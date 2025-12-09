@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using CommunityToolkit.WinUI.Helpers;
 using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.UI.Xaml;
@@ -121,25 +122,15 @@ internal sealed class ColorfulThemeProvider : IThemeProvider
             (350, 357)
         ];
 
-        public static Color Transform(Color c, Options? opt = null)
+        public static Color Transform(Color input, Options? opt = null)
         {
             opt ??= new Options();
-
-            // to HSV
-            RgbToHsv(c, out var h, out var s, out var v); // h in [0,360), s,v in [0,1]
-
-            // 1) Hue warp via LUT
-            var h2 = RemapHueLut(h);
-
-            // 2) Saturation tweak
-            var s2 = Clamp01(Math.Pow(Clamp01(s), opt.SaturationGamma) * opt.SaturationGain);
-
-            // 3) Value tone curve
-            var v2 = Clamp01((opt.ValueScaleA * v) + opt.ValueBiasB);
-
-            // back to RGB
-            HsvToRgb(h2, s2, v2, out var r, out var g, out var b);
-            return Color.FromArgb(c.A, (byte)Math.Round(r * 255), (byte)Math.Round(g * 255), (byte)Math.Round(b * 255));
+            var hsv = input.ToHsv();
+            return ColorHelper.FromHsv(
+                RemapHueLut(hsv.H),
+                Clamp01(Math.Pow(hsv.S, opt.SaturationGamma) * opt.SaturationGain),
+                Clamp01((opt.ValueScaleA * hsv.V) + opt.ValueBiasB),
+                input.A);
         }
 
         // Hue LUT remap (piecewise-linear with cyclic wrap)
@@ -148,139 +139,32 @@ internal sealed class ColorfulThemeProvider : IThemeProvider
             // Normalize to [0,360)
             hDeg = Mod(hDeg, 360.0);
 
-            // Fast paths: below first or above last – handle cyclicly by comparing to endpoints +/-360
-            // Build a small search window that includes -360 and +360 copies to handle wrap cleanly.
-            Span<(double HIn, double HOut)> buf = stackalloc (double, double)[HueMap.Length + 2];
-            for (var i = 0; i < HueMap.Length; i++)
+            // Handle wrap-around case: hDeg is between last entry (350°) and 360°
+            var last = HueMap[^1];
+            var first = HueMap[0];
+            if (hDeg >= last.HIn)
             {
-                buf[i] = HueMap[i];
+                // Interpolate between last entry and first entry (wrapped by 360°)
+                var t = (hDeg - last.HIn) / (first.HIn + 360.0 - last.HIn + 1e-12);
+                var ho = Lerp(last.HOut, first.HOut + 360.0, t);
+                return Mod(ho, 360.0);
             }
 
-            buf[HueMap.Length + 0] = (HueMap[^1].HIn - 360.0, HueMap[^1].HOut - 360.0);
-            buf[HueMap.Length + 1] = (HueMap[0].HIn + 360.0, HueMap[0].HOut + 360.0);
-
-            // Find segment [i,i+1] s.t. hIn_i <= hDeg <= hIn_{i+1}, considering wrap
-            var best = double.NaN;
-            var bestDist = double.PositiveInfinity;
-
-            for (var pass = -1; pass <= 1; pass++)
+            // Find segment [i, i+1] where HueMap[i].HIn <= hDeg < HueMap[i+1].HIn
+            for (var i = 0; i < HueMap.Length - 1; i++)
             {
-                var hh = hDeg + (360.0 * pass);
-                for (var i = 0; i < buf.Length - 1; i++)
+                var a = HueMap[i];
+                var b = HueMap[i + 1];
+
+                if (hDeg >= a.HIn && hDeg < b.HIn)
                 {
-                    var a = buf[i];
-                    var b = buf[i + 1];
-
-                    if (hh >= a.HIn && hh <= b.HIn)
-                    {
-                        var t = (hh - a.HIn) / (b.HIn - a.HIn + 1e-12);
-                        var ho = Lerp(a.HOut, b.HOut, t);
-
-                        // Map back to [0,360)
-                        ho = Mod(ho, 360.0);
-
-                        // choose the closest reconstructed domain
-                        var dist = Math.Abs(hh - ((a.HIn + b.HIn) * 0.5));
-                        if (dist < bestDist)
-                        {
-                            bestDist = dist;
-                            best = ho;
-                        }
-
-                        break;
-                    }
+                    var t = (hDeg - a.HIn) / (b.HIn - a.HIn + 1e-12);
+                    return Lerp(a.HOut, b.HOut, t);
                 }
             }
 
             // Fallback (shouldn't happen)
-            return double.IsNaN(best) ? hDeg : best;
-        }
-
-        // RGB/HSV utilities (HSV with H∈[0,360), S,V∈[0,1])
-        private static void RgbToHsv(Color c, out double h, out double s, out double v)
-        {
-            double r = c.R / 255.0, g = c.G / 255.0, b = c.B / 255.0;
-            var max = Math.Max(r, Math.Max(g, b));
-            var min = Math.Min(r, Math.Min(g, b));
-            v = max;
-
-            var d = max - min;
-            s = max <= 0 ? 0 : (d / max);
-
-            if (d < 1e-12)
-            {
-                h = 0; // undefined; choose 0
-            }
-            else
-            {
-                double hue;
-                if (Math.Abs(max - r) < double.Epsilon * 2)
-                {
-                    hue = ((g - b) / d) + (g < b ? 6 : 0);
-                }
-                else if (Math.Abs(max - g) < double.Epsilon * 2)
-                {
-                    hue = ((b - r) / d) + 2;
-                }
-                else
-                {
-                    hue = ((r - g) / d) + 4;
-                }
-
-                h = (hue / 6.0) * 360.0;
-            }
-        }
-
-        private static void HsvToRgb(double h, double s, double v, out double r, out double g, out double b)
-        {
-            h = Mod(h, 360.0);
-            if (s <= 1e-12)
-            {
-                r = g = b = v;
-                return;
-            }
-
-            var hh = h / 60.0;
-            var i = (int)Math.Floor(hh);
-            var f = hh - i;
-
-            var p = v * (1.0 - s);
-            var q = v * (1.0 - (s * f));
-            var t = v * (1.0 - (s * (1.0 - f)));
-
-            switch (Mod(i, 6))
-            {
-                case 0:
-                    r = v;
-                    g = t;
-                    b = p;
-                    break;
-                case 1:
-                    r = q;
-                    g = v;
-                    b = p;
-                    break;
-                case 2:
-                    r = p;
-                    g = v;
-                    b = t;
-                    break;
-                case 3:
-                    r = p;
-                    g = q;
-                    b = v;
-                    break;
-                case 4:
-                    r = t;
-                    g = p;
-                    b = v;
-                    break;
-                default:
-                    r = v;
-                    g = p;
-                    b = q;
-                    break;
-            }
+            return hDeg;
         }
 
         private static double Lerp(double a, double b, double t) => a + ((b - a) * t);
@@ -295,7 +179,7 @@ internal sealed class ColorfulThemeProvider : IThemeProvider
             public double SaturationGain { get; init; } = 1.0;
 
             // Optional saturation gamma (1.0 = linear). <1.0 raises low S a bit; >1.0 preserves low S.
-            public double SaturationGamma { get; init; } = 1.00;
+            public double SaturationGamma { get; init; } = 1.0;
 
             // Value (V) remap: V' = a*V + b   (tone curve; clamp applied)
             // Example that lifts blacks & compresses whites slightly: a=0.50, b=0.08
