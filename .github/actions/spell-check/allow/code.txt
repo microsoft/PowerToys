@@ -302,6 +302,7 @@ onefuzz
 # NameInCode
 leilzh
 mengyuanchen
+contoso
 
 # DllName
 testhost
@@ -329,6 +330,12 @@ FFF
 HHH
 riday
 YYY
+
+# names of characters
+zwsp
+
+# mermaid
+autonumber
 
 # GitHub issue/PR commands
 azp
