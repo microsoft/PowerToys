@@ -24,6 +24,7 @@ namespace KeystrokeOverlayUI
     {
         Monitor,
         Activation,
+        DisplayMode,
     }
 
     public partial class MainViewModel : ObservableObject
@@ -64,6 +65,15 @@ namespace KeystrokeOverlayUI
         [ObservableProperty]
         private bool _isActivationLabelVisible = false;
 
+        [ObservableProperty]
+        private string _displayModeText = string.Empty;
+
+        [ObservableProperty]
+        private bool _isDisplayModeVisible = false;
+
+        [ObservableProperty]
+        private bool _isVisibleHotkey = false;
+
         private string _streamBuffer = string.Empty;
 
         public HotkeySettings ActivationShortcut { get; set; }
@@ -71,6 +81,9 @@ namespace KeystrokeOverlayUI
 
         public HotkeySettings SwitchMonitorHotkey { get; set; }
             = new HotkeySettings(true, true, false, false, 0x4B);
+
+        public HotkeySettings SwitchDisplayModeHotkey { get; set; }
+            = new HotkeySettings(true, false, false, true, 0x44);
 
         public event EventHandler<HotkeyAction> HotkeyActionTriggered;
 
@@ -86,7 +99,13 @@ namespace KeystrokeOverlayUI
                     ActivationLabelText = text;
                     IsActivationLabelVisible = true;
                     break;
+                case HotkeyAction.DisplayMode:
+                    DisplayModeText = text;
+                    IsDisplayModeVisible = true;
+                    break;
             }
+
+            IsVisibleHotkey = IsMonitorLabelVisible || IsActivationLabelVisible || IsDisplayModeVisible;
 
             try
             {
@@ -106,7 +125,12 @@ namespace KeystrokeOverlayUI
                 case HotkeyAction.Activation:
                     IsActivationLabelVisible = false;
                     break;
+                case HotkeyAction.DisplayMode:
+                    IsDisplayModeVisible = false;
+                    break;
             }
+
+            IsVisibleHotkey = IsMonitorLabelVisible || IsActivationLabelVisible || IsDisplayModeVisible;
         }
 
         public void ApplySettings(ModuleProperties props)
@@ -185,6 +209,25 @@ namespace KeystrokeOverlayUI
             {
                 // Fire the event for the View to handle
                 HotkeyActionTriggered?.Invoke(this, HotkeyAction.Monitor);
+                return;
+            }
+
+            if (isDown && keystroke.IsPressed && IsHotkeyMatch(keystroke, SwitchDisplayModeHotkey))
+            {
+                // Fire the event for the View to handle
+                DisplayMode = (DisplayMode + 1) % 4;
+
+                string modeText = DisplayMode switch
+                {
+                    0 => "Last Five Keystroke",
+                    1 => "Single Characters Only",
+                    2 => "Shortcuts Only",
+                    3 => "Stream",
+                    _ => "Unknown",
+                };
+
+                ShowLabel(HotkeyAction.DisplayMode, modeText);
+                HotkeyActionTriggered?.Invoke(this, HotkeyAction.DisplayMode);
                 return;
             }
 

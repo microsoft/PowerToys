@@ -233,7 +233,7 @@ namespace KeystrokeOverlayUI
                 case HotkeyAction.Monitor:
                     MoveToNextMonitor();
                     break;
-
+                case HotkeyAction.DisplayMode:
                 case HotkeyAction.Activation:
                     HandleActivation();
                     break;
@@ -407,7 +407,7 @@ namespace KeystrokeOverlayUI
                 desiredSize.Height == 0 ||
                 ViewModel.PressedKeys.Count == 0)
             {
-                if (!ViewModel.IsActivationLabelVisible && !ViewModel.IsMonitorLabelVisible)
+                if (!ViewModel.IsVisibleHotkey)
                 {
                     HideAppWindow();
                     _zOrderEnforcer.Stop();
@@ -424,7 +424,7 @@ namespace KeystrokeOverlayUI
             double totalHeight =
                 desiredSize.Height + RootGrid.Padding.Top + RootGrid.Padding.Bottom + 15;
 
-            if (ViewModel.IsMonitorLabelVisible || ViewModel.IsActivationLabelVisible)
+            if (ViewModel.IsVisibleHotkey)
             {
                 totalHeight = totalHeight + 30;
             }

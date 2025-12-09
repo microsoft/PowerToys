@@ -49,6 +49,17 @@
                        FontSize="18"
                        FontWeight="SemiBold"/>
                 </Border>
+
+                <Border CornerRadius="4"
+                        Padding="8,4"
+                        HorizontalAlignment="Left"
+                        Visibility="{x:Bind ViewModel.IsDisplayModeVisible, Mode=OneWay}">
+
+                    <TextBlock Text="{x:Bind ViewModel.DisplayModeText, Mode=OneWay}"
+                       Foreground="Black"
+                       FontSize="18"
+                       FontWeight="SemiBold"/>
+                </Border>
             </StackPanel>
 
             <ItemsControl ItemsSource="{x:Bind ViewModel.PressedKeys, Mode=OneWay}">
