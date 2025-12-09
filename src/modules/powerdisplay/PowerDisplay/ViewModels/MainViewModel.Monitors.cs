@@ -24,7 +24,6 @@ public partial class MainViewModel
     {
         try
         {
-            StatusText = "Scanning monitors...";
             IsScanning = true;
 
             // Discover monitors
@@ -41,21 +40,11 @@ public partial class MainViewModel
 
                     // Start watching for display changes after initialization
                     StartDisplayWatching();
-
-                    if (monitors.Count > 0)
-                    {
-                        StatusText = $"Found {monitors.Count} monitors";
-                    }
-                    else
-                    {
-                        StatusText = "No controllable monitors found";
-                    }
                 }
                 catch (Exception lambdaEx)
                 {
                     Logger.LogError($"[InitializeAsync] UI update failed: {lambdaEx.Message}");
                     IsScanning = false;
-                    StatusText = $"UI update failed: {lambdaEx.Message}";
                 }
             });
         }
@@ -64,7 +53,6 @@ public partial class MainViewModel
             Logger.LogError($"[InitializeAsync] Monitor discovery failed: {ex.Message}");
             _dispatcherQueue.TryEnqueue(() =>
             {
-                StatusText = $"Scan failed: {ex.Message}";
                 IsScanning = false;
             });
         }
@@ -79,7 +67,6 @@ public partial class MainViewModel
 
         try
         {
-            StatusText = "Refreshing monitor list...";
             IsScanning = true;
 
             var monitors = await _monitorManager.DiscoverMonitorsAsync(_cancellationTokenSource.Token);
@@ -88,14 +75,13 @@ public partial class MainViewModel
             {
                 UpdateMonitorList(monitors);
                 IsScanning = false;
-                StatusText = $"Found {monitors.Count} monitors";
             });
         }
         catch (Exception ex)
         {
+            Logger.LogError($"[RefreshMonitorsAsync] Refresh failed: {ex.Message}");
             _dispatcherQueue.TryEnqueue(() =>
             {
-                StatusText = $"Refresh failed: {ex.Message}";
                 IsScanning = false;
             });
         }
@@ -190,13 +176,11 @@ public partial class MainViewModel
     {
         try
         {
-            StatusText = $"Setting all monitors brightness to {brightness}%...";
             await _monitorManager.SetAllBrightnessAsync(brightness, _cancellationTokenSource.Token);
-            StatusText = $"All monitors brightness set to {brightness}%";
         }
         catch (Exception ex)
         {
-            StatusText = $"Failed to set brightness: {ex.Message}";
+            Logger.LogError($"[SetAllBrightnessAsync] Failed to set brightness: {ex.Message}");
         }
     }
 

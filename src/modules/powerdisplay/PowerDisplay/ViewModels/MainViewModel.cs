@@ -42,7 +42,6 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
 
     private ObservableCollection<MonitorViewModel> _monitors;
     private ObservableCollection<PowerDisplayProfile> _profiles;
-    private string _statusText;
     private bool _isScanning;
     private bool _isInitialized;
     private bool _isLoading;
@@ -58,7 +57,6 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
         _cancellationTokenSource = new CancellationTokenSource();
         _monitors = new ObservableCollection<MonitorViewModel>();
         _profiles = new ObservableCollection<PowerDisplayProfile>();
-        _statusText = "Initializing...";
         _isScanning = true;
 
         // Initialize settings utils
@@ -106,16 +104,6 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
     }
 
     public bool HasProfiles => Profiles.Count > 0;
-
-    public string StatusText
-    {
-        get => _statusText;
-        set
-        {
-            _statusText = value;
-            OnPropertyChanged();
-        }
-    }
 
     public bool IsScanning
     {

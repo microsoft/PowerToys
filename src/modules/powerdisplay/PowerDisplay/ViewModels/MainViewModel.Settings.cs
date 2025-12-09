@@ -340,7 +340,6 @@ public partial class MainViewModel
         {
             // Set loading state to block UI interactions
             IsLoading = true;
-            StatusText = "Loading settings...";
 
             // Read current settings
             var settings = _settingsUtils.GetSettingsOrDefault<PowerDisplaySettings>("PowerDisplay");
@@ -395,8 +394,6 @@ public partial class MainViewModel
                     // Apply feature visibility settings using HardwareId
                     ApplyFeatureVisibility(monitorVm, settings);
                 }
-
-                StatusText = "Saved settings restored successfully";
             }
             else
             {
@@ -427,14 +424,12 @@ public partial class MainViewModel
                 }
 
                 // No need to flush - MonitorStateManager now saves directly!
-                StatusText = "Current monitor values saved to state file";
             }
         }
         catch (Exception ex)
         {
             Logger.LogError($"[ReloadMonitorSettingsAsync] Failed to reload settings: {ex.Message}");
             Logger.LogError($"[ReloadMonitorSettingsAsync] Stack trace: {ex.StackTrace}");
-            StatusText = $"Failed to process settings: {ex.Message}";
         }
         finally
         {

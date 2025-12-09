@@ -146,14 +146,7 @@ namespace PowerDisplay
 
         private void ShowError(string message)
         {
-            if (_viewModel != null)
-            {
-                _viewModel.StatusText = $"Error: {message}";
-            }
-            else
-            {
-                Logger.LogError($"Error (ViewModel not yet initialized): {message}");
-            }
+            Logger.LogError($"Error: {message}");
         }
 
         private void OnWindowActivated(object sender, WindowActivatedEventArgs args)
@@ -398,10 +391,6 @@ namespace PowerDisplay
             catch (Exception ex)
             {
                 Logger.LogError($"OnRefreshClick failed: {ex}");
-                if (_viewModel != null)
-                {
-                    _viewModel.StatusText = "Refresh failed";
-                }
             }
         }
 
