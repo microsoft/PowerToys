@@ -217,26 +217,38 @@ namespace KeystrokeOverlayUI
                     break;
                 case 3: // "Stream" full words
 
-                    // regular text input
-                    string charText = keystroke.Text;
-
-                    // ignore spaces/tabs/newlines
-                    if (string.IsNullOrWhiteSpace(charText))
+                    // backspace, edit current word
+                    if (keystroke.VirtualKey == (uint)Windows.System.VirtualKey.Back)
                     {
-                        _streamBuffer = string.Empty;
-                        formattedText = string.Empty;
+                        if (_streamBuffer.Length > 0)
+                        {
+                            _streamBuffer = _streamBuffer.Substring(0, _streamBuffer.Length - 1);
+
+                            if (PressedKeys.Count > 0)
+                            {
+                                PressedKeys.RemoveAt(PressedKeys.Count - 1);
+                            }
+
+                            if (!string.IsNullOrEmpty(_streamBuffer))
+                            {
+                                RegisterKey(_streamBuffer);
+                            }
+                        }
+
                         return;
                     }
 
-                    // show shortcuts + reset buffer
-                    if (isShortcut)
+                    // show shortcuts, reset buffer
+                    if (isShortcut && keystroke.VirtualKey != (uint)Windows.System.VirtualKey.Space)
                     {
                         _streamBuffer = string.Empty;
                         break;
                     }
 
-                    // ignore no text inputs
-                    if (string.IsNullOrEmpty(charText))
+                    string charText = keystroke.Text;
+
+                    // whitespace
+                    if (string.IsNullOrWhiteSpace(charText))
                     {
                         _streamBuffer = string.Empty;
                         formattedText = string.Empty;
@@ -261,6 +273,7 @@ namespace KeystrokeOverlayUI
             {
                 PressedKeys.RemoveAt(PressedKeys.Count - 1);
             }
+
             RegisterKey(text);
         }
 
