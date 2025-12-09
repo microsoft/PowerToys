@@ -18,6 +18,7 @@ using Microsoft.CmdPal.UI.Messages;
 using Microsoft.CmdPal.UI.Services;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
+using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI;
@@ -78,9 +79,13 @@ public sealed partial class MainWindow : WindowEx,
 
     private WindowPosition _currentWindowPosition = new();
 
+    private MainWindowViewModel ViewModel { get; }
+
     public MainWindow()
     {
         InitializeComponent();
+
+        ViewModel = App.Current.Services.GetService<MainWindowViewModel>()!;
 
         _autoGoHomeTimer = new DispatcherTimer();
         _autoGoHomeTimer.Tick += OnAutoGoHomeTimerOnTick;

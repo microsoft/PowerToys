@@ -28,7 +28,7 @@
     <PackageReference Include="AdaptiveCards.ObjectModel.WinUI3" GeneratePathProperty="true">
       <ExcludeAssets>compile</ExcludeAssets>
     </PackageReference>
-    <PackageReference Include="AdaptiveCards.Rendering.WinUI3" GeneratePathProperty="True" >
+    <PackageReference Include="AdaptiveCards.Rendering.WinUI3" GeneratePathProperty="True">
       <ExcludeAssets>compile</ExcludeAssets>
     </PackageReference>
 

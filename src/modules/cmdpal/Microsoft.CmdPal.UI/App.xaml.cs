@@ -28,6 +28,7 @@ using Microsoft.CmdPal.UI.Services;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.BuiltinCommands;
 using Microsoft.CmdPal.UI.ViewModels.Models;
+using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.PowerToys.Telemetry;
@@ -113,6 +114,17 @@ public partial class App : Application
         // Root services
         services.AddSingleton(TaskScheduler.FromCurrentSynchronizationContext());
 
+        AddBuiltInCommands(services);
+
+        AddCoreServices(services);
+
+        AddUIServices(services);
+
+        return services.BuildServiceProvider();
+    }
+
+    private static void AddBuiltInCommands(ServiceCollection services)
+    {
         // Built-in Commands. Order matters - this is the order they'll be presented by default.
         var allApps = new AllAppsCommandProvider();
         var files = new IndexerCommandsProvider();
@@ -155,29 +167,40 @@ public partial class App : Application
         services.AddSingleton<ICommandProvider, TimeDateCommandsProvider>();
         services.AddSingleton<ICommandProvider, SystemCommandExtensionProvider>();
         services.AddSingleton<ICommandProvider, RemoteDesktopCommandProvider>();
+    }
 
+    private static void AddUIServices(ServiceCollection services)
+    {
         // Models
-        services.AddSingleton<TopLevelCommandManager>();
-        services.AddSingleton<AliasManager>();
-        services.AddSingleton<HotkeyManager>();
         var sm = SettingsModel.LoadSettings();
         services.AddSingleton(sm);
         var state = AppStateModel.LoadState();
         services.AddSingleton(state);
-        services.AddSingleton<IExtensionService, ExtensionService>();
+
+        // Services
+        services.AddSingleton<TopLevelCommandManager>();
+        services.AddSingleton<AliasManager>();
+        services.AddSingleton<HotkeyManager>();
+
+        services.AddSingleton<MainWindowViewModel>();
         services.AddSingleton<TrayIconService>();
+
+        services.AddSingleton<IThemeService, ThemeService>();
+        services.AddSingleton<ResourceSwapper>();
+    }
+
+    private static void AddCoreServices(ServiceCollection services)
+    {
+        // Core services
+        services.AddSingleton<IExtensionService, ExtensionService>();
         services.AddSingleton<IRunHistoryService, RunHistoryService>();
 
         services.AddSingleton<IRootPageService, PowerToysRootPageService>();
         services.AddSingleton<IAppHostService, PowerToysAppHostService>();
         services.AddSingleton<ITelemetryService, TelemetryForwarder>();
-        services.AddSingleton<IThemeService, ThemeService>();
-        services.AddSingleton<ResourceSwapper>();
 
         // ViewModels
         services.AddSingleton<ShellViewModel>();
         services.AddSingleton<IPageViewModelFactoryService, CommandPalettePageViewModelFactory>();
-
-        return services.BuildServiceProvider();
     }
 }

@@ -6,7 +6,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Media;
 using Windows.UI;
 
-namespace Microsoft.CmdPal.Core.Common.Services;
+namespace Microsoft.CmdPal.UI.ViewModels.Services;
 
 /// <summary>
 /// Represents a snapshot of theme-related visual settings, including accent color, theme preference, and background

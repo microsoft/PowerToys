@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using Microsoft.CmdPal.Core.Common.Services;
+using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.UI.Xaml;
 
 namespace Microsoft.CmdPal.UI.Services;

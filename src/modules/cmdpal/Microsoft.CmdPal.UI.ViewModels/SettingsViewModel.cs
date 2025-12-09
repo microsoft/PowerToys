@@ -5,6 +5,7 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using Microsoft.CmdPal.Core.Common.Services;
+using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
 using Microsoft.Extensions.DependencyInjection;
 

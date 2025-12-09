@@ -7,12 +7,9 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.Core.Common;
-using Microsoft.CmdPal.Core.Common.Services;
 using Microsoft.CmdPal.Core.ViewModels.Messages;
 using Microsoft.CmdPal.Core.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
-using Microsoft.UI.Xaml.Media;
-using Color = Windows.UI.Color;
 
 namespace Microsoft.CmdPal.Core.ViewModels;
 
@@ -23,7 +20,6 @@ public partial class ShellViewModel : ObservableObject,
 {
     private readonly IRootPageService _rootPageService;
     private readonly IAppHostService _appHostService;
-    private readonly IThemeService _themeService;
     private readonly TaskScheduler _scheduler;
     private readonly IPageViewModelFactoryService _pageViewModelFactory;
     private readonly Lock _invokeLock = new();
@@ -43,30 +39,6 @@ public partial class ShellViewModel : ObservableObject,
 
     [ObservableProperty]
     public partial bool IsSearchBoxVisible { get; set; } = true;
-
-    [ObservableProperty]
-    public partial ImageSource? BackgroundImageSource { get; private set; }
-
-    [ObservableProperty]
-    public partial Stretch BackgroundImageStretch { get; private set; } = Stretch.Fill;
-
-    [ObservableProperty]
-    public partial double BackgroundImageOpacity { get; private set; }
-
-    [ObservableProperty]
-    public partial Color BackgroundImageTint { get; private set; }
-
-    [ObservableProperty]
-    public partial double BackgroundImageTintIntensity { get; private set; }
-
-    [ObservableProperty]
-    public partial int BackgroundImageBlurAmount { get; private set; }
-
-    [ObservableProperty]
-    public partial double BackgroundImageBrightness { get; private set; }
-
-    [ObservableProperty]
-    public partial bool ShowBackgroundImage { get; private set; }
 
     private PageViewModel _currentPage;
 
@@ -116,42 +88,19 @@ public partial class ShellViewModel : ObservableObject,
         TaskScheduler scheduler,
         IRootPageService rootPageService,
         IPageViewModelFactoryService pageViewModelFactory,
-        IAppHostService appHostService,
-        IThemeService themeService)
+        IAppHostService appHostService)
     {
-        ArgumentNullException.ThrowIfNull(themeService);
-
         _pageViewModelFactory = pageViewModelFactory;
         _scheduler = scheduler;
         _rootPageService = rootPageService;
         _appHostService = appHostService;
-        _themeService = themeService;
 
         NullPage = new NullPageViewModel(_scheduler, appHostService.GetDefaultHost());
         _currentPage = new LoadingPageViewModel(null, _scheduler, appHostService.GetDefaultHost());
 
-        _themeService.ThemeChanged += ThemeService_ThemeChanged;
-
         // Register to receive messages
         WeakReferenceMessenger.Default.Register<PerformCommandMessage>(this);
         WeakReferenceMessenger.Default.Register<HandleCommandResultMessage>(this);
-    }
-
-    private void ThemeService_ThemeChanged(object? sender, ThemeChangedEventArgs e)
-    {
-        OnUIThread(() =>
-        {
-            BackgroundImageSource = _themeService.Current.BackgroundImageSource;
-            BackgroundImageStretch = _themeService.Current.BackgroundImageStretch;
-            BackgroundImageOpacity = _themeService.Current.BackgroundImageOpacity;
-
-            BackgroundImageBrightness = _themeService.Current.BackgroundBrightness;
-            BackgroundImageTint = _themeService.Current.Tint;
-            BackgroundImageTintIntensity = _themeService.Current.TintIntensity;
-            BackgroundImageBlurAmount = _themeService.Current.BlurAmount;
-
-            ShowBackgroundImage = BackgroundImageSource != null;
-        });
     }
 
     [RelayCommand]
@@ -515,8 +464,6 @@ public partial class ShellViewModel : ObservableObject,
 
     public void Dispose()
     {
-        _themeService.ThemeChanged -= ThemeService_ThemeChanged;
-
         _handleInvokeTask?.Dispose();
         _navigationCts?.Dispose();
 
