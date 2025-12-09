@@ -92,9 +92,9 @@ public partial class ListItemViewModel : CommandItemViewModel
 
         UpdateAccessibleName();
 
-        if (li is IExtendedAttributesProvider eap)
+        if (li is IExtendedAttributesProvider extendedAttributesProvider)
         {
-            var properties = eap.GetProperties();
+            var properties = extendedAttributesProvider.GetProperties();
             UpdateDataPackage(properties);
         }
     }
@@ -169,12 +169,10 @@ public partial class ListItemViewModel : CommandItemViewModel
                 UpdateAccessibleName();
                 break;
             case "DataPackage":
+                if (model is IExtendedAttributesProvider extendedAttributesProvider)
                 {
-                    if (model is IExtendedAttributesProvider eap)
-                    {
-                        var properties = eap.GetProperties();
-                        UpdateDataPackage(properties);
-                    }
+                    var properties = extendedAttributesProvider.GetProperties();
+                    UpdateDataPackage(properties);
                 }
 
                 break;
