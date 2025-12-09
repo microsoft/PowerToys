@@ -290,14 +290,14 @@
                                 IsOn="{x:Bind ViewModel.ShowSysTrayIcon, Mode=TwoWay}"
                                 Toggled="ShowSystemTrayIcon_Toggled" />
                             <tkcontrols:SettingsExpander.Items>
-                                <tkcontrols:SettingsCard
+                                <tkcontrols:SettingsCard ContentAlignment="Left"
                                     x:Name="ShowThemeAdaptiveTrayIconCard"
                                     x:Uid="ShowThemeAdaptiveTrayIcon"
                                     IsEnabled="{x:Bind ViewModel.ShowSysTrayIcon, Mode=OneWay}">
-                                    <ToggleSwitch
+                                    <CheckBox
                                         x:Uid="ShowThemeAdaptiveTrayIcon_ToggleSwitch"
                                         AutomationProperties.Name="{Binding ElementName=ShowThemeAdaptiveTrayIconCard, Path=Header}"
-                                        IsOn="{x:Bind ViewModel.ShowThemeAdaptiveTrayIcon, Mode=TwoWay}" />
+                                        IsChecked="{x:Bind ViewModel.ShowThemeAdaptiveTrayIcon, Mode=TwoWay}" />
                                 </tkcontrols:SettingsCard>
                             </tkcontrols:SettingsExpander.Items>
                         </tkcontrols:SettingsExpander>
