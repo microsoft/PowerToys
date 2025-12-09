@@ -353,11 +353,13 @@ DBPROP
 DBPROPIDSET
 DBPROPSET
 DCBA
+DCapabilities
 DCOM
 DComposition
 DCR
 Ddc
 Ddcci
+ddcutil
 DDEIf
 Deact
 debouncer
@@ -481,6 +483,7 @@ EDITSHORTCUTS
 EDITTEXT
 EFile
 EInvalid
+eep
 eku
 emojis
 ENABLEDELAYEDEXPANSION
@@ -1010,6 +1013,8 @@ MDL
 mdtext
 mdtxt
 mdwn
+Mccs
+mccs
 meme
 memicmp
 MENUITEMINFO
@@ -1092,6 +1097,7 @@ Mso
 msrc
 msstore
 mstsc
+mswhql
 msvcp
 MT
 MTND
@@ -1287,6 +1293,7 @@ PATINVERT
 PATPAINT
 pbc
 pbi
+PBP
 PBlob
 pbrush
 pcb
@@ -1956,6 +1963,7 @@ VERSIONINFO
 VERTRES
 VERTSIZE
 VESA
+vesa
 VFT
 Vga
 vget
