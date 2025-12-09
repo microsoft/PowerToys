@@ -398,6 +398,7 @@
                             ContextRequested="Items_OnContextRequested"
                             DoubleTapped="Items_DoubleTapped"
                             DragItemsStarting="Items_DragItemsStarting"
+                            DragItemsCompleted="Items_DragItemsCompleted"
                             IsDoubleTapEnabled="True"
                             IsItemClickEnabled="True"
                             ItemClick="Items_ItemClick"

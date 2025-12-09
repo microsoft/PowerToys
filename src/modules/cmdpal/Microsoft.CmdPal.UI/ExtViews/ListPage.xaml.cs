@@ -587,6 +587,8 @@ public sealed partial class ListPage : Page,
                 return;
             }
 
+            WeakReferenceMessenger.Default.Send(new DragStartedMessage());
+
             // copy properties
             foreach (var (key, value) in item.DataPackage.Properties)
             {
@@ -644,8 +646,14 @@ public sealed partial class ListPage : Page,
         }
         catch (Exception ex)
         {
+            WeakReferenceMessenger.Default.Send(new DragCompletedMessage());
             Logger.LogError("Failed to start dragging an item", ex);
         }
+    }
+
+    private void Items_DragItemsCompleted(ListViewBase sender, DragItemsCompletedEventArgs args)
+    {
+        WeakReferenceMessenger.Default.Send(new DragCompletedMessage());
     }
 
     private enum InputSource
