@@ -7,6 +7,9 @@ parameters:
     default: false
 
 steps:
+- task: NuGetAuthenticate@1
+  displayName: 'NuGet Authenticate'
+
 - task: PowerShell@2
   displayName: 'Generate Temporary NuGet Config'
   inputs:
@@ -34,9 +37,6 @@ steps:
       
       Set-Content -Path $tempConfigPath -Value $content -Encoding UTF8
       Get-Content $tempConfigPath
-
-- task: NuGetAuthenticate@1
-  displayName: 'NuGet Authenticate'
 
 - task: PowerShell@2
   displayName: Update WinAppSDK Versions
