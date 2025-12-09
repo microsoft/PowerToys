@@ -53,7 +53,11 @@ $nullVersionExceptions = @(
     "Microsoft.Windows.Widgets.dll",
     "AdaptiveCards.ObjectModel.WinUI3.dll",
     "AdaptiveCards.Rendering.WinUI3.dll",
-    "boost_regex") -join '|';
+    "boost_regex-vc143-mt-gd-x32-1_87.dll",
+    "boost_regex-vc143-mt-gd-x64-1_87.dll",
+    "boost_regex-vc143-mt-x32-1_87.dll",
+    "boost_regex-vc143-mt-x64-1_87.dll"
+    ) -join '|';
 $totalFailure = 0;
 
 Write-Host $DirPath;
