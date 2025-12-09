@@ -16,9 +16,9 @@
     <Border x:Name="RootGrid"
             Loaded="RootGrid_Loaded"
             PointerPressed="RootGrid_PointerPressed"
-            Padding="15,12"
-            HorizontalAlignment="Left"
-            VerticalAlignment="Top"
+            Padding="10,7"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
             Background="Transparent">
 
         <StackPanel Orientation="Vertical" Spacing="5">
@@ -62,7 +62,7 @@
                         IsTabStop="False"
                         AutomationProperties.AccessibilityView="Raw"
                         Padding="12,6"
-                        CornerRadius="4"
+                        CornerRadius="6"
                         Opacity="{Binding Opacity}"
                         FontSize="{Binding TextSize}"
                         Foreground="{Binding DataContext.TextColor, ElementName=RootGrid}"

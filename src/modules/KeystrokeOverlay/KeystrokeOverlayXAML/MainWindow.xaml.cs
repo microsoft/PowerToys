@@ -64,6 +64,12 @@ namespace KeystrokeOverlayUI
         [DllImport("user32.dll")]
         private static extern int SetWindowLong(IntPtr hWnd, int nIndex, int dwNewLong);
 
+        [DllImport("dwmapi.dll")]
+        private static extern int DwmSetWindowAttribute(IntPtr hwnd, int attribute, ref int value, int size);
+
+        private const int DwmWindowCornerPreference = 33;
+        private const int DwmRoundCorner = 2;
+
         private static readonly IntPtr HWNDTOPMOST = new IntPtr(-1);
         private const uint SWPNOSIZE = 0x0001;
         private const uint SWPNOMOVE = 0x0002;
@@ -117,10 +123,10 @@ namespace KeystrokeOverlayUI
             IntPtr hWnd = WindowNative.GetWindowHandle(this);
 
             int exStyle = GetWindowLong(hWnd, GWLEXSTYLE);
-
-            // WS_EX_NOACTIVATE: Prevents the window from stealing focus when clicked/updated
-            // WS_EX_TOOLWINDOW: Hides it from the Alt+Tab menu (optional, good for overlays)
             _ = SetWindowLong(hWnd, GWLEXSTYLE, exStyle | EXNOACTIVATE | EXTOOLWINDOW);
+
+            int cornerPreference = DwmRoundCorner;
+            _ = DwmSetWindowAttribute(hWnd, DwmWindowCornerPreference, ref cornerPreference, sizeof(int));
 
             ForceWindowOnTop();
         }
@@ -310,7 +316,7 @@ namespace KeystrokeOverlayUI
                 desiredSize.Width + RootGrid.Padding.Left + RootGrid.Padding.Right + 5;
 
             double totalHeight =
-                desiredSize.Height + RootGrid.Padding.Top + RootGrid.Padding.Bottom + 10;
+                desiredSize.Height + RootGrid.Padding.Top + RootGrid.Padding.Bottom + 15;
 
             if (ViewModel.IsMonitorLabelVisible || ViewModel.IsActivationLabelVisible)
             {
