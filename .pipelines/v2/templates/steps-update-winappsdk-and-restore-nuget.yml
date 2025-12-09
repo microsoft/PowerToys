@@ -19,11 +19,19 @@ steps:
       -useExperimentalVersion $${{ parameters.useExperimentalVersion }}
       -rootPath "$(build.sourcesdirectory)"
 
-- task: NuGetCommand@2
-  displayName: 'Restore NuGet packages (slnx)'
+# - task: NuGetCommand@2
+#   displayName: 'Restore NuGet packages (slnx)'
+#   inputs:
+#     command: 'restore'
+#     feedsToUse: 'config'
+#     nugetConfigPath: '$(build.sourcesdirectory)\nuget.config'
+#     restoreSolution: '$(build.sourcesdirectory)\**\*.slnx'
+#     includeNuGetOrg: false
+
+- task: DotNetCoreCLI@2
+  displayName: 'Restore NuGet packages (dotnet)'
   inputs:
     command: 'restore'
+    projects: '$(build.sourcesdirectory)\**\*.slnx'
     feedsToUse: 'config'
     nugetConfigPath: '$(build.sourcesdirectory)\nuget.config'
-    restoreSolution: '$(build.sourcesdirectory)\**\*.slnx'
-    includeNuGetOrg: false
