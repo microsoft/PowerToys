@@ -20,6 +20,12 @@ using Windows.UI;
 
 namespace KeystrokeOverlayUI
 {
+    public enum HotkeyAction
+    {
+        Monitor,
+        Activation,
+    }
+
     public partial class MainViewModel : ObservableObject
     {
         // Changed from string to KeyVisualItem to support individual properties
@@ -66,19 +72,20 @@ namespace KeystrokeOverlayUI
         public HotkeySettings SwitchMonitorHotkey { get; set; }
             = new HotkeySettings(true, true, false, false, 0x4B);
 
-        public event EventHandler RequestMonitorMove;
+        public event EventHandler<HotkeyAction> HotkeyActionTriggered;
 
-        public async void ShowLabel(string type, string text, int durationMs = 2000)
+        public async void ShowLabel(HotkeyAction action, string text, int durationMs = 2000)
         {
-            if (type == "monitor")
+            switch (action)
             {
-                MonitorLabelText = text;
-                IsMonitorLabelVisible = true;
-            }
-            else
-            {
-                ActivationLabelText = text;
-                IsActivationLabelVisible = true;
+                case HotkeyAction.Monitor:
+                    MonitorLabelText = text;
+                    IsMonitorLabelVisible = true;
+                    break;
+                case HotkeyAction.Activation:
+                    ActivationLabelText = text;
+                    IsActivationLabelVisible = true;
+                    break;
             }
 
             try
@@ -91,13 +98,14 @@ namespace KeystrokeOverlayUI
                 Logger.LogError("KeystrokeOverlay: Error showing label delay.");
             }
 
-            if (type == "monitor")
+            switch (action)
             {
-                IsMonitorLabelVisible = false;
-            }
-            else
-            {
-                IsActivationLabelVisible = false;
+                case HotkeyAction.Monitor:
+                    IsMonitorLabelVisible = false;
+                    break;
+                case HotkeyAction.Activation:
+                    IsActivationLabelVisible = false;
+                    break;
             }
         }
 
@@ -162,20 +170,21 @@ namespace KeystrokeOverlayUI
             {
                 IsActive = !IsActive;
 
-                ShowLabel("activation", IsActive ? "Overlay On" : "Overlay Off");
+                ShowLabel(HotkeyAction.Activation, IsActive ? "Overlay On" : "Overlay Off");
 
                 if (!IsActive)
                 {
                     ClearKeys();
                 }
 
+                HotkeyActionTriggered?.Invoke(this, HotkeyAction.Activation);
                 return;
             }
 
             if (isDown && keystroke.IsPressed && IsHotkeyMatch(keystroke, SwitchMonitorHotkey))
             {
                 // Fire the event for the View to handle
-                RequestMonitorMove?.Invoke(this, EventArgs.Empty);
+                HotkeyActionTriggered?.Invoke(this, HotkeyAction.Monitor);
                 return;
             }
 
