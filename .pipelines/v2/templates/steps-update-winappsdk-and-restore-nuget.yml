@@ -7,9 +7,6 @@ parameters:
     default: false
 
 steps:
-- task: NuGetAuthenticate@1
-  displayName: 'NuGet Authenticate'
-
 - task: PowerShell@2
   displayName: 'Generate Temporary NuGet Config'
   inputs:
@@ -49,6 +46,11 @@ steps:
 
 - script: echo $(WinAppSDKVersion)
   displayName: 'Display WinAppSDK Version Found'
+
+- task: NuGetAuthenticate@1
+  displayName: 'NuGet Authenticate'
+  inputs:
+    nugetConfigPath: '$(Build.SourcesDirectory)\nuget_temp.config'
 
 - task: NuGetCommand@2
   displayName: 'Restore NuGet packages'
