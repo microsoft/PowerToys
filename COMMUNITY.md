@@ -12,9 +12,6 @@ Noraa has helped triaging, discussing, and creating a substantial number of issu
 ### [@cgaarden](https://github.com/cgaarden) - [Christian Gaarden Gaardmark](https://www.onegreatworld.com) 
 Christian contributed New+ utility
 
-### [@cinnamon-msft](https://github.com/cinnamon-msft) - Kayla Cinnamon
-Kayla was a former lead for PowerToys and helped create multiple utilities, maintained the GitHub repo, and collaborated with the community to improve the overall product
-
 ### [@CleanCodeDeveloper](https://github.com/CleanCodeDeveloper)
 CleanCodeDeveloper helped do massive amounts of code stability and image resizer work.
 
@@ -123,6 +120,9 @@ PowerToys Awake is a tool to keep your computer awake.
 ### [@randyrants](https://github.com/randyrants) - [Randy Santossio](https://www.randyrants.com)
 
 Randy contributed Registry Preview and some very early conversations about keyboard remapping.
+
+### [@cinnamon-msft](https://github.com/cinnamon-msft) - Kayla Cinnamon
+Kayla was a former lead for PowerToys and helped create multiple utilities, maintained the GitHub repo, and collaborated with the community to improve the overall product
 
 ### [@oldnewthing](https://github.com/oldnewthing) - Raymond Chen
 
