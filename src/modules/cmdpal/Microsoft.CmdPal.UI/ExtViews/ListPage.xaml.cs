@@ -945,15 +945,7 @@ public sealed partial class ListPage : Page,
     /// <summary>
     ///  Code stealed from <see cref="Controls.ContextMenu.IsSeparator(object)"/>
     /// </summary>
-    private bool IsSeparator(object? item)
-    {
-        if (item is not null)
-        {
-            return ((ListItemViewModel)item).IsSectionOrSeparator;
-        }
-
-        return false;
-    }
+    private bool IsSeparator(object? item) => item is ListItemViewModel li && li.IsSectionOrSeparator;
 
     private enum InputSource
     {
