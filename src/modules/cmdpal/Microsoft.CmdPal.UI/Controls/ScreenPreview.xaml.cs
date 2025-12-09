@@ -26,7 +26,7 @@ public sealed partial class ScreenPreview : UserControl
     {
         InitializeComponent();
 
-        using var wallpaperHelper = new WallpaperHelper();
+        var wallpaperHelper = new WallpaperHelper();
         WallpaperImage!.Source = wallpaperHelper.GetWallpaperImage()!;
         ScreenBorder!.Background = new SolidColorBrush(wallpaperHelper.GetWallpaperColor());
     }

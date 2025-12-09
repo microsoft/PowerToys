@@ -16,21 +16,18 @@ namespace Microsoft.CmdPal.UI.Helpers;
 /// <summary>
 /// Lightweight helper to access wallpaper information.
 /// </summary>
-internal sealed partial class WallpaperHelper : IDisposable
+internal sealed partial class WallpaperHelper
 {
-    private readonly ComApartment? _apartment;
     private readonly IDesktopWallpaper? _desktopWallpaper;
 
     public WallpaperHelper()
     {
         try
         {
-            var apartment = new ComApartment(sta: true);
             var desktopWallpaper = ComHelper.CreateComInstance<IDesktopWallpaper>(
                 ref Unsafe.AsRef(in CLSID.DesktopWallpaper),
                 CLSCTX.ALL);
 
-            _apartment = apartment;
             _desktopWallpaper = desktopWallpaper;
         }
         catch (Exception ex)
@@ -38,13 +35,7 @@ internal sealed partial class WallpaperHelper : IDisposable
             // If COM initialization fails, keep helper usable with safe fallbacks
             Logger.LogError("Failed to initialize DesktopWallpaper COM interface", ex);
             _desktopWallpaper = null;
-            _apartment = null;
         }
-    }
-
-    public void Dispose()
-    {
-        _apartment?.Dispose();
     }
 
     private string? GetWallpaperPathForFirstMonitor()
