@@ -6,6 +6,7 @@
 #include "centralized_hotkeys.h"
 #include "centralized_kb_hook.h"
 #include "quick_access_host.h"
+#include "hotkey_conflict_detector.h"
 #include <Windows.h>
 
 #include <common/utils/resources.h>
@@ -357,18 +358,31 @@ void update_quick_access_hotkey(bool enabled, PowerToysSettings::HotkeyObject ho
 {
     static PowerToysSettings::HotkeyObject current_hotkey;
     static bool is_registered = false;
+    auto& hkmng = HotkeyConflictDetector::HotkeyConflictManager::GetInstance();
 
     if (is_registered)
     {
-        CentralizedHotkeys::UnregisterHotkeysForModule(L"QuickAccess");
+        CentralizedKeyboardHook::ClearModuleHotkeys(L"QuickAccess");
+        hkmng.RemoveHotkeyByModule(L"GeneralSettings");
         is_registered = false;
     }
 
     if (enabled && hotkey.get_code() != 0)
     {
-        CentralizedHotkeys::AddHotkeyAction({ static_cast<WORD>(hotkey.get_modifiers()), static_cast<WORD>(hotkey.get_code()) }, { L"QuickAccess", [](WORD, WORD) {
+        HotkeyConflictDetector::Hotkey hk = {
+            hotkey.win_pressed(),
+            hotkey.ctrl_pressed(),
+            hotkey.shift_pressed(),
+            hotkey.alt_pressed(),
+            static_cast<unsigned char>(hotkey.get_code())
+        };
+
+        hkmng.AddHotkey(hk, L"GeneralSettings", 0, true);
+        CentralizedKeyboardHook::SetHotkeyAction(L"QuickAccess", hk, []() {
             open_quick_access_flyout_window();
-        }});
+            return true;
+        });
+
         current_hotkey = hotkey;
         is_registered = true;
     }

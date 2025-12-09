@@ -8,10 +8,9 @@
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
-                <ResourceDictionary Source="ms-appx:///Resources/Styles/Button.xaml" />
-                <ResourceDictionary Source="ms-appx:///Resources/Styles/TextBlock.xaml" />
-                <ResourceDictionary Source="ms-appx:///Resources/Themes/Colors.xaml" />
-                <ResourceDictionary Source="ms-appx:///Resources/Themes/Generic.xaml" />
+                <ResourceDictionary Source="/Resources/Styles/Button.xaml" />
+                <ResourceDictionary Source="/Resources/Styles/TextBlock.xaml" />
+                <ResourceDictionary Source="/Resources/Themes/Colors.xaml" />
             </ResourceDictionary.MergedDictionaries>
 
             <ResourceDictionary.ThemeDictionaries>
@@ -20,21 +19,29 @@
                         x:Key="LayerOnAcrylicFillColorDefaultBrush"
                         Opacity="0.7"
                         Color="#FFFFFFFF" />
+                    <SolidColorBrush x:Key="CardStrokeColorDefaultBrush" Color="#0F000000" />
+                    <SolidColorBrush x:Key="CardBackgroundFillColorDefaultBrush" Color="#B3FFFFFF" />
                 </ResourceDictionary>
                 <ResourceDictionary x:Key="Light">
                     <SolidColorBrush
                         x:Key="LayerOnAcrylicFillColorDefaultBrush"
                         Opacity="0.7"
                         Color="#FFFFFFFF" />
+                    <SolidColorBrush x:Key="CardStrokeColorDefaultBrush" Color="#0F000000" />
+                    <SolidColorBrush x:Key="CardBackgroundFillColorDefaultBrush" Color="#B3FFFFFF" />
                 </ResourceDictionary>
                 <ResourceDictionary x:Key="Dark">
                     <SolidColorBrush
                         x:Key="LayerOnAcrylicFillColorDefaultBrush"
                         Opacity="0.6"
                         Color="#FF000000" />
+                    <SolidColorBrush x:Key="CardStrokeColorDefaultBrush" Color="#0FFFFFFF" />
+                    <SolidColorBrush x:Key="CardBackgroundFillColorDefaultBrush" Color="#0DFFFFFF" />
                 </ResourceDictionary>
                 <ResourceDictionary x:Key="HighContrast">
                     <SolidColorBrush x:Key="LayerOnAcrylicFillColorDefaultBrush" Color="{ThemeResource SystemColorWindowColor}" />
+                    <SolidColorBrush x:Key="CardStrokeColorDefaultBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+                    <SolidColorBrush x:Key="CardBackgroundFillColorDefaultBrush" Color="{ThemeResource SystemColorWindowColor}" />
                 </ResourceDictionary>
             </ResourceDictionary.ThemeDictionaries>
 

@@ -189,6 +189,12 @@ GeneralSettings get_general_settings()
 
 void apply_general_settings(const json::JsonObject& general_configs, bool save)
 {
+    std::wstring old_settings_json_string;
+    if (save)
+    {
+        old_settings_json_string = get_general_settings().to_json().Stringify().c_str();
+    }
+
     Logger::info(L"apply_general_settings: {}", std::wstring{ general_configs.ToString() });
     run_as_elevated = general_configs.GetNamedBoolean(L"run_elevated", false);
 
@@ -355,8 +361,12 @@ void apply_general_settings(const json::JsonObject& general_configs, bool save)
     if (save)
     {
         GeneralSettings save_settings = get_general_settings();
-        PTSettingsHelper::save_general_settings(save_settings.to_json());
-        Trace::SettingsChanged(save_settings);
+        std::wstring new_settings_json_string = save_settings.to_json().Stringify().c_str();
+        if (old_settings_json_string != new_settings_json_string)
+        {
+            PTSettingsHelper::save_general_settings(save_settings.to_json());
+            Trace::SettingsChanged(save_settings);
+        }
     }
 }
 

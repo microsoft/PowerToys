@@ -31,12 +31,22 @@ using Windows.System.Profile;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
-    public partial class GeneralViewModel : Observable
+    public partial class GeneralViewModel : PageViewModelBase
     {
         public enum InstallScope
         {
             PerMachine = 0,
             PerUser,
+        }
+
+        protected override string ModuleName => "GeneralSettings";
+
+        public override Dictionary<string, HotkeySettings[]> GetAllHotkeySettings()
+        {
+            return new Dictionary<string, HotkeySettings[]>
+            {
+                { ModuleName, new HotkeySettings[] { QuickAccessShortcut } },
+            };
         }
 
         private GeneralSettings GeneralSettingsConfig { get; set; }
@@ -75,6 +85,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private string _settingsConfigFileFolder = string.Empty;
 
+        private ISettingsRepository<GeneralSettings> _settingsRepository;
+        private Microsoft.UI.Dispatching.DispatcherQueue _dispatcherQueue;
+
         private IFileSystemWatcher _fileWatcher;
 
         private Func<Task<string>> PickSingleFolderDialog { get; }
@@ -99,6 +112,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             // To obtain the general settings configuration of PowerToys if it exists, else to create a new file and return the default configurations.
             ArgumentNullException.ThrowIfNull(settingsRepository);
+
+            _settingsRepository = settingsRepository;
+            _settingsRepository.SettingsChanged += OnSettingsChanged;
+            _dispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread();
 
             GeneralSettingsConfig = settingsRepository.SettingsConfig;
             UpdatingSettingsConfig = UpdatingSettings.LoadSettings();
@@ -1492,6 +1509,31 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 // Open etw dir in FileExplorer
                 Process.Start("explorer.exe", etwDirPath);
             }
+        }
+
+        private void OnSettingsChanged(GeneralSettings newSettings)
+        {
+            _dispatcherQueue?.TryEnqueue(() =>
+            {
+                GeneralSettingsConfig = newSettings;
+
+                if (_enableQuickAccess != newSettings.EnableQuickAccess)
+                {
+                    _enableQuickAccess = newSettings.EnableQuickAccess;
+                    OnPropertyChanged(nameof(EnableQuickAccess));
+                }
+            });
+        }
+
+        public override void Dispose()
+        {
+            base.Dispose();
+            if (_settingsRepository != null)
+            {
+                _settingsRepository.SettingsChanged -= OnSettingsChanged;
+            }
+
+            GC.SuppressFinalize(this);
         }
     }
 }

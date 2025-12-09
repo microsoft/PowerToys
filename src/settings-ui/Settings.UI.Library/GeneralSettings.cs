@@ -7,6 +7,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 
 using ManagedCommon;
+using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Settings.UI.Library.Attributes;
@@ -19,7 +20,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         ByStatus,
     }
 
-    public class GeneralSettings : ISettingsConfig
+    public class GeneralSettings : ISettingsConfig, IHotkeyConfig
     {
         // Gets or sets a value indicating whether run powertoys on start-up.
         [JsonPropertyName("startup")]
@@ -124,6 +125,22 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             Enabled = new EnabledModules();
             CustomActionName = string.Empty;
             IgnoredConflictProperties = new ShortcutConflictProperties();
+        }
+
+        public HotkeyAccessor[] GetAllHotkeyAccessors()
+        {
+            return new HotkeyAccessor[]
+            {
+                new HotkeyAccessor(
+                    () => QuickAccessShortcut,
+                    (hotkey) => { QuickAccessShortcut = hotkey; },
+                    "GeneralPage_QuickAccessShortcut"),
+            };
+        }
+
+        public ModuleType GetModuleType()
+        {
+            return ModuleType.GeneralSettings;
         }
 
         // converts the current to a json string.

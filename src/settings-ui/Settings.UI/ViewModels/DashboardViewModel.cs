@@ -48,6 +48,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         // Flag to prevent circular updates when a UI toggle triggers settings changes.
         private bool _isUpdatingFromUI;
+        private bool _isUpdatingFromSettings;
 
         private AllHotkeyConflictsData _allHotkeyConflictsData = new AllHotkeyConflictsData();
 
@@ -164,6 +165,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             foreach (ModuleType moduleType in Enum.GetValues<ModuleType>())
             {
+                if (moduleType == ModuleType.GeneralSettings)
+                {
+                    continue;
+                }
+
                 GpoRuleConfigured gpo = ModuleHelper.GetModuleGpoConfiguration(moduleType);
                 var newItem = new DashboardListItem()
                 {
@@ -263,6 +269,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         /// </summary>
         private void EnabledChangedOnUI(DashboardListItem dashboardListItem)
         {
+            if (_isUpdatingFromSettings)
+            {
+                return;
+            }
+
             _isUpdatingFromUI = true;
             try
             {
@@ -306,6 +317,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 return;
             }
 
+            _isUpdatingFromSettings = true;
             try
             {
                 RefreshModuleList();
@@ -319,6 +331,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             catch (Exception ex)
             {
                 Logger.LogError($"Updating active/disabled modules list failed: {ex.Message}");
+            }
+            finally
+            {
+                _isUpdatingFromSettings = false;
             }
         }
 
@@ -730,6 +746,17 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 NavigationService.Navigate(ModuleHelper.GetModulePageType(moduleType));
             }
+        }
+
+        public override void Dispose()
+        {
+            base.Dispose();
+            if (_settingsRepository != null)
+            {
+                _settingsRepository.SettingsChanged -= OnSettingsChanged;
+            }
+
+            GC.SuppressFinalize(this);
         }
     }
 }

@@ -93,6 +93,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             CheckBugReportStatus();
 
             doRefreshBackupRestoreStatus(100);
+
+            this.Loaded += (s, e) => ViewModel.OnPageLoaded();
         }
 
         private void OpenColorsSettings_Click(object sender, RoutedEventArgs e)

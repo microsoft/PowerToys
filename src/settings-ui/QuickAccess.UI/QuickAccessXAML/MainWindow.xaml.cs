@@ -372,7 +372,7 @@ public sealed partial class MainWindow : WindowEx, IDisposable
             _exitEvent?.Dispose();
             _exitEvent = null;
 
-            if (_hwnd != IntPtr.Zero)
+            if (_hwnd != IntPtr.Zero && IsWindow(_hwnd))
             {
                 UncloakWindow();
             }
@@ -384,6 +384,10 @@ public sealed partial class MainWindow : WindowEx, IDisposable
 
         _disposed = true;
     }
+
+    [DllImport("user32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool IsWindow(IntPtr hWnd);
 
     [DllImport("user32.dll", EntryPoint = "ShowWindow", SetLastError = true)]
     private static extern bool ShowWindowNative(IntPtr hWnd, int nCmdShow);

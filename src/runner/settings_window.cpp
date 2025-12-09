@@ -190,12 +190,12 @@ void dispatch_received_json(const std::wstring& json_to_parse)
         if (name == L"general")
         {
             apply_general_settings(value.GetObjectW());
-            const std::wstring settings_string{ get_all_settings().Stringify().c_str() };
-            {
-                std::unique_lock lock{ ipc_mutex };
-                if (current_settings_ipc)
-                    current_settings_ipc->send(settings_string);
-            }
+            // const std::wstring settings_string{ get_all_settings().Stringify().c_str() };
+            // {
+            //     std::unique_lock lock{ ipc_mutex };
+            //     if (current_settings_ipc)
+            //         current_settings_ipc->send(settings_string);
+            // }
         }
         else if (name == L"powertoys")
         {

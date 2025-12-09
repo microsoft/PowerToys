@@ -86,6 +86,11 @@ public sealed class AllAppsViewModel : Observable
 
         foreach (ModuleType moduleType in Enum.GetValues<ModuleType>())
         {
+            if (moduleType == ModuleType.GeneralSettings)
+            {
+                continue;
+            }
+
             var gpo = ModuleHelper.GetModuleGpoConfiguration(moduleType);
             var isLocked = gpo is GpoRuleConfigured.Enabled or GpoRuleConfigured.Disabled;
             var isEnabled = gpo == GpoRuleConfigured.Enabled || (!isLocked && ModuleHelper.GetIsModuleEnabled(_generalSettings, moduleType));

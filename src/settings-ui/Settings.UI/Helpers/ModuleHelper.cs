@@ -24,6 +24,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
                 case ModuleType.MouseJump:
                 case ModuleType.MousePointerCrosshairs:
                 case ModuleType.CursorWrap: return $"MouseUtils_{moduleType}/Header";
+                case ModuleType.GeneralSettings: return "QuickAccessTitle/Title";
                 default: return $"{moduleType}/ModuleTitle";
             }
         }
@@ -39,6 +40,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
                 case ModuleType.MousePointerCrosshairs: return "ms-appx:///Assets/Settings/Icons/MouseCrosshairs.png";
                 case ModuleType.MeasureTool: return "ms-appx:///Assets/Settings/Icons/ScreenRuler.png";
                 case ModuleType.PowerLauncher: return $"ms-appx:///Assets/Settings/Icons/PowerToysRun.png";
+                case ModuleType.GeneralSettings: return "ms-appx:///Assets/Settings/Icons/PowerToys.png";
                 default: return $"ms-appx:///Assets/Settings/Icons/{moduleType}.png";
             }
         }
@@ -77,6 +79,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
                 case ModuleType.ShortcutGuide: return generalSettingsConfig.Enabled.ShortcutGuide;
                 case ModuleType.PowerOCR: return generalSettingsConfig.Enabled.PowerOcr;
                 case ModuleType.ZoomIt: return generalSettingsConfig.Enabled.ZoomIt;
+                case ModuleType.GeneralSettings: return generalSettingsConfig.EnableQuickAccess;
                 default: return false;
             }
         }
@@ -115,6 +118,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
                 case ModuleType.ShortcutGuide: generalSettingsConfig.Enabled.ShortcutGuide = isEnabled; break;
                 case ModuleType.PowerOCR: generalSettingsConfig.Enabled.PowerOcr = isEnabled; break;
                 case ModuleType.ZoomIt: generalSettingsConfig.Enabled.ZoomIt = isEnabled; break;
+                case ModuleType.GeneralSettings: generalSettingsConfig.EnableQuickAccess = isEnabled; break;
             }
         }
 
@@ -171,6 +175,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
                 ModuleType.FancyZones => typeof(FancyZonesPage),
                 ModuleType.FileLocksmith => typeof(FileLocksmithPage),
                 ModuleType.FindMyMouse => typeof(MouseUtilsPage),
+                ModuleType.GeneralSettings => typeof(GeneralPage),
                 ModuleType.Hosts => typeof(HostsPage),
                 ModuleType.ImageResizer => typeof(ImageResizerPage),
                 ModuleType.KeyboardManager => typeof(KeyboardManagerPage),
