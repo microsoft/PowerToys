@@ -14,5 +14,7 @@
     Activated="MainWindow_Activated"
     Closed="MainWindow_Closed"
     mc:Ignorable="d">
-    <pages:ShellPage x:Name="RootShellPage" />
+    <Grid x:Name="RootElement">
+        <pages:ShellPage />
+    </Grid>
 </winuiex:WindowEx>

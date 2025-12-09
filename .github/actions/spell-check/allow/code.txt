@@ -95,6 +95,7 @@ OTP
 Yubi
 Yubico
 Perplexity
+Groq
 svgl
 
 # KEYS
@@ -328,3 +329,9 @@ FFF
 HHH
 riday
 YYY
+
+# GitHub issue/PR commands
+azp
+feedbackhub
+needinfo
+reportbug
