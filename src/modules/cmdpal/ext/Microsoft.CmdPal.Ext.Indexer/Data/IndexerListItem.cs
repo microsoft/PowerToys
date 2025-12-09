@@ -2,14 +2,18 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Microsoft.CmdPal.Core.Common.Commands;
+using Microsoft.CmdPal.Ext.Indexer.Helpers;
 using Microsoft.CmdPal.Ext.Indexer.Pages;
 using Microsoft.CmdPal.Ext.Indexer.Properties;
 using Microsoft.CommandPalette.Extensions.Toolkit;
+using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation.Metadata;
+using FileAttributes = System.IO.FileAttributes;
 
 namespace Microsoft.CmdPal.Ext.Indexer.Data;
 
@@ -35,6 +39,8 @@ internal sealed partial class IndexerListItem : ListItem
 
         Title = indexerItem.FileName;
         Subtitle = indexerItem.FullPath;
+
+        DataPackage = DataPackageHelper.CreateDataPackageForPath(this, FilePath);
 
         var commands = FileCommands(indexerItem.FullPath, browseByDefault);
         if (commands.Any())
@@ -106,6 +112,22 @@ internal sealed partial class IndexerListItem : ListItem
         }
 
         return commands;
+    }
+
+    private DataPackage GetDataPackage(string filePath)
+    {
+        if (string.IsNullOrEmpty(filePath))
+        {
+            return null;
+        }
+
+        var dataPackage = new DataPackage();
+        dataPackage.SetText(filePath);
+        _ = dataPackage.TrySetStorageItemsAsync(filePath);
+        dataPackage.Properties.Title = Title;
+        dataPackage.Properties.Description = Subtitle;
+        dataPackage.RequestedOperation = DataPackageOperation.Copy;
+        return dataPackage;
     }
 }
 

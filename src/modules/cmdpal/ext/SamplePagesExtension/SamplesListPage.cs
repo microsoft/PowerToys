@@ -101,6 +101,13 @@ public partial class SamplesListPage : ListPage
             Subtitle = "A demo of the settings helpers",
         },
 
+        // Data package samples
+        new ListItem(new SampleDataTransferPage())
+        {
+            Title = "Clipboard and Drag-and-Drop Demo",
+            Subtitle = "Demonstrates clipboard integration and drag-and-drop functionality",
+        },
+
         // Evil edge cases
         // Anything weird that might break the palette - put that in here.
         new ListItem(new EvilSamplesPage())
