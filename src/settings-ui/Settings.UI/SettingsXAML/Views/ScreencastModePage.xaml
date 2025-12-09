@@ -70,7 +70,7 @@
                         <NumberBox
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
                             Minimum="10"
-                            Maximum="96"
+                            Maximum="84"
                             SpinButtonPlacementMode="Inline"
                             Value="{x:Bind ViewModel.TextSize, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
