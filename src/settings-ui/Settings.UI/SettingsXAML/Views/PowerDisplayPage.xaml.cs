@@ -27,7 +27,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         public PowerDisplayPage()
         {
-            var settingsUtils = new SettingsUtils();
+            var settingsUtils = SettingsUtils.Default;
             ViewModel = new PowerDisplayViewModel(
                 settingsUtils,
                 SettingsRepository<GeneralSettings>.GetInstance(settingsUtils),

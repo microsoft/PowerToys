@@ -723,7 +723,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             try
             {
-                var settingsUtils = new SettingsUtils();
+                var settingsUtils = SettingsUtils.Default;
                 var generalSettings = settingsUtils.GetSettingsOrDefault<GeneralSettings>(string.Empty);
                 IsPowerDisplayEnabled = generalSettings?.Enabled?.PowerDisplay ?? false;
                 Logger.LogInfo($"PowerDisplay enabled status: {IsPowerDisplayEnabled}");

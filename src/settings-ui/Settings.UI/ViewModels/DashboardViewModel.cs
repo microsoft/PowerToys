@@ -658,7 +658,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private ObservableCollection<DashboardModuleItem> GetModuleItemsPowerDisplay()
         {
-            ISettingsRepository<PowerDisplaySettings> moduleSettingsRepository = SettingsRepository<PowerDisplaySettings>.GetInstance(new SettingsUtils());
+            ISettingsRepository<PowerDisplaySettings> moduleSettingsRepository = SettingsRepository<PowerDisplaySettings>.GetInstance(SettingsUtils.Default);
             var settings = moduleSettingsRepository.SettingsConfig;
             var list = new List<DashboardModuleItem>
             {
