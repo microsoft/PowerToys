@@ -30,11 +30,24 @@ steps:
           $packageSourcesNode.AppendChild($addNode) | Out-Null
       }
       
-      # Remove packageSourceMapping to ensure we can restore from both sources without restriction
+      # Update packageSourceMapping to include localpackages for WindowsAppSDK
       $packageSourceMappingNode = $xml.configuration.packageSourceMapping
       if ($packageSourceMappingNode) {
-          $xml.configuration.RemoveChild($packageSourceMappingNode) | Out-Null
-          Write-Host "Removed packageSourceMapping."
+          # Create new packageSource element for localpackages
+          $sourceNode = $xml.CreateElement("packageSource")
+          $sourceNode.SetAttribute("key", "localpackages")
+          
+          $packageNode = $xml.CreateElement("package")
+          $packageNode.SetAttribute("pattern", "Microsoft.WindowsAppSDK*")
+          $sourceNode.AppendChild($packageNode) | Out-Null
+          
+          # Insert at the beginning to prioritize
+          if ($packageSourceMappingNode.HasChildNodes) {
+              $packageSourceMappingNode.InsertBefore($sourceNode, $packageSourceMappingNode.FirstChild) | Out-Null
+          } else {
+              $packageSourceMappingNode.AppendChild($sourceNode) | Out-Null
+          }
+          Write-Host "Updated packageSourceMapping."
       }
       
       $xml.Save($nugetConfigPath)
