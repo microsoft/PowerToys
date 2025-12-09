@@ -47,10 +47,12 @@
                             <RowDefinition Height="*" />
                         </Grid.RowDefinitions>
                         <Image
+                            x:Name="GradientImage"
                             Grid.RowSpan="3"
-                            HorizontalAlignment="Stretch"
-                            Source="/Assets/Settings/Modules/CmdPal_Background.png"
                             Stretch="UniformToFill" />
+
+                        <Rectangle x:Name="TextureRectangle" Grid.RowSpan="3" />
+
                         <TextBlock
                             Margin="0,24,0,12"
                             HorizontalAlignment="Center"
