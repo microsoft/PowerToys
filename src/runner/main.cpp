@@ -105,6 +105,8 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
 #endif
     Trace::RegisterProvider();
 
+    // Load settings from file before reading them
+    load_general_settings();
     auto const settings = get_general_settings();
     start_tray_icon(isProcessElevated, settings.showThemeAdaptiveTrayIcon);
     set_tray_icon_visible(settings.showSystemTrayIcon);
