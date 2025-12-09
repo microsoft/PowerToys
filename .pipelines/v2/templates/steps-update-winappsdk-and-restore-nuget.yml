@@ -8,50 +8,32 @@ parameters:
 
 steps:
 - task: PowerShell@2
-  displayName: 'Configure NuGet'
+  displayName: 'Generate Temporary NuGet Config'
   inputs:
     targetType: 'inline'
     script: |
       $nugetConfigPath = "$(Build.SourcesDirectory)\nuget.config"
+      $tempConfigPath = "$(Build.SourcesDirectory)\nuget_temp.config"
       $localPackagesPath = "$(Build.SourcesDirectory)\localpackages\output"
       
       # Ensure the directory exists so it's a valid source
       New-Item -ItemType Directory -Path $localPackagesPath -Force | Out-Null
       
-      Write-Host "Modifying $nugetConfigPath..."
-      [xml]$xml = Get-Content -Path $nugetConfigPath
+      Write-Host "Creating $tempConfigPath from $nugetConfigPath using text replacement..."
+      $content = Get-Content -Path $nugetConfigPath -Raw
       
       # Add localpackages source
-      $packageSourcesNode = $xml.configuration.packageSources
-      if (-not $packageSourcesNode.SelectSingleNode("add[@key='localpackages']")) {
-          $addNode = $xml.CreateElement("add")
-          $addNode.SetAttribute("key", "localpackages")
-          $addNode.SetAttribute("value", $localPackagesPath)
-          $packageSourcesNode.AppendChild($addNode) | Out-Null
-      }
+      # We insert it before the closing packageSources tag
+      $sourceInsert = "    <add key=""localpackages"" value=""$localPackagesPath"" />`r`n  "
+      $content = $content -replace "</packageSources>", "$sourceInsert</packageSources>"
       
-      # Update packageSourceMapping to include localpackages for WindowsAppSDK
-      $packageSourceMappingNode = $xml.configuration.packageSourceMapping
-      if ($packageSourceMappingNode) {
-          # Create new packageSource element for localpackages
-          $sourceNode = $xml.CreateElement("packageSource")
-          $sourceNode.SetAttribute("key", "localpackages")
-          
-          $packageNode = $xml.CreateElement("package")
-          $packageNode.SetAttribute("pattern", "Microsoft.WindowsAppSDK*")
-          $sourceNode.AppendChild($packageNode) | Out-Null
-          
-          # Insert at the beginning to prioritize
-          if ($packageSourceMappingNode.HasChildNodes) {
-              $packageSourceMappingNode.InsertBefore($sourceNode, $packageSourceMappingNode.FirstChild) | Out-Null
-          } else {
-              $packageSourceMappingNode.AppendChild($sourceNode) | Out-Null
-          }
-          Write-Host "Updated packageSourceMapping."
-      }
+      # Add mapping for WindowsAppSDK
+      # We insert it after the opening packageSourceMapping tag to ensure it's first (highest priority)
+      $mappingInsert = "`r`n    <packageSource key=""localpackages"">`r`n      <package pattern=""Microsoft.WindowsAppSDK*"" />`r`n    </packageSource>"
+      $content = $content -replace "<packageSourceMapping>", "<packageSourceMapping>$mappingInsert"
       
-      $xml.Save($nugetConfigPath)
-      Get-Content $nugetConfigPath
+      Set-Content -Path $tempConfigPath -Value $content -Encoding UTF8
+      Get-Content $tempConfigPath
 
 - task: NuGetAuthenticate@1
   displayName: 'NuGet Authenticate'
@@ -73,7 +55,7 @@ steps:
   inputs:
     command: 'restore'
     feedsToUse: 'config'
-    nugetConfigPath: '$(build.sourcesdirectory)\nuget.config'
+    nugetConfigPath: '$(build.sourcesdirectory)\nuget_temp.config'
     restoreSolution: '$(build.sourcesdirectory)\**\*.sln'
     includeNuGetOrg: false
 
@@ -82,6 +64,6 @@ steps:
   inputs:
     command: 'restore'
     feedsToUse: 'config'
-    nugetConfigPath: '$(build.sourcesdirectory)\nuget.config'
+    nugetConfigPath: '$(build.sourcesdirectory)\nuget_temp.config'
     restoreSolution: '$(build.sourcesdirectory)\**\*.slnx'
     includeNuGetOrg: false
