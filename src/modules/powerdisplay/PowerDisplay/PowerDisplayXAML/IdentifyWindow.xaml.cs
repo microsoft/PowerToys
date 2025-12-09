@@ -4,9 +4,9 @@
 
 using System;
 using System.Globalization;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Microsoft.UI;
-using Microsoft.UI.Composition.SystemBackdrops;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using PowerDisplay.Helpers;
@@ -18,12 +18,17 @@ namespace PowerDisplay.PowerDisplayXAML
     /// <summary>
     /// Interaction logic for IdentifyWindow.xaml
     /// </summary>
-    public sealed partial class IdentifyWindow : Window, IDisposable
+    public sealed partial class IdentifyWindow : Window
     {
+        // Window size in device-independent units (DIU)
+        private const int WindowWidthDiu = 300;
+        private const int WindowHeightDiu = 280;
+
         private AppWindow? _appWindow;
-        private DesktopAcrylicController? _acrylicController;
-        private SystemBackdropConfiguration? _configurationSource;
-        private bool _disposed;
+        private double _dpiScale = 1.0;
+
+        [LibraryImport("user32.dll")]
+        private static partial uint GetDpiForWindow(IntPtr hwnd);
 
         public IdentifyWindow(int number)
         {
@@ -49,6 +54,9 @@ namespace PowerDisplay.PowerDisplayXAML
             var windowId = Win32Interop.GetWindowIdFromWindow(hwnd);
             _appWindow = AppWindow.GetFromWindowId(windowId);
 
+            // Get DPI scale for this window
+            _dpiScale = GetDpiForWindow(hwnd) / 96.0;
+
             if (_appWindow != null)
             {
                 // Remove title bar using OverlappedPresenter
@@ -61,38 +69,17 @@ namespace PowerDisplay.PowerDisplayXAML
                     presenter.IsMaximizable = false;
                 }
 
-                // Set window size to fit the large number (200pt font)
-                _appWindow.Resize(new SizeInt32 { Width = 300, Height = 280 });
+                // Set window size scaled for DPI
+                // AppWindow.Resize expects physical pixels
+                int physicalWidth = (int)(WindowWidthDiu * _dpiScale);
+                int physicalHeight = (int)(WindowHeightDiu * _dpiScale);
+                _appWindow.Resize(new SizeInt32 { Width = physicalWidth, Height = physicalHeight });
             }
 
             // Set window topmost and hide from taskbar
             WindowHelper.SetWindowTopmost(hwnd, true);
             WindowHelper.HideFromTaskbar(hwnd);
             WindowHelper.DisableWindowMovingAndResizing(hwnd);
-
-            // Configure 90% transparent acrylic backdrop
-            ConfigureAcrylicBackdrop();
-        }
-
-        private void ConfigureAcrylicBackdrop()
-        {
-            if (!DesktopAcrylicController.IsSupported())
-            {
-                return;
-            }
-
-            _configurationSource = new SystemBackdropConfiguration();
-            _acrylicController = new DesktopAcrylicController();
-
-            // Set 90% transparency (TintOpacity 0.1 = 10% tint = 90% transparent)
-            _acrylicController.TintColor = Windows.UI.Color.FromArgb(255, 0, 0, 0);
-            _acrylicController.TintOpacity = 0.1f;
-            _acrylicController.LuminosityOpacity = 0f;
-
-            // Add target using WinRT cast
-            var target = WinRT.CastExtensions.As<Microsoft.UI.Composition.ICompositionSupportsSystemBackdrop>(this);
-            _acrylicController.AddSystemBackdropTarget(target);
-            _acrylicController.SetSystemBackdropConfiguration(_configurationSource);
         }
 
         /// <summary>
@@ -106,26 +93,16 @@ namespace PowerDisplay.PowerDisplayXAML
             }
 
             var workArea = displayArea.WorkArea;
-            int windowWidth = 300;
-            int windowHeight = 280;
+
+            // Window size in physical pixels (already scaled for DPI)
+            int physicalWidth = (int)(WindowWidthDiu * _dpiScale);
+            int physicalHeight = (int)(WindowHeightDiu * _dpiScale);
 
             // Calculate center position (WorkArea coordinates are in physical pixels)
-            int x = workArea.X + ((workArea.Width - windowWidth) / 2);
-            int y = workArea.Y + ((workArea.Height - windowHeight) / 2);
+            int x = workArea.X + ((workArea.Width - physicalWidth) / 2);
+            int y = workArea.Y + ((workArea.Height - physicalHeight) / 2);
 
             _appWindow.Move(new PointInt32(x, y));
-        }
-
-        public void Dispose()
-        {
-            if (_disposed)
-            {
-                return;
-            }
-
-            _disposed = true;
-            _acrylicController?.Dispose();
-            _acrylicController = null;
         }
     }
 }

@@ -9,12 +9,9 @@ using System.Threading.Tasks;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.UI;
-using Microsoft.UI.Composition;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Media;
-using Microsoft.UI.Xaml.Media.Animation;
 using PowerDisplay.Common.Models;
 using PowerDisplay.Configuration;
 using PowerDisplay.Helpers;
@@ -603,17 +600,6 @@ namespace PowerDisplay
         }
 
         /// <summary>
-        /// Slider ValueChanged event handler - does nothing during drag
-        /// This allows the slider UI to update smoothly without triggering hardware operations
-        /// </summary>
-        private void Slider_ValueChanged(object sender, Microsoft.UI.Xaml.Controls.Primitives.RangeBaseValueChangedEventArgs e)
-        {
-            // During drag, this event fires 60-120 times per second
-            // We intentionally do nothing here to keep UI smooth
-            // The actual ViewModel update happens in PointerCaptureLost after drag completes
-        }
-
-        /// <summary>
         /// Slider PointerCaptureLost event handler - updates ViewModel when drag completes
         /// This is the WinUI3 recommended way to detect drag completion
         /// </summary>
@@ -664,75 +650,6 @@ namespace PowerDisplay
         }
 
         /// <summary>
-        /// Input source item click handler - switches the monitor input source
-        /// </summary>
-        private async void InputSourceItem_Click(object sender, RoutedEventArgs e)
-        {
-            Logger.LogInfo("[UI] InputSourceItem_Click: Event triggered!");
-
-            if (sender is not Button button)
-            {
-                Logger.LogWarning("[UI] InputSourceItem_Click: sender is not Button");
-                return;
-            }
-
-            Logger.LogInfo($"[UI] InputSourceItem_Click: Button clicked, Tag type = {button.Tag?.GetType().Name ?? "null"}, DataContext type = {button.DataContext?.GetType().Name ?? "null"}");
-
-            // Get the InputSourceItem from Tag (not DataContext - Flyout doesn't inherit DataContext properly)
-            var inputSourceItem = button.Tag as InputSourceItem;
-            if (inputSourceItem == null)
-            {
-                Logger.LogWarning("[UI] InputSourceItem_Click: Tag is not InputSourceItem");
-                return;
-            }
-
-            Logger.LogInfo($"[UI] InputSourceItem_Click: InputSourceItem found - Value=0x{inputSourceItem.Value:X2}, Name={inputSourceItem.Name}, MonitorId={inputSourceItem.MonitorId}");
-
-            int inputSourceValue = inputSourceItem.Value;
-            string monitorId = inputSourceItem.MonitorId;
-
-            // Use MonitorId for direct lookup (Flyout popup is not in visual tree)
-            MonitorViewModel? monitorVm = null;
-
-            if (!string.IsNullOrEmpty(monitorId) && _viewModel != null)
-            {
-                monitorVm = _viewModel.Monitors.FirstOrDefault(m => m.Id == monitorId);
-                Logger.LogInfo($"[UI] InputSourceItem_Click: Found MonitorViewModel by ID: {monitorVm?.Name ?? "null"}");
-            }
-
-            // Fallback: search through all monitors (for backwards compatibility)
-            if (monitorVm == null && _viewModel != null)
-            {
-                Logger.LogInfo("[UI] InputSourceItem_Click: MonitorId lookup failed, trying fallback search");
-                foreach (var vm in _viewModel.Monitors)
-                {
-                    if (vm.SupportsInputSource && vm.AvailableInputSources != null)
-                    {
-                        if (vm.AvailableInputSources.Any(s => s.Value == inputSourceValue))
-                        {
-                            monitorVm = vm;
-                            Logger.LogInfo($"[UI] InputSourceItem_Click: Found MonitorViewModel by fallback: {vm.Name}");
-                            break;
-                        }
-                    }
-                }
-            }
-
-            if (monitorVm == null)
-            {
-                Logger.LogWarning("[UI] InputSourceItem_Click: Could not find MonitorViewModel");
-                return;
-            }
-
-            Logger.LogInfo($"[UI] Switching input source for {monitorVm.Name} to 0x{inputSourceValue:X2} ({inputSourceItem.Name})");
-
-            // Set the input source
-            await monitorVm.SetInputSourceAsync(inputSourceValue);
-
-            Logger.LogInfo("[UI] InputSourceItem_Click: SetInputSourceAsync completed");
-        }
-
-        /// <summary>
         /// Input source ListView selection changed handler - switches the monitor input source
         /// </summary>
         private async void InputSourceListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -766,13 +683,6 @@ namespace PowerDisplay
 
             // Set the input source
             await monitorVm.SetInputSourceAsync(selectedItem.Value);
-
-            // Close the flyout after selection
-            if (listView.Parent is StackPanel stackPanel &&
-                stackPanel.Parent is Flyout flyout)
-            {
-                flyout.Hide();
-            }
         }
 
         /// <summary>

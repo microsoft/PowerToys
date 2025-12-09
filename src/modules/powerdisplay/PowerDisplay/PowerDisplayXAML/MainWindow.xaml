@@ -193,7 +193,6 @@
                                                         Minimum="{x:Bind MinBrightness, Mode=OneWay}"
                                                         PointerCaptureLost="Slider_PointerCaptureLost"
                                                         Tag="Brightness"
-                                                        ValueChanged="Slider_ValueChanged"
                                                         Value="{x:Bind Brightness, Mode=OneWay}" />
                                                 </Grid>
 
@@ -226,7 +225,6 @@
                                                         Minimum="0"
                                                         PointerCaptureLost="Slider_PointerCaptureLost"
                                                         Tag="Contrast"
-                                                        ValueChanged="Slider_ValueChanged"
                                                         Value="{x:Bind ContrastPercent, Mode=OneWay}" />
                                                 </Grid>
 
@@ -260,7 +258,6 @@
                                                         Minimum="{x:Bind MinVolume, Mode=OneWay}"
                                                         PointerCaptureLost="Slider_PointerCaptureLost"
                                                         Tag="Volume"
-                                                        ValueChanged="Slider_ValueChanged"
                                                         Value="{x:Bind Volume, Mode=OneWay}" />
                                                 </Grid>
 

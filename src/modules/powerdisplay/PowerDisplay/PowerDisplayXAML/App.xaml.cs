@@ -10,8 +10,6 @@ using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Media;
 using Microsoft.Windows.AppLifecycle;
 using PowerDisplay.Helpers;
 using PowerDisplay.Serialization;
@@ -75,11 +73,7 @@ namespace PowerDisplay
         /// </summary>
         private void OnUnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
         {
-            // Try to display error information
-            ShowStartupError(e.Exception);
-
-            // Mark exception as handled to prevent app crash
-            e.Handled = true;
+            Logger.LogError("Unhandled exception", e.Exception);
         }
 
         /// <summary>
@@ -196,7 +190,7 @@ namespace PowerDisplay
             }
             catch (Exception ex)
             {
-                ShowStartupError(ex);
+                Logger.LogError("PowerDisplay startup failed", ex);
             }
         }
 
@@ -258,66 +252,6 @@ namespace PowerDisplay
                     });
                 },
                 CancellationToken.None);
-        }
-
-        /// <summary>
-        /// Show startup error
-        /// </summary>
-        private void ShowStartupError(Exception ex)
-        {
-            try
-            {
-                Logger.LogError($"PowerDisplay startup failed: {ex.Message}");
-
-                var errorWindow = new Window { Title = "PowerDisplay - Startup Error" };
-                var panel = new StackPanel { Margin = new Thickness(20), Spacing = 16 };
-
-                panel.Children.Add(new TextBlock
-                {
-                    Text = "PowerDisplay Startup Failed",
-                    FontSize = 20,
-                    FontWeight = Microsoft.UI.Text.FontWeights.SemiBold,
-                });
-
-                panel.Children.Add(new TextBlock
-                {
-                    Text = $"Error: {ex.Message}",
-                    FontSize = 14,
-                    TextWrapping = TextWrapping.Wrap,
-                });
-
-                panel.Children.Add(new TextBlock
-                {
-                    Text = $"Details:\n{ex}",
-                    FontSize = 12,
-                    TextWrapping = TextWrapping.Wrap,
-                    Foreground = new SolidColorBrush(Microsoft.UI.Colors.Gray),
-                    Margin = new Thickness(0, 10, 0, 0),
-                });
-
-                var closeButton = new Button
-                {
-                    Content = "Close",
-                    HorizontalAlignment = HorizontalAlignment.Right,
-                    Margin = new Thickness(0, 10, 0, 0),
-                };
-                closeButton.Click += (_, _) => errorWindow.Close();
-                panel.Children.Add(closeButton);
-
-                errorWindow.Content = new ScrollViewer
-                {
-                    Content = panel,
-                    VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
-                    MaxHeight = 600,
-                    MaxWidth = 800,
-                };
-
-                errorWindow.Activate();
-            }
-            catch
-            {
-                Environment.Exit(1);
-            }
         }
 
         /// <summary>
