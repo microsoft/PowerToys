@@ -13,7 +13,7 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 public partial class MainWindowViewModel : ObservableObject, IDisposable
 {
     private readonly IThemeService _themeService;
-    private readonly DispatcherQueue _uisDispatcherQueue = DispatcherQueue.GetForCurrentThread()!;
+    private readonly DispatcherQueue _uiDispatcherQueue = DispatcherQueue.GetForCurrentThread()!;
 
     [ObservableProperty]
     public partial ImageSource? BackgroundImageSource { get; private set; }
@@ -47,7 +47,7 @@ public partial class MainWindowViewModel : ObservableObject, IDisposable
 
     private void ThemeService_ThemeChanged(object? sender, ThemeChangedEventArgs e)
     {
-        _uisDispatcherQueue.TryEnqueue(() =>
+        _uiDispatcherQueue.TryEnqueue(() =>
         {
             BackgroundImageSource = _themeService.Current.BackgroundImageSource;
             BackgroundImageStretch = _themeService.Current.BackgroundImageStretch;
