@@ -1483,6 +1483,7 @@ rgh
 rgn
 rgs
 rguid
+rhk
 RIDEV
 RIGHTSCROLLBAR
 riid
@@ -1588,6 +1589,7 @@ SHGDNF
 SHGFI
 SHIL
 shinfo
+shk
 shlwapi
 shobjidl
 SHORTCUTATLEAST

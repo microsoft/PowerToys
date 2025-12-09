@@ -60,6 +60,8 @@
             "PowerToys.FancyZonesEditorCommon.dll",
             "PowerToys.FancyZonesModuleInterface.dll",
             "PowerToys.FancyZones.exe",
+            "FancyZonesCLI.exe",
+            "FancyZonesCLI.dll",
 
             "PowerToys.GcodePreviewHandler.dll",
             "PowerToys.GcodePreviewHandler.exe",
