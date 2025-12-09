@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Security;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading;
@@ -16,6 +17,7 @@ using KeystrokeOverlayUI.Controls;
 using KeystrokeOverlayUI.Models;
 using Microsoft.UI;
 using Microsoft.UI.Composition.SystemBackdrops;
+using Microsoft.UI.Input;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -37,20 +39,36 @@ namespace KeystrokeOverlayUI
     {
         public MainViewModel ViewModel { get; set; } = new();
 
+        // draggable cursor
+        private readonly InputCursor _dragCursor = InputSystemCursor.Create(InputSystemCursorShape.SizeAll);
+
+        // core components
         private readonly KeystrokeListener _keystrokeListener = new();
         private readonly OverlaySettings _overlaySettings = new();
         private CancellationTokenSource _startupCancellationSource;
         private bool _disposed;
 
-        // for draggable overlay
-        private const int WMNCLBUTTONDOWN = 0xA1;
-        private const int HTCAPTION = 0x2;
+        // DWM API for rounded corners
+        [DllImport("dwmapi.dll")]
+        private static extern int DwmSetWindowAttribute(IntPtr hwnd, int attribute, ref int value, int size);
 
-        [DllImport("user32.dll")]
-        private static extern int SendMessage(IntPtr hWnd, int msg, int wParam, int lParam);
+        private const int DwmWindowCornerPreference = 33;
+        private const int DwmRoundCorner = 2;
 
+        // draggable overlay
         [DllImport("user32.dll")]
-        private static extern bool ReleaseCapture();
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool GetCursorPos(out POINT lpPoint);
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct POINT
+        {
+            public int X;
+            public int Y;
+        }
+
+        private bool _isDragging;
+        private POINT _lastCursorPos;
 
         // always on top
         // P/Invoke for Win32 APIs
@@ -63,12 +81,6 @@ namespace KeystrokeOverlayUI
 
         [DllImport("user32.dll")]
         private static extern int SetWindowLong(IntPtr hWnd, int nIndex, int dwNewLong);
-
-        [DllImport("dwmapi.dll")]
-        private static extern int DwmSetWindowAttribute(IntPtr hwnd, int attribute, ref int value, int size);
-
-        private const int DwmWindowCornerPreference = 33;
-        private const int DwmRoundCorner = 2;
 
         private static readonly IntPtr HWNDTOPMOST = new IntPtr(-1);
         private const uint SWPNOSIZE = 0x0001;
@@ -262,13 +274,14 @@ namespace KeystrokeOverlayUI
         }
 
         // ----------------------
-        // WinUI Event Handlers
+        // Draggable Overlay
         // ----------------------
-        private void RootGrid_Loaded(object sender, RoutedEventArgs e)
+        private void SetRootGridCursor(InputCursor cursor)
         {
-            RootGrid.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
-            var desiredSize = RootGrid.DesiredSize;
-            ResizeAppWindow(desiredSize.Width, desiredSize.Height);
+            // Use Reflection to access the protected "ProtectedCursor" property on the Border (RootGrid)
+            typeof(UIElement)
+                .GetProperty("ProtectedCursor", BindingFlags.NonPublic | BindingFlags.Instance)
+                ?.SetValue(RootGrid, cursor);
         }
 
         private void RootGrid_PointerPressed(object sender, PointerRoutedEventArgs e)
@@ -277,14 +290,81 @@ namespace KeystrokeOverlayUI
 
             if (ViewModel.IsDraggable && properties.IsLeftButtonPressed)
             {
-                IntPtr hWnd = WindowNative.GetWindowHandle(this);
+                _isDragging = true;
 
-                ReleaseCapture();
+                RootGrid.CapturePointer(e.Pointer);
 
-                _ = SendMessage(hWnd, WMNCLBUTTONDOWN, HTCAPTION, 0);
+                GetCursorPos(out _lastCursorPos);
+
+                SetRootGridCursor(_dragCursor);
 
                 e.Handled = true;
             }
+        }
+
+        private void RootGrid_PointerMoved(object sender, PointerRoutedEventArgs e)
+        {
+            if (_isDragging)
+            {
+                GetCursorPos(out POINT currentPos);
+
+                int deltaX = currentPos.X - _lastCursorPos.X;
+                int deltaY = currentPos.Y - _lastCursorPos.Y;
+
+                var appWindow = GetAppWindow();
+                if (appWindow != null)
+                {
+                    var newPos = new Windows.Graphics.PointInt32(
+                        appWindow.Position.X + deltaX,
+                        appWindow.Position.Y + deltaY );
+
+                    appWindow.Move(newPos);
+                }
+
+                _lastCursorPos = currentPos;
+            }
+        }
+
+        private void RootGrid_PointerReleased(object sender, PointerRoutedEventArgs e)
+        {
+            if (_isDragging)
+            {
+                _isDragging = false;
+                RootGrid.ReleasePointerCapture(e.Pointer);
+                UpdateCursorState();
+            }
+        }
+
+        private void RootGrid_PointerEntered(object sender, PointerRoutedEventArgs e)
+        {
+            UpdateCursorState();
+        }
+
+        private void RootGrid_PointerExited(object sender, PointerRoutedEventArgs e)
+        {
+            SetRootGridCursor(null);
+        }
+
+        private void UpdateCursorState()
+        {
+            if (ViewModel.IsDraggable)
+            {
+                SetRootGridCursor(_dragCursor);
+            }
+            else
+            {
+                SetRootGridCursor(null);
+            }
+        }
+
+        // ----------------------
+        // WinUI Event Handlers
+        // ----------------------
+        private void RootGrid_Loaded(object sender, RoutedEventArgs e)
+        {
+            RootGrid.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+            var desiredSize = RootGrid.DesiredSize;
+            ResizeAppWindow(desiredSize.Width, desiredSize.Height);
         }
 
         private void StackPanel_SizeChanged(object sender, SizeChangedEventArgs e)
