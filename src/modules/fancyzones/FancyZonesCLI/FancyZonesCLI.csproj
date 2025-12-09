@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Look at Directory.Build.props in root for common stuff as well -->
+  <Import Project="..\..\..\Common.Dotnet.CsWinRT.props" />
+  <Import Project="..\..\..\Common.SelfContained.props" />
+  <Import Project="..\..\..\Common.Dotnet.AotCompatibility.props" />
+  
+  <PropertyGroup>
+    <AssemblyTitle>PowerToys.FancyZonesCLI</AssemblyTitle>
+    <AssemblyDescription>PowerToys FancyZones Command Line Interface</AssemblyDescription>
+    <Description>PowerToys FancyZones CLI</Description>
+    <OutputType>Exe</OutputType>
+    <Platforms>x64;ARM64</Platforms>
+    <PublishAot>true</PublishAot>
+    <DisableRuntimeMarshalling>true</DisableRuntimeMarshalling>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+    <OutputPath>..\..\..\..\$(Platform)\$(Configuration)</OutputPath>
+    <AssemblyName>FancyZonesCLI</AssemblyName>
+    <NoWarn>$(NoWarn);SA1500;SA1402;CA1852</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Text.Json" />
+    <PackageReference Include="Microsoft.Windows.CsWin32" PrivateAssets="all" />
+  </ItemGroup>
+
+  <!-- Force using WindowsDesktop runtime to ensure consistent dll versions with other projects -->
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.WindowsDesktop.App" />
+  </ItemGroup>
+
+</Project>

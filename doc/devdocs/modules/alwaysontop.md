@@ -86,7 +86,7 @@ The module provides a user interface for configuring settings in the PowerToys S
 ### Building and Testing
 
 1. Clone the repository: `git clone https://github.com/microsoft/PowerToys.git`
-2. Open PowerToys.sln in Visual Studio
+2. Open PowerToys.slnx in Visual Studio
 3. Select the Release configuration and build the solution
 4. Run PowerToys.exe from the output directory to test the module
 

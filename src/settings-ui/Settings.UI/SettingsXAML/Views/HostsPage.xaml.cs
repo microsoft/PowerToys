@@ -16,7 +16,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         public HostsPage()
         {
             InitializeComponent();
-            var settingsUtils = new SettingsUtils();
+            var settingsUtils = SettingsUtils.Default;
             ViewModel = new HostsViewModel(settingsUtils, SettingsRepository<GeneralSettings>.GetInstance(settingsUtils), SettingsRepository<HostsSettings>.GetInstance(settingsUtils), ShellPage.SendDefaultIPCMessage, App.IsElevated);
             BackupsCountInputSettingsCard.Header = ResourceLoaderInstance.ResourceLoader.GetString("Hosts_Backup_CountInput_Header");
             BackupsCountInputSettingsCard.Description = ResourceLoaderInstance.ResourceLoader.GetString("Hosts_Backup_CountInput_Description");
