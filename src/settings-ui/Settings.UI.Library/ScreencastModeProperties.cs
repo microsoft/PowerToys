@@ -3,17 +3,16 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Text.Json.Serialization;
-using System.Threading.Tasks;
-using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
+using Settings.UI.Library.Attributes;
 
 namespace Microsoft.PowerToys.Settings.UI.Library
 {
     public class ScreencastModeProperties
     {
+        [CmdConfigureIgnore]
+        public static HotkeySettings DefaultActivationShortcut => new HotkeySettings(true, false, true, false, 0x53); // Win + Alt + S
+
         public HotkeySettings ScreencastModeShortcut { get; set; }
 
         [JsonPropertyName("display_position")]
@@ -30,7 +29,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         public ScreencastModeProperties()
         {
-            ScreencastModeShortcut = new HotkeySettings(true, false, true, false, 83); // Win + Alt + S
+            ScreencastModeShortcut = DefaultActivationShortcut;
             DisplayPosition = new StringProperty("TopRight");
             TextColor = new StringProperty("#FFFFFF");
             BackgroundColor = new StringProperty("#000000");

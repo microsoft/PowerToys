@@ -66,7 +66,8 @@ public partial class ScreencastModeViewModel : Observable
         {
             if (this.screencastModeSettings.Properties.ScreencastModeShortcut != value)
             {
-                this.screencastModeSettings.Properties.ScreencastModeShortcut = value;
+                // If null, reset to default shortcut (this happens when user clicks "Reset")
+                this.screencastModeSettings.Properties.ScreencastModeShortcut = value ?? ScreencastModeProperties.DefaultActivationShortcut;
                 OnPropertyChanged(nameof(this.ScreencastModeShortcut));
 
                 this.SaveAndNotifySettings();
