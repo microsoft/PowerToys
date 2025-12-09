@@ -39,6 +39,12 @@
     <None Remove="*.binlog" />
   </ItemGroup>
   <ItemGroup>
+    <!-- Add WindowsDesktop.App framework reference to align Microsoft.VisualBasic.dll version
+         with other projects that use UseWPF/UseWindowsForms. This does NOT enable WPF/WinForms,
+         it only ensures consistent runtime DLL versions across all WinUI3Apps. -->
+    <FrameworkReference Include="Microsoft.WindowsDesktop.App" />
+  </ItemGroup>
+  <ItemGroup>
     <Page Remove="PowerDisplayXAML\App.xaml" />
   </ItemGroup>
   <ItemGroup>
