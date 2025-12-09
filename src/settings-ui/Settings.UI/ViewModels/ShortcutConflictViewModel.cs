@@ -244,6 +244,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
                     // Send IPC notification using the same format as other ViewModels
                     SendConfigMSG(settingsConfig, moduleName);
+
+                    // Request updated conflicts after changing a hotkey
+                    GlobalHotkeyConflictManager.Instance?.RequestAllConflicts();
                 }
             }
             catch (Exception ex)
@@ -264,11 +267,22 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     ? JsonSerializer.Serialize(settingsConfig, jsonTypeInfo)
                     : JsonSerializer.Serialize(settingsConfig);
 
-                var ipcMessage = string.Format(
-                    CultureInfo.InvariantCulture,
-                    "{{ \"powertoys\": {{ \"{0}\": {1} }} }}",
-                    moduleName,
-                    serializedSettings);
+                string ipcMessage;
+                if (string.Equals(moduleName, "GeneralSettings", StringComparison.OrdinalIgnoreCase))
+                {
+                    ipcMessage = string.Format(
+                        CultureInfo.InvariantCulture,
+                        "{{ \"general\": {0} }}",
+                        serializedSettings);
+                }
+                else
+                {
+                    ipcMessage = string.Format(
+                        CultureInfo.InvariantCulture,
+                        "{{ \"powertoys\": {{ \"{0}\": {1} }} }}",
+                        moduleName,
+                        serializedSettings);
+                }
 
                 var result = _ipcMSGCallBackFunc(ipcMessage);
                 System.Diagnostics.Debug.WriteLine($"Sent IPC notification for {moduleName}, result: {result}");
