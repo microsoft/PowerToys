@@ -5764,16 +5764,13 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
     <comment>Fluent Design is a product name, do not loc</comment>
   </data>
   <data name="GeneralPage_EnableQuickAccess.Header" xml:space="preserve">
-    <value>Enable Quick Access flyout</value>
+    <value>Quick Access flyout</value>
   </data>
   <data name="GeneralPage_EnableQuickAccess.Description" xml:space="preserve">
-    <value>Keep the Quick Access process in memory for easy access to your favorite tools</value>
+    <value>Fast access to quick actions and module toggles</value>
   </data>
   <data name="GeneralPage_QuickAccessShortcut.Header" xml:space="preserve">
-    <value>Activation Shortcut</value>
-  </data>
-  <data name="GeneralPage_QuickAccessShortcut_Description.Text" xml:space="preserve">
-    <value>Change the activation shortcut for Quick Access</value>
+    <value>Activation shortcut</value>
   </data>
 </root>
 
