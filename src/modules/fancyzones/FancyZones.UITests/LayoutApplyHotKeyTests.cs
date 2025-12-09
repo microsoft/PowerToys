@@ -217,8 +217,6 @@ namespace UITests_FancyZones
         [TestInitialize]
         public void TestInitialize()
         {
-            SettingsConfigHelper.ConfigureGlobalModuleSettings("Hosts");
-
             FancyZonesEditorHelper.Files.Restore();
             EditorParameters editorParameters = new EditorParameters();
             FancyZonesEditorHelper.Files.ParamsIOHelper.WriteData(editorParameters.Serialize(Parameters));
@@ -273,7 +271,7 @@ namespace UITests_FancyZones
             };
             FancyZonesEditorHelper.Files.AppliedLayoutsIOHelper.WriteData(appliedLayouts.Serialize(appliedLayoutsWrapper));
 
-            this.RestartScopeExe();
+            RestartScopeExe("Hosts");
         }
 
         [TestMethod("FancyZones.Settings.TestApplyHotKey")]

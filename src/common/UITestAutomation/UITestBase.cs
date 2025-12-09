@@ -778,9 +778,9 @@ namespace Microsoft.PowerToys.UITest
         /// <summary>
         /// Restart scope exe.
         /// </summary>
-        public void RestartScopeExe()
+        public void RestartScopeExe(string? enableModules = null)
         {
-            this.sessionHelper!.RestartScopeExe();
+            this.sessionHelper!.RestartScopeExe(enableModules);
             this.Session = new Session(this.sessionHelper.GetRoot(), this.sessionHelper.GetDriver(), this.scope, this.size);
             return;
         }

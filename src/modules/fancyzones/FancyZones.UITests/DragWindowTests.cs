@@ -55,10 +55,9 @@ namespace UITests_FancyZones
 
             AppZoneHistory.DeleteFile();
             FancyZonesEditorHelper.Files.Restore();
-            SettingsConfigHelper.ConfigureGlobalModuleSettings("Hosts");
             SetupCustomLayouts();
 
-            RestartScopeExe();
+            RestartScopeExe("Hosts");
             Thread.Sleep(2000);
 
             // Get the current mouse button setting

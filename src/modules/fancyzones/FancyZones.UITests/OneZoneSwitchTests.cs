@@ -30,13 +30,11 @@ namespace UITests_FancyZones
         [TestInitialize]
         public void TestInitialize()
         {
-            SettingsConfigHelper.ConfigureGlobalModuleSettings("Hosts");
-
             // kill all processes related to FancyZones Editor to ensure a clean state
             Session.KillAllProcessesByName("PowerToys.FancyZonesEditor");
             AppZoneHistory.DeleteFile();
 
-            this.RestartScopeExe();
+            RestartScopeExe("Hosts");
             FancyZonesEditorHelper.Files.Restore();
 
             // Set a custom layout with 1 subzones and clear app zone history

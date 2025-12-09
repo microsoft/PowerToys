@@ -130,9 +130,13 @@ namespace Microsoft.PowerToys.UITest
         /// </summary>
         /// <param name="appPath">The path to the application executable.</param>
         /// <param name="args">Optional command line arguments to pass to the application.</param>
-        public void StartExe(string appPath, string[]? args = null)
+        public void StartExe(string appPath, string[]? args = null, string? enableModules = null)
         {
             var opts = new AppiumOptions();
+            if (!string.IsNullOrEmpty(enableModules))
+            {
+                opts.AddAdditionalCapability("enableModules", enableModules);
+            }
 
             if (scope == PowerToysModule.PowerToysSettings)
             {
@@ -169,7 +173,12 @@ namespace Microsoft.PowerToys.UITest
 
         private void TryLaunchPowerToysSettings(AppiumOptions opts)
         {
-            SettingsConfigHelper.ConfigureGlobalModuleSettings("Hosts");
+            if (opts.ToCapabilities().HasCapability("enableModules"))
+            {
+                var modulesString = (string)opts.ToCapabilities().GetCapability("enableModules");
+                var modulesArray = modulesString.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+                SettingsConfigHelper.ConfigureGlobalModuleSettings(modulesArray);
+            }
 
             const int maxTries = 3;
             const int delayMs = 5000;
@@ -179,8 +188,6 @@ namespace Microsoft.PowerToys.UITest
             {
                 try
                 {
-                    Console.WriteLine($"[TryLaunchPowerToysSettings] Attempt {tryCount}/{maxTries}");
-
                     var runnerProcessInfo = new ProcessStartInfo
                     {
                         FileName = locationPath + runnerPath,
@@ -188,53 +195,39 @@ namespace Microsoft.PowerToys.UITest
                         Arguments = "--open-settings",
                     };
 
-                    Console.WriteLine($"[TryLaunchPowerToysSettings] Killing existing runner process: {runnerProcessInfo.FileName}");
                     ExitExe(runnerProcessInfo.FileName);
 
                     // Verify process was killed
                     string exeName = Path.GetFileNameWithoutExtension(runnerProcessInfo.FileName);
                     var remainingProcesses = Process.GetProcessesByName(exeName);
-                    Console.WriteLine($"[TryLaunchPowerToysSettings] After ExitExe, remaining '{exeName}' processes: {remainingProcesses.Length}");
 
-                    Console.WriteLine($"[TryLaunchPowerToysSettings] Starting runner process: {runnerProcessInfo.FileName} {runnerProcessInfo.Arguments}");
                     runner = Process.Start(runnerProcessInfo);
-                    Console.WriteLine($"[TryLaunchPowerToysSettings] Process.Start returned: {(runner != null ? $"PID={runner.Id}" : "null")}");
 
-                    Console.WriteLine($"[TryLaunchPowerToysSettings] Waiting for 'PowerToys Settings' window...");
                     if (WaitForWindowAndSetCapability(opts, "PowerToys Settings", delayMs, maxRetries))
                     {
-                        Console.WriteLine($"[TryLaunchPowerToysSettings] Window found successfully on attempt {tryCount}");
-
                         // Exit CmdPal UI before launching new process if use installer for test
                         ExitExeByName("Microsoft.CmdPal.UI");
                         return;
                     }
 
-                    Console.WriteLine($"[TryLaunchPowerToysSettings] Window not found on attempt {tryCount}");
-
                     // Window not found, kill all PowerToys processes and retry
                     if (tryCount < maxTries)
                     {
-                        Console.WriteLine($"[TryLaunchPowerToysSettings] Killing all PowerToys processes before retry...");
                         KillPowerToysProcesses();
                     }
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"[TryLaunchPowerToysSettings] Exception on attempt {tryCount}: {ex.Message}");
-
                     if (tryCount == maxTries)
                     {
                         throw new InvalidOperationException($"Failed to launch PowerToys Settings after {maxTries} attempts: {ex.Message}", ex);
                     }
 
                     // Kill processes and retry
-                    Console.WriteLine($"[TryLaunchPowerToysSettings] Killing all PowerToys processes after exception...");
                     KillPowerToysProcesses();
                 }
             }
 
-            Console.WriteLine($"[TryLaunchPowerToysSettings] All {maxTries} attempts failed");
             throw new InvalidOperationException($"Failed to launch PowerToys Settings: Window not found after {maxTries} attempts.");
         }
 
@@ -346,10 +339,10 @@ namespace Microsoft.PowerToys.UITest
         /// <summary>
         /// Restarts now exe and takes control of it.
         /// </summary>
-        public void RestartScopeExe()
+        public void RestartScopeExe(string? enableModules = null)
         {
             ExitScopeExe();
-            StartExe(locationPath + sessionPath, this.commandLineArgs);
+            StartExe(locationPath + sessionPath, commandLineArgs, enableModules);
         }
 
         public WindowsDriver<WindowsElement> GetRoot()
@@ -379,34 +372,26 @@ namespace Microsoft.PowerToys.UITest
         {
             var powerToysProcessNames = new[] { "PowerToys", "Microsoft.CmdPal.UI" };
 
-            Console.WriteLine($"[KillPowerToysProcesses] Starting to kill PowerToys-related processes...");
-
             foreach (var processName in powerToysProcessNames)
             {
                 try
                 {
                     var processes = Process.GetProcessesByName(processName);
-                    Console.WriteLine($"[KillPowerToysProcesses] Found {processes.Length} process(es) with name '{processName}'");
 
                     foreach (var process in processes)
                     {
-                        Console.WriteLine($"[KillPowerToysProcesses] Killing process '{processName}' (PID: {process.Id})...");
                         process.Kill();
                         process.WaitForExit();
-                        Console.WriteLine($"[KillPowerToysProcesses] Process '{processName}' (PID: {process.Id}) killed and exited");
                     }
 
                     // Verify processes are actually gone
                     var remainingProcesses = Process.GetProcessesByName(processName);
-                    Console.WriteLine($"[KillPowerToysProcesses] After killing, remaining '{processName}' processes: {remainingProcesses.Length}");
                 }
                 catch (Exception ex)
                 {
                     Console.WriteLine($"[KillPowerToysProcesses] Failed to kill process {processName}: {ex.Message}");
                 }
             }
-
-            Console.WriteLine($"[KillPowerToysProcesses] Finished killing processes");
         }
     }
 }
