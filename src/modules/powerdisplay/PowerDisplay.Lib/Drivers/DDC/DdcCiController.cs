@@ -31,21 +31,14 @@ namespace PowerDisplay.Common.Drivers.DDC
     {
         /// <summary>
         /// Represents a candidate monitor discovered during Phase 1 of monitor enumeration.
-        /// This record replaces the long tuple for better readability and maintainability.
         /// </summary>
         /// <param name="Handle">Physical monitor handle for DDC/CI communication</param>
-        /// <param name="DeviceKey">Stable device key for handle reuse across discoveries</param>
         /// <param name="PhysicalMonitor">Native physical monitor structure with description</param>
-        /// <param name="AdapterName">Display adapter name (e.g., "\\.\DISPLAY1")</param>
-        /// <param name="Index">Index of this monitor on its adapter</param>
-        /// <param name="MatchedDevice">Optional matched DisplayDeviceInfo with EDID data</param>
+        /// <param name="MonitorInfo">Display info from QueryDisplayConfig (HardwareId, FriendlyName, MonitorNumber)</param>
         private readonly record struct CandidateMonitor(
             IntPtr Handle,
-            string DeviceKey,
             PHYSICAL_MONITOR PhysicalMonitor,
-            string AdapterName,
-            int Index,
-            DisplayDeviceInfo? MatchedDevice);
+            MonitorDisplayInfo MonitorInfo);
 
         /// <summary>
         /// Delay between retry attempts for DDC/CI operations (in milliseconds)
@@ -382,14 +375,8 @@ namespace PowerDisplay.Common.Drivers.DDC
                 {
                     try
                     {
-                        // Pre-fetch display information
-                        var displayDevices = DdcCiNative.GetAllDisplayDevices();
-                        var monitorDisplayInfo = DdcCiNative.GetAllMonitorDisplayInfo();
-
-                        // Pre-group devices by adapter for O(1) lookup instead of O(n) per monitor
-                        var devicesByAdapter = displayDevices
-                            .GroupBy(d => d.AdapterName)
-                            .ToDictionary(g => g.Key, g => g.ToList());
+                        // Get monitor display info from QueryDisplayConfig (HardwareId, FriendlyName, MonitorNumber)
+                        var monitorDisplayInfoList = DdcCiNative.GetAllMonitorDisplayInfo().Values.ToList();
 
                         // Phase 1: Collect candidate monitors
                         var monitorHandles = EnumerateMonitorHandles();
@@ -399,7 +386,7 @@ namespace PowerDisplay.Common.Drivers.DDC
                         }
 
                         var candidateMonitors = await CollectCandidateMonitorsAsync(
-                            monitorHandles, devicesByAdapter, cancellationToken);
+                            monitorHandles, monitorDisplayInfoList, cancellationToken);
 
                         if (candidateMonitors.Count == 0)
                         {
@@ -411,7 +398,7 @@ namespace PowerDisplay.Common.Drivers.DDC
                             candidateMonitors, cancellationToken);
 
                         // Phase 3: Create monitor objects
-                        return CreateValidMonitors(fetchResults, monitorDisplayInfo);
+                        return CreateValidMonitors(fetchResults);
                     }
                     catch (Exception ex)
                     {
@@ -445,23 +432,18 @@ namespace PowerDisplay.Common.Drivers.DDC
 
         /// <summary>
         /// Phase 1: Collect all candidate monitors with their physical handles.
-        /// Uses pre-grouped device lookup for better performance.
+        /// Pairs each physical monitor with its corresponding MonitorDisplayInfo by index.
         /// </summary>
         private async Task<List<CandidateMonitor>> CollectCandidateMonitorsAsync(
             List<IntPtr> monitorHandles,
-            Dictionary<string, List<DisplayDeviceInfo>> devicesByAdapter,
+            List<MonitorDisplayInfo> monitorDisplayInfoList,
             CancellationToken cancellationToken)
         {
             var candidates = new List<CandidateMonitor>();
+            int monitorIndex = 0;
 
             foreach (var hMonitor in monitorHandles)
             {
-                var adapterName = _discoveryHelper.GetMonitorDeviceId(hMonitor);
-                if (string.IsNullOrEmpty(adapterName))
-                {
-                    continue;
-                }
-
                 var physicalMonitors = await GetPhysicalMonitorsWithRetryAsync(hMonitor, cancellationToken);
                 if (physicalMonitors == null || physicalMonitors.Length == 0)
                 {
@@ -469,51 +451,29 @@ namespace PowerDisplay.Common.Drivers.DDC
                     continue;
                 }
 
-                // Get devices for this adapter (O(1) lookup)
-                var adapterDevices = devicesByAdapter.TryGetValue(adapterName, out var devices)
-                    ? devices
-                    : null;
+                foreach (var physicalMonitor in physicalMonitors)
+                {
+                    // Get MonitorDisplayInfo by index (from QueryDisplayConfig)
+                    var monitorInfo = monitorIndex < monitorDisplayInfoList.Count
+                        ? monitorDisplayInfoList[monitorIndex]
+                        : new MonitorDisplayInfo { MonitorNumber = monitorIndex + 1 };
 
-                candidates.AddRange(
-                    CreateCandidatesFromPhysicalMonitors(physicalMonitors, adapterName, adapterDevices));
+                    // Generate stable device key: "{HardwareId}_{MonitorNumber}"
+                    var deviceKey = !string.IsNullOrEmpty(monitorInfo.HardwareId)
+                        ? $"{monitorInfo.HardwareId}_{monitorInfo.MonitorNumber}"
+                        : $"Unknown_{monitorInfo.MonitorNumber}";
+
+                    var (handleToUse, _) = _handleManager.ReuseOrCreateHandle(deviceKey, physicalMonitor.HPhysicalMonitor);
+
+                    var monitorToCreate = physicalMonitor;
+                    monitorToCreate.HPhysicalMonitor = handleToUse;
+
+                    candidates.Add(new CandidateMonitor(handleToUse, monitorToCreate, monitorInfo));
+                    monitorIndex++;
+                }
             }
 
             return candidates;
-        }
-
-        /// <summary>
-        /// Create candidate monitors from physical monitor array.
-        /// Handles device matching and handle reuse.
-        /// Note: NULL handles are already filtered out by GetPhysicalMonitors.
-        /// </summary>
-        private IEnumerable<CandidateMonitor> CreateCandidatesFromPhysicalMonitors(
-            PHYSICAL_MONITOR[] physicalMonitors,
-            string adapterName,
-            List<DisplayDeviceInfo>? adapterDevices)
-        {
-            for (int i = 0; i < physicalMonitors.Length; i++)
-            {
-                var physicalMonitor = physicalMonitors[i];
-
-                // O(1) lookup: devices are already filtered by adapter
-                var matchedDevice = adapterDevices != null && i < adapterDevices.Count
-                    ? adapterDevices[i]
-                    : null;
-
-                var deviceKey = matchedDevice?.DeviceKey ?? $"{adapterName}_{i}";
-                var (handleToUse, _) = _handleManager.ReuseOrCreateHandle(deviceKey, physicalMonitor.HPhysicalMonitor);
-
-                var monitorToCreate = physicalMonitor;
-                monitorToCreate.HPhysicalMonitor = handleToUse;
-
-                yield return new CandidateMonitor(
-                    handleToUse,
-                    deviceKey,
-                    monitorToCreate,
-                    adapterName,
-                    i,
-                    matchedDevice);
-            }
         }
 
         /// <summary>
@@ -543,8 +503,7 @@ namespace PowerDisplay.Common.Drivers.DDC
         /// A monitor is valid if it has capabilities with brightness support.
         /// </summary>
         private List<Monitor> CreateValidMonitors(
-            (CandidateMonitor Candidate, DdcCiValidationResult Result)[] fetchResults,
-            Dictionary<string, MonitorDisplayInfo> monitorDisplayInfo)
+            (CandidateMonitor Candidate, DdcCiValidationResult Result)[] fetchResults)
         {
             var monitors = new List<Monitor>();
             var newHandleMap = new Dictionary<string, IntPtr>();
@@ -559,10 +518,7 @@ namespace PowerDisplay.Common.Drivers.DDC
 
                 var monitor = _discoveryHelper.CreateMonitorFromPhysical(
                     candidate.PhysicalMonitor,
-                    candidate.AdapterName,
-                    candidate.Index,
-                    monitorDisplayInfo,
-                    candidate.MatchedDevice);
+                    candidate.MonitorInfo);
 
                 if (monitor == null)
                 {

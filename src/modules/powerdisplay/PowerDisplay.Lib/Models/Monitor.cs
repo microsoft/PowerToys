@@ -243,12 +243,13 @@ namespace PowerDisplay.Common.Models
         public IntPtr Handle { get; set; } = IntPtr.Zero;
 
         /// <summary>
-        /// Windows device path fragment for physical monitor handle management.
+        /// Stable device key for persistent monitor identification and handle management.
         /// </summary>
         /// <remarks>
-        /// Format: Registry-style path from DisplayDeviceInfo (e.g., "\\?\DISPLAY#GSM5C6D#...").
+        /// Format: "{HardwareId}_{MonitorNumber}" (e.g., "GSM5C6D_1").
+        /// HardwareId is from EDID (manufacturer+product code), MonitorNumber from QueryDisplayConfig.
         /// Used by PhysicalMonitorHandleManager to reuse handles across monitor discovery cycles.
-        /// Changes when monitor is reconnected to a different port.
+        /// Same-model monitors on different ports will have different keys due to MonitorNumber.
         /// </remarks>
         public string DeviceKey { get; set; } = string.Empty;
 

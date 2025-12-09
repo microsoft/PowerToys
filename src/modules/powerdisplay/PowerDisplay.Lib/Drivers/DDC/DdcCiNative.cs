@@ -27,20 +27,6 @@ using RECT = PowerDisplay.Common.Drivers.Rect;
 namespace PowerDisplay.Common.Drivers.DDC
 {
     /// <summary>
-    /// Display device information class
-    /// </summary>
-    public class DisplayDeviceInfo
-    {
-        public string DeviceName { get; set; } = string.Empty;
-
-        public string AdapterName { get; set; } = string.Empty;
-
-        public string DeviceID { get; set; } = string.Empty;
-
-        public string DeviceKey { get; set; } = string.Empty;
-    }
-
-    /// <summary>
     /// DDC/CI validation result containing both validation status and cached capabilities data.
     /// This allows reusing capabilities data retrieved during validation, avoiding duplicate I2C calls.
     /// </summary>
@@ -511,94 +497,6 @@ namespace PowerDisplay.Common.Drivers.DDC
             }
 
             return monitorInfo;
-        }
-
-        /// <summary>
-        /// Get all display device information using EnumDisplayDevices API
-        /// </summary>
-        /// <returns>List of display device information</returns>
-        public static unsafe List<DisplayDeviceInfo> GetAllDisplayDevices()
-        {
-            var devices = new List<DisplayDeviceInfo>();
-
-            try
-            {
-                // Enumerate all adapters
-                uint adapterIndex = 0;
-                var adapter = default(DISPLAY_DEVICE);
-                adapter.Cb = (uint)sizeof(DisplayDevice);
-
-                while (EnumDisplayDevices(null, adapterIndex, ref adapter, EddGetDeviceInterfaceName))
-                {
-                    // Skip mirroring drivers
-                    if ((adapter.StateFlags & DisplayDeviceMirroringDriver) != 0)
-                    {
-                        adapterIndex++;
-                        adapter = default(DISPLAY_DEVICE);
-                        adapter.Cb = (uint)sizeof(DisplayDevice);
-                        continue;
-                    }
-
-                    // Only process adapters attached to desktop
-                    if ((adapter.StateFlags & DisplayDeviceAttachedToDesktop) != 0)
-                    {
-                        // Enumerate all monitors on this adapter
-                        uint displayIndex = 0;
-                        var display = default(DISPLAY_DEVICE);
-                        display.Cb = (uint)sizeof(DisplayDevice);
-
-                        string adapterDeviceName = adapter.GetDeviceName();
-                        while (EnumDisplayDevices(adapterDeviceName, displayIndex, ref display, EddGetDeviceInterfaceName))
-                        {
-                            string displayDeviceID = display.GetDeviceID();
-
-                            // Only process active monitors
-                            if ((display.StateFlags & DisplayDeviceAttachedToDesktop) != 0 &&
-                                !string.IsNullOrEmpty(displayDeviceID))
-                            {
-                                var deviceInfo = new DisplayDeviceInfo
-                                {
-                                    DeviceName = display.GetDeviceName(),
-                                    AdapterName = adapterDeviceName,
-                                    DeviceID = displayDeviceID,
-                                };
-
-                                // Extract DeviceKey: remove GUID part (#{...} and everything after)
-                                // Example: \\?\DISPLAY#GSM5C6D#5&1234&0&UID#{GUID} -> \\?\DISPLAY#GSM5C6D#5&1234&0&UID
-                                int guidIndex = deviceInfo.DeviceID.IndexOf("#{", StringComparison.Ordinal);
-                                if (guidIndex >= 0)
-                                {
-                                    deviceInfo.DeviceKey = deviceInfo.DeviceID.Substring(0, guidIndex);
-                                }
-                                else
-                                {
-                                    deviceInfo.DeviceKey = deviceInfo.DeviceID;
-                                }
-
-                                devices.Add(deviceInfo);
-
-                                Logger.LogDebug($"Found display device - Name: {deviceInfo.DeviceName}, Adapter: {deviceInfo.AdapterName}, DeviceKey: {deviceInfo.DeviceKey}");
-                            }
-
-                            displayIndex++;
-                            display = default(DISPLAY_DEVICE);
-                            display.Cb = (uint)sizeof(DisplayDevice);
-                        }
-                    }
-
-                    adapterIndex++;
-                    adapter = default(DISPLAY_DEVICE);
-                    adapter.Cb = (uint)sizeof(DisplayDevice);
-                }
-
-                Logger.LogInfo($"GetAllDisplayDevices found {devices.Count} display devices");
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError($"GetAllDisplayDevices exception: {ex.Message}");
-            }
-
-            return devices;
         }
     }
 

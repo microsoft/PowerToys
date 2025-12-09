@@ -4,9 +4,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using ManagedCommon;
 using PowerDisplay.Common.Models;
 using PowerDisplay.Common.Utils;
@@ -15,7 +12,6 @@ using static PowerDisplay.Common.Drivers.PInvoke;
 
 using MONITORINFOEX = PowerDisplay.Common.Drivers.MonitorInfoEx;
 using PHYSICAL_MONITOR = PowerDisplay.Common.Drivers.PhysicalMonitor;
-using RECT = PowerDisplay.Common.Drivers.Rect;
 
 namespace PowerDisplay.Common.Drivers.DDC
 {
@@ -123,90 +119,36 @@ namespace PowerDisplay.Common.Drivers.DDC
         }
 
         /// <summary>
-        /// Create Monitor object from physical monitor
+        /// Create Monitor object from physical monitor and display info.
+        /// Uses MonitorDisplayInfo directly from QueryDisplayConfig for stable identification.
         /// </summary>
+        /// <param name="physicalMonitor">Physical monitor structure with handle and description</param>
+        /// <param name="monitorInfo">Display info from QueryDisplayConfig (HardwareId, FriendlyName, MonitorNumber)</param>
         internal Monitor? CreateMonitorFromPhysical(
             PHYSICAL_MONITOR physicalMonitor,
-            string adapterName,
-            int index,
-            Dictionary<string, MonitorDisplayInfo> monitorDisplayInfo,
-            DisplayDeviceInfo? displayDevice)
+            MonitorDisplayInfo monitorInfo)
         {
             try
             {
-                // Get hardware ID and friendly name from the display info
-                string hardwareId = string.Empty;
+                // Get hardware ID and friendly name directly from MonitorDisplayInfo
+                string hardwareId = monitorInfo.HardwareId ?? string.Empty;
                 string name = physicalMonitor.GetDescription() ?? string.Empty;
 
-                // Step 1: Extract HardwareId from displayDevice.DeviceID
-                // DeviceID format: \\?\DISPLAY#GSM5C6D#5&1234&0&UID#{GUID}
-                // We need to extract "GSM5C6D" (the second segment after DISPLAY#)
-                string? extractedHardwareId = null;
-                if (displayDevice != null && !string.IsNullOrEmpty(displayDevice.DeviceID))
+                // Use FriendlyName from QueryDisplayConfig if available and not generic
+                if (!string.IsNullOrEmpty(monitorInfo.FriendlyName) &&
+                    !monitorInfo.FriendlyName.Contains("Generic"))
                 {
-                    extractedHardwareId = ExtractHardwareIdFromDeviceId(displayDevice.DeviceID);
+                    name = monitorInfo.FriendlyName;
                 }
 
-                // Step 2: Find matching MonitorDisplayInfo by HardwareId
-                MonitorDisplayInfo? matchedInfo = null;
-                if (!string.IsNullOrEmpty(extractedHardwareId))
-                {
-                    foreach (var kvp in monitorDisplayInfo.Values)
-                    {
-                        // Match by HardwareId (e.g., "GSM5C6D" matches "GSM5C6D")
-                        if (!string.IsNullOrEmpty(kvp.HardwareId) &&
-                            kvp.HardwareId.Equals(extractedHardwareId, StringComparison.OrdinalIgnoreCase))
-                        {
-                            matchedInfo = kvp;
-                            break;
-                        }
-                    }
-                }
+                // Generate stable device key: "{HardwareId}_{MonitorNumber}"
+                string deviceKey = !string.IsNullOrEmpty(hardwareId)
+                    ? $"{hardwareId}_{monitorInfo.MonitorNumber}"
+                    : $"Unknown_{monitorInfo.MonitorNumber}";
 
-                // Step 3: Fallback to first match if no direct match found (for backward compatibility)
-                if (matchedInfo == null)
-                {
-                    foreach (var kvp in monitorDisplayInfo.Values)
-                    {
-                        if (!string.IsNullOrEmpty(kvp.HardwareId))
-                        {
-                            matchedInfo = kvp;
-                            break;
-                        }
-                    }
-                }
-
-                // Step 4: Use matched info
-                if (matchedInfo.HasValue)
-                {
-                    hardwareId = matchedInfo.Value.HardwareId;
-                    if (!string.IsNullOrEmpty(matchedInfo.Value.FriendlyName) &&
-                        !matchedInfo.Value.FriendlyName.Contains("Generic"))
-                    {
-                        name = matchedInfo.Value.FriendlyName;
-                    }
-                }
-
-                // Use stable device IDs from DisplayDeviceInfo
-                string deviceKey;
-                string monitorId;
-
-                if (displayDevice != null && !string.IsNullOrEmpty(displayDevice.DeviceKey))
-                {
-                    // Use stable device key from EnumDisplayDevices
-                    deviceKey = displayDevice.DeviceKey;
-                    monitorId = $"DDC_{deviceKey.Replace(@"\\?\", string.Empty, StringComparison.Ordinal).Replace("#", "_", StringComparison.Ordinal).Replace("&", "_", StringComparison.Ordinal)}";
-                }
-                else
-                {
-                    // Fallback: create device ID without handle in the key
-                    var baseDevice = adapterName.Replace(@"\\.\", string.Empty, StringComparison.Ordinal);
-                    deviceKey = $"{baseDevice}_{index}";
-                    monitorId = $"DDC_{deviceKey}";
-                }
+                string monitorId = $"DDC_{deviceKey}";
 
                 // If still no good name, use default value
-                // Note: Don't include index in the name - let DisplayName property handle numbering
                 if (string.IsNullOrEmpty(name) || name.Contains("Generic") || name.Contains("PnP"))
                 {
                     name = "External Display";
@@ -231,8 +173,8 @@ namespace PowerDisplay.Common.Drivers.DDC
                     CommunicationMethod = "DDC/CI",
                     Manufacturer = ExtractManufacturer(name),
                     CapabilitiesStatus = "unknown",
-                    MonitorNumber = GetMonitorNumber(matchedInfo),
-                    Orientation = GetMonitorOrientation(adapterName),
+                    MonitorNumber = monitorInfo.MonitorNumber,
+                    Orientation = DmdoDefault, // Orientation will be set separately if needed
                 };
 
                 // Note: Feature detection (brightness, contrast, color temp, volume) is now done
@@ -245,37 +187,6 @@ namespace PowerDisplay.Common.Drivers.DDC
                 Logger.LogError($"DDC: CreateMonitorFromPhysical exception: {ex.Message}");
                 return null;
             }
-        }
-
-        /// <summary>
-        /// Extract HardwareId from DeviceID string.
-        /// DeviceID format: \\?\DISPLAY#GSM5C6D#5&amp;1234&amp;0&amp;UID#{GUID}
-        /// Returns the second segment (e.g., "GSM5C6D") which is the manufacturer+product code.
-        /// </summary>
-        private static string? ExtractHardwareIdFromDeviceId(string deviceId)
-        {
-            if (string.IsNullOrEmpty(deviceId))
-            {
-                return null;
-            }
-
-            // Find "DISPLAY#" and extract the next segment before the next "#"
-            const string displayPrefix = "DISPLAY#";
-            int startIndex = deviceId.IndexOf(displayPrefix, StringComparison.OrdinalIgnoreCase);
-            if (startIndex < 0)
-            {
-                return null;
-            }
-
-            startIndex += displayPrefix.Length;
-            int endIndex = deviceId.IndexOf('#', startIndex);
-            if (endIndex < 0)
-            {
-                return null;
-            }
-
-            var hardwareId = deviceId.Substring(startIndex, endIndex - startIndex);
-            return string.IsNullOrEmpty(hardwareId) ? null : hardwareId;
         }
 
         /// <summary>
@@ -316,43 +227,6 @@ namespace PowerDisplay.Common.Drivers.DDC
             // Return first word as manufacturer
             var firstWord = name.Split(' ')[0];
             return firstWord.Length > 2 ? firstWord : "Unknown";
-        }
-
-        /// <summary>
-        /// Get monitor number from MonitorDisplayInfo (QueryDisplayConfig path index).
-        /// This matches the number shown in Windows Display Settings "Identify" feature.
-        /// </summary>
-        private int GetMonitorNumber(MonitorDisplayInfo? matchedInfo)
-        {
-            if (matchedInfo.HasValue && matchedInfo.Value.MonitorNumber > 0)
-            {
-                return matchedInfo.Value.MonitorNumber;
-            }
-
-            // No match found - return 0 (will not display number suffix)
-            return 0;
-        }
-
-        /// <summary>
-        /// Get monitor orientation using EnumDisplaySettings
-        /// </summary>
-        private unsafe int GetMonitorOrientation(string adapterName)
-        {
-            try
-            {
-                DevMode devMode = default;
-                devMode.DmSize = (short)sizeof(DevMode);
-                if (EnumDisplaySettings(adapterName, EnumCurrentSettings, &devMode))
-                {
-                    return devMode.DmDisplayOrientation;
-                }
-            }
-            catch
-            {
-                // Ignore errors
-            }
-
-            return DmdoDefault;
         }
     }
 }
