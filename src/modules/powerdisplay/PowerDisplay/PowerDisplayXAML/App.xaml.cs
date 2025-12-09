@@ -134,7 +134,6 @@ namespace PowerDisplay
                 // Initialize tray icon service
                 _trayIconService = new TrayIconService(
                     _settingsUtils,
-                    ShowMainWindow,
                     ToggleMainWindow,
                     () => Environment.Exit(0),
                     OpenSettings);

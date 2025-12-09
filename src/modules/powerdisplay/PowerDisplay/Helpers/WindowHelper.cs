@@ -31,37 +31,25 @@ namespace PowerDisplay.Helpers
         private const uint SwpNosize = 0x0001;
         private const uint SwpNomove = 0x0002;
         private const uint SwpFramechanged = 0x0020;
-        private static readonly IntPtr HwndTopmost = new IntPtr(-1);
-        private static readonly IntPtr HwndNotopmost = new IntPtr(-2);
+        private const nint HwndTopmost = -1;
+        private const nint HwndNotopmost = -2;
 
         // ShowWindow commands
         private const int SwHide = 0;
         private const int SwShow = 5;
-        private const int SwMinimize = 6;
-        private const int SwRestore = 9;
 
-        // P/Invoke declarations
-#if WIN64
+        // P/Invoke declarations (64-bit only - PowerToys only builds for x64/ARM64)
         [LibraryImport("user32.dll", EntryPoint = "GetWindowLongPtrW")]
-        private static partial IntPtr GetWindowLong(IntPtr hWnd, int nIndex);
-#else
-        [LibraryImport("user32.dll", EntryPoint = "GetWindowLongW")]
-        private static partial int GetWindowLong(IntPtr hWnd, int nIndex);
-#endif
+        private static partial nint GetWindowLong(nint hWnd, int nIndex);
 
-#if WIN64
         [LibraryImport("user32.dll", EntryPoint = "SetWindowLongPtrW")]
-        private static partial IntPtr SetWindowLong(IntPtr hWnd, int nIndex, IntPtr dwNewLong);
-#else
-        [LibraryImport("user32.dll", EntryPoint = "SetWindowLongW")]
-        private static partial int SetWindowLong(IntPtr hWnd, int nIndex, int dwNewLong);
-#endif
+        private static partial nint SetWindowLong(nint hWnd, int nIndex, nint dwNewLong);
 
         [LibraryImport("user32.dll")]
         [return: MarshalAs(UnmanagedType.Bool)]
         private static partial bool SetWindowPos(
-            IntPtr hWnd,
-            IntPtr hWndInsertAfter,
+            nint hWnd,
+            nint hWndInsertAfter,
             int x,
             int y,
             int cx,
@@ -70,16 +58,16 @@ namespace PowerDisplay.Helpers
 
         [LibraryImport("user32.dll", EntryPoint = "ShowWindow")]
         [return: MarshalAs(UnmanagedType.Bool)]
-        private static partial bool ShowWindowNative(IntPtr hWnd, int nCmdShow);
+        private static partial bool ShowWindowNative(nint hWnd, int nCmdShow);
 
         [LibraryImport("user32.dll", EntryPoint = "IsWindowVisible")]
         [return: MarshalAs(UnmanagedType.Bool)]
-        private static partial bool IsWindowVisibleNative(IntPtr hWnd);
+        private static partial bool IsWindowVisibleNative(nint hWnd);
 
         /// <summary>
         /// Check if window is visible
         /// </summary>
-        public static bool IsWindowVisible(IntPtr hWnd)
+        public static bool IsWindowVisible(nint hWnd)
         {
             return IsWindowVisibleNative(hWnd);
         }
@@ -87,14 +75,10 @@ namespace PowerDisplay.Helpers
         /// <summary>
         /// Disable window moving and resizing functionality
         /// </summary>
-        public static void DisableWindowMovingAndResizing(IntPtr hWnd)
+        public static void DisableWindowMovingAndResizing(nint hWnd)
         {
             // Get current window style
-#if WIN64
-            int style = (int)GetWindowLong(hWnd, GwlStyle);
-#else
-            int style = GetWindowLong(hWnd, GwlStyle);
-#endif
+            nint style = GetWindowLong(hWnd, GwlStyle);
 
             // Remove resizable borders, title bar, and system menu
             style &= ~WsThickframe;
@@ -104,32 +88,20 @@ namespace PowerDisplay.Helpers
             style &= ~WsSysmenu;   // Remove system menu
 
             // Set new window style
-#if WIN64
-            _ = SetWindowLong(hWnd, GwlStyle, new IntPtr(style));
-#else
             _ = SetWindowLong(hWnd, GwlStyle, style);
-#endif
 
             // Get extended style and remove related borders
-#if WIN64
-            int exStyle = (int)GetWindowLong(hWnd, GwlExstyle);
-#else
-            int exStyle = GetWindowLong(hWnd, GwlExstyle);
-#endif
+            nint exStyle = GetWindowLong(hWnd, GwlExstyle);
             exStyle &= ~WsExDlgmodalframe;
             exStyle &= ~WsExWindowedge;
             exStyle &= ~WsExClientedge;
             exStyle &= ~WsExStaticedge;
-#if WIN64
-            _ = SetWindowLong(hWnd, GwlExstyle, new IntPtr(exStyle));
-#else
             _ = SetWindowLong(hWnd, GwlExstyle, exStyle);
-#endif
 
             // Refresh window frame
             SetWindowPos(
                 hWnd,
-                IntPtr.Zero,
+                0,
                 0,
                 0,
                 0,
@@ -140,7 +112,7 @@ namespace PowerDisplay.Helpers
         /// <summary>
         /// Set whether window is topmost
         /// </summary>
-        public static void SetWindowTopmost(IntPtr hWnd, bool topmost)
+        public static void SetWindowTopmost(nint hWnd, bool topmost)
         {
             SetWindowPos(
                 hWnd,
@@ -155,53 +127,29 @@ namespace PowerDisplay.Helpers
         /// <summary>
         /// Show or hide window
         /// </summary>
-        public static void ShowWindow(IntPtr hWnd, bool show)
+        public static void ShowWindow(nint hWnd, bool show)
         {
             ShowWindowNative(hWnd, show ? SwShow : SwHide);
         }
 
         /// <summary>
-        /// Minimize window
-        /// </summary>
-        public static void MinimizeWindow(IntPtr hWnd)
-        {
-            ShowWindowNative(hWnd, SwMinimize);
-        }
-
-        /// <summary>
-        /// Restore window
-        /// </summary>
-        public static void RestoreWindow(IntPtr hWnd)
-        {
-            ShowWindowNative(hWnd, SwRestore);
-        }
-
-        /// <summary>
         /// Hide window from taskbar
         /// </summary>
-        public static void HideFromTaskbar(IntPtr hWnd)
+        public static void HideFromTaskbar(nint hWnd)
         {
             // Get current extended style
-#if WIN64
-            int exStyle = (int)GetWindowLong(hWnd, GwlExstyle);
-#else
-            int exStyle = GetWindowLong(hWnd, GwlExstyle);
-#endif
+            nint exStyle = GetWindowLong(hWnd, GwlExstyle);
 
             // Add WS_EX_TOOLWINDOW style to hide window from taskbar
             exStyle |= WsExToolwindow;
 
             // Set new extended style
-#if WIN64
-            _ = SetWindowLong(hWnd, GwlExstyle, new IntPtr(exStyle));
-#else
             _ = SetWindowLong(hWnd, GwlExstyle, exStyle);
-#endif
 
             // Refresh window frame
             SetWindowPos(
                 hWnd,
-                IntPtr.Zero,
+                0,
                 0,
                 0,
                 0,

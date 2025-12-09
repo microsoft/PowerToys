@@ -51,7 +51,6 @@ namespace PowerDisplay.Helpers
 
         public TrayIconService(
             ISettingsUtils settingsUtils,
-            Action showWindowAction,
             Action toggleWindowAction,
             Action exitAction,
             Action openSettingsAction)
