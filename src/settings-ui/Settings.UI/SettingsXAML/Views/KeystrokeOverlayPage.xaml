@@ -43,6 +43,7 @@
                             <ComboBoxItem x:Uid="Radio_KeystrokeOverlay_DisplayMode_LastFiveKeystrokes" />
                             <ComboBoxItem x:Uid="Radio_KeystrokeOverlay_DisplayMode_SingleCharactersOnly" />
                             <ComboBoxItem x:Uid="Radio_KeystrokeOverlay_DisplayMode_ShortcutsOnly" />
+                            <ComboBoxItem x:Uid="Radio_KeystrokeOverlay_DisplayMode_Stream" />
                         </ComboBox>
                     </tkcontrols:SettingsCard>
 

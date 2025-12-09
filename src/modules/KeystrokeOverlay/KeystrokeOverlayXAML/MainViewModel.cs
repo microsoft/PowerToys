@@ -6,6 +6,8 @@ using System;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
+using System.Net.Security;
+using System.Printing;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using KeystrokeOverlayUI.Controls;
@@ -55,6 +57,8 @@ namespace KeystrokeOverlayUI
 
         [ObservableProperty]
         private bool _isActivationLabelVisible = false;
+
+        private string _streamBuffer = string.Empty;
 
         public HotkeySettings ActivationShortcut { get; set; }
             = new HotkeySettings(true, false, false, true, 0x4B);
@@ -211,9 +215,53 @@ namespace KeystrokeOverlayUI
                     }
 
                     break;
+                case 3: // "Stream" full words
+
+                    // regular text input
+                    string charText = keystroke.Text;
+
+                    // ignore spaces/tabs/newlines
+                    if (string.IsNullOrWhiteSpace(charText))
+                    {
+                        _streamBuffer = string.Empty;
+                        formattedText = string.Empty;
+                        return;
+                    }
+
+                    // show shortcuts + reset buffer
+                    if (isShortcut)
+                    {
+                        _streamBuffer = string.Empty;
+                        break;
+                    }
+
+                    // ignore no text inputs
+                    if (string.IsNullOrEmpty(charText))
+                    {
+                        _streamBuffer = string.Empty;
+                        formattedText = string.Empty;
+                        return;
+                    }
+
+                    _streamBuffer += charText;
+                    RegisterStreamKey(_streamBuffer);
+
+                    return;
             }
 
-            RegisterKey(formattedText);
+            if (!string.IsNullOrEmpty(formattedText))
+            {
+                RegisterKey(formattedText);
+            }
+        }
+
+        private void RegisterStreamKey(string text)
+        {
+            if (text.Length > 1 && PressedKeys.Count > 0)
+            {
+                PressedKeys.RemoveAt(PressedKeys.Count - 1);
+            }
+            RegisterKey(text);
         }
 
         private bool IsHotkeyMatch(KeystrokeEvent kEvent, HotkeySettings settings)

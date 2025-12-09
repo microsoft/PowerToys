@@ -5674,6 +5674,9 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   <data name="Radio_KeystrokeOverlay_DisplayMode_ShortcutsOnly.Content" xml:space="preserve">
     <value>Shortcuts Only</value>
   </data>
+  <data name="Radio_KeystrokeOverlay_DisplayMode_Stream.Content" xml:space="preserve">
+    <value>Stream</value>
+  </data>
   <data name="KeystrokeOverlay_OverlayTimeout.Header" xml:space="preserve">
     <value>Overlay Timeout (ms)</value>
   </data>

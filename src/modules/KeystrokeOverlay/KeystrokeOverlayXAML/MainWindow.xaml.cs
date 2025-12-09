@@ -364,7 +364,7 @@ namespace KeystrokeOverlayUI
         {
             RootGrid.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
             var desiredSize = RootGrid.DesiredSize;
-            ResizeAppWindow(desiredSize.Width, desiredSize.Height);
+            ResizeAppWindow(desiredSize.Width + 5, desiredSize.Height + 15);
         }
 
         private void StackPanel_SizeChanged(object sender, SizeChangedEventArgs e)
