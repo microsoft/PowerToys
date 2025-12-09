@@ -533,6 +533,11 @@ public sealed partial class MainWindow : WindowEx,
 
     public void Receive(DismissMessage message)
     {
+        if (message.ForceGoHome)
+        {
+            WeakReferenceMessenger.Default.Send(new GoHomeMessage(false, false));
+        }
+
         // This might come in off the UI thread. Make sure to hop back.
         DispatcherQueue.TryEnqueue(() =>
         {

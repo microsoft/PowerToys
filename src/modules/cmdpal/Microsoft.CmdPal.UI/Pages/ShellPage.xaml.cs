@@ -133,7 +133,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
             if (!message.FromBackspace)
             {
                 // If we can't go back then we must be at the top and thus escape again should quit.
-                WeakReferenceMessenger.Default.Send<DismissMessage>();
+                WeakReferenceMessenger.Default.Send(new DismissMessage());
 
                 PowerToysTelemetry.Log.WriteEvent(new CmdPalDismissedOnEsc());
             }

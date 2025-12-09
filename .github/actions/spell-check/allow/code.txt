@@ -95,6 +95,7 @@ OTP
 Yubi
 Yubico
 Perplexity
+Groq
 svgl
 
 # KEYS
@@ -335,3 +336,9 @@ zwsp
 
 # mermaid
 autonumber
+
+# GitHub issue/PR commands
+azp
+feedbackhub
+needinfo
+reportbug
