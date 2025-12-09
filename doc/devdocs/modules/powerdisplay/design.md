@@ -65,7 +65,7 @@ embedded in display cables.
 
 Most monitors (external monitors) support DDC/CI, allowing applications to read and modify settings
 like brightness and contrast programmatically. But unfortunately, even if a monitor supports DDC/CI, 
-they may only support a limited subset of VCP codes, or have buggy implementations. PowerDisplay relys on
+they may only support a limited subset of VCP codes, or have buggy implementations. PowerDisplay relies on
 the monitor-reported capabilities string to determine supported features. But if your monitor's manufacturer
 has a poor DDC/CI implementation, some features may not work as expected. And we can do nothing about it.
 
