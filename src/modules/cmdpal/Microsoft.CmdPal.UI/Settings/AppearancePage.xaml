@@ -124,15 +124,6 @@
                                 Visibility="{x:Bind ViewModel.Appearance.IsBackgroundControlsVisible, Mode=OneWay}">
                                 <Button x:Uid="Settings_GeneralPage_BackgroundImage_ChooseImageButton" Click="PickBackgroundImage_Click" />
                             </controls:SettingsCard>
-                            <!--
-                            <controls:SettingsCard x:Uid="Settings_GeneralPage_BackgroundImageOpacity_SettingsCard" Visibility="{x:Bind ViewModel.Appearance.IsBackgroundControlsVisible, Mode=OneWay}">
-                                <Slider
-                                    Maximum="100"
-                                    Minimum="1"
-                                    StepFrequency="1"
-                                    Value="{x:Bind ViewModel.Appearance.BackgroundImageOpacity, Mode=TwoWay}" />
-                            </controls:SettingsCard>
-                            -->
                             <controls:SettingsCard x:Uid="Settings_GeneralPage_BackgroundImageBrightness_SettingsCard" Visibility="{x:Bind ViewModel.Appearance.IsBackgroundControlsVisible, Mode=OneWay}">
                                 <Slider
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
