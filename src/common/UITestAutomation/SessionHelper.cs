@@ -179,6 +179,10 @@ namespace Microsoft.PowerToys.UITest
                 var modulesArray = modulesString.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
                 SettingsConfigHelper.ConfigureGlobalModuleSettings(modulesArray);
             }
+            else
+            {
+                SettingsConfigHelper.ConfigureGlobalModuleSettings();
+            }
 
             const int maxTries = 3;
             const int delayMs = 5000;
