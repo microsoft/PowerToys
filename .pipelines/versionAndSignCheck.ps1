@@ -53,10 +53,10 @@ $nullVersionExceptions = @(
     "Microsoft.Windows.Widgets.dll",
     "AdaptiveCards.ObjectModel.WinUI3.dll",
     "AdaptiveCards.Rendering.WinUI3.dll",
-    "boost_regex-vc143-mt-gd-x32-1_87.dll",
-    "boost_regex-vc143-mt-gd-x64-1_87.dll",
-    "boost_regex-vc143-mt-x32-1_87.dll",
-    "boost_regex-vc143-mt-x64-1_87.dll"
+    "boost_regex_vc143_mt_gd_x32_1_87.dll",
+    "boost_regex_vc143_mt_gd_x64_1_87.dll",
+    "boost_regex_vc143_mt_x32_1_87.dll",
+    "boost_regex_vc143_mt_x64_1_87.dll"
     ) -join '|';
 $totalFailure = 0;
 
