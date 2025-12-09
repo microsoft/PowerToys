@@ -21,7 +21,7 @@ namespace Microsoft.PowerToys.UITest
     public class SettingsConfigHelper
     {
         private static readonly JsonSerializerOptions IndentedJsonOptions = new() { WriteIndented = true };
-        private static readonly SettingsUtils SettingsUtils = new SettingsUtils();
+        private static readonly SettingsUtils SettingsUtils = SettingsUtils.Default;
 
         /// <summary>
         /// Configures global PowerToys settings to enable only specified modules and disable all others.
