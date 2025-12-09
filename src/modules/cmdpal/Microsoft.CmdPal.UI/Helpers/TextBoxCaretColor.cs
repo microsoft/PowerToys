@@ -4,6 +4,7 @@
 
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using CommunityToolkit.WinUI;
 using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -136,7 +137,7 @@ public static class TextBoxCaretColor
         tb.ApplyTemplate();
 
         // Find the internal ScrollContentPresenter within the TextBox template
-        var scp = VisualTreeExtensions.FindDescendant<ScrollContentPresenter>(tb, name: "ScrollContentPresenter");
+        var scp = tb.FindDescendant<ScrollContentPresenter>(s => s.Name == "ScrollContentPresenter");
         if (scp is null)
         {
             return;
@@ -148,7 +149,7 @@ public static class TextBoxCaretColor
             brush = new SolidColorBrush(Colors.Black);
         }
 
-        foreach (var rect in VisualTreeExtensions.FindDescendants<Rectangle>(scp))
+        foreach (var rect in scp.FindDescendants().OfType<Rectangle>())
         {
             try
             {
