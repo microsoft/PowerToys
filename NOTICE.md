@@ -1568,6 +1568,7 @@ SOFTWARE.
 - UnitsNet
 - UTF.Unknown
 - WinUIEx
+- WmiLight
 - WPF-UI
 - WyHash
 
