@@ -1032,7 +1032,7 @@ public sealed partial class MainWindow : WindowEx,
             DispatcherQueue.TryEnqueue(ForceActivate);
         });
     }
-    
+
     private unsafe void ForceActivate()
     {
         var foregroundWindow = PInvoke.GetForegroundWindow();
