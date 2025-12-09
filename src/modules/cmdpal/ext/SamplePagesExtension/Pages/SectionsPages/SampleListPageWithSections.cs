@@ -24,15 +24,15 @@ internal sealed partial class SampleListPageWithSections : ListPage
 
     public override IListItem[] GetItems()
     {
-        var sectionList = new LiveSectionBuilder("This is a section list", [
+        var sectionList = new Section("This is a section list", [
                     new ListItem(new NoOpCommand())
                     {
                         Title = "Sample Title",
                         Subtitle = "I don't do anything",
                         Icon = IconHelpers.FromRelativePath("Assets/Images/RedRectangle.png"),
                     },
-                ]).ToListItems();
-        var anotherSectionList = new LiveSectionBuilder("This is another section list", [
+                ]);
+        var anotherSectionList = new Section("This is another section list", [
                     new ListItem(new NoOpCommand())
                     {
                         Title = "Another Title",
@@ -51,9 +51,9 @@ internal sealed partial class SampleListPageWithSections : ListPage
                         Subtitle = "I don't do anything",
                         Icon = IconHelpers.FromRelativePath("Assets/Images/Win-Digital.png"),
                     },
-                ]).ToListItems();
+                ]);
 
-        var yesTheresAnother = new LiveSectionBuilder("There's another", [
+        var yesTheresAnother = new Section("There's another", [
             new ListItem(new NoOpCommand())
             {
                 Title = "Sample Title",
@@ -96,7 +96,7 @@ internal sealed partial class SampleListPageWithSections : ListPage
                 Subtitle = "I don't do anything",
                 Icon = IconHelpers.FromRelativePath("Assets/Images/Win-Digital.png"),
             },
-            ]).ToListItems();
+            ]);
 
         return [
             ..sectionList,

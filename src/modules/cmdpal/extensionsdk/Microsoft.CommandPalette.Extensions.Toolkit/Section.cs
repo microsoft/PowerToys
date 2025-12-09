@@ -2,9 +2,11 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Collections;
+
 namespace Microsoft.CommandPalette.Extensions.Toolkit;
 
-public sealed partial class LiveSectionBuilder
+public sealed partial class Section : IEnumerable<IListItem>
 {
     public IListItem[] Items { get; set; } = [];
 
@@ -15,24 +17,23 @@ public sealed partial class LiveSectionBuilder
         return new Separator(SectionTitle);
     }
 
-    public LiveSectionBuilder(string sectionName, IListItem[] items)
+    public Section(string sectionName, IListItem[] items)
     {
-        Items = items;
         SectionTitle = sectionName;
-    }
+        var listItems = items.ToList();
 
-    public LiveSectionBuilder()
-    {
-    }
-
-    public IListItem[] ToListItems()
-    {
-        var listItems = Items.ToList();
         if (listItems.Count > 0)
         {
             listItems.Insert(0, CreateSectionListItem());
+            Items = [.. listItems];
         }
-
-        return [.. listItems];
     }
+
+    public Section()
+    {
+    }
+
+    public IEnumerator<IListItem> GetEnumerator() => Items.ToList().GetEnumerator();
+
+    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 }

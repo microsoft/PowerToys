@@ -91,7 +91,7 @@ public partial class ListItemViewModel : CommandItemViewModel
         UpdateAccessibleName();
     }
 
-    public bool IsSeparator(IListItem item)
+    private bool IsSeparator(IListItem item)
     {
         return item.Command is null;
     }

@@ -314,14 +314,7 @@ public sealed partial class ListPage : Page,
         else
         {
             // For list views, use simple linear navigation
-            if (ItemView.SelectedIndex < ItemView.Items.Count - 1)
-            {
-                ItemView.SelectedIndex++;
-            }
-            else
-            {
-                ItemView.SelectedIndex = 0;
-            }
+            NavigateDown();
         }
     }
 
@@ -334,15 +327,7 @@ public sealed partial class ListPage : Page,
         }
         else
         {
-            // For list views, use simple linear navigation
-            if (ItemView.SelectedIndex > 0)
-            {
-                ItemView.SelectedIndex--;
-            }
-            else
-            {
-                ItemView.SelectedIndex = ItemView.Items.Count - 1;
-            }
+            NavigateUp();
         }
     }
 
@@ -593,10 +578,7 @@ public sealed partial class ListPage : Page,
             // If there is only separators in the list, don't select anything.
             if (firstUsefulIndex == -1)
             {
-                _ = DispatcherQueue.TryEnqueue(() =>
-                {
-                    ItemView.SelectedIndex = -1;
-                });
+                ItemView.SelectedIndex = -1;
 
                 return;
             }
@@ -629,14 +611,10 @@ public sealed partial class ListPage : Page,
 
             if (shouldUpdateSelection)
             {
-                _ = DispatcherQueue.TryEnqueue(() =>
+                if (firstUsefulIndex != -1)
                 {
-                    var firstUsefulIndex = GetFirstSelectableIndex();
-                    if (firstUsefulIndex != -1)
-                    {
-                        ItemView.SelectedIndex = firstUsefulIndex;
-                    }
-                });
+                    ItemView.SelectedIndex = firstUsefulIndex;
+                }
             }
         });
     }
@@ -704,6 +682,11 @@ public sealed partial class ListPage : Page,
                 for (var i = 0; i < ItemView.Items.Count; i++)
                 {
                     if (i == currentIndex)
+                    {
+                        continue;
+                    }
+
+                    if (IsSeparator(ItemView.Items[i]))
                     {
                         continue;
                     }
