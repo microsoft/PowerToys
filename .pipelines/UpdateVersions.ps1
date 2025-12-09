@@ -16,32 +16,7 @@ Param(
   [string]$sourceLink = "https://microsoft.pkgs.visualstudio.com/ProjectReunion/_packaging/Project.Reunion.nuget.internal/nuget/v3/index.json"
 )
 
-function Update-NugetConfig {
-    param (
-        [string]$filePath = [System.IO.Path]::Combine($rootPath, "nuget.config")
-    )
 
-    Write-Host "Updating nuget.config file"
-    [xml]$xml = Get-Content -Path $filePath
-
-    # Add localpackages source into nuget.config
-    $packageSourcesNode = $xml.configuration.packageSources
-    $addNode = $xml.CreateElement("add")
-    $addNode.SetAttribute("key", "localpackages")
-    $addNode.SetAttribute("value", "localpackages")
-    $packageSourcesNode.AppendChild($addNode) | Out-Null
-
-    # Remove <packageSourceMapping> tag and its content
-    $packageSourceMappingNode = $xml.configuration.packageSourceMapping
-    if ($packageSourceMappingNode) {
-        $xml.configuration.RemoveChild($packageSourceMappingNode) | Out-Null
-    }
-
-    # print nuget.config after modification
-    $xml.OuterXml
-    # Save the modified nuget.config file
-    $xml.Save($filePath)
-}
 
 function Read-FileWithEncoding {
     param (
@@ -177,4 +152,4 @@ Get-ChildItem -Path $rootPath -Recurse "Directory.Packages.props" | ForEach-Obje
 }
 
 
-Update-NugetConfig
+
