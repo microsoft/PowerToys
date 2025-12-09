@@ -309,23 +309,15 @@ internal sealed class ColorfulThemeProvider : IThemeProvider
     {
         public static (Color Light3, Color Light2, Color Light1, Color Dark1, Color Dark2, Color Dark3) Compute(Color accent)
         {
-            var light1 = accent.Update(brightnessFactor: 15, saturationFactor: -12);
-            var light2 = accent.Update(brightnessFactor: 30, saturationFactor: -24);
-            var light3 = accent.Update(brightnessFactor: 45, saturationFactor: -36);
+            var light1 = accent.Update(brightnessFactor: 0.15, saturationFactor: -0.12);
+            var light2 = accent.Update(brightnessFactor: 0.30, saturationFactor: -0.24);
+            var light3 = accent.Update(brightnessFactor: 0.45, saturationFactor: -0.36);
 
-            var dark1 = accent.UpdateBrightness(factor: -5);
-            var dark2 = accent.UpdateBrightness(factor: -10);
-            var dark3 = accent.UpdateBrightness(factor: -15);
+            var dark1 = accent.UpdateBrightness(brightnessFactor: -0.05f);
+            var dark2 = accent.UpdateBrightness(brightnessFactor: -0.01f);
+            var dark3 = accent.UpdateBrightness(brightnessFactor: -0.015f);
 
             return (light3, light2, light1, dark1, dark2, dark3);
-        }
-
-        private static double ToLinear(double c) => c <= 0.04045 ? c / 12.92 : Math.Pow((c + 0.055) / 1.055, 2.4);
-
-        private static byte ToSrgb(double cLin)
-        {
-            var c = cLin <= 0.0031308 ? 12.92 * cLin : (1.055 * Math.Pow(cLin, 1 / 2.4)) - 0.055;
-            return (byte)Math.Clamp(Math.Round(c * 255.0), 0, 255);
         }
     }
 }
