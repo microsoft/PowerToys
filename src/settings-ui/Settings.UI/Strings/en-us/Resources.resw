@@ -540,7 +540,7 @@ opera.exe</value>
     <comment>Product name: Navigation view item name for Shortcut Guide</comment>
   </data>
   <data name="Shell_PowerPreview.Content" xml:space="preserve">
-    <value>File Explorer add-ons</value>
+    <value>File Explorer Add-ons</value>
     <comment>Product name: Navigation view item name for File Explorer.  Please use File Explorer as in the context of File Explorer in Windows</comment>
   </data>
   <data name="Shell_FancyZones.Content" xml:space="preserve">
@@ -564,7 +564,7 @@ opera.exe</value>
     <comment>Product name: Navigation view item name for Mouse Without Borders</comment>
   </data>
   <data name="Shell_MouseUtilities.Content" xml:space="preserve">
-    <value>Mouse utilities</value>
+    <value>Mouse Utilities</value>
     <comment>Product name: Navigation view item name for Mouse utilities</comment>
   </data>
   <data name="Shell_NavigationMenu_Announce_Collapse" xml:space="preserve">
