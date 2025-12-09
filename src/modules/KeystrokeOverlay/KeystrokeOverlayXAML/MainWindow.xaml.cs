@@ -127,7 +127,7 @@ namespace KeystrokeOverlayUI
             _zOrderEnforcer.Interval = TimeSpan.FromMilliseconds(500);
             _zOrderEnforcer.Tick += (s, e) => ForceWindowOnTop();
 
-            ViewModel.HotkeyActionTriggered += OnHotkeyActionTriggered;
+            ViewModel.RequestMonitorMove += (s, e) => MoveToNextMonitor();
         }
 
         private void ApplyOverlayStyles()
@@ -226,32 +226,6 @@ namespace KeystrokeOverlayUI
         // ----------------------
         // Hotkey Methods
         // ----------------------
-        private void OnHotkeyActionTriggered(object sender, HotkeyAction action)
-        {
-            switch (action)
-            {
-                case HotkeyAction.Monitor:
-                    MoveToNextMonitor();
-                    break;
-
-                case HotkeyAction.Activation:
-                    HandleActivation();
-                    break;
-            }
-
-            ForceWindowOnTop();
-
-            // resize to show labels
-            RootGrid.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
-            var desiredSize = RootGrid.DesiredSize;
-            ResizeAppWindow(desiredSize.Width + 5, desiredSize.Height + 15);
-        }
-
-        private void HandleActivation()
-        {
-            ShowAppWindow();
-        }
-
         private void MoveToNextMonitor()
         {
             IntPtr hWnd = WindowNative.GetWindowHandle(this);
@@ -296,7 +270,7 @@ namespace KeystrokeOverlayUI
             // int newX = nextDisplay.WorkArea.X + offsetX;
             // int newY = nextDisplay.WorkArea.Y + offsetY;
             appWindow.Move(new Windows.Graphics.PointInt32(newX, newY));
-            ViewModel.ShowLabel(HotkeyAction.Monitor, $"Monitor {nextIndex + 1}");
+            ViewModel.ShowLabel("monitor", $"Monitor {nextIndex + 1}");
         }
 
         // ----------------------
@@ -476,7 +450,7 @@ namespace KeystrokeOverlayUI
 
         private void ForceWindowOnTop()
         {
-            if (ViewModel.PressedKeys.Count == 0 && !ViewModel.IsActivationLabelVisible && !ViewModel.IsMonitorLabelVisible)
+            if (ViewModel.PressedKeys.Count == 0)
             {
                 _zOrderEnforcer.Stop();
                 return;
