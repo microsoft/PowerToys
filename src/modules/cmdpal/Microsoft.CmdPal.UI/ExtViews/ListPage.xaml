@@ -419,6 +419,7 @@
                             ContextCanceled="Items_OnContextCanceled"
                             ContextRequested="Items_OnContextRequested"
                             DoubleTapped="Items_DoubleTapped"
+                            DragItemsCompleted="Items_DragItemsCompleted"
                             DragItemsStarting="Items_DragItemsStarting"
                             IsDoubleTapEnabled="True"
                             IsItemClickEnabled="True"
