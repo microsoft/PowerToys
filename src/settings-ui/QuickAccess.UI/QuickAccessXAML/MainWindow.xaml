@@ -7,16 +7,17 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:winuiEx="using:WinUIEx"
     Title="PowerToys Quick Access (Preview)"
-    Width="420"
-    Height="268"
-    MinWidth="420"
-    MinHeight="268"
+    Width="386"
+    Height="486"
+    MinWidth="386"
+    MinHeight="486"
     IsAlwaysOnTop="True"
     IsMaximizable="False"
     IsMinimizable="False"
     IsResizable="False"
+    IsShownInSwitchers="False"
+    IsTitleBarVisible="False"
     mc:Ignorable="d">
-
     <winuiEx:WindowEx.Backdrop>
         <winuiEx:AcrylicSystemBackdrop
             DarkFallbackColor="#1c1c1c"
