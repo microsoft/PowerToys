@@ -17,10 +17,8 @@ using KeystrokeOverlayUI.Models;
 
 namespace KeystrokeOverlayUI
 {
-    /// <summary>
     /// Connects to the native KeystrokeOverlayPipe and converts native JSON
     /// batches into KeystrokeEvent objects for the overlay UI.
-    /// </summary>
     public class KeystrokeListener : IDisposable
     {
         private const string PipeName = "KeystrokeOverlayPipe";
