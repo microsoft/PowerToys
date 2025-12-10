@@ -141,8 +141,11 @@ BITSPIXEL
 bla
 BLACKFRAME
 BLENDFUNCTION
+blittable
 Blockquotes
 blt
+bluelightreduction
+bluelightreductionstate
 BLURBEHIND
 BLURREGION
 bmi
@@ -250,6 +253,7 @@ colorformat
 colorhistory
 colorhistorylimit
 COLORKEY
+colorref
 comctl
 comdlg
 comexp
@@ -1113,6 +1117,7 @@ NEWPLUSSHELLEXTENSIONWIN
 newrow
 nicksnettravels
 NIF
+nightlight
 NLog
 NLSTEXT
 NMAKE
@@ -1860,8 +1865,10 @@ Uniquifies
 unitconverter
 unittests
 UNLEN
+Uninitializes
 UNORM
 unremapped
+Unsubscribes
 unvirtualized
 unwide
 unzoom
