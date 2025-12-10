@@ -60,6 +60,8 @@
             "PowerToys.FancyZonesEditorCommon.dll",
             "PowerToys.FancyZonesModuleInterface.dll",
             "PowerToys.FancyZones.exe",
+            "FancyZonesCLI.exe",
+            "FancyZonesCLI.dll",
 
             "PowerToys.GcodePreviewHandler.dll",
             "PowerToys.GcodePreviewHandler.exe",
@@ -350,6 +352,11 @@
                 "ColorCode.Core.dll", 
                 "Microsoft.SemanticKernel.Connectors.Ollama.dll",
                 "OllamaSharp.dll",
+
+                "boost_regex-vc143-mt-gd-x32-1_87.dll",
+                "boost_regex-vc143-mt-gd-x64-1_87.dll",
+                "boost_regex-vc143-mt-x32-1_87.dll",
+                "boost_regex-vc143-mt-x64-1_87.dll",
 
                 "UnitsNet.dll",
                 "UtfUnknown.dll",

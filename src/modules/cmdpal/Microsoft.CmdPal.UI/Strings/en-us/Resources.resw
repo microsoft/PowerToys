@@ -550,8 +550,68 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="Settings_GeneralPage_AutoGoHome_SettingsCard.Description" xml:space="preserve">
     <value>Automatically returns to home page after a period of inactivity when Command Palette is closed</value>
   </data>
+  <data name="Settings_GeneralPage_NavigationViewItem_Appearance.Content" xml:space="preserve">
+    <value>Personalization</value>
+  </data>
+  <data name="Settings_GeneralPage_AppTheme_SettingsCard.Header" xml:space="preserve">
+    <value>App theme mode</value>
+  </data>
+  <data name="Settings_GeneralPage_AppTheme_SettingsCard.Description" xml:space="preserve">
+    <value>Select which app theme to display</value>
+  </data>
+  <data name="AppearanceSettingsHeader.Text" xml:space="preserve">
+    <value>Appearance</value>
+  </data>
+  <data name="Settings_GeneralPage_AppTheme_Mode_System.Text" xml:space="preserve">
+    <value>Use system settings</value>
+  </data>
+  <data name="Settings_GeneralPage_AppTheme_Mode_Light.Text" xml:space="preserve">
+    <value>Light</value>
+  </data>
+  <data name="Settings_GeneralPage_AppTheme_Mode_Dark.Text" xml:space="preserve">
+    <value>Dark</value>
+  </data>
+  <data name="Settings_GeneralPage_BackgroundTint_SettingsCard.Header" xml:space="preserve">
+    <value>Color tint</value>
+  </data>
+  <data name="Settings_GeneralPage_BackgroundTintIntensity_SettingsCard.Header" xml:space="preserve">
+    <value>Color intensity</value>
+  </data>
+  <data name="OptionalColorPickerButton_UnsetTextBlock.Text" xml:space="preserve">
+    <value>Choose color</value>
+  </data>
+  <data name="OptionalColorPickerButton_ResetButton.Content" xml:space="preserve">
+    <value>Use default</value>
+  </data>
+  <data name="OptionalColorPickerButton_TransparentColorButton.Content" xml:space="preserve">
+    <value>Use default color</value>
+  </data>
+  <data name="OptionalColorPickerButton_WindowsColorsSectionHeading.Text" xml:space="preserve">
+    <value>Windows colors</value>
+  </data>
+  <data name="Settings_GeneralPage_BackgroundImage_SettingsExpander.Header" xml:space="preserve">
+    <value>Background image</value>
+  </data>
+  <data name="Settings_GeneralPage_BackgroundImageOpacity_SettingsCard.Header" xml:space="preserve">
+    <value>Background image opacity</value>
+  </data>
+  <data name="Settings_GeneralPage_BackgroundImageFit_SettingsCard.Header" xml:space="preserve">
+    <value>Background image fit</value>
+  </data>
+  <data name="BackgroundImageFit_ComboBoxItem_Fill.Content" xml:space="preserve">
+    <value>Fill</value>
+  </data>
+  <data name="BackgroundImageFit_ComboBoxItem_Fit.Content" xml:space="preserve">
+    <value>Fit</value>
+  </data>
+  <data name="BackgroundImageFit_ComboBoxItem_Stretch.Content" xml:space="preserve">
+    <value>Stretch</value>
+  </data>
   <data name="Settings_PageTitles_GeneralPage" xml:space="preserve">
     <value>General</value>
+  </data>
+  <data name="Settings_PageTitles_AppearancePage" xml:space="preserve">
+    <value>Personalization</value>
   </data>
   <data name="Settings_PageTitles_ExtensionsPage" xml:space="preserve">
     <value>Extensions</value>
@@ -576,5 +636,74 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   </data>
   <data name="SettingsButtonTextBlock.Text" xml:space="preserve">
     <value>Settings</value>
+  </data>
+  <data name="OptionalColorPickerButton_CustomColorsSectionHeading.Text" xml:space="preserve">
+    <value>Custom colors</value>
+  </data>
+  <data name="Settings_GeneralPage_ColorizationMode_None.Content" xml:space="preserve">
+    <value>None</value>
+  </data>
+  <data name="Settings_GeneralPage_ColorizationMode_CustomColor.Content" xml:space="preserve">
+    <value>Custom color</value>
+  </data>
+  <data name="Settings_GeneralPage_ColorizationMode_WindowsAccent.Content" xml:space="preserve">
+    <value>Accent color</value>
+  </data>
+  <data name="Settings_GeneralPage_ColorizationMode_Image.Content" xml:space="preserve">
+    <value>Image</value>
+  </data>
+  <data name="Settings_GeneralPage_BackgroundImage_ChooseImageButton.Content" xml:space="preserve">
+    <value>Browse...</value>
+  </data>
+  <data name="Settings_GeneralPage_BackgroundImage_ResetImageButton.Content" xml:space="preserve">
+    <value>Remove image</value>
+  </data>
+  <data name="Settings_GeneralPage_BackgroundColor_SettingsExpander.Header" xml:space="preserve">
+    <value>Background color</value>
+  </data>
+  <data name="Settings_GeneralPage_BackgroundColor_SettingsExpander.Description" xml:space="preserve">
+    <value>Choose a custom background color or use the current accent color</value>
+  </data>
+  <data name="Settings_GeneralPage_BackgroundImage_SettingsCard.Header" xml:space="preserve">
+    <value>Background image</value>
+  </data>
+  <data name="Settings_GeneralPage_NoBackground_DescriptionTextBlock.Text" xml:space="preserve">
+    <value>No settings</value>
+  </data>
+  <data name="Settings_GeneralPage_Background_SettingsExpander.Header" xml:space="preserve">
+    <value>Background</value>
+  </data>
+  <data name="Settings_GeneralPage_Background_SettingsExpander.Description" xml:space="preserve">
+    <value>Choose a custom background color or image</value>
+  </data>
+  <data name="Settings_GeneralPage_WindowsAccentColor_SettingsCard.Header" xml:space="preserve">
+    <value>System accent color</value>
+  </data>
+  <data name="Settings_GeneralPage_WindowsAccentColor_OpenWindowsColorsLinkText.Text" xml:space="preserve">
+    <value>Personalization › Colors</value>
+  </data>
+  <data name="Settings_GeneralPage_BackgroundImageBlur_SettingsCard.Header" xml:space="preserve">
+    <value>Background image blur</value>
+  </data>
+  <data name="Settings_GeneralPage_BackgroundImageBrightness_SettingsCard.Header" xml:space="preserve">
+    <value>Background image brightness</value>
+  </data>
+  <data name="Settings_GeneralPage_BackgroundImage_ResetProperties_SettingsCard.Header" xml:space="preserve">
+    <value>Restore defaults</value>
+  </data>
+  <data name="Settings_GeneralPage_Background_ResetImagePropertiesButton.Content" xml:space="preserve">
+    <value>Reset</value>
+  </data>
+  <data name="Settings_GeneralPage_WindowsAccentColor_SettingsCard_Description1.Text" xml:space="preserve">
+    <value>Change the system accent in Windows Settings:</value>
+  </data>
+  <data name="Settings_GeneralPage_AppTheme_Mode_Light_Automation.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Light</value>
+  </data>
+  <data name="Settings_GeneralPage_AppTheme_Mode_Dark_Automation.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Dark</value>
+  </data>
+  <data name="Settings_GeneralPage_AppTheme_Mode_System_Automation.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Use system settings</value>
   </data>
 </root>
