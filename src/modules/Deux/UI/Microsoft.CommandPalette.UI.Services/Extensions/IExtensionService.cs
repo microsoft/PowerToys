@@ -4,6 +4,7 @@
 
 namespace Microsoft.CommandPalette.UI.Services.Extensions;
 
-internal interface IExtensionService
+public interface IExtensionService
 {
+    CommandViewModel
 }

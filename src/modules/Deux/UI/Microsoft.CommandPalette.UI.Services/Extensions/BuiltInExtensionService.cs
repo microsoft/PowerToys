@@ -4,6 +4,6 @@
 
 namespace Microsoft.CommandPalette.UI.Services.Extensions;
 
-internal class BuiltInExtensionService : IExtensionService
+public class BuiltInExtensionService : IExtensionService
 {
 }

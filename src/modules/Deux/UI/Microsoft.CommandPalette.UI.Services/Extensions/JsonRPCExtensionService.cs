@@ -4,6 +4,6 @@
 
 namespace Microsoft.CommandPalette.UI.Services.Extensions;
 
-public class WinRTExtensionService : IExtensionService
+public class JsonRPCExtensionService : IExtensionService
 {
 }

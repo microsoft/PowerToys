@@ -18,7 +18,7 @@ public partial class AppStateService
 
     public AppStateModel CurrentSettings => _appStateModel;
 
-    public AppStateService(ILogger<SettingsService> logger)
+    public AppStateService(ILogger logger)
     {
         this.logger = logger;
         _filePath = PersistenceService.SettingsJsonPath("state.json");

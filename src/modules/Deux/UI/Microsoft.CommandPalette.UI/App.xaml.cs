@@ -5,6 +5,7 @@
 using Microsoft.CommandPalette.UI.Helpers;
 using Microsoft.CommandPalette.UI.Pages;
 using Microsoft.CommandPalette.UI.Services;
+using Microsoft.CommandPalette.UI.Services.Extensions;
 using Microsoft.CommandPalette.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -30,7 +31,6 @@ public partial class App : Application
     public Window? AppWindow { get; private set; }
 
     public ETWTrace EtwTrace { get; private set; } = new ETWTrace();
-
 
     public App(ILogger logger)
     {
@@ -69,6 +69,15 @@ public partial class App : Application
         // because other services depend on them
         services.AddSingleton<SettingsService>();
         services.AddSingleton<AppStateService>();
+
+        // Register extension services
+        // We do these before other services so that they are available
+        // during initialization of other services. Technically, they should
+        // be registered before other services require them, but this is
+        // a simple way to ensure that.
+        services.AddSingleton<IExtensionService, BuiltInExtensionService>();
+        services.AddSingleton<IExtensionService, WinRTExtensionService>();
+        services.AddSingleton<IExtensionService, JsonRPCExtensionService>();
 
         // Register services
         services.AddSingleton<TrayIconService>();

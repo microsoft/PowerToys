@@ -22,7 +22,7 @@ public partial class SettingsService
 
     public SettingsModel CurrentSettings => _settingsModel;
 
-    public SettingsService(ILogger<SettingsService> logger)
+    public SettingsService(ILogger logger)
     {
         this.logger = logger;
         _filePath = PersistenceService.SettingsJsonPath("settings.json");
