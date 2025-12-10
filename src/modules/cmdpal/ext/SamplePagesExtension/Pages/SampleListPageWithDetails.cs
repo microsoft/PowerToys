@@ -95,7 +95,7 @@ internal sealed partial class SampleListPageWithDetails : ListPage
                 {
                     Title = "Metadata Example",
                     Body = "Each of the sections below is some sample metadata",
-                    Size = ContentSize.Small,
+                    Size = ContentSize.Large,
                     Metadata = [
                         new DetailsElement()
                         {
