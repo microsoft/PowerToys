@@ -228,6 +228,15 @@ namespace KeystrokeOverlayUI
                 // Fire the event for the View to handle
                 DisplayMode = (DisplayMode + 1) % 4;
 
+                if (DisplayMode == 1)
+                {
+                    _maxKeystrokesShown = 1;
+                }
+                else
+                {
+                    _maxKeystrokesShown = 5;
+                }
+
                 string modeText = DisplayMode switch
                 {
                     0 => "Last Five Keystroke",
