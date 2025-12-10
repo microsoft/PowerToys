@@ -202,7 +202,7 @@
     <comment>'UTC' means here 'Universal Time Convention'</comment>
   </data>
   <data name="Microsoft_plugin_timedate_plugin_description" xml:space="preserve">
-    <value>Provides time and date values in different formats</value>
+    <value>Show time and date values in different formats</value>
     <comment>Do not translate the placeholders like '{0}' because it will be replaced in code.</comment>
   </data>
   <data name="Microsoft_plugin_timedate_plugin_description_example_calendarWeek" xml:space="preserve">
@@ -215,7 +215,7 @@
     <value>Time</value>
   </data>
   <data name="Microsoft_plugin_timedate_plugin_name" xml:space="preserve">
-    <value>Time and Date</value>
+    <value>Time and date</value>
   </data>
   <data name="Microsoft_plugin_timedate_Rfc1123" xml:space="preserve">
     <value>RFC1123</value>
@@ -251,10 +251,6 @@
   <data name="Microsoft_plugin_timedate_SearchTagTimeNow" xml:space="preserve">
     <value>Current Time; Now</value>
     <comment>Don't change order</comment>
-  </data>
-  <data name="Microsoft_plugin_timedate_Search_ConjunctionList" xml:space="preserve">
-    <value>for; and; nor; but; or; so</value>
-    <comment>List of conjunctions. We don't add 'yet' because this can be a synonym of 'now' which might be problematic on localized searches.</comment>
   </data>
   <data name="Microsoft_plugin_timedate_Second" xml:space="preserve">
     <value>Second</value>
@@ -358,7 +354,7 @@
     <value>Error: Invalid input</value>
   </data>
   <data name="Microsoft_plugin_timedate_main_page_title" xml:space="preserve">
-    <value>Time and Date</value>
+    <value>Time and date</value>
   </data>
   <data name="Microsoft_plugin_timedate_InvalidInput_SupportedInput" xml:space="preserve">
     <value>A {0}format name{0}, a {0}valid date or time value{0}, or a {0}prefixed number{0}. To search for a format in a specific date/time please use the syntax {0}format::date/time/number{0}.{1}Supported prefixes:{2}'{0}u{0}' for Unix Timestamp{2}'{0}ums{0}' for Unix Timestamp in milliseconds{2}'{0}ft{0}' for Windows file time{2}'{0}oa{0}' for OLE Automation Date{2}'{0}exc{0}' for Excel's 1900 date value{2}'{0}exf{0}' for Excel's 1904 date value</value>

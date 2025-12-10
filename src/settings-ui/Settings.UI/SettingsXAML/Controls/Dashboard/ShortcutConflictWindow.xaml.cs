@@ -14,6 +14,7 @@ using Microsoft.PowerToys.Settings.UI.Views;
 using Microsoft.UI;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 using Windows.Graphics;
 using WinUIEx;
 
@@ -21,26 +22,27 @@ namespace Microsoft.PowerToys.Settings.UI.SettingsXAML.Controls.Dashboard
 {
     public sealed partial class ShortcutConflictWindow : WindowEx
     {
-        public ShortcutConflictViewModel DataContext { get; }
-
         public ShortcutConflictViewModel ViewModel { get; private set; }
 
         public ShortcutConflictWindow()
         {
-            var settingsUtils = new SettingsUtils();
+            var settingsUtils = SettingsUtils.Default;
             ViewModel = new ShortcutConflictViewModel(
                 settingsUtils,
                 SettingsRepository<GeneralSettings>.GetInstance(settingsUtils),
                 ShellPage.SendDefaultIPCMessage);
 
-            DataContext = ViewModel;
             InitializeComponent();
+
+            // Set DataContext on the root Grid instead of the Window
+            RootGrid.DataContext = ViewModel;
 
             this.Activated += Window_Activated_SetIcon;
 
             // Set localized window title
             var resourceLoader = ResourceLoaderInstance.ResourceLoader;
-            this.ExtendsContentIntoTitleBar = true;
+            ExtendsContentIntoTitleBar = true;
+            SetTitleBar(titleBar);
 
             this.Title = resourceLoader.GetString("ShortcutConflictWindow_Title");
             this.CenterOnScreen();
@@ -74,6 +76,54 @@ namespace Microsoft.PowerToys.Settings.UI.SettingsXAML.Controls.Dashboard
             }
         }
 
+        private void OnIgnoreConflictClicked(object sender, RoutedEventArgs e)
+        {
+            if (sender is CheckBox checkBox && checkBox.DataContext is HotkeyConflictGroupData conflictGroup)
+            {
+                // The Click event only fires from user interaction, not programmatic changes
+                if (checkBox.IsChecked == true)
+                {
+                    IgnoreConflictGroup(conflictGroup);
+                }
+                else
+                {
+                    UnignoreConflictGroup(conflictGroup);
+                }
+            }
+        }
+
+        private void IgnoreConflictGroup(HotkeyConflictGroupData conflictGroup)
+        {
+            try
+            {
+                // Ignore all hotkey settings in this conflict group
+                if (conflictGroup.Modules != null)
+                {
+                    HotkeySettings hotkey = new(conflictGroup.Hotkey.Win, conflictGroup.Hotkey.Ctrl, conflictGroup.Hotkey.Alt, conflictGroup.Hotkey.Shift, conflictGroup.Hotkey.Key);
+                    ViewModel.IgnoreShortcut(hotkey);
+                }
+            }
+            catch
+            {
+            }
+        }
+
+        private void UnignoreConflictGroup(HotkeyConflictGroupData conflictGroup)
+        {
+            try
+            {
+                // Unignore all hotkey settings in this conflict group
+                if (conflictGroup.Modules != null)
+                {
+                    HotkeySettings hotkey = new(conflictGroup.Hotkey.Win, conflictGroup.Hotkey.Ctrl, conflictGroup.Hotkey.Alt, conflictGroup.Hotkey.Shift, conflictGroup.Hotkey.Key);
+                    ViewModel.UnignoreShortcut(hotkey);
+                }
+            }
+            catch
+            {
+            }
+        }
+
         private void WindowEx_Closed(object sender, WindowEventArgs args)
         {
             ViewModel?.Dispose();
@@ -82,10 +132,7 @@ namespace Microsoft.PowerToys.Settings.UI.SettingsXAML.Controls.Dashboard
         private void Window_Activated_SetIcon(object sender, WindowActivatedEventArgs args)
         {
             // Set window icon
-            var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
-            WindowId windowId = Win32Interop.GetWindowIdFromWindow(hWnd);
-            AppWindow appWindow = AppWindow.GetFromWindowId(windowId);
-            appWindow.SetIcon("Assets\\Settings\\icon.ico");
+            AppWindow.SetIcon("Assets\\Settings\\icon.ico");
         }
     }
 }

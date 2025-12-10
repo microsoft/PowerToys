@@ -154,8 +154,7 @@ HRESULT CPowerRenameRegEx::_OnEnumerateOrRandomizeItemsChanged()
                 std::find_if(
                     m_randomizer.begin(),
                     m_randomizer.end(),
-                    [option](const Randomizer& r) -> bool { return r.options.replaceStrSpan.offset == option.replaceStrSpan.offset; }
-                ))
+                    [option](const Randomizer& r) -> bool { return r.options.replaceStrSpan.offset == option.replaceStrSpan.offset; }))
             {
                 // Only add as enumerator if we didn't find a randomizer already at this offset.
                 // Every randomizer will also be a valid enumerator according to the definition of enumerators, which allows any string to mean the default enumerator, so it should be interpreted that the user wanted a randomizer if both were found at the same offset of the replace string.
@@ -329,6 +328,22 @@ IFACEMETHODIMP CPowerRenameRegEx::ResetFileTime()
     return S_OK;
 }
 
+IFACEMETHODIMP CPowerRenameRegEx::PutMetadataPatterns(_In_ const PowerRenameLib::MetadataPatternMap& patterns)
+{
+    m_metadataPatterns = patterns;
+    m_useMetadata = true;
+    _OnMetadataChanged();
+    return S_OK;
+}
+
+IFACEMETHODIMP CPowerRenameRegEx::ResetMetadata()
+{
+    m_metadataPatterns.clear();
+    m_useMetadata = false;
+    _OnMetadataChanged();
+    return S_OK;
+}
+
 HRESULT CPowerRenameRegEx::s_CreateInstance(_Outptr_ IPowerRenameRegEx** renameRegEx)
 {
     *renameRegEx = nullptr;
@@ -388,24 +403,50 @@ HRESULT CPowerRenameRegEx::Replace(_In_ PCWSTR source, _Outptr_ PWSTR* result, u
         // TODO: creating the regex could be costly.  May want to cache this.
         wchar_t newReplaceTerm[MAX_PATH] = { 0 };
         bool fileTimeErrorOccurred = false;
+        bool metadataErrorOccurred = false;
+        bool appliedTemplateTransform = false;
+
+        std::wstring replaceTemplate;
+        if (m_replaceTerm)
+        {
+            replaceTemplate = m_replaceTerm;
+        }
+
         if (m_useFileTime)
         {
-            if (FAILED(GetDatedFileName(newReplaceTerm, ARRAYSIZE(newReplaceTerm), m_replaceTerm, m_fileTime)))
+            if (FAILED(GetDatedFileName(newReplaceTerm, ARRAYSIZE(newReplaceTerm), replaceTemplate.c_str(), m_fileTime)))
+            {
                 fileTimeErrorOccurred = true;
+            }
+            else
+            {
+                replaceTemplate.assign(newReplaceTerm);
+                appliedTemplateTransform = true;
+            }
+        }
+
+        if (m_useMetadata)
+        {
+            if (FAILED(GetMetadataFileName(newReplaceTerm, ARRAYSIZE(newReplaceTerm), replaceTemplate.c_str(), m_metadataPatterns)))
+            {
+                metadataErrorOccurred = true;
+            }
+            else
+            {
+                replaceTemplate.assign(newReplaceTerm);
+                appliedTemplateTransform = true;
+            }
         }
 
         std::wstring sourceToUse;
-        std::wstring originalSource;
         sourceToUse.reserve(MAX_PATH);
-        originalSource.reserve(MAX_PATH);
         sourceToUse = source;
-        originalSource = sourceToUse;
 
         std::wstring searchTerm(m_searchTerm);
         std::wstring replaceTerm;
-        if (m_useFileTime && !fileTimeErrorOccurred)
+        if (appliedTemplateTransform)
         {
-            replaceTerm = newReplaceTerm;
+            replaceTerm = replaceTemplate;
         }
         else if (m_replaceTerm)
         {
@@ -487,27 +528,46 @@ HRESULT CPowerRenameRegEx::Replace(_In_ PCWSTR source, _Outptr_ PWSTR* result, u
             }
         }
 
-        bool replacedSomething = false;
+        bool shouldIncrementCounter = false;
+        const bool isCaseInsensitive = !(m_flags & CaseSensitive);
+
         if (m_flags & UseRegularExpressions)
         {
             replaceTerm = regex_replace(replaceTerm, zeroGroupRegex, L"$1$$$0");
             replaceTerm = regex_replace(replaceTerm, otherGroupsRegex, L"$1$0$4");
 
-            res = RegexReplaceDispatch[_useBoostLib](source, m_searchTerm, replaceTerm, m_flags & MatchAllOccurrences, !(m_flags & CaseSensitive));
-            replacedSomething = originalSource != res;
+            res = RegexReplaceDispatch[_useBoostLib](source, m_searchTerm, replaceTerm, m_flags & MatchAllOccurrences, isCaseInsensitive);
+
+            // Use regex search to determine if a match exists. This is the basis for incrementing
+            // the counter.
+            if (_useBoostLib)
+            {
+                boost::wregex pattern(m_searchTerm, boost::wregex::ECMAScript | (isCaseInsensitive ? boost::wregex::icase : boost::wregex::normal));
+                shouldIncrementCounter = boost::regex_search(sourceToUse, pattern);
+            }
+            else
+            {
+                auto regexFlags = std::wregex::ECMAScript;
+                if (isCaseInsensitive)
+                {
+                    regexFlags |= std::wregex::icase;
+                }
+                std::wregex pattern(m_searchTerm, regexFlags);
+                shouldIncrementCounter = std::regex_search(sourceToUse, pattern);
+            }
         }
         else
         {
-            // Simple search and replace
+            // Simple search and replace.
             size_t pos = 0;
             do
             {
-                pos = _Find(sourceToUse, searchTerm, (!(m_flags & CaseSensitive)), pos);
+                pos = _Find(sourceToUse, searchTerm, isCaseInsensitive, pos);
                 if (pos != std::string::npos)
                 {
                     res = sourceToUse.replace(pos, searchTerm.length(), replaceTerm);
                     pos += replaceTerm.length();
-                    replacedSomething = true;
+                    shouldIncrementCounter = true;
                 }
                 if (!(m_flags & MatchAllOccurrences))
                 {
@@ -516,7 +576,8 @@ HRESULT CPowerRenameRegEx::Replace(_In_ PCWSTR source, _Outptr_ PWSTR* result, u
             } while (pos != std::string::npos);
         }
         hr = SHStrDup(res.c_str(), result);
-        if (replacedSomething)
+
+        if (shouldIncrementCounter)
             enumIndex++;
     }
     catch (regex_error e)
@@ -590,3 +651,43 @@ void CPowerRenameRegEx::_OnFileTimeChanged()
         }
     }
 }
+
+void CPowerRenameRegEx::_OnMetadataChanged()
+{
+    CSRWSharedAutoLock lock(&m_lockEvents);
+
+    for (auto it : m_renameRegExEvents)
+    {
+        if (it.pEvents)
+        {
+            it.pEvents->OnMetadataChanged();
+        }
+    }
+}
+
+PowerRenameLib::MetadataType CPowerRenameRegEx::_GetMetadataTypeFromFlags() const
+{
+    if (m_flags & MetadataSourceXMP)
+        return PowerRenameLib::MetadataType::XMP;
+    
+    // Default to EXIF
+    return PowerRenameLib::MetadataType::EXIF;
+}
+
+// Interface method implementation  
+IFACEMETHODIMP CPowerRenameRegEx::GetMetadataType(_Out_ PowerRenameLib::MetadataType* metadataType)
+{
+    if (metadataType == nullptr)
+        return E_POINTER;
+        
+    *metadataType = _GetMetadataTypeFromFlags();
+    return S_OK;
+}
+
+// Convenience method for internal use
+PowerRenameLib::MetadataType CPowerRenameRegEx::GetMetadataType() const
+{
+    return _GetMetadataTypeFromFlags();
+}
+
+

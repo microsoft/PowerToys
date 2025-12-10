@@ -9,19 +9,15 @@ using HostsUILib.Helpers;
 using HostsUILib.Views;
 using ManagedCommon;
 using Microsoft.PowerToys.Telemetry;
+using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.Windows.ApplicationModel.Resources;
 using WinUIEx;
 
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
 namespace Hosts
 {
-    /// <summary>
-    /// An empty window that can be used on its own or navigated to within a Frame.
-    /// </summary>
     public sealed partial class MainWindow : WindowEx
     {
         private HostsMainPage MainPage { get; }
@@ -38,29 +34,16 @@ namespace Hosts
 
             var title = Host.GetService<IElevationHelper>().IsElevated ? loader.GetString("WindowAdminTitle") : loader.GetString("WindowTitle");
             Title = title;
-            AppTitleTextBlock.Text = title;
+            titleBar.Title = title;
 
             var handle = this.GetWindowHandle();
 
             WindowHelpers.ForceTopBorder1PixelInsetOnWindows10(handle);
             WindowHelpers.BringToForeground(handle);
-            Activated += MainWindow_Activated;
 
             MainPage = Host.GetService<HostsMainPage>();
 
             PowerToysTelemetry.Log.WriteEvent(new HostEditorStartFinishEvent() { TimeStamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() });
-        }
-
-        private void MainWindow_Activated(object sender, WindowActivatedEventArgs args)
-        {
-            if (args.WindowActivationState == WindowActivationState.Deactivated)
-            {
-                AppTitleTextBlock.Foreground = (SolidColorBrush)App.Current.Resources["WindowCaptionForegroundDisabled"];
-            }
-            else
-            {
-                AppTitleTextBlock.Foreground = (SolidColorBrush)App.Current.Resources["WindowCaptionForeground"];
-            }
         }
 
         private void Grid_Loaded(object sender, RoutedEventArgs e)

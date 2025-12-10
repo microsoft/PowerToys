@@ -53,7 +53,7 @@ The Screen Ruler module consists of several components:
 
 ### Building
 
-1. Open PowerToys.sln in Visual Studio
+1. Open PowerToys.slnx in Visual Studio
 2. In the Solutions Configuration drop-down menu, select Release or Debug
 3. From the Build menu, choose Build Solution
 4. The executable app for Screen Ruler is named PowerToys.MeasureToolUI.exe

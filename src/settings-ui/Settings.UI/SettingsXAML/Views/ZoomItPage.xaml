@@ -30,23 +30,15 @@
                     IsOpen="True"
                     IsTabStop="True"
                     Severity="Warning" />
-                <tkcontrols:SettingsCard
-                    Name="ZoomItEnableToggleControlHeaderText"
-                    x:Uid="ZoomIt_EnableToggleControl_HeaderText"
-                    HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/ZoomIt.png}"
-                    IsEnabled="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
-                    <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
-                </tkcontrols:SettingsCard>
-                <InfoBar
-                    x:Uid="GPO_SettingIsManaged"
-                    IsClosable="False"
-                    IsOpen="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
-                    IsTabStop="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
-                    Severity="Informational">
-                    <InfoBar.IconSource>
-                        <FontIconSource FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE72E;" />
-                    </InfoBar.IconSource>
-                </InfoBar>
+                <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}">
+                    <tkcontrols:SettingsCard
+                        Name="ZoomItEnableToggleControlHeaderText"
+                        x:Uid="ZoomIt_EnableToggleControl_HeaderText"
+                        HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/ZoomIt.png}">
+                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
+                </controls:GPOInfoControl>
+
                 <controls:SettingsGroup x:Uid="ZoomIt_BehaviorGroup" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsCard Name="ZoomItToggleShowTrayIcon" x:Uid="ZoomIt_Toggle_ShowTrayIcon">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.ShowTrayIcon, Mode=TwoWay}" />
@@ -61,6 +53,9 @@
                     </tkcontrols:SettingsCard>
                     <tkcontrols:SettingsCard Name="ZoomItToggleAnimateZoom" x:Uid="ZoomIt_Toggle_AnimateZoom">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.AnimateZoom, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
+                    <tkcontrols:SettingsCard Name="ZoomItSmoothZoomedImage" x:Uid="ZoomIt_Toggle_SmoothZoomedImage">
+                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.SmoothImage, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                     <tkcontrols:SettingsCard Name="ZoomItSliderInitialMagnification" x:Uid="ZoomIt_Slider_InitialMagnification">
                         <Slider
@@ -244,6 +239,12 @@
                             <ComboBoxItem>0.8</ComboBoxItem>
                             <ComboBoxItem>0.9</ComboBoxItem>
                             <ComboBoxItem>1.0</ComboBoxItem>
+                        </ComboBox>
+                    </tkcontrols:SettingsCard>
+                    <tkcontrols:SettingsCard Name="ZoomItRecordFormat" x:Uid="ZoomIt_Record_Format">
+                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.RecordFormatIndex, Mode=TwoWay}">
+                            <ComboBoxItem>GIF</ComboBoxItem>
+                            <ComboBoxItem>MP4</ComboBoxItem>
                         </ComboBox>
                     </tkcontrols:SettingsCard>
                     <tkcontrols:SettingsCard Name="ZoomItRecordCaptureAudio" x:Uid="ZoomIt_Record_CaptureAudio">

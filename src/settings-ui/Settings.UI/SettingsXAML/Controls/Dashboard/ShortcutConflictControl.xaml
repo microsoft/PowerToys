@@ -8,18 +8,21 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <Grid Visibility="{x:Bind HasConflicts, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
-        <Button Click="ShortcutConflictBtn_Click" Style="{StaticResource SubtleButtonStyle}">
+    <Grid>
+        <Button
+            x:Uid="ShortcutConflictControl_Automation"
+            Click="ShortcutConflictBtn_Click"
+            Style="{StaticResource SubtleButtonStyle}">
             <Grid ColumnSpacing="16">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
                 <FontIcon
+                    x:Name="Icon"
                     AutomationProperties.AccessibilityView="Raw"
                     FontSize="20"
-                    Foreground="{ThemeResource SystemFillColorCriticalBrush}"
-                    Glyph="&#xE814;" />
+                    Glyph="&#xEDA7;" />
                 <StackPanel Grid.Column="1" Orientation="Vertical">
                     <TextBlock x:Uid="ShortcutConflictControl_Title" FontWeight="SemiBold" />
                     <TextBlock
@@ -29,5 +32,16 @@
                 </StackPanel>
             </Grid>
         </Button>
+        <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup x:Name="ConflictsStateGroup">
+                <VisualState x:Name="NoConflictState" />
+                <VisualState x:Name="ConflictState">
+                    <VisualState.Setters>
+                        <Setter Target="Icon.Glyph" Value="&#xE814;" />
+                        <Setter Target="Icon.Foreground" Value="{ThemeResource SystemFillColorCautionBrush}" />
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+        </VisualStateManager.VisualStateGroups>
     </Grid>
 </UserControl>

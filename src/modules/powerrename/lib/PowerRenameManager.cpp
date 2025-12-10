@@ -462,6 +462,12 @@ IFACEMETHODIMP CPowerRenameManager::OnFileTimeChanged(_In_ SYSTEMTIME /*fileTime
     return S_OK;
 }
 
+IFACEMETHODIMP CPowerRenameManager::OnMetadataChanged()
+{
+    _PerformRegExRename();
+    return S_OK;
+}
+
 HRESULT CPowerRenameManager::s_CreateInstance(_Outptr_ IPowerRenameManager** ppsrm)
 {
     *ppsrm = nullptr;

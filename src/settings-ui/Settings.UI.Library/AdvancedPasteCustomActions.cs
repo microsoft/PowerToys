@@ -10,7 +10,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library;
 
 public sealed class AdvancedPasteCustomActions
 {
-    private static readonly JsonSerializerOptions _serializerOptions = new()
+    private static readonly JsonSerializerOptions _serializerOptions = new(SettingsSerializationContext.Default.Options)
     {
         WriteIndented = true,
     };

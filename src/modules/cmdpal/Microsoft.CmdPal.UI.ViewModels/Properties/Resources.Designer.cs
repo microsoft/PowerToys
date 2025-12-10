@@ -19,7 +19,7 @@ namespace Microsoft.CmdPal.UI.ViewModels.Properties {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "18.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     public class Resources {
@@ -286,6 +286,15 @@ namespace Microsoft.CmdPal.UI.ViewModels.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Home.
+        /// </summary>
+        public static string builtin_home_name {
+            get {
+                return ResourceManager.GetString("builtin_home_name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to View log folder.
         /// </summary>
         public static string builtin_log_folder_command_name {
@@ -399,6 +408,33 @@ namespace Microsoft.CmdPal.UI.ViewModels.Properties {
         public static string builtin_reload_subtitle {
             get {
                 return ResourceManager.GetString("builtin_reload_subtitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Pick background image.
+        /// </summary>
+        public static string builtin_settings_appearance_pick_background_image_title {
+            get {
+                return ResourceManager.GetString("builtin_settings_appearance_pick_background_image_title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} extensions found.
+        /// </summary>
+        public static string builtin_settings_extension_n_extensions_found {
+            get {
+                return ResourceManager.GetString("builtin_settings_extension_n_extensions_found", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} extensions installed.
+        /// </summary>
+        public static string builtin_settings_extension_n_extensions_installed {
+            get {
+                return ResourceManager.GetString("builtin_settings_extension_n_extensions_installed", resourceCulture);
             }
         }
     }
