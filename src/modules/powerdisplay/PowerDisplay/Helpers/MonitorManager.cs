@@ -76,6 +76,7 @@ namespace PowerDisplay.Helpers
 
         /// <summary>
         /// Discover all monitors from all controllers.
+        /// All initialization (brightness, capabilities, input source) is done during controller discovery.
         /// </summary>
         public async Task<IReadOnlyList<Monitor>> DiscoverMonitorsAsync(CancellationToken cancellationToken = default)
         {
@@ -83,16 +84,22 @@ namespace PowerDisplay.Helpers
 
             try
             {
-                var oldMonitors = _monitors.ToList();
-
-                // Step 1: Discover monitors from all controllers
                 var discoveryResults = await DiscoverFromAllControllersAsync(cancellationToken);
 
-                // Step 2: Initialize and validate all discovered monitors
-                var newMonitors = await InitializeAllMonitorsAsync(discoveryResults, cancellationToken);
+                // Update collections
+                _monitors.Clear();
+                _monitorLookup.Clear();
 
-                // Step 3: Update collection and notify changes
-                UpdateMonitorCollection(oldMonitors, newMonitors);
+                var newMonitors = discoveryResults
+                    .SelectMany(r => r.Monitors)
+                    .OrderBy(m => m.MonitorNumber)
+                    .ToList();
+
+                _monitors.AddRange(newMonitors);
+                foreach (var monitor in newMonitors)
+                {
+                    _monitorLookup[monitor.Id] = monitor;
+                }
 
                 return _monitors.AsReadOnly();
             }
@@ -124,193 +131,6 @@ namespace PowerDisplay.Helpers
 
             var results = await Task.WhenAll(discoveryTasks);
             return results.ToList();
-        }
-
-        /// <summary>
-        /// Initialize all discovered monitors from all controllers.
-        /// </summary>
-        private async Task<List<Monitor>> InitializeAllMonitorsAsync(
-            List<(IMonitorController Controller, List<Monitor> Monitors)> discoveryResults,
-            CancellationToken cancellationToken)
-        {
-            var newMonitors = new List<Monitor>();
-
-            foreach (var (controller, monitors) in discoveryResults)
-            {
-                var initTasks = monitors.Select(monitor =>
-                    InitializeSingleMonitorAsync(monitor, controller, cancellationToken));
-
-                var initializedMonitors = await Task.WhenAll(initTasks);
-                var validMonitors = initializedMonitors.Where(m => m != null).Cast<Monitor>();
-                newMonitors.AddRange(validMonitors);
-            }
-
-            return newMonitors;
-        }
-
-        /// <summary>
-        /// Initialize a single monitor: verify control, get brightness, and fetch capabilities.
-        /// </summary>
-        private async Task<Monitor?> InitializeSingleMonitorAsync(
-            Monitor monitor,
-            IMonitorController controller,
-            CancellationToken cancellationToken)
-        {
-            // Skip control verification if monitor was already validated during discovery phase
-            // The presence of cached VcpCapabilitiesInfo indicates the monitor passed DDC/CI validation
-            // This avoids redundant capabilities retrieval (~4 seconds per monitor)
-            bool alreadyValidated = monitor.VcpCapabilitiesInfo != null &&
-                                   monitor.VcpCapabilitiesInfo.SupportedVcpCodes.Count > 0;
-
-            if (!alreadyValidated)
-            {
-                // Verify if monitor can be controlled (for monitors not validated in discovery phase)
-                if (!await controller.CanControlMonitorAsync(monitor, cancellationToken))
-                {
-                    return null;
-                }
-            }
-
-            // Get current brightness
-            await InitializeMonitorBrightnessAsync(monitor, controller, cancellationToken);
-
-            // Get capabilities for DDC/CI monitors
-            if (monitor.CommunicationMethod?.Contains("DDC", StringComparison.OrdinalIgnoreCase) == true)
-            {
-                await InitializeMonitorCapabilitiesAsync(monitor, controller, cancellationToken);
-
-                // Initialize input source if supported
-                if (monitor.SupportsInputSource)
-                {
-                    await InitializeMonitorInputSourceAsync(monitor, controller, cancellationToken);
-                }
-            }
-
-            return monitor;
-        }
-
-        /// <summary>
-        /// Initialize monitor brightness values.
-        /// </summary>
-        private async Task InitializeMonitorBrightnessAsync(
-            Monitor monitor,
-            IMonitorController controller,
-            CancellationToken cancellationToken)
-        {
-            try
-            {
-                var brightnessInfo = await controller.GetBrightnessAsync(monitor, cancellationToken);
-                if (brightnessInfo.IsValid)
-                {
-                    monitor.CurrentBrightness = brightnessInfo.ToPercentage();
-                    monitor.MinBrightness = brightnessInfo.Minimum;
-                    monitor.MaxBrightness = brightnessInfo.Maximum;
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.LogWarning($"Failed to get brightness for monitor {monitor.Id}: {ex.Message}");
-            }
-        }
-
-        /// <summary>
-        /// Initialize monitor DDC/CI capabilities.
-        /// If capabilities are already cached from discovery phase, only update derived properties.
-        /// </summary>
-        private async Task InitializeMonitorCapabilitiesAsync(
-            Monitor monitor,
-            IMonitorController controller,
-            CancellationToken cancellationToken)
-        {
-            try
-            {
-                // Check if capabilities were already cached during discovery phase
-                // This avoids expensive I2C calls (~4 seconds per monitor) for redundant data
-                if (monitor.VcpCapabilitiesInfo != null && monitor.VcpCapabilitiesInfo.SupportedVcpCodes.Count > 0)
-                {
-                    Logger.LogInfo($"Using cached capabilities for {monitor.Id}: {monitor.VcpCapabilitiesInfo.SupportedVcpCodes.Count} VCP codes");
-                    UpdateMonitorCapabilitiesFromVcp(monitor);
-                    return;
-                }
-
-                Logger.LogInfo($"Getting capabilities for monitor {monitor.Id}");
-                var capsString = await controller.GetCapabilitiesStringAsync(monitor, cancellationToken);
-
-                if (!string.IsNullOrEmpty(capsString))
-                {
-                    monitor.CapabilitiesRaw = capsString;
-                    var parseResult = Common.Utils.MccsCapabilitiesParser.Parse(capsString);
-                    monitor.VcpCapabilitiesInfo = parseResult.Capabilities;
-
-                    if (parseResult.HasErrors)
-                    {
-                        foreach (var error in parseResult.Errors)
-                        {
-                            Logger.LogDebug($"Capabilities parse warning at {error.Position}: {error.Message}");
-                        }
-                    }
-
-                    Logger.LogInfo($"Successfully parsed capabilities for {monitor.Id}: {monitor.VcpCapabilitiesInfo.SupportedVcpCodes.Count} VCP codes");
-
-                    if (monitor.VcpCapabilitiesInfo.SupportedVcpCodes.Count > 0)
-                    {
-                        UpdateMonitorCapabilitiesFromVcp(monitor);
-                    }
-                }
-                else
-                {
-                    Logger.LogWarning($"Got empty capabilities string for monitor {monitor.Id}");
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.LogWarning($"Failed to get capabilities for monitor {monitor.Id}: {ex.Message}");
-            }
-        }
-
-        /// <summary>
-        /// Initialize monitor input source value.
-        /// </summary>
-        private async Task InitializeMonitorInputSourceAsync(
-            Monitor monitor,
-            IMonitorController controller,
-            CancellationToken cancellationToken)
-        {
-            try
-            {
-                var inputSourceInfo = await controller.GetInputSourceAsync(monitor, cancellationToken);
-                if (inputSourceInfo.IsValid)
-                {
-                    monitor.CurrentInputSource = inputSourceInfo.Current;
-                    Logger.LogInfo($"[{monitor.Id}] Input source initialized: {monitor.InputSourceName} (0x{monitor.CurrentInputSource:X2})");
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.LogWarning($"Failed to get input source for monitor {monitor.Id}: {ex.Message}");
-            }
-        }
-
-        /// <summary>
-        /// Update the monitor collection and trigger change events.
-        /// </summary>
-        private void UpdateMonitorCollection(List<Monitor> oldMonitors, List<Monitor> newMonitors)
-        {
-            // Update monitor list and lookup dictionary
-            _monitors.Clear();
-            _monitorLookup.Clear();
-
-            // Sort by monitor number
-            newMonitors.Sort((a, b) => a.MonitorNumber.CompareTo(b.MonitorNumber));
-
-            _monitors.AddRange(newMonitors);
-
-            foreach (var monitor in newMonitors)
-            {
-                _monitorLookup[monitor.Id] = monitor;
-            }
-
-            // Trigger change events
         }
 
         /// <summary>
@@ -646,48 +466,6 @@ namespace PowerDisplay.Helpers
                 Logger.LogError($"[MonitorManager] Operation failed for {monitorId}: {ex.Message}");
                 return MonitorOperationResult.Failure($"Exception: {ex.Message}");
             }
-        }
-
-        /// <summary>
-        /// Update monitor capability flags based on parsed VCP capabilities
-        /// </summary>
-        private void UpdateMonitorCapabilitiesFromVcp(Monitor monitor)
-        {
-            var vcpCaps = monitor.VcpCapabilitiesInfo;
-            if (vcpCaps == null)
-            {
-                return;
-            }
-
-            // Check for Contrast support (VCP 0x12)
-            if (vcpCaps.SupportsVcpCode(NativeConstants.VcpCodeContrast))
-            {
-                monitor.Capabilities |= MonitorCapabilities.Contrast;
-                Logger.LogDebug($"[{monitor.Id}] Contrast support detected via VCP 0x12");
-            }
-
-            // Check for Volume support (VCP 0x62)
-            if (vcpCaps.SupportsVcpCode(NativeConstants.VcpCodeVolume))
-            {
-                monitor.Capabilities |= MonitorCapabilities.Volume;
-                Logger.LogDebug($"[{monitor.Id}] Volume support detected via VCP 0x62");
-            }
-
-            // Check for Color Temperature support (VCP 0x14)
-            if (vcpCaps.SupportsVcpCode(NativeConstants.VcpCodeSelectColorPreset))
-            {
-                monitor.SupportsColorTemperature = true;
-                Logger.LogDebug($"[{monitor.Id}] Color temperature support detected via VCP 0x14");
-            }
-
-            // Check for Input Source support (VCP 0x60)
-            if (vcpCaps.SupportsVcpCode(NativeConstants.VcpCodeInputSource))
-            {
-                var supportedSources = vcpCaps.GetSupportedValues(0x60);
-                Logger.LogDebug($"[{monitor.Id}] Input source support detected via VCP 0x60: {supportedSources?.Count ?? 0} sources");
-            }
-
-            Logger.LogInfo($"[{monitor.Id}] Capabilities updated: Contrast={monitor.SupportsContrast}, Volume={monitor.SupportsVolume}, ColorTemp={monitor.SupportsColorTemperature}, InputSource={monitor.SupportsInputSource}");
         }
 
         public void Dispose()

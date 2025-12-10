@@ -560,7 +560,7 @@ namespace PowerDisplay.Common.Drivers.DDC
                     continue;
                 }
 
-                // Attach cached capabilities data to avoid re-fetching
+                // Set capabilities data
                 if (!string.IsNullOrEmpty(capResult.CapabilitiesString))
                 {
                     monitor.CapabilitiesRaw = capResult.CapabilitiesString;
@@ -569,6 +569,13 @@ namespace PowerDisplay.Common.Drivers.DDC
                 if (capResult.VcpCapabilitiesInfo != null)
                 {
                     monitor.VcpCapabilitiesInfo = capResult.VcpCapabilitiesInfo;
+                    UpdateMonitorCapabilitiesFromVcp(monitor, capResult.VcpCapabilitiesInfo);
+
+                    // Initialize input source if supported
+                    if (monitor.SupportsInputSource)
+                    {
+                        InitializeInputSource(monitor, candidate.Handle);
+                    }
                 }
 
                 monitors.Add(monitor);
@@ -579,6 +586,44 @@ namespace PowerDisplay.Common.Drivers.DDC
 
             _handleManager.UpdateHandleMap(newHandleMap);
             return monitors;
+        }
+
+        /// <summary>
+        /// Initialize input source value for a monitor using VCP 0x60.
+        /// </summary>
+        private static void InitializeInputSource(Monitor monitor, IntPtr handle)
+        {
+            if (DdcCiNative.TryGetVCPFeature(handle, VcpCodeInputSource, out uint current, out uint _))
+            {
+                monitor.CurrentInputSource = (int)current;
+                Logger.LogDebug($"[{monitor.Id}] Input source: {VcpValueNames.GetFormattedName(VcpCodeInputSource, (int)current)}");
+            }
+        }
+
+        /// <summary>
+        /// Update monitor capability flags based on parsed VCP capabilities.
+        /// </summary>
+        private static void UpdateMonitorCapabilitiesFromVcp(Monitor monitor, VcpCapabilities vcpCaps)
+        {
+            // Check for Contrast support (VCP 0x12)
+            if (vcpCaps.SupportsVcpCode(VcpCodeContrast))
+            {
+                monitor.Capabilities |= MonitorCapabilities.Contrast;
+            }
+
+            // Check for Volume support (VCP 0x62)
+            if (vcpCaps.SupportsVcpCode(VcpCodeVolume))
+            {
+                monitor.Capabilities |= MonitorCapabilities.Volume;
+            }
+
+            // Check for Color Temperature support (VCP 0x14)
+            if (vcpCaps.SupportsVcpCode(VcpCodeSelectColorPreset))
+            {
+                monitor.SupportsColorTemperature = true;
+            }
+
+            Logger.LogDebug($"[{monitor.Id}] Capabilities: Contrast={monitor.SupportsContrast}, Volume={monitor.SupportsVolume}, ColorTemp={monitor.SupportsColorTemperature}, InputSource={monitor.SupportsInputSource}");
         }
 
         /// <summary>
