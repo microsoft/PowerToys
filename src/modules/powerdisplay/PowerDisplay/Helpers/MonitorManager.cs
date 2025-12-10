@@ -345,56 +345,6 @@ namespace PowerDisplay.Helpers
         }
 
         /// <summary>
-        /// Initialize input source for a monitor (async operation)
-        /// </summary>
-        public async Task InitializeInputSourceAsync(string monitorId, CancellationToken cancellationToken = default)
-        {
-            try
-            {
-                var sourceInfo = await GetInputSourceAsync(monitorId, cancellationToken);
-                if (sourceInfo.IsValid)
-                {
-                    var monitor = GetMonitor(monitorId);
-                    if (monitor != null)
-                    {
-                        // Store raw VCP 0x60 value (e.g., 0x11 for HDMI-1)
-                        monitor.CurrentInputSource = sourceInfo.Current;
-                        Logger.LogInfo($"[{monitorId}] Input source initialized: {monitor.InputSourceName}");
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.LogWarning($"Failed to initialize input source for {monitorId}: {ex.Message}");
-            }
-        }
-
-        /// <summary>
-        /// Initialize color temperature for a monitor (async operation)
-        /// </summary>
-        public async Task InitializeColorTemperatureAsync(string monitorId, CancellationToken cancellationToken = default)
-        {
-            try
-            {
-                var tempInfo = await GetColorTemperatureAsync(monitorId, cancellationToken);
-                if (tempInfo.IsValid)
-                {
-                    var monitor = GetMonitor(monitorId);
-                    if (monitor != null)
-                    {
-                        // Store raw VCP 0x14 preset value (e.g., 0x05 for 6500K)
-                        // No Kelvin conversion - we use discrete presets
-                        monitor.CurrentColorTemperature = tempInfo.Current;
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.LogWarning($"Failed to initialize color temperature for {monitorId}: {ex.Message}");
-            }
-        }
-
-        /// <summary>
         /// Get monitor by ID. Uses dictionary lookup for O(1) performance.
         /// </summary>
         public Monitor? GetMonitor(string monitorId)

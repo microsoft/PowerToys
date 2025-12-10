@@ -576,6 +576,12 @@ namespace PowerDisplay.Common.Drivers.DDC
                     {
                         InitializeInputSource(monitor, candidate.Handle);
                     }
+
+                    // Initialize color temperature if supported
+                    if (monitor.SupportsColorTemperature)
+                    {
+                        InitializeColorTemperature(monitor, candidate.Handle);
+                    }
                 }
 
                 monitors.Add(monitor);
@@ -597,6 +603,18 @@ namespace PowerDisplay.Common.Drivers.DDC
             {
                 monitor.CurrentInputSource = (int)current;
                 Logger.LogDebug($"[{monitor.Id}] Input source: {VcpValueNames.GetFormattedName(VcpCodeInputSource, (int)current)}");
+            }
+        }
+
+        /// <summary>
+        /// Initialize color temperature value for a monitor using VCP 0x14.
+        /// </summary>
+        private static void InitializeColorTemperature(Monitor monitor, IntPtr handle)
+        {
+            if (DdcCiNative.TryGetVCPFeature(handle, VcpCodeSelectColorPreset, out uint current, out uint _))
+            {
+                monitor.CurrentColorTemperature = (int)current;
+                Logger.LogDebug($"[{monitor.Id}] Color temperature: {VcpValueNames.GetFormattedName(VcpCodeSelectColorPreset, (int)current)}");
             }
         }
 
