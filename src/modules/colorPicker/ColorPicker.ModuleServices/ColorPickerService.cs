@@ -52,7 +52,7 @@ public sealed class ColorPickerService : ModuleServiceBase, IColorPickerService
             using var stream = File.OpenRead(historyPath);
             var colors = JsonSerializer.Deserialize(stream, ColorPickerServiceJsonContext.Default.ListString) ?? new List<string>();
 
-            var settingsUtils = new SettingsUtils();
+            var settingsUtils = SettingsUtils.Default;
             var settings = settingsUtils.GetSettingsOrDefault<ColorPickerSettings>(ColorPickerSettings.ModuleName);
 
             var results = new List<SavedColor>(colors.Count);

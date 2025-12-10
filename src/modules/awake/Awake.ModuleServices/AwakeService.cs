@@ -72,7 +72,7 @@ public sealed class AwakeService : ModuleServiceBase, IAwakeService
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            var settingsUtils = new SettingsUtils();
+            var settingsUtils = SettingsUtils.Default;
             var settings = settingsUtils.GetSettingsOrDefault<AwakeSettings>(AwakeSettings.ModuleName);
 
             mutateSettings(settings);
