@@ -11,18 +11,14 @@ using Microsoft.UI.Xaml;
 
 namespace KeystrokeOverlayUI
 {
-    /// <summary>
-    /// Application entry point for the Keystroke Overlay UI.
-    /// </summary>
+    // Application entry point for the Keystroke Overlay UI.
     public sealed partial class App : Application, IDisposable
     {
         private readonly ProcessJob _job = new();
         private Window _window;
         private bool _disposed;
 
-        /// <summary>
-        /// Gets the running native keystroke server process.
-        /// </summary>
+        // Gets the running native keystroke server process.
         public Process KeystrokeServerProcess { get; private set; }
 
         public App()
@@ -41,7 +37,6 @@ namespace KeystrokeOverlayUI
             UnhandledException += App_UnhandledException;
         }
 
-        /// <inheritdoc/>
         protected override void OnLaunched(LaunchActivatedEventArgs args)
         {
             StartKeystrokeServer();
@@ -87,13 +82,12 @@ namespace KeystrokeOverlayUI
             }
         }
 
-        // FIXED: Explicit namespace to resolve ambiguity
+        // Explicit namespace to resolve ambiguity
         private void App_UnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
         {
             Logger.LogError("Unhandled UI exception.", e.Exception);
         }
 
-        /// <inheritdoc/>
         public void Dispose()
         {
             if (!_disposed)

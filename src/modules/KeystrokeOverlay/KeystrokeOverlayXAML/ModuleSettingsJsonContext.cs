@@ -7,9 +7,7 @@ using KeystrokeOverlayUI.Models;
 
 namespace KeystrokeOverlayUI;
 
-/// <summary>
 /// Trimming-safe JSON metadata for loading module settings.
-/// </summary>
 [JsonSourceGenerationOptions(PropertyNameCaseInsensitive = true)]
 [JsonSerializable(typeof(ModuleSettingsRoot))]
 internal sealed partial class ModuleSettingsJsonContext : JsonSerializerContext
