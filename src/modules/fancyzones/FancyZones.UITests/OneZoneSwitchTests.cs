@@ -274,7 +274,7 @@ namespace UITests_FancyZones
 
             this.Find<ToggleSwitch>("FancyZonesWindowSwitchingToggle").Toggle(switchWindowEnable);
 
-            // Go back and forth to make sure settigns applied
+            // Go back and forth to make sure settings applied
             this.Find<NavigationViewItem>("Workspaces").Click();
             Task.Delay(200).Wait();
             this.Find<NavigationViewItem>("FancyZones").Click();
