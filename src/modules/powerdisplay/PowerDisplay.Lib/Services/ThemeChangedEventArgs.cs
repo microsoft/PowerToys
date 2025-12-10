@@ -12,7 +12,7 @@ namespace PowerDisplay.Common.Services
     public class ThemeChangedEventArgs : EventArgs
     {
         /// <summary>
-        /// Gets a value indicating whether whether the system is currently in light mode
+        /// Gets a value indicating whether the system is currently in light mode
         /// </summary>
         public bool IsLightMode { get; }
 

@@ -475,7 +475,7 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
     public string ColorTemperaturePresetName => _monitor.ColorTemperaturePresetName;
 
     /// <summary>
-    /// Gets a value indicating whether whether this monitor supports input source switching via VCP 0x60
+    /// Gets a value indicating whether this monitor supports input source switching via VCP 0x60
     /// </summary>
     public bool SupportsInputSource => _monitor.SupportsInputSource;
 
