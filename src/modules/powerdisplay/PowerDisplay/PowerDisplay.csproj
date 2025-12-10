@@ -7,7 +7,7 @@
     <OutputType>WinExe</OutputType>
     <RootNamespace>PowerDisplay</RootNamespace>
     <ApplicationManifest>app.manifest</ApplicationManifest>
-    <ApplicationIcon>Assets\PowerDisplay\PowerDisplay.ico</ApplicationIcon>
+    <ApplicationIcon>Assets\PowerDisplay.ico</ApplicationIcon>
     <Platforms>x64;ARM64</Platforms>
     <UseWinUI>true</UseWinUI>
     <EnableMsixTooling>true</EnableMsixTooling>

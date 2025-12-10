@@ -150,39 +150,6 @@ namespace PowerDisplay.Common.Drivers
                 return new string((char*)ptr);
             }
         }
-
-        /// <summary>
-        /// Helper method to get device string as string
-        /// </summary>
-        public readonly string GetDeviceString()
-        {
-            fixed (ushort* ptr = DeviceString)
-            {
-                return new string((char*)ptr);
-            }
-        }
-
-        /// <summary>
-        /// Helper method to get device ID as string
-        /// </summary>
-        public readonly string GetDeviceID()
-        {
-            fixed (ushort* ptr = DeviceID)
-            {
-                return new string((char*)ptr);
-            }
-        }
-
-        /// <summary>
-        /// Helper method to get device key as string
-        /// </summary>
-        public readonly string GetDeviceKey()
-        {
-            fixed (ushort* ptr = DeviceKey)
-            {
-                return new string((char*)ptr);
-            }
-        }
     }
 
     /// <summary>

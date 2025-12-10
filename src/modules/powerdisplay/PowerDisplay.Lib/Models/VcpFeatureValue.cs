@@ -13,27 +13,27 @@ namespace PowerDisplay.Common.Models
     public readonly struct VcpFeatureValue
     {
         /// <summary>
-        /// Current value
+        /// Gets current value
         /// </summary>
         public int Current { get; }
 
         /// <summary>
-        /// Minimum value
+        /// Gets minimum value
         /// </summary>
         public int Minimum { get; }
 
         /// <summary>
-        /// Maximum value
+        /// Gets maximum value
         /// </summary>
         public int Maximum { get; }
 
         /// <summary>
-        /// Whether the value information is valid
+        /// Gets a value indicating whether whether the value information is valid
         /// </summary>
         public bool IsValid { get; }
 
         /// <summary>
-        /// Timestamp when the value information was obtained
+        /// Gets timestamp when the value information was obtained
         /// </summary>
         public DateTime Timestamp { get; }
 
@@ -52,7 +52,7 @@ namespace PowerDisplay.Common.Models
         }
 
         /// <summary>
-        /// Creates invalid value information
+        /// Gets creates invalid value information
         /// </summary>
         public static VcpFeatureValue Invalid => new(-1, -1, -1);
 
@@ -67,20 +67,6 @@ namespace PowerDisplay.Common.Models
             }
 
             return (int)Math.Round((double)(Current - Minimum) * 100 / (Maximum - Minimum));
-        }
-
-        /// <summary>
-        /// Creates raw value from percentage
-        /// </summary>
-        public int FromPercentage(int percentage)
-        {
-            if (!IsValid)
-            {
-                return -1;
-            }
-
-            percentage = Math.Clamp(percentage, 0, 100);
-            return Minimum + (int)Math.Round((double)(Maximum - Minimum) * percentage / 100);
         }
 
         public override string ToString()

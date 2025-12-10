@@ -25,27 +25,6 @@ namespace PowerDisplay.Common.Drivers.DDC
         }
 
         /// <summary>
-        /// Get monitor device ID
-        /// </summary>
-        public unsafe string GetMonitorDeviceId(IntPtr hMonitor)
-        {
-            try
-            {
-                var monitorInfo = new MONITORINFOEX { CbSize = (uint)sizeof(MonitorInfoEx) };
-                if (GetMonitorInfo(hMonitor, ref monitorInfo))
-                {
-                    return monitorInfo.GetDeviceName() ?? string.Empty;
-                }
-            }
-            catch
-            {
-                // Silent failure
-            }
-
-            return string.Empty;
-        }
-
-        /// <summary>
         /// Get physical monitors for a logical monitor.
         /// Filters out any monitors with NULL handles (Windows API bug workaround).
         /// </summary>
