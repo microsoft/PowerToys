@@ -15,6 +15,9 @@ namespace ManagedCommon
         public const string ColorPickerShow = "Local\\ShowColorPickerEvent-8c46be2a-3e05-4186-b56b-4ae986ef2525";
         public const string ColorPickerTerminate = "Local\\TerminateColorPickerEvent-3d676258-c4d5-424e-a87a-4be22020e813";
         public const string SettingsTerminate = "Local\\PowerToysRunnerTerminateSettingsEvent-c34cb661-2e69-4613-a1f8-4e39c25d7ef6";
+        public const string CropAndLockReparent = "Local\\PowerToysCropAndLockReparentEvent-6060860a-76a1-44e8-8d0e-6355785e9c36";
+        public const string CropAndLockThumbnail = "Local\\PowerToysCropAndLockThumbnailEvent-1637be50-da72-46b2-9220-b32b206b2434";
+        public const string CropAndLockTerminate = "Local\\PowerToysCropAndLockExitEvent-d995d409-7b70-482b-bad6-e7c8666f375a";
 
         private IntPtr _eventHandle;
 

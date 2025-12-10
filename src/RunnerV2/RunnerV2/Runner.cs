@@ -42,6 +42,7 @@ namespace RunnerV2
             new CmdNotFoundModuleInterface(),
             new ColorPickerModuleInterface(),
             new CommandPaletteModuleInterface(),
+            new CropAndLockModuleInterface(),
         ];
 
         internal static bool Run(Action afterInitializationAction)
