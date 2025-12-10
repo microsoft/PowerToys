@@ -52,7 +52,6 @@
                             VerticalAlignment="Center"
                             Orientation="Horizontal"
                             Spacing="12">
-
                             <TextBlock x:Uid="MoreLabel" Style="{StaticResource CaptionTextBlockStyle}" />
                             <FontIcon
                                 Margin="0,2,0,0"

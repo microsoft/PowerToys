@@ -17,7 +17,7 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <Grid Padding="24,12,24,0">
+        <Grid Padding="24,32,24,0">
             <TextBlock
                 x:Uid="AllAppsTxt"
                 VerticalAlignment="Center"

@@ -23,6 +23,27 @@
             FalseValue="Visible"
             TrueValue="Collapsed" />
         <tkconverters:BoolNegationConverter x:Key="BoolNegationConverter" />
+
+        <Style x:Key="NewInfoBadgeStyle" TargetType="InfoBadge">
+            <Setter Property="Padding" Value="5,1,5,2" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="InfoBadge">
+                        <Border
+                            x:Name="RootGrid"
+                            Padding="{TemplateBinding Padding}"
+                            Background="{TemplateBinding Background}"
+                            CornerRadius="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.InfoBadgeCornerRadius}">
+                            <TextBlock
+                                x:Uid="NewInfoBadge"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                FontSize="10" />
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </UserControl.Resources>
 
     <controls:Card
@@ -77,8 +98,8 @@
                         BorderThickness="0,1,0,0"
                         Click="OnSettingsCardClick"
                         CornerRadius="0"
-                        Tag="{x:Bind}"
-                        IsClickEnabled="{Binding (tk:FrameworkElementExtensions.Ancestor).IsItemClickable, RelativeSource={RelativeSource Self}}">
+                        IsClickEnabled="{Binding (tk:FrameworkElementExtensions.Ancestor).IsItemClickable, RelativeSource={RelativeSource Self}}"
+                        Tag="{x:Bind}">
                         <tkcontrols:SettingsCard.Header>
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="{x:Bind Label, Mode=OneWay}" />
@@ -86,7 +107,7 @@
                                 <InfoBadge
                                     x:Name="NewInfoBadge"
                                     Margin="4,0,0,0"
-                                    Style="{StaticResource AttentionDotInfoBadgeStyle}"
+                                    Style="{StaticResource NewInfoBadgeStyle}"
                                     Visibility="{x:Bind IsNew, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
                                 <FontIcon
                                     Width="20"
@@ -95,7 +116,7 @@
                                     Glyph="&#xE72E;"
                                     Visibility="{x:Bind IsLocked, Converter={StaticResource ReverseBoolToVisibilityConverter}, ConverterParameter=True}">
                                     <ToolTipService.ToolTip>
-                                        <TextBlock Text="This setting is managed by your organization" TextWrapping="WrapWholeWords" />
+                                        <TextBlock x:Uid="GPOWarning" TextWrapping="WrapWholeWords" />
                                     </ToolTipService.ToolTip>
                                 </FontIcon>
                             </StackPanel>

@@ -17,10 +17,7 @@
     <ItemsControl ItemsSource="{x:Bind ItemsSource, Mode=OneWay}">
         <ItemsControl.ItemsPanel>
             <ItemsPanelTemplate>
-                <tkcontrols:WrapPanel
-                    Padding="12"
-                    HorizontalSpacing="16"
-                    VerticalSpacing="24" />
+                <tkcontrols:WrapPanel HorizontalAlignment="Stretch" VerticalSpacing="12" />
             </ItemsPanelTemplate>
         </ItemsControl.ItemsPanel>
         <ItemsControl.ItemTemplate>
@@ -38,7 +35,7 @@
                             TextWrapping="Wrap" />
                     </local:FlyoutMenuButton.Content>
                     <local:FlyoutMenuButton.Icon>
-                        <Image Width="24">
+                        <Image>
                             <Image.Source>
                                 <BitmapImage UriSource="{x:Bind Icon}" />
                             </Image.Source>
