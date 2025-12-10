@@ -4,8 +4,8 @@
 
 using System.Text;
 using CommunityToolkit.Mvvm.Messaging;
-using Microsoft.CommandPalette.UI.Helpers;
 using Microsoft.CommandPalette.UI.Models;
+using Microsoft.CommandPalette.UI.Models.Helpers;
 using Microsoft.CommandPalette.UI.Models.Messages;
 using Microsoft.CommandPalette.UI.ViewModels;
 using Microsoft.CommandPalette.ViewModels;

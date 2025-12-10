@@ -29,6 +29,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
     <ProjectReference Include="..\..\SDK\Microsoft.CommandPalette.Extensions.Toolkit\Microsoft.CommandPalette.Extensions.Toolkit.csproj" />
+    <ProjectReference Include="..\Microsoft.CommandPalette.UI.Models\Microsoft.CommandPalette.UI.Models.csproj" />
   </ItemGroup>
   
 </Project>

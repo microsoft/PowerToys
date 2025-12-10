@@ -11,6 +11,7 @@ using Microsoft.CommandPalette.UI.Models;
 using Microsoft.CommandPalette.UI.Models.Events;
 using Microsoft.CommandPalette.UI.Models.Messages;
 using Microsoft.CommandPalette.UI.Pages;
+using Microsoft.CommandPalette.UI.Services;
 using Microsoft.CommandPalette.UI.ViewModels.Helpers;
 using Microsoft.Extensions.Logging;
 using Microsoft.PowerToys.Telemetry;
@@ -35,7 +36,7 @@ using Windows.Win32.UI.Input.KeyboardAndMouse;
 using Windows.Win32.UI.WindowsAndMessaging;
 using WinRT;
 using WinUIEx;
-using RS_ = Microsoft.CommandPalette.UI.Helpers.ResourceLoaderInstance;
+using RS_ = Microsoft.CommandPalette.UI.Services.Helpers.ResourceLoaderInstance;
 
 namespace Microsoft.CommandPalette.UI;
 
@@ -47,7 +48,7 @@ public sealed partial class MainWindow : WindowEx,
 {
     private readonly ILogger logger;
     private readonly ShellPage _shellPage;
-    private readonly SettingsModel _settingsModel;
+    private readonly SettingsService _settingsService;
     private readonly TrayIconService _trayIconService;
     private const int DefaultWidth = 800;
     private const int DefaultHeight = 480;
@@ -72,13 +73,13 @@ public sealed partial class MainWindow : WindowEx,
 
     private WindowPosition _currentWindowPosition = new();
 
-    public MainWindow(ShellPage shellPage, SettingsModel settingsModel, TrayIconService trayIconService, ILogger logger)
+    public MainWindow(ShellPage shellPage, SettingsService settingsService, TrayIconService trayIconService, ILogger logger)
     {
         InitializeComponent();
 
         this.logger = logger;
         _shellPage = shellPage;
-        _settingsModel = settingsModel;
+        _settingsService = settingsService;
         _trayIconService = trayIconService;
 
         RootElement.Children.Add(_shellPage);
@@ -128,9 +129,10 @@ public sealed partial class MainWindow : WindowEx,
         var hotKeyPrcPointer = Marshal.GetFunctionPointerForDelegate(_hotkeyWndProc);
         _originalWndProc = Marshal.GetDelegateForFunctionPointer<WNDPROC>(PInvoke.SetWindowLongPtr(_hwnd, WINDOW_LONG_PTR_INDEX.GWL_WNDPROC, hotKeyPrcPointer));
 
-        // Load our settings, and then also wire up a settings changed handler
-        HotReloadSettings();
-        _settingsModel.SettingsChanged += SettingsChangedHandler;
+        // Wire up a settings changed handler
+        _settingsService.SettingsChanged += SettingsChangedHandler;
+
+        _trayIconService.SetupTrayIcon();
 
         // Make sure that we update the acrylic theme when the OS theme changes
         RootElement.ActualThemeChanged += (s, e) => DispatcherQueue.TryEnqueue(UpdateAcrylic);
@@ -150,7 +152,7 @@ public sealed partial class MainWindow : WindowEx,
 
     public void Receive(ShowWindowMessage message)
     {
-        ShowHwnd(message.Hwnd, _settingsModel.SummonOn);
+        ShowHwnd(message.Hwnd, _settingsService.CurrentSettings.SummonOn);
     }
 
     public void Receive(HideWindowMessage message)
@@ -217,7 +219,7 @@ public sealed partial class MainWindow : WindowEx,
 
     private void RestoreWindowPosition()
     {
-        if (_settingsModel.LastWindowPosition is not WindowPosition savedPosition)
+        if (_settingsService.CurrentSettings.LastWindowPosition is not WindowPosition savedPosition)
         {
             PositionCentered();
             return;
@@ -264,12 +266,11 @@ public sealed partial class MainWindow : WindowEx,
 
     private void HotReloadSettings()
     {
-        SetupHotkey(_settingsModel);
-        _trayIconService.SetupTrayIcon(_settingsModel.ShowSystemTrayIcon);
+        SetupHotkey(_settingsService.CurrentSettings);
 
-        _ignoreHotKeyWhenFullScreen = _settingsModel.IgnoreShortcutWhenFullscreen;
+        _ignoreHotKeyWhenFullScreen = _settingsService.CurrentSettings.IgnoreShortcutWhenFullscreen;
 
-        _autoGoHomeInterval = _settingsModel.AutoGoHomeInterval;
+        _autoGoHomeInterval = _settingsService.CurrentSettings.AutoGoHomeInterval;
         _autoGoHomeTimer.Interval = _autoGoHomeInterval;
     }
 
@@ -614,9 +615,10 @@ public sealed partial class MainWindow : WindowEx,
     {
         UpdateWindowPositionInMemory();
 
-        if (_settingsModel is not null)
+        if (_settingsService is not null)
         {
-            _settingsModel.LastWindowPosition = new WindowPosition
+            var settings = _settingsService.CurrentSettings;
+            settings.LastWindowPosition = new WindowPosition
             {
                 X = _currentWindowPosition.X,
                 Y = _currentWindowPosition.Y,
@@ -627,12 +629,12 @@ public sealed partial class MainWindow : WindowEx,
                 ScreenHeight = _currentWindowPosition.ScreenHeight,
             };
 
-            SettingsModel.SaveSettings(_settingsModel, logger);
+            _settingsService.SaveSettings(settings);
         }
 
         // var extensionService = serviceProvider.GetService<IExtensionService>()!;
         // extensionService.SignalStopExtensionsAsync();
-        _trayIconService.Destroy();
+        // _trayIconService.Destroy();
 
         // WinUI bug is causing a crash on shutdown when FailFastOnErrors is set to true (#51773592).
         // Workaround by turning it off before shutdown.
@@ -770,7 +772,7 @@ public sealed partial class MainWindow : WindowEx,
                         }
                         else if (uri.StartsWith("x-cmdpal://reload", StringComparison.OrdinalIgnoreCase))
                         {
-                            if (_settingsModel.AllowExternalReload == true)
+                            if (_settingsService.CurrentSettings.AllowExternalReload == true)
                             {
                                 Log_ExternalReloadTriggered();
                                 WeakReferenceMessenger.Default.Send<ReloadCommandsMessage>(new());

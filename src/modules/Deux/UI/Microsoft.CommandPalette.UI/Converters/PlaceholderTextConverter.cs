@@ -3,7 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using Microsoft.UI.Xaml.Data;
-using RS_ = Microsoft.CommandPalette.UI.Helpers.ResourceLoaderInstance;
+using RS_ = Microsoft.CommandPalette.UI.Services.Helpers.ResourceLoaderInstance;
 
 namespace Microsoft.CommandPalette.UI.Converters;
 

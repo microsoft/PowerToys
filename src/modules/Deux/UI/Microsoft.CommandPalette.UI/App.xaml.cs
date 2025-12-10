@@ -2,9 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CommandPalette.UI.Helpers;
-using Microsoft.CommandPalette.UI.Models;
 using Microsoft.CommandPalette.UI.Pages;
 using Microsoft.CommandPalette.UI.Services;
 using Microsoft.CommandPalette.ViewModels;
@@ -22,6 +20,7 @@ public partial class App : Application
 {
     private readonly ILogger logger;
     private readonly GlobalErrorHandler _globalErrorHandler;
+    private readonly IServiceProvider _services;
 
     /// <summary>
     /// Gets the current <see cref="App"/> instance in use.
@@ -32,10 +31,6 @@ public partial class App : Application
 
     public ETWTrace EtwTrace { get; private set; } = new ETWTrace();
 
-    /// <summary>
-    /// Gets the <see cref="IServiceProvider"/> instance to resolve application services.
-    /// </summary>
-    public IServiceProvider Services { get; }
 
     public App(ILogger logger)
     {
@@ -46,7 +41,7 @@ public partial class App : Application
         _globalErrorHandler.Register(this);
 #endif
 
-        Services = ConfigureServices();
+        _services = ConfigureServices();
 
         this.InitializeComponent();
 
@@ -70,12 +65,10 @@ public partial class App : Application
         services.AddSingleton(logger);
         services.AddSingleton(TaskScheduler.FromCurrentSynchronizationContext());
 
-        // Register settings & app state
-        var settingsModel = SettingsModel.LoadSettings(logger);
-        services.AddSingleton(settingsModel);
-
-        var appStateModel = AppStateModel.LoadState(logger);
-        services.AddSingleton(appStateModel);
+        // Register settings & app state services first
+        // because other services depend on them
+        services.AddSingleton<SettingsService>();
+        services.AddSingleton<AppStateService>();
 
         // Register services
         services.AddSingleton<TrayIconService>();
@@ -99,7 +92,7 @@ public partial class App : Application
     {
         var activatedEventArgs = Microsoft.Windows.AppLifecycle.AppInstance.GetCurrent().GetActivatedEventArgs();
 
-        var mainWindow = Services.GetRequiredService<MainWindow>();
+        var mainWindow = _services.GetRequiredService<MainWindow>();
         AppWindow = mainWindow;
 
         ((MainWindow)AppWindow).HandleLaunchNonUI(activatedEventArgs);

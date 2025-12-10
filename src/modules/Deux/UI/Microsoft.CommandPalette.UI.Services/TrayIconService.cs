@@ -8,19 +8,23 @@ using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CommandPalette.UI.Models;
 using Microsoft.CommandPalette.UI.Models.Messages;
 using Microsoft.UI.Xaml;
+using Windows.Win32;
+using Windows.Win32.Foundation;
+using Windows.Win32.UI.Shell;
+using Windows.Win32.UI.WindowsAndMessaging;
 using WinRT.Interop;
-using RS_ = Microsoft.CommandPalette.UI.Models.Helpers.ResourceLoaderInstance;
+using RS_ = Microsoft.CommandPalette.UI.Services.Helpers.ResourceLoaderInstance;
 
 namespace Microsoft.CommandPalette.UI.Services;
 
 [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1310:Field names should not contain underscore", Justification = "Stylistically, window messages are WM_*")]
 [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1306:Field names should begin with lower-case letter", Justification = "Stylistically, window messages are WM_*")]
-public sealed partial class TrayIconService
+public sealed partial class TrayIconService : IDisposable
 {
     private const uint MY_NOTIFY_ID = 1000;
     private const uint WM_TRAY_ICON = PInvoke.WM_USER + 1;
 
-    private readonly SettingsModel _settingsModel;
+    private readonly SettingsService _settingsService;
     private readonly uint WM_TASKBAR_RESTART;
 
     private Window? _window;
@@ -31,9 +35,10 @@ public sealed partial class TrayIconService
     private DestroyIconSafeHandle? _largeIcon;
     private DestroyMenuSafeHandle? _popupMenu;
 
-    public TrayIconService(SettingsModel settingsModel)
+    public TrayIconService(SettingsService settingsService)
     {
-        _settingsModel = settingsModel;
+        _settingsService = settingsService;
+        _settingsService.SettingsChanged += OnSettingsChanged;
 
         // TaskbarCreated is the message that's broadcast when explorer.exe
         // restarts. We need to know when that happens to be able to bring our
@@ -41,9 +46,14 @@ public sealed partial class TrayIconService
         WM_TASKBAR_RESTART = PInvoke.RegisterWindowMessage("TaskbarCreated");
     }
 
-    public void SetupTrayIcon(bool? showSystemTrayIcon = null)
+    private void OnSettingsChanged(SettingsModel sender, object? args)
     {
-        if (showSystemTrayIcon ?? _settingsModel.ShowSystemTrayIcon)
+        SetupTrayIcon();
+    }
+
+    public void SetupTrayIcon()
+    {
+        if (_settingsService.CurrentSettings.ShowSystemTrayIcon)
         {
             if (_window is null)
             {
@@ -204,5 +214,15 @@ public sealed partial class TrayIconService
         }
 
         return PInvoke.CallWindowProc(_originalWndProc, hwnd, uMsg, wParam, lParam);
+    }
+
+    public void Dispose()
+    {
+        if (_settingsService is not null)
+        {
+            _settingsService.SettingsChanged -= OnSettingsChanged;
+        }
+
+        Destroy();
     }
 }

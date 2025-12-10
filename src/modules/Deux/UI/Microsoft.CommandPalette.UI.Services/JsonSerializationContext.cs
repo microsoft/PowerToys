@@ -3,9 +3,9 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Text.Json.Serialization;
-using Microsoft.CmdPal.UI.ViewModels;
+using Microsoft.CommandPalette.UI.Models;
 
-namespace Microsoft.CommandPalette.UI.Models;
+namespace Microsoft.CommandPalette.UI.Services;
 
 [JsonSerializable(typeof(float))]
 [JsonSerializable(typeof(int))]

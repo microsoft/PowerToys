@@ -4,11 +4,11 @@
 
 using System.ComponentModel;
 using Microsoft.CommandPalette.UI.Models;
-using Microsoft.Extensions.Logging;
+using Microsoft.CommandPalette.UI.Services;
 
 namespace Microsoft.CommandPalette.UI.ViewModels.Settings;
 
-public partial class SettingsViewModel : INotifyPropertyChanged
+public partial class SettingsViewModel : INotifyPropertyChanged, IDisposable
 {
     private static readonly List<TimeSpan> AutoGoHomeIntervals =
     [
@@ -23,18 +23,17 @@ public partial class SettingsViewModel : INotifyPropertyChanged
         TimeSpan.FromSeconds(180),
     ];
 
-    private readonly ILogger logger;
-    private readonly SettingsModel _settings;
-    private readonly IServiceProvider _serviceProvider;
+    private readonly SettingsService _settingsService;
+    private SettingsModel _settingsModel;
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
     public HotkeySettings? Hotkey
     {
-        get => _settings.Hotkey;
+        get => _settingsModel.Hotkey;
         set
         {
-            _settings.Hotkey = value ?? SettingsModel.DefaultActivationShortcut;
+            _settingsModel.Hotkey = value ?? SettingsModel.DefaultActivationShortcut;
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Hotkey)));
             Save();
         }
@@ -42,10 +41,10 @@ public partial class SettingsViewModel : INotifyPropertyChanged
 
     public bool UseLowLevelGlobalHotkey
     {
-        get => _settings.UseLowLevelGlobalHotkey;
+        get => _settingsModel.UseLowLevelGlobalHotkey;
         set
         {
-            _settings.UseLowLevelGlobalHotkey = value;
+            _settingsModel.UseLowLevelGlobalHotkey = value;
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Hotkey)));
             Save();
         }
@@ -53,90 +52,90 @@ public partial class SettingsViewModel : INotifyPropertyChanged
 
     public bool AllowExternalReload
     {
-        get => _settings.AllowExternalReload;
+        get => _settingsModel.AllowExternalReload;
         set
         {
-            _settings.AllowExternalReload = value;
+            _settingsModel.AllowExternalReload = value;
             Save();
         }
     }
 
     public bool ShowAppDetails
     {
-        get => _settings.ShowAppDetails;
+        get => _settingsModel.ShowAppDetails;
         set
         {
-            _settings.ShowAppDetails = value;
+            _settingsModel.ShowAppDetails = value;
             Save();
         }
     }
 
     public bool BackspaceGoesBack
     {
-        get => _settings.BackspaceGoesBack;
+        get => _settingsModel.BackspaceGoesBack;
         set
         {
-            _settings.BackspaceGoesBack = value;
+            _settingsModel.BackspaceGoesBack = value;
             Save();
         }
     }
 
     public bool SingleClickActivates
     {
-        get => _settings.SingleClickActivates;
+        get => _settingsModel.SingleClickActivates;
         set
         {
-            _settings.SingleClickActivates = value;
+            _settingsModel.SingleClickActivates = value;
             Save();
         }
     }
 
     public bool HighlightSearchOnActivate
     {
-        get => _settings.HighlightSearchOnActivate;
+        get => _settingsModel.HighlightSearchOnActivate;
         set
         {
-            _settings.HighlightSearchOnActivate = value;
+            _settingsModel.HighlightSearchOnActivate = value;
             Save();
         }
     }
 
     public int MonitorPositionIndex
     {
-        get => (int)_settings.SummonOn;
+        get => (int)_settingsModel.SummonOn;
         set
         {
-            _settings.SummonOn = (MonitorBehavior)value;
+            _settingsModel.SummonOn = (MonitorBehavior)value;
             Save();
         }
     }
 
     public bool ShowSystemTrayIcon
     {
-        get => _settings.ShowSystemTrayIcon;
+        get => _settingsModel.ShowSystemTrayIcon;
         set
         {
-            _settings.ShowSystemTrayIcon = value;
+            _settingsModel.ShowSystemTrayIcon = value;
             Save();
         }
     }
 
     public bool IgnoreShortcutWhenFullscreen
     {
-        get => _settings.IgnoreShortcutWhenFullscreen;
+        get => _settingsModel.IgnoreShortcutWhenFullscreen;
         set
         {
-            _settings.IgnoreShortcutWhenFullscreen = value;
+            _settingsModel.IgnoreShortcutWhenFullscreen = value;
             Save();
         }
     }
 
     public bool DisableAnimations
     {
-        get => _settings.DisableAnimations;
+        get => _settingsModel.DisableAnimations;
         set
         {
-            _settings.DisableAnimations = value;
+            _settingsModel.DisableAnimations = value;
             Save();
         }
     }
@@ -145,7 +144,7 @@ public partial class SettingsViewModel : INotifyPropertyChanged
     {
         get
         {
-            var index = AutoGoHomeIntervals.IndexOf(_settings.AutoGoHomeInterval);
+            var index = AutoGoHomeIntervals.IndexOf(_settingsModel.AutoGoHomeInterval);
             return index >= 0 ? index : 0;
         }
 
@@ -153,7 +152,7 @@ public partial class SettingsViewModel : INotifyPropertyChanged
         {
             if (value >= 0 && value < AutoGoHomeIntervals.Count)
             {
-                _settings.AutoGoHomeInterval = AutoGoHomeIntervals[value];
+                _settingsModel.AutoGoHomeInterval = AutoGoHomeIntervals[value];
             }
 
             Save();
@@ -162,11 +161,12 @@ public partial class SettingsViewModel : INotifyPropertyChanged
 
     // public ObservableCollection<ProviderSettingsViewModel> CommandProviders { get; } = [];
     // public SettingsExtensionsViewModel Extensions { get; }
-    public SettingsViewModel(SettingsModel settings, IServiceProvider serviceProvider, TaskScheduler scheduler, ILogger logger)
+    public SettingsViewModel(SettingsService settingsService)
     {
-        _settings = settings;
-        _serviceProvider = serviceProvider;
-        this.logger = logger;
+        _settingsService = settingsService;
+        _settingsModel = _settingsService.CurrentSettings;
+
+        _settingsService.SettingsChanged += OnSettingsChanged;
 
         // var activeProviders = GetCommandProviders();
         // var allProviderSettings = _settings.ProviderSettings;
@@ -179,11 +179,27 @@ public partial class SettingsViewModel : INotifyPropertyChanged
         // Extensions = new SettingsExtensionsViewModel(CommandProviders, scheduler);
     }
 
+    private void OnSettingsChanged(SettingsModel sender, object? args)
+    {
+        _settingsModel = sender;
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(null));
+    }
+
     // private IEnumerable<CommandProviderWrapper> GetCommandProviders()
     // {
     //    var manager = _serviceProvider.GetService<TopLevelCommandManager>()!;
     //    var allProviders = manager.CommandProviders;
     //    return allProviders;
     // }
-    private void Save() => SettingsModel.SaveSettings(_settings, logger);
+    private void Save() => _settingsService.SaveSettings(_settingsModel);
+
+    public void Dispose()
+    {
+        if (_settingsService is not null)
+        {
+            _settingsService.SettingsChanged -= OnSettingsChanged;
+        }
+
+        GC.SuppressFinalize(this);
+    }
 }

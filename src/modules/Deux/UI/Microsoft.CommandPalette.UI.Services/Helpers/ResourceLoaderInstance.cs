@@ -4,7 +4,7 @@
 
 using Microsoft.Windows.ApplicationModel.Resources;
 
-namespace Microsoft.CommandPalette.UI.Models.Helpers;
+namespace Microsoft.CommandPalette.UI.Services.Helpers;
 
 public static class ResourceLoaderInstance
 {

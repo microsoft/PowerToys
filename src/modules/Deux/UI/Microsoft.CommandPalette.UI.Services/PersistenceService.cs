@@ -9,7 +9,7 @@ using System.Text.Json.Serialization.Metadata;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.CommandPalette.UI.Models;
+namespace Microsoft.CommandPalette.UI.Services;
 
 public partial class PersistenceService
 {

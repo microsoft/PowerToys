@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using Microsoft.CommandPalette.UI.Services;
+using Microsoft.CommandPalette.UI.Services.Helpers;
 using Microsoft.Extensions.Logging;
 using Windows.Win32;
 using Windows.Win32.Foundation;

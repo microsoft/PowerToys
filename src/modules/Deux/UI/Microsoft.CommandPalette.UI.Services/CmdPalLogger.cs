@@ -9,7 +9,7 @@ namespace Microsoft.CommandPalette.UI.Services;
 
 // Adapter implementing Microsoft.Extensions.Logging.ILogger,
 // delegating to ManagedCommon.Logger.
-internal sealed partial class CmdPalLogger : ILogger
+public sealed partial class CmdPalLogger : ILogger
 {
     private static readonly AsyncLocal<Stack<object>> _scopeStack = new();
     private readonly LogLevel _minLevel;
