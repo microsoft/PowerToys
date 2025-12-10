@@ -15,6 +15,7 @@
     <CppWinRTRootNamespaceAutoMerge>true</CppWinRTRootNamespaceAutoMerge>
     <CppWinRTGenerateWindowsMetadata>true</CppWinRTGenerateWindowsMetadata>
     <MinimalCoreWin>true</MinimalCoreWin>
+    <WindowsAppSDKVerifyTransitiveDependencies>false</WindowsAppSDKVerifyTransitiveDependencies>
     <ProjectGuid>{305dd37e-c85d-4b08-aafe-7381fa890463}</ProjectGuid>
     <ProjectName>Microsoft.CommandPalette.Extensions</ProjectName>
     <RootNamespace>Microsoft.CommandPalette.Extensions</RootNamespace>
