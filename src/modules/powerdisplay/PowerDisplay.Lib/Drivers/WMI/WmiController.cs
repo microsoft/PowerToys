@@ -405,20 +405,22 @@ namespace PowerDisplay.Common.Drivers.WMI
         }
 
         /// <summary>
-        /// Get user-friendly name from WMI object
+        /// Get user-friendly name from WMI object.
+        /// WmiMonitorID returns UserFriendlyName as a fixed-size uint16 array buffer,
+        /// with UserFriendlyNameLength indicating the actual character count.
         /// </summary>
         private static string? GetUserFriendlyName(WmiObject monitorObject)
         {
             try
             {
-                // WmiLight returns arrays as object arrays
-                var userFriendlyNameObj = monitorObject.GetPropertyValue<object>("UserFriendlyName");
+                var userFriendlyName = monitorObject.GetPropertyValue<ushort[]>("UserFriendlyName");
+                var nameLength = monitorObject.GetPropertyValue<ushort>("UserFriendlyNameLength");
 
-                if (userFriendlyNameObj is ushort[] userFriendlyName && userFriendlyName.Length > 0)
+                if (userFriendlyName != null && nameLength > 0 && nameLength <= userFriendlyName.Length)
                 {
-                    // Convert UINT16 array to string
+                    // Use UserFriendlyNameLength to extract only valid characters
                     var chars = userFriendlyName
-                        .Where(c => c != 0)
+                        .Take(nameLength)
                         .Select(c => (char)c)
                         .ToArray();
 
@@ -430,7 +432,6 @@ namespace PowerDisplay.Common.Drivers.WMI
             }
             catch (Exception ex)
             {
-                // Ignore conversion errors
                 Logger.LogDebug($"Failed to parse UserFriendlyName: {ex.Message}");
             }
 
