@@ -79,8 +79,17 @@ namespace PowerToys.FileLocksmithUI.ViewModels
 
         public MainViewModel()
         {
-            paths = NativeMethods.ReadPathsFromFile();
-            Logger.LogInfo($"Starting FileLocksmith with {paths.Length} files selected.");
+            try
+            {
+                paths = NativeMethods.ReadPathsFromFile();
+                Logger.LogInfo($"Starting FileLocksmith with {paths.Length} files selected.");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Failed to read paths from the FileLocksmith temporary file during initialization. FileLocksmith will start with an empty file list.", ex);
+                paths = Array.Empty<string>();
+            }
+
             LoadProcessesCommand = new AsyncRelayCommand(LoadProcessesAsync);
         }
 
