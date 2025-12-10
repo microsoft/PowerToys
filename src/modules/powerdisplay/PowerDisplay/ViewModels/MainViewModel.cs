@@ -3,18 +3,23 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.Input;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
+using Microsoft.UI;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Windowing;
+using PowerDisplay.Common.Drivers;
+using PowerDisplay.Common.Drivers.DDC;
 using PowerDisplay.Common.Models;
 using PowerDisplay.Common.Services;
 using PowerDisplay.Helpers;
@@ -32,6 +37,10 @@ namespace PowerDisplay.ViewModels;
 [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicMethods)]
 public partial class MainViewModel : INotifyPropertyChanged, IDisposable
 {
+    [LibraryImport("user32.dll", EntryPoint = "GetMonitorInfoW", StringMarshalling = StringMarshalling.Utf16)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static partial bool GetMonitorInfo(IntPtr hMonitor, ref MonitorInfoEx lpmi);
+
     private readonly MonitorManager _monitorManager;
     private readonly DispatcherQueue _dispatcherQueue;
     private readonly CancellationTokenSource _cancellationTokenSource;
@@ -157,39 +166,64 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
     private async Task RefreshAsync() => await RefreshMonitorsAsync();
 
     [RelayCommand]
-    private void IdentifyMonitors()
+    private unsafe void IdentifyMonitors()
     {
         Logger.LogInfo("Identify monitors feature triggered");
 
         try
         {
-            // Get all display areas - use direct indexing to avoid WinRT enumeration issues
+            // Get all display areas
             var displayAreas = DisplayArea.FindAll();
-            int displayCount = displayAreas.Count;
-            Logger.LogDebug($"Found {displayCount} display areas");
+            Logger.LogDebug($"Found {displayAreas.Count} display areas");
 
-            // Get current monitors sorted by MonitorNumber
-            var monitors = _monitorManager.Monitors.OrderBy(m => m.MonitorNumber).ToList();
-            Logger.LogDebug($"Found {monitors.Count} monitors in MonitorManager");
+            // Get GDI device name to MonitorNumber mapping from QueryDisplayConfig
+            var displayInfoByGdiName = DdcCiNative.GetAllMonitorDisplayInfo()
+                .Values
+                .Where(info => info.MonitorNumber > 0)
+                .ToDictionary(info => info.GdiDeviceName, info => info.MonitorNumber, StringComparer.OrdinalIgnoreCase);
+            Logger.LogDebug($"Found {displayInfoByGdiName.Count} monitors with valid MonitorNumber from QueryDisplayConfig");
 
-            for (int index = 0; index < displayCount; index++)
+            // For each DisplayArea, get its HMONITOR, then get GDI device name to find MonitorNumber
+            int windowsCreated = 0;
+            for (int i = 0; i < displayAreas.Count; i++)
             {
-                var displayArea = displayAreas[index];
+                var displayArea = displayAreas[i];
 
-                // Get monitor number: prefer MonitorManager's number, fall back to index+1
-                int monitorNumber = (index < monitors.Count)
-                    ? monitors[index].MonitorNumber
-                    : index + 1;
+                // Convert DisplayId to HMONITOR
+                var hMonitor = Win32Interop.GetMonitorFromDisplayId(displayArea.DisplayId);
+                if (hMonitor == IntPtr.Zero)
+                {
+                    Logger.LogDebug($"DisplayArea[{i}]: Failed to get HMONITOR");
+                    continue;
+                }
 
-                Logger.LogDebug($"Creating identify window for monitor {monitorNumber} on display area {index}");
+                // Get GDI device name from HMONITOR
+                var monitorInfo = new MonitorInfoEx { CbSize = (uint)sizeof(MonitorInfoEx) };
+                if (!GetMonitorInfo(hMonitor, ref monitorInfo))
+                {
+                    Logger.LogDebug($"DisplayArea[{i}]: GetMonitorInfo failed");
+                    continue;
+                }
 
-                // Create and position window
+                var gdiDeviceName = monitorInfo.GetDeviceName();
+
+                // Look up MonitorNumber by GDI device name
+                if (!displayInfoByGdiName.TryGetValue(gdiDeviceName, out int monitorNumber))
+                {
+                    Logger.LogDebug($"DisplayArea[{i}]: No MonitorNumber found for GDI device '{gdiDeviceName}'");
+                    continue;
+                }
+
+                Logger.LogDebug($"DisplayArea[{i}]: GDI='{gdiDeviceName}' -> MonitorNumber={monitorNumber}");
+
+                // Create and position identify window
                 var identifyWindow = new IdentifyWindow(monitorNumber);
                 identifyWindow.PositionOnDisplay(displayArea);
                 identifyWindow.Activate();
+                windowsCreated++;
             }
 
-            Logger.LogInfo($"Created {displayCount} identify windows");
+            Logger.LogInfo($"Created {windowsCreated} identify windows");
         }
         catch (Exception ex)
         {
