@@ -73,7 +73,7 @@
         <Grid Grid.Row="1">
             <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
                 <controls:ModuleList
-                    Margin="8,0,12,0"
+                    Margin="8,12,12,12"
                     DividerThickness="0,0,0,0"
                     IsItemClickable="False"
                     ItemsSource="{x:Bind ViewModel.FlyoutMenuItems, Mode=OneWay}" />
