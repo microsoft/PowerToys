@@ -67,6 +67,10 @@ struct LightSwitchConfig
 
     bool changeSystem = false;
     bool changeApps = false;
+
+    bool useThemeSwitching = false;
+    std::wstring lightThemePath = L"";
+    std::wstring darkThemePath = L"";
 };
 
 class LightSwitchSettings

@@ -6,6 +6,7 @@
 #include <ThemeHelper.h>
 
 void ApplyTheme(bool shouldBeLight);
+void ApplyWindowsThemeFile(bool shouldBeLight);
 
 // Constructor
 LightSwitchStateManager::LightSwitchStateManager()
@@ -260,7 +261,16 @@ void LightSwitchStateManager::EvaluateAndApplyIfNeeded()
     if (!_state.isManualOverride && (appsNeedsToChange || systemNeedsToChange))
     {
         Logger::info(L"[LightSwitchStateManager] Applying {} theme", shouldBeLight ? L"light" : L"dark");
+        
+        // Apply light/dark theme
         ApplyTheme(shouldBeLight);
+
+        // Apply Windows theme files to also swap wallpapers if needed
+        if (_currentSettings.useThemeSwitching)
+        {
+            ApplyWindowsThemeFile(shouldBeLight);
+            Logger::info(L"[LightSwitchStateManager] Applied Windows theme file for {} theme", shouldBeLight ? L"light" : L"dark"); 
+        }
 
         _state.isSystemLightActive = GetCurrentSystemTheme();
         _state.isAppsLightActive = GetCurrentAppsTheme();
