@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Threading.Tasks;
 using ManagedCommon;
 using Microsoft.PowerLauncher.Telemetry;
 using Microsoft.PowerToys.Settings.UI.Helpers;
@@ -93,11 +94,13 @@ namespace Microsoft.PowerToys.Settings.UI
                     // Save settings to file
                     new SettingsUtils().SaveSettings(generalSettingsConfig.ToJsonString());
 
-                    this.DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal, () =>
+                    // Send IPC message asynchronously to avoid blocking UI and potential recursive calls
+                    Task.Run(() =>
                     {
                         ShellPage.SendDefaultIPCMessage(outgoing.ToString());
-                        ShellPage.ShellHandler?.SignalGeneralDataUpdate();
                     });
+
+                    ShellPage.ShellHandler?.SignalGeneralDataUpdate();
                 }
 
                 return needToUpdate;
