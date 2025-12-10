@@ -394,24 +394,6 @@ namespace PowerDisplay
             }
         }
 
-        private void OnLinkClick(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                // Link all monitor brightness (synchronized adjustment)
-                if (_viewModel != null && _viewModel.Monitors.Count > 0)
-                {
-                    // Get first monitor brightness as reference
-                    var baseBrightness = _viewModel.Monitors.First().Brightness;
-                    _ = _viewModel.SetAllBrightnessAsync(baseBrightness);
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError($"OnLinkClick failed: {ex}");
-            }
-        }
-
         private void OnSettingsClick(object sender, RoutedEventArgs e)
         {
             // Open PowerDisplay settings in PowerToys Settings UI

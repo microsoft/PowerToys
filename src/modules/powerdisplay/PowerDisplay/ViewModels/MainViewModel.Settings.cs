@@ -40,7 +40,7 @@ public partial class MainViewModel
 
             // Rebuild monitor list with updated hidden monitor settings
             // UpdateMonitorList already handles filtering hidden monitors
-            UpdateMonitorList(_monitorManager.Monitors);
+            UpdateMonitorList(_monitorManager.Monitors, isInitialLoad: false);
 
             // Apply UI configuration changes only (feature visibility toggles, etc.)
             // Hardware parameters (brightness, color temperature) are applied via custom actions
@@ -322,122 +322,58 @@ public partial class MainViewModel
     }
 
     /// <summary>
-    /// Reload monitor settings from configuration - ONLY called at startup
+    /// Restore monitor settings from state file - ONLY called at startup when RestoreSettingsOnStartup is enabled
     /// </summary>
-    /// <param name="colorTempInitTasks">Optional tasks for color temperature initialization to wait for</param>
-    public async Task ReloadMonitorSettingsAsync(List<Task>? colorTempInitTasks = null)
+    public void RestoreMonitorSettings()
     {
-        Logger.LogInfo($"[ReloadMonitorSettingsAsync] Method called with {colorTempInitTasks?.Count ?? 0} color temp tasks");
-
-        // Prevent duplicate calls
-        if (IsLoading)
-        {
-            Logger.LogInfo("[Startup] ReloadMonitorSettingsAsync already in progress, skipping");
-            return;
-        }
-
         try
         {
-            // Set loading state to block UI interactions
             IsLoading = true;
 
-            // Read current settings
-            var settings = _settingsUtils.GetSettingsOrDefault<PowerDisplaySettings>("PowerDisplay");
-
-            // Note: Profiles are now quick-apply templates, not startup states
-            // We only restore from monitor_state.json, not from profiles
-            if (settings.Properties.RestoreSettingsOnStartup)
+            foreach (var monitorVm in Monitors)
             {
-                // Restore saved settings from configuration file
-                foreach (var monitorVm in Monitors)
+                // Find and apply corresponding saved settings from state file using stable HardwareId
+                var savedState = _stateManager.GetMonitorParameters(monitorVm.HardwareId);
+                if (!savedState.HasValue)
                 {
-                    var hardwareId = monitorVm.HardwareId;
-
-                    // Find and apply corresponding saved settings from state file using stable HardwareId
-                    var savedState = _stateManager.GetMonitorParameters(hardwareId);
-                    if (savedState.HasValue)
-                    {
-                        // Validate and apply saved values (skip invalid values)
-                        // Use UpdatePropertySilently to avoid triggering hardware updates during initialization
-                        if (IsValueInRange(savedState.Value.Brightness, monitorVm.MinBrightness, monitorVm.MaxBrightness))
-                        {
-                            monitorVm.UpdatePropertySilently(nameof(monitorVm.Brightness), savedState.Value.Brightness);
-                        }
-                        else
-                        {
-                            Logger.LogWarning($"[Startup] Invalid brightness value {savedState.Value.Brightness} for HardwareId '{hardwareId}'");
-                        }
-
-                        // Color temperature: VCP 0x14 preset value (discrete values, no range check needed)
-                        // Note: ColorTemperature is now read-only in flyout UI, controlled via Settings UI
-                        if (savedState.Value.ColorTemperatureVcp > 0)
-                        {
-                            // Validation will happen in Settings UI when applying preset values
-                            monitorVm.UpdatePropertySilently(nameof(monitorVm.ColorTemperature), savedState.Value.ColorTemperatureVcp);
-                        }
-
-                        // Contrast validation - only apply if hardware supports it
-                        if (monitorVm.ShowContrast &&
-                            IsValueInRange(savedState.Value.Contrast, monitorVm.MinContrast, monitorVm.MaxContrast))
-                        {
-                            monitorVm.UpdatePropertySilently(nameof(monitorVm.Contrast), savedState.Value.Contrast);
-                        }
-
-                        // Volume validation - only apply if hardware supports it
-                        if (monitorVm.ShowVolume &&
-                            IsValueInRange(savedState.Value.Volume, monitorVm.MinVolume, monitorVm.MaxVolume))
-                        {
-                            monitorVm.UpdatePropertySilently(nameof(monitorVm.Volume), savedState.Value.Volume);
-                        }
-                    }
-
-                    // Apply feature visibility settings using HardwareId
-                    ApplyFeatureVisibility(monitorVm, settings);
-                }
-            }
-            else
-            {
-                // Save current hardware values to configuration file
-                // Wait for color temperature initialization to complete (if any)
-                if (colorTempInitTasks != null && colorTempInitTasks.Count > 0)
-                {
-                    try
-                    {
-                        await Task.WhenAll(colorTempInitTasks);
-                    }
-                    catch (Exception ex)
-                    {
-                        Logger.LogWarning($"[Startup] Some color temperature initializations failed: {ex.Message}");
-                    }
+                    continue;
                 }
 
-                foreach (var monitorVm in Monitors)
+                // Validate and apply saved values (skip invalid values)
+                // Use UpdatePropertySilently to avoid triggering hardware updates during initialization
+                if (IsValueInRange(savedState.Value.Brightness, monitorVm.MinBrightness, monitorVm.MaxBrightness))
                 {
-                    // Save current hardware values to settings
-                    SaveMonitorSettingDirect(monitorVm.HardwareId, "Brightness", monitorVm.Brightness);
-                    SaveMonitorSettingDirect(monitorVm.HardwareId, "ColorTemperature", monitorVm.ColorTemperature);
-                    SaveMonitorSettingDirect(monitorVm.HardwareId, "Contrast", monitorVm.Contrast);
-                    SaveMonitorSettingDirect(monitorVm.HardwareId, "Volume", monitorVm.Volume);
-
-                    // Apply feature visibility settings
-                    ApplyFeatureVisibility(monitorVm, settings);
+                    monitorVm.UpdatePropertySilently(nameof(monitorVm.Brightness), savedState.Value.Brightness);
                 }
 
-                // No need to flush - MonitorStateManager now saves directly!
+                // Color temperature: VCP 0x14 preset value (discrete values, no range check needed)
+                if (savedState.Value.ColorTemperatureVcp > 0)
+                {
+                    monitorVm.UpdatePropertySilently(nameof(monitorVm.ColorTemperature), savedState.Value.ColorTemperatureVcp);
+                }
+
+                // Contrast validation - only apply if hardware supports it
+                if (monitorVm.ShowContrast &&
+                    IsValueInRange(savedState.Value.Contrast, monitorVm.MinContrast, monitorVm.MaxContrast))
+                {
+                    monitorVm.UpdatePropertySilently(nameof(monitorVm.Contrast), savedState.Value.Contrast);
+                }
+
+                // Volume validation - only apply if hardware supports it
+                if (monitorVm.ShowVolume &&
+                    IsValueInRange(savedState.Value.Volume, monitorVm.MinVolume, monitorVm.MaxVolume))
+                {
+                    monitorVm.UpdatePropertySilently(nameof(monitorVm.Volume), savedState.Value.Volume);
+                }
             }
         }
         catch (Exception ex)
         {
-            Logger.LogError($"[ReloadMonitorSettingsAsync] Failed to reload settings: {ex.Message}");
-            Logger.LogError($"[ReloadMonitorSettingsAsync] Stack trace: {ex.StackTrace}");
+            Logger.LogError($"[RestoreMonitorSettings] Failed: {ex.Message}");
         }
         finally
         {
-            Logger.LogInfo("[ReloadMonitorSettingsAsync] In finally block, setting IsLoading = false");
-
-            // Clear loading state to enable UI interactions
             IsLoading = false;
-            Logger.LogInfo("[ReloadMonitorSettingsAsync] IsLoading set to false, method exiting");
         }
     }
 

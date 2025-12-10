@@ -157,15 +157,6 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
     private async Task RefreshAsync() => await RefreshMonitorsAsync();
 
     [RelayCommand]
-    private async Task SetAllBrightness(int? brightness)
-    {
-        if (brightness.HasValue)
-        {
-            await SetAllBrightnessAsync(brightness.Value);
-        }
-    }
-
-    [RelayCommand]
     private void IdentifyMonitors()
     {
         Logger.LogInfo("Identify monitors feature triggered");

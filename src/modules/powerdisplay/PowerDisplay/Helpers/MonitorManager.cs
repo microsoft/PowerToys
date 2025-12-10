@@ -183,28 +183,6 @@ namespace PowerDisplay.Helpers
                 cancellationToken);
 
         /// <summary>
-        /// Set brightness of all monitors
-        /// </summary>
-        public async Task<IEnumerable<MonitorOperationResult>> SetAllBrightnessAsync(int brightness, CancellationToken cancellationToken = default)
-        {
-            var tasks = _monitors
-                .Where(m => m.IsAvailable)
-                .Select(async monitor =>
-                {
-                    try
-                    {
-                        return await SetBrightnessAsync(monitor.Id, brightness, cancellationToken);
-                    }
-                    catch (Exception ex)
-                    {
-                        return MonitorOperationResult.Failure($"Failed to set brightness for {monitor.Name}: {ex.Message}");
-                    }
-                });
-
-            return await Task.WhenAll(tasks);
-        }
-
-        /// <summary>
         /// Set contrast of the specified monitor
         /// </summary>
         public Task<MonitorOperationResult> SetContrastAsync(string monitorId, int contrast, CancellationToken cancellationToken = default)

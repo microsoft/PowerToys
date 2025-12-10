@@ -34,7 +34,7 @@ public partial class MainViewModel
             {
                 try
                 {
-                    UpdateMonitorList(monitors);
+                    UpdateMonitorList(monitors, isInitialLoad: true);
                     IsScanning = false;
                     IsInitialized = true;
 
@@ -73,7 +73,7 @@ public partial class MainViewModel
 
             _dispatcherQueue.TryEnqueue(() =>
             {
-                UpdateMonitorList(monitors);
+                UpdateMonitorList(monitors, isInitialLoad: false);
                 IsScanning = false;
             });
         }
@@ -87,7 +87,7 @@ public partial class MainViewModel
         }
     }
 
-    private void UpdateMonitorList(IReadOnlyList<Monitor> monitors)
+    private void UpdateMonitorList(IReadOnlyList<Monitor> monitors, bool isInitialLoad)
     {
         Monitors.Clear();
 
@@ -105,26 +105,20 @@ public partial class MainViewModel
             }
 
             var vm = new MonitorViewModel(monitor, _monitorManager, this);
+            ApplyFeatureVisibility(vm, settings);
             Monitors.Add(vm);
         }
 
         OnPropertyChanged(nameof(HasMonitors));
         OnPropertyChanged(nameof(ShowNoMonitorsMessage));
 
-        // Save monitor information to settings and reload
+        // Save monitor information to settings
         SaveMonitorsToSettings();
-        _ = ReloadMonitorSettingsAsync(null);
-    }
 
-    public async Task SetAllBrightnessAsync(int brightness)
-    {
-        try
+        // Only restore settings on initial load, not on refresh
+        if (isInitialLoad && settings.Properties.RestoreSettingsOnStartup)
         {
-            await _monitorManager.SetAllBrightnessAsync(brightness, _cancellationTokenSource.Token);
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError($"[SetAllBrightnessAsync] Failed to set brightness: {ex.Message}");
+            RestoreMonitorSettings();
         }
     }
 

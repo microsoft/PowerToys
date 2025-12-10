@@ -388,13 +388,6 @@
                             </Button.Flyout>
                         </Button>
                         <Button
-                            x:Name="LinkButton"
-                            x:Uid="SyncAllMonitorsTooltip"
-                            Click="OnLinkClick"
-                            Content="{ui:FontIcon Glyph=&#xE71B;,
-                                                  FontSize=16}"
-                            Style="{StaticResource SubtleButtonStyle}" />
-                        <Button
                             x:Name="RefreshButton"
                             x:Uid="RefreshTooltip"
                             Click="OnRefreshClick"
