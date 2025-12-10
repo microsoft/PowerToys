@@ -15,7 +15,7 @@
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <AssemblyName>PowerToys.KeyboardManagerEditorUI</AssemblyName>
-    <OutputPath>..\..\..\..\$(Platform)\$(Configuration)\WinUI3Apps\$(MSBuildProjectName)</OutputPath>
+    <OutputPath>..\..\..\..\$(Platform)\$(Configuration)\WinUI3Apps</OutputPath>
     <!-- MRT from windows app sdk will search for a pri file with the same name of the module before defaulting to resources.pri -->
     <ProjectPriFileName>PowerToys.KeyboardManagerEditorUI.pri</ProjectPriFileName>
   </PropertyGroup>
