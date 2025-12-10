@@ -4,6 +4,7 @@
 
 using AdaptiveCards.ObjectModel.WinUI3;
 using AdaptiveCards.Rendering.WinUI3;
+using Microsoft.CmdPal.UI.Controls.AdaptiveCards;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -33,6 +34,31 @@ public sealed partial class ContentFormControl : UserControl
         {
             OverrideStyles = null,
         };
+
+        // concrete
+        Register<AdaptiveSettingsToggleInputElement, AdaptiveSettingsToggleInputParser, AdaptiveSettingsToggleInputElementRenderer>();
+        Register<AdaptiveSettingsCheckBoxInputElement, AdaptiveSettingsCheckBoxInputParser, AdaptiveSettingsCheckBoxInputRenderer>();
+        Register<AdaptiveSettingsTextInputElement, AdaptiveSettingsTextInputParser, AdaptiveSettingsTextInputElementRenderer>();
+        Register<AdaptiveSettingsComboBoxInputElement, AdaptiveSettingsComboBoxInputParser, AdaptiveSettingsComboBoxInputRenderer>();
+
+        // generic
+        Register<AdaptiveSettingsExpanderElement, AdaptiveSettingsExpanderElementParser, AdaptiveSettingsExpanderElementRenderer>();
+        Register<AdaptiveSettingsCardContainerElement, AdaptiveSettingsCardContainerElementParser, AdaptiveSettingsCardContainerElementRenderer>();
+
+        return;
+
+        static void Register<TElement, TParser, TRenderer>()
+            where TElement : IAdaptiveCardElement, ICustomAdaptiveCardElement
+            where TParser : IAdaptiveElementParser, new()
+            where TRenderer : IAdaptiveElementRenderer, new()
+        {
+            ContentFormViewModel.AdaptiveElementParserRegistration.Set(TElement.CustomInputType, new TParser());
+            _renderer.ElementRenderers.Set(TElement.CustomInputType, new TRenderer());
+        }
+    }
+
+    public static void Initialize()
+    {
     }
 
     public ContentFormControl()
@@ -40,6 +66,9 @@ public sealed partial class ContentFormControl : UserControl
         this.InitializeComponent();
         var lightTheme = ActualTheme == Microsoft.UI.Xaml.ElementTheme.Light;
         _renderer.HostConfig = lightTheme ? AdaptiveCardsConfig.Light : AdaptiveCardsConfig.Dark;
+
+        // TODO: #1 padding of entire adaptive card
+        _renderer.HostConfig.Spacing.Padding = 0;
 
         // 5% BODGY: if we set this multiple times over the lifetime of the app,
         // then the second call will explode, because "CardOverrideStyles is already the child of another element".

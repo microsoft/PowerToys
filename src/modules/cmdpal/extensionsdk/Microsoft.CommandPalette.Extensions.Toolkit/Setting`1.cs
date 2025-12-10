@@ -9,8 +9,6 @@ namespace Microsoft.CommandPalette.Extensions.Toolkit;
 
 public abstract class Setting<T> : ISettingsForm
 {
-    private static readonly JsonSerializerOptions _jsonSerializerOptions = new() { WriteIndented = true };
-
     public T? Value { get; set; }
 
     public string Key { get; }
