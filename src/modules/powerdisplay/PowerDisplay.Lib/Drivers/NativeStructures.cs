@@ -347,6 +347,31 @@ namespace PowerDisplay.Common.Drivers
     }
 
     /// <summary>
+    /// Display configuration source device name - contains GDI device name (e.g., "\\.\DISPLAY1")
+    /// </summary>
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+    public unsafe struct DISPLAYCONFIG_SOURCE_DEVICE_NAME
+    {
+        public DISPLAYCONFIG_DEVICE_INFO_HEADER Header;
+
+        /// <summary>
+        /// GDI device name - fixed buffer for 32 wide characters (CCHDEVICENAME)
+        /// </summary>
+        public fixed ushort ViewGdiDeviceName[32];
+
+        /// <summary>
+        /// Helper method to get GDI device name as string
+        /// </summary>
+        public readonly string GetViewGdiDeviceName()
+        {
+            fixed (ushort* ptr = ViewGdiDeviceName)
+            {
+                return new string((char*)ptr);
+            }
+        }
+    }
+
+    /// <summary>
     /// Display configuration target device name
     /// </summary>
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]

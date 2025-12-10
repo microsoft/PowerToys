@@ -142,9 +142,14 @@ namespace PowerDisplay.Common.Drivers
         public const uint SdcAllowPathOrderChanges = 0x00002000;
 
         /// <summary>
-        /// Get target name
+        /// Get source name (GDI device name like "\\.\DISPLAY1")
         /// </summary>
-        public const uint DisplayconfigDeviceInfoGetTargetName = 1;
+        public const uint DisplayconfigDeviceInfoGetSourceName = 1;
+
+        /// <summary>
+        /// Get target name (monitor friendly name and hardware ID)
+        /// </summary>
+        public const uint DisplayconfigDeviceInfoGetTargetName = 2;
 
         /// <summary>
         /// Get SDR white level

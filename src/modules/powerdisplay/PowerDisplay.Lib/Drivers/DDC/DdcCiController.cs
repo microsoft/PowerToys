@@ -375,8 +375,8 @@ namespace PowerDisplay.Common.Drivers.DDC
                 {
                     try
                     {
-                        // Get monitor display info from QueryDisplayConfig (HardwareId, FriendlyName, MonitorNumber)
-                        var monitorDisplayInfoList = DdcCiNative.GetAllMonitorDisplayInfo().Values.ToList();
+                        // Get monitor display info from QueryDisplayConfig, keyed by device path (unique per target)
+                        var allMonitorDisplayInfo = DdcCiNative.GetAllMonitorDisplayInfo();
 
                         // Phase 1: Collect candidate monitors
                         var monitorHandles = EnumerateMonitorHandles();
@@ -386,7 +386,7 @@ namespace PowerDisplay.Common.Drivers.DDC
                         }
 
                         var candidateMonitors = await CollectCandidateMonitorsAsync(
-                            monitorHandles, monitorDisplayInfoList, cancellationToken);
+                            monitorHandles, allMonitorDisplayInfo, cancellationToken);
 
                         if (candidateMonitors.Count == 0)
                         {
@@ -431,34 +431,73 @@ namespace PowerDisplay.Common.Drivers.DDC
         }
 
         /// <summary>
+        /// Get GDI device name for a monitor handle (e.g., "\\.\DISPLAY1").
+        /// </summary>
+        private unsafe string? GetGdiDeviceName(IntPtr hMonitor)
+        {
+            var monitorInfo = new MONITORINFOEX { CbSize = (uint)sizeof(MONITORINFOEX) };
+            if (GetMonitorInfo(hMonitor, ref monitorInfo))
+            {
+                return monitorInfo.GetDeviceName();
+            }
+
+            return null;
+        }
+
+        /// <summary>
         /// Phase 1: Collect all candidate monitors with their physical handles.
-        /// Pairs each physical monitor with its corresponding MonitorDisplayInfo by index.
+        /// Matches physical monitors with MonitorDisplayInfo using GDI device name and friendly name.
+        /// Supports mirror mode where multiple physical monitors share the same GDI name.
         /// </summary>
         private async Task<List<CandidateMonitor>> CollectCandidateMonitorsAsync(
             List<IntPtr> monitorHandles,
-            List<MonitorDisplayInfo> monitorDisplayInfoList,
+            Dictionary<string, MonitorDisplayInfo> allMonitorDisplayInfo,
             CancellationToken cancellationToken)
         {
             var candidates = new List<CandidateMonitor>();
-            int monitorIndex = 0;
 
             foreach (var hMonitor in monitorHandles)
             {
-                var physicalMonitors = await GetPhysicalMonitorsWithRetryAsync(hMonitor, cancellationToken);
-                if (physicalMonitors == null || physicalMonitors.Length == 0)
+                // Get GDI device name for this monitor (e.g., "\\.\DISPLAY1")
+                var gdiDeviceName = GetGdiDeviceName(hMonitor);
+                if (string.IsNullOrEmpty(gdiDeviceName))
                 {
-                    Logger.LogWarning($"DDC: Failed to get physical monitors for hMonitor 0x{hMonitor:X} after retries");
+                    Logger.LogWarning($"DDC: Failed to get GDI device name for hMonitor 0x{hMonitor:X}");
                     continue;
                 }
 
-                foreach (var physicalMonitor in physicalMonitors)
+                var physicalMonitors = await GetPhysicalMonitorsWithRetryAsync(hMonitor, cancellationToken);
+                if (physicalMonitors == null || physicalMonitors.Length == 0)
                 {
-                    // Get MonitorDisplayInfo by index (from QueryDisplayConfig)
-                    var monitorInfo = monitorIndex < monitorDisplayInfoList.Count
-                        ? monitorDisplayInfoList[monitorIndex]
-                        : new MonitorDisplayInfo { MonitorNumber = monitorIndex + 1 };
+                    Logger.LogWarning($"DDC: Failed to get physical monitors for {gdiDeviceName} after retries");
+                    continue;
+                }
 
-                    // Generate stable device key: "{HardwareId}_{MonitorNumber}"
+                // Find all MonitorDisplayInfo entries that match this GDI device name
+                // In mirror mode, multiple targets share the same GDI name
+                var matchingInfos = allMonitorDisplayInfo.Values
+                    .Where(info => string.Equals(info.GdiDeviceName, gdiDeviceName, StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+
+                if (matchingInfos.Count == 0)
+                {
+                    Logger.LogWarning($"DDC: No QueryDisplayConfig info for {gdiDeviceName}, skipping");
+                    continue;
+                }
+
+                for (int i = 0; i < physicalMonitors.Length; i++)
+                {
+                    var physicalMonitor = physicalMonitors[i];
+
+                    if (i >= matchingInfos.Count)
+                    {
+                        Logger.LogWarning($"DDC: Physical monitor index {i} exceeds available QueryDisplayConfig entries ({matchingInfos.Count}) for {gdiDeviceName}");
+                        break;
+                    }
+
+                    var monitorInfo = matchingInfos[i];
+
+                    // Generate stable device key using DevicePath hash for uniqueness
                     var deviceKey = !string.IsNullOrEmpty(monitorInfo.HardwareId)
                         ? $"{monitorInfo.HardwareId}_{monitorInfo.MonitorNumber}"
                         : $"Unknown_{monitorInfo.MonitorNumber}";
@@ -469,7 +508,8 @@ namespace PowerDisplay.Common.Drivers.DDC
                     monitorToCreate.HPhysicalMonitor = handleToUse;
 
                     candidates.Add(new CandidateMonitor(handleToUse, monitorToCreate, monitorInfo));
-                    monitorIndex++;
+
+                    Logger.LogDebug($"DDC: Candidate {gdiDeviceName} -> DevicePath={monitorInfo.DevicePath}, HardwareId={monitorInfo.HardwareId}");
                 }
             }
 
@@ -526,7 +566,15 @@ namespace PowerDisplay.Common.Drivers.DDC
                 }
 
                 // Attach cached capabilities data to avoid re-fetching
-                AttachCapabilitiesToMonitor(monitor, capResult);
+                if (!string.IsNullOrEmpty(capResult.CapabilitiesString))
+                {
+                    monitor.CapabilitiesRaw = capResult.CapabilitiesString;
+                }
+
+                if (capResult.VcpCapabilitiesInfo != null)
+                {
+                    monitor.VcpCapabilitiesInfo = capResult.VcpCapabilitiesInfo;
+                }
 
                 monitors.Add(monitor);
                 newHandleMap[monitor.DeviceKey] = candidate.Handle;
@@ -536,23 +584,6 @@ namespace PowerDisplay.Common.Drivers.DDC
 
             _handleManager.UpdateHandleMap(newHandleMap);
             return monitors;
-        }
-
-        /// <summary>
-        /// Attach cached capabilities data to monitor object.
-        /// This is the key optimization - avoids re-fetching during InitializeMonitorCapabilitiesAsync.
-        /// </summary>
-        private static void AttachCapabilitiesToMonitor(Monitor monitor, DdcCiValidationResult capResult)
-        {
-            if (!string.IsNullOrEmpty(capResult.CapabilitiesString))
-            {
-                monitor.CapabilitiesRaw = capResult.CapabilitiesString;
-            }
-
-            if (capResult.VcpCapabilitiesInfo != null)
-            {
-                monitor.VcpCapabilitiesInfo = capResult.VcpCapabilitiesInfo;
-            }
         }
 
         /// <summary>

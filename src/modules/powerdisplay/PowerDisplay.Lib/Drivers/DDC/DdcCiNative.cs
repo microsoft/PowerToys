@@ -82,13 +82,6 @@ namespace PowerDisplay.Common.Drivers.DDC
     /// </summary>
     public static class DdcCiNative
     {
-        // Display Configuration constants
-        public const uint QdcAllPaths = 0x00000001;
-
-        public const uint QdcOnlyActivePaths = 0x00000002;
-
-        public const uint DisplayconfigDeviceInfoGetTargetName = 2;
-
         // Helper Methods
 
         /// <summary>
@@ -275,103 +268,47 @@ namespace PowerDisplay.Common.Drivers.DDC
         }
 
         /// <summary>
-        /// Gets the monitor friendly name
+        /// Gets GDI device name for a source (e.g., "\\.\DISPLAY1").
         /// </summary>
         /// <param name="adapterId">Adapter ID</param>
-        /// <param name="targetId">Target ID</param>
-        /// <returns>Monitor friendly name, or null if retrieval fails</returns>
-        public static unsafe string? GetMonitorFriendlyName(LUID adapterId, uint targetId)
+        /// <param name="sourceId">Source ID</param>
+        /// <returns>GDI device name, or null if retrieval fails</returns>
+        private static unsafe string? GetSourceGdiDeviceName(LUID adapterId, uint sourceId)
         {
             try
             {
-                var deviceName = new DISPLAYCONFIG_TARGET_DEVICE_NAME
+                var sourceName = new DISPLAYCONFIG_SOURCE_DEVICE_NAME
                 {
                     Header = new DISPLAYCONFIG_DEVICE_INFO_HEADER
                     {
-                        Type = DisplayconfigDeviceInfoGetTargetName,
-                        Size = (uint)sizeof(DISPLAYCONFIG_TARGET_DEVICE_NAME),
+                        Type = DisplayconfigDeviceInfoGetSourceName,
+                        Size = (uint)sizeof(DISPLAYCONFIG_SOURCE_DEVICE_NAME),
                         AdapterId = adapterId,
-                        Id = targetId,
+                        Id = sourceId,
                     },
                 };
 
-                var result = DisplayConfigGetDeviceInfo(ref deviceName);
+                var result = DisplayConfigGetDeviceInfo(ref sourceName);
                 if (result == 0)
                 {
-                    return deviceName.GetMonitorFriendlyDeviceName();
+                    return sourceName.GetViewGdiDeviceName();
                 }
             }
             catch (Exception ex) when (ex is not OutOfMemoryException)
             {
-                Logger.LogDebug($"GetMonitorFriendlyName failed: {ex.Message}");
+                Logger.LogDebug($"GetSourceGdiDeviceName failed: {ex.Message}");
             }
 
             return null;
         }
 
         /// <summary>
-        /// Gets all monitor friendly names by enumerating display configurations
-        /// </summary>
-        /// <returns>Mapping of device path to friendly name</returns>
-        public static unsafe Dictionary<string, string> GetAllMonitorFriendlyNames()
-        {
-            var friendlyNames = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-
-            try
-            {
-                // Get buffer sizes
-                var result = GetDisplayConfigBufferSizes(QdcOnlyActivePaths, out uint pathCount, out uint modeCount);
-                if (result != 0)
-                {
-                    return friendlyNames;
-                }
-
-                // Allocate buffers
-                var paths = new DISPLAYCONFIG_PATH_INFO[pathCount];
-                var modes = new DISPLAYCONFIG_MODE_INFO[modeCount];
-
-                // Query display configuration using fixed pointer
-                fixed (DISPLAYCONFIG_PATH_INFO* pathsPtr = paths)
-                {
-                    fixed (DISPLAYCONFIG_MODE_INFO* modesPtr = modes)
-                    {
-                        result = QueryDisplayConfig(QdcOnlyActivePaths, ref pathCount, pathsPtr, ref modeCount, modesPtr, IntPtr.Zero);
-                        if (result != 0)
-                        {
-                            return friendlyNames;
-                        }
-                    }
-                }
-
-                // Get friendly name for each path
-                for (int i = 0; i < pathCount; i++)
-                {
-                    var path = paths[i];
-                    var friendlyName = GetMonitorFriendlyName(path.TargetInfo.AdapterId, path.TargetInfo.Id);
-
-                    if (!string.IsNullOrEmpty(friendlyName))
-                    {
-                        // Use adapter and target ID as key
-                        var key = $"{path.TargetInfo.AdapterId}_{path.TargetInfo.Id}";
-                        friendlyNames[key] = friendlyName;
-                    }
-                }
-            }
-            catch (Exception ex) when (ex is not OutOfMemoryException)
-            {
-                Logger.LogDebug($"GetAllMonitorFriendlyNames failed: {ex.Message}");
-            }
-
-            return friendlyNames;
-        }
-
-        /// <summary>
-        /// Gets the EDID hardware ID information for a monitor
+        /// Gets friendly name, hardware ID, and device path for a monitor target.
         /// </summary>
         /// <param name="adapterId">Adapter ID</param>
         /// <param name="targetId">Target ID</param>
-        /// <returns>Hardware ID string in format: manufacturer code + product code</returns>
-        public static unsafe string? GetMonitorHardwareId(LUID adapterId, uint targetId)
+        /// <returns>Tuple of (friendlyName, hardwareId, devicePath), any may be null if retrieval fails</returns>
+        private static unsafe (string? FriendlyName, string? HardwareId, string? DevicePath) GetTargetDeviceInfo(LUID adapterId, uint targetId)
         {
             try
             {
@@ -389,29 +326,27 @@ namespace PowerDisplay.Common.Drivers.DDC
                 var result = DisplayConfigGetDeviceInfo(ref deviceName);
                 if (result == 0)
                 {
-                    // Convert manufacturer ID to 3-character string
+                    // Extract friendly name
+                    var friendlyName = deviceName.GetMonitorFriendlyDeviceName();
+
+                    // Extract device path (unique per target, used as key)
+                    var devicePath = deviceName.GetMonitorDevicePath();
+
+                    // Extract hardware ID from EDID data
                     var manufacturerId = deviceName.EdidManufactureId;
                     var manufactureCode = ConvertManufactureIdToString(manufacturerId);
-
-                    // Convert product ID to 4-digit hex string
                     var productCode = deviceName.EdidProductCodeId.ToString("X4", System.Globalization.CultureInfo.InvariantCulture);
-
                     var hardwareId = $"{manufactureCode}{productCode}";
-                    Logger.LogDebug($"GetMonitorHardwareId - ManufacturerId: 0x{manufacturerId:X4}, Code: '{manufactureCode}', ProductCode: '{productCode}', Result: '{hardwareId}'");
 
-                    return hardwareId;
-                }
-                else
-                {
-                    Logger.LogError($"GetMonitorHardwareId - DisplayConfigGetDeviceInfo failed with result: {result}");
+                    return (friendlyName, hardwareId, devicePath);
                 }
             }
             catch (Exception ex) when (ex is not OutOfMemoryException)
             {
-                Logger.LogDebug($"GetMonitorHardwareId failed: {ex.Message}");
+                Logger.LogDebug($"GetTargetDeviceInfo failed: {ex.Message}");
             }
 
-            return null;
+            return (null, null, null);
         }
 
         /// <summary>
@@ -434,9 +369,10 @@ namespace PowerDisplay.Common.Drivers.DDC
         }
 
         /// <summary>
-        /// Gets complete information for all monitors, including friendly name and hardware ID
+        /// Gets complete information for all monitors, keyed by GDI device name (e.g., "\\.\DISPLAY1").
+        /// This allows reliable matching with GetMonitorInfo results.
         /// </summary>
-        /// <returns>Dictionary containing monitor information</returns>
+        /// <returns>Dictionary keyed by GDI device name containing monitor information</returns>
         public static unsafe Dictionary<string, MonitorDisplayInfo> GetAllMonitorDisplayInfo()
         {
             var monitorInfo = new Dictionary<string, MonitorDisplayInfo>(StringComparer.OrdinalIgnoreCase);
@@ -472,23 +408,37 @@ namespace PowerDisplay.Common.Drivers.DDC
                 for (int i = 0; i < pathCount; i++)
                 {
                     var path = paths[i];
-                    var friendlyName = GetMonitorFriendlyName(path.TargetInfo.AdapterId, path.TargetInfo.Id);
-                    var hardwareId = GetMonitorHardwareId(path.TargetInfo.AdapterId, path.TargetInfo.Id);
 
-                    if (!string.IsNullOrEmpty(friendlyName) || !string.IsNullOrEmpty(hardwareId))
+                    // Get GDI device name from source info (e.g., "\\.\DISPLAY1")
+                    var gdiDeviceName = GetSourceGdiDeviceName(path.SourceInfo.AdapterId, path.SourceInfo.Id);
+                    if (string.IsNullOrEmpty(gdiDeviceName))
                     {
-                        var key = $"{path.TargetInfo.AdapterId}_{path.TargetInfo.Id}";
-                        monitorInfo[key] = new MonitorDisplayInfo
-                        {
-                            FriendlyName = friendlyName ?? string.Empty,
-                            HardwareId = hardwareId ?? string.Empty,
-                            AdapterId = path.TargetInfo.AdapterId,
-                            TargetId = path.TargetInfo.Id,
-                            MonitorNumber = i + 1, // 1-based, matches Windows Display Settings
-                        };
-
-                        Logger.LogDebug($"QueryDisplayConfig path[{i}]: HardwareId={hardwareId}, FriendlyName={friendlyName}, MonitorNumber={i + 1}");
+                        Logger.LogDebug($"QueryDisplayConfig path[{i}]: Failed to get GDI device name");
+                        continue;
                     }
+
+                    // Get target info (friendly name, hardware ID, device path)
+                    var (friendlyName, hardwareId, devicePath) = GetTargetDeviceInfo(path.TargetInfo.AdapterId, path.TargetInfo.Id);
+
+                    // Use device path as key - unique per target, supports mirror mode
+                    if (string.IsNullOrEmpty(devicePath))
+                    {
+                        Logger.LogDebug($"QueryDisplayConfig path[{i}]: Failed to get device path");
+                        continue;
+                    }
+
+                    monitorInfo[devicePath] = new MonitorDisplayInfo
+                    {
+                        DevicePath = devicePath,
+                        GdiDeviceName = gdiDeviceName,
+                        FriendlyName = friendlyName ?? string.Empty,
+                        HardwareId = hardwareId ?? string.Empty,
+                        AdapterId = path.TargetInfo.AdapterId,
+                        TargetId = path.TargetInfo.Id,
+                        MonitorNumber = i + 1, // 1-based, matches Windows Display Settings
+                    };
+
+                    Logger.LogDebug($"QueryDisplayConfig path[{i}]: DevicePath={devicePath}, GdiName={gdiDeviceName}, HardwareId={hardwareId}, FriendlyName={friendlyName}");
                 }
             }
             catch (Exception ex) when (ex is not OutOfMemoryException)
@@ -505,8 +455,27 @@ namespace PowerDisplay.Common.Drivers.DDC
     /// </summary>
     public struct MonitorDisplayInfo
     {
+        /// <summary>
+        /// Gets or sets the monitor device path (e.g., "\\?\DISPLAY#DELA1D8#...").
+        /// This is unique per target and used as the primary key.
+        /// </summary>
+        public string DevicePath { get; set; }
+
+        /// <summary>
+        /// Gets or sets the GDI device name (e.g., "\\.\DISPLAY1").
+        /// This is used to match with GetMonitorInfo results from HMONITOR.
+        /// In mirror mode, multiple targets may share the same GDI name.
+        /// </summary>
+        public string GdiDeviceName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the friendly display name from EDID.
+        /// </summary>
         public string FriendlyName { get; set; }
 
+        /// <summary>
+        /// Gets or sets the hardware ID derived from EDID manufacturer and product code.
+        /// </summary>
         public string HardwareId { get; set; }
 
         public LUID AdapterId { get; set; }

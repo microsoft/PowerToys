@@ -33,6 +33,10 @@ namespace PowerDisplay.Common.Drivers
         internal static partial int DisplayConfigGetDeviceInfo(
             ref DISPLAYCONFIG_TARGET_DEVICE_NAME deviceName);
 
+        [LibraryImport("user32.dll")]
+        internal static partial int DisplayConfigGetDeviceInfo(
+            ref DISPLAYCONFIG_SOURCE_DEVICE_NAME sourceName);
+
         // ==================== User32.dll - Monitor Enumeration ====================
         [LibraryImport("user32.dll")]
         [return: MarshalAs(UnmanagedType.Bool)]
