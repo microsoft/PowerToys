@@ -84,7 +84,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
         private void OnSettingsCardClick(object sender, RoutedEventArgs e)
         {
-            if (sender is FrameworkElement element && element.DataContext is ModuleListItem item)
+            if (sender is FrameworkElement element && element.Tag is ModuleListItem item)
             {
                 item.ClickCommand?.Execute(item.Tag);
             }
