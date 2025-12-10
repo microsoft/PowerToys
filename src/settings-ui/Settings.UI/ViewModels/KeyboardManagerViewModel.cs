@@ -297,7 +297,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     Logger.LogError("Failed to launch the new WinUI3 Editor", e);
                 }
 
-                string path = Path.Combine(Environment.CurrentDirectory, editorPath);
+                string path = Path.Combine(Directory.GetParent(Environment.CurrentDirectory).ToString(), editorPath);
                 Logger.LogInfo($"Starting {PowerToyName} editor from {path}");
 
                 // InvariantCulture: type represents the KeyboardManagerEditorType enum value
