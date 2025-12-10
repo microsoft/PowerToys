@@ -12,12 +12,12 @@ namespace PowerDisplay.Common.Services
     public class ThemeChangedEventArgs : EventArgs
     {
         /// <summary>
-        /// Whether the system is currently in light mode
+        /// Gets a value indicating whether whether the system is currently in light mode
         /// </summary>
         public bool IsLightMode { get; }
 
         /// <summary>
-        /// Profile name to apply (null if no profile configured for current theme)
+        /// Gets profile name to apply (null if no profile configured for current theme)
         /// </summary>
         public string? ProfileToApply { get; }
 

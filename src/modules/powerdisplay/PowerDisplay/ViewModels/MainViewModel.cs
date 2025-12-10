@@ -238,7 +238,7 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
         if (profile != null && profile.IsValid())
         {
             Logger.LogInfo($"[Profile] Applying profile '{profile.Name}' from quick apply");
-            await ApplyProfileAsync(profile.Name, profile.MonitorSettings);
+            await ApplyProfileAsync(profile.MonitorSettings);
         }
     }
 

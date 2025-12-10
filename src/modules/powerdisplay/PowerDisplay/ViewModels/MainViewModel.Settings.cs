@@ -121,7 +121,7 @@ public partial class MainViewModel
             if (monitorVm != null)
             {
                 // Apply color temperature directly
-                await ApplyColorTemperatureAsync(monitorVm, pendingOp.ColorTemperatureVcp);
+                await monitorVm.SetColorTemperatureAsync(pendingOp.ColorTemperatureVcp);
                 Logger.LogInfo($"[Settings] Successfully applied color temperature to monitor '{pendingOp.MonitorId}'");
 
                 // Update the monitor's ColorTemperatureVcp in settings to match the applied value
@@ -185,7 +185,7 @@ public partial class MainViewModel
             if (pendingOp.MonitorSettings != null && pendingOp.MonitorSettings.Count > 0)
             {
                 // Apply profile settings to monitors
-                await ApplyProfileAsync(pendingOp.ProfileName, pendingOp.MonitorSettings);
+                await ApplyProfileAsync(pendingOp.MonitorSettings);
 
                 // Note: We no longer track "current profile" - profiles are just templates
                 Logger.LogInfo($"[Profile] Successfully applied profile '{pendingOp.ProfileName}'");
@@ -235,7 +235,7 @@ public partial class MainViewModel
                 }
 
                 // Apply the profile
-                await ApplyProfileAsync(e.ProfileToApply, profile.MonitorSettings);
+                await ApplyProfileAsync(profile.MonitorSettings);
                 Logger.LogInfo($"[LightSwitch Integration] Successfully applied profile '{e.ProfileToApply}'");
             }
             catch (Exception ex)
@@ -248,29 +248,18 @@ public partial class MainViewModel
     /// <summary>
     /// Apply profile settings to monitors
     /// </summary>
-    private async Task ApplyProfileAsync(string profileName, List<ProfileMonitorSetting> monitorSettings)
+    private async Task ApplyProfileAsync(List<ProfileMonitorSetting> monitorSettings)
     {
         var updateTasks = new List<Task>();
 
         foreach (var setting in monitorSettings)
         {
-            // Find monitor by InternalName first (unique identifier), fall back to HardwareId for old profiles
-            MonitorViewModel? monitorVm = null;
-
-            if (!string.IsNullOrEmpty(setting.MonitorInternalName))
-            {
-                monitorVm = Monitors.FirstOrDefault(m => m.InternalName == setting.MonitorInternalName);
-            }
-
-            // Fallback to HardwareId for backward compatibility with old profiles
-            if (monitorVm == null)
-            {
-                monitorVm = Monitors.FirstOrDefault(m => m.HardwareId == setting.HardwareId);
-            }
+            // Find monitor by InternalName (unique identifier)
+            var monitorVm = Monitors.FirstOrDefault(m => m.InternalName == setting.MonitorInternalName);
 
             if (monitorVm == null)
             {
-                Logger.LogWarning($"[Profile] Monitor with InternalName '{setting.MonitorInternalName}' or HardwareId '{setting.HardwareId}' not found (disconnected?)");
+                Logger.LogWarning($"[Profile] Monitor with InternalName '{setting.MonitorInternalName}' not found (disconnected?)");
                 continue;
             }
 
@@ -310,15 +299,6 @@ public partial class MainViewModel
             await Task.WhenAll(updateTasks);
             Logger.LogInfo($"[Profile] Applied {updateTasks.Count} parameter updates");
         }
-    }
-
-    /// <summary>
-    /// Apply color temperature to a specific monitor
-    /// </summary>
-    private async Task ApplyColorTemperatureAsync(MonitorViewModel monitorVm, int colorTemperature)
-    {
-        // Use MonitorViewModel's unified method
-        await monitorVm.SetColorTemperatureAsync(colorTemperature);
     }
 
     /// <summary>

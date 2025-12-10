@@ -43,6 +43,7 @@ namespace PowerDisplay.Common.Services
         public static IProfileService Instance { get; } = new ProfileService();
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="ProfileService"/> class.
         /// Private constructor to enforce singleton pattern for instance-based access.
         /// Static methods remain available for backward compatibility.
         /// </summary>
