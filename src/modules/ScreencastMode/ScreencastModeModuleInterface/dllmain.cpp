@@ -40,11 +40,8 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserv
     return TRUE;
 }
 
-// The PowerToy name that will be shown in the settings.
 const static wchar_t* MODULE_NAME = L"Screencast Mode";
-// Non-localized key used by runner
 const static wchar_t* MODULE_KEY = L"ScreencastMode";
-// Description for settings page
 const static wchar_t* MODULE_DESC = L"Visualize keystrokes for recordings and presentations.";
 
 // Implement the PowerToy Module Interface and all the required methods.
@@ -53,6 +50,7 @@ class ScreencastMode : public PowertoyModuleIface
 private:
     bool m_enabled = false;
     bool m_overlayVisible = false;
+    bool m_firstEnable = true;
     HANDLE m_hProcess = nullptr;
     DWORD m_processPid = 0;
     Hotkey m_hotkey;
@@ -74,6 +72,7 @@ private:
                     m_hotkey.shift = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_SHIFT);
                     m_hotkey.ctrl = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_CTRL);
                     m_hotkey.key = static_cast<unsigned char>(jsonHotkeyObject.GetNamedNumber(JSON_KEY_CODE));
+
                     Logger::info("ScreencastMode hotkey loaded: win={}, alt={}, ctrl={}, shift={}, key={}",
                         m_hotkey.win, m_hotkey.alt, m_hotkey.ctrl, m_hotkey.shift, m_hotkey.key);
                 }
@@ -108,7 +107,7 @@ private:
         m_hotkey.alt = true;
         m_hotkey.shift = false;
         m_hotkey.ctrl = false;
-        m_hotkey.key = 0x53; // 'S' key
+        m_hotkey.key = 0x53;
     }
 
     void init_settings()
@@ -265,7 +264,17 @@ public:
     {
         Logger::trace(L"ScreencastMode enabled");
         m_enabled = true;
-        launch_process();
+
+        // Don't show the overlay on powertoys startup
+        if (!m_firstEnable)
+        {
+            launch_process();
+        }
+        else
+        {
+            m_firstEnable = false;
+        }
+
         Trace::ScreencastModeEnabled(true);
     }
 
