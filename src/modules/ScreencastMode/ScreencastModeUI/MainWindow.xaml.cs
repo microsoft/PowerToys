@@ -3,10 +3,9 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Runtime.InteropServices;
-using System.Text;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.UI;
@@ -14,14 +13,12 @@ using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Media;
 using ScreencastModeUI.Keyboard;
-using Windows.System;
 using WinUIEx;
 
 namespace ScreencastModeUI
 {
     /// <summary>
     /// Main window that displays keystrokes for screencast mode
-    /// This is a simple overlay that shows keystrokes during presentations and screen recordings
     /// </summary>
     public sealed partial class MainWindow : WindowEx, IDisposable
     {
@@ -37,26 +34,18 @@ namespace ScreencastModeUI
         private const int MinWindowHeight = 40;
         private const int EdgeMargin = 20;
 
-        // Extra buffer to prevent text clipping (accounts for rendering differences, corner radius, etc.)
+        // Extra buffer to prevent text clipping
         private const double ExtraWidthBuffer = 20;
         private const double ExtraHeightBuffer = 20;
 
         private readonly SettingsUtils _settingsUtils = new();
         private readonly DispatcherTimer _hideTimer;
-
-        // Track displayed keys in order - each entry is a display string
-        private readonly List<string> _displayedKeys = new();
-
-        // Track currently held modifiers
-        private readonly HashSet<VirtualKey> _activeModifiers = new();
-
         private readonly DispatcherTimer _settingsDebounceTimer;
-
-        // Flag to track if we need to add "+" before the next key
-        private bool _needsPlusSeparator;
+        private readonly KeyDisplayer _keyDisplayer = new();
 
         private KeyboardListener? _keyboardListener;
         private System.IO.FileSystemWatcher? _settingsWatcher;
+        private bool _disposed;
 
         private string _textColor = "#FFFFFF";
         private string _backgroundColor = "#000000";
@@ -67,18 +56,22 @@ namespace ScreencastModeUI
         {
             InitializeComponent();
 
+            // Timer to hide the keystroke display after nothing is typed
             _hideTimer = new DispatcherTimer
             {
                 Interval = TimeSpan.FromMilliseconds(DefaultHideDelayMs),
             };
             _hideTimer.Tick += HideTimer_Tick;
 
-            // Debounce timer for settings changes (FileSystemWatcher can fire multiple times)
+            // Debounce timer for settings changes
             _settingsDebounceTimer = new DispatcherTimer
             {
                 Interval = TimeSpan.FromMilliseconds(300),
             };
             _settingsDebounceTimer.Tick += SettingsDebounceTimer_Tick;
+
+            // Subscribe to display updates from KeyDisplayer
+            _keyDisplayer.DisplayUpdated += OnDisplayUpdated;
 
             LoadSettings();
             SetupKeyboardHook();
@@ -91,6 +84,9 @@ namespace ScreencastModeUI
             ConfigureOverlayWindow();
 
             UpdateWindowPosition();
+
+            // Hide the window initially - it will be shown when keystrokes are detected
+            this.Hide();
         }
 
         private void ConfigureOverlayWindow()
@@ -117,8 +113,6 @@ namespace ScreencastModeUI
                 this.SetWindowSize(MinWindowWidth, MinWindowHeight);
 
                 ApplyClickThroughStyle();
-
-                Logger.LogInfo("Configured window as overlay using WinUIEx");
             }
             catch (Exception ex)
             {
@@ -135,8 +129,6 @@ namespace ScreencastModeUI
             try
             {
                 var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
-
-                // GWL_EXSTYLE = -20
                 int extendedStyle = GetWindowLong(hwnd, -20);
 
                 // Add extended window styles:
@@ -147,8 +139,6 @@ namespace ScreencastModeUI
                 extendedStyle |= 0x00000020 | 0x00000080 | 0x08000000 | 0x00080000;
 
                 _ = SetWindowLong(hwnd, -20, extendedStyle);
-
-                Logger.LogInfo("Applied click-through and tool window styles");
             }
             catch (Exception ex)
             {
@@ -158,9 +148,37 @@ namespace ScreencastModeUI
 
         public void Dispose()
         {
-            _keyboardListener?.Dispose();
-            _settingsWatcher?.Dispose();
-            _settingsDebounceTimer?.Stop();
+            if (_disposed)
+            {
+                return;
+            }
+
+            _disposed = true;
+
+            // Stop timers
+            _hideTimer.Stop();
+            _settingsDebounceTimer.Stop();
+
+            // Unsubscribe from KeyDisplayer events
+            _keyDisplayer.DisplayUpdated -= OnDisplayUpdated;
+
+            // Unsubscribe from keyboard listener events and dispose
+            if (_keyboardListener != null)
+            {
+                _keyboardListener.KeyboardEvent -= OnKeyboardEvent;
+                _keyboardListener.Dispose();
+                _keyboardListener = null;
+            }
+
+            // Unsubscribe from settings watcher events and dispose
+            if (_settingsWatcher != null)
+            {
+                _settingsWatcher.EnableRaisingEvents = false;
+                _settingsWatcher.Changed -= OnSettingsFileChanged;
+                _settingsWatcher.Created -= OnSettingsFileChanged;
+                _settingsWatcher.Dispose();
+                _settingsWatcher = null;
+            }
         }
 
         private void SubscribeToSettingsChanges()
@@ -383,8 +401,6 @@ namespace ScreencastModeUI
                 KeystrokePanel.HorizontalAlignment = HorizontalAlignment.Center;
                 KeystrokePanel.VerticalAlignment = VerticalAlignment.Center;
                 KeystrokePanel.Margin = new Thickness(0);
-
-                Logger.LogInfo($"Positioned window at ({x}, {y}) with size {currentWidth}x{currentHeight}");
             }
             catch (Exception ex)
             {
@@ -416,138 +432,16 @@ namespace ScreencastModeUI
         {
             DispatcherQueue.TryEnqueue(() =>
             {
-                ProcessKeyEvent(e.Key, e.IsKeyDown);
+                _keyDisplayer.ProcessKeyEvent(e.Key, e.IsKeyDown);
             });
         }
 
-        private void ProcessKeyEvent(VirtualKey key, bool isKeyDown)
-        {
-            if (isKeyDown)
-            {
-                HandleKeyDown(key);
-            }
-            else
-            {
-                HandleKeyUp(key);
-            }
-        }
-
         /// <summary>
-        /// Handle when a key is being pressed
+        /// Handles display updates from the KeyDisplayer
         /// </summary>
-        /// <param name="key">The key that is currently being held down</param>
-        private void HandleKeyDown(VirtualKey key)
+        private void OnDisplayUpdated(object? sender, EventArgs e)
         {
-            // Normalize modifier keys (e.g., LeftShift -> Shift)
-            var normalizedKey = KeyDisplayNameProvider.IsModifierKey(key)
-                ? KeyDisplayNameProvider.NormalizeModifierKey(key)
-                : key;
-
-            // Handle modifier keys
-            if (KeyDisplayNameProvider.IsModifierKey(key))
-            {
-                // Only add modifier if not already held (Add returns false if already present)
-                if (_activeModifiers.Add(normalizedKey))
-                {
-                    var keyName = KeyDisplayNameProvider.GetKeyDisplayName(normalizedKey);
-
-                    // Check if adding would overflow
-                    string previewText = BuildPreviewText(keyName);
-                    if (WillOverflow(previewText))
-                    {
-                        // Clear and start fresh with just this modifier
-                        _displayedKeys.Clear();
-                        _needsPlusSeparator = false;
-                    }
-
-                    // Add "+" if we already have content and need separator
-                    if (_needsPlusSeparator && _displayedKeys.Count > 0)
-                    {
-                        _displayedKeys.Add("+");
-                    }
-
-                    _displayedKeys.Add(keyName);
-
-                    // Next key should have a "+" before it
-                    _needsPlusSeparator = true;
-                }
-            }
-
-            // Backspace and Escape keys clear the current display
-            else if (KeyDisplayNameProvider.IsClearKey(key))
-            {
-                // Clear keys (Backspace, Esc) - clear and show just this key
-                _displayedKeys.Clear();
-                _activeModifiers.Clear();
-                _needsPlusSeparator = false;
-
-                _displayedKeys.Add(KeyDisplayNameProvider.GetKeyDisplayName(normalizedKey));
-                _needsPlusSeparator = false; // Clear keys don't expect continuation
-            }
-            else
-            {
-                // Regular key
-                var keyName = KeyDisplayNameProvider.GetKeyDisplayName(normalizedKey);
-
-                // Check if adding would overflow
-                string previewText = BuildPreviewText(keyName);
-                if (WillOverflow(previewText))
-                {
-                    // Clear and start fresh - but keep active modifiers shown
-                    _displayedKeys.Clear();
-                    _needsPlusSeparator = false;
-
-                    // Re-add currently held modifiers
-                    foreach (var mod in _activeModifiers)
-                    {
-                        if (_displayedKeys.Count > 0)
-                        {
-                            _displayedKeys.Add("+");
-                        }
-
-                        _displayedKeys.Add(KeyDisplayNameProvider.GetKeyDisplayName(mod));
-                    }
-
-                    if (_displayedKeys.Count > 0)
-                    {
-                        _needsPlusSeparator = true;
-                    }
-                }
-
-                // Add "+" if we have modifiers held or previous content
-                if (_needsPlusSeparator && _displayedKeys.Count > 0)
-                {
-                    _displayedKeys.Add("+");
-                }
-
-                _displayedKeys.Add(keyName);
-
-                // If modifiers are still held, next key should have "+"
-                // If no modifiers, this is a standalone key, so start fresh next time
-                _needsPlusSeparator = _activeModifiers.Count > 0;
-            }
-
             UpdateDisplay();
-        }
-
-        /// <summary>
-        /// Handle key release events
-        /// </summary>
-        /// <param name="key">The key that is released</param>
-        private void HandleKeyUp(VirtualKey key)
-        {
-            if (KeyDisplayNameProvider.IsModifierKey(key))
-            {
-                var normalizedKey = KeyDisplayNameProvider.NormalizeModifierKey(key);
-                _activeModifiers.Remove(normalizedKey);
-
-                // When all modifiers are released, reset the separator flag
-                // This allows the next keystroke to start a new sequence
-                if (_activeModifiers.Count == 0)
-                {
-                    _needsPlusSeparator = false;
-                }
-            }
         }
 
         /// <summary>
@@ -555,12 +449,13 @@ namespace ScreencastModeUI
         /// </summary>
         private void UpdateDisplay()
         {
-            var displayText = BuildDisplayText();
+            var displayText = _keyDisplayer.DisplayText;
 
             if (string.IsNullOrEmpty(displayText))
             {
                 KeystrokePanel.Visibility = Visibility.Collapsed;
                 _hideTimer.Stop();
+                this.Hide();
             }
             else
             {
@@ -574,6 +469,9 @@ namespace ScreencastModeUI
                 KeystrokePanel.Padding = new Thickness(paddingH, paddingV, paddingH, paddingV);
 
                 KeystrokePanel.Visibility = Visibility.Visible;
+
+                // Show the window when there's content to display
+                this.Show();
 
                 // Force layout update before measuring
                 KeystrokeText.UpdateLayout();
@@ -626,8 +524,6 @@ namespace ScreencastModeUI
                 windowWidth = Math.Max(windowWidth, minWidth);
                 windowHeight = Math.Max(windowHeight, minHeight);
 
-                Logger.LogInfo($"Resizing window to {windowWidth}x{windowHeight} (text: {textWidth}x{textHeight}, padding: {totalPaddingH}x{totalPaddingV}, DPI: {dpiScale})");
-
                 // Resize using AppWindow API
                 appWindow.Resize(new Windows.Graphics.SizeInt32(windowWidth, windowHeight));
 
@@ -641,99 +537,20 @@ namespace ScreencastModeUI
         }
 
         /// <summary>
-        /// Builds the display text from the displayed keys list.
-        /// Keys are shown in the exact order they were added.
+        /// Hides the overlay, clears tracked keys, and stops the hide timer
         /// </summary>
-        private string BuildDisplayText()
-        {
-            if (_displayedKeys.Count == 0)
-            {
-                return string.Empty;
-            }
-
-            // Join with spaces for visual separation, but "+" entries are already in the list
-            var result = new StringBuilder();
-            foreach (var part in _displayedKeys)
-            {
-                if (part == "+")
-                {
-                    // Add space before and after the plus for readability
-                    result.Append(" + ");
-                }
-                else
-                {
-                    if (result.Length > 0 && !result.ToString().EndsWith(' '))
-                    {
-                        // Only add space if not coming right after a "+"
-                        // Check if last thing added was " + "
-                        if (!result.ToString().EndsWith("+ ", StringComparison.Ordinal))
-                        {
-                            result.Append(' ');
-                        }
-                    }
-
-                    result.Append(part);
-                }
-            }
-
-            return result.ToString().Trim();
-        }
-
-        /// <summary>
-        /// Builds a preview of what the display text would look like if we add a new key.
-        /// </summary>
-        private string BuildPreviewText(string newKey)
-        {
-            var tempList = new List<string>(_displayedKeys);
-            if (_needsPlusSeparator && tempList.Count > 0)
-            {
-                tempList.Add("+");
-            }
-
-            tempList.Add(newKey);
-
-            var result = new StringBuilder();
-            foreach (var part in tempList)
-            {
-                if (part == "+")
-                {
-                    result.Append(" + ");
-                }
-                else
-                {
-                    if (result.Length > 0 && !result.ToString().EndsWith(' '))
-                    {
-                        if (!result.ToString().EndsWith("+ ", StringComparison.Ordinal))
-                        {
-                            result.Append(' ');
-                        }
-                    }
-
-                    result.Append(part);
-                }
-            }
-
-            return result.ToString().Trim();
-        }
-
-        private bool WillOverflow(string nextText)
-        {
-            // Rough width check using character count vs. a max visible chars estimate
-            const int maxVisibleChars = 40; // tune this based on your font/width
-            return nextText.Length > maxVisibleChars;
-        }
-
         private void HideTimer_Tick(object? sender, object e)
         {
             _hideTimer.Stop();
 
             // Clear all tracked keys and modifiers when the overlay times out
-            _displayedKeys.Clear();
-            _activeModifiers.Clear();
-            _needsPlusSeparator = false;
+            _keyDisplayer.Clear();
 
             KeystrokeText.Text = string.Empty;
             KeystrokePanel.Visibility = Visibility.Collapsed;
+
+            // Hide the window completely when no text is displayed
+            this.Hide();
         }
     }
 }
