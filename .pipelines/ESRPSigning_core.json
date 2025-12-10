@@ -358,6 +358,8 @@
                 "boost_regex-vc143-mt-x32-1_87.dll",
                 "boost_regex-vc143-mt-x64-1_87.dll",
 
+                "Microsoft.ML.OnnxRuntime.dll",
+
                 "UnitsNet.dll",
                 "UtfUnknown.dll",
                 "Wpf.Ui.dll"
