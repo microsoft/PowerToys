@@ -32,7 +32,7 @@ using WinRT.Interop;
 
 namespace KeystrokeOverlayUI
 {
-    /// Main overlay window.
+    // Main overlay window.
     public sealed partial class MainWindow : Window, IDisposable
     {
         public MainViewModel ViewModel { get; set; } = new();

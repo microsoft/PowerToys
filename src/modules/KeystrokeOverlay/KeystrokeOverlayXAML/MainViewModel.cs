@@ -149,6 +149,10 @@ namespace KeystrokeOverlayUI
             {
                 _maxKeystrokesShown = 1;
             }
+            else
+            {
+                _maxKeystrokesShown = 5;
+            }
 
             ActivationShortcut = props.ActivationShortcut;
             SwitchMonitorHotkey = props.SwitchMonitorHotkey;
