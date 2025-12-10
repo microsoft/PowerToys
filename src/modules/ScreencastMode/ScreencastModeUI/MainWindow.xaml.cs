@@ -85,7 +85,6 @@ namespace ScreencastModeUI
 
             UpdateWindowPosition();
 
-            // Hide the window initially - it will be shown when keystrokes are detected
             this.Hide();
         }
 

@@ -65,7 +65,6 @@ private:
                 auto jsonPropsObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES);
                 if (jsonPropsObject.HasKey(JSON_KEY_HOTKEY))
                 {
-                    // The hotkey object is stored directly, not wrapped in a "value" object
                     auto jsonHotkeyObject = jsonPropsObject.GetNamedObject(JSON_KEY_HOTKEY);
                     m_hotkey.win = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_WIN);
                     m_hotkey.alt = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_ALT);
