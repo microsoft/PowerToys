@@ -55,6 +55,10 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                     () => Properties.ActivationShortcut,
                     value => Properties.ActivationShortcut = value ?? Properties.DefaultActivationShortcut,
                     "Activation_Shortcut"),
+                new HotkeyAccessor(
+                    () => Properties.SwitchDisplayModeHotkey,
+                    value => Properties.SwitchDisplayModeHotkey = value ?? Properties.DefaultSwitchDisplayModeHotkey,
+                    "SwitchDisplayMode_Shortcut"),
             };
 
             return hotkeyAccessors.ToArray();

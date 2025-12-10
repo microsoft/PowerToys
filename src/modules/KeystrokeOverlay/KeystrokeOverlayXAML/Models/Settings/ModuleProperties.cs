@@ -17,6 +17,9 @@ namespace KeystrokeOverlayUI.Models
         [CmdConfigureIgnore]
         public HotkeySettings DefaultActivationShortcut => new HotkeySettings(true, false, false, true, 0x4B);
 
+        [CmdConfigureIgnore]
+        public HotkeySettings DefaultSwitchDisplayModeHotkey => new HotkeySettings(true, false, false, true, 0x44);
+
         [JsonPropertyName("enable_draggable_overlay")]
         public BoolProperty IsDraggable { get; set; } = new() { Value = true };
 
@@ -25,6 +28,9 @@ namespace KeystrokeOverlayUI.Models
 
         [JsonPropertyName("switch_monitor_hotkey")]
         public HotkeySettings SwitchMonitorHotkey { get; set; }
+
+        [JsonPropertyName("switch_display_mode_hotkey")]
+        public HotkeySettings SwitchDisplayModeHotkey { get; set; }
 
         [JsonPropertyName("display_mode")]
         public IntProperty DisplayMode { get; set; } = new() { Value = 0 };
@@ -45,6 +51,7 @@ namespace KeystrokeOverlayUI.Models
         {
             ActivationShortcut = DefaultActivationShortcut;
             SwitchMonitorHotkey = DefaultSwitchMonitorHotkey;
+            SwitchDisplayModeHotkey = DefaultSwitchDisplayModeHotkey;
         }
     }
 }

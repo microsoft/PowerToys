@@ -5647,6 +5647,9 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   <data name="KeystrokeOverlay_Activation" xml:space="preserve">
     <value>Activation Shortcut</value>
   </data>
+    <data name="KeystrokeOverlay_SwitchDisplayMode" xml:space="preserve">
+    <value>Switch Display Mode Shortcut</value>
+  </data>
   <data name="KeystrokeOverlay_Enable.Header" xml:space="preserve">
     <value>Enable Keystroke Overlay</value>
   </data>
@@ -5655,6 +5658,12 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   </data>
   <data name="KeystrokeOverlay_SwitchMonitorHotkey.Description" xml:space="preserve">
     <value>Quickly move the overlay between monitors</value>
+  </data>
+  <data name="KeystrokeOverlay_SwitchDisplayModeHotkey.Header" xml:space="preserve">
+    <value>Switch Display Mode Shortcut</value>
+  </data>
+  <data name="KeystrokeOverlay_SwitchDisplayModeHotkey.Description" xml:space="preserve">
+    <value>Cycle through the different display modes</value>
   </data>
   <data name="KeystrokeOverlay_DraggableOverlay.Header" xml:space="preserve">
     <value>Draggable Overlay</value>

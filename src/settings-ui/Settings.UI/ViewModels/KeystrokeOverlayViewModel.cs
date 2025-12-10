@@ -62,6 +62,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 [ModuleName] = new[] { SwitchMonitorHotkey },
                 [ModuleName + "_Activation"] = new[] { ActivationShortcut },
+                [ModuleName + "_SwitchDisplayMode"] = new[] { SwitchDisplayModeHotkey },
             };
 
             return hotkeysDict;
@@ -111,6 +112,19 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 if (_settings.Properties.SwitchMonitorHotkey != value)
                 {
                     _settings.Properties.SwitchMonitorHotkey = value ?? _settings.Properties.DefaultSwitchMonitorHotkey;
+                    NotifySettingsChanged();
+                }
+            }
+        }
+
+        public HotkeySettings SwitchDisplayModeHotkey
+        {
+            get => _settings.Properties.SwitchDisplayModeHotkey;
+            set
+            {
+                if (_settings.Properties.SwitchDisplayModeHotkey != value)
+                {
+                    _settings.Properties.SwitchDisplayModeHotkey = value ?? _settings.Properties.DefaultSwitchDisplayModeHotkey;
                     NotifySettingsChanged();
                 }
             }

@@ -286,6 +286,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 new DashboardModuleShortcutItem() { Label = resourceLoader.GetString("KeystrokeOverlay_SwitchMonitor"), Shortcut = moduleSettingsRepository.SettingsConfig.Properties.SwitchMonitorHotkey.GetKeysList() },
                 new DashboardModuleShortcutItem() { Label = resourceLoader.GetString("KeystrokeOverlay_Activation"), Shortcut = moduleSettingsRepository.SettingsConfig.Properties.ActivationShortcut.GetKeysList() },
+                new DashboardModuleShortcutItem() { Label = resourceLoader.GetString("KeystrokeOverlay_SwitchDisplayMode"), Shortcut = moduleSettingsRepository.SettingsConfig.Properties.SwitchDisplayModeHotkey.GetKeysList() },
             };
             return new ObservableCollection<DashboardModuleItem>(list);
         }

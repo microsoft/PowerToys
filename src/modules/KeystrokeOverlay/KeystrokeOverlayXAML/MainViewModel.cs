@@ -146,6 +146,7 @@ namespace KeystrokeOverlayUI
 
             ActivationShortcut = props.ActivationShortcut;
             SwitchMonitorHotkey = props.SwitchMonitorHotkey;
+            SwitchDisplayModeHotkey = props.SwitchDisplayModeHotkey;
         }
 
         private SolidColorBrush GetBrushFromHex(string hex)
