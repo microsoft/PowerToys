@@ -769,19 +769,11 @@ public sealed partial class ListPage : Page,
     {
         try
         {
-            if (e.Items.FirstOrDefault() is not ListItemViewModel item)
+            if (e.Items.FirstOrDefault() is not ListItemViewModel item || item.DataPackage is null)
             {
                 e.Cancel = true;
                 return;
             }
-
-            if (item.DataPackage is null)
-            {
-                e.Cancel = true;
-                return;
-            }
-
-            WeakReferenceMessenger.Default.Send(new DragStartedMessage());
 
             // copy properties
             foreach (var (key, value) in item.DataPackage.Properties)
@@ -801,47 +793,53 @@ public sealed partial class ListPage : Page,
             {
                 try
                 {
-                    e.Data.SetDataProvider(format, request =>
-                    {
-                        var deferral = request.GetDeferral();
-                        try
-                        {
-                            item.DataPackage?.GetDataAsync(format).AsTask().ContinueWith(dataTask =>
-                            {
-                                try
-                                {
-                                    if (dataTask.IsCompletedSuccessfully)
-                                    {
-                                        request.SetData(dataTask.Result);
-                                    }
-                                    else if (dataTask.IsFaulted && dataTask.Exception is not null)
-                                    {
-                                        Logger.LogError($"Failed to get data for format '{format}' during drag-and-drop", dataTask.Exception);
-                                    }
-                                }
-                                finally
-                                {
-                                    deferral.Complete();
-                                }
-                            });
-                        }
-                        catch (Exception ex)
-                        {
-                            Logger.LogError($"Failed to set data for format '{format}' during drag-and-drop", ex);
-                            deferral.Complete();
-                        }
-                    });
+                    e.Data.SetDataProvider(format, request => DelayRenderer(request, item, format));
                 }
                 catch (Exception)
                 {
                     // noop - skip any formats that fail
                 }
             }
+
+            WeakReferenceMessenger.Default.Send(new DragStartedMessage());
         }
         catch (Exception ex)
         {
             WeakReferenceMessenger.Default.Send(new DragCompletedMessage());
             Logger.LogError("Failed to start dragging an item", ex);
+        }
+    }
+
+    private static void DelayRenderer(DataProviderRequest request, ListItemViewModel item, string format)
+    {
+        var deferral = request.GetDeferral();
+        try
+        {
+            item.DataPackage?.GetDataAsync(format)
+                .AsTask()
+                .ContinueWith(dataTask =>
+                {
+                    try
+                    {
+                        if (dataTask.IsCompletedSuccessfully)
+                        {
+                            request.SetData(dataTask.Result);
+                        }
+                        else if (dataTask.IsFaulted && dataTask.Exception is not null)
+                        {
+                            Logger.LogError($"Failed to get data for format '{format}' during drag-and-drop", dataTask.Exception);
+                        }
+                    }
+                    finally
+                    {
+                        deferral.Complete();
+                    }
+                });
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"Failed to set data for format '{format}' during drag-and-drop", ex);
+            deferral.Complete();
         }
     }
 

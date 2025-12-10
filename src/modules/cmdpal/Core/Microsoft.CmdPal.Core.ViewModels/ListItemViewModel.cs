@@ -7,7 +7,6 @@ using Microsoft.CmdPal.Core.ViewModels.Commands;
 using Microsoft.CmdPal.Core.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
-using Windows.ApplicationModel.DataTransfer;
 
 namespace Microsoft.CmdPal.Core.ViewModels;
 
@@ -35,8 +34,6 @@ public partial class ListItemViewModel : CommandItemViewModel
     public bool ShowTitle { get; private set; }
 
     public bool ShowSubtitle { get; private set; }
-
-    public DataPackageView? DataPackage { get; private set; }
 
     public bool LayoutShowsTitle
     {
@@ -91,12 +88,6 @@ public partial class ListItemViewModel : CommandItemViewModel
         UpdateProperty(nameof(Section));
 
         UpdateAccessibleName();
-
-        if (li is IExtendedAttributesProvider extendedAttributesProvider)
-        {
-            var properties = extendedAttributesProvider.GetProperties();
-            UpdateDataPackage(properties);
-        }
     }
 
     public override void SlowInitializeProperties()
@@ -167,14 +158,6 @@ public partial class ListItemViewModel : CommandItemViewModel
                 UpdateProperty(nameof(Subtitle));
                 UpdateShowsSubtitle();
                 UpdateAccessibleName();
-                break;
-            case "DataPackage":
-                if (model is IExtendedAttributesProvider extendedAttributesProvider)
-                {
-                    var properties = extendedAttributesProvider.GetProperties();
-                    UpdateDataPackage(properties);
-                }
-
                 break;
             default:
                 UpdateProperty(propertyName);
@@ -290,16 +273,6 @@ public partial class ListItemViewModel : CommandItemViewModel
         {
             UpdateProperty(nameof(ShowSubtitle));
         }
-    }
-
-    private void UpdateDataPackage(IDictionary<string, object?> properties)
-    {
-        DataPackage =
-            properties.TryGetValue(WellKnownExtensionAttributes.DataPackage, out var dataPackageView) &&
-            dataPackageView is DataPackageView view
-                ? view
-                : null;
-        UpdateProperty(nameof(DataPackage));
     }
 
     protected override void UnsafeCleanup()

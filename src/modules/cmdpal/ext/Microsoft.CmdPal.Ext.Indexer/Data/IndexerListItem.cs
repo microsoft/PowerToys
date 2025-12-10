@@ -11,7 +11,6 @@ using Microsoft.CmdPal.Ext.Indexer.Helpers;
 using Microsoft.CmdPal.Ext.Indexer.Pages;
 using Microsoft.CmdPal.Ext.Indexer.Properties;
 using Microsoft.CommandPalette.Extensions.Toolkit;
-using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation.Metadata;
 using FileAttributes = System.IO.FileAttributes;
 
@@ -112,22 +111,6 @@ internal sealed partial class IndexerListItem : ListItem
         }
 
         return commands;
-    }
-
-    private DataPackage GetDataPackage(string filePath)
-    {
-        if (string.IsNullOrEmpty(filePath))
-        {
-            return null;
-        }
-
-        var dataPackage = new DataPackage();
-        dataPackage.SetText(filePath);
-        _ = dataPackage.TrySetStorageItemsAsync(filePath);
-        dataPackage.Properties.Title = Title;
-        dataPackage.Properties.Description = Subtitle;
-        dataPackage.RequestedOperation = DataPackageOperation.Copy;
-        return dataPackage;
     }
 }
 

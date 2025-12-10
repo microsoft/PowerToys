@@ -8,6 +8,7 @@ using Microsoft.CmdPal.Core.ViewModels.Messages;
 using Microsoft.CmdPal.Core.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
+using Windows.ApplicationModel.DataTransfer;
 
 namespace Microsoft.CmdPal.Core.ViewModels;
 
@@ -15,6 +16,8 @@ namespace Microsoft.CmdPal.Core.ViewModels;
 public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBarContext
 {
     public ExtensionObject<ICommandItem> Model => _commandItemModel;
+
+    private ExtensionObject<IExtendedAttributesProvider>? ExtendedAttributesProvider { get; set; }
 
     private readonly ExtensionObject<ICommandItem> _commandItemModel = new(null);
     private CommandContextItemViewModel? _defaultCommandContextItemViewModel;
@@ -64,6 +67,8 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
     public CommandItemViewModel? SecondaryCommand => HasMoreCommands ? ActualCommands[0] : null;
 
     public bool ShouldBeVisible => !string.IsNullOrEmpty(Name);
+
+    public DataPackageView? DataPackage { get; private set; }
 
     public List<IContextItemViewModel> AllCommands
     {
@@ -156,6 +161,13 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
         // TopLevelViewModel will never know what the command's ID is, so it
         // will never be able to load Hotkeys & aliases
         UpdateProperty(nameof(IsInitialized));
+
+        if (model is IExtendedAttributesProvider extendedAttributesProvider)
+        {
+            ExtendedAttributesProvider = new ExtensionObject<IExtendedAttributesProvider>(extendedAttributesProvider);
+            var properties = extendedAttributesProvider.GetProperties();
+            UpdateDataPackage(properties);
+        }
 
         Initialized |= InitializedState.Initialized;
     }
@@ -380,6 +392,9 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
                 UpdateProperty(nameof(HasMoreCommands));
 
                 break;
+            case nameof(DataPackage):
+                UpdateDataPackage(ExtendedAttributesProvider?.Unsafe?.GetProperties());
+                break;
         }
 
         UpdateProperty(propertyName);
@@ -429,6 +444,16 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
         _icon = new(iconInfo);
         _icon.InitializeProperties();
         UpdateProperty(nameof(Icon));
+    }
+
+    private void UpdateDataPackage(IDictionary<string, object?>? properties)
+    {
+        DataPackage =
+            properties?.TryGetValue(WellKnownExtensionAttributes.DataPackage, out var dataPackageView) == true &&
+            dataPackageView is DataPackageView view
+                ? view
+                : null;
+        UpdateProperty(nameof(DataPackage));
     }
 
     protected override void UnsafeCleanup()

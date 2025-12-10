@@ -5,7 +5,7 @@
 using System;
 using System.IO;
 using System.Threading.Tasks;
-using Microsoft.CommandPalette.Extensions.Toolkit;
+using Microsoft.CommandPalette.Extensions;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Storage;
 using File = System.IO.File;
@@ -14,7 +14,7 @@ namespace Microsoft.CmdPal.Ext.Indexer.Helpers;
 
 internal static class DataPackageHelper
 {
-    public static DataPackage CreateDataPackageForPath(ListItem listItem, string path)
+    public static DataPackage CreateDataPackageForPath(ICommandItem listItem, string path)
     {
         if (string.IsNullOrEmpty(path))
         {

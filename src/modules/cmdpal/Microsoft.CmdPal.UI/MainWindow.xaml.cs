@@ -1029,11 +1029,11 @@ public sealed partial class MainWindow : WindowEx,
         _preventHideWhenDeactivated = false;
         Task.Delay(200).ContinueWith(_ =>
         {
-            DispatcherQueue.TryEnqueue(ForceActivate);
+            DispatcherQueue.TryEnqueue(StealForeground);
         });
     }
 
-    private unsafe void ForceActivate()
+    private unsafe void StealForeground()
     {
         var foregroundWindow = PInvoke.GetForegroundWindow();
         if (foregroundWindow == _hwnd)
