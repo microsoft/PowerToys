@@ -239,4 +239,7 @@
   <data name="builtin_settings_extension_n_extensions_installed" xml:space="preserve">
     <value>{0} extensions installed</value>
   </data>
+  <data name="builtin_settings_appearance_pick_background_image_title" xml:space="preserve">
+    <value>Pick background image</value>
+  </data>
 </root>

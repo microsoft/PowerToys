@@ -15,8 +15,10 @@ using Microsoft.CmdPal.UI.Controls;
 using Microsoft.CmdPal.UI.Events;
 using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.Messages;
+using Microsoft.CmdPal.UI.Services;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
+using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI;
@@ -66,7 +68,10 @@ public sealed partial class MainWindow : WindowEx,
     private readonly KeyboardListener _keyboardListener;
     private readonly LocalKeyboardListener _localKeyboardListener;
     private readonly HiddenOwnerWindowBehavior _hiddenOwnerBehavior = new();
+    private readonly IThemeService _themeService;
+    private readonly WindowThemeSynchronizer _windowThemeSynchronizer;
     private bool _ignoreHotKeyWhenFullScreen = true;
+    private bool _themeServiceInitialized;
 
     private DesktopAcrylicController? _acrylicController;
     private SystemBackdropConfiguration? _configurationSource;
@@ -74,12 +79,20 @@ public sealed partial class MainWindow : WindowEx,
 
     private WindowPosition _currentWindowPosition = new();
 
+    private MainWindowViewModel ViewModel { get; }
+
     public MainWindow()
     {
         InitializeComponent();
 
+        ViewModel = App.Current.Services.GetService<MainWindowViewModel>()!;
+
         _autoGoHomeTimer = new DispatcherTimer();
         _autoGoHomeTimer.Tick += OnAutoGoHomeTimerOnTick;
+
+        _themeService = App.Current.Services.GetRequiredService<IThemeService>();
+        _themeService.ThemeChanged += ThemeServiceOnThemeChanged;
+        _windowThemeSynchronizer = new WindowThemeSynchronizer(_themeService, this);
 
         _hwnd = new HWND(WinRT.Interop.WindowNative.GetWindowHandle(this).ToInt32());
 
@@ -87,6 +100,8 @@ public sealed partial class MainWindow : WindowEx,
         {
             CommandPaletteHost.SetHostHwnd((ulong)_hwnd.Value);
         }
+
+        SetAcrylic();
 
         _hiddenOwnerBehavior.ShowInTaskbar(this, Debugger.IsAttached);
 
@@ -99,8 +114,6 @@ public sealed partial class MainWindow : WindowEx,
         AppWindow.Title = RS_.GetString("AppName");
         RestoreWindowPosition();
         UpdateWindowPositionInMemory();
-
-        SetAcrylic();
 
         WeakReferenceMessenger.Default.Register<DismissMessage>(this);
         WeakReferenceMessenger.Default.Register<QuitMessage>(this);
@@ -154,6 +167,11 @@ public sealed partial class MainWindow : WindowEx,
         // BEAR LOADING: Focus Search must be suppressed here; otherwise it may steal focus (for example, from the system tray icon)
         // and prevent the user from opening its context menu.
         WeakReferenceMessenger.Default.Send(new GoHomeMessage(WithAnimation: false, FocusSearch: false));
+    }
+
+    private void ThemeServiceOnThemeChanged(object? sender, ThemeChangedEventArgs e)
+    {
+        UpdateAcrylic();
     }
 
     private static void LocalKeyboardListener_OnKeyPressed(object? sender, LocalKeyboardListenerKeyPressedEventArgs e)
@@ -247,8 +265,6 @@ public sealed partial class MainWindow : WindowEx,
         _autoGoHomeTimer.Interval = _autoGoHomeInterval;
     }
 
-    // We want to use DesktopAcrylicKind.Thin and custom colors as this is the default material
-    // other Shell surfaces are using, this cannot be set in XAML however.
     private void SetAcrylic()
     {
         if (DesktopAcrylicController.IsSupported())
@@ -265,41 +281,32 @@ public sealed partial class MainWindow : WindowEx,
 
     private void UpdateAcrylic()
     {
-        if (_acrylicController != null)
+        try
         {
-            _acrylicController.RemoveAllSystemBackdropTargets();
-            _acrylicController.Dispose();
-        }
-
-        _acrylicController = GetAcrylicConfig(Content);
-
-        // Enable the system backdrop.
-        // Note: Be sure to have "using WinRT;" to support the Window.As<...>() call.
-        _acrylicController.AddSystemBackdropTarget(this.As<ICompositionSupportsSystemBackdrop>());
-        _acrylicController.SetSystemBackdropConfiguration(_configurationSource);
-    }
-
-    private static DesktopAcrylicController GetAcrylicConfig(UIElement content)
-    {
-        var feContent = content as FrameworkElement;
-
-        return feContent?.ActualTheme == ElementTheme.Light
-            ? new DesktopAcrylicController()
+            if (_acrylicController != null)
             {
-                Kind = DesktopAcrylicKind.Thin,
-                TintColor = Color.FromArgb(255, 243, 243, 243),
-                LuminosityOpacity = 0.90f,
-                TintOpacity = 0.0f,
-                FallbackColor = Color.FromArgb(255, 238, 238, 238),
+                _acrylicController.RemoveAllSystemBackdropTargets();
+                _acrylicController.Dispose();
             }
-            : new DesktopAcrylicController()
+
+            var backdrop = _themeService.Current.BackdropParameters;
+            _acrylicController = new DesktopAcrylicController
             {
-                Kind = DesktopAcrylicKind.Thin,
-                TintColor = Color.FromArgb(255, 32, 32, 32),
-                LuminosityOpacity = 0.96f,
-                TintOpacity = 0.5f,
-                FallbackColor = Color.FromArgb(255, 28, 28, 28),
+                TintColor = backdrop.TintColor,
+                TintOpacity = backdrop.TintOpacity,
+                FallbackColor = backdrop.FallbackColor,
+                LuminosityOpacity = backdrop.LuminosityOpacity,
             };
+
+            // Enable the system backdrop.
+            // Note: Be sure to have "using WinRT;" to support the Window.As<...>() call.
+            _acrylicController.AddSystemBackdropTarget(this.As<ICompositionSupportsSystemBackdrop>());
+            _acrylicController.SetSystemBackdropConfiguration(_configurationSource);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError("Failed to update backdrop", ex);
+        }
     }
 
     private void ShowHwnd(IntPtr hwndValue, MonitorBehavior target)
@@ -530,6 +537,11 @@ public sealed partial class MainWindow : WindowEx,
 
     public void Receive(DismissMessage message)
     {
+        if (message.ForceGoHome)
+        {
+            WeakReferenceMessenger.Default.Send(new GoHomeMessage(false, false));
+        }
+
         // This might come in off the UI thread. Make sure to hop back.
         DispatcherQueue.TryEnqueue(() =>
         {
@@ -706,6 +718,19 @@ public sealed partial class MainWindow : WindowEx,
 
     internal void MainWindow_Activated(object sender, WindowActivatedEventArgs args)
     {
+        if (!_themeServiceInitialized && args.WindowActivationState != WindowActivationState.Deactivated)
+        {
+            try
+            {
+                _themeService.Initialize();
+                _themeServiceInitialized = true;
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Failed to initialize ThemeService", ex);
+            }
+        }
+
         if (args.WindowActivationState == WindowActivationState.Deactivated)
         {
             // Save the current window position before hiding the window
@@ -999,6 +1024,7 @@ public sealed partial class MainWindow : WindowEx,
     public void Dispose()
     {
         _localKeyboardListener.Dispose();
+        _windowThemeSynchronizer.Dispose();
         DisposeAcrylic();
     }
 }
