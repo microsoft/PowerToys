@@ -5,7 +5,6 @@
 using System;
 using System.Collections.Generic;
 using ManagedCommon;
-using PowerDisplay.Common.Models;
 using PowerDisplay.Common.Utils;
 using static PowerDisplay.Common.Drivers.PInvoke;
 
@@ -19,27 +18,6 @@ namespace PowerDisplay.Common.Drivers.DDC
         // Mapping: monitorId -> physical handle (thread-safe)
         private readonly LockedDictionary<string, IntPtr> _monitorIdToHandleMap = new();
         private bool _disposed;
-
-        /// <summary>
-        /// Get physical handle for monitor using its unique Id
-        /// </summary>
-        public IntPtr GetPhysicalHandle(Monitor monitor)
-        {
-            // Primary lookup: use monitor Id
-            if (!string.IsNullOrEmpty(monitor.Id) &&
-                _monitorIdToHandleMap.TryGetValue(monitor.Id, out var handle))
-            {
-                return handle;
-            }
-
-            // Fallback: use direct handle from monitor object
-            if (monitor.Handle != IntPtr.Zero)
-            {
-                return monitor.Handle;
-            }
-
-            return IntPtr.Zero;
-        }
 
         /// <summary>
         /// Update the handle mapping with new handles
