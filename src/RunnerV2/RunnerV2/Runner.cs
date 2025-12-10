@@ -19,6 +19,7 @@ using ManagedCommon;
 using RunnerV2.Helpers;
 using RunnerV2.ModuleInterfaces;
 using Update;
+using Windows.ApplicationModel;
 using static RunnerV2.NativeMethods;
 
 namespace RunnerV2
@@ -40,6 +41,7 @@ namespace RunnerV2
             new AwakeModuleInterface(),
             new CmdNotFoundModuleInterface(),
             new ColorPickerModuleInterface(),
+            new CommandPaletteModuleInterface(),
         ];
 
         internal static bool Run(Action afterInitializationAction)

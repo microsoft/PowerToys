@@ -93,6 +93,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\utils\package.h" />
     <ClInclude Include="async_message_queue.h" />
     <ClInclude Include="CommonManaged.h">
       <DependentUpon>CommonManaged.idl</DependentUpon>

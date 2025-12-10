@@ -5,7 +5,9 @@
 using System;
 using System.Drawing;
 using System.Runtime.InteropServices;
+using System.Runtime.InteropServices.ComTypes;
 using ManagedCommon;
+using Windows.ApplicationModel;
 
 namespace RunnerV2
 {
@@ -230,5 +232,27 @@ namespace RunnerV2
 
         [DllImport("user32.dll")]
         internal static extern uint SendInput(uint nInputs, NativeKeyboardHelper.INPUT[] pInputs, int cbSize);
+
+        public const int COINIT_MULTITHREADED = 0x0;
+
+        [LibraryImport("ole32.dll")]
+        public static partial int CoInitializeEx(IntPtr pvReserved, int dwCoInit);
+
+        [LibraryImport("ole32.dll")]
+        public static partial void CoUninitialize();
+
+        [DllImport("Shlwapi.dll")]
+        public static extern IntPtr SHCreateStreamOnFileEx(
+            [MarshalAs(UnmanagedType.LPWStr)] string pszFile,
+            uint grfMode,
+            [MarshalAs(UnmanagedType.Bool)]bool fCreate,
+            IntPtr pstmTemplate,
+            out IStream stream);
+
+        [DllImport("PowerToys.Interop.dll", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern bool GetPackageNameAndVersionFromAppx(
+            [MarshalAs(UnmanagedType.LPWStr)] string appxPath,
+            [MarshalAs(UnmanagedType.LPWStr)] out string outName,
+            out PackageVersion outVersion);
     }
 }
