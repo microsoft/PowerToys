@@ -96,13 +96,13 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
         // Apply to hardware (with or without debounce)
         if (immediate)
         {
-            await ApplyBrightnessToHardwareAsync(brightness);
+            await ApplyPropertyToHardwareAsync(nameof(Brightness), brightness, _monitorManager.SetBrightnessAsync);
         }
         else
         {
             // Debounce for slider smoothness
             var capturedValue = brightness;
-            _brightnessDebouncer.Debounce(async () => await ApplyBrightnessToHardwareAsync(capturedValue));
+            _brightnessDebouncer.Debounce(async () => await ApplyPropertyToHardwareAsync(nameof(Brightness), capturedValue, _monitorManager.SetBrightnessAsync));
         }
     }
 
@@ -122,12 +122,12 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
 
         if (immediate)
         {
-            await ApplyContrastToHardwareAsync(contrast);
+            await ApplyPropertyToHardwareAsync(nameof(Contrast), contrast, _monitorManager.SetContrastAsync);
         }
         else
         {
             var capturedValue = contrast;
-            _contrastDebouncer.Debounce(async () => await ApplyContrastToHardwareAsync(capturedValue));
+            _contrastDebouncer.Debounce(async () => await ApplyPropertyToHardwareAsync(nameof(Contrast), capturedValue, _monitorManager.SetContrastAsync));
         }
     }
 
@@ -146,12 +146,12 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
 
         if (immediate)
         {
-            await ApplyVolumeToHardwareAsync(volume);
+            await ApplyPropertyToHardwareAsync(nameof(Volume), volume, _monitorManager.SetVolumeAsync);
         }
         else
         {
             var capturedValue = volume;
-            _volumeDebouncer.Debounce(async () => await ApplyVolumeToHardwareAsync(capturedValue));
+            _volumeDebouncer.Debounce(async () => await ApplyPropertyToHardwareAsync(nameof(Volume), capturedValue, _monitorManager.SetVolumeAsync));
         }
     }
 
@@ -220,15 +220,6 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
             Logger.LogError($"[{Id}] Exception setting {propertyName.ToLowerInvariant()}: {ex.Message}");
         }
     }
-
-    private Task ApplyBrightnessToHardwareAsync(int brightness)
-        => ApplyPropertyToHardwareAsync(nameof(Brightness), brightness, _monitorManager.SetBrightnessAsync);
-
-    private Task ApplyContrastToHardwareAsync(int contrast)
-        => ApplyPropertyToHardwareAsync(nameof(Contrast), contrast, _monitorManager.SetContrastAsync);
-
-    private Task ApplyVolumeToHardwareAsync(int volume)
-        => ApplyPropertyToHardwareAsync(nameof(Volume), volume, _monitorManager.SetVolumeAsync);
 
     // Conversion function for x:Bind (AOT-compatible alternative to converters)
     public Visibility ConvertBoolToVisibility(bool value) => value ? Visibility.Visible : Visibility.Collapsed;

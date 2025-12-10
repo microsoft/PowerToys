@@ -326,6 +326,13 @@ namespace PowerDisplay.Common.Models
         public int MonitorNumber { get; set; }
 
         /// <summary>
+        /// Gets or sets the GDI device name (e.g., "\\.\DISPLAY1").
+        /// This is obtained from QueryDisplayConfig during discovery and should be used
+        /// for display settings APIs (EnumDisplaySettings, ChangeDisplaySettingsEx).
+        /// </summary>
+        public string GdiDeviceName { get; set; } = string.Empty;
+
+        /// <summary>
         /// Gets or sets monitor orientation (0=0, 1=90, 2=180, 3=270)
         /// </summary>
         public int Orientation { get; set; }

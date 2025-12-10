@@ -299,14 +299,9 @@ namespace PowerDisplay.Helpers
                 return Task.FromResult(MonitorOperationResult.Failure("Monitor not found"));
             }
 
-            if (monitor.MonitorNumber <= 0)
-            {
-                Logger.LogError($"[MonitorManager] SetRotation: Invalid monitor number for {monitorId}");
-                return Task.FromResult(MonitorOperationResult.Failure("Invalid monitor number"));
-            }
-
             // Rotation uses Windows display settings API, not DDC/CI controller
-            var result = _rotationService.SetRotation(monitor.MonitorNumber, orientation);
+            // Prefer using Monitor object which contains GdiDeviceName for accurate adapter targeting
+            var result = _rotationService.SetRotation(monitor, orientation);
 
             if (result.IsSuccess)
             {

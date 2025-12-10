@@ -20,49 +20,54 @@ namespace PowerDisplay.Common.Services
     {
         /// <summary>
         /// Set display rotation for a specific monitor.
+        /// Uses GdiDeviceName from the Monitor object for accurate adapter targeting.
         /// </summary>
-        /// <param name="monitorNumber">Monitor number (1, 2, 3...)</param>
+        /// <param name="monitor">Monitor object with GdiDeviceName</param>
         /// <param name="newOrientation">New orientation: 0=normal, 1=90°, 2=180°, 3=270°</param>
         /// <returns>Operation result</returns>
-        public MonitorOperationResult SetRotation(int monitorNumber, int newOrientation)
+        public MonitorOperationResult SetRotation(Monitor monitor, int newOrientation)
         {
-            if (monitorNumber <= 0)
-            {
-                return MonitorOperationResult.Failure("Invalid monitor number");
-            }
+            ArgumentNullException.ThrowIfNull(monitor);
 
             if (newOrientation < 0 || newOrientation > 3)
             {
                 return MonitorOperationResult.Failure($"Invalid orientation value: {newOrientation}. Must be 0-3.");
             }
 
-            // Construct adapter name from monitor number (e.g., 1 -> "\\.\DISPLAY1")
-            string adapterName = $"\\\\.\\DISPLAY{monitorNumber}";
+            if (string.IsNullOrEmpty(monitor.GdiDeviceName))
+            {
+                return MonitorOperationResult.Failure("Monitor has no GdiDeviceName");
+            }
 
-            return SetRotationByAdapterName(adapterName, newOrientation);
+            return SetRotationByGdiDeviceName(monitor.GdiDeviceName, newOrientation);
         }
 
         /// <summary>
-        /// Set display rotation by adapter name.
+        /// Set display rotation by GDI device name.
         /// </summary>
-        /// <param name="adapterName">Adapter name (e.g., "\\.\DISPLAY1")</param>
+        /// <param name="gdiDeviceName">GDI device name (e.g., "\\.\DISPLAY1")</param>
         /// <param name="newOrientation">New orientation: 0=normal, 1=90°, 2=180°, 3=270°</param>
         /// <returns>Operation result</returns>
-        public unsafe MonitorOperationResult SetRotationByAdapterName(string adapterName, int newOrientation)
+        public unsafe MonitorOperationResult SetRotationByGdiDeviceName(string gdiDeviceName, int newOrientation)
         {
+            if (string.IsNullOrEmpty(gdiDeviceName))
+            {
+                return MonitorOperationResult.Failure("GDI device name is required");
+            }
+
             try
             {
-                Logger.LogInfo($"SetRotation: Setting {adapterName} to orientation {newOrientation}");
+                Logger.LogInfo($"SetRotation: Setting {gdiDeviceName} to orientation {newOrientation}");
 
                 // 1. Get current display settings
                 DevMode devMode = default;
                 devMode.DmSize = (short)sizeof(DevMode);
 
-                if (!EnumDisplaySettings(adapterName, EnumCurrentSettings, &devMode))
+                if (!EnumDisplaySettings(gdiDeviceName, EnumCurrentSettings, &devMode))
                 {
                     var error = GetLastError();
-                    Logger.LogError($"SetRotation: EnumDisplaySettings failed for {adapterName}, error: {error}");
-                    return MonitorOperationResult.Failure($"Failed to get current display settings for {adapterName}", (int)error);
+                    Logger.LogError($"SetRotation: EnumDisplaySettings failed for {gdiDeviceName}, error: {error}");
+                    return MonitorOperationResult.Failure($"Failed to get current display settings for {gdiDeviceName}", (int)error);
                 }
 
                 int currentOrientation = devMode.DmDisplayOrientation;
@@ -94,31 +99,31 @@ namespace PowerDisplay.Common.Services
                 devMode.DmFields = DmDisplayOrientation | DmPelsWidth | DmPelsHeight;
 
                 // 4. Test the settings first using CDS_TEST flag
-                int testResult = ChangeDisplaySettingsEx(adapterName, &devMode, IntPtr.Zero, CdsTest, IntPtr.Zero);
+                int testResult = ChangeDisplaySettingsEx(gdiDeviceName, &devMode, IntPtr.Zero, CdsTest, IntPtr.Zero);
                 if (testResult != DispChangeSuccessful)
                 {
                     string errorMsg = GetChangeDisplaySettingsErrorMessage(testResult);
-                    Logger.LogError($"SetRotation: Test failed for {adapterName}: {errorMsg}");
+                    Logger.LogError($"SetRotation: Test failed for {gdiDeviceName}: {errorMsg}");
                     return MonitorOperationResult.Failure($"Display settings test failed: {errorMsg}", testResult);
                 }
 
                 Logger.LogDebug($"SetRotation: Test passed, applying settings...");
 
                 // 5. Apply the settings (without CDS_UPDATEREGISTRY to make it temporary)
-                int result = ChangeDisplaySettingsEx(adapterName, &devMode, IntPtr.Zero, 0, IntPtr.Zero);
+                int result = ChangeDisplaySettingsEx(gdiDeviceName, &devMode, IntPtr.Zero, 0, IntPtr.Zero);
                 if (result != DispChangeSuccessful)
                 {
                     string errorMsg = GetChangeDisplaySettingsErrorMessage(result);
-                    Logger.LogError($"SetRotation: Apply failed for {adapterName}: {errorMsg}");
+                    Logger.LogError($"SetRotation: Apply failed for {gdiDeviceName}: {errorMsg}");
                     return MonitorOperationResult.Failure($"Failed to apply display settings: {errorMsg}", result);
                 }
 
-                Logger.LogInfo($"SetRotation: Successfully set {adapterName} to orientation {newOrientation}");
+                Logger.LogInfo($"SetRotation: Successfully set {gdiDeviceName} to orientation {newOrientation}");
                 return MonitorOperationResult.Success();
             }
             catch (Exception ex)
             {
-                Logger.LogError($"SetRotation: Exception for {adapterName}: {ex.Message}");
+                Logger.LogError($"SetRotation: Exception for {gdiDeviceName}: {ex.Message}");
                 return MonitorOperationResult.Failure($"Exception while setting rotation: {ex.Message}");
             }
         }

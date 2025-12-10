@@ -107,17 +107,17 @@ namespace PowerDisplay.Common.Drivers.WMI
         }
 
         /// <summary>
-        /// Get monitor number from MonitorDisplayInfo dictionary by matching HardwareId.
+        /// Get MonitorDisplayInfo from dictionary by matching HardwareId.
         /// Uses QueryDisplayConfig path index which matches Windows Display Settings "Identify" feature.
         /// </summary>
         /// <param name="hardwareId">The hardware ID to match (e.g., "LEN4038", "BOE0900").</param>
         /// <param name="monitorDisplayInfos">Dictionary of monitor display info from QueryDisplayConfig.</param>
-        /// <returns>Monitor number (1-based) or 0 if not found.</returns>
-        private static int GetMonitorNumberFromDisplayInfo(string hardwareId, Dictionary<string, Drivers.DDC.MonitorDisplayInfo> monitorDisplayInfos)
+        /// <returns>MonitorDisplayInfo if found, or null if not found.</returns>
+        private static Drivers.DDC.MonitorDisplayInfo? GetMonitorDisplayInfoByHardwareId(string hardwareId, Dictionary<string, Drivers.DDC.MonitorDisplayInfo> monitorDisplayInfos)
         {
             if (string.IsNullOrEmpty(hardwareId) || monitorDisplayInfos == null || monitorDisplayInfos.Count == 0)
             {
-                return 0;
+                return null;
             }
 
             foreach (var kvp in monitorDisplayInfos)
@@ -125,13 +125,13 @@ namespace PowerDisplay.Common.Drivers.WMI
                 if (!string.IsNullOrEmpty(kvp.Value.HardwareId) &&
                     kvp.Value.HardwareId.Equals(hardwareId, StringComparison.OrdinalIgnoreCase))
                 {
-                    Logger.LogDebug($"WMI: Matched HardwareId '{hardwareId}' to MonitorNumber {kvp.Value.MonitorNumber}");
-                    return kvp.Value.MonitorNumber;
+                    Logger.LogDebug($"WMI: Matched HardwareId '{hardwareId}' to MonitorNumber {kvp.Value.MonitorNumber}, GdiDeviceName={kvp.Value.GdiDeviceName}");
+                    return kvp.Value;
                 }
             }
 
-            Logger.LogWarning($"WMI: Could not find MonitorNumber for HardwareId '{hardwareId}'");
-            return 0;
+            Logger.LogWarning($"WMI: Could not find MonitorDisplayInfo for HardwareId '{hardwareId}'");
+            return null;
         }
 
         public string Name => "WMI Monitor Controller (WmiLight)";
@@ -358,9 +358,11 @@ namespace PowerDisplay.Common.Drivers.WMI
                             // e.g., "DISPLAY\BOE0900\4&10fd3ab1&0&UID265988_0" -> "BOE0900"
                             var edidId = ExtractHardwareIdFromInstanceName(instanceName);
 
-                            // Get MonitorNumber from QueryDisplayConfig by matching EdidId
-                            // This matches Windows Display Settings "Identify" feature
-                            int monitorNumber = GetMonitorNumberFromDisplayInfo(edidId, monitorDisplayInfos);
+                            // Get MonitorDisplayInfo from QueryDisplayConfig by matching EdidId
+                            // This provides MonitorNumber and GdiDeviceName for display settings APIs
+                            var displayInfo = GetMonitorDisplayInfoByHardwareId(edidId, monitorDisplayInfos);
+                            int monitorNumber = displayInfo?.MonitorNumber ?? 0;
+                            string gdiDeviceName = displayInfo?.GdiDeviceName ?? string.Empty;
 
                             // Generate unique monitor Id: "WMI_{EdidId}_{MonitorNumber}"
                             string monitorId = !string.IsNullOrEmpty(edidId)
@@ -382,6 +384,7 @@ namespace PowerDisplay.Common.Drivers.WMI
                                 Manufacturer = edidId.Length >= 3 ? edidId.Substring(0, 3) : "Internal",
                                 SupportsColorTemperature = false,
                                 MonitorNumber = monitorNumber,
+                                GdiDeviceName = gdiDeviceName,
                             };
 
                             monitors.Add(monitor);

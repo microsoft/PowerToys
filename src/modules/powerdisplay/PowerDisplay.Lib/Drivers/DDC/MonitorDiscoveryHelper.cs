@@ -170,6 +170,7 @@ namespace PowerDisplay.Common.Drivers.DDC
                     Manufacturer = ExtractManufacturer(name),
                     CapabilitiesStatus = "unknown",
                     MonitorNumber = monitorInfo.MonitorNumber,
+                    GdiDeviceName = monitorInfo.GdiDeviceName ?? string.Empty,
                     Orientation = DmdoDefault, // Orientation will be set separately if needed
                 };
 
