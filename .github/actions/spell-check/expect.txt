@@ -358,6 +358,7 @@ DCapabilities
 DCOM
 DComposition
 DCR
+ddc
 Ddc
 Ddcci
 ddcutil
@@ -2083,6 +2084,7 @@ WKSG
 Wlkr
 wmain
 Wman
+wmi
 WMI
 WMICIM
 wmimgmt
