@@ -18,13 +18,10 @@ Keystroke Overlay is a PowerToys module that displays keyboard input live. There
 The Keystroke Overlay module consists of three main components:
 
 ```
-poweraccent/
 keystrokeoverlay/
 ├── KeystrokeOverlayKeyboardService/     # Keyboard Hook
 ├── KeystrokeOverlayXAML/                # The overlaying display UI
 └── KeystrokeOverlayModuleInterface/     # DLL Interface
-
-
 ```
 
 ### Keyboard Service (KeystrokeOverlayKeyboardService)
@@ -100,4 +97,4 @@ To directly debug the Keystroke Overlay UI component:
 
 
 
-## Any known issues with debuigging here
+## Any known issues with debugging here
