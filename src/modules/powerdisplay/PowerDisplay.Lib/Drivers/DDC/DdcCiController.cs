@@ -370,43 +370,38 @@ namespace PowerDisplay.Common.Drivers.DDC
         /// </summary>
         public async Task<IEnumerable<Monitor>> DiscoverMonitorsAsync(CancellationToken cancellationToken = default)
         {
-            return await Task.Run(
-                async () =>
+            try
+            {
+                // Get monitor display info from QueryDisplayConfig, keyed by device path (unique per target)
+                var allMonitorDisplayInfo = DdcCiNative.GetAllMonitorDisplayInfo();
+
+                // Phase 1: Collect candidate monitors
+                var monitorHandles = EnumerateMonitorHandles();
+                if (monitorHandles.Count == 0)
                 {
-                    try
-                    {
-                        // Get monitor display info from QueryDisplayConfig, keyed by device path (unique per target)
-                        var allMonitorDisplayInfo = DdcCiNative.GetAllMonitorDisplayInfo();
+                    return Enumerable.Empty<Monitor>();
+                }
 
-                        // Phase 1: Collect candidate monitors
-                        var monitorHandles = EnumerateMonitorHandles();
-                        if (monitorHandles.Count == 0)
-                        {
-                            return Enumerable.Empty<Monitor>();
-                        }
+                var candidateMonitors = await CollectCandidateMonitorsAsync(
+                    monitorHandles, allMonitorDisplayInfo, cancellationToken);
 
-                        var candidateMonitors = await CollectCandidateMonitorsAsync(
-                            monitorHandles, allMonitorDisplayInfo, cancellationToken);
+                if (candidateMonitors.Count == 0)
+                {
+                    return Enumerable.Empty<Monitor>();
+                }
 
-                        if (candidateMonitors.Count == 0)
-                        {
-                            return Enumerable.Empty<Monitor>();
-                        }
+                // Phase 2: Fetch capabilities in parallel
+                var fetchResults = await FetchCapabilitiesInParallelAsync(
+                    candidateMonitors, cancellationToken);
 
-                        // Phase 2: Fetch capabilities in parallel
-                        var fetchResults = await FetchCapabilitiesInParallelAsync(
-                            candidateMonitors, cancellationToken);
-
-                        // Phase 3: Create monitor objects
-                        return CreateValidMonitors(fetchResults);
-                    }
-                    catch (Exception ex)
-                    {
-                        Logger.LogError($"DDC: DiscoverMonitorsAsync exception: {ex.Message}\nStack: {ex.StackTrace}");
-                        return Enumerable.Empty<Monitor>();
-                    }
-                },
-                cancellationToken);
+                // Phase 3: Create monitor objects
+                return CreateValidMonitors(fetchResults);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"DDC: DiscoverMonitorsAsync exception: {ex.Message}\nStack: {ex.StackTrace}");
+                return Enumerable.Empty<Monitor>();
+            }
         }
 
         /// <summary>

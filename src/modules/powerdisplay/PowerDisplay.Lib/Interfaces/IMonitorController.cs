@@ -17,7 +17,7 @@ namespace PowerDisplay.Common.Interfaces
     public interface IMonitorController
     {
         /// <summary>
-        /// Controller name
+        /// Gets controller name
         /// </summary>
         string Name { get; }
 
