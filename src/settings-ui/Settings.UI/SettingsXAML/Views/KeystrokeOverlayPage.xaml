@@ -17,7 +17,6 @@
                
                 <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}">
                     <tkcontrols:SettingsCard
-                        Name="KeystrokeOverlayEnable"
                         x:Uid="KeystrokeOverlay_Enable"
                        HeaderIcon="{ui:FontIcon Glyph=&#xE7E8;}">
                         <ToggleSwitch x:Uid="KeystrokeOverlay_ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
@@ -25,23 +24,34 @@
                 </controls:GPOInfoControl>
 
                 <controls:SettingsGroup x:Uid="KeystrokeOverlay_Shortcut" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-                    <tkcontrols:SettingsCard Name="SwitchMonitorHotkeyCard" x:Uid="KeystrokeOverlay_SwitchMonitorHotkey" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
+                    <tkcontrols:SettingsCard x:Uid="KeystrokeOverlay_ActivationShortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
+                        <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.ActivationShortcut, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
+
+                    <tkcontrols:SettingsCard x:Uid="KeystrokeOverlay_SwitchMonitorHotkey" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
                         <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.SwitchMonitorHotkey, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
 
-                    <tkcontrols:SettingsCard Name="DraggableOverlay" x:Uid="KeystrokeOverlay_DraggableOverlay" HeaderIcon="{ui:FontIcon Glyph=&#xE81E;}">
+                    <tkcontrols:SettingsCard x:Uid="KeystrokeOverlay_SwitchDisplayModeHotkey" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
+                        <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.SwitchDisplayModeHotkey, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
+                </controls:SettingsGroup>
+
+                <controls:SettingsGroup x:Uid="KeystrokeOverlay_Behavior" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                    <tkcontrols:SettingsCard x:Uid="KeystrokeOverlay_DraggableOverlay" HeaderIcon="{ui:FontIcon Glyph=&#xE81E;}">
                         <ToggleSwitch IsOn="{x:Bind ViewModel.IsDraggableOverlayEnabled, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
 
-                    <tkcontrols:SettingsCard Name="DisplayMode" x:Uid="KeystrokeOverlay_DisplayMode" HeaderIcon="{ui:FontIcon Glyph=&#xE8B9;}">
+                    <tkcontrols:SettingsCard x:Uid="KeystrokeOverlay_DisplayMode" HeaderIcon="{ui:FontIcon Glyph=&#xE8B9;}">
                         <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.DisplayMode, Mode=TwoWay}">
                             <ComboBoxItem x:Uid="Radio_KeystrokeOverlay_DisplayMode_LastFiveKeystrokes" />
                             <ComboBoxItem x:Uid="Radio_KeystrokeOverlay_DisplayMode_SingleCharactersOnly" />
                             <ComboBoxItem x:Uid="Radio_KeystrokeOverlay_DisplayMode_ShortcutsOnly" />
+                            <ComboBoxItem x:Uid="Radio_KeystrokeOverlay_DisplayMode_Stream" />
                         </ComboBox>
                     </tkcontrols:SettingsCard>
-                   
-                    <tkcontrols:SettingsCard Name="OverlayTimeout" x:Uid="KeystrokeOverlay_OverlayTimeout" HeaderIcon="{ui:FontIcon Glyph=&#xE823;}">
+
+                    <tkcontrols:SettingsCard x:Uid="KeystrokeOverlay_OverlayTimeout" HeaderIcon="{ui:FontIcon Glyph=&#xE823;}">
                         <NumberBox
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
                             LargeChange="100"
@@ -73,11 +83,11 @@
                                         FontSize="{x:Bind ViewModel.TextSize, Mode=OneWay}">
 
                                         <controls:KeyVisual.Background>
-                                            <SolidColorBrush Color="{x:Bind ViewModel.BackgroundColorWithAlpha, Mode=OneWay}" />
+                                            <SolidColorBrush Color="{x:Bind ViewModel.BackgroundColor, Mode=OneWay}" />
                                         </controls:KeyVisual.Background>
 
                                         <controls:KeyVisual.Foreground>
-                                            <SolidColorBrush Color="{x:Bind ViewModel.TextColorWithAlpha, Mode=OneWay}" />
+                                            <SolidColorBrush Color="{x:Bind ViewModel.TextColor, Mode=OneWay}" />
                                         </controls:KeyVisual.Foreground>
 
                                     </controls:KeyVisual>
@@ -91,11 +101,11 @@
                                         FontSize="{x:Bind ViewModel.TextSize, Mode=OneWay}">
 
                                         <controls:KeyVisual.Background>
-                                            <SolidColorBrush Color="{x:Bind ViewModel.BackgroundColorWithAlpha, Mode=OneWay}" />
+                                            <SolidColorBrush Color="{x:Bind ViewModel.BackgroundColor, Mode=OneWay}" />
                                         </controls:KeyVisual.Background>
 
                                         <controls:KeyVisual.Foreground>
-                                            <SolidColorBrush Color="{x:Bind ViewModel.TextColorWithAlpha, Mode=OneWay}" />
+                                            <SolidColorBrush Color="{x:Bind ViewModel.TextColor, Mode=OneWay}" />
                                         </controls:KeyVisual.Foreground>
 
                                     </controls:KeyVisual>
@@ -109,11 +119,11 @@
                                         FontSize="{x:Bind ViewModel.TextSize, Mode=OneWay}">
 
                                         <controls:KeyVisual.Background>
-                                            <SolidColorBrush Color="{x:Bind ViewModel.BackgroundColorWithAlpha, Mode=OneWay}" />
+                                            <SolidColorBrush Color="{x:Bind ViewModel.BackgroundColor, Mode=OneWay}" />
                                         </controls:KeyVisual.Background>
 
                                         <controls:KeyVisual.Foreground>
-                                            <SolidColorBrush Color="{x:Bind ViewModel.TextColorWithAlpha, Mode=OneWay}" />
+                                            <SolidColorBrush Color="{x:Bind ViewModel.TextColor, Mode=OneWay}" />
                                         </controls:KeyVisual.Foreground>
 
                                     </controls:KeyVisual>
@@ -123,7 +133,7 @@
                         </tkcontrols:SettingsCard.Description>
                     </tkcontrols:SettingsCard>
 
-                    <tkcontrols:SettingsCard Name="TextSize" x:Uid="KeystrokeOverlay_TextSize" HeaderIcon="{ui:FontIcon Glyph=&#xE8E9;}">
+                    <tkcontrols:SettingsCard x:Uid="KeystrokeOverlay_TextSize" HeaderIcon="{ui:FontIcon Glyph=&#xE8E9;}">
                         <NumberBox
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
                             LargeChange="2"
@@ -134,16 +144,16 @@
                             Value="{x:Bind ViewModel.TextSize, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
 
-                    <tkcontrols:SettingsCard Name="KeystrokeOverlay_TextAppearance" x:Uid="KeystrokeOverlay_TextAppearance" HeaderIcon="{ui:FontIcon Glyph=&#xE8D3;}">                
+                    <tkcontrols:SettingsCard x:Uid="KeystrokeOverlay_TextAppearance" HeaderIcon="{ui:FontIcon Glyph=&#xE8D3;}">                
                         <controls:ColorPickerButton x:Name="TextColorPicker"
-                            SelectedColor="{x:Bind Path=ViewModel.TextColorWithAlpha, Mode=TwoWay}"
+                            SelectedColor="{x:Bind Path=ViewModel.TextColor, Mode=TwoWay}"
                             IsAlphaEnabled="True"
                         />
                     </tkcontrols:SettingsCard>
 
-                    <tkcontrols:SettingsCard Name="KeystrokeOverlay_BackgroundAppearance" x:Uid="KeystrokeOverlay_BackgroundAppearance" HeaderIcon="{ui:FontIcon Glyph=&#xE97C;}">                
+                    <tkcontrols:SettingsCard x:Uid="KeystrokeOverlay_BackgroundAppearance" HeaderIcon="{ui:FontIcon Glyph=&#xE97C;}">                
                         <controls:ColorPickerButton x:Name="BackgroundColorPicker"
-                            SelectedColor="{x:Bind Path=ViewModel.BackgroundColorWithAlpha, Mode=TwoWay}"
+                            SelectedColor="{x:Bind Path=ViewModel.BackgroundColor, Mode=TwoWay}"
                             IsAlphaEnabled="True"
                         />
                     </tkcontrols:SettingsCard>

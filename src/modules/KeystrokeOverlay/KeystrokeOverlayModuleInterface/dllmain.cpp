@@ -1,13 +1,21 @@
 #include "pch.h"
+
 #include <interface/powertoy_module_interface.h>
-#include <interface/lowlevel_keyboard_event_data.h>
-#include <interface/win_hook_event_data.h>
-#include <common/settings_objects.h>
+#include <common/SettingsAPI/settings_helpers.h>
+#include <common/hooks/LowlevelKeyboardEvent.h>
+#include <common/hooks/WinHookEvent.h>
+#include <common/SettingsAPI/settings_objects.h>
+#include <common/utils/gpo.h>
+#include <common/logger/logger.h>
+#include <common/utils/process_path.h>
+#include <common/utils/logger_helper.h>
+
 #include "trace.h"
+#include <iostream>
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
-BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserved)
+BOOL APIENTRY DllMain(HMODULE /*hModule*/, DWORD ul_reason_for_call, LPVOID /*lpReserved*/)
 {
     switch (ul_reason_for_call)
     {
@@ -25,41 +33,139 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserv
 }
 
 // The PowerToy name that will be shown in the settings.
-const static wchar_t* MODULE_NAME = L"$projectname$";
+const static wchar_t* MODULE_NAME = L"Keystroke Overlay";
+const static wchar_t* MODULE_KEY = L"KeystrokeOverlay";
 // Add a description that will we shown in the module settings page.
 const static wchar_t* MODULE_DESC = L"<no description>";
+
+const static wchar_t* win_hook_event = L"win_hook_event";
+// Note: low-level keyboard hook and batching are handled by the external
+// KeystrokeServer.exe. The module no longer declares an internal event queue
+// or batcher to avoid duplicate IPC servers.
 
 // These are the properties shown in the Settings page.
 struct ModuleSettings
 {
     // Add the PowerToy module properties with default values.
-    // Currently available types:
-    // - int
-    // - bool
-    // - string
 
-    //bool bool_prop = true;
-    //int int_prop = 10;
-    //std::wstring string_prop = L"The quick brown fox jumps over the lazy dog";
-    //std::wstring color_prop = L"#1212FF";
+    bool is_draggable = true;
+    int overlay_timeout = 3000;
+    int display_mode = 0; // NEW: 0=Standard, 1=Compact, etc. (Define your modes)
+    
+    int text_size = 24;
+    int text_opacity = 100;
+
+    int bg_opacity = 50;
+
+    std::wstring text_color = L"#FFFFFF";
+    std::wstring bg_color = L"#000000";
+
+    PowerToysSettings::HotkeyObject switch_monitor_hotkey =
+        PowerToysSettings::HotkeyObject::from_settings(true, false, false, true, 0xBF); // Default: Win+Ctrl+/
 
 } g_settings;
 
-// Implement the PowerToy Module Interface and all the required methods.
-class $safeprojectname$ : public PowertoyModuleIface
+class KeystrokeOverlay : public PowertoyModuleIface
 {
+    std::wstring app_name;
+    std::wstring app_key;
+
 private:
     // The PowerToy state.
     bool m_enabled = false;
+    HANDLE m_hProcess = nullptr;
+    // Handle for the hidden keystroke server process started by this module
+    HANDLE m_hServerProcess = nullptr;
 
     // Load initial settings from the persisted values.
     void init_settings();
 
+    // Launch and terminate the Keystroke Overlay process.
+    // Launch and terminate the Keystroke Overlay process.
+    void launch_process()
+    {
+        Logger::trace(L"Launching Keystroke Overlay process");
+        unsigned long powertoys_pid = GetCurrentProcessId();
+
+        //
+        // Determine the folder where this module's DLL lives
+        //
+        WCHAR modulePath[MAX_PATH] = { 0 };
+        if (GetModuleFileNameW(reinterpret_cast<HMODULE>(&__ImageBase), modulePath, ARRAYSIZE(modulePath)) == 0)
+        {
+            Logger::error(L"GetModuleFileNameW failed — cannot launch KeystrokeOverlay");
+            return;
+        }
+
+        std::wstring folder = modulePath;
+        size_t pos = folder.find_last_of(L"\\/");
+        if (pos != std::wstring::npos)
+            folder.resize(pos + 1);
+
+        //
+        // Build absolute path to KeystrokeOverlay.exe
+        //
+        std::wstring exePath = folder + L"PowerToys.KeystrokeOverlay.exe";
+        std::wstring cmdLine = exePath + L" " + std::to_wstring(powertoys_pid);
+
+        Logger::trace(L"Launching KeystrokeOverlay UI from: " + exePath);
+
+        //
+        // Launch the UI application
+        //
+        STARTUPINFOW si{};
+        si.cb = sizeof(si);
+        PROCESS_INFORMATION pi{};
+
+        if (!CreateProcessW(
+            exePath.c_str(),       // lpApplicationName
+            &cmdLine[0],           // lpCommandLine (modifiable buffer)
+            nullptr, nullptr,
+            FALSE,                 // inherit handles
+            0,                     // flags
+            nullptr, nullptr,
+            &si, &pi))
+        {
+            DWORD err = GetLastError();
+            Logger::error(L"KeystrokeOverlay.exe failed to start with error: " + std::to_wstring(err));
+            return;
+        }
+
+        m_hProcess = pi.hProcess;
+        CloseHandle(pi.hThread);
+
+        Logger::trace(L"KeystrokeOverlay.exe started successfully");
+    }
+
+
+    void terminate_process()
+    {
+        if (m_hProcess)
+        {
+            Logger::trace(L"Terminating Keystroke Overlay process");
+
+            TerminateProcess(m_hProcess, 0);
+            CloseHandle(m_hProcess);
+            m_hProcess = nullptr;
+        }
+        if (m_hServerProcess)
+        {
+            Logger::trace(L"Terminating KeystrokeServer process");
+            TerminateProcess(m_hServerProcess, 0);
+            CloseHandle(m_hServerProcess);
+            m_hServerProcess = nullptr;
+        }
+    }
+
 public:
     // Constructor
-    $safeprojectname$()
+    KeystrokeOverlay()
     {
         init_settings();
+        app_name = MODULE_NAME;
+        app_key = MODULE_KEY;
+        LoggerHelpers::init_logger(app_key, L"ModuleInterface", "KeystrokeOverlay");
+        Logger::info("Keystroke Overlay ModuleInterface object is constructing");
     };
 
     // Destroy the powertoy and free memory
@@ -74,20 +180,18 @@ public:
         return MODULE_NAME;
     }
 
-    // Return array of the names of all events that this powertoy listens for, with
-    // nullptr as the last element of the array. Nullptr can also be retured for empty
-    // list.
-    virtual const wchar_t** get_events() override
+    virtual const wchar_t* get_key() override
     {
-        static const wchar_t* events[] = { nullptr };
-        // Available events:
-        // - ll_keyboard
-        // - win_hook_event
-        //
-        // static const wchar_t* events[] = { ll_keyboard,
-        //                                   win_hook_event,
-        //                                   nullptr };
+        return MODULE_KEY;
+    }
 
+    // Return array of the names of all events that this powertoy listens for, with
+    // nullptr as the last element of the array. We no longer request ll_keyboard
+    // events from the runner because the external KeystrokeServer.exe owns the
+    // low-level keyboard hook and IPC delivery.
+    virtual const wchar_t** get_events()
+    {
+        static const wchar_t* events[] = { win_hook_event, nullptr };
         return events;
     }
 
@@ -101,73 +205,96 @@ public:
         settings.set_description(MODULE_DESC);
 
         // Show an overview link in the Settings page
+        // commented out for now
         //settings.set_overview_link(L"https://");
 
         // Show a video link in the Settings page.
         //settings.set_video_link(L"https://");
 
-        // A bool property with a toggle editor.
-        //settings.add_bool_toogle(
-        //  L"bool_toggle_1", // property name.
-        //  L"This is what a BoolToggle property looks like", // description or resource id of the localized string.
-        //  g_settings.bool_prop // property value.
-        //);
+        // enable_draggable_overlay Toggle
+        settings.add_bool_toggle(
+            L"enable_draggable_overlay",   // property name.
+            L"Enable Draggable Overlay",    // description or resource id of the localized string.
+            g_settings.is_draggable         // property value.
+        );
 
-        // An integer property with a spinner editor.
-        //settings.add_int_spinner(
-        //  L"int_spinner_1", // property name
-        //  L"This is what a IntSpinner property looks like", // description or resource id of the localized string.
-        //  g_settings.int_prop, // property value.
-        //  0, // min value.
-        //  100, // max value.
-        //  10 // incremental step.
-        //);
+        settings.add_int_spinner(
+            L"display_mode", // property name
+            L"Display Mode", // description
+            g_settings.display_mode, // current value
+            0, // Min value (e.g., LastFiveKeystrokes)
+            2, // Max value (e.g., ShortcutsOnly)
+            1 // Step
+        );
 
-        // A string property with a textbox editor.
-        //settings.add_string(
-        //  L"string_text_1", // property name.
-        //  L"This is what a String property looks like", // description or resource id of the localized string.
-        //  g_settings.string_prop // property value.
-        //);
+        settings.add_hotkey(
+            L"switch_monitor_hotkey",
+            L"Move to Next Monitor",
+            g_settings.switch_monitor_hotkey
+        );
 
-        // A string property with a color picker editor.
-        //settings.add_color_picker(
-        //  L"color_picker_1", // property name.
-        //  L"This is what a ColorPicker property looks like", // description or resource id of the localized string.
-        //  g_settings.color_prop // property value.
-        //);
+        // Overlay Timeout Spinner
+        settings.add_int_spinner(
+            L"overlay_timeout",              // property name
+            L"Overlay Timeout (ms)",        // description or resource id of the localized string.
+            g_settings.overlay_timeout,     // property value.
+            500,                            // Min
+            10000,                          // Max
+            100                             // Step
+        );
 
-        // A custom action property. When using this settings type, the "PowertoyModuleIface::call_custom_action()"
-        // method should be overriden as well.
-        //settings.add_custom_action(
-        //  L"custom_action_id", // action name.
-        //  L"This is what a CustomAction property looks like", // label above the field.
-        //  L"Call a custom action", // button text.
-        //  L"Press the button to call a custom action." // display values / extended info.
-        //);
+        // 3. Text Size Spinner
+        settings.add_int_spinner(
+            L"text_size",                    // property name
+            L"Text Font Size",              // description or resource id of the localized string.    
+            g_settings.text_size,           // property value.
+            10,                             // Min
+            72,                             // Max
+            2                               // Step
+        );
+
+        // 4. Text Opacity
+        settings.add_int_spinner(
+            L"text_opacity",                 // property name
+            L"Text Opacity (%)",            // description or resource id of the localized string.
+            g_settings.text_opacity,        // property value.
+            0,                              // Min
+            100,                            // Max
+            5                               // Step
+        );
+
+        // 5. Background Opacity
+        settings.add_int_spinner(
+            L"background_opacity",           // property name
+            L"Background Opacity (%)",      // description or resource id of the localized string.
+            g_settings.bg_opacity,          // property value.
+            0,                              // Min
+            100,                            // Max
+            5                               // Step
+        );
+
+        // 6. Text Color
+        settings.add_color_picker(
+            L"text_color",                   // property name.
+            L"Text Color",                   // description or resource id of the localized string.
+            g_settings.text_color            // property value.
+        );
+
+        // 7. Background Color
+        settings.add_color_picker(
+            L"background_color",               // property name.
+            L"Background Color",               // description or resource id of the localized string.
+            g_settings.bg_color                // property value.
+        );
 
         return settings.serialize_to_buffer(buffer, buffer_size);
     }
 
-    // Signal from the Settings editor to call a custom action.
-    // This can be used to spawn more complex editors.
-    virtual void call_custom_action(const wchar_t* action) override
+    // Return the configured status for the gpo policy for the module
+    virtual powertoys_gpo::gpo_rule_configured_t gpo_policy_enabled_configuration() override
     {
-        static UINT custom_action_num_calls = 0;
-        try
-        {
-            // Parse the action values, including name.
-            PowerToysSettings::CustomActionObject action_object =
-                PowerToysSettings::CustomActionObject::from_json_string(action);
-
-            //if (action_object.get_name() == L"custom_action_id") {
-            //  // Execute your custom action
-            //}
-        }
-        catch (std::exception&)
-        {
-            // Improper JSON.
-        }
+        return powertoys_gpo::gpo_rule_configured_t::gpo_rule_configured_not_configured;
+        // return powertoys_gpo::getConfiguredKeystrokeOverlayEnabledValue();
     }
 
     // Called by the runner to pass the updated settings values as a serialized JSON.
@@ -177,31 +304,43 @@ public:
         {
             // Parse the input JSON string.
             PowerToysSettings::PowerToyValues values =
-                PowerToysSettings::PowerToyValues::from_json_string(config);
+                PowerToysSettings::PowerToyValues::from_json_string(config, get_key());
 
-            // Update a bool property.
-            //if (auto v = values.get_bool_value(L"bool_toggle_1")) {
-            //  g_settings.bool_prop = *v;
-            //}
+            if (auto v = values.get_bool_value(L"enable_draggable_overlay")) {
+                g_settings.is_draggable = *v;
+            }
+            if (auto v = values.get_int_value(L"overlay_timeout")) {
+                g_settings.overlay_timeout = *v;
+            }
+            if (auto v = values.get_int_value(L"text_size")) {
+                g_settings.text_size = *v;
+            }
+            if (auto v = values.get_int_value(L"text_opacity")) {
+                g_settings.text_opacity = *v;
+            }
+            if (auto v = values.get_int_value(L"background_opacity")) {
+                g_settings.bg_opacity = *v;
+            }
+            if (auto v = values.get_string_value(L"text_color")) {
+                g_settings.text_color = *v;
+            }
+            if (auto v = values.get_string_value(L"background_color")) {
+                g_settings.bg_color = *v;
+            }
+            if (auto v = values.get_int_value(L"display_mode"))
+            {
+                g_settings.display_mode = *v;
+            }
+            if (auto v = values.get_json(L"switch_monitor_hotkey"))
+            {
+                g_settings.switch_monitor_hotkey = PowerToysSettings::HotkeyObject::from_json(*v);
+            }
 
-            // Update an int property.
-            //if (auto v = values.get_int_value(L"int_spinner_1")) {
-            //  g_settings.int_prop = *v;
-            //}
-
-            // Update a string property.
-            //if (auto v = values.get_string_value(L"string_text_1")) {
-            //  g_settings.string_prop = *v;
-            //}
-
-            // Update a color property.
-            //if (auto v = values.get_string_value(L"color_picker_1")) {
-            //  g_settings.color_prop = *v;
-            //}
-
+            // Save to disk so the C# App can read the updated settings.json
             // If you don't need to do any custom processing of the settings, proceed
             // to persists the values calling:
             values.save_to_settings_file();
+            
             // Otherwise call a custom function to process the settings before saving them to disk:
             // save_settings();
         }
@@ -212,15 +351,22 @@ public:
     }
 
     // Enable the powertoy
+
+    // where the keystrokeoverlay.exe is/should be launched
     virtual void enable()
     {
+        launch_process();
         m_enabled = true;
+        Trace::EnableKeystrokeOverlay(true);
     }
 
     // Disable the powertoy
     virtual void disable()
     {
+        terminate_process();
         m_enabled = false;
+        // External server handles batching; nothing else to stop here.
+        Trace::EnableKeystrokeOverlay(false);
     }
 
     // Returns if the powertoys is enabled
@@ -230,62 +376,56 @@ public:
     }
 
     // Handle incoming event, data is event-specific
-    virtual intptr_t signal_event(const wchar_t* name, intptr_t data) override
-    {
-        if (wcscmp(name, ll_keyboard) == 0)
-        {
-            auto& event = *(reinterpret_cast<LowlevelKeyboardEvent*>(data));
-            // Return 1 if the keypress is to be suppressed (not forwarded to Windows),
-            // otherwise return 0.
-            return 0;
-        }
-        else if (wcscmp(name, win_hook_event) == 0)
-        {
-            auto& event = *(reinterpret_cast<WinHookEvent*>(data));
-            // Return value is ignored
-            return 0;
-        }
-        return 0;
-    }
-
-    // This methods are part of an experimental features not fully supported yet
-    virtual void register_system_menu_helper(PowertoySystemMenuIface* helper) override
-    {
-    }
-
-    virtual void signal_system_menu_action(const wchar_t* name) override
-    {
-    }
+    // virtual intptr_t signal_event(const wchar_t* name, intptr_t data)
+    // {
+    //    if (wcscmp(name, win_hook_event) == 0)
+    //    {
+    //        /* auto& event = *(reinterpret_cast<WinHookEvent*>(data)); */
+    //        // Return value is ignored
+    //        return 0;
+    //    }
+    //    return 0;
+    // }
 };
 
 // Load the settings file.
-void $safeprojectname$::init_settings()
+void KeystrokeOverlay::init_settings()
 {
     try
     {
         // Load and parse the settings file for this PowerToy.
         PowerToysSettings::PowerToyValues settings =
-            PowerToysSettings::PowerToyValues::load_from_settings_file($safeprojectname$::get_name());
+            PowerToysSettings::PowerToyValues::load_from_settings_file(KeystrokeOverlay::get_name());
 
-        // Load a bool property.
-        //if (auto v = settings.get_bool_value(L"bool_toggle_1")) {
-        //  g_settings.bool_prop = *v;
-        //}
-
-        // Load an int property.
-        //if (auto v = settings.get_int_value(L"int_spinner_1")) {
-        //  g_settings.int_prop = *v;
-        //}
-
-        // Load a string property.
-        //if (auto v = settings.get_string_value(L"string_text_1")) {
-        //  g_settings.string_prop = *v;
-        //}
-
-        // Load a color property.
-        //if (auto v = settings.get_string_value(L"color_picker_1")) {
-        //  g_settings.color_prop = *v;
-        //}
+        if (auto v = settings.get_bool_value(L"enable_draggable_overlay")) {
+            g_settings.is_draggable = *v;
+        }
+        if (auto v = settings.get_int_value(L"overlay_timeout")) {
+            g_settings.overlay_timeout = *v;
+        }
+        if (auto v = settings.get_int_value(L"text_size")) {
+            g_settings.text_size = *v;
+        }
+        if (auto v = settings.get_int_value(L"text_opacity")) {
+            g_settings.text_opacity = *v;
+        }
+        if (auto v = settings.get_int_value(L"background_opacity")) {
+            g_settings.bg_opacity = *v;
+        }
+        if (auto v = settings.get_string_value(L"text_color")) {
+            g_settings.text_color = *v;
+        }
+        if (auto v = settings.get_string_value(L"background_color")) {
+            g_settings.bg_color = *v;
+        }
+        if (auto v = settings.get_int_value(L"display_mode"))
+        {
+            g_settings.display_mode = *v;
+        }
+        if (auto v = settings.get_json(L"switch_monitor_hotkey"))
+        {
+            g_settings.switch_monitor_hotkey = PowerToysSettings::HotkeyObject::from_json(*v);
+        }
     }
     catch (std::exception&)
     {
@@ -293,46 +433,7 @@ void $safeprojectname$::init_settings()
     }
 }
 
-// This method of saving the module settings is only required if you need to do any
-// custom processing of the settings before saving them to disk.
-//void $projectname$::save_settings() {
-//  try {
-//    // Create a PowerToyValues object for this PowerToy
-//    PowerToysSettings::PowerToyValues values(get_name());
-//
-//    // Save a bool property.
-//    //values.add_property(
-//    //  L"bool_toggle_1", // property name
-//    //  g_settings.bool_prop // property value
-//    //);
-//
-//    // Save an int property.
-//    //values.add_property(
-//    //  L"int_spinner_1", // property name
-//    //  g_settings.int_prop // property value
-//    //);
-//
-//    // Save a string property.
-//    //values.add_property(
-//    //  L"string_text_1", // property name
-//    //  g_settings.string_prop // property value
-//    );
-//
-//    // Save a color property.
-//    //values.add_property(
-//    //  L"color_picker_1", // property name
-//    //  g_settings.color_prop // property value
-//    //);
-//
-//    // Save the PowerToyValues JSON to the power toy settings file.
-//    values.save_to_settings_file();
-//  }
-//  catch (std::exception ex) {
-//    // Couldn't save the settings.
-//  }
-//}
-
 extern "C" __declspec(dllexport) PowertoyModuleIface* __cdecl powertoy_create()
 {
-    return new $safeprojectname$();
+    return new KeystrokeOverlay();
 }

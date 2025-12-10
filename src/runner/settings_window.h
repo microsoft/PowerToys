@@ -33,6 +33,7 @@ enum class ESettingsWindowNames
     CropAndLock,
     EnvironmentVariables,
     AdvancedPaste,
+    KeystrokeOverlay,
     NewPlus,
     CmdPal,
     ZoomIt,

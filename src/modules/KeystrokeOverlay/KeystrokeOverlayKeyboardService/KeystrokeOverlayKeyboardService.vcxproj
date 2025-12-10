@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <!-- Import CppWinRT props if available -->
+  <Import Project="..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.props"
+          Condition="Exists('..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.props')" />
+
+  <!-- Global project settings -->
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>15.0</VCProjectVersion>
+    <ProjectGuid>{A1B2C3D4-E5F6-4321-8765-123456789ABC}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>KeystrokeOverlay</RootNamespace>
+    <ProjectName>KeystrokeOverlayKeyboardService</ProjectName>
+  </PropertyGroup>
+
+  <!-- Load VS default props -->
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+
+  <!-- THIS IS THE IMPORTANT CHANGE -->
+  <PropertyGroup Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType> <!-- NOW BUILDS AN EXE -->
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+
+  <!-- User props -->
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props"
+            Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')"
+            Label="LocalAppDataPlatform" />
+  </ImportGroup>
+
+  <PropertyGroup Label="UserMacros" />
+
+  <!-- Output directory — EXACTLY where your UI exe lives -->
+  <PropertyGroup>
+    <OutDir>$(SolutionDir)x64\$(Configuration)\WinUI3Apps\</OutDir>
+    <IntDir>$(ProjectDir)Intermediate\$(Platform)\$(Configuration)\</IntDir>
+    <TargetName>PowerToys.KeystrokeOverlayKeystrokeServer</TargetName>
+    <TargetExt>.exe</TargetExt>
+  </PropertyGroup>
+
+  <!-- Compiler configuration -->
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <PreprocessorDefinitions>
+        WIN32;_WINDOWS;%(PreprocessorDefinitions)
+      </PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>
+        $(ProjectDir);
+        $(ProjectDir)..\..\..\common\inc;
+        $(ProjectDir)..\..\..\common\Telemetry;
+        $(ProjectDir)..\..\..;
+        %(AdditionalIncludeDirectories)
+      </AdditionalIncludeDirectories>
+    </ClCompile>
+
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>
+        user32.lib;
+        gdi32.lib;
+        kernel32.lib;
+        advapi32.lib;
+        %(AdditionalDependencies)
+      </AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+
+  <!-- Header files -->
+  <ItemGroup>
+    <ClInclude Include="pch.h" />
+    <ClInclude Include="Batcher.h" />
+    <ClInclude Include="EventQueue.h" />
+    <ClInclude Include="KeystrokeEvent.h" />
+    <ClInclude Include="Pipeserver.h" />
+  </ItemGroup>
+
+  <!-- Source files -->
+  <ItemGroup>
+    <ClCompile Include="Batcher.cpp" />
+    <ClCompile Include="Pipeserver.cpp" />
+    <ClCompile Include="KeyboardListener.cpp" /> <!-- ⭐ MAIN() HERE -->
+    <ClCompile Include="pch.cpp">
+      <PrecompiledHeader>Create</PrecompiledHeader>
+    </ClCompile>
+  </ItemGroup>
+
+  <!-- Standard VS C++ targets -->
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+
+  <!-- spdlog integration -->
+  <Import Project="..\..\..\..\deps\spdlog.props" />
+  
+  <!-- No copy target needed — EXE is built directly into WinUI3Apps -->
+  
+</Project>

@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "trace.h"
 
+#include <common/Telemetry/TraceBase.h>
+
 TRACELOGGING_DEFINE_PROVIDER(
     g_hProvider,
     "Microsoft.PowerToys",
@@ -18,12 +20,12 @@ void Trace::UnregisterProvider()
     TraceLoggingUnregister(g_hProvider);
 }
 
-void Trace::MyEvent()
+void Trace::EnableKeystrokeOverlay(const bool enabled) noexcept
 {
-    TraceLoggingWrite(
+    TraceLoggingWriteWrapper(
         g_hProvider,
-        "PowerToyName_MyEvent",
+        "KeystrokeOverlay_EnableKeystrokeOverlay",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
-        TraceLoggingBoolean(TRUE, "UTCReplace_AppSessionGuid"),
-        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
+        TraceLoggingBoolean(enabled, "Enabled"));
 }

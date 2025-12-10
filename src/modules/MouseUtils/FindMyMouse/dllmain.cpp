@@ -216,7 +216,7 @@ inline static uint8_t LegacyOpacityToAlpha(int overlayOpacityPercent)
         overlayOpacityPercent = 100;
     }
 
-    // Round to nearest integer (0–255)
+    // Round to nearest integer (0ï¿½255)
     return static_cast<uint8_t>((overlayOpacityPercent * 255 + 50) / 100);
 }
 

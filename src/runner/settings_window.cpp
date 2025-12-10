@@ -803,6 +803,8 @@ std::string ESettingsWindowNames_to_string(ESettingsWindowNames value)
         return "EnvironmentVariables";
     case ESettingsWindowNames::AdvancedPaste:
         return "AdvancedPaste";
+    case ESettingsWindowNames::KeystrokeOverlay:
+        return "KeystrokeOverlay";
     case ESettingsWindowNames::NewPlus:
         return "NewPlus";
     case ESettingsWindowNames::CmdPal:
@@ -939,6 +941,10 @@ ESettingsWindowNames ESettingsWindowNames_from_string(std::string value)
     else if (value == "NewPlus")
     {
         return ESettingsWindowNames::NewPlus;
+    }
+    else if (value == "KeystrokeOverlay")
+    {
+        return ESettingsWindowNames::KeystrokeOverlay;
     }
     else if (value == "CmdPal")
     {

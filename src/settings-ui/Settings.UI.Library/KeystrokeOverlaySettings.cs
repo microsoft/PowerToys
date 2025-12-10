@@ -14,7 +14,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 {
     public class KeystrokeOverlaySettings : BasePTModuleSettings, ISettingsConfig, IHotkeyConfig
     {
-        public const string ModuleName = "Keystroke Overlay";
+        public const string ModuleName = "KeystrokeOverlay";
 
         private static readonly JsonSerializerOptions _serializerOptions = new JsonSerializerOptions
         {
@@ -51,6 +51,14 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                     () => Properties.SwitchMonitorHotkey,
                     value => Properties.SwitchMonitorHotkey = value ?? Properties.DefaultSwitchMonitorHotkey,
                     "SwitchMonitor_Shortcut"),
+                new HotkeyAccessor(
+                    () => Properties.ActivationShortcut,
+                    value => Properties.ActivationShortcut = value ?? Properties.DefaultActivationShortcut,
+                    "Activation_Shortcut"),
+                new HotkeyAccessor(
+                    () => Properties.SwitchDisplayModeHotkey,
+                    value => Properties.SwitchDisplayModeHotkey = value ?? Properties.DefaultSwitchDisplayModeHotkey,
+                    "SwitchDisplayMode_Shortcut"),
             };
 
             return hotkeyAccessors.ToArray();

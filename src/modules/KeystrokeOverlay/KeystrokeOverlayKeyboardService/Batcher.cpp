@@ -1,5 +1,6 @@
 // Batcher.cpp
 // Worker thread that batches and sends keystroke data through IPC.
+#include "pch.h"
 #include "Batcher.h"
 #include <sstream>
 

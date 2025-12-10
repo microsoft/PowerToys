@@ -50,6 +50,7 @@ public sealed class SettingsResource : BaseResource
             { nameof(ModuleType.Hosts),                     CreateModuleFunctionData<HostsSettings> },
             { nameof(ModuleType.ImageResizer),              CreateModuleFunctionData<ImageResizerSettings> },
             { nameof(ModuleType.KeyboardManager),           CreateModuleFunctionData<KeyboardManagerSettings> },
+            { nameof(ModuleType.KeystrokeOverlay),          CreateModuleFunctionData<KeystrokeOverlaySettings> },
             { nameof(ModuleType.MouseHighlighter),          CreateModuleFunctionData<MouseHighlighterSettings> },
             { nameof(ModuleType.MouseJump),                 CreateModuleFunctionData<MouseJumpSettings> },
             { nameof(ModuleType.MousePointerCrosshairs),    CreateModuleFunctionData<MousePointerCrosshairsSettings> },

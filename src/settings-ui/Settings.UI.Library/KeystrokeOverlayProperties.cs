@@ -12,13 +12,25 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     public class KeystrokeOverlayProperties
     {
         [CmdConfigureIgnore]
-        public HotkeySettings DefaultSwitchMonitorHotkey => new HotkeySettings(true, false, false, true, 0xBF);
+        public HotkeySettings DefaultSwitchMonitorHotkey => new HotkeySettings(true, true, false, false, 0x4B);
+
+        [CmdConfigureIgnore]
+        public HotkeySettings DefaultActivationShortcut => new HotkeySettings(true, false, false, true, 0x4B);
+
+        [CmdConfigureIgnore]
+        public HotkeySettings DefaultSwitchDisplayModeHotkey => new HotkeySettings(true, true, false, false, 0x44);
 
         [JsonPropertyName("enable_keystrokeoverlay")]
         public BoolProperty IsEnabled { get; set; }
 
+        [JsonPropertyName("activation_shortcut")]
+        public HotkeySettings ActivationShortcut { get; set; }
+
         [JsonPropertyName("switch_monitor_hotkey")]
         public HotkeySettings SwitchMonitorHotkey { get; set; }
+
+        [JsonPropertyName("switch_display_mode_hotkey")]
+        public HotkeySettings SwitchDisplayModeHotkey { get; set; }
 
         [JsonPropertyName("enable_draggable_overlay")]
         public BoolProperty IsDraggableOverlayEnabled { get; set; }
@@ -33,29 +45,23 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public IntProperty TextSize { get; set; }
 
         [JsonPropertyName("text_color")]
-        public IntProperty TextColor { get; set; }
-
-        [JsonPropertyName("text_opacity")]
-        public IntProperty TextOpacity { get; set; }
+        public StringProperty TextColor { get; set; }
 
         [JsonPropertyName("background_color")]
-        public IntProperty BackgroundColor { get; set; }
-
-        [JsonPropertyName("background_opacity")]
-        public IntProperty BackgroundOpacity { get; set; }
+        public StringProperty BackgroundColor { get; set; }
 
         public KeystrokeOverlayProperties()
         {
             IsEnabled = new BoolProperty(true);
             SwitchMonitorHotkey = DefaultSwitchMonitorHotkey;
+            ActivationShortcut = DefaultActivationShortcut;
+            SwitchDisplayModeHotkey = DefaultSwitchDisplayModeHotkey;
             IsDraggableOverlayEnabled = new BoolProperty(true);
             DisplayMode = new IntProperty(0);
             OverlayTimeout = new IntProperty(3000);
             TextSize = new IntProperty(24);
-            TextColor = new IntProperty(16777215); // White
-            TextOpacity = new IntProperty(100);
-            BackgroundColor = new IntProperty(0); // Black
-            BackgroundOpacity = new IntProperty(50);
+            TextColor = new StringProperty("#FFFFFF");
+            BackgroundColor = new StringProperty("#000000");
         }
 
         public string ToJsonString()
