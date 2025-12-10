@@ -104,8 +104,12 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
 //init_global_error_handlers();
 #endif
     Trace::RegisterProvider();
-    start_tray_icon(isProcessElevated);
-    set_tray_icon_visible(get_general_settings().showSystemTrayIcon);
+
+    // Load settings from file before reading them
+    load_general_settings();
+    auto const settings = get_general_settings();
+    start_tray_icon(isProcessElevated, settings.showThemeAdaptiveTrayIcon);
+    set_tray_icon_visible(settings.showSystemTrayIcon);
     CentralizedKeyboardHook::Start();
 
     int result = -1;
