@@ -67,8 +67,6 @@
 		<ProjectReference Include="..\..\..\Workspaces\Workspaces.ModuleServices\Workspaces.ModuleServices.csproj" />
 	</ItemGroup>
 
-	<!-- Exclude legacy Helper folder in favor of Helpers -->
-
 	<PropertyGroup>
 		<!-- Always build/publish AOT so the extension ships as native code -->
 		<SelfContained>true</SelfContained>

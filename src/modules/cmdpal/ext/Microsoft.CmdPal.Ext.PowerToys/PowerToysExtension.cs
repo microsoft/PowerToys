@@ -20,7 +20,7 @@ public sealed partial class PowerToysExtension : IExtension, IDisposable
     public PowerToysExtension(ManualResetEvent extensionDisposedEvent)
     {
         this._extensionDisposedEvent = extensionDisposedEvent;
-        Logger.LogInfo("PowerToysExtension constructed.");
+        Logger.LogInfo($"PowerToysExtension constructed. ProcArch={RuntimeInformation.ProcessArchitecture} OSArch={RuntimeInformation.OSArchitecture} BaseDir={AppContext.BaseDirectory}");
     }
 
     public object? GetProvider(ProviderType providerType)
