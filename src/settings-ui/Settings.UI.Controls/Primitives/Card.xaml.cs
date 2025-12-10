@@ -34,7 +34,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             set => SetValue(ContentProperty, value);
         }
 
-        public static readonly DependencyProperty DividerVisibilityProperty = DependencyProperty.Register(nameof(DividerVisibility), typeof(Visibility), typeof(Card), new PropertyMetadata(defaultValue: null));
+        public static readonly DependencyProperty DividerVisibilityProperty = DependencyProperty.Register(nameof(DividerVisibility), typeof(Visibility), typeof(Card), new PropertyMetadata(defaultValue: Visibility.Visible));
 
         public Visibility DividerVisibility
         {
@@ -66,7 +66,6 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             else
             {
                 VisualStateManager.GoToState(this, "TitleGridVisible", true);
-                DividerVisibility = Visibility.Visible;
             }
         }
     }

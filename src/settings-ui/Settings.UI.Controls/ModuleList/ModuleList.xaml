@@ -45,101 +45,63 @@
             </Setter>
         </Style>
     </UserControl.Resources>
+    <ItemsRepeater x:Name="DashboardView" ItemsSource="{x:Bind ItemsSource, Mode=OneWay}">
+        <ItemsRepeater.Layout>
+            <StackLayout Orientation="Vertical" Spacing="0" />
+        </ItemsRepeater.Layout>
+        <ItemsRepeater.ItemTemplate>
+            <DataTemplate x:DataType="controls:ModuleListItem">
+                <tkcontrols:SettingsCard
+                    MinWidth="0"
+                    MinHeight="0"
+                    Padding="12,4,12,4"
+                    tk:FrameworkElementExtensions.AncestorType="controls:ModuleList"
+                    Background="Transparent"
+                    BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
+                    BorderThickness="{Binding (tk:FrameworkElementExtensions.Ancestor).DividerThickness, RelativeSource={RelativeSource Self}}"
+                    Click="OnSettingsCardClick"
+                    CornerRadius="0"
+                    IsClickEnabled="{Binding (tk:FrameworkElementExtensions.Ancestor).IsItemClickable, RelativeSource={RelativeSource Self}}"
+                    Tag="{x:Bind}">
+                    <tkcontrols:SettingsCard.Header>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="{x:Bind Label, Mode=OneWay}" />
+                            <!--  InfoBadge  -->
+                            <InfoBadge
+                                x:Name="NewInfoBadge"
+                                Margin="4,0,0,0"
+                                Style="{StaticResource NewInfoBadgeStyle}"
+                                Visibility="{x:Bind IsNew, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+                            <FontIcon
+                                Width="20"
+                                Margin="4,0,0,0"
+                                FontSize="16"
+                                Glyph="&#xE72E;"
+                                Visibility="{x:Bind IsLocked, Converter={StaticResource ReverseBoolToVisibilityConverter}, ConverterParameter=True}">
+                                <ToolTipService.ToolTip>
+                                    <TextBlock x:Uid="GPOWarning" TextWrapping="WrapWholeWords" />
+                                </ToolTipService.ToolTip>
+                            </FontIcon>
+                        </StackPanel>
+                    </tkcontrols:SettingsCard.Header>
 
-    <controls:Card
-        x:Name="ModulesCard"
-        Title="{x:Bind Title, Mode=OneWay}"
-        MinWidth="400"
-        Padding="0"
-        VerticalAlignment="Top"
-        DividerVisibility="Collapsed">
-        <controls:Card.TitleContent>
-            <Button
-                x:Uid="Dashboard_SortBy"
-                Margin="0,0,4,0"
-                VerticalAlignment="Center"
-                Style="{StaticResource SubtleButtonStyle}">
-                <ToolTipService.ToolTip>
-                    <TextBlock x:Uid="Dashboard_SortBy_ToolTip" />
-                </ToolTipService.ToolTip>
-                <Button.Content>
-                    <FontIcon FontSize="16" Glyph="&#xE8CB;" />
-                </Button.Content>
-                <Button.Flyout>
-                    <MenuFlyout>
-                        <ToggleMenuFlyoutItem
-                            x:Uid="Dashboard_SortAlphabetical"
-                            Click="SortAlphabetical_Click"
-                            IsChecked="{x:Bind SortOption, Mode=OneWay, Converter={StaticResource ModuleListSortOptionToBooleanConverter}, ConverterParameter=Alphabetical}" />
-                        <ToggleMenuFlyoutItem
-                            x:Uid="Dashboard_SortByStatus"
-                            Click="SortByStatus_Click"
-                            IsChecked="{x:Bind SortOption, Mode=OneWay, Converter={StaticResource ModuleListSortOptionToBooleanConverter}, ConverterParameter=ByStatus}" />
-                    </MenuFlyout>
-                </Button.Flyout>
-            </Button>
-        </controls:Card.TitleContent>
+                    <tkcontrols:SettingsCard.HeaderIcon>
+                        <ImageIcon>
+                            <ImageIcon.Source>
+                                <BitmapImage UriSource="{x:Bind Icon, Mode=OneWay}" />
+                            </ImageIcon.Source>
+                        </ImageIcon>
+                    </tkcontrols:SettingsCard.HeaderIcon>
 
-        <ItemsRepeater
-            x:Name="DashboardView"
-            Grid.Row="1"
-            ItemsSource="{x:Bind ItemsSource, Mode=OneWay}">
-            <ItemsRepeater.Layout>
-                <StackLayout Orientation="Vertical" Spacing="0" />
-            </ItemsRepeater.Layout>
-            <ItemsRepeater.ItemTemplate>
-                <DataTemplate x:DataType="controls:ModuleListItem">
-                    <tkcontrols:SettingsCard
-                        MinHeight="0"
-                        Padding="12,4,12,4"
-                        tk:FrameworkElementExtensions.AncestorType="controls:ModuleList"
-                        Background="Transparent"
-                        BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
-                        BorderThickness="0,1,0,0"
-                        Click="OnSettingsCardClick"
-                        CornerRadius="0"
-                        IsClickEnabled="{Binding (tk:FrameworkElementExtensions.Ancestor).IsItemClickable, RelativeSource={RelativeSource Self}}"
-                        Tag="{x:Bind}">
-                        <tkcontrols:SettingsCard.Header>
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="{x:Bind Label, Mode=OneWay}" />
-                                <!--  InfoBadge  -->
-                                <InfoBadge
-                                    x:Name="NewInfoBadge"
-                                    Margin="4,0,0,0"
-                                    Style="{StaticResource NewInfoBadgeStyle}"
-                                    Visibility="{x:Bind IsNew, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
-                                <FontIcon
-                                    Width="20"
-                                    Margin="4,0,0,0"
-                                    FontSize="16"
-                                    Glyph="&#xE72E;"
-                                    Visibility="{x:Bind IsLocked, Converter={StaticResource ReverseBoolToVisibilityConverter}, ConverterParameter=True}">
-                                    <ToolTipService.ToolTip>
-                                        <TextBlock x:Uid="GPOWarning" TextWrapping="WrapWholeWords" />
-                                    </ToolTipService.ToolTip>
-                                </FontIcon>
-                            </StackPanel>
-                        </tkcontrols:SettingsCard.Header>
-
-                        <tkcontrols:SettingsCard.HeaderIcon>
-                            <ImageIcon>
-                                <ImageIcon.Source>
-                                    <BitmapImage UriSource="{x:Bind Icon, Mode=OneWay}" />
-                                </ImageIcon.Source>
-                            </ImageIcon>
-                        </tkcontrols:SettingsCard.HeaderIcon>
-
-                        <ToggleSwitch
-                            HorizontalAlignment="Right"
-                            AutomationProperties.Name="{x:Bind Label, Mode=OneWay}"
-                            IsEnabled="{x:Bind IsLocked, Converter={StaticResource BoolNegationConverter}, ConverterParameter=True, Mode=OneWay}"
-                            IsOn="{x:Bind IsEnabled, Mode=TwoWay}"
-                            OffContent=""
-                            OnContent="" />
-                    </tkcontrols:SettingsCard>
-                </DataTemplate>
-            </ItemsRepeater.ItemTemplate>
-        </ItemsRepeater>
-    </controls:Card>
+                    <ToggleSwitch
+                        HorizontalAlignment="Right"
+                        AutomationProperties.Name="{x:Bind Label, Mode=OneWay}"
+                        IsEnabled="{x:Bind IsLocked, Converter={StaticResource BoolNegationConverter}, ConverterParameter=True, Mode=OneWay}"
+                        IsOn="{x:Bind IsEnabled, Mode=TwoWay}"
+                        OffContent=""
+                        OnContent="" />
+                </tkcontrols:SettingsCard>
+            </DataTemplate>
+        </ItemsRepeater.ItemTemplate>
+    </ItemsRepeater>
 </UserControl>

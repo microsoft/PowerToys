@@ -29,12 +29,13 @@
                 <Button
                     x:Uid="Dashboard_SortBy"
                     VerticalAlignment="Center"
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                     Style="{StaticResource SubtleButtonStyle}">
                     <ToolTipService.ToolTip>
                         <TextBlock x:Uid="Dashboard_SortBy_ToolTip" />
                     </ToolTipService.ToolTip>
                     <Button.Content>
-                        <FontIcon FontSize="16" Glyph="&#xE8CB;" />
+                        <FontIcon FontSize="14" Glyph="&#xE8CB;" />
                     </Button.Content>
                     <Button.Flyout>
                         <MenuFlyout Placement="BottomEdgeAlignedRight">
@@ -70,10 +71,12 @@
             </StackPanel>
         </Grid>
         <Grid Grid.Row="1">
-            <ScrollViewer
-                HorizontalScrollBarVisibility="Disabled"
-                VerticalScrollBarVisibility="Auto">
-                <controls:ModuleList IsItemClickable="False" ItemsSource="{x:Bind ViewModel.FlyoutMenuItems, Mode=OneWay}" />
+            <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+                <controls:ModuleList
+                    Margin="8,0,12,0"
+                    DividerThickness="0,0,0,0"
+                    IsItemClickable="False"
+                    ItemsSource="{x:Bind ViewModel.FlyoutMenuItems, Mode=OneWay}" />
             </ScrollViewer>
         </Grid>
     </Grid>

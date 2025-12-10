@@ -9,14 +9,18 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 {
     public sealed partial class ModuleList : UserControl
     {
-        private object? _sortButton;
-
         public ModuleList()
         {
             this.InitializeComponent();
-            _sortButton = ModulesCard.TitleContent;
-            UpdateHeaderVisibility();
         }
+
+        public Thickness DividerThickness
+        {
+            get => (Thickness)GetValue(DividerThicknessProperty);
+            set => SetValue(DividerThicknessProperty, value);
+        }
+
+        public static readonly DependencyProperty DividerThicknessProperty = DependencyProperty.Register(nameof(DividerThickness), typeof(Thickness), typeof(ModuleList), new PropertyMetadata(new Thickness(0, 1, 0, 0)));
 
         public bool IsItemClickable
         {
@@ -41,46 +45,6 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         }
 
         public static readonly DependencyProperty SortOptionProperty = DependencyProperty.Register(nameof(SortOption), typeof(ModuleListSortOption), typeof(ModuleList), new PropertyMetadata(ModuleListSortOption.Alphabetical));
-
-        public string Title
-        {
-            get => (string)GetValue(TitleProperty);
-            set => SetValue(TitleProperty, value);
-        }
-
-        public static readonly DependencyProperty TitleProperty = DependencyProperty.Register(nameof(Title), typeof(string), typeof(ModuleList), new PropertyMetadata(default(string), OnTitleChanged));
-
-        private static void OnTitleChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-        {
-            ((ModuleList)d).UpdateHeaderVisibility();
-        }
-
-        private void UpdateHeaderVisibility()
-        {
-            if (ModulesCard == null)
-            {
-                return;
-            }
-
-            if (string.IsNullOrEmpty(Title))
-            {
-                ModulesCard.TitleContent = null;
-            }
-            else
-            {
-                ModulesCard.TitleContent = _sortButton;
-            }
-        }
-
-        private void SortAlphabetical_Click(object sender, RoutedEventArgs e)
-        {
-            SortOption = ModuleListSortOption.Alphabetical;
-        }
-
-        private void SortByStatus_Click(object sender, RoutedEventArgs e)
-        {
-            SortOption = ModuleListSortOption.ByStatus;
-        }
 
         private void OnSettingsCardClick(object sender, RoutedEventArgs e)
         {
