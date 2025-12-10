@@ -75,6 +75,7 @@ namespace KeystrokeOverlayUI
         private bool _isVisibleHotkey = false;
 
         private string _streamBuffer = string.Empty;
+        private int _maxKeystrokesShown = 5;
 
         public HotkeySettings ActivationShortcut { get; set; }
             = new HotkeySettings(true, false, false, true, 0x4B);
@@ -143,6 +144,11 @@ namespace KeystrokeOverlayUI
 
             IsDraggable = props.IsDraggable.Value;
             DisplayMode = props.DisplayMode.Value;
+
+            if (DisplayMode == 1)
+            {
+                _maxKeystrokesShown = 1;
+            }
 
             ActivationShortcut = props.ActivationShortcut;
             SwitchMonitorHotkey = props.SwitchMonitorHotkey;
@@ -367,7 +373,7 @@ namespace KeystrokeOverlayUI
 
             UpdateOpacities();
 
-            if (PressedKeys.Count > 5)
+            if (PressedKeys.Count > _maxKeystrokesShown)
             {
                 PressedKeys.RemoveAt(0);
                 UpdateOpacities();
