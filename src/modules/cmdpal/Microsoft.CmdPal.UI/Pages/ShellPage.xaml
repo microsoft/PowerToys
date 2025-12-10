@@ -11,7 +11,6 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:h="using:Microsoft.CmdPal.UI.Helpers"
     xmlns:help="using:Microsoft.CmdPal.UI.Helpers"
-    xmlns:labToolkit="using:CommunityToolkit.Labs.WinUI.MarkdownTextBlock"
     xmlns:markdownImageProviders="using:Microsoft.CmdPal.UI.Helpers.MarkdownImageProviders"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
@@ -177,7 +176,7 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <Grid Background="{ThemeResource LayerOnAcrylicPrimaryBackgroundBrush}">
+        <Grid Grid.Row="0" Background="{ThemeResource LayerOnAcrylicPrimaryBackgroundBrush}">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
@@ -190,7 +189,7 @@
                 Padding="0,12,0,12"
                 HorizontalAlignment="Stretch"
                 VerticalAlignment="Stretch"
-                BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
+                BorderBrush="{ThemeResource CmdPal.TopBarBorderBrush}"
                 BorderThickness="0,0,0,1">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
@@ -390,7 +389,7 @@
                     HorizontalAlignment="Stretch"
                     ui:VisualExtensions.NormalizedCenterPoint="0.5,0.5"
                     Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                    BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
+                    BorderBrush="{ThemeResource CmdPal.DividerStrokeColorDefaultBrush}"
                     BorderThickness="1"
                     CornerRadius="{StaticResource ControlCornerRadius}"
                     Visibility="Collapsed">
@@ -518,7 +517,7 @@
         <Grid
             Grid.Row="1"
             Background="{ThemeResource LayerOnAcrylicSecondaryBackgroundBrush}"
-            BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
+            BorderBrush="{ThemeResource CmdPal.DividerStrokeColorDefaultBrush}"
             BorderThickness="0,1,0,0">
             <cpcontrols:CommandBar CurrentPageViewModel="{x:Bind ViewModel.CurrentPage, Mode=OneWay}" />
         </Grid>
