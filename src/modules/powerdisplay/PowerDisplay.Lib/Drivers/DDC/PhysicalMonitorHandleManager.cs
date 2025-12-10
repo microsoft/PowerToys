@@ -42,38 +42,6 @@ namespace PowerDisplay.Common.Drivers.DDC
         }
 
         /// <summary>
-        /// Try to reuse existing handle if valid; otherwise uses new handle
-        /// Returns the handle to use and whether it was reused
-        /// </summary>
-        public (IntPtr Handle, bool WasReused) ReuseOrCreateHandle(string monitorId, IntPtr newHandle)
-        {
-            if (string.IsNullOrEmpty(monitorId))
-            {
-                return (newHandle, false);
-            }
-
-            return _monitorIdToHandleMap.ExecuteWithLock(dict =>
-            {
-                // Try to reuse existing handle if it's still valid
-                // Use quick connection check instead of full capabilities retrieval
-                if (dict.TryGetValue(monitorId, out var existingHandle) &&
-                    existingHandle != IntPtr.Zero &&
-                    DdcCiNative.QuickConnectionCheck(existingHandle))
-                {
-                    // Destroy the newly created handle since we're using the old one
-                    if (newHandle != existingHandle && newHandle != IntPtr.Zero)
-                    {
-                        DestroyPhysicalMonitor(newHandle);
-                    }
-
-                    return (existingHandle, true);
-                }
-
-                return (newHandle, false);
-            });
-        }
-
-        /// <summary>
         /// Update the handle mapping with new handles
         /// </summary>
         public void UpdateHandleMap(Dictionary<string, IntPtr> newHandleMap)

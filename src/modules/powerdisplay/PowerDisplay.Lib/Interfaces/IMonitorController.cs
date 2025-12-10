@@ -27,7 +27,7 @@ namespace PowerDisplay.Common.Interfaces
         /// <param name="monitor">Monitor object</param>
         /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>Brightness information</returns>
-        Task<BrightnessInfo> GetBrightnessAsync(Monitor monitor, CancellationToken cancellationToken = default);
+        Task<VcpFeatureValue> GetBrightnessAsync(Monitor monitor, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Sets monitor brightness
@@ -69,7 +69,7 @@ namespace PowerDisplay.Common.Interfaces
         /// <param name="monitor">Monitor object</param>
         /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>VCP preset value (e.g., 0x05 for 6500K), not Kelvin temperature</returns>
-        Task<BrightnessInfo> GetColorTemperatureAsync(Monitor monitor, CancellationToken cancellationToken = default);
+        Task<VcpFeatureValue> GetColorTemperatureAsync(Monitor monitor, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Sets monitor color temperature using VCP 0x14 preset value
@@ -86,7 +86,7 @@ namespace PowerDisplay.Common.Interfaces
         /// <param name="monitor">Monitor object</param>
         /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>VCP input source value (e.g., 0x11 for HDMI-1)</returns>
-        Task<BrightnessInfo> GetInputSourceAsync(Monitor monitor, CancellationToken cancellationToken = default);
+        Task<VcpFeatureValue> GetInputSourceAsync(Monitor monitor, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Sets input source using VCP 0x60
@@ -96,14 +96,6 @@ namespace PowerDisplay.Common.Interfaces
         /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>Operation result</returns>
         Task<MonitorOperationResult> SetInputSourceAsync(Monitor monitor, int inputSource, CancellationToken cancellationToken = default);
-
-        /// <summary>
-        /// Gets monitor capabilities string (DDC/CI)
-        /// </summary>
-        /// <param name="monitor">Monitor object</param>
-        /// <param name="cancellationToken">Cancellation token</param>
-        /// <returns>Capabilities string</returns>
-        Task<string> GetCapabilitiesStringAsync(Monitor monitor, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Releases resources

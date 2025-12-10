@@ -82,62 +82,6 @@ namespace PowerDisplay.Common.Drivers.DDC
     /// </summary>
     public static class DdcCiNative
     {
-        // Helper Methods
-
-        /// <summary>
-        /// Safe wrapper for getting VCP feature value
-        /// </summary>
-        /// <param name="hPhysicalMonitor">Physical monitor handle</param>
-        /// <param name="vcpCode">VCP code</param>
-        /// <param name="currentValue">Current value</param>
-        /// <param name="maxValue">Maximum value</param>
-        /// <returns>True if successful</returns>
-        public static bool TryGetVCPFeature(IntPtr hPhysicalMonitor, byte vcpCode, out uint currentValue, out uint maxValue)
-        {
-            currentValue = 0;
-            maxValue = 0;
-
-            if (hPhysicalMonitor == IntPtr.Zero)
-            {
-                return false;
-            }
-
-            try
-            {
-                return GetVCPFeatureAndVCPFeatureReply(hPhysicalMonitor, vcpCode, IntPtr.Zero, out currentValue, out maxValue);
-            }
-            catch (Exception ex) when (ex is not OutOfMemoryException)
-            {
-                Logger.LogDebug($"TryGetVCPFeature failed for VCP code 0x{vcpCode:X2}: {ex.Message}");
-                return false;
-            }
-        }
-
-        /// <summary>
-        /// Safe wrapper for setting VCP feature value
-        /// </summary>
-        /// <param name="hPhysicalMonitor">Physical monitor handle</param>
-        /// <param name="vcpCode">VCP code</param>
-        /// <param name="value">New value</param>
-        /// <returns>True if successful</returns>
-        public static bool TrySetVCPFeature(IntPtr hPhysicalMonitor, byte vcpCode, uint value)
-        {
-            if (hPhysicalMonitor == IntPtr.Zero)
-            {
-                return false;
-            }
-
-            try
-            {
-                return SetVCPFeature(hPhysicalMonitor, vcpCode, value);
-            }
-            catch (Exception ex) when (ex is not OutOfMemoryException)
-            {
-                Logger.LogDebug($"TrySetVCPFeature failed for VCP code 0x{vcpCode:X2}: {ex.Message}");
-                return false;
-            }
-        }
-
         /// <summary>
         /// Fetches VCP capabilities string from a monitor and returns a validation result.
         /// This is the slow I2C operation (~4 seconds per monitor) that should only be done once.
@@ -181,46 +125,6 @@ namespace PowerDisplay.Common.Drivers.DDC
             {
                 Logger.LogDebug($"FetchCapabilities: Exception for handle 0x{hPhysicalMonitor:X}: {ex.Message}");
                 return DdcCiValidationResult.Invalid;
-            }
-        }
-
-        /// <summary>
-        /// Validates the DDC/CI connection by checking if the monitor returns a valid capabilities string
-        /// that includes brightness control (VCP 0x10).
-        /// NOTE: This method performs a slow I2C operation. Prefer using FetchCapabilities() during
-        /// discovery phase and caching the result.
-        /// </summary>
-        /// <param name="hPhysicalMonitor">Physical monitor handle</param>
-        /// <returns>Validation result containing status and cached capabilities data</returns>
-        [System.Obsolete("Use FetchCapabilities() during discovery and cache results. This method is kept for backward compatibility.")]
-        public static DdcCiValidationResult ValidateDdcCiConnection(IntPtr hPhysicalMonitor)
-        {
-            // Delegate to FetchCapabilities which does the same thing
-            return FetchCapabilities(hPhysicalMonitor);
-        }
-
-        /// <summary>
-        /// Quick connection check using a simple VCP read (brightness).
-        /// This is much faster than full capabilities retrieval (~50ms vs ~4s).
-        /// Use this for runtime connection validation when capabilities are already cached.
-        /// </summary>
-        /// <param name="hPhysicalMonitor">Physical monitor handle</param>
-        /// <returns>True if the monitor responds to VCP queries</returns>
-        public static bool QuickConnectionCheck(IntPtr hPhysicalMonitor)
-        {
-            if (hPhysicalMonitor == IntPtr.Zero)
-            {
-                return false;
-            }
-
-            try
-            {
-                // Try a quick brightness read via VCP 0x10 to verify connection
-                return TryGetVCPFeature(hPhysicalMonitor, NativeConstants.VcpCodeBrightness, out _, out _);
-            }
-            catch
-            {
-                return false;
             }
         }
 

@@ -153,18 +153,18 @@ namespace PowerDisplay.Helpers
         /// <summary>
         /// Get brightness of the specified monitor
         /// </summary>
-        public async Task<BrightnessInfo> GetBrightnessAsync(string monitorId, CancellationToken cancellationToken = default)
+        public async Task<VcpFeatureValue> GetBrightnessAsync(string monitorId, CancellationToken cancellationToken = default)
         {
             var monitor = GetMonitor(monitorId);
             if (monitor == null)
             {
-                return BrightnessInfo.Invalid;
+                return VcpFeatureValue.Invalid;
             }
 
             var controller = GetControllerForMonitor(monitor);
             if (controller == null)
             {
-                return BrightnessInfo.Invalid;
+                return VcpFeatureValue.Invalid;
             }
 
             try
@@ -184,7 +184,7 @@ namespace PowerDisplay.Helpers
                 // Mark monitor as unavailable
                 Logger.LogError($"Failed to get brightness for monitor {monitorId}: {ex.Message}");
                 monitor.IsAvailable = false;
-                return BrightnessInfo.Invalid;
+                return VcpFeatureValue.Invalid;
             }
         }
 
@@ -224,18 +224,18 @@ namespace PowerDisplay.Helpers
         /// <summary>
         /// Get monitor color temperature
         /// </summary>
-        public async Task<BrightnessInfo> GetColorTemperatureAsync(string monitorId, CancellationToken cancellationToken = default)
+        public async Task<VcpFeatureValue> GetColorTemperatureAsync(string monitorId, CancellationToken cancellationToken = default)
         {
             var monitor = GetMonitor(monitorId);
             if (monitor == null)
             {
-                return BrightnessInfo.Invalid;
+                return VcpFeatureValue.Invalid;
             }
 
             var controller = GetControllerForMonitor(monitor);
             if (controller == null)
             {
-                return BrightnessInfo.Invalid;
+                return VcpFeatureValue.Invalid;
             }
 
             try
@@ -245,7 +245,7 @@ namespace PowerDisplay.Helpers
             catch (Exception ex) when (ex is not OutOfMemoryException)
             {
                 Logger.LogDebug($"GetColorTemperatureAsync failed: {ex.Message}");
-                return BrightnessInfo.Invalid;
+                return VcpFeatureValue.Invalid;
             }
         }
 
@@ -263,18 +263,18 @@ namespace PowerDisplay.Helpers
         /// <summary>
         /// Get current input source for a monitor
         /// </summary>
-        public async Task<BrightnessInfo> GetInputSourceAsync(string monitorId, CancellationToken cancellationToken = default)
+        public async Task<VcpFeatureValue> GetInputSourceAsync(string monitorId, CancellationToken cancellationToken = default)
         {
             var monitor = GetMonitor(monitorId);
             if (monitor == null)
             {
-                return BrightnessInfo.Invalid;
+                return VcpFeatureValue.Invalid;
             }
 
             var controller = GetControllerForMonitor(monitor);
             if (controller == null)
             {
-                return BrightnessInfo.Invalid;
+                return VcpFeatureValue.Invalid;
             }
 
             try
@@ -284,7 +284,7 @@ namespace PowerDisplay.Helpers
             catch (Exception ex) when (ex is not OutOfMemoryException)
             {
                 Logger.LogDebug($"GetInputSourceAsync failed: {ex.Message}");
-                return BrightnessInfo.Invalid;
+                return VcpFeatureValue.Invalid;
             }
         }
 

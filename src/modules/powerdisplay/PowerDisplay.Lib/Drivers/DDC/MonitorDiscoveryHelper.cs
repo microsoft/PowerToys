@@ -189,14 +189,14 @@ namespace PowerDisplay.Common.Drivers.DDC
         /// <summary>
         /// Get current brightness using VCP code 0x10
         /// </summary>
-        private BrightnessInfo GetCurrentBrightness(IntPtr handle)
+        private VcpFeatureValue GetCurrentBrightness(IntPtr handle)
         {
-            if (DdcCiNative.TryGetVCPFeature(handle, VcpCodeBrightness, out uint current, out uint max))
+            if (GetVCPFeatureAndVCPFeatureReply(handle, VcpCodeBrightness, IntPtr.Zero, out uint current, out uint max))
             {
-                return new BrightnessInfo((int)current, 0, (int)max);
+                return new VcpFeatureValue((int)current, 0, (int)max);
             }
 
-            return BrightnessInfo.Invalid;
+            return VcpFeatureValue.Invalid;
         }
 
         /// <summary>

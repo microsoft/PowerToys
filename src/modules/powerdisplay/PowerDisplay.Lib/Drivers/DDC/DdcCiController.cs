@@ -60,7 +60,7 @@ namespace PowerDisplay.Common.Drivers.DDC
         /// <summary>
         /// Get monitor brightness using VCP code 0x10
         /// </summary>
-        public async Task<BrightnessInfo> GetBrightnessAsync(Monitor monitor, CancellationToken cancellationToken = default)
+        public async Task<VcpFeatureValue> GetBrightnessAsync(Monitor monitor, CancellationToken cancellationToken = default)
         {
             ArgumentNullException.ThrowIfNull(monitor);
             return await GetVcpFeatureAsync(monitor, VcpCodeBrightness, "Brightness", cancellationToken);
@@ -70,25 +70,25 @@ namespace PowerDisplay.Common.Drivers.DDC
         /// Set monitor brightness using VCP code 0x10
         /// </summary>
         public Task<MonitorOperationResult> SetBrightnessAsync(Monitor monitor, int brightness, CancellationToken cancellationToken = default)
-            => SetVcpFeatureAsync(monitor, NativeConstants.VcpCodeBrightness, brightness, 0, 100, cancellationToken);
+            => SetVcpFeatureAsync(monitor, NativeConstants.VcpCodeBrightness, brightness, cancellationToken);
 
         /// <summary>
         /// Set monitor contrast
         /// </summary>
         public Task<MonitorOperationResult> SetContrastAsync(Monitor monitor, int contrast, CancellationToken cancellationToken = default)
-            => SetVcpFeatureAsync(monitor, NativeConstants.VcpCodeContrast, contrast, 0, 100, cancellationToken);
+            => SetVcpFeatureAsync(monitor, NativeConstants.VcpCodeContrast, contrast, cancellationToken);
 
         /// <summary>
         /// Set monitor volume
         /// </summary>
         public Task<MonitorOperationResult> SetVolumeAsync(Monitor monitor, int volume, CancellationToken cancellationToken = default)
-            => SetVcpFeatureAsync(monitor, NativeConstants.VcpCodeVolume, volume, 0, 100, cancellationToken);
+            => SetVcpFeatureAsync(monitor, NativeConstants.VcpCodeVolume, volume, cancellationToken);
 
         /// <summary>
         /// Get monitor color temperature using VCP code 0x14 (Select Color Preset)
         /// Returns the raw VCP preset value (e.g., 0x05 for 6500K), not Kelvin temperature
         /// </summary>
-        public async Task<BrightnessInfo> GetColorTemperatureAsync(Monitor monitor, CancellationToken cancellationToken = default)
+        public async Task<VcpFeatureValue> GetColorTemperatureAsync(Monitor monitor, CancellationToken cancellationToken = default)
         {
             ArgumentNullException.ThrowIfNull(monitor);
             return await GetVcpFeatureAsync(monitor, VcpCodeSelectColorPreset, "Color temperature", cancellationToken);
@@ -97,56 +97,14 @@ namespace PowerDisplay.Common.Drivers.DDC
         /// <summary>
         /// Set monitor color temperature using VCP code 0x14 (Select Color Preset)
         /// </summary>
-        /// <param name="monitor">Monitor to control</param>
-        /// <param name="colorTemperature">VCP preset value (e.g., 0x05 for 6500K), not Kelvin temperature</param>
-        /// <param name="cancellationToken">Cancellation token</param>
-        public async Task<MonitorOperationResult> SetColorTemperatureAsync(Monitor monitor, int colorTemperature, CancellationToken cancellationToken = default)
-        {
-            ArgumentNullException.ThrowIfNull(monitor);
-
-            return await Task.Run(
-                () =>
-                {
-                    if (monitor.Handle == IntPtr.Zero)
-                    {
-                        return MonitorOperationResult.Failure("Invalid monitor handle");
-                    }
-
-                    try
-                    {
-                        // Validate value is in supported list
-                        var validationError = ValidateDiscreteVcpValue(monitor, VcpCodeSelectColorPreset, colorTemperature, "Color preset");
-                        if (validationError != null)
-                        {
-                            return validationError.Value;
-                        }
-
-                        // Set VCP 0x14 value
-                        var presetName = VcpValueNames.GetFormattedName(VcpCodeSelectColorPreset, colorTemperature);
-                        if (DdcCiNative.TrySetVCPFeature(monitor.Handle, VcpCodeSelectColorPreset, (uint)colorTemperature))
-                        {
-                            Logger.LogInfo($"[{monitor.Id}] Set color temperature to {presetName} via 0x14");
-                            return MonitorOperationResult.Success();
-                        }
-
-                        var lastError = GetLastError();
-                        Logger.LogError($"[{monitor.Id}] Failed to set color temperature, error: {lastError}");
-                        return MonitorOperationResult.Failure("Failed to set color temperature via DDC/CI", (int)lastError);
-                    }
-                    catch (Exception ex)
-                    {
-                        Logger.LogError($"[{monitor.Id}] Exception setting color temperature: {ex.Message}");
-                        return MonitorOperationResult.Failure($"Exception setting color temperature: {ex.Message}");
-                    }
-                },
-                cancellationToken);
-        }
+        public Task<MonitorOperationResult> SetColorTemperatureAsync(Monitor monitor, int colorTemperature, CancellationToken cancellationToken = default)
+            => SetVcpFeatureAsync(monitor, VcpCodeSelectColorPreset, colorTemperature, cancellationToken);
 
         /// <summary>
         /// Get current input source using VCP code 0x60
         /// Returns the raw VCP value (e.g., 0x11 for HDMI-1)
         /// </summary>
-        public async Task<BrightnessInfo> GetInputSourceAsync(Monitor monitor, CancellationToken cancellationToken = default)
+        public async Task<VcpFeatureValue> GetInputSourceAsync(Monitor monitor, CancellationToken cancellationToken = default)
         {
             ArgumentNullException.ThrowIfNull(monitor);
             return await GetVcpFeatureAsync(monitor, VcpCodeInputSource, "Input source", cancellationToken);
@@ -155,83 +113,8 @@ namespace PowerDisplay.Common.Drivers.DDC
         /// <summary>
         /// Set input source using VCP code 0x60
         /// </summary>
-        /// <param name="monitor">Monitor to control</param>
-        /// <param name="inputSource">VCP input source value (e.g., 0x11 for HDMI-1)</param>
-        /// <param name="cancellationToken">Cancellation token</param>
-        public async Task<MonitorOperationResult> SetInputSourceAsync(Monitor monitor, int inputSource, CancellationToken cancellationToken = default)
-        {
-            ArgumentNullException.ThrowIfNull(monitor);
-
-            return await Task.Run(
-                async () =>
-                {
-                    if (monitor.Handle == IntPtr.Zero)
-                    {
-                        return MonitorOperationResult.Failure("Invalid monitor handle");
-                    }
-
-                    try
-                    {
-                        // Validate value is in supported list
-                        var validationError = ValidateDiscreteVcpValue(monitor, VcpCodeInputSource, inputSource, "Input source");
-                        if (validationError != null)
-                        {
-                            return validationError.Value;
-                        }
-
-                        // Set VCP 0x60 value
-                        var sourceName = VcpValueNames.GetFormattedName(VcpCodeInputSource, inputSource);
-                        if (DdcCiNative.TrySetVCPFeature(monitor.Handle, VcpCodeInputSource, (uint)inputSource))
-                        {
-                            Logger.LogInfo($"[{monitor.Id}] Set input source to {sourceName} via 0x60");
-
-                            // Verify the change by reading back the value after a short delay
-                            await VerifyInputSourceChangeAsync(monitor, inputSource, cancellationToken);
-
-                            // Update the monitor model with the new value
-                            monitor.CurrentInputSource = inputSource;
-
-                            return MonitorOperationResult.Success();
-                        }
-
-                        var lastError = GetLastError();
-                        Logger.LogError($"[{monitor.Id}] Failed to set input source, error: {lastError}");
-                        return MonitorOperationResult.Failure("Failed to set input source via DDC/CI", (int)lastError);
-                    }
-                    catch (Exception ex)
-                    {
-                        Logger.LogError($"[{monitor.Id}] Exception setting input source: {ex.Message}");
-                        return MonitorOperationResult.Failure($"Exception setting input source: {ex.Message}");
-                    }
-                },
-                cancellationToken);
-        }
-
-        /// <summary>
-        /// Verify input source change by reading back the value after a short delay.
-        /// Logs warning if verification fails or value doesn't match.
-        /// </summary>
-        private static async Task VerifyInputSourceChangeAsync(Monitor monitor, int expectedValue, CancellationToken cancellationToken)
-        {
-            await Task.Delay(100, cancellationToken).ConfigureAwait(false);
-
-            if (DdcCiNative.TryGetVCPFeature(monitor.Handle, VcpCodeInputSource, out uint verifyValue, out uint _))
-            {
-                var verifyName = VcpValueNames.GetFormattedName(VcpCodeInputSource, (int)verifyValue);
-                if (verifyValue == (uint)expectedValue)
-                {
-                    Logger.LogDebug($"[{monitor.Id}] Input source verified: {verifyName} (0x{verifyValue:X2})");
-                }
-                else
-                {
-                    Logger.LogWarning($"[{monitor.Id}] Input source verification mismatch! Expected 0x{expectedValue:X2}, got {verifyName} (0x{verifyValue:X2}). Monitor may have refused to switch (no signal on target port?)");
-                }
-            }
-            else
-            {
-                Logger.LogWarning($"[{monitor.Id}] Could not verify input source change");
-            }
-        }
+        public Task<MonitorOperationResult> SetInputSourceAsync(Monitor monitor, int inputSource, CancellationToken cancellationToken = default)
+            => SetVcpFeatureAsync(monitor, VcpCodeInputSource, inputSource, cancellationToken);
 
         /// <summary>
         /// Get monitor capabilities string with retry logic.
@@ -454,18 +337,7 @@ namespace PowerDisplay.Common.Drivers.DDC
 
                     var monitorInfo = matchingInfos[i];
 
-                    // Generate unique monitor Id
-                    var monitorId = !string.IsNullOrEmpty(monitorInfo.HardwareId)
-                        ? $"DDC_{monitorInfo.HardwareId}_{monitorInfo.MonitorNumber}"
-                        : $"DDC_Unknown_{monitorInfo.MonitorNumber}";
-
-                    var (handleToUse, _) = _handleManager.ReuseOrCreateHandle(monitorId, physicalMonitor.HPhysicalMonitor);
-
-                    var monitorToCreate = physicalMonitor;
-                    monitorToCreate.HPhysicalMonitor = handleToUse;
-
-                    candidates.Add(new CandidateMonitor(handleToUse, monitorToCreate, monitorInfo));
-
+                    candidates.Add(new CandidateMonitor(physicalMonitor.HPhysicalMonitor, physicalMonitor, monitorInfo));
                     Logger.LogDebug($"DDC: Candidate {gdiDeviceName} -> DevicePath={monitorInfo.DevicePath}, HardwareId={monitorInfo.HardwareId}");
                 }
             }
@@ -561,7 +433,7 @@ namespace PowerDisplay.Common.Drivers.DDC
         /// </summary>
         private static void InitializeInputSource(Monitor monitor, IntPtr handle)
         {
-            if (DdcCiNative.TryGetVCPFeature(handle, VcpCodeInputSource, out uint current, out uint _))
+            if (GetVCPFeatureAndVCPFeatureReply(handle, VcpCodeInputSource, IntPtr.Zero, out uint current, out uint _))
             {
                 monitor.CurrentInputSource = (int)current;
                 Logger.LogDebug($"[{monitor.Id}] Input source: {VcpValueNames.GetFormattedName(VcpCodeInputSource, (int)current)}");
@@ -573,7 +445,7 @@ namespace PowerDisplay.Common.Drivers.DDC
         /// </summary>
         private static void InitializeColorTemperature(Monitor monitor, IntPtr handle)
         {
-            if (DdcCiNative.TryGetVCPFeature(handle, VcpCodeSelectColorPreset, out uint current, out uint _))
+            if (GetVCPFeatureAndVCPFeatureReply(handle, VcpCodeSelectColorPreset, IntPtr.Zero, out uint current, out uint _))
             {
                 monitor.CurrentColorTemperature = (int)current;
                 Logger.LogDebug($"[{monitor.Id}] Color temperature: {VcpValueNames.GetFormattedName(VcpCodeSelectColorPreset, (int)current)}");
@@ -668,7 +540,7 @@ namespace PowerDisplay.Common.Drivers.DDC
         /// <param name="vcpCode">VCP code to read</param>
         /// <param name="featureName">Optional feature name for logging (e.g., "color temperature", "input source")</param>
         /// <param name="cancellationToken">Cancellation token</param>
-        private async Task<BrightnessInfo> GetVcpFeatureAsync(
+        private async Task<VcpFeatureValue> GetVcpFeatureAsync(
             Monitor monitor,
             byte vcpCode,
             string? featureName = null,
@@ -684,10 +556,10 @@ namespace PowerDisplay.Common.Drivers.DDC
                             Logger.LogDebug($"[{monitor.Id}] Invalid handle for {featureName} read");
                         }
 
-                        return BrightnessInfo.Invalid;
+                        return VcpFeatureValue.Invalid;
                     }
 
-                    if (DdcCiNative.TryGetVCPFeature(monitor.Handle, vcpCode, out uint current, out uint max))
+                    if (GetVCPFeatureAndVCPFeatureReply(monitor.Handle, vcpCode, IntPtr.Zero, out uint current, out uint max))
                     {
                         if (featureName != null)
                         {
@@ -695,7 +567,7 @@ namespace PowerDisplay.Common.Drivers.DDC
                             Logger.LogDebug($"[{monitor.Id}] {featureName} via 0x{vcpCode:X2}: {valueName}");
                         }
 
-                        return new BrightnessInfo((int)current, 0, (int)max);
+                        return new VcpFeatureValue((int)current, 0, (int)max);
                     }
 
                     if (featureName != null)
@@ -703,58 +575,24 @@ namespace PowerDisplay.Common.Drivers.DDC
                         Logger.LogWarning($"[{monitor.Id}] Failed to read {featureName} (0x{vcpCode:X2} not supported)");
                     }
 
-                    return BrightnessInfo.Invalid;
+                    return VcpFeatureValue.Invalid;
                 },
                 cancellationToken);
         }
 
         /// <summary>
-        /// Validate that a discrete VCP value is supported by the monitor.
-        /// Returns null if valid, or a failure result if invalid.
+        /// Generic method to set VCP feature value directly.
         /// </summary>
-        /// <param name="monitor">Monitor to validate against</param>
-        /// <param name="vcpCode">VCP code to check</param>
-        /// <param name="value">Value to validate</param>
-        /// <param name="featureName">Feature name for error messages</param>
-        /// <returns>Null if valid, MonitorOperationResult.Failure if invalid</returns>
-        private static MonitorOperationResult? ValidateDiscreteVcpValue(
+        private Task<MonitorOperationResult> SetVcpFeatureAsync(
             Monitor monitor,
             byte vcpCode,
             int value,
-            string featureName)
-        {
-            var capabilities = monitor.VcpCapabilitiesInfo;
-            if (capabilities == null || !capabilities.SupportsVcpCode(vcpCode))
-            {
-                return null; // No capabilities to validate against, allow the operation
-            }
-
-            var supportedValues = capabilities.GetSupportedValues(vcpCode);
-            if (supportedValues == null || supportedValues.Count == 0 || supportedValues.Contains(value))
-            {
-                return null; // Value is valid or no discrete values defined
-            }
-
-            var supportedList = string.Join(", ", supportedValues.Select(v => $"0x{v:X2}"));
-            Logger.LogWarning($"[{monitor.Id}] {featureName} 0x{value:X2} not in supported list: [{supportedList}]");
-            return MonitorOperationResult.Failure($"{featureName} 0x{value:X2} not supported by monitor");
-        }
-
-        /// <summary>
-        /// Generic method to set VCP feature value
-        /// </summary>
-        private async Task<MonitorOperationResult> SetVcpFeatureAsync(
-            Monitor monitor,
-            byte vcpCode,
-            int value,
-            int min = 0,
-            int max = 100,
             CancellationToken cancellationToken = default)
         {
-            value = Math.Clamp(value, min, max);
+            ArgumentNullException.ThrowIfNull(monitor);
 
-            return await Task.Run(
-                async () =>
+            return Task.Run(
+                () =>
                 {
                     if (monitor.Handle == IntPtr.Zero)
                     {
@@ -763,16 +601,7 @@ namespace PowerDisplay.Common.Drivers.DDC
 
                     try
                     {
-                        // Get current value to determine range
-                        var currentInfo = await GetVcpFeatureAsync(monitor, vcpCode);
-                        if (!currentInfo.IsValid)
-                        {
-                            return MonitorOperationResult.Failure($"Cannot read current value for VCP 0x{vcpCode:X2}");
-                        }
-
-                        uint targetValue = (uint)currentInfo.FromPercentage(value);
-
-                        if (DdcCiNative.TrySetVCPFeature(monitor.Handle, vcpCode, targetValue))
+                        if (SetVCPFeature(monitor.Handle, vcpCode, (uint)value))
                         {
                             return MonitorOperationResult.Success();
                         }

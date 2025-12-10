@@ -139,7 +139,7 @@ namespace PowerDisplay.Common.Drivers.WMI
         /// <summary>
         /// Get monitor brightness
         /// </summary>
-        public async Task<BrightnessInfo> GetBrightnessAsync(Monitor monitor, CancellationToken cancellationToken = default)
+        public async Task<VcpFeatureValue> GetBrightnessAsync(Monitor monitor, CancellationToken cancellationToken = default)
         {
             ArgumentNullException.ThrowIfNull(monitor);
 
@@ -158,7 +158,7 @@ namespace PowerDisplay.Common.Drivers.WMI
                         foreach (var obj in results)
                         {
                             var currentBrightness = obj.GetPropertyValue<byte>("CurrentBrightness");
-                            return new BrightnessInfo(currentBrightness, 0, 100);
+                            return new VcpFeatureValue(currentBrightness, 0, 100);
                         }
 
                         // No match found - monitor may have been disconnected
@@ -173,7 +173,7 @@ namespace PowerDisplay.Common.Drivers.WMI
                         Logger.LogWarning($"WMI GetBrightness failed: {ex.Message}");
                     }
 
-                    return BrightnessInfo.Invalid;
+                    return VcpFeatureValue.Invalid;
                 },
                 cancellationToken);
         }
@@ -447,9 +447,9 @@ namespace PowerDisplay.Common.Drivers.WMI
             return Task.FromResult(MonitorOperationResult.Failure("Volume control not supported via WMI"));
         }
 
-        public Task<BrightnessInfo> GetColorTemperatureAsync(Monitor monitor, CancellationToken cancellationToken = default)
+        public Task<VcpFeatureValue> GetColorTemperatureAsync(Monitor monitor, CancellationToken cancellationToken = default)
         {
-            return Task.FromResult(BrightnessInfo.Invalid);
+            return Task.FromResult(VcpFeatureValue.Invalid);
         }
 
         public Task<MonitorOperationResult> SetColorTemperatureAsync(Monitor monitor, int colorTemperature, CancellationToken cancellationToken = default)
@@ -457,21 +457,16 @@ namespace PowerDisplay.Common.Drivers.WMI
             return Task.FromResult(MonitorOperationResult.Failure("Color temperature control not supported via WMI"));
         }
 
-        public Task<BrightnessInfo> GetInputSourceAsync(Monitor monitor, CancellationToken cancellationToken = default)
+        public Task<VcpFeatureValue> GetInputSourceAsync(Monitor monitor, CancellationToken cancellationToken = default)
         {
             // Input source switching not supported for internal displays
-            return Task.FromResult(BrightnessInfo.Invalid);
+            return Task.FromResult(VcpFeatureValue.Invalid);
         }
 
         public Task<MonitorOperationResult> SetInputSourceAsync(Monitor monitor, int inputSource, CancellationToken cancellationToken = default)
         {
             // Input source switching not supported for internal displays
             return Task.FromResult(MonitorOperationResult.Failure("Input source switching not supported via WMI"));
-        }
-
-        public Task<string> GetCapabilitiesStringAsync(Monitor monitor, CancellationToken cancellationToken = default)
-        {
-            return Task.FromResult(string.Empty);
         }
 
         public void Dispose()

@@ -7,36 +7,37 @@ using System;
 namespace PowerDisplay.Common.Models
 {
     /// <summary>
-    /// Brightness information structure
+    /// VCP feature value information structure.
+    /// Represents the current, minimum, and maximum values for a VCP (Virtual Control Panel) feature.
     /// </summary>
-    public readonly struct BrightnessInfo
+    public readonly struct VcpFeatureValue
     {
         /// <summary>
-        /// Current brightness value
+        /// Current value
         /// </summary>
         public int Current { get; }
 
         /// <summary>
-        /// Minimum brightness value
+        /// Minimum value
         /// </summary>
         public int Minimum { get; }
 
         /// <summary>
-        /// Maximum brightness value
+        /// Maximum value
         /// </summary>
         public int Maximum { get; }
 
         /// <summary>
-        /// Whether the brightness information is valid
+        /// Whether the value information is valid
         /// </summary>
         public bool IsValid { get; }
 
         /// <summary>
-        /// Timestamp when the brightness information was obtained
+        /// Timestamp when the value information was obtained
         /// </summary>
         public DateTime Timestamp { get; }
 
-        public BrightnessInfo(int current, int minimum, int maximum)
+        public VcpFeatureValue(int current, int minimum, int maximum)
         {
             Current = current;
             Minimum = minimum;
@@ -45,18 +46,18 @@ namespace PowerDisplay.Common.Models
             Timestamp = DateTime.Now;
         }
 
-        public BrightnessInfo(int current, int maximum)
+        public VcpFeatureValue(int current, int maximum)
             : this(current, 0, maximum)
         {
         }
 
         /// <summary>
-        /// Creates invalid brightness information
+        /// Creates invalid value information
         /// </summary>
-        public static BrightnessInfo Invalid => new(-1, -1, -1);
+        public static VcpFeatureValue Invalid => new(-1, -1, -1);
 
         /// <summary>
-        /// Converts brightness value to percentage (0-100)
+        /// Converts value to percentage (0-100)
         /// </summary>
         public int ToPercentage()
         {
@@ -69,7 +70,7 @@ namespace PowerDisplay.Common.Models
         }
 
         /// <summary>
-        /// Creates brightness value from percentage
+        /// Creates raw value from percentage
         /// </summary>
         public int FromPercentage(int percentage)
         {
