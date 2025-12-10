@@ -354,19 +354,23 @@ namespace PowerDisplay.Common.Drivers.WMI
                                 name = info.Name;
                             }
 
-                            // Extract HardwareId from InstanceName for state persistence
+                            // Extract EdidId from InstanceName
                             // e.g., "DISPLAY\BOE0900\4&10fd3ab1&0&UID265988_0" -> "BOE0900"
-                            var hardwareId = ExtractHardwareIdFromInstanceName(instanceName);
+                            var edidId = ExtractHardwareIdFromInstanceName(instanceName);
 
-                            // Get MonitorNumber from QueryDisplayConfig by matching HardwareId
+                            // Get MonitorNumber from QueryDisplayConfig by matching EdidId
                             // This matches Windows Display Settings "Identify" feature
-                            int monitorNumber = GetMonitorNumberFromDisplayInfo(hardwareId, monitorDisplayInfos);
+                            int monitorNumber = GetMonitorNumberFromDisplayInfo(edidId, monitorDisplayInfos);
+
+                            // Generate unique monitor Id: "WMI_{EdidId}_{MonitorNumber}"
+                            string monitorId = !string.IsNullOrEmpty(edidId)
+                                ? $"WMI_{edidId}_{monitorNumber}"
+                                : $"WMI_Unknown_{monitorNumber}";
 
                             var monitor = new Monitor
                             {
-                                Id = $"WMI_{instanceName}",
+                                Id = monitorId,
                                 Name = name,
-                                HardwareId = hardwareId,
                                 CurrentBrightness = currentBrightness,
                                 MinBrightness = 0,
                                 MaxBrightness = 100,
@@ -375,7 +379,7 @@ namespace PowerDisplay.Common.Drivers.WMI
                                 Capabilities = MonitorCapabilities.Brightness | MonitorCapabilities.Wmi,
                                 ConnectionType = "Internal",
                                 CommunicationMethod = "WMI",
-                                Manufacturer = hardwareId.Length >= 3 ? hardwareId.Substring(0, 3) : "Internal",
+                                Manufacturer = edidId.Length >= 3 ? edidId.Substring(0, 3) : "Internal",
                                 SupportsColorTemperature = false,
                                 MonitorNumber = monitorNumber,
                             };

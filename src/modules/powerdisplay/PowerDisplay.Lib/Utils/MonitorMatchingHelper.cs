@@ -14,33 +14,19 @@ namespace PowerDisplay.Common.Utils
     public static class MonitorMatchingHelper
     {
         /// <summary>
-        /// Generate a unique key for monitor matching based on hardware ID and internal name.
-        /// Uses HardwareId if available; otherwise falls back to Id (InternalName) or Name.
+        /// Generate a unique key for monitor matching based on Id.
         /// </summary>
         /// <param name="monitor">The monitor data to generate a key for.</param>
         /// <returns>A unique string key for the monitor.</returns>
         public static string GetMonitorKey(IMonitorData? monitor)
-            => GetMonitorKey(monitor?.HardwareId, monitor?.Id, monitor?.Name);
+            => monitor?.Id ?? string.Empty;
 
         /// <summary>
-        /// Generate a unique key for monitor matching using explicit values.
-        /// Uses priority: HardwareId > InternalName > Name.
-        /// </summary>
-        /// <param name="hardwareId">The monitor's hardware ID.</param>
-        /// <param name="internalName">The monitor's internal name (optional fallback).</param>
-        /// <param name="name">The monitor's display name (optional fallback).</param>
-        /// <returns>A unique string key for the monitor.</returns>
-        public static string GetMonitorKey(string? hardwareId, string? internalName = null, string? name = null)
-            => !string.IsNullOrEmpty(hardwareId) ? hardwareId
-             : !string.IsNullOrEmpty(internalName) ? internalName
-             : name ?? string.Empty;
-
-        /// <summary>
-        /// Check if two monitors are considered the same based on their keys.
+        /// Check if two monitors are considered the same based on their Ids.
         /// </summary>
         /// <param name="monitor1">First monitor.</param>
         /// <param name="monitor2">Second monitor.</param>
-        /// <returns>True if the monitors have the same key.</returns>
+        /// <returns>True if the monitors have the same Id.</returns>
         public static bool AreMonitorsSame(IMonitorData monitor1, IMonitorData monitor2)
         {
             if (monitor1 == null || monitor2 == null)
@@ -48,7 +34,7 @@ namespace PowerDisplay.Common.Utils
                 return false;
             }
 
-            return GetMonitorKey(monitor1) == GetMonitorKey(monitor2);
+            return !string.IsNullOrEmpty(monitor1.Id) && monitor1.Id == monitor2.Id;
         }
     }
 }

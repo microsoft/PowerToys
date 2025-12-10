@@ -22,11 +22,6 @@ namespace PowerDisplay.Common.Interfaces
         string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the hardware ID (EDID format like GSM5C6D).
-        /// </summary>
-        string HardwareId { get; set; }
-
-        /// <summary>
         /// Gets or sets the current brightness value (0-100).
         /// </summary>
         int Brightness { get; set; }

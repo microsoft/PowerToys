@@ -492,12 +492,12 @@ namespace PowerDisplay.Common.Drivers.DDC
 
                     var monitorInfo = matchingInfos[i];
 
-                    // Generate stable device key using DevicePath hash for uniqueness
-                    var deviceKey = !string.IsNullOrEmpty(monitorInfo.HardwareId)
-                        ? $"{monitorInfo.HardwareId}_{monitorInfo.MonitorNumber}"
-                        : $"Unknown_{monitorInfo.MonitorNumber}";
+                    // Generate unique monitor Id
+                    var monitorId = !string.IsNullOrEmpty(monitorInfo.HardwareId)
+                        ? $"DDC_{monitorInfo.HardwareId}_{monitorInfo.MonitorNumber}"
+                        : $"DDC_Unknown_{monitorInfo.MonitorNumber}";
 
-                    var (handleToUse, _) = _handleManager.ReuseOrCreateHandle(deviceKey, physicalMonitor.HPhysicalMonitor);
+                    var (handleToUse, _) = _handleManager.ReuseOrCreateHandle(monitorId, physicalMonitor.HPhysicalMonitor);
 
                     var monitorToCreate = physicalMonitor;
                     monitorToCreate.HPhysicalMonitor = handleToUse;
@@ -585,7 +585,7 @@ namespace PowerDisplay.Common.Drivers.DDC
                 }
 
                 monitors.Add(monitor);
-                newHandleMap[monitor.DeviceKey] = candidate.Handle;
+                newHandleMap[monitor.Id] = candidate.Handle;
 
                 Logger.LogInfo($"DDC: Added monitor {monitor.Id} with {monitor.VcpCapabilitiesInfo?.SupportedVcpCodes.Count ?? 0} VCP codes");
             }

@@ -89,12 +89,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             var settings = _monitors
                 .Where(m => m.IsSelected)
                 .Select(m => new ProfileMonitorSetting(
-                    m.Monitor.HardwareId,
+                    m.Monitor.InternalName, // Monitor Id (unique identifier)
                     m.IncludeBrightness ? (int?)m.Brightness : null,
                     m.IncludeColorTemperature && m.SupportsColorTemperature ? (int?)m.ColorTemperature : null,
                     m.IncludeContrast && m.SupportsContrast ? (int?)m.Contrast : null,
-                    m.IncludeVolume && m.SupportsVolume ? (int?)m.Volume : null,
-                    m.Monitor.InternalName))
+                    m.IncludeVolume && m.SupportsVolume ? (int?)m.Volume : null))
                 .ToList();
 
             return new PowerDisplayProfile(_profileName, settings);

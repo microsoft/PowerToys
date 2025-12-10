@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using PowerDisplay.Common.Models;
 using PowerDisplay.Common.Utils;
 
 namespace PowerDisplay.UnitTests;
@@ -15,72 +16,79 @@ namespace PowerDisplay.UnitTests;
 public class MonitorMatchingHelperTests
 {
     [TestMethod]
-    public void GetMonitorKey_WithHardwareId_ReturnsHardwareId()
+    public void GetMonitorKey_WithMonitor_ReturnsId()
     {
         // Arrange
-        var hardwareId = "HW_ID_123";
-        var internalName = "Internal_Name";
-        var name = "Display Name";
+        var monitor = new Monitor { Id = "DDC_GSM5C6D_1", Name = "LG Monitor" };
 
         // Act
-        var result = MonitorMatchingHelper.GetMonitorKey(hardwareId, internalName, name);
+        var result = MonitorMatchingHelper.GetMonitorKey(monitor);
 
         // Assert
-        Assert.AreEqual(hardwareId, result);
+        Assert.AreEqual("DDC_GSM5C6D_1", result);
     }
 
     [TestMethod]
-    public void GetMonitorKey_NoHardwareId_ReturnsInternalName()
+    public void GetMonitorKey_NullMonitor_ReturnsEmptyString()
     {
-        // Arrange
-        string? hardwareId = null;
-        var internalName = "Internal_Name";
-        var name = "Display Name";
-
         // Act
-        var result = MonitorMatchingHelper.GetMonitorKey(hardwareId, internalName, name);
-
-        // Assert
-        Assert.AreEqual(internalName, result);
-    }
-
-    [TestMethod]
-    public void GetMonitorKey_NoHardwareIdOrInternalName_ReturnsName()
-    {
-        // Arrange
-        string? hardwareId = null;
-        string? internalName = null;
-        var name = "Display Name";
-
-        // Act
-        var result = MonitorMatchingHelper.GetMonitorKey(hardwareId, internalName, name);
-
-        // Assert
-        Assert.AreEqual(name, result);
-    }
-
-    [TestMethod]
-    public void GetMonitorKey_AllNull_ReturnsEmptyString()
-    {
-        // Arrange & Act
-        var result = MonitorMatchingHelper.GetMonitorKey(null, null, null);
+        var result = MonitorMatchingHelper.GetMonitorKey(null);
 
         // Assert
         Assert.AreEqual(string.Empty, result);
     }
 
     [TestMethod]
-    public void GetMonitorKey_EmptyHardwareId_FallsBackToInternalName()
+    public void GetMonitorKey_EmptyId_ReturnsEmptyString()
     {
         // Arrange
-        var hardwareId = string.Empty;
-        var internalName = "Internal_Name";
-        var name = "Display Name";
+        var monitor = new Monitor { Id = string.Empty, Name = "Display Name" };
 
         // Act
-        var result = MonitorMatchingHelper.GetMonitorKey(hardwareId, internalName, name);
+        var result = MonitorMatchingHelper.GetMonitorKey(monitor);
 
         // Assert
-        Assert.AreEqual(internalName, result);
+        Assert.AreEqual(string.Empty, result);
+    }
+
+    [TestMethod]
+    public void AreMonitorsSame_SameId_ReturnsTrue()
+    {
+        // Arrange
+        var monitor1 = new Monitor { Id = "DDC_GSM5C6D_1", Name = "Monitor 1" };
+        var monitor2 = new Monitor { Id = "DDC_GSM5C6D_1", Name = "Monitor 2" };
+
+        // Act
+        var result = MonitorMatchingHelper.AreMonitorsSame(monitor1, monitor2);
+
+        // Assert
+        Assert.IsTrue(result);
+    }
+
+    [TestMethod]
+    public void AreMonitorsSame_DifferentId_ReturnsFalse()
+    {
+        // Arrange
+        var monitor1 = new Monitor { Id = "DDC_GSM5C6D_1", Name = "Monitor 1" };
+        var monitor2 = new Monitor { Id = "DDC_GSM5C6D_2", Name = "Monitor 2" };
+
+        // Act
+        var result = MonitorMatchingHelper.AreMonitorsSame(monitor1, monitor2);
+
+        // Assert
+        Assert.IsFalse(result);
+    }
+
+    [TestMethod]
+    public void AreMonitorsSame_NullMonitor_ReturnsFalse()
+    {
+        // Arrange
+        var monitor1 = new Monitor { Id = "DDC_GSM5C6D_1", Name = "Monitor 1" };
+
+        // Act
+        var result = MonitorMatchingHelper.AreMonitorsSame(monitor1, null!);
+
+        // Assert
+        Assert.IsFalse(result);
     }
 }

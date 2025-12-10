@@ -131,7 +131,7 @@ namespace PowerDisplay.Common.Drivers.DDC
             try
             {
                 // Get hardware ID and friendly name directly from MonitorDisplayInfo
-                string hardwareId = monitorInfo.HardwareId ?? string.Empty;
+                string edidId = monitorInfo.HardwareId ?? string.Empty;
                 string name = physicalMonitor.GetDescription() ?? string.Empty;
 
                 // Use FriendlyName from QueryDisplayConfig if available and not generic
@@ -141,12 +141,10 @@ namespace PowerDisplay.Common.Drivers.DDC
                     name = monitorInfo.FriendlyName;
                 }
 
-                // Generate stable device key: "{HardwareId}_{MonitorNumber}"
-                string deviceKey = !string.IsNullOrEmpty(hardwareId)
-                    ? $"{hardwareId}_{monitorInfo.MonitorNumber}"
-                    : $"Unknown_{monitorInfo.MonitorNumber}";
-
-                string monitorId = $"DDC_{deviceKey}";
+                // Generate unique monitor Id: "DDC_{EdidId}_{MonitorNumber}"
+                string monitorId = !string.IsNullOrEmpty(edidId)
+                    ? $"DDC_{edidId}_{monitorInfo.MonitorNumber}"
+                    : $"DDC_Unknown_{monitorInfo.MonitorNumber}";
 
                 // If still no good name, use default value
                 if (string.IsNullOrEmpty(name) || name.Contains("Generic") || name.Contains("PnP"))
@@ -160,14 +158,12 @@ namespace PowerDisplay.Common.Drivers.DDC
                 var monitor = new Monitor
                 {
                     Id = monitorId,
-                    HardwareId = hardwareId,
                     Name = name.Trim(),
                     CurrentBrightness = brightnessInfo.IsValid ? brightnessInfo.ToPercentage() : 50,
                     MinBrightness = 0,
                     MaxBrightness = 100,
                     IsAvailable = true,
                     Handle = physicalMonitor.HPhysicalMonitor,
-                    DeviceKey = deviceKey,
                     Capabilities = MonitorCapabilities.DdcCi,
                     ConnectionType = "External",
                     CommunicationMethod = "DDC/CI",

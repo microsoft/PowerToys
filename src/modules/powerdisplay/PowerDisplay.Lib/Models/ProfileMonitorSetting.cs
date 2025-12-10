@@ -11,8 +11,12 @@ namespace PowerDisplay.Common.Models
     /// </summary>
     public class ProfileMonitorSetting
     {
-        [JsonPropertyName("hardwareId")]
-        public string HardwareId { get; set; }
+        /// <summary>
+        /// Gets or sets the monitor's unique identifier.
+        /// Format: "{Source}_{EdidId}_{MonitorNumber}" (e.g., "DDC_GSM5C6D_1").
+        /// </summary>
+        [JsonPropertyName("monitorId")]
+        public string MonitorId { get; set; }
 
         [JsonPropertyName("brightness")]
         public int? Brightness { get; set; }
@@ -30,23 +34,18 @@ namespace PowerDisplay.Common.Models
         [JsonPropertyName("colorTemperature")]
         public int? ColorTemperatureVcp { get; set; }
 
-        [JsonPropertyName("monitorInternalName")]
-        public string MonitorInternalName { get; set; }
-
         public ProfileMonitorSetting()
         {
-            HardwareId = string.Empty;
-            MonitorInternalName = string.Empty;
+            MonitorId = string.Empty;
         }
 
-        public ProfileMonitorSetting(string hardwareId, int? brightness = null, int? colorTemperatureVcp = null, int? contrast = null, int? volume = null, string monitorInternalName = "")
+        public ProfileMonitorSetting(string monitorId, int? brightness = null, int? colorTemperatureVcp = null, int? contrast = null, int? volume = null)
         {
-            HardwareId = hardwareId;
+            MonitorId = monitorId;
             Brightness = brightness;
             ColorTemperatureVcp = colorTemperatureVcp;
             Contrast = contrast;
             Volume = volume;
-            MonitorInternalName = monitorInternalName;
         }
     }
 }

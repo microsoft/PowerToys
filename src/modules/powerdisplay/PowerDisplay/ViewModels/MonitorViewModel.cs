@@ -163,7 +163,7 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
     {
         try
         {
-            Logger.LogInfo($"[{HardwareId}] Setting color temperature to 0x{colorTemperature:X2}");
+            Logger.LogInfo($"[{Id}] Setting color temperature to 0x{colorTemperature:X2}");
 
             var result = await _monitorManager.SetColorTemperatureAsync(Id, colorTemperature);
 
@@ -173,18 +173,18 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
                 OnPropertyChanged(nameof(ColorTemperature));
                 OnPropertyChanged(nameof(ColorTemperaturePresetName));
 
-                _mainViewModel?.SaveMonitorSettingDirect(_monitor.HardwareId, nameof(ColorTemperature), colorTemperature);
+                _mainViewModel?.SaveMonitorSettingDirect(_monitor.Id, nameof(ColorTemperature), colorTemperature);
 
-                Logger.LogInfo($"[{HardwareId}] Color temperature applied successfully");
+                Logger.LogInfo($"[{Id}] Color temperature applied successfully");
             }
             else
             {
-                Logger.LogWarning($"[{HardwareId}] Failed to set color temperature: {result.ErrorMessage}");
+                Logger.LogWarning($"[{Id}] Failed to set color temperature: {result.ErrorMessage}");
             }
         }
         catch (Exception ex)
         {
-            Logger.LogError($"[{HardwareId}] Exception setting color temperature: {ex.Message}");
+            Logger.LogError($"[{Id}] Exception setting color temperature: {ex.Message}");
         }
     }
 
@@ -202,22 +202,22 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
     {
         try
         {
-            Logger.LogDebug($"[{HardwareId}] Applying {propertyName.ToLowerInvariant()}: {value}%");
+            Logger.LogDebug($"[{Id}] Applying {propertyName.ToLowerInvariant()}: {value}%");
 
             var result = await setAsyncFunc(Id, value, default);
 
             if (result.IsSuccess)
             {
-                _mainViewModel?.SaveMonitorSettingDirect(_monitor.HardwareId, propertyName, value);
+                _mainViewModel?.SaveMonitorSettingDirect(_monitor.Id, propertyName, value);
             }
             else
             {
-                Logger.LogWarning($"[{HardwareId}] Failed to set {propertyName.ToLowerInvariant()}: {result.ErrorMessage}");
+                Logger.LogWarning($"[{Id}] Failed to set {propertyName.ToLowerInvariant()}: {result.ErrorMessage}");
             }
         }
         catch (Exception ex)
         {
-            Logger.LogError($"[{HardwareId}] Exception setting {propertyName.ToLowerInvariant()}: {ex.Message}");
+            Logger.LogError($"[{Id}] Exception setting {propertyName.ToLowerInvariant()}: {ex.Message}");
         }
     }
 
@@ -265,8 +265,6 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
     }
 
     public string Id => _monitor.Id;
-
-    public string HardwareId => _monitor.HardwareId;
 
     public string InternalName => _monitor.Id;
 
@@ -373,7 +371,7 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
     }
 
     /// <summary>
-    /// Gets or sets whether to show rotation controls (controlled by Settings UI, default false)
+    /// Gets or sets a value indicating whether gets or sets whether to show rotation controls (controlled by Settings UI, default false)
     /// </summary>
     public bool ShowRotation
     {
@@ -394,22 +392,22 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
     public int CurrentRotation => _monitor.Orientation;
 
     /// <summary>
-    /// Gets whether the current rotation is 0° (normal/default)
+    /// Gets a value indicating whether gets whether the current rotation is 0° (normal/default)
     /// </summary>
     public bool IsRotation0 => CurrentRotation == 0;
 
     /// <summary>
-    /// Gets whether the current rotation is 90° (rotated right)
+    /// Gets a value indicating whether gets whether the current rotation is 90° (rotated right)
     /// </summary>
     public bool IsRotation1 => CurrentRotation == 1;
 
     /// <summary>
-    /// Gets whether the current rotation is 180° (inverted)
+    /// Gets a value indicating whether gets whether the current rotation is 180° (inverted)
     /// </summary>
     public bool IsRotation2 => CurrentRotation == 2;
 
     /// <summary>
-    /// Gets whether the current rotation is 270° (rotated left)
+    /// Gets a value indicating whether gets whether the current rotation is 270° (rotated left)
     /// </summary>
     public bool IsRotation3 => CurrentRotation == 3;
 
@@ -422,7 +420,7 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
         // Validate orientation range (0=normal, 1=90°, 2=180°, 3=270°)
         if (orientation < 0 || orientation > 3)
         {
-            Logger.LogWarning($"[{HardwareId}] Invalid rotation value: {orientation}. Must be 0-3.");
+            Logger.LogWarning($"[{Id}] Invalid rotation value: {orientation}. Must be 0-3.");
             return;
         }
 
@@ -434,7 +432,7 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
 
         try
         {
-            Logger.LogInfo($"[{HardwareId}] Setting rotation to {orientation}");
+            Logger.LogInfo($"[{Id}] Setting rotation to {orientation}");
 
             var result = await _monitorManager.SetRotationAsync(Id, orientation);
 
@@ -447,16 +445,16 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
                 OnPropertyChanged(nameof(IsRotation2));
                 OnPropertyChanged(nameof(IsRotation3));
 
-                Logger.LogInfo($"[{HardwareId}] Rotation set successfully to {orientation}");
+                Logger.LogInfo($"[{Id}] Rotation set successfully to {orientation}");
             }
             else
             {
-                Logger.LogWarning($"[{HardwareId}] Failed to set rotation: {result.ErrorMessage}");
+                Logger.LogWarning($"[{Id}] Failed to set rotation: {result.ErrorMessage}");
             }
         }
         catch (Exception ex)
         {
-            Logger.LogError($"[{HardwareId}] Exception setting rotation: {ex.Message}");
+            Logger.LogError($"[{Id}] Exception setting rotation: {ex.Message}");
         }
     }
 
@@ -486,7 +484,7 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
     public string ColorTemperaturePresetName => _monitor.ColorTemperaturePresetName;
 
     /// <summary>
-    /// Whether this monitor supports input source switching via VCP 0x60
+    /// Gets a value indicating whether whether this monitor supports input source switching via VCP 0x60
     /// </summary>
     public bool SupportsInputSource => _monitor.SupportsInputSource;
 
@@ -548,7 +546,7 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
     {
         try
         {
-            Logger.LogInfo($"[{HardwareId}] Setting input source to 0x{inputSource:X2}");
+            Logger.LogInfo($"[{Id}] Setting input source to 0x{inputSource:X2}");
 
             var result = await _monitorManager.SetInputSourceAsync(Id, inputSource);
 
@@ -558,16 +556,16 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
                 OnPropertyChanged(nameof(CurrentInputSourceName));
                 RefreshAvailableInputSources();
 
-                Logger.LogInfo($"[{HardwareId}] Input source set successfully to {CurrentInputSourceName}");
+                Logger.LogInfo($"[{Id}] Input source set successfully to {CurrentInputSourceName}");
             }
             else
             {
-                Logger.LogWarning($"[{HardwareId}] Failed to set input source: {result.ErrorMessage}");
+                Logger.LogWarning($"[{Id}] Failed to set input source: {result.ErrorMessage}");
             }
         }
         catch (Exception ex)
         {
-            Logger.LogError($"[{HardwareId}] Exception setting input source: {ex.Message}");
+            Logger.LogError($"[{Id}] Exception setting input source: {ex.Message}");
         }
     }
 

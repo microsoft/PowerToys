@@ -16,18 +16,18 @@ namespace PowerDisplay.Common.Drivers.DDC
     /// </summary>
     public partial class PhysicalMonitorHandleManager : IDisposable
     {
-        // Mapping: deviceKey -> physical handle (thread-safe)
-        private readonly LockedDictionary<string, IntPtr> _deviceKeyToHandleMap = new();
+        // Mapping: monitorId -> physical handle (thread-safe)
+        private readonly LockedDictionary<string, IntPtr> _monitorIdToHandleMap = new();
         private bool _disposed;
 
         /// <summary>
-        /// Get physical handle for monitor using stable deviceKey
+        /// Get physical handle for monitor using its unique Id
         /// </summary>
         public IntPtr GetPhysicalHandle(Monitor monitor)
         {
-            // Primary lookup: use stable deviceKey from EnumDisplayDevices
-            if (!string.IsNullOrEmpty(monitor.DeviceKey) &&
-                _deviceKeyToHandleMap.TryGetValue(monitor.DeviceKey, out var handle))
+            // Primary lookup: use monitor Id
+            if (!string.IsNullOrEmpty(monitor.Id) &&
+                _monitorIdToHandleMap.TryGetValue(monitor.Id, out var handle))
             {
                 return handle;
             }
@@ -45,18 +45,18 @@ namespace PowerDisplay.Common.Drivers.DDC
         /// Try to reuse existing handle if valid; otherwise uses new handle
         /// Returns the handle to use and whether it was reused
         /// </summary>
-        public (IntPtr Handle, bool WasReused) ReuseOrCreateHandle(string deviceKey, IntPtr newHandle)
+        public (IntPtr Handle, bool WasReused) ReuseOrCreateHandle(string monitorId, IntPtr newHandle)
         {
-            if (string.IsNullOrEmpty(deviceKey))
+            if (string.IsNullOrEmpty(monitorId))
             {
                 return (newHandle, false);
             }
 
-            return _deviceKeyToHandleMap.ExecuteWithLock(dict =>
+            return _monitorIdToHandleMap.ExecuteWithLock(dict =>
             {
                 // Try to reuse existing handle if it's still valid
                 // Use quick connection check instead of full capabilities retrieval
-                if (dict.TryGetValue(deviceKey, out var existingHandle) &&
+                if (dict.TryGetValue(monitorId, out var existingHandle) &&
                     existingHandle != IntPtr.Zero &&
                     DdcCiNative.QuickConnectionCheck(existingHandle))
                 {
@@ -78,7 +78,7 @@ namespace PowerDisplay.Common.Drivers.DDC
         /// </summary>
         public void UpdateHandleMap(Dictionary<string, IntPtr> newHandleMap)
         {
-            _deviceKeyToHandleMap.ExecuteWithLock(dict =>
+            _monitorIdToHandleMap.ExecuteWithLock(dict =>
             {
                 // Clean up unused handles before updating
                 CleanupUnusedHandles(dict, newHandleMap);
@@ -140,7 +140,7 @@ namespace PowerDisplay.Common.Drivers.DDC
             }
 
             // Release all physical monitor handles - get snapshot to avoid holding lock during cleanup
-            var handles = _deviceKeyToHandleMap.GetValuesSnapshot();
+            var handles = _monitorIdToHandleMap.GetValuesSnapshot();
             foreach (var handle in handles)
             {
                 if (handle != IntPtr.Zero)
@@ -157,7 +157,7 @@ namespace PowerDisplay.Common.Drivers.DDC
                 }
             }
 
-            _deviceKeyToHandleMap.Clear();
+            _monitorIdToHandleMap.Clear();
             _disposed = true;
             GC.SuppressFinalize(this);
         }

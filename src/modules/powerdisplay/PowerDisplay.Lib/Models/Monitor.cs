@@ -15,13 +15,8 @@ namespace PowerDisplay.Common.Models
     /// Implements IMonitorData to provide a common interface for monitor hardware values.
     /// </summary>
     /// <remarks>
-    /// <para><b>Monitor Identifier Hierarchy:</b></para>
-    /// <list type="bullet">
-    /// <item><see cref="Id"/>: Runtime identifier for UI and IPC (e.g., "DDC_GSM5C6D", "WMI_DISPLAY\BOE...")</item>
-    /// <item><see cref="HardwareId"/>: EDID-based identifier for persistent storage (e.g., "GSM5C6D")</item>
-    /// <item><see cref="DeviceKey"/>: Windows device path for handle management (e.g., "\\?\DISPLAY#...")</item>
-    /// </list>
-    /// <para>Use <see cref="Id"/> for lookups, <see cref="HardwareId"/> for saving state, <see cref="DeviceKey"/> for handle reuse.</para>
+    /// <para><see cref="Id"/> is the unique identifier used for all purposes: UI lookups, IPC, persistent storage, and handle management.</para>
+    /// <para>Format: "{Source}_{EdidId}_{MonitorNumber}" (e.g., "DDC_GSM5C6D_1", "WMI_BOE0900_2").</para>
     /// </remarks>
     public partial class Monitor : INotifyPropertyChanged, IMonitorData
     {
@@ -31,24 +26,14 @@ namespace PowerDisplay.Common.Models
         private bool _isAvailable = true;
 
         /// <summary>
-        /// Runtime unique identifier for UI lookups and IPC communication.
+        /// Unique identifier for all purposes: UI lookups, IPC, persistent storage, and handle management.
         /// </summary>
         /// <remarks>
-        /// Format: "{Source}_{HardwareId}" where Source is "DDC" or "WMI".
-        /// Examples: "DDC_GSM5C6D", "WMI_DISPLAY\BOE0900...".
-        /// Use this for ViewModel lookups and MonitorManager method parameters.
+        /// Format: "{Source}_{EdidId}_{MonitorNumber}" where Source is "DDC" or "WMI".
+        /// Examples: "DDC_GSM5C6D_1", "WMI_BOE0900_2".
+        /// Stable across reboots and unique even for multiple identical monitors.
         /// </remarks>
         public string Id { get; set; } = string.Empty;
-
-        /// <summary>
-        /// EDID-based hardware identifier for persistent state storage.
-        /// </summary>
-        /// <remarks>
-        /// Format: Manufacturer code + product code from EDID (e.g., "GSM5C6D" for LG monitors).
-        /// Use this for saving/loading monitor settings in MonitorStateManager.
-        /// Stable across reboots but not guaranteed unique if multiple identical monitors are connected.
-        /// </remarks>
-        public string HardwareId { get; set; } = string.Empty;
 
         /// <summary>
         /// Display name
@@ -241,17 +226,6 @@ namespace PowerDisplay.Common.Models
         /// Physical monitor handle (for DDC/CI)
         /// </summary>
         public IntPtr Handle { get; set; } = IntPtr.Zero;
-
-        /// <summary>
-        /// Stable device key for persistent monitor identification and handle management.
-        /// </summary>
-        /// <remarks>
-        /// Format: "{HardwareId}_{MonitorNumber}" (e.g., "GSM5C6D_1").
-        /// HardwareId is from EDID (manufacturer+product code), MonitorNumber from QueryDisplayConfig.
-        /// Used by PhysicalMonitorHandleManager to reuse handles across monitor discovery cycles.
-        /// Same-model monitors on different ports will have different keys due to MonitorNumber.
-        /// </remarks>
-        public string DeviceKey { get; set; } = string.Empty;
 
         /// <summary>
         /// Instance name (used by WMI)

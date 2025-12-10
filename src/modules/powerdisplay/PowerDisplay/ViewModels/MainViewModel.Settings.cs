@@ -254,16 +254,16 @@ public partial class MainViewModel
 
         foreach (var setting in monitorSettings)
         {
-            // Find monitor by InternalName (unique identifier)
-            var monitorVm = Monitors.FirstOrDefault(m => m.InternalName == setting.MonitorInternalName);
+            // Find monitor by Id (unique identifier)
+            var monitorVm = Monitors.FirstOrDefault(m => m.Id == setting.MonitorId);
 
             if (monitorVm == null)
             {
-                Logger.LogWarning($"[Profile] Monitor with InternalName '{setting.MonitorInternalName}' not found (disconnected?)");
+                Logger.LogWarning($"[Profile] Monitor with Id '{setting.MonitorId}' not found (disconnected?)");
                 continue;
             }
 
-            Logger.LogInfo($"[Profile] Applying settings to monitor '{monitorVm.Name}' (InternalName: {setting.MonitorInternalName}, HardwareId: {setting.HardwareId})");
+            Logger.LogInfo($"[Profile] Applying settings to monitor '{monitorVm.Name}' (Id: {setting.MonitorId})");
 
             // Apply brightness if included in profile
             if (setting.Brightness.HasValue &&
@@ -312,8 +312,8 @@ public partial class MainViewModel
 
             foreach (var monitorVm in Monitors)
             {
-                // Find and apply corresponding saved settings from state file using stable HardwareId
-                var savedState = _stateManager.GetMonitorParameters(monitorVm.HardwareId);
+                // Find and apply corresponding saved settings from state file using unique monitor Id
+                var savedState = _stateManager.GetMonitorParameters(monitorVm.Id);
                 if (!savedState.HasValue)
                 {
                     continue;
@@ -384,18 +384,18 @@ public partial class MainViewModel
     /// Thread-safe save method that can be called from background threads.
     /// Does not access UI collections or update UI properties.
     /// </summary>
-    public void SaveMonitorSettingDirect(string hardwareId, string property, int value)
+    public void SaveMonitorSettingDirect(string monitorId, string property, int value)
     {
         try
         {
             // This is thread-safe - _stateManager has internal locking
             // No UI thread operations, no ObservableCollection access
-            _stateManager.UpdateMonitorParameter(hardwareId, property, value);
+            _stateManager.UpdateMonitorParameter(monitorId, property, value);
         }
         catch (Exception ex)
         {
             // Only log, don't update UI from background thread
-            Logger.LogError($"Failed to queue setting save for HardwareId '{hardwareId}': {ex.Message}");
+            Logger.LogError($"Failed to queue setting save for monitorId '{monitorId}': {ex.Message}");
         }
     }
 
@@ -461,7 +461,7 @@ public partial class MainViewModel
         var monitorInfo = new Microsoft.PowerToys.Settings.UI.Library.MonitorInfo(
             name: vm.Name,
             internalName: vm.Id,
-            hardwareId: vm.HardwareId,
+            hardwareId: string.Empty, // Deprecated, use InternalName (Id) instead
             communicationMethod: vm.CommunicationMethod,
             currentBrightness: vm.Brightness,
             colorTemperatureVcp: vm.ColorTemperature)
