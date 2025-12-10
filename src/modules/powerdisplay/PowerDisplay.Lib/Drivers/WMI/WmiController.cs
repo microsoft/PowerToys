@@ -137,47 +137,6 @@ namespace PowerDisplay.Common.Drivers.WMI
         public string Name => "WMI Monitor Controller (WmiLight)";
 
         /// <summary>
-        /// Check if the specified monitor can be controlled.
-        /// Verifies the specific monitor exists in WMI by filtering on InstanceName.
-        /// </summary>
-        public async Task<bool> CanControlMonitorAsync(Monitor monitor, CancellationToken cancellationToken = default)
-        {
-            ArgumentNullException.ThrowIfNull(monitor);
-
-            if (monitor.CommunicationMethod != "WMI")
-            {
-                return false;
-            }
-
-            // If no InstanceName, we can't verify the specific monitor
-            if (string.IsNullOrEmpty(monitor.InstanceName))
-            {
-                return false;
-            }
-
-            return await Task.Run(
-                () =>
-                {
-                    try
-                    {
-                        using var connection = new WmiConnection(WmiNamespace);
-
-                        // Filter by InstanceName to verify this specific monitor exists
-                        var escapedInstanceName = EscapeWmiString(monitor.InstanceName);
-                        var query = $"SELECT InstanceName FROM {BrightnessQueryClass} WHERE InstanceName = '{escapedInstanceName}'";
-                        var results = connection.CreateQuery(query).ToList();
-                        return results.Count > 0;
-                    }
-                    catch (Exception ex)
-                    {
-                        Logger.LogWarning($"WMI CanControlMonitor check failed for '{monitor.InstanceName}': {ex.Message}");
-                        return false;
-                    }
-                },
-                cancellationToken);
-        }
-
-        /// <summary>
         /// Get monitor brightness
         /// </summary>
         public async Task<BrightnessInfo> GetBrightnessAsync(Monitor monitor, CancellationToken cancellationToken = default)

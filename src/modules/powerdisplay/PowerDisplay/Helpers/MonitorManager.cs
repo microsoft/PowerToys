@@ -27,9 +27,12 @@ namespace PowerDisplay.Helpers
     {
         private readonly List<Monitor> _monitors = new();
         private readonly Dictionary<string, Monitor> _monitorLookup = new();
-        private readonly List<IMonitorController> _controllers = new();
         private readonly SemaphoreSlim _discoveryLock = new(1, 1);
         private readonly DisplayRotationService _rotationService = new();
+
+        // Controllers stored by type for O(1) lookup based on CommunicationMethod
+        private DdcCiController? _ddcController;
+        private WmiController? _wmiController;
         private bool _disposed;
 
         public IReadOnlyList<Monitor> Monitors => _monitors.AsReadOnly();
@@ -48,7 +51,7 @@ namespace PowerDisplay.Helpers
             try
             {
                 // DDC/CI controller (external monitors)
-                _controllers.Add(new DdcCiController());
+                _ddcController = new DdcCiController();
             }
             catch (Exception ex)
             {
@@ -61,7 +64,7 @@ namespace PowerDisplay.Helpers
                 // First check if WMI is available
                 if (WmiController.IsWmiAvailable())
                 {
-                    _controllers.Add(new WmiController());
+                    _wmiController = new WmiController();
                 }
                 else
                 {
@@ -84,19 +87,18 @@ namespace PowerDisplay.Helpers
 
             try
             {
-                var discoveryResults = await DiscoverFromAllControllersAsync(cancellationToken);
+                var discoveredMonitors = await DiscoverFromAllControllersAsync(cancellationToken);
 
                 // Update collections
                 _monitors.Clear();
                 _monitorLookup.Clear();
 
-                var newMonitors = discoveryResults
-                    .SelectMany(r => r.Monitors)
+                var sortedMonitors = discoveredMonitors
                     .OrderBy(m => m.MonitorNumber)
                     .ToList();
 
-                _monitors.AddRange(newMonitors);
-                foreach (var monitor in newMonitors)
+                _monitors.AddRange(sortedMonitors);
+                foreach (var monitor in sortedMonitors)
                 {
                     _monitorLookup[monitor.Id] = monitor;
                 }
@@ -112,25 +114,40 @@ namespace PowerDisplay.Helpers
         /// <summary>
         /// Discover monitors from all registered controllers in parallel.
         /// </summary>
-        private async Task<List<(IMonitorController Controller, List<Monitor> Monitors)>> DiscoverFromAllControllersAsync(
+        private async Task<List<Monitor>> DiscoverFromAllControllersAsync(CancellationToken cancellationToken)
+        {
+            var tasks = new List<Task<IEnumerable<Monitor>>>();
+
+            if (_ddcController != null)
+            {
+                tasks.Add(SafeDiscoverAsync(_ddcController, cancellationToken));
+            }
+
+            if (_wmiController != null)
+            {
+                tasks.Add(SafeDiscoverAsync(_wmiController, cancellationToken));
+            }
+
+            var results = await Task.WhenAll(tasks);
+            return results.SelectMany(m => m).ToList();
+        }
+
+        /// <summary>
+        /// Safely discover monitors from a controller, returning empty list on failure.
+        /// </summary>
+        private static async Task<IEnumerable<Monitor>> SafeDiscoverAsync(
+            IMonitorController controller,
             CancellationToken cancellationToken)
         {
-            var discoveryTasks = _controllers.Select(async controller =>
+            try
             {
-                try
-                {
-                    var monitors = await controller.DiscoverMonitorsAsync(cancellationToken);
-                    return (Controller: controller, Monitors: monitors.ToList());
-                }
-                catch (Exception ex)
-                {
-                    Logger.LogWarning($"Controller {controller.Name} discovery failed: {ex.Message}");
-                    return (Controller: controller, Monitors: new List<Monitor>());
-                }
-            });
-
-            var results = await Task.WhenAll(discoveryTasks);
-            return results.ToList();
+                return await controller.DiscoverMonitorsAsync(cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogWarning($"Controller {controller.Name} discovery failed: {ex.Message}");
+                return Enumerable.Empty<Monitor>();
+            }
         }
 
         /// <summary>
@@ -144,7 +161,7 @@ namespace PowerDisplay.Helpers
                 return BrightnessInfo.Invalid;
             }
 
-            var controller = await GetControllerForMonitorAsync(monitor, cancellationToken);
+            var controller = GetControllerForMonitor(monitor);
             if (controller == null)
             {
                 return BrightnessInfo.Invalid;
@@ -215,7 +232,7 @@ namespace PowerDisplay.Helpers
                 return BrightnessInfo.Invalid;
             }
 
-            var controller = await GetControllerForMonitorAsync(monitor, cancellationToken);
+            var controller = GetControllerForMonitor(monitor);
             if (controller == null)
             {
                 return BrightnessInfo.Invalid;
@@ -254,7 +271,7 @@ namespace PowerDisplay.Helpers
                 return BrightnessInfo.Invalid;
             }
 
-            var controller = await GetControllerForMonitorAsync(monitor, cancellationToken);
+            var controller = GetControllerForMonitor(monitor);
             if (controller == null)
             {
                 return BrightnessInfo.Invalid;
@@ -326,20 +343,17 @@ namespace PowerDisplay.Helpers
         }
 
         /// <summary>
-        /// Get controller for the monitor
+        /// Get controller for the monitor based on CommunicationMethod.
+        /// O(1) lookup - no async validation needed since controller type is determined at discovery.
         /// </summary>
-        private async Task<IMonitorController?> GetControllerForMonitorAsync(Monitor monitor, CancellationToken cancellationToken = default)
+        private IMonitorController? GetControllerForMonitor(Monitor monitor)
         {
-            // WMI monitors use WmiController, DDC/CI monitors use DdcCiController
-            foreach (var controller in _controllers)
+            return monitor.CommunicationMethod switch
             {
-                if (await controller.CanControlMonitorAsync(monitor, cancellationToken))
-                {
-                    return controller;
-                }
-            }
-
-            return null;
+                "WMI" => _wmiController,
+                "DDC/CI" => _ddcController,
+                _ => null,
+            };
         }
 
         /// <summary>
@@ -360,7 +374,7 @@ namespace PowerDisplay.Helpers
                 return MonitorOperationResult.Failure("Monitor not found");
             }
 
-            var controller = await GetControllerForMonitorAsync(monitor, cancellationToken);
+            var controller = GetControllerForMonitor(monitor);
             if (controller == null)
             {
                 Logger.LogError($"[MonitorManager] No controller available for monitor {monitorId}");
@@ -403,13 +417,10 @@ namespace PowerDisplay.Helpers
             {
                 _discoveryLock?.Dispose();
 
-                // Release all controllers
-                foreach (var controller in _controllers)
-                {
-                    controller?.Dispose();
-                }
+                // Release controllers
+                _ddcController?.Dispose();
+                _wmiController?.Dispose();
 
-                _controllers.Clear();
                 _monitors.Clear();
                 _monitorLookup.Clear();
                 _disposed = true;

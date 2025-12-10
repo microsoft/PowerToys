@@ -58,50 +58,12 @@ namespace PowerDisplay.Common.Drivers.DDC
         public string Name => "DDC/CI Monitor Controller";
 
         /// <summary>
-        /// Check if the specified monitor can be controlled.
-        /// Uses quick connection check since capabilities are already cached during discovery.
-        /// </summary>
-        public async Task<bool> CanControlMonitorAsync(Monitor monitor, CancellationToken cancellationToken = default)
-        {
-            ArgumentNullException.ThrowIfNull(monitor);
-
-            return await Task.Run(
-                () =>
-                {
-                    var physicalHandle = GetPhysicalHandle(monitor);
-                    if (physicalHandle == IntPtr.Zero)
-                    {
-                        return false;
-                    }
-
-                    // Capabilities are always cached during DiscoverMonitorsAsync Phase 2,
-                    // so we can use quick connection check instead of full validation
-                    return DdcCiNative.QuickConnectionCheck(physicalHandle);
-                },
-                cancellationToken);
-        }
-
-        /// <summary>
         /// Get monitor brightness using VCP code 0x10
         /// </summary>
         public async Task<BrightnessInfo> GetBrightnessAsync(Monitor monitor, CancellationToken cancellationToken = default)
         {
             ArgumentNullException.ThrowIfNull(monitor);
-
-            return await Task.Run(
-                () =>
-                {
-                    var physicalHandle = GetPhysicalHandle(monitor);
-                    var result = GetBrightnessInfoCore(monitor.Id, physicalHandle);
-
-                    if (!result.IsValid)
-                    {
-                        Logger.LogWarning($"[{monitor.Id}] Failed to read brightness");
-                    }
-
-                    return result;
-                },
-                cancellationToken);
+            return await GetVcpFeatureAsync(monitor, VcpCodeBrightness, "Brightness", cancellationToken);
         }
 
         /// <summary>
@@ -824,37 +786,6 @@ namespace PowerDisplay.Common.Drivers.DDC
                     }
                 },
                 cancellationToken);
-        }
-
-        /// <summary>
-        /// Core implementation for getting brightness information using VCP code 0x10.
-        /// </summary>
-        /// <param name="monitorId">Monitor ID for logging.</param>
-        /// <param name="physicalHandle">Physical monitor handle.</param>
-        /// <returns>BrightnessInfo with current, min, and max values, or Invalid if failed.</returns>
-        private BrightnessInfo GetBrightnessInfoCore(string monitorId, IntPtr physicalHandle)
-        {
-            if (physicalHandle == IntPtr.Zero)
-            {
-                Logger.LogDebug($"[{monitorId}] Invalid physical handle");
-                return BrightnessInfo.Invalid;
-            }
-
-            if (DdcCiNative.TryGetVCPFeature(physicalHandle, VcpCodeBrightness, out uint current, out uint max))
-            {
-                Logger.LogDebug($"[{monitorId}] Brightness via VCP 0x10: {current}/{max}");
-                return new BrightnessInfo((int)current, 0, (int)max);
-            }
-
-            return BrightnessInfo.Invalid;
-        }
-
-        /// <summary>
-        /// Get physical handle for monitor using stable deviceKey
-        /// </summary>
-        private IntPtr GetPhysicalHandle(Monitor monitor)
-        {
-            return _handleManager.GetPhysicalHandle(monitor);
         }
 
         public void Dispose()

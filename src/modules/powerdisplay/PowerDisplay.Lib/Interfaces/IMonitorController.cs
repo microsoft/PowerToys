@@ -22,14 +22,6 @@ namespace PowerDisplay.Common.Interfaces
         string Name { get; }
 
         /// <summary>
-        /// Checks whether the specified monitor can be controlled
-        /// </summary>
-        /// <param name="monitor">Monitor object</param>
-        /// <param name="cancellationToken">Cancellation token</param>
-        /// <returns>Whether the monitor can be controlled</returns>
-        Task<bool> CanControlMonitorAsync(Monitor monitor, CancellationToken cancellationToken = default);
-
-        /// <summary>
         /// Gets monitor brightness
         /// </summary>
         /// <param name="monitor">Monitor object</param>
