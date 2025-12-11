@@ -19,10 +19,8 @@ EXPORTS
 	InstallEmbeddedMSIXCA
 	InstallDSCModuleCA
 	InstallCmdPalPackageCA
-	InstallCmdPalExtPowerToysPackageCA
 	UnApplyModulesRegistryChangeSetsCA
 	UnRegisterCmdPalPackageCA
-	UnRegisterCmdPalExtPowerToysPackageCA
 	UnRegisterContextMenuPackagesCA
 	UninstallEmbeddedMSIXCA
 	UninstallDSCModuleCA
