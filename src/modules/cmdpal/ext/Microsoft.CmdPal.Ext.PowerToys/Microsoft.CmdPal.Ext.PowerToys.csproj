@@ -25,32 +25,11 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<Content Update="Assets\SplashScreen.scale-200.png">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</Content>
-		<Content Update="Assets\LockScreenLogo.scale-200.png">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</Content>
-		<Content Update="Assets\Square150x150Logo.scale-200.png">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</Content>
-		<Content Update="Assets\Square44x44Logo.scale-200.png">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</Content>
-		<Content Update="Assets\Square44x44Logo.targetsize-24_altform-unplated.png">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</Content>
-		<Content Update="Assets\StoreLogo.png">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</Content>
-		<Content Update="Assets\Wide310x150Logo.scale-200.png">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</Content>
-		<Content Update="Assets\FileLocksmith.png">
+		<Content Include="..\..\..\..\settings-ui\Settings.UI\Assets\Settings\Icons\*.png" Link="Assets\%(Filename)%(Extension)">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</Content>
 	</ItemGroup>
-	
+
 	<ItemGroup>
 		<PackageReference Include="Microsoft.WindowsAppSDK" />
 		<PackageReference Include="Microsoft.Windows.CsWin32">
