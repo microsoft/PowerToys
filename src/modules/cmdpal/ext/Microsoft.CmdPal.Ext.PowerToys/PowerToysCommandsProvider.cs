@@ -15,7 +15,7 @@ public sealed partial class PowerToysCommandsProvider : CommandProvider
     public PowerToysCommandsProvider()
     {
         DisplayName = "PowerToys";
-        Icon = IconHelpers.FromRelativePath("Assets\\PowerToys.png");
+        Icon = PowerToysResourcesHelper.IconFromSettingsIcon("PowerToys.png");
     }
 
     public override ICommandItem[] TopLevelCommands() =>

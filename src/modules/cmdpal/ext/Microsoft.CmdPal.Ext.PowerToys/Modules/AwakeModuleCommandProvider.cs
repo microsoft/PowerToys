@@ -17,7 +17,7 @@ internal sealed class AwakeModuleCommandProvider : ModuleCommandProvider
     public override IEnumerable<ListItem> BuildCommands()
     {
         var items = new List<ListItem>();
-        var icon = IconHelpers.FromRelativePath("Assets\\Awake.png");
+        var icon = PowerToysResourcesHelper.IconFromSettingsIcon("Awake.png");
 
         // Settings entry with quick actions in MoreCommands.
         var settingsTitle = SettingsDeepLink.SettingsWindow.Awake.ModuleDisplayName();

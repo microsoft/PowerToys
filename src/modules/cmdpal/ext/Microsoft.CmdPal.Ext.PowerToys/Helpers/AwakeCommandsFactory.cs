@@ -52,6 +52,8 @@ internal static class AwakeCommandsFactory
             Toast: "Awake timer set for 2 hours"),
     ];
 
+    private static readonly IconInfo AwakeIcon = PowerToysResourcesHelper.IconFromSettingsIcon("Awake.png");
+
     internal static void PopulateModuleCommands(List<ICommandContextItem> moreCommands)
     {
         ArgumentNullException.ThrowIfNull(moreCommands);
@@ -76,7 +78,7 @@ internal static class AwakeCommandsFactory
             {
                 Title = "Current status",
                 Subtitle = statusSubtitle,
-                Icon = IconHelpers.FromRelativePath("Assets\\Awake.png"),
+                Icon = AwakeIcon,
             };
 
             results.Add(statusItem);
@@ -94,7 +96,7 @@ internal static class AwakeCommandsFactory
             {
                 Title = preset.Title,
                 Subtitle = preset.Subtitle,
-                Icon = IconHelpers.FromRelativePath("Assets\\Awake.png"),
+                Icon = AwakeIcon,
             };
             results.Add(item);
         }
@@ -119,7 +121,7 @@ internal static class AwakeCommandsFactory
             {
                 Title = title,
                 Subtitle = subtitle,
-                Icon = IconHelpers.FromRelativePath("Assets\\Awake.png"),
+                Icon = AwakeIcon,
             };
             results.Add(item);
         }
@@ -130,7 +132,7 @@ internal static class AwakeCommandsFactory
             {
                 Title = "Bind Awake to another process",
                 Subtitle = "Stop automatically when the target process exits",
-                Icon = IconHelpers.FromRelativePath("Assets\\Awake.png"),
+                Icon = AwakeIcon,
             };
 
             results.Add(new ListItem(processPageItem)
@@ -148,7 +150,7 @@ internal static class AwakeCommandsFactory
             {
                 Title = "Set Awake to Off",
                 Subtitle = "Switch Awake to passive mode",
-                Icon = IconHelpers.FromRelativePath("Assets\\Awake.png"),
+                Icon = AwakeIcon,
             };
             results.Add(stopItem);
         }
@@ -160,7 +162,7 @@ internal static class AwakeCommandsFactory
             {
                 Title = "Open Awake settings",
                 Subtitle = "Configure Awake inside PowerToys",
-                Icon = IconHelpers.FromRelativePath("Assets\\Awake.png"),
+                Icon = AwakeIcon,
             };
             results.Add(settingsItem);
         }
@@ -207,7 +209,7 @@ internal static class AwakeCommandsFactory
                 {
                     Title = title,
                     Subtitle = "Keep the PC awake while this process is running",
-                    Icon = IconHelpers.FromRelativePath("Assets\\Awake.png"),
+                    Icon = AwakeIcon,
                 };
                 results.Add(item);
             }

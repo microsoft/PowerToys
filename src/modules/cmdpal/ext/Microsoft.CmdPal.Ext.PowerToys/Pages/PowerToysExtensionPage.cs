@@ -13,7 +13,7 @@ internal sealed partial class PowerToysExtensionPage : ListPage
 {
     public PowerToysExtensionPage()
     {
-        Icon = IconHelpers.FromRelativePath("Assets\\PowerToys.png");
+        Icon = Helpers.PowerToysResourcesHelper.IconFromSettingsIcon("PowerToys.png");
         Title = "PowerToys";
         Name = "PowerToys commands";
     }

@@ -14,7 +14,7 @@ internal sealed partial class AwakeProcessListPage : DynamicListPage
 
     public AwakeProcessListPage()
     {
-        Icon = IconHelpers.FromRelativePath("Assets\\Awake.png");
+        Icon = PowerToysResourcesHelper.IconFromSettingsIcon("Awake.png");
         Title = "Bind Awake to process";
         Name = "AwakeProcessBinding";
         Id = "com.microsoft.powertoys.awake.processBinding";
@@ -23,7 +23,7 @@ internal sealed partial class AwakeProcessListPage : DynamicListPage
         {
             Title = "No matching processes",
             Subtitle = "Try another search.",
-            Icon = IconHelpers.FromRelativePath("Assets\\Awake.png"),
+            Icon = PowerToysResourcesHelper.IconFromSettingsIcon("Awake.png"),
         };
 
         EmptyContent = _emptyContent;

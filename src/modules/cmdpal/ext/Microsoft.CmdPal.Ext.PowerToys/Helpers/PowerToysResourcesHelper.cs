@@ -9,48 +9,52 @@ namespace PowerToysExtension.Helpers;
 
 internal static class PowerToysResourcesHelper
 {
-    public static IconInfo ProviderIcon() => IconHelpers.FromRelativePath("Assets\\PowerToys.png");
+    private const string SettingsIconRoot = "WinUI3Apps\\Assets\\Settings\\Icons\\";
+
+    internal static IconInfo IconFromSettingsIcon(string fileName) => IconHelpers.FromRelativePath($"{SettingsIconRoot}{fileName}");
+
+    public static IconInfo ProviderIcon() => IconFromSettingsIcon("PowerToys.png");
 
     public static IconInfo ModuleIcon(this SettingsWindow module)
     {
-        var iconPath = module switch
+        var iconFile = module switch
         {
-            SettingsWindow.ColorPicker => "Assets\\ColorPicker.png",
-            SettingsWindow.FancyZones => "Assets\\FancyZones.png",
-            SettingsWindow.Hosts => "Assets\\Hosts.png",
-            SettingsWindow.PowerOCR => "Assets\\TextExtractor.png",
-            SettingsWindow.RegistryPreview => "Assets\\RegistryPreview.png",
-            SettingsWindow.MeasureTool => "Assets\\ScreenRuler.png",
-            SettingsWindow.ShortcutGuide => "Assets\\ShortcutGuide.png",
-            SettingsWindow.CropAndLock => "Assets\\CropAndLock.png",
-            SettingsWindow.EnvironmentVariables => "Assets\\EnvironmentVariables.png",
-            SettingsWindow.Awake => "Assets\\Awake.png",
-            SettingsWindow.PowerRename => "Assets\\PowerRename.png",
-            SettingsWindow.Run => "Assets\\PowerToysRun.png",
-            SettingsWindow.ImageResizer => "Assets\\ImageResizer.png",
-            SettingsWindow.KBM => "Assets\\KeyboardManager.png",
-            SettingsWindow.MouseUtils => "Assets\\MouseUtils.png",
-            SettingsWindow.Workspaces => "Assets\\Workspaces.png",
-            SettingsWindow.AdvancedPaste => "Assets\\AdvancedPaste.png",
-            SettingsWindow.CmdPal => "Assets\\CmdPal.png",
-            SettingsWindow.ZoomIt => "Assets\\ZoomIt.png",
-            SettingsWindow.FileExplorer => "Assets\\FileExplorerPreview.png",
-            SettingsWindow.FileLocksmith => "Assets\\FileLocksmith.png",
-            SettingsWindow.NewPlus => "Assets\\NewPlus.png",
-            SettingsWindow.Peek => "Assets\\Peek.png",
-            SettingsWindow.LightSwitch => "Assets\\LightSwitch.png",
-            SettingsWindow.AlwaysOnTop => "Assets\\AlwaysOnTop.png",
-            SettingsWindow.CmdNotFound => "Assets\\CommandNotFound.png",
-            SettingsWindow.MouseWithoutBorders => "Assets\\MouseWithoutBorders.png",
-            SettingsWindow.PowerAccent => "Assets\\QuickAccent.png",
-            SettingsWindow.PowerLauncher => "Assets\\PowerToysRun.png",
-            SettingsWindow.PowerPreview => "Assets\\FileExplorerPreview.png",
-            SettingsWindow.Overview => "Assets\\PowerToys.png",
-            SettingsWindow.Dashboard => "Assets\\PowerToys.png",
-            _ => "Assets\\PowerToys.png",
+            SettingsWindow.ColorPicker => "ColorPicker.png",
+            SettingsWindow.FancyZones => "FancyZones.png",
+            SettingsWindow.Hosts => "Hosts.png",
+            SettingsWindow.PowerOCR => "TextExtractor.png",
+            SettingsWindow.RegistryPreview => "RegistryPreview.png",
+            SettingsWindow.MeasureTool => "ScreenRuler.png",
+            SettingsWindow.ShortcutGuide => "ShortcutGuide.png",
+            SettingsWindow.CropAndLock => "CropAndLock.png",
+            SettingsWindow.EnvironmentVariables => "EnvironmentVariables.png",
+            SettingsWindow.Awake => "Awake.png",
+            SettingsWindow.PowerRename => "PowerRename.png",
+            SettingsWindow.Run => "PowerToysRun.png",
+            SettingsWindow.ImageResizer => "ImageResizer.png",
+            SettingsWindow.KBM => "KeyboardManager.png",
+            SettingsWindow.MouseUtils => "MouseUtils.png",
+            SettingsWindow.Workspaces => "Workspaces.png",
+            SettingsWindow.AdvancedPaste => "AdvancedPaste.png",
+            SettingsWindow.CmdPal => "CmdPal.png",
+            SettingsWindow.ZoomIt => "ZoomIt.png",
+            SettingsWindow.FileExplorer => "FileExplorerPreview.png",
+            SettingsWindow.FileLocksmith => "FileLocksmith.png",
+            SettingsWindow.NewPlus => "NewPlus.png",
+            SettingsWindow.Peek => "Peek.png",
+            SettingsWindow.LightSwitch => "LightSwitch.png",
+            SettingsWindow.AlwaysOnTop => "AlwaysOnTop.png",
+            SettingsWindow.CmdNotFound => "CommandNotFound.png",
+            SettingsWindow.MouseWithoutBorders => "MouseWithoutBorders.png",
+            SettingsWindow.PowerAccent => "QuickAccent.png",
+            SettingsWindow.PowerLauncher => "PowerToysRun.png",
+            SettingsWindow.PowerPreview => "FileExplorerPreview.png",
+            SettingsWindow.Overview => "PowerToys.png",
+            SettingsWindow.Dashboard => "PowerToys.png",
+            _ => "PowerToys.png",
         };
 
-        return IconHelpers.FromRelativePath(iconPath);
+        return IconFromSettingsIcon(iconFile);
     }
 
     public static string ModuleDisplayName(this SettingsWindow module)

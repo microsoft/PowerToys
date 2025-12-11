@@ -14,7 +14,7 @@ internal sealed partial class AwakeSessionsPage : DynamicListPage
 
     public AwakeSessionsPage()
     {
-        Icon = IconHelpers.FromRelativePath("Assets\\Awake.png");
+        Icon = PowerToysResourcesHelper.IconFromSettingsIcon("Awake.png");
         Title = "Awake actions";
         Name = "AwakeActions";
         Id = "com.microsoft.powertoys.awake.actions";
@@ -23,7 +23,7 @@ internal sealed partial class AwakeSessionsPage : DynamicListPage
         {
             Title = "No Awake actions",
             Subtitle = "Try a different search phrase.",
-            Icon = IconHelpers.FromRelativePath("Assets\\Awake.png"),
+            Icon = PowerToysResourcesHelper.IconFromSettingsIcon("Awake.png"),
         };
 
         EmptyContent = _emptyContent;

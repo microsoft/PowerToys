@@ -21,6 +21,7 @@ internal sealed class WorkspacesModuleCommandProvider : ModuleCommandProvider
     public override IEnumerable<ListItem> BuildCommands()
     {
         var items = new List<ListItem>();
+        var icon = PowerToysResourcesHelper.IconFromSettingsIcon("Workspaces.png");
 
         // Settings entry plus common actions.
         var title = SettingsDeepLink.SettingsWindow.Workspaces.ModuleDisplayName();
@@ -40,7 +41,7 @@ internal sealed class WorkspacesModuleCommandProvider : ModuleCommandProvider
         {
             Title = "Workspaces: Open editor",
             Subtitle = "Create or edit workspaces",
-            Icon = IconHelpers.FromRelativePath("Assets\\Workspaces.png"),
+            Icon = icon,
         });
 
         // Per-workspace entries via the shared service.
@@ -55,7 +56,7 @@ internal sealed class WorkspacesModuleCommandProvider : ModuleCommandProvider
             {
                 Title = workspace.Name,
                 Subtitle = BuildSubtitle(workspace),
-                Icon = IconHelpers.FromRelativePath("Assets\\Workspaces.png"),
+                Icon = icon,
                 Details = BuildDetails(workspace),
             });
         }
@@ -104,7 +105,7 @@ internal sealed class WorkspacesModuleCommandProvider : ModuleCommandProvider
 
         return new Details
         {
-            HeroImage = IconHelpers.FromRelativePath("Assets\\Workspaces.png"),
+            HeroImage = PowerToysResourcesHelper.IconFromSettingsIcon("Workspaces.png"),
             Title = workspace.Name,
             Metadata = BuildAppMetadata(workspace),
         };

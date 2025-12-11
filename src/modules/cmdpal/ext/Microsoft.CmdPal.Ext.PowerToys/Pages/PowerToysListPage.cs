@@ -14,12 +14,12 @@ internal sealed partial class PowerToysListPage : DynamicListPage
 
     public PowerToysListPage()
     {
-        Icon = IconHelpers.FromRelativePath("Assets\\PowerToys.png");
+        Icon = PowerToysResourcesHelper.IconFromSettingsIcon("PowerToys.png");
         Name = Title = "PowerToys";
         Id = "com.microsoft.cmdpal.powertoys";
         _empty = new CommandItem()
         {
-            Icon = IconHelpers.FromRelativePath("Assets\\PowerToys.png"),
+            Icon = PowerToysResourcesHelper.IconFromSettingsIcon("PowerToys.png"),
             Title = "No matching module found",
             Subtitle = SearchText,
         };

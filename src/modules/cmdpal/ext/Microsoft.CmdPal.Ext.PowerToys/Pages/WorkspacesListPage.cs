@@ -5,6 +5,7 @@
 using System.Linq;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
+using PowerToysExtension.Helpers;
 using PowerToysExtension.Modules;
 
 namespace PowerToysExtension.Pages;
@@ -15,12 +16,12 @@ internal sealed partial class WorkspacesListPage : DynamicListPage
 
     public WorkspacesListPage()
     {
-        Icon = IconHelpers.FromRelativePath("Assets\\Workspaces.png");
+        Icon = PowerToysResourcesHelper.IconFromSettingsIcon("Workspaces.png");
         Name = Title = "Workspaces";
         Id = "com.microsoft.cmdpal.powertoys.workspaces";
         _emptyMessage = new CommandItem()
         {
-            Icon = IconHelpers.FromRelativePath("Assets\\Workspaces.png"),
+            Icon = PowerToysResourcesHelper.IconFromSettingsIcon("Workspaces.png"),
             Title = "No workspaces found",
             Subtitle = SearchText,
         };

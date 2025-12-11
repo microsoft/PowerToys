@@ -19,7 +19,7 @@ internal sealed partial class ColorPickerSavedColorsPage : DynamicListPage
 
     public ColorPickerSavedColorsPage()
     {
-        Icon = IconHelpers.FromRelativePath("Assets\\ColorPicker.png");
+        Icon = PowerToysResourcesHelper.IconFromSettingsIcon("ColorPicker.png");
         Title = "Saved colors";
         Name = "ColorPickerSavedColors";
         Id = "com.microsoft.powertoys.colorpicker.savedColors";
@@ -28,7 +28,7 @@ internal sealed partial class ColorPickerSavedColorsPage : DynamicListPage
         {
             Title = "No saved colors",
             Subtitle = "Pick a color first, then try again.",
-            Icon = IconHelpers.FromRelativePath("Assets\\ColorPicker.png"),
+            Icon = PowerToysResourcesHelper.IconFromSettingsIcon("ColorPicker.png"),
         };
 
         EmptyContent = _emptyContent;
