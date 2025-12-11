@@ -281,7 +281,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
                 if (dashboardListItem.Tag == ModuleType.NewPlus && dashboardListItem.IsEnabled == true)
                 {
-                    var settingsUtils = new SettingsUtils();
+                    var settingsUtils = SettingsUtils.Default;
                     var settings = NewPlusViewModel.LoadSettings(settingsUtils);
                     NewPlusViewModel.CopyTemplateExamples(settings.Properties.TemplateLocation.Value);
                 }
@@ -438,7 +438,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private ObservableCollection<DashboardModuleItem> GetModuleItemsAlwaysOnTop()
         {
-            ISettingsRepository<AlwaysOnTopSettings> moduleSettingsRepository = SettingsRepository<AlwaysOnTopSettings>.GetInstance(new SettingsUtils());
+            ISettingsRepository<AlwaysOnTopSettings> moduleSettingsRepository = SettingsRepository<AlwaysOnTopSettings>.GetInstance(SettingsUtils.Default);
             var list = new List<DashboardModuleItem>
             {
                 new DashboardModuleShortcutItem() { Label = resourceLoader.GetString("AlwaysOnTop_ShortDescription"), Shortcut = moduleSettingsRepository.SettingsConfig.Properties.Hotkey.Value.GetKeysList() },
@@ -459,7 +459,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private ObservableCollection<DashboardModuleItem> GetModuleItemsColorPicker()
         {
-            ISettingsRepository<ColorPickerSettings> moduleSettingsRepository = SettingsRepository<ColorPickerSettings>.GetInstance(new SettingsUtils());
+            ISettingsRepository<ColorPickerSettings> moduleSettingsRepository = SettingsRepository<ColorPickerSettings>.GetInstance(SettingsUtils.Default);
             var settings = moduleSettingsRepository.SettingsConfig;
             var hotkey = settings.Properties.ActivationShortcut;
             var list = new List<DashboardModuleItem>
@@ -471,7 +471,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private ObservableCollection<DashboardModuleItem> GetModuleItemsLightSwitch()
         {
-            ISettingsRepository<LightSwitchSettings> moduleSettingsRepository = SettingsRepository<LightSwitchSettings>.GetInstance(new SettingsUtils());
+            ISettingsRepository<LightSwitchSettings> moduleSettingsRepository = SettingsRepository<LightSwitchSettings>.GetInstance(SettingsUtils.Default);
             var settings = moduleSettingsRepository.SettingsConfig;
             var list = new List<DashboardModuleItem>
             {
@@ -482,7 +482,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private ObservableCollection<DashboardModuleItem> GetModuleItemsCropAndLock()
         {
-            ISettingsRepository<CropAndLockSettings> moduleSettingsRepository = SettingsRepository<CropAndLockSettings>.GetInstance(new SettingsUtils());
+            ISettingsRepository<CropAndLockSettings> moduleSettingsRepository = SettingsRepository<CropAndLockSettings>.GetInstance(SettingsUtils.Default);
             var settings = moduleSettingsRepository.SettingsConfig;
             var list = new List<DashboardModuleItem>
             {
@@ -503,7 +503,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private ObservableCollection<DashboardModuleItem> GetModuleItemsFancyZones()
         {
-            ISettingsRepository<FancyZonesSettings> moduleSettingsRepository = SettingsRepository<FancyZonesSettings>.GetInstance(new SettingsUtils());
+            ISettingsRepository<FancyZonesSettings> moduleSettingsRepository = SettingsRepository<FancyZonesSettings>.GetInstance(SettingsUtils.Default);
             var settings = moduleSettingsRepository.SettingsConfig;
             string activationMode = $"{resourceLoader.GetString(settings.Properties.FancyzonesShiftDrag.Value ? "FancyZones_ActivationShiftDrag" : "FancyZones_ActivationNoShiftDrag")}.";
 
@@ -518,7 +518,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private ObservableCollection<DashboardModuleItem> GetModuleItemsFindMyMouse()
         {
-            ISettingsRepository<FindMyMouseSettings> moduleSettingsRepository = SettingsRepository<FindMyMouseSettings>.GetInstance(new SettingsUtils());
+            ISettingsRepository<FindMyMouseSettings> moduleSettingsRepository = SettingsRepository<FindMyMouseSettings>.GetInstance(SettingsUtils.Default);
             string shortDescription = resourceLoader.GetString("FindMyMouse_ShortDescription");
             var settings = moduleSettingsRepository.SettingsConfig;
             var activationMethod = settings.Properties.ActivationMethod.Value;
@@ -556,7 +556,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private ObservableCollection<DashboardModuleItem> GetModuleItemsMouseHighlighter()
         {
-            ISettingsRepository<MouseHighlighterSettings> moduleSettingsRepository = SettingsRepository<MouseHighlighterSettings>.GetInstance(new SettingsUtils());
+            ISettingsRepository<MouseHighlighterSettings> moduleSettingsRepository = SettingsRepository<MouseHighlighterSettings>.GetInstance(SettingsUtils.Default);
             var list = new List<DashboardModuleItem>
             {
                 new DashboardModuleShortcutItem() { Label = resourceLoader.GetString("MouseHighlighter_ShortDescription"), Shortcut = moduleSettingsRepository.SettingsConfig.Properties.ActivationShortcut.GetKeysList() },
@@ -566,7 +566,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private ObservableCollection<DashboardModuleItem> GetModuleItemsMouseJump()
         {
-            ISettingsRepository<MouseJumpSettings> moduleSettingsRepository = SettingsRepository<MouseJumpSettings>.GetInstance(new SettingsUtils());
+            ISettingsRepository<MouseJumpSettings> moduleSettingsRepository = SettingsRepository<MouseJumpSettings>.GetInstance(SettingsUtils.Default);
             var list = new List<DashboardModuleItem>
             {
                 new DashboardModuleShortcutItem() { Label = resourceLoader.GetString("MouseJump_ShortDescription"), Shortcut = moduleSettingsRepository.SettingsConfig.Properties.ActivationShortcut.GetKeysList() },
@@ -576,7 +576,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private ObservableCollection<DashboardModuleItem> GetModuleItemsMousePointerCrosshairs()
         {
-            ISettingsRepository<MousePointerCrosshairsSettings> moduleSettingsRepository = SettingsRepository<MousePointerCrosshairsSettings>.GetInstance(new SettingsUtils());
+            ISettingsRepository<MousePointerCrosshairsSettings> moduleSettingsRepository = SettingsRepository<MousePointerCrosshairsSettings>.GetInstance(SettingsUtils.Default);
             var list = new List<DashboardModuleItem>
             {
                 new DashboardModuleShortcutItem() { Label = resourceLoader.GetString("MouseCrosshairs_ShortDescription"), Shortcut = moduleSettingsRepository.SettingsConfig.Properties.ActivationShortcut.GetKeysList() },
@@ -586,7 +586,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private ObservableCollection<DashboardModuleItem> GetModuleItemsAdvancedPaste()
         {
-            ISettingsRepository<AdvancedPasteSettings> moduleSettingsRepository = SettingsRepository<AdvancedPasteSettings>.GetInstance(new SettingsUtils());
+            ISettingsRepository<AdvancedPasteSettings> moduleSettingsRepository = SettingsRepository<AdvancedPasteSettings>.GetInstance(SettingsUtils.Default);
             var list = new List<DashboardModuleItem>
             {
                 new DashboardModuleShortcutItem() { Label = resourceLoader.GetString("AdvancedPasteUI_Shortcut/Header"), Shortcut = moduleSettingsRepository.SettingsConfig.Properties.AdvancedPasteUIShortcut.GetKeysList() },
@@ -608,7 +608,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private ObservableCollection<DashboardModuleItem> GetModuleItemsPeek()
         {
-            ISettingsRepository<PeekSettings> moduleSettingsRepository = SettingsRepository<PeekSettings>.GetInstance(new SettingsUtils());
+            ISettingsRepository<PeekSettings> moduleSettingsRepository = SettingsRepository<PeekSettings>.GetInstance(SettingsUtils.Default);
             var list = new List<DashboardModuleItem>
             {
                 new DashboardModuleShortcutItem() { Label = resourceLoader.GetString("Peek_ShortDescription"), Shortcut = moduleSettingsRepository.SettingsConfig.Properties.ActivationShortcut.GetKeysList() },
@@ -618,7 +618,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private ObservableCollection<DashboardModuleItem> GetModuleItemsPowerLauncher()
         {
-            ISettingsRepository<PowerLauncherSettings> moduleSettingsRepository = SettingsRepository<PowerLauncherSettings>.GetInstance(new SettingsUtils());
+            ISettingsRepository<PowerLauncherSettings> moduleSettingsRepository = SettingsRepository<PowerLauncherSettings>.GetInstance(SettingsUtils.Default);
             var list = new List<DashboardModuleItem>
             {
                 new DashboardModuleShortcutItem() { Label = resourceLoader.GetString("Run_ShortDescription"), Shortcut = moduleSettingsRepository.SettingsConfig.Properties.OpenPowerLauncher.GetKeysList() },
@@ -628,7 +628,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private ObservableCollection<DashboardModuleItem> GetModuleItemsPowerAccent()
         {
-            var settingsUtils = new SettingsUtils();
+            var settingsUtils = SettingsUtils.Default;
             PowerAccentSettings moduleSettings = settingsUtils.GetSettingsOrDefault<PowerAccentSettings>(PowerAccentSettings.ModuleName);
             var activationMethod = moduleSettings.Properties.ActivationKey;
             string activation = string.Empty;
@@ -648,7 +648,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private ObservableCollection<DashboardModuleItem> GetModuleItemsWorkspaces()
         {
-            ISettingsRepository<WorkspacesSettings> moduleSettingsRepository = SettingsRepository<WorkspacesSettings>.GetInstance(new SettingsUtils());
+            ISettingsRepository<WorkspacesSettings> moduleSettingsRepository = SettingsRepository<WorkspacesSettings>.GetInstance(SettingsUtils.Default);
             var settings = moduleSettingsRepository.SettingsConfig;
 
             var list = new List<DashboardModuleItem>
@@ -670,7 +670,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private ObservableCollection<DashboardModuleItem> GetModuleItemsMeasureTool()
         {
-            ISettingsRepository<MeasureToolSettings> moduleSettingsRepository = SettingsRepository<MeasureToolSettings>.GetInstance(new SettingsUtils());
+            ISettingsRepository<MeasureToolSettings> moduleSettingsRepository = SettingsRepository<MeasureToolSettings>.GetInstance(SettingsUtils.Default);
             var list = new List<DashboardModuleItem>
             {
                 new DashboardModuleShortcutItem() { Label = resourceLoader.GetString("ScreenRuler_ShortDescription"), Shortcut = moduleSettingsRepository.SettingsConfig.Properties.ActivationShortcut.GetKeysList() },
@@ -680,7 +680,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private ObservableCollection<DashboardModuleItem> GetModuleItemsShortcutGuide()
         {
-            ISettingsRepository<ShortcutGuideSettings> moduleSettingsRepository = SettingsRepository<ShortcutGuideSettings>.GetInstance(new SettingsUtils());
+            ISettingsRepository<ShortcutGuideSettings> moduleSettingsRepository = SettingsRepository<ShortcutGuideSettings>.GetInstance(SettingsUtils.Default);
 
             var shortcut = moduleSettingsRepository.SettingsConfig.Properties.UseLegacyPressWinKeyBehavior.Value
                 ? new List<object> { 92 } // Right Windows key code
@@ -695,7 +695,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private ObservableCollection<DashboardModuleItem> GetModuleItemsPowerOCR()
         {
-            ISettingsRepository<PowerOcrSettings> moduleSettingsRepository = SettingsRepository<PowerOcrSettings>.GetInstance(new SettingsUtils());
+            ISettingsRepository<PowerOcrSettings> moduleSettingsRepository = SettingsRepository<PowerOcrSettings>.GetInstance(SettingsUtils.Default);
             var list = new List<DashboardModuleItem>
             {
                 new DashboardModuleShortcutItem() { Label = resourceLoader.GetString("PowerOcr_ShortDescription"), Shortcut = moduleSettingsRepository.SettingsConfig.Properties.ActivationShortcut.GetKeysList() },
@@ -710,14 +710,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private void EnvironmentVariablesLaunchClicked(object sender, RoutedEventArgs e)
         {
-            var settingsUtils = new SettingsUtils();
+            var settingsUtils = SettingsUtils.Default;
             var environmentVariablesViewModel = new EnvironmentVariablesViewModel(settingsUtils, SettingsRepository<GeneralSettings>.GetInstance(settingsUtils), SettingsRepository<EnvironmentVariablesSettings>.GetInstance(settingsUtils), ShellPage.SendDefaultIPCMessage, App.IsElevated);
             environmentVariablesViewModel.Launch();
         }
 
         private void HostLaunchClicked(object sender, RoutedEventArgs e)
         {
-            var settingsUtils = new SettingsUtils();
+            var settingsUtils = SettingsUtils.Default;
             var hostsViewModel = new HostsViewModel(settingsUtils, SettingsRepository<GeneralSettings>.GetInstance(settingsUtils), SettingsRepository<HostsSettings>.GetInstance(settingsUtils), ShellPage.SendDefaultIPCMessage, App.IsElevated);
             hostsViewModel.Launch();
         }
