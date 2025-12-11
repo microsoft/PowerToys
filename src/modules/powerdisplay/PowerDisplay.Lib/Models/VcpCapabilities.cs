@@ -150,12 +150,12 @@ namespace PowerDisplay.Common.Models
         public IReadOnlyList<int> SupportedValues { get; }
 
         /// <summary>
-        /// Gets a value indicating whether whether this VCP code has discrete values
+        /// Gets a value indicating whether this VCP code has discrete values
         /// </summary>
         public bool HasDiscreteValues => SupportedValues.Count > 0;
 
         /// <summary>
-        /// Gets a value indicating whether whether this VCP code supports a continuous range
+        /// Gets a value indicating whether this VCP code supports a continuous range
         /// </summary>
         public bool IsContinuous => SupportedValues.Count == 0;
 

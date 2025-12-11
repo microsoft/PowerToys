@@ -12,7 +12,7 @@ namespace PowerDisplay.Common.Models
     public readonly struct MonitorOperationResult
     {
         /// <summary>
-        /// Gets a value indicating whether whether the operation was successful
+        /// Gets a value indicating whether the operation was successful
         /// </summary>
         public bool IsSuccess { get; }
 

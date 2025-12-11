@@ -93,7 +93,7 @@ namespace PowerDisplay.Common.Models
             VcpValueNames.GetFormattedName(0x14, CurrentColorTemperature);
 
         /// <summary>
-        /// Gets or sets a value indicating whether whether supports color temperature adjustment via VCP 0x14
+        /// Gets or sets a value indicating whether the monitor supports color temperature adjustment via VCP 0x14
         /// </summary>
         public bool SupportsColorTemperature { get; set; }
 
@@ -124,7 +124,7 @@ namespace PowerDisplay.Common.Models
             VcpValueNames.GetName(0x60, CurrentInputSource) ?? $"Source 0x{CurrentInputSource:X2}";
 
         /// <summary>
-        /// Gets a value indicating whether whether supports input source switching via VCP 0x60
+        /// Gets a value indicating whether the monitor supports input source switching via VCP 0x60
         /// </summary>
         public bool SupportsInputSource => VcpCapabilitiesInfo?.SupportsVcpCode(0x60) ?? false;
 
@@ -140,12 +140,12 @@ namespace PowerDisplay.Common.Models
         public string CapabilitiesStatus { get; set; } = "unknown";
 
         /// <summary>
-        /// Gets a value indicating whether whether supports contrast adjustment
+        /// Gets a value indicating whether the monitor supports contrast adjustment
         /// </summary>
         public bool SupportsContrast => Capabilities.HasFlag(MonitorCapabilities.Contrast);
 
         /// <summary>
-        /// Gets a value indicating whether whether supports volume adjustment (for audio-capable monitors)
+        /// Gets a value indicating whether the monitor supports volume adjustment (for audio-capable monitors)
         /// </summary>
         public bool SupportsVolume => Capabilities.HasFlag(MonitorCapabilities.Volume);
 
@@ -207,7 +207,7 @@ namespace PowerDisplay.Common.Models
         public int MaxVolume { get; set; } = 100;
 
         /// <summary>
-        /// Gets or sets a value indicating whether whether available/online
+        /// Gets or sets a value indicating whether the monitor is available/online
         /// </summary>
         public bool IsAvailable
         {
