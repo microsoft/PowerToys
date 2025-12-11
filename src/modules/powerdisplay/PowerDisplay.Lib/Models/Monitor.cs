@@ -24,6 +24,7 @@ namespace PowerDisplay.Common.Models
         private int _currentColorTemperature = 0x05; // Default to 6500K preset (VCP 0x14 value)
         private int _currentInputSource; // VCP 0x60 value
         private bool _isAvailable = true;
+        private int _orientation;
 
         /// <summary>
         /// Gets or sets unique identifier for all purposes: UI lookups, IPC, persistent storage, and handle management.
@@ -323,9 +324,21 @@ namespace PowerDisplay.Common.Models
         public string GdiDeviceName { get; set; } = string.Empty;
 
         /// <summary>
-        /// Gets or sets monitor orientation (0=0, 1=90, 2=180, 3=270)
+        /// Gets or sets monitor orientation (0=0, 1=90, 2=180, 3=270).
+        /// Fires PropertyChanged when value changes.
         /// </summary>
-        public int Orientation { get; set; }
+        public int Orientation
+        {
+            get => _orientation;
+            set
+            {
+                if (_orientation != value)
+                {
+                    _orientation = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
 
         /// <inheritdoc />
         int IMonitorData.MonitorNumber

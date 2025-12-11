@@ -296,6 +296,8 @@ namespace PowerDisplay.Helpers
         /// <summary>
         /// Set rotation/orientation for a monitor.
         /// Uses Windows ChangeDisplaySettingsEx API (not DDC/CI).
+        /// After successful rotation, refreshes orientation for all monitors sharing the same GdiDeviceName
+        /// (important for mirror/clone mode where multiple monitors share one display source).
         /// </summary>
         /// <param name="monitorId">Monitor ID</param>
         /// <param name="orientation">Orientation: 0=normal, 1=90°, 2=180°, 3=270°</param>
@@ -316,8 +318,9 @@ namespace PowerDisplay.Helpers
 
             if (result.IsSuccess)
             {
-                monitor.Orientation = orientation;
-                monitor.LastUpdate = DateTime.Now;
+                // Refresh orientation for all monitors - rotation affects the GdiDeviceName (display source),
+                // and in mirror mode multiple monitors may share the same GdiDeviceName
+                RefreshAllOrientations();
                 Logger.LogInfo($"[MonitorManager] SetRotation: Successfully set {monitorId} to orientation {orientation}");
             }
             else
@@ -326,6 +329,30 @@ namespace PowerDisplay.Helpers
             }
 
             return Task.FromResult(result);
+        }
+
+        /// <summary>
+        /// Refresh orientation values for all monitors by querying current display settings.
+        /// This ensures all monitors reflect the actual system state, which is important
+        /// in mirror mode where multiple monitors share the same GdiDeviceName.
+        /// </summary>
+        public void RefreshAllOrientations()
+        {
+            foreach (var monitor in _monitors)
+            {
+                if (string.IsNullOrEmpty(monitor.GdiDeviceName))
+                {
+                    continue;
+                }
+
+                var currentOrientation = _rotationService.GetCurrentOrientation(monitor.GdiDeviceName);
+                if (currentOrientation >= 0 && currentOrientation != monitor.Orientation)
+                {
+                    Logger.LogDebug($"[MonitorManager] RefreshAllOrientations: {monitor.Id} orientation updated from {monitor.Orientation} to {currentOrientation}");
+                    monitor.Orientation = currentOrientation;
+                    monitor.LastUpdate = DateTime.Now;
+                }
+            }
         }
 
         /// <summary>

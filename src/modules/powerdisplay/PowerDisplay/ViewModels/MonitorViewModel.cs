@@ -239,6 +239,9 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
             _mainViewModel.PropertyChanged += OnMainViewModelPropertyChanged;
         }
 
+        // Subscribe to underlying Monitor property changes (e.g., Orientation updates in mirror mode)
+        _monitor.PropertyChanged += OnMonitorPropertyChanged;
+
         // Initialize Show properties based on hardware capabilities
         _showContrast = monitor.SupportsContrast;
         _showVolume = monitor.SupportsVolume;
@@ -401,7 +404,9 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
     public bool IsRotation3 => CurrentRotation == 3;
 
     /// <summary>
-    /// Set rotation/orientation for this monitor
+    /// Set rotation/orientation for this monitor.
+    /// Note: MonitorManager.SetRotationAsync will refresh all monitors' orientations after success,
+    /// which triggers PropertyChanged through OnMonitorPropertyChanged - no manual notification needed here.
     /// </summary>
     /// <param name="orientation">Orientation: 0=normal, 1=90°, 2=180°, 3=270°</param>
     public async Task SetRotationAsync(int orientation)
@@ -427,13 +432,6 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
 
             if (result.IsSuccess)
             {
-                // Notify all rotation-related properties changed
-                OnPropertyChanged(nameof(CurrentRotation));
-                OnPropertyChanged(nameof(IsRotation0));
-                OnPropertyChanged(nameof(IsRotation1));
-                OnPropertyChanged(nameof(IsRotation2));
-                OnPropertyChanged(nameof(IsRotation3));
-
                 Logger.LogInfo($"[{Id}] Rotation set successfully to {orientation}");
             }
             else
@@ -685,6 +683,21 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
         }
     }
 
+    private void OnMonitorPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        // Forward Orientation changes from underlying Monitor to ViewModel properties
+        // This is important for mirror mode where MonitorManager.RefreshAllOrientations()
+        // updates multiple monitors sharing the same GdiDeviceName
+        if (e.PropertyName == nameof(Monitor.Orientation))
+        {
+            OnPropertyChanged(nameof(CurrentRotation));
+            OnPropertyChanged(nameof(IsRotation0));
+            OnPropertyChanged(nameof(IsRotation1));
+            OnPropertyChanged(nameof(IsRotation2));
+            OnPropertyChanged(nameof(IsRotation3));
+        }
+    }
+
     public void Dispose()
     {
         // Unsubscribe from MainViewModel events
@@ -692,6 +705,9 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
         {
             _mainViewModel.PropertyChanged -= OnMainViewModelPropertyChanged;
         }
+
+        // Unsubscribe from underlying Monitor events
+        _monitor.PropertyChanged -= OnMonitorPropertyChanged;
 
         // Dispose all debouncers
         _brightnessDebouncer?.Dispose();

@@ -129,6 +129,38 @@ namespace PowerDisplay.Common.Services
         }
 
         /// <summary>
+        /// Get current orientation for a GDI device name.
+        /// </summary>
+        /// <param name="gdiDeviceName">GDI device name (e.g., "\\.\DISPLAY1")</param>
+        /// <returns>Current orientation (0-3), or -1 if query failed</returns>
+        public unsafe int GetCurrentOrientation(string gdiDeviceName)
+        {
+            if (string.IsNullOrEmpty(gdiDeviceName))
+            {
+                return -1;
+            }
+
+            try
+            {
+                DevMode devMode = default;
+                devMode.DmSize = (short)sizeof(DevMode);
+
+                if (!EnumDisplaySettings(gdiDeviceName, EnumCurrentSettings, &devMode))
+                {
+                    Logger.LogDebug($"GetCurrentOrientation: EnumDisplaySettings failed for {gdiDeviceName}");
+                    return -1;
+                }
+
+                return devMode.DmDisplayOrientation;
+            }
+            catch (Exception ex)
+            {
+                Logger.LogDebug($"GetCurrentOrientation: Exception for {gdiDeviceName}: {ex.Message}");
+                return -1;
+            }
+        }
+
+        /// <summary>
         /// Get human-readable error message for ChangeDisplaySettings result code.
         /// </summary>
         private static string GetChangeDisplaySettingsErrorMessage(int resultCode)
