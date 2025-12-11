@@ -257,7 +257,7 @@ try {
         $versionPropsPath = Join-Path $repoRoot "src\Version.props"
         [xml]$versionProps = Get-Content $versionPropsPath
         $ptVersion = $versionProps.Project.PropertyGroup.Version
-        # Directory.Build.props appends .0 to the version for csproj files
+        # Directory.Build.props appends .0 to the version for .csproj files
         $ptVersionFull = "$ptVersion.0"
         
         # 2. Build the Generator
