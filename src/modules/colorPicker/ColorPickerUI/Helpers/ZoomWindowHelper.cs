@@ -82,7 +82,19 @@ namespace ColorPicker.Helpers
                 var x = (int)point.X - (BaseZoomImageSize / 2);
                 var y = (int)point.Y - (BaseZoomImageSize / 2);
 
-                _graphics.CopyFromScreen(x, y, 0, 0, _bmp.Size, CopyPixelOperation.SourceCopy);
+                // Temporarily hide the color picker UI to avoid capturing it in the zoom
+                var originalOpacity = System.Windows.Application.Current.MainWindow.Opacity;
+                System.Windows.Application.Current.MainWindow.Opacity = 0;
+
+                try
+                {
+                    _graphics.CopyFromScreen(x, y, 0, 0, _bmp.Size, CopyPixelOperation.SourceCopy);
+                }
+                finally
+                {
+                    // Restore the original opacity
+                    System.Windows.Application.Current.MainWindow.Opacity = originalOpacity;
+                }
 
                 _zoomViewModel.ZoomArea = BitmapToImageSource(_bmp);
             }
