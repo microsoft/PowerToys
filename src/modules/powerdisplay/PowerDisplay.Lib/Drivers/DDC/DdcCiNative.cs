@@ -7,19 +7,10 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using ManagedCommon;
 using static PowerDisplay.Common.Drivers.NativeConstants;
-using static PowerDisplay.Common.Drivers.NativeDelegates;
 using static PowerDisplay.Common.Drivers.PInvoke;
 
 // Type aliases for Windows API naming conventions compatibility
-using DISPLAY_DEVICE = PowerDisplay.Common.Drivers.DisplayDevice;
-using DISPLAYCONFIG_DEVICE_INFO_HEADER = PowerDisplay.Common.Drivers.DISPLAYCONFIG_DEVICE_INFO_HEADER;
-using DISPLAYCONFIG_MODE_INFO = PowerDisplay.Common.Drivers.DISPLAYCONFIG_MODE_INFO;
-using DISPLAYCONFIG_PATH_INFO = PowerDisplay.Common.Drivers.DISPLAYCONFIG_PATH_INFO;
-using DISPLAYCONFIG_TARGET_DEVICE_NAME = PowerDisplay.Common.Drivers.DISPLAYCONFIG_TARGET_DEVICE_NAME;
 using LUID = PowerDisplay.Common.Drivers.Luid;
-using MONITORINFOEX = PowerDisplay.Common.Drivers.MonitorInfoEx;
-using PHYSICAL_MONITOR = PowerDisplay.Common.Drivers.PhysicalMonitor;
-using RECT = PowerDisplay.Common.Drivers.Rect;
 
 #pragma warning disable SA1649 // File name should match first type name - Multiple related types for DDC/CI
 #pragma warning disable SA1402 // File may only contain a single type - Related DDC/CI types grouped together

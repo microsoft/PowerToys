@@ -79,7 +79,8 @@ namespace PowerDisplay.Helpers
 
         /// <summary>
         /// Discover all monitors from all controllers.
-        /// All initialization (brightness, capabilities, input source) is done during controller discovery.
+        /// Each controller is responsible for fully initializing its monitors
+        /// (including brightness, capabilities, input source, color temperature, etc.)
         /// </summary>
         public async Task<IReadOnlyList<Monitor>> DiscoverMonitorsAsync(CancellationToken cancellationToken = default)
         {

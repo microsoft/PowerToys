@@ -6,11 +6,8 @@ using System;
 using System.Collections.Generic;
 using ManagedCommon;
 using PowerDisplay.Common.Models;
-using PowerDisplay.Common.Utils;
 using static PowerDisplay.Common.Drivers.NativeConstants;
 using static PowerDisplay.Common.Drivers.PInvoke;
-
-using MONITORINFOEX = PowerDisplay.Common.Drivers.MonitorInfoEx;
 using PHYSICAL_MONITOR = PowerDisplay.Common.Drivers.PhysicalMonitor;
 
 namespace PowerDisplay.Common.Drivers.DDC
@@ -100,6 +97,8 @@ namespace PowerDisplay.Common.Drivers.DDC
         /// <summary>
         /// Create Monitor object from physical monitor and display info.
         /// Uses MonitorDisplayInfo directly from QueryDisplayConfig for stable identification.
+        /// Note: Brightness is not initialized here - MonitorManager handles brightness initialization
+        /// after discovery to avoid slow I2C operations during the discovery phase.
         /// </summary>
         /// <param name="physicalMonitor">Physical monitor structure with handle and description</param>
         /// <param name="monitorInfo">Display info from QueryDisplayConfig (HardwareId, FriendlyName, MonitorNumber)</param>
@@ -131,14 +130,11 @@ namespace PowerDisplay.Common.Drivers.DDC
                     name = "External Display";
                 }
 
-                // Get current brightness
-                var brightnessInfo = GetCurrentBrightness(physicalMonitor.HPhysicalMonitor);
-
                 var monitor = new Monitor
                 {
                     Id = monitorId,
                     Name = name.Trim(),
-                    CurrentBrightness = brightnessInfo.IsValid ? brightnessInfo.ToPercentage() : 50,
+                    CurrentBrightness = 50, // Default value, will be updated by MonitorManager after discovery
                     MinBrightness = 0,
                     MaxBrightness = 100,
                     IsAvailable = true,
@@ -166,22 +162,9 @@ namespace PowerDisplay.Common.Drivers.DDC
         }
 
         /// <summary>
-        /// Get current brightness using VCP code 0x10
-        /// </summary>
-        private VcpFeatureValue GetCurrentBrightness(IntPtr handle)
-        {
-            if (GetVCPFeatureAndVCPFeatureReply(handle, VcpCodeBrightness, IntPtr.Zero, out uint current, out uint max))
-            {
-                return new VcpFeatureValue((int)current, 0, (int)max);
-            }
-
-            return VcpFeatureValue.Invalid;
-        }
-
-        /// <summary>
         /// Extract manufacturer from name
         /// </summary>
-        private string ExtractManufacturer(string name)
+        private static string ExtractManufacturer(string name)
         {
             if (string.IsNullOrEmpty(name))
             {

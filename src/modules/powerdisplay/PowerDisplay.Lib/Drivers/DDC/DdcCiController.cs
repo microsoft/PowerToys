@@ -418,6 +418,9 @@ namespace PowerDisplay.Common.Drivers.DDC
                     }
                 }
 
+                // Initialize brightness (always supported for DDC/CI monitors)
+                InitializeBrightness(monitor, candidate.Handle);
+
                 monitors.Add(monitor);
                 newHandleMap[monitor.Id] = candidate.Handle;
 
@@ -449,6 +452,19 @@ namespace PowerDisplay.Common.Drivers.DDC
             {
                 monitor.CurrentColorTemperature = (int)current;
                 Logger.LogDebug($"[{monitor.Id}] Color temperature: {VcpValueNames.GetFormattedName(VcpCodeSelectColorPreset, (int)current)}");
+            }
+        }
+
+        /// <summary>
+        /// Initialize brightness value for a monitor using VCP 0x10.
+        /// </summary>
+        private static void InitializeBrightness(Monitor monitor, IntPtr handle)
+        {
+            if (GetVCPFeatureAndVCPFeatureReply(handle, VcpCodeBrightness, IntPtr.Zero, out uint current, out uint max))
+            {
+                var brightnessInfo = new VcpFeatureValue((int)current, 0, (int)max);
+                monitor.CurrentBrightness = brightnessInfo.ToPercentage();
+                Logger.LogDebug($"[{monitor.Id}] Brightness: {monitor.CurrentBrightness}%");
             }
         }
 
