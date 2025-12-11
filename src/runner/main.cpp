@@ -38,6 +38,7 @@
 #include "centralized_kb_hook.h"
 #include "centralized_hotkeys.h"
 #include "ai_detection.h"
+#include <common/utils/package.h>
 
 #if _DEBUG && _WIN64
 #include "unhandled_exception_handler.h"
@@ -210,9 +211,17 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
             PeriodicUpdateWorker();
         } }.detach();
 
-        // Start AI capability detection in background
+        // Start AI capability detection in background (Windows 11+ only)
+        // AI Super Resolution is not supported on Windows 10
         // This calls ImageResizer --detect-ai which writes result to cache file
-        DetectAiCapabilitiesAsync();
+        if (package::IsWin11OrGreater())
+        {
+            DetectAiCapabilitiesAsync();
+        }
+        else
+        {
+            Logger::info(L"AI capability detection skipped: Windows 10 does not support AI Super Resolution");
+        }
 
         std::thread{ [] {
             if (updating::uninstall_previous_msix_version_async().get())

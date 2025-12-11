@@ -84,30 +84,40 @@ namespace ImageResizer
                 return;
             }
 
-            // Load AI availability from cache (written by Runner's background detection)
-            var cachedState = Services.AiAvailabilityCacheService.LoadCache();
-
-            if (cachedState.HasValue)
+            // AI Super Resolution is not supported on Windows 10 - skip cache check entirely
+            if (OSVersionHelper.IsWindows10())
             {
-                AiAvailabilityState = cachedState.Value;
-                Logger.LogInfo($"AI state loaded from cache: {AiAvailabilityState}");
-            }
-            else
-            {
-                // No valid cache - default to NotSupported (Runner will detect and cache for next startup)
                 AiAvailabilityState = AiAvailabilityState.NotSupported;
-                Logger.LogInfo("No AI cache found, defaulting to NotSupported");
-            }
-
-            // If AI is potentially available, start background initialization (non-blocking)
-            if (AiAvailabilityState == AiAvailabilityState.Ready)
-            {
-                _ = InitializeAiServiceAsync(); // Fire and forget - don't block UI
+                ResizeBatch.SetAiSuperResolutionService(Services.NoOpAiSuperResolutionService.Instance);
+                Logger.LogInfo("AI Super Resolution not supported on Windows 10");
             }
             else
             {
-                // AI not available - set NoOp service immediately
-                ResizeBatch.SetAiSuperResolutionService(Services.NoOpAiSuperResolutionService.Instance);
+                // Load AI availability from cache (written by Runner's background detection)
+                var cachedState = Services.AiAvailabilityCacheService.LoadCache();
+
+                if (cachedState.HasValue)
+                {
+                    AiAvailabilityState = cachedState.Value;
+                    Logger.LogInfo($"AI state loaded from cache: {AiAvailabilityState}");
+                }
+                else
+                {
+                    // No valid cache - default to NotSupported (Runner will detect and cache for next startup)
+                    AiAvailabilityState = AiAvailabilityState.NotSupported;
+                    Logger.LogInfo("No AI cache found, defaulting to NotSupported");
+                }
+
+                // If AI is potentially available, start background initialization (non-blocking)
+                if (AiAvailabilityState == AiAvailabilityState.Ready)
+                {
+                    _ = InitializeAiServiceAsync(); // Fire and forget - don't block UI
+                }
+                else
+                {
+                    // AI not available - set NoOp service immediately
+                    ResizeBatch.SetAiSuperResolutionService(Services.NoOpAiSuperResolutionService.Instance);
+                }
             }
 
             var batch = ResizeBatch.FromCommandLine(Console.In, e?.Args);
@@ -129,6 +139,15 @@ namespace ImageResizer
             try
             {
                 Logger.LogInfo("Running AI detection mode...");
+
+                // AI Super Resolution is not supported on Windows 10
+                if (OSVersionHelper.IsWindows10())
+                {
+                    Logger.LogInfo("AI detection skipped: Windows 10 does not support AI Super Resolution");
+                    Services.AiAvailabilityCacheService.SaveCache(AiAvailabilityState.NotSupported);
+                    Environment.Exit(0);
+                    return;
+                }
 
                 // Perform detection (reuse existing logic)
                 var state = CheckAiAvailability();
