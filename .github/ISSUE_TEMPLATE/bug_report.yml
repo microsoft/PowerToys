@@ -7,6 +7,13 @@ body:
 - type: markdown
   attributes:
     value: Please make sure to [search for existing issues](https://github.com/microsoft/PowerToys/issues) before filing a new one!
+- type: markdown
+  attributes:
+    value: |
+      We are aware of the following high-volume issues and are actively working on them. Please check if your issue is one of these before filing a new bug report:
+      * **PowerToys Run crash related to "Desktop composition is disabled"**: This may appear as `COMException: 0x80263001`. For more details, see issue [#31226](https://github.com/microsoft/PowerToys/issues/31226).
+      * **PowerToys Run crash with `COMException (0xD0000701)`**: For more details, see issue [#30769](https://github.com/microsoft/PowerToys/issues/30769).
+      * **PowerToys Run crash with a "Cyclic reference" error**: This `System.InvalidOperationException` is detailed in issue [#36451](https://github.com/microsoft/PowerToys/issues/36451).
 - id: version
   type: input
   attributes:

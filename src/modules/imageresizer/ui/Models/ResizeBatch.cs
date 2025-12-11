@@ -100,8 +100,13 @@ namespace ImageResizer.Models
         public IEnumerable<ResizeError> Process(Action<int, double> reportProgress, CancellationToken cancellationToken)
         {
             double total = Files.Count;
-            var completed = 0;
+            int completed = 0;
             var errors = new ConcurrentBag<ResizeError>();
+
+            // NOTE: Settings.Default is captured once before parallel processing.
+            // Any changes to settings on disk during this batch will NOT be reflected until the next batch.
+            // This improves performance and predictability by avoiding repeated mutex acquisition and behaviour change results in a batch.
+            var settings = Settings.Default;
 
             // TODO: If we ever switch to Windows.Graphics.Imaging, we can get a lot more throughput by using the async
             //       APIs and a custom SynchronizationContext
@@ -110,13 +115,12 @@ namespace ImageResizer.Models
                 new ParallelOptions
                 {
                     CancellationToken = cancellationToken,
-                    MaxDegreeOfParallelism = Environment.ProcessorCount,
                 },
                 (file, state, i) =>
                 {
                     try
                     {
-                        Execute(file);
+                        Execute(file, settings);
                     }
                     catch (Exception ex)
                     {
@@ -124,17 +128,16 @@ namespace ImageResizer.Models
                     }
 
                     Interlocked.Increment(ref completed);
-
                     reportProgress(completed, total);
                 });
 
             return errors;
         }
 
-        protected virtual void Execute(string file)
+        protected virtual void Execute(string file, Settings settings)
         {
             var aiService = _aiSuperResolutionService ?? NoOpAiSuperResolutionService.Instance;
-            new ResizeOperation(file, DestinationDirectory, Settings.Default, aiService).Execute();
+            new ResizeOperation(file, DestinationDirectory, settings, aiService).Execute();
         }
     }
 }
