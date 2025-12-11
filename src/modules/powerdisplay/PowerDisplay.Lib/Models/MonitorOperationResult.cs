@@ -12,22 +12,22 @@ namespace PowerDisplay.Common.Models
     public readonly struct MonitorOperationResult
     {
         /// <summary>
-        /// Whether the operation was successful
+        /// Gets a value indicating whether whether the operation was successful
         /// </summary>
         public bool IsSuccess { get; }
 
         /// <summary>
-        /// Error message
+        /// Gets error message
         /// </summary>
         public string? ErrorMessage { get; }
 
         /// <summary>
-        /// System error code
+        /// Gets system error code
         /// </summary>
         public int? ErrorCode { get; }
 
         /// <summary>
-        /// Operation timestamp
+        /// Gets operation timestamp
         /// </summary>
         public DateTime Timestamp { get; }
 

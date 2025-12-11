@@ -61,15 +61,8 @@ namespace PowerDisplay.Helpers
             try
             {
                 // WMI controller (internal monitors)
-                // First check if WMI is available
-                if (WmiController.IsWmiAvailable())
-                {
-                    _wmiController = new WmiController();
-                }
-                else
-                {
-                    Logger.LogWarning("WMI brightness control not available on this system");
-                }
+                // Always create - DiscoverMonitorsAsync returns empty list if WMI is unavailable
+                _wmiController = new WmiController();
             }
             catch (Exception ex)
             {

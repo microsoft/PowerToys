@@ -13,47 +13,47 @@ namespace PowerDisplay.Common.Models
     public class VcpCapabilities
     {
         /// <summary>
-        /// Raw capabilities string (MCCS format)
+        /// Gets or sets raw capabilities string (MCCS format)
         /// </summary>
         public string Raw { get; set; } = string.Empty;
 
         /// <summary>
-        /// Monitor model name from capabilities
+        /// Gets or sets monitor model name from capabilities
         /// </summary>
         public string? Model { get; set; }
 
         /// <summary>
-        /// Monitor type from capabilities (e.g., "LCD")
+        /// Gets or sets monitor type from capabilities (e.g., "LCD")
         /// </summary>
         public string? Type { get; set; }
 
         /// <summary>
-        /// MCCS protocol version
+        /// Gets or sets mCCS protocol version
         /// </summary>
         public string? Protocol { get; set; }
 
         /// <summary>
-        /// MCCS version (e.g., "2.2", "2.1")
+        /// Gets or sets mCCS version (e.g., "2.2", "2.1")
         /// </summary>
         public string? MccsVersion { get; set; }
 
         /// <summary>
-        /// Supported command codes
+        /// Gets or sets supported command codes
         /// </summary>
         public List<byte> SupportedCommands { get; set; } = new();
 
         /// <summary>
-        /// Supported VCP codes with their information
+        /// Gets or sets supported VCP codes with their information
         /// </summary>
         public Dictionary<byte, VcpCodeInfo> SupportedVcpCodes { get; set; } = new();
 
         /// <summary>
-        /// Window capabilities for PIP/PBP support
+        /// Gets or sets window capabilities for PIP/PBP support
         /// </summary>
         public List<WindowCapability> Windows { get; set; } = new();
 
         /// <summary>
-        /// Check if display supports PIP/PBP windows
+        /// Gets a value indicating whether check if display supports PIP/PBP windows
         /// </summary>
         public bool HasWindowSupport => Windows.Count > 0;
 
@@ -119,7 +119,7 @@ namespace PowerDisplay.Common.Models
         }
 
         /// <summary>
-        /// Creates an empty capabilities object
+        /// Gets creates an empty capabilities object
         /// </summary>
         public static VcpCapabilities Empty => new();
 
@@ -135,27 +135,27 @@ namespace PowerDisplay.Common.Models
     public readonly struct VcpCodeInfo
     {
         /// <summary>
-        /// VCP code (e.g., 0x10 for brightness)
+        /// Gets vCP code (e.g., 0x10 for brightness)
         /// </summary>
         public byte Code { get; }
 
         /// <summary>
-        /// Human-readable name of the VCP code
+        /// Gets human-readable name of the VCP code
         /// </summary>
         public string Name { get; }
 
         /// <summary>
-        /// Supported discrete values (empty if continuous range)
+        /// Gets supported discrete values (empty if continuous range)
         /// </summary>
         public IReadOnlyList<int> SupportedValues { get; }
 
         /// <summary>
-        /// Whether this VCP code has discrete values
+        /// Gets a value indicating whether whether this VCP code has discrete values
         /// </summary>
         public bool HasDiscreteValues => SupportedValues.Count > 0;
 
         /// <summary>
-        /// Whether this VCP code supports a continuous range
+        /// Gets a value indicating whether whether this VCP code supports a continuous range
         /// </summary>
         public bool IsContinuous => SupportedValues.Count == 0;
 
@@ -193,12 +193,12 @@ namespace PowerDisplay.Common.Models
     public readonly struct WindowSize
     {
         /// <summary>
-        /// Width in pixels
+        /// Gets width in pixels
         /// </summary>
         public int Width { get; }
 
         /// <summary>
-        /// Height in pixels
+        /// Gets height in pixels
         /// </summary>
         public int Height { get; }
 
@@ -217,32 +217,32 @@ namespace PowerDisplay.Common.Models
     public readonly struct WindowArea
     {
         /// <summary>
-        /// Top-left X coordinate
+        /// Gets top-left X coordinate
         /// </summary>
         public int X1 { get; }
 
         /// <summary>
-        /// Top-left Y coordinate
+        /// Gets top-left Y coordinate
         /// </summary>
         public int Y1 { get; }
 
         /// <summary>
-        /// Bottom-right X coordinate
+        /// Gets bottom-right X coordinate
         /// </summary>
         public int X2 { get; }
 
         /// <summary>
-        /// Bottom-right Y coordinate
+        /// Gets bottom-right Y coordinate
         /// </summary>
         public int Y2 { get; }
 
         /// <summary>
-        /// Width of the area
+        /// Gets width of the area
         /// </summary>
         public int Width => X2 - X1;
 
         /// <summary>
-        /// Height of the area
+        /// Gets height of the area
         /// </summary>
         public int Height => Y2 - Y1;
 
@@ -263,32 +263,32 @@ namespace PowerDisplay.Common.Models
     public readonly struct WindowCapability
     {
         /// <summary>
-        /// Window number (1, 2, 3, etc.)
+        /// Gets window number (1, 2, 3, etc.)
         /// </summary>
         public int WindowNumber { get; }
 
         /// <summary>
-        /// Window type (e.g., "PIP", "PBP")
+        /// Gets window type (e.g., "PIP", "PBP")
         /// </summary>
         public string Type { get; }
 
         /// <summary>
-        /// Window area coordinates
+        /// Gets window area coordinates
         /// </summary>
         public WindowArea Area { get; }
 
         /// <summary>
-        /// Maximum window size
+        /// Gets maximum window size
         /// </summary>
         public WindowSize MaxSize { get; }
 
         /// <summary>
-        /// Minimum window size
+        /// Gets minimum window size
         /// </summary>
         public WindowSize MinSize { get; }
 
         /// <summary>
-        /// Window identifier
+        /// Gets window identifier
         /// </summary>
         public int WindowId { get; }
 

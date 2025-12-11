@@ -34,8 +34,6 @@ namespace PowerDisplay.Common.Drivers.WMI
         private const int WbemEInvalidQuery = unchecked((int)0x80041017);
         private const int WmiFeatureNotSupported = 0x1068;
 
-        private bool _disposed;
-
         /// <summary>
         /// Classifies WMI exceptions into user-friendly error messages.
         /// </summary>
@@ -52,14 +50,6 @@ namespace PowerDisplay.Common.Drivers.WMI
                 WmiFeatureNotSupported => MonitorOperationResult.Failure($"WMI brightness control not supported on this system during {operation}.", hresult),
                 _ => MonitorOperationResult.Failure($"WMI error during {operation}: {ex.Message}", hresult),
             };
-        }
-
-        /// <summary>
-        /// Determines if the WMI error is expected for systems without WMI brightness support.
-        /// </summary>
-        private static bool IsExpectedUnsupportedError(WmiException ex)
-        {
-            return ex.HResult == WmiFeatureNotSupported || ex.HResult == WbemENotFound;
         }
 
         /// <summary>
@@ -107,6 +97,19 @@ namespace PowerDisplay.Common.Drivers.WMI
         }
 
         /// <summary>
+        /// Build a WMI query filtered by monitor instance name.
+        /// </summary>
+        /// <param name="wmiClass">The WMI class to query.</param>
+        /// <param name="instanceName">The monitor instance name to filter by.</param>
+        /// <param name="selectClause">Optional SELECT clause fields (defaults to "*").</param>
+        /// <returns>The formatted WMI query string.</returns>
+        private static string BuildInstanceNameQuery(string wmiClass, string instanceName, string selectClause = "*")
+        {
+            var escapedInstanceName = EscapeWmiString(instanceName);
+            return $"SELECT {selectClause} FROM {wmiClass} WHERE InstanceName = '{escapedInstanceName}'";
+        }
+
+        /// <summary>
         /// Get MonitorDisplayInfo from dictionary by matching HardwareId.
         /// Uses QueryDisplayConfig path index which matches Windows Display Settings "Identify" feature.
         /// </summary>
@@ -120,21 +123,21 @@ namespace PowerDisplay.Common.Drivers.WMI
                 return null;
             }
 
-            foreach (var kvp in monitorDisplayInfos)
+            var match = monitorDisplayInfos.Values.FirstOrDefault(
+                v => hardwareId.Equals(v.HardwareId, StringComparison.OrdinalIgnoreCase));
+
+            // Check if match was found (struct default has null/empty HardwareId)
+            if (!string.IsNullOrEmpty(match.HardwareId))
             {
-                if (!string.IsNullOrEmpty(kvp.Value.HardwareId) &&
-                    kvp.Value.HardwareId.Equals(hardwareId, StringComparison.OrdinalIgnoreCase))
-                {
-                    Logger.LogDebug($"WMI: Matched HardwareId '{hardwareId}' to MonitorNumber {kvp.Value.MonitorNumber}, GdiDeviceName={kvp.Value.GdiDeviceName}");
-                    return kvp.Value;
-                }
+                Logger.LogDebug($"WMI: Matched HardwareId '{hardwareId}' to MonitorNumber {match.MonitorNumber}, GdiDeviceName={match.GdiDeviceName}");
+                return match;
             }
 
             Logger.LogWarning($"WMI: Could not find MonitorDisplayInfo for HardwareId '{hardwareId}'");
             return null;
         }
 
-        public string Name => "WMI Monitor Controller (WmiLight)";
+        public string Name => "WMI Monitor Controller";
 
         /// <summary>
         /// Get monitor brightness
@@ -149,10 +152,7 @@ namespace PowerDisplay.Common.Drivers.WMI
                     try
                     {
                         using var connection = new WmiConnection(WmiNamespace);
-
-                        // Filter by InstanceName to target the specific monitor
-                        var escapedInstanceName = EscapeWmiString(monitor.InstanceName);
-                        var query = $"SELECT CurrentBrightness FROM {BrightnessQueryClass} WHERE InstanceName = '{escapedInstanceName}'";
+                        var query = BuildInstanceNameQuery(BrightnessQueryClass, monitor.InstanceName, "CurrentBrightness");
                         var results = connection.CreateQuery(query);
 
                         foreach (var obj in results)
@@ -194,10 +194,7 @@ namespace PowerDisplay.Common.Drivers.WMI
                     try
                     {
                         using var connection = new WmiConnection(WmiNamespace);
-
-                        // Filter by InstanceName to target the specific monitor
-                        var escapedInstanceName = EscapeWmiString(monitor.InstanceName);
-                        var query = $"SELECT * FROM {BrightnessMethodClass} WHERE InstanceName = '{escapedInstanceName}'";
+                        var query = BuildInstanceNameQuery(BrightnessMethodClass, monitor.InstanceName);
                         var results = connection.CreateQuery(query);
 
                         foreach (var obj in results)
@@ -221,10 +218,8 @@ namespace PowerDisplay.Common.Drivers.WMI
                                 {
                                     return MonitorOperationResult.Success();
                                 }
-                                else
-                                {
-                                    return MonitorOperationResult.Failure($"WMI method returned error code: {result}", (int)result);
-                                }
+
+                                return MonitorOperationResult.Failure($"WMI method returned error code: {result}", (int)result);
                             }
                         }
 
@@ -338,9 +333,7 @@ namespace PowerDisplay.Common.Drivers.WMI
                                 IsAvailable = true,
                                 InstanceName = instanceName,
                                 Capabilities = MonitorCapabilities.Brightness | MonitorCapabilities.Wmi,
-                                ConnectionType = "Internal",
                                 CommunicationMethod = "WMI",
-                                Manufacturer = edidId.Length >= 3 ? edidId.Substring(0, 3) : "Internal",
                                 SupportsColorTemperature = false,
                                 MonitorNumber = monitorNumber,
                                 GdiDeviceName = gdiDeviceName,
@@ -404,38 +397,6 @@ namespace PowerDisplay.Common.Drivers.WMI
             return null;
         }
 
-        /// <summary>
-        /// Check WMI service availability
-        /// </summary>
-        public static bool IsWmiAvailable()
-        {
-            try
-            {
-                using var connection = new WmiConnection(WmiNamespace);
-                var query = $"SELECT * FROM {BrightnessQueryClass}";
-                var results = connection.CreateQuery(query).ToList();
-                return results.Count > 0;
-            }
-            catch (WmiException ex) when (IsExpectedUnsupportedError(ex))
-            {
-                // Expected on systems without WMI brightness support (desktops, some laptops)
-                Logger.LogInfo("WMI brightness control not supported on this system (expected for desktops)");
-                return false;
-            }
-            catch (WmiException ex)
-            {
-                // Unexpected WMI error - log with details for debugging
-                Logger.LogWarning($"WMI availability check failed: {ex.Message} (HResult: 0x{ex.HResult:X})");
-                return false;
-            }
-            catch (Exception ex)
-            {
-                // Unexpected non-WMI error
-                Logger.LogDebug($"WMI availability check failed: {ex.Message}");
-                return false;
-            }
-        }
-
         // Extended features not supported by WMI
         public Task<MonitorOperationResult> SetContrastAsync(Monitor monitor, int contrast, CancellationToken cancellationToken = default)
         {
@@ -471,17 +432,9 @@ namespace PowerDisplay.Common.Drivers.WMI
 
         public void Dispose()
         {
-            Dispose(true);
+            // WmiLight objects are created per-operation and disposed immediately via using statements.
+            // No instance-level resources require cleanup.
             GC.SuppressFinalize(this);
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!_disposed && disposing)
-            {
-                // WmiLight objects are automatically cleaned up, no specific cleanup needed here
-                _disposed = true;
-            }
         }
     }
 }

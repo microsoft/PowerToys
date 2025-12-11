@@ -140,9 +140,7 @@ namespace PowerDisplay.Common.Drivers.DDC
                     IsAvailable = true,
                     Handle = physicalMonitor.HPhysicalMonitor,
                     Capabilities = MonitorCapabilities.DdcCi,
-                    ConnectionType = "External",
                     CommunicationMethod = "DDC/CI",
-                    Manufacturer = ExtractManufacturer(name),
                     CapabilitiesStatus = "unknown",
                     MonitorNumber = monitorInfo.MonitorNumber,
                     GdiDeviceName = monitorInfo.GdiDeviceName ?? string.Empty,
@@ -159,33 +157,6 @@ namespace PowerDisplay.Common.Drivers.DDC
                 Logger.LogError($"DDC: CreateMonitorFromPhysical exception: {ex.Message}");
                 return null;
             }
-        }
-
-        /// <summary>
-        /// Extract manufacturer from name
-        /// </summary>
-        private static string ExtractManufacturer(string name)
-        {
-            if (string.IsNullOrEmpty(name))
-            {
-                return "Unknown";
-            }
-
-            // Common manufacturer prefixes
-            var manufacturers = new[] { "DELL", "HP", "LG", "Samsung", "ASUS", "Acer", "BenQ", "AOC", "ViewSonic" };
-            var upperName = name.ToUpperInvariant();
-
-            foreach (var manufacturer in manufacturers)
-            {
-                if (upperName.Contains(manufacturer))
-                {
-                    return manufacturer;
-                }
-            }
-
-            // Return first word as manufacturer
-            var firstWord = name.Split(' ')[0];
-            return firstWord.Length > 2 ? firstWord : "Unknown";
         }
     }
 }

@@ -26,7 +26,7 @@ namespace PowerDisplay.Common.Models
         private bool _isAvailable = true;
 
         /// <summary>
-        /// Unique identifier for all purposes: UI lookups, IPC, persistent storage, and handle management.
+        /// Gets or sets unique identifier for all purposes: UI lookups, IPC, persistent storage, and handle management.
         /// </summary>
         /// <remarks>
         /// Format: "{Source}_{EdidId}_{MonitorNumber}" where Source is "DDC" or "WMI".
@@ -36,12 +36,12 @@ namespace PowerDisplay.Common.Models
         public string Id { get; set; } = string.Empty;
 
         /// <summary>
-        /// Display name
+        /// Gets or sets display name
         /// </summary>
         public string Name { get; set; } = string.Empty;
 
         /// <summary>
-        /// Current brightness (0-100)
+        /// Gets or sets current brightness (0-100)
         /// </summary>
         public int CurrentBrightness
         {
@@ -58,17 +58,17 @@ namespace PowerDisplay.Common.Models
         }
 
         /// <summary>
-        /// Minimum brightness value
+        /// Gets or sets minimum brightness value
         /// </summary>
         public int MinBrightness { get; set; }
 
         /// <summary>
-        /// Maximum brightness value
+        /// Gets or sets maximum brightness value
         /// </summary>
         public int MaxBrightness { get; set; } = 100;
 
         /// <summary>
-        /// Current color temperature VCP preset value (from VCP code 0x14).
+        /// Gets or sets current color temperature VCP preset value (from VCP code 0x14).
         /// This stores the raw VCP value (e.g., 0x05 for 6500K), not Kelvin temperature.
         /// Use ColorTemperaturePresetName to get human-readable name.
         /// </summary>
@@ -87,18 +87,18 @@ namespace PowerDisplay.Common.Models
         }
 
         /// <summary>
-        /// Human-readable color temperature preset name (e.g., "6500K (0x05)", "sRGB (0x01)")
+        /// Gets human-readable color temperature preset name (e.g., "6500K (0x05)", "sRGB (0x01)")
         /// </summary>
         public string ColorTemperaturePresetName =>
             VcpValueNames.GetFormattedName(0x14, CurrentColorTemperature);
 
         /// <summary>
-        /// Whether supports color temperature adjustment via VCP 0x14
+        /// Gets or sets a value indicating whether whether supports color temperature adjustment via VCP 0x14
         /// </summary>
         public bool SupportsColorTemperature { get; set; }
 
         /// <summary>
-        /// Current input source VCP value (from VCP code 0x60).
+        /// Gets or sets current input source VCP value (from VCP code 0x60).
         /// This stores the raw VCP value (e.g., 0x11 for HDMI-1).
         /// Use InputSourceName to get human-readable name.
         /// </summary>
@@ -117,35 +117,35 @@ namespace PowerDisplay.Common.Models
         }
 
         /// <summary>
-        /// Human-readable input source name (e.g., "HDMI-1", "DisplayPort-1")
+        /// Gets human-readable input source name (e.g., "HDMI-1", "DisplayPort-1")
         /// Returns just the name without hex value for cleaner UI display.
         /// </summary>
         public string InputSourceName =>
             VcpValueNames.GetName(0x60, CurrentInputSource) ?? $"Source 0x{CurrentInputSource:X2}";
 
         /// <summary>
-        /// Whether supports input source switching via VCP 0x60
+        /// Gets a value indicating whether whether supports input source switching via VCP 0x60
         /// </summary>
         public bool SupportsInputSource => VcpCapabilitiesInfo?.SupportsVcpCode(0x60) ?? false;
 
         /// <summary>
-        /// Get supported input sources from capabilities (as list of VCP values)
+        /// Gets get supported input sources from capabilities (as list of VCP values)
         /// </summary>
         public System.Collections.Generic.IReadOnlyList<int>? SupportedInputSources =>
             VcpCapabilitiesInfo?.GetSupportedValues(0x60);
 
         /// <summary>
-        /// Capabilities detection status: "available", "unavailable", or "unknown"
+        /// Gets or sets capabilities detection status: "available", "unavailable", or "unknown"
         /// </summary>
         public string CapabilitiesStatus { get; set; } = "unknown";
 
         /// <summary>
-        /// Whether supports contrast adjustment
+        /// Gets a value indicating whether whether supports contrast adjustment
         /// </summary>
         public bool SupportsContrast => Capabilities.HasFlag(MonitorCapabilities.Contrast);
 
         /// <summary>
-        /// Whether supports volume adjustment (for audio-capable monitors)
+        /// Gets a value indicating whether whether supports volume adjustment (for audio-capable monitors)
         /// </summary>
         public bool SupportsVolume => Capabilities.HasFlag(MonitorCapabilities.Volume);
 
@@ -153,7 +153,7 @@ namespace PowerDisplay.Common.Models
         private int _currentVolume = 50;
 
         /// <summary>
-        /// Current contrast (0-100)
+        /// Gets or sets current contrast (0-100)
         /// </summary>
         public int CurrentContrast
         {
@@ -170,17 +170,17 @@ namespace PowerDisplay.Common.Models
         }
 
         /// <summary>
-        /// Minimum contrast value
+        /// Gets or sets minimum contrast value
         /// </summary>
         public int MinContrast { get; set; }
 
         /// <summary>
-        /// Maximum contrast value
+        /// Gets or sets maximum contrast value
         /// </summary>
         public int MaxContrast { get; set; } = 100;
 
         /// <summary>
-        /// Current volume (0-100)
+        /// Gets or sets current volume (0-100)
         /// </summary>
         public int CurrentVolume
         {
@@ -197,17 +197,17 @@ namespace PowerDisplay.Common.Models
         }
 
         /// <summary>
-        /// Minimum volume value
+        /// Gets or sets minimum volume value
         /// </summary>
         public int MinVolume { get; set; }
 
         /// <summary>
-        /// Maximum volume value
+        /// Gets or sets maximum volume value
         /// </summary>
         public int MaxVolume { get; set; } = 100;
 
         /// <summary>
-        /// Whether available/online
+        /// Gets or sets a value indicating whether whether available/online
         /// </summary>
         public bool IsAvailable
         {
@@ -223,47 +223,37 @@ namespace PowerDisplay.Common.Models
         }
 
         /// <summary>
-        /// Physical monitor handle (for DDC/CI)
+        /// Gets or sets physical monitor handle (for DDC/CI)
         /// </summary>
         public IntPtr Handle { get; set; } = IntPtr.Zero;
 
         /// <summary>
-        /// Instance name (used by WMI)
+        /// Gets or sets instance name (used by WMI)
         /// </summary>
         public string InstanceName { get; set; } = string.Empty;
 
         /// <summary>
-        /// Manufacturer information
-        /// </summary>
-        public string Manufacturer { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Connection type (HDMI, DP, VGA, etc.)
-        /// </summary>
-        public string ConnectionType { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Communication method (DDC/CI, WMI, HDR API, etc.)
+        /// Gets or sets communication method (DDC/CI, WMI, HDR API, etc.)
         /// </summary>
         public string CommunicationMethod { get; set; } = string.Empty;
 
         /// <summary>
-        /// Supported control methods
+        /// Gets or sets supported control methods
         /// </summary>
         public MonitorCapabilities Capabilities { get; set; } = MonitorCapabilities.None;
 
         /// <summary>
-        /// Raw DDC/CI capabilities string (MCCS format)
+        /// Gets or sets raw DDC/CI capabilities string (MCCS format)
         /// </summary>
         public string? CapabilitiesRaw { get; set; }
 
         /// <summary>
-        /// Parsed VCP capabilities information
+        /// Gets or sets parsed VCP capabilities information
         /// </summary>
         public VcpCapabilities? VcpCapabilitiesInfo { get; set; }
 
         /// <summary>
-        /// Last update time
+        /// Gets or sets last update time
         /// </summary>
         public DateTime LastUpdate { get; set; } = DateTime.Now;
 

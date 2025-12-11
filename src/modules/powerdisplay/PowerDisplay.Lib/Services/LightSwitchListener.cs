@@ -20,7 +20,7 @@ namespace PowerDisplay.Common.Services
     /// </summary>
     public sealed partial class LightSwitchListener : IDisposable
     {
-        private const string LogPrefix = "[LightSwitch Integration]";
+        private const string LogPrefix = "[LightSwitch Listener]";
 
         private Thread? _listenerThread;
         private CancellationTokenSource? _cancellationTokenSource;

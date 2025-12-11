@@ -102,8 +102,4 @@ namespace PowerDisplay.Common.Interfaces
         /// </summary>
         void Dispose();
     }
-
-    // IMonitorManager interface removed - YAGNI principle
-    // Only one implementation exists (MonitorManager), so interface abstraction is unnecessary
-    // This simplifies the codebase and eliminates maintenance overhead
 }

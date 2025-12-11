@@ -286,8 +286,6 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
         }
     }
 
-    public string Manufacturer => _monitor.Manufacturer;
-
     public string CommunicationMethod => _monitor.CommunicationMethod;
 
     public bool IsInternal => _monitor.CommunicationMethod == "WMI";
