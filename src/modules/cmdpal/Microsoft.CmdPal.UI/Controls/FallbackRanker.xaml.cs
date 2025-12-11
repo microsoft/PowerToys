@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using Microsoft.CmdPal.UI.ViewModels;
+using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml.Controls;
 
@@ -19,7 +20,8 @@ public sealed partial class FallbackRanker : UserControl
 
         var settings = App.Current.Services.GetService<SettingsModel>()!;
         var topLevelCommandManager = App.Current.Services.GetService<TopLevelCommandManager>()!;
-        viewModel = new SettingsViewModel(settings, topLevelCommandManager, _mainTaskScheduler);
+        var themeService = App.Current.Services.GetService<IThemeService>()!;
+        viewModel = new SettingsViewModel(settings, topLevelCommandManager, _mainTaskScheduler, themeService);
     }
 
     private void ListView_DragItemsCompleted(ListViewBase sender, DragItemsCompletedEventArgs args)

@@ -12,6 +12,7 @@ using Microsoft.CmdPal.Core.ViewModels.Messages;
 using Microsoft.CmdPal.Ext.Apps;
 using Microsoft.CmdPal.Ext.Apps.Programs;
 using Microsoft.CmdPal.Ext.Apps.State;
+using Microsoft.CmdPal.UI.ViewModels.Commands;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Properties;
 using Microsoft.CommandPalette.Extensions;
@@ -33,7 +34,10 @@ public partial class MainListPage : DynamicListPage,
     private readonly AppStateModel _appStateModel;
     private List<Scored<IListItem>>? _filteredItems;
     private List<Scored<IListItem>>? _filteredApps;
-    private IEnumerable<Scored<IListItem>>? _fallbackItems;
+    private List<Scored<IListItem>>? _fallbackItems;
+
+    // Keep as IEnumerable for deferred execution. Fallback item titles are updated
+    // asynchronously, so scoring must happen lazily when GetItems is called.
     private IEnumerable<Scored<IListItem>>? _scoredFallbackItems;
     private bool _includeApps;
     private bool _filteredItemsIncludesApps;
@@ -146,44 +150,24 @@ public partial class MainListPage : DynamicListPage,
 
     public override IListItem[] GetItems()
     {
-        if (string.IsNullOrEmpty(SearchText))
+        lock (_tlcManager.TopLevelCommands)
         {
-            lock (_tlcManager.TopLevelCommands)
+            // Either return the top-level commands (no search text), or the merged and
+            // filtered results.
+            if (string.IsNullOrWhiteSpace(SearchText))
             {
-                return _tlcManager
-                    .TopLevelCommands
+                return _tlcManager.TopLevelCommands
                     .Where(tlc => !tlc.IsFallback && !string.IsNullOrEmpty(tlc.Title))
                     .ToArray();
             }
-        }
-        else
-        {
-            lock (_tlcManager.TopLevelCommands)
+            else
             {
-                var limitedApps = new List<Scored<IListItem>>();
-
-                // Fuzzy matching can produce a lot of results, so we want to limit the
-                // number of apps we show at once if it's a large set.
-                if (_filteredApps?.Count > 0)
-                {
-                    limitedApps = _filteredApps.OrderByDescending(s => s.Score).Take(_appResultLimit).ToList();
-                }
-
-                var orderedFallbacks = _fallbackItems?
-                    .Where(w => !string.IsNullOrEmpty(w.Item.Title))
-                    .OrderByDescending(o => o.Score).ToList();
-
-                var items = Enumerable.Empty<Scored<IListItem>>()
-                                .Concat(_filteredItems is not null ? _filteredItems : [])
-                                .Concat(_scoredFallbackItems is not null ? _scoredFallbackItems : [])
-                                .Concat(limitedApps)
-                                .OrderByDescending(o => o.Score)
-
-                                // Now append the fallbacks that weren't scored (because they weren't in the global fallbacks list)
-                                .Concat(orderedFallbacks ?? [])
-                                .Select(s => s.Item)
-                                .ToArray();
-                return items;
+                return MainListPageResultFactory.Create(
+                    _filteredItems,
+                    _scoredFallbackItems?.ToList(),
+                    _filteredApps,
+                    _fallbackItems,
+                    _appResultLimit);
             }
         }
     }
@@ -402,15 +386,8 @@ public partial class MainListPage : DynamicListPage,
                 return;
             }
 
-            _scoredFallbackItems = ListHelpers.FilterListWithScores<IListItem>(newFallbacksForScoring ?? [], SearchText, scoreItem);
-
-            if (token.IsCancellationRequested)
-            {
-                return;
-            }
-
             Func<string, IListItem, int> scoreFallbackItem = (a, b) => { return ScoreFallbackItem(a, b, _settings.FallbackRanks); };
-            _fallbackItems = ListHelpers.FilterListWithScores<IListItem>(newFallbacks ?? [], SearchText, scoreFallbackItem);
+            _fallbackItems = [.. ListHelpers.FilterListWithScores<IListItem>(newFallbacks ?? [], SearchText, scoreFallbackItem)];
 
             if (token.IsCancellationRequested)
             {

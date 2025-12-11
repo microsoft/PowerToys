@@ -121,6 +121,9 @@ PowerToys Awake is a tool to keep your computer awake.
 
 Randy contributed Registry Preview and some very early conversations about keyboard remapping.
 
+### [@cinnamon-msft](https://github.com/cinnamon-msft) - Kayla Cinnamon
+Kayla was a former lead for PowerToys and helped create multiple utilities, maintained the GitHub repo, and collaborated with the community to improve the overall product
+
 ### [@oldnewthing](https://github.com/oldnewthing) - Raymond Chen
 
 Find My Mouse is based on Raymond Chen's SuperSonar.
@@ -180,7 +183,6 @@ ZoomIt source code was originally implemented by [Sysinternals](https://sysinter
 
 ## PowerToys core team
 
-- [@cinnamon-msft](https://github.com/cinnamon-msft) - Kayla Cinnamon - Lead
 - [@craigloewen-msft](https://github.com/craigloewen-msft) - Craig Loewen - Product Manager
 - [@niels9001](https://github.com/niels9001/) - Niels Laute - Product Manager
 - [@dhowett](https://github.com/dhowett) - Dustin Howett - Dev Lead
@@ -209,6 +211,7 @@ ZoomIt source code was originally implemented by [Sysinternals](https://sysinter
 ## Former PowerToys core team members
 
 - [@indierawk2k2](https://github.com/indierawk2k2) - Mike Harsh - Product Manager
+- [@cinnamon-msft](https://github.com/cinnamon-msft) - Kayla Cinnamon - Product Manager
 - [@ethanfangg](https://github.com/ethanfangg) - Ethan Fang - Product Manager
 - [@plante-msft](https://github.com/plante-msft) - Connor Plante - Product Manager
 - [@joadoumie](https://github.com/joadoumie) - Jordi Adoumie - Product Manager
