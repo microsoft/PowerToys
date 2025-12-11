@@ -360,16 +360,6 @@ try {
         RestoreThenBuild 'tools\StylesReportTool\StylesReportTool.sln' $commonArgs $Platform $Configuration
     }
 
-    if ($Clean) {
-        Write-Host '[CLEAN] installer (keep *.exe)'
-        Push-Location $repoRoot
-        try {
-            git clean -xfd -e '*.exe' -- .\installer\ | Out-Null
-        } finally {
-            Pop-Location
-        }
-    }
-
     # Set NUGET_PACKAGES environment variable if not set, to help wixproj find heat.exe
     if (-not $env:NUGET_PACKAGES) {
         $env:NUGET_PACKAGES = Join-Path $env:USERPROFILE ".nuget\packages"
