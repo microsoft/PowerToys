@@ -28,7 +28,7 @@ namespace PowerDisplay.Common.Models
         public int Maximum { get; }
 
         /// <summary>
-        /// Gets a value indicating whether whether the value information is valid
+        /// Gets a value indicating whether the value information is valid
         /// </summary>
         public bool IsValid { get; }
 

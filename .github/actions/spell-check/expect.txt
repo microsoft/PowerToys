@@ -1951,7 +1951,6 @@ vcamp
 VCENTER
 vcgtq
 VCINSTALLDIR
-VCP
 Vcp
 vcp
 vcpcodes
