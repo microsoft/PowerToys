@@ -27,12 +27,21 @@ namespace RunnerV2
 {
     internal static partial class Runner
     {
+        /// <summary>
+        /// Gets the window handle for the Runner main window that hosts the tray icon and receives system messages.
+        /// </summary>
         public static nint RunnerHwnd { get; private set; }
 
         private const string TrayWindowClassName = "pt_tray_icon_window_class";
 
+        /// <summary>
+        /// Gets all the currently loaded modules.
+        /// </summary>
         public static List<IPowerToysModule> LoadedModules { get; } = [];
 
+        /// <summary>
+        /// Gets the list of all available PowerToys modules.
+        /// </summary>
         public static FrozenSet<IPowerToysModule> ModulesToLoad { get; } =
         [
             new ColorPickerModuleInterface(),
@@ -46,7 +55,11 @@ namespace RunnerV2
             new CropAndLockModuleInterface(),
         ];
 
-        internal static bool Run(Action afterInitializationAction)
+        /// <summary>
+        /// Runs the main message loop for Runner.
+        /// </summary>
+        /// <param name="afterInitializationAction">A function to execute after initialization.</param>
+        internal static void Run(Action afterInitializationAction)
         {
             Logger.LogInfo("Runner started");
 
@@ -65,12 +78,13 @@ namespace RunnerV2
             afterInitializationAction();
 
             MessageLoop();
-
-            return true;
         }
 
         private static readonly uint _taskbarCreatedMessage = RegisterWindowMessageW("TaskbarCreated");
 
+        /// <summary>
+        /// The main message loop that processes Windows messages.
+        /// </summary>
         [STAThread]
         private static void MessageLoop()
         {
@@ -91,6 +105,9 @@ namespace RunnerV2
             Close();
         }
 
+        /// <summary>
+        /// Closes Runner and all loaded modules.
+        /// </summary>
         [DoesNotReturn]
         internal static void Close()
         {
@@ -123,6 +140,10 @@ namespace RunnerV2
             Environment.Exit(0);
         }
 
+        /// <summary>
+        /// Toggles the state of a module based on its enabled property and GPO rules.
+        /// </summary>
+        /// <param name="module">The module to toggle</param>
         public static void ToggleModuleStateBasedOnEnabledProperty(IPowerToysModule module)
         {
             try
@@ -194,6 +215,9 @@ namespace RunnerV2
             }
         }
 
+        /// <summary>
+        /// Initializes the tray window to receive system messages.
+        /// </summary>
         [STAThread]
         private static void InitializeTrayWindow()
         {
@@ -238,6 +262,9 @@ namespace RunnerV2
             }
         }
 
+        /// <summary>
+        /// Handles Windows messages sent to the tray window.
+        /// </summary>
         private static IntPtr HandleMessage(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam)
         {
             switch (msg)

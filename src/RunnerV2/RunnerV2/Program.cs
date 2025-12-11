@@ -111,7 +111,7 @@ internal sealed class Program
                 tempGeneralSettings.IsElevated = isElevated;
                 _settingsUtils.SaveSettings(tempGeneralSettings.ToJsonString());
 
-                _ = Runner.Run(afterInitializationAction);
+                Runner.Run(afterInitializationAction);
                 break;
             default:
                 ElevationHelper.RestartScheduled = ElevationHelper.RestartScheduledMode.RestartElevated;
@@ -121,6 +121,11 @@ internal sealed class Program
         ElevationHelper.RestartIfScheudled();
     }
 
+    /// <summary>
+    /// Returns whether the application should run in a special mode based on the provided arguments.
+    /// </summary>
+    /// <param name="args">The arguments passed to <see cref="Main(string[])"/></param>
+    /// <returns>The <see cref="SpecialMode"/> the app should run in.</returns>
     private static SpecialMode ShouldRunInSpecialMode(string[] args)
     {
         if (args.Length > 0 && args[0].StartsWith("powertoys://", StringComparison.InvariantCultureIgnoreCase))
@@ -137,6 +142,9 @@ internal sealed class Program
         return SpecialMode.None;
     }
 
+    /// <summary>
+    /// Starts the update process for PowerToys.
+    /// </summary>
     private static void UpdateNow()
     {
         Process.Start(new ProcessStartInfo()

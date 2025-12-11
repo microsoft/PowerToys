@@ -72,7 +72,13 @@ namespace RunnerV2.Helpers
             return [.. matchedFiles];
         }
 
-        internal static bool RegisterPackage(string packagePath, string[] dependencies)
+        /// <summary>
+        /// Installs the specified appx package along with its dependencies.
+        /// </summary>
+        /// <param name="packagePath">Path to the package</param>
+        /// <param name="dependencies">Array of dependency package paths</param>
+        /// <returns>True if the installation was successful, false otherwise</returns>
+        internal static bool InstallPackage(string packagePath, string[] dependencies)
         {
             Logger.LogInfo("Starting package install of package \"" + packagePath + "\"");
             PackageManager packageManager = new();
@@ -129,6 +135,11 @@ namespace RunnerV2.Helpers
             return false;
         }
 
+        /// <summary>
+        /// Checks if the package specified by the given path is already installed and satisfies the required version.
+        /// </summary>
+        /// <param name="packagePath">Path to the package.</param>
+        /// <returns>True if the package is already installed and satisfies the required version, false otherwise.</returns>
         private static bool IsPackageSatisfied(string packagePath)
         {
             if (!GetPackageNameAndVersionFromAppx(packagePath, out string name, out PackageVersion version))
@@ -153,6 +164,13 @@ namespace RunnerV2.Helpers
             return false;
         }
 
+        /// <summary>
+        /// Gets the package name and version from the specified appx package file.
+        /// </summary>
+        /// <param name="packagePath">Path to the package file.</param>
+        /// <param name="name">Output parameter for the package name.</param>
+        /// <param name="packageVersion">Output parameter for the package version.</param>
+        /// <returns>True if the package name and version were successfully retrieved, false otherwise.</returns>
         private static bool GetPackageNameAndVersionFromAppx(string packagePath, out string name, out PackageVersion packageVersion)
         {
             // Todo: Implement this without interop if possible

@@ -10,16 +10,17 @@ using System.IO;
 using System.IO.Pipelines;
 using System.Linq;
 using System.Text.Json;
-using System.Threading;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using PowerToys.Interop;
 using RunnerV2.ModuleInterfaces;
 using Update;
-using Windows.Media.Devices;
 
 namespace RunnerV2.Helpers
 {
+    /// <summary>
+    /// This class provides helper methods to interact with the PowerToys Settings window.
+    /// </summary>
     internal static class SettingsHelper
     {
         private static readonly SettingsUtils _settingsUtils = new();

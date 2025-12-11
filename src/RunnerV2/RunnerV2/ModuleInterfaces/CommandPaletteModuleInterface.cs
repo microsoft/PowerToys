@@ -59,7 +59,7 @@ namespace RunnerV2.ModuleInterfaces
 
                     if (msixFiles.Length > 0)
                     {
-                        if (!PackageHelper.RegisterPackage(msixFiles[0], dependencies))
+                        if (!PackageHelper.InstallPackage(msixFiles[0], dependencies))
                         {
                             Logger.LogError("Failed to register Command Palette package.");
                         }
