@@ -341,9 +341,9 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
         // Wait for hardware to stabilize (DDC/CI may not be ready immediately after plug)
         await Task.Delay(TimeSpan.FromSeconds(5));
 
-        // Perform actual refresh
+        // Perform actual refresh - skip scanning check since we already set IsScanning above
         Logger.LogInfo("[MainViewModel] Delay complete, now refreshing monitors...");
-        await RefreshMonitorsAsync();
+        await RefreshMonitorsAsync(skipScanningCheck: true);
     }
 
     /// <summary>

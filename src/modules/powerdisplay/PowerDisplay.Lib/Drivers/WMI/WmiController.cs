@@ -9,6 +9,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using ManagedCommon;
+using PowerDisplay.Common.Helpers;
 using PowerDisplay.Common.Interfaces;
 using PowerDisplay.Common.Models;
 using WmiLight;
@@ -25,7 +26,6 @@ namespace PowerDisplay.Common.Drivers.WMI
         private const string WmiNamespace = @"root\WMI";
         private const string BrightnessQueryClass = "WmiMonitorBrightness";
         private const string BrightnessMethodClass = "WmiMonitorBrightnessMethods";
-        private const string MonitorIdClass = "WmiMonitorID";
 
         // Common WMI error codes for classification
         private const int WbemENotFound = unchecked((int)0x80041002);
@@ -244,7 +244,9 @@ namespace PowerDisplay.Common.Drivers.WMI
         }
 
         /// <summary>
-        /// Discover supported monitors
+        /// Discover supported monitors.
+        /// WMI brightness control is typically only available on internal laptop displays,
+        /// which don't have meaningful UserFriendlyName in WmiMonitorID, so we use "Built-in Display".
         /// </summary>
         public async Task<IEnumerable<Monitor>> DiscoverMonitorsAsync(CancellationToken cancellationToken = default)
         {
@@ -257,44 +259,13 @@ namespace PowerDisplay.Common.Drivers.WMI
                 {
                     using var connection = new WmiConnection(WmiNamespace);
 
-                    // First check if WMI brightness support is available
-                    var brightnessQuery = $"SELECT * FROM {BrightnessQueryClass}";
+                    // Query WMI brightness support - only internal displays typically support this
+                    var brightnessQuery = $"SELECT InstanceName, CurrentBrightness FROM {BrightnessQueryClass}";
                     var brightnessResults = connection.CreateQuery(brightnessQuery).ToList();
 
                     if (brightnessResults.Count == 0)
                     {
                         return monitors;
-                    }
-
-                    // Get monitor information
-                    var idQuery = $"SELECT * FROM {MonitorIdClass}";
-                    var idResults = connection.CreateQuery(idQuery).ToList();
-
-                    var monitorInfos = new Dictionary<string, (string Name, string InstanceName)>();
-
-                    foreach (var obj in idResults)
-                    {
-                        try
-                        {
-                            var instanceName = obj.GetPropertyValue<string>("InstanceName") ?? string.Empty;
-                            var userFriendlyName = GetUserFriendlyName(obj);
-                            Logger.LogDebug($"WMI MonitorID: InstanceName='{instanceName}', UserFriendlyName='{userFriendlyName ?? "(null)"}'");
-
-                            if (string.IsNullOrEmpty(userFriendlyName))
-                            {
-                                userFriendlyName = "Internal Display";
-                            }
-
-                            if (!string.IsNullOrEmpty(instanceName))
-                            {
-                                monitorInfos[instanceName] = (userFriendlyName, instanceName);
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            // Skip problematic entries
-                            Logger.LogDebug($"Failed to parse WMI monitor info: {ex.Message}");
-                        }
                     }
 
                     // Get MonitorDisplayInfo from QueryDisplayConfig - this provides the correct monitor numbers
@@ -308,31 +279,29 @@ namespace PowerDisplay.Common.Drivers.WMI
                             var instanceName = obj.GetPropertyValue<string>("InstanceName") ?? string.Empty;
                             var currentBrightness = obj.GetPropertyValue<byte>("CurrentBrightness");
 
-                            var name = "Internal Display";
-                            if (monitorInfos.TryGetValue(instanceName, out var info))
-                            {
-                                name = info.Name;
-                            }
+                            // Extract hardware ID from InstanceName
+                            // e.g., "DISPLAY\LEN4038\4&40f4dee&0&UID8388688_0" -> "LEN4038"
+                            var hardwareId = ExtractHardwareIdFromInstanceName(instanceName);
 
-                            // Extract EdidId from InstanceName
-                            // e.g., "DISPLAY\BOE0900\4&10fd3ab1&0&UID265988_0" -> "BOE0900"
-                            var edidId = ExtractHardwareIdFromInstanceName(instanceName);
-
-                            // Get MonitorDisplayInfo from QueryDisplayConfig by matching EdidId
+                            // Get MonitorDisplayInfo from QueryDisplayConfig by matching hardware ID
                             // This provides MonitorNumber and GdiDeviceName for display settings APIs
-                            var displayInfo = GetMonitorDisplayInfoByHardwareId(edidId, monitorDisplayInfos);
+                            var displayInfo = GetMonitorDisplayInfoByHardwareId(hardwareId, monitorDisplayInfos);
                             int monitorNumber = displayInfo?.MonitorNumber ?? 0;
                             string gdiDeviceName = displayInfo?.GdiDeviceName ?? string.Empty;
 
-                            // Generate unique monitor Id: "WMI_{EdidId}_{MonitorNumber}"
-                            string monitorId = !string.IsNullOrEmpty(edidId)
-                                ? $"WMI_{edidId}_{monitorNumber}"
+                            // Generate unique monitor Id: "WMI_{HardwareId}_{MonitorNumber}"
+                            string monitorId = !string.IsNullOrEmpty(hardwareId)
+                                ? $"WMI_{hardwareId}_{monitorNumber}"
                                 : $"WMI_Unknown_{monitorNumber}";
+
+                            // Get display name from PnP manufacturer ID (e.g., "Lenovo Built-in Display")
+                            var displayName = PnpIdHelper.GetBuiltInDisplayName(hardwareId);
+                            Logger.LogDebug($"WMI: Found internal display '{hardwareId}' -> '{displayName}'");
 
                             var monitor = new Monitor
                             {
                                 Id = monitorId,
-                                Name = name,
+                                Name = displayName,
                                 CurrentBrightness = currentBrightness,
                                 MinBrightness = 0,
                                 MaxBrightness = 100,
@@ -349,14 +318,12 @@ namespace PowerDisplay.Common.Drivers.WMI
                         }
                         catch (Exception ex)
                         {
-                            // Skip problematic monitors
                             Logger.LogWarning($"Failed to create monitor from WMI data: {ex.Message}");
                         }
                     }
                 }
                 catch (WmiException ex)
                 {
-                    // Return empty list instead of throwing exception
                     Logger.LogError($"WMI DiscoverMonitors failed: {ex.Message} (HResult: 0x{ex.HResult:X})");
                 }
                 catch (Exception ex)
@@ -367,40 +334,6 @@ namespace PowerDisplay.Common.Drivers.WMI
                 return monitors;
             },
                 cancellationToken);
-        }
-
-        /// <summary>
-        /// Get user-friendly name from WMI object.
-        /// WmiMonitorID returns UserFriendlyName as a fixed-size uint16 array buffer,
-        /// with UserFriendlyNameLength indicating the actual character count.
-        /// </summary>
-        private static string? GetUserFriendlyName(WmiObject monitorObject)
-        {
-            try
-            {
-                var userFriendlyName = monitorObject.GetPropertyValue<ushort[]>("UserFriendlyName");
-                var nameLength = monitorObject.GetPropertyValue<ushort>("UserFriendlyNameLength");
-
-                if (userFriendlyName != null && nameLength > 0 && nameLength <= userFriendlyName.Length)
-                {
-                    // Use UserFriendlyNameLength to extract only valid characters
-                    var chars = userFriendlyName
-                        .Take(nameLength)
-                        .Select(c => (char)c)
-                        .ToArray();
-
-                    if (chars.Length > 0)
-                    {
-                        return new string(chars).Trim();
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.LogDebug($"Failed to parse UserFriendlyName: {ex.Message}");
-            }
-
-            return null;
         }
 
         // Extended features not supported by WMI

@@ -58,23 +58,31 @@ public partial class MainViewModel
         }
     }
 
-    public async Task RefreshMonitorsAsync()
+    /// <summary>
+    /// Refresh monitors list asynchronously.
+    /// </summary>
+    /// <param name="skipScanningCheck">If true, skip the IsScanning check (used by OnDisplayChanged which sets IsScanning before calling).</param>
+    public async Task RefreshMonitorsAsync(bool skipScanningCheck = false)
     {
-        if (IsScanning)
+        if (!skipScanningCheck && IsScanning)
         {
+            Logger.LogDebug("[RefreshMonitorsAsync] Skipping refresh - already scanning");
             return;
         }
 
         try
         {
             IsScanning = true;
+            Logger.LogInfo("[RefreshMonitorsAsync] Starting monitor discovery...");
 
             var monitors = await _monitorManager.DiscoverMonitorsAsync(_cancellationTokenSource.Token);
+            Logger.LogInfo($"[RefreshMonitorsAsync] Discovery complete, found {monitors.Count} monitors");
 
             _dispatcherQueue.TryEnqueue(() =>
             {
                 UpdateMonitorList(monitors, isInitialLoad: false);
                 IsScanning = false;
+                Logger.LogInfo("[RefreshMonitorsAsync] UI update complete, scanning stopped");
             });
         }
         catch (Exception ex)
