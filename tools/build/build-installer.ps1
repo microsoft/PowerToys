@@ -144,7 +144,8 @@ if ($currentScriptPath.StartsWith($repoRoot)) {
 
 Push-Location $repoRoot
 try {
-    if (git status --porcelain) {
+    $gitStatus = git status --porcelain
+    if ($gitStatus.Length -gt 0) {
         Write-Host "[GIT] Uncommitted changes detected. Stashing (excluding this script)..."
         $stashCountBefore = (git stash list).Count
         
