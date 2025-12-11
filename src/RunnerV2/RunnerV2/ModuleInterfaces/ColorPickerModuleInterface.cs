@@ -17,15 +17,13 @@ using RunnerV2.Helpers;
 
 namespace RunnerV2.ModuleInterfaces
 {
-    internal sealed partial class ColorPickerModuleInterface : IPowerToysModule, IDisposable
+    internal sealed partial class ColorPickerModuleInterface : ProcessModuleAbstractClass, IPowerToysModule, IDisposable
     {
         public string Name => "ColorPicker";
 
         public bool Enabled => new SettingsUtils().GetSettingsOrDefault<GeneralSettings>().Enabled.ColorPicker;
 
         public GpoRuleConfigured GpoRuleConfigured => GPOWrapper.GetConfiguredColorPickerEnabledValue();
-
-        private Process? _process;
 
         private InteropEvent? _showUiEventWrapper;
 
@@ -36,56 +34,40 @@ namespace RunnerV2.ModuleInterfaces
             terminateEventWrapper.Dispose();
             _showUiEventWrapper?.Dispose();
             _showUiEventWrapper = null;
-
-            ProcessHelper.ScheudleProcessKill("PowerToys.ColorPickerUI");
         }
 
         public void Enable()
         {
-            if (_process?.HasExited == false)
-            {
-                return;
-            }
+            InitializeShortcuts();
 
             _showUiEventWrapper = new InteropEvent(InteropEvent.ColorPickerShow);
-
-            var psi = new ProcessStartInfo
-            {
-                FileName = "PowerToys.ColorPickerUI.exe",
-                Arguments = Environment.ProcessId.ToString(CultureInfo.InvariantCulture),
-                UseShellExecute = true,
-            };
-
-            _process = Process.Start(psi);
         }
 
-        public ColorPickerModuleInterface()
-        {
-            InitializeHotkey();
-        }
-
-        private void InitializeHotkey()
+        private void InitializeShortcuts()
         {
             Shortcuts.Clear();
             Shortcuts.Add((new SettingsUtils().GetSettings<ColorPickerSettings>(Name).Properties.ActivationShortcut, () =>
             {
-                if (!_process?.HasExited ?? false)
-                {
-                    _showUiEventWrapper?.Fire();
-                }
-            }));
+                _showUiEventWrapper?.Fire();
+            }
+            ));
         }
 
         public void OnSettingsChanged(string settingsKind, JsonElement jsonProperties)
         {
-            InitializeHotkey();
+            InitializeShortcuts();
         }
 
         public List<(HotkeySettings Hotkey, Action Action)> Shortcuts { get; } = [];
 
+        public override string ProcessPath => "PowerToys.ColorPickerUI.exe";
+
+        public override string ProcessName => "PowerToys.ColorPickerUI";
+
+        public override ProcessLaunchOptions LaunchOptions => ProcessLaunchOptions.SingletonProcess | ProcessLaunchOptions.RunnerProcessIdAsFirstArgument;
+
         public void Dispose()
         {
-            _process?.Dispose();
             _showUiEventWrapper?.Dispose();
             GC.SuppressFinalize(this);
         }

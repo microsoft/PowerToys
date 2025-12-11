@@ -9,10 +9,11 @@ using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using PowerToys.GPOWrapper;
 using RunnerV2.Helpers;
+using Windows.Media.Capture;
 
 namespace RunnerV2.ModuleInterfaces
 {
-    internal sealed partial class AwakeModuleInterface : IPowerToysModule, IDisposable
+    internal sealed class AwakeModuleInterface : ProcessModuleAbstractClass, IPowerToysModule
     {
         public string Name => "Awake";
 
@@ -20,38 +21,23 @@ namespace RunnerV2.ModuleInterfaces
 
         public GpoRuleConfigured GpoRuleConfigured => GPOWrapper.GetConfiguredAwakeEnabledValue();
 
-        private Process? _process;
+        public override string ProcessPath => "PowerToys.Awake.exe";
+
+        public override string ProcessName => "PowerToys.Awake";
+
+        public override string ProcessArguments => $"--use-pt-config --pid {Environment.ProcessId.ToString(CultureInfo.InvariantCulture)}";
+
+        public override ProcessLaunchOptions LaunchOptions => ProcessLaunchOptions.SingletonProcess;
 
         public void Disable()
         {
             InteropEvent terminateEventWrapper = new(InteropEvent.AwakeTerminate);
             terminateEventWrapper.Fire();
             terminateEventWrapper.Dispose();
-
-            ProcessHelper.ScheudleProcessKill("PowerToys.Awake");
         }
 
         public void Enable()
         {
-            if (_process?.HasExited == false)
-            {
-                return;
-            }
-
-            var psi = new ProcessStartInfo
-            {
-                FileName = "PowerToys.Awake.exe",
-                Arguments = $"--use-pt-config --pid {Environment.ProcessId.ToString(CultureInfo.InvariantCulture)}",
-                UseShellExecute = true,
-            };
-
-            _process = Process.Start(psi);
-        }
-
-        public void Dispose()
-        {
-            _process?.Dispose();
-            GC.SuppressFinalize(this);
         }
     }
 }

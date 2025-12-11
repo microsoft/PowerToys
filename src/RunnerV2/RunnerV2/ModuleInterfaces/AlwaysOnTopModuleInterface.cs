@@ -14,15 +14,13 @@ using RunnerV2.Helpers;
 
 namespace RunnerV2.ModuleInterfaces
 {
-    public partial class AlwaysOnTopModuleInterface : IPowerToysModule, IDisposable
+    internal sealed partial class AlwaysOnTopModuleInterface : ProcessModuleAbstractClass, IPowerToysModule, IDisposable
     {
         public bool Enabled => new SettingsUtils().GetSettings<GeneralSettings>().Enabled.AlwaysOnTop;
 
         public string Name => "AlwaysOnTop";
 
         public GpoRuleConfigured GpoRuleConfigured => GPOWrapper.GetConfiguredAlwaysOnTopEnabledValue();
-
-        private Process? _process;
 
         private InteropEvent? _pinEventWrapper;
 
@@ -33,44 +31,22 @@ namespace RunnerV2.ModuleInterfaces
             terminateEventWrapper.Dispose();
             _pinEventWrapper?.Dispose();
             _pinEventWrapper = null;
-
-            ProcessHelper.ScheudleProcessKill("PowerToys.AlwaysOnTop");
         }
 
         public void Enable()
         {
-            if (_process?.HasExited == false)
-            {
-                return;
-            }
-
-            _pinEventWrapper = new InteropEvent(InteropEvent.AlwaysOnTopPin);
-
-            var psi = new ProcessStartInfo
-            {
-                FileName = "PowerToys.AlwaysOnTop.exe",
-                Arguments = Environment.ProcessId.ToString(CultureInfo.InvariantCulture),
-                UseShellExecute = true,
-            };
-
-            _process = Process.Start(psi);
-        }
-
-        public AlwaysOnTopModuleInterface()
-        {
             InitializeHotkey();
+            _pinEventWrapper = new InteropEvent(InteropEvent.AlwaysOnTopPin);
         }
 
         private void InitializeHotkey()
         {
             Shortcuts.Clear();
             Shortcuts.Add((new SettingsUtils().GetSettings<AlwaysOnTopSettings>(Name).Properties.Hotkey.Value, () =>
-            {
-                if (!_process?.HasExited ?? false)
                 {
                     _pinEventWrapper?.Fire();
                 }
-            }));
+            ));
         }
 
         public void OnSettingsChanged(string settingsKind, JsonElement jsonProperties)
@@ -80,9 +56,14 @@ namespace RunnerV2.ModuleInterfaces
 
         public List<(HotkeySettings Hotkey, Action Action)> Shortcuts { get; } = [];
 
+        public override string ProcessPath => "PowerToys.AlwaysOnTop.exe";
+
+        public override string ProcessName => "PowerToys.AlwaysOnTop";
+
+        public override ProcessLaunchOptions LaunchOptions => ProcessLaunchOptions.SingletonProcess | ProcessLaunchOptions.RunnerProcessIdAsFirstArgument | ProcessLaunchOptions.ElevateIfApplicable;
+
         public void Dispose()
         {
-            _process?.Dispose();
             _pinEventWrapper?.Dispose();
             GC.SuppressFinalize(this);
         }

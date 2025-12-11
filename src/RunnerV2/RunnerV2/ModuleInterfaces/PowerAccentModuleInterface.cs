@@ -10,7 +10,7 @@ using PowerToys.GPOWrapper;
 
 namespace RunnerV2.ModuleInterfaces
 {
-    internal sealed class PowerAccentModuleInterface : IPowerToysModule
+    internal sealed class PowerAccentModuleInterface : ProcessModuleAbstractClass, IPowerToysModule
     {
         public string Name => "PowerAccent";
 
@@ -18,17 +18,18 @@ namespace RunnerV2.ModuleInterfaces
 
         public GpoRuleConfigured GpoRuleConfigured => GPOWrapper.GetConfiguredQuickAccentEnabledValue();
 
+        public override string ProcessPath => "PowerToys.PowerAccent.exe";
+
+        public override string ProcessName => "PowerToys.PowerAccent";
+
+        public override ProcessLaunchOptions LaunchOptions => ProcessLaunchOptions.SingletonProcess | ProcessLaunchOptions.RunnerProcessIdAsFirstArgument;
+
         public void Disable()
         {
-            foreach (var process in Process.GetProcessesByName("PowerToys.PowerAccent.exe"))
-            {
-                process.Kill();
-            }
         }
 
         public void Enable()
         {
-            Process.Start("PowerToys.PowerAccent.exe", Environment.ProcessId.ToString(CultureInfo.InvariantCulture));
         }
     }
 }

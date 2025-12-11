@@ -15,7 +15,7 @@ using RunnerV2.Helpers;
 
 namespace RunnerV2.ModuleInterfaces
 {
-    internal sealed partial class CropAndLockModuleInterface : IPowerToysModule, IDisposable
+    internal sealed partial class CropAndLockModuleInterface : ProcessModuleAbstractClass, IPowerToysModule, IDisposable
     {
         public string Name => "CropAndLock";
 
@@ -33,25 +33,14 @@ namespace RunnerV2.ModuleInterfaces
             _reparentEvent.Dispose();
             _thumbnailEvent.Dispose();
             _terminateEvent.Dispose();
-            ProcessHelper.ScheudleProcessKill("PowerToys.CropAndLock");
         }
 
         public void Enable()
         {
-            EnsureLaunched();
             _reparentEvent = new(InteropEvent.CropAndLockReparent);
             _thumbnailEvent = new(InteropEvent.CropAndLockThumbnail);
             _terminateEvent = new(InteropEvent.CropAndLockTerminate);
             PopulateShortcuts();
-        }
-
-        private void EnsureLaunched()
-        {
-            Process[] processes = Process.GetProcessesByName("PowerToys.CropAndLock");
-            if (processes.Length == 0)
-            {
-                Process.Start("PowerToys.CropAndLock.exe", Environment.ProcessId.ToString(CultureInfo.InvariantCulture));
-            }
         }
 
         public void PopulateShortcuts()
@@ -68,6 +57,12 @@ namespace RunnerV2.ModuleInterfaces
         }
 
         public List<(HotkeySettings Hotkey, Action Action)> Shortcuts { get; } = [];
+
+        public override string ProcessPath => "PowerToys.CropAndLock.exe";
+
+        public override string ProcessName => "PowerToys.CropAndLock";
+
+        public override ProcessLaunchOptions LaunchOptions => ProcessLaunchOptions.SingletonProcess | ProcessLaunchOptions.RunnerProcessIdAsFirstArgument;
 
         public void Dispose()
         {

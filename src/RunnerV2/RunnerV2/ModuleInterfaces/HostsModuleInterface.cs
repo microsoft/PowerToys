@@ -9,7 +9,7 @@ using RunnerV2.Helpers;
 
 namespace RunnerV2.ModuleInterfaces
 {
-    internal sealed class HostsModuleInterface : IPowerToysModule
+    internal sealed class HostsModuleInterface : ProcessModuleAbstractClass, IPowerToysModule
     {
         public bool Enabled => new SettingsUtils().GetSettingsOrDefault<GeneralSettings>().Enabled.Hosts;
 
@@ -17,9 +17,14 @@ namespace RunnerV2.ModuleInterfaces
 
         public string Name => "Hosts";
 
+        public override string ProcessPath => string.Empty;
+
+        public override string ProcessName => "PowerToys.Hosts";
+
+        public override ProcessLaunchOptions LaunchOptions => ProcessLaunchOptions.SupressLaunchOnModuleEnabled;
+
         public void Disable()
         {
-            ProcessHelper.ScheudleProcessKill("PowerToys.Hosts", 0);
         }
 
         public void Enable()

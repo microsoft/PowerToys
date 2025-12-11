@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -34,13 +35,13 @@ namespace RunnerV2
 
         public static FrozenSet<IPowerToysModule> ModulesToLoad { get; } =
         [
+            new ColorPickerModuleInterface(),
             new AlwaysOnTopModuleInterface(),
             new HostsModuleInterface(),
             new PowerAccentModuleInterface(),
             new AdvancedPasteModuleInterface(),
             new AwakeModuleInterface(),
             new CmdNotFoundModuleInterface(),
-            new ColorPickerModuleInterface(),
             new CommandPaletteModuleInterface(),
             new CropAndLockModuleInterface(),
         ];
@@ -102,6 +103,12 @@ namespace RunnerV2
                 try
                 {
                     module.Disable();
+
+                    if (module is ProcessModuleAbstractClass pmac)
+                    {
+                        pmac.ProcessExit();
+                    }
+
                     foreach (var hotkey in module.Hotkeys)
                     {
                         HotkeyManager.DisableHotkey(hotkey.Key);
@@ -127,6 +134,11 @@ namespace RunnerV2
                     if (!LoadedModules.Contains(module))
                     {
                         module.Enable();
+                        if (module is ProcessModuleAbstractClass pmac)
+                        {
+                            pmac.LaunchProcess(true);
+                        }
+
                         LoadedModules.Add(module);
                     }
 
@@ -158,6 +170,11 @@ namespace RunnerV2
             try
             {
                 module.Disable();
+
+                if (module is ProcessModuleAbstractClass pmac)
+                {
+                    pmac.ProcessExit();
+                }
 
                 foreach (var hotkey in module.Hotkeys)
                 {

@@ -17,7 +17,7 @@ using RunnerV2.Helpers;
 
 namespace RunnerV2.ModuleInterfaces
 {
-    internal sealed class AdvancedPasteModuleInterface : IPowerToysModule, IDisposable
+    internal sealed class AdvancedPasteModuleInterface : ProcessModuleAbstractClass, IPowerToysModule, IDisposable
     {
         public string Name => "AdvancedPaste";
 
@@ -33,29 +33,17 @@ namespace RunnerV2.ModuleInterfaces
                 _ipc.End();
                 _ipc = null;
             }
-
-            ProcessHelper.ScheudleProcessKill("PowerToys.AdvancedPaste");
         }
 
         private TwoWayPipeMessageIPCManaged? _ipc;
+        private string _ipcName = @"\\.\pipe\PowerToys.AdvancedPaste";
 
         public void Enable()
         {
-            if (Process.GetProcessesByName("PowerToys.AdvancedPaste.exe").Length > 0)
-            {
-                return;
-            }
-
-            string ipcName = @"\\.\pipe\PowerToys.AdvancedPaste";
-            _ipc = new TwoWayPipeMessageIPCManaged(string.Empty, ipcName, (_) => { });
+            _ipc = new TwoWayPipeMessageIPCManaged(string.Empty, _ipcName, (_) => { });
             _ipc.Start();
 
-            if (Shortcuts.Count == 0)
-            {
-                PopulateShortcuts();
-            }
-
-            Process.Start("WinUI3Apps\\PowerToys.AdvancedPaste.exe", $"{Environment.ProcessId} {ipcName}");
+            PopulateShortcuts();
         }
 
         public void OnSettingsChanged(string settingsKind, JsonElement jsonProperties)
@@ -65,10 +53,7 @@ namespace RunnerV2.ModuleInterfaces
 
         public void PopulateShortcuts()
         {
-            if (_ipc is null)
-            {
-                _ipc = new TwoWayPipeMessageIPCManaged(string.Empty, @"\\.\pipe\PowerToys.AdvancedPaste", (_) => { });
-            }
+            _ipc ??= new TwoWayPipeMessageIPCManaged(string.Empty, @"\\.\pipe\PowerToys.AdvancedPaste", (_) => { });
 
             Shortcuts.Clear();
 
@@ -112,5 +97,13 @@ namespace RunnerV2.ModuleInterfaces
         }
 
         public List<(HotkeySettings Hotkey, Action Action)> Shortcuts { get; } = [];
+
+        public override string ProcessPath => "WinUI3Apps\\PowerToys.AdvancedPaste.exe";
+
+        public override string ProcessName => "PowerToys.AdvancedPaste";
+
+        public override string ProcessArguments => _ipcName;
+
+        public override ProcessLaunchOptions LaunchOptions => ProcessLaunchOptions.SingletonProcess | ProcessLaunchOptions.RunnerProcessIdAsFirstArgument;
     }
 }
