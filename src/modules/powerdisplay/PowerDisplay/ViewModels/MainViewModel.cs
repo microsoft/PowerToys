@@ -46,7 +46,6 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
     private readonly CancellationTokenSource _cancellationTokenSource;
     private readonly ISettingsUtils _settingsUtils;
     private readonly MonitorStateManager _stateManager;
-    private readonly LightSwitchListener _lightSwitchListener;
     private readonly DisplayChangeWatcher _displayChangeWatcher;
 
     private ObservableCollection<MonitorViewModel> _monitors;
@@ -74,11 +73,6 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
 
         // Initialize the monitor manager
         _monitorManager = new MonitorManager();
-
-        // Initialize and start LightSwitch integration listener
-        _lightSwitchListener = new LightSwitchListener();
-        _lightSwitchListener.ThemeChanged += OnLightSwitchThemeChanged;
-        _lightSwitchListener.Start();
 
         // Load profiles for quick apply feature
         LoadProfiles();
@@ -256,7 +250,6 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
 
         // Dispose all resources safely (don't throw from Dispose)
         SafeDispose(_displayChangeWatcher, "DisplayChangeWatcher");
-        SafeDispose(_lightSwitchListener, "LightSwitchListener");
 
         // Dispose monitor view models
         foreach (var vm in Monitors)

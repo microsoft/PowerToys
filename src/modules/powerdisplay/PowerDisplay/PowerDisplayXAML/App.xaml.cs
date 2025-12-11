@@ -11,6 +11,7 @@ using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.Windows.AppLifecycle;
+using PowerDisplay.Common;
 using PowerDisplay.Helpers;
 using PowerDisplay.Serialization;
 using PowerToys.Interop;
@@ -105,6 +106,10 @@ namespace PowerDisplay
                     "SettingsUpdated");
                 RegisterViewModelEvent(Constants.ApplyColorTemperaturePowerDisplayEvent(), vm => vm.ApplyColorTemperatureFromSettings(), "ApplyColorTemperature");
                 RegisterViewModelEvent(Constants.ApplyProfilePowerDisplayEvent(), vm => vm.ApplyProfileFromSettings(), "ApplyProfile");
+
+                // LightSwitch integration - apply profiles when theme changes
+                RegisterViewModelEvent(PathConstants.LightSwitchLightThemeEventName, vm => vm.ApplyLightSwitchProfile(isLightMode: true), "LightSwitch-Light");
+                RegisterViewModelEvent(PathConstants.LightSwitchDarkThemeEventName, vm => vm.ApplyLightSwitchProfile(isLightMode: false), "LightSwitch-Dark");
 
                 // Monitor Runner process (backup exit mechanism)
                 if (_powerToysRunnerPid > 0)

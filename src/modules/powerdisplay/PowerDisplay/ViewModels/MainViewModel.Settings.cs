@@ -209,11 +209,15 @@ public partial class MainViewModel
     }
 
     /// <summary>
-    /// Handle theme change notification from LightSwitch
+    /// Handle theme change from LightSwitch by applying the appropriate profile.
+    /// Called from App.xaml.cs when LightSwitch theme events are received.
     /// </summary>
-    private void OnLightSwitchThemeChanged(object? sender, ThemeChangedEventArgs e)
+    /// <param name="isLightMode">Whether the theme changed to light mode.</param>
+    public void ApplyLightSwitchProfile(bool isLightMode)
     {
-        if (string.IsNullOrEmpty(e.ProfileToApply))
+        var profileName = LightSwitchService.GetProfileForTheme(isLightMode);
+
+        if (string.IsNullOrEmpty(profileName))
         {
             return;
         }
@@ -222,21 +226,21 @@ public partial class MainViewModel
         {
             try
             {
-                Logger.LogInfo($"[LightSwitch Integration] Applying profile: {e.ProfileToApply}");
+                Logger.LogInfo($"[LightSwitch Integration] Applying profile: {profileName}");
 
                 // Load and apply the profile
                 var profilesData = ProfileService.LoadProfiles();
-                var profile = profilesData.GetProfile(e.ProfileToApply);
+                var profile = profilesData.GetProfile(profileName);
 
                 if (profile == null || !profile.IsValid())
                 {
-                    Logger.LogWarning($"[LightSwitch Integration] Profile '{e.ProfileToApply}' not found or invalid");
+                    Logger.LogWarning($"[LightSwitch Integration] Profile '{profileName}' not found or invalid");
                     return;
                 }
 
                 // Apply the profile
                 await ApplyProfileAsync(profile.MonitorSettings);
-                Logger.LogInfo($"[LightSwitch Integration] Successfully applied profile '{e.ProfileToApply}'");
+                Logger.LogInfo($"[LightSwitch Integration] Successfully applied profile '{profileName}'");
             }
             catch (Exception ex)
             {
