@@ -27,7 +27,8 @@ $versionExceptions = @(
     "WyHash.dll",
     "Microsoft.Recognizers.Text.DataTypes.TimexExpression.dll",
     "ObjectModelCsProjection.dll",
-    "RendererCsProjection.dll") -join '|';
+    "RendererCsProjection.dll",
+    "Microsoft.ML.OnnxRuntime.dll") -join '|';
 $nullVersionExceptions = @(
     "SkiaSharp.Views.WinUI.Native.dll",
     "libSkiaSharp.dll",
@@ -39,7 +40,6 @@ $nullVersionExceptions = @(
     "vcruntime140_1_app.dll",
     "msvcp140_app.dll",
     "marshal.dll",
-    "Microsoft.ML.OnnxRuntime.dll",
     "Microsoft.Toolkit.Win32.UI.XamlHost.dll",
     "Microsoft.UI.Composition.OSSupport.dll",
     "Microsoft.UI.Windowing.dll",
