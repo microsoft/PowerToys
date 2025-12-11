@@ -277,7 +277,13 @@ namespace PowerDisplay.Common.Drivers.WMI
                         try
                         {
                             var instanceName = obj.GetPropertyValue<string>("InstanceName") ?? string.Empty;
-                            var userFriendlyName = GetUserFriendlyName(obj) ?? "Internal Display";
+                            var userFriendlyName = GetUserFriendlyName(obj);
+                            Logger.LogDebug($"WMI MonitorID: InstanceName='{instanceName}', UserFriendlyName='{userFriendlyName ?? "(null)"}'");
+
+                            if (string.IsNullOrEmpty(userFriendlyName))
+                            {
+                                userFriendlyName = "Internal Display";
+                            }
 
                             if (!string.IsNullOrEmpty(instanceName))
                             {

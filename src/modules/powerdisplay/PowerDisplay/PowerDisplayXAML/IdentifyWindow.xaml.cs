@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Microsoft.UI;
@@ -30,10 +29,10 @@ namespace PowerDisplay.PowerDisplayXAML
         [LibraryImport("user32.dll")]
         private static partial uint GetDpiForWindow(IntPtr hwnd);
 
-        public IdentifyWindow(int number)
+        public IdentifyWindow(string displayText)
         {
             InitializeComponent();
-            NumberText.Text = number.ToString(CultureInfo.InvariantCulture);
+            NumberText.Text = displayText;
 
             // Configure window style
             ConfigureWindow();

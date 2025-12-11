@@ -166,18 +166,25 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
 
         try
         {
-            // Get all display areas
+            // Get all display areas (virtual desktop regions)
             var displayAreas = DisplayArea.FindAll();
             Logger.LogDebug($"Found {displayAreas.Count} display areas");
 
-            // Get GDI device name to MonitorNumber mapping from QueryDisplayConfig
-            var displayInfoByGdiName = DdcCiNative.GetAllMonitorDisplayInfo()
-                .Values
-                .Where(info => info.MonitorNumber > 0)
-                .ToDictionary(info => info.GdiDeviceName, info => info.MonitorNumber, StringComparer.OrdinalIgnoreCase);
-            Logger.LogDebug($"Found {displayInfoByGdiName.Count} monitors with valid MonitorNumber from QueryDisplayConfig");
+            // Get all monitor info from QueryDisplayConfig
+            var allDisplayInfo = DdcCiNative.GetAllMonitorDisplayInfo().Values.ToList();
+            Logger.LogDebug($"Found {allDisplayInfo.Count} monitors from QueryDisplayConfig");
 
-            // For each DisplayArea, get its HMONITOR, then get GDI device name to find MonitorNumber
+            // Build GDI name to MonitorNumber(s) mapping
+            // Note: In mirror mode, multiple monitors may share the same GdiDeviceName
+            var gdiToMonitorNumbers = allDisplayInfo
+                .Where(info => info.MonitorNumber > 0)
+                .GroupBy(info => info.GdiDeviceName, StringComparer.OrdinalIgnoreCase)
+                .ToDictionary(
+                    g => g.Key,
+                    g => g.Select(info => info.MonitorNumber).Distinct().OrderBy(n => n).ToList(),
+                    StringComparer.OrdinalIgnoreCase);
+
+            // For each DisplayArea, get its HMONITOR, then get GDI device name to find MonitorNumber(s)
             int windowsCreated = 0;
             for (int i = 0; i < displayAreas.Count; i++)
             {
@@ -201,17 +208,19 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
 
                 var gdiDeviceName = monitorInfo.GetDeviceName();
 
-                // Look up MonitorNumber by GDI device name
-                if (!displayInfoByGdiName.TryGetValue(gdiDeviceName, out int monitorNumber))
+                // Look up MonitorNumber(s) by GDI device name
+                if (!gdiToMonitorNumbers.TryGetValue(gdiDeviceName, out var monitorNumbers) || monitorNumbers.Count == 0)
                 {
                     Logger.LogDebug($"DisplayArea[{i}]: No MonitorNumber found for GDI device '{gdiDeviceName}'");
                     continue;
                 }
 
-                Logger.LogDebug($"DisplayArea[{i}]: GDI='{gdiDeviceName}' -> MonitorNumber={monitorNumber}");
+                // Format display text: single number for normal mode, "1|2" for mirror mode
+                var displayText = string.Join("|", monitorNumbers);
+                Logger.LogDebug($"DisplayArea[{i}]: GDI='{gdiDeviceName}' -> MonitorNumbers=[{displayText}]");
 
                 // Create and position identify window
-                var identifyWindow = new IdentifyWindow(monitorNumber);
+                var identifyWindow = new IdentifyWindow(displayText);
                 identifyWindow.PositionOnDisplay(displayArea);
                 identifyWindow.Activate();
                 windowsCreated++;
@@ -320,11 +329,20 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
 
     /// <summary>
     /// Handles display configuration changes detected by the DisplayChangeWatcher.
-    /// Triggers a monitor refresh to update the UI.
+    /// Triggers a monitor refresh to update the UI after a delay to allow hardware to stabilize.
     /// </summary>
     private async void OnDisplayChanged(object? sender, EventArgs e)
     {
-        Logger.LogInfo("[MainViewModel] Display change detected, refreshing monitors...");
+        Logger.LogInfo("[MainViewModel] Display change detected, will refresh after 5 second delay...");
+
+        // Set scanning state immediately to provide visual feedback
+        IsScanning = true;
+
+        // Wait for hardware to stabilize (DDC/CI may not be ready immediately after plug)
+        await Task.Delay(TimeSpan.FromSeconds(5));
+
+        // Perform actual refresh
+        Logger.LogInfo("[MainViewModel] Delay complete, now refreshing monitors...");
         await RefreshMonitorsAsync();
     }
 
