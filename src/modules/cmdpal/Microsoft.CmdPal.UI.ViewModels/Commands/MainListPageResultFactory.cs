@@ -29,13 +29,24 @@ internal static class MainListPageResultFactory
         }
 
         int len1 = filteredItems?.Count ?? 0;
-        int len2 = scoredFallbackItems?.Count ?? 0;
+
+        // Scored or not, fallbacks may contain empty items that we want to skip.
+        int len2 = GetNonEmptyFallbackItemsCount(scoredFallbackItems);
 
         // Apps are pre-sorted, so we just need to take the top N, limited by appResultLimit.
         int len3 = Math.Min(filteredApps?.Count ?? 0, appResultLimit);
 
+        int nonEmptyFallbackCount = GetNonEmptyFallbackItemsCount(fallbackItems);
+
         // Allocate the exact size of the result array.
-        int totalCount = len1 + len2 + len3 + GetNonEmptyFallbackItemsCount(fallbackItems);
+        int totalCount = len1 + len2 + len3 + nonEmptyFallbackCount;
+
+        // If there are non-empty fallbacks, we'll be adding a separator "Section"
+        if (nonEmptyFallbackCount > 0)
+        {
+            totalCount++;
+        }
+
         var result = new IListItem[totalCount];
 
         // Three-way stable merge of already-sorted lists.
@@ -122,6 +133,9 @@ internal static class MainListPageResultFactory
         // always at the end of the list and are sorted by user settings.
         if (fallbackItems is not null)
         {
+            // Create the fallbacks section header
+            result[writePos++] = new Separator(Properties.Resources.fallbacks);
+
             for (int i = 0; i < fallbackItems.Count; i++)
             {
                 var item = fallbackItems[i].Item;
@@ -143,7 +157,7 @@ internal static class MainListPageResultFactory
         {
             for (int i = 0; i < fallbackItems.Count; i++)
             {
-                if (!string.IsNullOrEmpty(fallbackItems[i].Item.Title))
+                if (!string.IsNullOrWhiteSpace(fallbackItems[i].Item.Title))
                 {
                     fallbackItemsCount++;
                 }
