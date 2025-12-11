@@ -55,7 +55,7 @@ if ($Help) {
     Write-Host "  -Platform       Target platform (default: auto-detect or x64)"
     Write-Host "  -Configuration  Build configuration (default: Release)"
     Write-Host "  -PerUser        Build per-user installer (default: true)"
-    Write-Host "  -Version        Overwrites the PowerToys version (default: from src\Version.props)"
+    Write-Host "  -Version        Sets the PowerToys version (default: from src\Version.props)"
     Write-Host "  -EnableCmdPalAOT Enable AOT compilation for CmdPal (slower build)"
     Write-Host "  -Clean          Clean output directories before building"
     Write-Host "  -SkipBuild      Skip building the main solution and tools (assumes they are already built)"
@@ -144,7 +144,8 @@ if ($currentScriptPath.StartsWith($repoRoot)) {
 
 Push-Location $repoRoot
 try {
-    if (git status --porcelain) {
+    $gitStatus = git status --porcelain
+    if ($gitStatus.Length -gt 0) {
         Write-Host "[GIT] Uncommitted changes detected. Stashing (excluding this script)..."
         $stashCountBefore = (git stash list).Count
         
@@ -257,7 +258,7 @@ try {
         $versionPropsPath = Join-Path $repoRoot "src\Version.props"
         [xml]$versionProps = Get-Content $versionPropsPath
         $ptVersion = $versionProps.Project.PropertyGroup.Version
-        # Directory.Build.props appends .0 to the version for csproj files
+        # Directory.Build.props appends .0 to the version for .csproj files
         $ptVersionFull = "$ptVersion.0"
         
         # 2. Build the Generator
@@ -357,16 +358,6 @@ try {
     if (-not $SkipBuild) {
         RestoreThenBuild 'tools\BugReportTool\BugReportTool.sln' $commonArgs $Platform $Configuration
         RestoreThenBuild 'tools\StylesReportTool\StylesReportTool.sln' $commonArgs $Platform $Configuration
-    }
-
-    if ($Clean) {
-        Write-Host '[CLEAN] installer (keep *.exe)'
-        Push-Location $repoRoot
-        try {
-            git clean -xfd -e '*.exe' -- .\installer\ | Out-Null
-        } finally {
-            Pop-Location
-        }
     }
 
     # Set NUGET_PACKAGES environment variable if not set, to help wixproj find heat.exe

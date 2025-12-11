@@ -26,14 +26,13 @@ namespace Microsoft.PowerToys.UITest
         /// <summary>
         /// Configures global PowerToys settings to enable only specified modules and disable all others.
         /// </summary>
-        /// <param name="modulesToEnable">Array of module names to enable (e.g., "Peek", "FancyZones"). All other modules will be disabled.</param>
-        /// <exception cref="ArgumentNullException">Thrown when modulesToEnable is null.</exception>
+        /// <param name="modulesToEnable">Array of module names to enable (e.g., "Peek", "FancyZones"). All other modules will be disabled. If null or empty, all modules will be disabled.</param>
         /// <exception cref="InvalidOperationException">Thrown when settings file operations fail.</exception>
         [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "This is test code and will not be trimmed")]
         [UnconditionalSuppressMessage("AOT", "IL3050", Justification = "This is test code and will not be AOT compiled")]
-        public static void ConfigureGlobalModuleSettings(params string[] modulesToEnable)
+        public static void ConfigureGlobalModuleSettings(params string[]? modulesToEnable)
         {
-            ArgumentNullException.ThrowIfNull(modulesToEnable);
+            modulesToEnable ??= Array.Empty<string>();
 
             try
             {

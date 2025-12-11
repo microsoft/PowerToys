@@ -52,6 +52,7 @@ enum class ScheduleMode
     Off,
     FixedHours,
     SunsetToSunrise,
+    FollowNightLight,
     // add more later
 };
 
@@ -63,6 +64,8 @@ inline std::wstring ToString(ScheduleMode mode)
         return L"SunsetToSunrise";
     case ScheduleMode::FixedHours:
         return L"FixedHours";
+    case ScheduleMode::FollowNightLight:
+        return L"FollowNightLight";
     default:
         return L"Off";
     }
@@ -74,6 +77,8 @@ inline ScheduleMode FromString(const std::wstring& str)
         return ScheduleMode::SunsetToSunrise;
     if (str == L"FixedHours")
         return ScheduleMode::FixedHours;
+    if (str == L"FollowNightLight")
+        return ScheduleMode::FollowNightLight;
     return ScheduleMode::Off;
 }
 
@@ -178,7 +183,9 @@ public:
             ToString(g_settings.m_scheduleMode),
             { { L"Off", L"Disable the schedule" },
               { L"FixedHours", L"Set hours manually" },
-              { L"SunsetToSunrise", L"Use sunrise/sunset times" } });
+              { L"SunsetToSunrise", L"Use sunrise/sunset times" },
+              { L"FollowNightLight", L"Follow Windows Night Light state" }
+            });
 
         // Integer spinners
         settings.add_int_spinner(

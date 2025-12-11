@@ -105,6 +105,7 @@ public sealed partial class SettingsWindow : WindowEx,
             "Extensions" => typeof(ExtensionsPage),
             _ => null,
         };
+
         if (pageType is not null)
         {
             NavFrame.Navigate(pageType);
