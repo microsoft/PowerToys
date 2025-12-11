@@ -55,7 +55,7 @@ if ($Help) {
     Write-Host "  -Platform       Target platform (default: auto-detect or x64)"
     Write-Host "  -Configuration  Build configuration (default: Release)"
     Write-Host "  -PerUser        Build per-user installer (default: true)"
-    Write-Host "  -Version        Overwrites the PowerToys version (default: from src\Version.props)"
+    Write-Host "  -Version        Sets the PowerToys version (default: from src\Version.props)"
     Write-Host "  -EnableCmdPalAOT Enable AOT compilation for CmdPal (slower build)"
     Write-Host "  -Clean          Clean output directories before building"
     Write-Host "  -SkipBuild      Skip building the main solution and tools (assumes they are already built)"
