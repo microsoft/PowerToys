@@ -15,7 +15,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
-    <LangVersion>preview</LangVersion>
+  <LangVersion>preview</LangVersion>
 
     <Version>$(CmdPalVersion)</Version>
 
@@ -23,14 +23,13 @@
 
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
-    <UseWinRT>true</UseWinRT>
   </PropertyGroup>
-
+  
   <!-- For debugging purposes, uncomment this block to enable AOT builds -->
-  <!--<PropertyGroup>
+   <!--<PropertyGroup>
     <EnableCmdPalAOT>true</EnableCmdPalAOT>
     <GeneratePackageLocally>true</GeneratePackageLocally>
-  </PropertyGroup>-->
+  </PropertyGroup>--> 
 
   <PropertyGroup Condition="'$(EnableCmdPalAOT)' == 'true'">
     <SelfContained>true</SelfContained>
@@ -46,7 +45,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <!-- This lets us actually reference types from Microsoft.Terminal.UI and CmdPalKeyboardService -->
+    <!-- This lets us actually reference types from Microsoft.Terminal.UI -->
     <CsWinRTIncludes>Microsoft.Terminal.UI;CmdPalKeyboardService</CsWinRTIncludes>
     <CsWinRTGeneratedFilesDir>$(OutDir)</CsWinRTGeneratedFilesDir>
   </PropertyGroup>
@@ -102,7 +101,7 @@
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
     <PackageReference Include="Microsoft.WindowsAppSDK" />
     <PackageReference Include="Microsoft.Xaml.Behaviors.WinUI.Managed" />
-    <PackageReference Include="WinUIEx" />
+	<PackageReference Include="WinUIEx" />
     <PackageReference Include="Microsoft.Windows.CsWin32">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
@@ -148,16 +147,12 @@
     <ProjectReference Include="..\ext\Microsoft.CmdPal.Ext.WindowWalker\Microsoft.CmdPal.Ext.WindowWalker.csproj" />
     <ProjectReference Include="..\ext\Microsoft.CmdPal.Ext.WinGet\Microsoft.CmdPal.Ext.WinGet.csproj" />
 
-    <ProjectReference Include="$(ProjectDir)\..\Microsoft.Terminal.UI\Microsoft.Terminal.UI.vcxproj">
-      <ReferenceOutputAssembly>False</ReferenceOutputAssembly>
-      <BuildProject>True</BuildProject>
+    <ProjectReference Include="..\Microsoft.Terminal.UI\Microsoft.Terminal.UI.vcxproj">
+      <ReferenceOutputAssembly>True</ReferenceOutputAssembly>
+      <Private>True</Private>
+      <CopyLocalSatelliteAssemblies>True</CopyLocalSatelliteAssemblies>
     </ProjectReference>
-    <!-- WinRT metadata reference -->
-    <CsWinRTInputs Include="$(OutputPath)\Microsoft.Terminal.UI.winmd" />
-    <!-- Native implementation DLL -->
-    <None Include="$(OutputPath)\Microsoft.Terminal.UI.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
+
     <ProjectReference Include="..\CmdPalKeyboardService\CmdPalKeyboardService.vcxproj">
       <ReferenceOutputAssembly>True</ReferenceOutputAssembly>
       <Private>True</Private>
