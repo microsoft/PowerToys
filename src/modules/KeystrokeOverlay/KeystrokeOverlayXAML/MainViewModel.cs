@@ -303,7 +303,7 @@ namespace KeystrokeOverlayUI
 
                             if (!string.IsNullOrEmpty(_streamBuffer))
                             {
-                                RegisterKey(_streamBuffer);
+                                RegisterKey(_streamBuffer, TimeoutMs);
                             }
                         }
 
@@ -335,7 +335,7 @@ namespace KeystrokeOverlayUI
 
             if (!string.IsNullOrEmpty(formattedText))
             {
-                RegisterKey(formattedText);
+                RegisterKey(formattedText, TimeoutMs);
             }
         }
 
@@ -346,7 +346,7 @@ namespace KeystrokeOverlayUI
                 PressedKeys.RemoveAt(PressedKeys.Count - 1);
             }
 
-            RegisterKey(text);
+            RegisterKey(text, 4000);
         }
 
         private bool IsHotkeyMatch(KeystrokeEvent kEvent, HotkeySettings settings)
@@ -374,7 +374,7 @@ namespace KeystrokeOverlayUI
                    hasShift == settings.Shift;
         }
 
-        public void RegisterKey(string key, int durationMs = 2000, int textSize = -1)
+        public void RegisterKey(string key, int durationMs, int textSize = -1)
         {
             if (textSize == -1)
             {
