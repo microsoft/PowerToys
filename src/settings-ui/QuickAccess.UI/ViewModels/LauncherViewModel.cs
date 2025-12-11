@@ -38,7 +38,7 @@ public sealed class LauncherViewModel : Observable
 
         _quickAccessViewModel = new QuickAccessViewModel(
             _settingsRepository,
-            new QuickAccessLauncher(_coordinator),
+            new Microsoft.PowerToys.QuickAccess.Services.QuickAccessLauncher(_coordinator),
             moduleType => Helpers.ModuleGpoHelper.GetModuleGpoConfiguration(moduleType) == GpoRuleConfigured.Disabled,
             _resourceLoader);
         var updatingSettings = UpdatingSettings.LoadSettings() ?? new UpdatingSettings();

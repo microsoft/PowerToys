@@ -10,118 +10,19 @@ using PowerToys.Interop;
 
 namespace Microsoft.PowerToys.QuickAccess.Services
 {
-    public class QuickAccessLauncher : IQuickAccessLauncher
+    public class QuickAccessLauncher : Microsoft.PowerToys.Settings.UI.Controls.QuickAccessLauncher
     {
-        private readonly IQuickAccessCoordinator _coordinator;
+        private readonly IQuickAccessCoordinator? _coordinator;
 
-        public QuickAccessLauncher(IQuickAccessCoordinator coordinator)
+        public QuickAccessLauncher(IQuickAccessCoordinator? coordinator)
+            : base(coordinator?.IsRunnerElevated ?? false)
         {
             _coordinator = coordinator;
         }
 
-        public void Launch(ModuleType moduleType)
+        public override bool Launch(ModuleType moduleType)
         {
-            bool moduleRun = true;
-
-            switch (moduleType)
-            {
-                case ModuleType.ColorPicker:
-                    using (var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.ShowColorPickerSharedEvent()))
-                    {
-                        eventHandle.Set();
-                    }
-
-                    break;
-                case ModuleType.EnvironmentVariables:
-                    {
-                        bool launchAdmin = SettingsRepository<EnvironmentVariablesSettings>.GetInstance(SettingsUtils.Default).SettingsConfig.Properties.LaunchAdministrator;
-                        bool isElevated = _coordinator?.IsRunnerElevated ?? false;
-                        string eventName = !isElevated && launchAdmin
-                            ? Constants.ShowEnvironmentVariablesAdminSharedEvent()
-                            : Constants.ShowEnvironmentVariablesSharedEvent();
-
-                        using (var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, eventName))
-                        {
-                            eventHandle.Set();
-                        }
-                    }
-
-                    break;
-                case ModuleType.FancyZones:
-                    using (var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.FZEToggleEvent()))
-                    {
-                        eventHandle.Set();
-                    }
-
-                    break;
-                case ModuleType.Hosts:
-                    {
-                        bool launchAdmin = SettingsRepository<HostsSettings>.GetInstance(SettingsUtils.Default).SettingsConfig.Properties.LaunchAdministrator;
-                        bool isElevated = _coordinator?.IsRunnerElevated ?? false;
-                        string eventName = !isElevated && launchAdmin
-                            ? Constants.ShowHostsAdminSharedEvent()
-                            : Constants.ShowHostsSharedEvent();
-
-                        using (var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, eventName))
-                        {
-                            eventHandle.Set();
-                        }
-                    }
-
-                    break;
-                case ModuleType.PowerLauncher:
-                    using (var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.PowerLauncherSharedEvent()))
-                    {
-                        eventHandle.Set();
-                    }
-
-                    break;
-                case ModuleType.PowerOCR:
-                    using (var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.ShowPowerOCRSharedEvent()))
-                    {
-                        eventHandle.Set();
-                    }
-
-                    break;
-                case ModuleType.RegistryPreview:
-                    using (var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.RegistryPreviewTriggerEvent()))
-                    {
-                        eventHandle.Set();
-                    }
-
-                    break;
-                case ModuleType.MeasureTool:
-                    using (var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.MeasureToolTriggerEvent()))
-                    {
-                        eventHandle.Set();
-                    }
-
-                    break;
-                case ModuleType.ShortcutGuide:
-                    using (var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.ShortcutGuideTriggerEvent()))
-                    {
-                        eventHandle.Set();
-                    }
-
-                    break;
-                case ModuleType.CmdPal:
-                    using (var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.ShowCmdPalEvent()))
-                    {
-                        eventHandle.Set();
-                    }
-
-                    break;
-                case ModuleType.Workspaces:
-                    using (var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.WorkspacesLaunchEditorEvent()))
-                    {
-                        eventHandle.Set();
-                    }
-
-                    break;
-                default:
-                    moduleRun = false;
-                    break;
-            }
+            bool moduleRun = base.Launch(moduleType);
 
             if (moduleRun)
             {
@@ -129,6 +30,8 @@ namespace Microsoft.PowerToys.QuickAccess.Services
             }
 
             _coordinator?.HideFlyout();
+
+            return moduleRun;
         }
     }
 }

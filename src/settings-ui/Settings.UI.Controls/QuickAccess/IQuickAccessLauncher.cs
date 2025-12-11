@@ -8,6 +8,6 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 {
     public interface IQuickAccessLauncher
     {
-        void Launch(ModuleType moduleType);
+        bool Launch(ModuleType moduleType);
     }
 }
