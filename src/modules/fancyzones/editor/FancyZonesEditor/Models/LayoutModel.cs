@@ -335,7 +335,7 @@ namespace FancyZonesEditor.Models
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
-        // Removes this Layout from the registry and the loaded CustomModels list
+        // Removes this Layout from the registry and the loaded CustomModels list or TemplateModels list
         public void Delete()
         {
             var customModels = MainWindowSettingsModel.CustomModels;
@@ -352,6 +352,16 @@ namespace FancyZonesEditor.Models
             if (i != -1)
             {
                 customModels.RemoveAt(i);
+            }
+            else
+            {
+                // Try to remove from template models if it's a template layout
+                var templateModels = MainWindowSettingsModel.TemplateModels;
+                i = templateModels.IndexOf(this);
+                if (i != -1)
+                {
+                    templateModels.RemoveAt(i);
+                }
             }
         }
 
