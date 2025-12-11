@@ -142,7 +142,8 @@
     <value>A list of connections to include in the query results by default</value>
   </data>
   <data name="remotedesktop_log_mstsc_error" xml:space="preserve">
-    <value>Unable to initialize Microsoft Terminal Service Client. Ensure it is enabled in Windows Settings.\r{0}</value>
+    <value>Unable to initialize Microsoft Terminal Service Client. Ensure it is enabled in Windows Settings.
+{0}</value>
   </data>
   <data name="remotedesktop_log_invalid_hostname" xml:space="preserve">
     <value>The hostname '{0}' was invalid. Ensure you're using a valid hostname or IP address.</value>

@@ -133,7 +133,7 @@ namespace WorkspacesEditor.ViewModels
                 _orderByIndex = value;
                 OnPropertyChanged(new PropertyChangedEventArgs(nameof(WorkspacesView)));
                 settings.Properties.SortBy = (WorkspacesProperties.SortByProperty)value;
-                settings.Save(new SettingsUtils());
+                settings.Save(SettingsUtils.Default);
             }
         }
 

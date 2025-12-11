@@ -142,9 +142,9 @@
                     FontSize="16"
                     Glyph="&#xE713;" />
                 <TextBlock
+                    x:Uid="SettingsButtonTextBlock"
                     VerticalAlignment="Center"
-                    Style="{StaticResource CaptionTextBlockStyle}"
-                    Text="Settings" />
+                    Style="{StaticResource CaptionTextBlockStyle}" />
             </StackPanel>
         </Button>
         <TextBlock

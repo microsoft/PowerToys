@@ -38,7 +38,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
             // Load string resources
             var loader = Helpers.ResourceLoaderInstance.ResourceLoader;
-            var settingsUtils = new SettingsUtils();
+            var settingsUtils = SettingsUtils.Default;
 
             Action stateUpdatingAction = () =>
             {

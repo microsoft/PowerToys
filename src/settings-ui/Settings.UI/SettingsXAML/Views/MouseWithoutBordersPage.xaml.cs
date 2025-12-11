@@ -33,7 +33,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         public MouseWithoutBordersPage()
         {
-            var settingsUtils = new SettingsUtils();
+            var settingsUtils = SettingsUtils.Default;
             ViewModel = new MouseWithoutBordersViewModel(
                 settingsUtils,
                 SettingsRepository<GeneralSettings>.GetInstance(settingsUtils),
