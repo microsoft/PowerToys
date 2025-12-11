@@ -15,9 +15,12 @@ public class OpenPage : EventBase, IEvent
 {
     public int PageDepth { get; set; }
 
-    public OpenPage(int pageDepth)
+    public string Id { get; set; }
+
+    public OpenPage(int pageDepth, string id)
     {
         PageDepth = pageDepth;
+        Id = id;
 
         EventName = "CmdPal_OpenPage";
     }

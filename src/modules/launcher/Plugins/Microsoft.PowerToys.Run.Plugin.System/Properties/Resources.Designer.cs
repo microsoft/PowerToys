@@ -19,7 +19,7 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Properties {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "18.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Resources {
@@ -682,7 +682,7 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to You are about to reboot this computer into UEFI Firmware Settings menu, are you sure?.
+        ///   Looks up a localized string similar to You are about to reboot this computer into UEFI firmware settings menu, are you sure?.
         /// </summary>
         internal static string Microsoft_plugin_sys_uefi_confirmation {
             get {
@@ -691,7 +691,7 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Reboot computer into UEFI Firmware Settings (Requires administrative permissions.).
+        ///   Looks up a localized string similar to Reboot computer into UEFI firmware settings (Requires administrative permissions.).
         /// </summary>
         internal static string Microsoft_plugin_sys_uefi_description {
             get {

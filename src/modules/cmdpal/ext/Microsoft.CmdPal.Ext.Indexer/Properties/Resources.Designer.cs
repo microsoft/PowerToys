@@ -178,6 +178,33 @@ namespace Microsoft.CmdPal.Ext.Indexer.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Files and folders.
+        /// </summary>
+        internal static string Indexer_Filter_All {
+            get {
+                return ResourceManager.GetString("Indexer_Filter_All", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Files.
+        /// </summary>
+        internal static string Indexer_Filter_Files_Only {
+            get {
+                return ResourceManager.GetString("Indexer_Filter_Files_Only", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Folders.
+        /// </summary>
+        internal static string Indexer_Filter_Folders_Only {
+            get {
+                return ResourceManager.GetString("Indexer_Filter_Folders_Only", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Find file from path.
         /// </summary>
         internal static string Indexer_Find_Path_fallback_display_title {
@@ -265,15 +292,6 @@ namespace Microsoft.CmdPal.Ext.Indexer.Properties {
         internal static string Indexer_Settings_FallbackCommand_Off {
             get {
                 return ResourceManager.GetString("Indexer_Settings_FallbackCommand_Off", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Search files on this device.
-        /// </summary>
-        internal static string Indexer_Subtitle {
-            get {
-                return ResourceManager.GetString("Indexer_Subtitle", resourceCulture);
             }
         }
         

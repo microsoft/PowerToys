@@ -39,6 +39,10 @@ type_pEnableThemeDialogTexture    pEnableThemeDialogTexture;
 #define WIN7_VERSION		0x106
 #define WIN10_VERSION		0x206
 
+// Default recording format frame rates
+#define RECORDING_FORMAT_GIF_DEFAULT_FRAMERATE 15
+#define RECORDING_FORMAT_MP4_DEFAULT_FRAMERATE 30
+
 // Time that we'll cache live zoom window to avoid flicker
 // of live zooming on Vista/ws2k8
 #define LIVEZOOM_WINDOW_TIMEOUT	2*3600*1000

@@ -1065,6 +1065,7 @@ public class Win32Program : IProgram
             DirPath = app.Location,
             Commands = app.GetCommands(),
             AppIdentifier = app.GetAppIdentifier(),
+            FullExecutablePath = app.FullPath,
         };
     }
 }

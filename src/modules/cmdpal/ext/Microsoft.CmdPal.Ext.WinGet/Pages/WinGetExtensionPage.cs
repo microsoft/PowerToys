@@ -28,9 +28,10 @@ internal sealed partial class WinGetExtensionPage : DynamicListPage, IDisposable
     public bool HasTag => !string.IsNullOrEmpty(_tag);
 
     private readonly Lock _resultsLock = new();
+    private readonly Lock _taskLock = new();
 
-    private CancellationTokenSource? _cancellationTokenSource;
-    private Task<IEnumerable<CatalogPackage>>? _currentSearchTask;
+    private string? _nextSearchQuery;
+    private bool _isTaskRunning;
 
     private List<CatalogPackage>? _results;
 
@@ -85,7 +86,6 @@ internal sealed partial class WinGetExtensionPage : DynamicListPage, IDisposable
 
                 stopwatch.Stop();
                 Logger.LogDebug($"Building ListItems took {stopwatch.ElapsedMilliseconds}ms", memberName: nameof(GetItems));
-                IsLoading = false;
                 return results;
             }
         }
@@ -97,8 +97,6 @@ internal sealed partial class WinGetExtensionPage : DynamicListPage, IDisposable
                             Properties.Resources.winget_placeholder_text :
                             Properties.Resources.winget_no_packages_found,
         };
-
-        IsLoading = false;
 
         return [];
     }
@@ -117,64 +115,70 @@ internal sealed partial class WinGetExtensionPage : DynamicListPage, IDisposable
 
     private void DoUpdateSearchText(string newSearch)
     {
-        // Cancel any ongoing search
-        if (_cancellationTokenSource is not null)
+        lock (_taskLock)
         {
-            Logger.LogDebug("Cancelling old search", memberName: nameof(DoUpdateSearchText));
-            _cancellationTokenSource.Cancel();
-        }
-
-        _cancellationTokenSource = new CancellationTokenSource();
-
-        var cancellationToken = _cancellationTokenSource.Token;
-
-        IsLoading = true;
-
-        try
-        {
-            // Save the latest search task
-            _currentSearchTask = DoSearchAsync(newSearch, cancellationToken);
-        }
-        catch (OperationCanceledException)
-        {
-            // DO NOTHING HERE
-            return;
-        }
-        catch (Exception ex)
-        {
-            // Handle other exceptions
-            ExtensionHost.LogMessage($"[WinGet] DoUpdateSearchText throw exception: {ex.Message}");
-            return;
-        }
-
-        // Await the task to ensure only the latest one gets processed
-        _ = ProcessSearchResultsAsync(_currentSearchTask, newSearch);
-    }
-
-    private async Task ProcessSearchResultsAsync(
-        Task<IEnumerable<CatalogPackage>> searchTask,
-        string newSearch)
-    {
-        try
-        {
-            var results = await searchTask;
-
-            // Ensure this is still the latest task
-            if (_currentSearchTask == searchTask)
+            if (_isTaskRunning)
             {
-                // Process the results (e.g., update UI)
-                UpdateWithResults(results, newSearch);
+                // If a task is running, queue the next search query
+                // Keep IsLoading = true since we still have work to do
+                Logger.LogDebug($"Task is running, queueing next search: '{newSearch}'", memberName: nameof(DoUpdateSearchText));
+                _nextSearchQuery = newSearch;
+            }
+            else
+            {
+                // No task is running, start a new search
+                Logger.LogDebug($"Starting new search: '{newSearch}'", memberName: nameof(DoUpdateSearchText));
+                _isTaskRunning = true;
+                _nextSearchQuery = null;
+                IsLoading = true;
+
+                _ = ExecuteSearchChainAsync(newSearch);
             }
         }
-        catch (OperationCanceledException)
+    }
+
+    private async Task ExecuteSearchChainAsync(string query)
+    {
+        while (true)
         {
-            // Handle cancellation gracefully (e.g., log or ignore)
-            Logger.LogDebug($"  Cancelled search for '{newSearch}'");
-        }
-        catch (Exception ex)
-        {
-            // Handle other exceptions
-            Logger.LogError("Unexpected error while processing results", ex);
+            try
+            {
+                Logger.LogDebug($"Executing search for '{query}'", memberName: nameof(ExecuteSearchChainAsync));
+
+                var results = await DoSearchAsync(query);
+
+                // Update UI with results
+                UpdateWithResults(results, query);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Unexpected error while searching for '{query}'", ex);
+            }
+
+            // Check if there's a next query to process
+            string? nextQuery;
+            lock (_taskLock)
+            {
+                if (_nextSearchQuery is not null)
+                {
+                    // There's a queued search, execute it
+                    nextQuery = _nextSearchQuery;
+                    _nextSearchQuery = null;
+
+                    Logger.LogDebug($"Found queued search, continuing with: '{nextQuery}'", memberName: nameof(ExecuteSearchChainAsync));
+                }
+                else
+                {
+                    // No more searches queued, mark task as completed
+                    _isTaskRunning = false;
+                    IsLoading = false;
+                    Logger.LogDebug("No more queued searches, task chain completed", memberName: nameof(ExecuteSearchChainAsync));
+                    break;
+                }
+            }
+
+            // Continue with the next query
+            query = nextQuery;
         }
     }
 
@@ -189,11 +193,8 @@ internal sealed partial class WinGetExtensionPage : DynamicListPage, IDisposable
         RaiseItemsChanged();
     }
 
-    private async Task<IEnumerable<CatalogPackage>> DoSearchAsync(string query, CancellationToken ct)
+    private async Task<IEnumerable<CatalogPackage>> DoSearchAsync(string query)
     {
-        // Were we already canceled?
-        ct.ThrowIfCancellationRequested();
-
         Stopwatch stopwatch = new();
         stopwatch.Start();
 
@@ -230,9 +231,6 @@ internal sealed partial class WinGetExtensionPage : DynamicListPage, IDisposable
             opts.Filters.Add(tagFilter);
         }
 
-        // Clean up here, then...
-        ct.ThrowIfCancellationRequested();
-
         var catalogTask = HasTag ? WinGetStatics.CompositeWingetCatalog : WinGetStatics.CompositeAllCatalog;
 
         // Both these catalogs should have been instantiated by the
@@ -251,13 +249,11 @@ internal sealed partial class WinGetExtensionPage : DynamicListPage, IDisposable
             findPackages_stopwatch.Start();
             Logger.LogDebug($"  Searching {catalog.Info.Name} ({query})", memberName: nameof(DoSearchAsync));
 
-            ct.ThrowIfCancellationRequested();
-
             Logger.LogDebug($"Preface for \"{searchDebugText}\" took {stopwatch.ElapsedMilliseconds}ms", memberName: nameof(DoSearchAsync));
 
             // BODGY, re: microsoft/winget-cli#5151
             // FindPackagesAsync isn't actually async.
-            var internalSearchTask = Task.Run(() => catalog.FindPackages(opts), ct);
+            var internalSearchTask = Task.Run(() => catalog.FindPackages(opts));
             var searchResults = await internalSearchTask;
 
             findPackages_stopwatch.Stop();
@@ -271,8 +267,6 @@ internal sealed partial class WinGetExtensionPage : DynamicListPage, IDisposable
                 return [];
             }
 
-            ct.ThrowIfCancellationRequested();
-
             Logger.LogDebug($"    got results for ({query})", memberName: nameof(DoSearchAsync));
 
             // FYI Using .ToArray or any other kind of enumerable loop
@@ -281,8 +275,6 @@ internal sealed partial class WinGetExtensionPage : DynamicListPage, IDisposable
             for (var i = 0; i < count; i++)
             {
                 var match = searchResults.Matches[i];
-
-                ct.ThrowIfCancellationRequested();
 
                 var package = match.CatalogPackage;
                 results.Add(package);

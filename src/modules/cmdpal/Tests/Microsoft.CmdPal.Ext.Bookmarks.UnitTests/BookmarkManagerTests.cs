@@ -186,4 +186,48 @@ public class BookmarkManagerTests
         Assert.AreEqual("D:\\UpdatedPath", updatedBookmark.Bookmark);
         Assert.IsTrue(bookmarkUpdatedEventFired);
     }
+
+    [TestMethod]
+    public void BookmarkManager_LegacyData_IdsArePersistedAcrossLoads()
+    {
+        // Arrange
+        const string json = """
+                            {
+                                "Data": 
+                                [
+                                    { "Name": "C:\\","Bookmark": "C:\\" },
+                                    { "Name": "Bing.com","Bookmark": "https://bing.com" }
+                                ]
+                            }
+                            """;
+
+        var dataSource = new MockBookmarkDataSource(json);
+
+        // First load: IDs should be generated for legacy entries
+        var manager1 = new BookmarksManager(dataSource);
+        var firstLoad = manager1.Bookmarks.ToList();
+        Assert.AreEqual(2, firstLoad.Count);
+        Assert.AreNotEqual(Guid.Empty, firstLoad[0].Id);
+        Assert.AreNotEqual(Guid.Empty, firstLoad[1].Id);
+
+        // Keep a name->id map to be insensitive to ordering
+        var firstIdsByName = firstLoad.ToDictionary(b => b.Name, b => b.Id);
+
+        // Wait deterministically for async persistence to complete
+        var wasSaved = dataSource.WaitForSave(1, 5000);
+        Assert.IsTrue(wasSaved, "Data was not saved within the expected time.");
+
+        // Second load: should read back the same IDs from persisted data
+        var manager2 = new BookmarksManager(dataSource);
+        var secondLoad = manager2.Bookmarks.ToList();
+        Assert.AreEqual(2, secondLoad.Count);
+
+        var secondIdsByName = secondLoad.ToDictionary(b => b.Name, b => b.Id);
+
+        foreach (var kvp in firstIdsByName)
+        {
+            Assert.IsTrue(secondIdsByName.ContainsKey(kvp.Key), $"Missing bookmark '{kvp.Key}' after reload.");
+            Assert.AreEqual(kvp.Value, secondIdsByName[kvp.Key], $"Bookmark '{kvp.Key}' upgraded ID was not persisted across loads.");
+        }
+    }
 }

@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.ComponentModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
@@ -13,6 +14,7 @@ using Microsoft.CommandPalette.Extensions;
 namespace Microsoft.CmdPal.Core.ViewModels;
 
 public partial class ShellViewModel : ObservableObject,
+    IDisposable,
     IRecipient<PerformCommandMessage>,
     IRecipient<HandleCommandResultMessage>
 {
@@ -48,6 +50,9 @@ public partial class ShellViewModel : ObservableObject,
             var oldValue = _currentPage;
             if (SetProperty(ref _currentPage, value))
             {
+                oldValue.PropertyChanged -= CurrentPage_PropertyChanged;
+                value.PropertyChanged += CurrentPage_PropertyChanged;
+
                 if (oldValue is IDisposable disposable)
                 {
                     try
@@ -60,6 +65,14 @@ public partial class ShellViewModel : ObservableObject,
                     }
                 }
             }
+        }
+    }
+
+    private void CurrentPage_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(PageViewModel.HasSearchBox))
+        {
+            IsSearchBoxVisible = CurrentPage.HasSearchBox;
         }
     }
 
@@ -366,7 +379,7 @@ public partial class ShellViewModel : ObservableObject,
                 {
                     // Reset the palette to the main page and dismiss
                     GoHome(withAnimation: false, focusSearch: false);
-                    WeakReferenceMessenger.Default.Send<DismissMessage>();
+                    WeakReferenceMessenger.Default.Send(new DismissMessage());
                     break;
                 }
 
@@ -386,7 +399,7 @@ public partial class ShellViewModel : ObservableObject,
             case CommandResultKind.Hide:
                 {
                     // Keep this page open, but hide the palette.
-                    WeakReferenceMessenger.Default.Send<DismissMessage>();
+                    WeakReferenceMessenger.Default.Send(new DismissMessage());
                     break;
                 }
 
@@ -447,5 +460,13 @@ public partial class ShellViewModel : ObservableObject,
     public void CancelNavigation()
     {
         _navigationCts?.Cancel();
+    }
+
+    public void Dispose()
+    {
+        _handleInvokeTask?.Dispose();
+        _navigationCts?.Dispose();
+
+        GC.SuppressFinalize(this);
     }
 }

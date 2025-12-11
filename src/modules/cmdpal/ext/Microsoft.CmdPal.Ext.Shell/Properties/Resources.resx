@@ -121,7 +121,7 @@
     <value>Run commands</value>
   </data>
   <data name="cmd_plugin_description" xml:space="preserve">
-    <value>Executes commands (e.g. 'ping', 'cmd')</value>
+    <value>Execute system commands like 'ping' and 'cmd'</value>
   </data>
   <data name="cmd_has_been_executed_times" xml:space="preserve">
     <value>this command has been executed {0} times</value>
