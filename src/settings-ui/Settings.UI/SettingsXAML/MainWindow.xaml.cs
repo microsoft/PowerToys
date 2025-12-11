@@ -92,7 +92,7 @@ namespace Microsoft.PowerToys.Settings.UI
                     var outgoing = new OutGoingGeneralSettings(generalSettingsConfig);
 
                     // Save settings to file
-                    new SettingsUtils().SaveSettings(generalSettingsConfig.ToJsonString());
+                    SettingsUtils.Default.SaveSettings(generalSettingsConfig.ToJsonString());
 
                     // Send IPC message asynchronously to avoid blocking UI and potential recursive calls
                     Task.Run(() =>

@@ -36,7 +36,7 @@ public sealed class LauncherViewModel : Observable
     {
         _coordinator = coordinator;
         _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
-        var settingsUtils = new SettingsUtils();
+        var settingsUtils = SettingsUtils.Default;
         _settingsRepository = SettingsRepository<GeneralSettings>.GetInstance(settingsUtils);
         _generalSettings = _settingsRepository.SettingsConfig;
         _generalSettings.AddEnabledModuleChangeNotification(ModuleEnabledChanged);
@@ -102,7 +102,7 @@ public sealed class LauncherViewModel : Observable
                 break;
             case ModuleType.EnvironmentVariables:
                 {
-                    bool launchAdmin = SettingsRepository<EnvironmentVariablesSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.LaunchAdministrator;
+                    bool launchAdmin = SettingsRepository<EnvironmentVariablesSettings>.GetInstance(SettingsUtils.Default).SettingsConfig.Properties.LaunchAdministrator;
                     bool isElevated = _coordinator?.IsRunnerElevated ?? false;
                     string eventName = !isElevated && launchAdmin
                         ? Constants.ShowEnvironmentVariablesAdminSharedEvent()
@@ -124,7 +124,7 @@ public sealed class LauncherViewModel : Observable
                 break;
             case ModuleType.Hosts:
                 {
-                    bool launchAdmin = SettingsRepository<HostsSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.LaunchAdministrator;
+                    bool launchAdmin = SettingsRepository<HostsSettings>.GetInstance(SettingsUtils.Default).SettingsConfig.Properties.LaunchAdministrator;
                     bool isElevated = _coordinator?.IsRunnerElevated ?? false;
                     string eventName = !isElevated && launchAdmin
                         ? Constants.ShowHostsAdminSharedEvent()
@@ -203,12 +203,12 @@ public sealed class LauncherViewModel : Observable
     {
         return moduleType switch
         {
-            ModuleType.ColorPicker => SettingsRepository<ColorPickerSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.ActivationShortcut.ToString(),
-            ModuleType.FancyZones => SettingsRepository<FancyZonesSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.FancyzonesEditorHotkey.Value.ToString(),
-            ModuleType.PowerLauncher => SettingsRepository<PowerLauncherSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.OpenPowerLauncher.ToString(),
-            ModuleType.PowerOCR => SettingsRepository<PowerOcrSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.ActivationShortcut.ToString(),
-            ModuleType.Workspaces => SettingsRepository<WorkspacesSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.Hotkey.Value.ToString(),
-            ModuleType.MeasureTool => SettingsRepository<MeasureToolSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.ActivationShortcut.ToString(),
+            ModuleType.ColorPicker => SettingsRepository<ColorPickerSettings>.GetInstance(SettingsUtils.Default).SettingsConfig.Properties.ActivationShortcut.ToString(),
+            ModuleType.FancyZones => SettingsRepository<FancyZonesSettings>.GetInstance(SettingsUtils.Default).SettingsConfig.Properties.FancyzonesEditorHotkey.Value.ToString(),
+            ModuleType.PowerLauncher => SettingsRepository<PowerLauncherSettings>.GetInstance(SettingsUtils.Default).SettingsConfig.Properties.OpenPowerLauncher.ToString(),
+            ModuleType.PowerOCR => SettingsRepository<PowerOcrSettings>.GetInstance(SettingsUtils.Default).SettingsConfig.Properties.ActivationShortcut.ToString(),
+            ModuleType.Workspaces => SettingsRepository<WorkspacesSettings>.GetInstance(SettingsUtils.Default).SettingsConfig.Properties.Hotkey.Value.ToString(),
+            ModuleType.MeasureTool => SettingsRepository<MeasureToolSettings>.GetInstance(SettingsUtils.Default).SettingsConfig.Properties.ActivationShortcut.ToString(),
             ModuleType.ShortcutGuide => GetShortcutGuideToolTip(),
             _ => string.Empty,
         };
@@ -216,7 +216,7 @@ public sealed class LauncherViewModel : Observable
 
     private string GetShortcutGuideToolTip()
     {
-        var shortcutGuideSettings = SettingsRepository<ShortcutGuideSettings>.GetInstance(new SettingsUtils()).SettingsConfig;
+        var shortcutGuideSettings = SettingsRepository<ShortcutGuideSettings>.GetInstance(SettingsUtils.Default).SettingsConfig;
         return shortcutGuideSettings.Properties.UseLegacyPressWinKeyBehavior.Value
             ? "Win"
             : shortcutGuideSettings.Properties.OpenShortcutGuide.ToString();

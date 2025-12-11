@@ -49,7 +49,7 @@ public sealed class AllAppsViewModel : Observable
     {
         _coordinator = coordinator;
         _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
-        _settingsUtils = new SettingsUtils();
+        _settingsUtils = SettingsUtils.Default;
         _settingsRepository = SettingsRepository<GeneralSettings>.GetInstance(_settingsUtils);
         _generalSettings = _settingsRepository.SettingsConfig;
         _generalSettings.AddEnabledModuleChangeNotification(ModuleEnabledChangedOnSettingsPage);

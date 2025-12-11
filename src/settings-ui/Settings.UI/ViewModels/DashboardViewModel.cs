@@ -85,7 +85,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(generalSettingsConfig);
 
                     // Save settings to file
-                    new SettingsUtils().SaveSettings(generalSettingsConfig.ToJsonString());
+                    SettingsUtils.Default.SaveSettings(generalSettingsConfig.ToJsonString());
 
                     SendConfigMSG(outgoing.ToString());
                     SortModuleList();

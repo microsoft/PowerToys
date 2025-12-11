@@ -17,7 +17,7 @@ internal sealed class QuickAccessCoordinator : IQuickAccessCoordinator, IDisposa
 {
     private readonly MainWindow _window;
     private readonly QuickAccessLaunchContext _launchContext;
-    private readonly SettingsUtils _settingsUtils = new();
+    private readonly SettingsUtils _settingsUtils = SettingsUtils.Default;
     private readonly object _generalSettingsLock = new();
     private readonly object _ipcLock = new();
     private TwoWayPipeMessageIPCManaged? _ipcManager;
