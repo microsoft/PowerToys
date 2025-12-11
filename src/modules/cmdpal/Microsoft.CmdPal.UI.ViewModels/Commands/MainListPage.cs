@@ -162,11 +162,19 @@ public partial class MainListPage : DynamicListPage,
             }
             else
             {
+                var validScoredFallbacks = _scoredFallbackItems?
+                    .Where(s => !string.IsNullOrWhiteSpace(s.Item.Title))
+                    .ToList();
+
+                var validFallbacks = _fallbackItems?
+                    .Where(s => !string.IsNullOrWhiteSpace(s.Item.Title))
+                    .ToList();
+
                 return MainListPageResultFactory.Create(
                     _filteredItems,
-                    _scoredFallbackItems?.ToList(),
+                    validScoredFallbacks,
                     _filteredApps,
-                    _fallbackItems?.ToList(),
+                    validFallbacks,
                     _appResultLimit);
             }
         }
