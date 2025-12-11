@@ -97,6 +97,11 @@ namespace KeystrokeOverlayUI
         {
             InitializeComponent();
             SystemBackdrop = new MicaBackdrop() { Kind = MicaKind.BaseAlt };
+            ForceWindowOnTop();
+
+            Activated += (s, e) => ApplyOverlayStyles();
+            _zOrderEnforcer.Interval = TimeSpan.FromMilliseconds(500);
+            _zOrderEnforcer.Tick += (s, e) => ForceWindowOnTop();
 
             RootGrid.DataContext = ViewModel;
 
@@ -113,6 +118,8 @@ namespace KeystrokeOverlayUI
             ConfigureOverlayWindow();
             RunStartupSequence(isDraggable: ViewModel.IsDraggable);
 
+            ViewModel.HotkeyActionTriggered += OnHotkeyActionTriggered;
+
             ViewModel.PropertyChanged += (s, e) =>
             {
                 if (e.PropertyName == nameof(MainViewModel.IsDraggable))
@@ -120,12 +127,6 @@ namespace KeystrokeOverlayUI
                     RunStartupSequence(isDraggable: ViewModel.IsDraggable);
                 }
             };
-
-            Activated += (s, e) => ApplyOverlayStyles();
-            _zOrderEnforcer.Interval = TimeSpan.FromMilliseconds(500);
-            _zOrderEnforcer.Tick += (s, e) => ForceWindowOnTop();
-
-            ViewModel.HotkeyActionTriggered += OnHotkeyActionTriggered;
         }
 
         private void ApplyOverlayStyles()
@@ -167,6 +168,12 @@ namespace KeystrokeOverlayUI
             _startupCancellationSource = new CancellationTokenSource();
 
             var token = _startupCancellationSource.Token;
+
+            ForceWindowOnTop();
+            if (!_zOrderEnforcer.IsEnabled)
+            {
+                _zOrderEnforcer.Start();
+            }
 
             try
             {
