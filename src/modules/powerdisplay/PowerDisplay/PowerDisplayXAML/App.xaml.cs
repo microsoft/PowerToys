@@ -45,8 +45,7 @@ namespace PowerDisplay
             // Ensure types used in XAML are preserved for AOT compilation
             TypePreservation.PreserveTypes();
 
-            // Initialize Logger
-            Logger.InitializeLogger("\\PowerDisplay\\Logs");
+            // Note: Logger is already initialized in Program.cs before App constructor
 
             // Initialize PowerToys telemetry
             try
