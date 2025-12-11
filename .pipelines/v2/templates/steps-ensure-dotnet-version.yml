@@ -1,7 +1,7 @@
 parameters:
 - name: version
   type: string
-  default: "9.0"
+  default: "10.0"
 - name: sdk
   type: boolean
   default: false
