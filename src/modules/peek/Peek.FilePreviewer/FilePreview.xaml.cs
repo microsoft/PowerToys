@@ -34,6 +34,8 @@ namespace Peek.FilePreviewer
 
         public event EventHandler<PreviewSizeChangedArgs>? PreviewSizeChanged;
 
+        public event EventHandler<double>? MediaVolumeChanged;
+
         public static readonly DependencyProperty ItemProperty =
         DependencyProperty.Register(
             nameof(Item),
@@ -47,6 +49,13 @@ namespace Peek.FilePreviewer
                 typeof(double),
                 typeof(FilePreview),
                 new PropertyMetadata(false, async (d, e) => await ((FilePreview)d).OnScalingFactorPropertyChanged()));
+
+        public static readonly DependencyProperty MediaVolumeProperty =
+            DependencyProperty.Register(
+                nameof(MediaVolume),
+                typeof(double),
+                typeof(FilePreview),
+                new PropertyMetadata(1.0, (d, e) => ((FilePreview)d).OnMediaVolumePropertyChanged()));
 
         [ObservableProperty]
         private int numberOfFiles;
@@ -71,14 +80,41 @@ namespace Peek.FilePreviewer
 
         private CancellationTokenSource _cancellationTokenSource = new();
 
+        private bool _isSettingVolume;
+
         public FilePreview()
         {
             InitializeComponent();
+
+            // Subscribe to video player volume changes
+            VideoPreview.MediaPlayer.VolumeChanged += MediaPlayer_VolumeChanged;
+
+            // Subscribe to audio player volume changes
+            AudioPreview.VolumeChanged += AudioPreview_VolumeChanged;
         }
 
         public void Dispose()
         {
+            VideoPreview.MediaPlayer.VolumeChanged -= MediaPlayer_VolumeChanged;
+            AudioPreview.VolumeChanged -= AudioPreview_VolumeChanged;
             _cancellationTokenSource.Dispose();
+        }
+
+        private void MediaPlayer_VolumeChanged(Windows.Media.Playback.MediaPlayer sender, object args)
+        {
+            // Only notify if the change was made by user (not by us setting the volume)
+            if (!_isSettingVolume)
+            {
+                DispatcherQueue.TryEnqueue(() =>
+                {
+                    MediaVolumeChanged?.Invoke(this, sender.Volume);
+                });
+            }
+        }
+
+        private void AudioPreview_VolumeChanged(object? sender, double volume)
+        {
+            MediaVolumeChanged?.Invoke(this, volume);
         }
 
         private async void Previewer_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -137,6 +173,12 @@ namespace Peek.FilePreviewer
                     imagePreviewer.ScalingFactor = ScalingFactor;
                 }
             }
+        }
+
+        public double MediaVolume
+        {
+            get => (double)GetValue(MediaVolumeProperty);
+            set => SetValue(MediaVolumeProperty, value);
         }
 
         public bool MatchPreviewState(PreviewState? value, PreviewState stateToMatch)
@@ -216,6 +258,30 @@ namespace Peek.FilePreviewer
         private async Task OnScalingFactorPropertyChanged()
         {
             await UpdatePreviewSizeAsync(_cancellationTokenSource.Token);
+        }
+
+        private void OnMediaVolumePropertyChanged()
+        {
+            ApplyMediaVolume();
+        }
+
+        private void ApplyMediaVolume()
+        {
+            var volume = MediaVolume;
+            _isSettingVolume = true;
+            try
+            {
+                if (VideoPreview.MediaPlayer != null)
+                {
+                    VideoPreview.MediaPlayer.Volume = volume;
+                }
+
+                AudioPreview.MediaVolume = volume;
+            }
+            finally
+            {
+                _isSettingVolume = false;
+            }
         }
 
         private async Task UpdatePreviewSizeAsync(CancellationToken cancellationToken)
