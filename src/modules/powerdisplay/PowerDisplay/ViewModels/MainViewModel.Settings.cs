@@ -12,6 +12,7 @@ using PowerDisplay.Common.Models;
 using PowerDisplay.Common.Services;
 using PowerDisplay.Common.Utils;
 using PowerDisplay.Serialization;
+using PowerDisplay.Services;
 using PowerToys.Interop;
 
 namespace PowerDisplay.ViewModels;
