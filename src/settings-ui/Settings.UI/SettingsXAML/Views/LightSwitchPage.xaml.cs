@@ -356,10 +356,26 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                     VisualStateManager.GoToState(this, "SunsetToSunriseState", true);
                     this.SunriseModeChartState();
                     break;
+                case "FollowNightLight":
+                    VisualStateManager.GoToState(this, "FollowNightLightState", true);
+                    TimelineCard.Visibility = Visibility.Collapsed;
+                    break;
                 default:
                     VisualStateManager.GoToState(this, "OffState", true);
                     this.TimelineCard.Visibility = Visibility.Collapsed;
                     break;
+            }
+        }
+
+        private void OpenNightLightSettings_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                Helpers.StartProcessHelper.Start(Helpers.StartProcessHelper.NightLightSettings);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Error while trying to open the system night light settings", ex);
             }
         }
 

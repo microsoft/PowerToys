@@ -9,6 +9,7 @@ struct LightSwitchState
     bool isManualOverride = false;
     bool isSystemLightActive = false;
     bool isAppsLightActive = false;
+    bool isNightLightActive = false;
     int lastEvaluatedDay = -1;
     int lastTickMinutes = -1;
 
@@ -31,6 +32,9 @@ public:
 
     // Called when manual override is toggled (via shortcut or system change).
     void OnManualOverride();
+
+    // Called when night light changes in windows settings
+    void OnNightLightChange();
 
     // Initial sync at startup to align internal state with system theme
     void SyncInitialThemeState();
