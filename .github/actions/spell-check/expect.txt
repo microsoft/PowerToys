@@ -11,6 +11,7 @@ ACCESSDENIED
 ACCESSTOKEN
 acfs
 ACIE
+ACR
 AClient
 AColumn
 acrt
@@ -103,6 +104,7 @@ ATRIOX
 ATX
 aumid
 authenticode
+AUO
 AUTOBUDDY
 AUTOCHECKBOX
 AUTOHIDE
@@ -217,6 +219,7 @@ changecursor
 CHILDACTIVATE
 CHILDWINDOW
 CHOOSEFONT
+Chunghwa
 cidl
 CIELCh
 cim
@@ -240,6 +243,7 @@ CLSCTX
 clsids
 Clusion
 cmder
+CMN
 CMDNOTFOUNDMODULEINTERFACE
 cmdpal
 CMIC
@@ -318,6 +322,7 @@ csdevkit
 CSearch
 CSettings
 cso
+CSOT
 CSRW
 CStyle
 cswin
@@ -662,6 +667,7 @@ gwl
 GWLP
 GWLSTYLE
 hangeul
+Hann
 Hantai
 Hanzi
 Hardlines
@@ -759,6 +765,7 @@ HVal
 HValue
 Hvci
 hwb
+HWP
 HWHEEL
 HWINEVENTHOOK
 hwnd
@@ -815,6 +822,7 @@ INITTOLOGFONTSTRUCT
 INLINEPREFIX
 inlines
 Inno
+Innolux
 INPC
 inproc
 INPUTHARDWARE
@@ -856,6 +864,7 @@ istep
 ith
 ITHUMBNAIL
 IUI
+IVO
 IUWP
 IWIC
 jfif
@@ -908,6 +917,8 @@ LEFTTEXT
 LError
 LEVELID
 LExit
+Lenovo
+LGD
 lhwnd
 LIBFUZZER
 LIBID
@@ -1121,6 +1132,7 @@ MVVMTK
 MWBEx
 MYICON
 NAMECHANGE
+Nanjing
 Notavailable
 namespaceanddescendants
 nao
@@ -1267,6 +1279,7 @@ openrdp
 opensource
 openxmlformats
 OPTIMIZEFORINVOKE
+Optronics
 ORPHANEDDIALOGTITLE
 ORSCANS
 oss
@@ -1340,6 +1353,7 @@ pguid
 phbm
 phbmp
 phicon
+PHL
 Photoshop
 phwnd
 pici
@@ -1461,6 +1475,7 @@ pwsz
 pwtd
 QDC
 qdc
+QDS
 qit
 QITAB
 QITABENT
@@ -1845,6 +1860,7 @@ THH
 THICKFRAME
 Thickframe
 THISCOMPONENT
+Tianma
 throughs
 TILEDWINDOW
 TILLSON

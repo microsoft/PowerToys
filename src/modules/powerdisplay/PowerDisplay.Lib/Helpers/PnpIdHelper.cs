@@ -31,7 +31,7 @@ public static class PnpIdHelper
         { "IVO", "InfoVision" },
         { "LEN", "Lenovo" },
         { "LGD", "LG Display" },
-        { "NCP", "Najing CEC Panda" },
+        { "NCP", "Nanjing CEC Panda" },
         { "SAM", "Samsung" },
         { "SDC", "Samsung Display" },
         { "SEC", "Samsung Electronics" },
