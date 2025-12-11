@@ -89,6 +89,7 @@
     <PackageVersion Include="NLog.Extensions.Logging" Version="5.3.8" />
     <PackageVersion Include="NLog.Schema" Version="5.2.8" />
     <PackageVersion Include="OpenAI" Version="2.5.0" />
+    <PackageVersion Include="Polly.Core" Version="8.6.5" />
     <PackageVersion Include="ReverseMarkdown" Version="4.1.0" />
     <PackageVersion Include="RtfPipe" Version="2.0.7677.4303" />
     <PackageVersion Include="ScipBe.Common.Office.OneNote" Version="3.0.1" />

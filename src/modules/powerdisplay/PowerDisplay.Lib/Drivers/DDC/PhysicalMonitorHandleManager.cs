@@ -3,9 +3,10 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using ManagedCommon;
-using PowerDisplay.Common.Utils;
 using static PowerDisplay.Common.Drivers.PInvoke;
 
 namespace PowerDisplay.Common.Drivers.DDC
@@ -16,7 +17,8 @@ namespace PowerDisplay.Common.Drivers.DDC
     public partial class PhysicalMonitorHandleManager : IDisposable
     {
         // Mapping: monitorId -> physical handle (thread-safe)
-        private readonly LockedDictionary<string, IntPtr> _monitorIdToHandleMap = new();
+        private readonly ConcurrentDictionary<string, IntPtr> _monitorIdToHandleMap = new();
+        private readonly object _handleLock = new();
         private bool _disposed;
 
         /// <summary>
@@ -24,28 +26,28 @@ namespace PowerDisplay.Common.Drivers.DDC
         /// </summary>
         public void UpdateHandleMap(Dictionary<string, IntPtr> newHandleMap)
         {
-            _monitorIdToHandleMap.ExecuteWithLock(dict =>
+            // Lock to ensure atomic update (cleanup + replace)
+            lock (_handleLock)
             {
                 // Clean up unused handles before updating
-                CleanupUnusedHandles(dict, newHandleMap);
+                CleanupUnusedHandles(newHandleMap);
 
                 // Update the device key map
-                dict.Clear();
+                _monitorIdToHandleMap.Clear();
                 foreach (var kvp in newHandleMap)
                 {
-                    dict[kvp.Key] = kvp.Value;
+                    _monitorIdToHandleMap[kvp.Key] = kvp.Value;
                 }
-            });
+            }
         }
 
         /// <summary>
         /// Clean up handles that are no longer in use.
-        /// Called within ExecuteWithLock context with the internal dictionary.
-        /// Optimized to O(n) using HashSet lookup instead of O(n*m) nested loops.
+        /// Called within lock context. Optimized to O(n) using HashSet lookup.
         /// </summary>
-        private void CleanupUnusedHandles(Dictionary<string, IntPtr> currentHandles, Dictionary<string, IntPtr> newHandles)
+        private void CleanupUnusedHandles(Dictionary<string, IntPtr> newHandles)
         {
-            if (currentHandles.Count == 0)
+            if (_monitorIdToHandleMap.IsEmpty)
             {
                 return;
             }
@@ -54,14 +56,9 @@ namespace PowerDisplay.Common.Drivers.DDC
             var reusedHandles = new HashSet<IntPtr>(newHandles.Values);
 
             // Find handles to destroy: in old map but not reused (O(n) with O(1) lookup)
-            var handlesToDestroy = new List<IntPtr>();
-            foreach (var oldHandle in currentHandles.Values)
-            {
-                if (oldHandle != IntPtr.Zero && !reusedHandles.Contains(oldHandle))
-                {
-                    handlesToDestroy.Add(oldHandle);
-                }
-            }
+            var handlesToDestroy = _monitorIdToHandleMap.Values
+                .Where(h => h != IntPtr.Zero && !reusedHandles.Contains(h))
+                .ToList();
 
             // Destroy unused handles
             foreach (var handle in handlesToDestroy)
@@ -86,7 +83,7 @@ namespace PowerDisplay.Common.Drivers.DDC
             }
 
             // Release all physical monitor handles - get snapshot to avoid holding lock during cleanup
-            var handles = _monitorIdToHandleMap.GetValuesSnapshot();
+            var handles = _monitorIdToHandleMap.Values.ToList();
             foreach (var handle in handles)
             {
                 if (handle != IntPtr.Zero)

@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
@@ -23,7 +24,8 @@ namespace PowerDisplay.Common.Services
     public partial class MonitorStateManager : IDisposable
     {
         private readonly string _stateFilePath;
-        private readonly LockedDictionary<string, MonitorState> _states = new();
+        private readonly ConcurrentDictionary<string, MonitorState> _states = new();
+        private readonly object _statesLock = new();
         private readonly SimpleDebouncer _saveDebouncer;
 
         private bool _disposed;
@@ -83,39 +85,35 @@ namespace PowerDisplay.Common.Services
                     return;
                 }
 
-                bool shouldSave = _states.ExecuteWithLock(dict =>
+                var state = _states.GetOrAdd(hardwareId, _ => new MonitorState());
+
+                // Update the specific property
+                bool shouldSave = true;
+                switch (property)
                 {
-                    // Get or create state entry using HardwareId
-                    if (!dict.TryGetValue(hardwareId, out var state))
-                    {
-                        state = new MonitorState();
-                        dict[hardwareId] = state;
-                    }
+                    case "Brightness":
+                        state.Brightness = value;
+                        break;
+                    case "ColorTemperature":
+                        state.ColorTemperatureVcp = value;
+                        break;
+                    case "Contrast":
+                        state.Contrast = value;
+                        break;
+                    case "Volume":
+                        state.Volume = value;
+                        break;
+                    default:
+                        Logger.LogWarning($"Unknown property: {property}");
+                        shouldSave = false;
+                        break;
+                }
 
-                    // Update the specific property
-                    switch (property)
-                    {
-                        case "Brightness":
-                            state.Brightness = value;
-                            break;
-                        case "ColorTemperature":
-                            state.ColorTemperatureVcp = value;
-                            break;
-                        case "Contrast":
-                            state.Contrast = value;
-                            break;
-                        case "Volume":
-                            state.Volume = value;
-                            break;
-                        default:
-                            Logger.LogWarning($"Unknown property: {property}");
-                            return false;
-                    }
-
+                if (shouldSave)
+                {
                     // Mark dirty for flush on dispose
                     _isDirty = true;
-                    return true;
-                });
+                }
 
                 // Schedule debounced save (SimpleDebouncer handles cancellation of previous calls)
                 if (shouldSave)
@@ -141,7 +139,7 @@ namespace PowerDisplay.Common.Services
                 return null;
             }
 
-            if (_states.TryGetValue(hardwareId, out var state) && state != null)
+            if (_states.TryGetValue(hardwareId, out var state))
             {
                 return (state.Brightness, state.ColorTemperatureVcp, state.Contrast, state.Volume);
             }
@@ -167,23 +165,20 @@ namespace PowerDisplay.Common.Services
 
                 if (stateFile?.Monitors != null)
                 {
-                    _states.ExecuteWithLock(dict =>
+                    foreach (var kvp in stateFile.Monitors)
                     {
-                        foreach (var kvp in stateFile.Monitors)
-                        {
-                            var monitorKey = kvp.Key; // Should be HardwareId (e.g., "GSM5C6D")
-                            var entry = kvp.Value;
+                        var monitorKey = kvp.Key; // Should be HardwareId (e.g., "GSM5C6D")
+                        var entry = kvp.Value;
 
-                            dict[monitorKey] = new MonitorState
-                            {
-                                Brightness = entry.Brightness,
-                                ColorTemperatureVcp = entry.ColorTemperatureVcp,
-                                Contrast = entry.Contrast,
-                                Volume = entry.Volume,
-                                CapabilitiesRaw = entry.CapabilitiesRaw,
-                            };
-                        }
-                    });
+                        _states[monitorKey] = new MonitorState
+                        {
+                            Brightness = entry.Brightness,
+                            ColorTemperatureVcp = entry.ColorTemperatureVcp,
+                            Contrast = entry.Contrast,
+                            Volume = entry.Volume,
+                            CapabilitiesRaw = entry.CapabilitiesRaw,
+                        };
+                    }
 
                     Logger.LogInfo($"[State] Loaded state for {stateFile.Monitors.Count} monitors from {_stateFilePath}");
                     Logger.LogInfo($"[State] Monitor keys in state file: {string.Join(", ", stateFile.Monitors.Keys)}");
@@ -258,24 +253,21 @@ namespace PowerDisplay.Common.Services
                 LastUpdated = now,
             };
 
-            _states.ExecuteWithLock(dict =>
+            foreach (var kvp in _states)
             {
-                foreach (var kvp in dict)
-                {
-                    var monitorId = kvp.Key;
-                    var state = kvp.Value;
+                var monitorId = kvp.Key;
+                var state = kvp.Value;
 
-                    stateFile.Monitors[monitorId] = new MonitorStateEntry
-                    {
-                        Brightness = state.Brightness,
-                        ColorTemperatureVcp = state.ColorTemperatureVcp,
-                        Contrast = state.Contrast,
-                        Volume = state.Volume,
-                        CapabilitiesRaw = state.CapabilitiesRaw,
-                        LastUpdated = now,
-                    };
-                }
-            });
+                stateFile.Monitors[monitorId] = new MonitorStateEntry
+                {
+                    Brightness = state.Brightness,
+                    ColorTemperatureVcp = state.ColorTemperatureVcp,
+                    Contrast = state.Contrast,
+                    Volume = state.Volume,
+                    CapabilitiesRaw = state.CapabilitiesRaw,
+                    LastUpdated = now,
+                };
+            }
 
             var json = JsonSerializer.Serialize(stateFile, ProfileSerializationContext.Default.MonitorStateFile);
             return (json, stateFile.Monitors.Count);

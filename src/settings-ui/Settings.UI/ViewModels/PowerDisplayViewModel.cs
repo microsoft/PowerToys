@@ -565,7 +565,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private ObservableCollection<PowerDisplayProfile> _profiles = new ObservableCollection<PowerDisplayProfile>();
 
         /// <summary>
-        /// Collection of available profiles (for button display)
+        /// Gets or sets collection of available profiles (for button display)
         /// </summary>
         public ObservableCollection<PowerDisplayProfile> Profiles
         {
