@@ -33,8 +33,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <RuntimeHostConfigurationOption Include="MVVMTOOLKIT_ENABLE_INOTIFYPROPERTYCHANGING_SUPPORT"
-                                    Value="true" />
+    <RuntimeHostConfigurationOption Include="MVVMTOOLKIT_ENABLE_INOTIFYPROPERTYCHANGING_SUPPORT" Value="true" />
   </ItemGroup>
 
   <ItemGroup>
