@@ -91,17 +91,17 @@ public sealed class AllAppsViewModel : Observable
                 continue;
             }
 
-            var gpo = ModuleHelper.GetModuleGpoConfiguration(moduleType);
+            var gpo = Helpers.ModuleGpoHelper.GetModuleGpoConfiguration(moduleType);
             var isLocked = gpo is GpoRuleConfigured.Enabled or GpoRuleConfigured.Disabled;
-            var isEnabled = gpo == GpoRuleConfigured.Enabled || (!isLocked && ModuleHelper.GetIsModuleEnabled(_generalSettings, moduleType));
+            var isEnabled = gpo == GpoRuleConfigured.Enabled || (!isLocked && Microsoft.PowerToys.Settings.UI.Library.Helpers.ModuleHelper.GetIsModuleEnabled(_generalSettings, moduleType));
 
             var existingItem = FlyoutMenuItems.FirstOrDefault(x => x.Tag == moduleType);
 
             if (existingItem != null)
             {
-                existingItem.Label = _resourceLoader.GetString(ModuleHelper.GetModuleLabelResourceName(moduleType));
+                existingItem.Label = _resourceLoader.GetString(Microsoft.PowerToys.Settings.UI.Library.Helpers.ModuleHelper.GetModuleLabelResourceName(moduleType));
                 existingItem.IsLocked = isLocked;
-                existingItem.Icon = ModuleHelper.GetModuleTypeFluentIconName(moduleType);
+                existingItem.Icon = Microsoft.PowerToys.Settings.UI.Library.Helpers.ModuleHelper.GetModuleTypeFluentIconName(moduleType);
 
                 if (existingItem.IsEnabled != isEnabled)
                 {
@@ -117,11 +117,11 @@ public sealed class AllAppsViewModel : Observable
             {
                 desiredItems.Add(new FlyoutMenuItem
                 {
-                    Label = _resourceLoader.GetString(ModuleHelper.GetModuleLabelResourceName(moduleType)),
+                    Label = _resourceLoader.GetString(Microsoft.PowerToys.Settings.UI.Library.Helpers.ModuleHelper.GetModuleLabelResourceName(moduleType)),
                     IsEnabled = isEnabled,
                     IsLocked = isLocked,
                     Tag = moduleType,
-                    Icon = ModuleHelper.GetModuleTypeFluentIconName(moduleType),
+                    Icon = Microsoft.PowerToys.Settings.UI.Library.Helpers.ModuleHelper.GetModuleTypeFluentIconName(moduleType),
                     EnabledChangedCallback = EnabledChangedOnUI,
                     ClickCommand = new RelayCommand(() => _coordinator.OpenSettingsForModule(moduleType)),
                 });

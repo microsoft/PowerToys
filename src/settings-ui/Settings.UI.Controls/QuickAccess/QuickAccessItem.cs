@@ -3,66 +3,67 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Windows.Input;
+using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.UI.Xaml;
 
 namespace Microsoft.PowerToys.Settings.UI.Controls
 {
-    public sealed class QuickAccessItem : DependencyObject
+    public sealed class QuickAccessItem : Observable
     {
+        private string _title = string.Empty;
+
         public string Title
         {
-            get => (string)GetValue(TitleProperty);
-            set => SetValue(TitleProperty, value);
+            get => _title;
+            set => Set(ref _title, value);
         }
 
-        public static readonly DependencyProperty TitleProperty = DependencyProperty.Register(nameof(Title), typeof(string), typeof(QuickAccessItem), new PropertyMetadata(string.Empty));
+        private string _description = string.Empty;
 
         public string Description
         {
-            get => (string)GetValue(DescriptionProperty);
-            set => SetValue(DescriptionProperty, value);
+            get => _description;
+            set => Set(ref _description, value);
         }
 
-        public static readonly DependencyProperty DescriptionProperty = DependencyProperty.Register(nameof(Description), typeof(string), typeof(QuickAccessItem), new PropertyMetadata(string.Empty));
+        private string _icon = string.Empty;
 
         public string Icon
         {
-            get => (string)GetValue(IconProperty);
-            set => SetValue(IconProperty, value);
+            get => _icon;
+            set => Set(ref _icon, value);
         }
 
-        public static readonly DependencyProperty IconProperty = DependencyProperty.Register(nameof(Icon), typeof(string), typeof(QuickAccessItem), new PropertyMetadata(string.Empty));
+        private ICommand? _command;
 
-        public ICommand Command
+        public ICommand? Command
         {
-            get => (ICommand)GetValue(CommandProperty);
-            set => SetValue(CommandProperty, value);
+            get => _command;
+            set => Set(ref _command, value);
         }
 
-        public static readonly DependencyProperty CommandProperty = DependencyProperty.Register(nameof(Command), typeof(ICommand), typeof(QuickAccessItem), new PropertyMetadata(null));
+        private object? _commandParameter;
 
-        public object CommandParameter
+        public object? CommandParameter
         {
-            get => (object)GetValue(CommandParameterProperty);
-            set => SetValue(CommandParameterProperty, value);
+            get => _commandParameter;
+            set => Set(ref _commandParameter, value);
         }
 
-        public static readonly DependencyProperty CommandParameterProperty = DependencyProperty.Register(nameof(CommandParameter), typeof(object), typeof(QuickAccessItem), new PropertyMetadata(null));
+        private bool _visible = true;
 
         public bool Visible
         {
-            get => (bool)GetValue(VisibleProperty);
-            set => SetValue(VisibleProperty, value);
+            get => _visible;
+            set => Set(ref _visible, value);
         }
 
-        public static readonly DependencyProperty VisibleProperty = DependencyProperty.Register(nameof(Visible), typeof(bool), typeof(QuickAccessItem), new PropertyMetadata(true));
+        private object? _tag;
 
-        public object Tag
+        public object? Tag
         {
-            get => (object)GetValue(TagProperty);
-            set => SetValue(TagProperty, value);
+            get => _tag;
+            set => Set(ref _tag, value);
         }
-
-        public static readonly DependencyProperty TagProperty = DependencyProperty.Register(nameof(Tag), typeof(object), typeof(QuickAccessItem), new PropertyMetadata(null));
     }
 }

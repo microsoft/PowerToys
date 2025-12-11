@@ -24,4 +24,9 @@
     <PackageReference Include="WinUIEx" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\common\ManagedCommon\ManagedCommon.csproj" />
+    <ProjectReference Include="..\Settings.UI.Library\Settings.UI.Library.csproj" />
+  </ItemGroup>
+
 </Project>

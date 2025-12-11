@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -41,7 +41,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public ObservableCollection<DashboardListItem> ActionModules { get; set; } = new ObservableCollection<DashboardListItem>();
 
-        public ObservableCollection<QuickAccessItem> QuickAccessItems { get; set; } = new ObservableCollection<QuickAccessItem>();
+        public ObservableCollection<QuickAccessItem> QuickAccessItems => _quickAccessViewModel.Items;
+
+        private readonly QuickAccessViewModel _quickAccessViewModel;
 
         // Master list of module items that is sorted and projected into AllModules.
         private List<DashboardListItem> _moduleItems = new List<DashboardListItem>();
@@ -111,6 +113,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             // set the callback functions value to handle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
 
+            _quickAccessViewModel = new QuickAccessViewModel(
+                _settingsRepository,
+                new DashboardLauncher(App.IsElevated),
+                moduleType => Helpers.ModuleGpoHelper.GetModuleGpoConfiguration(moduleType) == global::PowerToys.GPOWrapper.GpoRuleConfigured.Disabled,
+                resourceLoader);
+
             BuildModuleList();
             SortModuleList();
             RefreshShortcutModules();
@@ -170,7 +178,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     continue;
                 }
 
-                GpoRuleConfigured gpo = ModuleHelper.GetModuleGpoConfiguration(moduleType);
+                GpoRuleConfigured gpo = ModuleGpoHelper.GetModuleGpoConfiguration(moduleType);
                 var newItem = new DashboardListItem()
                 {
                     Tag = moduleType,
@@ -236,7 +244,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             foreach (var item in _moduleItems)
             {
-                GpoRuleConfigured gpo = ModuleHelper.GetModuleGpoConfiguration(item.Tag);
+                GpoRuleConfigured gpo = ModuleGpoHelper.GetModuleGpoConfiguration(item.Tag);
 
                 // GPO can force-enable (Enabled) or force-disable (Disabled) a module.
                 // If Enabled: module is on and the user cannot disable it.
@@ -346,7 +354,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             ShortcutModules.Clear();
             ActionModules.Clear();
-            QuickAccessItems.Clear();
 
             foreach (var x in AllModules.Where(x => x.IsEnabled))
             {
@@ -391,18 +398,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
                     ActionModules.Add(newItem);
                     newItem.EnabledChangedCallback = x.EnabledChangedCallback;
-
-                    foreach (DashboardModuleButtonItem item in filteredItems)
-                    {
-                        QuickAccessItems.Add(new QuickAccessItem
-                        {
-                            Title = item.ButtonTitle,
-                            Description = item.ButtonDescription,
-                            Icon = item.ButtonGlyph,
-                            Command = new RelayCommand(() => item.ButtonClickHandler?.Invoke(null, null)),
-                            Tag = x.Tag,
-                        });
-                    }
                 }
             }
         }
@@ -744,7 +739,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             if (sender is ModuleType moduleType)
             {
-                NavigationService.Navigate(ModuleHelper.GetModulePageType(moduleType));
+                NavigationService.Navigate(ModuleGpoHelper.GetModulePageType(moduleType));
             }
         }
 
