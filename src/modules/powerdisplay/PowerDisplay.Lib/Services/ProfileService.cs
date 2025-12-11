@@ -17,20 +17,6 @@ namespace PowerDisplay.Common.Services
     /// Provides unified access to profile data for PowerDisplay, Settings UI, and LightSwitch modules.
     /// Thread-safe and AOT-compatible.
     /// </summary>
-    /// <remarks>
-    /// <para><b>Design Note:</b> This class provides both static and instance-based access patterns:</para>
-    /// <list type="bullet">
-    ///   <item><description>Static methods: Direct access for backward compatibility with existing code. Thread-safe with internal locking.</description></item>
-    ///   <item><description>Instance methods (via <see cref="IProfileService"/>): For dependency injection consumers. Delegates to static methods internally.</description></item>
-    /// </list>
-    /// <para><b>Usage Guidelines:</b></para>
-    /// <list type="bullet">
-    ///   <item><description>New code should prefer DI: <c>serviceProvider.GetService&lt;IProfileService&gt;()</c></description></item>
-    ///   <item><description>Or use the singleton: <c>ProfileService.Instance.LoadProfiles()</c></description></item>
-    ///   <item><description>Static methods remain available for backward compatibility</description></item>
-    /// </list>
-    /// <para>All access patterns are thread-safe and share the same underlying lock.</para>
-    /// </remarks>
     public class ProfileService : IProfileService
     {
         private const string LogPrefix = "[ProfileService]";
