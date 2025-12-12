@@ -40,7 +40,7 @@ namespace PowerDisplay.Helpers
 
         // P/Invoke declarations (64-bit only - PowerToys only builds for x64/ARM64)
         [LibraryImport("user32.dll", EntryPoint = "GetWindowLongPtrW")]
-        private static partial nint GetWindowLong(nint hWnd, int nIndex);
+        private static partial nint GetWindowLongPtr(nint hWnd, int nIndex);
 
         [LibraryImport("user32.dll", EntryPoint = "SetWindowLongPtrW")]
         private static partial nint SetWindowLong(nint hWnd, int nIndex, nint dwNewLong);
@@ -78,7 +78,7 @@ namespace PowerDisplay.Helpers
         public static void DisableWindowMovingAndResizing(nint hWnd)
         {
             // Get current window style
-            nint style = GetWindowLong(hWnd, GwlStyle);
+            nint style = GetWindowLongPtr(hWnd, GwlStyle);
 
             // Remove resizable borders, title bar, and system menu
             style &= ~WsThickframe;
@@ -91,7 +91,7 @@ namespace PowerDisplay.Helpers
             _ = SetWindowLong(hWnd, GwlStyle, style);
 
             // Get extended style and remove related borders
-            nint exStyle = GetWindowLong(hWnd, GwlExstyle);
+            nint exStyle = GetWindowLongPtr(hWnd, GwlExstyle);
             exStyle &= ~WsExDlgmodalframe;
             exStyle &= ~WsExWindowedge;
             exStyle &= ~WsExClientedge;
@@ -138,7 +138,7 @@ namespace PowerDisplay.Helpers
         public static void HideFromTaskbar(nint hWnd)
         {
             // Get current extended style
-            nint exStyle = GetWindowLong(hWnd, GwlExstyle);
+            nint exStyle = GetWindowLongPtr(hWnd, GwlExstyle);
 
             // Add WS_EX_TOOLWINDOW style to hide window from taskbar
             exStyle |= WsExToolwindow;
