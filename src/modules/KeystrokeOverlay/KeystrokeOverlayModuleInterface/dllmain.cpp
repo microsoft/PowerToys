@@ -293,8 +293,7 @@ public:
     // Return the configured status for the gpo policy for the module
     virtual powertoys_gpo::gpo_rule_configured_t gpo_policy_enabled_configuration() override
     {
-        return powertoys_gpo::gpo_rule_configured_t::gpo_rule_configured_not_configured;
-        // return powertoys_gpo::getConfiguredKeystrokeOverlayEnabledValue();
+        return powertoys_gpo::getConfiguredKeystrokeOverlayEnabledValue();
     }
 
     // Called by the runner to pass the updated settings values as a serialized JSON.
@@ -306,7 +305,7 @@ public:
             PowerToysSettings::PowerToyValues values =
                 PowerToysSettings::PowerToyValues::from_json_string(config, get_key());
 
-            if (auto v = values.get_bool_value(L"enable_draggable_overlay")) {
+            if (auto v = values.get_bool_value(L"enable_draggable_overlay")) {  
                 g_settings.is_draggable = *v;
             }
             if (auto v = values.get_int_value(L"overlay_timeout")) {

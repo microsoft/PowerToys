@@ -5660,7 +5660,7 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
     <value>Keystroke Overlay</value>
   </data>
   <data name="KeystrokeOverlay.ModuleDescription" xml:space="preserve">
-    <value>Displays your keystrokes, shortcuts, and mouse clicks on-screen in real-time. This is perfect for screen recordings, presentations, or tutorials where you want to show your audience exactly what you are doing.</value>
+    <value>Displays your keystrokes and shortcuts on-screen in real-time. This is perfect for screen recordings, presentations, or tutorials where you want to show your audience exactly what you are doing.</value>
   </data>
   <data name="KeystrokeOverlay_Appearance.Description" xml:space="preserve">
     <value>This is a preview of how the overlay will look like on your screen.</value>
