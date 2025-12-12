@@ -52,6 +52,7 @@ public:
     void SaveData();
     void AdjustWorkAreaIds(const std::vector<FancyZonesDataTypes::MonitorId>& ids);
 
+    static std::wstring GetProcessPathWithAUMID(HWND window) noexcept;
     bool SetAppLastZones(HWND window, const FancyZonesDataTypes::WorkAreaId& workAreaId, const GUID& layoutId, const ZoneIndexSet& zoneIndexSet);
     bool RemoveAppLastZone(HWND window, const FancyZonesDataTypes::WorkAreaId& workAreaId, const GUID& layoutId);
 
