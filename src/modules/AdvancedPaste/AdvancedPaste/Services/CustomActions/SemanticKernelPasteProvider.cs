@@ -11,10 +11,8 @@ using AdvancedPaste.Models;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
-using Microsoft.SemanticKernel.Connectors.Amazon;
 using Microsoft.SemanticKernel.Connectors.AzureAIInference;
 using Microsoft.SemanticKernel.Connectors.Google;
-using Microsoft.SemanticKernel.Connectors.HuggingFace;
 using Microsoft.SemanticKernel.Connectors.MistralAI;
 using Microsoft.SemanticKernel.Connectors.Ollama;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
@@ -29,11 +27,8 @@ namespace AdvancedPaste.Services.CustomActions
             AIServiceType.AzureOpenAI,
             AIServiceType.Mistral,
             AIServiceType.Google,
-            AIServiceType.HuggingFace,
             AIServiceType.AzureAIInference,
             AIServiceType.Ollama,
-            AIServiceType.Anthropic,
-            AIServiceType.AmazonBedrock,
         };
 
         public static PasteAIProviderRegistration Registration { get; } = new(SupportedTypes, config => new SemanticKernelPasteProvider(config));
@@ -142,20 +137,11 @@ namespace AdvancedPaste.Services.CustomActions
                 case AIServiceType.Google:
                     kernelBuilder.AddGoogleAIGeminiChatCompletion(_config.Model, apiKey: apiKey);
                     break;
-                case AIServiceType.HuggingFace:
-                    kernelBuilder.AddHuggingFaceChatCompletion(_config.Model, apiKey: apiKey);
-                    break;
                 case AIServiceType.AzureAIInference:
                     kernelBuilder.AddAzureAIInferenceChatCompletion(_config.Model, apiKey: apiKey, endpoint: new Uri(endpoint));
                     break;
                 case AIServiceType.Ollama:
                     kernelBuilder.AddOllamaChatCompletion(_config.Model, endpoint: new Uri(endpoint));
-                    break;
-                case AIServiceType.Anthropic:
-                    kernelBuilder.AddBedrockChatCompletionService(_config.Model);
-                    break;
-                case AIServiceType.AmazonBedrock:
-                    kernelBuilder.AddBedrockChatCompletionService(_config.Model);
                     break;
 
                 default:
@@ -171,8 +157,6 @@ namespace AdvancedPaste.Services.CustomActions
             {
                 AIServiceType.OpenAI or AIServiceType.AzureOpenAI => new OpenAIPromptExecutionSettings
                 {
-                    Temperature = 0.01,
-                    MaxTokens = 2000,
                     FunctionChoiceBehavior = null,
                 },
                 _ => new PromptExecutionSettings(),
@@ -184,8 +168,6 @@ namespace AdvancedPaste.Services.CustomActions
             return serviceType switch
             {
                 AIServiceType.Ollama => false,
-                AIServiceType.Anthropic => false,
-                AIServiceType.AmazonBedrock => false,
                 _ => true,
             };
         }

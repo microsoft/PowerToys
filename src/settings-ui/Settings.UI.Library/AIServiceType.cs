@@ -17,10 +17,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         FoundryLocal,
         Mistral,
         Google,
-        HuggingFace,
         AzureAIInference,
         Ollama,
-        Anthropic,
-        AmazonBedrock,
     }
 }

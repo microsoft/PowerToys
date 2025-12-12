@@ -10,13 +10,11 @@ public interface ILanguageModelProvider
 {
     string Name { get; }
 
-    string UrlPrefix { get; }
-
     string ProviderDescription { get; }
 
-    Task<IEnumerable<ModelDetails>> GetModelsAsync(bool ignoreCached = false, CancellationToken cancelationToken = default);
+    Task<IEnumerable<ModelDetails>> GetModelsAsync(CancellationToken cancelationToken = default);
 
-    IChatClient? GetIChatClient(string url);
+    IChatClient? GetIChatClient(string modelId);
 
     string GetIChatClientString(string url);
 }

@@ -34,7 +34,7 @@ namespace UITests_FancyZones
             Session.KillAllProcessesByName("PowerToys.FancyZonesEditor");
             AppZoneHistory.DeleteFile();
 
-            this.RestartScopeExe();
+            RestartScopeExe("Hosts");
             FancyZonesEditorHelper.Files.Restore();
 
             // Set a custom layout with 1 subzones and clear app zone history
@@ -137,7 +137,7 @@ namespace UITests_FancyZones
             Task.Delay(500).Wait(); // Optional: Wait for a moment to ensure window switch
 
             activeWindowTitle = ZoneSwitchHelper.GetActiveWindowTitle();
-            Assert.AreNotEqual(preWindow, activeWindowTitle);
+            Assert.AreEqual(postWindow, activeWindowTitle);
 
             Clean(); // close the windows
         }
@@ -151,9 +151,23 @@ namespace UITests_FancyZones
 
             var rect = Session.GetMainWindowRect();
             var (targetX, targetY) = ZoneSwitchHelper.GetScreenMargins(rect, 4);
-            var offSet = ZoneSwitchHelper.GetOffset(hostsView, targetX, targetY);
 
-            DragWithShift(hostsView, offSet);
+            // Snap first window (Hosts) to left zone using shift+drag with direct mouse movement
+            var hostsRect = hostsView.Rect ?? throw new InvalidOperationException("Failed to get hosts window rect");
+            int hostsStartX = hostsRect.Left + 70;
+            int hostsStartY = hostsRect.Top + 25;
+
+            // For a 2-column layout, left zone is at approximately 1/4 of screen width
+            int hostsEndX = rect.Left + (3 * (rect.Right - rect.Left) / 4);
+            int hostsEndY = rect.Top + ((rect.Bottom - rect.Top) / 2);
+
+            Session.MoveMouseTo(hostsStartX, hostsStartY);
+            Session.PerformMouseAction(MouseActionType.LeftDown);
+            Session.PressKey(Key.Shift);
+            Session.MoveMouseTo(hostsEndX, hostsEndY);
+            Session.PerformMouseAction(MouseActionType.LeftUp);
+            Session.ReleaseKey(Key.Shift);
+            Task.Delay(500).Wait(); // Wait for snap to complete
 
             string preWindow = ZoneSwitchHelper.GetActiveWindowTitle();
 
@@ -163,27 +177,32 @@ namespace UITests_FancyZones
             Pane settingsView = Find<Pane>(By.Name("Non Client Input Sink Window"));
             settingsView.DoubleClick(); // maximize the window
 
-            DragWithShift(settingsView, offSet);
+            var windowRect = Session.GetMainWindowRect();
+            var settingsRect = settingsView.Rect ?? throw new InvalidOperationException("Failed to get settings window rect");
+            int settingsStartX = settingsRect.Left + 70;
+            int settingsStartY = settingsRect.Top + 25;
+
+            // For a 2-column layout, right zone is at approximately 3/4 of screen width
+            int settingsEndX = windowRect.Left + (3 * (windowRect.Right - windowRect.Left) / 4);
+            int settingsEndY = windowRect.Top + ((windowRect.Bottom - windowRect.Top) / 2);
+
+            Session.MoveMouseTo(settingsStartX, settingsStartY);
+            Session.PerformMouseAction(MouseActionType.LeftDown);
+            Session.PressKey(Key.Shift);
+            Session.MoveMouseTo(settingsEndX, settingsEndY);
+            Session.PerformMouseAction(MouseActionType.LeftUp);
+            Session.ReleaseKey(Key.Shift);
+            Task.Delay(500).Wait(); // Wait for snap to complete
 
             string appZoneHistoryJson = AppZoneHistory.GetData();
 
-            string? zoneIndexOfFileWindow = ZoneSwitchHelper.GetZoneIndexSetByAppName("PowerToys.Hosts.exe", appZoneHistoryJson); // explorer.exe
+            string? zoneIndexOfFileWindow = ZoneSwitchHelper.GetZoneIndexSetByAppName("PowerToys.Hosts.exe", appZoneHistoryJson);
             string? zoneIndexOfPowertoys = ZoneSwitchHelper.GetZoneIndexSetByAppName("PowerToys.Settings.exe", appZoneHistoryJson);
 
             // check the AppZoneHistory layout is set and in the same zone
             Assert.AreEqual(zoneIndexOfPowertoys, zoneIndexOfFileWindow);
 
             return (preWindow, powertoysWindowName);
-        }
-
-        private void DragWithShift(Pane settingsView, (int Dx, int Dy) offSet)
-        {
-            Session.PressKey(Key.Shift);
-            settingsView.DragAndHold(offSet.Dx, offSet.Dy);
-            Task.Delay(1000).Wait(); // Wait for drag to start (optional)
-            settingsView.ReleaseDrag();
-            Task.Delay(1000).Wait(); // Wait after drag (optional)
-            Session.ReleaseKey(Key.Shift);
         }
 
         private static readonly CustomLayouts.CustomLayoutListWrapper CustomLayoutsList = new CustomLayouts.CustomLayoutListWrapper
@@ -253,11 +272,14 @@ namespace UITests_FancyZones
             this.Scroll(9, "Down"); // Pull the setting page up to make sure the setting is visible
             bool switchWindowEnable = TestContext.TestName == "TestSwitchShortCutDisable" ? false : true;
 
-            this.Find<ToggleSwitch>("Switch between windows in the current zone").Toggle(switchWindowEnable);
+            this.Find<ToggleSwitch>("FancyZonesWindowSwitchingToggle").Toggle(switchWindowEnable);
 
-            Task.Delay(500).Wait(); // Wait for the setting to be applied
-            this.Scroll(9, "Up"); // Pull the setting page down to make sure the setting is visible
-            this.Find<Button>("Launch layout editor").Click(false, 500, 5000);
+            // Go back and forth to make sure settings applied
+            this.Find<NavigationViewItem>("Workspaces").Click();
+            Task.Delay(200).Wait();
+            this.Find<NavigationViewItem>("FancyZones").Click();
+
+            this.Find<Button>("Open layout editor").Click(false, 500, 5000);
             this.Session.Attach(PowerToysModule.FancyZone);
 
             // pipeline machine may have an unstable delays, causing the custom layout to be unavailable as we set. then A retry is required.
@@ -273,7 +295,7 @@ namespace UITests_FancyZones
                 this.Find<Microsoft.PowerToys.UITest.Button>("Close").Click();
                 this.Session.Attach(PowerToysModule.PowerToysSettings);
                 SetupCustomLayouts();
-                this.Find<Microsoft.PowerToys.UITest.Button>("Launch layout editor").Click(false, 5000, 5000);
+                this.Find<Microsoft.PowerToys.UITest.Button>("Open layout editor").Click(false, 5000, 5000);
                 this.Session.Attach(PowerToysModule.FancyZone);
 
                 // customLayoutData = FancyZonesEditorHelper.Files.CustomLayoutsIOHelper.GetData();
@@ -301,11 +323,11 @@ namespace UITests_FancyZones
             Task.Delay(1000).Wait();
 
             this.Find<ToggleSwitch>("Enable Hosts File Editor").Toggle(true);
-            this.Find<ToggleSwitch>("Launch as administrator").Toggle(launchAsAdmin);
+            this.Find<ToggleSwitch>("Open as administrator").Toggle(launchAsAdmin);
             this.Find<ToggleSwitch>("Show a warning at startup").Toggle(showWarning);
 
             // launch Hosts File Editor
-            this.Find<Button>("Launch Hosts File Editor").Click();
+            this.Find<Button>("Open Hosts File Editor").Click();
 
             Task.Delay(5000).Wait();
         }

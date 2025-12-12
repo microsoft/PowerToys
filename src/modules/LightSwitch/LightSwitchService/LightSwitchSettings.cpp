@@ -2,10 +2,8 @@
 #include <common/utils/json.h>
 #include <common/SettingsAPI/settings_helpers.h>
 #include "SettingsObserver.h"
-#include "ThemeHelper.h"
 #include <filesystem>
 #include <fstream>
-#include <WinHookEventIDs.h>
 #include <logger.h>
 
 using namespace std;
@@ -69,7 +67,6 @@ void LightSwitchSettings::InitFileWatcher()
                     try
                     {
                         LoadSettings();
-                        ApplyThemeIfNecessary();
                         SetEvent(m_settingsChangedEvent);
                     }
                     catch (const std::exception& e)
@@ -248,50 +245,5 @@ void LightSwitchSettings::LoadSettings()
     catch (...)
     {
         // Keeps defaults if load fails
-    }
-}
-
-void LightSwitchSettings::ApplyThemeIfNecessary()
-{
-    std::lock_guard<std::mutex> guard(m_settingsMutex);
-
-    SYSTEMTIME st;
-    GetLocalTime(&st);
-    int nowMinutes = st.wHour * 60 + st.wMinute;
-
-    bool shouldBeLight = false;
-    if (m_settings.lightTime < m_settings.darkTime)
-        shouldBeLight = (nowMinutes >= m_settings.lightTime && nowMinutes < m_settings.darkTime);
-    else
-        shouldBeLight = (nowMinutes >= m_settings.lightTime || nowMinutes < m_settings.darkTime);
-
-    bool isSystemCurrentlyLight = GetCurrentSystemTheme();
-    bool isAppsCurrentlyLight = GetCurrentAppsTheme();
-
-    if (shouldBeLight)
-    {
-        if (m_settings.changeSystem && !isSystemCurrentlyLight)
-        {
-            SetSystemTheme(true);
-            Logger::info(L"[LightSwitchService] Changing system theme to light mode.");
-        }
-        if (m_settings.changeApps && !isAppsCurrentlyLight)
-        {
-            SetAppsTheme(true);
-            Logger::info(L"[LightSwitchService] Changing apps theme to light mode.");
-        }
-    }
-    else
-    {
-        if (m_settings.changeSystem && isSystemCurrentlyLight)
-        {
-            SetSystemTheme(false);
-            Logger::info(L"[LightSwitchService] Changing system theme to dark mode.");
-        }
-        if (m_settings.changeApps && isAppsCurrentlyLight)
-        {
-            SetAppsTheme(false);
-            Logger::info(L"[LightSwitchService] Changing apps theme to dark mode.");
-        }
     }
 }

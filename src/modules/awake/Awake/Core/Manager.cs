@@ -60,7 +60,7 @@ namespace Awake.Core
         {
             _tokenSource = new CancellationTokenSource();
             _stateQueue = [];
-            ModuleSettings = new SettingsUtils();
+            ModuleSettings = SettingsUtils.Default;
         }
 
         internal static void StartMonitor()
@@ -350,7 +350,7 @@ namespace Awake.Core
                             TrayHelper.TimedIcon,
                             TrayIconAction.Update);
                     },
-                    _ => HandleTimerCompletion("timed"),
+                    () => HandleTimerCompletion("timed"),
                     _tokenSource.Token);
         }
 

@@ -83,32 +83,39 @@ namespace AdvancedPaste.Services.CustomActions
                     SystemPrompt = systemPrompt,
                 };
 
+                var operationStart = DateTime.UtcNow;
+
                 var providerContent = await provider.ProcessPasteAsync(
                     request,
                     cancellationToken,
                     progress);
 
+                var durationMs = (int)Math.Round((DateTime.UtcNow - operationStart).TotalMilliseconds);
+
                 var usage = request.Usage;
                 var content = providerContent ?? string.Empty;
 
-                // Log endpoint usage
-                var endpointEvent = new AdvancedPasteEndpointUsageEvent(providerConfig.ProviderType);
+                // Log endpoint usage (custom action pipeline is not the advanced SK flow)
+                var endpointEvent = new AdvancedPasteEndpointUsageEvent(providerConfig.ProviderType, providerConfig.Model ?? string.Empty, isAdvanced: false, durationMs: durationMs);
                 PowerToysTelemetry.Log.WriteEvent(endpointEvent);
 
-                Logger.LogDebug($"{nameof(CustomActionTransformService)}.{nameof(TransformAsync)} complete; ModelName={providerConfig.Model ?? string.Empty}, PromptTokens={usage.PromptTokens}, CompletionTokens={usage.CompletionTokens}");
+                Logger.LogDebug($"{nameof(CustomActionTransformService)}.{nameof(TransformAsync)} complete; ModelName={providerConfig.Model ?? string.Empty}, PromptTokens={usage.PromptTokens}, CompletionTokens={usage.CompletionTokens}, DurationMs={durationMs}");
 
                 return new CustomActionTransformResult(content, usage);
             }
             catch (Exception ex)
             {
                 Logger.LogError($"{nameof(CustomActionTransformService)}.{nameof(TransformAsync)} failed", ex);
+                var statusCode = ExtractStatusCode(ex);
+                var modelName = providerConfig.Model ?? string.Empty;
+                AdvancedPasteCustomActionErrorEvent errorEvent = new(providerConfig.ProviderType, modelName, statusCode, ex is PasteActionModeratedException ? PasteActionModeratedException.ErrorDescription : ex.Message);
+                PowerToysTelemetry.Log.WriteEvent(errorEvent);
 
                 if (ex is PasteActionException or OperationCanceledException)
                 {
                     throw;
                 }
 
-                var statusCode = ExtractStatusCode(ex);
                 var failureMessage = providerConfig.ProviderType switch
                 {
                     AIServiceType.OpenAI or AIServiceType.AzureOpenAI => ErrorHelpers.TranslateErrorText(statusCode),
@@ -181,8 +188,6 @@ namespace AdvancedPaste.Services.CustomActions
             {
                 AIServiceType.Onnx => false,
                 AIServiceType.Ollama => false,
-                AIServiceType.Anthropic => false,
-                AIServiceType.AmazonBedrock => false,
                 _ => true,
             };
         }

@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using AdvancedPaste.Models;
 using Microsoft.UI.Xaml.Media.Imaging;
@@ -10,8 +11,11 @@ using Windows.ApplicationModel.DataTransfer;
 
 namespace AdvancedPaste.Helpers
 {
-    internal static class ClipboardItemHelper
+    internal static partial class ClipboardItemHelper
     {
+        // Compiled regex for better performance when checking multiple clipboard items
+        private static readonly Regex HexColorRegex = HexColorCompiledRegex();
+
         /// <summary>
         /// Creates a ClipboardItem from current clipboard data.
         /// </summary>
@@ -56,6 +60,31 @@ namespace AdvancedPaste.Helpers
         }
 
         /// <summary>
+        /// Checks if text is a valid RGB hex color (e.g., #FFBFAB or #fff).
+        /// </summary>
+        public static bool IsRgbHexColor(string text)
+        {
+            if (text == null)
+            {
+                return false;
+            }
+
+            string trimmedText = text.Trim();
+            if (trimmedText.Length > 7)
+            {
+                return false;
+            }
+
+            if (string.IsNullOrWhiteSpace(trimmedText))
+            {
+                return false;
+            }
+
+            // Match #RGB or #RRGGBB format (case-insensitive)
+            return HexColorRegex.IsMatch(trimmedText);
+        }
+
+        /// <summary>
         /// Creates a BitmapImage from clipboard data.
         /// </summary>
         private static async Task<BitmapImage> TryCreateBitmapImageAsync(DataPackageView clipboardData)
@@ -80,5 +109,8 @@ namespace AdvancedPaste.Helpers
 
             return null;
         }
+
+        [GeneratedRegex(@"^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$")]
+        private static partial Regex HexColorCompiledRegex();
     }
 }

@@ -24,13 +24,13 @@
     <ApplicationIcon>Resources\ImageResizer.ico</ApplicationIcon>
   </PropertyGroup>
 
-  <PropertyGroup>
+  <!-- <PropertyGroup>
     <ApplicationManifest>ImageResizerUI.dev.manifest</ApplicationManifest>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(CIBuild)'=='true'">
     <ApplicationManifest>ImageResizerUI.prod.manifest</ApplicationManifest>
-  </PropertyGroup>
+  </PropertyGroup> -->
 
   <ItemGroup>
     <EmbeddedResource Update="Properties\Resources.resx">

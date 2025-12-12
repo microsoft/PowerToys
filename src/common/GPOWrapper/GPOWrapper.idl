@@ -64,7 +64,6 @@ namespace PowerToys
             static GpoRuleConfigured GetAllowedAdvancedPasteAzureAIInferenceValue();
             static GpoRuleConfigured GetAllowedAdvancedPasteMistralValue();
             static GpoRuleConfigured GetAllowedAdvancedPasteGoogleValue();
-            static GpoRuleConfigured GetAllowedAdvancedPasteAnthropicValue();
             static GpoRuleConfigured GetAllowedAdvancedPasteOllamaValue();
             static GpoRuleConfigured GetAllowedAdvancedPasteFoundryLocalValue();
             static GpoRuleConfigured GetConfiguredNewPlusEnabledValue();

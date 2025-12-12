@@ -51,7 +51,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 
         public ObservableCollection<OobePowerToysModule> Modules { get; }
 
-        private static ISettingsUtils settingsUtils = new SettingsUtils();
+        private static ISettingsUtils settingsUtils = SettingsUtils.Default;
 
         /* NOTE: Experimentation for OOBE is currently turned off on server side. Keeping this code in a comment to allow future experiments.
           private bool ExperimentationToggleSwitchEnabled { get; set; } = true;
