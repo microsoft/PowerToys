@@ -463,14 +463,13 @@ public partial class MainViewModel
     /// </summary>
     private Microsoft.PowerToys.Settings.UI.Library.MonitorInfo CreateMonitorInfo(MonitorViewModel vm)
     {
-        var monitorInfo = new Microsoft.PowerToys.Settings.UI.Library.MonitorInfo(
-            name: vm.Name,
-            internalName: vm.Id,
-            hardwareId: string.Empty, // Deprecated, use InternalName (Id) instead
-            communicationMethod: vm.CommunicationMethod,
-            currentBrightness: vm.Brightness,
-            colorTemperatureVcp: vm.ColorTemperature)
+        var monitorInfo = new Microsoft.PowerToys.Settings.UI.Library.MonitorInfo
         {
+            Name = vm.Name,
+            InternalName = vm.Id,
+            CommunicationMethod = vm.CommunicationMethod,
+            CurrentBrightness = vm.Brightness,
+            ColorTemperatureVcp = vm.ColorTemperature,
             CapabilitiesRaw = vm.CapabilitiesRaw,
             VcpCodes = vm.VcpCapabilitiesInfo?.GetVcpCodesAsHexStrings() ?? new List<string>(),
             VcpCodesFormatted = vm.VcpCapabilitiesInfo?.GetSortedVcpCodes()
