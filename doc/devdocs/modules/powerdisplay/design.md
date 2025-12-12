@@ -4,15 +4,37 @@
 
 1. [Background](#background)
 2. [Problem Statement](#problem-statement)
-3. [Goals and Non-Goals](#goals-and-non-goals)
+3. [Goals](#goals)
 4. [Technical Terminology](#technical-terminology)
+   - [DDC/CI (Display Data Channel Command Interface)](#ddcci-display-data-channel-command-interface)
+   - [WMI (Windows Management Instrumentation)](#wmi-windows-management-instrumentation)
 5. [Architecture Overview](#architecture-overview)
+   - [High-Level Component Architecture](#high-level-component-architecture)
+   - [Project Structure](#project-structure)
 6. [Component Design](#component-design)
+   - [PowerDisplay Module Internal Structure](#powerdisplay-module-internal-structure)
+   - [DisplayChangeWatcher - Monitor Hot-Plug Detection](#displaychangewatcher---monitor-hot-plug-detection)
+   - [DDC/CI and WMI Interaction Architecture](#ddcci-and-wmi-interaction-architecture)
+   - [IMonitorController Interface Methods](#imonitorcontroller-interface-methods)
+   - [Why WmiLight Instead of System.Management](#why-wmilight-instead-of-systemmanagement)
+   - [Why We Need an MCCS Capabilities String Parser](#why-we-need-an-mccs-capabilities-string-parser)
    - [Monitor Identification: Handles, IDs, and Names](#monitor-identification-handles-ids-and-names)
+   - [Settings UI and PowerDisplay Interaction Architecture](#settings-ui-and-powerdisplay-interaction-architecture)
+   - [Windows Events for IPC](#windows-events-for-ipc)
+   - [LightSwitch Profile Integration Architecture](#lightswitch-profile-integration-architecture)
+   - [LightSwitch Settings JSON Structure](#lightswitch-settings-json-structure)
 7. [Data Flow and Communication](#data-flow-and-communication)
+   - [Monitor Discovery Flow](#monitor-discovery-flow)
 8. [Sequence Diagrams](#sequence-diagrams)
-9. [Data Models](#data-models)
-10. [Future Considerations](#future-considerations)
+   - [Sequence: Modifying Monitor Settings in Settings UI](#sequence-modifying-monitor-settings-in-settings-ui)
+   - [Sequence: Creating and Saving a Profile](#sequence-creating-and-saving-a-profile)
+   - [Sequence: Applying Profile via LightSwitch Theme Change](#sequence-applying-profile-via-lightswitch-theme-change)
+   - [Sequence: UI Slider Adjustment (Brightness)](#sequence-ui-slider-adjustment-brightness)
+   - [Sequence: Module Enable/Disable Lifecycle](#sequence-module-enabledisable-lifecycle)
+9. [Future Considerations](#future-considerations)
+   - [Already Implemented](#already-implemented)
+   - [Potential Future Enhancements](#potential-future-enhancements)
+10. [References](#references)
 
 ---
 
@@ -88,10 +110,6 @@ PowerDisplay relies on the monitor-reported capabilities string to determine sup
 | `0x60` | Input Source | Active video input (HDMI, DP, USB-C, etc.) |
 | `0x62` | Volume | Speaker/headphone volume (0-100) |
 
-**Official Documentation:**
-- [VESA DDC/CI Standard](https://vesa.org/vesa-standards/)
-
-
 ---
 
 ### WMI (Windows Management Instrumentation)
@@ -100,10 +118,6 @@ PowerDisplay relies on the monitor-reported capabilities string to determine sup
 providing a standardized interface for accessing management information in Windows.
 For display control, WMI is primarily used for laptop internal displays that may not
 support DDC/CI.
-
-**Official Documentation:**
-- [WMI Reference](https://learn.microsoft.com/en-us/windows/win32/wmisdk/wmi-reference)
-- [WmiMonitorBrightness](https://learn.microsoft.com/en-us/windows/win32/wmicoreprov/wmimonitorbrightness)
 
 ---
 
@@ -525,6 +539,146 @@ classDiagram
 
 ---
 
+### Why WmiLight Instead of System.Management
+
+PowerDisplay uses the [WmiLight](https://github.com/MartinKuschnik/WmiLight) NuGet package
+for WMI operations instead of the built-in `System.Management` namespace. This decision was
+driven by several technical requirements:
+
+#### Native AOT Compatibility
+
+PowerDisplay is built with Native AOT (Ahead-of-Time compilation) enabled for improved startup
+performance and reduced memory footprint. The standard `System.Management` namespace is **not
+compatible with Native AOT** because it relies heavily on runtime reflection and COM interop
+patterns that cannot be statically analyzed.
+
+WmiLight provides Native AOT support since version 5.0.0, making it the appropriate choice for
+AOT-compiled applications.
+
+```xml
+<!-- PowerDisplay.Lib.csproj -->
+<PropertyGroup>
+    <IsAotCompatible>true</IsAotCompatible>
+</PropertyGroup>
+<ItemGroup>
+    <PackageReference Include="WmiLight" />
+</ItemGroup>
+```
+
+#### Memory Leak Prevention
+
+The `System.Management` implementation has a known issue where it leaks memory on each WMI
+operation. While this might be acceptable for short-lived applications, PowerDisplay runs as
+a long-running background process that may perform frequent WMI queries (e.g., polling
+brightness levels, responding to theme changes). WmiLight addresses this memory leak issue.
+
+#### Lightweight API
+
+WmiLight provides a simpler, more lightweight API compared to `System.Management`:
+
+```csharp
+// WmiLight - Simple and direct
+using (var connection = new WmiConnection(@"root\WMI"))
+{
+    var results = connection.CreateQuery("SELECT * FROM WmiMonitorBrightness");
+    foreach (var obj in results)
+    {
+        var brightness = obj.GetPropertyValue<byte>("CurrentBrightness");
+    }
+}
+
+// System.Management - More verbose
+using (var searcher = new ManagementObjectSearcher(@"root\WMI", "SELECT * FROM WmiMonitorBrightness"))
+{
+    foreach (ManagementObject obj in searcher.Get())
+    {
+        var brightness = (byte)obj["CurrentBrightness"];
+    }
+}
+```
+
+#### Comparison Summary
+
+| Aspect | System.Management | WmiLight |
+|--------|-------------------|----------|
+| **Native AOT Support** | ❌ Not supported | ✅ Supported (v5.0.0+) |
+| **Memory Leaks** | ⚠️ Leaks on remote operations | ✅ No known leaks |
+| **API Complexity** | More verbose | Simpler, lighter |
+| **Long-running Services** | Not recommended | ✅ Recommended |
+| **Static Linking** | ❌ Not available | ✅ Optional (`PublishWmiLightStaticallyLinked`) |
+
+#### References
+
+- [WmiLight GitHub Repository](https://github.com/MartinKuschnik/WmiLight)
+- [WmiLight NuGet Package](https://www.nuget.org/packages/WmiLight)
+
+---
+
+### Why We Need an MCCS Capabilities String Parser
+
+DDC/CI monitors report their supported features via a **capabilities string** - a structured
+text format defined by the VESA MCCS (Monitor Control Command Set) standard. This string
+tells PowerDisplay which VCP codes the monitor supports and what values are valid for each.
+
+#### Example Capabilities String
+
+```
+(prot(monitor)type(lcd)model(PD3220U)cmds(01 02 03 07)vcp(10 12 14(04 05 06) 60(11 12 0F))mccs_ver(2.2))
+```
+
+This string encodes:
+- **Protocol**: monitor
+- **Type**: LCD display
+- **Model**: PD3220U
+- **Supported commands**: 0x01, 0x02, 0x03, 0x07
+- **VCP codes**: 0x10 (brightness), 0x12 (contrast), 0x14 (color preset with values 4,5,6), 0x60 (input source with values 0x11, 0x12, 0x0F)
+- **MCCS version**: 2.2
+
+#### Why Parse It?
+
+| Use Case | How Parser Helps |
+|----------|------------------|
+| **Feature Detection** | Determine if monitor supports contrast, volume, color temperature, input switching |
+| **Input Source Dropdown** | Extract valid input source values (e.g., HDMI-1=0x11, DP=0x0F) for UI dropdown |
+| **Color Preset List** | Extract supported color presets (e.g., sRGB, 5000K, 6500K) |
+| **Diagnostics** | Display raw VCP codes in Settings UI for troubleshooting |
+| **PIP/PBP Support** | Parse window capabilities for Picture-in-Picture features |
+
+#### Why Not Use Regex?
+
+The MCCS capabilities string format has **nested parentheses** that regex cannot reliably handle:
+
+```
+vcp(10 12 14(04 05 06) 60(11 12 0F))
+         ^^^^^^^^^^^^ nested values
+```
+
+A recursive descent parser properly handles:
+- Nested parentheses at arbitrary depth
+- Variable whitespace (some monitors use `01 02 03`, others use `010203`)
+- Optional outer parentheses (some monitors omit them)
+- Unknown segments (graceful skip without failing)
+
+#### Implementation
+
+PowerDisplay implements a **zero-allocation recursive descent parser** using `ref struct` and
+`ReadOnlySpan<char>` for optimal performance during monitor discovery.
+
+```csharp
+// Usage in DdcCiController
+var result = MccsCapabilitiesParser.Parse(capabilitiesString);
+if (result.IsValid)
+{
+    monitor.VcpCapabilitiesInfo = result.Capabilities;
+    // Now we know which features this monitor supports
+}
+```
+
+> **Detailed Design:** See [MCCS_PARSER_DESIGN.md](./MCCS_PARSER_DESIGN.md) for the complete
+> parser architecture, grammar definition, and implementation details.
+
+---
+
 ### Monitor Identification: Handles, IDs, and Names
 
 Understanding how Windows identifies monitors is critical for PowerDisplay's operation.
@@ -838,83 +992,78 @@ PowerDisplay stores `GdiDeviceName` in each `Monitor` object specifically for ro
 ### Settings UI and PowerDisplay Interaction Architecture
 
 ```mermaid
-flowchart TB
-    subgraph SettingsProcess["Settings UI Process"]
-        SettingsPage["PowerDisplayPage.xaml"]
-        ViewModel["PowerDisplayViewModel"]
-        SettingsLib["Settings.UI.Library"]
-
-        subgraph DataModels["Data Models"]
-            PowerDisplaySettings["PowerDisplaySettings"]
-            MonitorInfo["MonitorInfo"]
-            ProfileOperation["ProfileOperation"]
-        end
+flowchart LR
+    subgraph SettingsUI["Settings UI Process"]
+        direction TB
+        Page["PowerDisplayPage.xaml"]
+        VM["PowerDisplayViewModel"]
+        Page --> VM
     end
 
-    subgraph RunnerProcess["Runner Process"]
-        Runner["PowerToys.exe"]
-        NamedPipe["Named Pipe IPC"]
-        ModuleInterface["PowerDisplayModuleInterface.dll"]
+    subgraph Runner["Runner Process"]
+        direction TB
+        Exe["PowerToys.exe"]
+        Pipe["Named Pipe IPC"]
+        Module["PowerDisplayModuleInterface.dll"]
+        Pipe --> Exe --> Module
     end
 
-    subgraph PowerDisplayProcess["PowerDisplay Process"]
-        App["PowerToys.PowerDisplay.exe"]
+    subgraph PDApp["PowerDisplay Process"]
+        direction TB
         MainVM["MainViewModel"]
-
-        subgraph EventListeners["Event Listeners"]
-            RefreshEvent["RefreshMonitors Event"]
-            ApplyColorTempEvent["ApplyColorTemp Event"]
-            ApplyProfileEvent["ApplyProfile Event"]
-        end
+        Events["Event Listeners<br/>Refresh / ColorTemp / Profile"]
+        Events --> MainVM
     end
 
-    subgraph FileSystem["File System"]
-        SettingsJson["PowerDisplay/settings.json"]
-        ProfilesJson["PowerDisplay/profiles.json"]
+    subgraph Storage["File System"]
+        direction TB
+        Settings[("settings.json")]
+        Profiles[("profiles.json")]
     end
 
-    %% Settings UI to Runner
-    SettingsPage --> ViewModel
-    ViewModel --> SettingsLib
-    ViewModel -->|"SendDefaultIPCMessage()"| NamedPipe
-    NamedPipe --> Runner
-    Runner -->|"set_config()"| ModuleInterface
-    Runner -->|"call_custom_action()"| ModuleInterface
+    %% Main flow: Settings UI → Runner → PowerDisplay
+    VM -->|"IPC Message"| Pipe
+    Module -->|"SetEvent()"| Events
 
-    %% Settings persistence
-    ViewModel <-->|"Read/Write"| SettingsJson
-    ViewModel <-->|"Read/Write"| ProfilesJson
+    %% File access
+    VM <-.->|"Read/Write"| Settings
+    VM <-.->|"Read/Write"| Profiles
+    MainVM <-.->|"Read"| Settings
+    MainVM <-.->|"Read/Write"| Profiles
 
-    %% Module Interface to PowerDisplay App
-    ModuleInterface -->|"SetEvent()"| RefreshEvent
-    ModuleInterface -->|"SetEvent()"| ApplyColorTempEvent
-    ModuleInterface -->|"SetEvent()"| ApplyProfileEvent
-
-    %% PowerDisplay App event handling
-    RefreshEvent --> MainVM
-    ApplyColorTempEvent --> MainVM
-    ApplyProfileEvent --> MainVM
-    MainVM <-->|"Read Settings"| SettingsJson
-    MainVM <-->|"Read/Write Profiles"| ProfilesJson
-
-    style SettingsProcess fill:#e3f2fd
-    style RunnerProcess fill:#fff3e0
-    style PowerDisplayProcess fill:#e8f5e9
-    style FileSystem fill:#fffde7
+    style SettingsUI fill:#e3f2fd
+    style Runner fill:#fff3e0
+    style PDApp fill:#e8f5e9
+    style Storage fill:#fffde7
 ```
+
+**Data Models (in Settings.UI.Library):**
+
+| Model | Purpose |
+|-------|---------|
+| `PowerDisplaySettings` | Main settings container with properties and pending operations |
+| `MonitorInfo` | Per-monitor settings displayed in Settings UI |
+| `ProfileOperation` | Pending profile apply operation |
+| `ColorTemperatureOperation` | Pending color temperature change |
 
 ### Windows Events for IPC
 
-| Event Name | Constant | Direction | Purpose |
-|------------|----------|-----------|---------|
-| `Local\PowerToysPowerDisplay-ShowEvent-*` | `SHOW_POWER_DISPLAY_EVENT` | Runner → App | Show window |
-| `Local\PowerToysPowerDisplay-ToggleEvent-*` | `TOGGLE_POWER_DISPLAY_EVENT` | Runner → App | Toggle visibility |
-| `Local\PowerToysPowerDisplay-TerminateEvent-*` | `TERMINATE_POWER_DISPLAY_EVENT` | Runner → App | Terminate process |
-| `Local\PowerToysPowerDisplay-RefreshMonitorsEvent-*` | `REFRESH_POWER_DISPLAY_MONITORS_EVENT` | Settings → App | Refresh monitor list |
-| `Local\PowerToysPowerDisplay-ApplyColorTemperatureEvent-*` | `APPLY_COLOR_TEMPERATURE_POWER_DISPLAY_EVENT` | Settings → App | Apply color temp |
-| `Local\PowerToysPowerDisplay-ApplyProfileEvent-*` | `APPLY_PROFILE_POWER_DISPLAY_EVENT` | Settings → App | Apply profile |
-| `Local\PowerToys_LightSwitch_LightTheme` | `LightSwitchLightThemeEventName` | LightSwitch → App | Apply light mode profile |
-| `Local\PowerToys_LightSwitch_DarkTheme` | `LightSwitchDarkThemeEventName` | LightSwitch → App | Apply dark mode profile |
+Event names use fixed GUID suffixes to ensure uniqueness (defined in `shared_constants.h`).
+
+| Constant | Direction | Purpose |
+|----------|-----------|---------|
+| `SHOW_POWER_DISPLAY_EVENT` | Runner → App | Show window |
+| `TOGGLE_POWER_DISPLAY_EVENT` | Runner → App | Toggle visibility |
+| `TERMINATE_POWER_DISPLAY_EVENT` | Runner → App | Terminate process |
+| `REFRESH_POWER_DISPLAY_MONITORS_EVENT` | Settings → App | Refresh monitor list |
+| `APPLY_COLOR_TEMPERATURE_POWER_DISPLAY_EVENT` | Settings → App | Apply color temp |
+| `APPLY_PROFILE_POWER_DISPLAY_EVENT` | Settings → App | Apply profile |
+| `LightSwitchLightThemeEventName` | LightSwitch → App | Apply light mode profile |
+| `LightSwitchDarkThemeEventName` | LightSwitch → App | Apply dark mode profile |
+
+**Event Name Format:** `Local\PowerToysPowerDisplay-{EventType}-{GUID}`
+
+Example: `Local\PowerToysPowerDisplay-ShowEvent-d8a4e0e3-2c5b-4a1c-9e7f-8b3d6c1a2f4e`
 
 ---
 
@@ -1003,65 +1152,88 @@ flowchart TB
 
 ```mermaid
 flowchart TB
-    Start([Start Discovery]) --> Init["MonitorManager.DiscoverMonitorsAsync()"]
+    Start([Start Discovery])
+    Start --> MM["MonitorManager.DiscoverMonitorsAsync()"]
 
-    Init --> ParallelDiscover["Parallel Discovery"]
+    MM --> DDC["DdcCiController.DiscoverMonitorsAsync()"]
+    MM --> WMI["WmiController.DiscoverMonitorsAsync()"]
 
-    subgraph ParallelDiscover["Parallel Controller Discovery"]
-        DDCDiscover["DdcCiController.DiscoverMonitorsAsync()"]
-        WMIDiscover["WmiController.DiscoverMonitorsAsync()"]
-    end
+    DDC --> Merge["Merge Results"]
+    WMI --> Merge
 
-    DDCDiscover --> DDCEnum["EnumDisplayMonitors()"]
-    DDCEnum --> DDCPhysical["GetPhysicalMonitorsFromHMONITOR()"]
-    DDCPhysical --> DDCCheck["Quick DDC/CI connection check"]
+    Merge --> Sort["Sort by MonitorNumber"]
+    Sort --> Update["Update _monitors Collection"]
+    Update --> Done([Discovery Complete])
 
-    WMIDiscover --> WMIQuery["Query WmiMonitorBrightness"]
-    WMIQuery --> WMIFilter["Filter responsive displays"]
-
-    DDCCheck --> Merge["Merge Results"]
-    WMIFilter --> Merge
-
-    Merge --> InitLoop["For Each Monitor"]
-
-    subgraph InitLoop["Initialize Single Monitor"]
-        direction TB
-        VerifyControl["Verify Controller Access"]
-        GetBrightness["Get Current Brightness"]
-        CheckType{"CommunicationMethod<br/>contains 'DDC'?"}
-
-        subgraph DDCPath[" "]
-            direction TB
-            GetCaps["Fetch VCP Capabilities"]
-            ParseCaps["Parse MCCS Capabilities String"]
-            InitInputSource["Get Current Input Source"]
-        end
-
-        Done["Initialization Complete"]
-    end
-
-    VerifyControl --> GetBrightness
-    GetBrightness --> CheckType
-    CheckType -->|"Yes (DDC/CI)"| GetCaps
-    GetCaps --> ParseCaps
-    ParseCaps --> InitInputSource
-    InitInputSource --> Done
-    CheckType -->|"No (WMI)"| Done
-
-    InitLoop --> UpdateCollection["Update _monitors Collection"]
-    UpdateCollection --> FireEvent["Fire MonitorsChanged Event"]
-    FireEvent --> StartWatcher["Start DisplayChangeWatcher"]
-    StartWatcher --> End([Discovery Complete])
-
-    style ParallelDiscover fill:#e3f2fd
-    style InitLoop fill:#e8f5e9
-    style CheckType fill:#fff3e0
+    style Start fill:#e8f5e9
+    style Done fill:#e8f5e9
+    style DDC fill:#e3f2fd
+    style WMI fill:#fff3e0
 ```
 
-**Note:** WMI monitors skip VCP capabilities fetching because:
-1. WMI uses a different abstraction layer (`WmiMonitorBrightness` class)
-2. `WmiController.GetCapabilitiesStringAsync()` returns an empty string
-3. VCP codes are DDC/CI-specific and not applicable to WMI-controlled displays
+> **Note:** DDC/CI and WMI discovery run in parallel via `Task.WhenAll`.
+
+#### DDC/CI Discovery (Three-Phase Approach)
+
+**Phase 1: Collect Candidates**
+
+```mermaid
+flowchart LR
+    QDC["QueryDisplayConfig"] --> Match["Match by GDI Name"]
+    Enum["EnumDisplayMonitors"] --> GetPhys["GetPhysicalMonitors"] --> Match
+    Match --> Candidates["CandidateMonitor List"]
+
+    style QDC fill:#e3f2fd
+    style Enum fill:#e3f2fd
+```
+
+**Phase 2: Fetch Capabilities (Parallel)**
+
+```mermaid
+flowchart LR
+    Candidates["CandidateMonitor List"] --> Fetch["Task.WhenAll:<br/>FetchCapabilities<br/>~4s per monitor via I2C"]
+    Fetch --> Results["DdcCiValidationResult Array"]
+
+    style Fetch fill:#fff3e0
+```
+
+**Phase 3: Create Monitors**
+
+```mermaid
+flowchart LR
+    Results["Validation Results"] --> Check{"IsValid?"}
+    Check -->|Yes| Create["Create Monitor"]
+    Create --> Init["Initialize VCP Values:<br/>Brightness, ColorTemp, InputSource"]
+    Init --> Add["Add to List"]
+    Check -->|No| Skip([Skip])
+
+    style Create fill:#e8f5e9
+    style Init fill:#e8f5e9
+```
+
+#### WMI Discovery
+
+```mermaid
+flowchart LR
+    Query["Query WmiMonitorBrightness"] --> Extract["Extract HardwareId<br/>from InstanceName"]
+    QDC["QueryDisplayConfig"] --> Match["Match by HardwareId"]
+    Extract --> Match
+    Match --> Name["Get Display Name<br/>via PnpIdHelper"]
+    Name --> Create["Create Monitor<br/>Brightness + WMI"]
+
+    style Query fill:#fff3e0
+    style Create fill:#fff3e0
+```
+
+#### Key Differences
+
+| Aspect | DDC/CI | WMI |
+|--------|--------|-----|
+| **Target** | External monitors | Internal laptop displays |
+| **Capabilities** | Full VCP support (brightness, contrast, volume, color temp, input) | Brightness only |
+| **Discovery** | Three-phase with parallel I2C fetching | Single WMI query |
+| **Initialization** | Reads current values for all supported VCP codes | Brightness from query result |
+| **Performance** | ~4s per monitor (I2C), parallelized | Fast (~100ms total) |
 
 ---
 
@@ -1359,251 +1531,9 @@ sequenceDiagram
 
 ---
 
-## Data Models
-
-### Core Models
-
-```mermaid
-classDiagram
-    class Monitor {
-        +string Id
-        +string Name
-        +string CommunicationMethod
-        +string InstanceName
-        +string GdiDeviceName
-        +int MonitorNumber
-        +int CurrentBrightness
-        +int MinBrightness
-        +int MaxBrightness
-        +int CurrentContrast
-        +int MinContrast
-        +int MaxContrast
-        +int CurrentVolume
-        +int MinVolume
-        +int MaxVolume
-        +int CurrentColorTemperature
-        +string ColorTemperaturePresetName
-        +int CurrentInputSource
-        +string InputSourceName
-        +IReadOnlyList~int~ SupportedInputSources
-        +int Orientation
-        +bool IsAvailable
-        +bool SupportsContrast
-        +bool SupportsVolume
-        +bool SupportsColorTemperature
-        +bool SupportsInputSource
-        +MonitorCapabilities Capabilities
-        +VcpCapabilities VcpCapabilitiesInfo
-        +string CapabilitiesRaw
-        +IntPtr Handle
-        +DateTime LastUpdate
-        +UpdateStatus(brightness, isAvailable)
-    }
-
-    class VcpCapabilities {
-        +string Raw
-        +string Model
-        +string Type
-        +string Protocol
-        +string MccsVersion
-        +List~byte~ SupportedCommands
-        +Dictionary~byte, VcpCodeInfo~ SupportedVcpCodes
-        +List~WindowCapability~ Windows
-        +bool HasWindowSupport
-        +static VcpCapabilities Empty$
-        +SupportsVcpCode(code) bool
-        +GetVcpCodeInfo(code) VcpCodeInfo
-        +HasDiscreteValues(code) bool
-        +GetSupportedValues(code) IReadOnlyList~int~
-        +GetVcpCodesAsHexStrings() List~string~
-        +GetSortedVcpCodes() IEnumerable~VcpCodeInfo~
-    }
-
-    class VcpCodeInfo {
-        +byte Code
-        +string Name
-        +IReadOnlyList~int~ SupportedValues
-        +bool HasDiscreteValues
-        +bool IsContinuous
-        +string FormattedCode
-        +string FormattedTitle
-    }
-
-    class WindowCapability {
-        <<struct>>
-        +int WindowNumber
-        +string Type
-        +WindowArea Area
-        +WindowSize MaxSize
-        +WindowSize MinSize
-        +int WindowId
-    }
-
-    class WindowSize {
-        <<struct>>
-        +int Width
-        +int Height
-    }
-
-    class WindowArea {
-        <<struct>>
-        +int X1
-        +int Y1
-        +int X2
-        +int Y2
-        +int Width
-        +int Height
-    }
-
-    class VcpFeatureValue {
-        +int Current
-        +int Minimum
-        +int Maximum
-        +bool IsValid
-        +ToPercentage() int
-        +static Invalid VcpFeatureValue
-    }
-
-    class MonitorCapabilities {
-        <<flags enum>>
-        None
-        Brightness
-        Contrast
-        Volume
-        ColorTemperature
-        InputSource
-        Wmi
-        DdcCi
-    }
-
-    class PowerDisplayProfile {
-        +string Name
-        +DateTime CreatedDate
-        +DateTime LastModified
-        +List~ProfileMonitorSetting~ MonitorSettings
-        +IsValid() bool
-    }
-
-    class ProfileMonitorSetting {
-        +string MonitorInternalName
-        +int MonitorNumber
-        +int? Brightness
-        +int? Contrast
-        +int? Volume
-        +int? ColorTemperatureVcp
-        +int? Orientation
-    }
-
-    class PowerDisplayProfiles {
-        +List~PowerDisplayProfile~ Profiles
-        +DateTime LastUpdated
-    }
-
-    Monitor "1" --> "0..1" VcpCapabilities
-    Monitor "1" --> "1" MonitorCapabilities
-    VcpCapabilities "1" --> "*" VcpCodeInfo
-    VcpCapabilities "1" --> "*" WindowCapability
-    WindowCapability "1" --> "1" WindowArea
-    WindowCapability "1" --> "1" WindowSize : MaxSize
-    WindowCapability "1" --> "1" WindowSize : MinSize
-    PowerDisplayProfiles "1" --> "*" PowerDisplayProfile
-    PowerDisplayProfile "1" --> "*" ProfileMonitorSetting
-```
-
-### Settings Models
-
-```mermaid
-classDiagram
-    class PowerDisplaySettings {
-        +string Name
-        +PowerDisplayProperties Properties
-        +string Version
-        +ToJsonString() string
-    }
-
-    class PowerDisplayProperties {
-        +bool Enabled
-        +bool HotkeyEnabled
-        +HotkeySettings ActivationShortcut
-        +string BrightnessUpdateRate
-        +bool RestoreSettingsOnStartup
-        +bool ShowSystemTrayIcon
-        +List~MonitorInfo~ Monitors
-        +ColorTemperatureOperation PendingColorTemperatureOperation
-        +ProfileOperation PendingProfileOperation
-    }
-
-    class MonitorInfo {
-        +string Name
-        +string InternalName
-        +string HardwareId
-        +string CommunicationMethod
-        +int MonitorNumber
-        +int TotalMonitorCount
-        +string DisplayName
-        +string MonitorIconGlyph
-        +int CurrentBrightness
-        +int Contrast
-        +int Volume
-        +int ColorTemperatureVcp
-        +int Orientation
-        +bool SupportsBrightness
-        +bool SupportsContrast
-        +bool SupportsColorTemperature
-        +bool SupportsVolume
-        +bool SupportsInputSource
-        +bool EnableContrast
-        +bool EnableVolume
-        +bool EnableInputSource
-        +bool EnableRotation
-        +bool IsHidden
-        +string CapabilitiesRaw
-        +List~string~ VcpCodes
-        +List~VcpCodeDisplayInfo~ VcpCodesFormatted
-        +ObservableCollection~ColorPresetItem~ AvailableColorPresets
-        +ObservableCollection~ColorPresetItem~ ColorPresetsForDisplay
-        +bool HasCapabilities
-        +bool ShowCapabilitiesWarning
-        +GetVcpCodesAsText() string
-        +UpdateFrom(other)
-    }
-
-    class VcpCodeDisplayInfo {
-        +string Code
-        +string Title
-        +string Values
-        +bool HasValues
-        +List~VcpValueInfo~ ValueList
-    }
-
-    class VcpValueInfo {
-        +string Value
-        +string Name
-    }
-
-    class ColorTemperatureOperation {
-        +string MonitorId
-        +int ColorTemperatureVcp
-    }
-
-    class ProfileOperation {
-        +string ProfileName
-        +List~ProfileMonitorSetting~ MonitorSettings
-    }
-
-    MonitorInfo "1" --> "*" VcpCodeDisplayInfo
-    VcpCodeDisplayInfo "1" --> "*" VcpValueInfo
-    PowerDisplaySettings "1" --> "1" PowerDisplayProperties
-    PowerDisplayProperties "1" --> "*" MonitorInfo
-    PowerDisplayProperties "1" --> "0..1" ColorTemperatureOperation
-    PowerDisplayProperties "1" --> "0..1" ProfileOperation
-```
-
----
-
 ## Future Considerations
 
-### Already Implemented (removed from backlog)
+### Already Implemented
 
 - **Monitor Hot-Plug**: `DisplayChangeWatcher` uses WinRT DeviceWatcher + DisplayMonitor API with 1-second debouncing
 - **Display Rotation**: `DisplayRotationService` uses Windows ChangeDisplaySettingsEx API
@@ -1613,15 +1543,9 @@ classDiagram
 
 ### Potential Future Enhancements
 
-1. **Hardware Cursor Brightness**: Support for displays with hardware cursor brightness
-2. **Multi-GPU Support**: Better handling of monitors across different GPUs
-3. **Advanced Color Management**: Integration with Windows Color Management APIs (HDR, ICC profiles)
-4. **Scheduled Profiles**: Time-based automatic profile switching (beyond LightSwitch integration)
-5. **Monitor Groups**: Ability to control multiple monitors as a single entity
-6. **Remote Control**: Network-based control for multi-system setups
-7. **PIP/PBP Control**: Picture-in-Picture and Picture-by-Picture configuration (VcpCapabilities already parses window capabilities)
-8. **Power State Control**: Monitor power on/off via VCP code 0xD6
-9. **Input Source Scheduling**: Automatic input switching based on time or application
+1. **Advanced Color Management**: Integration with Windows Color Management APIs (HDR, ICC profiles)
+2. **PIP/PBP Control**: Picture-in-Picture and Picture-by-Picture configuration (VcpCapabilities already parses window capabilities)
+3. **Power State Control**: Monitor power on/off via VCP code 0xD6
 
 ---
 
