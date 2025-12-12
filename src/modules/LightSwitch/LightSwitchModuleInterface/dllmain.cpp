@@ -8,6 +8,7 @@
 #include <codecvt>
 #include <common/utils/logger_helper.h>
 #include "ThemeHelper.h"
+#include <LightSwitch/LightSwitchService/trace.h>
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
@@ -394,6 +395,7 @@ public:
     {
         m_enabled = true;
         Logger::info(L"Enabling Light Switch module...");
+        Trace::LightSwitch::Enable(true);
 
         unsigned long powertoys_pid = GetCurrentProcessId();
         std::wstring args = L"--pid " + std::to_wstring(powertoys_pid);
@@ -469,6 +471,7 @@ public:
             CloseHandle(m_process);
             m_process = nullptr;
         }
+        Trace::LightSwitch::Enable(false);
     }
 
     // Returns if the powertoys is enabled
@@ -524,6 +527,8 @@ public:
         if (m_enabled)
         {
             Logger::trace(L"Light Switch hotkey pressed");
+            Trace::LightSwitch::ShortcutInvoked();
+
             if (!is_process_running())
             {
                 enable();
@@ -540,6 +545,7 @@ public:
                 {
                     SetAppsTheme(!GetCurrentAppsTheme());
                 }
+
 
                 if (!m_manual_override_event_handle)
                 {
