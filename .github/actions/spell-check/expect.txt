@@ -1917,6 +1917,7 @@ VERSIONINFO
 VERTRES
 VERTSIZE
 VFT
+Vftable 
 vget
 vgetq
 viewmodels

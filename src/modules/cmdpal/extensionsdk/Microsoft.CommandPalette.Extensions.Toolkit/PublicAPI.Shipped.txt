@@ -1,0 +1,1040 @@
+﻿#nullable enable
+ABI.Microsoft.CommandPalette.Extensions.ICommandContextItemMethods
+ABI.Microsoft.CommandPalette.Extensions.ICommandItemMethods
+ABI.Microsoft.CommandPalette.Extensions.ICommandMethods
+ABI.Microsoft.CommandPalette.Extensions.ICommandProvider2Methods
+ABI.Microsoft.CommandPalette.Extensions.ICommandProviderMethods
+ABI.Microsoft.CommandPalette.Extensions.ICommandResultArgsMethods
+ABI.Microsoft.CommandPalette.Extensions.ICommandResultMethods
+ABI.Microsoft.CommandPalette.Extensions.ICommandSettingsMethods
+ABI.Microsoft.CommandPalette.Extensions.IConfirmationArgsMethods
+ABI.Microsoft.CommandPalette.Extensions.IContentMethods
+ABI.Microsoft.CommandPalette.Extensions.IContentPageMethods
+ABI.Microsoft.CommandPalette.Extensions.IContextItemMethods
+ABI.Microsoft.CommandPalette.Extensions.IDetailsCommandsMethods
+ABI.Microsoft.CommandPalette.Extensions.IDetailsDataMethods
+ABI.Microsoft.CommandPalette.Extensions.IDetailsElementMethods
+ABI.Microsoft.CommandPalette.Extensions.IDetailsLinkMethods
+ABI.Microsoft.CommandPalette.Extensions.IDetailsMethods
+ABI.Microsoft.CommandPalette.Extensions.IDetailsSeparatorMethods
+ABI.Microsoft.CommandPalette.Extensions.IDetailsTagsMethods
+ABI.Microsoft.CommandPalette.Extensions.IDynamicListPageMethods
+ABI.Microsoft.CommandPalette.Extensions.IExtendedAttributesProviderMethods
+ABI.Microsoft.CommandPalette.Extensions.IExtensionHostMethods
+ABI.Microsoft.CommandPalette.Extensions.IExtensionMethods
+ABI.Microsoft.CommandPalette.Extensions.IFallbackCommandItemMethods
+ABI.Microsoft.CommandPalette.Extensions.IFallbackHandlerMethods
+ABI.Microsoft.CommandPalette.Extensions.IFilterItemMethods
+ABI.Microsoft.CommandPalette.Extensions.IFilterMethods
+ABI.Microsoft.CommandPalette.Extensions.IFiltersMethods
+ABI.Microsoft.CommandPalette.Extensions.IFormContentMethods
+ABI.Microsoft.CommandPalette.Extensions.IGalleryGridLayoutMethods
+ABI.Microsoft.CommandPalette.Extensions.IGoToPageArgsMethods
+ABI.Microsoft.CommandPalette.Extensions.IGridPropertiesMethods
+ABI.Microsoft.CommandPalette.Extensions.IIconDataMethods
+ABI.Microsoft.CommandPalette.Extensions.IIconInfoMethods
+ABI.Microsoft.CommandPalette.Extensions.IInvokableCommandMethods
+ABI.Microsoft.CommandPalette.Extensions.IItemsChangedEventArgsMethods
+ABI.Microsoft.CommandPalette.Extensions.IListItemMethods
+ABI.Microsoft.CommandPalette.Extensions.IListPageMethods
+ABI.Microsoft.CommandPalette.Extensions.ILogMessageMethods
+ABI.Microsoft.CommandPalette.Extensions.IMarkdownContentMethods
+ABI.Microsoft.CommandPalette.Extensions.IMediumGridLayoutMethods
+ABI.Microsoft.CommandPalette.Extensions.INotifyItemsChangedMethods
+ABI.Microsoft.CommandPalette.Extensions.INotifyPropChangedMethods
+ABI.Microsoft.CommandPalette.Extensions.IPageMethods
+ABI.Microsoft.CommandPalette.Extensions.IProgressStateMethods
+ABI.Microsoft.CommandPalette.Extensions.IPropChangedEventArgsMethods
+ABI.Microsoft.CommandPalette.Extensions.ISeparatorContextItemMethods
+ABI.Microsoft.CommandPalette.Extensions.ISeparatorFilterItemMethods
+ABI.Microsoft.CommandPalette.Extensions.ISmallGridLayoutMethods
+ABI.Microsoft.CommandPalette.Extensions.IStatusMessageMethods
+ABI.Microsoft.CommandPalette.Extensions.ITagMethods
+ABI.Microsoft.CommandPalette.Extensions.IToastArgsMethods
+ABI.Microsoft.CommandPalette.Extensions.ITreeContentMethods
+ABI.Microsoft.CommandPalette.Extensions.OptionalColor
+ABI.Microsoft.CommandPalette.Extensions.OptionalColor.Color -> Microsoft.CommandPalette.Extensions.Color
+ABI.Microsoft.CommandPalette.Extensions.OptionalColor.HasValue -> byte
+ABI.Microsoft.CommandPalette.Extensions.OptionalColor.Marshaler
+ABI.Microsoft.CommandPalette.Extensions.OptionalColor.Marshaler.Marshaler() -> void
+ABI.Microsoft.CommandPalette.Extensions.OptionalColor.Marshaler.__abi -> ABI.Microsoft.CommandPalette.Extensions.OptionalColor
+ABI.Microsoft.CommandPalette.Extensions.OptionalColor.OptionalColor() -> void
+abstract Microsoft.CommandPalette.Extensions.Toolkit.CommandProvider.TopLevelCommands() -> Microsoft.CommandPalette.Extensions.ICommandItem![]!
+abstract Microsoft.CommandPalette.Extensions.Toolkit.ContentPage.GetContent() -> Microsoft.CommandPalette.Extensions.IContent![]!
+abstract Microsoft.CommandPalette.Extensions.Toolkit.DynamicListPage.UpdateSearchText(string! oldSearch, string! newSearch) -> void
+abstract Microsoft.CommandPalette.Extensions.Toolkit.Filters.GetFilters() -> Microsoft.CommandPalette.Extensions.IFilterItem![]!
+abstract Microsoft.CommandPalette.Extensions.Toolkit.Setting<T>.ToDictionary() -> System.Collections.Generic.Dictionary<string!, object!>!
+abstract Microsoft.CommandPalette.Extensions.Toolkit.Setting<T>.ToState() -> string!
+abstract Microsoft.CommandPalette.Extensions.Toolkit.Setting<T>.Update(System.Text.Json.Nodes.JsonObject! payload) -> void
+Microsoft.CmdPal.Common.Commands.ConfirmableCommand
+Microsoft.CmdPal.Common.Commands.ConfirmableCommand.Command.get -> Microsoft.CommandPalette.Extensions.IInvokableCommand!
+Microsoft.CmdPal.Common.Commands.ConfirmableCommand.Command.init -> void
+Microsoft.CmdPal.Common.Commands.ConfirmableCommand.ConfirmableCommand() -> void
+Microsoft.CmdPal.Common.Commands.ConfirmableCommand.ConfirmableCommand(Microsoft.CommandPalette.Extensions.IInvokableCommand! command, string! confirmationTitle, string! confirmationMessage, System.Func<bool>? isConfirmationRequired = null) -> void
+Microsoft.CmdPal.Common.Commands.ConfirmableCommand.ConfirmationMessage.get -> string!
+Microsoft.CmdPal.Common.Commands.ConfirmableCommand.ConfirmationMessage.init -> void
+Microsoft.CmdPal.Common.Commands.ConfirmableCommand.ConfirmationTitle.get -> string!
+Microsoft.CmdPal.Common.Commands.ConfirmableCommand.ConfirmationTitle.init -> void
+Microsoft.CmdPal.Common.Commands.ConfirmableCommand.IsConfirmationRequired.get -> System.Func<bool>?
+Microsoft.CmdPal.Common.Commands.ConfirmableCommand.IsConfirmationRequired.init -> void
+Microsoft.CmdPal.Core.Common.Commands.OpenWithCommand
+Microsoft.CmdPal.Core.Common.Commands.OpenWithCommand.OpenWithCommand(string! fullPath) -> void
+Microsoft.CommandPalette.Extensions.Color
+Microsoft.CommandPalette.Extensions.Color.A -> byte
+Microsoft.CommandPalette.Extensions.Color.B -> byte
+Microsoft.CommandPalette.Extensions.Color.Color() -> void
+Microsoft.CommandPalette.Extensions.Color.Color(byte _R, byte _G, byte _B, byte _A) -> void
+Microsoft.CommandPalette.Extensions.Color.Equals(Microsoft.CommandPalette.Extensions.Color other) -> bool
+Microsoft.CommandPalette.Extensions.Color.G -> byte
+Microsoft.CommandPalette.Extensions.Color.R -> byte
+Microsoft.CommandPalette.Extensions.CommandResultKind
+Microsoft.CommandPalette.Extensions.CommandResultKind.Confirm = 7 -> Microsoft.CommandPalette.Extensions.CommandResultKind
+Microsoft.CommandPalette.Extensions.CommandResultKind.Dismiss = 0 -> Microsoft.CommandPalette.Extensions.CommandResultKind
+Microsoft.CommandPalette.Extensions.CommandResultKind.GoBack = 2 -> Microsoft.CommandPalette.Extensions.CommandResultKind
+Microsoft.CommandPalette.Extensions.CommandResultKind.GoHome = 1 -> Microsoft.CommandPalette.Extensions.CommandResultKind
+Microsoft.CommandPalette.Extensions.CommandResultKind.GoToPage = 5 -> Microsoft.CommandPalette.Extensions.CommandResultKind
+Microsoft.CommandPalette.Extensions.CommandResultKind.Hide = 3 -> Microsoft.CommandPalette.Extensions.CommandResultKind
+Microsoft.CommandPalette.Extensions.CommandResultKind.KeepOpen = 4 -> Microsoft.CommandPalette.Extensions.CommandResultKind
+Microsoft.CommandPalette.Extensions.CommandResultKind.ShowToast = 6 -> Microsoft.CommandPalette.Extensions.CommandResultKind
+Microsoft.CommandPalette.Extensions.ExtensionsContract
+Microsoft.CommandPalette.Extensions.ExtensionServer
+Microsoft.CommandPalette.Extensions.ExtensionServer.Dispose() -> void
+Microsoft.CommandPalette.Extensions.ExtensionServer.ExtensionServer() -> void
+Microsoft.CommandPalette.Extensions.ExtensionServer.RegisterExtension<T>(System.Func<T>! createExtension, bool restrictToMicrosoftExtensionHosts = false) -> void
+Microsoft.CommandPalette.Extensions.ExtensionServer.Run() -> void
+Microsoft.CommandPalette.Extensions.ICommand
+Microsoft.CommandPalette.Extensions.ICommandContextItem
+Microsoft.CommandPalette.Extensions.ICommandContextItem.IsCritical.get -> bool
+Microsoft.CommandPalette.Extensions.ICommandContextItem.RequestedShortcut.get -> Microsoft.CommandPalette.Extensions.KeyChord
+Microsoft.CommandPalette.Extensions.ICommandItem
+Microsoft.CommandPalette.Extensions.ICommandProvider
+Microsoft.CommandPalette.Extensions.ICommandProvider.Frozen.get -> bool
+Microsoft.CommandPalette.Extensions.ICommandProvider2
+Microsoft.CommandPalette.Extensions.ICommandResult
+Microsoft.CommandPalette.Extensions.ICommandResult.Kind.get -> Microsoft.CommandPalette.Extensions.CommandResultKind
+Microsoft.CommandPalette.Extensions.ICommandResultArgs
+Microsoft.CommandPalette.Extensions.ICommandSettings
+Microsoft.CommandPalette.Extensions.IConfirmationArgs
+Microsoft.CommandPalette.Extensions.IConfirmationArgs.IsPrimaryCommandCritical.get -> bool
+Microsoft.CommandPalette.Extensions.IContent
+Microsoft.CommandPalette.Extensions.IContentPage
+Microsoft.CommandPalette.Extensions.IContextItem
+Microsoft.CommandPalette.Extensions.IDetails
+Microsoft.CommandPalette.Extensions.IDetailsCommands
+Microsoft.CommandPalette.Extensions.IDetailsData
+Microsoft.CommandPalette.Extensions.IDetailsElement
+Microsoft.CommandPalette.Extensions.IDetailsLink
+Microsoft.CommandPalette.Extensions.IDetailsSeparator
+Microsoft.CommandPalette.Extensions.IDetailsTags
+Microsoft.CommandPalette.Extensions.IDynamicListPage
+Microsoft.CommandPalette.Extensions.IExtendedAttributesProvider
+Microsoft.CommandPalette.Extensions.IExtension
+Microsoft.CommandPalette.Extensions.IExtension.Dispose() -> void
+Microsoft.CommandPalette.Extensions.IExtensionHost
+Microsoft.CommandPalette.Extensions.IFallbackCommandItem
+Microsoft.CommandPalette.Extensions.IFallbackHandler
+Microsoft.CommandPalette.Extensions.IFilter
+Microsoft.CommandPalette.Extensions.IFilterItem
+Microsoft.CommandPalette.Extensions.IFilters
+Microsoft.CommandPalette.Extensions.IFormContent
+Microsoft.CommandPalette.Extensions.IGalleryGridLayout
+Microsoft.CommandPalette.Extensions.IGalleryGridLayout.ShowSubtitle.get -> bool
+Microsoft.CommandPalette.Extensions.IGalleryGridLayout.ShowTitle.get -> bool
+Microsoft.CommandPalette.Extensions.IGoToPageArgs
+Microsoft.CommandPalette.Extensions.IGoToPageArgs.NavigationMode.get -> Microsoft.CommandPalette.Extensions.NavigationMode
+Microsoft.CommandPalette.Extensions.IGridProperties
+Microsoft.CommandPalette.Extensions.IIconData
+Microsoft.CommandPalette.Extensions.IIconInfo
+Microsoft.CommandPalette.Extensions.IInvokableCommand
+Microsoft.CommandPalette.Extensions.IItemsChangedEventArgs
+Microsoft.CommandPalette.Extensions.IItemsChangedEventArgs.TotalItems.get -> int
+Microsoft.CommandPalette.Extensions.IListItem
+Microsoft.CommandPalette.Extensions.IListPage
+Microsoft.CommandPalette.Extensions.IListPage.HasMoreItems.get -> bool
+Microsoft.CommandPalette.Extensions.IListPage.LoadMore() -> void
+Microsoft.CommandPalette.Extensions.IListPage.ShowDetails.get -> bool
+Microsoft.CommandPalette.Extensions.ILogMessage
+Microsoft.CommandPalette.Extensions.ILogMessage.State.get -> Microsoft.CommandPalette.Extensions.MessageState
+Microsoft.CommandPalette.Extensions.IMarkdownContent
+Microsoft.CommandPalette.Extensions.IMediumGridLayout
+Microsoft.CommandPalette.Extensions.IMediumGridLayout.ShowTitle.get -> bool
+Microsoft.CommandPalette.Extensions.INotifyItemsChanged
+Microsoft.CommandPalette.Extensions.INotifyItemsChanged.ItemsChanged -> Windows.Foundation.TypedEventHandler<object, Microsoft.CommandPalette.Extensions.IItemsChangedEventArgs>
+Microsoft.CommandPalette.Extensions.INotifyPropChanged
+Microsoft.CommandPalette.Extensions.INotifyPropChanged.PropChanged -> Windows.Foundation.TypedEventHandler<object, Microsoft.CommandPalette.Extensions.IPropChangedEventArgs>
+Microsoft.CommandPalette.Extensions.IPage
+Microsoft.CommandPalette.Extensions.IPage.AccentColor.get -> Microsoft.CommandPalette.Extensions.OptionalColor
+Microsoft.CommandPalette.Extensions.IPage.IsLoading.get -> bool
+Microsoft.CommandPalette.Extensions.IProgressState
+Microsoft.CommandPalette.Extensions.IProgressState.IsIndeterminate.get -> bool
+Microsoft.CommandPalette.Extensions.IProgressState.ProgressPercent.get -> uint
+Microsoft.CommandPalette.Extensions.IPropChangedEventArgs
+Microsoft.CommandPalette.Extensions.ISeparatorContextItem
+Microsoft.CommandPalette.Extensions.ISeparatorFilterItem
+Microsoft.CommandPalette.Extensions.ISmallGridLayout
+Microsoft.CommandPalette.Extensions.IStatusMessage
+Microsoft.CommandPalette.Extensions.IStatusMessage.State.get -> Microsoft.CommandPalette.Extensions.MessageState
+Microsoft.CommandPalette.Extensions.ITag
+Microsoft.CommandPalette.Extensions.ITag.Background.get -> Microsoft.CommandPalette.Extensions.OptionalColor
+Microsoft.CommandPalette.Extensions.ITag.Foreground.get -> Microsoft.CommandPalette.Extensions.OptionalColor
+Microsoft.CommandPalette.Extensions.IToastArgs
+Microsoft.CommandPalette.Extensions.ITreeContent
+Microsoft.CommandPalette.Extensions.KeyChord
+Microsoft.CommandPalette.Extensions.KeyChord.Equals(Microsoft.CommandPalette.Extensions.KeyChord other) -> bool
+Microsoft.CommandPalette.Extensions.KeyChord.KeyChord() -> void
+Microsoft.CommandPalette.Extensions.KeyChord.KeyChord(Windows.System.VirtualKeyModifiers _Modifiers, int _Vkey, int _ScanCode) -> void
+Microsoft.CommandPalette.Extensions.KeyChord.Modifiers -> Windows.System.VirtualKeyModifiers
+Microsoft.CommandPalette.Extensions.KeyChord.ScanCode -> int
+Microsoft.CommandPalette.Extensions.KeyChord.Vkey -> int
+Microsoft.CommandPalette.Extensions.MessageState
+Microsoft.CommandPalette.Extensions.MessageState.Error = 3 -> Microsoft.CommandPalette.Extensions.MessageState
+Microsoft.CommandPalette.Extensions.MessageState.Info = 0 -> Microsoft.CommandPalette.Extensions.MessageState
+Microsoft.CommandPalette.Extensions.MessageState.Success = 1 -> Microsoft.CommandPalette.Extensions.MessageState
+Microsoft.CommandPalette.Extensions.MessageState.Warning = 2 -> Microsoft.CommandPalette.Extensions.MessageState
+Microsoft.CommandPalette.Extensions.NavigationMode
+Microsoft.CommandPalette.Extensions.NavigationMode.GoBack = 1 -> Microsoft.CommandPalette.Extensions.NavigationMode
+Microsoft.CommandPalette.Extensions.NavigationMode.GoHome = 2 -> Microsoft.CommandPalette.Extensions.NavigationMode
+Microsoft.CommandPalette.Extensions.NavigationMode.Push = 0 -> Microsoft.CommandPalette.Extensions.NavigationMode
+Microsoft.CommandPalette.Extensions.OptionalColor
+Microsoft.CommandPalette.Extensions.OptionalColor.Color -> Microsoft.CommandPalette.Extensions.Color
+Microsoft.CommandPalette.Extensions.OptionalColor.Equals(Microsoft.CommandPalette.Extensions.OptionalColor other) -> bool
+Microsoft.CommandPalette.Extensions.OptionalColor.HasValue -> bool
+Microsoft.CommandPalette.Extensions.OptionalColor.OptionalColor() -> void
+Microsoft.CommandPalette.Extensions.OptionalColor.OptionalColor(bool _HasValue, Microsoft.CommandPalette.Extensions.Color _Color) -> void
+Microsoft.CommandPalette.Extensions.ProviderType
+Microsoft.CommandPalette.Extensions.ProviderType.Commands = 0 -> Microsoft.CommandPalette.Extensions.ProviderType
+Microsoft.CommandPalette.Extensions.StatusContext
+Microsoft.CommandPalette.Extensions.StatusContext.Extension = 1 -> Microsoft.CommandPalette.Extensions.StatusContext
+Microsoft.CommandPalette.Extensions.StatusContext.Page = 0 -> Microsoft.CommandPalette.Extensions.StatusContext
+Microsoft.CommandPalette.Extensions.Toolkit.AnonymousCommand
+Microsoft.CommandPalette.Extensions.Toolkit.AnonymousCommand.AnonymousCommand(System.Action? action) -> void
+Microsoft.CommandPalette.Extensions.Toolkit.AnonymousCommand.Result.get -> Microsoft.CommandPalette.Extensions.ICommandResult!
+Microsoft.CommandPalette.Extensions.Toolkit.AnonymousCommand.Result.set -> void
+Microsoft.CommandPalette.Extensions.Toolkit.BaseObservable
+Microsoft.CommandPalette.Extensions.Toolkit.BaseObservable.BaseObservable() -> void
+Microsoft.CommandPalette.Extensions.Toolkit.BaseObservable.OnPropertyChanged(string! propertyName) -> void
+Microsoft.CommandPalette.Extensions.Toolkit.BaseObservable.PropChanged -> Windows.Foundation.TypedEventHandler<object!, Microsoft.CommandPalette.Extensions.IPropChangedEventArgs!>?
+Microsoft.CommandPalette.Extensions.Toolkit.ChoiceSetSetting
+Microsoft.CommandPalette.Extensions.Toolkit.ChoiceSetSetting.Choice
+Microsoft.CommandPalette.Extensions.Toolkit.ChoiceSetSetting.Choice.Choice(string! title, string! value) -> void
+Microsoft.CommandPalette.Extensions.Toolkit.ChoiceSetSetting.Choice.Title.get -> string!
+Microsoft.CommandPalette.Extensions.Toolkit.ChoiceSetSetting.Choice.Title.set -> void
+Microsoft.CommandPalette.Extensions.Toolkit.ChoiceSetSetting.Choice.Value.get -> string!
+Microsoft.CommandPalette.Extensions.Toolkit.ChoiceSetSetting.Choice.Value.set -> void
+Microsoft.CommandPalette.Extensions.Toolkit.ChoiceSetSetting.Choices.get -> System.Collections.Generic.List<Microsoft.CommandPalette.Extensions.Toolkit.ChoiceSetSetting.Choice!>!
+Microsoft.CommandPalette.Extensions.Toolkit.ChoiceSetSetting.Choices.set -> void
+Microsoft.CommandPalette.Extensions.Toolkit.ChoiceSetSetting.ChoiceSetSetting(string! key, string! label, string! description, System.Collections.Generic.List<Microsoft.CommandPalette.Extensions.Toolkit.ChoiceSetSetting.Choice!>! choices) -> void
+Microsoft.CommandPalette.Extensions.Toolkit.ChoiceSetSetting.ChoiceSetSetting(string! key, System.Collections.Generic.List<Microsoft.CommandPalette.Extensions.Toolkit.ChoiceSetSetting.Choice!>! choices) -> void
+Microsoft.CommandPalette.Extensions.Toolkit.ClipboardHelper
+Microsoft.CommandPalette.Extensions.Toolkit.ColorHelpers
+Microsoft.CommandPalette.Extensions.Toolkit.ColorHelpers.ColorHelpers() -> void
+Microsoft.CommandPalette.Extensions.Toolkit.Command
+Microsoft.CommandPalette.Extensions.Toolkit.Command.Command() -> void
+Microsoft.CommandPalette.Extensions.Toolkit.CommandContextItem
+Microsoft.CommandPalette.Extensions.Toolkit.CommandContextItem.CommandContextItem(Microsoft.CommandPalette.Extensions.ICommand! command) -> void
+Microsoft.CommandPalette.Extensions.Toolkit.CommandContextItem.CommandContextItem(string! title, string! subtitle = "", string! name = "", System.Action? action = null, Microsoft.CommandPalette.Extensions.ICommandResult? result = null) -> void
+Microsoft.CommandPalette.Extensions.Toolkit.CommandItem
+Microsoft.CommandPalette.Extensions.Toolkit.CommandItem.CommandItem() -> void
+Microsoft.CommandPalette.Extensions.Toolkit.CommandItem.CommandItem(Microsoft.CommandPalette.Extensions.ICommand! command) -> void
+Microsoft.CommandPalette.Extensions.Toolkit.CommandItem.CommandItem(Microsoft.CommandPalette.Extensions.ICommandItem! other) -> void
+Microsoft.CommandPalette.Extensions.Toolkit.CommandItem.CommandItem(string! title, string! subtitle = "", string! name = "", System.Action? action = null, Microsoft.CommandPalette.Extensions.ICommandResult? result = null) -> void
+Microsoft.CommandPalette.Extensions.Toolkit.CommandProvider
+Microsoft.CommandPalette.Extensions.Toolkit.CommandProvider.CommandProvider() -> void
+Microsoft.CommandPalette.Extensions.Toolkit.CommandProvider.GetApiExtensionStubs() -> object![]!
+Microsoft.CommandPalette.Extensions.Toolkit.CommandProvider.ItemsChanged -> Windows.Foundation.TypedEventHandler<object!, Microsoft.CommandPalette.Extensions.IItemsChangedEventArgs!>?
+Microsoft.CommandPalette.Extensions.Toolkit.CommandProvider.RaiseItemsChanged(int totalItems = -1) -> void
+Microsoft.CommandPalette.Extensions.Toolkit.CommandResult
+Microsoft.CommandPalette.Extensions.Toolkit.CommandResult.Args.get -> Microsoft.CommandPalette.Extensions.ICommandResultArgs?
+Microsoft.CommandPalette.Extensions.Toolkit.CommandResult.CommandResult() -> void
+Microsoft.CommandPalette.Extensions.Toolkit.CommandResult.Kind.get -> Microsoft.CommandPalette.Extensions.CommandResultKind
+Microsoft.CommandPalette.Extensions.Toolkit.ConfirmationArgs
+Microsoft.CommandPalette.Extensions.Toolkit.ConfirmationArgs.ConfirmationArgs() -> void
+Microsoft.CommandPalette.Extensions.Toolkit.ContentPage
+Microsoft.CommandPalette.Extensions.Toolkit.ContentPage.ContentPage() -> void
+Microsoft.CommandPalette.Extensions.Toolkit.ContentPage.ItemsChanged -> Windows.Foundation.TypedEventHandler<object!, Microsoft.CommandPalette.Extensions.IItemsChangedEventArgs!>?
+Microsoft.CommandPalette.Extensions.Toolkit.ContentPage.RaiseItemsChanged(int totalItems = -1) -> void
+Microsoft.CommandPalette.Extensions.Toolkit.CopyPathCommand
+Microsoft.CommandPalette.Extensions.Toolkit.CopyPathCommand.CopyPathCommand(string! fullPath) -> void
+Microsoft.CommandPalette.Extensions.Toolkit.CopyPathCommand.Result.get -> Microsoft.CommandPalette.Extensions.Toolkit.CommandResult!
+Microsoft.CommandPalette.Extensions.Toolkit.CopyPathCommand.Result.set -> void
+Microsoft.CommandPalette.Extensions.Toolkit.CopyTextCommand
+Microsoft.CommandPalette.Extensions.Toolkit.CopyTextCommand.CopyTextCommand(string! text) -> void
+Microsoft.CommandPalette.Extensions.Toolkit.Details
+Microsoft.CommandPalette.Extensions.Toolkit.Details.Details() -> void
+Microsoft.CommandPalette.Extensions.Toolkit.DetailsCommands
+Microsoft.CommandPalette.Extensions.Toolkit.DetailsCommands.Commands.get -> Microsoft.CommandPalette.Extensions.ICommand![]?
+Microsoft.CommandPalette.Extensions.Toolkit.DetailsCommands.Commands.set -> void
+Microsoft.CommandPalette.Extensions.Toolkit.DetailsCommands.DetailsCommands() -> void
+Microsoft.CommandPalette.Extensions.Toolkit.DetailsElement
+Microsoft.CommandPalette.Extensions.Toolkit.DetailsElement.DetailsElement() -> void
+Microsoft.CommandPalette.Extensions.Toolkit.DetailsLink
+Microsoft.CommandPalette.Extensions.Toolkit.DetailsLink.DetailsLink() -> void
+Microsoft.CommandPalette.Extensions.Toolkit.DetailsLink.DetailsLink(string! url) -> void
+Microsoft.CommandPalette.Extensions.Toolkit.DetailsLink.DetailsLink(string! url, string! text) -> void
+Microsoft.CommandPalette.Extensions.Toolkit.DetailsSeparator
+Microsoft.CommandPalette.Extensions.Toolkit.DetailsSeparator.DetailsSeparator() -> void
+Microsoft.CommandPalette.Extensions.Toolkit.DetailsTags
+Microsoft.CommandPalette.Extensions.Toolkit.DetailsTags.DetailsTags() -> void
+Microsoft.CommandPalette.Extensions.Toolkit.DetailsTags.Tags.get -> Microsoft.CommandPalette.Extensions.ITag![]!
+Microsoft.CommandPalette.Extensions.Toolkit.DetailsTags.Tags.set -> void
+Microsoft.CommandPalette.Extensions.Toolkit.DynamicListPage
+Microsoft.CommandPalette.Extensions.Toolkit.DynamicListPage.DynamicListPage() -> void
+Microsoft.CommandPalette.Extensions.Toolkit.ExtensionHost
+Microsoft.CommandPalette.Extensions.Toolkit.ExtensionHost.ExtensionHost() -> void
+Microsoft.CommandPalette.Extensions.Toolkit.FallbackCommandItem
+Microsoft.CommandPalette.Extensions.Toolkit.FallbackCommandItem.FallbackCommandItem(Microsoft.CommandPalette.Extensions.ICommand! command, string! displayTitle) -> void
+Microsoft.CommandPalette.Extensions.Toolkit.FallbackCommandItem.FallbackHandler.get -> Microsoft.CommandPalette.Extensions.IFallbackHandler?
+Microsoft.CommandPalette.Extensions.Toolkit.FallbackCommandItem.FallbackHandler.init -> void
+Microsoft.CommandPalette.Extensions.Toolkit.Filter
+Microsoft.CommandPalette.Extensions.Toolkit.Filter.Filter() -> void
+Microsoft.CommandPalette.Extensions.Toolkit.Filters
+Microsoft.CommandPalette.Extensions.Toolkit.Filters.CurrentFilterId.get -> string!
+Microsoft.CommandPalette.Extensions.Toolkit.Filters.CurrentFilterId.set -> void
+Microsoft.CommandPalette.Extensions.Toolkit.Filters.Filters() -> void
+Microsoft.CommandPalette.Extensions.Toolkit.FontIconData
+Microsoft.CommandPalette.Extensions.Toolkit.FontIconData.FontFamily.get -> string!
+Microsoft.CommandPalette.Extensions.Toolkit.FontIconData.FontFamily.set -> void
+Microsoft.CommandPalette.Extensions.Toolkit.FontIconData.FontIconData(string! glyph, string! fontFamily) -> void
+Microsoft.CommandPalette.Extensions.Toolkit.FontIconData.GetProperties() -> System.Collections.Generic.IDictionary<string!, object!>?
+Microsoft.CommandPalette.Extensions.Toolkit.FormContent
+Microsoft.CommandPalette.Extensions.Toolkit.FormContent.FormContent() -> void
+Microsoft.CommandPalette.Extensions.Toolkit.FuzzyStringMatcher
+Microsoft.CommandPalette.Extensions.Toolkit.GalleryGridLayout
+Microsoft.CommandPalette.Extensions.Toolkit.GalleryGridLayout.GalleryGridLayout() -> void
+Microsoft.CommandPalette.Extensions.Toolkit.GoToPageArgs
+Microsoft.CommandPalette.Extensions.Toolkit.GoToPageArgs.GoToPageArgs() -> void
+Microsoft.CommandPalette.Extensions.Toolkit.GoToPageArgs.NavigationMode.get -> Microsoft.CommandPalette.Extensions.NavigationMode
+Microsoft.CommandPalette.Extensions.Toolkit.GoToPageArgs.NavigationMode.set -> void
+Microsoft.CommandPalette.Extensions.Toolkit.GoToPageArgs.PageId.get -> string!
+Microsoft.CommandPalette.Extensions.Toolkit.GoToPageArgs.PageId.set -> void
+Microsoft.CommandPalette.Extensions.Toolkit.IconData
+Microsoft.CommandPalette.Extensions.Toolkit.IconData.Data.get -> Windows.Storage.Streams.IRandomAccessStreamReference?
+Microsoft.CommandPalette.Extensions.Toolkit.IconData.Data.set -> void
+Microsoft.CommandPalette.Extensions.Toolkit.IconData.Icon.get -> string?
+Microsoft.CommandPalette.Extensions.Toolkit.IconData.Icon.set -> void
+Microsoft.CommandPalette.Extensions.Toolkit.IconData.IconData(string? icon) -> void
+Microsoft.CommandPalette.Extensions.Toolkit.IconData.IconData(Windows.Storage.Streams.IRandomAccessStreamReference! data) -> void
+Microsoft.CommandPalette.Extensions.Toolkit.IconHelpers
+Microsoft.CommandPalette.Extensions.Toolkit.IconHelpers.IconHelpers() -> void
+Microsoft.CommandPalette.Extensions.Toolkit.IconInfo
+Microsoft.CommandPalette.Extensions.Toolkit.IconInfo.IconInfo(Microsoft.CommandPalette.Extensions.Toolkit.IconData! icon) -> void
+Microsoft.CommandPalette.Extensions.Toolkit.IconInfo.IconInfo(Microsoft.CommandPalette.Extensions.Toolkit.IconData! light, Microsoft.CommandPalette.Extensions.Toolkit.IconData! dark) -> void
+Microsoft.CommandPalette.Extensions.Toolkit.IconInfo.IconInfo(string? icon) -> void
+Microsoft.CommandPalette.Extensions.Toolkit.InvokableCommand
+Microsoft.CommandPalette.Extensions.Toolkit.InvokableCommand.InvokableCommand() -> void
+Microsoft.CommandPalette.Extensions.Toolkit.ItemsChangedEventArgs
+Microsoft.CommandPalette.Extensions.Toolkit.ItemsChangedEventArgs.ItemsChangedEventArgs(int totalItems = -1) -> void
+Microsoft.CommandPalette.Extensions.Toolkit.ItemsChangedEventArgs.TotalItems.get -> int
+Microsoft.CommandPalette.Extensions.Toolkit.ItemsChangedEventArgs.TotalItems.set -> void
+Microsoft.CommandPalette.Extensions.Toolkit.JsonSettingsManager
+Microsoft.CommandPalette.Extensions.Toolkit.JsonSettingsManager.FilePath.get -> string!
+Microsoft.CommandPalette.Extensions.Toolkit.JsonSettingsManager.FilePath.init -> void
+Microsoft.CommandPalette.Extensions.Toolkit.JsonSettingsManager.JsonSettingsManager() -> void
+Microsoft.CommandPalette.Extensions.Toolkit.JsonSettingsManager.Settings.get -> Microsoft.CommandPalette.Extensions.Toolkit.Settings!
+Microsoft.CommandPalette.Extensions.Toolkit.KeyChordHelpers
+Microsoft.CommandPalette.Extensions.Toolkit.ListHelpers
+Microsoft.CommandPalette.Extensions.Toolkit.ListHelpers.ListHelpers() -> void
+Microsoft.CommandPalette.Extensions.Toolkit.ListItem
+Microsoft.CommandPalette.Extensions.Toolkit.ListItem.ListItem() -> void
+Microsoft.CommandPalette.Extensions.Toolkit.ListItem.ListItem(Microsoft.CommandPalette.Extensions.ICommand! command) -> void
+Microsoft.CommandPalette.Extensions.Toolkit.ListItem.ListItem(Microsoft.CommandPalette.Extensions.ICommandItem! command) -> void
+Microsoft.CommandPalette.Extensions.Toolkit.ListPage
+Microsoft.CommandPalette.Extensions.Toolkit.ListPage.ItemsChanged -> Windows.Foundation.TypedEventHandler<object!, Microsoft.CommandPalette.Extensions.IItemsChangedEventArgs!>?
+Microsoft.CommandPalette.Extensions.Toolkit.ListPage.ListPage() -> void
+Microsoft.CommandPalette.Extensions.Toolkit.ListPage.RaiseItemsChanged(int totalItems = -1) -> void
+Microsoft.CommandPalette.Extensions.Toolkit.ListPage.SetSearchNoUpdate(string! newSearchText) -> void
+Microsoft.CommandPalette.Extensions.Toolkit.LogMessage
+Microsoft.CommandPalette.Extensions.Toolkit.LogMessage.LogMessage(string! message = "") -> void
+Microsoft.CommandPalette.Extensions.Toolkit.LogMessage.Message.get -> string!
+Microsoft.CommandPalette.Extensions.Toolkit.LogMessage.Message.set -> void
+Microsoft.CommandPalette.Extensions.Toolkit.LogMessage.State.get -> Microsoft.CommandPalette.Extensions.MessageState
+Microsoft.CommandPalette.Extensions.Toolkit.LogMessage.State.set -> void
+Microsoft.CommandPalette.Extensions.Toolkit.MarkdownContent
+Microsoft.CommandPalette.Extensions.Toolkit.MarkdownContent.MarkdownContent() -> void
+Microsoft.CommandPalette.Extensions.Toolkit.MarkdownContent.MarkdownContent(string! body) -> void
+Microsoft.CommandPalette.Extensions.Toolkit.MatchOption
+Microsoft.CommandPalette.Extensions.Toolkit.MatchOption.IgnoreCase.get -> bool
+Microsoft.CommandPalette.Extensions.Toolkit.MatchOption.IgnoreCase.set -> void
+Microsoft.CommandPalette.Extensions.Toolkit.MatchOption.MatchOption() -> void
+Microsoft.CommandPalette.Extensions.Toolkit.MatchOption.Prefix.get -> string!
+Microsoft.CommandPalette.Extensions.Toolkit.MatchOption.Prefix.set -> void
+Microsoft.CommandPalette.Extensions.Toolkit.MatchOption.Suffix.get -> string!
+Microsoft.CommandPalette.Extensions.Toolkit.MatchOption.Suffix.set -> void
+Microsoft.CommandPalette.Extensions.Toolkit.MatchResult
+Microsoft.CommandPalette.Extensions.Toolkit.MatchResult.IsSearchPrecisionScoreMet() -> bool
+Microsoft.CommandPalette.Extensions.Toolkit.MatchResult.MatchData.get -> System.Collections.Generic.List<int>!
+Microsoft.CommandPalette.Extensions.Toolkit.MatchResult.MatchResult(bool success, Microsoft.CommandPalette.Extensions.Toolkit.SearchPrecisionScore searchPrecision) -> void
+Microsoft.CommandPalette.Extensions.Toolkit.MatchResult.MatchResult(bool success, Microsoft.CommandPalette.Extensions.Toolkit.SearchPrecisionScore searchPrecision, System.Collections.Generic.List<int>! matchData, int rawScore) -> void
+Microsoft.CommandPalette.Extensions.Toolkit.MatchResult.RawScore.get -> int
+Microsoft.CommandPalette.Extensions.Toolkit.MatchResult.RawScore.set -> void
+Microsoft.CommandPalette.Extensions.Toolkit.MatchResult.Score.get -> int
+Microsoft.CommandPalette.Extensions.Toolkit.MatchResult.SearchPrecision.get -> Microsoft.CommandPalette.Extensions.Toolkit.SearchPrecisionScore
+Microsoft.CommandPalette.Extensions.Toolkit.MatchResult.SearchPrecision.set -> void
+Microsoft.CommandPalette.Extensions.Toolkit.MatchResult.Success.get -> bool
+Microsoft.CommandPalette.Extensions.Toolkit.MatchResult.Success.set -> void
+Microsoft.CommandPalette.Extensions.Toolkit.MediumGridLayout
+Microsoft.CommandPalette.Extensions.Toolkit.MediumGridLayout.MediumGridLayout() -> void
+Microsoft.CommandPalette.Extensions.Toolkit.NoOpCommand
+Microsoft.CommandPalette.Extensions.Toolkit.NoOpCommand.NoOpCommand() -> void
+Microsoft.CommandPalette.Extensions.Toolkit.OpenFileCommand
+Microsoft.CommandPalette.Extensions.Toolkit.OpenFileCommand.OpenFileCommand(string! fullPath) -> void
+Microsoft.CommandPalette.Extensions.Toolkit.OpenFileCommand.Result.get -> Microsoft.CommandPalette.Extensions.Toolkit.CommandResult!
+Microsoft.CommandPalette.Extensions.Toolkit.OpenFileCommand.Result.set -> void
+Microsoft.CommandPalette.Extensions.Toolkit.OpenInConsoleCommand
+Microsoft.CommandPalette.Extensions.Toolkit.OpenInConsoleCommand.OpenInConsoleCommand(string! fullPath) -> void
+Microsoft.CommandPalette.Extensions.Toolkit.OpenPropertiesCommand
+Microsoft.CommandPalette.Extensions.Toolkit.OpenPropertiesCommand.OpenPropertiesCommand(string! fullPath) -> void
+Microsoft.CommandPalette.Extensions.Toolkit.OpenUrlCommand
+Microsoft.CommandPalette.Extensions.Toolkit.OpenUrlCommand.OpenUrlCommand(string! target) -> void
+Microsoft.CommandPalette.Extensions.Toolkit.OpenUrlCommand.Result.get -> Microsoft.CommandPalette.Extensions.Toolkit.CommandResult!
+Microsoft.CommandPalette.Extensions.Toolkit.OpenUrlCommand.Result.set -> void
+Microsoft.CommandPalette.Extensions.Toolkit.Page
+Microsoft.CommandPalette.Extensions.Toolkit.Page.Page() -> void
+Microsoft.CommandPalette.Extensions.Toolkit.ProgressState
+Microsoft.CommandPalette.Extensions.Toolkit.ProgressState.ProgressState() -> void
+Microsoft.CommandPalette.Extensions.Toolkit.PropChangedEventArgs
+Microsoft.CommandPalette.Extensions.Toolkit.PropChangedEventArgs.PropChangedEventArgs(string! propertyName) -> void
+Microsoft.CommandPalette.Extensions.Toolkit.PropChangedEventArgs.PropertyName.get -> string!
+Microsoft.CommandPalette.Extensions.Toolkit.Scored<T>
+Microsoft.CommandPalette.Extensions.Toolkit.Scored<T>.Item -> T
+Microsoft.CommandPalette.Extensions.Toolkit.Scored<T>.Score -> int
+Microsoft.CommandPalette.Extensions.Toolkit.Scored<T>.Scored() -> void
+Microsoft.CommandPalette.Extensions.Toolkit.ScoredListItem
+Microsoft.CommandPalette.Extensions.Toolkit.ScoredListItem.ListItem -> Microsoft.CommandPalette.Extensions.IListItem!
+Microsoft.CommandPalette.Extensions.Toolkit.ScoredListItem.Score -> int
+Microsoft.CommandPalette.Extensions.Toolkit.ScoredListItem.ScoredListItem() -> void
+Microsoft.CommandPalette.Extensions.Toolkit.SearchPrecisionScore
+Microsoft.CommandPalette.Extensions.Toolkit.SearchPrecisionScore.Low = 20 -> Microsoft.CommandPalette.Extensions.Toolkit.SearchPrecisionScore
+Microsoft.CommandPalette.Extensions.Toolkit.SearchPrecisionScore.None = 0 -> Microsoft.CommandPalette.Extensions.Toolkit.SearchPrecisionScore
+Microsoft.CommandPalette.Extensions.Toolkit.SearchPrecisionScore.Regular = 50 -> Microsoft.CommandPalette.Extensions.Toolkit.SearchPrecisionScore
+Microsoft.CommandPalette.Extensions.Toolkit.Separator
+Microsoft.CommandPalette.Extensions.Toolkit.Separator.Separator() -> void
+Microsoft.CommandPalette.Extensions.Toolkit.Setting<T>
+Microsoft.CommandPalette.Extensions.Toolkit.Setting<T>.Description.get -> string!
+Microsoft.CommandPalette.Extensions.Toolkit.Setting<T>.Description.set -> void
+Microsoft.CommandPalette.Extensions.Toolkit.Setting<T>.ErrorMessage.get -> string!
+Microsoft.CommandPalette.Extensions.Toolkit.Setting<T>.ErrorMessage.set -> void
+Microsoft.CommandPalette.Extensions.Toolkit.Setting<T>.IsRequired.get -> bool
+Microsoft.CommandPalette.Extensions.Toolkit.Setting<T>.IsRequired.set -> void
+Microsoft.CommandPalette.Extensions.Toolkit.Setting<T>.Key.get -> string!
+Microsoft.CommandPalette.Extensions.Toolkit.Setting<T>.Label.get -> string!
+Microsoft.CommandPalette.Extensions.Toolkit.Setting<T>.Label.set -> void
+Microsoft.CommandPalette.Extensions.Toolkit.Setting<T>.Setting() -> void
+Microsoft.CommandPalette.Extensions.Toolkit.Setting<T>.Setting(string! key, string! label, string! description, T defaultValue) -> void
+Microsoft.CommandPalette.Extensions.Toolkit.Setting<T>.Setting(string! key, T defaultValue) -> void
+Microsoft.CommandPalette.Extensions.Toolkit.Setting<T>.ToDataIdentifier() -> string!
+Microsoft.CommandPalette.Extensions.Toolkit.Setting<T>.ToForm() -> string!
+Microsoft.CommandPalette.Extensions.Toolkit.Setting<T>.Value.get -> T?
+Microsoft.CommandPalette.Extensions.Toolkit.Setting<T>.Value.set -> void
+Microsoft.CommandPalette.Extensions.Toolkit.Settings
+Microsoft.CommandPalette.Extensions.Toolkit.Settings.Add<T>(Microsoft.CommandPalette.Extensions.Toolkit.Setting<T>! s) -> void
+Microsoft.CommandPalette.Extensions.Toolkit.Settings.GetSetting<T>(string! key) -> T?
+Microsoft.CommandPalette.Extensions.Toolkit.Settings.Settings() -> void
+Microsoft.CommandPalette.Extensions.Toolkit.Settings.SettingsChanged -> Windows.Foundation.TypedEventHandler<object!, Microsoft.CommandPalette.Extensions.Toolkit.Settings!>?
+Microsoft.CommandPalette.Extensions.Toolkit.Settings.SettingsPage.get -> Microsoft.CommandPalette.Extensions.IContentPage!
+Microsoft.CommandPalette.Extensions.Toolkit.Settings.ToContent() -> Microsoft.CommandPalette.Extensions.IContent![]!
+Microsoft.CommandPalette.Extensions.Toolkit.Settings.ToJson() -> string!
+Microsoft.CommandPalette.Extensions.Toolkit.Settings.TryGetSetting<T>(string! key, out T? val) -> bool
+Microsoft.CommandPalette.Extensions.Toolkit.Settings.Update(string! data) -> void
+Microsoft.CommandPalette.Extensions.Toolkit.SettingsForm
+Microsoft.CommandPalette.Extensions.Toolkit.ShellHelpers
+Microsoft.CommandPalette.Extensions.Toolkit.ShellHelpers.ShellRunAsType
+Microsoft.CommandPalette.Extensions.Toolkit.ShellHelpers.ShellRunAsType.Administrator = 1 -> Microsoft.CommandPalette.Extensions.Toolkit.ShellHelpers.ShellRunAsType
+Microsoft.CommandPalette.Extensions.Toolkit.ShellHelpers.ShellRunAsType.None = 0 -> Microsoft.CommandPalette.Extensions.Toolkit.ShellHelpers.ShellRunAsType
+Microsoft.CommandPalette.Extensions.Toolkit.ShellHelpers.ShellRunAsType.OtherUser = 2 -> Microsoft.CommandPalette.Extensions.Toolkit.ShellHelpers.ShellRunAsType
+Microsoft.CommandPalette.Extensions.Toolkit.ShowFileInFolderCommand
+Microsoft.CommandPalette.Extensions.Toolkit.ShowFileInFolderCommand.Result.get -> Microsoft.CommandPalette.Extensions.Toolkit.CommandResult!
+Microsoft.CommandPalette.Extensions.Toolkit.ShowFileInFolderCommand.Result.set -> void
+Microsoft.CommandPalette.Extensions.Toolkit.ShowFileInFolderCommand.ShowFileInFolderCommand(string! path) -> void
+Microsoft.CommandPalette.Extensions.Toolkit.SmallGridLayout
+Microsoft.CommandPalette.Extensions.Toolkit.SmallGridLayout.SmallGridLayout() -> void
+Microsoft.CommandPalette.Extensions.Toolkit.StatusMessage
+Microsoft.CommandPalette.Extensions.Toolkit.StatusMessage.StatusMessage() -> void
+Microsoft.CommandPalette.Extensions.Toolkit.Tag
+Microsoft.CommandPalette.Extensions.Toolkit.Tag.Tag() -> void
+Microsoft.CommandPalette.Extensions.Toolkit.Tag.Tag(string! text) -> void
+Microsoft.CommandPalette.Extensions.Toolkit.TextSetting
+Microsoft.CommandPalette.Extensions.Toolkit.TextSetting.Multiline.get -> bool
+Microsoft.CommandPalette.Extensions.Toolkit.TextSetting.Multiline.set -> void
+Microsoft.CommandPalette.Extensions.Toolkit.TextSetting.Placeholder.get -> string!
+Microsoft.CommandPalette.Extensions.Toolkit.TextSetting.Placeholder.set -> void
+Microsoft.CommandPalette.Extensions.Toolkit.TextSetting.TextSetting(string! key, string! defaultValue) -> void
+Microsoft.CommandPalette.Extensions.Toolkit.TextSetting.TextSetting(string! key, string! label, string! description, string! defaultValue) -> void
+Microsoft.CommandPalette.Extensions.Toolkit.ThumbnailHelper
+Microsoft.CommandPalette.Extensions.Toolkit.ToastArgs
+Microsoft.CommandPalette.Extensions.Toolkit.ToastArgs.Message.get -> string?
+Microsoft.CommandPalette.Extensions.Toolkit.ToastArgs.Message.set -> void
+Microsoft.CommandPalette.Extensions.Toolkit.ToastArgs.Result.get -> Microsoft.CommandPalette.Extensions.ICommandResult?
+Microsoft.CommandPalette.Extensions.Toolkit.ToastArgs.Result.set -> void
+Microsoft.CommandPalette.Extensions.Toolkit.ToastArgs.ToastArgs() -> void
+Microsoft.CommandPalette.Extensions.Toolkit.ToastStatusMessage
+Microsoft.CommandPalette.Extensions.Toolkit.ToastStatusMessage.Show() -> void
+Microsoft.CommandPalette.Extensions.Toolkit.ToastStatusMessage.ToastStatusMessage(Microsoft.CommandPalette.Extensions.Toolkit.StatusMessage! message) -> void
+Microsoft.CommandPalette.Extensions.Toolkit.ToastStatusMessage.ToastStatusMessage(string! text) -> void
+Microsoft.CommandPalette.Extensions.Toolkit.ToggleSetting
+Microsoft.CommandPalette.Extensions.Toolkit.ToggleSetting.ToggleSetting(string! key, bool defaultValue) -> void
+Microsoft.CommandPalette.Extensions.Toolkit.ToggleSetting.ToggleSetting(string! key, string! label, string! description, bool defaultValue) -> void
+Microsoft.CommandPalette.Extensions.Toolkit.TreeContent
+Microsoft.CommandPalette.Extensions.Toolkit.TreeContent.Children.get -> Microsoft.CommandPalette.Extensions.IContent![]!
+Microsoft.CommandPalette.Extensions.Toolkit.TreeContent.Children.set -> void
+Microsoft.CommandPalette.Extensions.Toolkit.TreeContent.ItemsChanged -> Windows.Foundation.TypedEventHandler<object!, Microsoft.CommandPalette.Extensions.IItemsChangedEventArgs!>?
+Microsoft.CommandPalette.Extensions.Toolkit.TreeContent.RaiseItemsChanged(int totalItems = -1) -> void
+Microsoft.CommandPalette.Extensions.Toolkit.TreeContent.TreeContent() -> void
+Microsoft.CommandPalette.Extensions.Toolkit.Utilities
+Microsoft.CommandPalette.Extensions.Toolkit.Utilities.Utilities() -> void
+override Microsoft.CmdPal.Common.Commands.ConfirmableCommand.Icon.get -> Microsoft.CommandPalette.Extensions.Toolkit.IconInfo!
+override Microsoft.CmdPal.Common.Commands.ConfirmableCommand.Icon.set -> void
+override Microsoft.CmdPal.Common.Commands.ConfirmableCommand.Id.get -> string!
+override Microsoft.CmdPal.Common.Commands.ConfirmableCommand.Id.set -> void
+override Microsoft.CmdPal.Common.Commands.ConfirmableCommand.Invoke() -> Microsoft.CommandPalette.Extensions.ICommandResult!
+override Microsoft.CmdPal.Common.Commands.ConfirmableCommand.Name.get -> string!
+override Microsoft.CmdPal.Common.Commands.ConfirmableCommand.Name.set -> void
+override Microsoft.CmdPal.Core.Common.Commands.OpenWithCommand.Invoke() -> Microsoft.CommandPalette.Extensions.Toolkit.CommandResult!
+override Microsoft.CommandPalette.Extensions.Color.GetHashCode() -> int
+override Microsoft.CommandPalette.Extensions.KeyChord.GetHashCode() -> int
+override Microsoft.CommandPalette.Extensions.OptionalColor.GetHashCode() -> int
+override Microsoft.CommandPalette.Extensions.Toolkit.AnonymousCommand.Invoke() -> Microsoft.CommandPalette.Extensions.ICommandResult!
+override Microsoft.CommandPalette.Extensions.Toolkit.ChoiceSetSetting.ToDictionary() -> System.Collections.Generic.Dictionary<string!, object!>!
+override Microsoft.CommandPalette.Extensions.Toolkit.ChoiceSetSetting.ToState() -> string!
+override Microsoft.CommandPalette.Extensions.Toolkit.ChoiceSetSetting.Update(System.Text.Json.Nodes.JsonObject! payload) -> void
+override Microsoft.CommandPalette.Extensions.Toolkit.CopyPathCommand.Invoke() -> Microsoft.CommandPalette.Extensions.Toolkit.CommandResult!
+override Microsoft.CommandPalette.Extensions.Toolkit.CopyTextCommand.Invoke() -> Microsoft.CommandPalette.Extensions.ICommandResult!
+override Microsoft.CommandPalette.Extensions.Toolkit.DynamicListPage.SearchText.get -> string!
+override Microsoft.CommandPalette.Extensions.Toolkit.DynamicListPage.SearchText.set -> void
+override Microsoft.CommandPalette.Extensions.Toolkit.NoOpCommand.Invoke() -> Microsoft.CommandPalette.Extensions.ICommandResult!
+override Microsoft.CommandPalette.Extensions.Toolkit.OpenFileCommand.Invoke() -> Microsoft.CommandPalette.Extensions.Toolkit.CommandResult!
+override Microsoft.CommandPalette.Extensions.Toolkit.OpenInConsoleCommand.Invoke() -> Microsoft.CommandPalette.Extensions.Toolkit.CommandResult!
+override Microsoft.CommandPalette.Extensions.Toolkit.OpenPropertiesCommand.Invoke() -> Microsoft.CommandPalette.Extensions.Toolkit.CommandResult!
+override Microsoft.CommandPalette.Extensions.Toolkit.OpenUrlCommand.Invoke() -> Microsoft.CommandPalette.Extensions.Toolkit.CommandResult!
+override Microsoft.CommandPalette.Extensions.Toolkit.SettingsForm.SubmitForm(string! inputs, string! data) -> Microsoft.CommandPalette.Extensions.ICommandResult!
+override Microsoft.CommandPalette.Extensions.Toolkit.ShowFileInFolderCommand.Invoke() -> Microsoft.CommandPalette.Extensions.Toolkit.CommandResult!
+override Microsoft.CommandPalette.Extensions.Toolkit.TextSetting.ToDictionary() -> System.Collections.Generic.Dictionary<string!, object!>!
+override Microsoft.CommandPalette.Extensions.Toolkit.TextSetting.ToState() -> string!
+override Microsoft.CommandPalette.Extensions.Toolkit.TextSetting.Update(System.Text.Json.Nodes.JsonObject! payload) -> void
+override Microsoft.CommandPalette.Extensions.Toolkit.ToggleSetting.ToDictionary() -> System.Collections.Generic.Dictionary<string!, object!>!
+override Microsoft.CommandPalette.Extensions.Toolkit.ToggleSetting.ToState() -> string!
+override Microsoft.CommandPalette.Extensions.Toolkit.ToggleSetting.Update(System.Text.Json.Nodes.JsonObject! payload) -> void
+static ABI.Microsoft.CommandPalette.Extensions.ICommandContextItemMethods.AbiToProjectionVftablePtr.get -> nint
+static ABI.Microsoft.CommandPalette.Extensions.ICommandContextItemMethods.IID.get -> System.Guid
+static ABI.Microsoft.CommandPalette.Extensions.ICommandItemMethods.AbiToProjectionVftablePtr.get -> nint
+static ABI.Microsoft.CommandPalette.Extensions.ICommandItemMethods.IID.get -> System.Guid
+static ABI.Microsoft.CommandPalette.Extensions.ICommandMethods.AbiToProjectionVftablePtr.get -> nint
+static ABI.Microsoft.CommandPalette.Extensions.ICommandMethods.IID.get -> System.Guid
+static ABI.Microsoft.CommandPalette.Extensions.ICommandProvider2Methods.AbiToProjectionVftablePtr.get -> nint
+static ABI.Microsoft.CommandPalette.Extensions.ICommandProvider2Methods.IID.get -> System.Guid
+static ABI.Microsoft.CommandPalette.Extensions.ICommandProviderMethods.AbiToProjectionVftablePtr.get -> nint
+static ABI.Microsoft.CommandPalette.Extensions.ICommandProviderMethods.IID.get -> System.Guid
+static ABI.Microsoft.CommandPalette.Extensions.ICommandResultArgsMethods.AbiToProjectionVftablePtr.get -> nint
+static ABI.Microsoft.CommandPalette.Extensions.ICommandResultArgsMethods.IID.get -> System.Guid
+static ABI.Microsoft.CommandPalette.Extensions.ICommandResultMethods.AbiToProjectionVftablePtr.get -> nint
+static ABI.Microsoft.CommandPalette.Extensions.ICommandResultMethods.IID.get -> System.Guid
+static ABI.Microsoft.CommandPalette.Extensions.ICommandSettingsMethods.AbiToProjectionVftablePtr.get -> nint
+static ABI.Microsoft.CommandPalette.Extensions.ICommandSettingsMethods.IID.get -> System.Guid
+static ABI.Microsoft.CommandPalette.Extensions.IConfirmationArgsMethods.AbiToProjectionVftablePtr.get -> nint
+static ABI.Microsoft.CommandPalette.Extensions.IConfirmationArgsMethods.IID.get -> System.Guid
+static ABI.Microsoft.CommandPalette.Extensions.IContentMethods.AbiToProjectionVftablePtr.get -> nint
+static ABI.Microsoft.CommandPalette.Extensions.IContentMethods.IID.get -> System.Guid
+static ABI.Microsoft.CommandPalette.Extensions.IContentPageMethods.AbiToProjectionVftablePtr.get -> nint
+static ABI.Microsoft.CommandPalette.Extensions.IContentPageMethods.IID.get -> System.Guid
+static ABI.Microsoft.CommandPalette.Extensions.IContextItemMethods.AbiToProjectionVftablePtr.get -> nint
+static ABI.Microsoft.CommandPalette.Extensions.IContextItemMethods.IID.get -> System.Guid
+static ABI.Microsoft.CommandPalette.Extensions.IDetailsCommandsMethods.AbiToProjectionVftablePtr.get -> nint
+static ABI.Microsoft.CommandPalette.Extensions.IDetailsCommandsMethods.IID.get -> System.Guid
+static ABI.Microsoft.CommandPalette.Extensions.IDetailsDataMethods.AbiToProjectionVftablePtr.get -> nint
+static ABI.Microsoft.CommandPalette.Extensions.IDetailsDataMethods.IID.get -> System.Guid
+static ABI.Microsoft.CommandPalette.Extensions.IDetailsElementMethods.AbiToProjectionVftablePtr.get -> nint
+static ABI.Microsoft.CommandPalette.Extensions.IDetailsElementMethods.IID.get -> System.Guid
+static ABI.Microsoft.CommandPalette.Extensions.IDetailsLinkMethods.AbiToProjectionVftablePtr.get -> nint
+static ABI.Microsoft.CommandPalette.Extensions.IDetailsLinkMethods.IID.get -> System.Guid
+static ABI.Microsoft.CommandPalette.Extensions.IDetailsMethods.AbiToProjectionVftablePtr.get -> nint
+static ABI.Microsoft.CommandPalette.Extensions.IDetailsMethods.IID.get -> System.Guid
+static ABI.Microsoft.CommandPalette.Extensions.IDetailsSeparatorMethods.AbiToProjectionVftablePtr.get -> nint
+static ABI.Microsoft.CommandPalette.Extensions.IDetailsSeparatorMethods.IID.get -> System.Guid
+static ABI.Microsoft.CommandPalette.Extensions.IDetailsTagsMethods.AbiToProjectionVftablePtr.get -> nint
+static ABI.Microsoft.CommandPalette.Extensions.IDetailsTagsMethods.IID.get -> System.Guid
+static ABI.Microsoft.CommandPalette.Extensions.IDynamicListPageMethods.AbiToProjectionVftablePtr.get -> nint
+static ABI.Microsoft.CommandPalette.Extensions.IDynamicListPageMethods.IID.get -> System.Guid
+static ABI.Microsoft.CommandPalette.Extensions.IExtendedAttributesProviderMethods.AbiToProjectionVftablePtr.get -> nint
+static ABI.Microsoft.CommandPalette.Extensions.IExtendedAttributesProviderMethods.IID.get -> System.Guid
+static ABI.Microsoft.CommandPalette.Extensions.IExtensionHostMethods.AbiToProjectionVftablePtr.get -> nint
+static ABI.Microsoft.CommandPalette.Extensions.IExtensionHostMethods.IID.get -> System.Guid
+static ABI.Microsoft.CommandPalette.Extensions.IExtensionMethods.AbiToProjectionVftablePtr.get -> nint
+static ABI.Microsoft.CommandPalette.Extensions.IExtensionMethods.IID.get -> System.Guid
+static ABI.Microsoft.CommandPalette.Extensions.IFallbackCommandItemMethods.AbiToProjectionVftablePtr.get -> nint
+static ABI.Microsoft.CommandPalette.Extensions.IFallbackCommandItemMethods.IID.get -> System.Guid
+static ABI.Microsoft.CommandPalette.Extensions.IFallbackHandlerMethods.AbiToProjectionVftablePtr.get -> nint
+static ABI.Microsoft.CommandPalette.Extensions.IFallbackHandlerMethods.IID.get -> System.Guid
+static ABI.Microsoft.CommandPalette.Extensions.IFilterItemMethods.AbiToProjectionVftablePtr.get -> nint
+static ABI.Microsoft.CommandPalette.Extensions.IFilterItemMethods.IID.get -> System.Guid
+static ABI.Microsoft.CommandPalette.Extensions.IFilterMethods.AbiToProjectionVftablePtr.get -> nint
+static ABI.Microsoft.CommandPalette.Extensions.IFilterMethods.IID.get -> System.Guid
+static ABI.Microsoft.CommandPalette.Extensions.IFiltersMethods.AbiToProjectionVftablePtr.get -> nint
+static ABI.Microsoft.CommandPalette.Extensions.IFiltersMethods.IID.get -> System.Guid
+static ABI.Microsoft.CommandPalette.Extensions.IFormContentMethods.AbiToProjectionVftablePtr.get -> nint
+static ABI.Microsoft.CommandPalette.Extensions.IFormContentMethods.IID.get -> System.Guid
+static ABI.Microsoft.CommandPalette.Extensions.IGalleryGridLayoutMethods.AbiToProjectionVftablePtr.get -> nint
+static ABI.Microsoft.CommandPalette.Extensions.IGalleryGridLayoutMethods.IID.get -> System.Guid
+static ABI.Microsoft.CommandPalette.Extensions.IGoToPageArgsMethods.AbiToProjectionVftablePtr.get -> nint
+static ABI.Microsoft.CommandPalette.Extensions.IGoToPageArgsMethods.IID.get -> System.Guid
+static ABI.Microsoft.CommandPalette.Extensions.IGridPropertiesMethods.AbiToProjectionVftablePtr.get -> nint
+static ABI.Microsoft.CommandPalette.Extensions.IGridPropertiesMethods.IID.get -> System.Guid
+static ABI.Microsoft.CommandPalette.Extensions.IIconDataMethods.AbiToProjectionVftablePtr.get -> nint
+static ABI.Microsoft.CommandPalette.Extensions.IIconDataMethods.IID.get -> System.Guid
+static ABI.Microsoft.CommandPalette.Extensions.IIconInfoMethods.AbiToProjectionVftablePtr.get -> nint
+static ABI.Microsoft.CommandPalette.Extensions.IIconInfoMethods.IID.get -> System.Guid
+static ABI.Microsoft.CommandPalette.Extensions.IInvokableCommandMethods.AbiToProjectionVftablePtr.get -> nint
+static ABI.Microsoft.CommandPalette.Extensions.IInvokableCommandMethods.IID.get -> System.Guid
+static ABI.Microsoft.CommandPalette.Extensions.IItemsChangedEventArgsMethods.AbiToProjectionVftablePtr.get -> nint
+static ABI.Microsoft.CommandPalette.Extensions.IItemsChangedEventArgsMethods.IID.get -> System.Guid
+static ABI.Microsoft.CommandPalette.Extensions.IListItemMethods.AbiToProjectionVftablePtr.get -> nint
+static ABI.Microsoft.CommandPalette.Extensions.IListItemMethods.IID.get -> System.Guid
+static ABI.Microsoft.CommandPalette.Extensions.IListPageMethods.AbiToProjectionVftablePtr.get -> nint
+static ABI.Microsoft.CommandPalette.Extensions.IListPageMethods.IID.get -> System.Guid
+static ABI.Microsoft.CommandPalette.Extensions.ILogMessageMethods.AbiToProjectionVftablePtr.get -> nint
+static ABI.Microsoft.CommandPalette.Extensions.ILogMessageMethods.IID.get -> System.Guid
+static ABI.Microsoft.CommandPalette.Extensions.IMarkdownContentMethods.AbiToProjectionVftablePtr.get -> nint
+static ABI.Microsoft.CommandPalette.Extensions.IMarkdownContentMethods.IID.get -> System.Guid
+static ABI.Microsoft.CommandPalette.Extensions.IMediumGridLayoutMethods.AbiToProjectionVftablePtr.get -> nint
+static ABI.Microsoft.CommandPalette.Extensions.IMediumGridLayoutMethods.IID.get -> System.Guid
+static ABI.Microsoft.CommandPalette.Extensions.INotifyItemsChangedMethods.AbiToProjectionVftablePtr.get -> nint
+static ABI.Microsoft.CommandPalette.Extensions.INotifyItemsChangedMethods.IID.get -> System.Guid
+static ABI.Microsoft.CommandPalette.Extensions.INotifyPropChangedMethods.AbiToProjectionVftablePtr.get -> nint
+static ABI.Microsoft.CommandPalette.Extensions.INotifyPropChangedMethods.IID.get -> System.Guid
+static ABI.Microsoft.CommandPalette.Extensions.IPageMethods.AbiToProjectionVftablePtr.get -> nint
+static ABI.Microsoft.CommandPalette.Extensions.IPageMethods.IID.get -> System.Guid
+static ABI.Microsoft.CommandPalette.Extensions.IProgressStateMethods.AbiToProjectionVftablePtr.get -> nint
+static ABI.Microsoft.CommandPalette.Extensions.IProgressStateMethods.IID.get -> System.Guid
+static ABI.Microsoft.CommandPalette.Extensions.IPropChangedEventArgsMethods.AbiToProjectionVftablePtr.get -> nint
+static ABI.Microsoft.CommandPalette.Extensions.IPropChangedEventArgsMethods.IID.get -> System.Guid
+static ABI.Microsoft.CommandPalette.Extensions.ISeparatorContextItemMethods.AbiToProjectionVftablePtr.get -> nint
+static ABI.Microsoft.CommandPalette.Extensions.ISeparatorContextItemMethods.IID.get -> System.Guid
+static ABI.Microsoft.CommandPalette.Extensions.ISeparatorFilterItemMethods.AbiToProjectionVftablePtr.get -> nint
+static ABI.Microsoft.CommandPalette.Extensions.ISeparatorFilterItemMethods.IID.get -> System.Guid
+static ABI.Microsoft.CommandPalette.Extensions.ISmallGridLayoutMethods.AbiToProjectionVftablePtr.get -> nint
+static ABI.Microsoft.CommandPalette.Extensions.ISmallGridLayoutMethods.IID.get -> System.Guid
+static ABI.Microsoft.CommandPalette.Extensions.IStatusMessageMethods.AbiToProjectionVftablePtr.get -> nint
+static ABI.Microsoft.CommandPalette.Extensions.IStatusMessageMethods.IID.get -> System.Guid
+static ABI.Microsoft.CommandPalette.Extensions.ITagMethods.AbiToProjectionVftablePtr.get -> nint
+static ABI.Microsoft.CommandPalette.Extensions.ITagMethods.IID.get -> System.Guid
+static ABI.Microsoft.CommandPalette.Extensions.IToastArgsMethods.AbiToProjectionVftablePtr.get -> nint
+static ABI.Microsoft.CommandPalette.Extensions.IToastArgsMethods.IID.get -> System.Guid
+static ABI.Microsoft.CommandPalette.Extensions.ITreeContentMethods.AbiToProjectionVftablePtr.get -> nint
+static ABI.Microsoft.CommandPalette.Extensions.ITreeContentMethods.IID.get -> System.Guid
+static ABI.Microsoft.CommandPalette.Extensions.OptionalColor.CopyAbi(ABI.Microsoft.CommandPalette.Extensions.OptionalColor.Marshaler arg, nint dest) -> void
+static ABI.Microsoft.CommandPalette.Extensions.OptionalColor.CopyManaged(Microsoft.CommandPalette.Extensions.OptionalColor arg, nint dest) -> void
+static ABI.Microsoft.CommandPalette.Extensions.OptionalColor.CreateMarshaler(Microsoft.CommandPalette.Extensions.OptionalColor arg) -> ABI.Microsoft.CommandPalette.Extensions.OptionalColor.Marshaler
+static ABI.Microsoft.CommandPalette.Extensions.OptionalColor.DisposeAbi(ABI.Microsoft.CommandPalette.Extensions.OptionalColor abi) -> void
+static ABI.Microsoft.CommandPalette.Extensions.OptionalColor.DisposeMarshaler(ABI.Microsoft.CommandPalette.Extensions.OptionalColor.Marshaler m) -> void
+static ABI.Microsoft.CommandPalette.Extensions.OptionalColor.FromAbi(ABI.Microsoft.CommandPalette.Extensions.OptionalColor arg) -> Microsoft.CommandPalette.Extensions.OptionalColor
+static ABI.Microsoft.CommandPalette.Extensions.OptionalColor.FromManaged(Microsoft.CommandPalette.Extensions.OptionalColor arg) -> ABI.Microsoft.CommandPalette.Extensions.OptionalColor
+static ABI.Microsoft.CommandPalette.Extensions.OptionalColor.GetAbi(ABI.Microsoft.CommandPalette.Extensions.OptionalColor.Marshaler m) -> ABI.Microsoft.CommandPalette.Extensions.OptionalColor
+static Microsoft.CommandPalette.Extensions.Color.operator !=(Microsoft.CommandPalette.Extensions.Color x, Microsoft.CommandPalette.Extensions.Color y) -> bool
+static Microsoft.CommandPalette.Extensions.Color.operator ==(Microsoft.CommandPalette.Extensions.Color x, Microsoft.CommandPalette.Extensions.Color y) -> bool
+static Microsoft.CommandPalette.Extensions.KeyChord.operator !=(Microsoft.CommandPalette.Extensions.KeyChord x, Microsoft.CommandPalette.Extensions.KeyChord y) -> bool
+static Microsoft.CommandPalette.Extensions.KeyChord.operator ==(Microsoft.CommandPalette.Extensions.KeyChord x, Microsoft.CommandPalette.Extensions.KeyChord y) -> bool
+static Microsoft.CommandPalette.Extensions.OptionalColor.operator !=(Microsoft.CommandPalette.Extensions.OptionalColor x, Microsoft.CommandPalette.Extensions.OptionalColor y) -> bool
+static Microsoft.CommandPalette.Extensions.OptionalColor.operator ==(Microsoft.CommandPalette.Extensions.OptionalColor x, Microsoft.CommandPalette.Extensions.OptionalColor y) -> bool
+static Microsoft.CommandPalette.Extensions.Toolkit.ChoiceSetSetting.LoadFromJson(System.Text.Json.Nodes.JsonObject! jsonObject) -> Microsoft.CommandPalette.Extensions.Toolkit.ChoiceSetSetting!
+static Microsoft.CommandPalette.Extensions.Toolkit.ClipboardHelper.GetText() -> string!
+static Microsoft.CommandPalette.Extensions.Toolkit.ClipboardHelper.SetRtf(string! plainText, string! rtfText) -> void
+static Microsoft.CommandPalette.Extensions.Toolkit.ClipboardHelper.SetText(string! text) -> void
+static Microsoft.CommandPalette.Extensions.Toolkit.ColorHelpers.FromArgb(byte a, byte r, byte g, byte b) -> Microsoft.CommandPalette.Extensions.OptionalColor
+static Microsoft.CommandPalette.Extensions.Toolkit.ColorHelpers.FromRgb(byte r, byte g, byte b) -> Microsoft.CommandPalette.Extensions.OptionalColor
+static Microsoft.CommandPalette.Extensions.Toolkit.ColorHelpers.NoColor() -> Microsoft.CommandPalette.Extensions.OptionalColor
+static Microsoft.CommandPalette.Extensions.Toolkit.ColorHelpers.Transparent() -> Microsoft.CommandPalette.Extensions.OptionalColor
+static Microsoft.CommandPalette.Extensions.Toolkit.CommandResult.Confirm(Microsoft.CommandPalette.Extensions.Toolkit.ConfirmationArgs! args) -> Microsoft.CommandPalette.Extensions.Toolkit.CommandResult!
+static Microsoft.CommandPalette.Extensions.Toolkit.CommandResult.Dismiss() -> Microsoft.CommandPalette.Extensions.Toolkit.CommandResult!
+static Microsoft.CommandPalette.Extensions.Toolkit.CommandResult.GoBack() -> Microsoft.CommandPalette.Extensions.Toolkit.CommandResult!
+static Microsoft.CommandPalette.Extensions.Toolkit.CommandResult.GoHome() -> Microsoft.CommandPalette.Extensions.Toolkit.CommandResult!
+static Microsoft.CommandPalette.Extensions.Toolkit.CommandResult.GoToPage(Microsoft.CommandPalette.Extensions.Toolkit.GoToPageArgs! args) -> Microsoft.CommandPalette.Extensions.Toolkit.CommandResult!
+static Microsoft.CommandPalette.Extensions.Toolkit.CommandResult.Hide() -> Microsoft.CommandPalette.Extensions.Toolkit.CommandResult!
+static Microsoft.CommandPalette.Extensions.Toolkit.CommandResult.KeepOpen() -> Microsoft.CommandPalette.Extensions.Toolkit.CommandResult!
+static Microsoft.CommandPalette.Extensions.Toolkit.CommandResult.ShowToast(Microsoft.CommandPalette.Extensions.Toolkit.ToastArgs! args) -> Microsoft.CommandPalette.Extensions.Toolkit.CommandResult!
+static Microsoft.CommandPalette.Extensions.Toolkit.CommandResult.ShowToast(string! message) -> Microsoft.CommandPalette.Extensions.Toolkit.CommandResult!
+static Microsoft.CommandPalette.Extensions.Toolkit.ExtensionHost.HideStatus(Microsoft.CommandPalette.Extensions.IStatusMessage! message) -> void
+static Microsoft.CommandPalette.Extensions.Toolkit.ExtensionHost.Host.get -> Microsoft.CommandPalette.Extensions.IExtensionHost?
+static Microsoft.CommandPalette.Extensions.Toolkit.ExtensionHost.Initialize(Microsoft.CommandPalette.Extensions.IExtensionHost! host) -> void
+static Microsoft.CommandPalette.Extensions.Toolkit.ExtensionHost.LogMessage(Microsoft.CommandPalette.Extensions.ILogMessage! message) -> void
+static Microsoft.CommandPalette.Extensions.Toolkit.ExtensionHost.LogMessage(string! message) -> void
+static Microsoft.CommandPalette.Extensions.Toolkit.ExtensionHost.ShowStatus(Microsoft.CommandPalette.Extensions.IStatusMessage! message, Microsoft.CommandPalette.Extensions.StatusContext context) -> void
+static Microsoft.CommandPalette.Extensions.Toolkit.FuzzyStringMatcher.ScoreFuzzy(string! needle, string! haystack, bool allowNonContiguousMatches = true) -> int
+static Microsoft.CommandPalette.Extensions.Toolkit.FuzzyStringMatcher.ScoreFuzzyWithPositions(string! needle, string! haystack, bool allowNonContiguousMatches) -> (int Score, System.Collections.Generic.List<int>! Positions)
+static Microsoft.CommandPalette.Extensions.Toolkit.IconHelpers.FromRelativePath(string! path) -> Microsoft.CommandPalette.Extensions.Toolkit.IconInfo!
+static Microsoft.CommandPalette.Extensions.Toolkit.IconHelpers.FromRelativePaths(string! lightIcon, string! darkIcon) -> Microsoft.CommandPalette.Extensions.Toolkit.IconInfo!
+static Microsoft.CommandPalette.Extensions.Toolkit.IconInfo.FromStream(Windows.Storage.Streams.IRandomAccessStream! stream) -> Microsoft.CommandPalette.Extensions.Toolkit.IconInfo!
+static Microsoft.CommandPalette.Extensions.Toolkit.KeyChordHelpers.FormatForDebug(Microsoft.CommandPalette.Extensions.KeyChord value) -> string!
+static Microsoft.CommandPalette.Extensions.Toolkit.KeyChordHelpers.FromModifiers(bool ctrl = false, bool alt = false, bool shift = false, bool win = false, int vkey = 0, int scanCode = 0) -> Microsoft.CommandPalette.Extensions.KeyChord
+static Microsoft.CommandPalette.Extensions.Toolkit.KeyChordHelpers.FromModifiers(bool ctrl = false, bool alt = false, bool shift = false, bool win = false, Windows.System.VirtualKey vkey = Windows.System.VirtualKey.None, int scanCode = 0) -> Microsoft.CommandPalette.Extensions.KeyChord
+static Microsoft.CommandPalette.Extensions.Toolkit.ListHelpers.FilterList(System.Collections.Generic.IEnumerable<Microsoft.CommandPalette.Extensions.IListItem!>! items, string! query) -> System.Collections.Generic.IEnumerable<Microsoft.CommandPalette.Extensions.IListItem!>!
+static Microsoft.CommandPalette.Extensions.Toolkit.ListHelpers.FilterList<T>(System.Collections.Generic.IEnumerable<T>! items, string! query, System.Func<string!, T, int>! scoreFunction) -> System.Collections.Generic.IEnumerable<T>!
+static Microsoft.CommandPalette.Extensions.Toolkit.ListHelpers.FilterListWithScores<T>(System.Collections.Generic.IEnumerable<T>! items, string! query, System.Func<string!, T, int>! scoreFunction) -> System.Collections.Generic.IEnumerable<Microsoft.CommandPalette.Extensions.Toolkit.Scored<T>>!
+static Microsoft.CommandPalette.Extensions.Toolkit.ListHelpers.InPlaceUpdateList<T>(System.Collections.Generic.IList<T!>! original, System.Collections.Generic.IEnumerable<T!>! newContents) -> void
+static Microsoft.CommandPalette.Extensions.Toolkit.ListHelpers.InPlaceUpdateList<T>(System.Collections.Generic.IList<T!>! original, System.Collections.Generic.IEnumerable<T!>! newContents, out System.Collections.Generic.List<T!>! removedItems) -> void
+static Microsoft.CommandPalette.Extensions.Toolkit.ListHelpers.ScoreListItem(string! query, Microsoft.CommandPalette.Extensions.ICommandItem! listItem) -> int
+static Microsoft.CommandPalette.Extensions.Toolkit.OpenInConsoleCommand.FromDirectory(string! directory) -> Microsoft.CommandPalette.Extensions.Toolkit.OpenInConsoleCommand!
+static Microsoft.CommandPalette.Extensions.Toolkit.OpenInConsoleCommand.FromFile(string! file) -> Microsoft.CommandPalette.Extensions.Toolkit.OpenInConsoleCommand!
+static Microsoft.CommandPalette.Extensions.Toolkit.ShellHelpers.ExecutableExtensions.get -> string![]!
+static Microsoft.CommandPalette.Extensions.Toolkit.ShellHelpers.FileExistInPath(string! filename, out string! fullPath, System.Threading.CancellationToken? token = null) -> bool
+static Microsoft.CommandPalette.Extensions.Toolkit.ShellHelpers.IsExecutableExtension(string! fileExtension) -> bool
+static Microsoft.CommandPalette.Extensions.Toolkit.ShellHelpers.IsExecutableFile(string! fileName) -> bool
+static Microsoft.CommandPalette.Extensions.Toolkit.ShellHelpers.OpenCommandInShell(string? path, string? pattern, string? arguments, string? workingDir = null, Microsoft.CommandPalette.Extensions.Toolkit.ShellHelpers.ShellRunAsType runAs = Microsoft.CommandPalette.Extensions.Toolkit.ShellHelpers.ShellRunAsType.None, bool runWithHiddenWindow = false) -> bool
+static Microsoft.CommandPalette.Extensions.Toolkit.ShellHelpers.OpenInShell(string? path, string? arguments = null, string? workingDir = null, Microsoft.CommandPalette.Extensions.Toolkit.ShellHelpers.ShellRunAsType runAs = Microsoft.CommandPalette.Extensions.Toolkit.ShellHelpers.ShellRunAsType.None, bool runWithHiddenWindow = false) -> bool
+static Microsoft.CommandPalette.Extensions.Toolkit.ShellHelpers.ParseExecutableAndArgs(string! input, out string! executable, out string! arguments) -> void
+static Microsoft.CommandPalette.Extensions.Toolkit.ShellHelpers.TryResolveExecutableAsShell(string! name, out string! fullPath) -> bool
+static Microsoft.CommandPalette.Extensions.Toolkit.TextSetting.LoadFromJson(System.Text.Json.Nodes.JsonObject! jsonObject) -> Microsoft.CommandPalette.Extensions.Toolkit.TextSetting!
+static Microsoft.CommandPalette.Extensions.Toolkit.ThumbnailHelper.GetProtocolIconStream(string! protocol, bool jumbo) -> System.Threading.Tasks.Task<Windows.Storage.Streams.IRandomAccessStream?>!
+static Microsoft.CommandPalette.Extensions.Toolkit.ThumbnailHelper.GetThumbnail(string! path, bool jumbo = false) -> System.Threading.Tasks.Task<Windows.Storage.Streams.IRandomAccessStream?>!
+static Microsoft.CommandPalette.Extensions.Toolkit.ToggleSetting.LoadFromJson(System.Text.Json.Nodes.JsonObject! jsonObject) -> Microsoft.CommandPalette.Extensions.Toolkit.ToggleSetting!
+static Microsoft.CommandPalette.Extensions.Toolkit.Utilities.BaseSettingsPath(string! settingsFolderName) -> string!
+static Microsoft.CommandPalette.Extensions.Toolkit.Utilities.IsPackaged() -> bool
+virtual Microsoft.CommandPalette.Extensions.Toolkit.Command.Icon.get -> Microsoft.CommandPalette.Extensions.Toolkit.IconInfo!
+virtual Microsoft.CommandPalette.Extensions.Toolkit.Command.Icon.set -> void
+virtual Microsoft.CommandPalette.Extensions.Toolkit.Command.Id.get -> string!
+virtual Microsoft.CommandPalette.Extensions.Toolkit.Command.Id.set -> void
+virtual Microsoft.CommandPalette.Extensions.Toolkit.Command.Name.get -> string!
+virtual Microsoft.CommandPalette.Extensions.Toolkit.Command.Name.set -> void
+virtual Microsoft.CommandPalette.Extensions.Toolkit.CommandContextItem.IsCritical.get -> bool
+virtual Microsoft.CommandPalette.Extensions.Toolkit.CommandContextItem.IsCritical.set -> void
+virtual Microsoft.CommandPalette.Extensions.Toolkit.CommandContextItem.RequestedShortcut.get -> Microsoft.CommandPalette.Extensions.KeyChord
+virtual Microsoft.CommandPalette.Extensions.Toolkit.CommandContextItem.RequestedShortcut.set -> void
+virtual Microsoft.CommandPalette.Extensions.Toolkit.CommandItem.Command.get -> Microsoft.CommandPalette.Extensions.ICommand?
+virtual Microsoft.CommandPalette.Extensions.Toolkit.CommandItem.Command.set -> void
+virtual Microsoft.CommandPalette.Extensions.Toolkit.CommandItem.Icon.get -> Microsoft.CommandPalette.Extensions.IIconInfo?
+virtual Microsoft.CommandPalette.Extensions.Toolkit.CommandItem.Icon.set -> void
+virtual Microsoft.CommandPalette.Extensions.Toolkit.CommandItem.MoreCommands.get -> Microsoft.CommandPalette.Extensions.IContextItem![]!
+virtual Microsoft.CommandPalette.Extensions.Toolkit.CommandItem.MoreCommands.set -> void
+virtual Microsoft.CommandPalette.Extensions.Toolkit.CommandItem.Subtitle.get -> string!
+virtual Microsoft.CommandPalette.Extensions.Toolkit.CommandItem.Subtitle.set -> void
+virtual Microsoft.CommandPalette.Extensions.Toolkit.CommandItem.Title.get -> string!
+virtual Microsoft.CommandPalette.Extensions.Toolkit.CommandItem.Title.set -> void
+virtual Microsoft.CommandPalette.Extensions.Toolkit.CommandProvider.DisplayName.get -> string!
+virtual Microsoft.CommandPalette.Extensions.Toolkit.CommandProvider.DisplayName.set -> void
+virtual Microsoft.CommandPalette.Extensions.Toolkit.CommandProvider.Dispose() -> void
+virtual Microsoft.CommandPalette.Extensions.Toolkit.CommandProvider.FallbackCommands() -> Microsoft.CommandPalette.Extensions.IFallbackCommandItem![]?
+virtual Microsoft.CommandPalette.Extensions.Toolkit.CommandProvider.Frozen.get -> bool
+virtual Microsoft.CommandPalette.Extensions.Toolkit.CommandProvider.Frozen.set -> void
+virtual Microsoft.CommandPalette.Extensions.Toolkit.CommandProvider.GetCommand(string! id) -> Microsoft.CommandPalette.Extensions.ICommand?
+virtual Microsoft.CommandPalette.Extensions.Toolkit.CommandProvider.Icon.get -> Microsoft.CommandPalette.Extensions.Toolkit.IconInfo!
+virtual Microsoft.CommandPalette.Extensions.Toolkit.CommandProvider.Icon.set -> void
+virtual Microsoft.CommandPalette.Extensions.Toolkit.CommandProvider.Id.get -> string!
+virtual Microsoft.CommandPalette.Extensions.Toolkit.CommandProvider.Id.set -> void
+virtual Microsoft.CommandPalette.Extensions.Toolkit.CommandProvider.InitializeWithHost(Microsoft.CommandPalette.Extensions.IExtensionHost! host) -> void
+virtual Microsoft.CommandPalette.Extensions.Toolkit.CommandProvider.Settings.get -> Microsoft.CommandPalette.Extensions.ICommandSettings?
+virtual Microsoft.CommandPalette.Extensions.Toolkit.CommandProvider.Settings.set -> void
+virtual Microsoft.CommandPalette.Extensions.Toolkit.ConfirmationArgs.Description.get -> string?
+virtual Microsoft.CommandPalette.Extensions.Toolkit.ConfirmationArgs.Description.set -> void
+virtual Microsoft.CommandPalette.Extensions.Toolkit.ConfirmationArgs.IsPrimaryCommandCritical.get -> bool
+virtual Microsoft.CommandPalette.Extensions.Toolkit.ConfirmationArgs.IsPrimaryCommandCritical.set -> void
+virtual Microsoft.CommandPalette.Extensions.Toolkit.ConfirmationArgs.PrimaryCommand.get -> Microsoft.CommandPalette.Extensions.ICommand?
+virtual Microsoft.CommandPalette.Extensions.Toolkit.ConfirmationArgs.PrimaryCommand.set -> void
+virtual Microsoft.CommandPalette.Extensions.Toolkit.ConfirmationArgs.Title.get -> string?
+virtual Microsoft.CommandPalette.Extensions.Toolkit.ConfirmationArgs.Title.set -> void
+virtual Microsoft.CommandPalette.Extensions.Toolkit.ContentPage.Commands.get -> Microsoft.CommandPalette.Extensions.IContextItem![]!
+virtual Microsoft.CommandPalette.Extensions.Toolkit.ContentPage.Commands.set -> void
+virtual Microsoft.CommandPalette.Extensions.Toolkit.ContentPage.Details.get -> Microsoft.CommandPalette.Extensions.IDetails?
+virtual Microsoft.CommandPalette.Extensions.Toolkit.ContentPage.Details.set -> void
+virtual Microsoft.CommandPalette.Extensions.Toolkit.CopyTextCommand.Result.get -> Microsoft.CommandPalette.Extensions.Toolkit.CommandResult!
+virtual Microsoft.CommandPalette.Extensions.Toolkit.CopyTextCommand.Result.set -> void
+virtual Microsoft.CommandPalette.Extensions.Toolkit.CopyTextCommand.Text.get -> string!
+virtual Microsoft.CommandPalette.Extensions.Toolkit.CopyTextCommand.Text.set -> void
+virtual Microsoft.CommandPalette.Extensions.Toolkit.Details.Body.get -> string!
+virtual Microsoft.CommandPalette.Extensions.Toolkit.Details.Body.set -> void
+virtual Microsoft.CommandPalette.Extensions.Toolkit.Details.HeroImage.get -> Microsoft.CommandPalette.Extensions.IIconInfo!
+virtual Microsoft.CommandPalette.Extensions.Toolkit.Details.HeroImage.set -> void
+virtual Microsoft.CommandPalette.Extensions.Toolkit.Details.Metadata.get -> Microsoft.CommandPalette.Extensions.IDetailsElement![]!
+virtual Microsoft.CommandPalette.Extensions.Toolkit.Details.Metadata.set -> void
+virtual Microsoft.CommandPalette.Extensions.Toolkit.Details.Title.get -> string!
+virtual Microsoft.CommandPalette.Extensions.Toolkit.Details.Title.set -> void
+virtual Microsoft.CommandPalette.Extensions.Toolkit.DetailsElement.Data.get -> Microsoft.CommandPalette.Extensions.IDetailsData?
+virtual Microsoft.CommandPalette.Extensions.Toolkit.DetailsElement.Data.set -> void
+virtual Microsoft.CommandPalette.Extensions.Toolkit.DetailsElement.Key.get -> string!
+virtual Microsoft.CommandPalette.Extensions.Toolkit.DetailsElement.Key.set -> void
+virtual Microsoft.CommandPalette.Extensions.Toolkit.DetailsLink.Link.get -> System.Uri?
+virtual Microsoft.CommandPalette.Extensions.Toolkit.DetailsLink.Link.set -> void
+virtual Microsoft.CommandPalette.Extensions.Toolkit.DetailsLink.Text.get -> string!
+virtual Microsoft.CommandPalette.Extensions.Toolkit.DetailsLink.Text.set -> void
+virtual Microsoft.CommandPalette.Extensions.Toolkit.FallbackCommandItem.DisplayTitle.get -> string!
+virtual Microsoft.CommandPalette.Extensions.Toolkit.FallbackCommandItem.UpdateQuery(string! query) -> void
+virtual Microsoft.CommandPalette.Extensions.Toolkit.Filter.Icon.get -> Microsoft.CommandPalette.Extensions.IIconInfo!
+virtual Microsoft.CommandPalette.Extensions.Toolkit.Filter.Icon.set -> void
+virtual Microsoft.CommandPalette.Extensions.Toolkit.Filter.Id.get -> string!
+virtual Microsoft.CommandPalette.Extensions.Toolkit.Filter.Id.set -> void
+virtual Microsoft.CommandPalette.Extensions.Toolkit.Filter.Name.get -> string!
+virtual Microsoft.CommandPalette.Extensions.Toolkit.Filter.Name.set -> void
+virtual Microsoft.CommandPalette.Extensions.Toolkit.FormContent.DataJson.get -> string!
+virtual Microsoft.CommandPalette.Extensions.Toolkit.FormContent.DataJson.set -> void
+virtual Microsoft.CommandPalette.Extensions.Toolkit.FormContent.StateJson.get -> string!
+virtual Microsoft.CommandPalette.Extensions.Toolkit.FormContent.StateJson.set -> void
+virtual Microsoft.CommandPalette.Extensions.Toolkit.FormContent.SubmitForm(string! inputs) -> Microsoft.CommandPalette.Extensions.ICommandResult!
+virtual Microsoft.CommandPalette.Extensions.Toolkit.FormContent.SubmitForm(string! inputs, string! data) -> Microsoft.CommandPalette.Extensions.ICommandResult!
+virtual Microsoft.CommandPalette.Extensions.Toolkit.FormContent.TemplateJson.get -> string!
+virtual Microsoft.CommandPalette.Extensions.Toolkit.FormContent.TemplateJson.set -> void
+virtual Microsoft.CommandPalette.Extensions.Toolkit.GalleryGridLayout.ShowSubtitle.get -> bool
+virtual Microsoft.CommandPalette.Extensions.Toolkit.GalleryGridLayout.ShowSubtitle.set -> void
+virtual Microsoft.CommandPalette.Extensions.Toolkit.GalleryGridLayout.ShowTitle.get -> bool
+virtual Microsoft.CommandPalette.Extensions.Toolkit.GalleryGridLayout.ShowTitle.set -> void
+virtual Microsoft.CommandPalette.Extensions.Toolkit.IconInfo.Dark.get -> Microsoft.CommandPalette.Extensions.Toolkit.IconData!
+virtual Microsoft.CommandPalette.Extensions.Toolkit.IconInfo.Dark.set -> void
+virtual Microsoft.CommandPalette.Extensions.Toolkit.IconInfo.Light.get -> Microsoft.CommandPalette.Extensions.Toolkit.IconData!
+virtual Microsoft.CommandPalette.Extensions.Toolkit.IconInfo.Light.set -> void
+virtual Microsoft.CommandPalette.Extensions.Toolkit.InvokableCommand.Invoke() -> Microsoft.CommandPalette.Extensions.ICommandResult!
+virtual Microsoft.CommandPalette.Extensions.Toolkit.InvokableCommand.Invoke(object? sender) -> Microsoft.CommandPalette.Extensions.ICommandResult!
+virtual Microsoft.CommandPalette.Extensions.Toolkit.JsonSettingsManager.LoadSettings() -> void
+virtual Microsoft.CommandPalette.Extensions.Toolkit.JsonSettingsManager.SaveSettings() -> void
+virtual Microsoft.CommandPalette.Extensions.Toolkit.ListItem.Details.get -> Microsoft.CommandPalette.Extensions.IDetails?
+virtual Microsoft.CommandPalette.Extensions.Toolkit.ListItem.Details.set -> void
+virtual Microsoft.CommandPalette.Extensions.Toolkit.ListItem.Section.get -> string!
+virtual Microsoft.CommandPalette.Extensions.Toolkit.ListItem.Section.set -> void
+virtual Microsoft.CommandPalette.Extensions.Toolkit.ListItem.Tags.get -> Microsoft.CommandPalette.Extensions.ITag![]!
+virtual Microsoft.CommandPalette.Extensions.Toolkit.ListItem.Tags.set -> void
+virtual Microsoft.CommandPalette.Extensions.Toolkit.ListItem.TextToSuggest.get -> string!
+virtual Microsoft.CommandPalette.Extensions.Toolkit.ListItem.TextToSuggest.set -> void
+virtual Microsoft.CommandPalette.Extensions.Toolkit.ListPage.EmptyContent.get -> Microsoft.CommandPalette.Extensions.ICommandItem?
+virtual Microsoft.CommandPalette.Extensions.Toolkit.ListPage.EmptyContent.set -> void
+virtual Microsoft.CommandPalette.Extensions.Toolkit.ListPage.Filters.get -> Microsoft.CommandPalette.Extensions.IFilters?
+virtual Microsoft.CommandPalette.Extensions.Toolkit.ListPage.Filters.set -> void
+virtual Microsoft.CommandPalette.Extensions.Toolkit.ListPage.GetItems() -> Microsoft.CommandPalette.Extensions.IListItem![]!
+virtual Microsoft.CommandPalette.Extensions.Toolkit.ListPage.GridProperties.get -> Microsoft.CommandPalette.Extensions.IGridProperties?
+virtual Microsoft.CommandPalette.Extensions.Toolkit.ListPage.GridProperties.set -> void
+virtual Microsoft.CommandPalette.Extensions.Toolkit.ListPage.HasMoreItems.get -> bool
+virtual Microsoft.CommandPalette.Extensions.Toolkit.ListPage.HasMoreItems.set -> void
+virtual Microsoft.CommandPalette.Extensions.Toolkit.ListPage.LoadMore() -> void
+virtual Microsoft.CommandPalette.Extensions.Toolkit.ListPage.PlaceholderText.get -> string!
+virtual Microsoft.CommandPalette.Extensions.Toolkit.ListPage.PlaceholderText.set -> void
+virtual Microsoft.CommandPalette.Extensions.Toolkit.ListPage.SearchText.get -> string!
+virtual Microsoft.CommandPalette.Extensions.Toolkit.ListPage.SearchText.set -> void
+virtual Microsoft.CommandPalette.Extensions.Toolkit.ListPage.ShowDetails.get -> bool
+virtual Microsoft.CommandPalette.Extensions.Toolkit.ListPage.ShowDetails.set -> void
+virtual Microsoft.CommandPalette.Extensions.Toolkit.MarkdownContent.Body.get -> string!
+virtual Microsoft.CommandPalette.Extensions.Toolkit.MarkdownContent.Body.set -> void
+virtual Microsoft.CommandPalette.Extensions.Toolkit.MediumGridLayout.ShowTitle.get -> bool
+virtual Microsoft.CommandPalette.Extensions.Toolkit.MediumGridLayout.ShowTitle.set -> void
+virtual Microsoft.CommandPalette.Extensions.Toolkit.Page.AccentColor.get -> Microsoft.CommandPalette.Extensions.OptionalColor
+virtual Microsoft.CommandPalette.Extensions.Toolkit.Page.AccentColor.set -> void
+virtual Microsoft.CommandPalette.Extensions.Toolkit.Page.IsLoading.get -> bool
+virtual Microsoft.CommandPalette.Extensions.Toolkit.Page.IsLoading.set -> void
+virtual Microsoft.CommandPalette.Extensions.Toolkit.Page.Title.get -> string!
+virtual Microsoft.CommandPalette.Extensions.Toolkit.Page.Title.set -> void
+virtual Microsoft.CommandPalette.Extensions.Toolkit.ProgressState.IsIndeterminate.get -> bool
+virtual Microsoft.CommandPalette.Extensions.Toolkit.ProgressState.IsIndeterminate.set -> void
+virtual Microsoft.CommandPalette.Extensions.Toolkit.ProgressState.ProgressPercent.get -> uint
+virtual Microsoft.CommandPalette.Extensions.Toolkit.ProgressState.ProgressPercent.set -> void
+virtual Microsoft.CommandPalette.Extensions.Toolkit.StatusMessage.Message.get -> string!
+virtual Microsoft.CommandPalette.Extensions.Toolkit.StatusMessage.Message.set -> void
+virtual Microsoft.CommandPalette.Extensions.Toolkit.StatusMessage.Progress.get -> Microsoft.CommandPalette.Extensions.IProgressState?
+virtual Microsoft.CommandPalette.Extensions.Toolkit.StatusMessage.Progress.set -> void
+virtual Microsoft.CommandPalette.Extensions.Toolkit.StatusMessage.State.get -> Microsoft.CommandPalette.Extensions.MessageState
+virtual Microsoft.CommandPalette.Extensions.Toolkit.StatusMessage.State.set -> void
+virtual Microsoft.CommandPalette.Extensions.Toolkit.Tag.Background.get -> Microsoft.CommandPalette.Extensions.OptionalColor
+virtual Microsoft.CommandPalette.Extensions.Toolkit.Tag.Background.set -> void
+virtual Microsoft.CommandPalette.Extensions.Toolkit.Tag.Foreground.get -> Microsoft.CommandPalette.Extensions.OptionalColor
+virtual Microsoft.CommandPalette.Extensions.Toolkit.Tag.Foreground.set -> void
+virtual Microsoft.CommandPalette.Extensions.Toolkit.Tag.Icon.get -> Microsoft.CommandPalette.Extensions.IIconInfo!
+virtual Microsoft.CommandPalette.Extensions.Toolkit.Tag.Icon.set -> void
+virtual Microsoft.CommandPalette.Extensions.Toolkit.Tag.Text.get -> string!
+virtual Microsoft.CommandPalette.Extensions.Toolkit.Tag.Text.set -> void
+virtual Microsoft.CommandPalette.Extensions.Toolkit.Tag.ToolTip.get -> string!
+virtual Microsoft.CommandPalette.Extensions.Toolkit.Tag.ToolTip.set -> void
+virtual Microsoft.CommandPalette.Extensions.Toolkit.ToastStatusMessage.Duration.get -> int
+virtual Microsoft.CommandPalette.Extensions.Toolkit.ToastStatusMessage.Duration.init -> void
+virtual Microsoft.CommandPalette.Extensions.Toolkit.ToastStatusMessage.Message.get -> Microsoft.CommandPalette.Extensions.Toolkit.StatusMessage!
+virtual Microsoft.CommandPalette.Extensions.Toolkit.ToastStatusMessage.Message.init -> void
+virtual Microsoft.CommandPalette.Extensions.Toolkit.TreeContent.GetChildren() -> Microsoft.CommandPalette.Extensions.IContent![]!
+virtual Microsoft.CommandPalette.Extensions.Toolkit.TreeContent.RootContent.get -> Microsoft.CommandPalette.Extensions.IContent?
+virtual Microsoft.CommandPalette.Extensions.Toolkit.TreeContent.RootContent.set -> void
+~Microsoft.CommandPalette.Extensions.ICommand.Icon.get -> Microsoft.CommandPalette.Extensions.IIconInfo
+~Microsoft.CommandPalette.Extensions.ICommand.Id.get -> string
+~Microsoft.CommandPalette.Extensions.ICommand.Name.get -> string
+~Microsoft.CommandPalette.Extensions.ICommandItem.Command.get -> Microsoft.CommandPalette.Extensions.ICommand
+~Microsoft.CommandPalette.Extensions.ICommandItem.Icon.get -> Microsoft.CommandPalette.Extensions.IIconInfo
+~Microsoft.CommandPalette.Extensions.ICommandItem.MoreCommands.get -> Microsoft.CommandPalette.Extensions.IContextItem[]
+~Microsoft.CommandPalette.Extensions.ICommandItem.Subtitle.get -> string
+~Microsoft.CommandPalette.Extensions.ICommandItem.Title.get -> string
+~Microsoft.CommandPalette.Extensions.ICommandProvider.DisplayName.get -> string
+~Microsoft.CommandPalette.Extensions.ICommandProvider.FallbackCommands() -> Microsoft.CommandPalette.Extensions.IFallbackCommandItem[]
+~Microsoft.CommandPalette.Extensions.ICommandProvider.GetCommand(string id) -> Microsoft.CommandPalette.Extensions.ICommand
+~Microsoft.CommandPalette.Extensions.ICommandProvider.Icon.get -> Microsoft.CommandPalette.Extensions.IIconInfo
+~Microsoft.CommandPalette.Extensions.ICommandProvider.Id.get -> string
+~Microsoft.CommandPalette.Extensions.ICommandProvider.InitializeWithHost(Microsoft.CommandPalette.Extensions.IExtensionHost host) -> void
+~Microsoft.CommandPalette.Extensions.ICommandProvider.Settings.get -> Microsoft.CommandPalette.Extensions.ICommandSettings
+~Microsoft.CommandPalette.Extensions.ICommandProvider.TopLevelCommands() -> Microsoft.CommandPalette.Extensions.ICommandItem[]
+~Microsoft.CommandPalette.Extensions.ICommandProvider2.GetApiExtensionStubs() -> object[]
+~Microsoft.CommandPalette.Extensions.ICommandResult.Args.get -> Microsoft.CommandPalette.Extensions.ICommandResultArgs
+~Microsoft.CommandPalette.Extensions.ICommandSettings.SettingsPage.get -> Microsoft.CommandPalette.Extensions.IContentPage
+~Microsoft.CommandPalette.Extensions.IConfirmationArgs.Description.get -> string
+~Microsoft.CommandPalette.Extensions.IConfirmationArgs.PrimaryCommand.get -> Microsoft.CommandPalette.Extensions.ICommand
+~Microsoft.CommandPalette.Extensions.IConfirmationArgs.Title.get -> string
+~Microsoft.CommandPalette.Extensions.IContentPage.Commands.get -> Microsoft.CommandPalette.Extensions.IContextItem[]
+~Microsoft.CommandPalette.Extensions.IContentPage.Details.get -> Microsoft.CommandPalette.Extensions.IDetails
+~Microsoft.CommandPalette.Extensions.IContentPage.GetContent() -> Microsoft.CommandPalette.Extensions.IContent[]
+~Microsoft.CommandPalette.Extensions.IDetails.Body.get -> string
+~Microsoft.CommandPalette.Extensions.IDetails.HeroImage.get -> Microsoft.CommandPalette.Extensions.IIconInfo
+~Microsoft.CommandPalette.Extensions.IDetails.Metadata.get -> Microsoft.CommandPalette.Extensions.IDetailsElement[]
+~Microsoft.CommandPalette.Extensions.IDetails.Title.get -> string
+~Microsoft.CommandPalette.Extensions.IDetailsCommands.Commands.get -> Microsoft.CommandPalette.Extensions.ICommand[]
+~Microsoft.CommandPalette.Extensions.IDetailsElement.Data.get -> Microsoft.CommandPalette.Extensions.IDetailsData
+~Microsoft.CommandPalette.Extensions.IDetailsElement.Key.get -> string
+~Microsoft.CommandPalette.Extensions.IDetailsLink.Link.get -> System.Uri
+~Microsoft.CommandPalette.Extensions.IDetailsLink.Text.get -> string
+~Microsoft.CommandPalette.Extensions.IDetailsTags.Tags.get -> Microsoft.CommandPalette.Extensions.ITag[]
+~Microsoft.CommandPalette.Extensions.IDynamicListPage.SearchText.get -> string
+~Microsoft.CommandPalette.Extensions.IDynamicListPage.SearchText.set -> void
+~Microsoft.CommandPalette.Extensions.IExtendedAttributesProvider.GetProperties() -> System.Collections.Generic.IDictionary<string, object>
+~Microsoft.CommandPalette.Extensions.IExtension.GetProvider(Microsoft.CommandPalette.Extensions.ProviderType providerType) -> object
+~Microsoft.CommandPalette.Extensions.IExtensionHost.HideStatus(Microsoft.CommandPalette.Extensions.IStatusMessage message) -> Windows.Foundation.IAsyncAction
+~Microsoft.CommandPalette.Extensions.IExtensionHost.LogMessage(Microsoft.CommandPalette.Extensions.ILogMessage message) -> Windows.Foundation.IAsyncAction
+~Microsoft.CommandPalette.Extensions.IExtensionHost.ShowStatus(Microsoft.CommandPalette.Extensions.IStatusMessage message, Microsoft.CommandPalette.Extensions.StatusContext context) -> Windows.Foundation.IAsyncAction
+~Microsoft.CommandPalette.Extensions.IFallbackCommandItem.DisplayTitle.get -> string
+~Microsoft.CommandPalette.Extensions.IFallbackCommandItem.FallbackHandler.get -> Microsoft.CommandPalette.Extensions.IFallbackHandler
+~Microsoft.CommandPalette.Extensions.IFallbackHandler.UpdateQuery(string query) -> void
+~Microsoft.CommandPalette.Extensions.IFilter.Icon.get -> Microsoft.CommandPalette.Extensions.IIconInfo
+~Microsoft.CommandPalette.Extensions.IFilter.Id.get -> string
+~Microsoft.CommandPalette.Extensions.IFilter.Name.get -> string
+~Microsoft.CommandPalette.Extensions.IFilters.CurrentFilterId.get -> string
+~Microsoft.CommandPalette.Extensions.IFilters.CurrentFilterId.set -> void
+~Microsoft.CommandPalette.Extensions.IFilters.GetFilters() -> Microsoft.CommandPalette.Extensions.IFilterItem[]
+~Microsoft.CommandPalette.Extensions.IFormContent.DataJson.get -> string
+~Microsoft.CommandPalette.Extensions.IFormContent.StateJson.get -> string
+~Microsoft.CommandPalette.Extensions.IFormContent.SubmitForm(string inputs, string data) -> Microsoft.CommandPalette.Extensions.ICommandResult
+~Microsoft.CommandPalette.Extensions.IFormContent.TemplateJson.get -> string
+~Microsoft.CommandPalette.Extensions.IGoToPageArgs.PageId.get -> string
+~Microsoft.CommandPalette.Extensions.IIconData.Data.get -> Windows.Storage.Streams.IRandomAccessStreamReference
+~Microsoft.CommandPalette.Extensions.IIconData.Icon.get -> string
+~Microsoft.CommandPalette.Extensions.IIconInfo.Dark.get -> Microsoft.CommandPalette.Extensions.IIconData
+~Microsoft.CommandPalette.Extensions.IIconInfo.Light.get -> Microsoft.CommandPalette.Extensions.IIconData
+~Microsoft.CommandPalette.Extensions.IInvokableCommand.Invoke(object sender) -> Microsoft.CommandPalette.Extensions.ICommandResult
+~Microsoft.CommandPalette.Extensions.IListItem.Details.get -> Microsoft.CommandPalette.Extensions.IDetails
+~Microsoft.CommandPalette.Extensions.IListItem.Section.get -> string
+~Microsoft.CommandPalette.Extensions.IListItem.Tags.get -> Microsoft.CommandPalette.Extensions.ITag[]
+~Microsoft.CommandPalette.Extensions.IListItem.TextToSuggest.get -> string
+~Microsoft.CommandPalette.Extensions.IListPage.EmptyContent.get -> Microsoft.CommandPalette.Extensions.ICommandItem
+~Microsoft.CommandPalette.Extensions.IListPage.Filters.get -> Microsoft.CommandPalette.Extensions.IFilters
+~Microsoft.CommandPalette.Extensions.IListPage.GetItems() -> Microsoft.CommandPalette.Extensions.IListItem[]
+~Microsoft.CommandPalette.Extensions.IListPage.GridProperties.get -> Microsoft.CommandPalette.Extensions.IGridProperties
+~Microsoft.CommandPalette.Extensions.IListPage.PlaceholderText.get -> string
+~Microsoft.CommandPalette.Extensions.IListPage.SearchText.get -> string
+~Microsoft.CommandPalette.Extensions.ILogMessage.Message.get -> string
+~Microsoft.CommandPalette.Extensions.IMarkdownContent.Body.get -> string
+~Microsoft.CommandPalette.Extensions.IPage.Title.get -> string
+~Microsoft.CommandPalette.Extensions.IPropChangedEventArgs.PropertyName.get -> string
+~Microsoft.CommandPalette.Extensions.IStatusMessage.Message.get -> string
+~Microsoft.CommandPalette.Extensions.IStatusMessage.Progress.get -> Microsoft.CommandPalette.Extensions.IProgressState
+~Microsoft.CommandPalette.Extensions.ITag.Icon.get -> Microsoft.CommandPalette.Extensions.IIconInfo
+~Microsoft.CommandPalette.Extensions.ITag.Text.get -> string
+~Microsoft.CommandPalette.Extensions.ITag.ToolTip.get -> string
+~Microsoft.CommandPalette.Extensions.IToastArgs.Message.get -> string
+~Microsoft.CommandPalette.Extensions.IToastArgs.Result.get -> Microsoft.CommandPalette.Extensions.ICommandResult
+~Microsoft.CommandPalette.Extensions.ITreeContent.GetChildren() -> Microsoft.CommandPalette.Extensions.IContent[]
+~Microsoft.CommandPalette.Extensions.ITreeContent.RootContent.get -> Microsoft.CommandPalette.Extensions.IContent
+~override Microsoft.CommandPalette.Extensions.Color.Equals(object obj) -> bool
+~override Microsoft.CommandPalette.Extensions.KeyChord.Equals(object obj) -> bool
+~override Microsoft.CommandPalette.Extensions.OptionalColor.Equals(object obj) -> bool
+~static ABI.Microsoft.CommandPalette.Extensions.ICommandContextItemMethods.get_IsCritical(WinRT.IObjectReference _obj) -> bool
+~static ABI.Microsoft.CommandPalette.Extensions.ICommandContextItemMethods.get_RequestedShortcut(WinRT.IObjectReference _obj) -> Microsoft.CommandPalette.Extensions.KeyChord
+~static ABI.Microsoft.CommandPalette.Extensions.ICommandItemMethods.get_Command(WinRT.IObjectReference _obj) -> Microsoft.CommandPalette.Extensions.ICommand
+~static ABI.Microsoft.CommandPalette.Extensions.ICommandItemMethods.get_Icon(WinRT.IObjectReference _obj) -> Microsoft.CommandPalette.Extensions.IIconInfo
+~static ABI.Microsoft.CommandPalette.Extensions.ICommandItemMethods.get_MoreCommands(WinRT.IObjectReference _obj) -> Microsoft.CommandPalette.Extensions.IContextItem[]
+~static ABI.Microsoft.CommandPalette.Extensions.ICommandItemMethods.get_Subtitle(WinRT.IObjectReference _obj) -> string
+~static ABI.Microsoft.CommandPalette.Extensions.ICommandItemMethods.get_Title(WinRT.IObjectReference _obj) -> string
+~static ABI.Microsoft.CommandPalette.Extensions.ICommandMethods.get_Icon(WinRT.IObjectReference _obj) -> Microsoft.CommandPalette.Extensions.IIconInfo
+~static ABI.Microsoft.CommandPalette.Extensions.ICommandMethods.get_Id(WinRT.IObjectReference _obj) -> string
+~static ABI.Microsoft.CommandPalette.Extensions.ICommandMethods.get_Name(WinRT.IObjectReference _obj) -> string
+~static ABI.Microsoft.CommandPalette.Extensions.ICommandProvider2Methods.GetApiExtensionStubs(WinRT.IObjectReference _obj) -> object[]
+~static ABI.Microsoft.CommandPalette.Extensions.ICommandProviderMethods.FallbackCommands(WinRT.IObjectReference _obj) -> Microsoft.CommandPalette.Extensions.IFallbackCommandItem[]
+~static ABI.Microsoft.CommandPalette.Extensions.ICommandProviderMethods.GetCommand(WinRT.IObjectReference _obj, string id) -> Microsoft.CommandPalette.Extensions.ICommand
+~static ABI.Microsoft.CommandPalette.Extensions.ICommandProviderMethods.get_DisplayName(WinRT.IObjectReference _obj) -> string
+~static ABI.Microsoft.CommandPalette.Extensions.ICommandProviderMethods.get_Frozen(WinRT.IObjectReference _obj) -> bool
+~static ABI.Microsoft.CommandPalette.Extensions.ICommandProviderMethods.get_Icon(WinRT.IObjectReference _obj) -> Microsoft.CommandPalette.Extensions.IIconInfo
+~static ABI.Microsoft.CommandPalette.Extensions.ICommandProviderMethods.get_Id(WinRT.IObjectReference _obj) -> string
+~static ABI.Microsoft.CommandPalette.Extensions.ICommandProviderMethods.get_Settings(WinRT.IObjectReference _obj) -> Microsoft.CommandPalette.Extensions.ICommandSettings
+~static ABI.Microsoft.CommandPalette.Extensions.ICommandProviderMethods.InitializeWithHost(WinRT.IObjectReference _obj, Microsoft.CommandPalette.Extensions.IExtensionHost host) -> void
+~static ABI.Microsoft.CommandPalette.Extensions.ICommandProviderMethods.TopLevelCommands(WinRT.IObjectReference _obj) -> Microsoft.CommandPalette.Extensions.ICommandItem[]
+~static ABI.Microsoft.CommandPalette.Extensions.ICommandResultMethods.get_Args(WinRT.IObjectReference _obj) -> Microsoft.CommandPalette.Extensions.ICommandResultArgs
+~static ABI.Microsoft.CommandPalette.Extensions.ICommandResultMethods.get_Kind(WinRT.IObjectReference _obj) -> Microsoft.CommandPalette.Extensions.CommandResultKind
+~static ABI.Microsoft.CommandPalette.Extensions.ICommandSettingsMethods.get_SettingsPage(WinRT.IObjectReference _obj) -> Microsoft.CommandPalette.Extensions.IContentPage
+~static ABI.Microsoft.CommandPalette.Extensions.IConfirmationArgsMethods.get_Description(WinRT.IObjectReference _obj) -> string
+~static ABI.Microsoft.CommandPalette.Extensions.IConfirmationArgsMethods.get_IsPrimaryCommandCritical(WinRT.IObjectReference _obj) -> bool
+~static ABI.Microsoft.CommandPalette.Extensions.IConfirmationArgsMethods.get_PrimaryCommand(WinRT.IObjectReference _obj) -> Microsoft.CommandPalette.Extensions.ICommand
+~static ABI.Microsoft.CommandPalette.Extensions.IConfirmationArgsMethods.get_Title(WinRT.IObjectReference _obj) -> string
+~static ABI.Microsoft.CommandPalette.Extensions.IContentPageMethods.GetContent(WinRT.IObjectReference _obj) -> Microsoft.CommandPalette.Extensions.IContent[]
+~static ABI.Microsoft.CommandPalette.Extensions.IContentPageMethods.get_Commands(WinRT.IObjectReference _obj) -> Microsoft.CommandPalette.Extensions.IContextItem[]
+~static ABI.Microsoft.CommandPalette.Extensions.IContentPageMethods.get_Details(WinRT.IObjectReference _obj) -> Microsoft.CommandPalette.Extensions.IDetails
+~static ABI.Microsoft.CommandPalette.Extensions.IDetailsCommandsMethods.get_Commands(WinRT.IObjectReference _obj) -> Microsoft.CommandPalette.Extensions.ICommand[]
+~static ABI.Microsoft.CommandPalette.Extensions.IDetailsElementMethods.get_Data(WinRT.IObjectReference _obj) -> Microsoft.CommandPalette.Extensions.IDetailsData
+~static ABI.Microsoft.CommandPalette.Extensions.IDetailsElementMethods.get_Key(WinRT.IObjectReference _obj) -> string
+~static ABI.Microsoft.CommandPalette.Extensions.IDetailsLinkMethods.get_Link(WinRT.IObjectReference _obj) -> System.Uri
+~static ABI.Microsoft.CommandPalette.Extensions.IDetailsLinkMethods.get_Text(WinRT.IObjectReference _obj) -> string
+~static ABI.Microsoft.CommandPalette.Extensions.IDetailsMethods.get_Body(WinRT.IObjectReference _obj) -> string
+~static ABI.Microsoft.CommandPalette.Extensions.IDetailsMethods.get_HeroImage(WinRT.IObjectReference _obj) -> Microsoft.CommandPalette.Extensions.IIconInfo
+~static ABI.Microsoft.CommandPalette.Extensions.IDetailsMethods.get_Metadata(WinRT.IObjectReference _obj) -> Microsoft.CommandPalette.Extensions.IDetailsElement[]
+~static ABI.Microsoft.CommandPalette.Extensions.IDetailsMethods.get_Title(WinRT.IObjectReference _obj) -> string
+~static ABI.Microsoft.CommandPalette.Extensions.IDetailsTagsMethods.get_Tags(WinRT.IObjectReference _obj) -> Microsoft.CommandPalette.Extensions.ITag[]
+~static ABI.Microsoft.CommandPalette.Extensions.IDynamicListPageMethods.set_SearchText(WinRT.IObjectReference _obj, string value) -> void
+~static ABI.Microsoft.CommandPalette.Extensions.IExtendedAttributesProviderMethods.GetProperties(WinRT.IObjectReference _obj) -> System.Collections.Generic.IDictionary<string, object>
+~static ABI.Microsoft.CommandPalette.Extensions.IExtensionHostMethods.HideStatus(WinRT.IObjectReference _obj, Microsoft.CommandPalette.Extensions.IStatusMessage message) -> Windows.Foundation.IAsyncAction
+~static ABI.Microsoft.CommandPalette.Extensions.IExtensionHostMethods.LogMessage(WinRT.IObjectReference _obj, Microsoft.CommandPalette.Extensions.ILogMessage message) -> Windows.Foundation.IAsyncAction
+~static ABI.Microsoft.CommandPalette.Extensions.IExtensionHostMethods.ShowStatus(WinRT.IObjectReference _obj, Microsoft.CommandPalette.Extensions.IStatusMessage message, Microsoft.CommandPalette.Extensions.StatusContext context) -> Windows.Foundation.IAsyncAction
+~static ABI.Microsoft.CommandPalette.Extensions.IExtensionMethods.Dispose(WinRT.IObjectReference _obj) -> void
+~static ABI.Microsoft.CommandPalette.Extensions.IExtensionMethods.GetProvider(WinRT.IObjectReference _obj, Microsoft.CommandPalette.Extensions.ProviderType providerType) -> object
+~static ABI.Microsoft.CommandPalette.Extensions.IFallbackCommandItemMethods.get_DisplayTitle(WinRT.IObjectReference _obj) -> string
+~static ABI.Microsoft.CommandPalette.Extensions.IFallbackCommandItemMethods.get_FallbackHandler(WinRT.IObjectReference _obj) -> Microsoft.CommandPalette.Extensions.IFallbackHandler
+~static ABI.Microsoft.CommandPalette.Extensions.IFallbackHandlerMethods.UpdateQuery(WinRT.IObjectReference _obj, string query) -> void
+~static ABI.Microsoft.CommandPalette.Extensions.IFilterMethods.get_Icon(WinRT.IObjectReference _obj) -> Microsoft.CommandPalette.Extensions.IIconInfo
+~static ABI.Microsoft.CommandPalette.Extensions.IFilterMethods.get_Id(WinRT.IObjectReference _obj) -> string
+~static ABI.Microsoft.CommandPalette.Extensions.IFilterMethods.get_Name(WinRT.IObjectReference _obj) -> string
+~static ABI.Microsoft.CommandPalette.Extensions.IFiltersMethods.GetFilters(WinRT.IObjectReference _obj) -> Microsoft.CommandPalette.Extensions.IFilterItem[]
+~static ABI.Microsoft.CommandPalette.Extensions.IFiltersMethods.get_CurrentFilterId(WinRT.IObjectReference _obj) -> string
+~static ABI.Microsoft.CommandPalette.Extensions.IFiltersMethods.set_CurrentFilterId(WinRT.IObjectReference _obj, string value) -> void
+~static ABI.Microsoft.CommandPalette.Extensions.IFormContentMethods.get_DataJson(WinRT.IObjectReference _obj) -> string
+~static ABI.Microsoft.CommandPalette.Extensions.IFormContentMethods.get_StateJson(WinRT.IObjectReference _obj) -> string
+~static ABI.Microsoft.CommandPalette.Extensions.IFormContentMethods.get_TemplateJson(WinRT.IObjectReference _obj) -> string
+~static ABI.Microsoft.CommandPalette.Extensions.IFormContentMethods.SubmitForm(WinRT.IObjectReference _obj, string inputs, string data) -> Microsoft.CommandPalette.Extensions.ICommandResult
+~static ABI.Microsoft.CommandPalette.Extensions.IGalleryGridLayoutMethods.get_ShowSubtitle(WinRT.IObjectReference _obj) -> bool
+~static ABI.Microsoft.CommandPalette.Extensions.IGalleryGridLayoutMethods.get_ShowTitle(WinRT.IObjectReference _obj) -> bool
+~static ABI.Microsoft.CommandPalette.Extensions.IGoToPageArgsMethods.get_NavigationMode(WinRT.IObjectReference _obj) -> Microsoft.CommandPalette.Extensions.NavigationMode
+~static ABI.Microsoft.CommandPalette.Extensions.IGoToPageArgsMethods.get_PageId(WinRT.IObjectReference _obj) -> string
+~static ABI.Microsoft.CommandPalette.Extensions.IIconDataMethods.get_Data(WinRT.IObjectReference _obj) -> Windows.Storage.Streams.IRandomAccessStreamReference
+~static ABI.Microsoft.CommandPalette.Extensions.IIconDataMethods.get_Icon(WinRT.IObjectReference _obj) -> string
+~static ABI.Microsoft.CommandPalette.Extensions.IIconInfoMethods.get_Dark(WinRT.IObjectReference _obj) -> Microsoft.CommandPalette.Extensions.IIconData
+~static ABI.Microsoft.CommandPalette.Extensions.IIconInfoMethods.get_Light(WinRT.IObjectReference _obj) -> Microsoft.CommandPalette.Extensions.IIconData
+~static ABI.Microsoft.CommandPalette.Extensions.IInvokableCommandMethods.Invoke(WinRT.IObjectReference _obj, object sender) -> Microsoft.CommandPalette.Extensions.ICommandResult
+~static ABI.Microsoft.CommandPalette.Extensions.IItemsChangedEventArgsMethods.get_TotalItems(WinRT.IObjectReference _obj) -> int
+~static ABI.Microsoft.CommandPalette.Extensions.IListItemMethods.get_Details(WinRT.IObjectReference _obj) -> Microsoft.CommandPalette.Extensions.IDetails
+~static ABI.Microsoft.CommandPalette.Extensions.IListItemMethods.get_Section(WinRT.IObjectReference _obj) -> string
+~static ABI.Microsoft.CommandPalette.Extensions.IListItemMethods.get_Tags(WinRT.IObjectReference _obj) -> Microsoft.CommandPalette.Extensions.ITag[]
+~static ABI.Microsoft.CommandPalette.Extensions.IListItemMethods.get_TextToSuggest(WinRT.IObjectReference _obj) -> string
+~static ABI.Microsoft.CommandPalette.Extensions.IListPageMethods.GetItems(WinRT.IObjectReference _obj) -> Microsoft.CommandPalette.Extensions.IListItem[]
+~static ABI.Microsoft.CommandPalette.Extensions.IListPageMethods.get_EmptyContent(WinRT.IObjectReference _obj) -> Microsoft.CommandPalette.Extensions.ICommandItem
+~static ABI.Microsoft.CommandPalette.Extensions.IListPageMethods.get_Filters(WinRT.IObjectReference _obj) -> Microsoft.CommandPalette.Extensions.IFilters
+~static ABI.Microsoft.CommandPalette.Extensions.IListPageMethods.get_GridProperties(WinRT.IObjectReference _obj) -> Microsoft.CommandPalette.Extensions.IGridProperties
+~static ABI.Microsoft.CommandPalette.Extensions.IListPageMethods.get_HasMoreItems(WinRT.IObjectReference _obj) -> bool
+~static ABI.Microsoft.CommandPalette.Extensions.IListPageMethods.get_PlaceholderText(WinRT.IObjectReference _obj) -> string
+~static ABI.Microsoft.CommandPalette.Extensions.IListPageMethods.get_SearchText(WinRT.IObjectReference _obj) -> string
+~static ABI.Microsoft.CommandPalette.Extensions.IListPageMethods.get_ShowDetails(WinRT.IObjectReference _obj) -> bool
+~static ABI.Microsoft.CommandPalette.Extensions.IListPageMethods.LoadMore(WinRT.IObjectReference _obj) -> void
+~static ABI.Microsoft.CommandPalette.Extensions.ILogMessageMethods.get_Message(WinRT.IObjectReference _obj) -> string
+~static ABI.Microsoft.CommandPalette.Extensions.ILogMessageMethods.get_State(WinRT.IObjectReference _obj) -> Microsoft.CommandPalette.Extensions.MessageState
+~static ABI.Microsoft.CommandPalette.Extensions.IMarkdownContentMethods.get_Body(WinRT.IObjectReference _obj) -> string
+~static ABI.Microsoft.CommandPalette.Extensions.IMediumGridLayoutMethods.get_ShowTitle(WinRT.IObjectReference _obj) -> bool
+~static ABI.Microsoft.CommandPalette.Extensions.INotifyItemsChangedMethods.Get_ItemsChanged(WinRT.IObjectReference _obj, object _thisObj) -> (System.Action<Windows.Foundation.TypedEventHandler<object, Microsoft.CommandPalette.Extensions.IItemsChangedEventArgs>>, System.Action<Windows.Foundation.TypedEventHandler<object, Microsoft.CommandPalette.Extensions.IItemsChangedEventArgs>>)
+~static ABI.Microsoft.CommandPalette.Extensions.INotifyItemsChangedMethods.Get_ItemsChanged2(WinRT.IObjectReference _obj, object _thisObj) -> ABI.WinRT.Interop.EventSource<Windows.Foundation.TypedEventHandler<object, Microsoft.CommandPalette.Extensions.IItemsChangedEventArgs>>
+~static ABI.Microsoft.CommandPalette.Extensions.INotifyPropChangedMethods.Get_PropChanged(WinRT.IObjectReference _obj, object _thisObj) -> (System.Action<Windows.Foundation.TypedEventHandler<object, Microsoft.CommandPalette.Extensions.IPropChangedEventArgs>>, System.Action<Windows.Foundation.TypedEventHandler<object, Microsoft.CommandPalette.Extensions.IPropChangedEventArgs>>)
+~static ABI.Microsoft.CommandPalette.Extensions.INotifyPropChangedMethods.Get_PropChanged2(WinRT.IObjectReference _obj, object _thisObj) -> ABI.WinRT.Interop.EventSource<Windows.Foundation.TypedEventHandler<object, Microsoft.CommandPalette.Extensions.IPropChangedEventArgs>>
+~static ABI.Microsoft.CommandPalette.Extensions.IPageMethods.get_AccentColor(WinRT.IObjectReference _obj) -> Microsoft.CommandPalette.Extensions.OptionalColor
+~static ABI.Microsoft.CommandPalette.Extensions.IPageMethods.get_IsLoading(WinRT.IObjectReference _obj) -> bool
+~static ABI.Microsoft.CommandPalette.Extensions.IPageMethods.get_Title(WinRT.IObjectReference _obj) -> string
+~static ABI.Microsoft.CommandPalette.Extensions.IProgressStateMethods.get_IsIndeterminate(WinRT.IObjectReference _obj) -> bool
+~static ABI.Microsoft.CommandPalette.Extensions.IProgressStateMethods.get_ProgressPercent(WinRT.IObjectReference _obj) -> uint
+~static ABI.Microsoft.CommandPalette.Extensions.IPropChangedEventArgsMethods.get_PropertyName(WinRT.IObjectReference _obj) -> string
+~static ABI.Microsoft.CommandPalette.Extensions.IStatusMessageMethods.get_Message(WinRT.IObjectReference _obj) -> string
+~static ABI.Microsoft.CommandPalette.Extensions.IStatusMessageMethods.get_Progress(WinRT.IObjectReference _obj) -> Microsoft.CommandPalette.Extensions.IProgressState
+~static ABI.Microsoft.CommandPalette.Extensions.IStatusMessageMethods.get_State(WinRT.IObjectReference _obj) -> Microsoft.CommandPalette.Extensions.MessageState
+~static ABI.Microsoft.CommandPalette.Extensions.ITagMethods.get_Background(WinRT.IObjectReference _obj) -> Microsoft.CommandPalette.Extensions.OptionalColor
+~static ABI.Microsoft.CommandPalette.Extensions.ITagMethods.get_Foreground(WinRT.IObjectReference _obj) -> Microsoft.CommandPalette.Extensions.OptionalColor
+~static ABI.Microsoft.CommandPalette.Extensions.ITagMethods.get_Icon(WinRT.IObjectReference _obj) -> Microsoft.CommandPalette.Extensions.IIconInfo
+~static ABI.Microsoft.CommandPalette.Extensions.ITagMethods.get_Text(WinRT.IObjectReference _obj) -> string
+~static ABI.Microsoft.CommandPalette.Extensions.ITagMethods.get_ToolTip(WinRT.IObjectReference _obj) -> string
+~static ABI.Microsoft.CommandPalette.Extensions.IToastArgsMethods.get_Message(WinRT.IObjectReference _obj) -> string
+~static ABI.Microsoft.CommandPalette.Extensions.IToastArgsMethods.get_Result(WinRT.IObjectReference _obj) -> Microsoft.CommandPalette.Extensions.ICommandResult
+~static ABI.Microsoft.CommandPalette.Extensions.ITreeContentMethods.GetChildren(WinRT.IObjectReference _obj) -> Microsoft.CommandPalette.Extensions.IContent[]
+~static ABI.Microsoft.CommandPalette.Extensions.ITreeContentMethods.get_RootContent(WinRT.IObjectReference _obj) -> Microsoft.CommandPalette.Extensions.IContent
