@@ -11,14 +11,14 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-
+using KeystrokeOverlayUI;
 using KeystrokeOverlayUI.Controls;
 using KeystrokeOverlayUI.Models;
 
-namespace KeystrokeOverlayUI
+namespace KeystrokeOverlayUI.Services
 {
-    /// Connects to the native KeystrokeOverlayPipe and converts native JSON
-    /// batches into KeystrokeEvent objects for the overlay UI.
+    // Connects to the native KeystrokeOverlayPipe and converts native JSON
+    // batches into KeystrokeEvent objects for the overlay UI.
     public class KeystrokeListener : IDisposable
     {
         private const string PipeName = "KeystrokeOverlayPipe";

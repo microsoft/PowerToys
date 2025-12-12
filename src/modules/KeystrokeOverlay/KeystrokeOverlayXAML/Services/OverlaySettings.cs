@@ -10,13 +10,13 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-
+using KeystrokeOverlayUI;
 using KeystrokeOverlayUI.Models;
 using Microsoft.UI;
 using Microsoft.UI.Xaml.Media;
 using Windows.UI;
 
-namespace KeystrokeOverlayUI
+namespace KeystrokeOverlayUI.Services
 {
     public class OverlaySettings : IDisposable
     {

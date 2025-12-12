@@ -4,9 +4,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Net.Security;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.WindowsRuntime;
@@ -14,7 +12,10 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using KeystrokeOverlayUI.Controls;
+using KeystrokeOverlayUI.Helpers;
 using KeystrokeOverlayUI.Models;
+using KeystrokeOverlayUI.Services;
+
 using Microsoft.UI;
 using Microsoft.UI.Composition.SystemBackdrops;
 using Microsoft.UI.Input;
@@ -37,8 +38,9 @@ namespace KeystrokeOverlayUI
     {
         public MainViewModel ViewModel { get; set; } = new();
 
-        // draggable cursor
+        // readonly constants
         private readonly InputCursor _dragCursor = InputSystemCursor.Create(InputSystemCursorShape.SizeAll);
+        private readonly DispatcherTimer _zOrderEnforcer = new();
 
         // core components
         private readonly KeystrokeListener _keystrokeListener = new();
@@ -46,52 +48,9 @@ namespace KeystrokeOverlayUI
         private CancellationTokenSource _startupCancellationSource;
         private bool _disposed;
 
-        // DWM API for rounded corners
-        [DllImport("dwmapi.dll")]
-        private static extern int DwmSetWindowAttribute(IntPtr hwnd, int attribute, ref int value, int size);
-
-        private const int DwmWindowCornerPreference = 33;
-        private const int DwmRoundCorner = 2;
-
         // draggable overlay
-        [DllImport("user32.dll")]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        private static extern bool GetCursorPos(out POINT lpPoint);
-
-        [StructLayout(LayoutKind.Sequential)]
-        public struct POINT
-        {
-            public int X;
-            public int Y;
-        }
-
         private bool _isDragging;
-        private POINT _lastCursorPos;
-
-        // always on top
-        // P/Invoke for Win32 APIs
-        [DllImport("user32.dll", SetLastError = true)]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        private static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int x, int y, int cx, int cy, uint uFlags);
-
-        [DllImport("user32.dll")]
-        private static extern int GetWindowLong(IntPtr hWnd, int nIndex);
-
-        [DllImport("user32.dll")]
-        private static extern int SetWindowLong(IntPtr hWnd, int nIndex, int dwNewLong);
-
-        private static readonly IntPtr HWNDTOPMOST = new IntPtr(-1);
-        private const uint SWPNOSIZE = 0x0001;
-        private const uint SWPNOMOVE = 0x0002;
-        private const uint SWPNOACTIVATE = 0x0010;
-        private const uint SWPSHOWWINDOW = 0x0040;
-
-        private const int GWLEXSTYLE = -20;
-        private const int EXNOACTIVATE = 0x08000000;
-        private const int EXTOPMOST = 0x00000008;
-        private const int EXTOOLWINDOW = 0x00000080;
-
-        private readonly DispatcherTimer _zOrderEnforcer = new();
+        private NativeWindowHelper.POINT _lastCursorPos;
 
         public MainWindow()
         {
@@ -132,12 +91,8 @@ namespace KeystrokeOverlayUI
         private void ApplyOverlayStyles()
         {
             IntPtr hWnd = WindowNative.GetWindowHandle(this);
-
-            int exStyle = GetWindowLong(hWnd, GWLEXSTYLE);
-            _ = SetWindowLong(hWnd, GWLEXSTYLE, exStyle | EXNOACTIVATE | EXTOOLWINDOW);
-
-            int cornerPreference = DwmRoundCorner;
-            _ = DwmSetWindowAttribute(hWnd, DwmWindowCornerPreference, ref cornerPreference, sizeof(int));
+            NativeWindowHelper.SetOverlayWindowStyles(hWnd);
+            NativeWindowHelper.SetRoundedCorners(hWnd);
 
             ForceWindowOnTop();
         }
@@ -182,26 +137,22 @@ namespace KeystrokeOverlayUI
                     // Loop with cancellation check
                     for (int index = 10; index > 0; index--)
                     {
-                        // 2. Pass the token to Task.Delay
-                        // If cancelled, this throws OperationCanceledException immediately
                         ViewModel.RegisterKey($"Drag to Position ({index})", durationMs: 1000, textSize: 30);
                         await Task.Delay(1000, token);
                     }
                 }
 
-                // Normal completion cleanup
+                // cleanup
                 ViewModel.ClearKeys();
                 await Task.Delay(500, token);
             }
             catch (OperationCanceledException)
             {
-                // 3. Logic for when a key interrupts the sequence
-                // We clear immediately so the new key can take over
                 ViewModel.ClearKeys();
             }
             finally
             {
-                // Clean up the source
+                // cleanup
                 if (_startupCancellationSource != null)
                 {
                     _startupCancellationSource.Dispose();
@@ -295,11 +246,6 @@ namespace KeystrokeOverlayUI
             int newX = nextDisplay.WorkArea.X + 15;
             int newY = nextDisplay.WorkArea.Y + 12;
 
-            // keep relative position
-            // int offsetX = appWindow.Position.X - currentDisplay.WorkArea.X;
-            // int offsetY = appWindow.Position.Y - currentDisplay.WorkArea.Y;
-            // int newX = nextDisplay.WorkArea.X + offsetX;
-            // int newY = nextDisplay.WorkArea.Y + offsetY;
             appWindow.Move(new Windows.Graphics.PointInt32(newX, newY));
             ViewModel.ShowLabel(HotkeyAction.Monitor, $"Monitor {nextIndex + 1}");
         }
@@ -322,13 +268,10 @@ namespace KeystrokeOverlayUI
             if (ViewModel.IsDraggable && properties.IsLeftButtonPressed)
             {
                 _isDragging = true;
-
                 RootGrid.CapturePointer(e.Pointer);
-
-                GetCursorPos(out _lastCursorPos);
+                _lastCursorPos = NativeWindowHelper.GetCursorPosition();
 
                 SetRootGridCursor(_dragCursor);
-
                 e.Handled = true;
             }
         }
@@ -337,7 +280,7 @@ namespace KeystrokeOverlayUI
         {
             if (_isDragging)
             {
-                GetCursorPos(out POINT currentPos);
+                var currentPos = NativeWindowHelper.GetCursorPosition();
 
                 int deltaX = currentPos.X - _lastCursorPos.X;
                 int deltaY = currentPos.Y - _lastCursorPos.Y;
@@ -488,9 +431,7 @@ namespace KeystrokeOverlayUI
             }
 
             IntPtr hWnd = WindowNative.GetWindowHandle(this);
-
-            // SWP_NOACTIVATE is important here to ensure we don't steal focus while typing
-            SetWindowPos(hWnd, HWNDTOPMOST, 0, 0, 0, 0, SWPNOMOVE | SWPNOSIZE | SWPSHOWWINDOW | SWPNOACTIVATE);
+            NativeWindowHelper.EnforceTopMost(hWnd);
         }
 
         // -------------------
