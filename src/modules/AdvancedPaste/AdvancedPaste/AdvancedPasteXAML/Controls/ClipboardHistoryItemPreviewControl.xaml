@@ -11,6 +11,7 @@
     mc:Ignorable="d">
     <UserControl.Resources>
         <converters:DateTimeToFriendlyStringConverter x:Key="DateTimeToFriendlyStringConverter" />
+        <converters:HexColorToBrushConverter x:Key="HexColorToBrushConverter" />
         <tkconverters:BoolToVisibilityConverter x:Name="BoolToVisibilityConverter" />
     </UserControl.Resources>
     <Grid ColumnSpacing="12">
@@ -25,6 +26,26 @@
                     Source="{x:Bind ClipboardItem.Image, Mode=OneWay}"
                     Stretch="UniformToFill"
                     Visibility="{x:Bind HasImage, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+                <!--  Color preview with text  -->
+                <Grid Visibility="{x:Bind HasColor, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Ellipse
+                        Grid.Column="0"
+                        Width="8"
+                        Height="8"
+                        Margin="8,0,8,0"
+                        Fill="{x:Bind ClipboardItem.Content, Mode=OneWay, Converter={StaticResource HexColorToBrushConverter}}" />
+                    <TextBlock
+                        Grid.Column="1"
+                        VerticalAlignment="Center"
+                        FontSize="10"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        Text="{x:Bind ClipboardItem.Content, Mode=OneWay}"
+                        TextWrapping="NoWrap" />
+                </Grid>
                 <!--  Text preview  -->
                 <TextBlock
                     Margin="8,0,0,0"

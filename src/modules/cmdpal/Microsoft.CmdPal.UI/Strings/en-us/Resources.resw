@@ -1,17 +1,17 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
-  <!-- 
-    Microsoft ResX Schema 
-    
+  <!--
+    Microsoft ResX Schema
+
     Version 2.0
-    
-    The primary goals of this format is to allow a simple XML format 
-    that is mostly human readable. The generation and parsing of the 
-    various data types are done through the TypeConverter classes 
+
+    The primary goals of this format is to allow a simple XML format
+    that is mostly human readable. The generation and parsing of the
+    various data types are done through the TypeConverter classes
     associated with the data types.
-    
+
     Example:
-    
+
     ... ado.net/XML headers & schema ...
     <resheader name="resmimetype">text/microsoft-resx</resheader>
     <resheader name="version">2.0</resheader>
@@ -26,36 +26,36 @@
         <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
         <comment>This is a comment</comment>
     </data>
-                
-    There are any number of "resheader" rows that contain simple 
+
+    There are any number of "resheader" rows that contain simple
     name/value pairs.
-    
-    Each data row contains a name, and value. The row also contains a 
-    type or mimetype. Type corresponds to a .NET class that support 
-    text/value conversion through the TypeConverter architecture. 
-    Classes that don't support this are serialized and stored with the 
+
+    Each data row contains a name, and value. The row also contains a
+    type or mimetype. Type corresponds to a .NET class that support
+    text/value conversion through the TypeConverter architecture.
+    Classes that don't support this are serialized and stored with the
     mimetype set.
-    
-    The mimetype is used for serialized objects, and tells the 
-    ResXResourceReader how to depersist the object. This is currently not 
+
+    The mimetype is used for serialized objects, and tells the
+    ResXResourceReader how to depersist the object. This is currently not
     extensible. For a given mimetype the value must be set accordingly:
-    
-    Note - application/x-microsoft.net.object.binary.base64 is the format 
-    that the ResXResourceWriter will generate, however the reader can 
+
+    Note - application/x-microsoft.net.object.binary.base64 is the format
+    that the ResXResourceWriter will generate, however the reader can
     read any of the formats listed below.
-    
+
     mimetype: application/x-microsoft.net.object.binary.base64
-    value   : The object must be serialized with 
+    value   : The object must be serialized with
             : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
             : and then encoded with base64 encoding.
-    
+
     mimetype: application/x-microsoft.net.object.soap.base64
-    value   : The object must be serialized with 
+    value   : The object must be serialized with
             : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
             : and then encoded with base64 encoding.
 
     mimetype: application/x-microsoft.net.object.bytearray.base64
-    value   : The object must be serialized into a byte array 
+    value   : The object must be serialized into a byte array
             : using a System.ComponentModel.TypeConverter
             : and then encoded with base64 encoding.
     -->
@@ -550,10 +550,160 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="Settings_GeneralPage_AutoGoHome_SettingsCard.Description" xml:space="preserve">
     <value>Automatically returns to home page after a period of inactivity when Command Palette is closed</value>
   </data>
+  <data name="Settings_GeneralPage_NavigationViewItem_Appearance.Content" xml:space="preserve">
+    <value>Personalization</value>
+  </data>
+  <data name="Settings_GeneralPage_AppTheme_SettingsCard.Header" xml:space="preserve">
+    <value>App theme mode</value>
+  </data>
+  <data name="Settings_GeneralPage_AppTheme_SettingsCard.Description" xml:space="preserve">
+    <value>Select which app theme to display</value>
+  </data>
+  <data name="AppearanceSettingsHeader.Text" xml:space="preserve">
+    <value>Appearance</value>
+  </data>
+  <data name="Settings_GeneralPage_AppTheme_Mode_System.Text" xml:space="preserve">
+    <value>Use system settings</value>
+  </data>
+  <data name="Settings_GeneralPage_AppTheme_Mode_Light.Text" xml:space="preserve">
+    <value>Light</value>
+  </data>
+  <data name="Settings_GeneralPage_AppTheme_Mode_Dark.Text" xml:space="preserve">
+    <value>Dark</value>
+  </data>
+  <data name="Settings_GeneralPage_BackgroundTint_SettingsCard.Header" xml:space="preserve">
+    <value>Color tint</value>
+  </data>
+  <data name="Settings_GeneralPage_BackgroundTintIntensity_SettingsCard.Header" xml:space="preserve">
+    <value>Color intensity</value>
+  </data>
+  <data name="OptionalColorPickerButton_UnsetTextBlock.Text" xml:space="preserve">
+    <value>Choose color</value>
+  </data>
+  <data name="OptionalColorPickerButton_ResetButton.Content" xml:space="preserve">
+    <value>Use default</value>
+  </data>
+  <data name="OptionalColorPickerButton_TransparentColorButton.Content" xml:space="preserve">
+    <value>Use default color</value>
+  </data>
+  <data name="OptionalColorPickerButton_WindowsColorsSectionHeading.Text" xml:space="preserve">
+    <value>Windows colors</value>
+  </data>
+  <data name="Settings_GeneralPage_BackgroundImage_SettingsExpander.Header" xml:space="preserve">
+    <value>Background image</value>
+  </data>
+  <data name="Settings_GeneralPage_BackgroundImageOpacity_SettingsCard.Header" xml:space="preserve">
+    <value>Background image opacity</value>
+  </data>
+  <data name="Settings_GeneralPage_BackgroundImageFit_SettingsCard.Header" xml:space="preserve">
+    <value>Background image fit</value>
+  </data>
+  <data name="BackgroundImageFit_ComboBoxItem_Fill.Content" xml:space="preserve">
+    <value>Fill</value>
+  </data>
+  <data name="BackgroundImageFit_ComboBoxItem_Fit.Content" xml:space="preserve">
+    <value>Fit</value>
+  </data>
+  <data name="BackgroundImageFit_ComboBoxItem_Stretch.Content" xml:space="preserve">
+    <value>Stretch</value>
+  </data>
   <data name="Settings_PageTitles_GeneralPage" xml:space="preserve">
     <value>General</value>
   </data>
+  <data name="Settings_PageTitles_AppearancePage" xml:space="preserve">
+    <value>Personalization</value>
+  </data>
   <data name="Settings_PageTitles_ExtensionsPage" xml:space="preserve">
     <value>Extensions</value>
+  </data>
+  <data name="Settings_GeneralPage_EscapeKeyBehavior_Option_DismissEmptySearchOrGoBack.Content" xml:space="preserve">
+    <value>Clear search first, then go back</value>
+  </data>
+  <data name="Settings_GeneralPage_EscapeKeyBehavior_Option_AlwaysGoBack.Content" xml:space="preserve">
+    <value>Go back</value>
+  </data>
+  <data name="Settings_GeneralPage_EscapeKeyBehavior_Option_AlwaysDismiss.Content" xml:space="preserve">
+    <value>Hide window and go home</value>
+  </data>
+  <data name="Settings_GeneralPage_EscapeKeyBehavior_Option_AlwaysHide.Content" xml:space="preserve">
+    <value>Hide window</value>
+  </data>
+  <data name="Settings_GeneralPage_EscapeKeyBehavior_SettingsCard.Header" xml:space="preserve">
+    <value>Escape key behavior</value>
+  </data>
+  <data name="Settings_GeneralPage_EscapeKeyBehavior_SettingsCard.Description" xml:space="preserve">
+    <value>Choose how Escape key behaves</value>
+  </data>
+  <data name="SettingsButtonTextBlock.Text" xml:space="preserve">
+    <value>Settings</value>
+  </data>
+  <data name="OptionalColorPickerButton_CustomColorsSectionHeading.Text" xml:space="preserve">
+    <value>Custom colors</value>
+  </data>
+  <data name="Settings_GeneralPage_ColorizationMode_None.Content" xml:space="preserve">
+    <value>None</value>
+  </data>
+  <data name="Settings_GeneralPage_ColorizationMode_CustomColor.Content" xml:space="preserve">
+    <value>Custom color</value>
+  </data>
+  <data name="Settings_GeneralPage_ColorizationMode_WindowsAccent.Content" xml:space="preserve">
+    <value>Accent color</value>
+  </data>
+  <data name="Settings_GeneralPage_ColorizationMode_Image.Content" xml:space="preserve">
+    <value>Image</value>
+  </data>
+  <data name="Settings_GeneralPage_BackgroundImage_ChooseImageButton.Content" xml:space="preserve">
+    <value>Browse...</value>
+  </data>
+  <data name="Settings_GeneralPage_BackgroundImage_ResetImageButton.Content" xml:space="preserve">
+    <value>Remove image</value>
+  </data>
+  <data name="Settings_GeneralPage_BackgroundColor_SettingsExpander.Header" xml:space="preserve">
+    <value>Background color</value>
+  </data>
+  <data name="Settings_GeneralPage_BackgroundColor_SettingsExpander.Description" xml:space="preserve">
+    <value>Choose a custom background color or use the current accent color</value>
+  </data>
+  <data name="Settings_GeneralPage_BackgroundImage_SettingsCard.Header" xml:space="preserve">
+    <value>Background image</value>
+  </data>
+  <data name="Settings_GeneralPage_NoBackground_DescriptionTextBlock.Text" xml:space="preserve">
+    <value>No settings</value>
+  </data>
+  <data name="Settings_GeneralPage_Background_SettingsExpander.Header" xml:space="preserve">
+    <value>Background</value>
+  </data>
+  <data name="Settings_GeneralPage_Background_SettingsExpander.Description" xml:space="preserve">
+    <value>Choose a custom background color or image</value>
+  </data>
+  <data name="Settings_GeneralPage_WindowsAccentColor_SettingsCard.Header" xml:space="preserve">
+    <value>System accent color</value>
+  </data>
+  <data name="Settings_GeneralPage_WindowsAccentColor_OpenWindowsColorsLinkText.Text" xml:space="preserve">
+    <value>Personalization › Colors</value>
+  </data>
+  <data name="Settings_GeneralPage_BackgroundImageBlur_SettingsCard.Header" xml:space="preserve">
+    <value>Background image blur</value>
+  </data>
+  <data name="Settings_GeneralPage_BackgroundImageBrightness_SettingsCard.Header" xml:space="preserve">
+    <value>Background image brightness</value>
+  </data>
+  <data name="Settings_GeneralPage_BackgroundImage_ResetProperties_SettingsCard.Header" xml:space="preserve">
+    <value>Restore defaults</value>
+  </data>
+  <data name="Settings_GeneralPage_Background_ResetImagePropertiesButton.Content" xml:space="preserve">
+    <value>Reset</value>
+  </data>
+  <data name="Settings_GeneralPage_WindowsAccentColor_SettingsCard_Description1.Text" xml:space="preserve">
+    <value>Change the system accent in Windows Settings:</value>
+  </data>
+  <data name="Settings_GeneralPage_AppTheme_Mode_Light_Automation.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Light</value>
+  </data>
+  <data name="Settings_GeneralPage_AppTheme_Mode_Dark_Automation.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Dark</value>
+  </data>
+  <data name="Settings_GeneralPage_AppTheme_Mode_System_Automation.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Use system settings</value>
   </data>
 </root>
