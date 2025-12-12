@@ -267,7 +267,7 @@ namespace ScreencastModeUI.Keyboard
         private static bool WillOverflow(string nextText)
         {
             // Rough width check using character count vs. a max visible chars estimate
-            const int maxVisibleChars = 40; // tune this based on your font/width
+            const int maxVisibleChars = 40;
             return nextText.Length > maxVisibleChars;
         }
 
