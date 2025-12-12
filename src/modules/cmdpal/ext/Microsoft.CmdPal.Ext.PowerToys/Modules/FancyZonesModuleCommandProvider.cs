@@ -14,17 +14,21 @@ internal sealed class FancyZonesModuleCommandProvider : ModuleCommandProvider
 {
     public override IEnumerable<ListItem> BuildCommands()
     {
-        var title = SettingsWindow.FancyZones.ModuleDisplayName();
-        var icon = SettingsWindow.FancyZones.ModuleIcon();
+        var module = SettingsWindow.FancyZones;
+        var title = module.ModuleDisplayName();
+        var icon = module.ModuleIcon();
 
-        yield return new ListItem(new OpenFancyZonesEditorCommand())
+        if (ModuleEnablementService.IsModuleEnabled(module))
         {
-            Title = "Open FancyZones Editor",
-            Subtitle = "Launch layout editor",
-            Icon = icon,
-        };
+            yield return new ListItem(new OpenFancyZonesEditorCommand())
+            {
+                Title = "Open FancyZones Editor",
+                Subtitle = "Launch layout editor",
+                Icon = icon,
+            };
+        }
 
-        yield return new ListItem(new OpenInSettingsCommand(SettingsWindow.FancyZones, title))
+        yield return new ListItem(new OpenInSettingsCommand(module, title))
         {
             Title = title,
             Subtitle = "Open FancyZones settings",

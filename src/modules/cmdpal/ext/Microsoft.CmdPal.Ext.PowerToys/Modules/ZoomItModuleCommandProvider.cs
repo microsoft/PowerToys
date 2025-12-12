@@ -14,48 +14,52 @@ internal sealed class ZoomItModuleCommandProvider : ModuleCommandProvider
 {
     public override IEnumerable<ListItem> BuildCommands()
     {
-        var title = SettingsWindow.ZoomIt.ModuleDisplayName();
-        var icon = SettingsWindow.ZoomIt.ModuleIcon();
+        var module = SettingsWindow.ZoomIt;
+        var title = module.ModuleDisplayName();
+        var icon = module.ModuleIcon();
 
-        // Action commands via ZoomIt IPC
-        yield return new ListItem(new ZoomItActionCommand("zoom", "ZoomIt: Zoom"))
+        if (ModuleEnablementService.IsModuleEnabled(module))
         {
-            Title = "ZoomIt: Zoom",
-            Subtitle = "Enter zoom mode",
-            Icon = icon,
-        };
-        yield return new ListItem(new ZoomItActionCommand("draw", "ZoomIt: Draw"))
-        {
-            Title = "ZoomIt: Draw",
-            Subtitle = "Enter drawing mode",
-            Icon = icon,
-        };
-        yield return new ListItem(new ZoomItActionCommand("break", "ZoomIt: Break"))
-        {
-            Title = "ZoomIt: Break",
-            Subtitle = "Enter break timer",
-            Icon = icon,
-        };
-        yield return new ListItem(new ZoomItActionCommand("liveZoom", "ZoomIt: Live Zoom"))
-        {
-            Title = "ZoomIt: Live Zoom",
-            Subtitle = "Toggle live zoom",
-            Icon = icon,
-        };
-        yield return new ListItem(new ZoomItActionCommand("snip", "ZoomIt: Snip"))
-        {
-            Title = "ZoomIt: Snip",
-            Subtitle = "Enter snip mode",
-            Icon = icon,
-        };
-        yield return new ListItem(new ZoomItActionCommand("record", "ZoomIt: Record"))
-        {
-            Title = "ZoomIt: Record",
-            Subtitle = "Start recording",
-            Icon = icon,
-        };
+            // Action commands via ZoomIt IPC
+            yield return new ListItem(new ZoomItActionCommand("zoom", "ZoomIt: Zoom"))
+            {
+                Title = "ZoomIt: Zoom",
+                Subtitle = "Enter zoom mode",
+                Icon = icon,
+            };
+            yield return new ListItem(new ZoomItActionCommand("draw", "ZoomIt: Draw"))
+            {
+                Title = "ZoomIt: Draw",
+                Subtitle = "Enter drawing mode",
+                Icon = icon,
+            };
+            yield return new ListItem(new ZoomItActionCommand("break", "ZoomIt: Break"))
+            {
+                Title = "ZoomIt: Break",
+                Subtitle = "Enter break timer",
+                Icon = icon,
+            };
+            yield return new ListItem(new ZoomItActionCommand("liveZoom", "ZoomIt: Live Zoom"))
+            {
+                Title = "ZoomIt: Live Zoom",
+                Subtitle = "Toggle live zoom",
+                Icon = icon,
+            };
+            yield return new ListItem(new ZoomItActionCommand("snip", "ZoomIt: Snip"))
+            {
+                Title = "ZoomIt: Snip",
+                Subtitle = "Enter snip mode",
+                Icon = icon,
+            };
+            yield return new ListItem(new ZoomItActionCommand("record", "ZoomIt: Record"))
+            {
+                Title = "ZoomIt: Record",
+                Subtitle = "Start recording",
+                Icon = icon,
+            };
+        }
 
-        yield return new ListItem(new OpenInSettingsCommand(SettingsWindow.ZoomIt, title))
+        yield return new ListItem(new OpenInSettingsCommand(module, title))
         {
             Title = title,
             Subtitle = "Open ZoomIt settings",

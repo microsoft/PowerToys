@@ -21,15 +21,29 @@ internal sealed class WorkspacesModuleCommandProvider : ModuleCommandProvider
     public override IEnumerable<ListItem> BuildCommands()
     {
         var items = new List<ListItem>();
+        var module = SettingsDeepLink.SettingsWindow.Workspaces;
+        var title = module.ModuleDisplayName();
         var icon = PowerToysResourcesHelper.IconFromSettingsIcon("Workspaces.png");
+        var moduleIcon = module.ModuleIcon();
+
+        if (!ModuleEnablementService.IsModuleEnabled(module))
+        {
+            items.Add(new ListItem(new OpenInSettingsCommand(module, title))
+            {
+                Title = title,
+                Subtitle = "Open Workspaces settings",
+                Icon = moduleIcon,
+            });
+
+            return items;
+        }
 
         // Settings entry plus common actions.
-        var title = SettingsDeepLink.SettingsWindow.Workspaces.ModuleDisplayName();
-        items.Add(new ListItem(new OpenInSettingsCommand(SettingsDeepLink.SettingsWindow.Workspaces, title))
+        items.Add(new ListItem(new OpenInSettingsCommand(module, title))
         {
             Title = title,
             Subtitle = "Open Workspaces settings",
-            Icon = SettingsDeepLink.SettingsWindow.Workspaces.ModuleIcon(),
+            Icon = moduleIcon,
             MoreCommands =
             [
                 new CommandContextItem(new WorkspacesListPage()),

@@ -14,45 +14,61 @@ internal sealed class MouseUtilsModuleCommandProvider : ModuleCommandProvider
 {
     public override IEnumerable<ListItem> BuildCommands()
     {
-        var title = SettingsWindow.MouseUtils.ModuleDisplayName();
-        var icon = SettingsWindow.MouseUtils.ModuleIcon();
+        var module = SettingsWindow.MouseUtils;
+        var title = module.ModuleDisplayName();
+        var icon = module.ModuleIcon();
 
-        yield return new ListItem(new ToggleFindMyMouseCommand())
+        if (ModuleEnablementService.IsKeyEnabled("FindMyMouse"))
         {
-            Title = "Trigger Find My Mouse",
-            Subtitle = "Focus the mouse pointer",
-            Icon = icon,
-        };
+            yield return new ListItem(new ToggleFindMyMouseCommand())
+            {
+                Title = "Trigger Find My Mouse",
+                Subtitle = "Focus the mouse pointer",
+                Icon = icon,
+            };
+        }
 
-        yield return new ListItem(new ToggleMouseHighlighterCommand())
+        if (ModuleEnablementService.IsKeyEnabled("MouseHighlighter"))
         {
-            Title = "Toggle Mouse Highlighter",
-            Subtitle = "Highlight mouse clicks",
-            Icon = icon,
-        };
+            yield return new ListItem(new ToggleMouseHighlighterCommand())
+            {
+                Title = "Toggle Mouse Highlighter",
+                Subtitle = "Highlight mouse clicks",
+                Icon = icon,
+            };
+        }
 
-        yield return new ListItem(new ToggleMouseCrosshairsCommand())
+        if (ModuleEnablementService.IsKeyEnabled("MousePointerCrosshairs"))
         {
-            Title = "Toggle Mouse Crosshairs",
-            Subtitle = "Enable or disable pointer crosshairs",
-            Icon = icon,
-        };
+            yield return new ListItem(new ToggleMouseCrosshairsCommand())
+            {
+                Title = "Toggle Mouse Crosshairs",
+                Subtitle = "Enable or disable pointer crosshairs",
+                Icon = icon,
+            };
+        }
 
-        yield return new ListItem(new ToggleCursorWrapCommand())
+        if (ModuleEnablementService.IsKeyEnabled("CursorWrap"))
         {
-            Title = "Toggle Cursor Wrap",
-            Subtitle = "Wrap the cursor across monitor edges",
-            Icon = icon,
-        };
+            yield return new ListItem(new ToggleCursorWrapCommand())
+            {
+                Title = "Toggle Cursor Wrap",
+                Subtitle = "Wrap the cursor across monitor edges",
+                Icon = icon,
+            };
+        }
 
-        yield return new ListItem(new ShowMouseJumpPreviewCommand())
+        if (ModuleEnablementService.IsKeyEnabled("MouseJump"))
         {
-            Title = "Show Mouse Jump Preview",
-            Subtitle = "Jump the pointer to a target",
-            Icon = icon,
-        };
+            yield return new ListItem(new ShowMouseJumpPreviewCommand())
+            {
+                Title = "Show Mouse Jump Preview",
+                Subtitle = "Jump the pointer to a target",
+                Icon = icon,
+            };
+        }
 
-        yield return new ListItem(new OpenInSettingsCommand(SettingsWindow.MouseUtils, title))
+        yield return new ListItem(new OpenInSettingsCommand(module, title))
         {
             Title = title,
             Subtitle = "Open Mouse Utilities settings",

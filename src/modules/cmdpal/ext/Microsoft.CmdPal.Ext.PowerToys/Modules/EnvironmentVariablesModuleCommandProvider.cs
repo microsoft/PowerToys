@@ -14,24 +14,28 @@ internal sealed class EnvironmentVariablesModuleCommandProvider : ModuleCommandP
 {
     public override IEnumerable<ListItem> BuildCommands()
     {
-        var title = SettingsWindow.EnvironmentVariables.ModuleDisplayName();
-        var icon = SettingsWindow.EnvironmentVariables.ModuleIcon();
+        var module = SettingsWindow.EnvironmentVariables;
+        var title = module.ModuleDisplayName();
+        var icon = module.ModuleIcon();
 
-        yield return new ListItem(new OpenEnvironmentVariablesCommand())
+        if (ModuleEnablementService.IsModuleEnabled(module))
         {
-            Title = "Open Environment Variables",
-            Subtitle = "Launch Environment Variables editor",
-            Icon = icon,
-        };
+            yield return new ListItem(new OpenEnvironmentVariablesCommand())
+            {
+                Title = "Open Environment Variables",
+                Subtitle = "Launch Environment Variables editor",
+                Icon = icon,
+            };
 
-        yield return new ListItem(new OpenEnvironmentVariablesAdminCommand())
-        {
-            Title = "Open Environment Variables (Admin)",
-            Subtitle = "Launch Environment Variables editor as admin",
-            Icon = icon,
-        };
+            yield return new ListItem(new OpenEnvironmentVariablesAdminCommand())
+            {
+                Title = "Open Environment Variables (Admin)",
+                Subtitle = "Launch Environment Variables editor as admin",
+                Icon = icon,
+            };
+        }
 
-        yield return new ListItem(new OpenInSettingsCommand(SettingsWindow.EnvironmentVariables, title))
+        yield return new ListItem(new OpenInSettingsCommand(module, title))
         {
             Title = title,
             Subtitle = "Open Environment Variables settings",

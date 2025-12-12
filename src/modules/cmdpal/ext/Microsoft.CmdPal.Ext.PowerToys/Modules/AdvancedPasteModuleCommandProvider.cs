@@ -14,17 +14,21 @@ internal sealed class AdvancedPasteModuleCommandProvider : ModuleCommandProvider
 {
     public override IEnumerable<ListItem> BuildCommands()
     {
-        var title = SettingsDeepLink.SettingsWindow.AdvancedPaste.ModuleDisplayName();
-        var icon = SettingsDeepLink.SettingsWindow.AdvancedPaste.ModuleIcon();
+        var module = SettingsDeepLink.SettingsWindow.AdvancedPaste;
+        var title = module.ModuleDisplayName();
+        var icon = module.ModuleIcon();
 
-        yield return new ListItem(new OpenAdvancedPasteCommand())
+        if (ModuleEnablementService.IsModuleEnabled(module))
         {
-            Title = "Open Advanced Paste",
-            Subtitle = "Launch the Advanced Paste UI",
-            Icon = icon,
-        };
+            yield return new ListItem(new OpenAdvancedPasteCommand())
+            {
+                Title = "Open Advanced Paste",
+                Subtitle = "Launch the Advanced Paste UI",
+                Icon = icon,
+            };
+        }
 
-        yield return new ListItem(new OpenInSettingsCommand(SettingsDeepLink.SettingsWindow.AdvancedPaste, title))
+        yield return new ListItem(new OpenInSettingsCommand(module, title))
         {
             Title = title,
             Subtitle = "Open Advanced Paste settings",

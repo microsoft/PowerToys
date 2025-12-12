@@ -14,24 +14,28 @@ internal sealed class LightSwitchModuleCommandProvider : ModuleCommandProvider
 {
     public override IEnumerable<ListItem> BuildCommands()
     {
-        var title = SettingsWindow.LightSwitch.ModuleDisplayName();
-        var icon = SettingsWindow.LightSwitch.ModuleIcon();
+        var module = SettingsWindow.LightSwitch;
+        var title = module.ModuleDisplayName();
+        var icon = module.ModuleIcon();
 
-        var items = new List<ListItem>
+        var items = new List<ListItem>();
+
+        if (ModuleEnablementService.IsModuleEnabled(module))
         {
-            new ListItem(new ToggleLightSwitchCommand())
+            items.Add(new ListItem(new ToggleLightSwitchCommand())
             {
                 Title = "Toggle Light Switch",
                 Subtitle = "Toggle system/apps theme immediately",
                 Icon = icon,
-            },
-            new ListItem(new OpenInSettingsCommand(SettingsWindow.LightSwitch, title))
-            {
-                Title = title,
-                Subtitle = "Open Light Switch settings",
-                Icon = icon,
-            },
-        };
+            });
+        }
+
+        items.Add(new ListItem(new OpenInSettingsCommand(module, title))
+        {
+            Title = title,
+            Subtitle = "Open Light Switch settings",
+            Icon = icon,
+        });
 
         return items;
     }

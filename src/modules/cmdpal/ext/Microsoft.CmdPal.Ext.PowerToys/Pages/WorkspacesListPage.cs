@@ -19,6 +19,7 @@ internal sealed partial class WorkspacesListPage : DynamicListPage
         Icon = PowerToysResourcesHelper.IconFromSettingsIcon("Workspaces.png");
         Name = Title = "Workspaces";
         Id = "com.microsoft.cmdpal.powertoys.workspaces";
+        SettingsChangeNotifier.SettingsChanged += OnSettingsChanged;
         _emptyMessage = new CommandItem()
         {
             Icon = PowerToysResourcesHelper.IconFromSettingsIcon("Workspaces.png"),
@@ -26,6 +27,11 @@ internal sealed partial class WorkspacesListPage : DynamicListPage
             Subtitle = SearchText,
         };
         EmptyContent = _emptyMessage;
+    }
+
+    private void OnSettingsChanged()
+    {
+        RaiseItemsChanged(0);
     }
 
     public override void UpdateSearchText(string oldSearch, string newSearch)

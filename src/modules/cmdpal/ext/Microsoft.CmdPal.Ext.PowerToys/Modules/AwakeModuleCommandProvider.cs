@@ -17,15 +17,29 @@ internal sealed class AwakeModuleCommandProvider : ModuleCommandProvider
     public override IEnumerable<ListItem> BuildCommands()
     {
         var items = new List<ListItem>();
+        var module = SettingsDeepLink.SettingsWindow.Awake;
+        var settingsTitle = module.ModuleDisplayName();
         var icon = PowerToysResourcesHelper.IconFromSettingsIcon("Awake.png");
+        var moduleIcon = module.ModuleIcon();
+
+        if (!ModuleEnablementService.IsModuleEnabled(module))
+        {
+            items.Add(new ListItem(new OpenInSettingsCommand(module, settingsTitle))
+            {
+                Title = settingsTitle,
+                Subtitle = "Open Awake settings",
+                Icon = moduleIcon,
+            });
+
+            return items;
+        }
 
         // Settings entry with quick actions in MoreCommands.
-        var settingsTitle = SettingsDeepLink.SettingsWindow.Awake.ModuleDisplayName();
-        items.Add(new ListItem(new OpenInSettingsCommand(SettingsDeepLink.SettingsWindow.Awake, settingsTitle))
+        items.Add(new ListItem(new OpenInSettingsCommand(module, settingsTitle))
         {
             Title = settingsTitle,
             Subtitle = "Open Awake settings",
-            Icon = SettingsDeepLink.SettingsWindow.Awake.ModuleIcon(),
+            Icon = moduleIcon,
             MoreCommands =
             [
                 new CommandContextItem(new StartAwakeCommand("Awake: Keep awake indefinitely", () => AwakeService.Instance.SetIndefiniteAsync(), "Awake set to indefinite")),

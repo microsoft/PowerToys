@@ -14,17 +14,21 @@ internal sealed class ScreenRulerModuleCommandProvider : ModuleCommandProvider
 {
     public override IEnumerable<ListItem> BuildCommands()
     {
-        var title = SettingsWindow.MeasureTool.ModuleDisplayName();
-        var icon = SettingsWindow.MeasureTool.ModuleIcon();
+        var module = SettingsWindow.MeasureTool;
+        var title = module.ModuleDisplayName();
+        var icon = module.ModuleIcon();
 
-        yield return new ListItem(new ToggleScreenRulerCommand())
+        if (ModuleEnablementService.IsModuleEnabled(module))
         {
-            Title = "Toggle Screen Ruler",
-            Subtitle = "Start or close Screen Ruler",
-            Icon = icon,
-        };
+            yield return new ListItem(new ToggleScreenRulerCommand())
+            {
+                Title = "Toggle Screen Ruler",
+                Subtitle = "Start or close Screen Ruler",
+                Icon = icon,
+            };
+        }
 
-        yield return new ListItem(new OpenInSettingsCommand(SettingsWindow.MeasureTool, title))
+        yield return new ListItem(new OpenInSettingsCommand(module, title))
         {
             Title = title,
             Subtitle = "Open Screen Ruler settings",

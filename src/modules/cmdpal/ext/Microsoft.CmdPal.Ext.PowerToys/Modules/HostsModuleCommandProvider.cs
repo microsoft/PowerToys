@@ -14,24 +14,28 @@ internal sealed class HostsModuleCommandProvider : ModuleCommandProvider
 {
     public override IEnumerable<ListItem> BuildCommands()
     {
-        var title = SettingsWindow.Hosts.ModuleDisplayName();
-        var icon = SettingsWindow.Hosts.ModuleIcon();
+        var module = SettingsWindow.Hosts;
+        var title = module.ModuleDisplayName();
+        var icon = module.ModuleIcon();
 
-        yield return new ListItem(new OpenHostsEditorCommand())
+        if (ModuleEnablementService.IsModuleEnabled(module))
         {
-            Title = "Open Hosts File Editor",
-            Subtitle = "Launch Hosts File Editor",
-            Icon = icon,
-        };
+            yield return new ListItem(new OpenHostsEditorCommand())
+            {
+                Title = "Open Hosts File Editor",
+                Subtitle = "Launch Hosts File Editor",
+                Icon = icon,
+            };
 
-        yield return new ListItem(new OpenHostsEditorAdminCommand())
-        {
-            Title = "Open Hosts File Editor (Admin)",
-            Subtitle = "Launch Hosts File Editor as admin",
-            Icon = icon,
-        };
+            yield return new ListItem(new OpenHostsEditorAdminCommand())
+            {
+                Title = "Open Hosts File Editor (Admin)",
+                Subtitle = "Launch Hosts File Editor as admin",
+                Icon = icon,
+            };
+        }
 
-        yield return new ListItem(new OpenInSettingsCommand(SettingsWindow.Hosts, title))
+        yield return new ListItem(new OpenInSettingsCommand(module, title))
         {
             Title = title,
             Subtitle = "Open Hosts File Editor settings",

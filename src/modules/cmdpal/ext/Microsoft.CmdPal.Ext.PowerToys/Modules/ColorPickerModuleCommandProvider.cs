@@ -15,41 +15,54 @@ internal sealed class ColorPickerModuleCommandProvider : ModuleCommandProvider
 {
     public override IEnumerable<ListItem> BuildCommands()
     {
-        var title = SettingsDeepLink.SettingsWindow.ColorPicker.ModuleDisplayName();
-        var icon = SettingsDeepLink.SettingsWindow.ColorPicker.ModuleIcon();
+        var module = SettingsDeepLink.SettingsWindow.ColorPicker;
+        var title = module.ModuleDisplayName();
+        var icon = module.ModuleIcon();
 
         var commands = new List<ListItem>();
 
-        // Quick actions under MoreCommands.
-        var more = new List<CommandContextItem>
+        if (ModuleEnablementService.IsModuleEnabled(module))
         {
-            new CommandContextItem(new OpenColorPickerCommand()),
-            new CommandContextItem(new CopyColorCommand()),
-            new CommandContextItem(new ColorPickerSavedColorsPage()),
-        };
+            // Quick actions under MoreCommands.
+            var more = new List<CommandContextItem>
+            {
+                new CommandContextItem(new OpenColorPickerCommand()),
+                new CommandContextItem(new CopyColorCommand()),
+                new CommandContextItem(new ColorPickerSavedColorsPage()),
+            };
 
-        commands.Add(new ListItem(new OpenInSettingsCommand(SettingsDeepLink.SettingsWindow.ColorPicker, title))
-        {
-            Title = title,
-            Subtitle = "Open Color Picker settings",
-            Icon = icon,
-            MoreCommands = more.ToArray(),
-        });
+            commands.Add(new ListItem(new OpenInSettingsCommand(module, title))
+            {
+                Title = title,
+                Subtitle = "Open Color Picker settings",
+                Icon = icon,
+                MoreCommands = more.ToArray(),
+            });
 
-        // Direct entries in the module list.
-        commands.Add(new ListItem(new OpenColorPickerCommand())
-        {
-            Title = "Open Color Picker",
-            Subtitle = "Start a color pick session",
-            Icon = icon,
-        });
+            // Direct entries in the module list.
+            commands.Add(new ListItem(new OpenColorPickerCommand())
+            {
+                Title = "Open Color Picker",
+                Subtitle = "Start a color pick session",
+                Icon = icon,
+            });
 
-        commands.Add(new ListItem(new CommandItem(new ColorPickerSavedColorsPage()))
+            commands.Add(new ListItem(new CommandItem(new ColorPickerSavedColorsPage()))
+            {
+                Title = "Saved colors",
+                Subtitle = "Browse and copy saved colors",
+                Icon = icon,
+            });
+        }
+        else
         {
-            Title = "Saved colors",
-            Subtitle = "Browse and copy saved colors",
-            Icon = icon,
-        });
+            commands.Add(new ListItem(new OpenInSettingsCommand(module, title))
+            {
+                Title = title,
+                Subtitle = "Open Color Picker settings",
+                Icon = icon,
+            });
+        }
 
         return commands;
     }

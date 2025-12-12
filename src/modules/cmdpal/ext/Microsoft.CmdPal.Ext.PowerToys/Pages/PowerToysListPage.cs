@@ -17,6 +17,7 @@ internal sealed partial class PowerToysListPage : DynamicListPage
         Icon = PowerToysResourcesHelper.IconFromSettingsIcon("PowerToys.png");
         Name = Title = "PowerToys";
         Id = "com.microsoft.cmdpal.powertoys";
+        SettingsChangeNotifier.SettingsChanged += OnSettingsChanged;
         _empty = new CommandItem()
         {
             Icon = PowerToysResourcesHelper.IconFromSettingsIcon("PowerToys.png"),
@@ -24,6 +25,11 @@ internal sealed partial class PowerToysListPage : DynamicListPage
             Subtitle = SearchText,
         };
         EmptyContent = _empty;
+    }
+
+    private void OnSettingsChanged()
+    {
+        RaiseItemsChanged(0);
     }
 
     public override void UpdateSearchText(string oldSearch, string newSearch)

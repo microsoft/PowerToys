@@ -14,17 +14,21 @@ internal sealed class ShortcutGuideModuleCommandProvider : ModuleCommandProvider
 {
     public override IEnumerable<ListItem> BuildCommands()
     {
-        var title = SettingsWindow.ShortcutGuide.ModuleDisplayName();
-        var icon = SettingsWindow.ShortcutGuide.ModuleIcon();
+        var module = SettingsWindow.ShortcutGuide;
+        var title = module.ModuleDisplayName();
+        var icon = module.ModuleIcon();
 
-        yield return new ListItem(new ToggleShortcutGuideCommand())
+        if (ModuleEnablementService.IsModuleEnabled(module))
         {
-            Title = "Toggle Shortcut Guide",
-            Subtitle = "Show or hide Shortcut Guide",
-            Icon = icon,
-        };
+            yield return new ListItem(new ToggleShortcutGuideCommand())
+            {
+                Title = "Toggle Shortcut Guide",
+                Subtitle = "Show or hide Shortcut Guide",
+                Icon = icon,
+            };
+        }
 
-        yield return new ListItem(new OpenInSettingsCommand(SettingsWindow.ShortcutGuide, title))
+        yield return new ListItem(new OpenInSettingsCommand(module, title))
         {
             Title = title,
             Subtitle = "Open Shortcut Guide settings",

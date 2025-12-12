@@ -14,17 +14,21 @@ internal sealed class TextExtractorModuleCommandProvider : ModuleCommandProvider
 {
     public override IEnumerable<ListItem> BuildCommands()
     {
-        var title = SettingsWindow.PowerOCR.ModuleDisplayName();
-        var icon = SettingsWindow.PowerOCR.ModuleIcon();
+        var module = SettingsWindow.PowerOCR;
+        var title = module.ModuleDisplayName();
+        var icon = module.ModuleIcon();
 
-        yield return new ListItem(new ToggleTextExtractorCommand())
+        if (ModuleEnablementService.IsModuleEnabled(module))
         {
-            Title = "Toggle Text Extractor",
-            Subtitle = "Start or close Text Extractor",
-            Icon = icon,
-        };
+            yield return new ListItem(new ToggleTextExtractorCommand())
+            {
+                Title = "Toggle Text Extractor",
+                Subtitle = "Start or close Text Extractor",
+                Icon = icon,
+            };
+        }
 
-        yield return new ListItem(new OpenInSettingsCommand(SettingsWindow.PowerOCR, title))
+        yield return new ListItem(new OpenInSettingsCommand(module, title))
         {
             Title = title,
             Subtitle = "Open Text Extractor settings",

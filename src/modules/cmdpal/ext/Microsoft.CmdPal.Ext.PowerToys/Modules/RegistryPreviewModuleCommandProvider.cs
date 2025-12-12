@@ -14,17 +14,21 @@ internal sealed class RegistryPreviewModuleCommandProvider : ModuleCommandProvid
 {
     public override IEnumerable<ListItem> BuildCommands()
     {
-        var title = SettingsWindow.RegistryPreview.ModuleDisplayName();
-        var icon = SettingsWindow.RegistryPreview.ModuleIcon();
+        var module = SettingsWindow.RegistryPreview;
+        var title = module.ModuleDisplayName();
+        var icon = module.ModuleIcon();
 
-        yield return new ListItem(new OpenRegistryPreviewCommand())
+        if (ModuleEnablementService.IsModuleEnabled(module))
         {
-            Title = "Open Registry Preview",
-            Subtitle = "Launch Registry Preview",
-            Icon = icon,
-        };
+            yield return new ListItem(new OpenRegistryPreviewCommand())
+            {
+                Title = "Open Registry Preview",
+                Subtitle = "Launch Registry Preview",
+                Icon = icon,
+            };
+        }
 
-        yield return new ListItem(new OpenInSettingsCommand(SettingsWindow.RegistryPreview, title))
+        yield return new ListItem(new OpenInSettingsCommand(module, title))
         {
             Title = title,
             Subtitle = "Open Registry Preview settings",
