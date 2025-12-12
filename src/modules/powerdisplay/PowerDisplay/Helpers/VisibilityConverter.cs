@@ -10,7 +10,7 @@ namespace PowerDisplay.Helpers
     /// Provides conversion utilities for Visibility binding in x:Bind scenarios.
     /// AOT-compatible alternative to IValueConverter implementations.
     /// </summary>
-    internal static class VisibilityConverter
+    public static class VisibilityConverter
     {
         /// <summary>
         /// Converts a boolean value to a Visibility value.
