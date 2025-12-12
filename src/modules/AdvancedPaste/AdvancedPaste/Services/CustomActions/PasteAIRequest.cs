@@ -12,6 +12,10 @@ namespace AdvancedPaste.Services.CustomActions
 
         public string InputText { get; init; }
 
+        public byte[] ImageBytes { get; init; }
+
+        public string ImageMimeType { get; init; }
+
         public string SystemPrompt { get; init; }
 
         public AIServiceUsage Usage { get; set; } = AIServiceUsage.None;

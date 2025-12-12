@@ -40,15 +40,15 @@ namespace AdvancedPaste.Services.CustomActions
             this.userSettings = userSettings;
         }
 
-        public async Task<CustomActionTransformResult> TransformTextAsync(string prompt, string inputText, CancellationToken cancellationToken, IProgress<double> progress)
+        public async Task<CustomActionTransformResult> TransformAsync(string prompt, string inputText, byte[] imageBytes, CancellationToken cancellationToken, IProgress<double> progress)
         {
             var pasteConfig = userSettings?.PasteAIConfiguration;
             var providerConfig = BuildProviderConfig(pasteConfig);
 
-            return await TransformAsync(prompt, inputText, providerConfig, cancellationToken, progress);
+            return await TransformAsync(prompt, inputText, imageBytes, providerConfig, cancellationToken, progress);
         }
 
-        private async Task<CustomActionTransformResult> TransformAsync(string prompt, string inputText, PasteAIConfig providerConfig, CancellationToken cancellationToken, IProgress<double> progress)
+        private async Task<CustomActionTransformResult> TransformAsync(string prompt, string inputText, byte[] imageBytes, PasteAIConfig providerConfig, CancellationToken cancellationToken, IProgress<double> progress)
         {
             ArgumentNullException.ThrowIfNull(providerConfig);
 
@@ -57,9 +57,9 @@ namespace AdvancedPaste.Services.CustomActions
                 return new CustomActionTransformResult(string.Empty, AIServiceUsage.None);
             }
 
-            if (string.IsNullOrWhiteSpace(inputText))
+            if (string.IsNullOrWhiteSpace(inputText) && imageBytes is null)
             {
-                Logger.LogWarning("Clipboard has no usable text data");
+                Logger.LogWarning("Clipboard has no usable data");
                 return new CustomActionTransformResult(string.Empty, AIServiceUsage.None);
             }
 
@@ -80,6 +80,8 @@ namespace AdvancedPaste.Services.CustomActions
                 {
                     Prompt = prompt,
                     InputText = inputText,
+                    ImageBytes = imageBytes,
+                    ImageMimeType = imageBytes != null ? "image/png" : null,
                     SystemPrompt = systemPrompt,
                 };
 
