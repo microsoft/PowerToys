@@ -203,6 +203,9 @@
   <data name="MeasureTool_UnitsOfMeasure_Millimeters.Content" xml:space="preserve">
     <value>Millimeters</value>
   </data>
+  <data name="MeasureTool_UnitsOfMeasure_Points.Content" xml:space="preserve">
+    <value>Points</value>
+  </data>
   <data name="MeasureTool_PixelTolerance.Header" xml:space="preserve">
     <value>Pixel tolerance for edge detection</value>
   </data>

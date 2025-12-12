@@ -78,4 +78,7 @@
     <data name="MeasurementUnitAbbrMillimetre" xml:space="preserve">
         <value>mm</value>
     </data>
+    <data name="MeasurementUnitAbbrPoint" xml:space="preserve">
+        <value>pt</value>
+    </data>
 </root>
