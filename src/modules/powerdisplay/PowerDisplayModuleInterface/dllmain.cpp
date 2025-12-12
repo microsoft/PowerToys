@@ -217,6 +217,18 @@ private:
         }
     }
 
+    // Helper method to ensure PowerDisplay process is running
+    // Checks if process is running, launches it if needed, and waits for ready signal
+    void EnsureProcessRunning()
+    {
+        if (!is_process_running())
+        {
+            Logger::trace(L"PowerDisplay process not running, launching");
+            launch_process();
+            wait_for_process_ready();
+        }
+    }
+
 public:
     PowerDisplayModule()
     {
@@ -360,13 +372,7 @@ public:
                 Logger::trace(L"Event name: {}", CommonSharedConstants::APPLY_COLOR_TEMPERATURE_POWER_DISPLAY_EVENT);
 
                 // Ensure PowerDisplay process is running before signaling event
-                if (!is_process_running())
-                {
-                    Logger::trace(L"PowerDisplay process not running, launching before applying color temperature");
-                    launch_process();
-                    // Wait for process to signal ready
-                    wait_for_process_ready();
-                }
+                EnsureProcessRunning();
 
                 if (m_hApplyColorTemperatureEvent)
                 {
@@ -391,13 +397,7 @@ public:
                 Logger::trace(L"ApplyProfile action received");
 
                 // Ensure PowerDisplay process is running before signaling event
-                if (!is_process_running())
-                {
-                    Logger::trace(L"PowerDisplay process not running, launching before applying profile");
-                    launch_process();
-                    // Wait for process to signal ready
-                    wait_for_process_ready();
-                }
+                EnsureProcessRunning();
 
                 if (m_hApplyProfileEvent)
                 {
