@@ -701,7 +701,7 @@ _If you want to find diagnostic data events in the source code, these two links 
   </tr>
   <tr>
     <td>Microsoft.PowerToys.LightSwitch_ThemeTargetChanged</td>
-    <td>Occurs when a the options for targeting the system or apps is updated.</td>
+    <td>Occurs when the options for targeting the system or apps is updated.</td>
   </tr>
 </table>
 
