@@ -16,7 +16,7 @@ A PowerToy module is a self-contained utility integrated into the PowerToys ecos
 * .NET 8 SDK
 * [WiX v5 toolset](https://github.com/microsoft/PowerToys/tree/main)
 * [PowerToys repository](https://github.com/microsoft/PowerToys/tree/main) cloned locally
-* [Able to build and run](https://github.com/microsoft/PowerToys/blob/main/doc/devdocs/development/debugging.md) `PowerToys.sln`.
+* [Able to build and run](https://github.com/microsoft/PowerToys/blob/main/doc/devdocs/development/debugging.md) `PowerToys.slnx`.
 
 ### Folder Structure
 
