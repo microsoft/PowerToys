@@ -36,6 +36,7 @@
 #include <RestartManager.h>
 #include "centralized_kb_hook.h"
 #include "centralized_hotkeys.h"
+#include "quick_access_host.h"
 
 #if _DEBUG && _WIN64
 #include "unhandled_exception_handler.h"
@@ -105,6 +106,11 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
 #endif
     Trace::RegisterProvider();
     start_tray_icon(isProcessElevated);
+    if (get_general_settings().enableQuickAccess)
+    {
+        QuickAccessHost::start();
+    }
+    update_quick_access_hotkey(get_general_settings().enableQuickAccess, get_general_settings().quickAccessShortcut);
     set_tray_icon_visible(get_general_settings().showSystemTrayIcon);
     CentralizedKeyboardHook::Start();
 
@@ -220,7 +226,7 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
             {
                 window = winrt::to_hstring(settingsWindow);
             }
-            open_settings_window(window, false);
+            open_settings_window(window);
         }
 
         if (openOobe)
@@ -243,6 +249,7 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
         result = -1;
     }
     Trace::UnregisterProvider();
+    QuickAccessHost::stop();
     return result;
 }
 

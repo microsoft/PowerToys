@@ -124,6 +124,7 @@
 		<ProjectReference Include="..\..\common\LanguageModelProvider\LanguageModelProvider.csproj" />
 		<ProjectReference Include="..\..\modules\MouseUtils\MouseJump.Common\MouseJump.Common.csproj" />
 		<ProjectReference Include="..\Settings.UI.Library\Settings.UI.Library.csproj" />
+		<ProjectReference Include="..\Settings.UI.Controls\Settings.UI.Controls.csproj" />
 	</ItemGroup>
 
 	<!-- XamlIndexBuilder now outputs directly to Assets\Settings -->
