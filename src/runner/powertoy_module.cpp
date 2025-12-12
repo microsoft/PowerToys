@@ -66,7 +66,11 @@ void PowertoyModule::update_hotkeys()
     {
         if (hotkeys[i].isShown)
         {
-            hkmng.AddHotkey(hotkeys[i], pt_module->get_key(), static_cast<int>(i), pt_module->is_enabled());
+            // Skip the PowerToys Run hotkey to avoid issue #41468
+            if (wcscmp(pt_module->get_key(), L"PowerToys Run") != 0)
+            {
+                hkmng.AddHotkey(hotkeys[i], pt_module->get_key(), static_cast<int>(i), pt_module->is_enabled());
+            }
 
             CentralizedKeyboardHook::SetHotkeyAction(pt_module->get_key(), hotkeys[i], [modulePtr, i] {
                 Logger::trace(L"{} hotkey is invoked from Centralized keyboard hook", modulePtr->get_key());
