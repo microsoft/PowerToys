@@ -391,7 +391,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private ObservableCollection<DashboardModuleItem> GetModuleItemsKeystrokeOverlay()
         {
-            ISettingsRepository<KeystrokeOverlaySettings> moduleSettingsRepository = SettingsRepository<KeystrokeOverlaySettings>.GetInstance(new SettingsUtils());
+            ISettingsRepository<KeystrokeOverlaySettings> moduleSettingsRepository = SettingsRepository<KeystrokeOverlaySettings>.GetInstance(SettingsUtils.Default);
             var list = new List<DashboardModuleItem>
             {
                 new DashboardModuleShortcutItem() { Label = resourceLoader.GetString("KeystrokeOverlay_SwitchMonitor"), Shortcut = moduleSettingsRepository.SettingsConfig.Properties.SwitchMonitorHotkey.GetKeysList() },

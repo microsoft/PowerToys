@@ -15,7 +15,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         public KeystrokeOverlayPage()
         {
-            var settingsUtils = new SettingsUtils();
+            var settingsUtils = SettingsUtils.Default;
             ViewModel = new KeystrokeOverlayViewModel(
                 settingsUtils,
                 SettingsRepository<GeneralSettings>.GetInstance(settingsUtils),

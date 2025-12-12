@@ -64,9 +64,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             BackgroundColor = new StringProperty("#000000");
         }
 
-        public string ToJsonString()
-        {
-            return JsonSerializer.Serialize(this);
-        }
+        public override string ToString() => JsonSerializer.Serialize(this, SettingsSerializationContext.Default.KeystrokeOverlayProperties);
     }
 }
