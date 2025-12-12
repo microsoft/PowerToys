@@ -6,7 +6,7 @@ using System;
 using System.Collections.Frozen;
 using System.Collections.Generic;
 
-namespace PowerDisplay.Common.Helpers;
+namespace PowerDisplay.Common.Utils;
 
 /// <summary>
 /// Helper class for mapping PnP (Plug and Play) manufacturer IDs to display names.

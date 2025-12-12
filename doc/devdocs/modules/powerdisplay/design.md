@@ -49,9 +49,8 @@ Users with multiple monitors face several challenges:
 - Provide unified control for brightness, contrast, volume, color temperature, and
   input source across all connected monitors
 - Support both DDC/CI (external monitors) and WMI (laptop displays)
-- Integrate with PowerToys Settings UI for configuration
-- Integrate with LightSwitch module for automatic profile application on theme changes
 - Support user-defined profiles for quick configuration switching
+- Integrate with LightSwitch module for automatic profile application on theme changes
 - Support global hotkey activation
 
 ---
@@ -64,11 +63,12 @@ Users with multiple monitors face several challenges:
 bidirectional communication between a computer and a display over the I2C bus
 embedded in display cables.
 
-Most monitors (external monitors) support DDC/CI, allowing applications to read and modify settings
-like brightness and contrast programmatically. But unfortunately, even if a monitor supports DDC/CI, 
-they may only support a limited subset of VCP codes, or have buggy implementations. PowerDisplay relies on
-the monitor-reported capabilities string to determine supported features. But if your monitor's manufacturer
-has a poor DDC/CI implementation, some features may not work as expected. And we can do nothing about it.
+Most external monitors support DDC/CI, allowing applications to read and modify settings
+like brightness and contrast programmatically. But unfortunately, some manufacturers have poor implementations of their product's driver. They may not support DDC/CI or report itself supports DDC/CI (through capabilities string) when it does not. Even if a monitor supports DDC/CI, they may only support a limited subset of VCP codes, or have buggy implementations.
+
+And sometimes, users may connect monitor through a KVM switch or docking station that does not pass through DDC/CI commands correctly, and their docking may report it supports (hard code a capabilities string) but in reality, it does not. And will do thing when we try to send DDC/CI commands.
+
+PowerDisplay relies on the monitor-reported capabilities string to determine supported features. But if your monitor's manufacturer has a poor DDC/CI implementation, or you are connecting through a docking station that does not properly support DDC/CI, some features may not work as expected. And we can do nothing about it.
 
 **Key Concepts:**
 
@@ -90,7 +90,7 @@ has a poor DDC/CI implementation, some features may not work as expected. And we
 
 **Official Documentation:**
 - [VESA DDC/CI Standard](https://vesa.org/vesa-standards/)
-- [MCCS (Monitor Control Command Set) Specification](https://vesa.org/vesa-standards/)
+
 
 ---
 
@@ -113,7 +113,7 @@ support DDC/CI.
 
 ```mermaid
 flowchart TB
-    subgraph PowerToys["PowerToys Ecosystem"]
+    subgraph PowerToys["PowerToys Application"]
         Runner["Runner (PowerToys.exe)"]
         SettingsUI["Settings UI (WinUI 3)"]
         LightSwitch["LightSwitch Module"]
@@ -133,9 +133,10 @@ flowchart TB
     Runner -->|"Loads DLL"| ModuleInterface
     Runner -->|"Hotkey Events"| ModuleInterface
     SettingsUI <-->|"Named Pipes"| Runner
-    SettingsUI -->|"Custom Actions<br/>(Launch, RefreshMonitors,<br/>ApplyColorTemperature, ApplyProfile)"| ModuleInterface
+    SettingsUI -->|"Custom Actions<br/>(Launch, ApplyColorTemperature,<br/>ApplyProfile)"| ModuleInterface
 
-    ModuleInterface <-->|"Windows Events<br/>(Show/Toggle/Terminate/Refresh)"| PowerDisplayApp
+    ModuleInterface <-->|"Windows Events<br/>(Show/Toggle/Terminate)"| PowerDisplayApp
+    PowerDisplayApp -->|"RefreshMonitors Event"| SettingsUI
     LightSwitch -->|"Theme Events<br/>(Light/Dark)"| PowerDisplayApp
 
     PowerDisplayApp --> PowerDisplayLib
@@ -176,8 +177,6 @@ src/modules/powerdisplay/
 │   │   ├── NativeDelegates.cs        # P/Invoke delegate types
 │   │   ├── NativeStructures.cs       # Win32 structures
 │   │   └── PInvoke.cs                # P/Invoke declarations
-│   ├── Helpers/
-│   │   └── PnpIdHelper.cs            # PnP manufacturer ID lookup
 │   ├── Interfaces/
 │   │   ├── IMonitorController.cs     # Controller abstraction
 │   │   ├── IMonitorData.cs           # Monitor data interface
@@ -209,6 +208,7 @@ src/modules/powerdisplay/
 │   │   ├── MonitorFeatureHelper.cs   # Monitor feature utilities
 │   │   ├── MonitorMatchingHelper.cs  # Profile-to-monitor matching
 │   │   ├── MonitorValueConverter.cs  # Value conversion utilities
+│   │   ├── PnpIdHelper.cs            # PnP manufacturer ID lookup
 │   │   ├── ProfileHelper.cs          # Profile helper utilities
 │   │   ├── SimpleDebouncer.cs        # Generic debouncer
 │   │   └── VcpNames.cs               # VCP code and value name lookup
@@ -299,7 +299,7 @@ flowchart TB
                 DdcCiController
                 WmiController
             end
-            subgraph Helpers
+            subgraph Utils
                 PnpIdHelper["PnpIdHelper<br/>(Manufacturer Names)"]
             end
         end
@@ -336,7 +336,7 @@ flowchart TB
     MonitorManager --> Drivers
     MonitorManager --> DisplayRotationService
 
-    %% Helpers used during discovery
+    %% Utils used during discovery
     WmiController --> PnpIdHelper
 
     %% Services to Storage
@@ -357,7 +357,7 @@ flowchart TB
     style PowerDisplayLib fill:#c8e6c9,stroke:#388e3c
     style Services fill:#a5d6a7,stroke:#2e7d32
     style Drivers fill:#ffccbc,stroke:#e64a19
-    style Helpers fill:#dcedc8,stroke:#689f38
+    style Utils fill:#dcedc8,stroke:#689f38
     style Storage fill:#e1bee7,stroke:#8e24aa
     style Hardware fill:#b2dfdb,stroke:#00897b
 ```
@@ -651,15 +651,19 @@ sequenceDiagram
 
 ##### GDI Device Name ↔ Physical Monitors
 
-```
-HMONITOR (Logical)
-    │
-    ├── GetMonitorInfo() → GDI Device Name "\\.\DISPLAY1"
-    │
-    └── GetPhysicalMonitorsFromHMONITOR()
-            │
-            ├── Physical Monitor 0 (Handle: 0x0B14, Desc: "Dell U2722D")
-            └── Physical Monitor 1 (Handle: 0x0B18, Desc: "Dell U2722D")  [Mirror mode]
+```mermaid
+flowchart TB
+    HMON["HMONITOR (Logical)"]
+
+    HMON --> GDI["GetMonitorInfo()<br/>→ GDI Device Name<br/>\.DISPLAY1"]
+    HMON --> GetPhys["GetPhysicalMonitorsFromHMONITOR()"]
+
+    GetPhys --> PM0["Physical Monitor 0<br/>Handle: 0x0B14<br/>Desc: Dell U2722D"]
+    GetPhys --> PM1["Physical Monitor 1<br/>Handle: 0x0B18<br/>Desc: Dell U2722D<br/>Mirror mode"]
+
+    style HMON fill:#e3f2fd
+    style PM0 fill:#fff3e0
+    style PM1 fill:#fff3e0
 ```
 
 In **mirror/clone mode**, multiple physical monitors share the same GDI device name.
@@ -672,15 +676,25 @@ QueryDisplayConfig returns multiple paths with the same `GdiDeviceName` but diff
 DisplayPort output using MST (Multi-Stream Transport) technology. This creates unique
 challenges for monitor identification.
 
-```
-┌─────────────┐    DP    ┌─────────────┐    DP    ┌─────────────┐
-│   GPU       │─────────▶│  Monitor A  │─────────▶│  Monitor B  │
-│             │          │  (MST Hub)  │          │  (End)      │
-└─────────────┘          └─────────────┘          └─────────────┘
-      │
-      │ Single physical DP port
-      ▼
- Multiple logical displays (DISPLAY1, DISPLAY2)
+```mermaid
+flowchart LR
+    GPU["GPU<br/>(Single DP Port)"]
+    MonA["Monitor A<br/>(MST Hub)"]
+    MonB["Monitor B<br/>(End)"]
+
+    GPU -->|"DP"| MonA -->|"DP"| MonB
+
+    subgraph Result["Result: Multiple Logical Displays"]
+        D1["DISPLAY1"]
+        D2["DISPLAY2"]
+    end
+
+    GPU -.-> Result
+
+    style GPU fill:#bbdefb
+    style MonA fill:#c8e6c9
+    style MonB fill:#c8e6c9
+    style Result fill:#fff3e0
 ```
 
 **How Windows Handles MST:**
@@ -695,25 +709,13 @@ challenges for monitor identification.
 
 **MST vs Clone Mode Comparison:**
 
-```
-MST Daisy Chain (Extended Desktop):
-┌──────────────────────────────────────────────────────────────┐
-│ HMONITOR_1          │ HMONITOR_2          │ HMONITOR_3       │
-│ GDI: \\.\DISPLAY1   │ GDI: \\.\DISPLAY2   │ GDI: \\.\DISPLAY3│
-│ Physical Handle: A  │ Physical Handle: B  │ Physical Handle: C│
-│ DevicePath: unique1 │ DevicePath: unique2 │ DevicePath: unique3│
-└──────────────────────────────────────────────────────────────┘
-Each monitor = independent logical display with unique identifiers
-
-Clone/Mirror Mode:
-┌──────────────────────────────────────────────────────────────┐
-│                      HMONITOR_1                              │
-│                   GDI: \\.\DISPLAY1                          │
-│  Physical Handle: A          Physical Handle: B              │
-│  DevicePath: unique1         DevicePath: unique2             │
-└──────────────────────────────────────────────────────────────┘
-Multiple monitors share same HMONITOR and GDI name
-```
+| Property | MST Daisy Chain (Extended Desktop) | Clone/Mirror Mode |
+|----------|-----------------------------------|-------------------|
+| **HMONITOR** | Separate per monitor (HMONITOR_1, HMONITOR_2, ...) | Shared (single HMONITOR_1) |
+| **GDI Device Name** | Unique per monitor (`\\.\DISPLAY1`, `\\.\DISPLAY2`, ...) | Shared (`\\.\DISPLAY1`) |
+| **Physical Handle** | One per HMONITOR (A, B, C) | Multiple per HMONITOR (A, B) |
+| **DevicePath** | Unique per monitor (unique1, unique2, ...) | Unique per monitor (unique1, unique2) |
+| **Behavior** | Each monitor = independent logical display | Multiple monitors share same logical display |
 
 **PowerDisplay Handling of MST:**
 
@@ -732,10 +734,11 @@ distinguishes them using:
 - **Monitor.Id**: Format `DDC_{HardwareId}_{MonitorNumber}` ensures uniqueness
 
 Example with two identical Dell U2722D monitors:
-```
-Monitor 1: Id = "DDC_DEL41B4_1", MonitorNumber = 1
-Monitor 2: Id = "DDC_DEL41B4_2", MonitorNumber = 2
-```
+
+| Monitor | Id | MonitorNumber |
+|---------|-----|---------------|
+| Monitor 1 | `DDC_DEL41B4_1` | 1 |
+| Monitor 2 | `DDC_DEL41B4_2` | 2 |
 
 ##### Connection Mode Summary
 
@@ -752,20 +755,19 @@ identifiers. Only clone/mirror mode requires special handling due to shared HMON
 
 ##### Hardware ID Composition
 
-```
-Hardware ID: "DEL41B4"
-              ───┬───
-                 │
-    ┌────────────┴────────────┐
-    │                         │
-  "DEL"                    "41B4"
-    │                         │
-  PnP Manufacturer ID      Product Code
-  (3 chars, EDID bytes     (4 hex chars,
-   8-9, compressed)         EDID bytes 10-11)
+```mermaid
+flowchart TB
+    HardwareId["Hardware ID: DEL41B4"]
+
+    HardwareId --> PnpId["DEL<br/>PnP Manufacturer ID<br/>3 chars, EDID bytes 8-9"]
+    HardwareId --> ProductCode["41B4<br/>Product Code<br/>4 hex chars, EDID bytes 10-11"]
+
+    style HardwareId fill:#fff3e0
+    style PnpId fill:#c8e6c9
+    style ProductCode fill:#bbdefb
 ```
 
-The **PnP Manufacturer ID** is a 3-character code assigned by Microsoft (formerly UEFI Forum).
+The **PnP Manufacturer ID** is a 3-character code assigned by UEFI Forum.
 Common laptop display manufacturers:
 
 | PnP ID | Manufacturer |
@@ -781,17 +783,18 @@ Common laptop display manufacturers:
 
 ##### WMI Instance Name Parsing
 
-```
-WMI InstanceName: "DISPLAY\BOE0900\4&10fd3ab1&0&UID265988_0"
-                   ───────┬───────  ──────────┬───────────
-                          │                   │
-                 Segment 1: "DISPLAY"   Segment 3: Device instance
-                 (Constant prefix)
-                          │
-                 Segment 2: "BOE0900"
-                          │
-                   Hardware ID
-                   (Used for matching with QueryDisplayConfig)
+```mermaid
+flowchart TB
+    InstanceName["WMI InstanceName:<br/>DISPLAY\BOE0900\4#amp;10fd3ab1#amp;0#amp;UID265988_0"]
+
+    InstanceName --> Seg1["Segment 1: DISPLAY<br/>Constant prefix"]
+    InstanceName --> Seg2["Segment 2: BOE0900<br/>Hardware ID<br/>Used for matching with QueryDisplayConfig"]
+    InstanceName --> Seg3["Segment 3: Device instance<br/>4#amp;10fd3ab1#amp;0#amp;UID265988_0"]
+
+    style InstanceName fill:#fff3e0
+    style Seg1 fill:#e0e0e0
+    style Seg2 fill:#c8e6c9
+    style Seg3 fill:#e0e0e0
 ```
 
 ##### Monitor Number (Windows Display Settings)
