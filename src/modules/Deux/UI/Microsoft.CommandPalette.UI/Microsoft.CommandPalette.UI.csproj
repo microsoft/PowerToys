@@ -161,6 +161,7 @@
 	</ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
+    <ProjectReference Include="..\Microsoft.CommandPalette.UI.Models\Microsoft.CommandPalette.UI.Models.csproj" />
     <ProjectReference Include="..\Microsoft.CommandPalette.UI.Services\Microsoft.CommandPalette.UI.Services.csproj" />
     <ProjectReference Include="..\Microsoft.CommandPalette.UI.ViewModels\Microsoft.CommandPalette.UI.ViewModels.csproj" />
   </ItemGroup>

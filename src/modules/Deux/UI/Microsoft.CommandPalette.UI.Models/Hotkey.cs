@@ -9,11 +9,11 @@ using Microsoft.CommandPalette.UI.Models.Helpers;
 
 namespace Microsoft.CommandPalette.UI.Models;
 
-public record HotkeySettings
+public record Hotkey
 {
     private const int VKTAB = 0x09;
 
-    public HotkeySettings()
+    public Hotkey()
     {
         Win = false;
         Ctrl = false;
@@ -23,14 +23,14 @@ public record HotkeySettings
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="HotkeySettings"/> class.
+    /// Initializes a new instance of the <see cref="Hotkey"/> class.
     /// </summary>
     /// <param name="win">Should Windows key be used</param>
     /// <param name="ctrl">Should Ctrl key be used</param>
     /// <param name="alt">Should Alt key be used</param>
     /// <param name="shift">Should Shift key be used</param>
     /// <param name="code">Go to https://learn.microsoft.com/windows/win32/inputdev/virtual-key-codes to see list of v-keys</param>
-    public HotkeySettings(bool win, bool ctrl, bool alt, bool shift, int code)
+    public Hotkey(bool win, bool ctrl, bool alt, bool shift, int code)
     {
         Win = win;
         Ctrl = ctrl;

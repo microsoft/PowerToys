@@ -2,8 +2,11 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-namespace Microsoft.CommandPalette.UI.Services.Extensions;
+using Windows.System;
 
-public interface IExtensionService
+namespace Microsoft.CommandPalette.UI.Models;
+
+public class KeyPressedEventArgs(VirtualKey key) : EventArgs
 {
+    public VirtualKey Key { get; } = key;
 }

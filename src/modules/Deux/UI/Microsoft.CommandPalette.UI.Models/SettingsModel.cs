@@ -11,9 +11,9 @@ public partial class SettingsModel
     * Make sure that any new types you add are added to JsonSerializationContext!
     *************************************************************************/
 
-    public static HotkeySettings DefaultActivationShortcut { get; } = new HotkeySettings(true, false, true, false, 0x20); // win+alt+space
+    public static Hotkey DefaultActivationShortcut { get; } = new Hotkey(true, false, true, false, 0x20); // win+alt+space
 
-    public HotkeySettings? Hotkey { get; set; } = DefaultActivationShortcut;
+    public Hotkey? Hotkey { get; set; } = DefaultActivationShortcut;
 
     public bool UseLowLevelGlobalHotkey { get; set; }
 
@@ -40,4 +40,6 @@ public partial class SettingsModel
     public WindowPosition? LastWindowPosition { get; set; }
 
     public TimeSpan AutoGoHomeInterval { get; set; } = Timeout.InfiniteTimeSpan;
+
+    public List<CommandHotKey> CommandHotkeys { get; set; } = [];
 }

@@ -365,6 +365,7 @@
     <Project Path="src/modules/Deux/SDK/Microsoft.CommandPalette.Extensions/Microsoft.CommandPalette.Extensions.vcxproj" Id="7997dad4-31d6-496b-95db-6c028d699370" />
   </Folder>
   <Folder Name="/modules/Deux/UI/">
+    <Project Path="src/modules/Deux/UI/CmdPalKeyboardService/CmdPalKeyboardService.vcxproj" Id="fc192bce-bfbb-40f5-8c2d-9858de12c31f" />
     <Project Path="src/modules/Deux/UI/Microsoft.CommandPalette.UI.Models/Microsoft.CommandPalette.UI.Models.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />

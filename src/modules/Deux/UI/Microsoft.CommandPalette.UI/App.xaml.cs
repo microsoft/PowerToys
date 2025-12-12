@@ -80,6 +80,7 @@ public partial class App : Application
         services.AddSingleton<IExtensionService, JsonRPCExtensionService>();
 
         // Register services
+        services.AddSingleton<KeyboardService>();
         services.AddSingleton<TrayIconService>();
 
         // Register view models

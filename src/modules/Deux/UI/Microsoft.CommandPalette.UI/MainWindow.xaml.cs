@@ -32,7 +32,6 @@ using Windows.Win32.Foundation;
 using Windows.Win32.Graphics.Dwm;
 using Windows.Win32.Graphics.Gdi;
 using Windows.Win32.UI.HiDpi;
-using Windows.Win32.UI.Input.KeyboardAndMouse;
 using Windows.Win32.UI.WindowsAndMessaging;
 using WinRT;
 using WinUIEx;
@@ -50,6 +49,7 @@ public sealed partial class MainWindow : WindowEx,
     private readonly ShellPage _shellPage;
     private readonly SettingsService _settingsService;
     private readonly TrayIconService _trayIconService;
+    private readonly KeyboardService _keyboardService;
     private const int DefaultWidth = 800;
     private const int DefaultHeight = 480;
 
@@ -61,9 +61,6 @@ public sealed partial class MainWindow : WindowEx,
     private readonly WNDPROC? _hotkeyWndProc;
     private readonly WNDPROC? _originalWndProc;
 
-    // private readonly List<TopLevelHotkey> _hotkeys = [];
-    // private readonly KeyboardListener _keyboardListener;
-    // private readonly LocalKeyboardListener _localKeyboardListener;
     private readonly HiddenOwnerWindowBehavior _hiddenOwnerBehavior = new();
     private bool _ignoreHotKeyWhenFullScreen = true;
 
@@ -73,7 +70,7 @@ public sealed partial class MainWindow : WindowEx,
 
     private WindowPosition _currentWindowPosition = new();
 
-    public MainWindow(ShellPage shellPage, SettingsService settingsService, TrayIconService trayIconService, ILogger logger)
+    public MainWindow(ShellPage shellPage, SettingsService settingsService, TrayIconService trayIconService, KeyboardService keyboardService, ILogger logger)
     {
         InitializeComponent();
 
@@ -81,6 +78,7 @@ public sealed partial class MainWindow : WindowEx,
         _shellPage = shellPage;
         _settingsService = settingsService;
         _trayIconService = trayIconService;
+        _keyboardService = keyboardService;
 
         RootElement.Children.Add(_shellPage);
 
@@ -95,9 +93,9 @@ public sealed partial class MainWindow : WindowEx,
         // }
         _hiddenOwnerBehavior.ShowInTaskbar(this, Debugger.IsAttached);
 
-        // _keyboardListener = new KeyboardListener();
-        // _keyboardListener.Start();
-        // _keyboardListener.SetProcessCommand(new CmdPalKeyboardService.ProcessCommand(HandleSummon));
+        _keyboardService.KeyPressed += KeyboardService_OnKeyPressed;
+        _keyboardService.SetProcessCommand(_hwnd, new CmdPalKeyboardService.ProcessCommand(HandleSummon));
+
         this.SetIcon();
         AppWindow.Title = RS_.GetString("AppName");
         RestoreWindowPosition();
@@ -143,11 +141,16 @@ public sealed partial class MainWindow : WindowEx,
             Summon(string.Empty);
         });
 
-        // _localKeyboardListener = new LocalKeyboardListener();
-        // _localKeyboardListener.KeyPressed += LocalKeyboardListener_OnKeyPressed;
-        // _localKeyboardListener.Start();
         // Force window to be created, and then cloaked. This will offset initial animation when the window is shown.
         HideWindow();
+    }
+
+    private void KeyboardService_OnKeyPressed(object? sender, KeyPressedEventArgs e)
+    {
+        if (e.Key == VirtualKey.GoBack)
+        {
+            WeakReferenceMessenger.Default.Send(new GoBackMessage());
+        }
     }
 
     public void Receive(ShowWindowMessage message)
@@ -187,7 +190,7 @@ public sealed partial class MainWindow : WindowEx,
         WeakReferenceMessenger.Default.Send(new GoHomeMessage(WithAnimation: false, FocusSearch: false));
     }
 
-    private static void LocalKeyboardListener_OnKeyPressed(object? sender, LocalKeyboardListenerKeyPressedEventArgs e)
+    private static void KeyboardService_OnKeyPressed(object? sender, LocalKeyboardListenerKeyPressedEventArgs e)
     {
         if (e.Key == VirtualKey.GoBack)
         {
@@ -266,8 +269,6 @@ public sealed partial class MainWindow : WindowEx,
 
     private void HotReloadSettings()
     {
-        SetupHotkey(_settingsService.CurrentSettings);
-
         _ignoreHotKeyWhenFullScreen = _settingsService.CurrentSettings.IgnoreShortcutWhenFullscreen;
 
         _autoGoHomeInterval = _settingsService.CurrentSettings.AutoGoHomeInterval;
@@ -634,13 +635,13 @@ public sealed partial class MainWindow : WindowEx,
 
         // var extensionService = serviceProvider.GetService<IExtensionService>()!;
         // extensionService.SignalStopExtensionsAsync();
-        // _trayIconService.Destroy();
+        _trayIconService.Destroy();
 
         // WinUI bug is causing a crash on shutdown when FailFastOnErrors is set to true (#51773592).
         // Workaround by turning it off before shutdown.
         App.Current.DebugSettings.FailFastOnErrors = false;
 
-        // _localKeyboardListener.Dispose();
+        _keyboardService.Dispose();
         DisposeAcrylic();
 
         // _keyboardListener.Stop();
@@ -817,76 +818,6 @@ public sealed partial class MainWindow : WindowEx,
         // know till the message is being handled.
         WeakReferenceMessenger.Default.Send<HotkeySummonMessage>(new(commandId, _hwnd));
 
-    private void UnregisterHotkeys()
-    {
-        // _keyboardListener.ClearHotkeys();
-
-        // while (_hotkeys.Count > 0)
-        // {
-        //     PInvoke.UnregisterHotKey(_hwnd, _hotkeys.Count - 1);
-        //     _hotkeys.RemoveAt(_hotkeys.Count - 1);
-        // }
-    }
-
-    private void SetupHotkey(SettingsModel settings)
-    {
-        UnregisterHotkeys();
-
-        var globalHotkey = settings.Hotkey;
-        if (globalHotkey is not null)
-        {
-            if (settings.UseLowLevelGlobalHotkey)
-            {
-                // _keyboardListener.SetHotkeyAction(globalHotkey.Win, globalHotkey.Ctrl, globalHotkey.Shift, globalHotkey.Alt, (byte)globalHotkey.Code, string.Empty);
-                // _hotkeys.Add(new(globalHotkey, string.Empty));
-            }
-            else
-            {
-                var vk = globalHotkey.Code;
-                var modifiers =
-                                (globalHotkey.Alt ? HOT_KEY_MODIFIERS.MOD_ALT : 0) |
-                                (globalHotkey.Ctrl ? HOT_KEY_MODIFIERS.MOD_CONTROL : 0) |
-                                (globalHotkey.Shift ? HOT_KEY_MODIFIERS.MOD_SHIFT : 0) |
-                                (globalHotkey.Win ? HOT_KEY_MODIFIERS.MOD_WIN : 0)
-                                ;
-
-                // var success = PInvoke.RegisterHotKey(_hwnd, _hotkeys.Count, modifiers, (uint)vk);
-                // if (success)
-                // {
-                //    _hotkeys.Add(new(globalHotkey, string.Empty));
-                // }
-            }
-        }
-
-        // foreach (var commandHotkey in settings.CommandHotkeys)
-        // {
-        //     var key = commandHotkey.Hotkey;
-        //     if (key is not null)
-        //     {
-        //         if (settings.UseLowLevelGlobalHotkey)
-        //         {
-        //             _keyboardListener.SetHotkeyAction(key.Win, key.Ctrl, key.Shift, key.Alt, (byte)key.Code, commandHotkey.CommandId);
-        //             _hotkeys.Add(new(globalHotkey, string.Empty));
-        //         }
-        //         else
-        //         {
-        //             var vk = key.Code;
-        //             var modifiers =
-        //                 (key.Alt ? HOT_KEY_MODIFIERS.MOD_ALT : 0) |
-        //                 (key.Ctrl ? HOT_KEY_MODIFIERS.MOD_CONTROL : 0) |
-        //                 (key.Shift ? HOT_KEY_MODIFIERS.MOD_SHIFT : 0) |
-        //                 (key.Win ? HOT_KEY_MODIFIERS.MOD_WIN : 0)
-        //                 ;
-        //             var success = PInvoke.RegisterHotKey(_hwnd, _hotkeys.Count, modifiers, (uint)vk);
-        //             if (success)
-        //             {
-        //                 _hotkeys.Add(commandHotkey);
-        //             }
-        //         }
-        //     }
-        // }
-    }
-
     private void HandleSummon(string commandId)
     {
         if (_ignoreHotKeyWhenFullScreen)
@@ -982,7 +913,7 @@ public sealed partial class MainWindow : WindowEx,
 
     public void Dispose()
     {
-        // _localKeyboardListener.Dispose();
+        _keyboardService.Dispose();
         DisposeAcrylic();
     }
 
