@@ -10,7 +10,6 @@ using System.Text.Json.Serialization;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using PowerDisplay.Common.Drivers;
 using PowerDisplay.Common.Interfaces;
-using PowerDisplay.Common.Models;
 using PowerDisplay.Common.Utils;
 
 namespace Microsoft.PowerToys.Settings.UI.Library
@@ -64,23 +63,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         public MonitorInfo()
         {
-        }
-
-        public MonitorInfo(string name, string internalName, string communicationMethod)
-        {
-            Name = name;
-            InternalName = internalName;
-            CommunicationMethod = communicationMethod;
-        }
-
-        public MonitorInfo(string name, string internalName, string hardwareId, string communicationMethod, int currentBrightness, int colorTemperatureVcp)
-        {
-            Name = name;
-            InternalName = internalName;
-            HardwareId = hardwareId;
-            CommunicationMethod = communicationMethod;
-            CurrentBrightness = currentBrightness;
-            ColorTemperatureVcp = colorTemperatureVcp;
         }
 
         [JsonPropertyName("name")]
@@ -217,7 +199,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         /// <summary>
         /// Gets or sets the color temperature VCP preset value (raw DDC/CI value from VCP code 0x14).
         /// This stores the raw VCP value (e.g., 0x05 for 6500K preset), not the Kelvin temperature.
-        /// Use MonitorValueConverter to convert to human-readable Kelvin values for display.
         /// </summary>
         [JsonPropertyName("colorTemperatureVcp")]
         public int ColorTemperatureVcp
@@ -229,18 +210,10 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 {
                     _colorTemperatureVcp = value;
                     OnPropertyChanged();
-                    OnPropertyChanged(nameof(ColorTemperatureDisplay));
                     OnPropertyChanged(nameof(ColorPresetsForDisplay)); // Update display list when current value changes
                 }
             }
         }
-
-        /// <summary>
-        /// Gets the color temperature as a human-readable display string.
-        /// Converts the VCP value to a Kelvin temperature display.
-        /// </summary>
-        [JsonIgnore]
-        public string ColorTemperatureDisplay => MonitorValueConverter.FormatColorTemperatureDisplay(ColorTemperatureVcp);
 
         /// <summary>
         /// Gets or sets the current contrast value (0-100).
@@ -371,7 +344,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 {
                     _vcpCodes = value ?? new List<string>();
                     OnPropertyChanged();
-                    OnPropertyChanged(nameof(VcpCodesSummary));
                 }
             }
         }
@@ -435,24 +407,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
 
             return true;
-        }
-
-        [JsonIgnore]
-        public string VcpCodesSummary
-        {
-            get
-            {
-                if (_vcpCodes == null || _vcpCodes.Count == 0)
-                {
-                    return "No VCP codes detected";
-                }
-
-                var count = _vcpCodes.Count;
-                var preview = string.Join(", ", _vcpCodes.Take(10));
-                return count > 10
-                    ? $"{count} VCP codes: {preview}..."
-                    : $"{count} VCP codes: {preview}";
-            }
         }
 
         [JsonPropertyName("supportsBrightness")]
@@ -527,7 +481,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         }
 
         /// <summary>
-        /// Available color temperature presets computed from VcpCodesFormatted (VCP code 0x14).
+        /// Gets available color temperature presets computed from VcpCodesFormatted (VCP code 0x14).
         /// This is a computed property that parses the VCP capabilities data on-demand.
         /// </summary>
         [JsonIgnore]
@@ -598,7 +552,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         }
 
         /// <summary>
-        /// Color presets for display in ComboBox, includes current value if not in preset list.
+        /// Gets color presets for display in ComboBox, includes current value if not in preset list.
         /// Uses caching to avoid recreating collections on every access.
         /// </summary>
         [JsonIgnore]
@@ -649,19 +603,10 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         }
 
         [JsonIgnore]
-        public bool HasColorPresets => AvailableColorPresets != null && AvailableColorPresets.Count > 0;
-
-        [JsonIgnore]
         public bool HasCapabilities => !string.IsNullOrEmpty(_capabilitiesRaw);
 
         [JsonIgnore]
         public bool ShowCapabilitiesWarning => _communicationMethod.Contains("WMI", StringComparison.OrdinalIgnoreCase);
-
-        [JsonIgnore]
-        public string BrightnessTooltip => _supportsBrightness ? string.Empty : "Brightness control not supported by this monitor";
-
-        [JsonIgnore]
-        public string ContrastTooltip => _supportsContrast ? string.Empty : "Contrast control not supported by this monitor";
 
         /// <summary>
         /// Generate formatted text of all VCP codes for clipboard
