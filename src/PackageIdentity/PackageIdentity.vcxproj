@@ -5,6 +5,7 @@
   <PropertyGroup Condition="'$(CIBuild)'=='true'">
     <ForceCIPackaging>true</ForceCIPackaging>
     <NoSignCI>true</NoSignCI>
+    <WindowsAppSDKVerifyTransitiveDependencies>false</WindowsAppSDKVerifyTransitiveDependencies>
   </PropertyGroup>
 
   <!-- Target to generate sparse MSIX package -->
