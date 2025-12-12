@@ -6,12 +6,13 @@ using System;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
-using System.Net.Security;
-using System.Printing;
 using System.Threading.Tasks;
+
 using CommunityToolkit.Mvvm.ComponentModel;
 using KeystrokeOverlayUI.Controls;
+using KeystrokeOverlayUI.Helpers;
 using KeystrokeOverlayUI.Models;
+using KeystrokeOverlayUI.Services;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.UI;
@@ -20,13 +21,6 @@ using Windows.UI;
 
 namespace KeystrokeOverlayUI
 {
-    public enum HotkeyAction
-    {
-        Monitor,
-        Activation,
-        DisplayMode,
-    }
-
     public partial class MainViewModel : ObservableObject
     {
         // Changed from string to KeyVisualItem to support individual properties
@@ -48,7 +42,7 @@ namespace KeystrokeOverlayUI
         private bool _isDraggable = true;
 
         [ObservableProperty]
-        private int _displayMode = 0;
+        private DisplayMode _displayMode = DisplayMode.Last5;
 
         [ObservableProperty]
         private bool _isActive = true;
@@ -74,7 +68,6 @@ namespace KeystrokeOverlayUI
         [ObservableProperty]
         private bool _isVisibleHotkey = false;
 
-        private string _streamBuffer = string.Empty;
         private int _maxKeystrokesShown = 5;
 
         public HotkeySettings ActivationShortcut { get; set; }
@@ -139,205 +132,113 @@ namespace KeystrokeOverlayUI
             TimeoutMs = props.OverlayTimeout.Value;
             TextSize = props.TextSize.Value;
 
-            TextColor = GetBrushFromHex(props.TextColor.Value);
-            BackgroundColor = GetBrushFromHex(props.BackgroundColor.Value);
+            TextColor = CustomColorHelper.GetBrushFromHex(props.TextColor.Value);
+            BackgroundColor = CustomColorHelper.GetBrushFromHex(props.BackgroundColor.Value);
 
             IsDraggable = props.IsDraggable.Value;
-            DisplayMode = props.DisplayMode.Value;
+            DisplayMode = (DisplayMode)props.DisplayMode.Value;
 
-            if (DisplayMode == 1)
-            {
-                _maxKeystrokesShown = 1;
-            }
-            else
-            {
-                _maxKeystrokesShown = 5;
-            }
+            _maxKeystrokesShown = DisplayMode == DisplayMode.SingleCharactersOnly ? 1 : 5;
 
             ActivationShortcut = props.ActivationShortcut;
             SwitchMonitorHotkey = props.SwitchMonitorHotkey;
             SwitchDisplayModeHotkey = props.SwitchDisplayModeHotkey;
         }
 
-        private SolidColorBrush GetBrushFromHex(string hex)
-        {
-            try
-            {
-                if (string.IsNullOrEmpty(hex))
-                {
-                    return new SolidColorBrush(Colors.Transparent);
-                }
-
-                // Handles #RRGGBB or #AARRGGBB
-                hex = hex.Replace("#", string.Empty);
-                byte a = 255;
-                byte r = 0, g = 0, b = 0;
-
-                var provider = CultureInfo.InvariantCulture;
-
-                if (hex.Length == 6)
-                {
-                    r = byte.Parse(hex.AsSpan(0, 2), NumberStyles.HexNumber, provider);
-                    g = byte.Parse(hex.AsSpan(2, 2), NumberStyles.HexNumber, provider);
-                    b = byte.Parse(hex.AsSpan(4, 2), NumberStyles.HexNumber, provider);
-                }
-                else if (hex.Length == 8)
-                {
-                    a = byte.Parse(hex.AsSpan(0, 2), NumberStyles.HexNumber, provider);
-                    r = byte.Parse(hex.AsSpan(2, 2), NumberStyles.HexNumber, provider);
-                    g = byte.Parse(hex.AsSpan(4, 2), NumberStyles.HexNumber, provider);
-                    b = byte.Parse(hex.AsSpan(6, 2), NumberStyles.HexNumber, provider);
-                }
-
-                return new SolidColorBrush(Color.FromArgb(a, r, g, b));
-            }
-            catch
-            {
-                // Error fallback
-                return new SolidColorBrush(Colors.Magenta);
-            }
-        }
+        private readonly KeystrokeProcessor _keystrokeProcessor = new();
 
         public void HandleKeystrokeEvent(KeystrokeEvent keystroke)
         {
             bool isDown = string.Equals(keystroke.EventType, "down", StringComparison.OrdinalIgnoreCase);
-            if (isDown && keystroke.IsPressed && IsHotkeyMatch(keystroke, ActivationShortcut))
+
+            if (isDown && keystroke.IsPressed)
             {
-                IsActive = !IsActive;
-
-                ShowLabel(HotkeyAction.Activation, IsActive ? "Overlay On" : "Overlay Off");
-
-                if (!IsActive)
+                if (CheckGlobalHotkeys(keystroke))
                 {
-                    ClearKeys();
+                    return;
                 }
-
-                HotkeyActionTriggered?.Invoke(this, HotkeyAction.Activation);
-                return;
             }
 
-            if (isDown && keystroke.IsPressed && IsHotkeyMatch(keystroke, SwitchMonitorHotkey))
-            {
-                // Fire the event for the View to handle
-                HotkeyActionTriggered?.Invoke(this, HotkeyAction.Monitor);
-                return;
-            }
-
-            if (isDown && keystroke.IsPressed && IsHotkeyMatch(keystroke, SwitchDisplayModeHotkey))
-            {
-                // Fire the event for the View to handle
-                DisplayMode = (DisplayMode + 1) % 4;
-
-                string modeText = DisplayMode switch
-                {
-                    0 => "Last Five Keystroke",
-                    1 => "Single Characters Only",
-                    2 => "Shortcuts Only",
-                    3 => "Stream",
-                    _ => "Unknown",
-                };
-
-                ShowLabel(HotkeyAction.DisplayMode, modeText);
-                HotkeyActionTriggered?.Invoke(this, HotkeyAction.DisplayMode);
-                return;
-            }
-
-            // If the overlay is "OFF", stop here.
             if (!IsActive)
             {
                 return;
             }
 
-            string formattedText = keystroke.ToString();
-
-            if (string.IsNullOrEmpty(formattedText))
+            // update UI
+            var result = _keystrokeProcessor.Process(keystroke, DisplayMode);
+            switch (result.Action)
             {
-                return;
-            }
-
-            // 2. Filter based on DisplayMode
-            bool isShortcut = keystroke.IsShortcut;
-
-            switch (DisplayMode)
-            {
-                case 0: // "Last 5" (Both / All)
+                case KeystrokeAction.Add:
+                    RegisterKey(result.Text, TimeoutMs);
                     break;
 
-                case 1: // "Single Characters Only"
-                    if (isShortcut)
+                case KeystrokeAction.ReplaceLast:
+                    if (PressedKeys.Count > 0)
                     {
-                        return;
+                        PressedKeys.RemoveAt(PressedKeys.Count - 1);
                     }
 
+                    RegisterKey(result.Text, TimeoutMs);
                     break;
 
-                case 2: // "Shortcuts Only"
-                    if (!isShortcut)
+                case KeystrokeAction.RemoveLast:
+                    if (PressedKeys.Count > 0)
                     {
-                        return;
+                        PressedKeys.RemoveAt(PressedKeys.Count - 1);
+                        UpdateOpacities();
                     }
 
                     break;
-                case 3: // "Stream" full words
 
-                    // backspace, edit current word
-                    if (keystroke.VirtualKey == (uint)Windows.System.VirtualKey.Back)
-                    {
-                        if (_streamBuffer.Length > 0)
-                        {
-                            _streamBuffer = _streamBuffer.Substring(0, _streamBuffer.Length - 1);
-
-                            if (PressedKeys.Count > 0)
-                            {
-                                PressedKeys.RemoveAt(PressedKeys.Count - 1);
-                            }
-
-                            if (!string.IsNullOrEmpty(_streamBuffer))
-                            {
-                                RegisterKey(_streamBuffer);
-                            }
-                        }
-
-                        return;
-                    }
-
-                    // show shortcuts, reset buffer
-                    if (isShortcut && keystroke.VirtualKey != (uint)Windows.System.VirtualKey.Space)
-                    {
-                        _streamBuffer = string.Empty;
-                        break;
-                    }
-
-                    string charText = keystroke.Text;
-
-                    // whitespace
-                    if (string.IsNullOrWhiteSpace(charText))
-                    {
-                        _streamBuffer = string.Empty;
-                        formattedText = string.Empty;
-                        return;
-                    }
-
-                    _streamBuffer += charText;
-                    RegisterStreamKey(_streamBuffer);
-
-                    return;
-            }
-
-            if (!string.IsNullOrEmpty(formattedText))
-            {
-                RegisterKey(formattedText);
+                case KeystrokeAction.None:
+                default:
+                    break;
             }
         }
 
-        private void RegisterStreamKey(string text)
+        private bool CheckGlobalHotkeys(KeystrokeEvent keystroke)
         {
-            if (text.Length > 1 && PressedKeys.Count > 0)
+            if (IsHotkeyMatch(keystroke, ActivationShortcut))
             {
-                PressedKeys.RemoveAt(PressedKeys.Count - 1);
+                IsActive = !IsActive;
+                ShowLabel(HotkeyAction.Activation, IsActive ? "Overlay On" : "Overlay Off");
+                if (!IsActive)
+                {
+                    ClearKeys();
+                    _keystrokeProcessor.ResetBuffer();
+                }
+
+                HotkeyActionTriggered?.Invoke(this, HotkeyAction.Activation);
+                return true;
+            }
+            else if (IsHotkeyMatch(keystroke, SwitchMonitorHotkey))
+            {
+                HotkeyActionTriggered?.Invoke(this, HotkeyAction.Monitor);
+                return true;
+            }
+            else if (IsHotkeyMatch(keystroke, SwitchDisplayModeHotkey))
+            {
+                int current = (int)DisplayMode;
+                DisplayMode = (DisplayMode)((current + 1) % 4);
+
+                _maxKeystrokesShown = DisplayMode == DisplayMode.SingleCharactersOnly ? 1 : 5;
+
+                string modeText = DisplayMode switch
+                {
+                    DisplayMode.Last5 => "Last Five Keystrokes",
+                    DisplayMode.SingleCharactersOnly => "Single Characters Only",
+                    DisplayMode.ShortcutsOnly => "Shortcuts Only",
+                    DisplayMode.Stream => "Stream",
+                    _ => "Unknown",
+                };
+
+                _keystrokeProcessor.ResetBuffer();
+                ShowLabel(HotkeyAction.DisplayMode, modeText);
+                HotkeyActionTriggered?.Invoke(this, HotkeyAction.DisplayMode);
+                return true;
             }
 
-            RegisterKey(text);
+            return false;
         }
 
         private bool IsHotkeyMatch(KeystrokeEvent kEvent, HotkeySettings settings)
@@ -365,7 +266,7 @@ namespace KeystrokeOverlayUI
                    hasShift == settings.Shift;
         }
 
-        public void RegisterKey(string key, int durationMs = 2000, int textSize = -1)
+        public void RegisterKey(string key, int durationMs, int textSize = -1)
         {
             if (textSize == -1)
             {
