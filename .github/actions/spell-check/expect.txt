@@ -1466,6 +1466,7 @@ remoteip
 Removelnk
 renamable
 RENAMEONCOLLISION
+RENDERFULLCONTENT
 reparented
 reparenting
 reportfileaccesses

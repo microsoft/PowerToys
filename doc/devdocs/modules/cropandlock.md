@@ -20,6 +20,9 @@ Creates a window showing the selected area of the original window. Changes in th
 ### Reparent Mode
 Creates a window that replaces the original window, showing only the selected area. The application is controlled through the cropped window.
 
+### Screenshot Mode
+Creates a window showing a freezed snapshot of the original window. 
+
 ## Code Structure
 
 ### Project Layout
@@ -30,6 +33,7 @@ The Crop and Lock module is part of the PowerToys solution. All the logic-relate
 - **OverlayWindow.cpp**: Thumbnail module type's window concrete implementation.
 - **ReparentCropAndLockWindow.cpp**: Defines the UI for the reparent mode.
 - **ChildWindow.cpp**: Reparent module type's window concrete implementation.
+- **ScreenshotCropAndLockWindow.cpp**: Defines the UI for the screenshot mode.
 
 ## Known Issues
 
