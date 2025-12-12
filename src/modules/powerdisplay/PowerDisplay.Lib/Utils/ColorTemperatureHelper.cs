@@ -48,26 +48,18 @@ namespace PowerDisplay.Common.Utils
         /// </summary>
         /// <param name="vcpValue">The VCP value.</param>
         /// <param name="customName">Optional custom name from capabilities string.</param>
-        /// <returns>Formatted display name with hex value.</returns>
+        /// <returns>Formatted display name.</returns>
         public static string FormatColorTemperatureDisplayName(int vcpValue, string? customName = null)
         {
-            var hexValue = $"0x{vcpValue:X2}";
-
             // Priority: use name from VCP capabilities if available
             if (!string.IsNullOrEmpty(customName))
             {
-                return $"{customName} ({hexValue})";
+                return customName;
             }
 
             // Fall back to standard VCP value name from shared library
-            var standardName = VcpNames.GetValueName(NativeConstants.VcpCodeSelectColorPreset, vcpValue);
-            if (standardName != null)
-            {
-                return $"{standardName} ({hexValue})";
-            }
-
-            // Unknown value
-            return $"Manufacturer Defined ({hexValue})";
+            return VcpNames.GetValueName(NativeConstants.VcpCodeSelectColorPreset, vcpValue)
+                   ?? "Manufacturer Defined";
         }
 
         /// <summary>
@@ -80,8 +72,8 @@ namespace PowerDisplay.Common.Utils
         {
             var standardName = VcpNames.GetValueName(NativeConstants.VcpCodeSelectColorPreset, vcpValue);
             return string.IsNullOrEmpty(standardName)
-                ? $"Custom (0x{vcpValue:X2})"
-                : $"{standardName} (0x{vcpValue:X2}) - Custom";
+                ? "Custom"
+                : $"{standardName} (Custom)";
         }
     }
 }

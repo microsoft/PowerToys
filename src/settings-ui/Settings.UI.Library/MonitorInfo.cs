@@ -129,21 +129,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             OnPropertyChanged(nameof(ColorPresetsForDisplay));
         }
 
-        /// <summary>
-        /// Parses a hexadecimal string (with or without "0x" prefix) to an integer.
-        /// </summary>
-        private static bool TryParseHexCode(string hexString, out int result)
-        {
-            result = 0;
-            if (string.IsNullOrEmpty(hexString))
-            {
-                return false;
-            }
-
-            var cleanHex = hexString.Replace("0x", string.Empty);
-            return int.TryParse(cleanHex, System.Globalization.NumberStyles.HexNumber, null, out result);
-        }
-
         public MonitorInfo()
         {
         }
@@ -643,7 +628,13 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
             // Find VCP code 0x14 (Color Temperature / Select Color Preset)
             var colorTempVcp = _vcpCodesFormatted.FirstOrDefault(v =>
-                TryParseHexCode(v.Code, out int code) && code == NativeConstants.VcpCodeSelectColorPreset);
+                !string.IsNullOrEmpty(v.Code) &&
+                int.TryParse(
+                    v.Code.StartsWith("0x", StringComparison.OrdinalIgnoreCase) ? v.Code[2..] : v.Code,
+                    System.Globalization.NumberStyles.HexNumber,
+                    System.Globalization.CultureInfo.InvariantCulture,
+                    out int code) &&
+                code == NativeConstants.VcpCodeSelectColorPreset);
 
             // No VCP 0x14 or no values
             if (colorTempVcp == null || colorTempVcp.ValueList == null || colorTempVcp.ValueList.Count == 0)
@@ -655,7 +646,14 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             var colorTempValues = colorTempVcp.ValueList
                 .Select(valueInfo =>
                 {
-                    bool parsed = TryParseHexCode(valueInfo.Value, out int vcpValue);
+                    var hex = valueInfo.Value;
+                    if (string.IsNullOrEmpty(hex))
+                    {
+                        return (VcpValue: 0, Name: valueInfo.Name);
+                    }
+
+                    var cleanHex = hex.StartsWith("0x", StringComparison.OrdinalIgnoreCase) ? hex[2..] : hex;
+                    bool parsed = int.TryParse(cleanHex, System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture, out int vcpValue);
                     return (VcpValue: parsed ? vcpValue : 0, Name: valueInfo.Name);
                 })
                 .Where(x => x.VcpValue > 0);

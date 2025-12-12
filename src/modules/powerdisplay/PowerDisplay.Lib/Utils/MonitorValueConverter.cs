@@ -11,10 +11,10 @@ namespace PowerDisplay.Common.Utils
     public static class MonitorValueConverter
     {
         /// <summary>
-        /// Formats a VCP color temperature value as a display name with preset name.
+        /// Formats a VCP color temperature value as a display name.
         /// </summary>
         /// <param name="vcpValue">The VCP preset value (e.g., 0x05).</param>
-        /// <returns>Formatted string like "6500K (0x05)" or "sRGB (0x01)".</returns>
+        /// <returns>Display name like "6500K" or "sRGB".</returns>
         public static string FormatColorTemperatureDisplay(int vcpValue)
         {
             return ColorTemperatureHelper.FormatColorTemperatureDisplayName(vcpValue);

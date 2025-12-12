@@ -93,7 +93,7 @@ namespace PowerDisplay.Common.Utils
                 var cleanCode = code.Trim();
                 if (cleanCode.StartsWith("0x", StringComparison.OrdinalIgnoreCase))
                 {
-                    cleanCode = cleanCode.Substring(2);
+                    cleanCode = cleanCode[2..];
                 }
 
                 if (int.TryParse(cleanCode, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out int codeInt))
