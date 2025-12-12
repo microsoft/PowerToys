@@ -54,14 +54,18 @@ The Keystroke Overlay is activated when:
 2. After a brief delay (around 300ms per setting), the overlay appears
 3. Upon releasing the key(s), the overlay hovers for around 300ms or a value specified in settings, then disappears
 
+### Character Sets
+The module supports multiple language-specific characters. Since the module uses keyboard codes to detect key presses and trigger the display, various keyboards and languages are supported by Keystroke Overlay, as long as they are supported by Windows.
 
 ### Known Behaviors
+- If a key is pressed and held, this is processed as several presses of the same key in rapid succession
+- Stream mode detects capital letters as shortcuts because the shift key is pressed and separates them from words; e.g. “Hello” in stream mode appears as “H ello”
 
-- Any known bugs or unintended behaviors
+### Future Considerations
 
-## Future Considerations
+- Add support for different appearances, other than left-to-right. Right-to-left or center-outwards would be beneficial, especially for users who communicate in languages that read right-to-left
+- Add support for default positioning, e.g. top-left, bottom-center, middle-right, … 
 
-- What we could have done with 4 more weeks
 
 ## Debugging
 
