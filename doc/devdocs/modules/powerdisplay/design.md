@@ -211,15 +211,13 @@ src/modules/powerdisplay/
 │   │   ├── MonitorValueConverter.cs  # Value conversion utilities
 │   │   ├── ProfileHelper.cs          # Profile helper utilities
 │   │   ├── SimpleDebouncer.cs        # Generic debouncer
-│   │   ├── VcpCodeNames.cs           # VCP code name lookup
-│   │   └── VcpValueNames.cs          # VCP value name lookup
+│   │   └── VcpNames.cs               # VCP code and value name lookup
 │   └── PathConstants.cs              # File path constants
 │
 ├── PowerDisplay/                     # WinUI 3 application
 │   ├── Assets/                       # App icons and images
 │   ├── Configuration/
 │   │   └── AppConstants.cs           # Application constants
-│   ├── Converters/                   # XAML value converters
 │   ├── Helpers/
 │   │   ├── DisplayChangeWatcher.cs   # Monitor hot-plug detection (WinRT DeviceWatcher)
 │   │   ├── MonitorManager.cs         # Discovery orchestrator
@@ -239,7 +237,6 @@ src/modules/powerdisplay/
 │   ├── Services/
 │   │   └── LightSwitchService.cs     # LightSwitch theme change handling
 │   ├── Strings/                      # Localization resources (en-us)
-│   ├── Styles/                       # Custom control styles
 │   ├── Telemetry/
 │   │   └── Events/
 │   │       └── PowerDisplayStartEvent.cs  # Telemetry event
@@ -249,6 +246,7 @@ src/modules/powerdisplay/
 │   │   ├── MainViewModel.Monitors.cs # Monitor discovery methods
 │   │   ├── MainViewModel.Settings.cs # Settings persistence methods
 │   │   └── MonitorViewModel.cs       # Per-monitor VM
+│   ├── GlobalUsings.cs               # Global using directives
 │   └── Program.cs                    # Application entry point
 │
 ├── PowerDisplay.Lib.UnitTests/       # Unit tests
@@ -491,21 +489,34 @@ classDiagram
         -_discoveryHelper: MonitorDiscoveryHelper
         +Name: "DDC/CI Monitor Controller"
         +DiscoverMonitorsAsync()
+        +GetBrightnessAsync(monitor)
+        +SetBrightnessAsync(monitor, brightness)
+        +SetContrastAsync(monitor, contrast)
+        +SetVolumeAsync(monitor, volume)
+        +GetColorTemperatureAsync(monitor)
+        +SetColorTemperatureAsync(monitor, colorTemperature)
+        +GetInputSourceAsync(monitor)
+        +SetInputSourceAsync(monitor, inputSource)
         +GetCapabilitiesStringAsync(monitor) string
         -GetVcpFeatureAsync(monitor, vcpCode, featureName)
-        -SetVcpFeatureAsync(monitor, vcpCode, value)
         -CollectCandidateMonitorsAsync()
         -FetchCapabilitiesInParallelAsync()
-        -CreateValidMonitors()
+        -GetPhysicalMonitorsWithRetryAsync()
     }
 
     class WmiController {
         +Name: "WMI Monitor Controller"
         +DiscoverMonitorsAsync()
-        -BuildInstanceNameQuery()
+        +GetBrightnessAsync(monitor)
+        +SetBrightnessAsync(monitor, brightness)
+        +SetContrastAsync(monitor, contrast)
+        +SetVolumeAsync(monitor, volume)
+        +GetColorTemperatureAsync(monitor)
+        +SetColorTemperatureAsync(monitor, colorTemperature)
+        +GetInputSourceAsync(monitor)
+        +SetInputSourceAsync(monitor, inputSource)
         -ExtractHardwareIdFromInstanceName()
         -GetMonitorDisplayInfoByHardwareId()
-        -ClassifyWmiError()
     }
 
     IMonitorController <|.. DdcCiController
@@ -1362,9 +1373,16 @@ classDiagram
         +int MinBrightness
         +int MaxBrightness
         +int CurrentContrast
+        +int MinContrast
+        +int MaxContrast
         +int CurrentVolume
+        +int MinVolume
+        +int MaxVolume
         +int CurrentColorTemperature
+        +string ColorTemperaturePresetName
         +int CurrentInputSource
+        +string InputSourceName
+        +IReadOnlyList~int~ SupportedInputSources
         +int Orientation
         +bool IsAvailable
         +bool SupportsContrast
@@ -1389,10 +1407,13 @@ classDiagram
         +Dictionary~byte, VcpCodeInfo~ SupportedVcpCodes
         +List~WindowCapability~ Windows
         +bool HasWindowSupport
+        +static VcpCapabilities Empty$
         +SupportsVcpCode(code) bool
         +GetVcpCodeInfo(code) VcpCodeInfo
+        +HasDiscreteValues(code) bool
         +GetSupportedValues(code) IReadOnlyList~int~
         +GetVcpCodesAsHexStrings() List~string~
+        +GetSortedVcpCodes() IEnumerable~VcpCodeInfo~
     }
 
     class VcpCodeInfo {
@@ -1403,6 +1424,32 @@ classDiagram
         +bool IsContinuous
         +string FormattedCode
         +string FormattedTitle
+    }
+
+    class WindowCapability {
+        <<struct>>
+        +int WindowNumber
+        +string Type
+        +WindowArea Area
+        +WindowSize MaxSize
+        +WindowSize MinSize
+        +int WindowId
+    }
+
+    class WindowSize {
+        <<struct>>
+        +int Width
+        +int Height
+    }
+
+    class WindowArea {
+        <<struct>>
+        +int X1
+        +int Y1
+        +int X2
+        +int Y2
+        +int Width
+        +int Height
     }
 
     class VcpFeatureValue {
@@ -1452,6 +1499,10 @@ classDiagram
     Monitor "1" --> "0..1" VcpCapabilities
     Monitor "1" --> "1" MonitorCapabilities
     VcpCapabilities "1" --> "*" VcpCodeInfo
+    VcpCapabilities "1" --> "*" WindowCapability
+    WindowCapability "1" --> "1" WindowArea
+    WindowCapability "1" --> "1" WindowSize : MaxSize
+    WindowCapability "1" --> "1" WindowSize : MinSize
     PowerDisplayProfiles "1" --> "*" PowerDisplayProfile
     PowerDisplayProfile "1" --> "*" ProfileMonitorSetting
 ```
@@ -1484,10 +1535,15 @@ classDiagram
         +string InternalName
         +string HardwareId
         +string CommunicationMethod
+        +int MonitorNumber
+        +int TotalMonitorCount
+        +string DisplayName
+        +string MonitorIconGlyph
         +int CurrentBrightness
         +int Contrast
         +int Volume
         +int ColorTemperatureVcp
+        +int Orientation
         +bool SupportsBrightness
         +bool SupportsContrast
         +bool SupportsColorTemperature
@@ -1496,9 +1552,30 @@ classDiagram
         +bool EnableContrast
         +bool EnableVolume
         +bool EnableInputSource
+        +bool EnableRotation
         +bool IsHidden
         +string CapabilitiesRaw
         +List~string~ VcpCodes
+        +List~VcpCodeDisplayInfo~ VcpCodesFormatted
+        +ObservableCollection~ColorPresetItem~ AvailableColorPresets
+        +ObservableCollection~ColorPresetItem~ ColorPresetsForDisplay
+        +bool HasCapabilities
+        +bool ShowCapabilitiesWarning
+        +GetVcpCodesAsText() string
+        +UpdateFrom(other)
+    }
+
+    class VcpCodeDisplayInfo {
+        +string Code
+        +string Title
+        +string Values
+        +bool HasValues
+        +List~VcpValueInfo~ ValueList
+    }
+
+    class VcpValueInfo {
+        +string Value
+        +string Name
     }
 
     class ColorTemperatureOperation {
@@ -1511,6 +1588,8 @@ classDiagram
         +List~ProfileMonitorSetting~ MonitorSettings
     }
 
+    MonitorInfo "1" --> "*" VcpCodeDisplayInfo
+    VcpCodeDisplayInfo "1" --> "*" VcpValueInfo
     PowerDisplaySettings "1" --> "1" PowerDisplayProperties
     PowerDisplayProperties "1" --> "*" MonitorInfo
     PowerDisplayProperties "1" --> "0..1" ColorTemperatureOperation
