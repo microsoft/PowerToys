@@ -124,7 +124,7 @@
       <Custom Action="SetBundleInstallLocation" After="InstallFiles" Condition="NOT Installed OR WIX_UPGRADE_DETECTED" />
       <Custom Action="ApplyModulesRegistryChangeSets" After="InstallFiles" Condition="NOT Installed" />
       <Custom Action="InstallCmdPalPackage" After="InstallFiles" Condition="NOT Installed" />
-      <Custom Action="InstallPackageIdentityMSIX" After="InstallFiles" Condition="NOT Installed" />
+      <Custom Action="InstallPackageIdentityMSIX" After="InstallFiles" Condition="NOT Installed AND WINDOWSBUILDNUMBER &gt;= 22000" />
       <Custom Action="override Wix4CloseApplications_$(sys.BUILDARCHSHORT)" Before="RemoveFiles" />
       <Custom Action="RemovePowerToysSchTasks" After="RemoveFiles" />
       <!-- TODO: Use to activate embedded MSIX -->

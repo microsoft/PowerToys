@@ -7,6 +7,23 @@
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
     xmlns:v="clr-namespace:ImageResizer.Views">
 
+    <UserControl.Resources>
+        <Style
+            x:Key="ReadableDisabledButtonStyle"
+            BasedOn="{StaticResource {x:Type ui:Button}}"
+            TargetType="ui:Button">
+            <Style.Triggers>
+                <Trigger Property="IsEnabled" Value="False">
+                    <!--  Improved disabled state: keep readable but clearly disabled  -->
+                    <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}" />
+                    <Setter Property="Background" Value="{DynamicResource {x:Static SystemColors.ControlBrushKey}}" />
+                    <Setter Property="BorderBrush" Value="{DynamicResource {x:Static SystemColors.ControlDarkBrushKey}}" />
+                    <Setter Property="Opacity" Value="0.75" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </UserControl.Resources>
+
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -15,61 +32,67 @@
             <!--  other controls  -->
         </Grid.RowDefinitions>
 
-        <ComboBox
-            Name="SizeComboBox"
-            Grid.Row="0"
-            Height="64"
-            Margin="16"
-            HorizontalAlignment="Stretch"
-            VerticalAlignment="Stretch"
-            VerticalContentAlignment="Stretch"
-            AutomationProperties.HelpText="{Binding Settings.SelectedSize, Converter={StaticResource SizeTypeToHelpTextConverter}}"
-            AutomationProperties.Name="{x:Static p:Resources.Image_Sizes}"
-            ItemsSource="{Binding Settings.AllSizes}"
-            SelectedIndex="{Binding Settings.SelectedSizeIndex}">
-            <ComboBox.ItemContainerStyle>
-                <Style BasedOn="{StaticResource {x:Type ComboBoxItem}}" TargetType="ComboBoxItem">
-                    <Setter Property="AutomationProperties.Name" Value="{Binding Name}" />
-                    <Setter Property="AutomationProperties.HelpText" Value="{Binding ., Converter={StaticResource SizeTypeToHelpTextConverter}}" />
-                </Style>
-            </ComboBox.ItemContainerStyle>
-            <ComboBox.Resources>
-                <DataTemplate DataType="{x:Type m:ResizeSize}">
-                    <Grid VerticalAlignment="Center">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                        </Grid.RowDefinitions>
-                        <TextBlock Style="{StaticResource BodyStrongTextBlockStyle}" Text="{Binding Name}" />
-                        <StackPanel Grid.Row="1" Orientation="Horizontal">
-                            <TextBlock Text="{Binding Fit, Converter={StaticResource EnumValueConverter}, ConverterParameter=ThirdPersonSingular}" />
-                            <TextBlock
-                                Margin="4,0,0,0"
-                                Style="{StaticResource BodyStrongTextBlockStyle}"
-                                Text="{Binding Width, Converter={StaticResource AutoDoubleConverter}, ConverterParameter=Auto}" />
-                            <TextBlock
-                                Margin="4,0,0,0"
-                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                Text="×"
-                                Visibility="{Binding ShowHeight, Converter={StaticResource BoolValueConverter}}" />
-                            <TextBlock
-                                Margin="4,0,0,0"
-                                Style="{StaticResource BodyStrongTextBlockStyle}"
-                                Text="{Binding Height, Converter={StaticResource AutoDoubleConverter}, ConverterParameter=Auto}"
-                                Visibility="{Binding ShowHeight, Converter={StaticResource BoolValueConverter}}" />
-                            <TextBlock Margin="4,0,0,0" Text="{Binding Unit, Converter={StaticResource EnumValueConverter}, ConverterParameter=ToLower}" />
+        <StackPanel Grid.Row="0" Margin="16">
+            <ComboBox
+                Name="SizeComboBox"
+                Height="64"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch"
+                VerticalContentAlignment="Stretch"
+                AutomationProperties.HelpText="{Binding Settings.SelectedSize, Converter={StaticResource SizeTypeToHelpTextConverter}}"
+                AutomationProperties.Name="{x:Static p:Resources.Image_Sizes}"
+                ItemsSource="{Binding Settings.AllSizes}"
+                SelectedItem="{Binding Settings.SelectedSize, Mode=TwoWay}">
+                <ComboBox.ItemContainerStyle>
+                    <Style BasedOn="{StaticResource {x:Type ComboBoxItem}}" TargetType="ComboBoxItem">
+                        <Setter Property="AutomationProperties.Name" Value="{Binding Name}" />
+                        <Setter Property="AutomationProperties.HelpText" Value="{Binding ., Converter={StaticResource SizeTypeToHelpTextConverter}}" />
+                    </Style>
+                </ComboBox.ItemContainerStyle>
+                <ComboBox.Resources>
+                    <DataTemplate DataType="{x:Type m:ResizeSize}">
+                        <Grid VerticalAlignment="Center">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <TextBlock Style="{StaticResource BodyStrongTextBlockStyle}" Text="{Binding Name}" />
+                            <StackPanel Grid.Row="1" Orientation="Horizontal">
+                                <TextBlock Text="{Binding Fit, Converter={StaticResource EnumValueConverter}, ConverterParameter=ThirdPersonSingular}" />
+                                <TextBlock
+                                    Margin="4,0,0,0"
+                                    Style="{StaticResource BodyStrongTextBlockStyle}"
+                                    Text="{Binding Width, Converter={StaticResource AutoDoubleConverter}, ConverterParameter=Auto}" />
+                                <TextBlock
+                                    Margin="4,0,0,0"
+                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                    Text="×"
+                                    Visibility="{Binding ShowHeight, Converter={StaticResource BoolValueConverter}}" />
+                                <TextBlock
+                                    Margin="4,0,0,0"
+                                    Style="{StaticResource BodyStrongTextBlockStyle}"
+                                    Text="{Binding Height, Converter={StaticResource AutoDoubleConverter}, ConverterParameter=Auto}"
+                                    Visibility="{Binding ShowHeight, Converter={StaticResource BoolValueConverter}}" />
+                                <TextBlock Margin="4,0,0,0" Text="{Binding Unit, Converter={StaticResource EnumValueConverter}, ConverterParameter=ToLower}" />
+                            </StackPanel>
+                        </Grid>
+                    </DataTemplate>
+
+                    <DataTemplate DataType="{x:Type m:CustomSize}">
+                        <Grid VerticalAlignment="Center">
+                            <TextBlock FontWeight="SemiBold" Text="{Binding Name}" />
+                        </Grid>
+                    </DataTemplate>
+
+                    <DataTemplate DataType="{x:Type m:AiSize}">
+                        <StackPanel VerticalAlignment="Center" Orientation="Vertical">
+                            <TextBlock FontWeight="SemiBold" Text="{x:Static p:Resources.Input_AiSuperResolution}" />
+                            <TextBlock Text="{x:Static p:Resources.Input_AiSuperResolutionDescription}" />
                         </StackPanel>
-                    </Grid>
-                </DataTemplate>
-
-                <DataTemplate DataType="{x:Type m:CustomSize}">
-                    <Grid VerticalAlignment="Center">
-                        <TextBlock FontWeight="SemiBold" Text="{Binding Name}" />
-                    </Grid>
-                </DataTemplate>
-            </ComboBox.Resources>
-        </ComboBox>
-
+                    </DataTemplate>
+                </ComboBox.Resources>
+            </ComboBox>
+        </StackPanel>
         <Grid Grid.Row="1">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
@@ -83,6 +106,90 @@
                 Background="{DynamicResource LayerFillColorDefaultBrush}"
                 BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                 BorderThickness="0,1,0,0" />
+
+            <!--  AI Configuration Panel  -->
+            <Grid Margin="16">
+                <!--  AI Model Download Prompt  -->
+                <StackPanel>
+                    <StackPanel.Style>
+                        <Style TargetType="StackPanel">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding ShowModelDownloadPrompt}" Value="True">
+                                    <Setter Property="Visibility" Value="Visible" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </StackPanel.Style>
+
+                    <ui:InfoBar
+                        IsClosable="False"
+                        IsOpen="True"
+                        Message="{Binding ModelStatusMessage}"
+                        Severity="Informational" />
+
+                    <ui:Button
+                        Margin="0,8,0,0"
+                        HorizontalAlignment="Stretch"
+                        Appearance="Primary"
+                        Command="{Binding DownloadModelCommand}"
+                        Content="{x:Static p:Resources.Input_AiModelDownloadButton}"
+                        Visibility="{Binding IsModelDownloading, Converter={StaticResource BoolValueConverter}, ConverterParameter=Inverted}" />
+
+                    <StackPanel Margin="0,8,0,0" Visibility="{Binding IsModelDownloading, Converter={StaticResource BoolValueConverter}}">
+                        <ui:ProgressRing IsIndeterminate="True" />
+                        <TextBlock
+                            Margin="0,8,0,0"
+                            HorizontalAlignment="Center"
+                            Text="{Binding ModelStatusMessage}" />
+                    </StackPanel>
+                </StackPanel>
+
+                <!--  AI Scale Controls  -->
+                <StackPanel>
+                    <StackPanel.Style>
+                        <Style TargetType="StackPanel">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding ShowAiControls}" Value="True">
+                                    <Setter Property="Visibility" Value="Visible" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </StackPanel.Style>
+
+                    <Grid>
+                        <TextBlock Text="{x:Static p:Resources.Input_AiCurrentLabel}" />
+                        <TextBlock HorizontalAlignment="Right" Text="{Binding AiScaleDisplay}" />
+                    </Grid>
+
+                    <Slider
+                        Margin="0,8,0,0"
+                        AutomationProperties.Name="{x:Static p:Resources.Input_AiScaleLabel}"
+                        IsSelectionRangeEnabled="False"
+                        IsSnapToTickEnabled="True"
+                        Maximum="8"
+                        Minimum="1"
+                        TickFrequency="1"
+                        TickPlacement="BottomRight"
+                        Ticks="1,2,3,4,5,6,7,8"
+                        Value="{Binding AiSuperResolutionScale, Mode=TwoWay}" />
+
+                    <StackPanel Margin="0,16,0,0" Visibility="{Binding ShowAiSizeDescriptions, Converter={StaticResource BoolValueConverter}}">
+                        <Grid>
+                            <TextBlock Foreground="{DynamicResource TextFillColorSecondaryBrush}" Text="{x:Static p:Resources.Input_AiCurrentLabel}" />
+                            <TextBlock
+                                HorizontalAlignment="Right"
+                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                Text="{Binding CurrentResolutionDescription}" />
+                        </Grid>
+                        <Grid Margin="0,8,0,0">
+                            <TextBlock Text="{x:Static p:Resources.Input_AiNewLabel}" />
+                            <TextBlock HorizontalAlignment="Right" Text="{Binding NewResolutionDescription}" />
+                        </Grid>
+                    </StackPanel>
+                </StackPanel>
+            </Grid>
 
             <!--  "Custom" input matrix  -->
             <Grid Margin="16" Visibility="{Binding ElementName=SizeComboBox, Path=SelectedValue, Converter={StaticResource SizeTypeToVisibilityConverter}}">
@@ -280,7 +387,8 @@
                     Appearance="Primary"
                     AutomationProperties.Name="{x:Static p:Resources.Resize_Tooltip}"
                     Command="{Binding ResizeCommand}"
-                    IsDefault="True">
+                    IsDefault="True"
+                    Style="{StaticResource ReadableDisabledButtonStyle}">
                     <StackPanel Orientation="Horizontal">
                         <ui:SymbolIcon FontSize="16" Symbol="ResizeLarge16" />
                         <TextBlock Margin="8,0,0,0" Text="{x:Static p:Resources.Input_Resize}" />

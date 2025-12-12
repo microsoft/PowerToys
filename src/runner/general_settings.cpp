@@ -10,6 +10,7 @@
 #include <common/themes/windows_colors.h>
 
 #include "trace.h"
+#include "ai_detection.h"
 #include <common/utils/elevation.h>
 #include <common/version/version.h>
 #include <common/utils/resources.h>
@@ -279,6 +280,13 @@ void apply_general_settings(const json::JsonObject& general_configs, bool save)
                 powertoy->enable();
                 auto& hkmng = HotkeyConflictDetector::HotkeyConflictManager::GetInstance();
                 hkmng.EnableHotkeyByModule(name);
+
+                // Trigger AI capability detection when ImageResizer is enabled
+                if (name == L"Image Resizer")
+                {
+                    Logger::info(L"ImageResizer enabled, triggering AI capability detection");
+                    DetectAiCapabilitiesAsync(true);  // Skip settings check since we know it's being enabled
+                }
             }
             else
             {

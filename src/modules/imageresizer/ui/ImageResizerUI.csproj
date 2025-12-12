@@ -10,6 +10,7 @@
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <GenerateSatelliteAssembliesForCore>true</GenerateSatelliteAssembliesForCore>
     <UseWPF>true</UseWPF>
+    <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -18,19 +19,20 @@
     <RootNamespace>ImageResizer</RootNamespace>
     <AssemblyName>PowerToys.ImageResizer</AssemblyName>
     <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   
   <PropertyGroup>
     <ApplicationIcon>Resources\ImageResizer.ico</ApplicationIcon>
   </PropertyGroup>
 
-  <!-- <PropertyGroup>
+  <PropertyGroup>
     <ApplicationManifest>ImageResizerUI.dev.manifest</ApplicationManifest>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(CIBuild)'=='true'">
     <ApplicationManifest>ImageResizerUI.prod.manifest</ApplicationManifest>
-  </PropertyGroup> -->
+  </PropertyGroup>
 
   <ItemGroup>
     <EmbeddedResource Update="Properties\Resources.resx">
@@ -46,6 +48,8 @@
     <Resource Include="Resources\ImageResizer.png" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Microsoft.WindowsAppSDK" />
+    <PackageReference Include="Microsoft.WindowsAppSDK.AI" />
     <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" />
     <PackageReference Include="System.IO.Abstractions" />
     <PackageReference Include="WPF-UI" />

@@ -15,16 +15,29 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ImageResizer.Properties;
+using ImageResizer.Services;
 
 namespace ImageResizer.Models
 {
     public class ResizeBatch
     {
         private readonly IFileSystem _fileSystem = new FileSystem();
+        private static IAISuperResolutionService _aiSuperResolutionService;
 
         public string DestinationDirectory { get; set; }
 
         public ICollection<string> Files { get; } = new List<string>();
+
+        public static void SetAiSuperResolutionService(IAISuperResolutionService service)
+        {
+            _aiSuperResolutionService = service;
+        }
+
+        public static void DisposeAiSuperResolutionService()
+        {
+            _aiSuperResolutionService?.Dispose();
+            _aiSuperResolutionService = null;
+        }
 
         public static ResizeBatch FromCommandLine(TextReader standardInput, string[] args)
         {
@@ -122,6 +135,9 @@ namespace ImageResizer.Models
         }
 
         protected virtual void Execute(string file, Settings settings)
-            => new ResizeOperation(file, DestinationDirectory, settings).Execute();
+        {
+            var aiService = _aiSuperResolutionService ?? NoOpAiSuperResolutionService.Instance;
+            new ResizeOperation(file, DestinationDirectory, settings, aiService).Execute();
+        }
     }
 }
