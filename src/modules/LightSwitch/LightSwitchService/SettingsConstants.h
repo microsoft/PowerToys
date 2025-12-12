@@ -10,7 +10,10 @@ enum class SettingId
     Sunrise_Offset,
     Sunset_Offset,
     ChangeSystem,
-    ChangeApps
+    ChangeApps,
+    UseThemeSwitching,
+    LightThemePath,
+    DarkThemePath
 };
 
 constexpr wchar_t PERSONALIZATION_REGISTRY_PATH[] = L"Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize";

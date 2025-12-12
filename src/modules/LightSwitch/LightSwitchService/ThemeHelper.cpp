@@ -72,6 +72,10 @@ void SetSystemTheme(bool mode)
     }
 }
 
+void SetThemeFile(const std::wstring& themeFilePath) {
+    ShellExecuteW(nullptr, L"open", themeFilePath.c_str(), nullptr, nullptr, SW_SHOWNORMAL);
+}
+
 // Can think of this as "is the current theme light?"
 bool GetCurrentSystemTheme()
 {
