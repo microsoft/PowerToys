@@ -8,6 +8,7 @@
 4. [Technical Terminology](#technical-terminology)
 5. [Architecture Overview](#architecture-overview)
 6. [Component Design](#component-design)
+   - [Monitor Identification: Handles, IDs, and Names](#monitor-identification-handles-ids-and-names)
 7. [Data Flow and Communication](#data-flow-and-communication)
 8. [Sequence Diagrams](#sequence-diagrams)
 9. [Data Models](#data-models)
@@ -119,26 +120,28 @@ flowchart TB
     end
 
     subgraph PowerDisplayModule["PowerDisplay Module"]
-        ModuleInterface["Module Interface (C++ DLL)"]
-        PowerDisplayApp["PowerDisplay App (WinUI 3)"]
-        PowerDisplayLib["PowerDisplay.Lib"]
+        ModuleInterface["Module Interface<br/>(PowerDisplayModuleInterface.dll)"]
+        PowerDisplayApp["PowerDisplay App<br/>(PowerToys.PowerDisplay.exe)"]
+        PowerDisplayLib["PowerDisplay.Lib<br/>(Shared Library)"]
     end
 
     subgraph External["External"]
-        Hardware["Display Hardware"]
-        Storage["Persistent Storage (JSON)"]
+        Hardware["Display Hardware<br/>(External + Internal)"]
+        Storage["Persistent Storage<br/>(settings.json, profiles.json)"]
     end
 
     Runner -->|"Loads DLL"| ModuleInterface
     Runner -->|"Hotkey Events"| ModuleInterface
     SettingsUI <-->|"Named Pipes"| Runner
-    SettingsUI -->|"Custom Actions"| ModuleInterface
+    SettingsUI -->|"Custom Actions<br/>(Launch, RefreshMonitors,<br/>ApplyColorTemperature, ApplyProfile)"| ModuleInterface
 
-    ModuleInterface <-->|"Windows Events"| PowerDisplayApp
-    LightSwitch -->|"Theme Changed Event"| PowerDisplayApp
+    ModuleInterface <-->|"Windows Events<br/>(Show/Toggle/Terminate/Refresh)"| PowerDisplayApp
+    LightSwitch -->|"Theme Events<br/>(Light/Dark)"| PowerDisplayApp
 
     PowerDisplayApp --> PowerDisplayLib
-    PowerDisplayLib -->|"DDC/CI + WMI"| Hardware
+    PowerDisplayLib -->|"DDC/CI (Dxva2.dll)"| Hardware
+    PowerDisplayLib -->|"WMI (WmiLight)"| Hardware
+    PowerDisplayLib -->|"ChangeDisplaySettingsEx"| Hardware
     PowerDisplayApp <--> Storage
 
     style Runner fill:#e1f5fe
@@ -164,60 +167,100 @@ src/modules/powerdisplay/
 │   ├── Drivers/
 │   │   ├── DDC/
 │   │   │   ├── DdcCiController.cs    # DDC/CI implementation
-│   │   │   ├── DdcCiNative.cs        # P/Invoke declarations
+│   │   │   ├── DdcCiNative.cs        # P/Invoke declarations & QueryDisplayConfig
 │   │   │   ├── MonitorDiscoveryHelper.cs
 │   │   │   └── PhysicalMonitorHandleManager.cs
-│   │   └── WMI/
-│   │       └── WmiController.cs      # WMI implementation
+│   │   ├── WMI/
+│   │   │   └── WmiController.cs      # WMI implementation (WmiLight library)
+│   │   ├── NativeConstants.cs        # Win32 constants (VCP codes, etc.)
+│   │   ├── NativeDelegates.cs        # P/Invoke delegate types
+│   │   ├── NativeStructures.cs       # Win32 structures
+│   │   └── PInvoke.cs                # P/Invoke declarations
+│   ├── Helpers/
+│   │   └── PnpIdHelper.cs            # PnP manufacturer ID lookup
 │   ├── Interfaces/
-│   │   └── IMonitorController.cs     # Controller abstraction
+│   │   ├── IMonitorController.cs     # Controller abstraction
+│   │   ├── IMonitorData.cs           # Monitor data interface
+│   │   └── IProfileService.cs        # Profile service interface
 │   ├── Models/
 │   │   ├── Monitor.cs                # Runtime monitor data
-│   │   ├── MonitorOperationResult.cs # Operation result enum
+│   │   ├── MonitorCapabilities.cs    # Monitor capability flags
+│   │   ├── MonitorOperationResult.cs # Operation result
+│   │   ├── MonitorStateEntry.cs      # Persisted monitor state
+│   │   ├── MonitorStateFile.cs       # State file schema
 │   │   ├── PowerDisplayProfile.cs    # Profile definition
 │   │   ├── PowerDisplayProfiles.cs   # Profile collection
-│   │   └── ProfileMonitorSetting.cs  # Per-monitor settings
+│   │   ├── ProfileMonitorSetting.cs  # Per-monitor profile settings
+│   │   ├── ProfileOperation.cs       # Profile operation for IPC
+│   │   ├── ColorTemperatureOperation.cs  # Color temp operation for IPC
+│   │   ├── ColorPresetItem.cs        # Color preset UI item
+│   │   ├── VcpCapabilities.cs        # Parsed VCP capabilities
+│   │   └── VcpFeatureValue.cs        # VCP feature value (current/min/max)
+│   ├── Serialization/
+│   │   └── ProfileSerializationContext.cs  # JSON source generation
 │   ├── Services/
-│   │   ├── LightSwitchListener.cs    # Theme change listener
+│   │   ├── DisplayRotationService.cs # Display rotation via ChangeDisplaySettingsEx
 │   │   ├── MonitorStateManager.cs    # State persistence (debounced)
 │   │   └── ProfileService.cs         # Profile persistence
-│   └── Utils/
-│       ├── ColorTemperatureHelper.cs # Color temp utilities
-│       ├── MccsCapabilitiesParser.cs # DDC/CI capabilities parser
-│       └── VcpCapabilities.cs        # VCP capabilities model
+│   ├── Utils/
+│   │   ├── ColorTemperatureHelper.cs # Color temp utilities
+│   │   ├── EventHelper.cs            # Windows Event utilities
+│   │   ├── MccsCapabilitiesParser.cs # DDC/CI capabilities parser
+│   │   ├── MonitorFeatureHelper.cs   # Monitor feature utilities
+│   │   ├── MonitorMatchingHelper.cs  # Profile-to-monitor matching
+│   │   ├── MonitorValueConverter.cs  # Value conversion utilities
+│   │   ├── ProfileHelper.cs          # Profile helper utilities
+│   │   ├── SimpleDebouncer.cs        # Generic debouncer
+│   │   ├── VcpCodeNames.cs           # VCP code name lookup
+│   │   └── VcpValueNames.cs          # VCP value name lookup
+│   └── PathConstants.cs              # File path constants
 │
 ├── PowerDisplay/                     # WinUI 3 application
 │   ├── Assets/                       # App icons and images
-│   ├── Common/
-│   │   ├── Debouncer/
-│   │   │   └── SimpleDebouncer.cs    # Slider input debouncing
-│   │   └── Models/
-│   │       └── Monitor.cs            # UI-layer monitor model
+│   ├── Configuration/
+│   │   └── AppConstants.cs           # Application constants
 │   ├── Converters/                   # XAML value converters
 │   ├── Helpers/
 │   │   ├── DisplayChangeWatcher.cs   # Monitor hot-plug detection (WinRT DeviceWatcher)
-│   │   ├── DisplayRotationService.cs # Display rotation control
 │   │   ├── MonitorManager.cs         # Discovery orchestrator
-│   │   ├── NativeMethodsHelper.cs    # Window positioning
+│   │   ├── NativeEventWaiter.cs      # Windows Event waiting
+│   │   ├── ResourceLoaderInstance.cs # Resource loader singleton
+│   │   ├── SettingsDeepLink.cs       # Deep link to Settings UI
 │   │   ├── TrayIconService.cs        # System tray integration
-│   │   └── WindowHelpers.cs          # Window utilities
-│   ├── Strings/                      # Localization resources
+│   │   ├── TypePreservation.cs       # AOT type preservation
+│   │   └── WindowHelper.cs           # Window utilities
+│   ├── PowerDisplayXAML/
+│   │   ├── App.xaml / App.xaml.cs    # Application entry point
+│   │   ├── MainWindow.xaml / .cs     # Main UI window
+│   │   ├── IdentifyWindow.xaml / .cs # Monitor identify overlay
+│   │   └── MonitorIcon.xaml / .cs    # Monitor icon control
+│   ├── Serialization/
+│   │   └── JsonSourceGenerationContext.cs  # JSON source generation
+│   ├── Services/
+│   │   └── LightSwitchService.cs     # LightSwitch theme change handling
+│   ├── Strings/                      # Localization resources (en-us)
 │   ├── Styles/                       # Custom control styles
+│   ├── Telemetry/
+│   │   └── Events/
+│   │       └── PowerDisplayStartEvent.cs  # Telemetry event
 │   ├── ViewModels/
+│   │   ├── InputSourceItem.cs        # Input source dropdown item
 │   │   ├── MainViewModel.cs          # Main VM (partial class)
 │   │   ├── MainViewModel.Monitors.cs # Monitor discovery methods
-│   │   ├── MainViewModel.Profiles.cs # Profile management methods
 │   │   ├── MainViewModel.Settings.cs # Settings persistence methods
 │   │   └── MonitorViewModel.cs       # Per-monitor VM
-│   └── Views/
-│       ├── MainWindow.xaml           # Main UI window
-│       └── MainWindow.xaml.cs
+│   └── Program.cs                    # Application entry point
+│
+├── PowerDisplay.Lib.UnitTests/       # Unit tests
+│   ├── MccsCapabilitiesParserTests.cs
+│   └── MonitorMatchingHelperTests.cs
 │
 └── PowerDisplayModuleInterface/      # C++ DLL (module interface)
     ├── dllmain.cpp                   # PowertoyModuleIface impl
-    ├── Constants.h                   # Module constants
+    ├── Constants.h                   # Module constants (event names, timeouts)
+    ├── resource.h                    # Resource definitions
     ├── pch.h / pch.cpp               # Precompiled headers
-    └── trace.h / trace.cpp           # Telemetry tracing
+    └── Trace.h / Trace.cpp           # ETW telemetry tracing
 ```
 
 ---
@@ -236,7 +279,7 @@ flowchart TB
     subgraph WindowsEvents["Windows Events (IPC)"]
         direction LR
         ShowToggleEvents["Show/Toggle/Terminate<br/>Events"]
-        ThemeChangedEvent["ThemeChanged<br/>Event"]
+        ThemeChangedEvent["ThemeChanged<br/>Events"]
     end
 
     subgraph PowerDisplayModule["PowerDisplay Module"]
@@ -245,17 +288,21 @@ flowchart TB
             MonitorViewModel
             MonitorManager
             DisplayChangeWatcher["DisplayChangeWatcher<br/>(Hot-Plug Detection)"]
+            LightSwitchService["LightSwitchService<br/>(Theme Handler)"]
         end
 
         subgraph PowerDisplayLib["PowerDisplay.Lib"]
             subgraph Services
-                LightSwitchListener
                 ProfileService
                 MonitorStateManager
+                DisplayRotationService
             end
             subgraph Drivers
                 DdcCiController
                 WmiController
+            end
+            subgraph Helpers
+                PnpIdHelper["PnpIdHelper<br/>(Manufacturer Names)"]
             end
         end
     end
@@ -277,10 +324,10 @@ flowchart TB
 
     %% Windows Events to App
     ShowToggleEvents --> MainViewModel
-    ThemeChangedEvent --> LightSwitchListener
+    ThemeChangedEvent --> LightSwitchService
 
-    %% App internal (MainViewModel owns LightSwitchListener)
-    LightSwitchListener -.->|"ThemeChanged event"| MainViewModel
+    %% App internal
+    LightSwitchService -.->|"Get profile name"| MainViewModel
     MainViewModel --> MonitorViewModel
     MonitorViewModel --> MonitorManager
     DisplayChangeWatcher -.->|"DisplayChanged event"| MainViewModel
@@ -289,6 +336,10 @@ flowchart TB
     MainViewModel --> ProfileService
     MonitorViewModel --> MonitorStateManager
     MonitorManager --> Drivers
+    MonitorManager --> DisplayRotationService
+
+    %% Helpers used during discovery
+    WmiController --> PnpIdHelper
 
     %% Services to Storage
     ProfileService --> ProfilesJson
@@ -297,6 +348,8 @@ flowchart TB
     %% Drivers to Hardware
     DdcCiController -->|"DDC/CI"| ExternalMonitor
     WmiController -->|"WMI"| LaptopDisplay
+    DisplayRotationService -->|"ChangeDisplaySettingsEx"| ExternalMonitor
+    DisplayRotationService -->|"ChangeDisplaySettingsEx"| LaptopDisplay
 
     %% Styling
     style ExternalInputs fill:#e3f2fd,stroke:#1976d2
@@ -306,6 +359,7 @@ flowchart TB
     style PowerDisplayLib fill:#c8e6c9,stroke:#388e3c
     style Services fill:#a5d6a7,stroke:#2e7d32
     style Drivers fill:#ffccbc,stroke:#e64a19
+    style Helpers fill:#dcedc8,stroke:#689f38
     style Storage fill:#e1bee7,stroke:#8e24aa
     style Hardware fill:#b2dfdb,stroke:#00897b
 ```
@@ -371,12 +425,12 @@ flowchart TB
     end
 
     subgraph WMIStack["WMI Stack"]
-        WmiLight["WmiLight Library<br/>(Native AOT compatible)"]
+        WmiLight["WmiLight Library<br/>(Native AOT compatible,<br/>NuGet package)"]
+        PnpHelper["PnpIdHelper<br/>(Manufacturer name lookup)"]
 
         subgraph WMIClasses["WMI Classes (root\\WMI)"]
             WmiMonBright["WmiMonitorBrightness"]
             WmiMonBrightMethods["WmiMonitorBrightnessMethods"]
-            WmiMonID["WmiMonitorID"]
         end
     end
 
@@ -402,9 +456,9 @@ flowchart TB
     Dxva2 -->|"I2C/DDC"| ExtMon
 
     WMI --> WmiLight
+    WMI --> PnpHelper
     WmiLight --> WmiMonBright
     WmiLight --> WmiMonBrightMethods
-    WmiLight --> WmiMonID
 
     WmiMonBrightMethods -->|"WMI Provider"| LaptopMon
 
@@ -420,41 +474,350 @@ classDiagram
     class IMonitorController {
         <<interface>>
         +Name: string
-        +DiscoverMonitorsAsync() IEnumerable~Monitor~
-        +CanControlMonitorAsync(monitor) bool
-        +GetBrightnessAsync(monitor) BrightnessInfo
-        +SetBrightnessAsync(monitor, brightness) MonitorOperationResult
-        +SetContrastAsync(monitor, contrast) MonitorOperationResult
-        +SetVolumeAsync(monitor, volume) MonitorOperationResult
-        +GetColorTemperatureAsync(monitor) BrightnessInfo
-        +SetColorTemperatureAsync(monitor, vcpValue) MonitorOperationResult
-        +GetInputSourceAsync(monitor) BrightnessInfo
-        +SetInputSourceAsync(monitor, inputSource) MonitorOperationResult
-        +GetCapabilitiesStringAsync(monitor) string
+        +DiscoverMonitorsAsync(cancellationToken) IEnumerable~Monitor~
+        +GetBrightnessAsync(monitor, cancellationToken) VcpFeatureValue
+        +SetBrightnessAsync(monitor, brightness, cancellationToken) MonitorOperationResult
+        +SetContrastAsync(monitor, contrast, cancellationToken) MonitorOperationResult
+        +SetVolumeAsync(monitor, volume, cancellationToken) MonitorOperationResult
+        +GetColorTemperatureAsync(monitor, cancellationToken) VcpFeatureValue
+        +SetColorTemperatureAsync(monitor, vcpValue, cancellationToken) MonitorOperationResult
+        +GetInputSourceAsync(monitor, cancellationToken) VcpFeatureValue
+        +SetInputSourceAsync(monitor, inputSource, cancellationToken) MonitorOperationResult
         +Dispose()
     }
 
     class DdcCiController {
         -_handleManager: PhysicalMonitorHandleManager
-        +Name: "DDC/CI"
+        -_discoveryHelper: MonitorDiscoveryHelper
+        +Name: "DDC/CI Monitor Controller"
         +DiscoverMonitorsAsync()
-        +SetBrightnessAsync()
-        -GetVcpFeatureAsync()
-        -SetVcpFeatureAsync()
-        -QuickConnectionCheck()
+        +GetCapabilitiesStringAsync(monitor) string
+        -GetVcpFeatureAsync(monitor, vcpCode, featureName)
+        -SetVcpFeatureAsync(monitor, vcpCode, value)
+        -CollectCandidateMonitorsAsync()
+        -FetchCapabilitiesInParallelAsync()
+        -CreateValidMonitors()
     }
 
     class WmiController {
-        +Name: "WMI"
+        +Name: "WMI Monitor Controller"
         +DiscoverMonitorsAsync()
-        +SetBrightnessAsync()
-        -GetWmiMonitorBrightness()
-        -SetWmiMonitorBrightness()
+        -BuildInstanceNameQuery()
+        -ExtractHardwareIdFromInstanceName()
+        -GetMonitorDisplayInfoByHardwareId()
+        -ClassifyWmiError()
     }
 
     IMonitorController <|.. DdcCiController
     IMonitorController <|.. WmiController
 ```
+
+---
+
+### Monitor Identification: Handles, IDs, and Names
+
+Understanding how Windows identifies monitors is critical for PowerDisplay's operation.
+Different Windows APIs use different identifiers, and PowerDisplay must correlate these
+to provide a unified view across DDC/CI and WMI subsystems.
+
+#### Windows Display Subsystem Overview
+
+```mermaid
+flowchart TB
+    subgraph WindowsAPIs["Windows Display APIs"]
+        EnumDisplayMonitors["EnumDisplayMonitors<br/>(User32.dll)"]
+        QueryDisplayConfig["QueryDisplayConfig<br/>(User32.dll)"]
+        GetPhysicalMonitors["GetPhysicalMonitorsFromHMONITOR<br/>(Dxva2.dll)"]
+        WmiMonitor["WMI root\\WMI<br/>(WmiLight)"]
+    end
+
+    subgraph Identifiers["Monitor Identifiers"]
+        HMONITOR["HMONITOR<br/>(Logical Monitor Handle)"]
+        GdiDeviceName["GDI Device Name<br/>(e.g., \\\\.\\DISPLAY1)"]
+        PhysicalHandle["Physical Monitor Handle<br/>(IntPtr for DDC/CI)"]
+        DevicePath["Device Path<br/>(Unique per target)"]
+        HardwareId["Hardware ID<br/>(e.g., DEL41B4)"]
+        InstanceName["WMI Instance Name<br/>(e.g., DISPLAY\\BOE0900\\...)"]
+        MonitorNumber["Monitor Number<br/>(1-based, matches Windows Settings)"]
+    end
+
+    EnumDisplayMonitors --> HMONITOR
+    HMONITOR --> GdiDeviceName
+    GetPhysicalMonitors --> PhysicalHandle
+
+    QueryDisplayConfig --> GdiDeviceName
+    QueryDisplayConfig --> DevicePath
+    QueryDisplayConfig --> HardwareId
+    QueryDisplayConfig --> MonitorNumber
+
+    WmiMonitor --> InstanceName
+    InstanceName --> HardwareId
+
+    style HMONITOR fill:#e3f2fd
+    style GdiDeviceName fill:#fff3e0
+    style PhysicalHandle fill:#c8e6c9
+    style DevicePath fill:#f3e5f5
+    style HardwareId fill:#ffccbc
+    style InstanceName fill:#ffe0b2
+    style MonitorNumber fill:#b2dfdb
+```
+
+#### Identifier Definitions
+
+| Identifier | Source | Format | Example | Scope |
+|------------|--------|--------|---------|-------|
+| **HMONITOR** | `EnumDisplayMonitors` | `IntPtr` | `0x00010001` | Logical monitor (may represent multiple physical monitors in clone mode) |
+| **GDI Device Name** | `GetMonitorInfo` / `QueryDisplayConfig` | String | `\\.\DISPLAY1` | Adapter output; multiple targets can share same GDI name in mirror mode |
+| **Physical Monitor Handle** | `GetPhysicalMonitorsFromHMONITOR` | `IntPtr` | `0x00000B14` | DDC/CI communication handle; valid for `GetVCPFeature` / `SetVCPFeature` |
+| **Device Path** | `QueryDisplayConfig` | String | `\\?\DISPLAY#DEL41B4#5&12a3b4c&0&UID123#{...}` | Unique per target; used as primary key in `MonitorDisplayInfo` |
+| **Hardware ID** | EDID (via `QueryDisplayConfig`) | String | `DEL41B4` | Manufacturer (3-char PnP ID) + Product Code (4-char hex); identifies monitor model |
+| **WMI Instance Name** | `WmiMonitorBrightness` | String | `DISPLAY\BOE0900\4&10fd3ab1&0&UID265988_0` | WMI object identifier; contains hardware ID in second segment |
+| **Monitor Number** | `QueryDisplayConfig` path index | Integer | `1`, `2`, `3` | 1-based; matches Windows Settings → Display → "Identify" feature |
+
+#### DDC/CI Monitor Discovery Flow
+
+```mermaid
+sequenceDiagram
+    participant App as PowerDisplay
+    participant Enum as EnumDisplayMonitors
+    participant Info as GetMonitorInfo
+    participant QDC as QueryDisplayConfig
+    participant Phys as GetPhysicalMonitors
+    participant DDC as DDC/CI (I2C)
+
+    App->>Enum: EnumDisplayMonitors(callback)
+    Enum-->>App: HMONITOR handles
+
+    loop For each HMONITOR
+        App->>Info: GetMonitorInfo(hMonitor)
+        Info-->>App: GDI Device Name (e.g., "\\.\DISPLAY1")
+
+        App->>Phys: GetPhysicalMonitorsFromHMONITOR(hMonitor)
+        Phys-->>App: Physical Monitor Handle(s) + Description
+    end
+
+    App->>QDC: QueryDisplayConfig(QDC_ONLY_ACTIVE_PATHS)
+    QDC-->>App: MonitorDisplayInfo[] (DevicePath, GdiDeviceName, HardwareId, MonitorNumber)
+
+    Note over App: Match Physical Handles to MonitorDisplayInfo<br/>using GDI Device Name
+
+    loop For each Physical Handle
+        App->>DDC: GetCapabilitiesStringLength(handle)
+        DDC-->>App: Capabilities length
+        App->>DDC: CapabilitiesRequestAndCapabilitiesReply(handle)
+        DDC-->>App: Capabilities string (MCCS format)
+    end
+
+    Note over App: Create Monitor objects with:<br/>- Handle (Physical Monitor Handle)<br/>- MonitorNumber (from QueryDisplayConfig)<br/>- GdiDeviceName (for rotation APIs)
+```
+
+#### WMI Monitor Discovery Flow
+
+```mermaid
+sequenceDiagram
+    participant App as PowerDisplay
+    participant WMI as WmiLight
+    participant QDC as QueryDisplayConfig
+    participant PnP as PnpIdHelper
+
+    App->>WMI: Query WmiMonitorBrightness
+    WMI-->>App: InstanceName, CurrentBrightness
+
+    Note over App: Extract HardwareId from InstanceName<br/>"DISPLAY\BOE0900\..." → "BOE0900"
+
+    App->>QDC: GetAllMonitorDisplayInfo()
+    QDC-->>App: MonitorDisplayInfo[] (keyed by DevicePath)
+
+    Note over App: Match WMI monitor to QueryDisplayConfig<br/>by comparing HardwareId
+
+    App->>PnP: GetBuiltInDisplayName("BOE0900")
+    PnP-->>App: "BOE Built-in Display"
+
+    Note over App: Create Monitor objects with:<br/>- InstanceName (for WMI queries)<br/>- MonitorNumber (from QueryDisplayConfig)<br/>- GdiDeviceName (for rotation APIs)
+```
+
+#### Key Relationships
+
+##### GDI Device Name ↔ Physical Monitors
+
+```
+HMONITOR (Logical)
+    │
+    ├── GetMonitorInfo() → GDI Device Name "\\.\DISPLAY1"
+    │
+    └── GetPhysicalMonitorsFromHMONITOR()
+            │
+            ├── Physical Monitor 0 (Handle: 0x0B14, Desc: "Dell U2722D")
+            └── Physical Monitor 1 (Handle: 0x0B18, Desc: "Dell U2722D")  [Mirror mode]
+```
+
+In **mirror/clone mode**, multiple physical monitors share the same GDI device name.
+QueryDisplayConfig returns multiple paths with the same `GdiDeviceName` but different
+`DevicePath` values, allowing us to distinguish them.
+
+##### DisplayPort Daisy Chain (MST - Multi-Stream Transport)
+
+**Daisy chaining** allows multiple monitors to be connected in series through a single
+DisplayPort output using MST (Multi-Stream Transport) technology. This creates unique
+challenges for monitor identification.
+
+```
+┌─────────────┐    DP    ┌─────────────┐    DP    ┌─────────────┐
+│   GPU       │─────────▶│  Monitor A  │─────────▶│  Monitor B  │
+│             │          │  (MST Hub)  │          │  (End)      │
+└─────────────┘          └─────────────┘          └─────────────┘
+      │
+      │ Single physical DP port
+      ▼
+ Multiple logical displays (DISPLAY1, DISPLAY2)
+```
+
+**How Windows Handles MST:**
+
+| Aspect | Behavior |
+|--------|----------|
+| **HMONITOR** | Each daisy-chained monitor gets its own HMONITOR |
+| **GDI Device Name** | Each monitor gets a unique GDI name (e.g., `\\.\DISPLAY1`, `\\.\DISPLAY2`) |
+| **Physical Monitor Handle** | Each monitor has its own physical handle for DDC/CI |
+| **Device Path** | Unique for each monitor in the chain |
+| **Hardware ID** | Different if monitors are different models; same if identical models |
+
+**MST vs Clone Mode Comparison:**
+
+```
+MST Daisy Chain (Extended Desktop):
+┌──────────────────────────────────────────────────────────────┐
+│ HMONITOR_1          │ HMONITOR_2          │ HMONITOR_3       │
+│ GDI: \\.\DISPLAY1   │ GDI: \\.\DISPLAY2   │ GDI: \\.\DISPLAY3│
+│ Physical Handle: A  │ Physical Handle: B  │ Physical Handle: C│
+│ DevicePath: unique1 │ DevicePath: unique2 │ DevicePath: unique3│
+└──────────────────────────────────────────────────────────────┘
+Each monitor = independent logical display with unique identifiers
+
+Clone/Mirror Mode:
+┌──────────────────────────────────────────────────────────────┐
+│                      HMONITOR_1                              │
+│                   GDI: \\.\DISPLAY1                          │
+│  Physical Handle: A          Physical Handle: B              │
+│  DevicePath: unique1         DevicePath: unique2             │
+└──────────────────────────────────────────────────────────────┘
+Multiple monitors share same HMONITOR and GDI name
+```
+
+**PowerDisplay Handling of MST:**
+
+1. **Discovery**: `EnumDisplayMonitors` returns separate HMONITOR for each MST monitor
+2. **Physical Handles**: `GetPhysicalMonitorsFromHMONITOR` returns one handle per HMONITOR
+3. **Matching**: QueryDisplayConfig provides unique DevicePath for each MST target
+4. **DDC/CI**: Each monitor in the chain can be controlled independently via its handle
+
+**Identifying Same-Model Monitors in Daisy Chain:**
+
+When multiple identical monitors are daisy-chained (same Hardware ID), PowerDisplay
+distinguishes them using:
+
+- **MonitorNumber**: Different path index in QueryDisplayConfig (1, 2, 3...)
+- **DevicePath**: Unique system-generated path for each target
+- **Monitor.Id**: Format `DDC_{HardwareId}_{MonitorNumber}` ensures uniqueness
+
+Example with two identical Dell U2722D monitors:
+```
+Monitor 1: Id = "DDC_DEL41B4_1", MonitorNumber = 1
+Monitor 2: Id = "DDC_DEL41B4_2", MonitorNumber = 2
+```
+
+##### Connection Mode Summary
+
+| Mode | HMONITOR | GDI Device Name | Physical Handles | Use Case |
+|------|----------|-----------------|------------------|----------|
+| **Standard** (separate cables) | 1 per monitor | Unique per monitor | 1 per HMONITOR | Most common setup |
+| **Clone/Mirror** | 1 shared | Shared | Multiple per HMONITOR | Presentation, duplication |
+| **MST Daisy Chain** | 1 per monitor | Unique per monitor | 1 per HMONITOR | Reduced cable clutter |
+| **USB-C/Thunderbolt Hub** | 1 per monitor | Unique per monitor | 1 per HMONITOR | Laptop docking |
+
+**Key Insight**: From PowerDisplay's perspective, MST daisy chain and standard multi-cable
+setups behave identically - each monitor appears as an independent display with unique
+identifiers. Only clone/mirror mode requires special handling due to shared HMONITOR/GDI names.
+
+##### Hardware ID Composition
+
+```
+Hardware ID: "DEL41B4"
+              ───┬───
+                 │
+    ┌────────────┴────────────┐
+    │                         │
+  "DEL"                    "41B4"
+    │                         │
+  PnP Manufacturer ID      Product Code
+  (3 chars, EDID bytes     (4 hex chars,
+   8-9, compressed)         EDID bytes 10-11)
+```
+
+The **PnP Manufacturer ID** is a 3-character code assigned by Microsoft (formerly UEFI Forum).
+Common laptop display manufacturers:
+
+| PnP ID | Manufacturer |
+|--------|--------------|
+| `BOE` | BOE Technology |
+| `LGD` | LG Display |
+| `AUO` | AU Optronics |
+| `CMN` | Chi Mei Innolux |
+| `SDC` | Samsung Display |
+| `SHP` | Sharp |
+| `LEN` | Lenovo |
+| `DEL` | Dell |
+
+##### WMI Instance Name Parsing
+
+```
+WMI InstanceName: "DISPLAY\BOE0900\4&10fd3ab1&0&UID265988_0"
+                   ───────┬───────  ──────────┬───────────
+                          │                   │
+                 Segment 1: "DISPLAY"   Segment 3: Device instance
+                 (Constant prefix)
+                          │
+                 Segment 2: "BOE0900"
+                          │
+                   Hardware ID
+                   (Used for matching with QueryDisplayConfig)
+```
+
+##### Monitor Number (Windows Display Settings)
+
+The `MonitorNumber` in PowerDisplay corresponds exactly to the number shown in:
+- Windows Settings → System → Display → "Identify" button
+- The number overlay that appears on each display
+
+This is derived from the **path index** in `QueryDisplayConfig`:
+- `paths[0]` → Monitor 1
+- `paths[1]` → Monitor 2
+- etc.
+
+#### Display Rotation and GDI Device Name
+
+The `ChangeDisplaySettingsEx` API requires the **GDI Device Name** to target a specific display:
+
+```cpp
+// Correct: Target specific display by GDI name
+ChangeDisplaySettingsEx("\\.\DISPLAY2", &devMode, NULL, 0, NULL);
+
+// Wrong: NULL affects primary display only
+ChangeDisplaySettingsEx(NULL, &devMode, NULL, 0, NULL);
+```
+
+PowerDisplay stores `GdiDeviceName` in each `Monitor` object specifically for rotation operations.
+
+#### Cross-Reference Summary
+
+| PowerDisplay Property | DDC/CI Source | WMI Source |
+|-----------------------|---------------|------------|
+| `Monitor.Id` | `"DDC_{HardwareId}_{MonitorNumber}"` | `"WMI_{HardwareId}_{MonitorNumber}"` |
+| `Monitor.Handle` | Physical Monitor Handle | N/A (uses InstanceName) |
+| `Monitor.InstanceName` | N/A | WMI InstanceName |
+| `Monitor.GdiDeviceName` | QueryDisplayConfig | QueryDisplayConfig |
+| `Monitor.MonitorNumber` | QueryDisplayConfig path index | QueryDisplayConfig (matched by HardwareId) |
+| `Monitor.Name` | EDID FriendlyName or Description | PnpIdHelper.GetBuiltInDisplayName() |
 
 ---
 
@@ -553,13 +916,12 @@ flowchart TB
     end
 
     subgraph PowerDisplayModule["PowerDisplay Module (C#)"]
-        subgraph Listener["LightSwitchListener Service"]
-            EventWait["WaitAny([lightEvent, darkEvent])<br/>(Background Thread)"]
-            ReadSettings["ReadProfileFromLightSwitchSettings(isLightMode)"]
-            ThemeChangedEvent["ThemeChanged Event"]
+        subgraph App["PowerDisplay App"]
+            EventWaiter["NativeEventWaiter<br/>(Background Thread)"]
+            LightSwitchSvc["LightSwitchService<br/>(Static Helper)"]
+            MainViewModel["MainViewModel"]
         end
 
-        MainViewModel["MainViewModel"]
         ProfileService["ProfileService"]
         MonitorVMs["MonitorViewModels"]
         Controllers["IMonitorController"]
@@ -586,13 +948,12 @@ flowchart TB
     NotifyPD -->|"isLight=true"| LightEvent
     NotifyPD -->|"isLight=false"| DarkEvent
 
-    %% PowerDisplay flow - theme determined from event, not registry
-    LightEvent -->|"WaitAny index=0"| EventWait
-    DarkEvent -->|"WaitAny index=1"| EventWait
-    EventWait -->|"isLightMode from event"| ReadSettings
-    ReadSettings -->|"Get profile for theme"| LSSettingsJson
-    ReadSettings --> ThemeChangedEvent
-    ThemeChangedEvent --> MainViewModel
+    %% PowerDisplay flow - theme determined from event
+    LightEvent -->|"Event signaled"| EventWaiter
+    DarkEvent -->|"Event signaled"| EventWaiter
+    EventWaiter -->|"isLightMode"| LightSwitchSvc
+    LightSwitchSvc -->|"GetProfileForTheme()"| LSSettingsJson
+    LightSwitchSvc -->|"Profile name"| MainViewModel
     MainViewModel -->|"LoadProfiles()"| ProfileService
     ProfileService <--> PDProfilesJson
     MainViewModel -->|"ApplyProfileAsync()"| MonitorVMs
@@ -601,6 +962,7 @@ flowchart TB
 
     style LightSwitchModule fill:#ffccbc
     style PowerDisplayModule fill:#c8e6c9
+    style App fill:#a5d6a7
     style WindowsEvents fill:#e3f2fd
     style FileSystem fill:#fffde7
 ```
@@ -803,7 +1165,8 @@ sequenceDiagram
     participant System as Windows System
     participant LightSwitch as LightSwitchStateManager (C++)
     participant WinEvent as Windows Events
-    participant Listener as LightSwitchListener
+    participant EventWaiter as NativeEventWaiter
+    participant LSSvc as LightSwitchService
     participant MainVM as MainViewModel
     participant ProfileService
     participant MonitorVM as MonitorViewModel
@@ -825,24 +1188,21 @@ sequenceDiagram
         LightSwitch->>WinEvent: SetEvent("Local\\PowerToys_LightSwitch_DarkTheme")
     end
 
-    Note over Listener: Background thread waiting<br/>on both Light and Dark events
-    Listener->>WinEvent: WaitAny([lightEvent, darkEvent]) returns index
+    Note over EventWaiter: Background thread waiting<br/>on both Light and Dark events
+    EventWaiter->>WinEvent: WaitAny([lightEvent, darkEvent]) returns index
 
-    Note over Listener: Theme determined from event:<br/>index 0 = Light, index 1 = Dark
-    Listener->>Listener: ProcessThemeChange(isLightMode)
-    Listener->>Listener: ReadProfileFromLightSwitchSettings(isLightMode)
-    Note over Listener: Read LightSwitch/settings.json<br/>Get profile for known theme
+    Note over EventWaiter: Theme determined from event:<br/>index 0 = Light, index 1 = Dark
+    EventWaiter->>LSSvc: GetProfileForTheme(isLightMode)
+    LSSvc->>LSSvc: Read LightSwitch/settings.json
+    LSSvc-->>EventWaiter: profileName (or null)
 
-    Listener->>MainVM: ThemeChanged?.Invoke(ThemeChangedEventArgs)
+    EventWaiter->>MainVM: Dispatch to UI thread with profileName
 
-    MainVM->>MainVM: OnLightSwitchThemeChanged()
     MainVM->>ProfileService: LoadProfiles()
     ProfileService-->>MainVM: PowerDisplayProfiles
 
-    MainVM->>ProfileService: GetProfile(profileName)
-    ProfileService-->>MainVM: PowerDisplayProfile
-
-    MainVM->>MainVM: ApplyProfileAsync(profile)
+    MainVM->>MainVM: Find profile by name
+    MainVM->>MainVM: ApplyProfileAsync(profile.MonitorSettings)
 
     loop For each ProfileMonitorSetting
         MainVM->>MainVM: Find MonitorViewModel by InternalName
@@ -870,6 +1230,12 @@ sequenceDiagram
             MainVM->>MonitorVM: SetColorTemperatureAsync(vcpValue)
             MonitorVM->>Controller: SetColorTemperatureAsync(monitor, vcpValue)
             Controller->>Monitor: SetVCPFeature(0x14, vcpValue)
+        end
+
+        alt Orientation specified
+            MainVM->>MonitorVM: SetOrientationAsync(orientation)
+            MonitorVM->>Controller: SetRotationAsync(monitor, orientation)
+            Controller->>Monitor: ChangeDisplaySettingsEx
         end
     end
 
@@ -988,31 +1354,76 @@ classDiagram
     class Monitor {
         +string Id
         +string Name
-        +string HardwareId
-        +string DeviceKey
         +string CommunicationMethod
+        +string InstanceName
+        +string GdiDeviceName
+        +int MonitorNumber
         +int CurrentBrightness
+        +int MinBrightness
+        +int MaxBrightness
         +int CurrentContrast
         +int CurrentVolume
         +int CurrentColorTemperature
         +int CurrentInputSource
+        +int Orientation
+        +bool IsAvailable
+        +bool SupportsContrast
+        +bool SupportsVolume
+        +bool SupportsColorTemperature
+        +bool SupportsInputSource
+        +MonitorCapabilities Capabilities
         +VcpCapabilities VcpCapabilitiesInfo
-        +IntPtr PhysicalMonitorHandle
-        +PropertyChanged event
+        +string CapabilitiesRaw
+        +IntPtr Handle
+        +DateTime LastUpdate
+        +UpdateStatus(brightness, isAvailable)
     }
 
     class VcpCapabilities {
-        +Dictionary~int, VcpCodeInfo~ SupportedVcpCodes
-        +string RawCapabilitiesString
+        +string Raw
+        +string Model
+        +string Type
+        +string Protocol
+        +string MccsVersion
+        +List~byte~ SupportedCommands
+        +Dictionary~byte, VcpCodeInfo~ SupportedVcpCodes
+        +List~WindowCapability~ Windows
+        +bool HasWindowSupport
         +SupportsVcpCode(code) bool
-        +GetSupportedValues(code) List~int~
+        +GetVcpCodeInfo(code) VcpCodeInfo
+        +GetSupportedValues(code) IReadOnlyList~int~
+        +GetVcpCodesAsHexStrings() List~string~
     }
 
     class VcpCodeInfo {
-        +int Code
+        +byte Code
         +string Name
-        +List~int~ SupportedValues
-        +bool IsReadOnly
+        +IReadOnlyList~int~ SupportedValues
+        +bool HasDiscreteValues
+        +bool IsContinuous
+        +string FormattedCode
+        +string FormattedTitle
+    }
+
+    class VcpFeatureValue {
+        +int Current
+        +int Minimum
+        +int Maximum
+        +bool IsValid
+        +ToPercentage() int
+        +static Invalid VcpFeatureValue
+    }
+
+    class MonitorCapabilities {
+        <<flags enum>>
+        None
+        Brightness
+        Contrast
+        Volume
+        ColorTemperature
+        InputSource
+        Wmi
+        DdcCi
     }
 
     class PowerDisplayProfile {
@@ -1024,23 +1435,22 @@ classDiagram
     }
 
     class ProfileMonitorSetting {
-        +string HardwareId
         +string MonitorInternalName
+        +int MonitorNumber
         +int? Brightness
         +int? Contrast
         +int? Volume
         +int? ColorTemperatureVcp
+        +int? Orientation
     }
 
     class PowerDisplayProfiles {
         +List~PowerDisplayProfile~ Profiles
         +DateTime LastUpdated
-        +GetProfile(name) PowerDisplayProfile
-        +SetProfile(profile)
-        +RemoveProfile(name)
     }
 
     Monitor "1" --> "0..1" VcpCapabilities
+    Monitor "1" --> "1" MonitorCapabilities
     VcpCapabilities "1" --> "*" VcpCodeInfo
     PowerDisplayProfiles "1" --> "*" PowerDisplayProfile
     PowerDisplayProfile "1" --> "*" ProfileMonitorSetting
@@ -1111,14 +1521,25 @@ classDiagram
 
 ## Future Considerations
 
+### Already Implemented (removed from backlog)
+
+- **Monitor Hot-Plug**: `DisplayChangeWatcher` uses WinRT DeviceWatcher + DisplayMonitor API with 1-second debouncing
+- **Display Rotation**: `DisplayRotationService` uses Windows ChangeDisplaySettingsEx API
+- **LightSwitch Integration**: Automatic profile application on theme changes via `LightSwitchService`
+- **Monitor Identification**: Overlay windows showing monitor numbers via `IdentifyWindow`
+- **Mirror Mode Support**: Correct orientation sync for multiple monitors sharing the same GDI device name
+
+### Potential Future Enhancements
+
 1. **Hardware Cursor Brightness**: Support for displays with hardware cursor brightness
 2. **Multi-GPU Support**: Better handling of monitors across different GPUs
-3. ~~**Monitor Hot-Plug**: Improved detection and recovery for monitor connect/disconnect~~ **Implemented** - `DisplayChangeWatcher` uses WinRT DeviceWatcher + DisplayMonitor API with 1-second debouncing
-4. **Advanced Color Management**: Integration with Windows Color Management
-5. **Scheduled Profiles**: Time-based automatic profile switching (beyond LightSwitch)
-6. **Monitor Groups**: Ability to control multiple monitors as a single entity
-7. **Remote Control**: Network-based control for multi-system setups
-8. ~~**Display Rotation**: Control display orientation~~ **Implemented** - `DisplayRotationService` uses Windows ChangeDisplaySettingsEx API
+3. **Advanced Color Management**: Integration with Windows Color Management APIs (HDR, ICC profiles)
+4. **Scheduled Profiles**: Time-based automatic profile switching (beyond LightSwitch integration)
+5. **Monitor Groups**: Ability to control multiple monitors as a single entity
+6. **Remote Control**: Network-based control for multi-system setups
+7. **PIP/PBP Control**: Picture-in-Picture and Picture-by-Picture configuration (VcpCapabilities already parses window capabilities)
+8. **Power State Control**: Monitor power on/off via VCP code 0xD6
+9. **Input Source Scheduling**: Automatic input switching based on time or application
 
 ---
 

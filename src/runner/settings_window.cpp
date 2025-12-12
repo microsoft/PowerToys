@@ -323,48 +323,6 @@ void dispatch_received_json(const std::wstring& json_to_parse)
                 Logger::error(L"Failed to process get all hotkey conflicts request");
             }
         }
-        else if (name == L"powerdisplay_response")
-        {
-            try
-            {
-                // Forward PowerDisplay response messages to Settings UI
-                // PowerDisplay sends monitor information via IPC
-                std::unique_lock lock{ ipc_mutex };
-                if (current_settings_ipc)
-                {
-                    current_settings_ipc->send(value.Stringify().c_str());
-                }
-            }
-            catch (...)
-            {
-                Logger::error(L"Failed to forward PowerDisplay response to Settings");
-            }
-        }
-        else if (name == L"powerdisplay_command")
-        {
-            try
-            {
-                // Forward command from Settings UI to PowerDisplay module
-                Logger::trace(L"Received command from Settings UI to PowerDisplay");
-
-                // Find PowerDisplay module and send the command
-                auto moduleIt = modules().find(L"PowerDisplay");
-                if (moduleIt != modules().end())
-                {
-                    // Use call_custom_action to send the command
-                    // The command should contain an action field
-                    moduleIt->second->call_custom_action(value.Stringify().c_str());
-                }
-                else
-                {
-                    Logger::warn(L"PowerDisplay module not found, cannot send command");
-                }
-            }
-            catch (...)
-            {
-                Logger::error(L"Failed to forward command to PowerDisplay");
-            }
-        }
     }
     return;
 }
@@ -1003,30 +961,4 @@ ESettingsWindowNames ESettingsWindowNames_from_string(std::string value)
     }
 
     return ESettingsWindowNames::Dashboard;
-}
-
-// Global function for PowerDisplay module to send messages to Settings UI
-void send_powerdisplay_message_to_settings_ui(const wchar_t* message)
-{
-    try
-    {
-        Logger::trace(L"Sending PowerDisplay message to Settings UI");
-
-        std::unique_lock lock{ ipc_mutex };
-        if (current_settings_ipc)
-        {
-            // Wrap the message in powerdisplay_response format
-            json::JsonObject wrapper;
-            wrapper.SetNamedValue(L"powerdisplay_response", json::JsonValue::Parse(message));
-            current_settings_ipc->send(wrapper.Stringify().c_str());
-        }
-        else
-        {
-            Logger::warn(L"current_settings_ipc is null, cannot send to Settings UI");
-        }
-    }
-    catch (const std::exception&)
-    {
-        Logger::error(L"Exception while sending PowerDisplay message to Settings UI");
-    }
 }
