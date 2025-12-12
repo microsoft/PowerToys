@@ -219,9 +219,6 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
         }
     }
 
-    // Conversion function for x:Bind (AOT-compatible alternative to converters)
-    public Visibility ConvertBoolToVisibility(bool value) => value ? Visibility.Visible : Visibility.Collapsed;
-
     // Property to access IsInteractionEnabled from parent ViewModel
     public bool IsInteractionEnabled => _mainViewModel?.IsInteractionEnabled ?? true;
 

@@ -37,9 +37,6 @@ namespace PowerDisplay
         // Expose ViewModel as property for x:Bind
         public MainViewModel ViewModel => _viewModel ?? throw new InvalidOperationException("ViewModel not initialized");
 
-        // Conversion functions for x:Bind (AOT-compatible alternative to converters)
-        public Visibility ConvertBoolToVisibility(bool value) => value ? Visibility.Visible : Visibility.Collapsed;
-
         public MainWindow()
         {
             try

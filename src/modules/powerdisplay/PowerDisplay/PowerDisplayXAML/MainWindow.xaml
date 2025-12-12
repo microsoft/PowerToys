@@ -4,6 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:animatedVisuals="using:Microsoft.UI.Xaml.Controls.AnimatedVisuals"
     xmlns:animations="using:CommunityToolkit.WinUI.Animations"
+    xmlns:helpers="using:PowerDisplay.Helpers"
     xmlns:local="using:PowerDisplay"
     xmlns:models="using:PowerDisplay.Common.Models"
     xmlns:toolkit="using:CommunityToolkit.WinUI.Controls"
@@ -54,7 +55,7 @@
                             VerticalAlignment="Center"
                             Orientation="Vertical"
                             Spacing="16"
-                            Visibility="{x:Bind ConvertBoolToVisibility(ViewModel.IsScanning), Mode=OneWay}">
+                            Visibility="{x:Bind helpers:VisibilityConverter.BoolToVisibility(ViewModel.IsScanning), Mode=OneWay}">
                             <ProgressRing
                                 Width="24"
                                 Height="24"
@@ -77,7 +78,7 @@
                             IsClosable="False"
                             IsOpen="{x:Bind ViewModel.ShowNoMonitorsMessage, Mode=OneWay}"
                             Severity="Informational"
-                            Visibility="{x:Bind ConvertBoolToVisibility(ViewModel.ShowNoMonitorsMessage), Mode=OneWay}" />
+                            Visibility="{x:Bind helpers:VisibilityConverter.BoolToVisibility(ViewModel.ShowNoMonitorsMessage), Mode=OneWay}" />
 
                         <!--  Content Area  -->
                         <ScrollViewer
@@ -93,7 +94,7 @@
                                 x:Name="MonitorsRepeater"
                                 HorizontalAlignment="Stretch"
                                 ItemsSource="{x:Bind ViewModel.Monitors, Mode=OneWay}"
-                                Visibility="{x:Bind ConvertBoolToVisibility(ViewModel.HasMonitors), Mode=OneWay}">
+                                Visibility="{x:Bind helpers:VisibilityConverter.BoolToVisibility(ViewModel.HasMonitors), Mode=OneWay}">
                                 <ItemsRepeater.Layout>
                                     <StackLayout Orientation="Vertical" Spacing="32" />
                                 </ItemsRepeater.Layout>
@@ -123,7 +124,7 @@
                                                     Content="{ui:FontIcon Glyph=&#xE712;,
                                                                           FontSize=16}"
                                                     Style="{StaticResource SubtleButtonStyle}"
-                                                    Visibility="{x:Bind ConvertBoolToVisibility(ShowInputSource), Mode=OneWay}">
+                                                    Visibility="{x:Bind helpers:VisibilityConverter.BoolToVisibility(ShowInputSource), Mode=OneWay}">
                                                     <Button.Flyout>
                                                         <Flyout>
                                                             <StackPanel Orientation="Vertical">
@@ -200,7 +201,7 @@
                                                 <Grid
                                                     Margin="0,8,0,0"
                                                     HorizontalAlignment="Stretch"
-                                                    Visibility="{x:Bind ConvertBoolToVisibility(ShowContrast), Mode=OneWay}">
+                                                    Visibility="{x:Bind helpers:VisibilityConverter.BoolToVisibility(ShowContrast), Mode=OneWay}">
                                                     <Grid.ColumnDefinitions>
                                                         <ColumnDefinition Width="16" />
                                                         <ColumnDefinition Width="16" />
@@ -232,7 +233,7 @@
                                                 <Grid
                                                     Margin="0,8,0,0"
                                                     HorizontalAlignment="Stretch"
-                                                    Visibility="{x:Bind ConvertBoolToVisibility(ShowVolume), Mode=OneWay}">
+                                                    Visibility="{x:Bind helpers:VisibilityConverter.BoolToVisibility(ShowVolume), Mode=OneWay}">
                                                     <Grid.ColumnDefinitions>
                                                         <ColumnDefinition Width="16" />
                                                         <ColumnDefinition Width="16" />
@@ -265,7 +266,7 @@
                                                 <Grid
                                                     Margin="0,8,0,0"
                                                     HorizontalAlignment="Stretch"
-                                                    Visibility="{x:Bind ConvertBoolToVisibility(ShowRotation), Mode=OneWay}">
+                                                    Visibility="{x:Bind helpers:VisibilityConverter.BoolToVisibility(ShowRotation), Mode=OneWay}">
                                                     <Grid.ColumnDefinitions>
                                                         <ColumnDefinition Width="16" />
                                                         <ColumnDefinition Width="16" />
@@ -363,7 +364,7 @@
                             Content="{ui:FontIcon Glyph=&#xE748;,
                                                   FontSize=16}"
                             Style="{StaticResource SubtleButtonStyle}"
-                            Visibility="{x:Bind ConvertBoolToVisibility(ViewModel.HasProfiles), Mode=OneWay}">
+                            Visibility="{x:Bind helpers:VisibilityConverter.BoolToVisibility(ViewModel.HasProfiles), Mode=OneWay}">
                             <Button.Flyout>
                                 <Flyout x:Name="ProfilesFlyout">
                                     <ListView
