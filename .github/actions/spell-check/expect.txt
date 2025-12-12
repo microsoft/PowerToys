@@ -236,7 +236,6 @@ clientside
 CLIPBOARDUPDATE
 CLIPCHILDREN
 CLIPSIBLINGS
-CLITo
 closesocket
 clp
 CLSCTX
@@ -378,7 +377,6 @@ debugbreak
 decryptor
 Dedup
 Deduplicator
-Deeplink
 DEFAULTBOOTSTRAPPERINSTALLFOLDER
 DEFAULTCOLOR
 DEFAULTFLAGS
@@ -727,6 +725,7 @@ HKPD
 HKU
 HMD
 hmenu
+HMON
 hmodule
 hmonitor
 homies
@@ -898,6 +897,7 @@ KILLFOCUS
 killrunner
 kmph
 kvp
+KVM
 Kybd
 LARGEICON
 lastcodeanalysissucceeded
@@ -1133,7 +1133,6 @@ MWBEx
 MYICON
 NAMECHANGE
 Nanjing
-Notavailable
 namespaceanddescendants
 nao
 NCACTIVATE
@@ -1877,7 +1876,6 @@ tlbimp
 tlc
 tmain
 TNP
-toolgood
 Toolhelp
 toolwindow
 TOPDOWNDIB
@@ -1939,7 +1937,6 @@ Uniquifies
 unitconverter
 unittests
 UNLEN
-Uninitializes
 UNORM
 unremapped
 Unsubscribes
@@ -1978,7 +1975,6 @@ vcgtq
 VCINSTALLDIR
 Vcp
 vcp
-vcpcodes
 vcpname
 Vcpkg
 VCRT

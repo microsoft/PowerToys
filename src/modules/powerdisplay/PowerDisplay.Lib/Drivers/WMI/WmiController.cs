@@ -9,9 +9,9 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using ManagedCommon;
-using PowerDisplay.Common.Utils;
 using PowerDisplay.Common.Interfaces;
 using PowerDisplay.Common.Models;
+using PowerDisplay.Common.Utils;
 using WmiLight;
 using Monitor = PowerDisplay.Common.Models.Monitor;
 

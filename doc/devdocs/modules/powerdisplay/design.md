@@ -674,7 +674,7 @@ if (result.IsValid)
 }
 ```
 
-> **Detailed Design:** See [MCCS_PARSER_DESIGN.md](./MCCS_PARSER_DESIGN.md) for the complete
+> **Detailed Design:** See [mccsParserDesign.md](./mccsParserDesign.md) for the complete
 > parser architecture, grammar definition, and implementation details.
 
 ---
