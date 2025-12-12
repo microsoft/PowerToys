@@ -32,14 +32,25 @@ internal sealed partial class StartAwakeCommand : InvokableCommand
             var result = _action().GetAwaiter().GetResult();
             if (!result.Success)
             {
-                return CommandResult.ShowToast(result.Error ?? "Failed to start Awake.");
+                return ShowToastKeepOpen(result.Error ?? "Failed to start Awake.");
             }
 
-            return string.IsNullOrWhiteSpace(_successToast) ? CommandResult.Hide() : CommandResult.ShowToast(_successToast);
+            return string.IsNullOrWhiteSpace(_successToast)
+                ? CommandResult.KeepOpen()
+                : ShowToastKeepOpen(_successToast);
         }
         catch (Exception ex)
         {
-            return CommandResult.ShowToast($"Launching Awake failed: {ex.Message}");
+            return ShowToastKeepOpen($"Launching Awake failed: {ex.Message}");
         }
+    }
+
+    private static CommandResult ShowToastKeepOpen(string message)
+    {
+        return CommandResult.ShowToast(new ToastArgs()
+        {
+            Message = message,
+            Result = CommandResult.KeepOpen(),
+        });
     }
 }

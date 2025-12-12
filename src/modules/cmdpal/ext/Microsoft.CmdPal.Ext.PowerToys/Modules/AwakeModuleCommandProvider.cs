@@ -35,6 +35,34 @@ internal sealed class AwakeModuleCommandProvider : ModuleCommandProvider
         }
 
         // Direct commands surfaced in the PowerToys list page.
+        ListItem? statusItem = null;
+        var refreshCommand = new RefreshAwakeStatusCommand(subtitle =>
+        {
+            if (statusItem is not null)
+            {
+                statusItem.Subtitle = subtitle;
+            }
+        });
+
+        var statusNoOp = new NoOpCommand();
+        statusNoOp.Name = "Awake status";
+
+        statusItem = new ListItem(new CommandItem(statusNoOp))
+        {
+            Title = "Awake: Current status",
+            Subtitle = AwakeStatusService.GetStatusSubtitle(),
+            Icon = icon,
+            MoreCommands =
+            [
+                new CommandContextItem(refreshCommand)
+                {
+                    Title = "Refresh status",
+                    Subtitle = "Re-read current Awake state",
+                },
+            ],
+        };
+        items.Add(statusItem);
+
         items.Add(new ListItem(new StartAwakeCommand("Awake: Keep awake indefinitely", () => AwakeService.Instance.SetIndefiniteAsync(), "Awake set to indefinite"))
         {
             Title = "Awake: Keep awake indefinitely",

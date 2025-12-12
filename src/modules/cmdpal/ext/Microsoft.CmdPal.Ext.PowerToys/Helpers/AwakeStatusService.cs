@@ -9,6 +9,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
+using Common.UI;
 
 namespace PowerToysExtension.Helpers;
 
@@ -47,7 +48,7 @@ internal static class AwakeStatusService
         return new AwakeStatusSnapshot(isRunning, mode, settings.Properties.KeepDisplayOn, duration, expiration);
     }
 
-    internal static string BuildSubtitle()
+    internal static string GetStatusSubtitle()
     {
         var snapshot = GetSnapshot();
         if (!snapshot.IsRunning)
@@ -55,16 +56,25 @@ internal static class AwakeStatusService
             return "Awake is idle";
         }
 
+        if (snapshot.Mode == AwakeMode.Passive)
+        {
+            // When the PowerToys Awake module is enabled, the Awake process stays resident
+            // even in passive mode. In that case "idle" is correct. If the module is disabled,
+            // a running process implies a standalone/session keep-awake, so report as active.
+            return ModuleEnablementService.IsModuleEnabled(SettingsDeepLink.SettingsWindow.Awake)
+                ? "Awake is idle"
+                : "Active - session running";
+        }
+
         return snapshot.Mode switch
         {
-            AwakeMode.Passive => "Awake is idle",
-            AwakeMode.Indefinite => snapshot.KeepDisplayOn ? "Active � indefinite (display on)" : "Active � indefinite",
+            AwakeMode.Indefinite => snapshot.KeepDisplayOn ? "Active - indefinite (display on)" : "Active - indefinite",
             AwakeMode.Timed => snapshot.Duration is { } span
-                ? $"Active � timer {FormatDuration(span)}"
-                : "Active � timer",
+                ? $"Active - timer {FormatDuration(span)}"
+                : "Active - timer",
             AwakeMode.Expirable => snapshot.Expiration is { } expiry
-                ? $"Active � until {expiry.ToLocalTime():t}"
-                : "Active � scheduled",
+                ? $"Active - until {expiry.ToLocalTime():t}"
+                : "Active - scheduled",
             _ => "Awake is running",
         };
     }

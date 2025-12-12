@@ -71,14 +71,34 @@ internal static class AwakeCommandsFactory
     {
         var results = new List<IListItem>();
 
-        var statusSubtitle = AwakeStatusService.BuildSubtitle();
-        if (Matches("Current status", statusSubtitle, searchText))
+        var statusSubtitle = AwakeStatusService.GetStatusSubtitle();
+        if (Matches("Awake: Current status", statusSubtitle, searchText))
         {
-            var statusItem = new ListItem(new CommandItem(new Commands.NoOpCommand("Awake status")))
+            ListItem? statusItem = null;
+            var refreshCommand = new RefreshAwakeStatusCommand(subtitle =>
             {
-                Title = "Current status",
+                if (statusItem is not null)
+                {
+                    statusItem.Subtitle = subtitle;
+                }
+            });
+
+            var statusNoOp = new NoOpCommand();
+            statusNoOp.Name = "Awake status";
+
+            statusItem = new ListItem(new CommandItem(statusNoOp))
+            {
+                Title = "Awake: Current status",
                 Subtitle = statusSubtitle,
                 Icon = AwakeIcon,
+                MoreCommands =
+                [
+                    new CommandContextItem(refreshCommand)
+                    {
+                        Title = "Refresh status",
+                        Subtitle = "Re-read current Awake state",
+                    },
+                ],
             };
 
             results.Add(statusItem);

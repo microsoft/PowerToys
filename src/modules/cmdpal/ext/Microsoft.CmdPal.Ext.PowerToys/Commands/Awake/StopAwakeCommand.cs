@@ -22,14 +22,23 @@ internal sealed partial class StopAwakeCommand : InvokableCommand
             var result = AwakeService.Instance.SetOffAsync().GetAwaiter().GetResult();
             if (result.Success)
             {
-                return CommandResult.ShowToast("Awake switched to Off.");
+                return ShowToastKeepOpen("Awake switched to Off.");
             }
 
-            return CommandResult.ShowToast(result.Error ?? "Awake does not appear to be running.");
+            return ShowToastKeepOpen(result.Error ?? "Awake does not appear to be running.");
         }
         catch (Exception ex)
         {
-            return CommandResult.ShowToast($"Failed to switch Awake off: {ex.Message}");
+            return ShowToastKeepOpen($"Failed to switch Awake off: {ex.Message}");
         }
+    }
+
+    private static CommandResult ShowToastKeepOpen(string message)
+    {
+        return CommandResult.ShowToast(new ToastArgs()
+        {
+            Message = message,
+            Result = CommandResult.KeepOpen(),
+        });
     }
 }
