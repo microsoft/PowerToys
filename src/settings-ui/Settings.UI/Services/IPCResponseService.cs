@@ -4,11 +4,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
 
 using Microsoft.PowerToys.Settings.UI.Helpers;
-using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.HotkeyConflicts;
 using Microsoft.PowerToys.Settings.UI.Views;
 using Windows.Data.Json;
@@ -52,9 +49,8 @@ namespace Microsoft.PowerToys.Settings.UI.Services
                     }
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                Debug.WriteLine($"[IPCResponseService] Failed to process IPC message: {ex.Message}");
             }
         }
 
