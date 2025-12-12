@@ -265,21 +265,14 @@ namespace PowerDisplay
         {
             try
             {
-                bool isVisible = IsWindowVisible();
-                Logger.LogInfo($"[ToggleWindow] IsWindowVisible returned: {isVisible}");
-
-                if (isVisible)
+                if (IsWindowVisible())
                 {
-                    Logger.LogInfo("[ToggleWindow] Window is visible, calling HideWindow");
                     HideWindow();
                 }
                 else
                 {
-                    Logger.LogInfo("[ToggleWindow] Window is hidden, calling ShowWindow");
                     ShowWindow();
                 }
-
-                Logger.LogInfo("[ToggleWindow] Toggle completed");
             }
             catch (Exception ex)
             {
@@ -493,8 +486,6 @@ namespace PowerDisplay
                     return;
                 }
 
-                Logger.LogDebug($"[AdjustSize] Starting adjustment, current window size: {_appWindow.Size.Width}x{_appWindow.Size.Height}");
-
                 // Force layout update to ensure proper measurement
                 RootGrid.UpdateLayout();
 
@@ -502,21 +493,13 @@ namespace PowerDisplay
                 var availableWidth = (double)AppConstants.UI.WindowWidth;
                 var contentHeight = GetContentHeight(availableWidth);
 
-                Logger.LogDebug($"[AdjustSize] Content height from measurement: {contentHeight} DIU");
-
                 // Use unified DPI scaling method (consistent with FlyoutWindow pattern)
                 double dpiScale = WindowHelper.GetDpiScale(this);
-                Logger.LogDebug($"[AdjustSize] DPI scale: {dpiScale} ({dpiScale * 100}%)");
-
                 int scaledHeight = WindowHelper.ScaleToPhysicalPixels((int)Math.Ceiling(contentHeight), dpiScale);
-                Logger.LogDebug($"[AdjustSize] Scaled height (physical pixels): {scaledHeight}");
 
                 // Apply maximum height limit (also needs DPI scaling)
                 int maxHeight = WindowHelper.ScaleToPhysicalPixels(AppConstants.UI.MaxWindowHeight, dpiScale);
-                Logger.LogDebug($"[AdjustSize] Max height limit (physical pixels): {maxHeight}");
-
                 scaledHeight = Math.Min(scaledHeight, maxHeight);
-                Logger.LogDebug($"[AdjustSize] Final scaled height after limit: {scaledHeight}");
 
                 // Check if resize is needed
                 // Check if resize is needed
@@ -563,10 +546,9 @@ namespace PowerDisplay
                     windowSize.Height,
                     AppConstants.UI.WindowRightMargin);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                // Window positioning failures are non-critical, just log for diagnostics
-                Logger.LogDebug($"[PositionWindow] Failed to position window: {ex.Message}");
+                // Window positioning failures are non-critical, silently ignore
             }
         }
 
@@ -576,30 +558,22 @@ namespace PowerDisplay
         /// </summary>
         private void Slider_PointerCaptureLost(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
         {
-            Logger.LogDebug("[UI] Slider_PointerCaptureLost event triggered");
-
             var slider = sender as Slider;
             if (slider == null)
             {
-                Logger.LogWarning("[UI] Slider is null in PointerCaptureLost");
                 return;
             }
 
             var propertyName = slider.Tag as string;
             var monitorVm = slider.DataContext as MonitorViewModel;
 
-            Logger.LogDebug($"[UI] Property: {propertyName}, MonitorVM: {(monitorVm != null ? monitorVm.Name : "NULL")}, Value: {slider.Value}");
-
             if (monitorVm == null || propertyName == null)
             {
-                Logger.LogWarning($"[UI] Null check failed - MonitorVM: {monitorVm == null}, PropertyName: {propertyName == null}");
                 return;
             }
 
             // Get final value after drag completes
             int finalValue = (int)slider.Value;
-
-            Logger.LogInfo($"[UI] Updating {propertyName} to {finalValue} for monitor {monitorVm.Name}");
 
             // Now update the ViewModel, which will trigger hardware operation
             switch (propertyName)
@@ -616,8 +590,6 @@ namespace PowerDisplay
                     monitorVm.Volume = finalValue;
                     break;
             }
-
-            Logger.LogDebug($"[UI] ViewModel property {propertyName} updated successfully");
         }
 
         /// <summary>

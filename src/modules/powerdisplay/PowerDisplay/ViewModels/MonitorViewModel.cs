@@ -202,8 +202,6 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
     {
         try
         {
-            Logger.LogDebug($"[{Id}] Applying {propertyName.ToLowerInvariant()}: {value}%");
-
             var result = await setAsyncFunc(Id, value, default);
 
             if (result.IsSuccess)
@@ -518,7 +516,7 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
         _availableInputSources = supportedSources.Select(value => new InputSourceItem
         {
             Value = value,
-            Name = Common.Utils.VcpValueNames.GetName(0x60, value) ?? $"Source 0x{value:X2}",
+            Name = Common.Utils.VcpNames.GetValueName(0x60, value) ?? $"Source 0x{value:X2}",
             SelectionVisibility = value == _monitor.CurrentInputSource ? Visibility.Visible : Visibility.Collapsed,
             MonitorId = _monitor.Id,
         }).ToList();

@@ -165,7 +165,6 @@ namespace PowerDisplay.Common.Drivers.DDC
             // Check if capabilities are already cached
             if (!string.IsNullOrEmpty(monitor.CapabilitiesRaw))
             {
-                Logger.LogDebug($"GetCapabilitiesStringAsync: Using cached capabilities for {monitor.Id} (length: {monitor.CapabilitiesRaw.Length})");
                 return monitor.CapabilitiesRaw;
             }
 
@@ -202,7 +201,6 @@ namespace PowerDisplay.Common.Drivers.DDC
 
                         if (!string.IsNullOrEmpty(capsString))
                         {
-                            Logger.LogDebug($"Got capabilities string (length: {capsString.Length})");
                             return capsString;
                         }
 
@@ -370,7 +368,6 @@ namespace PowerDisplay.Common.Drivers.DDC
                     var monitorInfo = matchingInfos[i];
 
                     candidates.Add(new CandidateMonitor(physicalMonitor.HPhysicalMonitor, physicalMonitor, monitorInfo));
-                    Logger.LogDebug($"DDC: Candidate {gdiDeviceName} -> DevicePath={monitorInfo.DevicePath}, HardwareId={monitorInfo.HardwareId}");
                 }
             }
 
@@ -413,7 +410,6 @@ namespace PowerDisplay.Common.Drivers.DDC
             {
                 if (!capResult.IsValid)
                 {
-                    Logger.LogDebug($"DDC: Handle 0x{candidate.Handle:X} - No DDC/CI brightness support, skipping");
                     continue;
                 }
 
@@ -471,7 +467,6 @@ namespace PowerDisplay.Common.Drivers.DDC
             if (GetVCPFeatureAndVCPFeatureReply(handle, VcpCodeInputSource, IntPtr.Zero, out uint current, out uint _))
             {
                 monitor.CurrentInputSource = (int)current;
-                Logger.LogDebug($"[{monitor.Id}] Input source: {VcpValueNames.GetFormattedName(VcpCodeInputSource, (int)current)}");
             }
         }
 
@@ -483,7 +478,6 @@ namespace PowerDisplay.Common.Drivers.DDC
             if (GetVCPFeatureAndVCPFeatureReply(handle, VcpCodeSelectColorPreset, IntPtr.Zero, out uint current, out uint _))
             {
                 monitor.CurrentColorTemperature = (int)current;
-                Logger.LogDebug($"[{monitor.Id}] Color temperature: {VcpValueNames.GetFormattedName(VcpCodeSelectColorPreset, (int)current)}");
             }
         }
 
@@ -496,7 +490,6 @@ namespace PowerDisplay.Common.Drivers.DDC
             {
                 var brightnessInfo = new VcpFeatureValue((int)current, 0, (int)max);
                 monitor.CurrentBrightness = brightnessInfo.ToPercentage();
-                Logger.LogDebug($"[{monitor.Id}] Brightness: {monitor.CurrentBrightness}%");
             }
         }
 
@@ -522,8 +515,6 @@ namespace PowerDisplay.Common.Drivers.DDC
             {
                 monitor.SupportsColorTemperature = true;
             }
-
-            Logger.LogDebug($"[{monitor.Id}] Capabilities: Contrast={monitor.SupportsContrast}, Volume={monitor.SupportsVolume}, ColorTemp={monitor.SupportsColorTemperature}, InputSource={monitor.SupportsInputSource}");
         }
 
         /// <summary>
@@ -599,28 +590,12 @@ namespace PowerDisplay.Common.Drivers.DDC
                 {
                     if (monitor.Handle == IntPtr.Zero)
                     {
-                        if (featureName != null)
-                        {
-                            Logger.LogDebug($"[{monitor.Id}] Invalid handle for {featureName} read");
-                        }
-
                         return VcpFeatureValue.Invalid;
                     }
 
                     if (GetVCPFeatureAndVCPFeatureReply(monitor.Handle, vcpCode, IntPtr.Zero, out uint current, out uint max))
                     {
-                        if (featureName != null)
-                        {
-                            var valueName = VcpValueNames.GetFormattedName(vcpCode, (int)current);
-                            Logger.LogDebug($"[{monitor.Id}] {featureName} via 0x{vcpCode:X2}: {valueName}");
-                        }
-
                         return new VcpFeatureValue((int)current, 0, (int)max);
-                    }
-
-                    if (featureName != null)
-                    {
-                        Logger.LogWarning($"[{monitor.Id}] Failed to read {featureName} (0x{vcpCode:X2} not supported)");
                     }
 
                     return VcpFeatureValue.Invalid;

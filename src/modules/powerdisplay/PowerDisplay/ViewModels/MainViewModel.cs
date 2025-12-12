@@ -168,11 +168,9 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
         {
             // Get all display areas (virtual desktop regions)
             var displayAreas = DisplayArea.FindAll();
-            Logger.LogDebug($"Found {displayAreas.Count} display areas");
 
             // Get all monitor info from QueryDisplayConfig
             var allDisplayInfo = DdcCiNative.GetAllMonitorDisplayInfo().Values.ToList();
-            Logger.LogDebug($"Found {allDisplayInfo.Count} monitors from QueryDisplayConfig");
 
             // Build GDI name to MonitorNumber(s) mapping
             // Note: In mirror mode, multiple monitors may share the same GdiDeviceName
@@ -194,7 +192,6 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
                 var hMonitor = Win32Interop.GetMonitorFromDisplayId(displayArea.DisplayId);
                 if (hMonitor == IntPtr.Zero)
                 {
-                    Logger.LogDebug($"DisplayArea[{i}]: Failed to get HMONITOR");
                     continue;
                 }
 
@@ -202,7 +199,6 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
                 var monitorInfo = new MonitorInfoEx { CbSize = (uint)sizeof(MonitorInfoEx) };
                 if (!GetMonitorInfo(hMonitor, ref monitorInfo))
                 {
-                    Logger.LogDebug($"DisplayArea[{i}]: GetMonitorInfo failed");
                     continue;
                 }
 
@@ -211,13 +207,11 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
                 // Look up MonitorNumber(s) by GDI device name
                 if (!gdiToMonitorNumbers.TryGetValue(gdiDeviceName, out var monitorNumbers) || monitorNumbers.Count == 0)
                 {
-                    Logger.LogDebug($"DisplayArea[{i}]: No MonitorNumber found for GDI device '{gdiDeviceName}'");
                     continue;
                 }
 
                 // Format display text: single number for normal mode, "1|2" for mirror mode
                 var displayText = string.Join("|", monitorNumbers);
-                Logger.LogDebug($"DisplayArea[{i}]: GDI='{gdiDeviceName}' -> MonitorNumbers=[{displayText}]");
 
                 // Create and position identify window
                 var identifyWindow = new IdentifyWindow(displayText);
@@ -283,9 +277,9 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
         {
             disposable?.Dispose();
         }
-        catch (Exception ex)
+        catch
         {
-            Logger.LogDebug($"Error disposing {name}: {ex.Message}");
+            // Silently ignore dispose errors
         }
     }
 
@@ -298,9 +292,9 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
         {
             action();
         }
-        catch (Exception ex)
+        catch
         {
-            Logger.LogDebug($"Error executing {name}: {ex.Message}");
+            // Silently ignore execution errors
         }
     }
 

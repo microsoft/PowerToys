@@ -66,7 +66,6 @@ public partial class MainViewModel
     {
         if (!skipScanningCheck && IsScanning)
         {
-            Logger.LogDebug("[RefreshMonitorsAsync] Skipping refresh - already scanning");
             return;
         }
 

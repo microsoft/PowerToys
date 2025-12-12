@@ -306,7 +306,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 monitor.VcpCodes,
                 monitor.CapabilitiesRaw);
 
-            monitor.CapabilitiesStatus = result.CapabilitiesStatus;
             monitor.SupportsBrightness = result.SupportsBrightness;
             monitor.SupportsContrast = result.SupportsContrast;
             monitor.SupportsColorTemperature = result.SupportsColorTemperature;

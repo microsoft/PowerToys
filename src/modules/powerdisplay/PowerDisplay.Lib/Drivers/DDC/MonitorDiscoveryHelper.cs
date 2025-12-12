@@ -34,15 +34,12 @@ namespace PowerDisplay.Common.Drivers.DDC
 
             try
             {
-                Logger.LogDebug($"GetPhysicalMonitors: hMonitor=0x{hMonitor:X}");
-
                 if (!GetNumberOfPhysicalMonitorsFromHMONITOR(hMonitor, out uint numMonitors))
                 {
                     Logger.LogWarning($"GetPhysicalMonitors: GetNumberOfPhysicalMonitorsFromHMONITOR failed for 0x{hMonitor:X}");
                     return null;
                 }
 
-                Logger.LogDebug($"GetPhysicalMonitors: numMonitors={numMonitors}");
                 if (numMonitors == 0)
                 {
                     Logger.LogWarning($"GetPhysicalMonitors: numMonitors is 0");
@@ -59,8 +56,6 @@ namespace PowerDisplay.Common.Drivers.DDC
                     }
                 }
 
-                Logger.LogDebug($"GetPhysicalMonitors: GetPhysicalMonitorsFromHMONITOR returned {apiResult}");
-
                 if (!apiResult)
                 {
                     Logger.LogWarning($"GetPhysicalMonitors: GetPhysicalMonitorsFromHMONITOR failed");
@@ -71,7 +66,6 @@ namespace PowerDisplay.Common.Drivers.DDC
                 var validMonitors = new List<PHYSICAL_MONITOR>();
                 for (int i = 0; i < numMonitors; i++)
                 {
-                    string desc = physicalMonitors[i].GetDescription() ?? string.Empty;
                     IntPtr handle = physicalMonitors[i].HPhysicalMonitor;
 
                     if (handle == IntPtr.Zero)
@@ -81,7 +75,6 @@ namespace PowerDisplay.Common.Drivers.DDC
                         continue;
                     }
 
-                    Logger.LogDebug($"GetPhysicalMonitors: [{i}] Handle=0x{handle:X}, Desc='{desc}'");
                     validMonitors.Add(physicalMonitors[i]);
                 }
 
@@ -141,7 +134,6 @@ namespace PowerDisplay.Common.Drivers.DDC
                     Handle = physicalMonitor.HPhysicalMonitor,
                     Capabilities = MonitorCapabilities.DdcCi,
                     CommunicationMethod = "DDC/CI",
-                    CapabilitiesStatus = "unknown",
                     MonitorNumber = monitorInfo.MonitorNumber,
                     GdiDeviceName = monitorInfo.GdiDeviceName ?? string.Empty,
                     Orientation = DmdoDefault, // Orientation will be set separately if needed

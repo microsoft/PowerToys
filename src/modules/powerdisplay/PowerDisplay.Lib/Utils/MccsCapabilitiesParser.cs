@@ -254,8 +254,7 @@ namespace PowerDisplay.Common.Utils
                     }
                     else
                     {
-                        // Store unknown segments for potential future use
-                        Logger.LogDebug($"Unknown capabilities segment: {segment.Name}({segment.Content})");
+                        // Unknown segments are silently ignored
                     }
 
                     break;
@@ -273,7 +272,7 @@ namespace PowerDisplay.Common.Utils
 
             while (parser.TryParseEntry(out var entry))
             {
-                var name = VcpCodeNames.GetName(entry.Code);
+                var name = VcpNames.GetCodeName(entry.Code);
                 vcpCodes[entry.Code] = new VcpCodeInfo(entry.Code, name, entry.Values);
             }
 

@@ -44,7 +44,7 @@ namespace PowerDisplay.Common.Utils
 
         /// <summary>
         /// Formats a color temperature display name.
-        /// Uses VcpValueNames for standard VCP value mappings if no custom name is provided.
+        /// Uses VcpNames for standard VCP value mappings if no custom name is provided.
         /// </summary>
         /// <param name="vcpValue">The VCP value.</param>
         /// <param name="customName">Optional custom name from capabilities string.</param>
@@ -60,7 +60,7 @@ namespace PowerDisplay.Common.Utils
             }
 
             // Fall back to standard VCP value name from shared library
-            var standardName = VcpValueNames.GetName(NativeConstants.VcpCodeSelectColorPreset, vcpValue);
+            var standardName = VcpNames.GetValueName(NativeConstants.VcpCodeSelectColorPreset, vcpValue);
             if (standardName != null)
             {
                 return $"{standardName} ({hexValue})";
@@ -78,7 +78,7 @@ namespace PowerDisplay.Common.Utils
         /// <returns>Formatted display name with "Custom" indicator.</returns>
         public static string FormatCustomColorTemperatureDisplayName(int vcpValue)
         {
-            var standardName = VcpValueNames.GetName(NativeConstants.VcpCodeSelectColorPreset, vcpValue);
+            var standardName = VcpNames.GetValueName(NativeConstants.VcpCodeSelectColorPreset, vcpValue);
             return string.IsNullOrEmpty(standardName)
                 ? $"Custom (0x{vcpValue:X2})"
                 : $"{standardName} (0x{vcpValue:X2}) - Custom";

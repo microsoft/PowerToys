@@ -210,8 +210,6 @@ namespace PowerDisplay.Common.Services
 
                 // Clear dirty flag after successful save
                 _isDirty = false;
-
-                Logger.LogDebug($"[State] Saved state for {monitorCount} monitors");
             }
             catch (Exception ex)
             {
@@ -231,8 +229,6 @@ namespace PowerDisplay.Common.Services
 
                 // Write to disk synchronously - safe for Dispose
                 File.WriteAllText(_stateFilePath, json);
-
-                Logger.LogDebug($"[State] Saved state for {monitorCount} monitors (sync)");
             }
             catch (Exception ex)
             {

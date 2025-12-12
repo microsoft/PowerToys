@@ -71,12 +71,10 @@ namespace PowerDisplay.Common.Services
                 }
 
                 int currentOrientation = devMode.DmDisplayOrientation;
-                Logger.LogDebug($"SetRotation: Current orientation={currentOrientation}, target={newOrientation}");
 
                 // If already at target orientation, return success
                 if (currentOrientation == newOrientation)
                 {
-                    Logger.LogDebug($"SetRotation: Already at target orientation {newOrientation}");
                     return MonitorOperationResult.Success();
                 }
 
@@ -91,7 +89,6 @@ namespace PowerDisplay.Common.Services
                     int temp = devMode.DmPelsWidth;
                     devMode.DmPelsWidth = devMode.DmPelsHeight;
                     devMode.DmPelsHeight = temp;
-                    Logger.LogDebug($"SetRotation: Swapped dimensions to {devMode.DmPelsWidth}x{devMode.DmPelsHeight}");
                 }
 
                 // 3. Set new orientation
@@ -106,8 +103,6 @@ namespace PowerDisplay.Common.Services
                     Logger.LogError($"SetRotation: Test failed for {gdiDeviceName}: {errorMsg}");
                     return MonitorOperationResult.Failure($"Display settings test failed: {errorMsg}", testResult);
                 }
-
-                Logger.LogDebug($"SetRotation: Test passed, applying settings...");
 
                 // 5. Apply the settings (without CDS_UPDATEREGISTRY to make it temporary)
                 int result = ChangeDisplaySettingsEx(gdiDeviceName, &devMode, IntPtr.Zero, 0, IntPtr.Zero);
@@ -147,15 +142,13 @@ namespace PowerDisplay.Common.Services
 
                 if (!EnumDisplaySettings(gdiDeviceName, EnumCurrentSettings, &devMode))
                 {
-                    Logger.LogDebug($"GetCurrentOrientation: EnumDisplaySettings failed for {gdiDeviceName}");
                     return -1;
                 }
 
                 return devMode.DmDisplayOrientation;
             }
-            catch (Exception ex)
+            catch
             {
-                Logger.LogDebug($"GetCurrentOrientation: Exception for {gdiDeviceName}: {ex.Message}");
                 return -1;
             }
         }

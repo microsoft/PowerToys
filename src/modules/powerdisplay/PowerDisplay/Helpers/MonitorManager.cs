@@ -238,7 +238,6 @@ namespace PowerDisplay.Helpers
             }
             catch (Exception ex) when (ex is not OutOfMemoryException)
             {
-                Logger.LogDebug($"GetColorTemperatureAsync failed: {ex.Message}");
                 return VcpFeatureValue.Invalid;
             }
         }
@@ -277,7 +276,6 @@ namespace PowerDisplay.Helpers
             }
             catch (Exception ex) when (ex is not OutOfMemoryException)
             {
-                Logger.LogDebug($"GetInputSourceAsync failed: {ex.Message}");
                 return VcpFeatureValue.Invalid;
             }
         }
@@ -348,7 +346,6 @@ namespace PowerDisplay.Helpers
                 var currentOrientation = _rotationService.GetCurrentOrientation(monitor.GdiDeviceName);
                 if (currentOrientation >= 0 && currentOrientation != monitor.Orientation)
                 {
-                    Logger.LogDebug($"[MonitorManager] RefreshAllOrientations: {monitor.Id} orientation updated from {monitor.Orientation} to {currentOrientation}");
                     monitor.Orientation = currentOrientation;
                     monitor.LastUpdate = DateTime.Now;
                 }

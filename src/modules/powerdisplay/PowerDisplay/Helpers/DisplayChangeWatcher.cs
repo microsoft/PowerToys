@@ -55,7 +55,6 @@ public sealed partial class DisplayChangeWatcher : IDisposable
 
         if (_isRunning)
         {
-            Logger.LogDebug("[DisplayChangeWatcher] Already running, ignoring Start()");
             return;
         }
 
@@ -125,11 +124,10 @@ public sealed partial class DisplayChangeWatcher : IDisposable
             // Ignore events during initial enumeration or after disposal
             if (_disposed || !_initialEnumerationComplete)
             {
-                Logger.LogDebug($"[DisplayChangeWatcher] Ignoring add: {args.Name} (disposed={_disposed}, enumComplete={_initialEnumerationComplete})");
                 return;
             }
 
-            Logger.LogInfo($"[DisplayChangeWatcher] Display added: {args.Name} ({args.Id})");
+            Logger.LogInfo($"[DisplayChangeWatcher] Display added: {args.Name}");
             ScheduleDisplayChanged();
         });
     }
@@ -142,19 +140,16 @@ public sealed partial class DisplayChangeWatcher : IDisposable
             // Ignore events during initial enumeration or after disposal
             if (_disposed || !_initialEnumerationComplete)
             {
-                Logger.LogDebug($"[DisplayChangeWatcher] Ignoring remove: {args.Id} (disposed={_disposed}, enumComplete={_initialEnumerationComplete})");
                 return;
             }
 
-            Logger.LogInfo($"[DisplayChangeWatcher] Display removed: {args.Id}");
+            Logger.LogInfo("[DisplayChangeWatcher] Display removed");
             ScheduleDisplayChanged();
         });
     }
 
     private void OnDeviceUpdated(DeviceWatcher sender, DeviceInformationUpdate args)
     {
-        Logger.LogDebug($"[DisplayChangeWatcher] Display updated: {args.Id}");
-
         // Only trigger refresh for significant updates, not every property change.
         // For now, we'll skip updates to avoid excessive refreshes.
         // The Added and Removed events are the primary triggers for monitor changes.

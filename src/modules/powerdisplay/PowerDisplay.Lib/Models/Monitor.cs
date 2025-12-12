@@ -91,7 +91,7 @@ namespace PowerDisplay.Common.Models
         /// Gets human-readable color temperature preset name (e.g., "6500K (0x05)", "sRGB (0x01)")
         /// </summary>
         public string ColorTemperaturePresetName =>
-            VcpValueNames.GetFormattedName(0x14, CurrentColorTemperature);
+            VcpNames.GetFormattedValueName(0x14, CurrentColorTemperature);
 
         /// <summary>
         /// Gets or sets a value indicating whether the monitor supports color temperature adjustment via VCP 0x14
@@ -122,7 +122,7 @@ namespace PowerDisplay.Common.Models
         /// Returns just the name without hex value for cleaner UI display.
         /// </summary>
         public string InputSourceName =>
-            VcpValueNames.GetName(0x60, CurrentInputSource) ?? $"Source 0x{CurrentInputSource:X2}";
+            VcpNames.GetValueName(0x60, CurrentInputSource) ?? $"Source 0x{CurrentInputSource:X2}";
 
         /// <summary>
         /// Gets a value indicating whether the monitor supports input source switching via VCP 0x60
@@ -134,11 +134,6 @@ namespace PowerDisplay.Common.Models
         /// </summary>
         public System.Collections.Generic.IReadOnlyList<int>? SupportedInputSources =>
             VcpCapabilitiesInfo?.GetSupportedValues(0x60);
-
-        /// <summary>
-        /// Gets or sets capabilities detection status: "available", "unavailable", or "unknown"
-        /// </summary>
-        public string CapabilitiesStatus { get; set; } = "unknown";
 
         /// <summary>
         /// Gets a value indicating whether the monitor supports contrast adjustment

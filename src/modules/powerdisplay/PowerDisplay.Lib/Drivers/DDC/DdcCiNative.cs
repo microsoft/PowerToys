@@ -93,7 +93,6 @@ namespace PowerDisplay.Common.Drivers.DDC
                 var capsString = TryGetCapabilitiesString(hPhysicalMonitor);
                 if (string.IsNullOrEmpty(capsString))
                 {
-                    Logger.LogDebug($"FetchCapabilities: Failed to get capabilities string for handle 0x{hPhysicalMonitor:X}");
                     return DdcCiValidationResult.Invalid;
                 }
 
@@ -102,19 +101,15 @@ namespace PowerDisplay.Common.Drivers.DDC
                 var capabilities = parseResult.Capabilities;
                 if (capabilities == null || capabilities.SupportedVcpCodes.Count == 0)
                 {
-                    Logger.LogDebug($"FetchCapabilities: Failed to parse capabilities string for handle 0x{hPhysicalMonitor:X}");
                     return DdcCiValidationResult.Invalid;
                 }
 
                 // Check if brightness (VCP 0x10) is supported - determines DDC/CI validity
                 bool supportsBrightness = capabilities.SupportsVcpCode(NativeConstants.VcpCodeBrightness);
-
-                Logger.LogDebug($"FetchCapabilities: Handle 0x{hPhysicalMonitor:X} - BrightnessSupport={supportsBrightness}, VcpCodes={capabilities.SupportedVcpCodes.Count}");
                 return new DdcCiValidationResult(supportsBrightness, capsString, capabilities);
             }
             catch (Exception ex) when (ex is not OutOfMemoryException)
             {
-                Logger.LogDebug($"FetchCapabilities: Exception for handle 0x{hPhysicalMonitor:X}: {ex.Message}");
                 return DdcCiValidationResult.Invalid;
             }
         }
@@ -157,7 +152,6 @@ namespace PowerDisplay.Common.Drivers.DDC
             }
             catch (Exception ex) when (ex is not OutOfMemoryException)
             {
-                Logger.LogDebug($"TryGetCapabilitiesString failed: {ex.Message}");
                 return null;
             }
         }
@@ -191,7 +185,6 @@ namespace PowerDisplay.Common.Drivers.DDC
             }
             catch (Exception ex) when (ex is not OutOfMemoryException)
             {
-                Logger.LogDebug($"GetSourceGdiDeviceName failed: {ex.Message}");
             }
 
             return null;
@@ -238,7 +231,6 @@ namespace PowerDisplay.Common.Drivers.DDC
             }
             catch (Exception ex) when (ex is not OutOfMemoryException)
             {
-                Logger.LogDebug($"GetTargetDeviceInfo failed: {ex.Message}");
             }
 
             return (null, null, null);
@@ -308,7 +300,6 @@ namespace PowerDisplay.Common.Drivers.DDC
                     var gdiDeviceName = GetSourceGdiDeviceName(path.SourceInfo.AdapterId, path.SourceInfo.Id);
                     if (string.IsNullOrEmpty(gdiDeviceName))
                     {
-                        Logger.LogDebug($"QueryDisplayConfig path[{i}]: Failed to get GDI device name");
                         continue;
                     }
 
@@ -318,7 +309,6 @@ namespace PowerDisplay.Common.Drivers.DDC
                     // Use device path as key - unique per target, supports mirror mode
                     if (string.IsNullOrEmpty(devicePath))
                     {
-                        Logger.LogDebug($"QueryDisplayConfig path[{i}]: Failed to get device path");
                         continue;
                     }
 
@@ -332,13 +322,10 @@ namespace PowerDisplay.Common.Drivers.DDC
                         TargetId = path.TargetInfo.Id,
                         MonitorNumber = i + 1, // 1-based, matches Windows Display Settings
                     };
-
-                    Logger.LogDebug($"QueryDisplayConfig path[{i}]: DevicePath={devicePath}, GdiName={gdiDeviceName}, HardwareId={hardwareId}, FriendlyName={friendlyName}");
                 }
             }
             catch (Exception ex) when (ex is not OutOfMemoryException)
             {
-                Logger.LogDebug($"GetAllMonitorDisplayInfo failed: {ex.Message}");
             }
 
             return monitorInfo;

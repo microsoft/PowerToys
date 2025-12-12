@@ -66,11 +66,10 @@ namespace PowerDisplay.Common.Drivers.DDC
                 try
                 {
                     DestroyPhysicalMonitor(handle);
-                    Logger.LogDebug($"DDC: Cleaned up unused handle 0x{handle:X}");
                 }
-                catch (Exception ex)
+                catch
                 {
-                    Logger.LogWarning($"DDC: Failed to destroy handle 0x{handle:X}: {ex.Message}");
+                    // Silently ignore cleanup failures
                 }
             }
         }
@@ -91,11 +90,10 @@ namespace PowerDisplay.Common.Drivers.DDC
                     try
                     {
                         DestroyPhysicalMonitor(handle);
-                        Logger.LogDebug($"Released physical monitor handle 0x{handle:X}");
                     }
-                    catch (Exception ex)
+                    catch
                     {
-                        Logger.LogWarning($"Failed to destroy physical monitor handle 0x{handle:X}: {ex.Message}");
+                        // Silently ignore cleanup failures
                     }
                 }
             }

@@ -129,7 +129,6 @@ namespace PowerDisplay.Common.Drivers.WMI
             // Check if match was found (struct default has null/empty HardwareId)
             if (!string.IsNullOrEmpty(match.HardwareId))
             {
-                Logger.LogDebug($"WMI: Matched HardwareId '{hardwareId}' to MonitorNumber {match.MonitorNumber}, GdiDeviceName={match.GdiDeviceName}");
                 return match;
             }
 
@@ -162,7 +161,6 @@ namespace PowerDisplay.Common.Drivers.WMI
                         }
 
                         // No match found - monitor may have been disconnected
-                        Logger.LogDebug($"WMI GetBrightness: No monitor found with InstanceName '{monitor.InstanceName}'");
                     }
                     catch (WmiException ex)
                     {
@@ -296,7 +294,6 @@ namespace PowerDisplay.Common.Drivers.WMI
 
                             // Get display name from PnP manufacturer ID (e.g., "Lenovo Built-in Display")
                             var displayName = PnpIdHelper.GetBuiltInDisplayName(hardwareId);
-                            Logger.LogDebug($"WMI: Found internal display '{hardwareId}' -> '{displayName}'");
 
                             var monitor = new Monitor
                             {

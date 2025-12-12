@@ -536,7 +536,7 @@ public partial class MainViewModel
         else if (info.HasDiscreteValues)
         {
             var formattedValues = info.SupportedValues
-                .Select(v => Common.Utils.VcpValueNames.GetFormattedName(code, v))
+                .Select(v => Common.Utils.VcpNames.GetFormattedValueName(code, v))
                 .ToList();
             result.Values = $"Values: {string.Join(", ", formattedValues)}";
             result.HasValues = true;
@@ -547,7 +547,7 @@ public partial class MainViewModel
                 .Select(v => new Microsoft.PowerToys.Settings.UI.Library.VcpValueInfo
                 {
                     Value = $"0x{v:X2}",
-                    Name = Common.Utils.VcpValueNames.GetName(code, v),
+                    Name = Common.Utils.VcpNames.GetValueName(code, v),
                 })
                 .ToList();
         }

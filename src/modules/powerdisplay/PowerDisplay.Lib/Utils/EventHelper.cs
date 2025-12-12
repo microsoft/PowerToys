@@ -34,7 +34,6 @@ namespace PowerDisplay.Common.Utils
                     EventResetMode.AutoReset,
                     eventName);
                 eventHandle.Set();
-                Logger.LogDebug($"[EventHelper] Signaled event: {eventName}");
                 return true;
             }
             catch (Exception ex)

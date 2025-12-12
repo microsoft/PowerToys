@@ -46,12 +46,7 @@ namespace PowerDisplay.Common.Services
         {
             lock (_lock)
             {
-                var (profiles, message) = LoadProfilesInternal();
-                if (!string.IsNullOrEmpty(message))
-                {
-                    Logger.LogInfo($"{LogPrefix} {message}");
-                }
-
+                var (profiles, _) = LoadProfilesInternal();
                 return profiles;
             }
         }
@@ -72,12 +67,7 @@ namespace PowerDisplay.Common.Services
                     return false;
                 }
 
-                var (success, message) = SaveProfilesInternal(profiles);
-                if (!string.IsNullOrEmpty(message))
-                {
-                    Logger.LogInfo($"{LogPrefix} {message}");
-                }
-
+                var (success, _) = SaveProfilesInternal(profiles);
                 return success;
             }
         }

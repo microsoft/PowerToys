@@ -43,7 +43,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         private bool _supportsColorTemperature;
         private bool _supportsVolume;
         private bool _supportsInputSource;
-        private string _capabilitiesStatus = "unknown"; // "available", "unavailable", or "unknown"
 
         // Cached color temperature presets (computed from VcpCodesFormatted)
         private ObservableCollection<ColorPresetItem> _availableColorPresetsCache;
@@ -609,21 +608,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
-        [JsonPropertyName("capabilitiesStatus")]
-        public string CapabilitiesStatus
-        {
-            get => _capabilitiesStatus;
-            set
-            {
-                if (_capabilitiesStatus != value)
-                {
-                    _capabilitiesStatus = value;
-                    OnPropertyChanged();
-                    OnPropertyChanged(nameof(ShowCapabilitiesWarning));
-                }
-            }
-        }
-
         /// <summary>
         /// Available color temperature presets computed from VcpCodesFormatted (VCP code 0x14).
         /// This is a computed property that parses the VCP capabilities data on-demand.
@@ -740,7 +724,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public bool HasCapabilities => !string.IsNullOrEmpty(_capabilitiesRaw);
 
         [JsonIgnore]
-        public bool ShowCapabilitiesWarning => _capabilitiesStatus == "unavailable";
+        public bool ShowCapabilitiesWarning => _communicationMethod.Contains("WMI", StringComparison.OrdinalIgnoreCase);
 
         [JsonIgnore]
         public string BrightnessTooltip => _supportsBrightness ? string.Empty : "Brightness control not supported by this monitor";
@@ -816,7 +800,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             SupportsColorTemperature = other.SupportsColorTemperature;
             SupportsVolume = other.SupportsVolume;
             SupportsInputSource = other.SupportsInputSource;
-            CapabilitiesStatus = other.CapabilitiesStatus;
             MonitorNumber = other.MonitorNumber;
         }
 

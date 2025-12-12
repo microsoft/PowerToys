@@ -30,8 +30,6 @@ namespace PowerDisplay.Common.Utils
 
             public bool SupportsInputSource { get; init; }
 
-            public string CapabilitiesStatus { get; init; }
-
             public static FeatureSupportResult Unavailable => new()
             {
                 SupportsBrightness = false,
@@ -39,7 +37,6 @@ namespace PowerDisplay.Common.Utils
                 SupportsColorTemperature = false,
                 SupportsVolume = false,
                 SupportsInputSource = false,
-                CapabilitiesStatus = "unavailable",
             };
         }
 
@@ -69,7 +66,6 @@ namespace PowerDisplay.Common.Utils
                 SupportsColorTemperature = vcpCodeInts.Contains(NativeConstants.VcpCodeSelectColorPreset),
                 SupportsVolume = vcpCodeInts.Contains(NativeConstants.VcpCodeVolume),
                 SupportsInputSource = vcpCodeInts.Contains(NativeConstants.VcpCodeInputSource),
-                CapabilitiesStatus = "available",
             };
         }
 
