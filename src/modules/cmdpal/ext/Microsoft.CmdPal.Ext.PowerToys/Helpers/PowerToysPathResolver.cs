@@ -16,7 +16,7 @@ internal static class PowerToysPathResolver
     private const string PowerToysProtocolKey = @"Software\Classes\powertoys";
     private const string PowerToysUserKey = @"Software\Microsoft\PowerToys";
 
-    internal static string? GetPowerToysInstallPath()
+    internal static string GetPowerToysInstallPath()
     {
         var perUser = GetInstallPathFromRegistry(RegistryHive.CurrentUser);
         if (!string.IsNullOrEmpty(perUser))
@@ -27,24 +27,24 @@ internal static class PowerToysPathResolver
         return GetInstallPathFromRegistry(RegistryHive.LocalMachine);
     }
 
-    internal static string? TryResolveExecutable(string executableName)
+    internal static string TryResolveExecutable(string executableName)
     {
         if (string.IsNullOrEmpty(executableName))
         {
-            return null;
+            return string.Empty;
         }
 
         var baseDirectory = GetPowerToysInstallPath();
         if (string.IsNullOrEmpty(baseDirectory))
         {
-            return null;
+            return string.Empty;
         }
 
         var candidate = Path.Combine(baseDirectory, executableName);
-        return File.Exists(candidate) ? candidate : null;
+        return File.Exists(candidate) ? candidate : string.Empty;
     }
 
-    private static string? GetInstallPathFromRegistry(RegistryHive hive)
+    private static string GetInstallPathFromRegistry(RegistryHive hive)
     {
         try
         {
@@ -70,41 +70,41 @@ internal static class PowerToysPathResolver
             // Ignore registry access failures and fall back to other checks.
         }
 
-        return null;
+        return string.Empty;
     }
 
-    private static string? GetPathFromProtocolRegistration(RegistryKey baseKey)
+    private static string GetPathFromProtocolRegistration(RegistryKey baseKey)
     {
         try
         {
             using var commandKey = baseKey.OpenSubKey($@"{PowerToysProtocolKey}\shell\open\command");
             if (commandKey == null)
             {
-                return null;
+                return string.Empty;
             }
 
-            var command = commandKey.GetValue(string.Empty)?.ToString();
+            var command = commandKey.GetValue(string.Empty)?.ToString() ?? string.Empty;
             if (string.IsNullOrEmpty(command))
             {
-                return null;
+                return string.Empty;
             }
 
             return ExtractInstallDirectory(command);
         }
         catch
         {
-            return null;
+            return string.Empty;
         }
     }
 
-    private static string? GetPathFromUserRegistration(RegistryKey baseKey)
+    private static string GetPathFromUserRegistration(RegistryKey baseKey)
     {
         try
         {
             using var userKey = baseKey.OpenSubKey(PowerToysUserKey);
             if (userKey == null)
             {
-                return null;
+                return string.Empty;
             }
 
             var installedValue = userKey.GetValue("installed");
@@ -118,14 +118,14 @@ internal static class PowerToysPathResolver
             // Ignore registry access failures.
         }
 
-        return null;
+        return string.Empty;
     }
 
-    private static string? ExtractInstallDirectory(string command)
+    private static string ExtractInstallDirectory(string command)
     {
         if (string.IsNullOrEmpty(command))
         {
-            return null;
+            return string.Empty;
         }
 
         try
@@ -138,7 +138,7 @@ internal static class PowerToysPathResolver
                     var quotedPath = command.Substring(1, closingQuote - 1);
                     if (File.Exists(quotedPath))
                     {
-                        return Path.GetDirectoryName(quotedPath);
+                        return Path.GetDirectoryName(quotedPath) ?? string.Empty;
                     }
                 }
             }
@@ -147,7 +147,7 @@ internal static class PowerToysPathResolver
                 var parts = command.Split(' ');
                 if (parts.Length > 0 && File.Exists(parts[0]))
                 {
-                    return Path.GetDirectoryName(parts[0]);
+                    return Path.GetDirectoryName(parts[0]) ?? string.Empty;
                 }
             }
         }
@@ -156,6 +156,6 @@ internal static class PowerToysPathResolver
             // Fall through and report no path.
         }
 
-        return null;
+        return string.Empty;
     }
 }

@@ -16,16 +16,16 @@ namespace PowerToysExtension.Commands;
 internal sealed partial class LaunchModuleCommand : InvokableCommand
 {
     private readonly string _moduleName;
-    private readonly string? _eventName;
-    private readonly string? _executableName;
-    private readonly string? _arguments;
+    private readonly string _eventName;
+    private readonly string _executableName;
+    private readonly string _arguments;
 
     internal LaunchModuleCommand(
         string moduleName,
-        string? eventName = null,
-        string? executableName = null,
-        string? arguments = null,
-        string? displayName = null)
+        string eventName = "",
+        string executableName = "",
+        string arguments = "",
+        string displayName = "")
     {
         if (string.IsNullOrWhiteSpace(moduleName))
         {
@@ -33,9 +33,9 @@ internal sealed partial class LaunchModuleCommand : InvokableCommand
         }
 
         _moduleName = moduleName;
-        _eventName = eventName;
-        _executableName = executableName;
-        _arguments = arguments;
+        _eventName = eventName ?? string.Empty;
+        _executableName = executableName ?? string.Empty;
+        _arguments = arguments ?? string.Empty;
         Name = string.IsNullOrWhiteSpace(displayName) ? $"Launch {moduleName}" : displayName;
     }
 

@@ -18,38 +18,21 @@ internal sealed class AwakeModuleCommandProvider : ModuleCommandProvider
     {
         var items = new List<ListItem>();
         var module = SettingsDeepLink.SettingsWindow.Awake;
-        var settingsTitle = module.ModuleDisplayName();
+        var title = module.ModuleDisplayName();
         var icon = PowerToysResourcesHelper.IconFromSettingsIcon("Awake.png");
         var moduleIcon = module.ModuleIcon();
 
-        if (!ModuleEnablementService.IsModuleEnabled(module))
+        items.Add(new ListItem(new OpenInSettingsCommand(module, title))
         {
-            items.Add(new ListItem(new OpenInSettingsCommand(module, settingsTitle))
-            {
-                Title = settingsTitle,
-                Subtitle = "Open Awake settings",
-                Icon = moduleIcon,
-            });
-
-            return items;
-        }
-
-        // Settings entry with quick actions in MoreCommands.
-        items.Add(new ListItem(new OpenInSettingsCommand(module, settingsTitle))
-        {
-            Title = settingsTitle,
+            Title = title,
             Subtitle = "Open Awake settings",
             Icon = moduleIcon,
-            MoreCommands =
-            [
-                new CommandContextItem(new StartAwakeCommand("Awake: Keep awake indefinitely", () => AwakeService.Instance.SetIndefiniteAsync(), "Awake set to indefinite")),
-                new CommandContextItem(new StartAwakeCommand("Awake: Keep awake for 30 minutes", () => AwakeService.Instance.SetTimedAsync(30), "Awake set for 30 minutes")),
-                new CommandContextItem(new StartAwakeCommand("Awake: Keep awake for 1 hour", () => AwakeService.Instance.SetTimedAsync(60), "Awake set for 1 hour")),
-                new CommandContextItem(new StartAwakeCommand("Awake: Keep awake for 2 hours", () => AwakeService.Instance.SetTimedAsync(120), "Awake set for 2 hours")),
-                new CommandContextItem(new StopAwakeCommand()),
-                new CommandContextItem(new AwakeProcessListPage()),
-            ],
         });
+
+        if (!ModuleEnablementService.IsModuleEnabled(module))
+        {
+            return items;
+        }
 
         // Direct commands surfaced in the PowerToys list page.
         items.Add(new ListItem(new StartAwakeCommand("Awake: Keep awake indefinitely", () => AwakeService.Instance.SetIndefiniteAsync(), "Awake set to indefinite"))

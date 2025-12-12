@@ -24,12 +24,30 @@ internal static class ModuleEnablementService
     internal static bool IsModuleEnabled(SettingsWindow module)
     {
         var key = GetEnabledKey(module);
-        return string.IsNullOrEmpty(key) || IsKeyEnabled(key);
+        if (string.IsNullOrEmpty(key))
+        {
+            var globalRule = GpoEnablementService.GetUtilityEnabledValue(string.Empty);
+            return globalRule != GpoRuleConfiguredValue.Disabled;
+        }
+
+        return IsKeyEnabled(key);
     }
 
     internal static bool IsKeyEnabled(string enabledKey)
     {
         if (string.IsNullOrWhiteSpace(enabledKey))
+        {
+            return true;
+        }
+
+        var gpoPolicy = GetGpoPolicyForEnabledKey(enabledKey);
+        var gpoRule = GpoEnablementService.GetUtilityEnabledValue(gpoPolicy);
+        if (gpoRule == GpoRuleConfiguredValue.Disabled)
+        {
+            return false;
+        }
+
+        if (gpoRule == GpoRuleConfiguredValue.Enabled)
         {
             return true;
         }
@@ -73,7 +91,7 @@ internal static class ModuleEnablementService
         return result;
     }
 
-    private static string? GetEnabledKey(SettingsWindow module) => module switch
+    private static string GetEnabledKey(SettingsWindow module) => module switch
     {
         SettingsWindow.Awake => "Awake",
         SettingsWindow.AdvancedPaste => "AdvancedPaste",
@@ -103,6 +121,42 @@ internal static class ModuleEnablementService
         SettingsWindow.ZoomIt => "ZoomIt",
         SettingsWindow.CmdNotFound => "CmdNotFound",
         SettingsWindow.CmdPal => "CmdPal",
-        _ => null,
+        _ => string.Empty,
+    };
+
+    private static string GetGpoPolicyForEnabledKey(string enabledKey) => enabledKey switch
+    {
+        "AdvancedPaste" => "ConfigureEnabledUtilityAdvancedPaste",
+        "AlwaysOnTop" => "ConfigureEnabledUtilityAlwaysOnTop",
+        "Awake" => "ConfigureEnabledUtilityAwake",
+        "CmdNotFound" => "ConfigureEnabledUtilityCmdNotFound",
+        "CmdPal" => "ConfigureEnabledUtilityCmdPal",
+        "ColorPicker" => "ConfigureEnabledUtilityColorPicker",
+        "CropAndLock" => "ConfigureEnabledUtilityCropAndLock",
+        "CursorWrap" => "ConfigureEnabledUtilityCursorWrap",
+        "EnvironmentVariables" => "ConfigureEnabledUtilityEnvironmentVariables",
+        "FancyZones" => "ConfigureEnabledUtilityFancyZones",
+        "FileLocksmith" => "ConfigureEnabledUtilityFileLocksmith",
+        "FindMyMouse" => "ConfigureEnabledUtilityFindMyMouse",
+        "Hosts" => "ConfigureEnabledUtilityHostsFileEditor",
+        "Image Resizer" => "ConfigureEnabledUtilityImageResizer",
+        "Keyboard Manager" => "ConfigureEnabledUtilityKeyboardManager",
+        "LightSwitch" => "ConfigureEnabledUtilityLightSwitch",
+        "Measure Tool" => "ConfigureEnabledUtilityScreenRuler",
+        "MouseHighlighter" => "ConfigureEnabledUtilityMouseHighlighter",
+        "MouseJump" => "ConfigureEnabledUtilityMouseJump",
+        "MousePointerCrosshairs" => "ConfigureEnabledUtilityMousePointerCrosshairs",
+        "MouseWithoutBorders" => "ConfigureEnabledUtilityMouseWithoutBorders",
+        "NewPlus" => "ConfigureEnabledUtilityNewPlus",
+        "Peek" => "ConfigureEnabledUtilityPeek",
+        "PowerRename" => "ConfigureEnabledUtilityPowerRename",
+        "PowerToys Run" => "ConfigureEnabledUtilityPowerLauncher",
+        "QuickAccent" => "ConfigureEnabledUtilityQuickAccent",
+        "RegistryPreview" => "ConfigureEnabledUtilityRegistryPreview",
+        "Shortcut Guide" => "ConfigureEnabledUtilityShortcutGuide",
+        "TextExtractor" => "ConfigureEnabledUtilityTextExtractor",
+        "Workspaces" => "ConfigureEnabledUtilityWorkspaces",
+        "ZoomIt" => "ConfigureEnabledUtilityZoomIt",
+        _ => string.Empty,
     };
 }

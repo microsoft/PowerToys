@@ -38,13 +38,13 @@ internal sealed partial class CopyColorCommand : InvokableCommand
         }
     }
 
-    private static string? TryGetLastColor()
+    private static string TryGetLastColor()
     {
         var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
         var historyPath = Path.Combine(localAppData, "Microsoft", "PowerToys", "ColorPicker", "colorHistory.json");
         if (!File.Exists(historyPath))
         {
-            return null;
+            return string.Empty;
         }
 
         var lines = File.ReadAllLines(historyPath);
@@ -64,6 +64,6 @@ internal sealed partial class CopyColorCommand : InvokableCommand
             }
         }
 
-        return null;
+        return string.Empty;
     }
 }

@@ -10,7 +10,6 @@ using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using PowerToysExtension.Commands;
 using PowerToysExtension.Helpers;
-using PowerToysExtension.Pages;
 using Workspaces.ModuleServices;
 using WorkspacesCsharpLibrary.Data;
 
@@ -26,31 +25,19 @@ internal sealed class WorkspacesModuleCommandProvider : ModuleCommandProvider
         var icon = PowerToysResourcesHelper.IconFromSettingsIcon("Workspaces.png");
         var moduleIcon = module.ModuleIcon();
 
-        if (!ModuleEnablementService.IsModuleEnabled(module))
-        {
-            items.Add(new ListItem(new OpenInSettingsCommand(module, title))
-            {
-                Title = title,
-                Subtitle = "Open Workspaces settings",
-                Icon = moduleIcon,
-            });
-
-            return items;
-        }
-
-        // Settings entry plus common actions.
         items.Add(new ListItem(new OpenInSettingsCommand(module, title))
         {
             Title = title,
             Subtitle = "Open Workspaces settings",
             Icon = moduleIcon,
-            MoreCommands =
-            [
-                new CommandContextItem(new WorkspacesListPage()),
-                new CommandContextItem(new OpenWorkspaceEditorCommand()),
-            ],
         });
 
+        if (!ModuleEnablementService.IsModuleEnabled(module))
+        {
+            return items;
+        }
+
+        // Settings entry plus common actions.
         items.Add(new ListItem(new OpenWorkspaceEditorCommand())
         {
             Title = "Workspaces: Open editor",

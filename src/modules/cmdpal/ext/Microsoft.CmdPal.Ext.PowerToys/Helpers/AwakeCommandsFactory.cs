@@ -67,7 +67,7 @@ internal static class AwakeCommandsFactory
         moreCommands.Add(stopContext);
     }
 
-    internal static IListItem[] GetSessionItems(string? searchText)
+    internal static IListItem[] GetSessionItems(string searchText)
     {
         var results = new List<IListItem>();
 
@@ -170,7 +170,7 @@ internal static class AwakeCommandsFactory
         return results.ToArray();
     }
 
-    internal static IListItem[] GetProcessItems(string? searchText)
+    internal static IListItem[] GetProcessItems(string searchText)
     {
         var results = new List<IListItem>();
 
@@ -195,7 +195,7 @@ internal static class AwakeCommandsFactory
                 }
 
                 var title = $"{name} ({process.Id})";
-                if (!Matches(title, null, searchText))
+                if (!Matches(title, string.Empty, searchText))
                 {
                     continue;
                 }
@@ -226,7 +226,7 @@ internal static class AwakeCommandsFactory
         return results.ToArray();
     }
 
-    internal static bool Matches(string? source, string? subtitle, string? searchText)
+    internal static bool Matches(string source, string subtitle, string searchText)
     {
         if (string.IsNullOrWhiteSpace(searchText))
         {
@@ -236,9 +236,9 @@ internal static class AwakeCommandsFactory
         return Contains(source, searchText) || Contains(subtitle, searchText);
     }
 
-    private static bool Contains(string? source, string? searchText)
+    private static bool Contains(string source, string searchText)
     {
-        return !string.IsNullOrEmpty(source) && source.Contains(searchText!, StringComparison.CurrentCultureIgnoreCase);
+        return !string.IsNullOrEmpty(source) && source.Contains(searchText, StringComparison.CurrentCultureIgnoreCase);
     }
 
     private static string FormatDuration(TimeSpan span)
@@ -289,5 +289,5 @@ internal static class AwakeCommandsFactory
         }
     }
 
-    private sealed record AwakeCommandDefinition(string Title, string Subtitle, Func<Task<OperationResult>> Action, string? Toast);
+    private sealed record AwakeCommandDefinition(string Title, string Subtitle, Func<Task<OperationResult>> Action, string Toast);
 }

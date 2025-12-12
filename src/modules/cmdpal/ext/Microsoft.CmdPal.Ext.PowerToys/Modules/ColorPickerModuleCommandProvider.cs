@@ -21,48 +21,32 @@ internal sealed class ColorPickerModuleCommandProvider : ModuleCommandProvider
 
         var commands = new List<ListItem>();
 
-        if (ModuleEnablementService.IsModuleEnabled(module))
+        commands.Add(new ListItem(new OpenInSettingsCommand(module, title))
         {
-            // Quick actions under MoreCommands.
-            var more = new List<CommandContextItem>
-            {
-                new CommandContextItem(new OpenColorPickerCommand()),
-                new CommandContextItem(new CopyColorCommand()),
-                new CommandContextItem(new ColorPickerSavedColorsPage()),
-            };
+            Title = title,
+            Subtitle = "Open Color Picker settings",
+            Icon = icon,
+        });
 
-            commands.Add(new ListItem(new OpenInSettingsCommand(module, title))
-            {
-                Title = title,
-                Subtitle = "Open Color Picker settings",
-                Icon = icon,
-                MoreCommands = more.ToArray(),
-            });
-
-            // Direct entries in the module list.
-            commands.Add(new ListItem(new OpenColorPickerCommand())
-            {
-                Title = "Open Color Picker",
-                Subtitle = "Start a color pick session",
-                Icon = icon,
-            });
-
-            commands.Add(new ListItem(new CommandItem(new ColorPickerSavedColorsPage()))
-            {
-                Title = "Saved colors",
-                Subtitle = "Browse and copy saved colors",
-                Icon = icon,
-            });
-        }
-        else
+        if (!ModuleEnablementService.IsModuleEnabled(module))
         {
-            commands.Add(new ListItem(new OpenInSettingsCommand(module, title))
-            {
-                Title = title,
-                Subtitle = "Open Color Picker settings",
-                Icon = icon,
-            });
+            return commands;
         }
+
+        // Direct entries in the module list.
+        commands.Add(new ListItem(new OpenColorPickerCommand())
+        {
+            Title = "Open Color Picker",
+            Subtitle = "Start a color pick session",
+            Icon = icon,
+        });
+
+        commands.Add(new ListItem(new CommandItem(new ColorPickerSavedColorsPage()))
+        {
+            Title = "Saved colors",
+            Subtitle = "Browse and copy saved colors",
+            Icon = icon,
+        });
 
         return commands;
     }

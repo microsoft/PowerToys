@@ -13,15 +13,15 @@ namespace PowerToysExtension.Commands;
 internal sealed partial class StartAwakeCommand : InvokableCommand
 {
     private readonly Func<Task<OperationResult>> _action;
-    private readonly string? _successToast;
+    private readonly string _successToast;
 
-    internal StartAwakeCommand(string title, Func<Task<OperationResult>> action, string? successToast = null)
+    internal StartAwakeCommand(string title, Func<Task<OperationResult>> action, string successToast = "")
     {
         ArgumentNullException.ThrowIfNull(action);
         ArgumentException.ThrowIfNullOrWhiteSpace(title);
 
         _action = action;
-        _successToast = successToast;
+        _successToast = successToast ?? string.Empty;
         Name = title;
     }
 

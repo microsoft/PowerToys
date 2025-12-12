@@ -14,7 +14,7 @@ internal sealed partial class OpenInSettingsCommand : InvokableCommand
 {
     private readonly SettingsDeepLink.SettingsWindow _module;
 
-    internal OpenInSettingsCommand(SettingsDeepLink.SettingsWindow module, string? title = null)
+    internal OpenInSettingsCommand(SettingsDeepLink.SettingsWindow module, string title = "")
     {
         _module = module;
         Name = string.IsNullOrWhiteSpace(title) ? $"Open {_module} settings" : title;
