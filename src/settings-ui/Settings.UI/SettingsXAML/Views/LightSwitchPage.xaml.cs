@@ -8,6 +8,7 @@ using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
 using System.Threading.Tasks;
+using Common.UI;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
@@ -185,7 +186,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             // need to save the values
             this.ViewModel.Latitude = latitude.ToString(CultureInfo.InvariantCulture);
             this.ViewModel.Longitude = longitude.ToString(CultureInfo.InvariantCulture);
-            this.ViewModel.SyncButtonInformation = $"{this.ViewModel.Latitude}°, {this.ViewModel.Longitude}°";
+            this.ViewModel.SyncButtonInformation = $"{this.ViewModel.Latitude}ï¿½, {this.ViewModel.Longitude}ï¿½";
 
             var result = SunCalc.CalculateSunriseSunset(latitude, longitude, DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day);
 
@@ -390,6 +391,11 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 this.TimelineCard.Visibility = Visibility.Collapsed;
                 this.LocationWarningBar.Visibility = Visibility.Visible;
             }
+        }
+
+        private void NavigatePowerDisplaySettings_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        {
+            ShellPage.Navigate(typeof(PowerDisplayPage));
         }
     }
 }

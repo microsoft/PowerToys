@@ -264,7 +264,61 @@ void LightSwitchStateManager::EvaluateAndApplyIfNeeded()
 
         _state.isSystemLightActive = GetCurrentSystemTheme();
         _state.isAppsLightActive = GetCurrentAppsTheme();
+
+        // Notify PowerDisplay to apply display profile if configured
+        NotifyPowerDisplay(shouldBeLight);
     }
 
     _state.lastTickMinutes = now;
+}
+
+// Notify PowerDisplay module about theme change to apply display profiles
+void LightSwitchStateManager::NotifyPowerDisplay(bool isLight)
+{
+    const auto& settings = LightSwitchSettings::settings();
+
+    // Check if any profile is enabled and configured
+    bool shouldNotify = false;
+
+    if (isLight && settings.enableLightModeProfile && !settings.lightModeProfile.empty())
+    {
+        shouldNotify = true;
+    }
+    else if (!isLight && settings.enableDarkModeProfile && !settings.darkModeProfile.empty())
+    {
+        shouldNotify = true;
+    }
+
+    if (!shouldNotify)
+    {
+        return;
+    }
+
+    try
+    {
+        // Signal PowerDisplay with the specific theme event
+        // Using separate events for light/dark eliminates race conditions where PowerDisplay
+        // might read the registry before LightSwitch has finished updating it
+        const wchar_t* eventName = isLight
+            ? L"Local\\PowerToys_LightSwitch_LightTheme"
+            : L"Local\\PowerToys_LightSwitch_DarkTheme";
+
+        Logger::info(L"[LightSwitchStateManager] Notifying PowerDisplay about theme change (isLight: {})", isLight);
+
+        HANDLE hThemeEvent = CreateEventW(nullptr, FALSE, FALSE, eventName);
+        if (hThemeEvent)
+        {
+            SetEvent(hThemeEvent);
+            CloseHandle(hThemeEvent);
+            Logger::info(L"[LightSwitchStateManager] Theme event signaled to PowerDisplay: {}", eventName);
+        }
+        else
+        {
+            Logger::warn(L"[LightSwitchStateManager] Failed to create theme event (error: {})", GetLastError());
+        }
+    }
+    catch (...)
+    {
+        Logger::error(L"[LightSwitchStateManager] Failed to notify PowerDisplay");
+    }
 }

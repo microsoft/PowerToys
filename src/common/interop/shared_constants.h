@@ -131,6 +131,15 @@ namespace CommonSharedConstants
     const wchar_t ZOOMIT_REFRESH_SETTINGS_EVENT[] = L"Local\\PowerToysZoomIt-RefreshSettingsEvent-f053a563-d519-4b0d-8152-a54489c13324";
     const wchar_t ZOOMIT_EXIT_EVENT[] = L"Local\\PowerToysZoomIt-ExitEvent-36641ce6-df02-4eac-abea-a3fbf9138220";
 
+    // Path to the events used by PowerDisplay
+    const wchar_t SHOW_POWER_DISPLAY_EVENT[] = L"Local\\PowerToysPowerDisplay-ShowEvent-d8a4e0e3-2c5b-4a1c-9e7f-8b3d6c1a2f4e";
+    const wchar_t TOGGLE_POWER_DISPLAY_EVENT[] = L"Local\\PowerToysPowerDisplay-ToggleEvent-5f1a9c3e-7d2b-4e8f-9a6c-3b5d7e9f1a2c";
+    const wchar_t TERMINATE_POWER_DISPLAY_EVENT[] = L"Local\\PowerToysPowerDisplay-TerminateEvent-7b9c2e1f-8a5d-4c3e-9f6b-2a1d8c5e3b7a";
+    const wchar_t REFRESH_POWER_DISPLAY_MONITORS_EVENT[] = L"Local\\PowerToysPowerDisplay-RefreshMonitorsEvent-a3f5c8e7-9d1b-4e2f-8c6a-3b5d7e9f1a2c";
+    const wchar_t SETTINGS_UPDATED_POWER_DISPLAY_EVENT[] = L"Local\\PowerToysPowerDisplay-SettingsUpdatedEvent-2e4d6f8a-1c3b-5e7f-9a1d-4c6e8f0b2d3e";
+    const wchar_t APPLY_COLOR_TEMPERATURE_POWER_DISPLAY_EVENT[] = L"Local\\PowerToysPowerDisplay-ApplyColorTemperatureEvent-4b7e9f2a-3c6d-5a8e-7f1b-9d2e4c6a8b0d";
+    const wchar_t APPLY_PROFILE_POWER_DISPLAY_EVENT[] = L"Local\\PowerToysPowerDisplay-ApplyProfileEvent-6e8a3c9d-4f7b-5d2e-8a1c-3e9f7b6d2a5c";
+
     // used from quick access window
     const wchar_t CMDPAL_SHOW_EVENT[] = L"Local\\PowerToysCmdPal-ShowEvent-62336fcd-8611-4023-9b30-091a6af4cc5a";
     const wchar_t CMDPAL_EXIT_EVENT[] = L"Local\\PowerToysCmdPal-ExitEvent-eb73f6be-3f22-4b36-aee3-62924ba40bfd";
