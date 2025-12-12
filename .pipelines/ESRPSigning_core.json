@@ -206,6 +206,7 @@
             "PowerToys.PowerDisplayModuleInterface.dll",
             "WinUI3Apps\\PowerToys.PowerDisplay.dll",
             "WinUI3Apps\\PowerToys.PowerDisplay.exe",
+            "PowerDisplay.Lib.dll",
 
             "WinUI3Apps\\PowerToys.PowerRenameExt.dll",
             "WinUI3Apps\\PowerToys.PowerRename.exe",
@@ -364,7 +365,9 @@
 
                 "UnitsNet.dll",
                 "UtfUnknown.dll",
-                "Wpf.Ui.dll"
+                "Wpf.Ui.dll",
+                "WmiLight.dll",
+                "WmiLight.Native.dll"
             ],
             "SigningInfo": {
                 "Operations": [
