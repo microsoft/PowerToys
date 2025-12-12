@@ -785,6 +785,8 @@ std::string ESettingsWindowNames_to_string(ESettingsWindowNames value)
         return "PowerRename";
     case ESettingsWindowNames::FileExplorer:
         return "FileExplorer";
+    case ESettingsWindowNames::ScreencastMode:
+        return "ScreencastMode";
     case ESettingsWindowNames::ShortcutGuide:
         return "ShortcutGuide";
     case ESettingsWindowNames::Hosts:
@@ -899,6 +901,10 @@ ESettingsWindowNames ESettingsWindowNames_from_string(std::string value)
     else if (value == "FileExplorer")
     {
         return ESettingsWindowNames::FileExplorer;
+    }
+    else if (value == "ScreencastMode")
+    {
+        return ESettingsWindowNames::ScreencastMode;
     }
     else if (value == "ShortcutGuide")
     {

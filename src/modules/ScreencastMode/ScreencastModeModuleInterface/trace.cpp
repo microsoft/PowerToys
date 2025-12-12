@@ -19,12 +19,10 @@ void Trace::UnregisterProvider()
     TraceLoggingUnregister(g_hProvider);
 }
 
-void Trace::MyEvent()
+void Trace::ScreencastModeEnabled(bool enabled)
 {
     TraceLoggingWrite(
         g_hProvider,
-        "PowerToyName_MyEvent",
-        ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
-        TraceLoggingBoolean(TRUE, "UTCReplace_AppSessionGuid"),
-        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
+        "ScreencastMode_Enabled",
+        TraceLoggingValue(enabled, "Enabled"));
 }

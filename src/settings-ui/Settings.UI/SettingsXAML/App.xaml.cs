@@ -432,6 +432,7 @@ namespace Microsoft.PowerToys.Settings.UI
                 case "PowerRename": return typeof(PowerRenamePage);
                 case "QuickAccent": return typeof(PowerAccentPage);
                 case "FileExplorer": return typeof(PowerPreviewPage);
+                case "ScreencastMode": return typeof(ScreencastModePage);
                 case "ShortcutGuide": return typeof(ShortcutGuidePage);
                 case "PowerOcr": return typeof(PowerOcrPage);
                 case "MeasureTool": return typeof(MeasureToolPage);
