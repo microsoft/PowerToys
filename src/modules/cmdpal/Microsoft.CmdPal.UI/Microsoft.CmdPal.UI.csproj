@@ -25,10 +25,6 @@
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(CIBuild)' != 'true'">
-    <ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
-  </PropertyGroup>
-
   <!-- For debugging purposes, uncomment this block to enable AOT builds -->
    <!--<PropertyGroup>
     <EnableCmdPalAOT>true</EnableCmdPalAOT>

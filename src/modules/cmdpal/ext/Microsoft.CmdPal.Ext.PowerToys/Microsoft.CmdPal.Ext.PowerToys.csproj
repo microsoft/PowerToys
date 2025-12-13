@@ -25,7 +25,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<Content Include="..\..\..\..\settings-ui\Settings.UI\Assets\Settings\Icons\*.png" Link="Assets\%(Filename)%(Extension)">
+		<Content Include="..\..\..\..\settings-ui\Settings.UI\Assets\Settings\Icons\*.png" Link="WinUI3Apps\Assets\Settings\Icons\%(Filename)%(Extension)">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</Content>
 	</ItemGroup>

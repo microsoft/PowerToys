@@ -143,17 +143,6 @@
 	<!-- Removed hard-coded resource exclusion. -->
 
 	<ItemGroup>
-		<!-- Ensure the generated search index is present in the project; only if it exists to prevent CS1566 in clean CI -->
-		<Content Include="$(GeneratedJsonFile)" Condition="Exists('$(GeneratedJsonFile)')">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</Content>
-		<!-- Embed the generated search index; logical name must match PrebuiltIndexResourceName -->
-		<EmbeddedResource Include="$(GeneratedJsonFile)" Condition="Exists('$(GeneratedJsonFile)')">
-			<LogicalName>Microsoft.PowerToys.Settings.UI.Assets.search.index.json</LogicalName>
-		</EmbeddedResource>
-	</ItemGroup>
-
-	<ItemGroup>
 		<None Update="Assets\Settings\icon.ico">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
@@ -213,5 +202,20 @@
 	<Target Name="BuildXamlIndexBeforeSettings" BeforeTargets="CoreCompile" Condition="'$(DesignTimeBuild)' != 'true'">
 		<Message Importance="high" Text="[Settings] Building XamlIndexBuilder prior to compile. Views='$(MSBuildProjectDirectory)\SettingsXAML\Views' Out='$(GeneratedJsonFile)'" />
 		<MSBuild Projects="..\Settings.UI.XamlIndexBuilder\Settings.UI.XamlIndexBuilder.csproj" Targets="Build" Properties="Configuration=$(Configuration);Platform=Any CPU;TargetFramework=net9.0;XamlViewsDir=$(MSBuildProjectDirectory)\SettingsXAML\Views;GeneratedJsonFile=$(GeneratedJsonFile)" />
+
+		<ItemGroup>
+			<_GeneratedSearchIndex Include="$(GeneratedJsonFile)" Condition="Exists('$(GeneratedJsonFile)')" />
+		</ItemGroup>
+		<Message Importance="high" Condition="Exists('$(GeneratedJsonFile)')" Text="[Settings] Search index exists: '%(_GeneratedSearchIndex.FullPath)' (%(_GeneratedSearchIndex.FileSize) bytes)" />
+		<Error Condition="!Exists('$(GeneratedJsonFile)')" Text="[Settings] XamlIndexBuilder did not produce expected search index at '$(GeneratedJsonFile)'." />
+
+		<ItemGroup>
+			<Content Include="$(GeneratedJsonFile)">
+				<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+			</Content>
+			<EmbeddedResource Include="$(GeneratedJsonFile)">
+				<LogicalName>Microsoft.PowerToys.Settings.UI.Assets.search.index.json</LogicalName>
+			</EmbeddedResource>
+		</ItemGroup>
 	</Target>
 </Project>
