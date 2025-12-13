@@ -8,9 +8,15 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 
 public class ProviderSettings
 {
+    // List of built-in fallbacks that should not have global results enabled by default
+    private readonly string[] _excludedBuiltInFallbacks = [
+        "com.microsoft.cmdpal.builtin.indexer.fallback",
+        "com.microsoft.cmdpal.builtin.calculator.fallback",
+        ];
+
     public bool IsEnabled { get; set; } = true;
 
-    public Dictionary<string, bool> FallbackCommands { get; set; } = [];
+    public Dictionary<string, FallbackSettings> FallbackCommands { get; set; } = new();
 
     [JsonIgnore]
     public string ProviderDisplayName { get; set; } = string.Empty;
@@ -39,19 +45,21 @@ public class ProviderSettings
 
         ProviderDisplayName = wrapper.DisplayName;
 
+        if (wrapper.FallbackItems.Length > 0)
+        {
+            foreach (var fallback in wrapper.FallbackItems)
+            {
+                if (!FallbackCommands.ContainsKey(fallback.Id))
+                {
+                    var enableGlobalResults = IsBuiltin && !_excludedBuiltInFallbacks.Contains(fallback.Id);
+                    FallbackCommands[fallback.Id] = new FallbackSettings(enableGlobalResults);
+                }
+            }
+        }
+
         if (string.IsNullOrEmpty(ProviderId))
         {
             throw new InvalidDataException("Did you add a built-in command and forget to set the Id? Make sure you do that!");
         }
-    }
-
-    public bool IsFallbackEnabled(TopLevelViewModel command)
-    {
-        return FallbackCommands.TryGetValue(command.Id, out var enabled) ? enabled : true;
-    }
-
-    public void SetFallbackEnabled(TopLevelViewModel command, bool enabled)
-    {
-        FallbackCommands[command.Id] = enabled;
     }
 }

@@ -205,7 +205,7 @@ namespace Microsoft.CmdPal.UI.ViewModels.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Create a new extension.
+        ///   Looks up a localized string similar to Create extension.
         /// </summary>
         public static string builtin_create_extension_title {
             get {
@@ -349,7 +349,7 @@ namespace Microsoft.CmdPal.UI.ViewModels.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Creates a project for a new Command Palette extension.
+        ///   Looks up a localized string similar to Generate a new Command Palette extension project.
         /// </summary>
         public static string builtin_new_extension_subtitle {
             get {
@@ -358,20 +358,11 @@ namespace Microsoft.CmdPal.UI.ViewModels.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Open Settings.
+        ///   Looks up a localized string similar to Open Command Palette settings.
         /// </summary>
         public static string builtin_open_settings_name {
             get {
                 return ResourceManager.GetString("builtin_open_settings_name", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Open Command Palette settings.
-        /// </summary>
-        public static string builtin_open_settings_subtitle {
-            get {
-                return ResourceManager.GetString("builtin_open_settings_subtitle", resourceCulture);
             }
         }
         
@@ -435,6 +426,15 @@ namespace Microsoft.CmdPal.UI.ViewModels.Properties {
         public static string builtin_settings_extension_n_extensions_installed {
             get {
                 return ResourceManager.GetString("builtin_settings_extension_n_extensions_installed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Fallbacks.
+        /// </summary>
+        public static string fallbacks {
+            get {
+                return ResourceManager.GetString("fallbacks", resourceCulture);
             }
         }
     }

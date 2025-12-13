@@ -1221,6 +1221,7 @@ opensource
 openxmlformats
 ollama
 onnx
+openurl
 OPTIMIZEFORINVOKE
 ORPHANEDDIALOGTITLE
 ORSCANS

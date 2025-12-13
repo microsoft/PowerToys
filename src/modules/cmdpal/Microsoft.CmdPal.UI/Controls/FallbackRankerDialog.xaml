@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UserControl
+    x:Class="Microsoft.CmdPal.UI.Controls.FallbackRankerDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:cpcontrols="using:Microsoft.CmdPal.UI.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+    <ContentDialog
+        x:Name="FallbackRankerContentDialog"
+        Width="420"
+        MinWidth="420"
+        PrimaryButtonText="OK">
+        <ContentDialog.Title>
+            <TextBlock x:Uid="ManageFallbackRank" />
+        </ContentDialog.Title>
+        <ContentDialog.Resources>
+            <x:Double x:Key="ContentDialogMaxWidth">800</x:Double>
+        </ContentDialog.Resources>
+        <Grid Width="560" MinWidth="420">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <TextBlock
+                x:Uid="ManageFallbackOrderDialogDescription"
+                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                TextWrapping="Wrap" />
+            <Rectangle
+                Grid.Row="1"
+                Height="1"
+                Margin="0,16,0,16"
+                HorizontalAlignment="Stretch"
+                Fill="{ThemeResource DividerStrokeColorDefaultBrush}" />
+            <cpcontrols:FallbackRanker
+                x:Name="FallbackRanker"
+                Grid.Row="2"
+                Margin="-24,0,-24,0" />
+        </Grid>
+    </ContentDialog>
+</UserControl>
