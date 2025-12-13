@@ -8,6 +8,7 @@ template <typename T, size_t N>
 class SpscRing
 {
 public:
+    // Attempts to push an item into the queue. Returns false if the queue is full.
     bool try_push(const T &v)
     {       
         auto head = _head.load(std::memory_order_relaxed); // maybe fix pointer types later?
@@ -18,7 +19,7 @@ public:
         _head.store(next, std::memory_order_release);
         return true;
     }
-
+    // Attempts to pop an item from the queue. Returns false if the queue is empty.
     bool try_pop(T &out)
     {
         auto tail = _tail.load(std::memory_order_relaxed);
