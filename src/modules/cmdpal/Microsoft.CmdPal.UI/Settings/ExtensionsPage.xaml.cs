@@ -4,6 +4,7 @@
 
 using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.WinUI.Controls;
+using ManagedCommon;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.Extensions.DependencyInjection;
@@ -44,5 +45,17 @@ public sealed partial class ExtensionsPage : Page
     {
         SearchBox?.Focus(FocusState.Keyboard);
         args.Handled = true;
+    }
+
+    private async void MenuFlyoutItem_OnClick(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            await FallbackRankerDialog!.ShowAsync();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError("Error when showing FallbackRankerDialog", ex);
+        }
     }
 }
