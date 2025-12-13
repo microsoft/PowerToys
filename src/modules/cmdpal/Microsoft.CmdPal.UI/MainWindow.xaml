@@ -2,6 +2,7 @@
     x:Class="Microsoft.CmdPal.UI.MainWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Microsoft.CmdPal.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:pages="using:Microsoft.CmdPal.UI.Pages"
@@ -15,6 +16,21 @@
     Closed="MainWindow_Closed"
     mc:Ignorable="d">
     <Grid x:Name="RootElement">
+
+        <controls:BlurImageControl
+            HorizontalAlignment="Stretch"
+            VerticalAlignment="Stretch"
+            BlurAmount="{x:Bind ViewModel.BackgroundImageBlurAmount, Mode=OneWay}"
+            ImageBrightness="{x:Bind ViewModel.BackgroundImageBrightness, Mode=OneWay}"
+            ImageOpacity="{x:Bind ViewModel.BackgroundImageOpacity, Mode=OneWay}"
+            ImageSource="{x:Bind ViewModel.BackgroundImageSource, Mode=OneWay}"
+            ImageStretch="{x:Bind ViewModel.BackgroundImageStretch, Mode=OneWay}"
+            IsHitTestVisible="False"
+            IsHoldingEnabled="False"
+            TintColor="{x:Bind ViewModel.BackgroundImageTint, Mode=OneWay}"
+            TintIntensity="{x:Bind ViewModel.BackgroundImageTintIntensity, Mode=OneWay}"
+            Visibility="{x:Bind ViewModel.ShowBackgroundImage, Mode=OneWay}" />
+
         <pages:ShellPage />
     </Grid>
 </winuiex:WindowEx>

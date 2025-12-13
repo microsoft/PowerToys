@@ -14,6 +14,7 @@ using Microsoft.CommandPalette.Extensions;
 namespace Microsoft.CmdPal.Core.ViewModels;
 
 public partial class ShellViewModel : ObservableObject,
+    IDisposable,
     IRecipient<PerformCommandMessage>,
     IRecipient<HandleCommandResultMessage>,
     IRecipient<WindowHiddenMessage>
@@ -481,5 +482,13 @@ public partial class ShellViewModel : ObservableObject,
     public void CancelNavigation()
     {
         _navigationCts?.Cancel();
+    }
+
+    public void Dispose()
+    {
+        _handleInvokeTask?.Dispose();
+        _navigationCts?.Dispose();
+
+        GC.SuppressFinalize(this);
     }
 }

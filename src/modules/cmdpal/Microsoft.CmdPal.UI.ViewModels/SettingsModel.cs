@@ -11,7 +11,9 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using ManagedCommon;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
 using Microsoft.CommandPalette.Extensions.Toolkit;
+using Microsoft.UI;
 using Windows.Foundation;
+using Windows.UI;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
@@ -65,6 +67,24 @@ public partial class SettingsModel : ObservableObject
     public bool EnableDock { get; set; }
 
     public DockSettings DockSettings { get; set; } = new();
+
+    public UserTheme Theme { get; set; } = UserTheme.Default;
+
+    public ColorizationMode ColorizationMode { get; set; }
+
+    public Color CustomThemeColor { get; set; } = Colors.Transparent;
+
+    public int CustomThemeColorIntensity { get; set; } = 100;
+
+    public int BackgroundImageOpacity { get; set; } = 20;
+
+    public int BackgroundImageBlurAmount { get; set; }
+
+    public int BackgroundImageBrightness { get; set; }
+
+    public BackgroundImageFit BackgroundImageFit { get; set; }
+
+    public string? BackgroundImagePath { get; set; }
 
     // END SETTINGS
     ///////////////////////////////////////////////////////////////////////////

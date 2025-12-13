@@ -24,6 +24,8 @@ public partial class ListItemViewModel : CommandItemViewModel
 
     public string Section { get; private set; } = string.Empty;
 
+    public bool IsSectionOrSeparator { get; private set; }
+
     public DetailsViewModel? Details { get; private set; }
 
     [MemberNotNullWhen(true, nameof(Details))]
@@ -82,12 +84,16 @@ public partial class ListItemViewModel : CommandItemViewModel
         }
 
         UpdateTags(li.Tags);
-
         Section = li.Section ?? string.Empty;
-
-        UpdateProperty(nameof(Section));
+        IsSectionOrSeparator = IsSeparator(li);
+        UpdateProperty(nameof(Section), nameof(IsSectionOrSeparator));
 
         UpdateAccessibleName();
+    }
+
+    private bool IsSeparator(IListItem item)
+    {
+        return item.Command is null;
     }
 
     public override void SlowInitializeProperties()
@@ -104,8 +110,7 @@ public partial class ListItemViewModel : CommandItemViewModel
         {
             Details = new(extensionDetails, PageContext);
             Details.InitializeProperties();
-            UpdateProperty(nameof(Details));
-            UpdateProperty(nameof(HasDetails));
+            UpdateProperty(nameof(Details), nameof(HasDetails));
         }
 
         AddShowDetailsCommands();
@@ -135,14 +140,18 @@ public partial class ListItemViewModel : CommandItemViewModel
                 break;
             case nameof(model.Section):
                 Section = model.Section ?? string.Empty;
-                UpdateProperty(nameof(Section));
+                IsSectionOrSeparator = IsSeparator(model);
+                UpdateProperty(nameof(Section), nameof(IsSectionOrSeparator));
                 break;
-            case nameof(model.Details):
+            case nameof(model.Command):
+                IsSectionOrSeparator = IsSeparator(model);
+                UpdateProperty(nameof(IsSectionOrSeparator));
+                break;
+            case nameof(Details):
                 var extensionDetails = model.Details;
                 Details = extensionDetails is not null ? new(extensionDetails, PageContext) : null;
                 Details?.InitializeProperties();
-                UpdateProperty(nameof(Details));
-                UpdateProperty(nameof(HasDetails));
+                UpdateProperty(nameof(Details), nameof(HasDetails));
                 UpdateShowDetailsCommand();
                 break;
             case nameof(model.MoreCommands):
@@ -194,8 +203,7 @@ public partial class ListItemViewModel : CommandItemViewModel
                 MoreCommands.Add(showDetailsContextItemViewModel);
             }
 
-            UpdateProperty(nameof(MoreCommands));
-            UpdateProperty(nameof(AllCommands));
+            UpdateProperty(nameof(MoreCommands), nameof(AllCommands));
         }
     }
 
@@ -227,8 +235,7 @@ public partial class ListItemViewModel : CommandItemViewModel
             showDetailsContextItemViewModel.SlowInitializeProperties();
             MoreCommands.Add(showDetailsContextItemViewModel);
 
-            UpdateProperty(nameof(MoreCommands));
-            UpdateProperty(nameof(AllCommands));
+            UpdateProperty(nameof(MoreCommands), nameof(AllCommands));
         }
     }
 

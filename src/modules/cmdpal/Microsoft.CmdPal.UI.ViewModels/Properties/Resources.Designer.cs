@@ -421,6 +421,15 @@ namespace Microsoft.CmdPal.UI.ViewModels.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Pick background image.
+        /// </summary>
+        public static string builtin_settings_appearance_pick_background_image_title {
+            get {
+                return ResourceManager.GetString("builtin_settings_appearance_pick_background_image_title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to {0} extensions found.
         /// </summary>
         public static string builtin_settings_extension_n_extensions_found {
