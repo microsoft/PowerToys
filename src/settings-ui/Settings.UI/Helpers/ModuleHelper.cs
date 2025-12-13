@@ -72,6 +72,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
                 case ModuleType.Workspaces: return generalSettingsConfig.Enabled.Workspaces;
                 case ModuleType.RegistryPreview: return generalSettingsConfig.Enabled.RegistryPreview;
                 case ModuleType.MeasureTool: return generalSettingsConfig.Enabled.MeasureTool;
+                case ModuleType.ScreencastMode: return generalSettingsConfig.Enabled.ScreencastMode;
                 case ModuleType.ShortcutGuide: return generalSettingsConfig.Enabled.ShortcutGuide;
                 case ModuleType.PowerOCR: return generalSettingsConfig.Enabled.PowerOcr;
                 case ModuleType.ZoomIt: return generalSettingsConfig.Enabled.ZoomIt;
@@ -109,6 +110,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
                 case ModuleType.Workspaces: generalSettingsConfig.Enabled.Workspaces = isEnabled; break;
                 case ModuleType.RegistryPreview: generalSettingsConfig.Enabled.RegistryPreview = isEnabled; break;
                 case ModuleType.MeasureTool: generalSettingsConfig.Enabled.MeasureTool = isEnabled; break;
+                case ModuleType.ScreencastMode: generalSettingsConfig.Enabled.ScreencastMode = isEnabled; break;
                 case ModuleType.ShortcutGuide: generalSettingsConfig.Enabled.ShortcutGuide = isEnabled; break;
                 case ModuleType.PowerOCR: generalSettingsConfig.Enabled.PowerOcr = isEnabled; break;
                 case ModuleType.ZoomIt: generalSettingsConfig.Enabled.ZoomIt = isEnabled; break;
@@ -181,6 +183,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
                 ModuleType.Workspaces => typeof(WorkspacesPage),
                 ModuleType.RegistryPreview => typeof(RegistryPreviewPage),
                 ModuleType.MeasureTool => typeof(MeasureToolPage),
+                ModuleType.ScreencastMode => typeof(ScreencastModePage),
                 ModuleType.ShortcutGuide => typeof(ShortcutGuidePage),
                 ModuleType.PowerOCR => typeof(PowerOcrPage),
                 ModuleType.ZoomIt => typeof(ZoomItPage),
