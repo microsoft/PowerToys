@@ -34,7 +34,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         public DashboardPage()
         {
             InitializeComponent();
-            var settingsUtils = new SettingsUtils();
+            var settingsUtils = SettingsUtils.Default;
 
             ViewModel = new DashboardViewModel(
                SettingsRepository<GeneralSettings>.GetInstance(settingsUtils), ShellPage.SendDefaultIPCMessage);
@@ -65,6 +65,16 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
 
             App.GetOobeWindow().Activate();
+        }
+
+        private void SortAlphabetical_Click(object sender, RoutedEventArgs e)
+        {
+            ViewModel.DashboardSortOrder = DashboardSortOrder.Alphabetical;
+        }
+
+        private void SortByStatus_Click(object sender, RoutedEventArgs e)
+        {
+            ViewModel.DashboardSortOrder = DashboardSortOrder.ByStatus;
         }
     }
 }

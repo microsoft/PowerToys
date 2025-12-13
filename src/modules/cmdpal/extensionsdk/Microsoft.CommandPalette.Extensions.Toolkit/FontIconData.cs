@@ -27,6 +27,6 @@ public partial class FontIconData : IconData, IExtendedAttributesProvider
 
     public IDictionary<string, object>? GetProperties() => new ValueSet()
         {
-            { "FontFamily", FontFamily },
+            { WellKnownExtensionAttributes.FontFamily, FontFamily },
         };
 }

@@ -11,6 +11,10 @@ public class SmallGridPropertiesViewModel : IGridPropertiesViewModel
 {
     private readonly ExtensionObject<ISmallGridLayout> _model;
 
+    public bool ShowTitle => false;
+
+    public bool ShowSubtitle => false;
+
     public SmallGridPropertiesViewModel(ISmallGridLayout smallGridLayout)
     {
         _model = new(smallGridLayout);

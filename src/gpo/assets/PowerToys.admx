@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Copyright (c) Microsoft Corporation.
      Licensed under the MIT License. -->
-<policyDefinitions xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" revision="1.17" schemaVersion="1.0" xmlns="http://schemas.microsoft.com/GroupPolicy/2006/07/PolicyDefinitions">
+<policyDefinitions xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" revision="1.18" schemaVersion="1.0" xmlns="http://schemas.microsoft.com/GroupPolicy/2006/07/PolicyDefinitions">
   <policyNamespaces>
     <target prefix="powertoys" namespace="Microsoft.Policies.PowerToys" />
   </policyNamespaces>
-  <resources minRequiredRevision="1.17"/><!-- Last changed with PowerToys v0.90.0 -->
+  <resources minRequiredRevision="1.18"/><!-- Last changed with PowerToys v0.96.0 -->
   <supportedOn>
     <definitions>
       <definition name="SUPPORTED_POWERTOYS_0_64_0" displayName="$(string.SUPPORTED_POWERTOYS_0_64_0)"/>
@@ -26,6 +26,7 @@
       <definition name="SUPPORTED_POWERTOYS_0_88_0" displayName="$(string.SUPPORTED_POWERTOYS_0_88_0)"/>
       <definition name="SUPPORTED_POWERTOYS_0_89_0" displayName="$(string.SUPPORTED_POWERTOYS_0_89_0)"/>
       <definition name="SUPPORTED_POWERTOYS_0_90_0" displayName="$(string.SUPPORTED_POWERTOYS_0_90_0)"/>
+      <definition name="SUPPORTED_POWERTOYS_0_96_0" displayName="$(string.SUPPORTED_POWERTOYS_0_96_0)"/>
       <definition name="SUPPORTED_POWERTOYS_0_64_0_TO_0_87_1" displayName="$(string.SUPPORTED_POWERTOYS_0_64_0_TO_0_87_1)"/>
     </definitions>
   </supportedOn>
@@ -607,6 +608,86 @@
     <policy name="AllowPowerToysAdvancedPasteOnlineAIModels" class="Both" displayName="$(string.AllowPowerToysAdvancedPasteOnlineAIModels)" explainText="$(string.AllowPowerToysAdvancedPasteOnlineAIModelsDescription)" key="Software\Policies\PowerToys" valueName="AllowPowerToysAdvancedPasteOnlineAIModels">
       <parentCategory ref="AdvancedPaste" />
       <supportedOn ref="SUPPORTED_POWERTOYS_0_81_1" />
+      <enabledValue>
+        <decimal value="1" />
+      </enabledValue>
+      <disabledValue>
+        <decimal value="0" />
+      </disabledValue>
+    </policy>
+    <policy name="AllowAdvancedPasteOpenAI" class="Both" displayName="$(string.AllowAdvancedPasteOpenAI)" explainText="$(string.AllowAdvancedPasteOpenAIDescription)" key="Software\Policies\PowerToys" valueName="AllowAdvancedPasteOpenAI">
+      <parentCategory ref="AdvancedPaste" />
+      <supportedOn ref="SUPPORTED_POWERTOYS_0_96_0" />
+      <enabledValue>
+        <decimal value="1" />
+      </enabledValue>
+      <disabledValue>
+        <decimal value="0" />
+      </disabledValue>
+    </policy>
+    <policy name="AllowAdvancedPasteAzureOpenAI" class="Both" displayName="$(string.AllowAdvancedPasteAzureOpenAI)" explainText="$(string.AllowAdvancedPasteAzureOpenAIDescription)" key="Software\Policies\PowerToys" valueName="AllowAdvancedPasteAzureOpenAI">
+      <parentCategory ref="AdvancedPaste" />
+      <supportedOn ref="SUPPORTED_POWERTOYS_0_96_0" />
+      <enabledValue>
+        <decimal value="1" />
+      </enabledValue>
+      <disabledValue>
+        <decimal value="0" />
+      </disabledValue>
+    </policy>
+    <policy name="AllowAdvancedPasteAzureAIInference" class="Both" displayName="$(string.AllowAdvancedPasteAzureAIInference)" explainText="$(string.AllowAdvancedPasteAzureAIInferenceDescription)" key="Software\Policies\PowerToys" valueName="AllowAdvancedPasteAzureAIInference">
+      <parentCategory ref="AdvancedPaste" />
+      <supportedOn ref="SUPPORTED_POWERTOYS_0_96_0" />
+      <enabledValue>
+        <decimal value="1" />
+      </enabledValue>
+      <disabledValue>
+        <decimal value="0" />
+      </disabledValue>
+    </policy>
+    <policy name="AllowAdvancedPasteMistral" class="Both" displayName="$(string.AllowAdvancedPasteMistral)" explainText="$(string.AllowAdvancedPasteMistralDescription)" key="Software\Policies\PowerToys" valueName="AllowAdvancedPasteMistral">
+      <parentCategory ref="AdvancedPaste" />
+      <supportedOn ref="SUPPORTED_POWERTOYS_0_96_0" />
+      <enabledValue>
+        <decimal value="1" />
+      </enabledValue>
+      <disabledValue>
+        <decimal value="0" />
+      </disabledValue>
+    </policy>
+    <policy name="AllowAdvancedPasteGoogle" class="Both" displayName="$(string.AllowAdvancedPasteGoogle)" explainText="$(string.AllowAdvancedPasteGoogleDescription)" key="Software\Policies\PowerToys" valueName="AllowAdvancedPasteGoogle">
+      <parentCategory ref="AdvancedPaste" />
+      <supportedOn ref="SUPPORTED_POWERTOYS_0_96_0" />
+      <enabledValue>
+        <decimal value="1" />
+      </enabledValue>
+      <disabledValue>
+        <decimal value="0" />
+      </disabledValue>
+    </policy>
+    <policy name="AllowAdvancedPasteAnthropic" class="Both" displayName="$(string.AllowAdvancedPasteAnthropic)" explainText="$(string.AllowAdvancedPasteAnthropicDescription)" key="Software\Policies\PowerToys" valueName="AllowAdvancedPasteAnthropic">
+      <parentCategory ref="AdvancedPaste" />
+      <supportedOn ref="SUPPORTED_POWERTOYS_0_96_0" />
+      <enabledValue>
+        <decimal value="1" />
+      </enabledValue>
+      <disabledValue>
+        <decimal value="0" />
+      </disabledValue>
+    </policy>
+    <policy name="AllowAdvancedPasteOllama" class="Both" displayName="$(string.AllowAdvancedPasteOllama)" explainText="$(string.AllowAdvancedPasteOllamaDescription)" key="Software\Policies\PowerToys" valueName="AllowAdvancedPasteOllama">
+      <parentCategory ref="AdvancedPaste" />
+      <supportedOn ref="SUPPORTED_POWERTOYS_0_96_0" />
+      <enabledValue>
+        <decimal value="1" />
+      </enabledValue>
+      <disabledValue>
+        <decimal value="0" />
+      </disabledValue>
+    </policy>
+    <policy name="AllowAdvancedPasteFoundryLocal" class="Both" displayName="$(string.AllowAdvancedPasteFoundryLocal)" explainText="$(string.AllowAdvancedPasteFoundryLocalDescription)" key="Software\Policies\PowerToys" valueName="AllowAdvancedPasteFoundryLocal">
+      <parentCategory ref="AdvancedPaste" />
+      <supportedOn ref="SUPPORTED_POWERTOYS_0_96_0" />
       <enabledValue>
         <decimal value="1" />
       </enabledValue>

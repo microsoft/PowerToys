@@ -5,7 +5,6 @@
         {
           "MatchedPath": [
             "*.resources.dll",
-
             "WinUI3Apps\\Assets\\Settings\\Scripts\\*.ps1",
 
             "PowerToys.ActionRunner.exe",
@@ -27,6 +26,7 @@
             "PowerToys.GPOWrapper.dll",
             "PowerToys.GPOWrapperProjection.dll",
             "PowerToys.AllExperiments.dll",
+            "LanguageModelProvider.dll",
 
             "Common.Search.dll",
 
@@ -60,6 +60,8 @@
             "PowerToys.FancyZonesEditorCommon.dll",
             "PowerToys.FancyZonesModuleInterface.dll",
             "PowerToys.FancyZones.exe",
+            "FancyZonesCLI.exe",
+            "FancyZonesCLI.dll",
 
             "PowerToys.GcodePreviewHandler.dll",
             "PowerToys.GcodePreviewHandler.exe",
@@ -181,6 +183,7 @@
             "PowerToys.MousePointerCrosshairs.dll",
             "PowerToys.MouseJumpUI.dll",
             "PowerToys.MouseJumpUI.exe",
+            "PowerToys.CursorWrap.dll",
 
             "PowerToys.MouseWithoutBorders.dll",
             "PowerToys.MouseWithoutBorders.exe",
@@ -290,6 +293,7 @@
                 "Mono.Cecil.Rocks.dll",
                 "Newtonsoft.Json.dll",
                 "CommunityToolkit.WinUI.Controls.TitleBar.dll",
+                "CommunityToolkit.WinUI.Controls.OpacityMaskView.dll",
 
                 "NLog.dll",
                 "HtmlAgilityPack.dll",
@@ -346,6 +350,13 @@
                 "Testably.Abstractions.FileSystem.Interface.dll",
                 "WinUI3Apps\\Testably.Abstractions.FileSystem.Interface.dll",
                 "ColorCode.Core.dll", 
+                "Microsoft.SemanticKernel.Connectors.Ollama.dll",
+                "OllamaSharp.dll",
+
+                "boost_regex-vc143-mt-gd-x32-1_87.dll",
+                "boost_regex-vc143-mt-gd-x64-1_87.dll",
+                "boost_regex-vc143-mt-x32-1_87.dll",
+                "boost_regex-vc143-mt-x64-1_87.dll",
 
                 "UnitsNet.dll",
                 "UtfUnknown.dll",

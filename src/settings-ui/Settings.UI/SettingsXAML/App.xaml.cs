@@ -133,7 +133,7 @@ namespace Microsoft.PowerToys.Settings.UI
             var settingValue = cmdArgs[3];
             try
             {
-                SetSettingCommandLineCommand.Execute(settingName, settingValue, new SettingsUtils());
+                SetSettingCommandLineCommand.Execute(settingName, settingValue, SettingsUtils.Default);
             }
             catch (Exception ex)
             {
@@ -151,7 +151,7 @@ namespace Microsoft.PowerToys.Settings.UI
             {
                 using (var settings = JsonDocument.Parse(File.ReadAllText(ipcFileName)))
                 {
-                    SetAdditionalSettingsCommandLineCommand.Execute(moduleName, settings, new SettingsUtils());
+                    SetAdditionalSettingsCommandLineCommand.Execute(moduleName, settings, SettingsUtils.Default);
                 }
             }
             catch (Exception ex)
@@ -357,7 +357,7 @@ namespace Microsoft.PowerToys.Settings.UI
             return 0;
         }
 
-        private static ISettingsUtils settingsUtils = new SettingsUtils();
+        private static ISettingsUtils settingsUtils = SettingsUtils.Default;
         private static ThemeService themeService = new ThemeService(SettingsRepository<GeneralSettings>.GetInstance(settingsUtils));
 
         public static ThemeService ThemeService => themeService;

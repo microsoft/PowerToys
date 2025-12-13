@@ -19,7 +19,7 @@ namespace PowerAccent.Core.Tools
 
         public CharactersUsageInfo()
         {
-            _filePath = new SettingsUtils().GetSettingsFilePath(PowerAccentSettings.ModuleName, "UsageInfo.json");
+            _filePath = SettingsUtils.Default.GetSettingsFilePath(PowerAccentSettings.ModuleName, "UsageInfo.json");
             var data = GetUsageInfoData();
             _characterUsageCounters = data.CharacterUsageCounters;
             _characterUsageTimestamp = data.CharacterUsageTimestamp;

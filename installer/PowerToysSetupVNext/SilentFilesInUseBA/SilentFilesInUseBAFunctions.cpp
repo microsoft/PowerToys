@@ -18,6 +18,7 @@ public: // IBootstrapperApplication
 
         BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "*** CUSTOM BA FUNCTION SYSTEM ACTIVE *** Running detect begin BA function. fCached=%d, registrationType=%d, cPackages=%u, fCancel=%d", fCached, registrationType, cPackages, *pfCancel);
 
+    LExit:
         return hr;
     }
 
@@ -31,6 +32,12 @@ public: // IBAFunctions
 
         BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "*** CUSTOM BA FUNCTION SYSTEM ACTIVE *** Running plan begin BA function. cPackages=%u, fCancel=%d", cPackages, *pfCancel);
 
+        //-------------------------------------------------------------------------------------------------
+        // YOUR CODE GOES HERE
+        // BalExitOnFailure(hr, "Change this message to represent real error handling.");
+        //-------------------------------------------------------------------------------------------------
+
+    LExit:
         return hr;
     }
 
@@ -56,7 +63,6 @@ public: // IBAFunctions
         )
     {
         HRESULT hr = S_OK;
-        UNREFERENCED_PARAMETER(source);
 
         BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "*** CUSTOM BA FUNCTION CALLED *** Running OnExecuteFilesInUse BA function. packageId=%ls, cFiles=%u, recommendation=%d", wzPackageId, cFiles, nRecommendation);
         
