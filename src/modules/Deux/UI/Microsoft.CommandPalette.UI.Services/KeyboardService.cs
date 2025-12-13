@@ -42,9 +42,9 @@ public partial class KeyboardService : IDisposable
         _settingsService.SettingsChanged += SettingsChanged;
     }
 
-    public void SetProcessCommand(HWND hwnd, ProcessCommand processCommand)
+    public void SetProcessCommand(IntPtr hwnd, ProcessCommand processCommand)
     {
-        _hwnd = hwnd;
+        _hwnd = new HWND(hwnd);
         _keyboardListener.SetProcessCommand(processCommand);
         SetupHotkeys();
     }
