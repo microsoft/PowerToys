@@ -38,7 +38,7 @@ namespace ScreencastModeUI
         private const double ExtraWidthBuffer = 20;
         private const double ExtraHeightBuffer = 20;
 
-        private readonly SettingsUtils _settingsUtils = new();
+        private readonly SettingsUtils _settingsUtils = SettingsUtils.Default;
         private readonly DispatcherTimer _hideTimer;
         private readonly DispatcherTimer _settingsDebounceTimer;
         private readonly KeyDisplayer _keyDisplayer = new();

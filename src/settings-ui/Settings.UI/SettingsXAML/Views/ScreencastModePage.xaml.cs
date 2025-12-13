@@ -18,7 +18,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         public ScreencastModePage()
         {
             this.InitializeComponent();
-            var settingsUtils = new SettingsUtils();
+            var settingsUtils = SettingsUtils.Default;
             this.ViewModel = new ScreencastModeViewModel(
                 settingsUtils,
                 SettingsRepository<GeneralSettings>.GetInstance(settingsUtils),
