@@ -288,4 +288,8 @@ namespace winrt::PowerToys::GPOWrapper::implementation
     {
         return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredRunAtStartupValue());
     }
+    GpoRuleConfigured GPOWrapper::GetConfiguredKeystrokeOverlayEnabledValue()
+    {
+        return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredKeystrokeOverlayEnabledValue());
+    }
 }

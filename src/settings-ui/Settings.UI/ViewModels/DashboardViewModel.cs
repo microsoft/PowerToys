@@ -372,6 +372,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 ModuleType.FancyZones => GetModuleItemsFancyZones(),
                 ModuleType.FindMyMouse => GetModuleItemsFindMyMouse(),
                 ModuleType.Hosts => GetModuleItemsHosts(),
+                ModuleType.KeystrokeOverlay => GetModuleItemsKeystrokeOverlay(),
                 ModuleType.LightSwitch => GetModuleItemsLightSwitch(),
                 ModuleType.MouseHighlighter => GetModuleItemsMouseHighlighter(),
                 ModuleType.MouseJump => GetModuleItemsMouseJump(),
@@ -386,6 +387,18 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 ModuleType.PowerOCR => GetModuleItemsPowerOCR(),
                 _ => new ObservableCollection<DashboardModuleItem>(), // never called, all values listed above
             };
+        }
+
+        private ObservableCollection<DashboardModuleItem> GetModuleItemsKeystrokeOverlay()
+        {
+            ISettingsRepository<KeystrokeOverlaySettings> moduleSettingsRepository = SettingsRepository<KeystrokeOverlaySettings>.GetInstance(SettingsUtils.Default);
+            var list = new List<DashboardModuleItem>
+            {
+                new DashboardModuleShortcutItem() { Label = resourceLoader.GetString("KeystrokeOverlay_SwitchMonitor"), Shortcut = moduleSettingsRepository.SettingsConfig.Properties.SwitchMonitorHotkey.GetKeysList() },
+                new DashboardModuleShortcutItem() { Label = resourceLoader.GetString("KeystrokeOverlay_Activation"), Shortcut = moduleSettingsRepository.SettingsConfig.Properties.ActivationShortcut.GetKeysList() },
+                new DashboardModuleShortcutItem() { Label = resourceLoader.GetString("KeystrokeOverlay_SwitchDisplayMode"), Shortcut = moduleSettingsRepository.SettingsConfig.Properties.SwitchDisplayModeHotkey.GetKeysList() },
+            };
+            return new ObservableCollection<DashboardModuleItem>(list);
         }
 
         private ObservableCollection<DashboardModuleItem> GetModuleItemsAlwaysOnTop()

@@ -469,6 +469,14 @@
     <Project Path="src/modules/keyboardmanager/KeyboardManagerEditorTest/KeyboardManagerEditorTest.vcxproj" Id="62173d9a-6724-4c00-a1c8-fb646480a9ec" />
     <Project Path="src/modules/keyboardmanager/KeyboardManagerEngineTest/KeyboardManagerEngineTest.vcxproj" Id="7f4b3a60-bc27-45a7-8000-68b0b6ea7466" />
   </Folder>
+  <Folder Name="/modules/KeystrokeOverlay/">
+    <Project Path="src/modules/KeystrokeOverlay/KeystrokeOverlayKeyboardService/KeystrokeOverlayKeyboardService.vcxproj" Id="a1b2c3d4-e5f6-4321-8765-123456789abc" />
+    <Project Path="src/modules/KeystrokeOverlay/KeystrokeOverlayModuleInterface/KeystrokeOverlay.vcxproj" Id="d66daaf0-84fc-477d-a980-43370f4499c2" />
+    <Project Path="src/modules/KeystrokeOverlay/KeystrokeOverlayXAML/KeystrokeOverlayUI.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+  </Folder>
   <Folder Name="/modules/launcher/">
     <Project Path="src/modules/launcher/Microsoft.Launcher/Microsoft.Launcher.vcxproj" Id="e364f67b-bb12-4e91-b639-355866ebcd8b">
       <BuildDependency Project="src/modules/launcher/PowerLauncher/PowerLauncher.csproj" />

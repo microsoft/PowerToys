@@ -24,6 +24,11 @@ public partial class SamplesListPage : ListPage
             Title = "List Page With Details",
             Subtitle = "A list of items, each with additional details to display",
         },
+        new ListItem(new SectionsIndexPage())
+        {
+            Title = "List Pages With Sections",
+            Subtitle = "A list of items, with sections header",
+        },
         new ListItem(new SampleUpdatingItemsPage())
         {
             Title = "List page with items that change",
@@ -99,6 +104,13 @@ public partial class SamplesListPage : ListPage
         {
             Title = "Sample settings page",
             Subtitle = "A demo of the settings helpers",
+        },
+
+        // Data package samples
+        new ListItem(new SampleDataTransferPage())
+        {
+            Title = "Clipboard and Drag-and-Drop Demo",
+            Subtitle = "Demonstrates clipboard integration and drag-and-drop functionality",
         },
 
         // Evil edge cases

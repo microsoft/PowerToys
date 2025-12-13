@@ -1,0 +1,96 @@
+<Window
+    x:Class="KeystrokeOverlayUI.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:KeystrokeOverlayUI"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
+    mc:Ignorable="d"
+    Title="KeystrokeOverlayUI">
+
+    <Window.SystemBackdrop>
+        <MicaBackdrop Kind="BaseAlt"/>
+    </Window.SystemBackdrop>
+
+    <Border x:Name="RootGrid"
+            Loaded="RootGrid_Loaded"
+            PointerPressed="RootGrid_PointerPressed"
+            PointerMoved="RootGrid_PointerMoved"
+            PointerReleased="RootGrid_PointerReleased"
+            PointerEntered="RootGrid_PointerEntered"
+            PointerExited="RootGrid_PointerExited"
+            Padding="10,7"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            Background="Transparent">
+
+        <StackPanel Orientation="Vertical" Spacing="5">
+
+            <StackPanel Orientation="Horizontal" Spacing="5">
+                <Border CornerRadius="4"
+                        Padding="8,4"
+                        HorizontalAlignment="Left"
+                        Visibility="{x:Bind ViewModel.IsMonitorLabelVisible, Mode=OneWay}">
+
+                    <TextBlock Text="{x:Bind ViewModel.MonitorLabelText, Mode=OneWay}"
+                               Foreground="Black"
+                               FontSize="18"
+                               FontWeight="SemiBold"/>
+                </Border>
+
+                <Border CornerRadius="4"
+                        Padding="8,4"
+                        HorizontalAlignment="Left"
+                        Visibility="{x:Bind ViewModel.IsActivationLabelVisible, Mode=OneWay}">
+
+                    <TextBlock Text="{x:Bind ViewModel.ActivationLabelText, Mode=OneWay}"
+                       Foreground="Black"
+                       FontSize="18"
+                       FontWeight="SemiBold"/>
+                </Border>
+
+                <Border CornerRadius="4"
+                        Padding="8,4"
+                        HorizontalAlignment="Left"
+                        Visibility="{x:Bind ViewModel.IsDisplayModeVisible, Mode=OneWay}">
+
+                    <TextBlock Text="{x:Bind ViewModel.DisplayModeText, Mode=OneWay}"
+                       Foreground="Black"
+                       FontSize="18"
+                       FontWeight="SemiBold"/>
+                </Border>
+            </StackPanel>
+
+            <ItemsControl ItemsSource="{x:Bind ViewModel.PressedKeys, Mode=OneWay}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel Orientation="Horizontal" Spacing="10" SizeChanged="StackPanel_SizeChanged"/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <controls:KeyVisual
+                        Content="{Binding Text}"
+                        VerticalAlignment="Center"
+                        IsTabStop="False"
+                        AutomationProperties.AccessibilityView="Raw"
+                        Padding="12,6"
+                        CornerRadius="6"
+                        Opacity="{Binding Opacity}"
+                        FontSize="{Binding TextSize}"
+                        Foreground="{Binding DataContext.TextColor, ElementName=RootGrid}"
+                        Background="{Binding DataContext.BackgroundColor, ElementName=RootGrid}">
+
+                            <controls:KeyVisual.OpacityTransition>
+                                <ScalarTransition />
+                            </controls:KeyVisual.OpacityTransition>
+
+                        </controls:KeyVisual>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </StackPanel>
+    </Border>
+</Window>

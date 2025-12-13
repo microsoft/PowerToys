@@ -144,6 +144,8 @@ BLENDFUNCTION
 blittable
 Blockquotes
 blt
+bluelightreduction
+bluelightreductionstate
 BLURBEHIND
 BLURREGION
 bmi
@@ -463,6 +465,7 @@ EDITKEYBOARD
 EDITSHORTCUTS
 EDITTEXT
 EFile
+ekus
 eku
 emojis
 ENABLEDELAYEDEXPANSION
@@ -845,6 +848,7 @@ KEYIMAGE
 keynum
 keyremaps
 keyring
+keystrokeoverlay
 keyvault
 KILLFOCUS
 killrunner
@@ -1115,6 +1119,7 @@ NEWPLUSSHELLEXTENSIONWIN
 newrow
 nicksnettravels
 NIF
+nightlight
 NLog
 NLSTEXT
 NMAKE
@@ -1189,6 +1194,7 @@ ntfs
 NTSTATUS
 NTSYSAPI
 NULLCURSOR
+nullref
 nullonfailure
 nullref
 numberbox
@@ -1851,6 +1857,8 @@ uitests
 UITo
 ULONGLONG
 ums
+UMax
+UMin
 uncompilable
 UNCPRIORITY
 UNDNAME

@@ -1,0 +1,75 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Standard PowerToys Imports -->
+  <Import Project="..\..\..\Common.Dotnet.CsWinRT.props" />
+  <Import Project="..\..\..\Common.SelfContained.props" />
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+
+    <!-- IMPORTANT: Rename UI EXE so that Runner can launch it -->
+    <AssemblyName>PowerToys.KeystrokeOverlay</AssemblyName>
+    <RootNamespace>PowerToys.KeystrokeOverlayUI</RootNamespace>
+
+    <!-- Output folder must match where Runner searches -->
+    <OutputPath>..\..\..\..\$(Platform)\$(Configuration)\WinUI3Apps\</OutputPath>
+
+    <UseWinUI>true</UseWinUI>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+
+    <!-- PowerToys WinAppSDK settings (must stay enabled) -->
+    <WindowsPackageType>None</WindowsPackageType>
+    <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+    <SelfContained>true</SelfContained>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+
+    <!-- Platform settings -->
+    <Platforms>x64;ARM64</Platforms>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <GenerateSatelliteAssembliesForCore>true</GenerateSatelliteAssembliesForCore>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <RuntimeHostConfigurationOption Include="MVVMTOOLKIT_ENABLE_INOTIFYPROPERTYCHANGING_SUPPORT" Value="true" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- DO NOT specify version numbers — PowerToys manages versions repo-wide -->
+    <PackageReference Include="CommunityToolkit.Mvvm" />
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
+    <PackageReference Include="Microsoft.WindowsAppSDK" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" />
+    <PackageReference Include="System.Text.Json" />
+    <Manifest Include="$(ApplicationManifest)" />
+  </ItemGroup>
+
+  <!-- Required PowerToys common library references -->
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\common\Common.UI\Common.UI.csproj" />
+    <ProjectReference Include="..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
+    <ProjectReference Include="..\..\..\common\LanguageModelProvider\LanguageModelProvider.csproj" />
+    <ProjectReference Include="..\..\..\common\GPOWrapper\GPOWrapper.vcxproj" />
+    <ProjectReference Include="..\..\..\common\interop\PowerToys.Interop.vcxproj" />
+	<ProjectReference Include="..\..\..\settings-ui/Settings.UI.Library/Settings.UI.Library.csproj" />
+  </ItemGroup>
+
+  <!-- Ensure WinUI pages compile -->
+  <ItemGroup>
+    <Page Update="Controls\KeyVisual\KeyVisual.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+
+  <!-- Publish Properties (required for flattening like other PT modules) -->
+  <PropertyGroup>
+    <PublishReadyToRun Condition="'$(Configuration)' == 'Debug'">False</PublishReadyToRun>
+    <PublishReadyToRun Condition="'$(Configuration)' != 'Debug'">True</PublishReadyToRun>
+    <PublishTrimmed Condition="'$(Configuration)' == 'Debug'">False</PublishTrimmed>
+    <PublishTrimmed Condition="'$(Configuration)' != 'Debug'">True</PublishTrimmed>
+    <ApplicationIcon>Assets\KeystrokeOverlay\Icon.ico</ApplicationIcon>
+  </PropertyGroup>
+
+</Project>

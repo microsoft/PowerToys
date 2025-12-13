@@ -335,3 +335,26 @@ azp
 feedbackhub
 needinfo
 reportbug
+
+#ffmpeg
+crf
+nostdin
+
+# KeystrokeOverlay words
+dwmwa
+dwmwcp
+embeddedhtml
+getkeyboard
+installscopeperuser
+JOBOBJECT
+JOBOBJECTLIMIT
+keystate
+lgdi
+Pipeserver
+registryroot
+regroot
+spsc
+swp
+Timestamping
+xstring
+ello

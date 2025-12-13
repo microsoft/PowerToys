@@ -500,7 +500,9 @@ function Test-CoreFiles {
         'PowerToys.RegistryPreviewExt.dll',
         'PowerToys.RegistryPreviewUILib.dll',
         'PowerToys.RegistryPreview.dll',
-        'PowerToys.RegistryPreview.exe'
+        'PowerToys.RegistryPreview.exe',
+        'PowerToys.KeystrokeOverlayModuleInterface.dll',
+        'PowerToys.KeystrokeOverlay.exe'
     )
     
     # Tools signed files (in Tools subdirectory)
