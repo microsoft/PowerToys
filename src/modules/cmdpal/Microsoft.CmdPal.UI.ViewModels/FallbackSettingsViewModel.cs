@@ -74,7 +74,7 @@ public partial class FallbackSettingsViewModel : ObservableObject
             ? (string.IsNullOrWhiteSpace(fallback.Title) ? providerSettings.DisplayName : fallback.Title)
             : fallback.DisplayTitle;
 
-        Icon = new(fallback.Icon);
+        Icon = new(fallback.InitialIcon);
         Icon.InitializeProperties();
     }
 
