@@ -1,11 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <Import Project="..\..\..\Common.Dotnet.CsWinRT.props" />
+  <Import Project="..\..\..\Common.Dotnet.AotCompatibility.props" />
 
   <PropertyGroup>
     <AssemblyTitle>PowerToys.WorkspacesCsharpLibrary</AssemblyTitle>
     <AssemblyDescription>PowerToys Workspaces Csharp Library</AssemblyDescription>
     <Description>PowerToys Workspaces Csharp Library</Description>
+    <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
     <UseWindowsForms>true</UseWindowsForms>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
@@ -14,5 +16,9 @@
     <OutputPath>..\..\..\..\$(Platform)\$(Configuration)</OutputPath>
     <AssemblyName>PowerToys.WorkspacesCsharpLibrary</AssemblyName>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.IO.Abstractions" />
+  </ItemGroup>
 
 </Project>

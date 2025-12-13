@@ -8,6 +8,8 @@
 #include <codecvt>
 #include <common/utils/logger_helper.h>
 #include "ThemeHelper.h"
+#include <thread>
+#include <atomic>
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
@@ -103,12 +105,18 @@ private:
     HANDLE m_force_light_event_handle;
     HANDLE m_force_dark_event_handle;
     HANDLE m_manual_override_event_handle;
+    HANDLE m_toggle_event_handle{ nullptr };
+    std::thread m_toggle_thread;
+    std::atomic<bool> m_toggle_thread_running{ false };
 
     static const constexpr int NUM_DEFAULT_HOTKEYS = 4;
 
     Hotkey m_toggle_theme_hotkey = { .win = true, .ctrl = true, .shift = true, .alt = false, .key = 'D' };
 
     void init_settings();
+    void ToggleTheme();
+    void StartToggleListener();
+    void StopToggleListener();
 
 public:
     LightSwitchInterface()
@@ -118,6 +126,7 @@ public:
         m_force_light_event_handle = CreateDefaultEvent(L"POWERTOYS_LIGHTSWITCH_FORCE_LIGHT");
         m_force_dark_event_handle = CreateDefaultEvent(L"POWERTOYS_LIGHTSWITCH_FORCE_DARK");
         m_manual_override_event_handle = CreateEventW(nullptr, TRUE, FALSE, L"POWERTOYS_LIGHTSWITCH_MANUAL_OVERRIDE");
+        m_toggle_event_handle = CreateDefaultEvent(L"Local\\PowerToys-LightSwitch-ToggleEvent-d8dc2f29-8c94-4ca1-8c5f-3e2b1e3c4f5a");
 
         init_settings();
     };
@@ -130,6 +139,8 @@ public:
     // Destroy the powertoy and free memory
     virtual void destroy() override
     {
+        // Ensure worker threads/process handles are cleaned up before destruction
+        disable();
         delete this;
     }
 
@@ -444,6 +455,8 @@ public:
         Logger::info(L"Light Switch process launched successfully (PID: {}).", pi.dwProcessId);
         m_process = pi.hProcess;
         CloseHandle(pi.hThread);
+
+        StartToggleListener();
     }
 
     // Disable the powertoy
@@ -469,6 +482,8 @@ public:
             CloseHandle(m_process);
             m_process = nullptr;
         }
+
+        StopToggleListener();
     }
 
     // Returns if the powertoys is enabled
@@ -530,31 +545,8 @@ public:
             }
             else if (hotkeyId == 0)
             {
-                // get current will return true if in light mode; otherwise false
                 Logger::info(L"[Light Switch] Hotkey triggered: Toggle Theme");
-                if (g_settings.m_changeSystem)
-                {
-                    SetSystemTheme(!GetCurrentSystemTheme());
-                }
-                if (g_settings.m_changeApps)
-                {
-                    SetAppsTheme(!GetCurrentAppsTheme());
-                }
-
-                if (!m_manual_override_event_handle)
-                {
-                    m_manual_override_event_handle = OpenEventW(SYNCHRONIZE | EVENT_MODIFY_STATE, FALSE, L"POWERTOYS_LIGHTSWITCH_MANUAL_OVERRIDE");
-                    if (!m_manual_override_event_handle)
-                    {
-                        m_manual_override_event_handle = CreateEventW(nullptr, TRUE, FALSE, L"POWERTOYS_LIGHTSWITCH_MANUAL_OVERRIDE");
-                    }
-                }
-
-                if (m_manual_override_event_handle)
-                {
-                    SetEvent(m_manual_override_event_handle);
-                    Logger::debug(L"[Light Switch] Manual override event set");
-                }
+                ToggleTheme();
             }
 
             return true;
@@ -567,7 +559,79 @@ public:
     {
         return WaitForSingleObject(m_process, 0) == WAIT_TIMEOUT;
     }
+
 };
+
+void LightSwitchInterface::ToggleTheme()
+{
+    if (g_settings.m_changeSystem)
+    {
+        SetSystemTheme(!GetCurrentSystemTheme());
+    }
+    if (g_settings.m_changeApps)
+    {
+        SetAppsTheme(!GetCurrentAppsTheme());
+    }
+
+    if (!m_manual_override_event_handle)
+    {
+        m_manual_override_event_handle = OpenEventW(SYNCHRONIZE | EVENT_MODIFY_STATE, FALSE, L"POWERTOYS_LIGHTSWITCH_MANUAL_OVERRIDE");
+        if (!m_manual_override_event_handle)
+        {
+            m_manual_override_event_handle = CreateEventW(nullptr, TRUE, FALSE, L"POWERTOYS_LIGHTSWITCH_MANUAL_OVERRIDE");
+        }
+    }
+
+    if (m_manual_override_event_handle)
+    {
+        SetEvent(m_manual_override_event_handle);
+        Logger::debug(L"[Light Switch] Manual override event set");
+    }
+}
+
+void LightSwitchInterface::StartToggleListener()
+{
+    if (m_toggle_thread_running || !m_toggle_event_handle)
+    {
+        return;
+    }
+
+    m_toggle_thread_running = true;
+    m_toggle_thread = std::thread([this]() {
+        while (m_toggle_thread_running)
+        {
+            const DWORD wait_result = WaitForSingleObject(m_toggle_event_handle, 500);
+            if (!m_toggle_thread_running)
+            {
+                break;
+            }
+
+            if (wait_result == WAIT_OBJECT_0)
+            {
+                ToggleTheme();
+                ResetEvent(m_toggle_event_handle);
+            }
+        }
+    });
+}
+
+void LightSwitchInterface::StopToggleListener()
+{
+    if (!m_toggle_thread_running)
+    {
+        return;
+    }
+
+    m_toggle_thread_running = false;
+    if (m_toggle_event_handle)
+    {
+        SetEvent(m_toggle_event_handle);
+    }
+    if (m_toggle_thread.joinable())
+    {
+        m_toggle_thread.join();
+    }
+}
 
 std::wstring utf8_to_wstring(const std::string& str)
 {

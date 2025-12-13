@@ -24,7 +24,7 @@
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
   </PropertyGroup>
-  
+
   <!-- For debugging purposes, uncomment this block to enable AOT builds -->
    <!--<PropertyGroup>
     <EnableCmdPalAOT>true</EnableCmdPalAOT>

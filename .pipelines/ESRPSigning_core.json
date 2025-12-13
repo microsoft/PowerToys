@@ -235,6 +235,14 @@
 
             "PowerToys.CmdPalModuleInterface.dll",
             "CmdPalKeyboardService.dll",
+            "PowerToys.ModuleContracts.dll",
+            "Awake.ModuleServices.dll",
+            "ColorPicker.ModuleServices.dll",
+            "Workspaces.ModuleServices.dll",
+            "Microsoft.CommandPalette.Extensions.dll",
+            "Microsoft.CommandPalette.Extensions.Toolkit.dll",
+            "Microsoft.CmdPal.Ext.PowerToys.dll",
+            "Microsoft.CmdPal.Ext.PowerToys.exe",
             "*Microsoft.CmdPal.UI_*.msix",
 
             "PowerToys.DSC.dll",
@@ -360,7 +368,9 @@
 
                 "UnitsNet.dll",
                 "UtfUnknown.dll",
-                "Wpf.Ui.dll"
+                "Wpf.Ui.dll",
+                "Shmuelie.WinRTServer.dll",
+                "ToolGood.Words.Pinyin.dll"
             ],
             "SigningInfo": {
                 "Operations": [

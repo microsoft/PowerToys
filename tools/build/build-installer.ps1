@@ -28,11 +28,8 @@ Runs the pipeline for x64 Release with machine-wide installer.
 
 .NOTES
 - Generated MSIX files will be signed using cert-sign-package.ps1.
-- This script uses git to manage workspace state:
-  * Uncommitted changes are stashed before build and popped afterwards.
-  * Version files and manifests modified during build are reverted.
-  * Untracked generated files are cleaned up.
-- Use the -Clean parameter to clean build outputs (bin/obj) and ignored files.
+- If the working tree is not clean, the script will prompt before continuing (use -Force to skip the prompt).
+- Use the -Clean parameter to clean build outputs (bin/obj) and MSBuild outputs.
 - The built installer will be placed under: installer/PowerToysSetupVNext/[Platform]/[Configuration]/User[Machine]Setup 
   relative to the solution root directory.
 - To run the full installation in other machines, call "./cert-management.ps1" to export the cert used to sign the packages.
@@ -44,6 +41,7 @@ param (
     [string]$Configuration = 'Release',
     [string]$PerUser = 'true',
     [string]$Version,
+    [switch]$Force,
     [switch]$EnableCmdPalAOT,
     [switch]$Clean,
     [switch]$SkipBuild,
@@ -51,11 +49,12 @@ param (
 )
 
 if ($Help) {
-    Write-Host "Usage: .\build-installer.ps1 [-Platform <x64|arm64>] [-Configuration <Release|Debug>] [-PerUser <true|false>] [-Version <0.0.1>] [-EnableCmdPalAOT] [-Clean] [-SkipBuild]"
+    Write-Host "Usage: .\build-installer.ps1 [-Platform <x64|arm64>] [-Configuration <Release|Debug>] [-PerUser <true|false>] [-Version <0.0.1>] [-Force] [-EnableCmdPalAOT] [-Clean] [-SkipBuild]"
     Write-Host "  -Platform       Target platform (default: auto-detect or x64)"
     Write-Host "  -Configuration  Build configuration (default: Release)"
     Write-Host "  -PerUser        Build per-user installer (default: true)"
     Write-Host "  -Version        Sets the PowerToys version (default: from src\Version.props)"
+    Write-Host "  -Force          Continue even if the git working tree is not clean (skips the interactive prompt)."
     Write-Host "  -EnableCmdPalAOT Enable AOT compilation for CmdPal (slower build)"
     Write-Host "  -Clean          Clean output directories before building"
     Write-Host "  -SkipBuild      Skip building the main solution and tools (assumes they are already built)"
@@ -103,6 +102,73 @@ if (-not $repoRoot -or -not (Test-Path (Join-Path $repoRoot "PowerToys.slnx"))) 
 
 Write-Host "PowerToys repository root detected: $repoRoot"
 
+# Safety check: avoid mixing build outputs with existing local changes unless the user confirms.
+if (-not $Force) {
+    Push-Location $repoRoot
+    try {
+        $gitStatus = $null
+        $gitRelevantStatus = @()
+        try {
+            $gitStatus = git status --porcelain=v1 --untracked-files=all --ignore-submodules=all
+        } catch {
+            Write-Warning ("[GIT] Failed to query git status: {0}" -f $_.Exception.Message)
+        }
+
+        if ($gitStatus -and $gitStatus.Length -gt 0) {
+            foreach ($line in $gitStatus) {
+                if (-not $line) { continue }
+
+                # Porcelain v1 format: XY <path>
+                # We only care about changes that affect the working tree (Y != ' ') or untracked files (??).
+                # Index-only changes (staged, Y == ' ') are ignored per user request.
+                if ($line.StartsWith('??')) {
+                    $gitRelevantStatus += $line
+                    continue
+                }
+
+                if ($line.StartsWith('!!')) {
+                    continue
+                }
+
+                if ($line.Length -ge 2) {
+                    $workTreeStatus = $line[1]
+                    if ($workTreeStatus -ne ' ') {
+                        $gitRelevantStatus += $line
+                    }
+                }
+            }
+        }
+
+        if ($gitRelevantStatus.Count -gt 0) {
+            Write-Warning "[GIT] Working tree is NOT clean."
+            Write-Warning "[GIT] This build will generate untracked files and may modify tracked files, which can mix with your current changes."
+            Write-Host "[GIT] Unstaged/untracked status (first 50 lines):"
+            $gitRelevantStatus | Select-Object -First 50 | ForEach-Object { Write-Host ("  {0}" -f $_) }
+
+            $shouldContinue = $false
+            try {
+                $choices = [System.Management.Automation.Host.ChoiceDescription[]]@(
+                    (New-Object System.Management.Automation.Host.ChoiceDescription "&Yes", "Continue the build."),
+                    (New-Object System.Management.Automation.Host.ChoiceDescription "&No", "Cancel the build.")
+                )
+                $decision = $Host.UI.PromptForChoice("Working tree not clean", "Continue anyway?", $choices, 1)
+                $shouldContinue = ($decision -eq 0)
+            } catch {
+                Write-Warning "[GIT] Interactive prompt not available."
+                Write-Error "Refusing to proceed with a dirty working tree. Re-run with -Force to continue anyway."
+                exit 1
+            }
+
+            if (-not $shouldContinue) {
+                Write-Host "[GIT] Cancelled by user."
+                exit 1
+            }
+        }
+    } finally {
+        Pop-Location
+    }
+}
+
 $cmdpalOutputPath = Join-Path $repoRoot "$Platform\$Configuration\WinUI3Apps\CmdPal"
 $buildOutputPath = Join-Path $repoRoot "$Platform\$Configuration"
 
@@ -117,51 +183,8 @@ if ($Clean) {
         Remove-Item $buildOutputPath -Recurse -Force -ErrorAction Ignore
     }
     
-    Write-Host "[CLEAN] Cleaning all build artifacts (git clean -Xfd)..."
-    Push-Location $repoRoot
-    try {
-        git clean -Xfd | Out-Null
-    } catch {
-        Write-Warning "[CLEAN] git clean failed: $_"
-    } finally {
-        Pop-Location
-    }
-
     Write-Host "[CLEAN] Cleaning solution (msbuild /t:Clean)..."
     RunMSBuild 'PowerToys.slnx' '/t:Clean' $Platform $Configuration
-}
-
-# Git Stash Logic to handle workspace cleanup
-$stashedChanges = $false
-$scriptPathRelative = "tools/build/build-installer.ps1" 
-
-# Calculate relative path of this script to exclude it from stash/reset
-$currentScriptPath = $MyInvocation.MyCommand.Definition
-if ($currentScriptPath.StartsWith($repoRoot)) {
-    $scriptPathRelative = $currentScriptPath.Substring($repoRoot.Length).TrimStart('\', '/')
-    $scriptPathRelative = $scriptPathRelative -replace '\\', '/'
-}
-
-Push-Location $repoRoot
-try {
-    $gitStatus = git status --porcelain
-    if ($gitStatus.Length -gt 0) {
-        Write-Host "[GIT] Uncommitted changes detected. Stashing (excluding this script)..."
-        $stashCountBefore = (git stash list).Count
-        
-        # Exclude the current script from stash so we don't revert it while running
-        git stash push --include-untracked -m "PowerToys Build Auto-Stash" -- . ":(exclude)$scriptPathRelative"
-        
-        $stashCountAfter = (git stash list).Count
-        if ($stashCountAfter -gt $stashCountBefore) {
-            $stashedChanges = $true 
-            Write-Host "[GIT] Changes stashed."
-        } else {
-            Write-Host "[GIT] No changes to stash (likely only this script is modified)."
-        }
-    }
-} finally {
-    Pop-Location
 }
 
 try {
@@ -384,28 +407,7 @@ try {
     RunMSBuild 'installer\PowerToysSetup.slnx' "$commonArgs /m /t:PowerToysBootstrapperVNext /p:PerUser=$PerUser" $Platform $Configuration
 
 } finally {
-    # Restore workspace state using Git
-    Write-Host "[GIT] Cleaning up build artifacts..."
-    Push-Location $repoRoot
-    try {
-        # Revert all changes EXCEPT the script itself
-        # This cleans up Version.props, AppxManifests, etc.
-        git checkout HEAD -- . ":(exclude)$scriptPathRelative"
-        
-        # Remove untracked files (generated manifests, etc.)
-        # -f: force, -d: remove directories, -q: quiet
-        git clean -fd -q
-        
-        if ($stashedChanges) {
-            Write-Host "[GIT] Restoring stashed changes..."
-            git stash pop --index
-            if ($LASTEXITCODE -ne 0) {
-                Write-Warning "[GIT] 'git stash pop' reported conflicts or errors. Your changes are in the stash list."
-            }
-        }
-    } finally {
-        Pop-Location
-    }
+    # No git cleanup; leave workspace state as-is.
 }
 
 Write-Host '[PIPELINE] Completed'

@@ -10,7 +10,8 @@
   xmlns:desktop="http://schemas.microsoft.com/appx/manifest/desktop/windows10"
   xmlns:uap10="http://schemas.microsoft.com/appx/manifest/uap/windows10/10"
   xmlns:systemai="http://schemas.microsoft.com/appx/manifest/systemai/windows10"
-  IgnorableNamespaces="uap uap2 uap3 rescap desktop uap10 systemai">
+  xmlns:com="http://schemas.microsoft.com/appx/manifest/com/windows10"
+  IgnorableNamespaces="uap uap2 uap3 rescap desktop uap10 systemai com">
   <Identity
     Name="Microsoft.PowerToys.SparseApp"
     Publisher="CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US"
@@ -30,6 +31,7 @@
     <TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.19000.0" MaxVersionTested="10.0.26226.0" />
   </Dependencies>
   <Capabilities>
+    <Capability Name="internetClient" />
     <rescap:Capability Name="runFullTrust" />
     <systemai:Capability Name="systemAIModels"/>
     <rescap:Capability Name="unvirtualizedResources"/>
@@ -65,6 +67,43 @@
         Square44x44Logo="Images\Square44x44Logo.png"
         AppListEntry="none">
       </uap:VisualElements>
+    </Application>
+    <Application Id="PowerToys.CmdPalExtension" Executable="Microsoft.CmdPal.Ext.PowerToys.exe" EntryPoint="Windows.FullTrustApplication">
+      <uap:VisualElements
+        DisplayName="PowerToys.CommandPaletteExtension"
+        Description="PowerToys Command Palette Extension"
+        BackgroundColor="transparent"
+        Square150x150Logo="Images\Square150x150Logo.png"
+        Square44x44Logo="Images\Square44x44Logo.png"
+        AppListEntry="none">
+      </uap:VisualElements>
+      <Extensions>
+        <com:Extension Category="windows.comServer">
+          <com:ComServer>
+            <com:ExeServer Executable="Microsoft.CmdPal.Ext.PowerToys.exe" Arguments="-RegisterProcessAsComServer" DisplayName="PowerToys Command Palette Extension">
+              <com:Class Id="7EC02C7D-8F98-4A2E-9F23-B58C2C2F2B17" DisplayName="PowerToys Command Palette Extension" />
+            </com:ExeServer>
+          </com:ComServer>
+        </com:Extension>
+        <uap3:Extension Category="windows.appExtension">
+          <uap3:AppExtension Name="com.microsoft.commandpalette"
+            Id="PowerToys"
+            PublicFolder="Public"
+            DisplayName="PowerToys"
+            Description="Surface PowerToys commands inside Command Palette">
+            <uap3:Properties>
+              <CmdPalProvider>
+                <Activation>
+                  <CreateInstance ClassId="7EC02C7D-8F98-4A2E-9F23-B58C2C2F2B17" />
+                </Activation>
+                <SupportedInterfaces>
+                  <Commands/>
+                </SupportedInterfaces>
+              </CmdPalProvider>
+            </uap3:Properties>
+          </uap3:AppExtension>
+        </uap3:Extension>
+      </Extensions>
     </Application>
   </Applications>
 </Package>

@@ -6,6 +6,7 @@
 #include "../../../common/utils/resources.h"
 #include "../../../common/logger/logger.h"
 #include "../../../common/utils/logger_helper.h"
+#include "../../../common/interop/shared_constants.h"
 #include <atomic>
 #include <thread>
 #include <vector>
@@ -108,6 +109,12 @@ private:
     // Hotkey
     Hotkey m_activationHotkey{};
 
+    // Event-driven trigger support (for CmdPal/automation)
+    HANDLE m_triggerEventHandle = nullptr;
+    HANDLE m_terminateEventHandle = nullptr;
+    std::thread m_eventThread;
+    std::atomic_bool m_listening{ false };
+
 public:
     // Constructor
     CursorWrap()
@@ -121,7 +128,8 @@ public:
     // Destroy the powertoy and free memory
     virtual void destroy() override
     {
-        StopMouseHook();
+        // Ensure hooks/threads/handles are torn down before deletion
+        disable();
         g_cursorWrapInstance = nullptr; // Clear global instance pointer
         delete this;
     }
@@ -200,6 +208,34 @@ public:
         // This ensures cursor wrapping is active immediately after enabling
         StartMouseHook();
         Logger::info("CursorWrap enabled - mouse hook started");
+
+        // Start listening for external trigger event so we can invoke the same logic as the activation hotkey.
+        m_triggerEventHandle = CreateEventW(nullptr, false, false, CommonSharedConstants::CURSOR_WRAP_TRIGGER_EVENT);
+        m_terminateEventHandle = CreateEventW(nullptr, false, false, nullptr);
+        if (m_triggerEventHandle && m_terminateEventHandle)
+        {
+            m_listening = true;
+            m_eventThread = std::thread([this]() {
+                HANDLE handles[2] = { m_triggerEventHandle, m_terminateEventHandle };
+                while (m_listening)
+                {
+                    auto res = WaitForMultipleObjects(2, handles, false, INFINITE);
+                    if (!m_listening)
+                    {
+                        break;
+                    }
+
+                    if (res == WAIT_OBJECT_0)
+                    {
+                        on_hotkey(0);
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+            });
+        }
     }
 
     // Disable the powertoy
@@ -209,6 +245,26 @@ public:
         Trace::EnableCursorWrap(false);
         StopMouseHook();
         Logger::info("CursorWrap disabled - mouse hook stopped");
+
+        m_listening = false;
+        if (m_terminateEventHandle)
+        {
+            SetEvent(m_terminateEventHandle);
+        }
+        if (m_eventThread.joinable())
+        {
+            m_eventThread.join();
+        }
+        if (m_triggerEventHandle)
+        {
+            CloseHandle(m_triggerEventHandle);
+            m_triggerEventHandle = nullptr;
+        }
+        if (m_terminateEventHandle)
+        {
+            CloseHandle(m_terminateEventHandle);
+            m_terminateEventHandle = nullptr;
+        }
     }
 
     // Returns if the powertoys is enabled

@@ -4,6 +4,7 @@
 #include "trace.h"
 #include "InclusiveCrosshairs.h"
 #include "common/utils/color.h"
+#include <common/interop/shared_constants.h>
 #include <atomic>
 #include <thread>
 #include <chrono>
@@ -124,6 +125,12 @@ private:
     // Mouse Pointer Crosshairs specific settings
     InclusiveCrosshairsSettings m_inclusiveCrosshairsSettings;
 
+    // Event-driven trigger support
+    HANDLE m_triggerEventHandle = nullptr;
+    HANDLE m_terminateEventHandle = nullptr;
+    std::thread m_eventThread;
+    std::atomic_bool m_listening{ false };
+
 public:
     // Constructor
     MousePointerCrosshairs()
@@ -137,11 +144,9 @@ public:
     // Destroy the powertoy and free memory
     virtual void destroy() override
     {
-        UninstallKeyboardHook();
-        StopXTimer();
-        StopYTimer();
+        // Ensure all background threads/handles are torn down before destruction to avoid std::terminate/abort on joinable threads
+        disable();
         g_instance.store(nullptr, std::memory_order_release);
-        // Release shared state so worker threads (if any) exit when weak_ptr lock fails
         m_state.reset();
         delete this;
     }
@@ -203,6 +208,34 @@ public:
         m_enabled = true;
         Trace::EnableMousePointerCrosshairs(true);
         std::thread([=]() { InclusiveCrosshairsMain(m_hModule, m_inclusiveCrosshairsSettings); }).detach();
+
+        // Start listening for external trigger event so we can invoke the same logic as the activation hotkey.
+        m_triggerEventHandle = CreateEventW(nullptr, false, false, CommonSharedConstants::MOUSE_CROSSHAIRS_TRIGGER_EVENT);
+        m_terminateEventHandle = CreateEventW(nullptr, false, false, nullptr);
+        if (m_triggerEventHandle && m_terminateEventHandle)
+        {
+            m_listening = true;
+            m_eventThread = std::thread([this]() {
+                HANDLE handles[2] = { m_triggerEventHandle, m_terminateEventHandle };
+                while (m_listening)
+                {
+                    auto res = WaitForMultipleObjects(2, handles, false, INFINITE);
+                    if (!m_listening)
+                    {
+                        break;
+                    }
+
+                    if (res == WAIT_OBJECT_0)
+                    {
+                        on_hotkey(0); // activation hotkey
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+            });
+        }
     }
 
     // Disable the powertoy
@@ -215,6 +248,26 @@ public:
         StopYTimer();
         m_glideState = 0;
         InclusiveCrosshairsDisable();
+
+        m_listening = false;
+        if (m_terminateEventHandle)
+        {
+            SetEvent(m_terminateEventHandle);
+        }
+        if (m_eventThread.joinable())
+        {
+            m_eventThread.join();
+        }
+        if (m_triggerEventHandle)
+        {
+            CloseHandle(m_triggerEventHandle);
+            m_triggerEventHandle = nullptr;
+        }
+        if (m_terminateEventHandle)
+        {
+            CloseHandle(m_terminateEventHandle);
+            m_terminateEventHandle = nullptr;
+        }
     }
 
     // Returns if the powertoys is enabled
