@@ -927,6 +927,14 @@
       <Platform Solution="*|x64" Project="x64" />
     </Project>
   </Folder>
+  <Folder Name="/modules/ScreencastMode/">
+    <Project Path="src/modules/ScreencastMode/ScreencastModeModuleInterface/ScreencastModeModuleInterface.vcxproj" Id="ff038541-2c59-4ee2-a52f-a2e94863d517" />
+    <Project Path="src/modules/ScreencastMode/ScreencastModeUI/ScreencastModeUI.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+      <Deploy />
+    </Project>
+  </Folder>
   <Folder Name="/modules/shortcutguide/">
     <Project Path="src/modules/ShortcutGuide/ShortcutGuide/ShortcutGuide.vcxproj" Id="2edb3eb4-fa92-4bff-b2d8-566584837231" />
     <Project Path="src/modules/ShortcutGuide/ShortcutGuideModuleInterface/ShortcutGuideModuleInterface.vcxproj" Id="2d604c07-51fc-46bb-9eb7-75aecc7f5e81" />
