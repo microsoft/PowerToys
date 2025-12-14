@@ -129,31 +129,31 @@ internal static class Common
         return !hotkey.IsEmpty() && (vkCode == hotkey.Code) && (!hotkey.Win || winDown) && (!hotkey.Alt || altDown) && (!hotkey.Shift || shiftDown) && (!hotkey.Ctrl || ctrlDown);
     }
 
-    public static string BinaryName
+    internal static string BinaryName
     {
         get => Common.binaryName;
         set => Common.binaryName = value;
     }
 
-    public static bool SecondOpenSocketTry
+    internal static bool SecondOpenSocketTry
     {
         get => Common.secondOpenSocketTry;
         set => Common.secondOpenSocketTry = value;
     }
 
-    public static long LastReconnectByHotKeyTime
+    internal static long LastReconnectByHotKeyTime
     {
         get => Common.lastReconnectByHotKeyTime;
         set => Common.lastReconnectByHotKeyTime = value;
     }
 
-    public static int SwitchCount
+    internal static int SwitchCount
     {
         get => Common.switchCount;
         set => Common.switchCount = value;
     }
 
-    public static Point LastPos
+    internal static Point LastPos
     {
         get => Common.lastPos;
         set => Common.lastPos = value;
@@ -171,7 +171,7 @@ internal static class Common
         set => Common.inputCallbackForm = value;
     }
 
-    public static int PaintCount { get; set; }
+    internal static int PaintCount { get; set; }
 
     internal static bool RunOnScrSaverDesktop
     {
@@ -571,7 +571,7 @@ internal static class Common
         lastInputEventCount = Event.InputEventCount;
     }
 
-    internal static void PokeMyself()
+    private static void PokeMyself()
     {
         int x, y = 0;
 
@@ -663,7 +663,7 @@ internal static class Common
         }
     }
 
-    internal static void PrepareScreenCapture()
+    private static void PrepareScreenCapture()
     {
         Common.DoSomethingInUIThread(() =>
         {
@@ -1067,7 +1067,7 @@ internal static class Common
         return false;
     }
 
-    internal static Socket AtLeastOneServerSocketConnected()
+    private static Socket AtLeastOneServerSocketConnected()
     {
         SocketStuff sk = Common.Sk;
 
@@ -1504,7 +1504,7 @@ internal static class Common
         return sb.ToString();
     }
 
-    public static string GetWindowClassName(IntPtr hWnd)
+    private static string GetWindowClassName(IntPtr hWnd)
     {
         StringBuilder buffer = new(128);
         _ = NativeMethods.GetClassName(hWnd, buffer, buffer.Capacity);
@@ -1598,7 +1598,7 @@ internal static class Common
             || excludedApps.Contains(Path.GetFileName(name), StringComparer.OrdinalIgnoreCase);
     }
 
-    internal static bool IsEasyMouseBlockedByFullscreenWindow()
+    private static bool IsEasyMouseBlockedByFullscreenWindow()
     {
         var shellHandle = NativeMethods.GetShellWindow();
         var desktopHandle = NativeMethods.GetDesktopWindow();
