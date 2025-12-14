@@ -10,6 +10,7 @@ using System.IO;
 using System.IO.Pipelines;
 using System.Linq;
 using System.Text.Json;
+using System.Threading;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using PowerToys.Interop;
@@ -214,9 +215,8 @@ namespace RunnerV2.Helpers
 
         public static void CloseSettingsWindow()
         {
-            InteropEvent closeEventWrapper = new(InteropEvent.SettingsTerminate);
-            closeEventWrapper.Fire();
-            closeEventWrapper.Dispose();
+            using var closeEventWrapper = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.PowerToysRunnerTerminateSettingsEvent());
+            closeEventWrapper.Set();
         }
     }
 }

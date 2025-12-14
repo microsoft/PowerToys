@@ -6,10 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Threading;
 using ManagedCommon;
-using Microsoft.PowerToys.Settings.UI.Library;
-using Windows.System;
 using static RunnerV2.NativeMethods;
 
 namespace RunnerV2.Helpers

@@ -195,4 +195,16 @@ namespace winrt::PowerToys::Interop::implementation
     {
         return CommonSharedConstants::CMDPAL_SHOW_EVENT;
     }
+    hstring Constants::AlwaysOnTopPinEvent()
+    {
+        return CommonSharedConstants::ALWAYS_ON_TOP_PIN_EVENT;
+    }
+    hstring Constants::AlwaysOnTopTerminateEvent()
+    {
+        return CommonSharedConstants::ALWAYS_ON_TOP_TERMINATE_EVENT;
+    }
+    hstring Constants::CropAndLockExitEvent()
+    {
+        return CommonSharedConstants::CROP_AND_LOCK_EXIT_EVENT;
+    }
 }

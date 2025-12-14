@@ -8,19 +8,15 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
-using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Runtime.InteropServices;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using ManagedCommon;
 using RunnerV2.Helpers;
 using RunnerV2.ModuleInterfaces;
 using Update;
-using Windows.ApplicationModel;
 using static RunnerV2.NativeMethods;
 
 namespace RunnerV2
@@ -53,6 +49,7 @@ namespace RunnerV2
             new CmdNotFoundModuleInterface(),
             new CommandPaletteModuleInterface(),
             new CropAndLockModuleInterface(),
+            new EnvironmentVariablesModuleInterface(),
         ];
 
         /// <summary>

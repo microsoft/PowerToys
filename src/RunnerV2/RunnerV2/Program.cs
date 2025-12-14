@@ -6,7 +6,6 @@ using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.InteropServices;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using PowerToys.GPOWrapperProjection;

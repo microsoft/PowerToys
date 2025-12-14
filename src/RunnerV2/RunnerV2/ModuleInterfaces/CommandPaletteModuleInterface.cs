@@ -3,16 +3,13 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
-using System.Threading;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using PowerToys.GPOWrapper;
 using RunnerV2.Helpers;
-using Windows.ApplicationModel;
 
 namespace RunnerV2.ModuleInterfaces
 {

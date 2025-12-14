@@ -4,20 +4,15 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Globalization;
-using System.Linq;
 using System.Text.Json;
 using System.Threading;
-using System.Threading.Tasks;
-using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using PowerToys.GPOWrapper;
-using RunnerV2.Helpers;
+using PowerToys.Interop;
 
 namespace RunnerV2.ModuleInterfaces
 {
-    internal sealed partial class ColorPickerModuleInterface : ProcessModuleAbstractClass, IPowerToysModule, IDisposable
+    internal sealed class ColorPickerModuleInterface : ProcessModuleAbstractClass, IPowerToysModule
     {
         public string Name => "ColorPicker";
 
@@ -25,22 +20,15 @@ namespace RunnerV2.ModuleInterfaces
 
         public GpoRuleConfigured GpoRuleConfigured => GPOWrapper.GetConfiguredColorPickerEnabledValue();
 
-        private InteropEvent? _showUiEventWrapper;
-
         public void Disable()
         {
-            InteropEvent terminateEventWrapper = new(InteropEvent.ColorPickerTerminate);
-            terminateEventWrapper.Fire();
-            terminateEventWrapper.Dispose();
-            _showUiEventWrapper?.Dispose();
-            _showUiEventWrapper = null;
+            using var terminateEventWrapper = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.TerminateColorPickerSharedEvent());
+            terminateEventWrapper.Set();
         }
 
         public void Enable()
         {
             InitializeShortcuts();
-
-            _showUiEventWrapper = new InteropEvent(InteropEvent.ColorPickerShow);
         }
 
         private void InitializeShortcuts()
@@ -48,7 +36,8 @@ namespace RunnerV2.ModuleInterfaces
             Shortcuts.Clear();
             Shortcuts.Add((new SettingsUtils().GetSettings<ColorPickerSettings>(Name).Properties.ActivationShortcut, () =>
             {
-                _showUiEventWrapper?.Fire();
+                using var showUiEventWrapper = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.ShowColorPickerSharedEvent());
+                showUiEventWrapper.Set();
             }
             ));
         }
@@ -65,11 +54,5 @@ namespace RunnerV2.ModuleInterfaces
         public override string ProcessName => "PowerToys.ColorPickerUI";
 
         public override ProcessLaunchOptions LaunchOptions => ProcessLaunchOptions.SingletonProcess | ProcessLaunchOptions.RunnerProcessIdAsFirstArgument;
-
-        public void Dispose()
-        {
-            _showUiEventWrapper?.Dispose();
-            GC.SuppressFinalize(this);
-        }
     }
 }

@@ -43,12 +43,15 @@ namespace PowerToys
             static String TerminateHostsSharedEvent();
             static String CropAndLockThumbnailEvent();
             static String CropAndLockReparentEvent();
+            static String CropAndLockExitEvent();
             static String ShowEnvironmentVariablesSharedEvent();
             static String ShowEnvironmentVariablesAdminSharedEvent();
             static String WorkspacesLaunchEditorEvent();
             static String WorkspacesHotkeyEvent();
             static String PowerToysRunnerTerminateSettingsEvent();
             static String ShowCmdPalEvent();
+            static String AlwaysOnTopPinEvent();
+            static String AlwaysOnTopTerminateEvent();
         }
     }
 }

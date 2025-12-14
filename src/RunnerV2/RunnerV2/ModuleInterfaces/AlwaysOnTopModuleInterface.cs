@@ -4,17 +4,15 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Globalization;
 using System.Text.Json;
-using ManagedCommon;
+using System.Threading;
 using Microsoft.PowerToys.Settings.UI.Library;
 using PowerToys.GPOWrapper;
-using RunnerV2.Helpers;
+using PowerToys.Interop;
 
 namespace RunnerV2.ModuleInterfaces
 {
-    internal sealed partial class AlwaysOnTopModuleInterface : ProcessModuleAbstractClass, IPowerToysModule, IDisposable
+    internal sealed class AlwaysOnTopModuleInterface : ProcessModuleAbstractClass, IPowerToysModule
     {
         public bool Enabled => new SettingsUtils().GetSettings<GeneralSettings>().Enabled.AlwaysOnTop;
 
@@ -22,21 +20,15 @@ namespace RunnerV2.ModuleInterfaces
 
         public GpoRuleConfigured GpoRuleConfigured => GPOWrapper.GetConfiguredAlwaysOnTopEnabledValue();
 
-        private InteropEvent? _pinEventWrapper;
-
         public void Disable()
         {
-            InteropEvent terminateEventWrapper = new(InteropEvent.AlwaysOnTopTerminate);
-            terminateEventWrapper.Fire();
-            terminateEventWrapper.Dispose();
-            _pinEventWrapper?.Dispose();
-            _pinEventWrapper = null;
+            using var terminateEventWrapper = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.AlwaysOnTopTerminateEvent());
+            terminateEventWrapper.Set();
         }
 
         public void Enable()
         {
             InitializeHotkey();
-            _pinEventWrapper = new InteropEvent(InteropEvent.AlwaysOnTopPin);
         }
 
         private void InitializeHotkey()
@@ -44,7 +36,8 @@ namespace RunnerV2.ModuleInterfaces
             Shortcuts.Clear();
             Shortcuts.Add((new SettingsUtils().GetSettings<AlwaysOnTopSettings>(Name).Properties.Hotkey.Value, () =>
                 {
-                    _pinEventWrapper?.Fire();
+                    using var pinEventWrapper = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.AlwaysOnTopPinEvent());
+                    pinEventWrapper.Set();
                 }
             ));
         }
@@ -61,11 +54,5 @@ namespace RunnerV2.ModuleInterfaces
         public override string ProcessName => "PowerToys.AlwaysOnTop";
 
         public override ProcessLaunchOptions LaunchOptions => ProcessLaunchOptions.SingletonProcess | ProcessLaunchOptions.RunnerProcessIdAsFirstArgument | ProcessLaunchOptions.ElevateIfApplicable;
-
-        public void Dispose()
-        {
-            _pinEventWrapper?.Dispose();
-            GC.SuppressFinalize(this);
-        }
     }
 }

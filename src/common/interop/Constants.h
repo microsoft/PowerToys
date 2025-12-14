@@ -46,12 +46,15 @@ namespace winrt::PowerToys::Interop::implementation
         static hstring TerminateHostsSharedEvent();
         static hstring CropAndLockThumbnailEvent();
         static hstring CropAndLockReparentEvent();
+        static hstring CropAndLockExitEvent();
         static hstring ShowEnvironmentVariablesSharedEvent();
         static hstring ShowEnvironmentVariablesAdminSharedEvent();
         static hstring WorkspacesLaunchEditorEvent();
         static hstring WorkspacesHotkeyEvent();
         static hstring PowerToysRunnerTerminateSettingsEvent();
         static hstring ShowCmdPalEvent();
+        static hstring AlwaysOnTopPinEvent();
+        static hstring AlwaysOnTopTerminateEvent();
     };
 }
 

@@ -5,7 +5,6 @@
 using System;
 using System.Drawing;
 using System.Runtime.InteropServices;
-using System.Runtime.InteropServices.ComTypes;
 using ManagedCommon;
 using Windows.ApplicationModel;
 

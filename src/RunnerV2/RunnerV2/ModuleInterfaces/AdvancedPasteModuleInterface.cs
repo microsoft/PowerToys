@@ -4,16 +4,13 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Text.Json;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using PowerToys.GPOWrapper;
 using PowerToys.Interop;
-using RunnerV2.Helpers;
 
 namespace RunnerV2.ModuleInterfaces
 {
@@ -29,18 +26,18 @@ namespace RunnerV2.ModuleInterfaces
         {
             if (_ipc != null)
             {
-                _ipc.Send("TerminateApp");
+                _ipc.Send(Constants.AdvancedPasteTerminateAppMessage());
                 _ipc.End();
                 _ipc = null;
             }
         }
 
+        private const string IpcName = @"\\.\pipe\PowerToys.AdvancedPaste";
         private TwoWayPipeMessageIPCManaged? _ipc;
-        private string _ipcName = @"\\.\pipe\PowerToys.AdvancedPaste";
 
         public void Enable()
         {
-            _ipc = new TwoWayPipeMessageIPCManaged(string.Empty, _ipcName, (_) => { });
+            _ipc = new TwoWayPipeMessageIPCManaged(string.Empty, IpcName, (_) => { });
             _ipc.Start();
 
             PopulateShortcuts();
@@ -59,24 +56,24 @@ namespace RunnerV2.ModuleInterfaces
 
             AdvancedPasteSettings settings = new SettingsUtils().GetSettingsOrDefault<AdvancedPasteSettings>(Name);
             Shortcuts.Add((settings.Properties.AdvancedPasteUIShortcut, () =>
-                _ipc.Send("ShowUI")
+                _ipc.Send(Constants.AdvancedPasteShowUIMessage())
             ));
             Shortcuts.Add((settings.Properties.PasteAsPlainTextShortcut, TryToPasteAsPlainText));
-            Shortcuts.Add((settings.Properties.PasteAsMarkdownShortcut, () => _ipc.Send("PasteMarkdown")));
-            Shortcuts.Add((settings.Properties.PasteAsJsonShortcut, () => _ipc.Send("PasteJson")));
+            Shortcuts.Add((settings.Properties.PasteAsMarkdownShortcut, () => _ipc.Send(Constants.AdvancedPasteMarkdownMessage())));
+            Shortcuts.Add((settings.Properties.PasteAsJsonShortcut, () => _ipc.Send(Constants.AdvancedPasteJsonMessage())));
 
             HotkeyAccessor[] hotkeyAccessors = settings.GetAllHotkeyAccessors();
             int additionalActionsCount = settings.Properties.AdditionalActions.GetAllActions().Count() - 2;
             for (int i = 0; i < additionalActionsCount; i++)
             {
                 int scopedI = i;
-                Shortcuts.Add((hotkeyAccessors[4 + i].Value, () => _ipc.Send("AdditionalAction " + (3 + scopedI))));
+                Shortcuts.Add((hotkeyAccessors[4 + i].Value, () => _ipc.Send(Constants.AdvancedPasteAdditionalActionMessage() + " " + (3 + scopedI))));
             }
 
             for (int i = 4 + additionalActionsCount; i < hotkeyAccessors.Length; i++)
             {
                 int scopedI = i;
-                Shortcuts.Add((hotkeyAccessors[i].Value, () => _ipc.Send("CustomAction " + (scopedI - 5 - additionalActionsCount))));
+                Shortcuts.Add((hotkeyAccessors[i].Value, () => _ipc.Send(Constants.AdvancedPasteCustomActionMessage() + " " + (scopedI - 5 - additionalActionsCount))));
             }
         }
 
@@ -102,7 +99,7 @@ namespace RunnerV2.ModuleInterfaces
 
         public override string ProcessName => "PowerToys.AdvancedPaste";
 
-        public override string ProcessArguments => _ipcName;
+        public override string ProcessArguments => IpcName;
 
         public override ProcessLaunchOptions LaunchOptions => ProcessLaunchOptions.SingletonProcess | ProcessLaunchOptions.RunnerProcessIdAsFirstArgument;
     }

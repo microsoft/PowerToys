@@ -3,14 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using PowerToys.GPOWrapper;
 using RunnerV2.Helpers;
 
 namespace RunnerV2.ModuleInterfaces
@@ -56,6 +50,11 @@ namespace RunnerV2.ModuleInterfaces
             /// </summary>
             /// <remarks>Use this value when using a helper process to launch an application like explorer.exe.</remarks>
             NeverExit = 32,
+
+            /// <summary>
+            /// Suppresses UI when process is launched.
+            /// </summary>
+            HideUI = 64,
         }
 
         /// <summary>

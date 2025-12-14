@@ -4,14 +4,12 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Globalization;
-using System.Reflection;
 using System.Text.Json;
+using System.Threading;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using PowerToys.GPOWrapper;
-using RunnerV2.Helpers;
+using PowerToys.Interop;
 
 namespace RunnerV2.ModuleInterfaces
 {
@@ -23,23 +21,17 @@ namespace RunnerV2.ModuleInterfaces
 
         public GpoRuleConfigured GpoRuleConfigured => GPOWrapper.GetConfiguredCropAndLockEnabledValue();
 
-        private InteropEvent _reparentEvent = new(InteropEvent.CropAndLockReparent);
-        private InteropEvent _thumbnailEvent = new(InteropEvent.CropAndLockThumbnail);
-        private InteropEvent _terminateEvent = new(InteropEvent.CropAndLockTerminate);
+        private EventWaitHandle _reparentEvent = new(false, EventResetMode.AutoReset, Constants.CropAndLockReparentEvent());
+        private EventWaitHandle _thumbnailEvent = new(false, EventResetMode.AutoReset, Constants.CropAndLockThumbnailEvent());
+        private EventWaitHandle _terminateEvent = new(false, EventResetMode.AutoReset, Constants.CropAndLockExitEvent());
 
         public void Disable()
         {
-            _terminateEvent.Fire();
-            _reparentEvent.Dispose();
-            _thumbnailEvent.Dispose();
-            _terminateEvent.Dispose();
+            _terminateEvent.Set();
         }
 
         public void Enable()
         {
-            _reparentEvent = new(InteropEvent.CropAndLockReparent);
-            _thumbnailEvent = new(InteropEvent.CropAndLockThumbnail);
-            _terminateEvent = new(InteropEvent.CropAndLockTerminate);
             PopulateShortcuts();
         }
 
@@ -47,8 +39,8 @@ namespace RunnerV2.ModuleInterfaces
         {
             Shortcuts.Clear();
             var settings = new SettingsUtils().GetSettings<CropAndLockSettings>(Name);
-            Shortcuts.Add((settings.Properties.ThumbnailHotkey.Value, _thumbnailEvent.Fire));
-            Shortcuts.Add((settings.Properties.ReparentHotkey.Value, _reparentEvent.Fire));
+            Shortcuts.Add((settings.Properties.ThumbnailHotkey.Value,  () => _thumbnailEvent.Set()));
+            Shortcuts.Add((settings.Properties.ReparentHotkey.Value,  () => _reparentEvent.Set()));
         }
 
         public void OnSettingsChanged(string settingsKind, JsonElement jsonProperties)
