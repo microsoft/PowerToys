@@ -223,7 +223,10 @@
                                     <controls:SettingsCard.HeaderIcon>
                                         <cpcontrols:ContentIcon>
                                             <cpcontrols:ContentIcon.Content>
-                                                <controls:SwitchPresenter TargetType="x:Boolean" Value="{x:Bind Icon.IsSet, FallbackValue=x:False, Mode=OneWay}" AutomationProperties.AccessibilityView="Raw">
+                                                <controls:SwitchPresenter
+                                                    AutomationProperties.AccessibilityView="Raw"
+                                                    TargetType="x:Boolean"
+                                                    Value="{x:Bind Icon.IsSet, FallbackValue=x:False, Mode=OneWay}">
                                                     <controls:Case Value="True">
                                                         <cpcontrols:IconBox
                                                             Width="20"
@@ -233,7 +236,8 @@
                                                             SourceRequested="{x:Bind helpers:IconCacheProvider.SourceRequested}" />
                                                     </controls:Case>
                                                     <controls:Case Value="False">
-                                                        <Image Width="20"
+                                                        <Image
+                                                            Width="20"
                                                             Height="20"
                                                             AutomationProperties.AccessibilityView="Raw"
                                                             Source="ms-appx:///Assets/Icons/ExtensionIconPlaceholder.png" />
