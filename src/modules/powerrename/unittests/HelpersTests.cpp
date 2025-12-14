@@ -785,10 +785,10 @@ namespace HelpersTests
         TEST_METHOD(RelaxedConstraint_VerbatimCapitalAfterPatterns)
         {
             // Verify that patterns can be followed by capital letters that are not part
-            // of longer patterns, e.g., $YYYYA should be matched as $YYYY + 'A'.
+            // of longer patterns, e.g., $DDC should match $DD + 'C'.
             SYSTEMTIME testTime = GetTestTime();
             wchar_t result[MAX_PATH] = { 0 };
-            HRESULT hr = GetDatedFileName(result, MAX_PATH, L"file_$YYYYA_$MMB_$DDC", testTime);
+            HRESULT hr = GetDatedFileName(result, MAX_PATH, L"file_$YYYYA_$MMB_$DDC", testTime); /* #no-spell-check-line */
 
             Assert::IsTrue(SUCCEEDED(hr));
             Assert::AreEqual(L"file_2024A_03B_15C", result);

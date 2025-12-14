@@ -454,7 +454,7 @@ HRESULT GetDatedFileName(_Out_ PWSTR result, UINT cchMax, _In_ PCWSTR source, SY
         // lookahead to prevent matching those.
         res = regex_replace(
             res,
-            std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$D(?!(ATE_TAKEN_|ESCRIPTION|OCUMENT_ID))"),
+            std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$D(?!(ATE_TAKEN_|ESCRIPTION|OCUMENT_ID))"), /* #no-spell-check-line */
             replaceTerm);
 
         // Time.
