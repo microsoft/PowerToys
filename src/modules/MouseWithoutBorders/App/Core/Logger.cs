@@ -198,7 +198,6 @@ internal static class Logger
             }
 
             Logger.DumpProgramLogs(sb, level);
-            Logger.DumpOtherLogs(sb, level);
             Logger.DumpStaticTypes(sb, level);
 
             log = string.Format(
@@ -238,11 +237,6 @@ internal static class Logger
     internal static void DumpProgramLogs(StringBuilder sb, int level)
     {
         _ = Logger.PrivateDump(sb, AllLogs, "[Program logs]\r\n===============\r\n", 0, level, false);
-    }
-
-    internal static void DumpOtherLogs(StringBuilder sb, int level)
-    {
-        _ = Logger.PrivateDump(sb, new Common(), "[Other Logs]\r\n===============\r\n", 0, level, false);
     }
 
     internal static void DumpStaticTypes(StringBuilder sb, int level)
