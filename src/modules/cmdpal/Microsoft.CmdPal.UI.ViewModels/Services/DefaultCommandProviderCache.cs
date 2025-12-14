@@ -11,7 +11,7 @@ namespace Microsoft.CmdPal.UI.ViewModels.Services;
 
 public sealed partial class DefaultCommandProviderCache : ICommandProviderCache, IDisposable
 {
-    private const string CacheFileName = "commandprovidercache.json";
+    private const string CacheFileName = "commandProviderCache.json";
 
     private readonly Dictionary<string, CommandProviderCacheItem> _cache = new(StringComparer.Ordinal);
 
