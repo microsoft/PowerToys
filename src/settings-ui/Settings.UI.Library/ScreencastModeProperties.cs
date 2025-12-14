@@ -1,0 +1,39 @@
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
+using System.Text.Json.Serialization;
+using Settings.UI.Library.Attributes;
+
+namespace Microsoft.PowerToys.Settings.UI.Library
+{
+    public class ScreencastModeProperties
+    {
+        [CmdConfigureIgnore]
+        public static HotkeySettings DefaultActivationShortcut => new HotkeySettings(true, false, true, false, 0x53); // Win + Alt + S
+
+        public HotkeySettings ScreencastModeShortcut { get; set; }
+
+        [JsonPropertyName("display_position")]
+        public StringProperty DisplayPosition { get; set; }
+
+        [JsonPropertyName("text_color")]
+        public StringProperty TextColor { get; set; }
+
+        [JsonPropertyName("background_color")]
+        public StringProperty BackgroundColor { get; set; }
+
+        [JsonPropertyName("text_size")]
+        public IntProperty TextSize { get; set; }
+
+        public ScreencastModeProperties()
+        {
+            ScreencastModeShortcut = DefaultActivationShortcut;
+            DisplayPosition = new StringProperty("TopRight");
+            TextColor = new StringProperty("#FFFFFF");
+            BackgroundColor = new StringProperty("#000000");
+            TextSize = new IntProperty(18); // Default font size
+        }
+    }
+}

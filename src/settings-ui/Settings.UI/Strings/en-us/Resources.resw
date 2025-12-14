@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <root>
-  <!--
-    Microsoft ResX Schema
-
+  <!-- 
+    Microsoft ResX Schema 
+    
     Version 2.0
-
-    The primary goals of this format is to allow a simple XML format
-    that is mostly human readable. The generation and parsing of the
-    various data types are done through the TypeConverter classes
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
     associated with the data types.
-
+    
     Example:
-
+    
     ... ado.net/XML headers & schema ...
     <resheader name="resmimetype">text/microsoft-resx</resheader>
     <resheader name="version">2.0</resheader>
@@ -26,36 +26,36 @@
         <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
         <comment>This is a comment</comment>
     </data>
-
-    There are any number of "resheader" rows that contain simple
+                
+    There are any number of "resheader" rows that contain simple 
     name/value pairs.
-
-    Each data row contains a name, and value. The row also contains a
-    type or mimetype. Type corresponds to a .NET class that support
-    text/value conversion through the TypeConverter architecture.
-    Classes that don't support this are serialized and stored with the
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
     mimetype set.
-
-    The mimetype is used for serialized objects, and tells the
-    ResXResourceReader how to depersist the object. This is currently not
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
     extensible. For a given mimetype the value must be set accordingly:
-
-    Note - application/x-microsoft.net.object.binary.base64 is the format
-    that the ResXResourceWriter will generate, however the reader can
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
     read any of the formats listed below.
-
+    
     mimetype: application/x-microsoft.net.object.binary.base64
-    value   : The object must be serialized with
+    value   : The object must be serialized with 
             : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
             : and then encoded with base64 encoding.
-
+    
     mimetype: application/x-microsoft.net.object.soap.base64
-    value   : The object must be serialized with
+    value   : The object must be serialized with 
             : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
             : and then encoded with base64 encoding.
 
     mimetype: application/x-microsoft.net.object.bytearray.base64
-    value   : The object must be serialized into a byte array
+    value   : The object must be serialized into a byte array 
             : using a System.ComponentModel.TypeConverter
             : and then encoded with base64 encoding.
     -->
@@ -5587,6 +5587,64 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   <data name="Shortcut_Conflict_LearnMore.Content" xml:space="preserve">
     <value>Learn more</value>
   </data>
+  <data name="Shell_ScreencastMode.Content" xml:space="preserve">
+    <value>Screencast Mode</value>
+    <comment>Product name: Navigation view item name for Screencast Mode</comment>
+  </data>
+  <data name="ScreencastMode.ModuleTitle" xml:space="preserve">
+    <value>Screencast Mode</value>
+    <comment>"Screencast Mode" is the name of the utility</comment>
+  </data>
+  <data name="ScreencastMode.ModuleDescription" xml:space="preserve">
+    <value>Visualize keystrokes on the screen. Screencast Mode helps you create better presentations and screencasts by providing visual feedback for yourself and your audience.</value>
+  </data>
+  <data name="ScreencastMode_Enable.Header" xml:space="preserve">
+    <value>Enable Screencast Mode</value>
+  </data>
+  <data name="ScreencastMode_EnableToggle.Header" xml:space="preserve">
+    <value>Enable Screencast Mode</value>
+  </data>
+  <data name="ScreencastMode_Activation.Header" xml:space="preserve">
+    <value>Activation</value>
+  </data>
+  <data name="ScreencastMode_ActivationShortcut.Header" xml:space="preserve">
+    <value>Activation shortcut</value>
+  </data>
+  <data name="ScreencastMode_Appearance.Header" xml:space="preserve">
+    <value>Appearance &amp; behavior</value>
+  </data>
+  <data name="ScreencastMode_DisplayPosition.Header" xml:space="preserve">
+    <value>Display position</value>
+  </data>
+  <data name="ScreencastMode_DisplayPosition.Description" xml:space="preserve">
+    <value>Choose where the keystroke visualization appears on screen</value>
+  </data>
+  <data name="ScreencastMode_BackgroundColor.Header" xml:space="preserve">
+    <value>Background color</value>
+  </data>
+  <data name="ScreencastMode_BackgroundColor.Description" xml:space="preserve">
+    <value>Customize the background color of the keystroke display box</value>
+  </data>
+  <data name="ScreencastMode_DocumentationLink.Text" xml:space="preserve">
+    <value>Learn more about Screencast Mode</value>
+  </data>
+  <data name="ScreencastMode_TextColor.Header" xml:space="preserve">
+    <value>Text Color</value>
+  </data>
+  <data name="ScreencastMode_TextColor.Description" xml:space="preserve">
+    <value>Customize the text color of the keystrokes</value>
+  </data>
+  <data name="ScreencastMode_TextSize.Header" xml:space="preserve">
+    <value>Text size</value>
+    <comment>Change the size of the text inside the screencast mode overlay</comment>
+  </data>
+  <data name="ScreencastMode_TextSize.Description" xml:space="preserve">
+    <value>Customize the size of the keystroke text</value>
+  </data>
+  <data name="ScreencastMode_Preview.Header" xml:space="preserve">
+    <value>Preview</value>
+    <comment>Shows a preview of what the overlay will look like based on selected settings</comment>
+  </data>
   <data name="Hosts_Backup_GroupSettings.Header" xml:space="preserve">
     <value>Backup</value>
   </data>
@@ -5759,5 +5817,14 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   <data name="CmdPal_ModernDescription.Text" xml:space="preserve">
     <value>A modern UI built with Fluent Design</value>
     <comment>Fluent Design is a product name, do not loc</comment>
+  </data>
+  <data name="LightSwitch_ModeFollowNightLight.Content" xml:space="preserve">
+    <value>Follow Night Light</value>
+  </data>
+  <data name="LightSwitch_NightLightSettingsButton.Content" xml:space="preserve">
+    <value>Personalize your Night Light settings.</value>
+  </data>
+  <data name="LightSwitch_FollowNightLightCardMessage.Text" xml:space="preserve">
+    <value>Following Night Light settings.</value>
   </data>
 </root>

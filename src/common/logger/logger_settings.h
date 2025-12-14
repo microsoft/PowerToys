@@ -83,6 +83,8 @@ struct LogSettings
     inline const static std::wstring workspacesSnapshotToolLogPath = L"workspaces-snapshot-tool-log.log";
     inline const static std::string zoomItLoggerName = "zoom-it";
     inline const static std::string lightSwitchLoggerName = "light-switch";
+    inline const static std::string screencastModeLoggerName = "screencast-mode";
+    inline const static std::wstring screencastModeLogPath = L"screencast-mode-log.log";
     inline const static int retention = 30;
     std::wstring logLevel;
     LogSettings();

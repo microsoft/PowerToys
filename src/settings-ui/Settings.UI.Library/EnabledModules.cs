@@ -546,6 +546,23 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
+        private bool screencastMode;
+
+        [JsonPropertyName("ScreencastMode")]
+        public bool ScreencastMode
+        {
+            get => screencastMode;
+            set
+            {
+                if (screencastMode != value)
+                {
+                    LogTelemetryEvent(value);
+                    screencastMode = value;
+                    NotifyChange();
+                }
+            }
+        }
+
         private void NotifyChange()
         {
             notifyEnabledChangedAction?.Invoke();

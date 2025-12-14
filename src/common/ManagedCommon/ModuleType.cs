@@ -32,6 +32,7 @@ namespace ManagedCommon
         PowerAccent,
         RegistryPreview,
         MeasureTool,
+        ScreencastMode,
         ShortcutGuide,
         PowerOCR,
         Workspaces,
