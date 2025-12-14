@@ -507,9 +507,12 @@ namespace HelpersTests
             return testTime;
         }
 
-        // Category 1: Tests for patterns with extra characters (verify negative lookahead prevents wrong matching)
+        // Category 1: Tests for patterns with extra characters. Verifies negative
+        // lookahead doesn't cause issues with partially matched patterns and the
+        // ordering of pattern matches is correct, i.e. longer patterns are matched
+        // first.
 
-        TEST_METHOD(ValidPattern_YYY_Matched)
+        TEST_METHOD(ValidPattern_YYY_PartiallyMatched)
         {
             // Test $YYY (3 Y's) is recognized as a valid pattern $YY plus a verbatim 'Y'
             SYSTEMTIME testTime = GetTestTime();
@@ -520,7 +523,7 @@ namespace HelpersTests
             Assert::AreEqual(L"file_24Y", result);
         }
 
-        TEST_METHOD(InvalidPattern_DDD_NotPartiallyMatched)
+        TEST_METHOD(ValidPattern_DDD_PartiallyMatched)
         {
             // Test that $DDD (short weekday) is not confused with $DD (2-digit day)
             // Verifies that the matching of $DDD before $DD works correctly
@@ -532,7 +535,7 @@ namespace HelpersTests
             Assert::AreEqual(L"file_Fri", result);  // Should be "Fri", not "15D"
         }
 
-        TEST_METHOD(InvalidPattern_MMM_NotPartiallyMatched)
+        TEST_METHOD(ValidPattern_MMM_PartiallyMatched)
         {
             // Test that $MMM (short month name) is not confused with $MM (2-digit month)
             // Verifies that the matching of $MMM before $MM works correctly
@@ -544,7 +547,7 @@ namespace HelpersTests
             Assert::AreEqual(L"file_Mar", result);  // Should be "Mar", not "03M"
         }
 
-        TEST_METHOD(ValidPattern_HHH_Matched)
+        TEST_METHOD(ValidPattern_HHH_PartiallyMatched)
         {
             // Test $HHH (3 H's) should match $HH and leave extra H unchanged
             // Also confirms that $HH is matched before $H
@@ -683,7 +686,7 @@ namespace HelpersTests
             Assert::AreEqual(L"file_2024", result);  // Should be "2024", not "202Y"
         }
 
-        TEST_METHOD (ExecutionOrder_MonthNotMatchedInMMM)
+        TEST_METHOD(ExecutionOrder_MonthNotMatchedInMMM)
         {
             // Verify $M or $MM don't match when $MMM is given
             SYSTEMTIME testTime = GetTestTime();
@@ -694,7 +697,7 @@ namespace HelpersTests
             Assert::AreEqual(L"file_Mar", result);  // Should be "Mar", not "3ar"
         }
 
-        TEST_METHOD (ExecutionOrder_DayNotMatchedInDDDD)
+        TEST_METHOD(ExecutionOrder_DayNotMatchedInDDDD)
         {
             // Verify $D or $DD don't match when $DDDD is given
             SYSTEMTIME testTime = GetTestTime();
@@ -705,7 +708,7 @@ namespace HelpersTests
             Assert::AreEqual(L"file_Friday", result);  // Should be "Friday", not "15riday"
         }
 
-        TEST_METHOD (ExecutionOrder_HourNotMatchedInHH)
+        TEST_METHOD(ExecutionOrder_HourNotMatchedInHH)
         {
             // Verify $H doesn't match when part of $HH
             // Note: $HH is 12-hour format, so 14:00 (2 PM) displays as "02"
@@ -717,7 +720,7 @@ namespace HelpersTests
             Assert::AreEqual(L"file_02", result);  // 14:00 in 12-hour format is "02 PM"
         }
 
-        TEST_METHOD (ExecutionOrder_MillisecondNotMatchedInFFF)
+        TEST_METHOD(ExecutionOrder_MillisecondNotMatchedInFFF)
         {
             // Verify $f or $ff don't match when $fff is given
             SYSTEMTIME testTime = GetTestTime();
@@ -779,7 +782,7 @@ namespace HelpersTests
             Assert::AreEqual(L"file_15T", result);
         }
 
-        TEST_METHOD (RelaxedConstraint_VerbatimCapitalAfterPatterns)
+        TEST_METHOD(RelaxedConstraint_VerbatimCapitalAfterPatterns)
         {
             // Verify that patterns can be followed by capital letters that are not part
             // of longer patterns, e.g., $YYYYA should be matched as $YYYY + 'A'.
@@ -791,7 +794,7 @@ namespace HelpersTests
             Assert::AreEqual(L"file_2024A_03B_15C", result);
         }
 
-        TEST_METHOD (Collision_DateTaken_Protected)
+        TEST_METHOD(Collision_DateTaken_Protected)
         {
             // Verify that date patterns do not collide with metadata patterns like
             // DATE_TAKEN_YYYY.
@@ -803,7 +806,7 @@ namespace HelpersTests
             Assert::AreEqual(L"file_$DATE_TAKEN_YYYY", result); // Not replaced
         }
 
-        TEST_METHOD (Collision_Height_Protected)
+        TEST_METHOD(Collision_Height_Protected)
         {
             // Verify that HEIGHT metadata pattern does not collide with date pattern $H.
             SYSTEMTIME testTime = GetTestTime();
@@ -814,7 +817,7 @@ namespace HelpersTests
             Assert::AreEqual(L"file_$HEIGHT", result); // Not replaced
         }
 
-        TEST_METHOD (Collision_SafeSuffix_Deer)
+        TEST_METHOD(Collision_SafeSuffix_Deer)
         {
             // Verifies that patterns can be safely followed by certain suffix letters as
             // long as they don't match a longer pattern. $DEER should be matched as
