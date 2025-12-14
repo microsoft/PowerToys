@@ -164,7 +164,7 @@
                                                                 Width="20"
                                                                 Height="20"
                                                                 AutomationProperties.AccessibilityView="Raw"
-                                                                SourceKey="{x:Bind InitialIcon, Mode=OneWay}"
+                                                                SourceKey="{x:Bind Icon, Mode=OneWay}"
                                                                 SourceRequested="{x:Bind helpers:IconCacheProvider.SourceRequested}" />
                                                         </cpcontrols:ContentIcon.Content>
                                                     </cpcontrols:ContentIcon>
