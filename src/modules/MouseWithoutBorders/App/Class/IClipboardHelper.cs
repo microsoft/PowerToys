@@ -600,44 +600,4 @@ WellKnownSidType.AuthenticatedUserSid, null);
     {
         internal const int QUIT_CMD = 0x409;
     }
-
-    internal sealed partial class Common
-    {
-        internal static bool IpcChannelCreated { get; set; }
-
-        internal static T Retry<T>(string name, Func<T> func, Action<string> log, Action preRetry = null)
-        {
-            int count = 0;
-
-            do
-            {
-                try
-                {
-                    T rv = func();
-
-                    if (count > 0)
-                    {
-                        log($"Trace: {name} has been successful after {count} retry.");
-                    }
-
-                    return rv;
-                }
-                catch (Exception)
-                {
-                    count++;
-
-                    preRetry?.Invoke();
-
-                    if (count > 10)
-                    {
-                        throw;
-                    }
-
-                    Application.DoEvents();
-                    Thread.Sleep(200);
-                }
-            }
-            while (true);
-        }
-    }
 }
