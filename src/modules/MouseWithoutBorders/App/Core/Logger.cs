@@ -244,9 +244,11 @@ internal static class Logger
         var staticTypes = new List<Type>
         {
             typeof(Clipboard),
+            typeof(Common),
             typeof(DragDrop),
             typeof(Encryption),
             typeof(Event),
+            typeof(IpcChannelHelper),
             typeof(InitAndCleanup),
             typeof(Helper),
             typeof(Launch),
