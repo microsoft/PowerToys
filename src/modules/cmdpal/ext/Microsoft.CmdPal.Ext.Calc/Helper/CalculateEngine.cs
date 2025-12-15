@@ -11,7 +11,7 @@ using Windows.Foundation.Collections;
 
 namespace Microsoft.CmdPal.Ext.Calc.Helper;
 
-public static class CalculateEngine
+public static partial class CalculateEngine
 {
     private static readonly PropertySet _constants = new()
     {
@@ -45,7 +45,7 @@ public static class CalculateEngine
 
         // check for division by zero
         // We check if the string contains a slash followed by space (optional) and zero. Whereas the zero must not be followed by a dot, comma, 'b', 'o' or 'x' as these indicate a number with decimal digits or a binary/octal/hexadecimal value respectively. The zero must also not be followed by other digits.
-        if (new Regex("\\/\\s*0(?!(?:[,\\.0-9]|[box]0*[1-9a-f]))", RegexOptions.IgnoreCase).Match(input).Success)
+        if (DivisionByZeroRegex().IsMatch(input))
         {
             error = Properties.Resources.calculator_division_by_zero;
             return default;
@@ -121,4 +121,7 @@ public static class CalculateEngine
 
         return Convert.ToDecimal(formatted, cultureInfo);
     }
+
+    [GeneratedRegex("\\/\\s*0(?!(?:[,\\.0-9]|[box]0*[1-9a-f]))", RegexOptions.IgnoreCase, "en-US")]
+    private static partial Regex DivisionByZeroRegex();
 }

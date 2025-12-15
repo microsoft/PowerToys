@@ -181,7 +181,7 @@ jobs:
   - template: steps-ensure-dotnet-version.yml
     parameters:
       sdk: true
-      version: '9.0'
+      version: '10.0'
 
   - ${{ if eq(parameters.runTests, true) }}:
     - task: VisualStudioTestPlatformInstaller@1
@@ -253,7 +253,7 @@ jobs:
       displayName: Build PowerToys main project
     inputs:
       solution: 'PowerToys.slnx'
-      vsVersion: 17.0
+      vsVersion: 18.0
       msbuildArgs: >-
         -restore -graph
         /p:RestorePackagesConfig=true
@@ -267,6 +267,7 @@ jobs:
       configuration: $(BuildConfiguration)
       msbuildArchitecture: x64
       maximumCpuCount: true
+      customVersion: 18.0
     ${{ if eq(parameters.enableMsBuildCaching, true) }}:
       env:
         SYSTEM_ACCESSTOKEN: $(System.AccessToken)
@@ -276,7 +277,7 @@ jobs:
     condition: and(succeeded(), eq(variables['BuildPlatform'], 'arm64'))
     inputs:
       solution: PowerToys.slnx
-      vsVersion: 17.0
+      vsVersion: 18.0
       msbuildArgs: >-
         -restore
         /p:Configuration=$(BuildConfiguration)
@@ -290,6 +291,7 @@ jobs:
       configuration: $(BuildConfiguration)
       msbuildArchitecture: x64
       maximumCpuCount: true
+      customVersion: 18.0
 
   # Build PowerToys.DSC.exe for ARM64 (x64 uses existing binary from previous build)
   - task: VSBuild@1
@@ -302,6 +304,7 @@ jobs:
       configuration: $(BuildConfiguration)
       msbuildArchitecture: x64
       maximumCpuCount: true
+      customVersion: 18.0
 
   # Generate DSC manifests using PowerToys.DSC.exe
   - pwsh: |-
@@ -338,7 +341,7 @@ jobs:
     displayName: Build BugReportTool
     inputs:
       solution: '**/tools/BugReportTool/BugReportTool.sln'
-      vsVersion: 17.0
+      vsVersion: 18.0
       msbuildArgs: >-
         -restore -graph
         /p:RestorePackagesConfig=true
@@ -351,6 +354,7 @@ jobs:
       configuration: $(BuildConfiguration)
       msbuildArchitecture: x64
       maximumCpuCount: true
+      customVersion: 18.0
     ${{ if eq(parameters.enableMsBuildCaching, true) }}:
       env:
         SYSTEM_ACCESSTOKEN: $(System.AccessToken)
@@ -359,7 +363,7 @@ jobs:
     displayName: Build StylesReportTool
     inputs:
       solution: '**/tools/StylesReportTool/StylesReportTool.sln'
-      vsVersion: 17.0
+      vsVersion: 18.0
       msbuildArgs: >-
         -restore -graph
         /p:RestorePackagesConfig=true
@@ -372,6 +376,7 @@ jobs:
       configuration: $(BuildConfiguration)
       msbuildArchitecture: x64
       maximumCpuCount: true
+      customVersion: 18.0
     ${{ if eq(parameters.enableMsBuildCaching, true) }}:
       env:
         SYSTEM_ACCESSTOKEN: $(System.AccessToken)
@@ -381,7 +386,7 @@ jobs:
       displayName: Publish ${{ project }} for Packaging
       inputs:
         solution: ${{ project }}
-        vsVersion: 17.0
+        vsVersion: 18.0
         msbuildArgs: >-
           /target:Publish
           /graph
@@ -389,14 +394,15 @@ jobs:
           /p:VCRTForwarders-IncludeDebugCRT=false
           /p:PowerToysRoot=$(Build.SourcesDirectory)
           /p:PublishProfile=InstallationPublishProfile.pubxml
-          /p:TargetFramework=net9.0-windows10.0.26100.0
+          /p:TargetFramework=net10.0-windows10.0.26100.0
           /bl:$(LogOutputDirectory)\publish-${{ join('_',split(project, '/')) }}.binlog
           $(RestoreAdditionalProjectSourcesArg)
         platform: $(BuildPlatform)
         configuration: $(BuildConfiguration)
         msbuildArchitecture: x64
         maximumCpuCount: true
-
+        customVersion: 18.0
+        
   ### HACK: On ARM64 builds, building an app with Windows App SDK copies the x64 WebView2 dll instead of the ARM64 one. This task makes sure the right dll is used.
   - task: CopyFiles@2
     displayName: HACK Copy core WebView2 ARM64 dll to output directory

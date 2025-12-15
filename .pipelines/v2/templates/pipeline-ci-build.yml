@@ -21,7 +21,7 @@ parameters:
     default: true
   - name: useVSPreview
     type: boolean
-    default: false
+    default: true
   - name: useLatestWebView2
     type: boolean
     default: false
@@ -49,7 +49,7 @@ stages:
               ${{ else }}:
                 name: SHINE-OSS-L
               ${{ if eq(parameters.useVSPreview, true) }}:
-                demands: ImageOverride -equals SHINE-VS17-Preview
+                demands: ImageOverride -equals SHINE-VS18-Preview
             buildPlatforms:
               - ${{ platform }}
             buildConfigurations: [Release]
