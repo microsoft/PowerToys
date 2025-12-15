@@ -121,7 +121,7 @@
     <value>Applicable apps</value>
   </data>
   <data name="RemappingsPageDeleteButton.ToolTipService.ToolTip" xml:space="preserve">
-    <value>Delete remapping</value>
+    <value>Delete app shortcut</value>
   </data>
   <data name="RemappingsPageKeyDialog.PrimaryButtonText" xml:space="preserve">
     <value>Save</value>
@@ -183,101 +183,53 @@
   <data name="TextPageValidationTip.CloseButtonContent" xml:space="preserve">
     <value>OK</value>
   </data>
-  <data name="ProgramsPage_Instruction" xml:space="preserve">
+  <data name="ProgramsPageInstructionTextBlock.Text" xml:space="preserve">
     <value>Program shortcuts allow you to open specific applications when you use the configured shortcut</value>
   </data>
-  <data name="ProgramsPage_KeyDialogTitle" xml:space="preserve">
+  <data name="ProgramsPageKeyDialog.Title" xml:space="preserve">
     <value>New program shortcut</value>
   </data>
-  <data name="ProgramsPage_ExampleKey1" xml:space="preserve">
-    <value>Win (Left)</value>
-  </data>
-  <data name="ProgramsPage_ExampleKey2" xml:space="preserve">
-    <value>T</value>
-  </data>
-  <data name="ProgramsPage_ExampleHeader" xml:space="preserve">
+  <data name="AppPageInputControlExampleTextBlock.Text" xml:space="preserve">
     <value>Application</value>
   </data>
-  <data name="ProgramsPage_ExampleApp" xml:space="preserve">
-    <value>WindowsTerminal.exe</value>
-  </data>
-  <data name="ProgramsPage_New" xml:space="preserve">
+  <data name="ProgramsPageNewTextBlock.Text" xml:space="preserve">
     <value>New</value>
   </data>
-  <data name="ProgramsPage_Shortcut" xml:space="preserve">
+  <data name="ProgramsPageShortcutTextBlock.Text" xml:space="preserve">
     <value>Shortcut</value>
   </data>
-  <data name="ProgramsPage_Program" xml:space="preserve">
+  <data name="ProgramsPageProgramsTextBlock.Text" xml:space="preserve">
     <value>Program</value>
   </data>
-  <data name="ProgramsPage_Arguments" xml:space="preserve">
+  <data name="ProgramsPageArgumentsRun.Text" xml:space="preserve">
     <value>Arguments</value>
   </data>
-  <data name="ProgramsPage_Args" xml:space="preserve">
-    <value>-config json</value>
-  </data>
-  <data name="ProgramsPage_StartDir" xml:space="preserve">
-    <value>Starting directory:</value>
-  </data>
-  <data name="ProgramsPage_StartDirVal" xml:space="preserve">
-    <value>C:\Users\Dev\PowerToys\bin</value>
-  </data>
-  <data name="ProgramsPage_LaunchState" xml:space="preserve">
-    <value>Launch state:</value>
-  </data>
-  <data name="ProgramsPage_LaunchStateVal" xml:space="preserve">
-    <value>Minimized</value>
-  </data>
-  <data name="ProgramsPage_KeyDialogPrimary" xml:space="preserve">
+  <data name="ProgramsPageKeyDialog.PrimaryButtonText" xml:space="preserve">
     <value>Save</value>
   </data>
-  <data name="ProgramsPage_KeyDialogSecondary" xml:space="preserve">
+  <data name="ProgramsPageKeyDialog.SecondaryButtonText" xml:space="preserve">
     <value>Cancel</value>
   </data>
-  <data name="ProgramsPage_KeyDialogStartHeader" xml:space="preserve">
-    <value>Start in directory</value>
-  </data>
-  <data name="ProgramsPage_KeyDialogStartVal" xml:space="preserve">
-    <value>C:\Program Files\WindowsApps\Microsoft.WindowsTerminal_1.21.10351.0_x64__8wekyb3d8bbwe</value>
-  </data>
-  <data name="ProgramsPage_KeyDialogLaunchHeader" xml:space="preserve">
-    <value>Launch state</value>
-  </data>
-  <data name="ProgramsPage_KeyDialogLaunchShow" xml:space="preserve">
-    <value>Show window</value>
-  </data>
-  <data name="UrlPage_Instruction" xml:space="preserve">
+  <data name="UrlPageInstructionTextBlock.Text" xml:space="preserve">
     <value>URL shortcuts allow you to open a URL when you use the configured shortcut</value>
   </data>
-  <data name="UrlPage_New" xml:space="preserve">
+  <data name="UrlPageNewTextBlock.Text" xml:space="preserve">
     <value>New</value>
   </data>
-  <data name="UrlPage_Url" xml:space="preserve">
+  <data name="UrlPageUrlTextBlock.Text" xml:space="preserve">
     <value>URL</value>
   </data>
-  <data name="UrlPage_Shortcut" xml:space="preserve">
+  <data name="UrlPageShortcutTextBlock.Text" xml:space="preserve">
     <value>Shortcut</value>
   </data>
-  <data name="UrlPage_KeyDialogTitle" xml:space="preserve">
+  <data name="UrlPageKeyDialog.Title" xml:space="preserve">
     <value>New URL shortcut</value>
   </data>
-  <data name="UrlPage_WinLeft" xml:space="preserve">
-    <value>Win (Left)</value>
-  </data>
-  <data name="UrlPage_B" xml:space="preserve">
-    <value>B</value>
-  </data>
-  <data name="UrlPage_KeyDialogPrimary" xml:space="preserve">
+  <data name="UrlPageKeyDialog.PrimaryButtonText" xml:space="preserve">
     <value>Save</value>
   </data>
-  <data name="UrlPage_KeyDialogSecondary" xml:space="preserve">
+  <data name="UrlPageKeyDialog.SecondaryButtonText" xml:space="preserve">
     <value>Cancel</value>
-  </data>
-  <data name="UrlPage_UrlHeader" xml:space="preserve">
-    <value>URL to open</value>
-  </data>
-  <data name="UrlPage_UrlVal" xml:space="preserve">
-    <value>https://www.bing.com</value>
   </data>
   <data name="InputControlOriginalKeysTextBlock.Text" xml:space="preserve">
     <value>Original key(s)</value>
@@ -314,5 +266,44 @@
   </data>
   <data name="TextPageInputControlAllAppsTextBox.PlaceholderText" xml:space="preserve">
     <value>e.g.: outlook.exe</value>
+  </data>
+  <data name="ProgramsPageDeleteButton.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Delete remapping</value>
+  </data>
+  <data name="AppPageInputControlShortcutTextBlock.Text" xml:space="preserve">
+    <value>Shortcut</value>
+  </data>
+  <data name="AppPageInputControlPathSelectButton.Content" xml:space="preserve">
+    <value>Select Program</value>
+  </data>
+  <data name="AppPageInputControlArgumentsTextBlock.Text" xml:space="preserve">
+    <value>Arguments</value>
+  </data>
+  <data name="AppPageInputControlStartInTextBlock.Text" xml:space="preserve">
+    <value>Start in</value>
+  </data>
+  <data name="AppPageInputControlStartInSelectButto" xml:space="preserve">
+    <value>Select starting directory</value>
+  </data>
+  <data name="AppPageInputControlElevationComboBox.Header" xml:space="preserve">
+    <value>Elevation</value>
+  </data>
+  <data name="AppPageInputControlIfRunningComboBox.Header" xml:space="preserve">
+    <value>If running action</value>
+  </data>
+  <data name="AppPageInputControlVisibilityComboBox.Header" xml:space="preserve">
+    <value>Visibility</value>
+  </data>
+  <data name="UrlPageDeleteButton.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Delete URL remapping</value>
+  </data>
+  <data name="UrlPageInputControlShortcutTextBlock.Text" xml:space="preserve">
+    <value>Shortcut key(s)</value>
+  </data>
+  <data name="UrlPageInputControlToOpenTextBox.Header" xml:space="preserve">
+    <value>URL to open</value>
+  </data>
+  <data name="UrlPageInputControlToOpenTextBox.PlaceholderText" xml:space="preserve">
+    <value>https://github.com/microsoft/PowerToys</value>
   </data>
 </root>

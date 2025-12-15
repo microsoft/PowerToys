@@ -14,6 +14,6 @@ namespace KeyboardManagerEditorUI.Helpers
             ResourceLoader = new ResourceLoader("PowerToys.KeyboardManagerEditorUI.pri");
         }
 
-        internal static string GetString(string resourceId) => Microsoft.Windows.ApplicationModel.Resources.ResourceLoader.GetDefaultResourceFilePath(); // ResourceLoader.GetString(resourceId);
+        internal static string GetString(string resourceId) => "Hello";
     }
 }

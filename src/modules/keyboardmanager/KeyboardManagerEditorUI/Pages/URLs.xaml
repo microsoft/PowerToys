@@ -11,10 +11,12 @@
     mc:Ignorable="d">
 
     <Grid Padding="16">
-        <StackPanel Orientation="Vertical" Spacing="12">
+        <StackPanel 
+            Orientation="Vertical" 
+            Spacing="12">
             <TextBlock
+                x:Uid="UrlPageInstructionTextBlock"
                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                Text="{x:Bind helper:ResourceLoaderInstance.GetString('UrlPage_Instruction')}"
                 TextWrapping="Wrap" />
             <Button
                 x:Name="NewShortcutBtn"
@@ -26,7 +28,9 @@
                         FontSize="14"
                         Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
                         Glyph="&#xE109;" />
-                    <TextBlock VerticalAlignment="Center" Text="{x:Bind helper:ResourceLoaderInstance.GetString('UrlPage_New')}" />
+                    <TextBlock 
+                        x:Uid="UrlPageNewTextBlock"
+                        VerticalAlignment="Center" />
                 </StackPanel>
             </Button>
 
@@ -47,22 +51,22 @@
                     <ColumnDefinition Width="84" />
                 </Grid.ColumnDefinitions>
                 <TextBlock
+                    x:Uid="UrlPageShortcutTextBlock"
                     Grid.Column="0"
                     Margin="16,-2,0,0"
                     VerticalAlignment="Center"
-                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                    Text="{x:Bind helper:ResourceLoaderInstance.GetString('UrlPage_Shortcut')}" />
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                 <AppBarSeparator
                     Grid.Column="1"
                     Margin="-6,4,0,4"
                     HorizontalAlignment="Left" />
                 <TextBlock
+                    x:Uid="UrlPageUrlTextBlock"
                     Grid.Column="1"
                     Margin="12,-2,0,0"
                     HorizontalAlignment="Left"
                     VerticalAlignment="Center"
-                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                    Text="{x:Bind helper:ResourceLoaderInstance.GetString('UrlPage_Url')}" />
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                 <Rectangle
                     Grid.ColumnSpan="4"
                     Height="1"
@@ -116,6 +120,7 @@
                                     Margin="-12,0,0,0"
                                     Content="{x:Bind URL}" />
                                 <Button
+                                    x:Uid="UrlPageDeleteButton"
                                     Grid.ColumnSpan="4"
                                     Margin="0,0,4,0"
                                     Padding="8,4"
@@ -124,8 +129,7 @@
                                     AutomationProperties.Name="Delete URL shortcut"
                                     Background="Transparent"
                                     BorderThickness="0"
-                                    Click="DeleteButton_Click"
-                                    ToolTipService.ToolTip="{x:Bind helper:ResourceLoaderInstance.GetString('RemappingsPage_DeleteTooltip')}">
+                                    Click="DeleteButton_Click">
                                     <FontIcon
                                         FontFamily="{StaticResource SymbolThemeFontFamily}"
                                         FontSize="16"
@@ -140,15 +144,13 @@
         </StackPanel>
         <ContentDialog
             x:Name="KeyDialog"
-            Title="{x:Bind helper:ResourceLoaderInstance.GetString('UrlPage_KeyDialogTitle')}"
+            x:Uid="UrlPageKeyDialog"
             Width="480"
             Height="360"
             MinWidth="600"
             MaxWidth="600"
             PrimaryButtonClick="KeyDialog_PrimaryButtonClick"
-            PrimaryButtonStyle="{StaticResource AccentButtonStyle}"
-            PrimaryButtonText="{x:Bind helper:ResourceLoaderInstance.GetString('UrlPage_KeyDialogPrimary')}"
-            SecondaryButtonText="{x:Bind helper:ResourceLoaderInstance.GetString('UrlPage_KeyDialogSecondary')}">
+            PrimaryButtonStyle="{StaticResource AccentButtonStyle}">
             <Grid>
                 <controls:UrlPageInputControl x:Name="UrlShortcutControl" />
             </Grid>

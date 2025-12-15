@@ -16,11 +16,11 @@
         Height="360"
         Orientation="Vertical"
         Spacing="8">
-        <!--  Shortcut section  -->
+        <!-- Shortcut section -->
         <TextBlock
+            x:Uid="AppPageInputControlShortcutTextBlock"
             Margin="0,12,0,8"
-            FontWeight="SemiBold"
-            Text="{x:Bind helper:ResourceLoaderInstance.GetString('ProgramsPage_Shortcut')}" />
+            FontWeight="SemiBold" />
 
         <ToggleButton
             x:Name="ShortcutToggleBtn"
@@ -32,73 +32,124 @@
                 <ItemsControl x:Name="ShortcutKeys">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
-                            <controls:WrapPanel HorizontalSpacing="4" Orientation="Horizontal" />
+                            <controls:WrapPanel 
+                                HorizontalSpacing="4" 
+                                Orientation="Horizontal" />
                         </ItemsPanelTemplate>
                     </ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <local:KeyVisual Content="{Binding}" Style="{StaticResource DefaultKeyVisualStyle}" />
+                            <local:KeyVisual 
+                                Content="{Binding}" 
+                                Style="{StaticResource DefaultKeyVisualStyle}" />
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
             </ToggleButton.Content>
         </ToggleButton>
 
-        <StackPanel Orientation="Horizontal" Spacing="8">
-            <TextBlock Text="{x:Bind helper:ResourceLoaderInstance.GetString('ProgramsPage_ExampleHeader')}" />
-            <TextBox x:Name="ProgramPathInput" />
-            <Button
-                x:Name="ProgramPathSelectButton"
-                Click="ProgramPathSelectButton_Click"
-                Content="Select Program" />
-        </StackPanel>
-        <StackPanel Orientation="Horizontal" Spacing="8">
-            <TextBlock Text="{x:Bind helper:ResourceLoaderInstance.GetString('ProgramsPage_Arguments')}" />
-            <TextBox x:Name="ProgramArgsInput" />
-        </StackPanel>
+        <!-- Organized input section -->
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="180"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
 
-        <StackPanel Orientation="Horizontal" Spacing="8">
-            <TextBlock>
-                Start in
-            </TextBlock>
-            <TextBox x:Name="StartInPathInput" />
-            <Button
+            <!-- Program Path -->
+            <TextBlock 
+                x:Uid="AppPageInputControlExampleTextBlock"
+                Grid.Row="0" 
+                Grid.Column="0" 
+                VerticalAlignment="Center" />
+            <TextBox 
+                Grid.Row="0" 
+                Grid.Column="1" 
+                x:Name="ProgramPathInput" 
+                Width="180" />
+            <Button 
+                x:Name="ProgramPathSelectButton"
+                x:Uid="AppPageInputControlPathSelectButton"
+                Grid.Row="0" 
+                Grid.Column="2" 
+                Click="ProgramPathSelectButton_Click" />
+
+            <!-- Arguments -->
+            <TextBlock 
+                x:Uid="AppPageInputControlArgumentsTextBlock"
+                Grid.Row="1" 
+                Grid.Column="0" 
+                VerticalAlignment="Center" />
+            <TextBox 
+                x:Name="ProgramArgsInput" 
+                Grid.Row="1" 
+                Grid.Column="1" 
+                Grid.ColumnSpan="2"
+                Width="180" />
+
+            <!-- Start In Path -->
+            <TextBlock 
+                x:Uid="AppPageInputControlStartInTextBlock"
+                Grid.Row="2" 
+                Grid.Column="0" 
+                VerticalAlignment="Center" />
+            <TextBox 
+                x:Name="StartInPathInput"
+                Grid.Row="2"
+                Grid.Column="1"  
+                Width="180" />
+            <Button 
                 x:Name="StartInSelectButton"
-                Click="StartInSelectButton_Click"
-                Content="Select Starting Directory" />
-        </StackPanel>
-        <StackPanel Orientation="Horizontal" Spacing="8">
-            <ComboBox
+                x:Uid="AppPageInputControlStartInSelectButton"
+                Grid.Row="2"
+                Grid.Column="2" 
+                Click="StartInSelectButton_Click" />
+
+            <!-- ComboBoxes -->
+            <ComboBox 
                 x:Name="ElevationComboBox"
-                Header="Elevation"
-                SelectedValue="Normal">
+                x:Uid="AppPageInputControlElevationComboBox"
+                Grid.Row="3" 
+                Grid.Column="0"
+                SelectedValue="Normal" 
+                Width="110">
                 <x:String>Normal</x:String>
                 <x:String>Elevated</x:String>
                 <x:String>Different user</x:String>
             </ComboBox>
             <ComboBox
                 x:Name="IfRunningComboBox"
-                Header="If running action"
-                SelectedValue="Show window">
+                x:Uid="AppPageInputControlIfRunningComboBox"
+                Grid.Row="4" 
+                Grid.Column="0"
+                SelectedValue="Show window" 
+                Width="110">
                 <x:String>Show window</x:String>
                 <x:String>Start another</x:String>
                 <x:String>Do nothing</x:String>
                 <x:String>Close</x:String>
                 <x:String>End task</x:String>
             </ComboBox>
-            <ComboBox
+            <ComboBox 
                 x:Name="VisibilityComboBox"
-                Header="Visibility"
-                SelectedValue="Normal">
+                x:Uid="AppPageInputControlVisibilityComboBox"
+                Grid.Row="5" 
+                Grid.Column="0" 
+                SelectedValue="Normal" 
+                Width="110">
                 <x:String>Normal</x:String>
                 <x:String>Hidden</x:String>
                 <x:String>Minimized</x:String>
                 <x:String>Maximized</x:String>
             </ComboBox>
-        </StackPanel>
-
-
-
-
+        </Grid>
     </StackPanel>
 </UserControl>

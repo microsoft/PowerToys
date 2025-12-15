@@ -18,9 +18,9 @@
         Spacing="8">
         <!--  Shortcut section  -->
         <TextBlock
+            x:Uid="UrlPageInputControlShortcutTextBlock"
             Margin="0,12,0,8"
-            FontWeight="SemiBold"
-            Text="{x:Bind helper:ResourceLoaderInstance.GetString('ProgramsPage_Shortcut')}" />
+            FontWeight="SemiBold" />
 
         <ToggleButton
             x:Name="ShortcutToggleBtn"
@@ -44,9 +44,15 @@
             </ToggleButton.Content>
         </ToggleButton>
 
-        <StackPanel Orientation="Vertical" Spacing="8">
-            <TextBlock Text="URL to open" />
-            <TextBox x:Name="UrlPathInput" Width="360" />
-        </StackPanel>
+        <TextBox 
+            x:Name="UrlPathInput"
+            x:Uid="UrlPageInputControlToOpenTextBox"
+            Margin="0,8,0,0"
+            AcceptsReturn="True"
+            Background="{ThemeResource TextControlBackgroundFocused}"
+            BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
+            FontSize="13"
+            TextWrapping="Wrap" 
+            Width="360" />
     </StackPanel>
 </UserControl>
