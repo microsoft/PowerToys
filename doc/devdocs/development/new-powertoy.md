@@ -20,7 +20,7 @@ A PowerToy module is a self-contained utility integrated into the PowerToys ecos
   - Windows 11 SDK (10.0.26100.3916)
 * .NET 8 SDK
 * Clone the [PowerToys repository](https://github.com/microsoft/PowerToys/tree/main) locally
-* [Validate that you are able to build and run](https://github.com/microsoft/PowerToys/blob/main/doc/devdocs/development/debugging.md) `PowerToys.sln`.
+* [Validate that you are able to build and run](https://github.com/microsoft/PowerToys/blob/main/doc/devdocs/development/debugging.md) `PowerToys.slnx`.
 
 Optional: 
 * [WiX v5 toolset](https://github.com/microsoft/PowerToys/tree/main) for the installer
