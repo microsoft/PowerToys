@@ -38,7 +38,8 @@ namespace ImageResizer.Models
                 new StringReader(standardInput),
                 args);
 
-            CollectionAssert.AreEquivalent(new List<string> { "Image1.jpg", "Image2.jpg", "Image3.jpg" }, result.Files.ToArray());
+            var files = result.Files.Select(Path.GetFileName).ToArray();
+            CollectionAssert.AreEquivalent(new List<string> { "Image1.jpg", "Image2.jpg", "Image3.jpg" }, files);
 
             Assert.AreEqual("OutputDir", result.DestinationDirectory);
         }

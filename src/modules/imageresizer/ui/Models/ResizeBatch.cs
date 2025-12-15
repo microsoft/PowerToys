@@ -64,7 +64,7 @@ namespace ImageResizer.Models
                 // NB: We read these from stdin since there are limits on the number of args you can have
                 // Only read from stdin if it's redirected (piped input), not from interactive terminal
                 string file;
-                if (standardInput != null && Console.IsInputRedirected)
+                if (standardInput != null && (Console.IsInputRedirected || !ReferenceEquals(standardInput, Console.In)))
                 {
                     while ((file = standardInput.ReadLine()) != null)
                     {

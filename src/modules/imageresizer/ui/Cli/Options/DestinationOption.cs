@@ -8,7 +8,7 @@ namespace ImageResizer.Cli.Options
 {
     public sealed class DestinationOption : Option<string>
     {
-        private static readonly string[] _aliases = ["--destination", "-d"];
+        private static readonly string[] _aliases = ["--destination", "-d", "/d"];
 
         public DestinationOption()
             : base(_aliases, "Set destination directory")
