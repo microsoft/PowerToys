@@ -14,9 +14,13 @@ A PowerToy module is a self-contained utility integrated into the PowerToys ecos
 
 * [Visual Studio 2022](https://visualstudio.microsoft.com/downloads/) (Desktop & C++ workloads)
 * .NET 8 SDK
-* [WiX v5 toolset](https://github.com/microsoft/PowerToys/tree/main)
-* [PowerToys repository](https://github.com/microsoft/PowerToys/tree/main) cloned locally
-* [Able to build and run](https://github.com/microsoft/PowerToys/blob/main/doc/devdocs/development/debugging.md) `PowerToys.sln`.
+* Clone the [PowerToys repository](https://github.com/microsoft/PowerToys/tree/main) locally
+* [Validate that you are able to build and run](https://github.com/microsoft/PowerToys/blob/main/doc/devdocs/development/debugging.md) `PowerToys.sln`.
+
+Optional: 
+* [WiX v5 toolset](https://github.com/microsoft/PowerToys/tree/main) for the installer
+
+> Note: To ensure all the correct VS Workloads are installed, use [the WinGet configuration files](https://github.com/microsoft/PowerToys/tree/e13d6a78aafbcf32a4bb5f8581d041e1d057c3f1/.config) in the project repository. (Use the one that matches your VS distribution. ie: VS Enterprise would use `configuration.vsEnterprise.winget`)
 
 ### Folder Structure
 
@@ -251,8 +255,28 @@ Generate-FileComponents -fileListName "<Module>Files" -wxsFilePath $PSScriptRoot
 1. Validate wake/sleep and elevation states. Background modules often fail silently after resume if event handles aren’t recreated.
 2. Use Windows Sandbox to simulate clean install environments
 3. To simulate a "new user" you can delete the PowerToys folder from `%LOCALAPPDATA%\Microsoft`
+
+### Shorcut Conflict Detection
+If your module has a shortcut, ensure that it is properly registered following [the steps listed in the documentation](https://github.com/microsoft/PowerToys/blob/main/doc/devdocs/core/settings/settings-implementation.md#shortcut-conflict-detection) for conflict detection.
+
 ---
-## 9. Out-of-Box Experience (OOBE) page
-The OOBE page is a custom settings page that gives the user at a glance information about each module. This Window opens first before the Settings application for new users and after updates. Create `OOBE<ModuleName>.xaml` at ` src\settings-ui\Settings.UI\SettingsXAML\OOBE\Views`. You will also need to add your module name to the enum at `src\settings-ui\Settings.UI\OOBE\Enums\PowerToysModules.cs`
---
+## 9. The Final Touches
+
+### Out-of-Box Experience (OOBE) page
+The OOBE page is a custom settings page that gives the user at a glance information about each module. This Window opens first before the Settings application for new users and after updates. Create `OOBE<ModuleName>.xaml` at ` src\settings-ui\Settings.UI\SettingsXAML\OOBE\Views`. You will also need to add your module name to the enum at `src\settings-ui\Settings.UI\OOBE\Enums\PowerToysModules.cs`.
+
+### Module Assests
+Now that your PowerToy is _done_ you can start to think about the assets that will represent your module.
+- Module Icon: This will be displayed in a number of places: OOBE page, in the README, on the home screen of PowerToys, on your individual module settings page, etc.  
+- Module Image: This is the image you see at the top of each individual settings page.
+- OOBE Image: This is the header you see on the OOBE page for each module
+
+> Note: This step is something that the Design team will handle internally to ensure consistentcy throughout the application. If you have ideas or recommendations on what the icon or screenshots should be for your module feel free to leave it in the "Additional Comments" section of the PR and the team will take it into consideration.
+
+### Documentation
+There are two types of documentation that will be required when submitting a new PowerToy:
+1. Developer documentation: This will live in the [PowerToys repo](https://github.com/microsoft/PowerToys/blob/main/doc/devdocs/modules) at `/doc/devdocs/modules/` and should tell a developer how to work on your app. It should outline the module architecure, key files, testing, and tips on debugging if neccessary.
+2. Learn documentation: When your new Module is set to be merged into the PowerToys repository an internal team member will create Microsoft Learn documentation so that users will understand how to use your module. There is not much work on your end as the developer for this step, but keep an eye on your PR in case we need more information about your PowerToy for this step.
+
+---
 Thank you again for contributing! If you need help, feel free to [open an issue](https://github.com/microsoft/PowerToys/issues/new/choose) and use the `Needs-Team-Response` label so we know you need attention.
