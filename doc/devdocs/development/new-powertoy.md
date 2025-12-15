@@ -12,7 +12,12 @@ A PowerToy module is a self-contained utility integrated into the PowerToys ecos
 
 ### Requirements
 
-* [Visual Studio 2022](https://visualstudio.microsoft.com/downloads/) (Desktop & C++ workloads)
+* [Visual Studio 2022](https://visualstudio.microsoft.com/downloads/) and the following workloads/individual components
+  - Desktop Development with C++
+  - WinUI application development
+  - .NET desktop development
+  - Windows 10 SDK (10.0.22621.0)
+  - Windows 11 SDK (10.0.26100.3916)
 * .NET 8 SDK
 * Clone the [PowerToys repository](https://github.com/microsoft/PowerToys/tree/main) locally
 * [Validate that you are able to build and run](https://github.com/microsoft/PowerToys/blob/main/doc/devdocs/development/debugging.md) `PowerToys.sln`.
@@ -279,4 +284,11 @@ There are two types of documentation that will be required when submitting a new
 2. Learn documentation: When your new Module is set to be merged into the PowerToys repository an internal team member will create Microsoft Learn documentation so that users will understand how to use your module. There is not much work on your end as the developer for this step, but keep an eye on your PR in case we need more information about your PowerToy for this step.
 
 ---
+<<<<<<< HEAD
 Thank you again for contributing! If you need help, feel free to [open an issue](https://github.com/microsoft/PowerToys/issues/new/choose) and use the `Needs-Team-Response` label so we know you need attention.
+=======
+## 9. Out-of-Box Experience (OOBE) page
+The OOBE page is a custom settings page that gives the user at a glance information about each module. This Window opens first before the Settings application for new users and after updates. Create `OOBE<ModuleName>.xaml` at ` src\settings-ui\Settings.UI\SettingsXAML\OOBE\Views`. You will also need to add your module name to the enum at `src\settings-ui\Settings.UI\OOBE\Enums\PowerToysModules.cs`
+--
+Thank you again for contributing! If you need help, feel free to [open an issue](https://github.com/microsoft/PowerToys/issues/new/choose) and use the `Needs-Team-Response` label so we know you need attention.
+>>>>>>> 4a62754aec5fe80f5b802d81d31f44e638668df1
