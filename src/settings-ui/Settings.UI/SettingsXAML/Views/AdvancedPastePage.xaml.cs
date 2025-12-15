@@ -314,10 +314,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             string selectedType = draft.ServiceType ?? string.Empty;
             AIServiceType serviceKind = draft.ServiceTypeKind;
 
-            bool requiresEndpoint = serviceKind is AIServiceType.AzureOpenAI
-                or AIServiceType.AzureAIInference
-                or AIServiceType.Mistral
-                or AIServiceType.Ollama;
+            bool requiresEndpoint = RequiresEndpointForService(serviceKind);
             bool requiresDeployment = serviceKind == AIServiceType.AzureOpenAI;
             bool requiresApiVersion = serviceKind == AIServiceType.AzureOpenAI;
             bool requiresModelPath = serviceKind == AIServiceType.Onnx;
@@ -788,12 +785,17 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             string serviceType = draft.ServiceType ?? "OpenAI";
             string apiKey = PasteAIApiKeyPasswordBox.Password;
             string trimmedApiKey = apiKey?.Trim() ?? string.Empty;
+            var serviceKind = draft.ServiceTypeKind;
+            bool requiresEndpoint = RequiresEndpointForService(serviceKind);
             string endpoint = (draft.EndpointUrl ?? string.Empty).Trim();
-            if (endpoint == string.Empty)
+
+            // Never persist placeholder text or stale values for services that don't use an endpoint.
+            if (!requiresEndpoint)
             {
-                endpoint = GetEndpointPlaceholder(draft.ServiceTypeKind);
+                endpoint = string.Empty;
             }
 
+            // For endpoint-based services, keep empty if the user didn't provide a value.
             if (RequiresApiKeyForService(serviceType) && string.IsNullOrWhiteSpace(trimmedApiKey))
             {
                 args.Cancel = true;
@@ -833,6 +835,14 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             };
         }
 
+        private static bool RequiresEndpointForService(AIServiceType serviceKind)
+        {
+            return serviceKind is AIServiceType.AzureOpenAI
+                or AIServiceType.AzureAIInference
+                or AIServiceType.Mistral
+                or AIServiceType.Ollama;
+        }
+
         private static string GetEndpointPlaceholder(AIServiceType serviceKind)
         {
             return serviceKind switch
@@ -841,7 +851,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 AIServiceType.AzureAIInference => "https://{resource-name}.cognitiveservices.azure.com/",
                 AIServiceType.Mistral => "https://api.mistral.ai/v1/",
                 AIServiceType.Ollama => "http://localhost:11434/",
-                _ => "https://your-resource.openai.azure.com/",
+                _ => string.Empty,
             };
         }
 
