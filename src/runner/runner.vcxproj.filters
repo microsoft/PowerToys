@@ -118,7 +118,6 @@
     <CopyFileToFolders Include="svgs\icon.ico" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
     <None Include="runner.base.rc" />
   </ItemGroup>
   <ItemGroup>
