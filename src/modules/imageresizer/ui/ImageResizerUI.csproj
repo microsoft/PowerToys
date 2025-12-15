@@ -47,6 +47,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" />
+    <PackageReference Include="System.CommandLine" />
     <PackageReference Include="System.IO.Abstractions" />
     <PackageReference Include="WPF-UI" />
   </ItemGroup>

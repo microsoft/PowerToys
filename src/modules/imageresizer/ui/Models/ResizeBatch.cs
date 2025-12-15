@@ -26,44 +26,45 @@ namespace ImageResizer.Models
 
         public ICollection<string> Files { get; } = new List<string>();
 
-        public static ResizeBatch FromCommandLine(TextReader standardInput, string[] args)
+        /// <summary>
+        /// Creates a ResizeBatch from CliOptions.
+        /// </summary>
+        /// <param name="standardInput">Standard input stream for reading additional file paths.</param>
+        /// <param name="options">The parsed CLI options.</param>
+        /// <returns>A ResizeBatch instance.</returns>
+        public static ResizeBatch FromCliOptions(TextReader standardInput, CliOptions options)
         {
-            var batch = new ResizeBatch();
-            const string pipeNamePrefix = "\\\\.\\pipe\\";
-            string pipeName = null;
-
-            for (var i = 0; i < args?.Length; i++)
+            var batch = new ResizeBatch
             {
-                if (args[i] == "/d")
-                {
-                    batch.DestinationDirectory = args[++i];
-                    continue;
-                }
-                else if (args[i].Contains(pipeNamePrefix))
-                {
-                    pipeName = args[i].Substring(pipeNamePrefix.Length);
-                    continue;
-                }
+                DestinationDirectory = options.DestinationDirectory,
+            };
 
-                batch.Files.Add(args[i]);
+            foreach (var file in options.Files)
+            {
+                // Convert relative paths to absolute paths
+                var absolutePath = Path.IsPathRooted(file) ? file : Path.GetFullPath(file);
+                batch.Files.Add(absolutePath);
             }
 
-            if (string.IsNullOrEmpty(pipeName))
+            if (string.IsNullOrEmpty(options.PipeName))
             {
                 // NB: We read these from stdin since there are limits on the number of args you can have
+                // Only read from stdin if it's redirected (piped input), not from interactive terminal
                 string file;
-                if (standardInput != null)
+                if (standardInput != null && Console.IsInputRedirected)
                 {
                     while ((file = standardInput.ReadLine()) != null)
                     {
-                        batch.Files.Add(file);
+                        // Convert relative paths to absolute paths
+                        var absolutePath = Path.IsPathRooted(file) ? file : Path.GetFullPath(file);
+                        batch.Files.Add(absolutePath);
                     }
                 }
             }
             else
             {
                 using (NamedPipeClientStream pipeClient =
-                    new NamedPipeClientStream(".", pipeName, PipeDirection.In))
+                    new NamedPipeClientStream(".", options.PipeName, PipeDirection.In))
                 {
                     // Connect to the pipe or wait until the pipe is available.
                     pipeClient.Connect();
@@ -84,16 +85,25 @@ namespace ImageResizer.Models
             return batch;
         }
 
+        public static ResizeBatch FromCommandLine(TextReader standardInput, string[] args)
+        {
+            var options = CliOptions.Parse(args);
+            return FromCliOptions(standardInput, options);
+        }
+
         public IEnumerable<ResizeError> Process(Action<int, double> reportProgress, CancellationToken cancellationToken)
+        {
+            // NOTE: Settings.Default is captured once before parallel processing.
+            // Any changes to settings on disk during this batch will NOT be reflected until the next batch.
+            // This improves performance and predictability by avoiding repeated mutex acquisition and behaviour change results in a batch.
+            return Process(reportProgress, Settings.Default, cancellationToken);
+        }
+
+        public IEnumerable<ResizeError> Process(Action<int, double> reportProgress, Settings settings, CancellationToken cancellationToken)
         {
             double total = Files.Count;
             int completed = 0;
             var errors = new ConcurrentBag<ResizeError>();
-
-            // NOTE: Settings.Default is captured once before parallel processing.
-            // Any changes to settings on disk during this batch will NOT be reflected until the next batch.
-            // This improves performance and predictability by avoiding repeated mutex acquisition and behaviour change results in a batch.
-            var settings = Settings.Default;
 
             // TODO: If we ever switch to Windows.Graphics.Imaging, we can get a lot more throughput by using the async
             //       APIs and a custom SynchronizationContext
