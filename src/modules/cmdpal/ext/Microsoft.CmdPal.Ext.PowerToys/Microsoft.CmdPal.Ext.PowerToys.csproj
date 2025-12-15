@@ -15,6 +15,7 @@
 		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
 		<AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
 		<Nullable>enable</Nullable>
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 		<WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
 		<Version>$(CmdPalVersion)</Version>
 	</PropertyGroup>

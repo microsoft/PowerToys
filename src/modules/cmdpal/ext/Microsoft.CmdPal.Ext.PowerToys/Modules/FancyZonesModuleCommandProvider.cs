@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using PowerToysExtension.Commands;
 using PowerToysExtension.Helpers;
+using PowerToysExtension.Pages;
 using static Common.UI.SettingsDeepLink;
 
 namespace PowerToysExtension.Modules;
@@ -20,6 +21,20 @@ internal sealed class FancyZonesModuleCommandProvider : ModuleCommandProvider
 
         if (ModuleEnablementService.IsModuleEnabled(module))
         {
+            yield return new ListItem(new CommandItem(new FancyZonesLayoutsPage()))
+            {
+                Title = "FancyZones: Layouts",
+                Subtitle = "Apply a layout to all monitors or a specific monitor",
+                Icon = icon,
+            };
+
+            yield return new ListItem(new CommandItem(new FancyZonesMonitorsPage()))
+            {
+                Title = "FancyZones: Monitors",
+                Subtitle = "Identify monitors and apply layouts",
+                Icon = icon,
+            };
+
             yield return new ListItem(new OpenFancyZonesEditorCommand())
             {
                 Title = "Open FancyZones Editor",
