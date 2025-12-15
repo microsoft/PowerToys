@@ -327,13 +327,20 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
     /// </summary>
     private async void OnDisplayChanged(object? sender, EventArgs e)
     {
-        Logger.LogInfo("[MainViewModel] Display change detected, will refresh after 5 second delay...");
+        // Get the delay from settings (default to 5 seconds if not configured)
+        var settings = _settingsUtils.GetSettingsOrDefault<PowerDisplaySettings>(PowerDisplaySettings.ModuleName);
+        int delaySeconds = settings?.Properties?.MonitorRefreshDelay ?? 5;
+
+        // Clamp to reasonable range (1-30 seconds)
+        delaySeconds = Math.Clamp(delaySeconds, 1, 30);
+
+        Logger.LogInfo($"[MainViewModel] Display change detected, will refresh after {delaySeconds} second delay...");
 
         // Set scanning state immediately to provide visual feedback
         IsScanning = true;
 
         // Wait for hardware to stabilize (DDC/CI may not be ready immediately after plug)
-        await Task.Delay(TimeSpan.FromSeconds(5));
+        await Task.Delay(TimeSpan.FromSeconds(delaySeconds));
 
         // Perform actual refresh - skip scanning check since we already set IsScanning above
         Logger.LogInfo("[MainViewModel] Delay complete, now refreshing monitors...");

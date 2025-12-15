@@ -17,7 +17,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public PowerDisplayProperties()
         {
             ActivationShortcut = DefaultActivationShortcut;
-            BrightnessUpdateRate = "1s";
+            MonitorRefreshDelay = 5;
             Monitors = new List<MonitorInfo>();
             RestoreSettingsOnStartup = true;
             ShowSystemTrayIcon = true;
@@ -29,8 +29,12 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("activation_shortcut")]
         public HotkeySettings ActivationShortcut { get; set; }
 
-        [JsonPropertyName("brightness_update_rate")]
-        public string BrightnessUpdateRate { get; set; }
+        /// <summary>
+        /// Gets or sets delay in seconds before refreshing monitors after display changes (hot-plug).
+        /// This allows hardware to stabilize before querying DDC/CI.
+        /// </summary>
+        [JsonPropertyName("monitor_refresh_delay")]
+        public int MonitorRefreshDelay { get; set; }
 
         [JsonPropertyName("monitors")]
         public List<MonitorInfo> Monitors { get; set; }

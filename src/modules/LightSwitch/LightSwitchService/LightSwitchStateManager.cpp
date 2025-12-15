@@ -4,6 +4,7 @@
 #include <LightSwitchUtils.h>
 #include "ThemeScheduler.h"
 #include <ThemeHelper.h>
+#include <common/interop/shared_constants.h>
 
 void ApplyTheme(bool shouldBeLight);
 
@@ -300,8 +301,8 @@ void LightSwitchStateManager::NotifyPowerDisplay(bool isLight)
         // Using separate events for light/dark eliminates race conditions where PowerDisplay
         // might read the registry before LightSwitch has finished updating it
         const wchar_t* eventName = isLight
-            ? L"Local\\PowerToys_LightSwitch_LightTheme"
-            : L"Local\\PowerToys_LightSwitch_DarkTheme";
+            ? CommonSharedConstants::LIGHT_SWITCH_LIGHT_THEME_EVENT
+            : CommonSharedConstants::LIGHT_SWITCH_DARK_THEME_EVENT;
 
         Logger::info(L"[LightSwitchStateManager] Notifying PowerDisplay about theme change (isLight: {})", isLight);
 

@@ -154,22 +154,18 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             set => SetSettingsProperty(_settings.Properties.ActivationShortcut, value, v => _settings.Properties.ActivationShortcut = v);
         }
 
-        public string BrightnessUpdateRate
+        /// <summary>
+        /// Gets or sets the delay in seconds before refreshing monitors after display changes.
+        /// </summary>
+        public int MonitorRefreshDelay
         {
-            get => _settings.Properties.BrightnessUpdateRate;
-            set => SetSettingsProperty(_settings.Properties.BrightnessUpdateRate, value, v => _settings.Properties.BrightnessUpdateRate = v);
+            get => _settings.Properties.MonitorRefreshDelay;
+            set => SetSettingsProperty(_settings.Properties.MonitorRefreshDelay, value, v => _settings.Properties.MonitorRefreshDelay = v);
         }
 
-        private readonly List<string> _brightnessUpdateRateOptions = new List<string>
-        {
-            "never",
-            "250ms",
-            "500ms",
-            "1s",
-            "2s",
-        };
+        private readonly List<int> _monitorRefreshDelayOptions = new List<int> { 1, 2, 3, 5, 10 };
 
-        public List<string> BrightnessUpdateRateOptions => _brightnessUpdateRateOptions;
+        public List<int> MonitorRefreshDelayOptions => _monitorRefreshDelayOptions;
 
         public ObservableCollection<MonitorInfo> Monitors
         {

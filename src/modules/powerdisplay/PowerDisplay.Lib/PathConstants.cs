@@ -79,14 +79,16 @@ namespace PowerDisplay.Common
         /// <summary>
         /// Event name for LightSwitch light theme change notifications.
         /// Signaled when LightSwitch switches to light mode.
+        /// Must match CommonSharedConstants::LIGHT_SWITCH_LIGHT_THEME_EVENT in shared_constants.h.
         /// </summary>
-        public const string LightSwitchLightThemeEventName = "Local\\PowerToys_LightSwitch_LightTheme";
+        public const string LightSwitchLightThemeEventName = "Local\\PowerToysLightSwitch-LightThemeEvent-50077121-2ffc-4841-9c86-ab1bd3f9baca";
 
         /// <summary>
         /// Event name for LightSwitch dark theme change notifications.
         /// Signaled when LightSwitch switches to dark mode.
+        /// Must match CommonSharedConstants::LIGHT_SWITCH_DARK_THEME_EVENT in shared_constants.h.
         /// </summary>
-        public const string LightSwitchDarkThemeEventName = "Local\\PowerToys_LightSwitch_DarkTheme";
+        public const string LightSwitchDarkThemeEventName = "Local\\PowerToysLightSwitch-DarkThemeEvent-b3a835c0-eaa2-49b0-b8eb-f793e3df3368";
 
         /// <summary>
         /// Ensures the PowerDisplay folder exists. Creates it if necessary.

@@ -45,11 +45,11 @@
                         <ToggleSwitch IsOn="{x:Bind ViewModel.ShowSystemTrayIcon, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
 
-                    <tkcontrols:SettingsCard x:Uid="PowerDisplay_BrightnessUpdateRate" HeaderIcon="{ui:FontIcon Glyph=&#xE916;}">
+                    <tkcontrols:SettingsCard x:Uid="PowerDisplay_MonitorRefreshDelay" HeaderIcon="{ui:FontIcon Glyph=&#xE916;}">
                         <ComboBox
                             MinWidth="120"
-                            ItemsSource="{x:Bind ViewModel.BrightnessUpdateRateOptions}"
-                            SelectedItem="{x:Bind ViewModel.BrightnessUpdateRate, Mode=TwoWay}" />
+                            ItemsSource="{x:Bind ViewModel.MonitorRefreshDelayOptions}"
+                            SelectedItem="{x:Bind ViewModel.MonitorRefreshDelay, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
 
                 </controls:SettingsGroup>

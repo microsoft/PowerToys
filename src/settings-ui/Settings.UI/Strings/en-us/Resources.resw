@@ -5689,11 +5689,11 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   <data name="PowerDisplay_ShowSystemTrayIcon.Description" xml:space="preserve">
     <value>Choose if PowerDisplay is visible in the system tray</value>
   </data>
-  <data name="PowerDisplay_BrightnessUpdateRate.Header" xml:space="preserve">
-    <value>Brightness update rate</value>
+  <data name="PowerDisplay_MonitorRefreshDelay.Header" xml:space="preserve">
+    <value>Monitor refresh delay</value>
   </data>
-  <data name="PowerDisplay_BrightnessUpdateRate.Description" xml:space="preserve">
-    <value>How frequently to update brightness values</value>
+  <data name="PowerDisplay_MonitorRefreshDelay.Description" xml:space="preserve">
+    <value>Seconds to wait after display changes before refreshing monitors. Increase if monitors are not detected after hot-plug.</value>
   </data>
   <data name="PowerDisplay_Profiles_GroupSettings.Header" xml:space="preserve">
     <value>Profiles</value>

@@ -140,6 +140,10 @@ namespace CommonSharedConstants
     const wchar_t APPLY_COLOR_TEMPERATURE_POWER_DISPLAY_EVENT[] = L"Local\\PowerToysPowerDisplay-ApplyColorTemperatureEvent-4b7e9f2a-3c6d-5a8e-7f1b-9d2e4c6a8b0d";
     const wchar_t APPLY_PROFILE_POWER_DISPLAY_EVENT[] = L"Local\\PowerToysPowerDisplay-ApplyProfileEvent-6e8a3c9d-4f7b-5d2e-8a1c-3e9f7b6d2a5c";
 
+    // Path to the events used by LightSwitch to notify PowerDisplay of theme changes
+    const wchar_t LIGHT_SWITCH_LIGHT_THEME_EVENT[] = L"Local\\PowerToysLightSwitch-LightThemeEvent-50077121-2ffc-4841-9c86-ab1bd3f9baca";
+    const wchar_t LIGHT_SWITCH_DARK_THEME_EVENT[] = L"Local\\PowerToysLightSwitch-DarkThemeEvent-b3a835c0-eaa2-49b0-b8eb-f793e3df3368";
+
     // used from quick access window
     const wchar_t CMDPAL_SHOW_EVENT[] = L"Local\\PowerToysCmdPal-ShowEvent-62336fcd-8611-4023-9b30-091a6af4cc5a";
     const wchar_t CMDPAL_EXIT_EVENT[] = L"Local\\PowerToysCmdPal-ExitEvent-eb73f6be-3f22-4b36-aee3-62924ba40bfd";
