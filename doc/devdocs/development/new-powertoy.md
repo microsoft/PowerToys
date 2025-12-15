@@ -51,7 +51,7 @@ Think about how your module works and which existing modules behave similarly. Y
 
 ### Writing your Module Interface
 Begin by setting up the [PowerToy module template project](https://github.com/microsoft/PowerToys/tree/main/tools/project_template). This will generate boilerplate for you to begin your new module. Below I will go through the key headers in the Module Interface (dllmain.cpp) and explain their purpose:
-1. This is where we will define all of our module settings. These can be any time from strings, bools, ints, and even custom Enums.
+1. This is where module settings are defined. These can be anything from strings, bools, ints, and even custom Enums.
 ```c++
 struct ModuleSettings {};
 ```
@@ -144,7 +144,7 @@ virtual bool on_hotkey(size_t hotkeyId) override
 
 ---
 ## 4. Write your service
-This is going to look different for every PowerToy. It may be easier to develop the application independently then link in the PowerToys settings logic later. But you have to write the service first before connecting it to the runner.
+This is going to look different for every PowerToy. It may be easier to develop the application independently, and then link in the PowerToys settings logic later. But you have to write the service first before connecting it to the runner.
 
 ### Notes
 * This is a separate project from the Module Interface.
@@ -166,9 +166,9 @@ auto& settings = ModuleSettings::instance().settings();
 ```
 These come from the `ModuleSettings.h` file that lives with the Service. You can copy this from another module (e.g., Light Switch) and adjust to fit your needs.
 
-If your module has a visual interface:
-* Use **WinUI 3** Desktop templates when setting up your project
-* Use [Windows design best practices](https://learn.microsoft.com/en-us/windows/apps/design/basics/)
+If your module has a user interface:
+* Use the **WinUI Blank App** template when setting up your project
+* Use [Windows design best practices](https://learn.microsoft.com/windows/apps/design/basics/)
 * Use the [WinUI 3 Gallery](https://apps.microsoft.com/detail/9p3jfpwwdzrc) for help with visual components and more guidance
 
 ## 5. Settings Integration
@@ -215,7 +215,7 @@ public ModuleSettings()
 
 ### Gotchas:
 * Only use the WinUI 3 Desktop framework, not UWP.
-* Use [`DispatcherQueue`](https://learn.microsoft.com/en-us/windows/apps/develop/dispatcherqueue) when updating UI from non-UI threads.
+* Use [`DispatcherQueue`](https://learn.microsoft.com/windows/apps/develop/dispatcherqueue) when updating UI from non-UI threads.
 
 ---
 ## 6. Building and Debugging
@@ -248,7 +248,7 @@ Generate-FileComponents -fileListName "<Module>Files" -wxsFilePath $PSScriptRoot
 
 ### UI Tests
 * Place under `/modules/<YourModule>/Tests`
-* Create new [WinUI Unit Test App](https://learn.microsoft.com/en-us/windows/apps/winui/winui3/testing/create-winui-unit-test-project)
+* Create new [WinUI Unit Test App](https://learn.microsoft.com/windows/apps/winui/winui3/testing/create-winui-unit-test-project)
 * Write unit tests following format from previous modules (ie: Light Switch). This can be to test your standalone UI (if you're a module like Color Picker) or to verify that the Settings UI in the PowerToys app is controlling your service.
 
 ### Manual Validation
