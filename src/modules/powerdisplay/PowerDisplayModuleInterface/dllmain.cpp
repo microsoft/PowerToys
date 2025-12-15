@@ -232,7 +232,7 @@ private:
 public:
     PowerDisplayModule()
     {
-        LoggerHelpers::init_logger(MODULE_NAME, L"ModuleInterface", "PowerDisplay");
+        LoggerHelpers::init_logger(MODULE_NAME, L"ModuleInterface", LogSettings::powerDisplayLoggerName);
         Logger::info("Power Display object is constructing");
 
         init_settings();
