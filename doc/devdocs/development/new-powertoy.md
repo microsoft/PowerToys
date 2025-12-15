@@ -12,7 +12,7 @@ A PowerToy module is a self-contained utility integrated into the PowerToys ecos
 
 ### Requirements
 
-* [Visual Studio 2022](https://visualstudio.microsoft.com/downloads/) and the following workloads/individual components
+* [Visual Studio 2022](https://visualstudio.microsoft.com/downloads/) and the following workloads/individual components:
   - Desktop Development with C++
   - WinUI application development
   - .NET desktop development
@@ -50,7 +50,7 @@ Think about how your module works and which existing modules behave similarly. Y
 * **C++/C# interop:** e.g., PowerRename 
 
 ### Writing your Module Interface
-Begin by setting up the [PowerToy module template project](https://github.com/microsoft/PowerToys/tree/main/tools/project_template). This will generate boilerplate for you to begin your new module. Below I will go through the key headers in the Module Interface (dllmain.cpp) and explain their purpose:
+Begin by setting up the [PowerToy module template project](https://github.com/microsoft/PowerToys/tree/main/tools/project_template). This will generate boilerplate for you to begin your new module. Below are the key headers in the Module Interface (`dllmain.cpp`) and an explanation of their purpose:
 1. This is where module settings are defined. These can be anything from strings, bools, ints, and even custom Enums.
 ```c++
 struct ModuleSettings {};
@@ -169,7 +169,7 @@ These come from the `ModuleSettings.h` file that lives with the Service. You can
 If your module has a user interface:
 * Use the **WinUI Blank App** template when setting up your project
 * Use [Windows design best practices](https://learn.microsoft.com/windows/apps/design/basics/)
-* Use the [WinUI 3 Gallery](https://apps.microsoft.com/detail/9p3jfpwwdzrc) for help with visual components and more guidance
+* Use the [WinUI 3 Gallery](https://apps.microsoft.com/detail/9p3jfpwwdzrc) for help with your UI code, and additional guidance.
 
 ## 5. Settings Integration
 
@@ -214,7 +214,7 @@ public ModuleSettings()
 ---
 
 ### Gotchas:
-* Only use the WinUI 3 Desktop framework, not UWP.
+* Only use the WinUI 3 framework, _not_ UWP.
 * Use [`DispatcherQueue`](https://learn.microsoft.com/windows/apps/develop/dispatcherqueue) when updating UI from non-UI threads.
 
 ---
@@ -248,8 +248,8 @@ Generate-FileComponents -fileListName "<Module>Files" -wxsFilePath $PSScriptRoot
 
 ### UI Tests
 * Place under `/modules/<YourModule>/Tests`
-* Create new [WinUI Unit Test App](https://learn.microsoft.com/windows/apps/winui/winui3/testing/create-winui-unit-test-project)
-* Write unit tests following format from previous modules (ie: Light Switch). This can be to test your standalone UI (if you're a module like Color Picker) or to verify that the Settings UI in the PowerToys app is controlling your service.
+* Create a new [WinUI Unit Test App](https://learn.microsoft.com/windows/apps/winui/winui3/testing/create-winui-unit-test-project)
+* Write unit tests following the format from previous modules (ie: Light Switch). This can be to test your standalone UI (if you're a module like Color Picker) or to verify that the Settings UI in the PowerToys app is controlling your service.
 
 ### Manual Validation
 * Enable/disable in PowerToys Settings
