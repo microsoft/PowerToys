@@ -271,7 +271,7 @@ namespace UITests_FancyZones
             };
             FancyZonesEditorHelper.Files.AppliedLayoutsIOHelper.WriteData(appliedLayouts.Serialize(appliedLayoutsWrapper));
 
-            this.RestartScopeExe();
+            RestartScopeExe("Hosts");
         }
 
         [TestMethod("FancyZones.Settings.TestApplyHotKey")]
@@ -598,10 +598,12 @@ namespace UITests_FancyZones
             this.TryReaction();
             int tries = 24;
             Pull(tries, "down"); // Pull the setting page up to make sure the setting is visible
-            this.Find<ToggleSwitch>("Enable quick layout switch").Toggle(flag);
+            this.Find<ToggleSwitch>("FancyZonesQuickLayoutSwitch").Toggle(flag);
 
-            tries = 24;
-            Pull(tries, "up");
+            // Go back and forth to make sure settings applied
+            this.Find<NavigationViewItem>("Workspaces").Click();
+            Task.Delay(200).Wait();
+            this.Find<NavigationViewItem>("FancyZones").Click();
         }
 
         private void TryReaction()

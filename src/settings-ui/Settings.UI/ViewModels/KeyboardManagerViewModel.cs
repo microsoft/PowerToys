@@ -274,7 +274,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 try
                 {
                     // Check if the experimentation toggle is enabled in the settings
-                    var settingsUtils = new SettingsUtils();
+                    var settingsUtils = SettingsUtils.Default;
                     bool isExperimentationEnabled = SettingsRepository<GeneralSettings>.GetInstance(settingsUtils).SettingsConfig.EnableExperimentation;
 
                     // Only read the registry value if the experimentation toggle is enabled

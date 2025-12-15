@@ -64,3 +64,6 @@ WNDCLASSEXW
 RegisterClassEx
 GetStockObject
 GetModuleHandle
+
+GetWindowThreadProcessId
+AttachThreadInput

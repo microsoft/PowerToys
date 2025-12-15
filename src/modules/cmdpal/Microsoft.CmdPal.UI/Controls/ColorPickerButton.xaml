@@ -1,0 +1,90 @@
+﻿<UserControl
+    x:Class="Microsoft.CmdPal.UI.Controls.ColorPickerButton"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Microsoft.CmdPal.UI.Controls"
+    xmlns:converters="using:CommunityToolkit.WinUI.Converters"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    d:DesignHeight="300"
+    d:DesignWidth="400"
+    mc:Ignorable="d">
+    <UserControl.Resources>
+        <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+        <converters:BoolToVisibilityConverter
+            x:Key="BoolToVisibilityInvertedConverter"
+            FalseValue="Visible"
+            TrueValue="Collapsed" />
+    </UserControl.Resources>
+
+    <StackPanel Orientation="Horizontal" Spacing="8">
+        <DropDownButton Padding="{x:Bind ToDropDownPadding(HasSelectedColor), Mode=OneWay}">
+            <Grid>
+                <TextBlock x:Uid="OptionalColorPickerButton_UnsetTextBlock" Visibility="{x:Bind HasSelectedColor, Mode=OneWay, Converter={StaticResource BoolToVisibilityInvertedConverter}}" />
+                <Border
+                    x:Name="ColorPreviewBorder"
+                    Width="48"
+                    Height="24"
+                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                    BorderThickness="1"
+                    CornerRadius="{ThemeResource ControlCornerRadius}"
+                    Visibility="{x:Bind HasSelectedColor, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <Border.Background>
+                        <SolidColorBrush Color="{x:Bind SelectedColor, Mode=OneWay}" />
+                    </Border.Background>
+                </Border>
+            </Grid>
+            <DropDownButton.Flyout>
+                <Flyout
+                    x:Name="ColorPickerFlyout"
+                    Opened="FlyoutBase_OnOpened"
+                    Placement="Bottom"
+                    ShouldConstrainToRootBounds="False">
+                    <Flyout.FlyoutPresenterStyle>
+                        <Style BasedOn="{StaticResource DefaultFlyoutPresenterStyle}" TargetType="FlyoutPresenter">
+                            <Setter Property="MinWidth" Value="660" />
+                        </Style>
+                    </Flyout.FlyoutPresenterStyle>
+                    <StackPanel
+                        x:Name="FlyoutRoot"
+                        Orientation="Horizontal"
+                        SizeChanged="FlyoutRoot_OnSizeChanged"
+                        Spacing="20">
+                        <!--  Left column: Preset colors and reset button  -->
+                        <StackPanel Margin="2">
+                            <TextBlock
+                                x:Uid="OptionalColorPickerButton_WindowsColorsSectionHeading"
+                                Margin="0,0,0,12"
+                                Style="{StaticResource BodyTextBlockStyle}" />
+
+                            <controls:ColorPalette
+                                HorizontalAlignment="Left"
+                                VerticalAlignment="Top"
+                                CustomPaletteColumnCount="9"
+                                PaletteColors="{x:Bind PaletteColors}"
+                                SelectedColorChanged="ColorPalette_OnSelectedColorChanged" />
+                        </StackPanel>
+
+                        <!--  Right column: Spectrum  -->
+                        <StackPanel>
+                            <TextBlock
+                                x:Uid="OptionalColorPickerButton_CustomColorsSectionHeading"
+                                Margin="0,0,0,12"
+                                Style="{StaticResource BodyTextBlockStyle}" />
+
+                            <ColorPicker
+                                IsAlphaEnabled="{x:Bind IsAlphaEnabled, Mode=OneWay}"
+                                IsAlphaSliderVisible="{x:Bind IsAlphaEnabled, Mode=OneWay}"
+                                IsAlphaTextInputVisible="{x:Bind IsAlphaEnabled, Mode=OneWay}"
+                                IsColorChannelTextInputVisible="True"
+                                IsColorSliderVisible="True"
+                                IsHexInputVisible="True"
+                                IsMoreButtonVisible="True"
+                                Color="{x:Bind SelectedColor, Mode=TwoWay}" />
+                        </StackPanel>
+                    </StackPanel>
+                </Flyout>
+            </DropDownButton.Flyout>
+        </DropDownButton>
+    </StackPanel>
+</UserControl>
