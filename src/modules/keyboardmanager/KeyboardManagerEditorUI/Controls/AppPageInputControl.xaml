@@ -72,7 +72,6 @@
                         <TextBox 
                             x:Name="ProgramArgsInput" 
                             Width="180" />
-
                         <TextBlock 
                             x:Uid="AppPageInputControlStartInTextBlock"
                             VerticalAlignment="Center" />
