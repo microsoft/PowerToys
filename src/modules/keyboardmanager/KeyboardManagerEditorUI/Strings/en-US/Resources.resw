@@ -189,8 +189,8 @@
   <data name="ProgramsPageKeyDialog.Title" xml:space="preserve">
     <value>New program shortcut</value>
   </data>
-  <data name="AppPageInputControlExampleTextBlock.Text" xml:space="preserve">
-    <value>Application</value>
+  <data name="AppPageInputControlExampleTextBox.Header" xml:space="preserve">
+    <value>Program</value>
   </data>
   <data name="ProgramsPageNewTextBlock.Text" xml:space="preserve">
     <value>New</value>
@@ -276,14 +276,14 @@
   <data name="AppPageInputControlPathSelectButton.Content" xml:space="preserve">
     <value>Select Program</value>
   </data>
-  <data name="AppPageInputControlArgumentsTextBlock.Text" xml:space="preserve">
+  <data name="AppPageInputControlArgumentsTextBox.Header" xml:space="preserve">
     <value>Arguments</value>
   </data>
-  <data name="AppPageInputControlStartInTextBlock.Text" xml:space="preserve">
+  <data name="AppPageInputControlStartInTextBox.Header" xml:space="preserve">
     <value>Start in</value>
   </data>
-  <data name="AppPageInputControlStartInSelectButto" xml:space="preserve">
-    <value>Select starting directory</value>
+  <data name="AppPageInputControlStartInSelectButton.Content" xml:space="preserve">
+    <value>Select directory</value>
   </data>
   <data name="AppPageInputControlElevationComboBox.Header" xml:space="preserve">
     <value>Elevation</value>
@@ -305,5 +305,8 @@
   </data>
   <data name="UrlPageInputControlToOpenTextBox.PlaceholderText" xml:space="preserve">
     <value>https://github.com/microsoft/PowerToys</value>
+  </data>
+  <data name="AppPageInputControlExtraOptionsTextBlock.Text" xml:space="preserve">
+    <value>More options</value>
   </data>
 </root>

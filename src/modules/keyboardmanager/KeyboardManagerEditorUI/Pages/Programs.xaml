@@ -163,6 +163,9 @@
             Width="480"
             MinWidth="600"
             MaxWidth="600"
+            MinHeight="600"
+            MaxHeight="600"
+            Height="600"
             PrimaryButtonClick="KeyDialog_PrimaryButtonClick"
             PrimaryButtonStyle="{StaticResource AccentButtonStyle}">
             <Grid>

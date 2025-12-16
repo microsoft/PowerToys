@@ -13,7 +13,7 @@
 
     <StackPanel
         Width="360"
-        Height="360"
+        Height="600"
         Orientation="Vertical"
         Spacing="8">
         <!-- Shortcut section -->
@@ -48,75 +48,78 @@
             </ToggleButton.Content>
         </ToggleButton>
 
-        <TextBlock 
-            x:Uid="AppPageInputControlExampleTextBlock"
-            VerticalAlignment="Center" />
-        <TextBox 
-            x:Name="ProgramPathInput" 
-            Width="180" />
-        <Button 
-            x:Name="ProgramPathSelectButton"
-            x:Uid="AppPageInputControlPathSelectButton"
-            Click="ProgramPathSelectButton_Click" />
+        <StackPanel
+            Orientation="Horizontal"
+            Spacing="4"
+            Margin="0,8,0,0">
+            <TextBox 
+                x:Uid="AppPageInputControlExampleTextBox"
+                x:Name="ProgramPathInput" 
+                Width="220" />
+            <Button 
+                x:Name="ProgramPathSelectButton"
+                x:Uid="AppPageInputControlPathSelectButton"
+                Click="ProgramPathSelectButton_Click"
+                VerticalAlignment="Bottom"
+                Width="120"/>
+        </StackPanel>
 
-        <Expander>
-            <Expander.Content>
-                <ScrollView>
-                    <StackPanel
-                        Orientation="Vertical"
-                        Spacing="8"
-                        Margin="0,8,0,0">
-                        <TextBlock 
-                            x:Uid="AppPageInputControlArgumentsTextBlock"
-                            VerticalAlignment="Center" />
-                        <TextBox 
-                            x:Name="ProgramArgsInput" 
-                            Width="180" />
-                        <TextBlock 
-                            x:Uid="AppPageInputControlStartInTextBlock"
-                            VerticalAlignment="Center" />
-                        <TextBox 
-                            x:Name="StartInPathInput"
-                            Width="180" />
-                        <Button 
-                            x:Name="StartInSelectButton"
-                            x:Uid="AppPageInputControlStartInSelectButton"
-                            Click="StartInSelectButton_Click" />
-
-                        <ComboBox 
-                            x:Name="ElevationComboBox"
-                            x:Uid="AppPageInputControlElevationComboBox"
-                            SelectedValue="Normal" 
-                            Width="110">
-                            <x:String>Normal</x:String>
-                            <x:String>Elevated</x:String>
-                            <x:String>Different user</x:String>
-                        </ComboBox>
-                        <ComboBox
-                            x:Name="IfRunningComboBox"
-                            x:Uid="AppPageInputControlIfRunningComboBox"
-                            SelectedValue="Show window" 
-                            Width="110">
-                            <x:String>Show window</x:String>
-                            <x:String>Start another</x:String>
-                            <x:String>Do nothing</x:String>
-                            <x:String>Close</x:String>
-                            <x:String>End task</x:String>
-                        </ComboBox>
-                        <ComboBox 
-                            x:Name="VisibilityComboBox"
-                            x:Uid="AppPageInputControlVisibilityComboBox"
-                            SelectedValue="Normal" 
-                            Width="110">
-                            <x:String>Normal</x:String>
-                            <x:String>Hidden</x:String>
-                            <x:String>Minimized</x:String>
-                            <x:String>Maximized</x:String>
-                        </ComboBox>
-                    </StackPanel>
-                </ScrollView>
-            </Expander.Content>
-        </Expander>
-            
+        <TextBlock
+            x:Uid="AppPageInputControlExtraOptionsTextBlock"
+            Margin="0,12,0,8"
+            FontWeight="SemiBold" />
+        <StackPanel
+                Orientation="Vertical"
+                Spacing="8"
+                Margin="0,8,0,0">
+            <TextBox 
+                x:Uid="AppPageInputControlArgumentsTextBox"
+                x:Name="ProgramArgsInput" 
+                Width="360" />
+            <StackPanel 
+                Orientation="Horizontal"
+                Spacing="4">
+                <TextBox 
+                    x:Uid="AppPageInputControlStartInTextBox"
+                    x:Name="StartInPathInput"
+                    Width="220" />
+                <Button 
+                    x:Name="StartInSelectButton"
+                    x:Uid="AppPageInputControlStartInSelectButton"
+                    VerticalAlignment="Bottom"
+                    Click="StartInSelectButton_Click"
+                    Width="120"/>
+            </StackPanel>
+            <ComboBox 
+                x:Name="ElevationComboBox"
+                x:Uid="AppPageInputControlElevationComboBox"
+                SelectedValue="Normal" 
+                Width="360">
+                <x:String>Normal</x:String>
+                <x:String>Elevated</x:String>
+                <x:String>Different user</x:String>
+            </ComboBox>
+            <ComboBox
+                x:Name="IfRunningComboBox"
+                x:Uid="AppPageInputControlIfRunningComboBox"
+                SelectedValue="Show window" 
+                Width="360">
+                <x:String>Show window</x:String>
+                <x:String>Start another</x:String>
+                <x:String>Do nothing</x:String>
+                <x:String>Close</x:String>
+                <x:String>End task</x:String>
+            </ComboBox>
+            <ComboBox 
+                x:Name="VisibilityComboBox"
+                x:Uid="AppPageInputControlVisibilityComboBox"
+                SelectedValue="Normal" 
+                Width="360">
+                <x:String>Normal</x:String>
+                <x:String>Hidden</x:String>
+                <x:String>Minimized</x:String>
+                <x:String>Maximized</x:String>
+            </ComboBox>
+        </StackPanel>
     </StackPanel>
 </UserControl>
