@@ -8,10 +8,9 @@
   <PropertyGroup Label="ManifestToolOverride">
     <ManifestTool Condition="Exists('$(WindowsSdkDir)bin\x64\mt.exe')">$(WindowsSdkDir)bin\x64\mt.exe</ManifestTool>
   </PropertyGroup>
-	<!-- Auto-restore NuGet for native vcxproj (PackageReference) when building inside VS -->
-	<Target Name="EnsureNuGetRestoreForVcxproj"
-			BeforeTargets="PrepareForBuild"
-			Condition="
+
+  <!-- Auto-restore NuGet for native vcxproj (PackageReference) when building inside VS -->
+  <Target Name="EnsureNuGetRestoreForVcxproj" BeforeTargets="PrepareForBuild" Condition="
             '$(BuildingInsideVisualStudio)' == 'true'
             and '$(DesignTimeBuild)' != 'true'
             and '$(RestoreInProgress)' != 'true'
@@ -21,15 +20,8 @@
             and !Exists('$(MSBuildProjectExtensionsPath)project.assets.json')
           ">
 
-		<Message Importance="high"
-				 Text="NuGet assets missing for $(MSBuildProjectName); running Restore..." />
-		<Message Importance="high" Text="IntDir=$(IntDir)" />
-		<Message Importance="high" Text="BaseIntermediateOutputPath=$(BaseIntermediateOutputPath)" />
-		<Message Importance="high" Text="MSBuildProjectExtensionsPath=$(MSBuildProjectExtensionsPath)" />
+    <Message Importance="normal" Text="NuGet assets missing for $(MSBuildProjectName); running Restore...; IntDir=$(IntDir); BaseIntermediateOutputPath=$(BaseIntermediateOutputPath)" />
 
-		<MSBuild Projects="$(MSBuildProjectFullPath)"
-				 Targets="Restore"
-				 Properties="RestoreInProgress=true"
-				 BuildInParallel="false" />
-	</Target>
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="Restore" Properties="RestoreInProgress=true" BuildInParallel="false" />
+  </Target>
 </Project>
