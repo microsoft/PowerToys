@@ -136,7 +136,7 @@ bool EditorParameters::Save(const WorkAreaConfiguration& configuration, OnThread
         dpiUnawareThread.submit(OnThreadExecutor::task_t{
             [&]() {
                 combinedWorkArea = FancyZonesUtils::GetAllMonitorsCombinedRect<&MONITORINFOEX::rcWork>();
-        } }).wait();
+        } }).get();
         RECT combinedMonitorArea = FancyZonesUtils::GetAllMonitorsCombinedRect<&MONITORINFOEX::rcMonitor>();
 
         // use dpi-unaware values
@@ -198,7 +198,7 @@ bool EditorParameters::Save(const WorkAreaConfiguration& configuration, OnThread
                 {
                     return;
                 }
-            } }).wait();
+            } }).get();
 
             float width = static_cast<float>(monitorInfo.rcMonitor.right - monitorInfo.rcMonitor.left);
             float height = static_cast<float>(monitorInfo.rcMonitor.bottom - monitorInfo.rcMonitor.top);

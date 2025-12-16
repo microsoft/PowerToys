@@ -9,13 +9,17 @@ OnThreadExecutor::OnThreadExecutor() :
 {
 }
 
-std::future<void> OnThreadExecutor::submit(task_t task)
+winrt::Windows::Foundation::IAsyncAction OnThreadExecutor::submit(task_t task)
 {
     auto future = task.get_future();
-    std::lock_guard lock{ _task_mutex };
-    _task_queue.emplace(std::move(task));
-    _task_cv.notify_one();
-    return future;
+    {
+        std::lock_guard lock{ _task_mutex };
+        _task_queue.emplace(std::move(task));
+        _task_cv.notify_one();
+    }
+    
+    co_await winrt::resume_background();
+    future.wait();
 }
 
 void OnThreadExecutor::cancel()

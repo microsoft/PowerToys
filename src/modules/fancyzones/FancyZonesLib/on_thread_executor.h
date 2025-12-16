@@ -5,6 +5,7 @@
 #include <functional>
 #include <queue>
 #include <atomic>
+#include <winrt/Windows.Foundation.h>
 
 // OnThreadExecutor allows its caller to off-load some work to a persistently running background thread.
 // This might come in handy if you use the API which sets thread-wide global state and the state needs
@@ -17,7 +18,7 @@ public:
 
     OnThreadExecutor();
     ~OnThreadExecutor();
-    std::future<void> submit(task_t task);
+    winrt::Windows::Foundation::IAsyncAction submit(task_t task);
     void cancel();
 
 private:
