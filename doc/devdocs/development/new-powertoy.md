@@ -25,7 +25,7 @@ A PowerToy module is a self-contained utility integrated into the PowerToys ecos
 Optional: 
 * [WiX v5 toolset](https://github.com/microsoft/PowerToys/tree/main) for the installer
 
-> Note: To ensure all the correct VS Workloads are installed, use [the WinGet configuration files](https://github.com/microsoft/PowerToys/tree/e13d6a78aafbcf32a4bb5f8581d041e1d057c3f1/.config) in the project repository. (Use the one that matches your VS distribution. ie: VS Enterprise would use `configuration.vsEnterprise.winget`)
+> Note: To ensure all the correct VS Workloads are installed, use [the WinGet configuration files](https://github.com/microsoft/PowerToys/tree/e13d6a78aafbcf32a4bb5f8581d041e1d057c3f1/.config) in the project repository. (Use the one that matches your VS distribution. ie: VS Community would use `configuration.winget`)
 
 ### Folder Structure
 
