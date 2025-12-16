@@ -39,51 +39,52 @@ internal sealed partial class FancyZonesLayoutsPage : DynamicListPage
 
     public override IListItem[] GetItems()
     {
-        var layouts = FancyZonesDataService.GetLayouts();
-        if (!string.IsNullOrWhiteSpace(SearchText))
+        try
         {
-            layouts = layouts
-                .Where(l => l.Title.Contains(SearchText, StringComparison.CurrentCultureIgnoreCase) ||
-                            l.Subtitle.Contains(SearchText, StringComparison.CurrentCultureIgnoreCase))
-                .ToArray();
-        }
+            var layouts = FancyZonesDataService.GetLayouts();
+            if (!string.IsNullOrWhiteSpace(SearchText))
+            {
+                layouts = layouts
+                    .Where(l => l.Title.Contains(SearchText, StringComparison.CurrentCultureIgnoreCase) ||
+                                l.Subtitle.Contains(SearchText, StringComparison.CurrentCultureIgnoreCase))
+                    .ToArray();
+            }
 
-        if (layouts.Count == 0)
+            if (layouts.Count == 0)
+            {
+                return Array.Empty<IListItem>();
+            }
+
+            _ = FancyZonesDataService.TryGetMonitors(out var monitors, out _);
+            var fallbackIcon = PowerToysResourcesHelper.IconFromSettingsIcon("FancyZones.png");
+
+            var items = new List<IListItem>(layouts.Count);
+            foreach (var layout in layouts)
+            {
+                var defaultCommand = new ApplyFancyZonesLayoutCommand(layout, targetMonitorIndex: null);
+
+                var item = new FancyZonesLayoutListItem(defaultCommand, layout, fallbackIcon)
+                {
+                    MoreCommands = BuildLayoutContext(layout, monitors),
+                };
+
+                items.Add(item);
+            }
+
+            return items.ToArray();
+        }
+        catch (Exception ex)
         {
+            _emptyMessage.Subtitle = ex.Message;
             return Array.Empty<IListItem>();
         }
-
-        _ = FancyZonesDataService.TryGetMonitors(out var monitors, out _);
-        var fallbackIcon = PowerToysResourcesHelper.IconFromSettingsIcon("FancyZones.png");
-
-        var items = new List<IListItem>(layouts.Count);
-        foreach (var layout in layouts)
-        {
-            var defaultCommand = new ApplyFancyZonesLayoutCommand(layout, targetMonitorIndex: null);
-
-            var item = new FancyZonesLayoutListItem(defaultCommand, layout, fallbackIcon)
-            {
-                MoreCommands = BuildLayoutContext(layout, monitors),
-            };
-
-            items.Add(item);
-        }
-
-        return items.ToArray();
     }
 
     private static IContextItem[] BuildLayoutContext(FancyZonesLayoutDescriptor layout, IReadOnlyList<FancyZonesMonitorDescriptor> monitors)
     {
-        var commands = new List<IContextItem>
-        {
-            new CommandContextItem(new ApplyFancyZonesLayoutCommand(layout, targetMonitorIndex: null))
-            {
-                Title = "Apply to all monitors",
-                Subtitle = "Apply on the current virtual desktop",
-            },
-        };
+        var commands = new List<IContextItem>(monitors.Count);
 
-        for (int i = 0; i < monitors.Count; i++)
+        for (var i = 0; i < monitors.Count; i++)
         {
             var monitorIndex = i + 1;
             commands.Add(new CommandContextItem(new ApplyFancyZonesLayoutCommand(layout, targetMonitorIndex: monitorIndex))

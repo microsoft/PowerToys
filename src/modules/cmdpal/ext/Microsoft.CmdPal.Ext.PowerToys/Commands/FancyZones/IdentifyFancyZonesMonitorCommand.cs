@@ -15,6 +15,7 @@ internal sealed partial class IdentifyFancyZonesMonitorCommand : InvokableComman
     {
         _monitorIndex = monitorIndex;
         Name = $"Identify Monitor {_monitorIndex}";
+        Icon = new IconInfo("\uE7F4");
     }
 
     public override CommandResult Invoke()
@@ -38,6 +39,6 @@ internal sealed partial class IdentifyFancyZonesMonitorCommand : InvokableComman
             $"Monitor {_monitorIndex}",
             durationMs: 1200);
 
-        return CommandResult.Dismiss();
+        return CommandResult.KeepOpen();
     }
 }

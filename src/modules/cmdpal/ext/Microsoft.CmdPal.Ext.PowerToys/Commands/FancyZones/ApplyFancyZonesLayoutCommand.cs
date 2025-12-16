@@ -18,8 +18,8 @@ internal sealed partial class ApplyFancyZonesLayoutCommand : InvokableCommand
         _targetMonitorIndex = targetMonitorIndex;
 
         Name = targetMonitorIndex is null
-            ? $"Apply '{layout.Title}' to all monitors"
-            : $"Apply '{layout.Title}' to Monitor {targetMonitorIndex.Value}";
+            ? $"Apply to all monitors"
+            : $"Apply to Monitor {targetMonitorIndex.Value}";
     }
 
     public override CommandResult Invoke()

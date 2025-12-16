@@ -21,7 +21,7 @@ internal sealed partial class FancyZonesMonitorLayoutPickerPage : DynamicListPag
     {
         _monitorIndex = monitorIndex;
         Icon = PowerToysResourcesHelper.IconFromSettingsIcon("FancyZones.png");
-        Name = Title = $"Apply layout to Monitor {monitorIndex}";
+        Name = Title = $"Set active layout for Monitor {monitorIndex}";
         Id = $"com.microsoft.cmdpal.powertoys.fancyzones.monitor.{monitorIndex}.layouts";
 
         _emptyMessage = new CommandItem()
@@ -63,6 +63,6 @@ internal sealed partial class FancyZonesMonitorLayoutPickerPage : DynamicListPag
             items.Add(item);
         }
 
-        return items.ToArray();
+        return [.. items];
     }
 }

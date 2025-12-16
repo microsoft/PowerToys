@@ -4,10 +4,15 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using ManagedCommon;
 using Microsoft.CommandPalette.Extensions.Toolkit;
+using PowerToys.Interop;
 using Windows.Graphics.Imaging;
 using Windows.Storage.Streams;
 
@@ -15,37 +20,162 @@ namespace PowerToysExtension.Helpers;
 
 internal static class FancyZonesThumbnailRenderer
 {
-    private readonly record struct NormalizedRect(float X, float Y, float Width, float Height);
+    internal readonly record struct NormalizedRect(float X, float Y, float Width, float Height);
 
     private readonly record struct BgraColor(byte B, byte G, byte R, byte A);
 
     public static async Task<IconInfo?> RenderLayoutIconAsync(FancyZonesLayoutDescriptor layout, int sizePx = 72)
     {
-        if (sizePx < 16)
+        try
         {
-            sizePx = 16;
+            Logger.LogDebug($"FancyZones thumbnail render starting. LayoutId={layout.Id} Type={layout.ApplyLayout.Type} ZoneCount={layout.ApplyLayout.ZoneCount} Source={layout.Source}");
+            if (sizePx < 16)
+            {
+                sizePx = 16;
+            }
+
+            var cachedIcon = TryGetCachedIcon(layout);
+            if (cachedIcon is not null)
+            {
+                Logger.LogDebug($"FancyZones thumbnail cache hit. LayoutId={layout.Id}");
+                return cachedIcon;
+            }
+
+            var rects = GetNormalizedRectsForLayout(layout);
+            Logger.LogDebug($"FancyZones thumbnail rects computed. LayoutId={layout.Id} RectCount={rects.Count}");
+            var pixelBytes = RenderBgra(rects, sizePx, layout.ApplyLayout.ShowSpacing && layout.ApplyLayout.Spacing > 0 ? layout.ApplyLayout.Spacing : 0);
+            var stream = new InMemoryRandomAccessStream();
+
+            var encoder = await BitmapEncoder.CreateAsync(BitmapEncoder.PngEncoderId, stream);
+            encoder.SetPixelData(
+                BitmapPixelFormat.Bgra8,
+                BitmapAlphaMode.Premultiplied,
+                (uint)sizePx,
+                (uint)sizePx,
+                96,
+                96,
+                pixelBytes);
+
+            await encoder.FlushAsync();
+            stream.Seek(0);
+
+            var cachePath = GetCachePath(layout);
+            if (!string.IsNullOrEmpty(cachePath))
+            {
+                try
+                {
+                    var tempPath = FormattableString.Invariant($"{cachePath}.{Guid.NewGuid():N}.tmp");
+                    Directory.CreateDirectory(Path.GetDirectoryName(cachePath)!);
+                    await WriteStreamToFileAsync(stream, tempPath);
+                    File.Move(tempPath, cachePath, overwrite: true);
+
+                    var fileIcon = new IconInfo(cachePath);
+                    Logger.LogDebug($"FancyZones thumbnail render succeeded (file cache). LayoutId={layout.Id} Path=\"{cachePath}\"");
+                    return fileIcon;
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogWarning($"FancyZones thumbnail write cache failed. LayoutId={layout.Id} Path=\"{cachePath}\" Exception={ex}");
+                }
+            }
+
+            // Fallback: return an in-memory stream icon. This may not marshal reliably cross-proc,
+            // so prefer the file-cached path above.
+            stream.Seek(0);
+            var inMemoryIcon = IconInfo.FromStream(stream);
+            Logger.LogDebug($"FancyZones thumbnail render succeeded (in-memory). LayoutId={layout.Id}");
+            return inMemoryIcon;
         }
-
-        var rects = GetNormalizedRects(layout);
-        var pixelBytes = RenderBgra(rects, sizePx, layout.ApplyLayout.ShowSpacing && layout.ApplyLayout.Spacing > 0 ? layout.ApplyLayout.Spacing : 0);
-        var stream = new InMemoryRandomAccessStream();
-
-        var encoder = await BitmapEncoder.CreateAsync(BitmapEncoder.PngEncoderId, stream);
-        encoder.SetPixelData(
-            BitmapPixelFormat.Bgra8,
-            BitmapAlphaMode.Premultiplied,
-            (uint)sizePx,
-            (uint)sizePx,
-            96,
-            96,
-            pixelBytes);
-
-        await encoder.FlushAsync();
-        stream.Seek(0);
-        return IconInfo.FromStream(stream);
+        catch (Exception ex)
+        {
+            Logger.LogWarning($"FancyZones thumbnail render failed. LayoutId={layout.Id} Type={layout.ApplyLayout.Type} ZoneCount={layout.ApplyLayout.ZoneCount} Source={layout.Source} Exception={ex}");
+            return null;
+        }
     }
 
-    private static List<NormalizedRect> GetNormalizedRects(FancyZonesLayoutDescriptor layout)
+    private static IconInfo? TryGetCachedIcon(FancyZonesLayoutDescriptor layout)
+    {
+        var cachePath = GetCachePath(layout);
+        if (string.IsNullOrEmpty(cachePath))
+        {
+            return null;
+        }
+
+        try
+        {
+            if (File.Exists(cachePath))
+            {
+                return new IconInfo(cachePath);
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogWarning($"FancyZones thumbnail cache check failed. LayoutId={layout.Id} Path=\"{cachePath}\" Exception={ex}");
+        }
+
+        return null;
+    }
+
+    private static string? GetCachePath(FancyZonesLayoutDescriptor layout)
+    {
+        try
+        {
+            var basePath = Constants.AppDataPath();
+            if (string.IsNullOrWhiteSpace(basePath))
+            {
+                return null;
+            }
+
+            var cacheFolder = Path.Combine(basePath, "CmdPal", "PowerToysExtension", "Cache", "FancyZones", "LayoutThumbnails");
+            var fileName = ComputeLayoutHash(layout) + ".png";
+            return Path.Combine(cacheFolder, fileName);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogWarning($"FancyZones thumbnail cache path failed. LayoutId={layout.Id} Exception={ex}");
+            return null;
+        }
+    }
+
+    private static string ComputeLayoutHash(FancyZonesLayoutDescriptor layout)
+    {
+        var customType = layout.Custom?.Type?.Trim() ?? string.Empty;
+        var customInfo = layout.Custom is not null && layout.Custom.Info.ValueKind is not JsonValueKind.Undefined and not JsonValueKind.Null
+            ? layout.Custom.Info.GetRawText()
+            : string.Empty;
+
+        var fingerprint = FormattableString.Invariant(
+            $"{layout.Id}|{layout.Source}|{layout.ApplyLayout.Type}|{layout.ApplyLayout.ZoneCount}|{layout.ApplyLayout.ShowSpacing}|{layout.ApplyLayout.Spacing}|{customType}|{customInfo}");
+
+        var bytes = Encoding.UTF8.GetBytes(fingerprint);
+        var hash = SHA256.HashData(bytes);
+        return Convert.ToHexString(hash).ToLowerInvariant();
+    }
+
+    private static async Task WriteStreamToFileAsync(IRandomAccessStream stream, string filePath)
+    {
+        stream.Seek(0);
+        var size = stream.Size;
+        if (size == 0)
+        {
+            File.WriteAllBytes(filePath, Array.Empty<byte>());
+            return;
+        }
+
+        if (size > int.MaxValue)
+        {
+            throw new InvalidOperationException("Icon stream too large.");
+        }
+
+        using var input = stream.GetInputStreamAt(0);
+        using var reader = new DataReader(input);
+        await reader.LoadAsync((uint)size);
+        var bytes = new byte[(int)size];
+        reader.ReadBytes(bytes);
+        File.WriteAllBytes(filePath, bytes);
+    }
+
+    internal static List<NormalizedRect> GetNormalizedRectsForLayout(FancyZonesLayoutDescriptor layout)
     {
         var type = layout.ApplyLayout.Type.ToLowerInvariant();
         if (layout.Source == FancyZonesLayoutSource.Custom && layout.Custom is not null)

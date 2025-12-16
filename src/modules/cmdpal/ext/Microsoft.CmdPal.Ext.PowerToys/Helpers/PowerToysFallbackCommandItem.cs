@@ -62,8 +62,8 @@ internal sealed partial class PowerToysFallbackCommandItem : FallbackCommandItem
         }
 
         // Simple fuzzy match against title/subtitle; hide if neither match
-        var titleMatch = StringMatcher.FuzzyMatch(query, _baseTitle);
-        var subtitleMatch = StringMatcher.FuzzyMatch(query, _baseSubtitle);
+        var titleMatch = Common.Search.FuzzSearch.StringMatcher.FuzzyMatch(query, _baseTitle);
+        var subtitleMatch = Common.Search.FuzzSearch.StringMatcher.FuzzyMatch(query, _baseSubtitle);
         var matches = (titleMatch.Success && titleMatch.Score > 0) || (subtitleMatch.Success && subtitleMatch.Score > 0);
 
         if (matches)

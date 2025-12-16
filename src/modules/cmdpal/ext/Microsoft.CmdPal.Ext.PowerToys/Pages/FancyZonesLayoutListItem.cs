@@ -5,15 +5,19 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using ManagedCommon;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using PowerToysExtension.Helpers;
 
 namespace PowerToysExtension.Pages;
 
-internal sealed class FancyZonesLayoutListItem : ListItem
+internal sealed partial class FancyZonesLayoutListItem : ListItem
 {
     private readonly Lazy<Task<IconInfo?>> _iconLoadTask;
+    private readonly string _layoutId;
+    private readonly string _layoutTitle;
+
     private int _isLoadingIcon;
 
     public override IIconInfo? Icon
@@ -36,6 +40,8 @@ internal sealed class FancyZonesLayoutListItem : ListItem
         Title = layout.Title;
         Subtitle = layout.Subtitle;
         Icon = fallbackIcon;
+        _layoutId = layout.Id;
+        _layoutTitle = layout.Title;
 
         _iconLoadTask = new Lazy<Task<IconInfo?>>(async () => await FancyZonesThumbnailRenderer.RenderLayoutIconAsync(layout));
     }
@@ -44,15 +50,21 @@ internal sealed class FancyZonesLayoutListItem : ListItem
     {
         try
         {
+            Logger.LogDebug($"FancyZones layout icon load starting. LayoutId={_layoutId} Title=\"{_layoutTitle}\"");
             var icon = await _iconLoadTask.Value;
             if (icon is not null)
             {
                 Icon = icon;
+                Logger.LogDebug($"FancyZones layout icon load succeeded. LayoutId={_layoutId} Title=\"{_layoutTitle}\"");
+            }
+            else
+            {
+                Logger.LogDebug($"FancyZones layout icon load returned null. LayoutId={_layoutId} Title=\"{_layoutTitle}\"");
             }
         }
-        catch
+        catch (Exception ex)
         {
-            // Ignore icon failures.
+            Logger.LogWarning($"FancyZones layout icon load failed. LayoutId={_layoutId} Title=\"{_layoutTitle}\" Exception={ex}");
         }
     }
 }

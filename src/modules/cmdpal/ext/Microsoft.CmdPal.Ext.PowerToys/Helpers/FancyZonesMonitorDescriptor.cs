@@ -19,7 +19,7 @@ internal readonly record struct FancyZonesMonitorDescriptor(
         {
             var size = $"{Data.MonitorWidth}×{Data.MonitorHeight}";
             var scaling = Data.Dpi > 0 ? string.Format(CultureInfo.InvariantCulture, "{0}%", (int)Math.Round(Data.Dpi * 100 / 96.0)) : "n/a";
-            return $"{size} • {scaling} • {Data.Monitor}";
+            return $"{size} \u2022 {scaling} \u2022 {Data.Monitor}";
         }
     }
 }

@@ -5,7 +5,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Common.Search.FuzzSearch;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using PowerToysExtension.Modules;
@@ -59,7 +58,7 @@ internal static class ModuleCommandCatalog
         var matched = new List<Tuple<int, ListItem>>();
         foreach (var item in all)
         {
-            var result = StringMatcher.FuzzyMatch(query, item.Title);
+            var result = Common.Search.FuzzSearch.StringMatcher.FuzzyMatch(query, item.Title);
             if (result.Success)
             {
                 matched.Add(new Tuple<int, ListItem>(result.Score, item));

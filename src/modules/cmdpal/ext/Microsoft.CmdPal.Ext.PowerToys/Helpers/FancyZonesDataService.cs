@@ -304,9 +304,9 @@ internal static class FancyZonesDataService
             var title = custom.Name.Trim();
             var subtitle = customType switch
             {
-                "grid" => $"Custom grid  {applied.ZoneCount} zones",
-                "canvas" => $"Custom canvas  {applied.ZoneCount} zones",
-                _ => $"Custom  {applied.ZoneCount} zones",
+                "grid" => $"Custom grid \u2022 {applied.ZoneCount} zones",
+                "canvas" => $"Custom canvas \u2022 {applied.ZoneCount} zones",
+                _ => $"Custom \u2022 {applied.ZoneCount} zones",
             };
 
             yield return new FancyZonesLayoutDescriptor
@@ -377,35 +377,51 @@ internal static class FancyZonesDataService
         spacing = 0;
         sensitivityRadius = 20;
 
-        if (!info.TryGetProperty("rows", out var _) ||
-            !info.TryGetProperty("columns", out var _))
+        if (!info.TryGetProperty("rows", out var rowsProp) ||
+            !info.TryGetProperty("columns", out var columnsProp) ||
+            rowsProp.ValueKind != JsonValueKind.Number ||
+            columnsProp.ValueKind != JsonValueKind.Number)
         {
             return false;
         }
 
-        if (!info.TryGetProperty("cell-child-map", out var cellMap) || cellMap.ValueKind != JsonValueKind.Array)
+        var rows = rowsProp.GetInt32();
+        var columns = columnsProp.GetInt32();
+        if (rows <= 0 || columns <= 0)
         {
             return false;
         }
 
-        int max = -1;
-        foreach (var row in cellMap.EnumerateArray())
+        if (info.TryGetProperty("cell-child-map", out var cellMap) && cellMap.ValueKind == JsonValueKind.Array)
         {
-            if (row.ValueKind != JsonValueKind.Array)
+            var max = -1;
+            foreach (var row in cellMap.EnumerateArray())
             {
-                continue;
-            }
-
-            foreach (var cell in row.EnumerateArray())
-            {
-                if (cell.ValueKind == JsonValueKind.Number && cell.TryGetInt32(out var value))
+                if (row.ValueKind != JsonValueKind.Array)
                 {
-                    max = Math.Max(max, value);
+                    continue;
+                }
+
+                foreach (var cell in row.EnumerateArray())
+                {
+                    if (cell.ValueKind == JsonValueKind.Number && cell.TryGetInt32(out var value))
+                    {
+                        max = Math.Max(max, value);
+                    }
                 }
             }
+
+            zoneCount = max + 1;
+        }
+        else
+        {
+            zoneCount = rows * columns;
         }
 
-        zoneCount = max + 1;
+        if (zoneCount <= 0)
+        {
+            return false;
+        }
 
         if (info.TryGetProperty("show-spacing", out var showSpacingProp) &&
             (showSpacingProp.ValueKind == JsonValueKind.True || showSpacingProp.ValueKind == JsonValueKind.False))
@@ -423,7 +439,7 @@ internal static class FancyZonesDataService
             sensitivityRadius = sensitivityProp.GetInt32();
         }
 
-        return zoneCount > 0;
+        return true;
     }
 
     internal static bool TryParseCustomCanvasInfo(JsonElement info, out int zoneCount, out int sensitivityRadius)

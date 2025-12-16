@@ -33,6 +33,7 @@
 
 	<ItemGroup>
 		<PackageReference Include="Microsoft.WindowsAppSDK" />
+		<PackageReference Include="Microsoft.CommandPalette.Extensions" />
 		<PackageReference Include="Microsoft.Windows.CsWin32">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
@@ -50,7 +51,6 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\..\extensionsdk\Microsoft.CommandPalette.Extensions.Toolkit\Microsoft.CommandPalette.Extensions.Toolkit.csproj" />
 		<ProjectReference Include="..\..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
 		<ProjectReference Include="..\..\..\..\common\Common.Search\Common.Search.csproj" />
 		<ProjectReference Include="..\..\..\..\common\Common.UI\Common.UI.csproj" />
