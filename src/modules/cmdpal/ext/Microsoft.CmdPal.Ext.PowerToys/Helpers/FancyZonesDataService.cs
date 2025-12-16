@@ -88,19 +88,29 @@ internal static class FancyZonesDataService
         return ApplyLayoutToMonitors(layout, monitors.Select(m => m.Data));
     }
 
-    public static (bool Success, string Message) ApplyLayoutToMonitorIndex(FancyZonesLayoutDescriptor layout, int monitorIndex)
+    public static (bool Success, string Message) ApplyLayoutToMonitor(FancyZonesLayoutDescriptor layout, FancyZonesMonitorDescriptor monitor)
     {
         if (!TryGetMonitors(out var monitors, out var error))
         {
             return (false, error);
         }
 
-        if (monitorIndex < 1 || monitorIndex > monitors.Count)
+        FancyZonesEditorMonitor? monitorData = null;
+        foreach (var candidate in monitors)
         {
-            return (false, $"Monitor {monitorIndex} not found.");
+            if (candidate.Data.MonitorInstanceId == monitor.Data.MonitorInstanceId)
+            {
+                monitorData = candidate.Data;
+                break;
+            }
         }
 
-        return ApplyLayoutToMonitors(layout, [monitors[monitorIndex - 1].Data]);
+        if (monitorData is null)
+        {
+            return (false, "Monitor not found.");
+        }
+
+        return ApplyLayoutToMonitors(layout, [monitorData!]);
     }
 
     private static (bool Success, string Message) ApplyLayoutToMonitors(FancyZonesLayoutDescriptor layout, IEnumerable<FancyZonesEditorMonitor> monitors)

@@ -14,7 +14,7 @@ namespace PowerToysExtension.Pages;
 internal sealed partial class FancyZonesMonitorListItem : ListItem
 {
     public FancyZonesMonitorListItem(FancyZonesMonitorDescriptor monitor, string subtitle, IconInfo icon)
-        : base(new IdentifyFancyZonesMonitorCommand(monitor.Index))
+        : base(new IdentifyFancyZonesMonitorCommand(monitor))
     {
         Title = monitor.Title;
         Subtitle = subtitle;
@@ -22,7 +22,7 @@ internal sealed partial class FancyZonesMonitorListItem : ListItem
 
         Details = BuildMonitorDetails(monitor);
 
-        var pickerPage = new FancyZonesMonitorLayoutPickerPage(monitor.Index)
+        var pickerPage = new FancyZonesMonitorLayoutPickerPage(monitor)
         {
             Name = "Set active layout",
         };
@@ -46,8 +46,8 @@ internal sealed partial class FancyZonesMonitorListItem : ListItem
             DetailTag("Serial", monitor.Data.MonitorSerialNumber),
             DetailTag("Number", monitor.Data.MonitorNumber.ToString(CultureInfo.InvariantCulture)),
             DetailTag("Virtual desktop", monitor.Data.VirtualDesktop),
-            DetailTag("Work area", $"{monitor.Data.LeftCoordinate},{monitor.Data.TopCoordinate}  {monitor.Data.WorkAreaWidth}×{monitor.Data.WorkAreaHeight}"),
-            DetailTag("Resolution", $"{monitor.Data.MonitorWidth}×{monitor.Data.MonitorHeight}"),
+            DetailTag("Work area", $"{monitor.Data.LeftCoordinate},{monitor.Data.TopCoordinate}  {monitor.Data.WorkAreaWidth}ï¿½{monitor.Data.WorkAreaHeight}"),
+            DetailTag("Resolution", $"{monitor.Data.MonitorWidth}ï¿½{monitor.Data.MonitorHeight}"),
             DetailTag("DPI", monitor.Data.Dpi.ToString(CultureInfo.InvariantCulture)),
         };
 

@@ -14,15 +14,15 @@ namespace PowerToysExtension.Pages;
 
 internal sealed partial class FancyZonesMonitorLayoutPickerPage : DynamicListPage
 {
-    private readonly int _monitorIndex;
+    private readonly FancyZonesMonitorDescriptor _monitor;
     private readonly CommandItem _emptyMessage;
 
-    public FancyZonesMonitorLayoutPickerPage(int monitorIndex)
+    public FancyZonesMonitorLayoutPickerPage(FancyZonesMonitorDescriptor monitor)
     {
-        _monitorIndex = monitorIndex;
+        _monitor = monitor;
         Icon = PowerToysResourcesHelper.IconFromSettingsIcon("FancyZones.png");
-        Name = Title = $"Set active layout for Monitor {monitorIndex}";
-        Id = $"com.microsoft.cmdpal.powertoys.fancyzones.monitor.{monitorIndex}.layouts";
+        Name = Title = $"Set active layout for {_monitor.Title}";
+        Id = $"com.microsoft.cmdpal.powertoys.fancyzones.monitor.{_monitor.Index}.layouts";
 
         _emptyMessage = new CommandItem()
         {
@@ -58,7 +58,7 @@ internal sealed partial class FancyZonesMonitorLayoutPickerPage : DynamicListPag
         var items = new List<IListItem>(layouts.Count);
         foreach (var layout in layouts)
         {
-            var command = new ApplyFancyZonesLayoutCommand(layout, _monitorIndex);
+            var command = new ApplyFancyZonesLayoutCommand(layout, _monitor);
             var item = new FancyZonesLayoutListItem(command, layout, fallbackIcon);
             items.Add(item);
         }

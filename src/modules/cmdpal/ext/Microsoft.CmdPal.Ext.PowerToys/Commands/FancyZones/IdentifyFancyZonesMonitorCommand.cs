@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Linq;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using PowerToysExtension.Helpers;
 
@@ -9,13 +10,13 @@ namespace PowerToysExtension.Commands;
 
 internal sealed partial class IdentifyFancyZonesMonitorCommand : InvokableCommand
 {
-    private readonly int _monitorIndex;
+    private readonly FancyZonesMonitorDescriptor _monitor;
 
-    public IdentifyFancyZonesMonitorCommand(int monitorIndex)
+    public IdentifyFancyZonesMonitorCommand(FancyZonesMonitorDescriptor monitor)
     {
-        _monitorIndex = monitorIndex;
-        Name = $"Identify Monitor {_monitorIndex}";
-        Icon = new IconInfo("\uE7F4");
+        _monitor = monitor;
+        Name = $"Identify {_monitor.Title}";
+        Icon = new IconInfo("\uE773");
     }
 
     public override CommandResult Invoke()
@@ -25,18 +26,19 @@ internal sealed partial class IdentifyFancyZonesMonitorCommand : InvokableComman
             return CommandResult.ShowToast(error);
         }
 
-        if (_monitorIndex < 1 || _monitorIndex > monitors.Count)
+        var monitor = monitors.FirstOrDefault(m => m.Data.MonitorInstanceId == _monitor.Data.MonitorInstanceId);
+
+        if (monitor == null)
         {
-            return CommandResult.ShowToast($"Monitor {_monitorIndex} not found.");
+            return CommandResult.ShowToast("Monitor not found.");
         }
 
-        var monitor = monitors[_monitorIndex - 1].Data;
         FancyZonesMonitorIdentifier.Show(
-            monitor.LeftCoordinate,
-            monitor.TopCoordinate,
-            monitor.WorkAreaWidth,
-            monitor.WorkAreaHeight,
-            $"Monitor {_monitorIndex}",
+            monitor.Data.LeftCoordinate,
+            monitor.Data.TopCoordinate,
+            monitor.Data.WorkAreaWidth,
+            monitor.Data.WorkAreaHeight,
+            _monitor.Title,
             durationMs: 1200);
 
         return CommandResult.KeepOpen();

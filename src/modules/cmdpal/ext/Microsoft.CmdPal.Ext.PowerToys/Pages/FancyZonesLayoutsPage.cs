@@ -61,7 +61,7 @@ internal sealed partial class FancyZonesLayoutsPage : DynamicListPage
             var items = new List<IListItem>(layouts.Count);
             foreach (var layout in layouts)
             {
-                var defaultCommand = new ApplyFancyZonesLayoutCommand(layout, targetMonitorIndex: null);
+                var defaultCommand = new ApplyFancyZonesLayoutCommand(layout, monitor: null);
 
                 var item = new FancyZonesLayoutListItem(defaultCommand, layout, fallbackIcon)
                 {
@@ -86,11 +86,11 @@ internal sealed partial class FancyZonesLayoutsPage : DynamicListPage
 
         for (var i = 0; i < monitors.Count; i++)
         {
-            var monitorIndex = i + 1;
-            commands.Add(new CommandContextItem(new ApplyFancyZonesLayoutCommand(layout, targetMonitorIndex: monitorIndex))
+            var monitor = monitors[i];
+            commands.Add(new CommandContextItem(new ApplyFancyZonesLayoutCommand(layout, monitor))
             {
-                Title = string.Format(CultureInfo.CurrentCulture, "Apply to Monitor {0}", monitorIndex),
-                Subtitle = monitors[i].Data.Monitor,
+                Title = string.Format(CultureInfo.CurrentCulture, "Apply to {0}", monitor.Title),
+                Subtitle = monitor.Subtitle,
             });
         }
 

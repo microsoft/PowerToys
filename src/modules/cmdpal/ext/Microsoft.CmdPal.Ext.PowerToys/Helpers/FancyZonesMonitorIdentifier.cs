@@ -5,7 +5,7 @@
 using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using System.Threading;
+using System.Threading.Tasks;
 
 namespace PowerToysExtension.Helpers;
 
@@ -15,7 +15,6 @@ internal static class FancyZonesMonitorIdentifier
 
     private const uint WsExToolWindow = 0x00000080;
     private const uint WsExTopmost = 0x00000008;
-    private const uint WsExLayered = 0x00080000;
     private const uint WsExTransparent = 0x00000020;
     private const uint WsPopup = 0x80000000;
 
@@ -26,15 +25,20 @@ internal static class FancyZonesMonitorIdentifier
     private const uint CsVRedraw = 0x0001;
     private const uint CsHRedraw = 0x0002;
 
-    private const uint LwaAlpha = 0x02;
-
     private const int SwShowNoActivate = 4;
 
     private const int Transparent = 1;
 
+    private const int BaseFontHeightPx = 52;
+    private const int BaseDpi = 96;
+
     private const uint DtCenter = 0x00000001;
     private const uint DtVCenter = 0x00000004;
     private const uint DtSingleLine = 0x00000020;
+
+    private const uint MonitorDefaultToNearest = 2;
+
+    private static readonly nint DpiAwarenessContextUnaware = new(-1);
 
     private static readonly object Sync = new();
     private static bool classRegistered;
@@ -48,23 +52,32 @@ internal static class FancyZonesMonitorIdentifier
             text = "Monitor";
         }
 
-        var thread = new Thread(() => RunWindow(left, top, width, height, text, durationMs))
-        {
-            IsBackground = true,
-        };
-        thread.SetApartmentState(ApartmentState.STA);
-        thread.Start();
+        _ = Task.Run(() => RunWindow(left, top, width, height, text, durationMs))
+            .ContinueWith(static t => _ = t.Exception, TaskContinuationOptions.OnlyOnFaulted);
     }
 
     private static unsafe void RunWindow(int left, int top, int width, int height, string text, int durationMs)
     {
         EnsureClassRegistered();
 
-        var overlayWidth = Math.Clamp(width / 4, 220, 420);
-        var overlayHeight = Math.Clamp(height / 6, 120, 240);
+        var workArea = TryGetWorkAreaFromFancyZonesCoordinates(left, top, width, height, out var resolvedWorkArea)
+            ? resolvedWorkArea
+            : new RECT
+            {
+                Left = left,
+                Top = top,
+                Right = left + width,
+                Bottom = top + height,
+            };
 
-        var x = left + ((width - overlayWidth) / 2);
-        var y = top + ((height - overlayHeight) / 2);
+        var workAreaWidth = Math.Max(0, workArea.Right - workArea.Left);
+        var workAreaHeight = Math.Max(0, workArea.Bottom - workArea.Top);
+
+        var overlayWidth = Math.Clamp(workAreaWidth / 4, 220, 420);
+        var overlayHeight = Math.Clamp(workAreaHeight / 6, 120, 240);
+
+        var x = workArea.Left + ((workAreaWidth - overlayWidth) / 2);
+        var y = workArea.Top + ((workAreaHeight - overlayHeight) / 2);
 
         lock (Sync)
         {
@@ -73,7 +86,7 @@ internal static class FancyZonesMonitorIdentifier
         }
 
         var hwnd = CreateWindowExW(
-            WsExToolWindow | WsExTopmost | WsExLayered | WsExTransparent,
+            WsExToolWindow | WsExTopmost | WsExTransparent,
             WindowClassName,
             "MonitorIdentify",
             WsPopup,
@@ -91,7 +104,6 @@ internal static class FancyZonesMonitorIdentifier
             return;
         }
 
-        _ = SetLayeredWindowAttributes(hwnd, 0, 235, LwaAlpha);
         _ = ShowWindow(hwnd, SwShowNoActivate);
         _ = UpdateWindow(hwnd);
 
@@ -164,8 +176,10 @@ internal static class FancyZonesMonitorIdentifier
                     _ = SetBkMode(hdc, Transparent);
                     _ = SetTextColor(hdc, 0xFFFFFF);
 
+                    var dpi = GetDpiForWindow(hwnd);
+                    var fontHeight = -MulDiv(BaseFontHeightPx, (int)dpi, BaseDpi);
                     var font = CreateFontW(
-                        52,
+                        fontHeight,
                         0,
                         0,
                         0,
@@ -214,6 +228,53 @@ internal static class FancyZonesMonitorIdentifier
         }
     }
 
+    private static bool TryGetWorkAreaFromFancyZonesCoordinates(int left, int top, int width, int height, out RECT workArea)
+    {
+        workArea = default;
+
+        if (width <= 0 || height <= 0)
+        {
+            return false;
+        }
+
+        var logicalRect = new RECT
+        {
+            Left = left,
+            Top = top,
+            Right = left + width,
+            Bottom = top + height,
+        };
+
+        var previousContext = SetThreadDpiAwarenessContext(DpiAwarenessContextUnaware);
+        nint monitor;
+        try
+        {
+            monitor = MonitorFromRect(ref logicalRect, MonitorDefaultToNearest);
+        }
+        finally
+        {
+            _ = SetThreadDpiAwarenessContext(previousContext);
+        }
+
+        if (monitor == nint.Zero)
+        {
+            return false;
+        }
+
+        var mi = new MONITORINFOEXW
+        {
+            CbSize = (uint)Marshal.SizeOf<MONITORINFOEXW>(),
+        };
+
+        if (!GetMonitorInfoW(monitor, ref mi))
+        {
+            return false;
+        }
+
+        workArea = mi.RcWork;
+        return true;
+    }
+
     [StructLayout(LayoutKind.Sequential)]
     private unsafe struct WNDCLASSEXW
     {
@@ -259,6 +320,18 @@ internal static class FancyZonesMonitorIdentifier
         public int Bottom;
     }
 
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+    private struct MONITORINFOEXW
+    {
+        public uint CbSize;
+        public RECT RcMonitor;
+        public RECT RcWork;
+        public uint DwFlags;
+
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 32)]
+        public string SzDevice;
+    }
+
     [StructLayout(LayoutKind.Sequential)]
     private unsafe struct PAINTSTRUCT
     {
@@ -272,6 +345,12 @@ internal static class FancyZonesMonitorIdentifier
 
     [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
     private static extern nint GetModuleHandleW(string? lpModuleName);
+
+    [DllImport("kernel32.dll")]
+    private static extern int MulDiv(int nNumber, int nNumerator, int nDenominator);
+
+    [DllImport("user32.dll")]
+    private static extern uint GetDpiForWindow(nint hwnd);
 
     [DllImport("user32.dll", SetLastError = true)]
     private static extern bool UpdateWindow(nint hWnd);
@@ -300,6 +379,15 @@ internal static class FancyZonesMonitorIdentifier
     [DllImport("user32.dll")]
     private static extern nint DispatchMessageW(in MSG lpMsg);
 
+    [DllImport("user32.dll")]
+    private static extern nint SetThreadDpiAwarenessContext(nint dpiContext);
+
+    [DllImport("user32.dll")]
+    private static extern nint MonitorFromRect(ref RECT lprc, uint dwFlags);
+
+    [DllImport("user32.dll", CharSet = CharSet.Unicode)]
+    private static extern bool GetMonitorInfoW(nint hMonitor, ref MONITORINFOEXW lpmi);
+
     [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
     private static extern ushort RegisterClassExW(in WNDCLASSEXW lpwcx);
 
@@ -317,9 +405,6 @@ internal static class FancyZonesMonitorIdentifier
         nint hMenu,
         nint hInstance,
         nint lpParam);
-
-    [DllImport("user32.dll", SetLastError = true)]
-    private static extern bool SetLayeredWindowAttributes(nint hwnd, uint crKey, byte bAlpha, uint dwFlags);
 
     [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
     private static extern nint LoadCursorW(nint hInstance, nint lpCursorName);

@@ -10,26 +10,27 @@ namespace PowerToysExtension.Commands;
 internal sealed partial class ApplyFancyZonesLayoutCommand : InvokableCommand
 {
     private readonly FancyZonesLayoutDescriptor _layout;
-    private readonly int? _targetMonitorIndex;
+    private readonly FancyZonesMonitorDescriptor? _targetMonitor;
 
-    public ApplyFancyZonesLayoutCommand(FancyZonesLayoutDescriptor layout, int? targetMonitorIndex)
+    public ApplyFancyZonesLayoutCommand(FancyZonesLayoutDescriptor layout, FancyZonesMonitorDescriptor? monitor)
     {
         _layout = layout;
-        _targetMonitorIndex = targetMonitorIndex;
+        _targetMonitor = monitor;
 
-        Name = targetMonitorIndex is null
-            ? $"Apply to all monitors"
-            : $"Apply to Monitor {targetMonitorIndex.Value}";
+        Name = monitor is null ? "Apply to all monitors" : $"Apply to Monitor {monitor.Value.Title}";
+
+        Icon = new IconInfo("\uF78C");
     }
 
     public override CommandResult Invoke()
     {
-        var result = _targetMonitorIndex is null
+        var monitor = _targetMonitor;
+        var (success, message) = monitor is null
             ? FancyZonesDataService.ApplyLayoutToAllMonitors(_layout)
-            : FancyZonesDataService.ApplyLayoutToMonitorIndex(_layout, _targetMonitorIndex.Value);
+            : FancyZonesDataService.ApplyLayoutToMonitor(_layout, monitor.Value);
 
-        return result.Success
+        return success
             ? CommandResult.Dismiss()
-            : CommandResult.ShowToast(result.Message);
+            : CommandResult.ShowToast(message);
     }
 }
