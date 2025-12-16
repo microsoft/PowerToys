@@ -203,11 +203,6 @@ public:
     {
         m_enabled = true;
         Trace::EnableCursorWrap(true);
-        
-        // Always start the mouse hook when the module is enabled
-        // This ensures cursor wrapping is active immediately after enabling
-        StartMouseHook();
-        Logger::info("CursorWrap enabled - mouse hook started");
 
         // Start listening for external trigger event so we can invoke the same logic as the activation hotkey.
         m_triggerEventHandle = CreateEventW(nullptr, false, false, CommonSharedConstants::CURSOR_WRAP_TRIGGER_EVENT);
@@ -217,9 +212,18 @@ public:
             m_listening = true;
             m_eventThread = std::thread([this]() {
                 HANDLE handles[2] = { m_triggerEventHandle, m_terminateEventHandle };
+
+                // WH_MOUSE_LL callbacks are delivered to the thread that installed the hook.
+                // Ensure this thread has a message queue and pumps messages while the hook is active.
+                MSG msg;
+                PeekMessage(&msg, nullptr, WM_USER, WM_USER, PM_NOREMOVE);
+
+                StartMouseHook();
+                Logger::info("CursorWrap enabled - mouse hook started");
+
                 while (m_listening)
                 {
-                    auto res = WaitForMultipleObjects(2, handles, false, INFINITE);
+                    auto res = MsgWaitForMultipleObjects(2, handles, false, INFINITE, QS_ALLINPUT);
                     if (!m_listening)
                     {
                         break;
@@ -227,13 +231,24 @@ public:
 
                     if (res == WAIT_OBJECT_0)
                     {
-                        on_hotkey(0);
+                        ToggleMouseHook();
                     }
-                    else
+                    else if (res == WAIT_OBJECT_0 + 1)
                     {
                         break;
                     }
+                    else
+                    {
+                        while (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
+                        {
+                            TranslateMessage(&msg);
+                            DispatchMessage(&msg);
+                        }
+                    }
                 }
+
+                StopMouseHook();
+                Logger::info("CursorWrap event listener stopped");
             });
         }
     }
@@ -243,8 +258,6 @@ public:
     {
         m_enabled = false;
         Trace::EnableCursorWrap(false);
-        StopMouseHook();
-        Logger::info("CursorWrap disabled - mouse hook stopped");
 
         m_listening = false;
         if (m_terminateEventHandle)
@@ -296,7 +309,19 @@ public:
             return false;
         }
 
-        // Toggle cursor wrapping
+        // Toggle on the thread that owns the WH_MOUSE_LL hook (the event listener thread).
+        if (m_triggerEventHandle)
+        {
+            return SetEvent(m_triggerEventHandle);
+        }
+
+        return false;
+    }
+
+ private:
+    void ToggleMouseHook()
+    {
+        // Toggle cursor wrapping.
         if (m_hookActive)
         {
             StopMouseHook();
@@ -309,11 +334,8 @@ public:
             RunComprehensiveTests();
 #endif
         }
-        
-        return true;
     }
 
-private:
     // Load the settings file.
     void init_settings()
     {

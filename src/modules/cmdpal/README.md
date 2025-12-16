@@ -98,5 +98,3 @@ You do **not** need to touch the sparse package manifest for new commands (only 
 [generic samples]: ./ext/SamplePagesExtension 
 [real samples]: ./ext/ProcessMonitorExtension
 [real extensions that we've "shipped" already]: https://github.com/zadjii/CmdPalExtensions/blob/main/src/extensions
-
-
