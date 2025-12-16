@@ -328,3 +328,7 @@ FFF
 HHH
 riday
 YYY
+
+# UNICODE
+
+precomposed
