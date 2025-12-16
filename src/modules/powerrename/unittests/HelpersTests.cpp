@@ -523,7 +523,7 @@ namespace HelpersTests
             Assert::AreEqual(L"file_24Y", result);
         }
 
-        TEST_METHOD(ValidPattern_DDD_PartiallyMatched)
+        TEST_METHOD(ValidPattern_DDD_Matched)
         {
             // Test that $DDD (short weekday) is not confused with $DD (2-digit day)
             // Verifies that the matching of $DDD before $DD works correctly
@@ -535,7 +535,7 @@ namespace HelpersTests
             Assert::AreEqual(L"file_Fri", result);  // Should be "Fri", not "15D"
         }
 
-        TEST_METHOD(ValidPattern_MMM_PartiallyMatched)
+        TEST_METHOD(ValidPattern_MMM_Matched)
         {
             // Test that $MMM (short month name) is not confused with $MM (2-digit month)
             // Verifies that the matching of $MMM before $MM works correctly
