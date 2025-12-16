@@ -95,6 +95,7 @@ OTP
 Yubi
 Yubico
 Perplexity
+Groq
 svgl
 
 # KEYS
@@ -329,6 +330,15 @@ HHH
 riday
 YYY
 
-# UNICODE
-
+# Unicode
 precomposed
+
+# GitHub issue/PR commands
+azp
+feedbackhub
+needinfo
+reportbug
+
+#ffmpeg
+crf
+nostdin

@@ -11,11 +11,14 @@ using Microsoft.CmdPal.Core.Common.Helpers;
 using Microsoft.CmdPal.Core.Common.Services;
 using Microsoft.CmdPal.Core.ViewModels.Messages;
 using Microsoft.CmdPal.Ext.ClipboardHistory.Messages;
+using Microsoft.CmdPal.UI.Controls;
 using Microsoft.CmdPal.UI.Events;
 using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.Messages;
+using Microsoft.CmdPal.UI.Services;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
+using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI;
@@ -49,6 +52,8 @@ public sealed partial class MainWindow : WindowEx,
     IRecipient<ShowWindowMessage>,
     IRecipient<HideWindowMessage>,
     IRecipient<QuitMessage>,
+    IRecipient<DragStartedMessage>,
+    IRecipient<DragCompletedMessage>,
     IDisposable
 {
     private const int DefaultWidth = 800;
@@ -65,7 +70,10 @@ public sealed partial class MainWindow : WindowEx,
     private readonly KeyboardListener _keyboardListener;
     private readonly LocalKeyboardListener _localKeyboardListener;
     private readonly HiddenOwnerWindowBehavior _hiddenOwnerBehavior = new();
+    private readonly IThemeService _themeService;
+    private readonly WindowThemeSynchronizer _windowThemeSynchronizer;
     private bool _ignoreHotKeyWhenFullScreen = true;
+    private bool _themeServiceInitialized;
 
     private DesktopAcrylicController? _acrylicController;
     private SystemBackdropConfiguration? _configurationSource;
@@ -73,12 +81,22 @@ public sealed partial class MainWindow : WindowEx,
 
     private WindowPosition _currentWindowPosition = new();
 
+    private bool _preventHideWhenDeactivated;
+
+    private MainWindowViewModel ViewModel { get; }
+
     public MainWindow()
     {
         InitializeComponent();
 
+        ViewModel = App.Current.Services.GetService<MainWindowViewModel>()!;
+
         _autoGoHomeTimer = new DispatcherTimer();
         _autoGoHomeTimer.Tick += OnAutoGoHomeTimerOnTick;
+
+        _themeService = App.Current.Services.GetRequiredService<IThemeService>();
+        _themeService.ThemeChanged += ThemeServiceOnThemeChanged;
+        _windowThemeSynchronizer = new WindowThemeSynchronizer(_themeService, this);
 
         _hwnd = new HWND(WinRT.Interop.WindowNative.GetWindowHandle(this).ToInt32());
 
@@ -86,6 +104,8 @@ public sealed partial class MainWindow : WindowEx,
         {
             CommandPaletteHost.SetHostHwnd((ulong)_hwnd.Value);
         }
+
+        SetAcrylic();
 
         _hiddenOwnerBehavior.ShowInTaskbar(this, Debugger.IsAttached);
 
@@ -99,12 +119,12 @@ public sealed partial class MainWindow : WindowEx,
         RestoreWindowPosition();
         UpdateWindowPositionInMemory();
 
-        SetAcrylic();
-
         WeakReferenceMessenger.Default.Register<DismissMessage>(this);
         WeakReferenceMessenger.Default.Register<QuitMessage>(this);
         WeakReferenceMessenger.Default.Register<ShowWindowMessage>(this);
         WeakReferenceMessenger.Default.Register<HideWindowMessage>(this);
+        WeakReferenceMessenger.Default.Register<DragStartedMessage>(this);
+        WeakReferenceMessenger.Default.Register<DragCompletedMessage>(this);
 
         // Hide our titlebar.
         // We need to both ExtendsContentIntoTitleBar, then set the height to Collapsed
@@ -113,7 +133,7 @@ public sealed partial class MainWindow : WindowEx,
         ExtendsContentIntoTitleBar = true;
         AppWindow.TitleBar.PreferredHeightOption = TitleBarHeightOption.Collapsed;
         SizeChanged += WindowSizeChanged;
-        RootShellPage.Loaded += RootShellPage_Loaded;
+        RootElement.Loaded += RootElementLoaded;
 
         WM_TASKBAR_RESTART = PInvoke.RegisterWindowMessage("TaskbarCreated");
 
@@ -130,7 +150,7 @@ public sealed partial class MainWindow : WindowEx,
         App.Current.Services.GetService<SettingsModel>()!.SettingsChanged += SettingsChangedHandler;
 
         // Make sure that we update the acrylic theme when the OS theme changes
-        RootShellPage.ActualThemeChanged += (s, e) => DispatcherQueue.TryEnqueue(UpdateAcrylic);
+        RootElement.ActualThemeChanged += (s, e) => DispatcherQueue.TryEnqueue(UpdateAcrylic);
 
         // Hardcoding event name to avoid bringing in the PowerToys.interop dependency. Event name must match CMDPAL_SHOW_EVENT from shared_constants.h
         NativeEventWaiter.WaitForEventLoop("Local\\PowerToysCmdPal-ShowEvent-62336fcd-8611-4023-9b30-091a6af4cc5a", () =>
@@ -155,6 +175,11 @@ public sealed partial class MainWindow : WindowEx,
         WeakReferenceMessenger.Default.Send(new GoHomeMessage(WithAnimation: false, FocusSearch: false));
     }
 
+    private void ThemeServiceOnThemeChanged(object? sender, ThemeChangedEventArgs e)
+    {
+        UpdateAcrylic();
+    }
+
     private static void LocalKeyboardListener_OnKeyPressed(object? sender, LocalKeyboardListenerKeyPressedEventArgs e)
     {
         if (e.Key == VirtualKey.GoBack)
@@ -165,10 +190,17 @@ public sealed partial class MainWindow : WindowEx,
 
     private void SettingsChangedHandler(SettingsModel sender, object? args) => HotReloadSettings();
 
-    private void RootShellPage_Loaded(object sender, RoutedEventArgs e) =>
-
+    private void RootElementLoaded(object sender, RoutedEventArgs e)
+    {
         // Now that our content has loaded, we can update our draggable regions
         UpdateRegionsForCustomTitleBar();
+
+        // Add dev ribbon if enabled
+        if (!BuildInfo.IsCiBuild)
+        {
+            RootElement.Children.Add(new DevRibbon { Margin = new Thickness(-1, -1, 120, -1) });
+        }
+    }
 
     private void WindowSizeChanged(object sender, WindowSizeChangedEventArgs args) => UpdateRegionsForCustomTitleBar();
 
@@ -239,8 +271,6 @@ public sealed partial class MainWindow : WindowEx,
         _autoGoHomeTimer.Interval = _autoGoHomeInterval;
     }
 
-    // We want to use DesktopAcrylicKind.Thin and custom colors as this is the default material
-    // other Shell surfaces are using, this cannot be set in XAML however.
     private void SetAcrylic()
     {
         if (DesktopAcrylicController.IsSupported())
@@ -257,41 +287,32 @@ public sealed partial class MainWindow : WindowEx,
 
     private void UpdateAcrylic()
     {
-        if (_acrylicController != null)
+        try
         {
-            _acrylicController.RemoveAllSystemBackdropTargets();
-            _acrylicController.Dispose();
-        }
-
-        _acrylicController = GetAcrylicConfig(Content);
-
-        // Enable the system backdrop.
-        // Note: Be sure to have "using WinRT;" to support the Window.As<...>() call.
-        _acrylicController.AddSystemBackdropTarget(this.As<ICompositionSupportsSystemBackdrop>());
-        _acrylicController.SetSystemBackdropConfiguration(_configurationSource);
-    }
-
-    private static DesktopAcrylicController GetAcrylicConfig(UIElement content)
-    {
-        var feContent = content as FrameworkElement;
-
-        return feContent?.ActualTheme == ElementTheme.Light
-            ? new DesktopAcrylicController()
+            if (_acrylicController != null)
             {
-                Kind = DesktopAcrylicKind.Thin,
-                TintColor = Color.FromArgb(255, 243, 243, 243),
-                LuminosityOpacity = 0.90f,
-                TintOpacity = 0.0f,
-                FallbackColor = Color.FromArgb(255, 238, 238, 238),
+                _acrylicController.RemoveAllSystemBackdropTargets();
+                _acrylicController.Dispose();
             }
-            : new DesktopAcrylicController()
+
+            var backdrop = _themeService.Current.BackdropParameters;
+            _acrylicController = new DesktopAcrylicController
             {
-                Kind = DesktopAcrylicKind.Thin,
-                TintColor = Color.FromArgb(255, 32, 32, 32),
-                LuminosityOpacity = 0.96f,
-                TintOpacity = 0.5f,
-                FallbackColor = Color.FromArgb(255, 28, 28, 28),
+                TintColor = backdrop.TintColor,
+                TintOpacity = backdrop.TintOpacity,
+                FallbackColor = backdrop.FallbackColor,
+                LuminosityOpacity = backdrop.LuminosityOpacity,
             };
+
+            // Enable the system backdrop.
+            // Note: Be sure to have "using WinRT;" to support the Window.As<...>() call.
+            _acrylicController.AddSystemBackdropTarget(this.As<ICompositionSupportsSystemBackdrop>());
+            _acrylicController.SetSystemBackdropConfiguration(_configurationSource);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError("Failed to update backdrop", ex);
+        }
     }
 
     private void ShowHwnd(IntPtr hwndValue, MonitorBehavior target)
@@ -522,6 +543,11 @@ public sealed partial class MainWindow : WindowEx,
 
     public void Receive(DismissMessage message)
     {
+        if (message.ForceGoHome)
+        {
+            WeakReferenceMessenger.Default.Send(new GoHomeMessage(false, false));
+        }
+
         // This might come in off the UI thread. Make sure to hop back.
         DispatcherQueue.TryEnqueue(() =>
         {
@@ -658,28 +684,28 @@ public sealed partial class MainWindow : WindowEx,
     private void UpdateRegionsForCustomTitleBar()
     {
         // Specify the interactive regions of the title bar.
-        var scaleAdjustment = RootShellPage.XamlRoot.RasterizationScale;
+        var scaleAdjustment = RootElement.XamlRoot.RasterizationScale;
 
         // Get the rectangle around our XAML content. We're going to mark this
         // rectangle as "Passthrough", so that the normal window operations
         // (resizing, dragging) don't apply in this space.
-        var transform = RootShellPage.TransformToVisual(null);
+        var transform = RootElement.TransformToVisual(null);
 
         // Reserve 16px of space at the top for dragging.
         var topHeight = 16;
         var bounds = transform.TransformBounds(new Rect(
             0,
             topHeight,
-            RootShellPage.ActualWidth,
-            RootShellPage.ActualHeight));
+            RootElement.ActualWidth,
+            RootElement.ActualHeight));
         var contentRect = GetRect(bounds, scaleAdjustment);
         var rectArray = new RectInt32[] { contentRect };
         var nonClientInputSrc = InputNonClientPointerSource.GetForWindowId(this.AppWindow.Id);
         nonClientInputSrc.SetRegionRects(NonClientRegionKind.Passthrough, rectArray);
 
         // Add a drag-able region on top
-        var w = RootShellPage.ActualWidth;
-        _ = RootShellPage.ActualHeight;
+        var w = RootElement.ActualWidth;
+        _ = RootElement.ActualHeight;
         var dragSides = new RectInt32[]
         {
             GetRect(new Rect(0, 0, w, topHeight), scaleAdjustment), // the top, {topHeight=16} tall
@@ -698,6 +724,19 @@ public sealed partial class MainWindow : WindowEx,
 
     internal void MainWindow_Activated(object sender, WindowActivatedEventArgs args)
     {
+        if (!_themeServiceInitialized && args.WindowActivationState != WindowActivationState.Deactivated)
+        {
+            try
+            {
+                _themeService.Initialize();
+                _themeServiceInitialized = true;
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Failed to initialize ThemeService", ex);
+            }
+        }
+
         if (args.WindowActivationState == WindowActivationState.Deactivated)
         {
             // Save the current window position before hiding the window
@@ -714,6 +753,12 @@ public sealed partial class MainWindow : WindowEx,
             // This can happen if an extension wanted to show a modal dialog on top of our
             // window i.e. in the case of an MSAL auth window.
             if (PInvoke.IsWindowEnabled(_hwnd) == 0)
+            {
+                return;
+            }
+
+            // We're doing something that requires us to lose focus, but we don't want to hide the window
+            if (_preventHideWhenDeactivated)
             {
                 return;
             }
@@ -991,6 +1036,47 @@ public sealed partial class MainWindow : WindowEx,
     public void Dispose()
     {
         _localKeyboardListener.Dispose();
+        _windowThemeSynchronizer.Dispose();
         DisposeAcrylic();
+    }
+
+    public void Receive(DragStartedMessage message)
+    {
+        _preventHideWhenDeactivated = true;
+    }
+
+    public void Receive(DragCompletedMessage message)
+    {
+        _preventHideWhenDeactivated = false;
+        Task.Delay(200).ContinueWith(_ =>
+        {
+            DispatcherQueue.TryEnqueue(StealForeground);
+        });
+    }
+
+    private unsafe void StealForeground()
+    {
+        var foregroundWindow = PInvoke.GetForegroundWindow();
+        if (foregroundWindow == _hwnd)
+        {
+            return;
+        }
+
+        // This is bad, evil, and I'll have to forgo today's dinner dessert to punish myself
+        // for  writing this. But there's no way to make this work without it.
+        // If the window is not reactivated, the UX breaks down: a deactivated window has to
+        // be activated and then deactivated again to hide.
+        var currentThreadId = PInvoke.GetCurrentThreadId();
+        var foregroundThreadId = PInvoke.GetWindowThreadProcessId(foregroundWindow, null);
+        if (foregroundThreadId != currentThreadId)
+        {
+            PInvoke.AttachThreadInput(currentThreadId, foregroundThreadId, true);
+            PInvoke.SetForegroundWindow(_hwnd);
+            PInvoke.AttachThreadInput(currentThreadId, foregroundThreadId, false);
+        }
+        else
+        {
+            PInvoke.SetForegroundWindow(_hwnd);
+        }
     }
 }
