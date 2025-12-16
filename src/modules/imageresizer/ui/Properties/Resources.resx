@@ -296,4 +296,55 @@
   <data name="Input_ShrinkOnly.Content" xml:space="preserve">
     <value>_Make pictures smaller but not larger</value>
   </data>
+  <data name="Input_AiSuperResolution" xml:space="preserve">
+    <value>Super resolution</value>
+  </data>
+  <data name="Input_AiUnknownSize" xml:space="preserve">
+    <value>Unavailable</value>
+  </data>
+  <data name="Input_AiScaleFormat" xml:space="preserve">
+    <value>{0}×</value>
+  </data>
+  <data name="Input_AiScaleLabel" xml:space="preserve">
+    <value>Scale</value>
+  </data>
+  <data name="Input_AiCurrentLabel" xml:space="preserve">
+    <value>Current:</value>
+  </data>
+  <data name="Input_AiNewLabel" xml:space="preserve">
+    <value>New:</value>
+  </data>
+  <data name="Input_AiModelChecking" xml:space="preserve">
+    <value>Checking AI model availability...</value>
+  </data>
+  <data name="Input_AiModelNotAvailable" xml:space="preserve">
+    <value>AI model not downloaded. Click Download to get started.</value>
+  </data>
+  <data name="Input_AiModelDisabledByUser" xml:space="preserve">
+    <value>AI feature is disabled by system settings.</value>
+  </data>
+  <data name="Input_AiModelNotSupported" xml:space="preserve">
+    <value>AI feature is not supported on this system.</value>
+  </data>
+  <data name="Input_AiModelDownloading" xml:space="preserve">
+    <value>Downloading AI model...</value>
+  </data>
+  <data name="Input_AiModelDownloadFailed" xml:space="preserve">
+    <value>Failed to download AI model. Please try again.</value>
+  </data>
+  <data name="Input_AiModelDownloadButton" xml:space="preserve">
+    <value>Download</value>
+  </data>
+  <data name="Error_AiProcessingFailed" xml:space="preserve">
+    <value>AI super resolution processing failed: {0}</value>
+  </data>
+  <data name="Error_AiConversionFailed" xml:space="preserve">
+    <value>Failed to convert image format for AI processing.</value>
+  </data>
+  <data name="Error_AiScalingFailed" xml:space="preserve">
+    <value>AI scaling operation failed.</value>
+  </data>
+  <data name="Input_AiSuperResolutionDescription" xml:space="preserve">
+    <value>Upscale images using on-device AI</value>
+  </data>
 </root>

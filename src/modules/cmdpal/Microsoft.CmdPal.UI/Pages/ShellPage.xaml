@@ -26,6 +26,7 @@
                 EmptyValue="Collapsed"
                 NotEmptyValue="Visible" />
 
+            <cmdpalUI:DetailsSizeToGridLengthConverter x:Key="SizeToWidthConverter" />
             <cmdpalUI:MessageStateToSeverityConverter x:Key="MessageStateToSeverityConverter" />
 
             <cmdpalUI:DetailsDataTemplateSelector
@@ -370,7 +371,7 @@
             <Grid x:Name="ContentGrid" Grid.Row="1">
 
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="3*" />
+                    <ColumnDefinition Width="{x:Bind ViewModel.Details.Size, Mode=OneWay, Converter={StaticResource SizeToWidthConverter}}" />
                     <ColumnDefinition x:Name="DetailsColumn" Width="Auto" />
                 </Grid.ColumnDefinitions>
 
