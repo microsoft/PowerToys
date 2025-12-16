@@ -1,0 +1,216 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<UserControl
+    x:Class="Microsoft.CmdPal.UI.Controls.ColorPalette"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:CommunityToolkit.WinUI.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:Microsoft.CmdPal.UI.Controls"
+    xmlns:localConverters="using:Microsoft.CmdPal.UI.Converters"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:toolkitConverters="using:CommunityToolkit.WinUI.Converters"
+    xmlns:ui="using:CommunityToolkit.WinUI"
+    mc:Ignorable="d">
+    <UserControl.Resources>
+
+        <toolkitConverters:ColorToDisplayNameConverter x:Key="ColorToDisplayNameConverter" />
+        <localConverters:ContrastBrushConverter x:Key="ContrastBrushConverter" />
+
+        <Style x:Key="PaletteGridViewItemStyle" TargetType="GridViewItem">
+            <Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}" />
+            <Setter Property="FontSize" Value="{ThemeResource ControlContentThemeFontSize}" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Foreground" Value="{ThemeResource SystemControlForegroundBaseHighBrush}" />
+            <Setter Property="TabNavigation" Value="Local" />
+            <Setter Property="IsHoldingEnabled" Value="True" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="VerticalContentAlignment" Value="Stretch" />
+            <Setter Property="Margin" Value="0" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="MinWidth" Value="32" />
+            <Setter Property="MinHeight" Value="32" />
+            <Setter Property="AllowDrop" Value="False" />
+            <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
+            <Setter Property="FocusVisualMargin" Value="-2" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="GridViewItem">
+                        <Grid
+                            x:Name="ContentBorder"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            Control.IsTemplateFocusTarget="True"
+                            CornerRadius="{TemplateBinding CornerRadius}"
+                            FocusVisualMargin="{TemplateBinding FocusVisualMargin}"
+                            RenderTransformOrigin="0.5,0.5">
+                            <Grid.RenderTransform>
+                                <ScaleTransform x:Name="ContentBorderScale" />
+                            </Grid.RenderTransform>
+                            <ContentPresenter
+                                x:Name="ContentPresenter"
+                                Margin="{TemplateBinding Padding}"
+                                HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                ContentTransitions="{TemplateBinding ContentTransitions}" />
+                            <!--
+                                The 'Xg' text simulates the amount of space one line of text will occupy.
+                                In the DataPlaceholder state, the Content is not loaded yet so we
+                                approximate the size of the item using placeholder text.
+                            -->
+                            <TextBlock
+                                x:Name="PlaceholderTextBlock"
+                                Margin="{TemplateBinding Padding}"
+                                AutomationProperties.AccessibilityView="Raw"
+                                Foreground="{x:Null}"
+                                IsHitTestVisible="False"
+                                Text="Xg"
+                                Visibility="Collapsed" />
+                            <Rectangle
+                                x:Name="PlaceholderRect"
+                                Fill="{ThemeResource ListViewItemPlaceholderBackground}"
+                                Visibility="Collapsed" />
+                            <Rectangle
+                                x:Name="BorderRectangle"
+                                IsHitTestVisible="False"
+                                Opacity="0"
+                                RadiusX="6"
+                                RadiusY="6"
+                                Stroke="{ThemeResource SystemControlHighlightListAccentLowBrush}"
+                                StrokeThickness="2" />
+                            <Border
+                                x:Name="MultiSelectSquare"
+                                Width="20"
+                                Height="20"
+                                Margin="0,2,2,0"
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Top"
+                                Background="{ThemeResource SystemControlBackgroundChromeMediumBrush}"
+                                CornerRadius="6"
+                                Visibility="Collapsed">
+                                <FontIcon
+                                    x:Name="MultiSelectCheck"
+                                    FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                                    FontSize="16"
+                                    Foreground="{ThemeResource SystemControlForegroundBaseMediumHighBrush}"
+                                    Glyph="&#xE73E;"
+                                    Opacity="0" />
+                            </Border>
+                            <Border
+                                x:Name="MultiArrangeOverlayTextBorder"
+                                Height="20"
+                                MinWidth="20"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                Background="{ThemeResource SystemControlBackgroundAccentBrush}"
+                                BorderBrush="{ThemeResource SystemControlBackgroundChromeWhiteBrush}"
+                                BorderThickness="2"
+                                CornerRadius="6"
+                                IsHitTestVisible="False"
+                                Opacity="0">
+                                <TextBlock
+                                    x:Name="MultiArrangeOverlayText"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    AutomationProperties.AccessibilityView="Raw"
+                                    IsHitTestVisible="False"
+                                    Opacity="0"
+                                    Style="{ThemeResource CaptionTextBlockStyle}"
+                                    Text="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.DragItemsCount}" />
+                            </Border>
+                            <VisualStateManager.VisualStateGroups>
+                                <VisualStateGroup x:Name="FocusStates">
+                                    <VisualState x:Name="Focused">
+
+                                        <Storyboard>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="BorderRectangle" Storyboard.TargetProperty="Visibility">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="Collapsed" />
+                                            </ObjectAnimationUsingKeyFrames>
+                                        </Storyboard>
+                                    </VisualState>
+                                    <VisualState x:Name="Unfocused" />
+
+                                </VisualStateGroup>
+                                <VisualStateGroup x:Name="CommonStates">
+                                    <VisualState x:Name="Normal">
+
+                                        <Storyboard>
+                                            <PointerUpThemeAnimation Storyboard.TargetName="ContentPresenter" />
+                                        </Storyboard>
+                                    </VisualState>
+
+                                    <VisualState x:Name="PointerOver">
+
+                                        <Storyboard>
+                                            <DoubleAnimation
+                                                Storyboard.TargetName="BorderRectangle"
+                                                Storyboard.TargetProperty="Opacity"
+                                                To="1"
+                                                Duration="0" />
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="BorderRectangle" Storyboard.TargetProperty="Stroke">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{Binding Converter={StaticResource ContrastBrushConverter}, ConverterParameter={ThemeResource TextControlForeground}}" />
+                                            </ObjectAnimationUsingKeyFrames>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{Binding Converter={StaticResource ContrastBrushConverter}, ConverterParameter={ThemeResource TextControlForeground}}" />
+                                            </ObjectAnimationUsingKeyFrames>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentBorder" Storyboard.TargetProperty="FocusVisualSecondaryBrush">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{Binding Converter={StaticResource ContrastBrushConverter}, ConverterParameter={ThemeResource TextControlForeground}}" />
+                                            </ObjectAnimationUsingKeyFrames>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentBorder" Storyboard.TargetProperty="FocusVisualSecondaryThickness">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="2" />
+                                            </ObjectAnimationUsingKeyFrames>
+                                            <PointerUpThemeAnimation Storyboard.TargetName="ContentPresenter" />
+
+                                            <DoubleAnimation
+                                                Storyboard.TargetName="MultiSelectCheck"
+                                                Storyboard.TargetProperty="Opacity"
+                                                To="1"
+                                                Duration="0" />
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="MultiSelectSquare" Storyboard.TargetProperty="Background">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{Binding Converter={StaticResource ContrastBrushConverter}, ConverterParameter={ThemeResource TextControlForeground}}" />
+                                            </ObjectAnimationUsingKeyFrames>
+                                        </Storyboard>
+                                    </VisualState>
+
+                                </VisualStateGroup>
+                            </VisualStateManager.VisualStateGroups>
+                        </Grid>
+
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid HorizontalAlignment="Stretch">
+        <GridView
+            Margin="0"
+            Padding="0"
+            IsItemClickEnabled="True"
+            ItemClick="ListViewBase_OnItemClick"
+            ItemContainerStyle="{StaticResource PaletteGridViewItemStyle}"
+            ItemsSource="{x:Bind PaletteColors}"
+            SelectionMode="None">
+            <GridView.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <controls:UniformGrid ui:FrameworkElementExtensions.AncestorType="local:ColorPalette" Columns="{Binding (ui:FrameworkElementExtensions.Ancestor).CustomPaletteColumnCount, RelativeSource={RelativeSource Self}}" />
+                </ItemsPanelTemplate>
+            </GridView.ItemsPanel>
+            <GridView.ItemTemplate>
+                <DataTemplate x:DataType="Color">
+                    <Border
+                        Margin="2"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Stretch"
+                        AutomationProperties.Name="{Binding Converter={StaticResource ColorToDisplayNameConverter}}"
+                        CornerRadius="4"
+                        ToolTipService.ToolTip="{Binding Converter={StaticResource ColorToDisplayNameConverter}}">
+                        <Border.Background>
+                            <SolidColorBrush Color="{Binding}" />
+                        </Border.Background>
+                    </Border>
+                </DataTemplate>
+            </GridView.ItemTemplate>
+        </GridView>
+    </Grid>
+</UserControl>

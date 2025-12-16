@@ -133,7 +133,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
             if (!message.FromBackspace)
             {
                 // If we can't go back then we must be at the top and thus escape again should quit.
-                WeakReferenceMessenger.Default.Send<DismissMessage>();
+                WeakReferenceMessenger.Default.Send(new DismissMessage());
 
                 PowerToysTelemetry.Log.WriteEvent(new CmdPalDismissedOnEsc());
             }
@@ -348,7 +348,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
             // Depending on the settings, either
             // * Go home, or
             // * Select the search text (if we should remain open on this page)
-            if (settings.HotkeyGoesHome)
+            if (settings.AutoGoHomeInterval == TimeSpan.Zero)
             {
                 GoHome(false);
             }

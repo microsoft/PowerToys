@@ -18,7 +18,7 @@ using WyHash;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
-public sealed partial class TopLevelViewModel : ObservableObject, IListItem
+public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IExtendedAttributesProvider
 {
     private readonly SettingsModel _settings;
     private readonly ProviderSettings _providerSettings;
@@ -232,6 +232,13 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
             {
                 UpdateInitialIcon();
             }
+            else if (e.PropertyName == nameof(CommandItem.DataPackage))
+            {
+                DoOnUiThread(() =>
+                {
+                    OnPropertyChanged(nameof(CommandItem.DataPackage));
+                });
+            }
         }
     }
 
@@ -393,5 +400,13 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
     public override string ToString()
     {
         return $"{nameof(TopLevelViewModel)}: {Id} ({Title}) - display: {DisplayTitle} - fallback: {IsFallback} - enabled: {IsEnabled}";
+    }
+
+    public IDictionary<string, object?> GetProperties()
+    {
+        return new Dictionary<string, object?>
+        {
+            [WellKnownExtensionAttributes.DataPackage] = _commandItemViewModel?.DataPackage,
+        };
     }
 }

@@ -14,6 +14,7 @@ using Microsoft.CommandPalette.Extensions;
 namespace Microsoft.CmdPal.Core.ViewModels;
 
 public partial class ShellViewModel : ObservableObject,
+    IDisposable,
     IRecipient<PerformCommandMessage>,
     IRecipient<HandleCommandResultMessage>
 {
@@ -408,7 +409,7 @@ public partial class ShellViewModel : ObservableObject,
                 {
                     // Reset the palette to the main page and dismiss
                     GoHome(withAnimation: false, focusSearch: false);
-                    WeakReferenceMessenger.Default.Send<DismissMessage>();
+                    WeakReferenceMessenger.Default.Send(new DismissMessage());
                     break;
                 }
 
@@ -428,7 +429,7 @@ public partial class ShellViewModel : ObservableObject,
             case CommandResultKind.Hide:
                 {
                     // Keep this page open, but hide the palette.
-                    WeakReferenceMessenger.Default.Send<DismissMessage>();
+                    WeakReferenceMessenger.Default.Send(new DismissMessage());
                     break;
                 }
 
@@ -489,5 +490,13 @@ public partial class ShellViewModel : ObservableObject,
     public void CancelNavigation()
     {
         _navigationCts?.Cancel();
+    }
+
+    public void Dispose()
+    {
+        _handleInvokeTask?.Dispose();
+        _navigationCts?.Dispose();
+
+        GC.SuppressFinalize(this);
     }
 }

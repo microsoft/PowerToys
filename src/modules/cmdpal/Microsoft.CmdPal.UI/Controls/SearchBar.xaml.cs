@@ -7,8 +7,10 @@ using CommunityToolkit.WinUI;
 using Microsoft.CmdPal.Core.ViewModels;
 using Microsoft.CmdPal.Core.ViewModels.Commands;
 using Microsoft.CmdPal.Core.ViewModels.Messages;
-using Microsoft.CmdPal.UI.Messages;
+using Microsoft.CmdPal.Ext.ClipboardHistory.Messages;
+using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.Views;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
@@ -48,6 +50,8 @@ public sealed partial class SearchBar : UserControl,
 
     // 0.6+ suggestions
     private string? _textToSuggest;
+
+    private SettingsModel Settings => App.Current.Services.GetRequiredService<SettingsModel>();
 
     public PageViewModel? CurrentPageViewModel
     {
@@ -131,20 +135,39 @@ public sealed partial class SearchBar : UserControl,
         }
         else if (e.Key == VirtualKey.Escape)
         {
-            if (string.IsNullOrEmpty(FilterBox.Text))
+            switch (Settings.EscapeKeyBehaviorSetting)
             {
-                WeakReferenceMessenger.Default.Send<NavigateBackMessage>(new());
-            }
-            else
-            {
-                // Clear the search box
-                FilterBox.Text = string.Empty;
+                case EscapeKeyBehavior.AlwaysGoBack:
+                    WeakReferenceMessenger.Default.Send<NavigateBackMessage>(new());
+                    break;
 
-                // hack TODO GH #245
-                if (CurrentPageViewModel is not null)
-                {
-                    CurrentPageViewModel.SearchTextBox = FilterBox.Text;
-                }
+                case EscapeKeyBehavior.AlwaysDismiss:
+                    WeakReferenceMessenger.Default.Send<DismissMessage>(new(ForceGoHome: true));
+                    break;
+
+                case EscapeKeyBehavior.AlwaysHide:
+                    WeakReferenceMessenger.Default.Send<HideWindowMessage>(new());
+                    break;
+
+                case EscapeKeyBehavior.ClearSearchFirstThenGoBack:
+                default:
+                    if (string.IsNullOrEmpty(FilterBox.Text))
+                    {
+                        WeakReferenceMessenger.Default.Send<NavigateBackMessage>(new());
+                    }
+                    else
+                    {
+                        // Clear the search box
+                        FilterBox.Text = string.Empty;
+
+                        // hack TODO GH #245
+                        if (CurrentPageViewModel is not null)
+                        {
+                            CurrentPageViewModel.SearchTextBox = FilterBox.Text;
+                        }
+                    }
+
+                    break;
             }
 
             e.Handled = true;
@@ -185,21 +208,32 @@ public sealed partial class SearchBar : UserControl,
 
             e.Handled = true;
         }
+        else if (e.Key == VirtualKey.Left)
+        {
+            // Check if we're in a grid view, and if so, send grid navigation command
+            var isGridView = CurrentPageViewModel is ListViewModel { IsGridView: true };
+
+            // Special handling is required if we're in grid view.
+            if (isGridView)
+            {
+                WeakReferenceMessenger.Default.Send<NavigateLeftCommand>();
+                e.Handled = true;
+            }
+        }
         else if (e.Key == VirtualKey.Right)
         {
             // Check if the "replace search text with suggestion" feature from 0.4-0.5 is enabled.
             // If it isn't, then only use the suggestion when the caret is at the end of the input.
             if (!IsTextToSuggestEnabled)
             {
-                if (_textToSuggest != null &&
+                if (!string.IsNullOrEmpty(_textToSuggest) &&
                     FilterBox.SelectionStart == FilterBox.Text.Length)
                 {
                     FilterBox.Text = _textToSuggest;
                     FilterBox.Select(_textToSuggest.Length, 0);
                     e.Handled = true;
+                    return;
                 }
-
-                return;
             }
 
             // Here, we're using the "replace search text with suggestion" feature.
@@ -208,6 +242,20 @@ public sealed partial class SearchBar : UserControl,
                 _inSuggestion = false;
                 _lastText = null;
                 DoFilterBoxUpdate();
+            }
+
+            // Wouldn't want to perform text completion *and* move the selected item, so only perform this if text suggestion wasn't performed.
+            if (!e.Handled)
+            {
+                // Check if we're in a grid view, and if so, send grid navigation command
+                var isGridView = CurrentPageViewModel is ListViewModel { IsGridView: true };
+
+                // Special handling is required if we're in grid view.
+                if (isGridView)
+                {
+                    WeakReferenceMessenger.Default.Send<NavigateRightCommand>();
+                    e.Handled = true;
+                }
             }
         }
         else if (e.Key == VirtualKey.Down)
@@ -251,6 +299,8 @@ public sealed partial class SearchBar : UserControl,
 
                 e.Key == VirtualKey.Up ||
                 e.Key == VirtualKey.Down ||
+                e.Key == VirtualKey.Left ||
+                e.Key == VirtualKey.Right ||
 
                 e.Key == VirtualKey.RightMenu ||
                 e.Key == VirtualKey.LeftMenu ||
