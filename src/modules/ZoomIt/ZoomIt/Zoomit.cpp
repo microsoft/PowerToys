@@ -7735,7 +7735,7 @@ void ZoomIt_DispatchCommand(ZoomItCommand cmd)
     {
         if (g_hWndMain != nullptr)
         {
-            SendMessage(g_hWndMain, WM_HOTKEY, id, 0);
+            PostMessage(g_hWndMain, WM_HOTKEY, id, 0);
         }
     };
 
