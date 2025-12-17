@@ -31,8 +31,25 @@ namespace PowerDisplay
         [STAThread]
         public static int Main(string[] args)
         {
+            // Initialize COM wrappers first (needed for AppInstance)
+            WinRT.ComWrappersSupport.InitializeComWrappers();
+
+            // Single instance check BEFORE logger initialization to avoid creating extra log files
+            // Command Palette pattern: check for existing instance first
+            var activationArgs = AppInstance.GetCurrent().GetActivatedEventArgs();
+            var keyInstance = AppInstance.FindOrRegisterForKey("PowerToys_PowerDisplay_Instance");
+
+            if (!keyInstance.IsCurrent)
+            {
+                // Another instance exists - redirect and exit WITHOUT initializing logger
+                // This prevents creation of extra log files for short-lived redirect processes
+                RedirectActivationTo(activationArgs, keyInstance);
+                return 0;
+            }
+
+            // This is the primary instance - now initialize logger
             Logger.InitializeLogger("\\PowerDisplay\\Logs");
-            Logger.LogInfo("=== PowerDisplay Process Starting ===");
+            Logger.LogInfo("=== PowerDisplay Process Starting (Primary Instance) ===");
             Logger.LogInfo($"Main: Process ID = {Environment.ProcessId}");
             Logger.LogInfo($"Main: Command line args count = {args.Length}");
 
@@ -41,8 +58,8 @@ namespace PowerDisplay
                 Logger.LogInfo($"Main: args[{i}] = '{args[i]}'");
             }
 
-            Logger.LogTrace("Main: Initializing COM wrappers");
-            WinRT.ComWrappersSupport.InitializeComWrappers();
+            // Register activation handler for future redirects
+            keyInstance.Activated += OnActivated;
 
             // Parse command line arguments: args[0] = runner_pid (Awake pattern)
             int runnerPid = -1;
@@ -64,15 +81,7 @@ namespace PowerDisplay
                 Logger.LogWarning("Main: No command line args provided. Running in standalone mode.");
             }
 
-            // Single instance check with redirection (Command Palette pattern)
-            var isRedirect = DecideRedirection();
-            if (isRedirect)
-            {
-                Logger.LogInfo("Main: Redirected to existing instance, exiting");
-                return 0;
-            }
-
-            Logger.LogInfo("Main: This is the primary instance, starting application");
+            Logger.LogInfo("Main: Starting application");
             Microsoft.UI.Xaml.Application.Start((p) =>
             {
                 Logger.LogTrace("Main: Application.Start callback - setting up SynchronizationContext");
@@ -88,37 +97,11 @@ namespace PowerDisplay
         }
 
         /// <summary>
-        /// Decide whether to redirect activation to an existing instance (Command Palette pattern)
-        /// </summary>
-        private static bool DecideRedirection()
-        {
-            Logger.LogTrace("DecideRedirection: Checking for existing instance");
-            var isRedirect = false;
-            var activationArgs = AppInstance.GetCurrent().GetActivatedEventArgs();
-            var keyInstance = AppInstance.FindOrRegisterForKey("PowerToys_PowerDisplay_Instance");
-
-            if (keyInstance.IsCurrent)
-            {
-                Logger.LogInfo("DecideRedirection: This is the primary instance (IsCurrent=true)");
-                keyInstance.Activated += OnActivated;
-            }
-            else
-            {
-                Logger.LogInfo("DecideRedirection: Another instance exists, redirecting activation");
-                isRedirect = true;
-                RedirectActivationTo(activationArgs, keyInstance);
-            }
-
-            return isRedirect;
-        }
-
-        /// <summary>
         /// Redirect activation to existing instance (Command Palette pattern)
+        /// Called BEFORE logger is initialized, so no logging here
         /// </summary>
         private static void RedirectActivationTo(AppActivationArguments args, AppInstance keyInstance)
         {
-            Logger.LogInfo("RedirectActivationTo: Starting redirection to existing instance");
-
             // Do the redirection on another thread, and use a non-blocking
             // wait method to wait for the redirection to complete.
             using var redirectSemaphore = new Semaphore(0, 1);
@@ -129,20 +112,14 @@ namespace PowerDisplay
                 using var cts = new CancellationTokenSource(redirectTimeout);
                 try
                 {
-                    Logger.LogTrace("RedirectActivationTo: Calling RedirectActivationToAsync");
                     keyInstance.RedirectActivationToAsync(args)
                         .AsTask(cts.Token)
                         .GetAwaiter()
                         .GetResult();
-                    Logger.LogInfo("RedirectActivationTo: Redirection completed successfully");
                 }
-                catch (OperationCanceledException)
+                catch
                 {
-                    Logger.LogError($"RedirectActivationTo: Timed out after {redirectTimeout}");
-                }
-                catch (Exception ex)
-                {
-                    Logger.LogError($"RedirectActivationTo: Failed - {ex.Message}");
+                    // Silently ignore errors - logger not initialized yet
                 }
                 finally
                 {
@@ -158,8 +135,6 @@ namespace PowerDisplay
                 1,
                 handles,
                 out _);
-
-            Logger.LogTrace("RedirectActivationTo: Redirection wait completed");
         }
 
         /// <summary>
