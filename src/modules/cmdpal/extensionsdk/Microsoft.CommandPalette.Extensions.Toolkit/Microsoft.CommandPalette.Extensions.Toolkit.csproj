@@ -5,8 +5,7 @@
   <PropertyGroup>
     <RepoRoot>$(MSBuildThisFileDirectory)..\..\..\..\..\</RepoRoot>
     <WindowsSdkPackageVersion>10.0.26100.57</WindowsSdkPackageVersion>
-
-    <OutputPath>$(RepoRoot)\$(Configuration)\Microsoft.CommandPalette.Extensions.Toolkit</OutputPath>
+    <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\Microsoft.CommandPalette.Extensions.Toolkit</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <ImplicitUsings>enable</ImplicitUsings>
