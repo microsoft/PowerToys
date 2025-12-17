@@ -199,6 +199,7 @@ internal static class FancyZonesMonitorPreviewRenderer
 
     private static string ComputeMonitorHash(FancyZonesMonitorDescriptor monitor)
     {
+        var currentVirtualDesktop = FancyZonesVirtualDesktop.GetCurrentVirtualDesktopIdString();
         var appliedFingerprint = string.Empty;
         if (FancyZonesDataService.TryGetAppliedLayoutForMonitor(monitor.Data, out var applied) && applied is not null)
         {
@@ -206,7 +207,7 @@ internal static class FancyZonesMonitorPreviewRenderer
         }
 
         var identity = FormattableString.Invariant(
-            $"{monitor.Data.Monitor}|{monitor.Data.MonitorInstanceId}|{monitor.Data.MonitorSerialNumber}|{monitor.Data.MonitorNumber}|{monitor.Data.VirtualDesktop}|{monitor.Data.WorkAreaWidth}x{monitor.Data.WorkAreaHeight}|{monitor.Data.MonitorWidth}x{monitor.Data.MonitorHeight}|{appliedFingerprint}");
+            $"{monitor.Data.Monitor}|{monitor.Data.MonitorInstanceId}|{monitor.Data.MonitorSerialNumber}|{monitor.Data.MonitorNumber}|{currentVirtualDesktop}|{monitor.Data.WorkAreaWidth}x{monitor.Data.WorkAreaHeight}|{monitor.Data.MonitorWidth}x{monitor.Data.MonitorHeight}|{appliedFingerprint}");
 
         var bytes = Encoding.UTF8.GetBytes(identity);
         var hash = SHA256.HashData(bytes);

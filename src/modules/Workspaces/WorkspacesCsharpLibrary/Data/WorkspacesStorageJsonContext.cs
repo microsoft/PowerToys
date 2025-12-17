@@ -8,6 +8,11 @@ namespace WorkspacesCsharpLibrary.Data;
 
 [JsonSourceGenerationOptions(PropertyNameCaseInsensitive = true)]
 [JsonSerializable(typeof(WorkspacesStorage.WorkspacesFile))]
+[JsonSerializable(typeof(WorkspacesStorage.WorkspaceProject))]
+[JsonSerializable(typeof(ApplicationWrapper))]
+[JsonSerializable(typeof(ApplicationWrapper.WindowPositionWrapper))]
+[JsonSerializable(typeof(MonitorConfigurationWrapper))]
+[JsonSerializable(typeof(MonitorConfigurationWrapper.MonitorRectWrapper))]
 internal sealed partial class WorkspacesStorageJsonContext : JsonSerializerContext
 {
 }

@@ -39,15 +39,16 @@ internal sealed partial class FancyZonesMonitorListItem : ListItem
 
     public static Details BuildMonitorDetails(FancyZonesMonitorDescriptor monitor)
     {
+        var currentVirtualDesktop = FancyZonesVirtualDesktop.GetCurrentVirtualDesktopIdString();
         var tags = new List<IDetailsElement>
         {
             DetailTag("Monitor", monitor.Data.Monitor),
             DetailTag("Instance", monitor.Data.MonitorInstanceId),
             DetailTag("Serial", monitor.Data.MonitorSerialNumber),
             DetailTag("Number", monitor.Data.MonitorNumber.ToString(CultureInfo.InvariantCulture)),
-            DetailTag("Virtual desktop", monitor.Data.VirtualDesktop),
-            DetailTag("Work area", $"{monitor.Data.LeftCoordinate},{monitor.Data.TopCoordinate}  {monitor.Data.WorkAreaWidth}�{monitor.Data.WorkAreaHeight}"),
-            DetailTag("Resolution", $"{monitor.Data.MonitorWidth}�{monitor.Data.MonitorHeight}"),
+            DetailTag("Virtual desktop", currentVirtualDesktop),
+            DetailTag("Work area", $"{monitor.Data.LeftCoordinate},{monitor.Data.TopCoordinate}  {monitor.Data.WorkAreaWidth}\u00D7{monitor.Data.WorkAreaHeight}"),
+            DetailTag("Resolution", $"{monitor.Data.MonitorWidth}\u00D7{monitor.Data.MonitorHeight}"),
             DetailTag("DPI", monitor.Data.Dpi.ToString(CultureInfo.InvariantCulture)),
         };
 

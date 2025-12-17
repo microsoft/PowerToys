@@ -14,6 +14,7 @@ internal sealed partial class LaunchWorkspaceCommand : InvokableCommand
     internal LaunchWorkspaceCommand(string workspaceId)
     {
         _workspaceId = workspaceId;
+        Name = "Launch workspace";
     }
 
     public override CommandResult Invoke()

@@ -54,11 +54,11 @@ internal sealed partial class FancyZonesMonitorsPage : DynamicListPage
                 continue;
             }
 
-            var appliedText = FancyZonesDataService.TryGetAppliedLayoutForMonitor(monitor.Data, out var applied) && applied is not null
+            var layoutDescription = FancyZonesDataService.TryGetAppliedLayoutForMonitor(monitor.Data, out var applied) && applied is not null
                 ? $"Current layout: {applied.Type}"
                 : "Current layout: unknown";
 
-            var item = new FancyZonesMonitorListItem(monitor, appliedText, monitorIcon);
+            var item = new FancyZonesMonitorListItem(monitor, layoutDescription, monitorIcon);
             items.Add(item);
         }
 

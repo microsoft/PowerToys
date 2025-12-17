@@ -44,12 +44,6 @@ internal static class FancyZonesDataService
             return false;
         }
 
-        var currentVirtualDesktop = FancyZonesVirtualDesktop.GetCurrentVirtualDesktopIdString();
-        foreach (var monitor in editorMonitors)
-        {
-            monitor.VirtualDesktop = currentVirtualDesktop;
-        }
-
         monitors = editorMonitors
             .Select((monitor, i) => new FancyZonesMonitorDescriptor(i + 1, monitor))
             .ToArray();
@@ -65,6 +59,9 @@ internal static class FancyZonesDataService
     }
 
     public static bool TryGetAppliedLayoutForMonitor(FancyZonesEditorMonitor monitor, out FancyZonesAppliedLayout? appliedLayout)
+        => TryGetAppliedLayoutForMonitor(monitor, FancyZonesVirtualDesktop.GetCurrentVirtualDesktopIdString(), out appliedLayout);
+
+    public static bool TryGetAppliedLayoutForMonitor(FancyZonesEditorMonitor monitor, string virtualDesktopId, out FancyZonesAppliedLayout? appliedLayout)
     {
         appliedLayout = null;
 
@@ -73,7 +70,7 @@ internal static class FancyZonesDataService
             return false;
         }
 
-        var match = FindAppliedLayoutEntry(file, monitor);
+        var match = FindAppliedLayoutEntry(file, monitor, virtualDesktopId);
         appliedLayout = match?.AppliedLayout;
         return appliedLayout is not null;
     }
@@ -122,9 +119,11 @@ internal static class FancyZonesDataService
 
         appliedFile.AppliedLayouts ??= new List<FancyZonesAppliedLayoutEntry>();
 
+        var currentVirtualDesktop = FancyZonesVirtualDesktop.GetCurrentVirtualDesktopIdString();
+
         foreach (var monitor in monitors)
         {
-            var entry = FindAppliedLayoutEntry(appliedFile, monitor);
+            var entry = FindAppliedLayoutEntry(appliedFile, monitor, currentVirtualDesktop);
             if (entry is null)
             {
                 entry = new FancyZonesAppliedLayoutEntry
@@ -140,7 +139,7 @@ internal static class FancyZonesDataService
             entry.Device.MonitorInstance = monitor.MonitorInstanceId ?? string.Empty;
             entry.Device.SerialNumber = monitor.MonitorSerialNumber ?? string.Empty;
             entry.Device.MonitorNumber = monitor.MonitorNumber;
-            entry.Device.VirtualDesktop = monitor.VirtualDesktop ?? string.Empty;
+            entry.Device.VirtualDesktop = currentVirtualDesktop;
 
             entry.AppliedLayout.Uuid = layout.ApplyLayout.Uuid;
             entry.AppliedLayout.Type = layout.ApplyLayout.Type;
@@ -179,7 +178,7 @@ internal static class FancyZonesDataService
         return (true, "Layout applied.");
     }
 
-    private static FancyZonesAppliedLayoutEntry? FindAppliedLayoutEntry(FancyZonesAppliedLayoutsFile? file, FancyZonesEditorMonitor monitor)
+    private static FancyZonesAppliedLayoutEntry? FindAppliedLayoutEntry(FancyZonesAppliedLayoutsFile? file, FancyZonesEditorMonitor monitor, string virtualDesktopId)
     {
         if (file?.AppliedLayouts is null)
         {
@@ -191,7 +190,7 @@ internal static class FancyZonesDataService
             string.Equals(e.Device.MonitorInstance ?? string.Empty, monitor.MonitorInstanceId ?? string.Empty, StringComparison.OrdinalIgnoreCase) &&
             string.Equals(e.Device.SerialNumber ?? string.Empty, monitor.MonitorSerialNumber ?? string.Empty, StringComparison.OrdinalIgnoreCase) &&
             e.Device.MonitorNumber == monitor.MonitorNumber &&
-            string.Equals(e.Device.VirtualDesktop, monitor.VirtualDesktop, StringComparison.OrdinalIgnoreCase));
+            string.Equals(e.Device.VirtualDesktop, virtualDesktopId, StringComparison.OrdinalIgnoreCase));
     }
 
     private static bool TryReadAppliedLayouts(out FancyZonesAppliedLayoutsFile? file)
