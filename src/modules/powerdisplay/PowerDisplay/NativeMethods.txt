@@ -12,3 +12,6 @@ WM_RBUTTONUP
 WM_LBUTTONUP
 WM_LBUTTONDBLCLK
 WM_WINDOWPOSCHANGING
+
+// COM wait flags for single instance redirection (constants only)
+CWMO_FLAGS

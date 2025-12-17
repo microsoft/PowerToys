@@ -35,42 +35,54 @@ namespace PowerDisplay
 
         public MainWindow()
         {
+            Logger.LogInfo("MainWindow constructor: Starting");
             try
             {
                 // 1. Create ViewModel BEFORE InitializeComponent to avoid x:Bind failures
                 // x:Bind evaluates during InitializeComponent, so ViewModel must exist first
+                Logger.LogTrace("MainWindow constructor: Creating MainViewModel");
                 _viewModel = new MainViewModel();
+                Logger.LogTrace("MainWindow constructor: MainViewModel created");
 
+                Logger.LogTrace("MainWindow constructor: Calling InitializeComponent");
                 this.InitializeComponent();
+                Logger.LogTrace("MainWindow constructor: InitializeComponent completed");
 
                 // 2. Configure window immediately (synchronous, no data dependency)
+                Logger.LogTrace("MainWindow constructor: Configuring window");
                 ConfigureWindow();
 
                 // 3. Set up data context and update bindings
                 RootGrid.DataContext = _viewModel;
                 Bindings.Update();
+                Logger.LogTrace("MainWindow constructor: Data context set and bindings updated");
 
                 // 4. Register event handlers
                 RegisterEventHandlers();
+                Logger.LogTrace("MainWindow constructor: Event handlers registered");
 
                 // 5. Start background initialization (don't wait)
+                Logger.LogTrace("MainWindow constructor: Starting background initialization task");
                 _ = Task.Run(async () =>
                 {
                     try
                     {
+                        Logger.LogTrace("MainWindow: Background initialization starting");
                         await InitializeAsync();
                         _hasInitialized = true;
+                        Logger.LogInfo("MainWindow: Background initialization completed, _hasInitialized=true");
                     }
                     catch (Exception ex)
                     {
-                        Logger.LogError($"Background initialization failed: {ex.Message}");
+                        Logger.LogError($"MainWindow: Background initialization failed: {ex.Message}\n{ex.StackTrace}");
                         DispatcherQueue.TryEnqueue(() => ShowError($"Initialization failed: {ex.Message}"));
                     }
                 });
+                Logger.LogInfo("MainWindow constructor: Completed");
             }
             catch (Exception ex)
             {
-                Logger.LogError($"MainWindow initialization failed: {ex.Message}");
+                Logger.LogError($"MainWindow constructor: Initialization failed: {ex.Message}\n{ex.StackTrace}");
                 ShowError($"Unable to start main window: {ex.Message}");
             }
         }
@@ -101,15 +113,19 @@ namespace PowerDisplay
         /// </summary>
         public async Task EnsureInitializedAsync()
         {
+            Logger.LogInfo($"EnsureInitializedAsync: Called, _hasInitialized={_hasInitialized}");
             if (_hasInitialized)
             {
+                Logger.LogTrace("EnsureInitializedAsync: Already initialized, returning");
                 return;
             }
 
             // Wait for background initialization to complete
             // This is a no-op if initialization already completed
+            Logger.LogTrace("EnsureInitializedAsync: Calling InitializeAsync");
             await InitializeAsync();
             _hasInitialized = true;
+            Logger.LogInfo("EnsureInitializedAsync: Initialization completed, _hasInitialized=true");
         }
 
         private async Task InitializeAsync()
@@ -144,9 +160,12 @@ namespace PowerDisplay
 
         private void OnWindowActivated(object sender, WindowActivatedEventArgs args)
         {
+            Logger.LogTrace($"OnWindowActivated: WindowActivationState={args.WindowActivationState}");
+
             // Auto-hide window when it loses focus (deactivated)
             if (args.WindowActivationState == WindowActivationState.Deactivated)
             {
+                Logger.LogInfo("OnWindowActivated: Window deactivated, hiding window");
                 HideWindow();
             }
         }
@@ -160,20 +179,24 @@ namespace PowerDisplay
 
         public void ShowWindow()
         {
+            Logger.LogInfo($"ShowWindow: Called, _hasInitialized={_hasInitialized}");
             try
             {
                 // If not initialized, log warning but continue showing
                 if (!_hasInitialized)
                 {
-                    Logger.LogWarning("Window not fully initialized yet, showing anyway");
+                    Logger.LogWarning("ShowWindow: Window not fully initialized yet, showing anyway");
                 }
 
                 // Adjust size BEFORE showing to prevent flicker
                 // This measures content and positions window at correct size
+                Logger.LogTrace("ShowWindow: Adjusting window size to content");
                 AdjustWindowSizeToContent();
 
                 // Now show the window - it should appear at the correct size (WinUIEx simplified)
+                Logger.LogTrace("ShowWindow: Calling this.Show()");
                 this.Show();
+                Logger.LogTrace("ShowWindow: Calling this.BringToFront()");
                 this.BringToFront();
 
                 // Clear focus from any interactive element (e.g., Slider) to prevent
@@ -181,24 +204,35 @@ namespace PowerDisplay
                 RootGrid.Focus(FocusState.Programmatic);
 
                 // Verify window is visible
-                if (!IsWindowVisible())
+                bool isVisible = IsWindowVisible();
+                Logger.LogInfo($"ShowWindow: Window visibility after show: {isVisible}");
+                if (!isVisible)
                 {
-                    Logger.LogError("Window not visible after show attempt, forcing visibility");
+                    Logger.LogError("ShowWindow: Window not visible after show attempt, forcing visibility");
                     this.Show();
                     this.BringToFront();
+                    Logger.LogInfo($"ShowWindow: After forced show, visibility: {IsWindowVisible()}");
+                }
+                else
+                {
+                    Logger.LogInfo("ShowWindow: Window shown successfully");
                 }
             }
             catch (Exception ex)
             {
-                Logger.LogError($"Failed to show window: {ex.Message}");
+                Logger.LogError($"ShowWindow: Failed to show window: {ex.Message}\n{ex.StackTrace}");
                 throw;
             }
         }
 
         public void HideWindow()
         {
+            Logger.LogInfo("HideWindow: Hiding window");
+
             // Hide window using WinUIEx simplified API
             this.Hide();
+
+            Logger.LogTrace($"HideWindow: Window hidden, visibility now: {IsWindowVisible()}");
         }
 
         /// <summary>
@@ -208,7 +242,9 @@ namespace PowerDisplay
         public bool IsWindowVisible()
         {
             // Use WinUIEx Visible property
-            return this.Visible;
+            bool visible = this.Visible;
+            Logger.LogTrace($"IsWindowVisible: Returning {visible}");
+            return visible;
         }
 
         /// <summary>
@@ -216,20 +252,26 @@ namespace PowerDisplay
         /// </summary>
         public void ToggleWindow()
         {
+            bool currentlyVisible = IsWindowVisible();
+            Logger.LogInfo($"ToggleWindow: Called, current visibility={currentlyVisible}");
             try
             {
-                if (IsWindowVisible())
+                if (currentlyVisible)
                 {
+                    Logger.LogInfo("ToggleWindow: Window is visible, hiding");
                     HideWindow();
                 }
                 else
                 {
+                    Logger.LogInfo("ToggleWindow: Window is hidden, showing");
                     ShowWindow();
                 }
+
+                Logger.LogInfo($"ToggleWindow: Completed, new visibility={IsWindowVisible()}");
             }
             catch (Exception ex)
             {
-                Logger.LogError($"Failed to toggle window: {ex.Message}");
+                Logger.LogError($"ToggleWindow: Failed to toggle window: {ex.Message}\n{ex.StackTrace}");
                 throw;
             }
         }

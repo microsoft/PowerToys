@@ -66,37 +66,42 @@ private:
 
     void parse_hotkey_settings(PowerToysSettings::PowerToyValues settings)
     {
+        Logger::trace(L"parse_hotkey_settings: Starting to parse hotkey settings");
         auto settingsObject = settings.get_raw_json();
         if (settingsObject.GetView().Size())
         {
+            Logger::trace(L"parse_hotkey_settings: Settings JSON has {} keys", settingsObject.GetView().Size());
             try
             {
                 if (settingsObject.HasKey(JSON_KEY_PROPERTIES))
                 {
                     auto properties = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES);
                     m_hotkey_enabled = properties.GetNamedBoolean(JSON_KEY_HOTKEY_ENABLED, false);
+                    Logger::info(L"parse_hotkey_settings: hotkey_enabled={}", m_hotkey_enabled);
                 }
                 else
                 {
-                    Logger::info("Properties object not found in settings, using defaults");
+                    Logger::info("parse_hotkey_settings: Properties object not found in settings, using defaults");
                     m_hotkey_enabled = false;
                 }
             }
             catch (...)
             {
-                Logger::info("Failed to parse hotkey settings, using defaults");
+                Logger::error("parse_hotkey_settings: Exception thrown while parsing hotkey settings, using defaults");
                 m_hotkey_enabled = false;
             }
         }
         else
         {
-            Logger::info("Power Display settings are empty");
+            Logger::info("parse_hotkey_settings: Power Display settings are empty");
             m_hotkey_enabled = false;
         }
+        Logger::trace(L"parse_hotkey_settings: Completed, hotkey_enabled={}", m_hotkey_enabled);
     }
 
     void parse_activation_hotkey(PowerToysSettings::PowerToyValues& settings)
     {
+        Logger::trace(L"parse_activation_hotkey: Starting to parse activation hotkey");
         auto settingsObject = settings.get_raw_json();
         if (settingsObject.GetView().Size())
         {
@@ -107,6 +112,7 @@ private:
                     auto properties = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES);
                     if (properties.HasKey(JSON_KEY_ACTIVATION_SHORTCUT))
                     {
+                        Logger::trace(L"parse_activation_hotkey: Found activation_shortcut in settings");
                         auto jsonHotkeyObject = properties.GetNamedObject(JSON_KEY_ACTIVATION_SHORTCUT);
                         m_activation_hotkey.win = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_WIN);
                         m_activation_hotkey.alt = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_ALT);
@@ -114,23 +120,32 @@ private:
                         m_activation_hotkey.ctrl = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_CTRL);
                         m_activation_hotkey.key = static_cast<unsigned char>(jsonHotkeyObject.GetNamedNumber(JSON_KEY_CODE));
                         m_activation_hotkey.isShown = true;
-                        Logger::trace(L"Parsed activation hotkey: Win={} Ctrl={} Alt={} Shift={} Key={}",
+                        Logger::info(L"parse_activation_hotkey: Parsed hotkey - Win={} Ctrl={} Alt={} Shift={} Key={} (0x{:X})",
                                      m_activation_hotkey.win, m_activation_hotkey.ctrl, m_activation_hotkey.alt,
-                                     m_activation_hotkey.shift, m_activation_hotkey.key);
+                                     m_activation_hotkey.shift, m_activation_hotkey.key, m_activation_hotkey.key);
                     }
                     else
                     {
-                        Logger::info("ActivationShortcut not found in settings, using default Win+Alt+M");
+                        Logger::info("parse_activation_hotkey: ActivationShortcut not found in settings, using default Win+Alt+M");
                         m_activation_hotkey.isShown = true;
                     }
+                }
+                else
+                {
+                    Logger::info("parse_activation_hotkey: Properties key not found in settings JSON");
                 }
             }
             catch (...)
             {
-                Logger::error("Failed to parse PowerDisplay activation shortcut, using default Win+Alt+M");
+                Logger::error("parse_activation_hotkey: Exception thrown while parsing activation shortcut, using default Win+Alt+M");
                 m_activation_hotkey.isShown = true;
             }
         }
+        else
+        {
+            Logger::info("parse_activation_hotkey: Settings JSON is empty");
+        }
+        Logger::trace(L"parse_activation_hotkey: Completed");
     }
 
     void init_settings()
@@ -154,18 +169,24 @@ private:
     {
         if (m_hProcess == nullptr)
         {
+            Logger::trace(L"is_process_running: Process handle is null, returning false");
             return false;
         }
-        return WaitForSingleObject(m_hProcess, 0) == WAIT_TIMEOUT;
+        DWORD waitResult = WaitForSingleObject(m_hProcess, 0);
+        bool running = (waitResult == WAIT_TIMEOUT);
+        Logger::trace(L"is_process_running: WaitForSingleObject returned {}, process running={}", waitResult, running);
+        return running;
     }
 
     // Helper method to launch PowerDisplay.exe process
     void launch_process()
     {
-        Logger::trace(L"Starting PowerDisplay process");
+        Logger::info(L"launch_process: Starting PowerDisplay process");
         unsigned long powertoys_pid = GetCurrentProcessId();
+        Logger::trace(L"launch_process: PowerToys runner PID={}", powertoys_pid);
 
         std::wstring executable_args = std::to_wstring(powertoys_pid);
+        Logger::trace(L"launch_process: Executable args: {}", executable_args);
 
         SHELLEXECUTEINFOW sei{ sizeof(sei) };
         sei.fMask = SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI;
@@ -173,59 +194,36 @@ private:
         sei.nShow = SW_SHOWNORMAL;
         sei.lpParameters = executable_args.data();
 
+        Logger::trace(L"launch_process: Calling ShellExecuteExW with lpFile={}", sei.lpFile);
+
         if (ShellExecuteExW(&sei))
         {
-            Logger::trace(L"Successfully started PowerDisplay process");
+            Logger::info(L"launch_process: Successfully started PowerDisplay process, handle={}", reinterpret_cast<void*>(sei.hProcess));
             m_hProcess = sei.hProcess;
         }
         else
         {
-            Logger::error(L"PowerDisplay process failed to start. {}",
-                         get_last_error_or_default(GetLastError()));
-        }
-    }
-
-    // Helper method to wait for PowerDisplay.exe process to be ready
-    // Uses a named event for precise synchronization instead of hardcoded Sleep
-    void wait_for_process_ready()
-    {
-        HANDLE readyEvent = OpenEventW(SYNCHRONIZE, FALSE, PowerDisplayConstants::ProcessReadyEventName);
-        if (readyEvent)
-        {
-            Logger::trace(L"Waiting for PowerDisplay process ready signal...");
-            DWORD waitResult = WaitForSingleObject(readyEvent, PowerDisplayConstants::ProcessReadyTimeoutMs);
-            CloseHandle(readyEvent);
-
-            if (waitResult == WAIT_OBJECT_0)
-            {
-                Logger::trace(L"PowerDisplay process ready signal received");
-            }
-            else if (waitResult == WAIT_TIMEOUT)
-            {
-                Logger::warn(L"PowerDisplay process ready timeout after {}ms", PowerDisplayConstants::ProcessReadyTimeoutMs);
-            }
-            else
-            {
-                Logger::warn(L"WaitForSingleObject failed with error: {}", GetLastError());
-            }
-        }
-        else
-        {
-            // Fallback: if cannot open event, use a shorter delay
-            Logger::warn(L"Could not open PowerDisplay ready event, using fallback delay");
-            Sleep(PowerDisplayConstants::FallbackDelayMs);
+            DWORD lastError = GetLastError();
+            Logger::error(L"launch_process: PowerDisplay process failed to start. Error code={}, message: {}",
+                         lastError, get_last_error_or_default(lastError));
         }
     }
 
     // Helper method to ensure PowerDisplay process is running
-    // Checks if process is running, launches it if needed, and waits for ready signal
+    // Checks if process is running, launches it if needed
+    // Note: No wait needed - PowerDisplay uses RedirectActivationToAsync for single instance
     void EnsureProcessRunning()
     {
+        Logger::trace(L"EnsureProcessRunning: Checking if PowerDisplay process is running");
         if (!is_process_running())
         {
-            Logger::trace(L"PowerDisplay process not running, launching");
+            Logger::info(L"EnsureProcessRunning: PowerDisplay process not running, launching");
             launch_process();
-            wait_for_process_ready();
+            Logger::info(L"EnsureProcessRunning: Launch completed");
+        }
+        else
+        {
+            Logger::trace(L"EnsureProcessRunning: PowerDisplay process is already running");
         }
     }
 
@@ -233,22 +231,38 @@ public:
     PowerDisplayModule()
     {
         LoggerHelpers::init_logger(MODULE_NAME, L"ModuleInterface", LogSettings::powerDisplayLoggerName);
-        Logger::info("Power Display object is constructing");
+        Logger::info("Power Display module is constructing");
 
         init_settings();
 
         // Create all Windows Events (persistent handles - ColorPicker pattern)
+        Logger::trace(L"Creating Windows Events for IPC...");
         m_hInvokeEvent = CreateDefaultEvent(CommonSharedConstants::SHOW_POWER_DISPLAY_EVENT);
+        Logger::trace(L"Created SHOW_POWER_DISPLAY_EVENT: handle={}", reinterpret_cast<void*>(m_hInvokeEvent));
         m_hToggleEvent = CreateDefaultEvent(CommonSharedConstants::TOGGLE_POWER_DISPLAY_EVENT);
+        Logger::trace(L"Created TOGGLE_POWER_DISPLAY_EVENT: handle={}", reinterpret_cast<void*>(m_hToggleEvent));
         m_hTerminateEvent = CreateDefaultEvent(CommonSharedConstants::TERMINATE_POWER_DISPLAY_EVENT);
+        Logger::trace(L"Created TERMINATE_POWER_DISPLAY_EVENT: handle={}", reinterpret_cast<void*>(m_hTerminateEvent));
         m_hRefreshEvent = CreateDefaultEvent(CommonSharedConstants::REFRESH_POWER_DISPLAY_MONITORS_EVENT);
+        Logger::trace(L"Created REFRESH_MONITORS_EVENT: handle={}", reinterpret_cast<void*>(m_hRefreshEvent));
         m_hSettingsUpdatedEvent = CreateDefaultEvent(CommonSharedConstants::SETTINGS_UPDATED_POWER_DISPLAY_EVENT);
+        Logger::trace(L"Created SETTINGS_UPDATED_EVENT: handle={}", reinterpret_cast<void*>(m_hSettingsUpdatedEvent));
         m_hApplyColorTemperatureEvent = CreateDefaultEvent(CommonSharedConstants::APPLY_COLOR_TEMPERATURE_POWER_DISPLAY_EVENT);
+        Logger::trace(L"Created APPLY_COLOR_TEMPERATURE_EVENT: handle={}", reinterpret_cast<void*>(m_hApplyColorTemperatureEvent));
         m_hApplyProfileEvent = CreateDefaultEvent(CommonSharedConstants::APPLY_PROFILE_POWER_DISPLAY_EVENT);
+        Logger::trace(L"Created APPLY_PROFILE_EVENT: handle={}", reinterpret_cast<void*>(m_hApplyProfileEvent));
 
         if (!m_hInvokeEvent || !m_hToggleEvent || !m_hTerminateEvent || !m_hRefreshEvent || !m_hSettingsUpdatedEvent || !m_hApplyColorTemperatureEvent || !m_hApplyProfileEvent)
         {
-            Logger::error(L"Failed to create one or more event handles");
+            Logger::error(L"Failed to create one or more event handles: Invoke={}, Toggle={}, Terminate={}, Refresh={}, SettingsUpdated={}, ApplyColorTemp={}, ApplyProfile={}",
+                         reinterpret_cast<void*>(m_hInvokeEvent), reinterpret_cast<void*>(m_hToggleEvent),
+                         reinterpret_cast<void*>(m_hTerminateEvent), reinterpret_cast<void*>(m_hRefreshEvent),
+                         reinterpret_cast<void*>(m_hSettingsUpdatedEvent), reinterpret_cast<void*>(m_hApplyColorTemperatureEvent),
+                         reinterpret_cast<void*>(m_hApplyProfileEvent));
+        }
+        else
+        {
+            Logger::info(L"All Windows Events created successfully");
         }
     }
 
@@ -440,19 +454,24 @@ public:
 
     virtual void enable() override
     {
-        Logger::trace(L"PowerDisplay::enable()");
+        Logger::info(L"enable: PowerDisplay module is being enabled");
         m_enabled = true;
         Trace::EnablePowerDisplay(true);
 
         // Launch PowerDisplay.exe if not already running (ColorPicker pattern)
+        Logger::trace(L"enable: Checking if PowerDisplay process needs to be launched");
         if (!is_process_running())
         {
+            Logger::info(L"enable: Launching PowerDisplay process");
             launch_process();
+            // Don't wait for ready here - let the process initialize in background
+            Logger::info(L"enable: PowerDisplay process launch initiated");
         }
         else
         {
-            Logger::trace(L"PowerDisplay process already running");
+            Logger::info(L"enable: PowerDisplay process already running, skipping launch");
         }
+        Logger::info(L"enable: PowerDisplay module enabled successfully");
     }
 
     virtual void disable() override
@@ -495,22 +514,46 @@ public:
         return m_enabled;
     }
 
-    virtual bool on_hotkey(size_t /*hotkeyId*/) override
+    virtual bool on_hotkey(size_t hotkeyId) override
     {
+        Logger::info(L"on_hotkey: Hotkey pressed, hotkeyId={}, m_enabled={}, m_hToggleEvent={}",
+                    hotkeyId, m_enabled, reinterpret_cast<void*>(m_hToggleEvent));
+
         if (m_enabled && m_hToggleEvent)
         {
-            Logger::trace(L"Power Display hotkey pressed");
+            Logger::info(L"on_hotkey: PowerDisplay hotkey activated (Win={} Ctrl={} Alt={} Shift={} Key=0x{:X})",
+                        m_activation_hotkey.win, m_activation_hotkey.ctrl, m_activation_hotkey.alt,
+                        m_activation_hotkey.shift, m_activation_hotkey.key);
 
             // ColorPicker pattern: check if process is running, re-launch if needed
             if (!is_process_running())
             {
-                Logger::trace(L"PowerDisplay process not running, re-launching");
+                Logger::info(L"on_hotkey: PowerDisplay process not running, re-launching");
                 launch_process();
             }
 
-            Logger::trace(L"Signaling toggle event");
-            SetEvent(m_hToggleEvent);
+            Logger::info(L"on_hotkey: Signaling toggle event");
+            BOOL setEventResult = SetEvent(m_hToggleEvent);
+            if (setEventResult)
+            {
+                Logger::info(L"on_hotkey: Toggle event signaled successfully");
+            }
+            else
+            {
+                Logger::error(L"on_hotkey: SetEvent failed for toggle event, error={}", GetLastError());
+            }
             return true;
+        }
+        else
+        {
+            if (!m_enabled)
+            {
+                Logger::warn(L"on_hotkey: Module is disabled, ignoring hotkey");
+            }
+            if (!m_hToggleEvent)
+            {
+                Logger::error(L"on_hotkey: Toggle event handle is null");
+            }
         }
 
         return false;
@@ -518,14 +561,19 @@ public:
 
     virtual size_t get_hotkeys(Hotkey* hotkeys, size_t buffer_size) override
     {
+        Logger::trace(L"get_hotkeys: Called with buffer_size={}, m_activation_hotkey.key=0x{:X}", buffer_size, m_activation_hotkey.key);
         if (m_activation_hotkey.key != 0)
         {
             if (hotkeys && buffer_size >= 1)
             {
                 hotkeys[0] = m_activation_hotkey;
+                Logger::info(L"get_hotkeys: Returning hotkey - Win={} Ctrl={} Alt={} Shift={} Key=0x{:X}",
+                            m_activation_hotkey.win, m_activation_hotkey.ctrl, m_activation_hotkey.alt,
+                            m_activation_hotkey.shift, m_activation_hotkey.key);
             }
             return 1;
         }
+        Logger::trace(L"get_hotkeys: No hotkey configured (key=0)");
         return 0;
     }
 };

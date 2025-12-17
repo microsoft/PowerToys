@@ -23,31 +23,67 @@ namespace PowerDisplay.Helpers
         /// <param name="cancellationToken">Token to cancel the wait loop</param>
         public static void WaitForEventLoop(string eventName, Action callback, CancellationToken cancellationToken)
         {
+            Logger.LogTrace($"[NativeEventWaiter] Setting up event loop for event: {eventName}");
             var dispatcherQueue = DispatcherQueue.GetForCurrentThread();
+
+            if (dispatcherQueue == null)
+            {
+                Logger.LogError($"[NativeEventWaiter] DispatcherQueue is null for event: {eventName}");
+                return;
+            }
+
+            Logger.LogTrace($"[NativeEventWaiter] DispatcherQueue obtained for event: {eventName}");
 
             var t = new Thread(() =>
             {
+                Logger.LogInfo($"[NativeEventWaiter] Background thread started for event: {eventName}");
                 try
                 {
+                    Logger.LogTrace($"[NativeEventWaiter] Creating EventWaitHandle for event: {eventName}");
                     using var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, eventName);
+                    Logger.LogInfo($"[NativeEventWaiter] EventWaitHandle created successfully for event: {eventName}");
 
+                    int waitCount = 0;
                     while (!cancellationToken.IsCancellationRequested)
                     {
-                        // Use infinite wait like Peek.UI for more reliable event reception
+                        // Use 500ms timeout for polling
                         if (eventHandle.WaitOne(500))
                         {
-                            dispatcherQueue.TryEnqueue(() => callback());
+                            waitCount++;
+                            Logger.LogInfo($"[NativeEventWaiter] Event SIGNALED: {eventName} (signal count: {waitCount})");
+                            bool enqueued = dispatcherQueue.TryEnqueue(() =>
+                            {
+                                Logger.LogTrace($"[NativeEventWaiter] Executing callback on UI thread for event: {eventName}");
+                                try
+                                {
+                                    callback();
+                                    Logger.LogTrace($"[NativeEventWaiter] Callback completed for event: {eventName}");
+                                }
+                                catch (Exception callbackEx)
+                                {
+                                    Logger.LogError($"[NativeEventWaiter] Callback exception for event {eventName}: {callbackEx.Message}");
+                                }
+                            });
+
+                            if (!enqueued)
+                            {
+                                Logger.LogError($"[NativeEventWaiter] Failed to enqueue callback to UI thread for event: {eventName}");
+                            }
                         }
                     }
+
+                    Logger.LogInfo($"[NativeEventWaiter] Event loop ending for event: {eventName} (cancellation requested)");
                 }
                 catch (Exception ex)
                 {
-                    Logger.LogError($"[NativeEventWaiter] Exception in event loop for {eventName}: {ex.Message}");
+                    Logger.LogError($"[NativeEventWaiter] Exception in event loop for {eventName}: {ex.Message}\n{ex.StackTrace}");
                 }
             });
 
             t.IsBackground = true;
+            t.Name = $"NativeEventWaiter_{eventName}";
             t.Start();
+            Logger.LogTrace($"[NativeEventWaiter] Background thread started with name: {t.Name}");
         }
     }
 }
