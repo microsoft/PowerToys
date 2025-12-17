@@ -68,11 +68,10 @@
     <ClCompile Include="SilentFilesInUseBAFunctions.cpp" />
     <ClCompile Include="bafunctions.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
-      <PrecompiledHeaderFile>precomp.h</PrecompiledHeaderFile>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="precomp.h" />
+    <ClInclude Include="pch.h" />
     <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
