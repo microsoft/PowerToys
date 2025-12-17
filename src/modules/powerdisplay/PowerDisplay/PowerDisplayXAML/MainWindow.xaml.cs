@@ -194,36 +194,22 @@ namespace PowerDisplay
                 }
 
                 var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
+
+                // Adjust size BEFORE showing to prevent flicker
+                // This measures content and positions window at correct size
                 AdjustWindowSizeToContent();
 
-                if (_appWindow != null)
-                {
-                    PositionWindowAtBottomRight(_appWindow);
-                }
-                else
-                {
-                    Logger.LogWarning("AppWindow is null, skipping window repositioning");
-                }
-
+                // Now show the window - it should appear at the correct size
                 this.Activate();
                 WindowHelper.ShowWindow(hWnd, true);
                 WindowHelpers.BringToForeground(hWnd);
 
-                // Force a resize AFTER the window is shown.
-                // This is critical because the OS might restore the window to a previous (incorrect) size
-                // when ShowWindow is called, ignoring our pre-show adjustment.
-                // By queuing this on the dispatcher, we ensure it runs after the window is visible and layout is active.
-                DispatcherQueue.TryEnqueue(() =>
-                {
-                    AdjustWindowSizeToContent();
+                // Clear focus from any interactive element (e.g., Slider) to prevent
+                // showing the value tooltip when the window opens
+                RootGrid.Focus(FocusState.Programmatic);
 
-                    // Clear focus from any interactive element (e.g., Slider) to prevent
-                    // showing the value tooltip when the window opens
-                    RootGrid.Focus(FocusState.Programmatic);
-                });
-
-                bool isVisible = IsWindowVisible();
-                if (!isVisible)
+                // Verify window is visible
+                if (!IsWindowVisible())
                 {
                     Logger.LogError("Window not visible after show attempt, forcing visibility");
                     this.Activate();
@@ -406,8 +392,9 @@ namespace PowerDisplay
 
                 if (_appWindow != null)
                 {
-                    // Set initial window size - will be adjusted later based on content
-                    _appWindow.Resize(new SizeInt32 { Width = AppConstants.UI.WindowWidth, Height = 480 });
+                    // Set minimal initial window size - will be adjusted before showing
+                    // Using minimal height to prevent "large window shrinking" flicker
+                    _appWindow.Resize(new SizeInt32 { Width = AppConstants.UI.WindowWidth, Height = 100 });
 
                     // Position window at bottom right corner
                     PositionWindowAtBottomRight(_appWindow);
