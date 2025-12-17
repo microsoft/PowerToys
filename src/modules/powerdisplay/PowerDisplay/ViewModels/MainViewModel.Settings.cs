@@ -239,15 +239,48 @@ public partial class MainViewModel
                     return;
                 }
 
-                // Apply the profile
-                await ApplyProfileAsync(profile.MonitorSettings);
+                // Apply the profile - need to dispatch to UI thread since MonitorViewModels are UI-bound
+                var tcs = new TaskCompletionSource<bool>();
+                var enqueued = _dispatcherQueue.TryEnqueue(() =>
+                {
+                    // Start the async operation and handle completion
+                    _ = ApplyProfileAndCompleteAsync(profile.MonitorSettings, tcs);
+                });
+
+                if (!enqueued)
+                {
+                    Logger.LogError($"[LightSwitch Integration] Failed to enqueue profile application to UI thread");
+                    return;
+                }
+
+                await tcs.Task;
                 Logger.LogInfo($"[LightSwitch Integration] Successfully applied profile '{profileName}'");
             }
             catch (Exception ex)
             {
-                Logger.LogError($"[LightSwitch Integration] Failed to apply profile: {ex.Message}");
+                Logger.LogError($"[LightSwitch Integration] Failed to apply profile: {ex.GetType().Name}: {ex.Message}");
+                if (ex.InnerException != null)
+                {
+                    Logger.LogError($"[LightSwitch Integration] Inner exception: {ex.InnerException.GetType().Name}: {ex.InnerException.Message}");
+                }
             }
         });
+    }
+
+    /// <summary>
+    /// Helper method to apply profile and signal completion.
+    /// </summary>
+    private async Task ApplyProfileAndCompleteAsync(List<ProfileMonitorSetting> monitorSettings, TaskCompletionSource<bool> tcs)
+    {
+        try
+        {
+            await ApplyProfileAsync(monitorSettings);
+            tcs.SetResult(true);
+        }
+        catch (Exception ex)
+        {
+            tcs.SetException(ex);
+        }
     }
 
     /// <summary>
