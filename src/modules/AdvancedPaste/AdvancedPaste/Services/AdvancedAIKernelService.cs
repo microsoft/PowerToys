@@ -12,6 +12,7 @@ using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
+using Microsoft.SemanticKernel.TextToImage;
 
 namespace AdvancedPaste.Services;
 
@@ -71,9 +72,15 @@ public sealed class AdvancedAIKernelService : KernelServiceBase
         {
             case AIServiceType.OpenAI:
                 kernelBuilder.AddOpenAIChatCompletion(modelName, apiKey, serviceId: modelName);
+#pragma warning disable SKEXP0010
+                kernelBuilder.AddOpenAITextToImage(apiKey, modelId: "dall-e-3");
+#pragma warning restore SKEXP0010
                 break;
             case AIServiceType.AzureOpenAI:
                 kernelBuilder.AddAzureOpenAIChatCompletion(deployment, RequireEndpoint(endpoint, serviceType), apiKey, serviceId: modelName);
+#pragma warning disable SKEXP0010
+                kernelBuilder.AddAzureOpenAITextToImage("dall-e-3", "xxxx", "xxxxxx", "dall-e-3");
+#pragma warning restore SKEXP0010
                 break;
             default:
                 throw new NotSupportedException($"Service type '{runtimeConfig.ServiceType}' is not supported");

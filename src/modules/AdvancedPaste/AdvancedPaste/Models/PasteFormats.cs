@@ -122,4 +122,15 @@ public enum PasteFormats
         KernelFunctionDescription = "Takes input instructions and transforms clipboard text (not TXT files) with these input instructions, putting the result back on the clipboard. This uses AI to accomplish the task.",
         RequiresPrompt = true)]
     CustomTextTransformation,
+
+    [PasteFormatMetadata(
+        IsCoreAction = false,
+        ResourceId = "TextToImage",
+        IconGlyph = "\uE91B",
+        RequiresAIService = true,
+        CanPreview = false,
+        SupportedClipboardFormats = ClipboardFormat.Text,
+        KernelFunctionDescription = "Generates an image based on the text description in the clipboard.",
+        RequiresPrompt = true)]
+    TextToImage,
 }

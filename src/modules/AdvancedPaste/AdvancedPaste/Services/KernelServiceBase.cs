@@ -5,6 +5,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
+using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading;
 using System.Threading.Tasks;
 using AdvancedPaste.Helpers;
@@ -18,7 +20,10 @@ using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
+using Microsoft.SemanticKernel.TextToImage;
 using Windows.ApplicationModel.DataTransfer;
+using Windows.Storage.Streams;
 
 namespace AdvancedPaste.Services;
 
@@ -224,15 +229,8 @@ public abstract class KernelServiceBase(
             let metadata = PasteFormat.MetadataDict[format]
             let coreDescription = metadata.KernelFunctionDescription
             where !string.IsNullOrEmpty(coreDescription)
-            let requiresPrompt = metadata.RequiresPrompt
-            orderby requiresPrompt descending
-            select KernelFunctionFactory.CreateFromMethod(
-                method: requiresPrompt ? async (Kernel kernel, string prompt) => await ExecutePromptTransformAsync(kernel, format, prompt)
-                                       : async (Kernel kernel) => await ExecuteStandardTransformAsync(kernel, format),
-                functionName: format.ToString(),
-                description: requiresPrompt ? coreDescription : $"{coreDescription} Puts the result back on the clipboard.",
-                parameters: requiresPrompt ? [new(PromptParameterName) { Description = "Input instructions to AI", ParameterType = typeof(string) }] : null,
-                returnParameter: new() { Description = "Array of available clipboard formats after operation" });
+            orderby metadata.RequiresPrompt descending
+            select CreateKernelFunctionForFormat(format, metadata, coreDescription);
 
         HashSet<string> usedFunctionNames = new(Enum.GetNames<PasteFormats>(), StringComparer.OrdinalIgnoreCase);
 
@@ -255,6 +253,28 @@ public abstract class KernelServiceBase(
             });
 
         return standardFunctions.Concat(customActionFunctions);
+    }
+
+    private KernelFunction CreateKernelFunctionForFormat(PasteFormats format, PasteFormatMetadataAttribute metadata, string description)
+    {
+        if (format == PasteFormats.TextToImage)
+        {
+            return KernelFunctionFactory.CreateFromMethod(
+                method: async (Kernel kernel, string prompt) => await ExecuteTextToImageAsync(kernel, prompt),
+                functionName: format.ToString(),
+                description: description,
+                parameters: [new(PromptParameterName) { Description = "Input instructions to AI", ParameterType = typeof(string) }],
+                returnParameter: new() { Description = "Array of available clipboard formats after operation" });
+        }
+
+        bool requiresPrompt = metadata.RequiresPrompt;
+        return KernelFunctionFactory.CreateFromMethod(
+            method: requiresPrompt ? async (Kernel kernel, string prompt) => await ExecutePromptTransformAsync(kernel, format, prompt)
+                                   : async (Kernel kernel) => await ExecuteStandardTransformAsync(kernel, format),
+            functionName: format.ToString(),
+            description: requiresPrompt ? description : $"{description} Puts the result back on the clipboard.",
+            parameters: requiresPrompt ? [new(PromptParameterName) { Description = "Input instructions to AI", ParameterType = typeof(string) }] : null,
+            returnParameter: new() { Description = "Array of available clipboard formats after operation" });
     }
 
     private static string GetUniqueFunctionName(string baseName, HashSet<string> usedFunctionNames, int customActionId)
@@ -316,6 +336,53 @@ public abstract class KernelServiceBase(
                 var input = await dataPackageView.GetClipboardTextOrThrowAsync(kernel.GetCancellationToken());
                 string output = await GetPromptBasedOutput(format, prompt, input, kernel.GetCancellationToken(), kernel.GetProgress());
                 return DataPackageHelpers.CreateFromText(output);
+            });
+
+    private Task<string> ExecuteTextToImageAsync(Kernel kernel, string prompt) =>
+        ExecuteTransformAsync(
+            kernel,
+            new ActionChainItem(PasteFormats.TextToImage, Arguments: new() { { PromptParameterName, prompt } }),
+            async dataPackageView =>
+            {
+                var input = await dataPackageView.GetClipboardTextOrThrowAsync(kernel.GetCancellationToken());
+                var imageDescription = string.IsNullOrWhiteSpace(prompt) ? input : $"{input}. {prompt}";
+
+#pragma warning disable SKEXP0001
+                var imageService = kernel.GetRequiredService<ITextToImageService>();
+                var settings = new OpenAITextToImageExecutionSettings
+                {
+                    Size = (1024, 1024),
+                    ResponseFormat = "b64_json",
+                };
+
+                var generatedImages = await imageService.GetImageContentsAsync(new TextContent(imageDescription), settings, cancellationToken: kernel.GetCancellationToken());
+                if (generatedImages.Count == 0)
+                {
+                    throw new InvalidOperationException("No image generated.");
+                }
+
+                var imageContent = generatedImages[0];
+
+                var stream = new InMemoryRandomAccessStream();
+                if (imageContent.Data.HasValue)
+                {
+                    await stream.WriteAsync(imageContent.Data.Value.ToArray().AsBuffer());
+                }
+                else if (imageContent.Uri != null)
+                {
+                    using var client = new HttpClient();
+                    var imageBytes = await client.GetByteArrayAsync(imageContent.Uri, kernel.GetCancellationToken());
+                    await stream.WriteAsync(imageBytes.AsBuffer());
+                }
+                else
+                {
+                    throw new InvalidOperationException("Generated image contains no data.");
+                }
+#pragma warning restore SKEXP0001
+
+                stream.Seek(0);
+
+                return DataPackageHelpers.CreateFromImage(RandomAccessStreamReference.CreateFromStream(stream));
             });
 
     private async Task<string> GetPromptBasedOutput(PasteFormats format, string prompt, string input, CancellationToken cancellationToken, IProgress<double> progress) =>
