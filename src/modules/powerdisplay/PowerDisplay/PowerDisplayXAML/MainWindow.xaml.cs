@@ -8,7 +8,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
-using Microsoft.UI;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -17,7 +16,6 @@ using PowerDisplay.Configuration;
 using PowerDisplay.Helpers;
 using PowerDisplay.ViewModels;
 using Windows.Graphics;
-using WinRT.Interop;
 using WinUIEx;
 using Monitor = PowerDisplay.Common.Models.Monitor;
 
@@ -31,7 +29,6 @@ namespace PowerDisplay
     {
         private readonly ISettingsUtils _settingsUtils = SettingsUtils.Default;
         private MainViewModel? _viewModel;
-        private AppWindow? _appWindow;
         private bool _isExiting;
 
         // Expose ViewModel as property for x:Bind
@@ -193,16 +190,13 @@ namespace PowerDisplay
                     Logger.LogWarning("Window not fully initialized yet, showing anyway");
                 }
 
-                var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
-
                 // Adjust size BEFORE showing to prevent flicker
                 // This measures content and positions window at correct size
                 AdjustWindowSizeToContent();
 
-                // Now show the window - it should appear at the correct size
-                this.Activate();
-                WindowHelper.ShowWindow(hWnd, true);
-                WindowHelpers.BringToForeground(hWnd);
+                // Now show the window - it should appear at the correct size (WinUIEx simplified)
+                this.Show();
+                this.BringToFront();
 
                 // Clear focus from any interactive element (e.g., Slider) to prevent
                 // showing the value tooltip when the window opens
@@ -212,8 +206,8 @@ namespace PowerDisplay
                 if (!IsWindowVisible())
                 {
                     Logger.LogError("Window not visible after show attempt, forcing visibility");
-                    this.Activate();
-                    WindowHelpers.BringToForeground(hWnd);
+                    this.Show();
+                    this.BringToFront();
                 }
             }
             catch (Exception ex)
@@ -225,10 +219,8 @@ namespace PowerDisplay
 
         public void HideWindow()
         {
-            var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
-
-            // Fallback: hide immediately if animation not found
-            WindowHelper.ShowWindow(hWnd, false);
+            // Hide window using WinUIEx simplified API
+            this.Hide();
         }
 
         /// <summary>
@@ -237,8 +229,8 @@ namespace PowerDisplay
         /// <returns>True if window is visible, false otherwise</returns>
         public bool IsWindowVisible()
         {
-            var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
-            return WindowHelper.IsWindowVisible(hWnd);
+            // Use WinUIEx Visible property
+            return this.Visible;
         }
 
         /// <summary>
@@ -316,9 +308,8 @@ namespace PowerDisplay
                 UnsubscribeFromViewModelEvents();
                 _viewModel?.Dispose();
 
-                // Close window directly without animations
-                var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
-                WindowHelper.ShowWindow(hWnd, false);
+                // Close window directly without animations (WinUIEx simplified)
+                this.Hide();
             }
             catch (Exception ex)
             {
@@ -385,73 +376,55 @@ namespace PowerDisplay
         {
             try
             {
-                // Get window handle
-                var hWnd = WindowNative.GetWindowHandle(this);
-                var windowId = Win32Interop.GetWindowIdFromWindow(hWnd);
-                _appWindow = AppWindow.GetFromWindowId(windowId);
+                // Use WindowEx properties to configure presenter (simplified)
+                this.IsResizable = false;
+                this.IsMaximizable = false;
+                this.IsMinimizable = false;
+                this.IsTitleBarVisible = false;
 
-                if (_appWindow != null)
+                // Set minimal initial window size - will be adjusted before showing
+                // Using minimal height to prevent "large window shrinking" flicker
+                this.AppWindow.Resize(new SizeInt32 { Width = AppConstants.UI.WindowWidth, Height = 100 });
+
+                // Position window at bottom right corner
+                PositionWindowAtBottomRight();
+
+                // Set window title
+                this.AppWindow.Title = "PowerDisplay";
+
+                // Custom title bar - completely remove all buttons
+                var titleBar = this.AppWindow.TitleBar;
+                if (titleBar != null)
                 {
-                    // Set minimal initial window size - will be adjusted before showing
-                    // Using minimal height to prevent "large window shrinking" flicker
-                    _appWindow.Resize(new SizeInt32 { Width = AppConstants.UI.WindowWidth, Height = 100 });
+                    // Extend content into title bar area
+                    titleBar.ExtendsContentIntoTitleBar = true;
 
-                    // Position window at bottom right corner
-                    PositionWindowAtBottomRight(_appWindow);
+                    // Completely remove title bar height
+                    titleBar.PreferredHeightOption = TitleBarHeightOption.Collapsed;
 
-                    // Set window icon and title bar
-                    _appWindow.Title = "PowerDisplay";
+                    // Set all button colors to transparent
+                    titleBar.ButtonBackgroundColor = Windows.UI.Color.FromArgb(0, 0, 0, 0);
+                    titleBar.ButtonInactiveBackgroundColor = Windows.UI.Color.FromArgb(0, 0, 0, 0);
+                    titleBar.ButtonForegroundColor = Windows.UI.Color.FromArgb(0, 0, 0, 0);
+                    titleBar.ButtonHoverBackgroundColor = Windows.UI.Color.FromArgb(0, 0, 0, 0);
+                    titleBar.ButtonHoverForegroundColor = Windows.UI.Color.FromArgb(0, 0, 0, 0);
+                    titleBar.ButtonPressedBackgroundColor = Windows.UI.Color.FromArgb(0, 0, 0, 0);
+                    titleBar.ButtonPressedForegroundColor = Windows.UI.Color.FromArgb(0, 0, 0, 0);
+                    titleBar.ButtonInactiveForegroundColor = Windows.UI.Color.FromArgb(0, 0, 0, 0);
 
-                    // Remove title bar and system buttons
-                    var presenter = _appWindow.Presenter as OverlappedPresenter;
-                    if (presenter != null)
-                    {
-                        // Disable resizing
-                        presenter.IsResizable = false;
-
-                        // Disable maximize button
-                        presenter.IsMaximizable = false;
-
-                        // Disable minimize button
-                        presenter.IsMinimizable = false;
-
-                        // Set borderless mode
-                        presenter.SetBorderAndTitleBar(false, false);
-                    }
-
-                    // Custom title bar - completely remove all buttons
-                    var titleBar = _appWindow.TitleBar;
-                    if (titleBar != null)
-                    {
-                        // Extend content into title bar area
-                        titleBar.ExtendsContentIntoTitleBar = true;
-
-                        // Completely remove title bar height
-                        titleBar.PreferredHeightOption = Microsoft.UI.Windowing.TitleBarHeightOption.Collapsed;
-
-                        // Set all button colors to transparent
-                        titleBar.ButtonBackgroundColor = Windows.UI.Color.FromArgb(0, 0, 0, 0);
-                        titleBar.ButtonInactiveBackgroundColor = Windows.UI.Color.FromArgb(0, 0, 0, 0);
-                        titleBar.ButtonForegroundColor = Windows.UI.Color.FromArgb(0, 0, 0, 0);
-                        titleBar.ButtonHoverBackgroundColor = Windows.UI.Color.FromArgb(0, 0, 0, 0);
-                        titleBar.ButtonHoverForegroundColor = Windows.UI.Color.FromArgb(0, 0, 0, 0);
-                        titleBar.ButtonPressedBackgroundColor = Windows.UI.Color.FromArgb(0, 0, 0, 0);
-                        titleBar.ButtonPressedForegroundColor = Windows.UI.Color.FromArgb(0, 0, 0, 0);
-                        titleBar.ButtonInactiveForegroundColor = Windows.UI.Color.FromArgb(0, 0, 0, 0);
-
-                        // Disable title bar interaction area
-                        titleBar.SetDragRectangles(Array.Empty<Windows.Graphics.RectInt32>());
-                    }
-
-                    // Use Win32 API to further disable window moving
-                    WindowHelper.DisableWindowMovingAndResizing(hWnd);
-
-                    // Hide window from taskbar
-                    WindowHelper.HideFromTaskbar(hWnd);
-
-                    // Optional: set window topmost
-                    // WindowHelper.SetWindowTopmost(hWnd, true);
+                    // Disable title bar interaction area
+                    titleBar.SetDragRectangles(Array.Empty<Windows.Graphics.RectInt32>());
                 }
+
+                // Use Win32 API to further disable window moving
+                var hWnd = this.GetWindowHandle();
+                WindowHelper.DisableWindowMovingAndResizing(hWnd);
+
+                // Hide window from taskbar
+                WindowHelper.HideFromTaskbar(hWnd);
+
+                // Optional: set window topmost
+                // WindowHelper.SetWindowTopmost(hWnd, true);
             }
             catch (Exception ex)
             {
@@ -484,11 +457,11 @@ namespace PowerDisplay
             }
         }
 
-        private void PositionWindowAtBottomRight(AppWindow appWindow)
+        private void PositionWindowAtBottomRight()
         {
             try
             {
-                var windowSize = appWindow.Size;
+                var windowSize = this.AppWindow.Size;
                 WindowHelper.PositionWindowBottomRight(
                     this,  // MainWindow inherits from WindowEx
                     AppConstants.UI.WindowWidth,
