@@ -75,13 +75,6 @@ internal static class AwakeCommandsFactory
         if (Matches("Awake: Current status", statusSubtitle, searchText))
         {
             ListItem? statusItem = null;
-            var refreshCommand = new RefreshAwakeStatusCommand(subtitle =>
-            {
-                if (statusItem is not null)
-                {
-                    statusItem.Subtitle = subtitle;
-                }
-            });
 
             var statusNoOp = new NoOpCommand();
             statusNoOp.Name = "Awake status";
@@ -91,14 +84,6 @@ internal static class AwakeCommandsFactory
                 Title = "Awake: Current status",
                 Subtitle = statusSubtitle,
                 Icon = AwakeIcon,
-                MoreCommands =
-                [
-                    new CommandContextItem(refreshCommand)
-                    {
-                        Title = "Refresh status",
-                        Subtitle = "Re-read current Awake state",
-                    },
-                ],
             };
 
             results.Add(statusItem);
@@ -146,23 +131,6 @@ internal static class AwakeCommandsFactory
             results.Add(item);
         }
 
-        if (Matches("Bind Awake to another process", "Keep awake while a process is running", searchText))
-        {
-            var processPageItem = new CommandItem(new Pages.AwakeProcessListPage())
-            {
-                Title = "Bind Awake to another process",
-                Subtitle = "Stop automatically when the target process exits",
-                Icon = AwakeIcon,
-            };
-
-            results.Add(new ListItem(processPageItem)
-            {
-                Title = processPageItem.Title,
-                Subtitle = processPageItem.Subtitle,
-                Icon = processPageItem.Icon,
-            });
-        }
-
         if (Matches("Set Awake to Off", "Switch Awake to passive mode", searchText))
         {
             var stopCommand = new StopAwakeCommand();
@@ -185,62 +153,6 @@ internal static class AwakeCommandsFactory
                 Icon = AwakeIcon,
             };
             results.Add(settingsItem);
-        }
-
-        return results.ToArray();
-    }
-
-    internal static IListItem[] GetProcessItems(string searchText)
-    {
-        var results = new List<IListItem>();
-
-        Process[] processes;
-        try
-        {
-            processes = Process.GetProcesses();
-        }
-        catch
-        {
-            return Array.Empty<IListItem>();
-        }
-
-        foreach (var process in processes.OrderBy(p => p.ProcessName, StringComparer.CurrentCultureIgnoreCase).Take(200))
-        {
-            try
-            {
-                var name = process.ProcessName;
-                if (string.IsNullOrWhiteSpace(name))
-                {
-                    continue;
-                }
-
-                var title = $"{name} ({process.Id})";
-                if (!Matches(title, string.Empty, searchText))
-                {
-                    continue;
-                }
-
-                var command = new StartAwakeCommand(
-                    $"Bind Awake to {title}",
-                    () => InvokeAwakeCliAsync($"--pid {process.Id} --display-on true"),
-                    $"Awake bound to PID {process.Id}");
-
-                var item = new ListItem(new CommandItem(command))
-                {
-                    Title = title,
-                    Subtitle = "Keep the PC awake while this process is running",
-                    Icon = AwakeIcon,
-                };
-                results.Add(item);
-            }
-            catch
-            {
-                // Ignore processes that exit or cannot be inspected
-            }
-            finally
-            {
-                process.Dispose();
-            }
         }
 
         return results.ToArray();

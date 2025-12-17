@@ -32,7 +32,6 @@ public sealed class AwakeService : ModuleServiceBase, IAwakeService
             settings =>
             {
                 settings.Properties.Mode = AwakeMode.INDEFINITE;
-                settings.Properties.KeepDisplayOn = true;
             },
             cancellationToken);
     }
@@ -49,7 +48,6 @@ public sealed class AwakeService : ModuleServiceBase, IAwakeService
             {
                 var totalMinutes = Math.Min(minutes, int.MaxValue);
                 settings.Properties.Mode = AwakeMode.TIMED;
-                settings.Properties.KeepDisplayOn = true;
                 settings.Properties.IntervalHours = (uint)(totalMinutes / 60);
                 settings.Properties.IntervalMinutes = (uint)(totalMinutes % 60);
             },

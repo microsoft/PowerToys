@@ -14,14 +14,16 @@ internal sealed partial class StartAwakeCommand : InvokableCommand
 {
     private readonly Func<Task<OperationResult>> _action;
     private readonly string _successToast;
+    private readonly Action? _onSuccess;
 
-    internal StartAwakeCommand(string title, Func<Task<OperationResult>> action, string successToast = "")
+    internal StartAwakeCommand(string title, Func<Task<OperationResult>> action, string successToast = "", Action? onSuccess = null)
     {
         ArgumentNullException.ThrowIfNull(action);
         ArgumentException.ThrowIfNullOrWhiteSpace(title);
 
         _action = action;
         _successToast = successToast ?? string.Empty;
+        _onSuccess = onSuccess;
         Name = title;
     }
 
@@ -34,6 +36,8 @@ internal sealed partial class StartAwakeCommand : InvokableCommand
             {
                 return ShowToastKeepOpen(result.Error ?? "Failed to start Awake.");
             }
+
+            _onSuccess?.Invoke();
 
             return string.IsNullOrWhiteSpace(_successToast)
                 ? CommandResult.KeepOpen()

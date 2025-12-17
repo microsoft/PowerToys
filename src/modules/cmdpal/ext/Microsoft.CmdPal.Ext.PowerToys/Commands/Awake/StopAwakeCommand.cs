@@ -10,8 +10,11 @@ namespace PowerToysExtension.Commands;
 
 internal sealed partial class StopAwakeCommand : InvokableCommand
 {
-    internal StopAwakeCommand()
+    private readonly Action? _onSuccess;
+
+    internal StopAwakeCommand(Action? onSuccess = null)
     {
+        _onSuccess = onSuccess;
         Name = "Set Awake to Off";
     }
 
@@ -22,6 +25,7 @@ internal sealed partial class StopAwakeCommand : InvokableCommand
             var result = AwakeService.Instance.SetOffAsync().GetAwaiter().GetResult();
             if (result.Success)
             {
+                _onSuccess?.Invoke();
                 return ShowToastKeepOpen("Awake switched to Off.");
             }
 

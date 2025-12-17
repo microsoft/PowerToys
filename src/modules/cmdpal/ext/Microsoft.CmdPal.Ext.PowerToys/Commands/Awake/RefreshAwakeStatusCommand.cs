@@ -4,36 +4,23 @@
 
 using System;
 using Microsoft.CommandPalette.Extensions.Toolkit;
-using PowerToysExtension.Helpers;
 
 namespace PowerToysExtension.Commands;
 
 internal sealed partial class RefreshAwakeStatusCommand : InvokableCommand
 {
-    private readonly Action<string> _applySubtitle;
+    private readonly Action _refreshAction;
 
-    internal RefreshAwakeStatusCommand(Action<string> applySubtitle)
+    internal RefreshAwakeStatusCommand(Action refreshAction)
     {
-        ArgumentNullException.ThrowIfNull(applySubtitle);
-        _applySubtitle = applySubtitle;
+        ArgumentNullException.ThrowIfNull(refreshAction);
+        _refreshAction = refreshAction;
         Name = "Refresh Awake status";
     }
 
     public override CommandResult Invoke()
     {
-        try
-        {
-            var subtitle = AwakeStatusService.GetStatusSubtitle();
-            _applySubtitle(subtitle);
-            return CommandResult.KeepOpen();
-        }
-        catch (Exception ex)
-        {
-            return CommandResult.ShowToast(new ToastArgs()
-            {
-                Message = $"Failed to refresh Awake status: {ex.Message}",
-                Result = CommandResult.KeepOpen(),
-            });
-        }
+        _refreshAction();
+        return CommandResult.KeepOpen();
     }
 }

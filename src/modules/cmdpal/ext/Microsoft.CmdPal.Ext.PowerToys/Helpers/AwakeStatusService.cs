@@ -68,7 +68,7 @@ internal static class AwakeStatusService
 
         return snapshot.Mode switch
         {
-            AwakeMode.Indefinite => snapshot.KeepDisplayOn ? "Active - indefinite (display on)" : "Active - indefinite",
+            AwakeMode.Indefinite => "Active - indefinite",
             AwakeMode.Timed => snapshot.Duration is { } span
                 ? $"Active - timer {FormatDuration(span)}"
                 : "Active - timer",
