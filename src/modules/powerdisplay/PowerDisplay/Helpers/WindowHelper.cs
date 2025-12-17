@@ -179,7 +179,11 @@ namespace PowerDisplay.Helpers
         }
 
         /// <summary>
-        /// Position a window at the bottom-right corner of its display area
+        /// Position a window at the bottom-right corner of the primary monitor's work area.
+        /// Uses WinUIEx MonitorInfo API which correctly handles all edge cases:
+        /// - Multi-monitor setups
+        /// - Taskbar at any position (top/bottom/left/right)
+        /// - Different DPI settings
         /// </summary>
         /// <param name="window">WinUIEx window to position</param>
         /// <param name="width">Window width in device-independent units (DIU)</param>
@@ -191,27 +195,22 @@ namespace PowerDisplay.Helpers
             int height,
             int rightMargin = 0)
         {
-            var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(window);
-            var windowId = Win32Interop.GetWindowIdFromWindow(hwnd);
-            var displayArea = DisplayArea.GetFromWindowId(windowId, DisplayAreaFallback.Nearest);
-
-            if (displayArea == null)
+            // Use WinUIEx MonitorInfo - RectWork already includes correct offsets for taskbar position
+            var monitors = MonitorInfo.GetDisplayMonitors();
+            if (monitors == null || monitors.Count == 0)
             {
                 return;
             }
 
-            // Get DPI scale for this display
+            // First monitor is typically the primary one
+            var workArea = monitors[0].RectWork;
             double dpiScale = GetDpiScale(window);
 
-            // Calculate position in physical pixels
-            // WorkArea dimensions are in physical pixels, so we need to scale our DIU values
-            // IMPORTANT: Must include WorkArea.X and WorkArea.Y offsets to handle:
-            // - Multi-monitor setups where the display may not start at (0,0)
-            // - Taskbar positioned at top/left which shifts the WorkArea origin
-            double x = displayArea.WorkArea.X + displayArea.WorkArea.Width - (dpiScale * (width + rightMargin));
-            double y = displayArea.WorkArea.Y + displayArea.WorkArea.Height - (dpiScale * height);
+            // Calculate bottom-right position
+            // RectWork.Right/Bottom already account for taskbar position
+            double x = workArea.Right - (dpiScale * (width + rightMargin));
+            double y = workArea.Bottom - (dpiScale * height);
 
-            // MoveAndResize expects x,y in physical pixels and width,height in DIU
             window.MoveAndResize(x, y, width, height);
         }
     }

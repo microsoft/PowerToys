@@ -477,59 +477,24 @@ namespace PowerDisplay
         {
             try
             {
-                if (_appWindow == null || RootGrid == null)
+                if (RootGrid == null)
                 {
-                    Logger.LogWarning("[AdjustSize] _appWindow or RootGrid is null, aborting");
                     return;
                 }
 
-                // Force layout update to ensure proper measurement
+                // Force layout update and measure content height
                 RootGrid.UpdateLayout();
+                MainContainer?.Measure(new Windows.Foundation.Size(AppConstants.UI.WindowWidth, double.PositiveInfinity));
+                var contentHeight = (int)Math.Ceiling(MainContainer?.DesiredSize.Height ?? 0);
 
-                // Get precise content height
-                var availableWidth = (double)AppConstants.UI.WindowWidth;
-                var contentHeight = GetContentHeight(availableWidth);
-
-                // Use unified DPI scaling method (consistent with FlyoutWindow pattern)
-                double dpiScale = WindowHelper.GetDpiScale(this);
-                int scaledHeight = WindowHelper.ScaleToPhysicalPixels((int)Math.Ceiling(contentHeight), dpiScale);
-
-                // Apply maximum height limit (also needs DPI scaling)
-                int maxHeight = WindowHelper.ScaleToPhysicalPixels(AppConstants.UI.MaxWindowHeight, dpiScale);
-                scaledHeight = Math.Min(scaledHeight, maxHeight);
-
-                // Check if resize is needed
-                // Check if resize is needed
-                var currentSize = _appWindow.Size;
-                if (Math.Abs(currentSize.Height - scaledHeight) > 1)
-                {
-                    // Convert scaled height back to DIU and reposition using DPI-aware method
-                    int heightInDiu = (int)Math.Ceiling(scaledHeight / dpiScale);
-
-                    WindowHelper.PositionWindowBottomRight(
-                        this,
-                        AppConstants.UI.WindowWidth,
-                        heightInDiu,
-                        AppConstants.UI.WindowRightMargin);
-                }
+                // Apply max height limit and reposition (WindowEx handles DPI automatically)
+                var finalHeight = Math.Min(contentHeight, AppConstants.UI.MaxWindowHeight);
+                WindowHelper.PositionWindowBottomRight(this, AppConstants.UI.WindowWidth, finalHeight, AppConstants.UI.WindowRightMargin);
             }
             catch (Exception ex)
             {
                 Logger.LogError($"Error adjusting window size: {ex.Message}");
             }
-        }
-
-        private double GetContentHeight(double availableWidth)
-        {
-            // Elegant solution: Measure the MainContainer directly.
-            // This lets the XAML layout engine calculate the exact height required by all visible content.
-            if (MainContainer != null)
-            {
-                MainContainer.Measure(new Windows.Foundation.Size(availableWidth, double.PositiveInfinity));
-                return MainContainer.DesiredSize.Height;
-            }
-
-            return 0;
         }
 
         private void PositionWindowAtBottomRight(AppWindow appWindow)
