@@ -3,10 +3,10 @@
   <Import Project="..\..\..\..\Common.Dotnet.AotCompatibility.props" />
 
   <PropertyGroup>
-
+    <RepoRoot>$(MSBuildThisFileDirectory)..\..\..\..\..\</RepoRoot>
     <WindowsSdkPackageVersion>10.0.26100.57</WindowsSdkPackageVersion>
 
-    <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\Microsoft.CommandPalette.Extensions.Toolkit</OutputPath>
+    <OutputPath>$(RepoRoot)\$(Configuration)\Microsoft.CommandPalette.Extensions.Toolkit</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -21,7 +21,7 @@
   <PropertyGroup Condition="'$(CIBuild)'=='true'">
     <SignAssembly>true</SignAssembly>
     <DelaySign>true</DelaySign>
-    <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)..\..\..\..\..\.pipelines\272MSSharedLibSN2048.snk</AssemblyOriginatorKeyFile>
+    <AssemblyOriginatorKeyFile>$(RepoRoot).pipelines\272MSSharedLibSN2048.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -51,15 +51,15 @@
       <ReferenceOutputAssembly>False</ReferenceOutputAssembly>
       <BuildProject>True</BuildProject>
     </ProjectReference>
-    <CsWinRTInputs Include="..\Microsoft.CommandPalette.Extensions\$(Platform)\$(Configuration)\Microsoft.CommandPalette.Extensions\Microsoft.CommandPalette.Extensions.winmd" />
+    <CsWinRTInputs Include="$(RepoRoot)$(Platform)\$(Configuration)\Microsoft.CommandPalette.Extensions\Microsoft.CommandPalette.Extensions.winmd" />
     <!-- Native implementation DLL -->
-    <None Include="..\Microsoft.CommandPalette.Extensions\$(Platform)\$(Configuration)\Microsoft.CommandPalette.Extensions\Microsoft.CommandPalette.Extensions.dll">
+    <None Include="$(RepoRoot)$(Platform)\$(Configuration)\Microsoft.CommandPalette.Extensions\Microsoft.CommandPalette.Extensions.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
    </ItemGroup>
     
   <ItemGroup>
-    <Content Include="$(SolutionDir)$(Platform)\$(Configuration)\Microsoft.CommandPalette.Extensions\Microsoft.CommandPalette.Extensions.winmd" Link="Microsoft.CommandPalette.Extensions.winmd" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="$(RepoRoot)$(Platform)\$(Configuration)\Microsoft.CommandPalette.Extensions\Microsoft.CommandPalette.Extensions.winmd" Link="Microsoft.CommandPalette.Extensions.winmd" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>
