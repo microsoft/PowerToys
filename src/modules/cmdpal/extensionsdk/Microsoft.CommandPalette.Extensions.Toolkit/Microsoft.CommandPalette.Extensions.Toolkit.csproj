@@ -51,7 +51,7 @@
       <ReferenceOutputAssembly>False</ReferenceOutputAssembly>
       <BuildProject>True</BuildProject>
     </ProjectReference>
-    <CsWinRTInputs Include="..\Microsoft.CommandPalette.Extensions\$(Platform)\$(Configuration)\Microsoft.CommandPalette.Extensions\Microsoft.CommandPalette.Extensions\Microsoft.CommandPalette.Extensions.winmd" />
+    <CsWinRTInputs Include="..\Microsoft.CommandPalette.Extensions\$(Platform)\$(Configuration)\Microsoft.CommandPalette.Extensions\Microsoft.CommandPalette.Extensions.winmd" />
     <!-- Native implementation DLL -->
     <None Include="..\Microsoft.CommandPalette.Extensions\$(Platform)\$(Configuration)\Microsoft.CommandPalette.Extensions\Microsoft.CommandPalette.Extensions.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
