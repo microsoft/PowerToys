@@ -205,8 +205,11 @@ namespace PowerDisplay.Helpers
 
             // Calculate position in physical pixels
             // WorkArea dimensions are in physical pixels, so we need to scale our DIU values
-            double x = displayArea.WorkArea.Width - (dpiScale * (width + rightMargin));
-            double y = displayArea.WorkArea.Height - (dpiScale * height);
+            // IMPORTANT: Must include WorkArea.X and WorkArea.Y offsets to handle:
+            // - Multi-monitor setups where the display may not start at (0,0)
+            // - Taskbar positioned at top/left which shifts the WorkArea origin
+            double x = displayArea.WorkArea.X + displayArea.WorkArea.Width - (dpiScale * (width + rightMargin));
+            double y = displayArea.WorkArea.Y + displayArea.WorkArea.Height - (dpiScale * height);
 
             // MoveAndResize expects x,y in physical pixels and width,height in DIU
             window.MoveAndResize(x, y, width, height);
