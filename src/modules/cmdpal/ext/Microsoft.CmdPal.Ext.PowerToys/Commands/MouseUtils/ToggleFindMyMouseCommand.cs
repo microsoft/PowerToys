@@ -4,6 +4,7 @@
 
 using System;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using PowerToys.Interop;
 
@@ -21,15 +22,21 @@ internal sealed partial class ToggleFindMyMouseCommand : InvokableCommand
 
     public override CommandResult Invoke()
     {
-        try
+        // Delay the trigger so the Command Palette dismisses first
+        _ = Task.Run(async () =>
         {
-            using var evt = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.FindMyMouseTriggerEvent());
-            evt.Set();
-            return CommandResult.Dismiss();
-        }
-        catch (Exception ex)
-        {
-            return CommandResult.ShowToast($"Failed to trigger Find My Mouse: {ex.Message}");
-        }
+            await Task.Delay(200).ConfigureAwait(false);
+            try
+            {
+                using var evt = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.FindMyMouseTriggerEvent());
+                evt.Set();
+            }
+            catch
+            {
+                // Ignore errors in background task
+            }
+        });
+
+        return CommandResult.Dismiss();
     }
 }
