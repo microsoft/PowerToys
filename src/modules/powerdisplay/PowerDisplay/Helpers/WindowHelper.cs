@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using Microsoft.UI;
 using Microsoft.UI.Windowing;
@@ -12,6 +13,19 @@ namespace PowerDisplay.Helpers
 {
     internal static partial class WindowHelper
     {
+        // Cursor position structure for GetCursorPos
+        [StructLayout(LayoutKind.Sequential)]
+        private struct POINT
+        {
+            public int X;
+            public int Y;
+        }
+
+        // Cursor position for detecting the monitor with the mouse
+        [LibraryImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static partial bool GetCursorPos(out POINT lpPoint);
+
         // Window Styles
         private const int GwlStyle = -16;
         private const int WsCaption = 0x00C00000;
@@ -179,7 +193,7 @@ namespace PowerDisplay.Helpers
         }
 
         /// <summary>
-        /// Position a window at the bottom-right corner of the primary monitor's work area.
+        /// Position a window at the bottom-right corner of the monitor where the mouse cursor is located.
         /// Uses WinUIEx MonitorInfo API which correctly handles all edge cases:
         /// - Multi-monitor setups
         /// - Taskbar at any position (top/bottom/left/right)
@@ -202,8 +216,9 @@ namespace PowerDisplay.Helpers
                 return;
             }
 
-            // First monitor is typically the primary one
-            var workArea = monitors[0].RectWork;
+            // Find the monitor where the mouse cursor is located
+            var targetMonitor = GetMonitorAtCursor(monitors);
+            var workArea = targetMonitor.RectWork;
             double dpiScale = GetDpiScale(window);
 
             // Calculate bottom-right position
@@ -212,6 +227,34 @@ namespace PowerDisplay.Helpers
             double y = workArea.Bottom - (dpiScale * height);
 
             window.MoveAndResize(x, y, width, height);
+        }
+
+        /// <summary>
+        /// Get the monitor where the mouse cursor is currently located.
+        /// Falls back to primary monitor if cursor position cannot be determined.
+        /// </summary>
+        /// <param name="monitors">List of available monitors</param>
+        /// <returns>MonitorInfo of the monitor containing the cursor</returns>
+        private static MonitorInfo GetMonitorAtCursor(IList<MonitorInfo> monitors)
+        {
+            // Try to get cursor position using Win32 API
+            if (GetCursorPos(out var cursorPos))
+            {
+                // Find the monitor that contains the cursor point
+                foreach (var monitor in monitors)
+                {
+                    if (cursorPos.X >= monitor.RectMonitor.Left &&
+                        cursorPos.X < monitor.RectMonitor.Right &&
+                        cursorPos.Y >= monitor.RectMonitor.Top &&
+                        cursorPos.Y < monitor.RectMonitor.Bottom)
+                    {
+                        return monitor;
+                    }
+                }
+            }
+
+            // Fallback to first monitor (typically primary)
+            return monitors[0];
         }
     }
 }
