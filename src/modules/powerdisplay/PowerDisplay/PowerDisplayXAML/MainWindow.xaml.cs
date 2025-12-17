@@ -29,7 +29,6 @@ namespace PowerDisplay
     {
         private readonly ISettingsUtils _settingsUtils = SettingsUtils.Default;
         private MainViewModel? _viewModel;
-        private bool _isExiting;
 
         // Expose ViewModel as property for x:Bind
         public MainViewModel ViewModel => _viewModel ?? throw new InvalidOperationException("ViewModel not initialized");
@@ -154,30 +153,9 @@ namespace PowerDisplay
 
         private void OnWindowClosed(object sender, WindowEventArgs args)
         {
-            // Allow window to close if program is exiting
-            if (_isExiting)
-            {
-                UnsubscribeFromViewModelEvents();
-                args.Handled = false;
-                return;
-            }
-
             // If only user operation (although we hide close button), just hide window
             args.Handled = true; // Prevent window closing
             HideWindow();
-        }
-
-        /// <summary>
-        /// Unsubscribe from all ViewModel events to prevent memory leaks.
-        /// </summary>
-        private void UnsubscribeFromViewModelEvents()
-        {
-            if (_viewModel != null)
-            {
-                _viewModel.UIRefreshRequested -= OnUIRefreshRequested;
-                _viewModel.Monitors.CollectionChanged -= OnMonitorsCollectionChanged;
-                _viewModel.PropertyChanged -= OnViewModelPropertyChanged;
-            }
         }
 
         public void ShowWindow()
@@ -284,61 +262,6 @@ namespace PowerDisplay
                 {
                     AdjustWindowSizeToContent();
                 });
-            }
-        }
-
-        /// <summary>
-        /// Set exit flag to allow window to close normally
-        /// </summary>
-        public void SetExiting()
-        {
-            _isExiting = true;
-        }
-
-        /// <summary>
-        /// Fast shutdown: skip animations and complex cleanup
-        /// </summary>
-        public void FastShutdown()
-        {
-            try
-            {
-                _isExiting = true;
-
-                // Quick cleanup of ViewModel
-                UnsubscribeFromViewModelEvents();
-                _viewModel?.Dispose();
-
-                // Close window directly without animations (WinUIEx simplified)
-                this.Hide();
-            }
-            catch (Exception ex)
-            {
-                // Ignore cleanup errors to ensure shutdown
-                Logger.LogWarning($"FastShutdown error: {ex.Message}");
-            }
-        }
-
-        private void ExitApplication()
-        {
-            try
-            {
-                // Use fast shutdown
-                FastShutdown();
-
-                // Call application shutdown directly
-                if (Application.Current is App app)
-                {
-                    app.Shutdown();
-                }
-
-                // Ensure immediate exit
-                Environment.Exit(0);
-            }
-            catch (Exception ex)
-            {
-                // Ensure exit even on error
-                Logger.LogError($"ExitApplication error: {ex.Message}");
-                Environment.Exit(0);
             }
         }
 
