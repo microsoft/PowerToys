@@ -296,6 +296,7 @@ Corpor
 cotaskmem
 COULDNOT
 countof
+Cowait
 covrun
 cpcontrols
 cph
@@ -1331,6 +1332,7 @@ pdisp
 PDLL
 pdmodels
 pdo
+pdto
 pdtobj
 pdw
 Peb

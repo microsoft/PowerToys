@@ -38,7 +38,7 @@ void LightSwitchStateManager::OnTick(int currentMinutes)
     }
 }
 
-// Called when manual override is triggered
+// Called when manual override is triggered (via hotkey)
 void LightSwitchStateManager::OnManualOverride()
 {
     std::lock_guard<std::mutex> lock(_stateMutex);
@@ -46,15 +46,19 @@ void LightSwitchStateManager::OnManualOverride()
     _state.isManualOverride = !_state.isManualOverride;
 
     // When entering manual override, sync internal theme state to match the current system
+    // The hotkey handler in ModuleInterface has already toggled the theme, so we read the new state
     if (_state.isManualOverride)
     {
         _state.isSystemLightActive = GetCurrentSystemTheme();
-
         _state.isAppsLightActive = GetCurrentAppsTheme();
 
         Logger::debug(L"[LightSwitchStateManager] Synced internal theme state to current system theme ({}) and apps theme ({}).",
                       (_state.isSystemLightActive ? L"light" : L"dark"),
                       (_state.isAppsLightActive ? L"light" : L"dark"));
+
+        // Notify PowerDisplay about the theme change triggered by hotkey
+        // The theme has already been applied by ModuleInterface, we just need to notify PowerDisplay
+        NotifyPowerDisplay(_state.isSystemLightActive);
     }
 
     EvaluateAndApplyIfNeeded();

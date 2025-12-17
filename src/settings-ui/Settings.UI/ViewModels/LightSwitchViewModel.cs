@@ -86,6 +86,16 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             SendConfigMSG("{\"action\":{\"LightSwitch\":{\"action_name\":\"" + actionName + "\", \"value\":\"\"}}}");
         }
 
+        private void SaveSettings()
+        {
+            SendConfigMSG(
+                string.Format(
+                    CultureInfo.InvariantCulture,
+                    "{{ \"powertoys\": {{ \"{0}\": {1} }} }}",
+                    LightSwitchSettings.ModuleName,
+                    JsonSerializer.Serialize(_moduleSettings, SourceGenerationContextContext.Default.LightSwitchSettings)));
+        }
+
         public LightSwitchSettings ModuleSettings
         {
             get => _moduleSettings;
@@ -562,6 +572,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     ModuleSettings.Properties.EnableDarkModeProfile.Value = value;
                     NotifyPropertyChanged();
                     NotifyPropertyChanged(nameof(ShowPowerDisplayDisabledWarning));
+                    SaveSettings();
                 }
             }
         }
@@ -576,6 +587,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     ModuleSettings.Properties.EnableLightModeProfile.Value = value;
                     NotifyPropertyChanged();
                     NotifyPropertyChanged(nameof(ShowPowerDisplayDisabledWarning));
+                    SaveSettings();
                 }
             }
         }
@@ -594,6 +606,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     if (ModuleSettings.Properties.DarkModeProfile.Value != newProfileName)
                     {
                         ModuleSettings.Properties.DarkModeProfile.Value = newProfileName;
+                        SaveSettings();
                     }
 
                     NotifyPropertyChanged();
@@ -615,6 +628,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     if (ModuleSettings.Properties.LightModeProfile.Value != newProfileName)
                     {
                         ModuleSettings.Properties.LightModeProfile.Value = newProfileName;
+                        SaveSettings();
                     }
 
                     NotifyPropertyChanged();
@@ -684,7 +698,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         }
 
         /// <summary>
-        /// Helper method to sync the selected profile object from the profile name stored in settings
+        /// Helper method to sync the selected profile object from the profile name stored in settings.
+        /// If the configured profile no longer exists, clears the selection and updates settings.
         /// </summary>
         private void UpdateSelectedProfileFromName(string profileName, bool isDarkMode)
         {
@@ -694,12 +709,23 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 matchingProfile = AvailableProfiles.FirstOrDefault(p =>
                     p.Name.Equals(profileName, StringComparison.OrdinalIgnoreCase));
-            }
 
-            // If not found or empty, default to first available profile
-            if (matchingProfile == null && AvailableProfiles.Count > 0)
-            {
-                matchingProfile = AvailableProfiles[0];
+                // If the configured profile no longer exists, clear it from settings
+                if (matchingProfile == null)
+                {
+                    Logger.LogWarning($"Configured {(isDarkMode ? "dark" : "light")} mode profile '{profileName}' no longer exists, clearing selection");
+
+                    if (isDarkMode)
+                    {
+                        ModuleSettings.Properties.DarkModeProfile.Value = string.Empty;
+                    }
+                    else
+                    {
+                        ModuleSettings.Properties.LightModeProfile.Value = string.Empty;
+                    }
+
+                    SaveSettings();
+                }
             }
 
             if (isDarkMode)
