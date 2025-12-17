@@ -61,23 +61,9 @@ namespace PowerDisplay
                 RegisterEventHandlers();
                 Logger.LogTrace("MainWindow constructor: Event handlers registered");
 
-                // 5. Start background initialization (don't wait)
-                Logger.LogTrace("MainWindow constructor: Starting background initialization task");
-                _ = Task.Run(async () =>
-                {
-                    try
-                    {
-                        Logger.LogTrace("MainWindow: Background initialization starting");
-                        await InitializeAsync();
-                        _hasInitialized = true;
-                        Logger.LogInfo("MainWindow: Background initialization completed, _hasInitialized=true");
-                    }
-                    catch (Exception ex)
-                    {
-                        Logger.LogError($"MainWindow: Background initialization failed: {ex.Message}\n{ex.StackTrace}");
-                        DispatcherQueue.TryEnqueue(() => ShowError($"Initialization failed: {ex.Message}"));
-                    }
-                });
+                // Note: ViewModel handles all async initialization internally.
+                // We listen to InitializationCompleted event to know when data is ready.
+                // No duplicate initialization here - single responsibility in ViewModel.
                 Logger.LogInfo("MainWindow constructor: Completed");
             }
             catch (Exception ex)
@@ -99,59 +85,25 @@ namespace PowerDisplay
             // ViewModel events - _viewModel is guaranteed non-null here as this is called after initialization
             if (_viewModel != null)
             {
+                _viewModel.InitializationCompleted += OnViewModelInitializationCompleted;
                 _viewModel.UIRefreshRequested += OnUIRefreshRequested;
                 _viewModel.Monitors.CollectionChanged += OnMonitorsCollectionChanged;
                 _viewModel.PropertyChanged += OnViewModelPropertyChanged;
             }
         }
 
-        private bool _hasInitialized;
-
         /// <summary>
-        /// Ensures the window is properly initialized with ViewModel and data
-        /// Can be called from external code (e.g., App startup) to pre-initialize in background
+        /// Called when ViewModel completes initial monitor discovery.
+        /// This is the single source of truth for initialization state.
         /// </summary>
-        public async Task EnsureInitializedAsync()
+        private void OnViewModelInitializationCompleted(object? sender, EventArgs e)
         {
-            Logger.LogInfo($"EnsureInitializedAsync: Called, _hasInitialized={_hasInitialized}");
-            if (_hasInitialized)
-            {
-                Logger.LogTrace("EnsureInitializedAsync: Already initialized, returning");
-                return;
-            }
-
-            // Wait for background initialization to complete
-            // This is a no-op if initialization already completed
-            Logger.LogTrace("EnsureInitializedAsync: Calling InitializeAsync");
-            await InitializeAsync();
             _hasInitialized = true;
-            Logger.LogInfo("EnsureInitializedAsync: Initialization completed, _hasInitialized=true");
+            Logger.LogInfo("MainWindow: Initialization completed via ViewModel event, _hasInitialized=true");
+            AdjustWindowSizeToContent();
         }
 
-        private async Task InitializeAsync()
-        {
-            try
-            {
-                // Perform monitor scanning (which internally calls ReloadMonitorSettingsAsync)
-                if (_viewModel != null)
-                {
-                    await _viewModel.RefreshMonitorsAsync();
-                }
-
-                // Adjust window size after data is loaded (must run on UI thread)
-                DispatcherQueue.TryEnqueue(() => AdjustWindowSizeToContent());
-            }
-            catch (WmiLight.WmiException ex)
-            {
-                Logger.LogError($"WMI access failed: {ex.Message}");
-                DispatcherQueue.TryEnqueue(() => ShowError("Unable to access internal display control, administrator privileges may be required."));
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError($"Initialization failed: {ex.Message}");
-                DispatcherQueue.TryEnqueue(() => ShowError($"Initialization failed: {ex.Message}"));
-            }
-        }
+        private bool _hasInitialized;
 
         private void ShowError(string message)
         {
@@ -196,6 +148,7 @@ namespace PowerDisplay
                 // CRITICAL: WinUI3 windows must be Activated at least once to display properly.
                 // In PowerToys mode, window is created but never activated until first show.
                 // Without Activate(), Show() may not actually render the window on screen.
+                // Note: IsAlwaysOnTop="True" in XAML ensures window appears above others.
                 Logger.LogTrace("ShowWindow: Calling this.Activate()");
                 this.Activate();
 
@@ -395,8 +348,8 @@ namespace PowerDisplay
                 // Hide window from taskbar
                 WindowHelper.HideFromTaskbar(hWnd);
 
-                // Optional: set window topmost
-                // WindowHelper.SetWindowTopmost(hWnd, true);
+                // Note: IsAlwaysOnTop="True" is set in XAML via WinUIEx,
+                // ensuring the window always appears above other windows.
             }
             catch (Exception ex)
             {

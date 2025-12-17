@@ -40,6 +40,10 @@ public partial class MainViewModel
 
                     // Start watching for display changes after initialization
                     StartDisplayWatching();
+
+                    // Notify listeners that initialization is complete
+                    InitializationCompleted?.Invoke(this, EventArgs.Empty);
+                    Logger.LogInfo("[InitializeAsync] InitializationCompleted event fired");
                 }
                 catch (Exception lambdaEx)
                 {

@@ -59,6 +59,12 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
     /// </summary>
     public event EventHandler? UIRefreshRequested;
 
+    /// <summary>
+    /// Event triggered when initial monitor discovery is completed.
+    /// Used by MainWindow to know when data is ready for display.
+    /// </summary>
+    public event EventHandler? InitializationCompleted;
+
     public MainViewModel()
     {
         _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
