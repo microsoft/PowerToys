@@ -357,7 +357,7 @@ namespace Microsoft.PowerToys.Settings.UI
             return 0;
         }
 
-        private static ISettingsUtils settingsUtils = SettingsUtils.Default;
+        private static SettingsUtils settingsUtils = SettingsUtils.Default;
         private static ThemeService themeService = new ThemeService(SettingsRepository<GeneralSettings>.GetInstance(settingsUtils));
 
         public static ThemeService ThemeService => themeService;

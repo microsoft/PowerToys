@@ -27,7 +27,7 @@ namespace ViewModelTests
         {
             // Arrange
             var mockIOProvider = BackCompatTestProperties.GetModuleIOProvider(version, ColorPickerSettings.ModuleName, fileName);
-            var settingPathMock = new Mock<ISettingsPath>();
+            var settingPathMock = new Mock<SettingPath>();
 
             var mockSettingsUtils = new SettingsUtils(mockIOProvider.Object, settingPathMock.Object);
             ColorPickerSettings originalSettings = mockSettingsUtils.GetSettingsOrDefault<ColorPickerSettings>(ColorPickerSettings.ModuleName);
