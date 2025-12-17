@@ -268,11 +268,15 @@ public abstract class KernelServiceBase(
         if (format == PasteFormats.TextToImage)
         {
             return KernelFunctionFactory.CreateFromMethod(
-                method: async (Kernel kernel, string prompt) => await ExecuteTextToImageAsync(kernel, prompt),
+                method: async (Kernel kernel, string prompt) =>
+                {
+                    await ExecuteTextToImageAsync(kernel, prompt);
+                    return "Image generated successfully using the clipboard text as the description.";
+                },
                 functionName: format.ToString(),
-                description: description,
-                parameters: [new(PromptParameterName) { Description = "Input instructions to AI", ParameterType = typeof(string) }],
-                returnParameter: new() { Description = "Array of available clipboard formats after operation" });
+                description: "Generates an image based on text. If the 'prompt' parameter is not provided, the text currently in the clipboard is used as the image description.",
+                parameters: [new(PromptParameterName) { Description = "Optional. Additional instructions for the image. If left empty, the clipboard text is used.", ParameterType = typeof(string), IsRequired = false }],
+                returnParameter: new() { Description = "Status message indicating success." });
         }
 
         bool requiresPrompt = metadata.RequiresPrompt;
@@ -352,8 +356,10 @@ public abstract class KernelServiceBase(
             new ActionChainItem(PasteFormats.TextToImage, Arguments: new() { { PromptParameterName, prompt } }),
             async dataPackageView =>
             {
+                Logger.LogDebug($"ExecuteTextToImageAsync started. Prompt: '{prompt}'");
                 var input = await dataPackageView.GetClipboardTextOrThrowAsync(kernel.GetCancellationToken());
                 var imageDescription = string.IsNullOrWhiteSpace(prompt) ? input : $"{input}. {prompt}";
+                Logger.LogDebug($"Image description: '{imageDescription}'");
 
 #pragma warning disable SKEXP0001
                 var imageService = kernel.GetRequiredService<ITextToImageService>();
@@ -364,6 +370,8 @@ public abstract class KernelServiceBase(
                 };
 
                 var generatedImages = await imageService.GetImageContentsAsync(new TextContent(imageDescription), settings, cancellationToken: kernel.GetCancellationToken());
+                Logger.LogDebug($"Image generation completed. Count: {generatedImages.Count}");
+
                 if (generatedImages.Count == 0)
                 {
                     throw new InvalidOperationException("No image generated.");
@@ -408,6 +416,7 @@ public abstract class KernelServiceBase(
 
     private static async Task<string> ExecuteTransformAsync(Kernel kernel, ActionChainItem actionChainItem, Func<DataPackageView, Task<DataPackage>> transformFunc)
     {
+        Logger.LogDebug($"ExecuteTransformAsync started for {actionChainItem.Format}");
         kernel.GetOrAddActionChain().Add(actionChainItem);
         kernel.SetLastError(null);
 
@@ -416,10 +425,13 @@ public abstract class KernelServiceBase(
             var input = kernel.GetDataPackageView();
             var output = await transformFunc(input);
             kernel.SetDataPackage(output);
-            return await kernel.GetDataFormatsAsync();
+            var formats = await kernel.GetDataFormatsAsync();
+            Logger.LogDebug($"ExecuteTransformAsync finished. New formats: {formats}");
+            return formats;
         }
         catch (Exception ex)
         {
+            Logger.LogError($"ExecuteTransformAsync failed for {actionChainItem.Format}", ex);
             kernel.SetLastError(ex);
             throw;
         }
@@ -445,7 +457,7 @@ public abstract class KernelServiceBase(
             kernelContent switch
             {
                 FunctionCallContent functionCallContent => $"{functionCallContent.FunctionName}({FormatKernelArguments(functionCallContent.Arguments)})",
-                FunctionResultContent functionResultContent => functionResultContent.FunctionName,
+                FunctionResultContent functionResultContent => $"{functionResultContent.Result} / {functionResultContent.FunctionName}",
                 _ => kernelContent.ToString(),
             };
 #pragma warning restore SKEXP0001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
