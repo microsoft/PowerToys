@@ -114,7 +114,17 @@ namespace PowerDisplay.Helpers
                 // Add the notification icon
                 unsafe
                 {
-                    Shell_NotifyIconNative((uint)NOTIFY_ICON_MESSAGE.NIM_ADD, &d);
+                    bool success = Shell_NotifyIconNative((uint)NOTIFY_ICON_MESSAGE.NIM_ADD, &d);
+                    if (!success)
+                    {
+                        // Shell_NotifyIcon can fail if explorer.exe isn't ready yet (e.g., during system startup)
+                        // Reset _trayIconData to allow retry via WM_WINDOWPOSCHANGING or WM_TASKBAR_RESTART
+                        Logger.LogWarning("[TrayIcon] Shell_NotifyIcon(NIM_ADD) failed, will retry later");
+                        _trayIconData = null;
+                        return;
+                    }
+
+                    Logger.LogInfo("[TrayIcon] Tray icon created successfully");
                 }
 
                 if (_popupMenu == 0)

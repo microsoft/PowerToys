@@ -16,6 +16,7 @@ namespace PowerDisplay.Configuration
         {
             // Window dimensions
             public const int WindowWidth = 362;
+            public const int MinWindowHeight = 100;
             public const int MaxWindowHeight = 650;
             public const int WindowRightMargin = 12;
 

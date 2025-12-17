@@ -213,6 +213,7 @@ namespace PowerDisplay.Helpers
             var monitors = MonitorInfo.GetDisplayMonitors();
             if (monitors == null || monitors.Count == 0)
             {
+                ManagedCommon.Logger.LogWarning("PositionWindowBottomRight: No monitors found, skipping positioning");
                 return;
             }
 

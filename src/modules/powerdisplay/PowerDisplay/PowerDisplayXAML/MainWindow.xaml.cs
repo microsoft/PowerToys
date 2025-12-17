@@ -193,6 +193,12 @@ namespace PowerDisplay
                 Logger.LogTrace("ShowWindow: Adjusting window size to content");
                 AdjustWindowSizeToContent();
 
+                // CRITICAL: WinUI3 windows must be Activated at least once to display properly.
+                // In PowerToys mode, window is created but never activated until first show.
+                // Without Activate(), Show() may not actually render the window on screen.
+                Logger.LogTrace("ShowWindow: Calling this.Activate()");
+                this.Activate();
+
                 // Now show the window - it should appear at the correct size (WinUIEx simplified)
                 Logger.LogTrace("ShowWindow: Calling this.Show()");
                 this.Show();
@@ -209,6 +215,7 @@ namespace PowerDisplay
                 if (!isVisible)
                 {
                     Logger.LogError("ShowWindow: Window not visible after show attempt, forcing visibility");
+                    this.Activate();
                     this.Show();
                     this.BringToFront();
                     Logger.LogInfo($"ShowWindow: After forced show, visibility: {IsWindowVisible()}");
@@ -412,8 +419,10 @@ namespace PowerDisplay
                 MainContainer?.Measure(new Windows.Foundation.Size(AppConstants.UI.WindowWidth, double.PositiveInfinity));
                 var contentHeight = (int)Math.Ceiling(MainContainer?.DesiredSize.Height ?? 0);
 
-                // Apply max height limit and reposition (WindowEx handles DPI automatically)
-                var finalHeight = Math.Min(contentHeight, AppConstants.UI.MaxWindowHeight);
+                // Apply min/max height limits and reposition (WindowEx handles DPI automatically)
+                // Min height ensures window is visible even if content hasn't loaded yet
+                var finalHeight = Math.Max(AppConstants.UI.MinWindowHeight, Math.Min(contentHeight, AppConstants.UI.MaxWindowHeight));
+                Logger.LogTrace($"AdjustWindowSizeToContent: contentHeight={contentHeight}, finalHeight={finalHeight}");
                 WindowHelper.PositionWindowBottomRight(this, AppConstants.UI.WindowWidth, finalHeight, AppConstants.UI.WindowRightMargin);
             }
             catch (Exception ex)
