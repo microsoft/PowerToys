@@ -1138,7 +1138,31 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             await UpdateFoundryLocalUIAsync();
             RefreshDialogBindings();
             PasteAIApiKeyPasswordBox.Password = ViewModel.GetPasteAIApiKey(provider.Id, provider.ServiceType);
+
+            // Set Capability ComboBox
+            PasteAICapabilityComboBox.SelectedItem = PasteAICapabilityComboBox.Items
+                .OfType<ComboBoxItem>()
+                .FirstOrDefault(item => item.Tag is string tag &&
+                                      Enum.TryParse<AIServiceCapability>(tag, out var capability) &&
+                                      capability == provider.Capabilities);
+
             await PasteAIProviderConfigurationDialog.ShowAsync();
+        }
+
+        private void PasteAICapabilityComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (ViewModel?.PasteAIProviderDraft == null)
+            {
+                return;
+            }
+
+            if (PasteAICapabilityComboBox.SelectedItem is ComboBoxItem item && item.Tag is string tag)
+            {
+                if (Enum.TryParse<AIServiceCapability>(tag, out var capability))
+                {
+                    ViewModel.PasteAIProviderDraft.Capabilities = capability;
+                }
+            }
         }
 
         private void RemovePasteAIProviderButton_Click(object sender, RoutedEventArgs e)

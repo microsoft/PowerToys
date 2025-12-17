@@ -50,6 +50,12 @@ public sealed class EnhancedVaultCredentialsProvider : IAICredentialsProvider
         }
     }
 
+    public string GetKey(string providerId, AIServiceType serviceType)
+    {
+        var entry = BuildCredentialEntry(NormalizeServiceType(serviceType), providerId);
+        return LoadKey(entry);
+    }
+
     public bool IsConfigured()
     {
         return !string.IsNullOrEmpty(GetKey());

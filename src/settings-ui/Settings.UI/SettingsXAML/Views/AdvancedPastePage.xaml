@@ -493,6 +493,16 @@
                         Margin="0,8,0,48"
                         Orientation="Vertical"
                         Spacing="16">
+                        <ComboBox
+                            x:Name="PasteAICapabilityComboBox"
+                            x:Uid="AdvancedPaste_Capability"
+                            Header="Capability"
+                            MinWidth="200"
+                            HorizontalAlignment="Stretch"
+                            SelectionChanged="PasteAICapabilityComboBox_SelectionChanged">
+                            <ComboBoxItem Content="Chat Completion" Tag="ChatCompletion" />
+                            <ComboBoxItem Content="Text to Image" Tag="TextToImage" />
+                        </ComboBox>
                         <TextBox
                             x:Name="PasteAIModelNameTextBox"
                             x:Uid="AdvancedPaste_ModelName"

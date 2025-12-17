@@ -45,7 +45,7 @@ public abstract class KernelServiceBase(
 
     protected abstract PromptExecutionSettings PromptExecutionSettings { get; }
 
-    protected abstract void AddChatCompletionService(IKernelBuilder kernelBuilder);
+    protected abstract void AddAIServices(IKernelBuilder kernelBuilder);
 
     protected abstract AIServiceUsage GetAIServiceUsage(ChatMessageContent chatMessage);
 
@@ -216,12 +216,19 @@ public abstract class KernelServiceBase(
     private Kernel CreateKernel()
     {
         var kernelBuilder = Kernel.CreateBuilder();
-        AddChatCompletionService(kernelBuilder);
-        kernelBuilder.Plugins.AddFromFunctions("Actions", GetKernelFunctions());
+        AddAIServices(kernelBuilder);
+
+        // Build a temporary kernel to check registered services
+        // Note: This is a lightweight check. In a more complex DI scenario, we might need a different approach.
+        // However, since we are building the kernel right here, we can inspect the builder's services.
+#pragma warning disable SKEXP0001
+        var hasTextToImageService = kernelBuilder.Services.Any(s => s.ServiceType == typeof(ITextToImageService));
+#pragma warning restore SKEXP0001
+        kernelBuilder.Plugins.AddFromFunctions("Actions", GetKernelFunctions(hasTextToImageService));
         return kernelBuilder.Build();
     }
 
-    private IEnumerable<KernelFunction> GetKernelFunctions()
+    private IEnumerable<KernelFunction> GetKernelFunctions(bool hasTextToImageService)
     {
         // Get standard format functions
         var standardFunctions =
@@ -229,6 +236,7 @@ public abstract class KernelServiceBase(
             let metadata = PasteFormat.MetadataDict[format]
             let coreDescription = metadata.KernelFunctionDescription
             where !string.IsNullOrEmpty(coreDescription)
+            where format != PasteFormats.TextToImage || hasTextToImageService // Filter out TextToImage if the service is not available
             orderby metadata.RequiresPrompt descending
             select CreateKernelFunctionForFormat(format, metadata, coreDescription);
 

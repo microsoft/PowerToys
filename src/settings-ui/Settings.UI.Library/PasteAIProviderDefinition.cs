@@ -10,6 +10,14 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.PowerToys.Settings.UI.Library
 {
+    [Flags]
+    public enum AIServiceCapability
+    {
+        None = 0,
+        ChatCompletion = 1,
+        TextToImage = 2,
+    }
+
     /// <summary>
     /// Represents a single Paste AI provider configuration entry.
     /// </summary>
@@ -17,6 +25,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     {
         private string _id = Guid.NewGuid().ToString("N");
         private string _serviceType = "OpenAI";
+        private AIServiceCapability _capabilities = AIServiceCapability.ChatCompletion;
         private string _modelName = string.Empty;
         private string _endpointUrl = string.Empty;
         private string _apiVersion = string.Empty;
@@ -48,6 +57,13 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                     OnPropertyChanged(nameof(DisplayName));
                 }
             }
+        }
+
+        [JsonPropertyName("capabilities")]
+        public AIServiceCapability Capabilities
+        {
+            get => _capabilities;
+            set => SetProperty(ref _capabilities, value);
         }
 
         [JsonIgnore]

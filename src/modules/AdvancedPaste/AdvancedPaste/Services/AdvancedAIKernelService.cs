@@ -46,24 +46,23 @@ public sealed class AdvancedAIKernelService : KernelServiceBase
 
     protected override PromptExecutionSettings PromptExecutionSettings => CreatePromptExecutionSettings();
 
-    protected override void AddChatCompletionService(IKernelBuilder kernelBuilder)
+    protected override void AddAIServices(IKernelBuilder kernelBuilder)
     {
         ArgumentNullException.ThrowIfNull(kernelBuilder);
 
+        // 1. Register the primary Chat Completion Service
+        RegisterChatService(kernelBuilder);
+
+        // 2. Register auxiliary services (e.g., TextToImage) by searching through all configured providers
+        RegisterAuxiliaryServices(kernelBuilder);
+    }
+
+    private void RegisterChatService(IKernelBuilder kernelBuilder)
+    {
         var runtimeConfig = GetRuntimeConfiguration();
         var serviceType = runtimeConfig.ServiceType;
         var modelName = runtimeConfig.ModelName;
-        var requiresApiKey = RequiresApiKey(serviceType);
-        var apiKey = string.Empty;
-        if (requiresApiKey)
-        {
-            this.credentialsProvider.Refresh();
-            apiKey = (this.credentialsProvider.GetKey() ?? string.Empty).Trim();
-            if (string.IsNullOrWhiteSpace(apiKey))
-            {
-                throw new InvalidOperationException($"An API key is required for {serviceType} but none was found in the credential vault.");
-            }
-        }
+        var apiKey = GetApiKey(serviceType);
 
         var endpoint = string.IsNullOrWhiteSpace(runtimeConfig.Endpoint) ? null : runtimeConfig.Endpoint.Trim();
         var deployment = string.IsNullOrWhiteSpace(runtimeConfig.DeploymentName) ? modelName : runtimeConfig.DeploymentName;
@@ -72,19 +71,83 @@ public sealed class AdvancedAIKernelService : KernelServiceBase
         {
             case AIServiceType.OpenAI:
                 kernelBuilder.AddOpenAIChatCompletion(modelName, apiKey, serviceId: modelName);
-#pragma warning disable SKEXP0010
-                kernelBuilder.AddOpenAITextToImage(apiKey, modelId: "dall-e-3");
-#pragma warning restore SKEXP0010
                 break;
             case AIServiceType.AzureOpenAI:
                 kernelBuilder.AddAzureOpenAIChatCompletion(deployment, RequireEndpoint(endpoint, serviceType), apiKey, serviceId: modelName);
-#pragma warning disable SKEXP0010
-                kernelBuilder.AddAzureOpenAITextToImage("dall-e-3", "xxxx", "xxxxxx", "dall-e-3");
-#pragma warning restore SKEXP0010
                 break;
             default:
                 throw new NotSupportedException($"Service type '{runtimeConfig.ServiceType}' is not supported");
         }
+    }
+
+    private void RegisterAuxiliaryServices(IKernelBuilder kernelBuilder)
+    {
+        // Try to find a dedicated Image Generation provider
+        if (TryRegisterImageService(kernelBuilder))
+        {
+            return;
+        }
+    }
+
+    private bool TryRegisterImageService(IKernelBuilder kernelBuilder)
+    {
+        var allProviders = this.UserSettings.PasteAIConfiguration?.Providers;
+        if (allProviders == null)
+        {
+            return false;
+        }
+
+        var imageProvider = allProviders.FirstOrDefault(p =>
+            p.Capabilities.HasFlag(AIServiceCapability.TextToImage));
+
+        if (imageProvider == null)
+        {
+            return false;
+        }
+
+        var serviceType = NormalizeServiceType(imageProvider.ServiceTypeKind);
+        var apiKey = this.credentialsProvider.GetKey(imageProvider.Id, serviceType);
+
+        if (string.IsNullOrWhiteSpace(apiKey))
+        {
+            return false;
+        }
+
+        var endpoint = string.IsNullOrWhiteSpace(imageProvider.EndpointUrl) ? null : imageProvider.EndpointUrl.Trim();
+        var deployment = string.IsNullOrWhiteSpace(imageProvider.DeploymentName) ? imageProvider.ModelName : imageProvider.DeploymentName;
+
+        switch (serviceType)
+        {
+            case AIServiceType.OpenAI:
+#pragma warning disable SKEXP0010
+                kernelBuilder.AddOpenAITextToImage(apiKey, modelId: imageProvider.ModelName);
+#pragma warning restore SKEXP0010
+                return true;
+            case AIServiceType.AzureOpenAI:
+#pragma warning disable SKEXP0010
+                kernelBuilder.AddAzureOpenAITextToImage(deployment, RequireEndpoint(endpoint, serviceType), apiKey);
+#pragma warning restore SKEXP0010
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    private string GetApiKey(AIServiceType serviceType)
+    {
+        if (!RequiresApiKey(serviceType))
+        {
+            return string.Empty;
+        }
+
+        this.credentialsProvider.Refresh();
+        var apiKey = (this.credentialsProvider.GetKey() ?? string.Empty).Trim();
+        if (string.IsNullOrWhiteSpace(apiKey))
+        {
+            throw new InvalidOperationException($"An API key is required for {serviceType} but none was found in the credential vault.");
+        }
+
+        return apiKey;
     }
 
     protected override AIServiceUsage GetAIServiceUsage(ChatMessageContent chatMessage)
