@@ -47,9 +47,17 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Microsoft.CommandPalette.Extensions\Microsoft.CommandPalette.Extensions.vcxproj" />
-  </ItemGroup>
-
+    <ProjectReference Include="..\Microsoft.CommandPalette.Extensions\Microsoft.CommandPalette.Extensions.vcxproj">
+      <ReferenceOutputAssembly>False</ReferenceOutputAssembly>
+      <BuildProject>True</BuildProject>
+    </ProjectReference>
+    <CsWinRTInputs Include="..\Microsoft.CommandPalette.Extensions\$(Platform)\$(Configuration)\Microsoft.CommandPalette.Extensions\Microsoft.CommandPalette.Extensions\Microsoft.CommandPalette.Extensions.winmd" />
+    <!-- Native implementation DLL -->
+    <None Include="..\Microsoft.CommandPalette.Extensions\$(Platform)\$(Configuration)\Microsoft.CommandPalette.Extensions\Microsoft.CommandPalette.Extensions.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+   </ItemGroup>
+    
   <ItemGroup>
     <Content Include="$(SolutionDir)$(Platform)\$(Configuration)\Microsoft.CommandPalette.Extensions\Microsoft.CommandPalette.Extensions.winmd" Link="Microsoft.CommandPalette.Extensions.winmd" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
