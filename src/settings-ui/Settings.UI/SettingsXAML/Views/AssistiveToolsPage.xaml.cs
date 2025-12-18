@@ -26,21 +26,42 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private void ControlModeSelectionBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (ControlModeSelectionBox.SelectedIndex == 1)
+            if (ControlModeSelectionBox.SelectedIndex == 0)
             {
-                ReducedLineSpeedCard.Visibility = Visibility.Visible;
-                InitialSpeedCard.Visibility = Visibility.Visible;
+                DelayCard.Visibility = Visibility.Visible;
+                ModeComboBox.IsEnabled = true;
+                ReducedLineSpeedCard.Visibility = Visibility.Collapsed;
+                InitialSpeedCard.Visibility = Visibility.Collapsed;
             }
             else
             {
-                ReducedLineSpeedCard.Visibility = Visibility.Collapsed;
-                InitialSpeedCard.Visibility = Visibility.Collapsed;
+                DelayCard.Visibility = Visibility.Collapsed;
+                ModeComboBox.IsEnabled = false;
+                ReducedLineSpeedCard.Visibility = Visibility.Visible;
+                InitialSpeedCard.Visibility = Visibility.Visible;
             }
         }
 
         private void ControlModeSelectionBox_Loaded(object sender, RoutedEventArgs e)
         {
             ControlModeSelectionBox.SelectionChanged += ControlModeSelectionBox_SelectionChanged;
+        }
+
+        private void ModeComboBox_Loaded(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        {
+            ModeComboBox.SelectionChanged += ModeComboBox_SelectionChanged;
+        }
+
+        private void ModeComboBox_SelectionChanged(object sender, RoutedEventArgs e)
+        {
+            if (ModeComboBox.SelectedIndex == 0)
+            {
+                DelayCard.IsEnabled = true;
+            }
+            else
+            {
+                DelayCard.IsEnabled = false;
+            }
         }
     }
 }
