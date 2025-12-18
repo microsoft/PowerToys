@@ -34,6 +34,7 @@ affordances
 AFX
 AGGREGATABLE
 AHK
+ahmad
 AHybrid
 AIUI
 akv
@@ -155,6 +156,7 @@ BOklab
 BOOTSTRAPPERINSTALLFOLDER
 Bootstrappers
 BOTTOMALIGN
+BOffset
 boxmodel
 BPBF
 bpmf
@@ -612,6 +614,7 @@ GHND
 gitmodules
 GMEM
 GNumber
+GOffset
 googleai
 googlegemini
 gpedit
@@ -1376,6 +1379,7 @@ projectname
 PROPERTYKEY
 Propset
 PROPVARIANT
+Prt
 PRTL
 prvpane
 psapi
@@ -1497,6 +1501,7 @@ RNumber
 rop
 ROUNDSMALL
 ROWSETEXT
+ROffset
 rpcrt
 RRF
 rsop
@@ -1526,6 +1531,10 @@ scanled
 schedtasks
 SCID
 Scode
+screencasts
+Screencast
+screencast
+SCREENCASTMODE
 SCREENFONTS
 screenruler
 screensaver
@@ -1978,6 +1987,7 @@ wekyb
 wft
 wgpocpl
 WHEREID
+WHKEYBOARDLL
 wic
 wifi
 wikimedia
