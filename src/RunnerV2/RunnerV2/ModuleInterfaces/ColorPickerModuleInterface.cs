@@ -16,7 +16,7 @@ namespace RunnerV2.ModuleInterfaces
     {
         public string Name => "ColorPicker";
 
-        public bool Enabled => new SettingsUtils().GetSettingsOrDefault<GeneralSettings>().Enabled.ColorPicker;
+        public bool Enabled => SettingsUtils.Default.GetSettingsOrDefault<GeneralSettings>().Enabled.ColorPicker;
 
         public GpoRuleConfigured GpoRuleConfigured => GPOWrapper.GetConfiguredColorPickerEnabledValue();
 
@@ -34,7 +34,7 @@ namespace RunnerV2.ModuleInterfaces
         private void InitializeShortcuts()
         {
             Shortcuts.Clear();
-            Shortcuts.Add((new SettingsUtils().GetSettings<ColorPickerSettings>(Name).Properties.ActivationShortcut, () =>
+            Shortcuts.Add((SettingsUtils.Default.GetSettings<ColorPickerSettings>(Name).Properties.ActivationShortcut, () =>
             {
                 using var showUiEventWrapper = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.ShowColorPickerSharedEvent());
                 showUiEventWrapper.Set();

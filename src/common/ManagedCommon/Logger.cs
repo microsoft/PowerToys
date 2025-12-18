@@ -34,7 +34,7 @@ namespace ManagedCommon
         /// <summary>
         /// Gets the path to the current log file.
         /// </summary>
-        public static string CurrentLogFile { get; private set; }
+        public static string? CurrentLogFile { get; private set; }
 
         /// <summary>
         /// Gets the path to the log directory for the app.

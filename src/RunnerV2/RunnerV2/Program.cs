@@ -16,7 +16,7 @@ using Settings.UI.Library;
 
 internal sealed class Program
 {
-    private static readonly SettingsUtils _settingsUtils = new();
+    private static readonly SettingsUtils _settingsUtils = SettingsUtils.Default;
 
     internal static GeneralSettings GeneralSettings => _settingsUtils.GetSettings<GeneralSettings>();
 

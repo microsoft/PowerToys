@@ -24,7 +24,7 @@ namespace RunnerV2.Helpers
     /// </summary>
     internal static class SettingsHelper
     {
-        private static readonly SettingsUtils _settingsUtils = new();
+        private static readonly SettingsUtils _settingsUtils = SettingsUtils.Default;
         private static Process? _process;
         private static TwoWayPipeMessageIPCManaged? _ipc;
 

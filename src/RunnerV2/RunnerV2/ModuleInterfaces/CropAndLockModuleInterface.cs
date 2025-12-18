@@ -17,7 +17,7 @@ namespace RunnerV2.ModuleInterfaces
     {
         public string Name => "CropAndLock";
 
-        public bool Enabled => new SettingsUtils().GetSettings<GeneralSettings>().Enabled.CropAndLock;
+        public bool Enabled => SettingsUtils.Default.GetSettings<GeneralSettings>().Enabled.CropAndLock;
 
         public GpoRuleConfigured GpoRuleConfigured => GPOWrapper.GetConfiguredCropAndLockEnabledValue();
 
@@ -38,7 +38,7 @@ namespace RunnerV2.ModuleInterfaces
         public void PopulateShortcuts()
         {
             Shortcuts.Clear();
-            var settings = new SettingsUtils().GetSettings<CropAndLockSettings>(Name);
+            var settings = SettingsUtils.Default.GetSettings<CropAndLockSettings>(Name);
             Shortcuts.Add((settings.Properties.ThumbnailHotkey.Value,  () => _thumbnailEvent.Set()));
             Shortcuts.Add((settings.Properties.ReparentHotkey.Value,  () => _reparentEvent.Set()));
         }

@@ -11,10 +11,10 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests.Mocks
     internal static class ISettingsUtilsMocks
     {
         // Stubs out empty values for imageresizersettings and general settings as needed by the imageresizer view model
-        internal static Mock<ISettingsUtils> GetStubSettingsUtils<T>()
+        internal static Mock<SettingsUtils> GetStubSettingsUtils<T>()
             where T : ISettingsConfig, new()
         {
-            var settingsUtils = new Mock<ISettingsUtils>();
+            var settingsUtils = new Mock<SettingsUtils>();
             settingsUtils
                 .Setup(x => x.GetSettingsOrDefault<T>(It.IsAny<string>(), It.IsAny<string>()))
                 .Returns(new T());

@@ -18,7 +18,7 @@ namespace RunnerV2.ModuleInterfaces
     {
         public string Name => "AdvancedPaste";
 
-        public bool Enabled => new SettingsUtils().GetSettings<GeneralSettings>().Enabled.AdvancedPaste;
+        public bool Enabled => SettingsUtils.Default.GetSettings<GeneralSettings>().Enabled.AdvancedPaste;
 
         public GpoRuleConfigured GpoRuleConfigured => GPOWrapper.GetConfiguredAdvancedPasteEnabledValue();
 
@@ -54,7 +54,7 @@ namespace RunnerV2.ModuleInterfaces
 
             Shortcuts.Clear();
 
-            AdvancedPasteSettings settings = new SettingsUtils().GetSettingsOrDefault<AdvancedPasteSettings>(Name);
+            AdvancedPasteSettings settings = SettingsUtils.Default.GetSettingsOrDefault<AdvancedPasteSettings>(Name);
             Shortcuts.Add((settings.Properties.AdvancedPasteUIShortcut, () =>
                 _ipc.Send(Constants.AdvancedPasteShowUIMessage())
             ));
@@ -73,7 +73,7 @@ namespace RunnerV2.ModuleInterfaces
             for (int i = 4 + additionalActionsCount; i < hotkeyAccessors.Length; i++)
             {
                 int scopedI = i;
-                Shortcuts.Add((hotkeyAccessors[i].Value, () => _ipc.Send(Constants.AdvancedPasteCustomActionMessage() + " " + (scopedI - 5 - additionalActionsCount))));
+                Shortcuts.Add((hotkeyAccessors[i].Value, () => _ipc.Send(Constants.AdvancedPasteCustomActionMessage() + " " + (scopedI - 4 - additionalActionsCount))));
             }
         }
 

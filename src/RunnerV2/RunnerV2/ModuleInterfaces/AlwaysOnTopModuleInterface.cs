@@ -14,7 +14,7 @@ namespace RunnerV2.ModuleInterfaces
 {
     internal sealed class AlwaysOnTopModuleInterface : ProcessModuleAbstractClass, IPowerToysModule
     {
-        public bool Enabled => new SettingsUtils().GetSettings<GeneralSettings>().Enabled.AlwaysOnTop;
+        public bool Enabled => SettingsUtils.Default.GetSettings<GeneralSettings>().Enabled.AlwaysOnTop;
 
         public string Name => "AlwaysOnTop";
 
@@ -34,7 +34,7 @@ namespace RunnerV2.ModuleInterfaces
         private void InitializeHotkey()
         {
             Shortcuts.Clear();
-            Shortcuts.Add((new SettingsUtils().GetSettings<AlwaysOnTopSettings>(Name).Properties.Hotkey.Value, () =>
+            Shortcuts.Add((SettingsUtils.Default.GetSettings<AlwaysOnTopSettings>(Name).Properties.Hotkey.Value, () =>
                 {
                     using var pinEventWrapper = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.AlwaysOnTopPinEvent());
                     pinEventWrapper.Set();

@@ -20,7 +20,7 @@ namespace ViewModelTests
     {
         public const string GeneralSettingsFileName = "Test\\GeneralSettings";
 
-        private Mock<ISettingsUtils> mockGeneralSettingsUtils;
+        private Mock<SettingsUtils> mockGeneralSettingsUtils;
 
         [TestInitialize]
         public void SetUpStubSettingUtils()

@@ -15,7 +15,7 @@ namespace RunnerV2.ModuleInterfaces
     {
         public string Name => "Awake";
 
-        public bool Enabled => new SettingsUtils().GetSettings<GeneralSettings>().Enabled.Awake;
+        public bool Enabled => SettingsUtils.Default.GetSettings<GeneralSettings>().Enabled.Awake;
 
         public GpoRuleConfigured GpoRuleConfigured => GPOWrapper.GetConfiguredAwakeEnabledValue();
 

@@ -23,7 +23,7 @@ namespace RunnerV2.ModuleInterfaces
 
         public string Name => "CmdPal";
 
-        public bool Enabled => new SettingsUtils().GetSettingsOrDefault<GeneralSettings>().Enabled.CmdPal;
+        public bool Enabled => SettingsUtils.Default.GetSettingsOrDefault<GeneralSettings>().Enabled.CmdPal;
 
         public GpoRuleConfigured GpoRuleConfigured => GPOWrapper.GetConfiguredCmdPalEnabledValue();
 

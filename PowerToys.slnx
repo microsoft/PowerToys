@@ -139,7 +139,6 @@
       <Platform Solution="*|x64" Project="x64" />
       <Deploy />
     </Project>
-    <Project Path="src/modules/AdvancedPaste/AdvancedPasteModuleInterface/AdvancedPasteModuleInterface.vcxproj" Id="fc373b24-3293-453c-aaf5-cf2909dcee6a" />
   </Folder>
   <Folder Name="/modules/AdvancedPaste/Tests/">
     <Project Path="src/modules/AdvancedPaste/AdvancedPaste.FuzzTests/AdvancedPaste.FuzzTests.csproj">
@@ -153,22 +152,14 @@
   </Folder>
   <Folder Name="/modules/AlwaysOnTop/">
     <Project Path="src/modules/alwaysontop/AlwaysOnTop/AlwaysOnTop.vcxproj" Id="1dc3be92-ce89-43fb-8110-9c043a2fe7a2" />
-    <Project Path="src/modules/alwaysontop/AlwaysOnTopModuleInterface/AlwaysOnTopModuleInterface.vcxproj" Id="48a0a19e-a0be-4256-acf8-cc3b80291af9" />
   </Folder>
   <Folder Name="/modules/awake/">
     <Project Path="src/modules/awake/Awake/Awake.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
-    <Project Path="src/modules/awake/AwakeModuleInterface/AwakeModuleInterface.vcxproj" Id="5e7360a8-d048-4ed3-8f09-0bfd64c5529a" />
-  </Folder>
-  <Folder Name="/modules/cmdNotFound/">
-    <Project Path="src/modules/cmdNotFound/CmdNotFoundModuleInterface/CmdNotFoundModuleInterface.vcxproj" Id="0014d652-901f-4456-8d65-06fc5f997fb0" />
   </Folder>
   <Folder Name="/modules/colorpicker/">
-    <Project Path="src/modules/colorPicker/ColorPicker/ColorPicker.vcxproj" Id="655c9af2-18d3-4da6-80e4-85504a7722ba">
-      <BuildDependency Project="src/common/logger/logger.vcxproj" />
-    </Project>
     <Project Path="src/modules/colorPicker/ColorPickerUI/ColorPickerUI.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
@@ -182,7 +173,6 @@
   </Folder>
   <Folder Name="/modules/CommandPalette/">
     <Project Path="src/modules/cmdpal/CmdPalKeyboardService/CmdPalKeyboardService.vcxproj" Id="5f63c743-f6ce-4dba-a200-2b3f8a14e8c2" />
-    <Project Path="src/modules/cmdpal/CmdPalModuleInterface/CmdPalModuleInterface.vcxproj" Id="0adeb797-c8c7-4ffa-acd5-2af6cad7ecd8" />
   </Folder>
   <Folder Name="/modules/CommandPalette/Built-in Extensions/">
     <Project Path="src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.Apps/Microsoft.CmdPal.Ext.Apps.csproj">
@@ -354,7 +344,6 @@
   </Folder>
   <Folder Name="/modules/CropAndLock/">
     <Project Path="src/modules/CropAndLock/CropAndLock/CropAndLock.vcxproj" Id="f5e1146e-b7b3-4e11-85fd-270a500bd78c" />
-    <Project Path="src/modules/CropAndLock/CropAndLockModuleInterface/CropAndLockModuleInterface.vcxproj" Id="3157fa75-86cf-4ee2-8f62-c43f776493c6" />
   </Folder>
   <Folder Name="/modules/EnvironmentVariables/">
     <Project Path="src/modules/EnvironmentVariables/EnvironmentVariables/EnvironmentVariables.csproj">
@@ -417,7 +406,6 @@
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
-    <Project Path="src/modules/Hosts/HostsModuleInterface/HostsModuleInterface.vcxproj" Id="b41b888c-7db8-4747-b262-4062e05a230d" />
     <Project Path="src/modules/Hosts/HostsUILib/HostsUILib.csproj" />
   </Folder>
   <Folder Name="/modules/Hosts/Tests/">
@@ -748,7 +736,6 @@
       <Platform Solution="*|x64" Project="x64" />
     </Project>
     <Project Path="src/modules/poweraccent/PowerAccentKeyboardService/PowerAccentKeyboardService.vcxproj" Id="c97d9a5d-206c-454e-997e-009e227d7f02" />
-    <Project Path="src/modules/poweraccent/PowerAccentModuleInterface/PowerAccentModuleInterface.vcxproj" Id="34a354c5-23c7-4343-916c-c52daf4fc39d" />
   </Folder>
   <Folder Name="/modules/PowerOCR/">
     <Project Path="src/modules/PowerOCR/PowerOCR/PowerOCR.csproj">
@@ -1019,8 +1006,6 @@
     <BuildDependency Project="src/common/notifications/BackgroundActivatorDLL/BackgroundActivatorDLL.vcxproj" />
     <BuildDependency Project="src/common/updating/updating.vcxproj" />
     <BuildDependency Project="src/modules/awake/Awake/Awake.csproj" />
-    <BuildDependency Project="src/modules/awake/AwakeModuleInterface/AwakeModuleInterface.vcxproj" />
-    <BuildDependency Project="src/modules/colorPicker/ColorPicker/ColorPicker.vcxproj" />
     <BuildDependency Project="src/modules/colorPicker/ColorPickerUI/ColorPickerUI.csproj" />
     <BuildDependency Project="src/modules/fancyzones/editor/FancyZonesEditor/FancyZonesEditor.csproj" />
     <BuildDependency Project="src/modules/fancyzones/FancyZonesLib/FancyZonesLib.vcxproj" />
@@ -1040,6 +1025,13 @@
     <BuildDependency Project="src/modules/previewpane/SvgPreviewHandler/SvgPreviewHandler.csproj" />
     <BuildDependency Project="src/PackageIdentity/PackageIdentity.vcxproj" />
   </Project>
-  <Project Path="src/Update/PowerToys.Update.vcxproj" Id="44ce9ae1-4390-42c5-bacc-0fd6b40aa203" />
+  <Project Path="src/RunnerV2/RunnerV2/RunnerV2.csproj">
+    <Platform Solution="*|ARM64" Project="ARM64" />
+    <Platform Solution="*|x64" Project="x64" />
+  </Project>
+  <Project Path="src/Update/Update.csproj">
+    <Platform Solution="*|ARM64" Project="ARM64" />
+    <Platform Solution="*|x64" Project="x64" />
+  </Project>
   <Project Path="tools/project_template/ModuleTemplate/ModuleTemplateCompileTest.vcxproj" Id="64a80062-4d8b-4229-8a38-dfa1d7497749" />
 </Solution>

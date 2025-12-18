@@ -9,7 +9,7 @@ namespace RunnerV2.ModuleInterfaces
 {
     internal sealed class HostsModuleInterface : ProcessModuleAbstractClass, IPowerToysModule
     {
-        public bool Enabled => new SettingsUtils().GetSettingsOrDefault<GeneralSettings>().Enabled.Hosts;
+        public bool Enabled => SettingsUtils.Default.GetSettingsOrDefault<GeneralSettings>().Enabled.Hosts;
 
         public GpoRuleConfigured GpoRuleConfigured => GPOWrapper.GetConfiguredHostsFileEditorEnabledValue();
 

@@ -11,7 +11,7 @@ namespace RunnerV2.ModuleInterfaces
     {
         public string Name => "PowerAccent";
 
-        public bool Enabled => new SettingsUtils().GetSettingsOrDefault<GeneralSettings>().Enabled.PowerAccent;
+        public bool Enabled => SettingsUtils.Default.GetSettingsOrDefault<GeneralSettings>().Enabled.PowerAccent;
 
         public GpoRuleConfigured GpoRuleConfigured => GPOWrapper.GetConfiguredQuickAccentEnabledValue();
 
