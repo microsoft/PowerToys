@@ -5798,6 +5798,7 @@ Text uses the current drawing color.</value>
   </data>
   <data name="ZoomIt_Break_BackgroundImage_None.Content" xml:space="preserve">
     <value>None</value>
+  </data>
   <data name="LightSwitch_ModeFollowNightLight.Content" xml:space="preserve">
     <value>Follow Night Light</value>
   </data>
