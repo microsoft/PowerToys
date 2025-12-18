@@ -17,7 +17,6 @@
     <NuGetAuditMode>direct</NuGetAuditMode>
     <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>    <!-- Don't add source revision hash to the product version of binaries. -->
     <PlatformTarget>$(Platform)</PlatformTarget>
-    <WindowsAppSDKVerifyTransitiveDependencies>false</WindowsAppSDKVerifyTransitiveDependencies>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.csproj'">
