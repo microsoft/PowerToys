@@ -224,7 +224,6 @@ clientside
 CLIPBOARDUPDATE
 CLIPCHILDREN
 CLIPSIBLINGS
-CLITo
 closesocket
 clp
 CLSCTX
@@ -325,7 +324,6 @@ CUSTOMFORMATPLACEHOLDER
 CVal
 cvd
 CVirtual
-CVS
 CWMO
 CXSCREEN
 CXSMICON
@@ -733,9 +731,9 @@ HWNDPARENT
 HWNDPREV
 hyjiacan
 IAI
+icf
 ICONERROR
 ICONLOCATION
-icf
 IDCANCEL
 IDD
 idk
@@ -1062,9 +1060,9 @@ MSLLHOOKSTRUCT
 Mso
 msrc
 msstore
+mstsc
 msvcp
 MT
-mstsc
 MTND
 MULTIPLEUSE
 multizone
@@ -1078,7 +1076,6 @@ MVVMTK
 MWBEx
 MYICON
 NAMECHANGE
-Notavailable
 namespaceanddescendants
 nao
 NCACTIVATE
@@ -1219,8 +1216,6 @@ OPENFILENAME
 openrdp
 opensource
 openxmlformats
-ollama
-onnx
 OPTIMIZEFORINVOKE
 ORPHANEDDIALOGTITLE
 ORSCANS
@@ -1433,7 +1428,6 @@ RAWPATH
 rbhid
 rclsid
 RCZOOMIT
-remotedesktop
 rdp
 RDW
 READMODE
@@ -1462,6 +1456,7 @@ remappings
 REMAPSUCCESSFUL
 REMAPUNSUCCESSFUL
 Remotable
+remotedesktop
 remoteip
 Removelnk
 renamable
@@ -1805,7 +1800,6 @@ tlbimp
 tlc
 tmain
 TNP
-toolgood
 Toolhelp
 toolwindow
 TOPDOWNDIB
@@ -1853,9 +1847,9 @@ uild
 uitests
 UITo
 ULONGLONG
-ums
 UMax
 UMin
+ums
 uncompilable
 UNCPRIORITY
 UNDNAME
@@ -1867,7 +1861,6 @@ Uniquifies
 unitconverter
 unittests
 UNLEN
-Uninitializes
 UNORM
 unremapped
 Unsubscribes
@@ -1955,7 +1948,7 @@ vswhere
 Vtbl
 WANTNUKEWARNING
 WANTPALM
-wasdk
+WASDK
 wbem
 WBounds
 Wca
