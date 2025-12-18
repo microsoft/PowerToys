@@ -1,7 +1,7 @@
 Param(
   # Using the default value of 1.7 for winAppSdkVersionNumber and useExperimentalVersion as false
   [Parameter(Mandatory=$False,Position=1)]
-  [string]$winAppSdkVersionNumber = "1.7",
+  [string]$winAppSdkVersionNumber = "1.8",
 
   # When the pipeline calls the PS1 file, the passed parameters are converted to string type
   [Parameter(Mandatory=$False,Position=2)]
@@ -161,7 +161,7 @@ function Resolve-WinAppSdkSplitDependencies {
         $configData = Read-FileWithEncoding -Path $nugetConfig
         [xml]$xml = $configData.Content
 
-        Add-NuGetSourceAndMapping -Xml $xml -Key "localpackages" -Value "localpackages\output" -Patterns $allLocalPackages
+        Add-NuGetSourceAndMapping -Xml $xml -Key "localpackages" -Value $installDir -Patterns $allLocalPackages
 
         $xml.Save($nugetConfig)
         Write-Host "Updated nuget.config with localpackages mapping."
