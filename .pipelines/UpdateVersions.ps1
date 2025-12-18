@@ -114,6 +114,64 @@ function Add-NuGetSourceAndMapping {
     }
 }
 
+function Resolve-WinAppSdkSplitDependencies {
+    Write-Host "Version $WinAppSDKVersion detected. Resolving split dependencies..."
+    $installDir = Join-Path $rootPath "localpackages\output"
+    New-Item -ItemType Directory -Path $installDir -Force | Out-Null
+
+    # Create a temporary nuget.config to avoid interference from the repo's config
+    $tempConfig = Join-Path $env:TEMP "nuget_$(Get-Random).config"
+    Set-Content -Path $tempConfig -Value "<?xml version='1.0' encoding='utf-8'?><configuration><packageSources><clear /><add key='TempSource' value='$sourceLink' /></packageSources></configuration>"
+
+    try {
+        # Extract BuildTools version from Directory.Packages.props to ensure we have the required version
+        $dirPackagesProps = Join-Path $rootPath "Directory.Packages.props"
+        if (Test-Path $dirPackagesProps) {
+            $propsContent = Get-Content $dirPackagesProps -Raw
+            if ($propsContent -match '<PackageVersion Include="Microsoft.Windows.SDK.BuildTools" Version="([^"]+)"') {
+                $buildToolsVersion = $Matches[1]
+                Write-Host "Downloading Microsoft.Windows.SDK.BuildTools version $buildToolsVersion..."
+                $nugetArgsBuildTools = "install Microsoft.Windows.SDK.BuildTools -Version $buildToolsVersion -ConfigFile $tempConfig -OutputDirectory $installDir -NonInteractive -NoCache"
+                Invoke-Expression "nuget $nugetArgsBuildTools" | Out-Null
+            }
+        }
+
+        # Download package to inspect nuspec and keep it for the build
+        $nugetArgs = "install Microsoft.WindowsAppSDK -Version $WinAppSDKVersion -ConfigFile $tempConfig -OutputDirectory $installDir -NonInteractive -NoCache"
+        Invoke-Expression "nuget $nugetArgs" | Out-Null
+
+        # Parse dependencies from the installed folders
+        # Folder structure is typically {PackageId}.{Version}
+        $directories = Get-ChildItem -Path $installDir -Directory
+        $allLocalPackages = @()
+        foreach ($dir in $directories) {
+            # Match any package pattern: PackageId.Version
+            if ($dir.Name -match "^(.+?)\.(\d+\..*)$") {
+                $pkgId = $Matches[1]
+                $pkgVer = $Matches[2]
+                $allLocalPackages += $pkgId
+
+                $packageVersions[$pkgId] = $pkgVer
+                Write-Host "Found dependency: $pkgId = $pkgVer"
+            }
+        }
+
+        # Update repo's nuget.config to use localpackages
+        $nugetConfig = Join-Path $rootPath "nuget.config"
+        $configData = Read-FileWithEncoding -Path $nugetConfig
+        [xml]$xml = $configData.Content
+
+        Add-NuGetSourceAndMapping -Xml $xml -Key "localpackages" -Value "localpackages\output" -Patterns $allLocalPackages
+
+        $xml.Save($nugetConfig)
+        Write-Host "Updated nuget.config with localpackages mapping."
+    } catch {
+        Write-Warning "Failed to resolve dependencies: $_"
+    } finally {
+        Remove-Item $tempConfig -Force -ErrorAction SilentlyContinue
+    }
+}
+
 # Execute nuget list and capture the output
 if ($useExperimentalVersion) {
     # The nuget list for experimental versions will cost more time
@@ -158,66 +216,7 @@ if ($latestVersion) {
 # Resolve dependencies for 1.8+
 $packageVersions = @{ "Microsoft.WindowsAppSDK" = $WinAppSDKVersion }
 
-if ($WinAppSDKVersion -match "^1\.8") {
-    Write-Host "Version $WinAppSDKVersion detected. Resolving split dependencies..."
-    $installDir = Join-Path $rootPath "localpackages\output"
-    New-Item -ItemType Directory -Path $installDir -Force | Out-Null
-
-    # Create a temporary nuget.config to avoid interference from the repo's config
-    $tempConfig = Join-Path $env:TEMP "nuget_$(Get-Random).config"
-    Set-Content -Path $tempConfig -Value "<?xml version='1.0' encoding='utf-8'?><configuration><packageSources><clear /><add key='TempSource' value='$sourceLink' /></packageSources></configuration>"
-
-    try {
-        # Extract BuildTools version from Directory.Packages.props to ensure we have the required version
-        $dirPackagesProps = Join-Path $rootPath "Directory.Packages.props"
-        if (Test-Path $dirPackagesProps) {
-            $propsContent = Get-Content $dirPackagesProps -Raw
-            if ($propsContent -match '<PackageVersion Include="Microsoft.Windows.SDK.BuildTools" Version="([^"]+)"') {
-                $buildToolsVersion = $Matches[1]
-                Write-Host "Downloading Microsoft.Windows.SDK.BuildTools version $buildToolsVersion..."
-                $nugetArgsBuildTools = "install Microsoft.Windows.SDK.BuildTools -Version $buildToolsVersion -ConfigFile $tempConfig -OutputDirectory $installDir -NonInteractive -NoCache"
-                Invoke-Expression "nuget $nugetArgsBuildTools" | Out-Null
-            }
-        }
-
-        # Download package to inspect nuspec and keep it for the build
-        $nugetArgs = "install Microsoft.WindowsAppSDK -Version $WinAppSDKVersion -ConfigFile $tempConfig -OutputDirectory $installDir -NonInteractive -NoCache"
-        Invoke-Expression "nuget $nugetArgs" | Out-Null
-
-        # Parse dependencies from the installed folders
-        # Folder structure is typically {PackageId}.{Version}
-        $directories = Get-ChildItem -Path $installDir -Directory
-        $allLocalPackages = @()
-        foreach ($dir in $directories) {
-            # Match any package pattern: PackageId.Version
-            if ($dir.Name -match "^(.+?)\.(\d+\..*)$") {
-                $pkgId = $Matches[1]
-                $pkgVer = $Matches[2]
-                $allLocalPackages += $pkgId
-                
-                # Only update version variables for WindowsAppSDK packages and BuildTools
-                if ($pkgId -match "^Microsoft\.WindowsAppSDK" -or $pkgId -eq "Microsoft.Windows.SDK.BuildTools") {
-                    $packageVersions[$pkgId] = $pkgVer
-                    Write-Host "Found dependency: $pkgId = $pkgVer"
-                }
-            }
-        }
-
-         # Update repo's nuget.config to use localpackages
-        $nugetConfig = Join-Path $rootPath "nuget.config"
-        $configData = Read-FileWithEncoding -Path $nugetConfig
-        [xml]$xml = $configData.Content
-        
-        Add-NuGetSourceAndMapping -Xml $xml -Key "localpackages" -Value "localpackages\output" -Patterns $allLocalPackages
-        
-        $xml.Save($nugetConfig)
-        Write-Host "Updated nuget.config with localpackages mapping."
-    } catch {
-        Write-Warning "Failed to resolve dependencies: $_"
-    } finally {
-        Remove-Item $tempConfig -Force -ErrorAction SilentlyContinue
-    }
-}
+Resolve-WinAppSdkSplitDependencies
 
 # Update Directory.Packages.props file
 Get-ChildItem -Path $rootPath -Recurse "Directory.Packages.props" | ForEach-Object {
