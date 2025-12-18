@@ -8,7 +8,7 @@
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     mc:Ignorable="d">
 
-    <controls:OOBEPageControl x:Uid="Oobe_PowerDisplay" HeroImage="ms-appx:///Assets/Settings/Modules/OOBE/PowerDisplay.png">
+    <controls:OOBEPageControl x:Uid="Oobe_PowerDisplay" HeroImage="ms-appx:///Assets/Settings/Modules/OOBE/PowerDisplay.gif">
         <controls:OOBEPageControl.PageContent>
             <StackPanel Orientation="Vertical" Spacing="12">
                 <TextBlock x:Uid="Oobe_HowToUse" Style="{ThemeResource OobeSubtitleStyle}" />
