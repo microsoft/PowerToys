@@ -129,6 +129,7 @@
 ^src/modules/previewpane/SvgPreviewHandler/SvgHTMLPreviewGenerator\.cs$
 ^src/modules/previewpane/UnitTests-MarkdownPreviewHandler/HelperFiles/MarkdownWithHTMLImageTag\.txt$
 ^src/modules/registrypreview/RegistryPreviewUILib/Controls/HexBox/.*$
+^src/modules/ScreencastMode/ScreencastModeModuleInterface/resource\.h$
 ^src/modules/ZoomIt/ZoomIt/ZoomIt\.idc$
 ^src/Monaco/
 ^tools/project_template/ModuleTemplate/resource\.h$
