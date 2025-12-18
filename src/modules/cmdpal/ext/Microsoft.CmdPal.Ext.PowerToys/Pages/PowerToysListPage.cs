@@ -8,7 +8,7 @@ using PowerToysExtension.Helpers;
 
 namespace PowerToysExtension.Pages;
 
-internal sealed partial class PowerToysListPage : DynamicListPage
+internal sealed partial class PowerToysListPage : ListPage
 {
     private readonly CommandItem _empty;
 
@@ -32,11 +32,5 @@ internal sealed partial class PowerToysListPage : DynamicListPage
         RaiseItemsChanged(0);
     }
 
-    public override void UpdateSearchText(string oldSearch, string newSearch)
-    {
-        _empty.Subtitle = newSearch;
-        RaiseItemsChanged(0);
-    }
-
-    public override IListItem[] GetItems() => ModuleCommandCatalog.FilteredItems(SearchText);
+    public override IListItem[] GetItems() => ModuleCommandCatalog.GetAllItems();
 }

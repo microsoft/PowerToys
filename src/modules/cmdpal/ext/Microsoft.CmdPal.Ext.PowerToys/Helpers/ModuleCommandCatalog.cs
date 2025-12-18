@@ -47,25 +47,8 @@ internal static class ModuleCommandCatalog
         new RegistryPreviewModuleCommandProvider(),
     ];
 
-    public static IListItem[] FilteredItems(string query)
+    public static IListItem[] GetAllItems()
     {
-        var all = Providers.SelectMany(provider => provider.BuildCommands()).ToList();
-        if (string.IsNullOrWhiteSpace(query))
-        {
-            return [.. all];
-        }
-
-        var matched = new List<Tuple<int, ListItem>>();
-        foreach (var item in all)
-        {
-            var result = Common.Search.FuzzSearch.StringMatcher.FuzzyMatch(query, item.Title);
-            if (result.Success)
-            {
-                matched.Add(new Tuple<int, ListItem>(result.Score, item));
-            }
-        }
-
-        matched.Sort((x, y) => y.Item1.CompareTo(x.Item1));
-        return [.. matched.Select(x => x.Item2)];
+        return [.. Providers.SelectMany(provider => provider.BuildCommands())];
     }
 }

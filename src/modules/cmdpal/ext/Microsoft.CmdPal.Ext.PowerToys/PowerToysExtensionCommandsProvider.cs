@@ -33,7 +33,7 @@ public partial class PowerToysExtensionCommandsProvider : CommandProvider
 
     public override IFallbackCommandItem[] FallbackCommands()
     {
-        var items = ModuleCommandCatalog.FilteredItems(string.Empty);
+        var items = ModuleCommandCatalog.GetAllItems();
         var fallbacks = new List<IFallbackCommandItem>(items.Length);
         foreach (var item in items)
         {
