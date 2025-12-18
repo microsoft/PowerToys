@@ -161,7 +161,7 @@ function Resolve-WinAppSdkSplitDependencies {
         $configData = Read-FileWithEncoding -Path $nugetConfig
         [xml]$xml = $configData.Content
 
-        Add-NuGetSourceAndMapping -Xml $xml -Key "localpackages" -Value "localpackages\output" -Patterns $allLocalPackages
+        Add-NuGetSourceAndMapping -Xml $xml -Key "localpackages" -Value $installDir -Patterns $allLocalPackages
 
         $xml.Save($nugetConfig)
         Write-Host "Updated nuget.config with localpackages mapping."
