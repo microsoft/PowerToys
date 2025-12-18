@@ -14,7 +14,7 @@
   <!-- Common from the debug / release items -->
   <PropertyGroup>
     <WarningLevel>4</WarningLevel>
-    <NoWarn></NoWarn>
+    <NoWarn>$(NoWarn)</NoWarn>
     <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
     <WarningsNotAsErrors>CA1824;CA1416;CA1720;CA1859;CA2263;CA2022;MVVMTK0045;MVVMTK0049</WarningsNotAsErrors>
   </PropertyGroup>
