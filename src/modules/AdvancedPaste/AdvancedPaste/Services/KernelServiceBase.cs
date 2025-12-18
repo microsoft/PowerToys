@@ -67,12 +67,36 @@ public abstract class KernelServiceBase(
 
             LogResult(cacheUsed, isSavedQuery, kernel.GetOrAddActionChain(), usage);
 
+            var outputPackage = kernel.GetDataPackage();
+            var hasUsableData = await outputPackage.GetView().HasUsableDataAsync();
+
             if (kernel.GetLastError() is Exception ex)
             {
-                throw ex;
+                // If we have an error, but the AI provided a final text response, we can ignore the error (likely a tool failure that the AI handled).
+                // However, if we have usable data (e.g. from a successful tool call before the error?), we might want to keep it?
+                // In the case of ImageToText failure, outputPackage is empty (new DataPackage), hasUsableData is false.
+                // So we check if there is a valid response in the chat history.
+                var lastMessage = chatHistory.LastOrDefault();
+                bool hasAssistantResponse = lastMessage != null && lastMessage.Role == AuthorRole.Assistant && !string.IsNullOrEmpty(lastMessage.Content);
+
+                if (!hasAssistantResponse && !hasUsableData)
+                {
+                    throw ex;
+                }
+
+                // If we have a response or data, we log the error but proceed.
+                Logger.LogWarning($"Kernel operation encountered an error but proceeded with available response/data: {ex.Message}");
             }
 
-            var outputPackage = kernel.GetDataPackage();
+            if (!hasUsableData)
+            {
+                var lastMessage = chatHistory.LastOrDefault();
+                if (lastMessage != null && lastMessage.Role == AuthorRole.Assistant && !string.IsNullOrEmpty(lastMessage.Content))
+                {
+                    outputPackage = DataPackageHelpers.CreateFromText(lastMessage.Content);
+                    kernel.SetDataPackage(outputPackage);
+                }
+            }
 
             if (!(await outputPackage.GetView().HasUsableDataAsync()))
             {
@@ -148,7 +172,21 @@ public abstract class KernelServiceBase(
         var systemPrompt = string.IsNullOrWhiteSpace(runtimeConfig.SystemPrompt) ? DefaultSystemPrompt : runtimeConfig.SystemPrompt;
         chatHistory.AddSystemMessage(systemPrompt);
         chatHistory.AddSystemMessage($"Available clipboard formats: {await kernel.GetDataFormatsAsync()}");
-        chatHistory.AddUserMessage(prompt);
+
+        var imageBytes = await kernel.GetDataPackageView().GetImageAsPngBytesAsync();
+        if (imageBytes != null)
+        {
+            var collection = new ChatMessageContentItemCollection
+            {
+                new TextContent(prompt),
+                new ImageContent(imageBytes, "image/png"),
+            };
+            chatHistory.AddUserMessage(collection);
+        }
+        else
+        {
+            chatHistory.AddUserMessage(prompt);
+        }
 
         if (ShouldModerateAdvancedAI())
         {
@@ -302,8 +340,16 @@ public abstract class KernelServiceBase(
             new ActionChainItem(PasteFormats.CustomTextTransformation, Arguments: new() { { PromptParameterName, fixedPrompt } }),
             async dataPackageView =>
             {
-                var input = await dataPackageView.GetClipboardTextOrThrowAsync(kernel.GetCancellationToken());
-                var result = await _customActionTransformService.TransformTextAsync(fixedPrompt, input, kernel.GetCancellationToken(), kernel.GetProgress());
+                var imageBytes = await dataPackageView.GetImageAsPngBytesAsync();
+                var input = await dataPackageView.GetTextOrHtmlTextAsync();
+
+                if (string.IsNullOrEmpty(input) && imageBytes == null)
+                {
+                    // If we have no text and no image, try to get text via OCR or throw if nothing exists
+                    input = await dataPackageView.GetClipboardTextOrThrowAsync(kernel.GetCancellationToken());
+                }
+
+                var result = await _customActionTransformService.TransformAsync(fixedPrompt, input, imageBytes, kernel.GetCancellationToken(), kernel.GetProgress());
                 return DataPackageHelpers.CreateFromText(result?.Content ?? string.Empty);
             });
 
@@ -313,15 +359,22 @@ public abstract class KernelServiceBase(
             new ActionChainItem(format, Arguments: new() { { PromptParameterName, prompt } }),
             async dataPackageView =>
             {
-                var input = await dataPackageView.GetClipboardTextOrThrowAsync(kernel.GetCancellationToken());
-                string output = await GetPromptBasedOutput(format, prompt, input, kernel.GetCancellationToken(), kernel.GetProgress());
+                var imageBytes = await dataPackageView.GetImageAsPngBytesAsync();
+                var input = await dataPackageView.GetTextOrHtmlTextAsync();
+
+                if (string.IsNullOrEmpty(input) && imageBytes == null)
+                {
+                    input = await dataPackageView.GetClipboardTextOrThrowAsync(kernel.GetCancellationToken());
+                }
+
+                string output = await GetPromptBasedOutput(format, prompt, input, imageBytes, kernel.GetCancellationToken(), kernel.GetProgress());
                 return DataPackageHelpers.CreateFromText(output);
             });
 
-    private async Task<string> GetPromptBasedOutput(PasteFormats format, string prompt, string input, CancellationToken cancellationToken, IProgress<double> progress) =>
+    private async Task<string> GetPromptBasedOutput(PasteFormats format, string prompt, string input, byte[] imageBytes, CancellationToken cancellationToken, IProgress<double> progress) =>
         format switch
         {
-            PasteFormats.CustomTextTransformation => (await _customActionTransformService.TransformTextAsync(prompt, input, cancellationToken, progress))?.Content ?? string.Empty,
+            PasteFormats.CustomTextTransformation => (await _customActionTransformService.TransformAsync(prompt, input, imageBytes, cancellationToken, progress))?.Content ?? string.Empty,
             _ => throw new ArgumentException($"Unsupported format {format} for prompt transform", nameof(format)),
         };
 

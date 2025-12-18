@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using AdvancedPaste.Helpers;
 using AdvancedPaste.Models;
 using LanguageModelProvider;
 using Microsoft.Extensions.AI;
@@ -32,10 +33,6 @@ public sealed class FoundryLocalPasteProvider : IPasteAIProvider
         ArgumentNullException.ThrowIfNull(config);
         _config = config;
     }
-
-    public string ProviderName => AIServiceType.FoundryLocal.ToNormalizedKey();
-
-    public string DisplayName => string.IsNullOrWhiteSpace(_config?.Model) ? "Foundry Local" : _config.Model;
 
     public async Task<bool> IsAvailableAsync(CancellationToken cancellationToken)
     {
@@ -76,13 +73,20 @@ public sealed class FoundryLocalPasteProvider : IPasteAIProvider
             }
 
             cancellationToken.ThrowIfCancellationRequested();
-            var chatClient = _modelProvider.GetIChatClient(modelReference);
-            if (chatClient is null)
+
+            IChatClient chatClient;
+            try
             {
+                chatClient = _modelProvider.GetIChatClient(modelReference);
+            }
+            catch (InvalidOperationException ex)
+            {
+                // GetIChatClient throws InvalidOperationException for user-facing errors
+                var errorMessage = string.Format(System.Globalization.CultureInfo.CurrentCulture, ResourceLoaderInstance.ResourceLoader.GetString("FoundryLocal_UnableToLoadModel"), modelReference);
                 throw new PasteActionException(
-                    $"Unable to load Foundry Local model: {modelReference}",
-                    new InvalidOperationException("Chat client resolution failed"),
-                    aiServiceMessage: "The model may not be downloaded or the Foundry Local service may not be running. Please check the model status in settings.");
+                    errorMessage,
+                    ex,
+                    aiServiceMessage: ex.Message);
             }
 
             var userMessageContent = $"""
@@ -142,6 +146,7 @@ public sealed class FoundryLocalPasteProvider : IPasteAIProvider
         var options = new ChatOptions
         {
             ModelId = modelReference,
+            MaxOutputTokens = 2048,
         };
 
         if (!string.IsNullOrWhiteSpace(systemPrompt))
