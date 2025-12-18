@@ -49,7 +49,7 @@ The overlay is implemented as a WinUI 3 application in the `ScreencastModeUI` pr
 
 1. **Keyboard Capture**: `KeyboardListener` uses Windows low-level keyboard hooks to intercept keystrokes globally, even when other applications have focus. We don't believe Keystroke capture is possible without importing the DLLs from Win32. We took inspiration from [an old blog post on making a low level keyboard hook in C#](https://learn.microsoft.com/en-us/archive/blogs/toub/low-level-keyboard-hook-in-c).
 
-2. **Key Processing**: `KeyDisplayer` receives raw key events and converts them into human-readable text (handling modifiers like Ctrl, Alt, Shift, and special keys). The events are recieved via the Virtual Key Codes, which are then translated to their string representations.
+2. **Key Processing**: `KeyDisplayer` receives raw key events and converts them into human-readable text (handling modifiers like Ctrl, Alt, Shift, and special keys). The events are received via the Virtual Key Codes, which are then translated to their string representations.
 
 3. **Overlay Window**: `MainWindow` renders an always-on-top, click-through window that displays the formatted keystrokes. It gets the settings from the Settings.JSON using methods that are similar to those used in other PowerToys modules. We had to add Win32 APIs here so that the window would not show up as an application on Task Manager, would be click through, and would stay on top of other windows.
 
