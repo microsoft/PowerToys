@@ -316,7 +316,6 @@ public partial class TopLevelCommandManager : ObservableObject,
     private async Task<CommandProviderWrapper?> StartExtensionWithTimeoutAsync(IExtensionWrapper extension)
     {
         Logger.LogDebug($"Starting {extension.PackageFullName}");
-        Logger.LogInfo($"StartExtensionWithTimeoutAsync invoked for {extension.ExtensionUniqueId}");
         try
         {
             await extension.StartExtensionAsync().WaitAsync(TimeSpan.FromSeconds(10));

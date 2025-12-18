@@ -4,33 +4,9 @@ Windows Command Palette ("CmdPal") is the next iteration of PowerToys Run. With 
 
 By default, CmdPal is bound to <kbd>Win+Alt+Space</kbd>.
 
-## Architecture overview
-
-CmdPal is a Windows App SDK (WinUI 3) host app that discovers and loads extension providers out-of-proc.
-
-- **Host UI**: `Microsoft.CmdPal.UI` (WinUI 3) + view models in `Microsoft.CmdPal.UI.ViewModels` and shared logic in `Microsoft.CmdPal.Core.*`.
-- **Extension contract**: `Microsoft.CommandPalette.Extensions` (WinRT interfaces). Providers typically run in a separate process as a COM local server.
-- **Extension helpers**: `Microsoft.CommandPalette.Extensions.Toolkit` (in-repo) and a NuGet-distributed variant (`JPSoftworks.CommandPalette.Extensions.Toolkit`) used by some extensions.
-
-### Extension discovery & the sparse identity package
-
-CmdPal uses the Windows AppExtension mechanism to find extensions registered as `Name="com.microsoft.commandpalette"`:
-
-- The host declares `windows.appExtensionHost` in `src/modules/cmdpal/Microsoft.CmdPal.UI/Package.appxmanifest`.
-- Extensions declare `windows.appExtension` and provide activation metadata (one or more CLSIDs under `<CmdPalProvider>` in the extension's properties).
-
-PowerToys ships its built-in provider (`Microsoft.CmdPal.Ext.PowerToys.exe`) via the shared **sparse MSIX identity** package:
-
-- `src/PackageIdentity/AppxManifest.xml` registers the extension executable as both:
-  - `windows.comServer` (COM local server; launched with `-RegisterProcessAsComServer`)
-  - `windows.appExtension` (so CmdPal can discover it via `AppExtensionCatalog`)
-- The extension's `PublicFolder="Public"` maps to `src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.PowerToys/Public`.
-
-For local development where you want CmdPal to pick up the in-box PowerToys provider, you generally need the sparse package registered; see `src/PackageIdentity/readme.md`.
-
 ## Creating an extension
 
-The fastest way to get started is just to run the "Create extension" command in the palette itself. That'll prompt you for a project name and a Display Name, and where you want to place your project. Then just open the `sln` it produces. You should be ready to go.
+The fastest way to get started is just to run the "Create extension" command in the palette itself. That'll prompt you for a project name and a Display Name, and where you want to place your project. Then just open the `sln` it produces. You should be ready to go 🙂.
 
 The official API documentation can be found [on this docs site](https://learn.microsoft.com/windows/powertoys/command-palette/extensibility-overview).
 
@@ -62,31 +38,6 @@ Projects of interest are:
 * `Microsoft.CommandPalette.Extensions.Toolkit`: This is a C# helper library for creating extensions. This makes writing extensions easier.
 * Everything under "SampleExtensions": These are example plugins to demo how to author extensions. Deploy any number of these, to get a feel for how the extension API works.
 
-## Adding a new PowerToys module command
-
-The in-box PowerToys provider (`Microsoft.CmdPal.Ext.PowerToys`) surfaces commands per module via small provider classes:
-
-- Provider implementations live in `src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.PowerToys/Modules` (see `FancyZonesModuleCommandProvider.cs` for a representative example).
-- Providers are aggregated in `src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.PowerToys/Helpers/ModuleCommandCatalog.cs`.
-- The resulting `ListItem`s power both the PowerToys page (`PowerToysListPage`) and fallback search results (`PowerToysCommandsProvider.FallbackCommands`).
-
-### Typical effort
-
-- **5–15 minutes**: Add a simple command (open settings, launch a module) by reusing `OpenInSettingsCommand` / `LaunchModuleCommand`.
-- **1–2+ hours**: Add deeper integration (dynamic pages, thumbnails/hero images, extra state queries, multi-step flows).
-
-### Checklist (minimal path)
-
-1. Add a new `*ModuleCommandProvider` deriving from `ModuleCommandProvider` and return `ListItem`s.
-2. Register it by adding the provider to the `Providers` array in `ModuleCommandCatalog`.
-3. If you need module-specific APIs, add the corresponding `*.ModuleServices` project reference to `src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.PowerToys/Microsoft.CmdPal.Ext.PowerToys.csproj`.
-4. Pick an icon:
-   - Reuse Settings icons via `SettingsWindow.ModuleIcon()` / `PowerToysResourcesHelper.IconFromSettingsIcon(...)` (the extension project already copies `Settings.UI` icons at build time).
-   - Or use a Segoe Fluent glyph: `new IconInfo("\uE7F4")` is already used for monitor-related FancyZones UI.
-5. If the module is gated by enablement, ensure `ModuleEnablementService` knows the right settings key and (optionally) update `PowerToysResourcesHelper` mappings for display name/icon.
-
-You do **not** need to touch the sparse package manifest for new commands (only when adding new executables/COM servers to ship under the sparse identity).
-
 ### Footnotes and other links
 
 * [Initial SDK Spec]
@@ -98,3 +49,5 @@ You do **not** need to touch the sparse package manifest for new commands (only 
 [generic samples]: ./ext/SamplePagesExtension 
 [real samples]: ./ext/ProcessMonitorExtension
 [real extensions that we've "shipped" already]: https://github.com/zadjii/CmdPalExtensions/blob/main/src/extensions
+
+
