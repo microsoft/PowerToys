@@ -11,10 +11,10 @@
     xmlns:ui="using:CommunityToolkit.WinUI"
     AutomationProperties.LandmarkType="Main"
     mc:Ignorable="d">
-
     <local:NavigablePage.Resources>
         <converters:ZoomItInitialZoomConverter x:Key="ZoomItInitialZoomConverter" />
         <converters:ZoomItTypeSpeedSliderConverter x:Key="ZoomItTypeSpeedSliderConverter" />
+        <converters:HotkeySettingsToLocalizedStringConverter x:Key="HotkeySettingsToLocalizedStringConverter" />
         <tkcontrols:MarkdownThemes
             x:Key="ZoomItMarkdownThemeConfig"
             InlineCodeBackground="{StaticResource ControlFillColorDefaultBrush}"
@@ -24,18 +24,7 @@
             InlineCodeForeground="{StaticResource TextFillColorSecondaryBrush}"
             InlineCodePadding="2,0,2,1" />
         <tkcontrols:MarkdownConfig x:Key="ZoomItMarkdownConfig" Themes="{StaticResource ZoomItMarkdownThemeConfig}" />
-        <Style
-            x:Key="ZoomItKeyVisualStyle"
-            BasedOn="{StaticResource DefaultKeyVisualStyle}"
-            TargetType="controls:KeyVisual">
-            <Setter Property="Foreground" Value="{ThemeResource TextFillColorSecondaryBrush}" />
-            <Setter Property="Background" Value="{ThemeResource ControlFillColorDefaultBrush}" />
-            <Setter Property="BorderBrush" Value="{ThemeResource ControlElevationBorderBrush}" />
-            <Setter Property="Padding" Value="2,1,2,1" />
-            <Setter Property="FontSize" Value="12" />
-        </Style>
     </local:NavigablePage.Resources>
-
     <controls:SettingsPageControl
         x:Uid="ZoomIt"
         IsTabStop="False"
@@ -57,7 +46,6 @@
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                 </controls:GPOInfoControl>
-
                 <controls:SettingsGroup x:Uid="ZoomIt_BehaviorGroup" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsCard Name="ZoomItToggleShowTrayIcon" x:Uid="ZoomIt_Toggle_ShowTrayIcon">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.ShowTrayIcon, Mode=TwoWay}" />
@@ -105,15 +93,7 @@
                         <tkcontrols:SettingsExpander.Items>
                             <tkcontrols:SettingsCard>
                                 <tkcontrols:SettingsCard.Description>
-                                    <StackPanel Orientation="Vertical" Spacing="4">
-                                        <controls:ShortcutWithTextLabelControl
-                                            x:Uid="ZoomIt_LiveZoom_Shortcut_Draw"
-                                            KeyVisualStyle="{StaticResource ZoomItKeyVisualStyle}"
-                                            Keys="{x:Bind Path=ViewModel.LiveZoomToggleKeyDraw.GetKeysList(), Mode=OneWay}"
-                                            LabelPlacement="After"
-                                            MarkdownConfig="{StaticResource ZoomItMarkdownConfig}" />
-                                        <tkcontrols:MarkdownTextBlock x:Uid="ZoomIt_LiveZoomFAQ" Config="{StaticResource ZoomItMarkdownConfig}" />
-                                    </StackPanel>
+                                    <tkcontrols:MarkdownTextBlock Config="{StaticResource ZoomItMarkdownConfig}" Text="{x:Bind Path=ViewModel.LiveZoomToggleKeyDraw, Mode=OneWay, Converter={StaticResource HotkeySettingsToLocalizedStringConverter}, ConverterParameter=ZoomIt_LiveZoom_Shortcut_Draw}" />
                                 </tkcontrols:SettingsCard.Description>
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
@@ -188,15 +168,7 @@
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard Name="ZoomItDemoTypeShortcutReset">
                                 <tkcontrols:SettingsCard.Description>
-                                    <StackPanel Orientation="Vertical" Spacing="4">
-                                        <tkcontrols:MarkdownTextBlock x:Uid="ZoomIt_DemoTypeFAQ" Config="{StaticResource ZoomItMarkdownConfig}" />
-                                        <controls:ShortcutWithTextLabelControl
-                                            x:Uid="ZoomIt_DemoType_Shortcut_Reset"
-                                            KeyVisualStyle="{StaticResource ZoomItKeyVisualStyle}"
-                                            Keys="{x:Bind Path=ViewModel.DemoTypeToggleKeyReset.GetKeysList(), Mode=OneWay}"
-                                            LabelPlacement="After"
-                                            MarkdownConfig="{StaticResource ZoomItMarkdownConfig}" />
-                                    </StackPanel>
+                                    <tkcontrols:MarkdownTextBlock Config="{StaticResource ZoomItMarkdownConfig}" Text="{x:Bind Path=ViewModel.DemoTypeToggleKeyReset, Mode=OneWay, Converter={StaticResource HotkeySettingsToLocalizedStringConverter}, ConverterParameter=ZoomIt_DemoTypeFAQ}" />
                                 </tkcontrols:SettingsCard.Description>
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
@@ -339,21 +311,9 @@
                             <tkcontrols:SettingsCard>
                                 <tkcontrols:SettingsCard.Description>
                                     <StackPanel Orientation="Vertical" Spacing="4">
-                                        <controls:ShortcutWithTextLabelControl
-                                            x:Uid="ZoomIt_Record_Shortcut_FullScreen"
-                                            KeyVisualStyle="{StaticResource ZoomItKeyVisualStyle}"
-                                            Keys="{x:Bind Path=ViewModel.RecordToggleKey.GetKeysList(), Mode=OneWay}"
-                                            MarkdownConfig="{StaticResource ZoomItMarkdownConfig}" />
-                                        <controls:ShortcutWithTextLabelControl
-                                            x:Uid="ZoomIt_Record_Shortcut_Crop"
-                                            KeyVisualStyle="{StaticResource ZoomItKeyVisualStyle}"
-                                            Keys="{x:Bind Path=ViewModel.RecordToggleKeyCrop.GetKeysList(), Mode=OneWay}"
-                                            MarkdownConfig="{StaticResource ZoomItMarkdownConfig}" />
-                                        <controls:ShortcutWithTextLabelControl
-                                            x:Uid="ZoomIt_Record_Shortcut_Window"
-                                            KeyVisualStyle="{StaticResource ZoomItKeyVisualStyle}"
-                                            Keys="{x:Bind Path=ViewModel.RecordToggleKeyWindow.GetKeysList(), Mode=OneWay}"
-                                            MarkdownConfig="{StaticResource ZoomItMarkdownConfig}" />
+                                        <tkcontrols:MarkdownTextBlock Config="{StaticResource ZoomItMarkdownConfig}" Text="{x:Bind Path=ViewModel.RecordToggleKey, Mode=OneWay, Converter={StaticResource HotkeySettingsToLocalizedStringConverter}, ConverterParameter=ZoomIt_Record_Shortcut_FullScreen}" />
+                                        <tkcontrols:MarkdownTextBlock Config="{StaticResource ZoomItMarkdownConfig}" Text="{x:Bind Path=ViewModel.RecordToggleKeyCrop, Mode=OneWay, Converter={StaticResource HotkeySettingsToLocalizedStringConverter}, ConverterParameter=ZoomIt_Record_Shortcut_Crop}" />
+                                        <tkcontrols:MarkdownTextBlock Config="{StaticResource ZoomItMarkdownConfig}" Text="{x:Bind Path=ViewModel.RecordToggleKeyWindow, Mode=OneWay, Converter={StaticResource HotkeySettingsToLocalizedStringConverter}, ConverterParameter=ZoomIt_Record_Shortcut_Window}" />
                                     </StackPanel>
                                 </tkcontrols:SettingsCard.Description>
                             </tkcontrols:SettingsCard>
@@ -370,11 +330,7 @@
                         <tkcontrols:SettingsExpander.Items>
                             <tkcontrols:SettingsCard Name="ZoomItSnipShortcutSave">
                                 <tkcontrols:SettingsCard.Description>
-                                    <controls:ShortcutWithTextLabelControl
-                                        x:Uid="ZoomIt_Snip_Shortcut_Save"
-                                        KeyVisualStyle="{StaticResource ZoomItKeyVisualStyle}"
-                                        Keys="{x:Bind Path=ViewModel.SnipToggleKeySave.GetKeysList(), Mode=OneWay}"
-                                        MarkdownConfig="{StaticResource ZoomItMarkdownConfig}" />
+                                    <tkcontrols:MarkdownTextBlock Config="{StaticResource ZoomItMarkdownConfig}" Text="{x:Bind Path=ViewModel.SnipToggleKeySave, Mode=OneWay, Converter={StaticResource HotkeySettingsToLocalizedStringConverter}, ConverterParameter=ZoomIt_Snip_Shortcut_Save}" />
                                 </tkcontrols:SettingsCard.Description>
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>

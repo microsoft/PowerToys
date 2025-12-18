@@ -4759,13 +4759,10 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Zoom in or out to enlarge content and make details clearer.</value>
   </data>
   <data name="ZoomIt_ZoomFAQ.Text" xml:space="preserve">
-    <value>Zoom in or out with the `mouse wheel` or the `Up` / `Down` arrow keys.
-
-Exit zoom mode with `Esc` or the `right mouse button`.
-
-Capture the zoomed view with `Ctrl` `C`, or save it with `Ctrl` `S`.
-
-To crop before copying or saving, use `Ctrl` `Shift` instead.</value>
+    <value>Press **the mouse wheel** or **the Up / Down arrow keys** to zoom in or out.  
+Press **Esc** or **the right mouse button** to exit zoom mode.  
+Press **Ctrl + C** to capture the zoomed view, or **Ctrl + S** to save it.  
+Press **Ctrl + Shift** to crop before copying or saving.</value>
   </data>
   <data name="ZoomIt_Zoom_Shortcut.Header" xml:space="preserve">
     <value>Zoom activation</value>
@@ -4785,9 +4782,6 @@ To crop before copying or saving, use `Ctrl` `Shift` instead.</value>
   <data name="ZoomIt_LiveZoomGroup.Description" xml:space="preserve">
     <value>Live Zoom keeps windows updating while zoomed.</value>
   </data>
-  <data name="ZoomIt_LiveZoomFAQ.Text" xml:space="preserve">
-    <value>`Ctrl` `Up` and `Ctrl` `Down` to adjust the zoom level. </value>
-  </data>
   <data name="ZoomIt_LiveZoom_Shortcut.Header" xml:space="preserve">
     <value>Live Zoom activation</value>
   </data>
@@ -4795,17 +4789,25 @@ To crop before copying or saving, use `Ctrl` `Shift` instead.</value>
     <value>Draw</value>
   </data>
   <data name="ZoomIt_DrawFAQ.Text" xml:space="preserve">
-    <value>Once zoomed in, toggle drawing mode with the `left mouse button`. Undo with `Ctrl``Z` or clear all drawings with `E`. Press `Space` to center the cursor. Exit drawing mode with the `right mouse button`.
+    <value>Press **the left mouse button** to toggle drawing mode when zoomed in, and **the right mouse button** to exit.  
+Press **Ctrl + Z** to undo, **E** to clear drawings, and **Space** to center the cursor.
 
-**Pen control** - Adjust pen width by holding `Ctrl` and using the `mouse wheel` or the `Up`/`Down` arrow keys.
+**Pen control**  
+Press **Ctrl + the mouse wheel** or **Ctrl + Up / Down** to adjust the pen width.
 
-**Colors** - Change color with `R` (red), `G` (green), `B` (blue), `O` (orange), `Y` (yellow), or `P` (pink).
+**Colors**  
+Press **R** (Red), **G** (Green), **B** (Blue), **O** (Orange), **Y** (Yellow), or **P** (Pink) to switch colors.
 
-**Highlight and blur** - Hold `Shift` and press a color key for a translucent highlighter. Press `X` for blur or `Shift``X` for a stronger blur.
+**Highlight and blur**  
+Press **Shift + a color key** for a translucent highlighter, **X** for blur, or **Shift + X** for a stronger blur.
 
-**Shapes** - Draw a line with `Shift`, a rectangle with `Ctrl`, an ellipse with `Tab`, or an arrow with `Shift``Ctrl`.
+**Shapes**  
+Press **Shift** for a line, **Ctrl** for a rectangle, **Tab** for an ellipse, or **Shift + Ctrl** for an arrow.
 
-**Screen** - Press `W` (white) or `K` (black) for a blank sketch pad. Copy the zoomed screen with `Ctrl``C` or save it with `Ctrl+S`. Use `Ctrl+Shift` to crop when copying or saving.</value>
+**Screen**  
+Press **W** or **K** for a white or black sketch pad.  
+Press **Ctrl + C** to copy or **Ctrl + S** to save, and **Ctrl + Shift** to crop.
+    </value>
   </data>
   <data name="ZoomIt_Draw_Shortcut.Header" xml:space="preserve">
     <value>Draw without zoom hotkey</value>
@@ -4829,22 +4831,23 @@ To crop before copying or saving, use `Ctrl` `Shift` instead.</value>
   <data name="ZoomIt_DemoTypeGroup.Description" xml:space="preserve">
     <value>Insert predefined text snippets with a shortcut using a text file.</value>
   </data>
-  <data name="ZoomIt_DemoTypeFAQ.Text" xml:space="preserve">
-    <value>Text can also be pulled from the clipboard when it begins with the `[start]` keyword.
+  <data name="ZoomIt_DemoTypeFAQ" xml:space="preserve">
+    <value>Text can be pulled from the clipboard when it starts with **[start]**.  
+Use **[end]** to separate snippets, **[pause:n]** to insert pauses (in seconds), and **[paste]** / **[/paste]** to send clipboard text.  
+Use **[enter]**, **[up]**, **[down]**, **[left]**, and **[right]** to issue keystrokes.
 
-Separate snippets with `[end]` and insert pauses with `[pause:n]`, where n represents seconds. Text can be sent via the clipboard using [paste] and `[/paste]`. Keystrokes can be issued with `[enter]`, `[up]`, `[down]`, `[left]`, and `[right]`.
+ZoomIt can send text automatically or run in manual mode. Keyboard input is blocked while text is being sent.
 
-ZoomIt can send text automatically, or input can be driven manually. Keyboard input is blocked while output is being sent.
+In manual mode, press **Space** to unblock keyboard input at the end of a snippet.  
+In auto mode, control returns automatically after completion.
 
-In manual mode, pressing `Space` unblocks keyboard input at the end of a snippet. In auto mode, control returns after completion.
+At the end of the file, ZoomIt reloads the file and restarts from the beginning.  
+Press the hotkey with **Shift** in the opposite mode to step back to the previous **[end]** marker.
 
-At the end of the file, ZoomIt reloads the file and restarts from the beginning. Entering the hotkey with `Shift` in the opposite mode steps back to the previous `[end]` marker.</value>
+Press **{0}** to reset DemoType and start from the beginning.</value>
   </data>
   <data name="ZoomIt_DemoType_Shortcut.Header" xml:space="preserve">
     <value>DemoType activation</value>
-  </data>
-  <data name="ZoomIt_DemoType_Shortcut_Reset.Text" xml:space="preserve">
-    <value>to reset DemoType and start from the beginning.</value>
   </data>
   <data name="ZoomIt_DemoType_File.Header" xml:space="preserve">
     <value>Input file</value>
@@ -4874,11 +4877,13 @@ At the end of the file, ZoomIt reloads the file and restarts from the beginning.
     <value>Displays a countdown overlay for timed breaks or presentations.</value>
   </data>
   <data name="ZoomIt_BreakFAQ.Text" xml:space="preserve">
-    <value>Enter timer mode from the ZoomIt tray icon’s Break menu. Adjust the time with the arrow keys. If the timer window loses focus through `Alt+Tab`, reactivate it by left-clicking the ZoomIt tray icon.
+    <value>Enter timer mode from the ZoomIt tray icon’s Break menu.  
+Press **the arrow keys** to adjust the time. If the timer window loses focus through **Alt + Tab**, press **the left mouse button** on the ZoomIt tray icon to reactivate it.
 
-Exit timer mode with `Esc`.
+Press **Esc** to exit timer mode.
 
-Change the break timer color using the same keys used for drawing colors. The break timer font matches the text font.</value>
+Change the break timer color using the same keys as the drawing colors.  
+The break timer font matches the text font.</value>
   </data>
   <data name="ZoomIt_Break_Shortcut.Header" xml:space="preserve">
     <value>Break timer activation</value>
@@ -5003,14 +5008,14 @@ Change the break timer color using the same keys used for drawing colors. The br
   <data name="ZoomIt_Record_Shortcut.Header" xml:space="preserve">
     <value>Record activation</value>
   </data>
-  <data name="ZoomIt_Record_Shortcut_FullScreen.Text" xml:space="preserve">
-    <value>to start or stop recording the full screen or current zoom session</value>
+  <data name="ZoomIt_Record_Shortcut_FullScreen" xml:space="preserve">
+    <value>Press **{0}** to start or stop screen or zoom recording</value>
   </data>
-  <data name="ZoomIt_Record_Shortcut_Crop.Text" xml:space="preserve">
-    <value>to record a portion of the screen</value>
+  <data name="ZoomIt_Record_Shortcut_Crop" xml:space="preserve">
+    <value>Press **{0}** to record a portion of the screen</value>
   </data>
-  <data name="ZoomIt_Record_Shortcut_Window.Text" xml:space="preserve">
-    <value>to record a specific window</value>
+  <data name="ZoomIt_Record_Shortcut_Window" xml:space="preserve">
+    <value>Press **{0}** to record a specific window</value>
   </data>
   <data name="ZoomIt_Record_Scaling.Header" xml:space="preserve">
     <value>Scaling</value>
@@ -5036,8 +5041,8 @@ Change the break timer color using the same keys used for drawing colors. The br
   <data name="ZoomIt_Snip_Shortcut.Header" xml:space="preserve">
     <value>Snip activation</value>
   </data>
-  <data name="ZoomIt_Snip_Shortcut_Save.Text" xml:space="preserve">
-    <value>to save the snip directly to a file instead of the clipboard.</value>
+  <data name="ZoomIt_Snip_Shortcut_Save" xml:space="preserve">
+    <value>Press **{0}** to save the snip to a file instead of the clipboard.</value>
   </data>
   <data name="Oobe_ZoomIt.Description" xml:space="preserve">
     <value>ZoomIt is a screen zoom, annotation, and recording tool for technical presentations and demos. You can also use ZoomIt to snip screenshots to the clipboard or to a file.</value>
@@ -5781,16 +5786,16 @@ Change the break timer color using the same keys used for drawing colors. The br
     <value>A modern UI built with Fluent Design</value>
     <comment>Fluent Design is a product name, do not loc</comment>
   </data>
-  <data name="ZoomIt_LiveZoom_Shortcut_Draw.Text" xml:space="preserve">
-    <value>to activate live drawing. Press `Esc` to clear annotations or to exit draw mode.</value>
+  <data name="ZoomIt_LiveZoom_Shortcut_Draw" xml:space="preserve">
+    <value>Press **{0}** to activate live drawing and **Esc** to clear annotations or to exit.
+	
+Press **Ctrl + Up / Down** to adjust the zoom level.
+	</value>
   </data>
   <data name="ZoomIt_TypeFAQ.Text" xml:space="preserve">
-    <value>Once drawing mode is active, switch to typing with `T` or use `Shift` for right-aligned text.
-
-Leave typing mode with `Esc` or a `left-click`.
-
-Adjust font size with the `mouse wheel` or the `Up` and `Down` arrow keys.
-
+    <value>Press **T** to switch to typing when drawing mode is active, and **Shift** for right-aligned text.  
+Press **Esc** or **the left mouse button** to exit typing mode.  
+Press **the mouse wheel** or **Up / Down** to adjust the font size.  
 Text uses the current drawing color.</value>
   </data>
   <data name="ZoomIt_DrawGroup.Description" xml:space="preserve">
