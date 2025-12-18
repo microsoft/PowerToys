@@ -16,32 +16,7 @@ Param(
   [string]$sourceLink = "https://microsoft.pkgs.visualstudio.com/ProjectReunion/_packaging/Project.Reunion.nuget.internal/nuget/v3/index.json"
 )
 
-function Update-NugetConfig {
-    param (
-        [string]$filePath = [System.IO.Path]::Combine($rootPath, "nuget.config")
-    )
 
-    Write-Host "Updating nuget.config file"
-    [xml]$xml = Get-Content -Path $filePath
-
-    # Add localpackages source into nuget.config
-    $packageSourcesNode = $xml.configuration.packageSources
-    $addNode = $xml.CreateElement("add")
-    $addNode.SetAttribute("key", "localpackages")
-    $addNode.SetAttribute("value", "localpackages")
-    $packageSourcesNode.AppendChild($addNode) | Out-Null
-
-    # Remove <packageSourceMapping> tag and its content
-    $packageSourceMappingNode = $xml.configuration.packageSourceMapping
-    if ($packageSourceMappingNode) {
-        $xml.configuration.RemoveChild($packageSourceMappingNode) | Out-Null
-    }
-
-    # print nuget.config after modification
-    $xml.OuterXml
-    # Save the modified nuget.config file
-    $xml.Save($filePath)
-}
 
 function Read-FileWithEncoding {
     param (
@@ -69,6 +44,132 @@ function Write-FileWithEncoding {
     $writer = New-Object System.IO.StreamWriter($Path, $false, $Encoding)
     $writer.Write($Content)
     $writer.Close()
+}
+
+
+function Add-NuGetSourceAndMapping {
+    param (
+        [xml]$Xml,
+        [string]$Key,
+        [string]$Value,
+        [string[]]$Patterns
+    )
+
+    # Ensure packageSources exists
+    if (-not $Xml.configuration.packageSources) {
+        $Xml.configuration.AppendChild($Xml.CreateElement("packageSources")) | Out-Null
+    }
+    $sources = $Xml.configuration.packageSources
+
+    # Add/Update Source
+    $sourceNode = $sources.SelectSingleNode("add[@key='$Key']")
+    if (-not $sourceNode) {
+        $sourceNode = $Xml.CreateElement("add")
+        $sourceNode.SetAttribute("key", $Key)
+        $sources.AppendChild($sourceNode) | Out-Null
+    }
+    $sourceNode.SetAttribute("value", $Value)
+
+    # Ensure packageSourceMapping exists
+    if (-not $Xml.configuration.packageSourceMapping) {
+        $Xml.configuration.AppendChild($Xml.CreateElement("packageSourceMapping")) | Out-Null
+    }
+    $mapping = $Xml.configuration.packageSourceMapping
+
+    # Remove invalid packageSource nodes (missing key or empty key)
+    $invalidNodes = $mapping.SelectNodes("packageSource[not(@key) or @key='']")
+    if ($invalidNodes) {
+        foreach ($node in $invalidNodes) {
+            $mapping.RemoveChild($node) | Out-Null
+        }
+    }
+
+    # Add/Update Mapping Source
+    $mappingSource = $mapping.SelectSingleNode("packageSource[@key='$Key']")
+    if (-not $mappingSource) {
+        $mappingSource = $Xml.CreateElement("packageSource")
+        $mappingSource.SetAttribute("key", $Key)
+        # Insert at top for priority
+        if ($mapping.HasChildNodes) {
+            $mapping.InsertBefore($mappingSource, $mapping.FirstChild) | Out-Null
+        } else {
+            $mapping.AppendChild($mappingSource) | Out-Null
+        }
+    }
+    
+    # Double check and force attribute
+    if (-not $mappingSource.HasAttribute("key")) {
+         $mappingSource.SetAttribute("key", $Key)
+    }
+
+    # Update Patterns
+    # RemoveAll() removes all child nodes AND attributes, so we must re-set the key afterwards
+    $mappingSource.RemoveAll()
+    $mappingSource.SetAttribute("key", $Key)
+
+    foreach ($pattern in $Patterns) {
+        $pkg = $Xml.CreateElement("package")
+        $pkg.SetAttribute("pattern", $pattern)
+        $mappingSource.AppendChild($pkg) | Out-Null
+    }
+}
+
+function Resolve-WinAppSdkSplitDependencies {
+    Write-Host "Version $WinAppSDKVersion detected. Resolving split dependencies..."
+    $installDir = Join-Path $rootPath "localpackages\output"
+    New-Item -ItemType Directory -Path $installDir -Force | Out-Null
+
+    # Create a temporary nuget.config to avoid interference from the repo's config
+    $tempConfig = Join-Path $env:TEMP "nuget_$(Get-Random).config"
+    Set-Content -Path $tempConfig -Value "<?xml version='1.0' encoding='utf-8'?><configuration><packageSources><clear /><add key='TempSource' value='$sourceLink' /></packageSources></configuration>"
+
+    try {
+        # Extract BuildTools version from Directory.Packages.props to ensure we have the required version
+        $dirPackagesProps = Join-Path $rootPath "Directory.Packages.props"
+        if (Test-Path $dirPackagesProps) {
+            $propsContent = Get-Content $dirPackagesProps -Raw
+            if ($propsContent -match '<PackageVersion Include="Microsoft.Windows.SDK.BuildTools" Version="([^"]+)"') {
+                $buildToolsVersion = $Matches[1]
+                Write-Host "Downloading Microsoft.Windows.SDK.BuildTools version $buildToolsVersion..."
+                $nugetArgsBuildTools = "install Microsoft.Windows.SDK.BuildTools -Version $buildToolsVersion -ConfigFile $tempConfig -OutputDirectory $installDir -NonInteractive -NoCache"
+                Invoke-Expression "nuget $nugetArgsBuildTools" | Out-Null
+            }
+        }
+
+        # Download package to inspect nuspec and keep it for the build
+        $nugetArgs = "install Microsoft.WindowsAppSDK -Version $WinAppSDKVersion -ConfigFile $tempConfig -OutputDirectory $installDir -NonInteractive -NoCache"
+        Invoke-Expression "nuget $nugetArgs" | Out-Null
+
+        # Parse dependencies from the installed folders
+        # Folder structure is typically {PackageId}.{Version}
+        $directories = Get-ChildItem -Path $installDir -Directory
+        $allLocalPackages = @()
+        foreach ($dir in $directories) {
+            # Match any package pattern: PackageId.Version
+            if ($dir.Name -match "^(.+?)\.(\d+\..*)$") {
+                $pkgId = $Matches[1]
+                $pkgVer = $Matches[2]
+                $allLocalPackages += $pkgId
+
+                $packageVersions[$pkgId] = $pkgVer
+                Write-Host "Found dependency: $pkgId = $pkgVer"
+            }
+        }
+
+        # Update repo's nuget.config to use localpackages
+        $nugetConfig = Join-Path $rootPath "nuget.config"
+        $configData = Read-FileWithEncoding -Path $nugetConfig
+        [xml]$xml = $configData.Content
+
+        Add-NuGetSourceAndMapping -Xml $xml -Key "localpackages" -Value "localpackages\output" -Patterns $allLocalPackages
+
+        $xml.Save($nugetConfig)
+        Write-Host "Updated nuget.config with localpackages mapping."
+    } catch {
+        Write-Warning "Failed to resolve dependencies: $_"
+    } finally {
+        Remove-Item $tempConfig -Force -ErrorAction SilentlyContinue
+    }
 }
 
 # Execute nuget list and capture the output
@@ -112,56 +213,36 @@ if ($latestVersion) {
     exit 1
 }
 
-# Update packages.config files
-Get-ChildItem -Path $rootPath -Recurse packages.config | ForEach-Object {
-    $file = Read-FileWithEncoding -Path $_.FullName
-    $content = $file.Content
-    if ($content -match 'package id="Microsoft.WindowsAppSDK"') {
-        $newVersionString = 'package id="Microsoft.WindowsAppSDK" version="' + $WinAppSDKVersion + '"'
-        $oldVersionString = 'package id="Microsoft.WindowsAppSDK" version="[-.0-9a-zA-Z]*"'
-        $content = $content -replace $oldVersionString, $newVersionString
-        Write-FileWithEncoding -Path $_.FullName -Content $content -Encoding $file.encoding
-        Write-Host "Modified " $_.FullName 
-    }
-}
+# Resolve dependencies for 1.8+
+$packageVersions = @{ "Microsoft.WindowsAppSDK" = $WinAppSDKVersion }
+
+Resolve-WinAppSdkSplitDependencies
 
 # Update Directory.Packages.props file
 Get-ChildItem -Path $rootPath -Recurse "Directory.Packages.props" | ForEach-Object {
     $file = Read-FileWithEncoding -Path $_.FullName
     $content = $file.Content
-    if ($content -match '<PackageVersion Include="Microsoft.WindowsAppSDK"') {
-        $newVersionString = '<PackageVersion Include="Microsoft.WindowsAppSDK" Version="' + $WinAppSDKVersion + '" />'
-        $oldVersionString = '<PackageVersion Include="Microsoft.WindowsAppSDK" Version="[-.0-9a-zA-Z]*" />'
-        $content = $content -replace $oldVersionString, $newVersionString
+    $isModified = $false
+    
+    foreach ($pkgId in $packageVersions.Keys) {
+        $ver = $packageVersions[$pkgId]
+        # Escape dots in package ID for regex
+        $pkgIdRegex = $pkgId -replace '\.', '\.'
+        
+        $newVersionString = "<PackageVersion Include=""$pkgId"" Version=""$ver"" />"
+        $oldVersionString = "<PackageVersion Include=""$pkgIdRegex"" Version=""[-.0-9a-zA-Z]*"" />"
+
+        if ($content -match "<PackageVersion Include=""$pkgIdRegex""") {
+            # Update existing package
+            if ($content -notmatch [regex]::Escape($newVersionString)) {
+                $content = $content -replace $oldVersionString, $newVersionString
+                $isModified = $true
+            }
+        }
+    }
+
+    if ($isModified) {
         Write-FileWithEncoding -Path $_.FullName -Content $content -Encoding $file.encoding
         Write-Host "Modified " $_.FullName
     }
 }
-
-# Update .vcxproj files
-Get-ChildItem -Path $rootPath -Recurse *.vcxproj | ForEach-Object {
-    $file = Read-FileWithEncoding -Path $_.FullName
-    $content = $file.Content
-    if ($content -match '\\Microsoft.WindowsAppSDK.') {
-        $newVersionString = '\Microsoft.WindowsAppSDK.' + $WinAppSDKVersion
-        $oldVersionString = '\\Microsoft.WindowsAppSDK.(?=[-.0-9a-zA-Z]*\d)[-.0-9a-zA-Z]*'    #positive lookahead for at least a digit
-        $content = $content -replace $oldVersionString, $newVersionString
-        Write-FileWithEncoding -Path $_.FullName -Content $content -Encoding $file.encoding
-        Write-Host "Modified " $_.FullName
-    }
-}
-
-# Update .csproj files
-Get-ChildItem -Path $rootPath -Recurse *.csproj | ForEach-Object {
-    $file = Read-FileWithEncoding -Path $_.FullName
-    $content = $file.Content
-    if ($content -match 'PackageReference Include="Microsoft.WindowsAppSDK"') {
-        $newVersionString = 'PackageReference Include="Microsoft.WindowsAppSDK" Version="'+ $WinAppSDKVersion + '"'
-        $oldVersionString = 'PackageReference Include="Microsoft.WindowsAppSDK" Version="[-.0-9a-zA-Z]*"'
-        $content = $content -replace $oldVersionString, $newVersionString
-        Write-FileWithEncoding -Path $_.FullName -Content $content -Encoding $file.encoding
-        Write-Host "Modified " $_.FullName 
-    }
-}
-
-Update-NugetConfig

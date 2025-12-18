@@ -1,10 +1,11 @@
 ﻿// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
+using Windows.Foundation.Collections;
 
 namespace Microsoft.CommandPalette.Extensions.Toolkit;
 
-public partial class Details : BaseObservable, IDetails
+public partial class Details : BaseObservable, IDetails, IExtendedAttributesProvider
 {
     public virtual IIconInfo HeroImage
     {
@@ -53,4 +54,21 @@ public partial class Details : BaseObservable, IDetails
     }
 
 = [];
+
+    public virtual ContentSize Size
+    {
+        get;
+        set
+        {
+            field = value;
+            OnPropertyChanged(nameof(Size));
+        }
+    }
+
+= ContentSize.Small;
+
+    public IDictionary<string, object>? GetProperties() => new ValueSet()
+    {
+        { "Size", (int)Size },
+    };
 }

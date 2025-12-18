@@ -22,7 +22,14 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         private readonly ISettingsPath _settingsPath;
         private readonly JsonSerializerOptions _serializerOptions;
 
-        public SettingsUtils()
+        /// <summary>
+        /// Gets the default instance of the <see cref="SettingsUtils"/> class for general use.
+        /// Same as instantiating a new instance with the <see cref="SettingsUtils(IFileSystem?, JsonSerializerOptions?)"/> constructor with a new <see cref="FileSystem"/> object as the first argument and <c>null</c> as the second argument.
+        /// </summary>
+        /// <remarks>For using in tests, you should use one of the public constructors.</remarks>
+        public static SettingsUtils Default { get; } = new SettingsUtils();
+
+        private SettingsUtils()
             : this(new FileSystem())
         {
         }
@@ -234,7 +241,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public static (bool Success, string Message, string Severity, bool LastBackupExists, string OptionalMessage) BackupSettings()
         {
             var settingsBackupAndRestoreUtilsX = SettingsBackupAndRestoreUtils.Instance;
-            var settingsUtils = new SettingsUtils();
+            var settingsUtils = Default;
             var appBasePath = Path.GetDirectoryName(settingsUtils._settingsPath.GetSettingsPath(string.Empty, string.Empty));
             string settingsBackupAndRestoreDir = settingsBackupAndRestoreUtilsX.GetSettingsBackupAndRestoreDir();
 
@@ -247,7 +254,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public static (bool Success, string Message, string Severity) RestoreSettings()
         {
             var settingsBackupAndRestoreUtilsX = SettingsBackupAndRestoreUtils.Instance;
-            var settingsUtils = new SettingsUtils();
+            var settingsUtils = Default;
             var appBasePath = Path.GetDirectoryName(settingsUtils._settingsPath.GetSettingsPath(string.Empty, string.Empty));
             string settingsBackupAndRestoreDir = settingsBackupAndRestoreUtilsX.GetSettingsBackupAndRestoreDir();
             return settingsBackupAndRestoreUtilsX.RestoreSettings(appBasePath, settingsBackupAndRestoreDir);
