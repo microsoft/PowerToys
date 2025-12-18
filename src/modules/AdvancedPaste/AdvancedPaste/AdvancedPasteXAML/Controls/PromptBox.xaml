@@ -430,12 +430,19 @@
                                         Grid.Row="1"
                                         MinHeight="104"
                                         MaxHeight="320">
-                                        <TextBlock
-                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                            IsTextSelectionEnabled="True"
-                                            Style="{StaticResource CaptionTextBlockStyle}"
-                                            Text="{x:Bind ViewModel.CustomFormatResult, Mode=OneWay}"
-                                            TextWrapping="Wrap" />
+                                        <StackPanel>
+                                            <TextBlock
+                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                IsTextSelectionEnabled="True"
+                                                Style="{StaticResource CaptionTextBlockStyle}"
+                                                Text="{x:Bind ViewModel.CustomFormatResult, Mode=OneWay}"
+                                                TextWrapping="Wrap"
+                                                Visibility="{x:Bind ViewModel.HasCustomFormatText, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+                                            <Image
+                                                Source="{x:Bind ViewModel.CustomFormatImageResult, Mode=OneWay}"
+                                                Stretch="Uniform"
+                                                Visibility="{x:Bind ViewModel.HasCustomFormatImage, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+                                        </StackPanel>
                                     </ScrollViewer>
                                 </Grid>
                                 <Rectangle

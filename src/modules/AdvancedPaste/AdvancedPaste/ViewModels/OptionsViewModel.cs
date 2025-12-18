@@ -553,7 +553,7 @@ namespace AdvancedPaste.ViewModels
         }
 
         // List to store generated responses
-        public ObservableCollection<string> GeneratedResponses { get; set; } = [];
+        public ObservableCollection<GeneratedResponse> GeneratedResponses { get; set; } = [];
 
         // Index to keep track of the current response
         private int _currentResponseIndex;
@@ -566,8 +566,12 @@ namespace AdvancedPaste.ViewModels
                 if (value >= 0 && value < GeneratedResponses.Count)
                 {
                     SetProperty(ref _currentResponseIndex, value);
-                    CustomFormatResult = GeneratedResponses[_currentResponseIndex];
+                    var response = GeneratedResponses[_currentResponseIndex];
+                    CustomFormatResult = response.Preview.Content;
+                    CustomFormatImageResult = response.Preview.Image;
                     OnPropertyChanged(nameof(CurrentIndexDisplay));
+                    OnPropertyChanged(nameof(HasCustomFormatText));
+                    OnPropertyChanged(nameof(HasCustomFormatImage));
                 }
             }
         }
@@ -607,14 +611,21 @@ namespace AdvancedPaste.ViewModels
         [ObservableProperty]
         private string _customFormatResult;
 
+        [ObservableProperty]
+        private ImageSource _customFormatImageResult;
+
+        public bool HasCustomFormatText => !string.IsNullOrEmpty(CustomFormatResult);
+
+        public bool HasCustomFormatImage => CustomFormatImageResult != null;
+
         [RelayCommand]
         public async Task PasteCustomAsync()
         {
-            var text = GeneratedResponses.ElementAtOrDefault(CurrentResponseIndex);
+            var response = GeneratedResponses.ElementAtOrDefault(CurrentResponseIndex);
 
-            if (!string.IsNullOrEmpty(text))
+            if (response?.Data != null)
             {
-                await CopyPasteAndHideAsync(DataPackageHelpers.CreateFromText(text));
+                await CopyPasteAndHideAsync(response.Data);
             }
         }
 
@@ -695,11 +706,24 @@ namespace AdvancedPaste.ViewModels
                 await delayTask;
 
                 var outputText = await dataPackage.GetView().GetTextOrEmptyAsync();
-                bool shouldPreview = pasteFormat.Metadata.CanPreview && _userSettings.ShowCustomPreview && !string.IsNullOrEmpty(outputText) && source != PasteActionSource.GlobalKeyboardShortcut;
+                var formats = dataPackage.GetView().AvailableFormats;
+                var clipboardFormat = ClipboardFormat.None;
+                if (!string.IsNullOrEmpty(outputText))
+                {
+                    clipboardFormat |= ClipboardFormat.Text;
+                }
+
+                if (formats.Contains(StandardDataFormats.Bitmap))
+                {
+                    clipboardFormat |= ClipboardFormat.Image;
+                }
+
+                bool shouldPreview = pasteFormat.Metadata.CanPreview && _userSettings.ShowCustomPreview && clipboardFormat != ClipboardFormat.None && source != PasteActionSource.GlobalKeyboardShortcut;
 
                 if (shouldPreview)
                 {
-                    GeneratedResponses.Add(outputText);
+                    var previewItem = await ClipboardItemHelper.CreateFromCurrentClipboardAsync(dataPackage.GetView(), clipboardFormat);
+                    GeneratedResponses.Add(new GeneratedResponse { Preview = previewItem, Data = dataPackage });
                     CurrentResponseIndex = GeneratedResponses.Count - 1;
                     PreviewRequested?.Invoke(this, EventArgs.Empty);
                 }
