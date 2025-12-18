@@ -63,6 +63,7 @@ private:
     HANDLE m_hSettingsUpdatedEvent = nullptr;
     HANDLE m_hApplyColorTemperatureEvent = nullptr;
     HANDLE m_hApplyProfileEvent = nullptr;
+    HANDLE m_hSendSettingsTelemetryEvent = nullptr;
 
     void parse_hotkey_settings(PowerToysSettings::PowerToyValues settings)
     {
@@ -251,14 +252,16 @@ public:
         Logger::trace(L"Created APPLY_COLOR_TEMPERATURE_EVENT: handle={}", reinterpret_cast<void*>(m_hApplyColorTemperatureEvent));
         m_hApplyProfileEvent = CreateDefaultEvent(CommonSharedConstants::APPLY_PROFILE_POWER_DISPLAY_EVENT);
         Logger::trace(L"Created APPLY_PROFILE_EVENT: handle={}", reinterpret_cast<void*>(m_hApplyProfileEvent));
+        m_hSendSettingsTelemetryEvent = CreateDefaultEvent(CommonSharedConstants::POWER_DISPLAY_SEND_SETTINGS_TELEMETRY_EVENT);
+        Logger::trace(L"Created SEND_SETTINGS_TELEMETRY_EVENT: handle={}", reinterpret_cast<void*>(m_hSendSettingsTelemetryEvent));
 
-        if (!m_hInvokeEvent || !m_hToggleEvent || !m_hTerminateEvent || !m_hRefreshEvent || !m_hSettingsUpdatedEvent || !m_hApplyColorTemperatureEvent || !m_hApplyProfileEvent)
+        if (!m_hInvokeEvent || !m_hToggleEvent || !m_hTerminateEvent || !m_hRefreshEvent || !m_hSettingsUpdatedEvent || !m_hApplyColorTemperatureEvent || !m_hApplyProfileEvent || !m_hSendSettingsTelemetryEvent)
         {
-            Logger::error(L"Failed to create one or more event handles: Invoke={}, Toggle={}, Terminate={}, Refresh={}, SettingsUpdated={}, ApplyColorTemp={}, ApplyProfile={}",
+            Logger::error(L"Failed to create one or more event handles: Invoke={}, Toggle={}, Terminate={}, Refresh={}, SettingsUpdated={}, ApplyColorTemp={}, ApplyProfile={}, SettingsTelemetry={}",
                          reinterpret_cast<void*>(m_hInvokeEvent), reinterpret_cast<void*>(m_hToggleEvent),
                          reinterpret_cast<void*>(m_hTerminateEvent), reinterpret_cast<void*>(m_hRefreshEvent),
                          reinterpret_cast<void*>(m_hSettingsUpdatedEvent), reinterpret_cast<void*>(m_hApplyColorTemperatureEvent),
-                         reinterpret_cast<void*>(m_hApplyProfileEvent));
+                         reinterpret_cast<void*>(m_hApplyProfileEvent), reinterpret_cast<void*>(m_hSendSettingsTelemetryEvent));
         }
         else
         {
@@ -308,6 +311,11 @@ public:
         {
             CloseHandle(m_hApplyProfileEvent);
             m_hApplyProfileEvent = nullptr;
+        }
+        if (m_hSendSettingsTelemetryEvent)
+        {
+            CloseHandle(m_hSendSettingsTelemetryEvent);
+            m_hSendSettingsTelemetryEvent = nullptr;
         }
     }
 
@@ -486,7 +494,12 @@ public:
                 ResetEvent(m_hInvokeEvent);
             }
 
-            // Signal terminate event
+            if (m_hToggleEvent)
+            {
+                ResetEvent(m_hToggleEvent);
+            }
+
+            // Signal terminate event and wait for graceful shutdown
             if (m_hTerminateEvent)
             {
                 Logger::trace(L"Signaling PowerDisplay to exit");
@@ -497,11 +510,33 @@ public:
                 Logger::warn(L"Terminate event handle is null");
             }
 
-            // Close process handle (don't wait, don't force terminate - Awake pattern)
+            // Wait for process to exit gracefully, then force terminate if needed
+            // (ColorPicker/Peek/Hosts pattern: SetEvent → Wait 1500ms → TerminateProcess)
             if (m_hProcess)
             {
+                Logger::trace(L"Waiting for PowerDisplay process to exit (max 1500ms)");
+                DWORD waitResult = WaitForSingleObject(m_hProcess, 1500);
+                if (waitResult == WAIT_TIMEOUT)
+                {
+                    Logger::warn(L"PowerDisplay process did not exit gracefully, force terminating");
+                    TerminateProcess(m_hProcess, 1);
+                }
+                else if (waitResult == WAIT_OBJECT_0)
+                {
+                    Logger::trace(L"PowerDisplay process exited gracefully");
+                }
+                else
+                {
+                    Logger::error(L"WaitForSingleObject returned unexpected result: {}", waitResult);
+                }
                 CloseHandle(m_hProcess);
                 m_hProcess = nullptr;
+            }
+
+            // Reset terminate event after process cleanup
+            if (m_hTerminateEvent)
+            {
+                ResetEvent(m_hTerminateEvent);
             }
         }
 
@@ -575,6 +610,19 @@ public:
         }
         Logger::trace(L"get_hotkeys: No hotkey configured (key=0)");
         return 0;
+    }
+
+    virtual void send_settings_telemetry() override
+    {
+        Logger::trace(L"send_settings_telemetry: Signaling settings telemetry event");
+        if (m_hSendSettingsTelemetryEvent)
+        {
+            SetEvent(m_hSendSettingsTelemetryEvent);
+        }
+        else
+        {
+            Logger::warn(L"send_settings_telemetry: Event handle is null");
+        }
     }
 };
 

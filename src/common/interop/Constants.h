@@ -59,6 +59,7 @@ namespace winrt::PowerToys::Interop::implementation
         static hstring SettingsUpdatedPowerDisplayEvent();
         static hstring ApplyColorTemperaturePowerDisplayEvent();
         static hstring ApplyProfilePowerDisplayEvent();
+        static hstring PowerDisplaySendSettingsTelemetryEvent();
     };
 }
 
