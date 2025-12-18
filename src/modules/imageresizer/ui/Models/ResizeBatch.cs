@@ -15,16 +15,29 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ImageResizer.Properties;
+using ImageResizer.Services;
 
 namespace ImageResizer.Models
 {
     public class ResizeBatch
     {
         private readonly IFileSystem _fileSystem = new FileSystem();
+        private static IAISuperResolutionService _aiSuperResolutionService;
 
         public string DestinationDirectory { get; set; }
 
         public ICollection<string> Files { get; } = new List<string>();
+
+        public static void SetAiSuperResolutionService(IAISuperResolutionService service)
+        {
+            _aiSuperResolutionService = service;
+        }
+
+        public static void DisposeAiSuperResolutionService()
+        {
+            _aiSuperResolutionService?.Dispose();
+            _aiSuperResolutionService = null;
+        }
 
         public static ResizeBatch FromCommandLine(TextReader standardInput, string[] args)
         {
@@ -87,8 +100,13 @@ namespace ImageResizer.Models
         public IEnumerable<ResizeError> Process(Action<int, double> reportProgress, CancellationToken cancellationToken)
         {
             double total = Files.Count;
-            var completed = 0;
+            int completed = 0;
             var errors = new ConcurrentBag<ResizeError>();
+
+            // NOTE: Settings.Default is captured once before parallel processing.
+            // Any changes to settings on disk during this batch will NOT be reflected until the next batch.
+            // This improves performance and predictability by avoiding repeated mutex acquisition and behaviour change results in a batch.
+            var settings = Settings.Default;
 
             // TODO: If we ever switch to Windows.Graphics.Imaging, we can get a lot more throughput by using the async
             //       APIs and a custom SynchronizationContext
@@ -97,13 +115,12 @@ namespace ImageResizer.Models
                 new ParallelOptions
                 {
                     CancellationToken = cancellationToken,
-                    MaxDegreeOfParallelism = Environment.ProcessorCount,
                 },
                 (file, state, i) =>
                 {
                     try
                     {
-                        Execute(file);
+                        Execute(file, settings);
                     }
                     catch (Exception ex)
                     {
@@ -111,14 +128,16 @@ namespace ImageResizer.Models
                     }
 
                     Interlocked.Increment(ref completed);
-
                     reportProgress(completed, total);
                 });
 
             return errors;
         }
 
-        protected virtual void Execute(string file)
-            => new ResizeOperation(file, DestinationDirectory, Settings.Default).Execute();
+        protected virtual void Execute(string file, Settings settings)
+        {
+            var aiService = _aiSuperResolutionService ?? NoOpAiSuperResolutionService.Instance;
+            new ResizeOperation(file, DestinationDirectory, settings, aiService).Execute();
+        }
     }
 }

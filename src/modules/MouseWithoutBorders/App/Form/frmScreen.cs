@@ -318,7 +318,7 @@ namespace MouseWithoutBorders
 
             try
             {
-                if (!Common.IsMyDesktopActive() || Common.CurrentProcess.SessionId != NativeMethods.WTSGetActiveConsoleSessionId())
+                if (!WinAPI.IsMyDesktopActive() || Common.CurrentProcess.SessionId != NativeMethods.WTSGetActiveConsoleSessionId())
                 {
                     myDesktopNotActive = true;
 
@@ -348,7 +348,7 @@ namespace MouseWithoutBorders
                             Common.Hook?.ResetLastSwitchKeys();
                         });
 
-                        Common.CheckForDesktopSwitchEvent(true);
+                        WinAPI.CheckForDesktopSwitchEvent(true);
                     }
                 }
                 else
@@ -369,21 +369,21 @@ namespace MouseWithoutBorders
                             if (myDesktopNotActive)
                             {
                                 myDesktopNotActive = false;
-                                Common.MyKey = Setting.Values.MyKey;
+                                Encryption.MyKey = Setting.Values.MyKey;
                             }
 
                             MachineStuff.UpdateMachinePoolStringSetting();
 
-                            if (!Common.RunOnLogonDesktop && !Common.RunOnScrSaverDesktop && (Setting.Values.FirstRun || Common.KeyCorrupted))
+                            if (!Common.RunOnLogonDesktop && !Common.RunOnScrSaverDesktop && (Setting.Values.FirstRun || Encryption.KeyCorrupted))
                             {
                                 if (!shownSetupFormOneTime)
                                 {
                                     shownSetupFormOneTime = true;
                                     MachineStuff.ShowMachineMatrix();
 
-                                    if (Common.KeyCorrupted && !Setting.Values.FirstRun)
+                                    if (Encryption.KeyCorrupted && !Setting.Values.FirstRun)
                                     {
-                                        Common.KeyCorrupted = false;
+                                        Encryption.KeyCorrupted = false;
                                         string msg = "The security key is corrupted for some reason, please re-setup.";
                                         MessageBox.Show(msg, Application.ProductName, MessageBoxButtons.OK, MessageBoxIcon.Warning);
                                     }
@@ -490,9 +490,9 @@ namespace MouseWithoutBorders
 
                     if (count == 600)
                     {
-                        if (!Common.GeneratedKey)
+                        if (!Encryption.GeneratedKey)
                         {
-                            Common.MyKey = Setting.Values.MyKey;
+                            Encryption.MyKey = Setting.Values.MyKey;
 
                             if (!Common.RunOnLogonDesktop && !Common.RunOnScrSaverDesktop)
                             {
@@ -505,7 +505,7 @@ namespace MouseWithoutBorders
                                 Common.ShowToolTip("The security key must be auto generated in one of the machines.", 10000);
                             }
                         }
-                        else if (!Common.KeyCorrupted && !Common.RunOnLogonDesktop && !Common.RunOnScrSaverDesktop && !Setting.Values.FirstRun && Common.AtLeastOneSocketConnected())
+                        else if (!Encryption.KeyCorrupted && !Common.RunOnLogonDesktop && !Common.RunOnScrSaverDesktop && !Setting.Values.FirstRun && Common.AtLeastOneSocketConnected())
                         {
                             int myKeyDaysToExpire = Setting.Values.MyKeyDaysToExpire;
 
@@ -531,7 +531,7 @@ namespace MouseWithoutBorders
 #if SHOW_ON_WINLOGON
                     // if (Common.RunOnLogonDesktop) ShowMouseWithoutBordersUiOnWinLogonDesktop(false);
 #endif
-                    Common.CheckForDesktopSwitchEvent(true);
+                    WinAPI.CheckForDesktopSwitchEvent(true);
                     MachineStuff.UpdateClientSockets("helperTimer_Tick"); // Sockets may be closed by the remote host when both machines switch desktop at the same time.
                 }
 
@@ -582,7 +582,7 @@ namespace MouseWithoutBorders
 
                         int rv = 0;
 
-                        if (!Common.RunOnLogonDesktop && !Common.RunOnScrSaverDesktop && Common.IsMyDesktopActive() && (rv = Helper.SendMessageToHelper(0x400, IntPtr.Zero, IntPtr.Zero)) <= 0)
+                        if (!Common.RunOnLogonDesktop && !Common.RunOnScrSaverDesktop && WinAPI.IsMyDesktopActive() && (rv = Helper.SendMessageToHelper(0x400, IntPtr.Zero, IntPtr.Zero)) <= 0)
                         {
                             Logger.TelemetryLogTrace($"{Helper.HELPER_FORM_TEXT} not found: {rv}", SeverityLevel.Warning);
                         }

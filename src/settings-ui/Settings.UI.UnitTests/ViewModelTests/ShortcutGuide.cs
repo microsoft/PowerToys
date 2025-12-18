@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.IO.Abstractions;
 using System.Text.Json;
 
 using Microsoft.PowerToys.Settings.UI.Library;
@@ -69,7 +70,7 @@ namespace ViewModelTests
         [TestMethod]
         public void IsEnabledShouldEnableModuleWhenSuccessful()
         {
-            var settingsUtilsMock = new Mock<SettingsUtils>();
+            var settingsUtilsMock = new Mock<SettingsUtils>(new FileSystem(), null);
 
             // Assert
             // Initialize mock function of sending IPC message.

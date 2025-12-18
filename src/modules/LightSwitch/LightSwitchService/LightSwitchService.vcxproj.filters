@@ -33,7 +33,10 @@
     <ClCompile Include="WinHookEventIDs.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="LightSwitchServiceObserver.cpp">
+    <ClCompile Include="LightSwitchStateManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="NightLightRegistryObserver.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -56,7 +59,13 @@
     <ClInclude Include="WinHookEventIDs.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="LightSwitchServiceObserver.h">
+    <ClInclude Include="LightSwitchStateManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LightSwitchUtils.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="NightLightRegistryObserver.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -558,6 +558,7 @@ public class UWPApplication : IUWPApplication
             IsPackaged = true,
             Commands = app.GetCommands(),
             AppIdentifier = app.GetAppIdentifier(),
+            PackageFamilyName = app.Package.FamilyName,
         };
         return item;
     }
