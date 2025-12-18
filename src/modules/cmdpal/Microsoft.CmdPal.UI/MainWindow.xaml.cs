@@ -52,15 +52,12 @@ public sealed partial class MainWindow : WindowEx,
     IRecipient<ShowWindowMessage>,
     IRecipient<HideWindowMessage>,
     IRecipient<QuitMessage>,
-<<<<<<< cmdpal-add-telemetry
     IRecipient<NavigateToPageMessage>,
     IRecipient<NavigationDepthMessage>,
     IRecipient<SearchQueryMessage>,
     IRecipient<ErrorOccurredMessage>,
-=======
     IRecipient<DragStartedMessage>,
     IRecipient<DragCompletedMessage>,
->>>>>>> main
     IDisposable
 {
     private const int DefaultWidth = 800;

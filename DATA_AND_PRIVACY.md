@@ -262,24 +262,13 @@ _If you want to find diagnostic data events in the source code, these two links 
 </table>
 
 ### Command Palette
-<<<<<<< cmdpal-add-telemetry
 
-=======
->>>>>>> main
 <table style="width:100%">
   <tr>
     <th>Event Name</th>
     <th>Description</th>
   </tr>
   <tr>
-<<<<<<< cmdpal-add-telemetry
-    <td>Microsoft.PowerToys.CmdPal_ExtensionInvoked</td>
-    <td>Tracks extension usage including extension ID, command details, success status, and execution time.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.CmdPal_SessionDuration</td>
-    <td>Logs session metrics from launch to dismissal including duration, commands executed, pages visited, search queries, navigation depth, and errors.</td>
-=======
     <td>Microsoft.PowerToys.CmdPal_BeginInvoke</td>
     <td>Triggered when the Command Palette is launched by the user.</td>
   </tr>
@@ -326,7 +315,14 @@ _If you want to find diagnostic data events in the source code, these two links 
   <tr>
     <td>Microsoft.PowerToys.CmdPalProcessStarted</td>
     <td>Triggered when the Command Palette process is started.</td>
->>>>>>> main
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.CmdPal_ExtensionInvoked</td>
+    <td>Tracks extension usage including extension ID, command details, success status, and execution time.</td>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.CmdPal_SessionDuration</td>
+    <td>Logs session metrics from launch to dismissal including duration, commands executed, pages visited, search queries, navigation depth, and errors.</td>
   </tr>
 </table>
 
