@@ -108,6 +108,7 @@ AUTORADIOBUTTON
 Autorun
 AUTOTICKS
 AUTOUPDATE
+autopf
 AValid
 AWAYMODE
 azcliversion
@@ -255,6 +256,7 @@ CONFIGW
 CONFLICTINGMODIFIERKEY
 CONFLICTINGMODIFIERSHORTCUT
 CONOUT
+Contoso
 coreclr
 constexpr
 contentdialog
@@ -737,6 +739,7 @@ IEXPLORE
 IFACEMETHOD
 IFACEMETHODIMP
 IGNOREUNKNOWN
+ignoreversion
 IGo
 iid
 Iindex
@@ -763,6 +766,7 @@ INITDIALOG
 INITGUID
 INITTOLOGFONTSTRUCT
 INLINEPREFIX
+Inno
 inlines
 INPC
 inproc
@@ -796,6 +800,7 @@ ipreviewhandlervisualssetfont
 irow
 irprops
 isbi
+iscc
 isfinite
 iss
 issecret
@@ -1418,6 +1423,7 @@ RECTDESTINATION
 rectp
 RECTSOURCE
 recyclebin
+recursesubdirs
 Redist
 Reencode
 REFCLSID
@@ -1770,6 +1776,7 @@ TILEDWINDOW
 TILLSON
 timedate
 timediff
+timestamped
 timeunion
 timeutil
 TITLEBARINFO
