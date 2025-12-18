@@ -1,8 +1,6 @@
 #include "pch.h"
 #include "trace.h"
 
-#include <common/Telemetry/TraceBase.h>
-
 // Telemetry strings should not be localized.
 #define LoggingProviderKey "Microsoft.PowerToys"
 
@@ -13,23 +11,14 @@ TRACELOGGING_DEFINE_PROVIDER(
     (0x38e8889b, 0x9731, 0x53f5, 0xe9, 0x01, 0xe8, 0xa7, 0xc1, 0x75, 0x30, 0x74),
     TraceLoggingOptionProjectTelemetry());
 
-void Trace::LightSwitch::Enable(bool enabled) noexcept
+void Trace::LightSwitch::RegisterProvider()
 {
-    TraceLoggingWriteWrapper(
-        g_hProvider,
-        "LightSwitch_EnableLightSwitch",
-        ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
-        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
-        TraceLoggingBoolean(enabled, "Enabled"));
+    TraceLoggingRegister(g_hProvider);
 }
 
-void Trace::LightSwitch::ShortcutInvoked() noexcept
+void Trace::LightSwitch::UnregisterProvider()
 {
-    TraceLoggingWriteWrapper(
-        g_hProvider,
-        "LightSwitch_ShortcutInvoked",
-        ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
-        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
+    TraceLoggingUnregister(g_hProvider);
 }
 
 void Trace::LightSwitch::ScheduleModeToggled(const std::wstring& newMode) noexcept
