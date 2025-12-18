@@ -5,12 +5,12 @@
 using System;
 using System.IO;
 
-namespace FancyZonesCLI;
+namespace FancyZonesEditorCommon.Data;
 
 /// <summary>
 /// Provides paths to FancyZones configuration files.
 /// </summary>
-internal static class FancyZonesPaths
+public static class FancyZonesPaths
 {
     private static readonly string DataPath = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
@@ -27,4 +27,6 @@ internal static class FancyZonesPaths
     public static string LayoutHotkeys => Path.Combine(DataPath, "layout-hotkeys.json");
 
     public static string EditorParameters => Path.Combine(DataPath, "editor-parameters.json");
+
+    public static string DefaultLayouts => Path.Combine(DataPath, "default-layouts.json");
 }

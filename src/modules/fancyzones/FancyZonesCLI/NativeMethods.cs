@@ -15,6 +15,7 @@ internal static class NativeMethods
     // Registered Windows messages for notifying FancyZones
     private static uint wmPrivAppliedLayoutsFileUpdate;
     private static uint wmPrivLayoutHotkeysFileUpdate;
+    private static uint wmPrivSaveEditorParameters;
 
     /// <summary>
     /// Gets the Windows message ID for applied layouts file update notification.
@@ -27,12 +28,18 @@ internal static class NativeMethods
     public static uint WM_PRIV_LAYOUT_HOTKEYS_FILE_UPDATE => wmPrivLayoutHotkeysFileUpdate;
 
     /// <summary>
+    /// Gets the Windows message ID used to request saving editor-parameters.json.
+    /// </summary>
+    public static uint WM_PRIV_SAVE_EDITOR_PARAMETERS => wmPrivSaveEditorParameters;
+
+    /// <summary>
     /// Initializes the Windows messages used for FancyZones notifications.
     /// </summary>
     public static void InitializeWindowMessages()
     {
         wmPrivAppliedLayoutsFileUpdate = PInvoke.RegisterWindowMessage("{2ef2c8a7-e0d5-4f31-9ede-52aade2d284d}");
         wmPrivLayoutHotkeysFileUpdate = PInvoke.RegisterWindowMessage("{07229b7e-4f22-4357-b136-33c289be2295}");
+        wmPrivSaveEditorParameters = PInvoke.RegisterWindowMessage("{d8f9c0e3-5d77-4e83-8a4f-7c704c2bfb4a}");
     }
 
     /// <summary>
