@@ -135,15 +135,12 @@ public sealed partial class MainWindow : WindowEx,
         WeakReferenceMessenger.Default.Register<QuitMessage>(this);
         WeakReferenceMessenger.Default.Register<ShowWindowMessage>(this);
         WeakReferenceMessenger.Default.Register<HideWindowMessage>(this);
-<<<<<<< cmdpal-add-telemetry
         WeakReferenceMessenger.Default.Register<NavigateToPageMessage>(this);
         WeakReferenceMessenger.Default.Register<NavigationDepthMessage>(this);
         WeakReferenceMessenger.Default.Register<SearchQueryMessage>(this);
         WeakReferenceMessenger.Default.Register<ErrorOccurredMessage>(this);
-=======
         WeakReferenceMessenger.Default.Register<DragStartedMessage>(this);
         WeakReferenceMessenger.Default.Register<DragCompletedMessage>(this);
->>>>>>> main
 
         // Hide our titlebar.
         // We need to both ExtendsContentIntoTitleBar, then set the height to Collapsed
