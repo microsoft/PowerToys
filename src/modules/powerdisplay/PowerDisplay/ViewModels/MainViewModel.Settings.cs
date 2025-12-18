@@ -610,8 +610,8 @@ public partial class MainViewModel
 
             var telemetryEvent = new PowerDisplaySettingsTelemetryEvent
             {
-                HotkeyEnabled = settings.Properties.HotkeyEnabled,
-                TrayIconEnabled = settings.Properties.TrayIconEnabled,
+                HotkeyEnabled = settings.Properties.ActivationShortcut?.IsValid() ?? false,
+                TrayIconEnabled = settings.Properties.ShowSystemTrayIcon,
                 MonitorCount = Monitors.Count,
                 ProfileCount = profilesData?.Profiles?.Count ?? 0,
             };
