@@ -23,7 +23,7 @@
     <controls:SettingsPageControl
         ModuleDescription="Tools that adapt to different needs and make everyday interactions more accessible."
         ModuleImageSource="ms-appx:///Assets/Settings/Modules/NewPlus.png"
-        ModuleTitle="Assistive Tools">
+        ModuleTitle="Adaptive Tools">
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel
                 ChildrenTransitions="{StaticResource SettingsCardsAnimations}"
