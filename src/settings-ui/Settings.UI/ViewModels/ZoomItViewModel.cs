@@ -358,12 +358,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     return null;
                 }
 
-                // XOR with Shift: if Shift is present, remove it; if absent, add it
                 return new HotkeySettings(
                     baseKey.Win,
                     baseKey.Ctrl,
                     baseKey.Alt,
-                    !baseKey.Shift,  // XOR with Shift
+                    !baseKey.Shift, // Toggle Shift: if Shift is present, remove it; if absent, add it
                     baseKey.Code);
             }
         }
