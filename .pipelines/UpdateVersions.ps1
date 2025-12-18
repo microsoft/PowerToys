@@ -1,7 +1,7 @@
 Param(
   # Using the default value of 1.7 for winAppSdkVersionNumber and useExperimentalVersion as false
   [Parameter(Mandatory=$False,Position=1)]
-  [string]$winAppSdkVersionNumber = "1.7",
+  [string]$winAppSdkVersionNumber = "1.8",
 
   # When the pipeline calls the PS1 file, the passed parameters are converted to string type
   [Parameter(Mandatory=$False,Position=2)]

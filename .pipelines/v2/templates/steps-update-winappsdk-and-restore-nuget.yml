@@ -35,3 +35,4 @@ steps:
     projects: '$(build.sourcesdirectory)\**\*.slnx'
     feedsToUse: 'config'
     nugetConfigPath: '$(build.sourcesdirectory)\nuget.config'
+    workingDirectory: '$(build.sourcesdirectory)'
