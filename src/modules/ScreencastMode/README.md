@@ -26,7 +26,7 @@ Screencast Mode is a new utility within PowerToys that allows users to Visualize
 ### The Screencast Mode Settings
 Much like the other PowerToys modules, Screencast Mode's Settings are implemented in the `Settings.UI` and `Settings.UI.Library` folders. In the Settings.UI.Library, there are the `ScreencastModeSettings` and `ScreencastModeProperties` classes. The `ScreencastModeSettings`  implements `ISettingsConfig` Interface and inherits from `BasePTModuleSettings`, primarily to set up the JSON serialization. The `ScreencastModeProperties` class holds the actual settings that are bound to the UI elements in the Settings.UI project, and also sets up their default values.
 
-In the `Views` folder of the `Settings.UI` project, there is the `ScreencastModePage.xaml` file which contains the XAML code for the settings page, and the `ScreencastModePage.xaml.cs` file which contains the code-behind for the settings page. The code-behind file was kept minimal. We also modifed the `ShellPage.xaml` file to add a navigation item for the Screencast Mode settings page. To add all the buttons and descriptions, we had to add elements to `Resources.resw` file. We tried to follow convention as much as possible when naming the resources.
+In the `Views` folder of the `Settings.UI` project, there is the `ScreencastModePage.xaml` file which contains the XAML code for the settings page, and the `ScreencastModePage.xaml.cs` file which contains the code-behind for the settings page. The code-behind file was kept minimal. We also modified the `ShellPage.xaml` file to add a navigation item for the Screencast Mode settings page. To add all the buttons and descriptions, we had to add elements to `Resources.resw` file. We tried to follow convention as much as possible when naming the resources.
 
 Last but not at least, we designed assets for Screencast Mode, which can be found in the `Settings.UI/Icons` folder and the preview image is in the `Settings.UI/Modules` folder.
 
@@ -91,7 +91,7 @@ Left/right modifier variants are normalized to generic forms for cleaner display
 
 **Display Name Mapping:**
 Keys are mapped to short, readable names optimized for readability:
-- Unknown keys fall back to `PowerToys.Interop.LayoutMapManaged`; This is great for graceful handling in case some keys were missed during implementation. We decied not to use this for every key because some of the names are too long for screencast display.
+- Unknown keys fall back to `PowerToys.Interop.LayoutMapManaged`; This is great for graceful handling in case some keys were missed during implementation. We decided not to use this for every key because some of the names are too long for screencast display.
 
 **Overflow Handling:**
 When display text exceeds ~40 characters, the display clears but preserves
@@ -122,7 +122,7 @@ pattern by implementing `PowertoyModuleIface`.
 |------|---------|
 | `dllmain.cpp` | Module implementation and `PowertoyModuleIface` |
 
-There trace provide and precompiled header files folow standard PowerToys conventions, and we did not change them much.
+There trace provide and precompiled header files follow standard PowerToys conventions, and we did not change them much.
 
 #### Module Lifecycle
 

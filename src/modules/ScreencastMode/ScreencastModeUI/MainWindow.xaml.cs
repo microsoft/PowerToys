@@ -334,7 +334,7 @@ namespace ScreencastModeUI
         }
 
         /// <summary>
-        /// Move the overlaw to the updated position based on settings
+        /// Move the overlay to the updated position based on settings
         /// </summary>
         private void UpdateWindowPosition()
         {
@@ -408,7 +408,7 @@ namespace ScreencastModeUI
         }
 
         /// <summary>
-        /// Intializes the global keyboard hook to listen for keystrokes
+        /// Initializes the global keyboard hook to listen for keystrokes
         /// </summary>
         private void SetupKeyboardHook()
         {
