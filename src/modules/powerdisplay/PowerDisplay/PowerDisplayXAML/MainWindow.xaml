@@ -13,7 +13,6 @@
     xmlns:winuiex="using:WinUIEx"
     MinWidth="0"
     MinHeight="0"
-    IsAlwaysOnTop="True"
     IsMaximizable="False"
     IsMinimizable="False"
     IsResizable="False"

@@ -148,15 +148,16 @@ namespace PowerDisplay
                 // CRITICAL: WinUI3 windows must be Activated at least once to display properly.
                 // In PowerToys mode, window is created but never activated until first show.
                 // Without Activate(), Show() may not actually render the window on screen.
-                // Note: IsAlwaysOnTop="True" in XAML ensures window appears above others.
                 Logger.LogTrace("ShowWindow: Calling this.Activate()");
                 this.Activate();
 
                 // Now show the window - it should appear at the correct size (WinUIEx simplified)
                 Logger.LogTrace("ShowWindow: Calling this.Show()");
                 this.Show();
-                Logger.LogTrace("ShowWindow: Calling this.BringToFront()");
-                this.BringToFront();
+
+                // Ensure window stays on top of other windows
+                this.IsAlwaysOnTop = true;
+                Logger.LogTrace("ShowWindow: IsAlwaysOnTop set to true");
 
                 // Clear focus from any interactive element (e.g., Slider) to prevent
                 // showing the value tooltip when the window opens
