@@ -244,6 +244,7 @@ This project has adopted the [Microsoft Open Source Code of Conduct][oss-conduct
 ## Privacy Statement 
 The application logs basic diagnostic data (telemetry). For more privacy information and what we collect, see our [PowerToys Data and Privacy documentation](https://aka.ms/powertoys-data-and-privacy-documentation). 
 
+
 [oss-CLA]: https://cla.opensource.microsoft.com 
 [oss-conduct-code]: CODE_OF_CONDUCT.md 
 [community-link]: COMMUNITY.md 
