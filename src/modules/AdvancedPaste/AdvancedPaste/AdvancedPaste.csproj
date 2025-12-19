@@ -87,7 +87,7 @@
     <!-- TODO: fix issues and reenable -->
     <!-- These are caused by streamjsonrpc dependency on Microsoft.VisualStudio.Threading.Analyzers -->
     <!-- We might want to add that to the project and fix the issues as well -->
-    <NoWarn>$(NoWarn);VSTHRD002;VSTHRD110;VSTHRD100;VSTHRD200;VSTHRD101</NoWarn>
+    <NoWarn>VSTHRD002;VSTHRD110;VSTHRD100;VSTHRD200;VSTHRD101</NoWarn>
   </PropertyGroup>
 
   <!-- 

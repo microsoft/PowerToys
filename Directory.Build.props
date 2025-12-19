@@ -26,10 +26,6 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(IsCompatibilityTest)' == 'true' and '$(MSBuildProjectExtension)' == '.csproj'">
-    <NoWarn>$(NoWarn);CS8305</NoWarn>
-  </PropertyGroup>
-
   <PropertyGroup>
     <_PropertySheetDisplayName>PowerToys.Root.Props</_PropertySheetDisplayName>
     <ForceImportBeforeCppProps>$(MsbuildThisFileDirectory)\Cpp.Build.props</ForceImportBeforeCppProps>

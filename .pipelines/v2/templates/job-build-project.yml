@@ -129,11 +129,9 @@ jobs:
       MSBuildMainBuildTargets: Build
     ${{ insert }}: ${{ parameters.variables }}
     ${{ if eq(parameters.useLatestWinAppSDK, true) }}:
-      RestoreAdditionalProjectSourcesArg: '/p:RestoreAdditionalProjectSources="$(Build.SourcesDirectory)\localpackages\NugetPackages"'
-      CompatibilityTestMsBuildArgs: '/p:IsCompatibilityTest=true'
+      RestoreAdditionalProjectSourcesArg: '/p:RestoreAdditionalProjectSources="$(Build.SourcesDirectory)\localpackages\NugetPackages" /p:NoWarn=CS8305'
     ${{ else }}:
       RestoreAdditionalProjectSourcesArg: ''
-      CompatibilityTestMsBuildArgs: ''
   displayName: Build
   timeoutInMinutes: ${{ parameters.timeoutInMinutes }}
   cancelTimeoutInMinutes: ${{ parameters.cancelTimeoutInMinutes }}
@@ -265,7 +263,6 @@ jobs:
         $(MSBuildCacheParameters)
         /t:$(MSBuildMainBuildTargets)
         $(RestoreAdditionalProjectSourcesArg)
-        $(CompatibilityTestMsBuildArgs)
       platform: $(BuildPlatform)
       configuration: $(BuildConfiguration)
       msbuildArchitecture: x64
@@ -289,7 +286,6 @@ jobs:
         ${{ parameters.additionalBuildOptions }}
         $(MSBuildCacheParameters)
         $(RestoreAdditionalProjectSourcesArg)
-        $(CompatibilityTestMsBuildArgs)
       platform: x64
       configuration: $(BuildConfiguration)
       msbuildArchitecture: x64
@@ -301,7 +297,7 @@ jobs:
     condition: and(succeeded(), ne(variables['BuildPlatform'], 'x64'))
     inputs:
       solution: src/dsc/v3/PowerToys.DSC/PowerToys.DSC.csproj
-      msbuildArgs: /t:Build /m /restore $(CompatibilityTestMsBuildArgs)
+      msbuildArgs: /t:Build /m /restore
       platform: x64
       configuration: $(BuildConfiguration)
       msbuildArchitecture: x64
@@ -351,7 +347,6 @@ jobs:
         ${{ parameters.additionalBuildOptions }}
         $(MSBuildCacheParameters)
         $(RestoreAdditionalProjectSourcesArg)
-        $(CompatibilityTestMsBuildArgs)
       platform: $(BuildPlatform)
       configuration: $(BuildConfiguration)
       msbuildArchitecture: x64
@@ -373,7 +368,6 @@ jobs:
         ${{ parameters.additionalBuildOptions }}
         $(MSBuildCacheParameters)
         $(RestoreAdditionalProjectSourcesArg)
-        $(CompatibilityTestMsBuildArgs)
       platform: $(BuildPlatform)
       configuration: $(BuildConfiguration)
       msbuildArchitecture: x64
@@ -398,7 +392,6 @@ jobs:
           /p:TargetFramework=net9.0-windows10.0.26100.0
           /bl:$(LogOutputDirectory)\publish-${{ join('_',split(project, '/')) }}.binlog
           $(RestoreAdditionalProjectSourcesArg)
-          $(CompatibilityTestMsBuildArgs)
         platform: $(BuildPlatform)
         configuration: $(BuildConfiguration)
         msbuildArchitecture: x64
