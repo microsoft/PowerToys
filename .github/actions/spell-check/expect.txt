@@ -2032,7 +2032,7 @@ vswhere
 Vtbl
 WANTNUKEWARNING
 WANTPALM
-wasdk
+WASDK
 wbem
 WBounds
 Wca
