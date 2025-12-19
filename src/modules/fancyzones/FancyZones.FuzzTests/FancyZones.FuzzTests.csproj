@@ -11,6 +11,7 @@
 	<ItemGroup>
 		<Compile Include="..\editor\FancyZonesEditor\Utils\ParsingResult.cs" Link="ParsingResult.cs" />
 		<Compile Include="..\FancyZonesEditorCommon\Data\CustomLayouts.cs" Link="CustomLayouts.cs" />
+		<Compile Include="..\FancyZonesEditorCommon\Data\FancyZonesPaths.cs" Link="FancyZonesPaths.cs" />
 		<Compile Include="..\FancyZonesEditorCommon\Data\EditorData`1.cs" Link="EditorData`1.cs" />
 		<Compile Include="..\FancyZonesEditorCommon\Data\LayoutDefaultSettings.cs" Link="LayoutDefaultSettings.cs" />
 		<Compile Include="..\FancyZonesEditorCommon\Utils\DashCaseNamingPolicy.cs" Link="DashCaseNamingPolicy.cs" />
