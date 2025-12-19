@@ -10,6 +10,7 @@ using System.Text.Json;
 
 using FancyZonesEditorCommon.Data;
 using FancyZonesEditorCommon.Utils;
+using ManagedCommon;
 
 using FZPaths = FancyZonesEditorCommon.Data.FancyZonesPaths;
 
@@ -24,39 +25,70 @@ internal static class FancyZonesDataService
         monitors = Array.Empty<FancyZonesMonitorDescriptor>();
         error = string.Empty;
 
+        Logger.LogInfo($"TryGetMonitors: Starting. EditorParametersPath={FZPaths.EditorParameters}");
+
         try
         {
             if (!File.Exists(FZPaths.EditorParameters))
             {
                 error = "FancyZones monitor data not found. Open FancyZones Editor once to initialize.";
+                Logger.LogWarning($"TryGetMonitors: File not found. Path={FZPaths.EditorParameters}");
                 return false;
             }
 
+            Logger.LogInfo($"TryGetMonitors: File exists, reading...");
             var editorParams = FancyZonesDataIO.ReadEditorParameters();
+            Logger.LogInfo($"TryGetMonitors: ReadEditorParameters returned. Monitors={editorParams.Monitors?.Count ?? -1}");
+
             var editorMonitors = editorParams.Monitors;
             if (editorMonitors is null || editorMonitors.Count == 0)
             {
                 error = "No FancyZones monitors found.";
+                Logger.LogWarning($"TryGetMonitors: No monitors in file.");
                 return false;
             }
 
             monitors = editorMonitors
                 .Select((monitor, i) => new FancyZonesMonitorDescriptor(i + 1, monitor))
                 .ToArray();
+            Logger.LogInfo($"TryGetMonitors: Succeeded. MonitorCount={monitors.Count}");
             return true;
         }
         catch (Exception ex)
         {
             error = $"Failed to read FancyZones monitor data: {ex.Message}";
+            Logger.LogError($"TryGetMonitors: Exception. Message={ex.Message} Stack={ex.StackTrace}");
             return false;
         }
     }
 
     public static IReadOnlyList<FancyZonesLayoutDescriptor> GetLayouts()
     {
+        Logger.LogInfo($"GetLayouts: Starting. LayoutTemplatesPath={FZPaths.LayoutTemplates} CustomLayoutsPath={FZPaths.CustomLayouts}");
         var layouts = new List<FancyZonesLayoutDescriptor>();
-        layouts.AddRange(GetTemplateLayouts());
-        layouts.AddRange(GetCustomLayouts());
+        try
+        {
+            var templates = GetTemplateLayouts().ToArray();
+            Logger.LogInfo($"GetLayouts: GetTemplateLayouts returned {templates.Length} layouts");
+            layouts.AddRange(templates);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"GetLayouts: GetTemplateLayouts failed. Message={ex.Message} Stack={ex.StackTrace}");
+        }
+
+        try
+        {
+            var customLayouts = GetCustomLayouts().ToArray();
+            Logger.LogInfo($"GetLayouts: GetCustomLayouts returned {customLayouts.Length} layouts");
+            layouts.AddRange(customLayouts);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"GetLayouts: GetCustomLayouts failed. Message={ex.Message} Stack={ex.StackTrace}");
+        }
+
+        Logger.LogInfo($"GetLayouts: Total layouts={layouts.Count}");
         return layouts;
     }
 
@@ -223,24 +255,30 @@ internal static class FancyZonesDataService
 
     private static IEnumerable<FancyZonesLayoutDescriptor> GetTemplateLayouts()
     {
+        Logger.LogInfo($"GetTemplateLayouts: Starting. Path={FZPaths.LayoutTemplates} Exists={File.Exists(FZPaths.LayoutTemplates)}");
+
         LayoutTemplates.TemplateLayoutsListWrapper templates;
         try
         {
             if (!File.Exists(FZPaths.LayoutTemplates))
             {
+                Logger.LogWarning($"GetTemplateLayouts: File not found.");
                 yield break;
             }
 
             templates = FancyZonesDataIO.ReadLayoutTemplates();
+            Logger.LogInfo($"GetTemplateLayouts: ReadLayoutTemplates succeeded. Count={templates.LayoutTemplates?.Count ?? -1}");
         }
-        catch
+        catch (Exception ex)
         {
+            Logger.LogError($"GetTemplateLayouts: ReadLayoutTemplates failed. Message={ex.Message} Stack={ex.StackTrace}");
             yield break;
         }
 
         var templateLayouts = templates.LayoutTemplates;
         if (templateLayouts is null)
         {
+            Logger.LogWarning($"GetTemplateLayouts: LayoutTemplates is null.");
             yield break;
         }
 
