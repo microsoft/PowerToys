@@ -302,11 +302,8 @@ namespace PowerDisplay
         {
             try
             {
-                // Use WindowEx properties to configure presenter (simplified)
-                this.IsResizable = false;
-                this.IsMaximizable = false;
-                this.IsMinimizable = false;
-                this.IsTitleBarVisible = false;
+                // Window properties (IsResizable, IsMaximizable, IsMinimizable,
+                // IsTitleBarVisible, IsShownInSwitchers) are set in XAML
 
                 // Set minimal initial window size - will be adjusted before showing
                 // Using minimal height to prevent "large window shrinking" flicker
@@ -342,15 +339,9 @@ namespace PowerDisplay
                     titleBar.SetDragRectangles(Array.Empty<Windows.Graphics.RectInt32>());
                 }
 
-                // Use Win32 API to further disable window moving
+                // Use Win32 API to further disable window moving (removes WS_CAPTION, WS_SYSMENU, etc.)
                 var hWnd = this.GetWindowHandle();
                 WindowHelper.DisableWindowMovingAndResizing(hWnd);
-
-                // Hide window from taskbar
-                WindowHelper.HideFromTaskbar(hWnd);
-
-                // Note: IsAlwaysOnTop="True" is set in XAML via WinUIEx,
-                // ensuring the window always appears above other windows.
             }
             catch (Exception ex)
             {
