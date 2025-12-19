@@ -55,7 +55,7 @@ internal sealed partial class FancyZonesMonitorsPage : DynamicListPage
             }
 
             var layoutDescription = FancyZonesDataService.TryGetAppliedLayoutForMonitor(monitor.Data, out var applied) && applied is not null
-                ? $"Current layout: {applied.Type}"
+                ? $"Current layout: {applied.Value.Type}"
                 : "Current layout: unknown";
 
             var item = new FancyZonesMonitorListItem(monitor, layoutDescription, monitorIcon);

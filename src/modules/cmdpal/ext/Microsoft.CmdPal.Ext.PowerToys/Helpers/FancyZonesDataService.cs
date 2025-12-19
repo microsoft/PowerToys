@@ -8,6 +8,11 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 
+using FancyZonesEditorCommon.Data;
+using FancyZonesEditorCommon.Utils;
+
+using FZPaths = FancyZonesEditorCommon.Data.FancyZonesPaths;
+
 namespace PowerToysExtension.Helpers;
 
 internal static class FancyZonesDataService
@@ -19,35 +24,32 @@ internal static class FancyZonesDataService
         monitors = Array.Empty<FancyZonesMonitorDescriptor>();
         error = string.Empty;
 
-        FancyZonesEditorParametersFile? editorParams;
         try
         {
-            if (!File.Exists(FancyZonesPaths.EditorParameters))
+            if (!File.Exists(FZPaths.EditorParameters))
             {
                 error = "FancyZones monitor data not found. Open FancyZones Editor once to initialize.";
                 return false;
             }
 
-            var json = File.ReadAllText(FancyZonesPaths.EditorParameters);
-            editorParams = JsonSerializer.Deserialize(json, FancyZonesJsonContext.Default.FancyZonesEditorParametersFile);
+            var editorParams = FancyZonesDataIO.ReadEditorParameters();
+            var editorMonitors = editorParams.Monitors;
+            if (editorMonitors is null || editorMonitors.Count == 0)
+            {
+                error = "No FancyZones monitors found.";
+                return false;
+            }
+
+            monitors = editorMonitors
+                .Select((monitor, i) => new FancyZonesMonitorDescriptor(i + 1, monitor))
+                .ToArray();
+            return true;
         }
         catch (Exception ex)
         {
             error = $"Failed to read FancyZones monitor data: {ex.Message}";
             return false;
         }
-
-        var editorMonitors = editorParams?.Monitors;
-        if (editorMonitors is null || editorMonitors.Count == 0)
-        {
-            error = "No FancyZones monitors found.";
-            return false;
-        }
-
-        monitors = editorMonitors
-            .Select((monitor, i) => new FancyZonesMonitorDescriptor(i + 1, monitor))
-            .ToArray();
-        return true;
     }
 
     public static IReadOnlyList<FancyZonesLayoutDescriptor> GetLayouts()
@@ -58,10 +60,10 @@ internal static class FancyZonesDataService
         return layouts;
     }
 
-    public static bool TryGetAppliedLayoutForMonitor(FancyZonesEditorMonitor monitor, out FancyZonesAppliedLayout? appliedLayout)
+    public static bool TryGetAppliedLayoutForMonitor(EditorParameters.NativeMonitorDataWrapper monitor, out AppliedLayouts.AppliedLayoutWrapper.LayoutWrapper? appliedLayout)
         => TryGetAppliedLayoutForMonitor(monitor, FancyZonesVirtualDesktop.GetCurrentVirtualDesktopIdString(), out appliedLayout);
 
-    public static bool TryGetAppliedLayoutForMonitor(FancyZonesEditorMonitor monitor, string virtualDesktopId, out FancyZonesAppliedLayout? appliedLayout)
+    public static bool TryGetAppliedLayoutForMonitor(EditorParameters.NativeMonitorDataWrapper monitor, string virtualDesktopId, out AppliedLayouts.AppliedLayoutWrapper.LayoutWrapper? appliedLayout)
     {
         appliedLayout = null;
 
@@ -71,8 +73,13 @@ internal static class FancyZonesDataService
         }
 
         var match = FindAppliedLayoutEntry(file, monitor, virtualDesktopId);
-        appliedLayout = match?.AppliedLayout;
-        return appliedLayout is not null;
+        if (match is not null)
+        {
+            appliedLayout = match.Value.AppliedLayout;
+            return true;
+        }
+
+        return false;
     }
 
     public static (bool Success, string Message) ApplyLayoutToAllMonitors(FancyZonesLayoutDescriptor layout)
@@ -92,7 +99,7 @@ internal static class FancyZonesDataService
             return (false, error);
         }
 
-        FancyZonesEditorMonitor? monitorData = null;
+        EditorParameters.NativeMonitorDataWrapper? monitorData = null;
         foreach (var candidate in monitors)
         {
             if (candidate.Data.MonitorInstanceId == monitor.Data.MonitorInstanceId)
@@ -107,59 +114,61 @@ internal static class FancyZonesDataService
             return (false, "Monitor not found.");
         }
 
-        return ApplyLayoutToMonitors(layout, [monitorData!]);
+        return ApplyLayoutToMonitors(layout, [monitorData.Value]);
     }
 
-    private static (bool Success, string Message) ApplyLayoutToMonitors(FancyZonesLayoutDescriptor layout, IEnumerable<FancyZonesEditorMonitor> monitors)
+    private static (bool Success, string Message) ApplyLayoutToMonitors(FancyZonesLayoutDescriptor layout, IEnumerable<EditorParameters.NativeMonitorDataWrapper> monitors)
     {
-        if (!TryReadAppliedLayouts(out var appliedFile) || appliedFile is null)
+        AppliedLayouts.AppliedLayoutsListWrapper appliedFile;
+        if (!TryReadAppliedLayouts(out var existingFile))
         {
-            appliedFile = new FancyZonesAppliedLayoutsFile { AppliedLayouts = new List<FancyZonesAppliedLayoutEntry>() };
+            appliedFile = new AppliedLayouts.AppliedLayoutsListWrapper { AppliedLayouts = new List<AppliedLayouts.AppliedLayoutWrapper>() };
+        }
+        else
+        {
+            appliedFile = existingFile;
         }
 
-        appliedFile.AppliedLayouts ??= new List<FancyZonesAppliedLayoutEntry>();
+        appliedFile.AppliedLayouts ??= new List<AppliedLayouts.AppliedLayoutWrapper>();
 
         var currentVirtualDesktop = FancyZonesVirtualDesktop.GetCurrentVirtualDesktopIdString();
 
         foreach (var monitor in monitors)
         {
-            var entry = FindAppliedLayoutEntry(appliedFile, monitor, currentVirtualDesktop);
-            if (entry is null)
+            var existingEntry = FindAppliedLayoutEntry(appliedFile, monitor, currentVirtualDesktop);
+            if (existingEntry is not null)
             {
-                entry = new FancyZonesAppliedLayoutEntry
-                {
-                    Device = new FancyZonesAppliedDevice(),
-                    AppliedLayout = new FancyZonesAppliedLayout(),
-                };
-
-                appliedFile.AppliedLayouts.Add(entry);
+                // Remove the existing entry so we can add a new one
+                appliedFile.AppliedLayouts.Remove(existingEntry.Value);
             }
 
-            entry.Device.Monitor = monitor.Monitor;
-            entry.Device.MonitorInstance = monitor.MonitorInstanceId ?? string.Empty;
-            entry.Device.SerialNumber = monitor.MonitorSerialNumber ?? string.Empty;
-            entry.Device.MonitorNumber = monitor.MonitorNumber;
-            entry.Device.VirtualDesktop = currentVirtualDesktop;
+            var newEntry = new AppliedLayouts.AppliedLayoutWrapper
+            {
+                Device = new AppliedLayouts.AppliedLayoutWrapper.DeviceIdWrapper
+                {
+                    Monitor = monitor.Monitor,
+                    MonitorInstance = monitor.MonitorInstanceId ?? string.Empty,
+                    SerialNumber = monitor.MonitorSerialNumber ?? string.Empty,
+                    MonitorNumber = monitor.MonitorNumber,
+                    VirtualDesktop = currentVirtualDesktop,
+                },
+                AppliedLayout = new AppliedLayouts.AppliedLayoutWrapper.LayoutWrapper
+                {
+                    Uuid = layout.ApplyLayout.Uuid,
+                    Type = layout.ApplyLayout.Type,
+                    ZoneCount = layout.ApplyLayout.ZoneCount,
+                    ShowSpacing = layout.ApplyLayout.ShowSpacing,
+                    Spacing = layout.ApplyLayout.Spacing,
+                    SensitivityRadius = layout.ApplyLayout.SensitivityRadius,
+                },
+            };
 
-            entry.AppliedLayout.Uuid = layout.ApplyLayout.Uuid;
-            entry.AppliedLayout.Type = layout.ApplyLayout.Type;
-            entry.AppliedLayout.ZoneCount = layout.ApplyLayout.ZoneCount;
-            entry.AppliedLayout.ShowSpacing = layout.ApplyLayout.ShowSpacing;
-            entry.AppliedLayout.Spacing = layout.ApplyLayout.Spacing;
-            entry.AppliedLayout.SensitivityRadius = layout.ApplyLayout.SensitivityRadius;
+            appliedFile.AppliedLayouts.Add(newEntry);
         }
 
         try
         {
-            var json = JsonSerializer.Serialize(appliedFile, FancyZonesJsonContext.Default.FancyZonesAppliedLayoutsFile);
-            var directory = Path.GetDirectoryName(FancyZonesPaths.AppliedLayouts);
-            if (string.IsNullOrWhiteSpace(directory))
-            {
-                return (false, "Failed to write applied layouts: invalid applied-layouts.json path.");
-            }
-
-            Directory.CreateDirectory(directory);
-            File.WriteAllText(FancyZonesPaths.AppliedLayouts, json);
+            FancyZonesDataIO.WriteAppliedLayouts(appliedFile);
         }
         catch (Exception ex)
         {
@@ -178,9 +187,9 @@ internal static class FancyZonesDataService
         return (true, "Layout applied.");
     }
 
-    private static FancyZonesAppliedLayoutEntry? FindAppliedLayoutEntry(FancyZonesAppliedLayoutsFile? file, FancyZonesEditorMonitor monitor, string virtualDesktopId)
+    private static AppliedLayouts.AppliedLayoutWrapper? FindAppliedLayoutEntry(AppliedLayouts.AppliedLayoutsListWrapper file, EditorParameters.NativeMonitorDataWrapper monitor, string virtualDesktopId)
     {
-        if (file?.AppliedLayouts is null)
+        if (file.AppliedLayouts is null)
         {
             return null;
         }
@@ -193,19 +202,18 @@ internal static class FancyZonesDataService
             string.Equals(e.Device.VirtualDesktop, virtualDesktopId, StringComparison.OrdinalIgnoreCase));
     }
 
-    private static bool TryReadAppliedLayouts(out FancyZonesAppliedLayoutsFile? file)
+    private static bool TryReadAppliedLayouts(out AppliedLayouts.AppliedLayoutsListWrapper file)
     {
-        file = null;
+        file = default;
         try
         {
-            if (!File.Exists(FancyZonesPaths.AppliedLayouts))
+            if (!File.Exists(FZPaths.AppliedLayouts))
             {
                 return false;
             }
 
-            var json = File.ReadAllText(FancyZonesPaths.AppliedLayouts);
-            file = JsonSerializer.Deserialize(json, FancyZonesJsonContext.Default.FancyZonesAppliedLayoutsFile);
-            return file is not null;
+            file = FancyZonesDataIO.ReadAppliedLayouts();
+            return true;
         }
         catch
         {
@@ -215,23 +223,22 @@ internal static class FancyZonesDataService
 
     private static IEnumerable<FancyZonesLayoutDescriptor> GetTemplateLayouts()
     {
-        FancyZonesLayoutTemplatesFile? templates;
+        LayoutTemplates.TemplateLayoutsListWrapper templates;
         try
         {
-            if (!File.Exists(FancyZonesPaths.LayoutTemplates))
+            if (!File.Exists(FZPaths.LayoutTemplates))
             {
                 yield break;
             }
 
-            var json = File.ReadAllText(FancyZonesPaths.LayoutTemplates);
-            templates = JsonSerializer.Deserialize(json, FancyZonesJsonContext.Default.FancyZonesLayoutTemplatesFile);
+            templates = FancyZonesDataIO.ReadLayoutTemplates();
         }
         catch
         {
             yield break;
         }
 
-        var templateLayouts = templates?.LayoutTemplates;
+        var templateLayouts = templates.LayoutTemplates;
         if (templateLayouts is null)
         {
             yield break;
@@ -258,7 +265,7 @@ internal static class FancyZonesDataService
                 Title = title,
                 Subtitle = subtitle,
                 Template = template,
-                ApplyLayout = new FancyZonesAppliedLayout
+                ApplyLayout = new AppliedLayouts.AppliedLayoutWrapper.LayoutWrapper
                 {
                     Type = type.ToLowerInvariant(),
                     Uuid = ZeroUuid,
@@ -273,23 +280,22 @@ internal static class FancyZonesDataService
 
     private static IEnumerable<FancyZonesLayoutDescriptor> GetCustomLayouts()
     {
-        FancyZonesCustomLayoutsFile? customLayouts;
+        CustomLayouts.CustomLayoutListWrapper customLayouts;
         try
         {
-            if (!File.Exists(FancyZonesPaths.CustomLayouts))
+            if (!File.Exists(FZPaths.CustomLayouts))
             {
                 yield break;
             }
 
-            var json = File.ReadAllText(FancyZonesPaths.CustomLayouts);
-            customLayouts = JsonSerializer.Deserialize(json, FancyZonesJsonContext.Default.FancyZonesCustomLayoutsFile);
+            customLayouts = FancyZonesDataIO.ReadCustomLayouts();
         }
         catch
         {
             yield break;
         }
 
-        var layouts = customLayouts?.CustomLayouts;
+        var layouts = customLayouts.CustomLayouts;
         if (layouts is null)
         {
             yield break;
@@ -330,9 +336,9 @@ internal static class FancyZonesDataService
         }
     }
 
-    private static bool TryBuildAppliedLayoutForCustom(FancyZonesCustomLayout custom, out FancyZonesAppliedLayout applied)
+    private static bool TryBuildAppliedLayoutForCustom(CustomLayouts.CustomLayoutWrapper custom, out AppliedLayouts.AppliedLayoutWrapper.LayoutWrapper applied)
     {
-        applied = new FancyZonesAppliedLayout
+        applied = new AppliedLayouts.AppliedLayoutWrapper.LayoutWrapper
         {
             Type = "custom",
             Uuid = custom.Uuid.Trim(),

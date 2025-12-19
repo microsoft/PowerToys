@@ -9,11 +9,15 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+
+using FancyZonesEditorCommon.Data;
+
 using ManagedCommon;
 using Microsoft.CommandPalette.Extensions.Toolkit;
-using PowerToys.Interop;
 using Windows.Graphics.Imaging;
 using Windows.Storage.Streams;
+
+using InteropConstants = PowerToys.Interop.Constants;
 
 namespace PowerToysExtension.Helpers;
 
@@ -106,7 +110,7 @@ internal static class FancyZonesMonitorPreviewRenderer
         return new IconInfo(cachePath);
     }
 
-    private static (int WidthPx, int HeightPx) ComputeCanvasSize(FancyZonesEditorMonitor monitor)
+    private static (int WidthPx, int HeightPx) ComputeCanvasSize(EditorParameters.NativeMonitorDataWrapper monitor)
     {
         const int maxDim = 320;
         var w = monitor.WorkAreaWidth > 0 ? monitor.WorkAreaWidth : monitor.MonitorWidth;
@@ -130,14 +134,14 @@ internal static class FancyZonesMonitorPreviewRenderer
         }
     }
 
-    private static (List<FancyZonesThumbnailRenderer.NormalizedRect> Rects, int Spacing) GetLayoutRectangles(FancyZonesEditorMonitor monitor)
+    private static (List<FancyZonesThumbnailRenderer.NormalizedRect> Rects, int Spacing) GetLayoutRectangles(EditorParameters.NativeMonitorDataWrapper monitor)
     {
         if (!FancyZonesDataService.TryGetAppliedLayoutForMonitor(monitor, out var applied) || applied is null)
         {
             return ([], 0);
         }
 
-        var layout = FindLayoutDescriptor(applied);
+        var layout = FindLayoutDescriptor(applied.Value);
         if (layout is null)
         {
             return ([], 0);
@@ -148,7 +152,7 @@ internal static class FancyZonesMonitorPreviewRenderer
         return (rects, spacing);
     }
 
-    private static FancyZonesLayoutDescriptor? FindLayoutDescriptor(FancyZonesAppliedLayout applied)
+    private static FancyZonesLayoutDescriptor? FindLayoutDescriptor(AppliedLayouts.AppliedLayoutWrapper.LayoutWrapper applied)
     {
         try
         {
@@ -159,7 +163,7 @@ internal static class FancyZonesMonitorPreviewRenderer
             {
                 return layouts.FirstOrDefault(l => l.Source == FancyZonesLayoutSource.Custom &&
                                                   l.Custom is not null &&
-                                                  string.Equals(l.Custom.Uuid?.Trim(), applied.Uuid.Trim(), StringComparison.OrdinalIgnoreCase));
+                                                  string.Equals(l.Custom.Value.Uuid?.Trim(), applied.Uuid.Trim(), StringComparison.OrdinalIgnoreCase));
             }
 
             var type = applied.Type?.Trim().ToLowerInvariant() ?? string.Empty;
@@ -181,7 +185,7 @@ internal static class FancyZonesMonitorPreviewRenderer
     {
         try
         {
-            var basePath = Constants.AppDataPath();
+            var basePath = InteropConstants.AppDataPath();
             if (string.IsNullOrWhiteSpace(basePath))
             {
                 return null;
@@ -203,7 +207,7 @@ internal static class FancyZonesMonitorPreviewRenderer
         var appliedFingerprint = string.Empty;
         if (FancyZonesDataService.TryGetAppliedLayoutForMonitor(monitor.Data, out var applied) && applied is not null)
         {
-            appliedFingerprint = FormattableString.Invariant($"{applied.Type}|{applied.Uuid}|{applied.ZoneCount}|{applied.ShowSpacing}|{applied.Spacing}");
+            appliedFingerprint = FormattableString.Invariant($"{applied.Value.Type}|{applied.Value.Uuid}|{applied.Value.ZoneCount}|{applied.Value.ShowSpacing}|{applied.Value.Spacing}");
         }
 
         var identity = FormattableString.Invariant(

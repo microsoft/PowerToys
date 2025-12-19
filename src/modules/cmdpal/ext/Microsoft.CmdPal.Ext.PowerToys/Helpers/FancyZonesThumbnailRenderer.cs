@@ -10,11 +10,13 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using FancyZonesEditorCommon.Data;
 using ManagedCommon;
 using Microsoft.CommandPalette.Extensions.Toolkit;
-using PowerToys.Interop;
 using Windows.Graphics.Imaging;
 using Windows.Storage.Streams;
+
+using InteropConstants = PowerToys.Interop.Constants;
 
 namespace PowerToysExtension.Helpers;
 
@@ -120,7 +122,7 @@ internal static class FancyZonesThumbnailRenderer
     {
         try
         {
-            var basePath = Constants.AppDataPath();
+            var basePath = InteropConstants.AppDataPath();
             if (string.IsNullOrWhiteSpace(basePath))
             {
                 return null;
@@ -140,8 +142,8 @@ internal static class FancyZonesThumbnailRenderer
     private static string ComputeLayoutHash(FancyZonesLayoutDescriptor layout)
     {
         var customType = layout.Custom?.Type?.Trim() ?? string.Empty;
-        var customInfo = layout.Custom is not null && layout.Custom.Info.ValueKind is not JsonValueKind.Undefined and not JsonValueKind.Null
-            ? layout.Custom.Info.GetRawText()
+        var customInfo = layout.Custom is not null && layout.Custom.Value.Info.ValueKind is not JsonValueKind.Undefined and not JsonValueKind.Null
+            ? layout.Custom.Value.Info.GetRawText()
             : string.Empty;
 
         var fingerprint = FormattableString.Invariant(
@@ -180,7 +182,7 @@ internal static class FancyZonesThumbnailRenderer
         var type = layout.ApplyLayout.Type.ToLowerInvariant();
         if (layout.Source == FancyZonesLayoutSource.Custom && layout.Custom is not null)
         {
-            return GetCustomRects(layout.Custom);
+            return GetCustomRects(layout.Custom.Value);
         }
 
         return type switch
@@ -195,7 +197,7 @@ internal static class FancyZonesThumbnailRenderer
         };
     }
 
-    private static List<NormalizedRect> GetCustomRects(FancyZonesCustomLayout custom)
+    private static List<NormalizedRect> GetCustomRects(CustomLayouts.CustomLayoutWrapper custom)
     {
         var type = custom.Type?.Trim().ToLowerInvariant() ?? string.Empty;
         if (custom.Info.ValueKind is JsonValueKind.Undefined or JsonValueKind.Null)

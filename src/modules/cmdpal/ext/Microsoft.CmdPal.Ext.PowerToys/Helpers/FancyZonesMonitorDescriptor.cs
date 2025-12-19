@@ -5,11 +5,13 @@
 using System;
 using System.Globalization;
 
+using FancyZonesEditorCommon.Data;
+
 namespace PowerToysExtension.Helpers;
 
 internal readonly record struct FancyZonesMonitorDescriptor(
     int Index,
-    FancyZonesEditorMonitor Data)
+    EditorParameters.NativeMonitorDataWrapper Data)
 {
     public string Title => Data.Monitor;
 
