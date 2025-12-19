@@ -29,6 +29,7 @@ namespace PowerDisplay
     {
         private readonly ISettingsUtils _settingsUtils = SettingsUtils.Default;
         private MainViewModel? _viewModel;
+        private HotkeyService? _hotkeyService;
 
         // Expose ViewModel as property for x:Bind
         public MainViewModel ViewModel => _viewModel ?? throw new InvalidOperationException("ViewModel not initialized");
@@ -60,6 +61,13 @@ namespace PowerDisplay
                 // 4. Register event handlers
                 RegisterEventHandlers();
                 Logger.LogTrace("MainWindow constructor: Event handlers registered");
+
+                // 5. Initialize HotkeyService for in-process hotkey handling (CmdPal pattern)
+                // This avoids IPC timing issues with Runner's centralized hotkey mechanism
+                Logger.LogTrace("MainWindow constructor: Initializing HotkeyService");
+                _hotkeyService = new HotkeyService(_settingsUtils, ToggleWindow);
+                _hotkeyService.Initialize(this);
+                Logger.LogTrace("MainWindow constructor: HotkeyService initialized");
 
                 // Note: ViewModel handles all async initialization internally.
                 // We listen to InitializationCompleted event to know when data is ready.
@@ -539,8 +547,17 @@ namespace PowerDisplay
 
         public void Dispose()
         {
+            _hotkeyService?.Dispose();
             _viewModel?.Dispose();
             GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
+        /// Reload hotkey settings. Call this when settings change.
+        /// </summary>
+        public void ReloadHotkeySettings()
+        {
+            _hotkeyService?.ReloadSettings();
         }
     }
 }

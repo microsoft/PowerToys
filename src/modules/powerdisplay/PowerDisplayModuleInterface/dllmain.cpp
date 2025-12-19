@@ -34,135 +34,22 @@ BOOL APIENTRY DllMain(HMODULE /*hModule*/, DWORD ul_reason_for_call, LPVOID /*lp
 const static wchar_t* MODULE_NAME = L"PowerDisplay";
 const static wchar_t* MODULE_DESC = L"A utility to manage display brightness and color temperature across multiple monitors.";
 
-namespace
-{
-    const wchar_t JSON_KEY_PROPERTIES[] = L"properties";
-    const wchar_t JSON_KEY_ENABLED[] = L"enabled";
-    const wchar_t JSON_KEY_HOTKEY_ENABLED[] = L"hotkey_enabled";
-    const wchar_t JSON_KEY_ACTIVATION_SHORTCUT[] = L"activation_shortcut";
-    const wchar_t JSON_KEY_WIN[] = L"win";
-    const wchar_t JSON_KEY_ALT[] = L"alt";
-    const wchar_t JSON_KEY_CTRL[] = L"ctrl";
-    const wchar_t JSON_KEY_SHIFT[] = L"shift";
-    const wchar_t JSON_KEY_CODE[] = L"code";
-}
-
 class PowerDisplayModule : public PowertoyModuleIface
 {
 private:
     bool m_enabled = false;
-    bool m_hotkey_enabled = false;
-    Hotkey m_activation_hotkey = { .win = true, .ctrl = false, .shift = false, .alt = true, .key = 'M' };
 
     // Windows Events for IPC (persistent handles - ColorPicker pattern)
+    // Note: SettingsUpdatedEvent and HotkeyUpdatedEvent are NOT created here.
+    // They are created on-demand by EventHelper.SignalEvent() in Settings UI
+    // and NativeEventWaiter.WaitForEventLoop() in PowerDisplay.exe.
     HANDLE m_hProcess = nullptr;
     HANDLE m_hToggleEvent = nullptr;
     HANDLE m_hTerminateEvent = nullptr;
     HANDLE m_hRefreshEvent = nullptr;
-    HANDLE m_hSettingsUpdatedEvent = nullptr;
     HANDLE m_hApplyColorTemperatureEvent = nullptr;
     HANDLE m_hApplyProfileEvent = nullptr;
     HANDLE m_hSendSettingsTelemetryEvent = nullptr;
-
-    void parse_hotkey_settings(PowerToysSettings::PowerToyValues settings)
-    {
-        Logger::trace(L"parse_hotkey_settings: Starting to parse hotkey settings");
-        auto settingsObject = settings.get_raw_json();
-        if (settingsObject.GetView().Size())
-        {
-            Logger::trace(L"parse_hotkey_settings: Settings JSON has {} keys", settingsObject.GetView().Size());
-            try
-            {
-                if (settingsObject.HasKey(JSON_KEY_PROPERTIES))
-                {
-                    auto properties = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES);
-                    m_hotkey_enabled = properties.GetNamedBoolean(JSON_KEY_HOTKEY_ENABLED, false);
-                    Logger::info(L"parse_hotkey_settings: hotkey_enabled={}", m_hotkey_enabled);
-                }
-                else
-                {
-                    Logger::info("parse_hotkey_settings: Properties object not found in settings, using defaults");
-                    m_hotkey_enabled = false;
-                }
-            }
-            catch (...)
-            {
-                Logger::error("parse_hotkey_settings: Exception thrown while parsing hotkey settings, using defaults");
-                m_hotkey_enabled = false;
-            }
-        }
-        else
-        {
-            Logger::info("parse_hotkey_settings: Power Display settings are empty");
-            m_hotkey_enabled = false;
-        }
-        Logger::trace(L"parse_hotkey_settings: Completed, hotkey_enabled={}", m_hotkey_enabled);
-    }
-
-    void parse_activation_hotkey(PowerToysSettings::PowerToyValues& settings)
-    {
-        Logger::trace(L"parse_activation_hotkey: Starting to parse activation hotkey");
-        auto settingsObject = settings.get_raw_json();
-        if (settingsObject.GetView().Size())
-        {
-            try
-            {
-                if (settingsObject.HasKey(JSON_KEY_PROPERTIES))
-                {
-                    auto properties = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES);
-                    if (properties.HasKey(JSON_KEY_ACTIVATION_SHORTCUT))
-                    {
-                        Logger::trace(L"parse_activation_hotkey: Found activation_shortcut in settings");
-                        auto jsonHotkeyObject = properties.GetNamedObject(JSON_KEY_ACTIVATION_SHORTCUT);
-                        m_activation_hotkey.win = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_WIN);
-                        m_activation_hotkey.alt = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_ALT);
-                        m_activation_hotkey.shift = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_SHIFT);
-                        m_activation_hotkey.ctrl = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_CTRL);
-                        m_activation_hotkey.key = static_cast<unsigned char>(jsonHotkeyObject.GetNamedNumber(JSON_KEY_CODE));
-                        m_activation_hotkey.isShown = true;
-                        Logger::info(L"parse_activation_hotkey: Parsed hotkey - Win={} Ctrl={} Alt={} Shift={} Key={} (0x{:X})",
-                                     m_activation_hotkey.win, m_activation_hotkey.ctrl, m_activation_hotkey.alt,
-                                     m_activation_hotkey.shift, m_activation_hotkey.key, m_activation_hotkey.key);
-                    }
-                    else
-                    {
-                        Logger::info("parse_activation_hotkey: ActivationShortcut not found in settings, using default Win+Alt+M");
-                        m_activation_hotkey.isShown = true;
-                    }
-                }
-                else
-                {
-                    Logger::info("parse_activation_hotkey: Properties key not found in settings JSON");
-                }
-            }
-            catch (...)
-            {
-                Logger::error("parse_activation_hotkey: Exception thrown while parsing activation shortcut, using default Win+Alt+M");
-                m_activation_hotkey.isShown = true;
-            }
-        }
-        else
-        {
-            Logger::info("parse_activation_hotkey: Settings JSON is empty");
-        }
-        Logger::trace(L"parse_activation_hotkey: Completed");
-    }
-
-    void init_settings()
-    {
-        try
-        {
-            PowerToysSettings::PowerToyValues settings =
-                PowerToysSettings::PowerToyValues::load_from_settings_file(get_key());
-
-            parse_hotkey_settings(settings);
-            parse_activation_hotkey(settings);
-        }
-        catch (std::exception&)
-        {
-            Logger::error("Invalid json when trying to load the Power Display settings json from file.");
-        }
-    }
 
     // Helper method to check if PowerDisplay.exe process is still running
     bool is_process_running()
@@ -233,8 +120,6 @@ public:
         LoggerHelpers::init_logger(MODULE_NAME, L"ModuleInterface", LogSettings::powerDisplayLoggerName);
         Logger::info("Power Display module is constructing");
 
-        init_settings();
-
         // Create all Windows Events (persistent handles - ColorPicker pattern)
         Logger::trace(L"Creating Windows Events for IPC...");
         m_hToggleEvent = CreateDefaultEvent(CommonSharedConstants::TOGGLE_POWER_DISPLAY_EVENT);
@@ -243,8 +128,6 @@ public:
         Logger::trace(L"Created TERMINATE_POWER_DISPLAY_EVENT: handle={}", reinterpret_cast<void*>(m_hTerminateEvent));
         m_hRefreshEvent = CreateDefaultEvent(CommonSharedConstants::REFRESH_POWER_DISPLAY_MONITORS_EVENT);
         Logger::trace(L"Created REFRESH_MONITORS_EVENT: handle={}", reinterpret_cast<void*>(m_hRefreshEvent));
-        m_hSettingsUpdatedEvent = CreateDefaultEvent(CommonSharedConstants::SETTINGS_UPDATED_POWER_DISPLAY_EVENT);
-        Logger::trace(L"Created SETTINGS_UPDATED_EVENT: handle={}", reinterpret_cast<void*>(m_hSettingsUpdatedEvent));
         m_hApplyColorTemperatureEvent = CreateDefaultEvent(CommonSharedConstants::APPLY_COLOR_TEMPERATURE_POWER_DISPLAY_EVENT);
         Logger::trace(L"Created APPLY_COLOR_TEMPERATURE_EVENT: handle={}", reinterpret_cast<void*>(m_hApplyColorTemperatureEvent));
         m_hApplyProfileEvent = CreateDefaultEvent(CommonSharedConstants::APPLY_PROFILE_POWER_DISPLAY_EVENT);
@@ -252,12 +135,12 @@ public:
         m_hSendSettingsTelemetryEvent = CreateDefaultEvent(CommonSharedConstants::POWER_DISPLAY_SEND_SETTINGS_TELEMETRY_EVENT);
         Logger::trace(L"Created SEND_SETTINGS_TELEMETRY_EVENT: handle={}", reinterpret_cast<void*>(m_hSendSettingsTelemetryEvent));
 
-        if (!m_hToggleEvent || !m_hTerminateEvent || !m_hRefreshEvent || !m_hSettingsUpdatedEvent || !m_hApplyColorTemperatureEvent || !m_hApplyProfileEvent || !m_hSendSettingsTelemetryEvent)
+        if (!m_hToggleEvent || !m_hTerminateEvent || !m_hRefreshEvent || !m_hApplyColorTemperatureEvent || !m_hApplyProfileEvent || !m_hSendSettingsTelemetryEvent)
         {
-            Logger::error(L"Failed to create one or more event handles: Toggle={}, Terminate={}, Refresh={}, SettingsUpdated={}, ApplyColorTemp={}, ApplyProfile={}, SettingsTelemetry={}",
+            Logger::error(L"Failed to create one or more event handles: Toggle={}, Terminate={}, Refresh={}, ApplyColorTemp={}, ApplyProfile={}, SettingsTelemetry={}",
                          reinterpret_cast<void*>(m_hToggleEvent),
                          reinterpret_cast<void*>(m_hTerminateEvent), reinterpret_cast<void*>(m_hRefreshEvent),
-                         reinterpret_cast<void*>(m_hSettingsUpdatedEvent), reinterpret_cast<void*>(m_hApplyColorTemperatureEvent),
+                         reinterpret_cast<void*>(m_hApplyColorTemperatureEvent),
                          reinterpret_cast<void*>(m_hApplyProfileEvent), reinterpret_cast<void*>(m_hSendSettingsTelemetryEvent));
         }
         else
@@ -288,11 +171,6 @@ public:
         {
             CloseHandle(m_hRefreshEvent);
             m_hRefreshEvent = nullptr;
-        }
-        if (m_hSettingsUpdatedEvent)
-        {
-            CloseHandle(m_hSettingsUpdatedEvent);
-            m_hSettingsUpdatedEvent = nullptr;
         }
         if (m_hApplyColorTemperatureEvent)
         {
@@ -430,26 +308,13 @@ public:
         }
     }
 
-    virtual void set_config(const wchar_t* config) override
+    virtual void set_config(const wchar_t* /*config*/) override
     {
-        try
-        {
-            PowerToysSettings::PowerToyValues values =
-                PowerToysSettings::PowerToyValues::from_json_string(config, get_key());
-
-            parse_hotkey_settings(values);
-            parse_activation_hotkey(values);
-
-            // NOTE: We intentionally do NOT signal m_hSettingsUpdatedEvent here.
-            // The Settings UI broadcasts config changes to ALL modules on ANY change,
-            // which would cause excessive UI refreshes in PowerDisplay and close ComboBox dropdowns.
-            // Instead, settings updates are handled via explicit custom actions (ApplyColorTemperature, ApplyProfile, etc.)
-            // or when PowerDisplay starts up.
-        }
-        catch (std::exception&)
-        {
-            Logger::error(L"Invalid json when trying to parse Power Display settings json.");
-        }
+        // Settings changes are handled via dedicated Windows Events:
+        // - HotkeyUpdatedPowerDisplayEvent: triggered by Settings UI when activation shortcut changes
+        // - SettingsUpdatedPowerDisplayEvent: triggered for tray icon visibility changes
+        // - ApplyColorTemperaturePowerDisplayEvent, ApplyProfilePowerDisplayEvent: for hardware settings
+        // PowerDisplay.exe reads settings directly from file when these events are signaled.
     }
 
     virtual void enable() override
@@ -536,66 +401,19 @@ public:
         return m_enabled;
     }
 
-    virtual bool on_hotkey(size_t hotkeyId) override
+    // NOTE: Hotkey handling is done in-process by PowerDisplay.exe using RegisterHotKey,
+    // similar to CmdPal pattern. This avoids IPC timing issues where Deactivated event
+    // fires before the Toggle event arrives from Runner.
+    virtual bool on_hotkey(size_t /*hotkeyId*/) override
     {
-        Logger::info(L"on_hotkey: Hotkey pressed, hotkeyId={}, m_enabled={}, m_hToggleEvent={}",
-                    hotkeyId, m_enabled, reinterpret_cast<void*>(m_hToggleEvent));
-
-        if (m_enabled && m_hToggleEvent)
-        {
-            Logger::info(L"on_hotkey: PowerDisplay hotkey activated (Win={} Ctrl={} Alt={} Shift={} Key=0x{:X})",
-                        m_activation_hotkey.win, m_activation_hotkey.ctrl, m_activation_hotkey.alt,
-                        m_activation_hotkey.shift, m_activation_hotkey.key);
-
-            // ColorPicker pattern: check if process is running, re-launch if needed
-            if (!is_process_running())
-            {
-                Logger::info(L"on_hotkey: PowerDisplay process not running, re-launching");
-                launch_process();
-            }
-
-            Logger::info(L"on_hotkey: Signaling toggle event");
-            BOOL setEventResult = SetEvent(m_hToggleEvent);
-            if (setEventResult)
-            {
-                Logger::info(L"on_hotkey: Toggle event signaled successfully");
-            }
-            else
-            {
-                Logger::error(L"on_hotkey: SetEvent failed for toggle event, error={}", GetLastError());
-            }
-            return true;
-        }
-        else
-        {
-            if (!m_enabled)
-            {
-                Logger::warn(L"on_hotkey: Module is disabled, ignoring hotkey");
-            }
-            if (!m_hToggleEvent)
-            {
-                Logger::error(L"on_hotkey: Toggle event handle is null");
-            }
-        }
-
+        // PowerDisplay handles hotkeys in-process, not via Runner IPC
         return false;
     }
 
-    virtual size_t get_hotkeys(Hotkey* hotkeys, size_t buffer_size) override
+    virtual size_t get_hotkeys(Hotkey* /*hotkeys*/, size_t /*buffer_size*/) override
     {
-        Logger::trace(L"get_hotkeys: Called with buffer_size={}, m_activation_hotkey.key=0x{:X}", buffer_size, m_activation_hotkey.key);
-        if (m_activation_hotkey.key != 0)
-        {
-            if (hotkeys && buffer_size >= 1)
-            {
-                hotkeys[0] = m_activation_hotkey;
-                Logger::info(L"get_hotkeys: Returning hotkey - Win={} Ctrl={} Alt={} Shift={} Key=0x{:X}",
-                            m_activation_hotkey.win, m_activation_hotkey.ctrl, m_activation_hotkey.alt,
-                            m_activation_hotkey.shift, m_activation_hotkey.key);
-            }
-            return 1;
-        }
-        Logger::trace(L"get_hotkeys: No hotkey configured (key=0)");
+        // PowerDisplay handles hotkeys in-process, not via Runner
+        // Return 0 to tell Runner we don't want any hotkeys registered
         return 0;
     }
 

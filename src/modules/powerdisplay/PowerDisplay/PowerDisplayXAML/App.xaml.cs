@@ -96,16 +96,20 @@ namespace PowerDisplay
                 Logger.LogTrace($"OnLaunched: Registered Toggle event: {Constants.TogglePowerDisplayEvent()}");
                 RegisterEvent(Constants.TerminatePowerDisplayEvent(), () => Environment.Exit(0), "Terminate");
                 Logger.LogTrace($"OnLaunched: Registered Terminate event: {Constants.TerminatePowerDisplayEvent()}");
-                RegisterViewModelEvent(
+                RegisterWindowEvent(
                     Constants.SettingsUpdatedPowerDisplayEvent(),
-                    vm =>
+                    mw =>
                     {
-                        vm.ApplySettingsFromUI();
+                        mw.ViewModel.ApplySettingsFromUI();
 
                         // Refresh tray icon based on updated settings
                         _trayIconService?.SetupTrayIcon();
                     },
                     "SettingsUpdated");
+                RegisterWindowEvent(
+                    Constants.HotkeyUpdatedPowerDisplayEvent(),
+                    mw => mw.ReloadHotkeySettings(),
+                    "HotkeyUpdated");
                 RegisterViewModelEvent(Constants.ApplyColorTemperaturePowerDisplayEvent(), vm => vm.ApplyColorTemperatureFromSettings(), "ApplyColorTemperature");
                 RegisterViewModelEvent(Constants.ApplyProfilePowerDisplayEvent(), vm => vm.ApplyProfileFromSettings(), "ApplyProfile");
                 RegisterViewModelEvent(Constants.PowerDisplaySendSettingsTelemetryEvent(), vm => vm.SendSettingsTelemetry(), "SendSettingsTelemetry");

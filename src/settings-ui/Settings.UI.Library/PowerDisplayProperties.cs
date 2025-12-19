@@ -12,7 +12,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     public class PowerDisplayProperties
     {
         [CmdConfigureIgnore]
-        public HotkeySettings DefaultActivationShortcut => new HotkeySettings(true, false, false, true, 0x4D); // Win+Alt+M
+        public HotkeySettings DefaultActivationShortcut => new HotkeySettings(true, false, true, false, 0x44); // Win+Alt+D (win, ctrl, alt, shift, code)
 
         public PowerDisplayProperties()
         {

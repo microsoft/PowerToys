@@ -223,4 +223,8 @@ namespace winrt::PowerToys::Interop::implementation
     {
         return CommonSharedConstants::POWER_DISPLAY_SEND_SETTINGS_TELEMETRY_EVENT;
     }
+    hstring Constants::HotkeyUpdatedPowerDisplayEvent()
+    {
+        return CommonSharedConstants::HOTKEY_UPDATED_POWER_DISPLAY_EVENT;
+    }
 }

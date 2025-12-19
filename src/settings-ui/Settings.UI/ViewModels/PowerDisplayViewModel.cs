@@ -151,7 +151,15 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public HotkeySettings ActivationShortcut
         {
             get => _settings.Properties.ActivationShortcut;
-            set => SetSettingsProperty(_settings.Properties.ActivationShortcut, value, v => _settings.Properties.ActivationShortcut = v);
+            set
+            {
+                if (SetSettingsProperty(_settings.Properties.ActivationShortcut, value, v => _settings.Properties.ActivationShortcut = v))
+                {
+                    // Signal PowerDisplay.exe to re-register the hotkey
+                    EventHelper.SignalEvent(Constants.HotkeyUpdatedPowerDisplayEvent());
+                    Logger.LogInfo($"ActivationShortcut changed, signaled HotkeyUpdatedPowerDisplayEvent");
+                }
+            }
         }
 
         /// <summary>

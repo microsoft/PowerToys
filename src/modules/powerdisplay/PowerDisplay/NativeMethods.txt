@@ -1,11 +1,11 @@
-// Types/Structs only - functions use LibraryImport
+// Structs and types only - functions use LibraryImport for AOT compatibility
 NOTIFYICONDATAW
 NOTIFY_ICON_MESSAGE
 NOTIFY_ICON_DATA_FLAGS
 MENU_ITEM_FLAGS
 TRACK_POPUP_MENU_FLAGS
 
-// Constants for window messages
+// Window message constants (used by TrayIconService)
 WM_USER
 WM_COMMAND
 WM_RBUTTONUP
