@@ -1052,7 +1052,6 @@ Event names use fixed GUID suffixes to ensure uniqueness (defined in `shared_con
 
 | Constant | Direction | Purpose |
 |----------|-----------|---------|
-| `SHOW_POWER_DISPLAY_EVENT` | Runner → App | Show window |
 | `TOGGLE_POWER_DISPLAY_EVENT` | Runner → App | Toggle visibility |
 | `TERMINATE_POWER_DISPLAY_EVENT` | Runner → App | Terminate process |
 | `REFRESH_POWER_DISPLAY_MONITORS_EVENT` | Settings → App | Refresh monitor list |
@@ -1063,7 +1062,7 @@ Event names use fixed GUID suffixes to ensure uniqueness (defined in `shared_con
 
 **Event Name Format:** `Local\PowerToysPowerDisplay-{EventType}-{GUID}`
 
-Example: `Local\PowerToysPowerDisplay-ShowEvent-d8a4e0e3-2c5b-4a1c-9e7f-8b3d6c1a2f4e`
+Example: `Local\PowerToysPowerDisplay-ToggleEvent-5f1a9c3e-7d2b-4e8f-9a6c-3b5d7e9f1a2c`
 
 ---
 

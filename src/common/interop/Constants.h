@@ -52,7 +52,6 @@ namespace winrt::PowerToys::Interop::implementation
         static hstring WorkspacesHotkeyEvent();
         static hstring PowerToysRunnerTerminateSettingsEvent();
         static hstring ShowCmdPalEvent();
-        static hstring ShowPowerDisplayEvent();
         static hstring TogglePowerDisplayEvent();
         static hstring TerminatePowerDisplayEvent();
         static hstring RefreshPowerDisplayMonitorsEvent();

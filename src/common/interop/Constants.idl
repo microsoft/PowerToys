@@ -49,7 +49,6 @@ namespace PowerToys
             static String WorkspacesHotkeyEvent();
             static String PowerToysRunnerTerminateSettingsEvent();
             static String ShowCmdPalEvent();
-            static String ShowPowerDisplayEvent();
             static String TogglePowerDisplayEvent();
             static String TerminatePowerDisplayEvent();
             static String RefreshPowerDisplayMonitorsEvent();

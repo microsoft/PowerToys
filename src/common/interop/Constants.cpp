@@ -195,10 +195,6 @@ namespace winrt::PowerToys::Interop::implementation
     {
         return CommonSharedConstants::CMDPAL_SHOW_EVENT;
     }
-    hstring Constants::ShowPowerDisplayEvent()
-    {
-        return CommonSharedConstants::SHOW_POWER_DISPLAY_EVENT;
-    }
     hstring Constants::TogglePowerDisplayEvent()
     {
         return CommonSharedConstants::TOGGLE_POWER_DISPLAY_EVENT;

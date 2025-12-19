@@ -56,7 +56,6 @@ private:
 
     // Windows Events for IPC (persistent handles - ColorPicker pattern)
     HANDLE m_hProcess = nullptr;
-    HANDLE m_hInvokeEvent = nullptr;
     HANDLE m_hToggleEvent = nullptr;
     HANDLE m_hTerminateEvent = nullptr;
     HANDLE m_hRefreshEvent = nullptr;
@@ -238,8 +237,6 @@ public:
 
         // Create all Windows Events (persistent handles - ColorPicker pattern)
         Logger::trace(L"Creating Windows Events for IPC...");
-        m_hInvokeEvent = CreateDefaultEvent(CommonSharedConstants::SHOW_POWER_DISPLAY_EVENT);
-        Logger::trace(L"Created SHOW_POWER_DISPLAY_EVENT: handle={}", reinterpret_cast<void*>(m_hInvokeEvent));
         m_hToggleEvent = CreateDefaultEvent(CommonSharedConstants::TOGGLE_POWER_DISPLAY_EVENT);
         Logger::trace(L"Created TOGGLE_POWER_DISPLAY_EVENT: handle={}", reinterpret_cast<void*>(m_hToggleEvent));
         m_hTerminateEvent = CreateDefaultEvent(CommonSharedConstants::TERMINATE_POWER_DISPLAY_EVENT);
@@ -255,10 +252,10 @@ public:
         m_hSendSettingsTelemetryEvent = CreateDefaultEvent(CommonSharedConstants::POWER_DISPLAY_SEND_SETTINGS_TELEMETRY_EVENT);
         Logger::trace(L"Created SEND_SETTINGS_TELEMETRY_EVENT: handle={}", reinterpret_cast<void*>(m_hSendSettingsTelemetryEvent));
 
-        if (!m_hInvokeEvent || !m_hToggleEvent || !m_hTerminateEvent || !m_hRefreshEvent || !m_hSettingsUpdatedEvent || !m_hApplyColorTemperatureEvent || !m_hApplyProfileEvent || !m_hSendSettingsTelemetryEvent)
+        if (!m_hToggleEvent || !m_hTerminateEvent || !m_hRefreshEvent || !m_hSettingsUpdatedEvent || !m_hApplyColorTemperatureEvent || !m_hApplyProfileEvent || !m_hSendSettingsTelemetryEvent)
         {
-            Logger::error(L"Failed to create one or more event handles: Invoke={}, Toggle={}, Terminate={}, Refresh={}, SettingsUpdated={}, ApplyColorTemp={}, ApplyProfile={}, SettingsTelemetry={}",
-                         reinterpret_cast<void*>(m_hInvokeEvent), reinterpret_cast<void*>(m_hToggleEvent),
+            Logger::error(L"Failed to create one or more event handles: Toggle={}, Terminate={}, Refresh={}, SettingsUpdated={}, ApplyColorTemp={}, ApplyProfile={}, SettingsTelemetry={}",
+                         reinterpret_cast<void*>(m_hToggleEvent),
                          reinterpret_cast<void*>(m_hTerminateEvent), reinterpret_cast<void*>(m_hRefreshEvent),
                          reinterpret_cast<void*>(m_hSettingsUpdatedEvent), reinterpret_cast<void*>(m_hApplyColorTemperatureEvent),
                          reinterpret_cast<void*>(m_hApplyProfileEvent), reinterpret_cast<void*>(m_hSendSettingsTelemetryEvent));
@@ -277,11 +274,6 @@ public:
         }
 
         // Clean up all event handles
-        if (m_hInvokeEvent)
-        {
-            CloseHandle(m_hInvokeEvent);
-            m_hInvokeEvent = nullptr;
-        }
         if (m_hToggleEvent)
         {
             CloseHandle(m_hToggleEvent);
@@ -488,12 +480,7 @@ public:
 
         if (m_enabled)
         {
-            // Reset invoke event to prevent accidental activation during shutdown
-            if (m_hInvokeEvent)
-            {
-                ResetEvent(m_hInvokeEvent);
-            }
-
+            // Reset toggle event to prevent accidental activation during shutdown
             if (m_hToggleEvent)
             {
                 ResetEvent(m_hToggleEvent);

@@ -92,8 +92,6 @@ namespace PowerDisplay
                 // Note: PowerDisplay.exe should NOT listen to RefreshMonitorsEvent
                 // That event is sent BY PowerDisplay TO Settings UI for one-way notification
                 Logger.LogInfo("OnLaunched: Registering Windows Events for IPC...");
-                RegisterWindowEvent(Constants.ShowPowerDisplayEvent(), mw => mw.ShowWindow(), "Show");
-                Logger.LogTrace($"OnLaunched: Registered Show event: {Constants.ShowPowerDisplayEvent()}");
                 RegisterWindowEvent(Constants.TogglePowerDisplayEvent(), mw => mw.ToggleWindow(), "Toggle");
                 Logger.LogTrace($"OnLaunched: Registered Toggle event: {Constants.TogglePowerDisplayEvent()}");
                 RegisterEvent(Constants.TerminatePowerDisplayEvent(), () => Environment.Exit(0), "Terminate");
