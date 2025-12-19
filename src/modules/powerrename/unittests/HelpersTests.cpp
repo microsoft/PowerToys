@@ -830,4 +830,87 @@ namespace HelpersTests
             Assert::AreEqual(L"file_15EER", result);
         }
     };
+
+    TEST_CLASS(IsMetadataUsedTests)
+    {
+    public:
+        TEST_METHOD(HEIC_Files_Support_Metadata)
+        {
+            // Test that HEIC files are recognized as supporting metadata
+            bool result = isMetadataUsed(L"$CAMERA_MAKE", PowerRenameLib::MetadataType::EXIF, L"C:\\Photos\\IMG_1234.heic", false);
+            Assert::IsTrue(result, L"HEIC files should support EXIF metadata");
+        }
+
+        TEST_METHOD(HEIF_Files_Support_Metadata)
+        {
+            // Test that HEIF files are recognized as supporting metadata
+            bool result = isMetadataUsed(L"$CAMERA_MAKE", PowerRenameLib::MetadataType::EXIF, L"C:\\Photos\\IMG_1234.heif", false);
+            Assert::IsTrue(result, L"HEIF files should support EXIF metadata");
+        }
+
+        TEST_METHOD(WebP_Files_Support_Metadata)
+        {
+            // Test that WebP files are recognized as supporting metadata
+            bool result = isMetadataUsed(L"$CAMERA_MAKE", PowerRenameLib::MetadataType::EXIF, L"C:\\Photos\\image.webp", false);
+            Assert::IsTrue(result, L"WebP files should support EXIF metadata");
+        }
+
+        TEST_METHOD(AVIF_Files_Support_Metadata)
+        {
+            // Test that AVIF files are recognized as supporting metadata
+            bool result = isMetadataUsed(L"$CAMERA_MAKE", PowerRenameLib::MetadataType::EXIF, L"C:\\Photos\\image.avif", false);
+            Assert::IsTrue(result, L"AVIF files should support EXIF metadata");
+        }
+
+        TEST_METHOD(DNG_Files_Support_Metadata)
+        {
+            // Test that DNG (RAW) files are recognized as supporting metadata
+            bool result = isMetadataUsed(L"$CAMERA_MAKE", PowerRenameLib::MetadataType::EXIF, L"C:\\Photos\\DSC_1234.dng", false);
+            Assert::IsTrue(result, L"DNG files should support EXIF metadata");
+        }
+
+        TEST_METHOD(JPEG_XR_Files_Support_Metadata)
+        {
+            // Test that JPEG XR files are recognized as supporting metadata
+            bool result = isMetadataUsed(L"$CAMERA_MAKE", PowerRenameLib::MetadataType::EXIF, L"C:\\Photos\\image.jxr", false);
+            Assert::IsTrue(result, L"JXR files should support EXIF metadata");
+        }
+
+        TEST_METHOD(Case_Insensitive_Extension_Check)
+        {
+            // Test that extension check is case-insensitive
+            bool result1 = isMetadataUsed(L"$CAMERA_MAKE", PowerRenameLib::MetadataType::EXIF, L"C:\\Photos\\IMG_1234.HEIC", false);
+            bool result2 = isMetadataUsed(L"$CAMERA_MAKE", PowerRenameLib::MetadataType::EXIF, L"C:\\Photos\\IMG_1234.HeIc", false);
+            Assert::IsTrue(result1, L"HEIC extension check should be case-insensitive (uppercase)");
+            Assert::IsTrue(result2, L"HEIC extension check should be case-insensitive (mixed case)");
+        }
+
+        TEST_METHOD(Unsupported_Format_Returns_False)
+        {
+            // Test that unsupported file formats return false
+            bool result = isMetadataUsed(L"$CAMERA_MAKE", PowerRenameLib::MetadataType::EXIF, L"C:\\Documents\\file.txt", false);
+            Assert::IsFalse(result, L"TXT files should not support EXIF metadata");
+        }
+
+        TEST_METHOD(Folders_Do_Not_Support_Metadata)
+        {
+            // Test that folders don't support metadata even with image extensions
+            bool result = isMetadataUsed(L"$CAMERA_MAKE", PowerRenameLib::MetadataType::EXIF, L"C:\\Photos\\vacation.heic", true);
+            Assert::IsFalse(result, L"Folders should not support metadata extraction");
+        }
+
+        TEST_METHOD(No_Metadata_Pattern_Returns_False)
+        {
+            // Test that even supported formats return false if no metadata pattern is in the search term
+            bool result = isMetadataUsed(L"vacation", PowerRenameLib::MetadataType::EXIF, L"C:\\Photos\\IMG_1234.heic", false);
+            Assert::IsFalse(result, L"Should return false when no metadata pattern is present");
+        }
+
+        TEST_METHOD(Traditional_JPEG_Still_Supported)
+        {
+            // Test that traditional JPEG files still work
+            bool result = isMetadataUsed(L"$CAMERA_MAKE", PowerRenameLib::MetadataType::EXIF, L"C:\\Photos\\photo.jpg", false);
+            Assert::IsTrue(result, L"JPEG files should support EXIF metadata");
+        }
+    };
 }
