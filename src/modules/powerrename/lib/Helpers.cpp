@@ -345,16 +345,28 @@ bool isMetadataUsed(_In_ PCWSTR source, PowerRenameLib::MetadataType metadataTyp
         // Convert to lowercase for case-insensitive comparison
         std::transform(extension.begin(), extension.end(), extension.begin(), ::towlower);
 
-        // According to the metadata support table, only these formats support metadata extraction:
+        // Formats that support metadata extraction via WIC (Windows Imaging Component):
         // - JPEG (IFD, Exif, XMP, GPS, IPTC) - supports fast metadata encoding
         // - TIFF (IFD, Exif, XMP, GPS, IPTC) - supports fast metadata encoding  
         // - PNG (text chunks)
+        // - HEIC/HEIF (Exif, XMP) - requires HEIF Image Extensions on Windows 10/11
+        // - WebP (Exif, XMP) - supported natively on Windows 10 1809+
+        // - AVIF (Exif, XMP) - requires AV1 Video Extension on Windows 10/11
+        // - JPEG XR/HD Photo (Exif, XMP)
+        // - DNG (Digital Negative RAW format - Exif, XMP)
         static const std::unordered_set<std::wstring> supportedExtensions = {
             L".jpg",
             L".jpeg",
             L".png",
             L".tif",
-            L".tiff"
+            L".tiff",
+            L".heic",
+            L".heif",
+            L".webp",
+            L".avif",
+            L".jxr",
+            L".wdp",
+            L".dng"
         };
 
         // If file type doesn't support metadata, no need to check patterns
