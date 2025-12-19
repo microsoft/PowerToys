@@ -19,7 +19,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             ActivationShortcut = DefaultActivationShortcut;
             MonitorRefreshDelay = 5;
             Monitors = new List<MonitorInfo>();
-            RestoreSettingsOnStartup = true;
+            RestoreSettingsOnStartup = false;
             ShowSystemTrayIcon = true;
 
             // Note: saved_monitor_settings has been moved to monitor_state.json
@@ -46,14 +46,14 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public bool ShowSystemTrayIcon { get; set; }
 
         /// <summary>
-        /// Pending color temperature operation from Settings UI.
+        /// Gets or sets pending color temperature operation from Settings UI.
         /// This is cleared after PowerDisplay processes it.
         /// </summary>
         [JsonPropertyName("pending_color_temperature_operation")]
         public ColorTemperatureOperation PendingColorTemperatureOperation { get; set; }
 
         /// <summary>
-        /// Pending profile operation from Settings UI.
+        /// Gets or sets pending profile operation from Settings UI.
         /// This is cleared after PowerDisplay processes it.
         /// </summary>
         [JsonPropertyName("pending_profile_operation")]
