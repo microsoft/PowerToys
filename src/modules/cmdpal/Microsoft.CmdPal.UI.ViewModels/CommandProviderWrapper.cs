@@ -82,16 +82,13 @@ public sealed class CommandProviderWrapper
         _taskScheduler = mainThread;
         Extension = extension;
         ExtensionHost = new CommandPaletteHost(extension);
-        Logger.LogInfo($"CommandProviderWrapper ctor for extension {extension.ExtensionUniqueId}");
         if (!Extension.IsRunning())
         {
             throw new ArgumentException("You forgot to start the extension. This is a CmdPal error - we need to make sure to call StartExtensionAsync");
         }
 
         var extensionImpl = extension.GetExtensionObject();
-        Logger.LogInfo($"CommandProviderWrapper got extension object null? {extensionImpl is null}");
         var providerObject = extensionImpl?.GetProvider(ProviderType.Commands);
-        Logger.LogInfo($"CommandProviderWrapper GetProvider returned type {providerObject?.GetType().FullName ?? "null"}");
         if (providerObject is not ICommandProvider provider)
         {
             throw new ArgumentException("extension didn't actually implement ICommandProvider");
