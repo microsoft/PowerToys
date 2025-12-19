@@ -129,7 +129,7 @@ jobs:
       MSBuildMainBuildTargets: Build
     ${{ insert }}: ${{ parameters.variables }}
     ${{ if eq(parameters.useLatestWinAppSDK, true) }}:
-      RestoreAdditionalProjectSourcesArg: '/p:RestoreAdditionalProjectSources="$(Build.SourcesDirectory)\localpackages\NugetPackages" /p:NoWarn=CS8305'
+      RestoreAdditionalProjectSourcesArg: '/p:RestoreAdditionalProjectSources="$(Build.SourcesDirectory)\localpackages\NugetPackages" /p:NoWarn=CS8305;SA1500;CA1852'
     ${{ else }}:
       RestoreAdditionalProjectSourcesArg: ''
   displayName: Build
