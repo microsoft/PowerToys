@@ -26,10 +26,6 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(IgnoreExperimentalWarnings)' == 'true'">
-    <NoWarn>$(NoWarn);CS8305;SA1500;CA1852</NoWarn>
-  </PropertyGroup>
-
   <PropertyGroup>
     <_PropertySheetDisplayName>PowerToys.Root.Props</_PropertySheetDisplayName>
     <ForceImportBeforeCppProps>$(MsbuildThisFileDirectory)\Cpp.Build.props</ForceImportBeforeCppProps>
