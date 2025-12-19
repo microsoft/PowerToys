@@ -4,6 +4,7 @@
 
 using Microsoft.PowerToys.Settings.UI.Library;
 using PowerToys.GPOWrapper;
+using RunnerV2.Models;
 
 namespace RunnerV2.ModuleInterfaces
 {

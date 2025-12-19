@@ -8,6 +8,7 @@ using System.IO;
 using System.Threading;
 using ManagedCommon;
 using PowerToys.GPOWrapper;
+using RunnerV2.Models;
 
 namespace RunnerV2.ModuleInterfaces
 {

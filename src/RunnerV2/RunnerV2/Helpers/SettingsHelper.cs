@@ -14,7 +14,7 @@ using System.Threading;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using PowerToys.Interop;
-using RunnerV2.ModuleInterfaces;
+using RunnerV2.Models;
 using Update;
 
 namespace RunnerV2.Helpers

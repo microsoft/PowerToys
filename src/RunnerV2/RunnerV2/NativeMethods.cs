@@ -232,5 +232,15 @@ namespace RunnerV2
             [MarshalAs(UnmanagedType.LPWStr)] string appxPath,
             [MarshalAs(UnmanagedType.LPWStr)] out string outName,
             out PackageVersion outVersion);
+
+        [LibraryImport("Shell32.dll", SetLastError = true)]
+        internal static partial void SHChangeNotify(
+            uint wEventId,
+            uint uFlags,
+            IntPtr dwItem1,
+            IntPtr dwItem2);
+
+        internal const uint SHCNE_ASSOCCHANGED = 0x8000000;
+        internal const uint SHCNF_IDLIST = 0x0;
     }
 }

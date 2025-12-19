@@ -11,6 +11,7 @@ using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using PowerToys.GPOWrapper;
 using PowerToys.Interop;
+using RunnerV2.Models;
 
 namespace RunnerV2.ModuleInterfaces
 {

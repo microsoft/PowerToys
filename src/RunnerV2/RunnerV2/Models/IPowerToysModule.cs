@@ -9,7 +9,7 @@ using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using PowerToys.GPOWrapper;
 
-namespace RunnerV2.ModuleInterfaces
+namespace RunnerV2.Models
 {
     public interface IPowerToysModule
     {

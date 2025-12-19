@@ -904,7 +904,6 @@
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
-    <Project Path="src/modules/registrypreview/RegistryPreviewExt/RegistryPreviewExt.vcxproj" Id="697c6af9-0a48-49a9-866c-67da12384015" />
     <Project Path="src/modules/registrypreview/RegistryPreviewUILib/RegistryPreviewUILib.csproj" />
   </Folder>
   <Folder Name="/modules/RegistryPreview/Test/">

@@ -7,7 +7,7 @@ using System.Diagnostics;
 using System.Globalization;
 using RunnerV2.Helpers;
 
-namespace RunnerV2.ModuleInterfaces
+namespace RunnerV2.Models
 {
     /// <summary>
     /// Base abstract class for modules that launch and manage external processes.

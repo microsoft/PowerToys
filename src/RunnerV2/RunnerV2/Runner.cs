@@ -15,6 +15,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using ManagedCommon;
 using RunnerV2.Helpers;
+using RunnerV2.Models;
 using RunnerV2.ModuleInterfaces;
 using Update;
 using static RunnerV2.NativeMethods;
@@ -50,6 +51,7 @@ namespace RunnerV2
             new CommandPaletteModuleInterface(),
             new CropAndLockModuleInterface(),
             new EnvironmentVariablesModuleInterface(),
+            new RegistryPreviewModuleInterface(),
         ];
 
         /// <summary>
