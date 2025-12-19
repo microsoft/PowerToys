@@ -351,7 +351,7 @@ bool isMetadataUsed(_In_ PCWSTR source, PowerRenameLib::MetadataType metadataTyp
         // - PNG (text chunks)
         // - HEIC/HEIF (Exif, XMP) - requires HEIF Image Extensions on Windows 10/11
         // - WebP (Exif, XMP) - supported natively on Windows 10 1809+
-        // - AVIF (Exif, XMP) - requires AV1 Video Extension on Windows 10/11
+        // - AVIF (Exif, XMP) - requires HEIF Image Extensions (or AV1 Video Extension) on Windows 10/11
         // - JPEG XR/HD Photo (Exif, XMP)
         // - DNG (Digital Negative RAW format - Exif, XMP)
         static const std::unordered_set<std::wstring> supportedExtensions = {

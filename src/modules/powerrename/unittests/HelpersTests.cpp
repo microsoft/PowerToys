@@ -864,7 +864,7 @@ namespace HelpersTests
 
         TEST_METHOD(DNG_Files_Support_Metadata)
         {
-            // Test that DNG (RAW) files are recognized as supporting metadata
+            // Test that DNG (Digital Negative RAW) files are recognized as supporting metadata
             bool result = isMetadataUsed(L"$CAMERA_MAKE", PowerRenameLib::MetadataType::EXIF, L"C:\\Photos\\DSC_1234.dng", false);
             Assert::IsTrue(result, L"DNG files should support EXIF metadata");
         }
