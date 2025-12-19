@@ -22,12 +22,9 @@ internal sealed partial class GetActiveLayoutCommand : FancyZonesBaseCommand
 
     protected override string Execute(InvocationContext context)
     {
-        // Trigger FancyZones to save current monitor info.
-        NativeMethods.NotifyFancyZones(NativeMethods.WM_PRIV_SAVE_EDITOR_PARAMETERS);
-        System.Threading.Thread.Sleep(200);
-
-        // Read current monitors.
-        var editorParams = FancyZonesDataIO.ReadEditorParameters();
+        // Trigger FancyZones to save current monitor info and read it reliably.
+        var editorParams = EditorParametersRefresh.ReadEditorParametersWithRefresh(
+            () => NativeMethods.NotifyFancyZones(NativeMethods.WM_PRIV_SAVE_EDITOR_PARAMETERS));
 
         if (editorParams.Monitors == null || editorParams.Monitors.Count == 0)
         {

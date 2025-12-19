@@ -174,16 +174,8 @@ internal sealed partial class SetLayoutCommand : FancyZonesBaseCommand
 
     private static EditorParameters.ParamsWrapper ReadEditorParametersWithRefresh()
     {
-        NativeMethods.NotifyFancyZones(NativeMethods.WM_PRIV_SAVE_EDITOR_PARAMETERS);
-        System.Threading.Thread.Sleep(200);
-
-        var editorParams = FancyZonesDataIO.ReadEditorParameters();
-        if (editorParams.Monitors == null || editorParams.Monitors.Count == 0)
-        {
-            throw new InvalidOperationException("Could not get current monitor information.");
-        }
-
-        return editorParams;
+        return EditorParametersRefresh.ReadEditorParametersWithRefresh(
+            () => NativeMethods.NotifyFancyZones(NativeMethods.WM_PRIV_SAVE_EDITOR_PARAMETERS));
     }
 
     private static List<int> GetMonitorsToUpdate(EditorParameters.ParamsWrapper editorParams, int? monitor, bool all)

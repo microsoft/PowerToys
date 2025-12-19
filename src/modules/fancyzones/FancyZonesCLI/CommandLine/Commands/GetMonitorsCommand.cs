@@ -22,17 +22,12 @@ internal sealed partial class GetMonitorsCommand : FancyZonesBaseCommand
 
     protected override string Execute(InvocationContext context)
     {
-        // Request FancyZones to save current monitor configuration.
-        NativeMethods.NotifyFancyZones(NativeMethods.WM_PRIV_SAVE_EDITOR_PARAMETERS);
-
-        // Wait briefly for FancyZones to create the file.
-        System.Threading.Thread.Sleep(200);
-
-        // Try to read editor parameters for current monitor state.
+        // Request FancyZones to save current monitor configuration and read it reliably.
         EditorParameters.ParamsWrapper editorParams;
         try
         {
-            editorParams = FancyZonesDataIO.ReadEditorParameters();
+            editorParams = EditorParametersRefresh.ReadEditorParametersWithRefresh(
+                () => NativeMethods.NotifyFancyZones(NativeMethods.WM_PRIV_SAVE_EDITOR_PARAMETERS));
         }
         catch (Exception ex)
         {
