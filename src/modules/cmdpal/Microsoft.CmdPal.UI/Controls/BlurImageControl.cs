@@ -368,32 +368,69 @@ internal sealed partial class BlurImageControl : Control
     {
         try
         {
-            if (imageSource is Microsoft.UI.Xaml.Media.Imaging.BitmapImage bitmapImage)
+            if (imageSource is not Microsoft.UI.Xaml.Media.Imaging.BitmapImage bitmapImage)
             {
-                _imageBrush ??= _compositor?.CreateSurfaceBrush();
-                if (_imageBrush is null)
-                {
-                    return;
-                }
-
-                var loadedSurface = LoadedImageSurface.StartLoadFromUri(bitmapImage.UriSource);
-                loadedSurface.LoadCompleted += (_, _) =>
-                {
-                    if (_imageBrush is not null)
-                    {
-                        _imageBrush.Surface = loadedSurface;
-                        _imageBrush.Stretch = ConvertStretch(ImageStretch);
-                        _imageBrush.BitmapInterpolationMode = CompositionBitmapInterpolationMode.Linear;
-                    }
-                };
-
-                _effectBrush?.SetSourceParameter(ImageSourceParameterName, _imageBrush);
+                return;
             }
+
+            _imageBrush ??= _compositor?.CreateSurfaceBrush();
+            if (_imageBrush is null)
+            {
+                return;
+            }
+
+            Logger.LogDebug($"Starting load of BlurImageControl from '{bitmapImage.UriSource}'");
+            var loadedSurface = LoadedImageSurface.StartLoadFromUri(bitmapImage.UriSource);
+            loadedSurface.LoadCompleted += OnLoadedSurfaceOnLoadCompleted;
+            SetLoadedSurfaceToBrush(loadedSurface);
+            _effectBrush?.SetSourceParameter(ImageSourceParameterName, _imageBrush);
         }
         catch (Exception ex)
         {
             Logger.LogError("Failed to load image for BlurImageControl: {0}", ex);
         }
+
+        return;
+
+        void OnLoadedSurfaceOnLoadCompleted(LoadedImageSurface loadedSurface, LoadedImageSourceLoadCompletedEventArgs e)
+        {
+            switch (e.Status)
+            {
+                case LoadedImageSourceLoadStatus.Success:
+                    Logger.LogDebug($"BlurImageControl loaded successfully: has _imageBrush? {_imageBrush != null}");
+
+                    try
+                    {
+                        SetLoadedSurfaceToBrush(loadedSurface);
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.LogError("Failed to set surface in BlurImageControl", ex);
+                        throw;
+                    }
+
+                    break;
+                case LoadedImageSourceLoadStatus.NetworkError:
+                case LoadedImageSourceLoadStatus.InvalidFormat:
+                case LoadedImageSourceLoadStatus.Other:
+                default:
+                    Logger.LogError($"Failed to load image for BlurImageControl: Load status {e.Status}");
+                    break;
+            }
+        }
+    }
+
+    private void SetLoadedSurfaceToBrush(LoadedImageSurface loadedSurface)
+    {
+        var surfaceBrush = _imageBrush;
+        if (surfaceBrush is null)
+        {
+            return;
+        }
+
+        surfaceBrush.Surface = loadedSurface;
+        surfaceBrush.Stretch = ConvertStretch(ImageStretch);
+        surfaceBrush.BitmapInterpolationMode = CompositionBitmapInterpolationMode.Linear;
     }
 
     private static CompositionStretch ConvertStretch(Stretch stretch)

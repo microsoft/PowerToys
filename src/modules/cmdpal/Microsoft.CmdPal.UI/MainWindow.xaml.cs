@@ -52,6 +52,8 @@ public sealed partial class MainWindow : WindowEx,
     IRecipient<ShowWindowMessage>,
     IRecipient<HideWindowMessage>,
     IRecipient<QuitMessage>,
+    IRecipient<DragStartedMessage>,
+    IRecipient<DragCompletedMessage>,
     IDisposable
 {
     private const int DefaultWidth = 800;
@@ -78,6 +80,8 @@ public sealed partial class MainWindow : WindowEx,
     private TimeSpan _autoGoHomeInterval = Timeout.InfiniteTimeSpan;
 
     private WindowPosition _currentWindowPosition = new();
+
+    private bool _preventHideWhenDeactivated;
 
     private MainWindowViewModel ViewModel { get; }
 
@@ -119,6 +123,8 @@ public sealed partial class MainWindow : WindowEx,
         WeakReferenceMessenger.Default.Register<QuitMessage>(this);
         WeakReferenceMessenger.Default.Register<ShowWindowMessage>(this);
         WeakReferenceMessenger.Default.Register<HideWindowMessage>(this);
+        WeakReferenceMessenger.Default.Register<DragStartedMessage>(this);
+        WeakReferenceMessenger.Default.Register<DragCompletedMessage>(this);
 
         // Hide our titlebar.
         // We need to both ExtendsContentIntoTitleBar, then set the height to Collapsed
@@ -751,6 +757,12 @@ public sealed partial class MainWindow : WindowEx,
                 return;
             }
 
+            // We're doing something that requires us to lose focus, but we don't want to hide the window
+            if (_preventHideWhenDeactivated)
+            {
+                return;
+            }
+
             // This will DWM cloak our window:
             HideWindow();
 
@@ -1026,5 +1038,45 @@ public sealed partial class MainWindow : WindowEx,
         _localKeyboardListener.Dispose();
         _windowThemeSynchronizer.Dispose();
         DisposeAcrylic();
+    }
+
+    public void Receive(DragStartedMessage message)
+    {
+        _preventHideWhenDeactivated = true;
+    }
+
+    public void Receive(DragCompletedMessage message)
+    {
+        _preventHideWhenDeactivated = false;
+        Task.Delay(200).ContinueWith(_ =>
+        {
+            DispatcherQueue.TryEnqueue(StealForeground);
+        });
+    }
+
+    private unsafe void StealForeground()
+    {
+        var foregroundWindow = PInvoke.GetForegroundWindow();
+        if (foregroundWindow == _hwnd)
+        {
+            return;
+        }
+
+        // This is bad, evil, and I'll have to forgo today's dinner dessert to punish myself
+        // for  writing this. But there's no way to make this work without it.
+        // If the window is not reactivated, the UX breaks down: a deactivated window has to
+        // be activated and then deactivated again to hide.
+        var currentThreadId = PInvoke.GetCurrentThreadId();
+        var foregroundThreadId = PInvoke.GetWindowThreadProcessId(foregroundWindow, null);
+        if (foregroundThreadId != currentThreadId)
+        {
+            PInvoke.AttachThreadInput(currentThreadId, foregroundThreadId, true);
+            PInvoke.SetForegroundWindow(_hwnd);
+            PInvoke.AttachThreadInput(currentThreadId, foregroundThreadId, false);
+        }
+        else
+        {
+            PInvoke.SetForegroundWindow(_hwnd);
+        }
     }
 }
