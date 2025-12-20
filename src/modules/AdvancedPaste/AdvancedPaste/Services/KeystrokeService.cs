@@ -27,10 +27,7 @@ public sealed class KeystrokeService
     {
         Logger.LogTrace();
 
-        if (text is null)
-        {
-            throw new ArgumentNullException(nameof(text));
-        }
+        ArgumentNullException.ThrowIfNull(text);
 
         if (string.IsNullOrEmpty(text))
         {
@@ -84,7 +81,7 @@ public sealed class KeystrokeService
                 ki = new Helpers.NativeMethods.KEYBDINPUT
                 {
                     wVk = 0,  // Must be 0 for Unicode input
-                    wScan = character,
+                    wScan = (short)character,
                     dwFlags = (uint)Helpers.NativeMethods.KeyEventF.Unicode |
                               (isKeyUp ? (uint)Helpers.NativeMethods.KeyEventF.KeyUp : 0),
                     time = 0,
