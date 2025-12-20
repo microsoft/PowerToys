@@ -101,8 +101,7 @@ Some PowerToys build scripts rely on **PowerShell Core** (`pwsh`).
 
 Ensure that PowerShell Core is installed and available in your PATH.
 
-Installation instructions:
-https://learn.microsoft.com/powershell/
+Installation instructions: [Installing PowerShell on Windows](https://learn.microsoft.com/powershell/)
 
 Verify the installation by running:
 
