@@ -903,6 +903,7 @@ LOGPIXELSY
 lon
 longdate
 LONGNAMES
+Longpaths
 lowlevel
 LOWORD
 lparam
