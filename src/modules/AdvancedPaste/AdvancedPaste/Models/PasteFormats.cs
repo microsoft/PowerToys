@@ -39,7 +39,7 @@ public enum PasteFormats
     Json,
 
     [PasteFormatMetadata(
-        IsCoreAction = false,
+        IsCoreAction = true,
         ResourceId = "PasteAsKeystrokes",
         IconGlyph = "\uE765",
         RequiresAIService = false,

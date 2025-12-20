@@ -214,6 +214,15 @@
                                 HotkeySettings="{x:Bind Path=ViewModel.PasteAsJsonShortcut, Mode=TwoWay}" />
                         </tkcontrols:SettingsCard>
                         <tkcontrols:SettingsCard
+                            Name="PasteAsKeystrokeShortcut"
+                            x:Uid="PasteAsKeystroke_Shortcut"
+                            HeaderIcon="{ui:FontIcon Glyph=&#xE765;}">
+                            <controls:ShortcutControl
+                                MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                AllowDisable="True"
+                                HotkeySettings="{x:Bind Path=ViewModel.PasteAsKeystrokeShortcut, Mode=TwoWay}" />
+                        </tkcontrols:SettingsCard>
+                        <tkcontrols:SettingsCard
                             Name="ImageToText"
                             x:Uid="ImageToText"
                             DataContext="{x:Bind ViewModel.AdditionalActions.ImageToText, Mode=OneWay}"

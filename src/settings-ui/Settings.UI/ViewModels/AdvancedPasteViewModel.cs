@@ -467,6 +467,21 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public HotkeySettings PasteAsKeystrokeShortcut
+        {
+            get => _advancedPasteSettings.Properties.PasteAsKeystrokeShortcut;
+            set
+            {
+                if (_advancedPasteSettings.Properties.PasteAsKeystrokeShortcut != value)
+                {
+                    _advancedPasteSettings.Properties.PasteAsKeystrokeShortcut = value ?? new HotkeySettings();
+                    OnPropertyChanged(nameof(IsConflictingCopyShortcut));
+                    OnPropertyChanged(nameof(PasteAsKeystrokeShortcut));
+                    SaveAndNotifySettings();
+                }
+            }
+        }
+
         public PasteAIConfiguration PasteAIConfiguration
         {
             get => _advancedPasteSettings.Properties.PasteAIConfiguration;
