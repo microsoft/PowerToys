@@ -124,6 +124,26 @@ VOID WINAPI ServiceCtrlHandler(DWORD dwCtrl)
     }
 }
 
+void SetWallpaper(bool shouldBeLight)
+{
+    
+    const auto& settings = LightSwitchSettings::settings();
+
+    if (settings.wallpaperEnabled)
+    {
+        std::wstring const& wallpaperPath = shouldBeLight ? settings.wallpaperPathLight : settings.wallpaperPathDark;
+        auto style = shouldBeLight ? settings.wallpaperStyleLight : settings.wallpaperStyleDark;
+        if (auto e = SetDesktopWallpaper(wallpaperPath, style, settings.wallpaperVirtualDesktop) == 0)
+        {
+            Logger::info(L"[LightSwitchService] Wallpaper is changed to {}.", wallpaperPath);
+        }
+        else
+        {
+            Logger::error(L"[LightSwitchService] Failed to set wallpaper, error: {}.", e);
+        }
+    }
+};
+
 void ApplyTheme(bool shouldBeLight)
 {
     const auto& s = LightSwitchSettings::settings();
@@ -133,6 +153,7 @@ void ApplyTheme(bool shouldBeLight)
         bool isSystemCurrentlyLight = GetCurrentSystemTheme();
         if (shouldBeLight != isSystemCurrentlyLight)
         {
+            SetWallpaper(shouldBeLight);
             SetSystemTheme(shouldBeLight);
             Logger::info(L"[LightSwitchService] Changed system theme to {}.", shouldBeLight ? L"light" : L"dark");
         }
