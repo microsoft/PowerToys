@@ -178,6 +178,7 @@ public partial class App : Application
         services.AddSingleton(state);
 
         // Services
+        services.AddSingleton<ICommandProviderCache, DefaultCommandProviderCache>();
         services.AddSingleton<TopLevelCommandManager>();
         services.AddSingleton<AliasManager>();
         services.AddSingleton<HotkeyManager>();

@@ -18,6 +18,8 @@ public partial class ProviderSettingsViewModel(
     ProviderSettings _providerSettings,
     IServiceProvider _serviceProvider) : ObservableObject
 {
+    private static readonly IconInfoViewModel EmptyIcon = new(null);
+
     private readonly SettingsModel _settings = _serviceProvider.GetService<SettingsModel>()!;
     private readonly Lock _initializeSettingsLock = new();
     private Task? _initializeSettingsTask;
@@ -30,7 +32,7 @@ public partial class ProviderSettingsViewModel(
         HasFallbackCommands ?
             $"{ExtensionName}, {TopLevelCommands.Count} commands, {FallbackCommands.Count} fallback commands" :
             $"{ExtensionName}, {TopLevelCommands.Count} commands" :
-        Resources.builtin_disabled_extension;
+        $"{ExtensionName}, {Resources.builtin_disabled_extension}";
 
     [MemberNotNullWhen(true, nameof(Extension))]
     public bool IsFromExtension => _provider.Extension is not null;
@@ -39,7 +41,7 @@ public partial class ProviderSettingsViewModel(
 
     public string ExtensionVersion => IsFromExtension ? $"{Extension.Version.Major}.{Extension.Version.Minor}.{Extension.Version.Build}.{Extension.Version.Revision}" : string.Empty;
 
-    public IconInfoViewModel Icon => _provider.Icon;
+    public IconInfoViewModel Icon => IsEnabled ? _provider.Icon : EmptyIcon;
 
     [ObservableProperty]
     public partial bool LoadingSettings { get; set; } = _provider.Settings?.HasSettings ?? false;
@@ -56,6 +58,7 @@ public partial class ProviderSettingsViewModel(
                 WeakReferenceMessenger.Default.Send<ReloadCommandsMessage>(new());
                 OnPropertyChanged(nameof(IsEnabled));
                 OnPropertyChanged(nameof(ExtensionSubtext));
+                OnPropertyChanged(nameof(Icon));
             }
 
             if (value == true)
