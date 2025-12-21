@@ -211,4 +211,8 @@ namespace winrt::PowerToys::Interop::implementation
     {
         return CommonSharedConstants::ZOOMIT_REFRESH_SETTINGS_EVENT;
     }
+    hstring Constants::TerminateKBMSharedEvent()
+    {
+        return CommonSharedConstants::TERMINATE_KBM_SHARED_EVENT;
+    }
 }

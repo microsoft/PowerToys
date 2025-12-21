@@ -59,6 +59,7 @@ namespace RunnerV2
             new MouseJumpModuleInterface(),
             new FancyZonesModuleInterface(),
             new PowerToysRunModuleInterface(),
+            new KeyboardManagerModuleInterface(),
         ];
 
         /// <summary>

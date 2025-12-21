@@ -53,6 +53,7 @@ namespace PowerToys
             static String AlwaysOnTopPinEvent();
             static String AlwaysOnTopTerminateEvent();
             static String ZoomItRefreshSettingsEvent();
+            static String TerminateKBMSharedEvent();
         }
     }
 }

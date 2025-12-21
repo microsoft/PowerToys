@@ -565,7 +565,6 @@
   </Folder>
   <Folder Name="/modules/keyboardmanager/">
     <Project Path="src/modules/keyboardmanager/common/KeyboardManagerCommon.vcxproj" Id="8affa899-0b73-49ec-8c50-0fadda57b2fc" />
-    <Project Path="src/modules/keyboardmanager/dll/KeyboardManager.vcxproj" Id="89f34af7-1c34-4a72-aa6e-534bcf972bd9" />
     <Project Path="src/modules/keyboardmanager/KeyboardManagerEditor/KeyboardManagerEditor.vcxproj" Id="8df78b53-200e-451f-9328-01eb907193ae" />
     <Project Path="src/modules/keyboardmanager/KeyboardManagerEditorLibrary/KeyboardManagerEditorLibrary.vcxproj" Id="23d2070d-e4ad-4add-85a7-083d9c76ad49" />
     <Project Path="src/modules/keyboardmanager/KeyboardManagerEditorLibraryWrapper/KeyboardManagerEditorLibraryWrapper.vcxproj" Id="4382a954-179a-4078-92af-715187dfff50" />
@@ -998,7 +997,6 @@
     <BuildDependency Project="src/modules/fancyzones/FancyZonesLib/FancyZonesLib.vcxproj" />
     <BuildDependency Project="src/modules/imageresizer/dll/ImageResizerExt.vcxproj" />
     <BuildDependency Project="src/modules/imageresizer/ui/ImageResizerUI.csproj" />
-    <BuildDependency Project="src/modules/keyboardmanager/dll/KeyboardManager.vcxproj" />
     <BuildDependency Project="src/modules/LightSwitch/LightSwitchModuleInterface/LightSwitchModuleInterface.vcxproj" />
     <BuildDependency Project="src/modules/LightSwitch/LightSwitchService/LightSwitchService.vcxproj" />
     <BuildDependency Project="src/modules/powerrename/dll/PowerRenameExt.vcxproj" />

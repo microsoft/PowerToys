@@ -55,6 +55,11 @@ namespace RunnerV2.Models
             /// Suppresses UI when process is launched.
             /// </summary>
             HideUI = 64,
+
+            /// <summary>
+            /// Sets the launched process to realtime priority.
+            /// </summary>
+            RealtimePriority = 128,
         }
 
         /// <summary>
@@ -120,13 +125,28 @@ namespace RunnerV2.Models
 
             string arguments = (LaunchOptions.HasFlag(ProcessLaunchOptions.RunnerProcessIdAsFirstArgument) ? Environment.ProcessId.ToString(CultureInfo.InvariantCulture) + (string.IsNullOrEmpty(ProcessArguments) ? string.Empty : " ") : string.Empty) + ProcessArguments;
 
-            Process.Start(new ProcessStartInfo()
+            Process? p = Process.Start(new ProcessStartInfo()
             {
                 UseShellExecute = LaunchOptions.HasFlag(ProcessLaunchOptions.UseShellExecute),
                 FileName = ProcessPath,
                 Arguments = arguments,
                 Verb = LaunchOptions.HasFlag(ProcessLaunchOptions.ElevateIfApplicable) && ElevationHelper.IsProcessElevated() ? "runas" : "open",
             });
+
+            if (LaunchOptions.HasFlag(ProcessLaunchOptions.RealtimePriority))
+            {
+                try
+                {
+                    if (p != null && !p.HasExited)
+                    {
+                        p.PriorityClass = ProcessPriorityClass.RealTime;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"[ProcessModuleAbstractClass] Failed to set realtime priority for process {ProcessName}", ex);
+                }
+            }
         }
 
         /// <summary>
