@@ -52,6 +52,7 @@ namespace RunnerV2
             new CropAndLockModuleInterface(),
             new EnvironmentVariablesModuleInterface(),
             new RegistryPreviewModuleInterface(),
+            new FileExplorerModuleInterface(),
         ];
 
         /// <summary>

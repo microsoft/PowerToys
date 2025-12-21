@@ -816,9 +816,6 @@
       <Platform Solution="*|x64" Project="x64" />
     </Project>
     <Project Path="src/modules/previewpane/PdfThumbnailProviderCpp/PdfThumbnailProviderCpp.vcxproj" Id="ca5518ed-0458-4b09-8f53-4122b9888655" />
-    <Project Path="src/modules/previewpane/powerpreview/powerpreview.vcxproj" Id="217df501-135c-4e38-bfc8-99d4821032ea">
-      <BuildDependency Project="src/common/version/version.vcxproj" />
-    </Project>
     <Project Path="src/modules/previewpane/QoiPreviewHandler/QoiPreviewHandler.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
@@ -1019,7 +1016,6 @@
     <BuildDependency Project="src/modules/previewpane/Common/PreviewHandlerCommon.csproj" />
     <BuildDependency Project="src/modules/previewpane/MarkdownPreviewHandler/MarkdownPreviewHandler.csproj" />
     <BuildDependency Project="src/modules/previewpane/PdfPreviewHandler/PdfPreviewHandler.csproj" />
-    <BuildDependency Project="src/modules/previewpane/powerpreview/powerpreview.vcxproj" />
     <BuildDependency Project="src/modules/previewpane/SvgPreviewHandler/SvgPreviewHandler.csproj" />
     <BuildDependency Project="src/PackageIdentity/PackageIdentity.vcxproj" />
   </Project>
