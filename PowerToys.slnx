@@ -768,7 +768,6 @@
       <BuildDependency Project="src/common/SettingsAPI/SettingsAPI.vcxproj" />
       <BuildDependency Project="src/common/version/version.vcxproj" />
     </Project>
-    <Project Path="src/modules/MeasureTool/MeasureToolModuleInterface/MeasureToolModuleInterface.vcxproj" Id="92c39820-9f84-4529-bc7d-22aae514d63b" />
     <Project Path="src/modules/MeasureTool/MeasureToolUI/MeasureToolUI.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />

@@ -32,7 +32,7 @@ namespace RunnerV2.ModuleInterfaces
         private void PopulateShortcuts()
         {
             Shortcuts.Clear();
-            Shortcuts.Add((SettingsUtils.Default.GetSettings<PowerOcrSettings>(Name).Properties.DefaultActivationShortcut, () =>
+            Shortcuts.Add((SettingsUtils.Default.GetSettings<PowerOcrSettings>(Name).Properties.ActivationShortcut, () =>
                 {
                     using var invokeOcrEvent = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.ShowPowerOCRSharedEvent());
                     invokeOcrEvent.Set();

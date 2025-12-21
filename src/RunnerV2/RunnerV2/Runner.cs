@@ -55,6 +55,7 @@ namespace RunnerV2
             new FileExplorerModuleInterface(),
             new ZoomItModuleInterface(),
             new PowerOCRModuleInterface(),
+            new MeasureToolModuleInterface(),
         ];
 
         /// <summary>
