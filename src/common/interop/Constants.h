@@ -55,6 +55,7 @@ namespace winrt::PowerToys::Interop::implementation
         static hstring ShowCmdPalEvent();
         static hstring AlwaysOnTopPinEvent();
         static hstring AlwaysOnTopTerminateEvent();
+        static hstring ZoomItRefreshSettingsEvent();
     };
 }
 
