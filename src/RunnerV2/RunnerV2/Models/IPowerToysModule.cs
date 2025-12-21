@@ -67,7 +67,7 @@ namespace RunnerV2.Models
         /// </summary>
         /// <param name="settingsKind">Value of <see cref="Name"/> or "general" indicating the type of change.</param>
         /// <param name="jsonProperties">The json element with the new settings.</param>
-        public virtual void OnSettingsChanged(string settingsKind, JsonElement jsonProperties)
+        public void OnSettingsChanged(string settingsKind, JsonElement jsonProperties)
         {
         }
     }

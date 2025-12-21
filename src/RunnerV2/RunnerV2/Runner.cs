@@ -54,6 +54,7 @@ namespace RunnerV2
             new RegistryPreviewModuleInterface(),
             new FileExplorerModuleInterface(),
             new ZoomItModuleInterface(),
+            new PowerOCRModuleInterface(),
         ];
 
         /// <summary>
@@ -182,6 +183,7 @@ namespace RunnerV2
             }
             catch (IOException)
             {
+                return;
             }
             catch (Exception e)
             {
