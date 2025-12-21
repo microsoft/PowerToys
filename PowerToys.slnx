@@ -367,7 +367,6 @@
       <Platform Solution="*|x64" Project="x64" />
     </Project>
     <Project Path="src/modules/fancyzones/FancyZonesLib/FancyZonesLib.vcxproj" Id="f9c68edf-ac74-4b77-9af1-005d9c9f6a99" />
-    <Project Path="src/modules/fancyzones/FancyZonesModuleInterface/FancyZonesModuleInterface.vcxproj" Id="48804216-2a0e-4168-a6d8-9cd068d14227" />
   </Folder>
   <Folder Name="/modules/fancyzones/Tests/">
     <Project Path="src/modules/fancyzones/FancyZones.FuzzTests/FancyZones.FuzzTests.csproj">
@@ -1000,7 +999,6 @@
     <BuildDependency Project="src/modules/colorPicker/ColorPickerUI/ColorPickerUI.csproj" />
     <BuildDependency Project="src/modules/fancyzones/editor/FancyZonesEditor/FancyZonesEditor.csproj" />
     <BuildDependency Project="src/modules/fancyzones/FancyZonesLib/FancyZonesLib.vcxproj" />
-    <BuildDependency Project="src/modules/fancyzones/FancyZonesModuleInterface/FancyZonesModuleInterface.vcxproj" />
     <BuildDependency Project="src/modules/imageresizer/dll/ImageResizerExt.vcxproj" />
     <BuildDependency Project="src/modules/imageresizer/ui/ImageResizerUI.csproj" />
     <BuildDependency Project="src/modules/keyboardmanager/dll/KeyboardManager.vcxproj" />
