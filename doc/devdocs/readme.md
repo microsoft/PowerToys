@@ -93,11 +93,11 @@ Run the following command in an elevated (Administrator) terminal:
 git config --system core.longpaths true
 ```
 
-#### PowerShell Core (pwsh)
+#### PowerShell  (pwsh)
 
-Some PowerToys build scripts rely on PowerShell Core (`pwsh`).
+Some PowerToys build scripts rely on PowerShell  (`pwsh`).
 
-Ensure that PowerShell Core is installed and available in your `PATH`.
+Ensure that PowerShell  is installed and available in your `PATH`.
 
 Installation instructions:  
 https://learn.microsoft.com/powershell/scripting/install/installing-powershell-on-windows
