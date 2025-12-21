@@ -7,6 +7,7 @@
 using System;
 using System.IO;
 using System.IO.Abstractions;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 
 using ManagedCommon;
@@ -14,12 +15,13 @@ using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 
 namespace Microsoft.PowerToys.Settings.UI.Library
 {
-    public class SettingsUtils : ISettingsUtils
+    // Some functions are marked as virtual to allow mocking in unit tests.
+    public class SettingsUtils
     {
         public const string DefaultFileName = "settings.json";
         private const string DefaultModuleName = "";
         private readonly IFile _file;
-        private readonly ISettingsPath _settingsPath;
+        private readonly SettingPath _settingsPath;
         private readonly JsonSerializerOptions _serializerOptions;
 
         /// <summary>
@@ -39,7 +41,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         {
         }
 
-        public SettingsUtils(IFile file, ISettingsPath settingPath, JsonSerializerOptions? serializerOptions = null)
+        public SettingsUtils(IFile file, SettingPath settingPath, JsonSerializerOptions? serializerOptions = null)
         {
             _file = file ?? throw new ArgumentNullException(nameof(file));
             _settingsPath = settingPath;
@@ -62,7 +64,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             _settingsPath.DeleteSettings(powertoy);
         }
 
-        public T GetSettings<T>(string powertoy = DefaultModuleName, string fileName = DefaultFileName)
+        public virtual T GetSettings<T>(string powertoy = DefaultModuleName, string fileName = DefaultFileName)
             where T : ISettingsConfig, new()
         {
             if (!SettingsExists(powertoy, fileName))
@@ -87,7 +89,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         /// This function creates a file in the powertoy folder if it does not exist and returns an object with default properties.
         /// </summary>
         /// <returns>Deserialized json settings object.</returns>
-        public T GetSettingsOrDefault<T>(string powertoy = DefaultModuleName, string fileName = DefaultFileName)
+        public virtual T GetSettingsOrDefault<T>(string powertoy = DefaultModuleName, string fileName = DefaultFileName)
             where T : ISettingsConfig, new()
         {
             try
@@ -118,7 +120,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         /// This function creates a file in the powertoy folder if it does not exist and returns an object with default properties.
         /// </summary>
         /// <returns>Deserialized json settings object.</returns>
-        public T GetSettingsOrDefault<T, T2>(string powertoy = DefaultModuleName, string fileName = DefaultFileName, Func<object, object>? settingsUpgrader = null)
+        public virtual T GetSettingsOrDefault<T, T2>(string powertoy = DefaultModuleName, string fileName = DefaultFileName, Func<object, object>? settingsUpgrader = null)
             where T : ISettingsConfig, new()
             where T2 : ISettingsConfig, new()
         {
@@ -203,7 +205,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         }
 
         // Save settings to a json file.
-        public void SaveSettings(string jsonSettings, string powertoy = DefaultModuleName, string fileName = DefaultFileName)
+        public virtual void SaveSettings(string jsonSettings, string powertoy = DefaultModuleName, string fileName = DefaultFileName)
         {
             try
             {

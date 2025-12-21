@@ -26,7 +26,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private bool _enabledStateIsGPOConfigured;
         private bool _isEnabled;
 
-        private ISettingsUtils SettingsUtils { get; set; }
+        private SettingsUtils SettingsUtils { get; set; }
 
         private GeneralSettings GeneralSettingsConfig { get; set; }
 
@@ -82,7 +82,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public EnvironmentVariablesViewModel(ISettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, ISettingsRepository<EnvironmentVariablesSettings> moduleSettingsRepository, Func<string, int> ipcMSGCallBackFunc, bool isElevated)
+        public EnvironmentVariablesViewModel(SettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, ISettingsRepository<EnvironmentVariablesSettings> moduleSettingsRepository, Func<string, int> ipcMSGCallBackFunc, bool isElevated)
         {
             SettingsUtils = settingsUtils;
             GeneralSettingsConfig = settingsRepository.SettingsConfig;

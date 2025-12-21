@@ -2,7 +2,6 @@
   <!-- Look at Directory.Build.props in root for common stuff as well -->
   <Import Project="..\..\..\Common.Dotnet.CsWinRT.props" />
   <Import Project="..\..\..\Common.SelfContained.props" />
-  <Import Project="..\..\..\Common.Dotnet.AotCompatibility.props" />
   
   <PropertyGroup>
     <AssemblyTitle>PowerToys.FancyZonesCLI</AssemblyTitle>
@@ -10,8 +9,6 @@
     <Description>PowerToys FancyZones CLI</Description>
     <OutputType>Exe</OutputType>
     <Platforms>x64;ARM64</Platforms>
-    <PublishAot>true</PublishAot>
-    <DisableRuntimeMarshalling>true</DisableRuntimeMarshalling>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <OutputPath>..\..\..\..\$(Platform)\$(Configuration)</OutputPath>
@@ -21,7 +18,12 @@
 
   <ItemGroup>
     <PackageReference Include="System.Text.Json" />
+    <PackageReference Include="System.CommandLine" />
     <PackageReference Include="Microsoft.Windows.CsWin32" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\FancyZonesEditorCommon\FancyZonesEditorCommon.csproj" />
   </ItemGroup>
 
   <!-- Force using WindowsDesktop runtime to ensure consistent dll versions with other projects -->
