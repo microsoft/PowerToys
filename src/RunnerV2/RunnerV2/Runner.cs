@@ -56,6 +56,7 @@ namespace RunnerV2
             new ZoomItModuleInterface(),
             new PowerOCRModuleInterface(),
             new MeasureToolModuleInterface(),
+            new MouseJumpModuleInterface(),
         ];
 
         /// <summary>
