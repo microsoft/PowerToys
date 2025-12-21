@@ -581,9 +581,6 @@
     <Project Path="src/modules/keyboardmanager/KeyboardManagerEngineTest/KeyboardManagerEngineTest.vcxproj" Id="7f4b3a60-bc27-45a7-8000-68b0b6ea7466" />
   </Folder>
   <Folder Name="/modules/launcher/">
-    <Project Path="src/modules/launcher/Microsoft.Launcher/Microsoft.Launcher.vcxproj" Id="e364f67b-bb12-4e91-b639-355866ebcd8b">
-      <BuildDependency Project="src/modules/launcher/PowerLauncher/PowerLauncher.csproj" />
-    </Project>
     <Project Path="src/modules/launcher/PowerLauncher.Telemetry/PowerLauncher.Telemetry.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
@@ -1002,7 +999,6 @@
     <BuildDependency Project="src/modules/imageresizer/dll/ImageResizerExt.vcxproj" />
     <BuildDependency Project="src/modules/imageresizer/ui/ImageResizerUI.csproj" />
     <BuildDependency Project="src/modules/keyboardmanager/dll/KeyboardManager.vcxproj" />
-    <BuildDependency Project="src/modules/launcher/Microsoft.Launcher/Microsoft.Launcher.vcxproj" />
     <BuildDependency Project="src/modules/LightSwitch/LightSwitchModuleInterface/LightSwitchModuleInterface.vcxproj" />
     <BuildDependency Project="src/modules/LightSwitch/LightSwitchService/LightSwitchService.vcxproj" />
     <BuildDependency Project="src/modules/powerrename/dll/PowerRenameExt.vcxproj" />

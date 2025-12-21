@@ -58,6 +58,7 @@ namespace RunnerV2
             new MeasureToolModuleInterface(),
             new MouseJumpModuleInterface(),
             new FancyZonesModuleInterface(),
+            new PowerToysRunModuleInterface(),
         ];
 
         /// <summary>
