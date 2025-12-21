@@ -711,6 +711,7 @@ hotlight
 hotspot
 HPAINTBUFFER
 HRAWINPUT
+hredraw
 hres
 hresult
 hrgn
@@ -1906,6 +1907,7 @@ valuegenerator
 variantassignment
 VARTYPE
 vcamp
+vcenter
 vcgtq
 VCINSTALLDIR
 Vcpkg
@@ -1937,6 +1939,7 @@ vorrq
 VOS
 vpaddlq
 vqsubq
+vredraw
 vreinterpretq
 VSC
 VSCBD
