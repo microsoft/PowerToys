@@ -2,12 +2,31 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Globalization;
+
+using ToolGood.Words.Pinyin;
+
 namespace Microsoft.CommandPalette.Extensions.Toolkit;
 
 // Inspired by the fuzzy.rs from edit.exe
 public static class FuzzyStringMatcher
 {
     private const int NOMATCH = 0;
+
+    /// <summary>
+    /// Gets a value indicating whether to support Chinese PinYin.
+    /// Automatically enabled when the system UI culture is Simplified Chinese.
+    /// </summary>
+    public static bool ChinesePinYinSupport { get; } = IsSimplifiedChinese();
+
+    private static bool IsSimplifiedChinese()
+    {
+        var culture = CultureInfo.CurrentUICulture;
+
+        // Detect Simplified Chinese: zh-CN, zh-Hans, zh-Hans-*
+        return culture.Name.StartsWith("zh-CN", StringComparison.OrdinalIgnoreCase)
+            || culture.Name.StartsWith("zh-Hans", StringComparison.OrdinalIgnoreCase);
+    }
 
     public static int ScoreFuzzy(string needle, string haystack, bool allowNonContiguousMatches = true)
     {
@@ -16,6 +35,28 @@ public static class FuzzyStringMatcher
     }
 
     public static (int Score, List<int> Positions) ScoreFuzzyWithPositions(string needle, string haystack, bool allowNonContiguousMatches)
+        => ScoreAllFuzzyWithPositions(needle, haystack, allowNonContiguousMatches).MaxBy(i => i.Score);
+
+    public static IEnumerable<(int Score, List<int> Positions)> ScoreAllFuzzyWithPositions(string needle, string haystack, bool allowNonContiguousMatches)
+    {
+        List<string> needles = [needle];
+        List<string> haystacks = [haystack];
+
+        if (ChinesePinYinSupport)
+        {
+            // Remove IME composition split characters.
+            var input = needle.Replace("'", string.Empty);
+            needles.Add(WordsHelper.GetPinyin(input));
+            if (WordsHelper.HasChinese(haystack))
+            {
+                haystacks.Add(WordsHelper.GetPinyin(haystack));
+            }
+        }
+
+        return needles.SelectMany(i => haystacks.Select(j => ScoreFuzzyWithPositionsInternal(i, j, allowNonContiguousMatches)));
+    }
+
+    private static (int Score, List<int> Positions) ScoreFuzzyWithPositionsInternal(string needle, string haystack, bool allowNonContiguousMatches)
     {
         if (string.IsNullOrEmpty(haystack) || string.IsNullOrEmpty(needle))
         {

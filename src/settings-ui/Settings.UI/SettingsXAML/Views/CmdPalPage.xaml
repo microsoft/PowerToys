@@ -10,40 +10,202 @@
     xmlns:ui="using:CommunityToolkit.WinUI"
     AutomationProperties.LandmarkType="Main"
     mc:Ignorable="d">
+    <Grid>
+        <ScrollViewer AutomationProperties.AutomationId="PageScrollViewer">
+            <Grid
+                MaxWidth="1000"
+                Padding="16,0,16,0"
+                VerticalAlignment="Top"
+                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                BorderThickness="1"
+                CornerRadius="16"
+                RowSpacing="8">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <tkcontrols:OpacityMaskView Margin="-16,0,-16,0" HorizontalAlignment="Stretch">
+                    <tkcontrols:OpacityMaskView.OpacityMask>
+                        <Rectangle>
+                            <Rectangle.Fill>
+                                <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
+                                    <GradientStop Offset="0.50" Color="Black" />
+                                    <GradientStop Offset="0.75" Color="#80000000" />
+                                    <GradientStop Offset="0.95" Color="Transparent" />
+                                </LinearGradientBrush>
+                            </Rectangle.Fill>
+                        </Rectangle>
+                    </tkcontrols:OpacityMaskView.OpacityMask>
+                    <Grid Height="560">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <Image
+                            Grid.RowSpan="3"
+                            HorizontalAlignment="Stretch"
+                            Source="/Assets/Settings/Modules/CmdPal_Background.png"
+                            Stretch="UniformToFill" />
+                        <TextBlock
+                            Margin="0,24,0,12"
+                            HorizontalAlignment="Center"
+                            FontSize="36"
+                            FontWeight="Bold"
+                            Text="Command Palette">
+                            <TextBlock.Foreground>
+                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                    <GradientStop Offset="0.0" Color="#FFB9EBFF" />
+                                    <GradientStop Offset="0.49" Color="#FF86CBFF" />
+                                    <GradientStop Offset="1.0" Color="#FFA1E7FF" />
+                                </LinearGradientBrush>
+                            </TextBlock.Foreground>
+                        </TextBlock>
+                        <TextBlock
+                            Grid.Row="1"
+                            HorizontalAlignment="Center"
+                            Foreground="White"
+                            TextAlignment="Center"
+                            TextWrapping="Wrap">
+                            <Run x:Uid="CmdPal_Description" />
+                            <Hyperlink NavigateUri="">
+                                <Run x:Uid="LearnMore_CmdPal.Text" Foreground="White" />
+                            </Hyperlink>
+                        </TextBlock>
+                        <Image
+                            Grid.Row="2"
+                            Margin="0,16,0,0"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Top"
+                            Source="/Assets/Settings/Modules/CmdPal_Hero.png"
+                            Stretch="Uniform" />
+                    </Grid>
+                </tkcontrols:OpacityMaskView>
 
-    <controls:SettingsPageControl x:Uid="CmdPal" ModuleImageSource="ms-appx:///Assets/Settings/Modules/CmdPal.png">
-        <controls:SettingsPageControl.ModuleContent>
-            <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
-                <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}">
-                    <tkcontrols:SettingsCard
-                        Name="CmdPalEnableCmdPal"
-                        x:Uid="CmdPal_Enable_CmdPal"
-                        HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/CmdPal.png}">
-                        <ToggleSwitch IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
-                    </tkcontrols:SettingsCard>
-                </controls:GPOInfoControl>
-                <controls:SettingsGroup x:Uid="CmdPal_Activation_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-                    <tkcontrols:SettingsCard
-                        Name="CmdPalActivationShortcut"
-                        x:Uid="CmdPal_ActivationShortcut"
-                        HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
-                        <controls:ShortcutControl
-                            MinWidth="{StaticResource SettingActionControlMinWidth}"
-                            HotkeySettings="{x:Bind Path=ViewModel.Hotkey, Mode=OneWay}"
-                            IsEnabled="False" />
-                        <tkcontrols:SettingsCard.Description>
-                            <HyperlinkButton
-                                x:Name="CmdPalSettingsDeeplink"
-                                x:Uid="CmdPal_DeeplinkContent"
-                                Click="CmdPalSettingsDeeplink_Click" />
-                        </tkcontrols:SettingsCard.Description>
-                    </tkcontrols:SettingsCard>
-                </controls:SettingsGroup>
-            </StackPanel>
-        </controls:SettingsPageControl.ModuleContent>
+                <Grid
+                    Grid.Row="1"
+                    Margin="0,-12,0,24"
+                    ColumnSpacing="32"
+                    RowSpacing="8">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <FontIcon
+                        HorizontalAlignment="Center"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        Glyph="&#xEB3B;" />
+                    <TextBlock
+                        Grid.Row="1"
+                        HorizontalAlignment="Center"
+                        TextAlignment="Center"
+                        TextWrapping="Wrap">
+                        <Run x:Uid="CmdPal_ExtensibleHeader" FontWeight="SemiBold" /> <LineBreak />
+                        <Run
+                            x:Uid="CmdPal_ExtensibleDescription"
+                            FontSize="12"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                    </TextBlock>
 
-        <controls:SettingsPageControl.PrimaryLinks>
-            <controls:PageLink x:Uid="LearnMore_CmdPal" Link="https://aka.ms/PowerToysOverview_CmdPal" />
-        </controls:SettingsPageControl.PrimaryLinks>
-    </controls:SettingsPageControl>
+                    <FontIcon
+                        Grid.Column="1"
+                        HorizontalAlignment="Center"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        Glyph="&#xE945;" />
+                    <TextBlock
+                        Grid.Row="1"
+                        Grid.Column="1"
+                        HorizontalAlignment="Center"
+                        TextAlignment="Center"
+                        TextWrapping="Wrap">
+                        <Run x:Uid="CmdPal_FastHeader" FontWeight="SemiBold" /> <LineBreak />
+                        <Run
+                            x:Uid="CmdPal_FastDescription"
+                            FontSize="12"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                    </TextBlock>
+
+                    <FontIcon
+                        Grid.Column="2"
+                        HorizontalAlignment="Center"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        Glyph="&#xE790;" />
+                    <TextBlock
+                        Grid.Row="1"
+                        Grid.Column="2"
+                        HorizontalAlignment="Center"
+                        TextAlignment="Center"
+                        TextWrapping="Wrap">
+                        <Run x:Uid="CmdPal_ModernHeader" FontWeight="SemiBold" /> <LineBreak />
+                        <Run
+                            x:Uid="CmdPal_ModernDescription"
+                            FontSize="12"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                    </TextBlock>
+                </Grid>
+                <StackPanel
+                    Grid.Row="2"
+                    Margin="0,8,0,0"
+                    Orientation="Vertical"
+                    Spacing="{StaticResource SettingsCardSpacing}">
+                    <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}">
+                        <tkcontrols:SettingsCard
+                            Name="CmdPalEnableCmdPal"
+                            x:Uid="CmdPal_Enable_CmdPal"
+                            HorizontalAlignment="Stretch"
+                            HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/CmdPal.png}">
+                            <ToggleSwitch IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
+                        </tkcontrols:SettingsCard>
+                    </controls:GPOInfoControl>
+                    <tkcontrols:SettingsCard
+                        x:Uid="CmdPal_Launch"
+                        Grid.Row="3"
+                        ActionIcon="{ui:FontIcon Glyph=&#xE8A7;}"
+                        Click="LaunchCard_Click"
+                        Header="Launch Command Palette"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE945;}"
+                        IsClickEnabled="True"
+                        IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                        <ItemsControl
+                            AutomationProperties.AccessibilityView="Raw"
+                            IsTabStop="False"
+                            ItemsSource="{x:Bind Path=ViewModel.Hotkey.GetKeysList(), Mode=OneWay}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Orientation="Horizontal" Spacing="4" />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <controls:KeyVisual
+                                        Padding="8,8,8,8"
+                                        VerticalAlignment="Center"
+                                        AutomationProperties.AccessibilityView="Raw"
+                                        Content="{Binding}"
+                                        Style="{StaticResource AccentKeyVisualStyle}" />
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </tkcontrols:SettingsCard>
+                    <tkcontrols:SettingsCard
+                        x:Uid="CmdPal_Settings"
+                        Grid.Row="4"
+                        ActionIcon="{ui:FontIcon Glyph=&#xE8A7;}"
+                        Click="SettingsCard_Click"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE713;}"
+                        IsClickEnabled="True"
+                        IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}" />
+                </StackPanel>
+            </Grid>
+        </ScrollViewer>
+    </Grid>
 </local:NavigablePage>

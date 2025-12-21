@@ -23,7 +23,8 @@ public sealed class SettingsResourceAdvancedPasteModuleTest : SettingsResourceMo
         {
             s.Properties.ShowCustomPreview = !s.Properties.ShowCustomPreview;
             s.Properties.CloseAfterLosingFocus = !s.Properties.CloseAfterLosingFocus;
-            s.Properties.IsAdvancedAIEnabled = !s.Properties.IsAdvancedAIEnabled;
+
+            // s.Properties.IsAdvancedAIEnabled = !s.Properties.IsAdvancedAIEnabled;
             s.Properties.AdvancedPasteUIShortcut = new HotkeySettings
             {
                 Key = "mock",

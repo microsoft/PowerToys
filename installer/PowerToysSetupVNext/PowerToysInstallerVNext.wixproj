@@ -14,7 +14,6 @@ SET PTRoot=$(SolutionDir)\..
 call "..\..\..\publish.cmd" x64
 )
 call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuildThisFileDirectory)\generateMonacoWxs.ps1 -monacoWxsFile "$(MSBuildThisFileDirectory)\MonacoSRC.wxs" -Platform "$(Platform)" -nugetHeatPath "$(NUGET_PACKAGES)\wixtoolset.heat\5.0.2"
-call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuildThisFileDirectory)\generateDscResourcesWxs.ps1 -dscWxsFile "$(MSBuildThisFileDirectory)\DscResources.wxs" -Platform "$(Platform)" -Configuration "$(Configuration)"
     </PreBuildEvent>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Platform)' != 'x64'">
@@ -25,7 +24,6 @@ SET PTRoot=$(SolutionDir)\..
 call "..\..\..\publish.cmd" arm64
 )
 call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuildThisFileDirectory)\generateMonacoWxs.ps1 -monacoWxsFile "$(MSBuildThisFileDirectory)\MonacoSRC.wxs" -Platform "$(Platform)" -nugetHeatPath "$(NUGET_PACKAGES)\wixtoolset.heat\5.0.2"
-call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuildThisFileDirectory)\generateDscResourcesWxs.ps1 -dscWxsFile "$(MSBuildThisFileDirectory)\DscResources.wxs" -Platform "$(Platform)" -Configuration "$(Configuration)"
     </PreBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
@@ -37,6 +35,7 @@ call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuil
       call move /Y ..\..\..\CmdPal.wxs.bk ..\..\..\CmdPal.wxs
       call move /Y ..\..\..\ColorPicker.wxs.bk ..\..\..\ColorPicker.wxs
       call move /Y ..\..\..\Core.wxs.bk ..\..\..\Core.wxs
+      call move /Y ..\..\..\DscResources.wxs.bk ..\..\..\DscResources.wxs
       call move /Y ..\..\..\EnvironmentVariables.wxs.bk ..\..\..\EnvironmentVariables.wxs
       call move /Y ..\..\..\FileExplorerPreview.wxs.bk ..\..\..\FileExplorerPreview.wxs
       call move /Y ..\..\..\FileLocksmith.wxs.bk ..\..\..\FileLocksmith.wxs
