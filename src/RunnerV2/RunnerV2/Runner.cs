@@ -53,6 +53,7 @@ namespace RunnerV2
             new EnvironmentVariablesModuleInterface(),
             new RegistryPreviewModuleInterface(),
             new FileExplorerModuleInterface(),
+            new ZoomItModuleInterface(),
         ];
 
         /// <summary>

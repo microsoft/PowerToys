@@ -207,4 +207,8 @@ namespace winrt::PowerToys::Interop::implementation
     {
         return CommonSharedConstants::CROP_AND_LOCK_EXIT_EVENT;
     }
+    hstring Constants::ZoomItRefreshSettingsEvent()
+    {
+        return CommonSharedConstants::ZOOMIT_REFRESH_SETTINGS_EVENT;
+    }
 }

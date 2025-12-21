@@ -52,6 +52,7 @@ namespace PowerToys
             static String ShowCmdPalEvent();
             static String AlwaysOnTopPinEvent();
             static String AlwaysOnTopTerminateEvent();
+            static String ZoomItRefreshSettingsEvent();
         }
     }
 }
