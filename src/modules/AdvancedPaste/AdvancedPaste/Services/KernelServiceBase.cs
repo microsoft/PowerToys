@@ -268,9 +268,9 @@ public abstract class KernelServiceBase(
         if (format == PasteFormats.TextToImage)
         {
             return KernelFunctionFactory.CreateFromMethod(
-                method: async (Kernel kernel, string prompt) =>
+                method: async (Kernel kernel, string prompt = null) =>
                 {
-                    await ExecuteTextToImageAsync(kernel, prompt);
+                    await ExecuteTextToImageAsync(kernel, prompt ?? string.Empty);
                     return "Image generated successfully using the clipboard text as the description.";
                 },
                 functionName: format.ToString(),
