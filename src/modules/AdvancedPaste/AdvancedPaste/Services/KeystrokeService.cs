@@ -35,10 +35,19 @@ public sealed class KeystrokeService
             return;
         }
 
+        var targetWindow = Helpers.NativeMethods.GetForegroundWindow();
+
         const int chunkSize = 1;
 
         for (int i = 0; i < text.Length; i += chunkSize)
         {
+            var currentForeground = Helpers.NativeMethods.GetForegroundWindow();
+            if (targetWindow != IntPtr.Zero && currentForeground != targetWindow)
+            {
+                Logger.LogWarning("Keystroke paste cancelled because the foreground window changed");
+                break;
+            }
+
             int currentChunkLength = Math.Min(chunkSize, text.Length - i);
             string chunk = text.Substring(i, currentChunkLength);
 
