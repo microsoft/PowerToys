@@ -14,7 +14,7 @@ namespace AdvancedPaste.Services;
 /// </summary>
 public sealed class KeystrokeService
 {
-    private const uint IgnoreKeyEventFlag = 0x5555;
+    private const int WaitAfterSendInputEventsMS = 30;
 
     /// <summary>
     /// Sends text as individual Unicode keystroke events.
@@ -35,11 +35,21 @@ public sealed class KeystrokeService
             return;
         }
 
-        var inputs = CreateInputSequence(text);
+        const int chunkSize = 1;
 
-        if (inputs.Count > 0)
+        for (int i = 0; i < text.Length; i += chunkSize)
         {
-            SendInputEvents(inputs, text.Length);
+            int currentChunkLength = Math.Min(chunkSize, text.Length - i);
+            string chunk = text.Substring(i, currentChunkLength);
+
+            Logger.LogDebug(
+                $"Sending keystroke chunk starting at index {i} with length {currentChunkLength}");
+
+            if (chunk.Length > 0)
+            {
+                var inputs = CreateInputSequence(chunk);
+                SendInputEvents(inputs);
+            }
         }
     }
 
@@ -57,7 +67,7 @@ public sealed class KeystrokeService
         return inputs;
     }
 
-    private void SendInputEvents(List<Helpers.NativeMethods.INPUT> inputs, int characterCount)
+    private void SendInputEvents(List<Helpers.NativeMethods.INPUT> inputs)
     {
         uint sent = Helpers.NativeMethods.SendInput((uint)inputs.Count, inputs.ToArray(), Helpers.NativeMethods.INPUT.Size);
 
@@ -68,7 +78,10 @@ public sealed class KeystrokeService
             throw new InvalidOperationException(errorMessage);
         }
 
-        Logger.LogInfo($"Successfully sent {characterCount} characters as keystrokes");
+        // SendInput cannot handle rapid sequences of inputs. 20ms causes scrambled and missing characters.
+        System.Threading.Thread.Sleep(WaitAfterSendInputEventsMS);
+
+        Logger.LogDebug($"Successfully sent {inputs.Count} keystrokes");
     }
 
     private static Helpers.NativeMethods.INPUT CreateUnicodeInput(char character, bool isKeyUp)
@@ -85,7 +98,7 @@ public sealed class KeystrokeService
                     dwFlags = (uint)Helpers.NativeMethods.KeyEventF.Unicode |
                               (isKeyUp ? (uint)Helpers.NativeMethods.KeyEventF.KeyUp : 0),
                     time = 0,
-                    dwExtraInfo = (UIntPtr)IgnoreKeyEventFlag,
+                    dwExtraInfo = UIntPtr.Zero,
                 },
             },
         };
