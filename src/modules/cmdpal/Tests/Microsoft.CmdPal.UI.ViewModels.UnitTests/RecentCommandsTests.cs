@@ -263,11 +263,10 @@ public partial class RecentCommandsTests : CommandPaletteUnitTestBase
         };
 
         var history = CreateHistory(items.Reverse<ListItemMock>().ToList());
-        var query = new FuzzyMatchQuery("C");
 
-        var scoreA = MainListPage.ScoreTopLevelItem(query, items[0], history);
-        var scoreB = MainListPage.ScoreTopLevelItem(query, items[1], history);
-        var scoreC = MainListPage.ScoreTopLevelItem(query, items[2], history);
+        var scoreA = MainListPage.ScoreTopLevelItem("C", items[0], history);
+        var scoreB = MainListPage.ScoreTopLevelItem("C", items[1], history);
+        var scoreC = MainListPage.ScoreTopLevelItem("C", items[2], history);
 
         // Assert
         // All of these equally match the query, and they're all in the same bucket,
@@ -338,10 +337,9 @@ public partial class RecentCommandsTests : CommandPaletteUnitTestBase
         var items = CreateMockHistoryItems();
         var emptyHistory = CreateMockHistoryService(new());
         var history = CreateMockHistoryService(items);
-        var query = new FuzzyMatchQuery("C");
 
-        var unweightedScores = items.Select(item => MainListPage.ScoreTopLevelItem(query, item, emptyHistory)).ToList();
-        var weightedScores = items.Select(item => MainListPage.ScoreTopLevelItem(query, item, history)).ToList();
+        var unweightedScores = items.Select(item => MainListPage.ScoreTopLevelItem("C", item, emptyHistory)).ToList();
+        var weightedScores = items.Select(item => MainListPage.ScoreTopLevelItem("C", item, history)).ToList();
         Assert.AreEqual(unweightedScores.Count, weightedScores.Count, "Both score lists should have the same number of items");
         for (var i = 0; i < unweightedScores.Count; i++)
         {
@@ -382,7 +380,7 @@ public partial class RecentCommandsTests : CommandPaletteUnitTestBase
         var items = CreateMockHistoryItems();
         var emptyHistory = CreateMockHistoryService(new());
         var history = CreateMockHistoryService(items);
-        var weightedScores = items.Select(item => MainListPage.ScoreTopLevelItem(new FuzzyMatchQuery("te"), item, history)).ToList();
+        var weightedScores = items.Select(item => MainListPage.ScoreTopLevelItem("te", item, history)).ToList();
         var weightedMatches = GetMatches(items, weightedScores).ToList();
 
         Assert.AreEqual(3, weightedMatches.Count, "Find Terminal, VsCode and Run commands");
@@ -407,7 +405,7 @@ public partial class RecentCommandsTests : CommandPaletteUnitTestBase
             history.AddHistoryItem(items[1].Id);
         }
 
-        var weightedScores = items.Select(item => MainListPage.ScoreTopLevelItem(new FuzzyMatchQuery("te"), item, history)).ToList();
+        var weightedScores = items.Select(item => MainListPage.ScoreTopLevelItem("te", item, history)).ToList();
         var weightedMatches = GetMatches(items, weightedScores).ToList();
 
         Assert.AreEqual(3, weightedMatches.Count, "Find Terminal, VsCode and Run commands");
@@ -433,7 +431,7 @@ public partial class RecentCommandsTests : CommandPaletteUnitTestBase
         {
             history.AddHistoryItem(vsCodeId);
 
-            var weightedScores = items.Select(item => MainListPage.ScoreTopLevelItem(new FuzzyMatchQuery("C"), item, history)).ToList();
+            var weightedScores = items.Select(item => MainListPage.ScoreTopLevelItem("C", item, history)).ToList();
             var weightedMatches = GetMatches(items, weightedScores).ToList();
             Assert.AreEqual(4, weightedMatches.Count);
 

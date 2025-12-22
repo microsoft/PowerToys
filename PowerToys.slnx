@@ -339,10 +339,6 @@
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
-    <Project Path="src/modules/cmdpal/Tests/Microsoft.CommandPalette.Extensions.Toolkit.UnitTests/Microsoft.CommandPalette.Extensions.Toolkit.UnitTests.csproj" Id="58819d0f-c3e3-42f9-b5b6-0b0c89ecf47e">
-      <Platform Solution="*|ARM64" Project="ARM64" />
-      <Platform Solution="*|x64" Project="x64" />
-    </Project>
   </Folder>
   <Folder Name="/modules/CommandPalette/UI/">
     <Project Path="src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/Microsoft.CmdPal.UI.ViewModels.csproj">

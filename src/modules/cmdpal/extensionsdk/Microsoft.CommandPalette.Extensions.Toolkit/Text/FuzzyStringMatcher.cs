@@ -319,7 +319,7 @@ public static class FuzzyStringMatcher
     /// </summary>
     public static string NormalizeString(string input)
     {
-        return FuzzyStringMatchNormalizationHelper.NormalizeString(input);
+        return NormalizationHelper.NormalizeString(input);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
