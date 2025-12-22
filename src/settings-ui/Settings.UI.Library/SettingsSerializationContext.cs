@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Text.Json.Serialization;
+using Settings.UI.Library;
 using SettingsUILibrary = Settings.UI.Library;
 using SettingsUILibraryHelpers = Settings.UI.Library.Helpers;
 
@@ -55,13 +56,15 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     [JsonSerializable(typeof(HostsSettings))]
     [JsonSerializable(typeof(ImageResizerSettings))]
     [JsonSerializable(typeof(KeyboardManagerSettings))]
-    [JsonSerializable(typeof(SettingsUILibrary.LightSwitchSettings))]
+    [JsonSerializable(typeof(LastVersionRunSettings))]
+    [JsonSerializable(typeof(LightSwitchSettings))]
     [JsonSerializable(typeof(MeasureToolSettings))]
     [JsonSerializable(typeof(MouseHighlighterSettings))]
     [JsonSerializable(typeof(MouseJumpSettings))]
     [JsonSerializable(typeof(MousePointerCrosshairsSettings))]
     [JsonSerializable(typeof(MouseWithoutBordersSettings))]
     [JsonSerializable(typeof(NewPlusSettings))]
+    [JsonSerializable(typeof(OOBESettings))]
     [JsonSerializable(typeof(PeekSettings))]
     [JsonSerializable(typeof(PowerAccentSettings))]
     [JsonSerializable(typeof(PowerLauncherSettings))]
@@ -99,7 +102,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     [JsonSerializable(typeof(MouseWithoutBordersProperties))]
     [JsonSerializable(typeof(NewPlusProperties))]
     [JsonSerializable(typeof(PeekProperties))]
-    [JsonSerializable(typeof(SettingsUILibrary.PeekPreviewSettings))]
+    [JsonSerializable(typeof(PeekPreviewSettings))]
     [JsonSerializable(typeof(PowerAccentProperties))]
     [JsonSerializable(typeof(PowerLauncherProperties))]
     [JsonSerializable(typeof(PowerOcrProperties))]

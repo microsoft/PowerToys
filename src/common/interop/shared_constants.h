@@ -135,6 +135,9 @@ namespace CommonSharedConstants
     const wchar_t CMDPAL_SHOW_EVENT[] = L"Local\\PowerToysCmdPal-ShowEvent-62336fcd-8611-4023-9b30-091a6af4cc5a";
     const wchar_t CMDPAL_EXIT_EVENT[] = L"Local\\PowerToysCmdPal-ExitEvent-eb73f6be-3f22-4b36-aee3-62924ba40bfd";
 
+    // Used by Light Switch
+    const wchar_t LIGHTSWITCH_MANUAL_OVERRIDE_EVENT[] = L"Local\\PowerToysLightSwitch-ManualOverrideEvent-7a464015-a560-419c-845e-2249edc1b4d7";
+
     // Max DWORD for key code to disable keys.
     const DWORD VK_DISABLED = 0x100;
 }

@@ -2,6 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 using System;
+using System.Diagnostics;
+using System.IO;
 using System.Threading;
 
 using global::Windows.System;
@@ -52,13 +54,24 @@ namespace Microsoft.PowerToys.Settings.UI.Flyout
                 case ModuleType.EnvironmentVariables: // Launch Environment Variables
                     {
                         bool launchAdmin = SettingsRepository<EnvironmentVariablesSettings>.GetInstance(SettingsUtils.Default).SettingsConfig.Properties.LaunchAdministrator;
-                        string eventName = !App.IsElevated && launchAdmin
-                            ? Constants.ShowEnvironmentVariablesAdminSharedEvent()
-                            : Constants.ShowEnvironmentVariablesSharedEvent();
-
-                        using (var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, eventName))
+                        try
                         {
-                            eventHandle.Set();
+                            if (!App.IsElevated && launchAdmin)
+                            {
+                                Process.Start(new ProcessStartInfo()
+                                {
+                                    FileName = Path.GetFullPath("WinUI3Apps\\PowerToys.EnvironmentVariables.exe"),
+                                    Verb = "runas",
+                                    UseShellExecute = true,
+                                });
+                                return;
+                            }
+
+                            Process.Start("WinUI3Apps\\PowerToys.EnvironmentVariables.exe");
+                        }
+                        catch (Exception ex)
+                        {
+                            Logger.LogError($"[Flyout->LaunchPage] Launch of Environment Variables failed", ex);
                         }
                     }
 
@@ -75,13 +88,24 @@ namespace Microsoft.PowerToys.Settings.UI.Flyout
                 case ModuleType.Hosts: // Launch Hosts
                     {
                         bool launchAdmin = SettingsRepository<HostsSettings>.GetInstance(SettingsUtils.Default).SettingsConfig.Properties.LaunchAdministrator;
-                        string eventName = !App.IsElevated && launchAdmin
-                            ? Constants.ShowHostsAdminSharedEvent()
-                            : Constants.ShowHostsSharedEvent();
-
-                        using (var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, eventName))
+                        try
                         {
-                            eventHandle.Set();
+                            if (!App.IsElevated && launchAdmin)
+                            {
+                                Process.Start(new ProcessStartInfo()
+                                {
+                                    FileName = Path.GetFullPath("WinUI3Apps\\PowerToys.Hosts.exe"),
+                                    Verb = "runas",
+                                    UseShellExecute = true,
+                                });
+                                return;
+                            }
+
+                            Process.Start("WinUI3Apps\\PowerToys.Hosts.exe");
+                        }
+                        catch (Exception ex)
+                        {
+                            Logger.LogError($"[Flyout->LaunchPage] Launch of Hosts failed", ex);
                         }
                     }
 

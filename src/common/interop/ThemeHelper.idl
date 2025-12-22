@@ -1,0 +1,12 @@
+namespace PowerToys
+{
+    namespace Interop
+    {
+        [default_interface] static runtimeclass ThemeHelper {
+            static void SetSystemTheme(Boolean dark);
+            static void SetAppsTheme(Boolean dark);
+            static Boolean GetCurrentSystemTheme();
+            static Boolean GetCurrentAppsTheme();
+        }
+    }
+}

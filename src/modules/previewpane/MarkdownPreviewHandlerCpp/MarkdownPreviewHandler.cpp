@@ -1,7 +1,6 @@
 #include "pch.h"
 #include "MarkdownPreviewHandler.h"
 #include "Generated Files/resource.h"
-#include "../powerpreview/powerpreviewConstants.h"
 
 #include <shellapi.h>
 #include <Shlwapi.h>
@@ -223,7 +222,7 @@ IFACEMETHODIMP MarkdownPreviewHandler::Unload()
 
 IFACEMETHODIMP MarkdownPreviewHandler::SetBackgroundColor(COLORREF color)
 {
-    HBRUSH brush = CreateSolidBrush(WindowsColors::is_dark_mode() ? powerpreviewConstants::DARK_THEME_COLOR : powerpreviewConstants::LIGHT_THEME_COLOR);
+    HBRUSH brush = CreateSolidBrush(WindowsColors::is_dark_mode() ? RGB(0x1e, 0x1e, 0x1e) : RGB(0xff, 0xff, 0xff));
     SetClassLongPtr(m_hwndParent, GCLP_HBRBACKGROUND, reinterpret_cast<LONG_PTR>(brush));
     return S_OK;
 }

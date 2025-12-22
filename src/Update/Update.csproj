@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="..\Common.Dotnet.CsWinRT.props" />
+  <Import Project="..\Common.SelfContained.props" />
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <Description>PowerToys Runner</Description>
+    <AssemblyName>PowerToys.Update</AssemblyName>
+    <OutputPath>..\..\$(Platform)\$(Configuration)</OutputPath>
+    <Nullable>enable</Nullable>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+		<PublishAot>true</PublishAot>
+		<PublishSingleFile>true</PublishSingleFile>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <_IsPublishing Condition="'$(_IsPublishing)'==''">false</_IsPublishing>
+  </PropertyGroup>
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(_IsPublishing)'!='true'">
+    <Exec Command="dotnet publish &quot;$(ProjectPath)&quot; -c $(Configuration) -r $(RuntimeIdentifier) --self-contained -o &quot;$(OutputPath)&quot;" />
+  </Target>
+</Project>
