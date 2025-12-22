@@ -3,78 +3,154 @@
 #include <functional>
 #include <thread>
 #include <string>
+#include <atomic>
 #include <windows.h>
 
+/// <summary>
+/// A reusable utility class that listens for a named Windows event and invokes a callback when triggered.
+/// Provides RAII-based resource management for event handles and the listener thread.
+/// The thread is properly joined on destruction to ensure clean shutdown.
+/// </summary>
 class EventWaiter
 {
 public:
-    EventWaiter() {}
+    EventWaiter() = default;
+
     EventWaiter(const std::wstring& name, std::function<void(DWORD)> callback)
     {
-        // Create localExitThreadEvent and localWaitingEvent for capturing. We cannot capture 'this' as we implement move constructor.
-        auto localExitThreadEvent = exitThreadEvent = CreateEvent(nullptr, false, false, nullptr);
-        HANDLE localWaitingEvent = waitingEvent = CreateEvent(nullptr, false, false, name.c_str());
-        std::thread([=]() {
-            HANDLE events[2] = { localWaitingEvent, localExitThreadEvent };
-            while (true)
-            {
-                auto waitResult = WaitForMultipleObjects(2, events, false, INFINITE);
-                if (waitResult == WAIT_OBJECT_0 + 1)
-                {
-                    break;
-                }
-
-                if (waitResult == WAIT_FAILED)
-                {
-                    callback(GetLastError());
-                    continue;
-                }
-
-                if (waitResult == WAIT_OBJECT_0)
-                {
-                    callback(ERROR_SUCCESS);
-                }
-            }
-        }).detach();
+        start(name, std::move(callback));
     }
 
     EventWaiter(EventWaiter&) = delete;
     EventWaiter& operator=(EventWaiter&) = delete;
 
-    EventWaiter(EventWaiter&& a) noexcept
+    EventWaiter(EventWaiter&& other) noexcept
     {
-        this->exitThreadEvent = a.exitThreadEvent;
-        this->waitingEvent = a.waitingEvent;
-
-        a.exitThreadEvent = nullptr;
-        a.waitingEvent = nullptr;
+        *this = std::move(other);
     }
 
-    EventWaiter& operator=(EventWaiter&& a) noexcept
+    EventWaiter& operator=(EventWaiter&& other) noexcept
     {
-        this->exitThreadEvent = a.exitThreadEvent;
-        this->waitingEvent = a.waitingEvent;
+        if (this != &other)
+        {
+            stop();
 
-        a.exitThreadEvent = nullptr;
-        a.waitingEvent = nullptr;
+            m_exitThreadEvent = other.m_exitThreadEvent;
+            m_waitingEvent = other.m_waitingEvent;
+            m_eventThread = std::move(other.m_eventThread);
+            m_listening.store(other.m_listening.load());
+
+            other.m_exitThreadEvent = nullptr;
+            other.m_waitingEvent = nullptr;
+            other.m_listening = false;
+        }
         return *this;
     }
 
     ~EventWaiter()
     {
-        if (exitThreadEvent)
+        stop();
+    }
+
+    /// <summary>
+    /// Starts listening for the specified named event. When the event is signaled, the callback is invoked.
+    /// </summary>
+    /// <param name="name">The name of the Windows event to listen for.</param>
+    /// <param name="callback">The callback function to invoke when the event is triggered. Receives ERROR_SUCCESS on success.</param>
+    /// <returns>true if listening started successfully, false otherwise.</returns>
+    bool start(const std::wstring& name, std::function<void(DWORD)> callback)
+    {
+        if (m_listening)
         {
-            SetEvent(exitThreadEvent);
-            CloseHandle(exitThreadEvent);
+            return false;
         }
 
-        if (waitingEvent)
+        m_exitThreadEvent = CreateEventW(nullptr, false, false, nullptr);
+        m_waitingEvent = CreateEventW(nullptr, false, false, name.c_str());
+
+        if (!m_exitThreadEvent || !m_waitingEvent)
         {
-            CloseHandle(waitingEvent);
+            cleanup();
+            return false;
         }
+
+        m_listening = true;
+        m_eventThread = std::thread([this, cb = std::move(callback)]() {
+            HANDLE events[2] = { m_waitingEvent, m_exitThreadEvent };
+            while (m_listening)
+            {
+                auto waitResult = WaitForMultipleObjects(2, events, false, INFINITE);
+                if (!m_listening)
+                {
+                    break;
+                }
+
+                if (waitResult == WAIT_OBJECT_0 + 1)
+                {
+                    // Exit event signaled
+                    break;
+                }
+
+                if (waitResult == WAIT_FAILED)
+                {
+                    cb(GetLastError());
+                    continue;
+                }
+
+                if (waitResult == WAIT_OBJECT_0)
+                {
+                    cb(ERROR_SUCCESS);
+                }
+            }
+        });
+
+        return true;
+    }
+
+    /// <summary>
+    /// Stops listening for the event and cleans up resources.
+    /// Waits for the listener thread to finish before returning.
+    /// Safe to call multiple times.
+    /// </summary>
+    void stop()
+    {
+        m_listening = false;
+        if (m_exitThreadEvent)
+        {
+            SetEvent(m_exitThreadEvent);
+        }
+        if (m_eventThread.joinable())
+        {
+            m_eventThread.join();
+        }
+        cleanup();
+    }
+
+    /// <summary>
+    /// Returns whether the listener is currently active.
+    /// </summary>
+    bool is_listening() const
+    {
+        return m_listening;
     }
 
 private:
-    HANDLE exitThreadEvent = nullptr;
-    HANDLE waitingEvent = nullptr;
+    void cleanup()
+    {
+        if (m_exitThreadEvent)
+        {
+            CloseHandle(m_exitThreadEvent);
+            m_exitThreadEvent = nullptr;
+        }
+        if (m_waitingEvent)
+        {
+            CloseHandle(m_waitingEvent);
+            m_waitingEvent = nullptr;
+        }
+    }
+
+    HANDLE m_exitThreadEvent = nullptr;
+    HANDLE m_waitingEvent = nullptr;
+    std::thread m_eventThread;
+    std::atomic_bool m_listening{ false };
 };

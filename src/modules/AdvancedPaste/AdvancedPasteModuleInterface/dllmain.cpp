@@ -15,6 +15,7 @@
 #include <common/utils/logger_helper.h>
 #include <common/utils/winapi_error.h>
 #include <common/utils/gpo.h>
+#include <common/utils/EventWaiter.h>
 
 #include <algorithm>
 #include <cwctype>
@@ -103,10 +104,7 @@ private:
     bool m_preview_custom_format_output = true;
 
     // Event listening for external triggers (e.g., from CmdPal extension)
-    HANDLE m_showUiEventHandle = nullptr;
-    HANDLE m_terminateEventHandle = nullptr;
-    std::thread m_eventThread;
-    bool m_listening = false;
+    EventWaiter m_triggerEventWaiter;
 
     Hotkey parse_single_hotkey(const wchar_t* keyName, const winrt::Windows::Data::Json::JsonObject& settingsObject)
     {
@@ -788,37 +786,14 @@ public:
         m_process_manager.start();
 
         // Start listening for external trigger event so we can invoke the same logic as the hotkey.
-        m_showUiEventHandle = CreateEventW(nullptr, false, false, CommonSharedConstants::ADVANCED_PASTE_SHOW_UI_EVENT);
-        m_terminateEventHandle = CreateEventW(nullptr, false, false, nullptr);
-        if (m_showUiEventHandle && m_terminateEventHandle)
-        {
-            m_listening = true;
-            m_eventThread = std::thread([this]() {
-                HANDLE handles[2] = { m_showUiEventHandle, m_terminateEventHandle };
-                while (m_listening)
-                {
-                    auto res = WaitForMultipleObjects(2, handles, false, INFINITE);
-                    if (!m_listening)
-                    {
-                        break;
-                    }
-
-                    if (res == WAIT_OBJECT_0)
-                    {
-                        // Same logic as hotkeyId == 1 (m_advanced_paste_ui_hotkey)
-                        Logger::trace(L"AdvancedPaste ShowUI event triggered");
-                        m_process_manager.start();
-                        m_process_manager.bring_to_front();
-                        m_process_manager.send_message(CommonSharedConstants::ADVANCED_PASTE_SHOW_UI_MESSAGE);
-                        Trace::AdvancedPaste_Invoked(L"AdvancedPasteUIEvent");
-                    }
-                    else
-                    {
-                        break;
-                    }
-                }
-            });
-        }
+        m_triggerEventWaiter = EventWaiter(CommonSharedConstants::ADVANCED_PASTE_SHOW_UI_EVENT, [this](int) {
+            // Same logic as hotkeyId == 1 (m_advanced_paste_ui_hotkey)
+            Logger::trace(L"AdvancedPaste ShowUI event triggered");
+            m_process_manager.start();
+            m_process_manager.bring_to_front();
+            m_process_manager.send_message(CommonSharedConstants::ADVANCED_PASTE_SHOW_UI_MESSAGE);
+            Trace::AdvancedPaste_Invoked(L"AdvancedPasteUIEvent");
+        });
     };
 
     void Disable(bool traceEvent)
@@ -828,25 +803,7 @@ public:
             m_process_manager.stop();
 
             // Stop event listening
-            m_listening = false;
-            if (m_terminateEventHandle)
-            {
-                SetEvent(m_terminateEventHandle);
-            }
-            if (m_eventThread.joinable())
-            {
-                m_eventThread.join();
-            }
-            if (m_showUiEventHandle)
-            {
-                CloseHandle(m_showUiEventHandle);
-                m_showUiEventHandle = nullptr;
-            }
-            if (m_terminateEventHandle)
-            {
-                CloseHandle(m_terminateEventHandle);
-                m_terminateEventHandle = nullptr;
-            }
+            m_triggerEventWaiter.stop();
 
             if (traceEvent)
             {

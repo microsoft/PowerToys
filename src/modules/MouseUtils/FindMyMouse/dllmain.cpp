@@ -8,8 +8,8 @@
 #include <common/utils/logger_helper.h>
 #include <common/utils/color.h>
 #include <common/utils/string_utils.h>
+#include <common/utils/EventWaiter.h>
 #include <common/interop/shared_constants.h>
-#include <atomic>
 
 namespace
 {
@@ -72,10 +72,7 @@ private:
     FindMyMouseSettings m_findMyMouseSettings;
 
     // Event-driven trigger support
-    HANDLE m_triggerEventHandle = nullptr;
-    HANDLE m_terminateEventHandle = nullptr;
-    std::thread m_eventThread;
-    std::atomic_bool m_listening{ false };
+    EventWaiter m_triggerEventWaiter;
 
     // Load initial settings from the persisted values.
     void init_settings();
@@ -162,32 +159,9 @@ public:
         std::thread([=]() { FindMyMouseMain(m_hModule, m_findMyMouseSettings); }).detach();
 
         // Start listening for external trigger event so we can invoke the same logic as the hotkey.
-        m_triggerEventHandle = CreateEventW(nullptr, false, false, CommonSharedConstants::FIND_MY_MOUSE_TRIGGER_EVENT);
-        m_terminateEventHandle = CreateEventW(nullptr, false, false, nullptr);
-        if (m_triggerEventHandle && m_terminateEventHandle)
-        {
-            m_listening = true;
-            m_eventThread = std::thread([this]() {
-                HANDLE handles[2] = { m_triggerEventHandle, m_terminateEventHandle };
-                while (m_listening)
-                {
-                    auto res = WaitForMultipleObjects(2, handles, false, INFINITE);
-                    if (!m_listening)
-                    {
-                        break;
-                    }
-
-                    if (res == WAIT_OBJECT_0)
-                    {
-                        OnHotkeyEx();
-                    }
-                    else
-                    {
-                        break;
-                    }
-                }
-            });
-        }
+        m_triggerEventWaiter = EventWaiter(CommonSharedConstants::FIND_MY_MOUSE_TRIGGER_EVENT, [this](int) {
+            OnHotkeyEx();
+        });
     }
 
     // Disable the powertoy
@@ -197,25 +171,7 @@ public:
         Trace::EnableFindMyMouse(false);
         FindMyMouseDisable();
 
-        m_listening = false;
-        if (m_terminateEventHandle)
-        {
-            SetEvent(m_terminateEventHandle);
-        }
-        if (m_eventThread.joinable())
-        {
-            m_eventThread.join();
-        }
-        if (m_triggerEventHandle)
-        {
-            CloseHandle(m_triggerEventHandle);
-            m_triggerEventHandle = nullptr;
-        }
-        if (m_terminateEventHandle)
-        {
-            CloseHandle(m_terminateEventHandle);
-            m_terminateEventHandle = nullptr;
-        }
+        m_triggerEventWaiter.stop();
     }
 
     // Returns if the powertoys is enabled
