@@ -54,6 +54,7 @@ namespace PowerToys
             static String AlwaysOnTopTerminateEvent();
             static String ZoomItRefreshSettingsEvent();
             static String TerminateKBMSharedEvent();
+            static String LightSwitchManualOverrideEvent();
         }
     }
 }

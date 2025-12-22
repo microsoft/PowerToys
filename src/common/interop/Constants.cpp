@@ -215,4 +215,8 @@ namespace winrt::PowerToys::Interop::implementation
     {
         return CommonSharedConstants::TERMINATE_KBM_SHARED_EVENT;
     }
+    hstring Constants::LightSwitchManualOverrideEvent()
+    {
+        return CommonSharedConstants::LIGHTSWITCH_MANUAL_OVERRIDE_EVENT;
+    }
 }

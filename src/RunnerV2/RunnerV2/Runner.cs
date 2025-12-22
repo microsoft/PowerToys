@@ -60,6 +60,7 @@ namespace RunnerV2
             new FancyZonesModuleInterface(),
             new PowerToysRunModuleInterface(),
             new KeyboardManagerModuleInterface(),
+            new LightSwitchModuleInterface(),
         ];
 
         /// <summary>

@@ -57,6 +57,9 @@
     <ClInclude Include="..\utils\package.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ThemeHelper.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="keyboard_layout.cpp">
@@ -84,6 +87,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Constants.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ThemeHelper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -116,6 +122,9 @@
       <Filter>Source Files</Filter>
     </Midl>
     <Midl Include="TwoWayPipeMessageIPCManaged.idl">
+      <Filter>Source Files</Filter>
+    </Midl>
+    <Midl Include="ThemeHelper.idl">
       <Filter>Source Files</Filter>
     </Midl>
   </ItemGroup>

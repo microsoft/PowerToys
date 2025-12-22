@@ -747,7 +747,6 @@
     </Project>
   </Folder>
   <Folder Name="/modules/LightSwitch/">
-    <Project Path="src/modules/LightSwitch/LightSwitchModuleInterface/LightSwitchModuleInterface.vcxproj" Id="38177d56-6ad1-4adf-88c9-2843a7932166" />
     <Project Path="src/modules/LightSwitch/LightSwitchService/LightSwitchService.vcxproj" Id="08e71c67-6a7e-4ca1-b04e-2fb336410bac" />
   </Folder>
   <Folder Name="/modules/LightSwitch/Tests/">
@@ -997,7 +996,6 @@
     <BuildDependency Project="src/modules/fancyzones/FancyZonesLib/FancyZonesLib.vcxproj" />
     <BuildDependency Project="src/modules/imageresizer/dll/ImageResizerExt.vcxproj" />
     <BuildDependency Project="src/modules/imageresizer/ui/ImageResizerUI.csproj" />
-    <BuildDependency Project="src/modules/LightSwitch/LightSwitchModuleInterface/LightSwitchModuleInterface.vcxproj" />
     <BuildDependency Project="src/modules/LightSwitch/LightSwitchService/LightSwitchService.vcxproj" />
     <BuildDependency Project="src/modules/powerrename/dll/PowerRenameExt.vcxproj" />
     <BuildDependency Project="src/modules/powerrename/lib/PowerRenameLib.vcxproj" />
