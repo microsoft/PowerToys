@@ -17,10 +17,10 @@ namespace Microsoft.PowerToys.Settings.UI.Services
     /// </summary>
     public class SettingsFactory
     {
-        private readonly ISettingsUtils _settingsUtils;
+        private readonly SettingsUtils _settingsUtils;
         private readonly Dictionary<string, Type> _settingsTypes;
 
-        public SettingsFactory(ISettingsUtils settingsUtils)
+        public SettingsFactory(SettingsUtils settingsUtils)
         {
             _settingsUtils = settingsUtils ?? throw new ArgumentNullException(nameof(settingsUtils));
             _settingsTypes = DiscoverSettingsTypes();
@@ -105,7 +105,7 @@ namespace Microsoft.PowerToys.Settings.UI.Services
             try
             {
                 // Create a generic method call to _settingsUtils.GetSettingsOrDefault<T>(moduleKey)
-                var getSettingsMethod = typeof(ISettingsUtils).GetMethod("GetSettingsOrDefault", new[] { typeof(string), typeof(string) });
+                var getSettingsMethod = typeof(SettingsUtils).GetMethod("GetSettingsOrDefault", new[] { typeof(string), typeof(string) });
                 var genericMethod = getSettingsMethod?.MakeGenericMethod(settingsType);
 
                 // Call GetSettingsOrDefault<T>(moduleKey) to get fresh settings from file

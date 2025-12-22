@@ -37,7 +37,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private ResourceLoader resourceLoader;
 
         public ShortcutConflictViewModel(
-            ISettingsUtils settingsUtils,
+            SettingsUtils settingsUtils,
             ISettingsRepository<GeneralSettings> settingsRepository,
             Func<string, int> ipcMSGCallBackFunc)
         {

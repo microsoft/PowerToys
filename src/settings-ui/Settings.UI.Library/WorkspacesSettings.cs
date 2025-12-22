@@ -56,7 +56,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             return hotkeyAccessors.ToArray();
         }
 
-        public virtual void Save(ISettingsUtils settingsUtils)
+        public virtual void Save(SettingsUtils settingsUtils)
         {
             // Save settings to file
             var options = _serializerOptions;

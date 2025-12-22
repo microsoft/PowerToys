@@ -224,7 +224,6 @@ clientside
 CLIPBOARDUPDATE
 CLIPCHILDREN
 CLIPSIBLINGS
-CLITo
 closesocket
 clp
 CLSCTX
@@ -325,7 +324,6 @@ CUSTOMFORMATPLACEHOLDER
 CVal
 cvd
 CVirtual
-CVS
 CWMO
 CXSCREEN
 CXSMICON
@@ -1081,7 +1079,6 @@ MVVMTK
 MWBEx
 MYICON
 NAMECHANGE
-Notavailable
 namespaceanddescendants
 nao
 NCACTIVATE
@@ -1811,7 +1808,6 @@ tlbimp
 tlc
 tmain
 TNP
-toolgood
 Toolhelp
 toolwindow
 TOPDOWNDIB
@@ -1873,7 +1869,6 @@ Uniquifies
 unitconverter
 unittests
 UNLEN
-Uninitializes
 UNORM
 unremapped
 Unsubscribes
@@ -1961,7 +1956,7 @@ vswhere
 Vtbl
 WANTNUKEWARNING
 WANTPALM
-wasdk
+WASDK
 wbem
 WBounds
 Wca

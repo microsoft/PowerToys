@@ -24,4 +24,8 @@
 
     <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="Restore" Properties="RestoreInProgress=true" BuildInParallel="false" />
   </Target>
+
+  <PropertyGroup Condition="'$(IgnoreExperimentalWarnings)' == 'true'">
+    <NoWarn>$(NoWarn);CS8305;SA1500;CA1852</NoWarn>
+  </PropertyGroup>
 </Project>
