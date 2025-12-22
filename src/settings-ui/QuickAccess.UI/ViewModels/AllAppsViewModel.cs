@@ -23,7 +23,7 @@ public sealed class AllAppsViewModel : Observable
 {
     private readonly IQuickAccessCoordinator _coordinator;
     private readonly ISettingsRepository<GeneralSettings> _settingsRepository;
-    private readonly ISettingsUtils _settingsUtils;
+    private readonly SettingsUtils _settingsUtils;
     private readonly ResourceLoader _resourceLoader;
     private readonly DispatcherQueue _dispatcherQueue;
     private GeneralSettings _generalSettings;
