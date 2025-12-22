@@ -799,10 +799,10 @@ namespace Microsoft.AdvancedPaste.UITests
             }
 
             const string testText = "Hello World! Testing keystrokes.";
-            
+
             // Copy test text to clipboard
             SetClipboardText(testText);
-            
+
             // Create temp file and open in Notepad
             DeleteAndCopyFile(pasteAsMarkdownSrcFile, tempTxtFileName);
             string tempFile = Path.Combine(testFilesFolderPath, tempTxtFileName);
