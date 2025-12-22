@@ -110,6 +110,9 @@ namespace CommonSharedConstants
     // Path to the event used by MarkdownPreviewHandler
     const wchar_t SVG_PREVIEW_RESIZE_EVENT[] = L"Local\\PowerToysSvgPreviewResizeEvent-0701a4fc-d5a1-4ee7-b885-f83982c62a0d";
 
+    // Path to the event used by MediaPreviewHandler
+    const wchar_t MEDIA_PREVIEW_RESIZE_EVENT[] = L"Local\\PowerToysMediaPreviewResizeEvent-8f7a2b1c-3d4e-5f6a-7b8c-9d0e1f2a3b4c";
+
     // Path to the event used to show Peek
     const wchar_t SHOW_PEEK_SHARED_EVENT[] = L"Local\\ShowPeekEvent";
     // Path to the event used to terminate Peek

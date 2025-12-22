@@ -970,6 +970,7 @@ MAPPEDTOSAMEKEY
 MAPTOSAMESHORTCUT
 MAPVK
 MARKDOWNPREVIEWHANDLERCPP
+matroska
 MAXIMIZEBOX
 MAXSHORTCUTSIZE
 maxversiontested
@@ -981,6 +982,7 @@ MDL
 mdtext
 mdtxt
 mdwn
+MEDIAPREVIEWHANDLERCPP
 meme
 memicmp
 MENUITEMINFO
@@ -1060,9 +1062,10 @@ MSLLHOOKSTRUCT
 Mso
 msrc
 msstore
-msvcp
-MT
 mstsc
+msvcp
+msvideo
+MT
 MTND
 MULTIPLEUSE
 multizone
@@ -1216,8 +1219,6 @@ OPENFILENAME
 openrdp
 opensource
 openxmlformats
-ollama
-onnx
 OPTIMIZEFORINVOKE
 ORPHANEDDIALOGTITLE
 ORSCANS
@@ -1416,6 +1417,7 @@ QUERYENDSESSION
 QUERYOPEN
 QUEUESYNC
 quickaccent
+quicktime
 QUNS
 RAII
 RAlt
@@ -1430,7 +1432,6 @@ RAWPATH
 rbhid
 rclsid
 RCZOOMIT
-remotedesktop
 rdp
 RDW
 READMODE
@@ -1459,6 +1460,7 @@ remappings
 REMAPSUCCESSFUL
 REMAPUNSUCCESSFUL
 Remotable
+remotedesktop
 remoteip
 Removelnk
 renamable
@@ -1818,6 +1820,7 @@ transicc
 TRAYMOUSEMESSAGE
 triaging
 trl
+troska
 trx
 tsa
 tskill
