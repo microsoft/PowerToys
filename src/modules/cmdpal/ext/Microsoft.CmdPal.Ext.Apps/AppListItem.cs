@@ -7,20 +7,50 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using ManagedCommon;
 using Microsoft.CmdPal.Core.Common.Helpers;
+using Microsoft.CmdPal.Core.Common.Text;
 using Microsoft.CmdPal.Ext.Apps.Commands;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.Apps.Programs;
 
-public sealed partial class AppListItem : ListItem
+public sealed partial class AppListItem : ListItem, IPrecomputedListItem
 {
     private readonly AppCommand _appCommand;
     private readonly AppItem _app;
     private readonly Lazy<Details> _details;
     private readonly Lazy<Task<IconInfo?>> _iconLoadTask;
 
+    private FuzzyTargetCache _titleCache;
+    private FuzzyTargetCache _subtitleCache;
+
     private InterlockedBoolean _isLoadingIcon;
+
+    public override string Title
+    {
+        get => base.Title;
+        set
+        {
+            if (!string.Equals(base.Title, value, StringComparison.Ordinal))
+            {
+                base.Title = value;
+                _titleCache.Invalidate();
+            }
+        }
+    }
+
+    public override string Subtitle
+    {
+        get => base.Subtitle;
+        set
+        {
+            if (!string.Equals(value, base.Subtitle, StringComparison.Ordinal))
+            {
+                base.Subtitle = value;
+                _subtitleCache.Invalidate();
+            }
+        }
+    }
 
     public override IDetails? Details { get => _details.Value; set => base.Details = value; }
 
@@ -183,4 +213,10 @@ public sealed partial class AppListItem : ListItem
 
         return newCommands.ToArray();
     }
+
+    public FuzzyTarget GetTitleTarget(IPrecomputedFuzzyMatcher matcher)
+        => _titleCache.GetOrUpdate(matcher, Title);
+
+    public FuzzyTarget GetSubtitleTarget(IPrecomputedFuzzyMatcher matcher)
+        => _subtitleCache.GetOrUpdate(matcher, Subtitle);
 }

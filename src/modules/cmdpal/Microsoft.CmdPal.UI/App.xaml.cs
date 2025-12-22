@@ -6,6 +6,7 @@ using ManagedCommon;
 using Microsoft.CmdPal.Core.Common;
 using Microsoft.CmdPal.Core.Common.Helpers;
 using Microsoft.CmdPal.Core.Common.Services;
+using Microsoft.CmdPal.Core.Common.Text;
 using Microsoft.CmdPal.Core.ViewModels;
 using Microsoft.CmdPal.Ext.Apps;
 using Microsoft.CmdPal.Ext.Bookmarks;
@@ -198,6 +199,9 @@ public partial class App : Application
         services.AddSingleton<IRootPageService, PowerToysRootPageService>();
         services.AddSingleton<IAppHostService, PowerToysAppHostService>();
         services.AddSingleton<ITelemetryService, TelemetryForwarder>();
+
+        services.AddSingleton<IFuzzyMatcherProvider, FuzzyMatcherProvider>(
+            _ => new FuzzyMatcherProvider(new PrecomputedFuzzyMatcherOptions(), new PinyinFuzzyMatcherOptions()));
 
         // ViewModels
         services.AddSingleton<ShellViewModel>();

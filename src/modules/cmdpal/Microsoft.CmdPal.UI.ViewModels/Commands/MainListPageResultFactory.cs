@@ -4,8 +4,8 @@
 
 #pragma warning disable IDE0007 // Use implicit type
 
+using Microsoft.CmdPal.Core.Common.Helpers;
 using Microsoft.CommandPalette.Extensions;
-using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.UI.ViewModels.Commands;
 
@@ -16,10 +16,10 @@ internal static class MainListPageResultFactory
     /// applying an application result limit and filtering fallback items as needed.
     /// </summary>
     public static IListItem[] Create(
-        IList<Scored<IListItem>>? filteredItems,
-        IList<Scored<IListItem>>? scoredFallbackItems,
-        IList<Scored<IListItem>>? filteredApps,
-        IList<Scored<IListItem>>? fallbackItems,
+        IList<RoScored<IListItem>>? filteredItems,
+        IList<RoScored<IListItem>>? scoredFallbackItems,
+        IList<RoScored<IListItem>>? filteredApps,
+        IList<RoScored<IListItem>>? fallbackItems,
         int appResultLimit)
     {
         if (appResultLimit < 0)
@@ -135,7 +135,7 @@ internal static class MainListPageResultFactory
         return result;
     }
 
-    private static int GetNonEmptyFallbackItemsCount(IList<Scored<IListItem>>? fallbackItems)
+    private static int GetNonEmptyFallbackItemsCount(IList<RoScored<IListItem>>? fallbackItems)
     {
         int fallbackItemsCount = 0;
 
