@@ -4,7 +4,6 @@
 
 using System;
 using System.Threading.Tasks;
-using Awake.ModuleServices;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using PowerToys.ModuleContracts;
 

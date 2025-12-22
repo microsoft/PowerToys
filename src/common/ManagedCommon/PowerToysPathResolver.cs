@@ -5,14 +5,15 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Runtime.Versioning;
 using Microsoft.Win32;
 
 namespace ManagedCommon
 {
+    [SupportedOSPlatform("windows")]
     public class PowerToysPathResolver
     {
         private const string PowerToysRegistryKey = @"Software\Classes\powertoys";
-        private const string PowerToysUserRegistryKey = @"Software\Microsoft\PowerToys";
         private const string PowerToysExe = "PowerToys.exe";
 
         /// <summary>
@@ -55,16 +56,6 @@ namespace ManagedCommon
                 {
                     return path;
                 }
-
-                // For user installations, also check the user-specific key
-                if (hive == RegistryHive.CurrentUser)
-                {
-                    path = GetPathFromUserRegistration(baseKey);
-                    if (!string.IsNullOrEmpty(path))
-                    {
-                        return path;
-                    }
-                }
             }
             catch (Exception)
             {
@@ -87,31 +78,6 @@ namespace ManagedCommon
                     {
                         // Parse command like: "C:\Program Files\PowerToys\PowerToys.exe" "%1"
                         return ExtractPathFromCommand(command);
-                    }
-                }
-            }
-            catch (Exception)
-            {
-                // Ignore registry access errors
-            }
-
-            return null;
-        }
-
-        private static string GetPathFromUserRegistration(RegistryKey baseKey)
-        {
-            try
-            {
-                using var key = baseKey.OpenSubKey(PowerToysUserRegistryKey);
-
-                if (key != null)
-                {
-                    var installed = key.GetValue("installed");
-                    if (installed != null && installed.ToString() == "1")
-                    {
-                        // User registry key exists but doesn't contain path
-                        // Try to get path from protocol registration
-                        return GetPathFromProtocolRegistration(baseKey);
                     }
                 }
             }

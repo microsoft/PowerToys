@@ -16,8 +16,6 @@
 #include "WindowsVersions.h"
 #include "ZoomItSettings.h"
 #include "GifRecordingSession.h"
-#include "zoomit_mode.h"
-#include "zoomit_mode.h"
 
 #ifdef __ZOOMIT_POWERTOYS__
 #include <common/interop/shared_constants.h>
@@ -8098,4 +8096,3 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 
     return retCode;
 }
-#include "zoomit_mode.h"

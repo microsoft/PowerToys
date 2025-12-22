@@ -46,11 +46,6 @@
     <Message Text="Generating DSC resource JSON files to DSCModules subfolder..." Importance="high" />
     <MakeDir Directories="$(TargetDir)DSCModules" />
     
-    <PropertyGroup>
-      <DotNetHost>dotnet</DotNetHost>
-      <DotNetHost Condition="'$(Platform)' == 'x64' and Exists('C:\Program Files\dotnet\x64\dotnet.exe')">"C:\Program Files\dotnet\x64\dotnet.exe"</DotNetHost>
-    </PropertyGroup>
-
-    <Exec Command="$(DotNetHost) &quot;$(TargetPath)&quot; manifest --resource settings --outputDir &quot;$(TargetDir)DSCModules&quot;" />
+    <Exec Command="dotnet &quot;$(TargetPath)&quot; manifest --resource settings --outputDir &quot;$(TargetDir)DSCModules&quot;" />
   </Target>
 </Project>

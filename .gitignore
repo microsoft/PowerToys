@@ -56,7 +56,6 @@ project.lock.json
 project.fragment.lock.json
 artifacts/
 **/Properties/launchSettings.json
-!src/modules/cmdpal/**/Properties/launchSettings.json
 
 # StyleCop
 StyleCopReport.xml
