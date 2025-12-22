@@ -12,7 +12,7 @@ namespace AdvancedPaste.Services;
 /// <summary>
 /// Service for sending text as keyboard input events.
 /// </summary>
-public sealed class KeystrokeService
+public sealed class KeystrokeService : IKeystrokeService
 {
     private const int WaitAfterSendInputEventsMS = 30;
 
@@ -62,6 +62,26 @@ public sealed class KeystrokeService
         }
     }
 
+    private static Helpers.NativeMethods.INPUT CreateUnicodeInput(char character, bool isKeyUp)
+    {
+        return new Helpers.NativeMethods.INPUT
+        {
+            type = Helpers.NativeMethods.INPUTTYPE.INPUT_KEYBOARD,
+            data = new Helpers.NativeMethods.InputUnion
+            {
+                ki = new Helpers.NativeMethods.KEYBDINPUT
+                {
+                    wVk = 0,  // Must be 0 for Unicode input
+                    wScan = (short)character,
+                    dwFlags = (uint)Helpers.NativeMethods.KeyEventF.Unicode |
+                              (isKeyUp ? (uint)Helpers.NativeMethods.KeyEventF.KeyUp : 0),
+                    time = 0,
+                    dwExtraInfo = UIntPtr.Zero,
+                },
+            },
+        };
+    }
+
     private List<Helpers.NativeMethods.INPUT> CreateInputSequence(string text)
     {
         var inputs = new List<Helpers.NativeMethods.INPUT>(text.Length * 2);
@@ -91,25 +111,5 @@ public sealed class KeystrokeService
         System.Threading.Thread.Sleep(WaitAfterSendInputEventsMS);
 
         Logger.LogDebug($"Successfully sent {inputs.Count} keystrokes");
-    }
-
-    private static Helpers.NativeMethods.INPUT CreateUnicodeInput(char character, bool isKeyUp)
-    {
-        return new Helpers.NativeMethods.INPUT
-        {
-            type = Helpers.NativeMethods.INPUTTYPE.INPUT_KEYBOARD,
-            data = new Helpers.NativeMethods.InputUnion
-            {
-                ki = new Helpers.NativeMethods.KEYBDINPUT
-                {
-                    wVk = 0,  // Must be 0 for Unicode input
-                    wScan = (short)character,
-                    dwFlags = (uint)Helpers.NativeMethods.KeyEventF.Unicode |
-                              (isKeyUp ? (uint)Helpers.NativeMethods.KeyEventF.KeyUp : 0),
-                    time = 0,
-                    dwExtraInfo = UIntPtr.Zero,
-                },
-            },
-        };
     }
 }

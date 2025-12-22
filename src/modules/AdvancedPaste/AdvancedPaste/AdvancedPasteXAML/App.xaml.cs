@@ -84,6 +84,7 @@ namespace AdvancedPaste
                 services.AddSingleton<ICustomActionTransformService, CustomActionTransformService>();
                 services.AddSingleton<IKernelService, AdvancedAIKernelService>();
                 services.AddSingleton<IPasteFormatExecutor, PasteFormatExecutor>();
+                services.AddSingleton<IKeystrokeService, KeystrokeService>();
                 services.AddSingleton<OptionsViewModel>();
             }).Build();
 

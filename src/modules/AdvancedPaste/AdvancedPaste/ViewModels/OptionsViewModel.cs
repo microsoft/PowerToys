@@ -42,7 +42,7 @@ namespace AdvancedPaste.ViewModels
         private readonly IUserSettings _userSettings;
         private readonly IPasteFormatExecutor _pasteFormatExecutor;
         private readonly IAICredentialsProvider _credentialsProvider;
-        private readonly KeystrokeService _keystrokeService;
+        private readonly IKeystrokeService _keystrokeService;
 
         private CancellationTokenSource _pasteActionCancellationTokenSource;
 
@@ -259,12 +259,12 @@ namespace AdvancedPaste.ViewModels
 
         public event EventHandler PreviewRequested;
 
-        public OptionsViewModel(IFileSystem fileSystem, IAICredentialsProvider credentialsProvider, IUserSettings userSettings, IPasteFormatExecutor pasteFormatExecutor)
+        public OptionsViewModel(IFileSystem fileSystem, IAICredentialsProvider credentialsProvider, IUserSettings userSettings, IPasteFormatExecutor pasteFormatExecutor, IKeystrokeService keystrokeService)
         {
             _credentialsProvider = credentialsProvider;
             _userSettings = userSettings;
             _pasteFormatExecutor = pasteFormatExecutor;
-            _keystrokeService = new KeystrokeService();
+            _keystrokeService = keystrokeService;
 
             GeneratedResponses = [];
             GeneratedResponses.CollectionChanged += (s, e) =>
