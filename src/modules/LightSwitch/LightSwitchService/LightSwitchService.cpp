@@ -14,6 +14,7 @@
 #include "LightSwitchStateManager.h"
 #include <LightSwitchUtils.h>
 #include <NightLightRegistryObserver.h>
+#include "interop/shared_constants.h"
 
 SERVICE_STATUS g_ServiceStatus = {};
 SERVICE_STATUS_HANDLE g_StatusHandle = nullptr;
@@ -213,7 +214,7 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
 
     LightSwitchSettings::instance().InitFileWatcher();
 
-    HANDLE hManualOverride = OpenEventW(SYNCHRONIZE | EVENT_MODIFY_STATE, FALSE, L"POWERTOYS_LIGHTSWITCH_MANUAL_OVERRIDE");
+    HANDLE hManualOverride = OpenEventW(SYNCHRONIZE | EVENT_MODIFY_STATE, FALSE, CommonSharedConstants::LIGHTSWITCH_MANUAL_OVERRIDE_EVENT);
     HANDLE hSettingsChanged = LightSwitchSettings::instance().GetSettingsChangedEvent();
 
     static std::unique_ptr<NightLightRegistryObserver> g_nightLightWatcher;

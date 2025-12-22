@@ -57,6 +57,7 @@ namespace winrt::PowerToys::Interop::implementation
         static hstring AlwaysOnTopTerminateEvent();
         static hstring ZoomItRefreshSettingsEvent();
         static hstring TerminateKBMSharedEvent();
+        static hstring LightSwitchManualOverrideEvent();
     };
 }
 
