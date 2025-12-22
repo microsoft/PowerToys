@@ -13,4 +13,9 @@ public interface IAwakeService : IModuleService
     Task<OperationResult> SetTimedAsync(int minutes, CancellationToken cancellationToken = default);
 
     Task<OperationResult> SetOffAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Gets the current state of the Awake module.
+    /// </summary>
+    AwakeState GetCurrentState();
 }

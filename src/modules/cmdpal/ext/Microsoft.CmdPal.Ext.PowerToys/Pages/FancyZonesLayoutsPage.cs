@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using PowerToysExtension.Commands;
@@ -30,6 +31,9 @@ internal sealed partial class FancyZonesLayoutsPage : DynamicListPage
             Icon = PowerToysResourcesHelper.IconFromSettingsIcon("FancyZones.png"),
         };
         EmptyContent = _emptyMessage;
+
+        // Purge orphaned cache files in background (non-blocking)
+        Task.Run(FancyZonesThumbnailRenderer.PurgeOrphanedCache);
     }
 
     public override void UpdateSearchText(string oldSearch, string newSearch)

@@ -118,17 +118,79 @@ internal static class FancyZonesThumbnailRenderer
         return null;
     }
 
+    /// <summary>
+    /// Removes cached thumbnail files that no longer correspond to any current layout.
+    /// Call this on startup or periodically to prevent unbounded cache growth.
+    /// </summary>
+    public static void PurgeOrphanedCache()
+    {
+        try
+        {
+            var cacheFolder = GetCacheFolder();
+            if (string.IsNullOrEmpty(cacheFolder) || !Directory.Exists(cacheFolder))
+            {
+                return;
+            }
+
+            // Get all current layouts and compute their expected cache file names
+            var layouts = FancyZonesDataService.GetLayouts();
+            var validHashes = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var layout in layouts)
+            {
+                validHashes.Add(ComputeLayoutHash(layout) + ".png");
+            }
+
+            // Delete any .png files not in the valid set
+            var deletedCount = 0;
+            foreach (var filePath in Directory.EnumerateFiles(cacheFolder, "*.png"))
+            {
+                var fileName = Path.GetFileName(filePath);
+                if (!validHashes.Contains(fileName))
+                {
+                    try
+                    {
+                        File.Delete(filePath);
+                        deletedCount++;
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.LogWarning($"FancyZones thumbnail cache purge: failed to delete \"{filePath}\". Exception={ex.Message}");
+                    }
+                }
+            }
+
+            if (deletedCount > 0)
+            {
+                Logger.LogInfo($"FancyZones thumbnail cache purge: deleted {deletedCount} orphaned file(s).");
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogWarning($"FancyZones thumbnail cache purge failed. Exception={ex}");
+        }
+    }
+
+    private static string? GetCacheFolder()
+    {
+        var basePath = InteropConstants.AppDataPath();
+        if (string.IsNullOrWhiteSpace(basePath))
+        {
+            return null;
+        }
+
+        return Path.Combine(basePath, "CmdPal", "PowerToysExtension", "Cache", "FancyZones", "LayoutThumbnails");
+    }
+
     private static string? GetCachePath(FancyZonesLayoutDescriptor layout)
     {
         try
         {
-            var basePath = InteropConstants.AppDataPath();
-            if (string.IsNullOrWhiteSpace(basePath))
+            var cacheFolder = GetCacheFolder();
+            if (string.IsNullOrEmpty(cacheFolder))
             {
                 return null;
             }
 
-            var cacheFolder = Path.Combine(basePath, "CmdPal", "PowerToysExtension", "Cache", "FancyZones", "LayoutThumbnails");
             var fileName = ComputeLayoutHash(layout) + ".png";
             return Path.Combine(cacheFolder, fileName);
         }

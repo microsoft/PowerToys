@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Diagnostics;
 using System.Text.Json;
 using Common.UI;
 using Microsoft.PowerToys.Settings.UI.Library;
@@ -24,6 +25,41 @@ public sealed class AwakeService : ModuleServiceBase, IAwakeService
     {
         // Default launch -> indefinite, honoring Awake's own settings for display behavior.
         return SetIndefiniteAsync(cancellationToken);
+    }
+
+    public AwakeState GetCurrentState()
+    {
+        var isRunning = IsAwakeProcessRunning();
+        var settings = ReadSettings();
+
+        if (settings is null)
+        {
+            return new AwakeState(isRunning, AwakeStateMode.Passive, false, null, null);
+        }
+
+        var mode = settings.Properties.Mode switch
+        {
+            AwakeMode.PASSIVE => AwakeStateMode.Passive,
+            AwakeMode.INDEFINITE => AwakeStateMode.Indefinite,
+            AwakeMode.TIMED => AwakeStateMode.Timed,
+            AwakeMode.EXPIRABLE => AwakeStateMode.Expirable,
+            _ => AwakeStateMode.Passive,
+        };
+
+        TimeSpan? duration = null;
+        DateTimeOffset? expiration = null;
+
+        switch (mode)
+        {
+            case AwakeStateMode.Timed:
+                duration = TimeSpan.FromHours(settings.Properties.IntervalHours) + TimeSpan.FromMinutes(settings.Properties.IntervalMinutes);
+                break;
+            case AwakeStateMode.Expirable:
+                expiration = settings.Properties.ExpirationDateTime;
+                break;
+        }
+
+        return new AwakeState(isRunning, mode, settings.Properties.KeepDisplayOn, duration, expiration);
     }
 
     public Task<OperationResult> SetIndefiniteAsync(CancellationToken cancellationToken = default)
@@ -85,6 +121,31 @@ public sealed class AwakeService : ModuleServiceBase, IAwakeService
         catch (Exception ex)
         {
             return Task.FromResult(OperationResult.Fail($"Failed to update Awake settings: {ex.Message}"));
+        }
+    }
+
+    private static bool IsAwakeProcessRunning()
+    {
+        try
+        {
+            return Process.GetProcessesByName("PowerToys.Awake").Length > 0;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    private static AwakeSettings? ReadSettings()
+    {
+        try
+        {
+            var settingsUtils = SettingsUtils.Default;
+            return settingsUtils.GetSettingsOrDefault<AwakeSettings>(AwakeSettings.ModuleName);
+        }
+        catch
+        {
+            return null;
         }
     }
 }
