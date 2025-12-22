@@ -21,11 +21,30 @@ namespace ViewModelTests
         public const string GeneralSettingsFileName = "Test\\GeneralSettings";
 
         private Mock<SettingsUtils> mockGeneralSettingsUtils;
+        private Microsoft.UI.Dispatching.DispatcherQueueController _dispatcherQueueController;
 
         [TestInitialize]
         public void SetUpStubSettingUtils()
         {
             mockGeneralSettingsUtils = ISettingsUtilsMocks.GetStubSettingsUtils<GeneralSettings>();
+
+            try
+            {
+                if (Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread() == null)
+                {
+                    _dispatcherQueueController = Microsoft.UI.Dispatching.DispatcherQueueController.CreateOnCurrentThread();
+                }
+            }
+            catch (System.Runtime.InteropServices.COMException)
+            {
+                // Expected if running in a unit test where DispatcherQueue is not supported
+            }
+        }
+
+        [TestCleanup]
+        public void Cleanup()
+        {
+            _dispatcherQueueController?.ShutdownQueueAsync();
         }
 
         [TestMethod]

@@ -115,7 +115,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             _settingsRepository = settingsRepository;
             _settingsRepository.SettingsChanged += OnSettingsChanged;
-            _dispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread();
+            try
+            {
+                _dispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread();
+            }
+            catch (System.Runtime.InteropServices.COMException)
+            {
+                // Expected if running in a unit test
+            }
 
             GeneralSettingsConfig = settingsRepository.SettingsConfig;
             UpdatingSettingsConfig = UpdatingSettings.LoadSettings();
