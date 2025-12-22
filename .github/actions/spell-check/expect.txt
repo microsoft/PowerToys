@@ -731,9 +731,9 @@ HWNDPARENT
 HWNDPREV
 hyjiacan
 IAI
+icf
 ICONERROR
 ICONLOCATION
-icf
 IDCANCEL
 IDD
 idk
@@ -1060,9 +1060,9 @@ MSLLHOOKSTRUCT
 Mso
 msrc
 msstore
+mstsc
 msvcp
 MT
-mstsc
 MTND
 MULTIPLEUSE
 multizone
@@ -1216,8 +1216,6 @@ OPENFILENAME
 openrdp
 opensource
 openxmlformats
-ollama
-onnx
 OPTIMIZEFORINVOKE
 ORPHANEDDIALOGTITLE
 ORSCANS
@@ -1430,7 +1428,6 @@ RAWPATH
 rbhid
 rclsid
 RCZOOMIT
-remotedesktop
 rdp
 RDW
 READMODE
@@ -1459,6 +1456,7 @@ remappings
 REMAPSUCCESSFUL
 REMAPUNSUCCESSFUL
 Remotable
+remotedesktop
 remoteip
 Removelnk
 renamable
@@ -1849,9 +1847,9 @@ uild
 uitests
 UITo
 ULONGLONG
-ums
 UMax
 UMin
+ums
 uncompilable
 UNCPRIORITY
 UNDNAME
