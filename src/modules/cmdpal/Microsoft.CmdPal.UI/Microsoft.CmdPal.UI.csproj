@@ -15,7 +15,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
-  <LangVersion>preview</LangVersion>
+    <LangVersion>preview</LangVersion>
 
     <Version>$(CmdPalVersion)</Version>
 
@@ -23,13 +23,14 @@
 
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+    <UseWinRT>true</UseWinRT>
   </PropertyGroup>
-  
+
   <!-- For debugging purposes, uncomment this block to enable AOT builds -->
-   <!--<PropertyGroup>
+  <!--<PropertyGroup>
     <EnableCmdPalAOT>true</EnableCmdPalAOT>
     <GeneratePackageLocally>true</GeneratePackageLocally>
-  </PropertyGroup>--> 
+  </PropertyGroup>-->
 
   <PropertyGroup Condition="'$(EnableCmdPalAOT)' == 'true'">
     <SelfContained>true</SelfContained>
@@ -45,7 +46,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <!-- This lets us actually reference types from Microsoft.Terminal.UI -->
+    <!-- This lets us actually reference types from Microsoft.Terminal.UI and CmdPalKeyboardService -->
     <CsWinRTIncludes>Microsoft.Terminal.UI;CmdPalKeyboardService</CsWinRTIncludes>
     <CsWinRTGeneratedFilesDir>$(OutDir)</CsWinRTGeneratedFilesDir>
   </PropertyGroup>
@@ -67,8 +68,11 @@
 
   <ItemGroup>
     <None Remove="Controls\ActionBar.xaml" />
+    <None Remove="Controls\ColorPalette.xaml" />
+    <None Remove="Controls\CommandPalettePreview.xaml" />
     <None Remove="Controls\DevRibbon.xaml" />
     <None Remove="Controls\KeyVisual\KeyCharPresenter.xaml" />
+    <None Remove="Controls\ScreenPreview.xaml" />
     <None Remove="Controls\SearchBar.xaml" />
     <None Remove="IsEnabledTextBlock.xaml" />
     <None Remove="ListDetailPage.xaml" />
@@ -77,10 +81,12 @@
     <None Remove="Pages\Settings\ExtensionsPage.xaml" />
     <None Remove="Pages\Settings\GeneralPage.xaml" />
     <None Remove="SettingsWindow.xaml" />
+    <None Remove="Settings\AppearancePage.xaml" />
     <None Remove="ShellPage.xaml" />
     <None Remove="Styles\Colors.xaml" />
     <None Remove="Styles\Settings.xaml" />
     <None Remove="Styles\TextBox.xaml" />
+    <None Remove="Styles\Theme.Normal.xaml" />
   </ItemGroup>
 
 
@@ -92,10 +98,11 @@
     <PackageReference Include="CommunityToolkit.WinUI.Extensions" />
     <PackageReference Include="CommunityToolkit.Labs.WinUI.Controls.MarkdownTextBlock" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+    <PackageReference Include="Microsoft.Graphics.Win2D" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
     <PackageReference Include="Microsoft.WindowsAppSDK" />
     <PackageReference Include="Microsoft.Xaml.Behaviors.WinUI.Managed" />
-	<PackageReference Include="WinUIEx" />
+    <PackageReference Include="WinUIEx" />
     <PackageReference Include="Microsoft.Windows.CsWin32">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
@@ -141,12 +148,16 @@
     <ProjectReference Include="..\ext\Microsoft.CmdPal.Ext.WindowWalker\Microsoft.CmdPal.Ext.WindowWalker.csproj" />
     <ProjectReference Include="..\ext\Microsoft.CmdPal.Ext.WinGet\Microsoft.CmdPal.Ext.WinGet.csproj" />
 
-    <ProjectReference Include="..\Microsoft.Terminal.UI\Microsoft.Terminal.UI.vcxproj">
-      <ReferenceOutputAssembly>True</ReferenceOutputAssembly>
-      <Private>True</Private>
-      <CopyLocalSatelliteAssemblies>True</CopyLocalSatelliteAssemblies>
+    <ProjectReference Include="$(ProjectDir)\..\Microsoft.Terminal.UI\Microsoft.Terminal.UI.vcxproj">
+      <ReferenceOutputAssembly>False</ReferenceOutputAssembly>
+      <BuildProject>True</BuildProject>
     </ProjectReference>
-
+    <!-- WinRT metadata reference -->
+    <CsWinRTInputs Include="$(OutputPath)\Microsoft.Terminal.UI.winmd" />
+    <!-- Native implementation DLL -->
+    <None Include="$(OutputPath)\Microsoft.Terminal.UI.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <ProjectReference Include="..\CmdPalKeyboardService\CmdPalKeyboardService.vcxproj">
       <ReferenceOutputAssembly>True</ReferenceOutputAssembly>
       <Private>True</Private>
@@ -200,6 +211,39 @@
     <Content Update="Assets\WinGetLogo.svg">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Update="Controls\CommandPalettePreview.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Update="Controls\ScreenPreview.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Update="Controls\ColorPalette.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Update="Styles\Theme.Colorful.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Styles\Theme.Normal.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Update="Settings\AppearancePage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
 
   <ItemGroup>

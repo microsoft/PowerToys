@@ -31,7 +31,10 @@ void LightSwitchStateManager::OnSettingsChanged()
 void LightSwitchStateManager::OnTick(int currentMinutes)
 {
     std::lock_guard<std::mutex> lock(_stateMutex);
-    EvaluateAndApplyIfNeeded();
+    if (_state.lastAppliedMode != ScheduleMode::FollowNightLight)
+    {
+        EvaluateAndApplyIfNeeded();
+    }
 }
 
 // Called when manual override is triggered
@@ -49,8 +52,38 @@ void LightSwitchStateManager::OnManualOverride()
         _state.isAppsLightActive = GetCurrentAppsTheme();
 
         Logger::debug(L"[LightSwitchStateManager] Synced internal theme state to current system theme ({}) and apps theme ({}).",
-                     (_state.isSystemLightActive ? L"light" : L"dark"),
-                     (_state.isAppsLightActive ? L"light" : L"dark"));
+                      (_state.isSystemLightActive ? L"light" : L"dark"),
+                      (_state.isAppsLightActive ? L"light" : L"dark"));
+    }
+
+    EvaluateAndApplyIfNeeded();
+}
+
+// Runs with the registry observer detects a change in Night Light settings.
+void LightSwitchStateManager::OnNightLightChange()
+{
+    std::lock_guard<std::mutex> lock(_stateMutex);
+
+    bool newNightLightState = IsNightLightEnabled();
+
+    // In Follow Night Light mode, treat a Night Light toggle as a boundary
+    if (_state.lastAppliedMode == ScheduleMode::FollowNightLight && _state.isManualOverride)
+    {
+        Logger::info(L"[LightSwitchStateManager] Night Light changed while manual override active; "
+                     L"treating as a boundary and clearing manual override.");
+        _state.isManualOverride = false;
+    }
+
+    if (newNightLightState != _state.isNightLightActive)
+    {
+        Logger::info(L"[LightSwitchStateManager] Night Light toggled to {}",
+                     newNightLightState ? L"ON" : L"OFF");
+
+        _state.isNightLightActive = newNightLightState;
+    }
+    else
+    {
+        Logger::debug(L"[LightSwitchStateManager] Night Light change event fired, but no actual change.");
     }
 
     EvaluateAndApplyIfNeeded();
@@ -77,9 +110,9 @@ void LightSwitchStateManager::SyncInitialThemeState()
     _state.isSystemLightActive = GetCurrentSystemTheme();
     _state.isAppsLightActive = GetCurrentAppsTheme();
     Logger::debug(L"[LightSwitchStateManager] Synced initial state to current system theme ({})",
-                 _state.isSystemLightActive ? L"light" : L"dark");
+                  _state.isSystemLightActive ? L"light" : L"dark");
     Logger::debug(L"[LightSwitchStateManager] Synced initial state to current apps theme ({})",
-                 _state.isAppsLightActive ? L"light" : L"dark");
+                  _state.isAppsLightActive ? L"light" : L"dark");
 }
 
 static std::pair<int, int> update_sun_times(auto& settings)
@@ -194,7 +227,15 @@ void LightSwitchStateManager::EvaluateAndApplyIfNeeded()
 
     _state.lastAppliedMode = _currentSettings.scheduleMode;
 
-    bool shouldBeLight = ShouldBeLight(now, _state.effectiveLightMinutes, _state.effectiveDarkMinutes);
+    bool shouldBeLight = false;
+    if (_currentSettings.scheduleMode == ScheduleMode::FollowNightLight)
+    {
+        shouldBeLight = !_state.isNightLightActive;
+    }
+    else
+    {
+        shouldBeLight = ShouldBeLight(now, _state.effectiveLightMinutes, _state.effectiveDarkMinutes);
+    }
 
     bool appsNeedsToChange = _currentSettings.changeApps && (_state.isAppsLightActive != shouldBeLight);
     bool systemNeedsToChange = _currentSettings.changeSystem && (_state.isSystemLightActive != shouldBeLight);
@@ -227,6 +268,3 @@ void LightSwitchStateManager::EvaluateAndApplyIfNeeded()
 
     _state.lastTickMinutes = now;
 }
-
-
-

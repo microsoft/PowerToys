@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <root>
-  <!--
-    Microsoft ResX Schema
-
+  <!-- 
+    Microsoft ResX Schema 
+    
     Version 2.0
-
-    The primary goals of this format is to allow a simple XML format
-    that is mostly human readable. The generation and parsing of the
-    various data types are done through the TypeConverter classes
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
     associated with the data types.
-
+    
     Example:
-
+    
     ... ado.net/XML headers & schema ...
     <resheader name="resmimetype">text/microsoft-resx</resheader>
     <resheader name="version">2.0</resheader>
@@ -26,36 +26,36 @@
         <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
         <comment>This is a comment</comment>
     </data>
-
-    There are any number of "resheader" rows that contain simple
+                
+    There are any number of "resheader" rows that contain simple 
     name/value pairs.
-
-    Each data row contains a name, and value. The row also contains a
-    type or mimetype. Type corresponds to a .NET class that support
-    text/value conversion through the TypeConverter architecture.
-    Classes that don't support this are serialized and stored with the
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
     mimetype set.
-
-    The mimetype is used for serialized objects, and tells the
-    ResXResourceReader how to depersist the object. This is currently not
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
     extensible. For a given mimetype the value must be set accordingly:
-
-    Note - application/x-microsoft.net.object.binary.base64 is the format
-    that the ResXResourceWriter will generate, however the reader can
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
     read any of the formats listed below.
-
+    
     mimetype: application/x-microsoft.net.object.binary.base64
-    value   : The object must be serialized with
+    value   : The object must be serialized with 
             : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
             : and then encoded with base64 encoding.
-
+    
     mimetype: application/x-microsoft.net.object.soap.base64
-    value   : The object must be serialized with
+    value   : The object must be serialized with 
             : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
             : and then encoded with base64 encoding.
 
     mimetype: application/x-microsoft.net.object.bytearray.base64
-    value   : The object must be serialized into a byte array
+    value   : The object must be serialized into a byte array 
             : using a System.ComponentModel.TypeConverter
             : and then encoded with base64 encoding.
     -->
@@ -228,7 +228,7 @@
     <value>Adds feet to the end of cross lines</value>
   </data>
   <data name="MeasureTool_EnableMeasureTool.Header" xml:space="preserve">
-    <value>Enable Screen Ruler</value>
+    <value>Screen Ruler</value>
     <comment>"Screen Ruler" is the name of the utility</comment>
   </data>
   <data name="MouseWithoutBorders_ActivationSettings.Header" xml:space="preserve">
@@ -299,7 +299,7 @@
     <value>Service</value>
   </data>
   <data name="MouseWithoutBorders_Toggle_Enable.Header" xml:space="preserve">
-    <value>Enable Mouse Without Borders</value>
+    <value>Mouse Without Borders</value>
   </data>
   <data name="MouseWithoutBorders.SecondaryLinksHeader" xml:space="preserve">
     <value>Attribution</value>
@@ -540,7 +540,7 @@ opera.exe</value>
     <comment>Product name: Navigation view item name for Shortcut Guide</comment>
   </data>
   <data name="Shell_PowerPreview.Content" xml:space="preserve">
-    <value>File Explorer add-ons</value>
+    <value>File Explorer Add-ons</value>
     <comment>Product name: Navigation view item name for File Explorer.  Please use File Explorer as in the context of File Explorer in Windows</comment>
   </data>
   <data name="Shell_FancyZones.Content" xml:space="preserve">
@@ -564,7 +564,7 @@ opera.exe</value>
     <comment>Product name: Navigation view item name for Mouse Without Borders</comment>
   </data>
   <data name="Shell_MouseUtilities.Content" xml:space="preserve">
-    <value>Mouse utilities</value>
+    <value>Mouse Utilities</value>
     <comment>Product name: Navigation view item name for Mouse utilities</comment>
   </data>
   <data name="Shell_NavigationMenu_Announce_Collapse" xml:space="preserve">
@@ -584,7 +584,7 @@ opera.exe</value>
     <comment>Keyboard Manager page description</comment>
   </data>
   <data name="KeyboardManager_EnableToggle.Header" xml:space="preserve">
-    <value>Enable Keyboard Manager</value>
+    <value>Keyboard Manager</value>
     <comment>Keyboard Manager enable toggle header. Do not loc the Product name. Do you want this feature on / off</comment>
   </data>
   <data name="KeyboardManager_ProfileDescription.Text" xml:space="preserve">
@@ -624,7 +624,7 @@ opera.exe</value>
     <value>Disable</value>
   </data>
   <data name="AdvancedPaste_EnableAISettingsCard.Header" xml:space="preserve">
-    <value>Enable Paste with AI</value>
+    <value>Paste with AI</value>
   </data>
   <data name="AdvancedPaste_EnableAIDialogMarkdown.Text" xml:space="preserve">
     <value>## Preview Terms
@@ -638,11 +638,8 @@ Please review the placeholder content that represents the final terms and usage 
   <data name="AdvancedPaste_EnableAIDialogAcceptanceCheckBox.Content" xml:space="preserve">
     <value>I have read and accept the information above.</value>
   </data>
-  <data name="AdvancedPaste_EnableAdvancedAIModerationToggle.Content" xml:space="preserve">
-    <value>Enable OpenAI content moderation</value>
-  </data>
   <data name="AdvancedPaste_EnablePasteAIModerationToggle.Header" xml:space="preserve">
-    <value>Enable OpenAI content moderation</value>
+    <value>OpenAI content moderation</value>
   </data>
   <data name="AdvancedPaste_EnableAdvancedAIDescription.Text" xml:space="preserve">
     <value>Use built-in functions to handle complex tasks. Token consumption may increase.</value>
@@ -751,7 +748,7 @@ Please review the placeholder content that represents the final terms and usage 
     <value>Quick and simple system-wide color picker.</value>
   </data>
   <data name="ColorPicker_EnableColorPicker.Header" xml:space="preserve">
-    <value>Enable Color Picker</value>
+    <value>Color Picker</value>
     <comment>do not loc the Product name.  Do you want this feature on / off</comment>
   </data>
   <data name="ColorPicker_ChangeCursor.Content" xml:space="preserve">
@@ -761,7 +758,7 @@ Please review the placeholder content that represents the final terms and usage 
     <value>A quick launcher that has additional capabilities without sacrificing performance.</value>
   </data>
   <data name="PowerLauncher_EnablePowerLauncher.Header" xml:space="preserve">
-    <value>Enable PowerToys Run</value>
+    <value>PowerToys Run</value>
     <comment>do not loc the Product name.  Do you want this feature on / off</comment>
   </data>
   <data name="PowerLauncher_SearchResults.Header" xml:space="preserve">
@@ -886,7 +883,7 @@ Please review the placeholder content that represents the final terms and usage 
     <comment>windows refers to application windows</comment>
   </data>
   <data name="FancyZones_EnableToggleControl_HeaderText.Header" xml:space="preserve">
-    <value>Enable FancyZones</value>
+    <value>FancyZones</value>
     <comment>{Locked="FancyZones"}</comment>
   </data>
   <data name="FancyZones_ExcludeApps.Header" xml:space="preserve">
@@ -1056,7 +1053,7 @@ Please review the placeholder content that represents the final terms and usage 
     <comment>This refers to directly integrating in with Windows</comment>
   </data>
   <data name="PowerRename_Toggle_Enable.Header" xml:space="preserve">
-    <value>Enable PowerRename</value>
+    <value>PowerRename</value>
     <comment>do not loc the Product name.  Do you want this feature on / off</comment>
   </data>
   <data name="RadioButtons_Name_Theme.Text" xml:space="preserve">
@@ -1238,7 +1235,7 @@ Please review the placeholder content that represents the final terms and usage 
     <value>PowerToys will restart automatically if needed</value>
   </data>
   <data name="ShortcutGuide_Enable.Header" xml:space="preserve">
-    <value>Enable Shortcut Guide</value>
+    <value>Shortcut Guide</value>
     <comment>do not loc the Product name. Do you want this feature on / off</comment>
   </data>
   <data name="ShortcutGuide_OverlayOpacity.Header" xml:space="preserve">
@@ -1270,7 +1267,7 @@ Please review the placeholder content that represents the final terms and usage 
     <value>Lets you resize images by right-clicking.</value>
   </data>
   <data name="ImageResizer_EnableToggle.Header" xml:space="preserve">
-    <value>Enable Image Resizer</value>
+    <value>Image Resizer</value>
     <comment>do not loc the Product name.  Do you want this feature on / off</comment>
   </data>
   <data name="ImagesSizesListView.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
@@ -2092,9 +2089,6 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="TranscodeToMp4.Header" xml:space="preserve">
     <value>Transcode to .mp4 (H.264/AAC)</value>
   </data>
-  <data name="AdvancedPaste_EnableAIDialogOpenAIApiKey.Text" xml:space="preserve">
-    <value>OpenAI API key:</value>
-  </data>
   <data name="EnableAIDialog_SaveBtnText" xml:space="preserve">
     <value>Save</value>
   </data>
@@ -2411,7 +2405,7 @@ From there, simply click on one of the supported files in the File Explorer and 
     <value>A convenient way to keep your PC awake on-demand.</value>
   </data>
   <data name="Awake_EnableSettingsCard.Header" xml:space="preserve">
-    <value>Enable Awake</value>
+    <value>Awake</value>
     <comment>Awake is a product name, do not loc</comment>
   </data>
   <data name="Awake_NoKeepAwakeSelector.Content" xml:space="preserve">
@@ -2676,7 +2670,7 @@ From there, simply click on one of the supported files in the File Explorer and 
     <comment>Mouse as in the hardware peripheral.</comment>
   </data>
   <data name="MouseUtils_Enable_CursorWrap.Header" xml:space="preserve">
-    <value>Enable CursorWrap</value>
+    <value>CursorWrap</value>
   </data>
   <data name="MouseUtils_CursorWrap.Header" xml:space="preserve">
     <value>CursorWrap</value>
@@ -2831,7 +2825,7 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <comment>"Ctrl" is a keyboard key. "Find My Mouse" is the name of the utility</comment>
   </data>
   <data name="MouseUtils_Enable_FindMyMouse.Header" xml:space="preserve">
-    <value>Enable Find My Mouse</value>
+    <value>Find My Mouse</value>
     <comment>"Find My Mouse" is the name of the utility.</comment>
   </data>
   <data name="MouseUtils_FindMyMouse_ActivationMethod.Header" xml:space="preserve">
@@ -2920,7 +2914,7 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <comment>"Mouse Highlighter" is the name of the utility. Mouse is the hardware mouse.</comment>
   </data>
   <data name="MouseUtils_Enable_MouseHighlighter.Header" xml:space="preserve">
-    <value>Enable Mouse Highlighter</value>
+    <value>Mouse Highlighter</value>
     <comment>"Find My Mouse" is the name of the utility.</comment>
   </data>
   <data name="MouseUtils_MouseHighlighter_ActivationShortcut.Header" xml:space="preserve">
@@ -2965,7 +2959,7 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <comment>"Mouse Pointer Crosshairs" is the name of the utility. Mouse is the hardware mouse.</comment>
   </data>
   <data name="MouseUtils_Enable_MousePointerCrosshairs.Header" xml:space="preserve">
-    <value>Enable Mouse Pointer Crosshairs</value>
+    <value>Mouse Pointer Crosshairs</value>
     <comment>"Mouse Pointer Crosshairs" is the name of the utility.</comment>
   </data>
   <data name="MouseUtils_MousePointerCrosshairs_ActivationShortcut.Header" xml:space="preserve">
@@ -3090,7 +3084,7 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Activation</value>
   </data>
   <data name="CropAndLock_EnableToggleControl_HeaderText.Header" xml:space="preserve">
-    <value>Enable Crop And Lock</value>
+    <value>Crop And Lock</value>
     <comment>"Crop And Lock" is the name of the utility</comment>
   </data>
   <data name="Shell_CropAndLock.Content" xml:space="preserve">
@@ -3146,7 +3140,7 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Activation</value>
   </data>
   <data name="AlwaysOnTop_EnableToggleControl_HeaderText.Header" xml:space="preserve">
-    <value>Enable Always On Top</value>
+    <value>Always On Top</value>
     <comment>{Locked="Always On Top"}</comment>
   </data>
   <data name="AlwaysOnTop_ExcludedApps.Description" xml:space="preserve">
@@ -3247,7 +3241,7 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Peek is a quick and easy way to preview files. Select a file in File Explorer and press the shortcut to open the file preview.</value>
   </data>
   <data name="Peek_EnablePeek.Header" xml:space="preserve">
-    <value>Enable Peek</value>
+    <value>Peek</value>
     <comment>Peek is a product name, do not loc</comment>
   </data>
   <data name="Peek_BehaviorHeader.Header" xml:space="preserve">
@@ -3324,7 +3318,7 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <comment>Quick Accent is a product name, do not loc</comment>
   </data>
   <data name="QuickAccent_EnableQuickAccent.Header" xml:space="preserve">
-    <value>Enable Quick Accent</value>
+    <value>Quick Accent</value>
   </data>
   <data name="Shell_QuickAccent.Content" xml:space="preserve">
     <value>Quick Accent</value>
@@ -3333,7 +3327,7 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Workspaces</value>
   </data>
   <data name="Workspaces_EnableToggleControl_HeaderText.Header" xml:space="preserve">
-    <value>Enable Workspaces</value>
+    <value>Workspaces</value>
     <comment>"Workspaces" is the name of the utility</comment>
   </data>
   <data name="Workspaces_Activation_GroupSettings.Header" xml:space="preserve">
@@ -3607,7 +3601,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Text Extractor</value>
   </data>
   <data name="TextExtractor_EnableToggleControl_HeaderText.Header" xml:space="preserve">
-    <value>Enable Text Extractor</value>
+    <value>Text Extractor</value>
   </data>
   <data name="TextExtractor_SupportedLanguages.Title" xml:space="preserve">
     <value>Text Extractor can only recognize languages that have the OCR pack installed.</value>
@@ -3836,7 +3830,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <comment>Products name: Navigation view item name for Hosts File Editor</comment>
   </data>
   <data name="Hosts_EnableToggleControl_HeaderText.Header" xml:space="preserve">
-    <value>Enable Hosts File Editor</value>
+    <value>Hosts File Editor</value>
     <comment>"Hosts File Editor" is the name of the utility</comment>
   </data>
   <data name="Hosts_Toggle_ShowStartupWarning.Header" xml:space="preserve">
@@ -3901,7 +3895,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Environment Variables</value>
   </data>
   <data name="EnvironmentVariables_EnableToggleControl_HeaderText.Header" xml:space="preserve">
-    <value>Enable Environment Variables</value>
+    <value>Environment Variables</value>
   </data>
   <data name="EnvironmentVariables_Activation_GroupSettings.Header" xml:space="preserve">
     <value>Activation</value>
@@ -3949,7 +3943,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <comment>Product name: Navigation view item name for FileLocksmith</comment>
   </data>
   <data name="FileLocksmith_Enable_FileLocksmith.Header" xml:space="preserve">
-    <value>Enable File Locksmith</value>
+    <value>File Locksmith</value>
     <comment>File Locksmith is the name of the utility</comment>
   </data>
   <data name="FileLocksmith_Toggle_StandardContextMenu.Content" xml:space="preserve">
@@ -4029,7 +4023,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <comment>Product name: Navigation view item name for Advanced Paste</comment>
   </data>
   <data name="AdvancedPaste.ModuleDescription" xml:space="preserve">
-    <value>A tool to quickly format clipboard content into plain text, Markdown, JSON, and more. An AI-powered option requiring an OpenAI API key is available for advanced formatting.</value>
+    <value>Formats clipboard content into plain text, Markdown, JSON, and more. Advanced formatting can use an online or local language model endpoint.</value>
   </data>
   <data name="AdvancedPaste.ModuleTitle" xml:space="preserve">
     <value>Advanced Paste</value>
@@ -4038,7 +4032,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>cancel</value>
   </data>
   <data name="AdvancedPaste_EnableToggleControl_HeaderText.Header" xml:space="preserve">
-    <value>Enable Advanced Paste</value>
+    <value>Advanced Paste</value>
   </data>
   <data name="AdvancedPaste_EnableAISettingsGroup.Header" xml:space="preserve">
     <value>Paste with AI</value>
@@ -4053,7 +4047,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Preview the output of AI formats and Image to text before pasting</value>
   </data>
   <data name="AdvancedPaste_EnableAdvancedAI.Text" xml:space="preserve">
-    <value>Enable Advanced AI</value>
+    <value>Advanced AI</value>
   </data>
   <data name="Oobe_AdvancedPaste.Description" xml:space="preserve">
     <value>Advanced Paste is a tool to put your clipboard content into any format you need, focused towards developer workflows. It can paste as plain text, markdown, or json directly with the UX or with a direct keystroke invoke. These are fully locally executed. In addition, it has an AI powered option that is 100% opt-in and requires an Open AI key. Note: this will replace the formatted text in your clipboard with the selected format.</value>
@@ -4205,7 +4199,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <comment>Product name: Navigation view item name for Registry Preview</comment>
   </data>
   <data name="RegistryPreview_Enable_RegistryPreview.Header" xml:space="preserve">
-    <value>Enable Registry Preview</value>
+    <value>Registry Preview</value>
     <comment>Registry Preview is the name of the utility</comment>
   </data>
   <data name="Oobe_RegistryPreview_HowToUse.Text" xml:space="preserve">
@@ -4239,7 +4233,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <comment>"Mouse Jump" is the name of the utility. Mouse is the hardware mouse.</comment>
   </data>
   <data name="MouseUtils_Enable_MouseJump.Header" xml:space="preserve">
-    <value>Enable Mouse Jump</value>
+    <value>Mouse Jump</value>
     <comment>"Mouse Jump" is the name of the utility.</comment>
   </data>
   <data name="MouseUtils_MouseJump_ActivationShortcut.Description" xml:space="preserve">
@@ -4559,17 +4553,8 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="TermsLink.Text" xml:space="preserve">
     <value>OpenAI Terms</value>
   </data>
-  <data name="AdvancedPaste_EnableAIDialog_Description.Text" xml:space="preserve">
-    <value>Paste with AI allows you to format your clipboard content into any format you need. Learn more about the terms of conditions while using OpenAI and privacy at Microsoft:</value>
-  </data>
   <data name="AdvancedPaste_EnableAIDialog_LoginIntoText.Text" xml:space="preserve">
     <value>• Login into your</value>
-  </data>
-  <data name="AdvancedPaste_EnableAIDialog_ConfigureOpenAIKey.Text" xml:space="preserve">
-    <value>Configure OpenAI key</value>
-  </data>
-  <data name="AdvancedPaste_EnableAIDialog_OpenAIApiKeysOverviewText.Text" xml:space="preserve">
-    <value>OpenAI API keys overview</value>
   </data>
   <data name="AdvancedPaste_EnableAIDialog_CreateNewKeyText.Text" xml:space="preserve">
     <value>• Create a new secret key and paste it in the field below</value>
@@ -4587,9 +4572,6 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="Peek_SourceCode_FontSize.Header" xml:space="preserve">
     <value>Font size</value>
-  </data>
-  <data name="AdvancedPaste_EnableAIDialog_NoteAICreditsText.Text" xml:space="preserve">
-    <value>• NOTE: You need to have available paid credits in your OpenAI account to use this feature. If you do not have credits you will see an 'API key quota exceeded' error</value>
   </data>
   <data name="AdvancedPaste_EnableAIDialog_NoteAICreditsErrorText.Text" xml:space="preserve">
     <value>If you do not have credits you will see an 'API key quota exceeded' error</value>
@@ -4626,7 +4608,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <comment>New+ learn more link. Localize product name in accordance with Windows New</comment>
   </data>
   <data name="NewPlus_Enable_Toggle.Header" xml:space="preserve">
-    <value>Enable New+</value>
+    <value>New+</value>
     <comment>Localize product name in accordance with Windows New</comment>
   </data>
   <data name="NewPlus_TemplatesNotBackupAndRestoreWarning.Title" xml:space="preserve">
@@ -4739,7 +4721,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <comment>{Locked="ZoomIt"}</comment>
   </data>
   <data name="ZoomIt_EnableToggleControl_HeaderText.Header" xml:space="preserve">
-    <value>Enable ZoomIt</value>
+    <value>ZoomIt</value>
     <comment>{Locked="ZoomIt"}</comment>
   </data>
   <data name="ZoomIt.ModuleDescription" xml:space="preserve">
@@ -5160,7 +5142,7 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
     <value>System Tools</value>
   </data>
   <data name="CmdPal_Enable_CmdPal.Header" xml:space="preserve">
-    <value>Enable Command Palette</value>
+    <value>Command Palette</value>
     <comment>Command Palette is a product name, do not loc</comment>
   </data>
   <data name="LearnMore_CmdPal.Text" xml:space="preserve">
@@ -5345,9 +5327,6 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   <data name="Shell_LightSwitch.Content" xml:space="preserve">
     <value>Light Switch</value>
   </data>
-  <data name="LightSwitch_EnableToggleControl_HeaderText.Header" xml:space="preserve">
-    <value>Enable Light Switch</value>
-  </data>
   <data name="LightSwitch.ModuleDescription" xml:space="preserve">
     <value>Easily switch between light and dark mode - on a schedule, automatically, or with a shortcut.</value>
   </data>
@@ -5361,7 +5340,7 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
     <value>Behavior</value>
   </data>
   <data name="LightSwitch_EnableSettingsCard.Header" xml:space="preserve">
-    <value>Enable Light Switch</value>
+    <value>Light Switch</value>
   </data>
   <data name="LightSwitch_ShortcutsSettingsGroup.Header" xml:space="preserve">
     <value>Shortcuts</value>
@@ -5780,5 +5759,14 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   <data name="CmdPal_ModernDescription.Text" xml:space="preserve">
     <value>A modern UI built with Fluent Design</value>
     <comment>Fluent Design is a product name, do not loc</comment>
+  </data>
+  <data name="LightSwitch_ModeFollowNightLight.Content" xml:space="preserve">
+    <value>Follow Night Light</value>
+  </data>
+  <data name="LightSwitch_NightLightSettingsButton.Content" xml:space="preserve">
+    <value>Personalize your Night Light settings.</value>
+  </data>
+  <data name="LightSwitch_FollowNightLightCardMessage.Text" xml:space="preserve">
+    <value>Following Night Light settings.</value>
   </data>
 </root>

@@ -54,9 +54,15 @@ if ($IsAzurePipelineBuild) {
 } else {
   $nugetPath = (Join-Path $PSScriptRoot "NugetWrapper.cmd")
 }
+$solutionPath = (Join-Path $PSScriptRoot "..\..\..\..\..\PowerToys.slnx")
 
 if (($BuildStep -ieq "all") -Or ($BuildStep -ieq "build")) {
-  & $nugetPath restore (Join-Path $PSScriptRoot "..\..\..\..\..\PowerToys.slnx")
+  $restoreArgs = @(
+    $solutionPath
+    "/t:Restore"
+    "/p:RestorePackagesConfig=true"
+  )
+  & $msbuildPath $restoreArgs
 
   Try {
     foreach ($config in $Configuration.Split(",")) {

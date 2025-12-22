@@ -26,13 +26,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
     {
         private GeneralSettings GeneralSettingsConfig { get; set; }
 
-        private readonly ISettingsUtils _settingsUtils;
+        private readonly SettingsUtils _settingsUtils;
 
         private NewPlusSettings Settings { get; set; }
 
         private const string ModuleName = NewPlusSettings.ModuleName;
 
-        public NewPlusViewModel(ISettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, Func<string, int> ipcMSGCallBackFunc)
+        public NewPlusViewModel(SettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, Func<string, int> ipcMSGCallBackFunc)
         {
             _settingsUtils = settingsUtils ?? throw new ArgumentNullException(nameof(settingsUtils));
 
@@ -228,7 +228,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private Func<string, int> SendConfigMSG { get; }
 
-        public static NewPlusSettings LoadSettings(ISettingsUtils settingsUtils)
+        public static NewPlusSettings LoadSettings(SettingsUtils settingsUtils)
         {
             NewPlusSettings settings = null;
 

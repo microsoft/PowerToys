@@ -67,6 +67,10 @@
                                     x:Uid="LightSwitch_ModeSunsetToSunrise"
                                     AutomationProperties.AutomationId="SunCBItem_LightSwitch"
                                     Tag="SunsetToSunrise" />
+                                <ComboBoxItem
+                                    x:Uid="LightSwitch_ModeFollowNightLight"
+                                    AutomationProperties.AutomationId="FollowNightLightCBItem_LightSwitch"
+                                    Tag="FollowNightLight" />
                             </ComboBox>
                             <tkcontrols:SettingsExpander.Items>
                                 <tkcontrols:SettingsCard
@@ -151,6 +155,33 @@
                                         IsClosable="False"
                                         IsOpen="True"
                                         Severity="Informational" />
+                                </tkcontrols:SettingsCard>
+                                <tkcontrols:SettingsCard
+                                    x:Name="FollowNightLightCard"
+                                    Padding="0"
+                                    HorizontalContentAlignment="Stretch"
+                                    Background="{ThemeResource InfoBarInformationalSeverityBackgroundBrush}"
+                                    ContentAlignment="Vertical"
+                                    Visibility="Collapsed">
+                                    <InfoBar
+                                        Background="Transparent"
+                                        BorderThickness="0"
+                                        IsClosable="False"
+                                        IsOpen="True"
+                                        Severity="Informational">
+                                        <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
+                                            <TextBlock VerticalAlignment="Center">
+                                                <Run x:Uid="LightSwitch_FollowNightLightCardMessage" />
+                                            </TextBlock>
+
+                                            <HyperlinkButton
+                                                x:Uid="LightSwitch_NightLightSettingsButton"
+                                                Margin="3,0,0,0"
+                                                Padding="0"
+                                                Click="OpenNightLightSettings_Click" />
+                                        </StackPanel>
+
+                                    </InfoBar>
                                 </tkcontrols:SettingsCard>
                             </tkcontrols:SettingsExpander.Items>
                         </tkcontrols:SettingsExpander>
@@ -350,13 +381,25 @@
                         <Setter Target="SunLocation_Card.Visibility" Value="Visible" />
                         <Setter Target="SunOffset_Card.Visibility" Value="Visible" />
                         <Setter Target="NoScheduleCard.Visibility" Value="Collapsed" />
+                        <Setter Target="FollowNightLightCard.Visibility" Value="Collapsed" />
                     </VisualState.Setters>
                 </VisualState>
+
                 <VisualState x:Name="ManualState">
                     <VisualState.Setters>
                         <Setter Target="Fixed_TurnOnCard.Visibility" Value="Visible" />
                         <Setter Target="Fixed_TurnOffCard.Visibility" Value="Visible" />
                         <Setter Target="NoScheduleCard.Visibility" Value="Collapsed" />
+                        <Setter Target="FollowNightLightCard.Visibility" Value="Collapsed" />
+                    </VisualState.Setters>
+                </VisualState>
+
+                <VisualState x:Name="FollowNightLightState">
+                    <VisualState.Setters>
+                        <Setter Target="Fixed_TurnOnCard.Visibility" Value="Collapsed" />
+                        <Setter Target="Fixed_TurnOffCard.Visibility" Value="Collapsed" />
+                        <Setter Target="NoScheduleCard.Visibility" Value="Collapsed" />
+                        <Setter Target="FollowNightLightCard.Visibility" Value="Visible" />
                     </VisualState.Setters>
                 </VisualState>
             </VisualStateGroup>

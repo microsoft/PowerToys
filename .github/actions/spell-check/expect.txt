@@ -141,8 +141,11 @@ BITSPIXEL
 bla
 BLACKFRAME
 BLENDFUNCTION
+blittable
 Blockquotes
 blt
+bluelightreduction
+bluelightreductionstate
 BLURBEHIND
 BLURREGION
 bmi
@@ -249,6 +252,7 @@ colorformat
 colorhistory
 colorhistorylimit
 COLORKEY
+colorref
 comctl
 comdlg
 comexp
@@ -320,7 +324,6 @@ CUSTOMFORMATPLACEHOLDER
 CVal
 cvd
 CVirtual
-CVS
 CWMO
 CXSCREEN
 CXSMICON
@@ -728,9 +731,9 @@ HWNDPARENT
 HWNDPREV
 hyjiacan
 IAI
-icf
 ICONERROR
 ICONLOCATION
+icf
 IDCANCEL
 IDD
 idk
@@ -773,6 +776,7 @@ INITGUID
 INITTOLOGFONTSTRUCT
 INLINEPREFIX
 inlines
+Inno
 INPC
 inproc
 INPUTHARDWARE
@@ -1110,6 +1114,7 @@ NEWPLUSSHELLEXTENSIONWIN
 newrow
 nicksnettravels
 NIF
+nightlight
 NLog
 NLSTEXT
 NMAKE
@@ -1480,6 +1485,7 @@ rgh
 rgn
 rgs
 rguid
+rhk
 RIDEV
 RIGHTSCROLLBAR
 riid
@@ -1585,6 +1591,7 @@ SHGDNF
 SHGFI
 SHIL
 shinfo
+shk
 shlwapi
 shobjidl
 SHORTCUTATLEAST
@@ -1843,11 +1850,14 @@ uitests
 UITo
 ULONGLONG
 ums
+UMax
+UMin
 uncompilable
 UNCPRIORITY
 UNDNAME
 UNICODETEXT
 unins
+Uninstaller
 uninstalls
 Uniquifies
 unitconverter
@@ -1855,6 +1865,7 @@ unittests
 UNLEN
 UNORM
 unremapped
+Unsubscribes
 unvirtualized
 unwide
 unzoom
@@ -1939,7 +1950,7 @@ vswhere
 Vtbl
 WANTNUKEWARNING
 WANTPALM
-wasdk
+WASDK
 wbem
 WBounds
 Wca
