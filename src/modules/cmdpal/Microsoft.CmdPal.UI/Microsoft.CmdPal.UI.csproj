@@ -71,6 +71,7 @@
     <None Remove="Controls\ColorPalette.xaml" />
     <None Remove="Controls\CommandPalettePreview.xaml" />
     <None Remove="Controls\DevRibbon.xaml" />
+    <None Remove="Controls\FallbackRankerDialog.xaml" />
     <None Remove="Controls\KeyVisual\KeyCharPresenter.xaml" />
     <None Remove="Controls\ScreenPreview.xaml" />
     <None Remove="Controls\SearchBar.xaml" />
@@ -229,6 +230,12 @@
     <Page Update="Controls\ColorPalette.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
+  </ItemGroup>
+
+  <ItemGroup>
+	  <Page Update="Controls\FallbackRankerDialog.xaml">
+		  <Generator>MSBuild:Compile</Generator>
+	  </Page>
   </ItemGroup>
 
   <ItemGroup>
