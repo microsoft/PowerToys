@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using Microsoft.PowerToys.Settings.UI.Library;
 using PowerToys.GPOWrapper;
 using PowerToys.Interop;
@@ -19,13 +20,13 @@ namespace RunnerV2.ModuleInterfaces
 
         public GpoRuleConfigured GpoRuleConfigured => GPOWrapper.GetConfiguredPowerLauncherEnabledValue();
 
-        public override string ProcessPath => "PowerToys.PowerLauncher.exe";
+        public override string ProcessPath => Path.GetFullPath("PowerToys.PowerLauncher.exe");
 
         public override string ProcessName => "PowerToys.PowerLauncher";
 
-        public override ProcessLaunchOptions LaunchOptions => ProcessLaunchOptions.ElevateIfApplicable | ProcessLaunchOptions.UseShellExecute | ProcessLaunchOptions.SingletonProcess;
+        public override ProcessLaunchOptions LaunchOptions => ProcessLaunchOptions.ElevateIfApplicable | ProcessLaunchOptions.SingletonProcess;
 
-        public override string ProcessArguments => $"--powerToysPid {Environment.ProcessId} --started-from-runner";
+        public override string ProcessArguments => $"-powerToysPid {Environment.ProcessId}";
 
         public void Disable()
         {
@@ -37,8 +38,8 @@ namespace RunnerV2.ModuleInterfaces
         {
         }
 
-        public List<(HotkeySettings Hotkey, Action Action)> Shortcuts => new()
-        {
+        public List<(HotkeySettings Hotkey, Action Action)> Shortcuts =>
+        [
             (
                 SettingsUtils.Default.GetSettings<PowerLauncherSettings>(Name).Properties.OpenPowerLauncher,
                 () =>
@@ -48,6 +49,6 @@ namespace RunnerV2.ModuleInterfaces
                     invokeRunEvent.Set();
                 }
             ),
-        };
+        ];
     }
 }
