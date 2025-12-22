@@ -23,11 +23,12 @@
     <PackageReference Include="CommunityToolkit.Common" />
     <PackageReference Include="CommunityToolkit.Mvvm" />
     <PackageReference Include="AdaptiveCards.Templating" />
+    <PackageReference Include="CommunityToolkit.WinUI.Extensions" />
     <PackageReference Include="Microsoft.Bot.AdaptiveExpressions.Core" />
     <PackageReference Include="AdaptiveCards.ObjectModel.WinUI3" GeneratePathProperty="true">
       <ExcludeAssets>compile</ExcludeAssets>
     </PackageReference>
-    <PackageReference Include="AdaptiveCards.Rendering.WinUI3" GeneratePathProperty="True" >
+    <PackageReference Include="AdaptiveCards.Rendering.WinUI3" GeneratePathProperty="True">
       <ExcludeAssets>compile</ExcludeAssets>
     </PackageReference>
 

@@ -5,6 +5,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.CmdPal.Core.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.Storage.Streams;
 
 namespace Microsoft.CmdPal.Core.ViewModels;
@@ -57,7 +58,7 @@ public partial class IconDataViewModel : ObservableObject, IIconData
             // because each call to GetProperties() is a cross process hop, and if you
             // marshal-by-value the property set, then you don't want to throw it away and
             // re-marshal it for every property. MAKE SURE YOU CACHE IT.
-            if (props?.TryGetValue("FontFamily", out var family) ?? false)
+            if (props?.TryGetValue(WellKnownExtensionAttributes.FontFamily, out var family) ?? false)
             {
                 FontFamily = family as string;
             }

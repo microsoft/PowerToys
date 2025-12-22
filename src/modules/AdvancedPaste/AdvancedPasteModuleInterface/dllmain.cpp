@@ -312,13 +312,39 @@ private:
         return false;
     }
 
-        void read_settings(PowerToysSettings::PowerToyValues& settings)
+    void read_settings(PowerToysSettings::PowerToyValues& settings)
     {
         const auto settingsObject = settings.get_raw_json();
 
         // Migrate Paste As Plain text shortcut
         Hotkey old_paste_as_plain_hotkey;
         bool old_data_migrated = migrate_data_and_remove_data_file(old_paste_as_plain_hotkey);
+
+        if (settingsObject.GetView().Size())
+        {
+            const auto propertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES);
+
+            m_is_advanced_ai_enabled = has_advanced_ai_provider(propertiesObject);
+
+            if (propertiesObject.HasKey(JSON_KEY_IS_AI_ENABLED))
+            {
+                m_is_ai_enabled = propertiesObject.GetNamedObject(JSON_KEY_IS_AI_ENABLED).GetNamedBoolean(JSON_KEY_VALUE, false);
+            }
+            else if (propertiesObject.HasKey(JSON_KEY_IS_OPEN_AI_ENABLED))
+            {
+                m_is_ai_enabled = propertiesObject.GetNamedObject(JSON_KEY_IS_OPEN_AI_ENABLED).GetNamedBoolean(JSON_KEY_VALUE, false);
+            }
+            else
+            {
+                m_is_ai_enabled = false;
+            }
+
+            if (propertiesObject.HasKey(JSON_KEY_SHOW_CUSTOM_PREVIEW))
+            {
+                m_preview_custom_format_output = propertiesObject.GetNamedObject(JSON_KEY_SHOW_CUSTOM_PREVIEW).GetNamedBoolean(JSON_KEY_VALUE);
+            }
+        }
+
         if (old_data_migrated)
         {
             m_paste_as_plain_hotkey = old_paste_as_plain_hotkey;
@@ -403,31 +429,6 @@ private:
                         }
                     }
                 }
-            }
-        }
-
-        if (settingsObject.GetView().Size())
-        {
-            const auto propertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES);
-
-            m_is_advanced_ai_enabled = has_advanced_ai_provider(propertiesObject);
-
-            if (propertiesObject.HasKey(JSON_KEY_IS_AI_ENABLED))
-            {
-                m_is_ai_enabled = propertiesObject.GetNamedObject(JSON_KEY_IS_AI_ENABLED).GetNamedBoolean(JSON_KEY_VALUE, false);
-            }
-            else if (propertiesObject.HasKey(JSON_KEY_IS_OPEN_AI_ENABLED))
-            {
-                m_is_ai_enabled = propertiesObject.GetNamedObject(JSON_KEY_IS_OPEN_AI_ENABLED).GetNamedBoolean(JSON_KEY_VALUE, false);
-            }
-            else
-            {
-                m_is_ai_enabled = false;
-            }
-
-            if (propertiesObject.HasKey(JSON_KEY_SHOW_CUSTOM_PREVIEW))
-            {
-                m_preview_custom_format_output = propertiesObject.GetNamedObject(JSON_KEY_SHOW_CUSTOM_PREVIEW).GetNamedBoolean(JSON_KEY_VALUE);
             }
         }
     }

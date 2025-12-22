@@ -6,7 +6,7 @@
 - The template will be available in Visual Studio, when adding a new project, under the `Visual C++` tab.
 
 ## Contributing
-If you'd like to work on a PowerToy template, make required modifications to `\tools\project_template\ModuleTemplate.vcxproj` and then use the dedicated solution `PowerToyTemplate.sln` to export it as a template. Note that `ModuleTemplate.vcxproj` is actually a project template, therefore uncompilable, so we also have a dedicated `ModuleTemplateCompileTest.vcxproj` project referenced from the `PowerToys.sln` to help keeping the template sources up to date and verify it compiles correctly.
+If you'd like to work on a PowerToy template, make required modifications to `\tools\project_template\ModuleTemplate.vcxproj` and then use the dedicated solution `PowerToyTemplate.sln` to export it as a template. Note that `ModuleTemplate.vcxproj` is actually a project template, therefore uncompilable, so we also have a dedicated `ModuleTemplateCompileTest.vcxproj` project referenced from the `PowerToys.slnx` to help keeping the template sources up to date and verify it compiles correctly.
 
 ## Create a new PowerToy Module
 
@@ -442,7 +442,7 @@ void ExamplePowertoy::save_settings() {
 
 ## Add a new PowerToy to the Installer
 
-In the `installer` folder, open the `PowerToysSetup.sln` solution.
+In the `installer` folder, open the `PowerToysSetup.slnx` solution.
 Under the `PowerToysSetup` project, edit `Product.wxs`.
 You will need to add a component for your module DLL. Search for `Module_ShortcutGuide` to see where to add the component declaration and where to reference that declaration so the DLL is added to the installer.
 Each component requires a newly generated GUID (you can use the Visual Studio integrated tool to generate one).

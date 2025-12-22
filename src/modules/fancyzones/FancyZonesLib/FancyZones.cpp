@@ -728,6 +728,13 @@ LRESULT FancyZones::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lpa
         {
             FancyZonesSettings::instance().LoadSettings();
         }
+        else if (message == WM_PRIV_SAVE_EDITOR_PARAMETERS)
+        {
+            if (!EditorParameters::Save(m_workAreaConfiguration, m_dpiUnawareThread))
+            {
+                Logger::warn(L"Failed to save editor-parameters.json");
+            }
+        }
         else
         {
             return DefWindowProc(window, message, wparam, lparam);

@@ -16,7 +16,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     {
         private static readonly Lock _SettingsRepoLock = new Lock();
 
-        private static ISettingsUtils _settingsUtils;
+        private static SettingsUtils _settingsUtils;
 
         private static SettingsRepository<T> settingsRepository;
 
@@ -25,7 +25,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         // Suppressing the warning as this is a singleton class and this method is
         // necessarily static
 #pragma warning disable CA1000 // Do not declare static members on generic types
-        public static SettingsRepository<T> GetInstance(ISettingsUtils settingsUtils)
+        public static SettingsRepository<T> GetInstance(SettingsUtils settingsUtils)
 #pragma warning restore CA1000 // Do not declare static members on generic types
         {
             // To ensure that only one instance of Settings Repository is created in a multi-threaded environment.
