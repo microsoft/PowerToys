@@ -21,30 +21,33 @@ namespace ViewModelTests
         public const string GeneralSettingsFileName = "Test\\GeneralSettings";
 
         private Mock<SettingsUtils> mockGeneralSettingsUtils;
-        private Microsoft.UI.Dispatching.DispatcherQueueController _dispatcherQueueController;
 
         [TestInitialize]
         public void SetUpStubSettingUtils()
         {
             mockGeneralSettingsUtils = ISettingsUtilsMocks.GetStubSettingsUtils<GeneralSettings>();
-
-            try
-            {
-                if (Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread() == null)
-                {
-                    _dispatcherQueueController = Microsoft.UI.Dispatching.DispatcherQueueController.CreateOnCurrentThread();
-                }
-            }
-            catch (System.Runtime.InteropServices.COMException)
-            {
-                // Expected if running in a unit test where DispatcherQueue is not supported
-            }
         }
 
-        [TestCleanup]
-        public void Cleanup()
+        private sealed class TestGeneralViewModel : GeneralViewModel
         {
-            _dispatcherQueueController?.ShutdownQueueAsync();
+            public TestGeneralViewModel(
+                Microsoft.PowerToys.Settings.UI.Library.Interfaces.ISettingsRepository<GeneralSettings> settingsRepository,
+                string runAsAdminText,
+                string runAsUserText,
+                bool isElevated,
+                bool isAdmin,
+                Func<string, int> ipcMSGCallBackFunc,
+                Func<string, int> ipcMSGRestartAsAdminMSGCallBackFunc,
+                Func<string, int> ipcMSGCheckForUpdatesCallBackFunc,
+                string configFileSubfolder = "")
+                : base(settingsRepository, runAsAdminText, runAsUserText, isElevated, isAdmin, ipcMSGCallBackFunc, ipcMSGRestartAsAdminMSGCallBackFunc, ipcMSGCheckForUpdatesCallBackFunc, configFileSubfolder)
+            {
+            }
+
+            protected override Microsoft.UI.Dispatching.DispatcherQueue GetDispatcherQueue()
+            {
+                return null;
+            }
         }
 
         [TestMethod]
@@ -68,7 +71,7 @@ namespace ViewModelTests
             Func<string, int> sendMockIPCConfigMSG = msg => 0;
             Func<string, int> sendRestartAdminIPCMessage = msg => 0;
             Func<string, int> sendCheckForUpdatesIPCMessage = msg => 0;
-            var viewModel = new GeneralViewModel(
+            var viewModel = new TestGeneralViewModel(
                 settingsRepository: generalSettingsRepository,
                 runAsAdminText: "GeneralSettings_RunningAsAdminText",
                 runAsUserText: "GeneralSettings_RunningAsUserText",

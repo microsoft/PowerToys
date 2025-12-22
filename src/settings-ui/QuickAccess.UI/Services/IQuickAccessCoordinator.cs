@@ -15,8 +15,6 @@ public interface IQuickAccessCoordinator
 
     void OpenSettings();
 
-    void OpenSettingsForModule(ModuleType moduleType);
-
     void OpenGeneralSettingsForUpdates();
 
     Task<bool> ShowDocumentationAsync();

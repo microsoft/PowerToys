@@ -123,7 +123,6 @@ public sealed class AllAppsViewModel : Observable
                     Tag = moduleType,
                     Icon = Microsoft.PowerToys.Settings.UI.Library.Helpers.ModuleHelper.GetModuleTypeFluentIconName(moduleType),
                     EnabledChangedCallback = EnabledChangedOnUI,
-                    ClickCommand = new RelayCommand(() => _coordinator.OpenSettingsForModule(moduleType)),
                 });
             }
         }
@@ -163,36 +162,11 @@ public sealed class AllAppsViewModel : Observable
         if (_coordinator.UpdateModuleEnabled(item.Tag, item.IsEnabled))
         {
             _coordinator.NotifyUserSettingsInteraction();
-
-            // If sorting by status, we might want to re-sort, but that could be jarring.
-            // DashboardViewModel calls RequestConflictData but doesn't seem to re-sort immediately on toggle?
-            // Actually DashboardViewModel calls RefreshModuleList() in ModuleEnabledChangedOnSettingsPage, but that's from settings change.
-            // EnabledChangedOnUI in DashboardViewModel calls UpdateGeneralSettingsCallback.
-            // If we want to re-sort on toggle, we should call RefreshFlyoutMenuItems().
-            // But usually users don't like items jumping around when they toggle them.
-            // So let's leave it for now.
         }
     }
 
     private void ModuleEnabledChangedOnSettingsPage()
     {
-        // This is called when settings change (via OnSettingsChanged -> this).
-        // But OnSettingsChanged already calls RefreshFlyoutMenuItems.
-        // However, ModuleEnabledChangedOnSettingsPage is also passed as a callback to GeneralSettings.
-        // Wait, GeneralSettings.AddEnabledModuleChangeNotification adds it to a list.
-        // But GeneralSettings is just a data object. Who calls the notification?
-        // It seems GeneralSettings doesn't have logic to call it itself unless something calls it.
-        // In DashboardViewModel, it's called in OnSettingsChanged.
-
-        // In my implementation of OnSettingsChanged, I call RefreshFlyoutMenuItems directly.
-        // So I might not need ModuleEnabledChangedOnSettingsPage to do much, or I can remove it if I don't use the callback mechanism inside GeneralSettings (which seems to be for internal notification within the object, but GeneralSettings is just a POCO-like object with some logic).
-
-        // Actually, let's look at DashboardViewModel again.
-        // It adds ModuleEnabledChangedOnSettingsPage to generalSettingsConfig.AddEnabledModuleChangeNotification.
-        // And OnSettingsChanged calls ModuleEnabledChangedOnSettingsPage.
-
-        // I'll stick to calling RefreshFlyoutMenuItems in OnSettingsChanged.
-        // And I'll keep ModuleEnabledChangedOnSettingsPage for compatibility if needed, but maybe just redirect it.
         RefreshFlyoutMenuItems();
     }
 }

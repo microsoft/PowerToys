@@ -115,14 +115,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             _settingsRepository = settingsRepository;
             _settingsRepository.SettingsChanged += OnSettingsChanged;
-            try
-            {
-                _dispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread();
-            }
-            catch (System.Runtime.InteropServices.COMException)
-            {
-                // Expected if running in a unit test
-            }
+            _dispatcherQueue = GetDispatcherQueue();
 
             GeneralSettingsConfig = settingsRepository.SettingsConfig;
             UpdatingSettingsConfig = UpdatingSettings.LoadSettings();
@@ -1541,6 +1534,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
 
             GC.SuppressFinalize(this);
+        }
+
+        protected virtual Microsoft.UI.Dispatching.DispatcherQueue GetDispatcherQueue()
+        {
+            return Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread();
         }
     }
 }
