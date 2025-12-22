@@ -43,28 +43,6 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
 
     public string Subtitle { get; private set; } = string.Empty;
 
-    private FuzzyMatchTarget? _normalizedTitle;
-
-    private FuzzyMatchTarget? _normalizedSubtitle;
-
-    public FuzzyMatchTarget NormalizedTitle
-    {
-        get
-        {
-            _normalizedTitle ??= new FuzzyMatchTarget(Title);
-            return _normalizedTitle!.Value;
-        }
-    }
-
-    public FuzzyMatchTarget NormalizedSubtitle
-    {
-        get
-        {
-            _normalizedSubtitle ??= new FuzzyMatchTarget(Subtitle);
-            return _normalizedSubtitle!.Value;
-        }
-    }
-
     private IconInfoViewModel _icon = new(null);
 
     public IconInfoViewModel Icon => _icon.IsSet ? _icon : Command.Icon;
@@ -341,22 +319,16 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
                 UpdateProperty(nameof(Name));
                 UpdateProperty(nameof(Title));
                 UpdateProperty(nameof(Icon));
-                _normalizedTitle = null;
-                UpdateProperty(nameof(NormalizedTitle));
                 break;
 
             case nameof(Title):
                 _itemTitle = model.Title;
-                _normalizedTitle = null;
-                UpdateProperty(nameof(NormalizedTitle));
                 break;
 
             case nameof(Subtitle):
                 var modelSubtitle = model.Subtitle;
                 this.Subtitle = modelSubtitle;
                 _defaultCommandContextItemViewModel?.Subtitle = modelSubtitle;
-                _normalizedSubtitle = null;
-                UpdateProperty(nameof(NormalizedSubtitle));
                 break;
 
             case nameof(Icon):
@@ -429,8 +401,6 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
                 // or Command.Name change. This is a workaround to ensure that the Title is always up-to-date for extensions with old SDK.
                 _itemTitle = model.Title;
                 UpdateProperty(nameof(Title), nameof(Name));
-                _normalizedTitle = null;
-                UpdateProperty(nameof(NormalizedTitle));
 
                 _defaultCommandContextItemViewModel?.UpdateTitle(model.Command.Name);
                 break;
@@ -452,8 +422,6 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
     {
         _itemTitle = title ?? string.Empty;
         UpdateProperty(nameof(Title));
-        _normalizedTitle = null;
-        UpdateProperty(nameof(NormalizedTitle));
     }
 
     private void UpdateIcon(IIconInfo? iconInfo)

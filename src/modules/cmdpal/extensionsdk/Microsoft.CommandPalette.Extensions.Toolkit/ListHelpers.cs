@@ -4,7 +4,7 @@
 
 namespace Microsoft.CommandPalette.Extensions.Toolkit;
 
-public static partial class ListHelpers
+public partial class ListHelpers
 {
     // Generate a score for a list item.
     public static int ScoreListItem(string query, ICommandItem listItem)
@@ -48,22 +48,7 @@ public static partial class ListHelpers
                 .Select(score => score.Item);
     }
 
-    public static IEnumerable<T> FilterList<T>(IEnumerable<T> items, FuzzyMatchQuery query, Func<FuzzyMatchQuery, T, int> scoreFunction)
-    {
-        return FilterListWithScores<T>(items, query, scoreFunction)
-            .Select(score => score.Item);
-    }
-
     public static IEnumerable<Scored<T>> FilterListWithScores<T>(IEnumerable<T> items, string query, Func<string, T, int> scoreFunction)
-    {
-        var scores = items
-            .Select(li => new Scored<T>() { Item = li, Score = scoreFunction(query, li) })
-            .Where(score => score.Score > 0)
-            .OrderByDescending(score => score.Score);
-        return scores;
-    }
-
-    public static IEnumerable<Scored<T>> FilterListWithScores<T>(IEnumerable<T> items, FuzzyMatchQuery query, Func<FuzzyMatchQuery, T, int> scoreFunction)
     {
         var scores = items
             .Select(li => new Scored<T>() { Item = li, Score = scoreFunction(query, li) })

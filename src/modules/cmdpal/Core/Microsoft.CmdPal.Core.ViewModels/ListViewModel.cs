@@ -398,25 +398,30 @@ public partial class ListViewModel : PageViewModel, IDisposable
     /// subtitle, etc. Largely a copy of the version in ListHelpers, but
     /// operating on ViewModels instead of extension objects.
     /// </summary>
-    private static int ScoreListItem(FuzzyMatchQuery query, CommandItemViewModel listItem)
+    private static int ScoreListItem(string query, CommandItemViewModel listItem)
     {
-        if (string.IsNullOrEmpty(query.Original))
+        if (string.IsNullOrEmpty(query))
         {
             return 1;
         }
 
-        var nameMatch = FuzzyStringMatcher.Match(query, listItem.NormalizedTitle);
-        var descriptionMatch = FuzzyStringMatcher.Match(query, listItem.NormalizedSubtitle);
+        var nameMatch = FuzzyStringMatcher.ScoreFuzzy(query, listItem.Title);
+        var descriptionMatch = FuzzyStringMatcher.ScoreFuzzy(query, listItem.Subtitle);
         return new[] { nameMatch, (descriptionMatch - 4) / 2, 0 }.Max();
     }
 
-    // Similarly stolen from ListHelpers.FilterList
-    private static IEnumerable<ListItemViewModel> FilterList(IEnumerable<ListItemViewModel> items, string query)
+    private struct ScoredListItemViewModel
     {
-        var fuzzyQuery = new FuzzyMatchQuery(query);
+        public int Score;
+        public ListItemViewModel ViewModel;
+    }
+
+    // Similarly stolen from ListHelpers.FilterList
+    public static IEnumerable<ListItemViewModel> FilterList(IEnumerable<ListItemViewModel> items, string query)
+    {
         var scores = items
             .Where(i => !i.IsInErrorState)
-            .Select(li => new ScoredListItemViewModel { ViewModel = li, Score = ScoreListItem(fuzzyQuery, li) })
+            .Select(li => new ScoredListItemViewModel() { ViewModel = li, Score = ScoreListItem(query, li) })
             .Where(score => score.Score > 0)
             .OrderByDescending(score => score.Score);
         return scores
@@ -789,11 +794,5 @@ public partial class ListViewModel : PageViewModel, IDisposable
         {
             model.ItemsChanged -= Model_ItemsChanged;
         }
-    }
-
-    private struct ScoredListItemViewModel
-    {
-        public int Score;
-        public ListItemViewModel ViewModel;
     }
 }

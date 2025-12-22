@@ -41,9 +41,6 @@ public partial class MainListPage : DynamicListPage,
 
     private readonly IServiceProvider _serviceProvider;
     private readonly TopLevelCommandManager _tlcManager;
-    private readonly RecentCommandsManager _recentCommands;
-    private readonly Func<FuzzyMatchQuery, IListItem, int> _scoringFunction;
-
     private List<Scored<IListItem>>? _filteredItems;
     private List<Scored<IListItem>>? _filteredApps;
     private List<Scored<IListItem>>? _fallbackItems;
@@ -63,9 +60,6 @@ public partial class MainListPage : DynamicListPage,
         Icon = IconHelpers.FromRelativePath("Assets\\StoreLogo.scale-200.png");
         PlaceholderText = Properties.Resources.builtin_main_list_page_searchbar_placeholder;
         _serviceProvider = serviceProvider;
-
-        _recentCommands = _serviceProvider.GetService<AppStateModel>()!.RecentCommands;
-        _scoringFunction = (a, b) => ScoreTopLevelItem(a, b, _recentCommands);
 
         _tlcManager = _serviceProvider.GetService<TopLevelCommandManager>()!;
         _tlcManager.PropertyChanged += TlcManager_PropertyChanged;
@@ -373,14 +367,15 @@ public partial class MainListPage : DynamicListPage,
 
                 if (_includeApps)
                 {
-                    var allNewApps = AllAppsCommandProvider.Page.GetItems().Cast<AppListItem>().ToList();
+                    var allNewApps = AllAppsCommandProvider.Page.GetItems().ToList();
 
                     // We need to remove pinned apps from allNewApps so they don't show twice.
                     var pinnedApps = PinnedAppsManager.Instance.GetPinnedAppIdentifiers();
 
                     if (pinnedApps.Length > 0)
                     {
-                        newApps = allNewApps.Where(w => pinnedApps.IndexOf(w.AppIdentifier) < 0);
+                        newApps = allNewApps.Where(w =>
+                            pinnedApps.IndexOf(((AppListItem)w).AppIdentifier) < 0);
                     }
                     else
                     {
@@ -394,24 +389,25 @@ public partial class MainListPage : DynamicListPage,
                 }
             }
 
-            var query = new FuzzyMatchQuery(SearchText);
+            var history = _serviceProvider.GetService<AppStateModel>()!.RecentCommands!;
+            Func<string, IListItem, int> scoreItem = (a, b) => { return ScoreTopLevelItem(a, b, history); };
 
             // Produce a list of everything that matches the current filter.
-            _filteredItems = [.. ListHelpers.FilterListWithScores(newFilteredItems ?? [], query, _scoringFunction)];
+            _filteredItems = [.. ListHelpers.FilterListWithScores<IListItem>(newFilteredItems ?? [], SearchText, scoreItem)];
 
             if (token.IsCancellationRequested)
             {
                 return;
             }
 
-            var newFallbacksForScoring = commands.Where(s => s.IsFallback && _specialFallbacks.Contains(s.CommandProviderId));
+            IEnumerable<IListItem> newFallbacksForScoring = commands.Where(s => s.IsFallback && _specialFallbacks.Contains(s.CommandProviderId));
 
             if (token.IsCancellationRequested)
             {
                 return;
             }
 
-            _scoredFallbackItems = ListHelpers.FilterListWithScores(newFallbacksForScoring ?? [], query, _scoringFunction);
+            _scoredFallbackItems = ListHelpers.FilterListWithScores<IListItem>(newFallbacksForScoring ?? [], SearchText, scoreItem);
 
             if (token.IsCancellationRequested)
             {
@@ -429,7 +425,7 @@ public partial class MainListPage : DynamicListPage,
             // Produce a list of filtered apps with the appropriate limit
             if (newApps.Any())
             {
-                var scoredApps = ListHelpers.FilterListWithScores(newApps, query, _scoringFunction);
+                var scoredApps = ListHelpers.FilterListWithScores<IListItem>(newApps, SearchText, scoreItem);
 
                 if (token.IsCancellationRequested)
                 {
@@ -496,7 +492,7 @@ public partial class MainListPage : DynamicListPage,
     // Almost verbatim ListHelpers.ScoreListItem, but also accounting for the
     // fact that we want fallback handlers down-weighted, so that they don't
     // _always_ show up first.
-    internal static int ScoreTopLevelItem(FuzzyMatchQuery query, IListItem topLevelOrAppItem, IRecentCommandsManager history)
+    internal static int ScoreTopLevelItem(string query, IListItem topLevelOrAppItem, IRecentCommandsManager history)
     {
         var title = topLevelOrAppItem.Title;
         if (string.IsNullOrWhiteSpace(title))
@@ -504,38 +500,25 @@ public partial class MainListPage : DynamicListPage,
             return 0;
         }
 
-        FuzzyMatchTarget normalizedTitle;
-        FuzzyMatchTarget normalizedSubtitle;
-        if (topLevelOrAppItem is INormalizedTitles normalized)
-        {
-            normalizedTitle = normalized.NormalizedTitle;
-            normalizedSubtitle = normalized.NormalizedSubtitle;
-        }
-        else
-        {
-            normalizedTitle = new FuzzyMatchTarget(title);
-            normalizedSubtitle = new FuzzyMatchTarget(topLevelOrAppItem.Subtitle);
-        }
-
-        var isWhiteSpace = string.IsNullOrWhiteSpace(query.Original);
+        var isWhiteSpace = string.IsNullOrWhiteSpace(query);
 
         var isFallback = false;
         var isAliasSubstringMatch = false;
         var isAliasMatch = false;
         var id = IdForTopLevelOrAppItem(topLevelOrAppItem);
 
-        FuzzyMatchTarget? extensionDisplayName = null;
+        var extensionDisplayName = string.Empty;
         if (topLevelOrAppItem is TopLevelViewModel topLevel)
         {
             isFallback = topLevel.IsFallback;
             if (topLevel.HasAlias)
             {
                 var alias = topLevel.AliasText;
-                isAliasMatch = alias == query.Original;
-                isAliasSubstringMatch = isAliasMatch || alias.StartsWith(query.Original, StringComparison.CurrentCultureIgnoreCase);
+                isAliasMatch = alias == query;
+                isAliasSubstringMatch = isAliasMatch || alias.StartsWith(query, StringComparison.CurrentCultureIgnoreCase);
             }
 
-            extensionDisplayName = topLevel.NormalizedExtensionName;
+            extensionDisplayName = topLevel.ExtensionHost?.Extension?.PackageDisplayName ?? string.Empty;
         }
 
         // StringMatcher.FuzzySearch will absolutely BEEF IT if you give it a
@@ -548,23 +531,21 @@ public partial class MainListPage : DynamicListPage,
         // Title:
         // * whitespace query: 1 point
         // * otherwise full weight match
-        var nameMatch = isWhiteSpace
-            ? (title.Contains(query.Original, StringComparison.OrdinalIgnoreCase) ? 1 : 0)
-            : FuzzyStringMatcher.Match(query, normalizedTitle);
+        var nameMatch = isWhiteSpace ?
+            (title.Contains(query) ? 1 : 0) :
+               FuzzyStringMatcher.ScoreFuzzy(query, title);
 
         // Subtitle:
         // * whitespace query: 1/2 point
         // * otherwise ~half weight match. Minus a bit, because subtitles tend to be longer
-        var descriptionMatch = isWhiteSpace
-            ? (topLevelOrAppItem.Subtitle.Contains(query.Original, StringComparison.OrdinalIgnoreCase) ? .5 : 0)
-            : (FuzzyStringMatcher.Match(query, normalizedSubtitle) - 4) / 2.0;
+        var descriptionMatch = isWhiteSpace ?
+            (topLevelOrAppItem.Subtitle.Contains(query) ? .5 : 0) :
+            (FuzzyStringMatcher.ScoreFuzzy(query, topLevelOrAppItem.Subtitle) - 4) / 2.0;
 
         // Extension title: despite not being visible, give the extension name itself some weight
         // * whitespace query: 0 points
         // * otherwise more weight than a subtitle, but not much
-        var extensionTitleMatch = !isWhiteSpace && extensionDisplayName is not null
-            ? FuzzyStringMatcher.Match(query, extensionDisplayName.Value) / 1.5
-            : 0;
+        var extensionTitleMatch = isWhiteSpace ? 0 : FuzzyStringMatcher.ScoreFuzzy(query, extensionDisplayName) / 1.5;
 
         var scores = new[]
         {

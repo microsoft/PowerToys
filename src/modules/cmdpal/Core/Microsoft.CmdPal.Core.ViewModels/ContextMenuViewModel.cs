@@ -107,11 +107,9 @@ public partial class ContextMenuViewModel : ObservableObject,
             return 0;
         }
 
-        var q = new FuzzyMatchQuery(query);
+        var nameMatch = FuzzyStringMatcher.ScoreFuzzy(query, item.Title);
 
-        var nameMatch = FuzzyStringMatcher.Match(q, item.NormalizedTitle);
-
-        var descriptionMatch = FuzzyStringMatcher.Match(q, item.NormalizedSubtitle);
+        var descriptionMatch = FuzzyStringMatcher.ScoreFuzzy(query, item.Subtitle);
 
         return new[] { nameMatch, (descriptionMatch - 4) / 2, 0 }.Max();
     }
