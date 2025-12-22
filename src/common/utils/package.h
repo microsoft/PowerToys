@@ -6,13 +6,8 @@
 #include <exception>
 #include <string>
 #include <Shlwapi.h>
-#include <wrl/client.h>
-
 
 #include "../logger/logger.h"
-
-using namespace winrt::Windows::Foundation;
-using Microsoft::WRL::ComPtr;
 
 struct PACKAGE_VERSION
 {
@@ -51,6 +46,7 @@ __declspec(dllexport) EXTERN_C bool GetPackageNameAndVersionFromAppx(
     std::wstring& outName,
     PACKAGE_VERSION& outVersion)
 {
+    using namespace winrt::Windows::Foundation;
     try
     {
         ComInitializer comInit;
