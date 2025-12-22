@@ -65,7 +65,7 @@ stages:
             timeoutInMinutes: 90
 
   - stage: Build_SDK
-    displayName: Build SDK
+    displayName: Build Command Palette Toolkit SDK
     dependsOn: []
     jobs:
       - template: job-build-sdk.yml
