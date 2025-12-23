@@ -16,36 +16,10 @@ class EventWaiter
 public:
     EventWaiter() = default;
 
-    EventWaiter(const std::wstring& name, std::function<void(DWORD)> callback)
-    {
-        start(name, std::move(callback));
-    }
-
-    EventWaiter(EventWaiter&) = delete;
-    EventWaiter& operator=(EventWaiter&) = delete;
-
-    EventWaiter(EventWaiter&& other) noexcept
-    {
-        *this = std::move(other);
-    }
-
-    EventWaiter& operator=(EventWaiter&& other) noexcept
-    {
-        if (this != &other)
-        {
-            stop();
-
-            m_exitThreadEvent = other.m_exitThreadEvent;
-            m_waitingEvent = other.m_waitingEvent;
-            m_eventThread = std::move(other.m_eventThread);
-            m_listening.store(other.m_listening.load());
-
-            other.m_exitThreadEvent = nullptr;
-            other.m_waitingEvent = nullptr;
-            other.m_listening = false;
-        }
-        return *this;
-    }
+    EventWaiter(const EventWaiter&) = delete;
+    EventWaiter& operator=(const EventWaiter&) = delete;
+    EventWaiter(EventWaiter&&) = delete;
+    EventWaiter& operator=(EventWaiter&&) = delete;
 
     ~EventWaiter()
     {

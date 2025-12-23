@@ -141,7 +141,7 @@ public:
         std::thread([=]() { MouseHighlighterMain(m_hModule, m_highlightSettings); }).detach();
 
         // Start listening for external trigger event so we can invoke the same logic as the hotkey.
-        m_triggerEventWaiter = EventWaiter(CommonSharedConstants::MOUSE_HIGHLIGHTER_TRIGGER_EVENT, [this](int) {
+        m_triggerEventWaiter.start(CommonSharedConstants::MOUSE_HIGHLIGHTER_TRIGGER_EVENT, [this](DWORD) {
             OnHotkeyEx();
         });
     }

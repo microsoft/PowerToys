@@ -207,7 +207,7 @@ public:
         std::thread([=]() { InclusiveCrosshairsMain(m_hModule, m_inclusiveCrosshairsSettings); }).detach();
 
         // Start listening for external trigger event so we can invoke the same logic as the activation hotkey.
-        m_triggerEventWaiter = EventWaiter(CommonSharedConstants::MOUSE_CROSSHAIRS_TRIGGER_EVENT, [this](int) {
+        m_triggerEventWaiter.start(CommonSharedConstants::MOUSE_CROSSHAIRS_TRIGGER_EVENT, [this](DWORD) {
             on_hotkey(0); // activation hotkey
         });
     }

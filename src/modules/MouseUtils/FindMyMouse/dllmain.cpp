@@ -159,7 +159,7 @@ public:
         std::thread([=]() { FindMyMouseMain(m_hModule, m_findMyMouseSettings); }).detach();
 
         // Start listening for external trigger event so we can invoke the same logic as the hotkey.
-        m_triggerEventWaiter = EventWaiter(CommonSharedConstants::FIND_MY_MOUSE_TRIGGER_EVENT, [this](int) {
+        m_triggerEventWaiter.start(CommonSharedConstants::FIND_MY_MOUSE_TRIGGER_EVENT, [this](DWORD) {
             OnHotkeyEx();
         });
     }

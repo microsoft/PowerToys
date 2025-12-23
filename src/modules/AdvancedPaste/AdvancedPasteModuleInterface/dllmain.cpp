@@ -786,7 +786,8 @@ public:
         m_process_manager.start();
 
         // Start listening for external trigger event so we can invoke the same logic as the hotkey.
-        m_triggerEventWaiter = EventWaiter(CommonSharedConstants::ADVANCED_PASTE_SHOW_UI_EVENT, [this](int) {
+        // Note: Use start() directly instead of constructor + move assignment to avoid dangling this pointer in the thread.
+        m_triggerEventWaiter.start(CommonSharedConstants::ADVANCED_PASTE_SHOW_UI_EVENT, [this](DWORD) {
             // Same logic as hotkeyId == 1 (m_advanced_paste_ui_hotkey)
             Logger::trace(L"AdvancedPaste ShowUI event triggered");
             m_process_manager.start();
