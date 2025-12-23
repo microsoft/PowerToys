@@ -7,12 +7,13 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
 using System.Text.Json;
+using FancyZonesEditorCommon.Data;
 
 namespace FancyZonesCLI;
 
 public static class LayoutVisualizer
 {
-    public static string DrawTemplateLayout(TemplateLayout template)
+    public static string DrawTemplateLayout(LayoutTemplates.TemplateLayoutWrapper template)
     {
         var sb = new StringBuilder();
         sb.AppendLine("    Visual Preview:");
@@ -62,7 +63,7 @@ public static class LayoutVisualizer
         return sb.ToString();
     }
 
-    public static string DrawCustomLayout(CustomLayout layout)
+    public static string DrawCustomLayout(CustomLayouts.CustomLayoutWrapper layout)
     {
         if (layout.Info.ValueKind == JsonValueKind.Undefined || layout.Info.ValueKind == JsonValueKind.Null)
         {
@@ -426,6 +427,11 @@ public static class LayoutVisualizer
         const int displayWidth = 49;
         const int displayHeight = 15;
 
+        if (refWidth <= 0 || refHeight <= 0)
+        {
+            return string.Empty;
+        }
+
         // Create a 2D array to track which zones occupy each position
         var zoneGrid = new List<int>[displayHeight, displayWidth];
         for (int i = 0; i < displayHeight; i++)
@@ -442,10 +448,13 @@ public static class LayoutVisualizer
 
         foreach (var zone in zones.EnumerateArray())
         {
-            int x = zone.GetProperty("X").GetInt32();
-            int y = zone.GetProperty("Y").GetInt32();
-            int w = zone.GetProperty("width").GetInt32();
-            int h = zone.GetProperty("height").GetInt32();
+            if (!TryGetInt32Property(zone, "x", "X", out int x) ||
+                !TryGetInt32Property(zone, "y", "Y", out int y) ||
+                !TryGetInt32Property(zone, "width", "Width", out int w) ||
+                !TryGetInt32Property(zone, "height", "Height", out int h))
+            {
+                continue;
+            }
 
             int dx = Math.Max(0, Math.Min(displayWidth - 1, x * displayWidth / refWidth));
             int dy = Math.Max(0, Math.Min(displayHeight - 1, y * displayHeight / refHeight));
@@ -546,5 +555,24 @@ public static class LayoutVisualizer
 
         sb.AppendLine();
         return sb.ToString();
+    }
+
+    private static bool TryGetInt32Property(JsonElement element, string primaryName, string fallbackName, out int value)
+    {
+        if (element.TryGetProperty(primaryName, out var property) || element.TryGetProperty(fallbackName, out property))
+        {
+            if (property.ValueKind == JsonValueKind.Number)
+            {
+                return property.TryGetInt32(out value);
+            }
+
+            if (property.ValueKind == JsonValueKind.String)
+            {
+                return int.TryParse(property.GetString(), NumberStyles.Integer, CultureInfo.InvariantCulture, out value);
+            }
+        }
+
+        value = default;
+        return false;
     }
 }

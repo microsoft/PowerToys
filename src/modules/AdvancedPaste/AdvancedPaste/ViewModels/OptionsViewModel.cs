@@ -46,6 +46,7 @@ namespace AdvancedPaste.ViewModels
         private CancellationTokenSource _pasteActionCancellationTokenSource;
 
         private string _currentClipboardHistoryId;
+        private uint _lastClipboardSequenceNumber;
         private DateTimeOffset? _currentClipboardTimestamp;
         private ClipboardFormat _lastClipboardFormats = ClipboardFormat.None;
         private bool _clipboardHistoryUnavailableLogged;
@@ -456,6 +457,7 @@ namespace AdvancedPaste.ViewModels
             {
                 ResetClipboardPreview();
                 _currentClipboardHistoryId = null;
+                _lastClipboardSequenceNumber = 0;
                 _currentClipboardTimestamp = null;
                 _lastClipboardFormats = ClipboardFormat.None;
                 return;
@@ -477,6 +479,13 @@ namespace AdvancedPaste.ViewModels
         private async Task<bool> UpdateClipboardTimestampAsync(bool formatsChanged)
         {
             bool clipboardChanged = formatsChanged;
+
+            var currentSequenceNumber = NativeMethods.GetClipboardSequenceNumber();
+            if (_lastClipboardSequenceNumber != currentSequenceNumber)
+            {
+                clipboardChanged = true;
+                _lastClipboardSequenceNumber = currentSequenceNumber;
+            }
 
             if (Clipboard.IsHistoryEnabled())
             {

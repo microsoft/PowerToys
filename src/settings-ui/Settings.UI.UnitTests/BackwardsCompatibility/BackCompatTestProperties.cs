@@ -27,10 +27,10 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests.BackwardsCompatibility
         internal sealed class MockSettingsRepository<T> : ISettingsRepository<T>
             where T : ISettingsConfig, new()
         {
-            private readonly ISettingsUtils _settingsUtils;
+            private readonly SettingsUtils _settingsUtils;
             private T _settingsConfig;
 
-            public MockSettingsRepository(ISettingsUtils settingsUtils)
+            public MockSettingsRepository(SettingsUtils settingsUtils)
             {
                 _settingsUtils = settingsUtils;
             }

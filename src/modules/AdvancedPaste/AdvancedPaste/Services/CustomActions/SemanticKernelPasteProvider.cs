@@ -66,11 +66,17 @@ namespace AdvancedPaste.Services.CustomActions
 
             var prompt = request.Prompt;
             var inputText = request.InputText;
-            if (string.IsNullOrWhiteSpace(prompt) || string.IsNullOrWhiteSpace(inputText))
+            var imageBytes = request.ImageBytes;
+
+            if (string.IsNullOrWhiteSpace(prompt) || (string.IsNullOrWhiteSpace(inputText) && imageBytes is null))
             {
-                throw new ArgumentException("Prompt and input text must be provided", nameof(request));
+                throw new ArgumentException("Prompt and input content must be provided", nameof(request));
             }
 
+<<<<<<< HEAD
+=======
+            var executionSettings = CreateExecutionSettings();
+>>>>>>> main
             var kernel = CreateKernel();
 
             switch (_config.Usage)
@@ -155,7 +161,32 @@ namespace AdvancedPaste.Services.CustomActions
 
             var chatHistory = new ChatHistory();
             chatHistory.AddSystemMessage(systemPrompt);
-            chatHistory.AddUserMessage(userMessageContent);
+
+            if (imageBytes != null)
+            {
+                var collection = new ChatMessageContentItemCollection();
+                if (!string.IsNullOrWhiteSpace(inputText))
+                {
+                    collection.Add(new TextContent($"Clipboard Content:\n{inputText}"));
+                }
+
+                collection.Add(new ImageContent(imageBytes, request.ImageMimeType ?? "image/png"));
+                collection.Add(new TextContent($"User instructions:\n{prompt}\n\nOutput:"));
+                chatHistory.AddUserMessage(collection);
+            }
+            else
+            {
+                var userMessageContent = $"""
+                    User instructions:
+                    {prompt}
+
+                    Clipboard Content:
+                    {inputText}
+
+                    Output:
+                    """;
+                chatHistory.AddUserMessage(userMessageContent);
+            }
 
             var response = await chatService.GetChatMessageContentAsync(chatHistory, executionSettings, kernel, cancellationToken);
             chatHistory.Add(response);

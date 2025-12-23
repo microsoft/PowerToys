@@ -15,13 +15,14 @@ namespace Microsoft.CmdPal.Ext.WebSearch;
 
 internal sealed partial class FallbackOpenURLItem : FallbackCommandItem
 {
+    private const string _id = "com.microsoft.cmdpal.builtin.websearch.openurl.fallback";
     private readonly IBrowserInfoService _browserInfoService;
     private readonly OpenURLCommand _executeItem;
     private static readonly CompositeFormat PluginOpenURL = System.Text.CompositeFormat.Parse(Properties.Resources.plugin_open_url);
     private static readonly CompositeFormat PluginOpenUrlInBrowser = System.Text.CompositeFormat.Parse(Properties.Resources.plugin_open_url_in_browser);
 
     public FallbackOpenURLItem(ISettingsInterface settings, IBrowserInfoService browserInfoService)
-        : base(new OpenURLCommand(string.Empty, browserInfoService), Resources.open_url_fallback_title)
+        : base(new OpenURLCommand(string.Empty, browserInfoService), Resources.open_url_fallback_title, _id)
     {
         ArgumentNullException.ThrowIfNull(browserInfoService);
 
