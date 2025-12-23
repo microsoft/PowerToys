@@ -73,10 +73,7 @@ namespace AdvancedPaste.Services.CustomActions
                 throw new ArgumentException("Prompt and input content must be provided", nameof(request));
             }
 
-<<<<<<< HEAD
-=======
             var executionSettings = CreateExecutionSettings();
->>>>>>> main
             var kernel = CreateKernel();
 
             switch (_config.Usage)
