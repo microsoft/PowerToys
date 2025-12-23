@@ -1,0 +1,4 @@
+﻿#nullable enable
+Microsoft.CommandPalette.Extensions.Toolkit.FallbackCommandItem.FallbackCommandItem(string! displayTitle) -> void
+static Microsoft.CommandPalette.Extensions.Toolkit.FuzzyStringMatcher.ChinesePinYinSupport.get -> bool
+static Microsoft.CommandPalette.Extensions.Toolkit.FuzzyStringMatcher.ScoreAllFuzzyWithPositions(string! needle, string! haystack, bool allowNonContiguousMatches) -> System.Collections.Generic.IEnumerable<(int Score, System.Collections.Generic.List<int>! Positions)>!
