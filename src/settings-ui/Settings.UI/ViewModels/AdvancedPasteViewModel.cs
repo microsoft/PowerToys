@@ -949,6 +949,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             target.ModerationEnabled = source.ModerationEnabled;
             target.EnableAdvancedAI = source.EnableAdvancedAI;
             target.IsLocalModel = source.IsLocalModel;
+            target.Usage = source.Usage;
         }
 
         private void RemovePasteAICredentials(string providerId, string serviceType)

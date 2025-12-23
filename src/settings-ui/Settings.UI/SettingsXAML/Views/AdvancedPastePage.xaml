@@ -493,6 +493,19 @@
                         Margin="0,8,0,48"
                         Orientation="Vertical"
                         Spacing="16">
+                        <ComboBox
+                            x:Name="PasteAIUsageComboBox"
+                            x:Uid="AdvancedPaste_Usage"
+                            MinWidth="200"
+                            HorizontalAlignment="Stretch"
+                            Header="Usage"
+                            SelectedValuePath="Tag"
+                            SelectedValue="{x:Bind ViewModel.PasteAIProviderDraft.Usage, Mode=TwoWay}"
+                            SelectionChanged="PasteAIUsageComboBox_SelectionChanged"
+                            Visibility="{x:Bind GetUsageVisibility(ViewModel.PasteAIProviderDraft.ServiceType), Mode=OneWay}">
+                            <ComboBoxItem Content="Chat Completion" Tag="ChatCompletion" />
+                            <ComboBoxItem Content="Text to Image" Tag="TextToImage" />
+                        </ComboBox>
                         <TextBox
                             x:Name="PasteAIModelNameTextBox"
                             x:Uid="AdvancedPaste_ModelName"

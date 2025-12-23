@@ -303,6 +303,38 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             System.Diagnostics.Debug.WriteLine($"{configType} API key saved successfully");
         }
 
+        public Visibility GetUsageVisibility(string serviceType)
+        {
+            if (string.IsNullOrEmpty(serviceType))
+            {
+                return Visibility.Collapsed;
+            }
+
+            return (serviceType.Equals("OpenAI", StringComparison.OrdinalIgnoreCase) ||
+                    serviceType.Equals("AzureOpenAI", StringComparison.OrdinalIgnoreCase))
+                   ? Visibility.Visible
+                   : Visibility.Collapsed;
+        }
+
+        private void PasteAIUsageComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (ViewModel?.PasteAIProviderDraft == null)
+            {
+                return;
+            }
+
+            var comboBox = (ComboBox)sender;
+            if (comboBox.SelectedValue is string usage && usage == "TextToImage")
+            {
+                ViewModel.PasteAIProviderDraft.EnableAdvancedAI = false;
+                PasteAIEnableAdvancedAICheckBox.IsEnabled = false;
+            }
+            else
+            {
+                PasteAIEnableAdvancedAICheckBox.IsEnabled = true;
+            }
+        }
+
         private void UpdatePasteAIUIVisibility()
         {
             var draft = ViewModel?.PasteAIProviderDraft;
@@ -345,6 +377,16 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             PasteAIEnableAdvancedAICheckBox.Visibility = showAdvancedAI ? Visibility.Visible : Visibility.Collapsed;
             PasteAIApiKeyPasswordBox.Visibility = requiresApiKey ? Visibility.Visible : Visibility.Collapsed;
             PasteAIModelNameTextBox.Visibility = isFoundryLocal ? Visibility.Collapsed : Visibility.Visible;
+
+            if (draft.Usage == "TextToImage")
+            {
+                draft.EnableAdvancedAI = false;
+                PasteAIEnableAdvancedAICheckBox.IsEnabled = false;
+            }
+            else
+            {
+                PasteAIEnableAdvancedAICheckBox.IsEnabled = true;
+            }
 
             if (requiresApiKey)
             {

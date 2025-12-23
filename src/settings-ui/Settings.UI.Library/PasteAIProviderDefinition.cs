@@ -17,6 +17,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     {
         private string _id = Guid.NewGuid().ToString("N");
         private string _serviceType = "OpenAI";
+        private string _usage = "ChatCompletion";
         private string _modelName = string.Empty;
         private string _endpointUrl = string.Empty;
         private string _apiVersion = string.Empty;
@@ -48,6 +49,20 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                     OnPropertyChanged(nameof(DisplayName));
                 }
             }
+        }
+
+        [JsonPropertyName("usage")]
+        public string Usage
+        {
+            get => _usage;
+            set => SetProperty(ref _usage, string.IsNullOrWhiteSpace(value) ? "ChatCompletion" : value); // TODO: Localization support
+        }
+
+        [JsonIgnore]
+        public PasteAIUsage UsageKind
+        {
+            get => PasteAIUsageExtensions.FromConfigString(Usage);
+            set => Usage = value.ToConfigString();
         }
 
         [JsonIgnore]
@@ -142,6 +157,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             {
                 Id = Id,
                 ServiceType = ServiceType,
+                Usage = Usage,
                 ModelName = ModelName,
                 EndpointUrl = EndpointUrl,
                 ApiVersion = ApiVersion,

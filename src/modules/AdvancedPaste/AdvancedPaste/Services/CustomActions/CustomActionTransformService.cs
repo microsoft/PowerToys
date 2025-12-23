@@ -166,6 +166,7 @@ namespace AdvancedPaste.Services.CustomActions
                 ModelPath = provider.ModelPath,
                 SystemPrompt = systemPrompt,
                 ModerationEnabled = provider.ModerationEnabled,
+                Usage = provider.UsageKind,
             };
 
             return providerConfig;

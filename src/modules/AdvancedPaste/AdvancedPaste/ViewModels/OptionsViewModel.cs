@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Globalization;
+using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -605,7 +606,39 @@ namespace AdvancedPaste.ViewModels
         }
 
         [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(HasCustomFormatImage))]
+        [NotifyPropertyChangedFor(nameof(HasCustomFormatText))]
+        [NotifyPropertyChangedFor(nameof(CustomFormatImageResult))]
         private string _customFormatResult;
+
+        public bool HasCustomFormatImage => CustomFormatResult?.StartsWith("data:image", StringComparison.OrdinalIgnoreCase) ?? false;
+
+        public bool HasCustomFormatText => !HasCustomFormatImage;
+
+        public ImageSource CustomFormatImageResult
+        {
+            get
+            {
+                if (HasCustomFormatImage && !string.IsNullOrEmpty(CustomFormatResult))
+                {
+                    try
+                    {
+                        var base64Data = CustomFormatResult.Split(',')[1];
+                        var bytes = Convert.FromBase64String(base64Data);
+                        var stream = new System.IO.MemoryStream(bytes);
+                        var image = new BitmapImage();
+                        image.SetSource(stream.AsRandomAccessStream());
+                        return image;
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.LogError("Failed to create image source from data URI", ex);
+                    }
+                }
+
+                return null;
+            }
+        }
 
         [RelayCommand]
         public async Task PasteCustomAsync()
@@ -614,7 +647,25 @@ namespace AdvancedPaste.ViewModels
 
             if (!string.IsNullOrEmpty(text))
             {
-                await CopyPasteAndHideAsync(DataPackageHelpers.CreateFromText(text));
+                if (text.StartsWith("data:image", StringComparison.OrdinalIgnoreCase))
+                {
+                    try
+                    {
+                        var base64Data = text.Split(',')[1];
+                        var bytes = Convert.FromBase64String(base64Data);
+                        var stream = new System.IO.MemoryStream(bytes);
+                        var dataPackage = DataPackageHelpers.CreateFromImage(Windows.Storage.Streams.RandomAccessStreamReference.CreateFromStream(stream.AsRandomAccessStream()));
+                        await CopyPasteAndHideAsync(dataPackage);
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.LogError("Failed to paste image from data URI", ex);
+                    }
+                }
+                else
+                {
+                    await CopyPasteAndHideAsync(DataPackageHelpers.CreateFromText(text));
+                }
             }
         }
 

@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using AdvancedPaste.Helpers;
@@ -16,6 +17,7 @@ using Microsoft.SemanticKernel.Connectors.Google;
 using Microsoft.SemanticKernel.Connectors.MistralAI;
 using Microsoft.SemanticKernel.Connectors.Ollama;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
+using Microsoft.SemanticKernel.TextToImage;
 
 namespace AdvancedPaste.Services.CustomActions
 {
@@ -69,18 +71,69 @@ namespace AdvancedPaste.Services.CustomActions
                 throw new ArgumentException("Prompt and input text must be provided", nameof(request));
             }
 
-            var userMessageContent = $"""
-                User instructions:
-                {prompt}
-
-                Clipboard Content:
-                {inputText}
-
-                Output:
-                """;
-
-            var executionSettings = CreateExecutionSettings();
             var kernel = CreateKernel();
+
+            switch (_config.Usage)
+            {
+                case PasteAIUsage.TextToImage:
+                    var imageDescription = string.IsNullOrWhiteSpace(prompt) ? inputText : $"{inputText}. {prompt}";
+                    return await ProcessTextToImageAsync(kernel, imageDescription, cancellationToken);
+                case PasteAIUsage.ChatCompletion:
+                default:
+                    var userMessageContent = $"""
+                        User instructions:
+                        {prompt}
+
+                        Clipboard Content:
+                        {inputText}
+
+                        Output:
+                        """;
+                    return await ProcessChatCompletionAsync(kernel, request, userMessageContent, systemPrompt, cancellationToken);
+            }
+        }
+
+        private async Task<string> ProcessTextToImageAsync(Kernel kernel, string userMessageContent, CancellationToken cancellationToken)
+        {
+#pragma warning disable SKEXP0001
+            var imageService = kernel.GetRequiredService<ITextToImageService>();
+            var settings = new OpenAITextToImageExecutionSettings
+            {
+                Size = (1024, 1024),
+                ResponseFormat = "b64_json",
+            };
+
+            var generatedImages = await imageService.GetImageContentsAsync(new TextContent(userMessageContent), settings, cancellationToken: cancellationToken);
+
+            if (generatedImages.Count == 0)
+            {
+                throw new InvalidOperationException("No image generated.");
+            }
+
+            var imageContent = generatedImages[0];
+
+            if (imageContent.Data.HasValue)
+            {
+                var base64 = Convert.ToBase64String(imageContent.Data.Value.ToArray());
+                return $"data:{imageContent.MimeType ?? "image/png"};base64,{base64}";
+            }
+            else if (imageContent.Uri != null)
+            {
+                using var client = new HttpClient();
+                var imageBytes = await client.GetByteArrayAsync(imageContent.Uri, cancellationToken);
+                var base64 = Convert.ToBase64String(imageBytes);
+                return $"data:image/png;base64,{base64}";
+            }
+            else
+            {
+                throw new InvalidOperationException("Generated image contains no data.");
+            }
+#pragma warning restore SKEXP0001
+        }
+
+        private async Task<string> ProcessChatCompletionAsync(Kernel kernel, PasteAIRequest request, string userMessageContent, string systemPrompt, CancellationToken cancellationToken)
+        {
+            var executionSettings = CreateExecutionSettings();
             var modelId = _config.Model;
 
             IChatCompletionService chatService;
@@ -125,11 +178,31 @@ namespace AdvancedPaste.Services.CustomActions
             switch (_serviceType)
             {
                 case AIServiceType.OpenAI:
-                    kernelBuilder.AddOpenAIChatCompletion(_config.Model, apiKey, serviceId: _config.Model);
+                    if (_config.Usage == PasteAIUsage.TextToImage)
+                    {
+#pragma warning disable SKEXP0010
+                        kernelBuilder.AddOpenAITextToImage(apiKey, modelId: _config.Model);
+#pragma warning restore SKEXP0010
+                    }
+                    else
+                    {
+                        kernelBuilder.AddOpenAIChatCompletion(_config.Model, apiKey, serviceId: _config.Model);
+                    }
+
                     break;
                 case AIServiceType.AzureOpenAI:
                     var deploymentName = string.IsNullOrWhiteSpace(_config.DeploymentName) ? _config.Model : _config.DeploymentName;
-                    kernelBuilder.AddAzureOpenAIChatCompletion(deploymentName, RequireEndpoint(endpoint, _serviceType), apiKey, serviceId: _config.Model);
+                    if (_config.Usage == PasteAIUsage.TextToImage)
+                    {
+#pragma warning disable SKEXP0010
+                        kernelBuilder.AddAzureOpenAITextToImage(deploymentName, RequireEndpoint(endpoint, _serviceType), apiKey);
+#pragma warning restore SKEXP0010
+                    }
+                    else
+                    {
+                        kernelBuilder.AddAzureOpenAIChatCompletion(deploymentName, RequireEndpoint(endpoint, _serviceType), apiKey, serviceId: _config.Model);
+                    }
+
                     break;
                 case AIServiceType.Mistral:
                     kernelBuilder.AddMistralChatCompletion(_config.Model, apiKey: apiKey);
