@@ -82,6 +82,7 @@
     <Project Path="src/common/Telemetry/EtwTrace/EtwTrace.vcxproj" Id="8f021b46-362b-485c-bfba-ccf83e820cbd" />
   </Folder>
   <Folder Name="/common/utils/">
+    <Project Path="src/common/utils/utils.vcxproj" Id="e8470e15-88c4-4c4b-b872-7f1a8f8e7d7e" />
     <File Path="src/common/utils/appMutex.h" />
     <File Path="src/common/utils/color.h" />
     <File Path="src/common/utils/com_object_factory.h" />

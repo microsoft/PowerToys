@@ -137,6 +137,9 @@ MakeAppx.exe pack /d . /p $(OutDir)ImageResizerContextMenuPackage.msix /nv</Comm
     <ProjectReference Include="..\ImageResizerLib\ImageResizerLib.vcxproj">
       <Project>{18b3db45-4ffe-4d01-97d6-5223feee1853}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\..\..\common\utils\utils.vcxproj">
+      <Project>{e8470e15-88c4-4c4b-b872-7f1a8f8e7d7e}</Project>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources.resx" />
