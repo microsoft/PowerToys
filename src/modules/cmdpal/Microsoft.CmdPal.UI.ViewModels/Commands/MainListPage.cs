@@ -5,7 +5,7 @@
 using System.Collections.Immutable;
 using System.Collections.Specialized;
 using System.Diagnostics;
-using System.Threading.Channels;
+using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
 using Microsoft.CmdPal.Core.Common.Helpers;
@@ -27,8 +27,14 @@ namespace Microsoft.CmdPal.UI.ViewModels.MainPage;
 /// </summary>
 public partial class MainListPage : DynamicListPage,
     IRecipient<ClearSearchMessage>,
-    IRecipient<UpdateFallbackItemsMessage>, IDisposable
+    IRecipient<UpdateFallbackItemsMessage>,
+    IDisposable
 {
+    private static readonly TimeSpan RaiseItemsChangedThrottle = TimeSpan.FromMilliseconds(100);
+    private static readonly TimeSpan FallbackItemSlowTimeout = TimeSpan.FromMilliseconds(200);
+    private static readonly TimeSpan FallbackItemUltraSlowTimeout = TimeSpan.FromMilliseconds(1000);
+
+    private readonly DebouncedAction _refreshDebouncedAction;
     private readonly TopLevelCommandManager _tlcManager;
     private readonly AliasManager _aliasManager;
     private readonly SettingsModel _settings;
@@ -61,6 +67,12 @@ public partial class MainListPage : DynamicListPage,
         _tlcManager = topLevelCommandManager;
         _tlcManager.PropertyChanged += TlcManager_PropertyChanged;
         _tlcManager.TopLevelCommands.CollectionChanged += Commands_CollectionChanged;
+
+        _refreshDebouncedAction = new DebouncedAction(() => RaiseItemsChanged(), RaiseItemsChangedThrottle);
+        _refreshDebouncedAction.UnhandledException += (_, exception) =>
+        {
+            Logger.LogError("Unhandled exception in MainListPage refresh debounced action", exception);
+        };
 
         // The all apps page will kick off a BG thread to start loading apps.
         // We just want to know when it is done.
@@ -100,7 +112,7 @@ public partial class MainListPage : DynamicListPage,
         }
         else
         {
-            RaiseItemsChanged();
+            _refreshDebouncedAction.Invoke();
         }
     }
 
@@ -275,11 +287,19 @@ public partial class MainListPage : DynamicListPage,
             }
 
             // Cleared out the filter text? easy. Reset _filteredItems, and bail out.
-            if (string.IsNullOrEmpty(newSearch))
+            if (string.IsNullOrWhiteSpace(newSearch))
             {
                 _filteredItemsIncludesApps = _includeApps;
                 ClearResults();
-                RaiseItemsChanged(commands.Count);
+                if (string.IsNullOrWhiteSpace(oldSearch))
+                {
+                    _refreshDebouncedAction.Invoke();
+                }
+                else
+                {
+                    _refreshDebouncedAction.InvokeImmediately();
+                }
+
                 return;
             }
 
@@ -432,193 +452,86 @@ public partial class MainListPage : DynamicListPage,
                 }
             }
 
-            RaiseItemsChanged();
+            _refreshDebouncedAction.Invoke();
 
             timer.Stop();
             Logger.LogDebug($"Filter with '{newSearch}' in {timer.ElapsedMilliseconds}ms");
         }
     }
 
-    private Task UpdateFallbacksAsync(string newSearch, IReadOnlyList<TopLevelViewModel> commands, CancellationToken cancellationToken)
+    private Task UpdateFallbacksAsync(string query, IReadOnlyList<TopLevelViewModel> commands, CancellationToken cancellationToken)
     {
-        const int channelCapacity = 100;
-        const int itemTimeoutMs = 200;
-        const int ultraSlowTimeoutMs = 1000;
-        const int initialWorkerCount = 2;
-        var updateInterval = TimeSpan.FromMilliseconds(150);
+        return commands.Count == 0
+            ? Task.CompletedTask
+            : Task.Run(RunUpdateBatchAsync, cancellationToken);
 
-        return Task.Run(
-            async () =>
+        async Task RunUpdateBatchAsync()
+        {
+#if DEBUG || FF_TIME_FALLBACKUPDATES
+            Logger.LogDebug($"UpdateFallbacks: new run for {query}");
+            var batchStopwatch = Stopwatch.StartNew();
+#endif
+            var parallelOptions = new ParallelOptions
             {
-                var sw = Stopwatch.StartNew();
-                var hasChangesFlag = 0;
+                CancellationToken = cancellationToken,
+                MaxDegreeOfParallelism = Math.Max(1, Environment.ProcessorCount - 1),
+            };
 
-                // Timer thread will trigger updates in constant intervals, so the user gets continuous updates
-                using var timerCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            try
+            {
+                await Parallel.ForEachAsync(commands, parallelOptions, UpdateFallbackItem).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException)
+            {
+#if DEBUG || FF_TIME_FALLBACKUPDATES
+                Logger.LogDebug($"UpdateFallbacks: Batch cancelled");
+#endif
+            }
 
-                var timerTask = Task.Run(
-                    async () =>
-                    {
-                        try
-                        {
-                            using var timer = new PeriodicTimer(updateInterval);
-                            while (await timer.WaitForNextTickAsync(timerCts.Token).ConfigureAwait(false))
-                            {
-                                if (Interlocked.CompareExchange(ref hasChangesFlag, 0, 1) == 1)
-                                {
-                                    RaiseItemsChanged();
-                                    Logger.LogDebug($"UI update at {sw.ElapsedMilliseconds}ms");
-                                }
-                            }
-                        }
-                        catch (OperationCanceledException)
-                        {
-                            // we're done
-                        }
-                    },
-                    timerCts.Token);
+#if DEBUG || FF_TIME_FALLBACKUPDATES
+            batchStopwatch.Stop();
+            Logger.LogDebug($"UpdateFallbacks: UpdateFallbacks batch completed in {batchStopwatch.ElapsedMilliseconds}ms");
+#endif
+            return;
 
-                // producer will pump commands into a channel, and have multiple workers pull from it
-                var channel = Channel.CreateBounded<TopLevelViewModel>(
-                    new BoundedChannelOptions(channelCapacity) { FullMode = BoundedChannelFullMode.Wait });
-
-                var producerTask = Task.Run(
-                    async () =>
-                    {
-                        try
-                        {
-                            foreach (var command in commands)
-                            {
-                                await channel.Writer.WriteAsync(command, cancellationToken).ConfigureAwait(false);
-                            }
-                        }
-                        finally
-                        {
-                            channel.Writer.TryComplete();
-                        }
-                    },
-                    cancellationToken);
-
-                // Start with a few workers, and then spawn more if any of them
-                // take too long on an item.
-                var workers = new List<Task>();
-                var workersLock = new object();
-                var activeWorkerCount = 0;
-                var nextWorkerId = 0;
-                var maxWorkers = Math.Max(1, Environment.ProcessorCount - 1);
-
-                // Start with multiple workers
-                lock (workersLock)
-                {
-                    var startingWorkers = Math.Min(initialWorkerCount, maxWorkers);
-                    for (var i = 1; i <= startingWorkers; i++)
-                    {
-                        nextWorkerId = i;
-                        activeWorkerCount++;
-                        workers.Add(SpawnWorker(i));
-                    }
-
-                    Logger.LogDebug($"Starting with {startingWorkers} workers");
-                }
-
-                // Let's start: fill the channel with commands
-                await producerTask.ConfigureAwait(false);
-
-                // Wait for all the workers to finish
-                while (true)
-                {
-                    Task[] snapshot;
-                    lock (workersLock)
-                    {
-                        snapshot = workers.ToArray();
-                    }
-
-                    await Task.WhenAll(snapshot).ConfigureAwait(false);
-
-                    lock (workersLock)
-                    {
-                        // If no new workers were added while we were waiting, we're done
-                        if (workers.Count == snapshot.Length)
-                        {
-                            break;
-                        }
-                    }
-                }
-
-                await timerCts.CancelAsync();
+            ValueTask UpdateFallbackItem(TopLevelViewModel command, CancellationToken _)
+            {
                 try
                 {
-                    await timerTask.WaitAsync(TimeSpan.FromMilliseconds(100)).ConfigureAwait(false);
+#if DEBUG || FF_TIME_FALLBACKUPDATES
+                    var singleFallbackStopwatch = Stopwatch.StartNew();
+#endif
+                    var changed = command.SafeUpdateFallbackTextSynchronous(query);
+#if DEBUG || FF_TIME_FALLBACKUPDATES
+                    var elapsed = singleFallbackStopwatch.Elapsed;
+
+                    var tail = elapsed > FallbackItemSlowTimeout ? " is (slow)" : string.Empty;
+                    if (elapsed > FallbackItemUltraSlowTimeout)
+                    {
+                        tail += " <---------------- (ultra slow)";
+                    }
+
+                    Logger.LogDebug($"UpdateFallbacks: Worker: command id '{command.Id}', '{command.DisplayTitle}' updated with '{query}' processed in {elapsed} ms, has {(changed ? "changed" : "not changed")} and title is '{command.Title}' {tail}");
+#endif
+
+                    // Once we have a changed item, we need to refresh the list
+                    // even if the cancellation token has been set, to ensure the
+                    // UI is up to date
+                    if (changed)
+                    {
+                        _refreshDebouncedAction.Invoke();
+                    }
                 }
-                catch
+                catch (Exception ex)
                 {
-                    // ignore
+#if DEBUG || FF_TIME_FALLBACKUPDATES
+                    Logger.LogError($"UpdateFallbacks: Worker: command id '{command.Id}', '{command.DisplayTitle}' failed to update fallback text with '{query}'", ex);
+#endif
                 }
 
-                if (Volatile.Read(ref hasChangesFlag) == 1)
-                {
-                    RaiseItemsChanged();
-                }
-
-                sw.Stop();
-                Logger.LogDebug($"UpdateFallbacks completed in {sw.ElapsedMilliseconds}ms ({nextWorkerId} workers spawned)");
-                return;
-
-                Task SpawnWorker(int id) =>
-                    Task.Run(
-                        async () =>
-                        {
-                            try
-                            {
-                                await foreach (var command in channel.Reader.ReadAllAsync(cancellationToken).ConfigureAwait(false))
-                                {
-                                    var taskSw = Stopwatch.StartNew();
-                                    var changed = command.SafeUpdateFallbackTextSynchronous(newSearch);
-                                    var elapsed = taskSw.ElapsedMilliseconds;
-
-                                    var tail = elapsed > itemTimeoutMs ? " (slow)" : string.Empty;
-                                    if (elapsed > ultraSlowTimeoutMs)
-                                    {
-                                        tail += " <---------------- (ultra slow)";
-                                    }
-
-                                    Logger.LogTrace($"Worker {id}: command id '{command.Id}' for '{command.Title}' in {elapsed} ms {tail}");
-
-                                    if (changed)
-                                    {
-                                        Interlocked.Exchange(ref hasChangesFlag, 1);
-                                    }
-
-                                    if (elapsed > itemTimeoutMs)
-                                    {
-                                        lock (workersLock)
-                                        {
-                                            if (activeWorkerCount < maxWorkers)
-                                            {
-                                                nextWorkerId++;
-                                                activeWorkerCount++;
-                                                Logger.LogDebug($"Spawning worker {nextWorkerId} ({activeWorkerCount}/{maxWorkers} active)");
-                                                workers.Add(SpawnWorker(nextWorkerId));
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                            catch (OperationCanceledException)
-                            {
-                                Logger.LogDebug($"Worker {id} cancelled");
-                            }
-                            finally
-                            {
-                                lock (workersLock)
-                                {
-                                    activeWorkerCount--;
-                                }
-                            }
-                        },
-                        cancellationToken);
-            },
-            cancellationToken);
+                return ValueTask.CompletedTask;
+            }
+        }
     }
 
     private bool ActuallyLoading()
@@ -757,7 +670,10 @@ public partial class MainListPage : DynamicListPage,
 
     public void Receive(ClearSearchMessage message) => SearchText = string.Empty;
 
-    public void Receive(UpdateFallbackItemsMessage message) => RaiseItemsChanged(_tlcManager.TopLevelCommands.Count);
+    public void Receive(UpdateFallbackItemsMessage message)
+    {
+        _refreshDebouncedAction.Invoke();
+    }
 
     private void SettingsChangedHandler(SettingsModel sender, object? args) => HotReloadSettings(sender);
 
