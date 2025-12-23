@@ -1228,6 +1228,7 @@ opensource
 openxmlformats
 ollama
 onnx
+openurl
 OPTIMIZEFORINVOKE
 ORPHANEDDIALOGTITLE
 ORSCANS
@@ -1647,6 +1648,7 @@ SKIPOWNPROCESS
 sku
 SLGP
 sln
+slnf
 slnx
 SMALLICON
 smartphone
