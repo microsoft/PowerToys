@@ -110,6 +110,21 @@ namespace Peek.UI
         [ObservableProperty]
         private bool _isErrorVisible = false;
 
+        private IUserSettings UserSettings { get; }
+
+        public double MediaVolume
+        {
+            get => UserSettings.MediaVolume;
+            set
+            {
+                if (UserSettings.MediaVolume != value)
+                {
+                    UserSettings.MediaVolume = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
         private enum NavigationDirection
         {
             Forwards,
@@ -126,9 +141,10 @@ namespace Peek.UI
 
         private DispatcherTimer NavigationThrottleTimer { get; set; } = new();
 
-        public MainWindowViewModel(NeighboringItemsQuery query)
+        public MainWindowViewModel(NeighboringItemsQuery query, IUserSettings userSettings)
         {
             NeighboringItemsQuery = query;
+            UserSettings = userSettings;
             WindowTitle = _defaultWindowTitle;
 
             NavigationThrottleTimer.Tick += NavigationThrottleTimer_Tick;
