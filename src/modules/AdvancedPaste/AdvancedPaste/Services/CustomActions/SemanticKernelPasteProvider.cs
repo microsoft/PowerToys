@@ -159,29 +159,20 @@ namespace AdvancedPaste.Services.CustomActions
             var chatHistory = new ChatHistory();
             chatHistory.AddSystemMessage(systemPrompt);
 
-            if (imageBytes != null)
+            if (request.ImageBytes != null)
             {
                 var collection = new ChatMessageContentItemCollection();
-                if (!string.IsNullOrWhiteSpace(inputText))
+                if (!string.IsNullOrWhiteSpace(request.InputText))
                 {
-                    collection.Add(new TextContent($"Clipboard Content:\n{inputText}"));
+                    collection.Add(new TextContent($"Clipboard Content:\n{request.InputText}"));
                 }
 
-                collection.Add(new ImageContent(imageBytes, request.ImageMimeType ?? "image/png"));
-                collection.Add(new TextContent($"User instructions:\n{prompt}\n\nOutput:"));
+                collection.Add(new ImageContent(request.ImageBytes, request.ImageMimeType ?? "image/png"));
+                collection.Add(new TextContent($"User instructions:\n{request.Prompt}\n\nOutput:"));
                 chatHistory.AddUserMessage(collection);
             }
             else
             {
-                var userMessageContent = $"""
-                    User instructions:
-                    {prompt}
-
-                    Clipboard Content:
-                    {inputText}
-
-                    Output:
-                    """;
                 chatHistory.AddUserMessage(userMessageContent);
             }
 
