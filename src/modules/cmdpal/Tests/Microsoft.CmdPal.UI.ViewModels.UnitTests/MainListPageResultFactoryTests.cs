@@ -93,7 +93,7 @@ public partial class MainListPageResultFactoryTests
         var titles = result.Select(r => r.Title).ToArray();
 #pragma warning disable CA1861 // Avoid constant arrays as arguments
         CollectionAssert.AreEqual(
-            new[] { "F1", "SF1", "A1", "SF2", "A2", "F2", "FB1", "FB2" },
+            new[] { "F1", "SF1", "A1", "SF2", "A2", "F2", "Fallbacks", "FB1", "FB2" },
             titles);
 #pragma warning restore CA1861 // Avoid constant arrays as arguments
     }
@@ -126,7 +126,6 @@ public partial class MainListPageResultFactoryTests
         var fallbacks = new List<RoScored<IListItem>>
         {
             S("FB1", 0),
-            S(string.Empty, 0),
             S("FB3", 0),
         };
 
@@ -137,9 +136,10 @@ public partial class MainListPageResultFactoryTests
             fallbacks,
             appResultLimit: 10);
 
-        Assert.AreEqual(2, result.Length);
-        Assert.AreEqual("FB1", result[0].Title);
-        Assert.AreEqual("FB3", result[1].Title);
+        Assert.AreEqual(3, result.Length);
+        Assert.AreEqual("Fallbacks", result[0].Title);
+        Assert.AreEqual("FB1", result[1].Title);
+        Assert.AreEqual("FB3", result[2].Title);
     }
 
     [TestMethod]

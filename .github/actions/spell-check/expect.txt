@@ -391,6 +391,7 @@ devpal
 dfx
 DIALOGEX
 digicert
+diffs
 DINORMAL
 DISABLEASACTIONKEY
 DISABLENOSCROLL
@@ -982,6 +983,7 @@ mdtext
 mdtxt
 mdwn
 meme
+mcp
 memicmp
 MENUITEMINFO
 MENUITEMINFOW
@@ -1072,6 +1074,8 @@ muxxc
 muxxh
 MVPs
 mvvm
+myorg
+myrepo
 MVVMTK
 MWBEx
 MYICON
@@ -1218,6 +1222,7 @@ opensource
 openxmlformats
 ollama
 onnx
+openurl
 OPTIMIZEFORINVOKE
 ORPHANEDDIALOGTITLE
 ORSCANS
@@ -1295,6 +1300,7 @@ phwnd
 pici
 pidl
 PIDLIST
+PII
 pinfo
 pinvoke
 pipename
@@ -1492,6 +1498,7 @@ riid
 RKey
 RNumber
 rop
+rollups
 ROUNDSMALL
 ROWSETEXT
 rpcrt
@@ -1636,6 +1643,7 @@ SKIPOWNPROCESS
 sku
 SLGP
 sln
+slnf
 slnx
 SMALLICON
 smartphone
@@ -2096,6 +2104,7 @@ xstyler
 XTimer
 XUP
 XVIRTUALSCREEN
+XXL
 xxxxxx
 YAxis
 ycombinator
