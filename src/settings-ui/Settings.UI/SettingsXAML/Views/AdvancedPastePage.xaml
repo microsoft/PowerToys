@@ -512,8 +512,8 @@
                             MinWidth="200"
                             HorizontalAlignment="Stretch"
                             Header="Usage"
-                            SelectedValuePath="Tag"
                             SelectedValue="{x:Bind ViewModel.PasteAIProviderDraft.Usage, Mode=TwoWay}"
+                            SelectedValuePath="Tag"
                             SelectionChanged="PasteAIUsageComboBox_SelectionChanged"
                             Visibility="{x:Bind GetUsageVisibility(ViewModel.PasteAIProviderDraft.ServiceType), Mode=OneWay}">
                             <ComboBoxItem x:Uid="PasteAIUsage_ChatCompletion" Tag="ChatCompletion" />
@@ -530,8 +530,8 @@
                                 MinWidth="96"
                                 Text="{x:Bind ViewModel.PasteAIProviderDraft.ImageWidth, Mode=TwoWay}" />
                             <TextBlock
-                                VerticalAlignment="Bottom"
                                 Margin="0,0,0,8"
+                                VerticalAlignment="Bottom"
                                 Text="x" />
                             <TextBox
                                 x:Name="PasteAIImageHeightTextBox"
