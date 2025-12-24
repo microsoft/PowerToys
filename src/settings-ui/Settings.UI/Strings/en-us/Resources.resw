@@ -5769,4 +5769,16 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   <data name="LightSwitch_FollowNightLightCardMessage.Text" xml:space="preserve">
     <value>Following Night Light settings.</value>
   </data>
+  <data name="PasteAIUsage_ChatCompletion_Label" xml:space="preserve">
+    <value>Chat completion</value>
+  </data>
+  <data name="PasteAIUsage_TextToImage_Label" xml:space="preserve">
+    <value>Text to image</value>
+  </data>
+  <data name="PasteAIUsage_ChatCompletion.Content" xml:space="preserve">
+    <value>Chat completion</value>
+  </data>
+  <data name="PasteAIUsage_TextToImage.Content" xml:space="preserve">
+    <value>Text to image</value>
+  </data>
 </root>

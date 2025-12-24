@@ -335,6 +335,7 @@
             <converters:CountToVisibilityConverter x:Key="CountToVisibilityConverter" />
             <converters:CountToInvertedVisibilityConverter x:Key="CountToInvertedVisibilityConverter" />
             <converters:ServiceTypeToIconConverter x:Key="ServiceTypeToIconConverter" />
+            <converters:PasteAIUsageToStringConverter x:Key="PasteAIUsageToStringConverter" />
         </ResourceDictionary>
     </UserControl.Resources>
     <Grid x:Name="PromptBoxGrid" Loaded="Grid_Loaded">
@@ -623,9 +624,9 @@
                                                         CornerRadius="{StaticResource ControlCornerRadius}">
                                                         <TextBlock
                                                             AutomationProperties.AccessibilityView="Raw"
-                                                            FontSize="12"
+                                                            FontSize="10"
                                                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                                            Text="{x:Bind Usage, Mode=OneWay}" />
+                                                            Text="{x:Bind Usage, Mode=OneWay, Converter={StaticResource PasteAIUsageToStringConverter}}" />
                                                     </Border>
                                                     <Border
                                                         Padding="2,0,2,0"

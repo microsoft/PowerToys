@@ -40,6 +40,7 @@
             </Style>
 
             <converters:ServiceTypeToIconConverter x:Key="ServiceTypeToIconConverter" />
+            <converters:PasteAIUsageToStringConverter x:Key="PasteAIUsageToStringConverter" />
             <DataTemplate x:Key="AdditionalActionTemplate" x:DataType="models:AdvancedPasteAdditionalAction">
                 <StackPanel Orientation="Horizontal" Spacing="4">
                     <controls:ShortcutControl
@@ -128,7 +129,7 @@
                                                 <TextBlock
                                                     FontSize="12"
                                                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                                    Text="{x:Bind Usage, Mode=OneWay}" />
+                                                    Text="{x:Bind Usage, Mode=OneWay, Converter={StaticResource PasteAIUsageToStringConverter}}" />
                                             </Border>
                                             <Button
                                                 Padding="8"
@@ -515,8 +516,8 @@
                             SelectedValue="{x:Bind ViewModel.PasteAIProviderDraft.Usage, Mode=TwoWay}"
                             SelectionChanged="PasteAIUsageComboBox_SelectionChanged"
                             Visibility="{x:Bind GetUsageVisibility(ViewModel.PasteAIProviderDraft.ServiceType), Mode=OneWay}">
-                            <ComboBoxItem Content="Chat Completion" Tag="ChatCompletion" />
-                            <ComboBoxItem Content="Text to Image" Tag="TextToImage" />
+                            <ComboBoxItem x:Uid="PasteAIUsage_ChatCompletion" Tag="ChatCompletion" />
+                            <ComboBoxItem x:Uid="PasteAIUsage_TextToImage" Tag="TextToImage" />
                         </ComboBox>
                         <StackPanel
                             x:Name="PasteAIImageResolutionPanel"
