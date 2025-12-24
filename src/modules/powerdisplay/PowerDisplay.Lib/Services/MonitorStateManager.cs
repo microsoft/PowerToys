@@ -69,23 +69,23 @@ namespace PowerDisplay.Common.Services
 
         /// <summary>
         /// Update monitor parameter and schedule debounced save to disk.
-        /// Uses HardwareId as the stable key.
+        /// Uses Monitor.Id as the stable key (e.g., "DDC_GSM5C6D_1", "WMI_BOE0900_2").
         /// Debounced-save strategy reduces disk I/O by batching rapid updates (e.g., during slider drag).
         /// </summary>
-        /// <param name="hardwareId">The monitor's hardware ID.</param>
+        /// <param name="monitorId">The monitor's unique Id (e.g., "DDC_GSM5C6D_1").</param>
         /// <param name="property">The property name to update (Brightness, ColorTemperature, Contrast, or Volume).</param>
         /// <param name="value">The new value.</param>
-        public void UpdateMonitorParameter(string hardwareId, string property, int value)
+        public void UpdateMonitorParameter(string monitorId, string property, int value)
         {
             try
             {
-                if (string.IsNullOrEmpty(hardwareId))
+                if (string.IsNullOrEmpty(monitorId))
                 {
-                    Logger.LogWarning($"Cannot update monitor parameter: HardwareId is empty");
+                    Logger.LogWarning($"Cannot update monitor parameter: monitorId is empty");
                     return;
                 }
 
-                var state = _states.GetOrAdd(hardwareId, _ => new MonitorState());
+                var state = _states.GetOrAdd(monitorId, _ => new MonitorState());
 
                 // Update the specific property
                 bool shouldSave = true;
@@ -128,18 +128,18 @@ namespace PowerDisplay.Common.Services
         }
 
         /// <summary>
-        /// Get saved parameters for a monitor using HardwareId.
+        /// Get saved parameters for a monitor using Monitor.Id.
         /// </summary>
-        /// <param name="hardwareId">The monitor's hardware ID.</param>
+        /// <param name="monitorId">The monitor's unique Id (e.g., "DDC_GSM5C6D_1").</param>
         /// <returns>A tuple of (Brightness, ColorTemperatureVcp, Contrast, Volume) or null if not found.</returns>
-        public (int Brightness, int ColorTemperatureVcp, int Contrast, int Volume)? GetMonitorParameters(string hardwareId)
+        public (int Brightness, int ColorTemperatureVcp, int Contrast, int Volume)? GetMonitorParameters(string monitorId)
         {
-            if (string.IsNullOrEmpty(hardwareId))
+            if (string.IsNullOrEmpty(monitorId))
             {
                 return null;
             }
 
-            if (_states.TryGetValue(hardwareId, out var state))
+            if (_states.TryGetValue(monitorId, out var state))
             {
                 return (state.Brightness, state.ColorTemperatureVcp, state.Contrast, state.Volume);
             }

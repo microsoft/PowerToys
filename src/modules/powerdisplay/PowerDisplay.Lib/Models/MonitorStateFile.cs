@@ -10,13 +10,13 @@ namespace PowerDisplay.Common.Models
 {
     /// <summary>
     /// Monitor state file structure for JSON persistence.
-    /// Contains all monitor states indexed by HardwareId.
+    /// Contains all monitor states indexed by Monitor.Id.
     /// </summary>
     public sealed class MonitorStateFile
     {
         /// <summary>
         /// Gets or sets the monitor states dictionary.
-        /// Key is the monitor's HardwareId.
+        /// Key is the monitor's unique Id (e.g., "DDC_GSM5C6D_1", "WMI_BOE0900_2").
         /// </summary>
         [JsonPropertyName("monitors")]
         public Dictionary<string, MonitorStateEntry> Monitors { get; set; } = new();
