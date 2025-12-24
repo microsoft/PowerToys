@@ -100,9 +100,11 @@ namespace AdvancedPaste.Services.CustomActions
         {
 #pragma warning disable SKEXP0001
             var imageService = kernel.GetRequiredService<ITextToImageService>();
+            var width = _config.ImageWidth > 0 ? _config.ImageWidth : 1024;
+            var height = _config.ImageHeight > 0 ? _config.ImageHeight : 1024;
             var settings = new OpenAITextToImageExecutionSettings
             {
-                Size = (1024, 1024),
+                Size = (width, height),
                 ResponseFormat = "b64_json",
             };
 

@@ -28,6 +28,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         private bool _isActive;
         private bool _enableAdvancedAI;
         private bool _isLocalModel;
+        private int _imageWidth = 1024;
+        private int _imageHeight = 1024;
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -141,6 +143,20 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             set => SetProperty(ref _isLocalModel, value);
         }
 
+        [JsonPropertyName("image-width")]
+        public int ImageWidth
+        {
+            get => _imageWidth;
+            set => SetProperty(ref _imageWidth, value);
+        }
+
+        [JsonPropertyName("image-height")]
+        public int ImageHeight
+        {
+            get => _imageHeight;
+            set => SetProperty(ref _imageHeight, value);
+        }
+
         [JsonIgnore]
         public bool IsActive
         {
@@ -167,6 +183,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 ModerationEnabled = ModerationEnabled,
                 EnableAdvancedAI = EnableAdvancedAI,
                 IsLocalModel = IsLocalModel,
+                ImageWidth = ImageWidth,
+                ImageHeight = ImageHeight,
                 IsActive = IsActive,
             };
         }

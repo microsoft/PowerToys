@@ -316,6 +316,13 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                    : Visibility.Collapsed;
         }
 
+        public Visibility GetImageResolutionVisibility(string usage)
+        {
+            return string.Equals(usage, "TextToImage", StringComparison.OrdinalIgnoreCase)
+                   ? Visibility.Visible
+                   : Visibility.Collapsed;
+        }
+
         private void PasteAIUsageComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (ViewModel?.PasteAIProviderDraft == null)
@@ -377,6 +384,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             PasteAIEnableAdvancedAICheckBox.Visibility = showAdvancedAI ? Visibility.Visible : Visibility.Collapsed;
             PasteAIApiKeyPasswordBox.Visibility = requiresApiKey ? Visibility.Visible : Visibility.Collapsed;
             PasteAIModelNameTextBox.Visibility = isFoundryLocal ? Visibility.Collapsed : Visibility.Visible;
+            PasteAIImageResolutionPanel.Visibility = GetImageResolutionVisibility(draft.Usage);
 
             if (draft.Usage == "TextToImage")
             {

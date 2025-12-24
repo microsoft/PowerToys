@@ -30,5 +30,9 @@ namespace AdvancedPaste.Services.CustomActions
         public bool ModerationEnabled { get; set; }
 
         public PasteAIUsage Usage { get; set; }
+
+        public int ImageWidth { get; set; }
+
+        public int ImageHeight { get; set; }
     }
 }

@@ -950,6 +950,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             target.EnableAdvancedAI = source.EnableAdvancedAI;
             target.IsLocalModel = source.IsLocalModel;
             target.Usage = source.Usage;
+            target.ImageWidth = source.ImageWidth;
+            target.ImageHeight = source.ImageHeight;
         }
 
         private void RemovePasteAICredentials(string providerId, string serviceType)

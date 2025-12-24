@@ -506,6 +506,26 @@
                             <ComboBoxItem Content="Chat Completion" Tag="ChatCompletion" />
                             <ComboBoxItem Content="Text to Image" Tag="TextToImage" />
                         </ComboBox>
+                        <StackPanel
+                            x:Name="PasteAIImageResolutionPanel"
+                            Orientation="Horizontal"
+                            Spacing="8"
+                            Visibility="{x:Bind GetImageResolutionVisibility(ViewModel.PasteAIProviderDraft.Usage), Mode=OneWay}">
+                            <TextBox
+                                x:Name="PasteAIImageWidthTextBox"
+                                MinWidth="96"
+                                Header="Width"
+                                Text="{x:Bind ViewModel.PasteAIProviderDraft.ImageWidth, Mode=TwoWay}" />
+                            <TextBlock
+                                VerticalAlignment="Bottom"
+                                Margin="0,0,0,8"
+                                Text="x" />
+                            <TextBox
+                                x:Name="PasteAIImageHeightTextBox"
+                                MinWidth="96"
+                                Header="Height"
+                                Text="{x:Bind ViewModel.PasteAIProviderDraft.ImageHeight, Mode=TwoWay}" />
+                        </StackPanel>
                         <TextBox
                             x:Name="PasteAIModelNameTextBox"
                             x:Uid="AdvancedPaste_ModelName"
