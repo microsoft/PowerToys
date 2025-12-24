@@ -526,8 +526,8 @@
                             Visibility="{x:Bind GetImageResolutionVisibility(ViewModel.PasteAIProviderDraft.Usage), Mode=OneWay}">
                             <TextBox
                                 x:Name="PasteAIImageWidthTextBox"
+                                x:Uid="AdvancedPaste_ImgOutputWidth"
                                 MinWidth="96"
-                                Header="Width"
                                 Text="{x:Bind ViewModel.PasteAIProviderDraft.ImageWidth, Mode=TwoWay}" />
                             <TextBlock
                                 VerticalAlignment="Bottom"
@@ -535,8 +535,8 @@
                                 Text="x" />
                             <TextBox
                                 x:Name="PasteAIImageHeightTextBox"
+                                x:Uid="AdvancedPaste_ImgOutputHeight"
                                 MinWidth="96"
-                                Header="Height"
                                 Text="{x:Bind ViewModel.PasteAIProviderDraft.ImageHeight, Mode=TwoWay}" />
                         </StackPanel>
                         <TextBox
