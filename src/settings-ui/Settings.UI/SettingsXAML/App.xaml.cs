@@ -336,7 +336,7 @@ namespace Microsoft.PowerToys.Settings.UI
                 });
 #else
         /* If we try to run Settings as a standalone app, it will start PowerToys.exe if not running and open Settings again through it in the Dashboard page. */
-        Common.UI.SettingsDeepLink.OpenSettings(Common.UI.SettingsDeepLink.SettingsWindow.Dashboard, true);
+        Common.UI.SettingsDeepLink.OpenSettings(Common.UI.SettingsDeepLink.SettingsWindow.Dashboard);
         Exit();
 #endif
             }
@@ -357,7 +357,7 @@ namespace Microsoft.PowerToys.Settings.UI
             return 0;
         }
 
-        private static ISettingsUtils settingsUtils = SettingsUtils.Default;
+        private static SettingsUtils settingsUtils = SettingsUtils.Default;
         private static ThemeService themeService = new ThemeService(SettingsRepository<GeneralSettings>.GetInstance(settingsUtils));
 
         public static ThemeService ThemeService => themeService;

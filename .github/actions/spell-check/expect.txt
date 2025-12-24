@@ -228,6 +228,7 @@ CImage
 cla
 CLASSDC
 CLASSNOTAVAILABLE
+CLEARTYPE
 clickable
 clickonce
 clientedge
@@ -266,6 +267,7 @@ colorhistory
 colorhistorylimit
 COLORKEY
 colorref
+Convs
 comctl
 comdlg
 comexp
@@ -414,6 +416,7 @@ devpal
 dfx
 DIALOGEX
 digicert
+diffs
 DINORMAL
 DISABLEASACTIONKEY
 DISABLENOSCROLL
@@ -562,10 +565,13 @@ eyetracker
 FANCYZONESDRAWLAYOUTTEST
 FANCYZONESEDITOR
 FARPROC
+fdw
 fdx
+FErase
 fesf
 FFFF
 FFh
+FInc
 Figma
 FILEEXPLORER
 fileexploreraddons
@@ -609,6 +615,7 @@ foundrylocal
 FPrimary
 FRAMECHANGED
 Framechanged
+FRestore
 frm
 FROMTOUCH
 fsanitize
@@ -643,6 +650,7 @@ GETSCREENSAVERRUNNING
 GETSECKEY
 GETSTICKYKEYS
 GETTEXTLENGTH
+gfx
 GHND
 gitmodules
 GMEM
@@ -697,6 +705,7 @@ hdwwiz
 Helpline
 helptext
 HGFE
+hgdiobj
 hglobal
 hhk
 HHmmssfff
@@ -746,7 +755,7 @@ hotspot
 HPAINTBUFFER
 HPhysical
 HRAWINPUT
-HREDRAW
+hredraw
 hres
 hresult
 hrgn
@@ -932,7 +941,7 @@ LINKOVERLAY
 LINQTo
 listview
 LIVEDRAW
-LIVEZOOM
+livezoom
 LLKH
 llkhf
 LMEM
@@ -961,6 +970,7 @@ LPBITMAPINFOHEADER
 LPCFHOOKPROC
 LPCITEMIDLIST
 LPCLSID
+lpch
 lpcmi
 LPCMINVOKECOMMANDINFO
 LPCREATESTRUCT
@@ -985,6 +995,7 @@ lptpm
 LPTR
 LPTSTR
 lpv
+LPrivate
 LPW
 lpwcx
 lpwndpl
@@ -1036,6 +1047,7 @@ mdwn
 Mccs
 mccs
 meme
+mcp
 memicmp
 MENUITEMINFO
 MENUITEMINFOW
@@ -1129,6 +1141,8 @@ muxxc
 muxxh
 MVPs
 mvvm
+myorg
+myrepo
 MVVMTK
 MWBEx
 MYICON
@@ -1278,6 +1292,7 @@ OPENFILENAME
 openrdp
 opensource
 openxmlformats
+openurl
 OPTIMIZEFORINVOKE
 Optronics
 ORPHANEDDIALOGTITLE
@@ -1359,6 +1374,7 @@ phwnd
 pici
 pidl
 PIDLIST
+PII
 pinfo
 pinvoke
 pipename
@@ -1409,6 +1425,7 @@ ppv
 ppwsz
 prc
 Prefixer
+Premul
 prependpath
 prepopulate
 prevhost
@@ -1562,6 +1579,7 @@ riid
 RKey
 RNumber
 rop
+rollups
 ROUNDSMALL
 ROWSETEXT
 rpcrt
@@ -1707,6 +1725,7 @@ SKIPOWNPROCESS
 sku
 SLGP
 sln
+slnf
 slnx
 SMALLICON
 smartphone
@@ -1971,7 +1990,7 @@ valuegenerator
 variantassignment
 VARTYPE
 vcamp
-VCENTER
+vcenter
 vcgtq
 VCINSTALLDIR
 Vcp
@@ -2009,7 +2028,7 @@ vorrq
 VOS
 vpaddlq
 vqsubq
-VREDRAW
+vredraw
 vreinterpretq
 VSC
 VSCBD
@@ -2179,6 +2198,7 @@ xstyler
 XTimer
 XUP
 XVIRTUALSCREEN
+XXL
 xxxxxx
 YAxis
 ycombinator

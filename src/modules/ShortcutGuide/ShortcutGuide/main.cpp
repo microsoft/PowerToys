@@ -121,7 +121,7 @@ int WINAPI wWinMain(_In_ HINSTANCE /*hInstance*/, _In_opt_ HINSTANCE /*hPrevInst
     else
     {
         auto mainThreadId = GetCurrentThreadId();
-        exitEventWaiter = EventWaiter(CommonSharedConstants::SHORTCUT_GUIDE_EXIT_EVENT, [mainThreadId, &window](int err) {
+        exitEventWaiter.start(CommonSharedConstants::SHORTCUT_GUIDE_EXIT_EVENT, [mainThreadId, &window](DWORD err) {
             if (err != ERROR_SUCCESS)
             {
                 Logger::error(L"Failed to wait for {} event. {}", CommonSharedConstants::SHORTCUT_GUIDE_EXIT_EVENT, get_last_error_or_default(err));

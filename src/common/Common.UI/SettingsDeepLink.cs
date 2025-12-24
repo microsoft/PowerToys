@@ -2,8 +2,10 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Diagnostics;
 using System.IO;
+using ManagedCommon;
 
 namespace Common.UI
 {
@@ -123,28 +125,33 @@ namespace Common.UI
             }
         }
 
-        public static void OpenSettings(SettingsWindow window, bool mainExecutableIsOnTheParentFolder)
+        // What about debug build? Should also consider debug build, maybe tray window message?
+        public static void OpenSettings(SettingsWindow window)
         {
             try
             {
-                var directoryPath = System.AppContext.BaseDirectory;
-                if (mainExecutableIsOnTheParentFolder)
+                var exePath = Path.Combine(
+                    PowerToysPathResolver.GetPowerToysInstallPath(),
+                    "PowerToys.exe");
+
+                if (exePath == null || !File.Exists(exePath))
                 {
-                    // Need to go into parent folder for PowerToys.exe. Likely a WinUI3 App SDK application.
-                    directoryPath = Path.Combine(directoryPath, "..");
-                    directoryPath = Path.Combine(directoryPath, "PowerToys.exe");
-                }
-                else
-                {
-                    // PowerToys.exe is in the same path as the application.
-                    directoryPath = Path.Combine(directoryPath, "PowerToys.exe");
+                    Logger.LogError($"Failed to find powertoys exe path, {exePath}");
+                    return;
                 }
 
-                Process.Start(new ProcessStartInfo(directoryPath) { Arguments = "--open-settings=" + SettingsWindowNameToString(window) });
+                var args = "--open-settings=" + SettingsWindowNameToString(window);
+
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = exePath,
+                    Arguments = args,
+                    UseShellExecute = false,
+                });
             }
-            catch
+            catch (Exception ex)
             {
-                // TODO(stefan): Log exception once unified logging is implemented
+                Logger.LogError(ex.Message);
             }
         }
     }

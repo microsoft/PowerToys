@@ -44,6 +44,10 @@
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
+    <Project Path="src/common/PowerToys.ModuleContracts/PowerToys.ModuleContracts.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
     <Project Path="src/common/SettingsAPI/SettingsAPI.vcxproj" Id="6955446d-23f7-4023-9bb3-8657f904af99" />
     <Project Path="src/common/Themes/Themes.vcxproj" Id="98537082-0fdb-40de-abd8-0dc5a4269bab" />
     <Project Path="src/common/UITestAutomation/UITestAutomation.csproj">
@@ -156,6 +160,10 @@
     <Project Path="src/modules/alwaysontop/AlwaysOnTopModuleInterface/AlwaysOnTopModuleInterface.vcxproj" Id="48a0a19e-a0be-4256-acf8-cc3b80291af9" />
   </Folder>
   <Folder Name="/modules/awake/">
+    <Project Path="src/modules/awake/Awake.ModuleServices/Awake.ModuleServices.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
     <Project Path="src/modules/awake/Awake/Awake.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
@@ -166,6 +174,10 @@
     <Project Path="src/modules/cmdNotFound/CmdNotFoundModuleInterface/CmdNotFoundModuleInterface.vcxproj" Id="0014d652-901f-4456-8d65-06fc5f997fb0" />
   </Folder>
   <Folder Name="/modules/colorpicker/">
+    <Project Path="src/modules/colorPicker/ColorPicker.ModuleServices/ColorPicker.ModuleServices.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
     <Project Path="src/modules/colorPicker/ColorPicker/ColorPicker.vcxproj" Id="655c9af2-18d3-4da6-80e4-85504a7722ba">
       <BuildDependency Project="src/common/logger/logger.vcxproj" />
     </Project>
@@ -202,6 +214,11 @@
       <Platform Solution="*|x64" Project="x64" />
     </Project>
     <Project Path="src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.Indexer/Microsoft.CmdPal.Ext.Indexer.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+      <Deploy />
+    </Project>
+    <Project Path="src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.PowerToys/Microsoft.CmdPal.Ext.PowerToys.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
       <Deploy />
@@ -949,6 +966,10 @@
     <Project Path="src/modules/ShortcutGuide/ShortcutGuideModuleInterface/ShortcutGuideModuleInterface.vcxproj" Id="2d604c07-51fc-46bb-9eb7-75aecc7f5e81" />
   </Folder>
   <Folder Name="/modules/Workspaces/">
+    <Project Path="src/modules/Workspaces/Workspaces.ModuleServices/Workspaces.ModuleServices.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
     <Project Path="src/modules/Workspaces/WorkspacesCsharpLibrary/WorkspacesCsharpLibrary.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
