@@ -946,11 +946,6 @@ namespace AdvancedPaste.ViewModels
                 Logger.LogError("Failed to activate AI provider", ex);
                 return;
             }
-
-            UpdateAIProviderActiveFlags();
-            OnPropertyChanged(nameof(AIProviders));
-            NotifyActiveProviderChanged();
-            EnqueueRefreshPasteFormats();
         }
 
         public async Task CancelPasteActionAsync()

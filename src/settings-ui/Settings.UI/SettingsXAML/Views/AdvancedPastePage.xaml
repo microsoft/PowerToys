@@ -118,6 +118,18 @@
                                         Header="{x:Bind ModelName, Mode=OneWay}"
                                         HeaderIcon="{x:Bind ServiceType, Mode=OneWay, Converter={StaticResource ServiceTypeToIconConverter}}">
                                         <StackPanel Orientation="Horizontal" Spacing="8">
+                                            <Border
+                                                Padding="8,4"
+                                                VerticalAlignment="Center"
+                                                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                                BorderThickness="1"
+                                                CornerRadius="4">
+                                                <TextBlock
+                                                    FontSize="12"
+                                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                    Text="{x:Bind Usage, Mode=OneWay}" />
+                                            </Border>
                                             <Button
                                                 Padding="8"
                                                 Background="Transparent"
