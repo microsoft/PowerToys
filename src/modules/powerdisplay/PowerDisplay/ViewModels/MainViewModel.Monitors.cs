@@ -29,21 +29,16 @@ public partial class MainViewModel
             // Discover monitors
             var monitors = await _monitorManager.DiscoverMonitorsAsync(cancellationToken);
 
-            // Update UI on the dispatcher thread
+            // Update UI on the dispatcher thread, then complete initialization asynchronously
             _dispatcherQueue.TryEnqueue(() =>
             {
                 try
                 {
                     UpdateMonitorList(monitors, isInitialLoad: true);
-                    IsScanning = false;
-                    IsInitialized = true;
 
-                    // Start watching for display changes after initialization
-                    StartDisplayWatching();
-
-                    // Notify listeners that initialization is complete
-                    InitializationCompleted?.Invoke(this, EventArgs.Empty);
-                    Logger.LogInfo("[InitializeAsync] InitializationCompleted event fired");
+                    // Complete initialization asynchronously (restore settings if enabled)
+                    // IsScanning remains true until restore completes
+                    _ = CompleteInitializationAsync();
                 }
                 catch (Exception lambdaEx)
                 {
@@ -59,6 +54,41 @@ public partial class MainViewModel
             {
                 IsScanning = false;
             });
+        }
+    }
+
+    /// <summary>
+    /// Complete initialization by restoring settings (if enabled) and firing completion event.
+    /// IsScanning remains true until this method completes, so user sees discovery UI during restore.
+    /// </summary>
+    private async Task CompleteInitializationAsync()
+    {
+        try
+        {
+            // Check if we should restore settings on startup
+            var settings = _settingsUtils.GetSettingsOrDefault<PowerDisplaySettings>(PowerDisplaySettings.ModuleName);
+            if (settings.Properties.RestoreSettingsOnStartup)
+            {
+                Logger.LogInfo("[CompleteInitializationAsync] Restoring monitor settings...");
+                await RestoreMonitorSettingsAsync();
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"[CompleteInitializationAsync] Failed to restore settings: {ex.Message}");
+        }
+        finally
+        {
+            // Always complete initialization, even if restore failed
+            IsScanning = false;
+            IsInitialized = true;
+
+            // Start watching for display changes after initialization
+            StartDisplayWatching();
+
+            // Notify listeners that initialization is complete
+            InitializationCompleted?.Invoke(this, EventArgs.Empty);
+            Logger.LogInfo("[CompleteInitializationAsync] InitializationCompleted event fired");
         }
     }
 
@@ -126,11 +156,8 @@ public partial class MainViewModel
         // Save monitor information to settings
         SaveMonitorsToSettings();
 
-        // Only restore settings on initial load, not on refresh
-        if (isInitialLoad && settings.Properties.RestoreSettingsOnStartup)
-        {
-            RestoreMonitorSettings();
-        }
+        // Note: RestoreMonitorSettingsAsync is now called from InitializeAsync/CompleteInitializationAsync
+        // to ensure scanning state is maintained until restore completes
     }
 
     /// <summary>

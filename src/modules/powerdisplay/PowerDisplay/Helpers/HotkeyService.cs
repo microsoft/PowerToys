@@ -19,7 +19,7 @@ namespace PowerDisplay.Helpers
     {
         private const int HotkeyId = 9001;
 
-        private readonly ISettingsUtils _settingsUtils;
+        private readonly SettingsUtils _settingsUtils;
         private readonly Action _hotkeyAction;
 
         private nint _hwnd;
@@ -30,7 +30,7 @@ namespace PowerDisplay.Helpers
         private bool _isRegistered;
         private bool _disposed;
 
-        public HotkeyService(ISettingsUtils settingsUtils, Action hotkeyAction)
+        public HotkeyService(SettingsUtils settingsUtils, Action hotkeyAction)
         {
             _settingsUtils = settingsUtils;
             _hotkeyAction = hotkeyAction;

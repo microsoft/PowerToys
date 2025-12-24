@@ -44,7 +44,7 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
     private readonly MonitorManager _monitorManager;
     private readonly DispatcherQueue _dispatcherQueue;
     private readonly CancellationTokenSource _cancellationTokenSource;
-    private readonly ISettingsUtils _settingsUtils;
+    private readonly SettingsUtils _settingsUtils;
     private readonly MonitorStateManager _stateManager;
     private readonly DisplayChangeWatcher _displayChangeWatcher;
 

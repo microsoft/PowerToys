@@ -342,49 +342,59 @@ public partial class MainViewModel
     }
 
     /// <summary>
-    /// Restore monitor settings from state file - ONLY called at startup when RestoreSettingsOnStartup is enabled
+    /// Restore monitor settings from state file - ONLY called at startup when RestoreSettingsOnStartup is enabled.
+    /// This method actually sets hardware values (brightness, color temperature, etc.) to match saved state.
     /// </summary>
-    public void RestoreMonitorSettings()
+    public async Task RestoreMonitorSettingsAsync()
     {
         try
         {
             IsLoading = true;
+            var updateTasks = new List<Task>();
 
             foreach (var monitorVm in Monitors)
             {
-                // Find and apply corresponding saved settings from state file using unique monitor Id
+                // Find saved settings from state file using unique monitor Id
                 var savedState = _stateManager.GetMonitorParameters(monitorVm.Id);
                 if (!savedState.HasValue)
                 {
                     continue;
                 }
 
-                // Validate and apply saved values (skip invalid values)
-                // Use UpdatePropertySilently to avoid triggering hardware updates during initialization
+                Logger.LogInfo($"[Restore] Restoring settings for monitor '{monitorVm.Name}' ({monitorVm.Id})");
+
+                // Restore brightness - actually set hardware value
                 if (IsValueInRange(savedState.Value.Brightness, monitorVm.MinBrightness, monitorVm.MaxBrightness))
                 {
-                    monitorVm.UpdatePropertySilently(nameof(monitorVm.Brightness), savedState.Value.Brightness);
+                    updateTasks.Add(monitorVm.SetBrightnessAsync(savedState.Value.Brightness, immediate: true));
                 }
 
-                // Color temperature: VCP 0x14 preset value (discrete values, no range check needed)
+                // Restore color temperature (VCP 0x14 preset value)
                 if (savedState.Value.ColorTemperatureVcp > 0)
                 {
-                    monitorVm.UpdatePropertySilently(nameof(monitorVm.ColorTemperature), savedState.Value.ColorTemperatureVcp);
+                    updateTasks.Add(monitorVm.SetColorTemperatureAsync(savedState.Value.ColorTemperatureVcp));
                 }
 
-                // Contrast validation - only apply if hardware supports it
+                // Restore contrast if hardware supports it
                 if (monitorVm.ShowContrast &&
                     IsValueInRange(savedState.Value.Contrast, monitorVm.MinContrast, monitorVm.MaxContrast))
                 {
-                    monitorVm.UpdatePropertySilently(nameof(monitorVm.Contrast), savedState.Value.Contrast);
+                    updateTasks.Add(monitorVm.SetContrastAsync(savedState.Value.Contrast, immediate: true));
                 }
 
-                // Volume validation - only apply if hardware supports it
+                // Restore volume if hardware supports it
                 if (monitorVm.ShowVolume &&
                     IsValueInRange(savedState.Value.Volume, monitorVm.MinVolume, monitorVm.MaxVolume))
                 {
-                    monitorVm.UpdatePropertySilently(nameof(monitorVm.Volume), savedState.Value.Volume);
+                    updateTasks.Add(monitorVm.SetVolumeAsync(savedState.Value.Volume, immediate: true));
                 }
+            }
+
+            // Wait for all hardware updates to complete
+            if (updateTasks.Count > 0)
+            {
+                await Task.WhenAll(updateTasks);
+                Logger.LogInfo($"[Restore] Applied {updateTasks.Count} parameter updates");
             }
         }
         catch (Exception ex)

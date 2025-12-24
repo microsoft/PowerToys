@@ -25,7 +25,7 @@ namespace PowerDisplay
     public partial class App : Application
 #pragma warning restore CA1001
     {
-        private readonly ISettingsUtils _settingsUtils = SettingsUtils.Default;
+        private readonly SettingsUtils _settingsUtils = SettingsUtils.Default;
         private Window? _mainWindow;
         private int _powerToysRunnerPid;
         private TrayIconService? _trayIconService;

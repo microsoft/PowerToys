@@ -27,7 +27,7 @@ namespace PowerDisplay
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicMethods)]
     public sealed partial class MainWindow : WindowEx, IDisposable
     {
-        private readonly ISettingsUtils _settingsUtils = SettingsUtils.Default;
+        private readonly SettingsUtils _settingsUtils = SettingsUtils.Default;
         private MainViewModel? _viewModel;
         private HotkeyService? _hotkeyService;
 

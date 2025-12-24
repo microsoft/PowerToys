@@ -35,7 +35,7 @@ namespace PowerDisplay.Helpers
         private const uint MY_NOTIFY_ID = 1001;
         private const uint WM_TRAY_ICON = PInvoke.WM_USER + 1;
 
-        private readonly ISettingsUtils _settingsUtils;
+        private readonly SettingsUtils _settingsUtils;
         private readonly Action _toggleWindowAction;
         private readonly Action _exitAction;
         private readonly Action _openSettingsAction;
@@ -50,7 +50,7 @@ namespace PowerDisplay.Helpers
         private nint _popupMenu;
 
         public TrayIconService(
-            ISettingsUtils settingsUtils,
+            SettingsUtils settingsUtils,
             Action toggleWindowAction,
             Action exitAction,
             Action openSettingsAction)
