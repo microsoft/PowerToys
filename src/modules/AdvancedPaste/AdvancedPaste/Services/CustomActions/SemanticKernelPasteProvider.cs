@@ -102,7 +102,10 @@ namespace AdvancedPaste.Services.CustomActions
             var imageService = kernel.GetRequiredService<ITextToImageService>();
             var width = _config.ImageWidth > 0 ? _config.ImageWidth : 1024;
             var height = _config.ImageHeight > 0 ? _config.ImageHeight : 1024;
-            var settings = new OpenAITextToImageExecutionSettings();
+            var settings = new OpenAITextToImageExecutionSettings
+            {
+                Size = (width, height),
+            };
 
             var generatedImages = await imageService.GetImageContentsAsync(new TextContent(userMessageContent), settings, cancellationToken: cancellationToken);
 
