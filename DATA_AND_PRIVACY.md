@@ -444,6 +444,10 @@ _If you want to find diagnostic data events in the source code, these two links 
     <td>Microsoft.PowerToys.FancyZones_ZoneWindowKeyUp</td>
     <td>Occurs when a key is released while interacting with zones.</td>
   </tr>
+  <tr>
+    <td>Microsoft.PowerToys.FancyZones_CLICommand</td>
+    <td>Triggered when a FancyZones CLI command is executed, logging the command name and success status.</td>
+  </tr>
 </table>
 
 ### FileExplorerAddOns

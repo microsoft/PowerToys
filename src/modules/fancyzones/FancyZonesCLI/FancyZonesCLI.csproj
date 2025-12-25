@@ -13,7 +13,7 @@
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <OutputPath>..\..\..\..\$(Platform)\$(Configuration)</OutputPath>
     <AssemblyName>FancyZonesCLI</AssemblyName>
-    <NoWarn>$(NoWarn);SA1500;SA1402;CA1852</NoWarn>
+    <NoWarn>$(NoWarn);SA1500;SA1402;CA1852;CA1863;CA1305</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -24,6 +24,22 @@
 
   <ItemGroup>
     <ProjectReference Include="..\FancyZonesEditorCommon\FancyZonesEditorCommon.csproj" />
+    <ProjectReference Include="..\..\..\common\ManagedTelemetry\Telemetry\ManagedTelemetry.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Properties\Resources.Designer.cs">
+      <DependentUpon>Resources.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
   </ItemGroup>
 
   <!-- Force using WindowsDesktop runtime to ensure consistent dll versions with other projects -->

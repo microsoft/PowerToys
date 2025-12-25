@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.CommandLine;
 using System.CommandLine.Invocation;
+using System.Globalization;
 using System.Linq;
 
 using FancyZonesEditorCommon.Data;
@@ -19,12 +20,12 @@ internal sealed partial class SetHotkeyCommand : FancyZonesBaseCommand
     private readonly Argument<string> _layout;
 
     public SetHotkeyCommand()
-        : base("set-hotkey", "Assign hotkey (0-9) to a custom layout")
+        : base("set-hotkey", Properties.Resources.cmd_set_hotkey)
     {
         AddAlias("shk");
 
-        _key = new Argument<int>("key", "Hotkey index (0-9)");
-        _layout = new Argument<string>("layout", "Custom layout UUID");
+        _key = new Argument<int>("key", Properties.Resources.set_hotkey_arg_key);
+        _layout = new Argument<string>("layout", Properties.Resources.set_hotkey_arg_layout);
 
         AddArgument(_key);
         AddArgument(_layout);
@@ -38,7 +39,7 @@ internal sealed partial class SetHotkeyCommand : FancyZonesBaseCommand
 
         if (key < 0 || key > 9)
         {
-            throw new InvalidOperationException("Key must be between 0 and 9.");
+            throw new InvalidOperationException(Properties.Resources.set_hotkey_error_invalid_key);
         }
 
         // Editor only allows assigning hotkeys to existing custom layouts.
@@ -59,7 +60,7 @@ internal sealed partial class SetHotkeyCommand : FancyZonesBaseCommand
 
         if (!matchedLayout.HasValue)
         {
-            throw new InvalidOperationException($"Layout '{layout}' is not a custom layout UUID.");
+            throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, Properties.Resources.set_hotkey_error_not_custom, layout));
         }
 
         string layoutName = matchedLayout.Value.Name;
