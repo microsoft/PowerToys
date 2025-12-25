@@ -25,7 +25,7 @@
         <PrivateAssets>all</PrivateAssets>
         <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       </PackageReference>
-      <PackageReference Include="Microsoft.WindowsAppSDK" />
+      <PackageReference Include="Microsoft.WindowsAppSDK.WinUI" />
       <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
   </ItemGroup>
 

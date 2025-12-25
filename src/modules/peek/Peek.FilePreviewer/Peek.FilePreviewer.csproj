@@ -30,7 +30,7 @@
   <ItemGroup>
       <PackageReference Include="CommunityToolkit.Mvvm" />
       <PackageReference Include="CommunityToolkit.WinUI.Converters" />
-      <PackageReference Include="Microsoft.WindowsAppSDK" />
+      <PackageReference Include="Microsoft.WindowsAppSDK.WinUI" />
       <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
       <PackageReference Include="SharpCompress" />
       <PackageReference Include="System.Drawing.Common" />
