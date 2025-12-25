@@ -363,6 +363,10 @@ flowchart TB
     DisplayRotationService -->|"ChangeDisplaySettingsEx"| ExternalMonitor
     DisplayRotationService -->|"ChangeDisplaySettingsEx"| LaptopDisplay
 
+    %% Force vertical layout: PowerDisplay.Lib above Storage/Hardware
+    PowerDisplayLib ~~~ Storage
+    PowerDisplayLib ~~~ Hardware
+
     %% Styling
     style ExternalInputs fill:#e3f2fd,stroke:#1976d2
     style WindowsEvents fill:#fce4ec,stroke:#c2185b
