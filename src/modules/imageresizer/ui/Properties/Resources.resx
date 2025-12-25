@@ -412,7 +412,7 @@
     <value>  Fit Mode: {0}</value>
   </data>
   <data name="CLI_ConfigPresetSizes" xml:space="preserve">
-    <value>Preset Sizes:</value>
+    <value>Preset Sizes: (* = currently selected)</value>
   </data>
   <data name="CLI_ConfigPresetSizeFormat" xml:space="preserve">
     <value>  [{0}]{1} {2}: {3}x{4} {5} ({6})</value>

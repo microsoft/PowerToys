@@ -898,7 +898,7 @@ namespace ImageResizer.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Preset Sizes:.
+        ///   Looks up a localized string similar to Preset Sizes: (* = currently selected).
         /// </summary>
         public static string CLI_ConfigPresetSizes {
             get {
