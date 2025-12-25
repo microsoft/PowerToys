@@ -11,7 +11,7 @@ namespace ImageResizer.Cli.Options
         private static readonly string[] _aliases = ["--quality", "-q"];
 
         public QualityOption()
-            : base(_aliases, "Set JPEG quality level (1-100)")
+            : base(_aliases, Properties.Resources.CLI_Option_Quality)
         {
             AddValidator(result =>
             {

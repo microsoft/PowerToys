@@ -11,7 +11,7 @@ namespace ImageResizer.Cli.Options
         private static readonly string[] _aliases = ["--fit", "-f"];
 
         public FitOption()
-            : base(_aliases, "Set fit mode (Fill, Fit, Stretch)")
+            : base(_aliases, Properties.Resources.CLI_Option_Fit)
         {
         }
     }

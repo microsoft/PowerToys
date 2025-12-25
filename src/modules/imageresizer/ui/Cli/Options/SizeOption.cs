@@ -11,7 +11,7 @@ namespace ImageResizer.Cli.Options
         private static readonly string[] _aliases = ["--size"];
 
         public SizeOption()
-            : base(_aliases, "Use preset size by index (0-based)")
+            : base(_aliases, Properties.Resources.CLI_Option_Size)
         {
             AddValidator(result =>
             {

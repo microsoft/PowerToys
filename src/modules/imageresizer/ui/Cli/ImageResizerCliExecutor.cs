@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 
@@ -63,13 +64,13 @@ namespace ImageResizer.Cli
             var settings = Settings.Default;
             ApplyCliOptionsToSettings(cliOptions, settings);
 
-            Console.WriteLine($"Processing {batch.Files.Count} file(s)...");
+            Console.WriteLine(string.Format(CultureInfo.InvariantCulture, Resources.CLI_ProcessingFiles, batch.Files.Count));
 
             var errors = batch.Process(
                 (completed, total) =>
                 {
                     var progress = (int)((completed / total) * 100);
-                    Console.Write($"\rProgress: {progress}% ({completed}/{(int)total})");
+                    Console.Write(string.Format(CultureInfo.InvariantCulture, "\r{0}", string.Format(CultureInfo.InvariantCulture, Resources.CLI_ProgressFormat, progress, completed, (int)total)));
                 },
                 settings,
                 CancellationToken.None);
@@ -79,16 +80,16 @@ namespace ImageResizer.Cli
             var errorList = errors.ToList();
             if (errorList.Count > 0)
             {
-                Console.Error.WriteLine($"Completed with {errorList.Count} error(s):");
+                Console.Error.WriteLine(string.Format(CultureInfo.InvariantCulture, Resources.CLI_CompletedWithErrors, errorList.Count));
                 foreach (var error in errorList)
                 {
-                    Console.Error.WriteLine($"  {error.File}: {error.Error}");
+                    Console.Error.WriteLine(string.Format(CultureInfo.InvariantCulture, "  {0}: {1}", error.File, error.Error));
                 }
 
                 return 1;
             }
 
-            Console.WriteLine("All files processed successfully.");
+            Console.WriteLine(Resources.CLI_AllFilesProcessed);
             return 0;
         }
 
@@ -144,7 +145,7 @@ namespace ImageResizer.Cli
                 }
                 else
                 {
-                    Console.Error.WriteLine($"Warning: Invalid size index {cliOptions.SizeIndex.Value}. Using default.");
+                    Console.Error.WriteLine(string.Format(CultureInfo.InvariantCulture, Resources.CLI_WarningInvalidSizeIndex, cliOptions.SizeIndex.Value));
                 }
             }
 

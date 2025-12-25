@@ -5,9 +5,8 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-
 using System.CommandLine.Parsing;
-
+using System.Globalization;
 using ImageResizer.Cli.Commands;
 
 #pragma warning disable SA1649 // File name should match first type name
@@ -189,35 +188,35 @@ namespace ImageResizer.Models
         public static void PrintConfig(ImageResizer.Properties.Settings settings)
         {
             Console.OutputEncoding = System.Text.Encoding.UTF8;
-            Console.WriteLine("ImageResizer - Current Configuration");
+            Console.WriteLine(Properties.Resources.CLI_ConfigTitle);
             Console.WriteLine();
-            Console.WriteLine("General Settings:");
-            Console.WriteLine($"  Shrink Only: {settings.ShrinkOnly}");
-            Console.WriteLine($"  Replace Original: {settings.Replace}");
-            Console.WriteLine($"  Ignore Orientation: {settings.IgnoreOrientation}");
-            Console.WriteLine($"  Remove Metadata: {settings.RemoveMetadata}");
-            Console.WriteLine($"  Keep Date Modified: {settings.KeepDateModified}");
-            Console.WriteLine($"  JPEG Quality: {settings.JpegQualityLevel}");
-            Console.WriteLine($"  PNG Interlace: {settings.PngInterlaceOption}");
-            Console.WriteLine($"  TIFF Compress: {settings.TiffCompressOption}");
-            Console.WriteLine($"  Filename Format: {settings.FileName}");
+            Console.WriteLine(Properties.Resources.CLI_ConfigGeneralSettings);
+            Console.WriteLine(string.Format(CultureInfo.InvariantCulture, Properties.Resources.CLI_ConfigShrinkOnly, settings.ShrinkOnly));
+            Console.WriteLine(string.Format(CultureInfo.InvariantCulture, Properties.Resources.CLI_ConfigReplaceOriginal, settings.Replace));
+            Console.WriteLine(string.Format(CultureInfo.InvariantCulture, Properties.Resources.CLI_ConfigIgnoreOrientation, settings.IgnoreOrientation));
+            Console.WriteLine(string.Format(CultureInfo.InvariantCulture, Properties.Resources.CLI_ConfigRemoveMetadata, settings.RemoveMetadata));
+            Console.WriteLine(string.Format(CultureInfo.InvariantCulture, Properties.Resources.CLI_ConfigKeepDateModified, settings.KeepDateModified));
+            Console.WriteLine(string.Format(CultureInfo.InvariantCulture, Properties.Resources.CLI_ConfigJpegQuality, settings.JpegQualityLevel));
+            Console.WriteLine(string.Format(CultureInfo.InvariantCulture, Properties.Resources.CLI_ConfigPngInterlace, settings.PngInterlaceOption));
+            Console.WriteLine(string.Format(CultureInfo.InvariantCulture, Properties.Resources.CLI_ConfigTiffCompress, settings.TiffCompressOption));
+            Console.WriteLine(string.Format(CultureInfo.InvariantCulture, Properties.Resources.CLI_ConfigFilenameFormat, settings.FileName));
             Console.WriteLine();
-            Console.WriteLine("Custom Size:");
-            Console.WriteLine($"  Width: {settings.CustomSize.Width} {settings.CustomSize.Unit}");
-            Console.WriteLine($"  Height: {settings.CustomSize.Height} {settings.CustomSize.Unit}");
-            Console.WriteLine($"  Fit Mode: {settings.CustomSize.Fit}");
+            Console.WriteLine(Properties.Resources.CLI_ConfigCustomSize);
+            Console.WriteLine(string.Format(CultureInfo.InvariantCulture, Properties.Resources.CLI_ConfigWidth, settings.CustomSize.Width, settings.CustomSize.Unit));
+            Console.WriteLine(string.Format(CultureInfo.InvariantCulture, Properties.Resources.CLI_ConfigHeight, settings.CustomSize.Height, settings.CustomSize.Unit));
+            Console.WriteLine(string.Format(CultureInfo.InvariantCulture, Properties.Resources.CLI_ConfigFitMode, settings.CustomSize.Fit));
             Console.WriteLine();
-            Console.WriteLine("Preset Sizes:");
+            Console.WriteLine(Properties.Resources.CLI_ConfigPresetSizes);
             for (int i = 0; i < settings.Sizes.Count; i++)
             {
                 var size = settings.Sizes[i];
                 var selected = i == settings.SelectedSizeIndex ? "*" : " ";
-                Console.WriteLine($"  [{i}]{selected} {size.Name}: {size.Width}x{size.Height} {size.Unit} ({size.Fit})");
+                Console.WriteLine(string.Format(CultureInfo.InvariantCulture, Properties.Resources.CLI_ConfigPresetSizeFormat, i, selected, size.Name, size.Width, size.Height, size.Unit, size.Fit));
             }
 
             if (settings.SelectedSizeIndex >= settings.Sizes.Count)
             {
-                Console.WriteLine($"  [Custom]* {settings.CustomSize.Width}x{settings.CustomSize.Height} {settings.CustomSize.Unit} ({settings.CustomSize.Fit})");
+                Console.WriteLine(string.Format(CultureInfo.InvariantCulture, Properties.Resources.CLI_ConfigCustomSelected, settings.CustomSize.Width, settings.CustomSize.Height, settings.CustomSize.Unit, settings.CustomSize.Fit));
             }
         }
 
@@ -227,17 +226,17 @@ namespace ImageResizer.Models
         public static void PrintUsage()
         {
             Console.OutputEncoding = System.Text.Encoding.UTF8;
-            Console.WriteLine("ImageResizer - PowerToys Image Resizer CLI");
+            Console.WriteLine(Properties.Resources.CLI_UsageTitle);
             Console.WriteLine();
 
             var cmd = new ImageResizerRootCommand();
 
             // Print usage line
-            Console.WriteLine("Usage: PowerToys.ImageResizerCLI.exe [options] [files...]");
+            Console.WriteLine(Properties.Resources.CLI_UsageLine);
             Console.WriteLine();
 
             // Print options from the command definition
-            Console.WriteLine("Options:");
+            Console.WriteLine(Properties.Resources.CLI_UsageOptions);
             foreach (var option in cmd.Options)
             {
                 var aliases = string.Join(", ", option.Aliases);
@@ -246,11 +245,11 @@ namespace ImageResizer.Models
             }
 
             Console.WriteLine();
-            Console.WriteLine("Examples:");
-            Console.WriteLine("  PowerToys.ImageResizerCLI.exe --help");
-            Console.WriteLine("  PowerToys.ImageResizerCLI.exe --width 800 --height 600 image.jpg");
-            Console.WriteLine("  PowerToys.ImageResizerCLI.exe -w 50 -h 50 -u Percent *.jpg");
-            Console.WriteLine("  PowerToys.ImageResizerCLI.exe --size 0 -d \"C:\\Output\" photo.png");
+            Console.WriteLine(Properties.Resources.CLI_UsageExamples);
+            Console.WriteLine(Properties.Resources.CLI_UsageExampleHelp);
+            Console.WriteLine(Properties.Resources.CLI_UsageExampleDimensions);
+            Console.WriteLine(Properties.Resources.CLI_UsageExamplePercent);
+            Console.WriteLine(Properties.Resources.CLI_UsageExamplePreset);
         }
     }
 }

@@ -11,7 +11,7 @@ namespace ImageResizer.Cli.Options
         private static readonly string[] _aliases = ["--height", "-h"];
 
         public HeightOption()
-            : base(_aliases, "Set height")
+            : base(_aliases, Properties.Resources.CLI_Option_Height)
         {
         }
     }

@@ -11,7 +11,7 @@ namespace ImageResizer.Cli.Options
         private static readonly string[] _aliases = ["--show-config", "--config"];
 
         public ShowConfigOption()
-            : base(_aliases, "Show current configuration")
+            : base(_aliases, Properties.Resources.CLI_Option_ShowConfig)
         {
         }
     }

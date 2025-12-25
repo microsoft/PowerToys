@@ -9,7 +9,7 @@ namespace ImageResizer.Cli.Options
     public sealed class FilesArgument : Argument<string[]>
     {
         public FilesArgument()
-            : base("files", "Image files to resize")
+            : base("files", Properties.Resources.CLI_Option_Files)
         {
             Arity = ArgumentArity.ZeroOrMore;
         }

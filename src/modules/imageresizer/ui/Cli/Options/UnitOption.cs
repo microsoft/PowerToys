@@ -11,7 +11,7 @@ namespace ImageResizer.Cli.Options
         private static readonly string[] _aliases = ["--unit", "-u"];
 
         public UnitOption()
-            : base(_aliases, "Set unit (Pixel, Percent, Inch, Centimeter)")
+            : base(_aliases, Properties.Resources.CLI_Option_Unit)
         {
         }
     }

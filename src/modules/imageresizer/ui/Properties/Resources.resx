@@ -347,4 +347,153 @@
   <data name="Input_AiSuperResolutionDescription" xml:space="preserve">
     <value>Upscale images using on-device AI</value>
   </data>
+
+  <!-- CLI Processing messages -->
+  <data name="CLI_ProcessingFiles" xml:space="preserve">
+    <value>Processing {0} file(s)...</value>
+  </data>
+  <data name="CLI_ProgressFormat" xml:space="preserve">
+    <value>Progress: {0}% ({1}/{2})</value>
+  </data>
+  <data name="CLI_CompletedWithErrors" xml:space="preserve">
+    <value>Completed with {0} error(s):</value>
+  </data>
+  <data name="CLI_AllFilesProcessed" xml:space="preserve">
+    <value>All files processed successfully.</value>
+  </data>
+  <data name="CLI_WarningInvalidSizeIndex" xml:space="preserve">
+    <value>Warning: Invalid size index {0}. Using default.</value>
+  </data>
+
+  <!-- CLI Config display -->
+  <data name="CLI_ConfigTitle" xml:space="preserve">
+    <value>ImageResizer - Current Configuration</value>
+  </data>
+  <data name="CLI_ConfigGeneralSettings" xml:space="preserve">
+    <value>General Settings:</value>
+  </data>
+  <data name="CLI_ConfigShrinkOnly" xml:space="preserve">
+    <value>  Shrink Only: {0}</value>
+  </data>
+  <data name="CLI_ConfigReplaceOriginal" xml:space="preserve">
+    <value>  Replace Original: {0}</value>
+  </data>
+  <data name="CLI_ConfigIgnoreOrientation" xml:space="preserve">
+    <value>  Ignore Orientation: {0}</value>
+  </data>
+  <data name="CLI_ConfigRemoveMetadata" xml:space="preserve">
+    <value>  Remove Metadata: {0}</value>
+  </data>
+  <data name="CLI_ConfigKeepDateModified" xml:space="preserve">
+    <value>  Keep Date Modified: {0}</value>
+  </data>
+  <data name="CLI_ConfigJpegQuality" xml:space="preserve">
+    <value>  JPEG Quality: {0}</value>
+  </data>
+  <data name="CLI_ConfigPngInterlace" xml:space="preserve">
+    <value>  PNG Interlace: {0}</value>
+  </data>
+  <data name="CLI_ConfigTiffCompress" xml:space="preserve">
+    <value>  TIFF Compress: {0}</value>
+  </data>
+  <data name="CLI_ConfigFilenameFormat" xml:space="preserve">
+    <value>  Filename Format: {0}</value>
+  </data>
+  <data name="CLI_ConfigCustomSize" xml:space="preserve">
+    <value>Custom Size:</value>
+  </data>
+  <data name="CLI_ConfigWidth" xml:space="preserve">
+    <value>  Width: {0} {1}</value>
+  </data>
+  <data name="CLI_ConfigHeight" xml:space="preserve">
+    <value>  Height: {0} {1}</value>
+  </data>
+  <data name="CLI_ConfigFitMode" xml:space="preserve">
+    <value>  Fit Mode: {0}</value>
+  </data>
+  <data name="CLI_ConfigPresetSizes" xml:space="preserve">
+    <value>Preset Sizes:</value>
+  </data>
+  <data name="CLI_ConfigPresetSizeFormat" xml:space="preserve">
+    <value>  [{0}]{1} {2}: {3}x{4} {5} ({6})</value>
+  </data>
+  <data name="CLI_ConfigCustomSelected" xml:space="preserve">
+    <value>  [Custom]* {0}x{1} {2} ({3})</value>
+  </data>
+
+  <!-- CLI Usage help -->
+  <data name="CLI_UsageTitle" xml:space="preserve">
+    <value>ImageResizer - PowerToys Image Resizer CLI</value>
+  </data>
+  <data name="CLI_UsageLine" xml:space="preserve">
+    <value>Usage: PowerToys.ImageResizerCLI.exe [options] [files...]</value>
+  </data>
+  <data name="CLI_UsageOptions" xml:space="preserve">
+    <value>Options:</value>
+  </data>
+  <data name="CLI_UsageExamples" xml:space="preserve">
+    <value>Examples:</value>
+  </data>
+  <data name="CLI_UsageExampleHelp" xml:space="preserve">
+    <value>  PowerToys.ImageResizerCLI.exe --help</value>
+  </data>
+  <data name="CLI_UsageExampleDimensions" xml:space="preserve">
+    <value>  PowerToys.ImageResizerCLI.exe --width 800 --height 600 image.jpg</value>
+  </data>
+  <data name="CLI_UsageExamplePercent" xml:space="preserve">
+    <value>  PowerToys.ImageResizerCLI.exe -w 50 -h 50 -u Percent *.jpg</value>
+  </data>
+  <data name="CLI_UsageExamplePreset" xml:space="preserve">
+    <value>  PowerToys.ImageResizerCLI.exe --size 0 -d "C:\Output" photo.png</value>
+  </data>
+
+  <!-- CLI Option Descriptions -->
+  <data name="CLI_Option_Destination" xml:space="preserve">
+    <value>Set destination directory</value>
+  </data>
+  <data name="CLI_Option_FileName" xml:space="preserve">
+    <value>Set output filename format (%1=original name, %2=size name)</value>
+  </data>
+  <data name="CLI_Option_Files" xml:space="preserve">
+    <value>Image files to resize</value>
+  </data>
+  <data name="CLI_Option_Fit" xml:space="preserve">
+    <value>Set fit mode (Fill, Fit, Stretch)</value>
+  </data>
+  <data name="CLI_Option_Height" xml:space="preserve">
+    <value>Set height</value>
+  </data>
+  <data name="CLI_Option_Help" xml:space="preserve">
+    <value>Show help information</value>
+  </data>
+  <data name="CLI_Option_IgnoreOrientation" xml:space="preserve">
+    <value>Ignore image orientation</value>
+  </data>
+  <data name="CLI_Option_KeepDateModified" xml:space="preserve">
+    <value>Keep original date modified</value>
+  </data>
+  <data name="CLI_Option_Quality" xml:space="preserve">
+    <value>Set JPEG quality level (1-100)</value>
+  </data>
+  <data name="CLI_Option_Replace" xml:space="preserve">
+    <value>Replace original files</value>
+  </data>
+  <data name="CLI_Option_ShowConfig" xml:space="preserve">
+    <value>Show current configuration</value>
+  </data>
+  <data name="CLI_Option_ShrinkOnly" xml:space="preserve">
+    <value>Only shrink images, don't enlarge</value>
+  </data>
+  <data name="CLI_Option_RemoveMetadata" xml:space="preserve">
+    <value>Remove metadata from resized images</value>
+  </data>
+  <data name="CLI_Option_Size" xml:space="preserve">
+    <value>Use preset size by index (0-based)</value>
+  </data>
+  <data name="CLI_Option_Unit" xml:space="preserve">
+    <value>Set unit (Pixel, Percent, Inch, Centimeter)</value>
+  </data>
+  <data name="CLI_Option_Width" xml:space="preserve">
+    <value>Set width</value>
+  </data>
 </root>

@@ -11,7 +11,7 @@ namespace ImageResizer.Cli.Options
         private static readonly string[] _aliases = ["--ignore-orientation"];
 
         public IgnoreOrientationOption()
-            : base(_aliases, "Ignore image orientation")
+            : base(_aliases, Properties.Resources.CLI_Option_IgnoreOrientation)
         {
         }
     }

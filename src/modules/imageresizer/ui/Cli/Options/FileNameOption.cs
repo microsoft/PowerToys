@@ -11,7 +11,7 @@ namespace ImageResizer.Cli.Options
         private static readonly string[] _aliases = ["--filename", "-n"];
 
         public FileNameOption()
-            : base(_aliases, "Set output filename format (%1=original name, %2=size name)")
+            : base(_aliases, Properties.Resources.CLI_Option_FileName)
         {
         }
     }
