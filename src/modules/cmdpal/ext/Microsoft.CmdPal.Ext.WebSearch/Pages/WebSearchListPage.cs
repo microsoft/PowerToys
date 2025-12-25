@@ -9,33 +9,34 @@ using System.Text;
 using System.Threading;
 using Microsoft.CmdPal.Ext.WebSearch.Commands;
 using Microsoft.CmdPal.Ext.WebSearch.Helpers;
+using Microsoft.CmdPal.Ext.WebSearch.Helpers.Browser;
 using Microsoft.CmdPal.Ext.WebSearch.Properties;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
-using BrowserInfo = Microsoft.CmdPal.Ext.WebSearch.Helpers.DefaultBrowserInfo;
 
 namespace Microsoft.CmdPal.Ext.WebSearch.Pages;
 
 internal sealed partial class WebSearchListPage : DynamicListPage, IDisposable
 {
-    private readonly IconInfo _newSearchIcon = new(string.Empty);
     private readonly ISettingsInterface _settingsManager;
+    private readonly IBrowserInfoService _browserInfoService;
     private readonly Lock _sync = new();
     private static readonly CompositeFormat PluginInBrowserName = System.Text.CompositeFormat.Parse(Properties.Resources.plugin_in_browser_name);
     private static readonly CompositeFormat PluginOpen = System.Text.CompositeFormat.Parse(Properties.Resources.plugin_open);
     private IListItem[] _allItems = [];
     private List<ListItem> _historyItems = [];
 
-    public WebSearchListPage(ISettingsInterface settingsManager)
+    public WebSearchListPage(ISettingsInterface settingsManager, IBrowserInfoService browserInfoService)
     {
         ArgumentNullException.ThrowIfNull(settingsManager);
 
         Name = Resources.command_item_title;
         Title = Resources.command_item_title;
-        Icon = IconHelpers.FromRelativePath("Assets\\WebSearch.png");
+        Icon = Icons.WebSearch;
         Id = "com.microsoft.cmdpal.websearch";
 
         _settingsManager = settingsManager;
+        _browserInfoService = browserInfoService;
         _settingsManager.HistoryChanged += SettingsManagerOnHistoryChanged;
 
         // It just looks viewer to have string twice on the page, and default placeholder is good enough
@@ -44,8 +45,8 @@ internal sealed partial class WebSearchListPage : DynamicListPage, IDisposable
         EmptyContent = new CommandItem(new NoOpCommand())
         {
             Icon = Icon,
-            Title = Properties.Resources.plugin_description,
-            Subtitle = string.Format(CultureInfo.CurrentCulture, PluginInBrowserName, BrowserInfo.Name ?? BrowserInfo.MSEdgeName),
+            Title = Resources.plugin_description,
+            Subtitle = string.Format(CultureInfo.CurrentCulture, PluginInBrowserName, browserInfoService.GetDefaultBrowser()?.Name ?? Resources.default_browser),
         };
 
         UpdateHistory();
@@ -68,8 +69,9 @@ internal sealed partial class WebSearchListPage : DynamicListPage, IDisposable
             for (var index = items.Count - 1; index >= 0; index--)
             {
                 var historyItem = items[index];
-                history.Add(new ListItem(new SearchWebCommand(historyItem.SearchString, _settingsManager))
+                history.Add(new ListItem(new SearchWebCommand(historyItem.SearchString, _settingsManager, _browserInfoService))
                 {
+                    Icon = Icons.History,
                     Title = historyItem.SearchString,
                     Subtitle = historyItem.Timestamp.ToString("g", CultureInfo.InvariantCulture),
                 });
@@ -82,7 +84,7 @@ internal sealed partial class WebSearchListPage : DynamicListPage, IDisposable
         }
     }
 
-    private static IListItem[] Query(string query, List<ListItem> historySnapshot, ISettingsInterface settingsManager, IconInfo newSearchIcon)
+    private static IListItem[] Query(string query, List<ListItem> historySnapshot, ISettingsInterface settingsManager, IBrowserInfoService browserInfoService)
     {
         ArgumentNullException.ThrowIfNull(query);
 
@@ -95,11 +97,11 @@ internal sealed partial class WebSearchListPage : DynamicListPage, IDisposable
         if (!string.IsNullOrEmpty(query))
         {
             var searchTerm = query;
-            var result = new ListItem(new SearchWebCommand(searchTerm, settingsManager))
+            var result = new ListItem(new SearchWebCommand(searchTerm, settingsManager, browserInfoService))
             {
                 Title = searchTerm,
-                Subtitle = string.Format(CultureInfo.CurrentCulture, PluginOpen, BrowserInfo.Name ?? BrowserInfo.MSEdgeName),
-                Icon = newSearchIcon,
+                Subtitle = string.Format(CultureInfo.CurrentCulture, PluginOpen, browserInfoService.GetDefaultBrowser()?.Name ?? Resources.default_browser),
+                Icon = Icons.Search,
             };
             results.Add(result);
         }
@@ -117,7 +119,7 @@ internal sealed partial class WebSearchListPage : DynamicListPage, IDisposable
             historySnapshot = _historyItems;
         }
 
-        var items = Query(search ?? string.Empty, historySnapshot, _settingsManager, _newSearchIcon);
+        var items = Query(search ?? string.Empty, historySnapshot, _settingsManager, _browserInfoService);
 
         lock (_sync)
         {

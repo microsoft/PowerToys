@@ -3,7 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using ManagedCommon;
-using Microsoft.CmdPal.Common.Services;
+using Microsoft.CmdPal.Core.Common.Services;
 using Microsoft.CmdPal.Core.ViewModels;
 using Microsoft.CmdPal.Core.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
@@ -188,11 +188,12 @@ public sealed class CommandProviderWrapper
         Func<ICommandItem?, bool, TopLevelViewModel> makeAndAdd = (ICommandItem? i, bool fallback) =>
         {
             CommandItemViewModel commandItemViewModel = new(new(i), pageContext);
-            TopLevelViewModel topLevelViewModel = new(commandItemViewModel, fallback, ExtensionHost, ProviderId, settings, providerSettings, serviceProvider);
+            TopLevelViewModel topLevelViewModel = new(commandItemViewModel, fallback, ExtensionHost, ProviderId, settings, providerSettings, serviceProvider, i);
             topLevelViewModel.InitializeProperties();
 
             return topLevelViewModel;
         };
+
         if (commands is not null)
         {
             TopLevelItems = commands

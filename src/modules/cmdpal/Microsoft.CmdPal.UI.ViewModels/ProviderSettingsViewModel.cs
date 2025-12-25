@@ -5,22 +5,35 @@
 using System.Diagnostics.CodeAnalysis;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
-using Microsoft.CmdPal.Common.Services;
+using Microsoft.CmdPal.Core.Common.Services;
 using Microsoft.CmdPal.Core.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Properties;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
-public partial class ProviderSettingsViewModel(
-    CommandProviderWrapper _provider,
-    ProviderSettings _providerSettings,
-    IServiceProvider _serviceProvider) : ObservableObject
+public partial class ProviderSettingsViewModel : ObservableObject
 {
-    private readonly SettingsModel _settings = _serviceProvider.GetService<SettingsModel>()!;
+    private readonly CommandProviderWrapper _provider;
+    private readonly ProviderSettings _providerSettings;
+    private readonly SettingsModel _settings;
+
     private readonly Lock _initializeSettingsLock = new();
     private Task? _initializeSettingsTask;
+
+    public ProviderSettingsViewModel(
+        CommandProviderWrapper provider,
+        ProviderSettings providerSettings,
+        SettingsModel settings)
+    {
+        _provider = provider;
+        _providerSettings = providerSettings;
+        _settings = settings;
+
+        LoadingSettings = _provider.Settings?.HasSettings ?? false;
+
+        BuildFallbackViewModels();
+    }
 
     public string DisplayName => _provider.DisplayName;
 
@@ -28,7 +41,7 @@ public partial class ProviderSettingsViewModel(
 
     public string ExtensionSubtext => IsEnabled ?
         HasFallbackCommands ?
-            $"{ExtensionName}, {TopLevelCommands.Count} commands, {FallbackCommands.Count} fallback commands" :
+            $"{ExtensionName}, {TopLevelCommands.Count} commands, {_provider.FallbackItems?.Length} fallback commands" :
             $"{ExtensionName}, {TopLevelCommands.Count} commands" :
         Resources.builtin_disabled_extension;
 
@@ -42,7 +55,7 @@ public partial class ProviderSettingsViewModel(
     public IconInfoViewModel Icon => _provider.Icon;
 
     [ObservableProperty]
-    public partial bool LoadingSettings { get; set; } = _provider.Settings?.HasSettings ?? false;
+    public partial bool LoadingSettings { get; set; }
 
     public bool IsEnabled
     {
@@ -145,28 +158,29 @@ public partial class ProviderSettingsViewModel(
     }
 
     [field: AllowNull]
-    public List<TopLevelViewModel> FallbackCommands
-    {
-        get
-        {
-            if (field is null)
-            {
-                field = BuildFallbackViewModels();
-            }
-
-            return field;
-        }
-    }
+    public List<FallbackSettingsViewModel> FallbackCommands { get; set; } = [];
 
     public bool HasFallbackCommands => _provider.FallbackItems?.Length > 0;
 
-    private List<TopLevelViewModel> BuildFallbackViewModels()
+    private void BuildFallbackViewModels()
     {
         var thisProvider = _provider;
-        var providersCommands = thisProvider.FallbackItems;
+        var providersFallbackCommands = thisProvider.FallbackItems;
 
-        // Remember! This comes in on the UI thread!
-        return [.. providersCommands];
+        List<FallbackSettingsViewModel> fallbackViewModels = new(providersFallbackCommands.Length);
+        foreach (var fallbackItem in providersFallbackCommands)
+        {
+            if (_providerSettings.FallbackCommands.TryGetValue(fallbackItem.Id, out var fallbackSettings))
+            {
+                fallbackViewModels.Add(new FallbackSettingsViewModel(fallbackItem, fallbackSettings, _settings, this));
+            }
+            else
+            {
+                fallbackViewModels.Add(new FallbackSettingsViewModel(fallbackItem, new(), _settings, this));
+            }
+        }
+
+        FallbackCommands = fallbackViewModels;
     }
 
     private void Save() => SettingsModel.SaveSettings(_settings);

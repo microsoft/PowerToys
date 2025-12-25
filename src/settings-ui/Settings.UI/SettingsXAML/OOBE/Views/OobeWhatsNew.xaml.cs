@@ -5,7 +5,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -13,19 +12,23 @@ using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-
-using CommunityToolkit.WinUI.UI.Controls;
+using CommunityToolkit.WinUI.Controls;
 using global::PowerToys.GPOWrapper;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
+using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.HotkeyConflicts;
+using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.OOBE.Enums;
 using Microsoft.PowerToys.Settings.UI.OOBE.ViewModel;
 using Microsoft.PowerToys.Settings.UI.SerializationContext;
 using Microsoft.PowerToys.Settings.UI.Services;
 using Microsoft.PowerToys.Settings.UI.Views;
 using Microsoft.PowerToys.Telemetry;
+using Microsoft.UI.Text;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
 
 namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
@@ -38,6 +41,8 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 
         public bool ShowDataDiagnosticsInfoBar => GetShowDataDiagnosticsInfoBar();
 
+        private int _conflictCount;
+
         public AllHotkeyConflictsData AllHotkeyConflictsData
         {
             get => _allHotkeyConflictsData;
@@ -46,34 +51,48 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 if (_allHotkeyConflictsData != value)
                 {
                     _allHotkeyConflictsData = value;
+
+                    UpdateConflictCount();
+
                     OnPropertyChanged(nameof(AllHotkeyConflictsData));
                     OnPropertyChanged(nameof(HasConflicts));
                 }
             }
         }
 
-        public bool HasConflicts
+        public bool HasConflicts => _conflictCount > 0;
+
+        private void UpdateConflictCount()
         {
-            get
+            int count = 0;
+            if (AllHotkeyConflictsData == null)
             {
-                if (AllHotkeyConflictsData == null)
-                {
-                    return false;
-                }
-
-                int count = 0;
-                if (AllHotkeyConflictsData.InAppConflicts != null)
-                {
-                    count += AllHotkeyConflictsData.InAppConflicts.Count;
-                }
-
-                if (AllHotkeyConflictsData.SystemConflicts != null)
-                {
-                    count += AllHotkeyConflictsData.SystemConflicts.Count;
-                }
-
-                return count > 0;
+                _conflictCount = count;
             }
+
+            if (AllHotkeyConflictsData.InAppConflicts != null)
+            {
+                foreach (var inAppConflict in AllHotkeyConflictsData.InAppConflicts)
+                {
+                    if (!inAppConflict.ConflictIgnored)
+                    {
+                        count++;
+                    }
+                }
+            }
+
+            if (AllHotkeyConflictsData.SystemConflicts != null)
+            {
+                foreach (var systemConflict in AllHotkeyConflictsData.SystemConflicts)
+                {
+                    if (!systemConflict.ConflictIgnored)
+                    {
+                        count++;
+                    }
+                }
+            }
+
+            _conflictCount = count;
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -99,6 +118,21 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
         {
             this.DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal, () =>
             {
+                var allConflictData = e.Conflicts;
+                foreach (var inAppConflict in allConflictData.InAppConflicts)
+                {
+                    var hotkey = inAppConflict.Hotkey;
+                    var hotkeySetting = new HotkeySettings(hotkey.Win, hotkey.Ctrl, hotkey.Alt, hotkey.Shift, hotkey.Key);
+                    inAppConflict.ConflictIgnored = HotkeyConflictIgnoreHelper.IsIgnoringConflicts(hotkeySetting);
+                }
+
+                foreach (var systemConflict in allConflictData.SystemConflicts)
+                {
+                    var hotkey = systemConflict.Hotkey;
+                    var hotkeySetting = new HotkeySettings(hotkey.Win, hotkey.Ctrl, hotkey.Alt, hotkey.Shift, hotkey.Key);
+                    systemConflict.ConflictIgnored = HotkeyConflictIgnoreHelper.IsIgnoringConflicts(hotkeySetting);
+                }
+
                 AllHotkeyConflictsData = e.Conflicts ?? new AllHotkeyConflictsData();
             });
         }
@@ -257,17 +291,6 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             }
         }
 
-        private void ReleaseNotesMarkdown_LinkClicked(object sender, LinkClickedEventArgs e)
-        {
-            if (Uri.TryCreate(e.Link, UriKind.Absolute, out Uri link))
-            {
-                this.DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal, () =>
-                {
-                    Process.Start(new ProcessStartInfo(link.ToString()) { UseShellExecute = true });
-                });
-            }
-        }
-
         private void DataDiagnostics_InfoBar_YesNo_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
             string commandArg = string.Empty;
@@ -325,7 +348,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 
         private void DataDiagnostics_OpenSettings_Click(Microsoft.UI.Xaml.Documents.Hyperlink sender, Microsoft.UI.Xaml.Documents.HyperlinkClickEventArgs args)
         {
-            Common.UI.SettingsDeepLink.OpenSettings(Common.UI.SettingsDeepLink.SettingsWindow.Overview, true);
+            Common.UI.SettingsDeepLink.OpenSettings(Common.UI.SettingsDeepLink.SettingsWindow.Overview);
         }
 
         private async void LoadReleaseNotes_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)

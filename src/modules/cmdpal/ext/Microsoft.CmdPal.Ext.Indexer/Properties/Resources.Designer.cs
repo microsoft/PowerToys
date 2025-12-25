@@ -97,6 +97,15 @@ namespace Microsoft.CmdPal.Ext.Indexer.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Open Windows Search settings.
+        /// </summary>
+        internal static string Indexer_Command_OpenIndexerSettings {
+            get {
+                return ResourceManager.GetString("Indexer_Command_OpenIndexerSettings", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Open path in console.
         /// </summary>
         internal static string Indexer_Command_OpenPathInConsole {
@@ -120,6 +129,15 @@ namespace Microsoft.CmdPal.Ext.Indexer.Properties {
         internal static string Indexer_Command_OpenWith {
             get {
                 return ResourceManager.GetString("Indexer_Command_OpenWith", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Search all files.
+        /// </summary>
+        internal static string Indexer_Command_SearchAllFiles {
+            get {
+                return ResourceManager.GetString("Indexer_Command_SearchAllFiles", resourceCulture);
             }
         }
         
@@ -160,6 +178,33 @@ namespace Microsoft.CmdPal.Ext.Indexer.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Files and folders.
+        /// </summary>
+        internal static string Indexer_Filter_All {
+            get {
+                return ResourceManager.GetString("Indexer_Filter_All", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Files.
+        /// </summary>
+        internal static string Indexer_Filter_Files_Only {
+            get {
+                return ResourceManager.GetString("Indexer_Filter_Files_Only", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Folders.
+        /// </summary>
+        internal static string Indexer_Filter_Folders_Only {
+            get {
+                return ResourceManager.GetString("Indexer_Filter_Folders_Only", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Find file from path.
         /// </summary>
         internal static string Indexer_Find_Path_fallback_display_title {
@@ -187,11 +232,21 @@ namespace Microsoft.CmdPal.Ext.Indexer.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Tip: Improve your search result using filters like in Windows Explorer. (For example: type:directory).
+        ///   Looks up a localized string similar to Nothing was found in the indexed locations.
+        ///You can try searching all files on this PC or adjust your indexing settings..
         /// </summary>
         internal static string Indexer_NoResultsMessageTip {
             get {
                 return ResourceManager.GetString("Indexer_NoResultsMessageTip", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Tip: Refine your search using filters, just like in File Explorer (e.g., type:directory)..
+        /// </summary>
+        internal static string Indexer_NoSearchQueryMessageTip {
+            get {
+                return ResourceManager.GetString("Indexer_NoSearchQueryMessageTip", resourceCulture);
             }
         }
         
@@ -237,15 +292,6 @@ namespace Microsoft.CmdPal.Ext.Indexer.Properties {
         internal static string Indexer_Settings_FallbackCommand_Off {
             get {
                 return ResourceManager.GetString("Indexer_Settings_FallbackCommand_Off", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Search files on this device.
-        /// </summary>
-        internal static string Indexer_Subtitle {
-            get {
-                return ResourceManager.GetString("Indexer_Subtitle", resourceCulture);
             }
         }
         

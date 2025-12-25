@@ -133,7 +133,7 @@ namespace Microsoft.PowerToys.Settings.UI
             var settingValue = cmdArgs[3];
             try
             {
-                SetSettingCommandLineCommand.Execute(settingName, settingValue, new SettingsUtils());
+                SetSettingCommandLineCommand.Execute(settingName, settingValue, SettingsUtils.Default);
             }
             catch (Exception ex)
             {
@@ -151,7 +151,7 @@ namespace Microsoft.PowerToys.Settings.UI
             {
                 using (var settings = JsonDocument.Parse(File.ReadAllText(ipcFileName)))
                 {
-                    SetAdditionalSettingsCommandLineCommand.Execute(moduleName, settings, new SettingsUtils());
+                    SetAdditionalSettingsCommandLineCommand.Execute(moduleName, settings, SettingsUtils.Default);
                 }
             }
             catch (Exception ex)
@@ -336,7 +336,7 @@ namespace Microsoft.PowerToys.Settings.UI
                 });
 #else
         /* If we try to run Settings as a standalone app, it will start PowerToys.exe if not running and open Settings again through it in the Dashboard page. */
-        Common.UI.SettingsDeepLink.OpenSettings(Common.UI.SettingsDeepLink.SettingsWindow.Dashboard, true);
+        Common.UI.SettingsDeepLink.OpenSettings(Common.UI.SettingsDeepLink.SettingsWindow.Dashboard);
         Exit();
 #endif
             }
@@ -357,7 +357,7 @@ namespace Microsoft.PowerToys.Settings.UI
             return 0;
         }
 
-        private static ISettingsUtils settingsUtils = new SettingsUtils();
+        private static SettingsUtils settingsUtils = SettingsUtils.Default;
         private static ThemeService themeService = new ThemeService(SettingsRepository<GeneralSettings>.GetInstance(settingsUtils));
 
         public static ThemeService ThemeService => themeService;
@@ -417,6 +417,7 @@ namespace Microsoft.PowerToys.Settings.UI
                 case "Awake": return typeof(AwakePage);
                 case "CmdNotFound": return typeof(CmdNotFoundPage);
                 case "ColorPicker": return typeof(ColorPickerPage);
+                case "LightSwitch": return typeof(LightSwitchPage);
                 case "FancyZones": return typeof(FancyZonesPage);
                 case "FileLocksmith": return typeof(FileLocksmithPage);
                 case "Run": return typeof(PowerLauncherPage);

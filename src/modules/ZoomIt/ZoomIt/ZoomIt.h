@@ -39,6 +39,10 @@ type_pEnableThemeDialogTexture    pEnableThemeDialogTexture;
 #define WIN7_VERSION		0x106
 #define WIN10_VERSION		0x206
 
+// Default recording format frame rates
+#define RECORDING_FORMAT_GIF_DEFAULT_FRAMERATE 15
+#define RECORDING_FORMAT_MP4_DEFAULT_FRAMERATE 30
+
 // Time that we'll cache live zoom window to avoid flicker
 // of live zooming on Vista/ws2k8
 #define LIVEZOOM_WINDOW_TIMEOUT	2*3600*1000
@@ -96,7 +100,10 @@ typedef struct {
 #define SHALLOW_DESTROY 2
 #define LIVE_DRAW_ZOOM   3
 
-#define PEN_COLOR_HIGHLIGHT(Pencolor)	(Pencolor >> 24) != 0xFF
+#define PEN_COLOR_HIGHLIGHT(Pencolor)	((Pencolor >> 24) != 0xFF)
+#define PEN_COLOR_BLUR(Pencolor)        ((Pencolor & 0x00FFFFFF) == COLOR_BLUR)
+
+#define CURSOR_SAVE_MARGIN  4
 
 
 typedef BOOL (__stdcall *type_pGetMonitorInfo)(
@@ -143,7 +150,14 @@ typedef BOOL(__stdcall *type_pMagSetWindowFilterList)(
     int   count,
     HWND* pHWND
 );
-typedef BOOL (__stdcall *type_pMagInitialize)(VOID);
+typedef BOOL(__stdcall* type_pMagSetLensUseBitmapSmoothing)(
+    _In_ HWND, 
+    _In_ BOOL
+);
+typedef BOOL(__stdcall* type_MagSetFullscreenUseBitmapSmoothing)(
+    BOOL fUseBitmapSmoothing
+);
+typedef BOOL(__stdcall* type_pMagInitialize)(VOID);
 
 typedef BOOL(__stdcall *type_pGetPointerType)(
     _In_   UINT32 pointerId,

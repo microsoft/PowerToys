@@ -3,4 +3,29 @@
 
   <Import Project="$(MSBuildCachePackageRoot)\build\$(MSBuildCachePackageName).targets" Condition="'$(MSBuildCacheEnabled)' == 'true'" />
   <Import Project="$(MSBuildCacheSharedCompilationPackageRoot)\build\Microsoft.MSBuildCache.SharedCompilation.targets" Condition="'$(MSBuildCacheEnabled)' == 'true'" />
+
+  <!-- Override ManifestTool to the x64 host tool under WindowsSdkDir for all projects once the SDK path is known. -->
+  <PropertyGroup Label="ManifestToolOverride">
+    <ManifestTool Condition="Exists('$(WindowsSdkDir)bin\x64\mt.exe')">$(WindowsSdkDir)bin\x64\mt.exe</ManifestTool>
+  </PropertyGroup>
+
+  <!-- Auto-restore NuGet for native vcxproj (PackageReference) when building inside VS -->
+  <Target Name="EnsureNuGetRestoreForVcxproj" BeforeTargets="PrepareForBuild" Condition="
+            '$(BuildingInsideVisualStudio)' == 'true'
+            and '$(DesignTimeBuild)' != 'true'
+            and '$(RestoreInProgress)' != 'true'
+            and '$(MSBuildProjectExtension)' == '.vcxproj'
+            and '$(RestoreProjectStyle)' == 'PackageReference'
+            and '$(MSBuildProjectExtensionsPath)' != ''
+            and !Exists('$(MSBuildProjectExtensionsPath)project.assets.json')
+          ">
+
+    <Message Importance="normal" Text="NuGet assets missing for $(MSBuildProjectName); running Restore...; IntDir=$(IntDir); BaseIntermediateOutputPath=$(BaseIntermediateOutputPath)" />
+
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="Restore" Properties="RestoreInProgress=true" BuildInParallel="false" />
+  </Target>
+
+  <PropertyGroup Condition="'$(IgnoreExperimentalWarnings)' == 'true'">
+    <NoWarn>$(NoWarn);CS8305;SA1500;CA1852</NoWarn>
+  </PropertyGroup>
 </Project>

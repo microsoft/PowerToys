@@ -51,7 +51,8 @@ int WINAPI wWinMain(_In_ HINSTANCE /*hInstance*/,
 
     auto mainThreadId = GetCurrentThreadId();
 
-    EventWaiter ev = EventWaiter(CommonSharedConstants::TERMINATE_KBM_SHARED_EVENT, [&](int) {
+    EventWaiter ev;
+    ev.start(CommonSharedConstants::TERMINATE_KBM_SHARED_EVENT, [&](DWORD) {
         PostThreadMessage(mainThreadId, WM_QUIT, 0, 0);
     });
 

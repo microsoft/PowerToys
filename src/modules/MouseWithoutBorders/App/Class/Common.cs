@@ -33,6 +33,7 @@ using MouseWithoutBorders.Class;
 using MouseWithoutBorders.Core;
 using MouseWithoutBorders.Exceptions;
 
+using Clipboard = MouseWithoutBorders.Core.Clipboard;
 using Thread = MouseWithoutBorders.Core.Thread;
 
 // Log is enough
@@ -90,8 +91,8 @@ namespace MouseWithoutBorders
         private static FrmMatrix matrixForm;
         private static FrmInputCallback inputCallbackForm;
         private static FrmAbout aboutForm;
-        private static Thread helper;
 #pragma warning disable SA1307 // Accessible fields should begin with upper-case letter
+        internal static Thread helper;
         internal static int screenWidth;
         internal static int screenHeight;
 #pragma warning restore SA1307
@@ -121,7 +122,9 @@ namespace MouseWithoutBorders
         internal static int switchCount;
 #pragma warning restore SA1307
         private static long lastReconnectByHotKeyTime;
-        private static int tcpPort;
+#pragma warning disable SA1307 // Accessible fields should begin with upper-case names
+        internal static int tcpPort;
+#pragma warning restore SA1307
         private static bool secondOpenSocketTry;
         private static string binaryName;
 
@@ -210,7 +213,7 @@ namespace MouseWithoutBorders
 
         internal static bool Is64bitOS
         {
-            get; private set;
+            get; set;
 
             // set { Common.is64bitOS = value; }
         }
@@ -312,7 +315,7 @@ namespace MouseWithoutBorders
                 if (!acquireMutex)
                 {
                     Process[] ps = Process.GetProcessesByName(Common.BinaryName);
-                    Logger.TelemetryLogTrace($"Balance: {socketMutexBalance}, Active: {IsMyDesktopActive()}, Sid/Console: {Process.GetCurrentProcess().SessionId}/{NativeMethods.WTSGetActiveConsoleSessionId()}, Desktop/Input: {GetMyDesktop()}/{GetInputDesktop()}, count: {ps?.Length}.", SeverityLevel.Warning);
+                    Logger.TelemetryLogTrace($"Balance: {socketMutexBalance}, Active: {WinAPI.IsMyDesktopActive()}, Sid/Console: {Process.GetCurrentProcess().SessionId}/{NativeMethods.WTSGetActiveConsoleSessionId()}, Desktop/Input: {WinAPI.GetMyDesktop()}/{WinAPI.GetInputDesktop()}, count: {ps?.Length}.", SeverityLevel.Warning);
                 }
 
                 Logger.LogDebug("SOCKET MUTEX ENDED.");
@@ -355,7 +358,7 @@ namespace MouseWithoutBorders
 
                     Logger.TelemetryLogTrace($"[{actionName}] took more than {(long)timeout.TotalSeconds}, restarting the process.", SeverityLevel.Warning, true);
 
-                    string desktop = Common.GetMyDesktop();
+                    string desktop = WinAPI.GetMyDesktop();
                     MachineStuff.oneInstanceCheck?.Close();
                     _ = Process.Start(Application.ExecutablePath, desktop);
                     Logger.LogDebug($"Started on desktop {desktop}");
@@ -511,7 +514,7 @@ namespace MouseWithoutBorders
 
         internal static void SendHeartBeat(bool initial = false)
         {
-            SendPackage(ID.ALL, initial && Common.GeneratedKey ? PackageType.Heartbeat_ex : PackageType.Heartbeat);
+            SendPackage(ID.ALL, initial && Encryption.GeneratedKey ? PackageType.Heartbeat_ex : PackageType.Heartbeat);
         }
 
         private static long lastSendNextMachine;
@@ -547,7 +550,7 @@ namespace MouseWithoutBorders
 
         internal static void SendAwakeBeat()
         {
-            if (!Common.RunOnLogonDesktop && !Common.RunOnScrSaverDesktop && Common.IsMyDesktopActive() &&
+            if (!Common.RunOnLogonDesktop && !Common.RunOnScrSaverDesktop && WinAPI.IsMyDesktopActive() &&
                 Setting.Values.BlockScreenSaver && lastRealInputEventCount != Event.RealInputEventCount)
             {
                 SendPackage(ID.ALL, PackageType.Awake);
@@ -565,7 +568,7 @@ namespace MouseWithoutBorders
         {
             if (lastInputEventCount == Event.InputEventCount)
             {
-                if (!Common.RunOnLogonDesktop && !Common.RunOnScrSaverDesktop && Common.IsMyDesktopActive())
+                if (!Common.RunOnLogonDesktop && !Common.RunOnScrSaverDesktop && WinAPI.IsMyDesktopActive())
                 {
                     PokeMyself();
                 }
@@ -574,13 +577,13 @@ namespace MouseWithoutBorders
             lastInputEventCount = Event.InputEventCount;
         }
 
-        private static void PokeMyself()
+        internal static void PokeMyself()
         {
             int x, y = 0;
 
             for (int i = 0; i < 10; i++)
             {
-                x = Ran.Next(-9, 10);
+                x = Encryption.Ran.Next(-9, 10);
                 InputSimulation.MoveMouseRelative(x, y);
                 Thread.Sleep(50);
                 InputSimulation.MoveMouseRelative(-x, -y);
@@ -611,7 +614,7 @@ namespace MouseWithoutBorders
         }
          * */
 
-        private static void SendByeBye()
+        internal static void SendByeBye()
         {
             Logger.LogDebug($"{nameof(SendByeBye)}");
             SendPackage(ID.ALL, PackageType.ByeBye);
@@ -674,7 +677,7 @@ namespace MouseWithoutBorders
                 {
                     Common.MMSleep(0.2);
                     InputSimulation.SendKey(new KEYBDDATA() { wVk = (int)VK.SNAPSHOT });
-                    InputSimulation.SendKey(new KEYBDDATA() { dwFlags = (int)Common.LLKHF.UP, wVk = (int)VK.SNAPSHOT });
+                    InputSimulation.SendKey(new KEYBDDATA() { dwFlags = (int)WM.LLKHF.UP, wVk = (int)VK.SNAPSHOT });
 
                     Logger.LogDebug("PrepareScreenCapture: SNAPSHOT simulated.");
 
@@ -707,7 +710,7 @@ namespace MouseWithoutBorders
                 "\"" + Environment.ExpandEnvironmentVariables(@"%SystemRoot%\System32\Mspaint.exe") +
                 "\"",
                 "\"" + file + "\"",
-                GetInputDesktop(),
+                WinAPI.GetInputDesktop(),
                 1);
 
             // CreateNormalIntegrityProcess(Environment.ExpandEnvironmentVariables(@"%SystemRoot%\System32\Mspaint.exe") +
@@ -725,7 +728,7 @@ namespace MouseWithoutBorders
 
         internal static void SendImage(string machine, string file)
         {
-            LastDragDropFile = file;
+            Clipboard.LastDragDropFile = file;
 
             // Send ClipboardCapture
             if (machine.Equals("All", StringComparison.OrdinalIgnoreCase))
@@ -744,7 +747,7 @@ namespace MouseWithoutBorders
 
         internal static void SendImage(ID src, string file)
         {
-            LastDragDropFile = file;
+            Clipboard.LastDragDropFile = file;
 
             // Send ClipboardCapture
             SendPackage(src, PackageType.ClipboardCapture);
@@ -916,7 +919,7 @@ namespace MouseWithoutBorders
 
                 try
                 {
-                    data.Id = Interlocked.Increment(ref PackageID);
+                    data.Id = Interlocked.Increment(ref Package.PackageID);
 
                     bool updateClientSockets = false;
 
@@ -996,7 +999,7 @@ namespace MouseWithoutBorders
             }
             else
             {
-                PackageSent.Nil++;
+                Package.PackageSent.Nil++;
             }
         }
 
@@ -1291,7 +1294,7 @@ namespace MouseWithoutBorders
             });
         }
 
-        private static string GetMyStorageDir()
+        internal static string GetMyStorageDir()
         {
             string st = string.Empty;
 
@@ -1376,7 +1379,7 @@ namespace MouseWithoutBorders
 
                 if (string.IsNullOrEmpty(machine_Name))
                 {
-                    machine_Name = "RANDOM" + Ran.Next().ToString(CultureInfo.CurrentCulture);
+                    machine_Name = "RANDOM" + Encryption.Ran.Next().ToString(CultureInfo.CurrentCulture);
                 }
             }
 
@@ -1530,13 +1533,13 @@ namespace MouseWithoutBorders
 
         internal static void SendOrReceiveARandomDataBlockPerInitialIV(Stream st, bool send = true)
         {
-            byte[] ranData = new byte[SymAlBlockSize];
+            byte[] ranData = new byte[Encryption.SymAlBlockSize];
 
             try
             {
                 if (send)
                 {
-                    ranData = RandomNumberGenerator.GetBytes(SymAlBlockSize);
+                    ranData = RandomNumberGenerator.GetBytes(Encryption.SymAlBlockSize);
                     st.Write(ranData, 0, ranData.Length);
                 }
                 else

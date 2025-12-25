@@ -19,7 +19,7 @@ Shortcut Guide is a PowerToy that displays an overlay of available keyboard shor
 ## Build and Debug Instructions
 
 ### Build
-1. Open PowerToys.sln in Visual Studio
+1. Open PowerToys.slnx in Visual Studio
 2. Select Release or Debug in the Solutions Configuration drop-down menu
 3. From the Build menu, choose Build Solution
 4. The executable is named PowerToys.ShortcutGuide.exe

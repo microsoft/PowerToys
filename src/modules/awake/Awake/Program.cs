@@ -239,6 +239,25 @@ namespace Awake
             Manager.CompleteExit(exitCode);
         }
 
+        private static bool ProcessExists(int processId)
+        {
+            if (processId <= 0)
+            {
+                return false;
+            }
+
+            try
+            {
+                // Throws if the Process ID is not found.
+                using var p = Process.GetProcessById(processId);
+                return !p.HasExited;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
         private static void HandleCommandLineArguments(bool usePtConfig, bool displayOn, uint timeLimit, int pid, string expireAt, bool useParentPid)
         {
             if (pid == 0 && !useParentPid)
@@ -295,6 +314,12 @@ namespace Awake
 
                     if (pid != 0)
                     {
+                        if (!ProcessExists(pid))
+                        {
+                            Logger.LogError($"PID {pid} does not exist or is not accessible. Exiting.");
+                            Exit(Resources.AWAKE_EXIT_PROCESS_BINDING_FAILURE_MESSAGE, 1);
+                        }
+
                         Logger.LogInfo($"Bound to target process while also using PowerToys settings: {pid}");
 
                         RunnerHelper.WaitForPowerToysRunner(pid, () =>
@@ -311,28 +336,7 @@ namespace Awake
             }
             else if (pid != 0 || useParentPid)
             {
-                // Second, we snap to process-based execution. Because this is something that
-                // is snapped to a running entity, we only want to enable the ability to set
-                // indefinite keep-awake with the display settings that the user wants to set.
-                // In this context, manual (explicit) PID takes precedence over parent PID.
-                int targetPid = pid != 0 ? pid : useParentPid ? Manager.GetParentProcess()?.Id ?? 0 : 0;
-
-                if (targetPid != 0)
-                {
-                    Logger.LogInfo($"Bound to target process: {targetPid}");
-
-                    Manager.SetIndefiniteKeepAwake(displayOn, targetPid);
-
-                    RunnerHelper.WaitForPowerToysRunner(targetPid, () =>
-                    {
-                        Logger.LogInfo($"Triggered PID-based exit handler for PID {targetPid}.");
-                        Exit(Resources.AWAKE_EXIT_BINDING_HOOK_MESSAGE, 0);
-                    });
-                }
-                else
-                {
-                    Logger.LogError("Not binding to any process.");
-                }
+                HandleProcessScopedKeepAwake(pid, useParentPid, displayOn);
             }
             else
             {
@@ -366,6 +370,62 @@ namespace Awake
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Start a process-scoped keep-awake session. The application will keep the system awake
+        /// indefinitely until the target process terminates.
+        /// </summary>
+        /// <param name="pid">The explicit process ID to monitor.</param>
+        /// <param name="useParentPid">A flag indicating whether the application should monitor its
+        /// parent process.</param>
+        /// <param name="displayOn">Whether to keep the display on during the session.</param>
+        private static void HandleProcessScopedKeepAwake(int pid, bool useParentPid, bool displayOn)
+        {
+            int targetPid = 0;
+
+            // We prioritize a user-provided PID over the parent PID. If both are given on the
+            // command line, the --pid value will be used.
+            if (pid != 0)
+            {
+                if (pid == Environment.ProcessId)
+                {
+                    Logger.LogError("Awake cannot bind to itself, as this would lead to an indefinite keep-awake state.");
+                    Exit(Resources.AWAKE_EXIT_BIND_TO_SELF_FAILURE_MESSAGE, 1);
+                }
+
+                if (!ProcessExists(pid))
+                {
+                    Logger.LogError($"PID {pid} does not exist or is not accessible. Exiting.");
+                    Exit(Resources.AWAKE_EXIT_PROCESS_BINDING_FAILURE_MESSAGE, 1);
+                }
+
+                targetPid = pid;
+            }
+            else if (useParentPid)
+            {
+                targetPid = Manager.GetParentProcess()?.Id ?? 0;
+
+                if (targetPid == 0)
+                {
+                    // The parent process could not be identified.
+                    Logger.LogError("Failed to identify a parent process for binding.");
+                    Exit(Resources.AWAKE_EXIT_PARENT_BINDING_FAILURE_MESSAGE, 1);
+                }
+            }
+
+            // We have a valid non-zero PID to monitor.
+            Logger.LogInfo($"Bound to target process: {targetPid}");
+
+            // Sets the keep-awake plan and updates the tray icon.
+            Manager.SetIndefiniteKeepAwake(displayOn, targetPid);
+
+            // Synchronize with the target process, and trigger Exit() when it finishes.
+            RunnerHelper.WaitForPowerToysRunner(targetPid, () =>
+            {
+                Logger.LogInfo($"Triggered PID-based exit handler for PID {targetPid}.");
+                Exit(Resources.AWAKE_EXIT_BINDING_HOOK_MESSAGE, 0);
+            });
         }
 
         private static void AllocateLocalConsole()

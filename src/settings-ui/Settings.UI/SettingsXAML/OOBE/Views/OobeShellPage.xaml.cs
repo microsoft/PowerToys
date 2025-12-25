@@ -51,7 +51,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 
         public ObservableCollection<OobePowerToysModule> Modules { get; }
 
-        private static ISettingsUtils settingsUtils = new SettingsUtils();
+        private static SettingsUtils settingsUtils = SettingsUtils.Default;
 
         /* NOTE: Experimentation for OOBE is currently turned off on server side. Keeping this code in a comment to allow future experiments.
           private bool ExperimentationToggleSwitchEnabled { get; set; } = true;
@@ -137,6 +137,11 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             {
                 ModuleName = "KBM",
                 IsNew = false,
+            });
+            Modules.Insert((int)PowerToysModules.LightSwitch, new OobePowerToysModule()
+            {
+                ModuleName = "LightSwitch",
+                IsNew = true,
             });
             Modules.Insert((int)PowerToysModules.MouseUtils, new OobePowerToysModule()
             {
@@ -287,6 +292,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                     case "Run": NavigationFrame.Navigate(typeof(OobeRun)); break;
                     case "ImageResizer": NavigationFrame.Navigate(typeof(OobeImageResizer)); break;
                     case "KBM": NavigationFrame.Navigate(typeof(OobeKBM)); break;
+                    case "LightSwitch": NavigationFrame.Navigate(typeof(OobeLightSwitch)); break;
                     case "PowerRename": NavigationFrame.Navigate(typeof(OobePowerRename)); break;
                     case "QuickAccent": NavigationFrame.Navigate(typeof(OobePowerAccent)); break;
                     case "FileExplorer": NavigationFrame.Navigate(typeof(OobeFileExplorer)); break;

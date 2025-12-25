@@ -14,28 +14,17 @@
     <controls:SettingsPageControl x:Uid="FancyZones" ModuleImageSource="ms-appx:///Assets/Settings/Modules/FancyZones.png">
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
-                <tkcontrols:SettingsCard
-                    Name="FancyZonesEnableToggleControlHeaderText"
-                    x:Uid="FancyZones_EnableToggleControl_HeaderText"
-                    HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/FancyZones.png}"
-                    IsEnabled="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
-                    <ToggleSwitch
-                        x:Name="EnableFancyZonesToggleSwitch"
-                        x:Uid="ToggleSwitch"
-                        AutomationProperties.AutomationId="EnableFancyZonesToggleSwitch"
-                        IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
-                </tkcontrols:SettingsCard>
-                <InfoBar
-                    x:Uid="GPO_SettingIsManaged"
-                    IsClosable="False"
-                    IsOpen="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
-                    IsTabStop="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
-                    Severity="Informational">
-                    <InfoBar.IconSource>
-                        <FontIconSource FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE72E;" />
-                    </InfoBar.IconSource>
-                </InfoBar>
-
+                <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}">
+                    <tkcontrols:SettingsCard
+                        Name="FancyZonesEnableToggleControlHeaderText"
+                        x:Uid="FancyZones_EnableToggleControl_HeaderText"
+                        HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/FancyZones.png}">
+                        <ToggleSwitch
+                            x:Uid="ToggleSwitch"
+                            AutomationProperties.AutomationId="EnableFancyZonesToggleSwitch"
+                            IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
+                </controls:GPOInfoControl>
                 <controls:SettingsGroup x:Uid="FancyZones_Editor_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsCard
                         Name="FancyZonesLaunchEditorButtonControl"
@@ -203,7 +192,10 @@
                         x:Uid="FancyZones_WindowSwitching_GroupSettings"
                         HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}"
                         IsExpanded="True">
-                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.WindowSwitching, Mode=TwoWay}" />
+                        <ToggleSwitch
+                            x:Uid="ToggleSwitch"
+                            AutomationProperties.Name="FancyZonesWindowSwitchingToggle"
+                            IsOn="{x:Bind ViewModel.WindowSwitching, Mode=TwoWay}" />
                         <tkcontrols:SettingsExpander.Items>
                             <!--  HACK: For some weird reason, a Shortcut Control is not working correctly if it's the first item in the expander, so we add an invisible card as the first one.  -->
                             <tkcontrols:SettingsCard Name="FancyZonesWindowSwitchingPlaceholder" Visibility="Collapsed" />
@@ -270,7 +262,10 @@
                         Name="FancyZonesQuickLayoutSwitch"
                         x:Uid="FancyZones_QuickLayoutSwitch"
                         HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
-                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.QuickLayoutSwitch, Mode=TwoWay}" />
+                        <ToggleSwitch
+                            x:Uid="ToggleSwitch"
+                            AutomationProperties.Name="FancyZonesQuickLayoutSwitch"
+                            IsOn="{x:Bind ViewModel.QuickLayoutSwitch, Mode=TwoWay}" />
                         <tkcontrols:SettingsExpander.Items>
                             <tkcontrols:SettingsCard
                                 Name="FancyZonesFlashZonesOnQuickSwitch"

@@ -4,9 +4,6 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:tk7controls="using:CommunityToolkit.WinUI.UI.Controls"
-    xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
-    xmlns:ui="using:CommunityToolkit.WinUI"
     xmlns:winuiex="using:WinUIEx"
     MinWidth="480"
     MinHeight="320"
@@ -20,7 +17,7 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <TitleBar x:Name="titleBar">
+        <TitleBar x:Name="titleBar" IsTabStop="False">
             <!--  This is a workaround for https://github.com/microsoft/microsoft-ui-xaml/issues/10374, once fixed we should just be using IconSource  -->
             <TitleBar.LeftHeader>
                 <ImageIcon

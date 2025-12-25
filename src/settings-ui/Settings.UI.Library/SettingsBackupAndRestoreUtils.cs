@@ -592,7 +592,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         /// </summary>
         public (bool Success, string Message, string Severity, bool LastBackupExists, string OptionalMessage) DryRunBackup()
         {
-            var settingsUtils = new SettingsUtils();
+            var settingsUtils = SettingsUtils.Default;
             var appBasePath = Path.GetDirectoryName(settingsUtils.GetSettingsFilePath());
             string settingsBackupAndRestoreDir = GetSettingsBackupAndRestoreDir();
             var results = BackupSettings(appBasePath, settingsBackupAndRestoreDir, true);
@@ -653,11 +653,15 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                         return (false, "General_SettingsBackupAndRestore_InvalidBackupLocation", "Error", lastBackupExists, "\n" + appBasePath);
                     }
 
-                    var dirExists = TryCreateDirectory(settingsBackupAndRestoreDir);
-                    if (!dirExists)
+                    // Only create the backup directory if this is not a dry run
+                    if (!dryRun)
                     {
-                        Logger.LogError($"Failed to create dir {settingsBackupAndRestoreDir}");
-                        return (false, $"General_SettingsBackupAndRestore_BackupError", "Error", lastBackupExists, "\n" + settingsBackupAndRestoreDir);
+                        var dirExists = TryCreateDirectory(settingsBackupAndRestoreDir);
+                        if (!dirExists)
+                        {
+                            Logger.LogError($"Failed to create dir {settingsBackupAndRestoreDir}");
+                            return (false, $"General_SettingsBackupAndRestore_BackupError", "Error", lastBackupExists, "\n" + settingsBackupAndRestoreDir);
+                        }
                     }
 
                     // get data needed for process
@@ -717,12 +721,11 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                             var relativePath = currentFile.Value.Substring(appBasePath.Length + 1);
                             var backupFullPath = Path.Combine(fullBackupDir, relativePath);
 
-                            TryCreateDirectory(fullBackupDir);
-                            TryCreateDirectory(Path.GetDirectoryName(backupFullPath));
-
                             Logger.LogInfo($"BackupSettings writing, {backupFullPath}, dryRun:{dryRun}.");
                             if (!dryRun)
                             {
+                                TryCreateDirectory(fullBackupDir);
+                                TryCreateDirectory(Path.GetDirectoryName(backupFullPath));
                                 File.WriteAllText(backupFullPath, currentSettingsFileToBackup);
                             }
                         }
