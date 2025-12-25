@@ -117,6 +117,11 @@ public:
         return _enabled;
     }
 
+    virtual bool is_enabled_by_default() const override
+    {
+        return true;
+    }
+
     virtual void destroy() override
     {
         this->disable();

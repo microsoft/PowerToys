@@ -344,6 +344,11 @@ public:
     {
         return CmdPal::m_enabled.load();
     }
+
+    virtual bool is_enabled_by_default() const override
+    {
+        return true;
+    }
 };
 
 std::atomic<bool> CmdPal::m_enabled{ false };
