@@ -213,7 +213,7 @@ src/modules/powerdisplay/
 │   │   └── ProfileSerializationContext.cs  # JSON source generation
 │   ├── Services/
 │   │   ├── DisplayRotationService.cs # Display rotation via ChangeDisplaySettingsEx
-│   │   ├── MonitorStateManager.cs    # State persistence (debounced)
+│   │   ├── MonitorStateManager.cs    # State persistence (debounced save) and restore on startup
 │   │   └── ProfileService.cs         # Profile persistence
 │   ├── Utils/
 │   │   ├── ColorTemperatureHelper.cs # Color temp utilities
@@ -1161,16 +1161,24 @@ flowchart TB
     WMI --> Merge
 
     Merge --> Sort["Sort by MonitorNumber"]
-    Sort --> Update["Update _monitors Collection"]
-    Update --> Done([Discovery Complete])
+    Sort --> Update["UpdateMonitorList()"]
+    Update --> Check{"RestoreSettingsOnStartup?"}
+    Check -->|Yes| Restore["RestoreMonitorSettingsAsync()<br/>(Set hardware values)"]
+    Check -->|No| Done
+    Restore --> Done([Discovery Complete])
 
     style Start fill:#e8f5e9
     style Done fill:#e8f5e9
     style DDC fill:#e3f2fd
     style WMI fill:#fff3e0
+    style Restore fill:#fff9c4
 ```
 
 > **Note:** DDC/CI and WMI discovery run in parallel via `Task.WhenAll`.
+>
+> **Settings Restore:** When `RestoreSettingsOnStartup` is enabled, `RestoreMonitorSettingsAsync()` is called
+> after monitor discovery to restore saved brightness, contrast, color temperature, and volume values
+> to the hardware. The UI remains in "scanning" state until restore completes.
 
 #### DDC/CI Discovery (Three-Phase Approach)
 
@@ -1488,6 +1496,7 @@ sequenceDiagram
     participant ModuleInterface as PowerDisplayModule (C++)
     participant PowerDisplayApp as PowerDisplay.exe
     participant MonitorManager
+    participant StateManager as MonitorStateManager
     participant EventHandles as Windows Events
 
     Note over Runner: User enables PowerDisplay
@@ -1502,6 +1511,15 @@ sequenceDiagram
         PowerDisplayApp->>PowerDisplayApp: Initialize WinUI 3 App
         PowerDisplayApp->>PowerDisplayApp: RegisterSingletonInstance()
         PowerDisplayApp->>MonitorManager: DiscoverMonitorsAsync()
+
+        alt RestoreSettingsOnStartup enabled
+            PowerDisplayApp->>StateManager: GetMonitorParameters(monitorId)
+            StateManager-->>PowerDisplayApp: Saved brightness, contrast, etc.
+            PowerDisplayApp->>MonitorManager: SetBrightnessAsync(savedValue)
+            PowerDisplayApp->>MonitorManager: SetContrastAsync(savedValue)
+            Note over PowerDisplayApp: Restore all saved settings to hardware
+        end
+
         PowerDisplayApp->>PowerDisplayApp: Start event listeners
         PowerDisplayApp->>EventHandles: SetEvent("Ready")
     end
