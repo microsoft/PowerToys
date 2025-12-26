@@ -52,8 +52,10 @@ function RunMSBuild {
 
     $base = @(
         $Solution
+        "/m"
         "/p:Platform=$Platform"
         "/p:Configuration=$Configuration"
+        "/p:BuildInParallel=true"
         "/verbosity:normal"
         '/clp:Summary;PerformanceSummary;ErrorsOnly;WarningsOnly'
         "/fileLoggerParameters:LogFile=$allLog;Verbosity=detailed"
@@ -92,9 +94,7 @@ function RestoreThenBuild {
     RunMSBuild $Solution $restoreArgs $Platform $Configuration
 
     if (-not $RestoreOnly) {
-        $buildArgs = '/m'
-        if ($ExtraArgs) { $buildArgs = "$buildArgs $ExtraArgs" }
-        RunMSBuild $Solution $buildArgs $Platform $Configuration
+        RunMSBuild $Solution $ExtraArgs $Platform $Configuration
     }
 }
 
@@ -133,9 +133,7 @@ function BuildProjectsInDirectory {
         if ($f.Extension -eq '.sln') {
             RestoreThenBuild $f.FullName $ExtraArgs $Platform $Configuration $RestoreOnly
         } else {
-            $buildArgs = '/m'
-            if ($ExtraArgs) { $buildArgs = "$buildArgs $ExtraArgs" }
-            RunMSBuild $f.FullName $buildArgs $Platform $Configuration
+            RunMSBuild $f.FullName $ExtraArgs $Platform $Configuration
         }
     }
 
