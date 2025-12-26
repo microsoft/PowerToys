@@ -40,7 +40,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="RegistryPreviewExt.rc">
+    <ResourceCompile Include="PowerDisplayModuleInterface.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
   </ItemGroup>
