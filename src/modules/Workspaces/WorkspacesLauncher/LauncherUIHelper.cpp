@@ -35,7 +35,7 @@ LauncherUIHelper::~LauncherUIHelper()
         {
             Logger::error(L"Unable to find UI process: {}", get_last_error_or_default(GetLastError()));
         }
-    } }).wait();
+    } }).get();
 }
 
 void LauncherUIHelper::LaunchUI()

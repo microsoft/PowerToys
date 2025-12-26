@@ -8,5 +8,5 @@
 
 namespace updating
 {
-    std::future<bool> uninstall_previous_msix_version_async();
+    winrt::Windows::Foundation::IAsyncOperation<bool> uninstall_previous_msix_version_async();
 }
