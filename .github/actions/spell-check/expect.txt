@@ -372,7 +372,6 @@ DCOM
 DComposition
 DCR
 ddc
-Ddc
 Ddcci
 ddcutil
 DDEIf
@@ -616,7 +615,6 @@ FORPARSING
 foundrylocal
 FPrimary
 FRAMECHANGED
-Framechanged
 FRestore
 frm
 FROMTOUCH
@@ -701,7 +699,6 @@ hcursor
 hcwhite
 hdc
 hdmi
-HDMI
 hdr
 hdrop
 hdwwiz
@@ -725,7 +722,6 @@ HIMAGELIST
 himl
 hinst
 HINSTANCE
-hinstance
 HIWORD
 HKC
 HKCC
@@ -1039,7 +1035,6 @@ MAPTOSAMESHORTCUT
 MAPVK
 MARKDOWNPREVIEWHANDLERCPP
 MAXIMIZEBOX
-Maximizebox
 MAXSHORTCUTSIZE
 maxversiontested
 mber
@@ -1050,8 +1045,6 @@ MDL
 mdtext
 mdtxt
 mdwn
-MCCS
-Mccs
 mccs
 meme
 mcp
@@ -1074,7 +1067,6 @@ mikeclayton
 mindaro
 Minimizable
 MINIMIZEBOX
-Minimizebox
 MINIMIZEEND
 MINIMIZESTART
 MINMAXINFO
@@ -1094,7 +1086,6 @@ MODALFRAME
 MODESPRUNED
 MONITORENUMPROC
 MONITORINFO
-Monitorinfo
 MONITORINFOEX
 MONITORINFOEXW
 monitorinfof
@@ -1223,7 +1214,6 @@ NOMCX
 NOMINMAX
 NOMIRRORBITMAP
 NOMOVE
-Nomove
 NONANTIALIASED
 nonclient
 NONCLIENTMETRICSW
@@ -1245,7 +1235,6 @@ NORMALUSER
 NOSEARCH
 NOSENDCHANGING
 NOSIZE
-Nosize
 NOTHOUSANDS
 NOTICKS
 NOTIFICATIONSDLL
@@ -1253,7 +1242,6 @@ NOTIFYICONDATA
 NOTIFYICONDATAW
 NOTIMPL
 NOTOPMOST
-Notopmost
 NOTRACK
 NOTSRCCOPY
 NOTSRCERASE
@@ -1498,7 +1486,6 @@ PWSTR
 pwsz
 pwtd
 QDC
-qdc
 QDS
 qit
 QITAB
@@ -1784,7 +1771,6 @@ STARTUPINFOW
 startupscreen
 STATFLAG
 STATICEDGE
-Staticedge
 STATSTG
 stdafx
 STDAPI
@@ -1847,7 +1833,6 @@ syskeydown
 SYSKEYUP
 SYSLIB
 SYSMENU
-Sysmenu
 systemai
 SYSTEMAPPS
 SYSTEMMODAL
@@ -1887,7 +1872,6 @@ THEMECHANGED
 themeresources
 THH
 THICKFRAME
-Thickframe
 THISCOMPONENT
 Tianma
 throughs
@@ -2003,7 +1987,6 @@ vcamp
 vcenter
 vcgtq
 VCINSTALLDIR
-Vcp
 vcp
 vcpname
 Vcpkg
@@ -2019,7 +2002,6 @@ VERSIONINFO
 VERTRES
 VERTSIZE
 VESA
-vesa
 VFT
 Vga
 vget
@@ -2134,7 +2116,6 @@ WKSG
 Wlkr
 wmain
 Wman
-wmi
 WMI
 WMICIM
 wmimgmt
