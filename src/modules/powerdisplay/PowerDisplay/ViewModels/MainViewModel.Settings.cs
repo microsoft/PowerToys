@@ -39,8 +39,6 @@ public partial class MainViewModel
     {
         try
         {
-            Logger.LogInfo("[Settings] Processing settings update from Settings UI");
-
             // Rebuild monitor list with updated hidden monitor settings
             // UpdateMonitorList already handles filtering hidden monitors
             UpdateMonitorList(_monitorManager.Monitors, isInitialLoad: false);
@@ -52,8 +50,6 @@ public partial class MainViewModel
 
             // Reload profiles in case they were added/updated/deleted in Settings UI
             LoadProfiles();
-
-            Logger.LogInfo("[Settings] Settings update complete");
         }
         catch (Exception ex)
         {
@@ -69,8 +65,6 @@ public partial class MainViewModel
     {
         try
         {
-            Logger.LogInfo("[Settings] Applying UI configuration changes (feature visibility)");
-
             foreach (var monitorVm in Monitors)
             {
                 ApplyFeatureVisibility(monitorVm, settings);
@@ -78,8 +72,6 @@ public partial class MainViewModel
 
             // Trigger UI refresh
             UIRefreshRequested?.Invoke(this, EventArgs.Empty);
-
-            Logger.LogInfo("[Settings] UI configuration applied");
         }
         catch (Exception ex)
         {
@@ -116,8 +108,6 @@ public partial class MainViewModel
 
         if (pendingOp != null && !string.IsNullOrEmpty(pendingOp.MonitorId))
         {
-            Logger.LogInfo($"[Settings] Processing pending color temperature operation: Monitor '{pendingOp.MonitorId}' -> 0x{pendingOp.ColorTemperatureVcp:X2}");
-
             // Find the monitor by internal name (ID)
             var monitorVm = Monitors.FirstOrDefault(m => m.Id == pendingOp.MonitorId);
 
@@ -125,7 +115,6 @@ public partial class MainViewModel
             {
                 // Apply color temperature directly
                 await monitorVm.SetColorTemperatureAsync(pendingOp.ColorTemperatureVcp);
-                Logger.LogInfo($"[Settings] Successfully applied color temperature to monitor '{pendingOp.MonitorId}'");
 
                 // Update the monitor's ColorTemperatureVcp in settings to match the applied value
                 // This ensures Settings UI gets the correct value when it reloads from file
@@ -133,12 +122,7 @@ public partial class MainViewModel
                 if (settingsMonitor != null)
                 {
                     settingsMonitor.ColorTemperatureVcp = pendingOp.ColorTemperatureVcp;
-                    Logger.LogInfo($"[Settings] Updated monitor ColorTemperatureVcp in settings: 0x{pendingOp.ColorTemperatureVcp:X2}");
                 }
-            }
-            else
-            {
-                Logger.LogWarning($"[Settings] Monitor not found: {pendingOp.MonitorId}");
             }
 
             // Clear the pending operation and save updated settings
@@ -146,11 +130,6 @@ public partial class MainViewModel
             _settingsUtils.SaveSettings(
                 System.Text.Json.JsonSerializer.Serialize(settings, AppJsonContext.Default.PowerDisplaySettings),
                 PowerDisplaySettings.ModuleName);
-            Logger.LogInfo("[Settings] Cleared pending color temperature operation and saved updated settings");
-        }
-        else
-        {
-            Logger.LogInfo("[Settings] No pending color temperature operation");
         }
     }
 
@@ -183,19 +162,10 @@ public partial class MainViewModel
 
         if (pendingOp != null && !string.IsNullOrEmpty(pendingOp.ProfileName))
         {
-            Logger.LogInfo($"[Profile] Processing pending profile operation: '{pendingOp.ProfileName}' with {pendingOp.MonitorSettings?.Count ?? 0} monitors");
-
             if (pendingOp.MonitorSettings != null && pendingOp.MonitorSettings.Count > 0)
             {
                 // Apply profile settings to monitors
                 await ApplyProfileAsync(pendingOp.MonitorSettings);
-
-                // Note: We no longer track "current profile" - profiles are just templates
-                Logger.LogInfo($"[Profile] Successfully applied profile '{pendingOp.ProfileName}'");
-            }
-            else
-            {
-                Logger.LogWarning($"[Profile] Profile '{pendingOp.ProfileName}' has no monitor settings");
             }
 
             // Clear the pending operation
@@ -203,11 +173,6 @@ public partial class MainViewModel
             _settingsUtils.SaveSettings(
                 System.Text.Json.JsonSerializer.Serialize(settings, AppJsonContext.Default.PowerDisplaySettings),
                 PowerDisplaySettings.ModuleName);
-            Logger.LogInfo("[Profile] Cleared pending profile operation");
-        }
-        else
-        {
-            Logger.LogInfo("[Profile] No pending profile operation");
         }
     }
 
@@ -256,7 +221,6 @@ public partial class MainViewModel
                 }
 
                 await tcs.Task;
-                Logger.LogInfo($"[LightSwitch Integration] Successfully applied profile '{profileName}'");
             }
             catch (Exception ex)
             {
@@ -299,11 +263,8 @@ public partial class MainViewModel
 
             if (monitorVm == null)
             {
-                Logger.LogWarning($"[Profile] Monitor with Id '{setting.MonitorId}' not found (disconnected?)");
                 continue;
             }
-
-            Logger.LogInfo($"[Profile] Applying settings to monitor '{monitorVm.Name}' (Id: {setting.MonitorId})");
 
             // Apply brightness if included in profile
             if (setting.Brightness.HasValue &&
@@ -337,7 +298,6 @@ public partial class MainViewModel
         if (updateTasks.Count > 0)
         {
             await Task.WhenAll(updateTasks);
-            Logger.LogInfo($"[Profile] Applied {updateTasks.Count} parameter updates");
         }
     }
 
@@ -394,7 +354,6 @@ public partial class MainViewModel
             if (updateTasks.Count > 0)
             {
                 await Task.WhenAll(updateTasks);
-                Logger.LogInfo($"[Restore] Applied {updateTasks.Count} parameter updates");
             }
         }
         catch (Exception ex)
@@ -417,16 +376,10 @@ public partial class MainViewModel
 
         if (monitorSettings != null)
         {
-            Logger.LogInfo($"[Startup] Applying feature visibility for '{monitorVm.InternalName}': Contrast={monitorSettings.EnableContrast}, Volume={monitorSettings.EnableVolume}, InputSource={monitorSettings.EnableInputSource}, Rotation={monitorSettings.EnableRotation}");
-
             monitorVm.ShowContrast = monitorSettings.EnableContrast;
             monitorVm.ShowVolume = monitorSettings.EnableVolume;
             monitorVm.ShowInputSource = monitorSettings.EnableInputSource;
             monitorVm.ShowRotation = monitorSettings.EnableRotation;
-        }
-        else
-        {
-            Logger.LogWarning($"[Startup] No feature settings found for '{monitorVm.InternalName}' - using defaults");
         }
     }
 
@@ -480,7 +433,6 @@ public partial class MainViewModel
                 if (!monitors.Any(m => m.InternalName == existingMonitor.InternalName))
                 {
                     monitors.Add(existingMonitor);
-                    Logger.LogInfo($"[SaveMonitorsToSettings] Preserving hidden monitor in settings: {existingMonitor.Name} ({existingMonitor.InternalName})");
                 }
             }
 
@@ -491,8 +443,6 @@ public partial class MainViewModel
             _settingsUtils.SaveSettings(
                 System.Text.Json.JsonSerializer.Serialize(settings, AppJsonContext.Default.PowerDisplaySettings),
                 PowerDisplaySettings.ModuleName);
-
-            Logger.LogInfo($"Saved {monitors.Count} monitors to settings.json ({Monitors.Count} visible, {monitors.Count - Monitors.Count} hidden)");
 
             // Signal Settings UI that monitor list has been updated
             SignalMonitorsRefreshEvent();
@@ -558,7 +508,6 @@ public partial class MainViewModel
     private void SignalMonitorsRefreshEvent()
     {
         EventHelper.SignalEvent(Constants.RefreshPowerDisplayMonitorsEvent());
-        Logger.LogInfo("Signaled refresh monitors event to Settings UI");
     }
 
     /// <summary>
@@ -610,8 +559,6 @@ public partial class MainViewModel
     {
         try
         {
-            Logger.LogInfo("[Telemetry] Sending settings telemetry");
-
             // Load current settings to get hotkey and tray icon status
             var settings = _settingsUtils.GetSettingsOrDefault<PowerDisplaySettings>(PowerDisplaySettings.ModuleName);
 
@@ -627,8 +574,6 @@ public partial class MainViewModel
             };
 
             PowerToysTelemetry.Log.WriteEvent(telemetryEvent);
-
-            Logger.LogInfo($"[Telemetry] Settings telemetry sent: HotkeyEnabled={telemetryEvent.HotkeyEnabled}, TrayIconEnabled={telemetryEvent.TrayIconEnabled}, Monitors={telemetryEvent.MonitorCount}, Profiles={telemetryEvent.ProfileCount}");
         }
         catch (Exception ex)
         {

@@ -92,12 +92,6 @@ namespace PowerDisplay.Common.Services
                 profiles.SetProfile(profile);
 
                 var (success, _) = SaveProfilesInternal(profiles);
-
-                if (success)
-                {
-                    Logger.LogInfo($"{LogPrefix} Profile '{profile.Name}' added/updated with {profile.MonitorSettings.Count} monitors");
-                }
-
                 return success;
             }
         }
@@ -118,11 +112,6 @@ namespace PowerDisplay.Common.Services
                 if (removed)
                 {
                     SaveProfilesInternal(profiles);
-                    Logger.LogInfo($"{LogPrefix} Profile '{profileName}' removed");
-                }
-                else
-                {
-                    Logger.LogWarning($"{LogPrefix} Profile '{profileName}' not found or cannot be removed");
                 }
 
                 return removed;

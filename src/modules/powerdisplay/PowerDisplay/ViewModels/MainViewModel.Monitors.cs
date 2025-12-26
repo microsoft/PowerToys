@@ -69,7 +69,6 @@ public partial class MainViewModel
             var settings = _settingsUtils.GetSettingsOrDefault<PowerDisplaySettings>(PowerDisplaySettings.ModuleName);
             if (settings.Properties.RestoreSettingsOnStartup)
             {
-                Logger.LogInfo("[CompleteInitializationAsync] Restoring monitor settings...");
                 await RestoreMonitorSettingsAsync();
             }
         }
@@ -88,7 +87,6 @@ public partial class MainViewModel
 
             // Notify listeners that initialization is complete
             InitializationCompleted?.Invoke(this, EventArgs.Empty);
-            Logger.LogInfo("[CompleteInitializationAsync] InitializationCompleted event fired");
         }
     }
 
@@ -106,16 +104,13 @@ public partial class MainViewModel
         try
         {
             IsScanning = true;
-            Logger.LogInfo("[RefreshMonitorsAsync] Starting monitor discovery...");
 
             var monitors = await _monitorManager.DiscoverMonitorsAsync(_cancellationTokenSource.Token);
-            Logger.LogInfo($"[RefreshMonitorsAsync] Discovery complete, found {monitors.Count} monitors");
 
             _dispatcherQueue.TryEnqueue(() =>
             {
                 UpdateMonitorList(monitors, isInitialLoad: false);
                 IsScanning = false;
-                Logger.LogInfo("[RefreshMonitorsAsync] UI update complete, scanning stopped");
             });
         }
         catch (Exception ex)
@@ -141,7 +136,6 @@ public partial class MainViewModel
             // Skip monitors that are marked as hidden in settings
             if (hiddenMonitorIds.Contains(monitor.Id))
             {
-                Logger.LogInfo($"[UpdateMonitorList] Skipping hidden monitor: {monitor.Name} ({monitor.Id})");
                 continue;
             }
 

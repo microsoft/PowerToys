@@ -194,7 +194,7 @@ namespace PowerDisplay.Helpers
 
         /// <summary>
         /// Position a window at the bottom-right corner of the monitor where the mouse cursor is located.
-        /// Uses WinUIEx MonitorInfo API which correctly handles all edge cases:
+        /// Correctly handles all edge cases:
         /// - Multi-monitor setups
         /// - Taskbar at any position (top/bottom/left/right)
         /// - Different DPI settings
@@ -209,7 +209,7 @@ namespace PowerDisplay.Helpers
             int height,
             int rightMargin = 0)
         {
-            // Use WinUIEx MonitorInfo - RectWork already includes correct offsets for taskbar position
+            // RectWork already includes correct offsets for taskbar position
             var monitors = MonitorInfo.GetDisplayMonitors();
             if (monitors == null || monitors.Count == 0)
             {

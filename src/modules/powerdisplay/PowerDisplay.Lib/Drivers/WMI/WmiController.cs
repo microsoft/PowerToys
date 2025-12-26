@@ -19,7 +19,6 @@ namespace PowerDisplay.Common.Drivers.WMI
 {
     /// <summary>
     /// WMI monitor controller for controlling internal laptop displays.
-    /// Rewritten to use WmiLight library for Native AOT compatibility.
     /// </summary>
     public partial class WmiController : IMonitorController, IDisposable
     {

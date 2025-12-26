@@ -319,7 +319,6 @@ namespace PowerDisplay.Helpers
                 // Refresh orientation for all monitors - rotation affects the GdiDeviceName (display source),
                 // and in mirror mode multiple monitors may share the same GdiDeviceName
                 RefreshAllOrientations();
-                Logger.LogInfo($"[MonitorManager] SetRotation: Successfully set {monitorId} to orientation {orientation}");
             }
             else
             {

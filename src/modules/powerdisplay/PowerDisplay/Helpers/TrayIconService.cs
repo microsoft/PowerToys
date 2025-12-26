@@ -123,8 +123,6 @@ namespace PowerDisplay.Helpers
                         _trayIconData = null;
                         return;
                     }
-
-                    Logger.LogInfo("[TrayIcon] Tray icon created successfully");
                 }
 
                 if (_popupMenu == 0)
@@ -206,13 +204,11 @@ namespace PowerDisplay.Helpers
                         if (wParam == PInvoke.WM_USER + 1)
                         {
                             // Settings menu item
-                            Logger.LogInfo("[TrayIcon] Settings menu clicked");
                             _openSettingsAction?.Invoke();
                         }
                         else if (wParam == PInvoke.WM_USER + 2)
                         {
                             // Exit menu item
-                            Logger.LogInfo("[TrayIcon] Exit menu clicked");
                             _exitAction?.Invoke();
                         }
                     }
@@ -238,7 +234,6 @@ namespace PowerDisplay.Helpers
                     {
                         // Handle the case where explorer.exe restarts.
                         // Even if we created it before, do it again
-                        Logger.LogInfo("[TrayIcon] Taskbar restarted, recreating tray icon");
                         SetupTrayIcon();
                     }
                     else if (uMsg == WM_TRAY_ICON)
@@ -258,7 +253,6 @@ namespace PowerDisplay.Helpers
                                 break;
                             case PInvoke.WM_LBUTTONUP:
                             case PInvoke.WM_LBUTTONDBLCLK:
-                                Logger.LogInfo("[TrayIcon] Left click/double click - toggling window");
                                 _toggleWindowAction?.Invoke();
                                 break;
                         }

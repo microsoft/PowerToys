@@ -63,8 +63,6 @@ namespace PowerDisplay.Common.Services
 
             // Load existing state if available
             LoadStateFromDisk();
-
-            Logger.LogInfo($"MonitorStateManager initialized with debounced-save strategy (debounce: {SaveDebounceMs}ms), state file: {_stateFilePath}");
         }
 
         /// <summary>
@@ -156,7 +154,6 @@ namespace PowerDisplay.Common.Services
             {
                 if (!File.Exists(_stateFilePath))
                 {
-                    Logger.LogInfo("[State] No existing state file found, starting fresh");
                     return;
                 }
 
@@ -179,9 +176,6 @@ namespace PowerDisplay.Common.Services
                             CapabilitiesRaw = entry.CapabilitiesRaw,
                         };
                     }
-
-                    Logger.LogInfo($"[State] Loaded state for {stateFile.Monitors.Count} monitors from {_stateFilePath}");
-                    Logger.LogInfo($"[State] Monitor keys in state file: {string.Join(", ", stateFile.Monitors.Keys)}");
                 }
             }
             catch (Exception ex)
@@ -289,11 +283,9 @@ namespace PowerDisplay.Common.Services
             // Flush any pending changes before disposing using sync method to avoid deadlock
             if (wasDirty)
             {
-                Logger.LogInfo("Flushing pending state changes before dispose");
                 SaveStateToDiskSync();
             }
 
-            Logger.LogInfo("MonitorStateManager disposed");
             GC.SuppressFinalize(this);
         }
     }

@@ -163,8 +163,6 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
     {
         try
         {
-            Logger.LogInfo($"[{Id}] Setting color temperature to 0x{colorTemperature:X2}");
-
             var result = await _monitorManager.SetColorTemperatureAsync(Id, colorTemperature);
 
             if (result.IsSuccess)
@@ -174,8 +172,6 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
                 OnPropertyChanged(nameof(ColorTemperaturePresetName));
 
                 _mainViewModel?.SaveMonitorSettingDirect(_monitor.Id, nameof(ColorTemperature), colorTemperature);
-
-                Logger.LogInfo($"[{Id}] Color temperature applied successfully");
             }
             else
             {
@@ -241,10 +237,6 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
         _showContrast = monitor.SupportsContrast;
         _showVolume = monitor.SupportsVolume;
         _showInputSource = monitor.SupportsInputSource;
-
-        // Color temperature initialization removed - now controlled via Settings UI
-        // The Monitor.CurrentColorTemperature stores VCP 0x14 preset value (e.g., 0x05 for 6500K)
-        // and will be initialized by MonitorManager based on capabilities
 
         // Initialize basic properties from monitor
         _brightness = monitor.CurrentBrightness;
@@ -358,7 +350,7 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
     }
 
     /// <summary>
-    /// Gets or sets a value indicating whether gets or sets whether to show rotation controls (controlled by Settings UI, default false)
+    /// Gets or sets a value indicating whether to show rotation controls (controlled by Settings UI, default false).
     /// </summary>
     public bool ShowRotation
     {
@@ -379,22 +371,22 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
     public int CurrentRotation => _monitor.Orientation;
 
     /// <summary>
-    /// Gets a value indicating whether gets whether the current rotation is 0° (normal/default)
+    /// Gets a value indicating whether the current rotation is 0° (normal/default).
     /// </summary>
     public bool IsRotation0 => CurrentRotation == 0;
 
     /// <summary>
-    /// Gets a value indicating whether gets whether the current rotation is 90° (rotated right)
+    /// Gets a value indicating whether the current rotation is 90° (rotated right).
     /// </summary>
     public bool IsRotation1 => CurrentRotation == 1;
 
     /// <summary>
-    /// Gets a value indicating whether gets whether the current rotation is 180° (inverted)
+    /// Gets a value indicating whether the current rotation is 180° (inverted).
     /// </summary>
     public bool IsRotation2 => CurrentRotation == 2;
 
     /// <summary>
-    /// Gets a value indicating whether gets whether the current rotation is 270° (rotated left)
+    /// Gets a value indicating whether the current rotation is 270° (rotated left).
     /// </summary>
     public bool IsRotation3 => CurrentRotation == 3;
 
@@ -409,7 +401,6 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
         // Validate orientation range (0=normal, 1=90°, 2=180°, 3=270°)
         if (orientation < 0 || orientation > 3)
         {
-            Logger.LogWarning($"[{Id}] Invalid rotation value: {orientation}. Must be 0-3.");
             return;
         }
 
@@ -421,15 +412,9 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
 
         try
         {
-            Logger.LogInfo($"[{Id}] Setting rotation to {orientation}");
-
             var result = await _monitorManager.SetRotationAsync(Id, orientation);
 
-            if (result.IsSuccess)
-            {
-                Logger.LogInfo($"[{Id}] Rotation set successfully to {orientation}");
-            }
-            else
+            if (!result.IsSuccess)
             {
                 Logger.LogWarning($"[{Id}] Failed to set rotation: {result.ErrorMessage}");
             }
@@ -528,8 +513,6 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
     {
         try
         {
-            Logger.LogInfo($"[{Id}] Setting input source to 0x{inputSource:X2}");
-
             var result = await _monitorManager.SetInputSourceAsync(Id, inputSource);
 
             if (result.IsSuccess)
@@ -537,8 +520,6 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
                 OnPropertyChanged(nameof(CurrentInputSource));
                 OnPropertyChanged(nameof(CurrentInputSourceName));
                 RefreshAvailableInputSources();
-
-                Logger.LogInfo($"[{Id}] Input source set successfully to {CurrentInputSourceName}");
             }
             else
             {

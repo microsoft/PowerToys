@@ -159,7 +159,7 @@ namespace PowerDisplay
                 Logger.LogTrace("ShowWindow: Calling this.Activate()");
                 this.Activate();
 
-                // Now show the window - it should appear at the correct size (WinUIEx simplified)
+                // Now show the window - it should appear at the correct size
                 Logger.LogTrace("ShowWindow: Calling this.Show()");
                 this.Show();
 
@@ -198,7 +198,7 @@ namespace PowerDisplay
         {
             Logger.LogInfo("HideWindow: Hiding window");
 
-            // Hide window using WinUIEx simplified API
+            // Hide window
             this.Hide();
 
             Logger.LogTrace($"HideWindow: Window hidden, visibility now: {IsWindowVisible()}");
@@ -210,7 +210,6 @@ namespace PowerDisplay
         /// <returns>True if window is visible, false otherwise</returns>
         public bool IsWindowVisible()
         {
-            // Use WinUIEx Visible property
             bool visible = this.Visible;
             Logger.LogTrace($"IsWindowVisible: Returning {visible}");
             return visible;
@@ -430,8 +429,6 @@ namespace PowerDisplay
                 case "Brightness":
                     monitorVm.Brightness = finalValue;
                     break;
-
-                // ColorTemperature case removed - now controlled via Settings UI
                 case "Contrast":
                     monitorVm.ContrastPercent = finalValue;
                     break;

@@ -44,7 +44,6 @@ namespace PowerDisplay.Helpers
         public void Initialize(Microsoft.UI.Xaml.Window window)
         {
             _hwnd = WindowNative.GetWindowHandle(window);
-            Logger.LogTrace($"[HotkeyService] Initialize: hwnd=0x{_hwnd:X}");
 
             // LOAD BEARING: If you don't stick the pointer to the WndProc into a
             // member (and instead use a local), then the pointer we marshal
@@ -53,8 +52,6 @@ namespace PowerDisplay.Helpers
             _hotkeyWndProc = HotkeyWndProc;
             var wndProcPointer = Marshal.GetFunctionPointerForDelegate(_hotkeyWndProc);
             _originalWndProc = SetWindowLongPtrNative(_hwnd, GwlWndProc, wndProcPointer);
-
-            Logger.LogTrace($"[HotkeyService] WndProc hooked, original=0x{_originalWndProc:X}");
 
             // Register hotkey based on current settings
             ReloadSettings();
@@ -66,7 +63,6 @@ namespace PowerDisplay.Helpers
         /// </summary>
         public void ReloadSettings()
         {
-            Logger.LogTrace("[HotkeyService] ReloadSettings called");
             UnregisterHotkey();
 
             var settings = _settingsUtils.GetSettingsOrDefault<PowerDisplaySettings>(PowerDisplaySettings.ModuleName);
@@ -74,7 +70,6 @@ namespace PowerDisplay.Helpers
 
             if (hotkey == null || !hotkey.IsValid())
             {
-                Logger.LogInfo("[HotkeyService] No valid hotkey configured");
                 return;
             }
 
@@ -99,7 +94,6 @@ namespace PowerDisplay.Helpers
             if (RegisterHotKeyNative(_hwnd, HotkeyId, modifiers, (uint)hotkey.Code))
             {
                 _isRegistered = true;
-                Logger.LogInfo($"[HotkeyService] Hotkey registered: {hotkey}");
             }
             else
             {
@@ -116,11 +110,7 @@ namespace PowerDisplay.Helpers
 
             bool success = UnregisterHotKeyNative(_hwnd, HotkeyId);
 
-            if (success)
-            {
-                Logger.LogTrace("[HotkeyService] Hotkey unregistered");
-            }
-            else
+            if (!success)
             {
                 var error = Marshal.GetLastWin32Error();
                 Logger.LogWarning($"[HotkeyService] Failed to unregister hotkey, error={error}");
@@ -133,7 +123,6 @@ namespace PowerDisplay.Helpers
         {
             if (uMsg == WmHotkey && (int)wParam == HotkeyId)
             {
-                Logger.LogInfo("[HotkeyService] WM_HOTKEY received, invoking action");
                 try
                 {
                     _hotkeyAction?.Invoke();

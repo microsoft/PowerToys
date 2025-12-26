@@ -158,7 +158,7 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
     }
 
     /// <summary>
-    /// Gets a value indicating whether gets whether user interaction is enabled (not loading or scanning)
+    /// Gets a value indicating whether user interaction is enabled (not loading or scanning).
     /// </summary>
     public bool IsInteractionEnabled => !IsLoading && !IsScanning;
 
@@ -168,8 +168,6 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
     [RelayCommand]
     private unsafe void IdentifyMonitors()
     {
-        Logger.LogInfo("Identify monitors feature triggered");
-
         try
         {
             // Get all display areas (virtual desktop regions)
@@ -225,13 +223,10 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
                 identifyWindow.Activate();
                 windowsCreated++;
             }
-
-            Logger.LogInfo($"Created {windowsCreated} identify windows");
         }
         catch (Exception ex)
         {
             Logger.LogError($"Failed to identify monitors: {ex.Message}");
-            Logger.LogError($"Stack trace: {ex.StackTrace}");
         }
     }
 
@@ -240,7 +235,6 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
     {
         if (profile != null && profile.IsValid())
         {
-            Logger.LogInfo($"[Profile] Applying profile '{profile.Name}' from quick apply");
             await ApplyProfileAsync(profile.MonitorSettings);
         }
     }
@@ -289,7 +283,6 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
             }
 
             OnPropertyChanged(nameof(HasProfiles));
-            Logger.LogInfo($"[Profile] Loaded {_profiles.Count} profiles for quick apply");
         }
         catch (Exception ex)
         {
@@ -310,8 +303,6 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
         // Clamp to reasonable range (1-30 seconds)
         delaySeconds = Math.Clamp(delaySeconds, 1, 30);
 
-        Logger.LogInfo($"[MainViewModel] Display change detected, will refresh after {delaySeconds} second delay...");
-
         // Set scanning state immediately to provide visual feedback
         IsScanning = true;
 
@@ -319,7 +310,6 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
         await Task.Delay(TimeSpan.FromSeconds(delaySeconds));
 
         // Perform actual refresh - skip scanning check since we already set IsScanning above
-        Logger.LogInfo("[MainViewModel] Delay complete, now refreshing monitors...");
         await RefreshMonitorsAsync(skipScanningCheck: true);
     }
 

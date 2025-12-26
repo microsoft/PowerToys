@@ -383,8 +383,6 @@ namespace PowerDisplay.Common.Drivers.DDC
             List<CandidateMonitor> candidates,
             CancellationToken cancellationToken)
         {
-            Logger.LogInfo($"DDC: Phase 2 - Fetching capabilities for {candidates.Count} monitors in parallel");
-
             var tasks = candidates.Select(candidate =>
                 Task.Run(
                     () => (Candidate: candidate, Result: DdcCiNative.FetchCapabilities(candidate.Handle)),
@@ -392,7 +390,6 @@ namespace PowerDisplay.Common.Drivers.DDC
 
             var results = await Task.WhenAll(tasks);
 
-            Logger.LogInfo($"DDC: Phase 2 completed - Got results for {results.Length} monitors");
             return results;
         }
 
@@ -451,8 +448,6 @@ namespace PowerDisplay.Common.Drivers.DDC
 
                 monitors.Add(monitor);
                 newHandleMap[monitor.Id] = candidate.Handle;
-
-                Logger.LogInfo($"DDC: Added monitor {monitor.Id} with {monitor.VcpCapabilitiesInfo?.SupportedVcpCodes.Count ?? 0} VCP codes");
             }
 
             _handleManager.UpdateHandleMap(newHandleMap);

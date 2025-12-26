@@ -49,14 +49,7 @@ namespace PowerDisplay
 
             // This is the primary instance - now initialize logger
             Logger.InitializeLogger("\\PowerDisplay\\Logs");
-            Logger.LogInfo("=== PowerDisplay Process Starting (Primary Instance) ===");
-            Logger.LogInfo($"Main: Process ID = {Environment.ProcessId}");
-            Logger.LogInfo($"Main: Command line args count = {args.Length}");
-
-            for (int i = 0; i < args.Length; i++)
-            {
-                Logger.LogInfo($"Main: args[{i}] = '{args[i]}'");
-            }
+            Logger.LogInfo("PowerDisplay starting");
 
             // Register activation handler for future redirects
             keyInstance.Activated += OnActivated;
@@ -69,30 +62,15 @@ namespace PowerDisplay
                 if (int.TryParse(args[0], out int parsedPid))
                 {
                     runnerPid = parsedPid;
-                    Logger.LogInfo($"Main: Parsed runner_pid={runnerPid} from args[0]");
                 }
-                else
-                {
-                    Logger.LogWarning($"Main: Failed to parse PID from args[0]: '{args[0]}'");
-                }
-            }
-            else
-            {
-                Logger.LogWarning("Main: No command line args provided. Running in standalone mode.");
             }
 
-            Logger.LogInfo("Main: Starting application");
             Microsoft.UI.Xaml.Application.Start((p) =>
             {
-                Logger.LogTrace("Main: Application.Start callback - setting up SynchronizationContext");
                 var context = new DispatcherQueueSynchronizationContext(DispatcherQueue.GetForCurrentThread());
                 SynchronizationContext.SetSynchronizationContext(context);
-                Logger.LogTrace("Main: Creating App instance");
                 _app = new App(runnerPid);
-                Logger.LogTrace("Main: App instance created");
             });
-
-            Logger.LogInfo("Main: Application.Start returned, process ending");
             return 0;
         }
 
@@ -142,21 +120,13 @@ namespace PowerDisplay
         /// </summary>
         private static void OnActivated(object? sender, AppActivationArguments args)
         {
-            Logger.LogInfo("OnActivated: Received activation from another instance");
-
             // Toggle the window visibility when activated by another instance
             if (_app?.MainWindow is MainWindow mainWindow)
             {
-                Logger.LogInfo("OnActivated: Showing/toggling main window");
                 mainWindow.DispatcherQueue.TryEnqueue(() =>
                 {
-                    Logger.LogTrace("OnActivated: Executing ShowWindow on UI thread");
                     mainWindow.ShowWindow();
                 });
-            }
-            else
-            {
-                Logger.LogWarning("OnActivated: MainWindow not available");
             }
         }
     }

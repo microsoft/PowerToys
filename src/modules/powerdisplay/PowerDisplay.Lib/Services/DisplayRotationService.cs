@@ -57,8 +57,6 @@ namespace PowerDisplay.Common.Services
 
             try
             {
-                Logger.LogInfo($"SetRotation: Setting {gdiDeviceName} to orientation {newOrientation}");
-
                 // 1. Get current display settings
                 DevMode devMode = default;
                 devMode.DmSize = (short)sizeof(DevMode);
@@ -113,7 +111,6 @@ namespace PowerDisplay.Common.Services
                     return MonitorOperationResult.Failure($"Failed to apply display settings: {errorMsg}", result);
                 }
 
-                Logger.LogInfo($"SetRotation: Successfully set {gdiDeviceName} to orientation {newOrientation}");
                 return MonitorOperationResult.Success();
             }
             catch (Exception ex)

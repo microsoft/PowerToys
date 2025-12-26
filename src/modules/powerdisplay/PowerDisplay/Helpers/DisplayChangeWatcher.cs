@@ -62,7 +62,6 @@ public sealed partial class DisplayChangeWatcher : IDisposable
         {
             // Get the device selector for display monitors
             string selector = DisplayMonitor.GetDeviceSelector();
-            Logger.LogInfo($"[DisplayChangeWatcher] Using device selector: {selector}");
 
             // Create the device watcher
             _deviceWatcher = DeviceInformation.CreateWatcher(selector);
@@ -80,8 +79,6 @@ public sealed partial class DisplayChangeWatcher : IDisposable
 
             // Start watching
             _deviceWatcher.Start();
-
-            Logger.LogInfo("[DisplayChangeWatcher] Started watching for display changes");
         }
         catch (Exception ex)
         {
@@ -107,8 +104,6 @@ public sealed partial class DisplayChangeWatcher : IDisposable
 
             // Stop the watcher
             _deviceWatcher.Stop();
-
-            Logger.LogInfo("[DisplayChangeWatcher] Stopped watching for display changes");
         }
         catch (Exception ex)
         {
@@ -127,7 +122,6 @@ public sealed partial class DisplayChangeWatcher : IDisposable
                 return;
             }
 
-            Logger.LogInfo($"[DisplayChangeWatcher] Display added: {args.Name}");
             ScheduleDisplayChanged();
         });
     }
@@ -143,7 +137,6 @@ public sealed partial class DisplayChangeWatcher : IDisposable
                 return;
             }
 
-            Logger.LogInfo("[DisplayChangeWatcher] Display removed");
             ScheduleDisplayChanged();
         });
     }
@@ -161,7 +154,6 @@ public sealed partial class DisplayChangeWatcher : IDisposable
         _dispatcherQueue.TryEnqueue(() =>
         {
             _initialEnumerationComplete = true;
-            Logger.LogInfo("[DisplayChangeWatcher] Initial enumeration completed, now responding to display changes");
         });
     }
 
@@ -172,7 +164,6 @@ public sealed partial class DisplayChangeWatcher : IDisposable
         {
             _isRunning = false;
             _initialEnumerationComplete = false;
-            Logger.LogInfo("[DisplayChangeWatcher] Watcher stopped");
         });
     }
 
@@ -203,7 +194,6 @@ public sealed partial class DisplayChangeWatcher : IDisposable
                     {
                         if (!_disposed)
                         {
-                            Logger.LogInfo("[DisplayChangeWatcher] Triggering DisplayChanged event");
                             DisplayChanged?.Invoke(this, EventArgs.Empty);
                         }
                     });
@@ -262,7 +252,5 @@ public sealed partial class DisplayChangeWatcher : IDisposable
 
         // Cancel debounce
         CancelDebounce();
-
-        Logger.LogInfo("[DisplayChangeWatcher] Disposed");
     }
 }

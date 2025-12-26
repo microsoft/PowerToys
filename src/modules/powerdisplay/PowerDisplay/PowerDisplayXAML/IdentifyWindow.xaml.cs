@@ -40,7 +40,6 @@ namespace PowerDisplay.PowerDisplayXAML
 
         private void ConfigureWindow()
         {
-            // Get DPI scale using WinUIEx API
             _dpiScale = this.GetDpiForWindow() / 96.0;
 
             // Set window size scaled for DPI
@@ -52,7 +51,6 @@ namespace PowerDisplay.PowerDisplayXAML
             // Window properties (IsResizable, IsMinimizable, IsMaximizable,
             // IsTitleBarVisible, IsShownInSwitchers) are set in XAML
 
-            // Set window topmost using WinUIEx API
             this.IsAlwaysOnTop = true;
         }
 

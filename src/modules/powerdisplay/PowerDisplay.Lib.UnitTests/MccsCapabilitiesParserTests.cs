@@ -10,14 +10,10 @@ namespace PowerDisplay.UnitTests;
 
 /// <summary>
 /// Unit tests for MccsCapabilitiesParser class.
-/// Tests parsing of DDC/CI MCCS capabilities strings using real-world examples.
-/// Reference: https://www.ddcutil.com/cap_u3011_verbose_output/
 /// </summary>
 [TestClass]
 public class MccsCapabilitiesParserTests
 {
-    // Real capabilities string from Dell U3011 monitor
-    // Source: https://www.ddcutil.com/cap_u3011_verbose_output/
     private const string DellU3011Capabilities =
         "(prot(monitor)type(lcd)model(U3011)cmds(01 02 03 07 0C E3 F3)vcp(02 04 05 06 08 10 12 14(01 05 08 0B 0C) 16 18 1A 52 60(01 03 04 0C 0F 11 12) AC AE B2 B6 C6 C8 C9 D6(01 04 05) DC(00 02 03 04 05) DF FD)mccs_ver(2.1)mswhql(1))";
 
