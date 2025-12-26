@@ -109,12 +109,12 @@ namespace PowerDisplay.Common.Drivers.DDC
         {
             try
             {
-                var sourceName = new DISPLAYCONFIG_SOURCE_DEVICE_NAME
+                var sourceName = new DisplayConfigSourceDeviceName
                 {
-                    Header = new DISPLAYCONFIG_DEVICE_INFO_HEADER
+                    Header = new DisplayConfigDeviceInfoHeader
                     {
                         Type = DisplayconfigDeviceInfoGetSourceName,
-                        Size = (uint)sizeof(DISPLAYCONFIG_SOURCE_DEVICE_NAME),
+                        Size = (uint)sizeof(DisplayConfigSourceDeviceName),
                         AdapterId = adapterId,
                         Id = sourceId,
                     },
@@ -143,12 +143,12 @@ namespace PowerDisplay.Common.Drivers.DDC
         {
             try
             {
-                var deviceName = new DISPLAYCONFIG_TARGET_DEVICE_NAME
+                var deviceName = new DisplayConfigTargetDeviceName
                 {
-                    Header = new DISPLAYCONFIG_DEVICE_INFO_HEADER
+                    Header = new DisplayConfigDeviceInfoHeader
                     {
                         Type = DisplayconfigDeviceInfoGetTargetName,
-                        Size = (uint)sizeof(DISPLAYCONFIG_TARGET_DEVICE_NAME),
+                        Size = (uint)sizeof(DisplayConfigTargetDeviceName),
                         AdapterId = adapterId,
                         Id = targetId,
                     },
@@ -217,13 +217,13 @@ namespace PowerDisplay.Common.Drivers.DDC
                 }
 
                 // Allocate buffers
-                var paths = new DISPLAYCONFIG_PATH_INFO[pathCount];
-                var modes = new DISPLAYCONFIG_MODE_INFO[modeCount];
+                var paths = new DisplayConfigPathInfo[pathCount];
+                var modes = new DisplayConfigModeInfo[modeCount];
 
                 // Query display configuration using fixed pointer
-                fixed (DISPLAYCONFIG_PATH_INFO* pathsPtr = paths)
+                fixed (DisplayConfigPathInfo* pathsPtr = paths)
                 {
-                    fixed (DISPLAYCONFIG_MODE_INFO* modesPtr = modes)
+                    fixed (DisplayConfigModeInfo* modesPtr = modes)
                     {
                         result = QueryDisplayConfig(QdcOnlyActivePaths, ref pathCount, pathsPtr, ref modeCount, modesPtr, IntPtr.Zero);
                         if (result != 0)

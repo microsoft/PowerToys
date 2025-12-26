@@ -82,7 +82,7 @@ namespace PowerDisplay.Helpers
                     // and our **WindProc will explode**.
                     _trayWndProc = WindowProc;
                     var hotKeyPrcPointer = Marshal.GetFunctionPointerForDelegate(_trayWndProc);
-                    _originalWndProc = SetWindowLongPtrNative(_hwnd, GWL_WNDPROC, hotKeyPrcPointer);
+                    _originalWndProc = SetWindowLongPtrNative(_hwnd, GwlWndproc, hotKeyPrcPointer);
                 }
 
                 if (_trayIconData is null)
@@ -314,7 +314,6 @@ namespace PowerDisplay.Helpers
             public int Y;
         }
 
-        // GWL_WNDPROC constant
-        private const int GWL_WNDPROC = -4;
+        private const int GwlWndproc = -4;
     }
 }

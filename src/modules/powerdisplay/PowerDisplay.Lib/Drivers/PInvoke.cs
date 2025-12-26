@@ -24,18 +24,18 @@ namespace PowerDisplay.Common.Drivers
         internal static unsafe partial int QueryDisplayConfig(
             uint flags,
             ref uint numPathArrayElements,
-            DISPLAYCONFIG_PATH_INFO* pathArray,
+            DisplayConfigPathInfo* pathArray,
             ref uint numModeInfoArrayElements,
-            DISPLAYCONFIG_MODE_INFO* modeInfoArray,
+            DisplayConfigModeInfo* modeInfoArray,
             IntPtr currentTopologyId);
 
         [LibraryImport("user32.dll")]
         internal static unsafe partial int DisplayConfigGetDeviceInfo(
-            DISPLAYCONFIG_TARGET_DEVICE_NAME* deviceName);
+            DisplayConfigTargetDeviceName* deviceName);
 
         [LibraryImport("user32.dll")]
         internal static unsafe partial int DisplayConfigGetDeviceInfo(
-            DISPLAYCONFIG_SOURCE_DEVICE_NAME* sourceName);
+            DisplayConfigSourceDeviceName* sourceName);
 
         // ==================== User32.dll - Monitor Enumeration ====================
         [LibraryImport("user32.dll")]
