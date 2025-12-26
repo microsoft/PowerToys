@@ -301,6 +301,7 @@
                         <StackPanel Orientation="Horizontal" Spacing="8">
                             <Button x:Uid="General_SettingsBackupAndRestore_ButtonBackup" Command="{Binding BackupConfigsEventHandler}" />
                             <Button x:Uid="General_SettingsBackupAndRestore_ButtonRestore" Command="{Binding RestoreConfigsEventHandler}" />
+                            <Button x:Uid="General_SettingsBackupAndRestore_ButtonResetToDefaults" Command="{Binding ResetToDefaultsEventHandler}" />
                         </StackPanel>
                         <tkcontrols:SettingsExpander.Items>
                             <tkcontrols:SettingsCard Name="GeneralSettingsBackupAndRestoreLocationText" x:Uid="General_SettingsBackupAndRestoreLocationText">
