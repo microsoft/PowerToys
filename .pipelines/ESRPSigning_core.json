@@ -131,6 +131,8 @@
 
             "PowerToys.ImageResizer.exe",
             "PowerToys.ImageResizer.dll",
+            "WinUI3Apps\\PowerToys.ImageResizerCLI.exe",
+            "WinUI3Apps\\PowerToys.ImageResizerCLI.dll",
             "PowerToys.ImageResizerExt.dll",
             "PowerToys.ImageResizerContextMenu.dll",
             "ImageResizerContextMenuPackage.msix",
