@@ -31,6 +31,7 @@ namespace ImageResizer.Cli.Commands
             QualityOption = new QualityOption();
             KeepDateModifiedOption = new KeepDateModifiedOption();
             FileNameOption = new FileNameOption();
+            ProgressLinesOption = new ProgressLinesOption();
             FilesArgument = new FilesArgument();
 
             AddOption(HelpOption);
@@ -48,6 +49,7 @@ namespace ImageResizer.Cli.Commands
             AddOption(QualityOption);
             AddOption(KeepDateModifiedOption);
             AddOption(FileNameOption);
+            AddOption(ProgressLinesOption);
             AddArgument(FilesArgument);
         }
 
@@ -80,6 +82,8 @@ namespace ImageResizer.Cli.Commands
         public KeepDateModifiedOption KeepDateModifiedOption { get; }
 
         public FileNameOption FileNameOption { get; }
+
+        public ProgressLinesOption ProgressLinesOption { get; }
 
         public FilesArgument FilesArgument { get; }
     }

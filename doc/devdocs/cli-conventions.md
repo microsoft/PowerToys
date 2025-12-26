@@ -16,167 +16,78 @@ Add the reference to your project:
 <PackageReference Include="System.CommandLine" />
 ```
 
-## Option Naming
+## Option Naming and Definition
 
-### Aliases Pattern
-
-Define option aliases as static readonly arrays following this pattern:
-
-```csharp
-private static readonly string[] AliasesSilent = ["--silent", "-s"];
-private static readonly string[] AliasesWidth = ["--width", "-w"];
-private static readonly string[] AliasesHelp = ["--help"];
-```
-
-When creating dedicated option types (for example, `sealed class FooOption : Option<T>`),
-avoid naming a member `Aliases` (it hides `Option.Aliases`). Prefer `_aliases`.
-
-### Naming Rules
-
-1. **Long form**: Use `--kebab-case` (e.g., `--shrink-only`, `--keep-date-modified`)
-2. **Short form**: Use single `-x` character (e.g., `-s`, `-w`, `-h`)
-3. **No short form** for less common options (e.g., `--shrink-only`, `--ignore-orientation`)
-
-## Option Definition
-
-Create options using `Option<T>` with descriptive help text:
-
-```csharp
-var silentOption = new Option<bool>(AliasesSilent, "Run in silent mode without UI");
-var widthOption = new Option<double?>(AliasesWidth, "Set width in pixels");
-var unitOption = new Option<ResizeUnit?>(AliasesUnit, "Set unit (Pixel, Percent, Inch, Centimeter)");
-```
-
-## Validation
-
-Add validators for options that require range or format checking:
-
-```csharp
-qualityOption.AddValidator(result =>
-{
-    var value = result.GetValueOrDefault<int?>();
-    if (value.HasValue && (value.Value < 1 || value.Value > 100))
-    {
-        result.ErrorMessage = "JPEG quality must be between 1 and 100.";
-    }
-});
-```
+- Use `--kebab-case` for long form (e.g., `--shrink-only`).
+- Use single `-x` for short form (e.g., `-s`, `-w`).
+- Define aliases as static readonly arrays: `["--silent", "-s"]`.
+- Create options using `Option<T>` with descriptive help text.
+- Add validators for options that require range or format checking.
 
 ## RootCommand Setup
 
-Create a `RootCommand` with a description and add all options:
-
-```csharp
-public static RootCommand CreateRootCommand()
-{
-    var rootCommand = new RootCommand("PowerToys Module Name - Brief description")
-    {
-        silentOption,
-        widthOption,
-        heightOption,
-        // ... other options
-        filesArgument,
-    };
-
-    return rootCommand;
-}
-```
+- Create a `RootCommand` with a brief description.
+- Add all options and arguments to the command.
 
 ## Parsing
 
-Parse arguments and extract values:
-
-```csharp
-public static CliOptions Parse(string[] args)
-{
-    var options = new CliOptions();
-    var rootCommand = CreateRootCommand();
-    // Note: with the pinned System.CommandLine version in this repo,
-    // RootCommand.Parse(args) may not be available. Use Parser instead.
-    var parseResult = new Parser(rootCommand).Parse(args);
-
-    // Extract values
-    options.Silent = parseResult.GetValueForOption(silentOption);
-    options.Width = parseResult.GetValueForOption(widthOption);
-
-    return options;
-}
-```
+- Use `Parser(rootCommand).Parse(args)` to parse CLI arguments.
+- Extract option values using `parseResult.GetValueForOption()`.
+- Note: Use `Parser` directly; `RootCommand.Parse()` may not be available with the pinned System.CommandLine version.
 
 ### Parse/Validation Errors
 
-If parsing or validation fails, return a non-zero exit code (and typically print
-the errors plus usage):
-
-```csharp
-if (parseResult.Errors.Count > 0)
-{
-    foreach (var error in parseResult.Errors)
-    {
-        Console.Error.WriteLine(error.Message);
-    }
-
-    PrintUsage();
-    return 1;
-}
-```
+- On parse/validation errors, print error messages and usage, then exit with non-zero code.
 
 ## Examples
 
-### Awake Module
-
-Reference implementation: `src/modules/Awake/Awake/Program.cs`
-
-```csharp
-private static readonly string[] _aliasesConfigOption = ["--use-pt-config", "-c"];
-private static readonly string[] _aliasesDisplayOption = ["--display-on", "-d"];
-private static readonly string[] _aliasesTimeOption = ["--time-limit", "-t"];
-private static readonly string[] _aliasesPidOption = ["--pid", "-p"];
-private static readonly string[] _aliasesExpireAtOption = ["--expire-at", "-e"];
-```
-
-### ImageResizer Module
-
-Reference implementation:
-
-- `src/modules/imageresizer/ui/Cli/Commands/ImageResizerRootCommand.cs`
-- `src/modules/imageresizer/ui/Models/CliOptions.cs`
-- `src/modules/imageresizer/ui/Cli/ImageResizerCliExecutor.cs`
-
-```csharp
-public sealed class DestinationOption : Option<string>
-{
-    private static readonly string[] _aliases = ["--destination", "-d"];
-
-    public DestinationOption()
-        : base(_aliases, "Set destination directory")
-    {
-    }
-}
-```
+Reference implementations:
+- Awake: `src/modules/Awake/Awake/Program.cs`
+- ImageResizer: `src/modules/imageresizer/ui/Cli/`
 
 ## Help Output
 
-Provide a `PrintUsage()` method for custom help formatting if needed:
-
-```csharp
-public static void PrintUsage()
-{
-    Console.WriteLine("ModuleName - PowerToys Module CLI");
-    Console.WriteLine();
-    Console.WriteLine("Usage: PowerToys.ModuleName.exe [options] [arguments...]");
-    Console.WriteLine();
-    Console.WriteLine("Options:");
-    Console.WriteLine("  --option, -o <value>       Description of the option");
-    // ...
-}
-```
+- Provide a `PrintUsage()` method for custom help formatting if needed.
 
 ## Best Practices
 
-1. **Consistency**: Follow existing patterns in the codebase (Awake, ImageResizer)
-2. **Documentation**: Always provide help text for each option
-3. **Validation**: Validate input values and provide clear error messages
-4. **Nullable types**: Use `Option<T?>` for optional parameters
-5. **Boolean flags**: Use `Option<bool>` for flags that don't require values
-6. **Enum support**: System.CommandLine automatically handles enum parsing
+1. **Consistency**: Follow existing module patterns.
+2. **Documentation**: Always provide help text for each option.
+3. **Validation**: Validate input and provide clear error messages.
+4. **Atomicity**: Make one logical change per PR; avoid drive-by refactors.
+5. **Build/Test Discipline**: Build and test synchronously, one terminal per operation.
+6. **Style**: Follow repo analyzers (`.editorconfig`, StyleCop) and formatting rules.
+
+## Logging Requirements
+
+- Use `ManagedCommon.Logger` for consistent logging.
+- Initialize logging early in `Main()`.
+- Use dual output (console + log file) for errors and warnings to ensure visibility.
+- Reference: `src/modules/imageresizer/ui/Cli/CliLogger.cs`
+
+## Error Handling
+
+### Exit Codes
+
+- `0`: Success
+- `1`: General error (parsing, validation, runtime)
+- `2`: Invalid arguments (optional)
+
+### Exception Handling
+
+- Always wrap `Main()` in try-catch for unhandled exceptions.
+- Log exceptions before exiting with non-zero code.
+- Display user-friendly error messages to stderr.
+- Preserve detailed stack traces in log files only.
+
+## Testing Requirements
+
+- Include tests for argument parsing, validation, and edge cases.
+- Place CLI tests in module-specific test projects (e.g., `src/modules/[module]/tests/*CliTests.cs`).
+
+## Signing and Deployment
+
+- CLI executables are signed automatically in CI/CD.
+- **New CLI tools**: Add your executable and dll to `.pipelines/ESRPSigning_core.json` in the signing list.
+- CLI executables are deployed alongside their parent module (e.g., `C:\Program Files\PowerToys\modules\[ModuleName]\`).
+- Use self-contained deployment (import `Common.SelfContained.props`).

@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions;
 using System.IO.Pipes;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -40,6 +41,33 @@ namespace ImageResizer.Models
         }
 
         /// <summary>
+        /// Validates if a file path is a supported image format.
+        /// </summary>
+        /// <param name="path">The file path to validate.</param>
+        /// <returns>True if the path is valid and points to a supported image file.</returns>
+        private static bool IsValidImagePath(string path)
+        {
+            if (string.IsNullOrWhiteSpace(path))
+            {
+                return false;
+            }
+
+            if (!File.Exists(path))
+            {
+                return false;
+            }
+
+            var ext = Path.GetExtension(path)?.ToLowerInvariant();
+            var validExtensions = new[]
+            {
+                ".bmp", ".dib", ".gif", ".jfif", ".jpe", ".jpeg", ".jpg",
+                ".jxr", ".png", ".rle", ".tif", ".tiff", ".wdp",
+            };
+
+            return validExtensions.Contains(ext);
+        }
+
+        /// <summary>
         /// Creates a ResizeBatch from CliOptions.
         /// </summary>
         /// <param name="standardInput">Standard input stream for reading additional file paths.</param>
@@ -56,7 +84,10 @@ namespace ImageResizer.Models
             {
                 // Convert relative paths to absolute paths
                 var absolutePath = Path.IsPathRooted(file) ? file : Path.GetFullPath(file);
-                batch.Files.Add(absolutePath);
+                if (IsValidImagePath(absolutePath))
+                {
+                    batch.Files.Add(absolutePath);
+                }
             }
 
             if (string.IsNullOrEmpty(options.PipeName))
@@ -70,7 +101,10 @@ namespace ImageResizer.Models
                     {
                         // Convert relative paths to absolute paths
                         var absolutePath = Path.IsPathRooted(file) ? file : Path.GetFullPath(file);
-                        batch.Files.Add(absolutePath);
+                        if (IsValidImagePath(absolutePath))
+                        {
+                            batch.Files.Add(absolutePath);
+                        }
                     }
                 }
             }
@@ -89,7 +123,10 @@ namespace ImageResizer.Models
                         // Display the read text to the console
                         while ((file = sr.ReadLine()) != null)
                         {
-                            batch.Files.Add(file);
+                            if (IsValidImagePath(file))
+                            {
+                                batch.Files.Add(file);
+                            }
                         }
                     }
                 }

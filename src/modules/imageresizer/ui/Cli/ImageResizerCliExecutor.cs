@@ -13,16 +13,17 @@ using ImageResizer.Properties;
 namespace ImageResizer.Cli
 {
     /// <summary>
-    /// Centralizes the Image Resizer CLI execution logic for the dedicated CLI host.
+    /// Executes Image Resizer CLI operations.
+    /// Instance-based design for better testability and Single Responsibility Principle.
     /// </summary>
-    public static class ImageResizerCliExecutor
+    public class ImageResizerCliExecutor
     {
         /// <summary>
-        /// Entry point used by the dedicated CLI host.
+        /// Runs the CLI executor with the provided command-line arguments.
         /// </summary>
         /// <param name="args">Command-line arguments.</param>
         /// <returns>Exit code.</returns>
-        public static int RunStandalone(string[] args)
+        public int Run(string[] args)
         {
             var cliOptions = CliOptions.Parse(args);
 
@@ -31,6 +32,7 @@ namespace ImageResizer.Cli
                 foreach (var error in cliOptions.ParseErrors)
                 {
                     Console.Error.WriteLine(error);
+                    CliLogger.Error($"Parse error: {error}");
                 }
 
                 CliOptions.PrintUsage();
@@ -51,6 +53,7 @@ namespace ImageResizer.Cli
 
             if (cliOptions.Files.Count == 0 && string.IsNullOrEmpty(cliOptions.PipeName))
             {
+                Console.WriteLine(Resources.CLI_NoInputFiles);
                 CliOptions.PrintUsage();
                 return 1;
             }
@@ -58,132 +61,64 @@ namespace ImageResizer.Cli
             return RunSilentMode(cliOptions);
         }
 
-        private static int RunSilentMode(CliOptions cliOptions)
+        private int RunSilentMode(CliOptions cliOptions)
         {
             var batch = ResizeBatch.FromCliOptions(Console.In, cliOptions);
             var settings = Settings.Default;
-            ApplyCliOptionsToSettings(cliOptions, settings);
+            CliSettingsApplier.Apply(cliOptions, settings);
 
-            Console.WriteLine(string.Format(CultureInfo.InvariantCulture, Resources.CLI_ProcessingFiles, batch.Files.Count));
+            CliLogger.Info($"CLI mode: processing {batch.Files.Count} files");
+
+            // Use accessible line-based progress if requested or detected
+            bool useLineBasedProgress = cliOptions.ProgressLines ?? false;
+            int lastReportedMilestone = -1;
 
             var errors = batch.Process(
                 (completed, total) =>
                 {
                     var progress = (int)((completed / total) * 100);
-                    Console.Write(string.Format(CultureInfo.InvariantCulture, "\r{0}", string.Format(CultureInfo.InvariantCulture, Resources.CLI_ProgressFormat, progress, completed, (int)total)));
+
+                    if (useLineBasedProgress)
+                    {
+                        // Milestone-based progress (0%, 25%, 50%, 75%, 100%)
+                        int milestone = (progress / 25) * 25;
+                        if (milestone > lastReportedMilestone || completed == (int)total)
+                        {
+                            lastReportedMilestone = milestone;
+                            Console.WriteLine(string.Format(CultureInfo.InvariantCulture, Resources.CLI_ProgressFormat, progress, completed, (int)total));
+                        }
+                    }
+                    else
+                    {
+                        // Traditional carriage return mode
+                        Console.Write(string.Format(CultureInfo.InvariantCulture, "\r{0}", string.Format(CultureInfo.InvariantCulture, Resources.CLI_ProgressFormat, progress, completed, (int)total)));
+                    }
                 },
                 settings,
                 CancellationToken.None);
 
-            Console.WriteLine();
+            if (!useLineBasedProgress)
+            {
+                Console.WriteLine();
+            }
 
             var errorList = errors.ToList();
             if (errorList.Count > 0)
             {
                 Console.Error.WriteLine(string.Format(CultureInfo.InvariantCulture, Resources.CLI_CompletedWithErrors, errorList.Count));
+                CliLogger.Error($"Processing completed with {errorList.Count} error(s)");
                 foreach (var error in errorList)
                 {
                     Console.Error.WriteLine(string.Format(CultureInfo.InvariantCulture, "  {0}: {1}", error.File, error.Error));
+                    CliLogger.Error($"  {error.File}: {error.Error}");
                 }
 
                 return 1;
             }
 
+            CliLogger.Info("CLI batch completed successfully");
             Console.WriteLine(Resources.CLI_AllFilesProcessed);
             return 0;
-        }
-
-        /// <summary>
-        /// Applies CLI options to the settings, overriding default values.
-        /// </summary>
-        /// <param name="cliOptions">The CLI options to apply.</param>
-        /// <param name="settings">The settings to modify.</param>
-        private static void ApplyCliOptionsToSettings(CliOptions cliOptions, Settings settings)
-        {
-            // If custom width/height specified, use custom size
-            if (cliOptions.Width.HasValue || cliOptions.Height.HasValue)
-            {
-                if (cliOptions.Width.HasValue)
-                {
-                    settings.CustomSize.Width = cliOptions.Width.Value;
-                }
-                else
-                {
-                    // If only height specified, set width to 0 for auto-calculation in Fit mode
-                    settings.CustomSize.Width = 0;
-                }
-
-                if (cliOptions.Height.HasValue)
-                {
-                    settings.CustomSize.Height = cliOptions.Height.Value;
-                }
-                else
-                {
-                    // If only width specified, set height to 0 for auto-calculation in Fit mode
-                    settings.CustomSize.Height = 0;
-                }
-
-                if (cliOptions.Unit.HasValue)
-                {
-                    settings.CustomSize.Unit = cliOptions.Unit.Value;
-                }
-
-                if (cliOptions.Fit.HasValue)
-                {
-                    settings.CustomSize.Fit = cliOptions.Fit.Value;
-                }
-
-                // Select custom size (index = Sizes.Count)
-                settings.SelectedSizeIndex = settings.Sizes.Count;
-            }
-            else if (cliOptions.SizeIndex.HasValue)
-            {
-                // Use preset size by index
-                if (cliOptions.SizeIndex.Value >= 0 && cliOptions.SizeIndex.Value < settings.Sizes.Count)
-                {
-                    settings.SelectedSizeIndex = cliOptions.SizeIndex.Value;
-                }
-                else
-                {
-                    Console.Error.WriteLine(string.Format(CultureInfo.InvariantCulture, Resources.CLI_WarningInvalidSizeIndex, cliOptions.SizeIndex.Value));
-                }
-            }
-
-            // Apply other options
-            if (cliOptions.ShrinkOnly.HasValue)
-            {
-                settings.ShrinkOnly = cliOptions.ShrinkOnly.Value;
-            }
-
-            if (cliOptions.Replace.HasValue)
-            {
-                settings.Replace = cliOptions.Replace.Value;
-            }
-
-            if (cliOptions.IgnoreOrientation.HasValue)
-            {
-                settings.IgnoreOrientation = cliOptions.IgnoreOrientation.Value;
-            }
-
-            if (cliOptions.RemoveMetadata.HasValue)
-            {
-                settings.RemoveMetadata = cliOptions.RemoveMetadata.Value;
-            }
-
-            if (cliOptions.JpegQualityLevel.HasValue)
-            {
-                settings.JpegQualityLevel = cliOptions.JpegQualityLevel.Value;
-            }
-
-            if (cliOptions.KeepDateModified.HasValue)
-            {
-                settings.KeepDateModified = cliOptions.KeepDateModified.Value;
-            }
-
-            if (!string.IsNullOrEmpty(cliOptions.FileName))
-            {
-                settings.FileName = cliOptions.FileName;
-            }
         }
     }
 }

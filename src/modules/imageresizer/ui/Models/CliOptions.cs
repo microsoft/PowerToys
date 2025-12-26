@@ -95,6 +95,11 @@ namespace ImageResizer.Models
         public string FileName { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether to use line-based progress output for screen reader accessibility.
+        /// </summary>
+        public bool? ProgressLines { get; set; }
+
+        /// <summary>
         /// Gets the list of files to process.
         /// </summary>
         public ICollection<string> Files { get; } = new List<string>();
@@ -154,6 +159,7 @@ namespace ImageResizer.Models
             options.IgnoreOrientation = ToBoolOrNull(parseResult.GetValueForOption(cmd.IgnoreOrientationOption));
             options.RemoveMetadata = ToBoolOrNull(parseResult.GetValueForOption(cmd.RemoveMetadataOption));
             options.KeepDateModified = ToBoolOrNull(parseResult.GetValueForOption(cmd.KeepDateModifiedOption));
+            options.ProgressLines = ToBoolOrNull(parseResult.GetValueForOption(cmd.ProgressLinesOption));
 
             options.JpegQualityLevel = parseResult.GetValueForOption(cmd.QualityOption);
 

@@ -29,6 +29,22 @@ internal static class Program
         }
 
         Console.InputEncoding = Encoding.Unicode;
-        return ImageResizerCliExecutor.RunStandalone(args);
+
+        // Initialize logger to file (same as other modules)
+        CliLogger.Initialize("\\ImageResizer\\Logs");
+        CliLogger.Info($"ImageResizerCLI started with {args.Length} argument(s)");
+
+        try
+        {
+            var executor = new ImageResizerCliExecutor();
+            return executor.Run(args);
+        }
+        catch (Exception ex)
+        {
+            CliLogger.Error($"Unhandled exception: {ex.Message}");
+            CliLogger.Error($"Stack trace: {ex.StackTrace}");
+            Console.Error.WriteLine($"Fatal error: {ex.Message}");
+            return 1;
+        }
     }
 }

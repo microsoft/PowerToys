@@ -754,6 +754,15 @@ namespace ImageResizer.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to No input files or pipe specified. Showing usage..
+        /// </summary>
+        public static string CLI_NoInputFiles {
+            get {
+                return ResourceManager.GetString("CLI_NoInputFiles", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Warning: Size index {0} is invalid. Using custom size..
         /// </summary>
         public static string CLI_WarningInvalidSizeIndex {

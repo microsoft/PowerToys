@@ -364,6 +364,9 @@
   <data name="CLI_WarningInvalidSizeIndex" xml:space="preserve">
     <value>Warning: Invalid size index {0}. Using default.</value>
   </data>
+  <data name="CLI_NoInputFiles" xml:space="preserve">
+    <value>No input files or pipe specified. Showing usage.</value>
+  </data>
 
   <!-- CLI Config display -->
   <data name="CLI_ConfigTitle" xml:space="preserve">

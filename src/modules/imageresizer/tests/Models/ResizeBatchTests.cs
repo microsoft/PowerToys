@@ -25,13 +25,19 @@ namespace ImageResizer.Models
         [TestMethod]
         public void FromCommandLineWorks()
         {
+            // Use actual test files that exist in the test directory
+            var testDir = Path.GetDirectoryName(typeof(ResizeBatchTests).Assembly.Location);
+            var file1 = Path.Combine(testDir, "Test.jpg");
+            var file2 = Path.Combine(testDir, "Test.png");
+            var file3 = Path.Combine(testDir, "Test.gif");
+
             var standardInput =
-                "Image1.jpg" + EOL +
-                "Image2.jpg";
+                file1 + EOL +
+                file2;
             var args = new[]
             {
                 "/d", "OutputDir",
-                "Image3.jpg",
+                file3,
             };
 
             var result = ResizeBatch.FromCommandLine(
@@ -39,7 +45,7 @@ namespace ImageResizer.Models
                 args);
 
             var files = result.Files.Select(Path.GetFileName).ToArray();
-            CollectionAssert.AreEquivalent(new List<string> { "Image1.jpg", "Image2.jpg", "Image3.jpg" }, files);
+            CollectionAssert.AreEquivalent(new List<string> { "Test.jpg", "Test.png", "Test.gif" }, files);
 
             Assert.AreEqual("OutputDir", result.DestinationDirectory);
         }
