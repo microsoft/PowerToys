@@ -124,6 +124,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 AdvancedPasteUIShortcut,
                 PasteAsMarkdownShortcut,
                 PasteAsJsonShortcut,
+                PasteAsKeystrokeShortcut,
             };
 
             foreach (var action in _additionalActions.GetAllActions())
