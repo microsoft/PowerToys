@@ -176,6 +176,10 @@ Generate-FileComponents -fileListName "ImageResizerAssetsFiles" -wxsFilePath $PS
 Generate-FileList -fileDepsJson "" -fileListName LightSwitchFiles -wxsFilePath $PSScriptRoot\LightSwitch.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\LightSwitchService"
 Generate-FileComponents -fileListName "LightSwitchFiles" -wxsFilePath $PSScriptRoot\LightSwitch.wxs
 
+#PowerDisplay
+Generate-FileList -fileDepsJson "" -fileListName PowerDisplayAssetsFiles -wxsFilePath $PSScriptRoot\PowerDisplay.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\Assets\PowerDisplay"
+Generate-FileComponents -fileListName "PowerDisplayAssetsFiles" -wxsFilePath $PSScriptRoot\PowerDisplay.wxs
+
 #New+
 Generate-FileList -fileDepsJson "" -fileListName NewPlusAssetsFiles -wxsFilePath $PSScriptRoot\NewPlus.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\Assets\NewPlus"
 Generate-FileComponents -fileListName "NewPlusAssetsFiles" -wxsFilePath $PSScriptRoot\NewPlus.wxs

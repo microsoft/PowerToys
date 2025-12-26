@@ -11,6 +11,7 @@ ACCESSDENIED
 ACCESSTOKEN
 acfs
 ACIE
+ACR
 AClient
 AColumn
 acrt
@@ -92,6 +93,7 @@ asf
 Ashcraft
 AShortcut
 ASingle
+ASUS
 ASSOCCHANGED
 ASSOCF
 ASSOCSTR
@@ -102,6 +104,7 @@ ATRIOX
 ATX
 aumid
 authenticode
+AUO
 AUTOBUDDY
 AUTOCHECKBOX
 AUTOHIDE
@@ -119,6 +122,10 @@ azureaiinference
 azureinference
 azureopenai
 backticks
+Backlight
+Badflags
+Badmode
+Badparam
 bbwe
 BCIE
 bck
@@ -190,7 +197,10 @@ CARETBLINKING
 Carlseibert
 CAtl
 caub
+CAuthn
+CAuthz
 CBN
+Cds
 cch
 CCHDEVICENAME
 CCHFORMNAME
@@ -209,9 +219,11 @@ changecursor
 CHILDACTIVATE
 CHILDWINDOW
 CHOOSEFONT
+Chunghwa
 cidl
 CIELCh
 cim
+CImp
 CImage
 cla
 CLASSDC
@@ -219,7 +231,7 @@ CLASSNOTAVAILABLE
 CLEARTYPE
 clickable
 clickonce
-CLIENTEDGE
+clientedge
 clientid
 clientside
 CLIPBOARDUPDATE
@@ -229,8 +241,10 @@ closesocket
 clp
 CLSCTX
 clsids
+Cloneable
 Clusion
 cmder
+CMN
 CMDNOTFOUNDMODULEINTERFACE
 cmdpal
 CMIC
@@ -247,6 +261,7 @@ Codespaces
 Coen
 cognitiveservices
 COINIT
+coinit
 colid
 colorconv
 colorformat
@@ -285,6 +300,7 @@ Corpor
 cotaskmem
 COULDNOT
 countof
+Cowait
 covrun
 cpcontrols
 cph
@@ -304,11 +320,14 @@ CRECT
 CRH
 critsec
 cropandlock
+crt
 Crossdevice
+Crosshairs
 csdevkit
 CSearch
 CSettings
 cso
+CSOT
 CSRW
 CStyle
 cswin
@@ -349,11 +368,16 @@ DBPROP
 DBPROPIDSET
 DBPROPSET
 DCBA
+DCapabilities
 DCOM
 DComposition
 DCR
+ddc
+Ddcci
+ddcutil
 DDEIf
 Deact
+debouncer
 debugbreak
 decryptor
 Dedup
@@ -370,6 +394,7 @@ DEFAULTTOPRIMARY
 DEFERERASE
 DEFPUSHBUTTON
 deinitialization
+DELA
 DELETEDKEYIMAGE
 DELETESCANS
 DEMOTYPE
@@ -399,18 +424,21 @@ DISABLEASACTIONKEY
 DISABLENOSCROLL
 diskmgmt
 DISPLAYCHANGE
-DISPLAYCONFIG
+displayconfig
 DISPLAYFLAGS
 DISPLAYFREQUENCY
 displayname
 DISPLAYORIENTATION
+Displayport
+diu
 divyan
 Dlg
 DLGFRAME
-DLGMODALFRAME
+dlgmodalframe
 dlib
 dllhost
 dllmain
+Dmdo
 DNLEN
 DONOTROUND
 DONTVALIDATEPATH
@@ -427,6 +455,8 @@ DRAWCLIPBOARD
 DRAWFRAME
 drawingcolor
 dreamsofameaningfullife
+DRegion
+DREGION
 drivedetectionwarning
 DROPFILES
 DSTINVERT
@@ -438,6 +468,8 @@ dutil
 DVASPECT
 DVASPECTINFO
 DVD
+DVI
+dvi
 dvr
 DVTARGETDEVICE
 dwflags
@@ -457,15 +489,19 @@ DWMWINDOWMAXIMIZEDCHANGE
 DWORDLONG
 dworigin
 dwrite
+Dxva
 dxgi
 eab
+EAccess
 easeofaccess
 ecount
-Edid
+edid
 EDITKEYBOARD
 EDITSHORTCUTS
 EDITTEXT
 EFile
+EInvalid
+eep
 eku
 emojis
 ENABLEDELAYEDEXPANSION
@@ -475,14 +511,17 @@ ENABLETEMPLATE
 encodedlaunch
 encryptor
 ENDSESSION
+ENot
 ENSUREVISIBLE
 ENTERSIZEMOVE
 ENTRYW
 ENU
 environmentvariables
 EOAC
+eoac
 EPO
 epu
+EProvider
 ERASEBKGND
 EREOF
 EResize
@@ -536,6 +575,7 @@ fdx
 FErase
 fesf
 FFFF
+FFh
 FInc
 Figma
 FILEEXPLORER
@@ -577,7 +617,9 @@ FORMATDLGORD
 formatetc
 FORPARSING
 foundrylocal
+FPrimary
 FRAMECHANGED
+Framechanged
 FRestore
 frm
 FROMTOUCH
@@ -597,6 +639,7 @@ gdiplus
 GDIPVER
 GDISCALED
 geolocator
+Geoposition
 GETCLIENTAREAANIMATION
 GETCURSEL
 GETDESKWALLPAPER
@@ -637,6 +680,8 @@ gwl
 GWLP
 GWLSTYLE
 hangeul
+Hann
+Hantai
 Hanzi
 Hardlines
 hardlinks
@@ -658,6 +703,8 @@ HCRYPTPROV
 hcursor
 hcwhite
 hdc
+HDMI
+hdmi
 hdr
 hdrop
 hdwwiz
@@ -680,6 +727,7 @@ Hif
 HIMAGELIST
 himl
 hinst
+HINSTANCE
 HIWORD
 HKC
 HKCC
@@ -694,6 +742,7 @@ HKPD
 HKU
 HMD
 hmenu
+HMON
 hmodule
 hmonitor
 homies
@@ -711,6 +760,7 @@ hotkeys
 hotlight
 hotspot
 HPAINTBUFFER
+HPhysical
 HRAWINPUT
 hredraw
 hres
@@ -721,6 +771,7 @@ hsb
 HSCROLL
 hsi
 HSpeed
+HSync
 HTCLIENT
 hthumbnail
 HTOUCHINPUT
@@ -730,6 +781,7 @@ HVal
 HValue
 Hvci
 hwb
+HWP
 HWHEEL
 HWINEVENTHOOK
 hwnd
@@ -754,6 +806,7 @@ IDR
 IDXGI
 ietf
 IEXPLORE
+Iface
 IFACEMETHOD
 IFACEMETHODIMP
 ifd
@@ -786,6 +839,7 @@ INITTOLOGFONTSTRUCT
 INLINEPREFIX
 inlines
 Inno
+Innolux
 INPC
 inproc
 INPUTHARDWARE
@@ -827,6 +881,7 @@ istep
 ith
 ITHUMBNAIL
 IUI
+IVO
 IUWP
 IWIC
 jfif
@@ -838,6 +893,7 @@ jpnime
 Jsons
 jsonval
 jxr
+Kantai
 keybd
 KEYBDDATA
 KEYBDINPUT
@@ -859,6 +915,7 @@ KILLFOCUS
 killrunner
 kmph
 kvp
+KVM
 Kybd
 LARGEICON
 lastcodeanalysissucceeded
@@ -878,6 +935,8 @@ LEFTTEXT
 LError
 LEVELID
 LExit
+Lenovo
+LGD
 lhwnd
 LIBFUZZER
 LIBID
@@ -982,6 +1041,7 @@ MAPTOSAMESHORTCUT
 MAPVK
 MARKDOWNPREVIEWHANDLERCPP
 MAXIMIZEBOX
+Maximizebox
 MAXSHORTCUTSIZE
 maxversiontested
 mber
@@ -992,6 +1052,7 @@ MDL
 mdtext
 mdtxt
 mdwn
+mccs
 meme
 mcp
 memicmp
@@ -1013,6 +1074,7 @@ mikeclayton
 mindaro
 Minimizable
 MINIMIZEBOX
+Minimizebox
 MINIMIZEEND
 MINIMIZESTART
 MINMAXINFO
@@ -1072,9 +1134,10 @@ MSLLHOOKSTRUCT
 Mso
 msrc
 msstore
+mstsc
+mswhql
 msvcp
 MT
-mstsc
 MTND
 MULTIPLEUSE
 multizone
@@ -1090,6 +1153,7 @@ MVVMTK
 MWBEx
 MYICON
 NAMECHANGE
+Nanjing
 namespaceanddescendants
 nao
 NCACTIVATE
@@ -1158,6 +1222,7 @@ NOMCX
 NOMINMAX
 NOMIRRORBITMAP
 NOMOVE
+Nomove
 NONANTIALIASED
 nonclient
 NONCLIENTMETRICSW
@@ -1179,6 +1244,7 @@ NORMALUSER
 NOSEARCH
 NOSENDCHANGING
 NOSIZE
+Nosize
 NOTHOUSANDS
 NOTICKS
 NOTIFICATIONSDLL
@@ -1186,9 +1252,11 @@ NOTIFYICONDATA
 NOTIFYICONDATAW
 NOTIMPL
 NOTOPMOST
+Notopmost
 NOTRACK
 NOTSRCCOPY
 NOTSRCERASE
+Notupdated
 notwindows
 NOTXORPEN
 nowarn
@@ -1230,10 +1298,9 @@ OPENFILENAME
 openrdp
 opensource
 openxmlformats
-ollama
-onnx
 openurl
 OPTIMIZEFORINVOKE
+Optronics
 ORPHANEDDIALOGTITLE
 ORSCANS
 oss
@@ -1269,6 +1336,7 @@ PATINVERT
 PATPAINT
 pbc
 pbi
+PBP
 PBlob
 pbrush
 pcb
@@ -1283,6 +1351,7 @@ PDBs
 PDEVMODE
 pdisp
 PDLL
+pdmodels
 pdo
 pdto
 pdtobj
@@ -1305,6 +1374,7 @@ pguid
 phbm
 phbmp
 phicon
+PHL
 Photoshop
 phwnd
 pici
@@ -1336,6 +1406,8 @@ Pomodoro
 Popups
 POPUPWINDOW
 POSITIONITEM
+powerdisplay
+POWERDISPLAYMODULEINTERFACE
 POWERRENAMECONTEXTMENU
 powerrenameinput
 POWERRENAMETEST
@@ -1390,6 +1462,7 @@ projectname
 PROPERTYKEY
 Propset
 PROPVARIANT
+prot
 PRTL
 prvpane
 psapi
@@ -1417,12 +1490,16 @@ PTOKEN
 PToy
 ptstr
 pui
+pvct
 PWAs
 pwcs
 PWSTR
 pwsz
 pwtd
+Qdc
 QDC
+qdc
+QDS
 qit
 QITAB
 QITABENT
@@ -1447,7 +1524,6 @@ RAWPATH
 rbhid
 rclsid
 RCZOOMIT
-remotedesktop
 rdp
 RDW
 READMODE
@@ -1459,6 +1535,7 @@ RECTSOURCE
 recyclebin
 Redist
 Reencode
+Refreshable
 REFCLSID
 REFIID
 REGCLS
@@ -1476,10 +1553,12 @@ remappings
 REMAPSUCCESSFUL
 REMAPUNSUCCESSFUL
 Remotable
+remotedesktop
 remoteip
 Removelnk
 renamable
 RENAMEONCOLLISION
+Reparent
 reparented
 reparenting
 reportfileaccesses
@@ -1488,6 +1567,7 @@ requerying
 rescap
 resgen
 resheader
+Resizer
 resizers
 RESIZETOFIT
 resmimetype
@@ -1549,6 +1629,7 @@ scrollviewer
 SDDL
 SDKDDK
 sdns
+Sdr
 searchterm
 SEARCHUI
 secondaryclickaction
@@ -1703,6 +1784,7 @@ STARTUPINFOW
 startupscreen
 STATFLAG
 STATICEDGE
+Staticedge
 STATSTG
 stdafx
 STDAPI
@@ -1745,7 +1827,7 @@ SVGIO
 svgz
 SVSI
 SWFO
-SWP
+swp
 SWPNOSIZE
 SWPNOZORDER
 SWRESTORE
@@ -1765,6 +1847,7 @@ syskeydown
 SYSKEYUP
 SYSLIB
 SYSMENU
+Sysmenu
 systemai
 SYSTEMAPPS
 SYSTEMMODAL
@@ -1804,7 +1887,9 @@ THEMECHANGED
 themeresources
 THH
 THICKFRAME
+Thickframe
 THISCOMPONENT
+Tianma
 throughs
 TILEDWINDOW
 TILLSON
@@ -1892,6 +1977,7 @@ UOffset
 UOI
 UPDATENOW
 UPDATEREGISTRY
+updateregistry
 updown
 UPGRADINGPRODUCTCODE
 upscaling
@@ -1918,6 +2004,8 @@ vcamp
 vcenter
 vcgtq
 VCINSTALLDIR
+vcp
+vcpname
 Vcpkg
 VCRT
 vcruntime
@@ -1930,7 +2018,10 @@ VERIFYCONTEXT
 VERSIONINFO
 VERTRES
 VERTSIZE
+VESA
+vesa
 VFT
+Vga
 vget
 vgetq
 viewmodels
@@ -1960,6 +2051,7 @@ VSM
 vso
 vsonline
 VSpeed
+VSync
 vstemplate
 vstest
 VSTHRD
@@ -2001,7 +2093,7 @@ winapi
 winappsdk
 windir
 WINDOWCREATED
-WINDOWEDGE
+windowedge
 WINDOWINFO
 WINDOWNAME
 WINDOWPLACEMENT
@@ -2026,6 +2118,7 @@ winlogon
 winmd
 winml
 WINNT
+winnt
 winres
 winrt
 winsdk
@@ -2042,6 +2135,7 @@ WKSG
 Wlkr
 wmain
 Wman
+wmi
 WMI
 WMICIM
 wmimgmt
@@ -2054,6 +2148,7 @@ WNDCLASSEX
 WNDCLASSEXW
 WNDCLASSW
 WNDPROC
+Wndproc
 wnode
 wom
 WORKSPACESEDITOR
