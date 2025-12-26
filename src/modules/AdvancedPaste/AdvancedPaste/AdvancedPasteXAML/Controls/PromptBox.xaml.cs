@@ -164,7 +164,7 @@ namespace AdvancedPaste.Controls
                 return;
             }
 
-            var flyout = FlyoutBase.GetAttachedFlyout(AIProviderButton);
+            var flyout = AIProviderButton.Flyout;
 
             if (AIProviderListView.SelectedItem is not PasteAIProviderDefinition provider)
             {
@@ -180,7 +180,6 @@ namespace AdvancedPaste.Controls
             if (ViewModel.SetActiveProviderCommand.CanExecute(provider))
             {
                 await ViewModel.SetActiveProviderCommand.ExecuteAsync(provider);
-                SyncProviderSelection();
             }
 
             flyout?.Hide();
