@@ -36,6 +36,13 @@
 
                 <controls:SettingsGroup x:Uid="Awake_BehaviorSettingsGroup" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsCard
+                        Name="AwakeShowTrayIconSettingsCard"
+                        x:Uid="Awake_ShowTrayIconSettingsCard"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE7E8;}">
+                        <ToggleSwitch IsOn="{x:Bind ViewModel.ShowTrayIcon, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
+
+                    <tkcontrols:SettingsCard
                         Name="AwakeModeSettingsCard"
                         x:Uid="Awake_ModeSettingsCard"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE945;}">

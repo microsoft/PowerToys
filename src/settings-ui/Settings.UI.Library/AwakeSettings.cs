@@ -41,6 +41,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
                     // Fix old buggy default value that might be saved in Settings. Some components don't deal well with negative time zones and minimum time offsets.
                     ExpirationDateTime = Properties.ExpirationDateTime.Year < 2 ? DateTimeOffset.Now : Properties.ExpirationDateTime,
+                    ShowTrayIcon = Properties.ShowTrayIcon,
                 },
             };
         }
