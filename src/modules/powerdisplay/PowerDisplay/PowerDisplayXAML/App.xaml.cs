@@ -21,9 +21,7 @@ namespace PowerDisplay
     /// <summary>
     /// PowerDisplay application main class
     /// </summary>
-#pragma warning disable CA1001 // CancellationTokenSource is disposed in Shutdown/ForceExit methods
     public partial class App : Application
-#pragma warning restore CA1001
     {
         private readonly SettingsUtils _settingsUtils = SettingsUtils.Default;
         private Window? _mainWindow;

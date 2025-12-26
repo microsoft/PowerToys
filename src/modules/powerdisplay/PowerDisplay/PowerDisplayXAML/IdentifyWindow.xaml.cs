@@ -47,10 +47,6 @@ namespace PowerDisplay.PowerDisplayXAML
             int physicalWidth = (int)(WindowWidthDiu * _dpiScale);
             int physicalHeight = (int)(WindowHeightDiu * _dpiScale);
             this.AppWindow.Resize(new SizeInt32 { Width = physicalWidth, Height = physicalHeight });
-
-            // Window properties (IsResizable, IsMinimizable, IsMaximizable,
-            // IsTitleBarVisible, IsShownInSwitchers) are set in XAML
-
             this.IsAlwaysOnTop = true;
         }
 

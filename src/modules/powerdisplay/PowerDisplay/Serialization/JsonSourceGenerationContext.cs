@@ -8,8 +8,6 @@ using System.Text.Json.Serialization;
 using Microsoft.PowerToys.Settings.UI.Library;
 using PowerDisplay.Common.Models;
 
-#pragma warning disable SA1402 // File may only contain a single type - Related JSON serialization types grouped together
-
 namespace PowerDisplay.Serialization
 {
     /// <summary>
@@ -46,15 +44,5 @@ namespace PowerDisplay.Serialization
         DefaultIgnoreCondition = JsonIgnoreCondition.Never)]
     internal sealed partial class AppJsonContext : JsonSerializerContext
     {
-    }
-
-    /// <summary>
-    /// IPC message wrapper for parsing action-based messages.
-    /// Used in App.xaml.cs for dynamic IPC command handling.
-    /// </summary>
-    internal sealed class IPCMessageAction
-    {
-        [JsonPropertyName("action")]
-        public string? Action { get; set; }
     }
 }

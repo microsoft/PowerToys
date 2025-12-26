@@ -252,18 +252,57 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
         _cancellationTokenSource?.Cancel();
 
         // Dispose each resource independently to ensure all get cleaned up
-        try { _displayChangeWatcher?.Dispose(); } catch { }
+        try
+        {
+            _displayChangeWatcher?.Dispose();
+        }
+        catch
+        {
+        }
 
         // Dispose monitor view models
         foreach (var vm in Monitors)
         {
-            try { vm.Dispose(); } catch { }
+            try
+            {
+                vm.Dispose();
+            }
+            catch
+            {
+            }
         }
 
-        try { _monitorManager?.Dispose(); } catch { }
-        try { _stateManager?.Dispose(); } catch { }
-        try { _cancellationTokenSource?.Dispose(); } catch { }
-        try { Monitors.Clear(); } catch { }
+        try
+        {
+            _monitorManager?.Dispose();
+        }
+        catch
+        {
+        }
+
+        try
+        {
+            _stateManager?.Dispose();
+        }
+        catch
+        {
+        }
+
+        try
+        {
+            _cancellationTokenSource?.Dispose();
+        }
+        catch
+        {
+        }
+
+        try
+        {
+            Monitors.Clear();
+        }
+        catch
+        {
+        }
 
         GC.SuppressFinalize(this);
     }
