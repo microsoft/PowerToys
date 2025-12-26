@@ -225,9 +225,10 @@ public partial class MainViewModel
             catch (Exception ex)
             {
                 Logger.LogError($"[LightSwitch Integration] Failed to apply profile: {ex.GetType().Name}: {ex.Message}");
-                if (ex.InnerException != null)
+                var innerException = ex.InnerException;
+                if (innerException != null)
                 {
-                    Logger.LogError($"[LightSwitch Integration] Inner exception: {ex.InnerException.GetType().Name}: {ex.InnerException.Message}");
+                    Logger.LogError($"[LightSwitch Integration] Inner exception: {innerException.GetType().Name}: {innerException.Message}");
                 }
             }
         });
