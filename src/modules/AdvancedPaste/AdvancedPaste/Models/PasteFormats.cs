@@ -39,6 +39,16 @@ public enum PasteFormats
     Json,
 
     [PasteFormatMetadata(
+        IsCoreAction = true,
+        ResourceId = "PasteAsKeystrokes",
+        IconGlyph = "\uE765",
+        RequiresAIService = false,
+        CanPreview = false,
+        SupportedClipboardFormats = ClipboardFormat.Text,
+        KernelFunctionDescription = "Takes clipboard text and types it character-by-character as keyboard input, useful for applications that don't support standard paste operations.")]
+    PasteAsKeystrokes,
+
+    [PasteFormatMetadata(
         IsCoreAction = false,
         ResourceId = "ImageToText",
         IconGlyph = "\uE91B",
