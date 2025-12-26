@@ -141,7 +141,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
             else
             {
-                // User cancelled: revert ComboBox to previous selection (property unchanged)
+                // User canceled: revert ComboBox to previous selection (property unchanged)
                 // Use flag to prevent reentrant event handling
                 _isRestoringSelection = true;
                 try
