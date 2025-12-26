@@ -161,8 +161,9 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
                                 _webView.Height = this.Height;
                                 _webView.Width = this.Width;
                                 _webView.CoreWebView2.NewWindowRequested += CoreWebView2_NewWindowRequested;
+                                _webView.KeyDown += WebView2_KeyDown;
                                 Controls.Add(_webView);
-                                _webView.SendToBack();
+                                _webView.BringToFront();
                                 _loadingBar.Value = 100;
                                 this.Update();
                             }
@@ -220,6 +221,21 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
             }
 
             this.Resize += FormResize;
+        }
+
+        private async void WebView2_KeyDown(object sender, System.Windows.Forms.KeyEventArgs e)
+        {
+            // Check for Ctrl+C
+            if (e.Control && e.KeyCode == Keys.C)
+            {
+                // Run JS copy function
+                if (_webView.CoreWebView2 != null)
+                {
+                    await _webView.CoreWebView2.ExecuteScriptAsync("runCopyCommand()");
+                }
+
+                e.Handled = true;
+            }
         }
 
         private async void CoreWebView2_NewWindowRequested(object sender, CoreWebView2NewWindowRequestedEventArgs e)
