@@ -101,7 +101,7 @@ namespace PowerDisplay.Common.Drivers.DDC
         public async Task<VcpFeatureValue> GetBrightnessAsync(Monitor monitor, CancellationToken cancellationToken = default)
         {
             ArgumentNullException.ThrowIfNull(monitor);
-            return await GetVcpFeatureAsync(monitor, VcpCodeBrightness, "Brightness", cancellationToken);
+            return await GetVcpFeatureAsync(monitor, VcpCodeBrightness, cancellationToken);
         }
 
         /// <summary>
@@ -129,7 +129,7 @@ namespace PowerDisplay.Common.Drivers.DDC
         public async Task<VcpFeatureValue> GetColorTemperatureAsync(Monitor monitor, CancellationToken cancellationToken = default)
         {
             ArgumentNullException.ThrowIfNull(monitor);
-            return await GetVcpFeatureAsync(monitor, VcpCodeSelectColorPreset, "Color temperature", cancellationToken);
+            return await GetVcpFeatureAsync(monitor, VcpCodeSelectColorPreset, cancellationToken);
         }
 
         /// <summary>
@@ -145,7 +145,7 @@ namespace PowerDisplay.Common.Drivers.DDC
         public async Task<VcpFeatureValue> GetInputSourceAsync(Monitor monitor, CancellationToken cancellationToken = default)
         {
             ArgumentNullException.ThrowIfNull(monitor);
-            return await GetVcpFeatureAsync(monitor, VcpCodeInputSource, "Input source", cancellationToken);
+            return await GetVcpFeatureAsync(monitor, VcpCodeInputSource, cancellationToken);
         }
 
         /// <summary>
@@ -568,16 +568,14 @@ namespace PowerDisplay.Common.Drivers.DDC
         }
 
         /// <summary>
-        /// Generic method to get VCP feature value with optional logging.
+        /// Generic method to get VCP feature value.
         /// </summary>
         /// <param name="monitor">Monitor to query</param>
         /// <param name="vcpCode">VCP code to read</param>
-        /// <param name="featureName">Optional feature name for logging (e.g., "color temperature", "input source")</param>
         /// <param name="cancellationToken">Cancellation token</param>
         private async Task<VcpFeatureValue> GetVcpFeatureAsync(
             Monitor monitor,
             byte vcpCode,
-            string? featureName = null,
             CancellationToken cancellationToken = default)
         {
             return await Task.Run(

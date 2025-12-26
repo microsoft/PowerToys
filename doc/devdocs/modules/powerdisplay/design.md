@@ -516,7 +516,7 @@ classDiagram
         +GetInputSourceAsync(monitor)
         +SetInputSourceAsync(monitor, inputSource)
         +GetCapabilitiesStringAsync(monitor) string
-        -GetVcpFeatureAsync(monitor, vcpCode, featureName)
+        -GetVcpFeatureAsync(monitor, vcpCode)
         -CollectCandidateMonitorsAsync()
         -FetchCapabilitiesInParallelAsync()
         -GetPhysicalMonitorsWithRetryAsync()
