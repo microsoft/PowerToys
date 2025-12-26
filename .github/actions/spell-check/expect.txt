@@ -454,6 +454,7 @@ DRAWCLIPBOARD
 DRAWFRAME
 drawingcolor
 dreamsofameaningfullife
+DRegion
 DREGION
 drivedetectionwarning
 DROPFILES
@@ -1493,7 +1494,9 @@ pwcs
 PWSTR
 pwsz
 pwtd
+Qdc
 QDC
+qdc
 QDS
 qit
 QITAB
@@ -1971,6 +1974,7 @@ unzoom
 UOffset
 UOI
 UPDATENOW
+UPDATEREGISTRY
 updateregistry
 updown
 UPGRADINGPRODUCTCODE
@@ -2013,6 +2017,7 @@ VERSIONINFO
 VERTRES
 VERTSIZE
 VESA
+vesa
 VFT
 Vga
 vget
@@ -2127,6 +2132,7 @@ WKSG
 Wlkr
 wmain
 Wman
+wmi
 WMI
 WMICIM
 wmimgmt
