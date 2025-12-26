@@ -70,10 +70,21 @@ public sealed partial class CalculatorListPage : DynamicListPage
 
         skipQuerySearchText = string.Empty;
 
-        _emptyItem.Subtitle = newSearch;
+        // Check if query ends with '=' (Replace input feature - Issue #43460)
+        bool replaceInputOnEquals = newSearch.EndsWith('=');
+        string queryToProcess = replaceInputOnEquals ? newSearch.TrimEnd('=') : newSearch;
 
-        var result = QueryHelper.Query(newSearch, _settingsManager, false, HandleSave);
+        _emptyItem.Subtitle = queryToProcess;
+
+        var result = QueryHelper.Query(queryToProcess, _settingsManager, false, HandleSave);
         UpdateResult(result);
+
+        // If query ended with '=', replace input with result
+        if (replaceInputOnEquals && result is not null && !string.IsNullOrEmpty(result.Title))
+        {
+            skipQuerySearchText = result.Title;
+            SearchText = result.Title;
+        }
     }
 
     private void UpdateResult(ListItem result)
