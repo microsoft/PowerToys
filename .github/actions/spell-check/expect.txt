@@ -241,6 +241,7 @@ closesocket
 clp
 CLSCTX
 clsids
+Cloneable
 Clusion
 cmder
 CMN
@@ -320,6 +321,7 @@ critsec
 cropandlock
 crt
 Crossdevice
+Crosshairs
 csdevkit
 CSearch
 CSettings
@@ -634,6 +636,7 @@ gdiplus
 GDIPVER
 GDISCALED
 geolocator
+Geoposition
 GETCLIENTAREAANIMATION
 GETCURSEL
 GETDESKWALLPAPER
@@ -721,6 +724,8 @@ Hif
 HIMAGELIST
 himl
 hinst
+HINSTANCE
+hinstance
 HIWORD
 HKC
 HKCC
@@ -799,6 +804,7 @@ IDR
 IDXGI
 ietf
 IEXPLORE
+Iface
 IFACEMETHOD
 IFACEMETHODIMP
 ifd
@@ -1044,6 +1050,7 @@ MDL
 mdtext
 mdtxt
 mdwn
+MCCS
 Mccs
 mccs
 meme
@@ -1528,6 +1535,7 @@ RECTSOURCE
 recyclebin
 Redist
 Reencode
+Refreshable
 REFCLSID
 REFIID
 REGCLS
@@ -1550,6 +1558,7 @@ remoteip
 Removelnk
 renamable
 RENAMEONCOLLISION
+Reparent
 reparented
 reparenting
 reportfileaccesses
@@ -1558,6 +1567,7 @@ requerying
 rescap
 resgen
 resheader
+Resizer
 resizers
 RESIZETOFIT
 resmimetype
