@@ -283,9 +283,9 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
         {
             disposable?.Dispose();
         }
-        catch
+        catch (Exception ex)
         {
-            // Silently ignore dispose errors
+            Logger.LogError($"[SafeDispose] Error disposing {name}: {ex.Message}");
         }
     }
 
@@ -298,9 +298,9 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
         {
             action();
         }
-        catch
+        catch (Exception ex)
         {
-            // Silently ignore execution errors
+            Logger.LogError($"[SafeExecute] Error executing {name}: {ex.Message}");
         }
     }
 
