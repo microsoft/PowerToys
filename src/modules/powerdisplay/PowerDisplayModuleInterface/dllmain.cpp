@@ -10,7 +10,6 @@
 #include <common/utils/resources.h>
 
 #include "resource.h"
-#include "Constants.h"
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
