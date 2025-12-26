@@ -341,15 +341,16 @@ public abstract class KernelServiceBase(
             async dataPackageView =>
             {
                 var imageBytes = await dataPackageView.GetImageAsPngBytesAsync();
+                var audio = await dataPackageView.GetAudioBytesAsync();
                 var input = await dataPackageView.GetTextOrHtmlTextAsync();
 
-                if (string.IsNullOrEmpty(input) && imageBytes == null)
+                if (string.IsNullOrEmpty(input) && imageBytes == null && audio.Data == null)
                 {
                     // If we have no text and no image, try to get text via OCR or throw if nothing exists
                     input = await dataPackageView.GetClipboardTextOrThrowAsync(kernel.GetCancellationToken());
                 }
 
-                var result = await _customActionTransformService.TransformAsync(fixedPrompt, input, imageBytes, kernel.GetCancellationToken(), kernel.GetProgress());
+                var result = await _customActionTransformService.TransformAsync(fixedPrompt, input, imageBytes, audio.Data, audio.MimeType, kernel.GetCancellationToken(), kernel.GetProgress());
                 return DataPackageHelpers.CreateFromText(result?.Content ?? string.Empty);
             });
 
@@ -360,21 +361,22 @@ public abstract class KernelServiceBase(
             async dataPackageView =>
             {
                 var imageBytes = await dataPackageView.GetImageAsPngBytesAsync();
+                var audio = await dataPackageView.GetAudioBytesAsync();
                 var input = await dataPackageView.GetTextOrHtmlTextAsync();
 
-                if (string.IsNullOrEmpty(input) && imageBytes == null)
+                if (string.IsNullOrEmpty(input) && imageBytes == null && audio.Data == null)
                 {
                     input = await dataPackageView.GetClipboardTextOrThrowAsync(kernel.GetCancellationToken());
                 }
 
-                string output = await GetPromptBasedOutput(format, prompt, input, imageBytes, kernel.GetCancellationToken(), kernel.GetProgress());
+                string output = await GetPromptBasedOutput(format, prompt, input, imageBytes, audio.Data, audio.MimeType, kernel.GetCancellationToken(), kernel.GetProgress());
                 return DataPackageHelpers.CreateFromText(output);
             });
 
-    private async Task<string> GetPromptBasedOutput(PasteFormats format, string prompt, string input, byte[] imageBytes, CancellationToken cancellationToken, IProgress<double> progress) =>
+    private async Task<string> GetPromptBasedOutput(PasteFormats format, string prompt, string input, byte[] imageBytes, byte[] audioBytes, string audioMimeType, CancellationToken cancellationToken, IProgress<double> progress) =>
         format switch
         {
-            PasteFormats.CustomTextTransformation => (await _customActionTransformService.TransformAsync(prompt, input, imageBytes, cancellationToken, progress))?.Content ?? string.Empty,
+            PasteFormats.CustomTextTransformation => (await _customActionTransformService.TransformAsync(prompt, input, imageBytes, audioBytes, audioMimeType, cancellationToken, progress))?.Content ?? string.Empty,
             _ => throw new ArgumentException($"Unsupported format {format} for prompt transform", nameof(format)),
         };
 

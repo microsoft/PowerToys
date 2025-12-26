@@ -12,6 +12,6 @@ namespace AdvancedPaste.Services.CustomActions
 {
     public interface ICustomActionTransformService
     {
-        Task<CustomActionTransformResult> TransformAsync(string prompt, string inputText, byte[] imageBytes, CancellationToken cancellationToken, IProgress<double> progress);
+        Task<CustomActionTransformResult> TransformAsync(string prompt, string inputText, byte[] imageBytes, byte[] audioBytes, string audioMimeType, CancellationToken cancellationToken, IProgress<double> progress);
     }
 }

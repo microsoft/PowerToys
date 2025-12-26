@@ -250,6 +250,29 @@ internal static class DataPackageHelpers
         return memoryStream.ToArray();
     }
 
+    internal static async Task<(byte[] Data, string MimeType)> GetAudioBytesAsync(this DataPackageView dataPackageView)
+    {
+        if (dataPackageView.Contains(StandardDataFormats.StorageItems))
+        {
+            var storageItems = await dataPackageView.GetStorageItemsAsync();
+            var file = storageItems.Count == 1 ? storageItems[0] as StorageFile : null;
+
+            if (file != null)
+            {
+                var supportedAudioTypes = SupportedFileTypes.Value.FirstOrDefault(x => x.Format == ClipboardFormat.Audio).FileTypes;
+                if (supportedAudioTypes != null && supportedAudioTypes.Contains(file.FileType))
+                {
+                    using var stream = await file.OpenStreamForReadAsync();
+                    using var memoryStream = new MemoryStream();
+                    await stream.CopyToAsync(memoryStream);
+                    return (memoryStream.ToArray(), file.ContentType);
+                }
+            }
+        }
+
+        return (null, null);
+    }
+
     internal static async Task<SoftwareBitmap> GetImageContentAsync(this DataPackageView dataPackageView)
     {
         using var stream = await dataPackageView.GetImageStreamAsync();
@@ -286,7 +309,11 @@ internal static class DataPackageHelpers
             var file = storageItems.Count == 1 ? storageItems[0] as StorageFile : null;
             if (file != null)
             {
-                return await file.OpenReadAsync();
+                var supportedImageTypes = SupportedFileTypes.Value.FirstOrDefault(x => x.Format == ClipboardFormat.Image).FileTypes;
+                if (supportedImageTypes != null && supportedImageTypes.Contains(file.FileType))
+                {
+                    return await file.OpenReadAsync();
+                }
             }
         }
 

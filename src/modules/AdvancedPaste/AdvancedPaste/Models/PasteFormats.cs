@@ -118,8 +118,8 @@ public enum PasteFormats
         IconGlyph = "\uE945",
         RequiresAIService = true,
         CanPreview = true,
-        SupportedClipboardFormats = ClipboardFormat.Text | ClipboardFormat.Image,
-        KernelFunctionDescription = "Takes user instructions and applies them to the current clipboard content (text or image). Use this function for image analysis, description, or transformation tasks beyond simple OCR.",
+        SupportedClipboardFormats = ClipboardFormat.Text | ClipboardFormat.Image | ClipboardFormat.Audio,
+        KernelFunctionDescription = "Takes user instructions and applies them to the current clipboard content (text, image or audio). Use this function for image analysis, description, or transformation tasks beyond simple OCR.",
         RequiresPrompt = true)]
     CustomTextTransformation,
 }

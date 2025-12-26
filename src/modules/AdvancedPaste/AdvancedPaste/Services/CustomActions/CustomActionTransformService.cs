@@ -40,15 +40,15 @@ namespace AdvancedPaste.Services.CustomActions
             this.userSettings = userSettings;
         }
 
-        public async Task<CustomActionTransformResult> TransformAsync(string prompt, string inputText, byte[] imageBytes, CancellationToken cancellationToken, IProgress<double> progress)
+        public async Task<CustomActionTransformResult> TransformAsync(string prompt, string inputText, byte[] imageBytes, byte[] audioBytes, string audioMimeType, CancellationToken cancellationToken, IProgress<double> progress)
         {
             var pasteConfig = userSettings?.PasteAIConfiguration;
             var providerConfig = BuildProviderConfig(pasteConfig);
 
-            return await TransformAsync(prompt, inputText, imageBytes, providerConfig, cancellationToken, progress);
+            return await TransformAsync(prompt, inputText, imageBytes, audioBytes, audioMimeType, providerConfig, cancellationToken, progress);
         }
 
-        private async Task<CustomActionTransformResult> TransformAsync(string prompt, string inputText, byte[] imageBytes, PasteAIConfig providerConfig, CancellationToken cancellationToken, IProgress<double> progress)
+        private async Task<CustomActionTransformResult> TransformAsync(string prompt, string inputText, byte[] imageBytes, byte[] audioBytes, string audioMimeType, PasteAIConfig providerConfig, CancellationToken cancellationToken, IProgress<double> progress)
         {
             ArgumentNullException.ThrowIfNull(providerConfig);
 
@@ -57,7 +57,7 @@ namespace AdvancedPaste.Services.CustomActions
                 return new CustomActionTransformResult(string.Empty, AIServiceUsage.None);
             }
 
-            if (string.IsNullOrWhiteSpace(inputText) && imageBytes is null)
+            if (string.IsNullOrWhiteSpace(inputText) && imageBytes is null && audioBytes is null)
             {
                 Logger.LogWarning("Clipboard has no usable data");
                 return new CustomActionTransformResult(string.Empty, AIServiceUsage.None);
@@ -82,6 +82,8 @@ namespace AdvancedPaste.Services.CustomActions
                     InputText = inputText,
                     ImageBytes = imageBytes,
                     ImageMimeType = imageBytes != null ? "image/png" : null,
+                    AudioBytes = audioBytes,
+                    AudioMimeType = audioMimeType,
                     SystemPrompt = systemPrompt,
                 };
 

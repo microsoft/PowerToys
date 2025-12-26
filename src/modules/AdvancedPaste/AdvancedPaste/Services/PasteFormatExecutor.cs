@@ -34,12 +34,26 @@ public sealed class PasteFormatExecutor(IKernelService kernelService, ICustomAct
 
         // Run on thread-pool; although we use Async routines consistently, some actions still occasionally take a long time without yielding.
         return await Task.Run(async () =>
-            pasteFormat.Format switch
+        {
+            if (pasteFormat.Format == PasteFormats.CustomTextTransformation)
+            {
+                var audio = await clipboardData.GetAudioBytesAsync();
+                return DataPackageHelpers.CreateFromText((await _customActionTransformService.TransformAsync(
+                    pasteFormat.Prompt,
+                    await clipboardData.GetTextOrHtmlTextAsync(),
+                    await clipboardData.GetImageAsPngBytesAsync(),
+                    audio.Data,
+                    audio.MimeType,
+                    cancellationToken,
+                    progress))?.Content ?? string.Empty);
+            }
+
+            return pasteFormat.Format switch
             {
                 PasteFormats.KernelQuery => await _kernelService.TransformClipboardAsync(pasteFormat.Prompt, clipboardData, pasteFormat.IsSavedQuery, cancellationToken, progress),
-                PasteFormats.CustomTextTransformation => DataPackageHelpers.CreateFromText((await _customActionTransformService.TransformAsync(pasteFormat.Prompt, await clipboardData.GetTextOrHtmlTextAsync(), await clipboardData.GetImageAsPngBytesAsync(), cancellationToken, progress))?.Content ?? string.Empty),
                 _ => await TransformHelpers.TransformAsync(format, clipboardData, cancellationToken, progress),
-            });
+            };
+        });
     }
 
     private static void WriteTelemetry(PasteFormats format, PasteActionSource source)

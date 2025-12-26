@@ -70,8 +70,9 @@ namespace AdvancedPaste.Services.CustomActions
             var prompt = request.Prompt;
             var inputText = request.InputText;
             var imageBytes = request.ImageBytes;
+            var audioBytes = request.AudioBytes;
 
-            if (string.IsNullOrWhiteSpace(prompt) || (string.IsNullOrWhiteSpace(inputText) && imageBytes is null))
+            if (string.IsNullOrWhiteSpace(prompt) || (string.IsNullOrWhiteSpace(inputText) && imageBytes is null && audioBytes is null))
             {
                 throw new ArgumentException("Prompt and input content must be provided", nameof(request));
             }
