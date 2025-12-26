@@ -22,11 +22,4 @@ public static class NativeDelegates
     /// <returns>True to continue enumeration</returns>
     [UnmanagedFunctionPointer(CallingConvention.StdCall)]
     public delegate bool MonitorEnumProc(IntPtr hMonitor, IntPtr hdcMonitor, IntPtr lprcMonitor, IntPtr dwData);
-
-    /// <summary>
-    /// Thread start routine delegate
-    /// </summary>
-    /// <param name="lpParameter">Thread parameter</param>
-    /// <returns>Thread exit code</returns>
-    public delegate uint ThreadStartRoutine(IntPtr lpParameter);
 }

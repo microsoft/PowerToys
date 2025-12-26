@@ -106,54 +106,6 @@ namespace PowerDisplay.Common.Drivers
     }
 
     /// <summary>
-    /// Display device structure
-    /// </summary>
-    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
-    public unsafe struct DisplayDevice
-    {
-        /// <summary>
-        /// Structure size
-        /// </summary>
-        public uint Cb;
-
-        /// <summary>
-        /// Device name (e.g., "\\.\DISPLAY1\Monitor0") - fixed buffer for LibraryImport compatibility
-        /// </summary>
-        public fixed ushort DeviceName[32];
-
-        /// <summary>
-        /// Device description string - fixed buffer for LibraryImport compatibility
-        /// </summary>
-        public fixed ushort DeviceString[128];
-
-        /// <summary>
-        /// Status flags
-        /// </summary>
-        public uint StateFlags;
-
-        /// <summary>
-        /// Device ID - fixed buffer for LibraryImport compatibility
-        /// </summary>
-        public fixed ushort DeviceID[128];
-
-        /// <summary>
-        /// Registry device key - fixed buffer for LibraryImport compatibility
-        /// </summary>
-        public fixed ushort DeviceKey[128];
-
-        /// <summary>
-        /// Helper method to get device name as string
-        /// </summary>
-        public readonly string GetDeviceName()
-        {
-            fixed (ushort* ptr = DeviceName)
-            {
-                return new string((char*)ptr);
-            }
-        }
-    }
-
-    /// <summary>
     /// Display configuration path information
     /// </summary>
     [StructLayout(LayoutKind.Sequential)]
@@ -367,57 +319,6 @@ namespace PowerDisplay.Common.Drivers
             {
                 return new string((char*)ptr);
             }
-        }
-    }
-
-    /// <summary>
-    /// Display configuration SDR white level
-    /// </summary>
-    [StructLayout(LayoutKind.Sequential)]
-    public struct DISPLAYCONFIG_SDR_WHITE_LEVEL
-    {
-        public DISPLAYCONFIG_DEVICE_INFO_HEADER Header;
-        public uint SDRWhiteLevel;
-    }
-
-    /// <summary>
-    /// Display configuration advanced color information
-    /// </summary>
-    [StructLayout(LayoutKind.Sequential)]
-    public struct DISPLAYCONFIG_GET_ADVANCED_COLOR_INFO
-    {
-        public DISPLAYCONFIG_DEVICE_INFO_HEADER Header;
-        public uint AdvancedColorSupported;
-        public uint AdvancedColorEnabled;
-        public uint BitsPerColorChannel;
-        public uint ColorEncoding;
-        public uint FormatSupport;
-    }
-
-    /// <summary>
-    /// Custom structure for setting SDR white level
-    /// </summary>
-    [StructLayout(LayoutKind.Sequential)]
-    public struct DISPLAYCONFIG_SET_SDR_WHITE_LEVEL
-    {
-        public DISPLAYCONFIG_DEVICE_INFO_HEADER Header;
-        public uint SDRWhiteLevel;
-        public byte FinalValue;
-    }
-
-    /// <summary>
-    /// Point structure
-    /// </summary>
-    [StructLayout(LayoutKind.Sequential)]
-    public struct POINT
-    {
-        public int X;
-        public int Y;
-
-        public POINT(int x, int y)
-        {
-            this.X = x;
-            this.Y = y;
         }
     }
 

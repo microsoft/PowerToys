@@ -28,18 +28,16 @@ namespace PowerDisplay.Helpers
     /// <returns>The result of the message processing.</returns>
     internal delegate nint WndProcDelegate(nint hwnd, uint msg, nuint wParam, nint lParam);
 
-    [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1310:Field names should not contain underscore", Justification = "Stylistically, window messages are WM_*")]
-    [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1306:Field names should begin with lower-case letter", Justification = "Stylistically, window messages are WM_*")]
     internal sealed partial class TrayIconService
     {
-        private const uint MY_NOTIFY_ID = 1001;
-        private const uint WM_TRAY_ICON = PInvoke.WM_USER + 1;
+        private const uint MyNotifyId = 1001;
+        private const uint WmTrayIcon = PInvoke.WM_USER + 1;
 
         private readonly SettingsUtils _settingsUtils;
         private readonly Action _toggleWindowAction;
         private readonly Action _exitAction;
         private readonly Action _openSettingsAction;
-        private readonly uint WM_TASKBAR_RESTART;
+        private readonly uint _wmTaskbarRestart;
 
         private Window? _window;
         private nint _hwnd;
@@ -63,7 +61,7 @@ namespace PowerDisplay.Helpers
             // TaskbarCreated is the message that's broadcast when explorer.exe
             // restarts. We need to know when that happens to be able to bring our
             // notification area icon back
-            WM_TASKBAR_RESTART = RegisterWindowMessageNative("TaskbarCreated");
+            _wmTaskbarRestart = RegisterWindowMessageNative("TaskbarCreated");
         }
 
         public void SetupTrayIcon(bool? showSystemTrayIcon = null)
@@ -100,9 +98,9 @@ namespace PowerDisplay.Helpers
                         {
                             cbSize = (uint)sizeof(NOTIFYICONDATAW),
                             hWnd = new HWND(_hwnd),
-                            uID = MY_NOTIFY_ID,
+                            uID = MyNotifyId,
                             uFlags = NOTIFY_ICON_DATA_FLAGS.NIF_MESSAGE | NOTIFY_ICON_DATA_FLAGS.NIF_ICON | NOTIFY_ICON_DATA_FLAGS.NIF_TIP,
-                            uCallbackMessage = WM_TRAY_ICON,
+                            uCallbackMessage = WmTrayIcon,
                             hIcon = new HICON(_largeIcon),
                             szTip = GetString("AppName"),
                         };
@@ -216,7 +214,7 @@ namespace PowerDisplay.Helpers
                     break;
 
                 // Shell_NotifyIcon can fail when we invoke it during the time explorer.exe isn't present/ready to handle it.
-                // We'll also never receive WM_TASKBAR_RESTART message if the first call to Shell_NotifyIcon failed, so we use
+                // We'll also never receive _wmTaskbarRestart message if the first call to Shell_NotifyIcon failed, so we use
                 // WM_WINDOWPOSCHANGING which is always received on explorer startup sequence.
                 case PInvoke.WM_WINDOWPOSCHANGING:
                     {
@@ -228,15 +226,15 @@ namespace PowerDisplay.Helpers
 
                     break;
                 default:
-                    // WM_TASKBAR_RESTART isn't a compile-time constant, so we can't
+                    // _wmTaskbarRestart isn't a compile-time constant, so we can't
                     // use it in a case label
-                    if (uMsg == WM_TASKBAR_RESTART)
+                    if (uMsg == _wmTaskbarRestart)
                     {
                         // Handle the case where explorer.exe restarts.
                         // Even if we created it before, do it again
                         SetupTrayIcon();
                     }
-                    else if (uMsg == WM_TRAY_ICON)
+                    else if (uMsg == WmTrayIcon)
                     {
                         switch ((uint)lParam)
                         {

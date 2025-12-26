@@ -52,14 +52,6 @@ namespace PowerDisplay.Common.Drivers
             IntPtr hMonitor,
             MonitorInfoEx* lpmi);
 
-        [LibraryImport("user32.dll", EntryPoint = "EnumDisplayDevicesW", StringMarshalling = StringMarshalling.Utf16)]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        internal static unsafe partial bool EnumDisplayDevices(
-            [MarshalAs(UnmanagedType.LPWStr)] string? lpDevice,
-            uint iDevNum,
-            DisplayDevice* lpDisplayDevice,
-            uint dwFlags);
-
         [LibraryImport("user32.dll", EntryPoint = "EnumDisplaySettingsW", StringMarshalling = StringMarshalling.Utf16)]
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static unsafe partial bool EnumDisplaySettings(
@@ -74,16 +66,6 @@ namespace PowerDisplay.Common.Drivers
             IntPtr hwnd,
             uint dwflags,
             IntPtr lParam);
-
-        [LibraryImport("user32.dll")]
-        internal static partial IntPtr MonitorFromWindow(
-            IntPtr hwnd,
-            uint dwFlags);
-
-        [LibraryImport("user32.dll")]
-        internal static partial IntPtr MonitorFromPoint(
-            POINT pt,
-            uint dwFlags);
 
         // ==================== Dxva2.dll - DDC/CI Monitor Control ====================
         [LibraryImport("Dxva2.dll")]
@@ -104,13 +86,6 @@ namespace PowerDisplay.Common.Drivers
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static partial bool DestroyPhysicalMonitor(IntPtr hMonitor);
 
-        // Use unsafe pointer to avoid LPArray limitation
-        [LibraryImport("Dxva2.dll")]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        internal static unsafe partial bool DestroyPhysicalMonitors(
-            uint dwPhysicalMonitorArraySize,
-            PhysicalMonitor* pPhysicalMonitorArray);
-
         [LibraryImport("Dxva2.dll")]
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static partial bool GetVCPFeatureAndVCPFeatureReply(
@@ -126,10 +101,6 @@ namespace PowerDisplay.Common.Drivers
             IntPtr hPhysicalMonitor,
             byte bVCPCode,
             uint dwNewValue);
-
-        [LibraryImport("Dxva2.dll")]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        internal static partial bool SaveCurrentSettings(IntPtr hPhysicalMonitor);
 
         [LibraryImport("Dxva2.dll")]
         [return: MarshalAs(UnmanagedType.Bool)]

@@ -22,7 +22,6 @@ using Monitor = PowerDisplay.Common.Models.Monitor;
 // These uppercase aliases are used consistently throughout this file to match Win32 API documentation.
 using MONITORINFOEX = PowerDisplay.Common.Drivers.MonitorInfoEx;
 using PHYSICAL_MONITOR = PowerDisplay.Common.Drivers.PhysicalMonitor;
-using RECT = PowerDisplay.Common.Drivers.Rect;
 
 namespace PowerDisplay.Common.Drivers.DDC
 {

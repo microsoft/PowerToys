@@ -214,6 +214,12 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 IsNew = false,
             });
 
+            Modules.Insert((int)PowerToysModules.PowerDisplay, new OobePowerToysModule()
+            {
+                ModuleName = "PowerDisplay",
+                IsNew = true,
+            });
+
             Modules.Insert((int)PowerToysModules.NewPlus, new OobePowerToysModule()
             {
                 ModuleName = "NewPlus",
@@ -306,6 +312,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                     case "Peek": NavigationFrame.Navigate(typeof(OobePeek)); break;
                     case "NewPlus": NavigationFrame.Navigate(typeof(OobeNewPlus)); break;
                     case "Workspaces": NavigationFrame.Navigate(typeof(OobeWorkspaces)); break;
+                    case "PowerDisplay": NavigationFrame.Navigate(typeof(OobePowerDisplay)); break;
                     case "ZoomIt": NavigationFrame.Navigate(typeof(OobeZoomIt)); break;
                 }
             }
