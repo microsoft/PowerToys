@@ -257,51 +257,21 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
         // Cancel all async operations first
         _cancellationTokenSource?.Cancel();
 
-        // Dispose all resources safely (don't throw from Dispose)
-        SafeDispose(_displayChangeWatcher, "DisplayChangeWatcher");
+        // Dispose each resource independently to ensure all get cleaned up
+        try { _displayChangeWatcher?.Dispose(); } catch { }
 
         // Dispose monitor view models
         foreach (var vm in Monitors)
         {
-            SafeDispose(vm, "MonitorViewModel");
+            try { vm.Dispose(); } catch { }
         }
 
-        SafeExecute(() => Monitors.Clear(), "Monitors.Clear");
-        SafeDispose(_monitorManager, "MonitorManager");
-        SafeDispose(_stateManager, "StateManager");
-        SafeDispose(_cancellationTokenSource, "CancellationTokenSource");
+        try { _monitorManager?.Dispose(); } catch { }
+        try { _stateManager?.Dispose(); } catch { }
+        try { _cancellationTokenSource?.Dispose(); } catch { }
+        try { Monitors.Clear(); } catch { }
 
         GC.SuppressFinalize(this);
-    }
-
-    /// <summary>
-    /// Safely dispose an object without throwing exceptions
-    /// </summary>
-    private static void SafeDispose(IDisposable? disposable, string name)
-    {
-        try
-        {
-            disposable?.Dispose();
-        }
-        catch
-        {
-            // Silently ignore dispose errors
-        }
-    }
-
-    /// <summary>
-    /// Safely execute an action without throwing exceptions
-    /// </summary>
-    private static void SafeExecute(Action action, string name)
-    {
-        try
-        {
-            action();
-        }
-        catch
-        {
-            // Silently ignore execution errors
-        }
     }
 
     /// <summary>
