@@ -1036,7 +1036,7 @@ internal static class Clipboard
         {
             try
             {
-                _ = Common.Retry(
+                _ = IpcChannelHelper.Retry(
                     nameof(SystemClipboard.SetFileDropList),
                     () =>
                     {
@@ -1073,7 +1073,7 @@ internal static class Clipboard
         {
             try
             {
-                _ = Common.Retry(
+                _ = IpcChannelHelper.Retry(
                     nameof(SystemClipboard.SetImage),
                     () =>
                 {
@@ -1104,7 +1104,7 @@ internal static class Clipboard
         {
             try
             {
-                _ = Common.Retry(
+                _ = IpcChannelHelper.Retry(
                     nameof(SystemClipboard.SetText),
                     () =>
                 {
