@@ -1,0 +1,112 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<UserControl
+    x:Class="KeyboardManagerEditorUI.Controls.InputControl"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:helper="using:KeyboardManagerEditorUI.Helpers"
+    xmlns:local="using:KeyboardManagerEditorUI.Controls"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Loaded="UserControl_Loaded"
+    mc:Ignorable="d">
+
+    <StackPanel>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="240" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="240" />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <TextBlock x:Uid="InputControlOriginalKeysTextBlock" Margin="0,12,0,0" />
+            <Grid Grid.Column="2">
+                <TextBlock x:Uid="InputControlNewKeysTextBlock" Margin="0,12,0,0" />
+            </Grid>
+            <Grid Grid.Row="1" Margin="0,8,0,0">
+                <ToggleButton
+                    x:Name="OriginalToggleBtn"
+                    MinHeight="86"
+                    Padding="8,24,8,24"
+                    HorizontalAlignment="Stretch"
+                    HorizontalContentAlignment="Center"
+                    VerticalContentAlignment="Center"
+                    Checked="OriginalToggleBtn_Checked"
+                    Style="{StaticResource CustomShortcutToggleButtonStyle}">
+                    <ToggleButton.Content>
+                        <ItemsControl x:Name="OriginalKeys">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <controls:WrapPanel
+                                        HorizontalSpacing="4"
+                                        Orientation="Horizontal"
+                                        VerticalSpacing="4" />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <local:KeyVisual Content="{Binding}" Style="{StaticResource DefaultKeyVisualStyle}" />
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ToggleButton.Content>
+                </ToggleButton>
+            </Grid>
+
+            <TextBlock
+                Grid.Row="1"
+                Grid.Column="1"
+                Margin="24,0,24,0"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                Text="&#xE0AB;" />
+
+            <Grid
+                Grid.Row="1"
+                Grid.Column="2"
+                Margin="0,8,0,0">
+                <ToggleButton
+                    x:Name="RemappedToggleBtn"
+                    MinHeight="86"
+                    Padding="8,24,8,24"
+                    HorizontalAlignment="Stretch"
+                    HorizontalContentAlignment="Center"
+                    VerticalContentAlignment="Center"
+                    Checked="RemappedToggleBtn_Checked"
+                    Style="{StaticResource CustomShortcutToggleButtonStyle}">
+                    <ToggleButton.Content>
+                        <ItemsControl x:Name="RemappedKeys">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <controls:WrapPanel
+                                        HorizontalSpacing="4"
+                                        Orientation="Horizontal"
+                                        VerticalSpacing="4" />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <local:KeyVisual Content="{Binding}" Style="{StaticResource AccentKeyVisualStyle}" />
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ToggleButton.Content>
+                </ToggleButton>
+            </Grid>
+        </Grid>
+
+        <CheckBox
+            x:Name="AllAppsCheckBox"
+            x:Uid="InputControlAllAppsCheckBox"
+            Margin="0,24,0,12" />
+        <TextBox
+            x:Name="AppNameTextBox"
+            x:Uid="InputControlAppNameTextBox"
+            IsEnabled="{Binding ElementName=AllAppsCheckBox, Path=IsChecked}" />
+    </StackPanel>
+</UserControl>
