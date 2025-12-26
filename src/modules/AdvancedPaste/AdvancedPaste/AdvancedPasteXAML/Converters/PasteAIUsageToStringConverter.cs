@@ -20,7 +20,7 @@ public sealed partial class PasteAIUsageToStringConverter : IValueConverter
             _ => PasteAIUsage.ChatCompletion,
         };
 
-        return ResourceLoaderInstance.ResourceLoader.GetString($"PasteAIUsage_{usage}");
+        return ResourceLoaderInstance.ResourceLoader.GetString($"PasteAIUsage_{usage}_Label");
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, string language)

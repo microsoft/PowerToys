@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,12 +12,14 @@ using AdvancedPaste.Helpers;
 using AdvancedPaste.Models;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.AudioToText;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AzureAIInference;
 using Microsoft.SemanticKernel.Connectors.Google;
 using Microsoft.SemanticKernel.Connectors.MistralAI;
 using Microsoft.SemanticKernel.Connectors.Ollama;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
+using Microsoft.SemanticKernel.TextToAudio;
 using Microsoft.SemanticKernel.TextToImage;
 
 namespace AdvancedPaste.Services.CustomActions
@@ -81,6 +84,11 @@ namespace AdvancedPaste.Services.CustomActions
                 case PasteAIUsage.TextToImage:
                     var imageDescription = string.IsNullOrWhiteSpace(prompt) ? inputText : $"{inputText}. {prompt}";
                     return await ProcessTextToImageAsync(kernel, imageDescription, cancellationToken);
+                case PasteAIUsage.TextToAudio:
+                    var textToAudioInput = string.IsNullOrWhiteSpace(prompt) ? inputText : $"{inputText}. {prompt}";
+                    return await ProcessTextToAudioAsync(kernel, textToAudioInput, cancellationToken);
+                case PasteAIUsage.AudioToText:
+                    return await ProcessAudioToTextAsync(kernel, request, cancellationToken);
                 case PasteAIUsage.ChatCompletion:
                 default:
                     var userMessageContent = $"""
@@ -132,6 +140,52 @@ namespace AdvancedPaste.Services.CustomActions
             {
                 throw new InvalidOperationException("Generated image contains no data.");
             }
+#pragma warning restore SKEXP0001
+        }
+
+        private async Task<string> ProcessTextToAudioAsync(Kernel kernel, string text, CancellationToken cancellationToken)
+        {
+#pragma warning disable SKEXP0001
+            var audioService = kernel.GetRequiredService<ITextToAudioService>();
+            var settings = new OpenAITextToAudioExecutionSettings
+            {
+                Voice = _config.Voice,
+                ResponseFormat = "mp3",
+            };
+
+            var audioContent = await audioService.GetAudioContentAsync(text, settings, cancellationToken: cancellationToken);
+
+            if (audioContent.Data.HasValue)
+            {
+                var tempPath = Path.GetTempPath();
+                var fileName = $"AdvancedPaste_Audio_{DateTime.Now:yyyyMMddHHmmss}.mp3";
+                var filePath = Path.Combine(tempPath, fileName);
+
+                await File.WriteAllBytesAsync(filePath, audioContent.Data.Value.ToArray(), cancellationToken);
+                return filePath;
+            }
+            else
+            {
+                throw new InvalidOperationException("Generated audio contains no data.");
+            }
+#pragma warning restore SKEXP0001
+        }
+
+        private async Task<string> ProcessAudioToTextAsync(Kernel kernel, PasteAIRequest request, CancellationToken cancellationToken)
+        {
+#pragma warning disable SKEXP0001
+            var audioService = kernel.GetRequiredService<IAudioToTextService>();
+
+            if (request.AudioBytes == null || request.AudioBytes.Length == 0)
+            {
+                throw new ArgumentException("Audio content must be provided", nameof(request));
+            }
+
+            var audioContent = new AudioContent(request.AudioBytes, request.AudioMimeType);
+
+            var textContent = await audioService.GetTextContentAsync(audioContent, null, cancellationToken: cancellationToken);
+
+            return textContent.Text;
 #pragma warning restore SKEXP0001
         }
 
@@ -204,6 +258,18 @@ namespace AdvancedPaste.Services.CustomActions
                         kernelBuilder.AddOpenAITextToImage(apiKey, modelId: _config.Model);
 #pragma warning restore SKEXP0010
                     }
+                    else if (_config.Usage == PasteAIUsage.TextToAudio)
+                    {
+#pragma warning disable SKEXP0010
+                        kernelBuilder.AddOpenAITextToAudio(_config.Model, apiKey);
+#pragma warning restore SKEXP0010
+                    }
+                    else if (_config.Usage == PasteAIUsage.AudioToText)
+                    {
+#pragma warning disable SKEXP0010
+                        kernelBuilder.AddOpenAIAudioToText(_config.Model, apiKey);
+#pragma warning restore SKEXP0010
+                    }
                     else
                     {
                         kernelBuilder.AddOpenAIChatCompletion(_config.Model, apiKey, serviceId: _config.Model);
@@ -216,6 +282,18 @@ namespace AdvancedPaste.Services.CustomActions
                     {
 #pragma warning disable SKEXP0010
                         kernelBuilder.AddAzureOpenAITextToImage(deploymentName, RequireEndpoint(endpoint, _serviceType), apiKey);
+#pragma warning restore SKEXP0010
+                    }
+                    else if (_config.Usage == PasteAIUsage.TextToAudio)
+                    {
+#pragma warning disable SKEXP0010
+                        kernelBuilder.AddAzureOpenAITextToAudio(deploymentName, RequireEndpoint(endpoint, _serviceType), apiKey);
+#pragma warning restore SKEXP0010
+                    }
+                    else if (_config.Usage == PasteAIUsage.AudioToText)
+                    {
+#pragma warning disable SKEXP0010
+                        kernelBuilder.AddAzureOpenAIAudioToText(deploymentName, RequireEndpoint(endpoint, _serviceType), apiKey);
 #pragma warning restore SKEXP0010
                     }
                     else

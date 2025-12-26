@@ -171,6 +171,7 @@ namespace AdvancedPaste.Services.CustomActions
                 Usage = provider.UsageKind,
                 ImageWidth = provider.ImageWidth,
                 ImageHeight = provider.ImageHeight,
+                Voice = provider.Voice,
             };
 
             return providerConfig;

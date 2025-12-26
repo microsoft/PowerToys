@@ -444,6 +444,38 @@
                                                 Source="{x:Bind ViewModel.CustomFormatImageResult, Mode=OneWay}"
                                                 Stretch="Uniform"
                                                 Visibility="{x:Bind ViewModel.HasCustomFormatImage, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+                                            <Grid Visibility="{x:Bind ViewModel.HasCustomFormatAudio, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="Auto" />
+                                                    <RowDefinition Height="Auto" />
+                                                    <RowDefinition Height="Auto" />
+                                                </Grid.RowDefinitions>
+                                                <TextBlock Grid.Row="0" Text="{x:Bind ViewModel.AudioFileName, Mode=OneWay}" HorizontalAlignment="Left" Margin="0,0,0,8" />
+                                                <Grid Grid.Row="1" Margin="0,0,0,8">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="Auto" />
+                                                        <ColumnDefinition Width="*" />
+                                                        <ColumnDefinition Width="Auto" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Grid.Column="0" Text="{x:Bind ViewModel.AudioPositionString, Mode=OneWay}" VerticalAlignment="Center" Margin="0,0,8,0" />
+                                                    <Slider Grid.Column="1" Minimum="0" Maximum="{x:Bind ViewModel.AudioDuration, Mode=OneWay}" Value="{x:Bind ViewModel.AudioPosition, Mode=TwoWay}" VerticalAlignment="Center" />
+                                                    <TextBlock Grid.Column="2" Text="{x:Bind ViewModel.AudioDurationString, Mode=OneWay}" VerticalAlignment="Center" Margin="8,0,0,0" />
+                                                </Grid>
+                                                <Grid Grid.Row="2">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="Auto" />
+                                                        <ColumnDefinition Width="*" />
+                                                        <ColumnDefinition Width="Auto" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <Button Grid.Column="0" Command="{x:Bind ViewModel.PlayPauseAudioCommand}">
+                                                        <FontIcon Glyph="{x:Bind ViewModel.AudioPlayPauseGlyph, Mode=OneWay}" />
+                                                    </Button>
+                                                    <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8">
+                                                        <Button Command="{x:Bind ViewModel.SaveAudioCommand}" Content="Save" />
+                                                        <Button Command="{x:Bind ViewModel.DeleteAudioCommand}" Content="Delete" />
+                                                    </StackPanel>
+                                                </Grid>
+                                            </Grid>
                                         </StackPanel>
                                     </ScrollViewer>
                                 </Grid>

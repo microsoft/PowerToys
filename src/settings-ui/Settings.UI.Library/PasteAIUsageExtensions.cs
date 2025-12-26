@@ -12,6 +12,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             {
                 PasteAIUsage.ChatCompletion => "ChatCompletion",
                 PasteAIUsage.TextToImage => "TextToImage",
+                PasteAIUsage.TextToAudio => "TextToAudio",
+                PasteAIUsage.AudioToText => "AudioToText",
                 _ => "ChatCompletion",
             };
         }
@@ -21,6 +23,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             return usage switch
             {
                 "TextToImage" => PasteAIUsage.TextToImage,
+                "TextToAudio" => PasteAIUsage.TextToAudio,
+                "AudioToText" => PasteAIUsage.AudioToText,
                 _ => PasteAIUsage.ChatCompletion,
             };
         }

@@ -28,6 +28,8 @@ using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Microsoft.Win32;
 using Windows.ApplicationModel.DataTransfer;
+using Windows.Media.Core;
+using Windows.Media.Playback;
 using Windows.System;
 using WinUIEx;
 
@@ -272,6 +274,60 @@ namespace AdvancedPaste.ViewModels
                 OnPropertyChanged(nameof(CurrentIndexDisplay));
             };
 
+            PlayPauseAudioCommand = new RelayCommand(PlayPauseAudio);
+            SaveAudioCommand = new RelayCommand(SaveAudio);
+            DeleteAudioCommand = new RelayCommand(DeleteAudio);
+
+            _audioTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(100) };
+            _audioTimer.Tick += (s, e) =>
+            {
+                // Notify property change to update UI, but avoid triggering the setter logic
+                // The setter logic checks for significant difference, so it should be fine,
+                // but to be safe we are just notifying here.
+                OnPropertyChanged(nameof(AudioPosition));
+                OnPropertyChanged(nameof(AudioPositionString));
+            };
+
+            _audioPlayer = new MediaPlayer();
+            _audioPlayer.MediaOpened += (s, e) =>
+            {
+                _ = _dispatcherQueue.TryEnqueue(() =>
+                {
+                    OnPropertyChanged(nameof(AudioDuration));
+                    OnPropertyChanged(nameof(AudioDurationString));
+                });
+            };
+            _audioPlayer.PlaybackSession.PlaybackStateChanged += (s, e) =>
+            {
+                _ = _dispatcherQueue.TryEnqueue(() =>
+                {
+                    OnPropertyChanged(nameof(IsAudioPlaying));
+                    OnPropertyChanged(nameof(AudioPlayPauseGlyph));
+                    if (s.PlaybackState == MediaPlaybackState.Playing)
+                    {
+                        _audioTimer.Start();
+                    }
+                    else
+                    {
+                        _audioTimer.Stop();
+                    }
+                });
+            };
+            _audioPlayer.MediaEnded += (s, e) =>
+            {
+                _ = _dispatcherQueue.TryEnqueue(() =>
+                {
+                    s.Position = TimeSpan.Zero;
+
+                    // s.PlaybackState = MediaPlaybackState.Paused; // Read-only
+                    _audioPlayer.Pause();
+                    OnPropertyChanged(nameof(AudioPosition));
+                    OnPropertyChanged(nameof(AudioPositionString));
+                    OnPropertyChanged(nameof(IsAudioPlaying));
+                    OnPropertyChanged(nameof(AudioPlayPauseGlyph));
+                });
+            };
+
             ClipboardHistoryEnabled = IsClipboardHistoryEnabled();
             UpdateOpenAIKey();
             _clipboardTimer = new() { Interval = TimeSpan.FromSeconds(1) };
@@ -425,7 +481,27 @@ namespace AdvancedPaste.ViewModels
         public void Dispose()
         {
             _clipboardTimer.Stop();
+            _userSettings.Changed -= UserSettings_Changed;
             _pasteActionCancellationTokenSource?.Dispose();
+            _audioPlayer?.Dispose();
+            _audioTimer?.Stop();
+
+            // Cleanup any temporary audio files
+            foreach (var response in GeneratedResponses)
+            {
+                if (response.EndsWith(".mp3", StringComparison.OrdinalIgnoreCase) && File.Exists(response))
+                {
+                    try
+                    {
+                        File.Delete(response);
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.LogError($"Failed to delete temporary audio file: {response}", ex);
+                    }
+                }
+            }
+
             GC.SuppressFinalize(this);
         }
 
@@ -559,6 +635,23 @@ namespace AdvancedPaste.ViewModels
             }
 
             ClipboardHistoryEnabled = IsClipboardHistoryEnabled();
+
+            // Cleanup any temporary audio files from previous session
+            foreach (var response in GeneratedResponses)
+            {
+                if (response.EndsWith(".mp3", StringComparison.OrdinalIgnoreCase) && File.Exists(response))
+                {
+                    try
+                    {
+                        File.Delete(response);
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.LogError($"Failed to delete temporary audio file: {response}", ex);
+                    }
+                }
+            }
+
             GeneratedResponses.Clear();
         }
 
@@ -622,7 +715,9 @@ namespace AdvancedPaste.ViewModels
 
         public bool HasCustomFormatImage => CustomFormatResult?.StartsWith("data:image", StringComparison.OrdinalIgnoreCase) ?? false;
 
-        public bool HasCustomFormatText => !HasCustomFormatImage;
+        public bool HasCustomFormatAudio => CustomFormatResult?.EndsWith(".mp3", StringComparison.OrdinalIgnoreCase) ?? false;
+
+        public bool HasCustomFormatText => !HasCustomFormatImage && !HasCustomFormatAudio;
 
         public ImageSource CustomFormatImageResult
         {
@@ -642,6 +737,65 @@ namespace AdvancedPaste.ViewModels
                     catch (Exception ex)
                     {
                         Logger.LogError("Failed to create image source from data URI", ex);
+                    }
+                }
+
+                return null;
+            }
+        }
+
+        private MediaPlayer _audioPlayer;
+        private DispatcherTimer _audioTimer;
+
+        public string AudioFileName => HasCustomFormatAudio ? Path.GetFileName(CustomFormatResult) : string.Empty;
+
+        public double AudioDuration => _audioPlayer?.PlaybackSession.NaturalDuration.TotalSeconds ?? 0;
+
+        public double AudioPosition
+        {
+            get => _audioPlayer?.PlaybackSession.Position.TotalSeconds ?? 0;
+            set
+            {
+                if (_audioPlayer != null)
+                {
+                    if (Math.Abs(_audioPlayer.PlaybackSession.Position.TotalSeconds - value) > 0.5)
+                    {
+                        _audioPlayer.PlaybackSession.Position = TimeSpan.FromSeconds(value);
+                        OnPropertyChanged(nameof(AudioPosition)); // Only notify if we actually changed the position
+                    }
+
+                    OnPropertyChanged(nameof(AudioPositionString));
+                }
+            }
+        }
+
+        public string AudioDurationString => TimeSpan.FromSeconds(AudioDuration).ToString(@"mm\:ss", CultureInfo.InvariantCulture);
+
+        public string AudioPositionString => TimeSpan.FromSeconds(AudioPosition).ToString(@"mm\:ss", CultureInfo.InvariantCulture);
+
+        public bool IsAudioPlaying => _audioPlayer?.PlaybackSession.PlaybackState == MediaPlaybackState.Playing;
+
+        public string AudioPlayPauseGlyph => IsAudioPlaying ? "\uE769" : "\uE768";
+
+        public IRelayCommand PlayPauseAudioCommand { get; }
+
+        public IRelayCommand SaveAudioCommand { get; }
+
+        public IRelayCommand DeleteAudioCommand { get; }
+
+        public MediaSource CustomFormatAudioResult
+        {
+            get
+            {
+                if (HasCustomFormatAudio && !string.IsNullOrEmpty(CustomFormatResult))
+                {
+                    try
+                    {
+                        return MediaSource.CreateFromUri(new Uri(CustomFormatResult));
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.LogError("Failed to create audio source from file path", ex);
                     }
                 }
 
@@ -967,6 +1121,120 @@ namespace AdvancedPaste.ViewModels
             {
                 TransformProgress = value;
             });
+        }
+
+        partial void OnCustomFormatResultChanged(string value)
+        {
+            OnPropertyChanged(nameof(HasCustomFormatAudio));
+            OnPropertyChanged(nameof(CustomFormatAudioResult));
+            OnPropertyChanged(nameof(AudioFileName));
+
+            if (HasCustomFormatAudio)
+            {
+                try
+                {
+                    if (_audioPlayer != null)
+                    {
+                        // Ensure we are on the UI thread if needed, though OnCustomFormatResultChanged is likely called on UI thread.
+                        // Reset player state
+                        _audioPlayer.Pause();
+                        _audioPlayer.Source = MediaSource.CreateFromUri(new Uri(value));
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError("Failed to set audio source", ex);
+                }
+            }
+            else
+            {
+                if (_audioPlayer != null)
+                {
+                    _audioPlayer.Pause();
+                    _audioPlayer.Source = null;
+                }
+            }
+        }
+
+        private void PlayPauseAudio()
+        {
+            if (_audioPlayer == null)
+            {
+                return;
+            }
+
+            if (_audioPlayer.PlaybackSession.PlaybackState == MediaPlaybackState.Playing)
+            {
+                _audioPlayer.Pause();
+            }
+            else
+            {
+                _audioPlayer.Play();
+            }
+        }
+
+        private async void SaveAudio()
+        {
+            if (!HasCustomFormatAudio || string.IsNullOrEmpty(CustomFormatResult))
+            {
+                return;
+            }
+
+            var mainWindow = GetMainWindow();
+            if (mainWindow == null)
+            {
+                return;
+            }
+
+            var savePicker = new Windows.Storage.Pickers.FileSavePicker();
+            savePicker.SuggestedStartLocation = Windows.Storage.Pickers.PickerLocationId.Downloads;
+            savePicker.FileTypeChoices.Add("Audio", new List<string>() { ".mp3" });
+            savePicker.SuggestedFileName = Path.GetFileName(CustomFormatResult);
+
+            var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(mainWindow);
+            WinRT.Interop.InitializeWithWindow.Initialize(savePicker, hwnd);
+
+            var file = await savePicker.PickSaveFileAsync();
+            if (file != null)
+            {
+                try
+                {
+                    File.Copy(CustomFormatResult, file.Path, true);
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError("Failed to save audio file", ex);
+                }
+            }
+        }
+
+        private void DeleteAudio()
+        {
+            if (HasCustomFormatAudio && !string.IsNullOrEmpty(CustomFormatResult))
+            {
+                try
+                {
+                    if (File.Exists(CustomFormatResult))
+                    {
+                        File.Delete(CustomFormatResult);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError("Failed to delete audio file", ex);
+                }
+
+                GeneratedResponses.Remove(CustomFormatResult);
+                if (GeneratedResponses.Count > 0)
+                {
+                    CurrentResponseIndex = Math.Max(0, CurrentResponseIndex - 1);
+                }
+                else
+                {
+                    CustomFormatResult = null;
+                    PreviewRequested?.Invoke(this, EventArgs.Empty);
+                }
+            }
         }
     }
 }

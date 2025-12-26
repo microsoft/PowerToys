@@ -323,6 +323,13 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                    : Visibility.Collapsed;
         }
 
+        public Visibility GetVoiceVisibility(string usage)
+        {
+            return string.Equals(usage, "TextToAudio", StringComparison.OrdinalIgnoreCase)
+                   ? Visibility.Visible
+                   : Visibility.Collapsed;
+        }
+
         private void PasteAIUsageComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (ViewModel?.PasteAIProviderDraft == null)

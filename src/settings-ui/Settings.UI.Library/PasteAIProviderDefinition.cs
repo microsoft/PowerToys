@@ -30,6 +30,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         private bool _isLocalModel;
         private int _imageWidth = 1024;
         private int _imageHeight = 1024;
+        private string _voice = "alloy";
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -157,6 +158,13 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             set => SetProperty(ref _imageHeight, value);
         }
 
+        [JsonPropertyName("voice")]
+        public string Voice
+        {
+            get => _voice;
+            set => SetProperty(ref _voice, value ?? "alloy");
+        }
+
         [JsonIgnore]
         public bool IsActive
         {
@@ -185,6 +193,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 IsLocalModel = IsLocalModel,
                 ImageWidth = ImageWidth,
                 ImageHeight = ImageHeight,
+                Voice = Voice,
                 IsActive = IsActive,
             };
         }

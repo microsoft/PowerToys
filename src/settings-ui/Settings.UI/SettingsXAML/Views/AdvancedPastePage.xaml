@@ -518,6 +518,8 @@
                             Visibility="{x:Bind GetUsageVisibility(ViewModel.PasteAIProviderDraft.ServiceType), Mode=OneWay}">
                             <ComboBoxItem x:Uid="PasteAIUsage_ChatCompletion" Tag="ChatCompletion" />
                             <ComboBoxItem x:Uid="PasteAIUsage_TextToImage" Tag="TextToImage" />
+                            <ComboBoxItem x:Uid="PasteAIUsage_TextToAudio" Tag="TextToAudio" />
+                            <ComboBoxItem x:Uid="PasteAIUsage_AudioToText" Tag="AudioToText" />
                         </ComboBox>
                         <StackPanel
                             x:Name="PasteAIImageResolutionPanel"
@@ -571,6 +573,13 @@
                             MinWidth="200"
                             PlaceholderText="gpt-4o"
                             Text="{x:Bind ViewModel.PasteAIProviderDraft.DeploymentName, Mode=TwoWay}" />
+                        <TextBox
+                            x:Name="PasteAIVoiceTextBox"
+                            MinWidth="200"
+                            Header="Voice"
+                            PlaceholderText="alloy"
+                            Text="{x:Bind ViewModel.PasteAIProviderDraft.Voice, Mode=TwoWay}"
+                            Visibility="{x:Bind GetVoiceVisibility(ViewModel.PasteAIProviderDraft.Usage), Mode=OneWay}" />
                         <TextBox
                             x:Name="PasteAISystemPromptTextBox"
                             x:Uid="AdvancedPaste_SystemPrompt"

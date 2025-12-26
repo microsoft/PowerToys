@@ -16,6 +16,10 @@ namespace AdvancedPaste.Services.CustomActions
 
         public string ImageMimeType { get; init; }
 
+        public byte[] AudioBytes { get; init; }
+
+        public string AudioMimeType { get; init; }
+
         public string SystemPrompt { get; init; }
 
         public AIServiceUsage Usage { get; set; } = AIServiceUsage.None;

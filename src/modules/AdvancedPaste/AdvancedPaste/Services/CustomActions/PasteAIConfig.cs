@@ -31,6 +31,8 @@ namespace AdvancedPaste.Services.CustomActions
 
         public PasteAIUsage Usage { get; set; }
 
+        public string Voice { get; set; }
+
         public int ImageWidth { get; set; }
 
         public int ImageHeight { get; set; }

@@ -8,5 +8,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     {
         ChatCompletion,
         TextToImage,
+        TextToAudio,
+        AudioToText,
     }
 }

@@ -5781,6 +5781,18 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   <data name="PasteAIUsage_TextToImage.Content" xml:space="preserve">
     <value>Text to image</value>
   </data>
+  <data name="PasteAIUsage_TextToAudio.Content" xml:space="preserve">
+    <value>Text to audio</value>
+  </data>
+  <data name="PasteAIUsage_AudioToText.Content" xml:space="preserve">
+    <value>Audio to text</value>
+  </data>
+  <data name="PasteAIUsage_TextToAudio_Label" xml:space="preserve">
+    <value>Text to audio</value>
+  </data>
+  <data name="PasteAIUsage_AudioToText_Label" xml:space="preserve">
+    <value>Audio to text</value>
+  </data>
   <data name="AdvancedPaste_ImgOutputWidth.Header" xml:space="preserve">
     <value>Image output width</value>
   </data>
