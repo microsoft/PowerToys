@@ -29,6 +29,7 @@ admx
 advancedpaste
 advapi
 advfirewall
+avif
 AFeature
 affordances
 AFX
@@ -350,6 +351,7 @@ DBPROPIDSET
 DBPROPSET
 DCBA
 DCOM
+dng
 DComposition
 DCR
 DDEIf
@@ -659,6 +661,8 @@ hcursor
 hcwhite
 hdc
 hdr
+heic
+heif
 hdrop
 hdwwiz
 Helpline
@@ -1987,6 +1991,7 @@ wdp
 wdupenv
 webbrowsers
 webpage
+webp
 websites
 wekyb
 wft
