@@ -4,6 +4,8 @@
 #include <utils/logger_helper.h>
 #include "ThemeHelper.h"
 #include <SettingsConstants.h>
+#include <windows.h>
+#include <shellapi.h>
 
 // Controls changing the themes.
 
@@ -60,7 +62,7 @@ void SetSystemTheme(bool mode)
         RegSetValueEx(hKey, L"SystemUsesLightTheme", 0, REG_DWORD, reinterpret_cast<const BYTE*>(&value), sizeof(value));
         RegCloseKey(hKey);
 
-        if (mode) // if are changing to light mode 
+        if (mode) // if are changing to light mode
         {
             ResetColorPrevalence();
             Logger::info(L"[LightSwitchService] Reset ColorPrevalence to default when switching to light mode.");
@@ -69,6 +71,26 @@ void SetSystemTheme(bool mode)
         SendMessageTimeout(HWND_BROADCAST, WM_SETTINGCHANGE, 0, reinterpret_cast<LPARAM>(L"ImmersiveColorSet"), SMTO_ABORTIFHUNG, 5000, nullptr);
 
         SendMessageTimeout(HWND_BROADCAST, WM_THEMECHANGED, 0, 0, SMTO_ABORTIFHUNG, 5000, nullptr);
+    }
+}
+
+void SetThemeFile(const std::wstring& themeFilePath)
+{
+    SHELLEXECUTEINFOW sei{};
+    sei.cbSize = sizeof(sei);
+    sei.fMask = SEE_MASK_FLAG_NO_UI;
+    sei.lpVerb = L"open";
+    sei.lpFile = themeFilePath.c_str();
+    sei.nShow = SW_SHOWNORMAL;
+
+    try
+    {
+        ShellExecuteExW(&sei);
+    } 
+    catch (...)
+    {
+        Logger::error(L"[LightSwitchService] Failed to apply theme file: {}", themeFilePath);
+        return;
     }
 }
 
