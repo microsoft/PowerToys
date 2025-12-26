@@ -90,7 +90,7 @@ namespace PowerDisplay.Common.Utils
                 // Wait for quiet period
                 await Task.Delay(_delayMs, cts.Token).ConfigureAwait(false);
 
-                // Execute action if not cancelled
+                // Execute action if not canceled
                 if (!cts.Token.IsCancellationRequested)
                 {
                     await action().ConfigureAwait(false);
@@ -98,7 +98,7 @@ namespace PowerDisplay.Common.Utils
             }
             catch (OperationCanceledException)
             {
-                // Expected when debouncing - a newer call cancelled this one
+                // Expected when debouncing - a newer call canceled this one
             }
             catch (Exception ex)
             {

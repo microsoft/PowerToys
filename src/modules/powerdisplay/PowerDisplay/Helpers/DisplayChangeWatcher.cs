@@ -201,7 +201,7 @@ public sealed partial class DisplayChangeWatcher : IDisposable
             }
             catch (OperationCanceledException)
             {
-                // Debounce was cancelled by a newer event, this is expected
+                // Debounce was canceled by a newer event, this is expected
             }
             catch (Exception ex)
             {
