@@ -5,69 +5,12 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
-using ManagedCommon;
+using Windows.Win32.Foundation;
 using static PowerDisplay.Common.Drivers.NativeConstants;
 using static PowerDisplay.Common.Drivers.PInvoke;
 
-// Type aliases for Windows API naming conventions compatibility
-using LUID = PowerDisplay.Common.Drivers.Luid;
-
-#pragma warning disable SA1649 // File name should match first type name - Multiple related types for DDC/CI
-#pragma warning disable SA1402 // File may only contain a single type - Related DDC/CI types grouped together
-
 namespace PowerDisplay.Common.Drivers.DDC
 {
-    /// <summary>
-    /// DDC/CI validation result containing both validation status and cached capabilities data.
-    /// This allows reusing capabilities data retrieved during validation, avoiding duplicate I2C calls.
-    /// </summary>
-    public struct DdcCiValidationResult
-    {
-        /// <summary>
-        /// Gets a value indicating whether the monitor has a valid DDC/CI connection with brightness support.
-        /// </summary>
-        public bool IsValid { get; }
-
-        /// <summary>
-        /// Gets the raw capabilities string retrieved during validation.
-        /// Null if retrieval failed.
-        /// </summary>
-        public string? CapabilitiesString { get; }
-
-        /// <summary>
-        /// Gets the parsed VCP capabilities info retrieved during validation.
-        /// Null if parsing failed.
-        /// </summary>
-        public Models.VcpCapabilities? VcpCapabilitiesInfo { get; }
-
-        /// <summary>
-        /// Gets a value indicating whether capabilities retrieval was attempted.
-        /// True means the result is from an actual attempt (success or failure).
-        /// </summary>
-        public bool WasAttempted { get; }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="DdcCiValidationResult"/> struct.
-        /// </summary>
-        public DdcCiValidationResult(bool isValid, string? capabilitiesString = null, Models.VcpCapabilities? vcpCapabilitiesInfo = null, bool wasAttempted = true)
-        {
-            IsValid = isValid;
-            CapabilitiesString = capabilitiesString;
-            VcpCapabilitiesInfo = vcpCapabilitiesInfo;
-            WasAttempted = wasAttempted;
-        }
-
-        /// <summary>
-        /// Gets an invalid validation result with no cached data.
-        /// </summary>
-        public static DdcCiValidationResult Invalid => new(false, null, null, true);
-
-        /// <summary>
-        /// Gets a result indicating validation was not attempted yet.
-        /// </summary>
-        public static DdcCiValidationResult NotAttempted => new(false, null, null, false);
-    }
-
     /// <summary>
     /// DDC/CI native API wrapper
     /// </summary>
@@ -177,7 +120,7 @@ namespace PowerDisplay.Common.Drivers.DDC
                     },
                 };
 
-                var result = DisplayConfigGetDeviceInfo(ref sourceName);
+                var result = DisplayConfigGetDeviceInfo(&sourceName);
                 if (result == 0)
                 {
                     return sourceName.GetViewGdiDeviceName();
@@ -211,7 +154,7 @@ namespace PowerDisplay.Common.Drivers.DDC
                     },
                 };
 
-                var result = DisplayConfigGetDeviceInfo(ref deviceName);
+                var result = DisplayConfigGetDeviceInfo(&deviceName);
                 if (result == 0)
                 {
                     // Extract friendly name
@@ -330,45 +273,5 @@ namespace PowerDisplay.Common.Drivers.DDC
 
             return monitorInfo;
         }
-    }
-
-    /// <summary>
-    /// Monitor display information structure
-    /// </summary>
-    public struct MonitorDisplayInfo
-    {
-        /// <summary>
-        /// Gets or sets the monitor device path (e.g., "\\?\DISPLAY#DELA1D8#...").
-        /// This is unique per target and used as the primary key.
-        /// </summary>
-        public string DevicePath { get; set; }
-
-        /// <summary>
-        /// Gets or sets the GDI device name (e.g., "\\.\DISPLAY1").
-        /// This is used to match with GetMonitorInfo results from HMONITOR.
-        /// In mirror mode, multiple targets may share the same GDI name.
-        /// </summary>
-        public string GdiDeviceName { get; set; }
-
-        /// <summary>
-        /// Gets or sets the friendly display name from EDID.
-        /// </summary>
-        public string FriendlyName { get; set; }
-
-        /// <summary>
-        /// Gets or sets the hardware ID derived from EDID manufacturer and product code.
-        /// </summary>
-        public string HardwareId { get; set; }
-
-        public LUID AdapterId { get; set; }
-
-        public uint TargetId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the monitor number based on QueryDisplayConfig path index.
-        /// This matches the number shown in Windows Display Settings "Identify" feature.
-        /// 1-based index (paths[0] = 1, paths[1] = 2, etc.)
-        /// </summary>
-        public int MonitorNumber { get; set; }
     }
 }

@@ -30,12 +30,12 @@ namespace PowerDisplay.Common.Drivers
             IntPtr currentTopologyId);
 
         [LibraryImport("user32.dll")]
-        internal static partial int DisplayConfigGetDeviceInfo(
-            ref DISPLAYCONFIG_TARGET_DEVICE_NAME deviceName);
+        internal static unsafe partial int DisplayConfigGetDeviceInfo(
+            DISPLAYCONFIG_TARGET_DEVICE_NAME* deviceName);
 
         [LibraryImport("user32.dll")]
-        internal static partial int DisplayConfigGetDeviceInfo(
-            ref DISPLAYCONFIG_SOURCE_DEVICE_NAME sourceName);
+        internal static unsafe partial int DisplayConfigGetDeviceInfo(
+            DISPLAYCONFIG_SOURCE_DEVICE_NAME* sourceName);
 
         // ==================== User32.dll - Monitor Enumeration ====================
         [LibraryImport("user32.dll")]
@@ -48,16 +48,16 @@ namespace PowerDisplay.Common.Drivers
 
         [LibraryImport("user32.dll", EntryPoint = "GetMonitorInfoW", StringMarshalling = StringMarshalling.Utf16)]
         [return: MarshalAs(UnmanagedType.Bool)]
-        internal static partial bool GetMonitorInfo(
+        internal static unsafe partial bool GetMonitorInfo(
             IntPtr hMonitor,
-            ref MonitorInfoEx lpmi);
+            MonitorInfoEx* lpmi);
 
         [LibraryImport("user32.dll", EntryPoint = "EnumDisplayDevicesW", StringMarshalling = StringMarshalling.Utf16)]
         [return: MarshalAs(UnmanagedType.Bool)]
-        internal static partial bool EnumDisplayDevices(
+        internal static unsafe partial bool EnumDisplayDevices(
             [MarshalAs(UnmanagedType.LPWStr)] string? lpDevice,
             uint iDevNum,
-            ref DisplayDevice lpDisplayDevice,
+            DisplayDevice* lpDisplayDevice,
             uint dwFlags);
 
         [LibraryImport("user32.dll", EntryPoint = "EnumDisplaySettingsW", StringMarshalling = StringMarshalling.Utf16)]

@@ -4,6 +4,7 @@
 
 using System;
 using System.Runtime.InteropServices;
+using Windows.Win32.Foundation;
 
 #pragma warning disable SA1649 // File name should match first type name - Multiple related P/Invoke structures
 
@@ -153,21 +154,6 @@ namespace PowerDisplay.Common.Drivers
     }
 
     /// <summary>
-    /// LUID (Locally Unique Identifier) structure
-    /// </summary>
-    [StructLayout(LayoutKind.Sequential)]
-    public struct Luid
-    {
-        public uint LowPart;
-        public int HighPart;
-
-        public override string ToString()
-        {
-            return $"{HighPart:X8}:{LowPart:X8}";
-        }
-    }
-
-    /// <summary>
     /// Display configuration path information
     /// </summary>
     [StructLayout(LayoutKind.Sequential)]
@@ -184,7 +170,7 @@ namespace PowerDisplay.Common.Drivers
     [StructLayout(LayoutKind.Sequential)]
     public struct DISPLAYCONFIG_PATH_SOURCE_INFO
     {
-        public Luid AdapterId;
+        public LUID AdapterId;
         public uint Id;
         public uint ModeInfoIdx;
         public uint StatusFlags;
@@ -196,7 +182,7 @@ namespace PowerDisplay.Common.Drivers
     [StructLayout(LayoutKind.Sequential)]
     public struct DISPLAYCONFIG_PATH_TARGET_INFO
     {
-        public Luid AdapterId;
+        public LUID AdapterId;
         public uint Id;
         public uint ModeInfoIdx;
         public uint OutputTechnology;
@@ -226,7 +212,7 @@ namespace PowerDisplay.Common.Drivers
     {
         public uint InfoType;
         public uint Id;
-        public Luid AdapterId;
+        public LUID AdapterId;
         public DISPLAYCONFIG_MODE_INFO_UNION ModeInfo;
     }
 
@@ -309,7 +295,7 @@ namespace PowerDisplay.Common.Drivers
     {
         public uint Type;
         public uint Size;
-        public Luid AdapterId;
+        public LUID AdapterId;
         public uint Id;
     }
 

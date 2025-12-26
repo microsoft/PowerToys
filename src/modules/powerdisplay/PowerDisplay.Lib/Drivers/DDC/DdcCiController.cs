@@ -306,7 +306,7 @@ namespace PowerDisplay.Common.Drivers.DDC
         private unsafe string? GetGdiDeviceName(IntPtr hMonitor)
         {
             var monitorInfo = new MONITORINFOEX { CbSize = (uint)sizeof(MONITORINFOEX) };
-            if (GetMonitorInfo(hMonitor, ref monitorInfo))
+            if (GetMonitorInfo(hMonitor, &monitorInfo))
             {
                 return monitorInfo.GetDeviceName();
             }
