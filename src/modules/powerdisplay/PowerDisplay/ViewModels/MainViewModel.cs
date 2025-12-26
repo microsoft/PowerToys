@@ -285,7 +285,7 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
         }
         catch (Exception ex)
         {
-            Logger.LogError($"[SafeDispose] Error disposing {name}", ex);
+            Logger.LogError($"Error disposing {name}", ex);
         }
     }
 
@@ -300,7 +300,7 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
         }
         catch (Exception ex)
         {
-            Logger.LogError($"[SafeExecute] Error executing {name}", ex);
+            Logger.LogError($"Error executing {name}", ex);
         }
     }
 
