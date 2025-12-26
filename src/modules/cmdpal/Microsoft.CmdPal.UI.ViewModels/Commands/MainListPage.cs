@@ -5,6 +5,7 @@
 using System.Collections.Immutable;
 using System.Collections.Specialized;
 using System.Diagnostics;
+using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
 using Microsoft.CmdPal.Core.Common.Helpers;
@@ -26,8 +27,14 @@ namespace Microsoft.CmdPal.UI.ViewModels.MainPage;
 /// </summary>
 public partial class MainListPage : DynamicListPage,
     IRecipient<ClearSearchMessage>,
-    IRecipient<UpdateFallbackItemsMessage>, IDisposable
+    IRecipient<UpdateFallbackItemsMessage>,
+    IDisposable
 {
+    private static readonly TimeSpan RaiseItemsChangedThrottle = TimeSpan.FromMilliseconds(100);
+    private static readonly TimeSpan FallbackItemSlowTimeout = TimeSpan.FromMilliseconds(200);
+    private static readonly TimeSpan FallbackItemUltraSlowTimeout = TimeSpan.FromMilliseconds(1000);
+
+    private readonly DebouncedAction _refreshDebouncedAction;
     private readonly TopLevelCommandManager _tlcManager;
     private readonly AliasManager _aliasManager;
     private readonly SettingsModel _settings;
@@ -60,6 +67,12 @@ public partial class MainListPage : DynamicListPage,
         _tlcManager = topLevelCommandManager;
         _tlcManager.PropertyChanged += TlcManager_PropertyChanged;
         _tlcManager.TopLevelCommands.CollectionChanged += Commands_CollectionChanged;
+
+        _refreshDebouncedAction = new DebouncedAction(() => RaiseItemsChanged(), RaiseItemsChangedThrottle);
+        _refreshDebouncedAction.UnhandledException += (_, exception) =>
+        {
+            Logger.LogError("Unhandled exception in MainListPage refresh debounced action", exception);
+        };
 
         // The all apps page will kick off a BG thread to start loading apps.
         // We just want to know when it is done.
@@ -99,7 +112,7 @@ public partial class MainListPage : DynamicListPage,
         }
         else
         {
-            RaiseItemsChanged();
+            _refreshDebouncedAction.Invoke();
         }
     }
 
@@ -265,8 +278,8 @@ public partial class MainListPage : DynamicListPage,
 
             // start update of fallbacks; update special fallbacks separately,
             // so they can finish faster
-            UpdateFallbacks(SearchText, specialFallbacks, token);
-            UpdateFallbacks(SearchText, commonFallbacks, token);
+            _ = UpdateFallbacksAsync(SearchText, specialFallbacks, token);
+            _ = UpdateFallbacksAsync(SearchText, commonFallbacks, token);
 
             if (token.IsCancellationRequested)
             {
@@ -274,11 +287,19 @@ public partial class MainListPage : DynamicListPage,
             }
 
             // Cleared out the filter text? easy. Reset _filteredItems, and bail out.
-            if (string.IsNullOrEmpty(newSearch))
+            if (string.IsNullOrWhiteSpace(newSearch))
             {
                 _filteredItemsIncludesApps = _includeApps;
                 ClearResults();
-                RaiseItemsChanged(commands.Count);
+                if (string.IsNullOrWhiteSpace(oldSearch))
+                {
+                    _refreshDebouncedAction.Invoke();
+                }
+                else
+                {
+                    _refreshDebouncedAction.InvokeImmediately();
+                }
+
                 return;
             }
 
@@ -431,42 +452,86 @@ public partial class MainListPage : DynamicListPage,
                 }
             }
 
-            RaiseItemsChanged();
+            _refreshDebouncedAction.Invoke();
 
             timer.Stop();
             Logger.LogDebug($"Filter with '{newSearch}' in {timer.ElapsedMilliseconds}ms");
         }
     }
 
-    private void UpdateFallbacks(string newSearch, IReadOnlyList<TopLevelViewModel> commands, CancellationToken token)
+    private Task UpdateFallbacksAsync(string query, IReadOnlyList<TopLevelViewModel> commands, CancellationToken cancellationToken)
     {
-        _ = Task.Run(
-            () =>
+        return commands.Count == 0
+            ? Task.CompletedTask
+            : Task.Run(RunUpdateBatchAsync, cancellationToken);
+
+        async Task RunUpdateBatchAsync()
         {
-            var needsToUpdate = false;
-
-            foreach (var command in commands)
+#if DEBUG || FF_TIME_FALLBACKUPDATES
+            Logger.LogDebug($"UpdateFallbacks: new run for {query}");
+            var batchStopwatch = Stopwatch.StartNew();
+#endif
+            var parallelOptions = new ParallelOptions
             {
-                if (token.IsCancellationRequested)
-                {
-                    return;
-                }
+                CancellationToken = cancellationToken,
+                MaxDegreeOfParallelism = Math.Max(1, Environment.ProcessorCount - 1),
+            };
 
-                var changedVisibility = command.SafeUpdateFallbackTextSynchronous(newSearch);
-                needsToUpdate = needsToUpdate || changedVisibility;
+            try
+            {
+                await Parallel.ForEachAsync(commands, parallelOptions, UpdateFallbackItem).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException)
+            {
+#if DEBUG || FF_TIME_FALLBACKUPDATES
+                Logger.LogDebug($"UpdateFallbacks: Batch cancelled");
+#endif
             }
 
-            if (needsToUpdate)
+#if DEBUG || FF_TIME_FALLBACKUPDATES
+            batchStopwatch.Stop();
+            Logger.LogDebug($"UpdateFallbacks: UpdateFallbacks batch completed in {batchStopwatch.ElapsedMilliseconds}ms");
+#endif
+            return;
+
+            ValueTask UpdateFallbackItem(TopLevelViewModel command, CancellationToken _)
             {
-                if (token.IsCancellationRequested)
+                try
                 {
-                    return;
+#if DEBUG || FF_TIME_FALLBACKUPDATES
+                    var singleFallbackStopwatch = Stopwatch.StartNew();
+#endif
+                    var changed = command.SafeUpdateFallbackTextSynchronous(query);
+#if DEBUG || FF_TIME_FALLBACKUPDATES
+                    var elapsed = singleFallbackStopwatch.Elapsed;
+
+                    var tail = elapsed > FallbackItemSlowTimeout ? " is (slow)" : string.Empty;
+                    if (elapsed > FallbackItemUltraSlowTimeout)
+                    {
+                        tail += " <---------------- (ultra slow)";
+                    }
+
+                    Logger.LogDebug($"UpdateFallbacks: Worker: command id '{command.Id}', '{command.DisplayTitle}' updated with '{query}' processed in {elapsed} ms, has {(changed ? "changed" : "not changed")} and title is '{command.Title}' {tail}");
+#endif
+
+                    // Once we have a changed item, we need to refresh the list
+                    // even if the cancellation token has been set, to ensure the
+                    // UI is up to date
+                    if (changed)
+                    {
+                        _refreshDebouncedAction.Invoke();
+                    }
+                }
+                catch (Exception ex)
+                {
+#if DEBUG || FF_TIME_FALLBACKUPDATES
+                    Logger.LogError($"UpdateFallbacks: Worker: command id '{command.Id}', '{command.DisplayTitle}' failed to update fallback text with '{query}'", ex);
+#endif
                 }
 
-                RaiseItemsChanged();
+                return ValueTask.CompletedTask;
             }
-        },
-            token);
+        }
     }
 
     private bool ActuallyLoading()
@@ -605,7 +670,10 @@ public partial class MainListPage : DynamicListPage,
 
     public void Receive(ClearSearchMessage message) => SearchText = string.Empty;
 
-    public void Receive(UpdateFallbackItemsMessage message) => RaiseItemsChanged(_tlcManager.TopLevelCommands.Count);
+    public void Receive(UpdateFallbackItemsMessage message)
+    {
+        _refreshDebouncedAction.Invoke();
+    }
 
     private void SettingsChangedHandler(SettingsModel sender, object? args) => HotReloadSettings(sender);
 
