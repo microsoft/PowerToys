@@ -260,6 +260,7 @@ codereview
 Codespaces
 Coen
 cognitiveservices
+COINIT
 coinit
 colid
 colorconv
@@ -516,6 +517,7 @@ ENTERSIZEMOVE
 ENTRYW
 ENU
 environmentvariables
+EOAC
 eoac
 EPO
 epu
@@ -2115,6 +2117,7 @@ WINL
 winlogon
 winmd
 winml
+WINNT
 winnt
 winres
 winrt
