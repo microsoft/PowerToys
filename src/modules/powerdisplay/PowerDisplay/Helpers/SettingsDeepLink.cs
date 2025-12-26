@@ -9,12 +9,7 @@ namespace PowerDisplay.Helpers
 {
     public static class SettingsDeepLink
     {
-        public enum SettingsWindow
-        {
-            PowerDisplay,
-        }
-
-        public static void OpenSettings(SettingsWindow window, bool mainExecutableIsOnTheParentFolder)
+        public static void OpenSettings(bool mainExecutableIsOnTheParentFolder)
         {
             try
             {
