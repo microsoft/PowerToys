@@ -1,0 +1,3 @@
+[Files]
+    "AppPackages\x64\TemplateCmdPalExtension_0.0.1.0_x64_Test\TemplateCmdPalExtension_0.0.1.0_x64.msix" "TemplateCmdPalExtension_0.0.1.0_x64.msix"
+    "AppPackages\ARM64\TemplateCmdPalExtension_0.0.1.0_arm64_Test\TemplateCmdPalExtension_0.0.1.0_arm64.msix" "TemplateCmdPalExtension_0.0.1.0_arm64.msix"
