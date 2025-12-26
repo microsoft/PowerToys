@@ -365,6 +365,7 @@ DEFAULTICON
 defaultlib
 DEFAULTONLY
 DEFAULTTONEAREST
+Defaulttonearest
 DEFAULTTONULL
 DEFAULTTOPRIMARY
 DEFERERASE
@@ -865,6 +866,7 @@ lastcodeanalysissucceeded
 LASTEXITCODE
 LAYOUTRTL
 lbl
+Lbuttondown
 LCh
 lcid
 LCIDTo
@@ -987,6 +989,7 @@ maxversiontested
 mber
 MBM
 MBR
+Mbuttondown
 MDICHILD
 MDL
 mdtext
@@ -1445,6 +1448,7 @@ RAWINPUTHEADER
 RAWMODE
 RAWPATH
 rbhid
+Rbuttondown
 rclsid
 RCZOOMIT
 remotedesktop
@@ -1746,6 +1750,7 @@ svgz
 SVSI
 SWFO
 SWP
+Swp
 SWPNOSIZE
 SWPNOZORDER
 SWRESTORE
@@ -1765,6 +1770,7 @@ syskeydown
 SYSKEYUP
 SYSLIB
 SYSMENU
+Sysmenu
 systemai
 SYSTEMAPPS
 SYSTEMMODAL
@@ -2090,6 +2096,7 @@ Wwanpp
 xap
 XAxis
 XButton
+Xbuttondown
 xclip
 xcopy
 XDeployment

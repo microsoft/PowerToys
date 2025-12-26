@@ -1,6 +1,7 @@
 #pragma once
 
 #include <common/utils/json.h>
+#include <common/SettingsAPI/settings_objects.h>
 
 enum class DashboardSortOrder
 {
@@ -18,6 +19,8 @@ struct GeneralSettings
     bool isRunElevated;
     bool isAdmin;
     bool enableWarningsElevatedApps;
+    bool enableQuickAccess;
+    PowerToysSettings::HotkeyObject quickAccessShortcut;
     bool showNewUpdatesToastNotification;
     bool downloadUpdatesAutomatically;
     bool showWhatsNewAfterUpdates;

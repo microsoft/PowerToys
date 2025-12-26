@@ -6,7 +6,6 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using ManagedCommon;
-using Microsoft.PowerToys.Settings.UI.Flyout;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
@@ -94,6 +93,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             CheckBugReportStatus();
 
             doRefreshBackupRestoreStatus(100);
+
+            this.Loaded += (s, e) => ViewModel.OnPageLoaded();
         }
 
         private void OpenColorsSettings_Click(object sender, RoutedEventArgs e)
@@ -176,8 +177,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         private void BugReportToolClicked(object sender, RoutedEventArgs e)
         {
             // Start bug report
-            var launchPage = new LaunchPage();
-            launchPage.ReportBugBtn_Click(sender, e);
+            ShellPage.SendDefaultIPCMessage("{\"bugreport\": 0 }");
 
             ViewModel.IsBugReportRunning = true;
 

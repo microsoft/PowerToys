@@ -7,6 +7,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 
 using ManagedCommon;
+using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Settings.UI.Library.Attributes;
@@ -19,7 +20,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         ByStatus,
     }
 
-    public class GeneralSettings : ISettingsConfig
+    public class GeneralSettings : ISettingsConfig, IHotkeyConfig
     {
         // Gets or sets a value indicating whether run powertoys on start-up.
         [JsonPropertyName("startup")]
@@ -47,6 +48,14 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         // Gets or sets a value indicating whether is warnings of elevated apps enabled.
         [JsonPropertyName("enable_warnings_elevated_apps")]
         public bool EnableWarningsElevatedApps { get; set; }
+
+        // Gets or sets a value indicating whether Quick Access is enabled.
+        [JsonPropertyName("enable_quick_access")]
+        public bool EnableQuickAccess { get; set; }
+
+        // Gets or sets Quick Access shortcut.
+        [JsonPropertyName("quick_access_shortcut")]
+        public HotkeySettings QuickAccessShortcut { get; set; }
 
         // Gets or sets theme Name.
         [JsonPropertyName("theme")]
@@ -94,6 +103,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             ShowSysTrayIcon = true;
             IsAdmin = false;
             EnableWarningsElevatedApps = true;
+            EnableQuickAccess = true;
+            QuickAccessShortcut = new HotkeySettings();
             IsElevated = false;
             ShowNewUpdatesToastNotification = true;
             AutoDownloadUpdates = false;
@@ -114,6 +125,22 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             Enabled = new EnabledModules();
             CustomActionName = string.Empty;
             IgnoredConflictProperties = new ShortcutConflictProperties();
+        }
+
+        public HotkeyAccessor[] GetAllHotkeyAccessors()
+        {
+            return new HotkeyAccessor[]
+            {
+                new HotkeyAccessor(
+                    () => QuickAccessShortcut,
+                    (hotkey) => { QuickAccessShortcut = hotkey; },
+                    "GeneralPage_QuickAccessShortcut"),
+            };
+        }
+
+        public ModuleType GetModuleType()
+        {
+            return ModuleType.GeneralSettings;
         }
 
         // converts the current to a json string.

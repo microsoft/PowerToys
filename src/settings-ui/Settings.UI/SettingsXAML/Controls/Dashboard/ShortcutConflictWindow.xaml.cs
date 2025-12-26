@@ -71,7 +71,7 @@ namespace Microsoft.PowerToys.Settings.UI.SettingsXAML.Controls.Dashboard
                 settingsCard.DataContext is ModuleHotkeyData moduleData)
             {
                 var moduleType = moduleData.ModuleType;
-                NavigationService.Navigate(ModuleHelper.GetModulePageType(moduleType));
+                NavigationService.Navigate(ModuleGpoHelper.GetModulePageType(moduleType));
                 this.Close();
             }
         }
