@@ -46,14 +46,14 @@ Sets the keyboard shortcut for pasting as plain text.
 - `code` (integer) - Virtual key code.
 - `key` (string) - Key name.
 
-**Default:** `Ctrl + Win + V`
+**Default:** `Ctrl+Win+V`
 
 ### PasteAsMarkdownHotkey
 
 Sets the keyboard shortcut for pasting as markdown.
 
 **Type:** object (same structure as PasteAsPlainTextHotkey)  
-**Default:** `Ctrl + Win + Shift + V`
+**Default:** `Ctrl+Win+Shift+V`
 
 ### PasteAsJsonHotkey
 
