@@ -79,6 +79,15 @@
     <ProjectReference Include="..\WorkspacesCsharpLibrary\WorkspacesCsharpLibrary.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Remove="Data\WorkspacesData.cs" />
+    <Compile Remove="Data\ProjectData.cs" />
+    <Compile Remove="Data\WorkspacesEditorData`1.cs" />
+    <Compile Remove="Utils\IOUtils.cs" />
+    <Compile Remove="Utils\FolderUtils.cs" />
+    <Compile Remove="Utils\DashCaseNamingPolicy.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Update="Properties\Resources.Designer.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>

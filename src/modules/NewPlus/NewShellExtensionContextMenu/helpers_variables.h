@@ -1,7 +1,7 @@
 #pragma once
 
 #include <regex>
-#include "..\..\powerrename\lib\Helpers.h"
+#include "Helpers.h"
 #include "helpers_filesystem.h"
 
 #pragma comment(lib, "Pathcch.lib")

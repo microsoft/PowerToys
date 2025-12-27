@@ -58,7 +58,7 @@ public class AllAppsCommandProviderTests : AppsTestBase
         var provider = new AllAppsCommandProvider(page);
 
         // Act
-        var result = provider.LookupApp(string.Empty);
+        var result = provider.LookupAppByDisplayName(string.Empty);
 
         // Assert
         Assert.IsNotNull(result);
@@ -77,7 +77,7 @@ public class AllAppsCommandProviderTests : AppsTestBase
         await WaitForPageInitializationAsync();
 
         // Act
-        var result = provider.LookupApp("TestApp");
+        var result = provider.LookupAppByDisplayName("TestApp");
 
         // Assert
         Assert.IsNotNull(result);
@@ -97,7 +97,7 @@ public class AllAppsCommandProviderTests : AppsTestBase
         await WaitForPageInitializationAsync();
 
         // Act
-        var result = provider.LookupApp("NonExistentApp");
+        var result = provider.LookupAppByDisplayName("NonExistentApp");
 
         // Assert
         Assert.IsNull(result);
