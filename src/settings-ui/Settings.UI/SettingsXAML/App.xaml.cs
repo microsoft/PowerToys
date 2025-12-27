@@ -272,11 +272,11 @@ namespace Microsoft.PowerToys.Settings.UI
                 else if (ShowScoobe)
                 {
                     PowerToysTelemetry.Log.WriteEvent(new ScoobeStartedEvent());
-                    OobeWindow scoobeWindow = new OobeWindow(OOBE.Enums.PowerToysModules.WhatsNew);
-                    scoobeWindow.Activate();
-                    scoobeWindow.ExtendsContentIntoTitleBar = true;
+                    ScoobeWindow newScoobeWindow = new ScoobeWindow();
+                    newScoobeWindow.Activate();
+                    newScoobeWindow.ExtendsContentIntoTitleBar = true;
                     WindowHelpers.ForceTopBorder1PixelInsetOnWindows10(WindowNative.GetWindowHandle(settingsWindow));
-                    SetOobeWindow(scoobeWindow);
+                    SetScoobeWindow(newScoobeWindow);
                 }
                 else if (ShowFlyout)
                 {
@@ -364,6 +364,7 @@ namespace Microsoft.PowerToys.Settings.UI
 
         private static MainWindow settingsWindow;
         private static OobeWindow oobeWindow;
+        private static ScoobeWindow scoobeWindow;
         private static FlyoutWindow flyoutWindow;
 
         public static void ClearSettingsWindow()
@@ -399,6 +400,21 @@ namespace Microsoft.PowerToys.Settings.UI
         public static void ClearOobeWindow()
         {
             oobeWindow = null;
+        }
+
+        public static ScoobeWindow GetScoobeWindow()
+        {
+            return scoobeWindow;
+        }
+
+        public static void SetScoobeWindow(ScoobeWindow window)
+        {
+            scoobeWindow = window;
+        }
+
+        public static void ClearScoobeWindow()
+        {
+            scoobeWindow = null;
         }
 
         public static void ClearFlyoutWindow()

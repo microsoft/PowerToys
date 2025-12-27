@@ -202,6 +202,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 IsNew = true,
             });
 
+            // WhatsNew is handled by ScoobeWindow, but we need a placeholder to maintain index consistency
             Modules.Insert((int)PowerToysModules.WhatsNew, new OobePowerToysModule()
             {
                 ModuleName = "WhatsNew",
@@ -240,12 +241,23 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
         {
             if (selectedModule == PowerToysModules.WhatsNew)
             {
-                navigationView.SelectedItem = navigationView.FooterMenuItems[0];
+                // Open ScoobeWindow for What's new instead of navigating within OobeWindow
+                OpenScoobeWindow();
             }
             else
             {
                 navigationView.SelectedItem = navigationView.MenuItems[(int)selectedModule];
             }
+        }
+
+        private static void OpenScoobeWindow()
+        {
+            if (App.GetScoobeWindow() == null)
+            {
+                App.SetScoobeWindow(new ScoobeWindow());
+            }
+
+            App.GetScoobeWindow().Activate();
         }
 
         private void NavigationView_SelectionChanged(Microsoft.UI.Xaml.Controls.NavigationView sender, Microsoft.UI.Xaml.Controls.NavigationViewSelectionChangedEventArgs args)
@@ -278,7 +290,9 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                             break;
                         }
                     */
-                    case "WhatsNew": NavigationFrame.Navigate(typeof(OobeWhatsNew)); break;
+                    case "WhatsNew":
+                        OpenScoobeWindow();
+                        return; // Don't change selection, just open ScoobeWindow
                     case "AdvancedPaste": NavigationFrame.Navigate(typeof(OobeAdvancedPaste)); break;
                     case "AlwaysOnTop": NavigationFrame.Navigate(typeof(OobeAlwaysOnTop)); break;
                     case "Awake": NavigationFrame.Navigate(typeof(OobeAwake)); break;

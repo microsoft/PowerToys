@@ -113,16 +113,12 @@ namespace Microsoft.PowerToys.Settings.UI
             // open whats new window
             ShellPage.SetOpenWhatIsNewCallback(() =>
             {
-                if (App.GetOobeWindow() == null)
+                if (App.GetScoobeWindow() == null)
                 {
-                    App.SetOobeWindow(new OobeWindow(OOBE.Enums.PowerToysModules.WhatsNew));
-                }
-                else
-                {
-                    App.GetOobeWindow().SetAppWindow(OOBE.Enums.PowerToysModules.WhatsNew);
+                    App.SetScoobeWindow(new ScoobeWindow());
                 }
 
-                App.GetOobeWindow().Activate();
+                App.GetScoobeWindow().Activate();
             });
 
             // open flyout
@@ -213,7 +209,7 @@ namespace Microsoft.PowerToys.Settings.UI
             var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
             WindowHelper.SerializePlacement(hWnd);
 
-            if (App.GetOobeWindow() == null)
+            if (App.GetOobeWindow() == null && App.GetScoobeWindow() == null)
             {
                 App.ClearSettingsWindow();
             }

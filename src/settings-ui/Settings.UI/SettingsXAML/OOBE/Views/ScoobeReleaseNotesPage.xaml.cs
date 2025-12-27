@@ -1,39 +1,29 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
-using System.Net;
-using System.Net.Http;
 using System.Text;
-using System.Text.Json;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using CommunityToolkit.WinUI.Controls;
+
 using global::PowerToys.GPOWrapper;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.HotkeyConflicts;
-using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
-using Microsoft.PowerToys.Settings.UI.OOBE.Enums;
 using Microsoft.PowerToys.Settings.UI.OOBE.ViewModel;
-using Microsoft.PowerToys.Settings.UI.SerializationContext;
 using Microsoft.PowerToys.Settings.UI.Services;
 using Microsoft.PowerToys.Settings.UI.Views;
 using Microsoft.PowerToys.Telemetry;
-using Microsoft.UI.Text;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
 
 namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 {
-    public sealed partial class OobeWhatsNew : Page, INotifyPropertyChanged
+    public sealed partial class ScoobeReleaseNotesPage : Page, INotifyPropertyChanged
     {
         public OobePowerToysModule ViewModel { get; set; }
 
@@ -42,6 +32,8 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
         public bool ShowDataDiagnosticsInfoBar => GetShowDataDiagnosticsInfoBar();
 
         private int _conflictCount;
+
+        private IList<PowerToysReleaseInfo> _currentReleases;
 
         public AllHotkeyConflictsData AllHotkeyConflictsData
         {
@@ -98,13 +90,11 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
         public event PropertyChangedEventHandler PropertyChanged;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="OobeWhatsNew"/> class.
+        /// Initializes a new instance of the <see cref="ScoobeReleaseNotesPage"/> class.
         /// </summary>
-        public OobeWhatsNew()
+        public ScoobeReleaseNotesPage()
         {
             this.InitializeComponent();
-            ViewModel = new OobePowerToysModule(OobeShellPage.OobeShellHandler.Modules[(int)PowerToysModules.WhatsNew]);
-            DataContext = this;
 
             // Subscribe to hotkey conflict updates
             if (GlobalHotkeyConflictManager.Instance != null)
@@ -160,7 +150,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 
             bool registryValue = DataDiagnosticsSettings.GetEnabledValue();
 
-            bool isFirstRunAfterUpdate = (App.Current as Microsoft.PowerToys.Settings.UI.App).ShowScoobe;
+            bool isFirstRunAfterUpdate = (App.Current as App).ShowScoobe;
             if (isFirstRunAfterUpdate && registryValue == false)
             {
                 return true;
@@ -175,30 +165,13 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
         private const string RemoveInstallerHashesRegex = @"(\r\n)+## Installer Hashes(\r\n.*)+## Highlights";
         private const string RemoveHotFixInstallerHashesRegex = @"(\r\n)+## Installer Hashes(\r\n.*)+$";
         private const RegexOptions RemoveInstallerHashesRegexOptions = RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant;
-        private bool _loadingReleaseNotes;
 
-        private static async Task<string> GetReleaseNotesMarkdown()
+        private static string GetReleaseNotesMarkdown(IList<PowerToysReleaseInfo> releases)
         {
-            string releaseNotesJSON = string.Empty;
-
-            // Let's use system proxy
-            using var proxyClientHandler = new HttpClientHandler
+            if (releases == null || releases.Count == 0)
             {
-                DefaultProxyCredentials = CredentialCache.DefaultCredentials,
-                Proxy = WebRequest.GetSystemWebProxy(),
-                PreAuthenticate = true,
-            };
-
-            using var getReleaseInfoClient = new HttpClient(proxyClientHandler);
-
-            // GitHub APIs require sending an user agent
-            // https://docs.github.com/rest/overview/resources-in-the-rest-api#user-agent-required
-            getReleaseInfoClient.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", "PowerToys");
-            releaseNotesJSON = await getReleaseInfoClient.GetStringAsync("https://api.github.com/repos/microsoft/PowerToys/releases");
-            IList<PowerToysReleaseInfo> releases = JsonSerializer.Deserialize<IList<PowerToysReleaseInfo>>(releaseNotesJSON, SourceGenerationContextContext.Default.IListPowerToysReleaseInfo);
-
-            // Get the latest releases
-            var latestReleases = releases.OrderByDescending(release => release.PublishedDate).Take(5);
+                return string.Empty;
+            }
 
             StringBuilder releaseNotesHtmlBuilder = new StringBuilder(string.Empty);
 
@@ -207,14 +180,12 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 
             // Regex to remove installer hash sections from the release notes, since there'll be no Highlights section for hotfix releases.
             Regex removeHotfixHashRegex = new Regex(RemoveHotFixInstallerHashesRegex, RemoveInstallerHashesRegexOptions);
+
             int counter = 0;
-            foreach (var release in latestReleases)
+            foreach (var release in releases)
             {
                 releaseNotesHtmlBuilder.AppendLine("# " + release.Name);
                 var notes = removeHashRegex.Replace(release.ReleaseNotes, "\r\n### Highlights");
-
-                // Add a unique counter to [github-current-release-work] to distinguish each release,
-                // since this variable is used for all latest releases when they are merged.
                 notes = notes.Replace("[github-current-release-work]", $"[github-current-release-work{++counter}]");
                 notes = removeHotfixHashRegex.Replace(notes, string.Empty);
                 releaseNotesHtmlBuilder.AppendLine(notes);
@@ -224,58 +195,45 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             return releaseNotesHtmlBuilder.ToString();
         }
 
-        private async Task Reload()
+        private void DisplayReleaseNotes()
         {
-            if (_loadingReleaseNotes)
+            if (_currentReleases == null || _currentReleases.Count == 0)
             {
+                ReleaseNotesMarkdown.Visibility = Visibility.Collapsed;
+                ErrorInfoBar.IsOpen = true;
                 return;
             }
 
             try
             {
-                _loadingReleaseNotes = true;
-                ReleaseNotesMarkdown.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
-                LoadingProgressRing.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
-                string releaseNotesMarkdown = await GetReleaseNotesMarkdown();
+                LoadingProgressRing.Visibility = Visibility.Collapsed;
                 ProxyWarningInfoBar.IsOpen = false;
                 ErrorInfoBar.IsOpen = false;
 
+                string releaseNotesMarkdown = GetReleaseNotesMarkdown(_currentReleases);
                 ReleaseNotesMarkdown.Text = releaseNotesMarkdown;
-                ReleaseNotesMarkdown.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
-                LoadingProgressRing.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
-            }
-            catch (HttpRequestException httpEx)
-            {
-                Logger.LogError("Exception when loading the release notes", httpEx);
-                if (httpEx.Message.Contains("407", StringComparison.CurrentCulture))
-                {
-                    ProxyWarningInfoBar.IsOpen = true;
-                }
-                else
-                {
-                    ErrorInfoBar.IsOpen = true;
-                }
+                ReleaseNotesMarkdown.Visibility = Visibility.Visible;
             }
             catch (Exception ex)
             {
-                Logger.LogError("Exception when loading the release notes", ex);
+                Logger.LogError("Exception when displaying the release notes", ex);
                 ErrorInfoBar.IsOpen = true;
-            }
-            finally
-            {
-                LoadingProgressRing.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
-                _loadingReleaseNotes = false;
             }
         }
 
-        private async void Page_Loaded(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        private void Page_Loaded(object sender, RoutedEventArgs e)
         {
-            await Reload();
+            DisplayReleaseNotes();
         }
 
         /// <inheritdoc/>
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
+            if (e.Parameter is IList<PowerToysReleaseInfo> releases)
+            {
+                _currentReleases = releases;
+            }
+
             ViewModel.LogOpeningModuleEvent();
         }
 
@@ -291,7 +249,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             }
         }
 
-        private void DataDiagnostics_InfoBar_YesNo_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        private void DataDiagnostics_InfoBar_YesNo_Click(object sender, RoutedEventArgs e)
         {
             string commandArg = string.Empty;
             if (sender is Button senderBtn)
@@ -318,10 +276,10 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 WhatsNewDataDiagnosticsInfoBar.Header = ResourceLoaderInstance.ResourceLoader.GetString("Oobe_WhatsNew_DataDiagnostics_No_Click_InfoBar_Title");
             }
 
-            WhatsNewDataDiagnosticsInfoBarDescText.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
-            WhatsNewDataDiagnosticsInfoBarDescTextYesClicked.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
-            DataDiagnosticsButtonYes.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
-            DataDiagnosticsButtonNo.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
+            WhatsNewDataDiagnosticsInfoBarDescText.Visibility = Visibility.Collapsed;
+            WhatsNewDataDiagnosticsInfoBarDescTextYesClicked.Visibility = Visibility.Visible;
+            DataDiagnosticsButtonYes.Visibility = Visibility.Collapsed;
+            DataDiagnosticsButtonNo.Visibility = Visibility.Collapsed;
 
             // Set Data Diagnostics registry values
             if (commandArg == "Yes")
@@ -341,9 +299,9 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             });
         }
 
-        private void DataDiagnostics_InfoBar_Close_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        private void DataDiagnostics_InfoBar_Close_Click(object sender, RoutedEventArgs e)
         {
-            WhatsNewDataDiagnosticsInfoBar.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
+            WhatsNewDataDiagnosticsInfoBar.Visibility = Visibility.Collapsed;
         }
 
         private void DataDiagnostics_OpenSettings_Click(Microsoft.UI.Xaml.Documents.Hyperlink sender, Microsoft.UI.Xaml.Documents.HyperlinkClickEventArgs args)
@@ -351,9 +309,9 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             Common.UI.SettingsDeepLink.OpenSettings(Common.UI.SettingsDeepLink.SettingsWindow.Overview);
         }
 
-        private async void LoadReleaseNotes_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        private void LoadReleaseNotes_Click(object sender, RoutedEventArgs e)
         {
-            await Reload();
+            DisplayReleaseNotes();
         }
     }
 }
