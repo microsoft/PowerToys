@@ -61,8 +61,18 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             string lastHeroImageUrl = null;
 
             int counter = 0;
+            bool isFirst = true;
             foreach (var release in releases)
             {
+                // Add separator between releases
+                if (!isFirst)
+                {
+                    releaseNotesHtmlBuilder.AppendLine("---");
+                    releaseNotesHtmlBuilder.AppendLine();
+                }
+
+                isFirst = false;
+
                 releaseNotesHtmlBuilder.AppendLine("# " + release.Name);
                 var notes = removeHashRegex.Replace(release.ReleaseNotes, "\r\n### Highlights");
                 notes = notes.Replace("[github-current-release-work]", $"[github-current-release-work{++counter}]");

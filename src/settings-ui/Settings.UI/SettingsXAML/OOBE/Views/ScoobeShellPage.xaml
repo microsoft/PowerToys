@@ -4,11 +4,25 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:animations="using:CommunityToolkit.WinUI.Animations"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:Microsoft.PowerToys.Settings.UI.OOBE.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="using:CommunityToolkit.WinUI"
     HighContrastAdjustment="None"
     Loaded="ShellPage_Loaded"
     mc:Ignorable="d">
+
+    <UserControl.Resources>
+        <!--  Template for NavigationViewItem content with version and date  -->
+        <DataTemplate x:Key="ReleaseNavItemTemplate" x:DataType="local:ScoobeReleaseGroupViewModel">
+            <StackPanel Orientation="Vertical" Spacing="2">
+                <TextBlock Style="{StaticResource BodyTextBlockStyle}" Text="{x:Bind VersionText}" />
+                <TextBlock
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                    Style="{StaticResource CaptionTextBlockStyle}"
+                    Text="{x:Bind DateText}" />
+            </StackPanel>
+        </DataTemplate>
+    </UserControl.Resources>
 
     <Grid>
         <Grid.RowDefinitions>
@@ -46,6 +60,7 @@
             IsPaneOpen="True"
             IsPaneToggleButtonVisible="False"
             IsSettingsVisible="False"
+            MenuItemTemplate="{StaticResource ReleaseNavItemTemplate}"
             OpenPaneLength="220"
             PaneDisplayMode="Left"
             SelectionChanged="NavigationView_SelectionChanged">

@@ -10,15 +10,18 @@
     <Page.Resources>
         <tkcontrols:MarkdownThemes
             x:Key="ReleaseNotesMarkdownThemeConfig"
-            H1FontSize="22"
+            H1FontSize="28"
             H1FontWeight="SemiBold"
             H1Margin="0, 36, 0, 8"
-            H2FontSize="16"
+            H2FontSize="18"
             H2FontWeight="SemiBold"
             H2Margin="0, 16, 0, 4"
-            H3FontSize="16"
+            H3FontSize="14"
             H3FontWeight="SemiBold"
-            H3Margin="0, 16, 0, 4" />
+            H3Margin="0, 16, 0, 4"
+            HorizontalRuleBrush="{StaticResource DividerStrokeColorDefaultBrush}"
+            HorizontalRuleThickness="1"
+            ListBulletSpacing="4" />
         <tkcontrols:MarkdownConfig x:Key="ReleaseNotesMarkdownConfig" Themes="{StaticResource ReleaseNotesMarkdownThemeConfig}" />
     </Page.Resources>
 
@@ -31,7 +34,7 @@
                     <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
                 <Image x:Name="HeroImageHolder" Height="240" />
-                <Grid Margin="32,16,32,24">
+                <Grid Grid.Row="1" Margin="32,16,32,24">
                     <ProgressRing
                         x:Name="LoadingProgressRing"
                         HorizontalAlignment="Center"

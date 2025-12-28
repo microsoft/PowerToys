@@ -4,7 +4,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -124,61 +123,6 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             return version;
         }
 
-        private void PopulateNavigationItems()
-        {
-            if (ReleaseGroups == null || ReleaseGroups.Count == 0)
-            {
-                return;
-            }
-
-            bool isFirst = true;
-            foreach (var releaseGroup in ReleaseGroups)
-            {
-                var navItem = CreateNavigationViewItem(releaseGroup);
-                navigationView.MenuItems.Add(navItem);
-
-                if (isFirst)
-                {
-                    navigationView.SelectedItem = navItem;
-                    isFirst = false;
-                }
-            }
-        }
-
-        private static NavigationViewItem CreateNavigationViewItem(IList<PowerToysReleaseInfo> releaseGroup)
-        {
-            // Use the latest release in the group for display
-            var latestRelease = releaseGroup[0];
-            string versionText = GetVersionFromRelease(latestRelease);
-            string dateText = latestRelease.PublishedDate.ToString("MMMM yyyy", CultureInfo.CurrentCulture);
-
-            var contentStack = new StackPanel
-            {
-                Orientation = Orientation.Vertical,
-                Spacing = 2,
-            };
-
-            contentStack.Children.Add(new TextBlock
-            {
-                Text = versionText,
-                Style = Application.Current.Resources["BodyTextBlockStyle"] as Style,
-            });
-
-            contentStack.Children.Add(new TextBlock
-            {
-                Text = dateText,
-                Style = Application.Current.Resources["CaptionTextBlockStyle"] as Style,
-                Opacity = 0.6,
-            });
-
-            return new NavigationViewItem
-            {
-                Content = contentStack,
-                Tag = releaseGroup,
-                Icon = new FontIcon { Glyph = "\uE789" },
-            };
-        }
-
         private static string GetVersionFromRelease(PowerToysReleaseInfo release)
         {
             // TagName is typically like "v0.96.0", Name might be "Release v0.96.0"
@@ -191,12 +135,28 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             return version;
         }
 
+        private void PopulateNavigationItems()
+        {
+            if (ReleaseGroups == null || ReleaseGroups.Count == 0)
+            {
+                return;
+            }
+
+            foreach (var releaseGroup in ReleaseGroups)
+            {
+                var viewModel = new ScoobeReleaseGroupViewModel(releaseGroup);
+                navigationView.MenuItems.Add(viewModel);
+            }
+
+            // Select the first item to trigger navigation
+            navigationView.SelectedItem = navigationView.MenuItems[0];
+        }
+
         private void NavigationView_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
         {
-            if (args.SelectedItem is NavigationViewItem selectedItem &&
-                selectedItem.Tag is IList<PowerToysReleaseInfo> releaseGroup)
+            if (args.SelectedItem is ScoobeReleaseGroupViewModel viewModel)
             {
-                NavigationFrame.Navigate(typeof(ScoobeReleaseNotesPage), releaseGroup);
+                NavigationFrame.Navigate(typeof(ScoobeReleaseNotesPage), viewModel.Releases);
             }
         }
 
