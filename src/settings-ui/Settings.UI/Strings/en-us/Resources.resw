@@ -2390,13 +2390,13 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="OobeWindow_Title" xml:space="preserve">
     <value>Welcome to PowerToys</value>
   </data>
-  <data name="OobeWindow_TitleTxt.Text" xml:space="preserve">
+  <data name="OobeWindow_TitleTxt.Title" xml:space="preserve">
     <value>Welcome to PowerToys</value>
   </data>
   <data name="ScoobeWindow_Title" xml:space="preserve">
     <value>What's new in PowerToys</value>
   </data>
-  <data name="ScoobeWindow_TitleTxt.Text" xml:space="preserve">
+  <data name="ScoobeWindow_TitleTxt.Title" xml:space="preserve">
     <value>What's new in PowerToys</value>
   </data>
   <data name="SettingsWindow_Title" xml:space="preserve">

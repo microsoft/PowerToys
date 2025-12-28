@@ -2,11 +2,9 @@
     x:Class="Microsoft.PowerToys.Settings.UI.OOBE.Views.ScoobeShellPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:animations="using:CommunityToolkit.WinUI.Animations"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:Microsoft.PowerToys.Settings.UI.OOBE.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:ui="using:CommunityToolkit.WinUI"
     HighContrastAdjustment="None"
     Loaded="ShellPage_Loaded"
     mc:Ignorable="d">
@@ -14,7 +12,10 @@
     <UserControl.Resources>
         <!--  Template for NavigationViewItem content with version and date  -->
         <DataTemplate x:Key="ReleaseNavItemTemplate" x:DataType="local:ScoobeReleaseGroupViewModel">
-            <StackPanel Orientation="Vertical" Spacing="2">
+            <StackPanel
+                Margin="0,8,0,8"
+                Orientation="Vertical"
+                Spacing="4">
                 <TextBlock Style="{StaticResource BodyTextBlockStyle}" Text="{x:Bind VersionText}" />
                 <TextBlock
                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
@@ -26,32 +27,23 @@
 
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
+            <RowDefinition Height="48" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <Grid
+        <TitleBar
             x:Name="AppTitleBar"
-            Height="48"
-            Margin="16,0,0,0"
-            VerticalAlignment="Center"
-            IsHitTestVisible="True">
-            <animations:Implicit.Animations>
-                <animations:OffsetAnimation Duration="0:0:0.3" />
-            </animations:Implicit.Animations>
-            <StackPanel Orientation="Horizontal">
-                <Image
-                    Width="16"
+            x:Uid="ScoobeWindow_TitleTxt"
+            IsBackButtonVisible="False"
+            IsPaneToggleButtonVisible="False"
+            PaneToggleRequested="TitleBar_PaneButtonClick">
+            <!--  This is a workaround for https://github.com/microsoft/microsoft-ui-xaml/issues/10374, once fixed we should just be using IconSource  -->
+            <TitleBar.LeftHeader>
+                <ImageIcon
                     Height="16"
+                    Margin="16,0,0,0"
                     Source="/Assets/Settings/icon.ico" />
-                <TextBlock
-                    x:Name="AppTitleBarText"
-                    x:Uid="ScoobeWindow_TitleTxt"
-                    VerticalAlignment="Center"
-                    Style="{StaticResource CaptionTextBlockStyle}"
-                    TextWrapping="NoWrap" />
-            </StackPanel>
-        </Grid>
-
+            </TitleBar.LeftHeader>
+        </TitleBar>
         <NavigationView
             x:Name="navigationView"
             Grid.Row="1"
@@ -99,25 +91,5 @@
                 </Grid>
             </NavigationView.Content>
         </NavigationView>
-
-        <VisualStateManager.VisualStateGroups>
-            <VisualStateGroup x:Name="LayoutVisualStates">
-                <VisualState x:Name="WideLayout">
-                    <VisualState.StateTriggers>
-                        <AdaptiveTrigger MinWindowWidth="720" />
-                    </VisualState.StateTriggers>
-                </VisualState>
-                <VisualState x:Name="SmallLayout">
-                    <VisualState.StateTriggers>
-                        <AdaptiveTrigger MinWindowWidth="600" />
-                        <AdaptiveTrigger MinWindowWidth="0" />
-                    </VisualState.StateTriggers>
-                    <VisualState.Setters>
-                        <Setter Target="navigationView.PaneDisplayMode" Value="LeftCompact" />
-                        <Setter Target="navigationView.IsPaneOpen" Value="False" />
-                    </VisualState.Setters>
-                </VisualState>
-            </VisualStateGroup>
-        </VisualStateManager.VisualStateGroups>
     </Grid>
 </UserControl>

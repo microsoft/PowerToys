@@ -12,7 +12,6 @@ using Microsoft.PowerToys.Settings.UI.OOBE.Enums;
 using Microsoft.PowerToys.Settings.UI.OOBE.ViewModel;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using WinRT.Interop;
 
 namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 {
@@ -325,41 +324,33 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             }
         }
 
-        private void SetTitleBar()
-        {
-            var u = App.GetOobeWindow();
-            if (u != null)
-            {
-                // A custom title bar is required for full window theme and Mica support.
-                // https://docs.microsoft.com/windows/apps/develop/title-bar?tabs=winui3#full-customization
-                u.ExtendsContentIntoTitleBar = true;
-                WindowHelpers.ForceTopBorder1PixelInsetOnWindows10(WindowNative.GetWindowHandle(u));
-                u.SetTitleBar(AppTitleBar);
-            }
-        }
-
         private void ShellPage_Loaded(object sender, RoutedEventArgs e)
         {
             SetTitleBar();
+
+            // Select the first module by default
+            if (navigationView.MenuItems.Count > 0)
+            {
+                navigationView.SelectedItem = navigationView.MenuItems[0];
+            }
+        }
+
+        private void SetTitleBar()
+        {
+            var window = App.GetOobeWindow();
+            if (window != null)
+            {
+                window.ExtendsContentIntoTitleBar = true;
+                window.SetTitleBar(AppTitleBar);
+            }
         }
 
         private void NavigationView_DisplayModeChanged(NavigationView sender, NavigationViewDisplayModeChangedEventArgs args)
         {
-            if (args.DisplayMode == NavigationViewDisplayMode.Compact || args.DisplayMode == NavigationViewDisplayMode.Minimal)
-            {
-                PaneToggleBtn.Visibility = Visibility.Visible;
-                AppTitleBar.Margin = new Thickness(48, 0, 0, 0);
-                AppTitleBarText.Margin = new Thickness(12, 0, 0, 0);
-            }
-            else
-            {
-                PaneToggleBtn.Visibility = Visibility.Collapsed;
-                AppTitleBar.Margin = new Thickness(16, 0, 0, 0);
-                AppTitleBarText.Margin = new Thickness(16, 0, 0, 0);
-            }
+            AppTitleBar.IsPaneToggleButtonVisible = args.DisplayMode == NavigationViewDisplayMode.Compact || args.DisplayMode == NavigationViewDisplayMode.Minimal;
         }
 
-        private void PaneToggleBtn_Click(object sender, RoutedEventArgs e)
+        private void TitleBar_PaneButtonClick(TitleBar sender, object args)
         {
             navigationView.IsPaneOpen = !navigationView.IsPaneOpen;
         }

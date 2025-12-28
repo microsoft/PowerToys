@@ -15,7 +15,6 @@ using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.SerializationContext;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using WinRT.Interop;
 
 namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 {
@@ -43,7 +42,6 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
         public ScoobeShellPage()
         {
             InitializeComponent();
-            SetTitleBar();
             ScoobeShellHandler = this;
         }
 
@@ -171,23 +169,18 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             if (window != null)
             {
                 window.ExtendsContentIntoTitleBar = true;
-                WindowHelpers.ForceTopBorder1PixelInsetOnWindows10(WindowNative.GetWindowHandle(window));
                 window.SetTitleBar(AppTitleBar);
             }
         }
 
         private void NavigationView_DisplayModeChanged(NavigationView sender, NavigationViewDisplayModeChangedEventArgs args)
         {
-            if (args.DisplayMode == NavigationViewDisplayMode.Compact || args.DisplayMode == NavigationViewDisplayMode.Minimal)
-            {
-                AppTitleBar.Margin = new Thickness(48, 0, 0, 0);
-                AppTitleBarText.Margin = new Thickness(12, 0, 0, 0);
-            }
-            else
-            {
-                AppTitleBar.Margin = new Thickness(16, 0, 0, 0);
-                AppTitleBarText.Margin = new Thickness(16, 0, 0, 0);
-            }
+            AppTitleBar.IsPaneToggleButtonVisible = args.DisplayMode == NavigationViewDisplayMode.Compact || args.DisplayMode == NavigationViewDisplayMode.Minimal;
+        }
+
+        private void TitleBar_PaneButtonClick(TitleBar sender, object args)
+        {
+            navigationView.IsPaneOpen = !navigationView.IsPaneOpen;
         }
     }
 }
