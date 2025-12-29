@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <RootNamespace>TemplateCmdPalExtension</RootNamespace>
@@ -10,20 +10,58 @@
     <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
     <RuntimeIdentifiers>win-x64;win-arm64</RuntimeIdentifiers>
 
-    <PublishProfile>win-$(Platform).pubxml</PublishProfile>
     <EnableMsixTooling>true</EnableMsixTooling>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Include="Assets\SplashScreen.scale-200.png" />
-    <Content Include="Assets\LockScreenLogo.scale-200.png" />
-    <Content Include="Assets\Square150x150Logo.scale-200.png" />
-    <Content Include="Assets\Square44x44Logo.scale-200.png" />
-    <Content Include="Assets\Square44x44Logo.targetsize-24_altform-unplated.png" />
-    <Content Include="Assets\StoreLogo.png" />
-    <Content Include="Assets\Wide310x150Logo.scale-200.png" />
+    <Content Include="Assets\**\*.png" />
   </ItemGroup>
+  
+  <PropertyGroup>
+
+    <!-- FOR PUBLISHING TO WINGET -->
+    <!-- When you're ready to publish your extension to winget,  
+       comment out PublishProfile and uncomment WindowsPackageType tag to create 
+       OR USE THE GITHUB ACTION TO DO THIS FOR YOU-->
+    <PublishProfile>win-$(Platform).pubxml</PublishProfile>
+    <!--<WindowsPackageType>None</WindowsPackageType> -->
+
+    <!-- FOR PUBLISHING TO MICROSOFT STORE 1 of 2-->
+    <!-- When you're ready to publish your extension to Microsoft Store, you'll need to change that are below 
+      AppxPackageIdentityName = replace with Microsoft Store's Package/Identity/Name 
+      AppxPackagePublisher = replace with Microsoft Store's Package/Identity/Publisher
+    -->
+    <!-- <AppxPackageIdentityName>YOUR_PACKAGE_IDENTITY_NAME_HERE</AppxPackageIdentityName>
+    <AppxPackagePublisher>YOUR_PACKAGE_IDENTITY_PUBLISHER_HERE</AppxPackagePublisher>
+    <AppxPackageVersion>0.0.1.0</AppxPackageVersion> -->
+
+    
+  </PropertyGroup>
+  
+  <!-- FOR PUBLISHING TO MICROSOFT STORE 2 of 2-->
+  <!-- When you're ready to publish your extension to Microsoft Store, uncomment the 
+      Target tag and confirm the images exist -->
+  <!-- <Target Name="PrepareAssets" BeforeTargets="BeforeBuild">
+    <Copy SourceFiles="$(MSBuildProjectDirectory)\Assets\Square150x150Logo.scale-200.png"
+          DestinationFiles="$(MSBuildProjectDirectory)\Assets\Square150x150Logo.png"
+          SkipUnchangedFiles="true" />
+    <Copy SourceFiles="$(MSBuildProjectDirectory)\Assets\Square44x44Logo.scale-200.png"
+          DestinationFiles="$(MSBuildProjectDirectory)\Assets\SmallTile.png"
+          SkipUnchangedFiles="true" />
+    <Copy SourceFiles="$(MSBuildProjectDirectory)\Assets\Wide310x150Logo.scale-200.png"
+          DestinationFiles="$(MSBuildProjectDirectory)\Assets\Wide310x150Logo.png"
+          SkipUnchangedFiles="true" />
+    <Copy SourceFiles="$(MSBuildProjectDirectory)\Assets\SplashScreen.scale-200.png"
+          DestinationFiles="$(MSBuildProjectDirectory)\Assets\SplashScreen.png"
+          SkipUnchangedFiles="true" />
+    <Copy SourceFiles="$(MSBuildProjectDirectory)\Assets\Square150x150Logo.scale-200.png"
+          DestinationFiles="$(MSBuildProjectDirectory)\Assets\LargeTile.png"
+          SkipUnchangedFiles="true" />
+    <Copy SourceFiles="$(MSBuildProjectDirectory)\Assets\StoreLogo.scale-100.png"
+          DestinationFiles="$(MSBuildProjectDirectory)\Assets\StoreLogo.png"
+          SkipUnchangedFiles="true" />
+  </Target> -->
 
   <ItemGroup>
     <Manifest Include="$(ApplicationManifest)" />

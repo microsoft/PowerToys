@@ -1,0 +1,127 @@
+# TEMPLATE: Extension EXE Installer Build and Release Workflow
+# 
+# To use this template for a new extension:
+# 1. Copy this file to a new workflow file (e.g., release-extension-exe.yml)
+# 2. Update Global constants with your data:
+# - GITHUB_REPO_URL with your GitHub repository URL (e.g., https://github.com/yourusername/YourRepository)
+# - DISPLAY_NAME with your display name (e.g., My Extension)
+# - EXTENSION_NAME with your extension name (e.g., CmdPalMyExtension)
+# - FOLDER_NAME with your project folder name (e.g., CmdPalMyExtension)
+
+name: CmdPal Extension - Build EXE Installer
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version number (leave empty to auto-detect)'
+        required: false
+        type: string
+      release_notes:
+        description: 'What is new in this version'
+        required: false
+        default: 'New release with latest updates and improvements.'
+        type: string
+
+
+# Global constants: UPDATE THESE, example; DISPLAY_NAME: ${{ vars.DISPLAY_NAME || 'CmdPal Name' }}
+env:
+  DISPLAY_NAME: ${{ vars.DISPLAY_NAME || 'DISPLAY_NAME' }}
+  EXTENSION_NAME: ${{ vars.EXTENSION_NAME || 'EXTENSION_NAME' }}
+  FOLDER_NAME: ${{ vars.FOLDER_NAME || 'FOLDER_NAME' }}
+  GITHUB_REPO_URL: ${{ vars.GITHUB_REPO_URL || 'GITHUB_REPO_URL' }}
+
+
+jobs:
+  build:
+    runs-on: windows-2022
+    permissions:
+      contents: write
+      actions: read
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup .NET 9
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '9.0.x'
+    
+    - name: Install Inno Setup
+      run: choco install innosetup -y --no-progress
+      shell: pwsh
+    
+    - name: Get version from project
+      id: version
+      run: |
+        if ("${{ github.event.inputs.version }}" -ne "") {
+          $version = "${{ github.event.inputs.version }}"
+        } else {
+          $projectFile = "${{ env.FOLDER_NAME }}/${{ env.EXTENSION_NAME }}.csproj"
+          $xml = [xml](Get-Content $projectFile)
+          $version = $xml.Project.PropertyGroup.AppxPackageVersion | Select-Object -First 1
+          if (-not $version) { throw "Version not found in project file" }
+        }
+        echo "VERSION=$version" >> $env:GITHUB_OUTPUT
+        Write-Host "Using version: $version"
+      shell: pwsh
+    
+    - name: Build EXE installers (x64 and ARM64)
+      run: |
+        Set-Location "${{ env.FOLDER_NAME }}/Publication/winget-resources"
+        .\build-exe.ps1 -Version "${{ steps.version.outputs.VERSION }}" -Platforms @("x64", "arm64")
+      shell: pwsh
+    
+    - name: Upload x64 installer artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ env.EXTENSION_NAME }}-x64-installer
+        path: ${{ env.FOLDER_NAME }}/bin/Release/installer/*-x64.exe
+        if-no-files-found: error
+
+    - name: Upload ARM64 installer artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ env.EXTENSION_NAME }}-arm64-installer
+        path: ${{ env.FOLDER_NAME }}/bin/Release/installer/*-arm64.exe
+        if-no-files-found: warn
+    
+    - name: Create GitHub Release
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: ${{ env.EXTENSION_NAME }}-v${{ steps.version.outputs.VERSION }}
+        name: "${{ env.DISPLAY_NAME }} v${{ steps.version.outputs.VERSION }}"
+        body: |
+          ## 🎯 ${{ env.DISPLAY_NAME }} ${{ steps.version.outputs.VERSION }}
+          
+          ## What's New
+          ${{ github.event.inputs.release_notes }}
+          
+          ## 📦 Installation
+          
+          Download the installer for your system architecture:
+          
+          - **x64 (Intel/AMD)**: `${{ env.DISPLAY_NAME }}-Setup-${{ steps.version.outputs.VERSION }}-x64.exe`
+          - **ARM64 (Windows on ARM)**: `${{ env.DISPLAY_NAME }}-Setup-${{ steps.version.outputs.VERSION }}-arm64.exe`
+          
+          1. Download the appropriate installer from the Assets section below
+          2. Run the installer with administrator privileges
+          3. The extension will be registered and available in Command Palette
+          
+          
+          ## 🔗 More Information
+          
+          Repository: ${{ env.GITHUB_REPO_URL }}
+        files: ${{ env.FOLDER_NAME }}/bin/Release/installer/*.exe
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: Build summary
+      run: |
+        Write-Host "🎉 ${{ env.DISPLAY_NAME }} Release Complete!" -ForegroundColor Green
+        Write-Host "Version: ${{ steps.version.outputs.VERSION }}" -ForegroundColor Yellow
+        Write-Host "📁 Installer uploaded to GitHub Release" -ForegroundColor Green
+      shell: pwsh
