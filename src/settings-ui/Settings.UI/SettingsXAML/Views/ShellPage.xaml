@@ -179,6 +179,9 @@
                     AutomationProperties.AutomationId="SystemToolsNavItem"
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/SystemTools.png}"
                     SelectsOnInvoked="False">
+                    <NavigationViewItem.InfoBadge>
+                        <InfoBadge Style="{StaticResource NewInfoBadge}" />
+                    </NavigationViewItem.InfoBadge>
                     <NavigationViewItem.MenuItems>
                         <NavigationViewItem
                             x:Name="AdvancedPasteNavigationItem"
@@ -215,7 +218,11 @@
                             x:Uid="Shell_PowerDisplay"
                             helpers:NavHelper.NavigateTo="views:PowerDisplayPage"
                             AutomationProperties.AutomationId="PowerDisplayNavItem"
-                            Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/PowerDisplay.png}" />
+                            Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/PowerDisplay.png}">
+                            <NavigationViewItem.InfoBadge>
+                                <InfoBadge Style="{StaticResource NewInfoBadge}" />
+                            </NavigationViewItem.InfoBadge>
+                        </NavigationViewItem>
                         <NavigationViewItem
                             x:Name="PowerLauncherNavigationItem"
                             x:Uid="Shell_PowerLauncher"
