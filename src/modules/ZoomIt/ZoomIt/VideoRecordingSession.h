@@ -14,6 +14,7 @@
 #include <ppltasks.h>
 #include <atomic>
 #include <algorithm>
+#include <mutex>
 
 class VideoRecordingSession : public std::enable_shared_from_this<VideoRecordingSession>
 {
@@ -52,7 +53,17 @@ public:
         HWND hDialog{ nullptr };
         std::atomic<bool> loadingPreview{ false };
         std::atomic<int64_t> latestPreviewRequest{ 0 };
+        std::atomic<int64_t> lastRenderedPreview{ -1 };
         std::atomic<bool> isPlaying{ false };
+        std::atomic<bool> frameCopyInProgress{ false };
+        std::mutex previewBitmapMutex;
+        winrt::event_token frameAvailableToken{};
+        winrt::event_token positionChangedToken{};
+        winrt::event_token stateChangedToken{};
+        winrt::com_ptr<ID3D11Device> previewD3DDevice;
+        winrt::com_ptr<ID3D11DeviceContext> previewD3DContext;
+        winrt::com_ptr<ID3D11Texture2D> previewFrameTexture;
+        winrt::com_ptr<ID3D11Texture2D> previewFrameStaging;
         bool hoverPlay{ false };
         bool hoverRewind{ false };
         bool hoverForward{ false };
@@ -62,6 +73,7 @@ public:
         winrt::Windows::Foundation::TimeSpan positionBeforeOverride{ 0 };
         bool previewOverrideActive{ false };
         bool restorePreviewOnRelease{ false };
+        bool playheadPushed{ false };
         int dialogX{ 0 };
         int dialogY{ 0 };
 

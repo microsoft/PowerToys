@@ -9,6 +9,9 @@
 #include "pch.h"
 #include "VideoRecordingSession.h"
 #include "CaptureFrameWait.h"
+#include <winrt/Windows.Graphics.Imaging.h>
+#include <winrt/Windows.Media.h>
+#include <cstdlib>
 
 extern DWORD g_RecordScaling;
 
@@ -19,6 +22,7 @@ namespace winrt
     using namespace Windows::Graphics::Capture;
     using namespace Windows::Graphics::DirectX;
     using namespace Windows::Graphics::DirectX::Direct3D11;
+    using namespace Windows::Graphics::Imaging;
     using namespace Windows::Storage;
     using namespace Windows::UI::Composition;
     using namespace Windows::Media::Core;
@@ -50,6 +54,11 @@ int32_t EnsureEven(int32_t value)
 
 namespace
 {
+    struct __declspec(uuid("5b0d3235-4dba-4d44-8657-1f1d0f83e9a3")) IMemoryBufferByteAccess : IUnknown
+    {
+        virtual HRESULT STDMETHODCALLTYPE GetBuffer(BYTE** value, UINT32* capacity) = 0;
+    };
+
     constexpr int kTimelinePadding = 12;
     constexpr int kTimelineTrackHeight = 24;
     constexpr int kTimelineTrackTopOffset = 18;
@@ -57,6 +66,114 @@ namespace
     constexpr int kTimelineHandleHeight = 40;
     constexpr int kTimelineHandleHitRadius = 18;
     constexpr int64_t kJogStepTicks = 20'000'000;   // 2 seconds (or 1s for short videos)
+    constexpr int64_t kPreviewMinDeltaTicks = 2'000'000; // 20ms between thumbnails while playing
+    constexpr UINT32 kPreviewRequestWidthPlaying = 320;
+    constexpr UINT32 kPreviewRequestHeightPlaying = 180;
+    constexpr UINT WMU_PREVIEW_READY = WM_USER + 1;
+    constexpr UINT WMU_PREVIEW_SCHEDULED = WM_USER + 2;
+    constexpr UINT WMU_DURATION_CHANGED = WM_USER + 3;
+    constexpr UINT WMU_PLAYBACK_POSITION = WM_USER + 4;
+    constexpr UINT WMU_PLAYBACK_STOP = WM_USER + 5;
+
+    bool EnsurePlaybackDevice(VideoRecordingSession::TrimDialogData* pData)
+    {
+        if (!pData)
+        {
+            return false;
+        }
+
+        if (pData->previewD3DDevice && pData->previewD3DContext)
+        {
+            return true;
+        }
+
+        UINT creationFlags = D3D11_CREATE_DEVICE_BGRA_SUPPORT;
+#if defined(_DEBUG)
+        creationFlags |= D3D11_CREATE_DEVICE_DEBUG;
+#endif
+
+        D3D_FEATURE_LEVEL levels[] = { D3D_FEATURE_LEVEL_11_1, D3D_FEATURE_LEVEL_11_0, D3D_FEATURE_LEVEL_10_1, D3D_FEATURE_LEVEL_10_0 };
+        D3D_FEATURE_LEVEL levelCreated = D3D_FEATURE_LEVEL_11_0;
+
+        winrt::com_ptr<ID3D11Device> device;
+        winrt::com_ptr<ID3D11DeviceContext> context;
+        if (SUCCEEDED(D3D11CreateDevice(
+            nullptr,
+            D3D_DRIVER_TYPE_HARDWARE,
+            nullptr,
+            creationFlags,
+            levels,
+            ARRAYSIZE(levels),
+            D3D11_SDK_VERSION,
+            device.put(),
+            &levelCreated,
+            context.put())))
+        {
+            pData->previewD3DDevice = device;
+            pData->previewD3DContext = context;
+            return true;
+        }
+
+        return false;
+    }
+
+    bool EnsureFrameTextures(VideoRecordingSession::TrimDialogData* pData, UINT width, UINT height)
+    {
+        if (!pData || !pData->previewD3DDevice)
+        {
+            return false;
+        }
+
+        auto recreate = [&]()
+        {
+            pData->previewFrameTexture = nullptr;
+            pData->previewFrameStaging = nullptr;
+
+            D3D11_TEXTURE2D_DESC desc{};
+            desc.Width = width;
+            desc.Height = height;
+            desc.MipLevels = 1;
+            desc.ArraySize = 1;
+            desc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
+            desc.SampleDesc.Count = 1;
+            desc.Usage = D3D11_USAGE_DEFAULT;
+            desc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
+
+            winrt::com_ptr<ID3D11Texture2D> frameTex;
+            if (FAILED(pData->previewD3DDevice->CreateTexture2D(&desc, nullptr, frameTex.put())))
+            {
+                return false;
+            }
+
+            desc.BindFlags = 0;
+            desc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
+            desc.Usage = D3D11_USAGE_STAGING;
+
+            winrt::com_ptr<ID3D11Texture2D> staging;
+            if (FAILED(pData->previewD3DDevice->CreateTexture2D(&desc, nullptr, staging.put())))
+            {
+                return false;
+            }
+
+            pData->previewFrameTexture = frameTex;
+            pData->previewFrameStaging = staging;
+            return true;
+        };
+
+        if (!pData->previewFrameTexture || !pData->previewFrameStaging)
+        {
+            return recreate();
+        }
+
+        D3D11_TEXTURE2D_DESC existing{};
+        pData->previewFrameTexture->GetDesc(&existing);
+        if (existing.Width != width || existing.Height != height)
+        {
+            return recreate();
+        }
+
+        return true;
+    }
 
     void CenterTrimDialog(HWND hDlg)
     {
@@ -252,7 +369,7 @@ namespace
         }
 }
 
-static void StopPlayback(HWND hDlg, VideoRecordingSession::TrimDialogData* pData);
+static void StopPlayback(HWND hDlg, VideoRecordingSession::TrimDialogData* pData, bool capturePosition = true);
 static winrt::fire_and_forget StartPlaybackAsync(HWND hDlg, VideoRecordingSession::TrimDialogData* pData);
 
 
@@ -936,6 +1053,157 @@ INT_PTR VideoRecordingSession::ShowTrimDialogInternal(
     return result;
 }
 
+static void UpdatePositionUI(HWND hDlg, VideoRecordingSession::TrimDialogData* pData, bool invalidateTimeline = true)
+{
+    if (!pData || !hDlg)
+    {
+        return;
+    }
+
+    const auto previewTime = pData->previewOverrideActive ? pData->previewOverride : pData->currentPosition;
+    SetTimeText(hDlg, IDC_TRIM_POSITION_LABEL, previewTime, true);
+    if (invalidateTimeline)
+    {
+        InvalidateRect(GetDlgItem(hDlg, IDC_TRIM_TIMELINE), nullptr, FALSE);
+    }
+}
+
+static void SyncMediaPlayerPosition(VideoRecordingSession::TrimDialogData* pData)
+{
+    if (!pData || !pData->mediaPlayer)
+    {
+        return;
+    }
+
+    try
+    {
+        auto session = pData->mediaPlayer.PlaybackSession();
+        if (session)
+        {
+            const int64_t clampedTicks = std::clamp<int64_t>(
+                pData->currentPosition.count(),
+                pData->trimStart.count(),
+                pData->trimEnd.count());
+            session.Position(winrt::TimeSpan{ clampedTicks });
+        }
+    }
+    catch (...)
+    {
+    }
+}
+
+static HBITMAP CreateBitmapFromSoftwareBitmap(winrt::SoftwareBitmap const& sourceBitmap)
+{
+    if (!sourceBitmap)
+    {
+        return nullptr;
+    }
+
+    winrt::SoftwareBitmap bitmap = sourceBitmap;
+    if (bitmap.BitmapPixelFormat() != winrt::BitmapPixelFormat::Bgra8 ||
+        bitmap.BitmapAlphaMode() != winrt::BitmapAlphaMode::Premultiplied)
+    {
+        bitmap = winrt::SoftwareBitmap::Convert(bitmap, winrt::BitmapPixelFormat::Bgra8, winrt::BitmapAlphaMode::Premultiplied);
+    }
+
+    auto buffer = bitmap.LockBuffer(winrt::BitmapBufferAccessMode::Read);
+    auto reference = buffer.CreateReference();
+    auto byteAccess = reference.as<IMemoryBufferByteAccess>();
+
+    BYTE* data = nullptr;
+    UINT32 capacity = 0;
+    if (FAILED(byteAccess->GetBuffer(&data, &capacity)))
+    {
+        return nullptr;
+    }
+
+    auto desc = buffer.GetPlaneDescription(0);
+    if (desc.Width <= 0 || desc.Height <= 0)
+    {
+        return nullptr;
+    }
+
+    const UINT32 requiredBytes = static_cast<UINT32>(desc.Width * 4) * static_cast<UINT32>(desc.Height);
+    if (capacity < requiredBytes + desc.StartIndex)
+    {
+        return nullptr;
+    }
+
+    BITMAPINFO bmi{};
+    bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+    bmi.bmiHeader.biWidth = desc.Width;
+    bmi.bmiHeader.biHeight = -desc.Height; // Top-down bitmap
+    bmi.bmiHeader.biPlanes = 1;
+    bmi.bmiHeader.biBitCount = 32;
+    bmi.bmiHeader.biCompression = BI_RGB;
+
+    void* bits = nullptr;
+    HDC hdcScreen = GetDC(nullptr);
+    HBITMAP hBitmap = CreateDIBSection(hdcScreen, &bmi, DIB_RGB_COLORS, &bits, nullptr, 0);
+    ReleaseDC(nullptr, hdcScreen);
+
+    if (!hBitmap || !bits)
+    {
+        if (hBitmap)
+        {
+            DeleteObject(hBitmap);
+        }
+        return nullptr;
+    }
+
+    const LONG srcStride = desc.Stride;
+    BYTE* destBytes = static_cast<BYTE*>(bits);
+    const size_t destStride = static_cast<size_t>(desc.Width) * 4;
+    const BYTE* srcBase = data + desc.StartIndex;
+
+    for (int row = 0; row < desc.Height; ++row)
+    {
+        memcpy(destBytes + row * destStride, srcBase + row * srcStride, destStride);
+    }
+
+    return hBitmap;
+}
+
+static void CleanupMediaPlayer(VideoRecordingSession::TrimDialogData* pData)
+{
+    if (!pData || !pData->mediaPlayer)
+    {
+        return;
+    }
+
+    try
+    {
+        auto session = pData->mediaPlayer.PlaybackSession();
+        if (session)
+        {
+            if (pData->positionChangedToken.value)
+            {
+                session.PositionChanged(pData->positionChangedToken);
+                pData->positionChangedToken = {};
+            }
+            if (pData->stateChangedToken.value)
+            {
+                session.PlaybackStateChanged(pData->stateChangedToken);
+                pData->stateChangedToken = {};
+            }
+        }
+
+        if (pData->frameAvailableToken.value)
+        {
+            pData->mediaPlayer.VideoFrameAvailable(pData->frameAvailableToken);
+            pData->frameAvailableToken = {};
+        }
+
+        pData->mediaPlayer.Close();
+    }
+    catch (...)
+    {
+    }
+
+    pData->mediaPlayer = nullptr;
+    pData->frameCopyInProgress.store(false, std::memory_order_relaxed);
+}
+
 //----------------------------------------------------------------------------
 //
 // Helper: Update video frame preview
@@ -951,10 +1219,12 @@ static void UpdateVideoPreview(HWND hDlg, VideoRecordingSession::TrimDialogData*
     const auto previewTime = pData->previewOverrideActive ? pData->previewOverride : pData->currentPosition;
 
     // Update position label and timeline
-    SetTimeText(hDlg, IDC_TRIM_POSITION_LABEL, previewTime, true);
-    if (invalidateTimeline && hDlg)
+    UpdatePositionUI(hDlg, pData, invalidateTimeline);
+
+    // When playing with the frame server, frames arrive via VideoFrameAvailable; avoid extra thumbnails.
+    if (pData->isPlaying.load(std::memory_order_relaxed) && pData->mediaPlayer)
     {
-        InvalidateRect(GetDlgItem(hDlg, IDC_TRIM_TIMELINE), nullptr, FALSE);
+        return;
     }
 
     const int64_t requestTicks = previewTime.count();
@@ -1012,9 +1282,14 @@ static void UpdateVideoPreview(HWND hDlg, VideoRecordingSession::TrimDialogData*
                     requestTicks = std::clamp<int64_t>(requestTicks, 0, durationTicks);
                 }
 
+                const bool isPlaying = pData->isPlaying.load(std::memory_order_relaxed);
+                const UINT32 reqW = isPlaying ? kPreviewRequestWidthPlaying : 0;
+                const UINT32 reqH = isPlaying ? kPreviewRequestHeightPlaying : 0;
+
                 auto stream = composition.GetThumbnailAsync(
                     winrt::TimeSpan{ requestTicks },
-                    0, 0,
+                    reqW,
+                    reqH,
                     winrt::VideoFramePrecision::NearestFrame).get();
 
                 if (stream)
@@ -1059,11 +1334,14 @@ static void UpdateVideoPreview(HWND hDlg, VideoRecordingSession::TrimDialogData*
                                             {
                                                 converter->CopyPixels(nullptr, width * 4, width * height * 4, static_cast<BYTE*>(bits));
 
-                                                if (pData->hPreviewBitmap)
                                                 {
-                                                    DeleteObject(pData->hPreviewBitmap);
+                                                    std::lock_guard<std::mutex> lock(pData->previewBitmapMutex);
+                                                    if (pData->hPreviewBitmap)
+                                                    {
+                                                        DeleteObject(pData->hPreviewBitmap);
+                                                    }
+                                                    pData->hPreviewBitmap = hBitmap;
                                                 }
-                                                pData->hPreviewBitmap = hBitmap;
                                                 updatedBitmap = true;
                                             }
                                         }
@@ -1083,17 +1361,18 @@ static void UpdateVideoPreview(HWND hDlg, VideoRecordingSession::TrimDialogData*
 
         if (updatedBitmap)
         {
-            PostMessage(hDlg, WM_USER + 1, 0, 0);
+            pData->lastRenderedPreview.store(requestTicks, std::memory_order_relaxed);
+            PostMessage(hDlg, WMU_PREVIEW_READY, 0, 0);
         }
 
         if (pData->latestPreviewRequest.load(std::memory_order_relaxed) != requestTicksRaw)
         {
-            PostMessage(hDlg, WM_USER + 2, 0, 0);
+            PostMessage(hDlg, WMU_PREVIEW_SCHEDULED, 0, 0);
         }
 
         if (durationChanged)
         {
-            PostMessage(hDlg, WM_USER + 3, 0, 0);
+            PostMessage(hDlg, WMU_DURATION_CHANGED, 0, 0);
         }
     }, hDlg, pData, requestTicks).detach();
 }
@@ -1290,8 +1569,8 @@ static void DrawTimeline(HDC hdc, RECT rc, VideoRecordingSession::TrimDialogData
 namespace
 {
     constexpr UINT_PTR kPlaybackTimerId = 1;
-    constexpr UINT kPlaybackTimerIntervalMs = 33;
-    constexpr int64_t kPlaybackStepTicks = 330000; // ~33ms in 100-ns units
+    constexpr UINT kPlaybackTimerIntervalMs = 8;
+    constexpr int64_t kPlaybackStepTicks = static_cast<int64_t>(kPlaybackTimerIntervalMs) * 10'000; // timer interval in 100-ns units
 }
 
 static void RefreshPlaybackButtons(HWND hDlg)
@@ -1322,7 +1601,7 @@ static void HandlePlaybackCommand(int controlId, VideoRecordingSession::TrimDial
     case IDC_TRIM_PLAY_PAUSE:
         if (pData->isPlaying.load(std::memory_order_relaxed))
         {
-            StopPlayback(hDlg, pData);
+            StopPlayback(hDlg, pData, true);
         }
         else
         {
@@ -1332,47 +1611,43 @@ static void HandlePlaybackCommand(int controlId, VideoRecordingSession::TrimDial
 
     case IDC_TRIM_REWIND:
     {
-        StopPlayback(hDlg, pData);
+        StopPlayback(hDlg, pData, false);
         // Use 1 second step for timelines < 20 seconds, 2 seconds otherwise
         const int64_t duration = pData->trimEnd.count() - pData->trimStart.count();
         const int64_t stepTicks = (duration < 200'000'000) ? 10'000'000 : kJogStepTicks;
         const int64_t newTicks = (std::max)(pData->trimStart.count(), pData->currentPosition.count() - stepTicks);
         pData->currentPosition = winrt::TimeSpan{ newTicks };
+        SyncMediaPlayerPosition(pData);
         UpdateVideoPreview(hDlg, pData);
         break;
     }
 
     case IDC_TRIM_FORWARD:
     {
-        StopPlayback(hDlg, pData);
+        StopPlayback(hDlg, pData, false);
         // Use 1 second step for timelines < 20 seconds, 2 seconds otherwise
         const int64_t duration = pData->trimEnd.count() - pData->trimStart.count();
         const int64_t stepTicks = (duration < 200'000'000) ? 10'000'000 : kJogStepTicks;
         const int64_t newTicks = (std::min)(pData->trimEnd.count(), pData->currentPosition.count() + stepTicks);
         pData->currentPosition = winrt::TimeSpan{ newTicks };
-        UpdateVideoPreview(hDlg, pData);
-        break;
-    }
-
-    case IDC_TRIM_SKIP_START:
-    {
-        StopPlayback(hDlg, pData);
-        pData->currentPosition = pData->trimStart;
+        SyncMediaPlayerPosition(pData);
         UpdateVideoPreview(hDlg, pData);
         break;
     }
 
     case IDC_TRIM_SKIP_END:
     {
-        StopPlayback(hDlg, pData);
+        StopPlayback(hDlg, pData, false);
         pData->currentPosition = pData->trimEnd;
+        SyncMediaPlayerPosition(pData);
         UpdateVideoPreview(hDlg, pData);
         break;
     }
 
     default:
-        StopPlayback(hDlg, pData);
+        StopPlayback(hDlg, pData, false);
         pData->currentPosition = pData->trimStart;
+        SyncMediaPlayerPosition(pData);
         UpdateVideoPreview(hDlg, pData);
         break;
     }
@@ -1380,35 +1655,47 @@ static void HandlePlaybackCommand(int controlId, VideoRecordingSession::TrimDial
     RefreshPlaybackButtons(hDlg);
 }
 
-static void StopPlayback(HWND hDlg, VideoRecordingSession::TrimDialogData* pData)
+static void StopPlayback(HWND hDlg, VideoRecordingSession::TrimDialogData* pData, bool capturePosition)
 {
     if (!pData)
     {
         return;
     }
 
-    if (pData->isPlaying.exchange(false, std::memory_order_relaxed))
-    {
-        // Stop audio playback and align media position with UI state
-        if (pData->mediaPlayer)
-        {
-            try
-            {
-                pData->mediaPlayer.Pause();
-                pData->mediaPlayer.PlaybackSession().Position(pData->currentPosition);
-                pData->mediaPlayer.Close();
-            }
-            catch (...) {}
-            pData->mediaPlayer = nullptr;
-        }
+    const bool wasPlaying = pData->isPlaying.exchange(false, std::memory_order_relaxed);
 
-        if (hDlg)
+    // Stop audio playback and align media position with UI state, but keep player alive for resume
+    if (pData->mediaPlayer)
+    {
+        try
+        {
+            auto session = pData->mediaPlayer.PlaybackSession();
+            if (session)
+            {
+                if (capturePosition)
+                {
+                    pData->currentPosition = session.Position();
+                }
+                session.Position(pData->currentPosition);
+            }
+            pData->mediaPlayer.Pause();
+        }
+        catch (...)
+        {
+        }
+    }
+
+    if (hDlg)
+    {
+        if (wasPlaying)
         {
             KillTimer(hDlg, kPlaybackTimerId);
         }
         RefreshPlaybackButtons(hDlg);
     }
-}static winrt::fire_and_forget StartPlaybackAsync(HWND hDlg, VideoRecordingSession::TrimDialogData* pData)
+}
+
+static winrt::fire_and_forget StartPlaybackAsync(HWND hDlg, VideoRecordingSession::TrimDialogData* pData)
 {
     if (!pData || !hDlg)
     {
@@ -1433,15 +1720,39 @@ static void StopPlayback(HWND hDlg, VideoRecordingSession::TrimDialogData* pData
         co_return;
     }
 
+    // If a player already exists (paused), just resume from currentPosition
     if (pData->mediaPlayer)
     {
         try
         {
-            pData->mediaPlayer.Close();
+            auto session = pData->mediaPlayer.PlaybackSession();
+            if (session)
+            {
+                const int64_t clampedTicks = std::clamp<int64_t>(
+                    pData->currentPosition.count(),
+                    pData->trimStart.count(),
+                    pData->trimEnd.count());
+                session.Position(winrt::TimeSpan{ clampedTicks });
+            }
+            pData->mediaPlayer.Play();
         }
-        catch (...) {}
-        pData->mediaPlayer = nullptr;
+        catch (...)
+        {
+        }
+
+        if (!SetTimer(hDlg, kPlaybackTimerId, kPlaybackTimerIntervalMs, nullptr))
+        {
+            pData->isPlaying.store(false, std::memory_order_relaxed);
+            RefreshPlaybackButtons(hDlg);
+            co_return;
+        }
+
+        PostMessage(hDlg, WMU_PLAYBACK_POSITION, 0, 0);
+        RefreshPlaybackButtons(hDlg);
+        co_return;
     }
+
+    CleanupMediaPlayer(pData);
 
     winrt::MediaPlayer newPlayer{ nullptr };
 
@@ -1460,13 +1771,161 @@ static void StopPlayback(HWND hDlg, VideoRecordingSession::TrimDialogData* pData
 
         newPlayer = winrt::MediaPlayer();
         newPlayer.AudioCategory(winrt::MediaPlayerAudioCategory::Media);
-        newPlayer.IsVideoFrameServerEnabled(false);
+        newPlayer.IsVideoFrameServerEnabled(true);
         newPlayer.AutoPlay(false);
         newPlayer.Volume(1.0);
 
+        pData->frameCopyInProgress.store(false, std::memory_order_relaxed);
+        pData->mediaPlayer = newPlayer;
+
         auto mediaSource = winrt::MediaSource::CreateFromStorageFile(pData->playbackFile);
         VideoRecordingSession::TrimDialogData* dataPtr = pData;
-        newPlayer.MediaOpened([dataPtr](auto const& sender, auto const&)
+
+        pData->frameAvailableToken = pData->mediaPlayer.VideoFrameAvailable([hDlg, dataPtr](auto const& sender, auto const&)
+        {
+            if (!dataPtr)
+            {
+                return;
+            }
+
+            if (dataPtr->frameCopyInProgress.exchange(true, std::memory_order_relaxed))
+            {
+                return;
+            }
+
+            try
+            {
+                if (!EnsurePlaybackDevice(dataPtr))
+                {
+                    dataPtr->frameCopyInProgress.store(false, std::memory_order_relaxed);
+                    return;
+                }
+
+                auto session = sender.PlaybackSession();
+                UINT width = session.NaturalVideoWidth();
+                UINT height = session.NaturalVideoHeight();
+                if (width == 0 || height == 0)
+                {
+                    width = 640;
+                    height = 360;
+                }
+
+                if (!EnsureFrameTextures(dataPtr, width, height))
+                {
+                    dataPtr->frameCopyInProgress.store(false, std::memory_order_relaxed);
+                    return;
+                }
+
+                winrt::com_ptr<IDXGISurface> dxgiSurface;
+                if (dataPtr->previewFrameTexture)
+                {
+                    dxgiSurface = dataPtr->previewFrameTexture.as<IDXGISurface>();
+                }
+
+                if (dxgiSurface)
+                {
+                    winrt::com_ptr<IInspectable> inspectableSurface;
+                    if (SUCCEEDED(CreateDirect3D11SurfaceFromDXGISurface(dxgiSurface.get(), inspectableSurface.put())))
+                    {
+                        auto surface = inspectableSurface.as<winrt::Windows::Graphics::DirectX::Direct3D11::IDirect3DSurface>();
+                        sender.CopyFrameToVideoSurface(surface);
+
+                        if (dataPtr->previewD3DContext && dataPtr->previewFrameStaging)
+                        {
+                            dataPtr->previewD3DContext->CopyResource(dataPtr->previewFrameStaging.get(), dataPtr->previewFrameTexture.get());
+
+                            D3D11_MAPPED_SUBRESOURCE mapped{};
+                            if (SUCCEEDED(dataPtr->previewD3DContext->Map(dataPtr->previewFrameStaging.get(), 0, D3D11_MAP_READ, 0, &mapped)))
+                            {
+                                const UINT rowPitch = mapped.RowPitch;
+                                const UINT bytesPerPixel = 4;
+                                const UINT destStride = width * bytesPerPixel;
+
+                                BITMAPINFO bmi{};
+                                bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+                                bmi.bmiHeader.biWidth = static_cast<LONG>(width);
+                                bmi.bmiHeader.biHeight = -static_cast<LONG>(height);
+                                bmi.bmiHeader.biPlanes = 1;
+                                bmi.bmiHeader.biBitCount = 32;
+                                bmi.bmiHeader.biCompression = BI_RGB;
+
+                                void* bits = nullptr;
+                                HDC hdcScreen = GetDC(nullptr);
+                                HBITMAP hBitmap = CreateDIBSection(hdcScreen, &bmi, DIB_RGB_COLORS, &bits, nullptr, 0);
+                                ReleaseDC(nullptr, hdcScreen);
+
+                                if (hBitmap && bits)
+                                {
+                                    BYTE* dest = static_cast<BYTE*>(bits);
+                                    const BYTE* src = static_cast<const BYTE*>(mapped.pData);
+                                    for (UINT y = 0; y < height; ++y)
+                                    {
+                                        memcpy(dest + y * destStride, src + y * rowPitch, destStride);
+                                    }
+
+                                    {
+                                        std::lock_guard<std::mutex> lock(dataPtr->previewBitmapMutex);
+                                        if (dataPtr->hPreviewBitmap)
+                                        {
+                                            DeleteObject(dataPtr->hPreviewBitmap);
+                                        }
+                                        dataPtr->hPreviewBitmap = hBitmap;
+                                    }
+
+                                    PostMessage(hDlg, WMU_PREVIEW_READY, 0, 0);
+                                }
+                                else if (hBitmap)
+                                {
+                                    DeleteObject(hBitmap);
+                                }
+
+                                dataPtr->previewD3DContext->Unmap(dataPtr->previewFrameStaging.get(), 0);
+                            }
+                        }
+                    }
+                }
+            }
+            catch (...)
+            {
+            }
+
+            dataPtr->frameCopyInProgress.store(false, std::memory_order_relaxed);
+        });
+
+        auto session = pData->mediaPlayer.PlaybackSession();
+        pData->positionChangedToken = session.PositionChanged([hDlg, dataPtr](auto const& sender, auto const&)
+        {
+            if (!dataPtr)
+            {
+                return;
+            }
+
+            try
+            {
+                auto pos = sender.Position();
+                dataPtr->currentPosition = pos;
+
+                if (pos >= dataPtr->trimEnd)
+                {
+                    dataPtr->currentPosition = dataPtr->trimStart;
+                    PostMessage(hDlg, WMU_PLAYBACK_STOP, 0, 0);
+                }
+                else
+                {
+                    PostMessage(hDlg, WMU_PLAYBACK_POSITION, 0, 0);
+                }
+            }
+            catch (...)
+            {
+            }
+        });
+
+        pData->stateChangedToken = session.PlaybackStateChanged([hDlg](auto const&, auto const&)
+        {
+            PostMessage(hDlg, WMU_PLAYBACK_POSITION, 0, 0);
+        });
+
+        pData->mediaPlayer.MediaOpened([dataPtr, hDlg](auto const& sender, auto const&)
         {
             if (!dataPtr)
             {
@@ -1474,25 +1933,33 @@ static void StopPlayback(HWND hDlg, VideoRecordingSession::TrimDialogData* pData
             }
             try
             {
-                sender.PlaybackSession().Position(dataPtr->currentPosition);
+                const int64_t clampedTicks = std::clamp<int64_t>(
+                    dataPtr->currentPosition.count(),
+                    dataPtr->trimStart.count(),
+                    dataPtr->trimEnd.count());
+                sender.PlaybackSession().Position(winrt::TimeSpan{ clampedTicks });
                 sender.Play();
             }
-            catch (...) {}
+            catch (...)
+            {
+            }
         });
 
-        pData->mediaPlayer = newPlayer;
         pData->mediaPlayer.Source(mediaSource);
     }
     catch (...)
     {
         pData->isPlaying.store(false, std::memory_order_relaxed);
+        CleanupMediaPlayer(pData);
         if (newPlayer)
         {
             try
             {
                 newPlayer.Close();
             }
-            catch (...) {}
+            catch (...)
+            {
+            }
         }
         RefreshPlaybackButtons(hDlg);
         co_return;
@@ -1501,19 +1968,12 @@ static void StopPlayback(HWND hDlg, VideoRecordingSession::TrimDialogData* pData
     if (!SetTimer(hDlg, kPlaybackTimerId, kPlaybackTimerIntervalMs, nullptr))
     {
         pData->isPlaying.store(false, std::memory_order_relaxed);
-        if (pData->mediaPlayer)
-        {
-            try
-            {
-                pData->mediaPlayer.Close();
-            }
-            catch (...) {}
-            pData->mediaPlayer = nullptr;
-        }
+        CleanupMediaPlayer(pData);
         RefreshPlaybackButtons(hDlg);
         co_return;
     }
 
+    PostMessage(hDlg, WMU_PLAYBACK_POSITION, 0, 0);
     RefreshPlaybackButtons(hDlg);
 }
 
@@ -1533,15 +1993,32 @@ static LRESULT CALLBACK TimelineSubclassProc(
 
     auto restorePreviewIfNeeded = [&]()
     {
-        if (pData->restorePreviewOnRelease && pData->hDialog)
+        if (!pData->restorePreviewOnRelease)
+        {
+            pData->previewOverrideActive = false;
+            pData->playheadPushed = false;
+            return;
+        }
+
+        if (pData->playheadPushed)
+        {
+            // Keep pushed playhead; just clear override flags
+            pData->previewOverrideActive = false;
+            pData->restorePreviewOnRelease = false;
+            pData->playheadPushed = false;
+            return;
+        }
+
+        if (pData->hDialog)
         {
             const int64_t restoredTicks = std::clamp<int64_t>(
                 pData->positionBeforeOverride.count(),
-                0,
-                pData->videoDuration.count());
+                pData->trimStart.count(),
+                pData->trimEnd.count());
             pData->currentPosition = winrt::TimeSpan{ restoredTicks };
             pData->previewOverrideActive = false;
             pData->restorePreviewOnRelease = false;
+            pData->playheadPushed = false;
             UpdateVideoPreview(pData->hDialog, pData);
         }
     };
@@ -1554,7 +2031,8 @@ static LRESULT CALLBACK TimelineSubclassProc(
 
     case WM_LBUTTONDOWN:
     {
-        StopPlayback(pData->hDialog, pData);
+        // Pause without recapturing position; we might be parked on a handle
+        StopPlayback(pData->hDialog, pData, false);
 
         RECT rcClient{};
         GetClientRect(hWnd, &rcClient);
@@ -1565,7 +2043,14 @@ static LRESULT CALLBACK TimelineSubclassProc(
         }
 
         const int x = GET_X_LPARAM(lParam);
+        const int y = GET_Y_LPARAM(lParam);
         const int clampedX = std::clamp(x, 0, width);
+        const int trackTop = kTimelineTrackTopOffset;
+        const int trackBottom = trackTop + kTimelineTrackHeight;
+        const int knobTop = trackBottom + 10; // aligns with knob ellipse band
+        const int knobBottom = trackBottom + 26;
+        const bool inKnobBand = (y >= knobTop && y <= knobBottom);
+
         const int startX = TimelineTimeToClientX(pData, pData->trimStart, width);
         const int posX = TimelineTimeToClientX(pData, pData->currentPosition, width);
         const int endX = TimelineTimeToClientX(pData, pData->trimEnd, width);
@@ -1574,22 +2059,28 @@ static LRESULT CALLBACK TimelineSubclassProc(
         pData->previewOverrideActive = false;
         pData->restorePreviewOnRelease = false;
 
-        if (abs(clampedX - posX) <= kTimelineHandleHitRadius)
+        // If grabbing the knob band, prefer the playhead even if it overlaps a grip
+        if (inKnobBand && abs(clampedX - posX) <= kTimelineHandleHitRadius)
         {
             pData->dragMode = VideoRecordingSession::TrimDialogData::Position;
         }
-        else if (abs(clampedX - startX) < kTimelineHandleHitRadius)
+        else if (abs(clampedX - startX) <= kTimelineHandleHitRadius)
         {
             pData->dragMode = VideoRecordingSession::TrimDialogData::TrimStart;
         }
-        else if (abs(clampedX - endX) < kTimelineHandleHitRadius)
+        else if (abs(clampedX - endX) <= kTimelineHandleHitRadius)
         {
             pData->dragMode = VideoRecordingSession::TrimDialogData::TrimEnd;
+        }
+        else if (abs(clampedX - posX) <= kTimelineHandleHitRadius)
+        {
+            pData->dragMode = VideoRecordingSession::TrimDialogData::Position;
         }
 
         if (pData->dragMode != VideoRecordingSession::TrimDialogData::None)
         {
             pData->isDragging = true;
+            pData->playheadPushed = false;
             if (pData->dragMode == VideoRecordingSession::TrimDialogData::TrimStart ||
                 pData->dragMode == VideoRecordingSession::TrimDialogData::TrimEnd)
             {
@@ -1677,6 +2168,12 @@ static LRESULT CALLBACK TimelineSubclassProc(
                     pData->trimStart = newTime;
                     UpdateDurationDisplay(pData->hDialog, pData);
                 }
+                // Keep playhead inside selection when left grip passes it
+                if (pData->currentPosition.count() < pData->trimStart.count())
+                {
+                    pData->playheadPushed = true;
+                    pData->currentPosition = pData->trimStart;
+                }
                 overrideTime = pData->trimStart;
                 applyOverride = true;
                 requestPreviewUpdate = true;
@@ -1703,6 +2200,12 @@ static LRESULT CALLBACK TimelineSubclassProc(
                 {
                     pData->trimEnd = newTime;
                     UpdateDurationDisplay(pData->hDialog, pData);
+                }
+                // Keep playhead inside selection when right grip passes it
+                if (pData->currentPosition.count() > pData->trimEnd.count())
+                {
+                    pData->playheadPushed = true;
+                    pData->currentPosition = pData->trimEnd;
                 }
                 overrideTime = pData->trimEnd;
                 applyOverride = true;
@@ -1850,7 +2353,7 @@ static void DrawPlaybackButton(
 
     // Draw icons
     Gdiplus::SolidBrush iconBrush(Gdiplus::Color(255, GetRValue(iconColor), GetGValue(iconColor), GetBValue(iconColor)));
-    float iconSize = radius * 2.0f / 3.0f;
+    float iconSize = radius * 0.8f; // slightly larger icons
 
     if (isPlayControl)
     {
@@ -2050,6 +2553,10 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
         pData->hoverSkipStart = false;
         pData->hoverSkipEnd = false;
         pData->isPlaying.store(false, std::memory_order_relaxed);
+        pData->lastRenderedPreview.store(-1, std::memory_order_relaxed);
+
+        // Make OK the default button
+        SendMessage(hDlg, DM_SETDEFID, IDOK, 0);
 
         HWND hTimeline = GetDlgItem(hDlg, IDC_TRIM_TIMELINE);
         SetWindowSubclass(hTimeline, TimelineSubclassProc, 1, reinterpret_cast<DWORD_PTR>(pData));
@@ -2100,18 +2607,19 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
         return TRUE;
     }
 
-    case WM_USER + 1:
+    case WMU_PREVIEW_READY:
     {
         // Video preview loaded - refresh preview area
         pData = reinterpret_cast<TrimDialogData*>(GetWindowLongPtr(hDlg, DWLP_USER));
         if (pData)
         {
+                KillTimer(hDlg, kPlaybackTimerId);
             InvalidateRect(GetDlgItem(hDlg, IDC_TRIM_PREVIEW), nullptr, FALSE);
         }
         return TRUE;
     }
 
-    case WM_USER + 2:
+    case WMU_PREVIEW_SCHEDULED:
     {
         pData = reinterpret_cast<TrimDialogData*>(GetWindowLongPtr(hDlg, DWLP_USER));
         if (pData)
@@ -2121,7 +2629,7 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
         return TRUE;
     }
 
-    case WM_USER + 3:
+    case WMU_DURATION_CHANGED:
     {
         pData = reinterpret_cast<TrimDialogData*>(GetWindowLongPtr(hDlg, DWLP_USER));
         if (pData)
@@ -2131,9 +2639,39 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
                 pData->currentPosition = pData->trimEnd;
             }
             UpdateDurationDisplay(hDlg, pData);
-            SetTimeText(hDlg, IDC_TRIM_POSITION_LABEL, pData->currentPosition, true);
-            InvalidateRect(GetDlgItem(hDlg, IDC_TRIM_TIMELINE), nullptr, FALSE);
+            UpdatePositionUI(hDlg, pData);
         }
+        return TRUE;
+    }
+
+    case WMU_PLAYBACK_POSITION:
+    {
+        pData = reinterpret_cast<TrimDialogData*>(GetWindowLongPtr(hDlg, DWLP_USER));
+        if (pData)
+        {
+            // Always move the playhead smoothly
+            UpdatePositionUI(hDlg, pData);
+
+            // Throttle expensive thumbnail generation while playing
+            const int64_t currentTicks = pData->currentPosition.count();
+            const int64_t lastTicks = pData->lastRenderedPreview.load(std::memory_order_relaxed);
+            if (!pData->loadingPreview.load(std::memory_order_relaxed))
+            {
+                const int64_t delta = (lastTicks < 0) ? kPreviewMinDeltaTicks : std::llabs(currentTicks - lastTicks);
+                if (delta >= kPreviewMinDeltaTicks)
+                {
+                    UpdateVideoPreview(hDlg, pData, false);
+                }
+            }
+        }
+        return TRUE;
+    }
+
+    case WMU_PLAYBACK_STOP:
+    {
+        pData = reinterpret_cast<TrimDialogData*>(GetWindowLongPtr(hDlg, DWLP_USER));
+        StopPlayback(hDlg, pData, false);
+        UpdateVideoPreview(hDlg, pData);
         return TRUE;
     }
 
@@ -2155,6 +2693,8 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
             RECT rcFill = pDIS->rcItem;
             const int controlWidth = rcFill.right - rcFill.left;
             const int controlHeight = rcFill.bottom - rcFill.top;
+
+            std::unique_lock<std::mutex> previewLock(pData->previewBitmapMutex);
 
             // Create memory DC for double buffering to eliminate flicker
             HDC hdcMem = CreateCompatibleDC(pDIS->hDC);
@@ -2245,16 +2785,8 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
         {
             StopPlayback(hDlg, pData);
 
-            // Clean up MediaPlayer
-            if (pData->mediaPlayer)
-            {
-                try
-                {
-                    pData->mediaPlayer.Close();
-                    pData->mediaPlayer = nullptr;
-                }
-                catch (...) {}
-            }
+            // Ensure MediaPlayer and event handlers are fully released
+            CleanupMediaPlayer(pData);
 
             HWND hTimeline = GetDlgItem(hDlg, IDC_TRIM_TIMELINE);
             if (hTimeline)
@@ -2279,6 +2811,7 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
         }
         if (pData && pData->hPreviewBitmap)
         {
+            std::lock_guard<std::mutex> lock(pData->previewBitmapMutex);
             DeleteObject(pData->hPreviewBitmap);
             pData->hPreviewBitmap = nullptr;
         }
@@ -2306,11 +2839,38 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
                 return TRUE;
             }
 
+            if (pData->mediaPlayer)
+            {
+                try
+                {
+                    auto session = pData->mediaPlayer.PlaybackSession();
+                    auto position = session.Position();
+                    pData->currentPosition = position;
+
+                    // Drive the UI immediately for smoother slider motion; preview throttling still happens via WMU_PLAYBACK_POSITION
+                    UpdatePositionUI(hDlg, pData);
+
+                    if (position >= pData->trimEnd)
+                    {
+                        pData->currentPosition = pData->trimStart;
+                        PostMessage(hDlg, WMU_PLAYBACK_STOP, 0, 0);
+                    }
+                    else
+                    {
+                        PostMessage(hDlg, WMU_PLAYBACK_POSITION, 0, 0);
+                    }
+                }
+                catch (...)
+                {
+                }
+                return TRUE;
+            }
+
             const int64_t nextTicks = pData->currentPosition.count() + kPlaybackStepTicks;
             if (nextTicks >= pData->trimEnd.count())
             {
                 pData->currentPosition = pData->trimStart;
-                StopPlayback(hDlg, pData);
+                StopPlayback(hDlg, pData, false);
                 UpdateVideoPreview(hDlg, pData);
             }
             else
@@ -2320,7 +2880,9 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
             }
             return TRUE;
         }
-        break;    case WM_COMMAND:
+        break;
+
+    case WM_COMMAND:
         switch (LOWORD(wParam))
         {
         case IDC_TRIM_REWIND:
