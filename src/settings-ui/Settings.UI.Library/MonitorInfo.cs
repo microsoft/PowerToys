@@ -9,12 +9,12 @@ using System.Linq;
 using System.Text.Json.Serialization;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using PowerDisplay.Common.Drivers;
-using PowerDisplay.Common.Interfaces;
+using PowerDisplay.Common.Models;
 using PowerDisplay.Common.Utils;
 
 namespace Microsoft.PowerToys.Settings.UI.Library
 {
-    public class MonitorInfo : Observable, IMonitorData
+    public class MonitorInfo : Observable
     {
         private string _name = string.Empty;
         private string _id = string.Empty;
@@ -31,7 +31,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         private string _capabilitiesRaw = string.Empty;
         private List<VcpCodeDisplayInfo> _vcpCodesFormatted = new List<VcpCodeDisplayInfo>();
         private int _monitorNumber;
-        private int _orientation;
         private int _totalMonitorCount;
 
         // Feature support status (determined from capabilities)
@@ -55,7 +54,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             _availableColorPresetsCache = null;
             _colorPresetsForDisplayCache = null;
             _lastColorTemperatureVcpForCache = -1;
-            OnPropertyChanged(nameof(AvailableColorPresets));
             OnPropertyChanged(nameof(ColorPresetsForDisplay));
         }
 
@@ -109,7 +107,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 if (_totalMonitorCount != value)
                 {
                     _totalMonitorCount = value;
-                    OnPropertyChanged();
                     OnPropertyChanged(nameof(DisplayName));
                 }
             }
@@ -134,9 +131,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
-        public string MonitorIconGlyph => CommunicationMethod.Contains("WMI", StringComparison.OrdinalIgnoreCase) == true
-    ? "\uE7F8" // Laptop icon for WMI
-    : "\uE7F4"; // External monitor icon for DDC/CI and others
+        public string MonitorIconGlyph => CommunicationMethod.Contains("WMI", StringComparison.OrdinalIgnoreCase)
+            ? "\uE7F8" // Laptop icon for WMI
+            : "\uE7F4"; // External monitor icon for DDC/CI and others
 
         [JsonPropertyName("id")]
         public string Id
@@ -417,7 +414,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 {
                     _supportsColorTemperature = value;
                     OnPropertyChanged();
-                    InvalidateColorPresetCache(); // Notifies AvailableColorPresets and ColorPresetsForDisplay
+                    InvalidateColorPresetCache(); // Notifies ColorPresetsForDisplay
                 }
             }
         }
@@ -454,8 +451,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         /// Gets available color temperature presets computed from VcpCodesFormatted (VCP code 0x14).
         /// This is a computed property that parses the VCP capabilities data on-demand.
         /// </summary>
-        [JsonIgnore]
-        public ObservableCollection<ColorPresetItem> AvailableColorPresets
+        private ObservableCollection<ColorPresetItem> AvailableColorPresets
         {
             get
             {
@@ -645,80 +641,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             SupportsVolume = other.SupportsVolume;
             SupportsInputSource = other.SupportsInputSource;
             MonitorNumber = other.MonitorNumber;
-        }
-
-        /// <inheritdoc />
-        string IMonitorData.Id
-        {
-            get => Id;
-            set => Id = value;
-        }
-
-        /// <inheritdoc />
-        int IMonitorData.Brightness
-        {
-            get => CurrentBrightness;
-            set => CurrentBrightness = value;
-        }
-
-        /// <inheritdoc />
-        int IMonitorData.Contrast
-        {
-            get => Contrast;
-            set => Contrast = value;
-        }
-
-        /// <inheritdoc />
-        int IMonitorData.Volume
-        {
-            get => Volume;
-            set => Volume = value;
-        }
-
-        /// <inheritdoc />
-        int IMonitorData.ColorTemperatureVcp
-        {
-            get => ColorTemperatureVcp;
-            set => ColorTemperatureVcp = value;
-        }
-
-        /// <inheritdoc />
-        int IMonitorData.MonitorNumber
-        {
-            get => _monitorNumber;
-            set => _monitorNumber = value;
-        }
-
-        /// <inheritdoc />
-        int IMonitorData.Orientation
-        {
-            get => _orientation;
-            set => _orientation = value;
-        }
-
-        /// <summary>
-        /// Type alias for ColorPresetItem to maintain backward compatibility with XAML bindings.
-        /// Inherits from PowerDisplay.Common.Models.ColorPresetItem.
-        /// </summary>
-        public class ColorPresetItem : PowerDisplay.Common.Models.ColorPresetItem
-        {
-            /// <summary>
-            /// Initializes a new instance of the <see cref="ColorPresetItem"/> class.
-            /// </summary>
-            public ColorPresetItem()
-                : base()
-            {
-            }
-
-            /// <summary>
-            /// Initializes a new instance of the <see cref="ColorPresetItem"/> class.
-            /// </summary>
-            /// <param name="vcpValue">The VCP value for the color temperature preset.</param>
-            /// <param name="displayName">The display name for UI.</param>
-            public ColorPresetItem(int vcpValue, string displayName)
-                : base(vcpValue, displayName)
-            {
-            }
         }
     }
 }

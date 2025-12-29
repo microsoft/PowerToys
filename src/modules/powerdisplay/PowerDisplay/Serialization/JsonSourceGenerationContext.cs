@@ -16,7 +16,6 @@ namespace PowerDisplay.Serialization
     /// Note: MonitorStateFile and MonitorStateEntry are now in PowerDisplay.Lib
     /// and should be serialized using ProfileSerializationContext from the Lib.
     /// </summary>
-    [JsonSerializable(typeof(MonitorInfoData))]
     [JsonSerializable(typeof(IPCMessageAction))]
     [JsonSerializable(typeof(PowerDisplaySettings))]
     [JsonSerializable(typeof(ColorTemperatureOperation))]

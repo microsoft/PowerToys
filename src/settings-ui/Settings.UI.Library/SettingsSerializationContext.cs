@@ -141,7 +141,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     [JsonSerializable(typeof(ImageResizerCustomSizeProperty))]
     [JsonSerializable(typeof(KeyboardKeysProperty))]
     [JsonSerializable(typeof(MonitorInfo))]
-    [JsonSerializable(typeof(MonitorInfoData))]
     [JsonSerializable(typeof(PowerDisplayActionMessage))]
     [JsonSerializable(typeof(PowerDisplayActionMessage.ActionData))]
     [JsonSerializable(typeof(PowerDisplayActionMessage.PowerDisplayAction))]
