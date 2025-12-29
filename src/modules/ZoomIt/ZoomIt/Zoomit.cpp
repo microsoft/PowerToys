@@ -71,6 +71,10 @@ COLORREF	g_CustomColors[16];
 #define DEMOTYPE_RESET_HOTKEY    11
 #define RECORD_GIF_HOTKEY        12
 #define RECORD_GIF_WINDOW_HOTKEY 13
+#define SAVE_IMAGE_HOTKEY        14
+#define SAVE_CROP_HOTKEY         15
+#define COPY_IMAGE_HOTKEY        16
+#define COPY_CROP_HOTKEY         17
 
 #define ZOOM_PAGE	  0
 #define LIVE_PAGE	  1
@@ -1982,6 +1986,10 @@ void UnregisterAllHotkeys( HWND hWnd )
     UnregisterHotKey( hWnd, DEMOTYPE_RESET_HOTKEY );
     UnregisterHotKey( hWnd, RECORD_GIF_HOTKEY );
     UnregisterHotKey( hWnd, RECORD_GIF_WINDOW_HOTKEY );
+    UnregisterHotKey( hWnd, SAVE_IMAGE_HOTKEY );
+    UnregisterHotKey( hWnd, SAVE_CROP_HOTKEY );
+    UnregisterHotKey( hWnd, COPY_IMAGE_HOTKEY );
+    UnregisterHotKey( hWnd, COPY_CROP_HOTKEY );
 }
 
 //----------------------------------------------------------------------------
@@ -2014,6 +2022,12 @@ void RegisterAllHotkeys(HWND hWnd)
     // Register CTRL+8 for GIF recording and CTRL+ALT+8 for GIF window recording
     RegisterHotKey(hWnd, RECORD_GIF_HOTKEY, MOD_CONTROL | MOD_NOREPEAT, 568 && 0xFF);
     RegisterHotKey(hWnd, RECORD_GIF_WINDOW_HOTKEY, MOD_CONTROL | MOD_ALT | MOD_NOREPEAT, 568 && 0xFF);
+
+    // Fixed bindings for save/copy hotkeys
+    RegisterHotKey(hWnd, SAVE_IMAGE_HOTKEY, MOD_CONTROL | MOD_NOREPEAT, 'S');
+    RegisterHotKey(hWnd, SAVE_CROP_HOTKEY, MOD_CONTROL | MOD_SHIFT | MOD_NOREPEAT, 'S');
+    RegisterHotKey(hWnd, COPY_IMAGE_HOTKEY, MOD_CONTROL | MOD_NOREPEAT, 'C');
+    RegisterHotKey(hWnd, COPY_CROP_HOTKEY, MOD_CONTROL | MOD_SHIFT | MOD_NOREPEAT, 'C');
 }
 
 
@@ -4403,6 +4417,22 @@ LRESULT APIENTRY MainWndProc(
             }
             break;
         }
+
+        case SAVE_IMAGE_HOTKEY:
+            SendMessage(hWnd, WM_COMMAND, IDC_SAVE, 0);
+            break;
+
+        case SAVE_CROP_HOTKEY:
+            SendMessage(hWnd, WM_COMMAND, IDC_SAVE_CROP, 0);
+            break;
+
+        case COPY_IMAGE_HOTKEY:
+            SendMessage(hWnd, WM_COMMAND, IDC_COPY, 0);
+            break;
+
+        case COPY_CROP_HOTKEY:
+            SendMessage(hWnd, WM_COMMAND, IDC_COPY_CROP, 0);
+            break;
 
         case BREAK_HOTKEY:
             //
