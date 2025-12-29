@@ -17,8 +17,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     public class MonitorInfo : Observable, IMonitorData
     {
         private string _name = string.Empty;
-        private string _internalName = string.Empty;
-        private string _hardwareId = string.Empty;
+        private string _id = string.Empty;
         private string _communicationMethod = string.Empty;
         private int _currentBrightness;
         private int _colorTemperatureVcp = 0x05; // Default to 6500K preset (VCP 0x14 value)
@@ -30,7 +29,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         private bool _enableInputSource;
         private bool _enableRotation;
         private string _capabilitiesRaw = string.Empty;
-        private List<string> _vcpCodes = new List<string>();
         private List<VcpCodeDisplayInfo> _vcpCodesFormatted = new List<VcpCodeDisplayInfo>();
         private int _monitorNumber;
         private int _orientation;
@@ -140,15 +138,15 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     ? "\uE7F8" // Laptop icon for WMI
     : "\uE7F4"; // External monitor icon for DDC/CI and others
 
-        [JsonPropertyName("internalName")]
-        public string InternalName
+        [JsonPropertyName("id")]
+        public string Id
         {
-            get => _internalName;
+            get => _id;
             set
             {
-                if (_internalName != value)
+                if (_id != value)
                 {
-                    _internalName = value;
+                    _id = value;
                     OnPropertyChanged();
                 }
             }
@@ -163,20 +161,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 if (_communicationMethod != value)
                 {
                     _communicationMethod = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
-
-        [JsonPropertyName("hardwareId")]
-        public string HardwareId
-        {
-            get => _hardwareId;
-            set
-            {
-                if (_hardwareId != value)
-                {
-                    _hardwareId = value;
                     OnPropertyChanged();
                 }
             }
@@ -330,20 +314,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                     _capabilitiesRaw = value ?? string.Empty;
                     OnPropertyChanged();
                     OnPropertyChanged(nameof(HasCapabilities));
-                }
-            }
-        }
-
-        [JsonPropertyName("vcpCodes")]
-        public List<string> VcpCodes
-        {
-            get => _vcpCodes;
-            set
-            {
-                if (_vcpCodes != value)
-                {
-                    _vcpCodes = value ?? new List<string>();
-                    OnPropertyChanged();
                 }
             }
         }
@@ -620,7 +590,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
             var lines = new List<string>();
             lines.Add($"VCP Capabilities for: {_name}");
-            lines.Add($"Hardware ID: {_hardwareId}");
+            lines.Add($"Monitor ID: {_id}");
             lines.Add(string.Empty);
             lines.Add("Detected VCP Codes:");
             lines.Add(new string('-', 50));
@@ -656,8 +626,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
             // Update all properties that can change
             Name = other.Name;
-            InternalName = other.InternalName;
-            HardwareId = other.HardwareId;
+            Id = other.Id;
             CommunicationMethod = other.CommunicationMethod;
             CurrentBrightness = other.CurrentBrightness;
             Contrast = other.Contrast;
@@ -669,7 +638,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             EnableInputSource = other.EnableInputSource;
             EnableRotation = other.EnableRotation;
             CapabilitiesRaw = other.CapabilitiesRaw;
-            VcpCodes = other.VcpCodes;
             VcpCodesFormatted = other.VcpCodesFormatted;
             SupportsBrightness = other.SupportsBrightness;
             SupportsContrast = other.SupportsContrast;
@@ -682,8 +650,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         /// <inheritdoc />
         string IMonitorData.Id
         {
-            get => InternalName;
-            set => InternalName = value;
+            get => Id;
+            set => Id = value;
         }
 
         /// <inheritdoc />

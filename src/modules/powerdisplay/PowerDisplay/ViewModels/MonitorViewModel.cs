@@ -247,8 +247,6 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
 
     public string Id => _monitor.Id;
 
-    public string InternalName => _monitor.Id;
-
     public string Name => _monitor.Name;
 
     /// <summary>

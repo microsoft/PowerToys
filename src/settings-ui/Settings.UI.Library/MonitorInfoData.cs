@@ -15,11 +15,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("name")]
         public string Name { get; set; } = string.Empty;
 
-        [JsonPropertyName("internalName")]
-        public string InternalName { get; set; } = string.Empty;
-
-        [JsonPropertyName("hardwareId")]
-        public string HardwareId { get; set; } = string.Empty;
+        [JsonPropertyName("id")]
+        public string Id { get; set; } = string.Empty;
 
         [JsonPropertyName("communicationMethod")]
         public string CommunicationMethod { get; set; } = string.Empty;
@@ -32,9 +29,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         [JsonPropertyName("capabilitiesRaw")]
         public string CapabilitiesRaw { get; set; } = string.Empty;
-
-        [JsonPropertyName("vcpCodes")]
-        public List<string> VcpCodes { get; set; } = new List<string>();
 
         [JsonPropertyName("vcpCodesFormatted")]
         public List<VcpCodeDisplayInfo> VcpCodesFormatted { get; set; } = new List<VcpCodeDisplayInfo>();

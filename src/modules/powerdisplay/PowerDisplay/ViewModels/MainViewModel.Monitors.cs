@@ -161,5 +161,5 @@ public partial class MainViewModel
         => new HashSet<string>(
             settings.Properties.Monitors
                 .Where(m => m.IsHidden)
-                .Select(m => m.InternalName));
+                .Select(m => m.Id));
 }

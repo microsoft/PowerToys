@@ -164,7 +164,7 @@ namespace PowerDisplay.Common.Services
                 {
                     foreach (var kvp in stateFile.Monitors)
                     {
-                        var monitorKey = kvp.Key; // Should be HardwareId (e.g., "GSM5C6D")
+                        var monitorKey = kvp.Key; // Should be MonitorId (e.g., "GSM5C6D")
                         var entry = kvp.Value;
 
                         _states[monitorKey] = new MonitorState

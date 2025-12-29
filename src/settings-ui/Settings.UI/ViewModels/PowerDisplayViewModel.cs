@@ -52,16 +52,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             InitializeEnabledValue();
 
             // Initialize monitors collection using property setter for proper subscription setup
-            // Parse capabilities for each loaded monitor to ensure UI displays correctly
             var loadedMonitors = _settings.Properties.Monitors;
 
             Logger.LogInfo($"[Constructor] Initializing with {loadedMonitors.Count} monitors from settings");
-
-            foreach (var monitor in loadedMonitors)
-            {
-                // Parse capabilities to determine feature support
-                ParseFeatureSupportFromCapabilities(monitor);
-            }
 
             Monitors = new ObservableCollection<MonitorInfo>(loadedMonitors);
 
@@ -255,16 +248,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
 
             // Create a lookup of existing monitors to preserve user settings
-            var existingMonitors = _monitors.ToDictionary(m => GetMonitorKey(m), m => m);
+            var existingMonitors = _monitors.ToDictionary(m => m.Id, m => m);
 
             // Create new collection with merged settings
             var newCollection = new ObservableCollection<MonitorInfo>();
             foreach (var newMonitor in monitors)
             {
-                var monitorKey = GetMonitorKey(newMonitor);
-
-                // Parse capabilities to determine feature support
-                ParseFeatureSupportFromCapabilities(newMonitor);
+                var monitorKey = newMonitor.Id;
 
                 // Check if we have an existing monitor with the same key
                 if (existingMonitors.TryGetValue(monitorKey, out var existingMonitor))
@@ -281,47 +271,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             // Replace collection - property setter handles subscription management
             Monitors = newCollection;
-        }
-
-        /// <summary>
-        /// Generate a unique key for monitor matching based on hardware ID and internal name.
-        /// Uses shared MonitorMatchingHelper from PowerDisplay.Lib for consistency.
-        /// </summary>
-        private static string GetMonitorKey(MonitorInfo monitor)
-        {
-            // Use shared helper for consistent monitor matching logic
-            return MonitorMatchingHelper.GetMonitorKey(monitor);
-        }
-
-        /// <summary>
-        /// Parse feature support from capabilities VcpCodes list
-        /// Sets support flags based on VCP code presence
-        /// Uses shared MonitorFeatureHelper from PowerDisplay.Lib for consistency
-        /// </summary>
-        private static void ParseFeatureSupportFromCapabilities(MonitorInfo monitor)
-        {
-            if (monitor == null)
-            {
-                return;
-            }
-
-            // Use shared helper to parse feature support
-            var result = PowerDisplay.Common.Utils.MonitorFeatureHelper.ParseFeatureSupport(
-                monitor.VcpCodes,
-                monitor.CapabilitiesRaw);
-
-            monitor.SupportsBrightness = result.SupportsBrightness;
-            monitor.SupportsContrast = result.SupportsContrast;
-            monitor.SupportsColorTemperature = result.SupportsColorTemperature;
-            monitor.SupportsVolume = result.SupportsVolume;
-            monitor.SupportsInputSource = result.SupportsInputSource;
-
-            // WMI monitors always support brightness control, even without DDC/CI capabilities
-            // They control brightness through the Windows WMI interface
-            if (string.Equals(monitor.CommunicationMethod, "WMI", StringComparison.OrdinalIgnoreCase))
-            {
-                monitor.SupportsBrightness = true;
-            }
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA1816:Dispose methods should call SuppressFinalize", Justification = "Base class PageViewModelBase.Dispose() handles GC.SuppressFinalize")]
@@ -486,12 +435,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
                 Logger.LogInfo($"[ReloadMonitors] Loaded {updatedMonitors.Count} monitors from settings");
 
-                // Parse capabilities for each monitor
-                foreach (var monitor in updatedMonitors)
-                {
-                    ParseFeatureSupportFromCapabilities(monitor);
-                }
-
                 // Update existing MonitorInfo objects instead of replacing the collection
                 // This preserves XAML x:Bind bindings which reference specific object instances
                 if (Monitors == null)
@@ -501,22 +444,22 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 }
                 else
                 {
-                    // Create a dictionary for quick lookup by InternalName
-                    var updatedMonitorsDict = updatedMonitors.ToDictionary(m => m.InternalName, m => m);
+                    // Create a dictionary for quick lookup by Id
+                    var updatedMonitorsDict = updatedMonitors.ToDictionary(m => m.Id, m => m);
 
                     // Update existing monitors or remove ones that no longer exist
                     for (int i = Monitors.Count - 1; i >= 0; i--)
                     {
                         var existingMonitor = Monitors[i];
-                        if (updatedMonitorsDict.TryGetValue(existingMonitor.InternalName, out var updatedMonitor)
+                        if (updatedMonitorsDict.TryGetValue(existingMonitor.Id, out var updatedMonitor)
                             && updatedMonitor != null)
                         {
                             // Monitor still exists - update its properties in place
-                            Logger.LogInfo($"[ReloadMonitors] Updating existing monitor: {existingMonitor.InternalName}");
+                            Logger.LogInfo($"[ReloadMonitors] Updating existing monitor: {existingMonitor.Id}");
 
                             // Preserve local ColorTemperatureVcp if there's a pending operation for this monitor
                             // This prevents race condition where PowerDisplay's stale data overwrites user's selection
-                            if (existingMonitor.InternalName == pendingColorTempMonitorId && pendingColorTempValue > 0)
+                            if (existingMonitor.Id == pendingColorTempMonitorId && pendingColorTempValue > 0)
                             {
                                 var preservedColorTemp = existingMonitor.ColorTemperatureVcp;
                                 existingMonitor.UpdateFrom(updatedMonitor);
@@ -528,12 +471,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                                 existingMonitor.UpdateFrom(updatedMonitor);
                             }
 
-                            updatedMonitorsDict.Remove(existingMonitor.InternalName);
+                            updatedMonitorsDict.Remove(existingMonitor.Id);
                         }
                         else
                         {
                             // Monitor no longer exists - remove from collection
-                            Logger.LogInfo($"[ReloadMonitors] Removing monitor: {existingMonitor.InternalName}");
+                            Logger.LogInfo($"[ReloadMonitors] Removing monitor: {existingMonitor.Id}");
                             Monitors.RemoveAt(i);
                         }
                     }
@@ -541,7 +484,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     // Add any new monitors that weren't in the existing collection
                     foreach (var newMonitor in updatedMonitorsDict.Values)
                     {
-                        Logger.LogInfo($"[ReloadMonitors] Adding new monitor: {newMonitor.InternalName}");
+                        Logger.LogInfo($"[ReloadMonitors] Adding new monitor: {newMonitor.Id}");
                         Monitors.Add(newMonitor);
                     }
                 }

@@ -137,7 +137,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             {
                 // User confirmed: update property and apply to hardware
                 monitor.ColorTemperatureVcp = newItem.VcpValue;
-                ViewModel.ApplyColorTemperatureToMonitor(monitor.InternalName, newItem.VcpValue);
+                ViewModel.ApplyColorTemperatureToMonitor(monitor.Id, newItem.VcpValue);
             }
             else
             {

@@ -52,29 +52,29 @@ public static class PnpIdHelper
     }.ToFrozenDictionary(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>
-    /// Extract the 3-character PnP manufacturer ID from a hardware ID.
+    /// Extract the 3-character PnP manufacturer ID from an EDID ID.
     /// </summary>
-    /// <param name="hardwareId">Hardware ID like "LEN4038" or "BOE0900".</param>
+    /// <param name="edidId">EDID ID like "LEN4038" or "BOE0900".</param>
     /// <returns>The 3-character PnP ID (e.g., "LEN"), or null if invalid.</returns>
-    public static string? ExtractPnpId(string? hardwareId)
+    public static string? ExtractPnpId(string? edidId)
     {
-        if (string.IsNullOrEmpty(hardwareId) || hardwareId.Length < 3)
+        if (string.IsNullOrEmpty(edidId) || edidId.Length < 3)
         {
             return null;
         }
 
         // PnP ID is the first 3 characters
-        return hardwareId.Substring(0, 3).ToUpperInvariant();
+        return edidId.Substring(0, 3).ToUpperInvariant();
     }
 
     /// <summary>
-    /// Get a user-friendly display name for an internal display based on its hardware ID.
+    /// Get a user-friendly display name for an internal display based on its EDID ID.
     /// </summary>
-    /// <param name="hardwareId">Hardware ID like "LEN4038" or "BOE0900".</param>
+    /// <param name="edidId">EDID ID like "LEN4038" or "BOE0900".</param>
     /// <returns>Display name like "Lenovo Built-in Display" or "Built-in Display" as fallback.</returns>
-    public static string GetBuiltInDisplayName(string? hardwareId)
+    public static string GetBuiltInDisplayName(string? edidId)
     {
-        var pnpId = ExtractPnpId(hardwareId);
+        var pnpId = ExtractPnpId(edidId);
 
         if (pnpId != null && ManufacturerNames.TryGetValue(pnpId, out var manufacturer))
         {

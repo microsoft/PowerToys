@@ -118,7 +118,7 @@ public partial class MainViewModel
 
                 // Update the monitor's ColorTemperatureVcp in settings to match the applied value
                 // This ensures Settings UI gets the correct value when it reloads from file
-                var settingsMonitor = settings.Properties.Monitors.FirstOrDefault(m => m.InternalName == pendingOp.MonitorId);
+                var settingsMonitor = settings.Properties.Monitors.FirstOrDefault(m => m.Id == pendingOp.MonitorId);
                 if (settingsMonitor != null)
                 {
                     settingsMonitor.ColorTemperatureVcp = pendingOp.ColorTemperatureVcp;
@@ -372,7 +372,7 @@ public partial class MainViewModel
     private void ApplyFeatureVisibility(MonitorViewModel monitorVm, PowerDisplaySettings settings)
     {
         var monitorSettings = settings.Properties.Monitors.FirstOrDefault(m =>
-            m.InternalName == monitorVm.InternalName);
+            m.Id == monitorVm.Id);
 
         if (monitorSettings != null)
         {
@@ -412,9 +412,9 @@ public partial class MainViewModel
             // Load current settings to preserve user preferences (including IsHidden)
             var settings = _settingsUtils.GetSettingsOrDefault<PowerDisplaySettings>(PowerDisplaySettings.ModuleName);
 
-            // Create lookup of existing monitors by InternalName to preserve settings
+            // Create lookup of existing monitors by Id to preserve settings
             var existingMonitorSettings = settings.Properties.Monitors
-                .ToDictionary(m => m.InternalName, m => m);
+                .ToDictionary(m => m.Id, m => m);
 
             // Build monitor list using Settings UI's MonitorInfo model
             var monitors = new List<Microsoft.PowerToys.Settings.UI.Library.MonitorInfo>();
@@ -430,7 +430,7 @@ public partial class MainViewModel
             foreach (var existingMonitor in settings.Properties.Monitors.Where(m => m.IsHidden))
             {
                 // Only add if not already in the list (to avoid duplicates)
-                if (!monitors.Any(m => m.InternalName == existingMonitor.InternalName))
+                if (!monitors.Any(m => m.Id == existingMonitor.Id))
                 {
                     monitors.Add(existingMonitor);
                 }
@@ -461,12 +461,11 @@ public partial class MainViewModel
         var monitorInfo = new Microsoft.PowerToys.Settings.UI.Library.MonitorInfo
         {
             Name = vm.Name,
-            InternalName = vm.Id,
+            Id = vm.Id,
             CommunicationMethod = vm.CommunicationMethod,
             CurrentBrightness = vm.Brightness,
             ColorTemperatureVcp = vm.ColorTemperature,
             CapabilitiesRaw = vm.CapabilitiesRaw,
-            VcpCodes = vm.VcpCapabilitiesInfo?.GetVcpCodesAsHexStrings() ?? new List<string>(),
             VcpCodesFormatted = vm.VcpCapabilitiesInfo?.GetSortedVcpCodes()
                 .Select(info => FormatVcpCodeForDisplay(info.Code, info))
                 .ToList() ?? new List<Microsoft.PowerToys.Settings.UI.Library.VcpCodeDisplayInfo>(),
@@ -492,7 +491,7 @@ public partial class MainViewModel
         Microsoft.PowerToys.Settings.UI.Library.MonitorInfo monitorInfo,
         Dictionary<string, Microsoft.PowerToys.Settings.UI.Library.MonitorInfo> existingSettings)
     {
-        if (existingSettings.TryGetValue(monitorInfo.InternalName, out var existingMonitor))
+        if (existingSettings.TryGetValue(monitorInfo.Id, out var existingMonitor))
         {
             monitorInfo.IsHidden = existingMonitor.IsHidden;
             monitorInfo.EnableContrast = existingMonitor.EnableContrast;

@@ -58,7 +58,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             // Pre-fill monitor settings from existing profile
             foreach (var monitorSetting in profile.MonitorSettings)
             {
-                var monitorItem = ViewModel.Monitors.FirstOrDefault(m => m.Monitor.InternalName == monitorSetting.MonitorId);
+                var monitorItem = ViewModel.Monitors.FirstOrDefault(m => m.Monitor.Id == monitorSetting.MonitorId);
                 if (monitorItem != null)
                 {
                     monitorItem.IsSelected = true;

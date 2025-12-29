@@ -122,7 +122,7 @@
                             <DataTemplate x:DataType="library:MonitorInfo">
                                 <tkcontrols:SettingsExpander
                                     Margin="0,0,0,2"
-                                    Description="{x:Bind InternalName, Mode=OneWay}"
+                                    Description="{x:Bind Id, Mode=OneWay}"
                                     Header="{x:Bind DisplayName, Mode=OneWay}"
                                     IsExpanded="False">
                                     <tkcontrols:SettingsExpander.HeaderIcon>

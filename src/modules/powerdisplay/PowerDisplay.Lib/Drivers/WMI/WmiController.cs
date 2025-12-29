@@ -76,8 +76,8 @@ namespace PowerDisplay.Common.Drivers.WMI
         /// Returns the second segment (e.g., "BOE0900") which is the manufacturer+product code.
         /// </summary>
         /// <param name="instanceName">The WMI InstanceName.</param>
-        /// <returns>The hardware ID extracted from the InstanceName, or empty string if extraction fails.</returns>
-        private static string ExtractHardwareIdFromInstanceName(string instanceName)
+        /// <returns>The EDID ID extracted from the InstanceName, or empty string if extraction fails.</returns>
+        private static string ExtractEdidIdFromInstanceName(string instanceName)
         {
             if (string.IsNullOrEmpty(instanceName))
             {
@@ -109,29 +109,29 @@ namespace PowerDisplay.Common.Drivers.WMI
         }
 
         /// <summary>
-        /// Get MonitorDisplayInfo from dictionary by matching HardwareId.
+        /// Get MonitorDisplayInfo from dictionary by matching EdidId.
         /// Uses QueryDisplayConfig path index which matches Windows Display Settings "Identify" feature.
         /// </summary>
-        /// <param name="hardwareId">The hardware ID to match (e.g., "LEN4038", "BOE0900").</param>
+        /// <param name="edidId">The EDID ID to match (e.g., "LEN4038", "BOE0900").</param>
         /// <param name="monitorDisplayInfos">Dictionary of monitor display info from QueryDisplayConfig.</param>
         /// <returns>MonitorDisplayInfo if found, or null if not found.</returns>
-        private static Drivers.DDC.MonitorDisplayInfo? GetMonitorDisplayInfoByHardwareId(string hardwareId, Dictionary<string, Drivers.DDC.MonitorDisplayInfo> monitorDisplayInfos)
+        private static Drivers.DDC.MonitorDisplayInfo? GetMonitorDisplayInfoByEdidId(string edidId, Dictionary<string, Drivers.DDC.MonitorDisplayInfo> monitorDisplayInfos)
         {
-            if (string.IsNullOrEmpty(hardwareId) || monitorDisplayInfos == null || monitorDisplayInfos.Count == 0)
+            if (string.IsNullOrEmpty(edidId) || monitorDisplayInfos == null || monitorDisplayInfos.Count == 0)
             {
                 return null;
             }
 
             var match = monitorDisplayInfos.Values.FirstOrDefault(
-                v => hardwareId.Equals(v.HardwareId, StringComparison.OrdinalIgnoreCase));
+                v => edidId.Equals(v.EdidId, StringComparison.OrdinalIgnoreCase));
 
-            // Check if match was found (struct default has null/empty HardwareId)
-            if (!string.IsNullOrEmpty(match.HardwareId))
+            // Check if match was found (struct default has null/empty EdidId)
+            if (!string.IsNullOrEmpty(match.EdidId))
             {
                 return match;
             }
 
-            Logger.LogWarning($"WMI: Could not find MonitorDisplayInfo for HardwareId '{hardwareId}'");
+            Logger.LogWarning($"WMI: Could not find MonitorDisplayInfo for EdidId '{edidId}'");
             return null;
         }
 
@@ -276,27 +276,27 @@ namespace PowerDisplay.Common.Drivers.WMI
                             var instanceName = obj.GetPropertyValue<string>("InstanceName") ?? string.Empty;
                             var currentBrightness = obj.GetPropertyValue<byte>("CurrentBrightness");
 
-                            // Extract hardware ID from InstanceName
+                            // Extract EDID ID from InstanceName
                             // e.g., "DISPLAY\LEN4038\4&40f4dee&0&UID8388688_0" -> "LEN4038"
-                            var hardwareId = ExtractHardwareIdFromInstanceName(instanceName);
+                            var edidId = ExtractEdidIdFromInstanceName(instanceName);
 
-                            // Get MonitorDisplayInfo from QueryDisplayConfig by matching hardware ID
+                            // Get MonitorDisplayInfo from QueryDisplayConfig by matching EDID ID
                             // This provides MonitorNumber and GdiDeviceName for display settings APIs
-                            var displayInfo = GetMonitorDisplayInfoByHardwareId(hardwareId, monitorDisplayInfos);
+                            var displayInfo = GetMonitorDisplayInfoByEdidId(edidId, monitorDisplayInfos);
                             int monitorNumber = displayInfo?.MonitorNumber ?? 0;
                             string gdiDeviceName = displayInfo?.GdiDeviceName ?? string.Empty;
 
-                            // Generate unique monitor Id: "WMI_{HardwareId}_{MonitorNumber}"
-                            string monitorId = !string.IsNullOrEmpty(hardwareId)
-                                ? $"WMI_{hardwareId}_{monitorNumber}"
+                            // Generate unique ID: "WMI_{EdidId}_{MonitorNumber}"
+                            string uniqueId = !string.IsNullOrEmpty(edidId)
+                                ? $"WMI_{edidId}_{monitorNumber}"
                                 : $"WMI_Unknown_{monitorNumber}";
 
                             // Get display name from PnP manufacturer ID (e.g., "Lenovo Built-in Display")
-                            var displayName = PnpIdHelper.GetBuiltInDisplayName(hardwareId);
+                            var displayName = PnpIdHelper.GetBuiltInDisplayName(edidId);
 
                             var monitor = new Monitor
                             {
-                                Id = monitorId,
+                                Id = uniqueId,
                                 Name = displayName,
                                 CurrentBrightness = currentBrightness,
                                 MinBrightness = 0,

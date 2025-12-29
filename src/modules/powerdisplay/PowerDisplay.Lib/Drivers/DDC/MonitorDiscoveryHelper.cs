@@ -94,15 +94,15 @@ namespace PowerDisplay.Common.Drivers.DDC
         /// after discovery to avoid slow I2C operations during the discovery phase.
         /// </summary>
         /// <param name="physicalMonitor">Physical monitor structure with handle and description</param>
-        /// <param name="monitorInfo">Display info from QueryDisplayConfig (HardwareId, FriendlyName, MonitorNumber)</param>
+        /// <param name="monitorInfo">Display info from QueryDisplayConfig (EdidId, FriendlyName, MonitorNumber)</param>
         internal Monitor? CreateMonitorFromPhysical(
             PHYSICAL_MONITOR physicalMonitor,
             MonitorDisplayInfo monitorInfo)
         {
             try
             {
-                // Get hardware ID and friendly name directly from MonitorDisplayInfo
-                string edidId = monitorInfo.HardwareId ?? string.Empty;
+                // Get EDID ID and friendly name directly from MonitorDisplayInfo
+                string edidId = monitorInfo.EdidId ?? string.Empty;
                 string name = physicalMonitor.GetDescription() ?? string.Empty;
 
                 // Use FriendlyName from QueryDisplayConfig if available and not generic

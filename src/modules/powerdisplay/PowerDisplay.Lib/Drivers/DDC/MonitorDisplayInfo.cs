@@ -30,9 +30,11 @@ namespace PowerDisplay.Common.Drivers.DDC
         public string FriendlyName { get; set; }
 
         /// <summary>
-        /// Gets or sets the hardware ID derived from EDID manufacturer and product code.
+        /// Gets or sets the EDID ID derived from manufacturer and product code.
+        /// Format: "{ManufacturerCode}{ProductCode}" (e.g., "GSM5C6D", "LEN4038").
+        /// Note: This is NOT unique - same model monitors have the same EdidId.
         /// </summary>
-        public string HardwareId { get; set; }
+        public string EdidId { get; set; }
 
         public LUID AdapterId { get; set; }
 
