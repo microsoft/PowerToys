@@ -14,6 +14,7 @@
 #include <ppltasks.h>
 #include <atomic>
 #include <algorithm>
+#include <chrono>
 #include <mutex>
 #include <vector>
 
@@ -91,6 +92,7 @@ public:
         std::vector<GifFrame> gifFrames;
         bool gifFramesLoaded{ false };
         size_t gifLastFrameIndex{ 0 };
+        std::chrono::steady_clock::time_point gifFrameStartTime{}; // When the current GIF frame started displaying
 
         // Mouse tracking for timeline
         enum DragMode { None, TrimStart, Position, TrimEnd };

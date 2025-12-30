@@ -43,7 +43,9 @@ namespace util
 }
 
 const float CLEAR_COLOR[] = { 0.0f, 0.0f, 0.0f, 1.0f };
-constexpr UINT kGifDefaultDelayCs = 10;       // 100ms when metadata delay is missing
+constexpr UINT kGifDefaultDelayCs = 10;       // 100ms (~10 FPS) when metadata delay is missing
+constexpr UINT kGifMinDelayCs = 2;            // 20ms minimum; browsers treat <2cs as 10cs (100ms)
+constexpr UINT kGifBrowserFixupThreshold = 2; // Delays < this are treated as 10cs by browsers
 constexpr UINT kGifMaxPreviewDimension = 1280; // cap decoded GIF preview size to keep playback smooth
 
 int32_t EnsureEven(int32_t value)
@@ -277,7 +279,19 @@ static bool LoadGifFrames(const std::wstring& gifPath, VideoRecordingSession::Tr
 
         if (delayCs == 0)
         {
+            // GIF spec: delay of 0 means "as fast as possible"; browsers use ~10ms
             delayCs = kGifDefaultDelayCs;
+        }
+        else if (delayCs < kGifBrowserFixupThreshold)
+        {
+            // Browsers treat delays < 2cs (20ms) as 10cs (100ms) to prevent CPU-hogging GIFs
+            delayCs = kGifDefaultDelayCs;
+        }
+
+        // Log the first few frame delays for debugging
+        if (i < 3)
+        {
+            OutputDebugStringW((L"[GIF Trim] Frame " + std::to_wstring(i) + L" delay: " + std::to_wstring(delayCs) + L" cs (" + std::to_wstring(delayCs * 10) + L" ms)\n").c_str());
         }
 
         // Respect a max preview size to avoid huge allocations on large GIFs
@@ -2167,6 +2181,9 @@ static winrt::fire_and_forget StartPlaybackAsync(HWND hDlg, VideoRecordingSessio
 
     if (pData->isGif)
     {
+        // Initialize the frame start time for proper timing
+        pData->gifFrameStartTime = std::chrono::steady_clock::now();
+        
         if (!SetTimer(hDlg, kPlaybackTimerId, kPlaybackTimerIntervalMs, nullptr))
         {
             pData->isPlaying.store(false, std::memory_order_relaxed);
@@ -3354,6 +3371,20 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
                     pData->trimEnd.count());
                 const size_t frameIndex = FindGifFrameIndex(pData->gifFrames, clampedTicks);
                 const auto& frame = pData->gifFrames[frameIndex];
+                
+                // Check if enough real time has passed to advance to the next frame
+                auto now = std::chrono::steady_clock::now();
+                auto elapsedMs = std::chrono::duration_cast<std::chrono::milliseconds>(now - pData->gifFrameStartTime).count();
+                auto frameDurationMs = frame.duration.count() / 10'000; // Convert 100-ns ticks to ms
+                
+                if (elapsedMs < frameDurationMs)
+                {
+                    // Not time to advance yet, just update the UI position
+                    UpdatePositionUI(hDlg, pData);
+                    return TRUE;
+                }
+                
+                // Time to advance to next frame
                 const int64_t nextTicks = frame.start.count() + frame.duration.count();
 
                 if (nextTicks >= pData->trimEnd.count())
@@ -3365,6 +3396,7 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
                 else
                 {
                     pData->currentPosition = winrt::TimeSpan{ nextTicks };
+                    pData->gifFrameStartTime = now; // Reset timer for new frame
                     UpdateVideoPreview(hDlg, pData);
                 }
                 return TRUE;

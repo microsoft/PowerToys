@@ -3553,11 +3553,11 @@ auto GetUniqueRecordingFilename()
 
     if (g_RecordingFormat == RecordingFormat::GIF)
     {
-        path = g_RecordingSaveLocationGIF;
+        path = g_RecordingSaveLocationGIF.empty() ? DEFAULT_GIF_RECORDING_FILE : g_RecordingSaveLocationGIF;
     }
     else
     {
-        path = g_RecordingSaveLocation;
+        path = g_RecordingSaveLocation.empty() ? DEFAULT_RECORDING_FILE : g_RecordingSaveLocation;
     }
 
     // Chop off index if it's there
