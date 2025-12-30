@@ -12,6 +12,10 @@
 #include <winrt/Windows.Graphics.Imaging.h>
 #include <winrt/Windows.Media.h>
 #include <cstdlib>
+#include <filesystem>
+#include <shlwapi.h>   // For SHCreateStreamOnFileEx
+
+#pragma comment(lib, "shlwapi.lib")
 
 extern DWORD g_RecordScaling;
 
@@ -39,6 +43,8 @@ namespace util
 }
 
 const float CLEAR_COLOR[] = { 0.0f, 0.0f, 0.0f, 1.0f };
+constexpr UINT kGifDefaultDelayCs = 10;       // 100ms when metadata delay is missing
+constexpr UINT kGifMaxPreviewDimension = 1280; // cap decoded GIF preview size to keep playback smooth
 
 int32_t EnsureEven(int32_t value)
 {
@@ -49,6 +55,355 @@ int32_t EnsureEven(int32_t value)
     else
     {
         return value + 1;
+    }
+}
+
+static bool IsGifPath(const std::wstring& path)
+{
+    try
+    {
+        auto ext = std::filesystem::path(path).extension().wstring();
+        return _wcsicmp(ext.c_str(), L".gif") == 0;
+    }
+    catch (...)
+    {
+        return false;
+    }
+}
+
+static void CleanupGifFrames(VideoRecordingSession::TrimDialogData* pData)
+{
+    if (!pData)
+    {
+        return;
+    }
+
+    for (auto& frame : pData->gifFrames)
+    {
+        if (frame.hBitmap)
+        {
+            DeleteObject(frame.hBitmap);
+            frame.hBitmap = nullptr;
+        }
+    }
+    pData->gifFrames.clear();
+}
+
+static size_t FindGifFrameIndex(const std::vector<VideoRecordingSession::TrimDialogData::GifFrame>& frames, int64_t ticks)
+{
+    if (frames.empty())
+    {
+        return 0;
+    }
+
+    // Linear scan is fine for typical GIF counts; keeps logic simple and predictable
+    for (size_t i = 0; i < frames.size(); ++i)
+    {
+        const auto start = frames[i].start.count();
+        const auto end = start + frames[i].duration.count();
+        if (ticks >= start && ticks < end)
+        {
+            return i;
+        }
+    }
+
+    // If we fall through, clamp to last frame
+    return frames.size() - 1;
+}
+
+static bool LoadGifFrames(const std::wstring& gifPath, VideoRecordingSession::TrimDialogData* pData)
+{
+    OutputDebugStringW((L"[GIF Trim] LoadGifFrames called for: " + gifPath + L"\n").c_str());
+    
+    if (!pData)
+    {
+        OutputDebugStringW(L"[GIF Trim] pData is null\n");
+        return false;
+    }
+
+    try
+    {
+        CleanupGifFrames(pData);
+
+        winrt::com_ptr<IWICImagingFactory> factory;
+        HRESULT hrFactory = CoCreateInstance(CLSID_WICImagingFactory, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(factory.put()));
+        if (FAILED(hrFactory))
+        {
+            OutputDebugStringW((L"[GIF Trim] CoCreateInstance WICImagingFactory failed hr=0x" + std::to_wstring(hrFactory) + L"\n").c_str());
+            return false;
+        }
+
+        winrt::com_ptr<IWICBitmapDecoder> decoder;
+
+        auto logHr = [&](const wchar_t* step, HRESULT hr)
+        {
+            wchar_t buf[512]{};
+            swprintf_s(buf, L"[GIF Trim] %s failed hr=0x%08X path=%s\n", step, static_cast<unsigned>(hr), gifPath.c_str());
+            OutputDebugStringW(buf);
+        };
+
+        auto tryCreateDecoder = [&]() -> bool
+        {
+            OutputDebugStringW(L"[GIF Trim] Trying CreateDecoderFromFilename...\n");
+            HRESULT hr = factory->CreateDecoderFromFilename(gifPath.c_str(), nullptr, GENERIC_READ, WICDecodeMetadataCacheOnLoad, decoder.put());
+            if (SUCCEEDED(hr))
+            {
+                OutputDebugStringW(L"[GIF Trim] CreateDecoderFromFilename succeeded\n");
+                return true;
+            }
+
+            logHr(L"CreateDecoderFromFilename", hr);
+
+            // Fallback: try opening with FILE_SHARE_READ | FILE_SHARE_WRITE to handle locked files
+            OutputDebugStringW(L"[GIF Trim] Trying CreateStreamOnFile fallback...\n");
+            HANDLE hFile = CreateFileW(gifPath.c_str(), GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
+            if (hFile != INVALID_HANDLE_VALUE)
+            {
+                winrt::com_ptr<IStream> fileStream;
+                // Create an IStream over the file handle using SHCreateStreamOnFileEx
+                CloseHandle(hFile);
+                hr = SHCreateStreamOnFileEx(gifPath.c_str(), STGM_READ | STGM_SHARE_DENY_NONE, 0, FALSE, nullptr, fileStream.put());
+                if (SUCCEEDED(hr) && fileStream)
+                {
+                    hr = factory->CreateDecoderFromStream(fileStream.get(), nullptr, WICDecodeMetadataCacheOnLoad, decoder.put());
+                    if (SUCCEEDED(hr))
+                    {
+                        OutputDebugStringW(L"[GIF Trim] CreateDecoderFromStream (SHCreateStreamOnFileEx) succeeded\n");
+                        return true;
+                    }
+                    logHr(L"CreateDecoderFromStream(SHCreateStreamOnFileEx)", hr);
+                }
+                else
+                {
+                    logHr(L"SHCreateStreamOnFileEx", hr);
+                }
+            }
+
+            return false;
+        };
+
+    auto tryCopyAndDecode = [&]() -> bool
+    {
+        OutputDebugStringW(L"[GIF Trim] Trying temp file copy fallback...\n");
+        // Copy file to temp using Win32 APIs (no WinRT async)
+        wchar_t tempDir[MAX_PATH];
+        if (GetTempPathW(MAX_PATH, tempDir) == 0)
+        {
+            return false;
+        }
+
+        std::wstring tempPath = std::wstring(tempDir) + L"ZoomIt\\";
+        CreateDirectoryW(tempPath.c_str(), nullptr);
+        
+        std::wstring tempName = L"gif_trim_cache_" + std::to_wstring(GetTickCount64()) + L".gif";
+        tempPath += tempName;
+
+        if (!CopyFileW(gifPath.c_str(), tempPath.c_str(), FALSE))
+        {
+            logHr(L"CopyFileW", HRESULT_FROM_WIN32(GetLastError()));
+            return false;
+        }
+
+        HRESULT hr = factory->CreateDecoderFromFilename(tempPath.c_str(), nullptr, GENERIC_READ, WICDecodeMetadataCacheOnLoad, decoder.put());
+        if (SUCCEEDED(hr))
+        {
+            OutputDebugStringW(L"[GIF Trim] CreateDecoderFromFilename(temp copy) succeeded\n");
+            return true;
+        }
+        logHr(L"CreateDecoderFromFilename(temp copy)", hr);
+        
+        // Clean up temp file on failure
+        DeleteFileW(tempPath.c_str());
+        return false;
+    };
+
+    if (!tryCreateDecoder())
+    {
+        if (!tryCopyAndDecode())
+        {
+            return false;
+        }
+    }
+
+    UINT frameCount = 0;
+    if (FAILED(decoder->GetFrameCount(&frameCount)) || frameCount == 0)
+    {
+        return false;
+    }
+
+    int64_t cumulativeTicks = 0;
+    UINT frameWidth = 0;
+    UINT frameHeight = 0;
+
+    for (UINT i = 0; i < frameCount; ++i)
+    {
+        winrt::com_ptr<IWICBitmapFrameDecode> frame;
+        if (FAILED(decoder->GetFrame(i, frame.put())))
+        {
+            continue;
+        }
+
+        if (i == 0)
+        {
+            frame->GetSize(&frameWidth, &frameHeight);
+        }
+
+        UINT delayCs = kGifDefaultDelayCs;
+        try
+        {
+            winrt::com_ptr<IWICMetadataQueryReader> metadata;
+            if (SUCCEEDED(frame->GetMetadataQueryReader(metadata.put())) && metadata)
+            {
+                PROPVARIANT prop{};
+                PropVariantInit(&prop);
+                if (SUCCEEDED(metadata->GetMetadataByName(L"/grctlext/Delay", &prop)))
+                {
+                    if (prop.vt == VT_UI2)
+                    {
+                        delayCs = prop.uiVal;
+                    }
+                    else if (prop.vt == VT_UI1)
+                    {
+                        delayCs = prop.bVal;
+                    }
+                }
+                PropVariantClear(&prop);
+            }
+        }
+        catch (...)
+        {
+            // Keep fallback delay
+        }
+
+        if (delayCs == 0)
+        {
+            delayCs = kGifDefaultDelayCs;
+        }
+
+        // Respect a max preview size to avoid huge allocations on large GIFs
+        UINT targetWidth = frameWidth;
+        UINT targetHeight = frameHeight;
+        if (targetWidth > kGifMaxPreviewDimension || targetHeight > kGifMaxPreviewDimension)
+        {
+            const double scaleX = static_cast<double>(kGifMaxPreviewDimension) / static_cast<double>(targetWidth);
+            const double scaleY = static_cast<double>(kGifMaxPreviewDimension) / static_cast<double>(targetHeight);
+            const double scale = (std::min)(scaleX, scaleY);
+            targetWidth = static_cast<UINT>(std::lround(static_cast<double>(targetWidth) * scale));
+            targetHeight = static_cast<UINT>(std::lround(static_cast<double>(targetHeight) * scale));
+            targetWidth = (std::max)(1u, targetWidth);
+            targetHeight = (std::max)(1u, targetHeight);
+        }
+
+        winrt::com_ptr<IWICBitmapSource> source = frame;
+        if (targetWidth != frameWidth || targetHeight != frameHeight)
+        {
+            winrt::com_ptr<IWICBitmapScaler> scaler;
+            if (SUCCEEDED(factory->CreateBitmapScaler(scaler.put())))
+            {
+                if (SUCCEEDED(scaler->Initialize(frame.get(), targetWidth, targetHeight, WICBitmapInterpolationModeFant)))
+                {
+                    source = scaler;
+                }
+            }
+        }
+
+        winrt::com_ptr<IWICFormatConverter> converter;
+        if (FAILED(factory->CreateFormatConverter(converter.put())))
+        {
+            continue;
+        }
+
+        if (FAILED(converter->Initialize(source.get(), GUID_WICPixelFormat32bppPBGRA, WICBitmapDitherTypeNone, nullptr, 0.0, WICBitmapPaletteTypeCustom)))
+        {
+            continue;
+        }
+
+        UINT convertedWidth = 0;
+        UINT convertedHeight = 0;
+        converter->GetSize(&convertedWidth, &convertedHeight);
+        if (convertedWidth == 0 || convertedHeight == 0)
+        {
+            continue;
+        }
+
+        const UINT stride = convertedWidth * 4;
+        std::vector<BYTE> buffer(static_cast<size_t>(stride) * convertedHeight);
+        if (FAILED(converter->CopyPixels(nullptr, stride, static_cast<UINT>(buffer.size()), buffer.data())))
+        {
+            continue;
+        }
+
+        BITMAPINFO bmi{};
+        bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+        bmi.bmiHeader.biWidth = static_cast<LONG>(convertedWidth);
+        bmi.bmiHeader.biHeight = -static_cast<LONG>(convertedHeight);
+        bmi.bmiHeader.biPlanes = 1;
+        bmi.bmiHeader.biBitCount = 32;
+        bmi.bmiHeader.biCompression = BI_RGB;
+
+        void* bits = nullptr;
+        HDC hdcScreen = GetDC(nullptr);
+        HBITMAP hBitmap = CreateDIBSection(hdcScreen, &bmi, DIB_RGB_COLORS, &bits, nullptr, 0);
+        ReleaseDC(nullptr, hdcScreen);
+
+        if (!hBitmap || !bits)
+        {
+            if (hBitmap)
+            {
+                DeleteObject(hBitmap);
+            }
+            continue;
+        }
+
+        for (UINT row = 0; row < convertedHeight; ++row)
+        {
+            memcpy(static_cast<BYTE*>(bits) + static_cast<size_t>(row) * stride,
+                   buffer.data() + static_cast<size_t>(row) * stride,
+                   stride);
+        }
+
+        VideoRecordingSession::TrimDialogData::GifFrame gifFrame;
+        gifFrame.hBitmap = hBitmap;
+        gifFrame.start = winrt::TimeSpan{ cumulativeTicks };
+        gifFrame.duration = winrt::TimeSpan{ static_cast<int64_t>(delayCs) * 100'000 }; // centiseconds to 100ns
+        gifFrame.width = convertedWidth;
+        gifFrame.height = convertedHeight;
+
+        cumulativeTicks += gifFrame.duration.count();
+        pData->gifFrames.push_back(gifFrame);
+    }
+
+    if (pData->gifFrames.empty())
+    {
+        OutputDebugStringW(L"[GIF Trim] No frames loaded\n");
+        return false;
+    }
+
+    const auto& lastFrame = pData->gifFrames.back();
+    pData->videoDuration = winrt::TimeSpan{ lastFrame.start.count() + lastFrame.duration.count() };
+    pData->trimEnd = pData->videoDuration;
+    pData->gifFramesLoaded = true;
+    pData->gifLastFrameIndex = 0;
+
+    OutputDebugStringW((L"[GIF Trim] Successfully loaded " + std::to_wstring(pData->gifFrames.size()) + L" frames\n").c_str());
+    return true;
+    }
+    catch (const winrt::hresult_error& e)
+    {
+        OutputDebugStringW((L"[GIF Trim] Exception in LoadGifFrames: " + e.message() + L"\n").c_str());
+        return false;
+    }
+    catch (const std::exception& e)
+    {
+        OutputDebugStringA("[GIF Trim] std::exception in LoadGifFrames: ");
+        OutputDebugStringA(e.what());
+        OutputDebugStringA("\n");
+        return false;
+    }
+    catch (...)
+    {
+        OutputDebugStringW(L"[GIF Trim] Unknown exception in LoadGifFrames\n");
+        return false;
     }
 }
 
@@ -786,25 +1141,41 @@ public:
     {
         if (dwIDCtl == 2000) // Trim button ID
         {
-            // Get the file dialog's window handle to make trim dialog modal to it
-            wil::com_ptr<IFileDialog> pfd;
-            HWND hFileDlg = nullptr;
-            if (SUCCEEDED(pfdc->QueryInterface(IID_PPV_ARGS(&pfd))))
+            try
             {
-                wil::com_ptr<IOleWindow> pOleWnd;
-                if (SUCCEEDED(pfd->QueryInterface(IID_PPV_ARGS(&pOleWnd))))
+                OutputDebugStringW(L"[Trim] Trim button clicked\n");
+                // Get the file dialog's window handle to make trim dialog modal to it
+                wil::com_ptr<IFileDialog> pfd;
+                HWND hFileDlg = nullptr;
+                if (SUCCEEDED(pfdc->QueryInterface(IID_PPV_ARGS(&pfd))))
                 {
-                    pOleWnd->GetWindow(&hFileDlg);
+                    wil::com_ptr<IOleWindow> pOleWnd;
+                    if (SUCCEEDED(pfd->QueryInterface(IID_PPV_ARGS(&pOleWnd))))
+                    {
+                        pOleWnd->GetWindow(&hFileDlg);
+                    }
+                }
+
+                // Use file dialog window as parent if found, otherwise use original parent
+                HWND hParent = hFileDlg ? hFileDlg : m_hParent;
+                OutputDebugStringW((L"[Trim] Calling ShowTrimDialog with path: " + m_videoPath + L"\n").c_str());
+
+                auto trimResult = VideoRecordingSession::ShowTrimDialog(hParent, m_videoPath, *m_pTrimStart, *m_pTrimEnd);
+                OutputDebugStringW((L"[Trim] ShowTrimDialog returned: " + std::to_wstring(trimResult) + L"\n").c_str());
+                if (trimResult == IDOK)
+                {
+                    *m_pShouldTrim = true;
                 }
             }
-
-            // Use file dialog window as parent if found, otherwise use original parent
-            HWND hParent = hFileDlg ? hFileDlg : m_hParent;
-
-            auto trimResult = VideoRecordingSession::ShowTrimDialog(hParent, m_videoPath, *m_pTrimStart, *m_pTrimEnd);
-            if (trimResult == IDOK)
+            catch (const std::exception& e)
             {
-                *m_pShouldTrim = true;
+                OutputDebugStringA("[Trim] Exception in OnButtonClicked: ");
+                OutputDebugStringA(e.what());
+                OutputDebugStringA("\n");
+            }
+            catch (...)
+            {
+                OutputDebugStringW(L"[Trim] Unknown exception in OnButtonClicked\n");
             }
         }
         return S_OK;
@@ -826,6 +1197,8 @@ std::wstring VideoRecordingSession::ShowSaveDialogWithTrim(
 {
     trimmedVideoPath.clear();
 
+    const bool isGif = IsGifPath(originalVideoPath);
+
     std::wstring videoPathToSave = originalVideoPath;
     winrt::TimeSpan trimStart{ 0 };
     winrt::TimeSpan trimEnd{ 0 };
@@ -843,12 +1216,22 @@ std::wstring VideoRecordingSession::ShowSaveDialogWithTrim(
         IID_IShellItem, (void**)videosItem.put())))
         saveDialog->SetDefaultFolder(videosItem.get());
 
-    saveDialog->SetDefaultExtension(L".mp4");
-
-    COMDLG_FILTERSPEC fileTypes[] = {
-        { L"MP4 Video", L"*.mp4" }
-    };
-    saveDialog->SetFileTypes(_countof(fileTypes), fileTypes);
+    if (isGif)
+    {
+        saveDialog->SetDefaultExtension(L".gif");
+        COMDLG_FILTERSPEC fileTypes[] = {
+            { L"GIF Animation", L"*.gif" }
+        };
+        saveDialog->SetFileTypes(_countof(fileTypes), fileTypes);
+    }
+    else
+    {
+        saveDialog->SetDefaultExtension(L".mp4");
+        COMDLG_FILTERSPEC fileTypes[] = {
+            { L"MP4 Video", L"*.mp4" }
+        };
+        saveDialog->SetFileTypes(_countof(fileTypes), fileTypes);
+    }
     saveDialog->SetFileName(suggestedFileName.c_str());
 
     // Add custom Trim button
@@ -879,7 +1262,8 @@ std::wstring VideoRecordingSession::ShowSaveDialogWithTrim(
     {
         try
         {
-            auto trimOp = TrimVideoAsync(originalVideoPath, trimStart, trimEnd);
+            auto trimOp = isGif ? TrimGifAsync(originalVideoPath, trimStart, trimEnd)
+                                : TrimVideoAsync(originalVideoPath, trimStart, trimEnd);
 
             // Pump messages while waiting for async operation
             while (trimOp.Status() == winrt::AsyncStatus::Started)
@@ -954,11 +1338,26 @@ INT_PTR VideoRecordingSession::ShowTrimDialog(
 
         try
         {
+            OutputDebugStringW(L"[Trim] Calling ShowTrimDialogInternal...\n");
             INT_PTR dlgResult = ShowTrimDialogInternal(hParent, videoPath, trimStart, trimEnd);
+            OutputDebugStringW((L"[Trim] ShowTrimDialogInternal returned: " + std::to_wstring(dlgResult) + L"\n").c_str());
             promise.set_value(dlgResult);
+        }
+        catch (const winrt::hresult_error& e)
+        {
+            OutputDebugStringW((L"[Trim] winrt exception: " + e.message() + L"\n").c_str());
+            promise.set_exception(std::current_exception());
+        }
+        catch (const std::exception& e)
+        {
+            OutputDebugStringA("[Trim] std::exception: ");
+            OutputDebugStringA(e.what());
+            OutputDebugStringA("\n");
+            promise.set_exception(std::current_exception());
         }
         catch (...)
         {
+            OutputDebugStringW(L"[Trim] Unknown exception\n");
             promise.set_exception(std::current_exception());
         }
 
@@ -996,30 +1395,42 @@ INT_PTR VideoRecordingSession::ShowTrimDialogInternal(
     data.videoPath = videoPath;
     data.trimStart = winrt::TimeSpan{ 0 };
     data.trimEnd = winrt::TimeSpan{ 0 };
+    data.isGif = IsGifPath(videoPath);
 
-    // Get video duration - use simple file size estimation to avoid blocking
-    // The actual trim operation will handle the real duration
-    WIN32_FILE_ATTRIBUTE_DATA fileInfo;
-    if (GetFileAttributesEx(videoPath.c_str(), GetFileExInfoStandard, &fileInfo))
+    if (data.isGif)
     {
-        ULARGE_INTEGER fileSize;
-        fileSize.LowPart = fileInfo.nFileSizeLow;
-        fileSize.HighPart = fileInfo.nFileSizeHigh;
-
-        // Estimate: ~10MB per minute for typical 1080p recording
-        // Duration in 100-nanosecond units (10,000,000 = 1 second)
-        int64_t estimatedSeconds = fileSize.QuadPart / (10 * 1024 * 1024 / 60);
-        if (estimatedSeconds < 1) estimatedSeconds = 10; // minimum 10 seconds
-        if (estimatedSeconds > 3600) estimatedSeconds = 3600; // max 1 hour
-
-        data.videoDuration = winrt::TimeSpan{ estimatedSeconds * 10000000LL };
-        data.trimEnd = data.videoDuration;
+        if (!LoadGifFrames(videoPath, &data))
+        {
+            MessageBox(hParent, L"Unable to load the GIF for trimming. The file may be locked or unreadable.", L"Error", MB_OK | MB_ICONERROR);
+            return IDCANCEL;
+        }
     }
     else
     {
-        // Default to 60 seconds if we can't get file size
-        data.videoDuration = winrt::TimeSpan{ 600000000LL };
-        data.trimEnd = data.videoDuration;
+        // Get video duration - use simple file size estimation to avoid blocking
+        // The actual trim operation will handle the real duration
+        WIN32_FILE_ATTRIBUTE_DATA fileInfo;
+        if (GetFileAttributesEx(videoPath.c_str(), GetFileExInfoStandard, &fileInfo))
+        {
+            ULARGE_INTEGER fileSize;
+            fileSize.LowPart = fileInfo.nFileSizeLow;
+            fileSize.HighPart = fileInfo.nFileSizeHigh;
+
+            // Estimate: ~10MB per minute for typical 1080p recording
+            // Duration in 100-nanosecond units (10,000,000 = 1 second)
+            int64_t estimatedSeconds = fileSize.QuadPart / (10 * 1024 * 1024 / 60);
+            if (estimatedSeconds < 1) estimatedSeconds = 10; // minimum 10 seconds
+            if (estimatedSeconds > 3600) estimatedSeconds = 3600; // max 1 hour
+
+            data.videoDuration = winrt::TimeSpan{ estimatedSeconds * 10000000LL };
+            data.trimEnd = data.videoDuration;
+        }
+        else
+        {
+            // Default to 60 seconds if we can't get file size
+            data.videoDuration = winrt::TimeSpan{ 600000000LL };
+            data.trimEnd = data.videoDuration;
+        }
     }
 
     // Center dialog on the screen containing the parent window
@@ -1037,12 +1448,14 @@ INT_PTR VideoRecordingSession::ShowTrimDialogInternal(
     data.dialogX = x;
     data.dialogY = y;
 
+    OutputDebugStringW(L"[Trim] About to call DialogBoxParam...\n");
     auto result = DialogBoxParam(
         GetModuleHandle(nullptr),
         MAKEINTRESOURCE(IDD_VIDEO_TRIM),
         hParent,
         TrimDialogProc,
         reinterpret_cast<LPARAM>(&data));
+    OutputDebugStringW((L"[Trim] DialogBoxParam returned: " + std::to_wstring(result) + L"\n").c_str());
 
     if (result == IDOK)
     {
@@ -1236,6 +1649,37 @@ static void UpdateVideoPreview(HWND hDlg, VideoRecordingSession::TrimDialogData*
         return;
     }
 
+    if (pData->isGif)
+    {
+        const int64_t clampedTicks = std::clamp<int64_t>(requestTicks, pData->trimStart.count(), pData->trimEnd.count());
+        if (!pData->gifFrames.empty())
+        {
+            const size_t frameIndex = FindGifFrameIndex(pData->gifFrames, clampedTicks);
+            pData->gifLastFrameIndex = frameIndex;
+            {
+                std::lock_guard<std::mutex> lock(pData->previewBitmapMutex);
+                if (pData->hPreviewBitmap && pData->previewBitmapOwned)
+                {
+                    DeleteObject(pData->hPreviewBitmap);
+                }
+                pData->hPreviewBitmap = pData->gifFrames[frameIndex].hBitmap;
+                pData->previewBitmapOwned = false;
+            }
+
+            pData->lastRenderedPreview.store(clampedTicks, std::memory_order_relaxed);
+            pData->loadingPreview.store(false, std::memory_order_relaxed);
+
+            if (hDlg)
+            {
+                InvalidateRect(GetDlgItem(hDlg, IDC_TRIM_PREVIEW), nullptr, FALSE);
+            }
+            return;
+        }
+
+        pData->loadingPreview.store(false, std::memory_order_relaxed);
+        return;
+    }
+
     std::thread([](HWND hDlg, VideoRecordingSession::TrimDialogData* pData, int64_t requestTicks)
     {
         winrt::init_apartment(winrt::apartment_type::multi_threaded);
@@ -1336,11 +1780,12 @@ static void UpdateVideoPreview(HWND hDlg, VideoRecordingSession::TrimDialogData*
 
                                                 {
                                                     std::lock_guard<std::mutex> lock(pData->previewBitmapMutex);
-                                                    if (pData->hPreviewBitmap)
+                                                    if (pData->hPreviewBitmap && pData->previewBitmapOwned)
                                                     {
                                                         DeleteObject(pData->hPreviewBitmap);
                                                     }
                                                     pData->hPreviewBitmap = hBitmap;
+                                                    pData->previewBitmapOwned = true;
                                                 }
                                                 updatedBitmap = true;
                                             }
@@ -1720,6 +2165,20 @@ static winrt::fire_and_forget StartPlaybackAsync(HWND hDlg, VideoRecordingSessio
         co_return;
     }
 
+    if (pData->isGif)
+    {
+        if (!SetTimer(hDlg, kPlaybackTimerId, kPlaybackTimerIntervalMs, nullptr))
+        {
+            pData->isPlaying.store(false, std::memory_order_relaxed);
+            RefreshPlaybackButtons(hDlg);
+            co_return;
+        }
+
+        PostMessage(hDlg, WMU_PLAYBACK_POSITION, 0, 0);
+        RefreshPlaybackButtons(hDlg);
+        co_return;
+    }
+
     // If a player already exists (paused), just resume from currentPosition
     if (pData->mediaPlayer)
     {
@@ -1865,11 +2324,12 @@ static winrt::fire_and_forget StartPlaybackAsync(HWND hDlg, VideoRecordingSessio
 
                                     {
                                         std::lock_guard<std::mutex> lock(dataPtr->previewBitmapMutex);
-                                        if (dataPtr->hPreviewBitmap)
+                                        if (dataPtr->hPreviewBitmap && dataPtr->previewBitmapOwned)
                                         {
                                             DeleteObject(dataPtr->hPreviewBitmap);
                                         }
                                         dataPtr->hPreviewBitmap = hBitmap;
+                                        dataPtr->previewBitmapOwned = true;
                                     }
 
                                     PostMessage(hDlg, WMU_PREVIEW_READY, 0, 0);
@@ -2544,7 +3004,14 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
     {
     case WM_INITDIALOG:
     {
+        OutputDebugStringW(L"[Trim] WM_INITDIALOG received\n");
         pData = reinterpret_cast<TrimDialogData*>(lParam);
+        if (!pData)
+        {
+            OutputDebugStringW(L"[Trim] ERROR: pData is null in WM_INITDIALOG\n");
+            EndDialog(hDlg, IDCANCEL);
+            return FALSE;
+        }
         SetWindowLongPtr(hDlg, DWLP_USER, lParam);
         pData->hDialog = hDlg;
         pData->hoverPlay = false;
@@ -2559,9 +3026,15 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
         SendMessage(hDlg, DM_SETDEFID, IDOK, 0);
 
         HWND hTimeline = GetDlgItem(hDlg, IDC_TRIM_TIMELINE);
-        SetWindowSubclass(hTimeline, TimelineSubclassProc, 1, reinterpret_cast<DWORD_PTR>(pData));
+        if (hTimeline)
+        {
+            SetWindowSubclass(hTimeline, TimelineSubclassProc, 1, reinterpret_cast<DWORD_PTR>(pData));
+        }
         HWND hPlayPause = GetDlgItem(hDlg, IDC_TRIM_PLAY_PAUSE);
-        SetWindowSubclass(hPlayPause, PlaybackButtonSubclassProc, 2, reinterpret_cast<DWORD_PTR>(pData));
+        if (hPlayPause)
+        {
+            SetWindowSubclass(hPlayPause, PlaybackButtonSubclassProc, 2, reinterpret_cast<DWORD_PTR>(pData));
+        }
         HWND hRewind = GetDlgItem(hDlg, IDC_TRIM_REWIND);
         if (hRewind)
         {
@@ -2588,6 +3061,8 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
         pData->trimEnd = pData->videoDuration;
         pData->currentPosition = winrt::TimeSpan{ 0 };
 
+        OutputDebugStringW((L"[Trim] isGif=" + std::to_wstring(pData->isGif) + L" duration=" + std::to_wstring(pData->videoDuration.count()) + L"\n").c_str());
+
         UpdateDurationDisplay(hDlg, pData);
 
         // Update labels and timeline (also starts async video load)
@@ -2604,6 +3079,7 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
             CenterTrimDialog(hDlg);
         }
 
+        OutputDebugStringW(L"[Trim] WM_INITDIALOG completed\n");
         return TRUE;
     }
 
@@ -2812,12 +3288,16 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
         if (pData && pData->hPreviewBitmap)
         {
             std::lock_guard<std::mutex> lock(pData->previewBitmapMutex);
-            DeleteObject(pData->hPreviewBitmap);
+            if (pData->previewBitmapOwned)
+            {
+                DeleteObject(pData->hPreviewBitmap);
+            }
             pData->hPreviewBitmap = nullptr;
         }
         if (pData)
         {
             pData->playbackFile = nullptr;
+            CleanupGifFrames(pData);
         }
         break;
     }
@@ -2862,6 +3342,30 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
                 }
                 catch (...)
                 {
+                }
+                return TRUE;
+            }
+
+            if (pData->isGif && !pData->gifFrames.empty())
+            {
+                const int64_t clampedTicks = std::clamp<int64_t>(
+                    pData->currentPosition.count(),
+                    pData->trimStart.count(),
+                    pData->trimEnd.count());
+                const size_t frameIndex = FindGifFrameIndex(pData->gifFrames, clampedTicks);
+                const auto& frame = pData->gifFrames[frameIndex];
+                const int64_t nextTicks = frame.start.count() + frame.duration.count();
+
+                if (nextTicks >= pData->trimEnd.count())
+                {
+                    pData->currentPosition = pData->trimStart;
+                    StopPlayback(hDlg, pData, false);
+                    UpdateVideoPreview(hDlg, pData);
+                }
+                else
+                {
+                    pData->currentPosition = winrt::TimeSpan{ nextTicks };
+                    UpdateVideoPreview(hDlg, pData);
                 }
                 return TRUE;
             }
@@ -2971,6 +3475,214 @@ winrt::IAsyncOperation<winrt::hstring> VideoRecordingSession::TrimVideoAsync(
         {
             co_return winrt::hstring();
         }
+    }
+    catch (...)
+    {
+        co_return winrt::hstring();
+    }
+}
+
+winrt::IAsyncOperation<winrt::hstring> VideoRecordingSession::TrimGifAsync(
+    const std::wstring& sourceGifPath,
+    winrt::TimeSpan trimTimeStart,
+    winrt::TimeSpan trimTimeEnd)
+{
+    co_await winrt::resume_background();
+
+    try
+    {
+        if (trimTimeEnd.count() <= trimTimeStart.count())
+        {
+            co_return winrt::hstring();
+        }
+
+        winrt::com_ptr<IWICImagingFactory> factory;
+        winrt::check_hresult(CoCreateInstance(CLSID_WICImagingFactory, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(factory.put())));
+
+        auto sourceFile = co_await winrt::StorageFile::GetFileFromPathAsync(sourceGifPath);
+        auto sourceStream = co_await sourceFile.OpenAsync(winrt::FileAccessMode::Read);
+
+        winrt::com_ptr<IStream> sourceIStream;
+        winrt::check_hresult(CreateStreamOverRandomAccessStream(winrt::get_unknown(sourceStream), IID_PPV_ARGS(sourceIStream.put())));
+
+        winrt::com_ptr<IWICBitmapDecoder> decoder;
+        winrt::check_hresult(factory->CreateDecoderFromStream(sourceIStream.get(), nullptr, WICDecodeMetadataCacheOnLoad, decoder.put()));
+
+        UINT frameCount = 0;
+        winrt::check_hresult(decoder->GetFrameCount(&frameCount));
+        if (frameCount == 0)
+        {
+            co_return winrt::hstring();
+        }
+
+        // Prepare output file
+        auto tempFolder = co_await winrt::StorageFolder::GetFolderFromPathAsync(std::filesystem::temp_directory_path().wstring());
+        auto zoomitFolder = co_await tempFolder.CreateFolderAsync(L"ZoomIt", winrt::CreationCollisionOption::OpenIfExists);
+        std::wstring filename = L"zoomit_trimmed_" + std::to_wstring(GetTickCount64()) + L".gif";
+        auto outputFile = co_await zoomitFolder.CreateFileAsync(filename, winrt::CreationCollisionOption::ReplaceExisting);
+        auto outputStream = co_await outputFile.OpenAsync(winrt::FileAccessMode::ReadWrite);
+
+        winrt::com_ptr<IStream> outputIStream;
+        winrt::check_hresult(CreateStreamOverRandomAccessStream(winrt::get_unknown(outputStream), IID_PPV_ARGS(outputIStream.put())));
+
+        winrt::com_ptr<IWICBitmapEncoder> encoder;
+        winrt::check_hresult(factory->CreateEncoder(GUID_ContainerFormatGif, nullptr, encoder.put()));
+        winrt::check_hresult(encoder->Initialize(outputIStream.get(), WICBitmapEncoderNoCache));
+
+        // Try to set looping metadata
+        try
+        {
+            winrt::com_ptr<IWICMetadataQueryWriter> encoderMetadataWriter;
+            if (SUCCEEDED(encoder->GetMetadataQueryWriter(encoderMetadataWriter.put())) && encoderMetadataWriter)
+            {
+                PROPVARIANT prop{};
+                PropVariantInit(&prop);
+                prop.vt = VT_UI1 | VT_VECTOR;
+                prop.caub.cElems = 11;
+                prop.caub.pElems = static_cast<UCHAR*>(CoTaskMemAlloc(11));
+                if (prop.caub.pElems)
+                {
+                    memcpy(prop.caub.pElems, "NETSCAPE2.0", 11);
+                    encoderMetadataWriter->SetMetadataByName(L"/appext/application", &prop);
+                }
+                PropVariantClear(&prop);
+
+                PropVariantInit(&prop);
+                prop.vt = VT_UI1 | VT_VECTOR;
+                prop.caub.cElems = 5;
+                prop.caub.pElems = static_cast<UCHAR*>(CoTaskMemAlloc(5));
+                if (prop.caub.pElems)
+                {
+                    prop.caub.pElems[0] = 3;
+                    prop.caub.pElems[1] = 1;
+                    prop.caub.pElems[2] = 0;
+                    prop.caub.pElems[3] = 0;
+                    prop.caub.pElems[4] = 0;
+                    encoderMetadataWriter->SetMetadataByName(L"/appext/data", &prop);
+                }
+                PropVariantClear(&prop);
+            }
+        }
+        catch (...)
+        {
+            // Loop metadata is optional; continue without failing
+        }
+
+        int64_t cumulativeTicks = 0;
+        bool wroteFrame = false;
+
+        for (UINT i = 0; i < frameCount; ++i)
+        {
+            winrt::com_ptr<IWICBitmapFrameDecode> frame;
+            if (FAILED(decoder->GetFrame(i, frame.put())))
+            {
+                continue;
+            }
+
+            UINT delayCs = kGifDefaultDelayCs;
+            try
+            {
+                winrt::com_ptr<IWICMetadataQueryReader> metadata;
+                if (SUCCEEDED(frame->GetMetadataQueryReader(metadata.put())) && metadata)
+                {
+                    PROPVARIANT prop{};
+                    PropVariantInit(&prop);
+                    if (SUCCEEDED(metadata->GetMetadataByName(L"/grctlext/Delay", &prop)))
+                    {
+                        if (prop.vt == VT_UI2)
+                        {
+                            delayCs = prop.uiVal;
+                        }
+                        else if (prop.vt == VT_UI1)
+                        {
+                            delayCs = prop.bVal;
+                        }
+                    }
+                    PropVariantClear(&prop);
+                }
+            }
+            catch (...)
+            {
+            }
+
+            if (delayCs == 0)
+            {
+                delayCs = kGifDefaultDelayCs;
+            }
+
+            const int64_t frameStart = cumulativeTicks;
+            const int64_t frameEnd = frameStart + static_cast<int64_t>(delayCs) * 100'000;
+            cumulativeTicks = frameEnd;
+
+            if (frameEnd <= trimTimeStart.count() || frameStart >= trimTimeEnd.count())
+            {
+                continue;
+            }
+
+            const int64_t visibleStart = (std::max)(frameStart, trimTimeStart.count());
+            const int64_t visibleEnd = (std::min)(frameEnd, trimTimeEnd.count());
+            const int64_t visibleTicks = visibleEnd - visibleStart;
+            if (visibleTicks <= 0)
+            {
+                continue;
+            }
+
+            UINT width = 0;
+            UINT height = 0;
+            frame->GetSize(&width, &height);
+
+            winrt::com_ptr<IWICBitmapFrameEncode> frameEncode;
+            winrt::com_ptr<IPropertyBag2> propertyBag;
+            winrt::check_hresult(encoder->CreateNewFrame(frameEncode.put(), propertyBag.put()));
+            winrt::check_hresult(frameEncode->Initialize(propertyBag.get()));
+            winrt::check_hresult(frameEncode->SetSize(width, height));
+
+            WICPixelFormatGUID pixelFormat = GUID_WICPixelFormat8bppIndexed;
+            winrt::check_hresult(frameEncode->SetPixelFormat(&pixelFormat));
+
+            winrt::com_ptr<IWICFormatConverter> converter;
+            winrt::check_hresult(factory->CreateFormatConverter(converter.put()));
+            winrt::check_hresult(converter->Initialize(frame.get(), GUID_WICPixelFormat32bppBGRA, WICBitmapDitherTypeNone, nullptr, 0.0, WICBitmapPaletteTypeCustom));
+
+            winrt::check_hresult(frameEncode->WriteSource(converter.get(), nullptr));
+
+            try
+            {
+                winrt::com_ptr<IWICMetadataQueryWriter> frameMetadataWriter;
+                if (SUCCEEDED(frameEncode->GetMetadataQueryWriter(frameMetadataWriter.put())) && frameMetadataWriter)
+                {
+                    PROPVARIANT prop{};
+                    PropVariantInit(&prop);
+                    prop.vt = VT_UI2;
+                    // Convert ticks (100ns) to centiseconds with rounding and minimum 1
+                    const int64_t roundedCs = (visibleTicks + 50'000) / 100'000;
+                    prop.uiVal = static_cast<USHORT>((std::max<int64_t>)(1, roundedCs));
+                    frameMetadataWriter->SetMetadataByName(L"/grctlext/Delay", &prop);
+                    PropVariantClear(&prop);
+
+                    PropVariantInit(&prop);
+                    prop.vt = VT_UI1;
+                    prop.bVal = 2; // restore to background
+                    frameMetadataWriter->SetMetadataByName(L"/grctlext/Disposal", &prop);
+                    PropVariantClear(&prop);
+                }
+            }
+            catch (...)
+            {
+            }
+
+            winrt::check_hresult(frameEncode->Commit());
+            wroteFrame = true;
+        }
+
+        winrt::check_hresult(encoder->Commit());
+
+        if (!wroteFrame)
+        {
+            co_return winrt::hstring();
+        }
+
+        co_return winrt::hstring(outputFile.Path());
     }
     catch (...)
     {

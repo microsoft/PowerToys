@@ -15,6 +15,7 @@
 #include <atomic>
 #include <algorithm>
 #include <mutex>
+#include <vector>
 
 class VideoRecordingSession : public std::enable_shared_from_this<VideoRecordingSession>
 {
@@ -41,6 +42,15 @@ public:
 
     struct TrimDialogData
     {
+        struct GifFrame
+        {
+            HBITMAP hBitmap{ nullptr };
+            winrt::Windows::Foundation::TimeSpan start{ 0 };
+            winrt::Windows::Foundation::TimeSpan duration{ 0 };
+            UINT width{ 0 };
+            UINT height{ 0 };
+        };
+
         std::wstring videoPath;
         winrt::Windows::Foundation::TimeSpan videoDuration{ 0 };
         winrt::Windows::Foundation::TimeSpan trimStart{ 0 };
@@ -76,6 +86,11 @@ public:
         bool playheadPushed{ false };
         int dialogX{ 0 };
         int dialogY{ 0 };
+        bool isGif{ false };
+        bool previewBitmapOwned{ true };
+        std::vector<GifFrame> gifFrames;
+        bool gifFramesLoaded{ false };
+        size_t gifLastFrameIndex{ 0 };
 
         // Mouse tracking for timeline
         enum DragMode { None, TrimStart, Position, TrimEnd };
@@ -118,6 +133,10 @@ private:
 
     static winrt::Windows::Foundation::IAsyncOperation<winrt::hstring> TrimVideoAsync(
         const std::wstring& sourceVideoPath,
+        winrt::Windows::Foundation::TimeSpan trimTimeStart,
+        winrt::Windows::Foundation::TimeSpan trimTimeEnd);
+    static winrt::Windows::Foundation::IAsyncOperation<winrt::hstring> TrimGifAsync(
+        const std::wstring& sourceGifPath,
         winrt::Windows::Foundation::TimeSpan trimTimeStart,
         winrt::Windows::Foundation::TimeSpan trimTimeEnd);
     static INT_PTR ShowTrimDialogInternal(

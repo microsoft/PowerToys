@@ -3500,20 +3500,24 @@ inline auto CopyBytesFromTexture(winrt::com_ptr<ID3D11Texture2D> const& texture,
 //----------------------------------------------------------------------------
 void StopRecording()
 {
+    OutputDebugStringW(L"[Recording] StopRecording called\n");
     if( g_RecordToggle == TRUE ) {
 
+        OutputDebugStringW(L"[Recording] g_RecordToggle was TRUE, stopping...\n");
         g_SelectRectangle.Stop();
 
         if ( g_RecordingSession != nullptr ) {
 
+            OutputDebugStringW(L"[Recording] Closing VideoRecordingSession\n");
             g_RecordingSession->Close();
-            g_RecordingSession = nullptr;
+            // NOTE: Do NOT null the session here - let the coroutine finish first
         }
 
         if ( g_GifRecordingSession != nullptr ) {
 
+            OutputDebugStringW(L"[Recording] Closing GifRecordingSession\n");
             g_GifRecordingSession->Close();
-            g_GifRecordingSession = nullptr;
+            // NOTE: Do NOT null the session here - let the coroutine finish first
         }
 
         g_RecordToggle = FALSE;
@@ -3578,6 +3582,9 @@ auto GetUniqueRecordingFilename()
 //----------------------------------------------------------------------------
 winrt::fire_and_forget StartRecordingAsync( HWND hWnd, LPRECT rcCrop, HWND hWndRecord ) try
 {
+    // Capture the UI thread context so we can resume on it for the save dialog
+    winrt::apartment_context uiThread;
+
     auto tempFolderPath = std::filesystem::temp_directory_path().wstring();
     auto tempFolder = co_await winrt::StorageFolder::GetFolderFromPathAsync( tempFolderPath );
     auto appFolder = co_await tempFolder.CreateFolderAsync( L"ZoomIt", winrt::CreationCollisionOption::OpenIfExists );
@@ -3610,6 +3617,9 @@ winrt::fire_and_forget StartRecordingAsync( HWND hWnd, LPRECT rcCrop, HWND hWndR
 
     // Create the appropriate recording session based on format
     OutputDebugStringW((L"Starting recording session. Framerate:  " + std::to_wstring(g_RecordFrameRate) + L" scaling: " + std::to_wstring(g_RecordScaling) + L" Format: " + (g_RecordingFormat == RecordingFormat::GIF ? L"GIF" : L"MP4") + L"\n").c_str());
+    bool recordingStarted = false;
+    HRESULT captureStatus = S_OK;
+
     if (g_RecordingFormat == RecordingFormat::GIF)
     {
         g_GifRecordingSession = GifRecordingSession::Create(
@@ -3619,10 +3629,23 @@ winrt::fire_and_forget StartRecordingAsync( HWND hWnd, LPRECT rcCrop, HWND hWndR
                                         g_RecordFrameRate,
                                         stream );
 
+        recordingStarted = (g_GifRecordingSession != nullptr);
+
         if( g_hWndLiveZoom != NULL )
             g_GifRecordingSession->EnableCursorCapture( false );
 
-        co_await g_GifRecordingSession->StartAsync();
+        if (recordingStarted)
+        {
+            try
+            {
+                co_await g_GifRecordingSession->StartAsync();
+            }
+            catch (const winrt::hresult_error& error)
+            {
+                captureStatus = error.code();
+                OutputDebugStringW((L"Recording session failed: " + error.message() + L"\n").c_str());
+            }
+        }
     }
     else
     {
@@ -3634,14 +3657,44 @@ winrt::fire_and_forget StartRecordingAsync( HWND hWnd, LPRECT rcCrop, HWND hWndR
                                         g_CaptureAudio,
                                         stream );
 
+        recordingStarted = (g_RecordingSession != nullptr);
+
         if( g_hWndLiveZoom != NULL )
             g_RecordingSession->EnableCursorCapture( false );
 
-        co_await g_RecordingSession->StartAsync();
+        if (recordingStarted)
+        {
+            try
+            {
+                co_await g_RecordingSession->StartAsync();
+            }
+            catch (const winrt::hresult_error& error)
+            {
+                captureStatus = error.code();
+                OutputDebugStringW((L"Recording session failed: " + error.message() + L"\n").c_str());
+            }
+        }
     }
 
-    // Check if recording was aborted
-    if( g_RecordingSession == nullptr && g_GifRecordingSession == nullptr ) {
+    // If we never created a session, bail and clean up the temp file silently
+    if( !recordingStarted ) {
+
+        if (stream) {
+            stream.Close();
+            stream = nullptr;
+        }
+        try { co_await file.DeleteAsync(); } catch (...) {}
+        co_return;
+    }
+
+    // Recording completed (closed via hotkey or item close). Proceed to save/trim workflow.
+    OutputDebugStringW(L"[Recording] StartAsync completed, entering save workflow\n");
+    
+    // Resume on the UI thread for the save dialog
+    co_await uiThread;
+    OutputDebugStringW(L"[Recording] Resumed on UI thread\n");
+    
+    {
 
         g_bSaveInProgress = true;
 
@@ -3650,44 +3703,58 @@ winrt::fire_and_forget StartRecordingAsync( HWND hWnd, LPRECT rcCrop, HWND hWndR
         winrt::StorageFile destFile = nullptr;
         HRESULT hr = S_OK;
         try {
-			// Show trim dialog option and save dialog
-			std::wstring trimmedFilePath;
-			auto suggestedName = GetUniqueRecordingFilename();
-			auto finalPath = VideoRecordingSession::ShowSaveDialogWithTrim(
-				hWnd,
-				suggestedName,
-				std::wstring{ file.Path() },
-				trimmedFilePath
-			);
+            OutputDebugStringW(L"[Recording] About to show save dialog...\n");
+            // Show trim dialog option and save dialog
+            std::wstring trimmedFilePath;
+            auto suggestedName = GetUniqueRecordingFilename();
+            OutputDebugStringW((L"[Recording] Suggested filename: " + suggestedName + L"\n").c_str());
+            OutputDebugStringW((L"[Recording] Temp file path: " + std::wstring(file.Path()) + L"\n").c_str());
+            auto finalPath = VideoRecordingSession::ShowSaveDialogWithTrim(
+                hWnd,
+                suggestedName,
+                std::wstring{ file.Path() },
+                trimmedFilePath
+            );
+            OutputDebugStringW((L"[Recording] ShowSaveDialogWithTrim returned: " + finalPath + L"\n").c_str());
 
-			if (!finalPath.empty())
-			{
-				auto path = std::filesystem::path(finalPath);
-				winrt::StorageFolder folder{ co_await winrt::StorageFolder::GetFolderFromPathAsync(path.parent_path().c_str()) };
-				destFile = co_await folder.CreateFileAsync(path.filename().c_str(), winrt::CreationCollisionOption::ReplaceExisting);
+            if (!finalPath.empty())
+            {
+                auto path = std::filesystem::path(finalPath);
+                winrt::StorageFolder folder{ co_await winrt::StorageFolder::GetFolderFromPathAsync(path.parent_path().c_str()) };
+                destFile = co_await folder.CreateFileAsync(path.filename().c_str(), winrt::CreationCollisionOption::ReplaceExisting);
 
-				// If user trimmed, use the trimmed file; otherwise use original
-				winrt::StorageFile sourceFile = file;
-				if (!trimmedFilePath.empty())
-				{
-					sourceFile = co_await winrt::StorageFile::GetFileFromPathAsync(trimmedFilePath);
-				}
+                // If user trimmed, use the trimmed file; otherwise use the original capture
+                winrt::StorageFile sourceFile = file;
+                if (!trimmedFilePath.empty())
+                {
+                    sourceFile = co_await winrt::StorageFile::GetFileFromPathAsync(trimmedFilePath);
+                }
 
-				co_await sourceFile.MoveAndReplaceAsync(destFile);
-				g_RecordingSaveLocation = destFile.Path().c_str();
-				SaveToClipboard(const_cast<WCHAR*>(g_RecordingSaveLocation.c_str()), hWnd);
+                // Move the chosen source into the user-selected destination
+                co_await sourceFile.MoveAndReplaceAsync(destFile);
 
-				// Clean up temp files
-				if (sourceFile != file)
-				{
-					try { co_await file.DeleteAsync(); } catch (...) {}
-				}
-			}
-			else
-			{
-				// User cancelled
-				hr = HRESULT_FROM_WIN32(ERROR_CANCELLED);
-			}
+                // If we moved a trimmed copy, clean up the original temp capture file
+                if (sourceFile != file)
+                {
+                    try { co_await file.DeleteAsync(); } catch (...) {}
+                }
+
+                if (g_RecordingFormat == RecordingFormat::GIF)
+                {
+                    g_RecordingSaveLocationGIF = destFile.Path();
+                    SaveToClipboard(g_RecordingSaveLocationGIF.c_str(), hWnd);
+                }
+                else
+                {
+                    g_RecordingSaveLocation = destFile.Path();
+                    SaveToClipboard(g_RecordingSaveLocation.c_str(), hWnd);
+                }
+            }
+            else
+            {
+                // User cancelled
+                hr = HRESULT_FROM_WIN32(ERROR_CANCELLED);
+            }
 
             //auto saveDialog = wil::CoCreateInstance<IFileSaveDialog>( CLSID_FileSaveDialog );
             //FILEOPENDIALOGOPTIONS options;
@@ -3767,8 +3834,18 @@ winrt::fire_and_forget StartRecordingAsync( HWND hWnd, LPRECT rcCrop, HWND hWndR
             //destFile = co_await folder.CreateFileAsync( path.filename().c_str(), winrt::CreationCollisionOption::ReplaceExisting );
         }
         catch( const wil::ResultException& error ) {
-
+            OutputDebugStringW((L"[Recording] wil exception: hr=0x" + std::to_wstring(error.GetErrorCode()) + L"\n").c_str());
             hr = error.GetErrorCode();
+        }
+        catch( const std::exception& ex ) {
+            OutputDebugStringA("[Recording] std::exception: ");
+            OutputDebugStringA(ex.what());
+            OutputDebugStringA("\n");
+            hr = E_FAIL;
+        }
+        catch( ... ) {
+            OutputDebugStringW(L"[Recording] Unknown exception in save workflow\n");
+            hr = E_FAIL;
         }
         if( destFile == nullptr ) {
 
@@ -3776,19 +3853,7 @@ winrt::fire_and_forget StartRecordingAsync( HWND hWnd, LPRECT rcCrop, HWND hWndR
                 stream.Close();
                 stream = nullptr;
             }
-            co_await file.DeleteAsync();
-        }
-        else {
-
-            co_await file.MoveAndReplaceAsync(destFile);
-            if (g_RecordingFormat == RecordingFormat::GIF) {
-                g_RecordingSaveLocationGIF = file.Path();
-                SaveToClipboard(g_RecordingSaveLocationGIF.c_str(), hWnd);
-            }
-            else {
-                g_RecordingSaveLocation = file.Path();
-                SaveToClipboard(g_RecordingSaveLocation.c_str(), hWnd);
-            }
+            try { co_await file.DeleteAsync(); } catch (...) {}
         }
         g_bSaveInProgress = false;
 
@@ -3799,16 +3864,14 @@ winrt::fire_and_forget StartRecordingAsync( HWND hWnd, LPRECT rcCrop, HWND hWndR
         if( FAILED( hr ) )
             throw winrt::hresult_error( hr );
     }
-    else {
 
-        if (stream) {
-            stream.Close();
-            stream = nullptr;
-        }
-        co_await file.DeleteAsync();
-        g_RecordingSession = nullptr;
-        g_GifRecordingSession = nullptr;
+    // Ensure globals are reset after the save/cleanup path completes
+    if (stream) {
+        stream.Close();
+        stream = nullptr;
     }
+    g_RecordingSession = nullptr;
+    g_GifRecordingSession = nullptr;
 } catch( const winrt::hresult_error& error ) {
 
     PostMessage( g_hWndMain, WM_USER_STOP_RECORDING, 0, 0 );
