@@ -101,36 +101,69 @@ public partial class MainViewModel
     /// </summary>
     private async Task ApplyColorTemperatureFromSettingsAsync()
     {
+        Logger.LogInfo("[ApplyColorTemp] Starting ApplyColorTemperatureFromSettingsAsync");
+
         var settings = _settingsUtils.GetSettingsOrDefault<PowerDisplaySettings>("PowerDisplay");
 
         // Check if there's a pending color temperature operation
         var pendingOp = settings.Properties.PendingColorTemperatureOperation;
 
-        if (pendingOp != null && !string.IsNullOrEmpty(pendingOp.MonitorId))
+        if (pendingOp == null)
         {
-            // Find the monitor by internal name (ID)
-            var monitorVm = Monitors.FirstOrDefault(m => m.Id == pendingOp.MonitorId);
+            Logger.LogInfo("[ApplyColorTemp] No pending operation found (PendingColorTemperatureOperation is null)");
+            return;
+        }
 
-            if (monitorVm != null)
-            {
-                // Apply color temperature directly
-                await monitorVm.SetColorTemperatureAsync(pendingOp.ColorTemperatureVcp);
+        Logger.LogInfo($"[ApplyColorTemp] Found pending operation: MonitorId='{pendingOp.MonitorId}', ColorTempVcp={pendingOp.ColorTemperatureVcp}");
 
-                // Update the monitor's ColorTemperatureVcp in settings to match the applied value
-                // This ensures Settings UI gets the correct value when it reloads from file
-                var settingsMonitor = settings.Properties.Monitors.FirstOrDefault(m => m.Id == pendingOp.MonitorId);
-                if (settingsMonitor != null)
-                {
-                    settingsMonitor.ColorTemperatureVcp = pendingOp.ColorTemperatureVcp;
-                }
-            }
+        if (string.IsNullOrEmpty(pendingOp.MonitorId))
+        {
+            Logger.LogWarning("[ApplyColorTemp] MonitorId is null or empty, cannot apply color temperature");
 
-            // Clear the pending operation and save updated settings
+            // Clear the invalid pending operation
             settings.Properties.PendingColorTemperatureOperation = null;
             _settingsUtils.SaveSettings(
                 System.Text.Json.JsonSerializer.Serialize(settings, AppJsonContext.Default.PowerDisplaySettings),
                 PowerDisplaySettings.ModuleName);
+            return;
         }
+
+        // Find the monitor by internal name (ID)
+        Logger.LogInfo($"[ApplyColorTemp] Searching for monitor with Id='{pendingOp.MonitorId}' in {Monitors.Count} monitors");
+        foreach (var m in Monitors)
+        {
+            Logger.LogTrace($"[ApplyColorTemp] Available monitor: Id='{m.Id}', Name='{m.Name}'");
+        }
+
+        var monitorVm = Monitors.FirstOrDefault(m => m.Id == pendingOp.MonitorId);
+
+        if (monitorVm != null)
+        {
+            Logger.LogInfo($"[ApplyColorTemp] Found monitor '{monitorVm.Name}' (Id={monitorVm.Id}), applying color temp {pendingOp.ColorTemperatureVcp}");
+
+            // Apply color temperature directly
+            await monitorVm.SetColorTemperatureAsync(pendingOp.ColorTemperatureVcp);
+            Logger.LogInfo($"[ApplyColorTemp] SetColorTemperatureAsync completed for monitor '{monitorVm.Name}'");
+
+            // Update the monitor's ColorTemperatureVcp in settings to match the applied value
+            // This ensures Settings UI gets the correct value when it reloads from file
+            var settingsMonitor = settings.Properties.Monitors.FirstOrDefault(m => m.Id == pendingOp.MonitorId);
+            if (settingsMonitor != null)
+            {
+                settingsMonitor.ColorTemperatureVcp = pendingOp.ColorTemperatureVcp;
+            }
+        }
+        else
+        {
+            Logger.LogWarning($"[ApplyColorTemp] Monitor with Id='{pendingOp.MonitorId}' not found in current monitor list");
+        }
+
+        // Clear the pending operation and save updated settings
+        Logger.LogInfo("[ApplyColorTemp] Clearing pending operation and saving settings");
+        settings.Properties.PendingColorTemperatureOperation = null;
+        _settingsUtils.SaveSettings(
+            System.Text.Json.JsonSerializer.Serialize(settings, AppJsonContext.Default.PowerDisplaySettings),
+            PowerDisplaySettings.ModuleName);
     }
 
     /// <summary>
@@ -413,21 +446,33 @@ public partial class MainViewModel
             var settings = _settingsUtils.GetSettingsOrDefault<PowerDisplaySettings>(PowerDisplaySettings.ModuleName);
 
             // Create lookup of existing monitors by Id to preserve settings
+            // Filter out monitors with empty IDs to avoid dictionary key collision errors
             var existingMonitorSettings = settings.Properties.Monitors
-                .ToDictionary(m => m.Id, m => m);
+                .Where(m => !string.IsNullOrEmpty(m.Id))
+                .GroupBy(m => m.Id)
+                .ToDictionary(g => g.Key, g => g.First());
 
             // Build monitor list using Settings UI's MonitorInfo model
+            // Only include monitors with valid (non-empty) IDs to auto-fix corrupted settings
             var monitors = new List<Microsoft.PowerToys.Settings.UI.Library.MonitorInfo>();
 
             foreach (var vm in Monitors)
             {
+                // Skip monitors with empty IDs - they are invalid and would cause issues
+                if (string.IsNullOrEmpty(vm.Id))
+                {
+                    Logger.LogWarning($"[SaveMonitors] Skipping monitor '{vm.Name}' with empty Id");
+                    continue;
+                }
+
                 var monitorInfo = CreateMonitorInfo(vm);
                 ApplyPreservedUserSettings(monitorInfo, existingMonitorSettings);
                 monitors.Add(monitorInfo);
             }
 
             // Also add hidden monitors from existing settings (monitors that are hidden but still connected)
-            foreach (var existingMonitor in settings.Properties.Monitors.Where(m => m.IsHidden))
+            // Only include those with valid IDs
+            foreach (var existingMonitor in settings.Properties.Monitors.Where(m => m.IsHidden && !string.IsNullOrEmpty(m.Id)))
             {
                 // Only add if not already in the list (to avoid duplicates)
                 if (!monitors.Any(m => m.Id == existingMonitor.Id))
@@ -458,6 +503,12 @@ public partial class MainViewModel
     /// </summary>
     private Microsoft.PowerToys.Settings.UI.Library.MonitorInfo CreateMonitorInfo(MonitorViewModel vm)
     {
+        // Validate monitor Id - this should never be empty for properly discovered monitors
+        if (string.IsNullOrEmpty(vm.Id))
+        {
+            Logger.LogWarning($"[CreateMonitorInfo] Monitor '{vm.Name}' has empty Id - this may cause issues with Settings UI");
+        }
+
         var monitorInfo = new Microsoft.PowerToys.Settings.UI.Library.MonitorInfo
         {
             Name = vm.Name,
