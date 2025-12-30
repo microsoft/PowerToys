@@ -12,7 +12,6 @@
 // Forward declarations for unit test friend classes
 namespace WICMetadataExtractorTests
 {
-    class GetMetadataPathFormatTests;
     class ExtractAVIFMetadataTests;
 }
 
@@ -34,7 +33,6 @@ namespace PowerRenameLib
     class WICMetadataExtractor
     {
         // Friend declarations for unit testing
-        friend class WICMetadataExtractorTests::GetMetadataPathFormatTests;
         friend class WICMetadataExtractorTests::ExtractAVIFMetadataTests;
 
     public:
@@ -53,8 +51,6 @@ namespace PowerRenameLib
         void ClearCache();
 
     private:
-        // Container format detection
-        MetadataPathFormat GetMetadataPathFormat(const std::wstring& filePath);
         // WIC factory management
         static CComPtr<IWICImagingFactory> GetWICFactory();
         static void InitializeWIC();

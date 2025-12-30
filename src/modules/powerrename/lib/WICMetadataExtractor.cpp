@@ -574,12 +574,6 @@ MetadataPathFormat WICMetadataExtractor::GetMetadataPathFormatFromDecoder(IWICBi
     return MetadataPathFormat::JPEG;
 }
 
-MetadataPathFormat WICMetadataExtractor::GetMetadataPathFormat(const std::wstring& filePath)
-{
-    auto decoder = CreateDecoder(filePath);
-    return GetMetadataPathFormatFromDecoder(decoder);
-}
-
 void WICMetadataExtractor::ExtractAllEXIFFields(IWICMetadataQueryReader* reader, EXIFMetadata& metadata, MetadataPathFormat pathFormat)
 {
     if (!reader)
