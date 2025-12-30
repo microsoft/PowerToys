@@ -59,7 +59,7 @@ string validUIDisplayString = Resources.ValidUIDisplayString;
 Please review these brief docs below relating to our coding standards, etc.
 
 * [Coding Style](development/style.md)
-* [Code Organization](./readme.md)
+* [Code Organization](readme.md)
 
 
 [VS Resource Editor]: https://learn.microsoft.com/cpp/windows/resource-editors?view=vs-2019
