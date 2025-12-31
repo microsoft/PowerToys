@@ -2349,7 +2349,8 @@ static winrt::fire_and_forget StartPlaybackAsync(HWND hDlg, VideoRecordingSessio
         // Initialize the frame start time for proper timing
         pData->gifFrameStartTime = std::chrono::steady_clock::now();
         
-        if (!SetTimer(hDlg, kPlaybackTimerId, kPlaybackTimerIntervalMs, nullptr))
+        // Use multimedia timer for smooth GIF playback
+        if (!StartMMTimer(hDlg, pData))
         {
             pData->isPlaying.store(false, std::memory_order_relaxed);
             RefreshPlaybackButtons(hDlg);
@@ -3510,7 +3511,7 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
         break;
     }
 
-    // Multimedia timer tick - handles MP4 playback with high precision
+    // Multimedia timer tick - handles MP4 and GIF playback with high precision
     case WMU_MM_TIMER_TICK:
     {
         pData = reinterpret_cast<TrimDialogData*>(GetWindowLongPtr(hDlg, DWLP_USER));
@@ -3526,6 +3527,64 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
             return TRUE;
         }
 
+        // Handle GIF playback
+        if (pData->isGif && !pData->gifFrames.empty())
+        {
+            const int64_t clampedTicks = std::clamp<int64_t>(
+                pData->currentPosition.count(),
+                pData->trimStart.count(),
+                pData->trimEnd.count());
+            const size_t frameIndex = FindGifFrameIndex(pData->gifFrames, clampedTicks);
+            const auto& frame = pData->gifFrames[frameIndex];
+            
+            // Check if enough real time has passed to advance to the next frame
+            auto now = std::chrono::steady_clock::now();
+            auto elapsedMs = std::chrono::duration_cast<std::chrono::milliseconds>(now - pData->gifFrameStartTime).count();
+            auto frameDurationMs = frame.duration.count() / 10'000; // Convert 100-ns ticks to ms
+            
+            // Update playhead position smoothly based on elapsed time within current frame
+            const int64_t frameElapsedTicks = static_cast<int64_t>(elapsedMs) * 10'000;
+            const int64_t smoothPosition = frame.start.count() + (std::min)(frameElapsedTicks, frame.duration.count());
+            pData->currentPosition = winrt::TimeSpan{ std::clamp<int64_t>(smoothPosition, pData->trimStart.count(), pData->trimEnd.count()) };
+            
+            // Update playhead
+            HWND hTimeline = GetDlgItem(hDlg, IDC_TRIM_TIMELINE);
+            if (hTimeline)
+            {
+                RECT rc;
+                GetClientRect(hTimeline, &rc);
+                const int newX = TimelineTimeToClientX(pData, pData->currentPosition, rc.right - rc.left);
+                if (newX != pData->lastPlayheadX)
+                {
+                    InvalidatePlayheadRegion(hTimeline, rc, pData->lastPlayheadX, newX);
+                    pData->lastPlayheadX = newX;
+                    UpdateWindow(hTimeline);
+                }
+            }
+            SetTimeText(hDlg, IDC_TRIM_POSITION_LABEL, pData->currentPosition, true);
+            
+            if (elapsedMs >= frameDurationMs)
+            {
+                // Time to advance to next frame
+                const int64_t nextTicks = frame.start.count() + frame.duration.count();
+
+                if (nextTicks >= pData->trimEnd.count())
+                {
+                    pData->currentPosition = pData->trimStart;
+                    StopPlayback(hDlg, pData, false);
+                    UpdateVideoPreview(hDlg, pData);
+                }
+                else
+                {
+                    pData->currentPosition = winrt::TimeSpan{ nextTicks };
+                    pData->gifFrameStartTime = now; // Reset timer for new frame
+                    UpdateVideoPreview(hDlg, pData);
+                }
+            }
+            return TRUE;
+        }
+
+        // Handle MP4 playback
         if (pData->mediaPlayer)
         {
             try
@@ -3581,74 +3640,12 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
     }
 
     case WM_TIMER:
-        // WM_TIMER is now only used for GIF playback; MP4 uses multimedia timer (WMU_MM_TIMER_TICK)
+        // WM_TIMER is no longer used for playback; both MP4 and GIF use multimedia timer (WMU_MM_TIMER_TICK)
+        // This handler is kept for any other timers that might be added in the future
         if (wParam == kPlaybackTimerId)
         {
-            pData = reinterpret_cast<TrimDialogData*>(GetWindowLongPtr(hDlg, DWLP_USER));
-            if (!pData)
-            {
-                KillTimer(hDlg, kPlaybackTimerId);
-                return TRUE;
-            }
-
-            if (!pData->isPlaying.load(std::memory_order_relaxed))
-            {
-                KillTimer(hDlg, kPlaybackTimerId);
-                RefreshPlaybackButtons(hDlg);
-                return TRUE;
-            }
-
-            if (pData->isGif && !pData->gifFrames.empty())
-            {
-                const int64_t clampedTicks = std::clamp<int64_t>(
-                    pData->currentPosition.count(),
-                    pData->trimStart.count(),
-                    pData->trimEnd.count());
-                const size_t frameIndex = FindGifFrameIndex(pData->gifFrames, clampedTicks);
-                const auto& frame = pData->gifFrames[frameIndex];
-                
-                // Check if enough real time has passed to advance to the next frame
-                auto now = std::chrono::steady_clock::now();
-                auto elapsedMs = std::chrono::duration_cast<std::chrono::milliseconds>(now - pData->gifFrameStartTime).count();
-                auto frameDurationMs = frame.duration.count() / 10'000; // Convert 100-ns ticks to ms
-                
-                if (elapsedMs < frameDurationMs)
-                {
-                    // Not time to advance yet, just update the UI position
-                    UpdatePositionUI(hDlg, pData);
-                    return TRUE;
-                }
-                
-                // Time to advance to next frame
-                const int64_t nextTicks = frame.start.count() + frame.duration.count();
-
-                if (nextTicks >= pData->trimEnd.count())
-                {
-                    pData->currentPosition = pData->trimStart;
-                    StopPlayback(hDlg, pData, false);
-                    UpdateVideoPreview(hDlg, pData);
-                }
-                else
-                {
-                    pData->currentPosition = winrt::TimeSpan{ nextTicks };
-                    pData->gifFrameStartTime = now; // Reset timer for new frame
-                    UpdateVideoPreview(hDlg, pData);
-                }
-                return TRUE;
-            }
-
-            const int64_t nextTicks = pData->currentPosition.count() + kPlaybackStepTicks;
-            if (nextTicks >= pData->trimEnd.count())
-            {
-                pData->currentPosition = pData->trimStart;
-                StopPlayback(hDlg, pData, false);
-                UpdateVideoPreview(hDlg, pData);
-            }
-            else
-            {
-                pData->currentPosition = winrt::TimeSpan{ nextTicks };
-                UpdateVideoPreview(hDlg, pData);
-            }
+            // Legacy timer - should not fire anymore, but clean up if it does
+            KillTimer(hDlg, kPlaybackTimerId);
             return TRUE;
         }
         break;
