@@ -116,18 +116,15 @@ namespace PowerDisplay
         }
 
         /// <summary>
-        /// Called when an existing instance is activated by another process
+        /// Called when an existing instance is activated by another process.
+        /// This happens when EnsureProcessRunning() launches a new process while one is already running.
+        /// We intentionally don't show the window here - window visibility should only be controlled via:
+        /// - Toggle event (hotkey, tray icon click, Settings UI Launch button)
+        /// - Standalone mode startup (handled in OnLaunched)
         /// </summary>
         private static void OnActivated(object? sender, AppActivationArguments args)
         {
-            // Toggle the window visibility when activated by another instance
-            if (_app?.MainWindow is MainWindow mainWindow)
-            {
-                mainWindow.DispatcherQueue.TryEnqueue(() =>
-                {
-                    mainWindow.ShowWindow();
-                });
-            }
+            Logger.LogInfo("OnActivated: Redirect activation received - window visibility unchanged");
         }
     }
 }
