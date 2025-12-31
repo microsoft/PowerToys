@@ -167,12 +167,13 @@ BOOLEAN g_running = TRUE;
 // Screen recording globals
 #define DEFAULT_RECORDING_FILE		L"Recording.mp4"
 #define DEFAULT_GIF_RECORDING_FILE	L"Recording.gif"
+#define DEFAULT_SCREENSHOT_FILE		L"ZoomIt.png"
 
 BOOL	g_RecordToggle = FALSE;
 BOOL	g_RecordCropping = FALSE;
 SelectRectangle g_SelectRectangle;
 std::wstring	g_RecordingSaveLocation;
-std::wstring	g_RecordingSaveLocationGIF;
+std::wstring	g_ScreenshotSaveLocation;
 winrt::IDirect3DDevice	g_RecordDevice{ nullptr };
 std::shared_ptr<VideoRecordingSession> g_RecordingSession = nullptr;
 std::shared_ptr<GifRecordingSession> g_GifRecordingSession = nullptr;
@@ -3539,6 +3540,56 @@ void StopRecording()
 
 //----------------------------------------------------------------------------
 //
+// GetUniqueFilename
+//
+// Returns a unique filename by checking for existing files and adding (1), (2), etc.
+// suffixes as needed. Uses the folder from lastSavePath if available, otherwise
+// uses the default folder.
+//
+//----------------------------------------------------------------------------
+auto GetUniqueFilename(const std::wstring& lastSavePath, const wchar_t* defaultFilename, REFKNOWNFOLDERID defaultFolderId)
+{
+    // Get the folder where the file will be saved
+    std::filesystem::path saveFolder;
+    if (!lastSavePath.empty())
+    {
+        // Use folder from last save location
+        saveFolder = std::filesystem::path(lastSavePath).parent_path();
+    }
+    
+    if (saveFolder.empty())
+    {
+        // Default to specified known folder
+        wil::unique_cotaskmem_string folderPath;
+        if (SUCCEEDED(SHGetKnownFolderPath(defaultFolderId, KF_FLAG_DEFAULT, nullptr, folderPath.put())))
+        {
+            saveFolder = folderPath.get();
+        }
+    }
+
+    // Build base name and extension
+    std::filesystem::path defaultPath = defaultFilename;
+    auto base = defaultPath.stem().wstring();
+    auto ext = defaultPath.extension().wstring();
+    
+    // Check for existing files and find unique name
+    std::wstring candidateName = base + ext;
+    std::filesystem::path checkPath = saveFolder / candidateName;
+    
+    int index = 1;
+    std::error_code ec;
+    while (std::filesystem::exists(checkPath, ec))
+    {
+        candidateName = base + L" (" + std::to_wstring(index) + L")" + ext;
+        checkPath = saveFolder / candidateName;
+        index++;
+    }
+    
+    return candidateName;
+}
+
+//----------------------------------------------------------------------------
+//
 // GetUniqueRecordingFilename
 //
 // Gets a unique file name for recording saves, using the " (N)" suffix
@@ -3549,28 +3600,16 @@ void StopRecording()
 //----------------------------------------------------------------------------
 auto GetUniqueRecordingFilename()
 {
-    std::filesystem::path path;
+    const wchar_t* defaultFile = (g_RecordingFormat == RecordingFormat::GIF) 
+        ? DEFAULT_GIF_RECORDING_FILE 
+        : DEFAULT_RECORDING_FILE;
+    
+    return GetUniqueFilename(g_RecordingSaveLocation, defaultFile, FOLDERID_Videos);
+}
 
-    if (g_RecordingFormat == RecordingFormat::GIF)
-    {
-        path = g_RecordingSaveLocationGIF.empty() ? DEFAULT_GIF_RECORDING_FILE : g_RecordingSaveLocationGIF;
-    }
-    else
-    {
-        path = g_RecordingSaveLocation.empty() ? DEFAULT_RECORDING_FILE : g_RecordingSaveLocation;
-    }
-
-    // Chop off index if it's there
-    auto base = std::regex_replace( path.stem().wstring(), std::wregex( L" [(][0-9]+[)]$" ), L"" );
-    path.replace_filename( base + path.extension().wstring() );
-
-    for( int index = 1; std::filesystem::exists( path ); index++ )
-    {
-
-        // File exists, so increment number to avoid collision
-        path.replace_filename( base + L" (" + std::to_wstring(index) + L')' + path.extension().wstring() );
-    }
-    return path.stem().wstring() + path.extension().wstring();
+auto GetUniqueScreenshotFilename()
+{
+    return GetUniqueFilename(g_ScreenshotSaveLocation, DEFAULT_SCREENSHOT_FILE, FOLDERID_Pictures);
 }
 
 //----------------------------------------------------------------------------
@@ -3703,19 +3742,15 @@ winrt::fire_and_forget StartRecordingAsync( HWND hWnd, LPRECT rcCrop, HWND hWndR
         winrt::StorageFile destFile = nullptr;
         HRESULT hr = S_OK;
         try {
-            OutputDebugStringW(L"[Recording] About to show save dialog...\n");
             // Show trim dialog option and save dialog
             std::wstring trimmedFilePath;
             auto suggestedName = GetUniqueRecordingFilename();
-            OutputDebugStringW((L"[Recording] Suggested filename: " + suggestedName + L"\n").c_str());
-            OutputDebugStringW((L"[Recording] Temp file path: " + std::wstring(file.Path()) + L"\n").c_str());
             auto finalPath = VideoRecordingSession::ShowSaveDialogWithTrim(
                 hWnd,
                 suggestedName,
                 std::wstring{ file.Path() },
                 trimmedFilePath
             );
-            OutputDebugStringW((L"[Recording] ShowSaveDialogWithTrim returned: " + finalPath + L"\n").c_str());
 
             if (!finalPath.empty())
             {
@@ -3739,16 +3774,12 @@ winrt::fire_and_forget StartRecordingAsync( HWND hWnd, LPRECT rcCrop, HWND hWndR
                     try { co_await file.DeleteAsync(); } catch (...) {}
                 }
 
-                if (g_RecordingFormat == RecordingFormat::GIF)
-                {
-                    g_RecordingSaveLocationGIF = destFile.Path();
-                    SaveToClipboard(g_RecordingSaveLocationGIF.c_str(), hWnd);
-                }
-                else
-                {
-                    g_RecordingSaveLocation = destFile.Path();
-                    SaveToClipboard(g_RecordingSaveLocation.c_str(), hWnd);
-                }
+                // Use finalPath directly - destFile.Path() may be stale after MoveAndReplaceAsync
+                g_RecordingSaveLocation = finalPath;
+                // Update the registry buffer and save to persist across app restarts
+                wcsncpy_s(g_RecordingSaveLocationBuffer, g_RecordingSaveLocation.c_str(), _TRUNCATE);
+                reg.WriteRegSettings(RegSettings);
+                SaveToClipboard(g_RecordingSaveLocation.c_str(), hWnd);
             }
             else
             {
@@ -4189,6 +4220,10 @@ LRESULT APIENTRY MainWndProc(
 
         reg.ReadRegSettings( RegSettings );
 
+        // Initialize save location strings from registry buffers
+        g_RecordingSaveLocation = g_RecordingSaveLocationBuffer;
+        g_ScreenshotSaveLocation = g_ScreenshotSaveLocationBuffer;
+
         // Set g_RecordScaling based on the current recording format
         if (g_RecordingFormat == RecordingFormat::GIF) {
             g_RecordScaling = g_RecordScalingGIF;
@@ -4397,6 +4432,10 @@ LRESULT APIENTRY MainWndProc(
         case SNIP_SAVE_HOTKEY:
         case SNIP_HOTKEY:
         {
+            OutputDebugStringW((L"[Snip] Hotkey received: " + std::to_wstring(LOWORD(wParam)) + 
+                L" (SNIP_SAVE=" + std::to_wstring(SNIP_SAVE_HOTKEY) + 
+                L" SNIP=" + std::to_wstring(SNIP_HOTKEY) + L")\n").c_str());
+            
             // Block liveZoom liveDraw snip due to mirroring bug
             if( IsWindowVisible( g_hWndLiveZoom )
                 && ( GetWindowLongPtr( hWnd, GWL_EXSTYLE ) & WS_EX_LAYERED ) )
@@ -4442,10 +4481,8 @@ LRESULT APIENTRY MainWndProc(
             // Now copy crop or copy+save
             if( LOWORD( wParam ) == SNIP_SAVE_HOTKEY )
             {
-                // Hide cursor for screen capture
-                ShowCursor(false);
+                // IDC_SAVE_CROP handles cursor hiding internally after region selection
                 SendMessage( hWnd, WM_COMMAND, IDC_SAVE_CROP, ( zoomed ? 0 : SHALLOW_ZOOM ) );
-                ShowCursor(true);
             }
             else
             {
@@ -6686,6 +6723,11 @@ LRESULT APIENTRY MainWndProc(
             // Open the Save As dialog and capture the desired file path and whether to
             // save the zoomed display or the source bitmap pixels.
             g_bSaveInProgress = true;
+            
+            // Get a unique filename suggestion
+            auto suggestedName = GetUniqueScreenshotFilename();
+            _tcscpy(filePath, suggestedName.c_str());
+            
             memset( &openFileName, 0, sizeof(openFileName ));
             openFileName.lStructSize       = OPENFILENAME_SIZE_VERSION_400;
             openFileName.hwndOwner         = hWnd;
@@ -6742,6 +6784,11 @@ LRESULT APIENTRY MainWndProc(
 
                     SavePng( targetFilePath, hbmZoomed.get() );
                 }
+                
+                // Remember the save location for next time and persist to registry
+                g_ScreenshotSaveLocation = targetFilePath;
+                wcsncpy_s(g_ScreenshotSaveLocationBuffer, g_ScreenshotSaveLocation.c_str(), _TRUNCATE);
+                reg.WriteRegSettings(RegSettings);
             }
             g_bSaveInProgress = false;
 
