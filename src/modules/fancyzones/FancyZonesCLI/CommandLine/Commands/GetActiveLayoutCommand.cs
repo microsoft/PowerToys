@@ -15,7 +15,7 @@ namespace FancyZonesCLI.CommandLine.Commands;
 internal sealed partial class GetActiveLayoutCommand : FancyZonesBaseCommand
 {
     public GetActiveLayoutCommand()
-        : base("get-active-layout", "Show currently active layout")
+        : base("get-active-layout", Properties.Resources.cmd_get_active_layout)
     {
         AddAlias("active");
     }
@@ -28,7 +28,7 @@ internal sealed partial class GetActiveLayoutCommand : FancyZonesBaseCommand
 
         if (editorParams.Monitors == null || editorParams.Monitors.Count == 0)
         {
-            throw new InvalidOperationException("Could not get current monitor information.");
+            throw new InvalidOperationException(Properties.Resources.get_active_layout_no_monitor_info);
         }
 
         // Read applied layouts.
@@ -36,11 +36,11 @@ internal sealed partial class GetActiveLayoutCommand : FancyZonesBaseCommand
 
         if (appliedLayouts.AppliedLayouts == null)
         {
-            return "No layouts configured.";
+            return Properties.Resources.get_active_layout_no_layouts;
         }
 
         var sb = new System.Text.StringBuilder();
-        sb.AppendLine("\n=== Active FancyZones Layout(s) ===\n");
+        sb.AppendLine($"\n{Properties.Resources.get_active_layout_header}\n");
 
         // Show only layouts for currently connected monitors.
         for (int i = 0; i < editorParams.Monitors.Count; i++)
@@ -71,7 +71,7 @@ internal sealed partial class GetActiveLayoutCommand : FancyZonesBaseCommand
             }
             else
             {
-                sb.AppendLine("  No layout applied");
+                sb.AppendLine(Properties.Resources.get_active_layout_no_layout);
             }
 
             if (i < editorParams.Monitors.Count - 1)

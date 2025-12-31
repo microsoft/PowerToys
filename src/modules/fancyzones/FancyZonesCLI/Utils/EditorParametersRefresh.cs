@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Globalization;
 using System.IO;
 using System.Text.Json;
 using System.Threading;
@@ -60,7 +61,7 @@ internal static class EditorParametersRefresh
         var finalParams = FancyZonesDataIO.ReadEditorParameters();
         if (finalParams.Monitors == null || finalParams.Monitors.Count == 0)
         {
-            throw new InvalidOperationException($"Could not get current monitor information (timed out after {maxWaitMilliseconds}ms waiting for '{Path.GetFileName(filePath)}').");
+            throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, Properties.Resources.editor_params_timeout, maxWaitMilliseconds, Path.GetFileName(filePath)));
         }
 
         return finalParams;
