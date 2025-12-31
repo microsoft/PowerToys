@@ -56,7 +56,10 @@ public:
         winrt::Windows::Foundation::TimeSpan videoDuration{ 0 };
         winrt::Windows::Foundation::TimeSpan trimStart{ 0 };
         winrt::Windows::Foundation::TimeSpan trimEnd{ 0 };
+        winrt::Windows::Foundation::TimeSpan originalTrimStart{ 0 };  // Initial value to detect if trim needed
+        winrt::Windows::Foundation::TimeSpan originalTrimEnd{ 0 };    // Initial value to detect if trim needed
         winrt::Windows::Foundation::TimeSpan currentPosition{ 0 };
+        winrt::Windows::Foundation::TimeSpan playbackStartPosition{ 0 }; // Where playback started (for looping)
         winrt::Windows::Media::Editing::MediaComposition composition{ nullptr };
         winrt::Windows::Media::Playback::MediaPlayer mediaPlayer{ nullptr };
         winrt::Windows::Storage::StorageFile playbackFile{ nullptr };

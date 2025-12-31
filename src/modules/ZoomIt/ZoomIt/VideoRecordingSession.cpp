@@ -702,6 +702,11 @@ namespace
         const int64_t selectionTicks = (std::max)(pData->trimEnd.count() - pData->trimStart.count(), int64_t{ 0 });
         const std::wstring durationText = FormatDurationString(winrt::TimeSpan{ selectionTicks });
         SetDlgItemText(hDlg, IDC_TRIM_DURATION_LABEL, durationText.c_str());
+
+        // Enable OK button only if grippers have moved (trim is needed)
+        const bool trimChanged = (pData->trimStart.count() != pData->originalTrimStart.count()) ||
+                                 (pData->trimEnd.count() != pData->originalTrimEnd.count());
+        EnableWindow(GetDlgItem(hDlg, IDOK), trimChanged);
     }
 
         RECT GetTimelineTrackRect(const RECT& clientRect)
@@ -1786,7 +1791,8 @@ static void UpdateVideoPreview(HWND hDlg, VideoRecordingSession::TrimDialogData*
 
     if (pData->isGif)
     {
-        const int64_t clampedTicks = std::clamp<int64_t>(requestTicks, pData->trimStart.count(), pData->trimEnd.count());
+        // Use request time directly (don't clamp to trim bounds) so thumbnail updates outside trim region
+        const int64_t clampedTicks = std::clamp<int64_t>(requestTicks, 0, pData->videoDuration.count());
         if (!pData->gifFrames.empty())
         {
             const size_t frameIndex = FindGifFrameIndex(pData->gifFrames, clampedTicks);
@@ -1844,6 +1850,12 @@ static void UpdateVideoPreview(HWND hDlg, VideoRecordingSession::TrimDialogData*
 
                     pData->videoDuration = actualDuration;
                     pData->trimEnd = actualDuration;
+                    // Also update original values so OK button state stays correct
+                    pData->originalTrimEnd = actualDuration;
+                    if (pData->originalTrimStart.count() > pData->originalTrimEnd.count())
+                    {
+                        pData->originalTrimStart = pData->originalTrimEnd;
+                    }
                     if (pData->trimStart.count() > pData->trimEnd.count())
                     {
                         pData->trimStart = pData->trimEnd;
@@ -2337,6 +2349,9 @@ static winrt::fire_and_forget StartPlaybackAsync(HWND hDlg, VideoRecordingSessio
         pData->currentPosition = pData->trimStart;
         UpdateVideoPreview(hDlg, pData);
     }
+
+    // Store the position where playback started so we can loop back to it
+    pData->playbackStartPosition = pData->currentPosition;
 
     bool expected = false;
     if (!pData->isPlaying.compare_exchange_strong(expected, true, std::memory_order_relaxed))
@@ -3265,7 +3280,12 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
         // Initialize times
         pData->trimStart = winrt::TimeSpan{ 0 };
         pData->trimEnd = pData->videoDuration;
+        pData->originalTrimStart = pData->trimStart;
+        pData->originalTrimEnd = pData->trimEnd;
         pData->currentPosition = winrt::TimeSpan{ 0 };
+
+        // Initially disable OK button since no trim has been made yet
+        EnableWindow(GetDlgItem(hDlg, IDOK), FALSE);
 
         OutputDebugStringW((L"[Trim] isGif=" + std::to_wstring(pData->isGif) + L" duration=" + std::to_wstring(pData->videoDuration.count()) + L"\n").c_str());
 
@@ -3570,7 +3590,8 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
 
                 if (nextTicks >= pData->trimEnd.count())
                 {
-                    pData->currentPosition = pData->trimStart;
+                    // Loop back to where playback started
+                    pData->currentPosition = pData->playbackStartPosition;
                     StopPlayback(hDlg, pData, false);
                     UpdateVideoPreview(hDlg, pData);
                 }
@@ -3627,7 +3648,8 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
 
                 if (clampedTicks >= pData->trimEnd.count())
                 {
-                    pData->currentPosition = pData->trimStart;
+                    // Loop back to where playback started
+                    pData->currentPosition = pData->playbackStartPosition;
                     StopPlayback(hDlg, pData, false);
                     UpdateVideoPreview(hDlg, pData);
                 }
