@@ -5741,7 +5741,13 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
     <value>Power Display</value>
   </data>
   <data name="Oobe_PowerDisplay.Description" xml:space="preserve">
-    <value>Power Display provides advanced display management features including brightness control, auto-brightness, and power management settings.</value>
+    <value>Power Display provides unified control over display settings across multiple monitors. Adjust brightness, contrast, volume, color temperature, and input source for all connected displays from a single overlay. Supports DDC/CI for external monitors and WMI for laptop displays, with profile support for quick configuration switching and LightSwitch integration for automatic theme-based adjustments.</value>
+  </data>
+  <data name="Oobe_PowerDisplay_Activation.Text" xml:space="preserve">
+    <value>to open the Power Display overlay.</value>
+  </data>
+  <data name="Oobe_PowerDisplay_TipsAndTricks.Text" xml:space="preserve">
+    <value>**Create profiles** to save your preferred display settings, then configure them in **LightSwitch** to automatically switch profiles when the system theme changes.</value>
   </data>
   <data name="Launch_PowerDisplay.Content" xml:space="preserve">
     <value>Open Power Display</value>

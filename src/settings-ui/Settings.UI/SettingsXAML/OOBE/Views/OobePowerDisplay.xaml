@@ -11,9 +11,9 @@
     <controls:OOBEPageControl x:Uid="Oobe_PowerDisplay" HeroImage="ms-appx:///Assets/Settings/Modules/OOBE/PowerDisplay.gif">
         <controls:OOBEPageControl.PageContent>
             <StackPanel Orientation="Vertical" Spacing="12">
-                <TextBlock x:Uid="Oobe_HowToUse" Style="{ThemeResource OobeSubtitleStyle}" />
+                <TextBlock x:Uid="Oobe_HowToLaunch" Style="{ThemeResource OobeSubtitleStyle}" />
 
-                <tkcontrols:MarkdownTextBlock x:Uid="Oobe_PowerDisplay_HowToUse" />
+                <controls:ShortcutWithTextLabelControl x:Name="HotkeyActivation" x:Uid="Oobe_PowerDisplay_Activation" />
 
                 <TextBlock x:Uid="Oobe_TipsAndTricks" Style="{ThemeResource OobeSubtitleStyle}" />
 
