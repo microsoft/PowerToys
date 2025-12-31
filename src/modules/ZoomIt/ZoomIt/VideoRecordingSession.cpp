@@ -14,8 +14,10 @@
 #include <cstdlib>
 #include <filesystem>
 #include <shlwapi.h>   // For SHCreateStreamOnFileEx
+#include <mmsystem.h>   // For timeBeginPeriod/timeEndPeriod
 
 #pragma comment(lib, "shlwapi.lib")
+#pragma comment(lib, "winmm.lib")
 
 extern DWORD g_RecordScaling;
 
@@ -438,11 +440,36 @@ namespace
     constexpr int64_t kPreviewMinDeltaTicks = 2'000'000; // 20ms between thumbnails while playing
     constexpr UINT32 kPreviewRequestWidthPlaying = 320;
     constexpr UINT32 kPreviewRequestHeightPlaying = 180;
+    constexpr int64_t kTicksPerMicrosecond = 10; // 100ns units per microsecond
+    constexpr int64_t kPlaybackSyncIntervalMs = 40;             // refresh baseline frequently for smoother prediction
+    constexpr int64_t kPlaybackDriftCheckMs = 40;              // sample MediaPlayer at least every 40ms (overridden to every tick currently)
+    constexpr int64_t kPlaybackDriftSnapTicks = 2'000'000;     // snap if drift exceeds 200ms
+    constexpr int kPlaybackDriftBlendNumerator = 1;            // blend 20% toward real position
+    constexpr int kPlaybackDriftBlendDenominator = 5;
     constexpr UINT WMU_PREVIEW_READY = WM_USER + 1;
     constexpr UINT WMU_PREVIEW_SCHEDULED = WM_USER + 2;
     constexpr UINT WMU_DURATION_CHANGED = WM_USER + 3;
     constexpr UINT WMU_PLAYBACK_POSITION = WM_USER + 4;
     constexpr UINT WMU_PLAYBACK_STOP = WM_USER + 5;
+
+    std::atomic<int> g_highResTimerRefs{ 0 };
+
+    void AcquireHighResTimer()
+    {
+        if (g_highResTimerRefs.fetch_add(1, std::memory_order_relaxed) == 0)
+        {
+            timeBeginPeriod(1);
+        }
+    }
+
+    void ReleaseHighResTimer()
+    {
+        const int prev = g_highResTimerRefs.fetch_sub(1, std::memory_order_relaxed);
+        if (prev == 1)
+        {
+            timeEndPeriod(1);
+        }
+    }
 
     bool EnsurePlaybackDevice(VideoRecordingSession::TrimDialogData* pData)
     {
@@ -736,6 +763,100 @@ namespace
                 InvalidateRect(hTimeline, &invalidRect, FALSE);
             }
         }
+}
+
+static int64_t SteadyClockMicros()
+{
+    return std::chrono::duration_cast<std::chrono::microseconds>(
+        std::chrono::steady_clock::now().time_since_epoch()).count();
+}
+
+static void ResetSmoothPlayback(VideoRecordingSession::TrimDialogData* pData)
+{
+    if (!pData)
+    {
+        return;
+    }
+
+    pData->smoothActive.store(false, std::memory_order_relaxed);
+    pData->smoothBaseTicks.store(0, std::memory_order_relaxed);
+    pData->smoothLastSyncMicroseconds.store(0, std::memory_order_relaxed);
+    pData->smoothHasNonZeroSample.store(false, std::memory_order_relaxed);
+}
+
+static void LogSmoothingEvent(const wchar_t* label, int64_t predictedTicks, int64_t mediaTicks, int64_t driftTicks);
+
+static int64_t GetSmoothedPositionTicks(
+    VideoRecordingSession::TrimDialogData* pData,
+    int64_t minTicks,
+    int64_t maxTicks);
+
+static void BeginSmoothPlayback(VideoRecordingSession::TrimDialogData* pData, int64_t mediaTicks)
+{
+    if (!pData)
+    {
+        return;
+    }
+
+    const int64_t nowUs = SteadyClockMicros();
+    pData->smoothBaseTicks.store(mediaTicks, std::memory_order_relaxed);
+    pData->smoothLastSyncMicroseconds.store(nowUs, std::memory_order_relaxed);
+    pData->smoothActive.store(true, std::memory_order_relaxed);
+    pData->smoothHasNonZeroSample.store(mediaTicks > 0, std::memory_order_relaxed);
+}
+
+static void SyncSmoothPlayback(VideoRecordingSession::TrimDialogData* pData, int64_t mediaTicks, int64_t /*minTicks*/, int64_t /*maxTicks*/)
+{
+    if (!pData)
+    {
+        return;
+    }
+
+    const int64_t nowUs = SteadyClockMicros();
+    pData->smoothBaseTicks.store(mediaTicks, std::memory_order_relaxed);
+    pData->smoothLastSyncMicroseconds.store(nowUs, std::memory_order_relaxed);
+    pData->smoothActive.store(true, std::memory_order_relaxed);
+    pData->smoothHasNonZeroSample.store(mediaTicks > 0, std::memory_order_relaxed);
+
+    LogSmoothingEvent(L"setBase", mediaTicks, mediaTicks, 0);
+}
+
+static int64_t GetSmoothedPositionTicks(
+    VideoRecordingSession::TrimDialogData* pData,
+    int64_t minTicks,
+    int64_t maxTicks)
+{
+    if (!pData)
+    {
+        return minTicks;
+    }
+
+    if (!pData->smoothActive.load(std::memory_order_relaxed))
+    {
+        const int64_t rawTicks = pData->currentPosition.count();
+        return std::clamp<int64_t>(rawTicks, minTicks, maxTicks);
+    }
+
+    const int64_t lastSyncUs = pData->smoothLastSyncMicroseconds.load(std::memory_order_relaxed);
+    const int64_t baseTicks = pData->smoothBaseTicks.load(std::memory_order_relaxed);
+
+    if (lastSyncUs == 0)
+    {
+        return std::clamp<int64_t>(baseTicks, minTicks, maxTicks);
+    }
+
+    const int64_t nowUs = SteadyClockMicros();
+    const int64_t deltaUs = (std::max<int64_t>)(0, nowUs - lastSyncUs);
+    const int64_t predicted = baseTicks + deltaUs * kTicksPerMicrosecond;
+    return std::clamp<int64_t>(predicted, minTicks, maxTicks);
+}
+
+static void LogSmoothingEvent(const wchar_t* label, int64_t predictedTicks, int64_t mediaTicks, int64_t driftTicks)
+{
+    wchar_t buf[256]{};
+    swprintf_s(buf, L"[TrimSmooth] %s pred=%lld media=%lld drift=%lld\n",
+        label ? label : L"", static_cast<long long>(predictedTicks), static_cast<long long>(mediaTicks), static_cast<long long>(driftTicks));
+    OutputDebugStringW(buf);
 }
 
 static void StopPlayback(HWND hDlg, VideoRecordingSession::TrimDialogData* pData, bool capturePosition = true);
@@ -2028,8 +2149,48 @@ static void DrawTimeline(HDC hdc, RECT rc, VideoRecordingSession::TrimDialogData
 namespace
 {
     constexpr UINT_PTR kPlaybackTimerId = 1;
-    constexpr UINT kPlaybackTimerIntervalMs = 8;
-    constexpr int64_t kPlaybackStepTicks = static_cast<int64_t>(kPlaybackTimerIntervalMs) * 10'000; // timer interval in 100-ns units
+    constexpr UINT kPlaybackTimerIntervalMs = 16;  // Fallback for GIF; MP4 uses multimedia timer
+    constexpr int64_t kPlaybackStepTicks = static_cast<int64_t>(kPlaybackTimerIntervalMs) * 10'000;
+    constexpr UINT WMU_MM_TIMER_TICK = WM_USER + 10;  // Posted by multimedia timer callback
+    constexpr UINT kMMTimerIntervalMs = 8;  // 8ms for ~120Hz update rate
+}
+
+// Multimedia timer callback - runs in a separate thread, just posts a message
+static void CALLBACK MMTimerCallback(UINT /*uTimerID*/, UINT /*uMsg*/, DWORD_PTR dwUser, DWORD_PTR /*dw1*/, DWORD_PTR /*dw2*/)
+{
+    HWND hDlg = reinterpret_cast<HWND>(dwUser);
+    if (hDlg && IsWindow(hDlg))
+    {
+        PostMessage(hDlg, WMU_MM_TIMER_TICK, 0, 0);
+    }
+}
+
+static void StopMMTimer(VideoRecordingSession::TrimDialogData* pData)
+{
+    if (pData && pData->mmTimerId != 0)
+    {
+        timeKillEvent(pData->mmTimerId);
+        pData->mmTimerId = 0;
+    }
+}
+
+static bool StartMMTimer(HWND hDlg, VideoRecordingSession::TrimDialogData* pData)
+{
+    if (!pData || !hDlg)
+    {
+        return false;
+    }
+    
+    StopMMTimer(pData);
+    
+    pData->mmTimerId = timeSetEvent(
+        kMMTimerIntervalMs,
+        1,  // 1ms resolution
+        MMTimerCallback,
+        reinterpret_cast<DWORD_PTR>(hDlg),
+        TIME_PERIODIC | TIME_KILL_SYNCHRONOUS);
+    
+    return pData->mmTimerId != 0;
 }
 
 static void RefreshPlaybackButtons(HWND hDlg)
@@ -2122,6 +2283,7 @@ static void StopPlayback(HWND hDlg, VideoRecordingSession::TrimDialogData* pData
     }
 
     const bool wasPlaying = pData->isPlaying.exchange(false, std::memory_order_relaxed);
+    ResetSmoothPlayback(pData);
 
     // Stop audio playback and align media position with UI state, but keep player alive for resume
     if (pData->mediaPlayer)
@@ -2148,7 +2310,8 @@ static void StopPlayback(HWND hDlg, VideoRecordingSession::TrimDialogData* pData
     {
         if (wasPlaying)
         {
-            KillTimer(hDlg, kPlaybackTimerId);
+            StopMMTimer(pData);  // Stop multimedia timer for MP4
+            KillTimer(hDlg, kPlaybackTimerId);  // Stop regular timer for GIF
         }
         RefreshPlaybackButtons(hDlg);
     }
@@ -2165,6 +2328,8 @@ static winrt::fire_and_forget StartPlaybackAsync(HWND hDlg, VideoRecordingSessio
     {
         co_return;
     }
+
+    ResetSmoothPlayback(pData);
 
     if (pData->currentPosition.count() < pData->trimStart.count() ||
         pData->currentPosition.count() >= pData->trimEnd.count())
@@ -2209,6 +2374,10 @@ static winrt::fire_and_forget StartPlaybackAsync(HWND hDlg, VideoRecordingSessio
                     pData->trimStart.count(),
                     pData->trimEnd.count());
                 session.Position(winrt::TimeSpan{ clampedTicks });
+                pData->currentPosition = winrt::TimeSpan{ clampedTicks };
+                // Defer smoothing until the first real media sample to avoid extrapolating from zero
+                pData->smoothActive.store(false, std::memory_order_relaxed);
+                pData->smoothHasNonZeroSample.store(false, std::memory_order_relaxed);
             }
             pData->mediaPlayer.Play();
         }
@@ -2216,9 +2385,11 @@ static winrt::fire_and_forget StartPlaybackAsync(HWND hDlg, VideoRecordingSessio
         {
         }
 
-        if (!SetTimer(hDlg, kPlaybackTimerId, kPlaybackTimerIntervalMs, nullptr))
+        // Use multimedia timer for smooth updates
+        if (!StartMMTimer(hDlg, pData))
         {
             pData->isPlaying.store(false, std::memory_order_relaxed);
+            ResetSmoothPlayback(pData);
             RefreshPlaybackButtons(hDlg);
             co_return;
         }
@@ -2382,6 +2553,16 @@ static winrt::fire_and_forget StartPlaybackAsync(HWND hDlg, VideoRecordingSessio
                 auto pos = sender.Position();
                 dataPtr->currentPosition = pos;
 
+                if (dataPtr->isPlaying.load(std::memory_order_relaxed) &&
+                    !dataPtr->smoothHasNonZeroSample.load(std::memory_order_relaxed) &&
+                    pos.count() > 0)
+                {
+                    // Seed smoothing on first real position, but keep baseline exact to avoid a jump
+                    dataPtr->smoothHasNonZeroSample.store(true, std::memory_order_relaxed);
+                    SyncSmoothPlayback(dataPtr, pos.count(), dataPtr->trimStart.count(), dataPtr->trimEnd.count());
+                    LogSmoothingEvent(L"eventFirst", pos.count(), pos.count(), 0);
+                }
+
                 if (pos >= dataPtr->trimEnd)
                 {
                     dataPtr->currentPosition = dataPtr->trimStart;
@@ -2442,14 +2623,19 @@ static winrt::fire_and_forget StartPlaybackAsync(HWND hDlg, VideoRecordingSessio
         co_return;
     }
 
-    if (!SetTimer(hDlg, kPlaybackTimerId, kPlaybackTimerIntervalMs, nullptr))
+    // Use multimedia timer for smooth updates
+    if (!StartMMTimer(hDlg, pData))
     {
         pData->isPlaying.store(false, std::memory_order_relaxed);
         CleanupMediaPlayer(pData);
+        ResetSmoothPlayback(pData);
         RefreshPlaybackButtons(hDlg);
         co_return;
     }
 
+    // Defer smoothing until first real playback position is reported to prevent early extrapolation
+    pData->smoothActive.store(false, std::memory_order_relaxed);
+    pData->smoothHasNonZeroSample.store(false, std::memory_order_relaxed);
     PostMessage(hDlg, WMU_PLAYBACK_POSITION, 0, 0);
     RefreshPlaybackButtons(hDlg);
 }
@@ -3039,6 +3225,8 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
         pData->isPlaying.store(false, std::memory_order_relaxed);
         pData->lastRenderedPreview.store(-1, std::memory_order_relaxed);
 
+        AcquireHighResTimer();
+
         // Make OK the default button
         SendMessage(hDlg, DM_SETDEFID, IDOK, 0);
 
@@ -3313,13 +3501,87 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
         }
         if (pData)
         {
+            StopMMTimer(pData);  // Stop multimedia timer if running
             pData->playbackFile = nullptr;
             CleanupGifFrames(pData);
         }
+
+        ReleaseHighResTimer();
         break;
     }
 
+    // Multimedia timer tick - handles MP4 playback with high precision
+    case WMU_MM_TIMER_TICK:
+    {
+        pData = reinterpret_cast<TrimDialogData*>(GetWindowLongPtr(hDlg, DWLP_USER));
+        if (!pData)
+        {
+            return TRUE;
+        }
+
+        if (!pData->isPlaying.load(std::memory_order_relaxed))
+        {
+            StopMMTimer(pData);
+            RefreshPlaybackButtons(hDlg);
+            return TRUE;
+        }
+
+        if (pData->mediaPlayer)
+        {
+            try
+            {
+                auto session = pData->mediaPlayer.PlaybackSession();
+                if (!session)
+                {
+                    StopPlayback(hDlg, pData, false);
+                    UpdateVideoPreview(hDlg, pData);
+                    return TRUE;
+                }
+
+                // Simply use MediaPlayer position directly
+                auto position = session.Position();
+                const int64_t mediaTicks = position.count();
+                
+                // Clamp to trim range
+                const int64_t clampedTicks = std::clamp<int64_t>(
+                    mediaTicks,
+                    pData->trimStart.count(),
+                    pData->trimEnd.count());
+                pData->currentPosition = winrt::TimeSpan{ clampedTicks };
+
+                // Invalidate only the old and new playhead regions for efficiency
+                HWND hTimeline = GetDlgItem(hDlg, IDC_TRIM_TIMELINE);
+                if (hTimeline)
+                {
+                    RECT rc;
+                    GetClientRect(hTimeline, &rc);
+                    const int newX = TimelineTimeToClientX(pData, pData->currentPosition, rc.right - rc.left);
+                    // Only repaint if position actually changed
+                    if (newX != pData->lastPlayheadX)
+                    {
+                        InvalidatePlayheadRegion(hTimeline, rc, pData->lastPlayheadX, newX);
+                        pData->lastPlayheadX = newX;
+                        UpdateWindow(hTimeline);
+                    }
+                }
+                SetTimeText(hDlg, IDC_TRIM_POSITION_LABEL, pData->currentPosition, true);
+
+                if (clampedTicks >= pData->trimEnd.count())
+                {
+                    pData->currentPosition = pData->trimStart;
+                    StopPlayback(hDlg, pData, false);
+                    UpdateVideoPreview(hDlg, pData);
+                }
+            }
+            catch (...)
+            {
+            }
+        }
+        return TRUE;
+    }
+
     case WM_TIMER:
+        // WM_TIMER is now only used for GIF playback; MP4 uses multimedia timer (WMU_MM_TIMER_TICK)
         if (wParam == kPlaybackTimerId)
         {
             pData = reinterpret_cast<TrimDialogData*>(GetWindowLongPtr(hDlg, DWLP_USER));
@@ -3333,33 +3595,6 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
             {
                 KillTimer(hDlg, kPlaybackTimerId);
                 RefreshPlaybackButtons(hDlg);
-                return TRUE;
-            }
-
-            if (pData->mediaPlayer)
-            {
-                try
-                {
-                    auto session = pData->mediaPlayer.PlaybackSession();
-                    auto position = session.Position();
-                    pData->currentPosition = position;
-
-                    // Drive the UI immediately for smoother slider motion; preview throttling still happens via WMU_PLAYBACK_POSITION
-                    UpdatePositionUI(hDlg, pData);
-
-                    if (position >= pData->trimEnd)
-                    {
-                        pData->currentPosition = pData->trimStart;
-                        PostMessage(hDlg, WMU_PLAYBACK_STOP, 0, 0);
-                    }
-                    else
-                    {
-                        PostMessage(hDlg, WMU_PLAYBACK_POSITION, 0, 0);
-                    }
-                }
-                catch (...)
-                {
-                }
                 return TRUE;
             }
 

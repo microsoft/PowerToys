@@ -67,6 +67,10 @@ public:
         std::atomic<int64_t> lastRenderedPreview{ -1 };
         std::atomic<bool> isPlaying{ false };
         std::atomic<bool> frameCopyInProgress{ false };
+        std::atomic<bool> smoothActive{ false };
+        std::atomic<int64_t> smoothBaseTicks{ 0 };
+        std::atomic<int64_t> smoothLastSyncMicroseconds{ 0 };
+        std::atomic<bool> smoothHasNonZeroSample{ false };
         std::mutex previewBitmapMutex;
         winrt::event_token frameAvailableToken{};
         winrt::event_token positionChangedToken{};
@@ -98,6 +102,8 @@ public:
         enum DragMode { None, TrimStart, Position, TrimEnd };
         DragMode dragMode{ None };
         bool isDragging{ false };
+        int lastPlayheadX{ -1 }; // Track last playhead pixel position for efficient invalidation
+        MMRESULT mmTimerId{ 0 }; // Multimedia timer for smooth MP4 playback
 
         // Helper to convert time to pixel position
         int TimeToPixel(winrt::Windows::Foundation::TimeSpan time, int timelineWidth) const
