@@ -3,7 +3,12 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Threading;
 using System.Windows.Forms;
+
+#if !MM_HELPER
+using Thread = MouseWithoutBorders.Core.Thread;
+#endif
 
 namespace MouseWithoutBorders.Core;
 
