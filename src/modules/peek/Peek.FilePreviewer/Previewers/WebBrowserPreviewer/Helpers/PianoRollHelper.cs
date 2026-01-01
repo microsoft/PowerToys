@@ -22,9 +22,9 @@ namespace Peek.FilePreviewer.Previewers
         {
             string midiSvg = Microsoft.PowerToys.FilePreviewCommon.PianoRoll.PianoRollHelper.MidiSvg(filePath);
 
-            string filename = tempFolder + "\\" + Guid.NewGuid().ToString() + ".svg";
-            File.WriteAllText(filename, midiSvg);
-            return filename;
+            string svgPath = tempFolder + "\\" + Guid.NewGuid().ToString() + ".svg";
+            File.WriteAllText(svgPath, midiSvg);
+            return svgPath;
         }
     }
 }
