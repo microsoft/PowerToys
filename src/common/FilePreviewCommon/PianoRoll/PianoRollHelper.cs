@@ -9,6 +9,7 @@ using System.Text;
 using System.Xml;
 using Melanchall.DryWetMidi.Core;
 using Melanchall.DryWetMidi.Interaction;
+using MidiNote = Melanchall.DryWetMidi.Interaction.Note;
 
 namespace Microsoft.PowerToys.FilePreviewCommon.PianoRoll
 {
@@ -47,7 +48,7 @@ namespace Microsoft.PowerToys.FilePreviewCommon.PianoRoll
             };
         }
 
-        private static Note DecodeMidiNote(Melanchall.DryWetMidi.Interaction.Note midiNote, int resolution)
+        private static Note DecodeMidiNote(MidiNote midiNote, int resolution)
         {
             int startPos = (int)(midiNote.Time * 480 / resolution);
             return new Note
