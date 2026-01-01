@@ -34,6 +34,7 @@
     <PackageVersion Include="LazyCache" Version="2.4.0" />
     <PackageVersion Include="Mages" Version="3.0.0" />
     <PackageVersion Include="Markdig.Signed" Version="0.34.0" />
+    <PackageVersion Include="Melanchall.DryWetMidi" Version="7.2.0"/>
     <!-- Including MessagePack to force version, since it's used by StreamJsonRpc but contains vulnerabilities. After StreamJsonRpc updates the version of MessagePack, we can upgrade StreamJsonRpc instead. -->
     <PackageVersion Include="MessagePack" Version="3.1.3" />
     <PackageVersion Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="9.0.0" />
