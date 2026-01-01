@@ -9,7 +9,7 @@ namespace Microsoft.PowerToys.FilePreviewCommon.PianoRoll
 {
     internal sealed class CoordinateHelper
     {
-        public const int TICKSPERBEAT = 480;
+        public const int RESOLUTION = 480;
         public const int PADDING = 4;
 
         public int PixelPerBeat { get; set; }
@@ -42,10 +42,10 @@ namespace Microsoft.PowerToys.FilePreviewCommon.PianoRoll
             return new NotePositionParameters
             {
                 Point1 = new Tuple<double, double>(
-                    1.0 * (note.StartPos - positionRangeStart) * PixelPerBeat / TICKSPERBEAT,
+                    1.0 * (note.StartPos - positionRangeStart) * PixelPerBeat / RESOLUTION,
                     (maxKey - note.KeyNumber) * NoteHeight),
                 Point2 = new Tuple<double, double>(
-                    1.0 * (note.StartPos + note.Length - positionRangeStart) * PixelPerBeat / TICKSPERBEAT,
+                    1.0 * (note.StartPos + note.Length - positionRangeStart) * PixelPerBeat / RESOLUTION,
                     (maxKey - note.KeyNumber + 1) * NoteHeight),
             };
         }
@@ -53,7 +53,7 @@ namespace Microsoft.PowerToys.FilePreviewCommon.PianoRoll
         public Tuple<double, double> GetSize()
         {
             return new Tuple<double, double>(
-                1.0 * (positionRangeEnd - positionRangeStart) * PixelPerBeat / TICKSPERBEAT,
+                1.0 * (positionRangeEnd - positionRangeStart) * PixelPerBeat / RESOLUTION,
                 (maxKey - minKey + 1) * NoteHeight);
         }
     }

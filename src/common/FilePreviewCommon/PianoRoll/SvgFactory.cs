@@ -13,7 +13,6 @@ namespace Microsoft.PowerToys.FilePreviewCommon.PianoRoll
 {
     internal sealed class SvgFactory
     {
-        // Matplotlib's default colors
         private string[] noteColors = new string[]
         {
             "#1F77B4",
