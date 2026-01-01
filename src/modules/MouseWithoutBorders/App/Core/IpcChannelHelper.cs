@@ -7,7 +7,7 @@ using System.Windows.Forms;
 
 namespace MouseWithoutBorders.Core;
 
-internal sealed partial class IpcChannelHelper
+internal static class IpcChannelHelper
 {
     internal static bool IpcChannelCreated { get; set; }
 
