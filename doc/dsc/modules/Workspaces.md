@@ -36,7 +36,7 @@ Sets the keyboard shortcut to launch the Workspaces editor.
 - `code` (integer) - Virtual key code
 - `key` (string) - Key name
 
-**Default:** `Win + Shift + ;` (VK code 186)
+**Default:** `Win+Shift+;` (VK code 186)
 
 ### MoveExistingWindows
 

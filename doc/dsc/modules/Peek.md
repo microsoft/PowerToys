@@ -35,7 +35,7 @@ Sets the keyboard shortcut to activate Peek for the selected file.
 - `code` (integer) - Virtual key code
 - `key` (string) - Key name
 
-**Default:** `Ctrl + Space`
+**Default:** `Ctrl+Space`
 
 ### CloseAfterLosingFocus
 

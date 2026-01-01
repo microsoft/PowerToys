@@ -37,7 +37,7 @@ Sets the keyboard shortcut to activate Mouse Jump.
 - `code` (integer) - Virtual key code
 - `key` (string) - Key name
 
-**Default:** `Win + Shift + D`
+**Default:** `Win+Shift+D`
 
 ### ThumbnailSize
 

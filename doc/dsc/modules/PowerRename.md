@@ -46,7 +46,7 @@ Controls whether the Power Rename icon appears in the Explorer context menu.
 
 ### ExtendedContextMenuOnly
 
-Controls whether Power Rename appears only in the extended context menu (Shift + right-click).
+Controls whether Power Rename appears only in the extended context menu (Shift+right-click).
 
 **Type:** boolean  
 **Default:** `false`

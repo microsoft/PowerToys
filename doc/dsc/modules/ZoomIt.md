@@ -33,7 +33,7 @@ Sets the keyboard shortcut to activate the zoom mode.
 - `code` (integer) - Virtual key code
 - `key` (string) - Key name
 
-**Default:** `Ctrl + 1` (VK code 49)
+**Default:** `Ctrl+1` (VK code 49)
 
 ## Examples
 

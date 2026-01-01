@@ -37,7 +37,7 @@ Sets the keyboard shortcut to activate the measure tool.
 - `code` (integer) - Virtual key code
 - `key` (string) - Key name
 
-**Default:** `Win + Shift + M`
+**Default:** `Win+Shift+M`
 
 ### ContinuousCapture
 

@@ -33,7 +33,7 @@ Sets the keyboard shortcut to activate Crop And Lock for the active window.
 - `code` (integer) - Virtual key code.
 - `key` (string) - Key name.
 
-**Default:** `Win + Ctrl + Shift + T`
+**Default:** `Win+Ctrl+Shift+T`
 
 ### ReparentHotkey
 

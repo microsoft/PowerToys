@@ -36,7 +36,7 @@ Sets the keyboard shortcut to toggle Always On Top for the active window.
 - `code` (integer) - Virtual key code.
 - `key` (string) - Key name.
 
-**Default:** `Win + Ctrl + T`
+**Default:** `Win+Ctrl+T`
 
 ### FrameEnabled
 

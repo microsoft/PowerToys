@@ -37,7 +37,7 @@ Sets the keyboard shortcut to activate text extraction.
 - `code` (integer) - Virtual key code
 - `key` (string) - Key name
 
-**Default:** `Win + Shift + T`
+**Default:** `Win+Shift+T`
 
 ### PreferredLanguage
 

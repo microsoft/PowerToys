@@ -33,7 +33,7 @@ Sets the keyboard shortcut to activate the color picker.
 - `code` (integer) - Virtual key code.
 - `key` (string) - Key name.
 
-**Default:** `Win + Shift + C`
+**Default:** `Win+Shift+C`
 
 ### changecursor
 

@@ -41,7 +41,7 @@ Controls whether moving a window across monitors triggers zone selection.
 
 ### fancyzones_overrideSnapHotkeys
 
-Controls whether FancyZones overrides the Windows Snap hotkeys (Win + Arrow keys).
+Controls whether FancyZones overrides the Windows Snap hotkeys (Win+Arrow keys).
 
 **Type:** boolean  
 **Default:** `false`
@@ -171,7 +171,7 @@ Sets the keyboard shortcut to open the FancyZones editor.
 - `code` (integer) - Virtual key code
 - `key` (string) - Key name
 
-**Default:** `Win + Shift + ~`
+**Default:** `Win+Shift+~`
 
 ### fancyzones_windowSwitching
 

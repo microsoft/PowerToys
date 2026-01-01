@@ -37,7 +37,7 @@ Sets the keyboard shortcut to toggle crosshairs display.
 - `code` (integer) - Virtual key code
 - `key` (string) - Key name
 
-**Default:** `Win + Alt + P`
+**Default:** `Win+Alt+P`
 
 ### CrosshairsColor
 

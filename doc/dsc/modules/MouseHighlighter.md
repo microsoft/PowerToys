@@ -37,7 +37,7 @@ Sets the keyboard shortcut to toggle mouse highlighting.
 - `code` (integer) - Virtual key code
 - `key` (string) - Key name
 
-**Default:** `Win + Shift + H`
+**Default:** `Win+Shift+H`
 
 ### LeftButtonClickColor
 
