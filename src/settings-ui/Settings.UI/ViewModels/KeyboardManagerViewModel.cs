@@ -27,7 +27,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
     {
         private GeneralSettings GeneralSettingsConfig { get; set; }
 
-        private readonly ISettingsUtils _settingsUtils;
+        private readonly SettingsUtils _settingsUtils;
 
         private const string PowerToyName = KeyboardManagerSettings.ModuleName;
         private const string JsonFileType = ".json";
@@ -60,7 +60,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private Func<List<KeysDataModel>, int> FilterRemapKeysList { get; }
 
-        public KeyboardManagerViewModel(ISettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, Func<string, int> ipcMSGCallBackFunc, Func<List<KeysDataModel>, int> filterRemapKeysList)
+        public KeyboardManagerViewModel(SettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, Func<string, int> ipcMSGCallBackFunc, Func<List<KeysDataModel>, int> filterRemapKeysList)
         {
             ArgumentNullException.ThrowIfNull(settingsRepository);
 
@@ -274,7 +274,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 try
                 {
                     // Check if the experimentation toggle is enabled in the settings
-                    var settingsUtils = new SettingsUtils();
+                    var settingsUtils = SettingsUtils.Default;
                     bool isExperimentationEnabled = SettingsRepository<GeneralSettings>.GetInstance(settingsUtils).SettingsConfig.EnableExperimentation;
 
                     // Only read the registry value if the experimentation toggle is enabled

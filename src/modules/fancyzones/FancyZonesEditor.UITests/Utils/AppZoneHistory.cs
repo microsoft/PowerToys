@@ -55,24 +55,24 @@ namespace FancyZonesEditorCommon.Data
 
         public JsonElement ToJsonElement(ZoneHistoryWrapper info)
         {
-            string json = JsonSerializer.Serialize(info, this.JsonOptions);
+            string json = JsonSerializer.Serialize(info, JsonOptions);
             return JsonSerializer.Deserialize<JsonElement>(json);
         }
 
         public JsonElement ToJsonElement(DeviceIdWrapper info)
         {
-            string json = JsonSerializer.Serialize(info, this.JsonOptions);
+            string json = JsonSerializer.Serialize(info, JsonOptions);
             return JsonSerializer.Deserialize<JsonElement>(json);
         }
 
         public ZoneHistoryWrapper ZoneHistoryFromJsonElement(string json)
         {
-            return JsonSerializer.Deserialize<ZoneHistoryWrapper>(json, this.JsonOptions);
+            return JsonSerializer.Deserialize<ZoneHistoryWrapper>(json, JsonOptions);
         }
 
         public DeviceIdWrapper GridFromJsonElement(string json)
         {
-            return JsonSerializer.Deserialize<DeviceIdWrapper>(json, this.JsonOptions);
+            return JsonSerializer.Deserialize<DeviceIdWrapper>(json, JsonOptions);
         }
     }
 }

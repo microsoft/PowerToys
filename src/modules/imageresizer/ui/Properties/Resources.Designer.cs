@@ -19,7 +19,7 @@ namespace ImageResizer.Properties {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "18.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     public class Resources {
@@ -79,6 +79,33 @@ namespace ImageResizer.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Failed to convert image format for AI processing..
+        /// </summary>
+        public static string Error_AiConversionFailed {
+            get {
+                return ResourceManager.GetString("Error_AiConversionFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to AI super resolution processing failed: {0}.
+        /// </summary>
+        public static string Error_AiProcessingFailed {
+            get {
+                return ResourceManager.GetString("Error_AiProcessingFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to AI scaling operation failed..
+        /// </summary>
+        public static string Error_AiScalingFailed {
+            get {
+                return ResourceManager.GetString("Error_AiScalingFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Height.
         /// </summary>
         public static string Height {
@@ -102,6 +129,132 @@ namespace ImageResizer.Properties {
         public static string ImageResizer {
             get {
                 return ResourceManager.GetString("ImageResizer", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Current:.
+        /// </summary>
+        public static string Input_AiCurrentLabel {
+            get {
+                return ResourceManager.GetString("Input_AiCurrentLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Checking AI model availability....
+        /// </summary>
+        public static string Input_AiModelChecking {
+            get {
+                return ResourceManager.GetString("Input_AiModelChecking", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to AI feature is disabled by system settings..
+        /// </summary>
+        public static string Input_AiModelDisabledByUser {
+            get {
+                return ResourceManager.GetString("Input_AiModelDisabledByUser", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Download.
+        /// </summary>
+        public static string Input_AiModelDownloadButton {
+            get {
+                return ResourceManager.GetString("Input_AiModelDownloadButton", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to download AI model. Please try again..
+        /// </summary>
+        public static string Input_AiModelDownloadFailed {
+            get {
+                return ResourceManager.GetString("Input_AiModelDownloadFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Downloading AI model....
+        /// </summary>
+        public static string Input_AiModelDownloading {
+            get {
+                return ResourceManager.GetString("Input_AiModelDownloading", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to AI model not downloaded. Click Download to get started..
+        /// </summary>
+        public static string Input_AiModelNotAvailable {
+            get {
+                return ResourceManager.GetString("Input_AiModelNotAvailable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to AI feature is not supported on this system..
+        /// </summary>
+        public static string Input_AiModelNotSupported {
+            get {
+                return ResourceManager.GetString("Input_AiModelNotSupported", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to New:.
+        /// </summary>
+        public static string Input_AiNewLabel {
+            get {
+                return ResourceManager.GetString("Input_AiNewLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0}×.
+        /// </summary>
+        public static string Input_AiScaleFormat {
+            get {
+                return ResourceManager.GetString("Input_AiScaleFormat", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Scale.
+        /// </summary>
+        public static string Input_AiScaleLabel {
+            get {
+                return ResourceManager.GetString("Input_AiScaleLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Super resolution.
+        /// </summary>
+        public static string Input_AiSuperResolution {
+            get {
+                return ResourceManager.GetString("Input_AiSuperResolution", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Upscale images using on-device AI.
+        /// </summary>
+        public static string Input_AiSuperResolutionDescription {
+            get {
+                return ResourceManager.GetString("Input_AiSuperResolutionDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unavailable.
+        /// </summary>
+        public static string Input_AiUnknownSize {
+            get {
+                return ResourceManager.GetString("Input_AiUnknownSize", resourceCulture);
             }
         }
         
@@ -561,6 +714,438 @@ namespace ImageResizer.Properties {
         public static string Width {
             get {
                 return ResourceManager.GetString("Width", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Processing {0} files....
+        /// </summary>
+        public static string CLI_ProcessingFiles {
+            get {
+                return ResourceManager.GetString("CLI_ProcessingFiles", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to [{0}%] {1}/{2} completed.
+        /// </summary>
+        public static string CLI_ProgressFormat {
+            get {
+                return ResourceManager.GetString("CLI_ProgressFormat", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Completed with {0} error(s)..
+        /// </summary>
+        public static string CLI_CompletedWithErrors {
+            get {
+                return ResourceManager.GetString("CLI_CompletedWithErrors", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to All files processed successfully!.
+        /// </summary>
+        public static string CLI_AllFilesProcessed {
+            get {
+                return ResourceManager.GetString("CLI_AllFilesProcessed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No input files or pipe specified. Showing usage..
+        /// </summary>
+        public static string CLI_NoInputFiles {
+            get {
+                return ResourceManager.GetString("CLI_NoInputFiles", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Warning: Size index {0} is invalid. Using custom size..
+        /// </summary>
+        public static string CLI_WarningInvalidSizeIndex {
+            get {
+                return ResourceManager.GetString("CLI_WarningInvalidSizeIndex", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Current Configuration:.
+        /// </summary>
+        public static string CLI_ConfigTitle {
+            get {
+                return ResourceManager.GetString("CLI_ConfigTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to General Settings:.
+        /// </summary>
+        public static string CLI_ConfigGeneralSettings {
+            get {
+                return ResourceManager.GetString("CLI_ConfigGeneralSettings", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to  Shrink only: {0}.
+        /// </summary>
+        public static string CLI_ConfigShrinkOnly {
+            get {
+                return ResourceManager.GetString("CLI_ConfigShrinkOnly", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to  Replace original: {0}.
+        /// </summary>
+        public static string CLI_ConfigReplaceOriginal {
+            get {
+                return ResourceManager.GetString("CLI_ConfigReplaceOriginal", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to  Ignore orientation: {0}.
+        /// </summary>
+        public static string CLI_ConfigIgnoreOrientation {
+            get {
+                return ResourceManager.GetString("CLI_ConfigIgnoreOrientation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to  Remove metadata: {0}.
+        /// </summary>
+        public static string CLI_ConfigRemoveMetadata {
+            get {
+                return ResourceManager.GetString("CLI_ConfigRemoveMetadata", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to  Keep date modified: {0}.
+        /// </summary>
+        public static string CLI_ConfigKeepDateModified {
+            get {
+                return ResourceManager.GetString("CLI_ConfigKeepDateModified", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to  JPEG quality: {0}.
+        /// </summary>
+        public static string CLI_ConfigJpegQuality {
+            get {
+                return ResourceManager.GetString("CLI_ConfigJpegQuality", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to  PNG interlace: {0}.
+        /// </summary>
+        public static string CLI_ConfigPngInterlace {
+            get {
+                return ResourceManager.GetString("CLI_ConfigPngInterlace", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to  TIFF compress: {0}.
+        /// </summary>
+        public static string CLI_ConfigTiffCompress {
+            get {
+                return ResourceManager.GetString("CLI_ConfigTiffCompress", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to  Filename format: {0}.
+        /// </summary>
+        public static string CLI_ConfigFilenameFormat {
+            get {
+                return ResourceManager.GetString("CLI_ConfigFilenameFormat", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Custom Size:.
+        /// </summary>
+        public static string CLI_ConfigCustomSize {
+            get {
+                return ResourceManager.GetString("CLI_ConfigCustomSize", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to  Width: {0}.
+        /// </summary>
+        public static string CLI_ConfigWidth {
+            get {
+                return ResourceManager.GetString("CLI_ConfigWidth", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to  Height: {0}.
+        /// </summary>
+        public static string CLI_ConfigHeight {
+            get {
+                return ResourceManager.GetString("CLI_ConfigHeight", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to  Fit mode: {0}.
+        /// </summary>
+        public static string CLI_ConfigFitMode {
+            get {
+                return ResourceManager.GetString("CLI_ConfigFitMode", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Preset Sizes: (* = currently selected).
+        /// </summary>
+        public static string CLI_ConfigPresetSizes {
+            get {
+                return ResourceManager.GetString("CLI_ConfigPresetSizes", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to  {0}: {1} x {2} ({3}).
+        /// </summary>
+        public static string CLI_ConfigPresetSizeFormat {
+            get {
+                return ResourceManager.GetString("CLI_ConfigPresetSizeFormat", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to  → Custom size selected.
+        /// </summary>
+        public static string CLI_ConfigCustomSelected {
+            get {
+                return ResourceManager.GetString("CLI_ConfigCustomSelected", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Image Resizer CLI.
+        /// </summary>
+        public static string CLI_UsageTitle {
+            get {
+                return ResourceManager.GetString("CLI_UsageTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Usage: PowerToys.ImageResizer.exe [options] &lt;files&gt;.
+        /// </summary>
+        public static string CLI_UsageLine {
+            get {
+                return ResourceManager.GetString("CLI_UsageLine", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Options:.
+        /// </summary>
+        public static string CLI_UsageOptions {
+            get {
+                return ResourceManager.GetString("CLI_UsageOptions", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Examples:.
+        /// </summary>
+        public static string CLI_UsageExamples {
+            get {
+                return ResourceManager.GetString("CLI_UsageExamples", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to  PowerToys.ImageResizer.exe --help.
+        /// </summary>
+        public static string CLI_UsageExampleHelp {
+            get {
+                return ResourceManager.GetString("CLI_UsageExampleHelp", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to  PowerToys.ImageResizer.exe --width 800 --height 600 image.jpg.
+        /// </summary>
+        public static string CLI_UsageExampleDimensions {
+            get {
+                return ResourceManager.GetString("CLI_UsageExampleDimensions", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to  PowerToys.ImageResizer.exe --size 50 --unit percent *.jpg.
+        /// </summary>
+        public static string CLI_UsageExamplePercent {
+            get {
+                return ResourceManager.GetString("CLI_UsageExamplePercent", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to  PowerToys.ImageResizer.exe --size 2 image1.png image2.png.
+        /// </summary>
+        public static string CLI_UsageExamplePreset {
+            get {
+                return ResourceManager.GetString("CLI_UsageExamplePreset", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Destination directory for resized images.
+        /// </summary>
+        public static string CLI_Option_Destination {
+            get {
+                return ResourceManager.GetString("CLI_Option_Destination", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Output filename format (e.g., %1 (%2)).
+        /// </summary>
+        public static string CLI_Option_FileName {
+            get {
+                return ResourceManager.GetString("CLI_Option_FileName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Image files to resize.
+        /// </summary>
+        public static string CLI_Option_Files {
+            get {
+                return ResourceManager.GetString("CLI_Option_Files", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to How to fit image: fill, fit, stretch.
+        /// </summary>
+        public static string CLI_Option_Fit {
+            get {
+                return ResourceManager.GetString("CLI_Option_Fit", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Height of the resized image in pixels.
+        /// </summary>
+        public static string CLI_Option_Height {
+            get {
+                return ResourceManager.GetString("CLI_Option_Height", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Display this help message.
+        /// </summary>
+        public static string CLI_Option_Help {
+            get {
+                return ResourceManager.GetString("CLI_Option_Help", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Ignore image orientation metadata.
+        /// </summary>
+        public static string CLI_Option_IgnoreOrientation {
+            get {
+                return ResourceManager.GetString("CLI_Option_IgnoreOrientation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Preserve the original file modification date.
+        /// </summary>
+        public static string CLI_Option_KeepDateModified {
+            get {
+                return ResourceManager.GetString("CLI_Option_KeepDateModified", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Set JPEG quality level (1-100).
+        /// </summary>
+        public static string CLI_Option_Quality {
+            get {
+                return ResourceManager.GetString("CLI_Option_Quality", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Remove image metadata during resizing.
+        /// </summary>
+        public static string CLI_Option_RemoveMetadata {
+            get {
+                return ResourceManager.GetString("CLI_Option_RemoveMetadata", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Replace the original image file.
+        /// </summary>
+        public static string CLI_Option_Replace {
+            get {
+                return ResourceManager.GetString("CLI_Option_Replace", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Display current configuration.
+        /// </summary>
+        public static string CLI_Option_ShowConfig {
+            get {
+                return ResourceManager.GetString("CLI_Option_ShowConfig", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Only shrink images, do not enlarge.
+        /// </summary>
+        public static string CLI_Option_ShrinkOnly {
+            get {
+                return ResourceManager.GetString("CLI_Option_ShrinkOnly", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Use preset size by index (0-based).
+        /// </summary>
+        public static string CLI_Option_Size {
+            get {
+                return ResourceManager.GetString("CLI_Option_Size", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unit of measurement: pixel, percent, cm, inch.
+        /// </summary>
+        public static string CLI_Option_Unit {
+            get {
+                return ResourceManager.GetString("CLI_Option_Unit", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Width of the resized image in pixels.
+        /// </summary>
+        public static string CLI_Option_Width {
+            get {
+                return ResourceManager.GetString("CLI_Option_Width", resourceCulture);
             }
         }
     }

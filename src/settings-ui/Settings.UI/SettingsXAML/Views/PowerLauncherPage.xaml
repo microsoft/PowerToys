@@ -548,7 +548,7 @@
                         x:Uid="PowerLauncher_TitleFontSize"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE8E9;}">
                         <StackPanel Orientation="Horizontal" Spacing="12">
-                            <TextBlock
+                            <controls:IsEnabledTextBlock
                                 VerticalAlignment="Center"
                                 AutomationProperties.AccessibilityView="Raw"
                                 FontSize="12"
@@ -564,7 +564,7 @@
                                 TickFrequency="2"
                                 TickPlacement="Outside"
                                 Value="{x:Bind ViewModel.TitleFontSize, Mode=TwoWay}" />
-                            <TextBlock
+                            <controls:IsEnabledTextBlock
                                 VerticalAlignment="Center"
                                 AutomationProperties.AccessibilityView="Raw"
                                 FontSize="24"
