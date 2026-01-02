@@ -2,13 +2,9 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
-using System.Threading;
-using System.Threading.Tasks;
-
 namespace Microsoft.CmdPal.Core.Common.Helpers;
 
-public sealed class DebouncedAction : IDisposable
+public sealed class ThrottledDebouncedAction : IDisposable
 {
     private static readonly TimeSpan DefaultInterval = TimeSpan.FromMilliseconds(150);
 
@@ -23,12 +19,12 @@ public sealed class DebouncedAction : IDisposable
     private bool _isRunning;
     private bool _isPending;
 
-    public DebouncedAction(Action action)
+    public ThrottledDebouncedAction(Action action)
         : this(action, DefaultInterval)
     {
     }
 
-    public DebouncedAction(Action action, TimeSpan interval, bool runImmediately = false)
+    public ThrottledDebouncedAction(Action action, TimeSpan interval, bool runImmediately = false)
     {
         ArgumentNullException.ThrowIfNull(action);
         ArgumentOutOfRangeException.ThrowIfLessThan(interval, TimeSpan.Zero);
