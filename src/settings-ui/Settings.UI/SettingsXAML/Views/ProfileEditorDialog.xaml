@@ -46,7 +46,8 @@
                         <DataTemplate x:DataType="viewmodels:MonitorSelectionItem">
                             <tkcontrols:SettingsExpander
                                 Margin="0,0,0,8"
-                                Header="{x:Bind Monitor.Name}"
+                                Description="{x:Bind Monitor.Id, Mode=OneWay}"
+                                Header="{x:Bind Monitor.DisplayName, Mode=OneWay}"
                                 IsExpanded="True">
                                 <tkcontrols:SettingsExpander.HeaderIcon>
                                     <FontIcon Glyph="{x:Bind Monitor.MonitorIconGlyph}" />

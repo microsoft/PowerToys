@@ -26,6 +26,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _profileName = defaultName;
             _monitors = new ObservableCollection<MonitorSelectionItem>();
 
+            // Set TotalMonitorCount for DisplayName to show monitor numbers when multiple monitors exist
+            int totalCount = availableMonitors.Count;
+            foreach (var monitor in availableMonitors)
+            {
+                monitor.TotalMonitorCount = totalCount;
+            }
+
             // Initialize monitor selection items
             foreach (var monitor in availableMonitors)
             {
