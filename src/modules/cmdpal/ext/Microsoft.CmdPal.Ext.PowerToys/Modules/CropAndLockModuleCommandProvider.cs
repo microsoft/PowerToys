@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using PowerToysExtension.Commands;
 using PowerToysExtension.Helpers;
+using PowerToysExtension.Properties;
 using static Common.UI.SettingsDeepLink;
 
 namespace PowerToysExtension.Modules;
@@ -22,15 +23,15 @@ internal sealed class CropAndLockModuleCommandProvider : ModuleCommandProvider
         {
             yield return new ListItem(new CropAndLockReparentCommand())
             {
-                Title = "Crop and Lock (Reparent)",
-                Subtitle = "Create a cropped reparented window",
+                Title = Resources.CropAndLock_Reparent_Title,
+                Subtitle = Resources.CropAndLock_Reparent_Subtitle,
                 Icon = icon,
             };
 
             yield return new ListItem(new CropAndLockThumbnailCommand())
             {
-                Title = "Crop and Lock (Thumbnail)",
-                Subtitle = "Create a cropped thumbnail window",
+                Title = Resources.CropAndLock_Thumbnail_Title,
+                Subtitle = Resources.CropAndLock_Thumbnail_Subtitle,
                 Icon = icon,
             };
         }
@@ -38,7 +39,7 @@ internal sealed class CropAndLockModuleCommandProvider : ModuleCommandProvider
         yield return new ListItem(new OpenInSettingsCommand(module, title))
         {
             Title = title,
-            Subtitle = "Open Crop and Lock settings",
+            Subtitle = Resources.CropAndLock_Settings_Subtitle,
             Icon = icon,
         };
     }

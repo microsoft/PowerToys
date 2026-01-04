@@ -1,0 +1,630 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <!-- PowerToys CommandsProvider -->
+  <data name="PowerToys_DisplayName" xml:space="preserve">
+    <value>PowerToys</value>
+  </data>
+  <data name="PowerToys_Subtitle" xml:space="preserve">
+    <value>PowerToys commands and settings</value>
+  </data>
+  <data name="PowerToys_NoMatchingModule" xml:space="preserve">
+    <value>No matching module found</value>
+  </data>
+  <!-- PowerToys Extension Page -->
+  <data name="PowerToysExtension_CommandsName" xml:space="preserve">
+    <value>PowerToys commands</value>
+  </data>
+  <data name="PowerToysExtension_OpenPowerToys_Title" xml:space="preserve">
+    <value>Open PowerToys</value>
+  </data>
+  <data name="PowerToysExtension_OpenPowerToys_Subtitle" xml:space="preserve">
+    <value>Launch the PowerToys shell</value>
+  </data>
+  <data name="PowerToysExtension_OpenSettings_Title" xml:space="preserve">
+    <value>Open PowerToys settings</value>
+  </data>
+  <data name="PowerToysExtension_OpenSettings_Subtitle" xml:space="preserve">
+    <value>Open the main PowerToys settings window</value>
+  </data>
+  <data name="PowerToysExtension_OpenWorkspacesSettings_Title" xml:space="preserve">
+    <value>Open Workspaces settings</value>
+  </data>
+  <data name="PowerToysExtension_OpenWorkspacesSettings_Subtitle" xml:space="preserve">
+    <value>Jump directly to Workspaces settings</value>
+  </data>
+  <data name="PowerToysExtension_OpenWorkspacesEditor_Title" xml:space="preserve">
+    <value>Open Workspaces editor</value>
+  </data>
+  <data name="PowerToysExtension_OpenWorkspacesEditor_Subtitle" xml:space="preserve">
+    <value>Launch the Workspaces editor</value>
+  </data>
+  <!-- Advanced Paste Module -->
+  <data name="AdvancedPaste_Open_Title" xml:space="preserve">
+    <value>Open Advanced Paste</value>
+  </data>
+  <data name="AdvancedPaste_Open_Subtitle" xml:space="preserve">
+    <value>Launch the Advanced Paste UI</value>
+  </data>
+  <data name="AdvancedPaste_Settings_Subtitle" xml:space="preserve">
+    <value>Open Advanced Paste settings</value>
+  </data>
+  <!-- Always On Top Module -->
+  <data name="AlwaysOnTop_Settings_Subtitle" xml:space="preserve">
+    <value>Open Always On Top settings</value>
+  </data>
+  <!-- Awake Module -->
+  <data name="Awake_Settings_Subtitle" xml:space="preserve">
+    <value>Open Awake settings</value>
+  </data>
+  <data name="Awake_Status_Title" xml:space="preserve">
+    <value>Awake: Current status</value>
+  </data>
+  <data name="Awake_KeepIndefinite_Title" xml:space="preserve">
+    <value>Awake: Keep awake indefinitely</value>
+  </data>
+  <data name="Awake_KeepIndefinite_Subtitle" xml:space="preserve">
+    <value>Run Awake in indefinite mode</value>
+  </data>
+  <data name="Awake_Keep30Min_Title" xml:space="preserve">
+    <value>Awake: Keep awake for 30 minutes</value>
+  </data>
+  <data name="Awake_Keep30Min_Subtitle" xml:space="preserve">
+    <value>Run Awake timed for 30 minutes</value>
+  </data>
+  <data name="Awake_Keep1Hour_Title" xml:space="preserve">
+    <value>Awake: Keep awake for 1 hour</value>
+  </data>
+  <data name="Awake_Keep1Hour_Subtitle" xml:space="preserve">
+    <value>Run Awake timed for 1 hour</value>
+  </data>
+  <data name="Awake_Keep2Hours_Title" xml:space="preserve">
+    <value>Awake: Keep awake for 2 hours</value>
+  </data>
+  <data name="Awake_Keep2Hours_Subtitle" xml:space="preserve">
+    <value>Run Awake timed for 2 hours</value>
+  </data>
+  <data name="Awake_TurnOff_Title" xml:space="preserve">
+    <value>Awake: Turn off</value>
+  </data>
+  <data name="Awake_TurnOff_Subtitle" xml:space="preserve">
+    <value>Switch Awake back to Off</value>
+  </data>
+  <data name="Awake_SetIndefinite_Toast" xml:space="preserve">
+    <value>Awake set to indefinite</value>
+  </data>
+  <data name="Awake_Set30Min_Toast" xml:space="preserve">
+    <value>Awake set for 30 minutes</value>
+  </data>
+  <data name="Awake_Set1Hour_Toast" xml:space="preserve">
+    <value>Awake set for 1 hour</value>
+  </data>
+  <data name="Awake_Set2Hours_Toast" xml:space="preserve">
+    <value>Awake set for 2 hours</value>
+  </data>
+  <!-- Color Picker Module -->
+  <data name="ColorPicker_Settings_Subtitle" xml:space="preserve">
+    <value>Open Color Picker settings</value>
+  </data>
+  <data name="ColorPicker_Open_Title" xml:space="preserve">
+    <value>Open Color Picker</value>
+  </data>
+  <data name="ColorPicker_Open_Subtitle" xml:space="preserve">
+    <value>Start a color pick session</value>
+  </data>
+  <data name="ColorPicker_SavedColors_Title" xml:space="preserve">
+    <value>Saved colors</value>
+  </data>
+  <data name="ColorPicker_SavedColors_Subtitle" xml:space="preserve">
+    <value>Browse and copy saved colors</value>
+  </data>
+  <data name="ColorPicker_NoSavedColors_Title" xml:space="preserve">
+    <value>No saved colors</value>
+  </data>
+  <data name="ColorPicker_NoSavedColors_Subtitle" xml:space="preserve">
+    <value>Pick a color first, then try again.</value>
+  </data>
+  <data name="ColorPicker_NoMatchingSavedColors_Subtitle" xml:space="preserve">
+    <value>No saved colors matching '{0}'</value>
+  </data>
+  <!-- Command Not Found Module -->
+  <data name="CommandNotFound_Settings_Subtitle" xml:space="preserve">
+    <value>Open Command Not Found settings</value>
+  </data>
+  <!-- Crop And Lock Module -->
+  <data name="CropAndLock_Reparent_Title" xml:space="preserve">
+    <value>Crop and Lock (Reparent)</value>
+  </data>
+  <data name="CropAndLock_Reparent_Subtitle" xml:space="preserve">
+    <value>Create a cropped reparented window</value>
+  </data>
+  <data name="CropAndLock_Thumbnail_Title" xml:space="preserve">
+    <value>Crop and Lock (Thumbnail)</value>
+  </data>
+  <data name="CropAndLock_Thumbnail_Subtitle" xml:space="preserve">
+    <value>Create a cropped thumbnail window</value>
+  </data>
+  <data name="CropAndLock_Settings_Subtitle" xml:space="preserve">
+    <value>Open Crop and Lock settings</value>
+  </data>
+  <!-- Environment Variables Module -->
+  <data name="EnvironmentVariables_Open_Title" xml:space="preserve">
+    <value>Open Environment Variables</value>
+  </data>
+  <data name="EnvironmentVariables_Open_Subtitle" xml:space="preserve">
+    <value>Launch Environment Variables editor</value>
+  </data>
+  <data name="EnvironmentVariables_OpenAdmin_Title" xml:space="preserve">
+    <value>Open Environment Variables (Admin)</value>
+  </data>
+  <data name="EnvironmentVariables_OpenAdmin_Subtitle" xml:space="preserve">
+    <value>Launch Environment Variables editor as admin</value>
+  </data>
+  <data name="EnvironmentVariables_Settings_Subtitle" xml:space="preserve">
+    <value>Open Environment Variables settings</value>
+  </data>
+  <!-- FancyZones Module -->
+  <data name="FancyZones_Layouts_Title" xml:space="preserve">
+    <value>FancyZones: Layouts</value>
+  </data>
+  <data name="FancyZones_Layouts_Subtitle" xml:space="preserve">
+    <value>Apply a layout to all monitors or a specific monitor</value>
+  </data>
+  <data name="FancyZones_Monitors_Title" xml:space="preserve">
+    <value>FancyZones: Monitors</value>
+  </data>
+  <data name="FancyZones_Monitors_Subtitle" xml:space="preserve">
+    <value>Identify monitors and apply layouts</value>
+  </data>
+  <data name="FancyZones_OpenEditor_Title" xml:space="preserve">
+    <value>Open FancyZones Editor</value>
+  </data>
+  <data name="FancyZones_OpenEditor_Subtitle" xml:space="preserve">
+    <value>Launch layout editor</value>
+  </data>
+  <data name="FancyZones_Settings_Subtitle" xml:space="preserve">
+    <value>Open FancyZones settings</value>
+  </data>
+  <data name="FancyZones_LayoutsPage_Title" xml:space="preserve">
+    <value>FancyZones Layouts</value>
+  </data>
+  <data name="FancyZones_NoLayoutsFound_Title" xml:space="preserve">
+    <value>No layouts found</value>
+  </data>
+  <data name="FancyZones_NoLayoutsFound_Subtitle" xml:space="preserve">
+    <value>Open FancyZones Editor once to initialize layouts.</value>
+  </data>
+  <data name="FancyZones_ApplyTo_Format" xml:space="preserve">
+    <value>Apply to {0}</value>
+  </data>
+  <data name="FancyZones_MonitorsPage_Title" xml:space="preserve">
+    <value>FancyZones Monitors</value>
+  </data>
+  <data name="FancyZones_NoMonitorsFound_Title" xml:space="preserve">
+    <value>No monitors found</value>
+  </data>
+  <data name="FancyZones_NoMonitorsFound_Subtitle" xml:space="preserve">
+    <value>Open FancyZones Editor once to initialize monitor data.</value>
+  </data>
+  <data name="FancyZones_SetActiveLayout" xml:space="preserve">
+    <value>Set active layout</value>
+  </data>
+  <data name="FancyZones_PickLayoutForMonitor" xml:space="preserve">
+    <value>Pick a layout for this monitor</value>
+  </data>
+  <data name="FancyZones_SetActiveLayoutFor_Format" xml:space="preserve">
+    <value>Set active layout for {0}</value>
+  </data>
+  <data name="FancyZones_CurrentLayout_Format" xml:space="preserve">
+    <value>Current layout: {0}</value>
+  </data>
+  <data name="FancyZones_CurrentLayout_Unknown" xml:space="preserve">
+    <value>Current layout: unknown</value>
+  </data>
+  <data name="FancyZones_Template_Format" xml:space="preserve">
+    <value>Template: {0}</value>
+  </data>
+  <data name="FancyZones_Zones_Format" xml:space="preserve">
+    <value>{0} zones</value>
+  </data>
+  <data name="FancyZones_CustomGrid_Zones_Format" xml:space="preserve">
+    <value>Custom grid • {0} zones</value>
+  </data>
+  <data name="FancyZones_CustomCanvas_Zones_Format" xml:space="preserve">
+    <value>Custom canvas • {0} zones</value>
+  </data>
+  <data name="FancyZones_Custom_Zones_Format" xml:space="preserve">
+    <value>Custom • {0} zones</value>
+  </data>
+  <data name="FancyZones_LayoutApplied" xml:space="preserve">
+    <value>Layout applied.</value>
+  </data>
+  <data name="FancyZones_LayoutAppliedNotifyFailed_Format" xml:space="preserve">
+    <value>Layout applied, but FancyZones could not be notified: {0}</value>
+  </data>
+  <data name="FancyZones_WriteAppliedLayoutsFailed_Format" xml:space="preserve">
+    <value>Failed to write applied layouts: {0}</value>
+  </data>
+  <data name="FancyZones_MonitorDataNotFound" xml:space="preserve">
+    <value>FancyZones monitor data not found. Open FancyZones Editor once to initialize.</value>
+  </data>
+  <data name="FancyZones_NoFancyZonesMonitorsFound" xml:space="preserve">
+    <value>No FancyZones monitors found.</value>
+  </data>
+  <data name="FancyZones_ReadMonitorDataFailed_Format" xml:space="preserve">
+    <value>Failed to read FancyZones monitor data: {0}</value>
+  </data>
+  <!-- File Explorer Addons Module -->
+  <data name="FileExplorerAddons_Settings_Subtitle" xml:space="preserve">
+    <value>Open File Explorer add-ons settings</value>
+  </data>
+  <!-- File Locksmith Module -->
+  <data name="FileLocksmith_Settings_Subtitle" xml:space="preserve">
+    <value>Open File Locksmith settings</value>
+  </data>
+  <!-- Hosts Module -->
+  <data name="Hosts_Open_Title" xml:space="preserve">
+    <value>Open Hosts File Editor</value>
+  </data>
+  <data name="Hosts_Open_Subtitle" xml:space="preserve">
+    <value>Launch Hosts File Editor</value>
+  </data>
+  <data name="Hosts_OpenAdmin_Title" xml:space="preserve">
+    <value>Open Hosts File Editor (Admin)</value>
+  </data>
+  <data name="Hosts_OpenAdmin_Subtitle" xml:space="preserve">
+    <value>Launch Hosts File Editor as admin</value>
+  </data>
+  <data name="Hosts_Settings_Subtitle" xml:space="preserve">
+    <value>Open Hosts File Editor settings</value>
+  </data>
+  <!-- Image Resizer Module -->
+  <data name="ImageResizer_Settings_Subtitle" xml:space="preserve">
+    <value>Open Image Resizer settings</value>
+  </data>
+  <!-- Keyboard Manager Module -->
+  <data name="KeyboardManager_Settings_Subtitle" xml:space="preserve">
+    <value>Open Keyboard Manager settings</value>
+  </data>
+  <!-- Light Switch Module -->
+  <data name="LightSwitch_Toggle_Title" xml:space="preserve">
+    <value>Light Switch: Toggle theme</value>
+  </data>
+  <data name="LightSwitch_Toggle_Subtitle" xml:space="preserve">
+    <value>Toggle system/apps theme immediately</value>
+  </data>
+  <data name="LightSwitch_Settings_Subtitle" xml:space="preserve">
+    <value>Open Light Switch settings</value>
+  </data>
+  <!-- Mouse Utils Module -->
+  <data name="MouseUtils_FindMyMouse_Title" xml:space="preserve">
+    <value>Trigger Find My Mouse</value>
+  </data>
+  <data name="MouseUtils_FindMyMouse_Subtitle" xml:space="preserve">
+    <value>Focus the mouse pointer</value>
+  </data>
+  <data name="MouseUtils_Highlighter_Title" xml:space="preserve">
+    <value>Toggle Mouse Highlighter</value>
+  </data>
+  <data name="MouseUtils_Highlighter_Subtitle" xml:space="preserve">
+    <value>Highlight mouse clicks</value>
+  </data>
+  <data name="MouseUtils_Crosshairs_Title" xml:space="preserve">
+    <value>Toggle Mouse Crosshairs</value>
+  </data>
+  <data name="MouseUtils_Crosshairs_Subtitle" xml:space="preserve">
+    <value>Enable or disable pointer crosshairs</value>
+  </data>
+  <data name="MouseUtils_CursorWrap_Title" xml:space="preserve">
+    <value>Toggle Cursor Wrap</value>
+  </data>
+  <data name="MouseUtils_CursorWrap_Subtitle" xml:space="preserve">
+    <value>Wrap the cursor across monitor edges</value>
+  </data>
+  <data name="MouseUtils_MouseJump_Title" xml:space="preserve">
+    <value>Show Mouse Jump Preview</value>
+  </data>
+  <data name="MouseUtils_MouseJump_Subtitle" xml:space="preserve">
+    <value>Jump the pointer to a target</value>
+  </data>
+  <data name="MouseUtils_Settings_Subtitle" xml:space="preserve">
+    <value>Open Mouse Utilities settings</value>
+  </data>
+  <!-- Mouse Without Borders Module -->
+  <data name="MouseWithoutBorders_Settings_Subtitle" xml:space="preserve">
+    <value>Open Mouse Without Borders settings</value>
+  </data>
+  <!-- New+ Module -->
+  <data name="NewPlus_Settings_Subtitle" xml:space="preserve">
+    <value>Open New+ settings</value>
+  </data>
+  <!-- Peek Module -->
+  <data name="Peek_Settings_Subtitle" xml:space="preserve">
+    <value>Open Peek settings</value>
+  </data>
+  <!-- PowerRename Module -->
+  <data name="PowerRename_Settings_Subtitle" xml:space="preserve">
+    <value>Open PowerRename settings</value>
+  </data>
+  <!-- PowerToys Run Module -->
+  <data name="PowerToysRun_Settings_Subtitle" xml:space="preserve">
+    <value>Open PowerToys Run settings</value>
+  </data>
+  <!-- Quick Accent Module -->
+  <data name="QuickAccent_Settings_Subtitle" xml:space="preserve">
+    <value>Open Quick Accent settings</value>
+  </data>
+  <!-- Registry Preview Module -->
+  <data name="RegistryPreview_Open_Title" xml:space="preserve">
+    <value>Open Registry Preview</value>
+  </data>
+  <data name="RegistryPreview_Open_Subtitle" xml:space="preserve">
+    <value>Launch Registry Preview</value>
+  </data>
+  <data name="RegistryPreview_Settings_Subtitle" xml:space="preserve">
+    <value>Open Registry Preview settings</value>
+  </data>
+  <!-- Screen Ruler Module -->
+  <data name="ScreenRuler_Toggle_Title" xml:space="preserve">
+    <value>Toggle Screen Ruler</value>
+  </data>
+  <data name="ScreenRuler_Toggle_Subtitle" xml:space="preserve">
+    <value>Start or close Screen Ruler</value>
+  </data>
+  <data name="ScreenRuler_Settings_Subtitle" xml:space="preserve">
+    <value>Open Screen Ruler settings</value>
+  </data>
+  <!-- Shortcut Guide Module -->
+  <data name="ShortcutGuide_Toggle_Title" xml:space="preserve">
+    <value>Toggle Shortcut Guide</value>
+  </data>
+  <data name="ShortcutGuide_Toggle_Subtitle" xml:space="preserve">
+    <value>Show or hide Shortcut Guide</value>
+  </data>
+  <data name="ShortcutGuide_Settings_Subtitle" xml:space="preserve">
+    <value>Open Shortcut Guide settings</value>
+  </data>
+  <!-- Text Extractor Module -->
+  <data name="TextExtractor_Toggle_Title" xml:space="preserve">
+    <value>Toggle Text Extractor</value>
+  </data>
+  <data name="TextExtractor_Toggle_Subtitle" xml:space="preserve">
+    <value>Start or close Text Extractor</value>
+  </data>
+  <data name="TextExtractor_Settings_Subtitle" xml:space="preserve">
+    <value>Open Text Extractor settings</value>
+  </data>
+  <!-- Workspaces Module -->
+  <data name="Workspaces_Settings_Subtitle" xml:space="preserve">
+    <value>Open Workspaces settings</value>
+  </data>
+  <data name="Workspaces_OpenEditor_Title" xml:space="preserve">
+    <value>Workspaces: Open editor</value>
+  </data>
+  <data name="Workspaces_OpenEditor_Subtitle" xml:space="preserve">
+    <value>Create or edit workspaces</value>
+  </data>
+  <data name="Workspaces_NoApplications" xml:space="preserve">
+    <value>No applications</value>
+  </data>
+  <data name="Workspaces_Applications_Format" xml:space="preserve">
+    <value>{0} applications</value>
+  </data>
+  <data name="Workspaces_LastLaunched_Format" xml:space="preserve">
+    <value>Last launched {0}</value>
+  </data>
+  <data name="Workspaces_NeverLaunched" xml:space="preserve">
+    <value>Never launched</value>
+  </data>
+  <data name="Workspaces_NoApplicationsInWorkspace" xml:space="preserve">
+    <value>No applications in this workspace</value>
+  </data>
+  <data name="Workspaces_OneApplication" xml:space="preserve">
+    <value>1 application</value>
+  </data>
+  <data name="Workspaces_ApplicationsCount_Format" xml:space="preserve">
+    <value>{0} applications</value>
+  </data>
+  <data name="Workspaces_Workspace" xml:space="preserve">
+    <value>Workspace</value>
+  </data>
+  <data name="Workspaces_App" xml:space="preserve">
+    <value>App</value>
+  </data>
+  <data name="Workspaces_JustNow" xml:space="preserve">
+    <value>just now</value>
+  </data>
+  <data name="Workspaces_MinAgo_Format" xml:space="preserve">
+    <value>{0} min ago</value>
+  </data>
+  <data name="Workspaces_HrAgo_Format" xml:space="preserve">
+    <value>{0} hr ago</value>
+  </data>
+  <data name="Workspaces_DaysAgo_Format" xml:space="preserve">
+    <value>{0} days ago</value>
+  </data>
+  <!-- ZoomIt Module -->
+  <data name="ZoomIt_Zoom_Title" xml:space="preserve">
+    <value>ZoomIt: Zoom</value>
+  </data>
+  <data name="ZoomIt_Zoom_Subtitle" xml:space="preserve">
+    <value>Enter zoom mode</value>
+  </data>
+  <data name="ZoomIt_Draw_Title" xml:space="preserve">
+    <value>ZoomIt: Draw</value>
+  </data>
+  <data name="ZoomIt_Draw_Subtitle" xml:space="preserve">
+    <value>Enter drawing mode</value>
+  </data>
+  <data name="ZoomIt_Break_Title" xml:space="preserve">
+    <value>ZoomIt: Break</value>
+  </data>
+  <data name="ZoomIt_Break_Subtitle" xml:space="preserve">
+    <value>Enter break timer</value>
+  </data>
+  <data name="ZoomIt_LiveZoom_Title" xml:space="preserve">
+    <value>ZoomIt: Live Zoom</value>
+  </data>
+  <data name="ZoomIt_LiveZoom_Subtitle" xml:space="preserve">
+    <value>Toggle live zoom</value>
+  </data>
+  <data name="ZoomIt_Snip_Title" xml:space="preserve">
+    <value>ZoomIt: Snip</value>
+  </data>
+  <data name="ZoomIt_Snip_Subtitle" xml:space="preserve">
+    <value>Enter snip mode</value>
+  </data>
+  <data name="ZoomIt_Record_Title" xml:space="preserve">
+    <value>ZoomIt: Record</value>
+  </data>
+  <data name="ZoomIt_Record_Subtitle" xml:space="preserve">
+    <value>Start recording</value>
+  </data>
+  <data name="ZoomIt_Settings_Subtitle" xml:space="preserve">
+    <value>Open ZoomIt settings</value>
+  </data>
+  <!-- FancyZones Monitor Details -->
+  <data name="FancyZones_Monitor" xml:space="preserve">
+    <value>Monitor</value>
+  </data>
+  <data name="FancyZones_Instance" xml:space="preserve">
+    <value>Instance</value>
+  </data>
+  <data name="FancyZones_Serial" xml:space="preserve">
+    <value>Serial</value>
+  </data>
+  <data name="FancyZones_Number" xml:space="preserve">
+    <value>Number</value>
+  </data>
+  <data name="FancyZones_VirtualDesktop" xml:space="preserve">
+    <value>Virtual desktop</value>
+  </data>
+  <data name="FancyZones_WorkArea" xml:space="preserve">
+    <value>Work area</value>
+  </data>
+  <data name="FancyZones_Resolution" xml:space="preserve">
+    <value>Resolution</value>
+  </data>
+  <data name="FancyZones_DPI" xml:space="preserve">
+    <value>DPI</value>
+  </data>
+  <data name="Common_NotAvailable" xml:space="preserve">
+    <value>n/a</value>
+  </data>
+</root>

@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using PowerToysExtension.Commands;
 using PowerToysExtension.Helpers;
+using PowerToysExtension.Properties;
 using static Common.UI.SettingsDeepLink;
 
 namespace PowerToysExtension.Modules;
@@ -20,7 +21,7 @@ internal sealed class ImageResizerModuleCommandProvider : ModuleCommandProvider
         yield return new ListItem(new OpenInSettingsCommand(SettingsWindow.ImageResizer, title))
         {
             Title = title,
-            Subtitle = "Open Image Resizer settings",
+            Subtitle = Resources.ImageResizer_Settings_Subtitle,
             Icon = icon,
         };
     }

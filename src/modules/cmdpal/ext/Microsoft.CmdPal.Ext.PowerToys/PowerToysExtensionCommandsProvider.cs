@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using PowerToysExtension.Helpers;
+using PowerToysExtension.Properties;
 
 namespace PowerToysExtension;
 
@@ -15,13 +16,13 @@ public partial class PowerToysExtensionCommandsProvider : CommandProvider
 
     public PowerToysExtensionCommandsProvider()
     {
-        DisplayName = "PowerToys";
+        DisplayName = Resources.PowerToys_DisplayName;
         Icon = PowerToysResourcesHelper.IconFromSettingsIcon("PowerToys.png");
         _commands = [
             new CommandItem(new Pages.PowerToysListPage())
             {
-                Title = "PowerToys",
-                Subtitle = "PowerToys commands and settings",
+                Title = Resources.PowerToys_DisplayName,
+                Subtitle = Resources.PowerToys_Subtitle,
             },
         ];
     }
