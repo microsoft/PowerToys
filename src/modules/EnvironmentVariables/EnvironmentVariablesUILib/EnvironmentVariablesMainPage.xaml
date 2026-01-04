@@ -470,12 +470,12 @@
                         x:Name="EditVariableValuesList"
                         Margin="0,-8,0,12"
                         HorizontalAlignment="Stretch"
-                        ItemsSource="{Binding ValuesList, Mode=TwoWay}"
-                        Visibility="{Binding ShowAsList, Converter={StaticResource BoolToVisibilityConverter}}"
+                        AllowDrop="True"
                         CanDragItems="True"
                         CanReorderItems="True"
-                        AllowDrop="True"
-                        DragItemsCompleted="EditVariableValuesList_DragItemsCompleted">
+                        DragItemsCompleted="EditVariableValuesList_DragItemsCompleted"
+                        ItemsSource="{Binding ValuesList, Mode=TwoWay}"
+                        Visibility="{Binding ShowAsList, Converter={StaticResource BoolToVisibilityConverter}}">
                         <ListView.ItemTemplate>
                             <DataTemplate>
                                 <Grid>
@@ -486,8 +486,8 @@
                                     </Grid.ColumnDefinitions>
                                     <FontIcon
                                         Grid.Column="0"
-                                        FontSize="16"
                                         Margin="0,0,8,0"
+                                        FontSize="16"
                                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                         Glyph="&#xE759;" />
                                     <TextBox
