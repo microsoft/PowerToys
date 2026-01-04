@@ -215,7 +215,7 @@
                         </tkcontrols:SettingsCard>
                         <tkcontrols:SettingsCard
                             Name="PasteAsKeystrokeShortcut"
-                            x:Uid="PasteAsKeystroke_Shortcut"
+                            x:Uid="PasteAsKeystrokes_Shortcut"
                             HeaderIcon="{ui:FontIcon Glyph=&#xE765;}">
                             <controls:ShortcutControl
                                 MinWidth="{StaticResource SettingActionControlMinWidth}"
