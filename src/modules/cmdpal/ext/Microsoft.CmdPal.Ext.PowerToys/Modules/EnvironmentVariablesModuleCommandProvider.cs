@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using PowerToysExtension.Commands;
 using PowerToysExtension.Helpers;
+using PowerToysExtension.Properties;
 using static Common.UI.SettingsDeepLink;
 
 namespace PowerToysExtension.Modules;
@@ -22,15 +23,15 @@ internal sealed class EnvironmentVariablesModuleCommandProvider : ModuleCommandP
         {
             yield return new ListItem(new OpenEnvironmentVariablesCommand())
             {
-                Title = "Open Environment Variables",
-                Subtitle = "Launch Environment Variables editor",
+                Title = Resources.EnvironmentVariables_Open_Title,
+                Subtitle = Resources.EnvironmentVariables_Open_Subtitle,
                 Icon = icon,
             };
 
             yield return new ListItem(new OpenEnvironmentVariablesAdminCommand())
             {
-                Title = "Open Environment Variables (Admin)",
-                Subtitle = "Launch Environment Variables editor as admin",
+                Title = Resources.EnvironmentVariables_OpenAdmin_Title,
+                Subtitle = Resources.EnvironmentVariables_OpenAdmin_Subtitle,
                 Icon = icon,
             };
         }
@@ -38,7 +39,7 @@ internal sealed class EnvironmentVariablesModuleCommandProvider : ModuleCommandP
         yield return new ListItem(new OpenInSettingsCommand(module, title))
         {
             Title = title,
-            Subtitle = "Open Environment Variables settings",
+            Subtitle = Resources.EnvironmentVariables_Settings_Subtitle,
             Icon = icon,
         };
     }
