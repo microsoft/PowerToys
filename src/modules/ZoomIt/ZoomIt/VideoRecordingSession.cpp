@@ -9,6 +9,7 @@
 #include "pch.h"
 #include "VideoRecordingSession.h"
 #include "CaptureFrameWait.h"
+#include "Utility.h"
 #include <winrt/Windows.Graphics.Imaging.h>
 #include <winrt/Windows.Media.h>
 #include <cstdlib>
@@ -2084,7 +2085,6 @@ static void DrawTimeline(HDC hdc, RECT rc, VideoRecordingSession::TrimDialogData
 
         HBRUSH hBrush = CreateSolidBrush(color);
         FillRect(hdcMem, &handleRect, hBrush);
-        FrameRect(hdcMem, &handleRect, static_cast<HBRUSH>(GetStockObject(BLACK_BRUSH)));
 
         POINT triangle[3];
         if (pointDown)
@@ -2121,7 +2121,9 @@ static void DrawTimeline(HDC hdc, RECT rc, VideoRecordingSession::TrimDialogData
 
     HBRUSH hPositionBrush = CreateSolidBrush(RGB(33, 150, 243));
     HBRUSH hOldBrush = static_cast<HBRUSH>(SelectObject(hdcMem, hPositionBrush));
+    HPEN hOldPenForEllipse = static_cast<HPEN>(SelectObject(hdcMem, GetStockObject(NULL_PEN)));
     Ellipse(hdcMem, posX - 6, trackBottom + 12, posX + 6, trackBottom + 24);
+    SelectObject(hdcMem, hOldPenForEllipse);
     SelectObject(hdcMem, hOldBrush);
     DeleteObject(hPositionBrush);
 
@@ -2581,7 +2583,7 @@ static winrt::fire_and_forget StartPlaybackAsync(HWND hDlg, VideoRecordingSessio
 
                 if (pos >= dataPtr->trimEnd)
                 {
-                    dataPtr->currentPosition = dataPtr->trimStart;
+                    // Signal stop - position will be reset to trimStart in the stop handler
                     PostMessage(hDlg, WMU_PLAYBACK_STOP, 0, 0);
                 }
                 else
@@ -3218,6 +3220,7 @@ static LRESULT CALLBACK PlaybackButtonSubclassProc(
 INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
     static TrimDialogData* pData = nullptr;
+    static UINT currentDpi = DPI_BASELINE;
 
     switch (message)
     {
@@ -3295,7 +3298,14 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
         UpdateVideoPreview(hDlg, pData);
         SetTimeText(hDlg, IDC_TRIM_POSITION_LABEL, pData->currentPosition, true);
 
-        // Position dialog (use stored position if available)
+        // Apply DPI scaling to the dialog
+        currentDpi = GetDpiForWindowHelper( hDlg );
+        if( currentDpi != DPI_BASELINE )
+        {
+            ScaleDialogForDpi( hDlg, currentDpi, DPI_BASELINE );
+        }
+
+        // Position dialog (use stored position if available, otherwise center on screen)
         if (pData->dialogX != 0 || pData->dialogY != 0)
         {
             SetWindowPos(hDlg, nullptr, pData->dialogX, pData->dialogY, 0, 0, SWP_NOACTIVATE | SWP_NOSIZE | SWP_NOZORDER);
@@ -3373,6 +3383,11 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
     {
         pData = reinterpret_cast<TrimDialogData*>(GetWindowLongPtr(hDlg, DWLP_USER));
         StopPlayback(hDlg, pData, false);
+        // Reset position to left grip (trimStart) after playback ends
+        if (pData)
+        {
+            pData->currentPosition = pData->trimStart;
+        }
         UpdateVideoPreview(hDlg, pData);
         return TRUE;
     }
@@ -3478,6 +3493,19 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
             return TRUE;
         }
         break;
+    }
+
+    case WM_DPICHANGED:
+    {
+        HandleDialogDpiChange( hDlg, wParam, lParam, currentDpi );
+        // Invalidate preview and timeline to redraw at new DPI
+        pData = reinterpret_cast<TrimDialogData*>(GetWindowLongPtr(hDlg, DWLP_USER));
+        if (pData)
+        {
+            InvalidateRect(GetDlgItem(hDlg, IDC_TRIM_PREVIEW), nullptr, TRUE);
+            InvalidateRect(GetDlgItem(hDlg, IDC_TRIM_TIMELINE), nullptr, TRUE);
+        }
+        return TRUE;
     }
 
     case WM_DESTROY:
@@ -3590,8 +3618,8 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
 
                 if (nextTicks >= pData->trimEnd.count())
                 {
-                    // Loop back to where playback started
-                    pData->currentPosition = pData->playbackStartPosition;
+                    // Reset position to left grip (trimStart) after playback ends
+                    pData->currentPosition = pData->trimStart;
                     StopPlayback(hDlg, pData, false);
                     UpdateVideoPreview(hDlg, pData);
                 }
@@ -3648,8 +3676,8 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
 
                 if (clampedTicks >= pData->trimEnd.count())
                 {
-                    // Loop back to where playback started
-                    pData->currentPosition = pData->playbackStartPosition;
+                    // Reset position to left grip (trimStart) after playback ends
+                    pData->currentPosition = pData->trimStart;
                     StopPlayback(hDlg, pData, false);
                     UpdateVideoPreview(hDlg, pData);
                 }

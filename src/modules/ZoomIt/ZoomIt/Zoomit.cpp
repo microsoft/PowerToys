@@ -1547,6 +1547,7 @@ INT_PTR CALLBACK AdvancedBreakProc( HWND hDlg, UINT message, WPARAM wParam, LPAR
     TCHAR	filePath[MAX_PATH], initDir[MAX_PATH];
     DWORD	i;
     OPENFILENAME	openFileName;
+    static UINT currentDpi = DPI_BASELINE;
 
     switch ( message )  {
     case WM_INITDIALOG:
@@ -1609,6 +1610,17 @@ INT_PTR CALLBACK AdvancedBreakProc( HWND hDlg, UINT message, WPARAM wParam, LPAR
         }
         SendMessage( GetDlgItem( hDlg, IDC_OPACITY ), CB_SETCURSEL,
                 g_BreakOpacity / 10 - 1, 0 );
+
+        // Apply DPI scaling to the dialog
+        currentDpi = GetDpiForWindowHelper( hDlg );
+        if( currentDpi != DPI_BASELINE )
+        {
+            ScaleDialogForDpi( hDlg, currentDpi, DPI_BASELINE );
+        }
+        return TRUE;
+
+    case WM_DPICHANGED:
+        HandleDialogDpiChange( hDlg, wParam, lParam, currentDpi );
         return TRUE;
 
     case WM_COMMAND:
@@ -2091,6 +2103,7 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
     static HWND		hTabCtrl;
     static HWND		hOpacity;
     static HWND		hToggleKey;
+    static UINT		currentDpi = DPI_BASELINE;
     TCHAR			text[32];
     DWORD			newToggleKey, newTimeout, newToggleMod, newBreakToggleKey, newDemoTypeToggleKey, newRecordToggleKey, newSnipToggleKey;
     DWORD			newDrawToggleKey, newDrawToggleMod, newBreakToggleMod, newDemoTypeToggleMod, newRecordToggleMod, newSnipToggleMod;
@@ -2274,6 +2287,21 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
         SendMessage( GetDlgItem( g_OptionsTabs[DEMOTYPE_PAGE].hPage, IDC_DEMOTYPE_SPEED_SLIDER ), TBM_SETPOS, true, g_DemoTypeSpeedSlider );
         CheckDlgButton( g_OptionsTabs[DEMOTYPE_PAGE].hPage, IDC_DEMOTYPE_USER_DRIVEN, g_DemoTypeUserDriven ? BST_CHECKED: BST_UNCHECKED );
 
+        // Apply DPI scaling to the dialog
+        currentDpi = GetDpiForWindowHelper( hDlg );
+        if( currentDpi != DPI_BASELINE )
+        {
+            ScaleDialogForDpi( hDlg, currentDpi, DPI_BASELINE );
+            // Scale tab pages as well
+            for( int i = 0; i < sizeof( g_OptionsTabs ) / sizeof( g_OptionsTabs[0] ); i++ )
+            {
+                if( g_OptionsTabs[i].hPage )
+                {
+                    ScaleDialogForDpi( g_OptionsTabs[i].hPage, currentDpi, DPI_BASELINE );
+                }
+            }
+        }
+
         UnregisterAllHotkeys(GetParent( hDlg ));
         PostMessage( hDlg, WM_USER, 0, 0 );
         return TRUE;
@@ -2286,9 +2314,38 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
         return TRUE;
 
     case WM_DPICHANGED:
+    {
+        UINT newDpi = HIWORD( wParam );
+        if( newDpi != currentDpi && newDpi != 0 )
+        {
+            const RECT* pSuggestedRect = reinterpret_cast<const RECT*>(lParam);
+
+            // Scale the main dialog
+            ScaleDialogForDpi( hDlg, newDpi, currentDpi );
+
+            // Scale all tab pages
+            for( int i = 0; i < sizeof( g_OptionsTabs ) / sizeof( g_OptionsTabs[0] ); i++ )
+            {
+                if( g_OptionsTabs[i].hPage )
+                {
+                    ScaleDialogForDpi( g_OptionsTabs[i].hPage, newDpi, currentDpi );
+                }
+            }
+
+            // Move and resize the dialog to the suggested rectangle
+            SetWindowPos( hDlg, nullptr,
+                pSuggestedRect->left,
+                pSuggestedRect->top,
+                pSuggestedRect->right - pSuggestedRect->left,
+                pSuggestedRect->bottom - pSuggestedRect->top,
+                SWP_NOZORDER | SWP_NOACTIVATE );
+
+            currentDpi = newDpi;
+        }
         InitializeFonts( hDlg, &hFontBold );
         UpdateDrawTabHeaderFont();
         break;
+    }
 
     case WM_CTLCOLORSTATIC:
         if( reinterpret_cast<HWND>(lParam) == GetDlgItem( hDlg, IDC_TITLE ) ||

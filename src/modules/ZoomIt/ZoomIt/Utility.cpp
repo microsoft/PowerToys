@@ -151,3 +151,108 @@ POINT ScalePointInRects( POINT point, const RECT& source, const RECT& target )
     return { targetCenter.x + MulDiv( point.x - sourceCenter.x, targetSize.cx, sourceSize.cx ),
              targetCenter.y + MulDiv( point.y - sourceCenter.y, targetSize.cy, sourceSize.cy ) };
 }
+
+//----------------------------------------------------------------------------
+//
+// ScaleDialogForDpi
+//
+// Scales a dialog and all its child controls for the specified DPI.
+// oldDpi defaults to DPI_BASELINE (96) for initial scaling.
+//
+//----------------------------------------------------------------------------
+void ScaleDialogForDpi( HWND hDlg, UINT newDpi, UINT oldDpi )
+{
+    if( newDpi == oldDpi || newDpi == 0 || oldDpi == 0 )
+    {
+        return;
+    }
+
+    // Scale the dialog window itself
+    RECT dialogRect;
+    GetWindowRect( hDlg, &dialogRect );
+    int dialogWidth = MulDiv( dialogRect.right - dialogRect.left, newDpi, oldDpi );
+    int dialogHeight = MulDiv( dialogRect.bottom - dialogRect.top, newDpi, oldDpi );
+    SetWindowPos( hDlg, nullptr, 0, 0, dialogWidth, dialogHeight, SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE );
+
+    // Enumerate and scale all child controls
+    HWND hChild = GetWindow( hDlg, GW_CHILD );
+    while( hChild != nullptr )
+    {
+        RECT childRect;
+        GetWindowRect( hChild, &childRect );
+        MapWindowPoints( nullptr, hDlg, reinterpret_cast<LPPOINT>(&childRect), 2 );
+
+        int x = MulDiv( childRect.left, newDpi, oldDpi );
+        int y = MulDiv( childRect.top, newDpi, oldDpi );
+        int width = MulDiv( childRect.right - childRect.left, newDpi, oldDpi );
+        int height = MulDiv( childRect.bottom - childRect.top, newDpi, oldDpi );
+
+        SetWindowPos( hChild, nullptr, x, y, width, height, SWP_NOZORDER | SWP_NOACTIVATE );
+
+        // Scale the font for the control
+        HFONT hFont = reinterpret_cast<HFONT>(SendMessage( hChild, WM_GETFONT, 0, 0 ));
+        if( hFont != nullptr )
+        {
+            LOGFONT lf{};
+            if( GetObject( hFont, sizeof(lf), &lf ) )
+            {
+                lf.lfHeight = MulDiv( lf.lfHeight, newDpi, oldDpi );
+                HFONT hNewFont = CreateFontIndirect( &lf );
+                if( hNewFont )
+                {
+                    SendMessage( hChild, WM_SETFONT, reinterpret_cast<WPARAM>(hNewFont), TRUE );
+                    // Note: The old font might be shared, so we don't delete it here
+                    // The system will clean up fonts when the dialog is destroyed
+                }
+            }
+        }
+
+        hChild = GetWindow( hChild, GW_HWNDNEXT );
+    }
+
+    // Also scale the dialog's own font
+    HFONT hDialogFont = reinterpret_cast<HFONT>(SendMessage( hDlg, WM_GETFONT, 0, 0 ));
+    if( hDialogFont != nullptr )
+    {
+        LOGFONT lf{};
+        if( GetObject( hDialogFont, sizeof(lf), &lf ) )
+        {
+            lf.lfHeight = MulDiv( lf.lfHeight, newDpi, oldDpi );
+            HFONT hNewFont = CreateFontIndirect( &lf );
+            if( hNewFont )
+            {
+                SendMessage( hDlg, WM_SETFONT, reinterpret_cast<WPARAM>(hNewFont), TRUE );
+            }
+        }
+    }
+}
+
+//----------------------------------------------------------------------------
+//
+// HandleDialogDpiChange
+//
+// Handles WM_DPICHANGED message for dialogs. Call this from the dialog's
+// WndProc when WM_DPICHANGED is received.
+//
+//----------------------------------------------------------------------------
+void HandleDialogDpiChange( HWND hDlg, WPARAM wParam, LPARAM lParam, UINT& currentDpi )
+{
+    UINT newDpi = HIWORD( wParam );
+    if( newDpi != currentDpi && newDpi != 0 )
+    {
+        const RECT* pSuggestedRect = reinterpret_cast<const RECT*>(lParam);
+        
+        // Scale the dialog controls from the current DPI to the new DPI
+        ScaleDialogForDpi( hDlg, newDpi, currentDpi );
+        
+        // Move and resize the dialog to the suggested rectangle
+        SetWindowPos( hDlg, nullptr,
+            pSuggestedRect->left,
+            pSuggestedRect->top,
+            pSuggestedRect->right - pSuggestedRect->left,
+            pSuggestedRect->bottom - pSuggestedRect->top,
+            SWP_NOZORDER | SWP_NOACTIVATE );
+        
+        currentDpi = newDpi;
+    }
+}
