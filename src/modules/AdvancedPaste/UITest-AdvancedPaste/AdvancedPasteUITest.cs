@@ -1062,7 +1062,8 @@ namespace Microsoft.AdvancedPaste.UITests
             this.SendKeys(Key.Delete);
             Thread.Sleep(1000);
 
-            // Test direct hotkey - Win+Ctrl+Alt+K
+            // Test direct hotkey configured for "paste as keystroke text"
+            // paste as keystroke text: win + ctrl + alt + k
             this.SendKeys(Key.Win, Key.LCtrl, Key.Alt, Key.K);
             Thread.Sleep(3000); // Wait for keystrokes to complete
 
