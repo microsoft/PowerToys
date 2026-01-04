@@ -17,6 +17,7 @@ namespace EnvironmentVariablesUILib
     public sealed partial class EnvironmentVariablesMainPage : Page
     {
         private const string ValueListSeparator = ";";
+
         private sealed class RelayCommandParameter
         {
             public RelayCommandParameter(Variable variable, VariablesSet set)
