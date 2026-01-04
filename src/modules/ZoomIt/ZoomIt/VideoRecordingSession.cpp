@@ -2776,6 +2776,28 @@ static LRESULT CALLBACK TimelineSubclassProc(
             SetCapture(hWnd);
             return 0;
         }
+        else
+        {
+            // Click on the timeline track (not on a handle) - seek to that position
+            const int trackLeft = kTimelinePadding;
+            const int trackRight = width - kTimelinePadding;
+            if (x >= trackLeft && x <= trackRight && y >= trackTop && y <= trackBottom + 30)
+            {
+                // Convert click position to time and seek
+                winrt::TimeSpan clickTime = TimelinePixelToTime(pData, clampedX, width);
+                
+                // Clamp to current trim range
+                if (clickTime < pData->trimStart)
+                    clickTime = pData->trimStart;
+                if (clickTime > pData->trimEnd)
+                    clickTime = pData->trimEnd;
+                
+                pData->currentPosition = clickTime;
+                UpdateVideoPreview(pData->hDialog, pData);
+                InvalidateRect(hWnd, nullptr, FALSE);
+                return 0;
+            }
+        }
         break;
     }
 
