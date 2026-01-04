@@ -18,20 +18,11 @@
   <data name="NoMonitorsText.Message" xml:space="preserve">
     <value>No monitors detected</value>
   </data>
-  <data name="SyncAllMonitorsTooltip.ToolTipService.ToolTip" xml:space="preserve">
-    <value>Synchronize all monitors to the same brightness</value>
-  </data>
-  <data name="DisableControlTooltip.ToolTipService.ToolTip" xml:space="preserve">
-    <value>Enable or disable brightness control</value>
-  </data>
   <data name="RefreshTooltip.ToolTipService.ToolTip" xml:space="preserve">
     <value>Rescan connected monitors</value>
   </data>
 	<data name="SettingsTooltip.ToolTipService.ToolTip" xml:space="preserve">
     <value>Settings</value>
-  </data>
-	<data name="NoMonitorsText.Message" xml:space="preserve">
-    <value>No monitors detected</value>
   </data>
 	<data name="MonitorTooltip.ToolTipService.ToolTip" xml:space="preserve">
     <value>Monitor</value>
@@ -83,5 +74,11 @@
   </data>
   <data name="IdentifyTooltip.ToolTipService.ToolTip" xml:space="preserve">
     <value>Identify monitors</value>
+  </data>
+  <data name="InputSourceHeader.Text" xml:space="preserve">
+    <value>Input source</value>
+  </data>
+  <data name="ProfilesHeader.Text" xml:space="preserve">
+    <value>Profiles</value>
   </data>
 </root>

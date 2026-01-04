@@ -133,10 +133,10 @@
                                                                     SelectionMode="Single">
                                                                     <ListView.Header>
                                                                         <TextBlock
+                                                                            x:Uid="InputSourceHeader"
                                                                             Margin="16,0,8,0"
                                                                             FontSize="12"
-                                                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                                                            Text="Input source" />
+                                                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                                                     </ListView.Header>
                                                                     <ListView.ItemTemplate>
                                                                         <DataTemplate x:DataType="vm:InputSourceItem">
@@ -373,10 +373,10 @@
                                         SelectionMode="Single">
                                         <ListView.Header>
                                             <TextBlock
+                                                x:Uid="ProfilesHeader"
                                                 Margin="16,0,8,0"
                                                 FontSize="12"
-                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                                Text="Profiles" />
+                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                         </ListView.Header>
                                         <ListView.ItemTemplate>
                                             <DataTemplate x:DataType="models:PowerDisplayProfile">

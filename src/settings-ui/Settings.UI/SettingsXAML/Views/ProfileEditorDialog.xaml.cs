@@ -6,6 +6,7 @@
 
 using System.Collections.ObjectModel;
 using System.Linq;
+using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
 using Microsoft.UI.Xaml;
@@ -27,6 +28,12 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         {
             this.InitializeComponent();
             ViewModel = new ProfileEditorViewModel(availableMonitors, defaultName);
+
+            // Set localized strings for ContentDialog
+            var resourceLoader = ResourceLoaderInstance.ResourceLoader;
+            Title = resourceLoader.GetString("PowerDisplay_ProfileEditor_Title");
+            PrimaryButtonText = resourceLoader.GetString("PowerDisplay_Dialog_Save");
+            CloseButtonText = resourceLoader.GetString("PowerDisplay_Dialog_Cancel");
         }
 
         private void ContentDialog_PrimaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)

@@ -5707,32 +5707,11 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   <data name="PowerDisplay_AddProfile_Text.Text" xml:space="preserve">
     <value>Add profile</value>
   </data>
-  <data name="PowerDisplay_ProfilesHelpText.Text" xml:space="preserve">
-    <value>Right-click a profile to rename or delete it</value>
-  </data>
-  <data name="PowerDisplay_AddProfile_Button.ToolTipService.ToolTip" xml:space="preserve">
-    <value>Add new profile</value>
-  </data>
-  <data name="PowerDisplay_DeleteProfile_Button.ToolTipService.ToolTip" xml:space="preserve">
-    <value>Delete selected profile</value>
-  </data>
   <data name="PowerDisplay_Monitors.Header" xml:space="preserve">
     <value>Monitors</value>
   </data>
   <data name="PowerDisplay_NoMonitorsDetected.Text" xml:space="preserve">
     <value>No monitors detected. Ensure your external monitors are connected and powered on.</value>
-  </data>
-  <data name="PowerDisplay_Monitor_Name.Header" xml:space="preserve">
-    <value>Display name</value>
-  </data>
-  <data name="PowerDisplay_Monitor_InternalName.Header" xml:space="preserve">
-    <value>Internal name</value>
-  </data>
-  <data name="PowerDisplay_Monitor_Type.Header" xml:space="preserve">
-    <value>Monitor type</value>
-  </data>
-  <data name="PowerDisplay_Monitor_CommunicationMethod.Header" xml:space="preserve">
-    <value>Communication method</value>
   </data>
   <data name="LearnMore_PowerDisplay.Text" xml:space="preserve">
     <value>Learn more about Power Display</value>
@@ -5751,9 +5730,6 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   </data>
   <data name="Launch_PowerDisplay.Content" xml:space="preserve">
     <value>Open Power Display</value>
-  </data>
-  <data name="PowerDisplay_Monitor_Brightness.Header" xml:space="preserve">
-    <value>Brightness</value>
   </data>
   <data name="PowerDisplay_Monitor_ColorTemperature.Header" xml:space="preserve">
     <value>Color temperature</value>
@@ -5798,6 +5774,39 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   </data>
   <data name="PowerDisplay_Dialog_Cancel" xml:space="preserve">
     <value>Cancel</value>
+  </data>
+  <data name="PowerDisplay_Dialog_Save" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="PowerDisplay_ProfileEditor_Title" xml:space="preserve">
+    <value>Edit Profile</value>
+  </data>
+  <data name="PowerDisplay_ProfileEditor_ProfileName.Header" xml:space="preserve">
+    <value>Profile name</value>
+  </data>
+  <data name="PowerDisplay_ProfileEditor_ProfileName.PlaceholderText" xml:space="preserve">
+    <value>Enter profile name (e.g., 'Gaming Mode', 'Work')</value>
+  </data>
+  <data name="PowerDisplay_ProfileEditor_Description.Text" xml:space="preserve">
+    <value>Select what monitors and settings to include for this profile</value>
+  </data>
+  <data name="PowerDisplay_ProfileEditor_Brightness.Text" xml:space="preserve">
+    <value>Brightness</value>
+  </data>
+  <data name="PowerDisplay_ProfileEditor_Contrast.Text" xml:space="preserve">
+    <value>Contrast</value>
+  </data>
+  <data name="PowerDisplay_ProfileEditor_Volume.Text" xml:space="preserve">
+    <value>Volume</value>
+  </data>
+  <data name="PowerDisplay_ProfileEditor_ColorTemperature.Text" xml:space="preserve">
+    <value>Color temperature</value>
+  </data>
+  <data name="PowerDisplay_ProfileEditor_ColorTemperature_ComboBox.PlaceholderText" xml:space="preserve">
+    <value>Select..</value>
+  </data>
+  <data name="PowerDisplay_Profile_DefaultBaseName" xml:space="preserve">
+    <value>Profile</value>
   </data>
   <data name="PowerDisplay_DeleteProfile_Title" xml:space="preserve">
     <value>Delete Profile</value>

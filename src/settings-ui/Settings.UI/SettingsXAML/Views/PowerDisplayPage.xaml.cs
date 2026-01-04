@@ -232,7 +232,9 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         {
             // Use shared ProfileHelper for consistent profile name generation
             var existingNames = ViewModel.Profiles.Select(p => p.Name).ToHashSet();
-            return ProfileHelper.GenerateUniqueProfileName(existingNames);
+            var resourceLoader = ResourceLoaderInstance.ResourceLoader;
+            var baseName = resourceLoader.GetString("PowerDisplay_Profile_DefaultBaseName");
+            return ProfileHelper.GenerateUniqueProfileName(existingNames, baseName);
         }
     }
 }

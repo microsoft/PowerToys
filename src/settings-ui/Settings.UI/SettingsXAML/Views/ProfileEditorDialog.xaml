@@ -7,15 +7,12 @@
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     xmlns:ui="using:CommunityToolkit.WinUI"
     xmlns:viewmodels="using:Microsoft.PowerToys.Settings.UI.ViewModels"
-    Title="Edit Profile"
     Width="486"
     MinWidth="486"
     CloseButtonClick="ContentDialog_CloseButtonClick"
-    CloseButtonText="Cancel"
     DefaultButton="Primary"
     IsPrimaryButtonEnabled="{x:Bind ViewModel.CanSave, Mode=OneWay}"
     PrimaryButtonClick="ContentDialog_PrimaryButtonClick"
-    PrimaryButtonText="Save"
     Style="{StaticResource DefaultContentDialogStyle}"
     mc:Ignorable="d">
 
@@ -31,16 +28,15 @@
         </Grid.RowDefinitions>
         <TextBox
             x:Name="ProfileNameTextBox"
+            x:Uid="PowerDisplay_ProfileEditor_ProfileName"
             Margin="0,0,0,24"
-            Header="Profile name"
             MaxLength="50"
-            PlaceholderText="Enter profile name (e.g., 'Gaming Mode', 'Work')"
             Text="{x:Bind ViewModel.ProfileName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 
         <!--  Monitors List  -->
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
             <StackPanel Spacing="16">
-                <TextBlock Style="{StaticResource BodyStrongTextBlockStyle}" Text="Select what monitors and settings to include for this profile" />
+                <TextBlock x:Uid="PowerDisplay_ProfileEditor_Description" Style="{StaticResource BodyStrongTextBlockStyle}" />
                 <ItemsControl ItemsSource="{x:Bind ViewModel.Monitors, Mode=OneWay}">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate x:DataType="viewmodels:MonitorSelectionItem">
@@ -59,7 +55,7 @@
                                             <CheckBox IsChecked="{x:Bind IncludeBrightness, Mode=TwoWay}">
                                                 <StackPanel Orientation="Horizontal" Spacing="8">
                                                     <FontIcon FontSize="16" Glyph="&#xE706;" />
-                                                    <TextBlock VerticalAlignment="Center" Text="Brightness" />
+                                                    <TextBlock x:Uid="PowerDisplay_ProfileEditor_Brightness" VerticalAlignment="Center" />
                                                 </StackPanel>
                                             </CheckBox>
                                         </tkcontrols:SettingsCard.Header>
@@ -79,7 +75,7 @@
                                             <CheckBox IsChecked="{x:Bind IncludeContrast, Mode=TwoWay}">
                                                 <StackPanel Orientation="Horizontal" Spacing="8">
                                                     <FontIcon FontSize="16" Glyph="&#xE793;" />
-                                                    <TextBlock VerticalAlignment="Center" Text="Contrast" />
+                                                    <TextBlock x:Uid="PowerDisplay_ProfileEditor_Contrast" VerticalAlignment="Center" />
                                                 </StackPanel>
                                             </CheckBox>
                                         </tkcontrols:SettingsCard.Header>
@@ -95,7 +91,7 @@
                                             <CheckBox IsChecked="{x:Bind IncludeVolume, Mode=TwoWay}">
                                                 <StackPanel Orientation="Horizontal" Spacing="8">
                                                     <FontIcon FontSize="16" Glyph="&#xE767;" />
-                                                    <TextBlock VerticalAlignment="Center" Text="Volume" />
+                                                    <TextBlock x:Uid="PowerDisplay_ProfileEditor_Volume" VerticalAlignment="Center" />
                                                 </StackPanel>
                                             </CheckBox>
                                         </tkcontrols:SettingsCard.Header>
@@ -111,16 +107,16 @@
                                             <CheckBox IsChecked="{x:Bind IncludeColorTemperature, Mode=TwoWay}">
                                                 <StackPanel Orientation="Horizontal" Spacing="8">
                                                     <FontIcon FontSize="16" Glyph="&#xE790;" />
-                                                    <TextBlock VerticalAlignment="Center" Text="Color temperature" />
+                                                    <TextBlock x:Uid="PowerDisplay_ProfileEditor_ColorTemperature" VerticalAlignment="Center" />
                                                 </StackPanel>
                                             </CheckBox>
                                         </tkcontrols:SettingsCard.Header>
                                         <ComboBox
+                                            x:Uid="PowerDisplay_ProfileEditor_ColorTemperature_ComboBox"
                                             MinWidth="{StaticResource SettingActionControlMinWidth}"
                                             VerticalAlignment="Center"
                                             DisplayMemberPath="DisplayName"
                                             ItemsSource="{x:Bind Monitor.ColorPresetsForDisplay, Mode=OneWay}"
-                                            PlaceholderText="Select.."
                                             SelectedValue="{x:Bind ColorTemperature, Mode=TwoWay}"
                                             SelectedValuePath="VcpValue" />
                                     </tkcontrols:SettingsCard>
