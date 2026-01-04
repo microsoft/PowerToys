@@ -528,6 +528,12 @@ public partial class MainViewModel
             SupportsInputSource = vm.VcpCapabilitiesInfo?.SupportedVcpCodes.ContainsKey(0x60) ?? false,
             SupportsVolume = vm.VcpCapabilitiesInfo?.SupportedVcpCodes.ContainsKey(0x62) ?? false,
 
+            // Default Enable* to match Supports* for new monitors (first-time setup)
+            // ApplyPreservedUserSettings will override these with saved user preferences if they exist
+            EnableContrast = vm.VcpCapabilitiesInfo?.SupportedVcpCodes.ContainsKey(0x12) ?? false,
+            EnableVolume = vm.VcpCapabilitiesInfo?.SupportedVcpCodes.ContainsKey(0x62) ?? false,
+            EnableInputSource = vm.VcpCapabilitiesInfo?.SupportedVcpCodes.ContainsKey(0x60) ?? false,
+
             // Monitor number for display name formatting
             MonitorNumber = vm.MonitorNumber,
         };
