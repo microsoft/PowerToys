@@ -9,6 +9,475 @@
 #include "pch.h"
 #include "Utility.h"
 
+#pragma comment(lib, "uxtheme.lib")
+
+//----------------------------------------------------------------------------
+// Dark Mode - Static/Global State
+//----------------------------------------------------------------------------
+static bool g_darkModeInitialized = false;
+static bool g_darkModeEnabled = false;
+static HBRUSH g_darkBackgroundBrush = nullptr;
+static HBRUSH g_darkControlBrush = nullptr;
+static HBRUSH g_darkSurfaceBrush = nullptr;
+
+// Preferred App Mode values for Windows 10/11 dark mode
+enum class PreferredAppMode
+{
+    Default,
+    AllowDark,
+    ForceDark,
+    ForceLight,
+    Max
+};
+
+// Undocumented ordinals from uxtheme.dll for dark mode support
+using fnSetPreferredAppMode = PreferredAppMode(WINAPI*)(PreferredAppMode appMode);
+using fnAllowDarkModeForWindow = bool(WINAPI*)(HWND hWnd, bool allow);
+using fnShouldAppsUseDarkMode = bool(WINAPI*)();
+using fnRefreshImmersiveColorPolicyState = void(WINAPI*)();
+using fnFlushMenuThemes = void(WINAPI*)();
+
+static fnSetPreferredAppMode pSetPreferredAppMode = nullptr;
+static fnAllowDarkModeForWindow pAllowDarkModeForWindow = nullptr;
+static fnShouldAppsUseDarkMode pShouldAppsUseDarkMode = nullptr;
+static fnRefreshImmersiveColorPolicyState pRefreshImmersiveColorPolicyState = nullptr;
+static fnFlushMenuThemes pFlushMenuThemes = nullptr;
+
+//----------------------------------------------------------------------------
+//
+// InitializeDarkModeSupport
+//
+// Initialize dark mode function pointers from uxtheme.dll
+//
+//----------------------------------------------------------------------------
+static void InitializeDarkModeSupport()
+{
+    if (g_darkModeInitialized)
+        return;
+
+    g_darkModeInitialized = true;
+
+    HMODULE hUxTheme = GetModuleHandleW(L"uxtheme.dll");
+    if (hUxTheme)
+    {
+        // These are undocumented ordinal exports
+        // Ordinal 135: SetPreferredAppMode (Windows 10 1903+)
+        pSetPreferredAppMode = reinterpret_cast<fnSetPreferredAppMode>(
+            GetProcAddress(hUxTheme, MAKEINTRESOURCEA(135)));
+        // Ordinal 133: AllowDarkModeForWindow
+        pAllowDarkModeForWindow = reinterpret_cast<fnAllowDarkModeForWindow>(
+            GetProcAddress(hUxTheme, MAKEINTRESOURCEA(133)));
+        // Ordinal 132: ShouldAppsUseDarkMode
+        pShouldAppsUseDarkMode = reinterpret_cast<fnShouldAppsUseDarkMode>(
+            GetProcAddress(hUxTheme, MAKEINTRESOURCEA(132)));
+        // Ordinal 104: RefreshImmersiveColorPolicyState
+        pRefreshImmersiveColorPolicyState = reinterpret_cast<fnRefreshImmersiveColorPolicyState>(
+            GetProcAddress(hUxTheme, MAKEINTRESOURCEA(104)));
+        // Ordinal 136: FlushMenuThemes
+        pFlushMenuThemes = reinterpret_cast<fnFlushMenuThemes>(
+            GetProcAddress(hUxTheme, MAKEINTRESOURCEA(136)));
+
+        // Allow dark mode for the application
+        if (pSetPreferredAppMode)
+        {
+            // Use ForceDark when system is in dark mode, otherwise AllowDark
+            // This ensures popup menus follow the dark theme
+            if (pShouldAppsUseDarkMode && pShouldAppsUseDarkMode())
+            {
+                pSetPreferredAppMode(PreferredAppMode::ForceDark);
+            }
+            else
+            {
+                pSetPreferredAppMode(PreferredAppMode::AllowDark);
+            }
+        }
+
+        // Flush menu themes to apply dark mode to context menus
+        if (pFlushMenuThemes)
+        {
+            pFlushMenuThemes();
+        }
+    }
+
+    // Check initial dark mode state
+    RefreshDarkModeState();
+}
+
+//----------------------------------------------------------------------------
+//
+// IsDarkModeEnabled
+//
+//----------------------------------------------------------------------------
+bool IsDarkModeEnabled()
+{
+    InitializeDarkModeSupport();
+
+    // Check the undocumented API first
+    if (pShouldAppsUseDarkMode)
+    {
+        return pShouldAppsUseDarkMode();
+    }
+
+    // Fallback: Check registry for system theme preference
+    HKEY hKey;
+    if (RegOpenKeyExW(HKEY_CURRENT_USER,
+        L"Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize",
+        0, KEY_READ, &hKey) == ERROR_SUCCESS)
+    {
+        DWORD value = 1;
+        DWORD size = sizeof(value);
+        RegQueryValueExW(hKey, L"AppsUseLightTheme", nullptr, nullptr,
+            reinterpret_cast<LPBYTE>(&value), &size);
+        RegCloseKey(hKey);
+        return value == 0; // 0 = dark mode, 1 = light mode
+    }
+
+    return false;
+}
+
+//----------------------------------------------------------------------------
+//
+// RefreshDarkModeState
+//
+//----------------------------------------------------------------------------
+void RefreshDarkModeState()
+{
+    InitializeDarkModeSupport();
+
+    if (pRefreshImmersiveColorPolicyState)
+    {
+        pRefreshImmersiveColorPolicyState();
+    }
+
+    // Update preferred app mode based on current system theme
+    if (pSetPreferredAppMode && pShouldAppsUseDarkMode)
+    {
+        if (pShouldAppsUseDarkMode())
+        {
+            pSetPreferredAppMode(PreferredAppMode::ForceDark);
+        }
+        else
+        {
+            pSetPreferredAppMode(PreferredAppMode::ForceLight);
+        }
+    }
+
+    // Flush menu themes to apply dark mode to context menus
+    if (pFlushMenuThemes)
+    {
+        pFlushMenuThemes();
+    }
+
+    g_darkModeEnabled = IsDarkModeEnabled();
+}
+
+//----------------------------------------------------------------------------
+//
+// SetDarkModeForWindow
+//
+//----------------------------------------------------------------------------
+void SetDarkModeForWindow(HWND hWnd, bool enable)
+{
+    InitializeDarkModeSupport();
+
+    if (pAllowDarkModeForWindow)
+    {
+        pAllowDarkModeForWindow(hWnd, enable);
+    }
+
+    // Use DWMWA_USE_IMMERSIVE_DARK_MODE attribute (Windows 10 build 17763+)
+    // Attribute 20 is DWMWA_USE_IMMERSIVE_DARK_MODE
+    BOOL useDarkMode = enable ? TRUE : FALSE;
+    HMODULE hDwmapi = GetModuleHandleW(L"dwmapi.dll");
+    if (hDwmapi)
+    {
+        using fnDwmSetWindowAttribute = HRESULT(WINAPI*)(HWND, DWORD, LPCVOID, DWORD);
+        auto pDwmSetWindowAttribute = reinterpret_cast<fnDwmSetWindowAttribute>(
+            GetProcAddress(hDwmapi, "DwmSetWindowAttribute"));
+        if (pDwmSetWindowAttribute)
+        {
+            // Try attribute 20 first (Windows 11 / newer Windows 10)
+            HRESULT hr = pDwmSetWindowAttribute(hWnd, 20, &useDarkMode, sizeof(useDarkMode));
+            if (FAILED(hr))
+            {
+                // Fall back to attribute 19 (older Windows 10)
+                pDwmSetWindowAttribute(hWnd, 19, &useDarkMode, sizeof(useDarkMode));
+            }
+        }
+    }
+}
+
+//----------------------------------------------------------------------------
+//
+// GetDarkModeBrush / GetDarkModeControlBrush / GetDarkModeSurfaceBrush
+//
+//----------------------------------------------------------------------------
+HBRUSH GetDarkModeBrush()
+{
+    if (!g_darkBackgroundBrush)
+    {
+        g_darkBackgroundBrush = CreateSolidBrush(DarkMode::BackgroundColor);
+    }
+    return g_darkBackgroundBrush;
+}
+
+HBRUSH GetDarkModeControlBrush()
+{
+    if (!g_darkControlBrush)
+    {
+        g_darkControlBrush = CreateSolidBrush(DarkMode::ControlColor);
+    }
+    return g_darkControlBrush;
+}
+
+HBRUSH GetDarkModeSurfaceBrush()
+{
+    if (!g_darkSurfaceBrush)
+    {
+        g_darkSurfaceBrush = CreateSolidBrush(DarkMode::SurfaceColor);
+    }
+    return g_darkSurfaceBrush;
+}
+
+//----------------------------------------------------------------------------
+//
+// ApplyDarkModeToDialog
+//
+//----------------------------------------------------------------------------
+void ApplyDarkModeToDialog(HWND hDlg)
+{
+    if (IsDarkModeEnabled())
+    {
+        SetDarkModeForWindow(hDlg, true);
+
+        // Set dark theme for the dialog
+        SetWindowTheme(hDlg, L"DarkMode_Explorer", nullptr);
+
+        // Apply dark theme to common controls (buttons, edit boxes, etc.)
+        EnumChildWindows(hDlg, [](HWND hChild, LPARAM) -> BOOL {
+            wchar_t className[64] = { 0 };
+            GetClassNameW(hChild, className, _countof(className));
+
+            // Apply appropriate theme based on control type
+            if (_wcsicmp(className, L"Button") == 0)
+            {
+                // Check if this is a checkbox or radio button
+                LONG style = GetWindowLong(hChild, GWL_STYLE);
+                LONG buttonType = style & BS_TYPEMASK;
+                if (buttonType == BS_CHECKBOX || buttonType == BS_AUTOCHECKBOX ||
+                    buttonType == BS_3STATE || buttonType == BS_AUTO3STATE)
+                {
+                    // Subclass checkbox for dark mode painting
+                    SetWindowTheme(hChild, L"", L"");
+                    SetWindowSubclass(hChild, CheckboxSubclassProc, 2, 0);
+                }
+                else
+                {
+                    SetWindowTheme(hChild, L"DarkMode_Explorer", nullptr);
+                }
+            }
+            else if (_wcsicmp(className, L"Edit") == 0)
+            {
+                // Use empty theme to allow WM_CTLCOLOREDIT from parent to work
+                SetWindowTheme(hChild, L"", L"");
+            }
+            else if (_wcsicmp(className, L"ComboBox") == 0)
+            {
+                SetWindowTheme(hChild, L"DarkMode_CFD", nullptr);
+            }
+            else if (_wcsicmp(className, L"SysListView32") == 0 ||
+                     _wcsicmp(className, L"SysTreeView32") == 0)
+            {
+                SetWindowTheme(hChild, L"DarkMode_Explorer", nullptr);
+            }
+            else if (_wcsicmp(className, L"msctls_trackbar32") == 0)
+            {
+                // Use empty theme for trackbar to allow custom dark drawing
+                SetWindowTheme(hChild, L"", L"");
+            }
+            else if (_wcsicmp(className, L"SysTabControl32") == 0)
+            {
+                // Use empty theme for tab control to allow dark background
+                SetWindowTheme(hChild, L"", L"");
+            }
+            else if (_wcsicmp(className, L"msctls_updown32") == 0)
+            {
+                SetWindowTheme(hChild, L"DarkMode_Explorer", nullptr);
+            }
+            else if (_wcsicmp(className, L"msctls_hotkey32") == 0)
+            {
+                // Subclass hotkey controls for dark mode painting
+                SetWindowTheme(hChild, L"", L"");
+                SetWindowSubclass(hChild, HotkeyControlSubclassProc, 1, 0);
+            }
+            else
+            {
+                SetWindowTheme(hChild, L"DarkMode_Explorer", nullptr);
+            }
+            return TRUE;
+        }, 0);
+    }
+    else
+    {
+        // Light mode - remove dark mode
+        SetDarkModeForWindow(hDlg, false);
+        SetWindowTheme(hDlg, nullptr, nullptr);
+        
+        EnumChildWindows(hDlg, [](HWND hChild, LPARAM) -> BOOL {
+            // Remove subclass from controls
+            wchar_t className[64] = { 0 };
+            GetClassNameW(hChild, className, _countof(className));
+            if (_wcsicmp(className, L"msctls_hotkey32") == 0)
+            {
+                RemoveWindowSubclass(hChild, HotkeyControlSubclassProc, 1);
+            }
+            else if (_wcsicmp(className, L"Button") == 0)
+            {
+                LONG style = GetWindowLong(hChild, GWL_STYLE);
+                LONG buttonType = style & BS_TYPEMASK;
+                if (buttonType == BS_CHECKBOX || buttonType == BS_AUTOCHECKBOX ||
+                    buttonType == BS_3STATE || buttonType == BS_AUTO3STATE)
+                {
+                    RemoveWindowSubclass(hChild, CheckboxSubclassProc, 2);
+                }
+            }
+            SetWindowTheme(hChild, nullptr, nullptr);
+            return TRUE;
+        }, 0);
+    }
+}
+
+//----------------------------------------------------------------------------
+//
+// HandleDarkModeCtlColor
+//
+//----------------------------------------------------------------------------
+HBRUSH HandleDarkModeCtlColor(HDC hdc, HWND hCtrl, UINT message)
+{
+    if (!IsDarkModeEnabled())
+    {
+        return nullptr;
+    }
+
+    switch (message)
+    {
+    case WM_CTLCOLORDLG:
+        SetBkColor(hdc, DarkMode::BackgroundColor);
+        SetTextColor(hdc, DarkMode::TextColor);
+        return GetDarkModeBrush();
+
+    case WM_CTLCOLORSTATIC:
+        SetBkMode(hdc, TRANSPARENT);
+        SetTextColor(hdc, DarkMode::TextColor);
+        return GetDarkModeBrush();
+
+    case WM_CTLCOLORBTN:
+        SetBkColor(hdc, DarkMode::ControlColor);
+        SetTextColor(hdc, DarkMode::TextColor);
+        return GetDarkModeControlBrush();
+
+    case WM_CTLCOLOREDIT:
+        SetBkColor(hdc, DarkMode::SurfaceColor);
+        SetTextColor(hdc, DarkMode::TextColor);
+        return GetDarkModeSurfaceBrush();
+
+    case WM_CTLCOLORLISTBOX:
+        SetBkColor(hdc, DarkMode::SurfaceColor);
+        SetTextColor(hdc, DarkMode::TextColor);
+        return GetDarkModeSurfaceBrush();
+    }
+
+    return nullptr;
+}
+
+//----------------------------------------------------------------------------
+//
+// ApplyDarkModeToMenu
+//
+// Uses undocumented uxtheme functions to enable dark mode for menus
+//
+//----------------------------------------------------------------------------
+void ApplyDarkModeToMenu(HMENU hMenu)
+{
+    if (!hMenu)
+    {
+        return;
+    }
+
+    if (!IsDarkModeEnabled())
+    {
+        // Light mode - clear any dark background
+        MENUINFO mi = { sizeof(mi) };
+        mi.fMask = MIM_BACKGROUND | MIM_APPLYTOSUBMENUS;
+        mi.hbrBack = nullptr;
+        SetMenuInfo(hMenu, &mi);
+        return;
+    }
+
+    // For popup menus, we need to use MENUINFO to set the background
+    MENUINFO mi = { sizeof(mi) };
+    mi.fMask = MIM_BACKGROUND | MIM_APPLYTOSUBMENUS;
+    mi.hbrBack = GetDarkModeSurfaceBrush();
+    SetMenuInfo(hMenu, &mi);
+}
+
+//----------------------------------------------------------------------------
+//
+// RefreshWindowTheme
+//
+// Forces a window and all its children to redraw with current theme
+//
+//----------------------------------------------------------------------------
+void RefreshWindowTheme(HWND hWnd)
+{
+    if (!hWnd)
+    {
+        return;
+    }
+
+    // Reapply theme to this window
+    ApplyDarkModeToDialog(hWnd);
+
+    // Force redraw
+    RedrawWindow(hWnd, nullptr, nullptr, RDW_INVALIDATE | RDW_ERASE | RDW_ALLCHILDREN | RDW_FRAME);
+}
+
+//----------------------------------------------------------------------------
+//
+// CleanupDarkModeResources
+//
+//----------------------------------------------------------------------------
+void CleanupDarkModeResources()
+{
+    if (g_darkBackgroundBrush)
+    {
+        DeleteObject(g_darkBackgroundBrush);
+        g_darkBackgroundBrush = nullptr;
+    }
+    if (g_darkControlBrush)
+    {
+        DeleteObject(g_darkControlBrush);
+        g_darkControlBrush = nullptr;
+    }
+    if (g_darkSurfaceBrush)
+    {
+        DeleteObject(g_darkSurfaceBrush);
+        g_darkSurfaceBrush = nullptr;
+    }
+}
+
+//----------------------------------------------------------------------------
+//
+// InitializeDarkMode
+//
+// Public wrapper to initialize dark mode support early in app startup
+//
+//----------------------------------------------------------------------------
+void InitializeDarkMode()
+{
+    InitializeDarkModeSupport();
+}
+
 //----------------------------------------------------------------------------
 //
 // ForceRectInBounds

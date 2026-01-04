@@ -1985,8 +1985,9 @@ static void DrawTimeline(HDC hdc, RECT rc, VideoRecordingSession::TrimDialogData
     HBITMAP hbmMem = CreateCompatibleBitmap(hdc, width, height);
     HBITMAP hbmOld = static_cast<HBITMAP>(SelectObject(hdcMem, hbmMem));
 
-    // Draw to memory DC
-    HBRUSH hBackground = CreateSolidBrush(GetSysColor(COLOR_BTNFACE));
+    // Draw to memory DC - use dark mode colors if enabled
+    const bool darkMode = IsDarkModeEnabled();
+    HBRUSH hBackground = CreateSolidBrush(darkMode ? DarkMode::BackgroundColor : GetSysColor(COLOR_BTNFACE));
     RECT rcMem = { 0, 0, width, height };
     FillRect(hdcMem, &rcMem, hBackground);
     DeleteObject(hBackground);
@@ -1997,7 +1998,7 @@ static void DrawTimeline(HDC hdc, RECT rc, VideoRecordingSession::TrimDialogData
     const int trackBottom = trackTop + kTimelineTrackHeight;
 
     RECT rcTrack = { trackLeft, trackTop, trackRight, trackBottom };
-    HBRUSH hTrackBase = CreateSolidBrush(RGB(214, 219, 224));
+    HBRUSH hTrackBase = CreateSolidBrush(darkMode ? RGB(60, 60, 65) : RGB(214, 219, 224));
     FillRect(hdcMem, &rcTrack, hTrackBase);
     DeleteObject(hTrackBase);
 
@@ -2010,7 +2011,7 @@ static void DrawTimeline(HDC hdc, RECT rc, VideoRecordingSession::TrimDialogData
 
     RECT rcBefore{ trackLeft, trackTop, startX, trackBottom };
     RECT rcAfter{ endX, trackTop, trackRight, trackBottom };
-    HBRUSH hMuted = CreateSolidBrush(RGB(198, 202, 206));
+    HBRUSH hMuted = CreateSolidBrush(darkMode ? RGB(50, 50, 55) : RGB(198, 202, 206));
     FillRect(hdcMem, &rcBefore, hMuted);
     FillRect(hdcMem, &rcAfter, hMuted);
     DeleteObject(hMuted);
@@ -2020,7 +2021,7 @@ static void DrawTimeline(HDC hdc, RECT rc, VideoRecordingSession::TrimDialogData
     FillRect(hdcMem, &rcActive, hActive);
     DeleteObject(hActive);
 
-    HPEN hOutline = CreatePen(PS_SOLID, 1, RGB(150, 150, 150));
+    HPEN hOutline = CreatePen(PS_SOLID, 1, darkMode ? RGB(80, 80, 85) : RGB(150, 150, 150));
     HPEN hOldPen = static_cast<HPEN>(SelectObject(hdcMem, hOutline));
     MoveToEx(hdcMem, trackLeft, trackTop, nullptr);
     LineTo(hdcMem, trackRight, trackTop);
@@ -2038,10 +2039,10 @@ static void DrawTimeline(HDC hdc, RECT rc, VideoRecordingSession::TrimDialogData
         const int tickMinorBottom = tickTop + 6;
 
         const std::array<double, 5> fractions{ 0.0, 0.25, 0.5, 0.75, 1.0 };
-        HPEN hTickPen = CreatePen(PS_SOLID, 1, RGB(150, 150, 150));
+        HPEN hTickPen = CreatePen(PS_SOLID, 1, darkMode ? RGB(100, 100, 105) : RGB(150, 150, 150));
         HPEN hOldTickPen = static_cast<HPEN>(SelectObject(hdcMem, hTickPen));
         SetBkMode(hdcMem, TRANSPARENT);
-        SetTextColor(hdcMem, RGB(80, 80, 80));
+        SetTextColor(hdcMem, darkMode ? DarkMode::TextColor : RGB(80, 80, 80));
 
         // Use consistent font for all timeline text
         HFONT hTimelineFont = CreateFont(12, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, DEFAULT_CHARSET,
@@ -3305,6 +3306,9 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
             ScaleDialogForDpi( hDlg, currentDpi, DPI_BASELINE );
         }
 
+        // Apply dark mode
+        ApplyDarkModeToDialog( hDlg );
+
         // Position dialog (use stored position if available, otherwise center on screen)
         if (pData->dialogX != 0 || pData->dialogY != 0)
         {
@@ -3318,6 +3322,33 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
         OutputDebugStringW(L"[Trim] WM_INITDIALOG completed\n");
         return TRUE;
     }
+
+    case WM_CTLCOLORDLG:
+    case WM_CTLCOLORSTATIC:
+    case WM_CTLCOLORBTN:
+    case WM_CTLCOLOREDIT:
+    case WM_CTLCOLORLISTBOX:
+    {
+        HDC hdc = reinterpret_cast<HDC>(wParam);
+        HWND hCtrl = reinterpret_cast<HWND>(lParam);
+        HBRUSH hBrush = HandleDarkModeCtlColor(hdc, hCtrl, message);
+        if (hBrush)
+        {
+            return reinterpret_cast<INT_PTR>(hBrush);
+        }
+        break;
+    }
+
+    case WM_ERASEBKGND:
+        if (IsDarkModeEnabled())
+        {
+            HDC hdc = reinterpret_cast<HDC>(wParam);
+            RECT rc;
+            GetClientRect(hDlg, &rc);
+            FillRect(hdc, &rc, GetDarkModeBrush());
+            return TRUE;
+        }
+        break;
 
     case WMU_PREVIEW_READY:
     {

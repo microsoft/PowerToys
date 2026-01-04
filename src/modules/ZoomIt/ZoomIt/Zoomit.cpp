@@ -1617,11 +1617,41 @@ INT_PTR CALLBACK AdvancedBreakProc( HWND hDlg, UINT message, WPARAM wParam, LPAR
         {
             ScaleDialogForDpi( hDlg, currentDpi, DPI_BASELINE );
         }
+
+        // Apply dark mode
+        ApplyDarkModeToDialog( hDlg );
         return TRUE;
 
     case WM_DPICHANGED:
         HandleDialogDpiChange( hDlg, wParam, lParam, currentDpi );
         return TRUE;
+
+    case WM_ERASEBKGND:
+        if (IsDarkModeEnabled())
+        {
+            HDC hdc = reinterpret_cast<HDC>(wParam);
+            RECT rc;
+            GetClientRect(hDlg, &rc);
+            FillRect(hdc, &rc, GetDarkModeBrush());
+            return TRUE;
+        }
+        break;
+
+    case WM_CTLCOLORDLG:
+    case WM_CTLCOLORSTATIC:
+    case WM_CTLCOLORBTN:
+    case WM_CTLCOLOREDIT:
+    case WM_CTLCOLORLISTBOX:
+    {
+        HDC hdc = reinterpret_cast<HDC>(wParam);
+        HWND hCtrl = reinterpret_cast<HWND>(lParam);
+        HBRUSH hBrush = HandleDarkModeCtlColor(hdc, hCtrl, message);
+        if (hBrush)
+        {
+            return reinterpret_cast<INT_PTR>(hBrush);
+        }
+        break;
+    }
 
     case WM_COMMAND:
         switch ( HIWORD( wParam )) {
@@ -1801,6 +1831,34 @@ INT_PTR CALLBACK OptionsTabProc( HWND hDlg, UINT message,
     switch ( message )  {
     case WM_INITDIALOG:
         return TRUE;
+
+    case WM_ERASEBKGND:
+        if (IsDarkModeEnabled())
+        {
+            HDC hdc = reinterpret_cast<HDC>(wParam);
+            RECT rc;
+            GetClientRect(hDlg, &rc);
+            FillRect(hdc, &rc, GetDarkModeBrush());
+            return TRUE;
+        }
+        break;
+
+    case WM_CTLCOLORDLG:
+    case WM_CTLCOLORSTATIC:
+    case WM_CTLCOLORBTN:
+    case WM_CTLCOLOREDIT:
+    case WM_CTLCOLORLISTBOX:
+    {
+        HDC hdc = reinterpret_cast<HDC>(wParam);
+        HWND hCtrl = reinterpret_cast<HWND>(lParam);
+        HBRUSH hBrush = HandleDarkModeCtlColor(hdc, hCtrl, message);
+        if (hBrush)
+        {
+            return reinterpret_cast<INT_PTR>(hBrush);
+        }
+        break;
+    }
+
     case WM_COMMAND:
         // Handle combo box selection changes
         if (HIWORD(wParam) == CBN_SELCHANGE) {
@@ -1925,6 +1983,14 @@ INT_PTR CALLBACK OptionsTabProc( HWND hDlg, UINT message,
             MapWindowPoints( NULL, hDlg, reinterpret_cast<LPPOINT>(&previewRc), 2);
 
             previewRc.top += 6;
+
+            // Set text color based on dark mode
+            if (IsDarkModeEnabled())
+            {
+                SetTextColor(hDc, DarkMode::TextColor);
+                SetBkMode(hDc, TRANSPARENT);
+            }
+
             DrawText( hDc, L"Sample", static_cast<int>(_tcslen(L"Sample")), &previewRc,
                 DT_CENTER|DT_VCENTER|DT_SINGLELINE );
 
@@ -1972,8 +2038,13 @@ VOID OptionsAddTabs( HWND hOptionsDlg, HWND hTabCtrl )
              SWP_NOACTIVATE|(i == 0 ? SWP_SHOWWINDOW : SWP_HIDEWINDOW));
 
         if( pEnableThemeDialogTexture ) {
-
-            pEnableThemeDialogTexture( g_OptionsTabs[i].hPage, ETDT_ENABLETAB );
+            if( IsDarkModeEnabled() ) {
+                // Disable theme dialog texture in dark mode - it interferes with dark backgrounds
+                pEnableThemeDialogTexture( g_OptionsTabs[i].hPage, ETDT_DISABLE );
+            } else {
+                // Enable tab texturing in light mode
+                pEnableThemeDialogTexture( g_OptionsTabs[i].hPage, ETDT_ENABLETAB );
+            }
         }
     }
 }
@@ -2091,6 +2162,307 @@ void UpdateDrawTabHeaderFont()
 
 //----------------------------------------------------------------------------
 //
+// CheckboxSubclassProc
+//
+// Subclass procedure for checkbox controls to handle dark mode colors
+//
+//----------------------------------------------------------------------------
+LRESULT CALLBACK CheckboxSubclassProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData)
+{
+    switch (uMsg)
+    {
+    case WM_PAINT:
+        if (IsDarkModeEnabled())
+        {
+            PAINTSTRUCT ps;
+            HDC hdc = BeginPaint(hWnd, &ps);
+
+            RECT rc;
+            GetClientRect(hWnd, &rc);
+
+            // Fill background
+            FillRect(hdc, &rc, GetDarkModeBrush());
+
+            // Get checkbox state
+            LRESULT state = SendMessage(hWnd, BM_GETCHECK, 0, 0);
+            bool isChecked = (state == BST_CHECKED);
+            bool isIndeterminate = (state == BST_INDETERMINATE);
+
+            // Get DPI for scaling
+            UINT dpi = GetDpiForWindowHelper(hWnd);
+            int checkSize = ScaleForDpi(13, dpi);
+            int margin = ScaleForDpi(2, dpi);
+
+            // Calculate checkbox position (left-aligned, vertically centered)
+            RECT rcCheck;
+            rcCheck.left = rc.left + margin;
+            rcCheck.top = rc.top + (rc.bottom - rc.top - checkSize) / 2;
+            rcCheck.right = rcCheck.left + checkSize;
+            rcCheck.bottom = rcCheck.top + checkSize;
+
+            // Draw checkbox border
+            HPEN hPen = CreatePen(PS_SOLID, 1, DarkMode::BorderColor);
+            HPEN hOldPen = static_cast<HPEN>(SelectObject(hdc, hPen));
+            HBRUSH hFillBrush = isChecked ? CreateSolidBrush(DarkMode::AccentColor) : GetDarkModeSurfaceBrush();
+            HBRUSH hOldBrush = static_cast<HBRUSH>(SelectObject(hdc, hFillBrush));
+            Rectangle(hdc, rcCheck.left, rcCheck.top, rcCheck.right, rcCheck.bottom);
+            SelectObject(hdc, hOldBrush);
+            SelectObject(hdc, hOldPen);
+            DeleteObject(hPen);
+            if (isChecked)
+            {
+                DeleteObject(hFillBrush);
+            }
+
+            // Draw checkmark if checked
+            if (isChecked)
+            {
+                HPEN hCheckPen = CreatePen(PS_SOLID, ScaleForDpi(2, dpi), RGB(255, 255, 255));
+                HPEN hOldCheckPen = static_cast<HPEN>(SelectObject(hdc, hCheckPen));
+
+                // Draw checkmark
+                int x = rcCheck.left + ScaleForDpi(3, dpi);
+                int y = rcCheck.top + ScaleForDpi(6, dpi);
+                MoveToEx(hdc, x, y, nullptr);
+                LineTo(hdc, x + ScaleForDpi(2, dpi), y + ScaleForDpi(3, dpi));
+                LineTo(hdc, x + ScaleForDpi(7, dpi), y - ScaleForDpi(3, dpi));
+
+                SelectObject(hdc, hOldCheckPen);
+                DeleteObject(hCheckPen);
+            }
+
+            // Draw text
+            TCHAR text[256] = { 0 };
+            GetWindowText(hWnd, text, _countof(text));
+
+            SetBkMode(hdc, TRANSPARENT);
+            SetTextColor(hdc, DarkMode::TextColor);
+            HFONT hFont = reinterpret_cast<HFONT>(SendMessage(hWnd, WM_GETFONT, 0, 0));
+            HFONT hOldFont = nullptr;
+            if (hFont)
+            {
+                hOldFont = static_cast<HFONT>(SelectObject(hdc, hFont));
+            }
+
+            RECT rcText = rc;
+            rcText.left = rcCheck.right + ScaleForDpi(4, dpi);
+            DrawText(hdc, text, -1, &rcText, DT_LEFT | DT_VCENTER | DT_SINGLELINE);
+
+            if (hOldFont)
+            {
+                SelectObject(hdc, hOldFont);
+            }
+
+            EndPaint(hWnd, &ps);
+            return 0;
+        }
+        break;
+
+    case WM_NCDESTROY:
+        RemoveWindowSubclass(hWnd, CheckboxSubclassProc, uIdSubclass);
+        break;
+    }
+    return DefSubclassProc(hWnd, uMsg, wParam, lParam);
+}
+
+//----------------------------------------------------------------------------
+//
+// HotkeyControlSubclassProc
+//
+// Subclass procedure for hotkey controls to handle dark mode colors
+//
+//----------------------------------------------------------------------------
+LRESULT CALLBACK HotkeyControlSubclassProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData)
+{
+    switch (uMsg)
+    {
+    case WM_PAINT:
+        if (IsDarkModeEnabled())
+        {
+            // Get the hotkey from the control using HKM_GETHOTKEY
+            LRESULT hk = SendMessage(hWnd, HKM_GETHOTKEY, 0, 0);
+            WORD hotkey = LOWORD(hk);
+            BYTE vk = LOBYTE(hotkey);
+            BYTE mods = HIBYTE(hotkey);
+
+            // Build the hotkey text
+            std::wstring text;
+            if (vk != 0)
+            {
+                if (mods & HOTKEYF_CONTROL)
+                    text += L"Ctrl+";
+                if (mods & HOTKEYF_SHIFT)
+                    text += L"Shift+";
+                if (mods & HOTKEYF_ALT)
+                    text += L"Alt+";
+
+                // Get key name using virtual key code
+                UINT scanCode = MapVirtualKeyW(vk, MAPVK_VK_TO_VSC);
+                if (scanCode != 0)
+                {
+                    TCHAR keyName[64] = { 0 };
+                    LONG lParamKey = (scanCode << 16);
+                    // Set extended key bit for certain keys
+                    if ((vk >= VK_PRIOR && vk <= VK_DELETE) || 
+                        (vk >= VK_LWIN && vk <= VK_APPS) ||
+                        vk == VK_DIVIDE || vk == VK_NUMLOCK)
+                    {
+                        lParamKey |= (1 << 24);
+                    }
+                    if (GetKeyNameTextW(lParamKey, keyName, _countof(keyName)) > 0)
+                    {
+                        text += keyName;
+                    }
+                    else
+                    {
+                        // Fallback: use the virtual key character for printable keys
+                        if (vk >= '0' && vk <= '9')
+                        {
+                            text += static_cast<wchar_t>(vk);
+                        }
+                        else if (vk >= 'A' && vk <= 'Z')
+                        {
+                            text += static_cast<wchar_t>(vk);
+                        }
+                        else if (vk >= VK_F1 && vk <= VK_F24)
+                        {
+                            text += L"F";
+                            text += std::to_wstring(vk - VK_F1 + 1);
+                        }
+                    }
+                }
+                else
+                {
+                    // No scan code, try direct character representation
+                    if (vk >= '0' && vk <= '9')
+                    {
+                        text += static_cast<wchar_t>(vk);
+                    }
+                    else if (vk >= 'A' && vk <= 'Z')
+                    {
+                        text += static_cast<wchar_t>(vk);
+                    }
+                    else if (vk >= VK_F1 && vk <= VK_F24)
+                    {
+                        text += L"F";
+                        text += std::to_wstring(vk - VK_F1 + 1);
+                    }
+                }
+            }
+
+            PAINTSTRUCT ps;
+            HDC hdc = BeginPaint(hWnd, &ps);
+
+            RECT rc;
+            GetClientRect(hWnd, &rc);
+
+            // Fill background with dark surface color
+            FillRect(hdc, &rc, GetDarkModeSurfaceBrush());
+
+            // Draw border
+            HPEN hPen = CreatePen(PS_SOLID, 1, DarkMode::BorderColor);
+            HPEN hOldPen = static_cast<HPEN>(SelectObject(hdc, hPen));
+            HBRUSH hOldBrush = static_cast<HBRUSH>(SelectObject(hdc, GetStockObject(NULL_BRUSH)));
+            Rectangle(hdc, rc.left, rc.top, rc.right, rc.bottom);
+            SelectObject(hdc, hOldBrush);
+            SelectObject(hdc, hOldPen);
+            DeleteObject(hPen);
+
+            // Draw text if we have any
+            if (!text.empty())
+            {
+                SetBkMode(hdc, TRANSPARENT);
+                SetTextColor(hdc, DarkMode::TextColor);
+                HFONT hFont = reinterpret_cast<HFONT>(SendMessage(hWnd, WM_GETFONT, 0, 0));
+                HFONT hOldFont = nullptr;
+                if (hFont)
+                {
+                    hOldFont = static_cast<HFONT>(SelectObject(hdc, hFont));
+                }
+                RECT rcText = rc;
+                rcText.left += 4;
+                rcText.right -= 4;
+                DrawTextW(hdc, text.c_str(), -1, &rcText, DT_LEFT | DT_VCENTER | DT_SINGLELINE);
+                if (hOldFont)
+                {
+                    SelectObject(hdc, hOldFont);
+                }
+            }
+
+            EndPaint(hWnd, &ps);
+            return 0;
+        }
+        break;
+
+    case WM_NCDESTROY:
+        RemoveWindowSubclass(hWnd, HotkeyControlSubclassProc, uIdSubclass);
+        break;
+    }
+    return DefSubclassProc(hWnd, uMsg, wParam, lParam);
+}
+
+//----------------------------------------------------------------------------
+//
+// TabControlSubclassProc
+//
+// Subclass procedure for tab control to handle dark mode background
+//
+//----------------------------------------------------------------------------
+LRESULT CALLBACK TabControlSubclassProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData)
+{
+    switch (uMsg)
+    {
+    case WM_ERASEBKGND:
+        if (IsDarkModeEnabled())
+        {
+            HDC hdc = reinterpret_cast<HDC>(wParam);
+            RECT rc;
+            GetClientRect(hWnd, &rc);
+            FillRect(hdc, &rc, GetDarkModeBrush());
+            return TRUE;
+        }
+        break;
+
+    case WM_PAINT:
+        if (IsDarkModeEnabled())
+        {
+            // Let default painting happen for the tabs themselves
+            LRESULT result = DefSubclassProc(hWnd, uMsg, wParam, lParam);
+            
+            // Paint the tab panel area (below the tabs) with dark color
+            HDC hdc = GetDC(hWnd);
+            RECT rcClient;
+            GetClientRect(hWnd, &rcClient);
+            
+            RECT rcDisplay = rcClient;
+            TabCtrl_AdjustRect(hWnd, FALSE, &rcDisplay);
+            
+            // Fill the display area
+            FillRect(hdc, &rcDisplay, GetDarkModeBrush());
+            
+            // Draw a border around the display area
+            HPEN hPen = CreatePen(PS_SOLID, 1, DarkMode::BorderColor);
+            HPEN hOldPen = static_cast<HPEN>(SelectObject(hdc, hPen));
+            HBRUSH hOldBrush = static_cast<HBRUSH>(SelectObject(hdc, GetStockObject(NULL_BRUSH)));
+            Rectangle(hdc, rcDisplay.left - 1, rcDisplay.top - 1, rcDisplay.right + 1, rcDisplay.bottom + 1);
+            SelectObject(hdc, hOldBrush);
+            SelectObject(hdc, hOldPen);
+            DeleteObject(hPen);
+            
+            ReleaseDC(hWnd, hdc);
+            return result;
+        }
+        break;
+
+    case WM_NCDESTROY:
+        RemoveWindowSubclass(hWnd, TabControlSubclassProc, uIdSubclass);
+        break;
+    }
+    return DefSubclassProc(hWnd, uMsg, wParam, lParam);
+}
+
+//----------------------------------------------------------------------------
+//
 // OptionsProc
 //
 //----------------------------------------------------------------------------
@@ -2147,6 +2519,16 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
 #endif
         // Add tabs
         hTabCtrl = GetDlgItem( hDlg, IDC_TAB );
+
+        // Set owner-draw style for tab control when in dark mode
+        if (IsDarkModeEnabled())
+        {
+            LONG_PTR style = GetWindowLongPtr(hTabCtrl, GWL_STYLE);
+            SetWindowLongPtr(hTabCtrl, GWL_STYLE, style | TCS_OWNERDRAWFIXED);
+            // Subclass the tab control for dark mode background painting
+            SetWindowSubclass(hTabCtrl, TabControlSubclassProc, 1, 0);
+        }
+
         OptionsAddTabs( hDlg, hTabCtrl );
 
         InitializeFonts( hDlg, &hFontBold );
@@ -2302,6 +2684,16 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
             }
         }
 
+        // Apply dark mode to the dialog and all tab pages
+        ApplyDarkModeToDialog( hDlg );
+        for( int i = 0; i < sizeof( g_OptionsTabs ) / sizeof( g_OptionsTabs[0] ); i++ )
+        {
+            if( g_OptionsTabs[i].hPage )
+            {
+                ApplyDarkModeToDialog( g_OptionsTabs[i].hPage );
+            }
+        }
+
         UnregisterAllHotkeys(GetParent( hDlg ));
         PostMessage( hDlg, WM_USER, 0, 0 );
         return TRUE;
@@ -2347,19 +2739,122 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
         break;
     }
 
-    case WM_CTLCOLORSTATIC:
-        if( reinterpret_cast<HWND>(lParam) == GetDlgItem( hDlg, IDC_TITLE ) ||
-            reinterpret_cast<HWND>(lParam) == GetDlgItem(hDlg, IDC_DRAWING) ||
-            reinterpret_cast<HWND>(lParam) == GetDlgItem(hDlg, IDC_ZOOM) ||
-            reinterpret_cast<HWND>(lParam) == GetDlgItem(hDlg, IDC_BREAK) ||
-            reinterpret_cast<HWND>(lParam) == GetDlgItem( hDlg, IDC_TYPE )) {
-
-            HDC	hdc = reinterpret_cast<HDC>(wParam);
-            SetBkMode( hdc, TRANSPARENT );
-            SelectObject( hdc, hFontBold );
-            return PtrToLong(GetSysColorBrush( COLOR_BTNFACE ));
+    case WM_ERASEBKGND:
+        if (IsDarkModeEnabled())
+        {
+            HDC hdc = reinterpret_cast<HDC>(wParam);
+            RECT rc;
+            GetClientRect(hDlg, &rc);
+            FillRect(hdc, &rc, GetDarkModeBrush());
+            return TRUE;
         }
         break;
+
+    case WM_CTLCOLORDLG:
+    case WM_CTLCOLORSTATIC:
+    case WM_CTLCOLORBTN:
+    case WM_CTLCOLOREDIT:
+    case WM_CTLCOLORLISTBOX:
+    {
+        HDC hdc = reinterpret_cast<HDC>(wParam);
+        HWND hCtrl = reinterpret_cast<HWND>(lParam);
+
+        // Handle dark mode colors
+        HBRUSH hBrush = HandleDarkModeCtlColor(hdc, hCtrl, message);
+        if (hBrush)
+        {
+            // For bold title controls, also set the bold font
+            if (message == WM_CTLCOLORSTATIC &&
+                (hCtrl == GetDlgItem(hDlg, IDC_TITLE) ||
+                 hCtrl == GetDlgItem(hDlg, IDC_DRAWING) ||
+                 hCtrl == GetDlgItem(hDlg, IDC_ZOOM) ||
+                 hCtrl == GetDlgItem(hDlg, IDC_BREAK) ||
+                 hCtrl == GetDlgItem(hDlg, IDC_TYPE)))
+            {
+                SelectObject(hdc, hFontBold);
+            }
+            return reinterpret_cast<INT_PTR>(hBrush);
+        }
+
+        // Light mode handling for bold title controls
+        if (message == WM_CTLCOLORSTATIC &&
+            (hCtrl == GetDlgItem(hDlg, IDC_TITLE) ||
+             hCtrl == GetDlgItem(hDlg, IDC_DRAWING) ||
+             hCtrl == GetDlgItem(hDlg, IDC_ZOOM) ||
+             hCtrl == GetDlgItem(hDlg, IDC_BREAK) ||
+             hCtrl == GetDlgItem(hDlg, IDC_TYPE)))
+        {
+            SetBkMode(hdc, TRANSPARENT);
+            SelectObject(hdc, hFontBold);
+            return reinterpret_cast<INT_PTR>(GetSysColorBrush(COLOR_BTNFACE));
+        }
+        break;
+    }
+
+    case WM_SETTINGCHANGE:
+        // Handle theme change (dark/light mode toggle)
+        if (lParam && (wcscmp(reinterpret_cast<LPCWSTR>(lParam), L"ImmersiveColorSet") == 0))
+        {
+            RefreshDarkModeState();
+            ApplyDarkModeToDialog(hDlg);
+            for (int i = 0; i < sizeof(g_OptionsTabs) / sizeof(g_OptionsTabs[0]); i++)
+            {
+                if (g_OptionsTabs[i].hPage)
+                {
+                    ApplyDarkModeToDialog(g_OptionsTabs[i].hPage);
+                }
+            }
+            InvalidateRect(hDlg, nullptr, TRUE);
+            for (int i = 0; i < sizeof(g_OptionsTabs) / sizeof(g_OptionsTabs[0]); i++)
+            {
+                if (g_OptionsTabs[i].hPage)
+                {
+                    InvalidateRect(g_OptionsTabs[i].hPage, nullptr, TRUE);
+                }
+            }
+        }
+        break;
+
+    case WM_DRAWITEM:
+    {
+        // Handle owner-draw for tab control in dark mode
+        DRAWITEMSTRUCT* pDIS = reinterpret_cast<DRAWITEMSTRUCT*>(lParam);
+        if (pDIS->CtlID == IDC_TAB && IsDarkModeEnabled())
+        {
+            // Fill tab background
+            HBRUSH hBrush = GetDarkModeBrush();
+            FillRect(pDIS->hDC, &pDIS->rcItem, hBrush);
+
+            // Get tab text
+            TCITEM tci = {};
+            tci.mask = TCIF_TEXT;
+            TCHAR szText[128] = { 0 };
+            tci.pszText = szText;
+            tci.cchTextMax = _countof(szText);
+            TabCtrl_GetItem(hTabCtrl, pDIS->itemID, &tci);
+
+            // Draw text
+            SetBkMode(pDIS->hDC, TRANSPARENT);
+            bool isSelected = (pDIS->itemState & ODS_SELECTED) != 0;
+            SetTextColor(pDIS->hDC, isSelected ? DarkMode::TextColor : DarkMode::DisabledTextColor);
+
+            // Draw underline for selected tab
+            if (isSelected)
+            {
+                RECT rcUnderline = pDIS->rcItem;
+                rcUnderline.top = rcUnderline.bottom - 2;
+                HBRUSH hAccent = CreateSolidBrush(DarkMode::AccentColor);
+                FillRect(pDIS->hDC, &rcUnderline, hAccent);
+                DeleteObject(hAccent);
+            }
+
+            RECT rcText = pDIS->rcItem;
+            rcText.top += 4;
+            DrawText(pDIS->hDC, szText, -1, &rcText, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
+            return TRUE;
+        }
+        break;
+    }
 
     case WM_NOTIFY:
         notify = reinterpret_cast<PNMLINK>(lParam);
@@ -6497,6 +6992,8 @@ LRESULT APIENTRY MainWndProc(
                 InsertMenu( hPopupMenu, 0, MF_BYPOSITION|MF_SEPARATOR, 0, NULL );
                 InsertMenu( hPopupMenu, 0, MF_BYPOSITION, IDC_OPTIONS, L"&Options" );
             }
+            // Apply dark mode theme to the menu
+            ApplyDarkModeToMenu( hPopupMenu );
             TrackPopupMenu( hPopupMenu, 0, pt.x , pt.y, 0, hWnd, NULL );
             DestroyMenu( hPopupMenu );
             break;
@@ -7303,7 +7800,7 @@ LRESULT APIENTRY MainWndProc(
         return TRUE;
 
     case WM_DESTROY:
-
+        CleanupDarkModeResources();
         PostQuitMessage( 0 );
         break;
 
@@ -8061,6 +8558,11 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 
     pEnableThemeDialogTexture = (type_pEnableThemeDialogTexture) GetProcAddress( GetModuleHandle( L"uxtheme.dll" ),
                     "EnableThemeDialogTexture" );
+
+    // Initialize dark mode support early, before any windows are created
+    // This is required for popup menus to use dark mode
+    InitializeDarkMode();
+
     pMonitorFromPoint = (type_MonitorFromPoint) GetProcAddress( LoadLibrarySafe( L"User32.dll", DLL_LOAD_LOCATION_SYSTEM),
                     "MonitorFromPoint" );
     pGetMonitorInfo = (type_pGetMonitorInfo) GetProcAddress( LoadLibrarySafe( L"User32.dll", DLL_LOAD_LOCATION_SYSTEM),
