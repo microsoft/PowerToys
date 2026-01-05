@@ -35,8 +35,10 @@ public sealed partial class MainListPage : DynamicListPage,
     // and continue with others.
     private static readonly TimeSpan FallbackItemSlowTimeout = TimeSpan.FromMilliseconds(200);
 
+#if CMDPAL_FF_MAINPAGE_TIME_FALLBACK_UPDATES
     // For reporting only - if an item takes longer than this, we'll log it.
     private static readonly TimeSpan FallbackItemUltraSlowTimeout = TimeSpan.FromMilliseconds(1000);
+#endif
 
     // Initial number of workers to use for fallback updates.
     private const int InitialFallbackWorkers = 2;
@@ -62,11 +64,11 @@ public sealed partial class MainListPage : DynamicListPage,
 
     private CancellationTokenSource? _cancellationTokenSource;
 
-#if CMDPAL_FF_MAINPAGE_TIME_RAISEITEMS
+#if CMDPAL_FF_MAINPAGE_TIME_RAISE_ITEMS
     private DateTimeOffset _last = DateTimeOffset.UtcNow;
 #endif
 
-#if CMDPAL_FF_MAINPAGE_TIME_FALLBACKUPDATES
+#if CMDPAL_FF_MAINPAGE_TIME_FALLBACK_UPDATES
     private ulong _updateBatchCounter;
 #endif
 
@@ -86,7 +88,7 @@ public sealed partial class MainListPage : DynamicListPage,
         _refreshThrottledDebouncedAction = new ThrottledDebouncedAction(
             () =>
             {
-#if CMDPAL_FF_MAINPAGE_TIME_RAISEITEMS
+#if CMDPAL_FF_MAINPAGE_TIME_RAISE_ITEMS
                 var delta = DateTimeOffset.UtcNow - _last;
                 _last = DateTimeOffset.UtcNow;
                 Logger.LogDebug($"UpdateFallbacks: RaiseItemsChanged, delta {delta}");
@@ -94,7 +96,7 @@ public sealed partial class MainListPage : DynamicListPage,
                 var sw = Stopwatch.StartNew();
 #endif
                 RaiseItemsChanged();
-#if CMDPAL_FF_MAINPAGE_TIME_RAISEITEMS
+#if CMDPAL_FF_MAINPAGE_TIME_RAISE_ITEMS
                 Logger.LogInfo($"UpdateFallbacks: RaiseItemsChanged took {sw.Elapsed}");
 #endif
             },
@@ -493,7 +495,7 @@ public sealed partial class MainListPage : DynamicListPage,
             return;
         }
 
-#if CMDPAL_FF_MAINPAGE_TIME_FALLBACKUPDATES
+#if CMDPAL_FF_MAINPAGE_TIME_FALLBACK_UPDATES
         var batchNumber = _updateBatchCounter++;
         var batchStopwatch = Stopwatch.StartNew();
         Logger.LogDebug($"UpdateFallbacks: Batch start {batchNumber} for query '{query}'");
@@ -509,7 +511,7 @@ public sealed partial class MainListPage : DynamicListPage,
         }
         finally
         {
-#if CMDPAL_FF_MAINPAGE_TIME_FALLBACKUPDATES
+#if CMDPAL_FF_MAINPAGE_TIME_FALLBACK_UPDATES
             Logger.LogDebug($"UpdateFallbacks: Batch finished {batchNumber} for query '{query}' in {batchStopwatch.Elapsed}");
 #endif
         }
@@ -525,12 +527,12 @@ public sealed partial class MainListPage : DynamicListPage,
 
             try
             {
-#if CMDPAL_FF_MAINPAGE_TIME_FALLBACKUPDATES
+#if CMDPAL_FF_MAINPAGE_TIME_FALLBACK_UPDATES
                 var singleFallbackStopwatch = Stopwatch.StartNew();
                 Logger.LogDebug($"UpdateFallbacks: Worker: command id '{command.Id}', '{command.DisplayTitle}' updating with '{query}'");
 #endif
                 var changed = command.SafeUpdateFallbackTextSynchronous(query);
-#if CMDPAL_FF_MAINPAGE_TIME_FALLBACKUPDATES
+#if CMDPAL_FF_MAINPAGE_TIME_FALLBACK_UPDATES
                 var elapsed = singleFallbackStopwatch.Elapsed;
 
                 var tail = elapsed > FallbackItemSlowTimeout ? " is slow" : string.Empty;
@@ -546,7 +548,7 @@ public sealed partial class MainListPage : DynamicListPage,
                     _refreshThrottledDebouncedAction.Invoke();
                 }
             }
-#if CMDPAL_FF_MAINPAGE_TIME_FALLBACKUPDATES
+#if CMDPAL_FF_MAINPAGE_TIME_FALLBACK_UPDATES
             catch (Exception ex)
             {
                 Logger.LogError($"UpdateFallbacks: Worker: command id '{command.Id}', '{command.DisplayTitle}' failed to update fallback text with '{query}'", ex);
