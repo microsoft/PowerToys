@@ -7,7 +7,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
-using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Reflection;
@@ -49,8 +49,6 @@ internal static class Logger
     // track some application statistics
     private static PackageMonitor lastPackageSent;
     private static PackageMonitor lastPackageReceived;
-
-    private static List<ProcessThread> myThreads;
 
     internal static void TelemetryLogTrace(string log, SeverityLevel severityLevel, bool flush = false)
     {
@@ -168,12 +166,12 @@ internal static class Logger
 
     internal static void DumpProgramLogs(StringBuilder sb, int level)
     {
-        _ = Logger.PrivateDump(sb, AllLogs, "[Program logs]\r\n===============\r\n", 0, level, false);
+        _ = Logger.PrivateDump(sb, AllLogs, "[Program Logs]\r\n===============\r\n", 0, level, true);
     }
 
     internal static void DumpOtherLogs(StringBuilder sb, int level)
     {
-        _ = Logger.PrivateDump(sb, new Common(), "[Other Logs]\r\n===============\r\n", 0, level, false);
+        _ = Logger.PrivateDump(sb, new Common(), "[Other Logs]\r\n===============\r\n", 0, level, true);
     }
 
     internal static string DumpObjects(int level)
