@@ -205,106 +205,68 @@ internal static class Logger
 
     private static void DumpObject(StringBuilder sb, object obj, int level, Type t, int maxLevel)
     {
-        int i;
-        bool stop;
         if (t == typeof(Delegate))
         {
             return;
         }
-
-        FieldInfo[] fi;
-        string type;
 
         if (obj is PackageType or string or AddressFamily or ID or IPAddress)
         {
             return;
         }
 
-        type = obj.GetType().ToString();
-
-        if (type.EndsWith("type", StringComparison.CurrentCultureIgnoreCase) || type.Contains("Cryptography")
-            || type.EndsWith("AsyncEventBits", StringComparison.CurrentCultureIgnoreCase))
+        var typeName = obj.GetType().ToString();
+        if (typeName.EndsWith("type", StringComparison.CurrentCultureIgnoreCase)
+            || typeName.Contains("Cryptography")
+            || typeName.EndsWith("AsyncEventBits", StringComparison.CurrentCultureIgnoreCase))
         {
             return;
         }
 
-        stop = obj == null || obj is DATA || obj.GetType().BaseType == typeof(ValueType)
-            || obj.GetType().Namespace.Contains("System.Windows");
-        fi = t.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static);
-
-        foreach (FieldInfo f in fi)
+        var recurse = (obj is not null)
+            && (obj is not DATA)
+            && (obj.GetType().BaseType != typeof(ValueType))
+            && !obj.GetType().Namespace.Contains("System.Windows");
+        var fi = t.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static);
+        foreach (var f in fi)
         {
             if (f.GetValue(obj) != AllLogs)
             {
-                _ = PrivateDump(sb, f.GetValue(obj), f.Name, level + 1, maxLevel, stop);
+                _ = PrivateDump(sb, f.GetValue(obj), f.Name, level + 1, maxLevel, recurse);
             }
         }
 
-        if (obj is Dictionary<string, List<IPAddress>>)
+        if (obj is Dictionary<string, List<IPAddress>> dict)
         {
-            Dictionary<string, List<IPAddress>> d = obj as Dictionary<string, List<IPAddress>>;
-
-            foreach (string k in d.Keys)
+            foreach (var kvp in dict)
             {
-                if (d.TryGetValue(k, out List<IPAddress> l))
+                foreach (var ipAddress in kvp.Value)
                 {
-                    foreach (IPAddress ip in l)
-                    {
-                        _ = PrivateDump(sb, ip, "[" + k + "]", level + 1, maxLevel, false);
-                    }
+                    _ = PrivateDump(sb, ipAddress, "[" + kvp.Key + "]", level + 1, maxLevel, true);
                 }
             }
         }
-
-        if (obj is Array)
+        else if (obj is Array arr)
         {
             try
             {
-                if (obj is MachineInf[])
+                if (obj is string[] or int[] or uint[] or short[] or ushort[]
+                    or MachineInf[] or TcpClient[] or IPAddress[] or TcpSk[]
+                    or TcpServer[] or ProcessThread[] or Thread[])
                 {
-                    MachineInf[] os = (MachineInf[])obj;
-
-                    for (i = 0; i < os.GetLength(0); i++)
+                    for (var i = 0; i < arr.GetLength(0); i++)
                     {
-                        _ = PrivateDump(sb, os[i], "[" + i + "]", level + 1, maxLevel, false);
-                    }
-                }
-                else if (obj is int[] || obj is uint[])
-                {
-                    int[] os = (int[])obj;
-
-                    for (i = 0; i < os.GetLength(0); i++)
-                    {
-                        _ = PrivateDump(sb, os[i], "[" + i + "]", level + 1, maxLevel, false);
-                    }
-                }
-                else if (obj is short[] || obj is ushort[])
-                {
-                    short[] os = (short[])obj;
-
-                    for (i = 0; i < os.GetLength(0); i++)
-                    {
-                        _ = PrivateDump(sb, os[i], "[" + i + "]", level + 1, maxLevel, false);
-                    }
-                }
-                else if (obj is TcpClient[] || obj is IPAddress[] || obj is TcpSk[] || obj is string[]
-                    || obj is TcpServer[]
-                    || obj is ProcessThread[] || obj is Thread[])
-                {
-                    object[] os = (object[])obj;
-
-                    for (i = 0; i < os.GetLength(0); i++)
-                    {
-                        _ = PrivateDump(sb, os[i], "[" + i + "]", level + 1, maxLevel, false);
+                        _ = PrivateDump(sb, arr.GetValue(i), "[" + i + "]", level + 1, maxLevel, true);
                     }
                 }
                 else
                 {
-                    _ = PrivateDump(sb, obj.GetType().ToString() + ": N/A", obj.GetType().ToString(), level + 1, maxLevel, false);
+                    _ = PrivateDump(sb, $"{typeName}: N/A", typeName, level + 1, maxLevel, true);
                 }
             }
             catch (Exception)
             {
+                throw;
             }
         }
     }
