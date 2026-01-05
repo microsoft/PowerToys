@@ -191,7 +191,7 @@ internal static class Logger
         // obfuscate the current encryption key
         if (!string.IsNullOrEmpty(Encryption.myKey))
         {
-            log = log.Replace(Encryption.MyKey, Encryption.GetDebugInfo(Encryption.MyKey));
+            log = log.Replace(Encryption.MyKey, Logger.GetChecksum(Encryption.MyKey));
         }
 
         log += Thread.DumpThreadsStack();
@@ -285,7 +285,7 @@ internal static class Logger
         /* values[3] = t.FullName; */
         values[4] = " = ";
         values[5] = objName.Equals("myKey", StringComparison.OrdinalIgnoreCase)
-            ? Encryption.GetDebugInfo(objString)
+            ? Logger.GetChecksum(objString)
             : objName.Equals("lastClipboardObject", StringComparison.OrdinalIgnoreCase)
                 ? string.Empty
                 : objString
@@ -375,6 +375,17 @@ internal static class Logger
                 _ = Logger.PrivateDump(sb, fieldValue, fieldInfo.Name, level + 1, maxLevel, recurse);
             }
         }
+    }
+
+    /// <summary>
+    /// Calculates a basic checksum of the given string to be written to logs
+    /// for quick verification without revealing the original sensitive value.
+    /// </summary>
+    internal static string GetChecksum(string st)
+    {
+        return string.IsNullOrEmpty(st)
+            ? st
+            : ((byte)(Common.GetBytesU(st).Sum(value => value) % 256)).ToString(CultureInfo.InvariantCulture);
     }
 
     internal static string GetStackTrace(StackTrace st)
