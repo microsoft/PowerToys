@@ -54,8 +54,11 @@ namespace PowerDisplay
             // Register activation handler for future redirects
             keyInstance.Activated += OnActivated;
 
-            // Parse command line arguments: args[0] = runner_pid (Awake pattern)
+            // Parse command line arguments:
+            // args[0] = runner_pid (Awake pattern)
+            // args[1] = pipe_name (Named Pipe for IPC with module DLL)
             int runnerPid = -1;
+            string? pipeName = null;
 
             if (args.Length >= 1)
             {
@@ -65,11 +68,16 @@ namespace PowerDisplay
                 }
             }
 
+            if (args.Length >= 2)
+            {
+                pipeName = args[1];
+            }
+
             Microsoft.UI.Xaml.Application.Start((p) =>
             {
                 var context = new DispatcherQueueSynchronizationContext(DispatcherQueue.GetForCurrentThread());
                 SynchronizationContext.SetSynchronizationContext(context);
-                _app = new App(runnerPid);
+                _app = new App(runnerPid, pipeName);
             });
             return 0;
         }

@@ -263,10 +263,6 @@ namespace winrt::PowerToys::Interop::implementation
     {
         return CommonSharedConstants::SETTINGS_UPDATED_POWER_DISPLAY_EVENT;
     }
-    hstring Constants::ApplyProfilePowerDisplayEvent()
-    {
-        return CommonSharedConstants::APPLY_PROFILE_POWER_DISPLAY_EVENT;
-    }
     hstring Constants::PowerDisplaySendSettingsTelemetryEvent()
     {
         return CommonSharedConstants::POWER_DISPLAY_SEND_SETTINGS_TELEMETRY_EVENT;
@@ -274,5 +270,17 @@ namespace winrt::PowerToys::Interop::implementation
     hstring Constants::HotkeyUpdatedPowerDisplayEvent()
     {
         return CommonSharedConstants::HOTKEY_UPDATED_POWER_DISPLAY_EVENT;
+    }
+    hstring Constants::PowerDisplayToggleMessage()
+    {
+        return CommonSharedConstants::POWER_DISPLAY_TOGGLE_MESSAGE;
+    }
+    hstring Constants::PowerDisplayApplyProfileMessage()
+    {
+        return CommonSharedConstants::POWER_DISPLAY_APPLY_PROFILE_MESSAGE;
+    }
+    hstring Constants::PowerDisplayTerminateAppMessage()
+    {
+        return CommonSharedConstants::POWER_DISPLAY_TERMINATE_APP_MESSAGE;
     }
 }

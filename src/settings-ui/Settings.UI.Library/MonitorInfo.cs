@@ -28,6 +28,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         private bool _enableVolume;
         private bool _enableInputSource;
         private bool _enableRotation;
+        private bool _enableColorTemperature;
         private string _capabilitiesRaw = string.Empty;
         private List<VcpCodeDisplayInfo> _vcpCodesFormatted = new List<VcpCodeDisplayInfo>();
         private int _monitorNumber;
@@ -295,6 +296,20 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 if (_enableRotation != value)
                 {
                     _enableRotation = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        [JsonPropertyName("enableColorTemperature")]
+        public bool EnableColorTemperature
+        {
+            get => _enableColorTemperature;
+            set
+            {
+                if (_enableColorTemperature != value)
+                {
+                    _enableColorTemperature = value;
                     OnPropertyChanged();
                 }
             }
@@ -633,6 +648,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             EnableVolume = other.EnableVolume;
             EnableInputSource = other.EnableInputSource;
             EnableRotation = other.EnableRotation;
+            EnableColorTemperature = other.EnableColorTemperature;
             CapabilitiesRaw = other.CapabilitiesRaw;
             VcpCodesFormatted = other.VcpCodesFormatted;
             SupportsBrightness = other.SupportsBrightness;

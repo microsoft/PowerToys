@@ -204,7 +204,6 @@ src/modules/powerdisplay/
 │   │   ├── PowerDisplayProfile.cs    # Profile definition
 │   │   ├── PowerDisplayProfiles.cs   # Profile collection
 │   │   ├── ProfileMonitorSetting.cs  # Per-monitor profile settings
-│   │   ├── ProfileOperation.cs       # Profile operation for IPC
 │   │   ├── ColorPresetItem.cs        # Color preset UI item
 │   │   ├── VcpCapabilities.cs        # Parsed VCP capabilities
 │   │   └── VcpFeatureValue.cs        # VCP feature value (current/min/max)
@@ -1046,8 +1045,7 @@ flowchart LR
 | Model | Purpose |
 |-------|---------|
 | `PowerDisplaySettings` | Main settings container with properties |
-| `MonitorInfo` | Per-monitor settings displayed in Settings UI |
-| `ProfileOperation` | Pending profile apply operation |
+| `MonitorInfo` | Per-monitor settings displayed in Settings UI (includes feature visibility flags like `EnableColorTemperature`) |
 
 ### Windows Events for IPC
 
@@ -1058,9 +1056,15 @@ Event names use fixed GUID suffixes to ensure uniqueness (defined in `shared_con
 | `TOGGLE_POWER_DISPLAY_EVENT` | Runner → App | Toggle visibility |
 | `TERMINATE_POWER_DISPLAY_EVENT` | Runner → App | Terminate process |
 | `REFRESH_POWER_DISPLAY_MONITORS_EVENT` | Settings → App | Refresh monitor list |
-| `APPLY_PROFILE_POWER_DISPLAY_EVENT` | Settings → App | Apply profile |
+| `SETTINGS_UPDATED_POWER_DISPLAY_EVENT` | Settings → App | Notify settings changed (feature visibility, tray icon) |
 | `LightSwitchLightThemeEventName` | LightSwitch → App | Apply light mode profile |
 | `LightSwitchDarkThemeEventName` | LightSwitch → App | Apply dark mode profile |
+
+**Profile Application via Named Pipe IPC:**
+
+Profile application from Settings UI uses Named Pipe IPC (via Runner's `call_custom_action`) instead of
+Windows Events. When the user clicks "Apply" on a profile in Settings UI, the message is sent through
+the Runner to the Module Interface, which forwards it to PowerDisplay.exe via Named Pipe.
 
 **Event Name Format:** `Local\PowerToysPowerDisplay-{EventType}-{GUID}`
 
@@ -1282,6 +1286,9 @@ sequenceDiagram
     Controller-->>MonitorManager: MonitorOperationResult.Success
     MonitorManager-->>MonitorVM: Success
 
+    MonitorVM->>MonitorVM: RefreshAvailableColorPresets()
+    Note over MonitorVM: Regenerate ColorTemperatureItem list<br/>with updated IsSelected flags
+
     MonitorVM->>StateManager: UpdateMonitorParameter("ColorTemperature", vcpValue)
 
     Note over StateManager: Debounced save (2 seconds)
@@ -1290,22 +1297,52 @@ sequenceDiagram
     Note over StateManager: After 2s idle
     StateManager->>StateManager: SaveToFile(monitor_state.json)
 
-    Note over MonitorVM: UI updates to show<br/>selected preset
+    Note over MonitorVM: UI updates to show<br/>selected preset with checkmark
 ```
+
+**Color Temperature Selection UI:**
+
+The color temperature switcher displays a list of available presets (e.g., 5000K, 6500K, sRGB). Each preset
+shows a checkmark icon when selected. The `ColorTemperatureItem` class stores `IsSelected` state, which is
+updated by regenerating the entire `AvailableColorPresets` list after a successful color temperature change.
+This ensures the checkmark displays correctly for the newly selected preset.
 
 **Flyout Display Options:**
 
-The Flyout UI visibility is controlled by settings in Settings UI (`PowerDisplayProperties`):
+The Flyout UI visibility is controlled by a combination of global settings and per-monitor settings:
+
+**Global Settings (in `PowerDisplayProperties`):**
 
 | Setting | Default | Description |
 |---------|---------|-------------|
 | `ShowProfileSwitcher` | `true` | Show profile switcher (also requires profiles to exist) |
 | `ShowIdentifyMonitorsButton` | `true` | Show "Identify Monitors" button |
-| `ShowColorTemperatureSwitcher` | `false` | Show color temperature switcher per monitor |
 
-When enabling `ShowColorTemperatureSwitcher`, a confirmation dialog warns users about
-potential display issues since color temperature changes can cause unexpected results
-on some monitors.
+**Per-Monitor Settings (in `MonitorInfo`):**
+
+| Setting | Default | Description |
+|---------|---------|-------------|
+| `EnableContrast` | `true` (if supported) | Show contrast slider for this monitor |
+| `EnableVolume` | `true` (if supported) | Show volume slider for this monitor |
+| `EnableInputSource` | `true` (if supported) | Show input source selector for this monitor |
+| `EnableRotation` | `true` | Show rotation control for this monitor |
+| `EnableColorTemperature` | `true` (if supported) | Show color temperature switcher for this monitor |
+| `IsHidden` | `false` | Hide this monitor from the flyout entirely |
+
+Users can configure per-monitor visibility in Settings UI under the "Monitors" section. Each monitor
+shows checkboxes for the features it supports, allowing fine-grained control over the flyout UI.
+
+**Color Temperature Warning Dialog:**
+
+When enabling `EnableColorTemperature` for a monitor in Settings UI, a warning dialog is displayed to inform
+users about potential risks. Color temperature changes can cause unpredictable results on some monitors,
+including incorrect colors, display malfunction, or settings that cannot be reverted. The dialog requires
+explicit confirmation before enabling the feature.
+
+Implementation notes:
+- The warning dialog only appears when the user explicitly checks the checkbox (not during initial page load)
+- A `_isPageLoaded` flag prevents the dialog from appearing during data binding
+- If the user cancels the dialog, the checkbox is reverted to unchecked state
 
 ---
 

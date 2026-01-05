@@ -66,9 +66,11 @@ namespace PowerToys
             static String TerminatePowerDisplayEvent();
             static String RefreshPowerDisplayMonitorsEvent();
             static String SettingsUpdatedPowerDisplayEvent();
-            static String ApplyProfilePowerDisplayEvent();
             static String PowerDisplaySendSettingsTelemetryEvent();
             static String HotkeyUpdatedPowerDisplayEvent();
+            static String PowerDisplayToggleMessage();
+            static String PowerDisplayApplyProfileMessage();
+            static String PowerDisplayTerminateAppMessage();
         }
     }
 }

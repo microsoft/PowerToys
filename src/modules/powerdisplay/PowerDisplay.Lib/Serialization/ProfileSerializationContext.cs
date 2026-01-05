@@ -23,8 +23,6 @@ namespace PowerDisplay.Common.Serialization
     [JsonSerializable(typeof(PowerDisplayProfile))]
     [JsonSerializable(typeof(List<PowerDisplayProfile>))]
     [JsonSerializable(typeof(PowerDisplayProfiles))]
-    [JsonSerializable(typeof(ProfileOperation))]
-    [JsonSerializable(typeof(List<ProfileOperation>))]
 
     // Monitor State Types
     [JsonSerializable(typeof(MonitorStateEntry))]

@@ -158,8 +158,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     [JsonSerializable(typeof(System.Collections.ObjectModel.ObservableCollection<PasteAIProviderDefinition>))]
 
     // PowerDisplay Profile Types (for AOT compatibility)
-    [JsonSerializable(typeof(ProfileOperation))]
-    [JsonSerializable(typeof(List<ProfileOperation>))]
     [JsonSerializable(typeof(PowerDisplayProfile))]
     [JsonSerializable(typeof(List<PowerDisplayProfile>))]
     [JsonSerializable(typeof(PowerDisplayProfiles))]

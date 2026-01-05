@@ -123,7 +123,6 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
     // UI display control properties - loaded from settings
     private bool _showProfileSwitcher = true;
     private bool _showIdentifyMonitorsButton = true;
-    private bool _showColorTemperatureSwitcher;
 
     /// <summary>
     /// Gets a value indicating whether to show the profile switcher button.
@@ -159,22 +158,6 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
             if (_showIdentifyMonitorsButton != value)
             {
                 _showIdentifyMonitorsButton = value;
-                OnPropertyChanged();
-            }
-        }
-    }
-
-    /// <summary>
-    /// Gets or sets a value indicating whether to show the color temperature switcher.
-    /// </summary>
-    public bool ShowColorTemperatureSwitcher
-    {
-        get => _showColorTemperatureSwitcher;
-        set
-        {
-            if (_showColorTemperatureSwitcher != value)
-            {
-                _showColorTemperatureSwitcher = value;
                 OnPropertyChanged();
             }
         }
@@ -406,7 +389,6 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
             var settings = _settingsUtils.GetSettingsOrDefault<PowerDisplaySettings>(PowerDisplaySettings.ModuleName);
             ShowProfileSwitcher = settings.Properties.ShowProfileSwitcher;
             ShowIdentifyMonitorsButton = settings.Properties.ShowIdentifyMonitorsButton;
-            ShowColorTemperatureSwitcher = settings.Properties.ShowColorTemperatureSwitcher;
         }
         catch (Exception ex)
         {

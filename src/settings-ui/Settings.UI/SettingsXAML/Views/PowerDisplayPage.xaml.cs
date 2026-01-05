@@ -32,11 +32,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 ShellPage.SendDefaultIPCMessage);
             DataContext = ViewModel;
             InitializeComponent();
-
-            // Subscribe to Toggled event after page is loaded to avoid triggering
-            // during initial data binding when the toggle value is restored from settings
-            Loaded += (s, e) => ShowColorTemperatureSwitcherToggle.Toggled += ShowColorTemperatureSwitcher_Toggled;
-            Unloaded += (s, e) => ShowColorTemperatureSwitcherToggle.Toggled -= ShowColorTemperatureSwitcher_Toggled;
         }
 
         public void RefreshEnabledState()
@@ -137,24 +132,24 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             return ProfileHelper.GenerateUniqueProfileName(existingNames, baseName);
         }
 
-        // Flag to prevent reentrant handling during programmatic toggle
-        private bool _isRestoringColorTempToggle;
+        // Flag to prevent reentrant handling during programmatic checkbox changes
+        private bool _isRestoringColorTempCheckbox;
 
-        private async void ShowColorTemperatureSwitcher_Toggled(object sender, RoutedEventArgs e)
+        private async void EnableColorTemperature_Click(object sender, RoutedEventArgs e)
         {
-            // Skip if we're programmatically restoring the toggle state
-            if (_isRestoringColorTempToggle)
+            // Skip if we're programmatically restoring the checkbox state
+            if (_isRestoringColorTempCheckbox)
             {
                 return;
             }
 
-            if (sender is not ToggleSwitch toggleSwitch)
+            if (sender is not CheckBox checkBox || checkBox.Tag is not MonitorInfo monitor)
             {
                 return;
             }
 
-            // Only show warning when enabling (not when disabling)
-            if (!toggleSwitch.IsOn)
+            // Only show warning when enabling (checking the box)
+            if (checkBox.IsChecked != true)
             {
                 return;
             }
@@ -190,13 +185,13 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                         },
                         new TextBlock
                         {
-                            Text = resourceLoader.GetString("PowerDisplay_ColorTemperatureSwitcher_WarningConfirm"),
+                            Text = resourceLoader.GetString("PowerDisplay_ColorTemperature_WarningConfirm"),
                             FontWeight = Microsoft.UI.Text.FontWeights.SemiBold,
                             TextWrapping = TextWrapping.Wrap,
                         },
                     },
                 },
-                PrimaryButtonText = resourceLoader.GetString("PowerDisplay_ColorTemperatureSwitcher_EnableButton"),
+                PrimaryButtonText = resourceLoader.GetString("PowerDisplay_ColorTemperature_EnableButton"),
                 CloseButtonText = resourceLoader.GetString("PowerDisplay_Dialog_Cancel"),
                 DefaultButton = ContentDialogButton.Close,
             };
@@ -205,15 +200,16 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
             if (result != ContentDialogResult.Primary)
             {
-                // User cancelled: revert toggle to off
-                _isRestoringColorTempToggle = true;
+                // User cancelled: revert checkbox to unchecked
+                _isRestoringColorTempCheckbox = true;
                 try
                 {
-                    toggleSwitch.IsOn = false;
+                    checkBox.IsChecked = false;
+                    monitor.EnableColorTemperature = false;
                 }
                 finally
                 {
-                    _isRestoringColorTempToggle = false;
+                    _isRestoringColorTempCheckbox = false;
                 }
             }
         }

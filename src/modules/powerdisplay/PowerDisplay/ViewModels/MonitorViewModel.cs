@@ -138,6 +138,9 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
                 OnPropertyChanged(nameof(ColorTemperature));
                 OnPropertyChanged(nameof(ColorTemperaturePresetName));
 
+                // Refresh the color presets list to update IsSelected checkmarks in UI
+                RefreshAvailableColorPresets();
+
                 _mainViewModel?.SaveMonitorSettingDirect(_monitor.Id, nameof(ColorTemperature), colorTemperature);
             }
             else

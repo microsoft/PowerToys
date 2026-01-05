@@ -83,45 +83,33 @@ public partial class MainViewModel
     }
 
     /// <summary>
-    /// Apply profile from Settings UI (triggered by custom action from Settings UI)
-    /// This is called when user explicitly switches profile in Settings UI.
-    /// Reads the pending operation from settings and applies it directly.
+    /// Apply profile by name (called via Named Pipe from Settings UI)
+    /// This is the new direct method that receives the profile name via IPC.
     /// </summary>
-    public async void ApplyProfileFromSettings()
+    /// <param name="profileName">The name of the profile to apply.</param>
+    public async Task ApplyProfileByNameAsync(string profileName)
     {
         try
         {
-            await ApplyProfileFromSettingsAsync();
+            Logger.LogInfo($"[Profile] Applying profile by name: {profileName}");
+
+            // Load profiles and find the requested one
+            var profilesData = ProfileService.LoadProfiles();
+            var profile = profilesData.GetProfile(profileName);
+
+            if (profile == null || !profile.IsValid())
+            {
+                Logger.LogWarning($"[Profile] Profile '{profileName}' not found or invalid");
+                return;
+            }
+
+            // Apply the profile settings to monitors
+            await ApplyProfileAsync(profile.MonitorSettings);
+            Logger.LogInfo($"[Profile] Successfully applied profile: {profileName}");
         }
         catch (Exception ex)
         {
-            Logger.LogError($"[Profile] Failed to apply profile from settings: {ex.Message}");
-        }
-    }
-
-    /// <summary>
-    /// Core implementation for applying profile from settings
-    /// </summary>
-    private async Task ApplyProfileFromSettingsAsync()
-    {
-        var settings = _settingsUtils.GetSettingsOrDefault<PowerDisplaySettings>("PowerDisplay");
-
-        // Check if there's a pending profile operation
-        var pendingOp = settings.Properties.PendingProfileOperation;
-
-        if (pendingOp != null && !string.IsNullOrEmpty(pendingOp.ProfileName))
-        {
-            if (pendingOp.MonitorSettings != null && pendingOp.MonitorSettings.Count > 0)
-            {
-                // Apply profile settings to monitors
-                await ApplyProfileAsync(pendingOp.MonitorSettings);
-            }
-
-            // Clear the pending operation
-            settings.Properties.PendingProfileOperation = null;
-            _settingsUtils.SaveSettings(
-                System.Text.Json.JsonSerializer.Serialize(settings, AppJsonContext.Default.PowerDisplaySettings),
-                PowerDisplaySettings.ModuleName);
+            Logger.LogError($"[Profile] Failed to apply profile '{profileName}': {ex.Message}");
         }
     }
 
@@ -329,10 +317,8 @@ public partial class MainViewModel
             monitorVm.ShowVolume = monitorSettings.EnableVolume;
             monitorVm.ShowInputSource = monitorSettings.EnableInputSource;
             monitorVm.ShowRotation = monitorSettings.EnableRotation;
+            monitorVm.ShowColorTemperature = monitorSettings.EnableColorTemperature;
         }
-
-        // Apply global color temperature switcher visibility from settings
-        monitorVm.ShowColorTemperature = settings.Properties.ShowColorTemperatureSwitcher;
     }
 
     /// <summary>
@@ -452,6 +438,7 @@ public partial class MainViewModel
             EnableContrast = vm.VcpCapabilitiesInfo?.SupportedVcpCodes.ContainsKey(0x12) ?? false,
             EnableVolume = vm.VcpCapabilitiesInfo?.SupportedVcpCodes.ContainsKey(0x62) ?? false,
             EnableInputSource = vm.VcpCapabilitiesInfo?.SupportedVcpCodes.ContainsKey(0x60) ?? false,
+            EnableColorTemperature = vm.VcpCapabilitiesInfo?.SupportedVcpCodes.ContainsKey(0x14) ?? false,
 
             // Monitor number for display name formatting
             MonitorNumber = vm.MonitorNumber,
@@ -474,6 +461,7 @@ public partial class MainViewModel
             monitorInfo.EnableVolume = existingMonitor.EnableVolume;
             monitorInfo.EnableInputSource = existingMonitor.EnableInputSource;
             monitorInfo.EnableRotation = existingMonitor.EnableRotation;
+            monitorInfo.EnableColorTemperature = existingMonitor.EnableColorTemperature;
         }
     }
 

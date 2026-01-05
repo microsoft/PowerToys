@@ -61,9 +61,6 @@
                     <tkcontrols:SettingsCard x:Uid="PowerDisplay_ShowIdentifyMonitorsButton" HeaderIcon="{ui:FontIcon Glyph=&#xE9D9;}">
                         <ToggleSwitch IsOn="{x:Bind ViewModel.ShowIdentifyMonitorsButton, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
-                    <tkcontrols:SettingsCard x:Uid="PowerDisplay_ShowColorTemperatureSwitcher" HeaderIcon="{ui:FontIcon Glyph=&#xE790;}">
-                        <ToggleSwitch x:Name="ShowColorTemperatureSwitcherToggle" IsOn="{x:Bind ViewModel.ShowColorTemperatureSwitcher, Mode=TwoWay}" />
-                    </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup x:Uid="PowerDisplay_Profiles_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
@@ -164,6 +161,13 @@
                                         </tkcontrols:SettingsCard>
                                         <tkcontrols:SettingsCard ContentAlignment="Left">
                                             <CheckBox x:Uid="PowerDisplay_Monitor_EnableRotation" IsChecked="{x:Bind EnableRotation, Mode=TwoWay}" />
+                                        </tkcontrols:SettingsCard>
+                                        <tkcontrols:SettingsCard ContentAlignment="Left" IsEnabled="{x:Bind SupportsColorTemperature, Mode=OneWay}">
+                                            <CheckBox
+                                                x:Uid="PowerDisplay_Monitor_EnableColorTemperature"
+                                                Click="EnableColorTemperature_Click"
+                                                IsChecked="{x:Bind EnableColorTemperature, Mode=TwoWay}"
+                                                Tag="{x:Bind}" />
                                         </tkcontrols:SettingsCard>
                                         <tkcontrols:SettingsCard ContentAlignment="Left">
                                             <CheckBox x:Uid="PowerDisplay_Monitor_HideMonitor" IsChecked="{x:Bind IsHidden, Mode=TwoWay}" />

@@ -167,19 +167,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public bool ShowColorTemperatureSwitcher
-        {
-            get => _settings.Properties.ShowColorTemperatureSwitcher;
-            set
-            {
-                if (SetSettingsProperty(_settings.Properties.ShowColorTemperatureSwitcher, value, v => _settings.Properties.ShowColorTemperatureSwitcher = v))
-                {
-                    SignalSettingsUpdated();
-                    Logger.LogInfo($"ShowColorTemperatureSwitcher changed to {value}");
-                }
-            }
-        }
-
         public HotkeySettings ActivationShortcut
         {
             get => _settings.Properties.ActivationShortcut;
@@ -302,6 +289,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     newMonitor.EnableContrast = existingMonitor.EnableContrast;
                     newMonitor.EnableVolume = existingMonitor.EnableVolume;
                     newMonitor.EnableInputSource = existingMonitor.EnableInputSource;
+                    newMonitor.EnableRotation = existingMonitor.EnableRotation;
+                    newMonitor.EnableColorTemperature = existingMonitor.EnableColorTemperature;
                     newMonitor.IsHidden = existingMonitor.IsHidden;
                 }
 
@@ -379,6 +368,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 e.PropertyName == nameof(MonitorInfo.EnableVolume) ||
                 e.PropertyName == nameof(MonitorInfo.EnableInputSource) ||
                 e.PropertyName == nameof(MonitorInfo.EnableRotation) ||
+                e.PropertyName == nameof(MonitorInfo.EnableColorTemperature) ||
                 e.PropertyName == nameof(MonitorInfo.IsHidden))
             {
                 SignalSettingsUpdated();
@@ -563,22 +553,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
                 Logger.LogInfo($"Applying profile: {profile.Name}");
 
-                // Create pending operation
-                var operation = new ProfileOperation(profile.Name, profile.MonitorSettings);
-                _settings.Properties.PendingProfileOperation = operation;
-
-                // Save settings
-                NotifySettingsChanged();
-
                 // Send custom action to trigger profile application
+                // The profile name is passed via Named Pipe IPC to PowerDisplay.exe
                 SendConfigMSG(
                     string.Format(
                         CultureInfo.InvariantCulture,
                         "{{ \"action\": {{ \"PowerDisplay\": {{ \"action_name\": \"ApplyProfile\", \"value\": \"{0}\" }} }} }}",
                         profile.Name));
-
-                // Signal PowerDisplay to apply profile
-                EventHelper.SignalEvent(Constants.ApplyProfilePowerDisplayEvent());
 
                 Logger.LogInfo($"Profile '{profile.Name}' applied successfully");
             }

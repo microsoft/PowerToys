@@ -5743,6 +5743,9 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   <data name="PowerDisplay_Monitor_EnableRotation.Content" xml:space="preserve">
     <value>Show rotation control</value>
   </data>
+  <data name="PowerDisplay_Monitor_EnableColorTemperature.Content" xml:space="preserve">
+    <value>Show color temperature switcher</value>
+  </data>
   <data name="PowerDisplay_Monitor_HideMonitor.Content" xml:space="preserve">
     <value>Hide monitor</value>
   </data>
@@ -5759,6 +5762,12 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
     <value>• Incorrect display colors
 • Display malfunction
 • Settings that cannot be reverted</value>
+  </data>
+  <data name="PowerDisplay_ColorTemperature_WarningConfirm" xml:space="preserve">
+    <value>Do you want to enable color temperature control for this monitor?</value>
+  </data>
+  <data name="PowerDisplay_ColorTemperature_EnableButton" xml:space="preserve">
+    <value>Enable</value>
   </data>
   <data name="PowerDisplay_Dialog_Cancel" xml:space="preserve">
     <value>Cancel</value>
@@ -5879,18 +5888,6 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   </data>
   <data name="PowerDisplay_ShowIdentifyMonitorsButton.Description" xml:space="preserve">
     <value>Show or hide the identify monitors button in the Power Display flyout</value>
-  </data>
-  <data name="PowerDisplay_ShowColorTemperatureSwitcher.Header" xml:space="preserve">
-    <value>Show color temperature switcher</value>
-  </data>
-  <data name="PowerDisplay_ShowColorTemperatureSwitcher.Description" xml:space="preserve">
-    <value>Show or hide the color temperature switcher for each monitor in the Power Display flyout</value>
-  </data>
-  <data name="PowerDisplay_ColorTemperatureSwitcher_WarningConfirm" xml:space="preserve">
-    <value>Do you want to enable color temperature switching in the flyout?</value>
-  </data>
-  <data name="PowerDisplay_ColorTemperatureSwitcher_EnableButton" xml:space="preserve">
-    <value>Enable</value>
   </data>
   <data name="Hosts_Backup_GroupSettings.Header" xml:space="preserve">
     <value>Backup</value>

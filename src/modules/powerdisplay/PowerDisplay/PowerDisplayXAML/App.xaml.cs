@@ -26,12 +26,14 @@ namespace PowerDisplay
         private readonly SettingsUtils _settingsUtils = SettingsUtils.Default;
         private Window? _mainWindow;
         private int _powerToysRunnerPid;
+        private string? _pipeName;
         private TrayIconService? _trayIconService;
 
-        public App(int runnerPid)
+        public App(int runnerPid, string? pipeName)
         {
-            Logger.LogInfo($"App constructor: Starting with runnerPid={runnerPid}");
+            Logger.LogInfo($"App constructor: Starting with runnerPid={runnerPid}, pipeName={pipeName ?? "null"}");
             _powerToysRunnerPid = runnerPid;
+            _pipeName = pipeName;
 
             Logger.LogTrace("App constructor: Calling InitializeComponent");
             this.InitializeComponent();
@@ -108,13 +110,23 @@ namespace PowerDisplay
                     Constants.HotkeyUpdatedPowerDisplayEvent(),
                     mw => mw.ReloadHotkeySettings(),
                     "HotkeyUpdated");
-                RegisterViewModelEvent(Constants.ApplyProfilePowerDisplayEvent(), vm => vm.ApplyProfileFromSettings(), "ApplyProfile");
                 RegisterViewModelEvent(Constants.PowerDisplaySendSettingsTelemetryEvent(), vm => vm.SendSettingsTelemetry(), "SendSettingsTelemetry");
 
                 // LightSwitch integration - apply profiles when theme changes
                 RegisterViewModelEvent(PathConstants.LightSwitchLightThemeEventName, vm => vm.ApplyLightSwitchProfile(isLightMode: true), "LightSwitch-Light");
                 RegisterViewModelEvent(PathConstants.LightSwitchDarkThemeEventName, vm => vm.ApplyLightSwitchProfile(isLightMode: false), "LightSwitch-Dark");
                 Logger.LogInfo("OnLaunched: All Windows Events registered");
+
+                // Connect to Named Pipe for IPC with module DLL (if pipe name provided)
+                if (!string.IsNullOrEmpty(_pipeName))
+                {
+                    Logger.LogInfo($"OnLaunched: Starting Named Pipe processing for pipe: {_pipeName}");
+                    ProcessNamedPipe(_pipeName);
+                }
+                else
+                {
+                    Logger.LogInfo("OnLaunched: No pipe name provided, skipping Named Pipe setup");
+                }
 
                 // Monitor Runner process (backup exit mechanism)
                 if (_powerToysRunnerPid > 0)
@@ -325,6 +337,60 @@ namespace PowerDisplay
             Logger.LogInfo("PowerDisplay shutting down");
             _trayIconService?.Destroy();
             Environment.Exit(0);
+        }
+
+        /// <summary>
+        /// Connect to Named Pipe and process messages from module DLL
+        /// </summary>
+        private void ProcessNamedPipe(string pipeName)
+        {
+            void OnMessage(string message) => _mainWindow?.DispatcherQueue.TryEnqueue(async () => await OnNamedPipeMessage(message));
+
+            Task.Run(async () => await NamedPipeProcessor.ProcessNamedPipeAsync(
+                pipeName,
+                connectTimeout: TimeSpan.FromSeconds(10),
+                OnMessage,
+                CancellationToken.None));
+        }
+
+        /// <summary>
+        /// Handle messages received from the module DLL via Named Pipe
+        /// </summary>
+        private async Task OnNamedPipeMessage(string message)
+        {
+            var messageParts = message.Split(' ', 2);
+            var messageType = messageParts[0];
+
+            Logger.LogInfo($"[NamedPipe] Processing message type: {messageType}");
+
+            if (messageType == Constants.PowerDisplayToggleMessage())
+            {
+                // Toggle window visibility
+                if (_mainWindow is MainWindow mainWindow)
+                {
+                    mainWindow.ToggleWindow();
+                }
+            }
+            else if (messageType == Constants.PowerDisplayApplyProfileMessage())
+            {
+                // Apply profile by name
+                if (messageParts.Length > 1 && _mainWindow is MainWindow mainWindow && mainWindow.ViewModel != null)
+                {
+                    var profileName = messageParts[1].Trim();
+                    Logger.LogInfo($"[NamedPipe] Applying profile: {profileName}");
+                    await mainWindow.ViewModel.ApplyProfileByNameAsync(profileName);
+                }
+            }
+            else if (messageType == Constants.PowerDisplayTerminateAppMessage())
+            {
+                // Terminate the application
+                Logger.LogInfo("[NamedPipe] Received terminate message");
+                Shutdown();
+            }
+            else
+            {
+                Logger.LogWarning($"[NamedPipe] Unknown message type: {messageType}");
+            }
         }
     }
 }

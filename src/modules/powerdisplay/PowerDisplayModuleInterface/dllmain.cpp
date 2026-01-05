@@ -3,6 +3,7 @@
 #include <interface/powertoy_module_interface.h>
 #include <common/SettingsAPI/settings_objects.h>
 #include "trace.h"
+#include "PowerDisplayProcessManager.h"
 #include <common/interop/shared_constants.h>
 #include <common/utils/string_utils.h>
 #include <common/utils/winapi_error.h>
@@ -38,79 +39,14 @@ class PowerDisplayModule : public PowertoyModuleIface
 private:
     bool m_enabled = false;
 
-    // Windows Events for IPC (persistent handles - ColorPicker pattern)
-    // Note: SettingsUpdatedEvent and HotkeyUpdatedEvent are NOT created here.
-    // They are created on-demand by EventHelper.SignalEvent() in Settings UI
+    // Process manager handles Named Pipe communication and process lifecycle
+    PowerDisplayProcessManager m_processManager;
+
+    // Windows Events for Settings UI triggered events (these are still needed)
+    // Note: These events are created on-demand by EventHelper.SignalEvent() in Settings UI
     // and NativeEventWaiter.WaitForEventLoop() in PowerDisplay.exe.
-    HANDLE m_hProcess = nullptr;
-    HANDLE m_hToggleEvent = nullptr;
-    HANDLE m_hTerminateEvent = nullptr;
     HANDLE m_hRefreshEvent = nullptr;
-    HANDLE m_hApplyProfileEvent = nullptr;
     HANDLE m_hSendSettingsTelemetryEvent = nullptr;
-
-    // Helper method to check if PowerDisplay.exe process is still running
-    bool is_process_running()
-    {
-        if (m_hProcess == nullptr)
-        {
-            Logger::trace(L"is_process_running: Process handle is null, returning false");
-            return false;
-        }
-        DWORD waitResult = WaitForSingleObject(m_hProcess, 0);
-        bool running = (waitResult == WAIT_TIMEOUT);
-        Logger::trace(L"is_process_running: WaitForSingleObject returned {}, process running={}", waitResult, running);
-        return running;
-    }
-
-    // Helper method to launch PowerDisplay.exe process
-    void launch_process()
-    {
-        Logger::info(L"launch_process: Starting PowerDisplay process");
-        unsigned long powertoys_pid = GetCurrentProcessId();
-        Logger::trace(L"launch_process: PowerToys runner PID={}", powertoys_pid);
-
-        std::wstring executable_args = std::to_wstring(powertoys_pid);
-        Logger::trace(L"launch_process: Executable args: {}", executable_args);
-
-        SHELLEXECUTEINFOW sei{ sizeof(sei) };
-        sei.fMask = SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI;
-        sei.lpFile = L"WinUI3Apps\\PowerToys.PowerDisplay.exe";
-        sei.nShow = SW_SHOWNORMAL;
-        sei.lpParameters = executable_args.data();
-
-        Logger::trace(L"launch_process: Calling ShellExecuteExW with lpFile={}", sei.lpFile);
-
-        if (ShellExecuteExW(&sei))
-        {
-            Logger::info(L"launch_process: Successfully started PowerDisplay process, handle={}", reinterpret_cast<void*>(sei.hProcess));
-            m_hProcess = sei.hProcess;
-        }
-        else
-        {
-            DWORD lastError = GetLastError();
-            Logger::error(L"launch_process: PowerDisplay process failed to start. Error code={}, message: {}",
-                         lastError, get_last_error_or_default(lastError));
-        }
-    }
-
-    // Helper method to ensure PowerDisplay process is running
-    // Checks if process is running, launches it if needed
-    // Note: No wait needed - PowerDisplay uses RedirectActivationToAsync for single instance
-    void EnsureProcessRunning()
-    {
-        Logger::trace(L"EnsureProcessRunning: Checking if PowerDisplay process is running");
-        if (!is_process_running())
-        {
-            Logger::info(L"EnsureProcessRunning: PowerDisplay process not running, launching");
-            launch_process();
-            Logger::info(L"EnsureProcessRunning: Launch completed");
-        }
-        else
-        {
-            Logger::trace(L"EnsureProcessRunning: PowerDisplay process is already running");
-        }
-    }
 
 public:
     PowerDisplayModule()
@@ -118,25 +54,19 @@ public:
         LoggerHelpers::init_logger(MODULE_NAME, L"ModuleInterface", LogSettings::powerDisplayLoggerName);
         Logger::info("Power Display module is constructing");
 
-        // Create all Windows Events (persistent handles - ColorPicker pattern)
-        Logger::trace(L"Creating Windows Events for IPC...");
-        m_hToggleEvent = CreateDefaultEvent(CommonSharedConstants::TOGGLE_POWER_DISPLAY_EVENT);
-        Logger::trace(L"Created TOGGLE_POWER_DISPLAY_EVENT: handle={}", reinterpret_cast<void*>(m_hToggleEvent));
-        m_hTerminateEvent = CreateDefaultEvent(CommonSharedConstants::TERMINATE_POWER_DISPLAY_EVENT);
-        Logger::trace(L"Created TERMINATE_POWER_DISPLAY_EVENT: handle={}", reinterpret_cast<void*>(m_hTerminateEvent));
+        // Create Windows Events for Settings UI triggered operations
+        // These events are signaled by Settings UI, not by module DLL
+        Logger::trace(L"Creating Windows Events for Settings UI IPC...");
         m_hRefreshEvent = CreateDefaultEvent(CommonSharedConstants::REFRESH_POWER_DISPLAY_MONITORS_EVENT);
         Logger::trace(L"Created REFRESH_MONITORS_EVENT: handle={}", reinterpret_cast<void*>(m_hRefreshEvent));
-        m_hApplyProfileEvent = CreateDefaultEvent(CommonSharedConstants::APPLY_PROFILE_POWER_DISPLAY_EVENT);
-        Logger::trace(L"Created APPLY_PROFILE_EVENT: handle={}", reinterpret_cast<void*>(m_hApplyProfileEvent));
         m_hSendSettingsTelemetryEvent = CreateDefaultEvent(CommonSharedConstants::POWER_DISPLAY_SEND_SETTINGS_TELEMETRY_EVENT);
         Logger::trace(L"Created SEND_SETTINGS_TELEMETRY_EVENT: handle={}", reinterpret_cast<void*>(m_hSendSettingsTelemetryEvent));
 
-        if (!m_hToggleEvent || !m_hTerminateEvent || !m_hRefreshEvent || !m_hApplyProfileEvent || !m_hSendSettingsTelemetryEvent)
+        if (!m_hRefreshEvent || !m_hSendSettingsTelemetryEvent)
         {
-            Logger::error(L"Failed to create one or more event handles: Toggle={}, Terminate={}, Refresh={}, ApplyProfile={}, SettingsTelemetry={}",
-                         reinterpret_cast<void*>(m_hToggleEvent),
-                         reinterpret_cast<void*>(m_hTerminateEvent), reinterpret_cast<void*>(m_hRefreshEvent),
-                         reinterpret_cast<void*>(m_hApplyProfileEvent), reinterpret_cast<void*>(m_hSendSettingsTelemetryEvent));
+            Logger::error(L"Failed to create one or more event handles: Refresh={}, SettingsTelemetry={}",
+                         reinterpret_cast<void*>(m_hRefreshEvent),
+                         reinterpret_cast<void*>(m_hSendSettingsTelemetryEvent));
         }
         else
         {
@@ -151,26 +81,11 @@ public:
             disable();
         }
 
-        // Clean up all event handles
-        if (m_hToggleEvent)
-        {
-            CloseHandle(m_hToggleEvent);
-            m_hToggleEvent = nullptr;
-        }
-        if (m_hTerminateEvent)
-        {
-            CloseHandle(m_hTerminateEvent);
-            m_hTerminateEvent = nullptr;
-        }
+        // Clean up event handles
         if (m_hRefreshEvent)
         {
             CloseHandle(m_hRefreshEvent);
             m_hRefreshEvent = nullptr;
-        }
-        if (m_hApplyProfileEvent)
-        {
-            CloseHandle(m_hApplyProfileEvent);
-            m_hApplyProfileEvent = nullptr;
         }
         if (m_hSendSettingsTelemetryEvent)
         {
@@ -221,18 +136,8 @@ public:
             {
                 Logger::trace(L"Launch action received");
 
-                // ColorPicker pattern: check if process is running, re-launch if needed
-                if (!is_process_running())
-                {
-                    Logger::trace(L"PowerDisplay process not running, re-launching");
-                    launch_process();
-                }
-
-                if (m_hToggleEvent)
-                {
-                    Logger::trace(L"Signaling toggle event");
-                    SetEvent(m_hToggleEvent);
-                }
+                // Send Toggle message via Named Pipe (will start process if needed)
+                m_processManager.send_message(CommonSharedConstants::POWER_DISPLAY_TOGGLE_MESSAGE);
                 Trace::ActivatePowerDisplay();
             }
             else if (action_object.get_name() == L"RefreshMonitors")
@@ -251,18 +156,12 @@ public:
             {
                 Logger::trace(L"ApplyProfile action received");
 
-                // Ensure PowerDisplay process is running before signaling event
-                EnsureProcessRunning();
+                // Get the profile name from the action value
+                std::wstring profileName = action_object.get_value();
+                Logger::trace(L"ApplyProfile: profile name = '{}'", profileName);
 
-                if (m_hApplyProfileEvent)
-                {
-                    Logger::trace(L"Signaling apply profile event");
-                    SetEvent(m_hApplyProfileEvent);
-                }
-                else
-                {
-                    Logger::warn(L"Apply profile event handle is null");
-                }
+                // Send ApplyProfile message with profile name via Named Pipe
+                m_processManager.send_message(CommonSharedConstants::POWER_DISPLAY_APPLY_PROFILE_MESSAGE, profileName);
             }
         }
         catch (std::exception&)
@@ -276,7 +175,6 @@ public:
         // Settings changes are handled via dedicated Windows Events:
         // - HotkeyUpdatedPowerDisplayEvent: triggered by Settings UI when activation shortcut changes
         // - SettingsUpdatedPowerDisplayEvent: triggered for tray icon visibility changes
-        // - ApplyProfilePowerDisplayEvent: for profile settings
         // PowerDisplay.exe reads settings directly from file when these events are signaled.
     }
 
@@ -286,19 +184,9 @@ public:
         m_enabled = true;
         Trace::EnablePowerDisplay(true);
 
-        // Launch PowerDisplay.exe if not already running (ColorPicker pattern)
-        Logger::trace(L"enable: Checking if PowerDisplay process needs to be launched");
-        if (!is_process_running())
-        {
-            Logger::info(L"enable: Launching PowerDisplay process");
-            launch_process();
-            // Don't wait for ready here - let the process initialize in background
-            Logger::info(L"enable: PowerDisplay process launch initiated");
-        }
-        else
-        {
-            Logger::info(L"enable: PowerDisplay process already running, skipping launch");
-        }
+        // Start the process manager (launches PowerDisplay.exe with Named Pipe)
+        m_processManager.start();
+
         Logger::info(L"enable: PowerDisplay module enabled successfully");
     }
 
@@ -308,51 +196,8 @@ public:
 
         if (m_enabled)
         {
-            // Reset toggle event to prevent accidental activation during shutdown
-            if (m_hToggleEvent)
-            {
-                ResetEvent(m_hToggleEvent);
-            }
-
-            // Signal terminate event and wait for graceful shutdown
-            if (m_hTerminateEvent)
-            {
-                Logger::trace(L"Signaling PowerDisplay to exit");
-                SetEvent(m_hTerminateEvent);
-            }
-            else
-            {
-                Logger::warn(L"Terminate event handle is null");
-            }
-
-            // Wait for process to exit gracefully, then force terminate if needed
-            // (ColorPicker/Peek/Hosts pattern: SetEvent → Wait 1500ms → TerminateProcess)
-            if (m_hProcess)
-            {
-                Logger::trace(L"Waiting for PowerDisplay process to exit (max 1500ms)");
-                DWORD waitResult = WaitForSingleObject(m_hProcess, 1500);
-                if (waitResult == WAIT_TIMEOUT)
-                {
-                    Logger::warn(L"PowerDisplay process did not exit gracefully, force terminating");
-                    TerminateProcess(m_hProcess, 1);
-                }
-                else if (waitResult == WAIT_OBJECT_0)
-                {
-                    Logger::trace(L"PowerDisplay process exited gracefully");
-                }
-                else
-                {
-                    Logger::error(L"WaitForSingleObject returned unexpected result: {}", waitResult);
-                }
-                CloseHandle(m_hProcess);
-                m_hProcess = nullptr;
-            }
-
-            // Reset terminate event after process cleanup
-            if (m_hTerminateEvent)
-            {
-                ResetEvent(m_hTerminateEvent);
-            }
+            // Stop the process manager (sends terminate message and waits for exit)
+            m_processManager.stop();
         }
 
         m_enabled = false;
