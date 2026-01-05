@@ -11,6 +11,7 @@ using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using PowerToysExtension.Commands;
 using PowerToysExtension.Helpers;
+using PowerToysExtension.Properties;
 
 namespace PowerToysExtension.Pages;
 
@@ -21,13 +22,13 @@ internal sealed partial class FancyZonesLayoutsPage : DynamicListPage
     public FancyZonesLayoutsPage()
     {
         Icon = PowerToysResourcesHelper.IconFromSettingsIcon("FancyZones.png");
-        Name = Title = "FancyZones Layouts";
+        Name = Title = Resources.FancyZones_Layouts_Title;
         Id = "com.microsoft.cmdpal.powertoys.fancyzones.layouts";
 
         _emptyMessage = new CommandItem()
         {
-            Title = "No layouts found",
-            Subtitle = "Open FancyZones Editor once to initialize layouts.",
+            Title = Resources.FancyZones_NoLayoutsFound_Title,
+            Subtitle = Resources.FancyZones_NoLayoutsFound_Subtitle,
             Icon = PowerToysResourcesHelper.IconFromSettingsIcon("FancyZones.png"),
         };
         EmptyContent = _emptyMessage;
