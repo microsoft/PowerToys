@@ -242,6 +242,15 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     // No need to save settings here, the runner will call module interface to save it
                     // SaveSettingsToFile(settings);
 
+                    // For PowerToys Run, we should set the 'HotkeyChanged' property here to avoid issue #41468
+                    if (string.Equals(moduleName, PowerLauncherSettings.ModuleName, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if (settings is PowerLauncherSettings powerLauncherSettings)
+                        {
+                            powerLauncherSettings.Properties.HotkeyChanged = true;
+                        }
+                    }
+
                     // Send IPC notification using the same format as other ViewModels
                     SendConfigMSG(settingsConfig, moduleName);
                 }

@@ -4,13 +4,16 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Text.Json;
 
 using FancyZonesEditorCommon.Data;
 using FancyZonesEditorCommon.Utils;
 using ManagedCommon;
+using PowerToysExtension.Properties;
 
 using FZPaths = FancyZonesEditorCommon.Data.FancyZonesPaths;
 
@@ -19,6 +22,15 @@ namespace PowerToysExtension.Helpers;
 internal static class FancyZonesDataService
 {
     private const string ZeroUuid = "{00000000-0000-0000-0000-000000000000}";
+
+    private static readonly CompositeFormat ReadMonitorDataFailedFormat = CompositeFormat.Parse(Resources.FancyZones_ReadMonitorDataFailed_Format);
+    private static readonly CompositeFormat WriteAppliedLayoutsFailedFormat = CompositeFormat.Parse(Resources.FancyZones_WriteAppliedLayoutsFailed_Format);
+    private static readonly CompositeFormat LayoutAppliedNotifyFailedFormat = CompositeFormat.Parse(Resources.FancyZones_LayoutAppliedNotifyFailed_Format);
+    private static readonly CompositeFormat TemplateFormat = CompositeFormat.Parse(Resources.FancyZones_Template_Format);
+    private static readonly CompositeFormat ZonesFormat = CompositeFormat.Parse(Resources.FancyZones_Zones_Format);
+    private static readonly CompositeFormat CustomGridZonesFormat = CompositeFormat.Parse(Resources.FancyZones_CustomGrid_Zones_Format);
+    private static readonly CompositeFormat CustomCanvasZonesFormat = CompositeFormat.Parse(Resources.FancyZones_CustomCanvas_Zones_Format);
+    private static readonly CompositeFormat CustomZonesFormat = CompositeFormat.Parse(Resources.FancyZones_Custom_Zones_Format);
 
     public static bool TryGetMonitors(out IReadOnlyList<FancyZonesMonitorDescriptor> monitors, out string error)
     {
@@ -31,7 +43,7 @@ internal static class FancyZonesDataService
         {
             if (!File.Exists(FZPaths.EditorParameters))
             {
-                error = "FancyZones monitor data not found. Open FancyZones Editor once to initialize.";
+                error = Resources.FancyZones_MonitorDataNotFound;
                 Logger.LogWarning($"TryGetMonitors: File not found. Path={FZPaths.EditorParameters}");
                 return false;
             }
@@ -43,7 +55,7 @@ internal static class FancyZonesDataService
             var editorMonitors = editorParams.Monitors;
             if (editorMonitors is null || editorMonitors.Count == 0)
             {
-                error = "No FancyZones monitors found.";
+                error = Resources.FancyZones_NoFancyZonesMonitorsFound;
                 Logger.LogWarning($"TryGetMonitors: No monitors in file.");
                 return false;
             }
@@ -56,7 +68,7 @@ internal static class FancyZonesDataService
         }
         catch (Exception ex)
         {
-            error = $"Failed to read FancyZones monitor data: {ex.Message}";
+            error = string.Format(CultureInfo.CurrentCulture, ReadMonitorDataFailedFormat, ex.Message);
             Logger.LogError($"TryGetMonitors: Exception. Message={ex.Message} Stack={ex.StackTrace}");
             return false;
         }
@@ -204,7 +216,7 @@ internal static class FancyZonesDataService
         }
         catch (Exception ex)
         {
-            return (false, $"Failed to write applied layouts: {ex.Message}");
+            return (false, string.Format(CultureInfo.CurrentCulture, WriteAppliedLayoutsFailedFormat, ex.Message));
         }
 
         try
@@ -213,10 +225,10 @@ internal static class FancyZonesDataService
         }
         catch (Exception ex)
         {
-            return (true, $"Layout applied, but FancyZones could not be notified: {ex.Message}");
+            return (true, string.Format(CultureInfo.CurrentCulture, LayoutAppliedNotifyFailedFormat, ex.Message));
         }
 
-        return (true, "Layout applied.");
+        return (true, Resources.FancyZones_LayoutApplied);
     }
 
     private static AppliedLayouts.AppliedLayoutWrapper? FindAppliedLayoutEntry(AppliedLayouts.AppliedLayoutsListWrapper file, EditorParameters.NativeMonitorDataWrapper monitor, string virtualDesktopId)
@@ -293,8 +305,8 @@ internal static class FancyZonesDataService
             var zoneCount = type.Equals("blank", StringComparison.OrdinalIgnoreCase)
                 ? 0
                 : template.ZoneCount > 0 ? template.ZoneCount : 3;
-            var title = $"Template: {type}";
-            var subtitle = $"{zoneCount} zones";
+            var title = string.Format(CultureInfo.CurrentCulture, TemplateFormat, type);
+            var subtitle = string.Format(CultureInfo.CurrentCulture, ZonesFormat, zoneCount);
 
             yield return new FancyZonesLayoutDescriptor
             {
@@ -357,9 +369,9 @@ internal static class FancyZonesDataService
             var title = custom.Name.Trim();
             var subtitle = customType switch
             {
-                "grid" => $"Custom grid \u2022 {applied.ZoneCount} zones",
-                "canvas" => $"Custom canvas \u2022 {applied.ZoneCount} zones",
-                _ => $"Custom \u2022 {applied.ZoneCount} zones",
+                "grid" => string.Format(CultureInfo.CurrentCulture, CustomGridZonesFormat, applied.ZoneCount),
+                "canvas" => string.Format(CultureInfo.CurrentCulture, CustomCanvasZonesFormat, applied.ZoneCount),
+                _ => string.Format(CultureInfo.CurrentCulture, CustomZonesFormat, applied.ZoneCount),
             };
 
             yield return new FancyZonesLayoutDescriptor
