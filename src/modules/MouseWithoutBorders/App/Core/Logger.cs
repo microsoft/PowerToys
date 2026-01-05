@@ -106,15 +106,15 @@ internal static class Logger
     }
 
     [Conditional("DEBUG")]
-    internal static void LogDebug(string log, bool clearLog = false, [CallerMemberName] string memberName = "", [CallerFilePath] string sourceFilePath = "", [CallerLineNumber] int sourceLineNumber = 0)
-    {
-        Logger.Log(log, clearLog, memberName, sourceFilePath, sourceLineNumber);
-    }
-
-    [Conditional("DEBUG")]
     internal static void LogDebug(string format, params object[] args)
     {
         Logger.Log(format, args);
+    }
+
+    [Conditional("DEBUG")]
+    internal static void LogDebug(string log, bool clearLog = false, [CallerMemberName] string memberName = "", [CallerFilePath] string sourceFilePath = "", [CallerLineNumber] int sourceLineNumber = 0)
+    {
+        Logger.Log(log, clearLog, memberName, sourceFilePath, sourceLineNumber);
     }
 
     [Conditional("DEBUG")]
