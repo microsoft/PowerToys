@@ -550,7 +550,7 @@ namespace MouseWithoutBorders
 
                     if (count % 20 == 0)
                     {
-                        Logger.LogAll();
+                        Logger.LogStatistics();
 
                         // Need to review this code on why it is needed (moved from MoveToMyNeighbourIfNeeded(...))
                         for (int i = 0; i < MachineStuff.MachineMatrix.Length; i++)

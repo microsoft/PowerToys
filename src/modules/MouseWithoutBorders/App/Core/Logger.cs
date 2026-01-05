@@ -118,7 +118,7 @@ internal static class Logger
     }
 
     [Conditional("DEBUG")]
-    internal static void LogAll()
+    internal static void LogStatistics()
     {
         if (!lastPackageSent.Equals(Package.PackageSent))
         {
