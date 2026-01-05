@@ -271,33 +271,21 @@ internal static class Logger
         }
     }
 
-    private static bool PrivateDump(StringBuilder sb, object obj, string objName, int level, int maxLevel, bool stop)
+    private static bool PrivateDump(StringBuilder sb, object obj, string objName, int level, int maxLevel, bool recurse)
     {
-        Type t;
-        string padStr = string.Empty;
-        string[] strArr;
-        string objString;
-
-        if (obj == null || (maxLevel >= 0 && level >= maxLevel) || obj is Cursor)
+        if (obj == null || ((maxLevel >= 0) && (level >= maxLevel)) || obj is Cursor)
         {
             return false;
         }
 
-        for (int i = 0; i < level; i++)
-        {
-            padStr += i < level - 1 ? "-" : padStr += string.Empty;
-        }
-
-        objString = obj.ToString();
-        t = obj.GetType();
-        strArr = new string[7];
-        strArr[0] = padStr;
-        strArr[1] = objName;
-
-        // strArr[2] = " ";
-        // strArr[3] = t.FullName;
-        strArr[4] = " = ";
-        strArr[5] = objName.Equals("myKey", StringComparison.OrdinalIgnoreCase)
+        var objString = obj.ToString();
+        var values = new string[7];
+        values[0] = new string('-', Math.Max(level - 1, 0));
+        values[1] = objName;
+        /* values[2] = " "; */
+        /* values[3] = t.FullName; */
+        values[4] = " = ";
+        values[5] = objName.Equals("myKey", StringComparison.OrdinalIgnoreCase)
             ? Encryption.GetDebugInfo(objString)
             : objName.Equals("lastClipboardObject", StringComparison.OrdinalIgnoreCase)
                 ? string.Empty
@@ -315,10 +303,11 @@ internal static class Logger
                     .Replace("System.Drawing.", string.Empty)
                     .Replace("System.Int", string.Empty)
                     .Replace("System.EventHandler.", string.Empty);
-        strArr[6] = "\r\n";
-        _ = sb.Append(string.Concat(strArr).Replace(Common.BinaryName, "MM"));
+        values[6] = "\r\n";
+        _ = sb.Append(string.Concat(values).Replace(Common.BinaryName, "MM"));
 
-        if (stop || t.IsPrimitive)
+        var t = obj.GetType();
+        if (!recurse || t.IsPrimitive)
         {
             return false;
         }
@@ -365,25 +354,26 @@ internal static class Logger
             return;
         }
 
-        var typeFullName = typeToDump.ToString();
-        if (typeFullName.EndsWith("type", StringComparison.CurrentCultureIgnoreCase)
-            || typeFullName.Contains("Cryptography")
-            || typeFullName.EndsWith("AsyncEventBits", StringComparison.CurrentCultureIgnoreCase))
+        var typeName = typeToDump.ToString();
+        if (typeName.EndsWith("type", StringComparison.CurrentCultureIgnoreCase)
+            || typeName.Contains("Cryptography")
+            || typeName.EndsWith("AsyncEventBits", StringComparison.CurrentCultureIgnoreCase))
         {
             return;
         }
 
-        var stop = (typeToDump == null)
-            || (typeToDump == typeof(DATA))
-            || (typeToDump.BaseType == typeof(ValueType))
-            || typeToDump.Namespace.Contains("System.Windows");
+        var recurse = (typeToDump is not null)
+            && (typeToDump != typeof(DATA))
+            && (typeToDump.BaseType != typeof(ValueType))
+            && !typeToDump.Namespace.Contains("System.Windows");
 
         var fieldInfos = typeToDump.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static);
         foreach (var fieldInfo in fieldInfos)
         {
-            if (fieldInfo.GetValue(null) != AllLogs)
+            var fieldValue = fieldInfo.GetValue(null);
+            if (fieldValue != AllLogs)
             {
-                _ = Logger.PrivateDump(sb, fieldInfo.GetValue(null), fieldInfo.Name, level + 1, maxLevel, stop);
+                _ = Logger.PrivateDump(sb, fieldValue, fieldInfo.Name, level + 1, maxLevel, recurse);
             }
         }
     }
