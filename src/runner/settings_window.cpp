@@ -148,16 +148,19 @@ std::optional<std::wstring> dispatch_json_action_to_module(const json::JsonObjec
     return result;
 }
 
-void send_json_config_to_module(const std::wstring& module_key, const std::wstring& settings)
+void send_json_config_to_module(const std::wstring& module_key, const std::wstring& settings, bool hotkeyUpdated)
 {
     auto moduleIt = modules().find(module_key);
     if (moduleIt != modules().end())
     {
         moduleIt->second->set_config(settings.c_str());
 
-        moduleIt->second.remove_hotkey_records();
-        moduleIt->second.update_hotkeys();
-        moduleIt->second.UpdateHotkeyEx();
+        if (hotkeyUpdated)
+        {
+            moduleIt->second.remove_hotkey_records();
+            moduleIt->second.update_hotkeys();
+            moduleIt->second.UpdateHotkeyEx();
+        }
     }
 }
 
@@ -166,7 +169,22 @@ void dispatch_json_config_to_modules(const json::JsonObject& powertoys_configs)
     for (const auto& powertoy_element : powertoys_configs)
     {
         const auto element = powertoy_element.Value().Stringify();
-        send_json_config_to_module(powertoy_element.Key().c_str(), element.c_str());
+
+        /* As PowerToys Run hotkeys are not registered by the runner, hotkey updates are
+         * triggered only when hotkey properties change to avoid incorrect conflict detection; 
+         * otherwise, the existing logic remains.
+         */
+        auto settings = powertoy_element.Value().GetObjectW();
+        bool hotkeyUpdated = true;
+        if (settings.HasKey(L"properties"))
+        {
+            const auto properties = settings.GetNamedObject(L"properties");
+
+            // Currently, only PowerToys Run settings use the 'hotkey_changed' property.
+            json::get(properties, L"hotkey_changed", hotkeyUpdated, true);
+        }
+        
+        send_json_config_to_module(powertoy_element.Key().c_str(), element.c_str(), hotkeyUpdated);
     }
 };
 
