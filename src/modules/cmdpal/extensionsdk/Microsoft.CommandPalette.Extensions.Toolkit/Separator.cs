@@ -6,7 +6,6 @@ namespace Microsoft.CommandPalette.Extensions.Toolkit;
 
 public partial class Separator : BaseObservable, IListItem, ISeparatorContextItem, ISeparatorFilterItem
 {
-
     public IDetails? Details => null;
 
     public string? Section { get; private set; }
