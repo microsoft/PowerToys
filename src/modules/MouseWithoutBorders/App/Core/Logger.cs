@@ -11,6 +11,7 @@ using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Windows.Forms;
@@ -46,7 +47,7 @@ internal static class Logger
         Logger.Log(log);
     }
 
-    internal static void Log(Exception e, [System.Runtime.CompilerServices.CallerMemberName] string memberName = "", [System.Runtime.CompilerServices.CallerFilePath] string sourceFilePath = "", [System.Runtime.CompilerServices.CallerLineNumber] int sourceLineNumber = 0)
+    internal static void Log(Exception e, [CallerMemberName] string memberName = "", [CallerFilePath] string sourceFilePath = "", [CallerLineNumber] int sourceLineNumber = 0)
     {
         if (e is not KnownException)
         {
@@ -71,20 +72,14 @@ internal static class Logger
         }
     }
 
-    private const string HeaderSENT =
-        "Be{0},Ke{1},Mo{2},He{3},Mx{4},Tx{5},Im{6},By{7},Cl{8},Dr{9},De{10},Ed{11},Ie{12},Ni{13}";
-
-    private const string HeaderRECEIVED =
-        "Be{0},Ke{1},Mo{2},He{3},Mx{4},Tx{5},Im{6},By{7},Cl{8},Dr{9},De{10},Ed{11},In{12},Ni{13},Pc{14}/{15}";
-
-    internal static void LogDebug(string log, bool clearLog = false, [System.Runtime.CompilerServices.CallerMemberName] string memberName = "", [System.Runtime.CompilerServices.CallerFilePath] string sourceFilePath = "", [System.Runtime.CompilerServices.CallerLineNumber] int sourceLineNumber = 0)
+    internal static void LogDebug(string log, bool clearLog = false, [CallerMemberName] string memberName = "", [CallerFilePath] string sourceFilePath = "", [CallerLineNumber] int sourceLineNumber = 0)
     {
 #if DEBUG
         Log(log, clearLog, memberName, sourceFilePath, sourceLineNumber);
 #endif
     }
 
-    internal static void Log(string log, bool clearLog = false, [System.Runtime.CompilerServices.CallerMemberName] string memberName = "", [System.Runtime.CompilerServices.CallerFilePath] string sourceFilePath = "", [System.Runtime.CompilerServices.CallerLineNumber] int sourceLineNumber = 0)
+    internal static void Log(string log, bool clearLog = false, [CallerMemberName] string memberName = "", [CallerFilePath] string sourceFilePath = "", [CallerLineNumber] int sourceLineNumber = 0)
     {
         log = DateTime.Now.ToString("MM/dd HH:mm:ss.fff", CultureInfo.InvariantCulture) + $"({Thread.CurrentThread.ManagedThreadId})" + log;
 
@@ -119,53 +114,48 @@ internal static class Logger
     [Conditional("DEBUG")]
     internal static void LogAll()
     {
-        string log;
-
         if (!lastPackageSent.Equals(Package.PackageSent))
         {
-            log = string.Format(
-                CultureInfo.CurrentCulture,
-                "SENT:" + HeaderSENT,
-                Package.PackageSent.Heartbeat,
-                Package.PackageSent.Keyboard,
-                Package.PackageSent.Mouse,
-                Package.PackageSent.Hello,
-                Package.PackageSent.Matrix,
-                Package.PackageSent.ClipboardText,
-                Package.PackageSent.ClipboardImage,
-                Package.PackageSent.ByeBye,
-                Package.PackageSent.Clipboard,
-                Package.PackageSent.ClipboardDragDrop,
-                Package.PackageSent.ClipboardDragDropEnd,
-                Package.PackageSent.ExplorerDragDrop,
-                Event.inputEventCount,
-                Package.PackageSent.Nil);
-            Log(log);
-            lastPackageSent = Package.PackageSent; // Copy data
+            var log =
+                $"SENT:" +
+                $"Be{Package.PackageSent.Heartbeat}," +
+                $"Ke{Package.PackageSent.Keyboard}," +
+                $"Mo{Package.PackageSent.Mouse}," +
+                $"He{Package.PackageSent.Hello}," +
+                $"Mx{Package.PackageSent.Matrix}," +
+                $"Tx{Package.PackageSent.ClipboardText}," +
+                $"Im{Package.PackageSent.ClipboardImage}," +
+                $"By{Package.PackageSent.ByeBye}," +
+                $"Cl{Package.PackageSent.Clipboard}," +
+                $"Dr{Package.PackageSent.ClipboardDragDrop}," +
+                $"De{Package.PackageSent.ClipboardDragDropEnd}," +
+                $"Ed{Package.PackageSent.ExplorerDragDrop}," +
+                $"Ie{Event.inputEventCount}," +
+                $"Ni{Package.PackageSent.Nil}";
+            Logger.Log(log);
+            lastPackageSent = Package.PackageSent;
         }
 
         if (!lastPackageReceived.Equals(Package.PackageReceived))
         {
-            log = string.Format(
-                CultureInfo.CurrentCulture,
-                "RECEIVED:" + HeaderRECEIVED,
-                Package.PackageReceived.Heartbeat,
-                Package.PackageReceived.Keyboard,
-                Package.PackageReceived.Mouse,
-                Package.PackageReceived.Hello,
-                Package.PackageReceived.Matrix,
-                Package.PackageReceived.ClipboardText,
-                Package.PackageReceived.ClipboardImage,
-                Package.PackageReceived.ByeBye,
-                Package.PackageReceived.Clipboard,
-                Package.PackageReceived.ClipboardDragDrop,
-                Package.PackageReceived.ClipboardDragDropEnd,
-                Package.PackageReceived.ExplorerDragDrop,
-                Event.invalidPackageCount,
-                Package.PackageReceived.Nil,
-                Receiver.processedPackageCount,
-                Receiver.skippedPackageCount);
-            Log(log);
+            var log =
+                $"RECEIVED:" +
+                $"Be{Package.PackageReceived.Heartbeat}," +
+                $"Ke{Package.PackageReceived.Keyboard}," +
+                $"Mo{Package.PackageReceived.Mouse}," +
+                $"He{Package.PackageReceived.Hello}," +
+                $"Mx{Package.PackageReceived.Matrix}," +
+                $"Tx{Package.PackageReceived.ClipboardText}," +
+                $"Im{Package.PackageReceived.ClipboardImage}," +
+                $"By{Package.PackageReceived.ByeBye}," +
+                $"Cl{Package.PackageReceived.Clipboard}," +
+                $"Dr{Package.PackageReceived.ClipboardDragDrop}," +
+                $"De{Package.PackageReceived.ClipboardDragDropEnd}," +
+                $"Ed{Package.PackageReceived.ExplorerDragDrop}," +
+                $"Ie{Event.invalidPackageCount}," +
+                $"Ni{Package.PackageReceived.Nil}" +
+                $"Pc{Receiver.processedPackageCount}/{Receiver.skippedPackageCount}";
+            Logger.Log(log);
             lastPackageReceived = Package.PackageReceived;
         }
     }
