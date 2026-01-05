@@ -19,7 +19,7 @@ namespace PowerDisplay.Helpers;
 public sealed partial class DisplayChangeWatcher : IDisposable
 {
     private readonly DispatcherQueue _dispatcherQueue;
-    private readonly TimeSpan _debounceDelay = TimeSpan.FromSeconds(1);
+    private readonly TimeSpan _debounceDelay;
 
     private DeviceWatcher? _deviceWatcher;
     private CancellationTokenSource? _debounceCts;
@@ -36,9 +36,11 @@ public sealed partial class DisplayChangeWatcher : IDisposable
     /// Initializes a new instance of the <see cref="DisplayChangeWatcher"/> class.
     /// </summary>
     /// <param name="dispatcherQueue">The dispatcher queue for UI thread marshalling.</param>
-    public DisplayChangeWatcher(DispatcherQueue dispatcherQueue)
+    /// <param name="debounceDelay">Delay before triggering DisplayChanged event. This allows hardware to stabilize after monitor plug/unplug.</param>
+    public DisplayChangeWatcher(DispatcherQueue dispatcherQueue, TimeSpan debounceDelay)
     {
         _dispatcherQueue = dispatcherQueue ?? throw new ArgumentNullException(nameof(dispatcherQueue));
+        _debounceDelay = debounceDelay;
     }
 
     /// <summary>

@@ -87,7 +87,10 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
         LoadUIDisplaySettings();
 
         // Initialize display change watcher for auto-refresh on monitor plug/unplug
-        _displayChangeWatcher = new DisplayChangeWatcher(_dispatcherQueue);
+        // Use MonitorRefreshDelay from settings to allow hardware to stabilize after plug/unplug
+        var settings = _settingsUtils.GetSettingsOrDefault<PowerDisplaySettings>(PowerDisplaySettings.ModuleName);
+        int delaySeconds = Math.Clamp(settings?.Properties?.MonitorRefreshDelay ?? 5, 1, 30);
+        _displayChangeWatcher = new DisplayChangeWatcher(_dispatcherQueue, TimeSpan.FromSeconds(delaySeconds));
         _displayChangeWatcher.DisplayChanged += OnDisplayChanged;
 
         // Start initial discovery
@@ -413,24 +416,15 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
 
     /// <summary>
     /// Handles display configuration changes detected by the DisplayChangeWatcher.
-    /// Triggers a monitor refresh to update the UI after a delay to allow hardware to stabilize.
+    /// The DisplayChangeWatcher already applies the configured delay (MonitorRefreshDelay)
+    /// to allow hardware to stabilize, so we can refresh immediately here.
     /// </summary>
     private async void OnDisplayChanged(object? sender, EventArgs e)
     {
-        // Get the delay from settings (default to 5 seconds if not configured)
-        var settings = _settingsUtils.GetSettingsOrDefault<PowerDisplaySettings>(PowerDisplaySettings.ModuleName);
-        int delaySeconds = settings?.Properties?.MonitorRefreshDelay ?? 5;
-
-        // Clamp to reasonable range (1-30 seconds)
-        delaySeconds = Math.Clamp(delaySeconds, 1, 30);
-
-        // Set scanning state immediately to provide visual feedback
+        // Set scanning state to provide visual feedback
         IsScanning = true;
 
-        // Wait for hardware to stabilize (DDC/CI may not be ready immediately after plug)
-        await Task.Delay(TimeSpan.FromSeconds(delaySeconds));
-
-        // Perform actual refresh - skip scanning check since we already set IsScanning above
+        // Perform refresh - DisplayChangeWatcher has already waited for hardware to stabilize
         await RefreshMonitorsAsync(skipScanningCheck: true);
     }
 
