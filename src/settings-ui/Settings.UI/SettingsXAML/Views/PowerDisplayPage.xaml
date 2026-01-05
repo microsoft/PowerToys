@@ -62,9 +62,7 @@
                         <ToggleSwitch IsOn="{x:Bind ViewModel.ShowIdentifyMonitorsButton, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                     <tkcontrols:SettingsCard x:Uid="PowerDisplay_ShowColorTemperatureSwitcher" HeaderIcon="{ui:FontIcon Glyph=&#xE790;}">
-                        <ToggleSwitch
-                            x:Name="ShowColorTemperatureSwitcherToggle"
-                            IsOn="{x:Bind ViewModel.ShowColorTemperatureSwitcher, Mode=TwoWay}" />
+                        <ToggleSwitch x:Name="ShowColorTemperatureSwitcherToggle" IsOn="{x:Bind ViewModel.ShowColorTemperatureSwitcher, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
 
