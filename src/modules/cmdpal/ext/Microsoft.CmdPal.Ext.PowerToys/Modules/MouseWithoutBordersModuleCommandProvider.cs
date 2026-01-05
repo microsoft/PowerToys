@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using PowerToysExtension.Commands;
 using PowerToysExtension.Helpers;
+using PowerToysExtension.Properties;
 using static Common.UI.SettingsDeepLink;
 
 namespace PowerToysExtension.Modules;
@@ -20,7 +21,7 @@ internal sealed class MouseWithoutBordersModuleCommandProvider : ModuleCommandPr
         yield return new ListItem(new OpenInSettingsCommand(SettingsWindow.MouseWithoutBorders, title))
         {
             Title = title,
-            Subtitle = "Open Mouse Without Borders settings",
+            Subtitle = Resources.MouseWithoutBorders_Settings_Subtitle,
             Icon = icon,
         };
     }

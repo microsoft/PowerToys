@@ -4,16 +4,21 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
+using System.Text;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using PowerToysExtension.Commands;
 using PowerToysExtension.Helpers;
+using PowerToysExtension.Properties;
 
 namespace PowerToysExtension.Pages;
 
 internal sealed partial class FancyZonesMonitorLayoutPickerPage : DynamicListPage
 {
+    private static readonly CompositeFormat SetActiveLayoutForFormat = CompositeFormat.Parse(Resources.FancyZones_SetActiveLayoutFor_Format);
+
     private readonly FancyZonesMonitorDescriptor _monitor;
     private readonly CommandItem _emptyMessage;
 
@@ -21,13 +26,13 @@ internal sealed partial class FancyZonesMonitorLayoutPickerPage : DynamicListPag
     {
         _monitor = monitor;
         Icon = PowerToysResourcesHelper.IconFromSettingsIcon("FancyZones.png");
-        Name = Title = $"Set active layout for {_monitor.Title}";
+        Name = Title = string.Format(CultureInfo.CurrentCulture, SetActiveLayoutForFormat, _monitor.Title);
         Id = $"com.microsoft.cmdpal.powertoys.fancyzones.monitor.{_monitor.Index}.layouts";
 
         _emptyMessage = new CommandItem()
         {
-            Title = "No layouts found",
-            Subtitle = "Open FancyZones Editor once to initialize layouts.",
+            Title = Resources.FancyZones_NoLayoutsFound_Title,
+            Subtitle = Resources.FancyZones_NoLayoutsFound_Subtitle,
             Icon = PowerToysResourcesHelper.IconFromSettingsIcon("FancyZones.png"),
         };
         EmptyContent = _emptyMessage;
