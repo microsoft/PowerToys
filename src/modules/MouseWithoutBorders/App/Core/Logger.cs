@@ -58,13 +58,35 @@ internal static class Logger
         Logger.Log(log);
     }
 
+    private static void Log(string format, params object[] args)
+    {
+        Logger.Log(string.Format(CultureInfo.InvariantCulture, format, args));
+    }
+
+    internal static void Log(string log, bool clearLog = false, [CallerMemberName] string memberName = "", [CallerFilePath] string sourceFilePath = "", [CallerLineNumber] int sourceLineNumber = 0)
+    {
+        log = DateTime.Now.ToString("MM/dd HH:mm:ss.fff", CultureInfo.InvariantCulture) + $"({Thread.CurrentThread.ManagedThreadId})" + log;
+
+        ManagedCommon.Logger.LogInfo(log, memberName, sourceFilePath, sourceLineNumber);
+        lock (AllLogsLock)
+        {
+            if (clearLog)
+            {
+                allLogsIndex = 0;
+            }
+
+            AllLogs[allLogsIndex] = log;
+            allLogsIndex = (allLogsIndex + 1) % MAX_LOG;
+        }
+    }
+
     internal static void Log(Exception e, [CallerMemberName] string memberName = "", [CallerFilePath] string sourceFilePath = "", [CallerLineNumber] int sourceLineNumber = 0)
     {
         if (e is not KnownException)
         {
             string exText = e.ToString();
 
-            Log($"!Exception!: {exText}", memberName, sourceFilePath, sourceLineNumber);
+            Logger.Log($"!Exception!: {exText}", memberName, sourceFilePath, sourceLineNumber);
 
             if (DateTime.UtcNow.Hour != lastHour)
             {
@@ -86,25 +108,8 @@ internal static class Logger
     internal static void LogDebug(string log, bool clearLog = false, [CallerMemberName] string memberName = "", [CallerFilePath] string sourceFilePath = "", [CallerLineNumber] int sourceLineNumber = 0)
     {
 #if DEBUG
-        Log(log, clearLog, memberName, sourceFilePath, sourceLineNumber);
+        Logger.Log(log, clearLog, memberName, sourceFilePath, sourceLineNumber);
 #endif
-    }
-
-    internal static void Log(string log, bool clearLog = false, [CallerMemberName] string memberName = "", [CallerFilePath] string sourceFilePath = "", [CallerLineNumber] int sourceLineNumber = 0)
-    {
-        log = DateTime.Now.ToString("MM/dd HH:mm:ss.fff", CultureInfo.InvariantCulture) + $"({Thread.CurrentThread.ManagedThreadId})" + log;
-
-        ManagedCommon.Logger.LogInfo(log, memberName, sourceFilePath, sourceLineNumber);
-        lock (AllLogsLock)
-        {
-            if (clearLog)
-            {
-                allLogsIndex = 0;
-            }
-
-            AllLogs[allLogsIndex] = log;
-            allLogsIndex = (allLogsIndex + 1) % MAX_LOG;
-        }
     }
 
     internal static void LogDebug(string format, params object[] args)
@@ -112,11 +117,6 @@ internal static class Logger
 #if DEBUG
         Logger.Log(format, args);
 #endif
-    }
-
-    private static void Log(string format, params object[] args)
-    {
-        Logger.Log(string.Format(CultureInfo.InvariantCulture, format, args));
     }
 
     [Conditional("DEBUG")]
@@ -177,6 +177,16 @@ internal static class Logger
         }
     }
 
+    internal static void DumpProgramLogs(StringBuilder sb, int level)
+    {
+        _ = Logger.PrivateDump(sb, AllLogs, "[Program logs]\r\n===============\r\n", 0, level, false);
+    }
+
+    internal static void DumpOtherLogs(StringBuilder sb, int level)
+    {
+        _ = Logger.PrivateDump(sb, new Common(), "[Other Logs]\r\n===============\r\n", 0, level, false);
+    }
+
     private static void DumpObjects(int level)
     {
         try
@@ -229,98 +239,6 @@ internal static class Logger
         {
             _ = MessageBox.Show(e.Message + "\r\n" + e.StackTrace, Application.ProductName);
         }
-    }
-
-    internal static void DumpProgramLogs(StringBuilder sb, int level)
-    {
-        _ = Logger.PrivateDump(sb, AllLogs, "[Program logs]\r\n===============\r\n", 0, level, false);
-    }
-
-    internal static void DumpOtherLogs(StringBuilder sb, int level)
-    {
-        _ = Logger.PrivateDump(sb, new Common(), "[Other Logs]\r\n===============\r\n", 0, level, false);
-    }
-
-    internal static void DumpStaticTypes(StringBuilder sb, int level)
-    {
-        var staticTypes = new List<Type>
-        {
-            typeof(Clipboard),
-            typeof(DragDrop),
-            typeof(Encryption),
-            typeof(Event),
-            typeof(InitAndCleanup),
-            typeof(Helper),
-            typeof(Launch),
-            typeof(Logger),
-            typeof(MachineStuff),
-            typeof(Package),
-            typeof(Receiver),
-            typeof(Service),
-            typeof(WinAPI),
-            typeof(WM),
-        };
-        foreach (var staticType in staticTypes)
-        {
-            sb.AppendLine(CultureInfo.InvariantCulture, $"[{staticType.Name}]\r\n===============");
-            Logger.DumpType(sb, staticType, 0, level);
-        }
-    }
-
-    private static bool PrivateDump(StringBuilder sb, object obj, string objName, int level, int maxLevel, bool stop)
-    {
-        Type t;
-        string padStr = string.Empty;
-        string[] strArr;
-        string objString;
-
-        if (obj == null || (maxLevel >= 0 && level >= maxLevel) || obj is Cursor)
-        {
-            return false;
-        }
-
-        for (int i = 0; i < level; i++)
-        {
-            padStr += i < level - 1 ? "-" : padStr += string.Empty;
-        }
-
-        objString = obj.ToString();
-        t = obj.GetType();
-        strArr = new string[7];
-        strArr[0] = padStr;
-        strArr[1] = objName;
-
-        // strArr[2] = " ";
-        // strArr[3] = t.FullName;
-        strArr[4] = " = ";
-        strArr[5] = objName.Equals("myKey", StringComparison.OrdinalIgnoreCase)
-            ? Encryption.GetDebugInfo(objString)
-            : objName.Equals("lastClipboardObject", StringComparison.OrdinalIgnoreCase)
-                ? string.Empty
-                : objString
-                    .Replace("System.Windows.Forms.", string.Empty)
-                    .Replace("System.Net.Sockets.", string.Empty)
-                    .Replace("System.Security.Cryptography.", string.Empty)
-                    .Replace("System.Threading.", string.Empty)
-                    .Replace("System.ComponentModel.", string.Empty)
-                    .Replace("System.Runtime.", string.Empty)
-                    .Replace("System.Drawing.", string.Empty)
-                    .Replace("System.Object", "O")
-                    .Replace("System.Diagnostics.", string.Empty)
-                    .Replace("System.Collections.", string.Empty)
-                    .Replace("System.Drawing.", string.Empty)
-                    .Replace("System.Int", string.Empty)
-                    .Replace("System.EventHandler.", string.Empty);
-        strArr[6] = "\r\n";
-        _ = sb.Append(string.Concat(strArr).Replace(Common.BinaryName, "MM"));
-
-        if (stop || t.IsPrimitive)
-        {
-            return false;
-        }
-
-        Logger.DumpObject(sb, obj, level, t, maxLevel);
-        return true;
     }
 
     private static void DumpObject(StringBuilder sb, object obj, int level, Type t, int maxLevel)
@@ -426,6 +344,88 @@ internal static class Logger
             catch (Exception)
             {
             }
+        }
+    }
+
+    private static bool PrivateDump(StringBuilder sb, object obj, string objName, int level, int maxLevel, bool stop)
+    {
+        Type t;
+        string padStr = string.Empty;
+        string[] strArr;
+        string objString;
+
+        if (obj == null || (maxLevel >= 0 && level >= maxLevel) || obj is Cursor)
+        {
+            return false;
+        }
+
+        for (int i = 0; i < level; i++)
+        {
+            padStr += i < level - 1 ? "-" : padStr += string.Empty;
+        }
+
+        objString = obj.ToString();
+        t = obj.GetType();
+        strArr = new string[7];
+        strArr[0] = padStr;
+        strArr[1] = objName;
+
+        // strArr[2] = " ";
+        // strArr[3] = t.FullName;
+        strArr[4] = " = ";
+        strArr[5] = objName.Equals("myKey", StringComparison.OrdinalIgnoreCase)
+            ? Encryption.GetDebugInfo(objString)
+            : objName.Equals("lastClipboardObject", StringComparison.OrdinalIgnoreCase)
+                ? string.Empty
+                : objString
+                    .Replace("System.Windows.Forms.", string.Empty)
+                    .Replace("System.Net.Sockets.", string.Empty)
+                    .Replace("System.Security.Cryptography.", string.Empty)
+                    .Replace("System.Threading.", string.Empty)
+                    .Replace("System.ComponentModel.", string.Empty)
+                    .Replace("System.Runtime.", string.Empty)
+                    .Replace("System.Drawing.", string.Empty)
+                    .Replace("System.Object", "O")
+                    .Replace("System.Diagnostics.", string.Empty)
+                    .Replace("System.Collections.", string.Empty)
+                    .Replace("System.Drawing.", string.Empty)
+                    .Replace("System.Int", string.Empty)
+                    .Replace("System.EventHandler.", string.Empty);
+        strArr[6] = "\r\n";
+        _ = sb.Append(string.Concat(strArr).Replace(Common.BinaryName, "MM"));
+
+        if (stop || t.IsPrimitive)
+        {
+            return false;
+        }
+
+        Logger.DumpObject(sb, obj, level, t, maxLevel);
+        return true;
+    }
+
+    internal static void DumpStaticTypes(StringBuilder sb, int level)
+    {
+        var staticTypes = new List<Type>
+        {
+            typeof(Clipboard),
+            typeof(DragDrop),
+            typeof(Encryption),
+            typeof(Event),
+            typeof(InitAndCleanup),
+            typeof(Helper),
+            typeof(Launch),
+            typeof(Logger),
+            typeof(MachineStuff),
+            typeof(Package),
+            typeof(Receiver),
+            typeof(Service),
+            typeof(WinAPI),
+            typeof(WM),
+        };
+        foreach (var staticType in staticTypes)
+        {
+            sb.AppendLine(CultureInfo.InvariantCulture, $"[{staticType.Name}]\r\n===============");
+            Logger.DumpType(sb, staticType, 0, level);
         }
     }
 
