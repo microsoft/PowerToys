@@ -429,7 +429,7 @@
                             HorizontalAlignment="Left"
                             AutomationProperties.AccessibilityView="Raw"
                             SourceKey="{x:Bind ViewModel.Details.HeroImage, Mode=OneWay}"
-                            SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}"
+                            SourceRequested="{x:Bind help:IconCacheProvider.SourceRequestedJumbo}"
                             Visibility="{x:Bind HasHeroImage, Mode=OneWay}" />
 
                         <TextBlock
