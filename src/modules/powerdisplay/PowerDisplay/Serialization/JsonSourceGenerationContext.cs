@@ -18,7 +18,6 @@ namespace PowerDisplay.Serialization
     /// </summary>
     [JsonSerializable(typeof(IPCMessageAction))]
     [JsonSerializable(typeof(PowerDisplaySettings))]
-    [JsonSerializable(typeof(ColorTemperatureOperation))]
     [JsonSerializable(typeof(ProfileOperation))]
     [JsonSerializable(typeof(PowerDisplayProfiles))]
     [JsonSerializable(typeof(PowerDisplayProfile))]

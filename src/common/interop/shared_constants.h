@@ -153,7 +153,6 @@ namespace CommonSharedConstants
     const wchar_t TERMINATE_POWER_DISPLAY_EVENT[] = L"Local\\PowerToysPowerDisplay-TerminateEvent-7b9c2e1f-8a5d-4c3e-9f6b-2a1d8c5e3b7a";
     const wchar_t REFRESH_POWER_DISPLAY_MONITORS_EVENT[] = L"Local\\PowerToysPowerDisplay-RefreshMonitorsEvent-a3f5c8e7-9d1b-4e2f-8c6a-3b5d7e9f1a2c";
     const wchar_t SETTINGS_UPDATED_POWER_DISPLAY_EVENT[] = L"Local\\PowerToysPowerDisplay-SettingsUpdatedEvent-2e4d6f8a-1c3b-5e7f-9a1d-4c6e8f0b2d3e";
-    const wchar_t APPLY_COLOR_TEMPERATURE_POWER_DISPLAY_EVENT[] = L"Local\\PowerToysPowerDisplay-ApplyColorTemperatureEvent-4b7e9f2a-3c6d-5a8e-7f1b-9d2e4c6a8b0d";
     const wchar_t APPLY_PROFILE_POWER_DISPLAY_EVENT[] = L"Local\\PowerToysPowerDisplay-ApplyProfileEvent-6e8a3c9d-4f7b-5d2e-8a1c-3e9f7b6d2a5c";
     const wchar_t POWER_DISPLAY_SEND_SETTINGS_TELEMETRY_EVENT[] = L"Local\\PowerToysPowerDisplay-SettingsTelemetryEvent-8c4f2a1d-5e3b-7f9c-1a6d-3b8e5f2c9a7d";
     const wchar_t HOTKEY_UPDATED_POWER_DISPLAY_EVENT[] = L"Local\\PowerToysPowerDisplay-HotkeyUpdatedEvent-9d5f3a2b-7e1c-4b8a-6f3d-2a9e5c7b1d4f";

@@ -46,7 +46,6 @@ private:
     HANDLE m_hToggleEvent = nullptr;
     HANDLE m_hTerminateEvent = nullptr;
     HANDLE m_hRefreshEvent = nullptr;
-    HANDLE m_hApplyColorTemperatureEvent = nullptr;
     HANDLE m_hApplyProfileEvent = nullptr;
     HANDLE m_hSendSettingsTelemetryEvent = nullptr;
 
@@ -127,19 +126,16 @@ public:
         Logger::trace(L"Created TERMINATE_POWER_DISPLAY_EVENT: handle={}", reinterpret_cast<void*>(m_hTerminateEvent));
         m_hRefreshEvent = CreateDefaultEvent(CommonSharedConstants::REFRESH_POWER_DISPLAY_MONITORS_EVENT);
         Logger::trace(L"Created REFRESH_MONITORS_EVENT: handle={}", reinterpret_cast<void*>(m_hRefreshEvent));
-        m_hApplyColorTemperatureEvent = CreateDefaultEvent(CommonSharedConstants::APPLY_COLOR_TEMPERATURE_POWER_DISPLAY_EVENT);
-        Logger::trace(L"Created APPLY_COLOR_TEMPERATURE_EVENT: handle={}", reinterpret_cast<void*>(m_hApplyColorTemperatureEvent));
         m_hApplyProfileEvent = CreateDefaultEvent(CommonSharedConstants::APPLY_PROFILE_POWER_DISPLAY_EVENT);
         Logger::trace(L"Created APPLY_PROFILE_EVENT: handle={}", reinterpret_cast<void*>(m_hApplyProfileEvent));
         m_hSendSettingsTelemetryEvent = CreateDefaultEvent(CommonSharedConstants::POWER_DISPLAY_SEND_SETTINGS_TELEMETRY_EVENT);
         Logger::trace(L"Created SEND_SETTINGS_TELEMETRY_EVENT: handle={}", reinterpret_cast<void*>(m_hSendSettingsTelemetryEvent));
 
-        if (!m_hToggleEvent || !m_hTerminateEvent || !m_hRefreshEvent || !m_hApplyColorTemperatureEvent || !m_hApplyProfileEvent || !m_hSendSettingsTelemetryEvent)
+        if (!m_hToggleEvent || !m_hTerminateEvent || !m_hRefreshEvent || !m_hApplyProfileEvent || !m_hSendSettingsTelemetryEvent)
         {
-            Logger::error(L"Failed to create one or more event handles: Toggle={}, Terminate={}, Refresh={}, ApplyColorTemp={}, ApplyProfile={}, SettingsTelemetry={}",
+            Logger::error(L"Failed to create one or more event handles: Toggle={}, Terminate={}, Refresh={}, ApplyProfile={}, SettingsTelemetry={}",
                          reinterpret_cast<void*>(m_hToggleEvent),
                          reinterpret_cast<void*>(m_hTerminateEvent), reinterpret_cast<void*>(m_hRefreshEvent),
-                         reinterpret_cast<void*>(m_hApplyColorTemperatureEvent),
                          reinterpret_cast<void*>(m_hApplyProfileEvent), reinterpret_cast<void*>(m_hSendSettingsTelemetryEvent));
         }
         else
@@ -170,11 +166,6 @@ public:
         {
             CloseHandle(m_hRefreshEvent);
             m_hRefreshEvent = nullptr;
-        }
-        if (m_hApplyColorTemperatureEvent)
-        {
-            CloseHandle(m_hApplyColorTemperatureEvent);
-            m_hApplyColorTemperatureEvent = nullptr;
         }
         if (m_hApplyProfileEvent)
         {
@@ -256,33 +247,6 @@ public:
                     Logger::warn(L"Refresh event handle is null");
                 }
             }
-            else if (action_object.get_name() == L"ApplyColorTemperature")
-            {
-                Logger::trace(L"ApplyColorTemperature action received");
-                Logger::trace(L"Event handle address: {}", reinterpret_cast<void*>(m_hApplyColorTemperatureEvent));
-                Logger::trace(L"Event name: {}", CommonSharedConstants::APPLY_COLOR_TEMPERATURE_POWER_DISPLAY_EVENT);
-
-                // Ensure PowerDisplay process is running before signaling event
-                EnsureProcessRunning();
-
-                if (m_hApplyColorTemperatureEvent)
-                {
-                    Logger::trace(L"Signaling apply color temperature event (handle valid)");
-                    BOOL result = SetEvent(m_hApplyColorTemperatureEvent);
-                    if (result)
-                    {
-                        Logger::trace(L"SetEvent succeeded for ApplyColorTemperature");
-                    }
-                    else
-                    {
-                        Logger::error(L"SetEvent FAILED for ApplyColorTemperature, error: {}", GetLastError());
-                    }
-                }
-                else
-                {
-                    Logger::warn(L"Apply color temperature event handle is null");
-                }
-            }
             else if (action_object.get_name() == L"ApplyProfile")
             {
                 Logger::trace(L"ApplyProfile action received");
@@ -312,7 +276,7 @@ public:
         // Settings changes are handled via dedicated Windows Events:
         // - HotkeyUpdatedPowerDisplayEvent: triggered by Settings UI when activation shortcut changes
         // - SettingsUpdatedPowerDisplayEvent: triggered for tray icon visibility changes
-        // - ApplyColorTemperaturePowerDisplayEvent, ApplyProfilePowerDisplayEvent: for hardware settings
+        // - ApplyProfilePowerDisplayEvent: for profile settings
         // PowerDisplay.exe reads settings directly from file when these events are signaled.
     }
 

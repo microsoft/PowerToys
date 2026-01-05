@@ -54,6 +54,20 @@
 
                 </controls:SettingsGroup>
 
+                <controls:SettingsGroup x:Uid="PowerDisplay_FlyoutOptions_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                    <tkcontrols:SettingsCard x:Uid="PowerDisplay_ShowProfileSwitcher" HeaderIcon="{ui:FontIcon Glyph=&#xE748;}">
+                        <ToggleSwitch IsOn="{x:Bind ViewModel.ShowProfileSwitcher, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
+                    <tkcontrols:SettingsCard x:Uid="PowerDisplay_ShowIdentifyMonitorsButton" HeaderIcon="{ui:FontIcon Glyph=&#xE9D9;}">
+                        <ToggleSwitch IsOn="{x:Bind ViewModel.ShowIdentifyMonitorsButton, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
+                    <tkcontrols:SettingsCard x:Uid="PowerDisplay_ShowColorTemperatureSwitcher" HeaderIcon="{ui:FontIcon Glyph=&#xE790;}">
+                        <ToggleSwitch
+                            x:Name="ShowColorTemperatureSwitcherToggle"
+                            IsOn="{x:Bind ViewModel.ShowColorTemperatureSwitcher, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
+                </controls:SettingsGroup>
+
                 <controls:SettingsGroup x:Uid="PowerDisplay_Profiles_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsExpander
                         x:Uid="PowerDisplay_QuickProfiles"
@@ -141,35 +155,6 @@
                                             Visibility="{x:Bind ShowCapabilitiesWarning, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
                                     </tkcontrols:SettingsExpander.ItemsHeader>
                                     <tkcontrols:SettingsExpander.Items>
-                                        <tkcontrols:SettingsCard x:Uid="PowerDisplay_Monitor_ColorTemperature" IsEnabled="{x:Bind SupportsColorTemperature, Mode=OneWay}">
-                                            <tkcontrols:SettingsCard.Description>
-                                                <StackPanel Spacing="4">
-                                                    <!--  Simple warning message when supported  -->
-                                                    <TextBlock
-                                                        x:Uid="PowerDisplay_Monitor_ColorTemperature_Warning"
-                                                        Foreground="{ThemeResource SystemFillColorCautionBrush}"
-                                                        TextWrapping="Wrap"
-                                                        Visibility="{x:Bind SupportsColorTemperature, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
-                                                    <!--  Not supported message  -->
-                                                    <TextBlock
-                                                        x:Uid="ColorTemperatureNotSupportedText"
-                                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                                        Visibility="{x:Bind SupportsColorTemperature, Mode=OneWay, Converter={StaticResource ReverseBoolToVisibilityConverter}}" />
-                                                </StackPanel>
-                                            </tkcontrols:SettingsCard.Description>
-                                            <ComboBox
-                                                x:Name="ColorTemperatureComboBox"
-                                                x:Uid="PowerDisplay_Monitor_ColorTemperature_ComboBox"
-                                                MinWidth="{StaticResource SettingActionControlMinWidth}"
-                                                DisplayMemberPath="DisplayName"
-                                                IsEnabled="{Binding SupportsColorTemperature, Mode=OneWay}"
-                                                ItemsSource="{Binding ColorPresetsForDisplay, Mode=OneWay}"
-                                                SelectedValue="{Binding ColorTemperatureVcp, Mode=OneWay}"
-                                                SelectedValuePath="VcpValue"
-                                                SelectionChanged="ColorTemperatureComboBox_SelectionChanged"
-                                                Tag="{Binding}" />
-
-                                        </tkcontrols:SettingsCard>
                                         <tkcontrols:SettingsCard ContentAlignment="Left" IsEnabled="{x:Bind SupportsContrast, Mode=OneWay}">
                                             <CheckBox x:Uid="PowerDisplay_Monitor_EnableContrast" IsChecked="{x:Bind EnableContrast, Mode=TwoWay}" />
                                         </tkcontrols:SettingsCard>

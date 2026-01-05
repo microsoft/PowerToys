@@ -117,49 +117,100 @@
                                                     Margin="0,0,0,2"
                                                     VerticalAlignment="Center"
                                                     Text="{x:Bind DisplayName, Mode=OneWay}" />
-                                                <Button
+                                                <!--  Icon buttons for InputSource and ColorTemperature  -->
+                                                <StackPanel
                                                     Grid.Column="2"
                                                     HorizontalAlignment="Right"
-                                                    Content="{ui:FontIcon Glyph=&#xE712;,
-                                                                          FontSize=16}"
-                                                    Style="{StaticResource SubtleButtonStyle}"
-                                                    Visibility="{x:Bind helpers:VisibilityConverter.BoolToVisibility(ShowInputSource), Mode=OneWay}">
-                                                    <Button.Flyout>
-                                                        <Flyout>
-                                                            <StackPanel Orientation="Vertical">
-                                                                <ListView
-                                                                    ItemsSource="{x:Bind AvailableInputSources, Mode=OneWay}"
-                                                                    SelectionChanged="InputSourceListView_SelectionChanged"
-                                                                    SelectionMode="Single">
-                                                                    <ListView.Header>
-                                                                        <TextBlock
-                                                                            x:Uid="InputSourceHeader"
-                                                                            Margin="16,0,8,0"
-                                                                            FontSize="12"
-                                                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                                                                    </ListView.Header>
-                                                                    <ListView.ItemTemplate>
-                                                                        <DataTemplate x:DataType="vm:InputSourceItem">
-                                                                            <Grid Padding="0,4">
-                                                                                <Grid.ColumnDefinitions>
-                                                                                    <ColumnDefinition Width="*" />
-                                                                                    <ColumnDefinition Width="Auto" />
-                                                                                </Grid.ColumnDefinitions>
-                                                                                <TextBlock VerticalAlignment="Center" Text="{x:Bind Name}" />
-                                                                                <FontIcon
-                                                                                    Grid.Column="1"
-                                                                                    Margin="8,0,0,0"
-                                                                                    FontSize="12"
-                                                                                    Glyph="&#xE73E;"
-                                                                                    Visibility="{x:Bind SelectionVisibility}" />
-                                                                            </Grid>
-                                                                        </DataTemplate>
-                                                                    </ListView.ItemTemplate>
-                                                                </ListView>
-                                                            </StackPanel>
-                                                        </Flyout>
-                                                    </Button.Flyout>
-                                                </Button>
+                                                    Orientation="Horizontal"
+                                                    Spacing="4">
+                                                    <!--  Color Temperature Button  -->
+                                                    <Button
+                                                        x:Uid="ColorTemperatureTooltip"
+                                                        Content="{ui:FontIcon Glyph=&#xE790;,
+                                                                              FontSize=16}"
+                                                        IsEnabled="{x:Bind IsInteractionEnabled, Mode=OneWay}"
+                                                        Style="{StaticResource SubtleButtonStyle}"
+                                                        Visibility="{x:Bind helpers:VisibilityConverter.BoolToVisibility(ShowColorTemperature), Mode=OneWay}">
+                                                        <Button.Flyout>
+                                                            <Flyout>
+                                                                <StackPanel Orientation="Vertical">
+                                                                    <ListView
+                                                                        ItemsSource="{x:Bind AvailableColorPresets, Mode=OneWay}"
+                                                                        SelectionChanged="ColorTemperatureListView_SelectionChanged"
+                                                                        SelectionMode="Single">
+                                                                        <ListView.Header>
+                                                                            <TextBlock
+                                                                                x:Uid="ColorTemperatureHeader"
+                                                                                Margin="16,0,8,0"
+                                                                                FontSize="12"
+                                                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                                                        </ListView.Header>
+                                                                        <ListView.ItemTemplate>
+                                                                            <DataTemplate x:DataType="vm:ColorTemperatureItem">
+                                                                                <Grid Padding="0,4">
+                                                                                    <Grid.ColumnDefinitions>
+                                                                                        <ColumnDefinition Width="*" />
+                                                                                        <ColumnDefinition Width="Auto" />
+                                                                                    </Grid.ColumnDefinitions>
+                                                                                    <TextBlock VerticalAlignment="Center" Text="{x:Bind DisplayName}" />
+                                                                                    <FontIcon
+                                                                                        Grid.Column="1"
+                                                                                        Margin="8,0,0,0"
+                                                                                        FontSize="12"
+                                                                                        Glyph="&#xE73E;"
+                                                                                        Visibility="{x:Bind helpers:VisibilityConverter.BoolToVisibility(IsSelected)}" />
+                                                                                </Grid>
+                                                                            </DataTemplate>
+                                                                        </ListView.ItemTemplate>
+                                                                    </ListView>
+                                                                </StackPanel>
+                                                            </Flyout>
+                                                        </Button.Flyout>
+                                                    </Button>
+                                                    <!--  Input Source Button  -->
+                                                    <Button
+                                                        x:Uid="InputSourceTooltip"
+                                                        Content="{ui:FontIcon Glyph=&#xE712;,
+                                                                              FontSize=16}"
+                                                        Style="{StaticResource SubtleButtonStyle}"
+                                                        Visibility="{x:Bind helpers:VisibilityConverter.BoolToVisibility(ShowInputSource), Mode=OneWay}">
+                                                        <Button.Flyout>
+                                                            <Flyout>
+                                                                <StackPanel Orientation="Vertical">
+                                                                    <ListView
+                                                                        ItemsSource="{x:Bind AvailableInputSources, Mode=OneWay}"
+                                                                        SelectionChanged="InputSourceListView_SelectionChanged"
+                                                                        SelectionMode="Single">
+                                                                        <ListView.Header>
+                                                                            <TextBlock
+                                                                                x:Uid="InputSourceHeader"
+                                                                                Margin="16,0,8,0"
+                                                                                FontSize="12"
+                                                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                                                        </ListView.Header>
+                                                                        <ListView.ItemTemplate>
+                                                                            <DataTemplate x:DataType="vm:InputSourceItem">
+                                                                                <Grid Padding="0,4">
+                                                                                    <Grid.ColumnDefinitions>
+                                                                                        <ColumnDefinition Width="*" />
+                                                                                        <ColumnDefinition Width="Auto" />
+                                                                                    </Grid.ColumnDefinitions>
+                                                                                    <TextBlock VerticalAlignment="Center" Text="{x:Bind Name}" />
+                                                                                    <FontIcon
+                                                                                        Grid.Column="1"
+                                                                                        Margin="8,0,0,0"
+                                                                                        FontSize="12"
+                                                                                        Glyph="&#xE73E;"
+                                                                                        Visibility="{x:Bind SelectionVisibility}" />
+                                                                                </Grid>
+                                                                            </DataTemplate>
+                                                                        </ListView.ItemTemplate>
+                                                                    </ListView>
+                                                                </StackPanel>
+                                                            </Flyout>
+                                                        </Button.Flyout>
+                                                    </Button>
+                                                </StackPanel>
                                             </Grid>
                                             <StackPanel
                                                 Margin="0,8,0,0"
@@ -363,7 +414,7 @@
                             Content="{ui:FontIcon Glyph=&#xE748;,
                                                   FontSize=16}"
                             Style="{StaticResource SubtleButtonStyle}"
-                            Visibility="{x:Bind helpers:VisibilityConverter.BoolToVisibility(ViewModel.HasProfiles), Mode=OneWay}">
+                            Visibility="{x:Bind helpers:VisibilityConverter.BoolToVisibility(ViewModel.ShowProfileSwitcherButton), Mode=OneWay}">
                             <Button.Flyout>
                                 <Flyout x:Name="ProfilesFlyout">
                                     <ListView
@@ -400,7 +451,8 @@
                             Command="{x:Bind ViewModel.IdentifyMonitorsCommand}"
                             Content="{ui:FontIcon Glyph=&#xE9D9;,
                                                   FontSize=16}"
-                            Style="{StaticResource SubtleButtonStyle}" />
+                            Style="{StaticResource SubtleButtonStyle}"
+                            Visibility="{x:Bind helpers:VisibilityConverter.BoolToVisibility(ViewModel.ShowIdentifyMonitorsButton), Mode=OneWay}" />
                         <Button
                             x:Name="SettingsBtn"
                             x:Uid="SettingsTooltip"

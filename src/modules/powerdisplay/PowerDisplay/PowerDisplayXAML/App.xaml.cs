@@ -108,7 +108,6 @@ namespace PowerDisplay
                     Constants.HotkeyUpdatedPowerDisplayEvent(),
                     mw => mw.ReloadHotkeySettings(),
                     "HotkeyUpdated");
-                RegisterViewModelEvent(Constants.ApplyColorTemperaturePowerDisplayEvent(), vm => vm.ApplyColorTemperatureFromSettings(), "ApplyColorTemperature");
                 RegisterViewModelEvent(Constants.ApplyProfilePowerDisplayEvent(), vm => vm.ApplyProfileFromSettings(), "ApplyProfile");
                 RegisterViewModelEvent(Constants.PowerDisplaySendSettingsTelemetryEvent(), vm => vm.SendSettingsTelemetry(), "SendSettingsTelemetry");
 

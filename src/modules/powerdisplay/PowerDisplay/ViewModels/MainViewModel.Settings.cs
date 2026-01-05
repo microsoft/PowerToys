@@ -50,6 +50,9 @@ public partial class MainViewModel
 
             // Reload profiles in case they were added/updated/deleted in Settings UI
             LoadProfiles();
+
+            // Reload UI display settings (profile switcher, identify button, color temp switcher)
+            LoadUIDisplaySettings();
         }
         catch (Exception ex)
         {
@@ -77,93 +80,6 @@ public partial class MainViewModel
         {
             Logger.LogError($"[Settings] Failed to apply UI configuration: {ex.Message}");
         }
-    }
-
-    /// <summary>
-    /// Apply color temperature to a specific monitor (triggered by custom action from Settings UI)
-    /// This is called when user explicitly changes color temperature in Settings UI.
-    /// Reads the pending operation from settings and applies it directly.
-    /// </summary>
-    public async void ApplyColorTemperatureFromSettings()
-    {
-        try
-        {
-            await ApplyColorTemperatureFromSettingsAsync();
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError($"[Settings] Failed to apply color temperature from settings: {ex.Message}");
-        }
-    }
-
-    /// <summary>
-    /// Core implementation for applying color temperature from settings
-    /// </summary>
-    private async Task ApplyColorTemperatureFromSettingsAsync()
-    {
-        Logger.LogInfo("[ApplyColorTemp] Starting ApplyColorTemperatureFromSettingsAsync");
-
-        var settings = _settingsUtils.GetSettingsOrDefault<PowerDisplaySettings>("PowerDisplay");
-
-        // Check if there's a pending color temperature operation
-        var pendingOp = settings.Properties.PendingColorTemperatureOperation;
-
-        if (pendingOp == null)
-        {
-            Logger.LogInfo("[ApplyColorTemp] No pending operation found (PendingColorTemperatureOperation is null)");
-            return;
-        }
-
-        Logger.LogInfo($"[ApplyColorTemp] Found pending operation: MonitorId='{pendingOp.MonitorId}', ColorTempVcp={pendingOp.ColorTemperatureVcp}");
-
-        if (string.IsNullOrEmpty(pendingOp.MonitorId))
-        {
-            Logger.LogWarning("[ApplyColorTemp] MonitorId is null or empty, cannot apply color temperature");
-
-            // Clear the invalid pending operation
-            settings.Properties.PendingColorTemperatureOperation = null;
-            _settingsUtils.SaveSettings(
-                System.Text.Json.JsonSerializer.Serialize(settings, AppJsonContext.Default.PowerDisplaySettings),
-                PowerDisplaySettings.ModuleName);
-            return;
-        }
-
-        // Find the monitor by internal name (ID)
-        Logger.LogInfo($"[ApplyColorTemp] Searching for monitor with Id='{pendingOp.MonitorId}' in {Monitors.Count} monitors");
-        foreach (var m in Monitors)
-        {
-            Logger.LogTrace($"[ApplyColorTemp] Available monitor: Id='{m.Id}', Name='{m.Name}'");
-        }
-
-        var monitorVm = Monitors.FirstOrDefault(m => m.Id == pendingOp.MonitorId);
-
-        if (monitorVm != null)
-        {
-            Logger.LogInfo($"[ApplyColorTemp] Found monitor '{monitorVm.Name}' (Id={monitorVm.Id}), applying color temp {pendingOp.ColorTemperatureVcp}");
-
-            // Apply color temperature directly
-            await monitorVm.SetColorTemperatureAsync(pendingOp.ColorTemperatureVcp);
-            Logger.LogInfo($"[ApplyColorTemp] SetColorTemperatureAsync completed for monitor '{monitorVm.Name}'");
-
-            // Update the monitor's ColorTemperatureVcp in settings to match the applied value
-            // This ensures Settings UI gets the correct value when it reloads from file
-            var settingsMonitor = settings.Properties.Monitors.FirstOrDefault(m => m.Id == pendingOp.MonitorId);
-            if (settingsMonitor != null)
-            {
-                settingsMonitor.ColorTemperatureVcp = pendingOp.ColorTemperatureVcp;
-            }
-        }
-        else
-        {
-            Logger.LogWarning($"[ApplyColorTemp] Monitor with Id='{pendingOp.MonitorId}' not found in current monitor list");
-        }
-
-        // Clear the pending operation and save updated settings
-        Logger.LogInfo("[ApplyColorTemp] Clearing pending operation and saving settings");
-        settings.Properties.PendingColorTemperatureOperation = null;
-        _settingsUtils.SaveSettings(
-            System.Text.Json.JsonSerializer.Serialize(settings, AppJsonContext.Default.PowerDisplaySettings),
-            PowerDisplaySettings.ModuleName);
     }
 
     /// <summary>
@@ -414,6 +330,9 @@ public partial class MainViewModel
             monitorVm.ShowInputSource = monitorSettings.EnableInputSource;
             monitorVm.ShowRotation = monitorSettings.EnableRotation;
         }
+
+        // Apply global color temperature switcher visibility from settings
+        monitorVm.ShowColorTemperature = settings.Properties.ShowColorTemperatureSwitcher;
     }
 
     /// <summary>

@@ -5731,9 +5731,6 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   <data name="Launch_PowerDisplay.Content" xml:space="preserve">
     <value>Open Power Display</value>
   </data>
-  <data name="PowerDisplay_Monitor_ColorTemperature.Header" xml:space="preserve">
-    <value>Color temperature</value>
-  </data>
   <data name="PowerDisplay_Monitor_EnableContrast.Content" xml:space="preserve">
     <value>Display contrast slider</value>
   </data>
@@ -5749,9 +5746,6 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   <data name="PowerDisplay_Monitor_HideMonitor.Content" xml:space="preserve">
     <value>Hide monitor</value>
   </data>
-  <data name="ColorTemperatureNotSupportedText.Text" xml:space="preserve">
-    <value>Color temperature control not supported by this monitor</value>
-  </data>
   <data name="PowerDisplay_ColorTemperature_WarningTitle" xml:space="preserve">
     <value>Confirm Color Temperature Change</value>
   </data>
@@ -5765,12 +5759,6 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
     <value>• Incorrect display colors
 • Display malfunction
 • Settings that cannot be reverted</value>
-  </data>
-  <data name="PowerDisplay_ColorTemperature_WarningConfirm" xml:space="preserve">
-    <value>Are you sure you want to proceed with this change?</value>
-  </data>
-  <data name="PowerDisplay_ColorTemperature_PrimaryButton" xml:space="preserve">
-    <value>Yes, Change Setting</value>
   </data>
   <data name="PowerDisplay_Dialog_Cancel" xml:space="preserve">
     <value>Cancel</value>
@@ -5853,12 +5841,6 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   <data name="PowerDisplay_Monitor_CapabilitiesWarning.Message" xml:space="preserve">
     <value>This monitor did not report DDC/CI capabilities. Advanced controls may be limited.</value>
   </data>
-  <data name="PowerDisplay_Monitor_ColorTemperature_Warning.Text" xml:space="preserve">
-    <value>Warning: Changing this setting can cause unexpected behavior. Adjust only when its impact is clear.</value>
-  </data>
-  <data name="PowerDisplay_Monitor_ColorTemperature_ComboBox.PlaceholderText" xml:space="preserve">
-    <value>Not available</value>
-  </data>
   <data name="PowerDisplay_Monitor_VcpCapabilities.Header" xml:space="preserve">
     <value>VCP capabilities</value>
   </data>
@@ -5882,6 +5864,33 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   </data>
   <data name="PowerDisplay_Monitor_VcpCodes_CopyText.Text" xml:space="preserve">
     <value>Copy</value>
+  </data>
+  <data name="PowerDisplay_FlyoutOptions_GroupSettings.Header" xml:space="preserve">
+    <value>Flyout options</value>
+  </data>
+  <data name="PowerDisplay_ShowProfileSwitcher.Header" xml:space="preserve">
+    <value>Show profile switcher</value>
+  </data>
+  <data name="PowerDisplay_ShowProfileSwitcher.Description" xml:space="preserve">
+    <value>Show or hide the profile switcher button in the Power Display flyout</value>
+  </data>
+  <data name="PowerDisplay_ShowIdentifyMonitorsButton.Header" xml:space="preserve">
+    <value>Show identify monitors button</value>
+  </data>
+  <data name="PowerDisplay_ShowIdentifyMonitorsButton.Description" xml:space="preserve">
+    <value>Show or hide the identify monitors button in the Power Display flyout</value>
+  </data>
+  <data name="PowerDisplay_ShowColorTemperatureSwitcher.Header" xml:space="preserve">
+    <value>Show color temperature switcher</value>
+  </data>
+  <data name="PowerDisplay_ShowColorTemperatureSwitcher.Description" xml:space="preserve">
+    <value>Show or hide the color temperature switcher for each monitor in the Power Display flyout</value>
+  </data>
+  <data name="PowerDisplay_ColorTemperatureSwitcher_WarningConfirm" xml:space="preserve">
+    <value>Do you want to enable color temperature switching in the flyout?</value>
+  </data>
+  <data name="PowerDisplay_ColorTemperatureSwitcher_EnableButton" xml:space="preserve">
+    <value>Enable</value>
   </data>
   <data name="Hosts_Backup_GroupSettings.Header" xml:space="preserve">
     <value>Backup</value>

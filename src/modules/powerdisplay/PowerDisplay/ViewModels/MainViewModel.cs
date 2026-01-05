@@ -83,6 +83,9 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
         // Load profiles for quick apply feature
         LoadProfiles();
 
+        // Load UI display settings (profile switcher, identify button, color temp switcher)
+        LoadUIDisplaySettings();
+
         // Initialize display change watcher for auto-refresh on monitor plug/unplug
         _displayChangeWatcher = new DisplayChangeWatcher(_dispatcherQueue);
         _displayChangeWatcher.DisplayChanged += OnDisplayChanged;
@@ -113,6 +116,66 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
     }
 
     public bool HasProfiles => Profiles.Count > 0;
+
+    // UI display control properties - loaded from settings
+    private bool _showProfileSwitcher = true;
+    private bool _showIdentifyMonitorsButton = true;
+    private bool _showColorTemperatureSwitcher;
+
+    /// <summary>
+    /// Gets a value indicating whether to show the profile switcher button.
+    /// Combines settings value with HasProfiles check.
+    /// </summary>
+    public bool ShowProfileSwitcherButton => _showProfileSwitcher && HasProfiles;
+
+    /// <summary>
+    /// Gets or sets a value indicating whether to show the profile switcher (from settings).
+    /// </summary>
+    public bool ShowProfileSwitcher
+    {
+        get => _showProfileSwitcher;
+        set
+        {
+            if (_showProfileSwitcher != value)
+            {
+                _showProfileSwitcher = value;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(ShowProfileSwitcherButton));
+            }
+        }
+    }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether to show the identify monitors button.
+    /// </summary>
+    public bool ShowIdentifyMonitorsButton
+    {
+        get => _showIdentifyMonitorsButton;
+        set
+        {
+            if (_showIdentifyMonitorsButton != value)
+            {
+                _showIdentifyMonitorsButton = value;
+                OnPropertyChanged();
+            }
+        }
+    }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether to show the color temperature switcher.
+    /// </summary>
+    public bool ShowColorTemperatureSwitcher
+    {
+        get => _showColorTemperatureSwitcher;
+        set
+        {
+            if (_showColorTemperatureSwitcher != value)
+            {
+                _showColorTemperatureSwitcher = value;
+                OnPropertyChanged();
+            }
+        }
+    }
 
     public bool IsScanning
     {
@@ -322,10 +385,29 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
             }
 
             OnPropertyChanged(nameof(HasProfiles));
+            OnPropertyChanged(nameof(ShowProfileSwitcherButton));
         }
         catch (Exception ex)
         {
             Logger.LogError($"[Profile] Failed to load profiles: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// Load UI display settings from settings file
+    /// </summary>
+    private void LoadUIDisplaySettings()
+    {
+        try
+        {
+            var settings = _settingsUtils.GetSettingsOrDefault<PowerDisplaySettings>(PowerDisplaySettings.ModuleName);
+            ShowProfileSwitcher = settings.Properties.ShowProfileSwitcher;
+            ShowIdentifyMonitorsButton = settings.Properties.ShowIdentifyMonitorsButton;
+            ShowColorTemperatureSwitcher = settings.Properties.ShowColorTemperatureSwitcher;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"[Settings] Failed to load UI display settings: {ex.Message}");
         }
     }
 

@@ -27,12 +27,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
             [JsonPropertyName("value")]
             public string Value { get; set; }
-
-            [JsonPropertyName("monitor_id")]
-            public string MonitorId { get; set; }
-
-            [JsonPropertyName("color_temperature")]
-            public int ColorTemperature { get; set; }
         }
     }
 }

@@ -542,6 +542,44 @@ namespace PowerDisplay
             listView.SelectedItem = null;
         }
 
+        /// <summary>
+        /// Color temperature selection changed handler - applies the selected color temperature preset
+        /// </summary>
+        private async void ColorTemperatureListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (sender is not ListView listView)
+            {
+                return;
+            }
+
+            var selectedItem = listView.SelectedItem as ColorTemperatureItem;
+            if (selectedItem == null)
+            {
+                return;
+            }
+
+            Logger.LogInfo($"[UI] ColorTemperatureListView_SelectionChanged: Selected {selectedItem.DisplayName} (0x{selectedItem.VcpValue:X2}) for monitor {selectedItem.MonitorId}");
+
+            // Find the monitor by ID
+            MonitorViewModel? monitorVm = null;
+            if (!string.IsNullOrEmpty(selectedItem.MonitorId) && _viewModel != null)
+            {
+                monitorVm = _viewModel.Monitors.FirstOrDefault(m => m.Id == selectedItem.MonitorId);
+            }
+
+            if (monitorVm == null)
+            {
+                Logger.LogWarning("[UI] ColorTemperatureListView_SelectionChanged: Could not find MonitorViewModel");
+                return;
+            }
+
+            // Apply the color temperature
+            await monitorVm.SetColorTemperatureAsync(selectedItem.VcpValue);
+
+            // Clear selection to allow reselecting the same preset
+            listView.SelectedItem = null;
+        }
+
         public void Dispose()
         {
             _hotkeyService?.Dispose();

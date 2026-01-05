@@ -81,4 +81,10 @@
   <data name="ProfilesHeader.Text" xml:space="preserve">
     <value>Profiles</value>
   </data>
+  <data name="ColorTemperatureTooltip.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Color temperature</value>
+  </data>
+  <data name="ColorTemperatureHeader.Text" xml:space="preserve">
+    <value>Color temperature</value>
+  </data>
 </root>

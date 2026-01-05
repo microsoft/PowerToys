@@ -449,6 +449,92 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
     public string ColorTemperaturePresetName => _monitor.ColorTemperaturePresetName;
 
     /// <summary>
+    /// Gets a value indicating whether this monitor supports color temperature via VCP 0x14
+    /// </summary>
+    public bool SupportsColorTemperature => _monitor.SupportsColorTemperature;
+
+    private List<ColorTemperatureItem>? _availableColorPresets;
+    private bool _showColorTemperature;
+
+    /// <summary>
+    /// Gets or sets a value indicating whether to show color temperature switcher (controlled by Settings UI, default false).
+    /// </summary>
+    public bool ShowColorTemperature
+    {
+        get => _showColorTemperature && SupportsColorTemperature;
+        set
+        {
+            if (_showColorTemperature != value)
+            {
+                _showColorTemperature = value;
+                OnPropertyChanged();
+            }
+        }
+    }
+
+    /// <summary>
+    /// Gets available color temperature presets for this monitor
+    /// </summary>
+    public List<ColorTemperatureItem>? AvailableColorPresets
+    {
+        get
+        {
+            if (_availableColorPresets == null && SupportsColorTemperature)
+            {
+                RefreshAvailableColorPresets();
+            }
+
+            return _availableColorPresets;
+        }
+    }
+
+    /// <summary>
+    /// Standard MCCS color temperature presets (VCP 0x14 values) to use as fallback
+    /// when the monitor doesn't report discrete values in its capabilities string.
+    /// </summary>
+    private static readonly int[] StandardColorTemperaturePresets = { 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x08, 0x09, 0x0A, 0x0B };
+
+    /// <summary>
+    /// Refresh the list of available color temperature presets based on monitor capabilities
+    /// </summary>
+    private void RefreshAvailableColorPresets()
+    {
+        if (!SupportsColorTemperature)
+        {
+            _availableColorPresets = null;
+            return;
+        }
+
+        IEnumerable<int> presetValues;
+        var vcpInfo = VcpCapabilitiesInfo;
+
+        // Try to get discrete values from capabilities string
+        if (vcpInfo != null &&
+            vcpInfo.SupportedVcpCodes.TryGetValue(0x14, out var colorTempInfo) &&
+            colorTempInfo.HasDiscreteValues &&
+            colorTempInfo.SupportedValues.Count > 0)
+        {
+            // Use values from capabilities string
+            presetValues = colorTempInfo.SupportedValues;
+        }
+        else
+        {
+            // Fallback to standard MCCS presets when capabilities don't list discrete values
+            presetValues = StandardColorTemperaturePresets;
+        }
+
+        _availableColorPresets = presetValues.Select(value => new ColorTemperatureItem
+        {
+            VcpValue = value,
+            DisplayName = Common.Utils.VcpNames.GetFormattedValueName(0x14, value),
+            IsSelected = value == _monitor.CurrentColorTemperature,
+            MonitorId = _monitor.Id,
+        }).ToList();
+
+        OnPropertyChanged(nameof(AvailableColorPresets));
+    }
+
+    /// <summary>
     /// Gets a value indicating whether this monitor supports input source switching via VCP 0x60
     /// </summary>
     public bool SupportsInputSource => _monitor.SupportsInputSource;

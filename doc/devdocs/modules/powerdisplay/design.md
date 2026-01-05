@@ -26,7 +26,7 @@
 7. [Data Flow and Communication](#data-flow-and-communication)
    - [Monitor Discovery Flow](#monitor-discovery-flow)
 8. [Sequence Diagrams](#sequence-diagrams)
-   - [Sequence: Modifying Monitor Settings in Settings UI](#sequence-modifying-monitor-settings-in-settings-ui)
+   - [Sequence: Modifying Color Temperature in Flyout UI](#sequence-modifying-color-temperature-in-flyout-ui)
    - [Sequence: Creating and Saving a Profile](#sequence-creating-and-saving-a-profile)
    - [Sequence: Applying Profile via LightSwitch Theme Change](#sequence-applying-profile-via-lightswitch-theme-change)
    - [Sequence: UI Slider Adjustment (Brightness)](#sequence-ui-slider-adjustment-brightness)
@@ -147,7 +147,7 @@ flowchart TB
     Runner -->|"Loads DLL"| ModuleInterface
     Runner -->|"Hotkey Events"| ModuleInterface
     SettingsUI <-->|"Named Pipes"| Runner
-    SettingsUI -->|"Custom Actions<br/>(Launch, ApplyColorTemperature,<br/>ApplyProfile)"| ModuleInterface
+    SettingsUI -->|"Custom Actions<br/>(Launch, ApplyProfile)"| ModuleInterface
 
     ModuleInterface <-->|"Windows Events<br/>(Show/Toggle/Terminate)"| PowerDisplayApp
     PowerDisplayApp -->|"RefreshMonitors Event"| SettingsUI
@@ -205,7 +205,6 @@ src/modules/powerdisplay/
 │   │   ├── PowerDisplayProfiles.cs   # Profile collection
 │   │   ├── ProfileMonitorSetting.cs  # Per-monitor profile settings
 │   │   ├── ProfileOperation.cs       # Profile operation for IPC
-│   │   ├── ColorTemperatureOperation.cs  # Color temp operation for IPC
 │   │   ├── ColorPresetItem.cs        # Color preset UI item
 │   │   ├── VcpCapabilities.cs        # Parsed VCP capabilities
 │   │   └── VcpFeatureValue.cs        # VCP feature value (current/min/max)
@@ -255,6 +254,7 @@ src/modules/powerdisplay/
 │   │   └── Events/
 │   │       └── PowerDisplayStartEvent.cs  # Telemetry event
 │   ├── ViewModels/
+│   │   ├── ColorTemperatureItem.cs   # Color temperature dropdown item
 │   │   ├── InputSourceItem.cs        # Input source dropdown item
 │   │   ├── MainViewModel.cs          # Main VM (partial class)
 │   │   ├── MainViewModel.Monitors.cs # Monitor discovery methods
@@ -1015,7 +1015,7 @@ flowchart LR
     subgraph PDApp["PowerDisplay Process"]
         direction TB
         MainVM["MainViewModel"]
-        Events["Event Listeners<br/>Refresh / ColorTemp / Profile"]
+        Events["Event Listeners<br/>Refresh / Profile"]
         Events --> MainVM
     end
 
@@ -1045,10 +1045,9 @@ flowchart LR
 
 | Model | Purpose |
 |-------|---------|
-| `PowerDisplaySettings` | Main settings container with properties and pending operations |
+| `PowerDisplaySettings` | Main settings container with properties |
 | `MonitorInfo` | Per-monitor settings displayed in Settings UI |
 | `ProfileOperation` | Pending profile apply operation |
-| `ColorTemperatureOperation` | Pending color temperature change |
 
 ### Windows Events for IPC
 
@@ -1059,7 +1058,6 @@ Event names use fixed GUID suffixes to ensure uniqueness (defined in `shared_con
 | `TOGGLE_POWER_DISPLAY_EVENT` | Runner → App | Toggle visibility |
 | `TERMINATE_POWER_DISPLAY_EVENT` | Runner → App | Terminate process |
 | `REFRESH_POWER_DISPLAY_MONITORS_EVENT` | Settings → App | Refresh monitor list |
-| `APPLY_COLOR_TEMPERATURE_POWER_DISPLAY_EVENT` | Settings → App | Apply color temp |
 | `APPLY_PROFILE_POWER_DISPLAY_EVENT` | Settings → App | Apply profile |
 | `LightSwitchLightThemeEventName` | LightSwitch → App | Apply light mode profile |
 | `LightSwitchDarkThemeEventName` | LightSwitch → App | Apply dark mode profile |
@@ -1250,63 +1248,64 @@ flowchart LR
 
 ## Sequence Diagrams
 
-### Sequence: Modifying Monitor Settings in Settings UI
+### Sequence: Modifying Color Temperature in Flyout UI
+
+Color temperature adjustment is now handled directly in the PowerDisplay Flyout UI,
+providing a more responsive user experience without requiring IPC round-trips to Settings UI.
 
 ```mermaid
 sequenceDiagram
     participant User
-    participant SettingsPage as PowerDisplayPage
-    participant ViewModel as PowerDisplayViewModel
-    participant SettingsUtils
-    participant Runner
-    participant ModuleInterface as PowerDisplayModule (C++)
-    participant PowerDisplayApp as PowerDisplay.exe
+    participant Flyout as MainWindow (Flyout)
+    participant MonitorVM as MonitorViewModel
     participant MonitorManager
-    participant Controller as IMonitorController
+    participant Controller as DdcCiController
+    participant StateManager as MonitorStateManager
     participant Monitor as Physical Monitor
 
-    User->>SettingsPage: Selects color temperature<br/>from dropdown
-    SettingsPage->>SettingsPage: Show confirmation dialog
-    User->>SettingsPage: Confirms change
+    User->>Flyout: Opens PowerDisplay flyout<br/>(via hotkey or tray icon)
 
-    SettingsPage->>ViewModel: ApplyColorTemperatureToMonitor(monitorId, vcpValue)
+    Note over Flyout: Color temperature switcher visible<br/>(if enabled in Settings)
 
-    Note over ViewModel: Store pending operation
-    ViewModel->>ViewModel: _settings.Properties.PendingColorTemperatureOperation = {...}
-    ViewModel->>SettingsUtils: SaveSettings(settings.json)
-    SettingsUtils-->>ViewModel: Success
+    User->>Flyout: Selects color temperature preset<br/>from dropdown (e.g., 6500K)
 
-    Note over ViewModel: Send IPC message
-    ViewModel->>Runner: SendDefaultIPCMessage(CustomAction: ApplyColorTemperature)
-    Runner->>ModuleInterface: call_custom_action("ApplyColorTemperature")
+    Flyout->>MonitorVM: ColorTemperatureListView_SelectionChanged
+    MonitorVM->>MonitorVM: SetColorTemperatureAsync(vcpValue)
 
-    Note over ModuleInterface: Ensure process running
-    ModuleInterface->>ModuleInterface: is_process_running()
-    alt Process not running
-        ModuleInterface->>PowerDisplayApp: launch_process()
-        ModuleInterface->>ModuleInterface: wait_for_process_ready()
-    end
+    MonitorVM->>MonitorManager: SetColorTemperatureAsync(monitor, vcpValue)
 
-    ModuleInterface->>PowerDisplayApp: SetEvent(ApplyColorTemperatureEvent)
+    MonitorManager->>Controller: SetColorTemperatureAsync(monitor, vcpValue)
+    Controller->>Controller: SetVcpFeatureAsync(VcpCodeColorTemperature)
+    Controller->>Monitor: SetVCPFeature(0x14, vcpValue)
+    Monitor-->>Controller: OK
 
-    Note over PowerDisplayApp: Event listener triggers
-    PowerDisplayApp->>PowerDisplayApp: ApplyColorTemperatureFromSettings()
-    PowerDisplayApp->>SettingsUtils: Read settings.json
-    SettingsUtils-->>PowerDisplayApp: PendingColorTemperatureOperation
+    Controller-->>MonitorManager: MonitorOperationResult.Success
+    MonitorManager-->>MonitorVM: Success
 
-    PowerDisplayApp->>MonitorManager: Find monitor by ID
-    MonitorManager-->>PowerDisplayApp: Monitor found
+    MonitorVM->>StateManager: UpdateMonitorParameter("ColorTemperature", vcpValue)
 
-    PowerDisplayApp->>Controller: SetColorTemperatureAsync(monitor, vcpValue)
-    Controller->>Monitor: SetVCPFeature(0x14, value)
-    Monitor-->>Controller: Success
-    Controller-->>PowerDisplayApp: MonitorOperationResult.Success
+    Note over StateManager: Debounced save (2 seconds)
+    StateManager->>StateManager: Schedule file write
 
-    Note over PowerDisplayApp: Clear pending operation
-    PowerDisplayApp->>SettingsUtils: Update settings.json<br/>(clear pending, update monitor value)
+    Note over StateManager: After 2s idle
+    StateManager->>StateManager: SaveToFile(monitor_state.json)
 
-    Note over SettingsPage: Monitor property change<br/>notification refreshes UI
+    Note over MonitorVM: UI updates to show<br/>selected preset
 ```
+
+**Flyout Display Options:**
+
+The Flyout UI visibility is controlled by settings in Settings UI (`PowerDisplayProperties`):
+
+| Setting | Default | Description |
+|---------|---------|-------------|
+| `ShowProfileSwitcher` | `true` | Show profile switcher (also requires profiles to exist) |
+| `ShowIdentifyMonitorsButton` | `true` | Show "Identify Monitors" button |
+| `ShowColorTemperatureSwitcher` | `false` | Show color temperature switcher per monitor |
+
+When enabling `ShowColorTemperatureSwitcher`, a confirmation dialog warns users about
+potential display issues since color temperature changes can cause unexpected results
+on some monitors.
 
 ---
 

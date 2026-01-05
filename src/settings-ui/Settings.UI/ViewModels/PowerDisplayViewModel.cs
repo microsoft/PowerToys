@@ -141,6 +141,45 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public bool ShowProfileSwitcher
+        {
+            get => _settings.Properties.ShowProfileSwitcher;
+            set
+            {
+                if (SetSettingsProperty(_settings.Properties.ShowProfileSwitcher, value, v => _settings.Properties.ShowProfileSwitcher = v))
+                {
+                    SignalSettingsUpdated();
+                    Logger.LogInfo($"ShowProfileSwitcher changed to {value}");
+                }
+            }
+        }
+
+        public bool ShowIdentifyMonitorsButton
+        {
+            get => _settings.Properties.ShowIdentifyMonitorsButton;
+            set
+            {
+                if (SetSettingsProperty(_settings.Properties.ShowIdentifyMonitorsButton, value, v => _settings.Properties.ShowIdentifyMonitorsButton = v))
+                {
+                    SignalSettingsUpdated();
+                    Logger.LogInfo($"ShowIdentifyMonitorsButton changed to {value}");
+                }
+            }
+        }
+
+        public bool ShowColorTemperatureSwitcher
+        {
+            get => _settings.Properties.ShowColorTemperatureSwitcher;
+            set
+            {
+                if (SetSettingsProperty(_settings.Properties.ShowColorTemperatureSwitcher, value, v => _settings.Properties.ShowColorTemperatureSwitcher = v))
+                {
+                    SignalSettingsUpdated();
+                    Logger.LogInfo($"ShowColorTemperatureSwitcher changed to {value}");
+                }
+            }
+        }
+
         public HotkeySettings ActivationShortcut
         {
             get => _settings.Properties.ActivationShortcut;
@@ -373,42 +412,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         }
 
         /// <summary>
-        /// Trigger PowerDisplay.exe to apply color temperature to a specific monitor
-        /// Called after user confirms color temperature change in Settings UI
-        /// </summary>
-        /// <param name="monitorInternalName">Internal name (ID) of the monitor</param>
-        /// <param name="colorTemperature">Color temperature value to apply</param>
-        public void ApplyColorTemperatureToMonitor(string monitorInternalName, int colorTemperature)
-        {
-            // Set the pending operation in settings
-            _settings.Properties.PendingColorTemperatureOperation = new ColorTemperatureOperation
-            {
-                MonitorId = monitorInternalName,
-                ColorTemperatureVcp = colorTemperature,
-            };
-
-            // Save settings to persist the operation
-            SettingsUtils.SaveSettings(_settings.ToJsonString(), PowerDisplaySettings.ModuleName);
-
-            // Send IPC message to trigger PowerDisplay to process the operation
-            var actionMessage = new PowerDisplayActionMessage
-            {
-                Action = new PowerDisplayActionMessage.ActionData
-                {
-                    PowerDisplay = new PowerDisplayActionMessage.PowerDisplayAction
-                    {
-                        ActionName = "ApplyColorTemperature",
-                        Value = string.Empty,
-                        MonitorId = monitorInternalName,
-                        ColorTemperature = colorTemperature,
-                    },
-                },
-            };
-
-            SendConfigMSG(JsonSerializer.Serialize(actionMessage, SettingsSerializationContext.Default.PowerDisplayActionMessage));
-        }
-
-        /// <summary>
         /// Reload monitor list from settings file (called when PowerDisplay.exe signals monitor changes)
         /// </summary>
         private void ReloadMonitorsFromSettings()
@@ -420,18 +423,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 // Read fresh settings from file
                 var updatedSettings = SettingsUtils.GetSettingsOrDefault<PowerDisplaySettings>(PowerDisplaySettings.ModuleName);
                 var updatedMonitors = updatedSettings.Properties.Monitors;
-
-                // Check for pending color temperature operation to avoid race conditions
-                // If there's a pending operation, we should preserve the local ColorTemperatureVcp value
-                // because the Settings UI just set it and PowerDisplay hasn't processed it yet
-                var pendingColorTempOp = updatedSettings.Properties.PendingColorTemperatureOperation;
-                var pendingColorTempMonitorId = pendingColorTempOp?.MonitorId;
-                var pendingColorTempValue = pendingColorTempOp?.ColorTemperatureVcp ?? 0;
-
-                if (!string.IsNullOrEmpty(pendingColorTempMonitorId))
-                {
-                    Logger.LogInfo($"[ReloadMonitors] Found pending color temp operation for monitor: {pendingColorTempMonitorId}, will preserve local value");
-                }
 
                 Logger.LogInfo($"[ReloadMonitors] Loaded {updatedMonitors.Count} monitors from settings");
 
@@ -456,20 +447,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                         {
                             // Monitor still exists - update its properties in place
                             Logger.LogInfo($"[ReloadMonitors] Updating existing monitor: {existingMonitor.Id}");
-
-                            // Preserve local ColorTemperatureVcp if there's a pending operation for this monitor
-                            // This prevents race condition where PowerDisplay's stale data overwrites user's selection
-                            if (existingMonitor.Id == pendingColorTempMonitorId && pendingColorTempValue > 0)
-                            {
-                                var preservedColorTemp = existingMonitor.ColorTemperatureVcp;
-                                existingMonitor.UpdateFrom(updatedMonitor);
-                                existingMonitor.ColorTemperatureVcp = preservedColorTemp;
-                                Logger.LogInfo($"[ReloadMonitors] Preserved local ColorTemperatureVcp: 0x{preservedColorTemp:X2} for monitor with pending operation");
-                            }
-                            else
-                            {
-                                existingMonitor.UpdateFrom(updatedMonitor);
-                            }
+                            existingMonitor.UpdateFrom(updatedMonitor);
 
                             updatedMonitorsDict.Remove(existingMonitor.Id);
                         }

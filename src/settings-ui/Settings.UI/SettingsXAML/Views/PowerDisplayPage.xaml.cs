@@ -22,9 +22,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
     {
         private PowerDisplayViewModel ViewModel { get; set; }
 
-        // Flag to prevent reentrant SelectionChanged handling during programmatic selection
-        private bool _isRestoringSelection;
-
         public PowerDisplayPage()
         {
             var settingsUtils = SettingsUtils.Default;
@@ -35,6 +32,11 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 ShellPage.SendDefaultIPCMessage);
             DataContext = ViewModel;
             InitializeComponent();
+
+            // Subscribe to Toggled event after page is loaded to avoid triggering
+            // during initial data binding when the toggle value is restored from settings
+            Loaded += (s, e) => ShowColorTemperatureSwitcherToggle.Toggled += ShowColorTemperatureSwitcher_Toggled;
+            Unloaded += (s, e) => ShowColorTemperatureSwitcherToggle.Toggled -= ShowColorTemperatureSwitcher_Toggled;
         }
 
         public void RefreshEnabledState()
@@ -50,108 +52,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 var dataPackage = new DataPackage();
                 dataPackage.SetText(vcpText);
                 Clipboard.SetContent(dataPackage);
-            }
-        }
-
-        private async void ColorTemperatureComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            // Skip if we're programmatically restoring a selection (prevents reentrant handling)
-            if (_isRestoringSelection)
-            {
-                return;
-            }
-
-            // Skip if no new selection
-            if (e.AddedItems.Count == 0)
-            {
-                return;
-            }
-
-            if (sender is not ComboBox comboBox || comboBox.Tag is not MonitorInfo monitor)
-            {
-                return;
-            }
-
-            // Get new selected item
-            if (e.AddedItems[0] is not ColorPresetItem newItem)
-            {
-                return;
-            }
-
-            // Skip if selected value equals current property value (this is a restore operation or no change)
-            if (newItem.VcpValue == monitor.ColorTemperatureVcp)
-            {
-                return;
-            }
-
-            // Get old value: from RemovedItems if available; otherwise from current property
-            int oldValue = (e.RemovedItems.Count > 0 && e.RemovedItems[0] is ColorPresetItem oldItem)
-                ? oldItem.VcpValue
-                : monitor.ColorTemperatureVcp;
-
-            // Show confirmation dialog
-            var resourceLoader = ResourceLoaderInstance.ResourceLoader;
-            var dialog = new ContentDialog
-            {
-                XamlRoot = this.XamlRoot,
-                Title = resourceLoader.GetString("PowerDisplay_ColorTemperature_WarningTitle"),
-                Content = new StackPanel
-                {
-                    Spacing = 12,
-                    Children =
-                    {
-                        new TextBlock
-                        {
-                            Text = resourceLoader.GetString("PowerDisplay_ColorTemperature_WarningHeader"),
-                            FontWeight = Microsoft.UI.Text.FontWeights.Bold,
-                            Foreground = (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources["SystemFillColorCriticalBrush"],
-                            TextWrapping = TextWrapping.Wrap,
-                        },
-                        new TextBlock
-                        {
-                            Text = resourceLoader.GetString("PowerDisplay_ColorTemperature_WarningDescription"),
-                            TextWrapping = TextWrapping.Wrap,
-                        },
-                        new TextBlock
-                        {
-                            Text = resourceLoader.GetString("PowerDisplay_ColorTemperature_WarningList"),
-                            TextWrapping = TextWrapping.Wrap,
-                            Margin = new Thickness(20, 0, 0, 0),
-                        },
-                        new TextBlock
-                        {
-                            Text = resourceLoader.GetString("PowerDisplay_ColorTemperature_WarningConfirm"),
-                            FontWeight = Microsoft.UI.Text.FontWeights.SemiBold,
-                            TextWrapping = TextWrapping.Wrap,
-                        },
-                    },
-                },
-                PrimaryButtonText = resourceLoader.GetString("PowerDisplay_ColorTemperature_PrimaryButton"),
-                CloseButtonText = resourceLoader.GetString("PowerDisplay_Dialog_Cancel"),
-                DefaultButton = ContentDialogButton.Close,
-            };
-
-            var result = await dialog.ShowAsync();
-
-            if (result == ContentDialogResult.Primary)
-            {
-                // User confirmed: update property and apply to hardware
-                monitor.ColorTemperatureVcp = newItem.VcpValue;
-                ViewModel.ApplyColorTemperatureToMonitor(monitor.Id, newItem.VcpValue);
-            }
-            else
-            {
-                // User cancelled: revert ComboBox to previous selection (property unchanged)
-                // Use flag to prevent reentrant event handling
-                _isRestoringSelection = true;
-                try
-                {
-                    comboBox.SelectedValue = oldValue;
-                }
-                finally
-                {
-                    _isRestoringSelection = false;
-                }
             }
         }
 
@@ -235,6 +135,87 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             var resourceLoader = ResourceLoaderInstance.ResourceLoader;
             var baseName = resourceLoader.GetString("PowerDisplay_Profile_DefaultBaseName");
             return ProfileHelper.GenerateUniqueProfileName(existingNames, baseName);
+        }
+
+        // Flag to prevent reentrant handling during programmatic toggle
+        private bool _isRestoringColorTempToggle;
+
+        private async void ShowColorTemperatureSwitcher_Toggled(object sender, RoutedEventArgs e)
+        {
+            // Skip if we're programmatically restoring the toggle state
+            if (_isRestoringColorTempToggle)
+            {
+                return;
+            }
+
+            if (sender is not ToggleSwitch toggleSwitch)
+            {
+                return;
+            }
+
+            // Only show warning when enabling (not when disabling)
+            if (!toggleSwitch.IsOn)
+            {
+                return;
+            }
+
+            // Show confirmation dialog with color temperature warning
+            var resourceLoader = ResourceLoaderInstance.ResourceLoader;
+            var dialog = new ContentDialog
+            {
+                XamlRoot = this.XamlRoot,
+                Title = resourceLoader.GetString("PowerDisplay_ColorTemperature_WarningTitle"),
+                Content = new StackPanel
+                {
+                    Spacing = 12,
+                    Children =
+                    {
+                        new TextBlock
+                        {
+                            Text = resourceLoader.GetString("PowerDisplay_ColorTemperature_WarningHeader"),
+                            FontWeight = Microsoft.UI.Text.FontWeights.Bold,
+                            Foreground = (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources["SystemFillColorCriticalBrush"],
+                            TextWrapping = TextWrapping.Wrap,
+                        },
+                        new TextBlock
+                        {
+                            Text = resourceLoader.GetString("PowerDisplay_ColorTemperature_WarningDescription"),
+                            TextWrapping = TextWrapping.Wrap,
+                        },
+                        new TextBlock
+                        {
+                            Text = resourceLoader.GetString("PowerDisplay_ColorTemperature_WarningList"),
+                            TextWrapping = TextWrapping.Wrap,
+                            Margin = new Thickness(20, 0, 0, 0),
+                        },
+                        new TextBlock
+                        {
+                            Text = resourceLoader.GetString("PowerDisplay_ColorTemperatureSwitcher_WarningConfirm"),
+                            FontWeight = Microsoft.UI.Text.FontWeights.SemiBold,
+                            TextWrapping = TextWrapping.Wrap,
+                        },
+                    },
+                },
+                PrimaryButtonText = resourceLoader.GetString("PowerDisplay_ColorTemperatureSwitcher_EnableButton"),
+                CloseButtonText = resourceLoader.GetString("PowerDisplay_Dialog_Cancel"),
+                DefaultButton = ContentDialogButton.Close,
+            };
+
+            var result = await dialog.ShowAsync();
+
+            if (result != ContentDialogResult.Primary)
+            {
+                // User cancelled: revert toggle to off
+                _isRestoringColorTempToggle = true;
+                try
+                {
+                    toggleSwitch.IsOn = false;
+                }
+                finally
+                {
+                    _isRestoringColorTempToggle = false;
+                }
+            }
         }
     }
 }
