@@ -12,6 +12,8 @@ using Microsoft.CmdPal.Ext.ClipboardHistory.Helpers;
 using Microsoft.CmdPal.Ext.ClipboardHistory.Helpers.Analyzers;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
+using Windows.ApplicationModel.DataTransfer;
+using WinRT;
 
 namespace Microsoft.CmdPal.Ext.ClipboardHistory.Models;
 
@@ -61,6 +63,8 @@ internal sealed partial class ClipboardListItem : ListItem
             IsCritical = true,
             RequestedShortcut = KeyChords.DeleteEntry,
         };
+
+        DataPackageView = _item.Item.Content;
 
         if (item.IsImage)
         {

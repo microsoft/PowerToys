@@ -27,7 +27,7 @@ namespace Microsoft.PowerToys.Settings.UI.Flyout
         public LaunchPage()
         {
             this.InitializeComponent();
-            var settingsUtils = new SettingsUtils();
+            var settingsUtils = SettingsUtils.Default;
             ViewModel = new LauncherViewModel(SettingsRepository<GeneralSettings>.GetInstance(settingsUtils), Views.ShellPage.SendDefaultIPCMessage);
             DataContext = ViewModel;
         }
@@ -51,7 +51,7 @@ namespace Microsoft.PowerToys.Settings.UI.Flyout
                     break;
                 case ModuleType.EnvironmentVariables: // Launch Environment Variables
                     {
-                        bool launchAdmin = SettingsRepository<EnvironmentVariablesSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.LaunchAdministrator;
+                        bool launchAdmin = SettingsRepository<EnvironmentVariablesSettings>.GetInstance(SettingsUtils.Default).SettingsConfig.Properties.LaunchAdministrator;
                         string eventName = !App.IsElevated && launchAdmin
                             ? Constants.ShowEnvironmentVariablesAdminSharedEvent()
                             : Constants.ShowEnvironmentVariablesSharedEvent();
@@ -74,7 +74,7 @@ namespace Microsoft.PowerToys.Settings.UI.Flyout
 
                 case ModuleType.Hosts: // Launch Hosts
                     {
-                        bool launchAdmin = SettingsRepository<HostsSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.LaunchAdministrator;
+                        bool launchAdmin = SettingsRepository<HostsSettings>.GetInstance(SettingsUtils.Default).SettingsConfig.Properties.LaunchAdministrator;
                         string eventName = !App.IsElevated && launchAdmin
                             ? Constants.ShowHostsAdminSharedEvent()
                             : Constants.ShowHostsSharedEvent();

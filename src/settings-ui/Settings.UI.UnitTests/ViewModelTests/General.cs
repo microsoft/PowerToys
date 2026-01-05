@@ -20,7 +20,7 @@ namespace ViewModelTests
     {
         public const string GeneralSettingsFileName = "Test\\GeneralSettings";
 
-        private Mock<ISettingsUtils> mockGeneralSettingsUtils;
+        private Mock<SettingsUtils> mockGeneralSettingsUtils;
 
         [TestInitialize]
         public void SetUpStubSettingUtils()
@@ -36,7 +36,7 @@ namespace ViewModelTests
         [DataRow("v0.22.0")]
         public void OriginalFilesModificationTest(string version)
         {
-            var settingPathMock = new Mock<ISettingsPath>();
+            var settingPathMock = new Mock<SettingPath>();
             var fileMock = BackCompatTestProperties.GetGeneralSettingsIOProvider(version);
 
             var mockGeneralSettingsUtils = new SettingsUtils(fileMock.Object, settingPathMock.Object);

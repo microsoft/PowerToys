@@ -330,8 +330,15 @@ HHH
 riday
 YYY
 
+# Unicode
+precomposed
+
 # GitHub issue/PR commands
 azp
 feedbackhub
 needinfo
 reportbug
+
+#ffmpeg
+crf
+nostdin

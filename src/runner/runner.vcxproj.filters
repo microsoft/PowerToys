@@ -81,6 +81,9 @@
     <ClInclude Include="ActionRunnerUtils.h">
       <Filter>Utils</Filter>
     </ClInclude>
+    <ClInclude Include="ai_detection.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
     <ClInclude Include="resource.h">
       <Filter>Utils</Filter>
     </ClInclude>
@@ -117,7 +120,6 @@
     <CopyFileToFolders Include="svgs\PowerToysWhite.ico" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
     <None Include="runner.base.rc" />
   </ItemGroup>
   <ItemGroup>

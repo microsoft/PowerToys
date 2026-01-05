@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using Microsoft.CmdPal.UI.ViewModels;
+using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml.Controls;
 using Windows.ApplicationModel;
@@ -20,7 +21,9 @@ public sealed partial class GeneralPage : Page
         this.InitializeComponent();
 
         var settings = App.Current.Services.GetService<SettingsModel>()!;
-        viewModel = new SettingsViewModel(settings, App.Current.Services, _mainTaskScheduler);
+        var topLevelCommandManager = App.Current.Services.GetService<TopLevelCommandManager>()!;
+        var themeService = App.Current.Services.GetService<IThemeService>()!;
+        viewModel = new SettingsViewModel(settings, topLevelCommandManager, _mainTaskScheduler, themeService);
     }
 
     public string ApplicationVersion
