@@ -39,13 +39,13 @@ internal sealed class QuickAccessCoordinator : IQuickAccessCoordinator, IDisposa
 
     public void OpenSettings()
     {
-        SettingsDeepLink.OpenSettings(SettingsDeepLink.SettingsWindow.Dashboard, true);
+        Common.UI.SettingsDeepLink.OpenSettings(Common.UI.SettingsDeepLink.SettingsWindow.Dashboard, true);
         _window.RequestHide();
     }
 
     public void OpenGeneralSettingsForUpdates()
     {
-        SettingsDeepLink.OpenSettings(SettingsDeepLink.SettingsWindow.Overview, true);
+        Common.UI.SettingsDeepLink.OpenSettings(Common.UI.SettingsDeepLink.SettingsWindow.Overview, true);
         _window.RequestHide();
     }
 
