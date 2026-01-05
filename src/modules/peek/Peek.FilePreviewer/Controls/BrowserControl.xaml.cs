@@ -222,10 +222,10 @@ namespace Peek.FilePreviewer.Controls
 
         private void CoreWebView2_WebResourceRequested(CoreWebView2 sender, CoreWebView2WebResourceRequestedEventArgs args)
         {
-            if (args.Request.Uri.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
-                args.Request.Uri.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+            // Show local file we've saved with the markdown contents. Block all else.
+            if (Source != null && new Uri(args.Request.Uri) != Source)
             {
-                args.Response = sender.Environment.CreateWebResourceResponse(null, 403, "Forbidden", string.Empty);
+                args.Response = sender.Environment.CreateWebResourceResponse(null, 403, "Forbidden", null);
             }
         }
 
