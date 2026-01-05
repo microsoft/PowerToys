@@ -21,11 +21,6 @@ namespace PowerDisplay.Configuration
             public const int WindowRightMargin = 12;
 
             /// <summary>
-            /// Debounce delay for slider controls in milliseconds
-            /// </summary>
-            public const int SliderDebounceDelayMs = 300;
-
-            /// <summary>
             /// Icon glyph for internal/laptop displays (WMI)
             /// </summary>
             public const string InternalMonitorGlyph = "\uE7F8";

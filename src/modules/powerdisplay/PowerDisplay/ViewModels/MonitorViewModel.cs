@@ -14,7 +14,6 @@ using ManagedCommon;
 using Microsoft.UI.Xaml;
 
 using PowerDisplay.Common.Models;
-using PowerDisplay.Common.Utils;
 using PowerDisplay.Configuration;
 using PowerDisplay.Helpers;
 using Monitor = PowerDisplay.Common.Models.Monitor;
@@ -29,11 +28,6 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
     private readonly Monitor _monitor;
     private readonly MonitorManager _monitorManager;
     private readonly MainViewModel? _mainViewModel;
-
-    // Simple debouncers for each property (KISS principle - simpler than complex queue)
-    private readonly SimpleDebouncer _brightnessDebouncer = new(AppConstants.UI.SliderDebounceDelayMs);
-    private readonly SimpleDebouncer _contrastDebouncer = new(AppConstants.UI.SliderDebounceDelayMs);
-    private readonly SimpleDebouncer _volumeDebouncer = new(AppConstants.UI.SliderDebounceDelayMs);
 
     private int _brightness;
     private int _contrast;
@@ -77,39 +71,28 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
     }
 
     /// <summary>
-    /// Unified method to apply brightness with hardware update and state persistence.
-    /// Can be called from Flyout UI (with debounce) or Settings UI/IPC (immediate).
+    /// Apply brightness with hardware update and state persistence.
     /// </summary>
     /// <param name="brightness">Brightness value (0-100)</param>
-    /// <param name="immediate">If true, applies immediately; if false, debounces for smooth slider</param>
-    public async Task SetBrightnessAsync(int brightness, bool immediate = false)
+    public async Task SetBrightnessAsync(int brightness)
     {
         brightness = Math.Clamp(brightness, MinBrightness, MaxBrightness);
 
-        // Update UI state immediately for smooth response
+        // Update UI state immediately
         if (_brightness != brightness)
         {
             _brightness = brightness;
             OnPropertyChanged(nameof(Brightness));
         }
 
-        // Apply to hardware (with or without debounce)
-        if (immediate)
-        {
-            await ApplyPropertyToHardwareAsync(nameof(Brightness), brightness, _monitorManager.SetBrightnessAsync);
-        }
-        else
-        {
-            // Debounce for slider smoothness
-            var capturedValue = brightness;
-            _brightnessDebouncer.Debounce(async () => await ApplyPropertyToHardwareAsync(nameof(Brightness), capturedValue, _monitorManager.SetBrightnessAsync));
-        }
+        // Apply to hardware
+        await ApplyPropertyToHardwareAsync(nameof(Brightness), brightness, _monitorManager.SetBrightnessAsync);
     }
 
     /// <summary>
-    /// Unified method to apply contrast with hardware update and state persistence.
+    /// Apply contrast with hardware update and state persistence.
     /// </summary>
-    public async Task SetContrastAsync(int contrast, bool immediate = false)
+    public async Task SetContrastAsync(int contrast)
     {
         contrast = Math.Clamp(contrast, MinContrast, MaxContrast);
 
@@ -120,21 +103,13 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
             OnPropertyChanged(nameof(ContrastPercent));
         }
 
-        if (immediate)
-        {
-            await ApplyPropertyToHardwareAsync(nameof(Contrast), contrast, _monitorManager.SetContrastAsync);
-        }
-        else
-        {
-            var capturedValue = contrast;
-            _contrastDebouncer.Debounce(async () => await ApplyPropertyToHardwareAsync(nameof(Contrast), capturedValue, _monitorManager.SetContrastAsync));
-        }
+        await ApplyPropertyToHardwareAsync(nameof(Contrast), contrast, _monitorManager.SetContrastAsync);
     }
 
     /// <summary>
-    /// Unified method to apply volume with hardware update and state persistence.
+    /// Apply volume with hardware update and state persistence.
     /// </summary>
-    public async Task SetVolumeAsync(int volume, bool immediate = false)
+    public async Task SetVolumeAsync(int volume)
     {
         volume = Math.Clamp(volume, MinVolume, MaxVolume);
 
@@ -144,15 +119,7 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
             OnPropertyChanged(nameof(Volume));
         }
 
-        if (immediate)
-        {
-            await ApplyPropertyToHardwareAsync(nameof(Volume), volume, _monitorManager.SetVolumeAsync);
-        }
-        else
-        {
-            var capturedValue = volume;
-            _volumeDebouncer.Debounce(async () => await ApplyPropertyToHardwareAsync(nameof(Volume), capturedValue, _monitorManager.SetVolumeAsync));
-        }
+        await ApplyPropertyToHardwareAsync(nameof(Volume), volume, _monitorManager.SetVolumeAsync);
     }
 
     /// <summary>
@@ -430,8 +397,7 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
         {
             if (_brightness != value)
             {
-                // Use unified method with debouncing for smooth slider
-                _ = SetBrightnessAsync(value, immediate: false);
+                _ = SetBrightnessAsync(value);
             }
         }
     }
@@ -635,8 +601,7 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
         {
             if (_contrast != value)
             {
-                // Use unified method with debouncing
-                _ = SetContrastAsync(value, immediate: false);
+                _ = SetContrastAsync(value);
             }
         }
     }
@@ -648,8 +613,7 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
         {
             if (_volume != value)
             {
-                // Use unified method with debouncing
-                _ = SetVolumeAsync(value, immediate: false);
+                _ = SetVolumeAsync(value);
             }
         }
     }
@@ -769,10 +733,6 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
         // Unsubscribe from underlying Monitor events
         _monitor.PropertyChanged -= OnMonitorPropertyChanged;
 
-        // Dispose all debouncers
-        _brightnessDebouncer?.Dispose();
-        _contrastDebouncer?.Dispose();
-        _volumeDebouncer?.Dispose();
         GC.SuppressFinalize(this);
     }
 }
