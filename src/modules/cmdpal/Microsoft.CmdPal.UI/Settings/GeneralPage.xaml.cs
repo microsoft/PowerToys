@@ -49,14 +49,14 @@ public sealed partial class GeneralPage : Page
         version = string.Empty;
         try
         {
-            if (Package.Current is null)
-            {
-                return false;
-            }
-
+            // Package.Current throws InvalidOperationException if the app is not packaged
             var v = Package.Current.Id.Version;
             version = $"{v.Major}.{v.Minor}.{v.Build}.{v.Revision}";
             return true;
+        }
+        catch (InvalidOperationException)
+        {
+            return false;
         }
         catch (Exception ex)
         {
