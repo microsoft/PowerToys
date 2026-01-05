@@ -6,6 +6,7 @@ using Awake.ModuleServices;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using PowerToysExtension.Commands;
+using PowerToysExtension.Properties;
 
 namespace PowerToysExtension;
 
@@ -14,32 +15,32 @@ internal sealed partial class PowerToysExtensionPage : ListPage
     public PowerToysExtensionPage()
     {
         Icon = Helpers.PowerToysResourcesHelper.IconFromSettingsIcon("PowerToys.png");
-        Title = "PowerToys";
-        Name = "PowerToys commands";
+        Title = Resources.PowerToys_DisplayName;
+        Name = Resources.PowerToysExtension_CommandsName;
     }
 
     public override IListItem[] GetItems()
     {
         return [
-            new ListItem(new LaunchModuleCommand("PowerToys", executableName: "PowerToys.exe", displayName: "Open PowerToys"))
+            new ListItem(new LaunchModuleCommand("PowerToys", executableName: "PowerToys.exe", displayName: Resources.PowerToysExtension_OpenPowerToys_Title))
             {
-                Title = "Open PowerToys",
-                Subtitle = "Launch the PowerToys shell",
+                Title = Resources.PowerToysExtension_OpenPowerToys_Title,
+                Subtitle = Resources.PowerToysExtension_OpenPowerToys_Subtitle,
             },
             new ListItem(new OpenPowerToysSettingsCommand("PowerToys", "General"))
             {
-                Title = "Open PowerToys settings",
-                Subtitle = "Open the main PowerToys settings window",
+                Title = Resources.PowerToysExtension_OpenSettings_Title,
+                Subtitle = Resources.PowerToysExtension_OpenSettings_Subtitle,
             },
             new ListItem(new OpenPowerToysSettingsCommand("Workspaces", "Workspaces"))
             {
-                Title = "Open Workspaces settings",
-                Subtitle = "Jump directly to Workspaces settings",
+                Title = Resources.PowerToysExtension_OpenWorkspacesSettings_Title,
+                Subtitle = Resources.PowerToysExtension_OpenWorkspacesSettings_Subtitle,
             },
             new ListItem(new OpenWorkspaceEditorCommand())
             {
-                Title = "Open Workspaces editor",
-                Subtitle = "Launch the Workspaces editor",
+                Title = Resources.PowerToysExtension_OpenWorkspacesEditor_Title,
+                Subtitle = Resources.PowerToysExtension_OpenWorkspacesEditor_Subtitle,
             },
         ];
     }

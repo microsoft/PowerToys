@@ -5,6 +5,7 @@
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using PowerToysExtension.Helpers;
+using PowerToysExtension.Properties;
 
 namespace PowerToysExtension.Pages;
 
@@ -15,13 +16,13 @@ internal sealed partial class PowerToysListPage : ListPage
     public PowerToysListPage()
     {
         Icon = PowerToysResourcesHelper.IconFromSettingsIcon("PowerToys.png");
-        Name = Title = "PowerToys";
+        Name = Title = Resources.PowerToys_DisplayName;
         Id = "com.microsoft.cmdpal.powertoys";
         SettingsChangeNotifier.SettingsChanged += OnSettingsChanged;
         _empty = new CommandItem()
         {
             Icon = PowerToysResourcesHelper.IconFromSettingsIcon("PowerToys.png"),
-            Title = "No matching module found",
+            Title = Resources.PowerToys_NoMatchingModule,
             Subtitle = SearchText,
         };
         EmptyContent = _empty;

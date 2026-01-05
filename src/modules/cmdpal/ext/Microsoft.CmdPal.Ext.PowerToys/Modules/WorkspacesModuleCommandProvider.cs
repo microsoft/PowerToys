@@ -7,6 +7,7 @@ using Common.UI;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using PowerToysExtension.Commands;
 using PowerToysExtension.Helpers;
+using PowerToysExtension.Properties;
 using Workspaces.ModuleServices;
 using WorkspacesCsharpLibrary.Data;
 
@@ -25,7 +26,7 @@ internal sealed class WorkspacesModuleCommandProvider : ModuleCommandProvider
         items.Add(new ListItem(new OpenInSettingsCommand(module, title))
         {
             Title = title,
-            Subtitle = "Open Workspaces settings",
+            Subtitle = Resources.Workspaces_Settings_Subtitle,
             Icon = moduleIcon,
         });
 
@@ -37,8 +38,8 @@ internal sealed class WorkspacesModuleCommandProvider : ModuleCommandProvider
         // Settings entry plus common actions.
         items.Add(new ListItem(new OpenWorkspaceEditorCommand())
         {
-            Title = "Workspaces: Open editor",
-            Subtitle = "Create or edit workspaces",
+            Title = Resources.Workspaces_OpenEditor_Title,
+            Subtitle = Resources.Workspaces_OpenEditor_Subtitle,
             Icon = icon,
         });
 
