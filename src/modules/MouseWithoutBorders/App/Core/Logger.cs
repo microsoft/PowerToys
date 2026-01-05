@@ -31,15 +31,26 @@ namespace MouseWithoutBorders.Core;
 
 internal static class Logger
 {
-    internal static readonly string[] AllLogs = new string[MAX_LOG];
-    private static readonly Lock AllLogsLock = new();
-    internal static readonly ConcurrentDictionary<string, int> LogCounter = new();
+    // keep a count of unique lines of text that get logged
+    private static readonly ConcurrentDictionary<string, int> LogCounter = new();
+
+    // implements a simple ring buffer to store recent log entries in memory
     private const int MAX_LOG = 10000;
+    private const int MaxLogExceptionPerHour = 1000;
+    private static readonly string[] AllLogs = new string[MAX_LOG];
+    private static readonly Lock AllLogsLock = new();
     private static int allLogsIndex;
 
-    private const int MaxLogExceptionPerHour = 1000;
+    // used for throttling the number of exceptions that get logged
+    // so that high-volume exceptions don't flood the logs
     private static int lastHour;
     private static int exceptionCount;
+
+    // track some application statistics
+    private static PackageMonitor lastPackageSent;
+    private static PackageMonitor lastPackageReceived;
+
+    private static List<ProcessThread> myThreads;
 
     internal static void TelemetryLogTrace(string log, SeverityLevel severityLevel, bool flush = false)
     {
@@ -108,9 +119,6 @@ internal static class Logger
         Logger.Log(string.Format(CultureInfo.InvariantCulture, format, args));
     }
 
-    private static PackageMonitor lastPackageSent;
-    private static PackageMonitor lastPackageReceived;
-
     [Conditional("DEBUG")]
     internal static void LogAll()
     {
@@ -169,7 +177,6 @@ internal static class Logger
         }
     }
 
-    private static List<ProcessThread> myThreads;
 
     internal static void DumpObjects(int level)
     {
