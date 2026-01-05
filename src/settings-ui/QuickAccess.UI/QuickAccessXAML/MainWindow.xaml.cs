@@ -3,12 +3,10 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.IO;
-using System.IO.MemoryMappedFiles;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.PowerToys.QuickAccess.Flyout;
+using ManagedCommon;
 using Microsoft.PowerToys.QuickAccess.Services;
 using Microsoft.PowerToys.QuickAccess.ViewModels;
 using Microsoft.UI.Dispatching;
@@ -236,7 +234,7 @@ public sealed partial class MainWindow : WindowEx, IDisposable
             }
 
             SetWindowPosNative(_hwnd, HwndTopmost, targetX, targetY, 0, 0, flags);
-            BringToForeground(_hwnd);
+            WindowHelpers.BringToForeground(_hwnd);
         }
 
         _hasSeenInteractiveActivation = true;
@@ -436,38 +434,6 @@ public sealed partial class MainWindow : WindowEx, IDisposable
 
     [DllImport("user32.dll", EntryPoint = "GetWindowRect", SetLastError = true)]
     private static extern bool GetWindowRectNative(IntPtr hWnd, out Rect rect);
-
-    private static void BringToForeground(IntPtr hwnd)
-    {
-        if (hwnd == IntPtr.Zero)
-        {
-            return;
-        }
-
-        SetForegroundWindowNative(hwnd);
-
-        var foreground = GetForegroundWindowNative();
-        if (foreground == hwnd)
-        {
-            return;
-        }
-
-        var windowThread = GetWindowThreadProcessIdNative(hwnd, IntPtr.Zero);
-        var foregroundThread = foreground != IntPtr.Zero ? GetWindowThreadProcessIdNative(foreground, IntPtr.Zero) : 0;
-
-        if (windowThread != 0 && foregroundThread != 0 && windowThread != foregroundThread)
-        {
-            if (AttachThreadInputNative(windowThread, foregroundThread, true))
-            {
-                SetForegroundWindowNative(hwnd);
-                AttachThreadInputNative(windowThread, foregroundThread, false);
-            }
-        }
-        else
-        {
-            SetForegroundWindowNative(hwnd);
-        }
-    }
 
     private void EnsureGlobalMouseHook()
     {
