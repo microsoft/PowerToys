@@ -62,7 +62,7 @@ internal static class Helper
             {
                 Process p = Process.GetCurrentProcess();
                 string procInfo = $"{p.PrivateMemorySize64 / 1024 / 1024}MB, {p.TotalProcessorTime}, {Environment.ProcessorCount}.";
-                string threadStacks = $"{procInfo} {Thread.DumpThreadsStack()}";
+                string threadStacks = $"{procInfo}\r\n{Thread.DumpThreadsStack()}\r\n";
                 Logger.TelemetryLogTrace(threadStacks, SeverityLevel.Error);
                 break;
             }

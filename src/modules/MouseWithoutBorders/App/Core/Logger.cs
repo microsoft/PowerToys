@@ -171,7 +171,25 @@ internal static class Logger
         int l = Setting.Values.DumpObjectsLevel;
         if (l is > 0 and < 10)
         {
-            Logger.DumpObjects(l);
+            try
+            {
+                string logFile = Path.Combine(Common.RunWithNoAdminRight ? Path.GetTempPath() : Path.GetDirectoryName(Application.ExecutablePath), "MagicMouse.log");
+                var log = Logger.DumpObjects(l);
+                File.WriteAllText(logFile, log);
+                if (Common.RunOnLogonDesktop || Common.RunOnScrSaverDesktop)
+                {
+                    _ = MessageBox.Show("Dump file created: " + logFile, Application.ProductName);
+                }
+                else
+                {
+                    Common.ShowToolTip("Dump file created: " + logFile + " and placed in the Clipboard.", 10000);
+                    Clipboard.SetText(logFile);
+                }
+            }
+            catch (Exception e)
+            {
+                _ = MessageBox.Show(e.Message + "\r\n" + e.StackTrace, Application.ProductName);
+            }
         }
     }
 
@@ -185,58 +203,31 @@ internal static class Logger
         _ = Logger.PrivateDump(sb, new Common(), "[Other Logs]\r\n===============\r\n", 0, level, false);
     }
 
-    private static void DumpObjects(int level)
+    private static string DumpObjects(int level)
     {
-        try
+        StringBuilder sb = new(1000000);
+
+        Logger.DumpProgramLogs(sb, level);
+        Logger.DumpOtherLogs(sb, level);
+        Logger.DumpStaticTypes(sb, level);
+
+        string log =
+            $"{Application.ProductName} {Application.ProductVersion}\r\n" +
+            $"Private Mem: {Process.GetCurrentProcess().PrivateMemorySize64 / 1024}KB\r\n" +
+            $"\r\n" +
+            $"{sb}\r\n";
+
+        // obfuscate the current encryption key
+        if (!string.IsNullOrEmpty(Encryption.myKey))
         {
-            string logFile = Path.Combine(Common.RunWithNoAdminRight ? Path.GetTempPath() : Path.GetDirectoryName(Application.ExecutablePath), "MagicMouse.log");
-
-            StringBuilder sb = new(1000000);
-            string log;
-
-            myThreads = new List<ProcessThread>();
-
-            foreach (ProcessThread t in Process.GetCurrentProcess().Threads)
-            {
-                myThreads.Add(t);
-            }
-
-            Logger.DumpProgramLogs(sb, level);
-            Logger.DumpOtherLogs(sb, level);
-            Logger.DumpStaticTypes(sb, level);
-
-            log = string.Format(
-                CultureInfo.CurrentCulture,
-                "{0} {1}\r\n{2}\r\n\r\n{3}",
-                Application.ProductName,
-                Application.ProductVersion,
-                "Private Mem: " + (Process.GetCurrentProcess().PrivateMemorySize64 / 1024).ToString(CultureInfo.CurrentCulture) + "KB",
-                sb.ToString());
-
-            if (!string.IsNullOrEmpty(Encryption.myKey))
-            {
-                log = log.Replace(Encryption.MyKey, Encryption.GetDebugInfo(Encryption.MyKey));
-            }
-
-            log += Thread.DumpThreadsStack();
-            log += $"\r\nCurrent process session: {Process.GetCurrentProcess().SessionId}, active console session: {NativeMethods.WTSGetActiveConsoleSessionId()}.";
-
-            File.WriteAllText(logFile, log);
-
-            if (Common.RunOnLogonDesktop || Common.RunOnScrSaverDesktop)
-            {
-                _ = MessageBox.Show("Dump file created: " + logFile, Application.ProductName);
-            }
-            else
-            {
-                Common.ShowToolTip("Dump file created: " + logFile + " and placed in the Clipboard.", 10000);
-                Clipboard.SetText(logFile);
-            }
+            log = log.Replace(Encryption.MyKey, Encryption.GetDebugInfo(Encryption.MyKey));
         }
-        catch (Exception e)
-        {
-            _ = MessageBox.Show(e.Message + "\r\n" + e.StackTrace, Application.ProductName);
-        }
+
+        log += Thread.DumpThreadsStack();
+        log += "\r\n";
+        log += $"Current process session: {Process.GetCurrentProcess().SessionId}, active console session: {NativeMethods.WTSGetActiveConsoleSessionId()}.";
+
+        return log;
     }
 
     private static void DumpObject(StringBuilder sb, object obj, int level, Type t, int maxLevel)
