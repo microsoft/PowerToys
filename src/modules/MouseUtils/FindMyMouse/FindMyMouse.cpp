@@ -155,7 +155,7 @@ private:
     void DetectShake();
     bool KeyboardInputCanActivate();
 
-    void StartSonar();
+    void StartSonar(FindMyMouseActivationMethod activationMethod);
     void StopSonar();
 };
 
@@ -275,7 +275,7 @@ LRESULT SuperSonar<D>::BaseWndProc(UINT message, WPARAM wParam, LPARAM lParam) n
     {
         if (m_sonarStart == NoSonar)
         {
-            StartSonar();
+            StartSonar(FindMyMouseActivationMethod::Shortcut);
         }
         else
         {
@@ -384,7 +384,7 @@ void SuperSonar<D>::OnSonarKeyboardInput(RAWINPUT const& input)
                 IsEqual(m_lastKeyPos, ptCursor))
             {
                 m_sonarState = SonarState::ControlDown2;
-                StartSonar();
+                StartSonar(m_activationMethod);
             }
             else
             {
@@ -451,7 +451,7 @@ void SuperSonar<D>::DetectShake()
     if (diagonal > 0 && distanceTravelled / diagonal > (m_shakeFactor / 100.f))
     {
         m_movementHistory.clear();
-        StartSonar();
+        StartSonar(m_activationMethod);
     }
 }
 
@@ -519,7 +519,7 @@ void SuperSonar<D>::OnSonarMouseInput(RAWINPUT const& input)
 }
 
 template<typename D>
-void SuperSonar<D>::StartSonar()
+void SuperSonar<D>::StartSonar(FindMyMouseActivationMethod activationMethod)
 {
     // Don't activate if game mode is on.
     if (m_doNotActivateOnGameMode && detect_game_mode())
@@ -532,7 +532,7 @@ void SuperSonar<D>::StartSonar()
         return;
     }
 
-    Trace::MousePointerFocused();
+    Trace::MousePointerFocused(static_cast<int>(activationMethod));
     // Cover the entire virtual screen.
     // HACK: Draw with 1 pixel off. Otherwise, Windows glitches the task bar transparency when a transparent window fill the whole screen.
     SetWindowPos(m_hwnd, HWND_TOPMOST, GetSystemMetrics(SM_XVIRTUALSCREEN) + 1, GetSystemMetrics(SM_YVIRTUALSCREEN) + 1, GetSystemMetrics(SM_CXVIRTUALSCREEN) - 2, GetSystemMetrics(SM_CYVIRTUALSCREEN) - 2, 0);

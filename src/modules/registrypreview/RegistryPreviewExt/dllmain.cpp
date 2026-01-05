@@ -161,7 +161,7 @@ public:
         init_settings();
 
         triggerEvent = CreateEvent(nullptr, false, false, CommonSharedConstants::REGISTRY_PREVIEW_TRIGGER_EVENT);
-        triggerEventWaiter = EventWaiter(CommonSharedConstants::REGISTRY_PREVIEW_TRIGGER_EVENT, [this](int) {
+        triggerEventWaiter.start(CommonSharedConstants::REGISTRY_PREVIEW_TRIGGER_EVENT, [this](DWORD) {
             on_hotkey(0);
         });
     }
