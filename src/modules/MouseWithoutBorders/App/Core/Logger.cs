@@ -52,7 +52,7 @@ internal static class Logger
 
     internal static void TelemetryLogTrace(string log, SeverityLevel severityLevel, bool flush = false)
     {
-        int logCount = Logger.LogCounter.AddOrUpdate(log, 1, (key, value) => value + 1);
+        var logCount = Logger.LogCounter.AddOrUpdate(log, 1, (key, value) => value + 1);
         Logger.Log(log);
     }
 
