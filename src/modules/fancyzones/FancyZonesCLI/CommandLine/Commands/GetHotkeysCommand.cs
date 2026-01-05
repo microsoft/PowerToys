@@ -15,7 +15,7 @@ namespace FancyZonesCLI.CommandLine.Commands;
 internal sealed partial class GetHotkeysCommand : FancyZonesBaseCommand
 {
     public GetHotkeysCommand()
-        : base("get-hotkeys", "List all layout hotkeys")
+        : base("get-hotkeys", Properties.Resources.cmd_get_hotkeys)
     {
         AddAlias("hk");
     }
@@ -26,12 +26,12 @@ internal sealed partial class GetHotkeysCommand : FancyZonesBaseCommand
 
         if (hotkeys.LayoutHotkeys == null || hotkeys.LayoutHotkeys.Count == 0)
         {
-            return "No hotkeys configured.";
+            return Properties.Resources.get_hotkeys_no_hotkeys;
         }
 
         var sb = new System.Text.StringBuilder();
-        sb.AppendLine("=== Layout Hotkeys ===\n");
-        sb.AppendLine("Press Win + Ctrl + Alt + <number> to switch layouts:\n");
+        sb.AppendLine($"{Properties.Resources.get_hotkeys_header}\n");
+        sb.AppendLine($"{Properties.Resources.get_hotkeys_instruction}\n");
 
         foreach (var hotkey in hotkeys.LayoutHotkeys.OrderBy(h => h.Key))
         {

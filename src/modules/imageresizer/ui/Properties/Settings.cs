@@ -15,6 +15,7 @@ using System.IO.Abstractions;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
 using System.Threading;
 using System.Windows.Media.Imaging;
 
@@ -42,6 +43,7 @@ namespace ImageResizer.Properties
         {
             NumberHandling = JsonNumberHandling.AllowNamedFloatingPointLiterals,
             WriteIndented = true,
+            TypeInfoResolver = new DefaultJsonTypeInfoResolver(),
         };
 
         private static readonly CompositeFormat ValueMustBeBetween = System.Text.CompositeFormat.Parse(Properties.Resources.ValueMustBeBetween);

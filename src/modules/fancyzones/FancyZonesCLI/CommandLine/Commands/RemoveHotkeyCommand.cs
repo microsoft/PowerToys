@@ -5,6 +5,7 @@
 using System;
 using System.CommandLine;
 using System.CommandLine.Invocation;
+using System.Globalization;
 
 using FancyZonesEditorCommon.Data;
 using FancyZonesEditorCommon.Utils;
@@ -16,11 +17,11 @@ internal sealed partial class RemoveHotkeyCommand : FancyZonesBaseCommand
     private readonly Argument<int> _key;
 
     public RemoveHotkeyCommand()
-        : base("remove-hotkey", "Remove hotkey assignment")
+        : base("remove-hotkey", Properties.Resources.cmd_remove_hotkey)
     {
         AddAlias("rhk");
 
-        _key = new Argument<int>("key", "Hotkey index (0-9)");
+        _key = new Argument<int>("key", Properties.Resources.remove_hotkey_arg_key);
         AddArgument(_key);
     }
 
@@ -33,14 +34,14 @@ internal sealed partial class RemoveHotkeyCommand : FancyZonesBaseCommand
 
         if (hotkeysWrapper.LayoutHotkeys == null)
         {
-            return "No hotkeys configured.";
+            return Properties.Resources.remove_hotkey_no_hotkeys;
         }
 
         var hotkeysList = hotkeysWrapper.LayoutHotkeys;
         var removed = hotkeysList.RemoveAll(h => h.Key == key);
         if (removed == 0)
         {
-            return $"No hotkey assigned to key {key}";
+            return string.Format(CultureInfo.InvariantCulture, Properties.Resources.remove_hotkey_not_found, key);
         }
 
         // Save.

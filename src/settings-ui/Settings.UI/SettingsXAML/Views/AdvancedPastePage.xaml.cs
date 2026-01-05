@@ -794,6 +794,11 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             {
                 endpoint = string.Empty;
             }
+            else if (string.IsNullOrEmpty(endpoint))
+            {
+                // If endpoint is required but not provided, use placeholder.
+                endpoint = GetEndpointPlaceholder(serviceKind);
+            }
 
             // For endpoint-based services, keep empty if the user didn't provide a value.
             if (RequiresApiKeyForService(serviceType) && string.IsNullOrWhiteSpace(trimmedApiKey))
