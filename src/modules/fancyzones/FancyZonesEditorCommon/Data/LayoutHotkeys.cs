@@ -14,7 +14,7 @@ namespace FancyZonesEditorCommon.Data
         {
             get
             {
-                return GetDataFolder() + "\\Microsoft\\PowerToys\\FancyZones\\layout-hotkeys.json";
+                return FancyZonesPaths.LayoutHotkeys;
             }
         }
 

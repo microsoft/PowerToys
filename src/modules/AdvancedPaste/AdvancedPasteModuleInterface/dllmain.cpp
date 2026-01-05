@@ -15,9 +15,11 @@
 #include <common/utils/logger_helper.h>
 #include <common/utils/winapi_error.h>
 #include <common/utils/gpo.h>
+#include <common/utils/EventWaiter.h>
 
 #include <algorithm>
 #include <cwctype>
+#include <thread>
 #include <vector>
 
 BOOL APIENTRY DllMain(HMODULE /*hModule*/, DWORD ul_reason_for_call, LPVOID /*lpReserved*/)
@@ -100,6 +102,9 @@ private:
     bool m_is_ai_enabled = false;
     bool m_is_advanced_ai_enabled = false;
     bool m_preview_custom_format_output = true;
+
+    // Event listening for external triggers (e.g., from CmdPal extension)
+    EventWaiter m_triggerEventWaiter;
 
     Hotkey parse_single_hotkey(const wchar_t* keyName, const winrt::Windows::Data::Json::JsonObject& settingsObject)
     {
@@ -312,13 +317,39 @@ private:
         return false;
     }
 
-        void read_settings(PowerToysSettings::PowerToyValues& settings)
+    void read_settings(PowerToysSettings::PowerToyValues& settings)
     {
         const auto settingsObject = settings.get_raw_json();
 
         // Migrate Paste As Plain text shortcut
         Hotkey old_paste_as_plain_hotkey;
         bool old_data_migrated = migrate_data_and_remove_data_file(old_paste_as_plain_hotkey);
+
+        if (settingsObject.GetView().Size())
+        {
+            const auto propertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES);
+
+            m_is_advanced_ai_enabled = has_advanced_ai_provider(propertiesObject);
+
+            if (propertiesObject.HasKey(JSON_KEY_IS_AI_ENABLED))
+            {
+                m_is_ai_enabled = propertiesObject.GetNamedObject(JSON_KEY_IS_AI_ENABLED).GetNamedBoolean(JSON_KEY_VALUE, false);
+            }
+            else if (propertiesObject.HasKey(JSON_KEY_IS_OPEN_AI_ENABLED))
+            {
+                m_is_ai_enabled = propertiesObject.GetNamedObject(JSON_KEY_IS_OPEN_AI_ENABLED).GetNamedBoolean(JSON_KEY_VALUE, false);
+            }
+            else
+            {
+                m_is_ai_enabled = false;
+            }
+
+            if (propertiesObject.HasKey(JSON_KEY_SHOW_CUSTOM_PREVIEW))
+            {
+                m_preview_custom_format_output = propertiesObject.GetNamedObject(JSON_KEY_SHOW_CUSTOM_PREVIEW).GetNamedBoolean(JSON_KEY_VALUE);
+            }
+        }
+
         if (old_data_migrated)
         {
             m_paste_as_plain_hotkey = old_paste_as_plain_hotkey;
@@ -403,31 +434,6 @@ private:
                         }
                     }
                 }
-            }
-        }
-
-        if (settingsObject.GetView().Size())
-        {
-            const auto propertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES);
-
-            m_is_advanced_ai_enabled = has_advanced_ai_provider(propertiesObject);
-
-            if (propertiesObject.HasKey(JSON_KEY_IS_AI_ENABLED))
-            {
-                m_is_ai_enabled = propertiesObject.GetNamedObject(JSON_KEY_IS_AI_ENABLED).GetNamedBoolean(JSON_KEY_VALUE, false);
-            }
-            else if (propertiesObject.HasKey(JSON_KEY_IS_OPEN_AI_ENABLED))
-            {
-                m_is_ai_enabled = propertiesObject.GetNamedObject(JSON_KEY_IS_OPEN_AI_ENABLED).GetNamedBoolean(JSON_KEY_VALUE, false);
-            }
-            else
-            {
-                m_is_ai_enabled = false;
-            }
-
-            if (propertiesObject.HasKey(JSON_KEY_SHOW_CUSTOM_PREVIEW))
-            {
-                m_preview_custom_format_output = propertiesObject.GetNamedObject(JSON_KEY_SHOW_CUSTOM_PREVIEW).GetNamedBoolean(JSON_KEY_VALUE);
             }
         }
     }
@@ -778,6 +784,17 @@ public:
         Trace::AdvancedPaste_Enable(true);
         m_enabled = true;
         m_process_manager.start();
+
+        // Start listening for external trigger event so we can invoke the same logic as the hotkey.
+        // Note: Use start() directly instead of constructor + move assignment to avoid dangling this pointer in the thread.
+        m_triggerEventWaiter.start(CommonSharedConstants::ADVANCED_PASTE_SHOW_UI_EVENT, [this](DWORD) {
+            // Same logic as hotkeyId == 1 (m_advanced_paste_ui_hotkey)
+            Logger::trace(L"AdvancedPaste ShowUI event triggered");
+            m_process_manager.start();
+            m_process_manager.bring_to_front();
+            m_process_manager.send_message(CommonSharedConstants::ADVANCED_PASTE_SHOW_UI_MESSAGE);
+            Trace::AdvancedPaste_Invoked(L"AdvancedPasteUIEvent");
+        });
     };
 
     void Disable(bool traceEvent)
@@ -785,6 +802,9 @@ public:
         if (m_enabled)
         {
             m_process_manager.stop();
+
+            // Stop event listening
+            m_triggerEventWaiter.stop();
 
             if (traceEvent)
             {
