@@ -11,6 +11,16 @@ TRACELOGGING_DEFINE_PROVIDER(
     (0x38e8889b, 0x9731, 0x53f5, 0xe9, 0x01, 0xe8, 0xa7, 0xc1, 0x75, 0x30, 0x74),
     TraceLoggingOptionProjectTelemetry());
 
+void Trace::LightSwitch::RegisterProvider()
+{
+    TraceLoggingRegister(g_hProvider);
+}
+
+void Trace::LightSwitch::UnregisterProvider()
+{
+    TraceLoggingUnregister(g_hProvider);
+}
+
 void Trace::LightSwitch::ScheduleModeToggled(const std::wstring& newMode) noexcept
 {
     TraceLoggingWriteWrapper(
