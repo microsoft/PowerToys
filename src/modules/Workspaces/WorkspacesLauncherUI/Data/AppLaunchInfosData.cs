@@ -4,15 +4,12 @@
 
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
-
-using Workspaces.Data;
-
 using static WorkspacesLauncherUI.Data.AppLaunchInfoData;
 using static WorkspacesLauncherUI.Data.AppLaunchInfosData;
 
 namespace WorkspacesLauncherUI.Data
 {
-    public class AppLaunchInfosData : WorkspacesUIData<AppLaunchInfoListWrapper>
+    public class AppLaunchInfosData : WorkspacesCsharpLibrary.Data.WorkspacesEditorData<AppLaunchInfoListWrapper>
     {
         public struct AppLaunchInfoListWrapper
         {

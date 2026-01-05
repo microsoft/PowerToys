@@ -26,14 +26,14 @@ internal sealed partial class SetLayoutCommand : FancyZonesBaseCommand
     private readonly Option<bool> _all;
 
     public SetLayoutCommand()
-        : base("set-layout", "Set layout by UUID or template name")
+        : base("set-layout", Properties.Resources.cmd_set_layout)
     {
         AddAlias("s");
 
-        _layoutId = new Argument<string>("layout", "Layout UUID or template type (e.g. focus, columns)");
+        _layoutId = new Argument<string>("layout", Properties.Resources.set_layout_arg_layout);
         AddArgument(_layoutId);
 
-        _monitor = new Option<int?>(AliasesMonitor, "Apply to monitor N (1-based)");
+        _monitor = new Option<int?>(AliasesMonitor, Properties.Resources.set_layout_opt_monitor);
         _monitor.AddValidator(result =>
         {
             if (result.Tokens.Count == 0)
@@ -44,11 +44,11 @@ internal sealed partial class SetLayoutCommand : FancyZonesBaseCommand
             int? monitor = result.GetValueOrDefault<int?>();
             if (monitor.HasValue && monitor.Value < 1)
             {
-                result.ErrorMessage = "Monitor index must be >= 1.";
+                result.ErrorMessage = Properties.Resources.set_layout_error_monitor_index;
             }
         });
 
-        _all = new Option<bool>(AliasesAll, "Apply to all monitors");
+        _all = new Option<bool>(AliasesAll, Properties.Resources.set_layout_opt_all);
 
         AddOption(_monitor);
         AddOption(_all);
@@ -60,7 +60,7 @@ internal sealed partial class SetLayoutCommand : FancyZonesBaseCommand
 
             if (monitor.HasValue && all)
             {
-                commandResult.ErrorMessage = "Cannot specify both --monitor and --all.";
+                commandResult.ErrorMessage = Properties.Resources.set_layout_error_both_options;
             }
         });
     }
@@ -97,15 +97,15 @@ internal sealed partial class SetLayoutCommand : FancyZonesBaseCommand
     {
         if (all)
         {
-            return string.Format(CultureInfo.InvariantCulture, "Layout '{0}' applied to all monitors.", layout);
+            return string.Format(CultureInfo.InvariantCulture, Properties.Resources.set_layout_success_all, layout);
         }
 
         if (monitor.HasValue)
         {
-            return string.Format(CultureInfo.InvariantCulture, "Layout '{0}' applied to monitor {1}.", layout, monitor.Value);
+            return string.Format(CultureInfo.InvariantCulture, Properties.Resources.set_layout_success_monitor, layout, monitor.Value);
         }
 
-        return string.Format(CultureInfo.InvariantCulture, "Layout '{0}' applied to monitor 1.", layout);
+        return string.Format(CultureInfo.InvariantCulture, Properties.Resources.set_layout_success_default, layout);
     }
 
     private static (CustomLayouts.CustomLayoutWrapper? TargetCustomLayout, LayoutTemplates.TemplateLayoutWrapper? TargetTemplate) ResolveTargetLayout(string layout)
@@ -127,10 +127,7 @@ internal sealed partial class SetLayoutCommand : FancyZonesBaseCommand
 
         if (!targetCustomLayout.HasValue && !targetTemplate.HasValue)
         {
-            throw new InvalidOperationException(
-                $"Layout '{layout}' not found{Environment.NewLine}" +
-                "Tip: For templates, use the type name (e.g., 'focus', 'columns', 'rows', 'grid', 'priority-grid')" +
-                $"{Environment.NewLine}     For custom layouts, use the UUID from 'get-layouts'");
+            throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, Properties.Resources.set_layout_error_not_found, layout));
         }
 
         return (targetCustomLayout, targetTemplate);
@@ -197,7 +194,7 @@ internal sealed partial class SetLayoutCommand : FancyZonesBaseCommand
             int monitorIndex = monitor.Value - 1; // Convert to 0-based.
             if (monitorIndex < 0 || monitorIndex >= editorParams.Monitors.Count)
             {
-                throw new InvalidOperationException($"Monitor {monitor.Value} not found. Available monitors: 1-{editorParams.Monitors.Count}");
+                throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, Properties.Resources.set_layout_error_monitor_not_found, monitor.Value, editorParams.Monitors.Count));
             }
 
             result.Add(monitorIndex);
@@ -250,7 +247,7 @@ internal sealed partial class SetLayoutCommand : FancyZonesBaseCommand
 
         if (newLayouts.Count == 0)
         {
-            throw new InvalidOperationException("Internal error - no monitors to update.");
+            throw new InvalidOperationException(Properties.Resources.set_layout_error_no_monitors);
         }
 
         return newLayouts;
@@ -306,7 +303,7 @@ internal sealed partial class SetLayoutCommand : FancyZonesBaseCommand
             }
             else
             {
-                throw new InvalidOperationException($"Unsupported custom layout type '{targetCustomLayout.Value.Type}'.");
+                throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, Properties.Resources.set_layout_error_unsupported_type, targetCustomLayout.Value.Type));
             }
 
             return (
@@ -329,7 +326,7 @@ internal sealed partial class SetLayoutCommand : FancyZonesBaseCommand
                 targetTemplate.Value.SensitivityRadius);
         }
 
-        throw new InvalidOperationException("Internal error - no layout selected.");
+        throw new InvalidOperationException(Properties.Resources.set_layout_error_no_layout);
     }
 
     private static AppliedLayouts.AppliedLayoutsListWrapper MergeWithHistoricalLayouts(

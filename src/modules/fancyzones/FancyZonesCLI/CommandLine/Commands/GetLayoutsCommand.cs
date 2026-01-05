@@ -15,7 +15,7 @@ namespace FancyZonesCLI.CommandLine.Commands;
 internal sealed partial class GetLayoutsCommand : FancyZonesBaseCommand
 {
     public GetLayoutsCommand()
-        : base("get-layouts", "List available layouts")
+        : base("get-layouts", Properties.Resources.cmd_get_layouts)
     {
         AddAlias("ls");
     }
@@ -61,7 +61,7 @@ internal sealed partial class GetLayoutsCommand : FancyZonesBaseCommand
 
         if (customLayouts.CustomLayouts != null)
         {
-            sb.AppendLine(CultureInfo.InvariantCulture, $"=== Custom Layouts ({customLayouts.CustomLayouts.Count} total) ===");
+            sb.AppendLine(string.Format(CultureInfo.InvariantCulture, Properties.Resources.get_layouts_custom_header, customLayouts.CustomLayouts.Count));
 
             for (int i = 0; i < customLayouts.CustomLayouts.Count; i++)
             {
@@ -92,8 +92,8 @@ internal sealed partial class GetLayoutsCommand : FancyZonesBaseCommand
                 // Add note for canvas layouts.
                 if (isCanvasLayout)
                 {
-                    sb.AppendLine("\n    Note: Canvas layout preview is approximate.");
-                    sb.AppendLine("          Open FancyZones Editor for precise zone boundaries.");
+                    sb.AppendLine($"\n    {Properties.Resources.get_layouts_canvas_note}");
+                    sb.AppendLine($"          {Properties.Resources.get_layouts_canvas_detail}");
                 }
 
                 if (i < customLayouts.CustomLayouts.Count - 1)
@@ -102,7 +102,7 @@ internal sealed partial class GetLayoutsCommand : FancyZonesBaseCommand
                 }
             }
 
-            sb.AppendLine("\nUse 'FancyZonesCLI.exe set-layout <UUID>' to apply a layout.");
+            sb.AppendLine($"\n{Properties.Resources.get_layouts_usage}");
         }
 
         return sb.ToString().TrimEnd();

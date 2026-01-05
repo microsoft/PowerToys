@@ -216,6 +216,7 @@ CImage
 cla
 CLASSDC
 CLASSNOTAVAILABLE
+CLEARTYPE
 clickable
 clickonce
 CLIENTEDGE
@@ -253,6 +254,7 @@ colorhistory
 colorhistorylimit
 COLORKEY
 colorref
+Convs
 comctl
 comdlg
 comexp
@@ -529,9 +531,12 @@ eyetracker
 FANCYZONESDRAWLAYOUTTEST
 FANCYZONESEDITOR
 FARPROC
+fdw
 fdx
+FErase
 fesf
 FFFF
+FInc
 Figma
 FILEEXPLORER
 fileexploreraddons
@@ -573,6 +578,7 @@ formatetc
 FORPARSING
 foundrylocal
 FRAMECHANGED
+FRestore
 frm
 FROMTOUCH
 fsanitize
@@ -607,6 +613,7 @@ GETSCREENSAVERRUNNING
 GETSECKEY
 GETSTICKYKEYS
 GETTEXTLENGTH
+gfx
 GHND
 gitmodules
 GMEM
@@ -657,6 +664,7 @@ hdwwiz
 Helpline
 helptext
 HGFE
+hgdiobj
 hglobal
 hhk
 HHmmssfff
@@ -704,7 +712,7 @@ hotlight
 hotspot
 HPAINTBUFFER
 HRAWINPUT
-HREDRAW
+hredraw
 hres
 hresult
 hrgn
@@ -882,7 +890,7 @@ LINKOVERLAY
 LINQTo
 listview
 LIVEDRAW
-LIVEZOOM
+livezoom
 LLKH
 llkhf
 LMEM
@@ -911,6 +919,7 @@ LPBITMAPINFOHEADER
 LPCFHOOKPROC
 LPCITEMIDLIST
 LPCLSID
+lpch
 lpcmi
 LPCMINVOKECOMMANDINFO
 LPCREATESTRUCT
@@ -935,6 +944,7 @@ lptpm
 LPTR
 LPTSTR
 lpv
+LPrivate
 LPW
 lpwcx
 lpwndpl
@@ -1349,6 +1359,7 @@ ppv
 ppwsz
 prc
 Prefixer
+Premul
 prependpath
 prepopulate
 prevhost
@@ -1904,7 +1915,7 @@ valuegenerator
 variantassignment
 VARTYPE
 vcamp
-VCENTER
+vcenter
 vcgtq
 VCINSTALLDIR
 Vcpkg
@@ -1936,7 +1947,7 @@ vorrq
 VOS
 vpaddlq
 vqsubq
-VREDRAW
+vredraw
 vreinterpretq
 VSC
 VSCBD
