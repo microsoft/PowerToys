@@ -428,14 +428,8 @@ internal static class Logger
 
     internal static string GetStackTrace(StackTrace st)
     {
-        string rv = string.Empty;
-
-        for (int i = 0; i < st.FrameCount; i++)
-        {
-            StackFrame sf = st.GetFrame(i);
-            rv += sf.GetMethod() + " <= ";
-        }
-
-        return rv;
+        return string.Join(
+            " <= ",
+            st.GetFrames().Select(frame => frame.GetMethod().ToString()));
     }
 }
