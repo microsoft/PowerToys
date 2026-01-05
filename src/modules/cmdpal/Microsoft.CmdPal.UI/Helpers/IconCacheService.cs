@@ -23,7 +23,7 @@ public sealed class IconCacheService
     // Throttle concurrent icon loads to avoid overwhelming the system and UI thread.
     // The catch-22 is that loading icons requires some UI thread work and UI thread can block
     // itself with D2D multithread lock while delegating work to background threads to load icons.
-    // Loading and rasterizing SVGs turned out to be evil...
+    // Loading and decoding SVGs turned out to be evil...
     private static readonly Channel<Func<Task>> HighPriorityQueue = Channel.CreateBounded<Func<Task>>(32);
     private static readonly Channel<Func<Task>> LowPriorityQueue = Channel.CreateUnbounded<Func<Task>>();
 
@@ -56,7 +56,7 @@ public sealed class IconCacheService
         var key = new IconCacheKey(icon, scale);
 
         // If it's in the cache, return the Task wrapped in a ValueTask.
-        // No 'async/await' here = no state machine allocation, hehe
+        // No 'async/await' here = no state machine allocation
         if (_cache.TryGet(key, out var existingTask))
         {
             return new ValueTask<IconSource?>(existingTask);
