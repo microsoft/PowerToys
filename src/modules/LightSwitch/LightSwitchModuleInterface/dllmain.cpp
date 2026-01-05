@@ -594,7 +594,8 @@ public:
 
 static bool IsValidPath(const std::wstring& path)
 {
-    return !path.empty() && std::filesystem::exists(path);
+    std::error_code ec;
+    return !path.empty() && std::filesystem::exists(path, ec);
 }
 
 void LightSwitchInterface::ToggleTheme()
