@@ -49,6 +49,9 @@ namespace Peek.FilePreviewer.Previewers
         private bool isDevFilePreview;
 
         [ObservableProperty]
+        private bool isMarkdown;
+
+        [ObservableProperty]
         private bool customContextMenu;
 
         private bool disposed;
@@ -122,6 +125,7 @@ namespace Peek.FilePreviewer.Previewers
 
                     IsDevFilePreview = supportedByMonaco;
                     CustomContextMenu = useMonaco;
+                    IsMarkdown = isMarkdown;
 
                     if (useMonaco)
                     {

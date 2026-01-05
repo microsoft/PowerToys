@@ -88,6 +88,7 @@
             DOMContentLoaded="BrowserPreview_DOMContentLoaded"
             FlowDirection="LeftToRight"
             IsDevFilePreview="{x:Bind BrowserPreviewer.IsDevFilePreview, Mode=OneWay}"
+            IsMarkdown="{x:Bind BrowserPreviewer.IsMarkdown, Mode=OneWay}"
             NavigationCompleted="PreviewBrowser_NavigationCompleted"
             Source="{x:Bind BrowserPreviewer.Preview, Mode=OneWay}"
             Visibility="{x:Bind IsPreviewVisible(BrowserPreviewer, Previewer.State), Mode=OneWay, FallbackValue=Collapsed}" />

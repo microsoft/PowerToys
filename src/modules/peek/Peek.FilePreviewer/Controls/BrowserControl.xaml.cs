@@ -74,6 +74,18 @@ namespace Peek.FilePreviewer.Controls
             }
         }
 
+        public static readonly DependencyProperty IsMarkdownProperty = DependencyProperty.Register(
+            nameof(IsMarkdown),
+            typeof(bool),
+            typeof(BrowserControl),
+            new PropertyMetadata(false));
+
+        public bool IsMarkdown
+        {
+            get { return (bool)GetValue(IsMarkdownProperty); }
+            set { SetValue(IsMarkdownProperty, value); }
+        }
+
         public static readonly DependencyProperty CustomContextMenuProperty = DependencyProperty.Register(
             nameof(CustomContextMenu),
             typeof(bool),
@@ -180,6 +192,13 @@ namespace Peek.FilePreviewer.Controls
                 PreviewBrowser.CoreWebView2.Settings.IsScriptEnabled = IsDevFilePreview;
                 PreviewBrowser.CoreWebView2.Settings.IsWebMessageEnabled = false;
 
+                if (IsMarkdown)
+                {
+                    PreviewBrowser.CoreWebView2.Settings.IsScriptEnabled = false;
+                    PreviewBrowser.CoreWebView2.AddWebResourceRequestedFilter("*", CoreWebView2WebResourceContext.All);
+                    PreviewBrowser.CoreWebView2.WebResourceRequested += CoreWebView2_WebResourceRequested;
+                }
+
                 if (IsDevFilePreview)
                 {
                     PreviewBrowser.CoreWebView2.SetVirtualHostNameToFolderMapping(Microsoft.PowerToys.FilePreviewCommon.MonacoHelper.VirtualHostName, Microsoft.PowerToys.FilePreviewCommon.MonacoHelper.MonacoDirectory, CoreWebView2HostResourceAccessKind.Allow);
@@ -199,6 +218,15 @@ namespace Peek.FilePreviewer.Controls
             }
 
             Navigate();
+        }
+
+        private void CoreWebView2_WebResourceRequested(CoreWebView2 sender, CoreWebView2WebResourceRequestedEventArgs args)
+        {
+            if (args.Request.Uri.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
+                args.Request.Uri.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+            {
+                args.Response = sender.Environment.CreateWebResourceResponse(null, 403, "Forbidden", string.Empty);
+            }
         }
 
         private List<Control> GetContextMenuItems(CoreWebView2 sender, CoreWebView2ContextMenuRequestedEventArgs args)
