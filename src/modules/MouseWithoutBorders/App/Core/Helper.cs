@@ -428,9 +428,12 @@ internal static class Helper
         log += Setting.Values.LastPersonalizeLogonScr + "\r\n";
         log += "Name2IP =\r\n" + Setting.Values.Name2IP + "\r\n";
 
+        // note - this doesn't actually log the last 10 messages - it really concatenates the counts of
+        // the first 10 unique messages that were logged, which isn't really very useful so we'll remove it
+        /*
         log += "Last 10 trace messages:\r\n";
-
         log += string.Join(Environment.NewLine, Logger.LogCounter.Select(item => $"({item.Value}): {item.Key}").Take(10));
+        */
 
         log += "\r\n=============================================================================================================================";
 
