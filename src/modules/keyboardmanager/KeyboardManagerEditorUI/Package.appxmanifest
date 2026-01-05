@@ -15,7 +15,7 @@
   <mp:PhoneIdentity PhoneProductId="edb1d2cd-ef93-4f89-9db6-4edf04ff20a5" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 
   <Properties>
-    <DisplayName>KeyboardManagerEditorUI</DisplayName>
+    <DisplayName>Keyboard Manager</DisplayName>
     <PublisherDisplayName>haoliuu</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
   </Properties>
@@ -34,8 +34,8 @@
       Executable="$targetnametoken$.exe"
       EntryPoint="$targetentrypoint$">
       <uap:VisualElements
-        DisplayName="KeyboardManagerEditorUI"
-        Description="KeyboardManagerEditorUI"
+        DisplayName="Keyboard Manager"
+        Description="Keyboard Manager"
         BackgroundColor="transparent"
         Square150x150Logo="Assets\Square150x150Logo.png"
         Square44x44Logo="Assets\Square44x44Logo.png">

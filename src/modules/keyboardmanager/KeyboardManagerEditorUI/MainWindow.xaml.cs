@@ -10,6 +10,8 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.WindowsRuntime;
 using KeyboardManagerEditorUI.Helpers;
+using Microsoft.UI;
+using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
@@ -36,6 +38,10 @@ namespace KeyboardManagerEditorUI
 
             // Set the default page
             RootView.SelectedItem = RootView.MenuItems[0];
+            IntPtr windowHandle = WinRT.Interop.WindowNative.GetWindowHandle(this);
+            WindowId windowId = Win32Interop.GetWindowIdFromWindow(windowHandle);
+            AppWindow appWindow = AppWindow.GetFromWindowId(windowId);
+            appWindow.SetIcon(@"Assets\Keyboard.ico");
         }
 
         private void MainWindow_Activated(object sender, WindowActivatedEventArgs args)

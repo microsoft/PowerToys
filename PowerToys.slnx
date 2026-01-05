@@ -465,6 +465,31 @@
     <Project Path="src/modules/keyboardmanager/KeyboardManagerEngine/KeyboardManagerEngine.vcxproj" Id="ba661f5b-1d5a-4ffc-9bf1-fc39df280bdd" />
     <Project Path="src/modules/keyboardmanager/KeyboardManagerEngineLibrary/KeyboardManagerEngineLibrary.vcxproj" Id="e496b7fc-1e99-4bab-849b-0e8367040b02" />
   </Folder>
+  <Folder Name="/modules/keyboardmanager/MouseUtils/">
+    <Project Path="src/modules/MouseUtils/CursorWrap/CursorWrap.vcxproj" Id="48a1db8c-5df8-4fb3-9e14-2b67f3f2d8b5" />
+    <Project Path="src/modules/MouseUtils/FindMyMouse/FindMyMouse.vcxproj" Id="e94fd11c-0591-456f-899f-efc0ca548336" />
+    <Project Path="src/modules/MouseUtils/MouseHighlighter/MouseHighlighter.vcxproj" Id="782a61be-9d85-4081-b35c-1ccc9dcc1e88" />
+    <Project Path="src/modules/MouseUtils/MouseJump.Common/MouseJump.Common.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/MouseUtils/MouseJump/MouseJump.vcxproj" Id="8a08d663-4995-40e3-b42c-3f910625f284" />
+    <Project Path="src/modules/MouseUtils/MouseJumpUI/MouseJumpUI.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/MouseUtils/MousePointerCrosshairs/MousePointerCrosshairs.vcxproj" Id="eae14c0e-7a6b-45da-9080-a7d8c077ba6e" />
+  </Folder>
+  <Folder Name="/modules/keyboardmanager/MouseUtils/Tests/">
+    <Project Path="src/modules/MouseUtils/MouseJump.Common.UnitTests/MouseJump.Common.UnitTests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/MouseUtils/MouseUtils.UITests/MouseUtils.UITests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+  </Folder>
   <Folder Name="/modules/keyboardmanager/Tests/">
     <Project Path="src/modules/keyboardmanager/KeyboardManagerEditorTest/KeyboardManagerEditorTest.vcxproj" Id="62173d9a-6724-4c00-a1c8-fb646480a9ec" />
     <Project Path="src/modules/keyboardmanager/KeyboardManagerEngineTest/KeyboardManagerEngineTest.vcxproj" Id="7f4b3a60-bc27-45a7-8000-68b0b6ea7466" />
@@ -664,31 +689,6 @@
   </Folder>
   <Folder Name="/modules/MeasureTool/Tests/">
     <Project Path="src/modules/MeasureTool/Tests/ScreenRuler.UITests/ScreenRuler.UITests.csproj">
-      <Platform Solution="*|ARM64" Project="ARM64" />
-      <Platform Solution="*|x64" Project="x64" />
-    </Project>
-  </Folder>
-  <Folder Name="/modules/MouseUtils/">
-    <Project Path="src/modules/MouseUtils/CursorWrap/CursorWrap.vcxproj" Id="48a1db8c-5df8-4fb3-9e14-2b67f3f2d8b5" />
-    <Project Path="src/modules/MouseUtils/FindMyMouse/FindMyMouse.vcxproj" Id="e94fd11c-0591-456f-899f-efc0ca548336" />
-    <Project Path="src/modules/MouseUtils/MouseHighlighter/MouseHighlighter.vcxproj" Id="782a61be-9d85-4081-b35c-1ccc9dcc1e88" />
-    <Project Path="src/modules/MouseUtils/MouseJump.Common/MouseJump.Common.csproj">
-      <Platform Solution="*|ARM64" Project="ARM64" />
-      <Platform Solution="*|x64" Project="x64" />
-    </Project>
-    <Project Path="src/modules/MouseUtils/MouseJump/MouseJump.vcxproj" Id="8a08d663-4995-40e3-b42c-3f910625f284" />
-    <Project Path="src/modules/MouseUtils/MouseJumpUI/MouseJumpUI.csproj">
-      <Platform Solution="*|ARM64" Project="ARM64" />
-      <Platform Solution="*|x64" Project="x64" />
-    </Project>
-    <Project Path="src/modules/MouseUtils/MousePointerCrosshairs/MousePointerCrosshairs.vcxproj" Id="eae14c0e-7a6b-45da-9080-a7d8c077ba6e" />
-  </Folder>
-  <Folder Name="/modules/MouseUtils/Tests/">
-    <Project Path="src/modules/MouseUtils/MouseJump.Common.UnitTests/MouseJump.Common.UnitTests.csproj">
-      <Platform Solution="*|ARM64" Project="ARM64" />
-      <Platform Solution="*|x64" Project="x64" />
-    </Project>
-    <Project Path="src/modules/MouseUtils/MouseUtils.UITests/MouseUtils.UITests.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
