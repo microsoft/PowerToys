@@ -1,4 +1,4 @@
-﻿[Program logs]
+﻿[Program Logs]
 ===============
  = System.String[]
 [Other Logs]
@@ -198,15 +198,6 @@ HelperProcessName = PowerToys.MouseWithoutBordersHelper
 ===============
 [Logger]
 ===============
-AllLogsLock = Lock
---_owningThreadId = 0
---_state = 0
---_recursionCount = 0
---_spinCount = 22
---_waiterStartTimeMs = 0
---s_contentionCount = 0
---s_maxSpinCount = 22
---s_minSpinCountForAdaptiveSpin = -100
 LogCounter = Concurrent.ConcurrentDictionary`2[System.String,32]
 --_tables = Concurrent.ConcurrentDictionary`2+Tables[System.String,32]
 ----_comparer = Generic.NonRandomizedStringEqualityComparer+OrdinalComparer
@@ -227,6 +218,15 @@ LogCounter = Concurrent.ConcurrentDictionary`2[System.String,32]
 --_budget = ????????????
 --_growLockArray = True
 --_comparerIsDefaultForClasses = False
+AllLogsLock = Lock
+--_owningThreadId = 0
+--_state = 0
+--_recursionCount = 0
+--_spinCount = 22
+--_waiterStartTimeMs = 0
+--s_contentionCount = 0
+--s_maxSpinCount = 22
+--s_minSpinCountForAdaptiveSpin = -100
 allLogsIndex = 0
 lastHour = 0
 exceptionCount = 0
@@ -262,8 +262,6 @@ lastPackageReceived = MouseWithoutBorders.Core.PackageMonitor
 --Nil = 0
 MAX_LOG = 10000
 MaxLogExceptionPerHour = 1000
-HeaderSENT = Be{0},Ke{1},Mo{2},He{3},Mx{4},Tx{5},Im{6},By{7},Cl{8},Dr{9},De{10},Ed{11},Ie{12},Ni{13}
-HeaderRECEIVED = Be{0},Ke{1},Mo{2},He{3},Mx{4},Tx{5},Im{6},By{7},Cl{8},Dr{9},De{10},Ed{11},In{12},Ni{13},Pc{14}/{15}
 [MachineStuff]
 ===============
 McMatrixLock = Lock
@@ -440,6 +438,7 @@ WM_LBUTTONDBLCLK = 515
 WM_RBUTTONDBLCLK = 518
 WM_MBUTTONDBLCLK = 521
 WM_MOUSEWHEEL = 522
+WM_MOUSEHWHEEL = 526
 WM_KEYDOWN = 256
 WM_KEYUP = 257
 WM_SYSKEYDOWN = 260
