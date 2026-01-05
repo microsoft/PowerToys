@@ -15,6 +15,9 @@
     </DirectoryRef>
 
     <ComponentGroup Id="FileLocksmithComponentGroup">
+      <Component Id="FileLocksmithCLI" Guid="FBB9EFCE-7D05-489E-9557-01682A19FA21" Directory="INSTALLFOLDER">
+        <File Id="FileLocksmithCLI.exe" Source="$(var.BinDir)FileLocksmithCLI.exe" KeyPath="yes" Checksum="yes" />
+      </Component>
       <Component Id="RemoveFileLocksmithFolder" Guid="1DAC9A3F-D89C-4730-BF57-1778E011709B" Directory="FileLocksmithAssetsInstallFolder">
         <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
           <RegistryValue Type="string" Name="RemoveFileLocksmithFolder" Value="" KeyPath="yes" />

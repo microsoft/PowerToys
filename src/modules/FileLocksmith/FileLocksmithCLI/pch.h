@@ -1,9 +1,6 @@
 #pragma once
 
 #ifndef PCH_H
-#pragma once
-
-#ifndef PCH_H
 #define PCH_H
 
 #define NOMINMAX
@@ -23,7 +20,3 @@
 #include <winrt/base.h>
 
 #endif // PCH_H
-
-
-#endif // PCH_H
-
