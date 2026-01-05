@@ -596,16 +596,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 if (ModuleSettings.Properties.WallpaperEnabled.Value != value)
                 {
-                    // Only allow enabling if two images is valid
-                    if (value && IsLightWallpaperValid && IsDarkWallpaperValid)
-                    {
-                        ModuleSettings.Properties.WallpaperEnabled.Value = true;
-                    }
-                    else
-                    {
-                        ModuleSettings.Properties.WallpaperEnabled.Value = false;
-                    }
-
+                    ModuleSettings.Properties.WallpaperEnabled.Value = value;
                     NotifyPropertyChanged();
                 }
             }

@@ -549,6 +549,11 @@ public:
         return 1;
     }
 
+    static bool IsValidPath(const std::wstring& path)
+    {
+        return !path.empty() && std::filesystem::exists(path);
+    }
+
     virtual bool on_hotkey(size_t hotkeyId) override
     {
         if (m_enabled)
@@ -561,21 +566,7 @@ public:
             else if (hotkeyId == 0)
             {
                 bool current_system_theme = GetCurrentSystemTheme();
-                // get current will return true if in light mode; otherwise false
-                Logger::info(L"[Light Switch] Hotkey triggered: Toggle Theme");
-                if (g_settings.m_wallpaper)
-                {
-                    auto&& wallpaperPath = !current_system_theme ? g_settings.m_wallpaper_path_light : g_settings.m_wallpaper_path_dark;
-                    auto style = !current_system_theme ? g_settings.m_wallpaper_style_light : g_settings.m_wallpaper_style_dark;
-                    if (auto e = SetDesktopWallpaper(wallpaperPath, style, g_settings.m_wallpaper_virtual_desktop) == 0)
-                    {
-                        Logger::info(L"[LightSwitchService] Wallpaper is changed to {}.", wallpaperPath);
-                    }
-                    else
-                    {
-                        Logger::error(L"[LightSwitchService] Failed to set wallpaper, error: {}.", e);
-                    }
-                }
+                bool current_apps_theme = GetCurrentAppsTheme();
 
                 if (g_settings.m_changeSystem)
                 {
@@ -583,7 +574,36 @@ public:
                 }
                 if (g_settings.m_changeApps)
                 {
-                    SetAppsTheme(!GetCurrentAppsTheme());
+                    SetAppsTheme(!current_apps_theme);
+                }
+
+                bool new_system_theme = GetCurrentSystemTheme();
+                bool new_apps_theme = GetCurrentAppsTheme();
+
+                bool changeWallpaper =
+                    g_settings.m_wallpaper &&
+                    IsValidPath(g_settings.m_wallpaper_path_light) &&
+                    IsValidPath(g_settings.m_wallpaper_path_dark);
+
+                // if something changed and wallpaper change is enabled and paths are valid
+                if ((new_system_theme != current_system_theme || new_apps_theme != current_apps_theme) && changeWallpaper)
+                {
+                    bool shouldBeLight;
+
+                    if (g_settings.m_changeSystem && new_system_theme != current_system_theme)
+                    {
+                        shouldBeLight = new_system_theme;
+                    }
+                    else
+                    {
+                        // Either apps-only changed, or system didn't move
+                        shouldBeLight = new_apps_theme;
+                    }
+
+                    auto&& wallpaperPath = shouldBeLight ? g_settings.m_wallpaper_path_light : g_settings.m_wallpaper_path_dark;
+                    auto style = shouldBeLight ? g_settings.m_wallpaper_style_light : g_settings.m_wallpaper_style_dark;
+
+                    SetDesktopWallpaper(wallpaperPath, style, g_settings.m_wallpaper_virtual_desktop);
                 }
 
                 if (!m_manual_override_event_handle)

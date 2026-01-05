@@ -23,7 +23,7 @@ static LightSwitchStateManager* g_stateManagerPtr = nullptr;
 VOID WINAPI ServiceMain(DWORD argc, LPTSTR* argv);
 VOID WINAPI ServiceCtrlHandler(DWORD dwCtrl);
 DWORD WINAPI ServiceWorkerThread(LPVOID lpParam);
-void ApplyTheme(bool shouldBeLight);
+void ApplyTheme(bool shouldBeLight, bool changeWallpaper);
 
 // Entry point for the executable
 int _tmain(int argc, TCHAR* argv[])
@@ -126,7 +126,6 @@ VOID WINAPI ServiceCtrlHandler(DWORD dwCtrl)
 
 void SetWallpaper(bool shouldBeLight)
 {
-    
     const auto& settings = LightSwitchSettings::settings();
 
     if (settings.wallpaperEnabled)
@@ -144,18 +143,19 @@ void SetWallpaper(bool shouldBeLight)
     }
 };
 
-void ApplyTheme(bool shouldBeLight)
+void ApplyTheme(bool shouldBeLight, bool changeWallpaper)
 {
     const auto& s = LightSwitchSettings::settings();
+    bool somethingChanged = false;
 
     if (s.changeSystem)
     {
         bool isSystemCurrentlyLight = GetCurrentSystemTheme();
         if (shouldBeLight != isSystemCurrentlyLight)
         {
-            SetWallpaper(shouldBeLight);
             SetSystemTheme(shouldBeLight);
             Logger::info(L"[LightSwitchService] Changed system theme to {}.", shouldBeLight ? L"light" : L"dark");
+            somethingChanged = true;
         }
     }
 
@@ -166,6 +166,15 @@ void ApplyTheme(bool shouldBeLight)
         {
             SetAppsTheme(shouldBeLight);
             Logger::info(L"[LightSwitchService] Changed apps theme to {}.", shouldBeLight ? L"light" : L"dark");
+            somethingChanged = true;
+        }
+    }
+
+    if (somethingChanged)
+    {
+        if (changeWallpaper)
+        {
+            SetWallpaper(shouldBeLight);
         }
     }
 }
@@ -195,7 +204,7 @@ static void DetectAndHandleExternalThemeChange(LightSwitchStateManager& stateMan
     if (s.scheduleMode == ScheduleMode::FollowNightLight)
     {
         shouldBeLight = !IsNightLightEnabled();
-    } 
+    }
     else
     {
         shouldBeLight = ShouldBeLight(nowMinutes, effectiveLight, effectiveDark);
