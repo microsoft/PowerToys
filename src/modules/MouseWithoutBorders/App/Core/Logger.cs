@@ -177,8 +177,7 @@ internal static class Logger
         }
     }
 
-
-    internal static void DumpObjects(int level)
+    private static void DumpObjects(int level)
     {
         try
         {
@@ -268,7 +267,7 @@ internal static class Logger
         }
     }
 
-    internal static bool PrivateDump(StringBuilder sb, object obj, string objName, int level, int maxLevel, bool stop)
+    private static bool PrivateDump(StringBuilder sb, object obj, string objName, int level, int maxLevel, bool stop)
     {
         Type t;
         string padStr = string.Empty;
@@ -324,7 +323,7 @@ internal static class Logger
         return true;
     }
 
-    internal static void DumpObject(StringBuilder sb, object obj, int level, Type t, int maxLevel)
+    private static void DumpObject(StringBuilder sb, object obj, int level, Type t, int maxLevel)
     {
         int i;
         bool stop;
@@ -430,7 +429,7 @@ internal static class Logger
         }
     }
 
-    internal static void DumpType(StringBuilder sb, Type typeToDump, int level, int maxLevel)
+    private static void DumpType(StringBuilder sb, Type typeToDump, int level, int maxLevel)
     {
         if ((typeToDump == typeof(Delegate))
             || (typeToDump == typeof(PackageType))
