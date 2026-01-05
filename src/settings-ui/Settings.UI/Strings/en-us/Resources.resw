@@ -5445,7 +5445,7 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
     <value>Sunset</value>
   </data>
   <data name="LightSwitch_WallpaperExpander.Header" xml:space="preserve">
-    <value>Wallpaper changes with the system UI</value>
+    <value>Wallpaper changes with the color mode</value>
   </data>
   <data name="LightSwitch_StyleFill.Content" xml:space="preserve">
     <value>Fill</value>
