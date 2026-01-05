@@ -131,6 +131,8 @@
 
             "PowerToys.ImageResizer.exe",
             "PowerToys.ImageResizer.dll",
+            "WinUI3Apps\\PowerToys.ImageResizerCLI.exe",
+            "WinUI3Apps\\PowerToys.ImageResizerCLI.dll",
             "PowerToys.ImageResizerExt.dll",
             "PowerToys.ImageResizerContextMenu.dll",
             "ImageResizerContextMenuPackage.msix",
@@ -235,6 +237,14 @@
 
             "PowerToys.CmdPalModuleInterface.dll",
             "CmdPalKeyboardService.dll",
+            "PowerToys.ModuleContracts.dll",
+            "Awake.ModuleServices.dll",
+            "ColorPicker.ModuleServices.dll",
+            "Workspaces.ModuleServices.dll",
+            "Microsoft.CommandPalette.Extensions.dll",
+            "Microsoft.CommandPalette.Extensions.Toolkit.dll",
+            "Microsoft.CmdPal.Ext.PowerToys.dll",
+            "Microsoft.CmdPal.Ext.PowerToys.exe",
             "*Microsoft.CmdPal.UI_*.msix",
 
             "PowerToys.DSC.dll",
@@ -353,9 +363,18 @@
                 "Microsoft.SemanticKernel.Connectors.Ollama.dll",
                 "OllamaSharp.dll",
 
+                "boost_regex-vc143-mt-gd-x32-1_87.dll",
+                "boost_regex-vc143-mt-gd-x64-1_87.dll",
+                "boost_regex-vc143-mt-x32-1_87.dll",
+                "boost_regex-vc143-mt-x64-1_87.dll",
+
+                "Microsoft.ML.OnnxRuntime.dll",
+
                 "UnitsNet.dll",
                 "UtfUnknown.dll",
-                "Wpf.Ui.dll"
+                "Wpf.Ui.dll",
+                "Shmuelie.WinRTServer.dll",
+                "ToolGood.Words.Pinyin.dll"
             ],
             "SigningInfo": {
                 "Operations": [

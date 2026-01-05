@@ -7,6 +7,7 @@ using System.Globalization;
 using System.IO;
 using System.Text;
 using Microsoft.CmdPal.Ext.Indexer.Data;
+using Microsoft.CmdPal.Ext.Indexer.Helpers;
 using Microsoft.CmdPal.Ext.Indexer.Properties;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.Storage.Streams;
@@ -15,7 +16,8 @@ namespace Microsoft.CmdPal.Ext.Indexer;
 
 internal sealed partial class FallbackOpenFileItem : FallbackCommandItem, System.IDisposable
 {
-    private static readonly NoOpCommand _baseCommandWithId = new() { Id = "com.microsoft.indexer.fallback" };
+    private const string _id = "com.microsoft.cmdpal.builtin.indexer.fallback";
+    private static readonly NoOpCommand _baseCommandWithId = new() { Id = _id };
 
     private readonly CompositeFormat fallbackItemSearchPageTitleCompositeFormat = CompositeFormat.Parse(Resources.Indexer_fallback_searchPage_title);
 
@@ -26,7 +28,7 @@ internal sealed partial class FallbackOpenFileItem : FallbackCommandItem, System
     private Func<string, bool> _suppressCallback;
 
     public FallbackOpenFileItem()
-        : base(_baseCommandWithId, Resources.Indexer_Find_Path_fallback_display_title)
+        : base(_baseCommandWithId, Resources.Indexer_Find_Path_fallback_display_title, _id)
     {
         Title = string.Empty;
         Subtitle = string.Empty;
@@ -42,6 +44,7 @@ internal sealed partial class FallbackOpenFileItem : FallbackCommandItem, System
             Subtitle = string.Empty;
             Icon = null;
             MoreCommands = null;
+            DataPackage = null;
 
             return;
         }
@@ -53,6 +56,7 @@ internal sealed partial class FallbackOpenFileItem : FallbackCommandItem, System
             Subtitle = string.Empty;
             Icon = null;
             MoreCommands = null;
+            DataPackage = null;
 
             return;
         }
@@ -67,6 +71,7 @@ internal sealed partial class FallbackOpenFileItem : FallbackCommandItem, System
             Subtitle = item.FileName;
             Title = item.FullPath;
             Icon = listItemForUs.Icon;
+            DataPackage = DataPackageHelper.CreateDataPackageForPath(listItemForUs, item.FullPath);
 
             try
             {
@@ -92,13 +97,15 @@ internal sealed partial class FallbackOpenFileItem : FallbackCommandItem, System
                 _searchEngine.Query(query, _queryCookie);
                 var results = _searchEngine.FetchItems(0, 20, _queryCookie, out var _);
 
-                if (results.Count == 0 || ((results[0] as IndexerListItem) is null))
+                if (results.Count == 0 || (results[0] is not IndexerListItem indexerListItem))
                 {
                     // Exit 2: We searched for the file, and found nothing. Oh well.
                     // Hide ourselves.
                     Title = string.Empty;
                     Subtitle = string.Empty;
                     Command = new NoOpCommand();
+                    MoreCommands = null;
+                    DataPackage = null;
                     return;
                 }
 
@@ -106,11 +113,12 @@ internal sealed partial class FallbackOpenFileItem : FallbackCommandItem, System
                 {
                     // Exit 3: We searched for the file, and found exactly one thing. Awesome!
                     // Return it.
-                    Title = results[0].Title;
-                    Subtitle = results[0].Subtitle;
-                    Icon = results[0].Icon;
-                    Command = results[0].Command;
-                    MoreCommands = results[0].MoreCommands;
+                    Title = indexerListItem.Title;
+                    Subtitle = indexerListItem.Subtitle;
+                    Icon = indexerListItem.Icon;
+                    Command = indexerListItem.Command;
+                    MoreCommands = indexerListItem.MoreCommands;
+                    DataPackage = DataPackageHelper.CreateDataPackageForPath(indexerListItem, indexerListItem.FilePath);
 
                     return;
                 }
@@ -121,6 +129,8 @@ internal sealed partial class FallbackOpenFileItem : FallbackCommandItem, System
                 Title = string.Format(CultureInfo.CurrentCulture, fallbackItemSearchPageTitleCompositeFormat, query);
                 Icon = Icons.FileExplorerIcon;
                 Command = indexerPage;
+                MoreCommands = null;
+                DataPackage = null;
 
                 return;
             }
@@ -131,6 +141,7 @@ internal sealed partial class FallbackOpenFileItem : FallbackCommandItem, System
                 Icon = null;
                 Command = new NoOpCommand();
                 MoreCommands = null;
+                DataPackage = null;
             }
         }
     }

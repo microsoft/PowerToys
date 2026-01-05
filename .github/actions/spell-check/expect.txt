@@ -141,8 +141,11 @@ BITSPIXEL
 bla
 BLACKFRAME
 BLENDFUNCTION
+blittable
 Blockquotes
 blt
+bluelightreduction
+bluelightreductionstate
 BLURBEHIND
 BLURREGION
 bmi
@@ -213,6 +216,7 @@ CImage
 cla
 CLASSDC
 CLASSNOTAVAILABLE
+CLEARTYPE
 clickable
 clickonce
 CLIENTEDGE
@@ -221,7 +225,6 @@ clientside
 CLIPBOARDUPDATE
 CLIPCHILDREN
 CLIPSIBLINGS
-CLITo
 closesocket
 clp
 CLSCTX
@@ -250,6 +253,8 @@ colorformat
 colorhistory
 colorhistorylimit
 COLORKEY
+colorref
+Convs
 comctl
 comdlg
 comexp
@@ -321,7 +326,6 @@ CUSTOMFORMATPLACEHOLDER
 CVal
 cvd
 CVirtual
-CVS
 CWMO
 CXSCREEN
 CXSMICON
@@ -389,6 +393,7 @@ devpal
 dfx
 DIALOGEX
 digicert
+diffs
 DINORMAL
 DISABLEASACTIONKEY
 DISABLENOSCROLL
@@ -526,9 +531,12 @@ eyetracker
 FANCYZONESDRAWLAYOUTTEST
 FANCYZONESEDITOR
 FARPROC
+fdw
 fdx
+FErase
 fesf
 FFFF
+FInc
 Figma
 FILEEXPLORER
 fileexploreraddons
@@ -570,6 +578,7 @@ formatetc
 FORPARSING
 foundrylocal
 FRAMECHANGED
+FRestore
 frm
 FROMTOUCH
 fsanitize
@@ -604,6 +613,7 @@ GETSCREENSAVERRUNNING
 GETSECKEY
 GETSTICKYKEYS
 GETTEXTLENGTH
+gfx
 GHND
 gitmodules
 GMEM
@@ -654,6 +664,7 @@ hdwwiz
 Helpline
 helptext
 HGFE
+hgdiobj
 hglobal
 hhk
 HHmmssfff
@@ -701,7 +712,7 @@ hotlight
 hotspot
 HPAINTBUFFER
 HRAWINPUT
-HREDRAW
+hredraw
 hres
 hresult
 hrgn
@@ -879,7 +890,7 @@ LINKOVERLAY
 LINQTo
 listview
 LIVEDRAW
-LIVEZOOM
+livezoom
 LLKH
 llkhf
 LMEM
@@ -908,6 +919,7 @@ LPBITMAPINFOHEADER
 LPCFHOOKPROC
 LPCITEMIDLIST
 LPCLSID
+lpch
 lpcmi
 LPCMINVOKECOMMANDINFO
 LPCREATESTRUCT
@@ -932,6 +944,7 @@ lptpm
 LPTR
 LPTSTR
 lpv
+LPrivate
 LPW
 lpwcx
 lpwndpl
@@ -980,6 +993,7 @@ mdtext
 mdtxt
 mdwn
 meme
+mcp
 memicmp
 MENUITEMINFO
 MENUITEMINFOW
@@ -1070,11 +1084,12 @@ muxxc
 muxxh
 MVPs
 mvvm
+myorg
+myrepo
 MVVMTK
 MWBEx
 MYICON
 NAMECHANGE
-Notavailable
 namespaceanddescendants
 nao
 NCACTIVATE
@@ -1113,6 +1128,7 @@ NEWPLUSSHELLEXTENSIONWIN
 newrow
 nicksnettravels
 NIF
+nightlight
 NLog
 NLSTEXT
 NMAKE
@@ -1216,6 +1232,7 @@ opensource
 openxmlformats
 ollama
 onnx
+openurl
 OPTIMIZEFORINVOKE
 ORPHANEDDIALOGTITLE
 ORSCANS
@@ -1293,6 +1310,7 @@ phwnd
 pici
 pidl
 PIDLIST
+PII
 pinfo
 pinvoke
 pipename
@@ -1341,6 +1359,7 @@ ppv
 ppwsz
 prc
 Prefixer
+Premul
 prependpath
 prepopulate
 prevhost
@@ -1490,6 +1509,7 @@ riid
 RKey
 RNumber
 rop
+rollups
 ROUNDSMALL
 ROWSETEXT
 rpcrt
@@ -1634,6 +1654,7 @@ SKIPOWNPROCESS
 sku
 SLGP
 sln
+slnf
 slnx
 SMALLICON
 smartphone
@@ -1800,7 +1821,6 @@ tlbimp
 tlc
 tmain
 TNP
-toolgood
 Toolhelp
 toolwindow
 TOPDOWNDIB
@@ -1849,6 +1869,8 @@ uitests
 UITo
 ULONGLONG
 ums
+UMax
+UMin
 uncompilable
 UNCPRIORITY
 UNDNAME
@@ -1862,6 +1884,7 @@ unittests
 UNLEN
 UNORM
 unremapped
+Unsubscribes
 unvirtualized
 unwide
 unzoom
@@ -1892,7 +1915,7 @@ valuegenerator
 variantassignment
 VARTYPE
 vcamp
-VCENTER
+vcenter
 vcgtq
 VCINSTALLDIR
 Vcpkg
@@ -1924,7 +1947,7 @@ vorrq
 VOS
 vpaddlq
 vqsubq
-VREDRAW
+vredraw
 vreinterpretq
 VSC
 VSCBD
@@ -1946,7 +1969,7 @@ vswhere
 Vtbl
 WANTNUKEWARNING
 WANTPALM
-wasdk
+WASDK
 wbem
 WBounds
 Wca
@@ -2092,6 +2115,7 @@ xstyler
 XTimer
 XUP
 XVIRTUALSCREEN
+XXL
 xxxxxx
 YAxis
 ycombinator

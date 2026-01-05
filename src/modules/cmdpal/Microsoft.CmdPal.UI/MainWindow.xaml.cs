@@ -15,8 +15,10 @@ using Microsoft.CmdPal.UI.Controls;
 using Microsoft.CmdPal.UI.Events;
 using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.Messages;
+using Microsoft.CmdPal.UI.Services;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
+using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI;
@@ -50,6 +52,12 @@ public sealed partial class MainWindow : WindowEx,
     IRecipient<ShowWindowMessage>,
     IRecipient<HideWindowMessage>,
     IRecipient<QuitMessage>,
+    IRecipient<NavigateToPageMessage>,
+    IRecipient<NavigationDepthMessage>,
+    IRecipient<SearchQueryMessage>,
+    IRecipient<ErrorOccurredMessage>,
+    IRecipient<DragStartedMessage>,
+    IRecipient<DragCompletedMessage>,
     IDisposable
 {
     private const int DefaultWidth = 800;
@@ -66,7 +74,18 @@ public sealed partial class MainWindow : WindowEx,
     private readonly KeyboardListener _keyboardListener;
     private readonly LocalKeyboardListener _localKeyboardListener;
     private readonly HiddenOwnerWindowBehavior _hiddenOwnerBehavior = new();
+    private readonly IThemeService _themeService;
+    private readonly WindowThemeSynchronizer _windowThemeSynchronizer;
     private bool _ignoreHotKeyWhenFullScreen = true;
+    private bool _themeServiceInitialized;
+
+    // Session tracking for telemetry
+    private Stopwatch? _sessionStopwatch;
+    private int _sessionCommandsExecuted;
+    private int _sessionPagesVisited;
+    private int _sessionSearchQueriesCount;
+    private int _sessionMaxNavigationDepth;
+    private int _sessionErrorCount;
 
     private DesktopAcrylicController? _acrylicController;
     private SystemBackdropConfiguration? _configurationSource;
@@ -74,12 +93,22 @@ public sealed partial class MainWindow : WindowEx,
 
     private WindowPosition _currentWindowPosition = new();
 
+    private bool _preventHideWhenDeactivated;
+
+    private MainWindowViewModel ViewModel { get; }
+
     public MainWindow()
     {
         InitializeComponent();
 
+        ViewModel = App.Current.Services.GetService<MainWindowViewModel>()!;
+
         _autoGoHomeTimer = new DispatcherTimer();
         _autoGoHomeTimer.Tick += OnAutoGoHomeTimerOnTick;
+
+        _themeService = App.Current.Services.GetRequiredService<IThemeService>();
+        _themeService.ThemeChanged += ThemeServiceOnThemeChanged;
+        _windowThemeSynchronizer = new WindowThemeSynchronizer(_themeService, this);
 
         _hwnd = new HWND(WinRT.Interop.WindowNative.GetWindowHandle(this).ToInt32());
 
@@ -87,6 +116,8 @@ public sealed partial class MainWindow : WindowEx,
         {
             CommandPaletteHost.SetHostHwnd((ulong)_hwnd.Value);
         }
+
+        SetAcrylic();
 
         _hiddenOwnerBehavior.ShowInTaskbar(this, Debugger.IsAttached);
 
@@ -100,12 +131,16 @@ public sealed partial class MainWindow : WindowEx,
         RestoreWindowPosition();
         UpdateWindowPositionInMemory();
 
-        SetAcrylic();
-
         WeakReferenceMessenger.Default.Register<DismissMessage>(this);
         WeakReferenceMessenger.Default.Register<QuitMessage>(this);
         WeakReferenceMessenger.Default.Register<ShowWindowMessage>(this);
         WeakReferenceMessenger.Default.Register<HideWindowMessage>(this);
+        WeakReferenceMessenger.Default.Register<NavigateToPageMessage>(this);
+        WeakReferenceMessenger.Default.Register<NavigationDepthMessage>(this);
+        WeakReferenceMessenger.Default.Register<SearchQueryMessage>(this);
+        WeakReferenceMessenger.Default.Register<ErrorOccurredMessage>(this);
+        WeakReferenceMessenger.Default.Register<DragStartedMessage>(this);
+        WeakReferenceMessenger.Default.Register<DragCompletedMessage>(this);
 
         // Hide our titlebar.
         // We need to both ExtendsContentIntoTitleBar, then set the height to Collapsed
@@ -154,6 +189,11 @@ public sealed partial class MainWindow : WindowEx,
         // BEAR LOADING: Focus Search must be suppressed here; otherwise it may steal focus (for example, from the system tray icon)
         // and prevent the user from opening its context menu.
         WeakReferenceMessenger.Default.Send(new GoHomeMessage(WithAnimation: false, FocusSearch: false));
+    }
+
+    private void ThemeServiceOnThemeChanged(object? sender, ThemeChangedEventArgs e)
+    {
+        UpdateAcrylic();
     }
 
     private static void LocalKeyboardListener_OnKeyPressed(object? sender, LocalKeyboardListenerKeyPressedEventArgs e)
@@ -247,8 +287,6 @@ public sealed partial class MainWindow : WindowEx,
         _autoGoHomeTimer.Interval = _autoGoHomeInterval;
     }
 
-    // We want to use DesktopAcrylicKind.Thin and custom colors as this is the default material
-    // other Shell surfaces are using, this cannot be set in XAML however.
     private void SetAcrylic()
     {
         if (DesktopAcrylicController.IsSupported())
@@ -265,41 +303,32 @@ public sealed partial class MainWindow : WindowEx,
 
     private void UpdateAcrylic()
     {
-        if (_acrylicController != null)
+        try
         {
-            _acrylicController.RemoveAllSystemBackdropTargets();
-            _acrylicController.Dispose();
-        }
-
-        _acrylicController = GetAcrylicConfig(Content);
-
-        // Enable the system backdrop.
-        // Note: Be sure to have "using WinRT;" to support the Window.As<...>() call.
-        _acrylicController.AddSystemBackdropTarget(this.As<ICompositionSupportsSystemBackdrop>());
-        _acrylicController.SetSystemBackdropConfiguration(_configurationSource);
-    }
-
-    private static DesktopAcrylicController GetAcrylicConfig(UIElement content)
-    {
-        var feContent = content as FrameworkElement;
-
-        return feContent?.ActualTheme == ElementTheme.Light
-            ? new DesktopAcrylicController()
+            if (_acrylicController != null)
             {
-                Kind = DesktopAcrylicKind.Thin,
-                TintColor = Color.FromArgb(255, 243, 243, 243),
-                LuminosityOpacity = 0.90f,
-                TintOpacity = 0.0f,
-                FallbackColor = Color.FromArgb(255, 238, 238, 238),
+                _acrylicController.RemoveAllSystemBackdropTargets();
+                _acrylicController.Dispose();
             }
-            : new DesktopAcrylicController()
+
+            var backdrop = _themeService.Current.BackdropParameters;
+            _acrylicController = new DesktopAcrylicController
             {
-                Kind = DesktopAcrylicKind.Thin,
-                TintColor = Color.FromArgb(255, 32, 32, 32),
-                LuminosityOpacity = 0.96f,
-                TintOpacity = 0.5f,
-                FallbackColor = Color.FromArgb(255, 28, 28, 28),
+                TintColor = backdrop.TintColor,
+                TintOpacity = backdrop.TintOpacity,
+                FallbackColor = backdrop.FallbackColor,
+                LuminosityOpacity = backdrop.LuminosityOpacity,
             };
+
+            // Enable the system backdrop.
+            // Note: Be sure to have "using WinRT;" to support the Window.As<...>() call.
+            _acrylicController.AddSystemBackdropTarget(this.As<ICompositionSupportsSystemBackdrop>());
+            _acrylicController.SetSystemBackdropConfiguration(_configurationSource);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError("Failed to update backdrop", ex);
+        }
     }
 
     private void ShowHwnd(IntPtr hwndValue, MonitorBehavior target)
@@ -511,6 +540,11 @@ public sealed partial class MainWindow : WindowEx,
     {
         var settings = App.Current.Services.GetService<SettingsModel>()!;
 
+        // Start session tracking
+        _sessionStopwatch = Stopwatch.StartNew();
+        _sessionCommandsExecuted = 0;
+        _sessionPagesVisited = 0;
+
         ShowHwnd(message.Hwnd, settings.SummonOn);
     }
 
@@ -519,6 +553,7 @@ public sealed partial class MainWindow : WindowEx,
         // This might come in off the UI thread. Make sure to hop back.
         DispatcherQueue.TryEnqueue(() =>
         {
+            EndSession("Hide");
             HideWindow();
         });
     }
@@ -538,8 +573,65 @@ public sealed partial class MainWindow : WindowEx,
         // This might come in off the UI thread. Make sure to hop back.
         DispatcherQueue.TryEnqueue(() =>
         {
+            EndSession("Dismiss");
             HideWindow();
         });
+    }
+
+    // Session telemetry: Track metrics during the Command Palette session
+    // These receivers increment counters that are sent when EndSession is called
+    public void Receive(NavigateToPageMessage message)
+    {
+        _sessionPagesVisited++;
+    }
+
+    public void Receive(NavigationDepthMessage message)
+    {
+        if (message.Depth > _sessionMaxNavigationDepth)
+        {
+            _sessionMaxNavigationDepth = message.Depth;
+        }
+    }
+
+    public void Receive(SearchQueryMessage message)
+    {
+        _sessionSearchQueriesCount++;
+    }
+
+    public void Receive(ErrorOccurredMessage message)
+    {
+        _sessionErrorCount++;
+    }
+
+    /// <summary>
+    /// Ends the current telemetry session and emits the CmdPal_SessionDuration event.
+    /// Aggregates all session metrics collected since ShowWindow and sends them to telemetry.
+    /// </summary>
+    /// <param name="dismissalReason">The reason the session ended (e.g., Dismiss, Hide, LostFocus).</param>
+    private void EndSession(string dismissalReason)
+    {
+        if (_sessionStopwatch is not null)
+        {
+            _sessionStopwatch.Stop();
+            TelemetryForwarder.LogSessionDuration(
+                (ulong)_sessionStopwatch.ElapsedMilliseconds,
+                _sessionCommandsExecuted,
+                _sessionPagesVisited,
+                dismissalReason,
+                _sessionSearchQueriesCount,
+                _sessionMaxNavigationDepth,
+                _sessionErrorCount);
+            _sessionStopwatch = null;
+        }
+    }
+
+    /// <summary>
+    /// Increments the session commands executed counter for telemetry.
+    /// Called by TelemetryForwarder when an extension command is invoked.
+    /// </summary>
+    internal void IncrementCommandsExecuted()
+    {
+        _sessionCommandsExecuted++;
     }
 
     private void HideWindow()
@@ -711,6 +803,19 @@ public sealed partial class MainWindow : WindowEx,
 
     internal void MainWindow_Activated(object sender, WindowActivatedEventArgs args)
     {
+        if (!_themeServiceInitialized && args.WindowActivationState != WindowActivationState.Deactivated)
+        {
+            try
+            {
+                _themeService.Initialize();
+                _themeServiceInitialized = true;
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Failed to initialize ThemeService", ex);
+            }
+        }
+
         if (args.WindowActivationState == WindowActivationState.Deactivated)
         {
             // Save the current window position before hiding the window
@@ -731,7 +836,14 @@ public sealed partial class MainWindow : WindowEx,
                 return;
             }
 
+            // We're doing something that requires us to lose focus, but we don't want to hide the window
+            if (_preventHideWhenDeactivated)
+            {
+                return;
+            }
+
             // This will DWM cloak our window:
+            EndSession("LostFocus");
             HideWindow();
 
             PowerToysTelemetry.Log.WriteEvent(new CmdPalDismissedOnLostFocus());
@@ -1004,6 +1116,47 @@ public sealed partial class MainWindow : WindowEx,
     public void Dispose()
     {
         _localKeyboardListener.Dispose();
+        _windowThemeSynchronizer.Dispose();
         DisposeAcrylic();
+    }
+
+    public void Receive(DragStartedMessage message)
+    {
+        _preventHideWhenDeactivated = true;
+    }
+
+    public void Receive(DragCompletedMessage message)
+    {
+        _preventHideWhenDeactivated = false;
+        Task.Delay(200).ContinueWith(_ =>
+        {
+            DispatcherQueue.TryEnqueue(StealForeground);
+        });
+    }
+
+    private unsafe void StealForeground()
+    {
+        var foregroundWindow = PInvoke.GetForegroundWindow();
+        if (foregroundWindow == _hwnd)
+        {
+            return;
+        }
+
+        // This is bad, evil, and I'll have to forgo today's dinner dessert to punish myself
+        // for  writing this. But there's no way to make this work without it.
+        // If the window is not reactivated, the UX breaks down: a deactivated window has to
+        // be activated and then deactivated again to hide.
+        var currentThreadId = PInvoke.GetCurrentThreadId();
+        var foregroundThreadId = PInvoke.GetWindowThreadProcessId(foregroundWindow, null);
+        if (foregroundThreadId != currentThreadId)
+        {
+            PInvoke.AttachThreadInput(currentThreadId, foregroundThreadId, true);
+            PInvoke.SetForegroundWindow(_hwnd);
+            PInvoke.AttachThreadInput(currentThreadId, foregroundThreadId, false);
+        }
+        else
+        {
+            PInvoke.SetForegroundWindow(_hwnd);
+        }
     }
 }
