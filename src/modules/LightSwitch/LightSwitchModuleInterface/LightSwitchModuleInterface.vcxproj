@@ -168,9 +168,6 @@
     <ClCompile>
       <AdditionalIncludeDirectories>..\LightSwitchCommon;..\..\..\common;..\..\..\common\inc;..\..\..\common\Telemetry;..\..\;..\..\..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
-    <Link>
-      <AdditionalDependencies Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">$(CoreLibraryDependencies);%(AdditionalDependencies);advapi32.lib</AdditionalDependencies>
-    </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />

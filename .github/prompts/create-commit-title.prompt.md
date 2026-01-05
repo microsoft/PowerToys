@@ -1,6 +1,6 @@
 ---
 mode: 'agent'
-model: GPT-5-Codex (Preview)
+model: Claude Sonnet 4.5
 description: 'Generate an 80-character git commit title for the local diff.'
 ---
 

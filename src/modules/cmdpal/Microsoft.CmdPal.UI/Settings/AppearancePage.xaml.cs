@@ -5,6 +5,7 @@
 using System.Diagnostics;
 using ManagedCommon;
 using Microsoft.CmdPal.UI.ViewModels;
+using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI;
 using Microsoft.UI.Xaml;
@@ -28,7 +29,9 @@ public sealed partial class AppearancePage : Page
         InitializeComponent();
 
         var settings = App.Current.Services.GetService<SettingsModel>()!;
-        ViewModel = new SettingsViewModel(settings, App.Current.Services, _mainTaskScheduler);
+        var themeService = App.Current.Services.GetRequiredService<IThemeService>();
+        var topLevelCommandManager = App.Current.Services.GetService<TopLevelCommandManager>()!;
+        ViewModel = new SettingsViewModel(settings, topLevelCommandManager, _mainTaskScheduler, themeService);
     }
 
     private async void PickBackgroundImage_Click(object sender, RoutedEventArgs e)
