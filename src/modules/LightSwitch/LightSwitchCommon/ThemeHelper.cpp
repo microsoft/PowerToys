@@ -320,14 +320,15 @@ static int SetWallpaperViaIVirtualDesktopManagerInternal(const std::wstring& pat
 // After setting the wallpaper using this method, switching to other virtual desktops will cause the wallpaper to be restored
 static int SetWallpaperViaIDesktopWallpaper(const std::wstring& path, int style) noexcept
 {
-    switch (style)
+    auto pos = static_cast<DESKTOP_WALLPAPER_POSITION>(style);
+    switch (pos)
     {
-    case 0: // Fill
-    case 1: // Fit
-    case 2: // Stretch
-    case 3: // Tile
-    case 4: // Center
-    case 5: // Span
+    case DWPOS_CENTER:
+    case DWPOS_TILE:
+    case DWPOS_STRETCH:
+    case DWPOS_FIT:
+    case DWPOS_FILL:
+    case DWPOS_SPAN:
         break;
     default:
         std::terminate();
@@ -337,7 +338,7 @@ static int SetWallpaperViaIDesktopWallpaper(const std::wstring& path, int style)
     {
         return 0x301;
     }
-    if (desktopWallpaper->SetPosition(static_cast<DESKTOP_WALLPAPER_POSITION>(style)) != S_OK)
+    if (desktopWallpaper->SetPosition(pos) != S_OK)
     {
         return 0x302;
     }

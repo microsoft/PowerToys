@@ -300,11 +300,11 @@
                                                 VerticalAlignment="Center"
                                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                             <ComboBox AutomationProperties.AutomationId="Toggle_WallpaperStyleSwitchLight" SelectedIndex="{x:Bind ViewModel.WallpaperStyleLight, Mode=TwoWay}">
-                                                <ComboBoxItem x:Uid="LightSwitch_StyleFill" AutomationProperties.AutomationId="FillCBItem_StyleSwitch" />
-                                                <ComboBoxItem x:Uid="LightSwitch_StyleFit" AutomationProperties.AutomationId="FitCBItem_StyleSwitch" />
-                                                <ComboBoxItem x:Uid="LightSwitch_StyleStretch" AutomationProperties.AutomationId="StretchCBItem_StyleSwitch" />
-                                                <ComboBoxItem x:Uid="LightSwitch_StyleTile" AutomationProperties.AutomationId="TileCBItem_StyleSwitch" />
                                                 <ComboBoxItem x:Uid="LightSwitch_StyleCenter" AutomationProperties.AutomationId="CenterCBItem_StyleSwitch" />
+                                                <ComboBoxItem x:Uid="LightSwitch_StyleTile" AutomationProperties.AutomationId="TileCBItem_StyleSwitch" />
+                                                <ComboBoxItem x:Uid="LightSwitch_StyleStretch" AutomationProperties.AutomationId="StretchCBItem_StyleSwitch" />
+                                                <ComboBoxItem x:Uid="LightSwitch_StyleFit" AutomationProperties.AutomationId="FitCBItem_StyleSwitch" />
+                                                <ComboBoxItem x:Uid="LightSwitch_StyleFill" AutomationProperties.AutomationId="FillCBItem_StyleSwitch" />
                                                 <ComboBoxItem x:Uid="LightSwitch_StyleSpan" AutomationProperties.AutomationId="SpanCBItem_StyleSwitch" />
                                             </ComboBox>
                                             <TextBlock
@@ -312,11 +312,11 @@
                                                 VerticalAlignment="Center"
                                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                             <ComboBox AutomationProperties.AutomationId="Toggle_WallpaperStyleSwitchDark" SelectedIndex="{x:Bind ViewModel.WallpaperStyleDark, Mode=TwoWay}">
-                                                <ComboBoxItem x:Uid="LightSwitch_StyleFill" AutomationProperties.AutomationId="FillCBItem_StyleSwitch" />
-                                                <ComboBoxItem x:Uid="LightSwitch_StyleFit" AutomationProperties.AutomationId="FitCBItem_StyleSwitch" />
-                                                <ComboBoxItem x:Uid="LightSwitch_StyleStretch" AutomationProperties.AutomationId="StretchCBItem_StyleSwitch" />
-                                                <ComboBoxItem x:Uid="LightSwitch_StyleTile" AutomationProperties.AutomationId="TileCBItem_StyleSwitch" />
                                                 <ComboBoxItem x:Uid="LightSwitch_StyleCenter" AutomationProperties.AutomationId="CenterCBItem_StyleSwitch" />
+                                                <ComboBoxItem x:Uid="LightSwitch_StyleTile" AutomationProperties.AutomationId="TileCBItem_StyleSwitch" />
+                                                <ComboBoxItem x:Uid="LightSwitch_StyleStretch" AutomationProperties.AutomationId="StretchCBItem_StyleSwitch" />
+                                                <ComboBoxItem x:Uid="LightSwitch_StyleFit" AutomationProperties.AutomationId="FitCBItem_StyleSwitch" />
+                                                <ComboBoxItem x:Uid="LightSwitch_StyleFill" AutomationProperties.AutomationId="FillCBItem_StyleSwitch" />
                                                 <ComboBoxItem x:Uid="LightSwitch_StyleSpan" AutomationProperties.AutomationId="SpanCBItem_StyleSwitch" />
                                             </ComboBox>
                                         </StackPanel>
