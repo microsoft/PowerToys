@@ -166,33 +166,6 @@ internal static class Logger
         }
     }
 
-    internal static void GenerateLog()
-    {
-        int l = Setting.Values.DumpObjectsLevel;
-        if (l is > 0 and < 10)
-        {
-            try
-            {
-                string logFile = Path.Combine(Common.RunWithNoAdminRight ? Path.GetTempPath() : Path.GetDirectoryName(Application.ExecutablePath), "MagicMouse.log");
-                var log = Logger.DumpObjects(l);
-                File.WriteAllText(logFile, log);
-                if (Common.RunOnLogonDesktop || Common.RunOnScrSaverDesktop)
-                {
-                    _ = MessageBox.Show("Dump file created: " + logFile, Application.ProductName);
-                }
-                else
-                {
-                    Common.ShowToolTip("Dump file created: " + logFile + " and placed in the Clipboard.", 10000);
-                    Clipboard.SetText(logFile);
-                }
-            }
-            catch (Exception e)
-            {
-                _ = MessageBox.Show(e.Message + "\r\n" + e.StackTrace, Application.ProductName);
-            }
-        }
-    }
-
     internal static void DumpProgramLogs(StringBuilder sb, int level)
     {
         _ = Logger.PrivateDump(sb, AllLogs, "[Program logs]\r\n===============\r\n", 0, level, false);
