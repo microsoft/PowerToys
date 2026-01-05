@@ -19,7 +19,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
     {
         protected override string ModuleName => "MouseUtils";
 
-        private ISettingsUtils SettingsUtils { get; set; }
+        private SettingsUtils SettingsUtils { get; set; }
 
         private GeneralSettings GeneralSettingsConfig { get; set; }
 
@@ -31,7 +31,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private CursorWrapSettings CursorWrapSettingsConfig { get; set; }
 
-        public MouseUtilsViewModel(ISettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, ISettingsRepository<FindMyMouseSettings> findMyMouseSettingsRepository, ISettingsRepository<MouseHighlighterSettings> mouseHighlighterSettingsRepository, ISettingsRepository<MouseJumpSettings> mouseJumpSettingsRepository, ISettingsRepository<MousePointerCrosshairsSettings> mousePointerCrosshairsSettingsRepository, ISettingsRepository<CursorWrapSettings> cursorWrapSettingsRepository, Func<string, int> ipcMSGCallBackFunc)
+        public MouseUtilsViewModel(SettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, ISettingsRepository<FindMyMouseSettings> findMyMouseSettingsRepository, ISettingsRepository<MouseHighlighterSettings> mouseHighlighterSettingsRepository, ISettingsRepository<MouseJumpSettings> mouseJumpSettingsRepository, ISettingsRepository<MousePointerCrosshairsSettings> mousePointerCrosshairsSettingsRepository, ISettingsRepository<CursorWrapSettings> cursorWrapSettingsRepository, Func<string, int> ipcMSGCallBackFunc)
         {
             SettingsUtils = settingsUtils;
 

@@ -6,6 +6,7 @@ using System;
 using System.Windows.Forms;
 
 using MouseWithoutBorders.Class;
+using MouseWithoutBorders.Core;
 
 namespace MouseWithoutBorders
 {

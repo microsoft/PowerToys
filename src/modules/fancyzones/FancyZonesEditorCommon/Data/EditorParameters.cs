@@ -14,7 +14,7 @@ namespace FancyZonesEditorCommon.Data
         {
             get
             {
-                return GetDataFolder() + "\\Microsoft\\PowerToys\\FancyZones\\editor-parameters.json";
+                return FancyZonesPaths.EditorParameters;
             }
         }
 

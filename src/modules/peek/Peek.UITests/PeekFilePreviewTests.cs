@@ -124,9 +124,6 @@ public class PeekFilePreviewTests : UITestBase
                     settings["properties"] = properties;
                 });
 
-            // Disable all modules except Peek in global settings
-            SettingsConfigHelper.ConfigureGlobalModuleSettings("Peek");
-
             Debug.WriteLine("Successfully updated all settings - Peek shortcut configured and all modules except Peek disabled");
         }
         catch (Exception ex)
@@ -138,6 +135,7 @@ public class PeekFilePreviewTests : UITestBase
     [TestInitialize]
     public void TestInitialize()
     {
+        RestartScopeExe("Peek");
         Session.CloseMainWindow();
         SendKeys(Key.Win, Key.M);
     }

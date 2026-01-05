@@ -28,6 +28,8 @@
         <CornerRadius x:Key="MediumGridViewItemCornerRadius">8</CornerRadius>
 
         <Style x:Key="IconGridViewItemStyle" TargetType="GridViewItem">
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="GridViewItem">
@@ -90,6 +92,8 @@
         </Style>
 
         <Style x:Key="GalleryGridViewItemStyle" TargetType="GridViewItem">
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="GridViewItem">
@@ -168,7 +172,16 @@
             Gallery="{StaticResource GalleryGridItemViewModelTemplate}"
             GridProperties="{x:Bind ViewModel.GridProperties, Mode=OneWay}"
             Medium="{StaticResource MediumGridItemViewModelTemplate}"
+            Section="{StaticResource ListSectionViewModelTemplate}"
+            Separator="{StaticResource ListSeparatorViewModelTemplate}"
             Small="{StaticResource SmallGridItemViewModelTemplate}" />
+
+        <cmdpalUI:ListItemTemplateSelector
+            x:Key="ListItemTemplateSelector"
+            x:DataType="coreViewModels:ListItemViewModel"
+            ListItem="{StaticResource ListItemViewModelTemplate}"
+            Section="{StaticResource ListSectionViewModelTemplate}"
+            Separator="{StaticResource ListSeparatorViewModelTemplate}" />
 
         <cmdpalUI:GridItemContainerStyleSelector
             x:Key="GridItemContainerStyleSelector"
@@ -241,12 +254,46 @@
             </Grid>
         </DataTemplate>
 
+        <DataTemplate x:Key="ListSeparatorViewModelTemplate" x:DataType="coreViewModels:ListItemViewModel">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Rectangle
+                    Grid.Column="1"
+                    Height="1"
+                    Margin="0,2,0,2"
+                    Fill="{ThemeResource DividerStrokeColorDefaultBrush}" />
+            </Grid>
+        </DataTemplate>
+
+        <DataTemplate x:Key="ListSectionViewModelTemplate" x:DataType="coreViewModels:ListItemViewModel">
+            <Grid
+                Margin="0"
+                VerticalAlignment="Center"
+                cpcontrols:WrapPanel.IsFullLine="True"
+                ColumnSpacing="8"
+                IsTabStop="False"
+                IsTapEnabled="True">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <TextBlock
+                    Grid.Column="0"
+                    Foreground="{ThemeResource TextFillColorDisabled}"
+                    Style="{ThemeResource CaptionTextBlockStyle}"
+                    Text="{x:Bind Section}" />
+                <Rectangle
+                    Grid.Column="1"
+                    Height="1"
+                    Fill="{ThemeResource DividerStrokeColorDefaultBrush}" />
+            </Grid>
+        </DataTemplate>
+
         <!--  Grid item templates for visual grid representation  -->
         <DataTemplate x:Key="SmallGridItemViewModelTemplate" x:DataType="coreViewModels:ListItemViewModel">
             <StackPanel
-                Width="60"
-                Height="60"
-                Padding="8,16"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
                 AutomationProperties.Name="{x:Bind Title, Mode=OneWay}"
@@ -265,7 +312,6 @@
                     Foreground="{ThemeResource TextFillColorPrimary}"
                     SourceKey="{x:Bind Icon, Mode=OneWay}"
                     SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}" />
-
             </StackPanel>
         </DataTemplate>
 
@@ -393,13 +439,16 @@
                         <ListView
                             x:Name="ItemsList"
                             Padding="0,2,0,0"
+                            CanDragItems="True"
                             ContextCanceled="Items_OnContextCanceled"
                             ContextRequested="Items_OnContextRequested"
                             DoubleTapped="Items_DoubleTapped"
+                            DragItemsCompleted="Items_DragItemsCompleted"
+                            DragItemsStarting="Items_DragItemsStarting"
                             IsDoubleTapEnabled="True"
                             IsItemClickEnabled="True"
                             ItemClick="Items_ItemClick"
-                            ItemTemplate="{StaticResource ListItemViewModelTemplate}"
+                            ItemTemplateSelector="{StaticResource ListItemTemplateSelector}"
                             ItemsSource="{x:Bind ViewModel.FilteredItems, Mode=OneWay}"
                             RightTapped="Items_RightTapped"
                             SelectionChanged="Items_SelectionChanged">
@@ -411,10 +460,13 @@
                     <controls:Case Value="True">
                         <GridView
                             x:Name="ItemsGrid"
-                            Padding="8"
+                            Padding="16,0"
+                            CanDragItems="True"
                             ContextCanceled="Items_OnContextCanceled"
                             ContextRequested="Items_OnContextRequested"
                             DoubleTapped="Items_DoubleTapped"
+                            DragItemsCompleted="Items_DragItemsCompleted"
+                            DragItemsStarting="Items_DragItemsStarting"
                             IsDoubleTapEnabled="True"
                             IsItemClickEnabled="True"
                             ItemClick="Items_ItemClick"
@@ -423,10 +475,14 @@
                             ItemsSource="{x:Bind ViewModel.FilteredItems, Mode=OneWay}"
                             RightTapped="Items_RightTapped"
                             SelectionChanged="Items_SelectionChanged">
+                            <GridView.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <cpcontrols:WrapPanel HorizontalSpacing="8" Orientation="Horizontal" />
+                                </ItemsPanelTemplate>
+                            </GridView.ItemsPanel>
                             <GridView.ItemContainerTransitions>
                                 <TransitionCollection />
                             </GridView.ItemContainerTransitions>
-                            <GridView.ItemContainerStyle />
                         </GridView>
                     </controls:Case>
                 </controls:SwitchPresenter>
