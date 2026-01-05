@@ -52,7 +52,7 @@ internal static class Logger
 
     internal static void TelemetryLogTrace(string log, SeverityLevel severityLevel, bool flush = false)
     {
-        int logCount = LogCounter.AddOrUpdate(log, 1, (key, value) => value + 1);
+        int logCount = Logger.LogCounter.AddOrUpdate(log, 1, (key, value) => value + 1);
         Logger.Log(log);
     }
 
@@ -82,7 +82,7 @@ internal static class Logger
     {
         if (e is not KnownException)
         {
-            string exText = e.ToString();
+            var exText = e.ToString();
 
             Logger.Log($"!Exception!: {exText}", memberName, sourceFilePath, sourceLineNumber);
 
@@ -241,7 +241,7 @@ internal static class Logger
             {
                 foreach (var ipAddress in kvp.Value)
                 {
-                    _ = PrivateDump(sb, ipAddress, "[" + kvp.Key + "]", level + 1, maxLevel, true);
+                    _ = PrivateDump(sb, ipAddress, $"[{kvp.Key}]", level + 1, maxLevel, true);
                 }
             }
         }
@@ -255,7 +255,7 @@ internal static class Logger
                 {
                     for (var i = 0; i < arr.GetLength(0); i++)
                     {
-                        _ = PrivateDump(sb, arr.GetValue(i), "[" + i + "]", level + 1, maxLevel, true);
+                        _ = PrivateDump(sb, arr.GetValue(i), $"[{i}]", level + 1, maxLevel, true);
                     }
                 }
                 else
@@ -284,7 +284,7 @@ internal static class Logger
         /* values[2] = " "; */
         /* values[3] = t.FullName; */
         values[4] = " = ";
-        values[5] = objName.Equals("myKey", StringComparison.OrdinalIgnoreCase)
+        values[5] = objName.Equals(nameof(Encryption.myKey), StringComparison.OrdinalIgnoreCase)
             ? Logger.GetChecksum(objString)
             : objName.Equals("lastClipboardObject", StringComparison.OrdinalIgnoreCase)
                 ? string.Empty
