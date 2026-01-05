@@ -176,15 +176,15 @@ internal static class Logger
         _ = Logger.PrivateDump(sb, new Common(), "[Other Logs]\r\n===============\r\n", 0, level, false);
     }
 
-    private static string DumpObjects(int level)
+    internal static string DumpObjects(int level)
     {
-        StringBuilder sb = new(1000000);
+        var sb = new StringBuilder(1000000);
 
         Logger.DumpProgramLogs(sb, level);
         Logger.DumpOtherLogs(sb, level);
         Logger.DumpStaticTypes(sb, level);
 
-        string log =
+        var log =
             $"{Application.ProductName} {Application.ProductVersion}\r\n" +
             $"Private Mem: {Process.GetCurrentProcess().PrivateMemorySize64 / 1024}KB\r\n" +
             $"\r\n" +
@@ -198,7 +198,8 @@ internal static class Logger
 
         log += Thread.DumpThreadsStack();
         log += "\r\n";
-        log += $"Current process session: {Process.GetCurrentProcess().SessionId}, active console session: {NativeMethods.WTSGetActiveConsoleSessionId()}.";
+        log += $"Current process session: {Process.GetCurrentProcess().SessionId}\r\n";
+        log += $"Active console session: {NativeMethods.WTSGetActiveConsoleSessionId()}";
 
         return log;
     }
