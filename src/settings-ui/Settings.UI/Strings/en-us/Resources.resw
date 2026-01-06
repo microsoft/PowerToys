@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <root>
-  <!--
-    Microsoft ResX Schema
-
+  <!-- 
+    Microsoft ResX Schema 
+    
     Version 2.0
-
-    The primary goals of this format is to allow a simple XML format
-    that is mostly human readable. The generation and parsing of the
-    various data types are done through the TypeConverter classes
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
     associated with the data types.
-
+    
     Example:
-
+    
     ... ado.net/XML headers & schema ...
     <resheader name="resmimetype">text/microsoft-resx</resheader>
     <resheader name="version">2.0</resheader>
@@ -26,36 +26,36 @@
         <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
         <comment>This is a comment</comment>
     </data>
-
-    There are any number of "resheader" rows that contain simple
+                
+    There are any number of "resheader" rows that contain simple 
     name/value pairs.
-
-    Each data row contains a name, and value. The row also contains a
-    type or mimetype. Type corresponds to a .NET class that support
-    text/value conversion through the TypeConverter architecture.
-    Classes that don't support this are serialized and stored with the
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
     mimetype set.
-
-    The mimetype is used for serialized objects, and tells the
-    ResXResourceReader how to depersist the object. This is currently not
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
     extensible. For a given mimetype the value must be set accordingly:
-
-    Note - application/x-microsoft.net.object.binary.base64 is the format
-    that the ResXResourceWriter will generate, however the reader can
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
     read any of the formats listed below.
-
+    
     mimetype: application/x-microsoft.net.object.binary.base64
-    value   : The object must be serialized with
+    value   : The object must be serialized with 
             : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
             : and then encoded with base64 encoding.
-
+    
     mimetype: application/x-microsoft.net.object.soap.base64
-    value   : The object must be serialized with
+    value   : The object must be serialized with 
             : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
             : and then encoded with base64 encoding.
 
     mimetype: application/x-microsoft.net.object.bytearray.base64
-    value   : The object must be serialized into a byte array
+    value   : The object must be serialized into a byte array 
             : using a System.ComponentModel.TypeConverter
             : and then encoded with base64 encoding.
     -->
@@ -3107,6 +3107,12 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="CropAndLock_ThumbnailActivation_Shortcut.Description" xml:space="preserve">
     <value>Creates a cropped, non-interactive thumbnail of another window. Improves app compatibility.</value>
   </data>
+  <data name="CropAndLock_ScreenshotActivation_Shortcut.Header" xml:space="preserve">
+    <value>Screenshot shortcut</value>
+  </data>
+  <data name="CropAndLock_ScreenshotActivation_Shortcut.Description" xml:space="preserve">
+    <value>Creates a static, non-interactive screenshot of a selected cropped area of another window.</value>
+  </data>
   <data name="CropAndLock.SecondaryLinksHeader" xml:space="preserve">
     <value>Attribution</value>
     <comment>giving credit to the projects this utility was based on</comment>
@@ -3124,6 +3130,9 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   </data>
   <data name="Oobe_CropAndLock_HowToUse_Reparent.Text" xml:space="preserve">
     <value>to crop an application's window into a cropped window. This is experimental and can cause issues with some applications, since the cropped window will contain the original application window.</value>
+  </data>
+  <data name="Oobe_CropAndLock_HowToUse_Screenshot.Text" xml:space="preserve">
+    <value>to crop and create a static screenshot of another window. The screenshot won't update with the original window's content.</value>
   </data>
   <data name="AlwaysOnTop.ModuleDescription" xml:space="preserve">
     <value>Always On Top is a quick and easy way to pin windows on top.</value>
@@ -3381,6 +3390,9 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="CropAndLock_Reparent" xml:space="preserve">
     <value>Crop an app's window into a cropped window</value>
+  </data>
+  <data name="CropAndLock_Screenshot" xml:space="preserve">
+    <value>Take a screenshot of a cropped area</value>
   </data>
   <data name="FancyZones_OpenEditor" xml:space="preserve">
     <value>Open editor</value>
@@ -5541,15 +5553,6 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
     <value>Results for</value>
     <comment>Prefix for search string. E.g. "Results for 'shortcut'"</comment>
   </data>
-  <data name="Oobe_CropAndLock_HowToUse_Screenshot.Text" xml:space="preserve">
-    <value>to crop and create a temporary screenshot of another window.</value>
-  </data>
-  <data name="CropAndLock_ScreenshotActivation_Shortcut.Description" xml:space="preserve">
-    <value>Creates a cropped, not-updating copy of another window</value>
-  </data>
-  <data name="CropAndLock_ScreenshotActivation_Shortcut.Header" xml:space="preserve">
-    <value>Temporary screenshot shortcut</value>
-  </data>
   <data name="UtilitiesHeader.Title" xml:space="preserve">
     <value>Utilities</value>
   </data>
@@ -5768,5 +5771,14 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   <data name="CmdPal_ModernDescription.Text" xml:space="preserve">
     <value>A modern UI built with Fluent Design</value>
     <comment>Fluent Design is a product name, do not loc</comment>
+  </data>
+  <data name="LightSwitch_ModeFollowNightLight.Content" xml:space="preserve">
+    <value>Follow Night Light</value>
+  </data>
+  <data name="LightSwitch_NightLightSettingsButton.Content" xml:space="preserve">
+    <value>Personalize your Night Light settings.</value>
+  </data>
+  <data name="LightSwitch_FollowNightLightCardMessage.Text" xml:space="preserve">
+    <value>Following Night Light settings.</value>
   </data>
 </root>
