@@ -46,6 +46,13 @@ internal static class DataPackageHelpers
         return dataPackage;
     }
 
+    internal static DataPackage CreateFromImage(RandomAccessStreamReference imageStreamRef)
+    {
+        DataPackage dataPackage = new();
+        dataPackage.SetBitmap(imageStreamRef);
+        return dataPackage;
+    }
+
     internal static async Task<DataPackage> CreateFromFileAsync(string fileName)
     {
         var storageFile = await StorageFile.GetFileFromPathAsync(fileName);

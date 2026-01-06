@@ -28,5 +28,11 @@ namespace AdvancedPaste.Services.CustomActions
         public string SystemPrompt { get; set; }
 
         public bool ModerationEnabled { get; set; }
+
+        public PasteAIUsage Usage { get; set; }
+
+        public int ImageWidth { get; set; }
+
+        public int ImageHeight { get; set; }
     }
 }

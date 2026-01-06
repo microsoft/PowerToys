@@ -372,4 +372,10 @@
     <value>Unable to load Foundry Local model: {0}</value>
     <comment>{0} is the model identifier. Do not translate {0}.</comment>
   </data>
+  <data name="PasteAIUsage_ChatCompletion" xml:space="preserve">
+    <value>Chat completion</value>
+  </data>
+  <data name="PasteAIUsage_TextToImage" xml:space="preserve">
+    <value>Text to image</value>
+  </data>
 </root>

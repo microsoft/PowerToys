@@ -335,6 +335,7 @@
             <converters:CountToVisibilityConverter x:Key="CountToVisibilityConverter" />
             <converters:CountToInvertedVisibilityConverter x:Key="CountToInvertedVisibilityConverter" />
             <converters:ServiceTypeToIconConverter x:Key="ServiceTypeToIconConverter" />
+            <converters:PasteAIUsageToStringConverter x:Key="PasteAIUsageToStringConverter" />
         </ResourceDictionary>
     </UserControl.Resources>
     <Grid x:Name="PromptBoxGrid" Loaded="Grid_Loaded">
@@ -430,12 +431,20 @@
                                         Grid.Row="1"
                                         MinHeight="104"
                                         MaxHeight="320">
-                                        <TextBlock
-                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                            IsTextSelectionEnabled="True"
-                                            Style="{StaticResource CaptionTextBlockStyle}"
-                                            Text="{x:Bind ViewModel.CustomFormatResult, Mode=OneWay}"
-                                            TextWrapping="Wrap" />
+                                        <StackPanel>
+                                            <TextBlock
+                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                IsTextSelectionEnabled="True"
+                                                Style="{StaticResource CaptionTextBlockStyle}"
+                                                Text="{x:Bind ViewModel.CustomFormatResult, Mode=OneWay}"
+                                                TextWrapping="Wrap"
+                                                Visibility="{x:Bind ViewModel.HasCustomFormatText, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+                                            <Image
+                                                HorizontalAlignment="Left"
+                                                Source="{x:Bind ViewModel.CustomFormatImageResult, Mode=OneWay}"
+                                                Stretch="Uniform"
+                                                Visibility="{x:Bind ViewModel.HasCustomFormatImage, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+                                        </StackPanel>
                                     </ScrollViewer>
                                 </Grid>
                                 <Rectangle
@@ -602,20 +611,37 @@
                                                         Style="{StaticResource CaptionTextBlockStyle}"
                                                         Text="{x:Bind ServiceType, Mode=OneWay}" />
                                                 </StackPanel>
-                                                <Border
+                                                <StackPanel
                                                     Grid.Column="2"
-                                                    Padding="2,0,2,0"
                                                     VerticalAlignment="Center"
-                                                    BorderBrush="{ThemeResource ControlStrokeColorSecondary}"
-                                                    BorderThickness="1"
-                                                    CornerRadius="{StaticResource ControlCornerRadius}"
-                                                    Visibility="{x:Bind IsLocalModel, Mode=OneWay}">
-                                                    <TextBlock
-                                                        x:Uid="LocalModelBadge"
-                                                        AutomationProperties.AccessibilityView="Raw"
-                                                        FontSize="10"
-                                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                                                </Border>
+                                                    Orientation="Horizontal"
+                                                    Spacing="4">
+                                                    <Border
+                                                        Padding="2,0,2,0"
+                                                        VerticalAlignment="Center"
+                                                        BorderBrush="{ThemeResource ControlStrokeColorSecondary}"
+                                                        BorderThickness="1"
+                                                        CornerRadius="{StaticResource ControlCornerRadius}">
+                                                        <TextBlock
+                                                            AutomationProperties.AccessibilityView="Raw"
+                                                            FontSize="10"
+                                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                            Text="{x:Bind Usage, Mode=OneWay, Converter={StaticResource PasteAIUsageToStringConverter}}" />
+                                                    </Border>
+                                                    <Border
+                                                        Padding="2,0,2,0"
+                                                        VerticalAlignment="Center"
+                                                        BorderBrush="{ThemeResource ControlStrokeColorSecondary}"
+                                                        BorderThickness="1"
+                                                        CornerRadius="{StaticResource ControlCornerRadius}"
+                                                        Visibility="{x:Bind IsLocalModel, Mode=OneWay}">
+                                                        <TextBlock
+                                                            x:Uid="LocalModelBadge"
+                                                            AutomationProperties.AccessibilityView="Raw"
+                                                            FontSize="10"
+                                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                                    </Border>
+                                                </StackPanel>
                                                 <!--<Border
                                                     Grid.Column="2"
                                                     Padding="2,0,2,0"

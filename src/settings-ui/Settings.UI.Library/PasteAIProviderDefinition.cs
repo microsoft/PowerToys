@@ -17,6 +17,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     {
         private string _id = Guid.NewGuid().ToString("N");
         private string _serviceType = "OpenAI";
+        private string _usage = "ChatCompletion";
         private string _modelName = string.Empty;
         private string _endpointUrl = string.Empty;
         private string _apiVersion = string.Empty;
@@ -27,6 +28,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         private bool _isActive;
         private bool _enableAdvancedAI;
         private bool _isLocalModel;
+        private int _imageWidth = 1024;
+        private int _imageHeight = 1024;
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -48,6 +51,20 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                     OnPropertyChanged(nameof(DisplayName));
                 }
             }
+        }
+
+        [JsonPropertyName("usage")]
+        public string Usage
+        {
+            get => _usage;
+            set => SetProperty(ref _usage, string.IsNullOrWhiteSpace(value) ? "ChatCompletion" : value); // TODO: Localization support
+        }
+
+        [JsonIgnore]
+        public PasteAIUsage UsageKind
+        {
+            get => PasteAIUsageExtensions.FromConfigString(Usage);
+            set => Usage = value.ToConfigString();
         }
 
         [JsonIgnore]
@@ -126,6 +143,20 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             set => SetProperty(ref _isLocalModel, value);
         }
 
+        [JsonPropertyName("image-width")]
+        public int ImageWidth
+        {
+            get => _imageWidth;
+            set => SetProperty(ref _imageWidth, value);
+        }
+
+        [JsonPropertyName("image-height")]
+        public int ImageHeight
+        {
+            get => _imageHeight;
+            set => SetProperty(ref _imageHeight, value);
+        }
+
         [JsonIgnore]
         public bool IsActive
         {
@@ -142,6 +173,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             {
                 Id = Id,
                 ServiceType = ServiceType,
+                Usage = Usage,
                 ModelName = ModelName,
                 EndpointUrl = EndpointUrl,
                 ApiVersion = ApiVersion,
@@ -151,6 +183,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 ModerationEnabled = ModerationEnabled,
                 EnableAdvancedAI = EnableAdvancedAI,
                 IsLocalModel = IsLocalModel,
+                ImageWidth = ImageWidth,
+                ImageHeight = ImageHeight,
                 IsActive = IsActive,
             };
         }
