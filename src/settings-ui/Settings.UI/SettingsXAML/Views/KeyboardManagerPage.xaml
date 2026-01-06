@@ -76,7 +76,7 @@
                     HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
                     <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.ToggleShortcut, Mode=TwoWay}" />
                 </tkcontrols:SettingsCard>
-                 
+
                 <controls:SettingsGroup x:Uid="KeyboardManager_Keys" IsEnabled="{x:Bind ViewModel.Enabled, Mode=OneWay}">
                     <tkcontrols:SettingsCard
                         Name="KeyboardManagerRemapKeyboardButton"
