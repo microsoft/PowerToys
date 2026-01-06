@@ -313,12 +313,6 @@ void LightSwitchSettings::LoadSettings()
                 NotifyObservers(SettingId::WallpaperPathDark);
             }
         }
-
-        // For ChangeSystem/ChangeApps changes, log telemetry
-        if (themeTargetChanged)
-        {
-            Trace::LightSwitch::ThemeTargetChanged(m_settings.changeApps, m_settings.changeSystem);
-        }
     }
     catch (...)
     {
