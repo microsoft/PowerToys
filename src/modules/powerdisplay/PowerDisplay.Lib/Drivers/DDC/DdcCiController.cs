@@ -458,7 +458,7 @@ namespace PowerDisplay.Common.Drivers.DDC
         /// </summary>
         private static void InitializeInputSource(Monitor monitor, IntPtr handle)
         {
-            if (GetVCPFeatureAndVCPFeatureReply(handle, VcpCodeInputSource, IntPtr.Zero, out uint current, out uint _))
+            if (TryGetVcpFeature(handle, VcpCodeInputSource, monitor.Id, out uint current, out uint _))
             {
                 monitor.CurrentInputSource = (int)current;
             }
@@ -469,7 +469,7 @@ namespace PowerDisplay.Common.Drivers.DDC
         /// </summary>
         private static void InitializeColorTemperature(Monitor monitor, IntPtr handle)
         {
-            if (GetVCPFeatureAndVCPFeatureReply(handle, VcpCodeSelectColorPreset, IntPtr.Zero, out uint current, out uint _))
+            if (TryGetVcpFeature(handle, VcpCodeSelectColorPreset, monitor.Id, out uint current, out uint _))
             {
                 monitor.CurrentColorTemperature = (int)current;
             }
@@ -480,11 +480,33 @@ namespace PowerDisplay.Common.Drivers.DDC
         /// </summary>
         private static void InitializeBrightness(Monitor monitor, IntPtr handle)
         {
-            if (GetVCPFeatureAndVCPFeatureReply(handle, VcpCodeBrightness, IntPtr.Zero, out uint current, out uint max))
+            if (TryGetVcpFeature(handle, VcpCodeBrightness, monitor.Id, out uint current, out uint max))
             {
                 var brightnessInfo = new VcpFeatureValue((int)current, 0, (int)max);
                 monitor.CurrentBrightness = brightnessInfo.ToPercentage();
             }
+        }
+
+        /// <summary>
+        /// Wrapper for GetVCPFeatureAndVCPFeatureReply that logs errors on failure.
+        /// </summary>
+        /// <param name="handle">Physical monitor handle</param>
+        /// <param name="vcpCode">VCP code to read</param>
+        /// <param name="monitorId">Monitor ID for logging (optional)</param>
+        /// <param name="currentValue">Output: current value</param>
+        /// <param name="maxValue">Output: maximum value</param>
+        /// <returns>True if successful, false otherwise</returns>
+        private static bool TryGetVcpFeature(IntPtr handle, byte vcpCode, string? monitorId, out uint currentValue, out uint maxValue)
+        {
+            if (GetVCPFeatureAndVCPFeatureReply(handle, vcpCode, IntPtr.Zero, out currentValue, out maxValue))
+            {
+                return true;
+            }
+
+            var lastError = GetLastError();
+            var monitorPrefix = string.IsNullOrEmpty(monitorId) ? string.Empty : $"[{monitorId}] ";
+            Logger.LogError($"{monitorPrefix}Failed to read VCP 0x{vcpCode:X2}, error code: {lastError}");
+            return false;
         }
 
         /// <summary>
@@ -585,7 +607,7 @@ namespace PowerDisplay.Common.Drivers.DDC
                         return VcpFeatureValue.Invalid;
                     }
 
-                    if (GetVCPFeatureAndVCPFeatureReply(monitor.Handle, vcpCode, IntPtr.Zero, out uint current, out uint max))
+                    if (TryGetVcpFeature(monitor.Handle, vcpCode, monitor.Id, out uint current, out uint max))
                     {
                         return new VcpFeatureValue((int)current, 0, (int)max);
                     }
