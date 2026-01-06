@@ -2,6 +2,7 @@
 #include "Settings.h"
 #include "Constants.h"
 
+#include <filesystem>
 #include <common/utils/json.h>
 #include <common/SettingsAPI/settings_helpers.h>
 

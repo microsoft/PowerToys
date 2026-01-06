@@ -1,0 +1,19 @@
+#include "resource.h"
+#include <windows.h>
+
+STRINGTABLE
+BEGIN
+    IDS_USAGE               "Usage: FileLocksmithCLI.exe [options] <path1> [path2] ...\nOptions:\n  --kill      Kill processes locking the files\n  --json      Output results in JSON format\n  --wait      Wait for files to be unlocked\n  --timeout   Timeout in milliseconds for --wait\n  --help      Show this help message\n"
+    IDS_NO_PROCESSES        "No processes found locking the file(s).\n"
+    IDS_HEADER              "PID\tUser\tProcess\n"
+    IDS_TERMINATED          "Terminated process %1!d! (%2)\n"
+    IDS_FAILED_TERMINATE    "Failed to terminate process %1!d! (%2)\n"
+    IDS_FAILED_OPEN         "Failed to open process %1!d! (%2)\n"
+    IDS_ERROR_NO_PATHS      "Error: No paths specified.\n"
+    IDS_WARN_JSON_WAIT      "Warning: --wait is incompatible with --json. Ignoring --json.\n"
+    IDS_WAITING             "Waiting for files to be unlocked...\n"
+    IDS_UNLOCKED            "Files unlocked.\n"
+    IDS_TIMEOUT             "Timeout waiting for files to be unlocked.\n"
+    IDS_ERROR_INVALID_TIMEOUT "Error: Invalid timeout value.\n"
+    IDS_ERROR_TIMEOUT_ARG   "Error: --timeout requires an argument.\n"
+END

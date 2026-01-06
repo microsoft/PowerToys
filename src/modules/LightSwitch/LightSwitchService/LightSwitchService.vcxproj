@@ -68,6 +68,7 @@
     <ClCompile Include="NightLightRegistryObserver.cpp" />
     <ClCompile Include="..\LightSwitchCommon\ThemeHelper.cpp" />
     <ClCompile Include="ThemeScheduler.cpp" />
+    <ClCompile Include="trace.cpp" />
     <ClCompile Include="WinHookEventIDs.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -82,6 +83,7 @@
     <ClInclude Include="..\LightSwitchCommon\ThemeHelper.h" />
     <ClInclude Include="..\LightSwitchCommon\SettingsConstants.h" />
     <ClInclude Include="ThemeScheduler.h" />
+    <ClInclude Include="trace.h" />
     <ClInclude Include="WinHookEventIDs.h" />
   </ItemGroup>
   <ItemGroup>

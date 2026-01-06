@@ -3107,6 +3107,12 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="CropAndLock_ThumbnailActivation_Shortcut.Description" xml:space="preserve">
     <value>Creates a cropped, non-interactive thumbnail of another window. Improves app compatibility.</value>
   </data>
+  <data name="CropAndLock_ScreenshotActivation_Shortcut.Header" xml:space="preserve">
+    <value>Screenshot shortcut</value>
+  </data>
+  <data name="CropAndLock_ScreenshotActivation_Shortcut.Description" xml:space="preserve">
+    <value>Creates a cropped, static screenshot of another window. The screenshot won't update with the original window's content.</value>
+  </data>
   <data name="CropAndLock.SecondaryLinksHeader" xml:space="preserve">
     <value>Attribution</value>
     <comment>giving credit to the projects this utility was based on</comment>
@@ -3124,6 +3130,9 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   </data>
   <data name="Oobe_CropAndLock_HowToUse_Reparent.Text" xml:space="preserve">
     <value>to crop an application's window into a cropped window. This is experimental and can cause issues with some applications, since the cropped window will contain the original application window.</value>
+  </data>
+  <data name="Oobe_CropAndLock_HowToUse_Screenshot.Text" xml:space="preserve">
+    <value>to crop an application's window into a screenshot window. The screenshot won't update with the original window's content.</value>
   </data>
   <data name="AlwaysOnTop.ModuleDescription" xml:space="preserve">
     <value>Always On Top is a quick and easy way to pin windows on top.</value>
@@ -3381,6 +3390,9 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="CropAndLock_Reparent" xml:space="preserve">
     <value>Crop an app's window into a cropped window</value>
+  </data>
+  <data name="CropAndLock_Screenshot" xml:space="preserve">
+    <value>Crop an app into a screenshot window</value>
   </data>
   <data name="FancyZones_OpenEditor" xml:space="preserve">
     <value>Open editor</value>
