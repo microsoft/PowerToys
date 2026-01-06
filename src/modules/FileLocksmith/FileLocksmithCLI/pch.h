@@ -1,6 +1,8 @@
 #pragma once
 
-// System headers
+#ifndef PCH_H
+#define PCH_H
+
 #define NOMINMAX
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
@@ -8,16 +10,13 @@
 #include <Psapi.h>
 #include <shellapi.h>
 
-// C++ standard library headers
-#include <stdexcept>
-#include <vector>
-#include <map>
 #include <iostream>
+#include <vector>
 #include <string>
+#include <map>
 #include <set>
 #include <algorithm>
-#include <fstream>
 
-#ifndef FILELOCKSMITH_LIB_STATIC
-#include <winrt/PowerToys.Interop.h>
-#endif
+#include <winrt/base.h>
+
+#endif // PCH_H
