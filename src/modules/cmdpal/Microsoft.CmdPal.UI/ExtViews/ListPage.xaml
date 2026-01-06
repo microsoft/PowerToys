@@ -260,9 +260,8 @@
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
                 <Rectangle
-                    Grid.Column="1"
                     Height="1"
-                    Margin="0,2,0,2"
+                    Margin="0,4,0,2"
                     Fill="{ThemeResource DividerStrokeColorDefaultBrush}" />
             </Grid>
         </DataTemplate>
@@ -281,12 +280,13 @@
                 </Grid.ColumnDefinitions>
                 <TextBlock
                     Grid.Column="0"
-                    Foreground="{ThemeResource TextFillColorDisabled}"
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                     Style="{ThemeResource CaptionTextBlockStyle}"
                     Text="{x:Bind Section}" />
                 <Rectangle
                     Grid.Column="1"
                     Height="1"
+                    Margin="0,4,0,2"
                     Fill="{ThemeResource DividerStrokeColorDefaultBrush}" />
             </Grid>
         </DataTemplate>
@@ -414,7 +414,7 @@
                         VerticalAlignment="Center"
                         CharacterSpacing="11"
                         FontSize="11"
-                        Foreground="{ThemeResource TextFillColorTertiary}"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                         Text="{x:Bind Subtitle, Mode=OneWay}"
                         TextAlignment="Center"
                         TextTrimming="WordEllipsis"
