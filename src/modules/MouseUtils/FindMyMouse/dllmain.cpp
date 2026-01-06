@@ -16,6 +16,7 @@ namespace
     const wchar_t JSON_KEY_PROPERTIES[] = L"properties";
     const wchar_t JSON_KEY_VALUE[] = L"value";
     const wchar_t JSON_KEY_ACTIVATION_METHOD[] = L"activation_method";
+    const wchar_t JSON_KEY_ANIMATION_METHOD[] = L"animation_method";
     const wchar_t JSON_KEY_INCLUDE_WIN_KEY[] = L"include_win_key";
     const wchar_t JSON_KEY_DO_NOT_ACTIVATE_ON_GAME_MODE[] = L"do_not_activate_on_game_mode";
     const wchar_t JSON_KEY_BACKGROUND_COLOR[] = L"background_color";
@@ -265,6 +266,24 @@ void FindMyMouse::parse_settings(PowerToysSettings::PowerToyValues& settings)
         catch (...)
         {
             Logger::warn("Failed to initialize Activation Method from settings. Will use default value");
+        }
+        try
+        {
+            // Parse Animation Method
+            auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_ANIMATION_METHOD);
+            int value = static_cast<int>(jsonPropertiesObject.GetNamedNumber(JSON_KEY_VALUE));
+            if (value < static_cast<int>(FindMyMouseAnimationMethod::EnumElements) && value >= 0)
+            {
+                findMyMouseSettings.animationMethod = static_cast<FindMyMouseAnimationMethod>(value);
+            }
+            else
+            {
+                throw std::runtime_error("Invalid Animation Method value");
+            }
+        }
+        catch (...)
+        {
+            Logger::warn("Failed to initialize Animation Method from settings. Will use default value");
         }
         try
         {

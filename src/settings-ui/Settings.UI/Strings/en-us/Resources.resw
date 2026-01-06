@@ -2831,6 +2831,15 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="MouseUtils_FindMyMouse_ActivationMethod.Header" xml:space="preserve">
     <value>Activation method</value>
   </data>
+  <data name="MouseUtils_FindMyMouse_AnimationMethod.Header" xml:space="preserve">
+    <value>Animation method</value>
+  </data>
+  <data name="MouseUtils_FindMyMouse_AnimationMethod_Spotlight.Content" xml:space="preserve">
+    <value>Spotlight</value>
+  </data>
+  <data name="MouseUtils_FindMyMouse_AnimationMethod_CursorMagnifier.Content" xml:space="preserve">
+    <value>Cursor magnifier</value>
+  </data>
   <data name="MouseUtils_FindMyMouse_ActivationDoubleControlPress.Content" xml:space="preserve">
     <value>Press Left Control twice</value>
     <comment>Left control is the physical key on the keyboard.</comment>

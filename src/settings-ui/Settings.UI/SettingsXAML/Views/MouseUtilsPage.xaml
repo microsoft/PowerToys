@@ -143,6 +143,12 @@
                         HeaderIcon="{ui:FontIcon Glyph=&#xEB3C;}"
                         IsEnabled="{x:Bind ViewModel.IsFindMyMouseEnabled, Mode=OneWay}">
                         <tkcontrols:SettingsExpander.Items>
+                            <tkcontrols:SettingsCard Name="MouseUtilsFindMyMouseAnimationMethod" x:Uid="MouseUtils_FindMyMouse_AnimationMethod">
+                                <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.FindMyMouseAnimationMethod, Mode=TwoWay}">
+                                    <ComboBoxItem x:Uid="MouseUtils_FindMyMouse_AnimationMethod_Spotlight" />
+                                    <ComboBoxItem x:Uid="MouseUtils_FindMyMouse_AnimationMethod_CursorMagnifier" />
+                                </ComboBox>
+                            </tkcontrols:SettingsCard>
                             <!--  Overlay opacity removed; alpha now encoded in colors  -->
                             <tkcontrols:SettingsCard Name="MouseUtilsFindMyMouseBackgroundColor" x:Uid="MouseUtils_FindMyMouse_BackgroundColor">
                                 <controls:ColorPickerButton IsAlphaEnabled="True" SelectedColor="{x:Bind Path=ViewModel.FindMyMouseBackgroundColor, Mode=TwoWay}" />

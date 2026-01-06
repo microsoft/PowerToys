@@ -4,6 +4,29 @@
 #include <algorithm>
 #include <cmath>
 #include <cstring>
+#include <vector>
+
+namespace
+{
+    // System cursor IDs (same values as OCR_* when OEMRESOURCE is defined).
+    static constexpr UINT kCursorIdNormal = 32512;
+    static const UINT kCursorIds[] = {
+        kCursorIdNormal, // OCR_NORMAL
+        32513, // OCR_IBEAM
+        32514, // OCR_WAIT
+        32515, // OCR_CROSS
+        32516, // OCR_UP
+        32642, // OCR_SIZENWSE
+        32643, // OCR_SIZENESW
+        32644, // OCR_SIZEWE
+        32645, // OCR_SIZENS
+        32646, // OCR_SIZEALL
+        32648, // OCR_NO
+        32649, // OCR_HAND
+        32650, // OCR_APPSTARTING
+        32651, // OCR_HELP
+    };
+}
 
 CursorMagnifierOverlay::~CursorMagnifierOverlay()
 {
@@ -79,6 +102,8 @@ void CursorMagnifierOverlay::SetVisible(bool visible)
     m_visible = visible;
     if (visible)
     {
+        BeginScaleAnimation();
+        HideSystemCursors();
         SetTimer(m_hwnd, kTimerId, kFrameIntervalMs, nullptr);
         ShowWindow(m_hwnd, SW_SHOWNOACTIVATE);
         SetWindowPos(m_hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_SHOWWINDOW);
@@ -88,14 +113,34 @@ void CursorMagnifierOverlay::SetVisible(bool visible)
     {
         KillTimer(m_hwnd, kTimerId);
         ShowWindow(m_hwnd, SW_HIDE);
+        ResetCursorMetrics();
+        m_animationStartTick = 0;
+        RestoreSystemCursors();
     }
 }
 
 void CursorMagnifierOverlay::SetScale(float scale)
 {
-    if (scale > 0.0f)
+    if (scale > 0.0f && m_targetScale != scale)
     {
-        m_scale = scale;
+        m_targetScale = scale;
+        if (m_visible)
+        {
+            m_startScale = m_currentScale;
+            m_animationStartTick = GetTickCount64();
+        }
+    }
+}
+
+void CursorMagnifierOverlay::SetAnimationDurationMs(int durationMs)
+{
+    if (durationMs > 0)
+    {
+        m_animationDurationMs = static_cast<DWORD>(durationMs);
+    }
+    else
+    {
+        m_animationDurationMs = 1;
     }
 }
 
@@ -162,46 +207,33 @@ void CursorMagnifierOverlay::Render()
         return;
     }
 
-    ICONINFO ii{};
-    if (!GetIconInfo(ci.hCursor, &ii))
+    HCURSOR cursorToDraw = ci.hCursor;
+    if (m_systemCursorsHidden)
     {
-        return;
+        auto hiddenIt = m_hiddenCursorIds.find(ci.hCursor);
+        if (hiddenIt != m_hiddenCursorIds.end())
+        {
+            auto originalIt = m_originalCursors.find(hiddenIt->second);
+            if (originalIt != m_originalCursors.end() && originalIt->second)
+            {
+                cursorToDraw = originalIt->second;
+            }
+        }
     }
 
-    int srcW = 0;
-    int srcH = 0;
-    if (ii.hbmColor)
-    {
-        BITMAP bm{};
-        GetObject(ii.hbmColor, sizeof(bm), &bm);
-        srcW = bm.bmWidth;
-        srcH = bm.bmHeight;
-    }
-    else if (ii.hbmMask)
-    {
-        BITMAP bm{};
-        GetObject(ii.hbmMask, sizeof(bm), &bm);
-        srcW = bm.bmWidth;
-        srcH = bm.bmHeight / 2;
-    }
+    UpdateCursorMetrics(cursorToDraw);
 
-    if (ii.hbmColor)
-    {
-        DeleteObject(ii.hbmColor);
-    }
-    if (ii.hbmMask)
-    {
-        DeleteObject(ii.hbmMask);
-    }
-
+    const float scale = GetAnimatedScale();
+    int srcW = m_cursorSize.cx;
+    int srcH = m_cursorSize.cy;
     if (srcW <= 0 || srcH <= 0)
     {
         srcW = GetSystemMetrics(SM_CXCURSOR);
         srcH = GetSystemMetrics(SM_CYCURSOR);
     }
 
-    const int dstW = (std::max)(1, static_cast<int>(std::lround(srcW * m_scale)));
-    const int dstH = (std::max)(1, static_cast<int>(std::lround(srcH * m_scale)));
+    const int dstW = (std::max)(1, static_cast<int>(std::lround(srcW * scale)));
+    const int dstH = (std::max)(1, static_cast<int>(std::lround(srcH * scale)));
 
     EnsureResources(dstW, dstH);
     if (!m_memDc || !m_bits)
@@ -210,10 +242,13 @@ void CursorMagnifierOverlay::Render()
     }
 
     std::memset(m_bits, 0, static_cast<size_t>(dstW) * static_cast<size_t>(dstH) * 4);
-    DrawIconEx(m_memDc, 0, 0, ci.hCursor, dstW, dstH, 0, nullptr, DI_NORMAL);
+    if (cursorToDraw)
+    {
+        DrawIconEx(m_memDc, 0, 0, cursorToDraw, dstW, dstH, 0, nullptr, DI_NORMAL);
+    }
 
-    const int x = static_cast<int>(std::lround(ci.ptScreenPos.x - ii.xHotspot * m_scale));
-    const int y = static_cast<int>(std::lround(ci.ptScreenPos.y - ii.yHotspot * m_scale));
+    const int x = static_cast<int>(std::lround(ci.ptScreenPos.x - m_hotspot.x * scale));
+    const int y = static_cast<int>(std::lround(ci.ptScreenPos.y - m_hotspot.y * scale));
     POINT ptDst{ x, y };
     POINT ptSrc{ 0, 0 };
     SIZE size{ dstW, dstH };
@@ -224,6 +259,202 @@ void CursorMagnifierOverlay::Render()
 
     UpdateLayeredWindow(m_hwnd, nullptr, &ptDst, &size, m_memDc, &ptSrc, 0, &blend, ULW_ALPHA);
     ShowWindow(m_hwnd, SW_SHOWNOACTIVATE);
+}
+
+void CursorMagnifierOverlay::BeginScaleAnimation()
+{
+    m_startScale = (m_targetScale >= 1.0f) ? 1.0f : m_targetScale;
+    m_currentScale = m_startScale;
+    m_animationStartTick = GetTickCount64();
+}
+
+float CursorMagnifierOverlay::GetAnimatedScale()
+{
+    if (m_animationDurationMs <= 1 || !m_visible)
+    {
+        m_currentScale = m_targetScale;
+        return m_currentScale;
+    }
+
+    if (m_animationStartTick == 0)
+    {
+        m_animationStartTick = GetTickCount64();
+    }
+
+    const ULONGLONG now = GetTickCount64();
+    const ULONGLONG elapsed = now - m_animationStartTick;
+    if (elapsed >= m_animationDurationMs)
+    {
+        m_currentScale = m_targetScale;
+        return m_currentScale;
+    }
+
+    const float t = static_cast<float>(elapsed) / static_cast<float>(m_animationDurationMs);
+    m_currentScale = m_startScale + (m_targetScale - m_startScale) * t;
+    return m_currentScale;
+}
+
+bool CursorMagnifierOverlay::HideSystemCursors()
+{
+    if (m_systemCursorsHidden)
+    {
+        return true;
+    }
+
+    m_hiddenCursorIds.clear();
+    ReleaseOriginalCursors();
+
+    bool anyHidden = false;
+    bool normalHidden = false;
+    for (UINT cursorId : kCursorIds)
+    {
+        HCURSOR systemCursor = LoadCursor(nullptr, MAKEINTRESOURCE(cursorId));
+        if (systemCursor)
+        {
+            HCURSOR copy = CopyIcon(systemCursor);
+            if (copy)
+            {
+                m_originalCursors[cursorId] = copy;
+            }
+        }
+
+        HCURSOR transparent = CreateTransparentCursor();
+        if (!transparent)
+        {
+            Logger::warn("CreateTransparentCursor failed for cursor id {}. GetLastError={}", cursorId, GetLastError());
+            continue;
+        }
+
+        if (!SetSystemCursor(transparent, cursorId))
+        {
+            Logger::warn("SetSystemCursor failed for cursor id {}. GetLastError={}", cursorId, GetLastError());
+            DestroyCursor(transparent);
+            continue;
+        }
+
+        DestroyCursor(transparent);
+
+        HCURSOR replacedCursor = LoadCursor(nullptr, MAKEINTRESOURCE(cursorId));
+        if (replacedCursor)
+        {
+            m_hiddenCursorIds[replacedCursor] = cursorId;
+        }
+
+        anyHidden = true;
+        if (cursorId == kCursorIdNormal)
+        {
+            normalHidden = true;
+        }
+    }
+
+    if (!anyHidden)
+    {
+        m_hiddenCursorIds.clear();
+        ReleaseOriginalCursors();
+        return false;
+    }
+
+    if (!normalHidden)
+    {
+        Logger::warn("Failed to hide OCR_NORMAL; cursor may remain visible during magnifier.");
+    }
+
+    m_systemCursorsHidden = true;
+    return true;
+}
+
+void CursorMagnifierOverlay::RestoreSystemCursors()
+{
+    if (!m_systemCursorsHidden)
+    {
+        return;
+    }
+
+    SystemParametersInfoW(SPI_SETCURSORS, 0, nullptr, 0);
+    m_systemCursorsHidden = false;
+    m_hiddenCursorIds.clear();
+    ReleaseOriginalCursors();
+}
+
+HCURSOR CursorMagnifierOverlay::CreateTransparentCursor() const
+{
+    const int width = GetSystemMetrics(SM_CXCURSOR);
+    const int height = GetSystemMetrics(SM_CYCURSOR);
+    if (width <= 0 || height <= 0)
+    {
+        return nullptr;
+    }
+
+    const int bytesPerRow = (width + 7) / 8;
+    const size_t maskSize = static_cast<size_t>(bytesPerRow) * static_cast<size_t>(height);
+    std::vector<BYTE> andMask(maskSize, 0xFF);
+    std::vector<BYTE> xorMask(maskSize, 0x00);
+
+    return CreateCursor(m_instance, 0, 0, width, height, andMask.data(), xorMask.data());
+}
+
+void CursorMagnifierOverlay::ReleaseOriginalCursors()
+{
+    for (auto& entry : m_originalCursors)
+    {
+        if (entry.second)
+        {
+            DestroyIcon(entry.second);
+        }
+    }
+    m_originalCursors.clear();
+}
+
+void CursorMagnifierOverlay::UpdateCursorMetrics(HCURSOR cursor)
+{
+    if (!cursor || cursor == m_cachedCursor)
+    {
+        return;
+    }
+
+    m_cursorSize = { 0, 0 };
+    m_hotspot = { 0, 0 };
+
+    ICONINFO ii{};
+    if (GetIconInfo(cursor, &ii))
+    {
+        if (ii.hbmColor)
+        {
+            BITMAP bm{};
+            GetObject(ii.hbmColor, sizeof(bm), &bm);
+            m_cursorSize = { bm.bmWidth, bm.bmHeight };
+        }
+        else if (ii.hbmMask)
+        {
+            BITMAP bm{};
+            GetObject(ii.hbmMask, sizeof(bm), &bm);
+            m_cursorSize = { bm.bmWidth, bm.bmHeight / 2 };
+        }
+
+        m_hotspot = { static_cast<LONG>(ii.xHotspot), static_cast<LONG>(ii.yHotspot) };
+
+        if (ii.hbmColor)
+        {
+            DeleteObject(ii.hbmColor);
+        }
+        if (ii.hbmMask)
+        {
+            DeleteObject(ii.hbmMask);
+        }
+    }
+
+    m_cachedCursor = cursor;
+    if (m_cursorSize.cx <= 0 || m_cursorSize.cy <= 0)
+    {
+        m_cursorSize = { GetSystemMetrics(SM_CXCURSOR), GetSystemMetrics(SM_CYCURSOR) };
+    }
+}
+
+void CursorMagnifierOverlay::ResetCursorMetrics()
+{
+    m_cachedCursor = nullptr;
+    m_cursorSize = { 0, 0 };
+    m_hotspot = { 0, 0 };
 }
 
 void CursorMagnifierOverlay::EnsureResources(int width, int height)
@@ -289,4 +520,6 @@ void CursorMagnifierOverlay::DestroyWindowInternal()
         m_hwnd = nullptr;
     }
     CleanupResources();
+    ResetCursorMetrics();
+    RestoreSystemCursors();
 }

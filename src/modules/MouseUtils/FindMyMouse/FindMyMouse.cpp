@@ -62,6 +62,7 @@ protected:
     void AfterMoveSonar() {}
     void SetSonarVisibility(bool visible) = delete;
     void UpdateMouseSnooping();
+    void UpdateAnimationMethod(FindMyMouseAnimationMethod method);
     bool IsForegroundAppExcluded();
 
 protected:
@@ -78,6 +79,7 @@ protected:
 
     bool m_destroyed = false;
     FindMyMouseActivationMethod m_activationMethod = FIND_MY_MOUSE_DEFAULT_ACTIVATION_METHOD;
+    FindMyMouseAnimationMethod m_animationMethod = FIND_MY_MOUSE_DEFAULT_ANIMATION_METHOD;
     bool m_includeWinKey = FIND_MY_MOUSE_DEFAULT_INCLUDE_WIN_KEY;
     bool m_doNotActivateOnGameMode = FIND_MY_MOUSE_DEFAULT_DO_NOT_ACTIVATE_ON_GAME_MODE;
     int m_sonarRadius = FIND_MY_MOUSE_DEFAULT_SPOTLIGHT_RADIUS;
@@ -543,10 +545,14 @@ void SuperSonar<D>::StartSonar(FindMyMouseActivationMethod activationMethod)
     m_sonarPos = ptNowhere;
     OnMouseTimer();
     UpdateMouseSnooping();
-    Shim()->SetSonarVisibility(true);
+    const bool showSpotlight = m_animationMethod == FindMyMouseAnimationMethod::Spotlight;
+    if (showSpotlight)
+    {
+        Shim()->SetSonarVisibility(true);
+    }
     if (g_cursorMagnifier)
     {
-        g_cursorMagnifier->SetVisible(true);
+        g_cursorMagnifier->SetVisible(m_animationMethod == FindMyMouseAnimationMethod::CursorMagnifier);
     }
 }
 
@@ -628,6 +634,27 @@ void SuperSonar<D>::UpdateMouseSnooping()
             mouse.hwndTarget = nullptr;
         }
         RegisterRawInputDevices(&mouse, 1, sizeof(mouse));
+    }
+}
+
+template<typename D>
+void SuperSonar<D>::UpdateAnimationMethod(FindMyMouseAnimationMethod method)
+{
+    if (m_animationMethod == method)
+    {
+        return;
+    }
+
+    m_animationMethod = method;
+    if (m_sonarStart == NoSonar)
+    {
+        return;
+    }
+
+    Shim()->SetSonarVisibility(m_animationMethod == FindMyMouseAnimationMethod::Spotlight);
+    if (g_cursorMagnifier)
+    {
+        g_cursorMagnifier->SetVisible(m_animationMethod == FindMyMouseAnimationMethod::CursorMagnifier);
     }
 }
 
@@ -947,6 +974,7 @@ public:
             m_backgroundColor = settings.backgroundColor;
             m_spotlightColor = settings.spotlightColor;
             m_activationMethod = settings.activationMethod;
+            m_animationMethod = settings.animationMethod;
             m_includeWinKey = settings.includeWinKey;
             m_doNotActivateOnGameMode = settings.doNotActivateOnGameMode;
             m_fadeDuration = settings.animationDurationMs > 0 ? settings.animationDurationMs : 1;
@@ -955,6 +983,10 @@ public:
             m_shakeMinimumDistance = settings.shakeMinimumDistance;
             m_shakeIntervalMs = settings.shakeIntervalMs;
             m_shakeFactor = settings.shakeFactor;
+            if (g_cursorMagnifier)
+            {
+                g_cursorMagnifier->SetAnimationDurationMs(settings.animationDurationMs);
+            }
         }
         else
         {
@@ -973,6 +1005,7 @@ public:
                     m_backgroundColor = localSettings.backgroundColor;
                     m_spotlightColor = localSettings.spotlightColor;
                     m_activationMethod = localSettings.activationMethod;
+                    UpdateAnimationMethod(localSettings.animationMethod);
                     m_includeWinKey = localSettings.includeWinKey;
                     m_doNotActivateOnGameMode = localSettings.doNotActivateOnGameMode;
                     m_fadeDuration = localSettings.animationDurationMs > 0 ? localSettings.animationDurationMs : 1;
@@ -982,6 +1015,10 @@ public:
                     m_shakeIntervalMs = localSettings.shakeIntervalMs;
                     m_shakeFactor = localSettings.shakeFactor;
                     UpdateMouseSnooping(); // For the shake mouse activation method
+                    if (g_cursorMagnifier)
+                    {
+                        g_cursorMagnifier->SetAnimationDurationMs(localSettings.animationDurationMs);
+                    }
 
                     // Apply new settings to runtime composition objects.
                     if (m_dimColorBrush)
@@ -1100,6 +1137,10 @@ int FindMyMouseMain(HINSTANCE hinst, const FindMyMouseSettings& settings)
     {
         Logger::warn("Couldn't initialize cursor magnifier overlay.");
         g_cursorMagnifier = nullptr;
+    }
+    else
+    {
+        cursorMagnifier.SetAnimationDurationMs(settings.animationDurationMs);
     }
 
     InitializeWinhookEventIds();

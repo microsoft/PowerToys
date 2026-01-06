@@ -10,6 +10,13 @@ enum struct FindMyMouseActivationMethod : int
     EnumElements = 4, // number of elements in the enum, not counting this
 };
 
+enum struct FindMyMouseAnimationMethod : int
+{
+    Spotlight = 0,
+    CursorMagnifier = 1,
+    EnumElements = 2, // number of elements in the enum, not counting this
+};
+
 constexpr bool FIND_MY_MOUSE_DEFAULT_DO_NOT_ACTIVATE_ON_GAME_MODE = true;
 // Default colors now include full alpha. Opacity is encoded directly in color alpha (legacy overlay_opacity migrated into A channel)
 const winrt::Windows::UI::Color FIND_MY_MOUSE_DEFAULT_BACKGROUND_COLOR = winrt::Windows::UI::ColorHelper::FromArgb(128, 0, 0, 0);
@@ -18,6 +25,7 @@ constexpr int FIND_MY_MOUSE_DEFAULT_SPOTLIGHT_RADIUS = 100;
 constexpr int FIND_MY_MOUSE_DEFAULT_ANIMATION_DURATION_MS = 500;
 constexpr int FIND_MY_MOUSE_DEFAULT_SPOTLIGHT_INITIAL_ZOOM = 9;
 constexpr FindMyMouseActivationMethod FIND_MY_MOUSE_DEFAULT_ACTIVATION_METHOD = FindMyMouseActivationMethod::DoubleLeftControlKey;
+constexpr FindMyMouseAnimationMethod FIND_MY_MOUSE_DEFAULT_ANIMATION_METHOD = FindMyMouseAnimationMethod::Spotlight;
 constexpr bool FIND_MY_MOUSE_DEFAULT_INCLUDE_WIN_KEY = false;
 constexpr int FIND_MY_MOUSE_DEFAULT_SHAKE_MINIMUM_DISTANCE = 1000;
 constexpr int FIND_MY_MOUSE_DEFAULT_SHAKE_INTERVAL_MS = 1000;
@@ -26,6 +34,7 @@ constexpr int FIND_MY_MOUSE_DEFAULT_SHAKE_FACTOR = 400; // 400 percent
 struct FindMyMouseSettings
 {
     FindMyMouseActivationMethod activationMethod = FIND_MY_MOUSE_DEFAULT_ACTIVATION_METHOD;
+    FindMyMouseAnimationMethod animationMethod = FIND_MY_MOUSE_DEFAULT_ANIMATION_METHOD;
     bool includeWinKey = FIND_MY_MOUSE_DEFAULT_INCLUDE_WIN_KEY;
     bool doNotActivateOnGameMode = FIND_MY_MOUSE_DEFAULT_DO_NOT_ACTIVATE_ON_GAME_MODE;
     winrt::Windows::UI::Color backgroundColor = FIND_MY_MOUSE_DEFAULT_BACKGROUND_COLOR;
