@@ -33,6 +33,9 @@
     <ClCompile Include="WinHookEventIDs.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="CursorMagnifierOverlay.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -48,6 +51,9 @@
       <Filter>Resource Files</Filter>
     </ClInclude>
     <ClInclude Include="WinHookEventIDs.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CursorMagnifierOverlay.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

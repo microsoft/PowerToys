@@ -2,6 +2,7 @@
 //
 #include "pch.h"
 #include "FindMyMouse.h"
+#include "CursorMagnifierOverlay.h"
 #include "WinHookEventIDs.h"
 #include "trace.h"
 #include "common/utils/game_mode.h"
@@ -24,6 +25,11 @@
 namespace winrt
 {
     using namespace winrt::Windows::System;
+}
+
+namespace
+{
+    CursorMagnifierOverlay* g_cursorMagnifier = nullptr;
 }
 
 namespace muxc = winrt::Microsoft::UI::Composition;
@@ -540,6 +546,10 @@ void SuperSonar<D>::StartSonar(FindMyMouseActivationMethod activationMethod)
     OnMouseTimer();
     UpdateMouseSnooping();
     Shim()->SetSonarVisibility(true);
+    if (g_cursorMagnifier)
+    {
+        g_cursorMagnifier->SetVisible(true);
+    }
 }
 
 template<typename D>
@@ -550,6 +560,10 @@ void SuperSonar<D>::StopSonar()
         m_sonarStart = NoSonar;
         Shim()->SetSonarVisibility(false);
         KillTimer(m_hwnd, TIMER_ID_TRACK);
+    }
+    if (g_cursorMagnifier)
+    {
+        g_cursorMagnifier->SetVisible(false);
     }
     m_sonarState = SonarState::Idle;
     UpdateMouseSnooping();
@@ -1229,6 +1243,10 @@ void FindMyMouseApplySettings(const FindMyMouseSettings& settings)
 
 void FindMyMouseDisable()
 {
+    if (g_cursorMagnifier)
+    {
+        g_cursorMagnifier->Terminate();
+    }
     if (m_sonar != nullptr)
     {
         m_sonar->Terminate();
@@ -1258,6 +1276,14 @@ int FindMyMouseMain(HINSTANCE hinst, const FindMyMouseSettings& settings)
     }
     m_sonar = &sonar;
 
+    CursorMagnifierOverlay cursorMagnifier;
+    g_cursorMagnifier = &cursorMagnifier;
+    if (!cursorMagnifier.Initialize(hinst))
+    {
+        Logger::warn("Couldn't initialize cursor magnifier overlay.");
+        g_cursorMagnifier = nullptr;
+    }
+
     InitializeWinhookEventIds();
 
     MSG msg;
@@ -1270,6 +1296,7 @@ int FindMyMouseMain(HINSTANCE hinst, const FindMyMouseSettings& settings)
     }
 
     m_sonar = nullptr;
+    g_cursorMagnifier = nullptr;
 
     return (int)msg.wParam;
 }

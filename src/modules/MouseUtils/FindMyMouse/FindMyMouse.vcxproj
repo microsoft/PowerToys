@@ -106,6 +106,7 @@
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="CursorMagnifierOverlay.h" />
     <ClInclude Include="FindMyMouse.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="resource.h" />
@@ -113,6 +114,7 @@
     <ClInclude Include="WinHookEventIDs.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="CursorMagnifierOverlay.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="FindMyMouse.cpp" />
     <ClCompile Include="pch.cpp">
