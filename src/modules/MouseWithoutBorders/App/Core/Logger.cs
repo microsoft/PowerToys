@@ -265,7 +265,6 @@ internal static class Logger
             }
             catch (Exception)
             {
-                throw;
             }
         }
     }
