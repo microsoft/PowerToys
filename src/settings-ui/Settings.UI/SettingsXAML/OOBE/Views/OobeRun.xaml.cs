@@ -54,7 +54,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
         {
             ViewModel.LogOpeningModuleEvent();
 
-            HotkeyControl.Keys = SettingsRepository<PowerLauncherSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.OpenPowerLauncher.GetKeysList();
+            HotkeyControl.Keys = SettingsRepository<PowerLauncherSettings>.GetInstance(SettingsUtils.Default).SettingsConfig.Properties.OpenPowerLauncher.GetKeysList();
         }
 
         protected override void OnNavigatedFrom(NavigationEventArgs e)

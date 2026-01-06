@@ -8,6 +8,8 @@
 #include <codecvt>
 #include <common/utils/logger_helper.h>
 #include "ThemeHelper.h"
+#include <thread>
+#include <atomic>
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
@@ -47,8 +49,10 @@ const static wchar_t* MODULE_DESC = L"This is a module that allows you to contro
 
 enum class ScheduleMode
 {
+    Off,
     FixedHours,
     SunsetToSunrise,
+    FollowNightLight,
     // add more later
 };
 
@@ -59,8 +63,11 @@ inline std::wstring ToString(ScheduleMode mode)
     case ScheduleMode::SunsetToSunrise:
         return L"SunsetToSunrise";
     case ScheduleMode::FixedHours:
-    default:
         return L"FixedHours";
+    case ScheduleMode::FollowNightLight:
+        return L"FollowNightLight";
+    default:
+        return L"Off";
     }
 }
 
@@ -68,7 +75,11 @@ inline ScheduleMode FromString(const std::wstring& str)
 {
     if (str == L"SunsetToSunrise")
         return ScheduleMode::SunsetToSunrise;
-    return ScheduleMode::FixedHours;
+    if (str == L"FixedHours")
+        return ScheduleMode::FixedHours;
+    if (str == L"FollowNightLight")
+        return ScheduleMode::FollowNightLight;
+    return ScheduleMode::Off;
 }
 
 // These are the properties shown in the Settings page.
@@ -76,7 +87,7 @@ struct ModuleSettings
 {
     bool m_changeSystem = true;
     bool m_changeApps = true;
-    ScheduleMode m_scheduleMode = ScheduleMode::FixedHours;
+    ScheduleMode m_scheduleMode = ScheduleMode::Off;
     int m_lightTime = 480;
     int m_darkTime = 1200;
     int m_sunrise_offset = 0;
@@ -94,12 +105,18 @@ private:
     HANDLE m_force_light_event_handle;
     HANDLE m_force_dark_event_handle;
     HANDLE m_manual_override_event_handle;
+    HANDLE m_toggle_event_handle{ nullptr };
+    std::thread m_toggle_thread;
+    std::atomic<bool> m_toggle_thread_running{ false };
 
     static const constexpr int NUM_DEFAULT_HOTKEYS = 4;
 
     Hotkey m_toggle_theme_hotkey = { .win = true, .ctrl = true, .shift = true, .alt = false, .key = 'D' };
 
     void init_settings();
+    void ToggleTheme();
+    void StartToggleListener();
+    void StopToggleListener();
 
 public:
     LightSwitchInterface()
@@ -109,6 +126,7 @@ public:
         m_force_light_event_handle = CreateDefaultEvent(L"POWERTOYS_LIGHTSWITCH_FORCE_LIGHT");
         m_force_dark_event_handle = CreateDefaultEvent(L"POWERTOYS_LIGHTSWITCH_FORCE_DARK");
         m_manual_override_event_handle = CreateEventW(nullptr, TRUE, FALSE, L"POWERTOYS_LIGHTSWITCH_MANUAL_OVERRIDE");
+        m_toggle_event_handle = CreateDefaultEvent(L"Local\\PowerToys-LightSwitch-ToggleEvent-d8dc2f29-8c94-4ca1-8c5f-3e2b1e3c4f5a");
 
         init_settings();
     };
@@ -121,6 +139,8 @@ public:
     // Destroy the powertoy and free memory
     virtual void destroy() override
     {
+        // Ensure worker threads/process handles are cleaned up before destruction
+        disable();
         delete this;
     }
 
@@ -161,8 +181,11 @@ public:
             L"scheduleMode",
             L"Theme schedule mode",
             ToString(g_settings.m_scheduleMode),
-            { { L"FixedHours", L"Set hours manually" },
-              { L"SunsetToSunrise", L"Use sunrise/sunset times" } });
+            { { L"Off", L"Disable the schedule" },
+              { L"FixedHours", L"Set hours manually" },
+              { L"SunsetToSunrise", L"Use sunrise/sunset times" },
+              { L"FollowNightLight", L"Follow Windows Night Light state" }
+            });
 
         // Integer spinners
         settings.add_int_spinner(
@@ -284,9 +307,20 @@ public:
                 g_settings.m_changeApps = *v;
             }
 
+            auto previousMode = g_settings.m_scheduleMode;
+
             if (auto v = values.get_string_value(L"scheduleMode"))
             {
-                g_settings.m_scheduleMode = FromString(*v);
+                auto newMode = FromString(*v);
+                if (newMode != g_settings.m_scheduleMode)
+                {
+                    Logger::info(L"[LightSwitchInterface] Schedule mode changed from {} to {}",
+                                 ToString(g_settings.m_scheduleMode),
+                                 ToString(newMode));
+                    g_settings.m_scheduleMode = newMode;
+
+                    start_service_if_needed();
+                }
             }
 
             if (auto v = values.get_int_value(L"lightTime"))
@@ -304,7 +338,7 @@ public:
                 g_settings.m_sunrise_offset = *v;
             }
 
-            if (auto v = values.get_int_value(L"m_sunset_offset"))
+            if (auto v = values.get_int_value(L"sunset_offset"))
             {
                 g_settings.m_sunset_offset = *v;
             }
@@ -326,10 +360,52 @@ public:
         }
     }
 
+    virtual void start_service_if_needed()
+    {
+        if (!m_process || WaitForSingleObject(m_process, 0) != WAIT_TIMEOUT)
+        {
+            Logger::info(L"[LightSwitchInterface] Starting LightSwitchService due to active schedule mode.");
+            enable();
+        }
+        else
+        {
+            Logger::debug(L"[LightSwitchInterface] Service already running, skipping start.");
+        }
+    }
+
+    /*virtual void stop_worker_only()
+    {
+        if (m_process)
+        {
+            Logger::info(L"[LightSwitchInterface] Stopping LightSwitchService (worker only).");
+            constexpr DWORD timeout_ms = 1500;
+            DWORD result = WaitForSingleObject(m_process, timeout_ms);
+
+            if (result == WAIT_TIMEOUT)
+            {
+                Logger::warn("Light Switch: Process didn't exit in time. Forcing termination.");
+                TerminateProcess(m_process, 0);
+            }
+
+            CloseHandle(m_process);
+            m_process = nullptr;
+        }
+    }*/
+
+    /*virtual void stop_service_if_running()
+    {
+        if (m_process)
+        {
+            Logger::info(L"[LightSwitchInterface] Stopping LightSwitchService due to schedule OFF.");
+            stop_worker_only();
+        }
+    }*/
+
     virtual void enable()
     {
         m_enabled = true;
         Logger::info(L"Enabling Light Switch module...");
+        Trace::Enable(true);
 
         unsigned long powertoys_pid = GetCurrentProcessId();
         std::wstring args = L"--pid " + std::to_wstring(powertoys_pid);
@@ -380,6 +456,8 @@ public:
         Logger::info(L"Light Switch process launched successfully (PID: {}).", pi.dwProcessId);
         m_process = pi.hProcess;
         CloseHandle(pi.hThread);
+
+        StartToggleListener();
     }
 
     // Disable the powertoy
@@ -405,12 +483,21 @@ public:
             CloseHandle(m_process);
             m_process = nullptr;
         }
+        
+        Trace::Enable(false);
+        StopToggleListener();
     }
 
     // Returns if the powertoys is enabled
     virtual bool is_enabled() override
     {
         return m_enabled;
+    }
+
+    // Returns whether the PowerToys should be enabled by default
+    virtual bool is_enabled_by_default() const override
+    {
+        return false;
     }
 
     void parse_hotkey(PowerToysSettings::PowerToyValues& settings)
@@ -454,28 +541,16 @@ public:
         if (m_enabled)
         {
             Logger::trace(L"Light Switch hotkey pressed");
+            Trace::ShortcutInvoked();
+
             if (!is_process_running())
             {
                 enable();
             }
             else if (hotkeyId == 0)
             {
-                // get current will return true if in light mode; otherwise false
                 Logger::info(L"[Light Switch] Hotkey triggered: Toggle Theme");
-                if (g_settings.m_changeSystem)
-                {
-                    SetSystemTheme(!GetCurrentSystemTheme());
-                }
-                if (g_settings.m_changeApps)
-                {
-                    SetAppsTheme(!GetCurrentAppsTheme());
-                }
-
-                if (m_manual_override_event_handle)
-                {
-                    SetEvent(m_manual_override_event_handle);
-                    Logger::debug(L"[Light Switch] Manual override event set");
-                }
+                ToggleTheme();
             }
 
             return true;
@@ -488,7 +563,79 @@ public:
     {
         return WaitForSingleObject(m_process, 0) == WAIT_TIMEOUT;
     }
+
 };
+
+void LightSwitchInterface::ToggleTheme()
+{
+    if (g_settings.m_changeSystem)
+    {
+        SetSystemTheme(!GetCurrentSystemTheme());
+    }
+    if (g_settings.m_changeApps)
+    {
+        SetAppsTheme(!GetCurrentAppsTheme());
+    }
+
+    if (!m_manual_override_event_handle)
+    {
+        m_manual_override_event_handle = OpenEventW(SYNCHRONIZE | EVENT_MODIFY_STATE, FALSE, L"POWERTOYS_LIGHTSWITCH_MANUAL_OVERRIDE");
+        if (!m_manual_override_event_handle)
+        {
+            m_manual_override_event_handle = CreateEventW(nullptr, TRUE, FALSE, L"POWERTOYS_LIGHTSWITCH_MANUAL_OVERRIDE");
+        }
+    }
+
+    if (m_manual_override_event_handle)
+    {
+        SetEvent(m_manual_override_event_handle);
+        Logger::debug(L"[Light Switch] Manual override event set");
+    }
+}
+
+void LightSwitchInterface::StartToggleListener()
+{
+    if (m_toggle_thread_running || !m_toggle_event_handle)
+    {
+        return;
+    }
+
+    m_toggle_thread_running = true;
+    m_toggle_thread = std::thread([this]() {
+        while (m_toggle_thread_running)
+        {
+            const DWORD wait_result = WaitForSingleObject(m_toggle_event_handle, 500);
+            if (!m_toggle_thread_running)
+            {
+                break;
+            }
+
+            if (wait_result == WAIT_OBJECT_0)
+            {
+                ToggleTheme();
+                ResetEvent(m_toggle_event_handle);
+            }
+        }
+    });
+}
+
+void LightSwitchInterface::StopToggleListener()
+{
+    if (!m_toggle_thread_running)
+    {
+        return;
+    }
+
+    m_toggle_thread_running = false;
+    if (m_toggle_event_handle)
+    {
+        SetEvent(m_toggle_event_handle);
+    }
+    if (m_toggle_thread.joinable())
+    {
+        m_toggle_thread.join();
+    }
+}
 
 std::wstring utf8_to_wstring(const std::string& str)
 {

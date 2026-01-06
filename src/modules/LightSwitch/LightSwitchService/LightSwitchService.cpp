@@ -1,4 +1,4 @@
-#include <windows.h>
+﻿#include <windows.h>
 #include <tchar.h>
 #include "ThemeScheduler.h"
 #include "ThemeHelper.h"
@@ -11,15 +11,20 @@
 #include <logger/logger_settings.h>
 #include <logger/logger.h>
 #include <utils/logger_helper.h>
+#include "LightSwitchStateManager.h"
+#include <LightSwitchUtils.h>
+#include <NightLightRegistryObserver.h>
+#include <trace.h>
 
 SERVICE_STATUS g_ServiceStatus = {};
 SERVICE_STATUS_HANDLE g_StatusHandle = nullptr;
 HANDLE g_ServiceStopEvent = nullptr;
-static int g_lastUpdatedDay = -1;
+static LightSwitchStateManager* g_stateManagerPtr = nullptr;
 
 VOID WINAPI ServiceMain(DWORD argc, LPTSTR* argv);
 VOID WINAPI ServiceCtrlHandler(DWORD dwCtrl);
 DWORD WINAPI ServiceWorkerThread(LPVOID lpParam);
+void ApplyTheme(bool shouldBeLight);
 
 // Entry point for the executable
 int _tmain(int argc, TCHAR* argv[])
@@ -120,33 +125,75 @@ VOID WINAPI ServiceCtrlHandler(DWORD dwCtrl)
     }
 }
 
-static void update_sun_times(auto& settings)
+void ApplyTheme(bool shouldBeLight)
 {
-    double latitude = std::stod(settings.latitude);
-    double longitude = std::stod(settings.longitude);
+    const auto& s = LightSwitchSettings::settings();
+
+    if (s.changeSystem)
+    {
+        bool isSystemCurrentlyLight = GetCurrentSystemTheme();
+        if (shouldBeLight != isSystemCurrentlyLight)
+        {
+            SetSystemTheme(shouldBeLight);
+            Logger::info(L"[LightSwitchService] Changed system theme to {}.", shouldBeLight ? L"light" : L"dark");
+        }
+    }
+
+    if (s.changeApps)
+    {
+        bool isAppsCurrentlyLight = GetCurrentAppsTheme();
+        if (shouldBeLight != isAppsCurrentlyLight)
+        {
+            SetAppsTheme(shouldBeLight);
+            Logger::info(L"[LightSwitchService] Changed apps theme to {}.", shouldBeLight ? L"light" : L"dark");
+        }
+    }
+}
+
+static void DetectAndHandleExternalThemeChange(LightSwitchStateManager& stateManager)
+{
+    const auto& s = LightSwitchSettings::settings();
+    if (s.scheduleMode == ScheduleMode::Off)
+        return;
 
     SYSTEMTIME st;
     GetLocalTime(&st);
+    int nowMinutes = st.wHour * 60 + st.wMinute;
 
-    SunTimes newTimes = CalculateSunriseSunset(latitude, longitude, st.wYear, st.wMonth, st.wDay);
+    // Compute effective boundaries (with offsets if needed)
+    int effectiveLight = s.lightTime;
+    int effectiveDark = s.darkTime;
 
-    int newLightTime = newTimes.sunriseHour * 60 + newTimes.sunriseMinute;
-    int newDarkTime = newTimes.sunsetHour * 60 + newTimes.sunsetMinute;
-    try
+    if (s.scheduleMode == ScheduleMode::SunsetToSunrise)
     {
-        auto values = PowerToysSettings::PowerToyValues::load_from_settings_file(L"LightSwitch");
-        values.add_property(L"lightTime", newLightTime);
-        values.add_property(L"darkTime", newDarkTime);
-        values.save_to_settings_file();
+        effectiveLight = (s.lightTime + s.sunrise_offset) % 1440;
+        effectiveDark = (s.darkTime + s.sunset_offset) % 1440;
+    }
 
-        Logger::info(L"[LightSwitchService] Updated sun times and saved to config.");
-    }
-    catch (const std::exception& e)
+    // Use shared helper (handles wraparound logic)
+    bool shouldBeLight = false;
+    if (s.scheduleMode == ScheduleMode::FollowNightLight)
     {
-        std::wstring wmsg(e.what(), e.what() + strlen(e.what()));
-        Logger::error(L"[LightSwitchService] Exception during sun time update: {}", wmsg);
+        shouldBeLight = !IsNightLightEnabled();
+    } 
+    else
+    {
+        shouldBeLight = ShouldBeLight(nowMinutes, effectiveLight, effectiveDark);
     }
-    
+
+    // Compare current system/apps theme
+    bool currentSystemLight = GetCurrentSystemTheme();
+    bool currentAppsLight = GetCurrentAppsTheme();
+
+    bool systemMismatch = s.changeSystem && (currentSystemLight != shouldBeLight);
+    bool appsMismatch = s.changeApps && (currentAppsLight != shouldBeLight);
+
+    // Trigger manual override only if mismatch and not already active
+    if ((systemMismatch || appsMismatch) && !stateManager.GetState().isManualOverride)
+    {
+        Logger::info(L"[LightSwitchService] External theme change detected (Windows Settings). Entering manual override mode.");
+        stateManager.OnManualOverride();
+    }
 }
 
 DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
@@ -159,146 +206,160 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
     Logger::info(L"[LightSwitchService] Worker thread starting...");
     Logger::info(L"[LightSwitchService] Parent PID: {}", parentPid);
 
-    // Initialize settings system
+    // ────────────────────────────────────────────────────────────────
+    // Initialization
+    // ────────────────────────────────────────────────────────────────
+    static LightSwitchStateManager stateManager;
+    g_stateManagerPtr = &stateManager;
+
     LightSwitchSettings::instance().InitFileWatcher();
 
-    // Open the manual override event created by the module interface
     HANDLE hManualOverride = OpenEventW(SYNCHRONIZE | EVENT_MODIFY_STATE, FALSE, L"POWERTOYS_LIGHTSWITCH_MANUAL_OVERRIDE");
+    HANDLE hSettingsChanged = LightSwitchSettings::instance().GetSettingsChangedEvent();
 
-    auto applyTheme = [](int nowMinutes, int lightMinutes, int darkMinutes, const auto& settings) {
-        bool isLightActive = false;
+    static std::unique_ptr<NightLightRegistryObserver> g_nightLightWatcher;
 
-        if (lightMinutes < darkMinutes)
-        {
-            // Normal case: sunrise < sunset
-            isLightActive = (nowMinutes >= lightMinutes && nowMinutes < darkMinutes);
-        }
-        else
-        {
-            // Wraparound case: e.g. light at 21:00, dark at 06:00
-            isLightActive = (nowMinutes >= lightMinutes || nowMinutes < darkMinutes);
-        }
+    LightSwitchSettings::instance().LoadSettings();
+    const auto& settings = LightSwitchSettings::instance().settings();
 
-        bool isSystemCurrentlyLight = GetCurrentSystemTheme();
-        bool isAppsCurrentlyLight = GetCurrentAppsTheme();
+    // after loading settings:
+    bool nightLightNeeded = (settings.scheduleMode == ScheduleMode::FollowNightLight);
 
-        if (isLightActive)
-        {
-            if (settings.changeSystem && !isSystemCurrentlyLight)
-                SetSystemTheme(true);
-            if (settings.changeApps && !isAppsCurrentlyLight)
-                SetAppsTheme(true);
-        }
-        else
-        {
-            if (settings.changeSystem && isSystemCurrentlyLight)
-                SetSystemTheme(false);
-            if (settings.changeApps && isAppsCurrentlyLight)
-                SetAppsTheme(false);
-        }
-    };
-
-    // --- At service start: immediately honor the schedule ---
+    if (nightLightNeeded && !g_nightLightWatcher)
     {
-        SYSTEMTIME st;
-        GetLocalTime(&st);
-        int nowMinutes = st.wHour * 60 + st.wMinute;
+        Logger::info(L"[LightSwitchService] Starting Night Light registry watcher...");
 
-        LightSwitchSettings::instance().LoadSettings();
-        const auto& settings = LightSwitchSettings::instance().settings();
-
-        applyTheme(nowMinutes, settings.lightTime + settings.sunrise_offset, settings.darkTime + settings.sunset_offset, settings);
+        g_nightLightWatcher = std::make_unique<NightLightRegistryObserver>(
+            HKEY_CURRENT_USER,
+            NIGHT_LIGHT_REGISTRY_PATH,
+            []() {
+                if (g_stateManagerPtr)
+                    g_stateManagerPtr->OnNightLightChange();
+            });
+    }
+    else if (!nightLightNeeded && g_nightLightWatcher)
+    {
+        Logger::info(L"[LightSwitchService] Stopping Night Light registry watcher...");
+        g_nightLightWatcher->Stop();
+        g_nightLightWatcher.reset();
     }
 
-    // --- Main loop: wakes once per minute or stop/parent death ---
+    SYSTEMTIME st;
+    GetLocalTime(&st);
+    int nowMinutes = st.wHour * 60 + st.wMinute;
+
+    Logger::info(L"[LightSwitchService] Initialized at {:02d}:{:02d}.", st.wHour, st.wMinute);
+    stateManager.SyncInitialThemeState();
+    stateManager.OnTick(nowMinutes);
+
+    // ────────────────────────────────────────────────────────────────
+    // Worker Loop
+    // ────────────────────────────────────────────────────────────────
     for (;;)
     {
-        HANDLE waits[2] = { g_ServiceStopEvent, hParent };
-        DWORD count = hParent ? 2 : 1;
-
-        SYSTEMTIME st;
-        GetLocalTime(&st);
-        int nowMinutes = st.wHour * 60 + st.wMinute;
-
-        LightSwitchSettings::instance().LoadSettings();
-        const auto& settings = LightSwitchSettings::instance().settings();
-
-        // Refresh suntimes at day boundary
-        if (g_lastUpdatedDay != st.wDay)
-        {
-            update_sun_times(settings);
-            g_lastUpdatedDay = st.wDay;
-
-            Logger::info(L"[LightSwitchService] Recalculated sun times at new day boundary.");
-        }
-
-        wchar_t msg[160];
-        swprintf_s(msg,
-                   L"[LightSwitchService] now=%02d:%02d | light=%02d:%02d | dark=%02d:%02d",
-                   st.wHour,
-                   st.wMinute,
-                   settings.lightTime / 60,
-                   settings.lightTime % 60,
-                   settings.darkTime / 60,
-                   settings.darkTime % 60);
-        Logger::info(msg);
-
-        // --- Manual override check ---
-        bool manualOverrideActive = false;
+        HANDLE waits[4];
+        DWORD count = 0;
+        waits[count++] = g_ServiceStopEvent;
+        if (hParent)
+            waits[count++] = hParent;
         if (hManualOverride)
-        {
-            manualOverrideActive = (WaitForSingleObject(hManualOverride, 0) == WAIT_OBJECT_0);
-        }
+            waits[count++] = hManualOverride;
+        waits[count++] = hSettingsChanged;
 
-        if (manualOverrideActive)
-        {
-            // Did we hit a scheduled boundary? (reset override at boundary)
-            if (nowMinutes == (settings.lightTime + settings.sunrise_offset) % 1440 ||
-                nowMinutes == (settings.darkTime + settings.sunset_offset) % 1440)
-            {
-                ResetEvent(hManualOverride);
-                Logger::info(L"[LightSwitchService] Manual override cleared at boundary\n");
-            }
-            else
-            {
-                Logger::info(L"[LightSwitchService] Skipping schedule due to manual override\n");
-                goto sleep_until_next_minute;
-            }
-        }
-
-        // Apply theme logic (only runs if no manual override or override just cleared)
-        applyTheme(nowMinutes, settings.lightTime + settings.sunrise_offset, settings.darkTime + settings.sunset_offset, settings);
-
-    sleep_until_next_minute:
+        // Wait for one of these to trigger or for a new minute tick
+        SYSTEMTIME st;
         GetLocalTime(&st);
         int msToNextMinute = (60 - st.wSecond) * 1000 - st.wMilliseconds;
         if (msToNextMinute < 50)
             msToNextMinute = 50;
 
         DWORD wait = WaitForMultipleObjects(count, waits, FALSE, msToNextMinute);
+
+        if (wait == WAIT_TIMEOUT)
+        {
+            // regular minute tick
+            GetLocalTime(&st);
+            nowMinutes = st.wHour * 60 + st.wMinute;
+            DetectAndHandleExternalThemeChange(stateManager);
+            stateManager.OnTick(nowMinutes);
+            continue;
+        }
+
         if (wait == WAIT_OBJECT_0)
         {
-            Logger::info(L"[LightSwitchService] Stop event triggered � exiting worker loop.");
-            break;
-        }
-        if (hParent && wait == WAIT_OBJECT_0 + 1) // parent process exited
-        {
-            Logger::info(L"[LightSwitchService] Parent process exited � stopping service.");
+            Logger::info(L"[LightSwitchService] Stop event triggered — exiting.");
             break;
         }
 
+        if (hParent && wait == WAIT_OBJECT_0 + 1)
+        {
+            Logger::info(L"[LightSwitchService] Parent process exited — stopping service.");
+            break;
+        }
+
+        if (hManualOverride && wait == WAIT_OBJECT_0 + (hParent ? 2 : 1))
+        {
+            Logger::info(L"[LightSwitchService] Manual override event detected.");
+            stateManager.OnManualOverride();
+            ResetEvent(hManualOverride);
+            continue;
+        }
+
+        if (wait == WAIT_OBJECT_0 + (hParent ? (hManualOverride ? 3 : 2) : 2))
+        {
+            ResetEvent(hSettingsChanged);
+            LightSwitchSettings::instance().LoadSettings();
+            stateManager.OnSettingsChanged();
+
+            const auto& settings = LightSwitchSettings::instance().settings();
+            bool nightLightNeeded = (settings.scheduleMode == ScheduleMode::FollowNightLight);
+
+            if (nightLightNeeded && !g_nightLightWatcher)
+            {
+                Logger::info(L"[LightSwitchService] Starting Night Light registry watcher...");
+
+                g_nightLightWatcher = std::make_unique<NightLightRegistryObserver>(
+                    HKEY_CURRENT_USER,
+                    NIGHT_LIGHT_REGISTRY_PATH,
+                    []() {
+                        if (g_stateManagerPtr)
+                            g_stateManagerPtr->OnNightLightChange();
+                    });
+
+                stateManager.OnNightLightChange();
+            }
+            else if (!nightLightNeeded && g_nightLightWatcher)
+            {
+                Logger::info(L"[LightSwitchService] Stopping Night Light registry watcher...");
+                g_nightLightWatcher->Stop();
+                g_nightLightWatcher.reset();
+            }
+
+            continue;
+        }
     }
 
+    // ────────────────────────────────────────────────────────────────
+    // Cleanup
+    // ────────────────────────────────────────────────────────────────
     if (hManualOverride)
         CloseHandle(hManualOverride);
     if (hParent)
         CloseHandle(hParent);
+    if (g_nightLightWatcher)
+    {
+        g_nightLightWatcher->Stop();
+        g_nightLightWatcher.reset();
+    }
 
+    Logger::info(L"[LightSwitchService] Worker thread exiting cleanly.");
     return 0;
 }
 
 int APIENTRY wWinMain(HINSTANCE, HINSTANCE, PWSTR, int)
 {
+    Trace::LightSwitch::RegisterProvider();
+
     if (powertoys_gpo::getConfiguredLightSwitchEnabledValue() == powertoys_gpo::gpo_rule_configured_disabled)
     {
         wchar_t msg[160];
@@ -306,12 +367,14 @@ int APIENTRY wWinMain(HINSTANCE, HINSTANCE, PWSTR, int)
             msg,
             L"Tried to start with a GPO policy setting the utility to always be disabled. Please contact your systems administrator.");
         Logger::info(msg);
+        Trace::LightSwitch::UnregisterProvider();
         return 0;
     }
-
     int argc = 0;
     LPWSTR* argv = CommandLineToArgvW(GetCommandLineW(), &argc);
     int rc = _tmain(argc, argv); // reuse your existing logic
     LocalFree(argv);
+
+    Trace::LightSwitch::UnregisterProvider();
     return rc;
 }

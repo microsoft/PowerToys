@@ -4,6 +4,4 @@
 
 namespace Microsoft.CmdPal.Core.ViewModels.Messages;
 
-public record DismissMessage()
-{
-}
+public record DismissMessage(bool ForceGoHome = false);

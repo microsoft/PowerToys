@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.ComponentModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
@@ -13,6 +14,7 @@ using Microsoft.CommandPalette.Extensions;
 namespace Microsoft.CmdPal.Core.ViewModels;
 
 public partial class ShellViewModel : ObservableObject,
+    IDisposable,
     IRecipient<PerformCommandMessage>,
     IRecipient<HandleCommandResultMessage>
 {
@@ -48,6 +50,9 @@ public partial class ShellViewModel : ObservableObject,
             var oldValue = _currentPage;
             if (SetProperty(ref _currentPage, value))
             {
+                oldValue.PropertyChanged -= CurrentPage_PropertyChanged;
+                value.PropertyChanged += CurrentPage_PropertyChanged;
+
                 if (oldValue is IDisposable disposable)
                 {
                     try
@@ -60,6 +65,14 @@ public partial class ShellViewModel : ObservableObject,
                     }
                 }
             }
+        }
+    }
+
+    private void CurrentPage_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(PageViewModel.HasSearchBox))
+        {
+            IsSearchBoxVisible = CurrentPage.HasSearchBox;
         }
     }
 
@@ -257,8 +270,18 @@ public partial class ShellViewModel : ObservableObject,
                 var isMainPage = command == _rootPage;
                 _isNested = !isMainPage;
 
+                // Telemetry: Track extension page navigation for session metrics
+                if (host is not null)
+                {
+                    string extensionId = host.GetExtensionDisplayName() ?? "builtin";
+                    string commandId = command?.Id ?? "unknown";
+                    string commandName = command?.Name ?? "unknown";
+                    WeakReferenceMessenger.Default.Send<TelemetryExtensionInvokedMessage>(
+                        new(extensionId, commandId, commandName, true, 0));
+                }
+
                 // Construct our ViewModel of the appropriate type and pass it the UI Thread context.
-                var pageViewModel = _pageViewModelFactory.TryCreatePageViewModel(page, _isNested, host);
+                var pageViewModel = _pageViewModelFactory.TryCreatePageViewModel(page, _isNested, host!);
                 if (pageViewModel is null)
                 {
                     CoreLogger.LogError($"Failed to create ViewModel for page {page.GetType().Name}");
@@ -293,7 +316,7 @@ public partial class ShellViewModel : ObservableObject,
             {
                 CoreLogger.LogDebug($"Invoking command");
 
-                WeakReferenceMessenger.Default.Send<BeginInvokeMessage>();
+                WeakReferenceMessenger.Default.Send<TelemetryBeginInvokeMessage>();
                 StartInvoke(message, invokable, host);
             }
         }
@@ -326,6 +349,14 @@ public partial class ShellViewModel : ObservableObject,
 
     private void SafeHandleInvokeCommandSynchronous(PerformCommandMessage message, IInvokableCommand invokable, AppExtensionHost? host)
     {
+        // Telemetry: Track command execution time and success
+        var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+        var command = message.Command.Unsafe;
+        string extensionId = host?.GetExtensionDisplayName() ?? "builtin";
+        string commandId = command?.Id ?? "unknown";
+        string commandName = command?.Name ?? "unknown";
+        bool success = false;
+
         try
         {
             // Call out to extension process.
@@ -336,15 +367,27 @@ public partial class ShellViewModel : ObservableObject,
             // But if it did succeed, we need to handle the result.
             UnsafeHandleCommandResult(result);
 
+            success = true;
             _handleInvokeTask = null;
         }
         catch (Exception ex)
         {
+            success = false;
             _handleInvokeTask = null;
+
+            // Telemetry: Track errors for session metrics
+            WeakReferenceMessenger.Default.Send<ErrorOccurredMessage>(new());
 
             // TODO: It would be better to do this as a page exception, rather
             // than a silent log message.
             host?.Log(ex.Message);
+        }
+        finally
+        {
+            // Telemetry: Send extension invocation metrics (always sent, even on failure)
+            stopwatch.Stop();
+            WeakReferenceMessenger.Default.Send<TelemetryExtensionInvokedMessage>(
+                new(extensionId, commandId, commandName, success, (ulong)stopwatch.ElapsedMilliseconds));
         }
     }
 
@@ -359,14 +402,14 @@ public partial class ShellViewModel : ObservableObject,
         var kind = result.Kind;
         CoreLogger.LogDebug($"handling {kind.ToString()}");
 
-        WeakReferenceMessenger.Default.Send<CmdPalInvokeResultMessage>(new(kind));
+        WeakReferenceMessenger.Default.Send<TelemetryInvokeResultMessage>(new(kind));
         switch (kind)
         {
             case CommandResultKind.Dismiss:
                 {
                     // Reset the palette to the main page and dismiss
                     GoHome(withAnimation: false, focusSearch: false);
-                    WeakReferenceMessenger.Default.Send<DismissMessage>();
+                    WeakReferenceMessenger.Default.Send(new DismissMessage());
                     break;
                 }
 
@@ -386,7 +429,7 @@ public partial class ShellViewModel : ObservableObject,
             case CommandResultKind.Hide:
                 {
                     // Keep this page open, but hide the palette.
-                    WeakReferenceMessenger.Default.Send<DismissMessage>();
+                    WeakReferenceMessenger.Default.Send(new DismissMessage());
                     break;
                 }
 
@@ -447,5 +490,13 @@ public partial class ShellViewModel : ObservableObject,
     public void CancelNavigation()
     {
         _navigationCts?.Cancel();
+    }
+
+    public void Dispose()
+    {
+        _handleInvokeTask?.Dispose();
+        _navigationCts?.Dispose();
+
+        GC.SuppressFinalize(this);
     }
 }

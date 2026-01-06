@@ -124,16 +124,7 @@ namespace Microsoft.CmdPal.Ext.WinGet.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Search for extensions on WinGet.
-        /// </summary>
-        public static string winget_install_extensions_subtitle {
-            get {
-                return ResourceManager.GetString("winget_install_extensions_subtitle", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Install Command Palette extensions.
+        ///   Looks up a localized string similar to Add Command Palette extensions from WinGet.
         /// </summary>
         public static string winget_install_extensions_title {
             get {
@@ -205,7 +196,7 @@ namespace Microsoft.CmdPal.Ext.WinGet.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Search WinGet.
+        ///   Looks up a localized string similar to Find apps on WinGet.
         /// </summary>
         public static string winget_page_name {
             get {
@@ -268,7 +259,7 @@ namespace Microsoft.CmdPal.Ext.WinGet.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Search for extensions in the Store.
+        ///   Looks up a localized string similar to Add Command Palette extensions from the Microsoft Store.
         /// </summary>
         public static string winget_search_store_title {
             get {

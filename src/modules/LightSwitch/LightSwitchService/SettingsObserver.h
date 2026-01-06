@@ -2,6 +2,7 @@
 
 #include <unordered_set>
 #include "SettingsConstants.h"
+#include "LightSwitchSettings.h"
 
 class LightSwitchSettings;
 
@@ -22,7 +23,7 @@ public:
     // Override this in your class to respond to updates
     virtual void SettingsUpdate(SettingId type) {}
 
-    bool WantsToBeNotified(SettingId type) const noexcept
+    virtual bool WantsToBeNotified(SettingId type) const noexcept
     {
         return m_observedSettings.contains(type);
     }

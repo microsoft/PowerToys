@@ -2,8 +2,10 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Collections.Generic;
 using Microsoft.CmdPal.Core.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Core.ViewModels;
 
@@ -12,6 +14,8 @@ public partial class FiltersViewModel : ExtensionObjectViewModel
     private readonly ExtensionObject<IFilters> _filtersModel;
 
     public string CurrentFilterId { get; private set; } = string.Empty;
+
+    public IFilterItemViewModel? CurrentFilter { get; private set; }
 
     public IFilterItemViewModel[] Filters { get; private set; } = [];
 
@@ -30,11 +34,13 @@ public partial class FiltersViewModel : ExtensionObjectViewModel
             if (_filtersModel.Unsafe is not null)
             {
                 var filters = _filtersModel.Unsafe.GetFilters();
-                Filters = BuildFilters(filters ?? []);
-                UpdateProperty(nameof(Filters), nameof(ShouldShowFilters));
+                var currentFilterId = _filtersModel.Unsafe.CurrentFilterId ?? string.Empty;
 
-                CurrentFilterId = _filtersModel.Unsafe.CurrentFilterId ?? string.Empty;
-                UpdateProperty(nameof(CurrentFilterId));
+                var result = BuildFilters(filters ?? [], currentFilterId);
+                Filters = result.Items;
+                CurrentFilterId = currentFilterId;
+                CurrentFilter = result.Selected;
+                UpdateProperty(nameof(Filters), nameof(ShouldShowFilters), nameof(CurrentFilterId), nameof(CurrentFilter));
 
                 return;
             }
@@ -45,27 +51,48 @@ public partial class FiltersViewModel : ExtensionObjectViewModel
         }
 
         Filters = [];
-        UpdateProperty(nameof(Filters), nameof(ShouldShowFilters));
-
         CurrentFilterId = string.Empty;
-        UpdateProperty(nameof(CurrentFilterId));
+        CurrentFilter = null;
+        UpdateProperty(nameof(Filters), nameof(ShouldShowFilters), nameof(CurrentFilterId), nameof(CurrentFilter));
     }
 
-    private IFilterItemViewModel[] BuildFilters(IFilterItem[] filters)
+    private (IFilterItemViewModel[] Items, IFilterItemViewModel? Selected) BuildFilters(IFilterItem[] filters, string currentFilterId)
     {
-        return [..filters.Select<IFilterItem, IFilterItemViewModel>(filter =>
+        if (filters is null || filters.Length == 0)
+        {
+            return ([], null);
+        }
+
+        var items = new List<IFilterItemViewModel>(filters.Length);
+        FilterItemViewModel? firstFilterItem = null;
+        FilterItemViewModel? selectedFilterItem = null;
+
+        foreach (var filter in filters)
         {
             if (filter is IFilter filterItem)
             {
-                var filterItemViewModel = new FilterItemViewModel(filterItem!, PageContext);
+                var filterItemViewModel = new FilterItemViewModel(filterItem, PageContext);
                 filterItemViewModel.InitializeProperties();
-                return filterItemViewModel;
+
+                if (firstFilterItem is null)
+                {
+                    firstFilterItem = filterItemViewModel;
+                }
+
+                if (selectedFilterItem is null && filterItemViewModel.Id == currentFilterId)
+                {
+                    selectedFilterItem = filterItemViewModel;
+                }
+
+                items.Add(filterItemViewModel);
             }
             else
             {
-                return new SeparatorViewModel();
+                items.Add(new SeparatorViewModel());
             }
-        })];
+        }
+
+        return (items.ToArray(), selectedFilterItem ?? firstFilterItem);
     }
 
     public override void SafeCleanup()

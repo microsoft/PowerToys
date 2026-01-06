@@ -10,6 +10,7 @@ using Microsoft.PowerToys.Settings.UI.Controls;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Telemetry.Events;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
+using Microsoft.PowerToys.Settings.UI.Views;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -26,7 +27,7 @@ namespace Microsoft.PowerToys.Settings.UI.Flyout
         public LaunchPage()
         {
             this.InitializeComponent();
-            var settingsUtils = new SettingsUtils();
+            var settingsUtils = SettingsUtils.Default;
             ViewModel = new LauncherViewModel(SettingsRepository<GeneralSettings>.GetInstance(settingsUtils), Views.ShellPage.SendDefaultIPCMessage);
             DataContext = ViewModel;
         }
@@ -50,7 +51,7 @@ namespace Microsoft.PowerToys.Settings.UI.Flyout
                     break;
                 case ModuleType.EnvironmentVariables: // Launch Environment Variables
                     {
-                        bool launchAdmin = SettingsRepository<EnvironmentVariablesSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.LaunchAdministrator;
+                        bool launchAdmin = SettingsRepository<EnvironmentVariablesSettings>.GetInstance(SettingsUtils.Default).SettingsConfig.Properties.LaunchAdministrator;
                         string eventName = !App.IsElevated && launchAdmin
                             ? Constants.ShowEnvironmentVariablesAdminSharedEvent()
                             : Constants.ShowEnvironmentVariablesSharedEvent();
@@ -73,7 +74,7 @@ namespace Microsoft.PowerToys.Settings.UI.Flyout
 
                 case ModuleType.Hosts: // Launch Hosts
                     {
-                        bool launchAdmin = SettingsRepository<HostsSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.LaunchAdministrator;
+                        bool launchAdmin = SettingsRepository<HostsSettings>.GetInstance(SettingsUtils.Default).SettingsConfig.Properties.LaunchAdministrator;
                         string eventName = !App.IsElevated && launchAdmin
                             ? Constants.ShowHostsAdminSharedEvent()
                             : Constants.ShowHostsSharedEvent();
@@ -182,6 +183,15 @@ namespace Microsoft.PowerToys.Settings.UI.Flyout
 
             // Closing manually the flyout since no window will steal the focus
             App.GetFlyoutWindow()?.Hide();
+        }
+
+        private void UpdateInfoBar_Tapped(object sender, Microsoft.UI.Xaml.Input.TappedRoutedEventArgs e)
+        {
+            // Hide the flyout before opening settings window
+            App.GetFlyoutWindow()?.Hide();
+
+            // Open Settings window directly to General page where update controls are located
+            App.OpenSettingsWindow(typeof(GeneralPage));
         }
     }
 }
