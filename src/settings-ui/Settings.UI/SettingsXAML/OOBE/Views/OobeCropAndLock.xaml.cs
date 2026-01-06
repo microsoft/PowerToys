@@ -38,7 +38,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 
             ReparentHotkeyControl.Keys = SettingsRepository<CropAndLockSettings>.GetInstance(SettingsUtils.Default).SettingsConfig.Properties.ReparentHotkey.Value.GetKeysList();
             ThumbnailHotkeyControl.Keys = SettingsRepository<CropAndLockSettings>.GetInstance(SettingsUtils.Default).SettingsConfig.Properties.ThumbnailHotkey.Value.GetKeysList();
-            ScreenshotHotkeyControl.Keys = SettingsRepository<CropAndLockSettings>.GetInstance(SettingsUtils.Default.SettingsConfig.Properties.ScreenshotHotkey.Value.GetKeysList();
+            ScreenshotHotkeyControl.Keys = SettingsRepository<CropAndLockSettings>.GetInstance(SettingsUtils.Default).SettingsConfig.Properties.ScreenshotHotkey.Value.GetKeysList();
         }
 
         protected override void OnNavigatedFrom(NavigationEventArgs e)
