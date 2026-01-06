@@ -7,24 +7,37 @@
 #include "resource.h"
 #include <common/logger/logger.h>
 #include <common/utils/logger_helper.h>
+#include <type_traits>
 
-std::wstring FormatString(IStringProvider& strings, UINT id, ...)
+template<typename T>
+DWORD_PTR ToDwordPtr(T val)
+{
+    if constexpr (std::is_pointer_v<T>)
+    {
+        return reinterpret_cast<DWORD_PTR>(val);
+    }
+    else
+    {
+        return static_cast<DWORD_PTR>(val);
+    }
+}
+
+template<typename... Args>
+std::wstring FormatString(IStringProvider& strings, UINT id, Args... args)
 {
     std::wstring format = strings.GetString(id);
     if (format.empty()) return L"";
 
-    va_list args;
-    va_start(args, id);
-    
+    DWORD_PTR arguments[] = { ToDwordPtr(args)..., 0 };
+
     LPWSTR buffer = nullptr;
-    FormatMessageW(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_STRING,
+    FormatMessageW(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_STRING | FORMAT_MESSAGE_ARGUMENT_ARRAY,
                    format.c_str(),
                    0,
                    0,
                    reinterpret_cast<LPWSTR>(&buffer),
                    0,
-                   &args);
-    va_end(args);
+                   reinterpret_cast<va_list*>(arguments));
 
     if (buffer)
     {
