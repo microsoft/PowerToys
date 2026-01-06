@@ -64,13 +64,13 @@ public static partial class IconCacheProvider
     }
 
 #pragma warning disable IDE0060 // Remove unused parameter
-    public static void SourceRequested(IconBox sender, SourceRequestedEventArgs args)
+    public static void SourceRequested20(IconBox sender, SourceRequestedEventArgs args)
         => SourceRequestedCore(_provider20, args);
 
     public static void SourceRequested32(IconBox sender, SourceRequestedEventArgs args)
         => SourceRequestedCore(_provider32, args);
 
-    public static void SourceRequestedJumbo(IconBox sender, SourceRequestedEventArgs args)
+    public static void SourceRequested64(IconBox sender, SourceRequestedEventArgs args)
         => SourceRequestedCore(_provider64, args);
 
     public static void SourceRequested256(IconBox sender, SourceRequestedEventArgs args)
