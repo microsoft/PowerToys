@@ -47,7 +47,7 @@ struct RealStringProvider : IStringProvider
 int wmain(int argc, wchar_t* argv[])
 {
     winrt::init_apartment();
-    LoggerHelpers::init_logger(L"FileLocksmith", L"", LogSettings::fileLocksmithLoggerName);
+    LoggerHelpers::init_logger(L"FileLocksmithCLI", L"", LogSettings::fileLocksmithLoggerName);
     Logger::info("FileLocksmithCLI started");
 
     RealProcessFinder finder;
