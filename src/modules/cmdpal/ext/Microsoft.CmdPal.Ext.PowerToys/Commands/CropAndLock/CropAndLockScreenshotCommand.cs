@@ -11,13 +11,13 @@ using PowerToys.Interop;
 namespace PowerToysExtension.Commands;
 
 /// <summary>
-/// Triggers Crop and Lock reparent mode via the shared event.
+/// Triggers Crop and Lock screenshot mode via the shared event.
 /// </summary>
-internal sealed partial class CropAndLockReparentCommand : InvokableCommand
+internal sealed partial class CropAndLockScreenshotCommand : InvokableCommand
 {
-    public CropAndLockReparentCommand()
+    public CropAndLockScreenshotCommand()
     {
-        Name = "Crop and Lock (Reparent)";
+        Name = "Crop and Lock (Screenshot)";
     }
 
     public override CommandResult Invoke()
@@ -27,7 +27,7 @@ internal sealed partial class CropAndLockReparentCommand : InvokableCommand
             await Task.Delay(500);
             try
             {
-                using var evt = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.CropAndLockReparentEvent());
+                using var evt = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.CropAndLockScreenshotEvent());
                 evt.Set();
             }
             catch
