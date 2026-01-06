@@ -94,6 +94,12 @@ struct ModuleSettings
     int m_sunset_offset = 0;
     std::wstring m_latitude = L"0.0";
     std::wstring m_longitude = L"0.0";
+    bool m_wallpaper = false;
+    bool m_wallpaper_virtual_desktop = false;
+    int m_wallpaper_style_light = 0;
+    int m_wallpaper_style_dark = 0;
+    std::wstring m_wallpaper_path_light;
+    std::wstring m_wallpaper_path_dark;
 } g_settings;
 
 class LightSwitchInterface : public PowertoyModuleIface
@@ -351,6 +357,30 @@ public:
             {
                 g_settings.m_longitude = *v;
             }
+            if (auto v = values.get_bool_value(L"wallpaperEnabled"))
+            {
+                g_settings.m_wallpaper = *v;
+            }
+            if (auto v = values.get_bool_value(L"wallpaperVirtualDesktopEnabled"))
+            {
+                g_settings.m_wallpaper_virtual_desktop = *v;
+            }
+            if (auto v = values.get_int_value(L"wallpaperStyleLight"))
+            {
+                g_settings.m_wallpaper_style_light = *v;
+            }
+            if (auto v = values.get_int_value(L"wallpaperStyleDark"))
+            {
+                g_settings.m_wallpaper_style_dark = *v;
+            }
+            if (auto v = values.get_string_value(L"wallpaperPathLight"))
+            {
+                g_settings.m_wallpaper_path_light = *v;
+            }
+            if (auto v = values.get_string_value(L"wallpaperPathDark"))
+            {
+                g_settings.m_wallpaper_path_dark = *v;
+            }
 
             values.save_to_settings_file();
         }
@@ -566,15 +596,53 @@ public:
 
 };
 
+static bool IsValidPath(const std::wstring& path)
+{
+    std::error_code ec;
+    return !path.empty() && std::filesystem::exists(path, ec);
+}
+
 void LightSwitchInterface::ToggleTheme()
 {
+    bool current_system_theme = GetCurrentSystemTheme();
+    bool current_apps_theme = GetCurrentAppsTheme();
+
     if (g_settings.m_changeSystem)
     {
-        SetSystemTheme(!GetCurrentSystemTheme());
+        SetSystemTheme(!current_system_theme);
     }
     if (g_settings.m_changeApps)
     {
-        SetAppsTheme(!GetCurrentAppsTheme());
+        SetAppsTheme(!current_apps_theme);
+    }
+
+    bool new_system_theme = GetCurrentSystemTheme();
+    bool new_apps_theme = GetCurrentAppsTheme();
+
+    bool changeWallpaper =
+        g_settings.m_wallpaper &&
+        IsValidPath(g_settings.m_wallpaper_path_light) &&
+        IsValidPath(g_settings.m_wallpaper_path_dark);
+
+    // if something changed and wallpaper change is enabled and paths are valid
+    if ((new_system_theme != current_system_theme || new_apps_theme != current_apps_theme) && changeWallpaper)
+    {
+        bool shouldBeLight;
+
+        if (g_settings.m_changeSystem && new_system_theme != current_system_theme)
+        {
+            shouldBeLight = new_system_theme;
+        }
+        else
+        {
+            // Either apps-only changed, or system didn't move
+            shouldBeLight = new_apps_theme;
+        }
+
+        auto&& wallpaperPath = shouldBeLight ? g_settings.m_wallpaper_path_light : g_settings.m_wallpaper_path_dark;
+        auto style = shouldBeLight ? g_settings.m_wallpaper_style_light : g_settings.m_wallpaper_style_dark;
+
+        SetDesktopWallpaper(wallpaperPath, style, g_settings.m_wallpaper_virtual_desktop);
     }
 
     if (!m_manual_override_event_handle)
@@ -693,6 +761,18 @@ void LightSwitchInterface::init_settings()
             g_settings.m_latitude = *v;
         if (auto v = settings.get_string_value(L"longitude"))
             g_settings.m_longitude = *v;
+        if (auto v = settings.get_bool_value(L"wallpaperEnabled"))
+            g_settings.m_wallpaper = *v;
+        if (auto v = settings.get_bool_value(L"wallpaperVirtualDesktopEnabled"))
+            g_settings.m_wallpaper_virtual_desktop = *v;
+        if (auto v = settings.get_int_value(L"wallpaperStyleLight"))
+            g_settings.m_wallpaper_style_light = *v;
+        if (auto v = settings.get_int_value(L"wallpaperStyleDark"))
+            g_settings.m_wallpaper_style_dark = *v;
+        if (auto v = settings.get_string_value(L"wallpaperPathLight"))
+            g_settings.m_wallpaper_path_light = *v;
+        if (auto v = settings.get_string_value(L"wallpaperPathDark"))
+            g_settings.m_wallpaper_path_dark = *v;
 
         Logger::info(L"[Light Switch] init_settings: loaded successfully");
     }
