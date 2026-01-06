@@ -5,7 +5,9 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
@@ -16,10 +18,13 @@ using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.SerializationContext;
+using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Media.Imaging;
 using Newtonsoft.Json.Linq;
 using PowerToys.GPOWrapper;
 using Settings.UI.Library;
 using Settings.UI.Library.Helpers;
+using Windows.Storage;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
@@ -54,6 +59,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             };
 
             _toggleThemeHotkey = _moduleSettings.Properties.ToggleThemeHotkey.Value;
+            PropertyChanged += WallpaperPath_Changed;
         }
 
         public override Dictionary<string, HotkeySettings[]> GetAllHotkeySettings()
@@ -532,6 +538,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             OnPropertyChanged(nameof(Latitude));
             OnPropertyChanged(nameof(Longitude));
             OnPropertyChanged(nameof(ScheduleMode));
+            OnPropertyChanged(nameof(IsWallpaperEnabled));
+            OnPropertyChanged(nameof(WallpaperPathLight));
+            OnPropertyChanged(nameof(WallpaperPathDark));
+            OnPropertyChanged(nameof(WallpaperStyleLight));
+            OnPropertyChanged(nameof(WallpaperStyleDark));
         }
 
         private void UpdateSunTimes(double latitude, double longitude, string city = "n/a")
@@ -582,6 +593,222 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public bool IsWallpaperEnabled
+        {
+            get
+            {
+                return ModuleSettings.Properties.WallpaperEnabled.Value;
+            }
+
+            set
+            {
+                if (ModuleSettings.Properties.WallpaperEnabled.Value != value)
+                {
+                    ModuleSettings.Properties.WallpaperEnabled.Value = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
+        public bool IsVirtualDesktopEnabled
+        {
+            get
+            {
+                return ModuleSettings.Properties.WallpaperVirtualDesktopEnabled.Value;
+            }
+
+            set
+            {
+                if (ModuleSettings.Properties.WallpaperVirtualDesktopEnabled.Value != value)
+                {
+                    ModuleSettings.Properties.WallpaperVirtualDesktopEnabled.Value = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
+        public string WallpaperPathLight
+        {
+            get
+            {
+                return ModuleSettings.Properties.WallpaperPathLight.Value;
+            }
+
+            set
+            {
+                if (ModuleSettings.Properties.WallpaperPathLight.Value != value)
+                {
+                    ModuleSettings.Properties.WallpaperPathLight.Value = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
+        public string WallpaperPathDark
+        {
+            get
+            {
+                return ModuleSettings.Properties.WallpaperPathDark.Value;
+            }
+
+            set
+            {
+                if (ModuleSettings.Properties.WallpaperPathDark.Value != value)
+                {
+                    ModuleSettings.Properties.WallpaperPathDark.Value = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
+        public bool IsLightWallpaperValid
+        {
+            get => _isLightWallpaperValid;
+
+            set
+            {
+                if (_isLightWallpaperValid != value)
+                {
+                    _isLightWallpaperValid = value;
+                }
+            }
+        }
+
+        public bool IsDarkWallpaperValid
+        {
+            get => _isDarkWallpaperValid;
+            set
+            {
+                if (_isDarkWallpaperValid != value)
+                {
+                    _isDarkWallpaperValid = value;
+                }
+            }
+        }
+
+        public ImageSource WallpaperSourceLight
+        {
+            get => _wallpaperSourceLight;
+            set
+            {
+                if (_wallpaperSourceLight != value)
+                {
+                    _wallpaperSourceLight = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
+        public ImageSource WallpaperSourceDark
+        {
+            get => _wallpaperSourceDark;
+            set
+            {
+                if (_wallpaperSourceDark != value)
+                {
+                    _wallpaperSourceDark = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
+        public int WallpaperStyleLight
+        {
+            get => ModuleSettings.Properties.WallpaperStyleLight.Value;
+            set
+            {
+                if (ModuleSettings.Properties.WallpaperStyleLight.Value != value)
+                {
+                    ModuleSettings.Properties.WallpaperStyleLight.Value = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
+        public int WallpaperStyleDark
+        {
+            get => ModuleSettings.Properties.WallpaperStyleDark.Value;
+            set
+            {
+                if (ModuleSettings.Properties.WallpaperStyleDark.Value != value)
+                {
+                    ModuleSettings.Properties.WallpaperStyleDark.Value = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
+        public static void DeleteFile(string path)
+        {
+            // Prevent attackers from damaging files through specially crafted JSON
+            var dataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) + "\\Microsoft\\PowerToys\\LightSwitch";
+            if (!string.IsNullOrEmpty(path) && path.StartsWith(dataPath, StringComparison.OrdinalIgnoreCase))
+            {
+                try
+                {
+                    File.Delete(path);
+                }
+                catch (Exception)
+                {
+                }
+            }
+        }
+
+        private async void WallpaperPath_Changed(object sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(WallpaperPathLight))
+            {
+                var lightImage = new BitmapImage();
+                try
+                {
+                    var lightFile = await StorageFile.GetFileFromPathAsync(WallpaperPathLight);
+                    await lightImage.SetSourceAsync(await lightFile.OpenReadAsync()); // thrown here when the image is invalid
+                    WallpaperSourceLight = lightImage;
+                    IsLightWallpaperValid = true;
+                }
+                catch (Exception)
+                {
+                    DeleteFile(WallpaperPathLight);
+                    WallpaperPathLight = null;
+                    IsLightWallpaperValid = false;
+                    WallpaperSourceLight = null;
+                    IsWallpaperEnabled = false;
+                }
+            }
+            else if (e.PropertyName == nameof(WallpaperPathDark))
+            {
+                var darkImage = new BitmapImage();
+                try
+                {
+                    var darkFile = await StorageFile.GetFileFromPathAsync(WallpaperPathDark);
+                    await darkImage.SetSourceAsync(await darkFile.OpenReadAsync());
+                    WallpaperSourceDark = darkImage;
+                    IsDarkWallpaperValid = true;
+                }
+                catch (Exception)
+                {
+                    DeleteFile(WallpaperPathDark);
+                    WallpaperPathDark = null;
+                    IsDarkWallpaperValid = false;
+                    WallpaperSourceDark = null;
+                    IsWallpaperEnabled = false;
+                }
+            }
+        }
+
+        private int GetRegistryBuildNumber()
+        {
+            var value = Win32.Registry.GetValue("HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion", "CurrentBuildNumber", string.Empty);
+#pragma warning disable CA1305
+            return int.Parse(value as string);
+#pragma warning restore CA1305
+        }
+
+        public bool Is24H2OrLater
+        {
+            get => GetRegistryBuildNumber() > 26100;
+        }
+
         private bool _enabledStateIsGPOConfigured;
         private GpoRuleConfigured _enabledGpoRuleConfiguration;
         private LightSwitchSettings _moduleSettings;
@@ -589,6 +816,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private HotkeySettings _toggleThemeHotkey;
         private TimeSpan? _sunriseTimeSpan;
         private TimeSpan? _sunsetTimeSpan;
+        private bool _isLightWallpaperValid;
+        private bool _isDarkWallpaperValid;
+        private ImageSource _wallpaperSourceLight;
+        private ImageSource _wallpaperSourceDark;
 
         public ICommand ForceLightCommand { get; }
 
