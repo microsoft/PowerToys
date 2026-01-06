@@ -225,6 +225,24 @@ internal static class DataPackageHelpers
     internal static async Task<string> GetHtmlContentAsync(this DataPackageView dataPackageView) =>
         dataPackageView.Contains(StandardDataFormats.Html) ? await dataPackageView.GetHtmlFormatAsync() : string.Empty;
 
+    internal static async Task<byte[]> GetImageAsPngBytesAsync(this DataPackageView dataPackageView)
+    {
+        var bitmap = await dataPackageView.GetImageContentAsync();
+        if (bitmap == null)
+        {
+            return null;
+        }
+
+        using var pngStream = new InMemoryRandomAccessStream();
+        var encoder = await BitmapEncoder.CreateAsync(BitmapEncoder.PngEncoderId, pngStream);
+        encoder.SetSoftwareBitmap(bitmap);
+        await encoder.FlushAsync();
+
+        using var memoryStream = new MemoryStream();
+        await pngStream.AsStreamForRead().CopyToAsync(memoryStream);
+        return memoryStream.ToArray();
+    }
+
     internal static async Task<SoftwareBitmap> GetImageContentAsync(this DataPackageView dataPackageView)
     {
         using var stream = await dataPackageView.GetImageStreamAsync();

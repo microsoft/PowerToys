@@ -262,6 +262,7 @@ _If you want to find diagnostic data events in the source code, these two links 
 </table>
 
 ### Command Palette
+
 <table style="width:100%">
   <tr>
     <th>Event Name</th>
@@ -314,6 +315,14 @@ _If you want to find diagnostic data events in the source code, these two links 
   <tr>
     <td>Microsoft.PowerToys.CmdPalProcessStarted</td>
     <td>Triggered when the Command Palette process is started.</td>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.CmdPal_ExtensionInvoked</td>
+    <td>Tracks extension usage including extension ID, command details, success status, and execution time.</td>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.CmdPal_SessionDuration</td>
+    <td>Logs session metrics from launch to dismissal including duration, commands executed, pages visited, search queries, navigation depth, and errors.</td>
   </tr>
 </table>
 
@@ -434,6 +443,10 @@ _If you want to find diagnostic data events in the source code, these two links 
   <tr>
     <td>Microsoft.PowerToys.FancyZones_ZoneWindowKeyUp</td>
     <td>Occurs when a key is released while interacting with zones.</td>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.FancyZones_CLICommand</td>
+    <td>Triggered when a FancyZones CLI command is executed, logging the command name and success status.</td>
   </tr>
 </table>
 
@@ -678,6 +691,30 @@ _If you want to find diagnostic data events in the source code, these two links 
   <tr>
     <td>Microsoft.PowerToys.KeyboardManager_ShortcutRemapConfigurationLoaded</td>
     <td>Indicates that the shortcut remap configuration has been successfully loaded.</td>
+  </tr>
+</table>
+
+### Light Switch
+<table style="width:100%">
+  <tr>
+    <th>Event Name</th>
+    <th>Description</th>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.LightSwitch_EnableLightSwitch</td>
+    <td>Triggered when Light Switch is enabled or disabled.</td>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.LightSwitch_ShortcutInvoked</td>
+    <td>Occurs when the shortcut for Light Switch is invoked.</td>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.LightSwitch_ScheduleModeToggled</td>
+    <td>Occurs when a new schedule mode is selected for Light Switch.</td>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.LightSwitch_ThemeTargetChanged</td>
+    <td>Occurs when the options for targeting the system or apps is updated.</td>
   </tr>
 </table>
 

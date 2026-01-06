@@ -18,8 +18,23 @@ internal sealed partial class GridItemTemplateSelector : DataTemplateSelector
 
     public DataTemplate? Gallery { get; set; }
 
+    public DataTemplate? Section { get; set; }
+
+    public DataTemplate? Separator { get; set; }
+
     protected override DataTemplate? SelectTemplateCore(object item, DependencyObject dependencyObject)
     {
+        if (item is ListItemViewModel element && element.IsSectionOrSeparator)
+        {
+            if (dependencyObject is UIElement li)
+            {
+                li.IsTabStop = false;
+                li.IsHitTestVisible = false;
+            }
+
+            return string.IsNullOrWhiteSpace(element.Section) ? Separator : Section;
+        }
+
         return GridProperties switch
         {
             SmallGridPropertiesViewModel => Small,
