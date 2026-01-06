@@ -15,7 +15,7 @@ namespace FancyZonesCLI.CommandLine.Commands;
 internal sealed partial class GetMonitorsCommand : FancyZonesBaseCommand
 {
     public GetMonitorsCommand()
-        : base("get-monitors", "List monitors and FancyZones metadata")
+        : base("get-monitors", Properties.Resources.cmd_get_monitors)
     {
         AddAlias("m");
     }
@@ -31,19 +31,19 @@ internal sealed partial class GetMonitorsCommand : FancyZonesBaseCommand
         }
         catch (Exception ex)
         {
-            throw new InvalidOperationException($"Failed to read monitor information. {ex.Message}{Environment.NewLine}Note: Ensure FancyZones is running to get current monitor information.", ex);
+            throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, Properties.Resources.get_monitors_error, ex.Message), ex);
         }
 
         if (editorParams.Monitors == null || editorParams.Monitors.Count == 0)
         {
-            return "No monitors found.";
+            return Properties.Resources.get_monitors_no_monitors;
         }
 
         // Also read applied layouts to show which layout is active on each monitor.
         var appliedLayouts = FancyZonesDataIO.ReadAppliedLayouts();
 
         var sb = new System.Text.StringBuilder();
-        sb.AppendLine(CultureInfo.InvariantCulture, $"=== Monitors ({editorParams.Monitors.Count} total) ===");
+        sb.AppendLine(string.Format(CultureInfo.InvariantCulture, Properties.Resources.get_monitors_header, editorParams.Monitors.Count));
         sb.AppendLine();
 
         for (int i = 0; i < editorParams.Monitors.Count; i++)

@@ -28,7 +28,7 @@ internal sealed partial class FallbackRemoteDesktopItem : FallbackCommandItem
     private readonly NoOpCommand _emptyCommand = new NoOpCommand();
 
     public FallbackRemoteDesktopItem(IRdpConnectionsManager rdpConnectionsManager)
-    : base(Resources.remotedesktop_title)
+    : base(Resources.remotedesktop_title, _id)
     {
         _rdpConnectionsManager = rdpConnectionsManager;
 
