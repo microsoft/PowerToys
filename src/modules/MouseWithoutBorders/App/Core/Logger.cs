@@ -36,13 +36,13 @@ internal static class Logger
 
     // implements a simple ring buffer to store recent log entries in memory
     private const int MAX_LOG = 10000;
-    private const int MaxLogExceptionPerHour = 1000;
     private static readonly string[] AllLogs = new string[MAX_LOG];
     private static readonly Lock AllLogsLock = new();
     private static int allLogsIndex;
 
     // used for throttling the number of exceptions that get logged
     // so that high-volume exceptions don't flood the logs
+    private const int MaxLogExceptionPerHour = 1000;
     private static int lastHour;
     private static int exceptionCount;
 
