@@ -177,6 +177,12 @@
                                                 <FontIcon Glyph="&#xE777;" />
                                             </MenuFlyoutItem.Icon>
                                         </MenuFlyoutItem>
+                                        <MenuFlyoutSeparator />
+                                        <MenuFlyoutItem x:Uid="Settings_ExtensionsPage_More_ReorderFallbacks_MenuFlyoutItem" Click="MenuFlyoutItem_OnClick">
+                                            <MenuFlyoutItem.Icon>
+                                                <FontIcon Glyph="&#xE8CB;" />
+                                            </MenuFlyoutItem.Icon>
+                                        </MenuFlyoutItem>
                                     </MenuFlyout>
                                 </Button.Flyout>
                                 <FontIcon
@@ -254,6 +260,7 @@
                 </StackPanel>
             </Grid>
         </ScrollViewer>
+        <cpcontrols:FallbackRankerDialog x:Name="FallbackRankerDialog" />
         <VisualStateManager.VisualStateGroups>
             <VisualStateGroup x:Name="LayoutVisualStates">
                 <VisualState x:Name="WideLayout">

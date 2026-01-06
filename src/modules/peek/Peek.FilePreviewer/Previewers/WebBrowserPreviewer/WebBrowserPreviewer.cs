@@ -130,6 +130,7 @@ namespace Peek.FilePreviewer.Previewers
                     }
                     else if (isMarkdown)
                     {
+                        IsDevFilePreview = false;
                         var raw = await ReadHelper.Read(File.Path.ToString());
                         Preview = new Uri(MarkdownHelper.PreviewTempFile(raw, File.Path, TempFolderPath.Path));
                     }
