@@ -4,6 +4,7 @@
 
 using System;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using PowerToys.Interop;
 
@@ -21,15 +22,20 @@ internal sealed partial class CropAndLockScreenshotCommand : InvokableCommand
 
     public override CommandResult Invoke()
     {
-        try
+        Task.Run(async () =>
         {
-            using var evt = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.CropAndLockScreenshotEvent());
-            evt.Set();
-            return CommandResult.Dismiss();
-        }
-        catch (Exception ex)
-        {
-            return CommandResult.ShowToast($"Failed to start Crop and Lock (Screenshot): {ex.Message}");
-        }
+            await Task.Delay(500);
+            try
+            {
+                using var evt = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.CropAndLockScreenshotEvent());
+                evt.Set();
+            }
+            catch
+            {
+                // Ignore errors after dismissing
+            }
+        });
+
+        return CommandResult.Dismiss();
     }
 }
