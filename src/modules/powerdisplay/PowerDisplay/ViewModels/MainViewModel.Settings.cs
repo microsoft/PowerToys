@@ -318,6 +318,7 @@ public partial class MainViewModel
             monitorVm.ShowInputSource = monitorSettings.EnableInputSource;
             monitorVm.ShowRotation = monitorSettings.EnableRotation;
             monitorVm.ShowColorTemperature = monitorSettings.EnableColorTemperature;
+            monitorVm.ShowPowerState = monitorSettings.EnablePowerState;
         }
     }
 
@@ -427,11 +428,12 @@ public partial class MainViewModel
                 .ToList() ?? new List<Microsoft.PowerToys.Settings.UI.Library.VcpCodeDisplayInfo>(),
 
             // Infer support flags from VCP capabilities
-            // VCP 0x12 (18) = Contrast, 0x14 (20) = Color Temperature, 0x60 (96) = Input Source, 0x62 (98) = Volume
+            // VCP 0x12 (18) = Contrast, 0x14 (20) = Color Temperature, 0x60 (96) = Input Source, 0x62 (98) = Volume, 0xD6 (214) = Power Mode
             SupportsContrast = vm.VcpCapabilitiesInfo?.SupportedVcpCodes.ContainsKey(0x12) ?? false,
             SupportsColorTemperature = vm.VcpCapabilitiesInfo?.SupportedVcpCodes.ContainsKey(0x14) ?? false,
             SupportsInputSource = vm.VcpCapabilitiesInfo?.SupportedVcpCodes.ContainsKey(0x60) ?? false,
             SupportsVolume = vm.VcpCapabilitiesInfo?.SupportedVcpCodes.ContainsKey(0x62) ?? false,
+            SupportsPowerState = vm.VcpCapabilitiesInfo?.SupportedVcpCodes.ContainsKey(0xD6) ?? false,
 
             // Default Enable* to match Supports* for new monitors (first-time setup)
             // ApplyPreservedUserSettings will override these with saved user preferences if they exist
@@ -439,6 +441,7 @@ public partial class MainViewModel
             EnableVolume = vm.VcpCapabilitiesInfo?.SupportedVcpCodes.ContainsKey(0x62) ?? false,
             EnableInputSource = vm.VcpCapabilitiesInfo?.SupportedVcpCodes.ContainsKey(0x60) ?? false,
             EnableColorTemperature = vm.VcpCapabilitiesInfo?.SupportedVcpCodes.ContainsKey(0x14) ?? false,
+            EnablePowerState = vm.VcpCapabilitiesInfo?.SupportedVcpCodes.ContainsKey(0xD6) ?? false,
 
             // Monitor number for display name formatting
             MonitorNumber = vm.MonitorNumber,
@@ -462,6 +465,7 @@ public partial class MainViewModel
             monitorInfo.EnableInputSource = existingMonitor.EnableInputSource;
             monitorInfo.EnableRotation = existingMonitor.EnableRotation;
             monitorInfo.EnableColorTemperature = existingMonitor.EnableColorTemperature;
+            monitorInfo.EnablePowerState = existingMonitor.EnablePowerState;
         }
     }
 

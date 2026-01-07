@@ -169,6 +169,9 @@
                                                 IsChecked="{x:Bind EnableColorTemperature, Mode=TwoWay}"
                                                 Tag="{x:Bind}" />
                                         </tkcontrols:SettingsCard>
+                                        <tkcontrols:SettingsCard ContentAlignment="Left" IsEnabled="{x:Bind SupportsPowerState, Mode=OneWay}">
+                                            <CheckBox x:Uid="PowerDisplay_Monitor_EnablePowerState" IsChecked="{x:Bind EnablePowerState, Mode=TwoWay}" />
+                                        </tkcontrols:SettingsCard>
                                         <tkcontrols:SettingsCard ContentAlignment="Left">
                                             <CheckBox x:Uid="PowerDisplay_Monitor_HideMonitor" IsChecked="{x:Bind IsHidden, Mode=TwoWay}" />
                                         </tkcontrols:SettingsCard>

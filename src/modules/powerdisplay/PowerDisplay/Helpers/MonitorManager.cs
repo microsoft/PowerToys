@@ -292,6 +292,19 @@ namespace PowerDisplay.Helpers
                 cancellationToken);
 
         /// <summary>
+        /// Set power state for a monitor using VCP 0xD6.
+        /// Note: Setting any state other than On (0x01) will turn off the display.
+        /// We don't update monitor state since the display will be off.
+        /// </summary>
+        public Task<MonitorOperationResult> SetPowerStateAsync(string monitorId, int powerState, CancellationToken cancellationToken = default)
+            => ExecuteMonitorOperationAsync(
+                monitorId,
+                powerState,
+                (ctrl, mon, val, ct) => ctrl.SetPowerStateAsync(mon, val, ct),
+                (mon, val) => { }, // No state update - display will be off for non-On values
+                cancellationToken);
+
+        /// <summary>
         /// Set rotation/orientation for a monitor.
         /// Uses Windows ChangeDisplaySettingsEx API (not DDC/CI).
         /// After successful rotation, refreshes orientation for all monitors sharing the same GdiDeviceName

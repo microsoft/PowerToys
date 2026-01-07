@@ -475,6 +475,49 @@ namespace PowerDisplay
         }
 
         /// <summary>
+        /// Power state ListView selection changed handler - switches the monitor power state.
+        /// Note: Selecting any state other than "On" will turn off the display.
+        /// </summary>
+        private async void PowerStateListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (sender is not ListView listView)
+            {
+                return;
+            }
+
+            // Get the selected power state item
+            var selectedItem = listView.SelectedItem as PowerStateItem;
+            if (selectedItem == null)
+            {
+                return;
+            }
+
+            // Skip if "On" is selected - the monitor is already on
+            if (selectedItem.Value == PowerStateItem.PowerStateOn)
+            {
+                return;
+            }
+
+            Logger.LogInfo($"[UI] PowerStateListView_SelectionChanged: Selected {selectedItem.Name} (0x{selectedItem.Value:X2}) for monitor {selectedItem.MonitorId}");
+
+            // Find the monitor by ID
+            MonitorViewModel? monitorVm = null;
+            if (!string.IsNullOrEmpty(selectedItem.MonitorId) && _viewModel != null)
+            {
+                monitorVm = _viewModel.Monitors.FirstOrDefault(m => m.Id == selectedItem.MonitorId);
+            }
+
+            if (monitorVm == null)
+            {
+                Logger.LogWarning("[UI] PowerStateListView_SelectionChanged: Could not find MonitorViewModel");
+                return;
+            }
+
+            // Set the power state - this will turn off the display
+            await monitorVm.SetPowerStateAsync(selectedItem.Value);
+        }
+
+        /// <summary>
         /// Rotation button click handler - changes monitor orientation
         /// </summary>
         private async void RotationButton_Click(object sender, RoutedEventArgs e)

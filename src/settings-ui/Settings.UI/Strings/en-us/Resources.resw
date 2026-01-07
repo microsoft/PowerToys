@@ -5746,6 +5746,9 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   <data name="PowerDisplay_Monitor_EnableColorTemperature.Content" xml:space="preserve">
     <value>Show color temperature switcher</value>
   </data>
+  <data name="PowerDisplay_Monitor_EnablePowerState.Content" xml:space="preserve">
+    <value>Show power state control</value>
+  </data>
   <data name="PowerDisplay_Monitor_HideMonitor.Content" xml:space="preserve">
     <value>Hide monitor</value>
   </data>

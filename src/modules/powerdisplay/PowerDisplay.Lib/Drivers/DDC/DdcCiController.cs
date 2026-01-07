@@ -154,6 +154,14 @@ namespace PowerDisplay.Common.Drivers.DDC
             => SetVcpFeatureAsync(monitor, VcpCodeInputSource, inputSource, cancellationToken);
 
         /// <summary>
+        /// Set power state using VCP code 0xD6 (Power Mode).
+        /// Values: 0x01=On, 0x02=Standby, 0x03=Suspend, 0x04=Off(DPM), 0x05=Off(Hard).
+        /// Note: Setting any value other than 0x01 (On) will turn off the display.
+        /// </summary>
+        public Task<MonitorOperationResult> SetPowerStateAsync(Monitor monitor, int powerState, CancellationToken cancellationToken = default)
+            => SetVcpFeatureAsync(monitor, VcpCodePowerMode, powerState, cancellationToken);
+
+        /// <summary>
         /// Get monitor capabilities string with retry logic.
         /// Uses cached CapabilitiesRaw if available to avoid slow I2C operations.
         /// </summary>

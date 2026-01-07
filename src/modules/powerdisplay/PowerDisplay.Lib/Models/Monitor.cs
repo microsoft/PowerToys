@@ -136,6 +136,18 @@ namespace PowerDisplay.Common.Models
             VcpCapabilitiesInfo?.GetSupportedValues(0x60);
 
         /// <summary>
+        /// Gets a value indicating whether the monitor supports power state control via VCP 0xD6
+        /// </summary>
+        public bool SupportsPowerState => VcpCapabilitiesInfo?.SupportsVcpCode(0xD6) ?? false;
+
+        /// <summary>
+        /// Gets supported power states from capabilities (as list of VCP values)
+        /// Values: 0x01=On, 0x02=Standby, 0x03=Suspend, 0x04=Off(DPM), 0x05=Off(Hard)
+        /// </summary>
+        public System.Collections.Generic.IReadOnlyList<int>? SupportedPowerStates =>
+            VcpCapabilitiesInfo?.GetSupportedValues(0xD6);
+
+        /// <summary>
         /// Gets a value indicating whether the monitor supports contrast adjustment
         /// </summary>
         public bool SupportsContrast => Capabilities.HasFlag(MonitorCapabilities.Contrast);

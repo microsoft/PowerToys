@@ -39,6 +39,7 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
     private bool _showVolume;
     private bool _showInputSource;
     private bool _showRotation;
+    private bool _showPowerState;
 
     /// <summary>
     /// Updates a property value directly without triggering hardware updates.
@@ -313,8 +314,47 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
             {
                 _showInputSource = value;
                 OnPropertyChanged();
+                OnMoreButtonPropertiesChanged();
             }
         }
+    }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether to show power state control in the More Button flyout.
+    /// </summary>
+    public bool ShowPowerState
+    {
+        get => _showPowerState && SupportsPowerState;
+        set
+        {
+            if (_showPowerState != value)
+            {
+                _showPowerState = value;
+                OnPropertyChanged();
+                OnMoreButtonPropertiesChanged();
+            }
+        }
+    }
+
+    /// <summary>
+    /// Gets a value indicating whether the More Button should be visible.
+    /// Visible when at least one feature (InputSource or PowerState) is enabled.
+    /// </summary>
+    public bool ShowMoreButton => ShowInputSource || ShowPowerState;
+
+    /// <summary>
+    /// Gets a value indicating whether to show separator after Input Source section.
+    /// Only shown when both InputSource and PowerState are visible.
+    /// </summary>
+    public bool ShowSeparatorAfterInputSource => ShowInputSource && ShowPowerState;
+
+    /// <summary>
+    /// Notifies property changes for More Button related properties.
+    /// </summary>
+    private void OnMoreButtonPropertiesChanged()
+    {
+        OnPropertyChanged(nameof(ShowMoreButton));
+        OnPropertyChanged(nameof(ShowSeparatorAfterInputSource));
     }
 
     /// <summary>
@@ -594,6 +634,89 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
         if (source.HasValue)
         {
             await SetInputSourceAsync(source.Value);
+        }
+    }
+
+    /// <summary>
+    /// Gets a value indicating whether this monitor supports power state control via VCP 0xD6
+    /// </summary>
+    public bool SupportsPowerState => _monitor.SupportsPowerState;
+
+    private List<PowerStateItem>? _availablePowerStates;
+
+    /// <summary>
+    /// Gets available power states for this monitor.
+    /// The "On" state is always shown as selected since the monitor must be on to see the UI.
+    /// </summary>
+    public List<PowerStateItem>? AvailablePowerStates
+    {
+        get
+        {
+            if (_availablePowerStates == null && SupportsPowerState)
+            {
+                RefreshAvailablePowerStates();
+            }
+
+            return _availablePowerStates;
+        }
+    }
+
+    /// <summary>
+    /// Refresh the list of available power states based on monitor capabilities
+    /// </summary>
+    private void RefreshAvailablePowerStates()
+    {
+        var supportedStates = _monitor.SupportedPowerStates;
+        if (supportedStates == null || supportedStates.Count == 0)
+        {
+            _availablePowerStates = null;
+            return;
+        }
+
+        _availablePowerStates = supportedStates.Select(value => new PowerStateItem
+        {
+            Value = value,
+            Name = Common.Utils.VcpNames.GetValueName(0xD6, value) ?? $"State 0x{value:X2}",
+            MonitorId = _monitor.Id,
+        }).ToList();
+
+        OnPropertyChanged(nameof(AvailablePowerStates));
+    }
+
+    /// <summary>
+    /// Set power state for this monitor.
+    /// Note: Setting any state other than "On" will turn off the display.
+    /// </summary>
+    public async Task SetPowerStateAsync(int powerState)
+    {
+        try
+        {
+            var result = await _monitorManager.SetPowerStateAsync(Id, powerState);
+
+            if (!result.IsSuccess)
+            {
+                Logger.LogWarning($"[{Id}] Failed to set power state: {result.ErrorMessage}");
+            }
+
+            // Note: We don't update UI state here because:
+            // 1. If switching to non-On state, the display will turn off and UI won't be visible
+            // 2. If switching to On, the monitor is already on (otherwise we wouldn't see the UI)
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"[{Id}] Exception setting power state: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// Command to set power state
+    /// </summary>
+    [RelayCommand]
+    private async Task SetPowerState(int? state)
+    {
+        if (state.HasValue)
+        {
+            await SetPowerStateAsync(state.Value);
         }
     }
 

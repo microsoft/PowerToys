@@ -29,6 +29,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         private bool _enableInputSource;
         private bool _enableRotation;
         private bool _enableColorTemperature;
+        private bool _enablePowerState;
         private string _capabilitiesRaw = string.Empty;
         private List<VcpCodeDisplayInfo> _vcpCodesFormatted = new List<VcpCodeDisplayInfo>();
         private int _monitorNumber;
@@ -40,6 +41,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         private bool _supportsColorTemperature;
         private bool _supportsVolume;
         private bool _supportsInputSource;
+        private bool _supportsPowerState;
 
         // Cached color temperature presets (computed from VcpCodesFormatted)
         private ObservableCollection<ColorPresetItem> _availableColorPresetsCache;
@@ -315,6 +317,20 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
+        [JsonPropertyName("enablePowerState")]
+        public bool EnablePowerState
+        {
+            get => _enablePowerState;
+            set
+            {
+                if (_enablePowerState != value)
+                {
+                    _enablePowerState = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
         [JsonPropertyName("capabilitiesRaw")]
         public string CapabilitiesRaw
         {
@@ -457,6 +473,20 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 if (_supportsInputSource != value)
                 {
                     _supportsInputSource = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        [JsonPropertyName("supportsPowerState")]
+        public bool SupportsPowerState
+        {
+            get => _supportsPowerState;
+            set
+            {
+                if (_supportsPowerState != value)
+                {
+                    _supportsPowerState = value;
                     OnPropertyChanged();
                 }
             }
@@ -649,6 +679,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             EnableInputSource = other.EnableInputSource;
             EnableRotation = other.EnableRotation;
             EnableColorTemperature = other.EnableColorTemperature;
+            EnablePowerState = other.EnablePowerState;
             CapabilitiesRaw = other.CapabilitiesRaw;
             VcpCodesFormatted = other.VcpCodesFormatted;
             SupportsBrightness = other.SupportsBrightness;
@@ -656,6 +687,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             SupportsColorTemperature = other.SupportsColorTemperature;
             SupportsVolume = other.SupportsVolume;
             SupportsInputSource = other.SupportsInputSource;
+            SupportsPowerState = other.SupportsPowerState;
             MonitorNumber = other.MonitorNumber;
         }
     }

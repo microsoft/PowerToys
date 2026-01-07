@@ -45,6 +45,14 @@ namespace PowerDisplay.Common.Drivers
         public const byte VcpCodeInputSource = 0x60;
 
         /// <summary>
+        /// VCP code: Power Mode (0xD6)
+        /// Controls monitor power state via DPMS.
+        /// Values: 0x01=On, 0x02=Standby, 0x03=Suspend, 0x04=Off(DPM), 0x05=Off(Hard).
+        /// Note: Switching to any non-On state will turn off the display.
+        /// </summary>
+        public const byte VcpCodePowerMode = 0xD6;
+
+        /// <summary>
         /// Query display config: only active paths
         /// </summary>
         public const uint QdcOnlyActivePaths = 0x00000002;

@@ -78,6 +78,12 @@
   <data name="InputSourceHeader.Text" xml:space="preserve">
     <value>Input source</value>
   </data>
+  <data name="PowerStateHeader.Text" xml:space="preserve">
+    <value>Power state</value>
+  </data>
+  <data name="MoreOptionsTooltip.ToolTipService.ToolTip" xml:space="preserve">
+    <value>More options</value>
+  </data>
   <data name="ProfilesHeader.Text" xml:space="preserve">
     <value>Profiles</value>
   </data>
