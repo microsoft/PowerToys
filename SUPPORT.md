@@ -1,18 +1,16 @@
 # Support
 
+## How to use Microsoft PowerToys
 
-## How to use Microsoft PowerToys 
+For more info about [PowerToys overviews and how to use the utilities][usingPowerToys-docs-link], or any other tools and resources for [Windows development environments](https://learn.microsoft.com/windows/dev-environment/overview), head over to [learn.microsoft.com][usingPowerToys-docs-link]!
 
-For more info on [PowerToys overviews and how to use the utilities][usingPowerToys-docs-link], or any other tools and resources for [Windows development environments](https://learn.microsoft.com/windows/dev-environment/overview), head over to [learn.microsoft.com][usingPowerToys-docs-link]! 
+## How to file issues and get help
 
-## How to file issues and get help  
+This project uses [GitHub Issues][gh-issue] to [track bugs][gh-bug] and [feature requests][gh-feature]. Please search the existing issues before filing a new issue to avoid duplicates. For new issues, file your bug or feature request as a new Issue.
 
-This project uses [GitHub Issues][gh-issue] to [track bugs][gh-bug] and [feature requests][gh-feature]. Please search the existing issues before filing new issues to avoid duplicates.  For new issues, file your bug or 
-feature request as a new Issue.
+For help and questions about using this project, please refer to our [Wiki][wiki] for using PowerToys and our [Contributor's Guide][contributor] if you want to work on PowerToys.
 
-For help and questions about using this project, please look at our Wiki for using PowerToys and our [Contributor's Guide][contributor] if you want to work on PowerToys.
-
-## Microsoft Support Policy  
+## Microsoft Support Policy
 
 Support for PowerToys is limited to the resources listed above.
 
