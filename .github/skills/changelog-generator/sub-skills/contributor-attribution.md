@@ -72,11 +72,39 @@ if ($attribution) {
 
 ## High-Impact Community Members
 
-These contributors have made significant ongoing contributions and are recognized in COMMUNITY.md:
-- @davidegiacometti
-- @htcfreek
-- @daverayment
-- @jiripolasek
-- And others listed in the "High impact community members" section
+These contributors have made significant ongoing contributions and are recognized in COMMUNITY.md.
+**ALWAYS thank these contributors** - they are NOT core team and deserve recognition:
 
-Always thank them appropriately!
+```
+@davidegiacometti, @htcfreek, @daverayment, @jiripolasek
+```
+
+Check COMMUNITY.md for the full up-to-date list under "High impact community members" section.
+
+## Updated Check Author Script
+
+```powershell
+$coreTeam = @(
+    'craigloewen-msft', 'niels9001', 'dhowett', 'yeelam-gordon', 'jamrobot',
+    'lei9444', 'shuaiyuanxx', 'moooyo', 'haoliuu', 'chenmy77', 'chemwolf6922',
+    'yaqingmi', 'zhaoqpcn', 'urnotdfs', 'zhaopy536', 'wang563681252', 'vanzue',
+    'zadjii-msft', 'khmyznikov', 'chatasweetie', 'MichaelJolley', 'Jaylyn-Barbee',
+    'zateutsch', 'crutkas'
+)
+
+# High-impact community members - ALWAYS thank these!
+$highImpactCommunity = @(
+    'davidegiacometti', 'htcfreek', 'daverayment', 'jiripolasek'
+)
+
+function Get-Attribution {
+    param([string]$author)
+    
+    # Core team and bots don't need thanks
+    if ($coreTeam -contains $author -or $author -match '\[bot\]$') {
+        return $null
+    }
+    # Everyone else (including high-impact community) gets thanked
+    return "Thanks [@$author](https://github.com/$author)!"
+}
+```
