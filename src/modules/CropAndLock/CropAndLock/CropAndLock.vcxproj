@@ -82,6 +82,8 @@
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">MultiThreadedDebug</RuntimeLibrary>
+      <RuntimeLibrary Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
       <GenerateWindowsMetadata>false</GenerateWindowsMetadata>
@@ -93,6 +95,8 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">MultiThreaded</RuntimeLibrary>
+      <RuntimeLibrary Condition="'$(Configuration)|$(Platform)'=='Release|x64'">MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -108,6 +112,7 @@
     <ClCompile Include="ChildWindow.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="ReparentCropAndLockWindow.cpp" />
+    <ClCompile Include="ScreenshotCropAndLockWindow.cpp" />
     <ClCompile Include="ThumbnailCropAndLockWindow.cpp" />
     <ClCompile Include="OverlayWindow.cpp" />
     <ClCompile Include="pch.cpp">
@@ -122,6 +127,7 @@
     <ClInclude Include="DisplaysUtil.h" />
     <ClInclude Include="ModuleConstants.h" />
     <ClInclude Include="ReparentCropAndLockWindow.h" />
+    <ClInclude Include="ScreenshotCropAndLockWindow.h" />
     <ClInclude Include="ThumbnailCropAndLockWindow.h" />
     <ClInclude Include="SettingsWindow.h" />
     <ClInclude Include="OverlayWindow.h" />

@@ -119,6 +119,16 @@ namespace PowerToysSettings
     class HotkeyObject
     {
     public:
+        HotkeyObject() :
+            m_json(json::JsonObject())
+        {
+            m_json.SetNamedValue(L"win", json::value(false));
+            m_json.SetNamedValue(L"ctrl", json::value(false));
+            m_json.SetNamedValue(L"alt", json::value(false));
+            m_json.SetNamedValue(L"shift", json::value(false));
+            m_json.SetNamedValue(L"code", json::value(0));
+            m_json.SetNamedValue(L"key", json::value(L""));
+        }
         static HotkeyObject from_json(json::JsonObject json)
         {
             return HotkeyObject(std::move(json));

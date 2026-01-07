@@ -12,7 +12,7 @@
 
 - Exit PowerToys if it's running.
 
-- Open `PowerToys.sln` in Visual Studio and build the solution.
+- Open `PowerToys.slnx` in Visual Studio and build the solution.
 
 - Run tests in the Test Explorer (`Test > Test Explorer` or `Ctrl+E, T`).
 

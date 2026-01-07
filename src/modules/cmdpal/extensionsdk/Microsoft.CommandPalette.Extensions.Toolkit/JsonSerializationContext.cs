@@ -15,6 +15,7 @@ namespace Microsoft.CommandPalette.Extensions.Toolkit;
 [JsonSerializable(typeof(List<Choice>))]
 [JsonSerializable(typeof(List<ChoiceSetSetting>))]
 [JsonSerializable(typeof(Dictionary<string, object>), TypeInfoPropertyName = "Dictionary")]
+[JsonSerializable(typeof(List<Dictionary<string, object>>))]
 [JsonSourceGenerationOptions(UseStringEnumConverter = true, WriteIndented = true)]
 internal sealed partial class JsonSerializationContext : JsonSerializerContext
 {

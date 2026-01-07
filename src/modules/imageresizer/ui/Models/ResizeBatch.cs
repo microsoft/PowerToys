@@ -10,60 +10,108 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions;
 using System.IO.Pipes;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using ImageResizer.Models.ResizeResults;
 using ImageResizer.Properties;
+using ImageResizer.Services;
 
 namespace ImageResizer.Models
 {
     public class ResizeBatch
     {
         private readonly IFileSystem _fileSystem = new FileSystem();
+        private static IAISuperResolutionService _aiSuperResolutionService;
 
         public virtual string DestinationDirectory { get; set; }
 
         public virtual ICollection<string> Files { get; } = new List<string>();
 
-        public static ResizeBatch FromCommandLine(TextReader standardInput, string[] args)
+        public static void SetAiSuperResolutionService(IAISuperResolutionService service)
         {
-            var batch = new ResizeBatch();
-            const string pipeNamePrefix = "\\\\.\\pipe\\";
-            string pipeName = null;
+            _aiSuperResolutionService = service;
+        }
 
-            for (var i = 0; i < args?.Length; i++)
+        public static void DisposeAiSuperResolutionService()
+        {
+            _aiSuperResolutionService?.Dispose();
+            _aiSuperResolutionService = null;
+        }
+
+        /// <summary>
+        /// Validates if a file path is a supported image format.
+        /// </summary>
+        /// <param name="path">The file path to validate.</param>
+        /// <returns>True if the path is valid and points to a supported image file.</returns>
+        private static bool IsValidImagePath(string path)
+        {
+            if (string.IsNullOrWhiteSpace(path))
             {
-                if (args[i] == "/d")
-                {
-                    batch.DestinationDirectory = args[++i];
-                    continue;
-                }
-                else if (args[i].Contains(pipeNamePrefix))
-                {
-                    pipeName = args[i].Substring(pipeNamePrefix.Length);
-                    continue;
-                }
-
-                batch.Files.Add(args[i]);
+                return false;
             }
 
-            if (string.IsNullOrEmpty(pipeName))
+            if (!File.Exists(path))
+            {
+                return false;
+            }
+
+            var ext = Path.GetExtension(path)?.ToLowerInvariant();
+            var validExtensions = new[]
+            {
+                ".bmp", ".dib", ".gif", ".jfif", ".jpe", ".jpeg", ".jpg",
+                ".jxr", ".png", ".rle", ".tif", ".tiff", ".wdp",
+            };
+
+            return validExtensions.Contains(ext);
+        }
+
+        /// <summary>
+        /// Creates a ResizeBatch from CliOptions.
+        /// </summary>
+        /// <param name="standardInput">Standard input stream for reading additional file paths.</param>
+        /// <param name="options">The parsed CLI options.</param>
+        /// <returns>A ResizeBatch instance.</returns>
+        public static ResizeBatch FromCliOptions(TextReader standardInput, CliOptions options)
+        {
+            var batch = new ResizeBatch
+            {
+                DestinationDirectory = options.DestinationDirectory,
+            };
+
+            foreach (var file in options.Files)
+            {
+                // Convert relative paths to absolute paths
+                var absolutePath = Path.IsPathRooted(file) ? file : Path.GetFullPath(file);
+                if (IsValidImagePath(absolutePath))
+                {
+                    batch.Files.Add(absolutePath);
+                }
+            }
+
+            if (string.IsNullOrEmpty(options.PipeName))
             {
                 // NB: We read these from stdin since there are limits on the number of args you can have
+                // Only read from stdin if it's redirected (piped input), not from interactive terminal
                 string file;
-                if (standardInput != null)
+                if (standardInput != null && (Console.IsInputRedirected || !ReferenceEquals(standardInput, Console.In)))
                 {
                     while ((file = standardInput.ReadLine()) != null)
                     {
-                        batch.Files.Add(file);
+                        // Convert relative paths to absolute paths
+                        var absolutePath = Path.IsPathRooted(file) ? file : Path.GetFullPath(file);
+                        if (IsValidImagePath(absolutePath))
+                        {
+                            batch.Files.Add(absolutePath);
+                        }
                     }
                 }
             }
             else
             {
                 using (NamedPipeClientStream pipeClient =
-                    new NamedPipeClientStream(".", pipeName, PipeDirection.In))
+                    new NamedPipeClientStream(".", options.PipeName, PipeDirection.In))
                 {
                     // Connect to the pipe or wait until the pipe is available.
                     pipeClient.Connect();
@@ -75,7 +123,10 @@ namespace ImageResizer.Models
                         // Display the read text to the console
                         while ((file = sr.ReadLine()) != null)
                         {
-                            batch.Files.Add(file);
+                            if (IsValidImagePath(file))
+                            {
+                                batch.Files.Add(file);
+                            }
                         }
                     }
                 }
@@ -84,11 +135,26 @@ namespace ImageResizer.Models
             return batch;
         }
 
+        public static ResizeBatch FromCommandLine(TextReader standardInput, string[] args)
+        {
+            var options = CliOptions.Parse(args);
+            return FromCliOptions(standardInput, options);
+        }
+
         public IEnumerable<ResizeResult> Process(Action<int, double> reportProgress, CancellationToken cancellationToken)
+        {
+            // NOTE: Settings.Default is captured once before parallel processing.
+            // Any changes to settings on disk during this batch will NOT be reflected until the next batch.
+            // This improves performance and predictability by avoiding repeated mutex acquisition and behaviour change results in a batch.
+            return Process(reportProgress, Settings.Default, cancellationToken);
+        }
+
+        public IEnumerable<ResizeError> Process(Action<int, double> reportProgress, Settings settings, CancellationToken cancellationToken)
         {
             double total = Files.Count;
             int completed = 0;
             ConcurrentBag<ResizeResult> results = [];
+            var errors = new ConcurrentBag<ResizeError>();
 
             // TODO: If we ever switch to Windows.Graphics.Imaging, we can get a lot more throughput by using the async
             //       APIs and a custom SynchronizationContext
@@ -97,22 +163,30 @@ namespace ImageResizer.Models
                 new ParallelOptions
                 {
                     CancellationToken = cancellationToken,
-                    MaxDegreeOfParallelism = Environment.ProcessorCount,
                 },
                 (file, state, i) =>
                 {
-                    var result = Execute(file);
-                    results.Add(result);
+                    try
+                    {
+                        var result = Execute(file);
+                        results.Add(result);
+                    }
+                    catch (Exception ex)
+                    {
+                        errors.Add(new ResizeError { File = _fileSystem.Path.GetFileName(file), Error = ex.Message });
+                    }
 
                     Interlocked.Increment(ref completed);
-
                     reportProgress(completed, total);
                 });
 
             return results;
         }
 
-        protected virtual ResizeResult Execute(string file)
-            => new ResizeOperation(file, DestinationDirectory, Settings.Default).Execute();
+        protected virtual ResizeResult Execute(string file, Settings settings)
+        {
+            var aiService = _aiSuperResolutionService ?? NoOpAiSuperResolutionService.Instance;
+            return new ResizeOperation(file, DestinationDirectory, settings, aiService).Execute();
+        }
     }
 }

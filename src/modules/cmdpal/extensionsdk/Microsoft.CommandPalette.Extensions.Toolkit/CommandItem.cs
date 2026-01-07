@@ -2,13 +2,22 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using Windows.ApplicationModel.DataTransfer;
+using Windows.Foundation.Collections;
+using WinRT;
+
 namespace Microsoft.CommandPalette.Extensions.Toolkit;
 
-public partial class CommandItem : BaseObservable, ICommandItem
+public partial class CommandItem : BaseObservable, ICommandItem, IExtendedAttributesProvider
 {
+    private readonly PropertySet _extendedAttributes = new();
+
     private ICommand? _command;
     private WeakEventListener<CommandItem, object, IPropChangedEventArgs>? _commandListener;
     private string _title = string.Empty;
+
+    private DataPackage? _dataPackage;
+    private DataPackageView? _dataPackageView;
 
     public virtual IIconInfo? Icon
     {
@@ -91,6 +100,32 @@ public partial class CommandItem : BaseObservable, ICommandItem
 
 = [];
 
+    public DataPackage? DataPackage
+    {
+        get => _dataPackage;
+        set
+        {
+            _dataPackage = value;
+            _dataPackageView = null;
+            _extendedAttributes[WellKnownExtensionAttributes.DataPackage] = value?.AsAgile().Get()?.GetView()!;
+            OnPropertyChanged(nameof(DataPackage));
+            OnPropertyChanged(nameof(DataPackageView));
+        }
+    }
+
+    public DataPackageView? DataPackageView
+    {
+        get => _dataPackageView;
+        set
+        {
+            _dataPackage = null;
+            _dataPackageView = value;
+            _extendedAttributes[WellKnownExtensionAttributes.DataPackage] = value?.AsAgile().Get()!;
+            OnPropertyChanged(nameof(DataPackage));
+            OnPropertyChanged(nameof(DataPackageView));
+        }
+    }
+
     public CommandItem()
         : this(new NoOpCommand())
     {
@@ -131,5 +166,10 @@ public partial class CommandItem : BaseObservable, ICommandItem
 
         Title = title;
         Subtitle = subtitle;
+    }
+
+    public IDictionary<string, object> GetProperties()
+    {
+        return _extendedAttributes;
     }
 }

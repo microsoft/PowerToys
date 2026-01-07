@@ -2,11 +2,10 @@
 #include <common/utils/json.h>
 #include <common/SettingsAPI/settings_helpers.h>
 #include "SettingsObserver.h"
-
 #include <filesystem>
 #include <fstream>
-#include <WinHookEventIDs.h>
 #include <logger.h>
+#include <LightSwitchService/trace.h>
 
 using namespace std;
 
@@ -38,11 +37,78 @@ void LightSwitchSettings::InitFileWatcher()
         m_settingsFileWatcher = std::make_unique<FileWatcher>(
             GetSettingsFileName(),
             [this]() {
-                Logger::info(L"[LightSwitchSettings] Settings file changed, signaling event.");
-                SetEvent(m_settingsChangedEvent);
+                using namespace std::chrono;
+
+                {
+                    std::lock_guard<std::mutex> lock(m_debounceMutex);
+                    m_lastChangeTime = steady_clock::now();
+                    if (m_debouncePending)
+                        return;
+                    m_debouncePending = true;
+                }
+
+                m_debounceThread = std::jthread([this](std::stop_token stop) {
+                    using namespace std::chrono;
+                    while (!stop.stop_requested())
+                    {
+                        std::this_thread::sleep_for(seconds(3));
+
+                        auto elapsed = steady_clock::now() - m_lastChangeTime;
+                        if (elapsed >= seconds(1))
+                            break;
+                    }
+
+                    {
+                        std::lock_guard<std::mutex> lock(m_debounceMutex);
+                        m_debouncePending = false;
+                    }
+
+                    Logger::info(L"[LightSwitchSettings] Settings file stabilized, reloading.");
+
+                    try
+                    {
+                        LoadSettings();
+                        SetEvent(m_settingsChangedEvent);
+                    }
+                    catch (const std::exception& e)
+                    {
+                        std::wstring wmsg;
+                        wmsg.assign(e.what(), e.what() + strlen(e.what()));
+                        Logger::error(L"[LightSwitchSettings] Exception during debounced reload: {}", wmsg);
+                    }
+                });
             });
     }
 }
+
+LightSwitchSettings::~LightSwitchSettings()
+{
+    Logger::info(L"[LightSwitchSettings] Cleaning up settings resources...");
+
+    // Stop and join the debounce thread (std::jthread auto-joins, but we can signal stop too)
+    if (m_debounceThread.joinable())
+    {
+        m_debounceThread.request_stop();
+    }
+
+    // Release the file watcher so it closes file handles and background threads
+    if (m_settingsFileWatcher)
+    {
+        m_settingsFileWatcher.reset();
+        Logger::info(L"[LightSwitchSettings] File watcher stopped.");
+    }
+
+    // Close the Windows event handle
+    if (m_settingsChangedEvent)
+    {
+        CloseHandle(m_settingsChangedEvent);
+        m_settingsChangedEvent = nullptr;
+        Logger::info(L"[LightSwitchSettings] Settings changed event closed.");
+    }
+
+    Logger::info(L"[LightSwitchSettings] Cleanup complete.");
+}
+
 
 void LightSwitchSettings::AddObserver(SettingsObserver& observer)
 {
@@ -65,8 +131,14 @@ void LightSwitchSettings::NotifyObservers(SettingId id) const
     }
 }
 
+HANDLE LightSwitchSettings::GetSettingsChangedEvent() const
+{
+    return m_settingsChangedEvent;
+}
+
 void LightSwitchSettings::LoadSettings()
 {
+    std::lock_guard<std::mutex> guard(m_settingsMutex);
     try
     {
         PowerToysSettings::PowerToyValues values =
@@ -80,6 +152,7 @@ void LightSwitchSettings::LoadSettings()
             if (m_settings.scheduleMode != newMode)
             {
                 m_settings.scheduleMode = newMode;
+                Trace::LightSwitch::ScheduleModeToggled(val);
                 NotifyObservers(SettingId::ScheduleMode);
             }
         }
@@ -149,6 +222,8 @@ void LightSwitchSettings::LoadSettings()
             }
         }
 
+        bool themeTargetChanged = false;
+
         // ChangeSystem
         if (const auto jsonVal = values.get_bool_value(L"changeSystem"))
         {
@@ -156,6 +231,7 @@ void LightSwitchSettings::LoadSettings()
             if (m_settings.changeSystem != val)
             {
                 m_settings.changeSystem = val;
+                themeTargetChanged = true;
                 NotifyObservers(SettingId::ChangeSystem);
             }
         }
@@ -167,7 +243,74 @@ void LightSwitchSettings::LoadSettings()
             if (m_settings.changeApps != val)
             {
                 m_settings.changeApps = val;
+                themeTargetChanged = true;
                 NotifyObservers(SettingId::ChangeApps);
+            }
+        }
+
+        // For ChangeSystem/ChangeApps changes, log telemetry
+        if (themeTargetChanged)
+        {
+            Trace::LightSwitch::ThemeTargetChanged(m_settings.changeApps, m_settings.changeSystem);
+        }
+
+        if (const auto jsonVal = values.get_bool_value(L"wallpaperEnabled"))
+        {
+            auto val = *jsonVal;
+            if (m_settings.wallpaperEnabled != val)
+            {
+                m_settings.wallpaperEnabled = val;
+                NotifyObservers(SettingId::WallpaperEnabled);
+            }
+        }
+
+        if (const auto jsonVal = values.get_bool_value(L"wallpaperVirtualDesktopEnabled"))
+        {
+            auto val = *jsonVal;
+            if (m_settings.wallpaperVirtualDesktop != val)
+            {
+                m_settings.wallpaperVirtualDesktop = val;
+                NotifyObservers(SettingId::WallpaperVirtualDesktopEnabled);
+            }
+        }
+
+        if (const auto jsonVal = values.get_int_value(L"wallpaperStyleLight"))
+        {
+            auto val = *jsonVal;
+            if (m_settings.wallpaperStyleLight != val)
+            {
+                m_settings.wallpaperStyleLight = val;
+                NotifyObservers(SettingId::WallpaperStyleLight);
+            }
+        }
+
+        if (const auto jsonVal = values.get_int_value(L"wallpaperStyleDark"))
+        {
+            auto val = *jsonVal;
+            if (m_settings.wallpaperStyleDark != val)
+            {
+                m_settings.wallpaperStyleDark = val;
+                NotifyObservers(SettingId::WallpaperStyleDark);
+            }
+        }
+
+        if (const auto jsonVal = values.get_string_value(L"wallpaperPathLight"))
+        {
+            auto val = *jsonVal;
+            if (m_settings.wallpaperPathLight != val)
+            {
+                m_settings.wallpaperPathLight = val;
+                NotifyObservers(SettingId::WallpaperPathLight);
+            }
+        }
+
+        if (const auto jsonVal = values.get_string_value(L"wallpaperPathDark"))
+        {
+            auto val = *jsonVal;
+            if (m_settings.wallpaperPathDark != val)
+            {
+                m_settings.wallpaperPathDark = val;
+                NotifyObservers(SettingId::WallpaperPathDark);
             }
         }
     }

@@ -53,18 +53,7 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PreprocessorDefinitions>%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>
-        ./../;
-        ..\..\..\common;
-        ..\..\..\common\logger;
-        ..\..\..\common\utils;
-        ..\..\..\common\SettingsAPI;
-        ..\..\..\common\Telemetry;
-        ..\..\..\;
-        ..\..\..\..\deps\spdlog\include;
-        ./;
-        %(AdditionalIncludeDirectories)
-      </AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\LightSwitchCommon;.\..\;..\..\..\common;..\..\..\common\logger;..\..\..\common\utils;..\..\..\common\SettingsAPI;..\..\..\common\Telemetry;..\..\..\;..\..\..\..\deps\spdlog\include;./;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -75,9 +64,11 @@
   <ItemGroup>
     <ClCompile Include="LightSwitchService.cpp" />
     <ClCompile Include="LightSwitchSettings.cpp" />
-    <ClCompile Include="SettingsConstants.cpp" />
-    <ClCompile Include="ThemeHelper.cpp" />
+    <ClCompile Include="LightSwitchStateManager.cpp" />
+    <ClCompile Include="NightLightRegistryObserver.cpp" />
+    <ClCompile Include="..\LightSwitchCommon\ThemeHelper.cpp" />
     <ClCompile Include="ThemeScheduler.cpp" />
+    <ClCompile Include="trace.cpp" />
     <ClCompile Include="WinHookEventIDs.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -85,10 +76,14 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="LightSwitchSettings.h" />
-    <ClInclude Include="SettingsConstants.h" />
+    <ClInclude Include="LightSwitchStateManager.h" />
+    <ClInclude Include="LightSwitchUtils.h" />
+    <ClInclude Include="NightLightRegistryObserver.h" />
     <ClInclude Include="SettingsObserver.h" />
-    <ClInclude Include="ThemeHelper.h" />
+    <ClInclude Include="..\LightSwitchCommon\ThemeHelper.h" />
+    <ClInclude Include="..\LightSwitchCommon\SettingsConstants.h" />
     <ClInclude Include="ThemeScheduler.h" />
+    <ClInclude Include="trace.h" />
     <ClInclude Include="WinHookEventIDs.h" />
   </ItemGroup>
   <ItemGroup>

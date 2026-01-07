@@ -12,14 +12,14 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     {
         public override bool Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
-            var boolProperty = JsonSerializer.Deserialize<BoolProperty>(ref reader, options);
+            var boolProperty = JsonSerializer.Deserialize(ref reader, SettingsSerializationContext.Default.BoolProperty);
             return boolProperty.Value;
         }
 
         public override void Write(Utf8JsonWriter writer, bool value, JsonSerializerOptions options)
         {
             var boolProperty = new BoolProperty(value);
-            JsonSerializer.Serialize(writer, boolProperty, options);
+            JsonSerializer.Serialize(writer, boolProperty, SettingsSerializationContext.Default.BoolProperty);
         }
     }
 }

@@ -59,16 +59,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         public delegate void WhatIsNewOpeningCallback();
 
         /// <summary>
-        /// Declaration for opening flyout window callback function.
-        /// </summary>
-        public delegate void FlyoutOpeningCallback(POINT? point);
-
-        /// <summary>
-        /// Declaration for disabling hide of flyout window callback function.
-        /// </summary>
-        public delegate void DisablingFlyoutHidingCallback();
-
-        /// <summary>
         /// Gets or sets a shell handler to be used to update contents of the shell dynamically from page within the frame.
         /// </summary>
         public static ShellPage ShellHandler { get; set; }
@@ -109,16 +99,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         public static WhatIsNewOpeningCallback OpenWhatIsNewWindowCallback { get; set; }
 
         /// <summary>
-        /// Gets or sets callback function for opening flyout window
-        /// </summary>
-        public static FlyoutOpeningCallback OpenFlyoutCallback { get; set; }
-
-        /// <summary>
-        /// Gets or sets callback function for disabling hide of flyout window
-        /// </summary>
-        public static DisablingFlyoutHidingCallback DisableFlyoutHidingCallback { get; set; }
-
-        /// <summary>
         /// Gets view model.
         /// </summary>
         public ShellViewModel ViewModel { get; }
@@ -151,7 +131,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         {
             InitializeComponent();
             SetWindowTitle();
-            var settingsUtils = new SettingsUtils();
+            var settingsUtils = SettingsUtils.Default;
             ViewModel = new ShellViewModel(SettingsRepository<GeneralSettings>.GetInstance(settingsUtils));
             DataContext = ViewModel;
             ShellHandler = this;
@@ -259,24 +239,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         public static void SetOpenWhatIsNewCallback(WhatIsNewOpeningCallback implementation)
         {
             OpenWhatIsNewWindowCallback = implementation;
-        }
-
-        /// <summary>
-        /// Set flyout opening callback function
-        /// </summary>
-        /// <param name="implementation">delegate function implementation.</param>
-        public static void SetOpenFlyoutCallback(FlyoutOpeningCallback implementation)
-        {
-            OpenFlyoutCallback = implementation;
-        }
-
-        /// <summary>
-        /// Set disable flyout hiding callback function
-        /// </summary>
-        /// <param name="implementation">delegate function implementation.</param>
-        public static void SetDisableFlyoutHidingCallback(DisablingFlyoutHidingCallback implementation)
-        {
-            DisableFlyoutHidingCallback = implementation;
         }
 
         public static void SetElevationStatus(bool isElevated)
@@ -399,25 +361,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 IJsonValue whatToShowJson;
                 if (json.TryGetValue("ShowYourself", out whatToShowJson))
                 {
-                    if (whatToShowJson.ValueType == JsonValueType.String && whatToShowJson.GetString().Equals("flyout", StringComparison.Ordinal))
-                    {
-                        POINT? p = null;
-
-                        IJsonValue flyoutPointX;
-                        IJsonValue flyoutPointY;
-                        if (json.TryGetValue("x_position", out flyoutPointX) && json.TryGetValue("y_position", out flyoutPointY))
-                        {
-                            if (flyoutPointX.ValueType == JsonValueType.Number && flyoutPointY.ValueType == JsonValueType.Number)
-                            {
-                                int flyout_x = (int)flyoutPointX.GetNumber();
-                                int flyout_y = (int)flyoutPointY.GetNumber();
-                                p = new POINT(flyout_x, flyout_y);
-                            }
-                        }
-
-                        OpenFlyoutCallback(p);
-                    }
-                    else if (whatToShowJson.ValueType == JsonValueType.String)
+                    if (whatToShowJson.ValueType == JsonValueType.String)
                     {
                         OpenMainWindowCallback(App.GetPage(whatToShowJson.GetString()));
                     }

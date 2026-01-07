@@ -34,8 +34,12 @@
 
 #include <Psapi.h>
 #include <RestartManager.h>
+#include <shellapi.h>
 #include "centralized_kb_hook.h"
 #include "centralized_hotkeys.h"
+#include "quick_access_host.h"
+#include "ai_detection.h"
+#include <common/utils/package.h>
 
 #if _DEBUG && _WIN64
 #include "unhandled_exception_handler.h"
@@ -76,6 +80,87 @@ void chdir_current_executable()
     }
 }
 
+// Detect AI capabilities by calling ImageResizer in detection mode.
+// This runs in a background thread to avoid blocking the main startup.
+// ImageResizer writes the result to a cache file that it reads on normal startup.
+void DetectAiCapabilitiesAsync(bool skipSettingsCheck)
+{
+    std::thread([skipSettingsCheck]() {
+        try
+        {
+            // Check if ImageResizer module is enabled (skip if called from apply_general_settings)
+            if (!skipSettingsCheck)
+            {
+                auto settings = PTSettingsHelper::load_general_settings();
+                if (json::has(settings, L"enabled", json::JsonValueType::Object))
+                {
+                    auto enabledModules = settings.GetNamedObject(L"enabled");
+                    if (json::has(enabledModules, L"Image Resizer", json::JsonValueType::Boolean))
+                    {
+                        bool isEnabled = enabledModules.GetNamedBoolean(L"Image Resizer", false);
+                        if (!isEnabled)
+                        {
+                            Logger::info(L"ImageResizer module is disabled, skipping AI detection");
+                            return;
+                        }
+                    }
+                }
+            }
+
+            // Get ImageResizer.exe path (located in WinUI3Apps folder)
+            std::wstring imageResizerPath = get_module_folderpath();
+            imageResizerPath += L"\\WinUI3Apps\\PowerToys.ImageResizer.exe";
+
+            if (!std::filesystem::exists(imageResizerPath))
+            {
+                Logger::warn(L"ImageResizer.exe not found at {}, skipping AI detection", imageResizerPath);
+                return;
+            }
+
+            Logger::info(L"Starting AI capability detection via ImageResizer");
+
+            // Call ImageResizer --detect-ai
+            SHELLEXECUTEINFO sei = { sizeof(sei) };
+            sei.fMask = SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI;
+            sei.lpFile = imageResizerPath.c_str();
+            sei.lpParameters = L"--detect-ai";
+            sei.nShow = SW_HIDE;
+
+            if (ShellExecuteExW(&sei))
+            {
+                // Wait for detection to complete (with timeout)
+                DWORD waitResult = WaitForSingleObject(sei.hProcess, 30000); // 30 second timeout
+                CloseHandle(sei.hProcess);
+
+                if (waitResult == WAIT_OBJECT_0)
+                {
+                    Logger::info(L"AI capability detection completed successfully");
+                }
+                else if (waitResult == WAIT_TIMEOUT)
+                {
+                    Logger::warn(L"AI capability detection timed out");
+                }
+                else
+                {
+                    Logger::warn(L"AI capability detection wait failed");
+                }
+            }
+            else
+            {
+                Logger::warn(L"Failed to launch ImageResizer for AI detection, error: {}", GetLastError());
+            }
+        }
+        catch (const std::exception& e)
+        {
+            Logger::error("Exception during AI capability detection: {}", e.what());
+        }
+        catch (...)
+        {
+            Logger::error("Unknown exception during AI capability detection");
+        }
+    }).detach();
+}
+
 inline wil::unique_mutex_nothrow create_msi_mutex()
 {
     return createAppMutex(POWERTOYS_MSI_MUTEX_NAME);
@@ -105,6 +190,11 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
 #endif
     Trace::RegisterProvider();
     start_tray_icon(isProcessElevated);
+    if (get_general_settings().enableQuickAccess)
+    {
+        QuickAccessHost::start();
+    }
+    update_quick_access_hotkey(get_general_settings().enableQuickAccess, get_general_settings().quickAccessShortcut);
     set_tray_icon_visible(get_general_settings().showSystemTrayIcon);
     CentralizedKeyboardHook::Start();
 
@@ -126,6 +216,18 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
         std::thread{ [] {
             PeriodicUpdateWorker();
         } }.detach();
+
+        // Start AI capability detection in background (Windows 11+ only)
+        // AI Super Resolution is not supported on Windows 10
+        // This calls ImageResizer --detect-ai which writes result to cache file
+        if (package::IsWin11OrGreater())
+        {
+            DetectAiCapabilitiesAsync();
+        }
+        else
+        {
+            Logger::info(L"AI capability detection skipped: Windows 10 does not support AI Super Resolution");
+        }
 
         std::thread{ [] {
             if (updating::uninstall_previous_msix_version_async().get())
@@ -161,6 +263,7 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
             L"PowerToys.MouseJump.dll",
             L"PowerToys.AlwaysOnTopModuleInterface.dll",
             L"PowerToys.MousePointerCrosshairs.dll",
+            L"PowerToys.CursorWrap.dll",
             L"PowerToys.PowerAccentModuleInterface.dll",
             L"PowerToys.PowerOCRModuleInterface.dll",
             L"PowerToys.AdvancedPasteModuleInterface.dll",
@@ -219,7 +322,7 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
             {
                 window = winrt::to_hstring(settingsWindow);
             }
-            open_settings_window(window, false);
+            open_settings_window(window);
         }
 
         if (openOobe)
@@ -242,6 +345,7 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
         result = -1;
     }
     Trace::UnregisterProvider();
+    QuickAccessHost::stop();
     return result;
 }
 

@@ -205,7 +205,7 @@ namespace ColorPicker.Helpers
 
         private void ColorEditorViewModel_OpenSettingsRequested(object sender, EventArgs e)
         {
-            SettingsDeepLink.OpenSettings(SettingsDeepLink.SettingsWindow.ColorPicker, false);
+            SettingsDeepLink.OpenSettings(SettingsDeepLink.SettingsWindow.ColorPicker);
         }
 
         internal void RegisterWindowHandle(System.Windows.Interop.HwndSource hwndSource)
