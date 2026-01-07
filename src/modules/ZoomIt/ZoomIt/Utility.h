@@ -38,8 +38,8 @@ namespace DarkMode
     constexpr COLORREF ControlColor = RGB(51, 51, 55);
 
     // Text colors
-    constexpr COLORREF TextColor = RGB(255, 255, 255);
-    constexpr COLORREF DisabledTextColor = RGB(160, 160, 160);
+    constexpr COLORREF TextColor = RGB(200, 200, 200);
+    constexpr COLORREF DisabledTextColor = RGB(120, 120, 120);
     constexpr COLORREF LinkColor = RGB(86, 156, 214);
 
     // Border/accent colors
@@ -90,3 +90,15 @@ LRESULT CALLBACK HotkeyControlSubclassProc(HWND hWnd, UINT uMsg, WPARAM wParam, 
 
 // Subclass procedure for checkbox controls - needs to be accessible from Utility.cpp
 LRESULT CALLBACK CheckboxSubclassProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData);
+
+// Subclass procedure for edit controls - needs to be accessible from Utility.cpp
+LRESULT CALLBACK EditControlSubclassProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData);
+
+// Subclass procedure for group box controls - needs to be accessible from Utility.cpp
+LRESULT CALLBACK GroupBoxSubclassProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData);
+
+// Subclass procedure for slider/trackbar controls - needs to be accessible from Utility.cpp
+LRESULT CALLBACK SliderSubclassProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData);
+
+// Subclass procedure for static text controls - needs to be accessible from Utility.cpp
+LRESULT CALLBACK StaticTextSubclassProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData);

@@ -434,7 +434,7 @@ namespace
     constexpr int kTimelinePadding = 12;
     constexpr int kTimelineTrackHeight = 24;
     constexpr int kTimelineTrackTopOffset = 18;
-    constexpr int kTimelineHandleHalfWidth = 7;
+    constexpr int kTimelineHandleHalfWidth = 5;
     constexpr int kTimelineHandleHeight = 40;
     constexpr int kTimelineHandleHitRadius = 18;
     constexpr int64_t kJogStepTicks = 20'000'000;   // 2 seconds (or 1s for short videos)
@@ -680,16 +680,18 @@ namespace
         SetDlgItemText(hDlg, controlId, formatted.c_str());
     }
 
-    int TimelineTimeToClientX(const VideoRecordingSession::TrimDialogData* pData, winrt::TimeSpan value, int clientWidth)
+    int TimelineTimeToClientX(const VideoRecordingSession::TrimDialogData* pData, winrt::TimeSpan value, int clientWidth, UINT dpi = DPI_BASELINE)
     {
-        const int trackWidth = (std::max)(clientWidth - kTimelinePadding * 2, 1);
-        return kTimelinePadding + pData->TimeToPixel(value, trackWidth);
+        const int padding = ScaleForDpi(kTimelinePadding, dpi);
+        const int trackWidth = (std::max)(clientWidth - padding * 2, 1);
+        return padding + pData->TimeToPixel(value, trackWidth);
     }
 
-    winrt::TimeSpan TimelinePixelToTime(const VideoRecordingSession::TrimDialogData* pData, int x, int clientWidth)
+    winrt::TimeSpan TimelinePixelToTime(const VideoRecordingSession::TrimDialogData* pData, int x, int clientWidth, UINT dpi = DPI_BASELINE)
     {
-        const int trackWidth = (std::max)(clientWidth - kTimelinePadding * 2, 1);
-        const int localX = std::clamp(x - kTimelinePadding, 0, trackWidth);
+        const int padding = ScaleForDpi(kTimelinePadding, dpi);
+        const int trackWidth = (std::max)(clientWidth - padding * 2, 1);
+        const int localX = std::clamp(x - padding, 0, trackWidth);
         return pData->PixelToTime(localX, trackWidth);
     }
 
@@ -710,27 +712,36 @@ namespace
         EnableWindow(GetDlgItem(hDlg, IDOK), trimChanged);
     }
 
-        RECT GetTimelineTrackRect(const RECT& clientRect)
+        RECT GetTimelineTrackRect(const RECT& clientRect, UINT dpi)
         {
-            const int trackLeft = clientRect.left + kTimelinePadding;
-            const int trackRight = clientRect.right - kTimelinePadding;
-            const int trackTop = clientRect.top + kTimelineTrackTopOffset;
-            const int trackBottom = trackTop + kTimelineTrackHeight;
+            const int padding = ScaleForDpi(kTimelinePadding, dpi);
+            const int trackOffset = ScaleForDpi(kTimelineTrackTopOffset, dpi);
+            const int trackHeight = ScaleForDpi(kTimelineTrackHeight, dpi);
+            const int trackLeft = clientRect.left + padding;
+            const int trackRight = clientRect.right - padding;
+            const int trackTop = clientRect.top + trackOffset;
+            const int trackBottom = trackTop + trackHeight;
             RECT track{ trackLeft, trackTop, trackRight, trackBottom };
             return track;
         }
 
-        RECT GetPlayheadBoundsRect(const RECT& clientRect, int x)
+        RECT GetPlayheadBoundsRect(const RECT& clientRect, int x, UINT dpi)
         {
-            RECT track = GetTimelineTrackRect(clientRect);
-            RECT lineRect{ x - 2, track.top - 12, x + 3, track.bottom + 22 };
-            RECT circleRect{ x - 6, track.bottom + 12, x + 6, track.bottom + 24 };
+            RECT track = GetTimelineTrackRect(clientRect, dpi);
+            const int lineThick = ScaleForDpi(3, dpi);
+            const int topExt = ScaleForDpi(12, dpi);
+            const int botExt = ScaleForDpi(22, dpi);
+            const int circleR = ScaleForDpi(6, dpi);
+            const int circleBotOff = ScaleForDpi(12, dpi);
+            const int circleBotEnd = ScaleForDpi(24, dpi);
+            RECT lineRect{ x - lineThick + 1, track.top - topExt, x + lineThick, track.bottom + botExt };
+            RECT circleRect{ x - circleR, track.bottom + circleBotOff, x + circleR, track.bottom + circleBotEnd };
             RECT combined{};
             UnionRect(&combined, &lineRect, &circleRect);
             return combined;
         }
 
-        void InvalidatePlayheadRegion(HWND hTimeline, const RECT& clientRect, int previousX, int newX)
+        void InvalidatePlayheadRegion(HWND hTimeline, const RECT& clientRect, int previousX, int newX, UINT dpi)
         {
             if (!hTimeline)
             {
@@ -742,14 +753,14 @@ namespace
 
             if (previousX >= 0)
             {
-                RECT oldRect = GetPlayheadBoundsRect(clientRect, previousX);
+                RECT oldRect = GetPlayheadBoundsRect(clientRect, previousX, dpi);
                 invalidRect = oldRect;
                 hasRect = true;
             }
 
             if (newX >= 0)
             {
-                RECT newRect = GetPlayheadBoundsRect(clientRect, newX);
+                RECT newRect = GetPlayheadBoundsRect(clientRect, newX, dpi);
                 if (hasRect)
                 {
                     RECT unionRect{};
@@ -1975,10 +1986,17 @@ static void UpdateVideoPreview(HWND hDlg, VideoRecordingSession::TrimDialogData*
 // Helper: Draw custom timeline with handles
 //
 //----------------------------------------------------------------------------
-static void DrawTimeline(HDC hdc, RECT rc, VideoRecordingSession::TrimDialogData* pData)
+static void DrawTimeline(HDC hdc, RECT rc, VideoRecordingSession::TrimDialogData* pData, UINT dpi)
 {
     const int width = rc.right - rc.left;
     const int height = rc.bottom - rc.top;
+
+    // Scale constants for DPI
+    const int timelinePadding = ScaleForDpi(kTimelinePadding, dpi);
+    const int timelineTrackHeight = ScaleForDpi(kTimelineTrackHeight, dpi);
+    const int timelineTrackTopOffset = ScaleForDpi(kTimelineTrackTopOffset, dpi);
+    const int timelineHandleHalfWidth = ScaleForDpi(kTimelineHandleHalfWidth, dpi);
+    const int timelineHandleHeight = ScaleForDpi(kTimelineHandleHeight, dpi);
 
     // Create memory DC for double buffering
     HDC hdcMem = CreateCompatibleDC(hdc);
@@ -1992,18 +2010,18 @@ static void DrawTimeline(HDC hdc, RECT rc, VideoRecordingSession::TrimDialogData
     FillRect(hdcMem, &rcMem, hBackground);
     DeleteObject(hBackground);
 
-    const int trackLeft = kTimelinePadding;
-    const int trackRight = width - kTimelinePadding;
-    const int trackTop = kTimelineTrackTopOffset;
-    const int trackBottom = trackTop + kTimelineTrackHeight;
+    const int trackLeft = timelinePadding;
+    const int trackRight = width - timelinePadding;
+    const int trackTop = timelineTrackTopOffset;
+    const int trackBottom = trackTop + timelineTrackHeight;
 
     RECT rcTrack = { trackLeft, trackTop, trackRight, trackBottom };
     HBRUSH hTrackBase = CreateSolidBrush(darkMode ? RGB(60, 60, 65) : RGB(214, 219, 224));
     FillRect(hdcMem, &rcTrack, hTrackBase);
     DeleteObject(hTrackBase);
 
-    int startX = std::clamp(TimelineTimeToClientX(pData, pData->trimStart, width), trackLeft, trackRight);
-    int endX = std::clamp(TimelineTimeToClientX(pData, pData->trimEnd, width), trackLeft, trackRight);
+    int startX = std::clamp(TimelineTimeToClientX(pData, pData->trimStart, width, dpi), trackLeft, trackRight);
+    int endX = std::clamp(TimelineTimeToClientX(pData, pData->trimEnd, width, dpi), trackLeft, trackRight);
     if (endX < startX)
     {
         std::swap(startX, endX);
@@ -2034,18 +2052,19 @@ static void DrawTimeline(HDC hdc, RECT rc, VideoRecordingSession::TrimDialogData
     const int trackWidth = trackRight - trackLeft;
     if (trackWidth > 0 && pData && pData->videoDuration.count() > 0)
     {
-        const int tickTop = trackBottom + 2;
-        const int tickMajorBottom = tickTop + 10;
-        const int tickMinorBottom = tickTop + 6;
+        const int tickTop = trackBottom + ScaleForDpi(2, dpi);
+        const int tickMajorBottom = tickTop + ScaleForDpi(10, dpi);
+        const int tickMinorBottom = tickTop + ScaleForDpi(6, dpi);
 
         const std::array<double, 5> fractions{ 0.0, 0.25, 0.5, 0.75, 1.0 };
         HPEN hTickPen = CreatePen(PS_SOLID, 1, darkMode ? RGB(100, 100, 105) : RGB(150, 150, 150));
         HPEN hOldTickPen = static_cast<HPEN>(SelectObject(hdcMem, hTickPen));
         SetBkMode(hdcMem, TRANSPARENT);
-        SetTextColor(hdcMem, darkMode ? DarkMode::TextColor : RGB(80, 80, 80));
+        SetTextColor(hdcMem, darkMode ? RGB(140, 140, 140) : RGB(80, 80, 80));
 
-        // Use consistent font for all timeline text
-        HFONT hTimelineFont = CreateFont(12, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, DEFAULT_CHARSET,
+        // Use consistent font for all timeline text - scale for DPI
+        const int fontSize = ScaleForDpi(11, dpi);
+        HFONT hTimelineFont = CreateFont(fontSize, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, DEFAULT_CHARSET,
             OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, CLEARTYPE_QUALITY,
             DEFAULT_PITCH | FF_SWISS, L"Segoe UI");
         HFONT hOldTimelineFont = static_cast<HFONT>(SelectObject(hdcMem, hTimelineFont));
@@ -2063,8 +2082,12 @@ static void DrawTimeline(HDC hdc, RECT rc, VideoRecordingSession::TrimDialogData
                 // Calculate marker time within the selection range (trimStart to trimEnd)
                 const int64_t selectionDuration = pData->trimEnd.count() - pData->trimStart.count();
                 const auto markerTime = winrt::TimeSpan{ pData->trimStart.count() + static_cast<int64_t>(fraction * selectionDuration) };
-                const std::wstring markerText = FormatTrimTime(markerTime, false);
-                RECT rcMarker{ x - 35, tickMajorBottom + 2, x + 35, tickMajorBottom + 16 };
+                // For short videos (under 60 seconds), show fractional seconds to distinguish markers
+                const bool showMilliseconds = (pData->videoDuration.count() < 600000000LL); // 60 seconds in 100ns ticks
+                const std::wstring markerText = FormatTrimTime(markerTime, showMilliseconds);
+                const int markerHalfWidth = ScaleForDpi(showMilliseconds ? 45 : 35, dpi);
+                const int markerHeight = ScaleForDpi(16, dpi);
+                RECT rcMarker{ x - markerHalfWidth, tickMajorBottom + ScaleForDpi(2, dpi), x + markerHalfWidth, tickMajorBottom + ScaleForDpi(2, dpi) + markerHeight };
                 DrawText(hdcMem, markerText.c_str(), -1, &rcMarker, DT_CENTER | DT_TOP | DT_SINGLELINE | DT_NOPREFIX);
             }
         }
@@ -2077,11 +2100,13 @@ static void DrawTimeline(HDC hdc, RECT rc, VideoRecordingSession::TrimDialogData
 
     auto drawHandle = [&](int x, COLORREF color, bool pointDown)
     {
+        const int triangleOffset = ScaleForDpi(6, dpi);
+        const int triangleInset = ScaleForDpi(4, dpi);
         RECT handleRect{
-            x - kTimelineHandleHalfWidth,
-            trackTop - (kTimelineHandleHeight - kTimelineTrackHeight) / 2,
-            x + kTimelineHandleHalfWidth,
-            trackTop - (kTimelineHandleHeight - kTimelineTrackHeight) / 2 + kTimelineHandleHeight
+            x - timelineHandleHalfWidth,
+            trackTop - (timelineHandleHeight - timelineTrackHeight) / 2,
+            x + timelineHandleHalfWidth,
+            trackTop - (timelineHandleHeight - timelineTrackHeight) / 2 + timelineHandleHeight
         };
 
         HBRUSH hBrush = CreateSolidBrush(color);
@@ -2090,15 +2115,15 @@ static void DrawTimeline(HDC hdc, RECT rc, VideoRecordingSession::TrimDialogData
         POINT triangle[3];
         if (pointDown)
         {
-            triangle[0] = { x, handleRect.bottom + 6 };
-            triangle[1] = { x - kTimelineHandleHalfWidth, handleRect.bottom - 4 };
-            triangle[2] = { x + kTimelineHandleHalfWidth, handleRect.bottom - 4 };
+            triangle[0] = { x, handleRect.bottom + triangleOffset };
+            triangle[1] = { x - timelineHandleHalfWidth, handleRect.bottom - triangleInset };
+            triangle[2] = { x + timelineHandleHalfWidth, handleRect.bottom - triangleInset };
         }
         else
         {
-            triangle[0] = { x, handleRect.top - 6 };
-            triangle[1] = { x - kTimelineHandleHalfWidth, handleRect.top + 4 };
-            triangle[2] = { x + kTimelineHandleHalfWidth, handleRect.top + 4 };
+            triangle[0] = { x, handleRect.top - triangleOffset };
+            triangle[1] = { x - timelineHandleHalfWidth, handleRect.top + triangleInset };
+            triangle[2] = { x + timelineHandleHalfWidth, handleRect.top + triangleInset };
         }
 
         HPEN hNullPen = static_cast<HPEN>(SelectObject(hdcMem, GetStockObject(NULL_PEN)));
@@ -2112,36 +2137,48 @@ static void DrawTimeline(HDC hdc, RECT rc, VideoRecordingSession::TrimDialogData
     drawHandle(startX, RGB(76, 175, 80), false);
     drawHandle(endX, RGB(244, 67, 54), true);
 
-    const int posX = std::clamp(TimelineTimeToClientX(pData, pData->currentPosition, width), trackLeft, trackRight);
-    HPEN hPositionPen = CreatePen(PS_SOLID, 2, RGB(33, 150, 243));
+    const int posX = std::clamp(TimelineTimeToClientX(pData, pData->currentPosition, width, dpi), trackLeft, trackRight);
+    const int posLineWidth = ScaleForDpi(2, dpi);
+    const int posLineExtend = ScaleForDpi(12, dpi);
+    const int posLineBelow = ScaleForDpi(22, dpi);
+    HPEN hPositionPen = CreatePen(PS_SOLID, posLineWidth, RGB(33, 150, 243));
     hOldPen = static_cast<HPEN>(SelectObject(hdcMem, hPositionPen));
-    MoveToEx(hdcMem, posX, trackTop - 12, nullptr);
-    LineTo(hdcMem, posX, trackBottom + 22);
+    MoveToEx(hdcMem, posX, trackTop - posLineExtend, nullptr);
+    LineTo(hdcMem, posX, trackBottom + posLineBelow);
     SelectObject(hdcMem, hOldPen);
     DeleteObject(hPositionPen);
 
+    const int ellipseRadius = ScaleForDpi(6, dpi);
+    const int ellipseTop = ScaleForDpi(12, dpi);
+    const int ellipseBottom = ScaleForDpi(24, dpi);
     HBRUSH hPositionBrush = CreateSolidBrush(RGB(33, 150, 243));
     HBRUSH hOldBrush = static_cast<HBRUSH>(SelectObject(hdcMem, hPositionBrush));
     HPEN hOldPenForEllipse = static_cast<HPEN>(SelectObject(hdcMem, GetStockObject(NULL_PEN)));
-    Ellipse(hdcMem, posX - 6, trackBottom + 12, posX + 6, trackBottom + 24);
+    Ellipse(hdcMem, posX - ellipseRadius, trackBottom + ellipseTop, posX + ellipseRadius, trackBottom + ellipseBottom);
     SelectObject(hdcMem, hOldPenForEllipse);
     SelectObject(hdcMem, hOldBrush);
     DeleteObject(hPositionBrush);
 
     // Set font for start/end labels (same font used for tick labels)
     SetBkMode(hdcMem, TRANSPARENT);
-    SetTextColor(hdcMem, RGB(80, 80, 80));
-    HFONT hFont = CreateFont(12, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, DEFAULT_CHARSET,
+    SetTextColor(hdcMem, darkMode ? RGB(140, 140, 140) : RGB(80, 80, 80));
+    int labelFontSize = ScaleForDpi(11, dpi);
+    HFONT hFont = CreateFont(labelFontSize, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, DEFAULT_CHARSET,
         OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, CLEARTYPE_QUALITY,
         DEFAULT_PITCH | FF_SWISS, L"Segoe UI");
     HFONT hOldFont = static_cast<HFONT>(SelectObject(hdcMem, hFont));
 
-    RECT rcStartLabel{ trackLeft, trackBottom + 16, trackLeft + 70, trackBottom + 32 };
-    const std::wstring startLabel = FormatTrimTime(pData->trimStart, false);
+    int labelTop = trackBottom + ScaleForDpi(16, dpi);
+    int labelBottom = trackBottom + ScaleForDpi(32, dpi);
+    // For short videos (under 60 seconds), show fractional seconds
+    const bool showMilliseconds = (pData->videoDuration.count() < 600000000LL); // 60 seconds in 100ns ticks
+    int labelWidth = ScaleForDpi(showMilliseconds ? 80 : 70, dpi);
+    RECT rcStartLabel{ trackLeft, labelTop, trackLeft + labelWidth, labelBottom };
+    const std::wstring startLabel = FormatTrimTime(pData->trimStart, showMilliseconds);
     DrawText(hdcMem, startLabel.c_str(), -1, &rcStartLabel, DT_LEFT | DT_TOP | DT_SINGLELINE);
 
-    RECT rcEndLabel{ trackRight - 70, trackBottom + 16, trackRight, trackBottom + 32 };
-    const std::wstring endLabel = FormatTrimTime(pData->trimEnd, false);
+    RECT rcEndLabel{ trackRight - labelWidth, labelTop, trackRight, labelBottom };
+    const std::wstring endLabel = FormatTrimTime(pData->trimEnd, showMilliseconds);
     DrawText(hdcMem, endLabel.c_str(), -1, &rcEndLabel, DT_RIGHT | DT_TOP | DT_SINGLELINE);
 
     SelectObject(hdcMem, hOldFont);
@@ -2727,34 +2764,41 @@ static LRESULT CALLBACK TimelineSubclassProc(
         const int x = GET_X_LPARAM(lParam);
         const int y = GET_Y_LPARAM(lParam);
         const int clampedX = std::clamp(x, 0, width);
-        const int trackTop = kTimelineTrackTopOffset;
-        const int trackBottom = trackTop + kTimelineTrackHeight;
-        const int knobTop = trackBottom + 10; // aligns with knob ellipse band
-        const int knobBottom = trackBottom + 26;
+
+        // Get DPI for scaling hit test regions
+        const UINT dpi = GetDpiForWindowHelper(hWnd);
+        const int timelineTrackTopOffset = ScaleForDpi(kTimelineTrackTopOffset, dpi);
+        const int timelineTrackHeight = ScaleForDpi(kTimelineTrackHeight, dpi);
+        const int timelineHandleHitRadius = ScaleForDpi(kTimelineHandleHitRadius, dpi);
+
+        const int trackTop = timelineTrackTopOffset;
+        const int trackBottom = trackTop + timelineTrackHeight;
+        const int knobTop = trackBottom + ScaleForDpi(10, dpi); // aligns with knob ellipse band
+        const int knobBottom = trackBottom + ScaleForDpi(26, dpi);
         const bool inKnobBand = (y >= knobTop && y <= knobBottom);
 
-        const int startX = TimelineTimeToClientX(pData, pData->trimStart, width);
-        const int posX = TimelineTimeToClientX(pData, pData->currentPosition, width);
-        const int endX = TimelineTimeToClientX(pData, pData->trimEnd, width);
+        const int startX = TimelineTimeToClientX(pData, pData->trimStart, width, dpi);
+        const int posX = TimelineTimeToClientX(pData, pData->currentPosition, width, dpi);
+        const int endX = TimelineTimeToClientX(pData, pData->trimEnd, width, dpi);
 
         pData->dragMode = VideoRecordingSession::TrimDialogData::None;
         pData->previewOverrideActive = false;
         pData->restorePreviewOnRelease = false;
 
         // If grabbing the knob band, prefer the playhead even if it overlaps a grip
-        if (inKnobBand && abs(clampedX - posX) <= kTimelineHandleHitRadius)
+        if (inKnobBand && abs(clampedX - posX) <= timelineHandleHitRadius)
         {
             pData->dragMode = VideoRecordingSession::TrimDialogData::Position;
         }
-        else if (abs(clampedX - startX) <= kTimelineHandleHitRadius)
+        else if (abs(clampedX - startX) <= timelineHandleHitRadius)
         {
             pData->dragMode = VideoRecordingSession::TrimDialogData::TrimStart;
         }
-        else if (abs(clampedX - endX) <= kTimelineHandleHitRadius)
+        else if (abs(clampedX - endX) <= timelineHandleHitRadius)
         {
             pData->dragMode = VideoRecordingSession::TrimDialogData::TrimEnd;
         }
-        else if (abs(clampedX - posX) <= kTimelineHandleHitRadius)
+        else if (abs(clampedX - posX) <= timelineHandleHitRadius)
         {
             pData->dragMode = VideoRecordingSession::TrimDialogData::Position;
         }
@@ -2775,28 +2819,6 @@ static LRESULT CALLBACK TimelineSubclassProc(
             }
             SetCapture(hWnd);
             return 0;
-        }
-        else
-        {
-            // Click on the timeline track (not on a handle) - seek to that position
-            const int trackLeft = kTimelinePadding;
-            const int trackRight = width - kTimelinePadding;
-            if (x >= trackLeft && x <= trackRight && y >= trackTop && y <= trackBottom + 30)
-            {
-                // Convert click position to time and seek
-                winrt::TimeSpan clickTime = TimelinePixelToTime(pData, clampedX, width);
-                
-                // Clamp to current trim range
-                if (clickTime < pData->trimStart)
-                    clickTime = pData->trimStart;
-                if (clickTime > pData->trimEnd)
-                    clickTime = pData->trimEnd;
-                
-                pData->currentPosition = clickTime;
-                UpdateVideoPreview(pData->hDialog, pData);
-                InvalidateRect(hWnd, nullptr, FALSE);
-                return 0;
-            }
         }
         break;
     }
@@ -2837,15 +2859,19 @@ static LRESULT CALLBACK TimelineSubclassProc(
 
         if (!pData->isDragging)
         {
-            const int startX = TimelineTimeToClientX(pData, pData->trimStart, width);
-            const int posX = TimelineTimeToClientX(pData, pData->currentPosition, width);
-            const int endX = TimelineTimeToClientX(pData, pData->trimEnd, width);
+            // Get DPI for scaling hit test regions
+            const UINT dpi = GetDpiForWindowHelper(hWnd);
+            const int timelineHandleHitRadius = ScaleForDpi(kTimelineHandleHitRadius, dpi);
 
-            if (abs(clampedX - posX) <= kTimelineHandleHitRadius)
+            const int startX = TimelineTimeToClientX(pData, pData->trimStart, width, dpi);
+            const int posX = TimelineTimeToClientX(pData, pData->currentPosition, width, dpi);
+            const int endX = TimelineTimeToClientX(pData, pData->trimEnd, width, dpi);
+
+            if (abs(clampedX - posX) <= timelineHandleHitRadius)
             {
                 SetCursor(LoadCursor(nullptr, IDC_HAND));
             }
-            else if (abs(clampedX - startX) < kTimelineHandleHitRadius || abs(clampedX - endX) < kTimelineHandleHitRadius)
+            else if (abs(clampedX - startX) < timelineHandleHitRadius || abs(clampedX - endX) < timelineHandleHitRadius)
             {
                 SetCursor(LoadCursor(nullptr, IDC_SIZEWE));
             }
@@ -2856,7 +2882,9 @@ static LRESULT CALLBACK TimelineSubclassProc(
             return 0;
         }
 
-        const auto newTime = TimelinePixelToTime(pData, clampedX, width);
+        // Get DPI for pixel-to-time conversion during drag
+        const UINT dpi = GetDpiForWindowHelper(hWnd);
+        const auto newTime = TimelinePixelToTime(pData, clampedX, width, dpi);
 
         bool requestPreviewUpdate = false;
         bool applyOverride = false;
@@ -2886,12 +2914,13 @@ static LRESULT CALLBACK TimelineSubclassProc(
 
         case VideoRecordingSession::TrimDialogData::Position:
         {
-            const int previousPosX = TimelineTimeToClientX(pData, pData->currentPosition, width);
+            const UINT dpi = GetDpiForWindowHelper(hWnd);
+            const int previousPosX = TimelineTimeToClientX(pData, pData->currentPosition, width, dpi);
             pData->currentPosition = newTime;
-            const int newPosX = TimelineTimeToClientX(pData, pData->currentPosition, width);
+            const int newPosX = TimelineTimeToClientX(pData, pData->currentPosition, width, dpi);
             RECT clientRect{};
             GetClientRect(hWnd, &clientRect);
-            InvalidatePlayheadRegion(hWnd, clientRect, previousPosX, newPosX);
+            InvalidatePlayheadRegion(hWnd, clientRect, previousPosX, newPosX, dpi);
             pData->previewOverrideActive = false;
             UpdateVideoPreview(pData->hDialog, pData, false);
             break;
@@ -3000,13 +3029,14 @@ static void DrawPlaybackButton(
     COLORREF bgColorTop = RGB(45, 45, 50);
     COLORREF bgColorBottom = RGB(35, 35, 40);
     COLORREF iconColor = RGB(220, 220, 220);
-    COLORREF borderColor = RGB(80, 80, 85);
+    COLORREF borderColor = RGB(120, 120, 125);
 
     if (isHover && !isDisabled)
     {
         bgColorTop = RGB(60, 60, 65);
         bgColorBottom = RGB(50, 50, 55);
         iconColor = RGB(255, 255, 255);
+        borderColor = RGB(150, 150, 155);
     }
     if (isPressed && !isDisabled)
     {
@@ -3031,28 +3061,12 @@ static void DrawPlaybackButton(
     Gdiplus::Graphics graphics(pDIS->hDC);
     graphics.SetSmoothingMode(Gdiplus::SmoothingModeAntiAlias);
 
-    // Draw gradient background circle
-    Gdiplus::GraphicsPath path;
-    path.AddEllipse(centerX - radius, centerY - radius, radius * 2, radius * 2);
+    // Draw flat background circle (no gradient)
+    Gdiplus::SolidBrush bgBrush(Gdiplus::Color(255, GetRValue(bgColorBottom), GetGValue(bgColorBottom), GetBValue(bgColorBottom)));
+    graphics.FillEllipse(&bgBrush, centerX - radius, centerY - radius, radius * 2, radius * 2);
 
-    Gdiplus::PathGradientBrush gradientBrush(&path);
-    Gdiplus::Color colors[] = {
-        Gdiplus::Color(255, GetRValue(bgColorTop), GetGValue(bgColorTop), GetBValue(bgColorTop)),
-        Gdiplus::Color(255, GetRValue(bgColorBottom), GetGValue(bgColorBottom), GetBValue(bgColorBottom))
-    };
-
-    // Create linear gradient from top to bottom
-    Gdiplus::LinearGradientBrush linearGradient(
-        Gdiplus::PointF(centerX, centerY - radius),
-        Gdiplus::PointF(centerX, centerY + radius),
-        Gdiplus::Color(255, GetRValue(bgColorTop), GetGValue(bgColorTop), GetBValue(bgColorTop)),
-        Gdiplus::Color(255, GetRValue(bgColorBottom), GetGValue(bgColorBottom), GetBValue(bgColorBottom))
-    );
-
-    graphics.FillEllipse(&linearGradient, centerX - radius, centerY - radius, radius * 2, radius * 2);
-
-    // Draw border
-    Gdiplus::Pen borderPen(Gdiplus::Color(255, GetRValue(borderColor), GetGValue(borderColor), GetBValue(borderColor)), 1.0f);
+    // Draw subtle border
+    Gdiplus::Pen borderPen(Gdiplus::Color(100, GetRValue(borderColor), GetGValue(borderColor), GetBValue(borderColor)), 0.5f);
     graphics.DrawEllipse(&borderPen, centerX - radius, centerY - radius, radius * 2, radius * 2);
 
     // Draw icons
@@ -3321,25 +3335,14 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
         UpdateVideoPreview(hDlg, pData);
         SetTimeText(hDlg, IDC_TRIM_POSITION_LABEL, pData->currentPosition, true);
 
-        // Apply DPI scaling to the dialog
-        currentDpi = GetDpiForWindowHelper( hDlg );
-        if( currentDpi != DPI_BASELINE )
-        {
-            ScaleDialogForDpi( hDlg, currentDpi, DPI_BASELINE );
-        }
+        // Initialize currentDpi to actual dialog DPI (for WM_DPICHANGED handling)
+        currentDpi = GetDpiForWindowHelper(hDlg);
 
         // Apply dark mode
         ApplyDarkModeToDialog( hDlg );
 
-        // Position dialog (use stored position if available, otherwise center on screen)
-        if (pData->dialogX != 0 || pData->dialogY != 0)
-        {
-            SetWindowPos(hDlg, nullptr, pData->dialogX, pData->dialogY, 0, 0, SWP_NOACTIVATE | SWP_NOSIZE | SWP_NOZORDER);
-        }
-        else
-        {
-            CenterTrimDialog(hDlg);
-        }
+        // Center dialog on screen
+        CenterTrimDialog(hDlg);
 
         OutputDebugStringW(L"[Trim] WM_INITDIALOG completed\n");
         return TRUE;
@@ -3357,6 +3360,47 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
         if (hBrush)
         {
             return reinterpret_cast<INT_PTR>(hBrush);
+        }
+        break;
+    }
+
+    case WM_LBUTTONDOWN:
+    {
+        int x = GET_X_LPARAM(lParam);
+        int y = GET_Y_LPARAM(lParam);
+        OutputDebugStringW((L"[Trim] WM_LBUTTONDOWN on dialog at x=" + std::to_wstring(x) + L" y=" + std::to_wstring(y) + L"\n").c_str());
+        
+        // Debug: Check button positions
+        HWND hOkBtn = GetDlgItem(hDlg, IDOK);
+        HWND hCancelBtn = GetDlgItem(hDlg, IDCANCEL);
+        if (hOkBtn)
+        {
+            RECT rcOk;
+            GetWindowRect(hOkBtn, &rcOk);
+            MapWindowPoints(HWND_DESKTOP, hDlg, reinterpret_cast<LPPOINT>(&rcOk), 2);
+            OutputDebugStringW((L"[Trim] OK button rect: left=" + std::to_wstring(rcOk.left) + L" top=" + std::to_wstring(rcOk.top) + 
+                L" right=" + std::to_wstring(rcOk.right) + L" bottom=" + std::to_wstring(rcOk.bottom) + 
+                L" visible=" + std::to_wstring(IsWindowVisible(hOkBtn)) + L" enabled=" + std::to_wstring(IsWindowEnabled(hOkBtn)) + L"\n").c_str());
+        }
+        if (hCancelBtn)
+        {
+            RECT rcCancel;
+            GetWindowRect(hCancelBtn, &rcCancel);
+            MapWindowPoints(HWND_DESKTOP, hDlg, reinterpret_cast<LPPOINT>(&rcCancel), 2);
+            OutputDebugStringW((L"[Trim] Cancel button rect: left=" + std::to_wstring(rcCancel.left) + L" top=" + std::to_wstring(rcCancel.top) + 
+                L" right=" + std::to_wstring(rcCancel.right) + L" bottom=" + std::to_wstring(rcCancel.bottom) + 
+                L" visible=" + std::to_wstring(IsWindowVisible(hCancelBtn)) + L" enabled=" + std::to_wstring(IsWindowEnabled(hCancelBtn)) + L"\n").c_str());
+        }
+        
+        // Check what child window is at this point
+        POINT pt = { x, y };
+        HWND hChildAtPoint = ChildWindowFromPoint(hDlg, pt);
+        if (hChildAtPoint && hChildAtPoint != hDlg)
+        {
+            wchar_t className[64] = { 0 };
+            GetClassNameW(hChildAtPoint, className, _countof(className));
+            int ctrlId = GetDlgCtrlID(hChildAtPoint);
+            OutputDebugStringW((L"[Trim] Child at point: class=" + std::wstring(className) + L" ctrlId=" + std::to_wstring(ctrlId) + L"\n").c_str());
         }
         break;
     }
@@ -3455,7 +3499,8 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
         if (pDIS->CtlID == IDC_TRIM_TIMELINE)
         {
             // Draw custom timeline
-            DrawTimeline(pDIS->hDC, pDIS->rcItem, pData);
+            UINT timelineDpi = GetDpiForWindowHelper(pDIS->hwndItem);
+            DrawTimeline(pDIS->hDC, pDIS->rcItem, pData, timelineDpi);
             return TRUE;
         }
         else if (pDIS->CtlID == IDC_TRIM_PREVIEW)
@@ -3652,12 +3697,13 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
             HWND hTimeline = GetDlgItem(hDlg, IDC_TRIM_TIMELINE);
             if (hTimeline)
             {
+                const UINT dpi = GetDpiForWindowHelper(hTimeline);
                 RECT rc;
                 GetClientRect(hTimeline, &rc);
-                const int newX = TimelineTimeToClientX(pData, pData->currentPosition, rc.right - rc.left);
+                const int newX = TimelineTimeToClientX(pData, pData->currentPosition, rc.right - rc.left, dpi);
                 if (newX != pData->lastPlayheadX)
                 {
-                    InvalidatePlayheadRegion(hTimeline, rc, pData->lastPlayheadX, newX);
+                    InvalidatePlayheadRegion(hTimeline, rc, pData->lastPlayheadX, newX, dpi);
                     pData->lastPlayheadX = newX;
                     UpdateWindow(hTimeline);
                 }
@@ -3714,13 +3760,14 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
                 HWND hTimeline = GetDlgItem(hDlg, IDC_TRIM_TIMELINE);
                 if (hTimeline)
                 {
+                    const UINT dpi = GetDpiForWindowHelper(hTimeline);
                     RECT rc;
                     GetClientRect(hTimeline, &rc);
-                    const int newX = TimelineTimeToClientX(pData, pData->currentPosition, rc.right - rc.left);
+                    const int newX = TimelineTimeToClientX(pData, pData->currentPosition, rc.right - rc.left, dpi);
                     // Only repaint if position actually changed
                     if (newX != pData->lastPlayheadX)
                     {
-                        InvalidatePlayheadRegion(hTimeline, rc, pData->lastPlayheadX, newX);
+                        InvalidatePlayheadRegion(hTimeline, rc, pData->lastPlayheadX, newX, dpi);
                         pData->lastPlayheadX = newX;
                         UpdateWindow(hTimeline);
                     }
@@ -3754,6 +3801,7 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
         break;
 
     case WM_COMMAND:
+        OutputDebugStringW((L"[Trim] WM_COMMAND: wParam=0x" + std::to_wstring(wParam) + L" LOWORD=" + std::to_wstring(LOWORD(wParam)) + L" HIWORD=" + std::to_wstring(HIWORD(wParam)) + L"\n").c_str());
         switch (LOWORD(wParam))
         {
         case IDC_TRIM_REWIND:
@@ -3772,6 +3820,7 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
         }
 
         case IDOK:
+            OutputDebugStringW(L"[Trim] IDOK clicked\n");
             pData = reinterpret_cast<TrimDialogData*>(GetWindowLongPtr(hDlg, DWLP_USER));
             StopPlayback(hDlg, pData);
             // Trim times are already set by mouse dragging
@@ -3779,6 +3828,7 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
             return TRUE;
 
         case IDCANCEL:
+            OutputDebugStringW(L"[Trim] IDCANCEL clicked\n");
             pData = reinterpret_cast<TrimDialogData*>(GetWindowLongPtr(hDlg, DWLP_USER));
             StopPlayback(hDlg, pData);
             EndDialog(hDlg, IDCANCEL);

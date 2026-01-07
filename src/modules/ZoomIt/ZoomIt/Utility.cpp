@@ -8,6 +8,7 @@
 //==============================================================================
 #include "pch.h"
 #include "Utility.h"
+#include <string>
 
 #pragma comment(lib, "uxtheme.lib")
 
@@ -265,11 +266,19 @@ void ApplyDarkModeToDialog(HWND hDlg)
                 LONG style = GetWindowLong(hChild, GWL_STYLE);
                 LONG buttonType = style & BS_TYPEMASK;
                 if (buttonType == BS_CHECKBOX || buttonType == BS_AUTOCHECKBOX ||
-                    buttonType == BS_3STATE || buttonType == BS_AUTO3STATE)
+                    buttonType == BS_3STATE || buttonType == BS_AUTO3STATE ||
+                    buttonType == BS_RADIOBUTTON || buttonType == BS_AUTORADIOBUTTON)
                 {
-                    // Subclass checkbox for dark mode painting
-                    SetWindowTheme(hChild, L"", L"");
+                    // Subclass checkbox/radio for dark mode painting - but keep DarkMode_Explorer theme
+                    // for proper hit testing (empty theme can break mouse interaction)
+                    SetWindowTheme(hChild, L"DarkMode_Explorer", nullptr);
                     SetWindowSubclass(hChild, CheckboxSubclassProc, 2, 0);
+                }
+                else if (buttonType == BS_GROUPBOX)
+                {
+                    // Subclass group box for dark mode painting
+                    SetWindowTheme(hChild, L"", L"");
+                    SetWindowSubclass(hChild, GroupBoxSubclassProc, 4, 0);
                 }
                 else
                 {
@@ -278,8 +287,9 @@ void ApplyDarkModeToDialog(HWND hDlg)
             }
             else if (_wcsicmp(className, L"Edit") == 0)
             {
-                // Use empty theme to allow WM_CTLCOLOREDIT from parent to work
+                // Use empty theme and subclass for dark mode border drawing
                 SetWindowTheme(hChild, L"", L"");
+                SetWindowSubclass(hChild, EditControlSubclassProc, 3, 0);
             }
             else if (_wcsicmp(className, L"ComboBox") == 0)
             {
@@ -292,8 +302,9 @@ void ApplyDarkModeToDialog(HWND hDlg)
             }
             else if (_wcsicmp(className, L"msctls_trackbar32") == 0)
             {
-                // Use empty theme for trackbar to allow custom dark drawing
+                // Subclass trackbar controls for dark mode painting
                 SetWindowTheme(hChild, L"", L"");
+                SetWindowSubclass(hChild, SliderSubclassProc, 1, 0);
             }
             else if (_wcsicmp(className, L"SysTabControl32") == 0)
             {
@@ -309,6 +320,30 @@ void ApplyDarkModeToDialog(HWND hDlg)
                 // Subclass hotkey controls for dark mode painting
                 SetWindowTheme(hChild, L"", L"");
                 SetWindowSubclass(hChild, HotkeyControlSubclassProc, 1, 0);
+            }
+            else if (_wcsicmp(className, L"Static") == 0)
+            {
+                // Check if this is a text label (not an owner-draw or image control)
+                LONG style = GetWindowLong(hChild, GWL_STYLE);
+                LONG staticType = style & SS_TYPEMASK;
+                
+                wchar_t text[128] = { 0 };
+                GetWindowTextW(hChild, text, _countof(text));
+                OutputDebugStringW((std::wstring(L"[Dark] Static '") + text + L"' style=0x" + std::to_wstring(style) + L" type=" + std::to_wstring(staticType) + L"\n").c_str());
+                
+                if (staticType == SS_LEFT || staticType == SS_CENTER || staticType == SS_RIGHT ||
+                    staticType == SS_LEFTNOWORDWRAP || staticType == SS_SIMPLE)
+                {
+                    // Subclass text labels for proper dark mode painting
+                    OutputDebugStringW((std::wstring(L"[Dark] Subclassing static: ") + text + L"\n").c_str());
+                    SetWindowTheme(hChild, L"", L"");
+                    SetWindowSubclass(hChild, StaticTextSubclassProc, 5, 0);
+                }
+                else
+                {
+                    // Other static controls (icons, bitmaps, frames) - just remove theme
+                    SetWindowTheme(hChild, L"", L"");
+                }
             }
             else
             {
@@ -331,15 +366,32 @@ void ApplyDarkModeToDialog(HWND hDlg)
             {
                 RemoveWindowSubclass(hChild, HotkeyControlSubclassProc, 1);
             }
+            else if (_wcsicmp(className, L"msctls_trackbar32") == 0)
+            {
+                RemoveWindowSubclass(hChild, SliderSubclassProc, 1);
+            }
             else if (_wcsicmp(className, L"Button") == 0)
             {
                 LONG style = GetWindowLong(hChild, GWL_STYLE);
                 LONG buttonType = style & BS_TYPEMASK;
                 if (buttonType == BS_CHECKBOX || buttonType == BS_AUTOCHECKBOX ||
-                    buttonType == BS_3STATE || buttonType == BS_AUTO3STATE)
+                    buttonType == BS_3STATE || buttonType == BS_AUTO3STATE ||
+                    buttonType == BS_RADIOBUTTON || buttonType == BS_AUTORADIOBUTTON)
                 {
                     RemoveWindowSubclass(hChild, CheckboxSubclassProc, 2);
                 }
+                else if (buttonType == BS_GROUPBOX)
+                {
+                    RemoveWindowSubclass(hChild, GroupBoxSubclassProc, 4);
+                }
+            }
+            else if (_wcsicmp(className, L"Edit") == 0)
+            {
+                RemoveWindowSubclass(hChild, EditControlSubclassProc, 3);
+            }
+            else if (_wcsicmp(className, L"Static") == 0)
+            {
+                RemoveWindowSubclass(hChild, StaticTextSubclassProc, 5);
             }
             SetWindowTheme(hChild, nullptr, nullptr);
             return TRUE;
@@ -368,7 +420,15 @@ HBRUSH HandleDarkModeCtlColor(HDC hdc, HWND hCtrl, UINT message)
 
     case WM_CTLCOLORSTATIC:
         SetBkMode(hdc, TRANSPARENT);
-        SetTextColor(hdc, DarkMode::TextColor);
+        // Use dimmed color for disabled static controls
+        if (!IsWindowEnabled(hCtrl))
+        {
+            SetTextColor(hdc, RGB(100, 100, 100));
+        }
+        else
+        {
+            SetTextColor(hdc, DarkMode::TextColor);
+        }
         return GetDarkModeBrush();
 
     case WM_CTLCOLORBTN:
