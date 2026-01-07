@@ -26,7 +26,7 @@ public sealed partial class PeekFileCommand : InvokableCommand
     {
         _fullPath = fullPath;
         Name = Resources.Indexer_Command_Peek;
-        Icon = new IconInfo("\uF156"); // View icon
+        Icon = IconHelpers.FromRelativePath("Assets\\Peek.png");
     }
 
     /// <summary>
