@@ -5,6 +5,7 @@
 using System;
 using System.ComponentModel;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows.Input;
 using ManagedCommon;
 using Windows.Management.Deployment;
@@ -29,7 +30,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
             _packageFamilyName = packageFamilyName ?? throw new ArgumentNullException(nameof(packageFamilyName));
             _storeUri = storeUri ?? throw new ArgumentNullException(nameof(storeUri));
             _extensionName = extensionName ?? throw new ArgumentNullException(nameof(extensionName));
-            InstallCommand = new RelayCommand(InstallExtension);
+            InstallCommand = new AsyncCommand(InstallExtensionAsync);
         }
 
         /// <summary>
@@ -77,7 +78,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
             }
         }
 
-        private async void InstallExtension()
+        private async Task InstallExtensionAsync()
         {
             try
             {
