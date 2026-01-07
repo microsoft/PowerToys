@@ -67,13 +67,6 @@ struct LightSwitchConfig
 
     bool changeSystem = false;
     bool changeApps = false;
-
-    bool wallpaperEnabled = false;
-    bool wallpaperVirtualDesktop = false;
-    int wallpaperStyleLight = 0;
-    int wallpaperStyleDark = 0;
-    std::wstring wallpaperPathLight;
-    std::wstring wallpaperPathDark;
 };
 
 class LightSwitchSettings
