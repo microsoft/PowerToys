@@ -33,7 +33,7 @@ To let the team know which issues are important, upvote by clicking the [+😊] 
 
 ## Contributing Fixes/Features
 
-Please comment on our ["Would you like to contribute to PowerToys?"](https://github.com/microsoft/PowerToys/issues/28769) thread to let us know you're interested in working on something before you start. This helps avoid multiple people unexpectedly working on the same thing and ensures everyone is clear on what should be done. It's less work for everyone to establish this up front.
+Please comment on our ["Would you like to contribute to PowerToys?"](https://github.com/microsoft/PowerToys/issues/28769) thread to let us know you're interested in working on something before you start. This helps avoid multiple people unexpectedly working on the same thing and ensures everyone is clear on what should be done. It's less work for everyone to establish this upfront.
 
 ### Localization Issues
 
@@ -57,7 +57,7 @@ Follow the [development guidelines](https://github.com/microsoft/PowerToys/blob/
 
 ### Naming Features and Functionality
 
-Names should be descriptive and straightforward, clearly reflecting functionality and usefulness.
+Names should be descriptive and straightforward, clearly reflecting functionality and purpose.
 
 ### Becoming a Collaborator on the PowerToys Team
 

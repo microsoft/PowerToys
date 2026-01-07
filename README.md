@@ -60,8 +60,8 @@ Go to the [PowerToys GitHub releases][github-release-link], select **Assets** to
 |----------------|----------|
 | Per user - x64       | [PowerToysUserSetup-0.96.1-x64.exe][ptUserX64] |
 | Per user - ARM64     | [PowerToysUserSetup-0.96.1-arm64.exe][ptUserArm64] |
-| Machine wide - x64   | [PowerToysSetup-0.96.1-x64.exe][ptMachineX64] |
-| Machine wide - ARM64 | [PowerToysSetup-0.96.1-arm64.exe][ptMachineArm64] |
+| Machine-wide - x64   | [PowerToysSetup-0.96.1-x64.exe][ptMachineX64] |
+| Machine-wide - ARM64 | [PowerToysSetup-0.96.1-arm64.exe][ptMachineArm64] |
 
 </details>
 
@@ -99,7 +99,7 @@ winget install --scope machine Microsoft.PowerToys -s winget
 <details>
 <summary><strong>Other methods</strong></summary>
 <br/>
-There are [community driven install methods](./doc/unofficialInstallMethods.md) such as Chocolatey and Scoop. If these are your preferred install solutions, you can find the install instructions there.
+There are [community-driven install methods](./doc/unofficialInstallMethods.md) such as Chocolatey and Scoop. If these are your preferred install solutions, you can find the install instructions there.
 </details>
 
 ## ✨ What's new
@@ -142,10 +142,10 @@ For an in-depth look at the latest changes, visit the [Windows Command Line blog
 - The Command Palette now remembers its window size after restarting.
 - Added a global error handler that logs fatal errors and provides feedback when unexpected failures force Command Palette to close. Thanks [@jiripolasek](https://github.com/jiripolasek)!
 - Fixed forms and extension settings not showing on some machines due to a missing VC++ runtime.
-- Restored ranking of fallback commands for built-in extensions (Sleep, Shutdown, Windows settings, Web search, etc.). Thanks [@jiripolasek](https://github.com/jiripolasek).
+- Restored ranking of fallback commands for built-in extensions (Sleep, Shutdown, Windows settings, Web search, etc.). Thanks [@jiripolasek](https://github.com/jiripolasek)!
 - Improved and unified labels and texts across the application!
-- Maintainance: Resolved numerous build warnings in Command Palette projects; no user-visible impact. Thanks [@jiripolasek](https://github.com/jiripolasek)!
-- Maintainance: Fixed a logging issue so exception messages are properly recorded instead of placeholder text, improving troubleshooting. Thanks [@jiripolasek](https://github.com/jiripolasek)!
+- Maintenance: Resolved numerous build warnings in Command Palette projects; no user-visible impact. Thanks [@jiripolasek](https://github.com/jiripolasek)!
+- Maintenance: Fixed a logging issue so exception messages are properly recorded instead of placeholder text, improving troubleshooting. Thanks [@jiripolasek](https://github.com/jiripolasek)!
 
 ### Command Palette Extensions
 
@@ -209,7 +209,7 @@ For an in-depth look at the latest changes, visit the [Windows Command Line blog
 - Smoothed out zoom-animation in ZoomIt by coalescing mouse-move and timer events, thanks to [@foxmsft](https://github.com/foxmsft)!
 - Enabled GIF support for ZoomIt, thanks to [@MarioHewardt](https://github.com/MarioHewardt)!
 - Fixed spelling mistakes, and refactored some literal strings to string constants, thanks to [@lzandman](https://github.com/lzandman)!
-- Fixed inaccurate "actual size" screenshots in ZoomIt and resolves a GDI handle leak, improving capture fidelity and long-session stability. thanks to [@daverayment](https://github.com/daverayment)!
+- Fixed inaccurate "actual size" screenshots in ZoomIt and resolves a GDI handle leak, improving capture fidelity and long-session stability. Thanks to [@daverayment](https://github.com/daverayment)!
 
 ### Settings
 
@@ -246,7 +246,7 @@ For an in-depth look at the latest changes, visit the [Windows Command Line blog
 - Added complete OCR UI test coverage with automated tests for activation, settings, language selection, and text extraction.
 - Fixed test input for drive path normalization in bookmark resolver unit tests.
 - Fixed Peek UI tests by restoring select **Ctrl** + **Space** activation shortcut for test scenarios.
-- Hided apps in PowerToys.SpareApps package from Start Menu. Thanks [@jiripolasek](https://github.com/jiripolasek)!
+- Hid apps in PowerToys.SpareApps package from Start Menu. Thanks [@jiripolasek](https://github.com/jiripolasek)!
 
 ## 🛣️ Roadmap
 
@@ -258,7 +258,7 @@ The PowerToys team is extremely grateful to have the [support of an amazing acti
 
 ## Contributing
 
-This project welcomes contributions of all types. Besides coding features / bug fixes, other ways to assist include spec writing, design, documentation, and finding bugs. We are excited to work with the power user community to build a set of tools for helping you get the most out of Windows. We ask that **before you start work on a feature that you would like to contribute**, please read our [Contributor's Guide](CONTRIBUTING.md). We would be happy to work with you to figure out the best approach, provide guidance and mentorship throughout feature development, and help avoid any wasted or duplicate effort. Most contributions require you to agree to a [Contributor License Agreement (CLA)][oss-CLA] declaring that you grant us the rights to use your contribution and that you have permission to do so. For guidance on developing for PowerToys, please read the [developer docs](./doc/devdocs) for a detailed breakdown. This includes how to setup your computer to compile.
+This project welcomes contributions of all types. Besides coding features / bug fixes, other ways to assist include spec writing, design, documentation, and finding bugs. We are excited to work with the power user community to build a set of tools for helping you get the most out of Windows. We ask that **before you start work on a feature that you would like to contribute**, please read our [Contributor's Guide](CONTRIBUTING.md). We would be happy to work with you to figure out the best approach, provide guidance and mentorship throughout feature development, and help avoid any wasted or duplicate effort. Most contributions require you to agree to a [Contributor License Agreement (CLA)][oss-CLA] declaring that you grant us the rights to use your contribution and that you have permission to do so. For guidance on developing for PowerToys, please read the [developer docs](./doc/devdocs) for a detailed breakdown. This includes how to set up your computer to compile.
 
 ## Code of Conduct
 

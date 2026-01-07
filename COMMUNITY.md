@@ -104,7 +104,7 @@ ThiefZero has helped out contributing a features to PowerToys Run such as the un
 
 ## Open source projects
 
-As PowerToys creates new utilities, some will be based off existing technology. We'll continue to do our best to contribute back to these projects but their efforts were the base of some of our projects. We want to be sure their work is directly recognized.
+As PowerToys creates new utilities, some will be based on existing technology. We'll continue to do our best to contribute back to these projects but their efforts were the base of some of our projects. We want to be sure their work is directly recognized.
 
 ### [@jjw24](https://github.com/jjw24/) - Jeremy Wu
 
