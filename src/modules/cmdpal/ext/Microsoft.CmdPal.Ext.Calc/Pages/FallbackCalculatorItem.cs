@@ -27,7 +27,7 @@ public sealed partial class FallbackCalculatorItem : FallbackCommandItem
 
     public override void UpdateQuery(string query)
     {
-        var result = QueryHelper.Query(query, _settings, true, null);
+        var result = QueryHelper.Query(query, _settings, true, out _);
 
         if (result is null)
         {
@@ -46,7 +46,7 @@ public sealed partial class FallbackCalculatorItem : FallbackCommandItem
         // we have to make the subtitle into an equation,
         // so that we will still string match the original query
         // Otherwise, something like 1+2 will have a title of "3" and not match
-        Subtitle = query;
+        Subtitle = result.Subtitle;
 
         MoreCommands = result.MoreCommands;
     }

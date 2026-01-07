@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -16,6 +16,7 @@ public static class CalculateEngine
     private static readonly PropertySet _constants = new()
     {
         { "pi", Math.PI },
+        { "π", Math.PI },
         { "e", Math.E },
     };
 
@@ -59,6 +60,8 @@ public static class CalculateEngine
 
         input = CalculateHelper.FixHumanMultiplicationExpressions(input);
 
+        input = CalculateHelper.UpdateFactorialFunctions(input);
+
         // Get the user selected trigonometry unit
         TrigMode trigMode = settings.TrigUnit;
 
@@ -74,6 +77,13 @@ public static class CalculateEngine
         if (result == "NaN")
         {
             error = Properties.Resources.calculator_expression_not_complete;
+            return default;
+        }
+
+        // If we're out of bounds
+        if (result is "inf" or "-inf")
+        {
+            error = Properties.Resources.calculator_not_covert_to_decimal;
             return default;
         }
 

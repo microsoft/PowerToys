@@ -192,9 +192,11 @@ public class ExtendedCalculatorParserTests : CommandPaletteUnitTestBase
     private static IEnumerable<object[]> Interpret_MustReturnExpectedResult_WhenCalled_Data =>
         [
 
-            // ["factorial(5)", 120M], ToDo: this don't support now
-            // ["sign(-2)", -1M],
-            // ["sign(2)", +1M],
+            ["factorial(5)", 120M],
+            ["5!", 120M],
+            ["(2+3)!", 120M],
+            ["sign(-2)", -1M],
+            ["sign(2)", +1M],
             ["abs(-2)", 2M],
             ["abs(2)", 2M],
             ["0+(1*2)/(0+1)", 2M], // Validate that division by "(0+1)" is not interpret as division by zero.
@@ -388,5 +390,18 @@ public class ExtendedCalculatorParserTests : CommandPaletteUnitTestBase
         // Assert
         Assert.IsNotNull(result);
         Assert.AreEqual(expectedResult, result);
+    }
+
+    [DataTestMethod]
+    [DataRow("171!")]
+    [DataRow("1000!")]
+    public void Interpret_ReturnsError_WhenValueOverflowsDecimal(string input)
+    {
+        var settings = new Settings();
+
+        CalculateEngine.Interpret(settings, input, CultureInfo.InvariantCulture, out var error);
+
+        Assert.IsFalse(string.IsNullOrEmpty(error));
+        Assert.AreNotEqual(null, error);
     }
 }

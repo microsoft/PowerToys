@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
 namespace Microsoft.CmdPal.Ext.Calc.Helper;
@@ -31,6 +32,92 @@ public static class CalculateHelper
     private const string RadToDeg = "(180 / pi) * ";
     private const string RadToGrad = "(200 / pi) * ";
 
+    // replacements from the user input to displayed query
+    private static readonly Dictionary<string, string> QueryReplacements = new()
+    {
+        { "％", "%" }, { "﹪", "%" },
+        { "−", "-" }, { "–", "-" }, { "—", "-" },
+        { "！", "!" },
+        { "*", "×" }, { "∗", "×" }, { "·", "×" }, { "⊗", "×" }, { "⋅", "×" }, { "✕", "×" }, { "✖", "×" }, { "\u2062", "×" },
+        { "/", "÷" }, { "∕", "÷" }, { "➗", "÷" }, { ":", "÷" },
+    };
+
+    // replacements from a query to engine input
+    private static readonly Dictionary<string, string> EngineReplacements = new()
+    {
+        { "×", "*" },
+        { "÷", "/" },
+    };
+
+    private static readonly Dictionary<string, string> SuperscriptReplacements = new()
+    {
+        { "²", "^2" }, { "³", "^3" },
+    };
+
+    private static readonly HashSet<char> StandardOperators = [
+
+        // binary operators; doesn't make sense for them to be at the end of a query
+        '+', '-', '*', '/', '%', '^', '=', '&', '|', '\\',
+
+        // parentheses
+        '(', '[',
+    ];
+
+    private static readonly HashSet<char> SuffixOperators = [
+
+        // unary operators; can appear at the end of a query
+        ')', ']', '!',
+    ];
+
+    public static char[] GetQueryOperators()
+    {
+        var ops = new HashSet<char>(StandardOperators);
+        ops.ExceptWith(SuffixOperators);
+        return [.. ops];
+    }
+
+    /// <summary>
+    /// Normalizes the query for display
+    /// This replaces standard operators with more visually appealing ones (e.g., '*' -> '×') if enabled.
+    /// Always applies safe normalizations (standardizing variants like minus, percent, etc.).
+    /// </summary>
+    /// <param name="input">The query string to normalize.</param>
+    public static string NormalizeCharsForDisplayQuery(string input)
+    {
+        // 1. Safe/Trivial replacements (Variant -> Standard)
+        // These are always applied to ensure consistent behavior for non-math symbols (spaces) and
+        // operator variants like minus, percent, and exclamation mark.
+        foreach (var (key, value) in QueryReplacements)
+        {
+            input = input.Replace(key, value);
+        }
+
+        return input;
+    }
+
+    /// <summary>
+    /// Normalizes the query for the calculation engine.
+    /// This replaces all supported operator variants (visual or standard) with the specific
+    /// ASCII operators required by the engine (e.g., '×' -> '*').
+    /// It duplicates and expands upon replacements in NormalizeQuery to ensure the engine
+    /// receives valid input regardless of whether NormalizeQuery was executed.
+    /// </summary>
+    public static string NormalizeCharsToEngine(string input)
+    {
+        foreach (var (key, value) in EngineReplacements)
+        {
+            input = input.Replace(key, value);
+        }
+
+        // Replace superscript characters with their engine equivalents (e.g., '²' -> '^2')
+        foreach (var (key, value) in SuperscriptReplacements)
+        {
+            input = input.Replace(key, value);
+        }
+
+        return input;
+    }
+
     public static bool InputValid(string input)
     {
         if (string.IsNullOrWhiteSpace(input))
@@ -50,12 +137,24 @@ public static class CalculateHelper
 
         // If the input ends with a binary operator then it is not a valid input to mages and the Interpret function would throw an exception. Because we expect here that the user has not finished typing we block those inputs.
         var trimmedInput = input.TrimEnd();
-        if (trimmedInput.EndsWith('+') || trimmedInput.EndsWith('-') || trimmedInput.EndsWith('*') || trimmedInput.EndsWith('|') || trimmedInput.EndsWith('\\') || trimmedInput.EndsWith('^') || trimmedInput.EndsWith('=') || trimmedInput.EndsWith('&') || trimmedInput.EndsWith('/') || trimmedInput.EndsWith('%'))
+        if (EndsWithBinaryOperator(trimmedInput))
         {
             return false;
         }
 
         return true;
+    }
+
+    private static bool EndsWithBinaryOperator(string input)
+    {
+        var operators = GetQueryOperators();
+        if (string.IsNullOrEmpty(input))
+        {
+            return false;
+        }
+
+        var lastChar = input[^1];
+        return Array.Exists(operators, op => op == lastChar);
     }
 
     public static string FixHumanMultiplicationExpressions(string input)
@@ -72,11 +171,11 @@ public static class CalculateHelper
 
     private static string CheckScientificNotation(string input)
     {
-        /**
+        /*
          * NOTE: By the time that the expression gets to us, it's already in English format.
          *
          * Regex explanation:
-         * (-?(\d+({0}\d*)?)|-?({0}\d+)): Used to capture one of two types:
+         * (-?(\d+({0}\d*)?)|-?({0}\d+): Used to capture one of two types:
          * -?(\d+({0}\d*)?): Captures a decimal number starting with a number (e.g. "-1.23")
          * -?({0}\d+): Captures a decimal number without leading number (e.g. ".23")
          * e: Captures 'e' or 'E'
@@ -292,6 +391,86 @@ public static class CalculateHelper
         return modifiedInput;
     }
 
+    public static string UpdateFactorialFunctions(string input)
+    {
+        // Handle n! -> factorial(n)
+        int startSearch = 0;
+        while (true)
+        {
+            var index = input.IndexOf('!', startSearch);
+            if (index == -1)
+            {
+                break;
+            }
+
+            // Ignore !=
+            if (index + 1 < input.Length && input[index + 1] == '=')
+            {
+                startSearch = index + 2;
+                continue;
+            }
+
+            if (index == 0)
+            {
+                startSearch = index + 1;
+                continue;
+            }
+
+            // Scan backwards
+            var endArg = index - 1;
+            while (endArg >= 0 && char.IsWhiteSpace(input[endArg]))
+            {
+                endArg--;
+            }
+
+            if (endArg < 0)
+            {
+                startSearch = index + 1;
+                continue;
+            }
+
+            var startArg = endArg;
+            if (input[endArg] == ')')
+            {
+                // Find matching '('
+                startArg = FindOpeningBracketIndexInFrontOfIndex(input, endArg);
+                if (startArg == -1)
+                {
+                    startSearch = index + 1;
+                    continue;
+                }
+            }
+            else
+            {
+                // Scan back for number or word
+                while (startArg >= 0 && (char.IsLetterOrDigit(input[startArg]) || input[startArg] == '.'))
+                {
+                    startArg--;
+                }
+
+                startArg++; // Move back to first valid char
+            }
+
+            if (startArg > endArg)
+            {
+                // No argument found
+                startSearch = index + 1;
+                continue;
+            }
+
+            // Extract argument
+            var arg = input.Substring(startArg, endArg - startArg + 1);
+
+            // Replace <arg><whitespace>! with factorial(<arg>)
+            input = input.Remove(startArg, index - startArg + 1);
+            input = input.Insert(startArg, $"factorial({arg})");
+
+            startSearch = 0; // Reset search because string changed
+        }
+
+        return input;
+    }
+
     private static string ModifyMathFunction(string input, string function, string modification)
     {
         // Create the pattern to match the function, opening bracket, and any spaces in between
@@ -324,5 +503,31 @@ public static class CalculateHelper
         }
 
         return modifiedInput;
+    }
+
+    private static int FindOpeningBracketIndexInFrontOfIndex(string input, int end)
+    {
+        var bracketCount = 0;
+        for (var i = end; i >= 0; i--)
+        {
+            switch (input[i])
+            {
+                case ')':
+                    bracketCount++;
+                    break;
+                case '(':
+                {
+                    bracketCount--;
+                    if (bracketCount == 0)
+                    {
+                        return i;
+                    }
+
+                    break;
+                }
+            }
+        }
+
+        return -1;
     }
 }
