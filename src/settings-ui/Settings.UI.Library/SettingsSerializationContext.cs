@@ -40,6 +40,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
     // Main Settings Classes
     [JsonSerializable(typeof(GeneralSettings))]
+    [JsonSerializable(typeof(OutGoingGeneralSettings))]
     [JsonSerializable(typeof(AdvancedPasteSettings))]
     [JsonSerializable(typeof(AlwaysOnTopSettings))]
     [JsonSerializable(typeof(AwakeSettings))]

@@ -2,6 +2,7 @@
 #include "general_settings.h"
 #include "auto_start_helper.h"
 #include "tray_icon.h"
+#include "quick_access_host.h"
 #include "Generated files/resource.h"
 #include "hotkey_conflict_detector.h"
 
@@ -72,6 +73,8 @@ static bool download_updates_automatically = true;
 static bool show_whats_new_after_updates = true;
 static bool enable_experimentation = true;
 static bool enable_warnings_elevated_apps = true;
+static bool enable_quick_access = true;
+static PowerToysSettings::HotkeyObject quick_access_shortcut;
 static DashboardSortOrder dashboard_sort_order = DashboardSortOrder::Alphabetical;
 static json::JsonObject ignored_conflict_properties = create_default_ignored_conflict_properties();
 
@@ -105,6 +108,8 @@ json::JsonObject GeneralSettings::to_json()
     result.SetNamedValue(L"dashboard_sort_order", json::value(static_cast<int>(dashboardSortOrder)));
     result.SetNamedValue(L"is_admin", json::value(isAdmin));
     result.SetNamedValue(L"enable_warnings_elevated_apps", json::value(enableWarningsElevatedApps));
+    result.SetNamedValue(L"enable_quick_access", json::value(enableQuickAccess));
+    result.SetNamedValue(L"quick_access_shortcut", quickAccessShortcut.get_json());
     result.SetNamedValue(L"theme", json::value(theme));
     result.SetNamedValue(L"system_theme", json::value(systemTheme));
     result.SetNamedValue(L"powertoys_version", json::value(powerToysVersion));
@@ -127,6 +132,11 @@ json::JsonObject load_general_settings()
     show_whats_new_after_updates = loaded.GetNamedBoolean(L"show_whats_new_after_updates", true);
     enable_experimentation = loaded.GetNamedBoolean(L"enable_experimentation", true);
     enable_warnings_elevated_apps = loaded.GetNamedBoolean(L"enable_warnings_elevated_apps", true);
+    enable_quick_access = loaded.GetNamedBoolean(L"enable_quick_access", true);
+    if (json::has(loaded, L"quick_access_shortcut", json::JsonValueType::Object))
+    {
+        quick_access_shortcut = PowerToysSettings::HotkeyObject::from_json(loaded.GetNamedObject(L"quick_access_shortcut"));
+    }
     dashboard_sort_order = parse_dashboard_sort_order(loaded, dashboard_sort_order);
 
     if (json::has(loaded, L"ignored_conflict_properties", json::JsonValueType::Object))
@@ -153,6 +163,8 @@ GeneralSettings get_general_settings()
         .isRunElevated = run_as_elevated,
         .isAdmin = is_user_admin,
         .enableWarningsElevatedApps = enable_warnings_elevated_apps,
+        .enableQuickAccess = enable_quick_access,
+        .quickAccessShortcut = quick_access_shortcut,
         .showNewUpdatesToastNotification = show_new_updates_toast_notification,
         .downloadUpdatesAutomatically = download_updates_automatically && is_user_admin,
         .showWhatsNewAfterUpdates = show_whats_new_after_updates,
@@ -178,10 +190,46 @@ GeneralSettings get_general_settings()
 
 void apply_general_settings(const json::JsonObject& general_configs, bool save)
 {
+    std::wstring old_settings_json_string;
+    if (save)
+    {
+        old_settings_json_string = get_general_settings().to_json().Stringify().c_str();
+    }
+
     Logger::info(L"apply_general_settings: {}", std::wstring{ general_configs.ToString() });
     run_as_elevated = general_configs.GetNamedBoolean(L"run_elevated", false);
 
     enable_warnings_elevated_apps = general_configs.GetNamedBoolean(L"enable_warnings_elevated_apps", true);
+
+    bool new_enable_quick_access = general_configs.GetNamedBoolean(L"enable_quick_access", true);
+    Logger::info(L"apply_general_settings: enable_quick_access={}, new_enable_quick_access={}", enable_quick_access, new_enable_quick_access);
+
+    PowerToysSettings::HotkeyObject new_quick_access_shortcut;
+    if (json::has(general_configs, L"quick_access_shortcut", json::JsonValueType::Object))
+    {
+        new_quick_access_shortcut = PowerToysSettings::HotkeyObject::from_json(general_configs.GetNamedObject(L"quick_access_shortcut"));
+    }
+
+    auto hotkey_equals = [](const PowerToysSettings::HotkeyObject& a, const PowerToysSettings::HotkeyObject& b) {
+        return a.get_code() == b.get_code() &&
+               a.get_modifiers() == b.get_modifiers();
+    };
+
+    if (enable_quick_access != new_enable_quick_access || !hotkey_equals(quick_access_shortcut, new_quick_access_shortcut))
+    {
+        enable_quick_access = new_enable_quick_access;
+        quick_access_shortcut = new_quick_access_shortcut;
+
+        if (enable_quick_access)
+        {
+            QuickAccessHost::start();
+        }
+        else
+        {
+            QuickAccessHost::stop();
+        }
+        update_quick_access_hotkey(enable_quick_access, quick_access_shortcut);
+    }
 
     show_new_updates_toast_notification = general_configs.GetNamedBoolean(L"show_new_updates_toast_notification", true);
 
@@ -321,8 +369,12 @@ void apply_general_settings(const json::JsonObject& general_configs, bool save)
     if (save)
     {
         GeneralSettings save_settings = get_general_settings();
-        PTSettingsHelper::save_general_settings(save_settings.to_json());
-        Trace::SettingsChanged(save_settings);
+        std::wstring new_settings_json_string = save_settings.to_json().Stringify().c_str();
+        if (old_settings_json_string != new_settings_json_string)
+        {
+            PTSettingsHelper::save_general_settings(save_settings.to_json());
+            Trace::SettingsChanged(save_settings);
+        }
     }
 }
 
@@ -412,3 +464,5 @@ void start_enabled_powertoys()
         }
     }
 }
+
+

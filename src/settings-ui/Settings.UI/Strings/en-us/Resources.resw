@@ -5820,6 +5820,15 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
     <value>A modern UI built with Fluent Design</value>
     <comment>Fluent Design is a product name, do not loc</comment>
   </data>
+  <data name="GeneralPage_EnableQuickAccess.Header" xml:space="preserve">
+    <value>Quick Access flyout</value>
+  </data>
+  <data name="GeneralPage_EnableQuickAccess.Description" xml:space="preserve">
+    <value>Fast access to quick actions and module toggles</value>
+  </data>
+  <data name="GeneralPage_QuickAccessShortcut.Header" xml:space="preserve">
+    <value>Activation shortcut</value>
+  </data>
   <data name="LightSwitch_ModeFollowNightLight.Content" xml:space="preserve">
     <value>Follow Night Light</value>
   </data>

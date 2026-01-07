@@ -1005,6 +1005,14 @@
     <Project Path="src/modules/ZoomIt/ZoomItSettingsInterop/ZoomItSettingsInterop.vcxproj" Id="ca7d8106-30b9-4aec-9d05-b69b31b8c461" />
   </Folder>
   <Folder Name="/settings-ui/">
+    <Project Path="src/settings-ui/QuickAccess.UI/PowerToys.QuickAccess.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/settings-ui/Settings.UI.Controls/Settings.UI.Controls.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
     <Project Path="src/settings-ui/Settings.UI.Library/Settings.UI.Library.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
