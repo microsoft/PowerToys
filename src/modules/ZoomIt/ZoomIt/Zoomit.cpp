@@ -5498,6 +5498,9 @@ LRESULT APIENTRY MainWndProc(
 
         reg.ReadRegSettings( RegSettings );
 
+        // Refresh dark mode state after loading theme override from registry
+        RefreshDarkModeState();
+
         // Initialize save location strings from registry buffers
         g_RecordingSaveLocation = g_RecordingSaveLocationBuffer;
         g_ScreenshotSaveLocation = g_ScreenshotSaveLocationBuffer;

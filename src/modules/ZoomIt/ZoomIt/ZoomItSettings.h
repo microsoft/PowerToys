@@ -53,6 +53,7 @@ BOOLEAN g_CaptureAudio = FALSE;
 TCHAR	g_MicrophoneDeviceId[MAX_PATH] = {0};
 TCHAR	g_RecordingSaveLocationBuffer[MAX_PATH] = {0};
 TCHAR	g_ScreenshotSaveLocationBuffer[MAX_PATH] = {0};
+DWORD	g_ThemeOverride = 2; // 0=light, 1=dark, 2=system default
 
 REG_SETTING RegSettings[] = {
     { L"ToggleKey", SETTING_TYPE_DWORD, 0, &g_ToggleKey, static_cast<DOUBLE>(g_ToggleKey) },
@@ -96,5 +97,6 @@ REG_SETTING RegSettings[] = {
     { L"MicrophoneDeviceId", SETTING_TYPE_STRING, sizeof(g_MicrophoneDeviceId), g_MicrophoneDeviceId, static_cast<DOUBLE>(0) },
     { L"RecordingSaveLocation", SETTING_TYPE_STRING, sizeof(g_RecordingSaveLocationBuffer), g_RecordingSaveLocationBuffer, static_cast<DOUBLE>(0) },
     { L"ScreenshotSaveLocation", SETTING_TYPE_STRING, sizeof(g_ScreenshotSaveLocationBuffer), g_ScreenshotSaveLocationBuffer, static_cast<DOUBLE>(0) },
+    { L"Theme", SETTING_TYPE_DWORD, 0, &g_ThemeOverride, static_cast<DOUBLE>(g_ThemeOverride) },
     { NULL, SETTING_TYPE_DWORD, 0, NULL, static_cast<DOUBLE>(0) }
 };

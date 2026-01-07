@@ -21,6 +21,9 @@ static HBRUSH g_darkBackgroundBrush = nullptr;
 static HBRUSH g_darkControlBrush = nullptr;
 static HBRUSH g_darkSurfaceBrush = nullptr;
 
+// Theme override from registry (defined in ZoomItSettings.h)
+extern DWORD g_ThemeOverride;
+
 // Preferred App Mode values for Windows 10/11 dark mode
 enum class PreferredAppMode
 {
@@ -78,18 +81,32 @@ static void InitializeDarkModeSupport()
         pFlushMenuThemes = reinterpret_cast<fnFlushMenuThemes>(
             GetProcAddress(hUxTheme, MAKEINTRESOURCEA(136)));
 
-        // Allow dark mode for the application
+        // Set preferred app mode based on our theme override or system setting
+        // Note: We check g_ThemeOverride directly here because IsDarkModeEnabled
+        // calls InitializeDarkModeSupport, which would cause recursion
         if (pSetPreferredAppMode)
         {
-            // Use ForceDark when system is in dark mode, otherwise AllowDark
-            // This ensures popup menus follow the dark theme
-            if (pShouldAppsUseDarkMode && pShouldAppsUseDarkMode())
+            bool useDarkMode = false;
+            if (g_ThemeOverride == 0)
+            {
+                useDarkMode = false; // Force light
+            }
+            else if (g_ThemeOverride == 1)
+            {
+                useDarkMode = true; // Force dark
+            }
+            else if (pShouldAppsUseDarkMode)
+            {
+                useDarkMode = pShouldAppsUseDarkMode(); // Use system setting
+            }
+            
+            if (useDarkMode)
             {
                 pSetPreferredAppMode(PreferredAppMode::ForceDark);
             }
             else
             {
-                pSetPreferredAppMode(PreferredAppMode::AllowDark);
+                pSetPreferredAppMode(PreferredAppMode::ForceLight);
             }
         }
 
@@ -100,8 +117,20 @@ static void InitializeDarkModeSupport()
         }
     }
 
-    // Check initial dark mode state
-    RefreshDarkModeState();
+    // Update cached dark mode state
+    g_darkModeEnabled = false;
+    if (g_ThemeOverride == 0)
+    {
+        g_darkModeEnabled = false;
+    }
+    else if (g_ThemeOverride == 1)
+    {
+        g_darkModeEnabled = true;
+    }
+    else if (pShouldAppsUseDarkMode)
+    {
+        g_darkModeEnabled = pShouldAppsUseDarkMode();
+    }
 }
 
 //----------------------------------------------------------------------------
@@ -111,6 +140,16 @@ static void InitializeDarkModeSupport()
 //----------------------------------------------------------------------------
 bool IsDarkModeEnabled()
 {
+    // Check for theme override from registry (0=light, 1=dark, 2+=system)
+    if (g_ThemeOverride == 0)
+    {
+        return false; // Force light mode
+    }
+    else if (g_ThemeOverride == 1)
+    {
+        return true; // Force dark mode
+    }
+
     InitializeDarkModeSupport();
 
     // Check the undocumented API first
@@ -150,10 +189,11 @@ void RefreshDarkModeState()
         pRefreshImmersiveColorPolicyState();
     }
 
-    // Update preferred app mode based on current system theme
-    if (pSetPreferredAppMode && pShouldAppsUseDarkMode)
+    // Update preferred app mode based on our IsDarkModeEnabled (respects override)
+    bool useDark = IsDarkModeEnabled();
+    if (pSetPreferredAppMode)
     {
-        if (pShouldAppsUseDarkMode())
+        if (useDark)
         {
             pSetPreferredAppMode(PreferredAppMode::ForceDark);
         }
@@ -169,7 +209,7 @@ void RefreshDarkModeState()
         pFlushMenuThemes();
     }
 
-    g_darkModeEnabled = IsDarkModeEnabled();
+    g_darkModeEnabled = useDark;
 }
 
 //----------------------------------------------------------------------------
