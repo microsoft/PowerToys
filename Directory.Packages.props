@@ -7,6 +7,8 @@
     <PackageVersion Include="AdaptiveCards.ObjectModel.WinUI3" Version="2.0.0-beta" />
     <PackageVersion Include="AdaptiveCards.Rendering.WinUI3" Version="2.1.0-beta" />
     <PackageVersion Include="AdaptiveCards.Templating" Version="2.0.5" />
+    <PackageVersion Include="AWSSDK.BedrockRuntime" Version="4.0.7.2" />
+    <PackageVersion Include="AWSSDK.Core" Version="4.0.0.32" />
     <PackageVersion Include="boost" Version="1.87.0" TargetFramework="native" />
     <PackageVersion Include="boost_regex-vc143" Version="1.87.0" TargetFramework="native" />
     <PackageVersion Include="CommunityToolkit.Labs.WinUI.Controls.OpacityMaskView" Version="0.1.251101-build.2372" />
@@ -56,6 +58,7 @@
     <PackageVersion Include="Microsoft.AI.Foundry.Local" Version="0.3.0" />
     <PackageVersion Include="Microsoft.SemanticKernel" Version="1.66.0" />
     <PackageVersion Include="Microsoft.SemanticKernel.Connectors.OpenAI" Version="1.66.0" />
+    <PackageVersion Include="Microsoft.SemanticKernel.Connectors.Amazon" Version="1.66.0-alpha" />
     <PackageVersion Include="Microsoft.SemanticKernel.Connectors.AzureAIInference" Version="1.66.0-beta" />
     <PackageVersion Include="Microsoft.SemanticKernel.Connectors.Google" Version="1.66.0-alpha" />
     <PackageVersion Include="Microsoft.SemanticKernel.Connectors.MistralAI" Version="1.66.0-alpha" />

@@ -8,6 +8,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using AdvancedPaste.Helpers;
 using AdvancedPaste.Models;
+using Amazon;
+using Amazon.BedrockRuntime;
+using Amazon.Runtime;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -29,6 +32,7 @@ namespace AdvancedPaste.Services.CustomActions
             AIServiceType.Google,
             AIServiceType.AzureAIInference,
             AIServiceType.Ollama,
+            AIServiceType.Bedrock,
         };
 
         public static PasteAIProviderRegistration Registration { get; } = new(SupportedTypes, config => new SemanticKernelPasteProvider(config));
@@ -159,6 +163,18 @@ namespace AdvancedPaste.Services.CustomActions
                     break;
                 case AIServiceType.Ollama:
                     kernelBuilder.AddOllamaChatCompletion(_config.Model, endpoint: new Uri(endpoint));
+                    break;
+                case AIServiceType.Bedrock:
+                    var region = RequireEndpoint(endpoint, _serviceType);
+                    var parts = apiKey.Split(':');
+                    if (parts.Length != 2)
+                    {
+                        throw new ArgumentException("API Key for Bedrock must be in the format 'AccessKey:SecretKey'");
+                    }
+
+                    var credentials = new BasicAWSCredentials(parts[0], parts[1]);
+                    var bedrockRuntime = new AmazonBedrockRuntimeClient(credentials, RegionEndpoint.GetBySystemName(region));
+                    kernelBuilder.AddBedrockChatCompletionService(_config.Model, bedrockRuntime: bedrockRuntime, serviceId: _config.Model);
                     break;
 
                 default:

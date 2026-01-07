@@ -711,6 +711,15 @@ Please review the placeholder content that represents the final terms and usage 
   <data name="AdvancedPaste_Mistral_PrivacyLabel" xml:space="preserve">
     <value>Mistral Privacy Policy</value>
   </data>
+  <data name="AdvancedPaste_Bedrock_LegalDescription" xml:space="preserve">
+    <value>Your credentials connect directly to AWS Bedrock services. By setting up this provider, you agree to comply with AWS usage policies and data handling practices.</value>
+  </data>
+  <data name="AdvancedPaste_Bedrock_TermsLabel" xml:space="preserve">
+    <value>AWS Service Terms</value>
+  </data>
+  <data name="AdvancedPaste_Bedrock_PrivacyLabel" xml:space="preserve">
+    <value>AWS Privacy Policy</value>
+  </data>
   <data name="AdvancedPaste_Ollama_TermsLabel" xml:space="preserve">
     <value>Ollama Terms of Service</value>
   </data>
