@@ -158,7 +158,6 @@ public static class LoggerTests
             // copied from DumpObjects in Logger.cs
             var sb = new StringBuilder(1000000);
             Logger.DumpProgramLogs(sb, settingsDumpObjectsLevel);
-            Logger.DumpOtherLogs(sb, settingsDumpObjectsLevel);
             Logger.DumpStaticTypes(sb, settingsDumpObjectsLevel);
             var actual = sb.ToString();
 

@@ -1,9 +1,38 @@
 ﻿[Program Logs]
 ===============
  = System.String[]
-[Other Logs]
+[Clipboard]
 ===============
- = MouseWithoutBorders.Common
+Comma = System.Char[]
+--System.Char[] = System.Char[]: N/A
+Star = System.Char[]
+--System.Char[] = System.Char[]: N/A
+NullSeparator = System.Char[]
+--System.Char[] = System.Char[]: N/A
+lastClipboardEventTime = 0
+clipboardCopiedTime = 0
+<LastIDWithClipboardData>k__BackingField = NONE
+<NextClipboardViewer>k__BackingField = 0
+<IsClipboardDataImage>k__BackingField = False
+lastClipboardObject = 
+<HasSwitchedMachineSinceLastCopy>k__BackingField = False
+ClipboardThreadOldLock = Lock
+--_owningThreadId = 0
+--_state = 0
+--_recursionCount = 0
+--_spinCount = 22
+--_waiterStartTimeMs = 0
+--s_contentionCount = 0
+--s_maxSpinCount = 22
+--s_minSpinCountForAdaptiveSpin = -100
+BIG_CLIPBOARD_DATA_TIMEOUT = 30000
+MAX_CLIPBOARD_DATA_SIZE_CAN_BE_SENT_INSTANTLY_TCP = 1048576
+MAX_CLIPBOARD_FILE_SIZE_CAN_BE_SENT = 104857600
+TEXT_HEADER_SIZE = 12
+DATA_SIZE = 48
+TEXT_TYPE_SEP = {4CFF57F7-BEDD-43d5-AE8F-27A61E886F2F}
+[Common]
+===============
 screenWidth = 0
 screenHeight = 0
 lastX = 0
@@ -46,7 +75,6 @@ avgSendTime = 0
 maxSendTime = 0
 totalSendCount = 0
 totalSendTime = 0
-<IpcChannelCreated>k__BackingField = False
 TOGGLE_ICONS_SIZE = 4
 ICON_ONE = 0
 ICON_ALL = 1
@@ -55,36 +83,6 @@ ICON_BIG_CLIPBOARD = 3
 ICON_ERROR = 4
 JUST_GOT_BACK_FROM_SCREEN_SAVER = 9999
 NETWORK_STREAM_BUF_SIZE = 1048576
-[Clipboard]
-===============
-Comma = System.Char[]
---System.Char[] = System.Char[]: N/A
-Star = System.Char[]
---System.Char[] = System.Char[]: N/A
-NullSeparator = System.Char[]
---System.Char[] = System.Char[]: N/A
-lastClipboardEventTime = 0
-clipboardCopiedTime = 0
-<LastIDWithClipboardData>k__BackingField = NONE
-<NextClipboardViewer>k__BackingField = 0
-<IsClipboardDataImage>k__BackingField = False
-lastClipboardObject = 
-<HasSwitchedMachineSinceLastCopy>k__BackingField = False
-ClipboardThreadOldLock = Lock
---_owningThreadId = 0
---_state = 0
---_recursionCount = 0
---_spinCount = 22
---_waiterStartTimeMs = 0
---s_contentionCount = 0
---s_maxSpinCount = 22
---s_minSpinCountForAdaptiveSpin = -100
-BIG_CLIPBOARD_DATA_TIMEOUT = 30000
-MAX_CLIPBOARD_DATA_SIZE_CAN_BE_SENT_INSTANTLY_TCP = 1048576
-MAX_CLIPBOARD_FILE_SIZE_CAN_BE_SENT = 104857600
-TEXT_HEADER_SIZE = 12
-DATA_SIZE = 48
-TEXT_TYPE_SEP = {4CFF57F7-BEDD-43d5-AE8F-27A61E886F2F}
 [DragDrop]
 ===============
 isDragging = False
@@ -174,6 +172,9 @@ actualLastPos = {X=0,Y=0}
 --Empty = {X=0,Y=0}
 myLastX = 0
 myLastY = 0
+[IpcChannelHelper]
+===============
+<IpcChannelCreated>k__BackingField = False
 [InitAndCleanup]
 ===============
 initDone = False

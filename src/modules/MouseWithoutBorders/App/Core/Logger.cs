@@ -169,17 +169,11 @@ internal static class Logger
         _ = Logger.PrivateDump(sb, AllLogs, "[Program Logs]\r\n===============\r\n", 0, level, true);
     }
 
-    internal static void DumpOtherLogs(StringBuilder sb, int level)
-    {
-        _ = Logger.PrivateDump(sb, new Common(), "[Other Logs]\r\n===============\r\n", 0, level, true);
-    }
-
     internal static string DumpObjects(int level)
     {
         var sb = new StringBuilder(1000000);
 
         Logger.DumpProgramLogs(sb, level);
-        Logger.DumpOtherLogs(sb, level);
         Logger.DumpStaticTypes(sb, level);
 
         var log =
@@ -319,9 +313,11 @@ internal static class Logger
         var staticTypes = new List<Type>
         {
             typeof(Clipboard),
+            typeof(Common),
             typeof(DragDrop),
             typeof(Encryption),
             typeof(Event),
+            typeof(IpcChannelHelper),
             typeof(InitAndCleanup),
             typeof(Helper),
             typeof(Launch),

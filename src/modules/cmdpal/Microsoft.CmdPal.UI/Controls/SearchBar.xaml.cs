@@ -379,6 +379,12 @@ public sealed partial class SearchBar : UserControl,
         if (CurrentPageViewModel is not null)
         {
             CurrentPageViewModel.SearchTextBox = FilterBox.Text;
+
+            // Telemetry: Track search query count for session metrics (only non-empty queries)
+            if (!string.IsNullOrWhiteSpace(FilterBox.Text))
+            {
+                WeakReferenceMessenger.Default.Send<SearchQueryMessage>(new());
+            }
         }
     }
 

@@ -216,6 +216,7 @@ CImage
 cla
 CLASSDC
 CLASSNOTAVAILABLE
+CLEARTYPE
 clickable
 clickonce
 CLIENTEDGE
@@ -224,7 +225,6 @@ clientside
 CLIPBOARDUPDATE
 CLIPCHILDREN
 CLIPSIBLINGS
-CLITo
 closesocket
 clp
 CLSCTX
@@ -254,6 +254,7 @@ colorhistory
 colorhistorylimit
 COLORKEY
 colorref
+Convs
 comctl
 comdlg
 comexp
@@ -325,7 +326,6 @@ CUSTOMFORMATPLACEHOLDER
 CVal
 cvd
 CVirtual
-CVS
 CWMO
 CXSCREEN
 CXSMICON
@@ -365,6 +365,7 @@ DEFAULTICON
 defaultlib
 DEFAULTONLY
 DEFAULTTONEAREST
+Defaulttonearest
 DEFAULTTONULL
 DEFAULTTOPRIMARY
 DEFERERASE
@@ -393,6 +394,7 @@ devpal
 dfx
 DIALOGEX
 digicert
+diffs
 DINORMAL
 DISABLEASACTIONKEY
 DISABLENOSCROLL
@@ -455,6 +457,7 @@ DWMWINDOWATTRIBUTE
 DWMWINDOWMAXIMIZEDCHANGE
 DWORDLONG
 dworigin
+DWPOS
 dwrite
 dxgi
 eab
@@ -530,9 +533,12 @@ eyetracker
 FANCYZONESDRAWLAYOUTTEST
 FANCYZONESEDITOR
 FARPROC
+fdw
 fdx
+FErase
 fesf
 FFFF
+FInc
 Figma
 FILEEXPLORER
 fileexploreraddons
@@ -574,6 +580,7 @@ formatetc
 FORPARSING
 foundrylocal
 FRAMECHANGED
+FRestore
 frm
 FROMTOUCH
 fsanitize
@@ -608,6 +615,7 @@ GETSCREENSAVERRUNNING
 GETSECKEY
 GETSTICKYKEYS
 GETTEXTLENGTH
+gfx
 GHND
 gitmodules
 GMEM
@@ -658,6 +666,7 @@ hdwwiz
 Helpline
 helptext
 HGFE
+hgdiobj
 hglobal
 hhk
 HHmmssfff
@@ -669,6 +678,7 @@ hicon
 HICONSM
 HIDEREADONLY
 HIDEWINDOW
+hif
 Hif
 HIMAGELIST
 himl
@@ -705,7 +715,7 @@ hotlight
 hotspot
 HPAINTBUFFER
 HRAWINPUT
-HREDRAW
+hredraw
 hres
 hresult
 hrgn
@@ -830,6 +840,7 @@ jpe
 jpnime
 Jsons
 jsonval
+jxl
 jxr
 keybd
 KEYBDDATA
@@ -858,6 +869,7 @@ lastcodeanalysissucceeded
 LASTEXITCODE
 LAYOUTRTL
 lbl
+Lbuttondown
 LCh
 lcid
 LCIDTo
@@ -883,7 +895,7 @@ LINKOVERLAY
 LINQTo
 listview
 LIVEDRAW
-LIVEZOOM
+livezoom
 LLKH
 llkhf
 LMEM
@@ -912,6 +924,7 @@ LPBITMAPINFOHEADER
 LPCFHOOKPROC
 LPCITEMIDLIST
 LPCLSID
+lpch
 lpcmi
 LPCMINVOKECOMMANDINFO
 LPCREATESTRUCT
@@ -936,6 +949,7 @@ lptpm
 LPTR
 LPTSTR
 lpv
+LPrivate
 LPW
 lpwcx
 lpwndpl
@@ -978,12 +992,14 @@ maxversiontested
 mber
 MBM
 MBR
+Mbuttondown
 MDICHILD
 MDL
 mdtext
 mdtxt
 mdwn
 meme
+mcp
 memicmp
 MENUITEMINFO
 MENUITEMINFOW
@@ -1074,11 +1090,12 @@ muxxc
 muxxh
 MVPs
 mvvm
+myorg
+myrepo
 MVVMTK
 MWBEx
 MYICON
 NAMECHANGE
-Notavailable
 namespaceanddescendants
 nao
 NCACTIVATE
@@ -1221,6 +1238,7 @@ opensource
 openxmlformats
 ollama
 onnx
+openurl
 OPTIMIZEFORINVOKE
 ORPHANEDDIALOGTITLE
 ORSCANS
@@ -1298,6 +1316,7 @@ phwnd
 pici
 pidl
 PIDLIST
+PII
 pinfo
 pinvoke
 pipename
@@ -1346,6 +1365,7 @@ ppv
 ppwsz
 prc
 Prefixer
+Premul
 prependpath
 prepopulate
 prevhost
@@ -1431,6 +1451,7 @@ RAWINPUTHEADER
 RAWMODE
 RAWPATH
 rbhid
+Rbuttondown
 rclsid
 RCZOOMIT
 remotedesktop
@@ -1446,6 +1467,7 @@ recyclebin
 Redist
 Reencode
 REFCLSID
+REFGUID
 REFIID
 REGCLS
 regfile
@@ -1466,6 +1488,7 @@ remoteip
 Removelnk
 renamable
 RENAMEONCOLLISION
+RENDERFULLCONTENT
 reparented
 reparenting
 reportfileaccesses
@@ -1495,6 +1518,7 @@ riid
 RKey
 RNumber
 rop
+rollups
 ROUNDSMALL
 ROWSETEXT
 rpcrt
@@ -1550,6 +1574,7 @@ SETBUDDYINT
 SETCONTEXT
 SETCURSEL
 setcursor
+SETDESKWALLPAPER
 SETFOCUS
 SETFOREGROUND
 SETHOTKEY
@@ -1638,7 +1663,9 @@ SKEXP
 SKIPOWNPROCESS
 sku
 SLGP
+slideshow
 sln
+slnf
 slnx
 SMALLICON
 smartphone
@@ -1730,6 +1757,7 @@ svgz
 SVSI
 SWFO
 SWP
+Swp
 SWPNOSIZE
 SWPNOZORDER
 SWRESTORE
@@ -1749,6 +1777,7 @@ syskeydown
 SYSKEYUP
 SYSLIB
 SYSMENU
+Sysmenu
 systemai
 SYSTEMAPPS
 SYSTEMMODAL
@@ -1794,7 +1823,6 @@ TILEDWINDOW
 TILLSON
 timedate
 timediff
-timeunion
 timeutil
 TITLEBARINFO
 Titlecase
@@ -1805,7 +1833,6 @@ tlbimp
 tlc
 tmain
 TNP
-toolgood
 Toolhelp
 toolwindow
 TOPDOWNDIB
@@ -1867,7 +1894,6 @@ Uniquifies
 unitconverter
 unittests
 UNLEN
-Uninitializes
 UNORM
 unremapped
 Unsubscribes
@@ -1876,6 +1902,7 @@ unwide
 unzoom
 UOffset
 UOI
+UPDATEINIFILE
 UPDATENOW
 UPDATEREGISTRY
 updown
@@ -1901,7 +1928,7 @@ valuegenerator
 variantassignment
 VARTYPE
 vcamp
-VCENTER
+vcenter
 vcgtq
 VCINSTALLDIR
 Vcpkg
@@ -1933,7 +1960,7 @@ vorrq
 VOS
 vpaddlq
 vqsubq
-VREDRAW
+vredraw
 vreinterpretq
 VSC
 VSCBD
@@ -1955,7 +1982,7 @@ vswhere
 Vtbl
 WANTNUKEWARNING
 WANTPALM
-wasdk
+WASDK
 wbem
 WBounds
 Wca
@@ -2076,6 +2103,7 @@ Wwanpp
 xap
 XAxis
 XButton
+Xbuttondown
 xclip
 xcopy
 XDeployment
@@ -2101,6 +2129,7 @@ xstyler
 XTimer
 XUP
 XVIRTUALSCREEN
+XXL
 xxxxxx
 YAxis
 ycombinator

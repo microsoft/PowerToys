@@ -19,7 +19,7 @@ parameters:
   - name: enableMsBuildCaching
     type: boolean
     displayName: "Enable MSBuild Caching"
-    default: true
+    default: false
   - name: runTests
     type: boolean
     displayName: "Run Tests"
@@ -33,7 +33,7 @@ parameters:
     default: true
   - name: winAppSDKVersionNumber
     type: string
-    default: 1.7
+    default: 1.8
   - name: useExperimentalVersion
     type: boolean
     default: false
