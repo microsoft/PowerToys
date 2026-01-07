@@ -34,6 +34,13 @@ internal sealed class CropAndLockModuleCommandProvider : ModuleCommandProvider
                 Subtitle = Resources.CropAndLock_Thumbnail_Subtitle,
                 Icon = icon,
             };
+
+            yield return new ListItem(new CropAndLockScreenshotCommand())
+            {
+                Title = Resources.CropAndLock_Screenshot_Title,
+                Subtitle = Resources.CropAndLock_Screenshot_Subtitle,
+                Icon = icon,
+            };
         }
 
         yield return new ListItem(new OpenInSettingsCommand(module, title))

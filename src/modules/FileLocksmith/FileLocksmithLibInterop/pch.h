@@ -18,4 +18,6 @@
 #include <algorithm>
 #include <fstream>
 
+#ifndef FILELOCKSMITH_LIB_STATIC
 #include <winrt/PowerToys.Interop.h>
+#endif

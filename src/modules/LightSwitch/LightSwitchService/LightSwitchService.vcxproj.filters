@@ -21,13 +21,10 @@
     <ClCompile Include="ThemeScheduler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ThemeHelper.cpp">
+    <ClCompile Include="..\LightSwitchCommon\ThemeHelper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="LightSwitchSettings.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="SettingsConstants.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="WinHookEventIDs.cpp">
@@ -39,6 +36,9 @@
     <ClCompile Include="NightLightRegistryObserver.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="trace.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ThemeScheduler.h">
@@ -47,10 +47,10 @@
     <ClInclude Include="ThemeHelper.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="LightSwitchSettings.h">
+    <ClInclude Include="..\LightSwitchCommon\LightSwitchSettings.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="SettingsConstants.h">
+    <ClInclude Include="..\LightSwitchCommon\SettingsConstants.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="SettingsObserver.h">
@@ -66,6 +66,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="NightLightRegistryObserver.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="trace.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

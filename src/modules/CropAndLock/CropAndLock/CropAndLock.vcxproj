@@ -112,6 +112,7 @@
     <ClCompile Include="ChildWindow.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="ReparentCropAndLockWindow.cpp" />
+    <ClCompile Include="ScreenshotCropAndLockWindow.cpp" />
     <ClCompile Include="ThumbnailCropAndLockWindow.cpp" />
     <ClCompile Include="OverlayWindow.cpp" />
     <ClCompile Include="pch.cpp">
@@ -126,6 +127,7 @@
     <ClInclude Include="DisplaysUtil.h" />
     <ClInclude Include="ModuleConstants.h" />
     <ClInclude Include="ReparentCropAndLockWindow.h" />
+    <ClInclude Include="ScreenshotCropAndLockWindow.h" />
     <ClInclude Include="ThumbnailCropAndLockWindow.h" />
     <ClInclude Include="SettingsWindow.h" />
     <ClInclude Include="OverlayWindow.h" />
