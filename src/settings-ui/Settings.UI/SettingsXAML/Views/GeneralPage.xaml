@@ -291,6 +291,28 @@
                                 Toggled="ShowSystemTrayIcon_Toggled" />
                         </tkcontrols:SettingsCard>
                     </controls:GPOInfoControl>
+
+                    <tkcontrols:SettingsExpander
+                        Name="GeneralPageEnableQuickAccess"
+                        x:Uid="GeneralPage_EnableQuickAccess"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE91C;}"
+                        IsExpanded="True">
+                        <ToggleSwitch
+                            x:Uid="ToggleSwitch"
+                            AutomationProperties.Name="{Binding ElementName=GeneralPageEnableQuickAccess, Path=Header}"
+                            IsOn="{x:Bind ViewModel.EnableQuickAccess, Mode=TwoWay}" />
+                        <tkcontrols:SettingsExpander.Items>
+                            <!--  HACK: For some weird reason, a ShortcutControl does not work correctly if it's the first or last item in the expander, so we add an invisible card.  -->
+                            <tkcontrols:SettingsCard Visibility="Collapsed" />
+                            <tkcontrols:SettingsCard
+                                Name="QuickAccessShortcut"
+                                x:Uid="GeneralPage_QuickAccessShortcut"
+                                IsEnabled="{x:Bind ViewModel.EnableQuickAccess, Mode=OneWay}">
+                                <controls:ShortcutControl HotkeySettings="{x:Bind ViewModel.QuickAccessShortcut, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard Visibility="Collapsed" />
+                        </tkcontrols:SettingsExpander.Items>
+                    </tkcontrols:SettingsExpander>
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup x:Uid="General_SettingsBackupAndRestoreTitle" Visibility="Visible">

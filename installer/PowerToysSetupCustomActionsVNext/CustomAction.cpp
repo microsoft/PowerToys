@@ -4,6 +4,7 @@
 #include <ProjectTelemetry.h>
 #include <spdlog/sinks/base_sink.h>
 #include <filesystem>
+#include <string_view>
 
 #include "../../src/common/logger/logger.h"
 #include "../../src/common/utils/gpo.h"
@@ -856,14 +857,69 @@ UINT __stdcall UnsetAdvancedPasteAPIKeyCA(MSIHANDLE hInstall)
 
     try
     {
-        winrt::Windows::Security::Credentials::PasswordVault vault;
-        winrt::Windows::Security::Credentials::PasswordCredential cred;
-
         hr = WcaInitialize(hInstall, "UnsetAdvancedPasteAPIKey");
         ExitOnFailure(hr, "Failed to initialize");
 
-        cred = vault.Retrieve(L"https://platform.openai.com/api-keys", L"PowerToys_AdvancedPaste_OpenAIKey");
-        vault.Remove(cred);
+        winrt::Windows::Security::Credentials::PasswordVault vault;
+
+        auto hasPrefix = [](std::wstring_view value, wchar_t const* prefix) {
+            std::wstring_view prefixView{ prefix };
+            return value.compare(0, prefixView.size(), prefixView) == 0;
+        };
+
+        const wchar_t* resourcePrefixes[] = {
+            L"https://platform.openai.com/api-keys",
+            L"https://azure.microsoft.com/products/ai-services/openai-service",
+            L"https://azure.microsoft.com/products/ai-services/ai-inference",
+            L"https://console.mistral.ai/account/api-keys",
+            L"https://ai.google.dev/",
+        };
+
+        const wchar_t* usernamePrefixes[] = {
+            L"PowerToys_AdvancedPaste_",
+        };
+
+        auto credentials = vault.RetrieveAll();
+        for (auto const& credential : credentials)
+        {
+            bool shouldRemove = false;
+
+            std::wstring resource{ credential.Resource() };
+            for (auto const prefix : resourcePrefixes)
+            {
+                if (hasPrefix(resource, prefix))
+                {
+                    shouldRemove = true;
+                    break;
+                }
+            }
+
+            if (!shouldRemove)
+            {
+                std::wstring username{ credential.UserName() };
+                for (auto const prefix : usernamePrefixes)
+                {
+                    if (hasPrefix(username, prefix))
+                    {
+                        shouldRemove = true;
+                        break;
+                    }
+                }
+            }
+
+            if (!shouldRemove)
+            {
+                continue;
+            }
+
+            try
+            {
+                vault.Remove(credential);
+            }
+            catch (...)
+            {
+            }
+        }
     }
     catch (...)
     {

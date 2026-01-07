@@ -27,7 +27,7 @@ jobs:
         issue: ${{ fromJson(github.event.inputs.issue_numbers) }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v6
 
       - name: Run GenAI Issue Deduplicator
         uses: pelikhan/action-genai-issue-dedup@v0

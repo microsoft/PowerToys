@@ -3,10 +3,12 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Threading.Tasks;
 using ManagedCommon;
 using Microsoft.PowerLauncher.Telemetry;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
+using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Views;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI;
@@ -81,7 +83,7 @@ namespace Microsoft.PowerToys.Settings.UI
             // open main window
             ShellPage.SetUpdatingGeneralSettingsCallback((ModuleType moduleType, bool isEnabled) =>
             {
-                SettingsRepository<GeneralSettings> repository = SettingsRepository<GeneralSettings>.GetInstance(new SettingsUtils());
+                SettingsRepository<GeneralSettings> repository = SettingsRepository<GeneralSettings>.GetInstance(SettingsUtils.Default);
                 GeneralSettings generalSettingsConfig = repository.SettingsConfig;
                 bool needToUpdate = ModuleHelper.GetIsModuleEnabled(generalSettingsConfig, moduleType) != isEnabled;
 
@@ -89,11 +91,17 @@ namespace Microsoft.PowerToys.Settings.UI
                 {
                     ModuleHelper.SetIsModuleEnabled(generalSettingsConfig, moduleType, isEnabled);
                     var outgoing = new OutGoingGeneralSettings(generalSettingsConfig);
-                    this.DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal, () =>
+
+                    // Save settings to file
+                    SettingsUtils.Default.SaveSettings(generalSettingsConfig.ToJsonString());
+
+                    // Send IPC message asynchronously to avoid blocking UI and potential recursive calls
+                    Task.Run(() =>
                     {
                         ShellPage.SendDefaultIPCMessage(outgoing.ToString());
-                        ShellPage.ShellHandler?.SignalGeneralDataUpdate();
                     });
+
+                    ShellPage.ShellHandler?.SignalGeneralDataUpdate();
                 }
 
                 return needToUpdate;
@@ -123,40 +131,6 @@ namespace Microsoft.PowerToys.Settings.UI
                 }
 
                 App.GetOobeWindow().Activate();
-            });
-
-            // open flyout
-            ShellPage.SetOpenFlyoutCallback((POINT? p) =>
-            {
-                this.DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal, () =>
-                {
-                    if (App.GetFlyoutWindow() == null)
-                    {
-                        App.SetFlyoutWindow(new FlyoutWindow(p));
-                    }
-
-                    FlyoutWindow flyout = App.GetFlyoutWindow();
-                    flyout.FlyoutAppearPosition = p;
-                    flyout.Activate();
-
-                    // https://github.com/microsoft/microsoft-ui-xaml/issues/7595 - Activate doesn't bring window to the foreground
-                    // Need to call SetForegroundWindow to actually gain focus.
-                    WindowHelpers.BringToForeground(flyout.GetWindowHandle());
-                });
-            });
-
-            // disable flyout hiding
-            ShellPage.SetDisableFlyoutHidingCallback(() =>
-            {
-                this.DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal, () =>
-                {
-                    if (App.GetFlyoutWindow() == null)
-                    {
-                        App.SetFlyoutWindow(new FlyoutWindow(null));
-                    }
-
-                    App.GetFlyoutWindow().ViewModel.DisableHiding();
-                });
             });
 
             this.InitializeComponent();

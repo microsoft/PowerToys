@@ -16,7 +16,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
     /// </summary>
     public class Settings
     {
-        private static SettingsUtils moduleSettings = new SettingsUtils();
+        private static SettingsUtils moduleSettings = SettingsUtils.Default;
 
         /// <summary>
         /// Gets a value indicating whether word wrapping should be applied. Set by PT settings.

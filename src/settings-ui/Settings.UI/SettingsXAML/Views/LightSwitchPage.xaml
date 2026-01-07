@@ -9,6 +9,7 @@
     xmlns:local="using:Microsoft.PowerToys.Settings.UI.Helpers"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
+    xmlns:tkconverters="using:CommunityToolkit.WinUI.Converters"
     xmlns:ui="using:CommunityToolkit.WinUI"
     xmlns:viewModels="using:Microsoft.PowerToys.Settings.UI.ViewModels"
     d:DataContext="{d:DesignInstance Type=viewModels:LightSwitchViewModel}"
@@ -17,6 +18,12 @@
     <local:NavigablePage.Resources>
         <converters:TimeSpanToFriendlyTimeConverter x:Key="TimeSpanToFriendlyTimeConverter" />
         <converters:StringToDoubleConverter x:Key="StringToDoubleConverter" />
+        <tkconverters:BoolNegationConverter x:Key="BoolNegationConverter" />
+        <tkconverters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+        <tkconverters:BoolToVisibilityConverter
+            x:Key="BoolToInvertedVisibilityConverter"
+            FalseValue="Visible"
+            TrueValue="Collapsed" />
     </local:NavigablePage.Resources>
     <Grid>
         <controls:SettingsPageControl
@@ -67,6 +74,10 @@
                                     x:Uid="LightSwitch_ModeSunsetToSunrise"
                                     AutomationProperties.AutomationId="SunCBItem_LightSwitch"
                                     Tag="SunsetToSunrise" />
+                                <ComboBoxItem
+                                    x:Uid="LightSwitch_ModeFollowNightLight"
+                                    AutomationProperties.AutomationId="FollowNightLightCBItem_LightSwitch"
+                                    Tag="FollowNightLight" />
                             </ComboBox>
                             <tkcontrols:SettingsExpander.Items>
                                 <tkcontrols:SettingsCard
@@ -152,6 +163,33 @@
                                         IsOpen="True"
                                         Severity="Informational" />
                                 </tkcontrols:SettingsCard>
+                                <tkcontrols:SettingsCard
+                                    x:Name="FollowNightLightCard"
+                                    Padding="0"
+                                    HorizontalContentAlignment="Stretch"
+                                    Background="{ThemeResource InfoBarInformationalSeverityBackgroundBrush}"
+                                    ContentAlignment="Vertical"
+                                    Visibility="Collapsed">
+                                    <InfoBar
+                                        Background="Transparent"
+                                        BorderThickness="0"
+                                        IsClosable="False"
+                                        IsOpen="True"
+                                        Severity="Informational">
+                                        <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
+                                            <TextBlock VerticalAlignment="Center">
+                                                <Run x:Uid="LightSwitch_FollowNightLightCardMessage" />
+                                            </TextBlock>
+
+                                            <HyperlinkButton
+                                                x:Uid="LightSwitch_NightLightSettingsButton"
+                                                Margin="3,0,0,0"
+                                                Padding="0"
+                                                Click="OpenNightLightSettings_Click" />
+                                        </StackPanel>
+
+                                    </InfoBar>
+                                </tkcontrols:SettingsCard>
                             </tkcontrols:SettingsExpander.Items>
                         </tkcontrols:SettingsExpander>
                         <InfoBar
@@ -177,6 +215,124 @@
                                             x:Uid="LightSwitch_AppsCheckbox"
                                             AutomationProperties.AutomationId="ChangeAppsCheckbox_LightSwitch"
                                             IsChecked="{x:Bind ViewModel.ChangeApps, Mode=TwoWay}" />
+                                    </tkcontrols:SettingsCard>
+                                </tkcontrols:SettingsExpander.Items>
+                            </tkcontrols:SettingsExpander>
+                            <tkcontrols:SettingsExpander
+                                x:Uid="LightSwitch_WallpaperExpander"
+                                HeaderIcon="{ui:FontIcon Glyph=&#xE7f9;}"
+                                IsExpanded="True">
+                                <ToggleSwitch AutomationProperties.AutomationId="Toggle_WallpaperSwitch" IsOn="{x:Bind ViewModel.IsWallpaperEnabled, Mode=TwoWay}" />
+                                <tkcontrols:SettingsExpander.Items>
+                                    <tkcontrols:SettingsCard HorizontalContentAlignment="Stretch" ContentAlignment="Left">
+                                        <Grid HorizontalAlignment="Stretch">
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="*" />
+                                            </Grid.RowDefinitions>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="20px" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock
+                                                x:Uid="LightSwitch_WallpaperImageUnavailable"
+                                                Grid.Row="0"
+                                                Grid.Column="0"
+                                                VerticalAlignment="Center"
+                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                TextWrapping="Wrap"
+                                                Visibility="{x:Bind ViewModel.IsLightWallpaperValid, Converter={StaticResource BoolToInvertedVisibilityConverter}, Mode=OneWay}" />
+                                            <Image
+                                                Grid.Row="0"
+                                                Grid.Column="0"
+                                                VerticalAlignment="Center"
+                                                Source="{x:Bind ViewModel.WallpaperSourceLight, Mode=OneWay}"
+                                                Tag="Light" />
+                                            <TextBlock
+                                                x:Uid="LightSwitch_WallpaperImageUnavailable"
+                                                Grid.Row="0"
+                                                Grid.Column="2"
+                                                VerticalAlignment="Center"
+                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                TextWrapping="Wrap"
+                                                Visibility="{x:Bind ViewModel.IsDarkWallpaperValid, Converter={StaticResource BoolToInvertedVisibilityConverter}, Mode=OneWay}" />
+                                            <Image
+                                                Grid.Row="0"
+                                                Grid.Column="2"
+                                                Source="{x:Bind ViewModel.WallpaperSourceDark, Mode=OneWay}"
+                                                Tag="Dark" />
+                                        </Grid>
+                                    </tkcontrols:SettingsCard>
+                                    <tkcontrols:SettingsCard x:Uid="LightSwitch_WallpaperSelect">
+                                        <StackPanel Orientation="Horizontal" Spacing="8">
+                                            <TextBlock
+                                                x:Uid="LightSwitch_WallpaperLight"
+                                                Grid.Row="2"
+                                                Grid.Column="0"
+                                                VerticalAlignment="Center"
+                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                            <Button
+                                                x:Uid="LightSwitch_WallpaperBrowse"
+                                                Grid.Row="2"
+                                                Grid.Column="0"
+                                                AutomationProperties.AutomationId="Pick_ButtonLight"
+                                                Click="PickWallpaper_Click"
+                                                Tag="Light" />
+                                            <TextBlock
+                                                x:Uid="LightSwitch_WallpaperDark"
+                                                Grid.Row="2"
+                                                Grid.Column="2"
+                                                VerticalAlignment="Center"
+                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                            <Button
+                                                x:Uid="LightSwitch_WallpaperBrowse"
+                                                Grid.Row="2"
+                                                Grid.Column="2"
+                                                AutomationProperties.AutomationId="Pick_ButtonDark"
+                                                Click="PickWallpaper_Click"
+                                                Tag="Dark" />
+                                        </StackPanel>
+                                    </tkcontrols:SettingsCard>
+                                    <tkcontrols:SettingsCard x:Uid="LightSwitch_WallpaperStyle">
+                                        <StackPanel Orientation="Horizontal" Spacing="8">
+                                            <TextBlock
+                                                x:Uid="LightSwitch_WallpaperLight"
+                                                VerticalAlignment="Center"
+                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                            <ComboBox AutomationProperties.AutomationId="Toggle_WallpaperStyleSwitchLight" SelectedIndex="{x:Bind ViewModel.WallpaperStyleLight, Mode=TwoWay}">
+                                                <ComboBoxItem x:Uid="LightSwitch_StyleCenter" AutomationProperties.AutomationId="CenterCBItem_StyleSwitch" />
+                                                <ComboBoxItem x:Uid="LightSwitch_StyleTile" AutomationProperties.AutomationId="TileCBItem_StyleSwitch" />
+                                                <ComboBoxItem x:Uid="LightSwitch_StyleStretch" AutomationProperties.AutomationId="StretchCBItem_StyleSwitch" />
+                                                <ComboBoxItem x:Uid="LightSwitch_StyleFit" AutomationProperties.AutomationId="FitCBItem_StyleSwitch" />
+                                                <ComboBoxItem x:Uid="LightSwitch_StyleFill" AutomationProperties.AutomationId="FillCBItem_StyleSwitch" />
+                                                <ComboBoxItem x:Uid="LightSwitch_StyleSpan" AutomationProperties.AutomationId="SpanCBItem_StyleSwitch" />
+                                            </ComboBox>
+                                            <TextBlock
+                                                x:Uid="LightSwitch_WallpaperDark"
+                                                VerticalAlignment="Center"
+                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                            <ComboBox AutomationProperties.AutomationId="Toggle_WallpaperStyleSwitchDark" SelectedIndex="{x:Bind ViewModel.WallpaperStyleDark, Mode=TwoWay}">
+                                                <ComboBoxItem x:Uid="LightSwitch_StyleCenter" AutomationProperties.AutomationId="CenterCBItem_StyleSwitch" />
+                                                <ComboBoxItem x:Uid="LightSwitch_StyleTile" AutomationProperties.AutomationId="TileCBItem_StyleSwitch" />
+                                                <ComboBoxItem x:Uid="LightSwitch_StyleStretch" AutomationProperties.AutomationId="StretchCBItem_StyleSwitch" />
+                                                <ComboBoxItem x:Uid="LightSwitch_StyleFit" AutomationProperties.AutomationId="FitCBItem_StyleSwitch" />
+                                                <ComboBoxItem x:Uid="LightSwitch_StyleFill" AutomationProperties.AutomationId="FillCBItem_StyleSwitch" />
+                                                <ComboBoxItem x:Uid="LightSwitch_StyleSpan" AutomationProperties.AutomationId="SpanCBItem_StyleSwitch" />
+                                            </ComboBox>
+                                        </StackPanel>
+                                    </tkcontrols:SettingsCard>
+                                    <tkcontrols:SettingsCard x:Uid="LightSwitch_WallpaperVirtualDesktop" Visibility="{x:Bind ViewModel.Is24H2OrLater, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneTime}">
+                                        <ToggleSwitch AutomationProperties.AutomationId="Toggle_WallpaperVirtualDesktopSwitch" IsOn="{x:Bind ViewModel.IsVirtualDesktopEnabled, Mode=TwoWay}" />
+                                    </tkcontrols:SettingsCard>
+                                    <tkcontrols:SettingsCard Background="{ThemeResource SystemFillColorSuccessBackgroundBrush}" Visibility="{x:Bind ViewModel.Is24H2OrLater, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneTime}">
+                                        <tkcontrols:SettingsCard.Header>
+                                            <TextBlock x:Uid="LightSwitch_VirtualDesktopInfo" TextWrapping="Wrap" />
+                                        </tkcontrols:SettingsCard.Header>
+                                    </tkcontrols:SettingsCard>
+                                    <tkcontrols:SettingsCard Background="{ThemeResource SystemFillColorSuccessBackgroundBrush}" Visibility="{x:Bind ViewModel.Is24H2OrLater, Converter={StaticResource BoolToInvertedVisibilityConverter}, Mode=OneTime}">
+                                        <tkcontrols:SettingsCard.Header>
+                                            <TextBlock x:Uid="LightSwitch_DetectWindows24H2Info" TextWrapping="Wrap" />
+                                        </tkcontrols:SettingsCard.Header>
                                     </tkcontrols:SettingsCard>
                                 </tkcontrols:SettingsExpander.Items>
                             </tkcontrols:SettingsExpander>
@@ -350,13 +506,25 @@
                         <Setter Target="SunLocation_Card.Visibility" Value="Visible" />
                         <Setter Target="SunOffset_Card.Visibility" Value="Visible" />
                         <Setter Target="NoScheduleCard.Visibility" Value="Collapsed" />
+                        <Setter Target="FollowNightLightCard.Visibility" Value="Collapsed" />
                     </VisualState.Setters>
                 </VisualState>
+
                 <VisualState x:Name="ManualState">
                     <VisualState.Setters>
                         <Setter Target="Fixed_TurnOnCard.Visibility" Value="Visible" />
                         <Setter Target="Fixed_TurnOffCard.Visibility" Value="Visible" />
                         <Setter Target="NoScheduleCard.Visibility" Value="Collapsed" />
+                        <Setter Target="FollowNightLightCard.Visibility" Value="Collapsed" />
+                    </VisualState.Setters>
+                </VisualState>
+
+                <VisualState x:Name="FollowNightLightState">
+                    <VisualState.Setters>
+                        <Setter Target="Fixed_TurnOnCard.Visibility" Value="Collapsed" />
+                        <Setter Target="Fixed_TurnOffCard.Visibility" Value="Collapsed" />
+                        <Setter Target="NoScheduleCard.Visibility" Value="Collapsed" />
+                        <Setter Target="FollowNightLightCard.Visibility" Value="Visible" />
                     </VisualState.Setters>
                 </VisualState>
             </VisualStateGroup>

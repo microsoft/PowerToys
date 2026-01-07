@@ -5,6 +5,7 @@
 #include <filesystem>
 #include <fstream>
 #include <logger.h>
+#include <LightSwitchService/trace.h>
 
 using namespace std;
 
@@ -151,6 +152,7 @@ void LightSwitchSettings::LoadSettings()
             if (m_settings.scheduleMode != newMode)
             {
                 m_settings.scheduleMode = newMode;
+                Trace::LightSwitch::ScheduleModeToggled(val);
                 NotifyObservers(SettingId::ScheduleMode);
             }
         }
@@ -220,6 +222,8 @@ void LightSwitchSettings::LoadSettings()
             }
         }
 
+        bool themeTargetChanged = false;
+
         // ChangeSystem
         if (const auto jsonVal = values.get_bool_value(L"changeSystem"))
         {
@@ -227,6 +231,7 @@ void LightSwitchSettings::LoadSettings()
             if (m_settings.changeSystem != val)
             {
                 m_settings.changeSystem = val;
+                themeTargetChanged = true;
                 NotifyObservers(SettingId::ChangeSystem);
             }
         }
@@ -238,7 +243,74 @@ void LightSwitchSettings::LoadSettings()
             if (m_settings.changeApps != val)
             {
                 m_settings.changeApps = val;
+                themeTargetChanged = true;
                 NotifyObservers(SettingId::ChangeApps);
+            }
+        }
+
+        // For ChangeSystem/ChangeApps changes, log telemetry
+        if (themeTargetChanged)
+        {
+            Trace::LightSwitch::ThemeTargetChanged(m_settings.changeApps, m_settings.changeSystem);
+        }
+
+        if (const auto jsonVal = values.get_bool_value(L"wallpaperEnabled"))
+        {
+            auto val = *jsonVal;
+            if (m_settings.wallpaperEnabled != val)
+            {
+                m_settings.wallpaperEnabled = val;
+                NotifyObservers(SettingId::WallpaperEnabled);
+            }
+        }
+
+        if (const auto jsonVal = values.get_bool_value(L"wallpaperVirtualDesktopEnabled"))
+        {
+            auto val = *jsonVal;
+            if (m_settings.wallpaperVirtualDesktop != val)
+            {
+                m_settings.wallpaperVirtualDesktop = val;
+                NotifyObservers(SettingId::WallpaperVirtualDesktopEnabled);
+            }
+        }
+
+        if (const auto jsonVal = values.get_int_value(L"wallpaperStyleLight"))
+        {
+            auto val = *jsonVal;
+            if (m_settings.wallpaperStyleLight != val)
+            {
+                m_settings.wallpaperStyleLight = val;
+                NotifyObservers(SettingId::WallpaperStyleLight);
+            }
+        }
+
+        if (const auto jsonVal = values.get_int_value(L"wallpaperStyleDark"))
+        {
+            auto val = *jsonVal;
+            if (m_settings.wallpaperStyleDark != val)
+            {
+                m_settings.wallpaperStyleDark = val;
+                NotifyObservers(SettingId::WallpaperStyleDark);
+            }
+        }
+
+        if (const auto jsonVal = values.get_string_value(L"wallpaperPathLight"))
+        {
+            auto val = *jsonVal;
+            if (m_settings.wallpaperPathLight != val)
+            {
+                m_settings.wallpaperPathLight = val;
+                NotifyObservers(SettingId::WallpaperPathLight);
+            }
+        }
+
+        if (const auto jsonVal = values.get_string_value(L"wallpaperPathDark"))
+        {
+            auto val = *jsonVal;
+            if (m_settings.wallpaperPathDark != val)
+            {
+                m_settings.wallpaperPathDark = val;
+                NotifyObservers(SettingId::WallpaperPathDark);
             }
         }
     }

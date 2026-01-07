@@ -34,7 +34,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         public DashboardPage()
         {
             InitializeComponent();
-            var settingsUtils = new SettingsUtils();
+            var settingsUtils = SettingsUtils.Default;
 
             ViewModel = new DashboardViewModel(
                SettingsRepository<GeneralSettings>.GetInstance(settingsUtils), ShellPage.SendDefaultIPCMessage);
@@ -46,11 +46,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         public void RefreshEnabledState()
         {
             ViewModel.ModuleEnabledChangedOnSettingsPage();
-        }
-
-        private void DashboardListItemClick(object sender, RoutedEventArgs e)
-        {
-            ViewModel.DashboardListItemClick(sender);
         }
 
         private void WhatsNewButton_Click(object sender, RoutedEventArgs e)
