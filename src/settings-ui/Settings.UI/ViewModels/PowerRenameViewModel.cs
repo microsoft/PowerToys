@@ -4,7 +4,6 @@
 
 using System;
 using System.IO;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
 
@@ -14,8 +13,6 @@ using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
-using Windows.Management.Deployment;
-using Windows.System;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
@@ -71,6 +68,17 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _powerRenameMaxDispListNumValue = Settings.Properties.MaxMRUSize.Value;
             _autoComplete = Settings.Properties.MRUEnabled.Value;
             _powerRenameUseBoostLib = Settings.Properties.UseBoostLib.Value;
+
+            // Initialize extension helpers
+            HeifExtension = new StoreExtensionHelper(
+                "Microsoft.HEIFImageExtension_8wekyb3d8bbwe",
+                "ms-windows-store://pdp/?ProductId=9PMMSR1CGPWG",
+                "HEIF");
+
+            AvifExtension = new StoreExtensionHelper(
+                "Microsoft.AV1VideoExtension_8wekyb3d8bbwe",
+                "ms-windows-store://pdp/?ProductId=9MVZQVXJBQ9V",
+                "AV1");
 
             InitializeEnabledValue();
         }
@@ -276,98 +284,30 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             OnPropertyChanged(nameof(GlobalAndMruEnabled));
         }
 
-        // HEIF Extensions support
-        private const string HeifExtensionPackageFamilyName = "Microsoft.HEIFImageExtension_8wekyb3d8bbwe";
-        private const string HeifExtensionStoreUri = "ms-windows-store://pdp/?ProductId=9PMMSR1CGPWG";
+        // Store extension helpers
+        public StoreExtensionHelper HeifExtension { get; private set; }
 
-        private bool? _isHeifExtensionInstalled;
+        public StoreExtensionHelper AvifExtension { get; private set; }
 
-        public bool IsHeifExtensionInstalled
-        {
-            get
-            {
-                if (!_isHeifExtensionInstalled.HasValue)
-                {
-                    _isHeifExtensionInstalled = CheckExtensionInstalled(HeifExtensionPackageFamilyName);
-                }
+        // Convenience properties for XAML binding
+        public bool IsHeifExtensionInstalled => HeifExtension.IsInstalled;
 
-                return _isHeifExtensionInstalled.Value;
-            }
-        }
+        public bool IsAvifExtensionInstalled => AvifExtension.IsInstalled;
 
-        public ICommand InstallHeifExtensionCommand => new RelayCommand(InstallHeifExtension);
+        public ICommand InstallHeifExtensionCommand => HeifExtension.InstallCommand;
 
-        private async void InstallHeifExtension()
-        {
-            try
-            {
-                await Launcher.LaunchUriAsync(new Uri(HeifExtensionStoreUri));
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError("Failed to open HEIF extension store page", ex);
-            }
-        }
+        public ICommand InstallAvifExtensionCommand => AvifExtension.InstallCommand;
 
         public void RefreshHeifExtensionStatus()
         {
-            _isHeifExtensionInstalled = null;
+            HeifExtension.RefreshStatus();
             OnPropertyChanged(nameof(IsHeifExtensionInstalled));
-        }
-
-        // AVIF/AV1 Extensions support
-        private const string AvifExtensionPackageFamilyName = "Microsoft.AV1VideoExtension_8wekyb3d8bbwe";
-        private const string AvifExtensionStoreUri = "ms-windows-store://pdp/?ProductId=9MVZQVXJBQ9V";
-
-        private bool? _isAvifExtensionInstalled;
-
-        public bool IsAvifExtensionInstalled
-        {
-            get
-            {
-                if (!_isAvifExtensionInstalled.HasValue)
-                {
-                    _isAvifExtensionInstalled = CheckExtensionInstalled(AvifExtensionPackageFamilyName);
-                }
-
-                return _isAvifExtensionInstalled.Value;
-            }
-        }
-
-        public ICommand InstallAvifExtensionCommand => new RelayCommand(InstallAvifExtension);
-
-        private async void InstallAvifExtension()
-        {
-            try
-            {
-                await Launcher.LaunchUriAsync(new Uri(AvifExtensionStoreUri));
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError("Failed to open AV1 extension store page", ex);
-            }
         }
 
         public void RefreshAvifExtensionStatus()
         {
-            _isAvifExtensionInstalled = null;
+            AvifExtension.RefreshStatus();
             OnPropertyChanged(nameof(IsAvifExtensionInstalled));
-        }
-
-        // Common extension check method
-        private static bool CheckExtensionInstalled(string packageFamilyName)
-        {
-            try
-            {
-                var packageManager = new PackageManager();
-                var packages = packageManager.FindPackagesForUser(string.Empty, packageFamilyName);
-                return packages.Any();
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError($"Failed to check extension installation status: {packageFamilyName}", ex);
-                return false;
-            }
         }
     }
 }
