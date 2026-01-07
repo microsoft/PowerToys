@@ -68,8 +68,8 @@ APPICON                 ICON                    "appicon.ico"
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 9,21,0,0
- PRODUCTVERSION 9,21,0,0
+ FILEVERSION 10,0,0,0
+ PRODUCTVERSION 10,0,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -86,12 +86,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Sysinternals - www.sysinternals.com"
             VALUE "FileDescription", "Sysinternals Screen Magnifier"
-            VALUE "FileVersion", "9.21"
+            VALUE "FileVersion", "10.0"
             VALUE "InternalName", "ZoomIt"
-            VALUE "LegalCopyright", "Copyright � 2006-2025 Mark Russinovich"
+            VALUE "LegalCopyright", "Copyright \251 2006-2025 Mark Russinovich"
             VALUE "OriginalFilename", "ZoomIt.exe"
             VALUE "ProductName", "Sysinternals ZoomIt"
-            VALUE "ProductVersion", "9.21"
+            VALUE "ProductVersion", "10.0"
         END
     END
     BLOCK "VarFileInfo"
@@ -114,8 +114,8 @@ FONT 8, "MS Shell Dlg", 0, 0, 0x0
 BEGIN
     DEFPUSHBUTTON   "OK",IDOK,186,306,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,243,306,50,14
-    LTEXT           "ZoomIt v9.21",IDC_VERSION,42,7,73,10
-    LTEXT           "Copyright � 2006-2025 Mark Russinovich",IDC_COPYRIGHT,42,17,251,8
+    LTEXT           "ZoomIt v10.0",IDC_VERSION,42,7,73,10
+    LTEXT           "Copyright \251 2006-2025 Mark Russinovich",IDC_COPYRIGHT,42,17,251,8
     CONTROL         "<a HREF=""https://www.sysinternals.com"">Sysinternals - www.sysinternals.com</a>",IDC_LINK,
                     "SysLink",WS_TABSTOP,42,26,150,9
     ICON            "APPICON",IDC_STATIC,12,9,20,20
@@ -213,9 +213,9 @@ STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_SYSMENU
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     CONTROL         "",IDC_BREAK_HOTKEY,"msctls_hotkey32",WS_BORDER | WS_TABSTOP,52,67,80,12
-    EDITTEXT        IDC_TIMER,31,86,31,13,ES_RIGHT | ES_AUTOHSCROLL | ES_NUMBER
-    CONTROL         "",IDC_SPIN_TIMER,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS,45,86,11,12
-    LTEXT           "minutes",IDC_STATIC,67,88,25,8
+    EDITTEXT        IDC_TIMER,52,86,31,13,ES_RIGHT | ES_AUTOHSCROLL | ES_NUMBER
+    CONTROL         "",IDC_SPIN_TIMER,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS,66,86,11,12
+    LTEXT           "minutes",IDC_STATIC,88,88,25,8
     PUSHBUTTON      "&Advanced",IDC_ADVANCED_BREAK,232,102,41,14
     LTEXT           "Enter timer mode by using the ZoomIt tray icon's Break menu item. Increase and decrease time with the arrow keys. If you Alt-Tab away from the timer window, reactivate it by left-clicking on the ZoomIt tray icon. Exit timer mode with Escape. ",IDC_STATIC,7,7,266,33
     LTEXT           "Start Timer:",IDC_STATIC,7,70,39,8

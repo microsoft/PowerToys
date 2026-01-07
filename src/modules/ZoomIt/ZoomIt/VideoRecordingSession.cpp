@@ -1682,10 +1682,10 @@ static void SyncMediaPlayerPosition(VideoRecordingSession::TrimDialogData* pData
         auto session = pData->mediaPlayer.PlaybackSession();
         if (session)
         {
-            const int64_t clampedTicks = std::clamp<int64_t>(
-                pData->currentPosition.count(),
-                pData->trimStart.count(),
-                pData->trimEnd.count());
+            // The selection (trimStart..trimEnd) determines what will be trimmed,
+            // but playback may start before trimStart. Clamp only to valid media bounds.
+            const int64_t upper = (pData->trimEnd.count() > 0) ? pData->trimEnd.count() : pData->videoDuration.count();
+            const int64_t clampedTicks = std::clamp<int64_t>(pData->currentPosition.count(), 0, upper);
             session.Position(winrt::TimeSpan{ clampedTicks });
         }
     }
@@ -2208,9 +2208,9 @@ static void DrawTimeline(HDC hdc, RECT rc, VideoRecordingSession::TrimDialogData
     // For short videos (under 60 seconds), show fractional seconds
     const bool showMilliseconds = (pData->videoDuration.count() < 600000000LL); // 60 seconds in 100ns ticks
     int labelWidth = ScaleForDpi(showMilliseconds ? 80 : 70, dpi);
-    RECT rcStartLabel{ trackLeft, labelTop, trackLeft + labelWidth, labelBottom };
+    RECT rcStartLabel{ trackLeft - labelWidth, labelTop, trackLeft, labelBottom };
     const std::wstring startLabel = FormatTrimTime(pData->trimStart, showMilliseconds);
-    DrawText(hdcMem, startLabel.c_str(), -1, &rcStartLabel, DT_LEFT | DT_TOP | DT_SINGLELINE);
+    DrawText(hdcMem, startLabel.c_str(), -1, &rcStartLabel, DT_RIGHT | DT_TOP | DT_SINGLELINE);
 
     RECT rcEndLabel{ trackRight - labelWidth, labelTop, trackRight, labelBottom };
     const std::wstring endLabel = FormatTrimTime(pData->trimEnd, showMilliseconds);
@@ -2324,6 +2324,8 @@ static void HandlePlaybackCommand(int controlId, VideoRecordingSession::TrimDial
         const int64_t stepTicks = (duration < 200'000'000) ? 10'000'000 : kJogStepTicks;
         const int64_t newTicks = (std::max)(pData->trimStart.count(), pData->currentPosition.count() - stepTicks);
         pData->currentPosition = winrt::TimeSpan{ newTicks };
+        pData->playbackStartPosition = pData->currentPosition;
+        pData->playbackStartPositionValid = true;
         SyncMediaPlayerPosition(pData);
         UpdateVideoPreview(hDlg, pData);
         break;
@@ -2337,6 +2339,8 @@ static void HandlePlaybackCommand(int controlId, VideoRecordingSession::TrimDial
         const int64_t stepTicks = (duration < 200'000'000) ? 10'000'000 : kJogStepTicks;
         const int64_t newTicks = (std::min)(pData->trimEnd.count(), pData->currentPosition.count() + stepTicks);
         pData->currentPosition = winrt::TimeSpan{ newTicks };
+        pData->playbackStartPosition = pData->currentPosition;
+        pData->playbackStartPositionValid = true;
         SyncMediaPlayerPosition(pData);
         UpdateVideoPreview(hDlg, pData);
         break;
@@ -2346,6 +2350,8 @@ static void HandlePlaybackCommand(int controlId, VideoRecordingSession::TrimDial
     {
         StopPlayback(hDlg, pData, false);
         pData->currentPosition = pData->trimEnd;
+        pData->playbackStartPosition = pData->currentPosition;
+        pData->playbackStartPositionValid = true;
         SyncMediaPlayerPosition(pData);
         UpdateVideoPreview(hDlg, pData);
         break;
@@ -2354,6 +2360,8 @@ static void HandlePlaybackCommand(int controlId, VideoRecordingSession::TrimDial
     default:
         StopPlayback(hDlg, pData, false);
         pData->currentPosition = pData->trimStart;
+        pData->playbackStartPosition = pData->currentPosition;
+        pData->playbackStartPositionValid = true;
         SyncMediaPlayerPosition(pData);
         UpdateVideoPreview(hDlg, pData);
         break;
@@ -2371,6 +2379,10 @@ static void StopPlayback(HWND hDlg, VideoRecordingSession::TrimDialogData* pData
 
     const bool wasPlaying = pData->isPlaying.exchange(false, std::memory_order_relaxed);
     ResetSmoothPlayback(pData);
+
+    // Cancel any pending initial seek suppression.
+    pData->pendingInitialSeek.store(false, std::memory_order_relaxed);
+    pData->pendingInitialSeekTicks.store(0, std::memory_order_relaxed);
 
     // Stop audio playback and align media position with UI state, but keep player alive for resume
     if (pData->mediaPlayer)
@@ -2418,15 +2430,34 @@ static winrt::fire_and_forget StartPlaybackAsync(HWND hDlg, VideoRecordingSessio
 
     ResetSmoothPlayback(pData);
 
-    if (pData->currentPosition.count() < pData->trimStart.count() ||
-        pData->currentPosition.count() >= pData->trimEnd.count())
+    // If playhead is at/past selection end, restart from trimStart.
+    if (pData->currentPosition.count() >= pData->trimEnd.count())
     {
         pData->currentPosition = pData->trimStart;
         UpdateVideoPreview(hDlg, pData);
     }
 
-    // Store the position where playback started so we can loop back to it
-    pData->playbackStartPosition = pData->currentPosition;
+    // Capture resume position (where playback should start/resume from).
+    const auto resumePosition = pData->currentPosition;
+
+    // Suppress the brief Position==0 report before the initial seek takes effect.
+    pData->pendingInitialSeek.store(resumePosition.count() > 0, std::memory_order_relaxed);
+    pData->pendingInitialSeekTicks.store(resumePosition.count(), std::memory_order_relaxed);
+
+    // Capture loop anchor only if not already set by an explicit user positioning.
+    // This keeps the loop point stable across pause/resume.
+    if (!pData->playbackStartPositionValid)
+    {
+        pData->playbackStartPosition = resumePosition;
+        pData->playbackStartPositionValid = true;
+    }
+
+#if _DEBUG
+    OutputDebugStringW((L"[Trim] StartPlayback: currentPos=" + std::to_wstring(pData->currentPosition.count()) +
+        L" playbackStartPos=" + std::to_wstring(pData->playbackStartPosition.count()) +
+        L" trimStart=" + std::to_wstring(pData->trimStart.count()) +
+        L" trimEnd=" + std::to_wstring(pData->trimEnd.count()) + L"\n").c_str());
+#endif
 
     bool expected = false;
     if (!pData->isPlaying.compare_exchange_strong(expected, true, std::memory_order_relaxed))
@@ -2436,8 +2467,22 @@ static winrt::fire_and_forget StartPlaybackAsync(HWND hDlg, VideoRecordingSessio
 
     if (pData->isGif)
     {
-        // Initialize the frame start time for proper timing
-        pData->gifFrameStartTime = std::chrono::steady_clock::now();
+        // Initialize GIF timing so playback begins at the current playhead position
+        // (not at the start of the containing frame).
+        auto now = std::chrono::steady_clock::now();
+        if (!pData->gifFrames.empty() && pData->videoDuration.count() > 0)
+        {
+            const int64_t clampedTicks = std::clamp<int64_t>(resumePosition.count(), 0, pData->videoDuration.count());
+            const size_t frameIndex = FindGifFrameIndex(pData->gifFrames, clampedTicks);
+            const auto& frame = pData->gifFrames[frameIndex];
+            const int64_t offsetTicks = std::clamp<int64_t>(clampedTicks - frame.start.count(), 0, frame.duration.count());
+            const auto offsetMs = std::chrono::milliseconds(offsetTicks / 10'000);
+            pData->gifFrameStartTime = now - offsetMs;
+        }
+        else
+        {
+            pData->gifFrameStartTime = now;
+        }
         
         // Use multimedia timer for smooth GIF playback
         if (!StartMMTimer(hDlg, pData))
@@ -2452,7 +2497,7 @@ static winrt::fire_and_forget StartPlaybackAsync(HWND hDlg, VideoRecordingSessio
         co_return;
     }
 
-    // If a player already exists (paused), just resume from currentPosition
+    // If a player already exists (paused), resume from the current playhead position.
     if (pData->mediaPlayer)
     {
         try
@@ -2460,10 +2505,8 @@ static winrt::fire_and_forget StartPlaybackAsync(HWND hDlg, VideoRecordingSessio
             auto session = pData->mediaPlayer.PlaybackSession();
             if (session)
             {
-                const int64_t clampedTicks = std::clamp<int64_t>(
-                    pData->currentPosition.count(),
-                    pData->trimStart.count(),
-                    pData->trimEnd.count());
+                // Resume from the current playhead position (do not change the loop anchor)
+                const int64_t clampedTicks = std::clamp<int64_t>(resumePosition.count(), 0, pData->trimEnd.count());
                 session.Position(winrt::TimeSpan{ clampedTicks });
                 pData->currentPosition = winrt::TimeSpan{ clampedTicks };
                 // Defer smoothing until the first real media sample to avoid extrapolating from zero
@@ -2641,7 +2684,29 @@ static winrt::fire_and_forget StartPlaybackAsync(HWND hDlg, VideoRecordingSessio
 
             try
             {
+                // When not playing, ignore media callbacks so UI-driven seeks remain authoritative.
+                if (!dataPtr->isPlaying.load(std::memory_order_relaxed))
+                {
+                    return;
+                }
+
                 auto pos = sender.Position();
+
+                // Suppress the transient 0-position report before the initial seek takes effect.
+                if (dataPtr->pendingInitialSeek.load(std::memory_order_relaxed) &&
+                    dataPtr->pendingInitialSeekTicks.load(std::memory_order_relaxed) > 0 &&
+                    pos.count() == 0)
+                {
+                    return;
+                }
+
+                // First non-zero sample observed; allow normal updates.
+                if (pos.count() != 0)
+                {
+                    dataPtr->pendingInitialSeek.store(false, std::memory_order_relaxed);
+                    dataPtr->pendingInitialSeekTicks.store(0, std::memory_order_relaxed);
+                }
+
                 dataPtr->currentPosition = pos;
 
                 if (dataPtr->isPlaying.load(std::memory_order_relaxed) &&
@@ -2656,7 +2721,11 @@ static winrt::fire_and_forget StartPlaybackAsync(HWND hDlg, VideoRecordingSessio
 
                 if (pos >= dataPtr->trimEnd)
                 {
-                    // Signal stop - position will be reset to trimStart in the stop handler
+                    // Signal stop - WMU_PLAYBACK_STOP handler will reset to playbackStartPosition
+#if _DEBUG
+                    OutputDebugStringW((L"[Trim] PositionChanged: pos >= trimEnd, posting stop. pos=" +
+                        std::to_wstring(pos.count()) + L"\n").c_str());
+#endif
                     PostMessage(hDlg, WMU_PLAYBACK_STOP, 0, 0);
                 }
                 else
@@ -2674,7 +2743,13 @@ static winrt::fire_and_forget StartPlaybackAsync(HWND hDlg, VideoRecordingSessio
             PostMessage(hDlg, WMU_PLAYBACK_POSITION, 0, 0);
         });
 
-        pData->mediaPlayer.MediaOpened([dataPtr, hDlg](auto const& sender, auto const&)
+        // Capture the resume position now since currentPosition may change before MediaOpened fires
+        const int64_t resumePositionTicks = std::clamp<int64_t>(resumePosition.count(), 0, pData->trimEnd.count());
+#if _DEBUG
+        OutputDebugStringW((L"[Trim] Setting up MediaOpened callback with resumePos=" +
+            std::to_wstring(resumePositionTicks) + L"\n").c_str());
+#endif
+        pData->mediaPlayer.MediaOpened([dataPtr, hDlg, resumePositionTicks](auto const& sender, auto const&)
         {
             if (!dataPtr)
             {
@@ -2682,12 +2757,17 @@ static winrt::fire_and_forget StartPlaybackAsync(HWND hDlg, VideoRecordingSessio
             }
             try
             {
-                const int64_t clampedTicks = std::clamp<int64_t>(
-                    dataPtr->currentPosition.count(),
-                    dataPtr->trimStart.count(),
-                    dataPtr->trimEnd.count());
-                sender.PlaybackSession().Position(winrt::TimeSpan{ clampedTicks });
+                // Seek to the captured resume position (loop anchor is stored separately)
+#if _DEBUG
+                OutputDebugStringW((L"[Trim] MediaOpened: seeking to resumePos=" +
+                    std::to_wstring(resumePositionTicks) + L"\n").c_str());
+#endif
+                sender.PlaybackSession().Position(winrt::TimeSpan{ resumePositionTicks });
                 sender.Play();
+
+                // Once MediaOpened has applied the initial seek, allow position updates again.
+                dataPtr->pendingInitialSeek.store(false, std::memory_order_relaxed);
+                dataPtr->pendingInitialSeekTicks.store(0, std::memory_order_relaxed);
             }
             catch (...)
             {
@@ -2952,6 +3032,11 @@ static LRESULT CALLBACK TimelineSubclassProc(
             const UINT dpi = GetDpiForWindowHelper(hWnd);
             const int previousPosX = TimelineTimeToClientX(pData, pData->currentPosition, width, dpi);
             pData->currentPosition = newTime;
+
+            // User explicitly positioned the playhead; update the loop anchor.
+            pData->playbackStartPosition = pData->currentPosition;
+            pData->playbackStartPositionValid = true;
+
             const int newPosX = TimelineTimeToClientX(pData, pData->currentPosition, width, dpi);
             RECT clientRect{};
             GetClientRect(hWnd, &clientRect);
@@ -3514,12 +3599,26 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
     case WMU_PLAYBACK_STOP:
     {
         pData = reinterpret_cast<TrimDialogData*>(GetWindowLongPtr(hDlg, DWLP_USER));
-        StopPlayback(hDlg, pData, false);
-        // Reset position to left grip (trimStart) after playback ends
-        if (pData)
+        if (!pData)
         {
-            pData->currentPosition = pData->trimStart;
+            return TRUE;
         }
+        // Only process if still playing - avoid duplicate stop handling
+        if (!pData->isPlaying.load(std::memory_order_relaxed))
+        {
+#if _DEBUG
+            OutputDebugStringW(L"[Trim] WMU_PLAYBACK_STOP: already stopped, ignoring\n");
+#endif
+            return TRUE;
+        }
+
+        // Force UI + session back to the captured playback start position.
+        pData->currentPosition = pData->playbackStartPosition;
+#if _DEBUG
+        OutputDebugStringW((L"[Trim] WMU_PLAYBACK_STOP: resetting to playbackStartPos=" +
+            std::to_wstring(pData->playbackStartPosition.count()) + L"\n").c_str());
+#endif
+        StopPlayback(hDlg, pData, false);
         UpdateVideoPreview(hDlg, pData);
         return TRUE;
     }
@@ -3711,10 +3810,11 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
         // Handle GIF playback
         if (pData->isGif && !pData->gifFrames.empty())
         {
+            // Allow playing from before trimStart - only clamp to video bounds
             const int64_t clampedTicks = std::clamp<int64_t>(
                 pData->currentPosition.count(),
-                pData->trimStart.count(),
-                pData->trimEnd.count());
+                0,
+                pData->videoDuration.count());
             const size_t frameIndex = FindGifFrameIndex(pData->gifFrames, clampedTicks);
             const auto& frame = pData->gifFrames[frameIndex];
             
@@ -3726,7 +3826,8 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
             // Update playhead position smoothly based on elapsed time within current frame
             const int64_t frameElapsedTicks = static_cast<int64_t>(elapsedMs) * 10'000;
             const int64_t smoothPosition = frame.start.count() + (std::min)(frameElapsedTicks, frame.duration.count());
-            pData->currentPosition = winrt::TimeSpan{ std::clamp<int64_t>(smoothPosition, pData->trimStart.count(), pData->trimEnd.count()) };
+            // Allow positions before trimStart - only clamp to trimEnd
+            pData->currentPosition = winrt::TimeSpan{ (std::min)(smoothPosition, pData->trimEnd.count()) };
             
             // Update playhead
             HWND hTimeline = GetDlgItem(hDlg, IDC_TRIM_TIMELINE);
@@ -3752,10 +3853,8 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
 
                 if (nextTicks >= pData->trimEnd.count())
                 {
-                    // Reset position to left grip (trimStart) after playback ends
-                    pData->currentPosition = pData->trimStart;
-                    StopPlayback(hDlg, pData, false);
-                    UpdateVideoPreview(hDlg, pData);
+                    // Signal stop - WMU_PLAYBACK_STOP handler will reset position
+                    PostMessage(hDlg, WMU_PLAYBACK_STOP, 0, 0);
                 }
                 else
                 {
@@ -3783,11 +3882,25 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
                 // Simply use MediaPlayer position directly
                 auto position = session.Position();
                 const int64_t mediaTicks = position.count();
+
+                // Suppress the transient 0-position report before the initial seek takes effect.
+                if (pData->pendingInitialSeek.load(std::memory_order_relaxed) &&
+                    pData->pendingInitialSeekTicks.load(std::memory_order_relaxed) > 0 &&
+                    mediaTicks == 0)
+                {
+                    return TRUE;
+                }
+
+                if (mediaTicks != 0)
+                {
+                    pData->pendingInitialSeek.store(false, std::memory_order_relaxed);
+                    pData->pendingInitialSeekTicks.store(0, std::memory_order_relaxed);
+                }
                 
-                // Clamp to trim range
+                // Allow playing from before trimStart - only clamp to video bounds and trimEnd
                 const int64_t clampedTicks = std::clamp<int64_t>(
                     mediaTicks,
-                    pData->trimStart.count(),
+                    0,
                     pData->trimEnd.count());
                 pData->currentPosition = winrt::TimeSpan{ clampedTicks };
 
@@ -3811,10 +3924,8 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
 
                 if (clampedTicks >= pData->trimEnd.count())
                 {
-                    // Reset position to left grip (trimStart) after playback ends
-                    pData->currentPosition = pData->trimStart;
-                    StopPlayback(hDlg, pData, false);
-                    UpdateVideoPreview(hDlg, pData);
+                    // Signal stop - WMU_PLAYBACK_STOP handler will reset position
+                    PostMessage(hDlg, WMU_PLAYBACK_STOP, 0, 0);
                 }
             }
             catch (...)

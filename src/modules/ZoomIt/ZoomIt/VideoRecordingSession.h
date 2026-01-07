@@ -61,7 +61,15 @@ public:
         winrt::Windows::Foundation::TimeSpan originalTrimStart{ 0 };  // Initial value to detect if trim needed
         winrt::Windows::Foundation::TimeSpan originalTrimEnd{ 0 };    // Initial value to detect if trim needed
         winrt::Windows::Foundation::TimeSpan currentPosition{ 0 };
-        winrt::Windows::Foundation::TimeSpan playbackStartPosition{ 0 }; // Where playback started (for looping)
+        // Playback loop anchor. This is set when the user explicitly positions the playhead
+        // (e.g., dragging or using the jog buttons). Pausing/resuming should not change it.
+        winrt::Windows::Foundation::TimeSpan playbackStartPosition{ 0 };
+        bool playbackStartPositionValid{ false };
+
+        // When starting playback at a non-zero position, MediaPlayer may briefly report Position==0
+        // before the initial seek is applied. Use this to suppress a one-frame UI jump to 0.
+        std::atomic<bool> pendingInitialSeek{ false };
+        std::atomic<int64_t> pendingInitialSeekTicks{ 0 };
         winrt::Windows::Media::Editing::MediaComposition composition{ nullptr };
         winrt::Windows::Media::Playback::MediaPlayer mediaPlayer{ nullptr };
         winrt::Windows::Storage::StorageFile playbackFile{ nullptr };

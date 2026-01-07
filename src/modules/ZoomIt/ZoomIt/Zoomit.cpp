@@ -2744,6 +2744,12 @@ LRESULT CALLBACK SliderSubclassProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM 
             FillRect(hdc, &rcTrack, hTrackBrush);
             DeleteObject(hTrackBrush);
             
+            // Center thumb vertically - at high DPI the thumb rect may not be centered
+            int thumbHeight = rcThumb.bottom - rcThumb.top;
+            int thumbCenterY = (rc.bottom + rc.top) / 2;
+            rcThumb.top = thumbCenterY - thumbHeight / 2;
+            rcThumb.bottom = rcThumb.top + thumbHeight;
+            
             // Draw thumb - dark rectangle
             HBRUSH hThumbBrush = CreateSolidBrush(RGB(160, 160, 165));
             FillRect(hdc, &rcThumb, hThumbBrush);
@@ -2897,13 +2903,23 @@ LRESULT CALLBACK GroupBoxSubclassProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 //----------------------------------------------------------------------------
 LRESULT CALLBACK StaticTextSubclassProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData)
 {
+    const int ctrlId = GetDlgCtrlID( hWnd );
+    const bool isOptionsHeader = (ctrlId == IDC_VERSION || ctrlId == IDC_COPYRIGHT);
+
     auto paintStaticText = [](HWND hWnd, HDC hdc) -> void
     {
         RECT rc;
         GetClientRect(hWnd, &rc);
 
         // Fill background
-        FillRect(hdc, &rc, GetDarkModeBrush());
+        if( IsDarkModeEnabled() )
+        {
+            FillRect(hdc, &rc, GetDarkModeBrush());
+        }
+        else
+        {
+            FillRect(hdc, &rc, GetSysColorBrush( COLOR_BTNFACE ));
+        }
 
         // Get text
         TCHAR text[512] = { 0 };
@@ -2912,14 +2928,64 @@ LRESULT CALLBACK StaticTextSubclassProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPA
         // Set up text drawing
         SetBkMode(hdc, TRANSPARENT);
         bool isEnabled = IsWindowEnabled(hWnd);
-        SetTextColor(hdc, isEnabled ? DarkMode::TextColor : RGB(100, 100, 100));
+        if( IsDarkModeEnabled() )
+        {
+            SetTextColor(hdc, isEnabled ? DarkMode::TextColor : RGB(100, 100, 100));
+        }
+        else
+        {
+            SetTextColor( hdc, isEnabled ? GetSysColor( COLOR_WINDOWTEXT ) : GetSysColor( COLOR_GRAYTEXT ) );
+        }
 
-        HFONT hFont = reinterpret_cast<HFONT>(SendMessage(hWnd, WM_GETFONT, 0, 0));
+        // Try to get the font from a window property first (for header controls where
+        // WM_GETFONT may not work reliably), then fall back to WM_GETFONT.
+        HFONT hFont = reinterpret_cast<HFONT>(GetPropW( hWnd, L"ZoomIt.HeaderFont" ));
+        HFONT hCreatedFont = nullptr; // Track if we created a font that needs cleanup
+
+        // For IDC_VERSION, create a large title font on-demand if the property font doesn't work
+        const int thisCtrlId = GetDlgCtrlID( hWnd );
+        if( thisCtrlId == IDC_VERSION )
+        {
+            // Create a title font that is proportionally larger than the dialog font
+            LOGFONT lf{};
+            HFONT hDialogFont = reinterpret_cast<HFONT>(SendMessage( GetParent( hWnd ), WM_GETFONT, 0, 0 ));
+            if( hDialogFont )
+            {
+                GetObject( hDialogFont, sizeof( lf ), &lf );
+            }
+            else
+            {
+                GetObject( GetStockObject( DEFAULT_GUI_FONT ), sizeof( lf ), &lf );
+            }
+            lf.lfWeight = FW_BOLD;
+            // Make title 50% larger than dialog font (lfHeight is negative for character height)
+            lf.lfHeight = MulDiv( lf.lfHeight, 3, 2 );
+            hCreatedFont = CreateFontIndirect( &lf );
+            if( hCreatedFont )
+            {
+                hFont = hCreatedFont;
+            }
+        }
+
+        if( !hFont )
+        {
+            hFont = reinterpret_cast<HFONT>(SendMessage(hWnd, WM_GETFONT, 0, 0));
+        }
         HFONT hOldFont = nullptr;
         if (hFont)
         {
             hOldFont = static_cast<HFONT>(SelectObject(hdc, hFont));
         }
+
+#if _DEBUG
+        if( thisCtrlId == IDC_VERSION )
+        {
+            TEXTMETRIC tm{};
+            GetTextMetrics( hdc, &tm );
+            OutputDebug(L"IDC_VERSION paint: tmHeight=%d selectResult=%p hFont=%p created=%p rc=(%d,%d,%d,%d)\n",
+                tm.tmHeight, hOldFont, hFont, hCreatedFont, rc.left, rc.top, rc.right, rc.bottom );
+        }
+#endif
 
         // Get style to determine alignment and wrapping behavior
         LONG style = GetWindowLong(hWnd, GWL_STYLE);
@@ -2936,7 +3002,12 @@ LRESULT CALLBACK StaticTextSubclassProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPA
         if (style & SS_NOPREFIX)
             format |= DT_NOPREFIX;
 
-        const bool noWrap = (staticType == SS_LEFTNOWORDWRAP) || (staticType == SS_SIMPLE);
+        bool noWrap = (staticType == SS_LEFTNOWORDWRAP) || (staticType == SS_SIMPLE);
+        if( GetDlgCtrlID( hWnd ) == IDC_VERSION )
+        {
+            // The header title is intended to be a single line.
+            noWrap = true;
+        }
         if (noWrap)
         {
             // Single-line labels should match the classic static control behavior.
@@ -2954,9 +3025,15 @@ LRESULT CALLBACK StaticTextSubclassProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPA
         {
             SelectObject(hdc, hOldFont);
         }
+
+        // Clean up any font we created on-demand
+        if( hCreatedFont )
+        {
+            DeleteObject( hCreatedFont );
+        }
     };
 
-    if (IsDarkModeEnabled())
+    if (IsDarkModeEnabled() || isOptionsHeader)
     {
         switch (uMsg)
         {
@@ -2965,7 +3042,14 @@ LRESULT CALLBACK StaticTextSubclassProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPA
                 HDC hdc = reinterpret_cast<HDC>(wParam);
                 RECT rc;
                 GetClientRect(hWnd, &rc);
-                FillRect(hdc, &rc, GetDarkModeBrush());
+                if( IsDarkModeEnabled() )
+                {
+                    FillRect(hdc, &rc, GetDarkModeBrush());
+                }
+                else
+                {
+                    FillRect(hdc, &rc, GetSysColorBrush( COLOR_BTNFACE ));
+                }
                 return TRUE;
             }
 
@@ -3005,6 +3089,9 @@ LRESULT CALLBACK StaticTextSubclassProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPA
             }
 
         case WM_NCDESTROY:
+#if _DEBUG
+            RemovePropW( hWnd, L"ZoomIt.VersionFontLogged" );
+#endif
             RemoveWindowSubclass(hWnd, StaticTextSubclassProc, uIdSubclass);
             break;
         }
@@ -3013,11 +3100,27 @@ LRESULT CALLBACK StaticTextSubclassProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPA
     {
         if (uMsg == WM_NCDESTROY)
         {
+#if _DEBUG
+            RemovePropW( hWnd, L"ZoomIt.VersionFontLogged" );
+#endif
             RemoveWindowSubclass(hWnd, StaticTextSubclassProc, uIdSubclass);
         }
     }
     return DefSubclassProc(hWnd, uMsg, wParam, lParam);
 }
+
+
+#if _DEBUG
+// Logs any late WM_SETFONT on the Options header version label.
+LRESULT CALLBACK HeaderFontDebugSubclassProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData )
+{
+    if( uMsg == WM_SETFONT )
+    {
+        OutputDebug( L"IDC_VERSION WM_SETFONT: font=%p redraw=%d\n", reinterpret_cast<void*>(wParam), static_cast<int>(lParam) );
+    }
+    return DefSubclassProc( hWnd, uMsg, wParam, lParam );
+}
+#endif
 
 //----------------------------------------------------------------------------
 //
@@ -3181,7 +3284,9 @@ LRESULT CALLBACK TabControlSubclassProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPA
 INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
                              WPARAM wParam, LPARAM lParam )
 {
+    constexpr UINT WM_APPLY_HEADER_FONTS = WM_APP + 42;
     static HFONT	hFontBold = nullptr;
+    static HFONT    hFontVersion = nullptr;
     PNMLINK			notify = nullptr;
     static int		curTabSel = 0;
     static HWND		hTabCtrl;
@@ -3193,6 +3298,155 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
     DWORD			newDrawToggleKey, newDrawToggleMod, newBreakToggleMod, newDemoTypeToggleMod, newRecordToggleMod, newSnipToggleMod;
     DWORD			newLiveZoomToggleKey, newLiveZoomToggleMod;
     static std::vector<std::pair<std::wstring, std::wstring>>	microphones;
+
+    auto CleanupFonts = [&]()
+    {
+        if( hFontBold )
+        {
+            DeleteObject( hFontBold );
+            hFontBold = nullptr;
+        }
+        if( hFontVersion )
+        {
+            DeleteObject( hFontVersion );
+            hFontVersion = nullptr;
+        }
+    };
+
+    auto UpdateVersionFont = [&]()
+    {
+        if( hFontVersion )
+        {
+            DeleteObject( hFontVersion );
+            hFontVersion = nullptr;
+        }
+
+        HWND hVersion = GetDlgItem( hDlg, IDC_VERSION );
+        if( !hVersion )
+        {
+            return;
+        }
+
+        // Prefer the control's current font (it may already be DPI-scaled).
+        HFONT hBaseFont = reinterpret_cast<HFONT>(SendMessage( hVersion, WM_GETFONT, 0, 0 ));
+        if( !hBaseFont )
+        {
+            hBaseFont = reinterpret_cast<HFONT>(SendMessage( hDlg, WM_GETFONT, 0, 0 ));
+        }
+        if( !hBaseFont )
+        {
+            hBaseFont = static_cast<HFONT>(GetStockObject( DEFAULT_GUI_FONT ));
+        }
+
+        LOGFONT lf{};
+        if( !GetObject( hBaseFont, sizeof( lf ), &lf ) )
+        {
+            return;
+        }
+
+        // Make the header version text title-sized using an explicit point size,
+        // scaled by the current DPI.
+        const UINT dpi = GetDpiForWindowHelper( hDlg );
+        constexpr int kTitlePointSize = 22;
+
+        lf.lfWeight = FW_BOLD;
+        lf.lfHeight = -MulDiv( kTitlePointSize, static_cast<int>(dpi), 72 );
+        hFontVersion = CreateFontIndirect( &lf );
+        if( hFontVersion )
+        {
+            SendMessage( hVersion, WM_SETFONT, reinterpret_cast<WPARAM>(hFontVersion), TRUE );
+            // Also store in a property so our subclass paint can reliably retrieve it.
+            SetPropW( hVersion, L"ZoomIt.HeaderFont", reinterpret_cast<HANDLE>(hFontVersion) );
+#if _DEBUG
+            HFONT checkFont = reinterpret_cast<HFONT>(GetPropW( hVersion, L"ZoomIt.HeaderFont" ));
+            OutputDebug( L"SetPropW HeaderFont: hwnd=%p font=%p verify=%p\n", hVersion, hFontVersion, checkFont );
+#endif
+        }
+
+    #if _DEBUG
+        OutputDebug(L"UpdateVersionFont: dpi=%u titlePt=%d lfHeight=%d font=%p\n",
+            dpi, kTitlePointSize, lf.lfHeight, hFontVersion );
+
+        {
+            HFONT currentFont = reinterpret_cast<HFONT>(SendMessage( hVersion, WM_GETFONT, 0, 0 ));
+            LOGFONT currentLf{};
+            if( currentFont && GetObject( currentFont, sizeof( currentLf ), &currentLf ) )
+            {
+                OutputDebug( L"IDC_VERSION WM_GETFONT after set: font=%p lfHeight=%d lfWeight=%d\n",
+                    currentFont, currentLf.lfHeight, currentLf.lfWeight );
+            }
+            else
+            {
+                OutputDebug( L"IDC_VERSION WM_GETFONT after set: font=%p (no logfont)\n", currentFont );
+            }
+        }
+    #endif
+
+        // Resize the version control to fit the new font, and reflow the lines below if needed.
+        RECT rcVersion{};
+        GetWindowRect( hVersion, &rcVersion );
+        MapWindowPoints( nullptr, hDlg, reinterpret_cast<LPPOINT>(&rcVersion), 2 );
+        const int oldVersionHeight = rcVersion.bottom - rcVersion.top;
+
+        TCHAR versionText[128] = {};
+        GetWindowText( hVersion, versionText, _countof( versionText ) );
+
+        RECT rcCalc{ 0, 0, 0, 0 };
+        HDC hdc = GetDC( hVersion );
+        if( hdc )
+        {
+            HFONT oldFont = static_cast<HFONT>(SelectObject( hdc, hFontVersion ? hFontVersion : hBaseFont ));
+            DrawText( hdc, versionText, -1, &rcCalc, DT_CALCRECT | DT_SINGLELINE | DT_LEFT | DT_VCENTER );
+            SelectObject( hdc, oldFont );
+            ReleaseDC( hVersion, hdc );
+        }
+
+        // Keep within dialog client width.
+        RECT rcClient{};
+        GetClientRect( hDlg, &rcClient );
+        const int maxWidth = max( 0, rcClient.right - rcVersion.left - ScaleForDpi( 8, GetDpiForWindowHelper( hDlg ) ) );
+        const int desiredWidth = min( maxWidth, (rcCalc.right - rcCalc.left) + ScaleForDpi( 6, GetDpiForWindowHelper( hDlg ) ) );
+        const int desiredHeight = (rcCalc.bottom - rcCalc.top) + ScaleForDpi( 2, GetDpiForWindowHelper( hDlg ) );
+        const int newVersionHeight = max( oldVersionHeight, desiredHeight );
+
+        SetWindowPos( hVersion, nullptr,
+            rcVersion.left, rcVersion.top,
+            max( 1, desiredWidth ), newVersionHeight,
+            SWP_NOZORDER | SWP_NOACTIVATE );
+
+#if _DEBUG
+        {
+            RECT rcAfter{};
+            GetClientRect( hVersion, &rcAfter );
+            OutputDebug( L"UpdateVersionFont resize: desired=(%d,%d) oldH=%d newH=%d actual=(%d,%d)\n",
+                desiredWidth, desiredHeight, oldVersionHeight, newVersionHeight,
+                rcAfter.right - rcAfter.left, rcAfter.bottom - rcAfter.top );
+        }
+#endif
+
+        InvalidateRect( hVersion, nullptr, TRUE );
+
+        const int deltaY = newVersionHeight - oldVersionHeight;
+        if( deltaY > 0 )
+        {
+            const int headerIdsToShift[] = { IDC_COPYRIGHT, IDC_LINK };
+            for( int i = 0; i < _countof( headerIdsToShift ); i++ )
+            {
+                HWND hCtrl = GetDlgItem( hDlg, headerIdsToShift[i] );
+                if( !hCtrl )
+                {
+                    continue;
+                }
+                RECT rc{};
+                GetWindowRect( hCtrl, &rc );
+                MapWindowPoints( nullptr, hDlg, reinterpret_cast<LPPOINT>(&rc), 2 );
+                SetWindowPos( hCtrl, nullptr,
+                    rc.left, rc.top + deltaY,
+                    0, 0,
+                    SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE );
+            }
+        }
+    };
 
     switch ( message )  {
     case WM_INITDIALOG:
@@ -3242,9 +3496,6 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
         }
 
         OptionsAddTabs( hDlg, hTabCtrl );
-
-        InitializeFonts( hDlg, &hFontBold );
-        UpdateDrawTabHeaderFont();
 
         // Configure options
         SendMessage( GetDlgItem( g_OptionsTabs[ZOOM_PAGE].hPage, IDC_HOTKEY), HKM_SETRULES,
@@ -3401,6 +3652,32 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
         // Always reposition tab pages to fit the tab control (whether scaled or not)
         RepositionTabPages( hTabCtrl );
 
+        // Initialize DPI-aware fonts after scaling so text sizing is correct.
+        InitializeFonts( hDlg, &hFontBold );
+        UpdateDrawTabHeaderFont();
+        UpdateVersionFont();
+
+        // Always render the header labels using our static text subclass (even in light mode)
+        // so the larger title font is honored.
+        if( HWND hVersion = GetDlgItem( hDlg, IDC_VERSION ) )
+        {
+            SetWindowSubclass( hVersion, StaticTextSubclassProc, 55, 0 );
+        }
+        if( HWND hCopyright = GetDlgItem( hDlg, IDC_COPYRIGHT ) )
+        {
+            SetWindowSubclass( hCopyright, StaticTextSubclassProc, 56, 0 );
+        }
+
+#if _DEBUG
+        {
+            HWND hVersion = GetDlgItem( hDlg, IDC_VERSION );
+            if( hVersion )
+            {
+                SetWindowSubclass( hVersion, HeaderFontDebugSubclassProc, 99, 0 );
+            }
+        }
+#endif
+
         // Apply dark mode to the dialog and all tab pages
         ApplyDarkModeToDialog( hDlg );
         for( int i = 0; i < sizeof( g_OptionsTabs ) / sizeof( g_OptionsTabs[0] ); i++ )
@@ -3433,8 +3710,16 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
         }
         
         PostMessage( hDlg, WM_USER, 0, 0 );
+        // Reapply header fonts once the dialog has finished any late initialization.
+        PostMessage( hDlg, WM_APPLY_HEADER_FONTS, 0, 0 );
         return TRUE;
     }
+
+    case WM_APPLY_HEADER_FONTS:
+        InitializeFonts( hDlg, &hFontBold );
+        UpdateDrawTabHeaderFont();
+        UpdateVersionFont();
+        return TRUE;
 
     case WM_USER+100:
         BringWindowToTop( hDlg );
@@ -3475,6 +3760,8 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
         }
         InitializeFonts( hDlg, &hFontBold );
         UpdateDrawTabHeaderFont();
+        UpdateVersionFont();
+        PostMessage( hDlg, WM_APPLY_HEADER_FONTS, 0, 0 );
         break;
     }
 
@@ -3498,10 +3785,35 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
         HDC hdc = reinterpret_cast<HDC>(wParam);
         HWND hCtrl = reinterpret_cast<HWND>(lParam);
 
+        // Always force the Options header title to use the large version font.
+        // Note: We must also return a brush in light mode, otherwise the default
+        // dialog proc may ignore our HDC changes.
+        if( message == WM_CTLCOLORSTATIC && hCtrl == GetDlgItem( hDlg, IDC_VERSION ) && hFontVersion )
+        {
+            SetBkMode( hdc, TRANSPARENT );
+            SelectObject( hdc, hFontVersion );
+
+#if _DEBUG
+            OutputDebug( L"WM_CTLCOLORSTATIC IDC_VERSION: dark=%d font=%p\n", IsDarkModeEnabled() ? 1 : 0, hFontVersion );
+#endif
+
+            if( !IsDarkModeEnabled() )
+            {
+                // Light mode: explicitly return the dialog background brush.
+                return reinterpret_cast<INT_PTR>(GetSysColorBrush( COLOR_BTNFACE ));
+            }
+        }
+
         // Handle dark mode colors
         HBRUSH hBrush = HandleDarkModeCtlColor(hdc, hCtrl, message);
         if (hBrush)
         {
+            // Ensure the header version text uses the title font in dark mode.
+            if( message == WM_CTLCOLORSTATIC && hCtrl == GetDlgItem( hDlg, IDC_VERSION ) && hFontVersion )
+            {
+                SelectObject( hdc, hFontVersion );
+            }
+
             // For bold title controls, also set the bold font
             if (message == WM_CTLCOLORSTATIC &&
                 (hCtrl == GetDlgItem(hDlg, IDC_TITLE) ||
@@ -3743,6 +4055,7 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
                 EnableDisableTrayIcon( GetParent( hDlg ), g_ShowTrayIcon );
 
                 hWndOptions = NULL;
+                CleanupFonts();
                 EndDialog( hDlg, 0 );
                 return TRUE;
             }
@@ -3752,6 +4065,7 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
         case IDCANCEL:
             RegisterAllHotkeys(GetParent(hDlg));
             hWndOptions = NULL;
+            CleanupFonts();
             EndDialog( hDlg, 0 );
             return TRUE;
         }
@@ -3760,6 +4074,7 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
     case WM_CLOSE:
         hWndOptions = NULL;
         RegisterAllHotkeys(GetParent(hDlg));
+        CleanupFonts();
         EndDialog( hDlg, 0 );
         return TRUE;
 

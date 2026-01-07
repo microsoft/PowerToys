@@ -367,6 +367,15 @@ void ApplyDarkModeToDialog(HWND hDlg)
                 LONG style = GetWindowLong(hChild, GWL_STYLE);
                 LONG staticType = style & SS_TYPEMASK;
 
+                // Options header uses a dedicated static subclass (to support large title font).
+                // Avoid applying the generic static subclass on top of it.
+                const int controlId = GetDlgCtrlID( hChild );
+                if( controlId == IDC_VERSION || controlId == IDC_COPYRIGHT )
+                {
+                    SetWindowTheme( hChild, L"", L"" );
+                    return TRUE;
+                }
+
                 if (staticType == SS_LEFT || staticType == SS_CENTER || staticType == SS_RIGHT ||
                     staticType == SS_LEFTNOWORDWRAP || staticType == SS_SIMPLE)
                 {
