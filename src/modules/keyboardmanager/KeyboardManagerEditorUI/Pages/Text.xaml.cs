@@ -42,6 +42,7 @@ namespace KeyboardManagerEditorUI.Pages
             catch (Exception ex)
             {
                 Logger.LogError("Failed to initialize KeyboardMappingService: " + ex.Message);
+                System.Diagnostics.Debug.WriteLine(ex.Message);
             }
 
             this.Unloaded += Text_Unloaded;
@@ -49,7 +50,41 @@ namespace KeyboardManagerEditorUI.Pages
 
         private void Text_Unloaded(object sender, RoutedEventArgs e)
         {
-            Dispose();
+            // Make sure we unregister the handler when the page is unloaded
+            UnregisterWindowActivationHandler();
+            KeyboardHookHelper.Instance.CleanupHook();
+        }
+
+        private void RegisterWindowActivationHandler()
+        {
+            // Get the current window that contains this page
+            if (App.MainWindow is Window window)
+            {
+                // Register for window activation events
+                window.Activated += Dialog_WindowActivated;
+            }
+        }
+
+        private void UnregisterWindowActivationHandler()
+        {
+            // Unregister to prevent memory leaks
+            if (App.MainWindow is Window window)
+            {
+                window.Activated -= Dialog_WindowActivated;
+            }
+        }
+
+        private void Dialog_WindowActivated(object sender, WindowActivatedEventArgs args)
+        {
+            // When window is deactivated (user switched to another app)
+            if (args.WindowActivationState == WindowActivationState.Deactivated)
+            {
+                // Make sure to cleanup the keyboard hook when the window loses focus
+                KeyboardHookHelper.Instance.CleanupHook();
+
+                TextInputControl.ClearKeys();
+                TextInputControl.UpdateAllAppsCheckBoxState();
+            }
         }
 
         private void LoadTextMappings()
@@ -106,7 +141,14 @@ namespace KeyboardManagerEditorUI.Pages
             TextInputControl.SetTextContent(string.Empty);
             TextInputControl.SetAppSpecific(false, string.Empty);
 
+            RegisterWindowActivationHandler();
+
+            KeyDialog.PrimaryButtonClick += KeyDialog_PrimaryButtonClick;
             await KeyDialog.ShowAsync();
+            KeyDialog.PrimaryButtonClick -= KeyDialog_PrimaryButtonClick;
+
+            UnregisterWindowActivationHandler();
+            KeyboardHookHelper.Instance.CleanupHook();
         }
 
         private async void ListView_ItemClick(object sender, ItemClickEventArgs e)
@@ -120,7 +162,19 @@ namespace KeyboardManagerEditorUI.Pages
                 TextInputControl.SetTextContent(selectedMapping.Text);
                 TextInputControl.SetAppSpecific(!selectedMapping.IsAllApps, selectedMapping.AppName);
 
+                RegisterWindowActivationHandler();
+
+                KeyDialog.PrimaryButtonClick += KeyDialog_PrimaryButtonClick;
                 await KeyDialog.ShowAsync();
+                KeyDialog.PrimaryButtonClick -= KeyDialog_PrimaryButtonClick;
+
+                UnregisterWindowActivationHandler();
+
+                KeyboardHookHelper.Instance.CleanupHook();
+
+                // Reset the edit status
+                _isEditMode = false;
+                _editingMapping = null;
             }
         }
 

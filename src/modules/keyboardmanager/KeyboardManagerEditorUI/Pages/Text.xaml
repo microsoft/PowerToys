@@ -92,7 +92,7 @@
                     SelectionMode="None">
                     <ListView.ItemTemplate>
                         <DataTemplate x:DataType="helper:TextMapping">
-                            <Grid Height="Auto" MinHeight="48">
+                            <Grid MinHeight="48">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="236" />
                                     <ColumnDefinition Width="*" />
@@ -100,7 +100,7 @@
                                     <ColumnDefinition Width="48" />
                                 </Grid.ColumnDefinitions>
                                 <Rectangle
-                                    Grid.ColumnSpan="5"
+                                    Grid.ColumnSpan="4"
                                     Height="1"
                                     Margin="-16,0,-16,0"
                                     HorizontalAlignment="Stretch"
@@ -115,10 +115,7 @@
                                     ItemsSource="{x:Bind Keys}">
                                     <ItemsControl.ItemsPanel>
                                         <ItemsPanelTemplate>
-                                            <tkcontrols:WrapPanel
-                                                MaxWidth="230"
-                                                HorizontalSpacing="4"
-                                                Orientation="Horizontal" />
+                                            <StackPanel Orientation="Horizontal" Spacing="4" />
                                         </ItemsPanelTemplate>
                                     </ItemsControl.ItemsPanel>
                                     <ItemsControl.ItemTemplate>
@@ -184,7 +181,6 @@
             Height="360"
             MinWidth="600"
             MaxWidth="600"
-            PrimaryButtonClick="KeyDialog_PrimaryButtonClick"
             PrimaryButtonStyle="{StaticResource AccentButtonStyle}">
             <Grid>
                 <controls:TextPageInputControl x:Name="TextInputControl" />

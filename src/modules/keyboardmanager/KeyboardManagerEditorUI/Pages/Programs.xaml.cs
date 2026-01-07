@@ -45,7 +45,7 @@ namespace KeyboardManagerEditorUI.Pages
             try
             {
                 _mappingService = new KeyboardMappingService();
-                LoadProgramShrotcuts();
+                LoadProgramShortcuts();
             }
             catch (Exception ex)
             {
@@ -60,7 +60,7 @@ namespace KeyboardManagerEditorUI.Pages
             Dispose();
         }
 
-        private void LoadProgramShrotcuts()
+        private void LoadProgramShortcuts()
         {
             if (_mappingService == null)
             {
@@ -188,7 +188,7 @@ namespace KeyboardManagerEditorUI.Pages
                 if (saved)
                 {
                     _mappingService.SaveSettings();
-                    LoadProgramShrotcuts(); // Refresh the list
+                    LoadProgramShortcuts(); // Refresh the list
                 }
             }
             catch (Exception ex)
@@ -228,7 +228,7 @@ namespace KeyboardManagerEditorUI.Pages
                 {
                     _mappingService.SaveSettings();
                     Shortcuts.Remove(shortcut);
-                    LoadProgramShrotcuts();
+                    LoadProgramShortcuts();
                 }
             }
             catch (Exception ex)

@@ -255,7 +255,7 @@
   <data name="TextPageInputControlTextContentTextBox.Header" xml:space="preserve">
     <value>Text to insert</value>
   </data>
-  <data name="TextPageDeleteButton.ToolTipSevice.ToolTip" xml:space="preserve">
+  <data name="TextPageDeleteButton.ToolTipService.ToolTip" xml:space="preserve">
     <value>Delete</value>
   </data>
   <data name="TextPageInputControlAllAppsCheckBox.Content" xml:space="preserve">
