@@ -34,6 +34,8 @@ public:
     void EnableCursorCapture(bool enable = true) { m_frameWait->EnableCursorCapture(enable); }
     void Close();
 
+    bool HasCapturedVideoFrames() const { return m_hasVideoSample.load(); }
+
     // Trim and save functionality
     static std::wstring ShowSaveDialogWithTrim(
         HWND hWnd,
@@ -196,4 +198,7 @@ private:
 
     std::atomic<bool> m_isRecording = false;
     std::atomic<bool> m_closed = false;
+
+    // Set once the MediaStreamSource successfully returns at least one video sample.
+    std::atomic<bool> m_hasVideoSample = false;
 };

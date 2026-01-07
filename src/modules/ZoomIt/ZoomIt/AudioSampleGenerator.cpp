@@ -23,13 +23,14 @@ AudioSampleGenerator::AudioSampleGenerator()
 {
     m_audioEvent.create(wil::EventOptions::ManualReset);
     m_endEvent.create(wil::EventOptions::ManualReset);
+    m_startEvent.create(wil::EventOptions::ManualReset);
     m_asyncInitialized.create(wil::EventOptions::ManualReset);
 }
 
 AudioSampleGenerator::~AudioSampleGenerator()
 {
     Stop();
-    if (m_started.load())
+    if (m_audioGraph)
     {
         m_audioGraph.Close();
     }
@@ -40,6 +41,10 @@ winrt::IAsyncAction AudioSampleGenerator::InitializeAsync()
     auto expected = false;
     if (m_initialized.compare_exchange_strong(expected, true))
     {
+        // Reset state in case this instance is reused.
+        m_endEvent.ResetEvent();
+        m_startEvent.ResetEvent();
+
         // Initialize the audio graph
         auto audioGraphSettings = winrt::AudioGraphSettings(winrt::AudioRenderCategory::Media);
         auto audioGraphResult = co_await winrt::AudioGraph::CreateAsync(audioGraphSettings);
@@ -86,7 +91,29 @@ winrt::AudioEncodingProperties AudioSampleGenerator::GetEncodingProperties()
 std::optional<winrt::MediaStreamSample> AudioSampleGenerator::TryGetNextSample()
 {
     CheckInitialized();
-    CheckStarted();
+
+    // The MediaStreamSource can request audio samples before we've started the audio graph.
+    // Instead of throwing (which crashes the app), wait until either Start() is called
+    // or Stop() signals end-of-stream.
+    if (!m_started.load())
+    {
+        std::vector<HANDLE> events = { m_endEvent.get(), m_startEvent.get() };
+        auto waitResult = WaitForMultipleObjectsEx(static_cast<DWORD>(events.size()), events.data(), false, INFINITE, false);
+        auto eventIndex = -1;
+        switch (waitResult)
+        {
+        case WAIT_OBJECT_0:
+        case WAIT_OBJECT_0 + 1:
+            eventIndex = waitResult - WAIT_OBJECT_0;
+            break;
+        }
+        WINRT_VERIFY(eventIndex >= 0);
+
+        if (events[eventIndex] == m_endEvent.get())
+        {
+            return std::nullopt;
+        }
+    }
 
     {
         auto lock = m_lock.lock_exclusive();
@@ -135,18 +162,27 @@ void AudioSampleGenerator::Start()
     auto expected = false;
     if (m_started.compare_exchange_strong(expected, true))
     {
+        m_endEvent.ResetEvent();
+        m_startEvent.SetEvent();
         m_audioGraph.Start();
     }
 }
 
 void AudioSampleGenerator::Stop()
 {
-    CheckInitialized();
+    // Stop may be called during teardown even if initialization hasn't completed.
+    // It must never throw.
+    m_endEvent.SetEvent();
+
+    if (!m_initialized.load())
+    {
+        return;
+    }
+
+    m_asyncInitialized.wait();
     if (m_started.load())
     {
-        m_asyncInitialized.wait();
         m_audioGraph.Stop();
-        m_endEvent.SetEvent();
     }
 }
 

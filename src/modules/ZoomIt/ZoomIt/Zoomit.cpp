@@ -4976,6 +4976,20 @@ winrt::fire_and_forget StartRecordingAsync( HWND hWnd, LPRECT rcCrop, HWND hWndR
                 OutputDebugStringW((L"Recording session failed: " + error.message() + L"\n").c_str());
             }
         }
+
+        // If no frames were captured, behave as if the hotkey was never pressed.
+        if (recordingStarted && g_GifRecordingSession && !g_GifRecordingSession->HasCapturedFrames())
+        {
+            if (stream)
+            {
+                stream.Close();
+                stream = nullptr;
+            }
+            try { co_await file.DeleteAsync(); } catch (...) {}
+            g_RecordingSession = nullptr;
+            g_GifRecordingSession = nullptr;
+            co_return;
+        }
     }
     else
     {
@@ -5003,6 +5017,20 @@ winrt::fire_and_forget StartRecordingAsync( HWND hWnd, LPRECT rcCrop, HWND hWndR
                 captureStatus = error.code();
                 OutputDebugStringW((L"Recording session failed: " + error.message() + L"\n").c_str());
             }
+        }
+
+        // If no frames were captured, behave as if the hotkey was never pressed.
+        if (recordingStarted && g_RecordingSession && !g_RecordingSession->HasCapturedVideoFrames())
+        {
+            if (stream)
+            {
+                stream.Close();
+                stream = nullptr;
+            }
+            try { co_await file.DeleteAsync(); } catch (...) {}
+            g_RecordingSession = nullptr;
+            g_GifRecordingSession = nullptr;
+            co_return;
         }
     }
 

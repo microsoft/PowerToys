@@ -41,6 +41,7 @@ private:
     wil::srwlock m_lock;
     wil::unique_event m_audioEvent;
     wil::unique_event m_endEvent;
+    wil::unique_event m_startEvent;
     wil::unique_event m_asyncInitialized;
     std::deque<winrt::Windows::Media::Core::MediaStreamSample> m_samples;
     std::atomic<bool> m_initialized = false;

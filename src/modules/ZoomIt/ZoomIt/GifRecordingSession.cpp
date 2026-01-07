@@ -374,6 +374,7 @@ HRESULT GifRecordingSession::EncodeFrame(ID3D11Texture2D* frameTexture)
 
         // Increment and log frame count
         m_frameCount++;
+        m_hasAnyFrame.store(true);
         OutputDebugStringW((L"GIF Frame #" + std::to_wstring(m_frameCount) + L" fully encoded and committed\n").c_str());
 
         return S_OK;

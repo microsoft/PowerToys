@@ -28,6 +28,8 @@ public:
     void EnableCursorCapture(bool enable = true) { m_frameWait->EnableCursorCapture(enable); }
     void Close();
 
+    bool HasCapturedFrames() const { return m_hasAnyFrame.load(); }
+
 private:
     GifRecordingSession(
         winrt::Direct3D11::IDirect3DDevice const& device,
@@ -61,6 +63,7 @@ private:
     std::atomic<bool> m_isRecording = false;
     std::atomic<bool> m_closed = false;
     std::atomic<bool> m_encoderReleased = false;
+    std::atomic<bool> m_hasAnyFrame = false;
     std::mutex m_encoderMutex;
 
     uint32_t m_frameWidth=0;

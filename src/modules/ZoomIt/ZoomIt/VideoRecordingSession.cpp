@@ -1050,8 +1050,34 @@ winrt::IAsyncAction VideoRecordingSession::StartAsync()
         auto self = shared_from_this();
 
         // Start encoding
-        auto transcode = co_await m_transcoder.PrepareMediaStreamSourceTranscodeAsync(m_streamSource, m_stream, m_encodingProfile);
-        co_await transcode.TranscodeAsync();
+        // If the user stops recording immediately after starting, MediaTranscoder may fail
+        // with MF_E_NO_SAMPLE_PROCESSED (0xC00D4A44). Avoid surfacing this as an error.
+        if (m_closed.load())
+        {
+            co_return;
+        }
+
+        winrt::PrepareTranscodeResult transcode{ nullptr };
+        try
+        {
+            transcode = co_await m_transcoder.PrepareMediaStreamSourceTranscodeAsync(m_streamSource, m_stream, m_encodingProfile);
+
+            if (m_closed.load())
+            {
+                co_return;
+            }
+
+            co_await transcode.TranscodeAsync();
+        }
+        catch (winrt::hresult_error const& error)
+        {
+            constexpr HRESULT MF_E_NO_SAMPLE_PROCESSED = static_cast<HRESULT>(0xC00D4A44);
+            if (m_closed.load() || error.code() == MF_E_NO_SAMPLE_PROCESSED)
+            {
+                co_return;
+            }
+            throw;
+        }
     }
     co_return;
 }
@@ -1196,6 +1222,7 @@ void VideoRecordingSession::OnMediaStreamSourceSampleRequested(
                 winrt::check_hresult(m_previewSwapChain->Present1(0, 0, &presentParameters));
 
                 auto sample = winrt::MediaStreamSample::CreateFromDirect3D11Surface(sampleSurface, timeStamp);
+                m_hasVideoSample.store(true);
                 request.Sample(sample);
             }
             catch (winrt::hresult_error const& error)
@@ -1214,13 +1241,23 @@ void VideoRecordingSession::OnMediaStreamSourceSampleRequested(
     }
     else if (auto audioStreamDescriptor = streamDescriptor.try_as<winrt::AudioStreamDescriptor>())
     {
-        if (auto sample = m_audioGenerator->TryGetNextSample())
+        try
         {
-            request.Sample(sample.value());
+            if (auto sample = m_audioGenerator->TryGetNextSample())
+            {
+                request.Sample(sample.value());
+            }
+            else
+            {
+                request.Sample(nullptr);
+            }
         }
-        else
+        catch (winrt::hresult_error const& error)
         {
+            OutputDebugStringW(error.message().c_str());
             request.Sample(nullptr);
+            CloseInternal();
+            return;
         }
     }
 }
@@ -2098,10 +2135,8 @@ static void DrawTimeline(HDC hdc, RECT rc, VideoRecordingSession::TrimDialogData
         DeleteObject(hTickPen);
     }
 
-    auto drawHandle = [&](int x, COLORREF color, bool pointDown)
+    auto drawGripper = [&](int x)
     {
-        const int triangleOffset = ScaleForDpi(6, dpi);
-        const int triangleInset = ScaleForDpi(4, dpi);
         RECT handleRect{
             x - timelineHandleHalfWidth,
             trackTop - (timelineHandleHeight - timelineTrackHeight) / 2,
@@ -2109,33 +2144,33 @@ static void DrawTimeline(HDC hdc, RECT rc, VideoRecordingSession::TrimDialogData
             trackTop - (timelineHandleHeight - timelineTrackHeight) / 2 + timelineHandleHeight
         };
 
-        HBRUSH hBrush = CreateSolidBrush(color);
-        FillRect(hdcMem, &handleRect, hBrush);
+        const COLORREF fillColor = darkMode ? RGB(165, 165, 165) : RGB(200, 200, 200);
+        const COLORREF lineColor = darkMode ? RGB(90, 90, 90) : RGB(120, 120, 120);
+        const int cornerRadius = (std::max)(ScaleForDpi(6, dpi), timelineHandleHalfWidth);
+        const int lineInset = ScaleForDpi(6, dpi);
+        const int lineWidth = (std::max)(1, ScaleForDpi(2, dpi));
 
-        POINT triangle[3];
-        if (pointDown)
-        {
-            triangle[0] = { x, handleRect.bottom + triangleOffset };
-            triangle[1] = { x - timelineHandleHalfWidth, handleRect.bottom - triangleInset };
-            triangle[2] = { x + timelineHandleHalfWidth, handleRect.bottom - triangleInset };
-        }
-        else
-        {
-            triangle[0] = { x, handleRect.top - triangleOffset };
-            triangle[1] = { x - timelineHandleHalfWidth, handleRect.top + triangleInset };
-            triangle[2] = { x + timelineHandleHalfWidth, handleRect.top + triangleInset };
-        }
-
+        HBRUSH hFill = CreateSolidBrush(fillColor);
         HPEN hNullPen = static_cast<HPEN>(SelectObject(hdcMem, GetStockObject(NULL_PEN)));
-        HBRUSH hPrevBrush = static_cast<HBRUSH>(SelectObject(hdcMem, hBrush));
-        Polygon(hdcMem, triangle, 3);
-        SelectObject(hdcMem, hPrevBrush);
+        HBRUSH hOldBrush2 = static_cast<HBRUSH>(SelectObject(hdcMem, hFill));
+        RoundRect(hdcMem, handleRect.left, handleRect.top, handleRect.right, handleRect.bottom, cornerRadius, cornerRadius);
+        SelectObject(hdcMem, hOldBrush2);
         SelectObject(hdcMem, hNullPen);
-        DeleteObject(hBrush);
+        DeleteObject(hFill);
+
+        // Dark vertical line in the middle.
+        HPEN hLinePen = CreatePen(PS_SOLID, lineWidth, lineColor);
+        HPEN hOldLinePen = static_cast<HPEN>(SelectObject(hdcMem, hLinePen));
+        const int y1 = handleRect.top + lineInset;
+        const int y2 = handleRect.bottom - lineInset;
+        MoveToEx(hdcMem, x, y1, nullptr);
+        LineTo(hdcMem, x, y2);
+        SelectObject(hdcMem, hOldLinePen);
+        DeleteObject(hLinePen);
     };
 
-    drawHandle(startX, RGB(76, 175, 80), false);
-    drawHandle(endX, RGB(244, 67, 54), true);
+    drawGripper(startX);
+    drawGripper(endX);
 
     const int posX = std::clamp(TimelineTimeToClientX(pData, pData->currentPosition, width, dpi), trackLeft, trackRight);
     const int posLineWidth = ScaleForDpi(2, dpi);
