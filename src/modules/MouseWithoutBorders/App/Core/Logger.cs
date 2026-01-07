@@ -265,14 +265,14 @@ internal static class Logger
 
     private static bool PrivateDump(StringBuilder sb, object obj, string objName, int level, int maxLevel, bool recurse)
     {
-        if (obj == null || ((maxLevel >= 0) && (level >= maxLevel)) || obj is Cursor)
+        if (obj == null || ((maxLevel is >= 0) && (level >= maxLevel)) || obj is Cursor)
         {
             return false;
         }
 
         var objString = obj.ToString();
         var values = new string[7];
-        values[0] = new string('-', Math.Max(level - 1, 0));
+        values[0] = new string('-', Math.Max(level - 1, 0) * 2);
         values[1] = objName;
         /* values[2] = " "; */
         /* values[3] = t.FullName; */
