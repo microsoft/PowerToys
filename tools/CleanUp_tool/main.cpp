@@ -3,6 +3,7 @@
 #include <cstring>
 #include <shlwapi.h>
 #include <shlobj.h>
+#include <iostream>
 
 static wchar_t szWindowClass[] = L"CleanUp tool";
 static wchar_t szTitle[] = L"Tool to clean up FancyZones installation";
@@ -128,13 +129,15 @@ void RemoveSettingsFolder()
     HRESULT hr = CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
     if (FAILED(hr))
     {
+        std::wcerr << L"[AUDIT] CoInitializeEx failed: 0x" << std::hex << hr << std::endl;
         return;
     }
 
     IFileOperation* pfo;
     hr = CoCreateInstance(CLSID_FileOperation, nullptr, CLSCTX_ALL, IID_PPV_ARGS(&pfo));
     if (FAILED(hr))
-    {
+{
+        std::wcerr << L"[AUDIT] CoCreateInstance failed: 0x" << std::hex << hr << std::endl;
         return;
     }
 
@@ -148,13 +151,29 @@ void RemoveSettingsFolder()
             if (SUCCEEDED(hr))
             {
                 hr = pfo->DeleteItem(psiFrom, nullptr);
+                if (FAILED(hr))
+                {
+                    std::wcerr << L"[AUDIT] DeleteItem failed for path: " << settingsPath << L", error: 0x" << std::hex << hr << std::endl;
+                }
             }
             psiFrom->Release();
+        }
+        else
+        {
+            std::wcerr << L"[AUDIT] SHCreateItemFromParsingName failed for path: " << settingsPath << L", error: 0x" << std::hex << hr << std::endl;
         }
 
         if (SUCCEEDED(hr))
         {
             hr = pfo->PerformOperations();
+            if (SUCCEEDED(hr))
+            {
+                std::wcout << L"[AUDIT] Successfully deleted settings folder: " << settingsPath << std::endl;
+            }
+            else
+            {
+                std::wcerr << L"[AUDIT] PerformOperations failed: 0x" << std::hex << hr << std::endl;
+            }
         }
     }
     pfo->Release();

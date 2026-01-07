@@ -294,7 +294,8 @@ void LogWMI()
             break;
         }
 
-        LogWMIProp(pClassObject, L"InstanceName");
+        // InstanceName contains sensitive device identification - redact it
+        Logger::log(L"InstanceName : [REDACTED]");
         
         LogWMIProp(pClassObject, L"YearOfManufacture");
         LogWMIProp(pClassObject, L"WeekOfManufacture");
@@ -303,8 +304,9 @@ void LogWMI()
         LogWMIProp(pClassObject, L"UserFriendlyName");
         LogWMIProp(pClassObject, L"ManufacturerName");
 
-        LogWMIProp(pClassObject, L"SerialNumberID");
-        LogWMIProp(pClassObject, L"ProductCodeID");
+        // Serial numbers and product codes are sensitive device identifiers - redact them
+        Logger::log(L"SerialNumberID : [REDACTED]");
+        Logger::log(L"ProductCodeID : [REDACTED]");
         
         Logger::log(L"");
 
@@ -414,13 +416,15 @@ void LogWMICIMV2()
             break;
         }
 
-        LogWMIProp(pClassObject, L"DeviceID");
+        // DeviceID and PNPDeviceID contain sensitive device identifiers - redact them
+        Logger::log(L"DeviceID : [REDACTED]");
         LogWMIProp(pClassObject, L"Caption");
         LogWMIProp(pClassObject, L"Description");
         LogWMIProp(pClassObject, L"MonitorManufacturer");
         LogWMIProp(pClassObject, L"MonitorType");
         LogWMIProp(pClassObject, L"Name");
-        LogWMIProp(pClassObject, L"PNPDeviceID");
+        // PNPDeviceID is sensitive device identification information - redact it
+        Logger::log(L"PNPDeviceID : [REDACTED]");
         LogWMIProp(pClassObject, L"Status");
 
         LogWMIProp(pClassObject, L"Availability");

@@ -31,9 +31,13 @@ namespace ManagedCommon
         public ThemeListener()
         {
             var currentUser = WindowsIdentity.GetCurrent();
+            var userSid = currentUser.User.Value;
+            var keyPath = $"{userSid}\\\\{ThemeHelpers.HkeyWindowsPersonalizeTheme.Replace("\\", "\\\\")}";
+            var valueName = ThemeHelpers.HValueAppTheme;
             var query = new WqlEventQuery(
-                $"SELECT * FROM RegistryValueChangeEvent WHERE Hive='HKEY_USERS' AND " +
-                $"KeyPath='{currentUser.User.Value}\\\\{ThemeHelpers.HkeyWindowsPersonalizeTheme.Replace("\\", "\\\\")}' AND ValueName='{ThemeHelpers.HValueAppTheme}'");
+                "SELECT * FROM RegistryValueChangeEvent WHERE Hive='HKEY_USERS' AND " +
+                "KeyPath=? AND ValueName=?",
+                new string[] { keyPath, valueName });
             watcher = new ManagementEventWatcher(query);
             watcher.EventArrived += Watcher_EventArrived;
             watcher.Start();

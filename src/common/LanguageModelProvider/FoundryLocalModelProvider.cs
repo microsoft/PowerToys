@@ -12,6 +12,7 @@ namespace LanguageModelProvider;
 
 public sealed class FoundryLocalModelProvider : ILanguageModelProvider
 {
+    private const string LocalServiceApiKey = "none";
     private FoundryClient? _foundryClient;
     private IEnumerable<FoundryCatalogModel>? _catalogModels;
     private string? _serviceUrl;
@@ -63,7 +64,7 @@ public sealed class FoundryLocalModelProvider : ILanguageModelProvider
         Logger.LogInfo($"[FoundryLocal] Creating OpenAI client with endpoint: {endpointUri}");
 
         return new OpenAIClient(
-            new ApiKeyCredential("none"),
+            new ApiKeyCredential(LocalServiceApiKey),
             new OpenAIClientOptions { Endpoint = endpointUri, NetworkTimeout = TimeSpan.FromMinutes(5) })
             .GetChatClient(modelId)
             .AsIChatClient();
@@ -87,7 +88,7 @@ public sealed class FoundryLocalModelProvider : ILanguageModelProvider
             return string.Empty;
         }
 
-        return $"new OpenAIClient(new ApiKeyCredential(\"none\"), new OpenAIClientOptions{{ Endpoint = new Uri(\"{_serviceUrl}/v1\") }}).GetChatClient(\"{modelId}\").AsIChatClient()";
+        return $"new OpenAIClient(new ApiKeyCredential(\"{LocalServiceApiKey}\"), new OpenAIClientOptions{{ Endpoint = new Uri(\"{_serviceUrl}/v1\") }}).GetChatClient(\"{modelId}\").AsIChatClient()";
     }
 
     public async Task<IEnumerable<ModelDetails>> GetModelsAsync(CancellationToken cancelationToken = default)
