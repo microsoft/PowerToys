@@ -6,6 +6,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using System.Windows.Input;
 
 using global::PowerToys.GPOWrapper;
@@ -295,9 +296,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public ICommand InstallHeifExtensionCommand => new RelayCommand(InstallHeifExtension);
+        public ICommand InstallHeifExtensionCommand => new AsyncCommand(InstallHeifExtensionAsync);
 
-        private async void InstallHeifExtension()
+        private async Task InstallHeifExtensionAsync()
         {
             try
             {
@@ -334,9 +335,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public ICommand InstallAvifExtensionCommand => new RelayCommand(InstallAvifExtension);
+        public ICommand InstallAvifExtensionCommand => new AsyncCommand(InstallAvifExtensionAsync);
 
-        private async void InstallAvifExtension()
+        private async Task InstallAvifExtensionAsync()
         {
             try
             {
