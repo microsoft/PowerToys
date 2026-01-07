@@ -2921,15 +2921,32 @@ LRESULT CALLBACK StaticTextSubclassProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPA
             hOldFont = static_cast<HFONT>(SelectObject(hdc, hFont));
         }
 
-        // Get style to determine alignment
+        // Get style to determine alignment and wrapping behavior
         LONG style = GetWindowLong(hWnd, GWL_STYLE);
-        UINT format = DT_SINGLELINE | DT_VCENTER;
+        const LONG staticType = style & SS_TYPEMASK;
+
+        UINT format = 0;
         if (style & SS_CENTER)
             format |= DT_CENTER;
         else if (style & SS_RIGHT)
             format |= DT_RIGHT;
         else
             format |= DT_LEFT;
+
+        if (style & SS_NOPREFIX)
+            format |= DT_NOPREFIX;
+
+        const bool noWrap = (staticType == SS_LEFTNOWORDWRAP) || (staticType == SS_SIMPLE);
+        if (noWrap)
+        {
+            // Single-line labels should match the classic static control behavior.
+            format |= DT_SINGLELINE | DT_VCENTER | DT_END_ELLIPSIS;
+        }
+        else
+        {
+            // Multi-line/static text (LTEXT) should wrap like the default control.
+            format |= DT_WORDBREAK | DT_EDITCONTROL;
+        }
 
         DrawText(hdc, text, -1, &rc, format);
 
@@ -2945,7 +2962,6 @@ LRESULT CALLBACK StaticTextSubclassProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPA
         {
         case WM_ERASEBKGND:
             {
-                OutputDebugStringW(L"[Static] WM_ERASEBKGND\n");
                 HDC hdc = reinterpret_cast<HDC>(wParam);
                 RECT rc;
                 GetClientRect(hWnd, &rc);
@@ -2955,10 +2971,6 @@ LRESULT CALLBACK StaticTextSubclassProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPA
 
         case WM_PAINT:
             {
-                TCHAR dbgText[512] = { 0 };
-                GetWindowText(hWnd, dbgText, _countof(dbgText));
-                OutputDebugStringW((std::wstring(L"[Static] WM_PAINT: ") + dbgText + L" enabled=" + (IsWindowEnabled(hWnd) ? L"1" : L"0") + L"\n").c_str());
-                
                 PAINTSTRUCT ps;
                 HDC hdc = BeginPaint(hWnd, &ps);
                 paintStaticText(hWnd, hdc);
@@ -2983,7 +2995,6 @@ LRESULT CALLBACK StaticTextSubclassProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPA
 
         case WM_ENABLE:
             {
-                OutputDebugStringW((std::wstring(L"[Static] WM_ENABLE: enabled=") + (wParam ? L"1" : L"0") + L"\n").c_str());
                 // Let base window proc handle enable state change, but avoid any subclass chain
                 // that might trigger themed drawing
                 LRESULT result = DefWindowProc(hWnd, uMsg, wParam, lParam);
@@ -3370,22 +3381,25 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
         SendMessage( GetDlgItem( g_OptionsTabs[DEMOTYPE_PAGE].hPage, IDC_DEMOTYPE_SPEED_SLIDER ), TBM_SETPOS, true, g_DemoTypeSpeedSlider );
         CheckDlgButton( g_OptionsTabs[DEMOTYPE_PAGE].hPage, IDC_DEMOTYPE_USER_DRIVEN, g_DemoTypeUserDriven ? BST_CHECKED: BST_UNCHECKED );
 
-        // Apply DPI scaling to the dialog
+        // Apply DPI scaling to the main dialog and to controls inside tab pages.
+        // Note: Scaling the main dialog only scales its direct children (including the
+        // tab page windows), but NOT the controls contained within the tab pages.
+        // So we scale each tab page's child controls separately.
         currentDpi = GetDpiForWindowHelper( hDlg );
         if( currentDpi != DPI_BASELINE )
         {
             ScaleDialogForDpi( hDlg, currentDpi, DPI_BASELINE );
-            // Scale tab pages as well
+
             for( int i = 0; i < sizeof( g_OptionsTabs ) / sizeof( g_OptionsTabs[0] ); i++ )
             {
                 if( g_OptionsTabs[i].hPage )
                 {
-                    ScaleDialogForDpi( g_OptionsTabs[i].hPage, currentDpi, DPI_BASELINE );
+                    ScaleChildControlsForDpi( g_OptionsTabs[i].hPage, currentDpi, DPI_BASELINE );
                 }
             }
-            // Reposition tab pages to fit the scaled tab control
-            RepositionTabPages( hTabCtrl );
         }
+        // Always reposition tab pages to fit the tab control (whether scaled or not)
+        RepositionTabPages( hTabCtrl );
 
         // Apply dark mode to the dialog and all tab pages
         ApplyDarkModeToDialog( hDlg );
@@ -3435,15 +3449,14 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
         {
             const RECT* pSuggestedRect = reinterpret_cast<const RECT*>(lParam);
 
-            // Scale the main dialog
+            // Scale the main dialog (direct children) and tab page contents.
             ScaleDialogForDpi( hDlg, newDpi, currentDpi );
 
-            // Scale all tab pages
             for( int i = 0; i < sizeof( g_OptionsTabs ) / sizeof( g_OptionsTabs[0] ); i++ )
             {
                 if( g_OptionsTabs[i].hPage )
                 {
-                    ScaleDialogForDpi( g_OptionsTabs[i].hPage, newDpi, currentDpi );
+                    ScaleChildControlsForDpi( g_OptionsTabs[i].hPage, newDpi, currentDpi );
                 }
             }
             

@@ -366,16 +366,11 @@ void ApplyDarkModeToDialog(HWND hDlg)
                 // Check if this is a text label (not an owner-draw or image control)
                 LONG style = GetWindowLong(hChild, GWL_STYLE);
                 LONG staticType = style & SS_TYPEMASK;
-                
-                wchar_t text[128] = { 0 };
-                GetWindowTextW(hChild, text, _countof(text));
-                OutputDebugStringW((std::wstring(L"[Dark] Static '") + text + L"' style=0x" + std::to_wstring(style) + L" type=" + std::to_wstring(staticType) + L"\n").c_str());
-                
+
                 if (staticType == SS_LEFT || staticType == SS_CENTER || staticType == SS_RIGHT ||
                     staticType == SS_LEFTNOWORDWRAP || staticType == SS_SIMPLE)
                 {
                     // Subclass text labels for proper dark mode painting
-                    OutputDebugStringW((std::wstring(L"[Dark] Subclassing static: ") + text + L"\n").c_str());
                     SetWindowTheme(hChild, L"", L"");
                     SetWindowSubclass(hChild, StaticTextSubclassProc, 5, 0);
                 }
@@ -793,6 +788,59 @@ void ScaleDialogForDpi( HWND hDlg, UINT newDpi, UINT oldDpi )
                 SendMessage( hDlg, WM_SETFONT, reinterpret_cast<WPARAM>(hNewFont), TRUE );
             }
         }
+    }
+}
+
+//----------------------------------------------------------------------------
+//
+// ScaleChildControlsForDpi
+//
+// Scales a window's direct child controls (and their fonts) for the specified DPI.
+// Unlike ScaleDialogForDpi, this does not resize the parent window itself.
+//
+// This is useful for child dialogs used as tab pages: the tab page window is
+// already scaled when the parent options dialog is scaled, but the controls
+// inside the page are not (because they are grandchildren of the options dialog).
+//
+//----------------------------------------------------------------------------
+void ScaleChildControlsForDpi( HWND hParent, UINT newDpi, UINT oldDpi )
+{
+    if( newDpi == oldDpi || newDpi == 0 || oldDpi == 0 )
+    {
+        return;
+    }
+
+    HWND hChild = GetWindow( hParent, GW_CHILD );
+    while( hChild != nullptr )
+    {
+        RECT childRect;
+        GetWindowRect( hChild, &childRect );
+        MapWindowPoints( nullptr, hParent, reinterpret_cast<LPPOINT>(&childRect), 2 );
+
+        int x = MulDiv( childRect.left, newDpi, oldDpi );
+        int y = MulDiv( childRect.top, newDpi, oldDpi );
+        int width = MulDiv( childRect.right - childRect.left, newDpi, oldDpi );
+        int height = MulDiv( childRect.bottom - childRect.top, newDpi, oldDpi );
+
+        SetWindowPos( hChild, nullptr, x, y, width, height, SWP_NOZORDER | SWP_NOACTIVATE );
+
+        // Scale the font for the control
+        HFONT hFont = reinterpret_cast<HFONT>(SendMessage( hChild, WM_GETFONT, 0, 0 ));
+        if( hFont != nullptr )
+        {
+            LOGFONT lf{};
+            if( GetObject( hFont, sizeof(lf), &lf ) )
+            {
+                lf.lfHeight = MulDiv( lf.lfHeight, newDpi, oldDpi );
+                HFONT hNewFont = CreateFontIndirect( &lf );
+                if( hNewFont )
+                {
+                    SendMessage( hChild, WM_SETFONT, reinterpret_cast<WPARAM>(hNewFont), TRUE );
+                }
+            }
+        }
+
+        hChild = GetWindow( hChild, GW_HWNDNEXT );
     }
 }
 

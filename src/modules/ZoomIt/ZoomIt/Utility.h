@@ -23,6 +23,7 @@ POINT ScalePointInRects( POINT point, const RECT& source, const RECT& target );
 
 // Dialog DPI scaling functions
 void ScaleDialogForDpi( HWND hDlg, UINT newDpi, UINT oldDpi = DPI_BASELINE );
+void ScaleChildControlsForDpi( HWND hParent, UINT newDpi, UINT oldDpi = DPI_BASELINE );
 void HandleDialogDpiChange( HWND hDlg, WPARAM wParam, LPARAM lParam, UINT& currentDpi );
 
 //----------------------------------------------------------------------------
