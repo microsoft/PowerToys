@@ -17,6 +17,7 @@ using System.Threading.Tasks;
 using ImageResizer.Models.ResizeResults;
 using ImageResizer.Properties;
 using ImageResizer.Services;
+using ImageResizer.Utilities;
 
 namespace ImageResizer.Models
 {
@@ -149,12 +150,11 @@ namespace ImageResizer.Models
             return Process(reportProgress, Settings.Default, cancellationToken);
         }
 
-        public IEnumerable<ResizeError> Process(Action<int, double> reportProgress, Settings settings, CancellationToken cancellationToken)
+        public IEnumerable<ResizeResult> Process(Action<int, double> reportProgress, Settings settings, CancellationToken cancellationToken)
         {
             double total = Files.Count;
             int completed = 0;
             ConcurrentBag<ResizeResult> results = [];
-            var errors = new ConcurrentBag<ResizeError>();
 
             // TODO: If we ever switch to Windows.Graphics.Imaging, we can get a lot more throughput by using the async
             //       APIs and a custom SynchronizationContext
@@ -168,12 +168,12 @@ namespace ImageResizer.Models
                 {
                     try
                     {
-                        var result = Execute(file);
+                        var result = Execute(file, settings);
                         results.Add(result);
                     }
                     catch (Exception ex)
                     {
-                        errors.Add(new ResizeError { File = _fileSystem.Path.GetFileName(file), Error = ex.Message });
+                        results.Add(new ErrorResult(file, ex));
                     }
 
                     Interlocked.Increment(ref completed);
@@ -186,7 +186,7 @@ namespace ImageResizer.Models
         protected virtual ResizeResult Execute(string file, Settings settings)
         {
             var aiService = _aiSuperResolutionService ?? NoOpAiSuperResolutionService.Instance;
-            return new ResizeOperation(file, DestinationDirectory, settings, aiService).Execute();
+            return new ResizeOperation(file, DestinationDirectory, settings, _fileSystem, new WindowsRecycleBinService(), aiService).Execute();
         }
     }
 }

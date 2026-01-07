@@ -338,6 +338,7 @@
   <data name="Results_WarningItemType_AccessibilityText" xml:space="preserve">
     <value>Warning</value>
     <comment>The accessibility item type for warnings displayed on the results page</comment>
+  </data>
   <data name="Input_AiSuperResolution" xml:space="preserve">
     <value>Super resolution</value>
   </data>
