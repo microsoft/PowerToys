@@ -1,14 +1,10 @@
 # Community
 
-The PowerToys team is extremely grateful to have the support of an amazing active community.  The work you do is incredibly important.  PowerToys wouldn't be near what it is without your help filing bugs, updating documentation, guiding the design, or writing features.  We want to say thanks and to recognize your work.  This is a living document dedicated to highlighting the high impact community members and their contributions.
+The PowerToys team is extremely grateful to have the support of an amazing active community. The work you do is incredibly important. PowerToys wouldn't be near what it is without your help filing bugs, updating documentation, guiding the design, or writing features. We want to say thanks and to recognize your work. This is a living document dedicated to highlighting the high impact community members and their contributions.
 
 Names are in alphabetical order based on first name.
 
 ## High impact community members
-
-### [@Noraa-Junker](https://github.com/Noraa-Junker) - [Noraa Junker](https://noraajunker.ch)
-
-Noraa has helped triaging, discussing, and creating a substantial number of issues and contributed features/fixes. Noraa was the primary person for helping build the File Explorer preview pane handler for developer files.
 
 ### [@cgaarden](https://github.com/cgaarden) - [Christian Gaarden Gaardmark](https://www.onegreatworld.com)
 
@@ -61,7 +57,7 @@ Joe has helped triaging, discussing, issues as well as fixing bugs and building 
 ### [@joadoumie](https://github.com/joadoumie) - Jordi Adoumie
 
 Jordi helped innovate amazing new features into Advanced Paste and helped create Command Palette (PowerToys Run v2)
-  
+
 ### [@jsoref](https://github.com/jsoref) - [Josh Soref](https://check-spelling.dev/)
 
 Helping keep our spelling correct :)
@@ -74,9 +70,13 @@ Color Picker is from Martin.
 
 Michael contributed the [initial version](https://github.com/microsoft/PowerToys/issues/23216) of the Mouse Jump tool and [a number of updates](https://github.com/microsoft/PowerToys/pulls?q=is%3Apr+author%3Amikeclayton) based on his FancyMouse utility.
 
+### [@Noraa-Junker](https://github.com/Noraa-Junker) - [Noraa Junker](https://noraajunker.ch)
+
+Noraa has helped triaging, discussing, and creating a substantial number of issues and contributed features/fixes. Noraa was the primary person for helping build the File Explorer preview pane handler for developer files.
+
 ### [@pedrolamas](https://github.com/pedrolamas/) - Pedro Lamas
 
-Pedro helped create the thumbnail and File Explorer previewers for 3D files like STL and GCode.  If you like 3D printing, these are very helpful.
+Pedro helped create the thumbnail and File Explorer previewers for 3D files like STL and GCode. If you like 3D printing, these are very helpful.
 
 ### [@PesBandi](https://github.com/PesBandi/) - PesBandi
 
@@ -84,7 +84,7 @@ PesBandi has helped do massive amounts of Quick Accent and bug fixes.
 
 ### [@riverar](https://github.com/riverar) - [Rafael Rivera](https://withinrafael.com/)
 
-Rafael has helped do the [upgrade from CppWinRT 1.x to 2.0](https://github.com/microsoft/PowerToys/issues/1907).  He directly provided feedback to the CppWinRT team for bugs from this migration as well.
+Rafael has helped do the [upgrade from CppWinRT 1.x to 2.0](https://github.com/microsoft/PowerToys/issues/1907). He directly provided feedback to the CppWinRT team for bugs from this migration as well.
 
 ### [@royvou](https://github.com/royvou)
 
@@ -116,7 +116,7 @@ Initial base of jjw24's fork, which makes it the base of PowerToys Run.
 
 ### [Text-Grab](https://github.com/TheJoeFin/Text-Grab) - Joseph Finney
 
-Joe helped develop and contribute to the Text Extractor utility.  It is directly based on his Text Grab application.
+Joe helped develop and contribute to the Text Extractor utility. It is directly based on his Text Grab application.
 
 ## Microsoft community members
 
@@ -124,7 +124,7 @@ We would like to also directly call out some extremely helpful Microsoft employe
 
 ### [@betsegaw](https://github.com/betsegaw/) - [Betsegaw Tadele](http://www.dreamsofameaningfullife.com/)
 
-Window Walker, inside PowerToys Run, is from Beta.  
+Window Walker, inside PowerToys Run, is from Beta.
 
 ### [@TheMrJukes](https://github.com/TheMrJukes/) - Bret Anderson
 
@@ -162,7 +162,7 @@ ZoomIt's Video Recording Session code is based on Robert Mikhayelyan's <https://
 
 ### Microsoft InVEST team
 
-This amazing team helped PowerToys develop PowerToys Run and Keyboard manager as well as update our Settings to v2.  @alekhyareddy28, @arjunbalgovind, @jyuwono @laviusmotileng-ms, @ryanbodrug-microsoft, @saahmedm, @somil55, @traies, @udit3333
+This amazing team helped PowerToys develop PowerToys Run and Keyboard manager as well as update our Settings to v2. @alekhyareddy28, @arjunbalgovind, @jyuwono @laviusmotileng-ms, @ryanbodrug-microsoft, @saahmedm, @somil55, @traies, @udit3333
 
 ## Mouse Without Borders original contributors
 
