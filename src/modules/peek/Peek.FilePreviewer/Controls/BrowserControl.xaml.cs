@@ -34,6 +34,11 @@ namespace Peek.FilePreviewer.Controls
 
         private Color? _originalBackgroundColor;
 
+        /// <summary>
+        /// URI of the current source being previewed (for resource filtering)
+        /// </summary>
+        private Uri? _currentSourceUri;
+
         public delegate void NavigationCompletedHandler(WebView2? sender, CoreWebView2NavigationCompletedEventArgs? args);
 
         public delegate void DOMContentLoadedHandler(CoreWebView2? sender, CoreWebView2DOMContentLoadedEventArgs? args);
@@ -97,6 +102,7 @@ namespace Peek.FilePreviewer.Controls
         {
             this.InitializeComponent();
             Environment.SetEnvironmentVariable("WEBVIEW2_USER_DATA_FOLDER", TempFolderPath.Path, EnvironmentVariableTarget.Process);
+            Environment.SetEnvironmentVariable("WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS", "--block-new-web-contents", EnvironmentVariableTarget.Process);
         }
 
         public void Dispose()
@@ -105,6 +111,7 @@ namespace Peek.FilePreviewer.Controls
             {
                 PreviewBrowser.CoreWebView2.DOMContentLoaded -= CoreWebView2_DOMContentLoaded;
                 PreviewBrowser.CoreWebView2.ContextMenuRequested -= CoreWebView2_ContextMenuRequested;
+                RemoveResourceFilter();
             }
         }
 
@@ -123,6 +130,14 @@ namespace Peek.FilePreviewer.Controls
             {
                 /* CoreWebView2.Navigate() will always trigger a navigation even if the content/URI is the same.
                  * Use WebView2.Source to avoid re-navigating to the same content. */
+                _currentSourceUri = Source;
+
+                // Only apply resource filter for non-dev files
+                if (!IsDevFilePreview)
+                {
+                    ApplyResourceFilter();
+                }
+
                 PreviewBrowser.CoreWebView2.Navigate(Source.ToString());
             }
         }
@@ -146,10 +161,14 @@ namespace Peek.FilePreviewer.Controls
                 if (IsDevFilePreview)
                 {
                     PreviewBrowser.CoreWebView2.SetVirtualHostNameToFolderMapping(Microsoft.PowerToys.FilePreviewCommon.MonacoHelper.VirtualHostName, Microsoft.PowerToys.FilePreviewCommon.MonacoHelper.MonacoDirectory, CoreWebView2HostResourceAccessKind.Allow);
+
+                    // Remove resource filter for dev files (Monaco needs to load resources)
+                    RemoveResourceFilter();
                 }
                 else
                 {
                     PreviewBrowser.CoreWebView2.ClearVirtualHostNameToFolderMapping(Microsoft.PowerToys.FilePreviewCommon.MonacoHelper.VirtualHostName);
+                    ApplyResourceFilter();
                 }
             }
         }
@@ -280,6 +299,34 @@ namespace Peek.FilePreviewer.Controls
                 {
                     contextMenu.Items.Add(menuItem);
                 }
+            }
+        }
+
+        /// <summary>
+        /// Applies strict resource filtering for non-dev files to block external resources.
+        /// This prevents XSS attacks and unwanted external content loading.
+        /// </summary>
+        private void ApplyResourceFilter()
+        {
+            // Remove existing handler to prevent duplicate subscriptions
+            RemoveResourceFilter();
+
+            // Add filter and subscribe to resource requests
+            PreviewBrowser.CoreWebView2.AddWebResourceRequestedFilter("*", CoreWebView2WebResourceContext.All);
+            PreviewBrowser.CoreWebView2.WebResourceRequested += CoreWebView2_WebResourceRequested;
+        }
+
+        private void RemoveResourceFilter()
+        {
+            PreviewBrowser.CoreWebView2.WebResourceRequested -= CoreWebView2_WebResourceRequested;
+        }
+
+        private void CoreWebView2_WebResourceRequested(CoreWebView2 sender, CoreWebView2WebResourceRequestedEventArgs args)
+        {
+            // Only allow loading the specified source file. Block all other resources for security.
+            if (_currentSourceUri != null && new Uri(args.Request.Uri) != _currentSourceUri)
+            {
+                args.Response = PreviewBrowser.CoreWebView2.Environment.CreateWebResourceResponse(null, 403, "Forbidden", null);
             }
         }
 
