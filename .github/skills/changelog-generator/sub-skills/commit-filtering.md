@@ -2,81 +2,91 @@
 
 This sub-skill defines rules for filtering commits to include in the changelog.
 
-## Filter Out Commits Already in Start Tag
+## Understanding the Branch Model
 
-**CRITICAL: Skip commits that are already included in the start tag to avoid duplicates.**
+PowerToys uses a release branch model where fixes are cherry-picked from main:
 
-This happens when:
-- Cherry-picks from main to stable branch
-- Backported fixes that were already released
-- Commits included in a previous release
+```
+main:     A---B---C---D---E---F---G---H  (HEAD)
+               \
+release:        X---Y---Z  (v0.96.1 tag)
+                    ↑
+            (X, Y are cherry-picks of C, E from main)
+```
 
-### Method 1: Git Merge-Base (Local, Most Reliable)
+**Key insight:** When comparing `v0.96.1...main`:
+- The release tag (v0.96.1) is on a **different branch** than main
+- GitHub compare finds the merge-base and returns commits on main after that point
+- Commits C and E appear in the results even though they were cherry-picked to release as X and Y
+- **The SHAs are different**, so SHA-based filtering won't work!
+
+## ⚠️ CRITICAL: Filter by PR Number, Not SHA
+
+Since cherry-picks have different SHAs, you **MUST** check by PR number:
 
 ```powershell
-$startTag = "v0.96.0"
-$commitSha = "abc1234"
+# Extract PR number from commit message and check if it exists in the release tag
+$prNumber = "43785"
+$startTag = "v0.96.1"
 
-# Check if commit is ancestor of (already included in) start tag
-# Returns exit code 0 if true, 1 if false
-git merge-base --is-ancestor $commitSha $startTag
-if ($LASTEXITCODE -eq 0) {
-    Write-Host "SKIP: Commit $commitSha already in $startTag"
+# Search the release branch for this PR number in commit messages
+$cherryPicked = git log $startTag --oneline --grep="#$prNumber"
+if ($cherryPicked) {
+    Write-Host "SKIP: PR #$prNumber was cherry-picked to $startTag"
 } else {
-    Write-Host "PROCESS: Commit $commitSha is new"
+    Write-Host "INCLUDE: PR #$prNumber is new since $startTag"
 }
 ```
 
-### Method 2: GitHub API Compare (Auto-Filtered)
+## Complete Filtering Workflow
 
 ```powershell
-# The compare API already handles this - it returns only commits 
-# that are in the "head" but NOT in the "base"
-$compare = gh api repos/microsoft/PowerToys/compare/v0.96.0...v0.96.1 | ConvertFrom-Json
+$startTag = "v0.96.1"   # Release tag (on release branch)
+$endRef = "main"         # Target (main branch)
 
-# These commits are guaranteed to be NEW (not in v0.96.0)
-$newCommits = $compare.commits
-Write-Host "Found $($newCommits.Count) new commits not in start tag"
-```
+# Step 1: Get all commits from main since the merge-base with release tag
+$commits = gh api "repos/microsoft/PowerToys/compare/$startTag...$endRef" `
+    --jq '.commits[] | {sha: .sha, message: .commit.message}' | ConvertFrom-Json
 
-### Method 3: Check Tags Containing Commit
+# Step 2: Build list of PR numbers already in the release tag
+$releasePRs = git log $startTag --oneline | Select-String -Pattern '#(\d+)' -AllMatches | 
+    ForEach-Object { $_.Matches.Groups[1].Value } | Sort-Object -Unique
 
-```powershell
-$commitSha = "abc1234"
-$tagsContaining = git tag --contains $commitSha
-if ($tagsContaining -match "v0\.96\.0") {
-    Write-Host "SKIP: Commit already released in v0.96.0"
-}
-```
+Write-Host "PRs already in $startTag : $($releasePRs.Count)"
 
-## Batch Filter Script
-
-```powershell
-$startTag = "v0.96.0"
-$endTag = "v0.96.1"
-
-# Get commits from compare (already filtered - only new commits)
-$newCommits = gh api repos/microsoft/PowerToys/compare/$startTag...$endTag --jq '.commits[] | {sha: .sha, message: .commit.message}' | ConvertFrom-Json
-
-# Additional validation: filter out any merge commits that reference old PRs
-$filteredCommits = $newCommits | Where-Object {
-    $sha = $_.sha
-    # Double-check: ensure commit is not ancestor of start tag
-    git merge-base --is-ancestor $sha $startTag 2>$null
-    $LASTEXITCODE -ne 0  # Keep only if NOT an ancestor
+# Step 3: Filter commits - skip if PR was cherry-picked to release
+$newCommits = @()
+foreach ($commit in $commits) {
+    if ($commit.message -match '#(\d+)') {
+        $prNumber = $matches[1]
+        if ($releasePRs -contains $prNumber) {
+            Write-Host "SKIP: PR #$prNumber already in $startTag (cherry-picked)"
+            continue
+        }
+    }
+    $newCommits += $commit
 }
 
-Write-Host "After filtering: $($filteredCommits.Count) commits to process"
+Write-Host "New commits to process: $($newCommits.Count)"
 ```
+
+## Why SHA-Based Methods Don't Work Here
+
+| Method | Works for same branch? | Works for cross-branch (cherry-picks)? |
+|--------|------------------------|----------------------------------------|
+| `git merge-base --is-ancestor` | ✅ Yes | ❌ No - different SHAs |
+| `git tag --contains` | ✅ Yes | ❌ No - tag is on different branch |
+| GitHub Compare API | ✅ Yes | ❌ No - returns commits by SHA |
+| **PR number matching** | ✅ Yes | ✅ **Yes** |
 
 ## Skip Rules Summary
 
-| Condition | Action |
-|-----------|--------|
-| `git merge-base --is-ancestor $sha $startTag` returns 0 | SKIP - already in start tag |
-| Commit message contains "cherry-pick" + old PR number | SKIP - likely backport |
-| PR was merged before start tag date | SKIP - old PR |
-| Same PR number already processed | SKIP - duplicate |
+| Priority | Condition | Action |
+|----------|-----------|--------|
+| 1 | PR number found in `git log $startTag --grep="#$prNumber"` | **SKIP** - cherry-picked |
+| 2 | Same PR number already processed in this run | **SKIP** - duplicate |
+| 3 | Bot author (dependabot, etc.) | **SKIP** - unless user-visible |
+| 4 | Internal-only change (CI, tests, refactor) | Move to **Development** section |
 
 ## User-Facing vs Non-User-Facing
 

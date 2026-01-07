@@ -93,6 +93,7 @@
 \.xz$
 \.zip$
 ^\.github/actions/spell-check/
+^\.github/skills/
 ^\.github/workflows/spelling\d*\.yml$
 ^\.gitmodules$
 ^\Q.pipelines/ESRPSigning_core.json\E$
