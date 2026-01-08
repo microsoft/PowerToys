@@ -1698,6 +1698,35 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
     <value>Provides extended features but may use different regex syntax</value>
     <comment>Boost is a product name, should not be translated</comment>
   </data>
+  <data name="PowerRename_ExtensionsHeader.Header" xml:space="preserve">
+    <value>Extensions</value>
+  </data>
+  <data name="PowerRename_HeifExtension.Header" xml:space="preserve">
+    <value>HEIF image metadata extraction</value>
+  </data>
+  <data name="PowerRename_HeifExtension.Description" xml:space="preserve">
+    <value>Requires HEIF Image Extensions from Microsoft Store to extract metadata from HEIC/HEIF files</value>
+    <comment>HEIF is a file format name, do not translate</comment>
+  </data>
+  <data name="PowerRename_HeifExtension_Install.Content" xml:space="preserve">
+    <value>Install from Microsoft Store</value>
+  </data>
+  <data name="PowerRename_HeifExtension_Installed.Text" xml:space="preserve">
+    <value>Installed</value>
+  </data>
+  <data name="PowerRename_AvifExtension.Header" xml:space="preserve">
+    <value>AVIF image metadata extraction</value>
+  </data>
+  <data name="PowerRename_AvifExtension.Description" xml:space="preserve">
+    <value>Requires AV1 Video Extension from Microsoft Store to extract metadata from AVIF files</value>
+    <comment>AVIF is a file format name, do not translate</comment>
+  </data>
+  <data name="PowerRename_AvifExtension_Install.Content" xml:space="preserve">
+    <value>Install from Microsoft Store</value>
+  </data>
+  <data name="PowerRename_AvifExtension_Installed.Text" xml:space="preserve">
+    <value>Installed</value>
+  </data>
   <data name="MadeWithOssLove.Text" xml:space="preserve">
     <value>Made with 💗 by Microsoft and the PowerToys community.</value>
   </data>
