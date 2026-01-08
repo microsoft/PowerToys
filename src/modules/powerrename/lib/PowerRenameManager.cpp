@@ -772,7 +772,8 @@ DWORD WINAPI CPowerRenameManager::s_fileOpWorkerThread(_In_ void* pv)
 
                         // Creating a vector of vectors of items of the same depth
                         // Size by maxDepth+1 (not itemCount) to avoid excessive memory allocation
-                        std::vector<std::vector<UINT>> matrix(maxDepth + 1);
+                        // Cast to size_t before arithmetic to avoid overflow on 32-bit UINT
+                        std::vector<std::vector<UINT>> matrix(static_cast<size_t>(maxDepth) + 1);
 
                         for (UINT u = 0; u < itemCount; u++)
                         {
@@ -859,6 +860,7 @@ DWORD WINAPI CPowerRenameManager::s_fileOpWorkerThread(_In_ void* pv)
                             spFileOp->PerformOperations();
                         }
                     }
+                }
             }
 
             // Send the manager thread the completion message
