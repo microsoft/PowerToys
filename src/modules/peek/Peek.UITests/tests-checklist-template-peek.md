@@ -5,6 +5,7 @@
    - [x] Markdown file
    - [x] PDF
    - [x] Archive files (.zip, .tar, .rar)
+   - [x] Symbolic music files (.mid)
    - [x] Any other not mentioned file (.exe for example) to verify the unsupported file view is shown
 
  * Pinning/unpinning

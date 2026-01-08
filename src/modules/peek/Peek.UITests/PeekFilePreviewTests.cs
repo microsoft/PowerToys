@@ -234,6 +234,17 @@ public class PeekFilePreviewTests : UITestBase
     }
 
     /// <summary>
+    /// Test MID music preview
+    /// </summary>
+    [TestMethod("Peek.FilePreview.MIDMusic")]
+    [TestCategory("Preview files")]
+    public void PeekMIDMusicPreview()
+    {
+        string midPath = Path.GetFullPath(@".\TestAssets\9.mid");
+        TestSingleFilePreview(midPath, "9");
+    }
+
+    /// <summary>
     /// Test window pinning functionality - pin window and switch between different sized images
     /// Verify the window stays at the same place and the same size
     /// </summary>

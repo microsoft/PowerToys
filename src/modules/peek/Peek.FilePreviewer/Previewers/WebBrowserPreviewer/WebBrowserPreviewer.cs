@@ -120,6 +120,8 @@ namespace Peek.FilePreviewer.Previewers
                     bool supportedByMonaco = MonacoHelper.SupportedMonacoFileTypes.Contains(File.Extension);
                     bool useMonaco = supportedByMonaco && !isHtml && !isMarkdown && !isSvg;
 
+                    bool isPianoRoll = PianoRollHelper.SupportedPianoRollFileTypes.Contains(File.Extension);
+
                     IsDevFilePreview = supportedByMonaco;
                     CustomContextMenu = useMonaco;
 
@@ -140,6 +142,11 @@ namespace Peek.FilePreviewer.Previewers
                         // with complex SVGs from Adobe Illustrator, Inkscape, etc.
                         IsDevFilePreview = false;
                         Preview = new Uri(File.Path);
+                    }
+                    else if (isPianoRoll)
+                    {
+                        IsDevFilePreview = false;
+                        Preview = new Uri(PianoRollHelper.PreviewTempFile(File.Path, TempFolderPath.Path));
                     }
                     else
                     {
@@ -162,7 +169,9 @@ namespace Peek.FilePreviewer.Previewers
 
         public static bool IsItemSupported(IFileSystemItem item)
         {
-            return _supportedFileTypes.Contains(item.Extension) || MonacoHelper.SupportedMonacoFileTypes.Contains(item.Extension);
+            return _supportedFileTypes.Contains(item.Extension)
+                || MonacoHelper.SupportedMonacoFileTypes.Contains(item.Extension)
+                || PianoRollHelper.SupportedPianoRollFileTypes.Contains(item.Extension);
         }
 
         private bool HasFailedLoadingPreview()
