@@ -58,7 +58,6 @@ AOC
 aocfnapldcnfbofgmbbllojgocaelgdd
 AOklab
 aot
-APARTMENTTHREADED
 APeriod
 apicontract
 apidl
@@ -197,8 +196,6 @@ CARETBLINKING
 Carlseibert
 CAtl
 caub
-CAuthn
-CAuthz
 CBN
 Cds
 cch
@@ -218,12 +215,12 @@ CHANGECBCHAIN
 changecursor
 CHILDACTIVATE
 CHILDWINDOW
+checkmarks
 CHOOSEFONT
 Chunghwa
 cidl
 CIELCh
 cim
-CImp
 CImage
 cla
 CLASSDC
@@ -241,7 +238,6 @@ closesocket
 clp
 CLSCTX
 clsids
-Cloneable
 Clusion
 cmder
 CMN
@@ -261,7 +257,6 @@ Codespaces
 Coen
 cognitiveservices
 COINIT
-coinit
 colid
 colorconv
 colorformat
@@ -322,7 +317,6 @@ critsec
 cropandlock
 crt
 Crossdevice
-Crosshairs
 csdevkit
 CSearch
 CSettings
@@ -373,8 +367,6 @@ DCOM
 DComposition
 DCR
 ddc
-Ddcci
-ddcutil
 DDEIf
 Deact
 debouncer
@@ -431,7 +423,6 @@ DISPLAYFLAGS
 DISPLAYFREQUENCY
 displayname
 DISPLAYORIENTATION
-Displayport
 diu
 divyan
 Dlg
@@ -450,6 +441,7 @@ downsampling
 downscale
 DPICHANGED
 DPIs
+DPMS
 DPSAPI
 DQTAT
 DQTYPE
@@ -457,8 +449,6 @@ DRAWCLIPBOARD
 DRAWFRAME
 drawingcolor
 dreamsofameaningfullife
-DRegion
-DREGION
 drivedetectionwarning
 DROPFILES
 DSTINVERT
@@ -470,8 +460,6 @@ dutil
 DVASPECT
 DVASPECTINFO
 DVD
-DVI
-dvi
 dvr
 DVTARGETDEVICE
 dwflags
@@ -491,7 +479,6 @@ DWMWINDOWMAXIMIZEDCHANGE
 DWORDLONG
 dworigin
 dwrite
-Dxva
 dxgi
 eab
 EAccess
@@ -519,8 +506,6 @@ ENTERSIZEMOVE
 ENTRYW
 ENU
 environmentvariables
-EOAC
-eoac
 EPO
 epu
 EProvider
@@ -619,7 +604,6 @@ FORMATDLGORD
 formatetc
 FORPARSING
 foundrylocal
-FPrimary
 FRAMECHANGED
 Framechanged
 FRestore
@@ -641,7 +625,6 @@ gdiplus
 GDIPVER
 GDISCALED
 geolocator
-Geoposition
 GETCLIENTAREAANIMATION
 GETCURSEL
 GETDESKWALLPAPER
@@ -705,8 +688,6 @@ HCRYPTPROV
 hcursor
 hcwhite
 hdc
-HDMI
-hdmi
 hdr
 hdrop
 hdwwiz
@@ -808,7 +789,6 @@ IDR
 IDXGI
 ietf
 IEXPLORE
-Iface
 IFACEMETHOD
 IFACEMETHODIMP
 ifd
@@ -1542,7 +1522,6 @@ RECTSOURCE
 recyclebin
 Redist
 Reencode
-Refreshable
 REFCLSID
 REFIID
 REGCLS
@@ -1566,16 +1545,13 @@ Removelnk
 renamable
 RENAMEONCOLLISION
 RENDERFULLCONTENT
-Reparent
 reparented
-reparenting
 reportfileaccesses
 requery
 requerying
 rescap
 resgen
 resheader
-Resizer
 resizers
 RESIZETOFIT
 resmimetype
@@ -1637,7 +1613,6 @@ scrollviewer
 SDDL
 SDKDDK
 sdns
-Sdr
 searchterm
 SEARCHUI
 secondaryclickaction
@@ -1985,8 +1960,6 @@ unzoom
 UOffset
 UOI
 UPDATENOW
-UPDATEREGISTRY
-updateregistry
 updown
 UPGRADINGPRODUCTCODE
 upscaling
@@ -2030,7 +2003,6 @@ VERTSIZE
 VESA
 vesa
 VFT
-Vga
 vget
 vgetq
 viewmodels
@@ -2126,13 +2098,12 @@ WINL
 winlogon
 winmd
 winml
-WINNT
-winnt
 winres
 winrt
 winsdk
 winsta
 WINTHRESHOLD
+WINNT
 WINVER
 winxamlmanager
 withinrafael
