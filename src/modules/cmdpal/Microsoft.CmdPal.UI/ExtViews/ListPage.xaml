@@ -98,6 +98,7 @@
         <Style x:Key="GalleryGridViewItemStyle" TargetType="GridViewItem">
             <Setter Property="HorizontalContentAlignment" Value="Stretch" />
             <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="Margin" Value="0" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="GridViewItem">
@@ -159,11 +160,47 @@
             </Setter>
         </Style>
 
-        <Style x:Key="ListDefaultContainerStyle" TargetType="ListViewItem" BasedOn="{StaticResource DefaultListViewItemStyle}">
+        <Style
+            x:Key="GridViewSectionItemStyle"
+            BasedOn="{StaticResource DefaultGridViewItemStyle}"
+            TargetType="GridViewItem">
+            <Setter Property="IsHitTestVisible" Value="False" />
+            <Setter Property="IsTabStop" Value="False" />
+            <Setter Property="IsHoldingEnabled" Value="False" />
+            <Setter Property="Padding" Value="4,8,12,0" />
+            <Setter Property="Margin" Value="0" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="VerticalContentAlignment" Value="Bottom" />
+            <Setter Property="MinHeight" Value="{StaticResource ListViewSectionMinHeight}" />
+            <Setter Property="cpcontrols:WrapPanel.IsFullLine" Value="True" />
+        </Style>
+
+        <Style
+            x:Key="GridViewSeparatorItemStyle"
+            BasedOn="{StaticResource DefaultGridViewItemStyle}"
+            TargetType="GridViewItem">
+            <Setter Property="IsHitTestVisible" Value="False" />
+            <Setter Property="IsTabStop" Value="False" />
+            <Setter Property="IsHoldingEnabled" Value="False" />
+            <Setter Property="Padding" Value="4,4,12,4" />
+            <Setter Property="Margin" Value="0" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="MinHeight" Value="{StaticResource ListViewSeparatorMinHeight}" />
+            <Setter Property="cpcontrols:WrapPanel.IsFullLine" Value="True" />
+        </Style>
+
+        <Style
+            x:Key="ListDefaultContainerStyle"
+            BasedOn="{StaticResource DefaultListViewItemStyle}"
+            TargetType="ListViewItem">
             <Setter Property="MinHeight" Value="{StaticResource ListViewItemMinHeight}" />
         </Style>
 
-        <Style x:Key="ListSectionContainerStyle" TargetType="ListViewItem" BasedOn="{StaticResource DefaultListViewItemStyle}">
+        <Style
+            x:Key="ListSectionContainerStyle"
+            BasedOn="{StaticResource DefaultListViewItemStyle}"
+            TargetType="ListViewItem">
             <Setter Property="IsHitTestVisible" Value="False" />
             <Setter Property="IsTabStop" Value="False" />
             <Setter Property="IsHoldingEnabled" Value="False" />
@@ -174,7 +211,10 @@
             <Setter Property="AllowDrop" Value="False" />
         </Style>
 
-        <Style x:Key="ListSeparatorContainerStyle" TargetType="ListViewItem" BasedOn="{StaticResource DefaultListViewItemStyle}">
+        <Style
+            x:Key="ListSeparatorContainerStyle"
+            BasedOn="{StaticResource DefaultListViewItemStyle}"
+            TargetType="ListViewItem">
             <Setter Property="IsHitTestVisible" Value="False" />
             <Setter Property="IsTabStop" Value="False" />
             <Setter Property="IsHoldingEnabled" Value="False" />
@@ -223,15 +263,9 @@
             Gallery="{StaticResource GalleryGridViewItemStyle}"
             GridProperties="{x:Bind ViewModel.GridProperties, Mode=OneWay}"
             Medium="{StaticResource IconGridViewItemStyle}"
-            Small="{StaticResource IconGridViewItemStyle}"
             Section="{StaticResource GridViewSectionItemStyle}"
-            Separator="{StaticResource GridViewSectionItemStyle}" />
-
-        <Style x:Key="GridViewSectionItemStyle" TargetType="GridViewItem" BasedOn="{StaticResource DefaultGridViewItemStyle}">
-            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
-            <Setter Property="VerticalContentAlignment" Value="Center" />
-            <Setter Property="cpcontrols:WrapPanel.IsFullLine" Value="True" />
-        </Style>
+            Separator="{StaticResource GridViewSeparatorItemStyle}"
+            Small="{StaticResource IconGridViewItemStyle}" />
 
         <!--  https://learn.microsoft.com/windows/apps/design/controls/itemsview#specify-the-look-of-the-items  -->
         <DataTemplate x:Key="ListItemViewModelTemplate" x:DataType="coreViewModels:ListItemViewModel">
@@ -302,9 +336,7 @@
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
-                <Rectangle
-                    Height="1"
-                    Fill="{ThemeResource DividerStrokeColorDefaultBrush}" />
+                <Rectangle Height="1" Fill="{ThemeResource DividerStrokeColorDefaultBrush}" />
             </Grid>
         </DataTemplate>
 
@@ -498,7 +530,7 @@
                     <controls:Case Value="True">
                         <GridView
                             x:Name="ItemsGrid"
-                            Padding="16,0"
+                            Padding="16,16"
                             CanDragItems="True"
                             ContextCanceled="Items_OnContextCanceled"
                             ContextRequested="Items_OnContextRequested"
