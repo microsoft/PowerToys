@@ -118,27 +118,27 @@ class MonitorTopology:
 
         for idx, mon in enumerate(self.monitors):
             edges.append(
-    Edge(
-        EdgeType.LEFT,
-        mon.left,
-        mon.top,
-        mon.bottom,
-         idx))
+                Edge(
+                    EdgeType.LEFT,
+                    mon.left,
+                    mon.top,
+                    mon.bottom,
+                    idx))
             edges.append(
-    Edge(
-        EdgeType.RIGHT,
-        mon.right,
-        mon.top,
-        mon.bottom,
-         idx))
+                Edge(
+                    EdgeType.RIGHT,
+                    mon.right,
+                    mon.top,
+                    mon.bottom,
+                    idx))
             edges.append(Edge(EdgeType.TOP, mon.top, mon.left, mon.right, idx))
             edges.append(
-    Edge(
-        EdgeType.BOTTOM,
-        mon.bottom,
-        mon.left,
-        mon.right,
-         idx))
+                Edge(
+                    EdgeType.BOTTOM,
+                    mon.bottom,
+                    mon.left,
+                    mon.right,
+                    idx))
 
         return edges
 
