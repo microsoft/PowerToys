@@ -23,4 +23,6 @@ internal static class Icons
     internal static IconInfo FilesIcon { get; } = new("\uF571"); // PrintAllPages
 
     internal static IconInfo FilterIcon { get; } = new("\uE71C"); // Filter
+
+    internal static IconInfo PeekIcon { get; } = IconHelpers.FromRelativePath("Assets\\Peek.png");
 }

@@ -250,8 +250,16 @@
     <comment>Dialog showed when an URI is clicked. Button to copy the URI.</comment>
   </data>
   <data name="OpenUriDialog.Title" xml:space="preserve">
-    <value>Do you want Peek to open the external application?</value>
+    <value>Do you want Peek to open this link?</value>
     <comment>Title of the dialog showed when an URI is clicked,"Peek" is the name of the utility. </comment>
+  </data>
+  <data name="OpenUriWarningBanner.Title" xml:space="preserve">
+    <value>Security Warning</value>
+    <comment>Title of the warning banner in the open URI dialog.</comment>
+  </data>
+  <data name="OpenUriWarningBanner.Message" xml:space="preserve">
+    <value>This link will open externally. Make sure you trust the source before proceeding.</value>
+    <comment>Warning message displayed in the banner when opening an external URI.</comment>
   </data>
   <data name="ReadableString_BytesString" xml:space="preserve">
     <value> ({1:N0} bytes)</value>

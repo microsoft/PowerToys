@@ -260,6 +260,12 @@
   <data name="CropAndLock_Thumbnail_Subtitle" xml:space="preserve">
     <value>Create a cropped thumbnail window</value>
   </data>
+  <data name="CropAndLock_Screenshot_Title" xml:space="preserve">
+    <value>Crop and Lock (Screenshot)</value>
+  </data>
+  <data name="CropAndLock_Screenshot_Subtitle" xml:space="preserve">
+    <value>Create a cropped screenshot window</value>
+  </data>
   <data name="CropAndLock_Settings_Subtitle" xml:space="preserve">
     <value>Open Crop and Lock settings</value>
   </data>

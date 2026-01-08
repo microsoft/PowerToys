@@ -547,7 +547,10 @@
                             SelectionChanged="Items_SelectionChanged">
                             <GridView.ItemsPanel>
                                 <ItemsPanelTemplate>
-                                    <cpcontrols:WrapPanel HorizontalSpacing="8" Orientation="Horizontal" />
+                                    <cpcontrols:WrapPanel
+                                        HorizontalSpacing="8"
+                                        Orientation="Horizontal"
+                                        VerticalSpacing="8" />
                                 </ItemsPanelTemplate>
                             </GridView.ItemsPanel>
                             <GridView.ItemContainerTransitions>

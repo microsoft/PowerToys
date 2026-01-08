@@ -223,6 +223,10 @@ namespace winrt::PowerToys::Interop::implementation
     {
         return CommonSharedConstants::CROP_AND_LOCK_REPARENT_EVENT;
     }
+    hstring Constants::CropAndLockScreenshotEvent()
+    {
+        return CommonSharedConstants::CROP_AND_LOCK_SCREENSHOT_EVENT;
+    }
     hstring Constants::ShowEnvironmentVariablesSharedEvent()
     {
         return CommonSharedConstants::SHOW_ENVIRONMENT_VARIABLES_EVENT;

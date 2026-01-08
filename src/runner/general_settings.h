@@ -1,6 +1,7 @@
 #pragma once
 
 #include <common/utils/json.h>
+#include <common/SettingsAPI/settings_objects.h>
 
 enum class DashboardSortOrder
 {
@@ -12,12 +13,15 @@ struct GeneralSettings
 {
     bool isStartupEnabled;
     bool showSystemTrayIcon;
+    bool showThemeAdaptiveTrayIcon;
     std::wstring startupDisabledReason;
     std::map<std::wstring, bool> isModulesEnabledMap;
     bool isElevated;
     bool isRunElevated;
     bool isAdmin;
     bool enableWarningsElevatedApps;
+    bool enableQuickAccess;
+    PowerToysSettings::HotkeyObject quickAccessShortcut;
     bool showNewUpdatesToastNotification;
     bool downloadUpdatesAutomatically;
     bool showWhatsNewAfterUpdates;
