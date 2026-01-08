@@ -1698,6 +1698,35 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
     <value>Provides extended features but may use different regex syntax</value>
     <comment>Boost is a product name, should not be translated</comment>
   </data>
+  <data name="PowerRename_ExtensionsHeader.Header" xml:space="preserve">
+    <value>Extensions</value>
+  </data>
+  <data name="PowerRename_HeifExtension.Header" xml:space="preserve">
+    <value>HEIF image metadata extraction</value>
+  </data>
+  <data name="PowerRename_HeifExtension.Description" xml:space="preserve">
+    <value>Requires HEIF Image Extensions from Microsoft Store to extract metadata from HEIC/HEIF files</value>
+    <comment>HEIF is a file format name, do not translate</comment>
+  </data>
+  <data name="PowerRename_HeifExtension_Install.Content" xml:space="preserve">
+    <value>Install from Microsoft Store</value>
+  </data>
+  <data name="PowerRename_HeifExtension_Installed.Text" xml:space="preserve">
+    <value>Installed</value>
+  </data>
+  <data name="PowerRename_AvifExtension.Header" xml:space="preserve">
+    <value>AVIF image metadata extraction</value>
+  </data>
+  <data name="PowerRename_AvifExtension.Description" xml:space="preserve">
+    <value>Requires AV1 Video Extension from Microsoft Store to extract metadata from AVIF files</value>
+    <comment>AVIF is a file format name, do not translate</comment>
+  </data>
+  <data name="PowerRename_AvifExtension_Install.Content" xml:space="preserve">
+    <value>Install from Microsoft Store</value>
+  </data>
+  <data name="PowerRename_AvifExtension_Installed.Text" xml:space="preserve">
+    <value>Installed</value>
+  </data>
   <data name="MadeWithOssLove.Text" xml:space="preserve">
     <value>Made with 💗 by Microsoft and the PowerToys community.</value>
   </data>
@@ -3113,6 +3142,12 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="CropAndLock_ThumbnailActivation_Shortcut.Description" xml:space="preserve">
     <value>Creates a cropped, non-interactive thumbnail of another window. Improves app compatibility.</value>
   </data>
+  <data name="CropAndLock_ScreenshotActivation_Shortcut.Header" xml:space="preserve">
+    <value>Screenshot shortcut</value>
+  </data>
+  <data name="CropAndLock_ScreenshotActivation_Shortcut.Description" xml:space="preserve">
+    <value>Creates a cropped, static screenshot of another window. The screenshot won't update with the original window's content.</value>
+  </data>
   <data name="CropAndLock.SecondaryLinksHeader" xml:space="preserve">
     <value>Attribution</value>
     <comment>giving credit to the projects this utility was based on</comment>
@@ -3130,6 +3165,9 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   </data>
   <data name="Oobe_CropAndLock_HowToUse_Reparent.Text" xml:space="preserve">
     <value>to crop an application's window into a cropped window. This is experimental and can cause issues with some applications, since the cropped window will contain the original application window.</value>
+  </data>
+  <data name="Oobe_CropAndLock_HowToUse_Screenshot.Text" xml:space="preserve">
+    <value>to crop an application's window into a screenshot window. The screenshot won't update with the original window's content.</value>
   </data>
   <data name="AlwaysOnTop.ModuleDescription" xml:space="preserve">
     <value>Always On Top is a quick and easy way to pin windows on top.</value>
@@ -3387,6 +3425,9 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="CropAndLock_Reparent" xml:space="preserve">
     <value>Crop an app's window into a cropped window</value>
+  </data>
+  <data name="CropAndLock_Screenshot" xml:space="preserve">
+    <value>Crop an app into a screenshot window</value>
   </data>
   <data name="FancyZones_OpenEditor" xml:space="preserve">
     <value>Open editor</value>
@@ -5765,6 +5806,18 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   <data name="CmdPal_ModernDescription.Text" xml:space="preserve">
     <value>A modern UI built with Fluent Design</value>
     <comment>Fluent Design is a product name, do not loc</comment>
+  </data>
+  <data name="ShowThemeAdaptiveTrayIcon.Content" xml:space="preserve">
+    <value>Show a monochrome icon that matches the Windows theme</value>
+  </data>
+  <data name="GeneralPage_EnableQuickAccess.Header" xml:space="preserve">
+    <value>Quick Access flyout</value>
+  </data>
+  <data name="GeneralPage_EnableQuickAccess.Description" xml:space="preserve">
+    <value>Fast access to quick actions and module toggles</value>
+  </data>
+  <data name="GeneralPage_QuickAccessShortcut.Header" xml:space="preserve">
+    <value>Activation shortcut</value>
   </data>
   <data name="LightSwitch_ModeFollowNightLight.Content" xml:space="preserve">
     <value>Follow Night Light</value>

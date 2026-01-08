@@ -1,8 +1,10 @@
 ---
-mode: 'agent'
-model: Claude Sonnet 4.5
-description: 'Generate an 80-character git commit title for the local diff.'
+agent: 'agent'
+model: 'GPT-5.1-Codex-Max'
+description: 'Generate an 80-character git commit title for the local diff'
 ---
+
+# Generate Commit Title
 
 **Goal:** Provide a ready-to-paste git commit title (<= 80 characters) that captures the most important local changes since `HEAD`.
 

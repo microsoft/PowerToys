@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using PowerToysExtension.Commands;
 using PowerToysExtension.Helpers;
+using PowerToysExtension.Properties;
 using static Common.UI.SettingsDeepLink;
 
 namespace PowerToysExtension.Modules;
@@ -24,8 +25,8 @@ internal sealed class LightSwitchModuleCommandProvider : ModuleCommandProvider
         {
             items.Add(new ListItem(new ToggleLightSwitchCommand())
             {
-                Title = "Toggle Light Switch",
-                Subtitle = "Toggle system/apps theme immediately",
+                Title = Resources.LightSwitch_Toggle_Title,
+                Subtitle = Resources.LightSwitch_Toggle_Subtitle,
                 Icon = icon,
             });
         }
@@ -33,7 +34,7 @@ internal sealed class LightSwitchModuleCommandProvider : ModuleCommandProvider
         items.Add(new ListItem(new OpenInSettingsCommand(module, title))
         {
             Title = title,
-            Subtitle = "Open Light Switch settings",
+            Subtitle = Resources.LightSwitch_Settings_Subtitle,
             Icon = icon,
         });
 

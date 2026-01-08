@@ -2,6 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
+
 namespace Microsoft.PowerToys.Settings.UI.Library.Interfaces
 {
     public interface ISettingsRepository<T>
@@ -9,5 +11,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Interfaces
         T SettingsConfig { get; set; }
 
         bool ReloadSettings();
+
+        event Action<T> SettingsChanged;
     }
 }

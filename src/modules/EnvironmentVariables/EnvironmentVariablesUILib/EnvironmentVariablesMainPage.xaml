@@ -466,27 +466,39 @@
                         TextChanged="EditVariableDialogValueTxtBox_TextChanged"
                         TextWrapping="Wrap" />
                     <MenuFlyoutSeparator Visibility="{Binding ShowAsList, Converter={StaticResource BoolToVisibilityConverter}}" />
-                    <ItemsControl
+                    <ListView
                         x:Name="EditVariableValuesList"
                         Margin="0,-8,0,12"
                         HorizontalAlignment="Stretch"
+                        AllowDrop="True"
+                        CanDragItems="True"
+                        CanReorderItems="True"
+                        DragItemsCompleted="EditVariableValuesList_DragItemsCompleted"
                         ItemsSource="{Binding ValuesList, Mode=TwoWay}"
                         Visibility="{Binding ShowAsList, Converter={StaticResource BoolToVisibilityConverter}}">
-                        <ItemsControl.ItemTemplate>
+                        <ListView.ItemTemplate>
                             <DataTemplate>
                                 <Grid>
                                     <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="32" />
                                         <ColumnDefinition Width="*" />
                                         <ColumnDefinition Width="40" />
                                     </Grid.ColumnDefinitions>
+                                    <FontIcon
+                                        Grid.Column="0"
+                                        Margin="0,0,8,0"
+                                        FontSize="16"
+                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                        Glyph="&#xE759;" />
                                     <TextBox
+                                        Grid.Column="1"
                                         Background="Transparent"
                                         BorderBrush="Transparent"
                                         LostFocus="EditVariableValuesListTextBox_LostFocus"
                                         Text="{Binding Text}" />
                                     <Button
                                         x:Uid="More_Options_Button"
-                                        Grid.Column="1"
+                                        Grid.Column="2"
                                         VerticalAlignment="Center"
                                         Content="&#xE712;"
                                         FontFamily="{ThemeResource SymbolThemeFontFamily}"
@@ -523,8 +535,8 @@
                                     </Button>
                                 </Grid>
                             </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
+                        </ListView.ItemTemplate>
+                    </ListView>
                 </StackPanel>
             </ScrollViewer>
         </ContentDialog>

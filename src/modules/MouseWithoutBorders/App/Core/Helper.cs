@@ -295,9 +295,9 @@ internal static class Helper
             return;
         }
 
-        if (!Common.IpcChannelCreated)
+        if (!IpcChannelHelper.IpcChannelCreated)
         {
-            Logger.TelemetryLogTrace($"{nameof(Common.IpcChannelCreated)} = {Common.IpcChannelCreated}. {Logger.GetStackTrace(new StackTrace())}", SeverityLevel.Warning);
+            Logger.TelemetryLogTrace($"{nameof(IpcChannelHelper.IpcChannelCreated)} = {IpcChannelHelper.IpcChannelCreated}. {Logger.GetStackTrace(new StackTrace())}", SeverityLevel.Warning);
             return;
         }
 

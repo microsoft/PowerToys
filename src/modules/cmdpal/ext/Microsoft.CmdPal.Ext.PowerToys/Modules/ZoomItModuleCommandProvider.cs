@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using PowerToysExtension.Commands;
 using PowerToysExtension.Helpers;
+using PowerToysExtension.Properties;
 using static Common.UI.SettingsDeepLink;
 
 namespace PowerToysExtension.Modules;
@@ -21,40 +22,40 @@ internal sealed class ZoomItModuleCommandProvider : ModuleCommandProvider
         if (ModuleEnablementService.IsModuleEnabled(module))
         {
             // Action commands via ZoomIt IPC
-            yield return new ListItem(new ZoomItActionCommand("zoom", "ZoomIt: Zoom"))
+            yield return new ListItem(new ZoomItActionCommand("zoom", Resources.ZoomIt_Zoom_Title))
             {
-                Title = "ZoomIt: Zoom",
-                Subtitle = "Enter zoom mode",
+                Title = Resources.ZoomIt_Zoom_Title,
+                Subtitle = Resources.ZoomIt_Zoom_Subtitle,
                 Icon = icon,
             };
-            yield return new ListItem(new ZoomItActionCommand("draw", "ZoomIt: Draw"))
+            yield return new ListItem(new ZoomItActionCommand("draw", Resources.ZoomIt_Draw_Title))
             {
-                Title = "ZoomIt: Draw",
-                Subtitle = "Enter drawing mode",
+                Title = Resources.ZoomIt_Draw_Title,
+                Subtitle = Resources.ZoomIt_Draw_Subtitle,
                 Icon = icon,
             };
-            yield return new ListItem(new ZoomItActionCommand("break", "ZoomIt: Break"))
+            yield return new ListItem(new ZoomItActionCommand("break", Resources.ZoomIt_Break_Title))
             {
-                Title = "ZoomIt: Break",
-                Subtitle = "Enter break timer",
+                Title = Resources.ZoomIt_Break_Title,
+                Subtitle = Resources.ZoomIt_Break_Subtitle,
                 Icon = icon,
             };
-            yield return new ListItem(new ZoomItActionCommand("liveZoom", "ZoomIt: Live Zoom"))
+            yield return new ListItem(new ZoomItActionCommand("liveZoom", Resources.ZoomIt_LiveZoom_Title))
             {
-                Title = "ZoomIt: Live Zoom",
-                Subtitle = "Toggle live zoom",
+                Title = Resources.ZoomIt_LiveZoom_Title,
+                Subtitle = Resources.ZoomIt_LiveZoom_Subtitle,
                 Icon = icon,
             };
-            yield return new ListItem(new ZoomItActionCommand("snip", "ZoomIt: Snip"))
+            yield return new ListItem(new ZoomItActionCommand("snip", Resources.ZoomIt_Snip_Title))
             {
-                Title = "ZoomIt: Snip",
-                Subtitle = "Enter snip mode",
+                Title = Resources.ZoomIt_Snip_Title,
+                Subtitle = Resources.ZoomIt_Snip_Subtitle,
                 Icon = icon,
             };
-            yield return new ListItem(new ZoomItActionCommand("record", "ZoomIt: Record"))
+            yield return new ListItem(new ZoomItActionCommand("record", Resources.ZoomIt_Record_Title))
             {
-                Title = "ZoomIt: Record",
-                Subtitle = "Start recording",
+                Title = Resources.ZoomIt_Record_Title,
+                Subtitle = Resources.ZoomIt_Record_Subtitle,
                 Icon = icon,
             };
         }
@@ -62,7 +63,7 @@ internal sealed class ZoomItModuleCommandProvider : ModuleCommandProvider
         yield return new ListItem(new OpenInSettingsCommand(module, title))
         {
             Title = title,
-            Subtitle = "Open ZoomIt settings",
+            Subtitle = Resources.ZoomIt_Settings_Subtitle,
             Icon = icon,
         };
     }

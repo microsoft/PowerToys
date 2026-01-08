@@ -46,11 +46,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             ViewModel.ModuleEnabledChangedOnSettingsPage();
         }
 
-        private void DashboardListItemClick(object sender, RoutedEventArgs e)
-        {
-            ViewModel.DashboardListItemClick(sender);
-        }
-
         private void WhatsNewButton_Click(object sender, RoutedEventArgs e)
         {
             if (App.GetScoobeWindow() == null)

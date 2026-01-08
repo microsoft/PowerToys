@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using PowerToysExtension.Commands;
 using PowerToysExtension.Helpers;
+using PowerToysExtension.Properties;
 using static Common.UI.SettingsDeepLink;
 
 namespace PowerToysExtension.Modules;
@@ -22,8 +23,8 @@ internal sealed class MouseUtilsModuleCommandProvider : ModuleCommandProvider
         {
             yield return new ListItem(new ToggleFindMyMouseCommand())
             {
-                Title = "Trigger Find My Mouse",
-                Subtitle = "Focus the mouse pointer",
+                Title = Resources.MouseUtils_FindMyMouse_Title,
+                Subtitle = Resources.MouseUtils_FindMyMouse_Subtitle,
                 Icon = icon,
             };
         }
@@ -32,8 +33,8 @@ internal sealed class MouseUtilsModuleCommandProvider : ModuleCommandProvider
         {
             yield return new ListItem(new ToggleMouseHighlighterCommand())
             {
-                Title = "Toggle Mouse Highlighter",
-                Subtitle = "Highlight mouse clicks",
+                Title = Resources.MouseUtils_Highlighter_Title,
+                Subtitle = Resources.MouseUtils_Highlighter_Subtitle,
                 Icon = icon,
             };
         }
@@ -42,8 +43,8 @@ internal sealed class MouseUtilsModuleCommandProvider : ModuleCommandProvider
         {
             yield return new ListItem(new ToggleMouseCrosshairsCommand())
             {
-                Title = "Toggle Mouse Crosshairs",
-                Subtitle = "Enable or disable pointer crosshairs",
+                Title = Resources.MouseUtils_Crosshairs_Title,
+                Subtitle = Resources.MouseUtils_Crosshairs_Subtitle,
                 Icon = icon,
             };
         }
@@ -52,8 +53,8 @@ internal sealed class MouseUtilsModuleCommandProvider : ModuleCommandProvider
         {
             yield return new ListItem(new ToggleCursorWrapCommand())
             {
-                Title = "Toggle Cursor Wrap",
-                Subtitle = "Wrap the cursor across monitor edges",
+                Title = Resources.MouseUtils_CursorWrap_Title,
+                Subtitle = Resources.MouseUtils_CursorWrap_Subtitle,
                 Icon = icon,
             };
         }
@@ -62,8 +63,8 @@ internal sealed class MouseUtilsModuleCommandProvider : ModuleCommandProvider
         {
             yield return new ListItem(new ShowMouseJumpPreviewCommand())
             {
-                Title = "Show Mouse Jump Preview",
-                Subtitle = "Jump the pointer to a target",
+                Title = Resources.MouseUtils_MouseJump_Title,
+                Subtitle = Resources.MouseUtils_MouseJump_Subtitle,
                 Icon = icon,
             };
         }
@@ -71,7 +72,7 @@ internal sealed class MouseUtilsModuleCommandProvider : ModuleCommandProvider
         yield return new ListItem(new OpenInSettingsCommand(module, title))
         {
             Title = title,
-            Subtitle = "Open Mouse Utilities settings",
+            Subtitle = Resources.MouseUtils_Settings_Subtitle,
             Icon = icon,
         };
     }
