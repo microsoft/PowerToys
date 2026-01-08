@@ -292,11 +292,9 @@
                             <tkcontrols:SettingsExpander.Items>
                                 <tkcontrols:SettingsCard ContentAlignment="Left"
                                     x:Name="ShowThemeAdaptiveTrayIconCard"
-                                    x:Uid="ShowThemeAdaptiveTrayIcon"
                                     IsEnabled="{x:Bind ViewModel.ShowSysTrayIcon, Mode=OneWay}">
                                     <CheckBox
-                                        x:Uid="ShowThemeAdaptiveTrayIcon_ToggleSwitch"
-                                        AutomationProperties.Name="{Binding ElementName=ShowThemeAdaptiveTrayIconCard, Path=Header}"
+                                        x:Uid="ShowThemeAdaptiveTrayIcon"
                                         IsChecked="{x:Bind ViewModel.ShowThemeAdaptiveTrayIcon, Mode=TwoWay}" />
                                 </tkcontrols:SettingsCard>
                             </tkcontrols:SettingsExpander.Items>
