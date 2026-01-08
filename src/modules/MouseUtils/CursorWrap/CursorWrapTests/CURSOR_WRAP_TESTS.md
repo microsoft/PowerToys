@@ -28,7 +28,7 @@ monitor_layout_tests.py will produce an output file called `test_report.json` - 
     "failed": 0,
     "total_issues": 0,
     "pass_rate": "100.00%"
-  },i
+  },
   "failures": [],
   "recommendations": [
     "All tests passed - edge detection logic is working correctly!"
