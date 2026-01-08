@@ -502,9 +502,7 @@
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
-                <Rectangle
-                    Height="1"
-                    Fill="{ThemeResource DividerStrokeColorDefaultBrush}" />
+                <Rectangle Height="1" Fill="{ThemeResource DividerStrokeColorDefaultBrush}" />
             </Grid>
         </DataTemplate>
     </Page.Resources>
