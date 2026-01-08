@@ -215,6 +215,7 @@ cim
 CImage
 cla
 CLASSDC
+classmethod
 CLASSNOTAVAILABLE
 CLEARTYPE
 clickable
@@ -1602,7 +1603,7 @@ sharpfuzz
 SHCNE
 SHCNF
 SHCONTF
-Shcore
+shcore
 shellapi
 SHELLDETAILS
 SHELLDLL
@@ -1701,6 +1702,7 @@ srw
 srwlock
 sse
 ssf
+sszzz
 STACKFRAME
 stackoverflow
 STARTF
@@ -1711,6 +1713,7 @@ STARTUPINFOW
 startupscreen
 STATFLAG
 STATICEDGE
+staticmethod
 STATSTG
 stdafx
 STDAPI
@@ -1877,6 +1880,7 @@ uild
 uitests
 UITo
 ULONGLONG
+Ultrawide
 ums
 UMax
 UMin
