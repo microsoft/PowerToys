@@ -5,6 +5,7 @@
 using System;
 using System.IO;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using System.Windows.Input;
 
 using global::PowerToys.GPOWrapper;
