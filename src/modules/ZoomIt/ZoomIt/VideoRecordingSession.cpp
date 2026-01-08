@@ -2152,9 +2152,8 @@ static void DrawTimeline(HDC hdc, RECT rc, VideoRecordingSession::TrimDialogData
 
             if (fraction > 0.0 && fraction < 1.0)
             {
-                // Calculate marker time within the selection range (trimStart to trimEnd)
-                const int64_t selectionDuration = pData->trimEnd.count() - pData->trimStart.count();
-                const auto markerTime = winrt::TimeSpan{ pData->trimStart.count() + static_cast<int64_t>(fraction * selectionDuration) };
+                // Calculate marker time within the full video duration (untrimmed)
+                const auto markerTime = winrt::TimeSpan{ static_cast<int64_t>(fraction * pData->videoDuration.count()) };
                 // For short videos (under 60 seconds), show fractional seconds to distinguish markers
                 const bool showMilliseconds = (pData->videoDuration.count() < 600000000LL); // 60 seconds in 100ns ticks
                 const std::wstring markerText = FormatTrimTime(markerTime, showMilliseconds);
@@ -2339,6 +2338,17 @@ static void HandlePlaybackCommand(int controlId, VideoRecordingSession::TrimDial
 
     HWND hDlg = pData->hDialog;
 
+    // Helper lambda to invalidate cached start frame when position changes
+    auto invalidateCachedFrame = [pData]()
+    {
+        std::lock_guard<std::mutex> lock(pData->previewBitmapMutex);
+        if (pData->hCachedStartFrame)
+        {
+            DeleteObject(pData->hCachedStartFrame);
+            pData->hCachedStartFrame = nullptr;
+        }
+    };
+
     switch (controlId)
     {
     case IDC_TRIM_PLAY_PAUSE:
@@ -2362,6 +2372,7 @@ static void HandlePlaybackCommand(int controlId, VideoRecordingSession::TrimDial
         pData->currentPosition = winrt::TimeSpan{ newTicks };
         pData->playbackStartPosition = pData->currentPosition;
         pData->playbackStartPositionValid = true;
+        invalidateCachedFrame();
         SyncMediaPlayerPosition(pData);
         UpdateVideoPreview(hDlg, pData);
         break;
@@ -2377,6 +2388,7 @@ static void HandlePlaybackCommand(int controlId, VideoRecordingSession::TrimDial
         pData->currentPosition = winrt::TimeSpan{ newTicks };
         pData->playbackStartPosition = pData->currentPosition;
         pData->playbackStartPositionValid = true;
+        invalidateCachedFrame();
         SyncMediaPlayerPosition(pData);
         UpdateVideoPreview(hDlg, pData);
         break;
@@ -2388,6 +2400,7 @@ static void HandlePlaybackCommand(int controlId, VideoRecordingSession::TrimDial
         pData->currentPosition = pData->trimEnd;
         pData->playbackStartPosition = pData->currentPosition;
         pData->playbackStartPositionValid = true;
+        invalidateCachedFrame();
         SyncMediaPlayerPosition(pData);
         UpdateVideoPreview(hDlg, pData);
         break;
@@ -2398,6 +2411,7 @@ static void HandlePlaybackCommand(int controlId, VideoRecordingSession::TrimDial
         pData->currentPosition = pData->trimStart;
         pData->playbackStartPosition = pData->currentPosition;
         pData->playbackStartPositionValid = true;
+        invalidateCachedFrame();
         SyncMediaPlayerPosition(pData);
         UpdateVideoPreview(hDlg, pData);
         break;
@@ -2489,6 +2503,44 @@ static winrt::fire_and_forget StartPlaybackAsync(HWND hDlg, VideoRecordingSessio
     {
         pData->playbackStartPosition = resumePosition;
         pData->playbackStartPositionValid = true;
+    }
+
+    // Cache the current preview frame for instant restore when playback stops.
+    // Only cache if we have a valid preview and it matches the playback start position.
+    {
+        std::lock_guard<std::mutex> lock(pData->previewBitmapMutex);
+        // Clear any previous cached frame
+        if (pData->hCachedStartFrame)
+        {
+            DeleteObject(pData->hCachedStartFrame);
+            pData->hCachedStartFrame = nullptr;
+        }
+        // Cache if we have a valid preview at the current position
+        if (pData->hPreviewBitmap && pData->lastRenderedPreview.load(std::memory_order_relaxed) >= 0)
+        {
+            // Duplicate the bitmap so we have our own copy
+            BITMAP bm{};
+            if (GetObject(pData->hPreviewBitmap, sizeof(bm), &bm))
+            {
+                HDC hdcScreen = GetDC(nullptr);
+                HDC hdcSrc = CreateCompatibleDC(hdcScreen);
+                HDC hdcDst = CreateCompatibleDC(hdcScreen);
+                HBITMAP hCopy = CreateCompatibleBitmap(hdcScreen, bm.bmWidth, bm.bmHeight);
+                if (hCopy)
+                {
+                    HBITMAP hOldSrc = static_cast<HBITMAP>(SelectObject(hdcSrc, pData->hPreviewBitmap));
+                    HBITMAP hOldDst = static_cast<HBITMAP>(SelectObject(hdcDst, hCopy));
+                    BitBlt(hdcDst, 0, 0, bm.bmWidth, bm.bmHeight, hdcSrc, 0, 0, SRCCOPY);
+                    SelectObject(hdcSrc, hOldSrc);
+                    SelectObject(hdcDst, hOldDst);
+                    pData->hCachedStartFrame = hCopy;
+                    pData->cachedStartFramePosition = pData->playbackStartPosition;
+                }
+                DeleteDC(hdcSrc);
+                DeleteDC(hdcDst);
+                ReleaseDC(nullptr, hdcScreen);
+            }
+        }
     }
 
 #if _DEBUG
@@ -2766,6 +2818,21 @@ static winrt::fire_and_forget StartPlaybackAsync(HWND hDlg, VideoRecordingSessio
                     dataPtr->pendingInitialSeekTicks.store(0, std::memory_order_relaxed);
                 }
 
+                // Check for end-of-clip BEFORE updating currentPosition to avoid
+                // storing a value >= trimEnd that could flash in the UI
+                if (pos >= dataPtr->trimEnd)
+                {
+                    // Immediately mark as not playing to prevent further position updates
+                    // before WMU_PLAYBACK_STOP is processed.
+                    dataPtr->isPlaying.store(false, std::memory_order_release);
+#if _DEBUG
+                    OutputDebugStringW((L"[Trim] PositionChanged: pos >= trimEnd, posting stop. pos=" +
+                        std::to_wstring(pos.count()) + L"\n").c_str());
+#endif
+                    PostMessage(hDlg, WMU_PLAYBACK_STOP, 0, 0);
+                    return;
+                }
+
                 dataPtr->currentPosition = pos;
 
                 if (dataPtr->isPlaying.load(std::memory_order_relaxed) &&
@@ -2778,19 +2845,7 @@ static winrt::fire_and_forget StartPlaybackAsync(HWND hDlg, VideoRecordingSessio
                     LogSmoothingEvent(L"eventFirst", pos.count(), pos.count(), 0);
                 }
 
-                if (pos >= dataPtr->trimEnd)
-                {
-                    // Signal stop - WMU_PLAYBACK_STOP handler will reset to playbackStartPosition
-#if _DEBUG
-                    OutputDebugStringW((L"[Trim] PositionChanged: pos >= trimEnd, posting stop. pos=" +
-                        std::to_wstring(pos.count()) + L"\n").c_str());
-#endif
-                    PostMessage(hDlg, WMU_PLAYBACK_STOP, 0, 0);
-                }
-                else
-                {
-                    PostMessage(hDlg, WMU_PLAYBACK_POSITION, 0, 0);
-                }
+                PostMessage(hDlg, WMU_PLAYBACK_POSITION, 0, 0);
             }
             catch (...)
             {
@@ -2967,13 +3022,26 @@ static LRESULT CALLBACK TimelineSubclassProc(
         const UINT dpi = GetDpiForWindowHelper(hWnd);
         const int timelineTrackTopOffset = ScaleForDpi(kTimelineTrackTopOffset, dpi);
         const int timelineTrackHeight = ScaleForDpi(kTimelineTrackHeight, dpi);
+        const int timelineHandleHeight = ScaleForDpi(kTimelineHandleHeight, dpi);
         const int timelineHandleHitRadius = ScaleForDpi(kTimelineHandleHitRadius, dpi);
 
         const int trackTop = timelineTrackTopOffset;
         const int trackBottom = trackTop + timelineTrackHeight;
-        const int knobTop = trackBottom + ScaleForDpi(10, dpi); // aligns with knob ellipse band
-        const int knobBottom = trackBottom + ScaleForDpi(26, dpi);
+
+        // Gripper vertical band: centered on track
+        const int gripperTop = trackTop - (timelineHandleHeight - timelineTrackHeight) / 2;
+        const int gripperBottom = gripperTop + timelineHandleHeight;
+        const bool inGripperBand = (y >= gripperTop && y <= gripperBottom);
+
+        // Playhead knob vertical band: below the track (ellipse drawn at trackBottom + 12 to trackBottom + 24)
+        const int knobTop = trackBottom + ScaleForDpi(8, dpi); // slightly above ellipse for easier hit
+        const int knobBottom = trackBottom + ScaleForDpi(28, dpi);
         const bool inKnobBand = (y >= knobTop && y <= knobBottom);
+
+        // Playhead stem is also hittable (trackTop - 12 to trackBottom + posLineBelow)
+        const int stemTop = trackTop - ScaleForDpi(12, dpi);
+        const int stemBottom = trackBottom + ScaleForDpi(22, dpi);
+        const bool inStemBand = (y >= stemTop && y <= stemBottom);
 
         const int startX = TimelineTimeToClientX(pData, pData->trimStart, width, dpi);
         const int posX = TimelineTimeToClientX(pData, pData->currentPosition, width, dpi);
@@ -2983,20 +3051,30 @@ static LRESULT CALLBACK TimelineSubclassProc(
         pData->previewOverrideActive = false;
         pData->restorePreviewOnRelease = false;
 
-        // If grabbing the knob band, prefer the playhead even if it overlaps a grip
-        if (inKnobBand && abs(clampedX - posX) <= timelineHandleHitRadius)
-        {
-            pData->dragMode = VideoRecordingSession::TrimDialogData::Position;
-        }
-        else if (abs(clampedX - startX) <= timelineHandleHitRadius)
+        // Calculate horizontal distances to each handle
+        const int distToPos = abs(clampedX - posX);
+        const int distToStart = abs(clampedX - startX);
+        const int distToEnd = abs(clampedX - endX);
+
+        // Hit-test with vertical position awareness:
+        // - Grippers are only hittable in the gripper band (around the track)
+        // - Playhead is hittable in the knob band (below track) or stem band
+        // - When in overlapping regions, use distance-based priority with grippers preferred
+        
+        const bool startHit = inGripperBand && distToStart <= timelineHandleHitRadius;
+        const bool endHit = inGripperBand && distToEnd <= timelineHandleHitRadius;
+        const bool posHitKnob = inKnobBand && distToPos <= timelineHandleHitRadius;
+        const bool posHitStem = inStemBand && distToPos <= ScaleForDpi(4, dpi); // tighter radius for stem
+
+        if (startHit && (!endHit || distToStart <= distToEnd) && (!posHitKnob || distToStart <= distToPos))
         {
             pData->dragMode = VideoRecordingSession::TrimDialogData::TrimStart;
         }
-        else if (abs(clampedX - endX) <= timelineHandleHitRadius)
+        else if (endHit && (!posHitKnob || distToEnd <= distToPos))
         {
             pData->dragMode = VideoRecordingSession::TrimDialogData::TrimEnd;
         }
-        else if (abs(clampedX - posX) <= timelineHandleHitRadius)
+        else if (posHitKnob || posHitStem)
         {
             pData->dragMode = VideoRecordingSession::TrimDialogData::Position;
         }
@@ -3093,16 +3171,28 @@ static LRESULT CALLBACK TimelineSubclassProc(
         case VideoRecordingSession::TrimDialogData::TrimStart:
             if (newTime.count() < pData->trimEnd.count())
             {
+                const auto oldTrimStart = pData->trimStart;
                 if (newTime.count() != pData->trimStart.count())
                 {
                     pData->trimStart = newTime;
                     UpdateDurationDisplay(pData->hDialog, pData);
                 }
-                // Keep playhead inside selection when left grip passes it
-                if (pData->currentPosition.count() < pData->trimStart.count())
+                // Push playhead if it was inside selection (>= old trimStart) and handle crossed over it
+                if (pData->currentPosition.count() >= oldTrimStart.count() &&
+                    pData->currentPosition.count() < pData->trimStart.count())
                 {
                     pData->playheadPushed = true;
                     pData->currentPosition = pData->trimStart;
+                    // Also update playback start position so loop resets to pushed position
+                    pData->playbackStartPosition = pData->currentPosition;
+                    pData->playbackStartPositionValid = true;
+                    // Invalidate cached start frame
+                    std::lock_guard<std::mutex> lock(pData->previewBitmapMutex);
+                    if (pData->hCachedStartFrame)
+                    {
+                        DeleteObject(pData->hCachedStartFrame);
+                        pData->hCachedStartFrame = nullptr;
+                    }
                 }
                 overrideTime = pData->trimStart;
                 applyOverride = true;
@@ -3120,6 +3210,16 @@ static LRESULT CALLBACK TimelineSubclassProc(
             pData->playbackStartPosition = pData->currentPosition;
             pData->playbackStartPositionValid = true;
 
+            // Invalidate cached start frame since position changed - will be re-cached when playback starts.
+            {
+                std::lock_guard<std::mutex> lock(pData->previewBitmapMutex);
+                if (pData->hCachedStartFrame)
+                {
+                    DeleteObject(pData->hCachedStartFrame);
+                    pData->hCachedStartFrame = nullptr;
+                }
+            }
+
             const int newPosX = TimelineTimeToClientX(pData, pData->currentPosition, width, dpi);
             RECT clientRect{};
             GetClientRect(hWnd, &clientRect);
@@ -3132,16 +3232,28 @@ static LRESULT CALLBACK TimelineSubclassProc(
         case VideoRecordingSession::TrimDialogData::TrimEnd:
             if (newTime.count() > pData->trimStart.count())
             {
+                const auto oldTrimEnd = pData->trimEnd;
                 if (newTime.count() != pData->trimEnd.count())
                 {
                     pData->trimEnd = newTime;
                     UpdateDurationDisplay(pData->hDialog, pData);
                 }
-                // Keep playhead inside selection when right grip passes it
-                if (pData->currentPosition.count() > pData->trimEnd.count())
+                // Only push playhead if it was inside selection (<= old trimEnd) and handle crossed over it
+                if (pData->currentPosition.count() <= oldTrimEnd.count() &&
+                    pData->currentPosition.count() > pData->trimEnd.count())
                 {
                     pData->playheadPushed = true;
                     pData->currentPosition = pData->trimEnd;
+                    // Also update playback start position so loop resets to pushed position
+                    pData->playbackStartPosition = pData->currentPosition;
+                    pData->playbackStartPositionValid = true;
+                    // Invalidate cached start frame
+                    std::lock_guard<std::mutex> lock(pData->previewBitmapMutex);
+                    if (pData->hCachedStartFrame)
+                    {
+                        DeleteObject(pData->hCachedStartFrame);
+                        pData->hCachedStartFrame = nullptr;
+                    }
                 }
                 overrideTime = pData->trimEnd;
                 applyOverride = true;
@@ -3675,14 +3787,6 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
         {
             return TRUE;
         }
-        // Only process if still playing - avoid duplicate stop handling
-        if (!pData->isPlaying.load(std::memory_order_relaxed))
-        {
-#if _DEBUG
-            OutputDebugStringW(L"[Trim] WMU_PLAYBACK_STOP: already stopped, ignoring\n");
-#endif
-            return TRUE;
-        }
 
         // Force UI + session back to the captured playback start position.
         pData->currentPosition = pData->playbackStartPosition;
@@ -3691,7 +3795,39 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
             std::to_wstring(pData->playbackStartPosition.count()) + L"\n").c_str());
 #endif
         StopPlayback(hDlg, pData, false);
-        UpdateVideoPreview(hDlg, pData);
+
+        // Fast path: if we have a cached frame at the playback start position, restore it instantly.
+        bool usedCachedFrame = false;
+        if (pData->hCachedStartFrame &&
+            pData->cachedStartFramePosition.count() == pData->playbackStartPosition.count())
+        {
+            std::lock_guard<std::mutex> lock(pData->previewBitmapMutex);
+            if (pData->hCachedStartFrame)  // Double-check under lock
+            {
+                // Swap the cached frame into the preview
+                if (pData->hPreviewBitmap && pData->previewBitmapOwned)
+                {
+                    DeleteObject(pData->hPreviewBitmap);
+                }
+                pData->hPreviewBitmap = pData->hCachedStartFrame;
+                pData->previewBitmapOwned = true;
+                pData->hCachedStartFrame = nullptr;  // Transferred ownership
+                pData->lastRenderedPreview.store(pData->playbackStartPosition.count(), std::memory_order_relaxed);
+                usedCachedFrame = true;
+            }
+        }
+
+        if (usedCachedFrame)
+        {
+            // Just update UI - we already have the correct frame
+            UpdatePositionUI(hDlg, pData, true);
+            InvalidateRect(GetDlgItem(hDlg, IDC_TRIM_PREVIEW), nullptr, FALSE);
+        }
+        else
+        {
+            // Fall back to regenerating the preview
+            UpdateVideoPreview(hDlg, pData);
+        }
         return TRUE;
     }
 
@@ -3851,6 +3987,12 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
                 DeleteObject(pData->hPreviewBitmap);
             }
             pData->hPreviewBitmap = nullptr;
+            // Also clean up cached playback start frame
+            if (pData->hCachedStartFrame)
+            {
+                DeleteObject(pData->hCachedStartFrame);
+                pData->hCachedStartFrame = nullptr;
+            }
         }
         if (pData)
         {
@@ -3899,7 +4041,19 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
             const int64_t frameElapsedTicks = static_cast<int64_t>(elapsedMs) * 10'000;
             const int64_t smoothPosition = frame.start.count() + (std::min)(frameElapsedTicks, frame.duration.count());
             // Allow positions before trimStart - only clamp to trimEnd
-            pData->currentPosition = winrt::TimeSpan{ (std::min)(smoothPosition, pData->trimEnd.count()) };
+            const int64_t clampedPosition = (std::min)(smoothPosition, pData->trimEnd.count());
+
+            // Check for end-of-clip BEFORE updating UI to avoid showing the end position
+            // then immediately jumping back to start
+            if (clampedPosition >= pData->trimEnd.count())
+            {
+                // Immediately mark as not playing to prevent further position updates
+                pData->isPlaying.store(false, std::memory_order_release);
+                PostMessage(hDlg, WMU_PLAYBACK_STOP, 0, 0);
+                return TRUE;
+            }
+            
+            pData->currentPosition = winrt::TimeSpan{ clampedPosition };
             
             // Update playhead
             HWND hTimeline = GetDlgItem(hDlg, IDC_TRIM_TIMELINE);
@@ -3925,7 +4079,8 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
 
                 if (nextTicks >= pData->trimEnd.count())
                 {
-                    // Signal stop - WMU_PLAYBACK_STOP handler will reset position
+                    // Immediately mark as not playing to prevent further position updates
+                    pData->isPlaying.store(false, std::memory_order_release);
                     PostMessage(hDlg, WMU_PLAYBACK_STOP, 0, 0);
                 }
                 else
@@ -3974,30 +4129,36 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
                     mediaTicks,
                     0,
                     pData->trimEnd.count());
-                pData->currentPosition = winrt::TimeSpan{ clampedTicks };
 
-                // Invalidate only the old and new playhead regions for efficiency
-                HWND hTimeline = GetDlgItem(hDlg, IDC_TRIM_TIMELINE);
-                if (hTimeline)
-                {
-                    const UINT dpi = GetDpiForWindowHelper(hTimeline);
-                    RECT rc;
-                    GetClientRect(hTimeline, &rc);
-                    const int newX = TimelineTimeToClientX(pData, pData->currentPosition, rc.right - rc.left, dpi);
-                    // Only repaint if position actually changed
-                    if (newX != pData->lastPlayheadX)
-                    {
-                        InvalidatePlayheadRegion(hTimeline, rc, pData->lastPlayheadX, newX, dpi);
-                        pData->lastPlayheadX = newX;
-                        UpdateWindow(hTimeline);
-                    }
-                }
-                SetTimeText(hDlg, IDC_TRIM_POSITION_LABEL, pData->currentPosition, true);
-
+                // Check for end-of-clip BEFORE updating UI to avoid showing the end position
+                // then immediately jumping back to start
                 if (clampedTicks >= pData->trimEnd.count())
                 {
-                    // Signal stop - WMU_PLAYBACK_STOP handler will reset position
+                    // Immediately mark as not playing to prevent further position updates
+                    pData->isPlaying.store(false, std::memory_order_release);
                     PostMessage(hDlg, WMU_PLAYBACK_STOP, 0, 0);
+                }
+                else
+                {
+                    pData->currentPosition = winrt::TimeSpan{ clampedTicks };
+
+                    // Invalidate only the old and new playhead regions for efficiency
+                    HWND hTimeline = GetDlgItem(hDlg, IDC_TRIM_TIMELINE);
+                    if (hTimeline)
+                    {
+                        const UINT dpi = GetDpiForWindowHelper(hTimeline);
+                        RECT rc;
+                        GetClientRect(hTimeline, &rc);
+                        const int newX = TimelineTimeToClientX(pData, pData->currentPosition, rc.right - rc.left, dpi);
+                        // Only repaint if position actually changed
+                        if (newX != pData->lastPlayheadX)
+                        {
+                            InvalidatePlayheadRegion(hTimeline, rc, pData->lastPlayheadX, newX, dpi);
+                            pData->lastPlayheadX = newX;
+                            UpdateWindow(hTimeline);
+                        }
+                    }
+                    SetTimeText(hDlg, IDC_TRIM_POSITION_LABEL, pData->currentPosition, true);
                 }
             }
             catch (...)

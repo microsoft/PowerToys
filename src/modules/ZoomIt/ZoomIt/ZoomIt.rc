@@ -107,10 +107,10 @@ END
 //
 
 OPTIONS DIALOGEX 0, 0, 299, 325
-STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CLIPSIBLINGS | WS_CAPTION | WS_SYSMENU
+STYLE DS_SETFONT | DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CLIPSIBLINGS | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_CONTROLPARENT
 CAPTION "ZoomIt - Sysinternals: www.sysinternals.com"
-FONT 8, "MS Shell Dlg", 0, 0, 0x0
+FONT 9, "MS Shell Dlg", 0, 0, 0x0
 BEGIN
     DEFPUSHBUTTON   "OK",IDOK,186,306,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,243,306,50,14
@@ -125,9 +125,9 @@ BEGIN
 END
 
 ADVANCED_BREAK DIALOGEX 0, 0, 209, 225
-STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+STYLE DS_SETFONT | DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Advanced Break Options"
-FONT 8, "MS Shell Dlg", 400, 0, 0x1
+FONT 9, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     CONTROL         "Play Sound on Expiration:",IDC_CHECK_SOUND_FILE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,3,11,98,10,WS_EX_RIGHT
     EDITTEXT        IDC_SOUND_FILE,61,38,125,12,ES_AUTOHSCROLL | ES_READONLY
@@ -159,8 +159,8 @@ BEGIN
 END
 
 ZOOM DIALOGEX 0, 0, 280, 170
-STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_CLIPSIBLINGS | WS_SYSMENU
-FONT 8, "MS Shell Dlg", 400, 0, 0x1
+STYLE DS_SETFONT | DS_CONTROL | WS_CHILD | WS_CLIPSIBLINGS | WS_SYSMENU
+FONT 9, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     CONTROL         "",IDC_HOTKEY,"msctls_hotkey32",WS_BORDER | WS_TABSTOP,59,57,80,12
     LTEXT           "After toggling ZoomIt you can zoom in with the mouse wheel or up and down arrow keys. Exit zoom mode with Escape or by pressing the right mouse button.",IDC_STATIC,7,6,266,26
@@ -180,8 +180,8 @@ BEGIN
 END
 
 DRAW DIALOGEX 0, 0, 280, 228
-STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_SYSMENU
-FONT 8, "MS Shell Dlg", 400, 0, 0x1
+STYLE DS_SETFONT | DS_CONTROL | WS_CHILD | WS_SYSMENU
+FONT 9, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     LTEXT           "Once zoomed, toggle drawing mode by pressing the left mouse button. Undo with Ctrl+Z and all drawing by pressing E. Center the cursor with the space bar. Exit drawing mode by pressing the right mouse button.",IDC_STATIC,7,7,266,24
     LTEXT           "Pen Control ",IDC_PEN_CONTROL,7,38,40,8
@@ -199,8 +199,8 @@ BEGIN
 END
 
 TYPE DIALOGEX 0, 0, 280, 104
-STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_SYSMENU
-FONT 8, "MS Shell Dlg", 400, 0, 0x1
+STYLE DS_SETFONT | DS_CONTROL | WS_CHILD | WS_SYSMENU
+FONT 9, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     LTEXT           "Once in drawing mode, type 't' to enter typing mode or shift+'t' to enter typing mode with right-aligned input. Exit typing mode by pressing escape or the left mouse button. Use the mouse wheel or up and down arrow keys to change the font size.",IDC_STATIC,7,7,266,32
     LTEXT           "The text color is the current drawing color.",IDC_STATIC,7,47,266,9
@@ -209,8 +209,8 @@ BEGIN
 END
 
 BREAK DIALOGEX 0, 0, 280, 123
-STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_SYSMENU
-FONT 8, "MS Shell Dlg", 400, 0, 0x1
+STYLE DS_SETFONT | DS_CONTROL | WS_CHILD | WS_SYSMENU
+FONT 9, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     CONTROL         "",IDC_BREAK_HOTKEY,"msctls_hotkey32",WS_BORDER | WS_TABSTOP,52,67,80,12
     EDITTEXT        IDC_TIMER,52,86,31,13,ES_RIGHT | ES_AUTOHSCROLL | ES_NUMBER
@@ -228,7 +228,7 @@ END
 1543 DIALOGEX 100, 50, 216, 131
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "ZoomIt Font"
-FONT 8, "MS Shell Dlg", 0, 0, 0x0
+FONT 9, "MS Shell Dlg", 0, 0, 0x0
 BEGIN
     LTEXT           "&Font:",1088,6,0,40,9
     COMBOBOX        1136,6,10,94,64,CBS_SIMPLE | CBS_OWNERDRAWFIXED | CBS_AUTOHSCROLL | CBS_SORT | CBS_HASSTRINGS | CBS_DISABLENOSCROLL | WS_VSCROLL | WS_TABSTOP
@@ -243,8 +243,8 @@ BEGIN
 END
 
 LIVEZOOM DIALOGEX 0, 0, 280, 134
-STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_SYSMENU
-FONT 8, "MS Shell Dlg", 400, 0, 0x1
+STYLE DS_SETFONT | DS_CONTROL | WS_CHILD | WS_SYSMENU
+FONT 9, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     CONTROL         "",IDC_LIVE_HOTKEY,"msctls_hotkey32",WS_BORDER | WS_TABSTOP,69,108,80,12
     LTEXT           "LiveZoom mode is supported on Windows 7 and higher where window updates show while zoomed. ",IDC_STATIC,7,7,266,18
@@ -255,8 +255,8 @@ BEGIN
 END
 
 RECORD DIALOGEX 0, 0, 280, 169
-STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_SYSMENU
-FONT 8, "MS Shell Dlg", 400, 0, 0x1
+STYLE DS_SETFONT | DS_CONTROL | WS_CHILD | WS_SYSMENU
+FONT 9, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     CONTROL         "",IDC_RECORD_HOTKEY,"msctls_hotkey32",WS_BORDER | WS_TABSTOP,61,96,80,12
     LTEXT           "Record Toggle:",IDC_STATIC,7,98,54,8
@@ -276,8 +276,8 @@ BEGIN
 END
 
 SNIP DIALOGEX 0, 0, 280, 68
-STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_CLIPSIBLINGS | WS_SYSMENU
-FONT 8, "MS Shell Dlg", 400, 0, 0x1
+STYLE DS_SETFONT | DS_CONTROL | WS_CHILD | WS_CLIPSIBLINGS | WS_SYSMENU
+FONT 9, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     CONTROL         "",IDC_SNIP_HOTKEY,"msctls_hotkey32",WS_BORDER | WS_TABSTOP,55,32,80,12
     LTEXT           "Snip Toggle:",IDC_STATIC,7,33,45,8
@@ -285,8 +285,8 @@ BEGIN
 END
 
 DEMOTYPE DIALOGEX 0, 0, 280, 249
-STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_CLIPSIBLINGS | WS_SYSMENU
-FONT 8, "MS Shell Dlg", 400, 0, 0x1
+STYLE DS_SETFONT | DS_CONTROL | WS_CHILD | WS_CLIPSIBLINGS | WS_SYSMENU
+FONT 9, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     CONTROL         "",IDC_DEMOTYPE_HOTKEY,"msctls_hotkey32",WS_BORDER | WS_TABSTOP,74,154,80,12
     LTEXT           "DemoType toggle:",IDC_STATIC,7,157,63,8

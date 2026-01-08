@@ -66,6 +66,10 @@ public:
         winrt::Windows::Foundation::TimeSpan playbackStartPosition{ 0 };
         bool playbackStartPositionValid{ false };
 
+        // Cached preview frame at playback start position for instant restore when playback stops.
+        HBITMAP hCachedStartFrame{ nullptr };
+        winrt::Windows::Foundation::TimeSpan cachedStartFramePosition{ -1 };
+
         // When starting playback at a non-zero position, MediaPlayer may briefly report Position==0
         // before the initial seek is applied. Use this to suppress a one-frame UI jump to 0.
         std::atomic<bool> pendingInitialSeek{ false };

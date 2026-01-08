@@ -2237,8 +2237,6 @@ void UpdateDrawTabHeaderFont()
         GetObject( GetStockObject( DEFAULT_GUI_FONT ), sizeof( LOGFONT ), &lf );
     }
     lf.lfWeight = FW_BOLD;
-    // Make section headers noticeably larger than the dialog font.
-    lf.lfHeight = MulDiv( lf.lfHeight, 4, 3 );
 
     HFONT newHeaderFont = CreateFontIndirect( &lf );
     if( !newHeaderFont )
@@ -3749,7 +3747,10 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
         PostMessage( hDlg, WM_USER, 0, 0 );
         // Reapply header fonts once the dialog has finished any late initialization.
         PostMessage( hDlg, WM_APPLY_HEADER_FONTS, 0, 0 );
-        return TRUE;
+
+        // Set focus to the tab control instead of the first hotkey control
+        SetFocus( hTabCtrl );
+        return FALSE;
     }
 
     case WM_APPLY_HEADER_FONTS:
