@@ -1,7 +1,10 @@
-agent: 'agent'
-model: GPT-5.1-Codex-Max
-description: 'Resolve Code scanning / check-spelling comments on the active PR.'
 ---
+agent: 'agent'
+model: 'GPT-5.1-Codex-Max'
+description: 'Resolve Code scanning / check-spelling comments on the active PR'
+---
+
+# Fix Spelling Comments
 
 **Goal:** Clear every outstanding GitHub pull request comment created by the `Code scanning / check-spelling` workflow by explicitly allowing intentional terms.
 

@@ -1,7 +1,10 @@
-agent: 'agent'
-model: GPT-5.1-Codex-Max
-description: 'Generate a PowerToys-ready pull request description from the local diff.'
 ---
+agent: 'agent'
+model: 'GPT-5.1-Codex-Max'
+description: 'Generate a PowerToys-ready pull request description from the local diff'
+---
+
+# Generate PR Summary
 
 **Goal:** Produce a ready-to-paste PR title and description that follows PowerToys conventions by comparing the current branch against a user-selected target branch.
 
