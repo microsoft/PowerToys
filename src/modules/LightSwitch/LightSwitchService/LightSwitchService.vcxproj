@@ -75,9 +75,12 @@
   <ItemGroup>
     <ClCompile Include="LightSwitchService.cpp" />
     <ClCompile Include="LightSwitchSettings.cpp" />
+    <ClCompile Include="LightSwitchStateManager.cpp" />
+    <ClCompile Include="NightLightRegistryObserver.cpp" />
     <ClCompile Include="SettingsConstants.cpp" />
     <ClCompile Include="ThemeHelper.cpp" />
     <ClCompile Include="ThemeScheduler.cpp" />
+    <ClCompile Include="trace.cpp" />
     <ClCompile Include="WinHookEventIDs.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -85,10 +88,14 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="LightSwitchSettings.h" />
+    <ClInclude Include="LightSwitchStateManager.h" />
+    <ClInclude Include="LightSwitchUtils.h" />
+    <ClInclude Include="NightLightRegistryObserver.h" />
     <ClInclude Include="SettingsConstants.h" />
     <ClInclude Include="SettingsObserver.h" />
     <ClInclude Include="ThemeHelper.h" />
     <ClInclude Include="ThemeScheduler.h" />
+    <ClInclude Include="trace.h" />
     <ClInclude Include="WinHookEventIDs.h" />
   </ItemGroup>
   <ItemGroup>

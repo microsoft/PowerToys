@@ -1,21 +1,32 @@
 #pragma once
 
 #include <common/utils/json.h>
+#include <common/SettingsAPI/settings_objects.h>
+
+enum class DashboardSortOrder
+{
+    Alphabetical = 0,
+    ByStatus = 1,
+};
 
 struct GeneralSettings
 {
     bool isStartupEnabled;
     bool showSystemTrayIcon;
+    bool showThemeAdaptiveTrayIcon;
     std::wstring startupDisabledReason;
     std::map<std::wstring, bool> isModulesEnabledMap;
     bool isElevated;
     bool isRunElevated;
     bool isAdmin;
     bool enableWarningsElevatedApps;
+    bool enableQuickAccess;
+    PowerToysSettings::HotkeyObject quickAccessShortcut;
     bool showNewUpdatesToastNotification;
     bool downloadUpdatesAutomatically;
     bool showWhatsNewAfterUpdates;
     bool enableExperimentation;
+    DashboardSortOrder dashboardSortOrder;
     std::wstring theme;
     std::wstring systemTheme;
     std::wstring powerToysVersion;

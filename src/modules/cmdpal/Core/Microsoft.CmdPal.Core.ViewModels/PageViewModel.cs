@@ -64,11 +64,15 @@ public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
 
     public string Title { get => string.IsNullOrEmpty(field) ? Name : field; protected set; } = string.Empty;
 
+    public string Id { get; protected set; } = string.Empty;
+
     // This property maps to `IPage.IsLoading`, but we want to expose our own
     // `IsLoading` property as a combo of this value and `IsInitialized`
     public bool ModelIsLoading { get; protected set; } = true;
 
-    public bool HasSearchBox { get; protected set; }
+    public bool HasSearchBox { get; protected set; } = true;
+
+    public bool HasFilters { get; protected set; }
 
     public IconInfoViewModel Icon { get; protected set; }
 
@@ -140,6 +144,7 @@ public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
             return; // throw?
         }
 
+        Id = page.Id;
         Name = page.Name;
         ModelIsLoading = page.IsLoading;
         Title = page.Title;

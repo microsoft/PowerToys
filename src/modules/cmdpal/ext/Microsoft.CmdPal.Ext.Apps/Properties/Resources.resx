@@ -124,14 +124,11 @@
   <data name="installed_apps" xml:space="preserve">
     <value>Installed apps</value>
   </data>
-  <data name="search_installed_apps" xml:space="preserve">
-    <value>Search installed apps</value>
-  </data>
   <data name="all_apps" xml:space="preserve">
-    <value>All Apps</value>
+    <value>Search apps</value>
   </data>
   <data name="search_installed_apps_placeholder" xml:space="preserve">
-    <value>Search installed apps...</value>
+    <value>Search apps...</value>
   </data>
   <data name="open_path_in_console" xml:space="preserve">
     <value>Open path in console</value>

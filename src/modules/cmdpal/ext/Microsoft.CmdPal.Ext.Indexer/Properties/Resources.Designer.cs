@@ -133,6 +133,33 @@ namespace Microsoft.CmdPal.Ext.Indexer.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Peek preview.
+        /// </summary>
+        internal static string Indexer_Command_Peek {
+            get {
+                return ResourceManager.GetString("Indexer_Command_Peek", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to launch Peek.
+        /// </summary>
+        internal static string Indexer_Command_Peek_Failed {
+            get {
+                return ResourceManager.GetString("Indexer_Command_Peek_Failed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to PowerToys Peek is not available.
+        /// </summary>
+        internal static string Indexer_Command_Peek_NotAvailable {
+            get {
+                return ResourceManager.GetString("Indexer_Command_Peek_NotAvailable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Search all files.
         /// </summary>
         internal static string Indexer_Command_SearchAllFiles {
@@ -174,6 +201,33 @@ namespace Microsoft.CmdPal.Ext.Indexer.Properties {
         internal static string Indexer_File_Is_File_Not_Folder {
             get {
                 return ResourceManager.GetString("Indexer_File_Is_File_Not_Folder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Files and folders.
+        /// </summary>
+        internal static string Indexer_Filter_All {
+            get {
+                return ResourceManager.GetString("Indexer_Filter_All", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Files.
+        /// </summary>
+        internal static string Indexer_Filter_Files_Only {
+            get {
+                return ResourceManager.GetString("Indexer_Filter_Files_Only", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Folders.
+        /// </summary>
+        internal static string Indexer_Filter_Folders_Only {
+            get {
+                return ResourceManager.GetString("Indexer_Filter_Folders_Only", resourceCulture);
             }
         }
         
@@ -265,15 +319,6 @@ namespace Microsoft.CmdPal.Ext.Indexer.Properties {
         internal static string Indexer_Settings_FallbackCommand_Off {
             get {
                 return ResourceManager.GetString("Indexer_Settings_FallbackCommand_Off", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Search files on this device.
-        /// </summary>
-        internal static string Indexer_Subtitle {
-            get {
-                return ResourceManager.GetString("Indexer_Subtitle", resourceCulture);
             }
         }
         

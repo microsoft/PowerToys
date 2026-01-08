@@ -105,6 +105,7 @@
 ^src/common/notifications/BackgroundActivatorDLL/cpp\.hint$
 ^src/common/sysinternals/Eula/
 ^src/modules/cmdpal/doc/initial-sdk-spec/list-elements-mock-002\.pdn$
+^src/modules/cmdpal/ext/SamplePagesExtension/Pages/SampleMarkdownImagesPage\.cs$
 ^src/modules/colorPicker/ColorPickerUI/Shaders/GridShader\.cso$
 ^src/modules/launcher/Plugins/Microsoft\.PowerToys\.Run\.Plugin\.TimeDate/Properties/
 ^src/modules/MouseUtils/MouseJumpUI/MainForm\.resx$

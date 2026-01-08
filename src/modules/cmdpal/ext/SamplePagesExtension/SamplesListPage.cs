@@ -5,6 +5,7 @@
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using SamplePagesExtension.Pages;
+using SamplePagesExtension.Pages.IssueSpecificPages;
 
 namespace SamplePagesExtension;
 
@@ -23,6 +24,11 @@ public partial class SamplesListPage : ListPage
             Title = "List Page With Details",
             Subtitle = "A list of items, each with additional details to display",
         },
+        new ListItem(new SectionsIndexPage())
+        {
+            Title = "List Pages With Sections",
+            Subtitle = "A list of items, with sections header",
+        },
         new ListItem(new SampleUpdatingItemsPage())
         {
             Title = "List page with items that change",
@@ -33,9 +39,9 @@ public partial class SamplesListPage : ListPage
             Title = "Dynamic List Page Command",
             Subtitle = "Changes the list of items in response to the typed query",
         },
-        new ListItem(new SampleGalleryListPage())
+        new ListItem(new SampleGridsListPage())
         {
-            Title = "Gallery List Page Command",
+            Title = "Grid views and galleries",
             Subtitle = "Displays items as a gallery",
         },
         new ListItem(new OnLoadPage())
@@ -100,12 +106,24 @@ public partial class SamplesListPage : ListPage
             Subtitle = "A demo of the settings helpers",
         },
 
+        // Data package samples
+        new ListItem(new SampleDataTransferPage())
+        {
+            Title = "Clipboard and Drag-and-Drop Demo",
+            Subtitle = "Demonstrates clipboard integration and drag-and-drop functionality",
+        },
+
         // Evil edge cases
         // Anything weird that might break the palette - put that in here.
         new ListItem(new EvilSamplesPage())
         {
             Title = "Evil samples",
             Subtitle = "Samples designed to break the palette in many different evil ways",
+        },
+        new ListItem(new AllIssueSamplesIndexPage())
+        {
+            Title = "Issue-specific samples",
+            Subtitle = "Samples designed to reproduce specific issues",
         }
     ];
 

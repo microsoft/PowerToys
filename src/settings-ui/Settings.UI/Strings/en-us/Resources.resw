@@ -228,7 +228,7 @@
     <value>Adds feet to the end of cross lines</value>
   </data>
   <data name="MeasureTool_EnableMeasureTool.Header" xml:space="preserve">
-    <value>Enable Screen Ruler</value>
+    <value>Screen Ruler</value>
     <comment>"Screen Ruler" is the name of the utility</comment>
   </data>
   <data name="MouseWithoutBorders_ActivationSettings.Header" xml:space="preserve">
@@ -299,7 +299,7 @@
     <value>Service</value>
   </data>
   <data name="MouseWithoutBorders_Toggle_Enable.Header" xml:space="preserve">
-    <value>Enable Mouse Without Borders</value>
+    <value>Mouse Without Borders</value>
   </data>
   <data name="MouseWithoutBorders.SecondaryLinksHeader" xml:space="preserve">
     <value>Attribution</value>
@@ -540,7 +540,7 @@ opera.exe</value>
     <comment>Product name: Navigation view item name for Shortcut Guide</comment>
   </data>
   <data name="Shell_PowerPreview.Content" xml:space="preserve">
-    <value>File Explorer add-ons</value>
+    <value>File Explorer Add-ons</value>
     <comment>Product name: Navigation view item name for File Explorer.  Please use File Explorer as in the context of File Explorer in Windows</comment>
   </data>
   <data name="Shell_FancyZones.Content" xml:space="preserve">
@@ -564,7 +564,7 @@ opera.exe</value>
     <comment>Product name: Navigation view item name for Mouse Without Borders</comment>
   </data>
   <data name="Shell_MouseUtilities.Content" xml:space="preserve">
-    <value>Mouse utilities</value>
+    <value>Mouse Utilities</value>
     <comment>Product name: Navigation view item name for Mouse utilities</comment>
   </data>
   <data name="Shell_NavigationMenu_Announce_Collapse" xml:space="preserve">
@@ -584,7 +584,7 @@ opera.exe</value>
     <comment>Keyboard Manager page description</comment>
   </data>
   <data name="KeyboardManager_EnableToggle.Header" xml:space="preserve">
-    <value>Enable Keyboard Manager</value>
+    <value>Keyboard Manager</value>
     <comment>Keyboard Manager enable toggle header. Do not loc the Product name. Do you want this feature on / off</comment>
   </data>
   <data name="KeyboardManager_ProfileDescription.Text" xml:space="preserve">
@@ -624,19 +624,98 @@ opera.exe</value>
     <value>Disable</value>
   </data>
   <data name="AdvancedPaste_EnableAISettingsCard.Header" xml:space="preserve">
-    <value>Enable Paste with AI</value>
+    <value>Paste with AI</value>
+  </data>
+  <data name="AdvancedPaste_EnableAIDialogMarkdown.Text" xml:space="preserve">
+    <value>## Preview Terms
+
+Please review the placeholder content that represents the final terms and usage guidance for Advanced Paste.
+
+1. This is sample information.
+2. Real policy content will be provided later.
+3. Continue only if you are comfortable with the above.</value>
+  </data>
+  <data name="AdvancedPaste_EnableAIDialogAcceptanceCheckBox.Content" xml:space="preserve">
+    <value>I have read and accept the information above.</value>
+  </data>
+  <data name="AdvancedPaste_EnablePasteAIModerationToggle.Header" xml:space="preserve">
+    <value>OpenAI content moderation</value>
+  </data>
+  <data name="AdvancedPaste_EnableAdvancedAIDescription.Text" xml:space="preserve">
+    <value>Use built-in functions to handle complex tasks. Token consumption may increase.</value>
   </data>
   <data name="AdvancedPaste_Clipboard_History_Enabled_SettingsCard.Header" xml:space="preserve">
-    <value>Clipboard history</value>
+    <value>Access Clipboard History</value>
   </data>
   <data name="AdvancedPaste_Clipboard_History_Enabled_SettingsCard.Description" xml:space="preserve">
-    <value>Save multiple items to your clipboard. This is an OS feature.</value>
+    <value>View and select previously copied items</value>
   </data>
   <data name="AdvancedPaste_Direct_Access_Hotkeys_GroupSettings.Header" xml:space="preserve">
     <value>Actions</value>
   </data>
   <data name="AdvancedPaste_Additional_Actions_GroupSettings.Header" xml:space="preserve">
-    <value>Additional actions</value>
+    <value>Custom actions</value>
+  </data>
+  <data name="AdvancedPaste_FoundryLocal_LegalDescription" xml:space="preserve">
+    <value>You're running local models directly on your device. Their behavior may vary or be unpredictable.</value>
+  </data>
+  <data name="FoundryLocal_RestartRequiredNote.Text" xml:space="preserve">
+    <value>Note: After installing the Foundry Local CLI, restart PowerToys to use it.</value>
+    <comment>Message informing users that PowerToys needs to be restarted after installing Foundry Local CLI</comment>
+  </data>
+  <data name="AdvancedPaste_LocalModel_LegalDescription" xml:space="preserve">
+    <value>You're running local models directly on your device. Their behavior may vary or be unpredictable.</value>
+  </data>
+  <data name="AdvancedPaste_OpenAI_LegalDescription" xml:space="preserve">
+    <value>Your API key connects directly to OpenAI services. By setting up this provider, you agree to comply with OpenAI's usage policies and data handling practices.</value>
+  </data>
+  <data name="AdvancedPaste_OpenAI_TermsLabel" xml:space="preserve">
+    <value>Terms of Use</value>
+  </data>
+  <data name="AdvancedPaste_OpenAI_PrivacyLabel" xml:space="preserve">
+    <value>Privacy Policy</value>
+  </data>
+  <data name="AdvancedPaste_AzureOpenAI_LegalDescription" xml:space="preserve">
+    <value>Your API key connects directly to Microsoft Azure services. By setting up this provider, you agree to comply with Microsoft Azure's usage policies and data handling practices.</value>
+  </data>
+  <data name="AdvancedPaste_AzureOpenAI_TermsLabel" xml:space="preserve">
+    <value>Microsoft Azure Terms of Service</value>
+  </data>
+  <data name="AdvancedPaste_AzureOpenAI_PrivacyLabel" xml:space="preserve">
+    <value>Microsoft Privacy Statement</value>
+  </data>
+  <data name="AdvancedPaste_AzureAIInference_LegalDescription" xml:space="preserve">
+    <value>Your API key connects directly to Microsoft Azure services. By setting up this provider, you agree to comply with Microsoft Azure's usage policies and data handling practices.</value>
+  </data>
+  <data name="AdvancedPaste_AzureAIInference_TermsLabel" xml:space="preserve">
+    <value>Microsoft Azure Terms of Service</value>
+  </data>
+  <data name="AdvancedPaste_AzureAIInference_PrivacyLabel" xml:space="preserve">
+    <value>Microsoft Privacy Statement</value>
+  </data>
+  <data name="AdvancedPaste_Google_LegalDescription" xml:space="preserve">
+    <value>Your API key connects directly to Google services. By setting up this provider, you agree to comply with Google's usage policies and data handling practices.</value>
+  </data>
+  <data name="AdvancedPaste_Google_TermsLabel" xml:space="preserve">
+    <value>Google Terms of Service</value>
+  </data>
+  <data name="AdvancedPaste_Google_PrivacyLabel" xml:space="preserve">
+    <value>Google Privacy Policy</value>
+  </data>
+  <data name="AdvancedPaste_Mistral_LegalDescription" xml:space="preserve">
+    <value>Your API key connects directly to Mistral services. By setting up this provider, you agree to comply with Mistral's usage policies and data handling practices.</value>
+  </data>
+  <data name="AdvancedPaste_Mistral_TermsLabel" xml:space="preserve">
+    <value>Mistral Terms of Use</value>
+  </data>
+  <data name="AdvancedPaste_Mistral_PrivacyLabel" xml:space="preserve">
+    <value>Mistral Privacy Policy</value>
+  </data>
+  <data name="AdvancedPaste_Ollama_TermsLabel" xml:space="preserve">
+    <value>Ollama Terms of Service</value>
+  </data>
+  <data name="AdvancedPaste_Ollama_PrivacyLabel" xml:space="preserve">
+    <value>Ollama Privacy Policy</value>
   </data>
   <data name="RemapKeysList.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Current key remappings</value>
@@ -669,7 +748,7 @@ opera.exe</value>
     <value>Quick and simple system-wide color picker.</value>
   </data>
   <data name="ColorPicker_EnableColorPicker.Header" xml:space="preserve">
-    <value>Enable Color Picker</value>
+    <value>Color Picker</value>
     <comment>do not loc the Product name.  Do you want this feature on / off</comment>
   </data>
   <data name="ColorPicker_ChangeCursor.Content" xml:space="preserve">
@@ -679,7 +758,7 @@ opera.exe</value>
     <value>A quick launcher that has additional capabilities without sacrificing performance.</value>
   </data>
   <data name="PowerLauncher_EnablePowerLauncher.Header" xml:space="preserve">
-    <value>Enable PowerToys Run</value>
+    <value>PowerToys Run</value>
     <comment>do not loc the Product name.  Do you want this feature on / off</comment>
   </data>
   <data name="PowerLauncher_SearchResults.Header" xml:space="preserve">
@@ -804,7 +883,7 @@ opera.exe</value>
     <comment>windows refers to application windows</comment>
   </data>
   <data name="FancyZones_EnableToggleControl_HeaderText.Header" xml:space="preserve">
-    <value>Enable FancyZones</value>
+    <value>FancyZones</value>
     <comment>{Locked="FancyZones"}</comment>
   </data>
   <data name="FancyZones_ExcludeApps.Header" xml:space="preserve">
@@ -974,7 +1053,7 @@ opera.exe</value>
     <comment>This refers to directly integrating in with Windows</comment>
   </data>
   <data name="PowerRename_Toggle_Enable.Header" xml:space="preserve">
-    <value>Enable PowerRename</value>
+    <value>PowerRename</value>
     <comment>do not loc the Product name.  Do you want this feature on / off</comment>
   </data>
   <data name="RadioButtons_Name_Theme.Text" xml:space="preserve">
@@ -1156,7 +1235,7 @@ opera.exe</value>
     <value>PowerToys will restart automatically if needed</value>
   </data>
   <data name="ShortcutGuide_Enable.Header" xml:space="preserve">
-    <value>Enable Shortcut Guide</value>
+    <value>Shortcut Guide</value>
     <comment>do not loc the Product name. Do you want this feature on / off</comment>
   </data>
   <data name="ShortcutGuide_OverlayOpacity.Header" xml:space="preserve">
@@ -1188,7 +1267,7 @@ opera.exe</value>
     <value>Lets you resize images by right-clicking.</value>
   </data>
   <data name="ImageResizer_EnableToggle.Header" xml:space="preserve">
-    <value>Enable Image Resizer</value>
+    <value>Image Resizer</value>
     <comment>do not loc the Product name.  Do you want this feature on / off</comment>
   </data>
   <data name="ImagesSizesListView.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
@@ -1619,6 +1698,35 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
     <value>Provides extended features but may use different regex syntax</value>
     <comment>Boost is a product name, should not be translated</comment>
   </data>
+  <data name="PowerRename_ExtensionsHeader.Header" xml:space="preserve">
+    <value>Extensions</value>
+  </data>
+  <data name="PowerRename_HeifExtension.Header" xml:space="preserve">
+    <value>HEIF image metadata extraction</value>
+  </data>
+  <data name="PowerRename_HeifExtension.Description" xml:space="preserve">
+    <value>Requires HEIF Image Extensions from Microsoft Store to extract metadata from HEIC/HEIF files</value>
+    <comment>HEIF is a file format name, do not translate</comment>
+  </data>
+  <data name="PowerRename_HeifExtension_Install.Content" xml:space="preserve">
+    <value>Install from Microsoft Store</value>
+  </data>
+  <data name="PowerRename_HeifExtension_Installed.Text" xml:space="preserve">
+    <value>Installed</value>
+  </data>
+  <data name="PowerRename_AvifExtension.Header" xml:space="preserve">
+    <value>AVIF image metadata extraction</value>
+  </data>
+  <data name="PowerRename_AvifExtension.Description" xml:space="preserve">
+    <value>Requires AV1 Video Extension from Microsoft Store to extract metadata from AVIF files</value>
+    <comment>AVIF is a file format name, do not translate</comment>
+  </data>
+  <data name="PowerRename_AvifExtension_Install.Content" xml:space="preserve">
+    <value>Install from Microsoft Store</value>
+  </data>
+  <data name="PowerRename_AvifExtension_Installed.Text" xml:space="preserve">
+    <value>Installed</value>
+  </data>
   <data name="MadeWithOssLove.Text" xml:space="preserve">
     <value>Made with 💗 by Microsoft and the PowerToys community.</value>
   </data>
@@ -1956,6 +2064,9 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="AdvancedPasteUI_CustomAction_Name.Header" xml:space="preserve">
     <value>Name</value>
   </data>
+  <data name="AdvancedPasteUI_CustomAction_Description.Header" xml:space="preserve">
+    <value>Description</value>
+  </data>
   <data name="AdvancedPasteUI_CustomAction_Prompt.Header" xml:space="preserve">
     <value>Prompt</value>
   </data>
@@ -2006,9 +2117,6 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   </data>
   <data name="TranscodeToMp4.Header" xml:space="preserve">
     <value>Transcode to .mp4 (H.264/AAC)</value>
-  </data>
-  <data name="AdvancedPaste_EnableAIDialogOpenAIApiKey.Text" xml:space="preserve">
-    <value>OpenAI API key:</value>
   </data>
   <data name="EnableAIDialog_SaveBtnText" xml:space="preserve">
     <value>Save</value>
@@ -2163,7 +2271,7 @@ Take a moment to preview the various utilities listed or view our comprehensive 
     <value>Press the **Restart as administrator** button from the File Locksmith UI to also get information on elevated processes that might be using the files.</value>
   </data>
   <data name="Oobe_FileExplorer_HowToEnable.Text" xml:space="preserve">
-    <value>Select **View** which is located at the top of File Explorer, followed by **Show**, and then **Preview pane**. 
+    <value>Select **View** which is located at the top of File Explorer, followed by **Show**, and then **Preview pane**.
 From there, simply click on one of the supported files in the File Explorer and observe the content on the preview pane!</value>
   </data>
   <data name="Oobe_HowToCreateMappings.Text" xml:space="preserve">
@@ -2326,7 +2434,7 @@ From there, simply click on one of the supported files in the File Explorer and 
     <value>A convenient way to keep your PC awake on-demand.</value>
   </data>
   <data name="Awake_EnableSettingsCard.Header" xml:space="preserve">
-    <value>Enable Awake</value>
+    <value>Awake</value>
     <comment>Awake is a product name, do not loc</comment>
   </data>
   <data name="Awake_NoKeepAwakeSelector.Content" xml:space="preserve">
@@ -2590,6 +2698,30 @@ From there, simply click on one of the supported files in the File Explorer and 
     <value>Use a keyboard shortcut to highlight left and right mouse clicks.</value>
     <comment>Mouse as in the hardware peripheral.</comment>
   </data>
+  <data name="MouseUtils_Enable_CursorWrap.Header" xml:space="preserve">
+    <value>CursorWrap</value>
+  </data>
+  <data name="MouseUtils_CursorWrap.Header" xml:space="preserve">
+    <value>CursorWrap</value>
+  </data>
+  <data name="MouseUtils_CursorWrap.Description" xml:space="preserve">
+    <value>Wrap the mouse cursor between monitor edges</value>
+  </data>
+  <data name="MouseUtils_CursorWrap_ActivationShortcut.Header" xml:space="preserve">
+    <value>Activation and behavior</value>
+  </data>
+  <data name="MouseUtils_CursorWrap_ActivationShortcut_Button.Content" xml:space="preserve">
+    <value>Set shortcut</value>
+  </data>
+  <data name="MouseUtils_CursorWrap_DisableWrapDuringDrag.Content" xml:space="preserve">
+    <value>Disable wrapping while dragging</value>
+  </data>
+  <data name="MouseUtils_CursorWrap_AutoActivate.Header" xml:space="preserve">
+    <value>Auto-activate on startup</value>
+  </data>
+  <data name="MouseUtils_CursorWrap_AutoActivate.Content" xml:space="preserve">
+    <value>Automatically activate on utility startup</value>
+  </data>
   <data name="Oobe_MouseUtils_MousePointerCrosshairs.Text" xml:space="preserve">
     <value>Mouse Pointer Crosshairs</value>
     <comment>Mouse as in the hardware peripheral.</comment>
@@ -2718,11 +2850,11 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <comment>Refers to the utility name</comment>
   </data>
   <data name="MouseUtils_FindMyMouse.Description" xml:space="preserve">
-    <value>Find My Mouse highlights the position of the cursor when pressing the Ctrl key twice, using a custom shortcut or when shaking the mouse.</value>
+    <value>Highlight the position of the cursor when pressing the Ctrl key twice, using a custom shortcut or when shaking the mouse.</value>
     <comment>"Ctrl" is a keyboard key. "Find My Mouse" is the name of the utility</comment>
   </data>
   <data name="MouseUtils_Enable_FindMyMouse.Header" xml:space="preserve">
-    <value>Enable Find My Mouse</value>
+    <value>Find My Mouse</value>
     <comment>"Find My Mouse" is the name of the utility.</comment>
   </data>
   <data name="MouseUtils_FindMyMouse_ActivationMethod.Header" xml:space="preserve">
@@ -2807,11 +2939,11 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <comment>Refers to the utility name</comment>
   </data>
   <data name="MouseUtils_MouseHighlighter.Description" xml:space="preserve">
-    <value>Mouse Highlighter mode will highlight mouse clicks.</value>
+    <value>Highlight mouse clicks.</value>
     <comment>"Mouse Highlighter" is the name of the utility. Mouse is the hardware mouse.</comment>
   </data>
   <data name="MouseUtils_Enable_MouseHighlighter.Header" xml:space="preserve">
-    <value>Enable Mouse Highlighter</value>
+    <value>Mouse Highlighter</value>
     <comment>"Find My Mouse" is the name of the utility.</comment>
   </data>
   <data name="MouseUtils_MouseHighlighter_ActivationShortcut.Header" xml:space="preserve">
@@ -2852,11 +2984,11 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <comment>Refers to the utility name</comment>
   </data>
   <data name="MouseUtils_MousePointerCrosshairs.Description" xml:space="preserve">
-    <value>Mouse Pointer Crosshairs draws crosshairs centered on the mouse pointer.</value>
+    <value>Draw crosshairs centered on the mouse pointer.</value>
     <comment>"Mouse Pointer Crosshairs" is the name of the utility. Mouse is the hardware mouse.</comment>
   </data>
   <data name="MouseUtils_Enable_MousePointerCrosshairs.Header" xml:space="preserve">
-    <value>Enable Mouse Pointer Crosshairs</value>
+    <value>Mouse Pointer Crosshairs</value>
     <comment>"Mouse Pointer Crosshairs" is the name of the utility.</comment>
   </data>
   <data name="MouseUtils_MousePointerCrosshairs_ActivationShortcut.Header" xml:space="preserve">
@@ -2893,7 +3025,7 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Crosshairs fixed length (px)</value>
     <comment>px = pixels</comment>
   </data>
-	<data name="MouseUtils_MousePointerCrosshairs_CrosshairsOrientation.Header" xml:space="preserve">
+  <data name="MouseUtils_MousePointerCrosshairs_CrosshairsOrientation.Header" xml:space="preserve">
     <value>Crosshairs orientation</value>
   </data>
   <data name="MouseUtils_MousePointerCrosshairs_CrosshairsOrientation_Both.Content" xml:space="preserve">
@@ -2981,7 +3113,7 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Activation</value>
   </data>
   <data name="CropAndLock_EnableToggleControl_HeaderText.Header" xml:space="preserve">
-    <value>Enable Crop And Lock</value>
+    <value>Crop And Lock</value>
     <comment>"Crop And Lock" is the name of the utility</comment>
   </data>
   <data name="Shell_CropAndLock.Content" xml:space="preserve">
@@ -3004,6 +3136,12 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="CropAndLock_ThumbnailActivation_Shortcut.Description" xml:space="preserve">
     <value>Creates a cropped, non-interactive thumbnail of another window. Improves app compatibility.</value>
   </data>
+  <data name="CropAndLock_ScreenshotActivation_Shortcut.Header" xml:space="preserve">
+    <value>Screenshot shortcut</value>
+  </data>
+  <data name="CropAndLock_ScreenshotActivation_Shortcut.Description" xml:space="preserve">
+    <value>Creates a cropped, static screenshot of another window. The screenshot won't update with the original window's content.</value>
+  </data>
   <data name="CropAndLock.SecondaryLinksHeader" xml:space="preserve">
     <value>Attribution</value>
     <comment>giving credit to the projects this utility was based on</comment>
@@ -3022,6 +3160,9 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="Oobe_CropAndLock_HowToUse_Reparent.Text" xml:space="preserve">
     <value>to crop an application's window into a cropped window. This is experimental and can cause issues with some applications, since the cropped window will contain the original application window.</value>
   </data>
+  <data name="Oobe_CropAndLock_HowToUse_Screenshot.Text" xml:space="preserve">
+    <value>to crop an application's window into a screenshot window. The screenshot won't update with the original window's content.</value>
+  </data>
   <data name="AlwaysOnTop.ModuleDescription" xml:space="preserve">
     <value>Always On Top is a quick and easy way to pin windows on top.</value>
     <comment>{Locked="Always On Top"}</comment>
@@ -3037,7 +3178,7 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Activation</value>
   </data>
   <data name="AlwaysOnTop_EnableToggleControl_HeaderText.Header" xml:space="preserve">
-    <value>Enable Always On Top</value>
+    <value>Always On Top</value>
     <comment>{Locked="Always On Top"}</comment>
   </data>
   <data name="AlwaysOnTop_ExcludedApps.Description" xml:space="preserve">
@@ -3138,7 +3279,7 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Peek is a quick and easy way to preview files. Select a file in File Explorer and press the shortcut to open the file preview.</value>
   </data>
   <data name="Peek_EnablePeek.Header" xml:space="preserve">
-    <value>Enable Peek</value>
+    <value>Peek</value>
     <comment>Peek is a product name, do not loc</comment>
   </data>
   <data name="Peek_BehaviorHeader.Header" xml:space="preserve">
@@ -3215,7 +3356,7 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <comment>Quick Accent is a product name, do not loc</comment>
   </data>
   <data name="QuickAccent_EnableQuickAccent.Header" xml:space="preserve">
-    <value>Enable Quick Accent</value>
+    <value>Quick Accent</value>
   </data>
   <data name="Shell_QuickAccent.Content" xml:space="preserve">
     <value>Quick Accent</value>
@@ -3224,7 +3365,7 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Workspaces</value>
   </data>
   <data name="Workspaces_EnableToggleControl_HeaderText.Header" xml:space="preserve">
-    <value>Enable Workspaces</value>
+    <value>Workspaces</value>
     <comment>"Workspaces" is the name of the utility</comment>
   </data>
   <data name="Workspaces_Activation_GroupSettings.Header" xml:space="preserve">
@@ -3279,6 +3420,9 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="CropAndLock_Reparent" xml:space="preserve">
     <value>Crop an app's window into a cropped window</value>
   </data>
+  <data name="CropAndLock_Screenshot" xml:space="preserve">
+    <value>Crop an app into a screenshot window</value>
+  </data>
   <data name="FancyZones_OpenEditor" xml:space="preserve">
     <value>Open editor</value>
   </data>
@@ -3301,7 +3445,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>An AI powered tool to put your clipboard content into any format you need, focused towards developer workflows.</value>
   </data>
   <data name="AdvancedPaste_EnableAISettingsCardDescription.Text" xml:space="preserve">
-    <value>This feature allows you to format your clipboard content with the power of AI. An OpenAI API key is required.</value>
+    <value>Transform your clipboard content with the power of AI. A cloud or local endpoint is required.</value>
   </data>
   <data name="AdvancedPaste_EnableAISettingsCardDescriptionLearnMore.Content" xml:space="preserve">
     <value>Learn more</value>
@@ -3498,7 +3642,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Text Extractor</value>
   </data>
   <data name="TextExtractor_EnableToggleControl_HeaderText.Header" xml:space="preserve">
-    <value>Enable Text Extractor</value>
+    <value>Text Extractor</value>
   </data>
   <data name="TextExtractor_SupportedLanguages.Title" xml:space="preserve">
     <value>Text Extractor can only recognize languages that have the OCR pack installed.</value>
@@ -3727,7 +3871,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <comment>Products name: Navigation view item name for Hosts File Editor</comment>
   </data>
   <data name="Hosts_EnableToggleControl_HeaderText.Header" xml:space="preserve">
-    <value>Enable Hosts File Editor</value>
+    <value>Hosts File Editor</value>
     <comment>"Hosts File Editor" is the name of the utility</comment>
   </data>
   <data name="Hosts_Toggle_ShowStartupWarning.Header" xml:space="preserve">
@@ -3792,7 +3936,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Environment Variables</value>
   </data>
   <data name="EnvironmentVariables_EnableToggleControl_HeaderText.Header" xml:space="preserve">
-    <value>Enable Environment Variables</value>
+    <value>Environment Variables</value>
   </data>
   <data name="EnvironmentVariables_Activation_GroupSettings.Header" xml:space="preserve">
     <value>Activation</value>
@@ -3840,7 +3984,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <comment>Product name: Navigation view item name for FileLocksmith</comment>
   </data>
   <data name="FileLocksmith_Enable_FileLocksmith.Header" xml:space="preserve">
-    <value>Enable File Locksmith</value>
+    <value>File Locksmith</value>
     <comment>File Locksmith is the name of the utility</comment>
   </data>
   <data name="FileLocksmith_Toggle_StandardContextMenu.Content" xml:space="preserve">
@@ -3920,7 +4064,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <comment>Product name: Navigation view item name for Advanced Paste</comment>
   </data>
   <data name="AdvancedPaste.ModuleDescription" xml:space="preserve">
-    <value>A tool to quickly format clipboard content into plain text, Markdown, JSON, and more. An AI-powered option requiring an OpenAI API key is available for advanced formatting.</value>
+    <value>Formats clipboard content into plain text, Markdown, JSON, and more. Advanced formatting can use an online or local language model endpoint.</value>
   </data>
   <data name="AdvancedPaste.ModuleTitle" xml:space="preserve">
     <value>Advanced Paste</value>
@@ -3929,13 +4073,13 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>cancel</value>
   </data>
   <data name="AdvancedPaste_EnableToggleControl_HeaderText.Header" xml:space="preserve">
-    <value>Enable Advanced Paste</value>
+    <value>Advanced Paste</value>
   </data>
   <data name="AdvancedPaste_EnableAISettingsGroup.Header" xml:space="preserve">
     <value>Paste with AI</value>
   </data>
   <data name="AdvancedPaste_BehaviorSettingsGroup.Header" xml:space="preserve">
-    <value>Behavior</value>
+    <value>Activation &amp; behavior</value>
   </data>
   <data name="AdvancedPaste_ShowCustomPreviewSettingsCard.Header" xml:space="preserve">
     <value>Custom format preview</value>
@@ -3943,11 +4087,8 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="AdvancedPaste_ShowCustomPreviewSettingsCard.Description" xml:space="preserve">
     <value>Preview the output of AI formats and Image to text before pasting</value>
   </data>
-  <data name="AdvancedPaste_EnableAdvancedAI.Header" xml:space="preserve">
-    <value>Enable advanced AI</value>
-  </data>
-  <data name="AdvancedPaste_EnableAdvancedAI.Description" xml:space="preserve">
-    <value>Add advanced capabilities when using 'Paste with AI' including the power to 'chain' multiple transformations together and work with images and files. This feature may consume more API credits when used.</value>
+  <data name="AdvancedPaste_EnableAdvancedAI.Text" xml:space="preserve">
+    <value>Advanced AI</value>
   </data>
   <data name="Oobe_AdvancedPaste.Description" xml:space="preserve">
     <value>Advanced Paste is a tool to put your clipboard content into any format you need, focused towards developer workflows. It can paste as plain text, markdown, or json directly with the UX or with a direct keystroke invoke. These are fully locally executed. In addition, it has an AI powered option that is 100% opt-in and requires an Open AI key. Note: this will replace the formatted text in your clipboard with the selected format.</value>
@@ -4099,7 +4240,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <comment>Product name: Navigation view item name for Registry Preview</comment>
   </data>
   <data name="RegistryPreview_Enable_RegistryPreview.Header" xml:space="preserve">
-    <value>Enable Registry Preview</value>
+    <value>Registry Preview</value>
     <comment>Registry Preview is the name of the utility</comment>
   </data>
   <data name="Oobe_RegistryPreview_HowToUse.Text" xml:space="preserve">
@@ -4133,7 +4274,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <comment>"Mouse Jump" is the name of the utility. Mouse is the hardware mouse.</comment>
   </data>
   <data name="MouseUtils_Enable_MouseJump.Header" xml:space="preserve">
-    <value>Enable Mouse Jump</value>
+    <value>Mouse Jump</value>
     <comment>"Mouse Jump" is the name of the utility.</comment>
   </data>
   <data name="MouseUtils_MouseJump_ActivationShortcut.Description" xml:space="preserve">
@@ -4356,6 +4497,18 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="Shell_Dashboard.Content" xml:space="preserve">
     <value>Home</value>
   </data>
+  <data name="Dashboard_SortBy_ToolTip.Text" xml:space="preserve">
+    <value>Sort utilities</value>
+  </data>
+  <data name="Dashboard_SortAlphabetical.Text" xml:space="preserve">
+    <value>Alphabetically</value>
+  </data>
+  <data name="Dashboard_SortByStatus.Text" xml:space="preserve">
+    <value>By status</value>
+  </data>
+  <data name="Dashboard_SortBy.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Sort utilities</value>
+  </data>
   <data name="Peek_Preview_GroupSettings.Header" xml:space="preserve">
     <value>Preview</value>
   </data>
@@ -4441,17 +4594,8 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="TermsLink.Text" xml:space="preserve">
     <value>OpenAI Terms</value>
   </data>
-  <data name="AdvancedPaste_EnableAIDialog_Description.Text" xml:space="preserve">
-    <value>Paste with AI allows you to format your clipboard content into any format you need. Learn more about the terms of conditions while using OpenAI and privacy at Microsoft:</value>
-  </data>
   <data name="AdvancedPaste_EnableAIDialog_LoginIntoText.Text" xml:space="preserve">
     <value>• Login into your</value>
-  </data>
-  <data name="AdvancedPaste_EnableAIDialog_ConfigureOpenAIKey.Text" xml:space="preserve">
-    <value>Configure OpenAI key</value>
-  </data>
-  <data name="AdvancedPaste_EnableAIDialog_OpenAIApiKeysOverviewText.Text" xml:space="preserve">
-    <value>OpenAI API keys overview</value>
   </data>
   <data name="AdvancedPaste_EnableAIDialog_CreateNewKeyText.Text" xml:space="preserve">
     <value>• Create a new secret key and paste it in the field below</value>
@@ -4470,15 +4614,16 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="Peek_SourceCode_FontSize.Header" xml:space="preserve">
     <value>Font size</value>
   </data>
-  <data name="AdvancedPaste_EnableAIDialog_NoteAICreditsText.Text" xml:space="preserve">
-    <value>• NOTE: You need to have available paid credits in your OpenAI account to use this feature. If you do not have credits you will see an 'API key quota exceeded' error</value>
-  </data>
   <data name="AdvancedPaste_EnableAIDialog_NoteAICreditsErrorText.Text" xml:space="preserve">
     <value>If you do not have credits you will see an 'API key quota exceeded' error</value>
   </data>
-  <data name="AdvancedPaste_CloseAfterLosingFocus.Header" xml:space="preserve">
-    <value>Automatically close the AdvancedPaste window after it loses focus</value>
-    <comment>AdvancedPaste is a product name, do not loc</comment>
+  <data name="AdvancedPaste_CloseAfterLosingFocus.Content" xml:space="preserve">
+    <value>Automatically close the window after it loses focus</value>
+    <comment>Advanced Paste is a product name, do not loc</comment>
+  </data>
+  <data name="AdvancedPaste_EnableClipboardPreview.Header" xml:space="preserve">
+    <value>Show clipboard preview</value>
+    <comment>Enables display of clipboard contents preview in the Advanced Paste window</comment>
   </data>
   <data name="GPO_CommandNotFound_ForceDisabled.Title" xml:space="preserve">
     <value>The Command Not Found module is disabled by your organization.</value>
@@ -4504,7 +4649,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <comment>New+ learn more link. Localize product name in accordance with Windows New</comment>
   </data>
   <data name="NewPlus_Enable_Toggle.Header" xml:space="preserve">
-    <value>Enable New+</value>
+    <value>New+</value>
     <comment>Localize product name in accordance with Windows New</comment>
   </data>
   <data name="NewPlus_TemplatesNotBackupAndRestoreWarning.Title" xml:space="preserve">
@@ -4617,7 +4762,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <comment>{Locked="ZoomIt"}</comment>
   </data>
   <data name="ZoomIt_EnableToggleControl_HeaderText.Header" xml:space="preserve">
-    <value>Enable ZoomIt</value>
+    <value>ZoomIt</value>
     <comment>{Locked="ZoomIt"}</comment>
   </data>
   <data name="ZoomIt.ModuleDescription" xml:space="preserve">
@@ -4664,7 +4809,7 @@ Copy a zoomed screen with Ctrl+C or save it by typing Ctrl+S. Crop the copy or s
   </data>
   <data name="ZoomIt_Toggle_SmoothZoomedImage.Header" xml:space="preserve">
     <value>Smooth zoomed image</value>
-  </data>  
+  </data>
   <data name="ZoomIt_Slider_InitialMagnification.Header" xml:space="preserve">
     <value>Specify the initial level of magnification when zooming in</value>
   </data>
@@ -4893,6 +5038,9 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   <data name="ZoomIt_Record_Scaling.Header" xml:space="preserve">
     <value>Scaling</value>
   </data>
+  <data name="ZoomIt_Record_Format.Header" xml:space="preserve">
+    <value>Format</value>
+  </data>
   <data name="ZoomIt_Record_CaptureAudio.Header" xml:space="preserve">
     <value>Capture audio input</value>
   </data>
@@ -5034,25 +5182,12 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   <data name="Shell_TopLevelSystemTools.Content" xml:space="preserve">
     <value>System Tools</value>
   </data>
-  <data name="CmdPal.ModuleTitle" xml:space="preserve">
-    <value>Command Palette</value>
-  </data>
-  <data name="CmdPal_ShortDescription" xml:space="preserve">
-    <value>A better quick launcher</value>
-  </data>
-  <data name="CmdPal_ActivationDescription" xml:space="preserve">
-    <value>Open Command Palette</value>
-  </data>
   <data name="CmdPal_Enable_CmdPal.Header" xml:space="preserve">
-    <value>Enable Command Palette</value>
-    <comment>"Command Palette" is the name of the utility.</comment>
-  </data>
-  <data name="CmdPal.ModuleDescription" xml:space="preserve">
-    <value>A fully extensible quick launcher with a richer display and additional capabilities without sacrificing performance.</value>
+    <value>Command Palette</value>
+    <comment>Command Palette is a product name, do not loc</comment>
   </data>
   <data name="LearnMore_CmdPal.Text" xml:space="preserve">
     <value>Learn more about Command Palette</value>
-    <comment>Command Palette is a product name, do not loc</comment>
   </data>
   <data name="Shell_CmdPal.Content" xml:space="preserve">
     <value>Command Palette</value>
@@ -5060,11 +5195,11 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   </data>
   <data name="Oobe_CmdPal.Description" xml:space="preserve">
     <value>A fully extensible quick launcher with a richer display and additional capabilities without sacrificing performance.</value>
-    <comment>"Command Palette" is a product name</comment>
+    <comment>Command Palette is a product name, do not loc</comment>
   </data>
   <data name="Oobe_CmdPal.Title" xml:space="preserve">
     <value>Command Palette</value>
-    <comment>"Command Palette" is a product name</comment>
+    <comment>Command Palette is a product name, do not loc</comment>
   </data>
   <data name="Oobe_CmdPal_HowToUse.Text" xml:space="preserve">
     <value>and start typing!</value>
@@ -5097,14 +5232,8 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   <data name="RetryLabel.Text" xml:space="preserve">
     <value>Retry</value>
   </data>
-  <data name="CmdPal_Activation_GroupSettings.Header" xml:space="preserve">
-    <value>Activation</value>
-  </data>
-  <data name="CmdPal_ActivationShortcut.Header" xml:space="preserve">
-    <value>Activation shortcut</value>
-  </data>
-  <data name="CmdPal_DeeplinkContent.Content" xml:space="preserve">
-    <value>Open Command Palette settings to customize the activation shortcut</value>
+  <data name="CmdPal_Settings.Header" xml:space="preserve">
+    <value>Settings</value>
   </data>
   <data name="Help_chromaCIE" xml:space="preserve">
     <value>chroma (CIE LCh)</value>
@@ -5239,9 +5368,6 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   <data name="Shell_LightSwitch.Content" xml:space="preserve">
     <value>Light Switch</value>
   </data>
-  <data name="LightSwitch_EnableToggleControl_HeaderText.Header" xml:space="preserve">
-    <value>Enable Light Switch</value>
-  </data>
   <data name="LightSwitch.ModuleDescription" xml:space="preserve">
     <value>Easily switch between light and dark mode - on a schedule, automatically, or with a shortcut.</value>
   </data>
@@ -5255,7 +5381,7 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
     <value>Behavior</value>
   </data>
   <data name="LightSwitch_EnableSettingsCard.Header" xml:space="preserve">
-    <value>Enable Light Switch</value>
+    <value>Light Switch</value>
   </data>
   <data name="LightSwitch_ShortcutsSettingsGroup.Header" xml:space="preserve">
     <value>Shortcuts</value>
@@ -5269,11 +5395,17 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   <data name="LightSwitch_ModeSettingsExpander.Description" xml:space="preserve">
     <value>Determine when dark mode should be turned on</value>
   </data>
+  <data name="LightSwitch_ModeOff.Content" xml:space="preserve">
+    <value>Off</value>
+  </data>
   <data name="LightSwitch_ModeManual.Content" xml:space="preserve">
-    <value>Manual</value>
+    <value>Fixed hours</value>
   </data>
   <data name="LightSwitch_ModeSunsetToSunrise.Content" xml:space="preserve">
     <value>Sunset to sunrise</value>
+  </data>
+  <data name="LightSwitch_ScheduleOffMessage.Title" xml:space="preserve">
+    <value>Scheduling is turned off.</value>
   </data>
   <data name="LightSwitch_TurnOnDarkMode.Header" xml:space="preserve">
     <value>Turn on dark mode</value>
@@ -5321,16 +5453,13 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
     <value>Select a location</value>
   </data>
   <data name="LightSwitch_LocationDialog.PrimaryButtonText" xml:space="preserve">
-    <value>Select</value>
+    <value>Save</value>
   </data>
   <data name="LightSwitch_LocationDialog.SecondaryButtonText" xml:space="preserve">
     <value>Cancel</value>
   </data>
-  <data name="LightSwitch_GetCurrentLocation.Text" xml:space="preserve">
-    <value>Get current location</value>
-  </data>
   <data name="LightSwitch_LocationDialog_Description.Text" xml:space="preserve">
-    <value>To calculate the sunrise and sunset, Light Switch needs a location.</value>
+    <value>Detect your location automatically or enter it manually to calculate sunrise and sunset times.</value>
   </data>
   <data name="LightSwitch_SunriseText.Text" xml:space="preserve">
     <value>Sunrise</value>
@@ -5338,8 +5467,17 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   <data name="LightSwitch_SunsetText.Text" xml:space="preserve">
     <value>Sunset</value>
   </data>
-  <data name="LightSwitch_LocationTooltip.Text" xml:space="preserve">
-    <value>Location</value>
+  <data name="LightSwitch_LatitudeBox.Header" xml:space="preserve">
+    <value>Latitude</value>
+  </data>
+  <data name="LightSwitch_LongitudeBox.Header" xml:space="preserve">
+    <value>Longitude</value>
+  </data>
+  <data name="LightSwitch_FindLocation.Text" xml:space="preserve">
+    <value>Detect location</value>
+  </data>
+  <data name="LightSwitch_FindLocationAutomation.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Detect location</value>
   </data>
   <data name="LightSwitch_SunriseTooltip.Text" xml:space="preserve">
     <value>Sunrise</value>
@@ -5421,6 +5559,9 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   <data name="ShortcutConflictControl_Title.Text" xml:space="preserve">
     <value>Shortcut conflicts</value>
   </data>
+  <data name="ShortcutConflictControl_Automation.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Shortcut conflicts</value>
+  </data>
   <data name="ShortcutConflictControl_NoConflictsFound" xml:space="preserve">
     <value>No conflicts found</value>
   </data>
@@ -5486,5 +5627,199 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   </data>
   <data name="Shortcut_Conflict_LearnMore.Content" xml:space="preserve">
     <value>Learn more</value>
+  </data>
+  <data name="Hosts_Backup_GroupSettings.Header" xml:space="preserve">
+    <value>Backup</value>
+  </data>
+  <data name="Hosts_Backup.Header" xml:space="preserve">
+    <value>Backup hosts file</value>
+    <comment>"Hosts" refers to the system hosts file, do not loc</comment>
+  </data>
+  <data name="Hosts_Backup.Description" xml:space="preserve">
+    <value>Automatically create a backup of the hosts file when you save for the first time in a session</value>
+    <comment>"Hosts" refers to the system hosts file, do not loc</comment>
+  </data>
+  <data name="Hosts_Backup_Location.Header" xml:space="preserve">
+    <value>Location</value>
+  </data>
+  <data name="Hosts_ButtonSelectLocation.Text" xml:space="preserve">
+    <value>Select location</value>
+  </data>
+  <data name="Hosts_Delete_Backup.Header" xml:space="preserve">
+    <value>Automatically delete backups</value>
+  </data>
+  <data name="Hosts_Backup_DaysInput.Header" xml:space="preserve">
+    <value>Days</value>
+  </data>
+  <data name="Hosts_Backup_CountInput_Description" xml:space="preserve">
+    <value>Set the number of backups to keep. Older backups will be deleted once the limit is reached.</value>
+  </data>
+  <data name="Hosts_Backup_DaysInput.Description" xml:space="preserve">
+    <value>Set the number of days to keep backups. Older backups will be deleted once the limit is reached.</value>
+  </data>
+  <data name="Hosts_DeleteBackupMode_Never.Content" xml:space="preserve">
+    <value>Never</value>
+  </data>
+  <data name="Hosts_DeleteBackupMode_CountBased.Content" xml:space="preserve">
+    <value>Based on count</value>
+  </data>
+  <data name="Hosts_DeleteBackupMode_AgeAndCountBased.Content" xml:space="preserve">
+    <value>Based on age and count</value>
+  </data>
+  <data name="Hosts_Backup_CountInput_Age_Description" xml:space="preserve">
+    <value>Set an optional number of backups to always keep despite their age</value>
+  </data>
+  <data name="Hosts_Backup_CountInput_Header" xml:space="preserve">
+    <value>Backup count</value>
+  </data>
+  <data name="LightSwitch_SetLocationButton.Content" xml:space="preserve">
+    <value>Set Location</value>
+  </data>
+  <data name="AdvancedPaste_FL_OpenFoundryModelList.Content" xml:space="preserve">
+    <value>Open Foundry Local model list</value>
+    <comment>Do not localize "Foundry Local", it's a product name</comment>
+  </data>
+  <data name="AdvancedPaste_FL_RunFoundryLocalText.Text" xml:space="preserve">
+    <value>Run Foundry Local to download or add a local model</value>
+    <comment>Do not localize "Foundry Local", it's a product name</comment>
+  </data>
+  <data name="AdvancedPaste_FL_NoModelsDownloaded.Text" xml:space="preserve">
+    <value>No models downloaded</value>
+  </data>
+  <data name="AdvancedPaste_FL_LoadingStatus.Text" xml:space="preserve">
+    <value>Loading Foundry Local status..</value>
+    <comment>Do not localize "Foundry Local", it's a product name</comment>
+  </data>
+  <data name="AdvancedPaste_FL_LocalModel.Text" xml:space="preserve">
+    <value>Foundry Local model</value>
+    <comment>Do not localize "Foundry Local", it's a product name</comment>
+  </data>
+  <data name="AdvancedPaste_FL_UseCliToDownloadModels.Text" xml:space="preserve">
+    <value>Use the Foundry Local CLI to download models that run locally on-device. They'll appear here.</value>
+    <comment>Do not localize "Foundry Local", it's a product name</comment>
+  </data>
+  <data name="AdvancedPaste_FL_RefreshModelList.Text" xml:space="preserve">
+    <value>Refresh model list</value>
+  </data>
+  <data name="AdvancedPaste_FL_FLNotAvailableYet.Text" xml:space="preserve">
+    <value>Foundry Local is not available on this device yet.</value>
+    <comment>Do not localize "Foundry Local", it's a product name</comment>
+  </data>
+  <data name="AdvancedPaste_FL_StartService.Text" xml:space="preserve">
+    <value>Start the Foundry Local service before returning to PowerToys.</value>
+  </data>
+  <data name="AdvancedPaste_FL_CLIGuide.Content" xml:space="preserve">
+    <value>Follow the Foundry Local CLI guide</value>
+    <comment>Do not localize "Foundry Local", it's a product name</comment>
+  </data>
+  <data name="AdvancedPaste_ModelProviders.Header" xml:space="preserve">
+    <value>Model providers</value>
+  </data>
+  <data name="AdvancedPaste_ModelProviders.Description" xml:space="preserve">
+    <value>Add online or local models</value>
+  </data>
+  <data name="AdvancedPaste_Edit.Text" xml:space="preserve">
+    <value>Edit</value>
+  </data>
+  <data name="AdvancedPaste_Remove.Text" xml:space="preserve">
+    <value>Remove</value>
+  </data>
+  <data name="AdvancedPaste_ModelName.Header" xml:space="preserve">
+    <value>Model name</value>
+  </data>
+  <data name="AdvancedPaste_EndpointURL.Header" xml:space="preserve">
+    <value>Endpoint URL</value>
+  </data>
+  <data name="AdvancedPaste_APIKey.Header" xml:space="preserve">
+    <value>API key</value>
+  </data>
+  <data name="AdvancedPaste_APIKey.PlaceholderText" xml:space="preserve">
+    <value>Enter API key</value>
+  </data>
+  <data name="AdvancedPaste_APIVersion.Header" xml:space="preserve">
+    <value>API version</value>
+  </data>
+  <data name="AdvancedPaste_DeploymentName.Header" xml:space="preserve">
+    <value>Deployment name</value>
+  </data>
+  <data name="AdvancedPaste_SystemPrompt.Header" xml:space="preserve">
+    <value>System prompt</value>
+  </data>
+  <data name="AdvancedPaste_EndpointDialog.PrimaryButtonText" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="AdvancedPaste_EndpointDialog.SecondaryButtonText" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="AdvancedPaste_EnableClipboardPreview.Description" xml:space="preserve">
+    <value>Display a preview of the current clipboard content</value>
+  </data>
+  <data name="AdvancedPaste_FL_LearnMoreFoundryLocal.Content" xml:space="preserve">
+    <value>Learn more</value>
+  </data>
+  <data name="AdvancedPaste_FL_PreviewMessage.Message" xml:space="preserve">
+    <value>Foundry Local is still in public preview</value>
+    <comment>Do not loc "Foundry Local"</comment>
+  </data>
+  <data name="CmdPal_Settings.Description" xml:space="preserve">
+    <value>Configure the activation shortcut, extensions, behavior and much more</value>
+  </data>
+  <data name="CmdPal_Launch.Header" xml:space="preserve">
+    <value>Open Command Palette</value>
+    <comment>Command Palette is a product name, do not loc</comment>
+  </data>
+  <data name="CmdPal_ShortDescription" xml:space="preserve">
+    <value>A better quick launcher</value>
+  </data>
+  <data name="CmdPal_Description.Text" xml:space="preserve">
+    <value>Find files, launch apps, and do so much more with the most extensible quick launcher.</value>
+  </data>
+  <data name="CmdPal.ModuleTitle" xml:space="preserve">
+    <value>Command Palette</value>
+    <comment>Command Palette is a product name, do not loc</comment>
+  </data>
+  <data name="CmdPal_ActivationDescription" xml:space="preserve">
+    <value>Open Command Palette</value>
+    <comment>Command Palette is a product name, do not loc</comment>
+  </data>
+  <data name="CmdPal_ExtensibleDescription.Text" xml:space="preserve">
+    <value>Powerful extensions help you do more</value>
+  </data>
+  <data name="CmdPal_ExtensibleHeader.Text" xml:space="preserve">
+    <value>Extensible</value>
+  </data>
+  <data name="CmdPal_FastDescription.Text" xml:space="preserve">
+    <value>Find files and launch apps in an instant</value>
+  </data>
+  <data name="CmdPal_FastHeader.Text" xml:space="preserve">
+    <value>Fast</value>
+  </data>
+  <data name="CmdPal_ModernHeader.Text" xml:space="preserve">
+    <value>Beautiful</value>
+  </data>
+  <data name="CmdPal_ModernDescription.Text" xml:space="preserve">
+    <value>A modern UI built with Fluent Design</value>
+    <comment>Fluent Design is a product name, do not loc</comment>
+  </data>
+  <data name="ShowThemeAdaptiveTrayIcon.Content" xml:space="preserve">
+    <value>Show a monochrome icon that matches the Windows theme</value>
+  </data>
+  <data name="GeneralPage_EnableQuickAccess.Header" xml:space="preserve">
+    <value>Quick Access flyout</value>
+  </data>
+  <data name="GeneralPage_EnableQuickAccess.Description" xml:space="preserve">
+    <value>Fast access to quick actions and module toggles</value>
+  </data>
+  <data name="GeneralPage_QuickAccessShortcut.Header" xml:space="preserve">
+    <value>Activation shortcut</value>
+  </data>
+  <data name="LightSwitch_ModeFollowNightLight.Content" xml:space="preserve">
+    <value>Follow Night Light</value>
+  </data>
+  <data name="LightSwitch_NightLightSettingsButton.Content" xml:space="preserve">
+    <value>Personalize your Night Light settings.</value>
+  </data>
+  <data name="LightSwitch_FollowNightLightCardMessage.Text" xml:space="preserve">
+    <value>Following Night Light settings.</value>
   </data>
 </root>

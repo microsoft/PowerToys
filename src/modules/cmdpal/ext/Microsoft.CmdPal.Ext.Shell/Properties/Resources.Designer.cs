@@ -97,7 +97,7 @@ namespace Microsoft.CmdPal.Ext.Shell.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Executes commands (e.g. &apos;ping&apos;, &apos;cmd&apos;).
+        ///   Looks up a localized string similar to Execute system commands like &apos;ping&apos; and &apos;cmd&apos;.
         /// </summary>
         public static string cmd_plugin_description {
             get {

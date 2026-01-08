@@ -33,9 +33,4 @@
     <Target Name="PostBuildAction" AfterTargets="Build" Outputs="$(GeneratedDSCModule)" Condition="'$(Platform)'!='ARM64'">
         <Exec Command="&quot;$(OutDir)$(AssemblyName).exe&quot; &quot;..\..\..\x64\$(Configuration)\WinUI3Apps\PowerToys.Settings.UI.Lib.dll&quot; $(GeneratedDSCModule) $(GeneratedDSCManifest)" />
     </Target>
-
-    <Target Name="PreBuild" BeforeTargets="PreBuildEvent" Condition="'$(Platform)'=='ARM64'">
-      <Exec Command="&quot;$(MSBuildToolsPath)\msbuild.exe&quot; PowerToys.sln -p:Configuration=&quot;$(Configuration)&quot; -p:Platform=&quot;x64&quot; -verbosity:m -t:DSC\PowerToys_Settings_DSC_Schema_Generator" WorkingDirectory="..\..\..\" />
-    </Target>
-
 </Project>
