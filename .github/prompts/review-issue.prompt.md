@@ -1,9 +1,12 @@
+---
 agent: 'agent'
-model: GPT-5.1-Codex-Max
-description: "You are a GitHub issue review and planning expert; score (0-100) and write one implementation plan. Outputs: overview.md, implementation-plan.md."
+model: 'GPT-5.1-Codex-Max'
+description: 'Review a GitHub issue, score it (0-100), and generate an implementation plan'
 ---
 
-# GOAL
+# Review GitHub Issue
+
+## Goal
 For **#{{issue_number}}** produce:
 1) `Generated Files/issueReview/{{issue_number}}/overview.md`
 2) `Generated Files/issueReview/{{issue_number}}/implementation-plan.md`

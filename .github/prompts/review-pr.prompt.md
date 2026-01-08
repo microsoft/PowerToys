@@ -1,9 +1,10 @@
+---
 agent: 'agent'
-model: GPT-5.1-Codex-Max
-description: "gh-driven PR review; per-step Markdown + machine-readable outputs"
+model: 'GPT-5.1-Codex-Max'
+description: 'Perform a comprehensive PR review with per-step Markdown and machine-readable outputs'
 ---
 
-# PR Review — gh + stepwise
+# Review Pull Request
 
 **Goal**: Given `{{pr_number}}`, run a *one-topic-per-step* review. Write files to `Generated Files/prReview/{{pr_number}}/` (replace `{{pr_number}}` with the integer). Emit machine‑readable blocks for a GitHub MCP to post review comments.
 
