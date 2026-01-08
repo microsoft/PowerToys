@@ -73,6 +73,89 @@ void SetSystemTheme(bool mode)
     }
 }
 
+static bool GetProcessImagePath(DWORD pid, std::wstring& outPath)
+{
+    outPath.clear();
+
+    HANDLE hProc = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, FALSE, pid);
+    if (!hProc)
+        return false;
+
+    wchar_t buf[MAX_PATH]{};
+    DWORD size = ARRAYSIZE(buf);
+
+    bool ok = QueryFullProcessImageNameW(hProc, 0, buf, &size) != 0;
+    CloseHandle(hProc);
+
+    if (!ok)
+        return false;
+
+    outPath.assign(buf, size);
+    return true;
+}
+
+static bool IsSettingsFrameWindow(HWND hwnd)
+{
+    wchar_t cls[128]{};
+    if (!GetClassNameW(hwnd, cls, ARRAYSIZE(cls)))
+        return false;
+
+    if (wcscmp(cls, L"ApplicationFrameWindow") != 0)
+        return false;
+
+    if (!IsWindowVisible(hwnd))
+        return false;
+
+    DWORD pid = 0;
+    GetWindowThreadProcessId(hwnd, &pid);
+    if (!pid)
+        return false;
+
+    std::wstring imagePath;
+    if (!GetProcessImagePath(pid, imagePath))
+        return false;
+
+    // Direct hit: Settings process
+    if (imagePath.find(L"SystemSettings.exe") != std::wstring::npos)
+        return true;
+
+    // Hosted case: sometimes you see ApplicationFrameHost instead.
+    // Use window title as a fallback signal.
+    if (imagePath.find(L"ApplicationFrameHost.exe") != std::wstring::npos)
+    {
+        wchar_t title[256]{};
+        GetWindowTextW(hwnd, title, ARRAYSIZE(title));
+        if (wcslen(title) > 0 && wcsstr(title, L"Settings") != nullptr)
+            return true;
+    }
+
+    return false;
+}
+
+void CloseSettingsApp()
+{
+    HWND settingsHwnd = nullptr;
+
+    EnumWindows([](HWND hwnd, LPARAM lParam) -> BOOL {
+        if (IsSettingsFrameWindow(hwnd))
+        {
+            *reinterpret_cast<HWND*>(lParam) = hwnd;
+            return FALSE; // stop enumeration
+        }
+        return TRUE;
+    },
+                reinterpret_cast<LPARAM>(&settingsHwnd));
+
+    if (!settingsHwnd)
+    {
+        Logger::info("CloseSettingsApp: Settings window not found.");
+        return;
+    }
+
+    Logger::info("CloseSettingsApp: Closing Settings window.");
+    PostMessageW(settingsHwnd, WM_CLOSE, 0, 0);
+}
+
 void SetThemeFile(const std::wstring& themeFilePath)
 {
     SHELLEXECUTEINFOW sei{};
@@ -94,6 +177,9 @@ void SetThemeFile(const std::wstring& themeFilePath)
         WaitForInputIdle(sei.hProcess, 2000);
         CloseHandle(sei.hProcess);
     }
+
+    Sleep(1000); // Give Settings app time to apply the theme change
+    CloseSettingsApp();
 }
 
 // Can think of this as "is the current theme light?"
