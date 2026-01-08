@@ -1883,6 +1883,7 @@ uild
 uitests
 UITo
 ULONGLONG
+Ultrawide
 ums
 UMax
 UMin

@@ -36,7 +36,7 @@ monitor_layout_tests.py will produce an output file called `test_report.json` - 
 }
 ```
 
-If there are failures (the failures array is not empty) you can run the second python applicaton called `analyze_test_results.py`
+If there are failures (the failures array is not empty) you can run the second python application called `analyze_test_results.py`
 
 Supported options include:
 ```text
