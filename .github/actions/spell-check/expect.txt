@@ -479,6 +479,7 @@ DWMWINDOWMAXIMIZEDCHANGE
 DWORDLONG
 dworigin
 dwrite
+Dxva
 dxgi
 eab
 EAccess
@@ -710,7 +711,6 @@ Hif
 HIMAGELIST
 himl
 hinst
-HINSTANCE
 HIWORD
 HKC
 HKCC
@@ -1546,6 +1546,7 @@ renamable
 RENAMEONCOLLISION
 RENDERFULLCONTENT
 reparented
+reparenting
 reportfileaccesses
 requery
 requerying
