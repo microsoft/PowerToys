@@ -175,6 +175,7 @@
   <ItemGroup>
     <ClInclude Include="pch.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="SettingsConstants.h" />
     <ClInclude Include="ThemeHelper.h" />
     <ClInclude Include="trace.h" />
   </ItemGroup>

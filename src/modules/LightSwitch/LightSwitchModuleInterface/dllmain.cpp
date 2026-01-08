@@ -112,8 +112,9 @@ private:
     Hotkey m_toggle_theme_hotkey = { .win = true, .ctrl = true, .shift = true, .alt = false, .key = 'D' };
 
     void init_settings();
+    void ToggleTheme();
 
-public:
+public :
     LightSwitchInterface()
     {
         LoggerHelpers::init_logger(L"LightSwitch", L"ModuleInterface", LogSettings::lightSwitchLoggerName);
@@ -176,8 +177,7 @@ public:
             { { L"Off", L"Disable the schedule" },
               { L"FixedHours", L"Set hours manually" },
               { L"SunsetToSunrise", L"Use sunrise/sunset times" },
-              { L"FollowNightLight", L"Follow Windows Night Light state" }
-            });
+              { L"FollowNightLight", L"Follow Windows Night Light state" } });
 
         // Integer spinners
         settings.add_int_spinner(
@@ -564,29 +564,7 @@ public:
             {
                 // get current will return true if in light mode; otherwise false
                 Logger::info(L"[Light Switch] Hotkey triggered: Toggle Theme");
-                if (g_settings.m_changeSystem)
-                {
-                    SetSystemTheme(!GetCurrentSystemTheme());
-                }
-                if (g_settings.m_changeApps)
-                {
-                    SetAppsTheme(!GetCurrentAppsTheme());
-                }
-
-                if (!m_manual_override_event_handle)
-                {
-                    m_manual_override_event_handle = OpenEventW(SYNCHRONIZE | EVENT_MODIFY_STATE, FALSE, L"POWERTOYS_LIGHTSWITCH_MANUAL_OVERRIDE");
-                    if (!m_manual_override_event_handle)
-                    {
-                        m_manual_override_event_handle = CreateEventW(nullptr, TRUE, FALSE, L"POWERTOYS_LIGHTSWITCH_MANUAL_OVERRIDE");
-                    }
-                }
-
-                if (m_manual_override_event_handle)
-                {
-                    SetEvent(m_manual_override_event_handle);
-                    Logger::debug(L"[Light Switch] Manual override event set");
-                }
+                ToggleTheme();
             }
 
             return true;
@@ -600,6 +578,71 @@ public:
         return WaitForSingleObject(m_process, 0) == WAIT_TIMEOUT;
     }
 };
+
+static bool IsValidPath(const std::wstring& path)
+{
+    std::error_code ec;
+    return !path.empty() && std::filesystem::exists(path, ec);
+}
+
+void LightSwitchInterface::ToggleTheme()
+{
+    bool current_system_theme = GetCurrentSystemTheme();
+    bool current_apps_theme = GetCurrentAppsTheme();
+
+    if (g_settings.m_changeSystem)
+    {
+        SetSystemTheme(!current_system_theme);
+    }
+    if (g_settings.m_changeApps)
+    {
+        SetAppsTheme(!current_apps_theme);
+    }
+
+    bool new_system_theme = GetCurrentSystemTheme();
+    bool new_apps_theme = GetCurrentAppsTheme();
+
+    bool changeWallpaper =
+        g_settings.m_use_theme_switching &&
+        IsValidPath(g_settings.m_light_theme_path) &&
+        IsValidPath(g_settings.m_dark_theme_path);
+
+    // if something changed and wallpaper change is enabled and paths are valid
+    if ((new_system_theme != current_system_theme || new_apps_theme != current_apps_theme) && changeWallpaper)
+    {
+        bool shouldBeLight;
+
+        if (g_settings.m_changeSystem && new_system_theme != current_system_theme)
+        {
+            shouldBeLight = new_system_theme;
+        }
+        else
+        {
+            // Either apps-only changed, or system didn't move
+            shouldBeLight = new_apps_theme;
+        }
+
+        auto&& themeFilePath = shouldBeLight ? g_settings.m_light_theme_path : g_settings.m_dark_theme_path;
+
+        Logger::info(L"[Light Switch] Theme switched: toggling theme file to {}", themeFilePath);
+        SetThemeFile(themeFilePath);
+    }
+
+    if (!m_manual_override_event_handle)
+    {
+        m_manual_override_event_handle = OpenEventW(SYNCHRONIZE | EVENT_MODIFY_STATE, FALSE, L"POWERTOYS_LIGHTSWITCH_MANUAL_OVERRIDE");
+        if (!m_manual_override_event_handle)
+        {
+            m_manual_override_event_handle = CreateEventW(nullptr, TRUE, FALSE, L"POWERTOYS_LIGHTSWITCH_MANUAL_OVERRIDE");
+        }
+    }
+
+    if (m_manual_override_event_handle)
+    {
+        SetEvent(m_manual_override_event_handle);
+        Logger::debug(L"[Light Switch] Manual override event set");
+    }
+}
 
 std::wstring utf8_to_wstring(const std::string& str)
 {

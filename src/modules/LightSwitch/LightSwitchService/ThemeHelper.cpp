@@ -78,19 +78,22 @@ void SetThemeFile(const std::wstring& themeFilePath)
 {
     SHELLEXECUTEINFOW sei{};
     sei.cbSize = sizeof(sei);
-    sei.fMask = SEE_MASK_FLAG_NO_UI;
+    sei.fMask = SEE_MASK_FLAG_NO_UI | SEE_MASK_NOCLOSEPROCESS;
     sei.lpVerb = L"open";
     sei.lpFile = themeFilePath.c_str();
     sei.nShow = SW_SHOWNORMAL;
 
-    try
+    if (!ShellExecuteExW(&sei))
     {
-        ShellExecuteExW(&sei);
-    } 
-    catch (...)
-    {
-        Logger::error(L"[LightSwitchService] Failed to apply theme file: {}", themeFilePath);
+        DWORD err = GetLastError();
+        Logger::error(L"[LightSwitch] ShellExecuteExW failed ({}): {}", err, themeFilePath);
         return;
+    }
+
+    if (sei.hProcess)
+    {
+        WaitForInputIdle(sei.hProcess, 2000);
+        CloseHandle(sei.hProcess);
     }
 }
 
