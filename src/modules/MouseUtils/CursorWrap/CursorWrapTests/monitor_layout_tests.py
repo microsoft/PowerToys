@@ -14,7 +14,6 @@ Tests:
 Output: JSON report with failures for GitHub Copilot analysis
 """
 
-import itertools
 import json
 from dataclasses import dataclass, asdict
 from typing import List, Tuple, Set, Dict, Optional
