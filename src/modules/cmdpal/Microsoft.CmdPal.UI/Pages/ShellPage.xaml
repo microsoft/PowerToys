@@ -92,7 +92,7 @@
                                 Height="16"
                                 Margin="0,3,8,0"
                                 SourceKey="{x:Bind Icon, Mode=OneWay}"
-                                SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}" />
+                                SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested20}" />
                             <TextBlock Style="{StaticResource BodyTextBlockStyle}" Text="{x:Bind Name}" />
                         </StackPanel>
                     </Button>
@@ -296,7 +296,7 @@
                         ui:VisualExtensions.NormalizedCenterPoint="0.5,0.5"
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                         SourceKey="{x:Bind ViewModel.CurrentPage.Icon, Mode=OneWay}"
-                        SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}"
+                        SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested20}"
                         Visibility="{x:Bind ViewModel.CurrentPage.IsNested, Mode=OneWay}">
                         <animations:Implicit.ShowAnimations>
                             <animations:OpacityAnimation
@@ -429,7 +429,7 @@
                             HorizontalAlignment="Left"
                             AutomationProperties.AccessibilityView="Raw"
                             SourceKey="{x:Bind ViewModel.Details.HeroImage, Mode=OneWay}"
-                            SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}"
+                            SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested64}"
                             Visibility="{x:Bind HasHeroImage, Mode=OneWay}" />
 
                         <TextBlock

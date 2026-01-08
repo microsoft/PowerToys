@@ -762,8 +762,14 @@ public sealed partial class MainWindow : WindowEx,
     // Updates our window s.t. the top of the window is draggable.
     private void UpdateRegionsForCustomTitleBar()
     {
+        var xamlRoot = RootElement.XamlRoot;
+        if (xamlRoot is null)
+        {
+            return;
+        }
+
         // Specify the interactive regions of the title bar.
-        var scaleAdjustment = RootElement.XamlRoot.RasterizationScale;
+        var scaleAdjustment = xamlRoot.RasterizationScale;
 
         // Get the rectangle around our XAML content. We're going to mark this
         // rectangle as "Passthrough", so that the normal window operations
