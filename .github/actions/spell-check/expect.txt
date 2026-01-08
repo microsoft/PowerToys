@@ -457,6 +457,7 @@ DWMWINDOWATTRIBUTE
 DWMWINDOWMAXIMIZEDCHANGE
 DWORDLONG
 dworigin
+DWPOS
 dwrite
 dxgi
 eab
@@ -677,6 +678,7 @@ hicon
 HICONSM
 HIDEREADONLY
 HIDEWINDOW
+hif
 Hif
 HIMAGELIST
 himl
@@ -838,6 +840,7 @@ jpe
 jpnime
 Jsons
 jsonval
+jxl
 jxr
 keybd
 KEYBDDATA
@@ -1464,6 +1467,7 @@ recyclebin
 Redist
 Reencode
 REFCLSID
+REFGUID
 REFIID
 REGCLS
 regfile
@@ -1570,6 +1574,7 @@ SETBUDDYINT
 SETCONTEXT
 SETCURSEL
 setcursor
+SETDESKWALLPAPER
 SETFOCUS
 SETFOREGROUND
 SETHOTKEY
@@ -1658,6 +1663,7 @@ SKEXP
 SKIPOWNPROCESS
 sku
 SLGP
+slideshow
 sln
 slnf
 slnx
@@ -1896,6 +1902,7 @@ unwide
 unzoom
 UOffset
 UOI
+UPDATEINIFILE
 UPDATENOW
 UPDATEREGISTRY
 updown
