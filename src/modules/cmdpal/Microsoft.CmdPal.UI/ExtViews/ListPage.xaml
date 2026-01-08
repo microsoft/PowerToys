@@ -498,12 +498,7 @@
         </DataTemplate>
 
         <DataTemplate x:Key="GridSeparatorViewModelTemplate" x:DataType="coreViewModels:ListItemViewModel">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
-                <Rectangle Height="1" Fill="{ThemeResource DividerStrokeColorDefaultBrush}" />
-            </Grid>
+            <Rectangle Height="1" Fill="{ThemeResource DividerStrokeColorDefaultBrush}" />
         </DataTemplate>
     </Page.Resources>
 
