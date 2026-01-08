@@ -1815,6 +1815,35 @@ INT_PTR CALLBACK AdvancedBreakProc( HWND hDlg, UINT message, WPARAM wParam, LPAR
 //
 //----------------------------------------------------------------------------
 
+static UINT_PTR CALLBACK ChooseFontHookProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
+{
+    switch (message)
+    {
+    case WM_INITDIALOG:
+        // Basic (incomplete) dark mode attempt: theme the main common dialog window.
+        ApplyDarkModeToDialog(hDlg);
+        return 0;
+
+    case WM_CTLCOLORDLG:
+    case WM_CTLCOLORSTATIC:
+    case WM_CTLCOLORBTN:
+    case WM_CTLCOLOREDIT:
+    case WM_CTLCOLORLISTBOX:
+    {
+        HDC hdc = reinterpret_cast<HDC>(wParam);
+        HWND hCtrl = reinterpret_cast<HWND>(lParam);
+        HBRUSH hBrush = HandleDarkModeCtlColor(hdc, hCtrl, message);
+        if (hBrush)
+        {
+            return reinterpret_cast<UINT_PTR>(hBrush);
+        }
+        break;
+    }
+    }
+
+    return 0;
+}
+
 INT_PTR CALLBACK OptionsTabProc( HWND hDlg, UINT message,
                                 WPARAM wParam, LPARAM lParam )
 {
@@ -1926,7 +1955,7 @@ INT_PTR CALLBACK OptionsTabProc( HWND hDlg, UINT message,
             chooseFont.lStructSize = sizeof (CHOOSEFONT);
             chooseFont.hwndOwner = hDlg;
             chooseFont.lpLogFont = &lf;
-            chooseFont.Flags     = CF_SCREENFONTS|CF_ENABLETEMPLATE|
+            chooseFont.Flags     = CF_SCREENFONTS|CF_ENABLETEMPLATE|CF_ENABLEHOOK|
                         CF_INITTOLOGFONTSTRUCT|CF_LIMITSIZE;
             chooseFont.rgbColors = RGB (0, 0, 0);
             chooseFont.lCustData = 0;
@@ -1935,7 +1964,7 @@ INT_PTR CALLBACK OptionsTabProc( HWND hDlg, UINT message,
             chooseFont.hInstance = g_hInstance;
             chooseFont.lpszStyle = static_cast<LPTSTR>(NULL);
             chooseFont.nFontType = SCREEN_FONTTYPE;
-            chooseFont.lpfnHook  = nullptr;
+            chooseFont.lpfnHook  = ChooseFontHookProc;
             chooseFont.lpTemplateName = static_cast<LPTSTR>(MAKEINTRESOURCE (FORMATDLGORD31));
             if( ChooseFont( &chooseFont ) ) {
                 g_LogFont = lf;
