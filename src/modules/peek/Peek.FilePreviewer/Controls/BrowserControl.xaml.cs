@@ -336,13 +336,6 @@ namespace Peek.FilePreviewer.Controls
                 return;
             }
 
-            // Block all http(s) requests to prevent external tracking and data exfiltration
-            if (requestUri.Scheme == "http" || requestUri.Scheme == "https")
-            {
-                args.Response = PreviewBrowser.CoreWebView2.Environment.CreateWebResourceResponse(null, 403, "Forbidden", null);
-                return;
-            }
-
             // For local file:// resources, allow same directory and subdirectories
             if (requestUri.Scheme == "file" && _currentSourceUri.Scheme == "file")
             {
@@ -364,7 +357,8 @@ namespace Peek.FilePreviewer.Controls
                 }
             }
 
-            // Block all other resources
+            // Block all other resources including http(s) requests to prevent external tracking,
+            // data exfiltration, and XSS attacks
             args.Response = PreviewBrowser.CoreWebView2.Environment.CreateWebResourceResponse(null, 403, "Forbidden", null);
         }
 
