@@ -255,7 +255,7 @@
             GridProperties="{x:Bind ViewModel.GridProperties, Mode=OneWay}"
             Medium="{StaticResource MediumGridItemViewModelTemplate}"
             Section="{StaticResource ListSectionViewModelTemplate}"
-            Separator="{StaticResource ListSeparatorViewModelTemplate}"
+            Separator="{StaticResource GridSeparatorViewModelTemplate}"
             Small="{StaticResource SmallGridItemViewModelTemplate}" />
 
         <cmdpalUI:GridItemContainerStyleSelector
@@ -332,11 +332,15 @@
         </DataTemplate>
 
         <DataTemplate x:Key="ListSeparatorViewModelTemplate" x:DataType="coreViewModels:ListItemViewModel">
-            <Grid>
+            <Grid ColumnSpacing="12">
                 <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="28" />
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
-                <Rectangle Height="1" Fill="{ThemeResource DividerStrokeColorDefaultBrush}" />
+                <Rectangle
+                    Grid.Column="1"
+                    Height="1"
+                    Fill="{ThemeResource DividerStrokeColorDefaultBrush}" />
             </Grid>
         </DataTemplate>
 
@@ -491,6 +495,17 @@
                         Visibility="{x:Bind ShowSubtitle, Mode=OneWay}" />
                 </StackPanel>
             </StackPanel>
+        </DataTemplate>
+
+        <DataTemplate x:Key="GridSeparatorViewModelTemplate" x:DataType="coreViewModels:ListItemViewModel">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Rectangle
+                    Height="1"
+                    Fill="{ThemeResource DividerStrokeColorDefaultBrush}" />
+            </Grid>
         </DataTemplate>
     </Page.Resources>
 
