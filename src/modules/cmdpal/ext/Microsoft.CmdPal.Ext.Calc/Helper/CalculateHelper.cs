@@ -8,7 +8,7 @@ using System.Text.RegularExpressions;
 
 namespace Microsoft.CmdPal.Ext.Calc.Helper;
 
-public static class CalculateHelper
+public static partial class CalculateHelper
 {
     private static readonly Regex RegValidExpressChar = new Regex(
         @"^(" +
@@ -20,7 +20,7 @@ public static class CalculateHelper
         @"rad\s*\(|deg\s*\(|grad\s*\(|" + /* trigonometry unit conversion macros */
         @"pi|" +
         @"==|~=|&&|\|\||" +
-        @"((-?(\d+(\.\d*)?)|-?(\.\d+))[Ee](-?\d+))|" + /* expression from CheckScientificNotation between parenthesis */
+        @"((\d+(?:\.\d*)?|\.\d+)[eE](-?\d+))|" + /* expression from CheckScientificNotation between parenthesis */
         @"e|[0-9]|0[xX][0-9a-fA-F]+|0[bB][01]+|0[oO][0-7]+|[\+\-\*\/\^\., ""]|[\(\)\|\!\[\]]" +
         @")+$",
         RegexOptions.Compiled);
@@ -68,6 +68,8 @@ public static class CalculateHelper
         // unary operators; can appear at the end of a query
         ')', ']', '!',
     ];
+
+    private static readonly Regex ReplaceScientificNotationRegex = CreateReplaceScientificNotationRegex();
 
     public static char[] GetQueryOperators()
     {
@@ -171,18 +173,7 @@ public static class CalculateHelper
 
     private static string CheckScientificNotation(string input)
     {
-        /*
-         * NOTE: By the time that the expression gets to us, it's already in English format.
-         *
-         * Regex explanation:
-         * (-?(\d+({0}\d*)?)|-?({0}\d+): Used to capture one of two types:
-         * -?(\d+({0}\d*)?): Captures a decimal number starting with a number (e.g. "-1.23")
-         * -?({0}\d+): Captures a decimal number without leading number (e.g. ".23")
-         * e: Captures 'e' or 'E'
-         * (-?\d+): Captures an integer number (e.g. "-1" or "23")
-         */
-        var p = @"(-?(\d+(\.\d*)?)|-?(\.\d+))e(-?\d+)";
-        return Regex.Replace(input, p, "($1 * 10^($5))", RegexOptions.IgnoreCase);
+        return ReplaceScientificNotationRegex.Replace(input, "($1 * 10^($2))");
     }
 
     /*
@@ -530,4 +521,17 @@ public static class CalculateHelper
 
         return -1;
     }
+
+    /*
+     * NOTE: By the time that the expression gets to us, it's already in English format.
+     *
+     * Regex explanation:
+     * (-?(\d+({0}\d*)?)|-?({0}\d+)): Used to capture one of two types:
+     * -?(\d+({0}\d*)?): Captures a decimal number starting with a number (e.g. "-1.23")
+     * -?({0}\d+): Captures a decimal number without leading number (e.g. ".23")
+     * e: Captures 'e' or 'E'
+     * (?\d+): Captures an integer number (e.g. "-1" or "23")
+     */
+    [GeneratedRegex(@"(\d+(?:\.\d*)?|\.\d+)e(-?\d+)", RegexOptions.IgnoreCase, "en-US")]
+    private static partial Regex CreateReplaceScientificNotationRegex();
 }

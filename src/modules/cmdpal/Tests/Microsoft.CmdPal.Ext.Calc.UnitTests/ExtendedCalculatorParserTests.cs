@@ -223,6 +223,9 @@ public class ExtendedCalculatorParserTests : CommandPaletteUnitTestBase
         [
             ["0.2E1", "en-US", 2M],
             ["0,2E1", "pt-PT", 2M],
+            ["3.5e3 + 2.5E2", "en-US", 3750M],
+            ["3,5e3 + 2,5E2", "fr-FR", 3750M],
+            ["1E3-1E3/1.5", "en-US", 333.333333333333371M],
         ];
 
     [DataTestMethod]
