@@ -15,12 +15,12 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 public partial class ProviderSettingsViewModel : ObservableObject
 {
     private static readonly IconInfoViewModel EmptyIcon = new(null);
-    
+
     private readonly CommandProviderWrapper _provider;
     private readonly ProviderSettings _providerSettings;
     private readonly SettingsModel _settings;
     private readonly Lock _initializeSettingsLock = new();
-    
+
     private Task? _initializeSettingsTask;
 
     public ProviderSettingsViewModel(
