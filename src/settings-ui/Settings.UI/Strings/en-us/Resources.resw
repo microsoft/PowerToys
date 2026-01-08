@@ -5495,15 +5495,6 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   <data name="LightSwitch_WallpaperStyle.Header" xml:space="preserve">
     <value>Choose fits for your desktop images</value>
   </data>
-  <data name="LightSwitch_WallpaperVirtualDesktop.Header" xml:space="preserve">
-    <value>Apply wallpaper to all virtual desktops</value>
-  </data>
-  <data name="LightSwitch_VirtualDesktopInfo.Text" xml:space="preserve">
-    <value>Apply wallpaper to all virtual desktops is an experimental feature, only supported on Windows 24H2 and later versions. It may become unavailable or cause errors due to Windows updates. If you find that the LightSwitch service is not running properly after enabling this feature, please disable the feature and file a bug report with your Windows version.</value>
-  </data>
-  <data name="LightSwitch_DetectWindows24H2Info.Text" xml:space="preserve">
-    <value>It has been detected that your Windows version is earlier than 24H2. On such versions, switching to another virtual desktop may cause the wallpaper to revert. If you are using virtual desktops, it is not recommended to enable this feature. Alternatively, upgrade your Windows version to 24H2 or later for the best experience.</value>
-  </data>
   <data name="Close_NavViewItem.Content" xml:space="preserve">
     <value>Close PowerToys</value>
     <comment>Don't loc "PowerToys"</comment>

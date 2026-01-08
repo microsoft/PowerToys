@@ -12,7 +12,6 @@ enum class SettingId
     ChangeSystem,
     ChangeApps,
     WallpaperEnabled,
-    WallpaperVirtualDesktopEnabled,
     WallpaperStyleLight,
     WallpaperStyleDark,
     WallpaperPathLight,

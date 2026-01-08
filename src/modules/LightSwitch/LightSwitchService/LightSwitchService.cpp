@@ -133,7 +133,7 @@ void SetWallpaper(bool shouldBeLight)
     {
         std::wstring const& wallpaperPath = shouldBeLight ? settings.wallpaperPathLight : settings.wallpaperPathDark;
         auto style = shouldBeLight ? settings.wallpaperStyleLight : settings.wallpaperStyleDark;
-        if (auto e = SetDesktopWallpaper(wallpaperPath, style, settings.wallpaperVirtualDesktop) == 0)
+        if (auto e = SetDesktopWallpaper(wallpaperPath, style) == 0)
         {
             Logger::info(L"[LightSwitchService] Wallpaper is changed to {}.", wallpaperPath);
         }
