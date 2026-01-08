@@ -388,7 +388,9 @@ DEFAULTFLAGS
 DEFAULTICON
 defaultlib
 DEFAULTONLY
+DEFAULTSIZE
 DEFAULTTONEAREST
+Defaulttonearest
 DEFAULTTONULL
 DEFAULTTOPRIMARY
 DEFERERASE
@@ -884,9 +886,11 @@ IUI
 IVO
 IUWP
 IWIC
+jeli
 jfif
 jgeosdfsdsgmkedfgdfgdfgbkmhcgcflmi
 jjw
+JOBOBJECT
 jobject
 jpe
 jpnime
@@ -922,6 +926,7 @@ lastcodeanalysissucceeded
 LASTEXITCODE
 LAYOUTRTL
 lbl
+Lbuttondown
 LCh
 lcid
 LCIDTo
@@ -1047,6 +1052,7 @@ maxversiontested
 mber
 MBM
 MBR
+Mbuttondown
 MDICHILD
 MDL
 mdtext
@@ -1522,6 +1528,7 @@ RAWINPUTHEADER
 RAWMODE
 RAWPATH
 rbhid
+Rbuttondown
 rclsid
 RCZOOMIT
 rdp
@@ -1558,6 +1565,7 @@ remoteip
 Removelnk
 renamable
 RENAMEONCOLLISION
+RENDERFULLCONTENT
 Reparent
 reparented
 reparenting
@@ -1827,6 +1835,8 @@ SVGIO
 svgz
 SVSI
 SWFO
+SWP
+Swp
 swp
 SWPNOSIZE
 SWPNOZORDER
@@ -1895,7 +1905,6 @@ TILEDWINDOW
 TILLSON
 timedate
 timediff
-timeunion
 timeutil
 TITLEBARINFO
 Titlecase
@@ -2185,6 +2194,7 @@ Wwanpp
 xap
 XAxis
 XButton
+Xbuttondown
 xclip
 xcopy
 XDeployment

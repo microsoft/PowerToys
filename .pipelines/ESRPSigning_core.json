@@ -117,6 +117,7 @@
             "WinUI3Apps\\PowerToys.FileLocksmithUI.dll",
             "WinUI3Apps\\PowerToys.FileLocksmithContextMenu.dll",
             "FileLocksmithContextMenuPackage.msix",
+            "FileLocksmithCLI.exe",
 
             "WinUI3Apps\\Peek.Common.dll",
             "WinUI3Apps\\Peek.FilePreviewer.dll",

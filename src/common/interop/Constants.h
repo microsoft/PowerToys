@@ -59,6 +59,7 @@ namespace winrt::PowerToys::Interop::implementation
         static hstring TerminateHostsSharedEvent();
         static hstring CropAndLockThumbnailEvent();
         static hstring CropAndLockReparentEvent();
+        static hstring CropAndLockScreenshotEvent();
         static hstring ShowEnvironmentVariablesSharedEvent();
         static hstring ShowEnvironmentVariablesAdminSharedEvent();
         static hstring WorkspacesLaunchEditorEvent();

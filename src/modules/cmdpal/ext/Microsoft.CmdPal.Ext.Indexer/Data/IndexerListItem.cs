@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Microsoft.CmdPal.Core.Common.Commands;
+using Microsoft.CmdPal.Ext.Indexer.Commands;
 using Microsoft.CmdPal.Ext.Indexer.Helpers;
 using Microsoft.CmdPal.Ext.Indexer.Pages;
 using Microsoft.CmdPal.Ext.Indexer.Properties;
@@ -96,6 +97,13 @@ internal sealed partial class IndexerListItem : ListItem
         }
 
         commands.Add(new CommandContextItem(new OpenWithCommand(fullPath)));
+
+        // Add Peek command if available (only for files, not directories)
+        if (!isDir && PeekFileCommand.IsPeekAvailable)
+        {
+            commands.Add(new CommandContextItem(new PeekFileCommand(fullPath)) { RequestedShortcut = KeyChords.Peek });
+        }
+
         commands.Add(new CommandContextItem(new ShowFileInFolderCommand(fullPath) { Name = Resources.Indexer_Command_ShowInFolder }) { RequestedShortcut = KeyChords.OpenFileLocation });
         commands.Add(new CommandContextItem(new CopyPathCommand(fullPath) { Name = Resources.Indexer_Command_CopyPath }) { RequestedShortcut = KeyChords.CopyFilePath });
         commands.Add(new CommandContextItem(new OpenInConsoleCommand(fullPath)) { RequestedShortcut = KeyChords.OpenInConsole });

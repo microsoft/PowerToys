@@ -286,3 +286,6 @@ St&yle
 
 # 2D Region struct names
 \bDisplayConfig2?D?Region\b
+
+# Microsoft Store URLs and product IDs
+ms-windows-store://\S+
