@@ -16,7 +16,7 @@ Output: JSON report with failures for GitHub Copilot analysis
 
 import json
 from dataclasses import dataclass, asdict
-from typing import List, Tuple, Set, Dict, Optional
+from typing import List, Tuple, Dict, Optional
 from enum import Enum
 import sys
 
