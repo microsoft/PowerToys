@@ -1,7 +1,6 @@
----
-mode: 'agent'
-model: Claude Sonnet 4.5
-description: "You are github issue review and planning expertise, Score (0–100) and write one Implementation Plan. Outputs: overview.md, implementation-plan.md."
+agent: 'agent'
+model: GPT-5.1-Codex-Max
+description: "You are a GitHub issue review and planning expert; score (0-100) and write one implementation plan. Outputs: overview.md, implementation-plan.md."
 ---
 
 # GOAL
@@ -10,11 +9,11 @@ For **#{{issue_number}}** produce:
 2) `Generated Files/issueReview/{{issue_number}}/implementation-plan.md`
 
 ## Inputs
-  figure out from the prompt on the 
+Figure out required inputs {{issue_number}} from the invocation context; if anything is missing, ask for the value or note it as a gap.
 
 # CONTEXT (brief)
-Ground evidence using `gh issue view {{issue_number}} --json number,title,body,author,createdAt,updatedAt,state,labels,milestone,reactions,comments,linkedPullRequests`, and download the image for understand the context of the issue more.
-Locate source code in current workspace, but also free feel to use via `rg`/`git grep`. Link related issues/PRs.
+Ground evidence using `gh issue view {{issue_number}} --json number,title,body,author,createdAt,updatedAt,state,labels,milestone,reactions,comments,linkedPullRequests`, and download images to better understand the issue context.
+Locate source code in the current workspace; feel free to use `rg`/`git grep`. Link related issues and PRs.
 
 # OVERVIEW.MD
 ## Summary

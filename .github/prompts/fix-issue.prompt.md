@@ -1,7 +1,6 @@
----
-mode: 'agent'
-model: GPT-5-Codex (Preview)
-description: "  Execute the fix for a GitHub issue using the previously generated implementation plan. Apply code & tests directly in the repo. Output only a PR description (and optional manual steps)."
+agent: 'agent'
+model: GPT-5.1-Codex-Max
+description: "Execute the fix for a GitHub issue using the previously generated implementation plan. Apply code & tests directly in the repo. Output only a PR description (and optional manual steps)."
 ---
 
 # DEPENDENCY
