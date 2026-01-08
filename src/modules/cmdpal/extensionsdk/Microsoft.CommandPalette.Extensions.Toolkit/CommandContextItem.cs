@@ -6,9 +6,9 @@ namespace Microsoft.CommandPalette.Extensions.Toolkit;
 
 public partial class CommandContextItem : CommandItem, ICommandContextItem
 {
-    public virtual bool IsCritical { get; set; }
+    public virtual bool IsCritical { get; set => SetProperty(ref field, value); }
 
-    public virtual KeyChord RequestedShortcut { get; set; }
+    public virtual KeyChord RequestedShortcut { get; set => SetProperty(ref field, value); }
 
     public CommandContextItem(ICommand command)
         : base(command)
