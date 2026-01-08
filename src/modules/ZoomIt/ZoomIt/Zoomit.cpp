@@ -1814,6 +1814,7 @@ INT_PTR CALLBACK AdvancedBreakProc( HWND hDlg, UINT message, WPARAM wParam, LPAR
 // OptionsTabProc
 //
 //----------------------------------------------------------------------------
+
 INT_PTR CALLBACK OptionsTabProc( HWND hDlg, UINT message,
                                 WPARAM wParam, LPARAM lParam )
 {
@@ -1934,7 +1935,7 @@ INT_PTR CALLBACK OptionsTabProc( HWND hDlg, UINT message,
             chooseFont.hInstance = g_hInstance;
             chooseFont.lpszStyle = static_cast<LPTSTR>(NULL);
             chooseFont.nFontType = SCREEN_FONTTYPE;
-            chooseFont.lpfnHook  = reinterpret_cast<LPCFHOOKPROC>(static_cast<FARPROC>(NULL));
+            chooseFont.lpfnHook  = nullptr;
             chooseFont.lpTemplateName = static_cast<LPTSTR>(MAKEINTRESOURCE (FORMATDLGORD31));
             if( ChooseFont( &chooseFont ) ) {
                 g_LogFont = lf;
@@ -1991,7 +1992,7 @@ INT_PTR CALLBACK OptionsTabProc( HWND hDlg, UINT message,
                 SetBkMode(hDc, TRANSPARENT);
             }
 
-            DrawText( hDc, L"Sample", static_cast<int>(_tcslen(L"Sample")), &previewRc,
+            DrawText( hDc, L"AaBbYyZz", static_cast<int>(_tcslen(L"AaBbYyZz")), &previewRc,
                 DT_CENTER|DT_VCENTER|DT_SINGLELINE );
 
             EndPaint( hDlg, &ps );
@@ -2030,19 +2031,11 @@ VOID RepositionTabPages( HWND hTabCtrl )
     // Get the parent dialog to convert coordinates correctly
     HWND hParent = GetParent( hTabCtrl );
     
-    TCHAR dbgBuf[256];
-    _stprintf_s(dbgBuf, _T("RepositionTabPages: display rc=(%d,%d,%d,%d)\n"), rc.left, rc.top, rc.right, rc.bottom);
-    OutputDebugString(dbgBuf);
-    
     for( int i = 0; i < sizeof( g_OptionsTabs )/sizeof(g_OptionsTabs[0]); i++ ) {
         if( g_OptionsTabs[i].hPage ) {
             pageRc = rc;
             // Convert screen coords to parent dialog client coords
             MapWindowPoints( NULL, hParent, reinterpret_cast<LPPOINT>(&pageRc), 2);
-            
-            _stprintf_s(dbgBuf, _T("RepositionTabPages: page[%d] pos=(%d,%d) size=(%d,%d)\n"), 
-                i, pageRc.left, pageRc.top, pageRc.right - pageRc.left, pageRc.bottom - pageRc.top);
-            OutputDebugString(dbgBuf);
             
             SetWindowPos( g_OptionsTabs[i].hPage,
                  HWND_TOP,
@@ -2073,16 +2066,8 @@ VOID OptionsAddTabs( HWND hOptionsDlg, HWND hTabCtrl )
         g_OptionsTabs[i].hPage = CreateDialog( g_hInstance, g_OptionsTabs[i].TabTitle,
                     hOptionsDlg, OptionsTabProc );
     }
-    
-    TCHAR dbgBuf[256];
-    _stprintf_s(dbgBuf, _T("OptionsAddTabs: before adjust rc=(%d,%d,%d,%d)\n"), rc.left, rc.top, rc.right, rc.bottom);
-    OutputDebugString(dbgBuf);
-    
+
     TabCtrl_AdjustRect( hTabCtrl, FALSE, &rc );
-    
-    _stprintf_s(dbgBuf, _T("OptionsAddTabs: after adjust rc=(%d,%d,%d,%d) darkMode=%d\n"), 
-        rc.left, rc.top, rc.right, rc.bottom, IsDarkModeEnabled() ? 1 : 0);
-    OutputDebugString(dbgBuf);
     
     // Inset the display area to leave room for border in dark mode
     // Need 2 pixels so tab pages don't cover the 1-pixel border
@@ -2092,24 +2077,19 @@ VOID OptionsAddTabs( HWND hOptionsDlg, HWND hTabCtrl )
         rc.top += 2;
         rc.right -= 2;
         rc.bottom -= 2;
-        _stprintf_s(dbgBuf, _T("OptionsAddTabs: after inset rc=(%d,%d,%d,%d)\n"), rc.left, rc.top, rc.right, rc.bottom);
-        OutputDebugString(dbgBuf);
     }
     
     for( i = 0; i < sizeof( g_OptionsTabs )/sizeof(g_OptionsTabs[0]); i++ ) {
 
         pageRc = rc;
-        MapWindowPoints( NULL, g_OptionsTabs[i].hPage, reinterpret_cast<LPPOINT>(&pageRc), 2);
-        
-        _stprintf_s(dbgBuf, _T("OptionsAddTabs: page[%d] pos=(%d,%d) size=(%d,%d)\n"), 
-            i, pageRc.left, pageRc.top, pageRc.right - pageRc.left, pageRc.bottom - pageRc.top);
-        OutputDebugString(dbgBuf);
+        // Convert screen coords to parent dialog client coords.
+        MapWindowPoints( NULL, hOptionsDlg, reinterpret_cast<LPPOINT>(&pageRc), 2);
 
         SetWindowPos( g_OptionsTabs[i].hPage,
              HWND_TOP,
              pageRc.left, pageRc.top,
              pageRc.right - pageRc.left, pageRc.bottom - pageRc.top,
-             SWP_NOACTIVATE|(i == 0 ? SWP_SHOWWINDOW : SWP_HIDEWINDOW));
+             SWP_NOACTIVATE | SWP_HIDEWINDOW );
 
         if( pEnableThemeDialogTexture ) {
             if( IsDarkModeEnabled() ) {
@@ -2120,6 +2100,12 @@ VOID OptionsAddTabs( HWND hOptionsDlg, HWND hTabCtrl )
                 pEnableThemeDialogTexture( g_OptionsTabs[i].hPage, ETDT_ENABLETAB );
             }
         }
+    }
+
+    // Show the initial page once positioned to reduce visible churn.
+    if( g_OptionsTabs[0].hPage )
+    {
+        ShowWindow( g_OptionsTabs[0].hPage, SW_SHOW );
     }
 }
 
@@ -2200,26 +2186,55 @@ void UpdateDrawTabHeaderFont()
     static HFONT	headerFont = nullptr;
     TCHAR 			text[64];
 
-    if( headerFont != nullptr )
+    constexpr int headers[] = { IDC_PEN_CONTROL, IDC_COLORS, IDC_HIGHLIGHT_AND_BLUR, IDC_SHAPES, IDC_SCREEN };
+
+    HWND hPage = g_OptionsTabs[DRAW_PAGE].hPage;
+    if( !hPage )
     {
-        DeleteObject( headerFont );
-        headerFont = nullptr;
+        return;
     }
 
-    constexpr int headers[] = { IDC_PEN_CONTROL, IDC_COLORS, IDC_HIGHLIGHT_AND_BLUR, IDC_SHAPES, IDC_SCREEN };
+    // Derive from the page font (stable) rather than a header's WM_GETFONT (which may already
+    // be our previous header font and could be deleted during refresh).
+    HFONT hBaseFont = reinterpret_cast<HFONT>(SendMessage( hPage, WM_GETFONT, 0, 0 ));
+    if( !hBaseFont )
+    {
+        hBaseFont = reinterpret_cast<HFONT>(GetStockObject( DEFAULT_GUI_FONT ));
+    }
+
+    LOGFONT lf{};
+    if( !GetObject( hBaseFont, sizeof( LOGFONT ), &lf ) )
+    {
+        GetObject( GetStockObject( DEFAULT_GUI_FONT ), sizeof( LOGFONT ), &lf );
+    }
+    lf.lfWeight = FW_BOLD;
+    // Make section headers noticeably larger than the dialog font.
+    lf.lfHeight = MulDiv( lf.lfHeight, 4, 3 );
+
+    HFONT newHeaderFont = CreateFontIndirect( &lf );
+    if( !newHeaderFont )
+    {
+        return;
+    }
+
+    // Swap fonts safely: apply the new font to all header controls first, then delete the old.
+    HFONT oldHeaderFont = headerFont;
+    headerFont = newHeaderFont;
+
     for( int i = 0; i < _countof( headers ); i++ )
     {
         // Change the header font to bold
-        HWND hHeader = GetDlgItem( g_OptionsTabs[DRAW_PAGE].hPage, headers[i] );
-        if( headerFont == nullptr )
+        HWND hHeader = GetDlgItem( hPage, headers[i] );
+        if( !hHeader )
         {
-            HFONT hFont = reinterpret_cast<HFONT>(SendMessage( hHeader, WM_GETFONT, 0, 0 ));
-            LOGFONT lf = {};
-            GetObject( hFont, sizeof( LOGFONT ), &lf );
-            lf.lfWeight = FW_BOLD;
-            headerFont = CreateFontIndirect( &lf );
+            continue;
         }
-        SendMessage( hHeader, WM_SETFONT, reinterpret_cast<WPARAM>(headerFont), 0 );
+
+        // StaticTextSubclassProc already supports a per-control font override via this property.
+        // Setting it here makes Draw tab headers resilient if something later overwrites WM_SETFONT.
+        SetPropW( hHeader, L"ZoomIt.HeaderFont", headerFont );
+
+        SendMessage( hHeader, WM_SETFONT, reinterpret_cast<WPARAM>(headerFont), TRUE );
 
         // Resize the control to fit the text
         GetWindowText( hHeader, text, sizeof( text ) / sizeof( text[0] ) );
@@ -2231,6 +2246,12 @@ void UpdateDrawTabHeaderFont()
         DrawText( hDC, text, static_cast<int>(_tcslen( text )), &rc, DT_CALCRECT | DT_SINGLELINE | DT_LEFT | DT_VCENTER );
         ReleaseDC( hHeader, hDC );
         SetWindowPos( hHeader, nullptr, 0, 0, rc.right - rc.left + ScaleForDpi( 4, GetDpiForWindowHelper( hHeader ) ), rc.bottom - rc.top, SWP_NOMOVE | SWP_NOZORDER );
+        InvalidateRect( hHeader, nullptr, TRUE );
+    }
+
+    if( oldHeaderFont )
+    {
+        DeleteObject( oldHeaderFont );
     }
 }
 
@@ -3110,17 +3131,6 @@ LRESULT CALLBACK StaticTextSubclassProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPA
 }
 
 
-#if _DEBUG
-// Logs any late WM_SETFONT on the Options header version label.
-LRESULT CALLBACK HeaderFontDebugSubclassProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData )
-{
-    if( uMsg == WM_SETFONT )
-    {
-        OutputDebug( L"IDC_VERSION WM_SETFONT: font=%p redraw=%d\n", reinterpret_cast<void*>(wParam), static_cast<int>(lParam) );
-    }
-    return DefSubclassProc( hWnd, uMsg, wParam, lParam );
-}
-#endif
 
 //----------------------------------------------------------------------------
 //
@@ -3293,6 +3303,8 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
     static HWND		hOpacity;
     static HWND		hToggleKey;
     static UINT		currentDpi = DPI_BASELINE;
+    static RECT     stableWindowRect{};
+    static bool     stableWindowRectValid = false;
     TCHAR			text[32];
     DWORD			newToggleKey, newTimeout, newToggleMod, newBreakToggleKey, newDemoTypeToggleKey, newRecordToggleKey, newSnipToggleKey;
     DWORD			newDrawToggleKey, newDrawToggleMod, newBreakToggleMod, newDemoTypeToggleMod, newRecordToggleMod, newSnipToggleMod;
@@ -3463,7 +3475,9 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
 
         SetForegroundWindow( hDlg );
         SetActiveWindow( hDlg );
-        SetWindowPos( hDlg, HWND_TOP, 0, 0, 0, 0, SWP_NOSIZE|SWP_NOMOVE|SWP_SHOWWINDOW );
+        // Do not force-show the dialog here. DialogBox will show it after WM_INITDIALOG
+        // returns, and showing early causes visible layout churn while we add tabs, scale,
+        // and center the window.
 #if 1
         // set version info
         TCHAR               filePath[MAX_PATH];
@@ -3668,16 +3682,6 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
             SetWindowSubclass( hCopyright, StaticTextSubclassProc, 56, 0 );
         }
 
-#if _DEBUG
-        {
-            HWND hVersion = GetDlgItem( hDlg, IDC_VERSION );
-            if( hVersion )
-            {
-                SetWindowSubclass( hVersion, HeaderFontDebugSubclassProc, 99, 0 );
-            }
-        }
-#endif
-
         // Apply dark mode to the dialog and all tab pages
         ApplyDarkModeToDialog( hDlg );
         for( int i = 0; i < sizeof( g_OptionsTabs ) / sizeof( g_OptionsTabs[0] ); i++ )
@@ -3708,6 +3712,10 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
             int y = mi.rcWork.top + (mi.rcWork.bottom - mi.rcWork.top - dlgHeight) / 2;
             SetWindowPos(hDlg, nullptr, x, y, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
         }
+
+        // Capture a stable window size so per-monitor DPI changes won't resize/reflow the dialog.
+        GetWindowRect(hDlg, &stableWindowRect);
+        stableWindowRectValid = true;
         
         PostMessage( hDlg, WM_USER, 0, 0 );
         // Reapply header fonts once the dialog has finished any late initialization.
@@ -3729,40 +3737,23 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
 
     case WM_DPICHANGED:
     {
-        UINT newDpi = HIWORD( wParam );
-        if( newDpi != currentDpi && newDpi != 0 )
+        // Requirement: keep the Options dialog stable while it is open.
+        // Windows may already have resized the window by the time this arrives,
+        // so explicitly restore the previous size (but allow the suggested top-left).
+
+        RECT* suggested = reinterpret_cast<RECT*>(lParam);
+        if (stableWindowRectValid && suggested)
         {
-            const RECT* pSuggestedRect = reinterpret_cast<const RECT*>(lParam);
-
-            // Scale the main dialog (direct children) and tab page contents.
-            ScaleDialogForDpi( hDlg, newDpi, currentDpi );
-
-            for( int i = 0; i < sizeof( g_OptionsTabs ) / sizeof( g_OptionsTabs[0] ); i++ )
-            {
-                if( g_OptionsTabs[i].hPage )
-                {
-                    ScaleChildControlsForDpi( g_OptionsTabs[i].hPage, newDpi, currentDpi );
-                }
-            }
-            
-            // Reposition tab pages to fit the scaled tab control
-            RepositionTabPages( hTabCtrl );
-
-            // Move and resize the dialog to the suggested rectangle
-            SetWindowPos( hDlg, nullptr,
-                pSuggestedRect->left,
-                pSuggestedRect->top,
-                pSuggestedRect->right - pSuggestedRect->left,
-                pSuggestedRect->bottom - pSuggestedRect->top,
-                SWP_NOZORDER | SWP_NOACTIVATE );
-
-            currentDpi = newDpi;
+            const int stableW = stableWindowRect.right - stableWindowRect.left;
+            const int stableH = stableWindowRect.bottom - stableWindowRect.top;
+            SetWindowPos(hDlg, nullptr,
+                suggested->left,
+                suggested->top,
+                stableW,
+                stableH,
+                SWP_NOZORDER | SWP_NOACTIVATE);
         }
-        InitializeFonts( hDlg, &hFontBold );
-        UpdateDrawTabHeaderFont();
-        UpdateVersionFont();
-        PostMessage( hDlg, WM_APPLY_HEADER_FONTS, 0, 0 );
-        break;
+        return TRUE;
     }
 
     case WM_ERASEBKGND:

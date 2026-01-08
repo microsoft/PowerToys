@@ -79,6 +79,9 @@ public:
         std::atomic<int64_t> latestPreviewRequest{ 0 };
         std::atomic<int64_t> lastRenderedPreview{ -1 };
         std::atomic<bool> isPlaying{ false };
+        // Monotonic serial used to cancel in-flight StartPlaybackAsync work when the user
+        // immediately pauses after starting playback.
+        std::atomic<uint64_t> playbackCommandSerial{ 0 };
         std::atomic<bool> frameCopyInProgress{ false };
         std::atomic<bool> smoothActive{ false };
         std::atomic<int64_t> smoothBaseTicks{ 0 };

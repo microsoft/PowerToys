@@ -205,7 +205,7 @@ BEGIN
     LTEXT           "Once in drawing mode, type 't' to enter typing mode or shift+'t' to enter typing mode with right-aligned input. Exit typing mode by pressing escape or the left mouse button. Use the mouse wheel or up and down arrow keys to change the font size.",IDC_STATIC,7,7,266,32
     LTEXT           "The text color is the current drawing color.",IDC_STATIC,7,47,266,9
     PUSHBUTTON      "&Font",IDC_FONT,112,69,41,14
-    GROUPBOX        "Text Font",IDC_TEXT_FONT,8,61,99,28
+    GROUPBOX        "Sample",IDC_TEXT_FONT,8,61,99,28
 END
 
 BREAK DIALOGEX 0, 0, 280, 123

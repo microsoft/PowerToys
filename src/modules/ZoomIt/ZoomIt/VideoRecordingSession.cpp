@@ -67,7 +67,7 @@ static bool IsGifPath(const std::wstring& path)
 {
     try
     {
-        auto ext = std::filesystem::path(path).extension().wstring();
+        const auto ext = std::filesystem::path(path).extension().wstring();
         return _wcsicmp(ext.c_str(), L".gif") == 0;
     }
     catch (...)
@@ -706,10 +706,13 @@ namespace
         const std::wstring durationText = FormatDurationString(winrt::TimeSpan{ selectionTicks });
         SetDlgItemText(hDlg, IDC_TRIM_DURATION_LABEL, durationText.c_str());
 
-        // Enable OK button only if grippers have moved (trim is needed)
+        // Enable OK when trimming is active (even if unchanged since dialog opened),
+        // or when the user changed the selection (including reverting to full length).
         const bool trimChanged = (pData->trimStart.count() != pData->originalTrimStart.count()) ||
                                  (pData->trimEnd.count() != pData->originalTrimEnd.count());
-        EnableWindow(GetDlgItem(hDlg, IDOK), trimChanged);
+        const bool trimIsActive = (pData->trimStart.count() > 0) ||
+                                  (pData->videoDuration.count() > 0 && pData->trimEnd.count() < pData->videoDuration.count());
+        EnableWindow(GetDlgItem(hDlg, IDOK), trimChanged || trimIsActive);
     }
 
         RECT GetTimelineTrackRect(const RECT& clientRect, UINT dpi)
@@ -1332,7 +1335,6 @@ public:
         {
             try
             {
-                OutputDebugStringW(L"[Trim] Trim button clicked\n");
                 // Get the file dialog's window handle to make trim dialog modal to it
                 wil::com_ptr<IFileDialog> pfd;
                 HWND hFileDlg = nullptr;
@@ -1347,24 +1349,27 @@ public:
 
                 // Use file dialog window as parent if found, otherwise use original parent
                 HWND hParent = hFileDlg ? hFileDlg : m_hParent;
-                OutputDebugStringW((L"[Trim] Calling ShowTrimDialog with path: " + m_videoPath + L"\n").c_str());
 
                 auto trimResult = VideoRecordingSession::ShowTrimDialog(hParent, m_videoPath, *m_pTrimStart, *m_pTrimEnd);
-                OutputDebugStringW((L"[Trim] ShowTrimDialog returned: " + std::to_wstring(trimResult) + L"\n").c_str());
                 if (trimResult == IDOK)
                 {
                     *m_pShouldTrim = true;
                 }
+                else if( trimResult == IDCANCEL )
+                {
+                    // Cancel should reset to the default selection (fresh state) and
+                    // disable trimming for the eventual save.
+                    *m_pTrimStart = winrt::TimeSpan{ 0 };
+                    *m_pTrimEnd = winrt::TimeSpan{ 0 };
+                    *m_pShouldTrim = false;
+                }
             }
             catch (const std::exception& e)
             {
-                OutputDebugStringA("[Trim] Exception in OnButtonClicked: ");
-                OutputDebugStringA(e.what());
-                OutputDebugStringA("\n");
+                (void)e;
             }
             catch (...)
             {
-                OutputDebugStringW(L"[Trim] Unknown exception in OnButtonClicked\n");
             }
         }
         return S_OK;
@@ -1527,26 +1532,21 @@ INT_PTR VideoRecordingSession::ShowTrimDialog(
 
         try
         {
-            OutputDebugStringW(L"[Trim] Calling ShowTrimDialogInternal...\n");
             INT_PTR dlgResult = ShowTrimDialogInternal(hParent, videoPath, trimStart, trimEnd);
-            OutputDebugStringW((L"[Trim] ShowTrimDialogInternal returned: " + std::to_wstring(dlgResult) + L"\n").c_str());
             promise.set_value(dlgResult);
         }
         catch (const winrt::hresult_error& e)
         {
-            OutputDebugStringW((L"[Trim] winrt exception: " + e.message() + L"\n").c_str());
+            (void)e;
             promise.set_exception(std::current_exception());
         }
         catch (const std::exception& e)
         {
-            OutputDebugStringA("[Trim] std::exception: ");
-            OutputDebugStringA(e.what());
-            OutputDebugStringA("\n");
+            (void)e;
             promise.set_exception(std::current_exception());
         }
         catch (...)
         {
-            OutputDebugStringW(L"[Trim] Unknown exception\n");
             promise.set_exception(std::current_exception());
         }
 
@@ -1582,8 +1582,9 @@ INT_PTR VideoRecordingSession::ShowTrimDialogInternal(
 {
     TrimDialogData data;
     data.videoPath = videoPath;
-    data.trimStart = winrt::TimeSpan{ 0 };
-    data.trimEnd = winrt::TimeSpan{ 0 };
+    // Initialize from the caller so reopening the trim dialog can preserve prior work.
+    data.trimStart = trimStart;
+    data.trimEnd = trimEnd;
     data.isGif = IsGifPath(videoPath);
 
     if (data.isGif)
@@ -1612,15 +1613,39 @@ INT_PTR VideoRecordingSession::ShowTrimDialogInternal(
             if (estimatedSeconds > 3600) estimatedSeconds = 3600; // max 1 hour
 
             data.videoDuration = winrt::TimeSpan{ estimatedSeconds * 10000000LL };
-            data.trimEnd = data.videoDuration;
+            if( data.trimEnd.count() <= 0 )
+            {
+                data.trimEnd = data.videoDuration;
+            }
         }
         else
         {
             // Default to 60 seconds if we can't get file size
             data.videoDuration = winrt::TimeSpan{ 600000000LL };
-            data.trimEnd = data.videoDuration;
+            if( data.trimEnd.count() <= 0 )
+            {
+                data.trimEnd = data.videoDuration;
+            }
         }
     }
+
+    // Clamp incoming selection to valid bounds now that duration is known.
+    if( data.videoDuration.count() > 0 )
+    {
+        const int64_t durationTicks = data.videoDuration.count();
+        const int64_t endTicks = (data.trimEnd.count() > 0) ? data.trimEnd.count() : durationTicks;
+        const int64_t clampedEnd = std::clamp<int64_t>( endTicks, 0, durationTicks );
+        const int64_t clampedStart = std::clamp<int64_t>( data.trimStart.count(), 0, clampedEnd );
+        data.trimStart = winrt::TimeSpan{ clampedStart };
+        data.trimEnd = winrt::TimeSpan{ clampedEnd };
+    }
+
+    // Track initial selection so we can enable OK only when trimming changes.
+    data.originalTrimStart = data.trimStart;
+    data.originalTrimEnd = data.trimEnd;
+    data.currentPosition = data.trimStart;
+    data.playbackStartPosition = data.currentPosition;
+    data.playbackStartPositionValid = true;
 
     // Center dialog on the screen containing the parent window
     HMONITOR hMonitor = MonitorFromWindow(hParent, MONITOR_DEFAULTTONEAREST);
@@ -1637,14 +1662,12 @@ INT_PTR VideoRecordingSession::ShowTrimDialogInternal(
     data.dialogX = x;
     data.dialogY = y;
 
-    OutputDebugStringW(L"[Trim] About to call DialogBoxParam...\n");
     auto result = DialogBoxParam(
         GetModuleHandle(nullptr),
         MAKEINTRESOURCE(IDD_VIDEO_TRIM),
         hParent,
         TrimDialogProc,
         reinterpret_cast<LPARAM>(&data));
-    OutputDebugStringW((L"[Trim] DialogBoxParam returned: " + std::to_wstring(result) + L"\n").c_str());
 
     if (result == IDOK)
     {
@@ -1892,15 +1915,29 @@ static void UpdateVideoPreview(HWND hDlg, VideoRecordingSession::TrimDialogData*
                 auto actualDuration = clip.OriginalDuration();
                 if (actualDuration.count() > 0)
                 {
-                    if (pData->videoDuration.count() != actualDuration.count())
+                    const int64_t oldDurationTicks = pData->videoDuration.count();
+                    if (oldDurationTicks != actualDuration.count())
                     {
                         durationChanged = true;
                     }
 
+                    // Update duration, but preserve a user-chosen trim end.
+                    // If the trim end was "full length" (old duration or 0), keep it full length.
                     pData->videoDuration = actualDuration;
-                    pData->trimEnd = actualDuration;
-                    // Also update original values so OK button state stays correct
-                    pData->originalTrimEnd = actualDuration;
+
+                    const int64_t oldTrimEndTicks = pData->trimEnd.count();
+                    const bool endWasFullLength = (oldTrimEndTicks <= 0) || (oldDurationTicks > 0 && oldTrimEndTicks >= oldDurationTicks);
+                    const int64_t newTrimEndTicks = endWasFullLength ? actualDuration.count()
+                        : (std::min)(oldTrimEndTicks, actualDuration.count());
+                    pData->trimEnd = winrt::TimeSpan{ newTrimEndTicks };
+
+                    const int64_t oldOrigEndTicks = pData->originalTrimEnd.count();
+                    const bool origEndWasFullLength = (oldOrigEndTicks <= 0) || (oldDurationTicks > 0 && oldOrigEndTicks >= oldDurationTicks);
+                    const int64_t newOrigEndTicks = origEndWasFullLength ? actualDuration.count()
+                        : (std::min)(oldOrigEndTicks, actualDuration.count());
+                    pData->originalTrimEnd = winrt::TimeSpan{ newOrigEndTicks };
+
+                    // Clamp starts to the new end.
                     if (pData->originalTrimStart.count() > pData->originalTrimEnd.count())
                     {
                         pData->originalTrimStart = pData->originalTrimEnd;
@@ -1909,7 +1946,6 @@ static void UpdateVideoPreview(HWND hDlg, VideoRecordingSession::TrimDialogData*
                     {
                         pData->trimStart = pData->trimEnd;
                     }
-                    durationChanged = true;
                 }
             }
 
@@ -2377,7 +2413,10 @@ static void StopPlayback(HWND hDlg, VideoRecordingSession::TrimDialogData* pData
         return;
     }
 
-    const bool wasPlaying = pData->isPlaying.exchange(false, std::memory_order_relaxed);
+    // Invalidate any in-flight StartPlaybackAsync continuation (e.g., after awaiting file load).
+    pData->playbackCommandSerial.fetch_add(1, std::memory_order_acq_rel);
+
+    const bool wasPlaying = pData->isPlaying.exchange(false, std::memory_order_acq_rel);
     ResetSmoothPlayback(pData);
 
     // Cancel any pending initial seek suppression.
@@ -2465,6 +2504,8 @@ static winrt::fire_and_forget StartPlaybackAsync(HWND hDlg, VideoRecordingSessio
         co_return;
     }
 
+    const uint64_t startSerial = pData->playbackCommandSerial.fetch_add(1, std::memory_order_acq_rel) + 1;
+
     if (pData->isGif)
     {
         // Initialize GIF timing so playback begins at the current playhead position
@@ -2500,6 +2541,15 @@ static winrt::fire_and_forget StartPlaybackAsync(HWND hDlg, VideoRecordingSessio
     // If a player already exists (paused), resume from the current playhead position.
     if (pData->mediaPlayer)
     {
+        // If the user already canceled playback, do nothing.
+        if (!pData->isPlaying.load(std::memory_order_acquire) ||
+            pData->playbackCommandSerial.load(std::memory_order_acquire) != startSerial)
+        {
+            pData->isPlaying.store(false, std::memory_order_relaxed);
+            RefreshPlaybackButtons(hDlg);
+            co_return;
+        }
+
         try
         {
             auto session = pData->mediaPlayer.PlaybackSession();
@@ -2543,6 +2593,15 @@ static winrt::fire_and_forget StartPlaybackAsync(HWND hDlg, VideoRecordingSessio
         {
             auto file = co_await winrt::StorageFile::GetFileFromPathAsync(pData->videoPath);
             pData->playbackFile = file;
+        }
+
+        // The user may have clicked Pause while the async file lookup was in-flight.
+        if (!pData->isPlaying.load(std::memory_order_acquire) ||
+            pData->playbackCommandSerial.load(std::memory_order_acquire) != startSerial)
+        {
+            pData->isPlaying.store(false, std::memory_order_relaxed);
+            RefreshPlaybackButtons(hDlg);
+            co_return;
         }
 
         if (!pData->playbackFile)
@@ -2749,7 +2808,7 @@ static winrt::fire_and_forget StartPlaybackAsync(HWND hDlg, VideoRecordingSessio
         OutputDebugStringW((L"[Trim] Setting up MediaOpened callback with resumePos=" +
             std::to_wstring(resumePositionTicks) + L"\n").c_str());
 #endif
-        pData->mediaPlayer.MediaOpened([dataPtr, hDlg, resumePositionTicks](auto const& sender, auto const&)
+        pData->mediaPlayer.MediaOpened([dataPtr, hDlg, resumePositionTicks, startSerial](auto const& sender, auto const&)
         {
             if (!dataPtr)
             {
@@ -2757,12 +2816,26 @@ static winrt::fire_and_forget StartPlaybackAsync(HWND hDlg, VideoRecordingSessio
             }
             try
             {
+                if (!dataPtr->isPlaying.load(std::memory_order_acquire) ||
+                    dataPtr->playbackCommandSerial.load(std::memory_order_acquire) != startSerial)
+                {
+                    sender.Pause();
+                    return;
+                }
                 // Seek to the captured resume position (loop anchor is stored separately)
 #if _DEBUG
                 OutputDebugStringW((L"[Trim] MediaOpened: seeking to resumePos=" +
                     std::to_wstring(resumePositionTicks) + L"\n").c_str());
 #endif
                 sender.PlaybackSession().Position(winrt::TimeSpan{ resumePositionTicks });
+
+                // Re-check immediately before playing to reduce Play->Pause races.
+                if (!dataPtr->isPlaying.load(std::memory_order_acquire) ||
+                    dataPtr->playbackCommandSerial.load(std::memory_order_acquire) != startSerial)
+                {
+                    sender.Pause();
+                    return;
+                }
                 sender.Play();
 
                 // Once MediaOpened has applied the initial seek, allow position updates again.
@@ -2800,6 +2873,16 @@ static winrt::fire_and_forget StartPlaybackAsync(HWND hDlg, VideoRecordingSessio
         pData->isPlaying.store(false, std::memory_order_relaxed);
         CleanupMediaPlayer(pData);
         ResetSmoothPlayback(pData);
+        RefreshPlaybackButtons(hDlg);
+        co_return;
+    }
+
+    // If a quick Pause happened right after Play, don't start timers/UI updates.
+    if (!pData->isPlaying.load(std::memory_order_acquire) ||
+        pData->playbackCommandSerial.load(std::memory_order_acquire) != startSerial)
+    {
+        StopMMTimer(pData);
+        pData->isPlaying.store(false, std::memory_order_relaxed);
         RefreshPlaybackButtons(hDlg);
         co_return;
     }
@@ -3312,6 +3395,37 @@ static LRESULT CALLBACK PlaybackButtonSubclassProc(
         RemoveWindowSubclass(hWnd, PlaybackButtonSubclassProc, uIdSubclass);
         break;
 
+    case WM_LBUTTONDOWN:
+        SetFocus(hWnd);
+        SetCapture(hWnd);
+        return 0;
+
+    case WM_LBUTTONUP:
+    {
+        if (GetCapture() == hWnd)
+        {
+            ReleaseCapture();
+        }
+
+        POINT pt{ GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
+        RECT rc{};
+        GetClientRect(hWnd, &rc);
+
+        if (PtInRect(&rc, pt))
+        {
+            HandlePlaybackCommand(GetDlgCtrlID(hWnd), pData);
+        }
+        return 0;
+    }
+
+    case WM_KEYUP:
+        if (wParam == VK_SPACE || wParam == VK_RETURN)
+        {
+            HandlePlaybackCommand(GetDlgCtrlID(hWnd), pData);
+            return 0;
+        }
+        break;
+
     case WM_MOUSEMOVE:
     {
         TRACKMOUSEEVENT tme{ sizeof(tme), TME_LEAVE, hWnd, 0 };
@@ -3383,11 +3497,9 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
     {
     case WM_INITDIALOG:
     {
-        OutputDebugStringW(L"[Trim] WM_INITDIALOG received\n");
         pData = reinterpret_cast<TrimDialogData*>(lParam);
         if (!pData)
         {
-            OutputDebugStringW(L"[Trim] ERROR: pData is null in WM_INITDIALOG\n");
             EndDialog(hDlg, IDCANCEL);
             return FALSE;
         }
@@ -3437,17 +3549,20 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
             SetWindowSubclass(hSkipEnd, PlaybackButtonSubclassProc, 6, reinterpret_cast<DWORD_PTR>(pData));
         }
 
-        // Initialize times
-        pData->trimStart = winrt::TimeSpan{ 0 };
-        pData->trimEnd = pData->videoDuration;
-        pData->originalTrimStart = pData->trimStart;
-        pData->originalTrimEnd = pData->trimEnd;
-        pData->currentPosition = winrt::TimeSpan{ 0 };
+        // Ensure incoming times are sane and within bounds.
+        if (pData->videoDuration.count() > 0)
+        {
+            const int64_t durationTicks = pData->videoDuration.count();
+            const int64_t endTicks = (pData->trimEnd.count() > 0) ? pData->trimEnd.count() : durationTicks;
+            const int64_t clampedEnd = std::clamp<int64_t>(endTicks, 0, durationTicks);
+            const int64_t clampedStart = std::clamp<int64_t>(pData->trimStart.count(), 0, clampedEnd);
+            pData->trimStart = winrt::TimeSpan{ clampedStart };
+            pData->trimEnd = winrt::TimeSpan{ clampedEnd };
+        }
 
-        // Initially disable OK button since no trim has been made yet
-        EnableWindow(GetDlgItem(hDlg, IDOK), FALSE);
-
-        OutputDebugStringW((L"[Trim] isGif=" + std::to_wstring(pData->isGif) + L" duration=" + std::to_wstring(pData->videoDuration.count()) + L"\n").c_str());
+        // Keep the playhead at a valid position.
+        const int64_t upper = (pData->trimEnd.count() > 0) ? pData->trimEnd.count() : pData->videoDuration.count();
+        pData->currentPosition = winrt::TimeSpan{ std::clamp<int64_t>(pData->currentPosition.count(), 0, upper) };
 
         UpdateDurationDisplay(hDlg, pData);
 
@@ -3463,8 +3578,6 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
 
         // Center dialog on screen
         CenterTrimDialog(hDlg);
-
-        OutputDebugStringW(L"[Trim] WM_INITDIALOG completed\n");
         return TRUE;
     }
 
@@ -3480,47 +3593,6 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
         if (hBrush)
         {
             return reinterpret_cast<INT_PTR>(hBrush);
-        }
-        break;
-    }
-
-    case WM_LBUTTONDOWN:
-    {
-        int x = GET_X_LPARAM(lParam);
-        int y = GET_Y_LPARAM(lParam);
-        OutputDebugStringW((L"[Trim] WM_LBUTTONDOWN on dialog at x=" + std::to_wstring(x) + L" y=" + std::to_wstring(y) + L"\n").c_str());
-        
-        // Debug: Check button positions
-        HWND hOkBtn = GetDlgItem(hDlg, IDOK);
-        HWND hCancelBtn = GetDlgItem(hDlg, IDCANCEL);
-        if (hOkBtn)
-        {
-            RECT rcOk;
-            GetWindowRect(hOkBtn, &rcOk);
-            MapWindowPoints(HWND_DESKTOP, hDlg, reinterpret_cast<LPPOINT>(&rcOk), 2);
-            OutputDebugStringW((L"[Trim] OK button rect: left=" + std::to_wstring(rcOk.left) + L" top=" + std::to_wstring(rcOk.top) + 
-                L" right=" + std::to_wstring(rcOk.right) + L" bottom=" + std::to_wstring(rcOk.bottom) + 
-                L" visible=" + std::to_wstring(IsWindowVisible(hOkBtn)) + L" enabled=" + std::to_wstring(IsWindowEnabled(hOkBtn)) + L"\n").c_str());
-        }
-        if (hCancelBtn)
-        {
-            RECT rcCancel;
-            GetWindowRect(hCancelBtn, &rcCancel);
-            MapWindowPoints(HWND_DESKTOP, hDlg, reinterpret_cast<LPPOINT>(&rcCancel), 2);
-            OutputDebugStringW((L"[Trim] Cancel button rect: left=" + std::to_wstring(rcCancel.left) + L" top=" + std::to_wstring(rcCancel.top) + 
-                L" right=" + std::to_wstring(rcCancel.right) + L" bottom=" + std::to_wstring(rcCancel.bottom) + 
-                L" visible=" + std::to_wstring(IsWindowVisible(hCancelBtn)) + L" enabled=" + std::to_wstring(IsWindowEnabled(hCancelBtn)) + L"\n").c_str());
-        }
-        
-        // Check what child window is at this point
-        POINT pt = { x, y };
-        HWND hChildAtPoint = ChildWindowFromPoint(hDlg, pt);
-        if (hChildAtPoint && hChildAtPoint != hDlg)
-        {
-            wchar_t className[64] = { 0 };
-            GetClassNameW(hChildAtPoint, className, _countof(className));
-            int ctrlId = GetDlgCtrlID(hChildAtPoint);
-            OutputDebugStringW((L"[Trim] Child at point: class=" + std::wstring(className) + L" ctrlId=" + std::to_wstring(ctrlId) + L"\n").c_str());
         }
         break;
     }
@@ -3947,7 +4019,6 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
         break;
 
     case WM_COMMAND:
-        OutputDebugStringW((L"[Trim] WM_COMMAND: wParam=0x" + std::to_wstring(wParam) + L" LOWORD=" + std::to_wstring(LOWORD(wParam)) + L" HIWORD=" + std::to_wstring(HIWORD(wParam)) + L"\n").c_str());
         switch (LOWORD(wParam))
         {
         case IDC_TRIM_REWIND:
@@ -3966,7 +4037,6 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
         }
 
         case IDOK:
-            OutputDebugStringW(L"[Trim] IDOK clicked\n");
             pData = reinterpret_cast<TrimDialogData*>(GetWindowLongPtr(hDlg, DWLP_USER));
             StopPlayback(hDlg, pData);
             // Trim times are already set by mouse dragging
@@ -3974,7 +4044,6 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
             return TRUE;
 
         case IDCANCEL:
-            OutputDebugStringW(L"[Trim] IDCANCEL clicked\n");
             pData = reinterpret_cast<TrimDialogData*>(GetWindowLongPtr(hDlg, DWLP_USER));
             StopPlayback(hDlg, pData);
             EndDialog(hDlg, IDCANCEL);
