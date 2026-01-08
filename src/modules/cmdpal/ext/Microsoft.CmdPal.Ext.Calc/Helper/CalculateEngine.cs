@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.Text.RegularExpressions;
 using CalculatorEngineCommon;
@@ -120,15 +119,19 @@ public static class CalculateEngine
     /// </summary>
     public static decimal FormatMax15Digits(decimal value, CultureInfo cultureInfo)
     {
+        const int maxDisplayDigits = 15;
+
+        if (value == 0m)
+        {
+            return 0m;
+        }
+
         var absValue = Math.Abs(value);
         var integerDigits = absValue >= 1 ? (int)Math.Floor(Math.Log10((double)absValue)) + 1 : 1;
 
-        var maxDecimalDigits = Math.Max(0, 15 - integerDigits);
+        var maxDecimalDigits = Math.Max(0, maxDisplayDigits - integerDigits);
 
         var rounded = Math.Round(value, maxDecimalDigits, MidpointRounding.AwayFromZero);
-
-        var formatted = rounded.ToString("G29", cultureInfo);
-
-        return Convert.ToDecimal(formatted, cultureInfo);
+        return rounded / 1.000000000000000000000000000000000m;
     }
 }

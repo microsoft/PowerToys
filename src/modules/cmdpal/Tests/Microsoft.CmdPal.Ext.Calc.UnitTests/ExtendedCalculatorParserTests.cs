@@ -65,6 +65,9 @@ public class ExtendedCalculatorParserTests : CommandPaletteUnitTestBase
             ["log10(3)", 0.47712125471966M],
             ["ln(e)", 1M],
             ["cosh(0)", 1M],
+            ["1*10^(-5)", 0.00001M],
+            ["1*10^(-15)", 0.0000000000000001M],
+            ["1*10^(-16)", 0M],
         ];
 
     [DataTestMethod]
