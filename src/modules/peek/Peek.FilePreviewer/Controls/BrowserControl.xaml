@@ -21,6 +21,19 @@
             x:Name="OpenUriDialog"
             x:Uid="OpenUriDialog"
             PrimaryButtonStyle="{ThemeResource AccentButtonStyle}"
-            SecondaryButtonClick="OpenUriDialog_SecondaryButtonClick" />
+            SecondaryButtonClick="OpenUriDialog_SecondaryButtonClick">
+            <StackPanel Spacing="16">
+                <controls:InfoBar
+                    x:Name="OpenUriWarningBanner"
+                    x:Uid="OpenUriWarningBanner"
+                    Severity="Warning"
+                    IsOpen="True"
+                    IsClosable="False"/>
+                <TextBlock
+                    x:Name="OpenUriDialogContent"
+                    TextWrapping="Wrap"
+                    IsTextSelectionEnabled="True"/>
+            </StackPanel>
+        </ContentDialog>
     </Grid>
 </UserControl>

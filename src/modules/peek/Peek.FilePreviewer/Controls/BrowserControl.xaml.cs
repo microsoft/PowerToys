@@ -323,11 +323,49 @@ namespace Peek.FilePreviewer.Controls
 
         private void CoreWebView2_WebResourceRequested(CoreWebView2 sender, CoreWebView2WebResourceRequestedEventArgs args)
         {
-            // Only allow loading the specified source file. Block all other resources for security.
-            if (_currentSourceUri != null && new Uri(args.Request.Uri) != _currentSourceUri)
+            if (_currentSourceUri == null)
+            {
+                return;
+            }
+
+            var requestUri = new Uri(args.Request.Uri);
+
+            // Allow loading the source file itself
+            if (requestUri == _currentSourceUri)
+            {
+                return;
+            }
+
+            // Block all http(s) requests to prevent external tracking and data exfiltration
+            if (requestUri.Scheme == "http" || requestUri.Scheme == "https")
             {
                 args.Response = PreviewBrowser.CoreWebView2.Environment.CreateWebResourceResponse(null, 403, "Forbidden", null);
+                return;
             }
+
+            // For local file:// resources, allow same directory and subdirectories
+            if (requestUri.Scheme == "file" && _currentSourceUri.Scheme == "file")
+            {
+                try
+                {
+                    var sourceDirectory = System.IO.Path.GetDirectoryName(_currentSourceUri.LocalPath);
+                    var requestPath = requestUri.LocalPath;
+
+                    // Allow resources in the same directory or subdirectories
+                    if (!string.IsNullOrEmpty(sourceDirectory) &&
+                        requestPath.StartsWith(sourceDirectory, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return;
+                    }
+                }
+                catch
+                {
+                    // If path processing fails, block for security
+                }
+            }
+
+            // Block all other resources
+            args.Response = PreviewBrowser.CoreWebView2.Environment.CreateWebResourceResponse(null, 403, "Forbidden", null);
         }
 
         private void CoreWebView2_DOMContentLoaded(CoreWebView2 sender, CoreWebView2DOMContentLoadedEventArgs args)
@@ -391,7 +429,7 @@ namespace Peek.FilePreviewer.Controls
 
         private async Task ShowOpenUriDialogAsync(Uri uri)
         {
-            OpenUriDialog.Content = uri.ToString();
+            OpenUriDialogContent.Text = uri.ToString();
             var result = await OpenUriDialog.ShowAsync();
 
             if (result == ContentDialogResult.Primary)
@@ -403,7 +441,7 @@ namespace Peek.FilePreviewer.Controls
         private void OpenUriDialog_SecondaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
         {
             var dataPackage = new DataPackage();
-            dataPackage.SetText(sender.Content.ToString());
+            dataPackage.SetText(OpenUriDialogContent.Text);
             Clipboard.SetContent(dataPackage);
         }
     }
