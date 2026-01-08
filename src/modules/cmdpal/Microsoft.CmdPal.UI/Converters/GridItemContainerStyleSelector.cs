@@ -24,17 +24,19 @@ internal sealed partial class GridItemContainerStyleSelector : StyleSelector
 
     protected override Style? SelectStyleCore(object item, DependencyObject container)
     {
-        return item switch
+        if (item is ListItemViewModel { IsSectionOrSeparator: true } listItem)
         {
-            ListItemViewModel { IsSectionOrSeparator: true } listItemViewModel when string.IsNullOrWhiteSpace(listItemViewModel.Title) => Separator!,
-            ListItemViewModel { IsSectionOrSeparator: true } => Section,
-            _ => GridProperties switch
-            {
-                SmallGridPropertiesViewModel => Small,
-                MediumGridPropertiesViewModel => Medium,
-                GalleryGridPropertiesViewModel => Gallery,
-                _ => Medium,
-            },
+            return string.IsNullOrWhiteSpace(listItem.Title)
+                ? Separator!
+                : Section;
+        }
+
+        return GridProperties switch
+        {
+            SmallGridPropertiesViewModel => Small,
+            MediumGridPropertiesViewModel => Medium,
+            GalleryGridPropertiesViewModel => Gallery,
+            _ => Medium,
         };
     }
 }
