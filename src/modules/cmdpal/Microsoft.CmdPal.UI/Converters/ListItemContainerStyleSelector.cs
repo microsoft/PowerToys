@@ -8,15 +8,9 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.CmdPal.UI;
 
-internal sealed partial class GridItemContainerStyleSelector : StyleSelector
+internal sealed partial class ListItemContainerStyleSelector : StyleSelector
 {
-    public IGridPropertiesViewModel? GridProperties { get; set; }
-
-    public Style? Small { get; set; }
-
-    public Style? Medium { get; set; }
-
-    public Style? Gallery { get; set; }
+    public Style? Default { get; set; }
 
     public Style? Section { get; set; }
 
@@ -28,13 +22,7 @@ internal sealed partial class GridItemContainerStyleSelector : StyleSelector
         {
             ListItemViewModel { IsSectionOrSeparator: true } listItemViewModel when string.IsNullOrWhiteSpace(listItemViewModel.Title) => Separator!,
             ListItemViewModel { IsSectionOrSeparator: true } => Section,
-            _ => GridProperties switch
-            {
-                SmallGridPropertiesViewModel => Small,
-                MediumGridPropertiesViewModel => Medium,
-                GalleryGridPropertiesViewModel => Gallery,
-                _ => Medium,
-            },
+            _ => Default,
         };
     }
 }
