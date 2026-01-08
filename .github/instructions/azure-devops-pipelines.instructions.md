@@ -30,7 +30,7 @@ Guidelines for creating maintainable, secure, and efficient Azure DevOps pipelin
 - Cache dependencies (npm, NuGet, Maven, etc.) to improve build performance
 - Implement proper artifact management with meaningful names and retention policies
 - Use build variables for version numbers and build metadata
-- Include code quality gates (linting, testing, security scans)
+- Include code quality gates (lint checks, testing, security scans)
 - Ensure builds are reproducible and environment-independent
 
 ## Testing Integration

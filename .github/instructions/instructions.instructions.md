@@ -79,7 +79,7 @@ code example here
 ### 4. Validation and Verification (Optional but Recommended)
 
 - Build commands to verify code
-- Linting and formatting tools
+- Lint checks and formatting tools
 - Testing requirements
 - Verification steps
 
@@ -179,7 +179,7 @@ function getUser(id: any): any {
 - **Ambiguous guidelines**: Be specific about what to do or avoid
 - **Missing examples**: Abstract rules without concrete code examples
 - **Contradictory advice**: Ensure consistency throughout the file
-- **Copy-paste from documentation**: Add value by distilling and contextualizing
+- **Copy-paste from documentation**: Add value by distilling and providing context
 
 ## Testing Your Instructions
 
@@ -238,7 +238,7 @@ Description and example
 ## Validation
 
 - Build command: `command to verify`
-- Linting: `command to lint`
+- Lint checks: `command to lint`
 - Testing: `command to test`
 ```
 

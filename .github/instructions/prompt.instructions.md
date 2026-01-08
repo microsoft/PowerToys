@@ -59,7 +59,7 @@ Every prompt file should include YAML frontmatter with the following fields:
 - Avoid idioms, humor, or culturally specific references; favor neutral, inclusive language.
 
 ## Output Definition
-- Specify the format, structure, and location of expected results (for example, “Create `docs/adr/adr-XXXX.md` using the template below”).
+- Specify the format, structure, and location of expected results (for example, “Create an architecture decision record file using the template below, such as `docs/architecture-decisions/record-XXXX.md`).
 - Include success criteria and failure triggers so Copilot knows when to halt or retry.
 - Provide validation steps—manual checks, automated commands, or acceptance criteria lists—that reviewers can execute after running the prompt.
 
