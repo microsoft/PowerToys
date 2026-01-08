@@ -67,6 +67,7 @@ namespace
 // TODO: would be nice to get rid of these globals, since they're basically cached json settings
 static std::wstring settings_theme = L"system";
 static bool show_tray_icon = true;
+static bool show_theme_adaptive_tray_icon = false;
 static bool run_as_elevated = false;
 static bool show_new_updates_toast_notification = true;
 static bool download_updates_automatically = true;
@@ -99,6 +100,7 @@ json::JsonObject GeneralSettings::to_json()
     result.SetNamedValue(L"enabled", std::move(enabled));
 
     result.SetNamedValue(L"show_tray_icon", json::value(showSystemTrayIcon));
+    result.SetNamedValue(L"show_theme_adaptive_tray_icon", json::value(showThemeAdaptiveTrayIcon));
     result.SetNamedValue(L"is_elevated", json::value(isElevated));
     result.SetNamedValue(L"run_elevated", json::value(isRunElevated));
     result.SetNamedValue(L"show_new_updates_toast_notification", json::value(showNewUpdatesToastNotification));
@@ -126,6 +128,8 @@ json::JsonObject load_general_settings()
     {
         settings_theme = L"system";
     }
+    show_tray_icon = loaded.GetNamedBoolean(L"show_tray_icon", true);
+    show_theme_adaptive_tray_icon = loaded.GetNamedBoolean(L"show_theme_adaptive_tray_icon", false);
     run_as_elevated = loaded.GetNamedBoolean(L"run_elevated", false);
     show_new_updates_toast_notification = loaded.GetNamedBoolean(L"show_new_updates_toast_notification", true);
     download_updates_automatically = loaded.GetNamedBoolean(L"download_updates_automatically", true) && check_user_is_admin();
@@ -159,6 +163,7 @@ GeneralSettings get_general_settings()
     GeneralSettings settings
     {
         .showSystemTrayIcon = show_tray_icon,
+        .showThemeAdaptiveTrayIcon = show_theme_adaptive_tray_icon,
         .isElevated = is_process_elevated(),
         .isRunElevated = run_as_elevated,
         .isAdmin = is_user_admin,
@@ -356,8 +361,17 @@ void apply_general_settings(const json::JsonObject& general_configs, bool save)
     if (json::has(general_configs, L"show_tray_icon", json::JsonValueType::Boolean))
     {
         show_tray_icon = general_configs.GetNamedBoolean(L"show_tray_icon");
-        // Update tray icon visibility when setting is toggled
         set_tray_icon_visible(show_tray_icon);
+    }
+
+    if (json::has(general_configs, L"show_theme_adaptive_tray_icon", json::JsonValueType::Boolean))
+    {
+        bool new_theme_adaptive = general_configs.GetNamedBoolean(L"show_theme_adaptive_tray_icon");
+        if (show_theme_adaptive_tray_icon != new_theme_adaptive)
+        {
+            show_theme_adaptive_tray_icon = new_theme_adaptive;
+            set_tray_icon_theme_adaptive(show_theme_adaptive_tray_icon);
+        }
     }
 
     if (json::has(general_configs, L"ignored_conflict_properties", json::JsonValueType::Object))

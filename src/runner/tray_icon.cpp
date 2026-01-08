@@ -13,6 +13,7 @@
 #include <common/version/version.h>
 #include <common/logger/logger.h>
 #include <common/utils/elevation.h>
+#include <common/Themes/theme_listener.h>
 #include "bug_report.h"
 
 namespace
@@ -39,6 +40,8 @@ namespace
     bool double_clicked = false;
     POINT tray_icon_click_point;
 
+    static ThemeListener theme_listener;
+    static bool theme_adaptive_enabled = false;
 }
 
 // Struct to fill with callback and the data. The window_proc is responsible for cleaning it.
@@ -266,6 +269,28 @@ LRESULT __stdcall tray_icon_window_proc(HWND window, UINT message, WPARAM wparam
     return DefWindowProc(window, message, wparam, lparam);
 }
 
+static HICON get_icon(Theme theme)
+{
+    std::wstring icon_path = get_module_folderpath();
+    icon_path += theme == Theme::Dark ? L"\\svgs\\PowerToysWhite.ico" : L"\\svgs\\PowerToysDark.ico";
+    return static_cast<HICON>(LoadImage(NULL,
+                                        icon_path.c_str(),
+                                        IMAGE_ICON,
+                                        0,
+                                        0,
+                                        LR_LOADFROMFILE | LR_DEFAULTSIZE | LR_SHARED));
+}
+
+
+static void handle_theme_change()
+{
+    if (theme_adaptive_enabled)
+    {
+        tray_icon_data.hIcon = get_icon(theme_listener.AppTheme);
+        Shell_NotifyIcon(NIM_MODIFY, &tray_icon_data);
+    }
+}
+
 void update_bug_report_menu_status(bool isRunning)
 {
     if (h_sub_menu != nullptr)
@@ -274,10 +299,11 @@ void update_bug_report_menu_status(bool isRunning)
     }
 }
 
-void start_tray_icon(bool isProcessElevated)
+void start_tray_icon(bool isProcessElevated, bool theme_adaptive)
 {
+    theme_adaptive_enabled = theme_adaptive;
     auto h_instance = reinterpret_cast<HINSTANCE>(&__ImageBase);
-    auto icon = LoadIcon(h_instance, MAKEINTRESOURCE(APPICON));
+    HICON const icon = theme_adaptive ? get_icon(theme_listener.AppTheme) : LoadIcon(h_instance, MAKEINTRESOURCE(APPICON));
     if (icon)
     {
         UINT id_tray_icon = 1;
@@ -324,6 +350,7 @@ void start_tray_icon(bool isProcessElevated)
         ChangeWindowMessageFilterEx(hwnd, WM_COMMAND, MSGFLT_ALLOW, nullptr);
 
         tray_icon_created = Shell_NotifyIcon(NIM_ADD, &tray_icon_data) == TRUE;
+        theme_listener.AddChangedHandler(&handle_theme_change);
 
         // Register callback to update bug report menu item status
         BugReportManager::instance().register_callback([](bool isRunning) {
@@ -343,6 +370,18 @@ void set_tray_icon_visible(bool shouldIconBeVisible)
     tray_icon_data.dwStateMask = NIS_HIDDEN;
     tray_icon_data.dwState = shouldIconBeVisible ? 0 : NIS_HIDDEN;
     Shell_NotifyIcon(NIM_MODIFY, &tray_icon_data);
+}
+
+void set_tray_icon_theme_adaptive(bool theme_adaptive)
+{
+    theme_adaptive_enabled = theme_adaptive;
+    auto h_instance = reinterpret_cast<HINSTANCE>(&__ImageBase);
+    HICON const icon = theme_adaptive ? get_icon(theme_listener.AppTheme) : LoadIcon(h_instance, MAKEINTRESOURCE(APPICON));
+    if (icon)
+    {
+        tray_icon_data.hIcon = icon;
+        Shell_NotifyIcon(NIM_MODIFY, &tray_icon_data);
+    }
 }
 
 void stop_tray_icon()

@@ -164,6 +164,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
 
             _showSysTrayIcon = GeneralSettingsConfig.ShowSysTrayIcon;
+            _showThemeAdaptiveSysTrayIcon = GeneralSettingsConfig.ShowThemeAdaptiveTrayIcon;
             _showNewUpdatesToastNotification = GeneralSettingsConfig.ShowNewUpdatesToastNotification;
             _autoDownloadUpdates = GeneralSettingsConfig.AutoDownloadUpdates;
             _showWhatsNewAfterUpdates = GeneralSettingsConfig.ShowWhatsNewAfterUpdates;
@@ -253,6 +254,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private static bool _isDevBuild;
         private bool _startup;
         private bool _showSysTrayIcon;
+        private bool _showThemeAdaptiveSysTrayIcon;
         private GpoRuleConfigured _runAtStartupGpoRuleConfiguration;
         private bool _runAtStartupIsGPOConfigured;
         private bool _isElevated;
@@ -401,6 +403,24 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     _showSysTrayIcon = value;
                     GeneralSettingsConfig.ShowSysTrayIcon = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
+        public bool ShowThemeAdaptiveTrayIcon
+        {
+            get
+            {
+                return _showThemeAdaptiveSysTrayIcon;
+            }
+
+            set
+            {
+                if (_showThemeAdaptiveSysTrayIcon != value)
+                {
+                    _showThemeAdaptiveSysTrayIcon = value;
+                    GeneralSettingsConfig.ShowThemeAdaptiveTrayIcon = value;
                     NotifyPropertyChanged();
                 }
             }

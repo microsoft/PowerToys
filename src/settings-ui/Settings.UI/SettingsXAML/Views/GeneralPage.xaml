@@ -283,13 +283,21 @@
                             IsOn="{x:Bind ViewModel.Startup, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                     <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsRunAtStartupGPOManaged, Mode=OneWay}">
-                        <tkcontrols:SettingsCard x:Name="ShowSystemTrayIconCard" x:Uid="ShowSystemTrayIcon">
+                        <tkcontrols:SettingsExpander x:Name="ShowSystemTrayIconCard" x:Uid="ShowSystemTrayIcon">
                             <ToggleSwitch
                                 x:Uid="ShowSystemTrayIcon_ToggleSwitch"
                                 AutomationProperties.Name="{Binding ElementName=ShowSystemTrayIconCard, Path=Header}"
                                 IsOn="{x:Bind ViewModel.ShowSysTrayIcon, Mode=TwoWay}"
                                 Toggled="ShowSystemTrayIcon_Toggled" />
-                        </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsExpander.Items>
+                                <tkcontrols:SettingsCard
+                                    x:Name="ShowThemeAdaptiveTrayIconCard"
+                                    ContentAlignment="Left"
+                                    IsEnabled="{x:Bind ViewModel.ShowSysTrayIcon, Mode=OneWay}">
+                                    <CheckBox x:Uid="ShowThemeAdaptiveTrayIcon" IsChecked="{x:Bind ViewModel.ShowThemeAdaptiveTrayIcon, Mode=TwoWay}" />
+                                </tkcontrols:SettingsCard>
+                            </tkcontrols:SettingsExpander.Items>
+                        </tkcontrols:SettingsExpander>
                     </controls:GPOInfoControl>
 
                     <tkcontrols:SettingsExpander

@@ -30,6 +30,10 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("show_tray_icon")]
         public bool ShowSysTrayIcon { get; set; }
 
+        // Gets or sets a value indicating whether the powertoys system tray icon should show a theme adaptive icon
+        [JsonPropertyName("show_theme_adaptive_tray_icon")]
+        public bool ShowThemeAdaptiveTrayIcon { get; set; }
+
         // Gets or sets a value indicating whether the powertoy elevated.
         [CmdConfigureIgnoreAttribute]
         [JsonPropertyName("is_elevated")]

@@ -5801,6 +5801,9 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
     <value>A modern UI built with Fluent Design</value>
     <comment>Fluent Design is a product name, do not loc</comment>
   </data>
+  <data name="ShowThemeAdaptiveTrayIcon.Content" xml:space="preserve">
+    <value>Show a monochrome icon that matches the Windows theme</value>
+  </data>
   <data name="GeneralPage_EnableQuickAccess.Header" xml:space="preserve">
     <value>Quick Access flyout</value>
   </data>
