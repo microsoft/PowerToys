@@ -101,7 +101,7 @@ internal sealed partial class IndexerListItem : ListItem
         // Add Peek command if available (only for files, not directories)
         if (!isDir && PeekFileCommand.IsPeekAvailable)
         {
-            commands.Add(new CommandContextItem(new PeekFileCommand(fullPath)));
+            commands.Add(new CommandContextItem(new PeekFileCommand(fullPath)) { RequestedShortcut = KeyChords.Peek });
         }
 
         commands.Add(new CommandContextItem(new ShowFileInFolderCommand(fullPath) { Name = Resources.Indexer_Command_ShowInFolder }) { RequestedShortcut = KeyChords.OpenFileLocation });
