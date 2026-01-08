@@ -1,6 +1,5 @@
----
-mode: 'agent'
-model: Claude Sonnet 4.5
+agent: 'agent'
+model: GPT-5.1-Codex-Max
 description: "gh-driven PR review; per-step Markdown + machine-readable outputs"
 ---
 

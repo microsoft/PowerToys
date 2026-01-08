@@ -48,9 +48,9 @@ This is the top-level guide for AI changes. Keep edits small, follow existing pa
 - `doc/devdocs/modules/readme.md`
 
 # Language style rules
-- Always enforce repo analyzers: root `.editorconfig` plus any `stylecop.json`.
+- Always enforce repo analyzers: `src/.editorconfig` plus any `stylecop.json`.
 - C# code follows StyleCop.Analyzers and Microsoft.CodeAnalysis.NetAnalyzers.
-- C++ code honors `.clang-format` plus `.clang-tidy` (modernize/cppcoreguidelines/readability).
+- C++ code honors `src/.clang-format` for formatting.
 - Markdown files wrap at 80 characters and use ATX headers with fenced code blocks that include language tags.
 - YAML files indent two spaces and add comments for complex settings while keeping keys clear.
 - PowerShell scripts use Verb-Noun names and prefer single-quoted literals while documenting parameters and satisfying PSScriptAnalyzer.
