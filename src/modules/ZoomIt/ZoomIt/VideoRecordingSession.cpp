@@ -2580,6 +2580,18 @@ static winrt::fire_and_forget StartPlaybackAsync(HWND hDlg, VideoRecordingSessio
             pData->gifFrameStartTime = now;
         }
         
+        // Update lastPlayheadX to current position so timer ticks can track movement properly
+        {
+            HWND hTimeline = GetDlgItem(hDlg, IDC_TRIM_TIMELINE);
+            if (hTimeline)
+            {
+                RECT rc;
+                GetClientRect(hTimeline, &rc);
+                const UINT dpi = GetDpiForWindowHelper(hTimeline);
+                pData->lastPlayheadX = TimelineTimeToClientX(pData, pData->currentPosition, rc.right - rc.left, dpi);
+            }
+        }
+
         // Use multimedia timer for smooth GIF playback
         if (!StartMMTimer(hDlg, pData))
         {
@@ -2631,6 +2643,18 @@ static winrt::fire_and_forget StartPlaybackAsync(HWND hDlg, VideoRecordingSessio
             ResetSmoothPlayback(pData);
             RefreshPlaybackButtons(hDlg);
             co_return;
+        }
+
+        // Update lastPlayheadX to current position so timer ticks can track movement properly
+        {
+            HWND hTimeline = GetDlgItem(hDlg, IDC_TRIM_TIMELINE);
+            if (hTimeline)
+            {
+                RECT rc;
+                GetClientRect(hTimeline, &rc);
+                const UINT dpi = GetDpiForWindowHelper(hTimeline);
+                pData->lastPlayheadX = TimelineTimeToClientX(pData, pData->currentPosition, rc.right - rc.left, dpi);
+            }
         }
 
         PostMessage(hDlg, WMU_PLAYBACK_POSITION, 0, 0);
@@ -2948,6 +2972,19 @@ static winrt::fire_and_forget StartPlaybackAsync(HWND hDlg, VideoRecordingSessio
     // Defer smoothing until first real playback position is reported to prevent early extrapolation
     pData->smoothActive.store(false, std::memory_order_relaxed);
     pData->smoothHasNonZeroSample.store(false, std::memory_order_relaxed);
+
+    // Update lastPlayheadX to current position so timer ticks can track movement properly
+    {
+        HWND hTimeline = GetDlgItem(hDlg, IDC_TRIM_TIMELINE);
+        if (hTimeline)
+        {
+            RECT rc;
+            GetClientRect(hTimeline, &rc);
+            const UINT dpi = GetDpiForWindowHelper(hTimeline);
+            pData->lastPlayheadX = TimelineTimeToClientX(pData, pData->currentPosition, rc.right - rc.left, dpi);
+        }
+    }
+
     PostMessage(hDlg, WMU_PLAYBACK_POSITION, 0, 0);
     RefreshPlaybackButtons(hDlg);
 }
