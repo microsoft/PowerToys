@@ -184,10 +184,10 @@ class MonitorTopology:
 
     @staticmethod
     def _ranges_overlap(
-    a_start: int,
-    a_end: int,
-    b_start: int,
-     b_end: int) -> bool:
+        a_start: int,
+        a_end: int,
+        b_start: int,
+        b_end: int) -> bool:
         """Check if two 1D ranges overlap"""
         return not (a_end <= b_start or b_end <= a_start)
 
