@@ -118,6 +118,9 @@ public:
         size_t gifLastFrameIndex{ 0 };
         std::chrono::steady_clock::time_point gifFrameStartTime{}; // When the current GIF frame started displaying
 
+        // Font for time labels
+        HFONT hTimeLabelFont{ nullptr };
+
         // Mouse tracking for timeline
         enum DragMode { None, TrimStart, Position, TrimEnd };
         DragMode dragMode{ None };

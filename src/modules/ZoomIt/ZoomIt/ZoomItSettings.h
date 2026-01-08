@@ -54,6 +54,8 @@ TCHAR	g_MicrophoneDeviceId[MAX_PATH] = {0};
 TCHAR	g_RecordingSaveLocationBuffer[MAX_PATH] = {0};
 TCHAR	g_ScreenshotSaveLocationBuffer[MAX_PATH] = {0};
 DWORD	g_ThemeOverride = 2; // 0=light, 1=dark, 2=system default
+DWORD	g_TrimDialogWidth = 0;  // 0 means use default; stored in screen pixels
+DWORD	g_TrimDialogHeight = 0; // 0 means use default; stored in screen pixels
 
 REG_SETTING RegSettings[] = {
     { L"ToggleKey", SETTING_TYPE_DWORD, 0, &g_ToggleKey, static_cast<DOUBLE>(g_ToggleKey) },
@@ -98,5 +100,7 @@ REG_SETTING RegSettings[] = {
     { L"RecordingSaveLocation", SETTING_TYPE_STRING, sizeof(g_RecordingSaveLocationBuffer), g_RecordingSaveLocationBuffer, static_cast<DOUBLE>(0) },
     { L"ScreenshotSaveLocation", SETTING_TYPE_STRING, sizeof(g_ScreenshotSaveLocationBuffer), g_ScreenshotSaveLocationBuffer, static_cast<DOUBLE>(0) },
     { L"Theme", SETTING_TYPE_DWORD, 0, &g_ThemeOverride, static_cast<DOUBLE>(g_ThemeOverride) },
+    { L"TrimDialogWidth", SETTING_TYPE_DWORD, 0, &g_TrimDialogWidth, static_cast<DOUBLE>(0) },
+    { L"TrimDialogHeight", SETTING_TYPE_DWORD, 0, &g_TrimDialogHeight, static_cast<DOUBLE>(0) },
     { NULL, SETTING_TYPE_DWORD, 0, NULL, static_cast<DOUBLE>(0) }
 };

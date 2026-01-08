@@ -21,6 +21,10 @@
 #pragma comment(lib, "winmm.lib")
 
 extern DWORD g_RecordScaling;
+extern DWORD g_TrimDialogWidth;
+extern DWORD g_TrimDialogHeight;
+extern class ClassRegistry reg;
+extern REG_SETTING RegSettings[];
 
 namespace winrt
 {
@@ -588,27 +592,20 @@ namespace
         const int dlgWidth = rcDlg.right - rcDlg.left;
         const int dlgHeight = rcDlg.bottom - rcDlg.top;
 
+        // Always center on the monitor containing the dialog, not the parent window
         RECT rcTarget{};
-        HWND hParent = GetParent(hDlg);
-        if (hParent && GetWindowRect(hParent, &rcTarget))
+        HMONITOR monitor = MonitorFromWindow(hDlg, MONITOR_DEFAULTTONEAREST);
+        MONITORINFO mi{ sizeof(mi) };
+        if (GetMonitorInfo(monitor, &mi))
         {
-            // Use parent window bounds when available.
+            rcTarget = mi.rcWork;
         }
         else
         {
-            HMONITOR monitor = MonitorFromWindow(hDlg, MONITOR_DEFAULTTONEAREST);
-            MONITORINFO mi{ sizeof(mi) };
-            if (GetMonitorInfo(monitor, &mi))
-            {
-                rcTarget = mi.rcWork;
-            }
-            else
-            {
-                rcTarget.left = 0;
-                rcTarget.top = 0;
-                rcTarget.right = GetSystemMetrics(SM_CXSCREEN);
-                rcTarget.bottom = GetSystemMetrics(SM_CYSCREEN);
-            }
+            rcTarget.left = 0;
+            rcTarget.top = 0;
+            rcTarget.right = GetSystemMetrics(SM_CXSCREEN);
+            rcTarget.bottom = GetSystemMetrics(SM_CYSCREEN);
         }
 
         const int targetWidth = rcTarget.right - rcTarget.left;
@@ -2135,8 +2132,8 @@ static void DrawTimeline(HDC hdc, RECT rc, VideoRecordingSession::TrimDialogData
         SetBkMode(hdcMem, TRANSPARENT);
         SetTextColor(hdcMem, darkMode ? RGB(140, 140, 140) : RGB(80, 80, 80));
 
-        // Use consistent font for all timeline text - scale for DPI
-        const int fontSize = ScaleForDpi(11, dpi);
+        // Use consistent font for all timeline text - scale for DPI (12pt)
+        const int fontSize = -MulDiv(12, static_cast<int>(dpi), 72);
         HFONT hTimelineFont = CreateFont(fontSize, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, DEFAULT_CHARSET,
             OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, CLEARTYPE_QUALITY,
             DEFAULT_PITCH | FF_SWISS, L"Segoe UI");
@@ -2158,7 +2155,7 @@ static void DrawTimeline(HDC hdc, RECT rc, VideoRecordingSession::TrimDialogData
                 const bool showMilliseconds = (pData->videoDuration.count() < 600000000LL); // 60 seconds in 100ns ticks
                 const std::wstring markerText = FormatTrimTime(markerTime, showMilliseconds);
                 const int markerHalfWidth = ScaleForDpi(showMilliseconds ? 45 : 35, dpi);
-                const int markerHeight = ScaleForDpi(16, dpi);
+                const int markerHeight = ScaleForDpi(20, dpi);
                 RECT rcMarker{ x - markerHalfWidth, tickMajorBottom + ScaleForDpi(2, dpi), x + markerHalfWidth, tickMajorBottom + ScaleForDpi(2, dpi) + markerHeight };
                 DrawText(hdcMem, markerText.c_str(), -1, &rcMarker, DT_CENTER | DT_TOP | DT_SINGLELINE | DT_NOPREFIX);
             }
@@ -2229,24 +2226,26 @@ static void DrawTimeline(HDC hdc, RECT rc, VideoRecordingSession::TrimDialogData
     SelectObject(hdcMem, hOldBrush);
     DeleteObject(hPositionBrush);
 
-    // Set font for start/end labels (same font used for tick labels)
+    // Set font for start/end labels (same font used for tick labels - 12pt)
     SetBkMode(hdcMem, TRANSPARENT);
     SetTextColor(hdcMem, darkMode ? RGB(140, 140, 140) : RGB(80, 80, 80));
-    int labelFontSize = ScaleForDpi(11, dpi);
+    int labelFontSize = -MulDiv(12, static_cast<int>(dpi), 72);
     HFONT hFont = CreateFont(labelFontSize, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, DEFAULT_CHARSET,
         OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, CLEARTYPE_QUALITY,
         DEFAULT_PITCH | FF_SWISS, L"Segoe UI");
     HFONT hOldFont = static_cast<HFONT>(SelectObject(hdcMem, hFont));
 
     int labelTop = trackBottom + ScaleForDpi(16, dpi);
-    int labelBottom = trackBottom + ScaleForDpi(32, dpi);
+    int labelBottom = trackBottom + ScaleForDpi(36, dpi);
     // For short videos (under 60 seconds), show fractional seconds
     const bool showMilliseconds = (pData->videoDuration.count() < 600000000LL); // 60 seconds in 100ns ticks
     int labelWidth = ScaleForDpi(showMilliseconds ? 80 : 70, dpi);
-    RECT rcStartLabel{ trackLeft - labelWidth, labelTop, trackLeft, labelBottom };
+    // Start label: draw to the right of trackLeft (left-aligned)
+    RECT rcStartLabel{ trackLeft, labelTop, trackLeft + labelWidth, labelBottom };
     const std::wstring startLabel = FormatTrimTime(pData->trimStart, showMilliseconds);
-    DrawText(hdcMem, startLabel.c_str(), -1, &rcStartLabel, DT_RIGHT | DT_TOP | DT_SINGLELINE);
+    DrawText(hdcMem, startLabel.c_str(), -1, &rcStartLabel, DT_LEFT | DT_TOP | DT_SINGLELINE);
 
+    // End label: draw to the left of trackRight (right-aligned)
     RECT rcEndLabel{ trackRight - labelWidth, labelTop, trackRight, labelBottom };
     const std::wstring endLabel = FormatTrimTime(pData->trimEnd, showMilliseconds);
     DrawText(hdcMem, endLabel.c_str(), -1, &rcEndLabel, DT_RIGHT | DT_TOP | DT_SINGLELINE);
@@ -2358,6 +2357,10 @@ static void HandlePlaybackCommand(int controlId, VideoRecordingSession::TrimDial
         }
         else
         {
+            // Always start playback from current time selector position
+            pData->playbackStartPosition = pData->currentPosition;
+            pData->playbackStartPositionValid = true;
+            invalidateCachedFrame();
             StartPlaybackAsync(hDlg, pData);
         }
         break;
@@ -2983,10 +2986,13 @@ static LRESULT CALLBACK TimelineSubclassProc(
 
         if (pData->hDialog)
         {
+            // Restore playhead to where it was before the gripper drag.
+            // Only clamp to video bounds, not selection bounds, so the playhead
+            // can remain outside the selection if it was there before.
             const int64_t restoredTicks = std::clamp<int64_t>(
                 pData->positionBeforeOverride.count(),
-                pData->trimStart.count(),
-                pData->trimEnd.count());
+                0LL,
+                pData->videoDuration.count());
             pData->currentPosition = winrt::TimeSpan{ restoredTicks };
             pData->previewOverrideActive = false;
             pData->restorePreviewOnRelease = false;
@@ -3059,22 +3065,28 @@ static LRESULT CALLBACK TimelineSubclassProc(
         // Hit-test with vertical position awareness:
         // - Grippers are only hittable in the gripper band (around the track)
         // - Playhead is hittable in the knob band (below track) or stem band
-        // - When in overlapping regions, use distance-based priority with grippers preferred
+        // - When clicking in the knob area (below track), playhead always wins
+        // - When in the gripper band, grippers take priority for horizontal overlaps
         
         const bool startHit = inGripperBand && distToStart <= timelineHandleHitRadius;
         const bool endHit = inGripperBand && distToEnd <= timelineHandleHitRadius;
         const bool posHitKnob = inKnobBand && distToPos <= timelineHandleHitRadius;
         const bool posHitStem = inStemBand && distToPos <= ScaleForDpi(4, dpi); // tighter radius for stem
 
-        if (startHit && (!endHit || distToStart <= distToEnd) && (!posHitKnob || distToStart <= distToPos))
+        // Prioritize playhead when clicking in the knob area (lollipop head below the track)
+        if (posHitKnob)
+        {
+            pData->dragMode = VideoRecordingSession::TrimDialogData::Position;
+        }
+        else if (startHit && (!endHit || distToStart <= distToEnd))
         {
             pData->dragMode = VideoRecordingSession::TrimDialogData::TrimStart;
         }
-        else if (endHit && (!posHitKnob || distToEnd <= distToPos))
+        else if (endHit)
         {
             pData->dragMode = VideoRecordingSession::TrimDialogData::TrimEnd;
         }
-        else if (posHitKnob || posHitStem)
+        else if (posHitStem)
         {
             pData->dragMode = VideoRecordingSession::TrimDialogData::Position;
         }
@@ -3177,9 +3189,19 @@ static LRESULT CALLBACK TimelineSubclassProc(
                     pData->trimStart = newTime;
                     UpdateDurationDisplay(pData->hDialog, pData);
                 }
-                // Push playhead if it was inside selection (>= old trimStart) and handle crossed over it
-                if (pData->currentPosition.count() >= oldTrimStart.count() &&
-                    pData->currentPosition.count() < pData->trimStart.count())
+                // Push playhead if gripper crossed over it in either direction:
+                // - Moving right: playhead was >= oldTrimStart and is now < newTrimStart
+                // - Moving left: playhead was <= oldTrimStart and is now >= newTrimStart
+                //   (use <= so that once pushed, the playhead continues moving with the gripper)
+                const bool movingRight = pData->trimStart.count() > oldTrimStart.count();
+                const bool movingLeft = pData->trimStart.count() < oldTrimStart.count();
+                const bool pushRight = movingRight &&
+                    pData->currentPosition.count() >= oldTrimStart.count() &&
+                    pData->currentPosition.count() < pData->trimStart.count();
+                const bool pushLeft = movingLeft &&
+                    pData->currentPosition.count() <= oldTrimStart.count() &&
+                    pData->currentPosition.count() >= pData->trimStart.count();
+                if (pushRight || pushLeft)
                 {
                     pData->playheadPushed = true;
                     pData->currentPosition = pData->trimStart;
@@ -3204,7 +3226,10 @@ static LRESULT CALLBACK TimelineSubclassProc(
         {
             const UINT dpi = GetDpiForWindowHelper(hWnd);
             const int previousPosX = TimelineTimeToClientX(pData, pData->currentPosition, width, dpi);
-            pData->currentPosition = newTime;
+            
+            // Allow playhead to move anywhere within video bounds (0 to videoDuration)
+            const int64_t clampedTicks = std::clamp(newTime.count(), 0LL, pData->videoDuration.count());
+            pData->currentPosition = winrt::TimeSpan{ clampedTicks };
 
             // User explicitly positioned the playhead; update the loop anchor.
             pData->playbackStartPosition = pData->currentPosition;
@@ -3685,8 +3710,42 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
         // Initialize currentDpi to actual dialog DPI (for WM_DPICHANGED handling)
         currentDpi = GetDpiForWindowHelper(hDlg);
 
+        // Create a larger font for the time position label
+        {
+            int fontSize = -MulDiv(12, static_cast<int>(currentDpi), 72);  // 12pt font
+            pData->hTimeLabelFont = CreateFont(fontSize, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, DEFAULT_CHARSET,
+                OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, CLEARTYPE_QUALITY, DEFAULT_PITCH | FF_DONTCARE, L"Segoe UI");
+            if (pData->hTimeLabelFont)
+            {
+                HWND hPosition = GetDlgItem(hDlg, IDC_TRIM_POSITION_LABEL);
+                if (hPosition)
+                {
+                    SendMessage(hPosition, WM_SETFONT, reinterpret_cast<WPARAM>(pData->hTimeLabelFont), TRUE);
+                }
+                HWND hDuration = GetDlgItem(hDlg, IDC_TRIM_DURATION_LABEL);
+                if (hDuration)
+                {
+                    SendMessage(hDuration, WM_SETFONT, reinterpret_cast<WPARAM>(pData->hTimeLabelFont), TRUE);
+                }
+            }
+        }
+
         // Apply dark mode
         ApplyDarkModeToDialog( hDlg );
+
+        // Apply saved dialog size if available, then center
+        if (g_TrimDialogWidth > 0 && g_TrimDialogHeight > 0)
+        {
+            // Get current window rect to preserve position initially
+            RECT rcDlg{};
+            GetWindowRect(hDlg, &rcDlg);
+
+            // Apply saved size (stored in screen pixels)
+            SetWindowPos(hDlg, nullptr, 0, 0,
+                static_cast<int>(g_TrimDialogWidth),
+                static_cast<int>(g_TrimDialogHeight),
+                SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE);
+        }
 
         // Center dialog on screen
         CenterTrimDialog(hDlg);
@@ -3694,13 +3753,35 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
     }
 
     case WM_CTLCOLORDLG:
-    case WM_CTLCOLORSTATIC:
     case WM_CTLCOLORBTN:
     case WM_CTLCOLOREDIT:
     case WM_CTLCOLORLISTBOX:
     {
         HDC hdc = reinterpret_cast<HDC>(wParam);
         HWND hCtrl = reinterpret_cast<HWND>(lParam);
+        HBRUSH hBrush = HandleDarkModeCtlColor(hdc, hCtrl, message);
+        if (hBrush)
+        {
+            return reinterpret_cast<INT_PTR>(hBrush);
+        }
+        break;
+    }
+
+    case WM_CTLCOLORSTATIC:
+    {
+        HDC hdc = reinterpret_cast<HDC>(wParam);
+        HWND hCtrl = reinterpret_cast<HWND>(lParam);
+        // Use timeline marker color for duration and position labels
+        if (IsDarkModeEnabled())
+        {
+            int ctrlId = GetDlgCtrlID(hCtrl);
+            if (ctrlId == IDC_TRIM_DURATION_LABEL || ctrlId == IDC_TRIM_POSITION_LABEL)
+            {
+                SetBkMode(hdc, TRANSPARENT);
+                SetTextColor(hdc, RGB(140, 140, 140));  // Match timeline marker color
+                return reinterpret_cast<INT_PTR>(GetDarkModeBrush());
+            }
+        }
         HBRUSH hBrush = HandleDarkModeCtlColor(hdc, hCtrl, message);
         if (hBrush)
         {
@@ -3719,6 +3800,205 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
             return TRUE;
         }
         break;
+
+    case WM_GETMINMAXINFO:
+    {
+        // Set minimum dialog size to prevent controls from overlapping
+        MINMAXINFO* mmi = reinterpret_cast<MINMAXINFO*>(lParam);
+        // Use MapDialogRect to convert dialog units to pixels
+        // Minimum size: 400x300 dialog units (smaller than original 521x380)
+        RECT rcMin = { 0, 0, 400, 300 };
+        MapDialogRect(hDlg, &rcMin);
+        // Add frame/border size
+        RECT rcFrame = { 0, 0, 0, 0 };
+        AdjustWindowRectEx(&rcFrame, GetWindowLong(hDlg, GWL_STYLE), FALSE, GetWindowLong(hDlg, GWL_EXSTYLE));
+        const int frameWidth = (rcFrame.right - rcFrame.left);
+        const int frameHeight = (rcFrame.bottom - rcFrame.top);
+        mmi->ptMinTrackSize.x = rcMin.right + frameWidth;
+        mmi->ptMinTrackSize.y = rcMin.bottom + frameHeight;
+        return 0;
+    }
+
+    case WM_SIZE:
+    {
+        if (wParam == SIZE_MINIMIZED)
+        {
+            return 0;
+        }
+
+        pData = reinterpret_cast<TrimDialogData*>(GetWindowLongPtr(hDlg, DWLP_USER));
+        if (!pData)
+        {
+            return 0;
+        }
+
+        const int clientWidth = LOWORD(lParam);
+        const int clientHeight = HIWORD(lParam);
+
+        // Use MapDialogRect to convert dialog units to pixels properly
+        // This accounts for font metrics and DPI
+        auto DluToPixels = [hDlg](int dluX, int dluY, int* pxX, int* pxY) {
+            RECT rc = { 0, 0, dluX, dluY };
+            MapDialogRect(hDlg, &rc);
+            if (pxX) *pxX = rc.right;
+            if (pxY) *pxY = rc.bottom;
+        };
+
+        // Convert dialog unit values to pixels
+        int marginLeft, marginRight, marginTop;
+        DluToPixels(12, 12, &marginLeft, &marginTop);
+        DluToPixels(11, 0, &marginRight, nullptr);
+
+        // Fixed heights from RC file (in dialog units) converted to pixels
+        int labelHeight, timelineHeight, buttonRowHeight, okCancelHeight, bottomMargin;
+        int spacing4, spacing2, spacing8;
+        DluToPixels(0, 16, nullptr, &labelHeight);     // Label height: 16 DLU (for 12pt font)
+        DluToPixels(0, 47, nullptr, &timelineHeight);  // Timeline height: 47 DLU
+        DluToPixels(0, 32, nullptr, &buttonRowHeight); // Play button height: 32 DLU
+        DluToPixels(0, 14, nullptr, &okCancelHeight);  // OK/Cancel height: 14 DLU
+        DluToPixels(0, 8, nullptr, &bottomMargin);     // Bottom margin
+        DluToPixels(0, 4, nullptr, &spacing4);         // 4 DLU spacing
+        DluToPixels(0, 2, nullptr, &spacing2);         // 2 DLU spacing
+        DluToPixels(0, 8, nullptr, &spacing8);         // 8 DLU spacing
+
+        // Calculate vertical positions from bottom up
+        const int okCancelY = clientHeight - bottomMargin - okCancelHeight;
+        const int buttonRowY = okCancelY - spacing4 - buttonRowHeight;
+        const int timelineY = buttonRowY - spacing4 - timelineHeight;
+        const int labelY = timelineY - spacing2 - labelHeight;
+
+        // Preview fills from top to above labels
+        const int previewHeight = labelY - spacing8 - marginTop;
+        const int previewWidth = clientWidth - marginLeft - marginRight;
+        const int timelineWidth = previewWidth;
+
+        // Resize preview
+        HWND hPreview = GetDlgItem(hDlg, IDC_TRIM_PREVIEW);
+        if (hPreview)
+        {
+            SetWindowPos(hPreview, nullptr, marginLeft, marginTop, previewWidth, previewHeight,
+                SWP_NOZORDER | SWP_NOACTIVATE);
+        }
+
+        // Position duration label (left-aligned)
+        HWND hDuration = GetDlgItem(hDlg, IDC_TRIM_DURATION_LABEL);
+        if (hDuration)
+        {
+            int labelWidth;
+            DluToPixels(160, 0, &labelWidth, nullptr);
+            SetWindowPos(hDuration, nullptr, marginLeft, labelY, labelWidth, labelHeight,
+                SWP_NOZORDER | SWP_NOACTIVATE);
+        }
+
+        // Position time label (centered)
+        HWND hPosition = GetDlgItem(hDlg, IDC_TRIM_POSITION_LABEL);
+        if (hPosition)
+        {
+            int posLabelWidth;
+            DluToPixels(200, 0, &posLabelWidth, nullptr);
+            const int posLabelX = (clientWidth - posLabelWidth) / 2;
+            SetWindowPos(hPosition, nullptr, posLabelX, labelY, posLabelWidth, labelHeight,
+                SWP_NOZORDER | SWP_NOACTIVATE);
+        }
+
+        // Resize timeline
+        HWND hTimeline = GetDlgItem(hDlg, IDC_TRIM_TIMELINE);
+        if (hTimeline)
+        {
+            SetWindowPos(hTimeline, nullptr, marginLeft, timelineY, timelineWidth, timelineHeight,
+                SWP_NOZORDER | SWP_NOACTIVATE);
+        }
+
+        // Position playback buttons (centered horizontally)
+        // Button sizes: play=44x32, small=30x26 (in dialog units)
+        int playButtonWidth, playButtonHeight, smallButtonWidth, smallButtonHeight, buttonSpacing;
+        DluToPixels(44, 32, &playButtonWidth, &playButtonHeight);
+        DluToPixels(30, 26, &smallButtonWidth, &smallButtonHeight);
+        DluToPixels(2, 0, &buttonSpacing, nullptr);
+
+        // Count actual buttons present to calculate total width
+        HWND hSkipStart = GetDlgItem(hDlg, IDC_TRIM_SKIP_START);
+        HWND hRewind = GetDlgItem(hDlg, IDC_TRIM_REWIND);
+        HWND hPlayPause = GetDlgItem(hDlg, IDC_TRIM_PLAY_PAUSE);
+        HWND hForward = GetDlgItem(hDlg, IDC_TRIM_FORWARD);
+        HWND hSkipEnd = GetDlgItem(hDlg, IDC_TRIM_SKIP_END);
+
+        int numSmallButtons = 0;
+        int numPlayButtons = 0;
+        if (hSkipStart) numSmallButtons++;
+        if (hRewind) numSmallButtons++;
+        if (hPlayPause) numPlayButtons++;
+        if (hForward) numSmallButtons++;
+        if (hSkipEnd) numSmallButtons++;
+
+        const int numButtons = numSmallButtons + numPlayButtons;
+        const int totalButtonWidth = smallButtonWidth * numSmallButtons + playButtonWidth * numPlayButtons +
+            buttonSpacing * (numButtons > 0 ? numButtons - 1 : 0);
+        int buttonX = (clientWidth - totalButtonWidth) / 2;
+
+        if (hSkipStart)
+        {
+            const int yOffset = (buttonRowHeight - smallButtonHeight) / 2;
+            SetWindowPos(hSkipStart, nullptr, buttonX, buttonRowY + yOffset, smallButtonWidth, smallButtonHeight,
+                SWP_NOZORDER | SWP_NOACTIVATE);
+            buttonX += smallButtonWidth + buttonSpacing;
+        }
+
+        if (hRewind)
+        {
+            const int yOffset = (buttonRowHeight - smallButtonHeight) / 2;
+            SetWindowPos(hRewind, nullptr, buttonX, buttonRowY + yOffset, smallButtonWidth, smallButtonHeight,
+                SWP_NOZORDER | SWP_NOACTIVATE);
+            buttonX += smallButtonWidth + buttonSpacing;
+        }
+
+        if (hPlayPause)
+        {
+            SetWindowPos(hPlayPause, nullptr, buttonX, buttonRowY, playButtonWidth, playButtonHeight,
+                SWP_NOZORDER | SWP_NOACTIVATE);
+            buttonX += playButtonWidth + buttonSpacing;
+        }
+
+        if (hForward)
+        {
+            const int yOffset = (buttonRowHeight - smallButtonHeight) / 2;
+            SetWindowPos(hForward, nullptr, buttonX, buttonRowY + yOffset, smallButtonWidth, smallButtonHeight,
+                SWP_NOZORDER | SWP_NOACTIVATE);
+            buttonX += smallButtonWidth + buttonSpacing;
+        }
+
+        if (hSkipEnd)
+        {
+            const int yOffset = (buttonRowHeight - smallButtonHeight) / 2;
+            SetWindowPos(hSkipEnd, nullptr, buttonX, buttonRowY + yOffset, smallButtonWidth, smallButtonHeight,
+                SWP_NOZORDER | SWP_NOACTIVATE);
+        }
+
+        // Position OK/Cancel buttons (right-aligned)
+        int okCancelWidth, okCancelSpacingH;
+        DluToPixels(50, 0, &okCancelWidth, nullptr);
+        DluToPixels(4, 0, &okCancelSpacingH, nullptr);
+
+        HWND hCancel = GetDlgItem(hDlg, IDCANCEL);
+        if (hCancel)
+        {
+            const int cancelX = clientWidth - marginRight - okCancelWidth;
+            SetWindowPos(hCancel, nullptr, cancelX, okCancelY, okCancelWidth, okCancelHeight,
+                SWP_NOZORDER | SWP_NOACTIVATE);
+        }
+
+        HWND hOK = GetDlgItem(hDlg, IDOK);
+        if (hOK)
+        {
+            const int okX = clientWidth - marginRight - okCancelWidth - okCancelSpacingH - okCancelWidth;
+            SetWindowPos(hOK, nullptr, okX, okCancelY, okCancelWidth, okCancelHeight,
+                SWP_NOZORDER | SWP_NOACTIVATE);
+        }
+
+        // Invalidate to repaint
+        InvalidateRect(hDlg, nullptr, TRUE);
+        return 0;
+    }
 
     case WMU_PREVIEW_READY:
     {
@@ -3950,6 +4230,15 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
 
     case WM_DESTROY:
     {
+        // Save dialog size before closing
+        RECT rcDlg{};
+        if (GetWindowRect(hDlg, &rcDlg))
+        {
+            g_TrimDialogWidth = static_cast<DWORD>(rcDlg.right - rcDlg.left);
+            g_TrimDialogHeight = static_cast<DWORD>(rcDlg.bottom - rcDlg.top);
+            reg.WriteRegSettings(RegSettings);
+        }
+
         pData = reinterpret_cast<TrimDialogData*>(GetWindowLongPtr(hDlg, DWLP_USER));
         if (pData)
         {
@@ -3999,6 +4288,12 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
             StopMMTimer(pData);  // Stop multimedia timer if running
             pData->playbackFile = nullptr;
             CleanupGifFrames(pData);
+            // Clean up time label font
+            if (pData->hTimeLabelFont)
+            {
+                DeleteObject(pData->hTimeLabelFont);
+                pData->hTimeLabelFont = nullptr;
+            }
         }
 
         ReleaseHighResTimer();
