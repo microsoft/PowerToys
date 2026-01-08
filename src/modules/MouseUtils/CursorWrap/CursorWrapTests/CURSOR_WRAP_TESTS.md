@@ -28,7 +28,7 @@ monitor_layout_tests.py will produce an output file called `test_report.json` - 
     "failed": 0,
     "total_issues": 0,
     "pass_rate": "100.00%"
-  },
+  },i
   "failures": [],
   "recommendations": [
     "All tests passed - edge detection logic is working correctly!"
@@ -36,7 +36,7 @@ monitor_layout_tests.py will produce an output file called `test_report.json` - 
 }
 ```
 
-If there are failures (the failures array is not empty) you can run the second python applicaiton called `analyze_test_results.py`
+If there are failures (the failures array is not empty) you can run the second python applicaton called `analyze_test_results.py`
 
 Supported options include:
 ```text
@@ -49,7 +49,7 @@ Supported options include:
 Running the analyze_test_results.py script against our single monitor test results produces the following:
 
 ```text
-ython .\analyze_test_results.py --detailed
+python .\analyze_test_results.py --detailed
 ================================================================================
 CURSORWRAP TEST RESULTS ANALYSIS
 ================================================================================
