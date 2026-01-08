@@ -274,5 +274,18 @@ St&yle
 # 0x6f677548 is user name but user folder causes a flag
 \bx6f677548\b
 
+# Windows API constants and hardware interface terms
+\bCOINIT[_A-Z]*\b
+\bEOAC[_A-Z]*\b
+\b(?:RPC_C_AUTHN_)?WINNT\b
+\bUPDATEREGISTRY\b
+\b(?:CDS_)?UPDATEREGISTRY\b
+
+# Display interface terms (HDMI, DVI, DisplayPort)
+\b(?:HDMI|DVI|DisplayPort)(?:-\d+)?\b
+
+# 2D Region struct names
+\bDisplayConfig2?D?Region\b
+
 # Microsoft Store URLs and product IDs
 ms-windows-store://\S+

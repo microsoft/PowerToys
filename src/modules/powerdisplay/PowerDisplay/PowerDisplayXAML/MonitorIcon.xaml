@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<UserControl
+    x:Class="PowerDisplay.MonitorIcon"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:PowerDisplay"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Grid>
+        <Viewbox>
+            <Grid>
+                <Grid x:Name="MonitorGrid">
+                    <FontIcon
+                        x:Uid="MonitorTooltip"
+                        VerticalAlignment="Center"
+                        AutomationProperties.AccessibilityView="Raw"
+                        FontSize="22"
+                        Glyph="&#xE7F4;" />
+                    <TextBlock
+                        Margin="0,0,0,4"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        FontSize="10"
+                        FontWeight="SemiBold"
+                        Text="{x:Bind MonitorNumber, Mode=OneWay}" />
+                </Grid>
+
+                <Grid
+                    x:Name="BuiltInDisplayGrid"
+                    Padding="0,0,0,-4"
+                    Visibility="Collapsed">
+                    <FontIcon
+                        x:Uid="MonitorTooltip"
+                        Margin="0,0,0,0"
+                        VerticalAlignment="Center"
+                        AutomationProperties.AccessibilityView="Raw"
+                        FontSize="22"
+                        Glyph="&#xE7FB;" />
+                    <TextBlock
+                        Margin="0,0,0,6"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        FontSize="10"
+                        FontWeight="SemiBold"
+                        Text="{x:Bind MonitorNumber, Mode=OneWay}" />
+                </Grid>
+            </Grid>
+        </Viewbox>
+        <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup x:Name="CommonStates">
+                <VisualState x:Name="Monitor" />
+                <VisualState x:Name="BuiltIn">
+                    <VisualState.Setters>
+                        <Setter Target="BuiltInDisplayGrid.Visibility" Value="Visible" />
+                        <Setter Target="MonitorGrid.Visibility" Value="Collapsed" />
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+        </VisualStateManager.VisualStateGroups>
+    </Grid>
+</UserControl>

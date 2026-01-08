@@ -123,6 +123,7 @@
 		<ProjectReference Include="..\..\common\ManagedTelemetry\Telemetry\ManagedTelemetry.csproj" />
 		<ProjectReference Include="..\..\common\LanguageModelProvider\LanguageModelProvider.csproj" />
 		<ProjectReference Include="..\..\modules\MouseUtils\MouseJump.Common\MouseJump.Common.csproj" />
+		<ProjectReference Include="..\..\modules\powerdisplay\PowerDisplay.Lib\PowerDisplay.Lib.csproj" />
 		<ProjectReference Include="..\Settings.UI.Library\Settings.UI.Library.csproj" />
 		<ProjectReference Include="..\Settings.UI.Controls\Settings.UI.Controls.csproj" />
 	</ItemGroup>

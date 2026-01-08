@@ -11,6 +11,7 @@ ACCESSDENIED
 ACCESSTOKEN
 acfs
 ACIE
+ACR
 AClient
 AColumn
 acrt
@@ -57,7 +58,6 @@ AOC
 aocfnapldcnfbofgmbbllojgocaelgdd
 AOklab
 aot
-APARTMENTTHREADED
 APeriod
 apicontract
 apidl
@@ -92,6 +92,7 @@ asf
 Ashcraft
 AShortcut
 ASingle
+ASUS
 ASSOCCHANGED
 ASSOCF
 ASSOCSTR
@@ -102,6 +103,7 @@ ATRIOX
 ATX
 aumid
 authenticode
+AUO
 AUTOBUDDY
 AUTOCHECKBOX
 AUTOHIDE
@@ -119,6 +121,10 @@ azureaiinference
 azureinference
 azureopenai
 backticks
+Backlight
+Badflags
+Badmode
+Badparam
 bbwe
 BCIE
 bck
@@ -191,6 +197,7 @@ Carlseibert
 CAtl
 caub
 CBN
+Cds
 cch
 CCHDEVICENAME
 CCHFORMNAME
@@ -208,7 +215,9 @@ CHANGECBCHAIN
 changecursor
 CHILDACTIVATE
 CHILDWINDOW
+checkmarks
 CHOOSEFONT
+Chunghwa
 cidl
 CIELCh
 cim
@@ -219,7 +228,7 @@ CLASSNOTAVAILABLE
 CLEARTYPE
 clickable
 clickonce
-CLIENTEDGE
+clientedge
 clientid
 clientside
 CLIPBOARDUPDATE
@@ -231,6 +240,7 @@ CLSCTX
 clsids
 Clusion
 cmder
+CMN
 CMDNOTFOUNDMODULEINTERFACE
 cmdpal
 CMIC
@@ -285,6 +295,7 @@ Corpor
 cotaskmem
 COULDNOT
 countof
+Cowait
 covrun
 cpcontrols
 cph
@@ -304,11 +315,13 @@ CRECT
 CRH
 critsec
 cropandlock
+crt
 Crossdevice
 csdevkit
 CSearch
 CSettings
 cso
+CSOT
 CSRW
 CStyle
 cswin
@@ -349,11 +362,14 @@ DBPROP
 DBPROPIDSET
 DBPROPSET
 DCBA
+DCapabilities
 DCOM
 DComposition
 DCR
+ddc
 DDEIf
 Deact
+debouncer
 debugbreak
 decryptor
 Dedup
@@ -372,6 +388,7 @@ DEFAULTTOPRIMARY
 DEFERERASE
 DEFPUSHBUTTON
 deinitialization
+DELA
 DELETEDKEYIMAGE
 DELETESCANS
 DEMOTYPE
@@ -401,18 +418,20 @@ DISABLEASACTIONKEY
 DISABLENOSCROLL
 diskmgmt
 DISPLAYCHANGE
-DISPLAYCONFIG
+displayconfig
 DISPLAYFLAGS
 DISPLAYFREQUENCY
 displayname
 DISPLAYORIENTATION
+diu
 divyan
 Dlg
 DLGFRAME
-DLGMODALFRAME
+dlgmodalframe
 dlib
 dllhost
 dllmain
+Dmdo
 DNLEN
 DONOTROUND
 DONTVALIDATEPATH
@@ -422,6 +441,7 @@ downsampling
 downscale
 DPICHANGED
 DPIs
+DPMS
 DPSAPI
 DQTAT
 DQTYPE
@@ -459,15 +479,19 @@ DWMWINDOWMAXIMIZEDCHANGE
 DWORDLONG
 dworigin
 dwrite
+Dxva
 dxgi
 eab
+EAccess
 easeofaccess
 ecount
-Edid
+edid
 EDITKEYBOARD
 EDITSHORTCUTS
 EDITTEXT
 EFile
+EInvalid
+eep
 eku
 emojis
 ENABLEDELAYEDEXPANSION
@@ -477,14 +501,15 @@ ENABLETEMPLATE
 encodedlaunch
 encryptor
 ENDSESSION
+ENot
 ENSUREVISIBLE
 ENTERSIZEMOVE
 ENTRYW
 ENU
 environmentvariables
-EOAC
 EPO
 epu
+EProvider
 ERASEBKGND
 EREOF
 EResize
@@ -538,6 +563,7 @@ fdx
 FErase
 fesf
 FFFF
+FFh
 FInc
 Figma
 FILEEXPLORER
@@ -580,6 +606,7 @@ formatetc
 FORPARSING
 foundrylocal
 FRAMECHANGED
+Framechanged
 FRestore
 frm
 FROMTOUCH
@@ -639,6 +666,8 @@ gwl
 GWLP
 GWLSTYLE
 hangeul
+Hann
+Hantai
 Hanzi
 Hardlines
 hardlinks
@@ -696,6 +725,7 @@ HKPD
 HKU
 HMD
 hmenu
+HMON
 hmodule
 hmonitor
 homies
@@ -713,6 +743,7 @@ hotkeys
 hotlight
 hotspot
 HPAINTBUFFER
+HPhysical
 HRAWINPUT
 hredraw
 hres
@@ -723,6 +754,7 @@ hsb
 HSCROLL
 hsi
 HSpeed
+HSync
 HTCLIENT
 hthumbnail
 HTOUCHINPUT
@@ -732,6 +764,7 @@ HVal
 HValue
 Hvci
 hwb
+HWP
 HWHEEL
 HWINEVENTHOOK
 hwnd
@@ -788,6 +821,7 @@ INITTOLOGFONTSTRUCT
 INLINEPREFIX
 inlines
 Inno
+Innolux
 INPC
 inproc
 INPUTHARDWARE
@@ -829,6 +863,7 @@ istep
 ith
 ITHUMBNAIL
 IUI
+IVO
 IUWP
 IWIC
 jeli
@@ -842,6 +877,7 @@ jpnime
 Jsons
 jsonval
 jxr
+Kantai
 keybd
 KEYBDDATA
 KEYBDINPUT
@@ -863,6 +899,7 @@ KILLFOCUS
 killrunner
 kmph
 kvp
+KVM
 Kybd
 LARGEICON
 lastcodeanalysissucceeded
@@ -883,6 +920,8 @@ LEFTTEXT
 LError
 LEVELID
 LExit
+Lenovo
+LGD
 lhwnd
 LIBFUZZER
 LIBID
@@ -987,6 +1026,7 @@ MAPTOSAMESHORTCUT
 MAPVK
 MARKDOWNPREVIEWHANDLERCPP
 MAXIMIZEBOX
+Maximizebox
 MAXSHORTCUTSIZE
 maxversiontested
 mber
@@ -998,6 +1038,7 @@ MDL
 mdtext
 mdtxt
 mdwn
+mccs
 meme
 mcp
 memicmp
@@ -1019,6 +1060,7 @@ mikeclayton
 mindaro
 Minimizable
 MINIMIZEBOX
+Minimizebox
 MINIMIZEEND
 MINIMIZESTART
 MINMAXINFO
@@ -1078,9 +1120,10 @@ MSLLHOOKSTRUCT
 Mso
 msrc
 msstore
+mstsc
+mswhql
 msvcp
 MT
-mstsc
 MTND
 MULTIPLEUSE
 multizone
@@ -1096,6 +1139,7 @@ MVVMTK
 MWBEx
 MYICON
 NAMECHANGE
+Nanjing
 namespaceanddescendants
 nao
 NCACTIVATE
@@ -1164,6 +1208,7 @@ NOMCX
 NOMINMAX
 NOMIRRORBITMAP
 NOMOVE
+Nomove
 NONANTIALIASED
 nonclient
 NONCLIENTMETRICSW
@@ -1185,6 +1230,7 @@ NORMALUSER
 NOSEARCH
 NOSENDCHANGING
 NOSIZE
+Nosize
 NOTHOUSANDS
 NOTICKS
 NOTIFICATIONSDLL
@@ -1192,9 +1238,11 @@ NOTIFYICONDATA
 NOTIFYICONDATAW
 NOTIMPL
 NOTOPMOST
+Notopmost
 NOTRACK
 NOTSRCCOPY
 NOTSRCERASE
+Notupdated
 notwindows
 NOTXORPEN
 nowarn
@@ -1236,10 +1284,9 @@ OPENFILENAME
 openrdp
 opensource
 openxmlformats
-ollama
-onnx
 openurl
 OPTIMIZEFORINVOKE
+Optronics
 ORPHANEDDIALOGTITLE
 ORSCANS
 oss
@@ -1275,6 +1322,7 @@ PATINVERT
 PATPAINT
 pbc
 pbi
+PBP
 PBlob
 pbrush
 pcb
@@ -1289,6 +1337,7 @@ PDBs
 PDEVMODE
 pdisp
 PDLL
+pdmodels
 pdo
 pdto
 pdtobj
@@ -1311,6 +1360,7 @@ pguid
 phbm
 phbmp
 phicon
+PHL
 Photoshop
 phwnd
 pici
@@ -1342,6 +1392,8 @@ Pomodoro
 Popups
 POPUPWINDOW
 POSITIONITEM
+powerdisplay
+POWERDISPLAYMODULEINTERFACE
 POWERRENAMECONTEXTMENU
 powerrenameinput
 POWERRENAMETEST
@@ -1396,6 +1448,7 @@ projectname
 PROPERTYKEY
 Propset
 PROPVARIANT
+prot
 PRTL
 prvpane
 psapi
@@ -1423,12 +1476,16 @@ PTOKEN
 PToy
 ptstr
 pui
+pvct
 PWAs
 pwcs
 PWSTR
 pwsz
 pwtd
+Qdc
 QDC
+qdc
+QDS
 qit
 QITAB
 QITABENT
@@ -1454,7 +1511,6 @@ rbhid
 Rbuttondown
 rclsid
 RCZOOMIT
-remotedesktop
 rdp
 RDW
 READMODE
@@ -1483,6 +1539,7 @@ remappings
 REMAPSUCCESSFUL
 REMAPUNSUCCESSFUL
 Remotable
+remotedesktop
 remoteip
 Removelnk
 renamable
@@ -1711,6 +1768,7 @@ STARTUPINFOW
 startupscreen
 STATFLAG
 STATICEDGE
+Staticedge
 STATSTG
 stdafx
 STDAPI
@@ -1755,6 +1813,7 @@ SVSI
 SWFO
 SWP
 Swp
+swp
 SWPNOSIZE
 SWPNOZORDER
 SWRESTORE
@@ -1814,7 +1873,9 @@ THEMECHANGED
 themeresources
 THH
 THICKFRAME
+Thickframe
 THISCOMPONENT
+Tianma
 throughs
 TILEDWINDOW
 TILLSON
@@ -1900,7 +1961,6 @@ unzoom
 UOffset
 UOI
 UPDATENOW
-UPDATEREGISTRY
 updown
 UPGRADINGPRODUCTCODE
 upscaling
@@ -1927,6 +1987,8 @@ vcamp
 vcenter
 vcgtq
 VCINSTALLDIR
+vcp
+vcpname
 Vcpkg
 VCRT
 vcruntime
@@ -1939,6 +2001,8 @@ VERIFYCONTEXT
 VERSIONINFO
 VERTRES
 VERTSIZE
+VESA
+vesa
 VFT
 vget
 vgetq
@@ -1969,6 +2033,7 @@ VSM
 vso
 vsonline
 VSpeed
+VSync
 vstemplate
 vstest
 VSTHRD
@@ -2010,7 +2075,7 @@ winapi
 winappsdk
 windir
 WINDOWCREATED
-WINDOWEDGE
+windowedge
 WINDOWINFO
 WINDOWNAME
 WINDOWPLACEMENT
@@ -2034,12 +2099,12 @@ WINL
 winlogon
 winmd
 winml
-WINNT
 winres
 winrt
 winsdk
 winsta
 WINTHRESHOLD
+WINNT
 WINVER
 winxamlmanager
 withinrafael
@@ -2051,6 +2116,7 @@ WKSG
 Wlkr
 wmain
 Wman
+wmi
 WMI
 WMICIM
 wmimgmt
@@ -2063,6 +2129,7 @@ WNDCLASSEX
 WNDCLASSEXW
 WNDCLASSW
 WNDPROC
+Wndproc
 wnode
 wom
 WORKSPACESEDITOR

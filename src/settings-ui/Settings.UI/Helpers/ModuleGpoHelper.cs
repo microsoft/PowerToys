@@ -44,6 +44,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
                 case ModuleType.MeasureTool: return GPOWrapper.GetConfiguredScreenRulerEnabledValue();
                 case ModuleType.ShortcutGuide: return GPOWrapper.GetConfiguredShortcutGuideEnabledValue();
                 case ModuleType.PowerOCR: return GPOWrapper.GetConfiguredTextExtractorEnabledValue();
+                case ModuleType.PowerDisplay: return GPOWrapper.GetConfiguredPowerDisplayEnabledValue();
                 case ModuleType.ZoomIt: return GPOWrapper.GetConfiguredZoomItEnabledValue();
                 default: return GpoRuleConfigured.Unavailable;
             }
@@ -83,6 +84,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
                 ModuleType.MeasureTool => typeof(MeasureToolPage),
                 ModuleType.ShortcutGuide => typeof(ShortcutGuidePage),
                 ModuleType.PowerOCR => typeof(PowerOcrPage),
+                ModuleType.PowerDisplay => typeof(PowerDisplayPage),
                 ModuleType.ZoomIt => typeof(ZoomItPage),
                 _ => typeof(DashboardPage), // never called, all values listed above
             };

@@ -126,6 +126,10 @@
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/MouseUtils.png}"
                     Tag="MouseUtils" />
                 <NavigationViewItem
+                    x:Uid="Shell_PowerDisplay"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/PowerDisplay.png}"
+                    Tag="PowerDisplay" />
+                <NavigationViewItem
                     x:Uid="Shell_MouseWithoutBorders"
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/MouseWithoutBorders.png}"
                     Tag="MouseWithoutBorders" />
