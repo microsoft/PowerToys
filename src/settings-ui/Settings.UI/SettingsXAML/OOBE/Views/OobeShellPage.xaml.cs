@@ -5,13 +5,13 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Globalization;
-
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.OOBE.Enums;
 using Microsoft.PowerToys.Settings.UI.OOBE.ViewModel;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Input;
 
 namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 {
@@ -62,7 +62,6 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 
             // NOTE: Experimentation for OOBE is currently turned off on server side. Keeping this code in a comment to allow future experiments.
             // ExperimentationToggleSwitchEnabled = SettingsRepository<GeneralSettings>.GetInstance(settingsUtils).SettingsConfig.EnableExperimentation;
-            SetTitleBar();
             DataContext = ViewModel;
             OobeShellHandler = this;
             Modules = new ObservableCollection<OobePowerToysModule>();
@@ -201,13 +200,6 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 IsNew = true,
             });
 
-            // WhatsNew is handled by ScoobeWindow, but we need a placeholder to maintain index consistency
-            Modules.Insert((int)PowerToysModules.WhatsNew, new OobePowerToysModule()
-            {
-                ModuleName = "WhatsNew",
-                IsNew = false,
-            });
-
             Modules.Insert((int)PowerToysModules.RegistryPreview, new OobePowerToysModule()
             {
                 ModuleName = "RegistryPreview",
@@ -229,7 +221,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 
         public void OnClosing()
         {
-            Microsoft.UI.Xaml.Controls.NavigationViewItem selectedItem = this.navigationView.SelectedItem as Microsoft.UI.Xaml.Controls.NavigationViewItem;
+            NavigationViewItem selectedItem = this.navigationView.SelectedItem as NavigationViewItem;
             if (selectedItem != null)
             {
                 Modules[(int)(PowerToysModules)Enum.Parse(typeof(PowerToysModules), (string)selectedItem.Tag, true)].LogClosingModuleEvent();
@@ -259,9 +251,9 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             App.GetScoobeWindow().Activate();
         }
 
-        private void NavigationView_SelectionChanged(Microsoft.UI.Xaml.Controls.NavigationView sender, Microsoft.UI.Xaml.Controls.NavigationViewSelectionChangedEventArgs args)
+        private void NavigationView_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
         {
-            Microsoft.UI.Xaml.Controls.NavigationViewItem selectedItem = args.SelectedItem as Microsoft.UI.Xaml.Controls.NavigationViewItem;
+            NavigationViewItem selectedItem = args.SelectedItem as NavigationViewItem;
 
             if (selectedItem != null)
             {
@@ -289,9 +281,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                             break;
                         }
                     */
-                    case "WhatsNew":
-                        OpenScoobeWindow();
-                        return; // Don't change selection, just open ScoobeWindow
+
                     case "AdvancedPaste": NavigationFrame.Navigate(typeof(OobeAdvancedPaste)); break;
                     case "AlwaysOnTop": NavigationFrame.Navigate(typeof(OobeAlwaysOnTop)); break;
                     case "Awake": NavigationFrame.Navigate(typeof(OobeAwake)); break;
@@ -326,22 +316,10 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 
         private void ShellPage_Loaded(object sender, RoutedEventArgs e)
         {
-            SetTitleBar();
-
             // Select the first module by default
             if (navigationView.MenuItems.Count > 0)
             {
                 navigationView.SelectedItem = navigationView.MenuItems[0];
-            }
-        }
-
-        private void SetTitleBar()
-        {
-            var window = App.GetOobeWindow();
-            if (window != null)
-            {
-                window.ExtendsContentIntoTitleBar = true;
-                window.SetTitleBar(AppTitleBar);
             }
         }
 
@@ -353,6 +331,11 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
         private void TitleBar_PaneButtonClick(TitleBar sender, object args)
         {
             navigationView.IsPaneOpen = !navigationView.IsPaneOpen;
+        }
+
+        private void WhatIsNewItem_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            OpenScoobeWindow();
         }
     }
 }

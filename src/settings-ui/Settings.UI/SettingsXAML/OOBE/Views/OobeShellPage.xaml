@@ -8,7 +8,6 @@
     HighContrastAdjustment="None"
     Loaded="ShellPage_Loaded"
     mc:Ignorable="d">
-
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="48" />
@@ -157,12 +156,13 @@
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/ZoomIt.png}"
                     Tag="ZoomIt" />
             </NavigationView.MenuItems>
-            <NavigationView.FooterMenuItems>
+            <NavigationView.PaneFooter>
                 <NavigationViewItem
                     x:Uid="Shell_WhatsNew"
+                    AutomationProperties.AutomationId="WhatIsNewNavItem"
                     Icon="{ui:FontIcon Glyph=&#xE789;}"
-                    Tag="WhatsNew" />
-            </NavigationView.FooterMenuItems>
+                    Tapped="WhatIsNewItem_Tapped" />
+            </NavigationView.PaneFooter>
             <NavigationView.Content>
                 <Frame x:Name="NavigationFrame" />
             </NavigationView.Content>

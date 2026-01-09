@@ -47,13 +47,13 @@
         <NavigationView
             x:Name="navigationView"
             Grid.Row="1"
+            CompactModeThresholdWidth="1007"
             DisplayModeChanged="NavigationView_DisplayModeChanged"
             IsBackButtonVisible="Collapsed"
             IsPaneOpen="True"
             IsPaneToggleButtonVisible="False"
             IsSettingsVisible="False"
             MenuItemTemplate="{StaticResource ReleaseNavItemTemplate}"
-            OpenPaneLength="186"
             PaneDisplayMode="Left"
             SelectionChanged="NavigationView_SelectionChanged">
             <NavigationView.MenuItems>

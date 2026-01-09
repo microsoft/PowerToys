@@ -227,7 +227,6 @@ namespace Microsoft.PowerToys.Settings.UI
             {
                 settingsWindow = new MainWindow();
                 settingsWindow.Activate();
-                settingsWindow.ExtendsContentIntoTitleBar = true;
                 settingsWindow.NavigateToSection(StartupPage);
 
                 // https://github.com/microsoft/microsoft-ui-xaml/issues/7595 - Activate doesn't bring window to the foreground
@@ -259,7 +258,6 @@ namespace Microsoft.PowerToys.Settings.UI
                     PowerToysTelemetry.Log.WriteEvent(new ScoobeStartedEvent());
                     ScoobeWindow newScoobeWindow = new ScoobeWindow();
                     newScoobeWindow.Activate();
-                    newScoobeWindow.ExtendsContentIntoTitleBar = true;
                     WindowHelpers.ForceTopBorder1PixelInsetOnWindows10(WindowNative.GetWindowHandle(settingsWindow));
                     SetScoobeWindow(newScoobeWindow);
                 }

@@ -93,7 +93,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             using var httpClient = new HttpClient(proxyClientHandler);
             httpClient.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", "PowerToys");
 
-            string json = await httpClient.GetStringAsync("https://api.github.com/repos/microsoft/PowerToys/releases");
+            string json = await httpClient.GetStringAsync("https://api.github.com/repos/microsoft/PowerToys/releases?per_page=20");
             var allReleases = JsonSerializer.Deserialize<IList<PowerToysReleaseInfo>>(json, SourceGenerationContextContext.Default.IListPowerToysReleaseInfo);
 
             return allReleases

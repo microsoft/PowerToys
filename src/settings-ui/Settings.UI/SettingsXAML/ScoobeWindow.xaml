@@ -8,7 +8,9 @@
     xmlns:winuiex="using:WinUIEx"
     MinWidth="480"
     MinHeight="480"
+    MaxWidth="1360"
     Closed="Window_Closed"
+    IsMaximizable="False"
     mc:Ignorable="d">
     <Window.SystemBackdrop>
         <MicaBackdrop />

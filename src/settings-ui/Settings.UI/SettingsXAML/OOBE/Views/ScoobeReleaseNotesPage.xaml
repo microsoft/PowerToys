@@ -22,8 +22,6 @@
             H3Margin="0, 16, 0, 4"
             HorizontalRuleBrush="{StaticResource DividerStrokeColorDefaultBrush}"
             HorizontalRuleThickness="1"
-            ImageMaxWidth="480"
-            ImageMaxHeight="360"
             ImageStretch="Uniform"
             ListBulletSpacing="1"
             ListGutterWidth="10" />
@@ -32,14 +30,18 @@
 
     <!--  Main layout container  -->
     <Grid>
-        <ScrollViewer Padding="0,0,0,24" VerticalScrollBarVisibility="Auto">
-            <Grid>
+        <ScrollViewer Padding="0,0,0,0" VerticalScrollBarVisibility="Auto">
+            <Grid Margin="0,0,0,24">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
-                <Image x:Name="HeroImageHolder" Height="240" />
-                <Grid Grid.Row="1" Margin="32,16,32,24">
+                <Image
+                    x:Name="HeroImageHolder"
+                    Height="240"
+                    HorizontalAlignment="Left"
+                    Stretch="UniformToFill" />
+                <Grid Grid.Row="1" Margin="24,16,24,24">
                     <ProgressRing
                         x:Name="LoadingProgressRing"
                         HorizontalAlignment="Center"

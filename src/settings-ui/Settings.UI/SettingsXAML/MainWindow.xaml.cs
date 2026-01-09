@@ -20,9 +20,6 @@ using WinUIEx;
 
 namespace Microsoft.PowerToys.Settings.UI
 {
-    /// <summary>
-    /// An empty window that can be used on its own or navigated to within a Frame.
-    /// </summary>
     public sealed partial class MainWindow : WindowEx
     {
         public MainWindow(bool createHidden = false)
@@ -35,10 +32,12 @@ namespace Microsoft.PowerToys.Settings.UI
             App.ThemeService.ThemeChanged += OnThemeChanged;
             App.ThemeService.ApplyTheme();
 
+            this.ExtendsContentIntoTitleBar = true;
+
             ShellPage.SetElevationStatus(App.IsElevated);
             ShellPage.SetIsUserAnAdmin(App.IsUserAnAdmin);
 
-            var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
+            var hWnd = WindowNative.GetWindowHandle(this);
             var placement = WindowHelper.DeserializePlacementOrDefault(hWnd);
             if (createHidden)
             {
