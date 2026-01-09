@@ -10,12 +10,14 @@ using System.Globalization;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
+using System.Text;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
 using ImageResizer.Extensions;
 using ImageResizer.Properties;
+using ImageResizer.Services;
 using ImageResizer.Utilities;
 using Microsoft.VisualBasic.FileIO;
 
@@ -30,6 +32,10 @@ namespace ImageResizer.Models
         private readonly string _file;
         private readonly string _destinationDirectory;
         private readonly Settings _settings;
+        private readonly IAISuperResolutionService _aiSuperResolutionService;
+
+        // Cache CompositeFormat for AI error message formatting (CA1863)
+        private static readonly CompositeFormat _aiErrorFormat = CompositeFormat.Parse(Resources.Error_AiProcessingFailed);
 
         // Filenames to avoid according to https://learn.microsoft.com/windows/win32/fileio/naming-a-file#file-and-directory-names
         private static readonly string[] _avoidFilenames =
@@ -39,11 +45,12 @@ namespace ImageResizer.Models
                 "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9",
             };
 
-        public ResizeOperation(string file, string destinationDirectory, Settings settings)
+        public ResizeOperation(string file, string destinationDirectory, Settings settings, IAISuperResolutionService aiSuperResolutionService = null)
         {
             _file = file;
             _destinationDirectory = destinationDirectory;
             _settings = settings;
+            _aiSuperResolutionService = aiSuperResolutionService ?? NoOpAiSuperResolutionService.Instance;
         }
 
         public void Execute()
@@ -167,6 +174,11 @@ namespace ImageResizer.Models
 
         private BitmapSource Transform(BitmapSource source)
         {
+            if (_settings.SelectedSize is AiSize)
+            {
+                return TransformWithAi(source);
+            }
+
             int originalWidth = source.PixelWidth;
             int originalHeight = source.PixelHeight;
 
@@ -255,6 +267,31 @@ namespace ImageResizer.Models
             }
 
             return scaledBitmap;
+        }
+
+        private BitmapSource TransformWithAi(BitmapSource source)
+        {
+            try
+            {
+                var result = _aiSuperResolutionService.ApplySuperResolution(
+                    source,
+                    _settings.AiSize.Scale,
+                    _file);
+
+                if (result == null)
+                {
+                    throw new InvalidOperationException(Properties.Resources.Error_AiConversionFailed);
+                }
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                // Wrap the exception with a localized message
+                // This will be caught by ResizeBatch.Process() and displayed to the user
+                var errorMessage = string.Format(CultureInfo.CurrentCulture, _aiErrorFormat, ex.Message);
+                throw new InvalidOperationException(errorMessage, ex);
+            }
         }
 
         /// <summary>
@@ -363,19 +400,24 @@ namespace ImageResizer.Models
             }
 
             // Remove directory characters from the size's name.
-            string sizeNameSanitized = _settings.SelectedSize.Name;
-            sizeNameSanitized = sizeNameSanitized
+            // For AI Size, use the scale display (e.g., "2×") instead of the full name
+            string sizeName = _settings.SelectedSize is AiSize aiSize
+                ? aiSize.ScaleDisplay
+                : _settings.SelectedSize.Name;
+            string sizeNameSanitized = sizeName
                 .Replace('\\', '_')
                 .Replace('/', '_');
 
             // Using CurrentCulture since this is user facing
+            var selectedWidth = _settings.SelectedSize is AiSize ? encoder.Frames[0].PixelWidth : _settings.SelectedSize.Width;
+            var selectedHeight = _settings.SelectedSize is AiSize ? encoder.Frames[0].PixelHeight : _settings.SelectedSize.Height;
             var fileName = string.Format(
                 CultureInfo.CurrentCulture,
                 _settings.FileNameFormat,
                 originalFileName,
                 sizeNameSanitized,
-                _settings.SelectedSize.Width,
-                _settings.SelectedSize.Height,
+                selectedWidth,
+                selectedHeight,
                 encoder.Frames[0].PixelWidth,
                 encoder.Frames[0].PixelHeight);
 

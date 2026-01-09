@@ -7,8 +7,10 @@
 #include <locale>
 #include <codecvt>
 #include <common/utils/logger_helper.h>
-#include <ThemeHelper.h>
 #include <SettingsConstants.h>
+#include "ThemeHelper.h"
+#include <thread>
+#include <atomic>
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
@@ -107,6 +109,9 @@ private:
     HANDLE m_force_light_event_handle;
     HANDLE m_force_dark_event_handle;
     HANDLE m_manual_override_event_handle;
+    HANDLE m_toggle_event_handle{ nullptr };
+    std::thread m_toggle_thread;
+    std::atomic<bool> m_toggle_thread_running{ false };
 
     static const constexpr int NUM_DEFAULT_HOTKEYS = 4;
 
@@ -114,6 +119,8 @@ private:
 
     void init_settings();
     void ToggleTheme();
+    void StartToggleListener();
+    void StopToggleListener();
 
 public :
     LightSwitchInterface()
@@ -123,6 +130,7 @@ public :
         m_force_light_event_handle = CreateDefaultEvent(L"POWERTOYS_LIGHTSWITCH_FORCE_LIGHT");
         m_force_dark_event_handle = CreateDefaultEvent(L"POWERTOYS_LIGHTSWITCH_FORCE_DARK");
         m_manual_override_event_handle = CreateEventW(nullptr, TRUE, FALSE, L"POWERTOYS_LIGHTSWITCH_MANUAL_OVERRIDE");
+        m_toggle_event_handle = CreateDefaultEvent(L"Local\\PowerToys-LightSwitch-ToggleEvent-d8dc2f29-8c94-4ca1-8c5f-3e2b1e3c4f5a");
 
         init_settings();
     };
@@ -135,6 +143,8 @@ public :
     // Destroy the powertoy and free memory
     virtual void destroy() override
     {
+        // Ensure worker threads/process handles are cleaned up before destruction
+        disable();
         delete this;
     }
 
@@ -427,6 +437,7 @@ public :
     {
         m_enabled = true;
         Logger::info(L"Enabling Light Switch module...");
+        Trace::Enable(true);
 
         unsigned long powertoys_pid = GetCurrentProcessId();
         std::wstring args = L"--pid " + std::to_wstring(powertoys_pid);
@@ -477,6 +488,8 @@ public :
         Logger::info(L"Light Switch process launched successfully (PID: {}).", pi.dwProcessId);
         m_process = pi.hProcess;
         CloseHandle(pi.hThread);
+
+        StartToggleListener();
     }
 
     // Disable the powertoy
@@ -502,6 +515,9 @@ public :
             CloseHandle(m_process);
             m_process = nullptr;
         }
+        
+        Trace::Enable(false);
+        StopToggleListener();
     }
 
     // Returns if the powertoys is enabled
@@ -557,13 +573,14 @@ public :
         if (m_enabled)
         {
             Logger::trace(L"Light Switch hotkey pressed");
+            Trace::ShortcutInvoked();
+
             if (!is_process_running())
             {
                 enable();
             }
             else if (hotkeyId == 0)
             {
-                // get current will return true if in light mode; otherwise false
                 Logger::info(L"[Light Switch] Hotkey triggered: Toggle Theme");
                 ToggleTheme();
             }
@@ -578,68 +595,18 @@ public :
     {
         return WaitForSingleObject(m_process, 0) == WAIT_TIMEOUT;
     }
-};
 
-static bool IsValidPath(const std::wstring& path)
-{
-    std::error_code ec;
-    return !path.empty() && std::filesystem::exists(path, ec);
-}
+};
 
 void LightSwitchInterface::ToggleTheme()
 {
-    bool current_system_theme = GetCurrentSystemTheme();
-    bool current_apps_theme = GetCurrentAppsTheme();
-
-    bool changeWallpaper =
-        g_settings.m_use_theme_switching &&
-        IsValidPath(g_settings.m_light_theme_path) &&
-        IsValidPath(g_settings.m_dark_theme_path);
-
-    // Start the Settings monitor BEFORE any theme changes if theme file switching is enabled
-    // The Settings app only opens when executing .theme files, not from registry changes
-    if (changeWallpaper)
-    {
-        StartSettingsMonitor();
-    }
-
     if (g_settings.m_changeSystem)
     {
-        SetSystemTheme(!current_system_theme);
+        SetSystemTheme(!GetCurrentSystemTheme());
     }
     if (g_settings.m_changeApps)
     {
-        SetAppsTheme(!current_apps_theme);
-    }
-
-    bool new_system_theme = GetCurrentSystemTheme();
-    bool new_apps_theme = GetCurrentAppsTheme();
-
-    // if something changed and wallpaper change is enabled and paths are valid
-    if ((new_system_theme != current_system_theme || new_apps_theme != current_apps_theme) && changeWallpaper)
-    {
-        bool shouldBeLight;
-
-        if (g_settings.m_changeSystem && new_system_theme != current_system_theme)
-        {
-            shouldBeLight = new_system_theme;
-        }
-        else
-        {
-            // Either apps-only changed, or system didn't move
-            shouldBeLight = new_apps_theme;
-        }
-
-        auto&& themeFilePath = shouldBeLight ? g_settings.m_light_theme_path : g_settings.m_dark_theme_path;
-
-        Logger::info(L"[Light Switch] Theme switched: toggling theme file to {}", themeFilePath);
-        SetThemeFile(themeFilePath);
-    }
-
-    // Stop the monitor after all theme operations are complete
-    if (changeWallpaper)
-    {
-        StopSettingsMonitor();
+        SetAppsTheme(!GetCurrentAppsTheme());
     }
 
     if (!m_manual_override_event_handle)
@@ -655,6 +622,50 @@ void LightSwitchInterface::ToggleTheme()
     {
         SetEvent(m_manual_override_event_handle);
         Logger::debug(L"[Light Switch] Manual override event set");
+    }
+}
+
+void LightSwitchInterface::StartToggleListener()
+{
+    if (m_toggle_thread_running || !m_toggle_event_handle)
+    {
+        return;
+    }
+
+    m_toggle_thread_running = true;
+    m_toggle_thread = std::thread([this]() {
+        while (m_toggle_thread_running)
+        {
+            const DWORD wait_result = WaitForSingleObject(m_toggle_event_handle, 500);
+            if (!m_toggle_thread_running)
+            {
+                break;
+            }
+
+            if (wait_result == WAIT_OBJECT_0)
+            {
+                ToggleTheme();
+                ResetEvent(m_toggle_event_handle);
+            }
+        }
+    });
+}
+
+void LightSwitchInterface::StopToggleListener()
+{
+    if (!m_toggle_thread_running)
+    {
+        return;
+    }
+
+    m_toggle_thread_running = false;
+    if (m_toggle_event_handle)
+    {
+        SetEvent(m_toggle_event_handle);
+    }
+    if (m_toggle_thread.joinable())
+    {
+        m_toggle_thread.join();
     }
 }
 

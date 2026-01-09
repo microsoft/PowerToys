@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -12,6 +12,7 @@ using System.Windows.Threading;
 using CommunityToolkit.WinUI.Controls;
 using global::PowerToys.GPOWrapper;
 using ManagedCommon;
+using Microsoft.PowerToys.Settings.UI.Controls;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
@@ -39,6 +40,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public ObservableCollection<DashboardListItem> ShortcutModules { get; set; } = new ObservableCollection<DashboardListItem>();
 
         public ObservableCollection<DashboardListItem> ActionModules { get; set; } = new ObservableCollection<DashboardListItem>();
+
+        public ObservableCollection<QuickAccessItem> QuickAccessItems => _quickAccessViewModel.Items;
+
+        private readonly QuickAccessViewModel _quickAccessViewModel;
 
         // Master list of module items that is sorted and projected into AllModules.
         private List<DashboardListItem> _moduleItems = new List<DashboardListItem>();
@@ -79,6 +84,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     generalSettingsConfig.DashboardSortOrder = value;
                     OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(generalSettingsConfig);
+
+                    // Save settings to file
+                    SettingsUtils.Default.SaveSettings(generalSettingsConfig.ToJsonString());
+
                     SendConfigMSG(outgoing.ToString());
                     SortModuleList();
                 }
@@ -95,6 +104,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _settingsRepository = settingsRepository;
             generalSettingsConfig = settingsRepository.SettingsConfig;
             generalSettingsConfig.AddEnabledModuleChangeNotification(ModuleEnabledChangedOnSettingsPage);
+            _settingsRepository.SettingsChanged += OnSettingsChanged;
 
             // Initialize dashboard sort order from settings
             _dashboardSortOrder = generalSettingsConfig.DashboardSortOrder;
@@ -102,9 +112,25 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             // set the callback functions value to handle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
 
+            _quickAccessViewModel = new QuickAccessViewModel(
+                _settingsRepository,
+                new Microsoft.PowerToys.Settings.UI.Controls.QuickAccessLauncher(App.IsElevated),
+                moduleType => Helpers.ModuleGpoHelper.GetModuleGpoConfiguration(moduleType) == global::PowerToys.GPOWrapper.GpoRuleConfigured.Disabled,
+                resourceLoader);
+
             BuildModuleList();
             SortModuleList();
             RefreshShortcutModules();
+        }
+
+        private void OnSettingsChanged(GeneralSettings newSettings)
+        {
+            dispatcher.BeginInvoke(() =>
+            {
+                generalSettingsConfig = newSettings;
+                generalSettingsConfig.AddEnabledModuleChangeNotification(ModuleEnabledChangedOnSettingsPage);
+                ModuleEnabledChangedOnSettingsPage();
+            });
         }
 
         protected override void OnConflictsUpdated(object sender, AllHotkeyConflictsEventArgs e)
@@ -146,7 +172,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             foreach (ModuleType moduleType in Enum.GetValues<ModuleType>())
             {
-                GpoRuleConfigured gpo = ModuleHelper.GetModuleGpoConfiguration(moduleType);
+                if (moduleType == ModuleType.GeneralSettings)
+                {
+                    continue;
+                }
+
+                GpoRuleConfigured gpo = ModuleGpoHelper.GetModuleGpoConfiguration(moduleType);
                 var newItem = new DashboardListItem()
                 {
                     Tag = moduleType,
@@ -156,6 +187,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     Icon = ModuleHelper.GetModuleTypeFluentIconName(moduleType),
                     IsNew = moduleType == ModuleType.CursorWrap,
                     DashboardModuleItems = GetModuleItems(moduleType),
+                    ClickCommand = new RelayCommand<object>(DashboardListItemClick),
                 };
                 newItem.EnabledChangedCallback = EnabledChangedOnUI;
                 _moduleItems.Add(newItem);
@@ -211,7 +243,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             foreach (var item in _moduleItems)
             {
-                GpoRuleConfigured gpo = ModuleHelper.GetModuleGpoConfiguration(item.Tag);
+                GpoRuleConfigured gpo = ModuleGpoHelper.GetModuleGpoConfiguration(item.Tag);
 
                 // GPO can force-enable (Enabled) or force-disable (Disabled) a module.
                 // If Enabled: module is on and the user cannot disable it.
@@ -225,7 +257,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 // Only update if there's an actual change to minimize UI notifications.
                 if (item.IsEnabled != newEnabledState)
                 {
-                    item.IsEnabled = newEnabledState;
+                    item.UpdateStatus(newEnabledState);
                 }
 
                 if (item.IsLocked != newLockedState)
@@ -242,14 +274,17 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         /// Sets the _isUpdatingFromUI flag to prevent circular updates, then updates
         /// settings, re-sorts if needed, and refreshes dependent collections.
         /// </summary>
-        private void EnabledChangedOnUI(DashboardListItem dashboardListItem)
+        private void EnabledChangedOnUI(ModuleListItem item)
         {
+            var dashboardListItem = (DashboardListItem)item;
+            var isEnabled = dashboardListItem.IsEnabled;
+
             _isUpdatingFromUI = true;
             try
             {
-                Views.ShellPage.UpdateGeneralSettingsCallback(dashboardListItem.Tag, dashboardListItem.IsEnabled);
+                Views.ShellPage.UpdateGeneralSettingsCallback(dashboardListItem.Tag, isEnabled);
 
-                if (dashboardListItem.Tag == ModuleType.NewPlus && dashboardListItem.IsEnabled == true)
+                if (dashboardListItem.Tag == ModuleType.NewPlus && isEnabled == true)
                 {
                     var settingsUtils = SettingsUtils.Default;
                     var settings = NewPlusViewModel.LoadSettings(settingsUtils);
@@ -440,6 +475,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 new DashboardModuleShortcutItem() { Label = resourceLoader.GetString("CropAndLock_Thumbnail"), Shortcut = settings.Properties.ThumbnailHotkey.Value.GetKeysList() },
                 new DashboardModuleShortcutItem() { Label = resourceLoader.GetString("CropAndLock_Reparent"), Shortcut = settings.Properties.ReparentHotkey.Value.GetKeysList() },
+                new DashboardModuleShortcutItem() { Label = resourceLoader.GetString("CropAndLock_Screenshot"), Shortcut = settings.Properties.ScreenshotHotkey.Value.GetKeysList() },
             };
             return new ObservableCollection<DashboardModuleItem>(list);
         }
@@ -694,10 +730,21 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         internal void DashboardListItemClick(object sender)
         {
-            if (sender is SettingsCard card && card.Tag is ModuleType moduleType)
+            if (sender is ModuleType moduleType)
             {
-                NavigationService.Navigate(ModuleHelper.GetModulePageType(moduleType));
+                NavigationService.Navigate(ModuleGpoHelper.GetModulePageType(moduleType));
             }
+        }
+
+        public override void Dispose()
+        {
+            base.Dispose();
+            if (_settingsRepository != null)
+            {
+                _settingsRepository.SettingsChanged -= OnSettingsChanged;
+            }
+
+            GC.SuppressFinalize(this);
         }
     }
 }

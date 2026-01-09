@@ -28,6 +28,20 @@
 #include <common/utils/logger_helper.h>
 #include <common/utils/winapi_error.h>
 #include <common/utils/gpo.h>
+#include <array>
+#include <vector>
+#endif // __ZOOMIT_POWERTOYS__
+
+#ifdef __ZOOMIT_POWERTOYS__
+enum class ZoomItCommand
+{
+    Zoom,
+    Draw,
+    Break,
+    LiveZoom,
+    Snip,
+    Record,
+};
 #endif // __ZOOMIT_POWERTOYS__
 
 namespace winrt
@@ -172,7 +186,6 @@ std::wstring	g_RecordingSaveLocationGIF;
 winrt::IDirect3DDevice	g_RecordDevice{ nullptr };
 std::shared_ptr<VideoRecordingSession> g_RecordingSession = nullptr;
 std::shared_ptr<GifRecordingSession> g_GifRecordingSession = nullptr;
-
 type_pGetMonitorInfo		pGetMonitorInfo;
 type_MonitorFromPoint		pMonitorFromPoint;
 type_pSHAutoComplete		pSHAutoComplete;
@@ -7712,6 +7725,53 @@ HWND InitInstance( HINSTANCE hInstance, int nCmdShow )
 
 }
 
+// Dispatch commands coming from the PowerToys IPC channel.
+#ifdef __ZOOMIT_POWERTOYS__
+void ZoomIt_DispatchCommand(ZoomItCommand cmd)
+{
+    auto post_hotkey = [](WPARAM id)
+    {
+        if (g_hWndMain != nullptr)
+        {
+            PostMessage(g_hWndMain, WM_HOTKEY, id, 0);
+        }
+    };
+
+    switch (cmd)
+    {
+    case ZoomItCommand::Zoom:
+        if (g_hWndMain != nullptr)
+        {
+            PostMessage(g_hWndMain, WM_COMMAND, IDC_ZOOM, 0);
+        }
+        Trace::ZoomItActivateZoom();
+        break;
+    case ZoomItCommand::Draw:
+        post_hotkey(DRAW_HOTKEY);
+        Trace::ZoomItActivateDraw();
+        break;
+    case ZoomItCommand::Break:
+        post_hotkey(BREAK_HOTKEY);
+        Trace::ZoomItActivateBreak();
+        break;
+    case ZoomItCommand::LiveZoom:
+        post_hotkey(LIVE_HOTKEY);
+        Trace::ZoomItActivateLiveZoom();
+        break;
+    case ZoomItCommand::Snip:
+        post_hotkey(SNIP_HOTKEY);
+        Trace::ZoomItActivateSnip();
+        break;
+    case ZoomItCommand::Record:
+        post_hotkey(RECORD_HOTKEY);
+        Trace::ZoomItActivateRecord();
+        break;
+    default:
+        break;
+    }
+}
+#endif
+
 //----------------------------------------------------------------------------
 //
 // WinMain
@@ -7746,7 +7806,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 
         // Initialize logger
         LoggerHelpers::init_logger(L"ZoomIt", L"", LogSettings::zoomItLoggerName);
-
         ProcessWaiter::OnProcessTerminate(pid, [mainThreadId](int err) {
             if (err != ERROR_SUCCESS)
             {
@@ -7905,26 +7964,62 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 #ifdef __ZOOMIT_POWERTOYS__
     HANDLE m_reload_settings_event_handle = NULL;
     HANDLE m_exit_event_handle = NULL;
+    HANDLE m_zoom_event_handle = NULL;
+    HANDLE m_draw_event_handle = NULL;
+    HANDLE m_break_event_handle = NULL;
+    HANDLE m_live_zoom_event_handle = NULL;
+    HANDLE m_snip_event_handle = NULL;
+    HANDLE m_record_event_handle = NULL;
     std::thread m_event_triggers_thread;
 
     if( g_StartedByPowerToys ) {
         // Start a thread to listen to PowerToys Events.
         m_reload_settings_event_handle = CreateEventW(nullptr, false, false, CommonSharedConstants::ZOOMIT_REFRESH_SETTINGS_EVENT);
         m_exit_event_handle = CreateEventW(nullptr, false, false, CommonSharedConstants::ZOOMIT_EXIT_EVENT);
-        if (!m_reload_settings_event_handle || !m_exit_event_handle)
+        m_zoom_event_handle = CreateEventW(nullptr, false, false, CommonSharedConstants::ZOOMIT_ZOOM_EVENT);
+        m_draw_event_handle = CreateEventW(nullptr, false, false, CommonSharedConstants::ZOOMIT_DRAW_EVENT);
+        m_break_event_handle = CreateEventW(nullptr, false, false, CommonSharedConstants::ZOOMIT_BREAK_EVENT);
+        m_live_zoom_event_handle = CreateEventW(nullptr, false, false, CommonSharedConstants::ZOOMIT_LIVEZOOM_EVENT);
+        m_snip_event_handle = CreateEventW(nullptr, false, false, CommonSharedConstants::ZOOMIT_SNIP_EVENT);
+        m_record_event_handle = CreateEventW(nullptr, false, false, CommonSharedConstants::ZOOMIT_RECORD_EVENT);
+        if (!m_reload_settings_event_handle || !m_exit_event_handle || !m_zoom_event_handle || !m_draw_event_handle || !m_break_event_handle || !m_live_zoom_event_handle || !m_snip_event_handle || !m_record_event_handle)
         {
             Logger::warn(L"Failed to create events. {}", get_last_error_or_default(GetLastError()));
             return 1;
         }
-        m_event_triggers_thread = std::thread([&]() {
+        const std::array<HANDLE, 8> event_handles{
+            m_reload_settings_event_handle,
+            m_exit_event_handle,
+            m_zoom_event_handle,
+            m_draw_event_handle,
+            m_break_event_handle,
+            m_live_zoom_event_handle,
+            m_snip_event_handle,
+            m_record_event_handle,
+        };
+        const DWORD handle_count = static_cast<DWORD>(event_handles.size());
+        m_event_triggers_thread = std::thread([event_handles, handle_count]() {
             MSG msg;
-            HANDLE event_handles[2] = {m_reload_settings_event_handle, m_exit_event_handle};
             while (g_running)
             {
-                DWORD dwEvt = MsgWaitForMultipleObjects(2, event_handles, false, INFINITE, QS_ALLINPUT);
+                DWORD dwEvt = MsgWaitForMultipleObjects(handle_count, event_handles.data(), false, INFINITE, QS_ALLINPUT);
+                if (dwEvt == WAIT_FAILED)
+                {
+                    Logger::error(L"ZoomIt event wait failed. {}", get_last_error_or_default(GetLastError()));
+                    break;
+                }
                 if (!g_running)
                 {
                     break;
+                }
+                if (dwEvt == WAIT_OBJECT_0 + handle_count)
+                {
+                    if (PeekMessageW(&msg, nullptr, 0, 0, PM_REMOVE))
+                    {
+                        TranslateMessage(&msg);
+                        DispatchMessageW(&msg);
+                    }
+                    continue;
                 }
                 switch (dwEvt)
                 {
@@ -7938,19 +8033,28 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
                 case WAIT_OBJECT_0 + 1:
                 {
                     // Exit Event
-                    Logger::trace(L"Received an exit event.");
                     PostMessage(g_hWndMain, WM_QUIT, 0, 0);
                     break;
                 }
                 case WAIT_OBJECT_0 + 2:
-                    if (PeekMessageW(&msg, nullptr, 0, 0, PM_REMOVE))
-                    {
-                        TranslateMessage(&msg);
-                        DispatchMessageW(&msg);
-                    }
+                    ZoomIt_DispatchCommand(ZoomItCommand::Zoom);
                     break;
-                default:
+                case WAIT_OBJECT_0 + 3:
+                    ZoomIt_DispatchCommand(ZoomItCommand::Draw);
                     break;
+                case WAIT_OBJECT_0 + 4:
+                    ZoomIt_DispatchCommand(ZoomItCommand::Break);
+                    break;
+                case WAIT_OBJECT_0 + 5:
+                    ZoomIt_DispatchCommand(ZoomItCommand::LiveZoom);
+                    break;
+                case WAIT_OBJECT_0 + 6:
+                    ZoomIt_DispatchCommand(ZoomItCommand::Snip);
+                    break;
+                case WAIT_OBJECT_0 + 7:
+                    ZoomIt_DispatchCommand(ZoomItCommand::Record);
+                    break;
+                default: break;
                 }
             }
         });
@@ -7980,6 +8084,12 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
         SetEvent(m_reload_settings_event_handle);
         CloseHandle(m_reload_settings_event_handle);
         CloseHandle(m_exit_event_handle);
+        CloseHandle(m_zoom_event_handle);
+        CloseHandle(m_draw_event_handle);
+        CloseHandle(m_break_event_handle);
+        CloseHandle(m_live_zoom_event_handle);
+        CloseHandle(m_snip_event_handle);
+        CloseHandle(m_record_event_handle);
         m_event_triggers_thread.join();
     }
 #endif // __ZOOMIT_POWERTOYS__

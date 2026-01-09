@@ -30,7 +30,6 @@ public sealed partial class WindowsSettingsCommandsProvider : CommandProvider
         _searchSettingsListItem = new CommandItem(new WindowsSettingsListPage(_windowsSettings))
         {
             Title = Resources.settings_title,
-            Subtitle = Resources.settings_subtitle,
         };
         _fallback = new(_windowsSettings);
 

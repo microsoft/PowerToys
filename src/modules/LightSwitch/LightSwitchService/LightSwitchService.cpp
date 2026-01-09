@@ -15,6 +15,7 @@
 #include "LightSwitchStateManager.h"
 #include <LightSwitchUtils.h>
 #include <NightLightRegistryObserver.h>
+#include <trace.h>
 
 SERVICE_STATUS g_ServiceStatus = {};
 SERVICE_STATUS_HANDLE g_StatusHandle = nullptr;
@@ -377,6 +378,8 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
 
 int APIENTRY wWinMain(HINSTANCE, HINSTANCE, PWSTR, int)
 {
+    Trace::LightSwitch::RegisterProvider();
+
     if (powertoys_gpo::getConfiguredLightSwitchEnabledValue() == powertoys_gpo::gpo_rule_configured_disabled)
     {
         wchar_t msg[160];
@@ -384,12 +387,14 @@ int APIENTRY wWinMain(HINSTANCE, HINSTANCE, PWSTR, int)
             msg,
             L"Tried to start with a GPO policy setting the utility to always be disabled. Please contact your systems administrator.");
         Logger::info(msg);
+        Trace::LightSwitch::UnregisterProvider();
         return 0;
     }
-
     int argc = 0;
     LPWSTR* argv = CommandLineToArgvW(GetCommandLineW(), &argc);
     int rc = _tmain(argc, argv); // reuse your existing logic
     LocalFree(argv);
+
+    Trace::LightSwitch::UnregisterProvider();
     return rc;
 }

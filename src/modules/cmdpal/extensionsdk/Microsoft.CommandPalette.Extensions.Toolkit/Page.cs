@@ -6,37 +6,9 @@ namespace Microsoft.CommandPalette.Extensions.Toolkit;
 
 public partial class Page : Command, IPage
 {
-    private bool _loading;
-    private string _title = string.Empty;
-    private OptionalColor _accentColor;
+    public virtual bool IsLoading { get; set => SetProperty(ref field, value); }
 
-    public virtual bool IsLoading
-    {
-        get => _loading;
-        set
-        {
-            _loading = value;
-            OnPropertyChanged(nameof(IsLoading));
-        }
-    }
+    public virtual string Title { get; set => SetProperty(ref field, value); } = string.Empty;
 
-    public virtual string Title
-    {
-        get => _title;
-        set
-        {
-            _title = value;
-            OnPropertyChanged(nameof(Title));
-        }
-    }
-
-    public virtual OptionalColor AccentColor
-    {
-        get => _accentColor;
-        set
-        {
-            _accentColor = value;
-            OnPropertyChanged(nameof(AccentColor));
-        }
-    }
+    public virtual OptionalColor AccentColor { get; set => SetProperty(ref field, value); }
 }

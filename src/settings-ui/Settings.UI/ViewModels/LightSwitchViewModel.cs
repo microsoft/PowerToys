@@ -14,8 +14,10 @@ using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
+using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.SerializationContext;
 using Newtonsoft.Json.Linq;
+using PowerToys.GPOWrapper;
 using Settings.UI.Library;
 using Settings.UI.Library.Helpers;
 
@@ -27,10 +29,16 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private Func<string, int> SendConfigMSG { get; }
 
+        private GeneralSettings GeneralSettingsConfig { get; set; }
+
         public ObservableCollection<SearchLocation> SearchLocations { get; } = new();
 
-        public LightSwitchViewModel(LightSwitchSettings initialSettings = null, Func<string, int> ipcMSGCallBackFunc = null)
+        public LightSwitchViewModel(ISettingsRepository<GeneralSettings> settingsRepository, LightSwitchSettings initialSettings = null, Func<string, int> ipcMSGCallBackFunc = null)
         {
+            ArgumentNullException.ThrowIfNull(settingsRepository);
+            GeneralSettingsConfig = settingsRepository.SettingsConfig;
+            InitializeEnabledValue();
+
             _moduleSettings = initialSettings ?? new LightSwitchSettings();
             SendConfigMSG = ipcMSGCallBackFunc;
 
@@ -56,6 +64,21 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             };
 
             return hotkeysDict;
+        }
+
+        private void InitializeEnabledValue()
+        {
+            _enabledGpoRuleConfiguration = GPOWrapper.GetConfiguredLightSwitchEnabledValue();
+            if (_enabledGpoRuleConfiguration == GpoRuleConfigured.Disabled || _enabledGpoRuleConfiguration == GpoRuleConfigured.Enabled)
+            {
+                // Get the enabled state from GPO.
+                _enabledStateIsGPOConfigured = true;
+                _isEnabled = _enabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
+            }
+            else
+            {
+                _isEnabled = GeneralSettingsConfig.Enabled.LightSwitch;
+            }
         }
 
         private void ForceLightNow()
@@ -93,33 +116,26 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public bool IsEnabled
         {
-            get
-            {
-                if (_enabledStateIsGPOConfigured)
-                {
-                    return _enabledGPOConfiguration;
-                }
-                else
-                {
-                    return _isEnabled;
-                }
-            }
+            get => _isEnabled;
 
             set
             {
-                if (_isEnabled != value)
+                if (_enabledStateIsGPOConfigured)
                 {
-                    if (_enabledStateIsGPOConfigured)
-                    {
-                        // If it's GPO configured, shouldn't be able to change this state.
-                        return;
-                    }
+                    // If it's GPO configured, shouldn't be able to change this state.
+                    return;
+                }
 
+                if (value != _isEnabled)
+                {
                     _isEnabled = value;
 
-                    RefreshEnabledState();
+                    // Set the status in the general settings configuration
+                    GeneralSettingsConfig.Enabled.LightSwitch = value;
+                    OutGoingGeneralSettings snd = new OutGoingGeneralSettings(GeneralSettingsConfig);
 
-                    NotifyPropertyChanged();
+                    SendConfigMSG(snd.ToString());
+                    OnPropertyChanged(nameof(IsEnabled));
                 }
             }
         }
@@ -127,24 +143,16 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public bool IsEnabledGpoConfigured
         {
             get => _enabledStateIsGPOConfigured;
-            set
-            {
-                if (_enabledStateIsGPOConfigured != value)
-                {
-                    _enabledStateIsGPOConfigured = value;
-                    NotifyPropertyChanged();
-                }
-            }
         }
 
-        public bool EnabledGPOConfiguration
+        public GpoRuleConfigured EnabledGPOConfiguration
         {
-            get => _enabledGPOConfiguration;
+            get => _enabledGpoRuleConfiguration;
             set
             {
-                if (_enabledGPOConfiguration != value)
+                if (_enabledGpoRuleConfiguration != value)
                 {
-                    _enabledGPOConfiguration = value;
+                    _enabledGpoRuleConfiguration = value;
                     NotifyPropertyChanged();
                 }
             }
@@ -614,7 +622,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         }
 
         private bool _enabledStateIsGPOConfigured;
-        private bool _enabledGPOConfiguration;
+        private GpoRuleConfigured _enabledGpoRuleConfiguration;
         private LightSwitchSettings _moduleSettings;
         private bool _isEnabled;
         private HotkeySettings _toggleThemeHotkey;
