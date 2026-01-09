@@ -4,8 +4,9 @@
 #include <LightSwitchUtils.h>
 #include "ThemeScheduler.h"
 #include <ThemeHelper.h>
+#include <filesystem>
 
-void ApplyTheme(bool shouldBeLight);
+void ApplyTheme(bool shouldBeLight, bool changeWallpaper);
 
 // Constructor
 LightSwitchStateManager::LightSwitchStateManager()
@@ -147,6 +148,11 @@ static std::pair<int, int> update_sun_times(auto& settings)
     return { newLightTime, newDarkTime };
 }
 
+static bool IsValidPath(const std::wstring& path)
+{
+    return !path.empty() && std::filesystem::exists(path);
+}
+
 // Internal: decide what should happen now
 void LightSwitchStateManager::EvaluateAndApplyIfNeeded()
 {
@@ -240,6 +246,11 @@ void LightSwitchStateManager::EvaluateAndApplyIfNeeded()
     bool appsNeedsToChange = _currentSettings.changeApps && (_state.isAppsLightActive != shouldBeLight);
     bool systemNeedsToChange = _currentSettings.changeSystem && (_state.isSystemLightActive != shouldBeLight);
 
+    bool changeWallpaper =
+        _currentSettings.wallpaperEnabled &&
+        IsValidPath(_currentSettings.wallpaperPathDark) &&
+        IsValidPath(_currentSettings.wallpaperPathLight);
+
     /* Logger::debug(
         L"[LightSwitchStateManager] now = {:02d}:{:02d}, light boundary = {:02d}:{:02d} ({}), dark boundary = {:02d}:{:02d} ({})",
         now / 60,
@@ -260,7 +271,7 @@ void LightSwitchStateManager::EvaluateAndApplyIfNeeded()
     if (!_state.isManualOverride && (appsNeedsToChange || systemNeedsToChange))
     {
         Logger::info(L"[LightSwitchStateManager] Applying {} theme", shouldBeLight ? L"light" : L"dark");
-        ApplyTheme(shouldBeLight);
+        ApplyTheme(shouldBeLight, changeWallpaper);
 
         _state.isSystemLightActive = GetCurrentSystemTheme();
         _state.isAppsLightActive = GetCurrentAppsTheme();

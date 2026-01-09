@@ -3107,6 +3107,12 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="CropAndLock_ThumbnailActivation_Shortcut.Description" xml:space="preserve">
     <value>Creates a cropped, non-interactive thumbnail of another window. Improves app compatibility.</value>
   </data>
+  <data name="CropAndLock_ScreenshotActivation_Shortcut.Header" xml:space="preserve">
+    <value>Screenshot shortcut</value>
+  </data>
+  <data name="CropAndLock_ScreenshotActivation_Shortcut.Description" xml:space="preserve">
+    <value>Creates a cropped, static screenshot of another window. The screenshot won't update with the original window's content.</value>
+  </data>
   <data name="CropAndLock.SecondaryLinksHeader" xml:space="preserve">
     <value>Attribution</value>
     <comment>giving credit to the projects this utility was based on</comment>
@@ -3124,6 +3130,9 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   </data>
   <data name="Oobe_CropAndLock_HowToUse_Reparent.Text" xml:space="preserve">
     <value>to crop an application's window into a cropped window. This is experimental and can cause issues with some applications, since the cropped window will contain the original application window.</value>
+  </data>
+  <data name="Oobe_CropAndLock_HowToUse_Screenshot.Text" xml:space="preserve">
+    <value>to crop an application's window into a screenshot window. The screenshot won't update with the original window's content.</value>
   </data>
   <data name="AlwaysOnTop.ModuleDescription" xml:space="preserve">
     <value>Always On Top is a quick and easy way to pin windows on top.</value>
@@ -3381,6 +3390,9 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="CropAndLock_Reparent" xml:space="preserve">
     <value>Crop an app's window into a cropped window</value>
+  </data>
+  <data name="CropAndLock_Screenshot" xml:space="preserve">
+    <value>Crop an app into a screenshot window</value>
   </data>
   <data name="FancyZones_OpenEditor" xml:space="preserve">
     <value>Open editor</value>
@@ -5444,6 +5456,54 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   <data name="LightSwitch_SunsetTooltip.Text" xml:space="preserve">
     <value>Sunset</value>
   </data>
+  <data name="LightSwitch_WallpaperExpander.Header" xml:space="preserve">
+    <value>Wallpaper changes with the color mode</value>
+  </data>
+  <data name="LightSwitch_StyleFill.Content" xml:space="preserve">
+    <value>Fill</value>
+  </data>
+  <data name="LightSwitch_StyleFit.Content" xml:space="preserve">
+    <value>Fit</value>
+  </data>
+  <data name="LightSwitch_StyleStretch.Content" xml:space="preserve">
+    <value>Stretch</value>
+  </data>
+  <data name="LightSwitch_StyleTile.Content" xml:space="preserve">
+    <value>Tile</value>
+  </data>
+  <data name="LightSwitch_StyleCenter.Content" xml:space="preserve">
+    <value>Center</value>
+  </data>
+  <data name="LightSwitch_StyleSpan.Content" xml:space="preserve">
+    <value>Span</value>
+  </data>
+  <data name="LightSwitch_WallpaperBrowse.Content" xml:space="preserve">
+    <value>Browse</value>
+  </data>
+  <data name="LightSwitch_WallpaperLight.Text" xml:space="preserve">
+    <value>Light:</value>
+  </data>
+  <data name="LightSwitch_WallpaperDark.Text" xml:space="preserve">
+    <value>Dark:</value>
+  </data>
+  <data name="LightSwitch_WallpaperImageUnavailable.Text" xml:space="preserve">
+    <value>Image preview unavailable, may not exist or is corrupted</value>
+  </data>
+  <data name="LightSwitch_WallpaperSelect.Header" xml:space="preserve">
+    <value>Choose images for different modes</value>
+  </data>
+  <data name="LightSwitch_WallpaperStyle.Header" xml:space="preserve">
+    <value>Choose fits for your desktop images</value>
+  </data>
+  <data name="LightSwitch_WallpaperVirtualDesktop.Header" xml:space="preserve">
+    <value>Apply wallpaper to all virtual desktops</value>
+  </data>
+  <data name="LightSwitch_VirtualDesktopInfo.Text" xml:space="preserve">
+    <value>Apply wallpaper to all virtual desktops is an experimental feature, only supported on Windows 24H2 and later versions. It may become unavailable or cause errors due to Windows updates. If you find that the LightSwitch service is not running properly after enabling this feature, please disable the feature and file a bug report with your Windows version.</value>
+  </data>
+  <data name="LightSwitch_DetectWindows24H2Info.Text" xml:space="preserve">
+    <value>It has been detected that your Windows version is earlier than 24H2. On such versions, switching to another virtual desktop may cause the wallpaper to revert. If you are using virtual desktops, it is not recommended to enable this feature. Alternatively, upgrade your Windows version to 24H2 or later for the best experience.</value>
+  </data>
   <data name="Close_NavViewItem.Content" xml:space="preserve">
     <value>Close PowerToys</value>
     <comment>Don't loc "PowerToys"</comment>
@@ -5759,6 +5819,15 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   <data name="CmdPal_ModernDescription.Text" xml:space="preserve">
     <value>A modern UI built with Fluent Design</value>
     <comment>Fluent Design is a product name, do not loc</comment>
+  </data>
+  <data name="GeneralPage_EnableQuickAccess.Header" xml:space="preserve">
+    <value>Quick Access flyout</value>
+  </data>
+  <data name="GeneralPage_EnableQuickAccess.Description" xml:space="preserve">
+    <value>Fast access to quick actions and module toggles</value>
+  </data>
+  <data name="GeneralPage_QuickAccessShortcut.Header" xml:space="preserve">
+    <value>Activation shortcut</value>
   </data>
   <data name="LightSwitch_ModeFollowNightLight.Content" xml:space="preserve">
     <value>Follow Night Light</value>

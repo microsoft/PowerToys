@@ -60,6 +60,12 @@ namespace Settings.UI.Library
                     Latitude = new StringProperty(Properties.Latitude.Value),
                     Longitude = new StringProperty(Properties.Longitude.Value),
                     ToggleThemeHotkey = new KeyboardKeysProperty(Properties.ToggleThemeHotkey.Value),
+                    WallpaperEnabled = new BoolProperty(Properties.WallpaperEnabled.Value),
+                    WallpaperVirtualDesktopEnabled = new BoolProperty(Properties.WallpaperVirtualDesktopEnabled.Value),
+                    WallpaperStyleLight = new IntProperty((int)Properties.WallpaperStyleLight.Value),
+                    WallpaperStyleDark = new IntProperty((int)Properties.WallpaperStyleDark.Value),
+                    WallpaperPathLight = new StringProperty(Properties.WallpaperPathLight.Value),
+                    WallpaperPathDark = new StringProperty(Properties.WallpaperPathDark.Value),
                 },
             };
         }

@@ -482,5 +482,14 @@ namespace Microsoft.CmdPal.UI.ViewModels.Properties {
                 return ResourceManager.GetString("dock_unpin_command_name", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Fallbacks.
+        /// </summary>
+        public static string fallbacks {
+            get {
+                return ResourceManager.GetString("fallbacks", resourceCulture);
+            }
+        }
     }
 }

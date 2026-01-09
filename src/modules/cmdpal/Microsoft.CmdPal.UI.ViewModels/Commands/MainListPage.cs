@@ -17,7 +17,6 @@ using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Properties;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.CmdPal.UI.ViewModels.MainPage;
 
@@ -29,26 +28,17 @@ public partial class MainListPage : DynamicListPage,
     IRecipient<ClearSearchMessage>,
     IRecipient<UpdateFallbackItemsMessage>, IDisposable
 {
-    private readonly string[] _specialFallbacks = [
-        "com.microsoft.cmdpal.builtin.run",
-        "com.microsoft.cmdpal.builtin.calculator",
-        "com.microsoft.cmdpal.builtin.system",
-        "com.microsoft.cmdpal.builtin.core",
-        "com.microsoft.cmdpal.builtin.websearch",
-        "com.microsoft.cmdpal.builtin.windowssettings",
-        "com.microsoft.cmdpal.builtin.datetime",
-        "com.microsoft.cmdpal.builtin.remotedesktop",
-    ];
-
-    private readonly IServiceProvider _serviceProvider;
     private readonly TopLevelCommandManager _tlcManager;
+    private readonly AliasManager _aliasManager;
+    private readonly SettingsModel _settings;
+    private readonly AppStateModel _appStateModel;
     private List<Scored<IListItem>>? _filteredItems;
     private List<Scored<IListItem>>? _filteredApps;
-    private List<Scored<IListItem>>? _fallbackItems;
 
     // Keep as IEnumerable for deferred execution. Fallback item titles are updated
     // asynchronously, so scoring must happen lazily when GetItems is called.
     private IEnumerable<Scored<IListItem>>? _scoredFallbackItems;
+    private IEnumerable<Scored<IListItem>>? _fallbackItems;
     private bool _includeApps;
     private bool _filteredItemsIncludesApps;
     private int _appResultLimit = 10;
@@ -58,15 +48,17 @@ public partial class MainListPage : DynamicListPage,
 
     private CancellationTokenSource? _cancellationTokenSource;
 
-    public MainListPage(IServiceProvider serviceProvider)
+    public MainListPage(TopLevelCommandManager topLevelCommandManager, SettingsModel settings, AliasManager aliasManager, AppStateModel appStateModel)
     {
         Id = "com.microsoft.cmdpal.home";
         Title = Resources.builtin_home_name;
         Icon = IconHelpers.FromRelativePath("Assets\\StoreLogo.scale-200.png");
         PlaceholderText = Properties.Resources.builtin_main_list_page_searchbar_placeholder;
-        _serviceProvider = serviceProvider;
 
-        _tlcManager = _serviceProvider.GetService<TopLevelCommandManager>()!;
+        _settings = settings;
+        _aliasManager = aliasManager;
+        _appStateModel = appStateModel;
+        _tlcManager = topLevelCommandManager;
         _tlcManager.PropertyChanged += TlcManager_PropertyChanged;
         _tlcManager.TopLevelCommands.CollectionChanged += Commands_CollectionChanged;
 
@@ -84,7 +76,6 @@ public partial class MainListPage : DynamicListPage,
         WeakReferenceMessenger.Default.Register<ClearSearchMessage>(this);
         WeakReferenceMessenger.Default.Register<UpdateFallbackItemsMessage>(this);
 
-        var settings = _serviceProvider.GetService<SettingsModel>()!;
         settings.SettingsChanged += SettingsChangedHandler;
         HotReloadSettings(settings);
         _includeApps = _tlcManager.IsProviderActive(AllAppsCommandProvider.WellKnownId);
@@ -164,14 +155,29 @@ public partial class MainListPage : DynamicListPage,
         {
             // Either return the top-level commands (no search text), or the merged and
             // filtered results.
-            return string.IsNullOrEmpty(SearchText)
-                ? _tlcManager.TopLevelCommands.Where(tlc => !tlc.IsFallback && !string.IsNullOrEmpty(tlc.Title)).ToArray()
-                : MainListPageResultFactory.Create(
+            if (string.IsNullOrWhiteSpace(SearchText))
+            {
+                return _tlcManager.TopLevelCommands
+                    .Where(tlc => !tlc.IsFallback && !string.IsNullOrEmpty(tlc.Title))
+                    .ToArray();
+            }
+            else
+            {
+                var validScoredFallbacks = _scoredFallbackItems?
+                    .Where(s => !string.IsNullOrWhiteSpace(s.Item.Title))
+                    .ToList();
+
+                var validFallbacks = _fallbackItems?
+                    .Where(s => !string.IsNullOrWhiteSpace(s.Item.Title))
+                    .ToList();
+
+                return MainListPageResultFactory.Create(
                     _filteredItems,
-                    _scoredFallbackItems?.ToList(),
+                    validScoredFallbacks,
                     _filteredApps,
-                    _fallbackItems,
+                    validFallbacks,
                     _appResultLimit);
+            }
         }
     }
 
@@ -201,7 +207,7 @@ public partial class MainListPage : DynamicListPage,
         // Handle changes to the filter text here
         if (!string.IsNullOrEmpty(SearchText))
         {
-            var aliases = _serviceProvider.GetService<AliasManager>()!;
+            var aliases = _aliasManager;
 
             if (token.IsCancellationRequested)
             {
@@ -237,7 +243,8 @@ public partial class MainListPage : DynamicListPage,
             }
 
             // prefilter fallbacks
-            var specialFallbacks = new List<TopLevelViewModel>(_specialFallbacks.Length);
+            var globalFallbacks = _settings.GetGlobalFallbacks();
+            var specialFallbacks = new List<TopLevelViewModel>(globalFallbacks.Length);
             var commonFallbacks = new List<TopLevelViewModel>();
 
             foreach (var s in commands)
@@ -247,7 +254,7 @@ public partial class MainListPage : DynamicListPage,
                     continue;
                 }
 
-                if (_specialFallbacks.Contains(s.CommandProviderId))
+                if (globalFallbacks.Contains(s.Id))
                 {
                     specialFallbacks.Add(s);
                 }
@@ -370,7 +377,7 @@ public partial class MainListPage : DynamicListPage,
                 }
             }
 
-            var history = _serviceProvider.GetService<AppStateModel>()!.RecentCommands!;
+            var history = _appStateModel.RecentCommands!;
             Func<string, IListItem, int> scoreItem = (a, b) => { return ScoreTopLevelItem(a, b, history); };
 
             // Produce a list of everything that matches the current filter.
@@ -381,7 +388,7 @@ public partial class MainListPage : DynamicListPage,
                 return;
             }
 
-            IEnumerable<IListItem> newFallbacksForScoring = commands.Where(s => s.IsFallback && _specialFallbacks.Contains(s.CommandProviderId));
+            IEnumerable<IListItem> newFallbacksForScoring = commands.Where(s => s.IsFallback && globalFallbacks.Contains(s.Id));
 
             if (token.IsCancellationRequested)
             {
@@ -395,8 +402,8 @@ public partial class MainListPage : DynamicListPage,
                 return;
             }
 
-            // Defaulting scored to 1 but we'll eventually use user rankings
-            _fallbackItems = [.. newFallbacks.Select(f => new Scored<IListItem> { Item = f, Score = 1 })];
+            Func<string, IListItem, int> scoreFallbackItem = (a, b) => { return ScoreFallbackItem(a, b, _settings.FallbackRanks); };
+            _fallbackItems = [.. ListHelpers.FilterListWithScores<IListItem>(newFallbacks ?? [], SearchText, scoreFallbackItem)];
 
             if (token.IsCancellationRequested)
             {
@@ -465,9 +472,8 @@ public partial class MainListPage : DynamicListPage,
 
     private bool ActuallyLoading()
     {
-        var tlcManager = _serviceProvider.GetService<TopLevelCommandManager>()!;
         var allApps = AllAppsCommandProvider.Page;
-        return allApps.IsLoading || tlcManager.IsLoading;
+        return allApps.IsLoading || _tlcManager.IsLoading;
     }
 
     // Almost verbatim ListHelpers.ScoreListItem, but also accounting for the
@@ -559,13 +565,30 @@ public partial class MainListPage : DynamicListPage,
         return (int)finalScore;
     }
 
+    internal static int ScoreFallbackItem(string query, IListItem topLevelOrAppItem, string[] fallbackRanks)
+    {
+        // Default to 1 so it always shows in list.
+        var finalScore = 1;
+
+        if (topLevelOrAppItem is TopLevelViewModel topLevelViewModel)
+        {
+            var index = Array.IndexOf(fallbackRanks, topLevelViewModel.Id);
+
+            if (index >= 0)
+            {
+                finalScore = fallbackRanks.Length - index + 1;
+            }
+        }
+
+        return finalScore;
+    }
+
     public void UpdateHistory(IListItem topLevelOrAppItem)
     {
         var id = IdForTopLevelOrAppItem(topLevelOrAppItem);
-        var state = _serviceProvider.GetService<AppStateModel>()!;
-        var history = state.RecentCommands;
+        var history = _appStateModel.RecentCommands;
         history.AddHistoryItem(id);
-        AppStateModel.SaveState(state);
+        AppStateModel.SaveState(_appStateModel);
     }
 
     private static string IdForTopLevelOrAppItem(IListItem topLevelOrAppItem)
@@ -597,10 +620,9 @@ public partial class MainListPage : DynamicListPage,
         _tlcManager.PropertyChanged -= TlcManager_PropertyChanged;
         _tlcManager.TopLevelCommands.CollectionChanged -= Commands_CollectionChanged;
 
-        var settings = _serviceProvider.GetService<SettingsModel>();
-        if (settings is not null)
+        if (_settings is not null)
         {
-            settings.SettingsChanged -= SettingsChangedHandler;
+            _settings.SettingsChanged -= SettingsChangedHandler;
         }
 
         WeakReferenceMessenger.Default.UnregisterAll(this);

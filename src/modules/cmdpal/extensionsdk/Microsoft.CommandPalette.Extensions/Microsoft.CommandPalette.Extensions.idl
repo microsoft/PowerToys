@@ -371,6 +371,11 @@ namespace Microsoft.CommandPalette.Extensions
         IFallbackHandler FallbackHandler{ get; };
         String DisplayTitle { get; };
     };
+
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface IFallbackCommandItem2 requires IFallbackCommandItem {
+        String Id { get; };
+    };
     
     [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
     interface ICommandProvider requires Windows.Foundation.IClosable, INotifyItemsChanged

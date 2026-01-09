@@ -4,6 +4,7 @@
 
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Dock;
+using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml.Controls;
@@ -23,7 +24,10 @@ public sealed partial class DockSettingsPage : Page
         this.InitializeComponent();
 
         var settings = App.Current.Services.GetService<SettingsModel>()!;
-        viewModel = new SettingsViewModel(settings, App.Current.Services, _mainTaskScheduler);
+        var themeService = App.Current.Services.GetService<IThemeService>()!;
+        var topLevelCommandManager = App.Current.Services.GetService<TopLevelCommandManager>()!;
+
+        viewModel = new SettingsViewModel(settings, topLevelCommandManager, _mainTaskScheduler, themeService);
 
         // Initialize UI state
         InitializeSettings();

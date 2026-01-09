@@ -227,11 +227,12 @@ public sealed class CommandProviderWrapper
         Func<ICommandItem?, TopLevelType, TopLevelViewModel> make = (ICommandItem? i, TopLevelType t) =>
         {
             CommandItemViewModel commandItemViewModel = new(new(i), pageContext);
-            TopLevelViewModel topLevelViewModel = new(commandItemViewModel, t, ExtensionHost, ProviderId, settings, providerSettings, serviceProvider);
+            TopLevelViewModel topLevelViewModel = new(commandItemViewModel, t, ExtensionHost, ProviderId, settings, providerSettings, serviceProvider, i);
             topLevelViewModel.InitializeProperties();
 
             return topLevelViewModel;
         };
+
         if (objects.Commands is not null)
         {
             TopLevelItems = objects.Commands

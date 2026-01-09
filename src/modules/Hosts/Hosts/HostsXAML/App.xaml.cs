@@ -67,7 +67,7 @@ namespace Hosts
                     services.AddSingleton<IElevationHelper, ElevationHelper>();
                     services.AddSingleton<OpenSettingsFunction>(() =>
                     {
-                        SettingsDeepLink.OpenSettings(SettingsDeepLink.SettingsWindow.Hosts, true);
+                        SettingsDeepLink.OpenSettings(SettingsDeepLink.SettingsWindow.Hosts);
                     });
 
                     services.AddSingleton<MainViewModel, MainViewModel>();
