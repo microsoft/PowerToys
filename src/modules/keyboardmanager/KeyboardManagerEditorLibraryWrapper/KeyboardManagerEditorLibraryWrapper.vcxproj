@@ -149,7 +149,7 @@
       <PreprocessorDefinitions>_DEBUG;KEYBOARDMANAGEREDITORLIBRARYWRAPPER_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>false</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
-      <AdditionalIncludeDirectories>./;$(RepoRoot)src\modules\;$(RepoRoot)src\modules\KeyboardManager\KeyboardManagerEditorLibrary\;$(RepoRoot)src\common\Display;$(RepoRoot)src\common\inc;$(RepoRoot)src\common\Telemetry;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>./;$(RepoRoot)src\modules\;$(RepoRoot)src\modules\KeyboardManager\KeyboardManagerEditorLibrary\;$(RepoRoot)src\common\Display;$(RepoRoot)src\common\inc;$(RepoRoot)src\common\Telemetry;$(RepoRoot)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <CompileAsWinRT>false</CompileAsWinRT>
     </ClCompile>
     <Link>
@@ -166,7 +166,7 @@
       <PreprocessorDefinitions>_DEBUG;KEYBOARDMANAGEREDITORLIBRARYWRAPPER_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>false</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
-      <AdditionalIncludeDirectories>./;$(RepoRoot)src\modules\;$(RepoRoot)src\modules\KeyboardManager\KeyboardManagerEditorLibrary\;$(RepoRoot)src\common\Display;$(RepoRoot)src\common\inc;$(RepoRoot)src\common\Telemetry;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>./;$(RepoRoot)src\modules\;$(RepoRoot)src\modules\KeyboardManager\KeyboardManagerEditorLibrary\;$(RepoRoot)src\common\Display;$(RepoRoot)src\common\inc;$(RepoRoot)src\common\Telemetry;$(RepoRoot)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <CompileAsWinRT>false</CompileAsWinRT>
     </ClCompile>
     <Link>
@@ -185,7 +185,7 @@
       <PreprocessorDefinitions>NDEBUG;KEYBOARDMANAGEREDITORLIBRARYWRAPPER_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>false</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
-      <AdditionalIncludeDirectories>./;$(RepoRoot)src\modules\;$(RepoRoot)src\modules\KeyboardManager\KeyboardManagerEditorLibrary\;$(RepoRoot)src\common\Display;$(RepoRoot)src\common\inc;$(RepoRoot)src\common\Telemetry;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>./;$(RepoRoot)src\modules\;$(RepoRoot)src\modules\KeyboardManager\KeyboardManagerEditorLibrary\;$(RepoRoot)src\common\Display;$(RepoRoot)src\common\inc;$(RepoRoot)src\common\Telemetry;$(RepoRoot)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <SupportJustMyCode>true</SupportJustMyCode>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
@@ -207,7 +207,7 @@
       <PreprocessorDefinitions>NDEBUG;KEYBOARDMANAGEREDITORLIBRARYWRAPPER_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>false</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
-      <AdditionalIncludeDirectories>./;$(RepoRoot)src\modules\;$(RepoRoot)src\modules\KeyboardManager\KeyboardManagerEditorLibrary\;$(RepoRoot)src\common\Display;$(RepoRoot)src\common\inc;$(RepoRoot)src\common\Telemetry;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>./;$(RepoRoot)src\modules\;$(RepoRoot)src\modules\KeyboardManager\KeyboardManagerEditorLibrary\;$(RepoRoot)src\common\Display;$(RepoRoot)src\common\inc;$(RepoRoot)src\common\Telemetry;$(RepoRoot)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

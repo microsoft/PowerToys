@@ -77,7 +77,7 @@
       <WarningLevel>Level4</WarningLevel>
       <AdditionalOptions>%(AdditionalOptions) /bigobj</AdditionalOptions>
       <!-- Need to add $(ProjectDir)\Generated Files\PowerRenameXAML files directly because of https://github.com/microsoft/microsoft-ui-xaml/issues/7652 -->
-      <AdditionalIncludeDirectories>$(ProjectDir)\Generated Files\PowerRenameXAML;$(ProjectDir)$(RepoRoot)src\common\Telemetry;$(RepoRoot)src\;$(ProjectDir)..\lib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\Generated Files\PowerRenameXAML;$(RepoRoot)src\common\Telemetry;$(RepoRoot)src\;$(ProjectDir)..\lib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Debug'">
