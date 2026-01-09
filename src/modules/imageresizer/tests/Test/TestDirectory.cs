@@ -15,10 +15,9 @@ using IOPath = System.IO.Path;
 
 namespace ImageResizer
 {
-    public class TestDirectory : IDisposable
+    public sealed class TestDirectory : IDisposable
     {
         private readonly string _path;
-        private bool disposedValue;
 
         public TestDirectory()
         {
@@ -46,36 +45,22 @@ namespace ImageResizer
             return _path;
         }
 
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!disposedValue)
-            {
-                if (disposing)
-                {
-                    var stopwatch = Stopwatch.StartNew();
-                    while (stopwatch.ElapsedMilliseconds < 30000)
-                    {
-                        try
-                        {
-                            Directory.Delete(_path, recursive: true);
-                            break;
-                        }
-                        catch
-                        {
-                            Thread.Sleep(150);
-                        }
-                    }
-                }
-
-                disposedValue = true;
-            }
-        }
-
         public void Dispose()
         {
-            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-            Dispose(disposing: true);
-            GC.SuppressFinalize(this);
+            // Try to delete the directory, with retries for file locks.
+            var stopwatch = Stopwatch.StartNew();
+            while (stopwatch.ElapsedMilliseconds < 30000)
+            {
+                try
+                {
+                    Directory.Delete(_path, recursive: true);
+                    break;
+                }
+                catch
+                {
+                    Thread.Sleep(150);
+                }
+            }
         }
     }
 }

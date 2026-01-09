@@ -13,5 +13,7 @@ namespace ImageResizer.Views
         void Close();
 
         IEnumerable<string> OpenPictureFiles();
+
+        void ResizeForResults();
     }
 }

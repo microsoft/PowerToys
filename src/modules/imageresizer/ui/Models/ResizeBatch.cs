@@ -14,9 +14,10 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-
+using ImageResizer.Models.ResizeResults;
 using ImageResizer.Properties;
 using ImageResizer.Services;
+using ImageResizer.Utilities;
 
 namespace ImageResizer.Models
 {
@@ -25,9 +26,9 @@ namespace ImageResizer.Models
         private readonly IFileSystem _fileSystem = new FileSystem();
         private static IAISuperResolutionService _aiSuperResolutionService;
 
-        public string DestinationDirectory { get; set; }
+        public virtual string DestinationDirectory { get; set; }
 
-        public ICollection<string> Files { get; } = new List<string>();
+        public virtual ICollection<string> Files { get; } = new List<string>();
 
         public static void SetAiSuperResolutionService(IAISuperResolutionService service)
         {
@@ -141,7 +142,7 @@ namespace ImageResizer.Models
             return FromCliOptions(standardInput, options);
         }
 
-        public IEnumerable<ResizeError> Process(Action<int, double> reportProgress, CancellationToken cancellationToken)
+        public IEnumerable<ResizeResult> Process(Action<int, double> reportProgress, CancellationToken cancellationToken)
         {
             // NOTE: Settings.Default is captured once before parallel processing.
             // Any changes to settings on disk during this batch will NOT be reflected until the next batch.
@@ -149,11 +150,11 @@ namespace ImageResizer.Models
             return Process(reportProgress, Settings.Default, cancellationToken);
         }
 
-        public IEnumerable<ResizeError> Process(Action<int, double> reportProgress, Settings settings, CancellationToken cancellationToken)
+        public IEnumerable<ResizeResult> Process(Action<int, double> reportProgress, Settings settings, CancellationToken cancellationToken)
         {
             double total = Files.Count;
             int completed = 0;
-            var errors = new ConcurrentBag<ResizeError>();
+            ConcurrentBag<ResizeResult> results = [];
 
             // TODO: If we ever switch to Windows.Graphics.Imaging, we can get a lot more throughput by using the async
             //       APIs and a custom SynchronizationContext
@@ -167,24 +168,25 @@ namespace ImageResizer.Models
                 {
                     try
                     {
-                        Execute(file, settings);
+                        var result = Execute(file, settings);
+                        results.Add(result);
                     }
                     catch (Exception ex)
                     {
-                        errors.Add(new ResizeError { File = _fileSystem.Path.GetFileName(file), Error = ex.Message });
+                        results.Add(new ErrorResult(file, ex));
                     }
 
                     Interlocked.Increment(ref completed);
                     reportProgress(completed, total);
                 });
 
-            return errors;
+            return results;
         }
 
-        protected virtual void Execute(string file, Settings settings)
+        protected virtual ResizeResult Execute(string file, Settings settings)
         {
             var aiService = _aiSuperResolutionService ?? NoOpAiSuperResolutionService.Instance;
-            new ResizeOperation(file, DestinationDirectory, settings, aiService).Execute();
+            return new ResizeOperation(file, DestinationDirectory, settings, _fileSystem, new WindowsRecycleBinService(), aiService).Execute();
         }
     }
 }
