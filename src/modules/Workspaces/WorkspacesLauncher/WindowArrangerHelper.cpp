@@ -60,7 +60,7 @@ void WindowArrangerHelper::Launch(const std::wstring& projectId, bool elevated, 
                 
                 Logger::trace(L"Finished waiting WorkspacesWindowArranger");
                 CloseHandle(process);
-            }}).wait();
+            }}).get();
 
         timeoutExpired = true;
     }
