@@ -1024,5 +1024,69 @@ namespace Microsoft.AdvancedPaste.UITests
                 Debug.WriteLine($"ERROR copying settings file: {ex.Message}");
             }
         }
+
+        [TestMethod]
+        [TestCategory("AdvancedPasteUITest")]
+        [TestCategory("PasteAsKeystrokes")]
+        public void TestCasePasteAsKeystrokes()
+        {
+            if (_notepadSettingsChanged == false)
+            {
+                ChangeNotePadSettings();
+            }
+
+            const string testText = "Hello World! Testing keystrokes.";
+
+            // Copy test text to clipboard
+            SetClipboardText(testText);
+
+            // Create temp file and open in Notepad
+            DeleteAndCopyFile(pasteAsMarkdownSrcFile, tempTxtFileName);
+            string tempFile = Path.Combine(testFilesFolderPath, tempTxtFileName);
+
+            Process process = Process.Start("notepad.exe", tempFile);
+            if (process == null)
+            {
+                throw new InvalidOperationException("Failed to start Notepad.");
+            }
+
+            Thread.Sleep(15000);
+
+            var window = FindWindowWithFlexibleTitle(Path.GetFileName(tempFile), false);
+            window.Click();
+            Thread.Sleep(1000);
+
+            // Clear the file
+            this.SendKeys(Key.LCtrl, Key.A);
+            Thread.Sleep(1000);
+            this.SendKeys(Key.Delete);
+            Thread.Sleep(1000);
+
+            // Test direct hotkey configured for "paste as keystroke text"
+            // paste as keystroke text: win + ctrl + alt + k
+            this.SendKeys(Key.Win, Key.LCtrl, Key.Alt, Key.K);
+            Thread.Sleep(3000); // Wait for keystrokes to complete
+
+            // Save and verify
+            this.SendKeys(Key.LCtrl, Key.S);
+            Thread.Sleep(1000);
+
+            process.Kill(true);
+
+            // Read the file and verify
+            var fileContent = File.ReadAllText(tempFile);
+            Assert.AreEqual(testText, fileContent.Trim(), "Paste as keystrokes failed");
+        }
+
+        private void SetClipboardText(string text)
+        {
+            var thread = new System.Threading.Thread(() =>
+            {
+                System.Windows.Forms.Clipboard.SetText(text);
+            });
+            thread.SetApartmentState(System.Threading.ApartmentState.STA);
+            thread.Start();
+            thread.Join();
+        }
     }
 }

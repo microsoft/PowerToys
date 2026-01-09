@@ -63,6 +63,7 @@ namespace PowerToys
             static String WorkspacesHotkeyEvent();
             static String PowerToysRunnerTerminateSettingsEvent();
             static String ShowCmdPalEvent();
+            static String AdvancedPasteKeystrokeMessage();
         }
     }
 }
