@@ -590,18 +590,14 @@ void LightSwitchInterface::ToggleTheme()
     bool current_system_theme = GetCurrentSystemTheme();
     bool current_apps_theme = GetCurrentAppsTheme();
 
-    // Determine if we're switching to light mode (which triggers ResetColorPrevalence and might open Settings)
-    bool switchingToLight = (g_settings.m_changeSystem && !current_system_theme) || 
-                            (g_settings.m_changeApps && !current_apps_theme);
-    
     bool changeWallpaper =
         g_settings.m_use_theme_switching &&
         IsValidPath(g_settings.m_light_theme_path) &&
         IsValidPath(g_settings.m_dark_theme_path);
 
-    // Start the Settings monitor BEFORE any theme changes if we might trigger Settings
-    // This is critical for dark->light transitions which call ResetColorPrevalence
-    if (switchingToLight || changeWallpaper)
+    // Start the Settings monitor BEFORE any theme changes if theme file switching is enabled
+    // The Settings app only opens when executing .theme files, not from registry changes
+    if (changeWallpaper)
     {
         StartSettingsMonitor();
     }
@@ -640,7 +636,7 @@ void LightSwitchInterface::ToggleTheme()
     }
 
     // Stop the monitor after all theme operations are complete
-    if (switchingToLight || changeWallpaper)
+    if (changeWallpaper)
     {
         StopSettingsMonitor();
     }

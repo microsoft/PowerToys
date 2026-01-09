@@ -262,10 +262,9 @@ void LightSwitchStateManager::EvaluateAndApplyIfNeeded()
     {
         Logger::info(L"[LightSwitchStateManager] Applying {} theme", shouldBeLight ? L"light" : L"dark");
         
-        // Start the Settings monitor BEFORE any theme changes to prevent Settings from showing
-        // This is especially important for dark->light transitions
-        bool needsMonitor = shouldBeLight || _currentSettings.useThemeSwitching;
-        if (needsMonitor)
+        // Start the Settings monitor BEFORE any theme changes if theme file switching is enabled
+        // The Settings app only opens when executing .theme files, not from registry changes
+        if (_currentSettings.useThemeSwitching)
         {
             StartSettingsMonitor();
         }
@@ -278,11 +277,8 @@ void LightSwitchStateManager::EvaluateAndApplyIfNeeded()
         {
             ApplyWindowsThemeFile(shouldBeLight);
             Logger::info(L"[LightSwitchStateManager] Applied Windows theme file for {} theme", shouldBeLight ? L"light" : L"dark"); 
-        }
-
-        // Stop the monitor after all theme operations
-        if (needsMonitor)
-        {
+            
+            // Stop the monitor after theme file operations
             StopSettingsMonitor();
         }
 
