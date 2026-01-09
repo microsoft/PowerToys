@@ -26,7 +26,7 @@
     <ProjectName>PowerToys.FileLocksmithLib.Interop</ProjectName>
     <RootNamespace>PowerToys.FileLocksmithLib.Interop</RootNamespace>
     <TargetFramework>net8.0-windows10.0.22621.0</TargetFramework>
-    <OutDir>..\..\..\..\$(Platform)\$(Configuration)\WinUI3Apps\</OutDir>
+    <OutDir>$(RepoRoot)$(Platform)\$(Configuration)\WinUI3Apps\</OutDir>
     <TargetName>PowerToys.FileLocksmithLib.Interop</TargetName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -116,7 +116,7 @@
     <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\common\interop\PowerToys.Interop.vcxproj">
+    <ProjectReference Include="$(RepoRoot)src\common\interop\PowerToys.Interop.vcxproj">
       <Project>{f055103b-f80b-4d0c-bf48-057c55620033}</Project>
     </ProjectReference>
   </ItemGroup>

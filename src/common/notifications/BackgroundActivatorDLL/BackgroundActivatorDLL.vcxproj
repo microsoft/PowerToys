@@ -67,7 +67,7 @@
     <Import Project="..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.targets')" />
   </ImportGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\common\version\version.vcxproj">
+    <ProjectReference Include="$(RepoRoot)src\common\version\version.vcxproj">
       <Project>{cc6e41ac-8174-4e8a-8d22-85dd7f4851df}</Project>
     </ProjectReference>
     <ProjectReference Include="..\BackgroundActivator\BackgroundActivator.vcxproj">

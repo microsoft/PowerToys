@@ -9,7 +9,7 @@
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
-  <Import Project="..\..\..\..\..\deps\spdlog.props" />
+  <Import Project="$(RepoRoot)deps\spdlog.props" />
   <PropertyGroup Label="Configuration">
     <PlatformToolset>v143</PlatformToolset>
     <ConfigurationType>DynamicLibrary</ConfigurationType>
@@ -25,11 +25,11 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
-    <OutDir>..\..\..\..\..\$(Platform)\$(Configuration)\tests\FileLocksmithCLI\</OutDir>
+    <OutDir>$(RepoRoot)$(Platform)\$(Configuration)\tests\FileLocksmithCLI\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
-      <AdditionalIncludeDirectories>..\;..\..\;..\..\..\..\;$(VCInstallDir)UnitTest\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\;..\..\;$(RepoRoot)src\;$(VCInstallDir)UnitTest\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;UNIT_TEST;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <UseFullPaths>true</UseFullPaths>
       <PrecompiledHeader>Use</PrecompiledHeader>
@@ -57,13 +57,13 @@
     <ProjectReference Include="..\..\FileLocksmithLib\FileLocksmithLib.vcxproj">
       <Project>{9d52fd25-ef90-4f9a-a015-91efc5daf54f}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\..\common\logger\logger.vcxproj">
+    <ProjectReference Include="$(RepoRoot)src\common\logger\logger.vcxproj">
       <Project>{d9b8fc84-322a-4f9f-bbb9-20915c47ddfd}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\..\common\SettingsAPI\SettingsAPI.vcxproj">
+    <ProjectReference Include="$(RepoRoot)src\common\SettingsAPI\SettingsAPI.vcxproj">
       <Project>{6955446d-23f7-4023-9bb3-8657f904af99}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\..\common\version\version.vcxproj">
+    <ProjectReference Include="$(RepoRoot)src\common\version\version.vcxproj">
       <Project>{1248566c-272a-43c0-88d6-e6675d569a09}</Project>
     </ProjectReference>
   </ItemGroup>

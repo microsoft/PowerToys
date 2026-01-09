@@ -43,7 +43,7 @@
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <PropertyGroup>
-    <OutDir>..\..\..\..\$(Platform)\$(Configuration)\$(MSBuildProjectName)\</OutDir>
+    <OutDir>$(RepoRoot)$(Platform)\$(Configuration)\$(MSBuildProjectName)\</OutDir>
     <TargetName>PowerToys.LightSwitchService</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup>
@@ -56,11 +56,11 @@
       <AdditionalIncludeDirectories>
         ./../;
         ..\..\..\common;
-        ..\..\..\common\logger;
-        ..\..\..\common\utils;
-        ..\..\..\common\SettingsAPI;
-        ..\..\..\common\Telemetry;
-        ..\..\..\;
+        $(RepoRoot)src\common\logger;
+        $(RepoRoot)src\common\utils;
+        $(RepoRoot)src\common\SettingsAPI;
+        $(RepoRoot)src\common\Telemetry;
+        $(RepoRoot)src\;
         ..\..\..\..\deps\spdlog\include;
         ./;
         %(AdditionalIncludeDirectories)
@@ -99,21 +99,21 @@
     <ClInclude Include="WinHookEventIDs.h" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\common\ManagedCommon\ManagedCommon.csproj">
+    <ProjectReference Include="$(RepoRoot)src\common\ManagedCommon\ManagedCommon.csproj">
       <Project>{4aed67b6-55fd-486f-b917-e543dee2cb3c}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\common\SettingsAPI\SettingsAPI.vcxproj">
+    <ProjectReference Include="$(RepoRoot)src\common\SettingsAPI\SettingsAPI.vcxproj">
       <Project>{6955446d-23f7-4023-9bb3-8657f904af99}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\common\notifications\notifications.vcxproj">
+    <ProjectReference Include="$(RepoRoot)src\common\notifications\notifications.vcxproj">
       <Project>{1d5be09d-78c0-4fd7-af00-ae7c1af7c525}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\common\Telemetry\EtwTrace\EtwTrace.vcxproj">
+    <ProjectReference Include="$(RepoRoot)src\common\Telemetry\EtwTrace\EtwTrace.vcxproj">
       <Project>{8f021b46-362b-485c-bfba-ccf83e820cbd}</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
-  <Import Project="..\..\..\..\deps\spdlog.props" />
+  <Import Project="$(RepoRoot)deps\spdlog.props" />
   <ImportGroup Label="ExtensionTargets">
     <Import Project="..\..\..\..\packages\Microsoft.Windows.ImplementationLibrary.1.0.231216.1\build\native\Microsoft.Windows.ImplementationLibrary.targets" Condition="Exists('..\..\..\..\packages\Microsoft.Windows.ImplementationLibrary.1.0.231216.1\build\native\Microsoft.Windows.ImplementationLibrary.targets')" />
     <Import Project="..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.targets')" />

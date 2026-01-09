@@ -1,5 +1,8 @@
 <Project>
-  <Import Project="src\Version.props" />
+  <PropertyGroup>
+    <RepoRoot>$(MSBuildThisFileDirectory)</RepoRoot>
+  </PropertyGroup>
+  <Import Project="$(RepoRoot)src\Version.props" />
   <PropertyGroup>
     <Copyright>Copyright (C) Microsoft Corporation. All rights reserved.</Copyright>
     <AssemblyCopyright>Copyright (C) Microsoft Corporation. All rights reserved.</AssemblyCopyright>
@@ -28,15 +31,15 @@
 
   <PropertyGroup>
     <_PropertySheetDisplayName>PowerToys.Root.Props</_PropertySheetDisplayName>
-    <ForceImportBeforeCppProps>$(MsbuildThisFileDirectory)\Cpp.Build.props</ForceImportBeforeCppProps>
+    <ForceImportBeforeCppProps>$(RepoRoot)Cpp.Build.props</ForceImportBeforeCppProps>
   </PropertyGroup>
   <ItemGroup Condition="'$(MSBuildProjectExtension)' == '.csproj'">
     <PackageReference Include="StyleCop.Analyzers">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <Compile Include="$(MSBuildThisFileDirectory)\src\codeAnalysis\GlobalSuppressions.cs" Link="GlobalSuppressions.cs" />
-    <AdditionalFiles Include="$(MSBuildThisFileDirectory)\src\codeAnalysis\StyleCop.json" Link="StyleCop.json" />
+    <Compile Include="$(RepoRoot)src\codeAnalysis\GlobalSuppressions.cs" Link="GlobalSuppressions.cs" />
+    <AdditionalFiles Include="$(RepoRoot)src\codeAnalysis\StyleCop.json" Link="StyleCop.json" />
 
     <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers">
       <PrivateAssets>all</PrivateAssets>

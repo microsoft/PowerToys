@@ -61,7 +61,7 @@
   <!-- Props that are constant for both Debug and Release configurations -->
   <PropertyGroup Label="Configuration">
     <PlatformToolset>v143</PlatformToolset>
-    <OutDir>..\..\..\..\$(Platform)\$(Configuration)\$(MSBuildProjectName)\</OutDir>
+    <OutDir>$(RepoRoot)$(Platform)\$(Configuration)\$(MSBuildProjectName)\</OutDir>
     <CharacterSet>Unicode</CharacterSet>
     <SpectreMitigation>Spectre</SpectreMitigation>
     <ConfigurationType>Application</ConfigurationType>
@@ -89,7 +89,7 @@
   <PropertyGroup Label="UserMacros" />
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Debug'">
     <ClCompile>
-      <AdditionalIncludeDirectories>./;$(SolutionDir)src\modules\;$(SolutionDir)src\modules\KeyboardManager\KeyboardManagerEditorLibrary\;$(SolutionDir)src\common\Display;$(SolutionDir)src\common\inc;$(SolutionDir)src\common\Telemetry;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>./;$(RepoRoot)src\modules\;$(RepoRoot)src\modules\KeyboardManager\KeyboardManagerEditorLibrary\;$(RepoRoot)src\common\Display;$(RepoRoot)src\common\inc;$(RepoRoot)src\common\Telemetry;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <AdditionalDependencies>Display.lib;shcore.lib;Dbghelp.lib;dwmapi.lib;uxtheme.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -98,7 +98,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Release'">
     <ClCompile>
-      <AdditionalIncludeDirectories>./;$(SolutionDir)src\modules\;$(SolutionDir)src\modules\KeyboardManager\KeyboardManagerEditorLibrary\;$(SolutionDir)src\common\Display;$(SolutionDir)src\common\inc;$(SolutionDir)src\common\Telemetry;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>./;$(RepoRoot)src\modules\;$(RepoRoot)src\modules\KeyboardManager\KeyboardManagerEditorLibrary\;$(RepoRoot)src\common\Display;$(RepoRoot)src\common\inc;$(RepoRoot)src\common\Telemetry;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -126,16 +126,16 @@
     <None Include="KeyboardManagerEditor.base.rc" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\common\Display\Display.vcxproj">
+    <ProjectReference Include="$(RepoRoot)src\common\Display\Display.vcxproj">
       <Project>{caba8dfb-823b-4bf2-93ac-3f31984150d9}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\common\logger\logger.vcxproj">
+    <ProjectReference Include="$(RepoRoot)src\common\logger\logger.vcxproj">
       <Project>{d9b8fc84-322a-4f9f-bbb9-20915c47ddfd}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\common\Telemetry\EtwTrace\EtwTrace.vcxproj">
+    <ProjectReference Include="$(RepoRoot)src\common\Telemetry\EtwTrace\EtwTrace.vcxproj">
       <Project>{8f021b46-362b-485c-bfba-ccf83e820cbd}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\common\Themes\Themes.vcxproj">
+    <ProjectReference Include="$(RepoRoot)src\common\Themes\Themes.vcxproj">
       <Project>{98537082-0fdb-40de-abd8-0dc5a4269bab}</Project>
     </ProjectReference>
     <ProjectReference Include="..\common\KeyboardManagerCommon.vcxproj">
@@ -167,9 +167,9 @@
     <Import Project="..\..\..\..\packages\Microsoft.UI.Xaml.2.8.2-prerelease.220830001\build\native\Microsoft.UI.Xaml.targets" Condition="Exists('..\..\..\..\packages\Microsoft.UI.Xaml.2.8.2-prerelease.220830001\build\native\Microsoft.UI.Xaml.targets')" />
     <Import Project="..\..\..\..\packages\Microsoft.Web.WebView2.1.0.2903.40\build\native\Microsoft.Web.WebView2.targets" Condition="Exists('..\..\..\..\packages\Microsoft.Web.WebView2.1.0.2903.40\build\native\Microsoft.Web.WebView2.targets')" />
   </ImportGroup>
-  <Import Project="..\..\..\..\deps\spdlog.props" />
+  <Import Project="$(RepoRoot)deps\spdlog.props" />
   <Target Name="GenerateResourceFiles" BeforeTargets="PrepareForBuild">
-    <Exec Command="powershell -NonInteractive -executionpolicy Unrestricted $(SolutionDir)tools\build\convert-resx-to-rc.ps1 $(MSBuildThisFileDirectory) resource.base.h resource.h KeyboardManagerEditor.base.rc KeyboardManagerEditor.rc" />
+    <Exec Command="powershell -NonInteractive -executionpolicy Unrestricted $(RepoRoot)tools\build\convert-resx-to-rc.ps1 $(MSBuildThisFileDirectory) resource.base.h resource.h KeyboardManagerEditor.base.rc KeyboardManagerEditor.rc" />
   </Target>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>

@@ -1,6 +1,6 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-  <Import Project="..\..\Common.Dotnet.CsWinRT.props" />
-  <Import Project="..\..\Common.SelfContained.props" />
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
+  <Import Project="$(RepoRoot)src\Common.SelfContained.props" />
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
@@ -14,7 +14,7 @@
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <ApplicationManifest>app.manifest</ApplicationManifest>
-    <OutputPath>..\..\..\$(Platform)\$(Configuration)\WinUI3Apps</OutputPath>
+    <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\WinUI3Apps</OutputPath>
       <EnableDefaultPageItems>false</EnableDefaultPageItems>
       <EnableDefaultApplicationDefinition>false</EnableDefaultApplicationDefinition>
     <Nullable>enable</Nullable>

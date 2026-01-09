@@ -1,6 +1,6 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <!-- Look at Directory.Build.props in root for common stuff as well -->
-  <Import Project="..\..\..\Common.Dotnet.CsWinRT.props" />
+  <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
 
   <PropertyGroup>
     <ProjectGuid>{69D76A76-6EF6-4846-94CD-EAAF0CAC9F15}</ProjectGuid>
@@ -14,7 +14,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <OutputPath>..\..\..\..\$(Platform)\$(Configuration)\tests\FancyZones.UITests\</OutputPath>
+    <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\tests\FancyZones.UITests\</OutputPath>
   </PropertyGroup>
 
   <ItemGroup>
