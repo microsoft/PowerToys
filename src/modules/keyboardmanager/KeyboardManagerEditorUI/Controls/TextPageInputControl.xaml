@@ -1,0 +1,72 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<UserControl
+    x:Class="KeyboardManagerEditorUI.Controls.TextPageInputControl"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:helper="using:KeyboardManagerEditorUI.Helpers"
+    xmlns:local="using:KeyboardManagerEditorUI.Controls"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Loaded="UserControl_Loaded"
+    mc:Ignorable="d">
+
+    <StackPanel
+        Width="360"
+        Height="360"
+        Orientation="Vertical">
+        <!--  Shortcut section  -->
+        <TextBlock
+            x:Uid="TextPageInputControlShortcutKeysTextBlock"
+            Margin="0,12,0,8"
+            FontWeight="SemiBold" />
+
+        <ToggleButton
+            x:Name="ShortcutToggleBtn"
+            Padding="0,24,0,24"
+            HorizontalAlignment="Stretch"
+            Checked="ShortcutToggleBtn_Checked"
+            Style="{StaticResource CustomShortcutToggleButtonStyle}">
+            <ToggleButton.Content>
+                <ItemsControl x:Name="ShortcutKeys">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <controls:WrapPanel HorizontalSpacing="4" Orientation="Horizontal" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <local:KeyVisual Content="{Binding}" Style="{StaticResource DefaultKeyVisualStyle}" />
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ToggleButton.Content>
+        </ToggleButton>
+
+        <!--  Text section  -->
+        <TextBox
+            x:Name="TextContentBox"
+            x:Uid="TextPageInputControlTextContentTextBox"
+            Height="120"
+            Margin="0,8,0,0"
+            AcceptsReturn="True"
+            Background="{ThemeResource TextControlBackgroundFocused}"
+            BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
+            FontSize="13"
+            TextWrapping="Wrap" />
+
+        <!--  App specific section  -->
+        <CheckBox
+            x:Name="AllAppsCheckBox"
+            x:Uid="TextPageInputControlAllAppsCheckBox"
+            Margin="0,8,0,0"
+            Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
+
+        <TextBox
+            x:Name="AppNameTextBox"
+            x:Uid="TextPageInputControlAllAppsTextBox"
+            Background="{ThemeResource TextControlBackgroundFocused}"
+            BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
+            IsEnabled="{Binding ElementName=AllAppsCheckBox, Path=IsChecked}" />
+    </StackPanel>
+</UserControl>
