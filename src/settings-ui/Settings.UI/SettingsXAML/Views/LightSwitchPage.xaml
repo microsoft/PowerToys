@@ -215,20 +215,20 @@
                                 x:Name="EnableThemeSwitchingExpander"
                                 x:Uid="LightSwitch_EnableThemeSwitching"
                                 HeaderIcon="{ui:FontIcon Glyph=&#xE771;}">
-                
-                <tkcontrols:SettingsExpander.Description>
-                  <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
-                    <TextBlock VerticalAlignment="Center">
-<Run x:Uid="LightSwitch_EnableThemeSwitchingDescription" />
-                    </TextBlock>
 
-                    <HyperlinkButton
-x:Uid="LightSwitch_EnableThemeSwitching_LearnMoreLink"
-Margin="3,0,0,0"
-Padding="0"
-Click="OpenThemeSettings_Click" />
-                  </StackPanel>
-                </tkcontrols:SettingsExpander.Description>
+                                <tkcontrols:SettingsExpander.Description>
+                                    <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
+                                        <TextBlock VerticalAlignment="Center">
+                                            <Run x:Uid="LightSwitch_EnableThemeSwitchingDescription" />
+                                        </TextBlock>
+
+                                        <HyperlinkButton
+                                            x:Uid="LightSwitch_EnableThemeSwitching_LearnMoreLink"
+                                            Margin="3,0,0,0"
+                                            Padding="0"
+                                            Click="OpenThemeSettings_Click" />
+                                    </StackPanel>
+                                </tkcontrols:SettingsExpander.Description>
                                 <tkcontrols:SettingsExpander.Content>
                                     <ToggleSwitch
                                         x:Name="ThemeSwitchToggle"
