@@ -83,6 +83,33 @@ Once you've discussed your proposed feature/fix/etc. with a team member, and an 
 1. A local clone of the PowerToys repository
 1. Enable long paths in Windows (see [Enable Long Paths](https://docs.microsoft.com/windows/win32/fileio/maximum-file-path-limitation#enabling-long-paths-in-windows-10-version-1607-and-later) for details)
 
+#### Enable Git long paths (Windows)
+
+In addition to enabling long paths in Windows, Git must also be configured to support long paths.
+
+Run the following command in an elevated (Administrator) terminal:
+
+```powershell
+git config --system core.longpaths true
+```
+
+#### PowerShell  (pwsh)
+
+Some PowerToys build scripts rely on PowerShell  (`pwsh`).
+
+Ensure that PowerShell  is installed and available in your `PATH`.
+
+Installation instructions:  
+https://learn.microsoft.com/powershell/scripting/install/installing-powershell-on-windows
+
+Verify the installation by running:
+
+```powershell
+pwsh --version
+```
+
+
+
 ### Install Visual Studio dependencies
 
 1. Open the `PowerToys.slnx` file.
