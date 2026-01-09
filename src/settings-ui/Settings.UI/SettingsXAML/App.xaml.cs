@@ -340,7 +340,6 @@ namespace Microsoft.PowerToys.Settings.UI
         private static MainWindow settingsWindow;
         private static OobeWindow oobeWindow;
         private static ScoobeWindow scoobeWindow;
-        private static FlyoutWindow flyoutWindow;
 
         public static void ClearSettingsWindow()
         {
@@ -380,11 +379,6 @@ namespace Microsoft.PowerToys.Settings.UI
         public static void ClearScoobeWindow()
         {
             scoobeWindow = null;
-        }
-
-        public static void ClearFlyoutWindow()
-        {
-            flyoutWindow = null;
         }
 
         public static Type GetPage(string settingWindow)

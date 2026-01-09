@@ -10,18 +10,23 @@
     <Page.Resources>
         <tkcontrols:MarkdownThemes
             x:Key="ReleaseNotesMarkdownThemeConfig"
+            BoldFontWeight="SemiBold"
             H1FontSize="28"
             H1FontWeight="SemiBold"
             H1Margin="0, 36, 0, 8"
-            H2FontSize="18"
+            H2FontSize="20"
             H2FontWeight="SemiBold"
             H2Margin="0, 16, 0, 4"
-            H3FontSize="14"
+            H3FontSize="16"
             H3FontWeight="SemiBold"
             H3Margin="0, 16, 0, 4"
             HorizontalRuleBrush="{StaticResource DividerStrokeColorDefaultBrush}"
             HorizontalRuleThickness="1"
-            ListBulletSpacing="4" />
+            ImageMaxWidth="480"
+            ImageMaxHeight="360"
+            ImageStretch="Uniform"
+            ListBulletSpacing="1"
+            ListGutterWidth="10" />
         <tkcontrols:MarkdownConfig x:Key="ReleaseNotesMarkdownConfig" Themes="{StaticResource ReleaseNotesMarkdownThemeConfig}" />
     </Page.Resources>
 

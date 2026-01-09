@@ -16,11 +16,11 @@
                 Margin="0,8,0,8"
                 Orientation="Vertical"
                 Spacing="4">
-                <TextBlock Style="{StaticResource BodyTextBlockStyle}" Text="{x:Bind VersionText}" />
+                <TextBlock Style="{StaticResource BodyTextBlockStyle}" Text="{x:Bind DateText}" />
                 <TextBlock
                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                     Style="{StaticResource CaptionTextBlockStyle}"
-                    Text="{x:Bind DateText}" />
+                    Text="{x:Bind VersionText}" />
             </StackPanel>
         </DataTemplate>
     </UserControl.Resources>
@@ -53,7 +53,7 @@
             IsPaneToggleButtonVisible="False"
             IsSettingsVisible="False"
             MenuItemTemplate="{StaticResource ReleaseNavItemTemplate}"
-            OpenPaneLength="220"
+            OpenPaneLength="186"
             PaneDisplayMode="Left"
             SelectionChanged="NavigationView_SelectionChanged">
             <NavigationView.MenuItems>

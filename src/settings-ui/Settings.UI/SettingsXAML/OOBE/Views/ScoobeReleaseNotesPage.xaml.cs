@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -43,6 +44,17 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             @"!\[([^\]]*Hero[^\]]*)\]\(([^)]+)\)",
             RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
+        /// <summary>
+        /// Regex to match GitHub PR/Issue references (e.g., #41029).
+        /// Only matches # followed by digits that are not already part of a markdown link.
+        /// </summary>
+        private static readonly Regex GitHubPrReferenceRegex = new Regex(
+            @"(?<!\[)#(\d+)(?!\])",
+            RegexOptions.Compiled);
+
+        private static readonly CompositeFormat GitHubPrLinkTemplate = CompositeFormat.Parse("[#{0}](https://github.com/microsoft/PowerToys/pull/{0})");
+        private static readonly CompositeFormat GitHubReleaseLinkTemplate = CompositeFormat.Parse("https://github.com/microsoft/PowerToys/releases/tag/{0}");
+
         private static (string Markdown, string HeroImageUrl) ProcessReleaseNotesMarkdown(IList<PowerToysReleaseInfo> releases)
         {
             if (releases == null || releases.Count == 0)
@@ -73,8 +85,12 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 
                 isFirst = false;
 
-                releaseNotesHtmlBuilder.AppendLine("# " + release.Name);
-                var notes = removeHashRegex.Replace(release.ReleaseNotes, "\r\n### Highlights");
+                var releaseUrl = string.Format(CultureInfo.InvariantCulture, GitHubReleaseLinkTemplate, release.TagName);
+                releaseNotesHtmlBuilder.AppendLine(CultureInfo.InvariantCulture, $"# {release.Name}");
+                releaseNotesHtmlBuilder.AppendLine(CultureInfo.InvariantCulture, $"{release.PublishedDate.ToString("MMMM d, yyyy", CultureInfo.CurrentCulture)} • [View on GitHub]({releaseUrl})");
+                releaseNotesHtmlBuilder.AppendLine();
+                releaseNotesHtmlBuilder.AppendLine();
+                var notes = removeHashRegex.Replace(release.ReleaseNotes, "\r\n## Highlights");
                 notes = notes.Replace("[github-current-release-work]", $"[github-current-release-work{++counter}]");
                 notes = removeHotfixHashRegex.Replace(notes, string.Empty);
 
@@ -87,6 +103,10 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 
                 // Remove Hero images from the markdown
                 notes = HeroImageRegex.Replace(notes, string.Empty);
+
+                // Convert GitHub PR/Issue references to hyperlinks
+                notes = GitHubPrReferenceRegex.Replace(notes, match =>
+                    string.Format(CultureInfo.InvariantCulture, GitHubPrLinkTemplate, match.Groups[1].Value));
 
                 releaseNotesHtmlBuilder.AppendLine(notes);
                 releaseNotesHtmlBuilder.AppendLine("&nbsp;");
