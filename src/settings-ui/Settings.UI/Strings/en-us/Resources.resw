@@ -3293,10 +3293,12 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <comment>Peek is a product name, do not loc</comment>
   </data>
   <data name="Peek_AlwaysOnTop.Header" xml:space="preserve">
-    <value>Always put Peek's window on the top of the stack</value>
+    <value>Peek window is always on top</value>
+    <comment>Peek is a product name, do not loc</comment>
   </data>
   <data name="Peek_ShowTaskbarIcon.Header" xml:space="preserve">
-    <value>Show Peek's icon on the taskbar</value>
+    <value>Show Peek icon on the taskbar</value>
+    <comment>Peek is a product name, do not loc</comment>
   </data>
   <data name="Peek_CloseAfterLosingFocus.Header" xml:space="preserve">
     <value>Automatically close the Peek window after it loses focus</value>
