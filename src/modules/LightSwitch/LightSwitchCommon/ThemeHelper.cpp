@@ -1,15 +1,15 @@
-#include "pch.h"
-#include <windows.h>
-#include "ThemeHelper.h"
 #include <windows.h>
 #include <shellapi.h>
-#include "SettingsConstants.h"
-#include <common/logger/logger.h>
 #include <thread>
 #include <atomic>
 #include <chrono>
 #include <tlhelp32.h>
 #include <psapi.h>
+#include <vector>
+
+#include "ThemeHelper.h"
+#include "SettingsConstants.h"
+#include <common/logger/logger.h>
 
 // Controls changing the themes.
 
@@ -72,7 +72,7 @@ void SetSystemTheme(bool mode)
         if (mode) // if are changing to light mode
         {
             ResetColorPrevalence();
-            Logger::info(L"[LightSwitchService] Reset ColorPrevalence to default when switching to light mode.");
+            Logger::info(L"[LightSwitch] Reset ColorPrevalence to default when switching to light mode.");
         }
 
         SendMessageTimeout(HWND_BROADCAST, WM_SETTINGCHANGE, 0, reinterpret_cast<LPARAM>(L"ImmersiveColorSet"), SMTO_ABORTIFHUNG, 5000, nullptr);
@@ -275,11 +275,6 @@ static void PreemptiveSettingsMonitor()
         // Very short sleep to catch it quickly (10ms polling)
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
-}
-
-void CloseSettingsApp()
-{
-    FindAndSuppressSettings();
 }
 
 // Start the preemptive Settings monitor - call this before any operation that might trigger Settings

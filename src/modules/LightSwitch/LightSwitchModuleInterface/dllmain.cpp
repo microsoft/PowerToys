@@ -7,7 +7,8 @@
 #include <locale>
 #include <codecvt>
 #include <common/utils/logger_helper.h>
-#include "ThemeHelper.h"
+#include <ThemeHelper.h>
+#include <SettingsConstants.h>
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 

@@ -1,7 +1,8 @@
 ﻿#include <windows.h>
 #include <tchar.h>
 #include "ThemeScheduler.h"
-#include "ThemeHelper.h"
+#include <ThemeHelper.h>
+#include <SettingsConstants.h>
 #include <common/SettingsAPI/settings_objects.h>
 #include <common/SettingsAPI/settings_helpers.h>
 #include <stdio.h>
