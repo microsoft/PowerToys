@@ -1812,6 +1812,7 @@ TEXTBOXNEWLINE
 textextractor
 TEXTINCLUDE
 tfopen
+tgamma
 tgz
 THEMECHANGED
 themeresources

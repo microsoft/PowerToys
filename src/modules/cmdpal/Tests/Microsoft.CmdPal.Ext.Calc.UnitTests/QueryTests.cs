@@ -6,7 +6,6 @@ using System.Linq;
 using Microsoft.CmdPal.Ext.Calc.Helper;
 using Microsoft.CmdPal.Ext.Calc.Pages;
 using Microsoft.CmdPal.Ext.UnitTestBase;
-using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.Ext.Calc.UnitTests;
@@ -72,7 +71,7 @@ public class QueryTests : CommandPaletteUnitTestBase
     [DataRow("sin(60)", "0.809016", CalculateEngine.TrigMode.Gradians)]
     public void TrigModeSettingsTest(string input, string expected, CalculateEngine.TrigMode trigMode)
     {
-        var settings = new Settings(trigUnit: trigMode);
+        var settings = new Settings(trigUnit: trigMode, outputUseEnglishFormat: true);
 
         var page = new CalculatorListPage(settings);
 

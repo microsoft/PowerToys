@@ -1,9 +1,8 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.Text.RegularExpressions;
 using CalculatorEngineCommon;
@@ -16,6 +15,7 @@ public static class CalculateEngine
     private static readonly PropertySet _constants = new()
     {
         { "pi", Math.PI },
+        { "π", Math.PI },
         { "e", Math.E },
     };
 
@@ -59,6 +59,8 @@ public static class CalculateEngine
 
         input = CalculateHelper.FixHumanMultiplicationExpressions(input);
 
+        input = CalculateHelper.UpdateFactorialFunctions(input);
+
         // Get the user selected trigonometry unit
         TrigMode trigMode = settings.TrigUnit;
 
@@ -74,6 +76,13 @@ public static class CalculateEngine
         if (result == "NaN")
         {
             error = Properties.Resources.calculator_expression_not_complete;
+            return default;
+        }
+
+        // If we're out of bounds
+        if (result is "inf" or "-inf")
+        {
+            error = Properties.Resources.calculator_not_covert_to_decimal;
             return default;
         }
 
@@ -110,15 +119,19 @@ public static class CalculateEngine
     /// </summary>
     public static decimal FormatMax15Digits(decimal value, CultureInfo cultureInfo)
     {
+        const int maxDisplayDigits = 15;
+
+        if (value == 0m)
+        {
+            return 0m;
+        }
+
         var absValue = Math.Abs(value);
         var integerDigits = absValue >= 1 ? (int)Math.Floor(Math.Log10((double)absValue)) + 1 : 1;
 
-        var maxDecimalDigits = Math.Max(0, 15 - integerDigits);
+        var maxDecimalDigits = Math.Max(0, maxDisplayDigits - integerDigits);
 
         var rounded = Math.Round(value, maxDecimalDigits, MidpointRounding.AwayFromZero);
-
-        var formatted = rounded.ToString("G29", cultureInfo);
-
-        return Convert.ToDecimal(formatted, cultureInfo);
+        return rounded / 1.000000000000000000000000000000000m;
     }
 }
