@@ -113,38 +113,41 @@ namespace Peek.FilePreviewer.Previewers
 
                 await Dispatcher.RunOnUiThread(async () =>
                 {
-                    bool isHtml = File.Extension == ".html" || File.Extension == ".htm";
-                    bool isMarkdown = File.Extension == ".md";
-                    bool isSvg = File.Extension == ".svg";
+                    string extension = File.Extension;
 
-                    bool supportedByMonaco = MonacoHelper.SupportedMonacoFileTypes.Contains(File.Extension);
-                    bool useMonaco = supportedByMonaco && !isHtml && !isMarkdown && !isSvg;
+                    // Default: non-dev file preview with standard context menu
+                    IsDevFilePreview = false;
+                    CustomContextMenu = false;
 
-                    IsDevFilePreview = supportedByMonaco;
-                    CustomContextMenu = useMonaco;
-
-                    if (useMonaco)
+                    // Determine preview strategy based on file type priority
+                    if (extension == ".md")
                     {
-                        var raw = await ReadHelper.Read(File.Path.ToString());
-                        Preview = new Uri(MonacoHelper.PreviewTempFile(raw, File.Extension, TempFolderPath.Path, _previewSettings.SourceCodeTryFormat, _previewSettings.SourceCodeWrapText, _previewSettings.SourceCodeStickyScroll, _previewSettings.SourceCodeFontSize, _previewSettings.SourceCodeMinimap));
-                    }
-                    else if (isMarkdown)
-                    {
-                        IsDevFilePreview = false;
+                        // Markdown files use custom renderer
                         var raw = await ReadHelper.Read(File.Path.ToString());
                         Preview = new Uri(MarkdownHelper.PreviewTempFile(raw, File.Path, TempFolderPath.Path));
                     }
-                    else if (isSvg)
+                    else if (extension == ".svg")
                     {
                         // SVG files are rendered directly by WebView2 for better compatibility
                         // with complex SVGs from Adobe Illustrator, Inkscape, etc.
-                        IsDevFilePreview = false;
                         Preview = new Uri(File.Path);
+                    }
+                    else if (extension == ".html" || extension == ".htm")
+                    {
+                        // Simple html file to preview. Shouldn't do things like enabling scripts or using a virtual mapped directory.
+                        Preview = new Uri(File.Path);
+                    }
+                    else if (MonacoHelper.SupportedMonacoFileTypes.Contains(extension))
+                    {
+                        // Source code files use Monaco editor
+                        IsDevFilePreview = true;
+                        CustomContextMenu = true;
+                        var raw = await ReadHelper.Read(File.Path.ToString());
+                        Preview = new Uri(MonacoHelper.PreviewTempFile(raw, extension, TempFolderPath.Path, _previewSettings.SourceCodeTryFormat, _previewSettings.SourceCodeWrapText, _previewSettings.SourceCodeStickyScroll, _previewSettings.SourceCodeFontSize, _previewSettings.SourceCodeMinimap));
                     }
                     else
                     {
-                        // Simple html file to preview. Shouldn't do things like enabling scripts or using a virtual mapped directory.
-                        IsDevFilePreview = false;
+                        // Fallback for other supported file types (e.g., PDF)
                         Preview = new Uri(File.Path);
                     }
                 });

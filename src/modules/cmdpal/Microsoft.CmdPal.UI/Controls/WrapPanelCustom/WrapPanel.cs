@@ -99,8 +99,6 @@ public sealed partial class WrapPanel : Panel
         set { SetValue(HorizontalSpacingProperty, value); }
     }
 
-    private bool IsSectionItem(UIElement element) => element is FrameworkElement fe && fe.DataContext is ListItemViewModel item && item.IsSectionOrSeparator;
-
     /// <summary>
     /// Identifies the <see cref="HorizontalSpacing"/> dependency property.
     /// </summary>
@@ -350,7 +348,7 @@ public sealed partial class WrapPanel : Panel
                 return;
             }
 
-            var isFullLine = IsSectionItem(child);
+            var isFullLine = GetIsFullLine(child);
             var desiredMeasure = new UvMeasure(Orientation, child.DesiredSize);
 
             if (isFullLine)

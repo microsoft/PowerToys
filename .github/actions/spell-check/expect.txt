@@ -215,6 +215,7 @@ cim
 CImage
 cla
 CLASSDC
+classmethod
 CLASSNOTAVAILABLE
 CLEARTYPE
 clickable
@@ -364,7 +365,9 @@ DEFAULTFLAGS
 DEFAULTICON
 defaultlib
 DEFAULTONLY
+DEFAULTSIZE
 DEFAULTTONEAREST
+Defaulttonearest
 DEFAULTTONULL
 DEFAULTTOPRIMARY
 DEFERERASE
@@ -456,7 +459,6 @@ DWMWINDOWATTRIBUTE
 DWMWINDOWMAXIMIZEDCHANGE
 DWORDLONG
 dworigin
-DWPOS
 dwrite
 dxgi
 eab
@@ -677,7 +679,6 @@ hicon
 HICONSM
 HIDEREADONLY
 HIDEWINDOW
-hif
 Hif
 HIMAGELIST
 himl
@@ -831,15 +832,16 @@ ITHUMBNAIL
 IUI
 IUWP
 IWIC
+jeli
 jfif
 jgeosdfsdsgmkedfgdfgdfgbkmhcgcflmi
 jjw
+JOBOBJECT
 jobject
 jpe
 jpnime
 Jsons
 jsonval
-jxl
 jxr
 keybd
 KEYBDDATA
@@ -868,6 +870,7 @@ lastcodeanalysissucceeded
 LASTEXITCODE
 LAYOUTRTL
 lbl
+Lbuttondown
 LCh
 lcid
 LCIDTo
@@ -990,6 +993,7 @@ maxversiontested
 mber
 MBM
 MBR
+Mbuttondown
 MDICHILD
 MDL
 mdtext
@@ -1448,6 +1452,7 @@ RAWINPUTHEADER
 RAWMODE
 RAWPATH
 rbhid
+Rbuttondown
 rclsid
 RCZOOMIT
 remotedesktop
@@ -1463,7 +1468,6 @@ recyclebin
 Redist
 Reencode
 REFCLSID
-REFGUID
 REFIID
 REGCLS
 regfile
@@ -1570,7 +1574,6 @@ SETBUDDYINT
 SETCONTEXT
 SETCURSEL
 setcursor
-SETDESKWALLPAPER
 SETFOCUS
 SETFOREGROUND
 SETHOTKEY
@@ -1600,7 +1603,7 @@ sharpfuzz
 SHCNE
 SHCNF
 SHCONTF
-Shcore
+shcore
 shellapi
 SHELLDETAILS
 SHELLDLL
@@ -1659,7 +1662,6 @@ SKEXP
 SKIPOWNPROCESS
 sku
 SLGP
-slideshow
 sln
 slnf
 slnx
@@ -1700,6 +1702,7 @@ srw
 srwlock
 sse
 ssf
+sszzz
 STACKFRAME
 stackoverflow
 STARTF
@@ -1710,6 +1713,7 @@ STARTUPINFOW
 startupscreen
 STATFLAG
 STATICEDGE
+staticmethod
 STATSTG
 stdafx
 STDAPI
@@ -1753,6 +1757,7 @@ svgz
 SVSI
 SWFO
 SWP
+Swp
 SWPNOSIZE
 SWPNOZORDER
 SWRESTORE
@@ -1772,6 +1777,7 @@ syskeydown
 SYSKEYUP
 SYSLIB
 SYSMENU
+Sysmenu
 systemai
 SYSTEMAPPS
 SYSTEMMODAL
@@ -1874,6 +1880,7 @@ uild
 uitests
 UITo
 ULONGLONG
+Ultrawide
 ums
 UMax
 UMin
@@ -1896,7 +1903,6 @@ unwide
 unzoom
 UOffset
 UOI
-UPDATEINIFILE
 UPDATENOW
 UPDATEREGISTRY
 updown
@@ -2097,6 +2103,7 @@ Wwanpp
 xap
 XAxis
 XButton
+Xbuttondown
 xclip
 xcopy
 XDeployment
