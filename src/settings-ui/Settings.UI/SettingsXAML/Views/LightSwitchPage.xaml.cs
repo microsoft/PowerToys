@@ -417,6 +417,18 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
         }
 
+        private void OpenThemeSettings_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                Helpers.StartProcessHelper.Start(Helpers.StartProcessHelper.ThemeSettings);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Error while trying to open the system theme settings", ex);
+            }
+        }
+
         private void SunriseModeChartState()
         {
             if (this.ViewModel.Latitude != "0.0" && this.ViewModel.Longitude != "0.0")

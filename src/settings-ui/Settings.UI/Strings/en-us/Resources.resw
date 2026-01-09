@@ -5843,7 +5843,7 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   <data name="LightSwitch_EnableThemeSwitchingDescription.Text" xml:space="preserve">
     <value>Allow Light Switch to swap themes when the color mode changes.</value>
   </data>
-  <data name="LightSwitch_EnableThemeSwitching_LearnMoreLink.Text" xml:space="preserve">
+  <data name="LightSwitch_EnableThemeSwitching_LearnMoreLink.Content" xml:space="preserve">
     <value>Create and personalize Windows themes</value>
   </data>
 </root>
