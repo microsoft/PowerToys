@@ -10,6 +10,7 @@ using global::PowerToys.GPOWrapper;
 using ManagedCommon;
 using Microsoft.PowerToys.QuickAccess.Helpers;
 using Microsoft.PowerToys.QuickAccess.Services;
+using Microsoft.PowerToys.Settings.UI.Controls; // Add missing namespace
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
@@ -105,10 +106,7 @@ public sealed class AllAppsViewModel : Observable
 
                 if (existingItem.IsEnabled != isEnabled)
                 {
-                    var callback = existingItem.EnabledChangedCallback;
-                    existingItem.EnabledChangedCallback = null;
-                    existingItem.IsEnabled = isEnabled;
-                    existingItem.EnabledChangedCallback = callback;
+                    existingItem.UpdateStatus(isEnabled);
                 }
 
                 desiredItems.Add(existingItem);
@@ -157,9 +155,10 @@ public sealed class AllAppsViewModel : Observable
         }
     }
 
-    private void EnabledChangedOnUI(FlyoutMenuItem item)
+    private void EnabledChangedOnUI(ModuleListItem item)
     {
-        if (_coordinator.UpdateModuleEnabled(item.Tag, item.IsEnabled))
+        var flyoutItem = (FlyoutMenuItem)item;
+        if (_coordinator.UpdateModuleEnabled(flyoutItem.Tag, flyoutItem.IsEnabled))
         {
             _coordinator.NotifyUserSettingsInteraction();
         }

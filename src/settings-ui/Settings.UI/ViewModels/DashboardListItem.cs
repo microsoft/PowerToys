@@ -26,21 +26,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             set => base.Tag = value;
         }
 
-        public Action<DashboardListItem> EnabledChangedCallback { get; set; }
-
-        public override bool IsEnabled
-        {
-            get => base.IsEnabled;
-            set
-            {
-                if (base.IsEnabled != value)
-                {
-                    base.IsEnabled = value;
-                    EnabledChangedCallback?.Invoke(this);
-                }
-            }
-        }
-
         public bool Visible
         {
             get => _visible;
