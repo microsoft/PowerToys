@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System; // For Action
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
@@ -17,6 +18,22 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         private bool _isLocked;
         private object? _tag;
         private ICommand? _clickCommand;
+        private bool _isUpdating;
+
+        public Action<ModuleListItem>? EnabledChangedCallback { get; set; }
+
+        public void UpdateStatus(bool isEnabled)
+        {
+            _isUpdating = true;
+            try
+            {
+                IsEnabled = isEnabled;
+            }
+            finally
+            {
+                _isUpdating = false;
+            }
+        }
 
         public virtual string Label
         {
@@ -79,6 +96,11 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                 {
                     _isEnabled = value;
                     OnPropertyChanged();
+
+                    if (!_isUpdating)
+                    {
+                        EnabledChangedCallback?.Invoke(this);
+                    }
                 }
             }
         }

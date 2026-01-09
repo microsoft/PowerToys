@@ -50,7 +50,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         // Flag to prevent circular updates when a UI toggle triggers settings changes.
         private bool _isUpdatingFromUI;
-        private bool _isUpdatingFromSettings;
 
         private AllHotkeyConflictsData _allHotkeyConflictsData = new AllHotkeyConflictsData();
 
@@ -258,7 +257,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 // Only update if there's an actual change to minimize UI notifications.
                 if (item.IsEnabled != newEnabledState)
                 {
-                    item.IsEnabled = newEnabledState;
+                    item.UpdateStatus(newEnabledState);
                 }
 
                 if (item.IsLocked != newLockedState)
@@ -275,19 +274,17 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         /// Sets the _isUpdatingFromUI flag to prevent circular updates, then updates
         /// settings, re-sorts if needed, and refreshes dependent collections.
         /// </summary>
-        private void EnabledChangedOnUI(DashboardListItem dashboardListItem)
+        private void EnabledChangedOnUI(ModuleListItem item)
         {
-            if (_isUpdatingFromSettings)
-            {
-                return;
-            }
+            var dashboardListItem = (DashboardListItem)item;
+            var isEnabled = dashboardListItem.IsEnabled;
 
             _isUpdatingFromUI = true;
             try
             {
-                Views.ShellPage.UpdateGeneralSettingsCallback(dashboardListItem.Tag, dashboardListItem.IsEnabled);
+                Views.ShellPage.UpdateGeneralSettingsCallback(dashboardListItem.Tag, isEnabled);
 
-                if (dashboardListItem.Tag == ModuleType.NewPlus && dashboardListItem.IsEnabled == true)
+                if (dashboardListItem.Tag == ModuleType.NewPlus && isEnabled == true)
                 {
                     var settingsUtils = SettingsUtils.Default;
                     var settings = NewPlusViewModel.LoadSettings(settingsUtils);
@@ -325,7 +322,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 return;
             }
 
-            _isUpdatingFromSettings = true;
             try
             {
                 RefreshModuleList();
@@ -339,10 +335,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             catch (Exception ex)
             {
                 Logger.LogError($"Updating active/disabled modules list failed: {ex.Message}");
-            }
-            finally
-            {
-                _isUpdatingFromSettings = false;
             }
         }
 
