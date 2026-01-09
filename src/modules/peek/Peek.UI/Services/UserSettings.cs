@@ -46,7 +46,7 @@ namespace Peek.UI
             }
         }
 
-        public event EventHandler Changed;
+        public event EventHandler? Changed;
 
         /// <summary>
         /// Gets a value indicating whether Peek shows its window on the top of the stack.

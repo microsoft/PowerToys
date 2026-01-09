@@ -16,6 +16,6 @@ namespace Peek.UI
 
         public bool ConfirmFileDelete { get; set; }
 
-        public event EventHandler Changed;
+        public event EventHandler? Changed;
     }
 }

@@ -54,7 +54,7 @@
                     <tkcontrols:SettingsCard
                         Name="PeekShowTaskbarIcon"
                         x:Uid="Peek_ShowTaskbarIcon"
-                        HeaderIcon="{ui:FontIcon Glyph=&#xEE64;}">
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE8F9;}">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.ShowTaskbarIcon, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                     <tkcontrols:SettingsCard

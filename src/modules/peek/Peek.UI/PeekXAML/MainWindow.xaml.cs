@@ -74,8 +74,11 @@ namespace Peek.UI
 
         private async void UpdateWindowBySettings()
         {
-            IsAlwaysOnTop = userSettings.AlwaysOnTop;
-            IsShownInSwitchers = userSettings.ShowTaskbarIcon;
+            DispatcherQueue.TryEnqueue(() =>
+            {
+                IsAlwaysOnTop = userSettings.AlwaysOnTop;
+                IsShownInSwitchers = userSettings.ShowTaskbarIcon;
+            });
         }
 
         private async void Content_KeyUp(object sender, KeyRoutedEventArgs e)
