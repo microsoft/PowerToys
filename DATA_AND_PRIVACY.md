@@ -30,7 +30,11 @@ _If you want to find diagnostic data events in the source code, these two links 
 - [C++ events](https://github.com/search?q=repo%3Amicrosoft%2FPowerToys+ProjectTelemetryPrivacyDataTag&type=code)
 
 ### General
-<table style="width:100%">
+<table style="width:100%; table-layout:fixed">
+  <colgroup>
+    <col style="width:40%">
+    <col style="width:60%">
+  </colgroup>
   <tr>
     <th>Event Name</th>
     <th>Description</th>
@@ -42,6 +46,18 @@ _If you want to find diagnostic data events in the source code, these two links 
   <tr>
     <td>Microsoft.PowerToys.GeneralSettingsChanged</td>
     <td>Logs changes made to general settings within PowerToys.</td>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.Install_Fail</td>
+    <td>Triggered when the PowerToys installation process encounters an error and fails to complete.</td>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.Repair_Cancel</td>
+    <td>Triggered when a PowerToys repair operation is cancelled by the user before completion.</td>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.Repair_Fail</td>
+    <td>Triggered when the PowerToys repair operation fails to complete successfully due to an error.</td>
   </tr>
   <tr>
     <td>Microsoft.PowerToys.Runner_Launch</td>
@@ -60,6 +76,18 @@ _If you want to find diagnostic data events in the source code, these two links 
     <td>Triggered when SCOOBE (Secondary Out-of-box experience) starts.</td>
   </tr>
   <tr>
+    <td>Microsoft.PowerToys.ShortcutConflictControlClickedEvent</td>
+    <td>Triggered when a user clicks on the Shortcut Conflict Control button in the PowerToys Settings UI Dashboard.</td>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.ShortcutConflictDetectedEvent</td>
+    <td>Triggered when keyboard shortcut conflicts are detected in the PowerToys Settings UI Dashboard.</td>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.ShortcutConflictResolvedEvent</td>
+    <td>Triggered when a keyboard shortcut conflict is resolved in the PowerToys Settings UI.</td>
+  </tr>
+  <tr>
     <td>Microsoft.PowerToys.TrayFlyoutActivatedEvent</td>
     <td>Indicates when the tray flyout menu is activated.</td>
   </tr>
@@ -68,13 +96,25 @@ _If you want to find diagnostic data events in the source code, these two links 
     <td>Logs when a utility from the tray flyout menu is run.</td>
   </tr>
   <tr>
+    <td>Microsoft.PowerToys.UnInstall_Cancel</td>
+    <td>Triggered when the PowerToys uninstallation process is cancelled by the user before completion.</td>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.UnInstall_Fail</td>
+    <td>Triggered when the PowerToys uninstallation process fails to complete successfully due to an error. </td>
+  </tr>
+  <tr>
     <td>Microsoft.PowerToys.Uninstall_Success</td>
     <td>Logs when PowerToys is successfully uninstalled (who would do such a thing!).</td>
   </tr>
 </table>
 
 ### OOBE (Out-of-box experience)
-<table style="width:100%">
+<table style="width:100%; table-layout:fixed">
+  <colgroup>
+    <col style="width:40%">
+    <col style="width:60%">
+  </colgroup>
   <tr>
     <th>Event Name</th>
     <th>Description</th>
@@ -94,7 +134,11 @@ _If you want to find diagnostic data events in the source code, these two links 
 </table>
 
 ### Advanced Paste
-<table style="width:100%">
+<table style="width:100%; table-layout:fixed">
+  <colgroup>
+    <col style="width:40%">
+    <col style="width:60%">
+  </colgroup>
   <tr>
     <th>Event Name</th>
     <th>Description</th>
@@ -162,7 +206,11 @@ _If you want to find diagnostic data events in the source code, these two links 
 </table>
 
 ### Always on Top
-<table style="width:100%">
+<table style="width:100%; table-layout:fixed">
+  <colgroup>
+    <col style="width:40%">
+    <col style="width:60%">
+  </colgroup>
   <tr>
     <th>Event Name</th>
     <th>Description</th>
@@ -182,7 +230,11 @@ _If you want to find diagnostic data events in the source code, these two links 
 </table>
 
 ### Awake
-<table style="width:100%">
+<table style="width:100%; table-layout:fixed">
+  <colgroup>
+    <col style="width:40%">
+    <col style="width:60%">
+  </colgroup>
   <tr>
     <th>Event Name</th>
     <th>Description</th>
@@ -210,7 +262,11 @@ _If you want to find diagnostic data events in the source code, these two links 
 </table>
 
 ### Color Picker
-<table style="width:100%">
+<table style="width:100%; table-layout:fixed">
+  <colgroup>
+    <col style="width:40%">
+    <col style="width:60%">
+  </colgroup>
   <tr>
     <th>Event Name</th>
     <th>Description</th>
@@ -238,7 +294,11 @@ _If you want to find diagnostic data events in the source code, these two links 
 </table>
 
 ### Command Not Found
-<table style="width:100%">
+<table style="width:100%; table-layout:fixed">
+  <colgroup>
+    <col style="width:40%">
+    <col style="width:60%">
+  </colgroup>
   <tr>
     <th>Event Name</th>
     <th>Description</th>
@@ -263,7 +323,11 @@ _If you want to find diagnostic data events in the source code, these two links 
 
 ### Command Palette
 
-<table style="width:100%">
+<table style="width:100%; table-layout:fixed">
+  <colgroup>
+    <col style="width:40%">
+    <col style="width:60%">
+  </colgroup>
   <tr>
     <th>Event Name</th>
     <th>Description</th>
@@ -327,7 +391,11 @@ _If you want to find diagnostic data events in the source code, these two links 
 </table>
 
 ### Crop And Lock
-<table style="width:100%">
+<table style="width:100%; table-layout:fixed">
+  <colgroup>
+    <col style="width:40%">
+    <col style="width:60%">
+  </colgroup>
   <tr>
     <th>Event Name</th>
     <th>Description</th>
@@ -350,8 +418,28 @@ _If you want to find diagnostic data events in the source code, these two links 
   </tr>  
 </table>
 
+### Cursor Wrap
+<table style="width:100%; table-layout:fixed">
+  <colgroup>
+    <col style="width:40%">
+    <col style="width:60%">
+  </colgroup>
+  <tr>
+    <th>Event Name</th>
+    <th>Description</th>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.CursorWrap_EnableCursorWrap</td>
+    <td>Triggered when Cursor Wrap is enabled or disabled.</td>
+  </tr>
+</table>
+
 ### Environment Variables
-<table style="width:100%">
+<table style="width:100%; table-layout:fixed">
+  <colgroup>
+    <col style="width:40%">
+    <col style="width:60%">
+  </colgroup>
   <tr>
     <th>Event Name</th>
     <th>Description</th>
@@ -379,7 +467,11 @@ _If you want to find diagnostic data events in the source code, these two links 
 </table>
 
 ### FancyZones
-<table style="width:100%">
+<table style="width:100%; table-layout:fixed">
+  <colgroup>
+    <col style="width:40%">
+    <col style="width:60%">
+  </colgroup>
   <tr>
     <th>Event Name</th>
     <th>Description</th>
@@ -450,8 +542,40 @@ _If you want to find diagnostic data events in the source code, these two links 
   </tr>
 </table>
 
+### File Locksmith
+<table style="width:100%; table-layout:fixed">
+  <colgroup>
+    <col style="width:40%">
+    <col style="width:60%">
+  </colgroup>
+  <tr>
+    <th>Event Name</th>
+    <th>Description</th>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.FileLocksmith_EnableFileLocksmith</td>
+    <td>Triggered when File Locksmith is enabled.</td>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.FileLocksmith_Invoked</td>
+    <td>Occurs when File Locksmith is invoked.</td>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.FileLocksmith_InvokedRet</td>
+    <td>Triggered when File Locksmith invocation returns a result.</td>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.FileLocksmith_QueryContextMenuError</td>
+    <td>Occurs when there is an error querying the context menu for File Locksmith.</td>
+  </tr>
+</table>
+
 ### FileExplorerAddOns
-<table style="width:100%">
+<table style="width:100%; table-layout:fixed">
+  <colgroup>
+    <col style="width:40%">
+    <col style="width:60%">
+  </colgroup>
   <tr>
     <th>Event Name</th>
     <th>Description</th>
@@ -534,32 +658,12 @@ _If you want to find diagnostic data events in the source code, these two links 
   </tr>
 </table>
 
-### File Locksmith
-<table style="width:100%">
-  <tr>
-    <th>Event Name</th>
-    <th>Description</th>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.FileLocksmith_EnableFileLocksmith</td>
-    <td>Triggered when File Locksmith is enabled.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.FileLocksmith_Invoked</td>
-    <td>Occurs when File Locksmith is invoked.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.FileLocksmith_InvokedRet</td>
-    <td>Triggered when File Locksmith invocation returns a result.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.FileLocksmith_QueryContextMenuError</td>
-    <td>Occurs when there is an error querying the context menu for File Locksmith.</td>
-  </tr>
-</table>
-
 ### Find My Mouse
-<table style="width:100%">
+<table style="width:100%; table-layout:fixed">
+  <colgroup>
+    <col style="width:40%">
+    <col style="width:60%">
+  </colgroup>
   <tr>
     <th>Event Name</th>
     <th>Description</th>
@@ -575,7 +679,11 @@ _If you want to find diagnostic data events in the source code, these two links 
 </table>
 
 ### Hosts File Editor
-<table style="width:100%">
+<table style="width:100%; table-layout:fixed">
+  <colgroup>
+    <col style="width:40%">
+    <col style="width:60%">
+  </colgroup>
   <tr>
     <th>Event Name</th>
     <th>Description</th>
@@ -592,10 +700,22 @@ _If you want to find diagnostic data events in the source code, these two links 
     <td>Microsoft.PowerToys.HostsFileEditorOpenedEvent</td>
     <td>Fires when Hosts File Editor is opened.</td>
   </tr>
+  <tr>
+    <td>Microsoft.PowerToys.HostEditorStartEvent</td>
+    <td>Triggered when the Hosts File Editor application starts. This logs the initialization of the Hosts File Editor UI with a timestamp.</td>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.HostEditorStartFinishEvent</td>
+    <td>Triggered when the Hosts File Editor has completed loading and is ready for user interaction.</td>
+  </tr>
 </table>
 
 ### Image Resizer
-<table style="width:100%">
+<table style="width:100%; table-layout:fixed">
+  <colgroup>
+    <col style="width:40%">
+    <col style="width:60%">
+  </colgroup>
   <tr>
     <th>Event Name</th>
     <th>Description</th>
@@ -612,10 +732,18 @@ _If you want to find diagnostic data events in the source code, these two links 
     <td>Microsoft.PowerToys.ImageResizer_InvokedRet</td>
     <td>Fires when the Image Resizer operation is completed and returns a result.</td>
   </tr>
+  <tr>
+    <td>Microsoft.PowerToys.ImageResizer_QueryContextMenuError</td>
+    <td>Triggered when there is an error querying the context menu for Image Resizer.</td>
+  </tr>
 </table>
 
 ### Keyboard Manager
-<table style="width:100%">
+<table style="width:100%; table-layout:fixed">
+  <colgroup>
+    <col style="width:40%">
+    <col style="width:60%">
+  </colgroup>
   <tr>
     <th>Event Name</th>
     <th>Description</th>
@@ -695,7 +823,11 @@ _If you want to find diagnostic data events in the source code, these two links 
 </table>
 
 ### Light Switch
-<table style="width:100%">
+<table style="width:100%; table-layout:fixed">
+  <colgroup>
+    <col style="width:40%">
+    <col style="width:60%">
+  </colgroup>
   <tr>
     <th>Event Name</th>
     <th>Description</th>
@@ -719,7 +851,11 @@ _If you want to find diagnostic data events in the source code, these two links 
 </table>
 
 ### Mouse Highlighter
-<table style="width:100%">
+<table style="width:100%; table-layout:fixed">
+  <colgroup>
+    <col style="width:40%">
+    <col style="width:60%">
+  </colgroup>
   <tr>
     <th>Event Name</th>
     <th>Description</th>
@@ -735,7 +871,11 @@ _If you want to find diagnostic data events in the source code, these two links 
 </table>
 
 ### Mouse Jump
-<table style="width:100%">
+<table style="width:100%; table-layout:fixed">
+  <colgroup>
+    <col style="width:40%">
+    <col style="width:60%">
+  </colgroup>
   <tr>
     <th>Event Name</th>
     <th>Description</th>
@@ -759,7 +899,11 @@ _If you want to find diagnostic data events in the source code, these two links 
 </table>
 
 ### Mouse Pointer Crosshairs
-<table style="width:100%">
+<table style="width:100%; table-layout:fixed">
+  <colgroup>
+    <col style="width:40%">
+    <col style="width:60%">
+  </colgroup>
   <tr>
     <th>Event Name</th>
     <th>Description</th>
@@ -775,7 +919,11 @@ _If you want to find diagnostic data events in the source code, these two links 
 </table>
 
 ### Mouse Without Borders
-<table style="width:100%">
+<table style="width:100%; table-layout:fixed">
+  <colgroup>
+    <col style="width:40%">
+    <col style="width:60%">
+  </colgroup>
   <tr>
     <th>Event Name</th>
     <th>Description</th>
@@ -827,7 +975,11 @@ _If you want to find diagnostic data events in the source code, these two links 
 </table>
 
 ### New+
-<table style="width:100%">
+<table style="width:100%; table-layout:fixed">
+  <colgroup>
+    <col style="width:40%">
+    <col style="width:60%">
+  </colgroup>
   <tr>
     <th>Event Name</th>
     <th>Description</th>
@@ -859,7 +1011,11 @@ _If you want to find diagnostic data events in the source code, these two links 
 </table>
 
 ### Peek
-<table style="width:100%">
+<table style="width:100%; table-layout:fixed">
+  <colgroup>
+    <col style="width:40%">
+    <col style="width:60%">
+  </colgroup>
   <tr>
     <th>Event Name</th>
     <th>Description</th>
@@ -895,7 +1051,11 @@ _If you want to find diagnostic data events in the source code, these two links 
 </table>
 
 ### PowerRename
-<table style="width:100%">
+<table style="width:100%; table-layout:fixed">
+  <colgroup>
+    <col style="width:40%">
+    <col style="width:60%">
+  </colgroup>
   <tr>
     <th>Event Name</th>
     <th>Description</th>
@@ -927,7 +1087,11 @@ _If you want to find diagnostic data events in the source code, these two links 
 </table>
 
 ### PowerToys Run
-<table style="width:100%">
+<table style="width:100%; table-layout:fixed">
+  <colgroup>
+    <col style="width:40%">
+    <col style="width:60%">
+  </colgroup>
   <tr>
     <th>Event Name</th>
     <th>Description</th>
@@ -975,7 +1139,11 @@ _If you want to find diagnostic data events in the source code, these two links 
 </table>
 
 ### Quick Accent
-<table style="width:100%">
+<table style="width:100%; table-layout:fixed">
+  <colgroup>
+    <col style="width:40%">
+    <col style="width:60%">
+  </colgroup>
   <tr>
     <th>Event Name</th>
     <th>Description</th>
@@ -991,7 +1159,11 @@ _If you want to find diagnostic data events in the source code, these two links 
 </table>
 
 ### Registry Preview
-<table style="width:100%">
+<table style="width:100%; table-layout:fixed">
+  <colgroup>
+    <col style="width:40%">
+    <col style="width:60%">
+  </colgroup>
   <tr>
     <th>Event Name</th>
     <th>Description</th>
@@ -1007,7 +1179,11 @@ _If you want to find diagnostic data events in the source code, these two links 
 </table>
 
 ### Screen Ruler
-<table style="width:100%">
+<table style="width:100%; table-layout:fixed">
+  <colgroup>
+    <col style="width:40%">
+    <col style="width:60%">
+  </colgroup>
   <tr>
     <th>Event Name</th>
     <th>Description</th>
@@ -1027,7 +1203,11 @@ _If you want to find diagnostic data events in the source code, these two links 
 </table>
 
 ### Shortcut Guide
-<table style="width:100%">
+<table style="width:100%; table-layout:fixed">
+  <colgroup>
+    <col style="width:40%">
+    <col style="width:60%">
+  </colgroup>
   <tr>
     <th>Event Name</th>
     <th>Description</th>
@@ -1043,7 +1223,11 @@ _If you want to find diagnostic data events in the source code, these two links 
 </table>
 
 ### Text Extractor
-<table style="width:100%">
+<table style="width:100%; table-layout:fixed">
+  <colgroup>
+    <col style="width:40%">
+    <col style="width:60%">
+  </colgroup>
   <tr>
     <th>Event Name</th>
     <th>Description</th>
@@ -1067,7 +1251,11 @@ _If you want to find diagnostic data events in the source code, these two links 
 </table>
 
 ### Workspaces
-<table style="width:100%">
+<table style="width:100%; table-layout:fixed">
+  <colgroup>
+    <col style="width:40%">
+    <col style="width:60%">
+  </colgroup>
   <tr>
     <th>Event Name</th>
     <th>Description</th>
@@ -1103,7 +1291,11 @@ _If you want to find diagnostic data events in the source code, these two links 
 </table>
 
 ### ZoomIt
-<table style="width:100%">
+<table style="width:100%; table-layout:fixed">
+  <colgroup>
+    <col style="width:40%">
+    <col style="width:60%">
+  </colgroup>
   <tr>
     <th>Event Name</th>
     <th>Description</th>
