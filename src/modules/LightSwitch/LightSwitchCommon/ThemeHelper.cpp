@@ -147,7 +147,7 @@ bool IsNightLightEnabled() noexcept
 }
 
 // This function will supplement the wallpaper path setting. It does not cause the wallpaper to change, but for consistency, it is better to set it
-static int SetRemainWallpaperPathRegistry(std::wstring const& wallpaperPath) noexcept
+static DWORD SetRemainWallpaperPathRegistry(std::wstring const& wallpaperPath) noexcept
 {
     HKEY hKey{};
     auto closeKey = RegKeyGuard(hKey);
@@ -158,14 +158,14 @@ static int SetRemainWallpaperPathRegistry(std::wstring const& wallpaperPath) noe
         // The key will be created by the Settings app
         return 0;
     }
-    if (RegSetValueExW(hKey, L"CurrentWallpaperPath", 0, REG_SZ, reinterpret_cast<const BYTE*>(wallpaperPath.data()), static_cast<DWORD>((wallpaperPath.size() + 1u) * sizeof(wchar_t))) != ERROR_SUCCESS)
+    if (auto e = RegSetValueExW(hKey, L"CurrentWallpaperPath", 0, REG_SZ, reinterpret_cast<const BYTE*>(wallpaperPath.data()), static_cast<DWORD>((wallpaperPath.size() + 1u) * sizeof(wchar_t))); e != ERROR_SUCCESS)
     {
-        return 0x301;
+        return e;
     }
     DWORD backgroundType = 0; // 0 = picture, 1 = solid color, 2 = slideshow
-    if (RegSetValueExW(hKey, L"BackgroundType", 0, REG_DWORD, reinterpret_cast<const BYTE*>(&backgroundType), static_cast<DWORD>(sizeof(DWORD))) != ERROR_SUCCESS)
+    if (auto e = RegSetValueExW(hKey, L"BackgroundType", 0, REG_DWORD, reinterpret_cast<const BYTE*>(&backgroundType), static_cast<DWORD>(sizeof(DWORD))); e != ERROR_SUCCESS)
     {
-        return 0x302;
+        return e;
     }
     return 0;
 }
@@ -178,7 +178,7 @@ static int SetRemainWallpaperPathRegistry(std::wstring const& wallpaperPath) noe
 #include <winrt/base.h>
 
 // After setting the wallpaper using this method, switching to other virtual desktops will cause the wallpaper to be restored
-static int SetWallpaperViaIDesktopWallpaper(const std::wstring& path, int style) noexcept
+static HRESULT SetWallpaperViaIDesktopWallpaper(const std::wstring& path, int style) noexcept
 {
     auto pos = static_cast<DESKTOP_WALLPAPER_POSITION>(style);
     switch (pos)
@@ -196,28 +196,28 @@ static int SetWallpaperViaIDesktopWallpaper(const std::wstring& path, int style)
     auto desktopWallpaper = winrt::try_create_instance<IDesktopWallpaper>(__uuidof(DesktopWallpaper), CLSCTX_LOCAL_SERVER);
     if (!desktopWallpaper)
     {
-        return 0x301;
+        return E_FAIL;
     }
-    if (desktopWallpaper->SetPosition(pos) != S_OK)
+    if (auto e = desktopWallpaper->SetPosition(pos); SUCCEEDED(e))
     {
-        return 0x302;
+        return e;
     }
-    if (desktopWallpaper->SetWallpaper(nullptr, path.c_str()) != S_OK)
+    if (auto e = desktopWallpaper->SetWallpaper(nullptr, path.c_str()); SUCCEEDED(e))
     {
-        return 0x303;
+        return e;
     }
     return 0;
 }
 
-int SetDesktopWallpaper(const std::wstring& path, int style) noexcept
+HRESULT SetDesktopWallpaper(const std::wstring& path, int style) noexcept
 {
-    if (auto e = SetWallpaperViaIDesktopWallpaper(path, style); e != 0)
+    if (auto e = SetWallpaperViaIDesktopWallpaper(path, style); FAILED(e))
     {
         return e;
     }
-    if (auto e = SetRemainWallpaperPathRegistry(path); e != 0)
+    if (auto e = SetRemainWallpaperPathRegistry(path); e != ERROR_SUCCESS)
     {
-        return e;
+        return HRESULT_FROM_WIN32(e);
     }
     return 0;
 }

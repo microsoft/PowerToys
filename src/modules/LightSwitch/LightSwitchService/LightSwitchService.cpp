@@ -133,13 +133,13 @@ void SetWallpaper(bool shouldBeLight)
     {
         std::wstring const& wallpaperPath = shouldBeLight ? settings.wallpaperPathLight : settings.wallpaperPathDark;
         auto style = shouldBeLight ? settings.wallpaperStyleLight : settings.wallpaperStyleDark;
-        if (auto e = SetDesktopWallpaper(wallpaperPath, style) == 0)
+        if (auto e = SetDesktopWallpaper(wallpaperPath, style); SUCCEEDED(e))
         {
             Logger::info(L"[LightSwitchService] Wallpaper is changed to {}.", wallpaperPath);
         }
         else
         {
-            Logger::error(L"[LightSwitchService] Failed to set wallpaper, error: {}.", e);
+            Logger::error(L"[LightSwitchService] Failed to change wallpaper, error: ", winrt::hresult_error(e).message());
         }
     }
 };

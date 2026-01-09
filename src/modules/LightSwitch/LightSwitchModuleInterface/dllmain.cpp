@@ -637,7 +637,14 @@ void LightSwitchInterface::ToggleTheme()
         auto&& wallpaperPath = shouldBeLight ? g_settings.m_wallpaper_path_light : g_settings.m_wallpaper_path_dark;
         auto style = shouldBeLight ? g_settings.m_wallpaper_style_light : g_settings.m_wallpaper_style_dark;
 
-        SetDesktopWallpaper(wallpaperPath, style);
+        if (auto e = SetDesktopWallpaper(wallpaperPath, style); SUCCEEDED(e))
+        {
+            Logger::info(L"[Light Switch] Wallpaper is changed to {}.", wallpaperPath);
+        }
+        else
+        {
+            Logger::error(L"[Light Switch] Failed to change wallpaper, error: ", winrt::hresult_error(e).message());
+        }
     }
 
     if (!m_manual_override_event_handle)
