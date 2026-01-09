@@ -21,11 +21,16 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [CmdConfigureIgnoreAttribute]
         public GenericProperty<List<string>> KeyboardConfigurations { get; set; }
 
+        public HotkeySettings DefaultToggleShortcut => new HotkeySettings(true, false, false, true, 0x4B);
+
         public KeyboardManagerProperties()
         {
+            ToggleShortcut = DefaultToggleShortcut;
             KeyboardConfigurations = new GenericProperty<List<string>>(new List<string> { "default", });
             ActiveConfiguration = new GenericProperty<string>("default");
         }
+
+        public HotkeySettings ToggleShortcut { get; set; }
 
         public string ToJsonString()
         {
