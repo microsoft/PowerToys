@@ -13,7 +13,7 @@
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <GenerateSatelliteAssembliesForCore>true</GenerateSatelliteAssembliesForCore>
-    <OutputPath>$(RepoRoot)..\$(Platform)\$(Configuration)\RunPlugins\Program\</OutputPath>
+    <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\RunPlugins\Program\</OutputPath>
   </PropertyGroup>
 
   <ItemGroup>

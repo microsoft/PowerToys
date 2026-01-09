@@ -9,7 +9,7 @@
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <GenerateSatelliteAssembliesForCore>true</GenerateSatelliteAssembliesForCore>
-    <OutputPath>$(RepoRoot)..\$(Platform)\$(Configuration)\RunPlugins\PowerToys\</OutputPath>
+    <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\RunPlugins\PowerToys\</OutputPath>
   </PropertyGroup>
 
   <!-- See https://learn.microsoft.com/windows/apps/develop/platform/csharp-winrt/net-projection-from-cppwinrt-component for more info -->

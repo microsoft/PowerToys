@@ -12,7 +12,7 @@
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <GenerateSatelliteAssembliesForCore>true</GenerateSatelliteAssembliesForCore>
-    <OutputPath>$(RepoRoot)..\$(Platform)\$(Configuration)\RunPlugins\UnitConverter\</OutputPath>
+    <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\RunPlugins\UnitConverter\</OutputPath>
   </PropertyGroup>
 
   <ItemGroup>

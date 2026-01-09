@@ -10,7 +10,7 @@
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <Nullable>enable</Nullable>
     <GenerateSatelliteAssembliesForCore>true</GenerateSatelliteAssembliesForCore>
-    <OutputPath>$(RepoRoot)..\$(Platform)\$(Configuration)\RunPlugins\Registry\</OutputPath>
+    <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\RunPlugins\Registry\</OutputPath>
   </PropertyGroup>
 
   <ItemGroup>

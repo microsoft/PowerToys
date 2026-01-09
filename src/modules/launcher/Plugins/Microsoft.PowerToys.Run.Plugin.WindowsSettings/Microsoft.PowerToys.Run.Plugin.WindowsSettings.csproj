@@ -13,7 +13,7 @@
     <UseWindowsForms>true</UseWindowsForms>
     <Nullable>enable</Nullable>
     <GenerateSatelliteAssembliesForCore>true</GenerateSatelliteAssembliesForCore>
-    <OutputPath>$(RepoRoot)..\$(Platform)\$(Configuration)\RunPlugins\WindowsSettings\</OutputPath>
+    <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\RunPlugins\WindowsSettings\</OutputPath>
   </PropertyGroup>
 
   <ItemGroup>
