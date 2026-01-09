@@ -18,8 +18,6 @@
     <local:NavigablePage.Resources>
         <converters:TimeSpanToFriendlyTimeConverter x:Key="TimeSpanToFriendlyTimeConverter" />
         <converters:StringToDoubleConverter x:Key="StringToDoubleConverter" />
-        <tkconverters:BoolNegationConverter x:Key="BoolNegationConverter" />
-        <tkconverters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
         <tkconverters:BoolToVisibilityConverter
             x:Key="BoolToInvertedVisibilityConverter"
             FalseValue="Visible"
@@ -294,7 +292,7 @@
                                         </StackPanel>
                                     </tkcontrols:SettingsCard>
                                     <tkcontrols:SettingsCard x:Uid="LightSwitch_WallpaperStyle">
-                                        <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <StackPanel Orientation="Horizontal" Spacing="16">
                                             <TextBlock
                                                 x:Uid="LightSwitch_WallpaperLight"
                                                 VerticalAlignment="Center"
