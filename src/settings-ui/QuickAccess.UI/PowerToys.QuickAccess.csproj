@@ -50,8 +50,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PRIResource Include="..\Settings.UI\Strings\en-us\Resources.resw">
-      <Link>Strings\en-us\Resources.resw</Link>
+    <PRIResource Include="..\Settings.UI\Strings\**\Resources.resw">
+      <Link>Strings\%(RecursiveDir)Resources.resw</Link>
     </PRIResource>
   </ItemGroup>
 

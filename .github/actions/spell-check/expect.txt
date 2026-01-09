@@ -215,6 +215,7 @@ cim
 CImage
 cla
 CLASSDC
+classmethod
 CLASSNOTAVAILABLE
 CLEARTYPE
 clickable
@@ -364,6 +365,7 @@ DEFAULTFLAGS
 DEFAULTICON
 defaultlib
 DEFAULTONLY
+DEFAULTSIZE
 DEFAULTTONEAREST
 Defaulttonearest
 DEFAULTTONULL
@@ -457,7 +459,6 @@ DWMWINDOWATTRIBUTE
 DWMWINDOWMAXIMIZEDCHANGE
 DWORDLONG
 dworigin
-DWPOS
 dwrite
 dxgi
 eab
@@ -678,7 +679,6 @@ hicon
 HICONSM
 HIDEREADONLY
 HIDEWINDOW
-hif
 Hif
 HIMAGELIST
 himl
@@ -832,15 +832,16 @@ ITHUMBNAIL
 IUI
 IUWP
 IWIC
+jeli
 jfif
 jgeosdfsdsgmkedfgdfgdfgbkmhcgcflmi
 jjw
+JOBOBJECT
 jobject
 jpe
 jpnime
 Jsons
 jsonval
-jxl
 jxr
 keybd
 KEYBDDATA
@@ -1467,7 +1468,6 @@ recyclebin
 Redist
 Reencode
 REFCLSID
-REFGUID
 REFIID
 REGCLS
 regfile
@@ -1574,7 +1574,6 @@ SETBUDDYINT
 SETCONTEXT
 SETCURSEL
 setcursor
-SETDESKWALLPAPER
 SETFOCUS
 SETFOREGROUND
 SETHOTKEY
@@ -1604,7 +1603,7 @@ sharpfuzz
 SHCNE
 SHCNF
 SHCONTF
-Shcore
+shcore
 shellapi
 SHELLDETAILS
 SHELLDLL
@@ -1663,7 +1662,6 @@ SKEXP
 SKIPOWNPROCESS
 sku
 SLGP
-slideshow
 sln
 slnf
 slnx
@@ -1704,6 +1702,7 @@ srw
 srwlock
 sse
 ssf
+sszzz
 STACKFRAME
 stackoverflow
 STARTF
@@ -1714,6 +1713,7 @@ STARTUPINFOW
 startupscreen
 STATFLAG
 STATICEDGE
+staticmethod
 STATSTG
 stdafx
 STDAPI
@@ -1880,6 +1880,7 @@ uild
 uitests
 UITo
 ULONGLONG
+Ultrawide
 ums
 UMax
 UMin
@@ -1902,7 +1903,6 @@ unwide
 unzoom
 UOffset
 UOI
-UPDATEINIFILE
 UPDATENOW
 UPDATEREGISTRY
 updown

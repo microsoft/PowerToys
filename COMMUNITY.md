@@ -6,9 +6,6 @@ Names are in alphabetical order based on first name.
 
 ## High impact community members
 
-### [@Noraa-Junker](https://github.com/Noraa-Junker) - [Noraa Junker](https://noraajunker.ch)
-Noraa has helped triaging, discussing, and creating a substantial number of issues and contributed features/fixes. Noraa was the primary person for helping build the File Explorer preview pane handler for developer files.
-
 ### [@cgaarden](https://github.com/cgaarden) - [Christian Gaarden Gaardmark](https://www.onegreatworld.com) 
 Christian contributed New+ utility
 
@@ -42,6 +39,12 @@ Jay has helped triaging, discussing, creating a substantial number of issues and
 ### [@jefflord](https://github.com/Jjefflord) - Jeff Lord
 Jeff added in multiple new features into Keyboard manager, such as key chord support and launching apps. He also contributed multiple features/fixes to PowerToys.
 
+### [@snickler](https://github.com/snickler) - [Jeremy Sinclair](http://sinclairinat0r.com)
+Jeremy has helped drive large sums of the ARM64 support inside PowerToys
+
+### [@jiripolasek](https://github.com/jiripolasek) - [Jiří Polášek](https://github.com/jiripolasek)
+Jiří has contributed a massive number of features and improvements to Command Palette, including drag & drop support, custom themes, Web Search enhancements, Remote Desktop extension fixes, and many UX improvements.
+
 ### [@TheJoeFin](https://github.com/TheJoeFin) - [Joe Finney](https://joefinapps.com)
 Joe has helped triaging, discussing, issues as well as fixing bugs and building features for Text Extractor.
 
@@ -57,6 +60,9 @@ Color Picker is from Martin.
 ### [@mikeclayton](https://github.com/mikeclayton) - [Michael Clayton](https://michael-clayton.com)
 Michael contributed the [initial version](https://github.com/microsoft/PowerToys/issues/23216) of the Mouse Jump tool and [a number of updates](https://github.com/microsoft/PowerToys/pulls?q=is%3Apr+author%3Amikeclayton) based on his FancyMouse utility.
 
+### [@Noraa-Junker](https://github.com/Noraa-Junker) - [Noraa Junker](https://noraajunker.ch)
+Noraa has helped triaging, discussing, and creating a substantial number of issues and contributed features/fixes. Noraa was the primary person for helping build the File Explorer preview pane handler for developer files.
+
 ### [@pedrolamas](https://github.com/pedrolamas/) - Pedro Lamas
 Pedro helped create the thumbnail and File Explorer previewers for 3D files like STL and GCode.  If you like 3D printing, these are very helpful.
 
@@ -69,14 +75,11 @@ Rafael has helped do the [upgrade from CppWinRT 1.x to 2.0](https://github.com/m
 ### [@royvou](https://github.com/royvou)
 Roy has helped out contributing multiple features to PowerToys Run
 
-### [@snickler](https://github.com/snickler) - [Jeremy Sinclair](http://sinclairinat0r.com)
-Jeremy has helped drive large sums of the ARM64 support inside PowerToys
+### [@ThiefZero](https://github.com/ThiefZero)
+ThiefZero has helped out contributing a features to PowerToys Run such as the unit converter plugin
 
 ### [@TobiasSekan](https://github.com/TobiasSekan) - Tobias Sekan
 Tobias Sekan has helped out contributing features to PowerToys Run such as Settings plugin, Registry plugin
-
-### [@ThiefZero](https://github.com/ThiefZero)
-ThiefZero has helped out contributing a features to PowerToys Run such as the unit converter plugin
 
 ## Open source projects
 
@@ -187,18 +190,10 @@ ZoomIt source code was originally implemented by [Sysinternals](https://sysinter
 - [@niels9001](https://github.com/niels9001/) - Niels Laute - Product Manager
 - [@dhowett](https://github.com/dhowett) - Dustin Howett - Dev Lead
 - [@yeelam-gordon](https://github.com/yeelam-gordon) - Gordon Lam - Dev Lead
-- [@jamrobot](https://github.com/jamrobot) - Jerry Xu - Dev Lead
 - [@lei9444](https://github.com/lei9444) - Leilei Zhang - Dev
 - [@shuaiyuanxx](https://github.com/shuaiyuanxx) - Shawn Yuan - Dev
 - [@moooyo](https://github.com/moooyo) - Yu Leng - Dev
 - [@haoliuu](https://github.com/haoliuu) - Hao Liu - Dev
-- [@chenmy77](https://github.com/chenmy77) - Mengyuan Chen - Dev
-- [@chemwolf6922](https://github.com/chemwolf6922) - Feng Wang - Dev
-- [@yaqingmi](https://github.com/yaqingmi) - Yaqing Mi - Dev
-- [@zhaoqpcn](https://github.com/zhaoqpcn) - Qingpeng Zhao - Dev
-- [@urnotdfs](https://github.com/urnotdfs) - Xiaofeng Wang - Dev
-- [@zhaopy536](https://github.com/zhaopy536) - Peiyao Zhao - Dev
-- [@wang563681252](https://github.com/wang563681252) - Zhaopeng Wang - Dev
 - [@vanzue](https://github.com/vanzue) - Kai Tao - Dev
 - [@zadjii-msft](https://github.com/zadjii-msft) - Mike Griese - Dev
 - [@khmyznikov](https://github.com/khmyznikov) - Gleb Khmyznikov - Dev
@@ -229,3 +224,12 @@ ZoomIt source code was originally implemented by [Sysinternals](https://sysinter
 - [@SeraphimaZykova](https://github.com/SeraphimaZykova) - Seraphima Zykova - Dev
 - [@stefansjfw](https://github.com/stefansjfw) - Stefan Markovic - Dev
 - [@jaimecbernardo](https://github.com/jaimecbernardo) - Jaime Bernardo - Dev Lead
+- [@haoliuu](https://github.com/haoliuu) - Hao Liu - Dev
+- [@chenmy77](https://github.com/chenmy77) - Mengyuan Chen - Dev
+- [@chemwolf6922](https://github.com/chemwolf6922) - Feng Wang - Dev
+- [@yaqingmi](https://github.com/yaqingmi) - Yaqing Mi - Dev
+- [@zhaoqpcn](https://github.com/zhaoqpcn) - Qingpeng Zhao - Dev
+- [@urnotdfs](https://github.com/urnotdfs) - Xiaofeng Wang - Dev
+- [@zhaopy536](https://github.com/zhaopy536) - Peiyao Zhao - Dev
+- [@wang563681252](https://github.com/wang563681252) - Zhaopeng Wang - Dev
+- [@jamrobot](https://github.com/jamrobot) - Jerry Xu - Dev Lead

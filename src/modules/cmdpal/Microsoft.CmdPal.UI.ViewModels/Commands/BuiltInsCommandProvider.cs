@@ -26,7 +26,7 @@ public sealed partial class BuiltInsCommandProvider : CommandProvider
     public override ICommandItem[] TopLevelCommands() =>
         [
             new CommandItem(openSettings) { },
-            new CommandItem(_newExtension) { Title = _newExtension.Title, Subtitle = Properties.Resources.builtin_new_extension_subtitle },
+            new CommandItem(_newExtension) { Title = _newExtension.Title },
         ];
 
     public override IFallbackCommandItem[] FallbackCommands() =>

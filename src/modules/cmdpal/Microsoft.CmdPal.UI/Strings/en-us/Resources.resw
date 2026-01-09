@@ -742,4 +742,7 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="Settings_ExtensionsPage_More_ReorderFallbacks_MenuFlyoutItem.Text" xml:space="preserve">
     <value>Manage fallback order</value>
   </data>
+  <data name="Settings_GeneralPage_VersionNo" xml:space="preserve">
+    <value>Version {0}</value>
+  </data>
 </root>

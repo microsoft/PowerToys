@@ -31,7 +31,6 @@ public sealed partial class TimeDateCommandsProvider : CommandProvider
         {
             Icon = _timeDateExtensionPage.Icon,
             Title = Resources.Microsoft_plugin_timedate_plugin_name,
-            Subtitle = GetTranslatedPluginDescription(),
             MoreCommands = [new CommandContextItem(_settingsManager.Settings.SettingsPage)],
         };
 

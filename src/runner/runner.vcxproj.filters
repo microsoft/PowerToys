@@ -122,6 +122,8 @@
   </ItemGroup>
   <ItemGroup>
     <CopyFileToFolders Include="svgs\icon.ico" />
+    <CopyFileToFolders Include="svgs\PowerToysDark.ico" />
+    <CopyFileToFolders Include="svgs\PowerToysWhite.ico" />
   </ItemGroup>
   <ItemGroup>
     <None Include="runner.base.rc" />

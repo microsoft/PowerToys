@@ -33,7 +33,6 @@ public partial class WindowWalkerCommandsProvider : CommandProvider
         _windowWalkerPageItem = new CommandItem(new WindowWalkerListPage(_settings))
         {
             Title = Resources.window_walker_top_level_command_title,
-            Subtitle = Resources.windowwalker_name,
             MoreCommands = [
                 new CommandContextItem(Settings.SettingsPage),
             ],

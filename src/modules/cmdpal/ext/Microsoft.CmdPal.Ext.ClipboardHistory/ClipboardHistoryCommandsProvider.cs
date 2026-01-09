@@ -20,7 +20,6 @@ public partial class ClipboardHistoryCommandsProvider : CommandProvider
         _clipboardHistoryListItem = new ListItem(page)
         {
             Title = Properties.Resources.list_item_title,
-            Subtitle = Properties.Resources.list_item_subtitle,
             Icon = Icons.ClipboardListIcon,
             MoreCommands = [
                 new CommandContextItem(_settingsManager.Settings.SettingsPage),
