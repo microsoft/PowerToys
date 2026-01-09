@@ -68,11 +68,11 @@ namespace Peek.UI
             AppWindow.Closing += AppWindow_Closing;
 
             userSettings = Application.Current.GetService<IUserSettings>();
-            userSettings.Changed += (_, _) => UpdateWindowBySettings();
-            UpdateWindowBySettings();
+            userSettings.Changed += UpdateWindowBySettings;
+            UpdateWindowBySettings(null, EventArgs.Empty);
         }
 
-        private async void UpdateWindowBySettings()
+        private async void UpdateWindowBySettings(object? sender, EventArgs e)
         {
             DispatcherQueue.TryEnqueue(() =>
             {
@@ -315,6 +315,7 @@ namespace Peek.UI
         public void Dispose()
         {
             themeListener?.Dispose();
+            userSettings.Changed -= UpdateWindowBySettings;
         }
     }
 }
