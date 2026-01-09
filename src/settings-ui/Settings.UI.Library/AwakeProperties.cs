@@ -20,6 +20,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             IntervalMinutes = 1;
             ExpirationDateTime = DateTimeOffset.Now;
             CustomTrayTimes = [];
+            ShowTrayIcon = true;
         }
 
         [JsonPropertyName("keepDisplayOn")]
@@ -40,5 +41,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("customTrayTimes")]
         [CmdConfigureIgnore]
         public Dictionary<string, uint> CustomTrayTimes { get; set; }
+
+        [JsonPropertyName("showTrayIcon")]
+        public bool ShowTrayIcon { get; set; }
     }
 }
