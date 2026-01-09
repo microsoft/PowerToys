@@ -1,7 +1,8 @@
 ﻿#include <windows.h>
 #include <tchar.h>
 #include "ThemeScheduler.h"
-#include "ThemeHelper.h"
+#include <ThemeHelper.h>
+#include <SettingsConstants.h>
 #include <common/SettingsAPI/settings_objects.h>
 #include <common/SettingsAPI/settings_helpers.h>
 #include <stdio.h>
@@ -25,6 +26,7 @@ VOID WINAPI ServiceMain(DWORD argc, LPTSTR* argv);
 VOID WINAPI ServiceCtrlHandler(DWORD dwCtrl);
 DWORD WINAPI ServiceWorkerThread(LPVOID lpParam);
 void ApplyTheme(bool shouldBeLight);
+void ApplyWindowsThemeFile(bool shouldBeLight);
 
 // Entry point for the executable
 int _tmain(int argc, TCHAR* argv[])
@@ -147,6 +149,24 @@ void ApplyTheme(bool shouldBeLight)
             SetAppsTheme(shouldBeLight);
             Logger::info(L"[LightSwitchService] Changed apps theme to {}.", shouldBeLight ? L"light" : L"dark");
         }
+    }
+}
+
+void ApplyWindowsThemeFile(bool shouldBeLight) {
+    const auto& s = LightSwitchSettings::settings();
+    
+    // double check the setting is enabled for safety
+    if (s.useThemeSwitching)
+    {
+        // Need to find a way to safely invoke the theme file which will be stored at s.lightThemePath and s.darkThemePath
+        std::wstring themePath = shouldBeLight ? s.lightThemePath : s.darkThemePath;
+        if (themePath.empty())
+        {
+            Logger::warn(L"[LightSwitchService] Theme file path is empty for {} theme; skipping.", shouldBeLight ? L"light" : L"dark");
+            return;
+        }
+
+        SetThemeFile(themePath);
     }
 }
 

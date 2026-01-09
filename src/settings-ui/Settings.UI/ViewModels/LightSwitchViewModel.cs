@@ -384,6 +384,45 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public bool UseThemeSwitching
+        {
+            get => ModuleSettings.Properties.UseThemeSwitching.Value;
+            set
+            {
+                if (ModuleSettings.Properties.UseThemeSwitching.Value != value)
+                {
+                    ModuleSettings.Properties.UseThemeSwitching.Value = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
+        public string LightThemePath
+        {
+            get => ModuleSettings.Properties.LightThemePath.Value;
+            set
+            {
+                if (ModuleSettings.Properties.LightThemePath.Value != value)
+                {
+                    ModuleSettings.Properties.LightThemePath.Value = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
+        public string DarkThemePath
+        {
+            get => ModuleSettings.Properties.DarkThemePath.Value;
+            set
+            {
+                if (ModuleSettings.Properties.DarkThemePath.Value != value)
+                {
+                    ModuleSettings.Properties.DarkThemePath.Value = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
         private SearchLocation _selectedSearchLocation;
 
         public SearchLocation SelectedCity

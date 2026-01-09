@@ -59,6 +59,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                     SunsetOffset = new IntProperty((int)Properties.SunsetOffset.Value),
                     Latitude = new StringProperty(Properties.Latitude.Value),
                     Longitude = new StringProperty(Properties.Longitude.Value),
+                    UseThemeSwitching = new BoolProperty(Properties.UseThemeSwitching.Value),
+                    LightThemePath = new StringProperty(Properties.LightThemePath.Value),
+                    DarkThemePath = new StringProperty(Properties.DarkThemePath.Value),
                     ToggleThemeHotkey = new KeyboardKeysProperty(Properties.ToggleThemeHotkey.Value),
                 },
             };

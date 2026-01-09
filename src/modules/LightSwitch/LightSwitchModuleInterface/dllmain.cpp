@@ -7,6 +7,7 @@
 #include <locale>
 #include <codecvt>
 #include <common/utils/logger_helper.h>
+#include <SettingsConstants.h>
 #include "ThemeHelper.h"
 #include <thread>
 #include <atomic>
@@ -94,6 +95,9 @@ struct ModuleSettings
     int m_sunset_offset = 0;
     std::wstring m_latitude = L"0.0";
     std::wstring m_longitude = L"0.0";
+    bool m_use_theme_switching = false;
+    std::wstring m_light_theme_path = L"";
+    std::wstring m_dark_theme_path = L"";
 } g_settings;
 
 class LightSwitchInterface : public PowertoyModuleIface
@@ -118,7 +122,7 @@ private:
     void StartToggleListener();
     void StopToggleListener();
 
-public:
+public :
     LightSwitchInterface()
     {
         LoggerHelpers::init_logger(L"LightSwitch", L"ModuleInterface", LogSettings::lightSwitchLoggerName);
@@ -184,8 +188,7 @@ public:
             { { L"Off", L"Disable the schedule" },
               { L"FixedHours", L"Set hours manually" },
               { L"SunsetToSunrise", L"Use sunrise/sunset times" },
-              { L"FollowNightLight", L"Follow Windows Night Light state" }
-            });
+              { L"FollowNightLight", L"Follow Windows Night Light state" } });
 
         // Integer spinners
         settings.add_int_spinner(
@@ -230,6 +233,22 @@ public:
             L"longitude",
             L"Your longitude in decimal degrees (e.g. -75.16).",
             g_settings.m_longitude);
+
+        // Theme switching settings
+        settings.add_bool_toggle(
+            L"use_theme_switching",
+            L"Enable or disable theme switching based on location.",
+            g_settings.m_use_theme_switching);
+
+        settings.add_string(
+            L"light_theme_path",
+            L"Path to your light theme file.",
+            g_settings.m_light_theme_path);
+
+        settings.add_string(
+            L"dark_theme_path",
+            L"Path to your dark theme file.",
+            g_settings.m_dark_theme_path);
 
         // One-shot actions (buttons)
         settings.add_custom_action(
@@ -350,6 +369,19 @@ public:
             if (auto v = values.get_string_value(L"longitude"))
             {
                 g_settings.m_longitude = *v;
+            }
+
+            if (auto v = values.get_bool_value(L"use_theme_switching"))
+            {
+                g_settings.m_use_theme_switching = *v;
+            }
+            if (auto v = values.get_string_value(L"light_theme_path"))
+            {
+                g_settings.m_light_theme_path = *v;
+            }
+            if (auto v = values.get_string_value(L"dark_theme_path"))
+            {
+                g_settings.m_dark_theme_path = *v;
             }
 
             values.save_to_settings_file();
@@ -693,6 +725,12 @@ void LightSwitchInterface::init_settings()
             g_settings.m_latitude = *v;
         if (auto v = settings.get_string_value(L"longitude"))
             g_settings.m_longitude = *v;
+        if (auto v = settings.get_bool_value(L"use_theme_switching"))
+            g_settings.m_use_theme_switching = *v;
+        if (auto v = settings.get_string_value(L"light_theme_path"))
+            g_settings.m_light_theme_path = *v;
+        if (auto v = settings.get_string_value(L"dark_theme_path"))
+            g_settings.m_dark_theme_path = *v;
 
         Logger::info(L"[Light Switch] init_settings: loaded successfully");
     }
