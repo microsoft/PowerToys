@@ -36,11 +36,27 @@ namespace Peek.UI
                 lock (_settingsLock)
                 {
                     _settings = value;
+                    AlwaysOnTop = _settings.Properties.AlwaysOnTop.Value;
+                    ShowTaskbarIcon = _settings.Properties.ShowTaskbarIcon.Value;
                     CloseAfterLosingFocus = _settings.Properties.CloseAfterLosingFocus.Value;
                     ConfirmFileDelete = _settings.Properties.ConfirmFileDelete.Value;
+
+                    Changed?.Invoke(this, EventArgs.Empty);
                 }
             }
         }
+
+        public event EventHandler Changed;
+
+        /// <summary>
+        /// Gets a value indicating whether Peek shows its window on the top of the stack.
+        /// </summary>
+        public bool AlwaysOnTop { get; private set; }
+
+        /// <summary>
+        /// Gets a value indicating whether Peek shows its icon on the taskbar when activated.
+        /// </summary>
+        public bool ShowTaskbarIcon { get; private set; }
 
         /// <summary>
         /// Gets a value indicating whether Peek closes automatically when the window loses focus.
