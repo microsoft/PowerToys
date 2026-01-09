@@ -22,3 +22,4 @@ description: 'Generate a PowerToys-ready pull request description from the local
 5. Confirm validation: list tests executed with results or state why tests were skipped in line with repo guidance.
 6. Load `.github/pull_request_template.md`, mirror its section order, and populate it with the gathered facts. Include only relevant checklist entries, marking them `[x]/[ ]` and noting any intentional omissions as "N/A".
 7. Present the filled template inside a fenced ```markdown code block with no extra commentary so it is ready to paste into a PR, clearly flagging any placeholders that still need user input.
+8. Prepend the PR title above the filled template, applying the Conventional Commit type/scope rules from `.github/prompts/create-commit-title.prompt.md`; pick the dominant component from the diff and keep the title concise and imperative.
