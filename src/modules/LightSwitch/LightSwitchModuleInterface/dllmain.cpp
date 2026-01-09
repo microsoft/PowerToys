@@ -590,6 +590,22 @@ void LightSwitchInterface::ToggleTheme()
     bool current_system_theme = GetCurrentSystemTheme();
     bool current_apps_theme = GetCurrentAppsTheme();
 
+    // Determine if we're switching to light mode (which triggers ResetColorPrevalence and might open Settings)
+    bool switchingToLight = (g_settings.m_changeSystem && !current_system_theme) || 
+                            (g_settings.m_changeApps && !current_apps_theme);
+    
+    bool changeWallpaper =
+        g_settings.m_use_theme_switching &&
+        IsValidPath(g_settings.m_light_theme_path) &&
+        IsValidPath(g_settings.m_dark_theme_path);
+
+    // Start the Settings monitor BEFORE any theme changes if we might trigger Settings
+    // This is critical for dark->light transitions which call ResetColorPrevalence
+    if (switchingToLight || changeWallpaper)
+    {
+        StartSettingsMonitor();
+    }
+
     if (g_settings.m_changeSystem)
     {
         SetSystemTheme(!current_system_theme);
@@ -601,11 +617,6 @@ void LightSwitchInterface::ToggleTheme()
 
     bool new_system_theme = GetCurrentSystemTheme();
     bool new_apps_theme = GetCurrentAppsTheme();
-
-    bool changeWallpaper =
-        g_settings.m_use_theme_switching &&
-        IsValidPath(g_settings.m_light_theme_path) &&
-        IsValidPath(g_settings.m_dark_theme_path);
 
     // if something changed and wallpaper change is enabled and paths are valid
     if ((new_system_theme != current_system_theme || new_apps_theme != current_apps_theme) && changeWallpaper)
@@ -626,6 +637,12 @@ void LightSwitchInterface::ToggleTheme()
 
         Logger::info(L"[Light Switch] Theme switched: toggling theme file to {}", themeFilePath);
         SetThemeFile(themeFilePath);
+    }
+
+    // Stop the monitor after all theme operations are complete
+    if (switchingToLight || changeWallpaper)
+    {
+        StopSettingsMonitor();
     }
 
     if (!m_manual_override_event_handle)

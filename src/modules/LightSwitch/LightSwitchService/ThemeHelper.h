@@ -7,3 +7,7 @@ void SetThemeFile(const std::wstring& themeFilePath);
 bool GetCurrentSystemTheme();
 bool GetCurrentAppsTheme();
 bool IsNightLightEnabled();
+
+// Functions to manually control Settings app suppression monitoring
+void StartSettingsMonitor();
+void StopSettingsMonitor();

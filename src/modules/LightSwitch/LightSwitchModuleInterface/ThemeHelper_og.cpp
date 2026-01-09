@@ -5,18 +5,8 @@
 #include <shellapi.h>
 #include "SettingsConstants.h"
 #include <common/logger/logger.h>
-#include <thread>
-#include <atomic>
-#include <chrono>
-#include <tlhelp32.h>
-#include <psapi.h>
 
 // Controls changing the themes.
-
-// Global flag to control the monitoring thread
-static std::atomic<bool> g_stopMonitoring(false);
-static std::thread g_monitorThread;
-static std::atomic<bool> g_monitorRunning(false);
 
 static void ResetColorPrevalence()
 {
@@ -32,6 +22,7 @@ static void ResetColorPrevalence()
         RegCloseKey(hKey);
 
         SendMessageTimeout(HWND_BROADCAST, WM_SETTINGCHANGE, 0, reinterpret_cast<LPARAM>(L"ImmersiveColorSet"), SMTO_ABORTIFHUNG, 5000, nullptr);
+
         SendMessageTimeout(HWND_BROADCAST, WM_THEMECHANGED, 0, 0, SMTO_ABORTIFHUNG, 5000, nullptr);
 
         SendMessageTimeout(HWND_BROADCAST, WM_DWMCOLORIZATIONCOLORCHANGED, 0, 0, SMTO_ABORTIFHUNG, 5000, nullptr);
@@ -52,6 +43,7 @@ void SetAppsTheme(bool mode)
         RegCloseKey(hKey);
 
         SendMessageTimeout(HWND_BROADCAST, WM_SETTINGCHANGE, 0, reinterpret_cast<LPARAM>(L"ImmersiveColorSet"), SMTO_ABORTIFHUNG, 5000, nullptr);
+
         SendMessageTimeout(HWND_BROADCAST, WM_THEMECHANGED, 0, 0, SMTO_ABORTIFHUNG, 5000, nullptr);
     }
 }
@@ -76,6 +68,7 @@ void SetSystemTheme(bool mode)
         }
 
         SendMessageTimeout(HWND_BROADCAST, WM_SETTINGCHANGE, 0, reinterpret_cast<LPARAM>(L"ImmersiveColorSet"), SMTO_ABORTIFHUNG, 5000, nullptr);
+
         SendMessageTimeout(HWND_BROADCAST, WM_THEMECHANGED, 0, 0, SMTO_ABORTIFHUNG, 5000, nullptr);
     }
 }
@@ -139,35 +132,7 @@ static bool IsSettingsFrameWindow(HWND hwnd)
     return false;
 }
 
-// Aggressively suppress Settings window - hide, move off-screen, close, and terminate
-static void SuppressSettingsWindow(HWND hwnd)
-{
-    // First, immediately hide it to prevent flash
-    ShowWindow(hwnd, SW_HIDE);
-    
-    // Move it off-screen as backup
-    SetWindowPos(hwnd, nullptr, -32000, -32000, 0, 0, 
-        SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE);
-    
-    // Send close message
-    PostMessageW(hwnd, WM_CLOSE, 0, 0);
-    
-    // Also terminate the process for faster closure
-    DWORD processId = 0;
-    GetWindowThreadProcessId(hwnd, &processId);
-    if (processId != 0)
-    {
-        HANDLE hProcess = OpenProcess(PROCESS_TERMINATE, FALSE, processId);
-        if (hProcess)
-        {
-            TerminateProcess(hProcess, 0);
-            CloseHandle(hProcess);
-        }
-    }
-}
-
-// Find and suppress Settings app windows
-static bool FindAndSuppressSettings()
+void CloseSettingsApp()
 {
     HWND settingsHwnd = nullptr;
 
@@ -181,192 +146,40 @@ static bool FindAndSuppressSettings()
     },
                 reinterpret_cast<LPARAM>(&settingsHwnd));
 
-    if (settingsHwnd)
+    if (!settingsHwnd)
     {
-        SuppressSettingsWindow(settingsHwnd);
-        return true;
-    }
-    return false;
-}
-
-// Pre-emptive monitor that catches Settings via process enumeration
-// This is the critical function - it must suppress windows BEFORE they become visible
-static void PreemptiveSettingsMonitor()
-{
-    while (!g_stopMonitoring)
-    {
-        // Check for SystemSettings.exe process and suppress its windows
-        HANDLE hSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
-        if (hSnapshot != INVALID_HANDLE_VALUE)
-        {
-            PROCESSENTRY32W pe;
-            pe.dwSize = sizeof(pe);
-
-            if (Process32FirstW(hSnapshot, &pe))
-            {
-                do
-                {
-                    if (_wcsicmp(pe.szExeFile, L"SystemSettings.exe") == 0)
-                    {
-                        // Found Settings process - enumerate and hide ALL its windows immediately
-                        // DO NOT check IsWindowVisible - we need to catch windows before they show
-                        EnumWindows([](HWND hwnd, LPARAM lParam) -> BOOL {
-                            DWORD pid = 0;
-                            GetWindowThreadProcessId(hwnd, &pid);
-                            if (pid == static_cast<DWORD>(lParam))
-                            {
-                                // Hide immediately without visibility check
-                                ShowWindow(hwnd, SW_HIDE);
-                                SetWindowPos(hwnd, nullptr, -32000, -32000, 0, 0,
-                                    SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE);
-                                PostMessageW(hwnd, WM_CLOSE, 0, 0);
-                            }
-                            return TRUE;
-                        }, static_cast<LPARAM>(pe.th32ProcessID));
-
-                        // Terminate the process immediately
-                        HANDLE hProc = OpenProcess(PROCESS_TERMINATE, FALSE, pe.th32ProcessID);
-                        if (hProc)
-                        {
-                            TerminateProcess(hProc, 0);
-                            CloseHandle(hProc);
-                        }
-                    }
-                } while (Process32NextW(hSnapshot, &pe));
-            }
-            CloseHandle(hSnapshot);
-        }
-
-        // Also check ApplicationFrameHost windows that might be hosting Settings
-        // This catches Settings windows even when the process is ApplicationFrameHost.exe
-        EnumWindows([](HWND hwnd, LPARAM) -> BOOL {
-            wchar_t cls[128]{};
-            if (!GetClassNameW(hwnd, cls, ARRAYSIZE(cls)))
-                return TRUE;
-
-            if (wcscmp(cls, L"ApplicationFrameWindow") != 0)
-                return TRUE;
-
-            // Check window title for Settings - don't require visibility
-            wchar_t title[256]{};
-            GetWindowTextW(hwnd, title, ARRAYSIZE(title));
-            if (wcslen(title) > 0 && wcsstr(title, L"Settings") != nullptr)
-            {
-                ShowWindow(hwnd, SW_HIDE);
-                SetWindowPos(hwnd, nullptr, -32000, -32000, 0, 0,
-                    SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE);
-                PostMessageW(hwnd, WM_CLOSE, 0, 0);
-                
-                DWORD processId = 0;
-                GetWindowThreadProcessId(hwnd, &processId);
-                if (processId != 0)
-                {
-                    HANDLE hProcess = OpenProcess(PROCESS_TERMINATE, FALSE, processId);
-                    if (hProcess)
-                    {
-                        TerminateProcess(hProcess, 0);
-                        CloseHandle(hProcess);
-                    }
-                }
-            }
-            return TRUE;
-        }, 0);
-
-        // Very short sleep to catch it quickly (10ms polling)
-        std::this_thread::sleep_for(std::chrono::milliseconds(10));
-    }
-}
-
-void CloseSettingsApp()
-{
-    FindAndSuppressSettings();
-}
-
-// Start the preemptive Settings monitor - call this before any operation that might trigger Settings
-void StartSettingsMonitor()
-{
-    // If already running, do nothing
-    if (g_monitorRunning.exchange(true))
-    {
+        Logger::info("CloseSettingsApp: Settings window not found.");
         return;
     }
 
-    g_stopMonitoring = false;
-    g_monitorThread = std::thread(PreemptiveSettingsMonitor);
-    
-    // Small delay to ensure monitor is running
-    std::this_thread::sleep_for(std::chrono::milliseconds(50));
-}
-
-// Stop the preemptive Settings monitor
-void StopSettingsMonitor()
-{
-    if (!g_monitorRunning)
-    {
-        return;
-    }
-
-    g_stopMonitoring = true;
-    
-    if (g_monitorThread.joinable())
-    {
-        g_monitorThread.join();
-    }
-    
-    g_monitorRunning = false;
-
-    // Final cleanup pass
-    for (int i = 0; i < 5; i++)
-    {
-        FindAndSuppressSettings();
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
-    }
+    Logger::info("CloseSettingsApp: Closing Settings window.");
+    PostMessageW(settingsHwnd, WM_CLOSE, 0, 0);
 }
 
 void SetThemeFile(const std::wstring& themeFilePath)
 {
-    // Check if monitor is already running from external call (e.g., ToggleTheme)
-    bool externalMonitor = g_monitorRunning;
-    
-    if (!externalMonitor)
-    {
-        // Start our own monitor
-        StartSettingsMonitor();
-    }
-
-    // Execute the theme file
     SHELLEXECUTEINFOW sei{};
     sei.cbSize = sizeof(sei);
-    sei.fMask = SEE_MASK_FLAG_NO_UI | SEE_MASK_NOCLOSEPROCESS | SEE_MASK_NOASYNC;
+    sei.fMask = SEE_MASK_FLAG_NO_UI | SEE_MASK_NOCLOSEPROCESS;
     sei.lpVerb = L"open";
     sei.lpFile = themeFilePath.c_str();
-    sei.nShow = SW_HIDE;  // Try to hide from the start
+    sei.nShow = SW_SHOWNORMAL;
 
     if (!ShellExecuteExW(&sei))
     {
         DWORD err = GetLastError();
         Logger::error(L"[LightSwitch] ShellExecuteExW failed ({}): {}", err, themeFilePath);
-        if (!externalMonitor)
-        {
-            StopSettingsMonitor();
-        }
         return;
     }
 
     if (sei.hProcess)
     {
-        WaitForInputIdle(sei.hProcess, 3000);
+        WaitForInputIdle(sei.hProcess, 2000);
         CloseHandle(sei.hProcess);
     }
 
-    // Give time for the theme to be applied
-    std::this_thread::sleep_for(std::chrono::milliseconds(1500));
-
-    // Only stop if we started it
-    if (!externalMonitor)
-    {
-        StopSettingsMonitor();
-    }
+    Sleep(1000); // Give Settings app time to apply the theme change
+    CloseSettingsApp();
 }
 
 // Can think of this as "is the current theme light?"
