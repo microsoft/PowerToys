@@ -126,7 +126,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private void OnSettingsChanged(GeneralSettings newSettings)
         {
-            dispatcher.BeginInvoke(() =>
+            dispatcher.TryEnqueue(() =>
             {
                 generalSettingsConfig = newSettings;
                 generalSettingsConfig.AddEnabledModuleChangeNotification(ModuleEnabledChangedOnSettingsPage);
