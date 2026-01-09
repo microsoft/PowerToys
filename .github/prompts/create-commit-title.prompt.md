@@ -47,4 +47,4 @@ Use Conventional Commits style:
 - `fix(mouseutils): guard crosshair toggle when dpi info missing`
 - `docs(runner): document tray icon states`
 - `build(installer): align wix v5 suffix flag`
-- `ci(build): cache vcpkg artifacts for x64`
+- `ci(ci): cache pipeline artifacts for x64`
