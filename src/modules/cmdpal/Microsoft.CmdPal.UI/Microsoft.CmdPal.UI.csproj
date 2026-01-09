@@ -26,6 +26,15 @@
     <UseWinRT>true</UseWinRT>
   </PropertyGroup>
 
+  <!-- Defines: to quickly add project-wide define constants / feature flags -->
+  <PropertyGroup Condition=" '$(Configuration)' == 'DEBUG' ">
+	  <DefineConstants>$(DefineConstants);CMDPAL_FF_EXAMPLE_FLAG</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(Configuration)' == 'RELEASE' ">
+	  <DefineConstants>$(DefineConstants)</DefineConstants>
+  </PropertyGroup>
+
   <!-- For debugging purposes, uncomment this block to enable AOT builds -->
   <!--<PropertyGroup>
     <EnableCmdPalAOT>true</EnableCmdPalAOT>
