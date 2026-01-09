@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.props')" />
   <PropertyGroup Label="Globals">
@@ -16,7 +16,7 @@
   <PropertyGroup>
     <ConfigurationType>Application</ConfigurationType>
     <TargetName>PowerToys.$(ProjectName)</TargetName>
-    <OutDir>$(SolutionDir)..\..\$(Platform)\$(Configuration)\Tools\</OutDir>
+    <OutDir>$(RepoRoot)$(Platform)\$(Configuration)\Tools\</OutDir>
   </PropertyGroup>
   <ImportGroup Label="ExtensionSettings">
   </ImportGroup>
@@ -63,7 +63,7 @@
     <ClInclude Include="Package.h" />
     <ClInclude Include="ReportGPOValues.h" />
     <ClInclude Include="ReportMonitorInfo.h" />
-    <ClInclude Include="..\..\..\common\utils\json.h" />
+    <ClInclude Include="$(RepoRoot)src\common\utils\json.h" />
     <ClInclude Include="RegistryUtils.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="XmlDocumentEx.h" />

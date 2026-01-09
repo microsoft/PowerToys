@@ -1,6 +1,6 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <!-- Look at Directory.Build.props in root for common stuff as well -->
-  <Import Project="..\..\..\..\Common.Dotnet.CsWinRT.props" />	
+  <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />	
 
   <PropertyGroup>
     <ProjectGuid>{D095BE44-1F2E-463E-A494-121892A75EA2}</ProjectGuid>
@@ -11,7 +11,7 @@
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <GenerateSatelliteAssembliesForCore>true</GenerateSatelliteAssembliesForCore>
-    <OutputPath>..\..\..\..\..\$(Platform)\$(Configuration)\RunPlugins\ValueGenerator\</OutputPath>
+    <OutputPath>$(RepoRoot)..\$(Platform)\$(Configuration)\RunPlugins\ValueGenerator\</OutputPath>
   </PropertyGroup>
 
   <ItemGroup>

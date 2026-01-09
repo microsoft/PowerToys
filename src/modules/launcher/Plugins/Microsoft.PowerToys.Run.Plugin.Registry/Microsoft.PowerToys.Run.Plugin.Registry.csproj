@@ -1,6 +1,6 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <!-- Look at Directory.Build.props in root for common stuff as well -->
-  <Import Project="..\..\..\..\Common.Dotnet.CsWinRT.props" />	
+  <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />	
 
   <PropertyGroup>
     <RootNamespace>Microsoft.PowerToys.Run.Plugin.Registry</RootNamespace>
@@ -10,7 +10,7 @@
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <Nullable>enable</Nullable>
     <GenerateSatelliteAssembliesForCore>true</GenerateSatelliteAssembliesForCore>
-    <OutputPath>..\..\..\..\..\$(Platform)\$(Configuration)\RunPlugins\Registry\</OutputPath>
+    <OutputPath>$(RepoRoot)..\$(Platform)\$(Configuration)\RunPlugins\Registry\</OutputPath>
   </PropertyGroup>
 
   <ItemGroup>

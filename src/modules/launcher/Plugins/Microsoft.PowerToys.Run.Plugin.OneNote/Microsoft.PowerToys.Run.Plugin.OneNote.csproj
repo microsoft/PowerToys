@@ -1,6 +1,6 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <!-- Look at Directory.Build.props in root for common stuff as well -->
-  <Import Project="..\..\..\..\Common.Dotnet.CsWinRT.props" />	
+  <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />	
 
   <PropertyGroup>
     <RootNamespace>Microsoft.PowerToys.Run.Plugin.OneNote</RootNamespace>
@@ -11,7 +11,7 @@
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <GenerateSatelliteAssembliesForCore>true</GenerateSatelliteAssembliesForCore>
     <Nullable>enable</Nullable>
-    <OutputPath>..\..\..\..\..\$(Platform)\$(Configuration)\RunPlugins\OneNote\</OutputPath>
+    <OutputPath>$(RepoRoot)..\$(Platform)\$(Configuration)\RunPlugins\OneNote\</OutputPath>
   </PropertyGroup>
 
   <PropertyGroup>
