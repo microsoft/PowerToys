@@ -56,7 +56,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     [JsonSerializable(typeof(HostsSettings))]
     [JsonSerializable(typeof(ImageResizerSettings))]
     [JsonSerializable(typeof(KeyboardManagerSettings))]
-    [JsonSerializable(typeof(SettingsUILibrary.LightSwitchSettings))]
+    [JsonSerializable(typeof(LightSwitchSettings))]
     [JsonSerializable(typeof(MeasureToolSettings))]
     [JsonSerializable(typeof(MouseHighlighterSettings))]
     [JsonSerializable(typeof(MouseJumpSettings))]

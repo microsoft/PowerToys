@@ -113,6 +113,13 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                     }
 
                     return true;
+                case ModuleType.LightSwitch:
+                    using (var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.LightSwitchToggleEvent()))
+                    {
+                        eventHandle.Set();
+                    }
+
+                    return true;
                 default:
                     return false;
             }
