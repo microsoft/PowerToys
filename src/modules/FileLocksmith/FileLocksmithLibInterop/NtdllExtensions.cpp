@@ -20,6 +20,46 @@ namespace
         return std::wstring(unicode_str.Buffer, unicode_str.Length / sizeof(WCHAR));
     }
 
+    // Helper to convert handle to a clean Win32 path
+    std::wstring get_win32_path_from_handle(HANDLE h_file)
+    {
+        if (h_file == NULL || h_file == INVALID_HANDLE_VALUE)
+        {
+            return L"";
+        }
+
+        DWORD dw_chars_required = GetFinalPathNameByHandleW(h_file, nullptr, 0, VOLUME_NAME_DOS);
+        if (dw_chars_required == 0)
+        {
+            return L"";
+        }
+
+        std::wstring path_buffer;
+        path_buffer.resize(dw_chars_required);
+
+        DWORD dw_result = GetFinalPathNameByHandleW(h_file, &path_buffer[0], dw_chars_required, VOLUME_NAME_DOS);
+        if (dw_result == 0 || dw_result >= dw_chars_required)
+        {
+            return L"";
+        }
+
+        path_buffer.resize(dw_result);
+
+        // Remove the \\?\ prefix
+        if (path_buffer.compare(0, 4, L"\\\\?\\") == 0)
+        {
+            // Handle UNC paths: \\?\UNC\server\share -> \\server\share
+            if (path_buffer.compare(4, 4, L"UNC\\") == 0)
+            {
+                return L"\\\\" + path_buffer.substr(8);
+            }
+
+            return path_buffer.substr(4);
+        }
+
+        return path_buffer;
+    }
+
     // Implementation adapted from src/common/utils
     inline std::wstring get_module_name(HANDLE process, HMODULE mod)
     {
@@ -240,8 +280,11 @@ std::vector<NtdllExtensions::HandleInfo> NtdllExtensions::handles() noexcept
 
                 if (type_name == L"File")
                 {
-                    file_name = file_handle_to_kernel_name(handle_copy, object_info_buffer);
-                    result.push_back(HandleInfo{ pid, handle_info->HandleValue, type_name, file_name });
+                    file_name = get_win32_path_from_handle(handle_copy);
+                    
+                    if (!file_name.empty()) {
+                        result.push_back(HandleInfo{ pid, handle_info->HandleValue, type_name, file_name });
+                    }
                 }
 
                 CloseHandle(handle_copy);
