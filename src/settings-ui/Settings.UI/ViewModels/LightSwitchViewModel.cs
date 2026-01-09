@@ -771,19 +771,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        private int GetRegistryBuildNumber()
-        {
-            var value = Win32.Registry.GetValue("HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion", "CurrentBuildNumber", string.Empty);
-#pragma warning disable CA1305
-            return int.Parse(value as string);
-#pragma warning restore CA1305
-        }
-
-        public bool Is24H2OrLater
-        {
-            get => GetRegistryBuildNumber() > 26100;
-        }
-
         private bool _enabledStateIsGPOConfigured;
         private bool _enabledGPOConfiguration;
         private LightSwitchSettings _moduleSettings;
