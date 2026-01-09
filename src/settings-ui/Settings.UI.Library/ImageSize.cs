@@ -65,6 +65,17 @@ public partial class ImageSize : INotifyPropertyChanged, IHasId
         get => !(Unit == ResizeUnit.Percent && Fit != ResizeFit.Stretch);
     }
 
+    /// <summary>
+    /// Gets the localized header text for the Width field. When in Percent mode (non-stretch),
+    /// returns "Percent" since the value represents a scale factor for both dimensions.
+    /// Otherwise returns "Width".
+    /// </summary>
+    [JsonIgnore]
+    public string WidthHeader
+    {
+        get => !IsHeightUsed ? ResourceLoader.GetString("ImageResizer_Sizes_Units_Percent") : ResourceLoader.GetString("ImageResizer_Width");
+    }
+
     [JsonPropertyName("name")]
     public string Name
     {
@@ -81,6 +92,7 @@ public partial class ImageSize : INotifyPropertyChanged, IHasId
             if (SetProperty(ref _fit, value))
             {
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsHeightUsed)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(WidthHeader)));
             }
         }
     }
@@ -105,9 +117,18 @@ public partial class ImageSize : INotifyPropertyChanged, IHasId
         get => _unit;
         set
         {
+            var previousUnit = _unit;
             if (SetProperty(ref _unit, value))
             {
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsHeightUsed)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(WidthHeader)));
+
+                // When switching to Percent unit, reset width and height to 100%
+                if (value == ResizeUnit.Percent && previousUnit != ResizeUnit.Percent)
+                {
+                    Width = 100;
+                    Height = 100;
+                }
             }
         }
     }

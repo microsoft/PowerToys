@@ -134,8 +134,8 @@
 
                                                         <StackPanel Orientation="Horizontal" Spacing="8">
                                                             <controls:ImageResizerDimensionsNumberBox
-                                                                x:Uid="ImageResizer_Width"
                                                                 Width="116"
+                                                                Header="{x:Bind WidthHeader, Mode=OneWay}"
                                                                 Minimum="0"
                                                                 SpinButtonPlacementMode="Compact"
                                                                 Value="{x:Bind Width, Mode=TwoWay, Converter={StaticResource ImageResizerNumberBoxValueConverter}}" />
