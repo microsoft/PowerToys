@@ -104,6 +104,8 @@
 #define IDC_TRIM_DURATION_LABEL         1094
 #define IDC_TRIM_SKIP_START             1095
 #define IDC_TRIM_SKIP_END               1096
+#define IDC_TRIM_VOLUME                 1097
+#define IDC_TRIM_VOLUME_ICON            1098
 #define IDC_PEN_WIDTH                   1105
 #define IDC_TIMER                       1106
 #define IDC_SMOOTH_IMAGE				1107
@@ -121,7 +123,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        120
 #define _APS_NEXT_COMMAND_VALUE         40013
-#define _APS_NEXT_CONTROL_VALUE         1098
+#define _APS_NEXT_CONTROL_VALUE         1099
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

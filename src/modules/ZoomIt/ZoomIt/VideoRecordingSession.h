@@ -104,6 +104,7 @@ public:
         bool hoverForward{ false };
         bool hoverSkipStart{ false };
         bool hoverSkipEnd{ false };
+        double volume{ 0.70 };  // Volume level 0.0 to 1.0, initialized from g_TrimDialogVolume in dialog init
         winrt::Windows::Foundation::TimeSpan previewOverride{ 0 };
         winrt::Windows::Foundation::TimeSpan positionBeforeOverride{ 0 };
         bool previewOverrideActive{ false };

@@ -56,6 +56,7 @@ TCHAR	g_ScreenshotSaveLocationBuffer[MAX_PATH] = {0};
 DWORD	g_ThemeOverride = 2; // 0=light, 1=dark, 2=system default
 DWORD	g_TrimDialogWidth = 0;  // 0 means use default; stored in screen pixels
 DWORD	g_TrimDialogHeight = 0; // 0 means use default; stored in screen pixels
+DWORD	g_TrimDialogVolume = 70; // 0-100 volume level for trim dialog preview
 
 REG_SETTING RegSettings[] = {
     { L"ToggleKey", SETTING_TYPE_DWORD, 0, &g_ToggleKey, static_cast<DOUBLE>(g_ToggleKey) },
@@ -102,5 +103,6 @@ REG_SETTING RegSettings[] = {
     { L"Theme", SETTING_TYPE_DWORD, 0, &g_ThemeOverride, static_cast<DOUBLE>(g_ThemeOverride) },
     { L"TrimDialogWidth", SETTING_TYPE_DWORD, 0, &g_TrimDialogWidth, static_cast<DOUBLE>(0) },
     { L"TrimDialogHeight", SETTING_TYPE_DWORD, 0, &g_TrimDialogHeight, static_cast<DOUBLE>(0) },
+    { L"TrimDialogVolume", SETTING_TYPE_DWORD, 0, &g_TrimDialogVolume, static_cast<DOUBLE>(g_TrimDialogVolume) },
     { NULL, SETTING_TYPE_DWORD, 0, NULL, static_cast<DOUBLE>(0) }
 };

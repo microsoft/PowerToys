@@ -2223,9 +2223,24 @@ void UpdateDrawTabHeaderFont()
         return;
     }
 
-    // Derive from the page font (stable) rather than a header's WM_GETFONT (which may already
-    // be our previous header font and could be deleted during refresh).
-    HFONT hBaseFont = reinterpret_cast<HFONT>(SendMessage( hPage, WM_GETFONT, 0, 0 ));
+    // Get the font from an actual body text control that has been DPI-scaled.
+    // This ensures headers use the exact same font as body text, just bold.
+    // Find the first static text child control (ID -1) to get the scaled body text font.
+    HFONT hBaseFont = nullptr;
+    HWND hChild = GetWindow( hPage, GW_CHILD );
+    while( hChild != nullptr )
+    {
+        if( GetDlgCtrlID( hChild ) == -1 )  // IDC_STATIC is -1
+        {
+            hBaseFont = reinterpret_cast<HFONT>(SendMessage( hChild, WM_GETFONT, 0, 0 ));
+            if( hBaseFont )
+            {
+                break;
+            }
+        }
+        hChild = GetWindow( hChild, GW_HWNDNEXT );
+    }
+
     if( !hBaseFont )
     {
         hBaseFont = reinterpret_cast<HFONT>(GetStockObject( DEFAULT_GUI_FONT ));
@@ -8201,6 +8216,9 @@ LRESULT APIENTRY MainWndProc(
         // Reload the settings. This message is called from PowerToys after a setting is changed by the user.
         reg.ReadRegSettings(RegSettings);
         
+        // Refresh dark mode state after loading theme override from registry
+        RefreshDarkModeState();
+
         if (g_RecordingFormat == RecordingFormat::GIF)
         {
             g_RecordScaling = g_RecordScalingGIF;

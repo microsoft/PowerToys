@@ -23,6 +23,7 @@
 extern DWORD g_RecordScaling;
 extern DWORD g_TrimDialogWidth;
 extern DWORD g_TrimDialogHeight;
+extern DWORD g_TrimDialogVolume;
 extern class ClassRegistry reg;
 extern REG_SETTING RegSettings[];
 
@@ -2692,7 +2693,7 @@ static winrt::fire_and_forget StartPlaybackAsync(HWND hDlg, VideoRecordingSessio
         newPlayer.AudioCategory(winrt::MediaPlayerAudioCategory::Media);
         newPlayer.IsVideoFrameServerEnabled(true);
         newPlayer.AutoPlay(false);
-        newPlayer.Volume(1.0);
+        newPlayer.Volume(pData->volume);
 
         pData->frameCopyInProgress.store(false, std::memory_order_relaxed);
         pData->mediaPlayer = newPlayer;
@@ -3723,6 +3724,17 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
             SetWindowSubclass(hSkipEnd, PlaybackButtonSubclassProc, 6, reinterpret_cast<DWORD_PTR>(pData));
         }
 
+        // Initialize volume from saved setting
+        pData->volume = std::clamp(static_cast<double>(g_TrimDialogVolume) / 100.0, 0.0, 1.0);
+
+        // Initialize volume slider
+        HWND hVolume = GetDlgItem(hDlg, IDC_TRIM_VOLUME);
+        if (hVolume)
+        {
+            SendMessage(hVolume, TBM_SETRANGE, TRUE, MAKELPARAM(0, 100));
+            SendMessage(hVolume, TBM_SETPOS, TRUE, static_cast<LPARAM>(pData->volume * 100));
+        }
+
         // Ensure incoming times are sane and within bounds.
         if (pData->videoDuration.count() > 0)
         {
@@ -4009,6 +4021,32 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
             const int yOffset = (buttonRowHeight - smallButtonHeight) / 2;
             SetWindowPos(hSkipEnd, nullptr, buttonX, buttonRowY + yOffset, smallButtonWidth, smallButtonHeight,
                 SWP_NOZORDER | SWP_NOACTIVATE);
+            buttonX += smallButtonWidth + buttonSpacing;
+        }
+
+        // Position volume icon and slider (to the right of playback buttons)
+        int volumeIconWidth, volumeIconHeight, volumeSliderWidth, volumeSliderHeight, volumeSpacing;
+        DluToPixels(14, 12, &volumeIconWidth, &volumeIconHeight);
+        DluToPixels(70, 14, &volumeSliderWidth, &volumeSliderHeight);
+        DluToPixels(8, 0, &volumeSpacing, nullptr);
+
+        HWND hVolumeIcon = GetDlgItem(hDlg, IDC_TRIM_VOLUME_ICON);
+        HWND hVolumeSlider = GetDlgItem(hDlg, IDC_TRIM_VOLUME);
+        
+        if (hVolumeIcon)
+        {
+            const int iconX = buttonX + volumeSpacing;
+            const int iconY = buttonRowY + (buttonRowHeight - volumeIconHeight) / 2;
+            SetWindowPos(hVolumeIcon, nullptr, iconX, iconY, volumeIconWidth, volumeIconHeight,
+                SWP_NOZORDER | SWP_NOACTIVATE);
+        }
+        
+        if (hVolumeSlider)
+        {
+            const int sliderX = buttonX + volumeSpacing + volumeIconWidth + 4;
+            const int sliderY = buttonRowY + (buttonRowHeight - volumeSliderHeight) / 2;
+            SetWindowPos(hVolumeSlider, nullptr, sliderX, sliderY, volumeSliderWidth, volumeSliderHeight,
+                SWP_NOZORDER | SWP_NOACTIVATE);
         }
 
         // Position OK/Cancel buttons (right-aligned)
@@ -4247,6 +4285,78 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
                  pDIS->CtlID == IDC_TRIM_SKIP_END)
         {
             DrawPlaybackButton(pDIS, pData);
+            return TRUE;
+        }
+        else if (pDIS->CtlID == IDC_TRIM_VOLUME_ICON)
+        {
+            // Draw speaker icon for volume control
+            int width = pDIS->rcItem.right - pDIS->rcItem.left;
+            int height = pDIS->rcItem.bottom - pDIS->rcItem.top;
+            float centerX = pDIS->rcItem.left + width / 2.0f;
+            float centerY = pDIS->rcItem.top + height / 2.0f;
+
+            Gdiplus::Graphics graphics(pDIS->hDC);
+            graphics.SetSmoothingMode(Gdiplus::SmoothingModeAntiAlias);
+
+            // Dark background
+            Gdiplus::SolidBrush bgBrush(Gdiplus::Color(255, 35, 35, 40));
+            graphics.FillRectangle(&bgBrush, pDIS->rcItem.left, pDIS->rcItem.top, width, height);
+
+            // Icon color matches other controls
+            COLORREF iconColor = RGB(180, 180, 180);
+            Gdiplus::SolidBrush iconBrush(Gdiplus::Color(255, GetRValue(iconColor), GetGValue(iconColor), GetBValue(iconColor)));
+            Gdiplus::Pen iconPen(Gdiplus::Color(255, GetRValue(iconColor), GetGValue(iconColor), GetBValue(iconColor)), 1.2f);
+
+            // Scale for icon
+            float scale = min(width, height) / 16.0f;
+
+            // Draw speaker body (rectangle + triangle)
+            float speakerLeft = centerX - 4.0f * scale;
+            float speakerWidth = 3.0f * scale;
+            float speakerHeight = 5.0f * scale;
+            graphics.FillRectangle(&iconBrush, speakerLeft, centerY - speakerHeight / 2.0f, speakerWidth, speakerHeight);
+
+            // Speaker cone (triangle)
+            Gdiplus::PointF cone[3] = {
+                Gdiplus::PointF(speakerLeft + speakerWidth, centerY - speakerHeight / 2.0f),
+                Gdiplus::PointF(speakerLeft + speakerWidth + 3.0f * scale, centerY - 4.0f * scale),
+                Gdiplus::PointF(speakerLeft + speakerWidth + 3.0f * scale, centerY + 4.0f * scale)
+            };
+            Gdiplus::PointF cone2[3] = {
+                Gdiplus::PointF(speakerLeft + speakerWidth, centerY + speakerHeight / 2.0f),
+                cone[1],
+                cone[2]
+            };
+            graphics.FillPolygon(&iconBrush, cone, 3);
+            graphics.FillPolygon(&iconBrush, cone2, 3);
+
+            // Draw sound waves based on volume
+            if (pData && pData->volume > 0.0)
+            {
+                float waveX = speakerLeft + speakerWidth + 4.0f * scale;
+                
+                // First wave (always visible when volume > 0)
+                graphics.DrawArc(&iconPen, waveX, centerY - 2.5f * scale, 3.0f * scale, 5.0f * scale, -60.0f, 120.0f);
+                
+                // Second wave (visible when volume > 33%)
+                if (pData->volume > 0.33)
+                {
+                    graphics.DrawArc(&iconPen, waveX + 1.5f * scale, centerY - 4.0f * scale, 4.5f * scale, 8.0f * scale, -60.0f, 120.0f);
+                }
+                
+                // Third wave (visible when volume > 66%)
+                if (pData->volume > 0.66)
+                {
+                    graphics.DrawArc(&iconPen, waveX + 3.0f * scale, centerY - 5.5f * scale, 6.0f * scale, 11.0f * scale, -60.0f, 120.0f);
+                }
+            }
+            else if (pData && pData->volume == 0.0)
+            {
+                // Draw X for muted
+                float xOffset = speakerLeft + speakerWidth + 5.0f * scale;
+                graphics.DrawLine(&iconPen, xOffset, centerY - 2.5f * scale, xOffset + 3.5f * scale, centerY + 2.5f * scale);
+                graphics.DrawLine(&iconPen, xOffset, centerY + 2.5f * scale, xOffset + 3.5f * scale, centerY - 2.5f * scale);
+            }
             return TRUE;
         }
         break;
@@ -4510,6 +4620,39 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
             return TRUE;
         }
         break;
+
+    case WM_HSCROLL:
+    {
+        HWND hVolumeSlider = GetDlgItem(hDlg, IDC_TRIM_VOLUME);
+        if (reinterpret_cast<HWND>(lParam) == hVolumeSlider)
+        {
+            pData = reinterpret_cast<TrimDialogData*>(GetWindowLongPtr(hDlg, DWLP_USER));
+            if (pData)
+            {
+                int pos = static_cast<int>(SendMessage(hVolumeSlider, TBM_GETPOS, 0, 0));
+                pData->volume = pos / 100.0;
+                
+                // Persist volume setting
+                g_TrimDialogVolume = static_cast<DWORD>(pos);
+                reg.WriteRegSettings(RegSettings);
+                
+                if (pData->mediaPlayer)
+                {
+                    try
+                    {
+                        pData->mediaPlayer.Volume(pData->volume);
+                    }
+                    catch (...)
+                    {
+                    }
+                }
+                // Invalidate volume icon to update its appearance
+                InvalidateRect(GetDlgItem(hDlg, IDC_TRIM_VOLUME_ICON), nullptr, FALSE);
+            }
+            return TRUE;
+        }
+        break;
+    }
 
     case WM_COMMAND:
         switch (LOWORD(wParam))
