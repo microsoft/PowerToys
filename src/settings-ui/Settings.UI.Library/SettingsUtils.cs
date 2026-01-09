@@ -261,5 +261,16 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             string settingsBackupAndRestoreDir = settingsBackupAndRestoreUtilsX.GetSettingsBackupAndRestoreDir();
             return settingsBackupAndRestoreUtilsX.RestoreSettings(appBasePath, settingsBackupAndRestoreDir);
         }
+
+        /// <summary>
+        /// Method <c>ResetSettingsToDefaults</c> Mostly a wrapper for SettingsBackupAndRestoreUtils.ResetSettingsToDefaults
+        /// </summary>
+        public static (bool Success, string Message, string Severity) ResetSettingsToDefaults()
+        {
+            var settingsBackupAndRestoreUtilsX = SettingsBackupAndRestoreUtils.Instance;
+            var settingsUtils = new SettingsUtils();
+            var appBasePath = Path.GetDirectoryName(settingsUtils._settingsPath.GetSettingsPath(string.Empty, string.Empty));
+            return settingsBackupAndRestoreUtilsX.ResetSettingsToDefaults(appBasePath);
+        }
     }
 }
