@@ -47,6 +47,7 @@ Allmodule
 ALLOWUNDO
 ALLVIEW
 ALPHATYPE
+altkey
 AModifier
 amr
 ANDSCANS
@@ -539,6 +540,7 @@ fdx
 FErase
 fesf
 FFFF
+fffffffzzz
 FInc
 Figma
 FILEEXPLORER
@@ -680,6 +682,7 @@ HICONSM
 HIDEREADONLY
 HIDEWINDOW
 Hif
+highcontrast
 HIMAGELIST
 himl
 hinst
@@ -999,6 +1002,7 @@ MDL
 mdtext
 mdtxt
 mdwn
+measuretool
 meme
 mcp
 memicmp
@@ -1043,6 +1047,7 @@ MONITORINFOEX
 MONITORINFOEXW
 monitorinfof
 MOUSEACTIVATE
+mousecrosshairs
 MOUSEDATA
 MOUSEEVENTF
 mousehighlighter
@@ -1083,6 +1088,7 @@ msvcp
 MT
 mstsc
 MTND
+multimonitor
 MULTIPLEUSE
 multizone
 muxc
@@ -1186,6 +1192,7 @@ NORMALUSER
 NOSEARCH
 NOSENDCHANGING
 NOSIZE
+notdefault
 NOTHOUSANDS
 NOTICKS
 NOTIFICATIONSDLL
@@ -1288,6 +1295,7 @@ PCTSTR
 PCWSTR
 PDBs
 PDEVMODE
+PDFs
 pdisp
 PDLL
 pdo
@@ -1343,6 +1351,7 @@ Pomodoro
 Popups
 POPUPWINDOW
 POSITIONITEM
+powerocr
 POWERRENAMECONTEXTMENU
 powerrenameinput
 POWERRENAMETEST
@@ -1748,6 +1757,7 @@ subkeys
 sublang
 SUBMODULEUPDATE
 subresource
+suntimes
 Superbar
 sut
 svchost
@@ -1999,6 +2009,7 @@ wdm
 wdp
 wdupenv
 webbrowsers
+webdev
 webpage
 websites
 wekyb
