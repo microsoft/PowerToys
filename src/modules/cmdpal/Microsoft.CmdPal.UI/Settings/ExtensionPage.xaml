@@ -190,13 +190,7 @@
                                     Style="{StaticResource SettingsSectionHeaderTextBlockStyle}"
                                     Visibility="{x:Bind ViewModel.HasSettings}" />
 
-                                <Frame
-                                    x:Name="SettingsFrame"
-                                    Background="{ThemeResource SettingsCardBackground}"
-                                    BorderBrush="{ThemeResource SettingsCardBorderBrush}"
-                                    BorderThickness="{ThemeResource SettingsCardBorderThickness}"
-                                    CornerRadius="{StaticResource ControlCornerRadius}"
-                                    Visibility="{x:Bind ViewModel.HasSettings}">
+                                <Frame x:Name="SettingsFrame" Visibility="{x:Bind ViewModel.HasSettings}">
                                     <controls:SwitchPresenter
                                         HorizontalAlignment="Stretch"
                                         TargetType="x:Boolean"
