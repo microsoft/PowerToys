@@ -3678,6 +3678,7 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
             EndDialog(hDlg, IDCANCEL);
             return FALSE;
         }
+
         SetWindowLongPtr(hDlg, DWLP_USER, lParam);
         pData->hDialog = hDlg;
         pData->hoverPlay = false;
@@ -3898,6 +3899,13 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
         DluToPixels(12, 12, &marginLeft, &marginTop);
         DluToPixels(11, 0, &marginRight, nullptr);
 
+        // Suppress timeline redraw during layout to avoid flashing while resizing.
+        HWND hTimeline = GetDlgItem(hDlg, IDC_TRIM_TIMELINE);
+        if (hTimeline)
+        {
+            SendMessage(hTimeline, WM_SETREDRAW, FALSE, 0);
+        }
+
         // Fixed heights from RC file (in dialog units) converted to pixels
         int labelHeight, timelineHeight, buttonRowHeight, okCancelHeight, bottomMargin;
         int spacing4, spacing2, spacing8;
@@ -3951,10 +3959,10 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
         }
 
         // Resize timeline
-        HWND hTimeline = GetDlgItem(hDlg, IDC_TRIM_TIMELINE);
-        if (hTimeline)
+        HWND hTimelineCtrl = hTimeline ? hTimeline : GetDlgItem(hDlg, IDC_TRIM_TIMELINE);
+        if (hTimelineCtrl)
         {
-            SetWindowPos(hTimeline, nullptr, marginLeft, timelineY, timelineWidth, timelineHeight,
+            SetWindowPos(hTimelineCtrl, nullptr, marginLeft, timelineY, timelineWidth, timelineHeight,
                 SWP_NOZORDER | SWP_NOACTIVATE);
         }
 
@@ -4070,8 +4078,13 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
                 SWP_NOZORDER | SWP_NOACTIVATE);
         }
 
-        // Invalidate to repaint
-        InvalidateRect(hDlg, nullptr, TRUE);
+        // Invalidate to repaint without erasing, and do a single timeline redraw now that layout is done.
+        InvalidateRect(hDlg, nullptr, FALSE);
+        if (hTimeline)
+        {
+            SendMessage(hTimeline, WM_SETREDRAW, TRUE, 0);
+            RedrawWindow(hTimeline, nullptr, nullptr, RDW_INVALIDATE | RDW_UPDATENOW | RDW_NOERASE);
+        }
         return 0;
     }
 
