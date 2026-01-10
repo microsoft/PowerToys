@@ -333,7 +333,8 @@ void DrawIndex(HDC hdc, const RECT& rect, size_t index)
     std::wstring text = std::to_wstring(index);
 
     g.SetTextRenderingHint(Gdiplus::TextRenderingHintAntiAlias);
-    Gdiplus::StringFormat stringFormat = new Gdiplus::StringFormat();
+
+    Gdiplus::StringFormat stringFormat;
     stringFormat.SetAlignment(Gdiplus::StringAlignmentCenter);
     stringFormat.SetLineAlignment(Gdiplus::StringAlignmentCenter);
 
@@ -345,6 +346,7 @@ void DrawIndex(HDC hdc, const RECT& rect, size_t index)
 
     g.DrawString(text.c_str(), -1, &font, gdiRect, &stringFormat, &solidBrush);
 }
+
 
 void DrawZone(HDC hdc, const ColorSetting& colorSetting, const RECT& rect, size_t index)
 {
