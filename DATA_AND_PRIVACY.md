@@ -120,6 +120,10 @@ _If you want to find diagnostic data events in the source code, these two links 
     <th>Description</th>
   </tr>
   <tr>
+    <td>Microsoft.PowerToys.OobeModuleRunEvent</td>
+    <td>Triggered when a user clicks to run or launch a PowerToys module directly from the OOBE (out-of-box experience) interface.</td>
+  </tr>
+  <tr>
     <td>Microsoft.PowerToys.OobeSectionEvent</td>
     <td>Occurs when OOBE is shown to the user.</td>
   </tr>
@@ -130,6 +134,10 @@ _If you want to find diagnostic data events in the source code, these two links 
   <tr>
     <td>Microsoft.PowerToys.OobeStartedEvent</td>
     <td>Indicates when the out-of-box experience has been initiated.</td>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.OobeVariantAssignmentEvent</td>
+    <td>This event logs A/B testing assignments for experimental features, helping track which users are in control or alternate groups for feature experiments. </td>
   </tr>
 </table>
 
@@ -407,6 +415,15 @@ _If you want to find diagnostic data events in the source code, these two links 
   <tr>
     <td>Microsoft.PowerToys.CropAndLock_ActivateThumbnail</td>
     <td>Occurs when the thumbnail view for cropped content is activated.</td>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.CropAndLock_CreateThumbnailWindow</td>
+    <td>Triggered when a thumbnail window is created in Crop and Lock mode.</td>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.CropAndLock_CreateScreenshotWindow</td>
+    <td>Triggered when a screenshot window is created in Crop and Lock mode.
+    </td>
   </tr>
   <tr>
     <td>Microsoft.PowerToys.CropAndLock_EnableCropAndLock</td>
@@ -757,8 +774,20 @@ _If you want to find diagnostic data events in the source code, these two links 
     <td>Logs the number of application-specific shortcut remaps configured by the user.</td>
   </tr>
   <tr>
+    <td>Microsoft.PowerToys.KeyboardManager_AppSpecificShortcutToKeyRemapInvoked</td>
+    <td>Logs each instance when an application-specific shortcut-to-key remap is used.</td>
+  </tr>
+  <tr>
     <td>Microsoft.PowerToys.KeyboardManager_AppSpecificShortcutToShortcutRemapInvoked</td>
     <td>Logs each instance when an application-specific shortcut-to-shortcut remap is used.</td>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.KeyboardManager_Error</td>
+    <td>Triggered when an error occurs in Keyboard Manager. This logs the error code, error message, and the method name where the error occurred.</td>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.KeyboardManager_ErrorSendingKeyAndShortcutRemapLoadedConfiguration</td>
+    <td>Triggered when there is an error sending remapping configuration telemetry. This occurs when Keyboard Manager fails to report the loaded key and shortcut remap configurations</td>
   </tr>
   <tr>
     <td>Microsoft.PowerToys.KeyboardManager_DailyAppSpecificShortcutToKeyRemapInvoked</td>
@@ -867,6 +896,10 @@ _If you want to find diagnostic data events in the source code, these two links 
   <tr>
     <td>Microsoft.PowerToys.MouseHighlighter_StartHighlightingSession</td>
     <td>Occurs when a new highlighting session is started.</td>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.MouseHighlighter_StartSpotlightSession</td>
+    <td>Triggered when a spotlight session is started in Mouse Highlighter. This occurs when the user activates the spotlight mode.</td>
   </tr>
 </table>
 
@@ -1048,6 +1081,10 @@ _If you want to find diagnostic data events in the source code, these two links 
     <td>Microsoft.PowerToys.Peek_Settings</td>
     <td>Triggered when the settings for Peek are modified.</td>
   </tr>
+  <tr>
+    <td>Microsoft.PowerToys.Peek_SpaceModeEnabled</td>
+    <td>Triggered when the Space key activation mode is enabled or disabled in Peek</td>
+  </tr>
 </table>
 
 ### PowerRename
@@ -1176,6 +1213,14 @@ _If you want to find diagnostic data events in the source code, these two links 
     <td>Microsoft.PowerToys.RegistryPreview_EnableRegistryPreview</td>
     <td>Occurs when Registry Preview is enabled.</td>
   </tr>
+  <tr>
+    <td>Microsoft.PowerToys.RegistryPreviewEditorStartEvent</td>
+    <td>Triggered when the Registry Preview application starts. This logs the initialization of the Registry Preview UI with a timestamp.</td>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.RegistryPreviewEditorStartFinishEvent</td>
+    <td>Triggered when the Registry Preview application has completed loading and is ready for user interaction.</td>
+  </tr>
 </table>
 
 ### Screen Ruler
@@ -1287,6 +1332,14 @@ _If you want to find diagnostic data events in the source code, these two links 
   <tr>
     <td>Microsoft.PowerToys.Workspaces_Settings</td>
     <td>Logs changes to workspaces settings.</td>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.WorkspacesEditorStartEvent</td>
+    <td>Triggered when the Workspaces Editor application starts. This logs the initialization of the Workspaces Editor UI with a timestamp.</td>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.WorkspacesEditorStartFinishEvent</td>
+    <td>Triggered when the Workspaces Editor has completed loading and is ready for user interaction.</td>
   </tr>
 </table>
 
