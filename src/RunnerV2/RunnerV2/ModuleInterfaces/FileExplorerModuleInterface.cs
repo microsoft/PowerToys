@@ -39,51 +39,51 @@ namespace RunnerV2.ModuleInterfaces
                 new FileExplorerModule(
                     () => GetProperties().EnableBgcodePreview,
                     GPOWrapper.GetConfiguredBgcodePreviewEnabledValue(),
-                    GetFileExplorerAddOnChangeSet(FileExplorerAddOnType.PreviewHandler, "{0e6d5bdd-d5f8-4692-a089-8bb88cdd37f4}", Path.Combine(installationPath, "PowerToys.BgcodePreviewHandlerCpp.dll"), "BgcodePreviewHandler", "Binary G-code Preview Handler", ExtBGCode)),
+                    GetFileExplorerAddOnChangeSet(FileExplorerAddOnType.PreviewHandler, "{0e6d5bdd-d5f8-4692-a089-8bb88cdd37f4}", "BgcodePreviewHandler", "Binary G-code Preview Handler", ExtBGCode)),
                 new FileExplorerModule(
                     () => GetProperties().EnableBgcodeThumbnail,
                     GPOWrapper.GetConfiguredBgcodeThumbnailsEnabledValue(),
-                    GetFileExplorerAddOnChangeSet(FileExplorerAddOnType.ThumbnailProvider, "{5c93a1e4-99d0-4fb3-991c-6c296a27be21}", Path.Combine(installationPath, "PowerToys.BgcodeThumbnailProviderCpp.dll"), "BgcodeThumbnailProvider", "Binary G-code Thumbnail Provider", ExtBGCode)),
+                    GetFileExplorerAddOnChangeSet(FileExplorerAddOnType.ThumbnailProvider, "{5c93a1e4-99d0-4fb3-991c-6c296a27be21}", "BgcodeThumbnailProvider", "Binary G-code Thumbnail Provider", ExtBGCode)),
                 new FileExplorerModule(
                     () => GetProperties().EnableGcodePreview,
                     GPOWrapper.GetConfiguredGcodePreviewEnabledValue(),
-                    GetFileExplorerAddOnChangeSet(FileExplorerAddOnType.PreviewHandler, "{A0257634-8812-4CE8-AF11-FA69ACAEAFAE}", Path.Combine(installationPath, "PowerToys.GcodePreviewHandlerCpp.dll"), "GcodePreviewHandler", "G-code Preview Handler", ExtGCode)),
+                    GetFileExplorerAddOnChangeSet(FileExplorerAddOnType.PreviewHandler, "{A0257634-8812-4CE8-AF11-FA69ACAEAFAE}", "GcodePreviewHandler", "G-code Preview Handler", ExtGCode)),
                 new FileExplorerModule(
                     () => GetProperties().EnableGcodeThumbnail,
                     GPOWrapper.GetConfiguredGcodeThumbnailsEnabledValue(),
-                    GetFileExplorerAddOnChangeSet(FileExplorerAddOnType.ThumbnailProvider, "{F2847CBE-CD03-4C83-A359-1A8052C1B9D5}", Path.Combine(installationPath, "PowerToys.GcodeThumbnailProviderCpp.dll"), "GcodeThumbnailProvider", "G-code Thumbnail Provider", ExtGCode)),
+                    GetFileExplorerAddOnChangeSet(FileExplorerAddOnType.ThumbnailProvider, "{F2847CBE-CD03-4C83-A359-1A8052C1B9D5}", "GcodeThumbnailProvider", "G-code Thumbnail Provider", ExtGCode)),
                 new FileExplorerModule(
                     () => GetProperties().EnableMdPreview,
                     GPOWrapper.GetConfiguredMarkdownPreviewEnabledValue(),
-                    GetFileExplorerAddOnChangeSet(FileExplorerAddOnType.PreviewHandler, "{60789D87-9C3C-44AF-B18C-3DE2C2820ED3}", Path.Combine(installationPath, "PowerToys.MarkdownPreviewHandlerCpp.dll"), "MarkdownPreviewHandler", "Markdown Preview Handler", ExtMarkdown)),
+                    GetFileExplorerAddOnChangeSet(FileExplorerAddOnType.PreviewHandler, "{60789D87-9C3C-44AF-B18C-3DE2C2820ED3}", "MarkdownPreviewHandler", "Markdown Preview Handler", ExtMarkdown)),
                 new FileExplorerModule(
                     () => GetProperties().EnablePdfPreview,
                     GPOWrapper.GetConfiguredPdfPreviewEnabledValue(),
-                    GetFileExplorerAddOnChangeSet(FileExplorerAddOnType.PreviewHandler, "{A5A41CC7-02CB-41D4-8C9B-9087040D6098}", Path.Combine(installationPath, "PowerToys.PdfPreviewHandlerCpp.dll"), "PdfPreviewHandler", "PDF Preview Handler", ExtPDF)),
+                    GetFileExplorerAddOnChangeSet(FileExplorerAddOnType.PreviewHandler, "{A5A41CC7-02CB-41D4-8C9B-9087040D6098}", "PdfPreviewHandler", "PDF Preview Handler", ExtPDF)),
                 new FileExplorerModule(
                     () => GetProperties().EnablePdfThumbnail,
                     GPOWrapper.GetConfiguredPdfThumbnailsEnabledValue(),
-                    GetFileExplorerAddOnChangeSet(FileExplorerAddOnType.ThumbnailProvider, "{D8BB9942-93BD-412D-87E4-33FAB214DC1A}", Path.Combine(installationPath, "PowerToys.PdfThumbnailProviderCpp.dll"), "PdfThumbnailProvider", "PDF Thumbnail Provider", ExtPDF)),
+                    GetFileExplorerAddOnChangeSet(FileExplorerAddOnType.ThumbnailProvider, "{D8BB9942-93BD-412D-87E4-33FAB214DC1A}", "PdfThumbnailProvider", "PDF Thumbnail Provider", ExtPDF)),
                 new FileExplorerModule(
                     () => GetProperties().EnableQoiPreview,
                     GPOWrapper.GetConfiguredQoiPreviewEnabledValue(),
-                    GetFileExplorerAddOnChangeSet(FileExplorerAddOnType.PreviewHandler, "{729B72CD-B72E-4FE9-BCBF-E954B33FE699}", Path.Combine(installationPath, "PowerToys.QoiPreviewHandlerCpp.dll"), "QoiPreviewHandler", "QOI Preview Handler", ExtQOI)),
+                    GetFileExplorerAddOnChangeSet(FileExplorerAddOnType.PreviewHandler, "{729B72CD-B72E-4FE9-BCBF-E954B33FE699}", "QoiPreviewHandler", "QOI Preview Handler", ExtQOI)),
                 new FileExplorerModule(
                     () => GetProperties().EnableQoiThumbnail,
                     GPOWrapper.GetConfiguredQoiThumbnailsEnabledValue(),
-                    GetFileExplorerAddOnChangeSet(FileExplorerAddOnType.ThumbnailProvider, "{AD856B15-D25E-4008-AFB7-AFAA55586188}", Path.Combine(installationPath, "PowerToys.QoiThumbnailProviderCpp.dll"), "QoiThumbnailProvider", "QOI Thumbnail Provider", ExtQOI, "image", "Picture")),
+                    GetFileExplorerAddOnChangeSet(FileExplorerAddOnType.ThumbnailProvider, "{AD856B15-D25E-4008-AFB7-AFAA55586188}", "QoiThumbnailProvider", "QOI Thumbnail Provider", ExtQOI, "image", "Picture")),
                 new FileExplorerModule(
                     () => GetProperties().EnableStlThumbnail,
                     GPOWrapper.GetConfiguredStlThumbnailsEnabledValue(),
-                    GetFileExplorerAddOnChangeSet(FileExplorerAddOnType.ThumbnailProvider, "{77257004-6F25-4521-B602-50ECC6EC62A6}", Path.Combine(installationPath, "PowerToys.StlThumbnailProviderCpp.dll"), "StlThumbnailProvider", "STL Thumbnail Provider", ExtSTL)),
+                    GetFileExplorerAddOnChangeSet(FileExplorerAddOnType.ThumbnailProvider, "{77257004-6F25-4521-B602-50ECC6EC62A6}", "StlThumbnailProvider", "STL Thumbnail Provider", ExtSTL)),
                 new FileExplorerModule(
                     () => GetProperties().EnableSvgPreview,
                     GPOWrapper.GetConfiguredSvgPreviewEnabledValue(),
-                    GetFileExplorerAddOnChangeSet(FileExplorerAddOnType.PreviewHandler, "{FCDD4EED-41AA-492F-8A84-31A1546226E0}", Path.Combine(installationPath, "PowerToys.SvgPreviewHandlerCpp.dll"), "SvgPreviewHandler", "SVG Preview Handler", ExtSVG)),
+                    GetFileExplorerAddOnChangeSet(FileExplorerAddOnType.PreviewHandler, "{FCDD4EED-41AA-492F-8A84-31A1546226E0}", "SvgPreviewHandler", "SVG Preview Handler", ExtSVG)),
                 new FileExplorerModule(
                     () => GetProperties().EnableSvgThumbnail,
                     GPOWrapper.GetConfiguredSvgThumbnailsEnabledValue(),
-                    GetFileExplorerAddOnChangeSet(FileExplorerAddOnType.ThumbnailProvider, "{10144713-1526-46C9-88DA-1FB52807A9FF}", Path.Combine(installationPath, "PowerToys.SvgThumbnailProviderCpp.dll"), "SvgThumbnailProvider", "SVG Thumbnail Provider", ExtSVG, "image", "Picture")),
+                    GetFileExplorerAddOnChangeSet(FileExplorerAddOnType.ThumbnailProvider, "{10144713-1526-46C9-88DA-1FB52807A9FF}", "SvgThumbnailProvider", "SVG Thumbnail Provider", ExtSVG, "image", "Picture")),
                 GetMonacoFileExplorerModule(installationPath)
             ];
         }
@@ -134,7 +134,6 @@ namespace RunnerV2.ModuleInterfaces
                 GetFileExplorerAddOnChangeSet(
                     FileExplorerAddOnType.PreviewHandler,
                     "{D8034CFA-F34B-41FE-AD45-62FCBB52A6DA}",
-                    Path.Combine(installationPath, "PowerToys.MonacoPreviewHandlerCpp.dll"),
                     "MonacoPreviewHandler",
                     "Monaco Preview Handler",
                     [.. extensions.Where(ext => !extExclusions.Contains(ext))]));
@@ -146,8 +145,10 @@ namespace RunnerV2.ModuleInterfaces
             PreviewHandler,
         }
 
-        private static RegistryChangeSet GetFileExplorerAddOnChangeSet(FileExplorerAddOnType type, string handlerClsid, string pathToHandler, string className, string displayName, string[] fileTypes, string? perceivedType = null, string? fileKindType = null)
+        private static RegistryChangeSet GetFileExplorerAddOnChangeSet(FileExplorerAddOnType type, string handlerClsid, string className, string displayName, string[] fileTypes, string? perceivedType = null, string? fileKindType = null)
         {
+            string installationPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!;
+            string pathToHandler = Path.Combine(installationPath, "PowerToys.FileExplorerDllExporter.dll");
             string clsidPath = "Software\\Classes\\CLSID\\" + handlerClsid;
             string inprocServer32Path = clsidPath + "\\InprocServer32";
 
@@ -312,17 +313,17 @@ namespace RunnerV2.ModuleInterfaces
             {
                 if (submodule.GpoRule == GpoRuleConfigured.Disabled)
                 {
-                    submodule.RegistryChanges.UnApplyIfApplied();
+                    submodule.RegistryChanges.UnApply();
                     continue;
                 }
 
                 if (submodule.IsEnabled() || submodule.GpoRule == GpoRuleConfigured.Enabled)
                 {
-                    submodule.RegistryChanges.ApplyIfNotApplied();
+                    submodule.RegistryChanges.Apply();
                 }
                 else
                 {
-                    submodule.RegistryChanges.UnApplyIfApplied();
+                    submodule.RegistryChanges.UnApply();
                 }
             }
         }
