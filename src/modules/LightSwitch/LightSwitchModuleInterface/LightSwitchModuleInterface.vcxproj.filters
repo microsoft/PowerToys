@@ -10,7 +10,7 @@
     <ClCompile Include="trace.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ThemeHelper.cpp">
+    <ClCompile Include="..\LightSwitchCommon\ThemeHelper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -24,7 +24,10 @@
     <ClInclude Include="trace.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ThemeHelper.h">
+    <ClInclude Include="..\LightSwitchCommon\ThemeHelper.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\LightSwitchCommon\SettingsConstants.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -46,5 +49,8 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="$(MSBuildThisFileDirectory)..\..\natvis\wil.natvis" />
   </ItemGroup>
 </Project>
