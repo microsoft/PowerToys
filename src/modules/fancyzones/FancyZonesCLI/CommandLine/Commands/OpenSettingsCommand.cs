@@ -5,6 +5,7 @@
 using System;
 using System.CommandLine.Invocation;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 
 namespace FancyZonesCLI.CommandLine.Commands;
@@ -12,7 +13,7 @@ namespace FancyZonesCLI.CommandLine.Commands;
 internal sealed partial class OpenSettingsCommand : FancyZonesBaseCommand
 {
     public OpenSettingsCommand()
-        : base("open-settings", "Open FancyZones settings page")
+        : base("open-settings", Properties.Resources.cmd_open_settings)
     {
         AddAlias("settings");
     }
@@ -37,14 +38,14 @@ internal sealed partial class OpenSettingsCommand : FancyZonesBaseCommand
 
             if (process == null)
             {
-                throw new InvalidOperationException("PowerToys.exe failed to start.");
+                throw new InvalidOperationException(Properties.Resources.open_settings_error_not_started);
             }
 
             return string.Empty;
         }
         catch (Exception ex)
         {
-            throw new InvalidOperationException($"Failed to open FancyZones Settings. {ex.Message}", ex);
+            throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, Properties.Resources.open_settings_error, ex.Message), ex);
         }
     }
 }

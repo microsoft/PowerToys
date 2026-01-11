@@ -30,6 +30,11 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests.BackwardsCompatibility
             private readonly SettingsUtils _settingsUtils;
             private T _settingsConfig;
 
+            // Implements ISettingsRepository<T>.SettingsChanged
+#pragma warning disable CS0067
+            public event System.Action<T> SettingsChanged;
+#pragma warning restore CS0067
+
             public MockSettingsRepository(SettingsUtils settingsUtils)
             {
                 _settingsUtils = settingsUtils;

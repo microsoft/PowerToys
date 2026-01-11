@@ -51,6 +51,24 @@ namespace Awake
 
         private static async Task<int> Main(string[] args)
         {
+            var rootCommand = BuildRootCommand();
+
+            Bridge.AttachConsole(Core.Native.Constants.ATTACH_PARENT_PROCESS);
+
+            var parseResult = rootCommand.Parse(args);
+
+            if (parseResult.Tokens.Any(t => t.Value.ToLowerInvariant() is "--help" or "-h" or "-?"))
+            {
+                // Print help and exit.
+                return rootCommand.Invoke(args);
+            }
+
+            if (parseResult.Errors.Count > 0)
+            {
+                // Shows errors and returns non-zero.
+                return rootCommand.Invoke(args);
+            }
+
             _settingsUtils = SettingsUtils.Default;
 
             LockMutex = new Mutex(true, Core.Constants.AppName, out bool instantiated);
@@ -107,114 +125,95 @@ namespace Awake
                     Bridge.GetPwrCapabilities(out _powerCapabilities);
                     Logger.LogInfo(JsonSerializer.Serialize(_powerCapabilities, _serializerOptions));
 
-                    Logger.LogInfo("Parsing parameters...");
-
-                    Option<bool> configOption = new(_aliasesConfigOption, () => false, Resources.AWAKE_CMD_HELP_CONFIG_OPTION)
-                    {
-                        Arity = ArgumentArity.ZeroOrOne,
-                        IsRequired = false,
-                    };
-
-                    Option<bool> displayOption = new(_aliasesDisplayOption, () => true, Resources.AWAKE_CMD_HELP_DISPLAY_OPTION)
-                    {
-                        Arity = ArgumentArity.ZeroOrOne,
-                        IsRequired = false,
-                    };
-
-                    Option<uint> timeOption = new(_aliasesTimeOption, () => 0, Resources.AWAKE_CMD_HELP_TIME_OPTION)
-                    {
-                        Arity = ArgumentArity.ExactlyOne,
-                        IsRequired = false,
-                    };
-
-                    Option<int> pidOption = new(_aliasesPidOption, () => 0, Resources.AWAKE_CMD_HELP_PID_OPTION)
-                    {
-                        Arity = ArgumentArity.ZeroOrOne,
-                        IsRequired = false,
-                    };
-
-                    Option<string> expireAtOption = new(_aliasesExpireAtOption, () => string.Empty, Resources.AWAKE_CMD_HELP_EXPIRE_AT_OPTION)
-                    {
-                        Arity = ArgumentArity.ZeroOrOne,
-                        IsRequired = false,
-                    };
-
-                    Option<bool> parentPidOption = new(_aliasesParentPidOption, () => false, Resources.AWAKE_CMD_PARENT_PID_OPTION)
-                    {
-                        Arity = ArgumentArity.ZeroOrOne,
-                        IsRequired = false,
-                    };
-
-                    timeOption.AddValidator(result =>
-                    {
-                        if (result.Tokens.Count != 0 && !uint.TryParse(result.Tokens[0].Value, out _))
-                        {
-                            string errorMessage = $"Interval in --time-limit could not be parsed correctly. Check that the value is valid and doesn't exceed 4,294,967,295. Value used: {result.Tokens[0].Value}.";
-                            Logger.LogError(errorMessage);
-                            result.ErrorMessage = errorMessage;
-                        }
-                    });
-
-                    pidOption.AddValidator(result =>
-                    {
-                        if (result.Tokens.Count == 0)
-                        {
-                            return;
-                        }
-
-                        string tokenValue = result.Tokens[0].Value;
-
-                        if (!int.TryParse(tokenValue, out int parsed))
-                        {
-                            string errorMessage = $"PID value in --pid could not be parsed correctly. Check that the value is valid and falls within the boundaries of Windows PID process limits. Value used: {tokenValue}.";
-                            Logger.LogError(errorMessage);
-                            result.ErrorMessage = errorMessage;
-                            return;
-                        }
-
-                        if (parsed <= 0)
-                        {
-                            string errorMessage = $"PID value in --pid must be a positive integer. Value used: {parsed}.";
-                            Logger.LogError(errorMessage);
-                            result.ErrorMessage = errorMessage;
-                            return;
-                        }
-
-                        // Process existence check. (We also re-validate just before binding.)
-                        if (!ProcessExists(parsed))
-                        {
-                            string errorMessage = $"No running process found with an ID of {parsed}.";
-                            Logger.LogError(errorMessage);
-                            result.ErrorMessage = errorMessage;
-                        }
-                    });
-
-                    expireAtOption.AddValidator(result =>
-                    {
-                        if (result.Tokens.Count != 0 && !DateTimeOffset.TryParse(result.Tokens[0].Value, out _))
-                        {
-                            string errorMessage = $"Date and time value in --expire-at could not be parsed correctly. Check that the value is valid date and time. Refer to https://aka.ms/powertoys/awake for format examples. Value used: {result.Tokens[0].Value}.";
-                            Logger.LogError(errorMessage);
-                            result.ErrorMessage = errorMessage;
-                        }
-                    });
-
-                    RootCommand? rootCommand =
-                    [
-                        configOption,
-                        displayOption,
-                        timeOption,
-                        pidOption,
-                        expireAtOption,
-                        parentPidOption,
-                    ];
-
-                    rootCommand.Description = Core.Constants.AppName;
-                    rootCommand.SetHandler(HandleCommandLineArguments, configOption, displayOption, timeOption, pidOption, expireAtOption, parentPidOption);
-
-                    return rootCommand.InvokeAsync(args).Result;
+                    return await rootCommand.InvokeAsync(args);
                 }
             }
+        }
+
+        private static RootCommand BuildRootCommand()
+        {
+            Logger.LogInfo("Parsing parameters...");
+
+            Option<bool> configOption = new(_aliasesConfigOption, () => false, Resources.AWAKE_CMD_HELP_CONFIG_OPTION)
+            {
+                Arity = ArgumentArity.ZeroOrOne,
+                IsRequired = false,
+            };
+
+            Option<bool> displayOption = new(_aliasesDisplayOption, () => true, Resources.AWAKE_CMD_HELP_DISPLAY_OPTION)
+            {
+                Arity = ArgumentArity.ZeroOrOne,
+                IsRequired = false,
+            };
+
+            Option<uint> timeOption = new(_aliasesTimeOption, () => 0, Resources.AWAKE_CMD_HELP_TIME_OPTION)
+            {
+                Arity = ArgumentArity.ExactlyOne,
+                IsRequired = false,
+            };
+
+            Option<int> pidOption = new(_aliasesPidOption, () => 0, Resources.AWAKE_CMD_HELP_PID_OPTION)
+            {
+                Arity = ArgumentArity.ZeroOrOne,
+                IsRequired = false,
+            };
+
+            Option<string> expireAtOption = new(_aliasesExpireAtOption, () => string.Empty, Resources.AWAKE_CMD_HELP_EXPIRE_AT_OPTION)
+            {
+                Arity = ArgumentArity.ZeroOrOne,
+                IsRequired = false,
+            };
+
+            Option<bool> parentPidOption = new(_aliasesParentPidOption, () => false, Resources.AWAKE_CMD_PARENT_PID_OPTION)
+            {
+                Arity = ArgumentArity.ZeroOrOne,
+                IsRequired = false,
+            };
+
+            timeOption.AddValidator(result =>
+            {
+                if (result.Tokens.Count != 0 && !uint.TryParse(result.Tokens[0].Value, out _))
+                {
+                    string errorMessage = $"Interval in --time-limit could not be parsed correctly. Check that the value is valid and doesn't exceed 4,294,967,295. Value used: {result.Tokens[0].Value}.";
+                    Logger.LogError(errorMessage);
+                    result.ErrorMessage = errorMessage;
+                }
+            });
+
+            pidOption.AddValidator(result =>
+            {
+                if (result.Tokens.Count != 0 && !int.TryParse(result.Tokens[0].Value, out _))
+                {
+                    string errorMessage = $"PID value in --pid could not be parsed correctly. Check that the value is valid and falls within the boundaries of Windows PID process limits. Value used: {result.Tokens[0].Value}.";
+                    Logger.LogError(errorMessage);
+                    result.ErrorMessage = errorMessage;
+                }
+            });
+
+            expireAtOption.AddValidator(result =>
+            {
+                if (result.Tokens.Count != 0 && !DateTimeOffset.TryParse(result.Tokens[0].Value, out _))
+                {
+                    string errorMessage = $"Date and time value in --expire-at could not be parsed correctly. Check that the value is valid date and time. Refer to https://aka.ms/powertoys/awake for format examples. Value used: {result.Tokens[0].Value}.";
+                    Logger.LogError(errorMessage);
+                    result.ErrorMessage = errorMessage;
+                }
+            });
+
+            RootCommand? rootCommand =
+            [
+                configOption,
+                displayOption,
+                timeOption,
+                pidOption,
+                expireAtOption,
+                parentPidOption,
+            ];
+
+            rootCommand.Description = Core.Constants.AppName;
+            rootCommand.SetHandler(HandleCommandLineArguments, configOption, displayOption, timeOption, pidOption, expireAtOption, parentPidOption);
+
+            return rootCommand;
         }
 
         private static void AwakeUnhandledExceptionCatcher(object sender, UnhandledExceptionEventArgs e)
@@ -264,6 +263,7 @@ namespace Awake
             if (pid == 0 && !useParentPid)
             {
                 Logger.LogInfo("No PID specified. Allocating console...");
+                Bridge.FreeConsole();
                 AllocateLocalConsole();
             }
             else

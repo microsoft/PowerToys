@@ -31,12 +31,22 @@ using Windows.System.Profile;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
-    public partial class GeneralViewModel : Observable
+    public partial class GeneralViewModel : PageViewModelBase
     {
         public enum InstallScope
         {
             PerMachine = 0,
             PerUser,
+        }
+
+        protected override string ModuleName => "GeneralSettings";
+
+        public override Dictionary<string, HotkeySettings[]> GetAllHotkeySettings()
+        {
+            return new Dictionary<string, HotkeySettings[]>
+            {
+                { ModuleName, new HotkeySettings[] { QuickAccessShortcut } },
+            };
         }
 
         private GeneralSettings GeneralSettingsConfig { get; set; }
@@ -75,6 +85,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private string _settingsConfigFileFolder = string.Empty;
 
+        private ISettingsRepository<GeneralSettings> _settingsRepository;
+        private Microsoft.UI.Dispatching.DispatcherQueue _dispatcherQueue;
+
         private IFileSystemWatcher _fileWatcher;
 
         private Func<Task<string>> PickSingleFolderDialog { get; }
@@ -99,6 +112,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             // To obtain the general settings configuration of PowerToys if it exists, else to create a new file and return the default configurations.
             ArgumentNullException.ThrowIfNull(settingsRepository);
+
+            _settingsRepository = settingsRepository;
+            _settingsRepository.SettingsChanged += OnSettingsChanged;
+            _dispatcherQueue = GetDispatcherQueue();
 
             GeneralSettingsConfig = settingsRepository.SettingsConfig;
             UpdatingSettingsConfig = UpdatingSettings.LoadSettings();
@@ -147,6 +164,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
 
             _showSysTrayIcon = GeneralSettingsConfig.ShowSysTrayIcon;
+            _showThemeAdaptiveSysTrayIcon = GeneralSettingsConfig.ShowThemeAdaptiveTrayIcon;
             _showNewUpdatesToastNotification = GeneralSettingsConfig.ShowNewUpdatesToastNotification;
             _autoDownloadUpdates = GeneralSettingsConfig.AutoDownloadUpdates;
             _showWhatsNewAfterUpdates = GeneralSettingsConfig.ShowWhatsNewAfterUpdates;
@@ -155,6 +173,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _isElevated = isElevated;
             _runElevated = GeneralSettingsConfig.RunElevated;
             _enableWarningsElevatedApps = GeneralSettingsConfig.EnableWarningsElevatedApps;
+            _enableQuickAccess = GeneralSettingsConfig.EnableQuickAccess;
+            _quickAccessShortcut = GeneralSettingsConfig.QuickAccessShortcut;
+            if (_quickAccessShortcut != null)
+            {
+                _quickAccessShortcut.PropertyChanged += QuickAccessShortcut_PropertyChanged;
+            }
 
             RunningAsUserDefaultText = runAsUserText;
             RunningAsAdminDefaultText = runAsAdminText;
@@ -230,12 +254,15 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private static bool _isDevBuild;
         private bool _startup;
         private bool _showSysTrayIcon;
+        private bool _showThemeAdaptiveSysTrayIcon;
         private GpoRuleConfigured _runAtStartupGpoRuleConfiguration;
         private bool _runAtStartupIsGPOConfigured;
         private bool _isElevated;
         private bool _runElevated;
         private bool _isAdmin;
         private bool _enableWarningsElevatedApps;
+        private bool _enableQuickAccess;
+        private HotkeySettings _quickAccessShortcut;
         private int _themeIndex;
 
         private bool _showNewUpdatesToastNotification;
@@ -381,6 +408,24 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public bool ShowThemeAdaptiveTrayIcon
+        {
+            get
+            {
+                return _showThemeAdaptiveSysTrayIcon;
+            }
+
+            set
+            {
+                if (_showThemeAdaptiveSysTrayIcon != value)
+                {
+                    _showThemeAdaptiveSysTrayIcon = value;
+                    GeneralSettingsConfig.ShowThemeAdaptiveTrayIcon = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
         public string RunningAsText
         {
             get
@@ -478,6 +523,57 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     NotifyPropertyChanged();
                 }
             }
+        }
+
+        public bool EnableQuickAccess
+        {
+            get
+            {
+                return _enableQuickAccess;
+            }
+
+            set
+            {
+                if (_enableQuickAccess != value)
+                {
+                    _enableQuickAccess = value;
+                    GeneralSettingsConfig.EnableQuickAccess = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
+        public HotkeySettings QuickAccessShortcut
+        {
+            get
+            {
+                return _quickAccessShortcut;
+            }
+
+            set
+            {
+                if (_quickAccessShortcut != value)
+                {
+                    if (_quickAccessShortcut != null)
+                    {
+                        _quickAccessShortcut.PropertyChanged -= QuickAccessShortcut_PropertyChanged;
+                    }
+
+                    _quickAccessShortcut = value;
+                    if (_quickAccessShortcut != null)
+                    {
+                        _quickAccessShortcut.PropertyChanged += QuickAccessShortcut_PropertyChanged;
+                    }
+
+                    GeneralSettingsConfig.QuickAccessShortcut = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
+        private void QuickAccessShortcut_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            NotifyPropertyChanged(nameof(QuickAccessShortcut));
         }
 
         public bool SomeUpdateSettingsAreGpoManaged
@@ -1433,6 +1529,36 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 // Open etw dir in FileExplorer
                 Process.Start("explorer.exe", etwDirPath);
             }
+        }
+
+        private void OnSettingsChanged(GeneralSettings newSettings)
+        {
+            _dispatcherQueue?.TryEnqueue(() =>
+            {
+                GeneralSettingsConfig = newSettings;
+
+                if (_enableQuickAccess != newSettings.EnableQuickAccess)
+                {
+                    _enableQuickAccess = newSettings.EnableQuickAccess;
+                    OnPropertyChanged(nameof(EnableQuickAccess));
+                }
+            });
+        }
+
+        public override void Dispose()
+        {
+            base.Dispose();
+            if (_settingsRepository != null)
+            {
+                _settingsRepository.SettingsChanged -= OnSettingsChanged;
+            }
+
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual Microsoft.UI.Dispatching.DispatcherQueue GetDispatcherQueue()
+        {
+            return Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread();
         }
     }
 }

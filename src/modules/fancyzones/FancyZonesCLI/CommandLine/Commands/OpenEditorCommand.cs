@@ -5,6 +5,7 @@
 using System;
 using System.CommandLine.Invocation;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 
@@ -13,7 +14,7 @@ namespace FancyZonesCLI.CommandLine.Commands;
 internal sealed partial class OpenEditorCommand : FancyZonesBaseCommand
 {
     public OpenEditorCommand()
-        : base("open-editor", "Launch FancyZones layout editor")
+        : base("open-editor", Properties.Resources.cmd_open_editor)
     {
         AddAlias("e");
     }
@@ -38,7 +39,7 @@ internal sealed partial class OpenEditorCommand : FancyZonesBaseCommand
         }
         catch (Exception ex)
         {
-            throw new InvalidOperationException($"Failed to request FancyZones Editor launch. {ex.Message}", ex);
+            throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, Properties.Resources.open_editor_error, ex.Message), ex);
         }
     }
 }
