@@ -3899,12 +3899,8 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
         DluToPixels(12, 12, &marginLeft, &marginTop);
         DluToPixels(11, 0, &marginRight, nullptr);
 
-        // Suppress timeline redraw during layout to avoid flashing while resizing.
-        HWND hTimeline = GetDlgItem(hDlg, IDC_TRIM_TIMELINE);
-        if (hTimeline)
-        {
-            SendMessage(hTimeline, WM_SETREDRAW, FALSE, 0);
-        }
+        // Suppress redraw on the entire dialog during layout to prevent tearing
+        SendMessage(hDlg, WM_SETREDRAW, FALSE, 0);
 
         // Fixed heights from RC file (in dialog units) converted to pixels
         int labelHeight, timelineHeight, buttonRowHeight, okCancelHeight, bottomMargin;
@@ -3959,10 +3955,10 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
         }
 
         // Resize timeline
-        HWND hTimelineCtrl = hTimeline ? hTimeline : GetDlgItem(hDlg, IDC_TRIM_TIMELINE);
-        if (hTimelineCtrl)
+        HWND hTimeline = GetDlgItem(hDlg, IDC_TRIM_TIMELINE);
+        if (hTimeline)
         {
-            SetWindowPos(hTimelineCtrl, nullptr, marginLeft, timelineY, timelineWidth, timelineHeight,
+            SetWindowPos(hTimeline, nullptr, marginLeft, timelineY, timelineWidth, timelineHeight,
                 SWP_NOZORDER | SWP_NOACTIVATE);
         }
 
@@ -4078,13 +4074,9 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
                 SWP_NOZORDER | SWP_NOACTIVATE);
         }
 
-        // Invalidate to repaint without erasing, and do a single timeline redraw now that layout is done.
-        InvalidateRect(hDlg, nullptr, FALSE);
-        if (hTimeline)
-        {
-            SendMessage(hTimeline, WM_SETREDRAW, TRUE, 0);
-            RedrawWindow(hTimeline, nullptr, nullptr, RDW_INVALIDATE | RDW_UPDATENOW | RDW_NOERASE);
-        }
+        // Re-enable redraw and repaint the entire dialog
+        SendMessage(hDlg, WM_SETREDRAW, TRUE, 0);
+        RedrawWindow(hDlg, nullptr, nullptr, RDW_ERASE | RDW_FRAME | RDW_INVALIDATE | RDW_ALLCHILDREN);
         return 0;
     }
 
@@ -4245,7 +4237,8 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
                 {
                     const double scaleX = static_cast<double>(controlWidth) / static_cast<double>(bm.bmWidth);
                     const double scaleY = static_cast<double>(controlHeight) / static_cast<double>(bm.bmHeight);
-                    const double scale = (std::max)(scaleX, scaleY);
+                    // Use min to fit entirely within control (letterbox), not max which crops
+                    const double scale = (std::min)(scaleX, scaleY);
 
                     destWidth = (std::max)(1, static_cast<int>(std::lround(static_cast<double>(bm.bmWidth) * scale)));
                     destHeight = (std::max)(1, static_cast<int>(std::lround(static_cast<double>(bm.bmHeight) * scale)));
