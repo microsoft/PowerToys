@@ -62,6 +62,7 @@ namespace RunnerV2
             new KeyboardManagerModuleInterface(),
             new LightSwitchModuleInterface(),
             new CursorWrapModuleInterface(),
+            new FindMyMouseModuleInterface(),
         ];
 
         /// <summary>
@@ -97,7 +98,7 @@ namespace RunnerV2
         [STAThread]
         private static void MessageLoop()
         {
-            while (GetMessageW(out MSG msg, IntPtr.Zero, 0, 0) != 0)
+            while (GetMessageW(out MSG msg, IntPtr.Zero, 0, 0) != 0 || true)
             {
                 TranslateMessage(ref msg);
                 DispatchMessageW(ref msg);

@@ -3,10 +3,8 @@
   <PropertyGroup Label="NuGet">
     <!-- Tell NuGet this is PackageReference style -->
     <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
-
     <!-- Tell NuGet we're a native project -->
     <NuGetTargetMoniker>native,Version=v0.0</NuGetTargetMoniker>
-
     <!-- Tell NuGet we target Windows (use your existing WindowsTargetPlatformVersion) -->
     <NuGetTargetPlatformIdentifier>Windows</NuGetTargetPlatformIdentifier>
     <NuGetTargetPlatformVersion>$(WindowsTargetPlatformVersion)</NuGetTargetPlatformVersion>
@@ -25,9 +23,9 @@
     <WindowsAppSDKVerifyTransitiveDependencies>false</WindowsAppSDKVerifyTransitiveDependencies>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.WindowsAppSDK" GeneratePathProperty="true"/>
-    <PackageReference Include="Microsoft.WindowsAppSDK.Foundation" GeneratePathProperty="true"/>
-    <PackageReference Include="Microsoft.Windows.CppWinRT" GeneratePathProperty="true"/>
+    <PackageReference Include="Microsoft.WindowsAppSDK" GeneratePathProperty="true" />
+    <PackageReference Include="Microsoft.WindowsAppSDK.Foundation" GeneratePathProperty="true" />
+    <PackageReference Include="Microsoft.Windows.CppWinRT" GeneratePathProperty="true" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)'=='Debug'" Label="Configuration">
@@ -51,7 +49,6 @@
   <ImportGroup Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
-
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
     <OutDir>..\..\..\..\$(Platform)\$(Configuration)\</OutDir>
@@ -113,7 +110,6 @@
     <ClInclude Include="WinHookEventIDs.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="FindMyMouse.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(UsePrecompiledHeaders)' != 'false'">Create</PrecompiledHeader>
@@ -121,7 +117,6 @@
     <ClCompile Include="trace.cpp" />
     <ClCompile Include="WinHookEventIDs.cpp" />
   </ItemGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\..\..\common\logger\logger.vcxproj">
       <Project>{d9b8fc84-322a-4f9f-bbb9-20915c47ddfd}</Project>
@@ -138,7 +133,6 @@
     <ItemGroup>
       <!-- Remove ALL injected versions of the file -->
       <ClCompile Remove="@(ClCompile)" Condition="'%(Filename)' == 'WindowsAppRuntimeAutoInitializer'" />
-
       <!-- Add ONE copy back manually -->
       <ClCompile Include="$(PkgMicrosoft_WindowsAppSDK_Foundation)\include\WindowsAppRuntimeAutoInitializer.cpp">
         <PrecompiledHeader>NotUsing</PrecompiledHeader>
@@ -151,7 +145,6 @@
     </ItemGroup>
     <Delete Files="@(_ToDelete)" Condition="Exists('%(Identity)')" />
   </Target>
-
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <Import Project="..\..\..\..\deps\spdlog.props" />
 </Project>

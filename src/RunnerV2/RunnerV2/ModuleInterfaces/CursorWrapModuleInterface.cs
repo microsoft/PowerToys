@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using System.Text.Json;
 using Microsoft.PowerToys.Settings.UI.Library;
 using PowerToys.GPOWrapper;
 using RunnerV2.Models;
@@ -34,10 +35,15 @@ namespace RunnerV2.ModuleInterfaces
             CursorWrapStartMouseHook();
         }
 
+        public void OnSettingsChanged(string settingsKind, JsonElement jsonProperties)
+        {
+            InitializeShortcuts();
+        }
+
         private void InitializeShortcuts()
         {
             Shortcuts.Clear();
-            Shortcuts.Add((SettingsUtils.Default.GetSettings<CursorWrapSettings>().Properties.DefaultActivationShortcut, () =>
+            Shortcuts.Add((SettingsUtils.Default.GetSettings<CursorWrapSettings>(Name).Properties.DefaultActivationShortcut, () =>
             {
                 if (_hookActive)
                 {
