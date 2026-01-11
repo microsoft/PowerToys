@@ -63,6 +63,7 @@ namespace RunnerV2
             new LightSwitchModuleInterface(),
             new CursorWrapModuleInterface(),
             new FindMyMouseModuleInterface(),
+            new WorkspacesModuleInterface(),
         ];
 
         /// <summary>

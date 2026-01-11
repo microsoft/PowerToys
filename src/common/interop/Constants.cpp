@@ -83,10 +83,6 @@ namespace winrt::PowerToys::Interop::implementation
     {
         return CommonSharedConstants::ADVANCED_PASTE_TERMINATE_APP_MESSAGE;
     }
-    hstring Constants::AlwaysOnTopPinEvent()
-    {
-        return CommonSharedConstants::ALWAYS_ON_TOP_PIN_EVENT;
-    }
     hstring Constants::FindMyMouseTriggerEvent()
     {
         return CommonSharedConstants::FIND_MY_MOUSE_TRIGGER_EVENT;

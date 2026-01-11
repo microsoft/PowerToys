@@ -64,7 +64,6 @@ namespace PowerToys
             static String WorkspacesHotkeyEvent();
             static String PowerToysRunnerTerminateSettingsEvent();
             static String ShowCmdPalEvent();
-            static String AlwaysOnTopPinEvent();
             static String AlwaysOnTopTerminateEvent();
             static String ZoomItRefreshSettingsEvent();
             static String TerminateKBMSharedEvent();

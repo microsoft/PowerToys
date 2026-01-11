@@ -49,7 +49,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             Settings = moduleSettingsRepository.SettingsConfig;
 
-            _hotkey = Settings.Properties.Hotkey.Value;
+            _hotkey = Settings.Properties.Hotkey;
 
             // set the callback functions value to handle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
@@ -136,7 +136,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                         _hotkey = value;
                     }
 
-                    Settings.Properties.Hotkey.Value = _hotkey;
+                    Settings.Properties.Hotkey = _hotkey;
                     NotifyPropertyChanged();
 
                     // Using InvariantCulture as this is an IPC message

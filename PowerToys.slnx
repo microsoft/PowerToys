@@ -936,7 +936,6 @@
       <Platform Solution="*|x64" Project="x64" />
     </Project>
     <Project Path="src/modules/Workspaces/WorkspacesLib/WorkspacesLib.vcxproj" Id="b31fcc55-b5a4-4ea7-b414-2dceae6af332" />
-    <Project Path="src/modules/Workspaces/WorkspacesModuleInterface/WorkspacesModuleInterface.vcxproj" Id="45285df2-9742-4eca-9ac9-58951fc26489" />
     <Project Path="src/modules/Workspaces/WorkspacesSnapshotTool/WorkspacesSnapshotTool.vcxproj" Id="3d63307b-9d27-44fd-b033-b26f39245b85" />
     <Project Path="src/modules/Workspaces/WorkspacesWindowArranger/WorkspacesWindowArranger.vcxproj" Id="37d07516-4185-43a4-924f-3c7a5d95ecf6" />
   </Folder>
