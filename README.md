@@ -48,7 +48,7 @@ But to get started quickly, choose one of the installation methods below:
 <details open>
 <summary><strong>Download .exe from GitHub</strong></summary>
 <br/>
-Go to the <a href="https://github.com/microsoft/PowerToys/releases/latest">PowerToys GitHub releases</a>, click Assets to reveal the downloads, and choose the installer that matches your architecture and install scope. For most devices, that's the x64 per-user installer.
+Go to the <a href="https://aka.ms/installPowerToys">PowerToys GitHub releases</a>, click Assets to reveal the downloads, and choose the installer that matches your architecture and install scope. For most devices, that's the x64 per-user installer.
 
 <!-- items that need to be updated release to release -->
 [github-next-release-work]: https://github.com/microsoft/PowerToys/issues?q=is%3Aissue+milestone%3A%22PowerToys+0.97%22
@@ -83,7 +83,7 @@ You can easily install PowerToys from the Microsoft Store:
 <details>
 <summary><strong>WinGet</strong></summary>
 <br/>
-Download PowerToys from <a href="https://learn.microsoft.com/en-us/windows/package-manager/">WinGet</a>. Updating PowerToys via winget will respect the current PowerToys installation scope. To install PowerToys, run the following command from the command line / PowerShell:
+Download PowerToys from <a href="https://github.com/microsoft/winget-cli#installing-the-client">WinGet</a>. Updating PowerToys via winget will respect the current PowerToys installation scope. To install PowerToys, run the following command from the command line / PowerShell:
 
 *User scope installer [default]*
 ```powershell
