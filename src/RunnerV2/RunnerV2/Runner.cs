@@ -61,6 +61,7 @@ namespace RunnerV2
             new PowerToysRunModuleInterface(),
             new KeyboardManagerModuleInterface(),
             new LightSwitchModuleInterface(),
+            new CursorWrapModuleInterface(),
         ];
 
         /// <summary>

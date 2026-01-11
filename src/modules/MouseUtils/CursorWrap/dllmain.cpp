@@ -1,11 +1,5 @@
 #include "pch.h"
-#include "../../../interface/powertoy_module_interface.h"
-#include "../../../common/SettingsAPI/settings_objects.h"
-#include "trace.h"
-#include "../../../common/utils/process_path.h"
-#include "../../../common/utils/resources.h"
 #include "../../../common/logger/logger.h"
-#include "../../../common/utils/logger_helper.h"
 #include <atomic>
 #include <thread>
 #include <vector>
@@ -13,45 +7,11 @@
 #include <string>
 #include <algorithm>
 #include <windows.h>
-#include "resource.h"
-#include "CursorWrapTests.h"
 
 // Disable C26451 arithmetic overflow warning for this file since the operations are safe in this context
 #pragma warning(disable: 26451)
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
-
-BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID /*lpReserved*/)
-{
-    switch (ul_reason_for_call)
-    {
-    case DLL_PROCESS_ATTACH:
-        Trace::RegisterProvider();
-        break;
-    case DLL_THREAD_ATTACH:
-    case DLL_THREAD_DETACH:
-        break;
-    case DLL_PROCESS_DETACH:
-        Trace::UnregisterProvider();
-        break;
-    }
-    return TRUE;
-}
-
-// Non-Localizable strings
-namespace
-{
-    const wchar_t JSON_KEY_PROPERTIES[] = L"properties";
-    const wchar_t JSON_KEY_VALUE[] = L"value";
-    const wchar_t JSON_KEY_ACTIVATION_SHORTCUT[] = L"activation_shortcut";
-    const wchar_t JSON_KEY_AUTO_ACTIVATE[] = L"auto_activate";
-    const wchar_t JSON_KEY_DISABLE_WRAP_DURING_DRAG[] = L"disable_wrap_during_drag";
-}
-
-// The PowerToy name that will be shown in the settings.
-const static wchar_t* MODULE_NAME = L"CursorWrap";
-// Add a description that will we shown in the module settings page.
-const static wchar_t* MODULE_DESC = L"<no description>";
 
 // Mouse hook data structure
 struct MonitorInfo
@@ -85,284 +45,13 @@ struct MonitorTopology
 // Forward declaration
 class CursorWrap;
 
-// Global instance pointer for the mouse hook
+// Global instance pointer
 static CursorWrap* g_cursorWrapInstance = nullptr;
 
 // Implement the PowerToy Module Interface and all the required methods.
-class CursorWrap : public PowertoyModuleIface
+class CursorWrap
 {
-private:
-    // The PowerToy state.
-    bool m_enabled = false;
-    bool m_autoActivate = false;
-    bool m_disableWrapDuringDrag = true; // Default to true to prevent wrap during drag
-    
-    // Mouse hook
-    HHOOK m_mouseHook = nullptr;
-    std::atomic<bool> m_hookActive{ false };
-    
-    // Monitor information
-    std::vector<MonitorInfo> m_monitors;
-    MonitorTopology m_topology;
-    
-    // Hotkey
-    Hotkey m_activationHotkey{};
-
 public:
-    // Constructor
-    CursorWrap()
-    {
-        LoggerHelpers::init_logger(MODULE_NAME, L"ModuleInterface", LogSettings::cursorWrapLoggerName);
-        init_settings();
-        UpdateMonitorInfo();
-        g_cursorWrapInstance = this; // Set global instance pointer
-    };
-
-    // Destroy the powertoy and free memory
-    virtual void destroy() override
-    {
-        StopMouseHook();
-        g_cursorWrapInstance = nullptr; // Clear global instance pointer
-        delete this;
-    }
-
-    // Return the localized display name of the powertoy
-    virtual const wchar_t* get_name() override
-    {
-        return MODULE_NAME;
-    }
-
-    // Return the non localized key of the powertoy, this will be cached by the runner
-    virtual const wchar_t* get_key() override
-    {
-        return MODULE_NAME;
-    }
-
-    // Return the configured status for the gpo policy for the module
-    virtual powertoys_gpo::gpo_rule_configured_t gpo_policy_enabled_configuration() override
-    {
-        return powertoys_gpo::getConfiguredCursorWrapEnabledValue();
-    }
-
-    // Return JSON with the configuration options.
-    virtual bool get_config(wchar_t* buffer, int* buffer_size) override
-    {
-        HINSTANCE hinstance = reinterpret_cast<HINSTANCE>(&__ImageBase);
-
-        PowerToysSettings::Settings settings(hinstance, get_name());
-
-        settings.set_description(IDS_CURSORWRAP_NAME);
-        settings.set_icon_key(L"pt-cursor-wrap");
-        
-        // Create HotkeyObject from the Hotkey struct for the settings
-        auto hotkey_object = PowerToysSettings::HotkeyObject::from_settings(
-            m_activationHotkey.win,
-            m_activationHotkey.ctrl,
-            m_activationHotkey.alt,
-            m_activationHotkey.shift,
-            m_activationHotkey.key);
-
-        settings.add_hotkey(JSON_KEY_ACTIVATION_SHORTCUT, IDS_CURSORWRAP_NAME, hotkey_object);
-        settings.add_bool_toggle(JSON_KEY_AUTO_ACTIVATE, IDS_CURSORWRAP_NAME, m_autoActivate);
-        settings.add_bool_toggle(JSON_KEY_DISABLE_WRAP_DURING_DRAG, IDS_CURSORWRAP_NAME, m_disableWrapDuringDrag);
-
-        return settings.serialize_to_buffer(buffer, buffer_size);
-    }
-
-    // Signal from the Settings editor to call a custom action.
-    // This can be used to spawn more complex editors.
-    virtual void call_custom_action(const wchar_t* /*action*/) override {}
-
-    // Called by the runner to pass the updated settings values as a serialized JSON.
-    virtual void set_config(const wchar_t* config) override
-    {
-        try
-        {
-            // Parse the input JSON string.
-            PowerToysSettings::PowerToyValues values =
-                PowerToysSettings::PowerToyValues::from_json_string(config, get_key());
-
-            parse_settings(values);
-        }
-        catch (std::exception&)
-        {
-            Logger::error("Invalid json when trying to parse CursorWrap settings json.");
-        }
-    }
-
-    // Enable the powertoy
-    virtual void enable()
-    {
-        m_enabled = true;
-        Trace::EnableCursorWrap(true);
-        
-        // Always start the mouse hook when the module is enabled
-        // This ensures cursor wrapping is active immediately after enabling
-        StartMouseHook();
-        Logger::info("CursorWrap enabled - mouse hook started");
-    }
-
-    // Disable the powertoy
-    virtual void disable()
-    {
-        m_enabled = false;
-        Trace::EnableCursorWrap(false);
-        StopMouseHook();
-        Logger::info("CursorWrap disabled - mouse hook stopped");
-    }
-
-    // Returns if the powertoys is enabled
-    virtual bool is_enabled() override
-    {
-        return m_enabled;
-    }
-
-    // Returns whether the PowerToys should be enabled by default
-    virtual bool is_enabled_by_default() const override
-    {
-        return false;
-    }
-
-    // Legacy hotkey support
-    virtual size_t get_hotkeys(Hotkey* buffer, size_t buffer_size) override
-    {
-        if (buffer && buffer_size >= 1)
-        {
-            buffer[0] = m_activationHotkey;
-        }
-        return 1;
-    }
-
-    virtual bool on_hotkey(size_t hotkeyId) override
-    {
-        if (!m_enabled || hotkeyId != 0)
-        {
-            return false;
-        }
-
-        // Toggle cursor wrapping
-        if (m_hookActive)
-        {
-            StopMouseHook();
-        }
-        else
-        {
-            StartMouseHook();
-#ifdef _DEBUG
-            // Run comprehensive tests when hook is started in debug builds
-            RunComprehensiveTests();
-#endif
-        }
-        
-        return true;
-    }
-
-private:
-    // Load the settings file.
-    void init_settings()
-    {
-        try
-        {
-            // Load and parse the settings file for this PowerToy.
-            PowerToysSettings::PowerToyValues settings =
-                PowerToysSettings::PowerToyValues::load_from_settings_file(CursorWrap::get_key());
-            parse_settings(settings);
-        }
-        catch (std::exception&)
-        {
-            Logger::error("Invalid json when trying to load the CursorWrap settings json from file.");
-        }
-    }
-
-    void parse_settings(PowerToysSettings::PowerToyValues& settings)
-    {
-        auto settingsObject = settings.get_raw_json();
-        if (settingsObject.GetView().Size())
-        {
-            try
-            {
-                // Parse activation HotKey
-                auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_ACTIVATION_SHORTCUT);
-                auto hotkey = PowerToysSettings::HotkeyObject::from_json(jsonPropertiesObject);
-
-                m_activationHotkey.win = hotkey.win_pressed();
-                m_activationHotkey.ctrl = hotkey.ctrl_pressed();
-                m_activationHotkey.shift = hotkey.shift_pressed();
-                m_activationHotkey.alt = hotkey.alt_pressed();
-                m_activationHotkey.key = static_cast<unsigned char>(hotkey.get_code());
-            }
-            catch (...)
-            {
-                Logger::warn("Failed to initialize CursorWrap activation shortcut");
-            }
-            
-            try
-            {
-                // Parse auto activate
-                auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_AUTO_ACTIVATE);
-                m_autoActivate = jsonPropertiesObject.GetNamedBoolean(JSON_KEY_VALUE);
-            }
-            catch (...)
-            {
-                Logger::warn("Failed to initialize CursorWrap auto activate from settings. Will use default value");
-            }
-            
-            try
-            {
-                // Parse disable wrap during drag
-                auto propertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES);
-                if (propertiesObject.HasKey(JSON_KEY_DISABLE_WRAP_DURING_DRAG))
-                {
-                    auto disableDragObject = propertiesObject.GetNamedObject(JSON_KEY_DISABLE_WRAP_DURING_DRAG);
-                    m_disableWrapDuringDrag = disableDragObject.GetNamedBoolean(JSON_KEY_VALUE);
-                }
-            }
-            catch (...)
-            {
-                Logger::warn("Failed to initialize CursorWrap disable wrap during drag from settings. Will use default value (true)");
-            }
-        }
-        else
-        {
-            Logger::info("CursorWrap settings are empty");
-        }
-        
-        // Set default hotkey if not configured
-        if (m_activationHotkey.key == 0)
-        {
-            m_activationHotkey.win = true;
-            m_activationHotkey.alt = true;
-            m_activationHotkey.ctrl = false;
-            m_activationHotkey.shift = false;
-            m_activationHotkey.key = 'U'; // Win+Alt+U
-        }
-    }
-
-    void UpdateMonitorInfo()
-    {
-        m_monitors.clear();
-        
-        EnumDisplayMonitors(nullptr, nullptr, [](HMONITOR hMonitor, HDC, LPRECT, LPARAM lParam) -> BOOL {
-            auto* self = reinterpret_cast<CursorWrap*>(lParam);
-            
-            MONITORINFO mi{};
-            mi.cbSize = sizeof(MONITORINFO);
-            if (GetMonitorInfo(hMonitor, &mi))
-            {
-                MonitorInfo info{};
-                info.rect = mi.rcMonitor;
-                info.isPrimary = (mi.dwFlags & MONITORINFOF_PRIMARY) != 0;
-                info.monitorId = static_cast<int>(self->m_monitors.size());
-                self->m_monitors.push_back(info);
-            }
-            
-            return TRUE;
-        }, reinterpret_cast<LPARAM>(this));
-        
-        // Initialize monitor topology
-        m_topology.Initialize(m_monitors);
-    }
-
     void StartMouseHook()
     {
         if (m_mouseHook || m_hookActive)
@@ -401,6 +90,43 @@ private:
             Logger::info("CursorWrap DEBUG: Mouse hook stopped");
 #endif
         }
+    }
+
+private:
+    // The PowerToy state.
+    bool m_disableWrapDuringDrag = true; // Default to true to prevent wrap during drag
+    
+    // Mouse hook
+    HHOOK m_mouseHook = nullptr;
+    std::atomic<bool> m_hookActive{ false };
+    
+    // Monitor information
+    std::vector<MonitorInfo> m_monitors;
+    MonitorTopology m_topology;
+    
+    void UpdateMonitorInfo()
+    {
+        m_monitors.clear();
+        
+        EnumDisplayMonitors(nullptr, nullptr, [](HMONITOR hMonitor, HDC, LPRECT, LPARAM lParam) -> BOOL {
+            auto* self = reinterpret_cast<CursorWrap*>(lParam);
+            
+            MONITORINFO mi{};
+            mi.cbSize = sizeof(MONITORINFO);
+            if (GetMonitorInfo(hMonitor, &mi))
+            {
+                MonitorInfo info{};
+                info.rect = mi.rcMonitor;
+                info.isPrimary = (mi.dwFlags & MONITORINFOF_PRIMARY) != 0;
+                info.monitorId = static_cast<int>(self->m_monitors.size());
+                self->m_monitors.push_back(info);
+            }
+            
+            return TRUE;
+        }, reinterpret_cast<LPARAM>(this));
+        
+        // Initialize monitor topology
+        m_topology.Initialize(m_monitors);
     }
 
     static LRESULT CALLBACK MouseHookProc(int nCode, WPARAM wParam, LPARAM lParam)
@@ -540,6 +266,7 @@ private:
                 }
             }
             
+
             if (topMonitor && topMonitor != currentMonitor) {
                 // *** MOVE TO TOP OF VERTICAL STACK ***
                 MONITORINFO topInfo{};
@@ -1040,7 +767,20 @@ HMONITOR MonitorTopology::FindAdjacentMonitor(HMONITOR current, int deltaRow, in
     return GetMonitorAt(newRow, newCol);
 }
 
-extern "C" __declspec(dllexport) PowertoyModuleIface* __cdecl powertoy_create()
+EXTERN_C __declspec(dllexport) void CursorWrapStartMouseHook()
 {
-    return new CursorWrap();
+    if (!g_cursorWrapInstance)
+    {
+        g_cursorWrapInstance = new CursorWrap();
+    }
+    g_cursorWrapInstance->StartMouseHook();
 }
+
+EXTERN_C __declspec(dllexport) void CursorWrapStopMouseHook()
+{
+    if (g_cursorWrapInstance)
+    {
+        g_cursorWrapInstance->StopMouseHook();
+    }
+}
+
