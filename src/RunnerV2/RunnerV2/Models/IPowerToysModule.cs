@@ -45,14 +45,6 @@ namespace RunnerV2.Models
         public GpoRuleConfigured GpoRuleConfigured { get; }
 
         /// <summary>
-        /// Gets a dictionary of hotkeys and their associated actions. Every hotkey must have an associated id.
-        /// </summary>
-        /// <remarks>
-        /// If this property is not overridden, the module is considered to not have hotkeys.
-        /// </remarks>
-        public Dictionary<HotkeyEx, Action> Hotkeys { get => []; }
-
-        /// <summary>
         /// Gets a list of shortcuts, that shall be registered in the keyboard hook, and their associated actions.
         /// </summary>
         /// <remarks>

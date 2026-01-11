@@ -136,11 +136,6 @@ namespace RunnerV2
                     {
                         pmac.ProcessExit();
                     }
-
-                    foreach (var hotkey in module.Hotkeys)
-                    {
-                        HotkeyManager.DisableHotkey(hotkey.Key);
-                    }
                 }
                 catch (Exception e)
                 {
@@ -174,12 +169,6 @@ namespace RunnerV2
                         LoadedModules.Add(module);
                     }
 
-                    // ToArray is called to mitigate mutations while the foreach is executing
-                    foreach (var hotkey in module.Hotkeys.ToArray())
-                    {
-                        HotkeyManager.EnableHotkey(hotkey.Key, hotkey.Value);
-                    }
-
                     CentralizedKeyboardHookManager.RemoveAllHooksFromModule(module.Name);
 
                     foreach (var shortcut in module.Shortcuts.ToArray())
@@ -207,11 +196,6 @@ namespace RunnerV2
                 if (module is ProcessModuleAbstractClass pmac)
                 {
                     pmac.ProcessExit();
-                }
-
-                foreach (var hotkey in module.Hotkeys)
-                {
-                    HotkeyManager.DisableHotkey(hotkey.Key);
                 }
 
                 CentralizedKeyboardHookManager.RemoveAllHooksFromModule(module.Name);
@@ -281,9 +265,6 @@ namespace RunnerV2
         {
             switch (msg)
             {
-                case (uint)WindowMessages.HOTKEY:
-                    HotkeyManager.ProcessHotkey((nuint)wParam);
-                    break;
                 case (uint)WindowMessages.ICON_NOTIFY:
                     TrayIconManager.ProcessTrayIconMessage(lParam);
                     break;
