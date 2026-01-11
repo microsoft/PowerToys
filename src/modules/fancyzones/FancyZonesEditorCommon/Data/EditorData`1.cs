@@ -4,6 +4,7 @@
 
 using System;
 using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
 
 using FancyZonesEditorCommon.Utils;
 
@@ -16,28 +17,20 @@ namespace FancyZonesEditorCommon.Data
             return Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
         }
 
-        protected JsonSerializerOptions JsonOptions
-        {
-            get
-            {
-                return new JsonSerializerOptions
-                {
-                    PropertyNamingPolicy = new DashCaseNamingPolicy(),
-                    WriteIndented = true,
-                };
-            }
-        }
+        protected static JsonSerializerOptions JsonOptions => FancyZonesJsonContext.Default.Options;
+
+        protected static JsonTypeInfo<T> TypeInfo => (JsonTypeInfo<T>)FancyZonesJsonContext.Default.GetTypeInfo(typeof(T));
 
         public T Read(string file)
         {
             IOUtils ioUtils = new IOUtils();
             string data = ioUtils.ReadFile(file);
-            return JsonSerializer.Deserialize<T>(data, JsonOptions);
+            return JsonSerializer.Deserialize(data, TypeInfo);
         }
 
         public string Serialize(T data)
         {
-            return JsonSerializer.Serialize(data, JsonOptions);
+            return JsonSerializer.Serialize(data, TypeInfo);
         }
     }
 }

@@ -67,6 +67,11 @@ namespace PowerToys.GPOWrapperProjection
             return (GpoRuleConfigured)PowerToys.GPOWrapper.GPOWrapper.GetConfiguredWorkspacesEnabledValue();
         }
 
+        public static GpoRuleConfigured GetConfiguredLightSwitchEnabledValue()
+        {
+            return (GpoRuleConfigured)PowerToys.GPOWrapper.GPOWrapper.GetConfiguredLightSwitchEnabledValue();
+        }
+
         public static GpoRuleConfigured GetDisableShowWhatsNewAfterUpdatesValue()
         {
             return (GpoRuleConfigured)PowerToys.GPOWrapper.GPOWrapper.GetDisableShowWhatsNewAfterUpdatesValue();

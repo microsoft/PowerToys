@@ -261,7 +261,7 @@ FancyZones::Run() noexcept
                       } })
         .wait();
 
-    m_toggleEditorEventWaiter = EventWaiter(CommonSharedConstants::FANCY_ZONES_EDITOR_TOGGLE_EVENT, [&](int err) {
+    m_toggleEditorEventWaiter.start(CommonSharedConstants::FANCY_ZONES_EDITOR_TOGGLE_EVENT, [&](DWORD err) {
         if (err == ERROR_SUCCESS)
         {
             Logger::trace(L"{} event was signaled", CommonSharedConstants::FANCY_ZONES_EDITOR_TOGGLE_EVENT);

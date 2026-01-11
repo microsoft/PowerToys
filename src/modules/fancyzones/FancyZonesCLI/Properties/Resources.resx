@@ -1,0 +1,233 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  
+  <!-- Base Command -->
+  <data name="error_fancyzones_not_running" xml:space="preserve">
+    <value>Error: FancyZones is not running. Start PowerToys (FancyZones) and retry.</value>
+  </data>
+
+  <!-- GetActiveLayoutCommand -->
+  <data name="cmd_get_active_layout" xml:space="preserve">
+    <value>Show currently active layout</value>
+  </data>
+  <data name="get_active_layout_no_monitor_info" xml:space="preserve">
+    <value>Could not get current monitor information.</value>
+  </data>
+  <data name="get_active_layout_no_layouts" xml:space="preserve">
+    <value>No layouts configured.</value>
+  </data>
+  <data name="get_active_layout_header" xml:space="preserve">
+    <value>=== Active FancyZones Layout(s) ===</value>
+  </data>
+  <data name="get_active_layout_no_layout" xml:space="preserve">
+    <value>  No layout applied</value>
+  </data>
+
+  <!-- GetLayoutsCommand -->
+  <data name="cmd_get_layouts" xml:space="preserve">
+    <value>List available layouts</value>
+  </data>
+  <data name="get_layouts_templates_header" xml:space="preserve">
+    <value>=== Built-in Template Layouts ({0} total) ===</value>
+  </data>
+  <data name="get_layouts_custom_header" xml:space="preserve">
+    <value>=== Custom Layouts ({0} total) ===</value>
+  </data>
+  <data name="get_layouts_canvas_note" xml:space="preserve">
+    <value>Note: Canvas layout preview is approximate.</value>
+  </data>
+  <data name="get_layouts_canvas_detail" xml:space="preserve">
+    <value>Open FancyZones Editor for precise zone boundaries.</value>
+  </data>
+  <data name="get_layouts_usage" xml:space="preserve">
+    <value>Use 'FancyZonesCLI.exe set-layout &lt;UUID&gt;' to apply a layout.</value>
+  </data>
+
+  <!-- GetMonitorsCommand -->
+  <data name="cmd_get_monitors" xml:space="preserve">
+    <value>List monitors and FancyZones metadata</value>
+  </data>
+  <data name="get_monitors_error" xml:space="preserve">
+    <value>Failed to read monitor information. {0}
+Note: Ensure FancyZones is running to get current monitor information.</value>
+  </data>
+  <data name="get_monitors_no_monitors" xml:space="preserve">
+    <value>No monitors found.</value>
+  </data>
+  <data name="get_monitors_header" xml:space="preserve">
+    <value>=== Monitors ({0} total) ===</value>
+  </data>
+
+  <!-- SetLayoutCommand -->
+  <data name="cmd_set_layout" xml:space="preserve">
+    <value>Set layout by UUID or template name</value>
+  </data>
+  <data name="set_layout_arg_layout" xml:space="preserve">
+    <value>Layout UUID or template type (e.g. focus, columns)</value>
+  </data>
+  <data name="set_layout_opt_monitor" xml:space="preserve">
+    <value>Apply to monitor N (1-based)</value>
+  </data>
+  <data name="set_layout_opt_all" xml:space="preserve">
+    <value>Apply to all monitors</value>
+  </data>
+  <data name="set_layout_error_monitor_index" xml:space="preserve">
+    <value>Monitor index must be &gt;= 1.</value>
+  </data>
+  <data name="set_layout_error_both_options" xml:space="preserve">
+    <value>Cannot specify both --monitor and --all.</value>
+  </data>
+  <data name="set_layout_error_not_found" xml:space="preserve">
+    <value>Layout '{0}' not found
+Tip: For templates, use the type name (e.g., 'focus', 'columns', 'rows', 'grid', 'priority-grid')
+     For custom layouts, use the UUID from 'get-layouts'</value>
+  </data>
+  <data name="set_layout_error_monitor_not_found" xml:space="preserve">
+    <value>Monitor {0} not found. Available monitors: 1-{1}</value>
+  </data>
+  <data name="set_layout_error_no_monitors" xml:space="preserve">
+    <value>Internal error - no monitors to update.</value>
+  </data>
+  <data name="set_layout_error_unsupported_type" xml:space="preserve">
+    <value>Unsupported custom layout type '{0}'.</value>
+  </data>
+  <data name="set_layout_error_no_layout" xml:space="preserve">
+    <value>Internal error - no layout selected.</value>
+  </data>
+  <data name="set_layout_success_all" xml:space="preserve">
+    <value>Layout '{0}' applied to all monitors.</value>
+  </data>
+  <data name="set_layout_success_monitor" xml:space="preserve">
+    <value>Layout '{0}' applied to monitor {1}.</value>
+  </data>
+  <data name="set_layout_success_default" xml:space="preserve">
+    <value>Layout '{0}' applied to monitor 1.</value>
+  </data>
+
+  <!-- OpenEditorCommand -->
+  <data name="cmd_open_editor" xml:space="preserve">
+    <value>Launch FancyZones layout editor</value>
+  </data>
+  <data name="open_editor_error" xml:space="preserve">
+    <value>Failed to request FancyZones Editor launch. {0}</value>
+  </data>
+
+  <!-- OpenSettingsCommand -->
+  <data name="cmd_open_settings" xml:space="preserve">
+    <value>Open FancyZones settings page</value>
+  </data>
+  <data name="open_settings_error_not_started" xml:space="preserve">
+    <value>PowerToys.exe failed to start.</value>
+  </data>
+  <data name="open_settings_error" xml:space="preserve">
+    <value>Failed to open FancyZones Settings. {0}</value>
+  </data>
+
+  <!-- SetHotkeyCommand -->
+  <data name="cmd_set_hotkey" xml:space="preserve">
+    <value>Assign hotkey (0-9) to a custom layout</value>
+  </data>
+  <data name="set_hotkey_arg_key" xml:space="preserve">
+    <value>Hotkey index (0-9)</value>
+  </data>
+  <data name="set_hotkey_arg_layout" xml:space="preserve">
+    <value>Custom layout UUID</value>
+  </data>
+  <data name="set_hotkey_error_invalid_key" xml:space="preserve">
+    <value>Key must be between 0 and 9.</value>
+  </data>
+  <data name="set_hotkey_error_not_custom" xml:space="preserve">
+    <value>Layout '{0}' is not a custom layout UUID.</value>
+  </data>
+
+  <!-- RemoveHotkeyCommand -->
+  <data name="cmd_remove_hotkey" xml:space="preserve">
+    <value>Remove hotkey assignment</value>
+  </data>
+  <data name="remove_hotkey_arg_key" xml:space="preserve">
+    <value>Hotkey index (0-9)</value>
+  </data>
+  <data name="remove_hotkey_no_hotkeys" xml:space="preserve">
+    <value>No hotkeys configured.</value>
+  </data>
+  <data name="remove_hotkey_not_found" xml:space="preserve">
+    <value>No hotkey assigned to key {0}</value>
+  </data>
+
+  <!-- GetHotkeysCommand -->
+  <data name="cmd_get_hotkeys" xml:space="preserve">
+    <value>List all layout hotkeys</value>
+  </data>
+  <data name="get_hotkeys_no_hotkeys" xml:space="preserve">
+    <value>No hotkeys configured.</value>
+  </data>
+  <data name="get_hotkeys_header" xml:space="preserve">
+    <value>=== Layout Hotkeys ===</value>
+  </data>
+  <data name="get_hotkeys_instruction" xml:space="preserve">
+    <value>Press Win + Ctrl + Alt + &lt;number&gt; to switch layouts:</value>
+  </data>
+
+  <!-- EditorParametersRefresh -->
+  <data name="editor_params_timeout" xml:space="preserve">
+    <value>Could not get current monitor information (timed out after {0}ms waiting for '{1}').</value>
+  </data>
+</root>
