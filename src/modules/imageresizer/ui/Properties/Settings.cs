@@ -228,15 +228,8 @@ namespace ImageResizer.Properties
                     }
                     else if (e.PropertyName == nameof(Models.AiSize))
                     {
-                        var oldAiSize = _aiSize;
                         _aiSize = settings.AiSize;
-
-                        OnCollectionChanged(
-                            new NotifyCollectionChangedEventArgs(
-                                NotifyCollectionChangedAction.Replace,
-                                _aiSize,
-                                oldAiSize,
-                                _sizes.Count + 1));
+                        OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
                     }
                     else if (e.PropertyName == nameof(Sizes))
                     {
