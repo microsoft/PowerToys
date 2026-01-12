@@ -29,7 +29,7 @@
     </Page.Resources>
 
     <!--  Main layout container  -->
-    <Grid>
+    <Grid MaxWidth="1360">
         <ScrollViewer Padding="0,0,0,0" VerticalScrollBarVisibility="Auto">
             <Grid Margin="0,0,0,24">
                 <Grid.RowDefinitions>

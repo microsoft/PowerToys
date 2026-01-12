@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
-
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.UI.Xaml;
@@ -154,7 +153,6 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             DisplayReleaseNotes();
         }
 
-        /// <inheritdoc/>
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
             if (e.Parameter is IList<PowerToysReleaseInfo> releases)

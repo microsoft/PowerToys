@@ -15,7 +15,7 @@ using Microsoft.UI.Xaml.Input;
 
 namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 {
-    public sealed partial class OobeShellPage : UserControl
+    public sealed partial class OobeShellPage : Page
     {
         public static Func<string> RunSharedEventCallback { get; set; }
 
@@ -230,15 +230,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 
         public void NavigateToModule(PowerToysModules selectedModule)
         {
-            if (selectedModule == PowerToysModules.WhatsNew)
-            {
-                // Open ScoobeWindow for What's new instead of navigating within OobeWindow
-                OpenScoobeWindow();
-            }
-            else
-            {
-                navigationView.SelectedItem = navigationView.MenuItems[(int)selectedModule];
-            }
+            navigationView.SelectedItem = navigationView.MenuItems[(int)selectedModule];
         }
 
         private static void OpenScoobeWindow()

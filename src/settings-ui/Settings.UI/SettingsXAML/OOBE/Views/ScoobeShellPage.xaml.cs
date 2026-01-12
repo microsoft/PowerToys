@@ -9,7 +9,6 @@ using System.Net;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
-
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.SerializationContext;
@@ -18,7 +17,7 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 {
-    public sealed partial class ScoobeShellPage : UserControl
+    public sealed partial class ScoobeShellPage : Page
     {
         public static Action<Type> OpenMainWindowCallback { get; set; }
 
