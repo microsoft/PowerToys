@@ -12,7 +12,50 @@
     xmlns:previewers="using:Peek.FilePreviewer.Previewers"
     mc:Ignorable="d">
 
-    <Grid>
+    <Grid Background="Transparent">
+        <Grid.ContextFlyout>
+            <MenuFlyout>
+                <MenuFlyoutItem
+                    x:Uid="ContextMenuLabel_Copy"
+                    Click="Copy_Click"
+                    KeyboardAcceleratorTextOverride="Ctrl + C">
+                    <MenuFlyoutItem.Icon>
+                        <FontIcon Glyph="&#xE16F;" />
+                    </MenuFlyoutItem.Icon>
+                </MenuFlyoutItem>
+                <MenuFlyoutItem x:Uid="ContextMenuLabel_CopyPath" Click="CopyPath_Click">
+                    <MenuFlyoutItem.Icon>
+                        <FontIcon Glyph="&#xE8C8;" />
+                    </MenuFlyoutItem.Icon>
+                </MenuFlyoutItem>
+                <MenuFlyoutItem
+                    Click="OpenWithDefaultApp_Click"
+                    Text="{x:Bind OpenWithDefaultAppText, Mode=OneWay}"
+                    Visibility="{x:Bind OpenWithMenuVisibility, Mode=OneWay}">
+                    <MenuFlyoutItem.Icon>
+                        <FontIcon Glyph="&#xE8E5;" />
+                    </MenuFlyoutItem.Icon>
+                </MenuFlyoutItem>
+                <MenuFlyoutItem
+                    x:Uid="ContextMenuLabel_OpenWith"
+                    Click="OpenWith_Click"
+                    Visibility="{x:Bind OpenWithMenuVisibility, Mode=OneWay}">
+                    <MenuFlyoutItem.Icon>
+                        <FontIcon Glyph="&#xE7AC;" />
+                    </MenuFlyoutItem.Icon>
+                </MenuFlyoutItem>
+                <MenuFlyoutSeparator />
+                <MenuFlyoutItem
+                    x:Uid="ContextMenuLabel_Delete"
+                    Click="Delete_Click"
+                    KeyboardAcceleratorTextOverride="Del">
+                    <MenuFlyoutItem.Icon>
+                        <FontIcon Glyph="&#xE74D;" />
+                    </MenuFlyoutItem.Icon>
+                </MenuFlyoutItem>
+            </MenuFlyout>
+        </Grid.ContextFlyout>
+
         <ProgressRing
             HorizontalAlignment="Center"
             VerticalAlignment="Center"
