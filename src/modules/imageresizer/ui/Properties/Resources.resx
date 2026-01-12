@@ -266,9 +266,6 @@
   <data name="Results_Close" xml:space="preserve">
     <value>Close</value>
   </data>
-  <data name="Results_MainInstruction" xml:space="preserve">
-    <value>Can't resize the following pictures</value>
-  </data>
   <data name="Small" xml:space="preserve">
     <value>Small</value>
   </data>
@@ -295,6 +292,52 @@
   </data>
   <data name="Input_ShrinkOnly.Content" xml:space="preserve">
     <value>_Make pictures smaller but not larger</value>
+  </data>
+  <data name="Results_PageHeader_CompleteWithErrors" xml:space="preserve">
+    <value>Processing completed with errors</value>
+  </data>
+  <data name="Results_PageHeader_CompleteWithNotes" xml:space="preserve">
+    <value>Processing completed successfully</value>
+    <comment>"Notes" = Further information about the resize operation</comment>
+  </data>
+  <data name="Results_Errors_SectionHeader" xml:space="preserve">
+    <value>These images could not be resized</value>
+    <comment>Shown above the list of files which had errors</comment>
+  </data>
+  <data name="Results_RecycleFailed_SectionHeader" xml:space="preserve">
+    <value>Backup files for these images could not be recycled</value>
+    <comment>Shown above the list of files where the backup file was not deleted because there was an issue sending them to the Recycle Bin.</comment>
+  </data>
+  <data name="Results_ReplaceFailed_SectionHeader" xml:space="preserve">
+    <value>Failed to overwrite these files with resized images</value>
+    <comment>Shown above the list of files where the resized image could not be moved to replace the original file (because of file lock, write protection etc.)</comment>
+  </data>
+  <data name="NoRecycleBin_ExceptionMessage" xml:space="preserve">
+    <value>This drive does not have a Recycle Bin.</value>
+  </data>
+  <data name="Results_ResizedAs_Label" xml:space="preserve">
+    <value>Resized as:</value>
+    <comment>Shown next to the filename of the resized file on the results page when an error occurred</comment>
+  </data>
+  <data name="Results_FilePath_AccessibilityText" xml:space="preserve">
+    <value>File path</value>
+    <comment>For accessibility devices - when reading file path entries in result lists</comment>
+  </data>
+  <data name="Results_ErrorMessage_AccessibilityText" xml:space="preserve">
+    <value>Error message</value>
+    <comment>For accessibility devices - when reading error messages listed in result lists</comment>
+  </data>
+  <data name="Results_OriginalFilePath_AccessibilityText" xml:space="preserve">
+    <value>Original file path</value>
+    <comment>For accessibility devices - when showing original and resized file names in the results</comment>
+  </data>
+  <data name="Results_ErrorItemType_AccessibilityText" xml:space="preserve">
+    <value>Error</value>
+    <comment>The accessibility item type for errors displayed on the results page</comment>
+  </data>
+  <data name="Results_WarningItemType_AccessibilityText" xml:space="preserve">
+    <value>Warning</value>
+    <comment>The accessibility item type for warnings displayed on the results page</comment>
   </data>
   <data name="Input_AiSuperResolution" xml:space="preserve">
     <value>Super resolution</value>

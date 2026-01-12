@@ -55,6 +55,12 @@ namespace ImageResizer.Views
             return openFileDialog.FileNames;
         }
 
+        public void ResizeForResults() => Dispatcher.Invoke(() =>
+        {
+            this.Width = 600;
+            this.Height = 500;
+        });
+
         void IMainView.Close()
             => Dispatcher.Invoke((Action)Close);
     }

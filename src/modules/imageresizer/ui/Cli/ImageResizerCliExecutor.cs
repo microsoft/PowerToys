@@ -4,10 +4,12 @@
 
 using System;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Threading;
 
 using ImageResizer.Models;
+using ImageResizer.Models.ResizeResults;
 using ImageResizer.Properties;
 
 namespace ImageResizer.Cli
@@ -109,8 +111,13 @@ namespace ImageResizer.Cli
                 CliLogger.Error($"Processing completed with {errorList.Count} error(s)");
                 foreach (var error in errorList)
                 {
-                    Console.Error.WriteLine(string.Format(CultureInfo.InvariantCulture, "  {0}: {1}", error.File, error.Error));
-                    CliLogger.Error($"  {error.File}: {error.Error}");
+                    if (error is ErrorResult errorResult)
+                    {
+                        var fileName = Path.GetFileName(errorResult.FilePath);
+                        var errorMessage = errorResult.Exception.Message;
+                        Console.Error.WriteLine(string.Format(CultureInfo.InvariantCulture, "  {0}: {1}", fileName, errorMessage));
+                        CliLogger.Error($"  {fileName}: {errorMessage}");
+                    }
                 }
 
                 return 1;
