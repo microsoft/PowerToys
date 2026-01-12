@@ -12,6 +12,13 @@ public enum DataType
     CPU,
 
     /// <summary>
+    /// CPU related data, including the top processes.
+    /// Calculating the top processes takes a lot longer,
+    /// so by default we don't.
+    /// </summary>
+    CpuWithTopProcesses,
+
+    /// <summary>
     /// Memory related data.
     /// </summary>
     Memory,

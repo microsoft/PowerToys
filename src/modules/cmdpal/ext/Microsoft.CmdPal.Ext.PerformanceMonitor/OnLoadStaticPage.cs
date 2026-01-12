@@ -9,15 +9,49 @@ using Windows.Foundation;
 
 namespace Microsoft.CmdPal.Ext.PerformanceMonitor;
 
-internal abstract partial class OnLoadStaticPage : Page, IListPage
+#pragma warning disable SA1402 // File may only contain a single type
+
+internal abstract partial class OnLoadStaticListPage : OnLoadBasePage, IListPage
 {
-    private string _placeholderText = string.Empty;
     private string _searchText = string.Empty;
-    private bool _showDetails;
-    private bool _hasMore;
-    private IFilters? _filters;
-    private IGridProperties? _gridProperties;
-    private ICommandItem? _emptyContent;
+
+    public virtual string PlaceholderText { get; set => SetProperty(ref field, value); } = string.Empty;
+
+    public virtual string SearchText { get => _searchText; set => SetProperty(ref _searchText, value); }
+
+    public virtual bool ShowDetails { get; set => SetProperty(ref field, value); }
+
+    public virtual bool HasMoreItems { get; set => SetProperty(ref field, value); }
+
+    public virtual IFilters? Filters { get; set => SetProperty(ref field, value); }
+
+    public virtual IGridProperties? GridProperties { get; set => SetProperty(ref field, value); }
+
+    public virtual ICommandItem? EmptyContent { get; set => SetProperty(ref field, value); }
+
+    public void LoadMore()
+    {
+    }
+
+    protected void SetSearchNoUpdate(string newSearchText)
+    {
+        _searchText = newSearchText;
+    }
+
+    public abstract IListItem[] GetItems();
+}
+
+internal abstract partial class OnLoadContentPage : OnLoadBasePage, IContentPage
+{
+    public virtual IDetails? Details { get; set => SetProperty(ref field, value); }
+
+    public virtual IContextItem[] Commands { get; set => SetProperty(ref field, value); } = [];
+
+    public abstract IContent[] GetContent();
+}
+
+internal abstract partial class OnLoadBasePage : Page
+{
     private int _loadCount;
 
 #pragma warning disable CS0067 // The event is never used
@@ -54,86 +88,17 @@ internal abstract partial class OnLoadStaticPage : Page, IListPage
 
     protected abstract void Unloaded();
 
-    public virtual string PlaceholderText
+    protected void RaiseItemsChanged(int totalItems = -1)
     {
-        get => _placeholderText;
-        set
+        try
         {
-            _placeholderText = value;
-            OnPropertyChanged(nameof(PlaceholderText));
+            // TODO #181 - This is the same thing that BaseObservable has to deal with.
+            InternalItemsChanged?.Invoke(this, new ItemsChangedEventArgs(totalItems));
+        }
+        catch
+        {
         }
     }
-
-    public virtual string SearchText
-    {
-        get => _searchText;
-        set
-        {
-            _searchText = value;
-            OnPropertyChanged(nameof(SearchText));
-        }
-    }
-
-    public virtual bool ShowDetails
-    {
-        get => _showDetails;
-        set
-        {
-            _showDetails = value;
-            OnPropertyChanged(nameof(ShowDetails));
-        }
-    }
-
-    public virtual bool HasMoreItems
-    {
-        get => _hasMore;
-        set
-        {
-            _hasMore = value;
-            OnPropertyChanged(nameof(HasMoreItems));
-        }
-    }
-
-    public virtual IFilters? Filters
-    {
-        get => _filters;
-        set
-        {
-            _filters = value;
-            OnPropertyChanged(nameof(Filters));
-        }
-    }
-
-    public virtual IGridProperties? GridProperties
-    {
-        get => _gridProperties;
-        set
-        {
-            _gridProperties = value;
-            OnPropertyChanged(nameof(GridProperties));
-        }
-    }
-
-    public virtual ICommandItem? EmptyContent
-    {
-        get => _emptyContent;
-        set
-        {
-            _emptyContent = value;
-            OnPropertyChanged(nameof(EmptyContent));
-        }
-    }
-
-    public void LoadMore()
-    {
-    }
-
-    protected void SetSearchNoUpdate(string newSearchText)
-    {
-        _searchText = newSearchText;
-    }
-
-    public abstract IListItem[] GetItems();
 }
 
 

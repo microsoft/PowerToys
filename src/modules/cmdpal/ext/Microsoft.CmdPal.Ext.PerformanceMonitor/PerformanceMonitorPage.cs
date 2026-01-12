@@ -25,7 +25,7 @@ namespace Microsoft.CmdPal.Ext.PerformanceMonitor;
 /// Intentionally, we're using IListPage rather than ListPage. This is so we
 /// can get the onload/onunload
 /// </remarks>
-internal sealed partial class PerformanceMonitorPage : OnLoadStaticPage, IDisposable
+internal sealed partial class PerformanceMonitorPage : OnLoadStaticListPage, IDisposable
 {
     private readonly PerformanceCounter? _cpuCounter;
     private readonly PerformanceCounter? _memoryCounter;

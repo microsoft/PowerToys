@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using Microsoft.CmdPal.Core.Common;
 
 // using Serilog;
 namespace CoreWidgetProvider.Helpers;
@@ -57,43 +58,55 @@ internal sealed partial class CPUStats : IDisposable
         }
     }
 
-    public void GetData()
+    public void GetData(bool includeTopProcesses)
     {
+        var timer = Stopwatch.StartNew();
         CpuUsage = _procPerf.NextValue() / 100;
+        var usageMs = timer.ElapsedMilliseconds;
         CpuSpeed = _procFrequency.NextValue() * (_procPerformance.NextValue() / 100);
-
+        var speedMs = timer.ElapsedMilliseconds - usageMs;
         lock (CpuChartValues)
         {
             ChartHelper.AddNextChartValue(CpuUsage * 100, CpuChartValues);
         }
 
+        var chartMs = timer.ElapsedMilliseconds - speedMs;
+
         var processCPUUsages = new Dictionary<Process, float>();
 
-        foreach (var processCounter in _cpuCounters)
+        if (includeTopProcesses)
         {
-            try
+            foreach (var processCounter in _cpuCounters)
             {
-                // process might be terminated
-                processCPUUsages.Add(processCounter.Key, processCounter.Value.NextValue() / Environment.ProcessorCount);
+                try
+                {
+                    // process might be terminated
+                    processCPUUsages.Add(processCounter.Key, processCounter.Value.NextValue() / Environment.ProcessorCount);
+                }
+                catch (InvalidOperationException)
+                {
+                    // _log.Information($"ProcessCounter Key {processCounter.Key} no longer exists, removing from _cpuCounters.");
+                    _cpuCounters.Remove(processCounter.Key);
+                }
+                catch (Exception)
+                {
+                    // _log.Error(ex, "Error going through process counters.");
+                }
             }
-            catch (InvalidOperationException)
+
+            var cpuIndex = 0;
+            foreach (var processCPUValue in processCPUUsages.OrderByDescending(x => x.Value).Take(3))
             {
-                // _log.Information($"ProcessCounter Key {processCounter.Key} no longer exists, removing from _cpuCounters.");
-                _cpuCounters.Remove(processCounter.Key);
-            }
-            catch (Exception)
-            {
-                // _log.Error(ex, "Error going through process counters.");
+                ProcessCPUStats[cpuIndex].Process = processCPUValue.Key;
+                ProcessCPUStats[cpuIndex].CpuUsage = processCPUValue.Value;
+                cpuIndex++;
             }
         }
 
-        var cpuIndex = 0;
-        foreach (var processCPUValue in processCPUUsages.OrderByDescending(x => x.Value).Take(3))
-        {
-            ProcessCPUStats[cpuIndex].Process = processCPUValue.Key;
-            ProcessCPUStats[cpuIndex].CpuUsage = processCPUValue.Value;
-            cpuIndex++;
-        }
+        timer.Stop();
+        var total = timer.ElapsedMilliseconds;
+        var processesMs = total - chartMs;
+        CoreLogger.LogDebug($"[{usageMs}]+[{speedMs}]+[{chartMs}]+[{processesMs}]=[{total}]");
     }
 
     internal string CreateCPUImageUrl()

@@ -4,13 +4,14 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Text;
 using System.Text.Json.Nodes;
-using System.Threading.Tasks;
 using CoreWidgetProvider.Helpers;
 using CoreWidgetProvider.Widgets.Enums;
+using Microsoft.CmdPal.Core.Common;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.ApplicationModel;
@@ -26,20 +27,14 @@ namespace Microsoft.CmdPal.Ext.PerformanceMonitor;
 /// Intentionally, we're using IListPage rather than ListPage. This is so we
 /// can get the onload/onunload
 /// </remarks>
-internal sealed partial class PerformanceWidgetsPage : OnLoadStaticPage, IDisposable
+internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDisposable
 {
-    private int _loadCount;
-
-    private bool IsActive => _loadCount > 0;
-
     public override string Id => "com.microsoft.cmdpal.performanceWidget";
 
     public override string Title => "Performance monitor";
 
-    // public override string PlaceholderText => "Performance monitor";
     public override IconInfo Icon => Icons.StackedAreaIcon;
 
-    // private Task? _updateTask;
     private readonly bool _isBandPage;
 
     private readonly SystemCPUUsageWidgetPage _cpuPage = new();
@@ -61,77 +56,12 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticPage, IDispos
 
     protected override void Loaded()
     {
-        _loadCount++;
-
-        _cpuPage.Activate();
-
-        // _updateTask ??= Task.Run(() =>
-        // {
-        //    UpdateValues();
-        // });
+        _cpuPage.PushActivate();
     }
 
     protected override void Unloaded()
     {
-        _loadCount--;
-
-        _cpuPage.Deactivate();
-
-        // TODO! cancel the update task
-    }
-
-    private async void UpdateValues()
-    {
-        // Update interval in milliseconds
-        const int updateInterval = 1000;
-
-        // TODO: Fix this behaviour which is needed cause of a bug
-        while (_loadCount > 0)
-        {
-            // Record start time of update cycle
-            var startTime = DateTime.Now;
-
-            var tasks = new List<Task>();
-
-            // // Start all update tasks in parallel
-            // if (_cpuItem != null)
-            // {
-            //     tasks.Add(Task.Run(() => UpdateCpuValues()));
-            // }
-
-            // if (_memoryItem != null)
-            // {
-            //     tasks.Add(Task.Run(() => UpdateMemoryValues()));
-            // }
-
-            // if (_diskCounters?.Length > 0 && _diskItem != null)
-            // {
-            //     tasks.Add(Task.Run(() => UpdateDiskValues()));
-            // }
-
-            // if (_networkItem != null)
-            // {
-            //     tasks.Add(Task.Run(() => UpdateNetworkValues()));
-            // }
-
-            // if (!_isBandPage)
-            // {
-            //     // TODO!: This is unbelievably loud
-            //     tasks.Add(GetProcessInfo());
-            // }
-
-            // // Wait for all tasks to complete
-            // await Task.WhenAll(tasks);
-
-            // Calculate how much time has passed
-            var elapsedTime = (DateTime.Now - startTime).TotalMilliseconds;
-
-            // If we completed faster than our desired interval, wait the remaining time
-            if (elapsedTime < updateInterval)
-            {
-                await Task.Delay((int)(updateInterval - elapsedTime));
-            }
-        }
+        _cpuPage.PopActivate();
     }
 
     public override IListItem[] GetItems()
@@ -150,7 +80,7 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticPage, IDispos
     }
 }
 
-internal abstract partial class WidgetPage : ContentPage
+internal abstract partial class WidgetPage : OnLoadContentPage
 {
     internal event EventHandler? Updated;
 
@@ -167,18 +97,27 @@ internal abstract partial class WidgetPage : ContentPage
             var json = new JsonObject();
             foreach (var kvp in ContentData)
             {
-                json[kvp.Key] = kvp.Value;
+                if (kvp.Value is not null)
+                {
+                    json[kvp.Key] = kvp.Value;
+                }
             }
 
             return json;
         }
     }
 
+    private readonly FormContent _formContent = new();
+
     public void UpdateWidget()
     {
         LoadContentData();
 
+        _formContent.DataJson = ContentDataJson.ToJsonString();
+
         Updated?.Invoke(this, EventArgs.Empty);
+
+        // RaiseItemsChanged();
     }
 
     protected abstract void LoadContentData();
@@ -189,7 +128,7 @@ internal abstract partial class WidgetPage : ContentPage
     {
         if (Template.TryGetValue(page, out var value))
         {
-            // Log.Debug($"Using cached template for {page}");
+            CoreLogger.LogDebug($"Using cached template for {page}");
             return value;
         }
 
@@ -199,8 +138,7 @@ internal abstract partial class WidgetPage : ContentPage
             var template = File.ReadAllText(path, Encoding.Default) ?? throw new FileNotFoundException(path);
 
             // template = Resources.ReplaceIdentifers(template, Resources.GetWidgetResourceIdentifiers(), Log);
-
-            // Log.Debug($"Caching template for {page}");
+            CoreLogger.LogDebug($"Caching template for {page}");
             Template[page] = template;
             return template;
         }
@@ -213,16 +151,34 @@ internal abstract partial class WidgetPage : ContentPage
 
     public override IContent[] GetContent()
     {
-        FormContent f = new();
-        f.TemplateJson = GetTemplateForPage(WidgetPageState.Content);
-        f.DataJson = ContentDataJson.ToJsonString();
+        _formContent.TemplateJson = GetTemplateForPage(WidgetPageState.Content);
 
-        return [f];
+        return [_formContent];
     }
 
-    internal abstract void Activate();
+    internal virtual void PushActivate()
+    {
+        _loadCount++;
+    }
 
-    internal abstract void Deactivate();
+    internal virtual void PopActivate()
+    {
+        _loadCount--;
+    }
+
+    private int _loadCount;
+
+    protected bool IsActive => _loadCount > 0;
+
+    protected override void Loaded()
+    {
+        PushActivate();
+    }
+
+    protected override void Unloaded()
+    {
+        PopActivate();
+    }
 }
 
 internal sealed partial class SystemCPUUsageWidgetPage : WidgetPage, IDisposable
@@ -242,12 +198,16 @@ internal sealed partial class SystemCPUUsageWidgetPage : WidgetPage, IDisposable
 
     protected override void LoadContentData()
     {
-        // Log.Debug("Getting CPU stats");
+        CoreLogger.LogDebug("Getting CPU stats");
         try
         {
-            // var cpuData = new JsonObject();
             ContentData.Clear();
+
+            var timer = Stopwatch.StartNew();
+
             var currentData = _dataManager.GetCPUStats();
+
+            var dataDuration = timer.ElapsedMilliseconds;
 
             ContentData["cpuUsage"] = FloatToPercentString(currentData.CpuUsage);
             ContentData["cpuSpeed"] = SpeedToString(currentData.CpuSpeed);
@@ -255,21 +215,19 @@ internal sealed partial class SystemCPUUsageWidgetPage : WidgetPage, IDisposable
             ContentData["chartHeight"] = ChartHelper.ChartHeight + "px";
             ContentData["chartWidth"] = ChartHelper.ChartWidth + "px";
 
-            ContentData["cpuProc1"] = currentData.GetCpuProcessText(0);
-            ContentData["cpuProc2"] = currentData.GetCpuProcessText(1);
-            ContentData["cpuProc3"] = currentData.GetCpuProcessText(2);
+            // ContentData["cpuProc1"] = currentData.GetCpuProcessText(0);
+            // ContentData["cpuProc2"] = currentData.GetCpuProcessText(1);
+            // ContentData["cpuProc3"] = currentData.GetCpuProcessText(2);
+
+            var contentDuration = timer.ElapsedMilliseconds - dataDuration;
+
+            CoreLogger.LogDebug($"CPU stats retrieved in {dataDuration} ms, content prepared in {contentDuration} ms. (Total {timer.ElapsedMilliseconds} ms)");
 
             // DataState = WidgetDataState.Okay;
-            // ContentData = cpuData.ToJsonString();
         }
         catch (Exception e)
         {
             // Log.Error(e, "Error retrieving stats.");
-
-            // var content = new JsonObject
-            // {
-            //     { "errorMessage", e.Message },
-            // };
             ContentData.Clear();
             ContentData["errorMessage"] = e.Message;
 
@@ -311,14 +269,22 @@ internal sealed partial class SystemCPUUsageWidgetPage : WidgetPage, IDisposable
         return ((int)(value * 100)).ToString(CultureInfo.InvariantCulture) + "%";
     }
 
-    internal override void Activate()
+    internal override void PushActivate()
     {
-        _dataManager.Start();
+        base.PushActivate();
+        if (IsActive)
+        {
+            _dataManager.Start();
+        }
     }
 
-    internal override void Deactivate()
+    internal override void PopActivate()
     {
-        _dataManager.Stop();
+        base.PopActivate();
+        if (!IsActive)
+        {
+            _dataManager.Stop();
+        }
     }
 
     public void Dispose()

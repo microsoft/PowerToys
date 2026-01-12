@@ -52,11 +52,11 @@ internal sealed partial class DataManager : IDisposable
         }
     }
 
-    private void GetCPUData()
+    private void GetCPUData(bool includeTopProcesses)
     {
         lock (SystemData.CpuStats)
         {
-            SystemData.CpuStats.GetData();
+            SystemData.CpuStats.GetData(includeTopProcesses);
         }
     }
 
@@ -65,9 +65,10 @@ internal sealed partial class DataManager : IDisposable
         switch (_dataType)
         {
             case DataType.CPU:
+            case DataType.CpuWithTopProcesses:
                 {
                     // CPU
-                    GetCPUData();
+                    GetCPUData(_dataType == DataType.CpuWithTopProcesses);
                     break;
                 }
 
