@@ -146,13 +146,12 @@ internal static class FancyZonesCliUsage
 
             case "get-layouts":
                 Console.WriteLine("  FancyZonesCLI get-layouts");
-                Console.WriteLine("  FancyZonesCLI l");
+                Console.WriteLine("  FancyZonesCLI ls");
                 break;
 
             case "get-active-layout":
                 Console.WriteLine("  FancyZonesCLI get-active-layout");
-                Console.WriteLine("  FancyZonesCLI get-active-layout --monitor 1");
-                Console.WriteLine("  FancyZonesCLI al -m 2");
+                Console.WriteLine("  FancyZonesCLI active");
                 break;
 
             case "set-layout":
@@ -169,12 +168,12 @@ internal static class FancyZonesCliUsage
 
             case "open-settings":
                 Console.WriteLine("  FancyZonesCLI open-settings");
-                Console.WriteLine("  FancyZonesCLI os");
+                Console.WriteLine("  FancyZonesCLI settings");
                 break;
 
             case "get-hotkeys":
                 Console.WriteLine("  FancyZonesCLI get-hotkeys");
-                Console.WriteLine("  FancyZonesCLI ghk");
+                Console.WriteLine("  FancyZonesCLI hk");
                 break;
 
             case "set-hotkey":

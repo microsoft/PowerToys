@@ -66,12 +66,12 @@ internal sealed class Program
 
         if (nonHelpArgs.Length == 0)
         {
-            // Root help: fancyzonescli --help
+            // Root help: fancyzones cli --help
             FancyZonesCliUsage.PrintUsage();
         }
         else
         {
-            // Subcommand help: fancyzonescli <command> --help
+            // Subcommand help: fancyzones cli <command> --help
             string subcommandName = nonHelpArgs[0];
             FancyZonesCliUsage.PrintCommandUsage(subcommandName);
         }
