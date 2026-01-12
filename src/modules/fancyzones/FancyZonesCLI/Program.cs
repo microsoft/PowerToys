@@ -12,6 +12,8 @@ namespace FancyZonesCLI;
 
 internal sealed class Program
 {
+    private static readonly string[] HelpFlags = ["--help", "-h", "-?"];
+
     private static async Task<int> Main(string[] args)
     {
         Logger.InitializeLogger();
@@ -21,12 +23,15 @@ internal sealed class Program
         NativeMethods.InitializeWindowMessages();
 
         // Intercept help requests early and print custom usage.
-        if (args.Any(a => string.Equals(a, "--help", StringComparison.OrdinalIgnoreCase) ||
-                          string.Equals(a, "-h", StringComparison.OrdinalIgnoreCase) ||
-                          string.Equals(a, "-?", StringComparison.OrdinalIgnoreCase)))
+        if (TryHandleHelpRequest(args))
         {
-            FancyZonesCliUsage.PrintUsage();
             return 0;
+        }
+
+        // Detect PowerShell script block expansion (when {} is interpreted as script block)
+        if (DetectPowerShellScriptBlockArgs(args))
+        {
+            return 1;
         }
 
         RootCommand rootCommand = FancyZonesCliCommandFactory.CreateRootCommand();
@@ -42,5 +47,70 @@ internal sealed class Program
         }
 
         return exitCode;
+    }
+
+    /// <summary>
+    /// Handles help requests for root command and subcommands.
+    /// </summary>
+    /// <returns>True if help was printed, false otherwise.</returns>
+    private static bool TryHandleHelpRequest(string[] args)
+    {
+        bool hasHelpFlag = args.Any(a => HelpFlags.Any(h => string.Equals(a, h, StringComparison.OrdinalIgnoreCase)));
+        if (!hasHelpFlag)
+        {
+            return false;
+        }
+
+        // Get non-help arguments to identify subcommand
+        var nonHelpArgs = args.Where(a => !HelpFlags.Any(h => string.Equals(a, h, StringComparison.OrdinalIgnoreCase))).ToArray();
+
+        if (nonHelpArgs.Length == 0)
+        {
+            // Root help: fancyzonescli --help
+            FancyZonesCliUsage.PrintUsage();
+        }
+        else
+        {
+            // Subcommand help: fancyzonescli <command> --help
+            string subcommandName = nonHelpArgs[0];
+            FancyZonesCliUsage.PrintCommandUsage(subcommandName);
+        }
+
+        return true;
+    }
+
+    /// <summary>
+    /// Detects when PowerShell interprets {GUID} as a script block and converts it to encoded command args.
+    /// This happens when users forget to quote GUIDs with braces in PowerShell.
+    /// </summary>
+    /// <returns>True if PowerShell script block args were detected, false otherwise.</returns>
+    private static bool DetectPowerShellScriptBlockArgs(string[] args)
+    {
+        // PowerShell converts {scriptblock} to: -encodedCommand <base64> -inputFormat xml -outputFormat text
+        bool hasEncodedCommand = args.Any(a => string.Equals(a, "-encodedCommand", StringComparison.OrdinalIgnoreCase));
+        bool hasInputFormat = args.Any(a => string.Equals(a, "-inputFormat", StringComparison.OrdinalIgnoreCase));
+        bool hasOutputFormat = args.Any(a => string.Equals(a, "-outputFormat", StringComparison.OrdinalIgnoreCase));
+
+        if (hasEncodedCommand || (hasInputFormat && hasOutputFormat))
+        {
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine(Properties.Resources.error_powershell_scriptblock_title);
+            Console.ResetColor();
+            Console.WriteLine();
+            Console.WriteLine(Properties.Resources.error_powershell_scriptblock_explanation);
+            Console.WriteLine(Properties.Resources.error_powershell_scriptblock_hint);
+            Console.WriteLine();
+            Console.WriteLine($"  {Properties.Resources.error_powershell_scriptblock_option1}");
+            Console.WriteLine($"    {Properties.Resources.error_powershell_scriptblock_option1_example}");
+            Console.WriteLine();
+            Console.WriteLine($"  {Properties.Resources.error_powershell_scriptblock_option2}");
+            Console.WriteLine($"    {Properties.Resources.error_powershell_scriptblock_option2_example}");
+            Console.WriteLine();
+
+            Logger.LogWarning("PowerShell script block expansion detected - user needs to quote GUID or omit braces");
+            return true;
+        }
+
+        return false;
     }
 }
