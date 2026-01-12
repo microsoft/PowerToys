@@ -546,6 +546,15 @@ public partial class MainListPage : DynamicListPage,
         // e.g. "git" will up-weight "GitHub searches" from the GitHub extension
         // above "git" from "whatever"
         max = max + extensionTitleMatch;
+        
+        // Apply a penalty to fallback items so they rank below direct matches.
+        // Fallbacks that dynamically match queries (like RDP connections) should
+        // appear after apps and direct command matches.
+        if (isFallback && max > 1)
+        {
+            // Reduce fallback scores by 50% to prioritize direct matches
+            max = max * 0.5;
+        }
 
         var matchSomething = max
             + (isAliasMatch ? 9001 : (isAliasSubstringMatch ? 1 : 0));
