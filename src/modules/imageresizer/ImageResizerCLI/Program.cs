@@ -31,7 +31,7 @@ internal static class Program
         Console.InputEncoding = Encoding.Unicode;
 
         // Initialize logger to file (same as other modules)
-        CliLogger.Initialize("\\ImageResizer\\Logs");
+        CliLogger.Initialize("\\Image Resizer\\Logs");
         CliLogger.Info($"ImageResizerCLI started with {args.Length} argument(s)");
 
         try

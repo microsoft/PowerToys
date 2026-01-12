@@ -71,7 +71,7 @@ public:
         UpdateRegistration(m_enabled);
         app_name = GET_RESOURCE_STRING(IDS_IMAGERESIZER);
         app_key = ImageResizerConstants::ModuleKey;
-        LoggerHelpers::init_logger(ImageResizerConstants::ModuleOldSaveFolderKey, L"Logs", LogSettings::imageResizerLoggerName);
+        LoggerHelpers::init_logger(ImageResizerConstants::ModuleSaveFolderKey, L"", LogSettings::imageResizerLoggerName);
     };
 
     // Destroy the powertoy and free memory
