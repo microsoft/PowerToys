@@ -51,7 +51,7 @@ internal sealed class Window
             var sizeOfTitle = NativeMethods.GetWindowTextLength(hwnd);
             if (sizeOfTitle++ > 0)
             {
-                var titleBuffer = new StringBuilder(sizeOfTitle);
+                StringBuilder titleBuffer = new StringBuilder(sizeOfTitle);
                 var numCharactersWritten = NativeMethods.GetWindowText(hwnd, titleBuffer, sizeOfTitle);
                 if (numCharactersWritten == 0)
                 {
@@ -260,7 +260,7 @@ internal sealed class Window
     /// <returns>The state (minimized, maximized, etc..) of the window</returns>
     internal WindowSizeState GetWindowSizeState()
     {
-        NativeMethods.GetWindowPlacement(Hwnd, out var placement);
+        NativeMethods.GetWindowPlacement(Hwnd, out WINDOWPLACEMENT placement);
 
         switch (placement.ShowCmd)
         {
@@ -295,30 +295,21 @@ internal sealed class Window
     /// <returns>The state (none, app, ...) of the window</returns>
     internal WindowCloakState GetWindowCloakState()
     {
-        try
-        {
-            _ = NativeMethods.DwmGetWindowAttribute(Hwnd, (int)DwmWindowAttributes.Cloaked, out var isCloakedState, sizeof(uint));
+        _ = NativeMethods.DwmGetWindowAttribute(Hwnd, (int)DwmWindowAttributes.Cloaked, out var isCloakedState, sizeof(uint));
 
-            switch (isCloakedState)
-            {
-                case (int)DwmWindowCloakStates.None:
-                    return WindowCloakState.None;
-                case (int)DwmWindowCloakStates.CloakedApp:
-                    return WindowCloakState.App;
-                case (int)DwmWindowCloakStates.CloakedShell:
-                    return WindowWalkerCommandsProvider.VirtualDesktopHelperInstance.IsWindowCloakedByVirtualDesktopManager(hwnd, Desktop.Id) ? WindowCloakState.OtherDesktop : WindowCloakState.Shell;
-                case (int)DwmWindowCloakStates.CloakedInherited:
-                    return WindowCloakState.Inherited;
-                default:
-                    return WindowCloakState.Unknown;
-            }
-        }
-        catch
+        switch (isCloakedState)
         {
-            // Log?
+            case (int)DwmWindowCloakStates.None:
+                return WindowCloakState.None;
+            case (int)DwmWindowCloakStates.CloakedApp:
+                return WindowCloakState.App;
+            case (int)DwmWindowCloakStates.CloakedShell:
+                return WindowWalkerCommandsProvider.VirtualDesktopHelperInstance.IsWindowCloakedByVirtualDesktopManager(hwnd, Desktop.Id) ? WindowCloakState.OtherDesktop : WindowCloakState.Shell;
+            case (int)DwmWindowCloakStates.CloakedInherited:
+                return WindowCloakState.Inherited;
+            default:
+                return WindowCloakState.Unknown;
         }
-
-        return WindowCloakState.Unknown;
     }
 
     /// <summary>
@@ -341,7 +332,7 @@ internal sealed class Window
     /// <returns>Class name</returns>
     private static string GetWindowClassName(IntPtr hwnd)
     {
-        var windowClassName = new StringBuilder(300);
+        StringBuilder windowClassName = new StringBuilder(300);
         var numCharactersWritten = NativeMethods.GetClassName(hwnd, windowClassName, windowClassName.MaxCapacity);
 
         if (numCharactersWritten == 0)
@@ -393,7 +384,7 @@ internal sealed class Window
             {
                 new Task(() =>
                 {
-                    var callbackptr = new EnumWindowsProc((IntPtr hwnd, IntPtr lParam) =>
+                    EnumWindowsProc callbackptr = new EnumWindowsProc((IntPtr hwnd, IntPtr lParam) =>
                     {
                         // Every uwp app main window has at least three child windows. Only the one we are interested in has a class starting with "Windows.UI.Core." and is assigned to the real app process.
                         // (The other ones have a class name that begins with the string "ApplicationFrame".)
@@ -418,22 +409,5 @@ internal sealed class Window
 
             return _handlesToProcessCache[hWindow];
         }
-    }
-
-    public override bool Equals(object? obj)
-    {
-        if (obj is Window other)
-        {
-            return this.hwnd == other.hwnd &&
-                this.Title == other.Title &&
-                this.Visible == other.Visible;
-        }
-
-        return base.Equals(obj);
-    }
-
-    public override int GetHashCode()
-    {
-        return base.GetHashCode();
     }
 }

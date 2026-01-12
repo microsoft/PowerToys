@@ -2,6 +2,11 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using Microsoft.CmdPal.Ext.WindowWalker.Commands;
 using Microsoft.CmdPal.Ext.WindowWalker.Components;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -18,25 +23,5 @@ internal sealed partial class WindowWalkerListItem : ListItem
         : base(new SwitchToWindowCommand(window))
     {
         _window = window;
-    }
-
-    public override bool Equals(object? obj)
-    {
-        if (obj is WindowWalkerListItem other)
-        {
-            if (this._window is null)
-            {
-                return other._window is null;
-            }
-
-            return this._window.Equals(other._window);
-        }
-
-        return base.Equals(obj);
-    }
-
-    public override int GetHashCode()
-    {
-        return base.GetHashCode();
     }
 }

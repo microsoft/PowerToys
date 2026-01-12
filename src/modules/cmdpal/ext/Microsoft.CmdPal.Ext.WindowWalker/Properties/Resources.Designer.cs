@@ -19,7 +19,7 @@ namespace Microsoft.CmdPal.Ext.WindowWalker.Properties {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "18.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     public class Resources {
@@ -372,24 +372,6 @@ namespace Microsoft.CmdPal.Ext.WindowWalker.Properties {
         public static string windowwalker_settings_name {
             get {
                 return ResourceManager.GetString("windowwalker_settings_name", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Dock: Show window titles.
-        /// </summary>
-        public static string windowwalker_SettingShowTitlesOnDock {
-            get {
-                return ResourceManager.GetString("windowwalker_SettingShowTitlesOnDock", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Show the window titles on windows in the dock.
-        /// </summary>
-        public static string windowwalker_SettingShowTitlesOnDock_Description {
-            get {
-                return ResourceManager.GetString("windowwalker_SettingShowTitlesOnDock_Description", resourceCulture);
             }
         }
         

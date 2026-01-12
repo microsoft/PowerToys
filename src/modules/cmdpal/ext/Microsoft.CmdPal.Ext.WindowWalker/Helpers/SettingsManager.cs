@@ -76,13 +76,7 @@ public class SettingsManager : JsonSettingsManager, ISettingsInterface
         Resources.windowwalker_SettingUseWindowIcon_Description,
         true);
 
-    private readonly ToggleSetting _showTitlesOnDock = new(
-        Namespaced(nameof(ShowTitlesOnDock)),
-        Resources.windowwalker_SettingShowTitlesOnDock,
-        Resources.windowwalker_SettingShowTitlesOnDock_Description,
-        true);
-
-    public bool ResultsFromVisibleDesktopOnly { get => _resultsFromVisibleDesktopOnly.Value; set => _resultsFromVisibleDesktopOnly.Value = value; }
+    public bool ResultsFromVisibleDesktopOnly => _resultsFromVisibleDesktopOnly.Value;
 
     public bool SubtitleShowPid => _subtitleShowPid.Value;
 
@@ -94,17 +88,13 @@ public class SettingsManager : JsonSettingsManager, ISettingsInterface
 
     public bool OpenAfterKillAndClose => _openAfterKillAndClose.Value;
 
-    public bool HideKillProcessOnElevatedProcesses { get => _hideKillProcessOnElevatedProcesses.Value; set => _hideKillProcessOnElevatedProcesses.Value = value; }
+    public bool HideKillProcessOnElevatedProcesses => _hideKillProcessOnElevatedProcesses.Value;
 
-    public bool HideExplorerSettingInfo { get => _hideExplorerSettingInfo.Value; set => _hideExplorerSettingInfo.Value = value; }
+    public bool HideExplorerSettingInfo => _hideExplorerSettingInfo.Value;
 
-    public bool InMruOrder { get => _inMruOrder.Value; set => _inMruOrder.Value = value; }
+    public bool InMruOrder => _inMruOrder.Value;
 
-    public bool UseWindowIcon { get => _useWindowIcon.Value; set => _useWindowIcon.Value = value; }
-
-    public bool ShowSubtitles { get; set; } = true;
-
-    public bool ShowTitlesOnDock { get => _showTitlesOnDock.Value; set => _showTitlesOnDock.Value = value; }
+    public bool UseWindowIcon => _useWindowIcon.Value;
 
     internal static string SettingsJsonPath()
     {
@@ -129,7 +119,6 @@ public class SettingsManager : JsonSettingsManager, ISettingsInterface
         Settings.Add(_hideExplorerSettingInfo);
         Settings.Add(_inMruOrder);
         Settings.Add(_useWindowIcon);
-        Settings.Add(_showTitlesOnDock);
 
         // Load settings from file upon initialization
         LoadSettings();

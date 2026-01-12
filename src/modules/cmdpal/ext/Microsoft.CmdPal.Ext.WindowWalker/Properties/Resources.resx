@@ -241,10 +241,4 @@
   <data name="windowwalker_SettingUseWindowIcon_Description" xml:space="preserve">
     <value>Show the actual window icon instead of the process icon</value>
   </data>
-  <data name="windowwalker_SettingShowTitlesOnDock" xml:space="preserve">
-    <value>Dock: Show window titles</value>
-  </data>
-  <data name="windowwalker_SettingShowTitlesOnDock_Description" xml:space="preserve">
-    <value>Show the window titles on windows in the dock</value>
-  </data>
 </root>

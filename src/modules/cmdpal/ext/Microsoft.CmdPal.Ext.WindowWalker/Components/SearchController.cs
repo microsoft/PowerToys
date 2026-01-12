@@ -17,8 +17,6 @@ namespace Microsoft.CmdPal.Ext.WindowWalker.Components;
 /// </summary>
 internal sealed class SearchController
 {
-    private readonly SettingsManager _settings;
-
     /// <summary>
     /// the current search text
     /// </summary>
@@ -29,10 +27,10 @@ internal sealed class SearchController
     /// </summary>
     private List<SearchResult>? searchMatches;
 
-    ///// <summary>
-    ///// Singleton pattern
-    ///// </summary>
-    // private static SearchController? instance;
+    /// <summary>
+    /// Singleton pattern
+    /// </summary>
+    private static SearchController? instance;
 
     /// <summary>
     /// Gets or sets the current search text
@@ -50,27 +48,26 @@ internal sealed class SearchController
     /// </summary>
     internal List<SearchResult> SearchMatches => new List<SearchResult>(searchMatches ?? []).OrderByDescending(x => x.Score).ToList();
 
-    ///// <summary>
-    ///// Gets singleton Pattern
-    ///// </summary>
-    // internal static SearchController Instance
-    // {
-    //    get
-    //    {
-    //        instance ??= new SearchController();
+    /// <summary>
+    /// Gets singleton Pattern
+    /// </summary>
+    internal static SearchController Instance
+    {
+        get
+        {
+            instance ??= new SearchController();
 
-    // return instance;
-    //    }
-    // }
+            return instance;
+        }
+    }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="SearchController"/> class.
     /// Initializes the search controller object
     /// </summary>
-    internal SearchController(SettingsManager settings)
+    private SearchController()
     {
         searchText = string.Empty;
-        _settings = settings;
     }
 
     /// <summary>
@@ -90,13 +87,8 @@ internal sealed class SearchController
         System.Diagnostics.Debug.Print("Syncing WindowSearch result with OpenWindows Model");
 
         var snapshotOfOpenWindows = OpenWindows.Instance.Windows;
-        var openWindowsCorrectDesktop = snapshotOfOpenWindows.Where(DesktopMatchesSetting).ToList();
-        searchMatches = string.IsNullOrWhiteSpace(SearchText) ? AllOpenWindows(openWindowsCorrectDesktop) : FuzzySearchOpenWindows(openWindowsCorrectDesktop);
-    }
 
-    private bool DesktopMatchesSetting(Window w)
-    {
-        return w.Desktop.IsVisible || !_settings.ResultsFromVisibleDesktopOnly || WindowWalkerCommandsProvider.VirtualDesktopHelperInstance.GetDesktopCount() < 2;
+        searchMatches = string.IsNullOrWhiteSpace(SearchText) ? AllOpenWindows(snapshotOfOpenWindows) : FuzzySearchOpenWindows(snapshotOfOpenWindows);
     }
 
     /// <summary>
@@ -142,7 +134,7 @@ internal sealed class SearchController
             }
         }
 
-        return _settings.InMruOrder
+        return SettingsManager.Instance.InMruOrder
             ? result.ToList()
             : result
                 .OrderBy(w => w.Result.Title)

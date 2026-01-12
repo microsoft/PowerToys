@@ -21,10 +21,7 @@ internal static class ResultHelper
     /// </summary>
     /// <param name="searchControllerResults">List with all search controller matches</param>
     /// <returns>List of results</returns>
-    internal static List<WindowWalkerListItem> GetResultList(
-        List<SearchResult> searchControllerResults,
-        bool isKeywordSearch,
-        SettingsManager settings)
+    internal static List<WindowWalkerListItem> GetResultList(List<SearchResult> searchControllerResults, bool isKeywordSearch)
     {
         if (searchControllerResults is null || searchControllerResults.Count == 0)
         {
@@ -43,15 +40,7 @@ internal static class ResultHelper
             .Select(x => CreateResultFromSearchResult(x))
             .ToList();
 
-        if (!settings.ShowSubtitles)
-        {
-            foreach (var li in resultsList)
-            {
-                li.Subtitle = string.Empty;
-            }
-        }
-
-        if (addExplorerInfo && !settings.HideExplorerSettingInfo)
+        if (addExplorerInfo && !SettingsManager.Instance.HideExplorerSettingInfo)
         {
             resultsList.Insert(0, GetExplorerInfoResult());
         }
