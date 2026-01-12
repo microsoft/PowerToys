@@ -19,10 +19,12 @@ public partial class PerformanceMonitorCommandsProvider : CommandProvider
         Icon = Icons.StackedAreaIcon;
 
         var page = new PerformanceMonitorPage(false);
+        var page2 = new PerformanceWidgetsPage(false);
         var band = new PerformanceMonitorPage(true);
         _band = new CommandItem(band) { Title = "Performance monitor" }; // TODO!Loc
         _commands = [
             new CommandItem(page) { Title = DisplayName },
+            new CommandItem(page2) { Title = "perf widgets" },  // TODO!Loc
         ];
     }
 

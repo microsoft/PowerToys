@@ -1,0 +1,117 @@
+{
+  "type": "AdaptiveCard",
+  "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+  "version": "1.6",
+  "body": [
+    {
+      "type": "Input.Text",
+      "id": "ConfigFile",
+      "label": "%SSH_Widget_Template/ConfigFilePath%",
+      "inlineAction": {
+        "type": "Action.ChooseFile"
+      },
+      "spacing": "Medium",
+      "style": "Url",
+      "placeholder": "${$root.configuration.currentOrDefaultConfigFile}",
+      "value": "${$root.configuration.currentOrDefaultConfigFile}"
+    },
+    {
+      "type": "ColumnSet",
+      "spacing": "Medium",
+      "horizontalAlignment": "center",
+      "columns": [
+        {
+          "type": "Column",
+          "width": "auto",
+          "items": [
+            {
+              "type": "ActionSet",
+              "actions": [
+                {
+                  "type": "Action.Execute",
+                  "title": "%Widget_Template_Button/Preview%",
+                  "verb": "CheckPath",
+                  "associatedInputs": "Auto"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "Container",
+      "items": [
+        {
+          "type": "TextBlock",
+          "text": "${errorMessage}",
+          "wrap": true,
+          "horizontalAlignment": "Center"
+        }
+      ],
+      "$when": "${errorMessage != null}",
+      "separator": true,
+      "verticalContentAlignment": "Center",
+      "style": "warning"
+    },
+    {
+      "type": "Container",
+      "items": [
+        {
+          "type": "TextBlock",
+          "text": "%SSH_Widget_Template/NumOfHosts%",
+          "wrap": true,
+          "spacing": "Medium",
+          "size": "Small",
+          "isSubtle": true
+        },
+        {
+          "type": "TextBlock",
+          "text": "${numOfEntries}",
+          "wrap": true,
+          "size": "medium",
+          "spacing": "None"
+        }
+      ],
+      "spacing": "Medium",
+      "$data": "${$root.configuration}",
+      "$when": "${$root.hasConfiguration}",
+      "bleed": true
+    },
+    {
+      "type": "ColumnSet",
+      "spacing": "Large",
+      "horizontalAlignment": "center",
+      "columns": [
+        {
+          "type": "Column",
+          "width": "auto",
+          "items": [
+            {
+              "type": "Container",
+              "items": [
+                {
+                  "type": "ActionSet",
+                  "actions": [
+                    {
+                      "type": "Action.Execute",
+                      "title": "%Widget_Template_Button/Save%",
+                      "verb": "Save",
+                      "isEnabled": "${$root.hasConfiguration}"
+                    },
+                    {
+                      "type": "Action.Execute",
+                      "title": "%Widget_Template_Button/Cancel%",
+                      "verb": "Cancel",
+                      "isEnabled": "${$root.savedConfigFile != \"\"}"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

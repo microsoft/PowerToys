@@ -1,0 +1,99 @@
+{
+  "type": "AdaptiveCard",
+  "body": [
+    {
+      "type": "Container",
+      "$when": "${errorMessage != null}",
+      "items": [
+        {
+          "type": "TextBlock",
+          "text": "${errorMessage}",
+          "wrap": true,
+          "size": "small"
+        }
+      ],
+      "style": "warning"
+    },
+    {
+      "type": "Container",
+      "$when": "${errorMessage == null}",
+      "items": [
+        {
+          "type": "Image",
+          "url": "${cpuGraphUrl}",
+          "height": "${chartHeight}",
+          "width": "${chartWidth}",
+          "$when": "${$host.widgetSize != \"small\"}",
+          "horizontalAlignment": "center"
+        },
+        {
+          "type": "ColumnSet",
+          "columns": [
+            {
+              "type": "Column",
+              "items": [
+                {
+                  "type": "TextBlock",
+                  "isSubtle": true,
+                  "text": "%CPUUsage_Widget_Template/CPU_Usage%"
+                },
+                {
+                  "type": "TextBlock",
+                  "size": "large",
+                  "weight": "bolder",
+                  "text": "${cpuUsage}"
+                }
+              ]
+            },
+            {
+              "type": "Column",
+              "items": [
+                {
+                  "type": "TextBlock",
+                  "isSubtle": true,
+                  "horizontalAlignment": "right",
+                  "text": "%CPUUsage_Widget_Template/CPU_Speed%"
+                },
+                {
+                  "type": "TextBlock",
+                  "size": "large",
+                  "horizontalAlignment": "right",
+                  "text": "${cpuSpeed}"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "Container",
+          "$when": "${$host.widgetSize != \"small\"}",
+          "items": [
+            {
+              "type": "TextBlock",
+              "isSubtle": true,
+              "text": "%CPUUsage_Widget_Template/Processes%",
+              "wrap": true
+            },
+            {
+              "type": "TextBlock",
+              "size": "medium",
+              "text": "${cpuProc1}"
+            },
+            {
+              "type": "TextBlock",
+              "size": "medium",
+              "text": "${cpuProc2}"
+            },
+            {
+              "type": "TextBlock",
+              "size": "medium",
+              "text": "${cpuProc3}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+  "version": "1.5"
+}

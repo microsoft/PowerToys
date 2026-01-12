@@ -1,0 +1,80 @@
+{
+  "type": "AdaptiveCard",
+  "body": [
+    {
+      "type": "Container",
+      "$when": "${errorMessage != null}",
+      "items": [
+        {
+          "type": "TextBlock",
+          "text": "${errorMessage}",
+          "wrap": true,
+          "size": "small"
+        }
+      ],
+      "style": "warning"
+    },
+    {
+      "type": "Container",
+      "$when": "${errorMessage == null}",
+      "items": [
+        {
+          "type": "Container",
+          "$when": "${(count(hosts) == 0)}",
+          "items": [
+            {
+              "type": "TextBlock",
+              "text": "%SSH_Widget_Template/EmptyHosts%",
+              "wrap": true,
+              "weight": "Bolder",
+              "horizontalAlignment": "Center"
+            }
+          ],
+          "spacing": "Medium",
+          "verticalContentAlignment": "Center"
+        },
+        {
+          "$data": "${hosts}",
+          "type": "ColumnSet",
+          "style": "emphasis",
+          "selectAction": {
+            "type": "Action.Execute",
+            "verb": "Connect",
+            "data": "${host}"
+          },
+          "columns": [
+            {
+              "type": "Column",
+              "verticalContentAlignment": "Center",
+              "width": "auto",
+              "items": [
+                {
+                  "type": "Image",
+                  "url": "data:image/png;base64,${icon}",
+                  "size": "small",
+                  "horizontalAlignment": "left"
+                }
+              ]
+            },
+            {
+              "type": "Column",
+              "width": "stretch",
+              "verticalContentAlignment": "Center",
+              "items": [
+                {
+                  "type": "TextBlock",
+                  "text": "${host}",
+                  "size": "medium",
+                  "wrap": true,
+                  "horizontalAlignment": "left"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+  "version": "1.5"
+}

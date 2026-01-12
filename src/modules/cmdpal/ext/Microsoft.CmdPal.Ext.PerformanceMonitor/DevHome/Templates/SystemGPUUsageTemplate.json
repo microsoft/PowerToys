@@ -1,0 +1,121 @@
+{
+  "type": "AdaptiveCard",
+  "body": [
+    {
+      "type": "Container",
+      "$when": "${errorMessage != null}",
+      "items": [
+        {
+          "type": "TextBlock",
+          "text": "${errorMessage}",
+          "wrap": true,
+          "size": "small"
+        }
+      ],
+      "style": "warning"
+    },
+    {
+      "type": "Container",
+      "$when": "${errorMessage == null}",
+      "items": [
+        {
+          "type": "Image",
+          "url": "${gpuGraphUrl}",
+          "height": "${chartHeight}",
+          "width": "${chartWidth}",
+          "$when": "${$host.widgetSize != \"small\"}",
+          "horizontalAlignment": "center"
+        },
+        {
+          "type": "ColumnSet",
+          "columns": [
+            {
+              "type": "Column",
+              "items": [
+                {
+                  "text": "%GPUUsage_Widget_Template/GPU_Usage%",
+                  "type": "TextBlock",
+                  "size": "small",
+                  "isSubtle": true
+                },
+                {
+                  "text": "${gpuUsage}",
+                  "type": "TextBlock",
+                  "size": "large",
+                  "weight": "bolder"
+                }
+              ]
+            },
+            {
+              "type": "Column",
+              "items": [
+                {
+                  "text": "%GPUUsage_Widget_Template/GPU_Temperature%",
+                  "type": "TextBlock",
+                  "size": "small",
+                  "isSubtle": true,
+                  "horizontalAlignment": "right"
+                },
+                {
+                  "text": "${gpuTemp}",
+                  "type": "TextBlock",
+                  "size": "large",
+                  "weight": "bolder",
+                  "horizontalAlignment": "right"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "text": "%GPUUsage_Widget_Template/GPU_Name%",
+          "type": "TextBlock",
+          "size": "small",
+          "isSubtle": true
+        },
+        {
+          "text": "${gpuName}",
+          "type": "TextBlock",
+          "size": "medium"
+        },
+        {
+          "type": "ColumnSet",
+          "spacing": "Medium",
+          "columns": [
+            {
+              "type": "Column",
+              "width": "stretch"
+            },
+            {
+              "type": "Column",
+              "width": "auto",
+              "items": [
+                {
+                  "type": "Container",
+                  "items": [
+                    {
+                      "type": "ActionSet",
+                      "actions": [
+                        {
+                          "type": "Action.Execute",
+                          "title": "%GPUUsage_Widget_Template/Next_GPU%",
+                          "verb": "NextItem"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "Column",
+              "width": "stretch"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+  "version": "1.5"
+}

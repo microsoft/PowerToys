@@ -36,15 +36,18 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Assets\" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Update="Assets\RemoteDesktop.png">
+    <None Update="DevHome\Templates\SystemCPUUsageTemplate.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Update="Assets\RemoteDesktop.svg">
+    </None>
+    <None Update="DevHome\Templates\SystemGPUUsageTemplate.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
+    </None>
+    <None Update="DevHome\Templates\SystemMemoryUsageTemplate.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="DevHome\Templates\SystemNetworkUsageTemplate.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>
