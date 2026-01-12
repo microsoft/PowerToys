@@ -14,6 +14,7 @@
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <OutputPath>..\..\..\..\$(Platform)\$(Configuration)\WinUI3Apps\</OutputPath>
     <AssemblyName>PowerToys.ImageResizerCLI</AssemblyName>
+    <ApplicationIcon>..\ui\Resources\ImageResizer.ico</ApplicationIcon>
     <NoWarn>$(NoWarn);SA1500;SA1402;CA1852</NoWarn>
   </PropertyGroup>
 

@@ -127,10 +127,41 @@ namespace ImageResizer.Models
         public static CliOptions Parse(string[] args)
         {
             var options = new CliOptions();
+
+            // Pre-scan for legacy pipe name and /d arguments before System.CommandLine parsing
+            // This ensures backward compatibility with context menu invocations
+            const string pipeNamePrefix = "\\\\.\\pipe\\";
+            var filteredArgs = new List<string>();
+
+            if (args != null)
+            {
+                for (int i = 0; i < args.Length; i++)
+                {
+                    var arg = args[i];
+
+                    // Check for pipe name (legacy format from context menu)
+                    if (arg.Contains(pipeNamePrefix))
+                    {
+                        int prefixIndex = arg.IndexOf(pipeNamePrefix, StringComparison.OrdinalIgnoreCase);
+                        options.PipeName = arg.Substring(prefixIndex + pipeNamePrefix.Length);
+                        continue;
+                    }
+
+                    // Check for legacy /d option (destination directory)
+                    if (arg == "/d" && i + 1 < args.Length)
+                    {
+                        options.DestinationDirectory = args[++i];
+                        continue;
+                    }
+
+                    filteredArgs.Add(arg);
+                }
+            }
+
             var cmd = new ImageResizerRootCommand();
 
-            // Parse using System.CommandLine
-            var parseResult = new Parser(cmd).Parse(args);
+            // Parse using System.CommandLine with filtered arguments
+            var parseResult = new Parser(cmd).Parse(filteredArgs.ToArray());
 
             if (parseResult.Errors.Count > 0)
             {
@@ -146,7 +177,14 @@ namespace ImageResizer.Models
             // Extract values from parse result using strongly typed options
             options.ShowHelp = parseResult.GetValueForOption(cmd.HelpOption);
             options.ShowConfig = parseResult.GetValueForOption(cmd.ShowConfigOption);
-            options.DestinationDirectory = parseResult.GetValueForOption(cmd.DestinationOption);
+
+            // Only override DestinationDirectory if not set by legacy /d option
+            var destOption = parseResult.GetValueForOption(cmd.DestinationOption);
+            if (!string.IsNullOrEmpty(destOption))
+            {
+                options.DestinationDirectory = destOption;
+            }
+
             options.Width = parseResult.GetValueForOption(cmd.WidthOption);
             options.Height = parseResult.GetValueForOption(cmd.HeightOption);
             options.Unit = parseResult.GetValueForOption(cmd.UnitOption);
@@ -169,10 +207,9 @@ namespace ImageResizer.Models
             var files = parseResult.GetValueForArgument(cmd.FilesArgument);
             if (files != null)
             {
-                const string pipeNamePrefix = "\\\\.\\pipe\\";
                 foreach (var file in files)
                 {
-                    // Check for pipe name (must be at the start of the path)
+                    // Check for pipe name in case it wasn't caught in pre-scan
                     if (file.StartsWith(pipeNamePrefix, StringComparison.OrdinalIgnoreCase))
                     {
                         options.PipeName = file.Substring(pipeNamePrefix.Length);

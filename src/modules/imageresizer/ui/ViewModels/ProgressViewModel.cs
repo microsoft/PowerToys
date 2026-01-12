@@ -9,7 +9,9 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Input;
+using System.Windows.Threading;
 
 using ImageResizer.Helpers;
 using ImageResizer.Models;
@@ -24,6 +26,7 @@ namespace ImageResizer.ViewModels
         private readonly IMainView _mainView;
         private readonly Stopwatch _stopwatch = new Stopwatch();
         private readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
+        private readonly Dispatcher _dispatcher;
 
         private double _progress;
         private TimeSpan _timeRemaining;
@@ -37,6 +40,7 @@ namespace ImageResizer.ViewModels
             _batch = batch;
             _mainViewModel = mainViewModel;
             _mainView = mainView;
+            _dispatcher = Application.Current?.Dispatcher ?? Dispatcher.CurrentDispatcher;
 
             StartCommand = new RelayCommand(Start);
             StopCommand = new RelayCommand(Stop);
@@ -60,7 +64,7 @@ namespace ImageResizer.ViewModels
 
         public void Start()
         {
-            _ = Task.Factory.StartNew(StartExecutingWork, _cancellationTokenSource.Token, TaskCreationOptions.None, TaskScheduler.Current);
+            _ = Task.Run(StartExecutingWork);
         }
 
         private void StartExecutingWork()
@@ -69,23 +73,32 @@ namespace ImageResizer.ViewModels
             var errors = _batch.Process(
                 (completed, total) =>
                 {
-                    var progress = completed / total;
-                    Progress = progress;
-                    _mainViewModel.Progress = progress;
+                    _dispatcher.BeginInvoke(() =>
+                    {
+                        var progress = completed / total;
+                        Progress = progress;
+                        _mainViewModel.Progress = progress;
 
-                    TimeRemaining = _stopwatch.Elapsed.Multiply((total - completed) / completed);
+                        if (completed > 0)
+                        {
+                            TimeRemaining = _stopwatch.Elapsed.Multiply((total - completed) / completed);
+                        }
+                    });
                 },
                 _cancellationTokenSource.Token);
 
-            if (errors.Any())
+            _dispatcher.BeginInvoke(() =>
             {
-                _mainViewModel.Progress = 0;
-                _mainViewModel.CurrentPage = new ResultsViewModel(_mainView, errors);
-            }
-            else
-            {
-                _mainView.Close();
-            }
+                if (errors.Any())
+                {
+                    _mainViewModel.Progress = 0;
+                    _mainViewModel.CurrentPage = new ResultsViewModel(_mainView, errors);
+                }
+                else
+                {
+                    _mainView.Close();
+                }
+            });
         }
 
         public void Stop()

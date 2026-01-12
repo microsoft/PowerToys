@@ -123,9 +123,11 @@ namespace ImageResizer.Models
                         // Display the read text to the console
                         while ((file = sr.ReadLine()) != null)
                         {
-                            if (IsValidImagePath(file))
+                            // Named pipe paths are typically absolute, but ensure consistency
+                            var absolutePath = Path.IsPathRooted(file) ? file : Path.GetFullPath(file);
+                            if (IsValidImagePath(absolutePath))
                             {
-                                batch.Files.Add(file);
+                                batch.Files.Add(absolutePath);
                             }
                         }
                     }
