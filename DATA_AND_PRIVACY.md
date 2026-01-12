@@ -413,17 +413,24 @@ _If you want to find diagnostic data events in the source code, these two links 
     <td>Triggered when the cropping interface is activated for reparenting the cropped content.</td>
   </tr>
   <tr>
+    <td>Microsoft.PowerToys.CropAndLock_ActivateScreenshot</td>
+    <td>Triggered when the screenshot mode is activated in Crop and Lock.</td>
+  </tr>
+  <tr>
     <td>Microsoft.PowerToys.CropAndLock_ActivateThumbnail</td>
     <td>Occurs when the thumbnail view for cropped content is activated.</td>
   </tr>
   <tr>
-    <td>Microsoft.PowerToys.CropAndLock_CreateThumbnailWindow</td>
-    <td>Triggered when a thumbnail window is created in Crop and Lock mode.</td>
+    <td>Microsoft.PowerToys.CropAndLock_CreateReparentWindow</td>
+    <td>Triggered when a reparent window is created in Crop and Lock mode.</td>
   </tr>
   <tr>
     <td>Microsoft.PowerToys.CropAndLock_CreateScreenshotWindow</td>
-    <td>Triggered when a screenshot window is created in Crop and Lock mode.
-    </td>
+    <td>Triggered when a screenshot window is created in Crop and Lock mode.</td>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.CropAndLock_CreateThumbnailWindow</td>
+    <td>Triggered when a thumbnail window is created in Crop and Lock mode.<-/td>
   </tr>
   <tr>
     <td>Microsoft.PowerToys.CropAndLock_EnableCropAndLock</td>
@@ -506,6 +513,10 @@ _If you want to find diagnostic data events in the source code, these two links 
     <td>Occurs when FancyZones is enabled.</td>
   </tr>
   <tr>
+    <td>Microsoft.PowerToys.FancyZones_Error</td>
+    <td>Triggered when an error occurs within the FancyZones module. This event logs critical errors to help diagnose and troubleshoot issues with FancyZones functionality, such as failures to set up Windows hooks or other system-level operations required for window management.</td>
+  </tr>
+  <tr>
     <td>Microsoft.PowerToys.FancyZones_KeyboardSnapWindowToZone</td>
     <td>Triggered when a window is snapped to a zone using the keyboard.</td>
   </tr>
@@ -556,6 +567,14 @@ _If you want to find diagnostic data events in the source code, these two links 
   <tr>
     <td>Microsoft.PowerToys.FancyZones_CLICommand</td>
     <td>Triggered when a FancyZones CLI command is executed, logging the command name and success status.</td>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.FancyZonesEditorStartEvent</td>
+    <td>Triggered when the FancyZones Editor application starts. This logs the initialization of the editor UI, which is used to create and configure custom zone layouts.</td>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.FancyZonesEditorStartFinishEvent</td>
+    <td>Triggered when the FancyZones Editor has completed loading and is ready for user interaction.</td>
   </tr>
 </table>
 
@@ -630,12 +649,20 @@ _If you want to find diagnostic data events in the source code, these two links 
     <td>Triggered when a Markdown file is previewed in File Explorer.</td>
   </tr>
   <tr>
+    <td>Microsoft.PowerToys.MarkdownFilePreviewError</td>
+    <td>Triggered when there is an error previewing a Markdown file in File Explorer.</td>
+  </tr>
+  <tr>
     <td>Microsoft.PowerToys.PdfFileHandlerLoaded</td>
     <td>Occurs when a PDF file handler is loaded.</td>
   </tr>
   <tr>
     <td>Microsoft.PowerToys.PdfFilePreviewed</td>
     <td>Triggered when a PDF file is previewed in File Explorer.</td>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.PdfFilePreviewError</td>
+    <td>Triggered when there is an error previewing a PDF file in File Explorer.</td>
   </tr>
   <tr>
     <td>Microsoft.PowerToys.PowerPreview_Enabled</td>
@@ -654,12 +681,20 @@ _If you want to find diagnostic data events in the source code, these two links 
     <td>Triggered when there is an error loading a file during Tweak UI settings initialization.</td>
   </tr>
   <tr>
+    <td>Microsoft.PowerToys.PowerPreview_TweakUISettings_SetConfig__InvalidJSONGiven</td>
+    <td>Triggered when invalid JSON is provided to the Power Preview settings configuration</td>
+  </tr>
+  <tr>
     <td>Microsoft.PowerToys.PowerPreview_TweakUISettings_SuccessfullyUpdatedSettings</td>
     <td>Occurs when the Tweak UI settings for Power Preview are successfully updated.</td>
   </tr>
   <tr>
     <td>Microsoft.PowerToys.QoiFilePreviewed</td>
     <td>Triggered when a QOI file is previewed in File Explorer.</td>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.QoiFilePreviewError</td>
+    <td>Triggered when there is an error previewing a QOI (Quite OK Image) file in File Explorer.</td>
   </tr>
   <tr>
     <td>Microsoft.PowerToys.SvgFileHandlerLoaded</td>
