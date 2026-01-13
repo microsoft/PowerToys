@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="..\..\..\..\packages\Microsoft.UI.Xaml.2.8.2-prerelease.220830001\build\native\Microsoft.UI.Xaml.props" Condition="Exists('..\..\..\..\packages\Microsoft.UI.Xaml.2.8.2-prerelease.220830001\build\native\Microsoft.UI.Xaml.props')" />
-  <Import Project="..\..\..\..\packages\Microsoft.Toolkit.Win32.UI.XamlApplication.6.1.3\build\native\Microsoft.Toolkit.Win32.UI.XamlApplication.props" Condition="Exists('..\..\..\..\packages\Microsoft.Toolkit.Win32.UI.XamlApplication.6.1.3\build\native\Microsoft.Toolkit.Win32.UI.XamlApplication.props')" />
-  <Import Project="..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.props')" />
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <Import Project="$(RepoRoot)packages\Microsoft.UI.Xaml.2.8.2-prerelease.220830001\build\native\Microsoft.UI.Xaml.props" Condition="Exists('$(RepoRoot)packages\Microsoft.UI.Xaml.2.8.2-prerelease.220830001\build\native\Microsoft.UI.Xaml.props')" />
+  <Import Project="$(RepoRoot)packages\Microsoft.Toolkit.Win32.UI.XamlApplication.6.1.3\build\native\Microsoft.Toolkit.Win32.UI.XamlApplication.props" Condition="Exists('$(RepoRoot)packages\Microsoft.Toolkit.Win32.UI.XamlApplication.6.1.3\build\native\Microsoft.Toolkit.Win32.UI.XamlApplication.props')" />
+  <Import Project="$(RepoRoot)packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('$(RepoRoot)packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.props')" />
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
     <ProjectGuid>{23d2070d-e4ad-4add-85a7-083d9c76ad49}</ProjectGuid>
     <RootNamespace>KeyboardManagerEditorLibrary</RootNamespace>
   </PropertyGroup>
-  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <OutDir>$(RepoRoot)$(Platform)\$(Configuration)\</OutDir>
@@ -98,23 +98,23 @@
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
-    <Import Project="..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.targets')" />
-    <Import Project="..\..\..\..\packages\Microsoft.Toolkit.Win32.UI.XamlApplication.6.1.3\build\native\Microsoft.Toolkit.Win32.UI.XamlApplication.targets" Condition="Exists('..\..\..\..\packages\Microsoft.Toolkit.Win32.UI.XamlApplication.6.1.3\build\native\Microsoft.Toolkit.Win32.UI.XamlApplication.targets')" />
-    <Import Project="..\..\..\..\packages\Microsoft.UI.Xaml.2.8.2-prerelease.220830001\build\native\Microsoft.UI.Xaml.targets" Condition="Exists('..\..\..\..\packages\Microsoft.UI.Xaml.2.8.2-prerelease.220830001\build\native\Microsoft.UI.Xaml.targets')" />
-    <Import Project="..\..\..\..\packages\Microsoft.Web.WebView2.1.0.2903.40\build\native\Microsoft.Web.WebView2.targets" Condition="Exists('..\..\..\..\packages\Microsoft.Web.WebView2.1.0.2903.40\build\native\Microsoft.Web.WebView2.targets')" />
+    <Import Project="$(RepoRoot)packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('$(RepoRoot)packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.targets')" />
+    <Import Project="$(RepoRoot)packages\Microsoft.Toolkit.Win32.UI.XamlApplication.6.1.3\build\native\Microsoft.Toolkit.Win32.UI.XamlApplication.targets" Condition="Exists('$(RepoRoot)packages\Microsoft.Toolkit.Win32.UI.XamlApplication.6.1.3\build\native\Microsoft.Toolkit.Win32.UI.XamlApplication.targets')" />
+    <Import Project="$(RepoRoot)packages\Microsoft.UI.Xaml.2.8.2-prerelease.220830001\build\native\Microsoft.UI.Xaml.targets" Condition="Exists('$(RepoRoot)packages\Microsoft.UI.Xaml.2.8.2-prerelease.220830001\build\native\Microsoft.UI.Xaml.targets')" />
+    <Import Project="$(RepoRoot)packages\Microsoft.Web.WebView2.1.0.2903.40\build\native\Microsoft.Web.WebView2.targets" Condition="Exists('$(RepoRoot)packages\Microsoft.Web.WebView2.1.0.2903.40\build\native\Microsoft.Web.WebView2.targets')" />
   </ImportGroup>
   <Import Project="$(RepoRoot)deps\spdlog.props" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.props'))" />
-    <Error Condition="!Exists('..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.targets'))" />
-    <Error Condition="!Exists('..\..\..\..\packages\Microsoft.Toolkit.Win32.UI.XamlApplication.6.1.3\build\native\Microsoft.Toolkit.Win32.UI.XamlApplication.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\packages\Microsoft.Toolkit.Win32.UI.XamlApplication.6.1.3\build\native\Microsoft.Toolkit.Win32.UI.XamlApplication.props'))" />
-    <Error Condition="!Exists('..\..\..\..\packages\Microsoft.Toolkit.Win32.UI.XamlApplication.6.1.3\build\native\Microsoft.Toolkit.Win32.UI.XamlApplication.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\packages\Microsoft.Toolkit.Win32.UI.XamlApplication.6.1.3\build\native\Microsoft.Toolkit.Win32.UI.XamlApplication.targets'))" />
-    <Error Condition="!Exists('..\..\..\..\packages\Microsoft.UI.Xaml.2.8.2-prerelease.220830001\build\native\Microsoft.UI.Xaml.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\packages\Microsoft.UI.Xaml.2.8.2-prerelease.220830001\build\native\Microsoft.UI.Xaml.props'))" />
-    <Error Condition="!Exists('..\..\..\..\packages\Microsoft.UI.Xaml.2.8.2-prerelease.220830001\build\native\Microsoft.UI.Xaml.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\packages\Microsoft.UI.Xaml.2.8.2-prerelease.220830001\build\native\Microsoft.UI.Xaml.targets'))" />
-    <Error Condition="!Exists('..\..\..\..\packages\Microsoft.Web.WebView2.1.0.2903.40\build\native\Microsoft.Web.WebView2.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\packages\Microsoft.Web.WebView2.1.0.2903.40\build\native\Microsoft.Web.WebView2.targets'))" />
+    <Error Condition="!Exists('$(RepoRoot)packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.props')" Text="$([System.String]::Format('$(ErrorText)', '$(RepoRoot)packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.props'))" />
+    <Error Condition="!Exists('$(RepoRoot)packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(RepoRoot)packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.targets'))" />
+    <Error Condition="!Exists('$(RepoRoot)packages\Microsoft.Toolkit.Win32.UI.XamlApplication.6.1.3\build\native\Microsoft.Toolkit.Win32.UI.XamlApplication.props')" Text="$([System.String]::Format('$(ErrorText)', '$(RepoRoot)packages\Microsoft.Toolkit.Win32.UI.XamlApplication.6.1.3\build\native\Microsoft.Toolkit.Win32.UI.XamlApplication.props'))" />
+    <Error Condition="!Exists('$(RepoRoot)packages\Microsoft.Toolkit.Win32.UI.XamlApplication.6.1.3\build\native\Microsoft.Toolkit.Win32.UI.XamlApplication.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(RepoRoot)packages\Microsoft.Toolkit.Win32.UI.XamlApplication.6.1.3\build\native\Microsoft.Toolkit.Win32.UI.XamlApplication.targets'))" />
+    <Error Condition="!Exists('$(RepoRoot)packages\Microsoft.UI.Xaml.2.8.2-prerelease.220830001\build\native\Microsoft.UI.Xaml.props')" Text="$([System.String]::Format('$(ErrorText)', '$(RepoRoot)packages\Microsoft.UI.Xaml.2.8.2-prerelease.220830001\build\native\Microsoft.UI.Xaml.props'))" />
+    <Error Condition="!Exists('$(RepoRoot)packages\Microsoft.UI.Xaml.2.8.2-prerelease.220830001\build\native\Microsoft.UI.Xaml.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(RepoRoot)packages\Microsoft.UI.Xaml.2.8.2-prerelease.220830001\build\native\Microsoft.UI.Xaml.targets'))" />
+    <Error Condition="!Exists('$(RepoRoot)packages\Microsoft.Web.WebView2.1.0.2903.40\build\native\Microsoft.Web.WebView2.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(RepoRoot)packages\Microsoft.Web.WebView2.1.0.2903.40\build\native\Microsoft.Web.WebView2.targets'))" />
   </Target>
   <Target Name="GenerateResourceFiles" BeforeTargets="PrepareForBuild">
     <Exec Command="powershell -NonInteractive -executionpolicy Unrestricted $(RepoRoot)tools\build\convert-resx-to-rc.ps1 $(MSBuildThisFileDirectory)\..\KeyboardManagerEditor\ resource.base.h resource.h KeyboardManagerEditor.base.rc KeyboardManagerEditor.rc" />
