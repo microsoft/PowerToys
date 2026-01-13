@@ -186,7 +186,8 @@ internal abstract partial class WidgetPage : OnLoadContentPage
             var path = Path.Combine(Package.Current.EffectivePath, GetTemplatePath(page));
             var template = File.ReadAllText(path, Encoding.Default) ?? throw new FileNotFoundException(path);
 
-            // template = Resources.ReplaceIdentifers(template, Resources.GetWidgetResourceIdentifiers(), Log);
+            // template = Resources.ReplaceIdentifers(template, Resources.GetWidgetResourceIdentifiers(), CoreLogger.Instance);
+            template = Resources.ReplaceIdentifersFast(template, CoreLogger.Instance);
             CoreLogger.LogDebug($"Caching template for {page}");
             Template[page] = template;
             return template;
