@@ -32,7 +32,7 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
 {
     public override string Id => "com.microsoft.cmdpal.performanceWidget";
 
-    public override string Title => "Performance monitor";
+    public override string Title => Resources.GetResource("Performance_Monitor_Title");
 
     public override IconInfo Icon => Icons.StackedAreaIcon;
 
@@ -102,6 +102,15 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
         {
             _gpuItem.Title = _gpuPage.GetItemTitle(isBandPage);
         };
+
+        if (_isBandPage)
+        {
+            // add subtitles to them all
+            _cpuItem.Subtitle = Resources.GetResource("CPU_Usage_Subtitle");
+            _memoryItem.Subtitle = Resources.GetResource("Memory_Usage_Subtitle");
+            _networkItem.Subtitle = Resources.GetResource("Network_Usage_Subtitle");
+            _gpuItem.Subtitle = Resources.GetResource("GPU_Usage_Subtitle");
+        }
     }
 
     protected override void Loaded()
@@ -249,13 +258,16 @@ internal abstract partial class WidgetPage : OnLoadContentPage
     {
         PopActivate();
     }
+
+    internal static string FloatToPercentString(float value)
+    {
+        return ((int)(value * 100)).ToString(CultureInfo.InvariantCulture) + "%";
+    }
 }
 
 internal sealed partial class SystemCPUUsageWidgetPage : WidgetPage, IDisposable
 {
-    public override string Id => "com.microsoft.cmdpal.systemcpuusagewidget";
-
-    public override string Title => "CPU Usage";
+    public override string Title => Resources.GetResource("CPU_Usage_Title");
 
     public override IconInfo Icon => Icons.CpuIcon;
 
@@ -320,22 +332,17 @@ internal sealed partial class SystemCPUUsageWidgetPage : WidgetPage, IDisposable
     {
         if (ContentData.TryGetValue("cpuUsage", out var usage))
         {
-            return isBandPage ? usage : $"CPU Usage: {usage}";
+            return isBandPage ? usage : string.Format(CultureInfo.CurrentCulture, Resources.GetResource("CPU_Usage_Label"), usage);
         }
         else
         {
-            return isBandPage ? "???" : "CPU Usage: ???";
+            return isBandPage ? Resources.GetResource("CPU_Usage_Unknown") : Resources.GetResource("CPU_Usage_Unknown_Label");
         }
     }
 
     private string SpeedToString(float cpuSpeed)
     {
         return string.Format(CultureInfo.InvariantCulture, "{0:0.00} GHz", cpuSpeed / 1000);
-    }
-
-    private string FloatToPercentString(float value)
-    {
-        return ((int)(value * 100)).ToString(CultureInfo.InvariantCulture) + "%";
     }
 
     internal override void PushActivate()
@@ -366,7 +373,7 @@ internal sealed partial class SystemMemoryUsageWidgetPage : WidgetPage, IDisposa
 {
     public override string Id => "com.microsoft.cmdpal.systemmemoryusagewidget";
 
-    public override string Title => "Memory Usage";
+    public override string Title => Resources.GetResource("Memory_Usage_Title");
 
     public override IconInfo Icon => Icons.MemoryIcon;
 
@@ -428,17 +435,12 @@ internal sealed partial class SystemMemoryUsageWidgetPage : WidgetPage, IDisposa
     {
         if (ContentData.TryGetValue("memUsage", out var usage))
         {
-            return isBandPage ? usage : $"Memory Usage: {usage}";
+            return isBandPage ? usage : string.Format(CultureInfo.CurrentCulture, Resources.GetResource("Memory_Usage_Label"), usage);
         }
         else
         {
-            return isBandPage ? "???" : "Memory Usage: ???";
+            return isBandPage ? Resources.GetResource("Memory_Usage_Unknown") : Resources.GetResource("Memory_Usage_Unknown_Label");
         }
-    }
-
-    private string FloatToPercentString(float value)
-    {
-        return ((int)(value * 100)).ToString(CultureInfo.InvariantCulture) + "%";
     }
 
     private string MemUlongToString(ulong memBytes)
@@ -492,7 +494,7 @@ internal sealed partial class SystemNetworkUsageWidgetPage : WidgetPage, IDispos
 {
     public override string Id => "com.microsoft.cmdpal.systemnetworkusagewidget";
 
-    public override string Title => "Network Usage";
+    public override string Title => Resources.GetResource("Network_Usage_Title");
 
     public override IconInfo Icon => Icons.NetworkIcon;
 
@@ -554,11 +556,11 @@ internal sealed partial class SystemNetworkUsageWidgetPage : WidgetPage, IDispos
     {
         if (ContentData.TryGetValue("networkName", out var name) && ContentData.TryGetValue("networkUsage", out var usage))
         {
-            return isBandPage ? usage : $"Network ({name}): {usage}";
+            return isBandPage ? usage : string.Format(CultureInfo.CurrentCulture, Resources.GetResource("Network_Usage_Label"), name, usage);
         }
         else
         {
-            return isBandPage ? "???" : "Network Usage: ???";
+            return isBandPage ? Resources.GetResource("Network_Usage_Unknown") : Resources.GetResource("Network_Usage_Unknown_Label");
         }
     }
 
@@ -585,11 +587,6 @@ internal sealed partial class SystemNetworkUsageWidgetPage : WidgetPage, IDispos
         {
             return "???";
         }
-    }
-
-    private string FloatToPercentString(float value)
-    {
-        return ((int)(value * 100)).ToString(CultureInfo.InvariantCulture) + "%";
     }
 
     private string BytesToBitsPerSecString(float value)
@@ -649,7 +646,7 @@ internal sealed partial class SystemGPUUsageWidgetPage : WidgetPage, IDisposable
 {
     public override string Id => "com.microsoft.cmdpal.systemgpuusagewidget";
 
-    public override string Title => "GPU Usage";
+    public override string Title => Resources.GetResource("GPU_Usage_Title");
 
     public override IconInfo Icon => Icons.GpuIcon;
 
@@ -710,17 +707,12 @@ internal sealed partial class SystemGPUUsageWidgetPage : WidgetPage, IDisposable
     {
         if (ContentData.TryGetValue("gpuName", out var name) && ContentData.TryGetValue("gpuUsage", out var usage))
         {
-            return isBandPage ? usage : $"GPU ({name}): {usage}";
+            return isBandPage ? usage : string.Format(CultureInfo.CurrentCulture, Resources.GetResource("GPU_Usage_Label"), name, usage);
         }
         else
         {
-            return isBandPage ? "???" : "GPU Usage: ???";
+            return isBandPage ? Resources.GetResource("GPU_Usage_Unknown") : Resources.GetResource("GPU_Usage_Unknown_Label");
         }
-    }
-
-    private string FloatToPercentString(float value)
-    {
-        return ((int)(value * 100)).ToString(CultureInfo.InvariantCulture) + "%";
     }
 
     internal override void PushActivate()
