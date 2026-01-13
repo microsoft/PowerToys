@@ -156,7 +156,19 @@ public sealed partial class MainWindow : WindowEx, IDisposable
             {
                 // Navigate back to LaunchPage before memory trim to release AppsListPage resources
                 ShellHost.NavigateToLaunchIfNeeded();
-                TrimMemory();
+
+                // Give UI time to complete cleanup before forcing GC
+                Task.Delay(500, token).ContinueWith(
+                    __ =>
+                {
+                    if (!token.IsCancellationRequested)
+                    {
+                        _dispatcherQueue.TryEnqueue(TrimMemory);
+                    }
+                },
+                    token,
+                    TaskContinuationOptions.None,
+                    TaskScheduler.Default);
             });
         },
             token,
