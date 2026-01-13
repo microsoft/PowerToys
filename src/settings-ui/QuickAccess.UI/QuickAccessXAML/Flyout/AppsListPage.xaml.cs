@@ -15,6 +15,7 @@ namespace Microsoft.PowerToys.QuickAccess.Flyout;
 public sealed partial class AppsListPage : Page
 {
     private FlyoutNavigationContext? _context;
+    private bool _isCleanedUp = false;
 
     public AppsListPage()
     {
@@ -51,6 +52,13 @@ public sealed partial class AppsListPage : Page
 
     private void CleanupPage()
     {
+        if (_isCleanedUp)
+        {
+            return;
+        }
+
+        _isCleanedUp = true;
+
         // Clear the collection before cleaning up to release all item references
         if (ViewModel != null)
         {
