@@ -4,6 +4,7 @@
 
 using AdaptiveCards.ObjectModel.WinUI3;
 using AdaptiveCards.Rendering.WinUI3;
+using Microsoft.CmdPal.Core.Common;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -94,13 +95,16 @@ public sealed partial class ContentFormControl : UserControl
     private void DisplayCard(AdaptiveCardParseResult result)
     {
         _renderedCard = _renderer.RenderAdaptiveCard(result.AdaptiveCard);
-        ContentGrid.Children.Clear();
+
+        // ContentGrid.Children.Clear();
         if (_renderedCard.FrameworkElement is not null)
         {
-            ContentGrid.Children.Add(_renderedCard.FrameworkElement);
-
             // Use the Loaded event to ensure we focus after the card is in the visual tree
             _renderedCard.FrameworkElement.Loaded += OnFrameworkElementLoaded;
+
+            ContentGrid.Children.Add(_renderedCard.FrameworkElement);
+
+            // _renderedCard.FrameworkElement.Visibility = Visibility.Collapsed;
         }
 
         _renderedCard.Action += Rendered_Action;
@@ -111,7 +115,23 @@ public sealed partial class ContentFormControl : UserControl
         // Unhook the event handler to avoid multiple registrations
         if (sender is FrameworkElement element)
         {
+            // element.Visibility = Visibility.Visible;
             element.Loaded -= OnFrameworkElementLoaded;
+
+            List<UIElement> others = new();
+            foreach (var elem in ContentGrid.Children)
+            {
+                if (elem != _renderedCard?.FrameworkElement)
+                {
+                    others.Add(elem);
+                }
+            }
+
+            CoreLogger.LogDebug($"Removing {others.Count} other items from the {ContentGrid.Children.Count} items in the grid");
+            foreach (var other in others)
+            {
+                ContentGrid.Children.Remove(other);
+            }
 
             if (!ViewModel?.OnlyControlOnPage ?? true)
             {
