@@ -15,7 +15,6 @@ using Microsoft.CmdPal.Ext.Apps.State;
 using Microsoft.CmdPal.UI.ViewModels.Commands;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Properties;
-using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.UI.ViewModels.MainPage;
@@ -546,7 +545,7 @@ public partial class MainListPage : DynamicListPage,
         // e.g. "git" will up-weight "GitHub searches" from the GitHub extension
         // above "git" from "whatever"
         max = max + extensionTitleMatch;
-        
+
         // Apply a penalty to fallback items so they rank below direct matches.
         // Fallbacks that dynamically match queries (like RDP connections) should
         // appear after apps and direct command matches.
