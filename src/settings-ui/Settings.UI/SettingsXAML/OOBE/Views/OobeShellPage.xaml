@@ -22,6 +22,7 @@
             <!--  This is a workaround for https://github.com/microsoft/microsoft-ui-xaml/issues/10374, once fixed we should just be using IconSource  -->
             <TitleBar.LeftHeader>
                 <ImageIcon
+                    x:Name="TitleBarIcon"
                     Height="16"
                     Margin="16,0,0,0"
                     Source="/Assets/Settings/icon.ico" />
