@@ -144,7 +144,7 @@ public sealed partial class MainWindow : WindowEx, IDisposable
         var token = _trimCts.Token;
 
         // Delay the trim to avoid aggressive GC during quick toggles
-        Task.Delay(2000, token).ContinueWith(
+        Task.Delay(5000, token).ContinueWith(
             _ =>
         {
             if (token.IsCancellationRequested)
@@ -152,7 +152,12 @@ public sealed partial class MainWindow : WindowEx, IDisposable
                 return;
             }
 
-            TrimMemory();
+            _dispatcherQueue.TryEnqueue(() =>
+            {
+                // Navigate back to LaunchPage before memory trim to release AppsListPage resources
+                ShellHost.NavigateToLaunchIfNeeded();
+                TrimMemory();
+            });
         },
             token,
             TaskContinuationOptions.None,

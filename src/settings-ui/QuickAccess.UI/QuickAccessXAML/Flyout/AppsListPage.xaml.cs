@@ -19,6 +19,8 @@ public sealed partial class AppsListPage : Page
     public AppsListPage()
     {
         InitializeComponent();
+        NavigationCacheMode = NavigationCacheMode.Disabled;
+        Unloaded += OnUnloaded;
     }
 
     public AllAppsViewModel ViewModel { get; private set; } = default!;
@@ -34,6 +36,30 @@ public sealed partial class AppsListPage : Page
             DataContext = ViewModel;
             ViewModel.RefreshSettings();
         }
+    }
+
+    protected override void OnNavigatingFrom(NavigatingCancelEventArgs e)
+    {
+        base.OnNavigatingFrom(e);
+        CleanupPage();
+    }
+
+    private void OnUnloaded(object sender, RoutedEventArgs e)
+    {
+        CleanupPage();
+    }
+
+    private void CleanupPage()
+    {
+        // Clear the collection before cleaning up to release all item references
+        if (ViewModel != null)
+        {
+            ViewModel.FlyoutMenuItems.Clear();
+        }
+
+        DataContext = null;
+        ViewModel = null!;
+        _context = null;
     }
 
     private void BackButton_Click(object sender, RoutedEventArgs e)

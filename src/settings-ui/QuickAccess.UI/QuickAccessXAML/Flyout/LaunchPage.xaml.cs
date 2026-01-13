@@ -27,6 +27,7 @@ public sealed partial class LaunchPage : Page
     public LaunchPage()
     {
         InitializeComponent();
+        NavigationCacheMode = NavigationCacheMode.Disabled;
     }
 
     public LauncherViewModel ViewModel { get; private set; } = default!;
@@ -42,6 +43,12 @@ public sealed partial class LaunchPage : Page
             _coordinator = context.Coordinator;
             DataContext = ViewModel;
         }
+    }
+
+    protected override void OnNavigatingFrom(NavigatingCancelEventArgs e)
+    {
+        base.OnNavigatingFrom(e);
+        DataContext = null;
     }
 
     private void SettingsBtn_Click(object sender, RoutedEventArgs e)

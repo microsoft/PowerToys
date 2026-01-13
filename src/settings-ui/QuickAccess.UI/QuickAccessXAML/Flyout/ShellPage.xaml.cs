@@ -65,4 +65,16 @@ public sealed partial class ShellPage : Page
             appsListPage.ViewModel?.RefreshSettings();
         }
     }
+
+    internal void NavigateToLaunchIfNeeded()
+    {
+        // Always clear FlyoutMenuItems to release memory
+        _allAppsViewModel?.FlyoutMenuItems.Clear();
+
+        // Navigate back to LaunchPage if on AppsListPage
+        if (ContentFrame.Content is AppsListPage)
+        {
+            NavigateToLaunch();
+        }
+    }
 }
