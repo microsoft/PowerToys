@@ -5,7 +5,6 @@
 using System;
 using System.Globalization;
 using System.Text;
-using Microsoft.CmdPal.Core.Common.Helpers;
 using Microsoft.CmdPal.Ext.TimeDate.Helpers;
 using Microsoft.CmdPal.Ext.TimeDate.Pages;
 using Microsoft.CommandPalette.Extensions;
@@ -21,7 +20,7 @@ public sealed partial class TimeDateCommandsProvider : CommandProvider
     private static readonly TimeDateExtensionPage _timeDateExtensionPage = new(_settingsManager);
     private readonly FallbackTimeDateItem _fallbackTimeDateItem = new(_settingsManager);
 
-    private readonly CommandItem _bandItem;
+    private readonly ListItem _bandItem;
 
     public TimeDateCommandsProvider()
     {
@@ -56,7 +55,7 @@ public sealed partial class TimeDateCommandsProvider : CommandProvider
     public override ICommandItem[] GetDockBands()
     {
         var wrappedBand = new WrappedDockItem(
-            _bandItem,
+            [_bandItem],
             "com.microsoft.cmdpal.timedate.dockband",
             Resources.Microsoft_plugin_timedate_dock_band_title);
 
@@ -65,7 +64,7 @@ public sealed partial class TimeDateCommandsProvider : CommandProvider
 }
 #pragma warning disable SA1402 // File may only contain a single type
 
-internal sealed partial class NowDockBand : CommandItem
+internal sealed partial class NowDockBand : ListItem
 {
     private CopyTextCommand _copyTimeCommand;
     private CopyTextCommand _copyDateCommand;

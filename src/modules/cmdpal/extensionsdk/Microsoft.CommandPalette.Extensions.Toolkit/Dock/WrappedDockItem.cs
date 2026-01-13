@@ -6,6 +6,17 @@ namespace Microsoft.CommandPalette.Extensions.Toolkit;
 
 #pragma warning disable SA1402 // File may only contain a single type
 
+/// <summary>
+/// Helper class for creating a band out of a set of items. This allows you to
+/// simply just instantiate a set of buttons as ListItems, then pass them in to
+/// this class to create a band from those items. For example:
+///
+/// ```cs
+/// var foo = new MyFooListItem();
+/// var bar = new MyBarListItem();
+/// var band = new WrappedDockItem([foo, bar], "com.me.myBand", "My cool desk band");
+/// ```
+/// </summary>
 public partial class WrappedDockItem : CommandItem
 {
     public override string Title => _itemTitle;
@@ -29,16 +40,22 @@ public partial class WrappedDockItem : CommandItem
         _icon = command.Icon;
     }
 
-    public WrappedDockItem(
-        ICommandItem item,
-        string id,
-        string displayTitle)
-    {
-        _backingList = new WrappedDockList(item, id);
-        _itemTitle = string.IsNullOrEmpty(displayTitle) ? item.Title : displayTitle;
-        _icon = item.Icon;
-    }
+    // This was too much of a footgun - we'd internally create a ListItem that
+    // didn't bubble the prop change events back up. That was bad.
+    // public WrappedDockItem(
+    //    ICommandItem item,
+    //    string id,
+    //    string displayTitle)
+    // {
+    //    _backingList = new WrappedDockList(item, id);
+    //    _itemTitle = string.IsNullOrEmpty(displayTitle) ? item.Title : displayTitle;
+    //    _icon = item.Icon;
+    // }
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="WrappedDockItem"/> class.
+    /// Create a new dock band for a set of list items
+    /// </summary>
     public WrappedDockItem(IListItem[] items, string id, string displayTitle)
     {
         _backingList = new WrappedDockList(items, id, displayTitle);
@@ -46,16 +63,19 @@ public partial class WrappedDockItem : CommandItem
     }
 }
 
-public partial class WrappedDockList : ListPage
+/// <summary>
+/// Helper class for a list page that just holds a set of items as a band.
+/// The page itself doesn't do anything interesting.
+/// </summary>
+internal partial class WrappedDockList : ListPage
 {
     private string _id;
 
     public override string Id => _id;
 
-    // private ICommand _command;
     private List<IListItem> _items;
 
-    public WrappedDockList(ICommand command)
+    internal WrappedDockList(ICommand command)
     {
         // _command = command;
         _items = new() { new ListItem(command) };
@@ -63,34 +83,38 @@ public partial class WrappedDockList : ListPage
         _id = command.Id;
     }
 
-    public WrappedDockList(ICommandItem item, string id)
-    {
-        var command = item.Command;
+    // Maybe revisit sometime.
+    // The hard problem is that  the wrapping item will not
+    // listen for property changes on the inner item.
+    // public WrappedDockList(ICommandItem item, string id)
+    // {
+    //    var command = item.Command;
+    //    _items = new()
+    //    {
+    //        new ListItem(command)
+    //        {
+    //            Title = item.Title,
+    //            Subtitle = item.Subtitle,
+    //            Icon = item.Icon,
+    //            MoreCommands = item.MoreCommands,
+    //        },
+    //    };
+    //    Name = command.Name;
+    //    _id = string.IsNullOrEmpty(id) ? command.Id : id;
+    // }
 
-        // TODO! This isn't _totally correct, because the wrapping item will not
-        // listen for property changes on the inner item.
-        _items = new()
-        {
-            new ListItem(command)
-            {
-                Title = item.Title,
-                Subtitle = item.Subtitle,
-                Icon = item.Icon,
-                MoreCommands = item.MoreCommands,
-            },
-        };
-        Name = command.Name;
-        _id = string.IsNullOrEmpty(id) ? command.Id : id;
-    }
-
-    public WrappedDockList(IListItem[] items, string id, string name)
+    /// <summary>
+    /// Initializes a new instance of the <see cref="WrappedDockList"/> class.
+    /// Create a new list page for the set of items provided.
+    /// </summary>
+    internal WrappedDockList(IListItem[] items, string id, string name)
     {
         _items = new(items);
         Name = name;
         _id = id;
     }
 
-    public WrappedDockList(ICommand[] items, string id, string name)
+    internal WrappedDockList(ICommand[] items, string id, string name)
     {
         _items = new();
         foreach (var item in items)
