@@ -319,7 +319,7 @@ namespace Peek.UI
         }
 
         /// <summary>
-        /// Returns Visibility.Visible if error is not showing, otherwise Collapsed.
+        /// Returns Visibility.Collapsed when error is showing, Visibility.Visible when not.
         /// </summary>
         public Visibility ContentVisibility(bool isErrorVisible)
         {
