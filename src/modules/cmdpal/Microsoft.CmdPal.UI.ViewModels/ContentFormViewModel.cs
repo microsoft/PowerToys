@@ -110,10 +110,9 @@ public partial class ContentFormViewModel(IFormContent _form, WeakReference<IPag
         {
             FetchProperty(args.PropertyName);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            // TODO!
-            // ShowException(ex, _commandItemModel?.Unsafe?.Title);
+            ShowException(ex);
         }
     }
 
