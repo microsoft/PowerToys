@@ -50,47 +50,57 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
     private readonly SystemGPUUsageWidgetPage _gpuPage = new();
     private readonly ListItem _gpuItem;
 
+    // For bands, we want two bands, one for up and one for down
+    private ListItem? _networkUpItem;
+    private ListItem? _networkDownItem;
+    private string _networkUpSpeed = string.Empty;
+    private string _networkDownSpeed = string.Empty;
+
     public PerformanceWidgetsPage(bool isBandPage = false)
     {
         _isBandPage = isBandPage;
         _cpuItem = new ListItem(_cpuPage)
         {
-            Title = _cpuPage.GetItemTitle(),
+            Title = _cpuPage.GetItemTitle(isBandPage),
         };
 
         _cpuPage.Updated += (s, e) =>
         {
-            _cpuItem.Title = _cpuPage.GetItemTitle();
+            _cpuItem.Title = _cpuPage.GetItemTitle(isBandPage);
         };
 
         _memoryItem = new ListItem(_memoryPage)
         {
-            Title = _memoryPage.GetItemTitle(),
+            Title = _memoryPage.GetItemTitle(isBandPage),
         };
 
         _memoryPage.Updated += (s, e) =>
         {
-            _memoryItem.Title = _memoryPage.GetItemTitle();
+            _memoryItem.Title = _memoryPage.GetItemTitle(isBandPage);
         };
 
         _networkItem = new ListItem(_networkPage)
         {
-            Title = _networkPage.GetItemTitle(),
+            Title = _networkPage.GetItemTitle(isBandPage),
         };
 
         _networkPage.Updated += (s, e) =>
         {
-            _networkItem.Title = _networkPage.GetItemTitle();
+            _networkItem.Title = _networkPage.GetItemTitle(isBandPage);
+            _networkUpSpeed = _networkPage.GetUpSpeed();
+            _networkDownSpeed = _networkPage.GetDownSpeed();
+            _networkDownItem?.Title = $"{_networkDownSpeed} ↓";
+            _networkUpItem?.Title = $"{_networkUpSpeed} ↑";
         };
 
         _gpuItem = new ListItem(_gpuPage)
         {
-            Title = _gpuPage.GetItemTitle(),
+            Title = _gpuPage.GetItemTitle(isBandPage),
         };
 
         _gpuPage.Updated += (s, e) =>
         {
-            _gpuItem.Title = _gpuPage.GetItemTitle();
+            _gpuItem.Title = _gpuPage.GetItemTitle(isBandPage);
         };
     }
 
@@ -115,9 +125,22 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
         if (!_isBandPage)
         {
             // TODO! add details
+            return new[] { _cpuItem, _memoryItem, _networkItem, _gpuItem };
         }
+        else
+        {
+            _networkUpItem = new ListItem(_networkPage)
+            {
+                Title = $"{_networkUpSpeed} ↑",
+            };
 
-        return new[] { _cpuItem, _memoryItem, _networkItem, _gpuItem };
+            _networkDownItem = new ListItem(_networkPage)
+            {
+                Title = $"{_networkDownSpeed} ↓",
+            };
+
+            return new[] { _cpuItem, _memoryItem, _networkDownItem, _networkUpItem, _gpuItem };
+        }
     }
 
     public void Dispose()
@@ -165,8 +188,6 @@ internal abstract partial class WidgetPage : OnLoadContentPage
         _formContent.DataJson = ContentDataJson.ToJsonString();
 
         Updated?.Invoke(this, EventArgs.Empty);
-
-        // RaiseItemsChanged();
     }
 
     protected abstract void LoadContentData();
@@ -186,7 +207,6 @@ internal abstract partial class WidgetPage : OnLoadContentPage
             var path = Path.Combine(Package.Current.EffectivePath, GetTemplatePath(page));
             var template = File.ReadAllText(path, Encoding.Default) ?? throw new FileNotFoundException(path);
 
-            // template = Resources.ReplaceIdentifers(template, Resources.GetWidgetResourceIdentifiers(), CoreLogger.Instance);
             template = Resources.ReplaceIdentifersFast(template, CoreLogger.Instance);
             CoreLogger.LogDebug($"Caching template for {page}");
             Template[page] = template;
@@ -296,15 +316,15 @@ internal sealed partial class SystemCPUUsageWidgetPage : WidgetPage, IDisposable
         };
     }
 
-    public string GetItemTitle()
+    public string GetItemTitle(bool isBandPage)
     {
         if (ContentData.TryGetValue("cpuUsage", out var usage))
         {
-            return $"CPU Usage: {usage}";
+            return isBandPage ? usage : $"CPU Usage: {usage}";
         }
         else
         {
-            return "CPU Usage: ???";
+            return isBandPage ? "???" : "CPU Usage: ???";
         }
     }
 
@@ -404,15 +424,15 @@ internal sealed partial class SystemMemoryUsageWidgetPage : WidgetPage, IDisposa
         };
     }
 
-    public string GetItemTitle()
+    public string GetItemTitle(bool isBandPage)
     {
         if (ContentData.TryGetValue("memUsage", out var usage))
         {
-            return $"Memory Usage: {usage}";
+            return isBandPage ? usage : $"Memory Usage: {usage}";
         }
         else
         {
-            return "Memory Usage: ???";
+            return isBandPage ? "???" : "Memory Usage: ???";
         }
     }
 
@@ -530,15 +550,40 @@ internal sealed partial class SystemNetworkUsageWidgetPage : WidgetPage, IDispos
         };
     }
 
-    public string GetItemTitle()
+    public string GetItemTitle(bool isBandPage)
     {
         if (ContentData.TryGetValue("networkName", out var name) && ContentData.TryGetValue("networkUsage", out var usage))
         {
-            return $"Network ({name}): {usage}";
+            return isBandPage ? usage : $"Network ({name}): {usage}";
         }
         else
         {
-            return "Network Usage: ???";
+            return isBandPage ? "???" : "Network Usage: ???";
+        }
+    }
+
+    // up/down speed is always used for bands
+    public string GetUpSpeed()
+    {
+        if (ContentData.TryGetValue("netSent", out var upSpeed))
+        {
+            return upSpeed;
+        }
+        else
+        {
+            return "???";
+        }
+    }
+
+    public string GetDownSpeed()
+    {
+        if (ContentData.TryGetValue("netReceived", out var downSpeed))
+        {
+            return downSpeed;
+        }
+        else
+        {
+            return "???";
         }
     }
 
@@ -661,15 +706,15 @@ internal sealed partial class SystemGPUUsageWidgetPage : WidgetPage, IDisposable
         };
     }
 
-    public string GetItemTitle()
+    public string GetItemTitle(bool isBandPage)
     {
         if (ContentData.TryGetValue("gpuName", out var name) && ContentData.TryGetValue("gpuUsage", out var usage))
         {
-            return $"GPU ({name}): {usage}";
+            return isBandPage ? usage : $"GPU ({name}): {usage}";
         }
         else
         {
-            return "GPU Usage: ???";
+            return isBandPage ? "???" : "GPU Usage: ???";
         }
     }
 
