@@ -154,6 +154,9 @@ public sealed class AllAppsViewModel : Observable
         if (_coordinator.UpdateModuleEnabled(flyoutItem.Tag, flyoutItem.IsEnabled))
         {
             _coordinator.NotifyUserSettingsInteraction();
+
+            // Trigger re-sort immediately when status changes on UI
+            RefreshFlyoutMenuItems();
         }
     }
 
