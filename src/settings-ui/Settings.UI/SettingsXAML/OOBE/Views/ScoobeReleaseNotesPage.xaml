@@ -29,7 +29,7 @@
     </Page.Resources>
 
     <!--  Main layout container  -->
-    <Grid MaxWidth="1360">
+    <Grid MaxWidth="1000">
         <ScrollViewer Padding="0,0,0,0" VerticalScrollBarVisibility="Auto">
             <Grid Margin="0,0,0,24">
                 <Grid.RowDefinitions>
@@ -38,7 +38,7 @@
                 </Grid.RowDefinitions>
                 <Image
                     x:Name="HeroImageHolder"
-                    Height="240"
+                    Height="186"
                     HorizontalAlignment="Left"
                     Stretch="UniformToFill" />
                 <Grid Grid.Row="1" Margin="24,16,24,24">

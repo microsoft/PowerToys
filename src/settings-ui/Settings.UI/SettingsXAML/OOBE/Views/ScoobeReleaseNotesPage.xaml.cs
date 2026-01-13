@@ -88,6 +88,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 releaseNotesHtmlBuilder.AppendLine(CultureInfo.InvariantCulture, $"# {release.Name}");
                 releaseNotesHtmlBuilder.AppendLine(CultureInfo.InvariantCulture, $"{release.PublishedDate.ToString("MMMM d, yyyy", CultureInfo.CurrentCulture)} • [View on GitHub]({releaseUrl})");
                 releaseNotesHtmlBuilder.AppendLine();
+                releaseNotesHtmlBuilder.AppendLine("&nbsp;");
                 releaseNotesHtmlBuilder.AppendLine();
                 var notes = removeHashRegex.Replace(release.ReleaseNotes, "\r\n## Highlights");
                 notes = notes.Replace("[github-current-release-work]", $"[github-current-release-work{++counter}]");
