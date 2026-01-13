@@ -29,6 +29,7 @@ public sealed partial class AppsListPage : Page
     protected override void OnNavigatedTo(NavigationEventArgs e)
     {
         base.OnNavigatedTo(e);
+        _isCleanedUp = false;
 
         if (e.Parameter is FlyoutNavigationContext context)
         {
