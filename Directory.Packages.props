@@ -13,6 +13,8 @@
     <PackageVersion Include="Microsoft.Bot.AdaptiveExpressions.Core" Version="4.23.0" />
     <PackageVersion Include="Appium.WebDriver" Version="4.4.5" />
     <PackageVersion Include="CoenM.ImageSharp.ImageHash" Version="1.3.6" />
+    <!-- Pin the SixLabors.ImageSharp version (a transitive dependency of CoenM.ImageSharp.ImageHash) to restore functionality and apply patches. -->
+    <PackageVersion Include="SixLabors.ImageSharp" Version="2.1.12" />
     <PackageVersion Include="CommunityToolkit.Common" Version="8.4.0" />
     <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.4.0" />
     <PackageVersion Include="CommunityToolkit.WinUI.Animations" Version="8.2.250402" />

@@ -27,6 +27,10 @@
         <CornerRadius x:Key="SmallGridViewItemCornerRadius">8</CornerRadius>
         <CornerRadius x:Key="MediumGridViewItemCornerRadius">8</CornerRadius>
 
+        <x:Double x:Key="ListViewItemMinHeight">40</x:Double>
+        <x:Double x:Key="ListViewSectionMinHeight">0</x:Double>
+        <x:Double x:Key="ListViewSeparatorMinHeight">0</x:Double>
+
         <Style x:Key="IconGridViewItemStyle" TargetType="GridViewItem">
             <Setter Property="HorizontalContentAlignment" Value="Stretch" />
             <Setter Property="VerticalContentAlignment" Value="Center" />
@@ -94,6 +98,7 @@
         <Style x:Key="GalleryGridViewItemStyle" TargetType="GridViewItem">
             <Setter Property="HorizontalContentAlignment" Value="Stretch" />
             <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="Margin" Value="0" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="GridViewItem">
@@ -155,6 +160,70 @@
             </Setter>
         </Style>
 
+        <Style
+            x:Key="GridViewSectionItemStyle"
+            BasedOn="{StaticResource DefaultGridViewItemStyle}"
+            TargetType="GridViewItem">
+            <Setter Property="IsHitTestVisible" Value="False" />
+            <Setter Property="IsTabStop" Value="False" />
+            <Setter Property="IsHoldingEnabled" Value="False" />
+            <Setter Property="Padding" Value="4,8,12,0" />
+            <Setter Property="Margin" Value="0" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="VerticalContentAlignment" Value="Bottom" />
+            <Setter Property="MinHeight" Value="{StaticResource ListViewSectionMinHeight}" />
+            <Setter Property="cpcontrols:WrapPanel.IsFullLine" Value="True" />
+        </Style>
+
+        <Style
+            x:Key="GridViewSeparatorItemStyle"
+            BasedOn="{StaticResource DefaultGridViewItemStyle}"
+            TargetType="GridViewItem">
+            <Setter Property="IsHitTestVisible" Value="False" />
+            <Setter Property="IsTabStop" Value="False" />
+            <Setter Property="IsHoldingEnabled" Value="False" />
+            <Setter Property="Padding" Value="4,4,12,4" />
+            <Setter Property="Margin" Value="0" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="MinHeight" Value="{StaticResource ListViewSeparatorMinHeight}" />
+            <Setter Property="cpcontrols:WrapPanel.IsFullLine" Value="True" />
+        </Style>
+
+        <Style
+            x:Key="ListDefaultContainerStyle"
+            BasedOn="{StaticResource DefaultListViewItemStyle}"
+            TargetType="ListViewItem">
+            <Setter Property="MinHeight" Value="{StaticResource ListViewItemMinHeight}" />
+        </Style>
+
+        <Style
+            x:Key="ListSectionContainerStyle"
+            BasedOn="{StaticResource DefaultListViewItemStyle}"
+            TargetType="ListViewItem">
+            <Setter Property="IsHitTestVisible" Value="False" />
+            <Setter Property="IsTabStop" Value="False" />
+            <Setter Property="IsHoldingEnabled" Value="False" />
+            <Setter Property="Padding" Value="16,8,12,0" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="VerticalContentAlignment" Value="Bottom" />
+            <Setter Property="MinHeight" Value="{StaticResource ListViewSectionMinHeight}" />
+            <Setter Property="AllowDrop" Value="False" />
+        </Style>
+
+        <Style
+            x:Key="ListSeparatorContainerStyle"
+            BasedOn="{StaticResource DefaultListViewItemStyle}"
+            TargetType="ListViewItem">
+            <Setter Property="IsHitTestVisible" Value="False" />
+            <Setter Property="IsTabStop" Value="False" />
+            <Setter Property="IsHoldingEnabled" Value="False" />
+            <Setter Property="Padding" Value="16,4,12,4" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="MinHeight" Value="{StaticResource ListViewSeparatorMinHeight}" />
+        </Style>
+
         <DataTemplate x:Key="TagTemplate" x:DataType="coreViewModels:TagViewModel">
             <cpcontrols:Tag
                 AutomationProperties.Name="{x:Bind Text, Mode=OneWay}"
@@ -166,16 +235,6 @@
                 ToolTipService.ToolTip="{x:Bind ToolTip, Mode=OneWay}" />
         </DataTemplate>
 
-        <cmdpalUI:GridItemTemplateSelector
-            x:Key="GridItemTemplateSelector"
-            x:DataType="coreViewModels:ListItemViewModel"
-            Gallery="{StaticResource GalleryGridItemViewModelTemplate}"
-            GridProperties="{x:Bind ViewModel.GridProperties, Mode=OneWay}"
-            Medium="{StaticResource MediumGridItemViewModelTemplate}"
-            Section="{StaticResource ListSectionViewModelTemplate}"
-            Separator="{StaticResource ListSeparatorViewModelTemplate}"
-            Small="{StaticResource SmallGridItemViewModelTemplate}" />
-
         <cmdpalUI:ListItemTemplateSelector
             x:Key="ListItemTemplateSelector"
             x:DataType="coreViewModels:ListItemViewModel"
@@ -183,11 +242,29 @@
             Section="{StaticResource ListSectionViewModelTemplate}"
             Separator="{StaticResource ListSeparatorViewModelTemplate}" />
 
+        <cmdpalUI:ListItemContainerStyleSelector
+            x:Key="ListItemContainerStyleSelector"
+            Default="{StaticResource ListDefaultContainerStyle}"
+            Section="{StaticResource ListSectionContainerStyle}"
+            Separator="{StaticResource ListSeparatorContainerStyle}" />
+
+        <cmdpalUI:GridItemTemplateSelector
+            x:Key="GridItemTemplateSelector"
+            x:DataType="coreViewModels:ListItemViewModel"
+            Gallery="{StaticResource GalleryGridItemViewModelTemplate}"
+            GridProperties="{x:Bind ViewModel.GridProperties, Mode=OneWay}"
+            Medium="{StaticResource MediumGridItemViewModelTemplate}"
+            Section="{StaticResource ListSectionViewModelTemplate}"
+            Separator="{StaticResource GridSeparatorViewModelTemplate}"
+            Small="{StaticResource SmallGridItemViewModelTemplate}" />
+
         <cmdpalUI:GridItemContainerStyleSelector
             x:Key="GridItemContainerStyleSelector"
             Gallery="{StaticResource GalleryGridViewItemStyle}"
             GridProperties="{x:Bind ViewModel.GridProperties, Mode=OneWay}"
             Medium="{StaticResource IconGridViewItemStyle}"
+            Section="{StaticResource GridViewSectionItemStyle}"
+            Separator="{StaticResource GridViewSeparatorItemStyle}"
             Small="{StaticResource IconGridViewItemStyle}" />
 
         <!--  https://learn.microsoft.com/windows/apps/design/controls/itemsview#specify-the-look-of-the-items  -->
@@ -255,21 +332,21 @@
         </DataTemplate>
 
         <DataTemplate x:Key="ListSeparatorViewModelTemplate" x:DataType="coreViewModels:ListItemViewModel">
-            <Grid>
+            <Grid ColumnSpacing="12">
                 <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="28" />
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
                 <Rectangle
                     Grid.Column="1"
                     Height="1"
-                    Margin="0,2,0,2"
                     Fill="{ThemeResource DividerStrokeColorDefaultBrush}" />
             </Grid>
         </DataTemplate>
 
         <DataTemplate x:Key="ListSectionViewModelTemplate" x:DataType="coreViewModels:ListItemViewModel">
             <Grid
-                Margin="0"
+                Margin="0,8,0,0"
                 VerticalAlignment="Center"
                 cpcontrols:WrapPanel.IsFullLine="True"
                 ColumnSpacing="8"
@@ -281,13 +358,9 @@
                 </Grid.ColumnDefinitions>
                 <TextBlock
                     Grid.Column="0"
-                    Foreground="{ThemeResource TextFillColorDisabled}"
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                     Style="{ThemeResource CaptionTextBlockStyle}"
                     Text="{x:Bind Section}" />
-                <Rectangle
-                    Grid.Column="1"
-                    Height="1"
-                    Fill="{ThemeResource DividerStrokeColorDefaultBrush}" />
             </Grid>
         </DataTemplate>
 
@@ -414,7 +487,7 @@
                         VerticalAlignment="Center"
                         CharacterSpacing="11"
                         FontSize="11"
-                        Foreground="{ThemeResource TextFillColorTertiary}"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                         Text="{x:Bind Subtitle, Mode=OneWay}"
                         TextAlignment="Center"
                         TextTrimming="WordEllipsis"
@@ -422,6 +495,10 @@
                         Visibility="{x:Bind ShowSubtitle, Mode=OneWay}" />
                 </StackPanel>
             </StackPanel>
+        </DataTemplate>
+
+        <DataTemplate x:Key="GridSeparatorViewModelTemplate" x:DataType="coreViewModels:ListItemViewModel">
+            <Rectangle Height="1" Fill="{ThemeResource DividerStrokeColorDefaultBrush}" />
         </DataTemplate>
     </Page.Resources>
 
@@ -448,6 +525,7 @@
                             IsDoubleTapEnabled="True"
                             IsItemClickEnabled="True"
                             ItemClick="Items_ItemClick"
+                            ItemContainerStyleSelector="{StaticResource ListItemContainerStyleSelector}"
                             ItemTemplateSelector="{StaticResource ListItemTemplateSelector}"
                             ItemsSource="{x:Bind ViewModel.FilteredItems, Mode=OneWay}"
                             RightTapped="Items_RightTapped"
@@ -460,7 +538,7 @@
                     <controls:Case Value="True">
                         <GridView
                             x:Name="ItemsGrid"
-                            Padding="16,0"
+                            Padding="16,16"
                             CanDragItems="True"
                             ContextCanceled="Items_OnContextCanceled"
                             ContextRequested="Items_OnContextRequested"

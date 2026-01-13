@@ -7,6 +7,7 @@
 		<OutputType>WinExe</OutputType>
 		<RootNamespace>PowerToysExtension</RootNamespace>
 		<ApplicationManifest>app.manifest</ApplicationManifest>
+		<ApplicationIcon>..\..\..\..\runner\svgs\icon.ico</ApplicationIcon>
 		<PublishProfile>win-$(Platform).pubxml</PublishProfile>
 		<EnableMsixTooling>false</EnableMsixTooling>
 		<WindowsPackageType>None</WindowsPackageType>
