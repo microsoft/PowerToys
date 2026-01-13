@@ -11,8 +11,6 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading;
-using System.Threading.Tasks;
-using System.Windows;
 
 using global::PowerToys.GPOWrapper;
 using ManagedCommon;
@@ -263,42 +261,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 monitor.TotalMonitorCount = count;
             }
-        }
-
-        public void UpdateMonitors(MonitorInfo[] monitors)
-        {
-            if (monitors == null)
-            {
-                Monitors = new ObservableCollection<MonitorInfo>();
-                return;
-            }
-
-            // Create a lookup of existing monitors to preserve user settings
-            var existingMonitors = _monitors.ToDictionary(m => m.Id, m => m);
-
-            // Create new collection with merged settings
-            var newCollection = new ObservableCollection<MonitorInfo>();
-            foreach (var newMonitor in monitors)
-            {
-                var monitorKey = newMonitor.Id;
-
-                // Check if we have an existing monitor with the same key
-                if (existingMonitors.TryGetValue(monitorKey, out var existingMonitor))
-                {
-                    // Preserve user settings from existing monitor
-                    newMonitor.EnableContrast = existingMonitor.EnableContrast;
-                    newMonitor.EnableVolume = existingMonitor.EnableVolume;
-                    newMonitor.EnableInputSource = existingMonitor.EnableInputSource;
-                    newMonitor.EnableRotation = existingMonitor.EnableRotation;
-                    newMonitor.EnableColorTemperature = existingMonitor.EnableColorTemperature;
-                    newMonitor.IsHidden = existingMonitor.IsHidden;
-                }
-
-                newCollection.Add(newMonitor);
-            }
-
-            // Replace collection - property setter handles subscription management
-            Monitors = newCollection;
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA1816:Dispose methods should call SuppressFinalize", Justification = "Base class PageViewModelBase.Dispose() handles GC.SuppressFinalize")]
@@ -555,11 +517,19 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
                 // Send custom action to trigger profile application
                 // The profile name is passed via Named Pipe IPC to PowerDisplay.exe
-                SendConfigMSG(
-                    string.Format(
-                        CultureInfo.InvariantCulture,
-                        "{{ \"action\": {{ \"PowerDisplay\": {{ \"action_name\": \"ApplyProfile\", \"value\": \"{0}\" }} }} }}",
-                        profile.Name));
+                var actionMessage = new PowerDisplayActionMessage
+                {
+                    Action = new PowerDisplayActionMessage.ActionData
+                    {
+                        PowerDisplay = new PowerDisplayActionMessage.PowerDisplayAction
+                        {
+                            ActionName = "ApplyProfile",
+                            Value = profile.Name,
+                        },
+                    },
+                };
+
+                SendConfigMSG(JsonSerializer.Serialize(actionMessage, SettingsSerializationContext.Default.PowerDisplayActionMessage));
 
                 Logger.LogInfo($"Profile '{profile.Name}' applied successfully");
             }
