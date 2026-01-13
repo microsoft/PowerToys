@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
+using Microsoft.Management.Infrastructure;
 
 // using Serilog;
 namespace CoreWidgetProvider.Helpers;
@@ -17,6 +18,8 @@ internal sealed partial class GPUStats : IDisposable
     private readonly Dictionary<int, List<PerformanceCounter>> _gpuCounters = new();
 
     private readonly List<Data> _stats = new();
+
+    private readonly CimSession _session;
 
     // private readonly ILogger _log = Log.ForContext("SourceContext", nameof(GPUStats));
     public sealed class Data
@@ -34,21 +37,21 @@ internal sealed partial class GPUStats : IDisposable
 
     public GPUStats()
     {
+        _session = CimSession.Create(null);
         LoadGPUs();
         GetGPUPerfCounters();
     }
 
     public void LoadGPUs()
     {
-        // using var session = MdmSession.Create(null);
-        // var i = 0;
-        // _stats.Clear();
+        var i = 0;
+        _stats.Clear();
 
-        // foreach (CimInstance obj in session.QueryInstances("root/cimv2", "WQL", "select * from Win32_VideoController"))
-        // {
-        //    var gpuName = (string)obj.CimInstanceProperties["name"].Value;
-        //    _stats.Add(new Data() { Name = gpuName, PhysId = i++ });
-        // }
+        foreach (var obj in _session.QueryInstances("root/cimv2", "WQL", "select * from Win32_VideoController"))
+        {
+            var gpuName = (string)obj.CimInstanceProperties["name"].Value;
+            _stats.Add(new Data() { Name = gpuName, PhysId = i++ });
+        }
     }
 
     public void GetGPUPerfCounters()

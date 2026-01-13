@@ -5,6 +5,8 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
+using Windows.Win32;
 
 namespace CoreWidgetProvider.Helpers;
 
@@ -60,21 +62,21 @@ internal sealed partial class MemoryStats : IDisposable
 
     public void GetData()
     {
-        // TODO!
-        // Windows.Win32.System.SystemInformation.MEMORYSTATUSEX memStatus = default;
-        // memStatus.dwLength = (uint)Marshal.SizeOf(typeof(Windows.Win32.System.SystemInformation.MEMORYSTATUSEX));
-        // if (PInvoke.GlobalMemoryStatusEx(ref memStatus))
-        // {
-        //    AllMem = memStatus.ullTotalPhys;
-        //    var availableMem = memStatus.ullAvailPhys;
-        //    UsedMem = AllMem - availableMem;
+        Windows.Win32.System.SystemInformation.MEMORYSTATUSEX memStatus = default;
+        memStatus.dwLength = (uint)Marshal.SizeOf<Windows.Win32.System.SystemInformation.MEMORYSTATUSEX>();
+        if (PInvoke.GlobalMemoryStatusEx(ref memStatus))
+        {
+            AllMem = memStatus.ullTotalPhys;
+            var availableMem = memStatus.ullAvailPhys;
+            UsedMem = AllMem - availableMem;
 
-        // MemUsage = (float)UsedMem / AllMem;
-        //    lock (MemChartValues)
-        //    {
-        //        ChartHelper.AddNextChartValue(MemUsage * 100, MemChartValues);
-        //    }
-        // }
+            MemUsage = (float)UsedMem / AllMem;
+            lock (MemChartValues)
+            {
+                ChartHelper.AddNextChartValue(MemUsage * 100, MemChartValues);
+            }
+        }
+
         MemCached = (ulong)_memCached.NextValue();
         MemCommitted = (ulong)_memCommitted.NextValue();
         MemCommitLimit = (ulong)_memCommittedLimit.NextValue();

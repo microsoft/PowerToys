@@ -19,6 +19,9 @@ internal sealed class Icons
     internal static IconInfo NetworkIcon => new("\uEC05"); // Network icon
 
     internal static IconInfo StackedAreaIcon => new("\uE9D2"); // StackedArea icon
+
+    // TODO! make different
+    internal static IconInfo GpuIcon => new("\uE9D9"); // CPU icon
 }
 
 
