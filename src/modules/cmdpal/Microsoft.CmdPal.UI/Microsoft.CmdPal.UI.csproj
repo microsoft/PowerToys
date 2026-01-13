@@ -291,24 +291,26 @@
   </ItemGroup>
   <!-- </AdaptiveCardsWorkaround> -->
 
-  <!-- Metadata for build information  -->
-  <ItemGroup>
-    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
-      <_Parameter1>PublishTrimmed</_Parameter1>
-      <_Parameter2>$(PublishTrimmed)</_Parameter2>
-    </AssemblyAttribute>
-    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
-      <_Parameter1>PublishAot</_Parameter1>
-      <_Parameter2>$(PublishAot)</_Parameter2>
-    </AssemblyAttribute>
-    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
-      <_Parameter1>CIBuild</_Parameter1>
-      <_Parameter2>$(CIBuild)</_Parameter2>
-    </AssemblyAttribute>
-    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
-      <_Parameter1>CommandPaletteBranding</_Parameter1>
-      <_Parameter2>$(CommandPaletteBranding)</_Parameter2>
-    </AssemblyAttribute>
-  </ItemGroup>
+  <!-- Metadata for build information - Use Target to ensure properties are evaluated at build time, not project load time -->
+  <Target Name="AddBuildMetadataAssemblyAttributes" BeforeTargets="GetAssemblyAttributes">
+    <ItemGroup>
+      <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+        <_Parameter1>PublishTrimmed</_Parameter1>
+        <_Parameter2>$(PublishTrimmed)</_Parameter2>
+      </AssemblyAttribute>
+      <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+        <_Parameter1>PublishAot</_Parameter1>
+        <_Parameter2>$(PublishAot)</_Parameter2>
+      </AssemblyAttribute>
+      <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+        <_Parameter1>CIBuild</_Parameter1>
+        <_Parameter2>$(CIBuild)</_Parameter2>
+      </AssemblyAttribute>
+      <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+        <_Parameter1>CommandPaletteBranding</_Parameter1>
+        <_Parameter2>$(CommandPaletteBranding)</_Parameter2>
+      </AssemblyAttribute>
+    </ItemGroup>
+  </Target>
 
 </Project>
