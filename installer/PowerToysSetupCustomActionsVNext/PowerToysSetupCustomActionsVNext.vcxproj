@@ -88,7 +88,7 @@
   <ItemDefinitionGroup>
     <ClCompile>
       <AdditionalIncludeDirectories>inc;..\..\src\;..\..\src\common\Telemetry;telemetry;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <AdditionalOptions>/await:strict /Zc:twoPhase- /Wv:18 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/await /Zc:twoPhase- /Wv:18 %(AdditionalOptions)</AdditionalOptions>
       <WarningLevel>Level4</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
