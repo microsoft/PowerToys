@@ -215,6 +215,12 @@ void dispatch_received_json(const std::wstring& json_to_parse)
             //         current_settings_ipc->send(settings_string);
             // }
         }
+        else if (name == L"module_status")
+        {
+            // Handle single module enable/disable update
+            // Expected format: {"module_status": {"ModuleName": true/false}}
+            apply_module_status_update(value.GetObjectW());
+        }
         else if (name == L"powertoys")
         {
             dispatch_json_config_to_modules(value.GetObjectW());

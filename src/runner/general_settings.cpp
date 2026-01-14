@@ -193,6 +193,102 @@ GeneralSettings get_general_settings()
     return settings;
 }
 
+void apply_module_status_update(const json::JsonObject& module_config, bool save)
+{
+    Logger::info(L"apply_module_status_update: {}", std::wstring{ module_config.ToString() });
+
+    // Expected format: {"ModuleName": true/false} - only one module per update
+    auto iter = module_config.First();
+    if (!iter.HasCurrent())
+    {
+        Logger::warn(L"apply_module_status_update: Empty module config");
+        return;
+    }
+
+    const auto& element = iter.Current();
+    const auto value = element.Value();
+    if (value.ValueType() != json::JsonValueType::Boolean)
+    {
+        Logger::warn(L"apply_module_status_update: Invalid value type for module status");
+        return;
+    }
+
+    const std::wstring name{ element.Key().c_str() };
+    if (modules().find(name) == modules().end())
+    {
+        Logger::warn(L"apply_module_status_update: Module {} not found", name);
+        return;
+    }
+
+    PowertoyModule& powertoy = modules().at(name);
+    const bool module_inst_enabled = powertoy->is_enabled();
+    bool target_enabled = value.GetBoolean();
+
+    auto gpo_rule = powertoy->gpo_policy_enabled_configuration();
+    if (gpo_rule == powertoys_gpo::gpo_rule_configured_enabled || gpo_rule == powertoys_gpo::gpo_rule_configured_disabled)
+    {
+        // Apply the GPO Rule.
+        target_enabled = gpo_rule == powertoys_gpo::gpo_rule_configured_enabled;
+    }
+
+    if (module_inst_enabled == target_enabled)
+    {
+        Logger::info(L"apply_module_status_update: Module {} already in target state {}", name, target_enabled);
+        return;
+    }
+
+    if (target_enabled)
+    {
+        Logger::info(L"apply_module_status_update: Enabling powertoy {}", name);
+        powertoy->enable();
+        auto& hkmng = HotkeyConflictDetector::HotkeyConflictManager::GetInstance();
+        hkmng.EnableHotkeyByModule(name);
+
+        // Trigger AI capability detection when ImageResizer is enabled
+        if (name == L"Image Resizer")
+        {
+            Logger::info(L"ImageResizer enabled, triggering AI capability detection");
+            DetectAiCapabilitiesAsync(true);  // Skip settings check since we know it's being enabled
+        }
+    }
+    else
+    {
+        Logger::info(L"apply_module_status_update: Disabling powertoy {}", name);
+        powertoy->disable();
+        auto& hkmng = HotkeyConflictDetector::HotkeyConflictManager::GetInstance();
+        hkmng.DisableHotkeyByModule(name);
+    }
+    // Sync the hotkey state with the module state, so it can be removed for disabled modules.
+    powertoy.UpdateHotkeyEx();
+
+    if (save)
+    {
+        // Load existing settings and only update the specific module's enabled state
+        json::JsonObject current_settings = PTSettingsHelper::load_general_settings();
+        
+        json::JsonObject enabled;
+        if (current_settings.HasKey(L"enabled"))
+        {
+            enabled = current_settings.GetNamedObject(L"enabled");
+        }
+        
+        // Check if the saved state is different from the requested state
+        bool current_saved = enabled.HasKey(name) ? enabled.GetNamedBoolean(name, true) : true;
+        
+        if (current_saved != target_enabled)
+        {
+            // Update only this module's enabled state
+            enabled.SetNamedValue(name, json::value(target_enabled));
+            current_settings.SetNamedValue(L"enabled", enabled);
+            
+            PTSettingsHelper::save_general_settings(current_settings);
+            
+            GeneralSettings settings_for_trace = get_general_settings();
+            Trace::SettingsChanged(settings_for_trace);
+        }
+    }
+}
+
 void apply_general_settings(const json::JsonObject& general_configs, bool save)
 {
     std::wstring old_settings_json_string;
