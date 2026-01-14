@@ -15,6 +15,8 @@ class SettingsObserver;
 struct Settings
 {
     PowerToysSettings::HotkeyObject hotkey = PowerToysSettings::HotkeyObject::from_settings(true, true, false, false, 84); // win + ctrl + T
+    PowerToysSettings::HotkeyObject transparencyHotkey = PowerToysSettings::HotkeyObject::from_settings(true, true, false, true, 84); // win + ctrl + shift + T
+    int transparencyPercentage = 50; // 0-100, 0 = fully transparent, 100 = opaque
     bool enableFrame = true;
     bool enableSound = true;
     bool roundCornersEnabled = true;

@@ -70,6 +70,8 @@ namespace CommonSharedConstants
     // Path to the event used by AlwaysOnTop
     const wchar_t ALWAYS_ON_TOP_PIN_EVENT[] = L"Local\\AlwaysOnTopPinEvent-892e0aa2-cfa8-4cc4-b196-ddeb32314ce8";
 
+    const wchar_t ALWAYS_ON_TOP_TRANSPARENT_PIN_EVENT[] = L"Local\\AlwaysOnTopTransparentPinEvent-a]bc123-4567-89ab-cdef01234567";
+
     const wchar_t ALWAYS_ON_TOP_TERMINATE_EVENT[] = L"Local\\AlwaysOnTopTerminateEvent-cfdf1eae-791f-4953-8021-2f18f3837eae";
 
     // Path to the event used by PowerAccent

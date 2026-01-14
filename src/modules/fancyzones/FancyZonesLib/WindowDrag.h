@@ -1,18 +1,17 @@
 #pragma once
 
 #include <FancyZonesLib/HighlightedZones.h>
-#include <common/notifications/NotificationUtil.h>
 #include <common/utils/window.h>
 
 class WorkArea;
 
-class WindowMouseSnap
+class WindowDrag
 {
-    WindowMouseSnap(HWND window, const std::unordered_map<HMONITOR, std::unique_ptr<WorkArea>>& activeWorkAreas);
+    WindowDrag(HWND window, const std::unordered_map<HMONITOR, std::unique_ptr<WorkArea>>& activeWorkAreas);
 
 public:
-    static std::unique_ptr<WindowMouseSnap> Create(HWND window, const std::unordered_map<HMONITOR, std::unique_ptr<WorkArea>>& activeWorkAreas, notifications::NotificationUtil* notificationUtil);
-    ~WindowMouseSnap();
+    static std::unique_ptr<WindowDrag> Create(HWND window, const std::unordered_map<HMONITOR, std::unique_ptr<WorkArea>>& activeWorkAreas);
+    ~WindowDrag();
 
     bool MoveSizeStart(HMONITOR monitor, bool isSnapping);
     void MoveSizeUpdate(HMONITOR monitor, POINT const& ptScreen, bool isSnapping, bool isSelectManyZonesState);
@@ -28,6 +27,8 @@ private:
     {
         // True if the window is a top-level window that does not have a visible owner
         bool hasNoVisibleOwner = false;
+        // True if the window is a standard window
+        bool isStandardWindow = false;
         // Transparency properties for restoration
         WindowTransparencyProperties transparency;
     };

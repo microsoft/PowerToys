@@ -13,6 +13,7 @@ namespace NonLocalizable
     const static wchar_t* SettingsFileName = L"settings.json";
 
     const static wchar_t* HotkeyID = L"hotkey";
+    const static wchar_t* TransparencyHotkeyID = L"transparency-hotkey";
     const static wchar_t* SoundEnabledID = L"sound-enabled";
     const static wchar_t* FrameEnabledID = L"frame-enabled";
     const static wchar_t* FrameThicknessID = L"frame-thickness";
@@ -22,6 +23,7 @@ namespace NonLocalizable
     const static wchar_t* ExcludedAppsID = L"excluded-apps";
     const static wchar_t* FrameAccentColor = L"frame-accent-color";
     const static wchar_t* RoundCornersEnabledID = L"round-corners-enabled";
+    const static wchar_t* TransparencyPercentageID = L"transparency-percentage";
 }
 
 // TODO: move to common utils
@@ -102,6 +104,26 @@ void AlwaysOnTopSettings::LoadSettings()
             {
                 m_settings.hotkey = val;
                 NotifyObservers(SettingId::Hotkey);
+            }
+        }
+
+        if (const auto jsonVal = values.get_json(NonLocalizable::TransparencyHotkeyID))
+        {
+            auto val = PowerToysSettings::HotkeyObject::from_json(*jsonVal);
+            if (m_settings.transparencyHotkey.get_modifiers() != val.get_modifiers() || m_settings.transparencyHotkey.get_key() != val.get_key() || m_settings.transparencyHotkey.get_code() != val.get_code())
+            {
+                m_settings.transparencyHotkey = val;
+                NotifyObservers(SettingId::TransparencyHotkey);
+            }
+        }
+
+        if (const auto jsonVal = values.get_int_value(NonLocalizable::TransparencyPercentageID))
+        {
+            auto val = *jsonVal;
+            if (m_settings.transparencyPercentage != val)
+            {
+                m_settings.transparencyPercentage = val;
+                NotifyObservers(SettingId::TransparencyPercentage);
             }
         }
         

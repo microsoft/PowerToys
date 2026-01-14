@@ -32,7 +32,7 @@ bool isExcluded(HWND window)
 }
 
 AlwaysOnTop::AlwaysOnTop(bool useLLKH, DWORD mainThreadId) :
-    SettingsObserver({SettingId::FrameEnabled, SettingId::Hotkey, SettingId::ExcludeApps}),
+    SettingsObserver({SettingId::FrameEnabled, SettingId::Hotkey, SettingId::TransparencyHotkey, SettingId::ExcludeApps}),
     m_hinstance(reinterpret_cast<HINSTANCE>(&__ImageBase)),
     m_useCentralizedLLKH(useLLKH),
     m_mainThreadId(mainThreadId),
@@ -105,6 +105,11 @@ void AlwaysOnTop::SettingsUpdate(SettingId id)
         RegisterHotkey();
     }
     break;
+    case SettingId::TransparencyHotkey:
+    {
+        RegisterHotkey();
+    }
+    break;
     case SettingId::FrameEnabled:
     {
         if (AlwaysOnTopSettings::settings().enableFrame)
@@ -153,9 +158,17 @@ LRESULT AlwaysOnTop::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lp
 {
     if (message == WM_HOTKEY)
     {
+        int hotkeyId = static_cast<int>(wparam);
         if (HWND fw{ GetForegroundWindow() })
         {
-            ProcessCommand(fw);
+            if (hotkeyId == static_cast<int>(HotkeyId::Pin))
+            {
+                ProcessCommand(fw, false);
+            }
+            else if (hotkeyId == static_cast<int>(HotkeyId::TransparentPin))
+            {
+                ProcessCommand(fw, true);
+            }
         }
     }
     else if (message == WM_PRIV_SETTINGS_CHANGED)
@@ -166,7 +179,7 @@ LRESULT AlwaysOnTop::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lp
     return 0;
 }
 
-void AlwaysOnTop::ProcessCommand(HWND window)
+void AlwaysOnTop::ProcessCommand(HWND window, bool transparent)
 {
     bool gameMode = detect_game_mode();
     if (AlwaysOnTopSettings::settings().blockInGameMode && gameMode)
@@ -191,6 +204,16 @@ void AlwaysOnTop::ProcessCommand(HWND window)
                 m_topmostWindows.erase(iter);
             }
 
+            // Restore transparency if the window has layered style
+            if (transparent)
+            {
+                LONG exStyle = GetWindowLong(window, GWL_EXSTYLE);
+                if (exStyle & WS_EX_LAYERED)
+                {
+                    SetWindowLong(window, GWL_EXSTYLE, exStyle & ~WS_EX_LAYERED);
+                }
+            }
+
             Trace::AlwaysOnTop::UnpinWindow();
         }
     }
@@ -200,6 +223,12 @@ void AlwaysOnTop::ProcessCommand(HWND window)
         {
             soundType = Sound::Type::On;
             AssignBorder(window);
+            
+            if (transparent)
+            {
+                ::MakeWindowTransparent(window, AlwaysOnTopSettings::settings().transparencyPercentage);
+            }
+            
             Trace::AlwaysOnTop::PinWindow();
         }
     }
@@ -274,6 +303,9 @@ void AlwaysOnTop::RegisterHotkey() const
 
     UnregisterHotKey(m_window, static_cast<int>(HotkeyId::Pin));
     RegisterHotKey(m_window, static_cast<int>(HotkeyId::Pin), AlwaysOnTopSettings::settings().hotkey.get_modifiers(), AlwaysOnTopSettings::settings().hotkey.get_code());
+    
+    UnregisterHotKey(m_window, static_cast<int>(HotkeyId::TransparentPin));
+    RegisterHotKey(m_window, static_cast<int>(HotkeyId::TransparentPin), AlwaysOnTopSettings::settings().transparencyHotkey.get_modifiers(), AlwaysOnTopSettings::settings().transparencyHotkey.get_code());
 }
 
 void AlwaysOnTop::RegisterLLKH()
@@ -284,11 +316,18 @@ void AlwaysOnTop::RegisterLLKH()
     }
 	
     m_hPinEvent = CreateEventW(nullptr, false, false, CommonSharedConstants::ALWAYS_ON_TOP_PIN_EVENT);
+    m_hTransparentPinEvent = CreateEventW(nullptr, false, false, CommonSharedConstants::ALWAYS_ON_TOP_TRANSPARENT_PIN_EVENT);
     m_hTerminateEvent = CreateEventW(nullptr, false, false, CommonSharedConstants::ALWAYS_ON_TOP_TERMINATE_EVENT);
 
     if (!m_hPinEvent)
     {
         Logger::warn(L"Failed to create pinEvent. {}", get_last_error_or_default(GetLastError()));
+        return;
+    }
+
+    if (!m_hTransparentPinEvent)
+    {
+        Logger::warn(L"Failed to create transparentPinEvent. {}", get_last_error_or_default(GetLastError()));
         return;
     }
 
@@ -298,14 +337,15 @@ void AlwaysOnTop::RegisterLLKH()
         return;
     }
 
-    HANDLE handles[2] = { m_hPinEvent,
+    HANDLE handles[3] = { m_hPinEvent,
+                          m_hTransparentPinEvent,
                           m_hTerminateEvent };
 
     m_thread = std::thread([this, handles]() {
         MSG msg;
         while (m_running)
         {
-            DWORD dwEvt = MsgWaitForMultipleObjects(2, handles, false, INFINITE, QS_ALLINPUT);
+            DWORD dwEvt = MsgWaitForMultipleObjects(3, handles, false, INFINITE, QS_ALLINPUT);
             if (!m_running)
             {
                 break;
@@ -315,13 +355,19 @@ void AlwaysOnTop::RegisterLLKH()
             case WAIT_OBJECT_0:
                 if (HWND fw{ GetForegroundWindow() })
                 {
-                    ProcessCommand(fw);
+                    ProcessCommand(fw, false);
                 }
                 break;
             case WAIT_OBJECT_0 + 1:
-                PostThreadMessage(m_mainThreadId, WM_QUIT, 0, 0);
+                if (HWND fw{ GetForegroundWindow() })
+                {
+                    ProcessCommand(fw, true);
+                }
                 break;
             case WAIT_OBJECT_0 + 2:
+                PostThreadMessage(m_mainThreadId, WM_QUIT, 0, 0);
+                break;
+            case WAIT_OBJECT_0 + 3:
                 if (PeekMessageW(&msg, nullptr, 0, 0, PM_REMOVE))
                 {
                     TranslateMessage(&msg);

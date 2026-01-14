@@ -10,6 +10,7 @@
 
 #include <common/hooks/WinHookEvent.h>
 #include <common/notifications/NotificationUtil.h>
+#include <common/utils/window.h>
 
 class AlwaysOnTop : public SettingsObserver
 {
@@ -38,6 +39,7 @@ private:
     enum class HotkeyId : int
     {
         Pin = 1,
+        TransparentPin = 2,
     };
 
     static inline AlwaysOnTop* s_instance = nullptr;
@@ -49,6 +51,7 @@ private:
     HINSTANCE m_hinstance;
     std::map<HWND, std::unique_ptr<WindowBorder>> m_topmostWindows{};
     HANDLE m_hPinEvent;
+    HANDLE m_hTransparentPinEvent;
     HANDLE m_hTerminateEvent;
     DWORD m_mainThreadId;
     std::thread m_thread;
@@ -64,7 +67,7 @@ private:
     void RegisterLLKH();
     void SubscribeToEvents();
 
-    void ProcessCommand(HWND window);
+    void ProcessCommand(HWND window, bool transparent = false);
     void StartTrackingTopmostWindows();
     void UnpinAll();
     void CleanUp();

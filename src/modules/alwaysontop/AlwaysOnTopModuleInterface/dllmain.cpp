@@ -27,6 +27,7 @@ namespace
     const wchar_t JSON_KEY_SHIFT[] = L"shift";
     const wchar_t JSON_KEY_CODE[] = L"code";
     const wchar_t JSON_KEY_HOTKEY[] = L"hotkey";
+    const wchar_t JSON_KEY_TRANSPARENCY_HOTKEY[] = L"transparency-hotkey";
     const wchar_t JSON_KEY_VALUE[] = L"value";
 }
 
@@ -105,17 +106,24 @@ public:
         }
     }
 
-    virtual bool on_hotkey(size_t /*hotkeyId*/) override
+    virtual bool on_hotkey(size_t hotkeyId) override
     {
         if (m_enabled)
         {
-            Logger::trace(L"AlwaysOnTop hotkey pressed");
+            Logger::trace(L"AlwaysOnTop hotkey pressed, id={}", hotkeyId);
             if (!is_process_running())
             {
                 Enable();
             }
 
-            SetEvent(m_hPinEvent);
+            if (hotkeyId == 0)
+            {
+                SetEvent(m_hPinEvent);
+            }
+            else if (hotkeyId == 1)
+            {
+                SetEvent(m_hTransparentPinEvent);
+            }
 
             return true;
         }
@@ -125,19 +133,32 @@ public:
 
     virtual size_t get_hotkeys(Hotkey* hotkeys, size_t buffer_size) override
     {
+        size_t count = 0;
+        
         if (m_hotkey.key)
         {
-            if (hotkeys && buffer_size >= 1)
+            if (hotkeys && buffer_size > count)
             {
-                hotkeys[0] = m_hotkey;
+                hotkeys[count] = m_hotkey;
+                Logger::trace(L"AlwaysOnTop hotkey[0]: win={}, ctrl={}, shift={}, alt={}, key={}", 
+                    m_hotkey.win, m_hotkey.ctrl, m_hotkey.shift, m_hotkey.alt, m_hotkey.key);
             }
-
-            return 1;
+            count++;
         }
-        else
+        
+        if (m_transparencyHotkey.key)
         {
-            return 0;
+            if (hotkeys && buffer_size > count)
+            {
+                hotkeys[count] = m_transparencyHotkey;
+                Logger::trace(L"AlwaysOnTop hotkey[1]: win={}, ctrl={}, shift={}, alt={}, key={}", 
+                    m_transparencyHotkey.win, m_transparencyHotkey.ctrl, m_transparencyHotkey.shift, m_transparencyHotkey.alt, m_transparencyHotkey.key);
+            }
+            count++;
         }
+
+        Logger::trace(L"AlwaysOnTop get_hotkeys returning count={}", count);
+        return count;
     }
 
     // Enable the powertoy
@@ -174,6 +195,7 @@ public:
         app_name = L"AlwaysOnTop"; //TODO: localize
         app_key = NonLocalizable::ModuleKey;
         m_hPinEvent = CreateDefaultEvent(CommonSharedConstants::ALWAYS_ON_TOP_PIN_EVENT);
+        m_hTransparentPinEvent = CreateDefaultEvent(CommonSharedConstants::ALWAYS_ON_TOP_TRANSPARENT_PIN_EVENT);
         m_hTerminateEvent = CreateDefaultEvent(CommonSharedConstants::ALWAYS_ON_TOP_TERMINATE_EVENT);
         init_settings();
     }
@@ -190,6 +212,7 @@ private:
         std::wstring executable_args = L"";
         executable_args.append(std::to_wstring(powertoys_pid));
         ResetEvent(m_hPinEvent);
+        ResetEvent(m_hTransparentPinEvent);
 
         SHELLEXECUTEINFOW sei{ sizeof(sei) };
         sei.fMask = { SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI };
@@ -215,6 +238,7 @@ private:
     {
         m_enabled = false;
         ResetEvent(m_hPinEvent);
+        ResetEvent(m_hTransparentPinEvent);
 
         // Log telemetry
         if (traceEvent)
@@ -253,6 +277,26 @@ private:
             {
                 Logger::error("Failed to initialize AlwaysOnTop start shortcut");
             }
+
+            try
+            {
+                auto jsonTransparencyHotkeyObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_TRANSPARENCY_HOTKEY).GetNamedObject(JSON_KEY_VALUE);
+                m_transparencyHotkey.win = jsonTransparencyHotkeyObject.GetNamedBoolean(JSON_KEY_WIN);
+                m_transparencyHotkey.alt = jsonTransparencyHotkeyObject.GetNamedBoolean(JSON_KEY_ALT);
+                m_transparencyHotkey.shift = jsonTransparencyHotkeyObject.GetNamedBoolean(JSON_KEY_SHIFT);
+                m_transparencyHotkey.ctrl = jsonTransparencyHotkeyObject.GetNamedBoolean(JSON_KEY_CTRL);
+                m_transparencyHotkey.key = static_cast<unsigned char>(jsonTransparencyHotkeyObject.GetNamedNumber(JSON_KEY_CODE));
+            }
+            catch (...)
+            {
+                Logger::info("AlwaysOnTop transparency shortcut not configured, using default");
+                // Set default: Win + Ctrl + Shift + T
+                m_transparencyHotkey.win = true;
+                m_transparencyHotkey.ctrl = true;
+                m_transparencyHotkey.shift = true;
+                m_transparencyHotkey.alt = false;
+                m_transparencyHotkey.key = 0x54; // T
+            }
         }
         else
         {
@@ -288,9 +332,11 @@ private:
     bool m_enabled = false;
     HANDLE m_hProcess = nullptr;
     Hotkey m_hotkey;
+    Hotkey m_transparencyHotkey;
 
     // Handle to event used to pin/unpin windows
     HANDLE m_hPinEvent;
+    HANDLE m_hTransparentPinEvent;
     HANDLE m_hTerminateEvent;
 };
 

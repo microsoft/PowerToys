@@ -11,5 +11,7 @@ enum class SettingId
     BlockInGameMode,
     ExcludeApps,
     FrameAccentColor,
-    RoundCornersEnabled
+    RoundCornersEnabled,
+    TransparencyHotkey,
+    TransparencyPercentage
 };

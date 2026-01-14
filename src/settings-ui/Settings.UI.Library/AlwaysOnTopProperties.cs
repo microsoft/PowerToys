@@ -11,6 +11,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     public class AlwaysOnTopProperties
     {
         public static readonly HotkeySettings DefaultHotkeyValue = new HotkeySettings(true, true, false, false, 0x54);
+        public static readonly HotkeySettings DefaultTransparencyHotkeyValue = new HotkeySettings(true, true, false, true, 0x54);
         public const bool DefaultFrameEnabled = true;
         public const int DefaultFrameThickness = 15;
         public const string DefaultFrameColor = "#0099cc";
@@ -19,10 +20,12 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public const bool DefaultSoundEnabled = true;
         public const bool DefaultDoNotActivateOnGameMode = true;
         public const bool DefaultRoundCornersEnabled = true;
+        public const int DefaultTransparencyPercentage = 50;
 
         public AlwaysOnTopProperties()
         {
             Hotkey = new KeyboardKeysProperty(DefaultHotkeyValue);
+            TransparencyHotkey = new KeyboardKeysProperty(DefaultTransparencyHotkeyValue);
             FrameEnabled = new BoolProperty(DefaultFrameEnabled);
             FrameThickness = new IntProperty(DefaultFrameThickness);
             FrameColor = new StringProperty(DefaultFrameColor);
@@ -31,11 +34,15 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             SoundEnabled = new BoolProperty(DefaultSoundEnabled);
             DoNotActivateOnGameMode = new BoolProperty(DefaultDoNotActivateOnGameMode);
             RoundCornersEnabled = new BoolProperty(DefaultRoundCornersEnabled);
+            TransparencyPercentage = new IntProperty(DefaultTransparencyPercentage);
             ExcludedApps = new StringProperty();
         }
 
         [JsonPropertyName("hotkey")]
         public KeyboardKeysProperty Hotkey { get; set; }
+
+        [JsonPropertyName("transparency-hotkey")]
+        public KeyboardKeysProperty TransparencyHotkey { get; set; }
 
         [JsonPropertyName("frame-enabled")]
         public BoolProperty FrameEnabled { get; set; }
@@ -63,6 +70,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         [JsonPropertyName("round-corners-enabled")]
         public BoolProperty RoundCornersEnabled { get; set; }
+
+        [JsonPropertyName("transparency-percentage")]
+        public IntProperty TransparencyPercentage { get; set; }
 
         public string ToJsonString()
         {

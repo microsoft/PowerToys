@@ -38,6 +38,22 @@
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
+                    <tkcontrols:SettingsCard
+                        Name="AlwaysOnTopTransparencyActivationShortcut"
+                        x:Uid="AlwaysOnTop_TransparencyActivationShortcut"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
+                        <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.TransparencyHotkey, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
+                    <tkcontrols:SettingsCard
+                        Name="AlwaysOnTopTransparencyPercentage"
+                        x:Uid="AlwaysOnTop_TransparencyPercentage"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE790;}">
+                        <Slider
+                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                            Maximum="100"
+                            Minimum="10"
+                            Value="{x:Bind ViewModel.TransparencyPercentage, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup x:Uid="AlwaysOnTop_Behavior_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">

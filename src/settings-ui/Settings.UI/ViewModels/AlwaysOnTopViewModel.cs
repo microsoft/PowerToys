@@ -49,6 +49,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             Settings = moduleSettingsRepository.SettingsConfig;
 
             _hotkey = Settings.Properties.Hotkey.Value;
+            _transparencyHotkey = Settings.Properties.TransparencyHotkey.Value;
             _frameEnabled = Settings.Properties.FrameEnabled.Value;
             _frameThickness = Settings.Properties.FrameThickness.Value;
             _frameColor = Settings.Properties.FrameColor.Value;
@@ -57,6 +58,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _soundEnabled = Settings.Properties.SoundEnabled.Value;
             _doNotActivateOnGameMode = Settings.Properties.DoNotActivateOnGameMode.Value;
             _roundCornersEnabled = Settings.Properties.RoundCornersEnabled.Value;
+            _transparencyPercentage = Settings.Properties.TransparencyPercentage.Value;
             _excludedApps = Settings.Properties.ExcludedApps.Value;
             _windows11 = OSVersionHelper.IsWindows11();
 
@@ -83,7 +85,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             var hotkeysDict = new Dictionary<string, HotkeySettings[]>
             {
-                [ModuleName] = [Hotkey],
+                [ModuleName] = [Hotkey, TransparencyHotkey],
             };
 
             return hotkeysDict;
@@ -131,6 +133,30 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     _hotkey = value ?? AlwaysOnTopProperties.DefaultHotkeyValue;
 
                     Settings.Properties.Hotkey.Value = _hotkey;
+                    NotifyPropertyChanged();
+
+                    // Using InvariantCulture as this is an IPC message
+                    SendConfigMSG(
+                        string.Format(
+                            CultureInfo.InvariantCulture,
+                            "{{ \"powertoys\": {{ \"{0}\": {1} }} }}",
+                            AlwaysOnTopSettings.ModuleName,
+                            JsonSerializer.Serialize(Settings, SourceGenerationContextContext.Default.AlwaysOnTopSettings)));
+                }
+            }
+        }
+
+        public HotkeySettings TransparencyHotkey
+        {
+            get => _transparencyHotkey;
+
+            set
+            {
+                if (value != _transparencyHotkey)
+                {
+                    _transparencyHotkey = value ?? AlwaysOnTopProperties.DefaultTransparencyHotkeyValue;
+
+                    Settings.Properties.TransparencyHotkey.Value = _transparencyHotkey;
                     NotifyPropertyChanged();
 
                     // Using InvariantCulture as this is an IPC message
@@ -199,6 +225,21 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     _frameOpacity = value;
                     Settings.Properties.FrameOpacity.Value = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
+        public int TransparencyPercentage
+        {
+            get => _transparencyPercentage;
+
+            set
+            {
+                if (value != _transparencyPercentage)
+                {
+                    _transparencyPercentage = value;
+                    Settings.Properties.TransparencyPercentage.Value = value;
                     NotifyPropertyChanged();
                 }
             }
@@ -305,6 +346,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private bool _enabledStateIsGPOConfigured;
         private bool _isEnabled;
         private HotkeySettings _hotkey;
+        private HotkeySettings _transparencyHotkey;
         private bool _frameEnabled;
         private int _frameThickness;
         private string _frameColor;
@@ -313,6 +355,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private bool _soundEnabled;
         private bool _doNotActivateOnGameMode;
         private bool _roundCornersEnabled;
+        private int _transparencyPercentage;
         private string _excludedApps;
         private bool _windows11;
     }
