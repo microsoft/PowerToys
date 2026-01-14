@@ -50,8 +50,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 "FollowNightLight",
             };
 
-            _toggleThemeHotkey = _moduleSettings.Properties.ToggleThemeHotkey.Value;
-
             // Load PowerDisplay profiles
             LoadPowerDisplayProfiles();
 
@@ -842,7 +840,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private bool _enabledGPOConfiguration;
         private LightSwitchSettings _moduleSettings;
         private bool _isEnabled;
-        private HotkeySettings _toggleThemeHotkey;
         private TimeSpan? _sunriseTimeSpan;
         private TimeSpan? _sunsetTimeSpan;
 
