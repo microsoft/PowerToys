@@ -20,6 +20,11 @@ namespace PowerDisplay.Common.Utils
         public const string DefaultProfileBaseName = "Profile";
 
         /// <summary>
+        /// Maximum counter value when generating unique profile names.
+        /// </summary>
+        private const int MaxProfileCounter = 1000;
+
+        /// <summary>
         /// Generates a unique profile name that doesn't conflict with existing names.
         /// Uses the format "Profile N" where N is an incrementing number.
         /// </summary>
@@ -42,9 +47,8 @@ namespace PowerDisplay.Common.Utils
             }
 
             // Try "Profile 2", "Profile 3", etc.
-            // Use 1000 as reasonable upper limit for counter
             int counter = 2;
-            while (counter < 1000)
+            while (counter < MaxProfileCounter)
             {
                 var candidateName = string.Format(CultureInfo.InvariantCulture, "{0} {1}", nameBase, counter);
                 if (!existingNames.Contains(candidateName))

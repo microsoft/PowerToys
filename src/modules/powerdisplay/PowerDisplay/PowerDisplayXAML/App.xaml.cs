@@ -270,23 +270,6 @@ namespace PowerDisplay
         public Window? MainWindow => _mainWindow;
 
         /// <summary>
-        /// Show the main window
-        /// </summary>
-        private void ShowMainWindow()
-        {
-            Logger.LogInfo("ShowMainWindow: Called");
-            if (_mainWindow is MainWindow mainWindow)
-            {
-                Logger.LogTrace("ShowMainWindow: MainWindow is valid, calling ShowWindow");
-                mainWindow.ShowWindow();
-            }
-            else
-            {
-                Logger.LogError("ShowMainWindow: _mainWindow is null or not MainWindow type");
-            }
-        }
-
-        /// <summary>
         /// Toggle the main window visibility
         /// </summary>
         private void ToggleMainWindow()

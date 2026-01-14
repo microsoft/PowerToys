@@ -39,7 +39,7 @@ namespace PowerDisplay.Common.Interfaces
         /// <summary>
         /// Gets or sets the color temperature VCP preset value (raw DDC/CI value from VCP code 0x14).
         /// This stores the raw VCP value (e.g., 0x05 for 6500K preset), not the Kelvin temperature.
-        /// Use MonitorValueConverter to convert to/from human-readable Kelvin values.
+        /// Use ColorTemperatureHelper to convert to/from human-readable display names.
         /// </summary>
         int ColorTemperatureVcp { get; set; }
 

@@ -17,10 +17,6 @@ namespace PowerDisplay.Common.Drivers.DDC
     /// </summary>
     public class MonitorDiscoveryHelper
     {
-        public MonitorDiscoveryHelper()
-        {
-        }
-
         /// <summary>
         /// Get physical monitors for a logical monitor.
         /// Filters out any monitors with NULL handles (Windows API bug workaround).

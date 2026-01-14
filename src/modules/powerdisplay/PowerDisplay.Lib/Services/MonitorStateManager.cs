@@ -4,7 +4,6 @@
 
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -25,7 +24,6 @@ namespace PowerDisplay.Common.Services
     {
         private readonly string _stateFilePath;
         private readonly ConcurrentDictionary<string, MonitorState> _states = new();
-        private readonly object _statesLock = new();
         private readonly SimpleDebouncer _saveDebouncer;
 
         private bool _disposed;
@@ -197,7 +195,7 @@ namespace PowerDisplay.Common.Services
                     return;
                 }
 
-                var (json, monitorCount) = BuildStateJson();
+                var json = BuildStateJson();
 
                 // Write to disk asynchronously
                 await File.WriteAllTextAsync(_stateFilePath, json);
@@ -219,7 +217,7 @@ namespace PowerDisplay.Common.Services
         {
             try
             {
-                var (json, monitorCount) = BuildStateJson();
+                var json = BuildStateJson();
 
                 // Write to disk synchronously - safe for Dispose
                 File.WriteAllText(_stateFilePath, json);
@@ -234,8 +232,8 @@ namespace PowerDisplay.Common.Services
         /// Build the JSON string for state file.
         /// Shared logic between async and sync save methods.
         /// </summary>
-        /// <returns>Tuple of (JSON string, monitor count)</returns>
-        private (string Json, int MonitorCount) BuildStateJson()
+        /// <returns>JSON string for state file</returns>
+        private string BuildStateJson()
         {
             var now = DateTime.Now;
             var stateFile = new MonitorStateFile
@@ -259,8 +257,7 @@ namespace PowerDisplay.Common.Services
                 };
             }
 
-            var json = JsonSerializer.Serialize(stateFile, ProfileSerializationContext.Default.MonitorStateFile);
-            return (json, stateFile.Monitors.Count);
+            return JsonSerializer.Serialize(stateFile, ProfileSerializationContext.Default.MonitorStateFile);
         }
 
         /// <summary>

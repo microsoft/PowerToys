@@ -6,11 +6,9 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
-using System.Threading;
 
 using global::PowerToys.GPOWrapper;
 using ManagedCommon;
@@ -19,7 +17,6 @@ using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.Library.ViewModels.Commands;
-using Microsoft.PowerToys.Settings.UI.Services;
 using PowerDisplay.Common.Models;
 using PowerDisplay.Common.Services;
 using PowerDisplay.Common.Utils;
@@ -133,8 +130,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     // Explicitly signal PowerDisplay to refresh tray icon
                     // This is needed because set_config() doesn't signal SettingsUpdatedEvent to avoid UI refresh issues
-                    EventHelper.SignalEvent(Constants.SettingsUpdatedPowerDisplayEvent());
-                    Logger.LogInfo($"ShowSystemTrayIcon changed to {value}, signaled SettingsUpdatedPowerDisplayEvent");
+                    SignalSettingsUpdated();
+                    Logger.LogInfo($"ShowSystemTrayIcon changed to {value}");
                 }
             }
         }
@@ -177,6 +174,16 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     Logger.LogInfo($"ActivationShortcut changed, signaled HotkeyUpdatedPowerDisplayEvent");
                 }
             }
+        }
+
+        public override Dictionary<string, HotkeySettings[]> GetAllHotkeySettings()
+        {
+            var hotkeysDict = new Dictionary<string, HotkeySettings[]>
+            {
+                [ModuleName] = [ActivationShortcut],
+            };
+
+            return hotkeysDict;
         }
 
         /// <summary>
@@ -274,8 +281,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 _monitors.CollectionChanged -= Monitors_CollectionChanged;
             }
-
-            GC.SuppressFinalize(this);
 
             base.Dispose();
         }

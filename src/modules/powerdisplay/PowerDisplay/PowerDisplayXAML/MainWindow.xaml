@@ -3,7 +3,6 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:animatedVisuals="using:Microsoft.UI.Xaml.Controls.AnimatedVisuals"
-    xmlns:animations="using:CommunityToolkit.WinUI.Animations"
     xmlns:helpers="using:PowerDisplay.Helpers"
     xmlns:local="using:PowerDisplay"
     xmlns:models="using:PowerDisplay.Common.Models"
