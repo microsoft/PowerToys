@@ -227,16 +227,6 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             navigationView.SelectedItem = navigationView.MenuItems[(int)selectedModule];
         }
 
-        private static void OpenScoobeWindow()
-        {
-            if (App.GetScoobeWindow() == null)
-            {
-                App.SetScoobeWindow(new ScoobeWindow());
-            }
-
-            App.GetScoobeWindow().Activate();
-        }
-
         private void NavigationView_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
         {
             NavigationViewItem selectedItem = args.SelectedItem as NavigationViewItem;
@@ -308,7 +298,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 
         private void WhatIsNewItem_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            OpenScoobeWindow();
+            App.OpenScoobeWindow();
         }
     }
 }

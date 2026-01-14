@@ -254,11 +254,7 @@ namespace Microsoft.PowerToys.Settings.UI
                 }
                 else if (ShowScoobe)
                 {
-                    PowerToysTelemetry.Log.WriteEvent(new ScoobeStartedEvent());
-                    ScoobeWindow newScoobeWindow = new ScoobeWindow();
-                    newScoobeWindow.Activate();
-                    WindowHelpers.ForceTopBorder1PixelInsetOnWindows10(WindowNative.GetWindowHandle(settingsWindow));
-                    SetScoobeWindow(newScoobeWindow);
+                    OpenScoobeWindow();
                 }
             }
         }
@@ -336,7 +332,6 @@ namespace Microsoft.PowerToys.Settings.UI
 
         private static MainWindow settingsWindow;
         private static OobeWindow oobeWindow;
-        private static ScoobeWindow scoobeWindow;
 
         public static void ClearSettingsWindow()
         {
@@ -363,19 +358,11 @@ namespace Microsoft.PowerToys.Settings.UI
             oobeWindow = null;
         }
 
-        public static ScoobeWindow GetScoobeWindow()
+        public static void OpenScoobeWindow()
         {
-            return scoobeWindow;
-        }
-
-        public static void SetScoobeWindow(ScoobeWindow window)
-        {
-            scoobeWindow = window;
-        }
-
-        public static void ClearScoobeWindow()
-        {
-            scoobeWindow = null;
+            PowerToysTelemetry.Log.WriteEvent(new ScoobeStartedEvent());
+            ScoobeWindow newScoobeWindow = new();
+            newScoobeWindow.Activate();
         }
 
         public static Type GetPage(string settingWindow)

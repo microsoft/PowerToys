@@ -117,16 +117,8 @@ namespace Microsoft.PowerToys.Settings.UI
                 App.GetOobeWindow().Activate();
             });
 
-            // open whats new window
-            ShellPage.SetOpenWhatIsNewCallback(() =>
-            {
-                if (App.GetScoobeWindow() == null)
-                {
-                    App.SetScoobeWindow(new ScoobeWindow());
-                }
-
-                App.GetScoobeWindow().Activate();
-            });
+            // Open the What's New window
+            ShellPage.SetOpenWhatIsNewCallback(App.OpenScoobeWindow);
 
             this.InitializeComponent();
             SetAppTitleBar();
@@ -182,7 +174,7 @@ namespace Microsoft.PowerToys.Settings.UI
             var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
             WindowHelper.SerializePlacement(hWnd);
 
-            if (App.GetOobeWindow() == null && App.GetScoobeWindow() == null)
+            if (App.GetOobeWindow() == null)
             {
                 App.ClearSettingsWindow();
             }
