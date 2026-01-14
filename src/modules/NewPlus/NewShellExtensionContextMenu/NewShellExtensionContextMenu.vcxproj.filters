@@ -34,9 +34,7 @@
     <ClCompile Include="new_utilities.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\powerrename\lib\Helpers.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
+    <ClCompile Include="Helpers.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="template_folder.h">
@@ -87,6 +85,7 @@
     <ClInclude Include="RuntimeRegistration.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Helpers.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

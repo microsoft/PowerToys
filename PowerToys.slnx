@@ -113,6 +113,7 @@
     <File Path="src/common/utils/string_utils.h" />
     <File Path="src/common/utils/timeutil.h" />
     <File Path="src/common/utils/UnhandledExceptionHandler.h" />
+    <File Path="src/common/utils/version.h" />
     <File Path="src/common/utils/winapi_error.h" />
     <File Path="src/common/utils/window.h" />
   </Folder>
@@ -517,7 +518,7 @@
     </Project>
   </Folder>
   <Folder Name="/modules/FileLocksmith/">
-    <Project Path="src/modules/FileLocksmith/FileLocksmithCLI/FileLocksmithCLI.vcxproj" Id="49D456D3-F485-45AF-8875-45B44F193DDC" />
+    <Project Path="src/modules/FileLocksmith/FileLocksmithCLI/FileLocksmithCLI.vcxproj" Id="49d456d3-f485-45af-8875-45b44f193ddc" />
     <Project Path="src/modules/FileLocksmith/FileLocksmithContextMenu/FileLocksmithContextMenu.vcxproj" Id="799a50d8-de89-4ed1-8ff8-ad5a9ed8c0ca" />
     <Project Path="src/modules/FileLocksmith/FileLocksmithExt/FileLocksmithExt.vcxproj" Id="57175ec7-92a5-4c1e-8244-e3fbca2a81de" />
     <Project Path="src/modules/FileLocksmith/FileLocksmithLib/FileLocksmithLib.vcxproj" Id="9d52fd25-ef90-4f9a-a015-91efc5daf54f" />
@@ -528,7 +529,7 @@
     </Project>
   </Folder>
   <Folder Name="/modules/FileLocksmith/Tests/">
-    <Project Path="src/modules/FileLocksmith/FileLocksmithCLI/tests/FileLocksmithCLIUnitTests.vcxproj" Id="A1B2C3D4-E5F6-7890-1234-567890ABCDEF" />
+    <Project Path="src/modules/FileLocksmith/FileLocksmithCLI/tests/FileLocksmithCLIUnitTests.vcxproj" Id="a1b2c3d4-e5f6-7890-1234-567890abcdef" />
   </Folder>
   <Folder Name="/modules/Hosts/">
     <Project Path="src/modules/Hosts/Hosts/Hosts.csproj">
@@ -553,13 +554,13 @@
   </Folder>
   <Folder Name="/modules/imageresizer/">
     <Project Path="src/modules/imageresizer/dll/ImageResizerExt.vcxproj" Id="0b43679e-edfa-4da0-ad30-f4628b308b1b" />
-    <Project Path="src/modules/imageresizer/ImageResizerContextMenu/ImageResizerContextMenu.vcxproj" Id="93b72a06-c8bd-484f-a6f7-c9f280b150bf" />
-    <Project Path="src/modules/imageresizer/ImageResizerLib/ImageResizerLib.vcxproj" Id="18b3db45-4ffe-4d01-97d6-5223feee1853" />
-    <Project Path="src/modules/imageresizer/ui/ImageResizerUI.csproj">
+    <Project Path="src/modules/imageresizer/ImageResizerCLI/ImageResizerCLI.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
-    <Project Path="src/modules/imageresizer/ImageResizerCLI/ImageResizerCLI.csproj">
+    <Project Path="src/modules/imageresizer/ImageResizerContextMenu/ImageResizerContextMenu.vcxproj" Id="93b72a06-c8bd-484f-a6f7-c9f280b150bf" />
+    <Project Path="src/modules/imageresizer/ImageResizerLib/ImageResizerLib.vcxproj" Id="18b3db45-4ffe-4d01-97d6-5223feee1853" />
+    <Project Path="src/modules/imageresizer/ui/ImageResizerUI.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
