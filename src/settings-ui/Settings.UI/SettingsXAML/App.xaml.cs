@@ -34,6 +34,10 @@ namespace Microsoft.PowerToys.Settings.UI
     {
         public static OobeShellViewModel OobeShellViewModel { get; } = new();
 
+        private OobeWindow oobeWindow;
+
+        private ScoobeWindow scoobeWindow;
+
         private enum Arguments
         {
             PTPipeName = 1,
@@ -245,11 +249,11 @@ namespace Microsoft.PowerToys.Settings.UI
 
                 if (ShowOobe)
                 {
-                    OpenOobeWindow();
+                    OpenOobe();
                 }
                 else if (ShowScoobe)
                 {
-                    OpenScoobeWindow();
+                    OpenScoobe();
                 }
             }
         }
@@ -335,18 +339,46 @@ namespace Microsoft.PowerToys.Settings.UI
             return settingsWindow;
         }
 
-        public static void OpenScoobeWindow()
+        public void OpenScoobe()
         {
             PowerToysTelemetry.Log.WriteEvent(new ScoobeStartedEvent());
-            ScoobeWindow scoobeWindow = new();
-            scoobeWindow.Activate();
+
+            if (scoobeWindow == null)
+            {
+                scoobeWindow = new ScoobeWindow();
+
+                scoobeWindow.Closed += (_, _) =>
+                {
+                    scoobeWindow = null;
+                };
+
+                scoobeWindow.Activate();
+            }
+            else
+            {
+                WindowHelpers.BringToForeground(scoobeWindow.GetWindowHandle());
+            }
         }
 
-        public static void OpenOobeWindow()
+        public void OpenOobe()
         {
             PowerToysTelemetry.Log.WriteEvent(new OobeStartedEvent());
-            OobeWindow oobeWindow = new OobeWindow();
-            oobeWindow.Activate();
+
+            if (oobeWindow == null)
+            {
+                oobeWindow = new OobeWindow();
+
+                oobeWindow.Closed += (_, _) =>
+                {
+                    oobeWindow = null;
+                };
+
+                oobeWindow.Activate();
+            }
+            else
+            {
+                WindowHelpers.BringToForeground(oobeWindow.GetWindowHandle());
+            }
         }
 
         public static Type GetPage(string settingWindow)

@@ -158,7 +158,7 @@ namespace Microsoft.PowerToys.Settings.UI
 
         private void WhatIsNewItem_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            App.OpenScoobeWindow();
+            ((App)App.Current)!.OpenScoobe();
         }
 
         private void Window_Activated(object sender, WindowActivatedEventArgs args)

@@ -107,12 +107,6 @@ namespace Microsoft.PowerToys.Settings.UI
                 return needToUpdate;
             });
 
-            // open oobe
-            App.OpenOobeWindow();
-
-            // Open the What's New window
-            ShellPage.SetOpenWhatIsNewCallback(App.OpenScoobeWindow);
-
             this.InitializeComponent();
             SetTitleBar();
 

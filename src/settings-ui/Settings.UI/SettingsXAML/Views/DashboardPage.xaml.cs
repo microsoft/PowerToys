@@ -48,7 +48,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private void WhatsNewButton_Click(object sender, RoutedEventArgs e)
         {
-            App.OpenScoobeWindow();
+            ((App)App.Current)!.OpenScoobe();
         }
 
         private void SortAlphabetical_Click(object sender, RoutedEventArgs e)
