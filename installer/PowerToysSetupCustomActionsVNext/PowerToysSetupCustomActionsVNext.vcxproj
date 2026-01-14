@@ -1,8 +1,9 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" Condition="Exists('$(VCTargetsPath)\Microsoft.Cpp.Default.props')" />
+  <Import Project="..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.props')" />
   <Import Project="..\packages\WixToolset.WcaUtil.5.0.2\build\WixToolset.WcaUtil.props" Condition="Exists('..\packages\WixToolset.WcaUtil.5.0.2\build\WixToolset.WcaUtil.props')" />
   <Import Project="..\packages\WixToolset.DUtil.5.0.2\build\WixToolset.DUtil.props" Condition="Exists('..\packages\WixToolset.DUtil.5.0.2\build\WixToolset.DUtil.props')" />
-  <Import Project="..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.props')" />
   <Import Project="..\wix.props" Condition="Exists('..\wix.props')" />
   <PropertyGroup Label="Globals">
     <ProjectGuid>{B3A354B0-1E54-4B55-A962-FB5AF9330C19}</ProjectGuid>
@@ -10,7 +11,6 @@
     <RootNamespace>PowerToysSetupCustomActionsVNext</RootNamespace>
     <ProjectName>PowerToysSetupCustomActionsVNext</ProjectName>
   </PropertyGroup>
-  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" Condition="Exists('$(VCTargetsPath)\Microsoft.Cpp.Default.props')" />
   <PropertyGroup Condition="'$(Configuration)'=='Debug'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <CharacterSet>Unicode</CharacterSet>
