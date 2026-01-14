@@ -1660,6 +1660,102 @@ INT_PTR VideoRecordingSession::ShowTrimDialogInternal(
     data.dialogX = x;
     data.dialogY = y;
 
+    // Pre-load the first frame preview before showing the dialog to avoid "Preview not available" flash
+    // Must run on a background thread because WinRT async .get() cannot be called on STA (UI) thread
+    if (!data.isGif)
+    {
+        std::thread preloadThread([&data, &videoPath]()
+        {
+            winrt::init_apartment(winrt::apartment_type::multi_threaded);
+            try
+            {
+                auto file = winrt::StorageFile::GetFileFromPathAsync(videoPath).get();
+                auto clip = winrt::MediaClip::CreateFromFileAsync(file).get();
+
+                data.composition = winrt::MediaComposition();
+                data.composition.Clips().Append(clip);
+
+                // Update to actual duration from clip
+                auto actualDuration = clip.OriginalDuration();
+                if (actualDuration.count() > 0)
+                {
+                    data.videoDuration = actualDuration;
+                    if (data.trimEnd.count() <= 0 || data.trimEnd.count() > actualDuration.count())
+                    {
+                        data.trimEnd = actualDuration;
+                        data.originalTrimEnd = actualDuration;
+                    }
+                }
+
+                // Get first frame thumbnail
+                const int64_t requestTicks = std::clamp<int64_t>(data.currentPosition.count(), 0, data.videoDuration.count());
+                auto stream = data.composition.GetThumbnailAsync(
+                    winrt::TimeSpan{ requestTicks },
+                    0, 0,
+                    winrt::VideoFramePrecision::NearestFrame).get();
+
+                if (stream)
+                {
+                    winrt::com_ptr<IWICImagingFactory> wicFactory;
+                    if (SUCCEEDED(CoCreateInstance(CLSID_WICImagingFactory, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(wicFactory.put()))))
+                    {
+                        winrt::com_ptr<IStream> istream;
+                        auto streamAsUnknown = static_cast<::IUnknown*>(winrt::get_abi(stream));
+                        if (SUCCEEDED(CreateStreamOverRandomAccessStream(streamAsUnknown, IID_PPV_ARGS(istream.put()))) && istream)
+                        {
+                            winrt::com_ptr<IWICBitmapDecoder> decoder;
+                            if (SUCCEEDED(wicFactory->CreateDecoderFromStream(istream.get(), nullptr, WICDecodeMetadataCacheOnDemand, decoder.put())))
+                            {
+                                winrt::com_ptr<IWICBitmapFrameDecode> frame;
+                                if (SUCCEEDED(decoder->GetFrame(0, frame.put())))
+                                {
+                                    winrt::com_ptr<IWICFormatConverter> converter;
+                                    if (SUCCEEDED(wicFactory->CreateFormatConverter(converter.put())))
+                                    {
+                                        if (SUCCEEDED(converter->Initialize(frame.get(), GUID_WICPixelFormat32bppBGRA,
+                                                                             WICBitmapDitherTypeNone, nullptr, 0.0,
+                                                                             WICBitmapPaletteTypeCustom)))
+                                        {
+                                            UINT width, height;
+                                            converter->GetSize(&width, &height);
+
+                                            BITMAPINFO bmi = {};
+                                            bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+                                            bmi.bmiHeader.biWidth = width;
+                                            bmi.bmiHeader.biHeight = -static_cast<LONG>(height);
+                                            bmi.bmiHeader.biPlanes = 1;
+                                            bmi.bmiHeader.biBitCount = 32;
+                                            bmi.bmiHeader.biCompression = BI_RGB;
+
+                                            void* bits = nullptr;
+                                            HDC hdcScreen = GetDC(nullptr);
+                                            HBITMAP hBitmap = CreateDIBSection(hdcScreen, &bmi, DIB_RGB_COLORS, &bits, nullptr, 0);
+                                            ReleaseDC(nullptr, hdcScreen);
+
+                                            if (hBitmap && bits)
+                                            {
+                                                converter->CopyPixels(nullptr, width * 4, width * height * 4, static_cast<BYTE*>(bits));
+                                                data.hPreviewBitmap = hBitmap;
+                                                data.previewBitmapOwned = true;
+                                                data.lastRenderedPreview.store(requestTicks, std::memory_order_relaxed);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            catch (...)
+            {
+                // If preloading fails, the dialog will show "Preview not available" briefly
+                // but will recover via the async UpdateVideoPreview path
+            }
+        });
+        preloadThread.join();
+    }
+
     auto result = DialogBoxParam(
         GetModuleHandle(nullptr),
         MAKEINTRESOURCE(IDD_VIDEO_TRIM),
@@ -3753,8 +3849,18 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
 
         UpdateDurationDisplay(hDlg, pData);
 
-        // Update labels and timeline (also starts async video load)
-        UpdateVideoPreview(hDlg, pData);
+        // Update labels and timeline; skip async preview load if we already have a preloaded frame
+        if (pData->hPreviewBitmap)
+        {
+            // Already have a preview from preloading - just update the UI
+            UpdatePositionUI(hDlg, pData, true);
+            InvalidateRect(GetDlgItem(hDlg, IDC_TRIM_PREVIEW), nullptr, FALSE);
+        }
+        else
+        {
+            // No preloaded preview - start async video load
+            UpdateVideoPreview(hDlg, pData);
+        }
         SetTimeText(hDlg, IDC_TRIM_POSITION_LABEL, pData->currentPosition, true);
 
         // Initialize currentDpi to actual dialog DPI (for WM_DPICHANGED handling)

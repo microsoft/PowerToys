@@ -2196,11 +2196,11 @@ void RegisterAllHotkeys(HWND hWnd)
     RegisterHotKey(hWnd, RECORD_GIF_HOTKEY, MOD_CONTROL | MOD_NOREPEAT, 568 && 0xFF);
     RegisterHotKey(hWnd, RECORD_GIF_WINDOW_HOTKEY, MOD_CONTROL | MOD_ALT | MOD_NOREPEAT, 568 && 0xFF);
 
-    // Fixed bindings for save/copy hotkeys
+    // Fixed bindings for save hotkeys (always active)
     RegisterHotKey(hWnd, SAVE_IMAGE_HOTKEY, MOD_CONTROL | MOD_NOREPEAT, 'S');
     RegisterHotKey(hWnd, SAVE_CROP_HOTKEY, MOD_CONTROL | MOD_SHIFT | MOD_NOREPEAT, 'S');
-    RegisterHotKey(hWnd, COPY_IMAGE_HOTKEY, MOD_CONTROL | MOD_NOREPEAT, 'C');
-    RegisterHotKey(hWnd, COPY_CROP_HOTKEY, MOD_CONTROL | MOD_SHIFT | MOD_NOREPEAT, 'C');
+    // Note: COPY_IMAGE_HOTKEY and COPY_CROP_HOTKEY (Ctrl+C, Ctrl+Shift+C) are registered
+    // only during static zoom mode to avoid blocking system-wide Ctrl+C
 }
 
 
@@ -5817,6 +5817,11 @@ LRESULT APIENTRY MainWndProc(
         if( wParam == 2 && zoomLevel == 1 )
         {
             g_Zoomed = FALSE;
+
+            // Unregister Ctrl+C hotkeys when exiting static zoom
+            UnregisterHotKey( hWnd, COPY_IMAGE_HOTKEY );
+            UnregisterHotKey( hWnd, COPY_CROP_HOTKEY );
+
             if( g_ZoomOnLiveZoom )
             {
                 GetCursorPos( &cursorPos );
@@ -6559,6 +6564,10 @@ LRESULT APIENTRY MainWndProc(
                     g_Zoomed = TRUE;
                     g_DrawingShape = FALSE;
                     OutputDebug( L"Zoom on\n");
+
+                    // Register Ctrl+C hotkeys only during static zoom
+                    RegisterHotKey(hWnd, COPY_IMAGE_HOTKEY, MOD_CONTROL | MOD_NOREPEAT, 'C');
+                    RegisterHotKey(hWnd, COPY_CROP_HOTKEY, MOD_CONTROL | MOD_SHIFT | MOD_NOREPEAT, 'C');
 
 #ifdef __ZOOMIT_POWERTOYS__
                     if( g_StartedByPowerToys )
