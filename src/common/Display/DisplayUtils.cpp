@@ -46,7 +46,7 @@ namespace DisplayUtils
         dpiUnawareThread.submit(OnThreadExecutor::task_t{ [&] {
             SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT_UNAWARE);
             SetThreadDpiHostingBehavior(DPI_HOSTING_BEHAVIOR_MIXED);
-        } }).get();
+        } }).wait();
 
         for (auto& monitorData : allMonitors)
         {
@@ -59,7 +59,7 @@ namespace DisplayUtils
                 {
                     return;
                 }
-            } }).get();
+            } }).wait();
 
             UINT dpi = 0;
             if (DPIAware::GetScreenDPIForMonitor(monitorData.first, dpi) != S_OK)

@@ -88,78 +88,70 @@ namespace updating
     std::future<nonstd::expected<github_version_info, std::wstring>> get_github_version_info_async(const bool prerelease)
 #endif
     {
-        return std::async(std::launch::async, [prerelease]() ->
-#if USE_STD_EXPECTED
-            std::expected<github_version_info, std::wstring>
-#else
-            nonstd::expected<github_version_info, std::wstring>
-#endif
+        // If the current version starts with 0.0.*, it means we're on a local build from a farm and shouldn't check for updates.
+        if constexpr (VERSION_MAJOR == 0 && VERSION_MINOR == 0)
         {
-            // If the current version starts with 0.0.*, it means we're on a local build from a farm and shouldn't check for updates.
-            if constexpr (VERSION_MAJOR == 0 && VERSION_MINOR == 0)
-            {
 #if USE_STD_EXPECTED
-                return std::unexpected(LOCAL_BUILD_ERROR);
+            co_return std::unexpected(LOCAL_BUILD_ERROR);
 #else
-                return nonstd::make_unexpected(LOCAL_BUILD_ERROR);
+            co_return nonstd::make_unexpected(LOCAL_BUILD_ERROR);
 #endif
-            }
+        }
 
-            try
+        try
+        {
+            http::HttpClient client;
+            json::JsonObject release_object;
+            const VersionHelper current_version(VERSION_MAJOR, VERSION_MINOR, VERSION_REVISION);
+            VersionHelper github_version = current_version;
+
+            if (prerelease)
             {
-                http::HttpClient client;
-                json::JsonObject release_object;
-                const VersionHelper current_version(VERSION_MAJOR, VERSION_MINOR, VERSION_REVISION);
-                VersionHelper github_version = current_version;
-
-                if (prerelease)
+                const auto body = co_await client.request(Uri{ ALL_RELEASES_ENDPOINT });
+                for (const auto& json : json::JsonValue::Parse(body).GetArray())
                 {
-                    const auto body = client.request(Uri{ ALL_RELEASES_ENDPOINT }).get();
-                    for (const auto& json : json::JsonValue::Parse(body).GetArray())
+                    auto potential_release_object = json.GetObjectW();
+                    const bool is_prerelease = potential_release_object.GetNamedBoolean(L"prerelease", false);
+                    auto extracted_version = extract_version_from_release_object(potential_release_object);
+                    if (!is_prerelease || !extracted_version || *extracted_version <= github_version)
                     {
-                        auto potential_release_object = json.GetObjectW();
-                        const bool is_prerelease = potential_release_object.GetNamedBoolean(L"prerelease", false);
-                        auto extracted_version = extract_version_from_release_object(potential_release_object);
-                        if (!is_prerelease || !extracted_version || *extracted_version <= github_version)
-                        {
-                            continue;
-                        }
-                        // Do not break, since https://developer.github.com/v3/repos/releases/#list-releases
-                        // doesn't specify the order in which release object appear
-                        github_version = std::move(*extracted_version);
-                        release_object = std::move(potential_release_object);
+                        continue;
                     }
+                    // Do not break, since https://developer.github.com/v3/repos/releases/#list-releases
+                    // doesn't specify the order in which release object appear
+                    github_version = std::move(*extracted_version);
+                    release_object = std::move(potential_release_object);
                 }
-                else
-                {
-                    const auto body = client.request(Uri{ LATEST_RELEASE_ENDPOINT }).get();
-                    release_object = json::JsonValue::Parse(body).GetObjectW();
-                    if (auto extracted_version = extract_version_from_release_object(release_object))
-                    {
-                        github_version = *extracted_version;
-                    }
-                }
-
-                if (github_version <= current_version)
-                {
-                    return version_up_to_date{};
-                }
-
-                auto [installer_download_url, installer_filename] = extract_installer_asset_download_info(release_object);
-                return new_version_download_info{ extract_release_page_url(release_object),
-                                                     std::move(github_version),
-                                                     std::move(installer_download_url),
-                                                     std::move(installer_filename) };
             }
-            catch (...)
+            else
             {
+                const auto body = co_await client.request(Uri{ LATEST_RELEASE_ENDPOINT });
+                release_object = json::JsonValue::Parse(body).GetObjectW();
+                if (auto extracted_version = extract_version_from_release_object(release_object))
+                {
+                    github_version = *extracted_version;
+                }
             }
+
+            if (github_version <= current_version)
+            {
+                co_return version_up_to_date{};
+            }
+
+            auto [installer_download_url, installer_filename] = extract_installer_asset_download_info(release_object);
+            co_return new_version_download_info{ extract_release_page_url(release_object),
+                                                 std::move(github_version),
+                                                 std::move(installer_download_url),
+                                                 std::move(installer_filename) };
+        }
+        catch (...)
+        {
+        }
 #if USE_STD_EXPECTED
-            return std::unexpected(NETWORK_ERROR);
+        co_return std::unexpected(NETWORK_ERROR);
 #else
-            return nonstd::make_unexpected(NETWORK_ERROR);
+        co_return nonstd::make_unexpected(NETWORK_ERROR);
 #endif
-        });
     }
 #pragma warning(pop)
 
@@ -180,32 +172,30 @@ namespace updating
 
     std::future<std::optional<std::filesystem::path>> download_new_version(const new_version_download_info& new_version)
     {
-        return std::async(std::launch::async, [new_version]() -> std::optional<std::filesystem::path> {
-            auto installer_download_path = create_download_path();
-            if (!installer_download_path)
-            {
-                return std::nullopt;
-            }
+        auto installer_download_path = create_download_path();
+        if (!installer_download_path)
+        {
+            co_return std::nullopt;
+        }
 
-            *installer_download_path /= new_version.installer_filename;
+        *installer_download_path /= new_version.installer_filename;
 
-            bool download_success = false;
-            for (size_t i = 0; i < MAX_DOWNLOAD_ATTEMPTS; ++i)
+        bool download_success = false;
+        for (size_t i = 0; i < MAX_DOWNLOAD_ATTEMPTS; ++i)
+        {
+            try
             {
-                try
-                {
-                    http::HttpClient client;
-                    client.download(new_version.installer_download_url, *installer_download_path).get();
-                    download_success = true;
-                    break;
-                }
-                catch (...)
-                {
-                    // reattempt to download or do nothing
-                }
+                http::HttpClient client;
+                co_await client.download(new_version.installer_download_url, *installer_download_path);
+                download_success = true;
+                break;
             }
-            return download_success ? installer_download_path : std::nullopt;
-        });
+            catch (...)
+            {
+                // reattempt to download or do nothing
+            }
+        }
+        co_return download_success ? installer_download_path : std::nullopt;
     }
 
     void cleanup_updates()

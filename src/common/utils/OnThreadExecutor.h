@@ -5,7 +5,6 @@
 #include <functional>
 #include <queue>
 #include <atomic>
-#include <winrt/Windows.Foundation.h>
 
 // OnThreadExecutor allows its caller to off-load some work to a persistently running background thread.
 // This might come in handy if you use the API which sets thread-wide global state and the state needs
@@ -29,17 +28,13 @@ public:
         _worker_thread.join();
     }
 
-    winrt::Windows::Foundation::IAsyncAction submit(task_t task)
+    std::future<void> submit(task_t task)
     {
         auto future = task.get_future();
-        {
-            std::lock_guard lock{ _task_mutex };
-            _task_queue.emplace(std::move(task));
-            _task_cv.notify_one();
-        }
-
-        co_await winrt::resume_background();
-        future.wait();
+        std::lock_guard lock{ _task_mutex };
+        _task_queue.emplace(std::move(task));
+        _task_cv.notify_one();
+        return future;
     }
 
     void cancel()

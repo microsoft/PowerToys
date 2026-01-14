@@ -18,7 +18,7 @@ namespace // Strings in this namespace should not be localized
 
 namespace updating
 {
-    winrt::Windows::Foundation::IAsyncOperation<bool> uninstall_previous_msix_version_async()
+    std::future<bool> uninstall_previous_msix_version_async()
     {
         winrt::Windows::Management::Deployment::PackageManager package_manager;
 
