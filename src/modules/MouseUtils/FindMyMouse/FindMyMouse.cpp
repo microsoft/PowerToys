@@ -8,16 +8,12 @@
 #include "common/utils/process_path.h"
 #include "common/utils/excluded_apps.h"
 #include "common/utils/MsWindowsSettings.h"
-#include <winrt/Windows.Graphics.h>
 #include <common/SettingsAPI/settings_objects.h>
 #include <common/utils/color.h>
 #include <common/utils/string_utils.h>
-#include <MddBootstrap.h>
-#include <winrt/Microsoft.UI.Composition.Interop.h>
 #include <winrt/Microsoft.UI.Dispatching.h>
 #include <winrt/Microsoft.UI.Xaml.h>
 #include <winrt/Microsoft.UI.Xaml.Controls.h>
-#include <winrt/Microsoft.UI.Xaml.Media.h>
 #include <winrt/Microsoft.UI.Xaml.Hosting.h>
 #include <winrt/Microsoft.UI.Interop.h>
 #include <winrt/Microsoft.UI.Content.h>

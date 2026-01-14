@@ -142,9 +142,9 @@
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
-		<ClCompile Include="ThemeHelper.cpp">
+    <ClCompile Include="ThemeHelper.cpp">
       <DependentUpon>ThemeHelper.idl</DependentUpon>
-		</ClCompile>
+    </ClCompile>
     <ClCompile Include="TwoWayPipeMessageIPCManaged.cpp">
       <DependentUpon>TwoWayPipeMessageIPCManaged.idl</DependentUpon>
     </ClCompile>
@@ -169,11 +169,6 @@
     <Midl Include="LayoutMapManaged.idl" />
     <Midl Include="ThemeHelper.idl" />
     <Midl Include="TwoWayPipeMessageIPCManaged.idl" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\version\version.vcxproj">
-      <Project>{cc6e41ac-8174-4e8a-8d22-85dd7f4851df}</Project>
-    </ProjectReference>
   </ItemGroup>
   <ImportGroup Label="ExtensionTargets" />
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

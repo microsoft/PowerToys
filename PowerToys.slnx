@@ -17,7 +17,6 @@
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
-    <Project Path="src/common/COMUtils/COMUtils.vcxproj" Id="7319089e-46d6-4400-bc65-e39bdf1416ee" />
     <Project Path="src/common/Display/Display.vcxproj" Id="caba8dfb-823b-4bf2-93ac-3f31984150d9" />
     <Project Path="src/common/FilePreviewCommon/FilePreviewCommon.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
@@ -55,8 +54,6 @@
       <Platform Solution="*|x64" Project="x64" />
     </Project>
     <Project Path="src/common/UnitTests-CommonLib/UnitTests-CommonLib.vcxproj" Id="1a066c63-64b3-45f8-92fe-664e1cce8077" />
-    <Project Path="src/common/updating/updating.vcxproj" Id="17da04df-e393-4397-9cf0-84dabe11032e" />
-    <Project Path="src/common/version/version.vcxproj" Id="cc6e41ac-8174-4e8a-8d22-85dd7f4851df" />
   </Folder>
   <Folder Name="/common/interop/">
     <Project Path="src/common/interop/interop-tests/Common.Interop.UnitTests.csproj">
@@ -773,7 +770,6 @@
     <Project Path="src/modules/MeasureTool/MeasureToolCore/PowerToys.MeasureToolCore.vcxproj" Id="54a93af7-60c7-4f6c-99d2-fbb1f75f853a">
       <BuildDependency Project="src/common/Display/Display.vcxproj" />
       <BuildDependency Project="src/common/SettingsAPI/SettingsAPI.vcxproj" />
-      <BuildDependency Project="src/common/version/version.vcxproj" />
     </Project>
     <Project Path="src/modules/MeasureTool/MeasureToolUI/MeasureToolUI.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
@@ -1013,7 +1009,6 @@
   <Project Path="src/runner/runner.vcxproj" Id="9412d5c6-2cf2-4fc2-a601-b55508ea9b27">
     <BuildDependency Project="src/common/notifications/BackgroundActivator/BackgroundActivator.vcxproj" />
     <BuildDependency Project="src/common/notifications/BackgroundActivatorDLL/BackgroundActivatorDLL.vcxproj" />
-    <BuildDependency Project="src/common/updating/updating.vcxproj" />
     <BuildDependency Project="src/modules/awake/Awake/Awake.csproj" />
     <BuildDependency Project="src/modules/colorPicker/ColorPickerUI/ColorPickerUI.csproj" />
     <BuildDependency Project="src/modules/fancyzones/editor/FancyZonesEditor/FancyZonesEditor.csproj" />
