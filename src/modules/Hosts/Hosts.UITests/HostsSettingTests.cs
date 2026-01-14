@@ -113,7 +113,7 @@ namespace Hosts.UITests
 
             this.Find<NavigationViewItem>("Hosts File Editor").Click();
 
-            this.Find<ToggleSwitch>("Enable Hosts File Editor").Toggle(true);
+            this.Find<ToggleSwitch>("Hosts File Editor").Toggle(true);
             this.Find<ToggleSwitch>("Launch as administrator").Toggle(launchAsAdmin);
             this.Find<ToggleSwitch>("Show a warning at startup").Toggle(showWarning);
 

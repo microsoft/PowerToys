@@ -5039,6 +5039,9 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   <data name="OpenSettings.Content" xml:space="preserve">
     <value>Open settings</value>
   </data>
+  <data name="OpenAnimationsSettings.Content" xml:space="preserve">
+    <value>Open animation settings</value>
+  </data>
   <data name="LanguageHeader.Header" xml:space="preserve">
     <value>Language</value>
   </data>
