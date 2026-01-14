@@ -52,16 +52,10 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 
         private static SettingsUtils settingsUtils = SettingsUtils.Default;
 
-        /* NOTE: Experimentation for OOBE is currently turned off on server side. Keeping this code in a comment to allow future experiments.
-          private bool ExperimentationToggleSwitchEnabled { get; set; } = true;
-        */
-
         public OobeShellPage()
         {
             InitializeComponent();
 
-            // NOTE: Experimentation for OOBE is currently turned off on server side. Keeping this code in a comment to allow future experiments.
-            // ExperimentationToggleSwitchEnabled = SettingsRepository<GeneralSettings>.GetInstance(settingsUtils).SettingsConfig.EnableExperimentation;
             DataContext = ViewModel;
             OobeShellHandler = this;
             Modules = new ObservableCollection<OobePowerToysModule>();
@@ -252,28 +246,6 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 switch (selectedItem.Tag)
                 {
                     case "Overview": NavigationFrame.Navigate(typeof(OobeOverview)); break;
-                    /* NOTE: Experimentation for OOBE is currently turned off on server side. Keeping this code in a comment to allow future experiments.
-                        if (ExperimentationToggleSwitchEnabled && GPOWrapper.GetAllowExperimentationValue() != GpoRuleConfigured.Disabled)
-                        {
-                            switch (AllExperiments.Experiments.LandingPageExperiment)
-                            {
-                                case Experiments.ExperimentState.Enabled:
-                                    NavigationFrame.Navigate(typeof(OobeOverviewAlternate)); break;
-                                case Experiments.ExperimentState.Disabled:
-                                    NavigationFrame.Navigate(typeof(OobeOverview)); break;
-                                case Experiments.ExperimentState.NotLoaded:
-                                    NavigationFrame.Navigate(typeof(OobeOverviewPlaceholder)); break;
-                            }
-
-                            break;
-                        }
-                        else
-                        {
-                            NavigationFrame.Navigate(typeof(OobeOverview));
-                            break;
-                        }
-                    */
-
                     case "AdvancedPaste": NavigationFrame.Navigate(typeof(OobeAdvancedPaste)); break;
                     case "AlwaysOnTop": NavigationFrame.Navigate(typeof(OobeAlwaysOnTop)); break;
                     case "Awake": NavigationFrame.Navigate(typeof(OobeAwake)); break;
