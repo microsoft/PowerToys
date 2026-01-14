@@ -8,6 +8,8 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Windows.Foundation;
 
+using ToolkitStretchChild = CommunityToolkit.WinUI.Controls.StretchChild;
+
 namespace Microsoft.CmdPal.UI.Controls;
 
 /// <summary>
@@ -97,8 +99,6 @@ public sealed partial class WrapPanel : Panel
         set { SetValue(HorizontalSpacingProperty, value); }
     }
 
-    private bool IsSectionItem(UIElement element) => element is FrameworkElement fe && fe.DataContext is ListItemViewModel item && item.IsSectionOrSeparator;
-
     /// <summary>
     /// Identifies the <see cref="HorizontalSpacing"/> dependency property.
     /// </summary>
@@ -177,9 +177,9 @@ public sealed partial class WrapPanel : Panel
     /// <summary>
     /// Gets or sets a value indicating how to arrange child items
     /// </summary>
-    public StretchChild StretchChild
+    public ToolkitStretchChild StretchChild
     {
-        get { return (StretchChild)GetValue(StretchChildProperty); }
+        get { return (ToolkitStretchChild)GetValue(StretchChildProperty); }
         set { SetValue(StretchChildProperty, value); }
     }
 
@@ -190,9 +190,9 @@ public sealed partial class WrapPanel : Panel
     public static readonly DependencyProperty StretchChildProperty =
         DependencyProperty.Register(
             nameof(StretchChild),
-            typeof(StretchChild),
+            typeof(ToolkitStretchChild),
             typeof(WrapPanel),
-            new PropertyMetadata(StretchChild.None, LayoutPropertyChanged));
+            new PropertyMetadata(ToolkitStretchChild.None, LayoutPropertyChanged));
 
     /// <summary>
     /// Identifies the IsFullLine attached dependency property.
@@ -348,7 +348,7 @@ public sealed partial class WrapPanel : Panel
                 return;
             }
 
-            var isFullLine = IsSectionItem(child);
+            var isFullLine = GetIsFullLine(child);
             var desiredMeasure = new UvMeasure(Orientation, child.DesiredSize);
 
             if (isFullLine)
@@ -397,7 +397,7 @@ public sealed partial class WrapPanel : Panel
             Arrange(Children[i]);
         }
 
-        Arrange(Children[lastIndex], StretchChild == StretchChild.Last);
+        Arrange(Children[lastIndex], StretchChild == ToolkitStretchChild.Last);
 
         if (currentRow.ChildrenRects.Count > 0)
         {

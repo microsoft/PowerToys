@@ -67,10 +67,18 @@ namespace FancyZonesEditor.Models
             Window.KeyUp += ((App)Application.Current).App_KeyUp;
             Window.KeyDown += ((App)Application.Current).App_KeyDown;
 
+            // Store for DPI-unaware positioning
+            _virtualWorkArea = workArea;
+
+            // Set initial WPF properties
             Window.Left = workArea.X;
             Window.Top = workArea.Y;
             Window.Width = workArea.Width;
             Window.Height = workArea.Height;
+
+            // After HWND is created, reposition using DPI-unaware context
+            // This matches the C++ backend which uses a DPI-unaware thread
+            Window.SourceInitialized += OnWindowSourceInitialized;
         }
 
         public Monitor(string monitorName, string monitorInstanceId, string monitorSerialNumber, string virtualDesktop, int dpi, Rect workArea, Size monitorSize)
@@ -80,16 +88,33 @@ namespace FancyZonesEditor.Models
         }
 
         private LayoutSettings _settings;
+        private Rect _virtualWorkArea;
+
+        private void OnWindowSourceInitialized(object sender, EventArgs e)
+        {
+            // Reposition window using DPI-unaware context to match the virtual coordinates
+            // from the FancyZones C++ backend (which uses a DPI-unaware thread)
+            Utils.NativeMethods.SetWindowPositionDpiUnaware(
+                Window,
+                (int)_virtualWorkArea.X,
+                (int)_virtualWorkArea.Y,
+                (int)_virtualWorkArea.Width,
+                (int)_virtualWorkArea.Height);
+        }
 
         public void Scale(double scaleFactor)
         {
             Device.Scale(scaleFactor);
 
-            var workArea = Device.WorkAreaRect;
-            Window.Left = workArea.X;
-            Window.Top = workArea.Y;
-            Window.Width = workArea.Width;
-            Window.Height = workArea.Height;
+            _virtualWorkArea = Device.WorkAreaRect;
+
+            // Use DPI-unaware positioning
+            Utils.NativeMethods.SetWindowPositionDpiUnaware(
+                Window,
+                (int)_virtualWorkArea.X,
+                (int)_virtualWorkArea.Y,
+                (int)_virtualWorkArea.Width,
+                (int)_virtualWorkArea.Height);
         }
 
         public void SetLayoutSettings(LayoutModel model)

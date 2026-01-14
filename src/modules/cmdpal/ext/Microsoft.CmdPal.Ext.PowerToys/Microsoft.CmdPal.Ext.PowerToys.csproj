@@ -1,0 +1,88 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<Import Project="..\..\..\..\Common.Dotnet.CsWinRT.props" />
+	<Import Project="..\..\..\..\Common.Dotnet.AotCompatibility.props" />
+	<Import Project="..\..\..\..\CmdPalVersion.props" />
+
+	<PropertyGroup>
+		<OutputType>WinExe</OutputType>
+		<RootNamespace>PowerToysExtension</RootNamespace>
+		<ApplicationManifest>app.manifest</ApplicationManifest>
+		<ApplicationIcon>..\..\..\..\runner\svgs\icon.ico</ApplicationIcon>
+		<PublishProfile>win-$(Platform).pubxml</PublishProfile>
+		<EnableMsixTooling>false</EnableMsixTooling>
+		<WindowsPackageType>None</WindowsPackageType>
+		<GenerateAppxPackageOnBuild>false</GenerateAppxPackageOnBuild>
+		<OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\</OutputPath>
+		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+		<AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+		<Nullable>enable</Nullable>
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+		<WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+		<Version>$(CmdPalVersion)</Version>
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<RuntimeIdentifier Condition="'$(RuntimeIdentifier)' == '' and '$(Platform)' == 'ARM64'">win-arm64</RuntimeIdentifier>
+		<RuntimeIdentifier Condition="'$(RuntimeIdentifier)' == '' and '$(Platform)' == 'x64'">win-x64</RuntimeIdentifier>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<Content Include="..\..\..\..\settings-ui\Settings.UI\Assets\Settings\Icons\*.png" Link="WinUI3Apps\Assets\Settings\Icons\%(Filename)%(Extension)">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.WindowsAppSDK" />
+		<PackageReference Include="Microsoft.CommandPalette.Extensions" />
+		<PackageReference Include="Microsoft.Windows.CsWin32">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+		</PackageReference>
+		<PackageReference Include="Shmuelie.WinRTServer" />
+	</ItemGroup>
+
+	<!-- Enable Single-project MSIX packaging support -->
+	<ItemGroup Condition="'$(DisableMsixProjectCapabilityAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">
+		<ProjectCapability Include="Msix" />
+	</ItemGroup>
+
+	<PropertyGroup Condition="'$(DisableHasPackageAndPublishMenuAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">
+		<HasPackageAndPublishMenu>true</HasPackageAndPublishMenu>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
+		<ProjectReference Include="..\..\..\..\common\Common.Search\Common.Search.csproj" />
+		<ProjectReference Include="..\..\..\..\common\Common.UI\Common.UI.csproj" />
+		<ProjectReference Include="..\..\..\..\common\interop\PowerToys.Interop.vcxproj" />
+		<ProjectReference Include="..\..\..\Awake\Awake.ModuleServices\Awake.ModuleServices.csproj" />
+		<ProjectReference Include="..\..\..\colorPicker\ColorPicker.ModuleServices\ColorPicker.ModuleServices.csproj" />
+		<ProjectReference Include="..\..\..\fancyzones\FancyZonesEditorCommon\FancyZonesEditorCommon.csproj" />
+		<ProjectReference Include="..\..\..\Workspaces\Workspaces.ModuleServices\Workspaces.ModuleServices.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Compile Update="Properties\Resources.Designer.cs">
+			<DesignTime>True</DesignTime>
+			<AutoGen>True</AutoGen>
+			<DependentUpon>Resources.resx</DependentUpon>
+		</Compile>
+	</ItemGroup>
+
+	<ItemGroup>
+		<EmbeddedResource Update="Properties\Resources.resx">
+			<Generator>ResXFileCodeGenerator</Generator>
+			<LastGenOutput>Resources.Designer.cs</LastGenOutput>
+		</EmbeddedResource>
+	</ItemGroup>
+
+	<PropertyGroup>
+		<!-- Always build/publish AOT so the extension ships as native code -->
+		<SelfContained>true</SelfContained>
+		<PublishAot>true</PublishAot>
+		<PublishSingleFile>false</PublishSingleFile>
+		<PublishTrimmed>true</PublishTrimmed>
+		<DisableRuntimeMarshalling>false</DisableRuntimeMarshalling>
+	</PropertyGroup>
+</Project>

@@ -15,6 +15,7 @@ using System.IO.Abstractions;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
 using System.Threading;
 using System.Windows.Media.Imaging;
 
@@ -42,6 +43,7 @@ namespace ImageResizer.Properties
         {
             NumberHandling = JsonNumberHandling.AllowNamedFloatingPointLiterals,
             WriteIndented = true,
+            TypeInfoResolver = new DefaultJsonTypeInfoResolver(),
         };
 
         private static readonly CompositeFormat ValueMustBeBetween = System.Text.CompositeFormat.Parse(Properties.Resources.ValueMustBeBetween);
@@ -214,27 +216,15 @@ namespace ImageResizer.Properties
                 {
                     if (e.PropertyName == nameof(Models.CustomSize))
                     {
-                        var oldCustomSize = _customSize;
                         _customSize = settings.CustomSize;
 
-                        OnCollectionChanged(
-                            new NotifyCollectionChangedEventArgs(
-                                NotifyCollectionChangedAction.Replace,
-                                _customSize,
-                                oldCustomSize,
-                                _sizes.Count));
+                        OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
                     }
                     else if (e.PropertyName == nameof(Models.AiSize))
                     {
-                        var oldAiSize = _aiSize;
                         _aiSize = settings.AiSize;
 
-                        OnCollectionChanged(
-                            new NotifyCollectionChangedEventArgs(
-                                NotifyCollectionChangedAction.Replace,
-                                _aiSize,
-                                oldAiSize,
-                                _sizes.Count + 1));
+                        OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
                     }
                     else if (e.PropertyName == nameof(Sizes))
                     {

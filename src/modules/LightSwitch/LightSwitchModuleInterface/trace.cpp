@@ -19,12 +19,21 @@ void Trace::UnregisterProvider()
     TraceLoggingUnregister(g_hProvider);
 }
 
-void Trace::MyEvent()
+void Trace::Enable(bool enabled) noexcept
 {
     TraceLoggingWrite(
         g_hProvider,
-        "PowerToyName_MyEvent",
+        "LightSwitch_EnableLightSwitch",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
-        TraceLoggingBoolean(TRUE, "UTCReplace_AppSessionGuid"),
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
+        TraceLoggingBoolean(enabled, "Enabled"));
+}
+
+void Trace::ShortcutInvoked() noexcept
+{
+    TraceLoggingWrite(
+        g_hProvider,
+        "LightSwitch_ShortcutInvoked",
+        ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
 }
