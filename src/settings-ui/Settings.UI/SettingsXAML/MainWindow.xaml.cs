@@ -90,15 +90,19 @@ namespace Microsoft.PowerToys.Settings.UI
                 if (needToUpdate)
                 {
                     ModuleHelper.SetIsModuleEnabled(generalSettingsConfig, moduleType, isEnabled);
-                    var outgoing = new OutGoingGeneralSettings(generalSettingsConfig);
 
                     // Save settings to file
                     SettingsUtils.Default.SaveSettings(generalSettingsConfig.ToJsonString());
 
+                    // Send optimized IPC message with only the module status update
+                    // Format: {"module_status": {"ModuleName": true/false}}
+                    string moduleKey = ModuleHelper.GetModuleKey(moduleType);
+                    string moduleStatusJson = $"{{\"module_status\": {{\"{moduleKey}\": {isEnabled.ToString().ToLowerInvariant()}}}}}";
+
                     // Send IPC message asynchronously to avoid blocking UI and potential recursive calls
                     Task.Run(() =>
                     {
-                        ShellPage.SendDefaultIPCMessage(outgoing.ToString());
+                        ShellPage.SendDefaultIPCMessage(moduleStatusJson);
                     });
 
                     ShellPage.ShellHandler?.SignalGeneralDataUpdate();

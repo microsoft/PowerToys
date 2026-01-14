@@ -282,7 +282,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _isUpdatingFromUI = true;
             try
             {
-                Views.ShellPage.UpdateGeneralSettingsCallback(dashboardListItem.Tag, isEnabled);
+                // Send optimized IPC message with only the module status update
+                // Format: {"module_status": {"ModuleName": true/false}}
+                string moduleKey = ModuleHelper.GetModuleKey(dashboardListItem.Tag);
+                string moduleStatusJson = $"{{\"module_status\": {{\"{moduleKey}\": {isEnabled.ToString().ToLowerInvariant()}}}}}";
+                SendConfigMSG(moduleStatusJson);
+
+                // Update local settings config to keep UI in sync
+                ModuleHelper.SetIsModuleEnabled(generalSettingsConfig, dashboardListItem.Tag, isEnabled);
 
                 if (dashboardListItem.Tag == ModuleType.NewPlus && isEnabled == true)
                 {
