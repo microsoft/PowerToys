@@ -116,6 +116,7 @@
     <File Path="src/common/utils/version.h" />
     <File Path="src/common/utils/winapi_error.h" />
     <File Path="src/common/utils/window.h" />
+    <File Path="version.h" />
   </Folder>
   <Folder Name="/DSC/">
     <Project Path="src/dsc/PowerToys.Settings.DSC.Schema.Generator/PowerToys.Settings.DSC.Schema.Generator.csproj">
