@@ -72,7 +72,7 @@ namespace Peek.UI
             UpdateWindowBySettings(null, EventArgs.Empty);
         }
 
-        private async void UpdateWindowBySettings(object? sender, EventArgs e)
+        private void UpdateWindowBySettings(object? sender, EventArgs e)
         {
             DispatcherQueue.TryEnqueue(() =>
             {
