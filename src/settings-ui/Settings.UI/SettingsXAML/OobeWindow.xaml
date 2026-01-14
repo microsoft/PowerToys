@@ -11,6 +11,7 @@
     Height="700"
     MinWidth="480"
     MinHeight="480"
+    Activated="Window_Activated"
     Closed="Window_Closed"
     mc:Ignorable="d">
     <Window.SystemBackdrop>

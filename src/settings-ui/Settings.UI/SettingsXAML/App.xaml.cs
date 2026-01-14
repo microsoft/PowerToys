@@ -2,17 +2,11 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Text.Json;
-using System.Threading.Tasks;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Telemetry.Events;
+using Microsoft.PowerToys.Settings.UI.OOBE.Enums;
 using Microsoft.PowerToys.Settings.UI.OOBE.ViewModel;
 using Microsoft.PowerToys.Settings.UI.SerializationContext;
 using Microsoft.PowerToys.Settings.UI.Services;
@@ -20,6 +14,13 @@ using Microsoft.PowerToys.Settings.UI.Views;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Xaml;
 using PowerToys.Interop;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Text.Json;
+using System.Threading.Tasks;
 using Windows.UI.Popups;
 using WinRT.Interop;
 using WinUIEx;
@@ -234,10 +235,6 @@ namespace Microsoft.PowerToys.Settings.UI
                 // https://github.com/microsoft/microsoft-ui-xaml/issues/7595 - Activate doesn't bring window to the foreground
                 // Need to call SetForegroundWindow to actually gain focus.
                 WindowHelpers.BringToForeground(settingsWindow.GetWindowHandle());
-
-                // https://github.com/microsoft/microsoft-ui-xaml/issues/8948 - A window's top border incorrectly
-                // renders as black on Windows 10.
-                WindowHelpers.ForceTopBorder1PixelInsetOnWindows10(WindowNative.GetWindowHandle(settingsWindow));
             }
             else
             {
@@ -248,12 +245,7 @@ namespace Microsoft.PowerToys.Settings.UI
 
                 if (ShowOobe)
                 {
-                    PowerToysTelemetry.Log.WriteEvent(new OobeStartedEvent());
-                    OobeWindow oobeWindow = new OobeWindow(OOBE.Enums.PowerToysModules.Overview);
-                    oobeWindow.Activate();
-                    oobeWindow.ExtendsContentIntoTitleBar = true;
-                    WindowHelpers.ForceTopBorder1PixelInsetOnWindows10(WindowNative.GetWindowHandle(settingsWindow));
-                    SetOobeWindow(oobeWindow);
+                    OpenOobeWindow();
                 }
                 else if (ShowScoobe)
                 {
@@ -267,7 +259,7 @@ namespace Microsoft.PowerToys.Settings.UI
         /// will be used such as when the application is launched to open a specific file.
         /// </summary>
         /// <param name="args">Details about the launch request and process.</param>
-        protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
+        protected override void OnLaunched(LaunchActivatedEventArgs args)
         {
             var cmdArgs = Environment.GetCommandLineArgs();
 
@@ -293,8 +285,6 @@ namespace Microsoft.PowerToys.Settings.UI
                 // For debugging purposes
                 // Window is also needed to show MessageDialog
                 settingsWindow = new MainWindow();
-                settingsWindow.ExtendsContentIntoTitleBar = true;
-                WindowHelpers.ForceTopBorder1PixelInsetOnWindows10(WindowNative.GetWindowHandle(settingsWindow));
                 settingsWindow.Activate();
                 settingsWindow.NavigateToSection(StartupPage);
 
@@ -302,7 +292,7 @@ namespace Microsoft.PowerToys.Settings.UI
                 GlobalHotkeyConflictManager.Initialize(message =>
                 {
                     // In debug mode, just log or do nothing
-                    System.Diagnostics.Debug.WriteLine($"IPC Message: {message}");
+                    Debug.WriteLine($"IPC Message: {message}");
                     return 0;
                 });
 #else
@@ -334,7 +324,6 @@ namespace Microsoft.PowerToys.Settings.UI
         public static ThemeService ThemeService => themeService;
 
         private static MainWindow settingsWindow;
-        private static OobeWindow oobeWindow;
 
         public static void ClearSettingsWindow()
         {
@@ -346,26 +335,18 @@ namespace Microsoft.PowerToys.Settings.UI
             return settingsWindow;
         }
 
-        public static OobeWindow GetOobeWindow()
-        {
-            return oobeWindow;
-        }
-
-        public static void SetOobeWindow(OobeWindow window)
-        {
-            oobeWindow = window;
-        }
-
-        public static void ClearOobeWindow()
-        {
-            oobeWindow = null;
-        }
-
         public static void OpenScoobeWindow()
         {
             PowerToysTelemetry.Log.WriteEvent(new ScoobeStartedEvent());
-            ScoobeWindow newScoobeWindow = new();
-            newScoobeWindow.Activate();
+            ScoobeWindow scoobeWindow = new();
+            scoobeWindow.Activate();
+        }
+
+        public static void OpenOobeWindow()
+        {
+            PowerToysTelemetry.Log.WriteEvent(new OobeStartedEvent());
+            OobeWindow oobeWindow = new OobeWindow();
+            oobeWindow.Activate();
         }
 
         public static Type GetPage(string settingWindow)

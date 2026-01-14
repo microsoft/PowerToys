@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.ObjectModel;
+using ManagedCommon;
 using Microsoft.Extensions.AI;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.OOBE.Enums;
@@ -16,6 +17,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using PowerToys.Interop;
 using Windows.Graphics;
+using WinRT.Interop;
 using WinUIEx;
 using WinUIEx.Messaging;
 
@@ -26,8 +28,6 @@ namespace Microsoft.PowerToys.Settings.UI
         public OobeShellViewModel ViewModel => App.OobeShellViewModel;
 
         public static Func<string> RunSharedEventCallback { get; set; }
-
-        private PowerToysModules initialModule;
 
         public static void SetRunSharedEventCallback(Func<string> implementation)
         {
@@ -48,20 +48,18 @@ namespace Microsoft.PowerToys.Settings.UI
             OpenMainWindowCallback = implementation;
         }
 
-        public OobeWindow(PowerToysModules initialModule)
+        public OobeWindow()
         {
             App.ThemeService.ThemeChanged += OnThemeChanged;
             App.ThemeService.ApplyTheme();
 
             this.InitializeComponent();
 
-            this.Activated += Window_Activated_SetIcon;
+            SetTitleBar();
+
             this.ExtendsContentIntoTitleBar = true;
 
-            this.initialModule = initialModule;
-
-            var loader = ResourceLoaderInstance.ResourceLoader;
-            Title = loader.GetString("OobeWindow_Title");
+            RootGrid.DataContext = ViewModel;
 
             SetRunSharedEventCallback(() =>
             {
@@ -79,9 +77,12 @@ namespace Microsoft.PowerToys.Settings.UI
             });
         }
 
-        private void LoadData()
+        private void SetTitleBar()
         {
-            RootGrid.DataContext = ViewModel;
+            WindowHelpers.ForceTopBorder1PixelInsetOnWindows10(WindowNative.GetWindowHandle(this));
+            this.ExtendsContentIntoTitleBar = true;
+            this.SetTitleBar(AppTitleBar);
+            Title = ResourceLoaderInstance.ResourceLoader.GetString("OobeWindow_Title");
         }
 
         public void OnClosing()
@@ -136,15 +137,6 @@ namespace Microsoft.PowerToys.Settings.UI
             }
         }
 
-        private void ShellPage_Loaded(object sender, RoutedEventArgs e)
-        {
-            // Select the first module by default
-            if (navigationView.MenuItems.Count > 0)
-            {
-                navigationView.SelectedItem = navigationView.MenuItems[0];
-            }
-        }
-
         private void NavigationView_DisplayModeChanged(NavigationView sender, NavigationViewDisplayModeChangedEventArgs args)
         {
             if (args.DisplayMode == NavigationViewDisplayMode.Compact || args.DisplayMode == NavigationViewDisplayMode.Minimal)
@@ -169,7 +161,7 @@ namespace Microsoft.PowerToys.Settings.UI
             App.OpenScoobeWindow();
         }
 
-        private void Window_Activated_SetIcon(object sender, WindowActivatedEventArgs args)
+        private void Window_Activated(object sender, WindowActivatedEventArgs args)
         {
             // Set window icon
             this.SetIcon("Assets\\Settings\\icon.ico");
@@ -177,8 +169,6 @@ namespace Microsoft.PowerToys.Settings.UI
 
         private void Window_Closed(object sender, WindowEventArgs args)
         {
-            App.ClearOobeWindow();
-
             var mainWindow = App.GetSettingsWindow();
             if (mainWindow != null)
             {
@@ -195,6 +185,11 @@ namespace Microsoft.PowerToys.Settings.UI
 
         private void NavigationView_Loaded(object sender, RoutedEventArgs e)
         {
+            // Select the first module by default
+            if (navigationView.MenuItems.Count > 0)
+            {
+                navigationView.SelectedItem = navigationView.MenuItems[0];
+            }
         }
     }
 }
