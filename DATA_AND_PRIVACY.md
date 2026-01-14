@@ -694,6 +694,30 @@ _If you want to find diagnostic data events in the source code, these two links 
   </tr>
 </table>
 
+### Light Switch
+<table style="width:100%">
+  <tr>
+    <th>Event Name</th>
+    <th>Description</th>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.LightSwitch_EnableLightSwitch</td>
+    <td>Triggered when Light Switch is enabled or disabled.</td>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.LightSwitch_ShortcutInvoked</td>
+    <td>Occurs when the shortcut for Light Switch is invoked.</td>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.LightSwitch_ScheduleModeToggled</td>
+    <td>Occurs when a new schedule mode is selected for Light Switch.</td>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.LightSwitch_ThemeTargetChanged</td>
+    <td>Occurs when the options for targeting the system or apps is updated.</td>
+  </tr>
+</table>
+
 ### Mouse Highlighter
 <table style="width:100%">
   <tr>

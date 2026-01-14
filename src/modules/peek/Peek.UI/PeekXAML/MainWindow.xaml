@@ -50,7 +50,8 @@
             Item="{x:Bind ViewModel.CurrentItem, Mode=OneWay}"
             NumberOfFiles="{x:Bind ViewModel.DisplayItemCount, Mode=OneWay}"
             PreviewSizeChanged="FilePreviewer_PreviewSizeChanged"
-            ScalingFactor="{x:Bind ViewModel.ScalingFactor, Mode=OneWay}" />
+            ScalingFactor="{x:Bind ViewModel.ScalingFactor, Mode=OneWay}"
+            Visibility="{x:Bind ContentVisibility(ViewModel.IsErrorVisible), Mode=OneWay}" />
 
         <InfoBar
             x:Name="ErrorInfoBar"
@@ -59,6 +60,7 @@
             Grid.RowSpan="2"
             Margin="4,0,4,6"
             VerticalAlignment="Bottom"
+            Closed="ErrorInfoBar_Closed"
             IsOpen="{x:Bind ViewModel.IsErrorVisible, Mode=TwoWay}"
             Message="{x:Bind ViewModel.ErrorMessage, Mode=OneWay}"
             Severity="Error" />
