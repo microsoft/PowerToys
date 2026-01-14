@@ -2,9 +2,9 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.InteropServices;
-using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
 using Microsoft.CmdPal.Core.ViewModels.Messages;
@@ -12,6 +12,7 @@ using Microsoft.CmdPal.UI.ViewModels.Dock;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.UI;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Media;
@@ -225,6 +226,55 @@ public sealed partial class DockControl : UserControl, INotifyPropertyChanged, I
             });
             e.Handled = true;
         }
+    }
+
+    internal HorizontalAlignment GetBandAlignment(ObservableCollection<DockItemViewModel> items)
+    {
+        if (DockSide == DockSide.Top || DockSide == DockSide.Bottom)
+        {
+            return HorizontalAlignment.Center;
+        }
+
+        var requestedTheme = ActualTheme;
+        var isLight = requestedTheme == Microsoft.UI.Xaml.ElementTheme.Light;
+
+        // Check if any of the items have both an icon and a label.
+        //
+        // If so, left align so that the icons don't wobble if the text
+        // changes.
+        //
+        // Otherwise, center align.
+        foreach (var item in items)
+        {
+            var showText = item.ShowLabel && item.HasText;
+            var showIcon = item.Icon is not null && item.Icon.HasIcon(isLight);
+            if (showText && showIcon)
+            {
+                return HorizontalAlignment.Left;
+            }
+        }
+
+        return HorizontalAlignment.Center;
+    }
+}
+
+internal sealed partial class BandAlignmentConverter : Microsoft.UI.Xaml.Data.IValueConverter
+{
+    public DockControl? Control { get; set; }
+
+    public object Convert(object value, Type targetType, object parameter, string language)
+    {
+        if (value is ObservableCollection<DockItemViewModel> items && Control is not null)
+        {
+            return Control.GetBandAlignment(items);
+        }
+
+        return HorizontalAlignment.Center;
+    }
+
+    public object ConvertBack(object value, Type targetType, object parameter, string language)
+    {
+        throw new NotImplementedException();
     }
 }
 

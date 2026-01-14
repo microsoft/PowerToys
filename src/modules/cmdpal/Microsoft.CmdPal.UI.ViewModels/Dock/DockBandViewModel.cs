@@ -87,10 +87,10 @@ public partial class DockItemViewModel : CommandItemViewModel
 {
     private bool _showLabel = true;
 
-    internal bool ShowLabel
+    public bool ShowLabel
     {
         get => _showLabel;
-        set
+        internal set
         {
             _showLabel = value;
             UpdateProperty(nameof(HasText));

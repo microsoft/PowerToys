@@ -32,6 +32,10 @@
             </Style>
 
             <local:IconInfoVisibilityConverter x:Key="IconInfoVisibilityConverter" />
+            <local:BandAlignmentConverter
+                x:Key="BandAlignmentConverter"
+                x:Name="BandAlignmentConverter"
+                Control="{x:Bind}" />
 
             <DataTemplate x:Key="DeskbandTemplate" x:DataType="dockVm:DockItemViewModel">
                 <Button
@@ -99,7 +103,8 @@
 
             <DataTemplate x:Key="DockBandTemplate" x:DataType="dockVm:DockBandViewModel">
                 <ItemsRepeater
-                    HorizontalAlignment="Center"
+                    x:Name="BandItemsRepeater"
+                    HorizontalAlignment="{x:Bind Items, Converter={StaticResource BandAlignmentConverter}, Mode=OneWay}"
                     ItemTemplate="{StaticResource DeskbandTemplate}"
                     ItemsSource="{x:Bind Items, Mode=OneWay}"
                     Layout="{StaticResource ItemsOrientation}">
