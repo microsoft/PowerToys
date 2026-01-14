@@ -7,7 +7,6 @@ using global::PowerToys.GPOWrapper;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.HotkeyConflicts;
-using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.OOBE.Enums;
 using Microsoft.PowerToys.Settings.UI.OOBE.ViewModel;
 using Microsoft.PowerToys.Settings.UI.Services;
@@ -280,9 +279,16 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 return;
             }
 
-            // Create and show the shortcut conflict window
-            var conflictWindow = new ShortcutConflictWindow();
-            conflictWindow.Activate();
+            if (App.GetShortcutConflictWindow() == null)
+            {
+                var conflictWindow = new ShortcutConflictWindow();
+                App.SetShortcutConflictWindow(conflictWindow);
+                conflictWindow.Activate();
+            }
+            else
+            {
+                App.GetShortcutConflictWindow().Activate();
+            }
         }
 
         protected override void OnNavigatedTo(NavigationEventArgs e)
