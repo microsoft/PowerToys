@@ -22,6 +22,10 @@ internal sealed class Icons
 
     // TODO! make different
     internal static IconInfo GpuIcon => new("\uE9D9"); // CPU icon
+
+    internal static IconInfo NavigateBackwardIcon => new("\uE72B"); // Previous icon
+
+    internal static IconInfo NavigateForwardIcon => new("\uE72A"); // Next icon
 }
 
 

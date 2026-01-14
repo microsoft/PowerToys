@@ -89,8 +89,8 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
             _networkItem.Title = _networkPage.GetItemTitle(isBandPage);
             _networkUpSpeed = _networkPage.GetUpSpeed();
             _networkDownSpeed = _networkPage.GetDownSpeed();
-            _networkDownItem?.Title = $"{_networkDownSpeed} ↓";
-            _networkUpItem?.Title = $"{_networkUpSpeed} ↑";
+            _networkDownItem?.Title = $"{_networkDownSpeed}";
+            _networkUpItem?.Title = $"{_networkUpSpeed}";
         };
 
         _gpuItem = new ListItem(_gpuPage)
@@ -513,7 +513,9 @@ internal sealed partial class SystemNetworkUsageWidgetPage : WidgetPage, IDispos
     {
         _dataManager = new(DataType.Network, () => UpdateWidget());
         Commands = [
-            new CommandContextItem(OpenTaskManagerCommand.Instance) { Title = Resources.GetResource("Open_Task_Manager_Title") },
+            new CommandContextItem(OpenTaskManagerCommand.Instance),
+            new CommandContextItem(new PrevNetworkCommand(this) { Name = Resources.GetResource("Previous_Network_Title") }),
+            new CommandContextItem(new NextNetworkCommand(this) { Name = Resources.GetResource("Next_Network_Title") }),
         ];
     }
 
@@ -635,13 +637,13 @@ internal sealed partial class SystemNetworkUsageWidgetPage : WidgetPage, IDispos
         }
     }
 
-    private void HandlePrevNetwork(WidgetActionInvokedArgs args)
+    private void HandlePrevNetwork()
     {
         _networkIndex = _dataManager.GetNetworkStats().GetPrevNetworkIndex(_networkIndex);
         UpdateWidget();
     }
 
-    private void HandleNextNetwork(WidgetActionInvokedArgs args)
+    private void HandleNextNetwork()
     {
         _networkIndex = _dataManager.GetNetworkStats().GetNextNetworkIndex(_networkIndex);
         UpdateWidget();
@@ -650,6 +652,46 @@ internal sealed partial class SystemNetworkUsageWidgetPage : WidgetPage, IDispos
     public void Dispose()
     {
         _dataManager.Dispose();
+    }
+
+    private sealed partial class PrevNetworkCommand : InvokableCommand
+    {
+        private readonly SystemNetworkUsageWidgetPage _page;
+
+        public PrevNetworkCommand(SystemNetworkUsageWidgetPage page)
+        {
+            _page = page;
+        }
+
+        public override string Id => "com.microsoft.cmdpal.network_widget.prev";
+
+        public override IconInfo Icon => Icons.NavigateBackwardIcon;
+
+        public override ICommandResult Invoke()
+        {
+            _page.HandlePrevNetwork();
+            return CommandResult.KeepOpen();
+        }
+    }
+
+    private sealed partial class NextNetworkCommand : InvokableCommand
+    {
+        private readonly SystemNetworkUsageWidgetPage _page;
+
+        public NextNetworkCommand(SystemNetworkUsageWidgetPage page)
+        {
+            _page = page;
+        }
+
+        public override string Id => "com.microsoft.cmdpal.network_widget.next";
+
+        public override IconInfo Icon => Icons.NavigateForwardIcon;
+
+        public override ICommandResult Invoke()
+        {
+            _page.HandleNextNetwork();
+            return CommandResult.KeepOpen();
+        }
     }
 }
 
@@ -773,6 +815,8 @@ internal sealed partial class OpenTaskManagerCommand : InvokableCommand
     public override string Id => "com.microsoft.cmdpal.open_task_manager";
 
     public override IconInfo Icon => Icons.StackedAreaIcon; // StackedAreaIcon looks like task manager's icon
+
+    public override string Name => Resources.GetResource("Open_Task_Manager_Title");
 
     public override ICommandResult Invoke()
     {
