@@ -375,6 +375,7 @@ namespace PowerDisplay.Common.Drivers.WMI
         {
             // WmiLight objects are created per-operation and disposed immediately via using statements.
             // No instance-level resources require cleanup.
+            GC.SuppressFinalize(this);
         }
     }
 }
