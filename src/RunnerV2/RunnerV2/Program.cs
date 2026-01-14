@@ -45,6 +45,12 @@ internal sealed class Program
             case SpecialMode.UpdateNow:
                 UpdateNow();
                 return;
+            case SpecialMode.DisableCantDragElevatedNotification:
+                Environment.Exit(NotificationHelper.DisableToast(NotificationHelper.ToastType.ElevatedDontShowAgain) ? 1 : 0);
+                return;
+            case SpecialMode.CouldntToggleFileExplorerModulesNotification:
+                Environment.Exit(NotificationHelper.DisableToast(NotificationHelper.ToastType.CouldntToggleFileExplorerModules) ? 1 : 0);
+                return;
             default:
                 throw new NotImplementedException("Special modes are not implemented yet.");
         }
@@ -134,6 +140,8 @@ internal sealed class Program
             return host switch
             {
                 "update_now" => SpecialMode.UpdateNow,
+                "cant_drag_elevated_disable" => SpecialMode.DisableCantDragElevatedNotification,
+                "couldnt_toggle_powerpreview_modules_disable" => SpecialMode.CouldntToggleFileExplorerModulesNotification,
                 _ => SpecialMode.None,
             };
         }

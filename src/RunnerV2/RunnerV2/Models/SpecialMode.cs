@@ -8,8 +8,9 @@ namespace RunnerV2.Models
     {
         None,
         Win32ToastNotificationCOMServer,
-        ToastNotificationHandler,
+        DisableCantDragElevatedNotification,
         UpdateNow,
         ReportSuccessfulUpdate,
+        CouldntToggleFileExplorerModulesNotification,
     }
 }

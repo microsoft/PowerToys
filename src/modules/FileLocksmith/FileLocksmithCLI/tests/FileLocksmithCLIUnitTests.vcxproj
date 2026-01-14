@@ -63,9 +63,6 @@
     <ProjectReference Include="..\..\..\..\common\SettingsAPI\SettingsAPI.vcxproj">
       <Project>{6955446d-23f7-4023-9bb3-8657f904af99}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\..\common\version\version.vcxproj">
-      <Project>{1248566c-272a-43c0-88d6-e6675d569a09}</Project>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
