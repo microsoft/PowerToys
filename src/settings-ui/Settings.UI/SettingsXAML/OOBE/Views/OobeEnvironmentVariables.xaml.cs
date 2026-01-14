@@ -21,7 +21,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
         public OobeEnvironmentVariables()
         {
             InitializeComponent();
-            ViewModel = new OobePowerToysModule(OobeShellPage.OobeShellHandler.Modules[(int)PowerToysModules.EnvironmentVariables]);
+            ViewModel = App.OobeShellViewModel.GetModule(PowerToysModules.EnvironmentVariables);
             DataContext = ViewModel;
         }
 
@@ -50,9 +50,9 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 
         private void Launch_Settings_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
-            if (OobeShellPage.OpenMainWindowCallback != null)
+            if (OobeWindow.OpenMainWindowCallback != null)
             {
-                OobeShellPage.OpenMainWindowCallback(typeof(EnvironmentVariablesPage));
+                OobeWindow.OpenMainWindowCallback(typeof(EnvironmentVariablesPage));
             }
 
             ViewModel.LogOpeningSettingsEvent();

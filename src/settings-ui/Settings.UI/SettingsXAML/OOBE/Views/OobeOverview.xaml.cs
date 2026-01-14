@@ -229,7 +229,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 
             _enableDataDiagnostics = DataDiagnosticsSettings.GetEnabledValue();
 
-            ViewModel = new OobePowerToysModule(OobeShellPage.OobeShellHandler.Modules[(int)PowerToysModules.Overview]);
+            ViewModel = App.OobeShellViewModel.GetModule(PowerToysModules.Overview);
             DataContext = this;
 
             // Subscribe to hotkey conflict updates
@@ -255,9 +255,9 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 
         private void SettingsLaunchButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
-            if (OobeShellPage.OpenMainWindowCallback != null)
+            if (OobeWindow.OpenMainWindowCallback != null)
             {
-                OobeShellPage.OpenMainWindowCallback(typeof(DashboardPage));
+                OobeWindow.OpenMainWindowCallback(typeof(DashboardPage));
             }
 
             ViewModel.LogOpeningSettingsEvent();
@@ -265,9 +265,9 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 
         private void GeneralSettingsLaunchButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
-            if (OobeShellPage.OpenMainWindowCallback != null)
+            if (OobeWindow.OpenMainWindowCallback != null)
             {
-                OobeShellPage.OpenMainWindowCallback(typeof(GeneralPage));
+                OobeWindow.OpenMainWindowCallback(typeof(GeneralPage));
             }
 
             ViewModel.LogOpeningSettingsEvent();

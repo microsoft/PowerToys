@@ -13,6 +13,7 @@ using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Telemetry.Events;
+using Microsoft.PowerToys.Settings.UI.OOBE.ViewModel;
 using Microsoft.PowerToys.Settings.UI.SerializationContext;
 using Microsoft.PowerToys.Settings.UI.Services;
 using Microsoft.PowerToys.Settings.UI.Views;
@@ -30,6 +31,8 @@ namespace Microsoft.PowerToys.Settings.UI
     /// </summary>
     public partial class App : Application
     {
+        public static OobeShellViewModel OobeShellViewModel { get; } = new();
+
         private enum Arguments
         {
             PTPipeName = 1,

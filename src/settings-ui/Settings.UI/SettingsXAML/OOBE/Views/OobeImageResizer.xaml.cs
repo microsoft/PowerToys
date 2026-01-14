@@ -20,15 +20,15 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
         public OobeImageResizer()
         {
             this.InitializeComponent();
-            ViewModel = new OobePowerToysModule(OobeShellPage.OobeShellHandler.Modules[(int)PowerToysModules.ImageResizer]);
+            ViewModel = App.OobeShellViewModel.GetModule(PowerToysModules.ImageResizer);
             DataContext = ViewModel;
         }
 
         private void SettingsLaunchButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
-            if (OobeShellPage.OpenMainWindowCallback != null)
+            if (OobeWindow.OpenMainWindowCallback != null)
             {
-                OobeShellPage.OpenMainWindowCallback(typeof(ImageResizerPage));
+                OobeWindow.OpenMainWindowCallback(typeof(ImageResizerPage));
             }
 
             ViewModel.LogOpeningSettingsEvent();
