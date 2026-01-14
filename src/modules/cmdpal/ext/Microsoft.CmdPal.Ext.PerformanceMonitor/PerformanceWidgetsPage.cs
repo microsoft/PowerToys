@@ -269,6 +269,8 @@ internal sealed partial class SystemCPUUsageWidgetPage : WidgetPage, IDisposable
 {
     public override string Title => Resources.GetResource("CPU_Usage_Title");
 
+    public override string Id => "com.microsoft.cmdpal.cpu_widget";
+
     public override IconInfo Icon => Icons.CpuIcon;
 
     private readonly DataManager _dataManager;
@@ -276,6 +278,9 @@ internal sealed partial class SystemCPUUsageWidgetPage : WidgetPage, IDisposable
     public SystemCPUUsageWidgetPage()
     {
         _dataManager = new(DataType.CPU, () => UpdateWidget());
+        Commands = [
+            new CommandContextItem(OpenTaskManagerCommand.Instance) { Title = Resources.GetResource("Open_Task_Manager_Title") },
+        ];
     }
 
     protected override void LoadContentData()
@@ -371,7 +376,7 @@ internal sealed partial class SystemCPUUsageWidgetPage : WidgetPage, IDisposable
 
 internal sealed partial class SystemMemoryUsageWidgetPage : WidgetPage, IDisposable
 {
-    public override string Id => "com.microsoft.cmdpal.systemmemoryusagewidget";
+    public override string Id => "com.microsoft.cmdpal.memory_widget";
 
     public override string Title => Resources.GetResource("Memory_Usage_Title");
 
@@ -382,6 +387,9 @@ internal sealed partial class SystemMemoryUsageWidgetPage : WidgetPage, IDisposa
     public SystemMemoryUsageWidgetPage()
     {
         _dataManager = new(DataType.Memory, () => UpdateWidget());
+        Commands = [
+            new CommandContextItem(OpenTaskManagerCommand.Instance) { Title = Resources.GetResource("Open_Task_Manager_Title") },
+        ];
     }
 
     protected override void LoadContentData()
@@ -492,7 +500,7 @@ internal sealed partial class SystemMemoryUsageWidgetPage : WidgetPage, IDisposa
 
 internal sealed partial class SystemNetworkUsageWidgetPage : WidgetPage, IDisposable
 {
-    public override string Id => "com.microsoft.cmdpal.systemnetworkusagewidget";
+    public override string Id => "com.microsoft.cmdpal.network_widget";
 
     public override string Title => Resources.GetResource("Network_Usage_Title");
 
@@ -504,6 +512,9 @@ internal sealed partial class SystemNetworkUsageWidgetPage : WidgetPage, IDispos
     public SystemNetworkUsageWidgetPage()
     {
         _dataManager = new(DataType.Network, () => UpdateWidget());
+        Commands = [
+            new CommandContextItem(OpenTaskManagerCommand.Instance) { Title = Resources.GetResource("Open_Task_Manager_Title") },
+        ];
     }
 
     protected override void LoadContentData()
@@ -644,7 +655,7 @@ internal sealed partial class SystemNetworkUsageWidgetPage : WidgetPage, IDispos
 
 internal sealed partial class SystemGPUUsageWidgetPage : WidgetPage, IDisposable
 {
-    public override string Id => "com.microsoft.cmdpal.systemgpuusagewidget";
+    public override string Id => "com.microsoft.cmdpal.gpu_widget";
 
     public override string Title => Resources.GetResource("GPU_Usage_Title");
 
@@ -657,6 +668,10 @@ internal sealed partial class SystemGPUUsageWidgetPage : WidgetPage, IDisposable
     public SystemGPUUsageWidgetPage()
     {
         _dataManager = new(DataType.GPU, () => UpdateWidget());
+
+        Commands = [
+            new CommandContextItem(OpenTaskManagerCommand.Instance) { Title = Resources.GetResource("Open_Task_Manager_Title") },
+        ];
     }
 
     protected override void LoadContentData()
@@ -748,5 +763,32 @@ internal sealed partial class SystemGPUUsageWidgetPage : WidgetPage, IDisposable
     public void Dispose()
     {
         _dataManager.Dispose();
+    }
+}
+
+internal sealed partial class OpenTaskManagerCommand : InvokableCommand
+{
+    internal static readonly OpenTaskManagerCommand Instance = new();
+
+    public override string Id => "com.microsoft.cmdpal.open_task_manager";
+
+    public override IconInfo Icon => Icons.StackedAreaIcon; // StackedAreaIcon looks like task manager's icon
+
+    public override ICommandResult Invoke()
+    {
+        try
+        {
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = "taskmgr.exe",
+                UseShellExecute = true,
+            });
+        }
+        catch (Exception e)
+        {
+            CoreLogger.LogError("Error launching Task Manager.", e);
+        }
+
+        return CommandResult.Hide();
     }
 }

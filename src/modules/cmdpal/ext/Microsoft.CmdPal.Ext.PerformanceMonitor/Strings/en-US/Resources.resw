@@ -241,4 +241,7 @@
   <data name="GPU_Usage_Unknown_Label" xml:space="preserve">
     <value>GPU Usage: ???</value>
   </data>
+  <data name="Open_Task_Manager_Title" xml:space="preserve">
+    <value>Open Task Manager</value>
+  </data>
 </root>

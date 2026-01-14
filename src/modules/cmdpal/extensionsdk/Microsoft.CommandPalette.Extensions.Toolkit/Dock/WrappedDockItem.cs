@@ -67,7 +67,7 @@ public partial class WrappedDockItem : CommandItem
 /// Helper class for a list page that just holds a set of items as a band.
 /// The page itself doesn't do anything interesting.
 /// </summary>
-internal partial class WrappedDockList : ListPage
+internal sealed partial class WrappedDockList : ListPage
 {
     private string _id;
 
@@ -77,7 +77,6 @@ internal partial class WrappedDockList : ListPage
 
     internal WrappedDockList(ICommand command)
     {
-        // _command = command;
         _items = new() { new ListItem(command) };
         Name = command.Name;
         _id = command.Id;
