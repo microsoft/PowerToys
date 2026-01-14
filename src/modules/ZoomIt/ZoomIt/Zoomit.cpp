@@ -3222,7 +3222,7 @@ bool IsPenInverted( WPARAM wParam )
 // Captures the specified screen using the capture APIs
 //
 //----------------------------------------------------------------------------
-winrt::com_ptr<ID3D11Texture2D> CaptureScreenshotAsync(winrt::IDirect3DDevice const& device, winrt::GraphicsCaptureItem const& item, winrt::DirectXPixelFormat const& pixelFormat)
+std::future<winrt::com_ptr<ID3D11Texture2D>> CaptureScreenshotAsync(winrt::IDirect3DDevice const& device, winrt::GraphicsCaptureItem const& item, winrt::DirectXPixelFormat const& pixelFormat)
 {
     auto d3dDevice = GetDXGIInterfaceFromObject<ID3D11Device>(device);
     winrt::com_ptr<ID3D11DeviceContext> d3dContext;
@@ -3251,7 +3251,7 @@ winrt::com_ptr<ID3D11Texture2D> CaptureScreenshotAsync(winrt::IDirect3DDevice co
 
     session.IsCursorCaptureEnabled( false );
     session.StartCapture();
-    captureEvent.wait();
+    co_await winrt::resume_on_signal(captureEvent.get());
 
     // End the capture
     session.Close();
@@ -3260,7 +3260,7 @@ winrt::com_ptr<ID3D11Texture2D> CaptureScreenshotAsync(winrt::IDirect3DDevice co
     auto texture = GetDXGIInterfaceFromObject<ID3D11Texture2D>(frame.Surface());
     auto result = util::CopyD3DTexture(d3dDevice, texture, true);
 
-    return result;
+    co_return result;
 }
 
 //----------------------------------------------------------------------------
@@ -3288,8 +3288,9 @@ winrt::com_ptr<ID3D11Texture2D>CaptureScreenshot(winrt::DirectXPixelFormat const
     auto item = util::CreateCaptureItemForMonitor(hMon);
 
     auto capture = CaptureScreenshotAsync(device, item, pixelFormat);
+    capture.wait();
 
-    return capture;
+    return capture.get();
 }
 
 
