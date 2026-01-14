@@ -145,10 +145,16 @@
                         <tkcontrols:SettingsExpander.Items>
                             <!--  Overlay opacity removed; alpha now encoded in colors  -->
                             <tkcontrols:SettingsCard Name="MouseUtilsFindMyMouseBackgroundColor" x:Uid="MouseUtils_FindMyMouse_BackgroundColor">
-                                <controls:ColorPickerButton IsAlphaEnabled="True" AutomationProperties.AutomationId="MouseUtils_FindMyMouseBackgroundColorId" SelectedColor="{x:Bind Path=ViewModel.FindMyMouseBackgroundColor, Mode=TwoWay}" />
+                                <controls:ColorPickerButton
+                                    AutomationProperties.AutomationId="MouseUtils_FindMyMouseBackgroundColorId"
+                                    IsAlphaEnabled="True"
+                                    SelectedColor="{x:Bind Path=ViewModel.FindMyMouseBackgroundColor, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard Name="MouseUtilsFindMyMouseSpotlightColor" x:Uid="MouseUtils_FindMyMouse_SpotlightColor">
-                                <controls:ColorPickerButton IsAlphaEnabled="True" AutomationProperties.AutomationId="MouseUtils_FindMyMouseSpotlightColorId" SelectedColor="{x:Bind Path=ViewModel.FindMyMouseSpotlightColor, Mode=TwoWay}" />
+                                <controls:ColorPickerButton
+                                    AutomationProperties.AutomationId="MouseUtils_FindMyMouseSpotlightColorId"
+                                    IsAlphaEnabled="True"
+                                    SelectedColor="{x:Bind Path=ViewModel.FindMyMouseSpotlightColor, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard Name="MouseUtilsFindMyMouseSpotlightRadius" x:Uid="MouseUtils_FindMyMouse_SpotlightRadius">
                                 <NumberBox
