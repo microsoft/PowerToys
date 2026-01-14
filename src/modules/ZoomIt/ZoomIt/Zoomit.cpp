@@ -2196,11 +2196,9 @@ void RegisterAllHotkeys(HWND hWnd)
     RegisterHotKey(hWnd, RECORD_GIF_HOTKEY, MOD_CONTROL | MOD_NOREPEAT, 568 && 0xFF);
     RegisterHotKey(hWnd, RECORD_GIF_WINDOW_HOTKEY, MOD_CONTROL | MOD_ALT | MOD_NOREPEAT, 568 && 0xFF);
 
-    // Fixed bindings for save hotkeys (always active)
-    RegisterHotKey(hWnd, SAVE_IMAGE_HOTKEY, MOD_CONTROL | MOD_NOREPEAT, 'S');
-    RegisterHotKey(hWnd, SAVE_CROP_HOTKEY, MOD_CONTROL | MOD_SHIFT | MOD_NOREPEAT, 'S');
-    // Note: COPY_IMAGE_HOTKEY and COPY_CROP_HOTKEY (Ctrl+C, Ctrl+Shift+C) are registered
-    // only during static zoom mode to avoid blocking system-wide Ctrl+C
+    // Note: COPY_IMAGE_HOTKEY, COPY_CROP_HOTKEY (Ctrl+C, Ctrl+Shift+C) and
+    // SAVE_IMAGE_HOTKEY, SAVE_CROP_HOTKEY (Ctrl+S, Ctrl+Shift+S) are registered
+    // only during static zoom mode to avoid blocking system-wide Ctrl+C/Ctrl+S
 }
 
 
@@ -5818,9 +5816,11 @@ LRESULT APIENTRY MainWndProc(
         {
             g_Zoomed = FALSE;
 
-            // Unregister Ctrl+C hotkeys when exiting static zoom
+            // Unregister Ctrl+C and Ctrl+S hotkeys when exiting static zoom
             UnregisterHotKey( hWnd, COPY_IMAGE_HOTKEY );
             UnregisterHotKey( hWnd, COPY_CROP_HOTKEY );
+            UnregisterHotKey( hWnd, SAVE_IMAGE_HOTKEY );
+            UnregisterHotKey( hWnd, SAVE_CROP_HOTKEY );
 
             if( g_ZoomOnLiveZoom )
             {
@@ -6565,9 +6565,11 @@ LRESULT APIENTRY MainWndProc(
                     g_DrawingShape = FALSE;
                     OutputDebug( L"Zoom on\n");
 
-                    // Register Ctrl+C hotkeys only during static zoom
+                    // Register Ctrl+C and Ctrl+S hotkeys only during static zoom
                     RegisterHotKey(hWnd, COPY_IMAGE_HOTKEY, MOD_CONTROL | MOD_NOREPEAT, 'C');
                     RegisterHotKey(hWnd, COPY_CROP_HOTKEY, MOD_CONTROL | MOD_SHIFT | MOD_NOREPEAT, 'C');
+                    RegisterHotKey(hWnd, SAVE_IMAGE_HOTKEY, MOD_CONTROL | MOD_NOREPEAT, 'S');
+                    RegisterHotKey(hWnd, SAVE_CROP_HOTKEY, MOD_CONTROL | MOD_SHIFT | MOD_NOREPEAT, 'S');
 
 #ifdef __ZOOMIT_POWERTOYS__
                     if( g_StartedByPowerToys )
