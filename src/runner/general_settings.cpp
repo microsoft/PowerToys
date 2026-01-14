@@ -367,11 +367,21 @@ void apply_general_settings(const json::JsonObject& general_configs, bool save)
     if (json::has(general_configs, L"show_theme_adaptive_tray_icon", json::JsonValueType::Boolean))
     {
         bool new_theme_adaptive = general_configs.GetNamedBoolean(L"show_theme_adaptive_tray_icon");
+        Logger::info(L"apply_general_settings: show_theme_adaptive_tray_icon current={}, new={}",
+                     show_theme_adaptive_tray_icon, new_theme_adaptive);
         if (show_theme_adaptive_tray_icon != new_theme_adaptive)
         {
             show_theme_adaptive_tray_icon = new_theme_adaptive;
             set_tray_icon_theme_adaptive(show_theme_adaptive_tray_icon);
         }
+        else
+        {
+            Logger::info(L"apply_general_settings: show_theme_adaptive_tray_icon unchanged, skipping update");
+        }
+    }
+    else
+    {
+        Logger::warn(L"apply_general_settings: show_theme_adaptive_tray_icon not found in config");
     }
 
     if (json::has(general_configs, L"ignored_conflict_properties", json::JsonValueType::Object))

@@ -372,7 +372,7 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Windows Command Palette</value>
   </data>
   <data name="Settings_GeneralPage_About_SettingsExpander.Description" xml:space="preserve">
-    <value>© 2025. All rights reserved.</value>
+    <value>© 2026. All rights reserved.</value>
   </data>
   <data name="Settings_GeneralPage_About_GithubLink_Hyperlink.Content" xml:space="preserve">
     <value>View GitHub repository</value>
