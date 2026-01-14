@@ -259,7 +259,7 @@ FancyZones::Run() noexcept
                           SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT_UNAWARE);
                           SetThreadDpiHostingBehavior(DPI_HOSTING_BEHAVIOR_MIXED);
                       } })
-        .get();
+        .wait();
 
     m_toggleEditorEventWaiter = EventWaiter(CommonSharedConstants::FANCY_ZONES_EDITOR_TOGGLE_EVENT, [&](int err) {
         if (err == ERROR_SUCCESS)
@@ -463,7 +463,7 @@ void FancyZones::WindowCreated(HWND window) noexcept
         if (!isMoved)
         {
             FancyZonesWindowProperties::StampMovedOnOpeningProperty(window);
-            m_dpiUnawareThread.submit(OnThreadExecutor::task_t{ [&] { MonitorUtils::OpenWindowOnActiveMonitor(window, active); } }).get();
+            m_dpiUnawareThread.submit(OnThreadExecutor::task_t{ [&] { MonitorUtils::OpenWindowOnActiveMonitor(window, active); } }).wait();
         }
     }
 }
