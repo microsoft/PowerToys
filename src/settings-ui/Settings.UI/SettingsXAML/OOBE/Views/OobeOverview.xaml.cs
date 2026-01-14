@@ -27,8 +27,6 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
         private bool _enableDataDiagnostics;
         private Windows.ApplicationModel.Resources.ResourceLoader resourceLoader = Helpers.ResourceLoaderInstance.ResourceLoader;
 
-        private int _conflictCount;
-
         public bool EnableDataDiagnostics
         {
             get
