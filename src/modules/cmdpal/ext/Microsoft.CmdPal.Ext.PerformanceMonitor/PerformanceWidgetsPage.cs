@@ -14,7 +14,6 @@ using CoreWidgetProvider.Widgets.Enums;
 using Microsoft.CmdPal.Core.Common;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
-using Microsoft.Windows.Widgets.Providers;
 using Windows.ApplicationModel;
 
 namespace Microsoft.CmdPal.Ext.PerformanceMonitor;
@@ -133,19 +132,21 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
     {
         if (!_isBandPage)
         {
-            // TODO! add details
+            // TODO add details
             return new[] { _cpuItem, _memoryItem, _networkItem, _gpuItem };
         }
         else
         {
             _networkUpItem = new ListItem(_networkPage)
             {
-                Title = $"{_networkUpSpeed} ↑",
+                Title = $"{_networkUpSpeed}",
+                Subtitle = Resources.GetResource("Network_Send_Subtitle"),
             };
 
             _networkDownItem = new ListItem(_networkPage)
             {
-                Title = $"{_networkDownSpeed} ↓",
+                Title = $"{_networkDownSpeed}",
+                Subtitle = Resources.GetResource("Network_Receive_Subtitle"),
             };
 
             return new[] { _cpuItem, _memoryItem, _networkDownItem, _networkUpItem, _gpuItem };
@@ -176,11 +177,14 @@ internal abstract partial class WidgetPage : OnLoadContentPage
         get
         {
             var json = new JsonObject();
-            foreach (var kvp in ContentData)
+            lock (ContentData)
             {
-                if (kvp.Value is not null)
+                foreach (var kvp in ContentData)
                 {
-                    json[kvp.Key] = kvp.Value;
+                    if (kvp.Value is not null)
+                    {
+                        json[kvp.Key] = kvp.Value;
+                    }
                 }
             }
 
@@ -192,7 +196,10 @@ internal abstract partial class WidgetPage : OnLoadContentPage
 
     public void UpdateWidget()
     {
-        LoadContentData();
+        lock (ContentData)
+        {
+            LoadContentData();
+        }
 
         _formContent.DataJson = ContentDataJson.ToJsonString();
 
@@ -279,7 +286,7 @@ internal sealed partial class SystemCPUUsageWidgetPage : WidgetPage, IDisposable
     {
         _dataManager = new(DataType.CPU, () => UpdateWidget());
         Commands = [
-            new CommandContextItem(OpenTaskManagerCommand.Instance) { Title = Resources.GetResource("Open_Task_Manager_Title") },
+            new CommandContextItem(OpenTaskManagerCommand.Instance),
         ];
     }
 
@@ -388,7 +395,7 @@ internal sealed partial class SystemMemoryUsageWidgetPage : WidgetPage, IDisposa
     {
         _dataManager = new(DataType.Memory, () => UpdateWidget());
         Commands = [
-            new CommandContextItem(OpenTaskManagerCommand.Instance) { Title = Resources.GetResource("Open_Task_Manager_Title") },
+            new CommandContextItem(OpenTaskManagerCommand.Instance),
         ];
     }
 
@@ -513,9 +520,9 @@ internal sealed partial class SystemNetworkUsageWidgetPage : WidgetPage, IDispos
     {
         _dataManager = new(DataType.Network, () => UpdateWidget());
         Commands = [
-            new CommandContextItem(OpenTaskManagerCommand.Instance),
             new CommandContextItem(new PrevNetworkCommand(this) { Name = Resources.GetResource("Previous_Network_Title") }),
             new CommandContextItem(new NextNetworkCommand(this) { Name = Resources.GetResource("Next_Network_Title") }),
+            new CommandContextItem(OpenTaskManagerCommand.Instance),
         ];
     }
 
@@ -536,8 +543,8 @@ internal sealed partial class SystemNetworkUsageWidgetPage : WidgetPage, IDispos
             var networkStats = currentData.GetNetworkUsage(_networkIndex);
 
             ContentData["networkUsage"] = FloatToPercentString(networkStats.Usage);
-            ContentData["netSent"] = BytesToBitsPerSecString(networkStats.Sent);
-            ContentData["netReceived"] = BytesToBitsPerSecString(networkStats.Received);
+            ContentData["netSent"] = PadStringIntoLength(BytesToBitsPerSecString(networkStats.Sent), 12);
+            ContentData["netReceived"] = PadStringIntoLength(BytesToBitsPerSecString(networkStats.Received), 12);
             ContentData["networkName"] = netName;
             ContentData["netGraphUrl"] = currentData.CreateNetImageUrl(_networkIndex);
             ContentData["chartHeight"] = ChartHelper.ChartHeight + "px";
@@ -611,12 +618,44 @@ internal sealed partial class SystemNetworkUsageWidgetPage : WidgetPage, IDispos
         value /= 1024;
         if (value < 1024)
         {
-            return string.Format(CultureInfo.InvariantCulture, "{0:0.0} Kbps", value);
+            if (value < 100)
+            {
+                return string.Format(CultureInfo.InvariantCulture, "{0:0.0} Kbps", value);
+            }
+
+            return string.Format(CultureInfo.InvariantCulture, "{0:0} Kbps", value);
         }
 
         // Kbits to Mbits
         value /= 1024;
-        return string.Format(CultureInfo.InvariantCulture, "{0:0.0} Mbps", value);
+        if (value < 1024)
+        {
+            if (value < 100)
+            {
+                return string.Format(CultureInfo.InvariantCulture, "{0:0.0} Mbps", value);
+            }
+
+            return string.Format(CultureInfo.InvariantCulture, "{0:0} Mbps", value);
+        }
+
+        // Mbits to Gbits
+        value /= 1024;
+        if (value < 100)
+        {
+            return string.Format(CultureInfo.InvariantCulture, "{0:0.0} Gbps", value);
+        }
+
+        return string.Format(CultureInfo.InvariantCulture, "{0:0} Gbps", value);
+    }
+
+    private static string PadStringIntoLength(string str, int length)
+    {
+        if (str.Length >= length)
+        {
+            return str;
+        }
+
+        return str + new string(' ', length - str.Length);
     }
 
     internal override void PushActivate()
@@ -712,7 +751,9 @@ internal sealed partial class SystemGPUUsageWidgetPage : WidgetPage, IDisposable
         _dataManager = new(DataType.GPU, () => UpdateWidget());
 
         Commands = [
-            new CommandContextItem(OpenTaskManagerCommand.Instance) { Title = Resources.GetResource("Open_Task_Manager_Title") },
+            new CommandContextItem(new PrevGPUCommand(this) { Name = Resources.GetResource("Previous_GPU_Title") }),
+            new CommandContextItem(new NextGPUCommand(this) { Name = Resources.GetResource("Next_GPU_Title") }),
+            new CommandContextItem(OpenTaskManagerCommand.Instance),
         ];
     }
 
@@ -790,13 +831,13 @@ internal sealed partial class SystemGPUUsageWidgetPage : WidgetPage, IDisposable
         }
     }
 
-    private void HandlePrevGPU(WidgetActionInvokedArgs args)
+    private void HandlePrevGPU()
     {
         _gpuActiveIndex = _dataManager.GetGPUStats().GetPrevGPUIndex(_gpuActiveIndex);
         UpdateWidget();
     }
 
-    private void HandleNextGPU(WidgetActionInvokedArgs args)
+    private void HandleNextGPU()
     {
         _gpuActiveIndex = _dataManager.GetGPUStats().GetNextGPUIndex(_gpuActiveIndex);
         UpdateWidget();
@@ -805,6 +846,46 @@ internal sealed partial class SystemGPUUsageWidgetPage : WidgetPage, IDisposable
     public void Dispose()
     {
         _dataManager.Dispose();
+    }
+
+    private sealed partial class PrevGPUCommand : InvokableCommand
+    {
+        private readonly SystemGPUUsageWidgetPage _page;
+
+        public PrevGPUCommand(SystemGPUUsageWidgetPage page)
+        {
+            _page = page;
+        }
+
+        public override string Id => "com.microsoft.cmdpal.gpu_widget.prev";
+
+        public override IconInfo Icon => Icons.NavigateBackwardIcon;
+
+        public override ICommandResult Invoke()
+        {
+            _page.HandlePrevGPU();
+            return CommandResult.KeepOpen();
+        }
+    }
+
+    private sealed partial class NextGPUCommand : InvokableCommand
+    {
+        private readonly SystemGPUUsageWidgetPage _page;
+
+        public NextGPUCommand(SystemGPUUsageWidgetPage page)
+        {
+            _page = page;
+        }
+
+        public override string Id => "com.microsoft.cmdpal.gpu_widget.next";
+
+        public override IconInfo Icon => Icons.NavigateForwardIcon;
+
+        public override ICommandResult Invoke()
+        {
+            _page.HandleNextGPU();
+            return CommandResult.KeepOpen();
+        }
     }
 }
 

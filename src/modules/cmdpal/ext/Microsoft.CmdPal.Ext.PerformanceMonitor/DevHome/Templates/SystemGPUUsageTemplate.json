@@ -77,41 +77,6 @@
           "text": "${gpuName}",
           "type": "TextBlock",
           "size": "medium"
-        },
-        {
-          "type": "ColumnSet",
-          "spacing": "Medium",
-          "columns": [
-            {
-              "type": "Column",
-              "width": "stretch"
-            },
-            {
-              "type": "Column",
-              "width": "auto",
-              "items": [
-                {
-                  "type": "Container",
-                  "items": [
-                    {
-                      "type": "ActionSet",
-                      "actions": [
-                        {
-                          "type": "Action.Execute",
-                          "title": "%GPUUsage_Widget_Template/Next_GPU%",
-                          "verb": "NextItem"
-                        }
-                      ]
-                    }
-                  ]
-                }
-              ]
-            },
-            {
-              "type": "Column",
-              "width": "stretch"
-            }
-          ]
         }
       ]
     }

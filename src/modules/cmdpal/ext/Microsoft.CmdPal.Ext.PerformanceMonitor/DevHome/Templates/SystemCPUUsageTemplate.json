@@ -66,7 +66,7 @@
         },
         {
           "type": "Container",
-          "$when": "${$host.widgetSize != \"small\"}",
+          "$when": false,
           "items": [
             {
               "type": "TextBlock",

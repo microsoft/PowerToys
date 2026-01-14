@@ -144,10 +144,10 @@
   <data name="GPUUsage_Widget_Template.GPU_Temperature" xml:space="preserve">
     <value>Temperature</value>
   </data>
-  <data name="GPUUsage_Widget_Template.Previous_GPU" xml:space="preserve">
+  <data name="Previous_GPU_Title" xml:space="preserve">
     <value>Previous GPU</value>
   </data>
-  <data name="GPUUsage_Widget_Template.Next_GPU" xml:space="preserve">
+  <data name="Next_GPU_Title" xml:space="preserve">
     <value>Next GPU</value>
   </data>
   <data name="CPUUsage_Widget_Template.CPU_Usage" xml:space="preserve">
