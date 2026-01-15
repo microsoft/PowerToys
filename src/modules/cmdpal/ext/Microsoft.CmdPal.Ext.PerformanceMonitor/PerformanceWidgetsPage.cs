@@ -145,12 +145,14 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
             {
                 Title = $"{_networkUpSpeed}",
                 Subtitle = Resources.GetResource("Network_Send_Subtitle"),
+                MoreCommands = _networkPage.Commands,
             };
 
             _networkDownItem = new ListItem(_networkPage)
             {
                 Title = $"{_networkDownSpeed}",
                 Subtitle = Resources.GetResource("Network_Receive_Subtitle"),
+                MoreCommands = _networkPage.Commands,
             };
 
             return new[] { _cpuItem, _memoryItem, _networkDownItem, _networkUpItem, _gpuItem };
@@ -166,6 +168,11 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
     }
 }
 
+/// <summary>
+/// Base class for all the performance monitor widget pages.
+/// This handles common stuff like loading their widget JSON
+/// and updating it when needed.
+/// </summary>
 internal abstract partial class WidgetPage : OnLoadContentPage
 {
     internal event EventHandler? Updated;
@@ -232,9 +239,9 @@ internal abstract partial class WidgetPage : OnLoadContentPage
             Template[page] = template;
             return template;
         }
-        catch (Exception)
+        catch (Exception e)
         {
-            // Log.Error(e, "Error getting template.");
+            CoreLogger.LogError("Error getting template.", e);
             return string.Empty;
         }
     }
@@ -246,6 +253,14 @@ internal abstract partial class WidgetPage : OnLoadContentPage
         return [_formContent];
     }
 
+    /// <summary>
+    /// Increment our tracker of how many pages have needed us active. This is a
+    /// little wackier than just OnLoad/Unload. Both the ListPage for
+    /// PerformanceWidgetsPage itself, AND the widget itself need the stats to
+    /// be updating. So we use a counter to track how many "clients" need us
+    /// active. When either is activated, we'll start updating. When both are
+    /// removed, we'll stop updating.
+    /// </summary>
     internal virtual void PushActivate()
     {
         _loadCount++;
@@ -296,7 +311,7 @@ internal sealed partial class SystemCPUUsageWidgetPage : WidgetPage, IDisposable
 
     protected override void LoadContentData()
     {
-        CoreLogger.LogDebug("Getting CPU stats");
+        // CoreLogger.LogDebug("Getting CPU stats");
         try
         {
             ContentData.Clear();
@@ -318,8 +333,7 @@ internal sealed partial class SystemCPUUsageWidgetPage : WidgetPage, IDisposable
             // ContentData["cpuProc3"] = currentData.GetCpuProcessText(2);
             var contentDuration = timer.ElapsedMilliseconds - dataDuration;
 
-            CoreLogger.LogDebug($"CPU stats retrieved in {dataDuration} ms, content prepared in {contentDuration} ms. (Total {timer.ElapsedMilliseconds} ms)");
-
+            // CoreLogger.LogDebug($"CPU stats retrieved in {dataDuration} ms, content prepared in {contentDuration} ms. (Total {timer.ElapsedMilliseconds} ms)");
             // DataState = WidgetDataState.Okay;
         }
         catch (Exception e)
@@ -405,7 +419,7 @@ internal sealed partial class SystemMemoryUsageWidgetPage : WidgetPage, IDisposa
 
     protected override void LoadContentData()
     {
-        CoreLogger.LogDebug("Getting Memory stats");
+        // CoreLogger.LogDebug("Getting Memory stats");
         try
         {
             ContentData.Clear();
@@ -430,7 +444,7 @@ internal sealed partial class SystemMemoryUsageWidgetPage : WidgetPage, IDisposa
 
             var contentDuration = timer.ElapsedMilliseconds - dataDuration;
 
-            CoreLogger.LogDebug($"Memory stats retrieved in {dataDuration} ms, content prepared in {contentDuration} ms. (Total {timer.ElapsedMilliseconds} ms)");
+            // CoreLogger.LogDebug($"Memory stats retrieved in {dataDuration} ms, content prepared in {contentDuration} ms. (Total {timer.ElapsedMilliseconds} ms)");
         }
         catch (Exception e)
         {
@@ -532,7 +546,7 @@ internal sealed partial class SystemNetworkUsageWidgetPage : WidgetPage, IDispos
 
     protected override void LoadContentData()
     {
-        CoreLogger.LogDebug("Getting Network stats");
+        // CoreLogger.LogDebug("Getting Network stats");
         try
         {
             ContentData.Clear();
@@ -547,8 +561,8 @@ internal sealed partial class SystemNetworkUsageWidgetPage : WidgetPage, IDispos
             var networkStats = currentData.GetNetworkUsage(_networkIndex);
 
             ContentData["networkUsage"] = FloatToPercentString(networkStats.Usage);
-            ContentData["netSent"] = PadStringIntoLength(BytesToBitsPerSecString(networkStats.Sent), 12);
-            ContentData["netReceived"] = PadStringIntoLength(BytesToBitsPerSecString(networkStats.Received), 12);
+            ContentData["netSent"] = BytesToBitsPerSecString(networkStats.Sent);
+            ContentData["netReceived"] = BytesToBitsPerSecString(networkStats.Received);
             ContentData["networkName"] = netName;
             ContentData["netGraphUrl"] = currentData.CreateNetImageUrl(_networkIndex);
             ContentData["chartHeight"] = ChartHelper.ChartHeight + "px";
@@ -556,7 +570,7 @@ internal sealed partial class SystemNetworkUsageWidgetPage : WidgetPage, IDispos
 
             var contentDuration = timer.ElapsedMilliseconds - dataDuration;
 
-            CoreLogger.LogDebug($"Network stats retrieved in {dataDuration} ms, content prepared in {contentDuration} ms. (Total {timer.ElapsedMilliseconds} ms)");
+            // CoreLogger.LogDebug($"Network stats retrieved in {dataDuration} ms, content prepared in {contentDuration} ms. (Total {timer.ElapsedMilliseconds} ms)");
         }
         catch (Exception e)
         {
@@ -650,16 +664,6 @@ internal sealed partial class SystemNetworkUsageWidgetPage : WidgetPage, IDispos
         }
 
         return string.Format(CultureInfo.InvariantCulture, "{0:0} Gbps", value);
-    }
-
-    private static string PadStringIntoLength(string str, int length)
-    {
-        if (str.Length >= length)
-        {
-            return str;
-        }
-
-        return str + new string(' ', length - str.Length);
     }
 
     internal override void PushActivate()
@@ -763,7 +767,7 @@ internal sealed partial class SystemGPUUsageWidgetPage : WidgetPage, IDisposable
 
     protected override void LoadContentData()
     {
-        CoreLogger.LogDebug("Getting GPU stats");
+        // CoreLogger.LogDebug("Getting GPU stats");
         try
         {
             ContentData.Clear();
@@ -785,7 +789,7 @@ internal sealed partial class SystemGPUUsageWidgetPage : WidgetPage, IDisposable
 
             var contentDuration = timer.ElapsedMilliseconds - dataDuration;
 
-            CoreLogger.LogDebug($"GPU stats retrieved in {dataDuration} ms, content prepared in {contentDuration} ms. (Total {timer.ElapsedMilliseconds} ms)");
+            // CoreLogger.LogDebug($"GPU stats retrieved in {dataDuration} ms, content prepared in {contentDuration} ms. (Total {timer.ElapsedMilliseconds} ms)");
         }
         catch (Exception e)
         {

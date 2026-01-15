@@ -20,8 +20,7 @@ internal sealed class Icons
 
     internal static IconInfo StackedAreaIcon => new("\uE9D2"); // StackedArea icon
 
-    // TODO! make different
-    internal static IconInfo GpuIcon => new("\uE9D9"); // CPU icon
+    internal static IconInfo GpuIcon => new("\uE950"); // Component icon
 
     internal static IconInfo NavigateBackwardIcon => new("\uE72B"); // Previous icon
 

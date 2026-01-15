@@ -11,6 +11,15 @@ namespace Microsoft.CmdPal.Ext.PerformanceMonitor;
 
 #pragma warning disable SA1402 // File may only contain a single type
 
+/// <summary>
+/// Helper class for creating ListPage's which can listen for when they're
+/// loaded and unloaded. This works because CmdPal will attach an event handler
+/// to the ItemsChanged event when the page is added to the UI, and remove it
+/// when the page is removed from the UI.
+///
+/// Subclasses should override the Loaded and Unloaded methods to start/stop
+/// any background work needed to populate the page.
+/// </summary>
 internal abstract partial class OnLoadStaticListPage : OnLoadBasePage, IListPage
 {
     private string _searchText = string.Empty;
@@ -41,6 +50,15 @@ internal abstract partial class OnLoadStaticListPage : OnLoadBasePage, IListPage
     public abstract IListItem[] GetItems();
 }
 
+/// <summary>
+/// Helper class for creating ContentPage's which can listen for when they're
+/// loaded and unloaded. This works because CmdPal will attach an event handler
+/// to the ItemsChanged event when the page is added to the UI, and remove it
+/// when the page is removed from the UI.
+///
+/// Subclasses should override the Loaded and Unloaded methods to start/stop
+/// any background work needed to populate the page.
+/// </summary>
 internal abstract partial class OnLoadContentPage : OnLoadBasePage, IContentPage
 {
     public virtual IDetails? Details { get; set => SetProperty(ref field, value); }
