@@ -12,7 +12,7 @@ A PowerToy module is a self-contained utility integrated into the PowerToys ecos
 
 ### Requirements
 
-- [Visual Studio 2022](https://visualstudio.microsoft.com/downloads/) and the following workloads/individual components:
+- [Visual Studio 2026](https://visualstudio.microsoft.com/downloads/) and the following workloads/individual components:
   - Desktop Development with C++
   - WinUI application development
   - .NET desktop development
