@@ -69,7 +69,7 @@ public sealed partial class SearchEngine : IDisposable
 
         while (!searchQuery.SearchResults.IsEmpty && searchQuery.SearchResults.TryDequeue(out var result) && ++index <= limit)
         {
-            var ili = new IndexerListItem(new IndexerItem
+            var indexerListItem = new IndexerListItem(new IndexerItem
             {
                 FileName = result.ItemDisplayName,
                 FullPath = result.LaunchUri,
@@ -92,10 +92,10 @@ public sealed partial class SearchEngine : IDisposable
                     Logger.LogError("Failed to get the icon.", ex);
                 }
 
-                ili.Icon = icon;
+                indexerListItem.Icon = icon;
             }
 
-            results.Add(ili);
+            results.Add(indexerListItem);
         }
 
         hasMore = hasMoreItems;
