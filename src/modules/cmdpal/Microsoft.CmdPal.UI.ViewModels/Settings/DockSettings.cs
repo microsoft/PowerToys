@@ -38,7 +38,7 @@ public class DockSettings
         StartBands.Add(new DockBandSettings { Id = "com.microsoft.cmdpal.home" });
         StartBands.Add(new DockBandSettings { Id = "com.microsoft.cmdpal.winget", ShowLabels = false });
 
-        EndBands.Add(new DockBandSettings { Id = "com.microsoft.cmdpal.performanceMonitor" });
+        EndBands.Add(new DockBandSettings { Id = "com.microsoft.cmdpal.performanceWidget" });
         EndBands.Add(new DockBandSettings { Id = "com.microsoft.cmdpal.timedate.dockband" });
     }
 }

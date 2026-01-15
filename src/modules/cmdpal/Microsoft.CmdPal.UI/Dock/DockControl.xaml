@@ -164,7 +164,7 @@
                 VerticalScrollMode="Disabled">
                 <ItemsRepeater
                     x:Name="StartItemsRepeater"
-                    HorizontalAlignment="Left"
+                    HorizontalAlignment="Stretch"
                     ItemTemplate="{StaticResource DockBandTemplate}"
                     ItemsSource="{x:Bind ViewModel.StartItems, Mode=OneWay}"
                     Layout="{StaticResource ItemsOrientation}">

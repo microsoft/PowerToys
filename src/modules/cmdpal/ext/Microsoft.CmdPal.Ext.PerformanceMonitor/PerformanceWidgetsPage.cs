@@ -61,6 +61,7 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
         _cpuItem = new ListItem(_cpuPage)
         {
             Title = _cpuPage.GetItemTitle(isBandPage),
+            MoreCommands = _cpuPage.Commands,
         };
 
         _cpuPage.Updated += (s, e) =>
@@ -71,6 +72,7 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
         _memoryItem = new ListItem(_memoryPage)
         {
             Title = _memoryPage.GetItemTitle(isBandPage),
+            MoreCommands = _memoryPage.Commands,
         };
 
         _memoryPage.Updated += (s, e) =>
@@ -81,6 +83,7 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
         _networkItem = new ListItem(_networkPage)
         {
             Title = _networkPage.GetItemTitle(isBandPage),
+            MoreCommands = _networkPage.Commands,
         };
 
         _networkPage.Updated += (s, e) =>
@@ -95,6 +98,7 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
         _gpuItem = new ListItem(_gpuPage)
         {
             Title = _gpuPage.GetItemTitle(isBandPage),
+            MoreCommands = _gpuPage.Commands,
         };
 
         _gpuPage.Updated += (s, e) =>
