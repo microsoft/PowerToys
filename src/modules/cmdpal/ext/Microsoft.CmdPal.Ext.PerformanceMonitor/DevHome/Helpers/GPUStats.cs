@@ -50,8 +50,7 @@ internal sealed partial class GPUStats : IDisposable
         // We could totally put each of those sets of counters into their own
         // set. That's what we should do, so that we can report the sum of those
         // numbers as the total utilization, and then have them broken out in
-        // the card template and in the details metadata. 
-
+        // the card template and in the details metadata.
         _gpuCounters.Clear();
 
         var pcg = new PerformanceCounterCategory("GPU Engine");
@@ -105,7 +104,7 @@ internal sealed partial class GPUStats : IDisposable
         //
         // We can't use WMI here, because it drags in a dependency on
         // Microsoft.Management.Infrastructure, which is not compatible with
-        // AOT. 
+        // AOT.
         //
         // For now, we'll just use the indicies as the GPU names.
         _stats.Clear();
@@ -232,8 +231,7 @@ internal sealed partial class GPUStats : IDisposable
         // collected. So this function always returns "--" for now.
         //
         // I have not done the code archeology to figure out why they were
-        // removed. 
-
+        // removed.
         if (_stats.Count <= gpuActiveIndex)
         {
             return "--";
