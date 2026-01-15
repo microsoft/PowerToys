@@ -381,21 +381,6 @@ namespace Microsoft.PowerToys.Settings.UI
             }
         }
 
-        public static ScoobeWindow GetScoobeWindow()
-        {
-            return scoobeWindow;
-        }
-
-        public static void SetScoobeWindow(ScoobeWindow window)
-        {
-            scoobeWindow = window;
-        }
-
-        public static void ClearScoobeWindow()
-        {
-            scoobeWindow = null;
-        }
-
         public static Type GetPage(string settingWindow)
         {
             switch (settingWindow)
