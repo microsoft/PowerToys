@@ -2688,8 +2688,55 @@ LRESULT CALLBACK HotkeyControlSubclassProc(HWND hWnd, UINT uMsg, WPARAM wParam, 
 //----------------------------------------------------------------------------
 LRESULT CALLBACK EditControlSubclassProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData)
 {
+    // Helper to adjust formatting rectangle for vertical text centering
+    auto AdjustTextRect = [](HWND hEdit) {
+        RECT rcClient;
+        GetClientRect(hEdit, &rcClient);
+        
+        // Get font metrics to calculate text height
+        HDC hdc = GetDC(hEdit);
+        HFONT hFont = reinterpret_cast<HFONT>(SendMessage(hEdit, WM_GETFONT, 0, 0));
+        HFONT hOldFont = hFont ? static_cast<HFONT>(SelectObject(hdc, hFont)) : nullptr;
+        
+        TEXTMETRIC tm;
+        GetTextMetrics(hdc, &tm);
+        int textHeight = tm.tmHeight;
+        
+        if (hOldFont)
+            SelectObject(hdc, hOldFont);
+        ReleaseDC(hEdit, hdc);
+        
+        // Calculate vertical offset to center text
+        int clientHeight = rcClient.bottom - rcClient.top;
+        int topOffset = (clientHeight - textHeight) / 2;
+        if (topOffset < 0) topOffset = 0;
+        
+        RECT rcFormat = rcClient;
+        rcFormat.top = topOffset;
+        rcFormat.left += 2;  // Small left margin
+        rcFormat.right -= 2; // Small right margin
+        
+        SendMessage(hEdit, EM_SETRECT, 0, reinterpret_cast<LPARAM>(&rcFormat));
+    };
+
     switch (uMsg)
     {
+    case WM_SIZE:
+    {
+        // Adjust the formatting rectangle to vertically center text
+        LRESULT result = DefSubclassProc(hWnd, uMsg, wParam, lParam);
+        AdjustTextRect(hWnd);
+        return result;
+    }
+
+    case WM_SETFONT:
+    {
+        // After font is set, adjust formatting rectangle
+        LRESULT result = DefSubclassProc(hWnd, uMsg, wParam, lParam);
+        AdjustTextRect(hWnd);
+        return result;
+    }
+
     case WM_NCPAINT:
         if (IsDarkModeEnabled())
         {
@@ -2778,6 +2825,19 @@ LRESULT CALLBACK SliderSubclassProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM 
 {
     switch (uMsg)
     {
+    case WM_LBUTTONDOWN:
+    case WM_MOUSEMOVE:
+    case WM_LBUTTONUP:
+        if (IsDarkModeEnabled())
+        {
+            // Let the default handler process the message first
+            LRESULT result = DefSubclassProc(hWnd, uMsg, wParam, lParam);
+            // Force full repaint to avoid artifacts at high DPI
+            InvalidateRect(hWnd, nullptr, TRUE);
+            return result;
+        }
+        break;
+
     case WM_PAINT:
         if (IsDarkModeEnabled())
         {
@@ -3734,7 +3794,7 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
 
         UnregisterAllHotkeys(GetParent( hDlg ));
         
-        // Center dialog on screen (must be done after DPI scaling)
+        // Center dialog on screen, clamping to fit if it's too large for the work area
         {
             RECT rcDlg;
             GetWindowRect(hDlg, &rcDlg);
@@ -3747,9 +3807,30 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
             HMONITOR hMon = MonitorFromPoint(pt, MONITOR_DEFAULTTONEAREST);
             MONITORINFO mi = { sizeof(mi) };
             GetMonitorInfo(hMon, &mi);
+
+            // Calculate available work area size
+            const int workWidth = mi.rcWork.right - mi.rcWork.left;
+            const int workHeight = mi.rcWork.bottom - mi.rcWork.top;
+
+            // Clamp dialog size to fit within work area (with a small margin)
+            constexpr int kMargin = 8;
+            if (dlgWidth > workWidth - kMargin * 2)
+            {
+                dlgWidth = workWidth - kMargin * 2;
+            }
+            if (dlgHeight > workHeight - kMargin * 2)
+            {
+                dlgHeight = workHeight - kMargin * 2;
+            }
+
+            // Apply clamped size if it changed
+            if (dlgWidth != (rcDlg.right - rcDlg.left) || dlgHeight != (rcDlg.bottom - rcDlg.top))
+            {
+                SetWindowPos(hDlg, nullptr, 0, 0, dlgWidth, dlgHeight, SWP_NOMOVE | SWP_NOZORDER);
+            }
             
-            int x = mi.rcWork.left + (mi.rcWork.right - mi.rcWork.left - dlgWidth) / 2;
-            int y = mi.rcWork.top + (mi.rcWork.bottom - mi.rcWork.top - dlgHeight) / 2;
+            int x = mi.rcWork.left + (workWidth - dlgWidth) / 2;
+            int y = mi.rcWork.top + (workHeight - dlgHeight) / 2;
             SetWindowPos(hDlg, nullptr, x, y, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
         }
 

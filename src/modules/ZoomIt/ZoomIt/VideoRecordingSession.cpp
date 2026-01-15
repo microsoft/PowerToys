@@ -3643,6 +3643,60 @@ static void DrawPlaybackButton(
 
 //----------------------------------------------------------------------------
 //
+// Helper: Mouse interaction for volume icon
+//
+//----------------------------------------------------------------------------
+static LRESULT CALLBACK VolumeIconSubclassProc(
+    HWND hWnd,
+    UINT message,
+    WPARAM wParam,
+    LPARAM lParam,
+    UINT_PTR uIdSubclass,
+    DWORD_PTR dwRefData)
+{
+    auto* pData = reinterpret_cast<VideoRecordingSession::TrimDialogData*>(dwRefData);
+    if (!pData)
+    {
+        return DefSubclassProc(hWnd, message, wParam, lParam);
+    }
+
+    switch (message)
+    {
+    case WM_NCDESTROY:
+        RemoveWindowSubclass(hWnd, VolumeIconSubclassProc, uIdSubclass);
+        break;
+
+    case WM_MOUSEMOVE:
+    {
+        TRACKMOUSEEVENT tme{ sizeof(tme), TME_LEAVE, hWnd, 0 };
+        TrackMouseEvent(&tme);
+
+        if (!pData->hoverVolumeIcon)
+        {
+            pData->hoverVolumeIcon = true;
+            InvalidateRect(hWnd, nullptr, FALSE);
+        }
+        return 0;
+    }
+
+    case WM_MOUSELEAVE:
+        if (pData->hoverVolumeIcon)
+        {
+            pData->hoverVolumeIcon = false;
+            InvalidateRect(hWnd, nullptr, FALSE);
+        }
+        return 0;
+
+    case WM_SETCURSOR:
+        SetCursor(LoadCursor(nullptr, IDC_HAND));
+        return TRUE;
+    }
+
+    return DefSubclassProc(hWnd, message, wParam, lParam);
+}
+
+//----------------------------------------------------------------------------
+//
 // Helper: Mouse interaction for playback controls
 //
 //----------------------------------------------------------------------------
@@ -3820,9 +3874,15 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
         {
             SetWindowSubclass(hSkipEnd, PlaybackButtonSubclassProc, 6, reinterpret_cast<DWORD_PTR>(pData));
         }
+        HWND hVolumeIcon = GetDlgItem(hDlg, IDC_TRIM_VOLUME_ICON);
+        if (hVolumeIcon)
+        {
+            SetWindowSubclass(hVolumeIcon, VolumeIconSubclassProc, 7, reinterpret_cast<DWORD_PTR>(pData));
+        }
 
         // Initialize volume from saved setting
         pData->volume = std::clamp(static_cast<double>(g_TrimDialogVolume) / 100.0, 0.0, 1.0);
+        pData->previousVolume = (pData->volume > 0.0) ? pData->volume : 0.70;  // Remember initial volume for unmute
 
         // Initialize volume slider
         HWND hVolume = GetDlgItem(hDlg, IDC_TRIM_VOLUME);
@@ -4023,7 +4083,7 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
         // Calculate vertical positions from bottom up
         const int okCancelY = clientHeight - bottomMargin - okCancelHeight;
         const int buttonRowY = okCancelY - spacing4 - buttonRowHeight;
-        const int timelineY = buttonRowY - spacing4 - timelineHeight;
+        const int timelineY = buttonRowY - spacing2 - timelineHeight;
         const int labelY = timelineY - spacing2 - labelHeight;
 
         // Preview fills from top to above labels
@@ -4414,8 +4474,9 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
             Gdiplus::SolidBrush bgBrush(Gdiplus::Color(255, 35, 35, 40));
             graphics.FillRectangle(&bgBrush, pDIS->rcItem.left, pDIS->rcItem.top, width, height);
 
-            // Icon color matches other controls
-            COLORREF iconColor = RGB(180, 180, 180);
+            // Icon color - brighter on hover
+            const bool isHover = pData && pData->hoverVolumeIcon;
+            COLORREF iconColor = isHover ? RGB(255, 255, 255) : RGB(180, 180, 180);
             Gdiplus::SolidBrush iconBrush(Gdiplus::Color(255, GetRValue(iconColor), GetGValue(iconColor), GetBValue(iconColor)));
             Gdiplus::Pen iconPen(Gdiplus::Color(255, GetRValue(iconColor), GetGValue(iconColor), GetBValue(iconColor)), 1.2f);
 
@@ -4525,6 +4586,11 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
             if (hForward)
             {
                 RemoveWindowSubclass(hForward, PlaybackButtonSubclassProc, 4);
+            }
+            HWND hVolumeIcon = GetDlgItem(hDlg, IDC_TRIM_VOLUME_ICON);
+            if (hVolumeIcon)
+            {
+                RemoveWindowSubclass(hVolumeIcon, VolumeIconSubclassProc, 7);
             }
         }
         if (pData && pData->hPreviewBitmap)
@@ -4769,6 +4835,57 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
     case WM_COMMAND:
         switch (LOWORD(wParam))
         {
+        case IDC_TRIM_VOLUME_ICON:
+        {
+            if (HIWORD(wParam) == STN_CLICKED)
+            {
+                pData = reinterpret_cast<TrimDialogData*>(GetWindowLongPtr(hDlg, DWLP_USER));
+                if (pData)
+                {
+                    HWND hVolumeSlider = GetDlgItem(hDlg, IDC_TRIM_VOLUME);
+                    
+                    if (pData->volume > 0.0)
+                    {
+                        // Mute: save current volume and set to 0
+                        pData->previousVolume = pData->volume;
+                        pData->volume = 0.0;
+                    }
+                    else
+                    {
+                        // Unmute: restore previous volume (default to 70% if never set)
+                        pData->volume = (pData->previousVolume > 0.0) ? pData->previousVolume : 0.70;
+                    }
+                    
+                    // Update slider position
+                    if (hVolumeSlider)
+                    {
+                        SendMessage(hVolumeSlider, TBM_SETPOS, TRUE, static_cast<LPARAM>(pData->volume * 100));
+                    }
+                    
+                    // Persist volume setting
+                    g_TrimDialogVolume = static_cast<DWORD>(pData->volume * 100);
+                    reg.WriteRegSettings(RegSettings);
+                    
+                    // Apply to media player
+                    if (pData->mediaPlayer)
+                    {
+                        try
+                        {
+                            pData->mediaPlayer.Volume(pData->volume);
+                        }
+                        catch (...)
+                        {
+                        }
+                    }
+                    
+                    // Update icon appearance
+                    InvalidateRect(GetDlgItem(hDlg, IDC_TRIM_VOLUME_ICON), nullptr, FALSE);
+                }
+                return TRUE;
+            }
+            break;
+        }
+
         case IDC_TRIM_REWIND:
         case IDC_TRIM_PLAY_PAUSE:
         case IDC_TRIM_FORWARD:

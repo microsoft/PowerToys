@@ -740,6 +740,14 @@ void ScaleDialogForDpi( HWND hDlg, UINT newDpi, UINT oldDpi )
         return;
     }
 
+    // With PerMonitorV2, Windows automatically scales dialogs (layout and fonts) when created.
+    // We only need to scale when moving between monitors with different DPIs.
+    // When oldDpi == DPI_BASELINE, this is initial creation and Windows already handled scaling.
+    if( oldDpi == DPI_BASELINE )
+    {
+        return;
+    }
+
     // Scale the dialog window itself
     RECT dialogRect;
     GetWindowRect( hDlg, &dialogRect );
@@ -815,6 +823,14 @@ void ScaleDialogForDpi( HWND hDlg, UINT newDpi, UINT oldDpi )
 void ScaleChildControlsForDpi( HWND hParent, UINT newDpi, UINT oldDpi )
 {
     if( newDpi == oldDpi || newDpi == 0 || oldDpi == 0 )
+    {
+        return;
+    }
+
+    // With PerMonitorV2, Windows automatically scales dialogs (layout and fonts) when created.
+    // We only need to scale when moving between monitors with different DPIs.
+    // When oldDpi == DPI_BASELINE, this is initial creation and Windows already handled scaling.
+    if( oldDpi == DPI_BASELINE )
     {
         return;
     }
