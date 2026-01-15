@@ -137,6 +137,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 generalSettingsConfig = newSettings;
 
+                // Update local field and notify UI if sort order changed
+                if (_dashboardSortOrder != generalSettingsConfig.DashboardSortOrder)
+                {
+                    _dashboardSortOrder = generalSettingsConfig.DashboardSortOrder;
+                    OnPropertyChanged(nameof(DashboardSortOrder));
+                }
+
                 // generalSettingsConfig.AddEnabledModuleChangeNotification(ModuleEnabledChangedOnSettingsPage);
                 ModuleEnabledChangedOnSettingsPage();
             });

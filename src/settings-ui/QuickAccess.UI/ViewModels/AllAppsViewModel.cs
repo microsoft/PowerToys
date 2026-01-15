@@ -22,6 +22,7 @@ namespace Microsoft.PowerToys.QuickAccess.ViewModels;
 
 public sealed class AllAppsViewModel : Observable
 {
+    private readonly object _sortLock = new object();
     private readonly IQuickAccessCoordinator _coordinator;
     private readonly ISettingsRepository<GeneralSettings> _settingsRepository;
     private readonly SettingsUtils _settingsUtils;
@@ -29,6 +30,9 @@ public sealed class AllAppsViewModel : Observable
     private readonly DispatcherQueue _dispatcherQueue;
     private readonly List<FlyoutMenuItem> _allFlyoutMenuItems = new();
     private GeneralSettings _generalSettings;
+
+    // Flag to prevent toggle operations during sorting to avoid race conditions.
+    private bool _isSorting;
 
     public ObservableCollection<FlyoutMenuItem> FlyoutMenuItems { get; }
 
@@ -40,7 +44,7 @@ public sealed class AllAppsViewModel : Observable
             if (_generalSettings.DashboardSortOrder != value)
             {
                 _generalSettings.DashboardSortOrder = value;
-                _settingsUtils.SaveSettings(_generalSettings.ToJsonString(), _generalSettings.GetModuleName());
+                _coordinator.SendSortOrderUpdate(_generalSettings);
                 OnPropertyChanged();
                 RefreshFlyoutMenuItems();
             }
@@ -103,47 +107,68 @@ public sealed class AllAppsViewModel : Observable
 
     private void RefreshFlyoutMenuItems()
     {
-        foreach (var item in _allFlyoutMenuItems)
+        // Prevent re-entrant calls during sorting
+        if (_isSorting)
         {
-            var moduleType = item.Tag;
-            var gpo = Helpers.ModuleGpoHelper.GetModuleGpoConfiguration(moduleType);
-            var isLocked = gpo is GpoRuleConfigured.Enabled or GpoRuleConfigured.Disabled;
-            var isEnabled = gpo == GpoRuleConfigured.Enabled || (!isLocked && Microsoft.PowerToys.Settings.UI.Library.Helpers.ModuleHelper.GetIsModuleEnabled(_generalSettings, moduleType));
-
-            item.Label = _resourceLoader.GetString(Microsoft.PowerToys.Settings.UI.Library.Helpers.ModuleHelper.GetModuleLabelResourceName(moduleType));
-            item.IsLocked = isLocked;
-            item.Icon = Microsoft.PowerToys.Settings.UI.Library.Helpers.ModuleHelper.GetModuleTypeFluentIconName(moduleType);
-
-            if (item.IsEnabled != isEnabled)
-            {
-                item.UpdateStatus(isEnabled);
-            }
-        }
-
-        var sortedItems = DashboardSortOrder switch
-        {
-            DashboardSortOrder.ByStatus => _allFlyoutMenuItems.OrderByDescending(x => x.IsEnabled).ThenBy(x => x.Label).ToList(),
-            _ => _allFlyoutMenuItems.OrderBy(x => x.Label).ToList(),
-        };
-
-        if (FlyoutMenuItems.Count == 0)
-        {
-            foreach (var item in sortedItems)
-            {
-                FlyoutMenuItems.Add(item);
-            }
-
             return;
         }
 
-        for (int i = 0; i < sortedItems.Count; i++)
+        lock (_sortLock)
         {
-            var item = sortedItems[i];
-            var oldIndex = FlyoutMenuItems.IndexOf(item);
-
-            if (oldIndex != -1 && oldIndex != i)
+            _isSorting = true;
+            try
             {
-                FlyoutMenuItems.Move(oldIndex, i);
+                foreach (var item in _allFlyoutMenuItems)
+                {
+                    var moduleType = item.Tag;
+                    var gpo = Helpers.ModuleGpoHelper.GetModuleGpoConfiguration(moduleType);
+                    var isLocked = gpo is GpoRuleConfigured.Enabled or GpoRuleConfigured.Disabled;
+                    var isEnabled = gpo == GpoRuleConfigured.Enabled || (!isLocked && Microsoft.PowerToys.Settings.UI.Library.Helpers.ModuleHelper.GetIsModuleEnabled(_generalSettings, moduleType));
+
+                    item.Label = _resourceLoader.GetString(Microsoft.PowerToys.Settings.UI.Library.Helpers.ModuleHelper.GetModuleLabelResourceName(moduleType));
+                    item.IsLocked = isLocked;
+                    item.Icon = Microsoft.PowerToys.Settings.UI.Library.Helpers.ModuleHelper.GetModuleTypeFluentIconName(moduleType);
+
+                    if (item.IsEnabled != isEnabled)
+                    {
+                        item.UpdateStatus(isEnabled);
+                    }
+                }
+
+                var sortedItems = DashboardSortOrder switch
+                {
+                    DashboardSortOrder.ByStatus => _allFlyoutMenuItems.OrderByDescending(x => x.IsEnabled).ThenBy(x => x.Label).ToList(),
+                    _ => _allFlyoutMenuItems.OrderBy(x => x.Label).ToList(),
+                };
+
+                if (FlyoutMenuItems.Count == 0)
+                {
+                    foreach (var item in sortedItems)
+                    {
+                        FlyoutMenuItems.Add(item);
+                    }
+
+                    return;
+                }
+
+                for (int i = 0; i < sortedItems.Count; i++)
+                {
+                    var item = sortedItems[i];
+                    var oldIndex = FlyoutMenuItems.IndexOf(item);
+
+                    if (oldIndex != -1 && oldIndex != i)
+                    {
+                        FlyoutMenuItems.Move(oldIndex, i);
+                    }
+                }
+            }
+            finally
+            {
+                // Use dispatcher to reset flag after UI updates complete
+                _dispatcherQueue.TryEnqueue(DispatcherQueuePriority.Low, () =>
+                {
+                    _isSorting = false;
+                });
             }
         }
     }
@@ -151,13 +176,18 @@ public sealed class AllAppsViewModel : Observable
     private void EnabledChangedOnUI(ModuleListItem item)
     {
         var flyoutItem = (FlyoutMenuItem)item;
-        if (_coordinator.UpdateModuleEnabled(flyoutItem.Tag, flyoutItem.IsEnabled))
-        {
-            _coordinator.NotifyUserSettingsInteraction();
+        var isEnabled = flyoutItem.IsEnabled;
 
-            // Trigger re-sort immediately when status changes on UI
-            RefreshFlyoutMenuItems();
+        // Ignore toggle operations during sorting to prevent race conditions.
+        // Revert the toggle state since UI already changed due to TwoWay binding.
+        if (_isSorting)
+        {
+            flyoutItem.UpdateStatus(!isEnabled);
+            return;
         }
+
+        _coordinator.UpdateModuleEnabled(flyoutItem.Tag, flyoutItem.IsEnabled);
+        RefreshFlyoutMenuItems();
     }
 
     private void ModuleEnabledChangedOnSettingsPage()
