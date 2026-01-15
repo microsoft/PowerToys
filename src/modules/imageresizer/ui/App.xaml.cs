@@ -107,33 +107,26 @@ namespace ImageResizer
             // Temporary workaround for issue #1273
             WindowHelpers.BringToForeground(new System.Windows.Interop.WindowInteropHelper(mainWindow).Handle);
 
-            // Check AI availability on UI thread after window is loaded
-            // Windows AI APIs require proper COM apartment and SynchronizationContext
+            // Check AI availability after window is loaded
+            // WinAiSuperResolutionService handles UI thread dispatching internally
             if (!OSVersionHelper.IsWindows10())
             {
-                mainWindow.Loaded += (s, args) =>
+                mainWindow.Loaded += async (s, args) =>
                 {
-                    // Use Dispatcher to ensure we're on the UI thread
-                    mainWindow.Dispatcher.InvokeAsync(async () =>
-                    {
-                        await InitializeAiOnUIThreadAsync();
-                    });
+                    await InitializeAiAsync();
                 };
             }
         }
 
         /// <summary>
-        /// Initialize AI availability check on UI thread.
-        /// Windows AI APIs require proper COM apartment context.
+        /// Initialize AI availability check.
+        /// WinAiSuperResolutionService handles UI thread dispatching internally.
         /// </summary>
-        private static async System.Threading.Tasks.Task InitializeAiOnUIThreadAsync()
+        private static async System.Threading.Tasks.Task InitializeAiAsync()
         {
             try
             {
-                Logger.LogInfo($"Checking AI availability on UI thread (Thread: {System.Threading.Thread.CurrentThread.ManagedThreadId})");
-
                 var readyState = Services.WinAiSuperResolutionService.GetModelReadyState();
-                Logger.LogInfo($"ImageScaler.GetReadyState() returned: {readyState}");
 
                 switch (readyState)
                 {
@@ -144,21 +137,18 @@ namespace ImageResizer
                         if (aiService != null)
                         {
                             ResizeBatch.SetAiSuperResolutionService(aiService);
-                            Logger.LogInfo("AI Super Resolution service initialized successfully on UI thread.");
                         }
 
                         break;
 
                     case Microsoft.Windows.AI.AIFeatureReadyState.NotReady:
                         AiAvailabilityState = AiAvailabilityState.ModelNotReady;
-                        Logger.LogInfo("AI model not ready, user can download via UI.");
                         break;
 
                     case Microsoft.Windows.AI.AIFeatureReadyState.DisabledByUser:
                     case Microsoft.Windows.AI.AIFeatureReadyState.NotSupportedOnCurrentSystem:
                     default:
                         AiAvailabilityState = AiAvailabilityState.NotSupported;
-                        Logger.LogInfo($"AI not supported: {readyState}");
                         break;
                 }
 
@@ -167,7 +157,7 @@ namespace ImageResizer
             }
             catch (Exception ex)
             {
-                Logger.LogError($"Failed to check AI availability on UI thread: {ex.Message}");
+                Logger.LogError($"Failed to check AI availability: {ex.Message}");
                 AiAvailabilityState = AiAvailabilityState.NotSupported;
                 AiInitializationCompleted?.Invoke(null, AiAvailabilityState);
             }

@@ -402,6 +402,7 @@ namespace ImageResizer.ViewModels
                 });
 
                 // Call EnsureReadyAsync to download and prepare the AI model
+                // Note: WinAiSuperResolutionService handles dispatching to UI thread internally
                 var result = await WinAiSuperResolutionService.EnsureModelReadyAsync(progress);
 
                 if (result?.Status == Microsoft.Windows.AI.AIFeatureReadyResultState.Success)

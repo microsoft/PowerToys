@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using ManagedCommon;
 using Microsoft.Windows.AI;
 using Microsoft.Windows.AI.Imaging;
 using Windows.Graphics.Imaging;
@@ -33,44 +34,78 @@ namespace ImageResizer.Services
 
         /// <summary>
         /// Async factory method to create and initialize WinAiSuperResolutionService.
-        /// Returns null if initialization fails.
+        /// Must be called on UI thread. Returns null if initialization fails.
         /// </summary>
         public static async Task<WinAiSuperResolutionService> CreateAsync()
         {
+            // Ensure we're on UI thread for Windows AI API calls
+            if (Application.Current?.Dispatcher != null && !Application.Current.Dispatcher.CheckAccess())
+            {
+                return await Application.Current.Dispatcher.InvokeAsync(() => CreateAsync()).Task.Unwrap();
+            }
+
             try
             {
+                Logger.LogInfo($"ImageScaler.CreateAsync() called on thread {Thread.CurrentThread.ManagedThreadId}");
                 var imageScaler = await ImageScaler.CreateAsync();
                 if (imageScaler == null)
                 {
+                    Logger.LogWarning("ImageScaler.CreateAsync() returned null");
                     return null;
                 }
 
+                Logger.LogInfo("ImageScaler created successfully");
                 return new WinAiSuperResolutionService(imageScaler);
             }
-            catch
+            catch (Exception ex)
             {
+                Logger.LogError($"ImageScaler.CreateAsync() failed: {ex.Message}");
                 return null;
             }
         }
 
+        /// <summary>
+        /// Get the ready state of the ImageScaler model.
+        /// Must be called on UI thread for accurate results.
+        /// </summary>
         public static AIFeatureReadyState GetModelReadyState()
         {
+            // Ensure we're on UI thread for Windows AI API calls
+            if (Application.Current?.Dispatcher != null && !Application.Current.Dispatcher.CheckAccess())
+            {
+                return Application.Current.Dispatcher.Invoke(() => GetModelReadyState());
+            }
+
             try
             {
-                return ImageScaler.GetReadyState();
+                Logger.LogInfo($"ImageScaler.GetReadyState() called on thread {Thread.CurrentThread.ManagedThreadId}");
+                var state = ImageScaler.GetReadyState();
+                Logger.LogInfo($"ImageScaler.GetReadyState() returned: {state}");
+                return state;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                Logger.LogError($"ImageScaler.GetReadyState() failed: {ex.Message}");
                 // If we can't get the state, treat it as disabled by user
-                // The caller should check if it's Ready or NotReady
                 return AIFeatureReadyState.DisabledByUser;
             }
         }
 
+        /// <summary>
+        /// Ensure the AI model is ready (download if needed).
+        /// Must be called on UI thread.
+        /// </summary>
         public static async Task<AIFeatureReadyResult> EnsureModelReadyAsync(IProgress<double> progress = null)
         {
+            // Ensure we're on UI thread for Windows AI API calls
+            if (Application.Current?.Dispatcher != null && !Application.Current.Dispatcher.CheckAccess())
+            {
+                return await Application.Current.Dispatcher.InvokeAsync(() => EnsureModelReadyAsync(progress)).Task.Unwrap();
+            }
+
             try
             {
+                Logger.LogInfo($"ImageScaler.EnsureReadyAsync() called on thread {Thread.CurrentThread.ManagedThreadId}");
                 var operation = ImageScaler.EnsureReadyAsync();
 
                 // Register progress handler if provided
@@ -83,10 +118,13 @@ namespace ImageResizer.Services
                     };
                 }
 
-                return await operation;
+                var result = await operation;
+                Logger.LogInfo($"ImageScaler.EnsureReadyAsync() completed: Status={result?.Status}, ExtendedError={result?.ExtendedError}");
+                return result;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                Logger.LogError($"ImageScaler.EnsureReadyAsync() failed: {ex.Message}");
                 return null;
             }
         }
