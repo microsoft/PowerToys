@@ -111,7 +111,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _settingsRepository = settingsRepository;
             generalSettingsConfig = settingsRepository.SettingsConfig;
 
-            // generalSettingsConfig.AddEnabledModuleChangeNotification(ModuleEnabledChangedOnSettingsPage);
             _settingsRepository.SettingsChanged += OnSettingsChanged;
 
             // Initialize dashboard sort order from settings
@@ -144,7 +143,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     OnPropertyChanged(nameof(DashboardSortOrder));
                 }
 
-                // generalSettingsConfig.AddEnabledModuleChangeNotification(ModuleEnabledChangedOnSettingsPage);
                 ModuleEnabledChangedOnSettingsPage();
             });
         }
@@ -218,7 +216,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         /// </summary>
         private void SortModuleList()
         {
-            // Prevent re-entrant calls during sorting
             if (_isSorting)
             {
                 return;

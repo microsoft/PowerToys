@@ -46,7 +46,7 @@ public sealed class AllAppsViewModel : Observable
                 _generalSettings.DashboardSortOrder = value;
                 _coordinator.SendSortOrderUpdate(_generalSettings);
                 OnPropertyChanged();
-                RefreshFlyoutMenuItems();
+                SortFlyoutMenuItems();
             }
         }
     }
@@ -58,7 +58,6 @@ public sealed class AllAppsViewModel : Observable
         _settingsUtils = SettingsUtils.Default;
         _settingsRepository = SettingsRepository<GeneralSettings>.GetInstance(_settingsUtils);
         _generalSettings = _settingsRepository.SettingsConfig;
-        _generalSettings.AddEnabledModuleChangeNotification(ModuleEnabledChangedOnSettingsPage);
         _settingsRepository.SettingsChanged += OnSettingsChanged;
 
         _resourceLoader = Helpers.ResourceLoaderInstance.ResourceLoader;
@@ -91,7 +90,6 @@ public sealed class AllAppsViewModel : Observable
         _dispatcherQueue.TryEnqueue(() =>
         {
             _generalSettings = newSettings;
-            _generalSettings.AddEnabledModuleChangeNotification(ModuleEnabledChangedOnSettingsPage);
             OnPropertyChanged(nameof(DashboardSortOrder));
             RefreshFlyoutMenuItems();
         });
@@ -107,7 +105,28 @@ public sealed class AllAppsViewModel : Observable
 
     private void RefreshFlyoutMenuItems()
     {
-        // Prevent re-entrant calls during sorting
+        foreach (var item in _allFlyoutMenuItems)
+        {
+            var moduleType = item.Tag;
+            var gpo = Helpers.ModuleGpoHelper.GetModuleGpoConfiguration(moduleType);
+            var isLocked = gpo is GpoRuleConfigured.Enabled or GpoRuleConfigured.Disabled;
+            var isEnabled = gpo == GpoRuleConfigured.Enabled || (!isLocked && Microsoft.PowerToys.Settings.UI.Library.Helpers.ModuleHelper.GetIsModuleEnabled(_generalSettings, moduleType));
+
+            item.Label = _resourceLoader.GetString(Microsoft.PowerToys.Settings.UI.Library.Helpers.ModuleHelper.GetModuleLabelResourceName(moduleType));
+            item.IsLocked = isLocked;
+            item.Icon = Microsoft.PowerToys.Settings.UI.Library.Helpers.ModuleHelper.GetModuleTypeFluentIconName(moduleType);
+
+            if (item.IsEnabled != isEnabled)
+            {
+                item.UpdateStatus(isEnabled);
+            }
+        }
+
+        SortFlyoutMenuItems();
+    }
+
+    private void SortFlyoutMenuItems()
+    {
         if (_isSorting)
         {
             return;
@@ -118,23 +137,6 @@ public sealed class AllAppsViewModel : Observable
             _isSorting = true;
             try
             {
-                foreach (var item in _allFlyoutMenuItems)
-                {
-                    var moduleType = item.Tag;
-                    var gpo = Helpers.ModuleGpoHelper.GetModuleGpoConfiguration(moduleType);
-                    var isLocked = gpo is GpoRuleConfigured.Enabled or GpoRuleConfigured.Disabled;
-                    var isEnabled = gpo == GpoRuleConfigured.Enabled || (!isLocked && Microsoft.PowerToys.Settings.UI.Library.Helpers.ModuleHelper.GetIsModuleEnabled(_generalSettings, moduleType));
-
-                    item.Label = _resourceLoader.GetString(Microsoft.PowerToys.Settings.UI.Library.Helpers.ModuleHelper.GetModuleLabelResourceName(moduleType));
-                    item.IsLocked = isLocked;
-                    item.Icon = Microsoft.PowerToys.Settings.UI.Library.Helpers.ModuleHelper.GetModuleTypeFluentIconName(moduleType);
-
-                    if (item.IsEnabled != isEnabled)
-                    {
-                        item.UpdateStatus(isEnabled);
-                    }
-                }
-
                 var sortedItems = DashboardSortOrder switch
                 {
                     DashboardSortOrder.ByStatus => _allFlyoutMenuItems.OrderByDescending(x => x.IsEnabled).ThenBy(x => x.Label).ToList(),
@@ -187,11 +189,6 @@ public sealed class AllAppsViewModel : Observable
         }
 
         _coordinator.UpdateModuleEnabled(flyoutItem.Tag, flyoutItem.IsEnabled);
-        RefreshFlyoutMenuItems();
-    }
-
-    private void ModuleEnabledChangedOnSettingsPage()
-    {
-        RefreshFlyoutMenuItems();
+        SortFlyoutMenuItems();
     }
 }
