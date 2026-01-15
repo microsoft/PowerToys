@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using ManagedCommon;
-using Windows.Web.AtomPub;
 
 namespace Microsoft.PowerToys.Settings.UI.Library.Helpers
 {
