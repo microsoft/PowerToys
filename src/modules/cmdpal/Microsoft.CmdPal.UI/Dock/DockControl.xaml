@@ -153,38 +153,41 @@
                 <RowDefinition x:Name="EndRow" Height="Auto" />
             </Grid.RowDefinitions>
 
-            <ScrollViewer
+            <cpcontrols:ScrollContainer
                 x:Name="StartItemsView"
                 Grid.Column="0"
                 HorizontalAlignment="Stretch"
-                VerticalAlignment="Stretch"
-                HorizontalScrollBarVisibility="Hidden"
-                HorizontalScrollMode="Enabled"
-                VerticalScrollBarVisibility="Auto"
-                VerticalScrollMode="Disabled">
-                <ItemsRepeater
-                    x:Name="StartItemsRepeater"
-                    HorizontalAlignment="Stretch"
-                    ItemTemplate="{StaticResource DockBandTemplate}"
-                    ItemsSource="{x:Bind ViewModel.StartItems, Mode=OneWay}"
-                    Layout="{StaticResource ItemsOrientation}">
+                VerticalAlignment="Stretch">
+                <cpcontrols:ScrollContainer.Source>
+                    <ItemsRepeater
+                        x:Name="StartItemsRepeater"
+                        HorizontalAlignment="Stretch"
+                        ItemTemplate="{StaticResource DockBandTemplate}"
+                        ItemsSource="{x:Bind ViewModel.StartItems, Mode=OneWay}"
+                        Layout="{StaticResource ItemsOrientation}">
+                        <ItemsRepeater.Transitions>
+                            <TransitionCollection />
+                        </ItemsRepeater.Transitions>
+                    </ItemsRepeater>
+                </cpcontrols:ScrollContainer.Source>
+            </cpcontrols:ScrollContainer>
 
-                    <ItemsRepeater.Transitions>
-                        <TransitionCollection />
-                    </ItemsRepeater.Transitions>
-                </ItemsRepeater>
-            </ScrollViewer>
-
-            <ItemsRepeater
-                x:Name="EndItemsRepeater"
+            <cpcontrols:ScrollContainer
+                x:Name="EndItemsView"
                 Grid.Column="1"
-                ItemTemplate="{StaticResource DockBandTemplate}"
-                ItemsSource="{x:Bind ViewModel.EndItems, Mode=OneWay}"
-                Layout="{StaticResource ItemsOrientation}">
-                <ItemsRepeater.Transitions>
-                    <TransitionCollection />
-                </ItemsRepeater.Transitions>
-            </ItemsRepeater>
+                ContentAlignment="End">
+                <cpcontrols:ScrollContainer.Source>
+                    <ItemsRepeater
+                        x:Name="EndItemsRepeater"
+                        ItemTemplate="{StaticResource DockBandTemplate}"
+                        ItemsSource="{x:Bind ViewModel.EndItems, Mode=OneWay}"
+                        Layout="{StaticResource ItemsOrientation}">
+                        <ItemsRepeater.Transitions>
+                            <TransitionCollection />
+                        </ItemsRepeater.Transitions>
+                    </ItemsRepeater>
+                </cpcontrols:ScrollContainer.Source>
+            </cpcontrols:ScrollContainer>
         </Grid>
         <VisualStateManager.VisualStateGroups>
             <VisualStateGroup x:Name="DockOrientation">
@@ -197,11 +200,11 @@
                         <Setter Target="StartItemsView.(Grid.Column)" Value="0" />
                         <Setter Target="StartItemsView.(Grid.RowSpan)" Value="3" />
                         <Setter Target="StartItemsView.(Grid.ColumnSpan)" Value="1" />
-                        <Setter Target="EndItemsRepeater.(Grid.Row)" Value="0" />
-                        <Setter Target="EndItemsRepeater.(Grid.Column)" Value="3" />
-                        <Setter Target="EndItemsRepeater.(Grid.RowSpan)" Value="3" />
-                        <Setter Target="EndItemsRepeater.(Grid.ColumnSpan)" Value="1" />
-                        <Setter Target="EndItemsRepeater.HorizontalAlignment" Value="Right" />
+                        <Setter Target="EndItemsView.(Grid.Row)" Value="0" />
+                        <Setter Target="EndItemsView.(Grid.Column)" Value="3" />
+                        <Setter Target="EndItemsView.(Grid.RowSpan)" Value="3" />
+                        <Setter Target="EndItemsView.(Grid.ColumnSpan)" Value="1" />
+                        <Setter Target="EndItemsView.HorizontalAlignment" Value="Right" />
                         <Setter Target="ContentGrid.Margin" Value="8,0,8,0" />
                         <Setter Target="RootGrid.BorderThickness" Value="0,0,0,1" />
                     </VisualState.Setters>
@@ -215,11 +218,11 @@
                         <Setter Target="StartItemsView.(Grid.Column)" Value="0" />
                         <Setter Target="StartItemsView.(Grid.RowSpan)" Value="3" />
                         <Setter Target="StartItemsView.(Grid.ColumnSpan)" Value="1" />
-                        <Setter Target="EndItemsRepeater.(Grid.Row)" Value="0" />
-                        <Setter Target="EndItemsRepeater.(Grid.Column)" Value="3" />
-                        <Setter Target="EndItemsRepeater.(Grid.RowSpan)" Value="3" />
-                        <Setter Target="EndItemsRepeater.(Grid.ColumnSpan)" Value="1" />
-                        <Setter Target="EndItemsRepeater.HorizontalAlignment" Value="Right" />
+                        <Setter Target="EndItemsView.(Grid.Row)" Value="0" />
+                        <Setter Target="EndItemsView.(Grid.Column)" Value="3" />
+                        <Setter Target="EndItemsView.(Grid.RowSpan)" Value="3" />
+                        <Setter Target="EndItemsView.(Grid.ColumnSpan)" Value="1" />
+                        <Setter Target="EndItemsView.HorizontalAlignment" Value="Right" />
                         <Setter Target="ContentGrid.Margin" Value="8,0,8,0" />
                         <Setter Target="RootGrid.BorderThickness" Value="0,1,0,0" />
                     </VisualState.Setters>
@@ -233,11 +236,13 @@
                         <Setter Target="StartItemsView.(Grid.Column)" Value="0" />
                         <Setter Target="StartItemsView.(Grid.RowSpan)" Value="1" />
                         <Setter Target="StartItemsView.(Grid.ColumnSpan)" Value="3" />
-                        <Setter Target="EndItemsRepeater.(Grid.Row)" Value="3" />
-                        <Setter Target="EndItemsRepeater.(Grid.Column)" Value="0" />
-                        <Setter Target="EndItemsRepeater.(Grid.RowSpan)" Value="1" />
-                        <Setter Target="EndItemsRepeater.(Grid.ColumnSpan)" Value="3" />
-                        <Setter Target="EndItemsRepeater.HorizontalAlignment" Value="Stretch" />
+                        <Setter Target="StartItemsView.Orientation" Value="Vertical" />
+                        <Setter Target="EndItemsView.Orientation" Value="Vertical" />
+                        <Setter Target="EndItemsView.(Grid.Row)" Value="3" />
+                        <Setter Target="EndItemsView.(Grid.Column)" Value="0" />
+                        <Setter Target="EndItemsView.(Grid.RowSpan)" Value="1" />
+                        <Setter Target="EndItemsView.(Grid.ColumnSpan)" Value="3" />
+                        <Setter Target="EndItemsView.HorizontalAlignment" Value="Stretch" />
                         <Setter Target="ContentGrid.Padding" Value="4,8,4,8" />
                         <Setter Target="RootGrid.BorderThickness" Value="0,0,1,0" />
                     </VisualState.Setters>
@@ -251,11 +256,13 @@
                         <Setter Target="StartItemsView.(Grid.Column)" Value="0" />
                         <Setter Target="StartItemsView.(Grid.RowSpan)" Value="1" />
                         <Setter Target="StartItemsView.(Grid.ColumnSpan)" Value="3" />
-                        <Setter Target="EndItemsRepeater.(Grid.Row)" Value="3" />
-                        <Setter Target="EndItemsRepeater.(Grid.Column)" Value="0" />
-                        <Setter Target="EndItemsRepeater.(Grid.RowSpan)" Value="1" />
-                        <Setter Target="EndItemsRepeater.(Grid.ColumnSpan)" Value="3" />
-                        <Setter Target="EndItemsRepeater.HorizontalAlignment" Value="Stretch" />
+                        <Setter Target="StartItemsView.Orientation" Value="Vertical" />
+                        <Setter Target="EndItemsView.Orientation" Value="Vertical" />
+                        <Setter Target="EndItemsView.(Grid.Row)" Value="3" />
+                        <Setter Target="EndItemsView.(Grid.Column)" Value="0" />
+                        <Setter Target="EndItemsView.(Grid.RowSpan)" Value="1" />
+                        <Setter Target="EndItemsView.(Grid.ColumnSpan)" Value="3" />
+                        <Setter Target="EndItemsView.HorizontalAlignment" Value="Stretch" />
                         <Setter Target="ContentGrid.Padding" Value="4,8,4,8" />
                         <Setter Target="RootGrid.BorderThickness" Value="1,0,0,0" />
                     </VisualState.Setters>
