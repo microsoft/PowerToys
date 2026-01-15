@@ -23,7 +23,6 @@ internal sealed partial class IndexerPage : DynamicListPage, IDisposable
     private readonly Lock _searchLock = new();
 
     private SearchEngine? _searchEngine;
-    private bool _disposeSearchEngine;
 
     private CancellationTokenSource? _searchCts;
     private string _initialQuery = string.Empty;
@@ -31,6 +30,8 @@ internal sealed partial class IndexerPage : DynamicListPage, IDisposable
 
     private CommandItem? _noSearchEmptyContent;
     private CommandItem? _nothingFoundEmptyContent;
+
+    private bool _deferredLoad;
 
     public override ICommandItem EmptyContent => _isEmptyQuery ? _noSearchEmptyContent! : _nothingFoundEmptyContent!;
 
@@ -42,7 +43,6 @@ internal sealed partial class IndexerPage : DynamicListPage, IDisposable
         PlaceholderText = Resources.Indexer_PlaceholderText;
 
         _searchEngine = new();
-        _disposeSearchEngine = true;
 
         var filters = new SearchFilters();
         filters.PropChanged += Filters_PropChanged;
@@ -51,13 +51,12 @@ internal sealed partial class IndexerPage : DynamicListPage, IDisposable
         CreateEmptyContent();
     }
 
-    public IndexerPage(string query, SearchEngine searchEngine, bool disposeSearchEngine = false)
+    public IndexerPage(string query)
     {
         Icon = Icons.FileExplorerIcon;
         Name = Resources.Indexer_Title;
 
-        _searchEngine = searchEngine;
-        _disposeSearchEngine = disposeSearchEngine;
+        _searchEngine = new();
 
         _initialQuery = query;
         SearchText = query;
@@ -67,7 +66,8 @@ internal sealed partial class IndexerPage : DynamicListPage, IDisposable
         Filters = filters;
 
         CreateEmptyContent();
-        LoadMore();
+        IsLoading = true;
+        _deferredLoad = true;
     }
 
     private void CreateEmptyContent()
@@ -115,7 +115,16 @@ internal sealed partial class IndexerPage : DynamicListPage, IDisposable
         }
     }
 
-    public override IListItem[] GetItems() => [.. _indexerListItems];
+    public override IListItem[] GetItems()
+    {
+        if (_deferredLoad)
+        {
+            PerformSearch(_initialQuery);
+            _deferredLoad = false;
+        }
+
+        return [.. _indexerListItems];
+    }
 
     private string FullSearchString(string query)
     {
@@ -137,7 +146,7 @@ internal sealed partial class IndexerPage : DynamicListPage, IDisposable
 
         IsLoading = true;
 
-        bool hasMore = false;
+        var hasMore = false;
         SearchEngine? searchEngine;
         int offset;
 
@@ -147,7 +156,7 @@ internal sealed partial class IndexerPage : DynamicListPage, IDisposable
             offset = _indexerListItems.Count;
         }
 
-        var results = searchEngine?.FetchItems(offset, 20, queryCookie: 0, out hasMore) ?? [];
+        var results = searchEngine?.FetchItems(offset, 20, queryCookie: 10, out hasMore) ?? [];
 
         if (ct?.IsCancellationRequested == true)
         {
@@ -175,28 +184,21 @@ internal sealed partial class IndexerPage : DynamicListPage, IDisposable
         lock (_searchLock)
         {
             _indexerListItems.Clear();
-            _searchEngine?.Query(query, queryCookie: 0);
+            _searchEngine?.Query(query, queryCookie: 10);
         }
     }
 
-    private void ReplaceSearchEngine(SearchEngine newSearchEngine, bool disposeNewEngine)
+    private void ReplaceSearchEngine(SearchEngine newSearchEngine)
     {
         SearchEngine? oldEngine;
-        bool disposeOld;
 
         lock (_searchLock)
         {
             oldEngine = _searchEngine;
-            disposeOld = _disposeSearchEngine;
-
             _searchEngine = newSearchEngine;
-            _disposeSearchEngine = disposeNewEngine;
         }
 
-        if (disposeOld)
-        {
-            oldEngine?.Dispose();
-        }
+        oldEngine?.Dispose();
     }
 
     private void PerformSearch(string newSearch)
@@ -237,11 +239,8 @@ internal sealed partial class IndexerPage : DynamicListPage, IDisposable
                     _initialQuery = newSearch;
                 }
 
-                if (_disposeSearchEngine)
-                {
-                    ct.ThrowIfCancellationRequested();
-                    ReplaceSearchEngine(new SearchEngine(), disposeNewEngine: true);
-                }
+                ct.ThrowIfCancellationRequested();
+                ReplaceSearchEngine(new SearchEngine());
 
                 ct.ThrowIfCancellationRequested();
                 Query(actualSearch);
@@ -266,21 +265,15 @@ internal sealed partial class IndexerPage : DynamicListPage, IDisposable
         cts?.Dispose();
 
         SearchEngine? searchEngine;
-        bool disposeSearchEngine;
 
         lock (_searchLock)
         {
             searchEngine = _searchEngine;
             _searchEngine = null;
-            disposeSearchEngine = _disposeSearchEngine;
-            _disposeSearchEngine = false;
             _indexerListItems.Clear();
         }
 
-        if (disposeSearchEngine)
-        {
-            searchEngine?.Dispose();
-        }
+        searchEngine?.Dispose();
 
         GC.SuppressFinalize(this);
     }

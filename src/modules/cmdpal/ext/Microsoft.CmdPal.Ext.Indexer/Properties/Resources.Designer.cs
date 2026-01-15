@@ -178,7 +178,7 @@ namespace Microsoft.CmdPal.Ext.Indexer.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to {0} files match the query.
+        ///   Looks up a localized string similar to The query matches multiple items.
         /// </summary>
         internal static string Indexer_Fallback_MultipleResults_Subtitle {
             get {

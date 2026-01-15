@@ -21,20 +21,11 @@ internal sealed partial class SearchQuery : IDisposable
     [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1310:Field names should not contain underscore", Justification = "Indexing Service constant")]
     private const int QUERY_E_ALLNOISE = unchecked((int)0x80041605);
 
-    [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1310:Field names should not contain underscore", Justification = "Indexing Service constant")]
-    private const uint MSIDXSPROP_WHEREID = 8;
-
-    [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1310:Field names should not contain underscore", Justification = "Indexing Service constant")]
-    private const uint MSIDXSPROP_RESULTS_FOUND = 7;
-
     private readonly Lock _lockObject = new();
-    private readonly DBPROPIDSET dbPropIdSet;
 
-    private IRowset currentRowset;
+    private IRowset _currentRowset;
 
     public QueryState State { get; private set; } = QueryState.NotStarted;
-
-    public int? TotalResultsFound { get; private set; }
 
     private int? LastHResult { get; set; }
 
@@ -45,20 +36,6 @@ internal sealed partial class SearchQuery : IDisposable
     public string SearchText { get; private set; }
 
     public ConcurrentQueue<SearchResult> SearchResults { get; private set; } = [];
-
-    public SearchQuery()
-    {
-        dbPropIdSet = new DBPROPIDSET
-        {
-            rgPropertyIDs = Marshal.AllocCoTaskMem(sizeof(uint) * 2),
-            cPropertyIDs = 2,
-            guidPropertySet = new Guid("AA6EE6B0-E828-11D0-B23E-00AA0047FC01"), // DBPROPSET_MSIDXS_ROWSETEXT
-        };
-
-        // Property IDs are an array of uint.
-        Marshal.WriteInt32(dbPropIdSet.rgPropertyIDs, checked((int)MSIDXSPROP_WHEREID));
-        Marshal.WriteInt32(dbPropIdSet.rgPropertyIDs, sizeof(uint), checked((int)MSIDXSPROP_RESULTS_FOUND));
-    }
 
     public void CancelOutstandingQueries()
     {
@@ -76,7 +53,7 @@ internal sealed partial class SearchQuery : IDisposable
         SearchText = searchText;
         Cookie = cookie;
         ExecuteSyncInternal();
-        return TotalResultsFound ?? 0;
+        return 0;
     }
 
     private void ExecuteSyncInternal()
@@ -86,18 +63,15 @@ internal sealed partial class SearchQuery : IDisposable
             State = QueryState.Running;
             LastHResult = null;
             LastErrorMessage = null;
-            TotalResultsFound = null;
 
             var queryStr = QueryStringBuilder.GenerateQuery(SearchText);
             try
             {
                 var result = ExecuteCommand(queryStr);
-                currentRowset = result.Rowset;
+                _currentRowset = result.Rowset;
                 State = result.State;
                 LastHResult = result.HResult;
                 LastErrorMessage = result.ErrorMessage;
-
-                TotalResultsFound = TryGetTotalResultsFound(currentRowset);
 
                 SearchResults.Clear();
             }
@@ -142,9 +116,9 @@ internal sealed partial class SearchQuery : IDisposable
 
     public bool FetchRows(int offset, int limit)
     {
-        if (currentRowset is null)
+        if (_currentRowset is null)
         {
-            var message = $"No rowset to fetch rows from. State={State}, TotalResultsFound={TotalResultsFound}, HResult={LastHResult}, Error='{LastErrorMessage}'";
+            var message = $"No rowset to fetch rows from. State={State}, HResult={LastHResult}, Error='{LastErrorMessage}'";
 
             switch (State)
             {
@@ -169,7 +143,7 @@ internal sealed partial class SearchQuery : IDisposable
 
         try
         {
-            getRow = (IGetRow)currentRowset;
+            getRow = (IGetRow)_currentRowset;
         }
         catch (Exception ex)
         {
@@ -178,7 +152,7 @@ internal sealed partial class SearchQuery : IDisposable
 
             ExecuteSyncInternal();
 
-            if (currentRowset is null)
+            if (_currentRowset is null)
             {
                 var message = $"Failed to reset rowset. State={State}, HResult={LastHResult}, Error='{LastErrorMessage}'";
 
@@ -196,14 +170,14 @@ internal sealed partial class SearchQuery : IDisposable
                 return false;
             }
 
-            getRow = (IGetRow)currentRowset;
+            getRow = (IGetRow)_currentRowset;
         }
 
         var prghRows = IntPtr.Zero;
 
         try
         {
-            currentRowset.GetNextRows(IntPtr.Zero, offset, limit, out var rowCountReturned, out prghRows);
+            _currentRowset.GetNextRows(IntPtr.Zero, offset, limit, out var rowCountReturned, out prghRows);
 
             if (rowCountReturned == 0)
             {
@@ -224,7 +198,7 @@ internal sealed partial class SearchQuery : IDisposable
                 }
             }
 
-            currentRowset.ReleaseRows(rowCountReturned, rowHandles, IntPtr.Zero, null, null);
+            _currentRowset.ReleaseRows(rowCountReturned, rowHandles, IntPtr.Zero, null, null);
 
             Marshal.FreeCoTaskMem(prghRows);
             prghRows = IntPtr.Zero;
@@ -308,89 +282,9 @@ internal sealed partial class SearchQuery : IDisposable
         }
     }
 
-    private int? TryGetTotalResultsFound(IRowset rowset)
-    {
-        if (rowset is not IRowsetInfo rowsetInfo)
-        {
-            return null;
-        }
-
-        var prop = GetPropset(rowsetInfo, MSIDXSPROP_RESULTS_FOUND);
-        if (prop is null)
-        {
-            return null;
-        }
-
-        return prop.Value.vValue.VarType switch
-        {
-            VarEnum.VT_UI4 => (int)(prop.Value.vValue._ulong > int.MaxValue ? int.MaxValue : prop.Value.vValue._ulong),
-            VarEnum.VT_I4 => unchecked((int)prop.Value.vValue._ulong),
-            _ => null,
-        };
-    }
-
-    private unsafe DBPROP? GetPropset(IRowsetInfo rowsetInfo, uint propertyId)
-    {
-        var prgPropSetsPtr = IntPtr.Zero;
-
-        try
-        {
-            ulong cPropertySets;
-            var res = rowsetInfo.GetProperties(1, [dbPropIdSet], out cPropertySets, out prgPropSetsPtr);
-            if (res != 0)
-            {
-                Logger.LogError($"Error getting properties: {res}");
-                return null;
-            }
-
-            if (cPropertySets == 0 || prgPropSetsPtr == IntPtr.Zero)
-            {
-                Logger.LogError("No property sets returned");
-                return null;
-            }
-
-            var firstPropSetPtr = (DBPROPSET*)prgPropSetsPtr.ToInt64();
-            var propSet = *firstPropSetPtr;
-            if (propSet.cProperties == 0 || propSet.rgProperties == IntPtr.Zero)
-            {
-                return null;
-            }
-
-            var props = (DBPROP*)propSet.rgProperties.ToInt64();
-            for (var i = 0; i < (int)propSet.cProperties; i++)
-            {
-                var prop = props[i];
-                if (prop.dwPropertyID == propertyId)
-                {
-                    return prop;
-                }
-            }
-
-            return null;
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError("Exception occurred while getting properties.", ex);
-            return null;
-        }
-        finally
-        {
-            if (prgPropSetsPtr != IntPtr.Zero)
-            {
-                Marshal.FreeCoTaskMem(prgPropSetsPtr);
-            }
-        }
-    }
-
     public void Dispose()
     {
         CancelOutstandingQueries();
-
-        // Free the allocated memory for rgPropertyIDs
-        if (dbPropIdSet.rgPropertyIDs != IntPtr.Zero)
-        {
-            Marshal.FreeCoTaskMem(dbPropIdSet.rgPropertyIDs);
-        }
     }
 
     internal enum QueryState

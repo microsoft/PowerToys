@@ -27,7 +27,8 @@ internal sealed partial class FallbackOpenFileItem : FallbackCommandItem, IDispo
 
     private readonly CompositeFormat _fallbackItemSearchPageTitleFormat = CompositeFormat.Parse(Resources.Indexer_fallback_searchPage_title);
     private readonly CompositeFormat _fallbackItemSearchSubtitleMultipleResults = CompositeFormat.Parse(Resources.Indexer_Fallback_MultipleResults_Subtitle);
-    private readonly Lock _queryLock = new();
+    private readonly Lock _querySwitchLock = new();
+    private readonly Lock _resultLock = new();
 
     private CancellationTokenSource? _currentQueryCts;
     private Func<string, bool>? _suppressCallback;
@@ -42,27 +43,34 @@ internal sealed partial class FallbackOpenFileItem : FallbackCommandItem, IDispo
 
     public override void UpdateQuery(string query)
     {
+        UpdateQueryCore(query);
+    }
+
+    private void UpdateQueryCore(string query)
+    {
         // Calling this will cancel any ongoing query processing. We always use a new SearchEngine
         // instance per query, as SearchEngine.Query cancels/reinitializes internally.
         CancellationToken cancellationToken;
 
-        lock (_queryLock)
+        lock (_querySwitchLock)
         {
             _currentQueryCts?.Cancel();
             _currentQueryCts?.Dispose();
             _currentQueryCts = new CancellationTokenSource();
             cancellationToken = _currentQueryCts.Token;
+        }
 
-            if (string.IsNullOrWhiteSpace(query) || (_suppressCallback is not null && _suppressCallback(query)))
-            {
-                ClearResult();
-                return;
-            }
+        var suppressCallback = _suppressCallback;
+        if (string.IsNullOrWhiteSpace(query) || (suppressCallback is not null && suppressCallback(query)))
+        {
+            ClearResultForCurrentQuery(cancellationToken);
+            return;
         }
 
         try
         {
-            if (Path.Exists(query))
+            var exists = Path.Exists(query);
+            if (exists)
             {
                 ProcessDirectPath(query, cancellationToken);
             }
@@ -77,12 +85,9 @@ internal sealed partial class FallbackOpenFileItem : FallbackCommandItem, IDispo
         }
         catch
         {
-            lock (_queryLock)
+            if (!cancellationToken.IsCancellationRequested)
             {
-                if (!cancellationToken.IsCancellationRequested)
-                {
-                    ClearResult();
-                }
+                ClearResultForCurrentQuery(cancellationToken);
             }
         }
     }
@@ -92,12 +97,8 @@ internal sealed partial class FallbackOpenFileItem : FallbackCommandItem, IDispo
         var item = new IndexerItem(fullPath: query);
         var indexerListItem = new IndexerListItem(item, IncludeBrowseCommand.AsDefault);
 
-        lock (_queryLock)
-        {
-            ct.ThrowIfCancellationRequested();
-            UpdateResult(indexerListItem);
-        }
-
+        ct.ThrowIfCancellationRequested();
+        UpdateResultForCurrentQuery(indexerListItem, skipIcon: true, ct);
         _ = LoadIconAsync(item.FullPath, ct);
     }
 
@@ -111,42 +112,47 @@ internal sealed partial class FallbackOpenFileItem : FallbackCommandItem, IDispo
 
         try
         {
-            var count = searchEngine.Query(query, queryCookie: 0);
+            searchEngine.Query(query, queryCookie: 10);
             ct.ThrowIfCancellationRequested();
 
-            lock (_queryLock)
-            {
-                ct.ThrowIfCancellationRequested();
+            // We only need to know whether there are 0, 1, or more than one result
+            var results = searchEngine.FetchItems(0, 2, queryCookie: 10, out _, noIcons: true);
+            var count = results.Count;
 
-                if (count == 0)
+            if (count == 0)
+            {
+                ClearResultForCurrentQuery(ct);
+            }
+            else if (count == 1)
+            {
+                if (results[0] is IndexerListItem indexerListItem)
                 {
-                    ClearResult();
-                }
-                else if (count == 1)
-                {
-                    var results = searchEngine.FetchItems(0, 1, queryCookie: 0, out _);
-                    if (results.Count > 0 && results[0] is IndexerListItem indexerListItem)
-                    {
-                        UpdateResult(indexerListItem);
-                    }
-                    else
-                    {
-                        ClearResult();
-                    }
+                    UpdateResultForCurrentQuery(indexerListItem, skipIcon: true, ct);
+                    _ = LoadIconAsync(indexerListItem.FilePath, ct);
                 }
                 else
                 {
-                    // Ownership of searchEngine transfers to IndexerPage
-                    var indexerPage = new IndexerPage(query, searchEngine, disposeSearchEngine: true);
-                    searchEngine = null;
+                    ClearResultForCurrentQuery(ct);
+                }
+            }
+            else
+            {
+                var indexerPage = new IndexerPage(query);
 
-                    UpdateResult(
-                        string.Format(CultureInfo.CurrentCulture, _fallbackItemSearchPageTitleFormat, query),
-                        string.Format(CultureInfo.CurrentCulture, _fallbackItemSearchSubtitleMultipleResults, count),
-                        Icons.FileExplorerIcon,
-                        indexerPage,
-                        MoreCommands,
-                        DataPackage);
+                var set = UpdateResultForCurrentQuery(
+                    string.Format(CultureInfo.CurrentCulture, _fallbackItemSearchPageTitleFormat, query),
+                    string.Format(CultureInfo.CurrentCulture, _fallbackItemSearchSubtitleMultipleResults),
+                    Icons.FileExplorerIcon,
+                    indexerPage,
+                    MoreCommands,
+                    DataPackage,
+                    skipIcon: false,
+                    ct);
+
+                if (!set)
+                {
+                    // if we failed to set the result (query was cancelled), dispose the page and search engine
+                    indexerPage.Dispose();
                 }
             }
         }
@@ -154,26 +160,6 @@ internal sealed partial class FallbackOpenFileItem : FallbackCommandItem, IDispo
         {
             searchEngine?.Dispose();
         }
-    }
-
-    private void UpdateResult(IndexerListItem listItem)
-    {
-        UpdateResult(listItem.Title, listItem.Subtitle, listItem.Icon, listItem.Command, listItem.MoreCommands, DataPackageHelper.CreateDataPackageForPath(listItem, listItem.FilePath));
-    }
-
-    private void ClearResult()
-    {
-        UpdateResult(string.Empty, string.Empty, Icons.FileExplorerIcon, BaseCommandWithId, null, null);
-    }
-
-    private void UpdateResult(string title, string subtitle, IIconInfo? iconInfo, ICommand? command, IContextItem[]? moreCommands, DataPackage? dataPackage)
-    {
-        Title = title;
-        Subtitle = subtitle;
-        Icon = iconInfo;
-        Command = command;
-        MoreCommands = moreCommands!;
-        DataPackage = dataPackage;
     }
 
     private async Task LoadIconAsync(string path, CancellationToken ct)
@@ -193,12 +179,66 @@ internal sealed partial class FallbackOpenFileItem : FallbackCommandItem, IDispo
             }
 
             var data = new IconData(thumbnailStream);
-            Icon = new IconInfo(data);
+            UpdateIconForCurrentQuery(new IconInfo(data), ct);
         }
         catch
         {
             // ignore - keep default icon
-            Icon = Icons.FileExplorerIcon;
+            UpdateIconForCurrentQuery(Icons.FileExplorerIcon, ct);
+        }
+    }
+
+    private bool ClearResultForCurrentQuery(CancellationToken ct)
+    {
+        return UpdateResultForCurrentQuery(string.Empty, string.Empty, Icons.FileExplorerIcon, BaseCommandWithId, null, null, false, ct);
+    }
+
+    private bool UpdateResultForCurrentQuery(IndexerListItem listItem, bool skipIcon, CancellationToken ct)
+    {
+        return UpdateResultForCurrentQuery(
+            listItem.Title,
+            listItem.Subtitle,
+            listItem.Icon,
+            listItem.Command,
+            listItem.MoreCommands,
+            DataPackageHelper.CreateDataPackageForPath(listItem, listItem.FilePath),
+            skipIcon,
+            ct);
+    }
+
+    private bool UpdateResultForCurrentQuery(string title, string subtitle, IIconInfo? iconInfo, ICommand? command, IContextItem[]? moreCommands, DataPackage? dataPackage, bool skipIcon, CancellationToken ct)
+    {
+        lock (_resultLock)
+        {
+            if (ct.IsCancellationRequested)
+            {
+                return false;
+            }
+
+            Title = title;
+            Subtitle = subtitle;
+            if (!skipIcon)
+            {
+                Icon = iconInfo!;
+            }
+
+            MoreCommands = moreCommands!;
+            DataPackage = dataPackage;
+            Command = command;
+            return true;
+        }
+    }
+
+    private void UpdateIconForCurrentQuery(IIconInfo icon, CancellationToken ct)
+    {
+        lock (_resultLock)
+        {
+            if (ct.IsCancellationRequested)
+            {
+                return;
+            }
+
+            Icon = icon;
         }
     }
 

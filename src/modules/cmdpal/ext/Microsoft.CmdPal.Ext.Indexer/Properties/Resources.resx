@@ -212,7 +212,6 @@ You can try searching all files on this PC or adjust your indexing settings.</va
     <value>Failed to launch Peek</value>
   </data>
   <data name="Indexer_Fallback_MultipleResults_Subtitle" xml:space="preserve">
-    <value>{0} files match the query</value>
-    <comment>{0} = number of items found, always greater than 1.</comment>
+    <value>The query matches multiple items</value>
   </data>
 </root>

@@ -47,7 +47,7 @@ public sealed partial class SearchEngine : IDisposable
         return totalResultsCount;
     }
 
-    public IList<IListItem> FetchItems(int offset, int limit, uint queryCookie, out bool hasMore)
+    public IList<IListItem> FetchItems(int offset, int limit, uint queryCookie, out bool hasMore, bool noIcons = false)
     {
         hasMore = false;
 
@@ -69,29 +69,33 @@ public sealed partial class SearchEngine : IDisposable
 
         while (!searchQuery.SearchResults.IsEmpty && searchQuery.SearchResults.TryDequeue(out var result) && ++index <= limit)
         {
-            IconInfo? icon = null;
-            try
-            {
-                var stream = ThumbnailHelper.GetThumbnail(result.LaunchUri).Result;
-                if (stream is not null)
-                {
-                    var data = new IconData(RandomAccessStreamReference.CreateFromStream(stream));
-                    icon = new IconInfo(data, data);
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError("Failed to get the icon.", ex);
-            }
-
-            results.Add(new IndexerListItem(new IndexerItem
+            var ili = new IndexerListItem(new IndexerItem
             {
                 FileName = result.ItemDisplayName,
                 FullPath = result.LaunchUri,
-            })
-            {
-                Icon = icon,
             });
+
+            if (!noIcons)
+            {
+                IconInfo? icon = null;
+                try
+                {
+                    var stream = ThumbnailHelper.GetThumbnail(result.LaunchUri).Result;
+                    if (stream is not null)
+                    {
+                        var data = new IconData(RandomAccessStreamReference.CreateFromStream(stream));
+                        icon = new IconInfo(data, data);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError("Failed to get the icon.", ex);
+                }
+
+                ili.Icon = icon;
+            }
+
+            results.Add(ili);
         }
 
         hasMore = hasMoreItems;
