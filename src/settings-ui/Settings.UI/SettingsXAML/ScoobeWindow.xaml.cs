@@ -1,11 +1,10 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
 using System;
 
 using Microsoft.PowerToys.Settings.UI.Helpers;
-using Microsoft.PowerToys.Settings.UI.OOBE.Enums;
 using Microsoft.PowerToys.Settings.UI.OOBE.Views;
 using Microsoft.UI;
 using Microsoft.UI.Windowing;
@@ -17,13 +16,8 @@ using WinUIEx.Messaging;
 
 namespace Microsoft.PowerToys.Settings.UI
 {
-    /// <summary>
-    /// An empty window that can be used on its own or navigated to within a Frame.
-    /// </summary>
-    public sealed partial class OobeWindow : WindowEx, IDisposable
+    public sealed partial class ScoobeWindow : WindowEx, IDisposable
     {
-        private PowerToysModules initialModule;
-
         private const int ExpectedWidth = 1100;
         private const int ExpectedHeight = 700;
         private const int DefaultDPI = 96;
@@ -33,7 +27,7 @@ namespace Microsoft.PowerToys.Settings.UI
         private AppWindow _appWindow;
         private bool disposedValue;
 
-        public OobeWindow(PowerToysModules initialModule)
+        public ScoobeWindow()
         {
             App.ThemeService.ThemeChanged += OnThemeChanged;
             App.ThemeService.ApplyTheme();
@@ -57,40 +51,15 @@ namespace Microsoft.PowerToys.Settings.UI
             size.Height = height;
             _appWindow.Resize(size);
 
-            this.initialModule = initialModule;
+            this.SizeChanged += ScoobeWindow_SizeChanged;
 
-            this.SizeChanged += OobeWindow_SizeChanged;
+            var loader = Helpers.ResourceLoaderInstance.ResourceLoader;
+            Title = loader.GetString("ScoobeWindow_Title");
 
-            var loader = ResourceLoaderInstance.ResourceLoader;
-            Title = loader.GetString("OobeWindow_Title");
-
-            if (shellPage != null)
-            {
-                shellPage.NavigateToModule(this.initialModule);
-            }
-
-            OobeShellPage.SetRunSharedEventCallback(() =>
-            {
-                return Constants.PowerLauncherSharedEvent();
-            });
-
-            OobeShellPage.SetColorPickerSharedEventCallback(() =>
-            {
-                return Constants.ShowColorPickerSharedEvent();
-            });
-
-            OobeShellPage.SetOpenMainWindowCallback((Type type) =>
+            ScoobeShellPage.SetOpenMainWindowCallback((Type type) =>
             {
                 App.OpenSettingsWindow(type);
             });
-        }
-
-        public void SetAppWindow(PowerToysModules module)
-        {
-            if (shellPage != null)
-            {
-                shellPage.NavigateToModule(module);
-            }
         }
 
         private void Window_Activated_SetIcon(object sender, WindowActivatedEventArgs args)
@@ -99,7 +68,7 @@ namespace Microsoft.PowerToys.Settings.UI
             _appWindow.SetIcon("Assets\\Settings\\icon.ico");
         }
 
-        private void OobeWindow_SizeChanged(object sender, WindowSizeChangedEventArgs args)
+        private void ScoobeWindow_SizeChanged(object sender, WindowSizeChangedEventArgs args)
         {
             var dpi = NativeMethods.GetDpiForWindow(_hWnd);
             if (_currentDPI != dpi)
@@ -118,7 +87,7 @@ namespace Microsoft.PowerToys.Settings.UI
 
         private void Window_Closed(object sender, WindowEventArgs args)
         {
-            App.ClearOobeWindow();
+            App.ClearScoobeWindow();
 
             var mainWindow = App.GetSettingsWindow();
             if (mainWindow != null)
