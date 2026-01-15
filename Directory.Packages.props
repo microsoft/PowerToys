@@ -79,7 +79,6 @@
     <PackageVersion Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.6901" />
     <PackageVersion Include="Microsoft.WindowsAppSDK" Version="1.8.251106002" />
     <PackageVersion Include="Microsoft.WindowsAppSDK.Foundation" Version="1.8.251104000" />
-    <PackageVersion Include="Microsoft.WindowsAppSDK.AI" Version="1.8.39" />
     <PackageVersion Include="Microsoft.WindowsAppSDK.Runtime" Version="1.8.251106002" />
     <PackageVersion Include="Microsoft.Xaml.Behaviors.WinUI.Managed" Version="2.0.9" />
     <PackageVersion Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.39" />

@@ -98,8 +98,20 @@ namespace ImageResizer
 
                 if (cachedState.HasValue)
                 {
-                    AiAvailabilityState = cachedState.Value;
-                    Logger.LogInfo($"AI state loaded from cache: {AiAvailabilityState}");
+                    if (cachedState.Value == AiAvailabilityState.NotSupported)
+                    {
+                        // Trust NotSupported - this state won't change without system changes
+                        AiAvailabilityState = cachedState.Value;
+                        Logger.LogInfo($"AI state loaded from cache: {AiAvailabilityState}");
+                    }
+                    else
+                    {
+                        // For non-NotSupported states (ModelNotReady, Ready), re-check via API
+                        // because the state might have changed (e.g., model downloaded by another app)
+                        var currentState = CheckAiAvailability();
+                        AiAvailabilityState = currentState;
+                        Logger.LogInfo($"AI state re-checked via API: {AiAvailabilityState} (cached was: {cachedState.Value})");
+                    }
                 }
                 else
                 {
