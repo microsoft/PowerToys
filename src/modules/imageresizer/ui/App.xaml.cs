@@ -84,7 +84,7 @@ namespace ImageResizer
                 return;
             }
 
-            // AI Super Resolution is not supported on Windows 10 - skip cache check entirely
+            // AI Super Resolution is not supported on Windows 10 - skip check entirely
             if (OSVersionHelper.IsWindows10())
             {
                 AiAvailabilityState = AiAvailabilityState.NotSupported;
@@ -93,43 +93,9 @@ namespace ImageResizer
             }
             else
             {
-                // Load AI availability from cache (written by Runner's background detection)
-                var cachedState = Services.AiAvailabilityCacheService.LoadCache();
-
-                if (cachedState.HasValue)
-                {
-                    if (cachedState.Value == AiAvailabilityState.NotSupported)
-                    {
-                        // Trust NotSupported - this state won't change without system changes
-                        AiAvailabilityState = cachedState.Value;
-                        Logger.LogInfo($"AI state loaded from cache: {AiAvailabilityState}");
-                    }
-                    else
-                    {
-                        // For non-NotSupported states (ModelNotReady, Ready), re-check via API
-                        // because the state might have changed (e.g., model downloaded by another app)
-                        var currentState = CheckAiAvailability();
-                        AiAvailabilityState = currentState;
-                        Logger.LogInfo($"AI state re-checked via API: {AiAvailabilityState} (cached was: {cachedState.Value})");
-                    }
-                }
-                else
-                {
-                    // No valid cache - default to NotSupported (Runner will detect and cache for next startup)
-                    AiAvailabilityState = AiAvailabilityState.NotSupported;
-                    Logger.LogInfo("No AI cache found, defaulting to NotSupported");
-                }
-
-                // If AI is potentially available, start background initialization (non-blocking)
-                if (AiAvailabilityState == AiAvailabilityState.Ready)
-                {
-                    _ = InitializeAiServiceAsync(); // Fire and forget - don't block UI
-                }
-                else
-                {
-                    // AI not available - set NoOp service immediately
-                    ResizeBatch.SetAiSuperResolutionService(Services.NoOpAiSuperResolutionService.Instance);
-                }
+                // Default to ModelNotReady initially, will be updated after window loads
+                AiAvailabilityState = AiAvailabilityState.ModelNotReady;
+                ResizeBatch.SetAiSuperResolutionService(Services.NoOpAiSuperResolutionService.Instance);
             }
 
             var batch = ResizeBatch.FromCommandLine(Console.In, e?.Args);
@@ -140,6 +106,71 @@ namespace ImageResizer
 
             // Temporary workaround for issue #1273
             WindowHelpers.BringToForeground(new System.Windows.Interop.WindowInteropHelper(mainWindow).Handle);
+
+            // Check AI availability on UI thread after window is loaded
+            // Windows AI APIs require proper COM apartment and SynchronizationContext
+            if (!OSVersionHelper.IsWindows10())
+            {
+                mainWindow.Loaded += (s, args) =>
+                {
+                    // Use Dispatcher to ensure we're on the UI thread
+                    mainWindow.Dispatcher.InvokeAsync(async () =>
+                    {
+                        await InitializeAiOnUIThreadAsync();
+                    });
+                };
+            }
+        }
+
+        /// <summary>
+        /// Initialize AI availability check on UI thread.
+        /// Windows AI APIs require proper COM apartment context.
+        /// </summary>
+        private static async System.Threading.Tasks.Task InitializeAiOnUIThreadAsync()
+        {
+            try
+            {
+                Logger.LogInfo($"Checking AI availability on UI thread (Thread: {System.Threading.Thread.CurrentThread.ManagedThreadId})");
+
+                var readyState = Services.WinAiSuperResolutionService.GetModelReadyState();
+                Logger.LogInfo($"ImageScaler.GetReadyState() returned: {readyState}");
+
+                switch (readyState)
+                {
+                    case Microsoft.Windows.AI.AIFeatureReadyState.Ready:
+                        AiAvailabilityState = AiAvailabilityState.Ready;
+                        // Initialize the AI service
+                        var aiService = await Services.WinAiSuperResolutionService.CreateAsync();
+                        if (aiService != null)
+                        {
+                            ResizeBatch.SetAiSuperResolutionService(aiService);
+                            Logger.LogInfo("AI Super Resolution service initialized successfully on UI thread.");
+                        }
+
+                        break;
+
+                    case Microsoft.Windows.AI.AIFeatureReadyState.NotReady:
+                        AiAvailabilityState = AiAvailabilityState.ModelNotReady;
+                        Logger.LogInfo("AI model not ready, user can download via UI.");
+                        break;
+
+                    case Microsoft.Windows.AI.AIFeatureReadyState.DisabledByUser:
+                    case Microsoft.Windows.AI.AIFeatureReadyState.NotSupportedOnCurrentSystem:
+                    default:
+                        AiAvailabilityState = AiAvailabilityState.NotSupported;
+                        Logger.LogInfo($"AI not supported: {readyState}");
+                        break;
+                }
+
+                // Notify UI that AI state has been determined
+                AiInitializationCompleted?.Invoke(null, AiAvailabilityState);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Failed to check AI availability on UI thread: {ex.Message}");
+                AiAvailabilityState = AiAvailabilityState.NotSupported;
+                AiInitializationCompleted?.Invoke(null, AiAvailabilityState);
+            }
         }
 
         /// <summary>
@@ -210,46 +241,6 @@ namespace ImageResizer
             {
                 return AiAvailabilityState.NotSupported;
             }
-        }
-
-        /// <summary>
-        /// Initialize AI Super Resolution service asynchronously in background.
-        /// Runs without blocking UI startup - state change event notifies completion.
-        /// </summary>
-        private static async System.Threading.Tasks.Task InitializeAiServiceAsync()
-        {
-            AiAvailabilityState finalState;
-
-            try
-            {
-                // Create and initialize AI service using async factory
-                var aiService = await Services.WinAiSuperResolutionService.CreateAsync();
-
-                if (aiService != null)
-                {
-                    ResizeBatch.SetAiSuperResolutionService(aiService);
-                    Logger.LogInfo("AI Super Resolution service initialized successfully.");
-                    finalState = AiAvailabilityState.Ready;
-                }
-                else
-                {
-                    // Initialization failed - use default NoOp service
-                    ResizeBatch.SetAiSuperResolutionService(Services.NoOpAiSuperResolutionService.Instance);
-                    Logger.LogWarning("AI Super Resolution service initialization failed. Using default service.");
-                    finalState = AiAvailabilityState.NotSupported;
-                }
-            }
-            catch (Exception ex)
-            {
-                // Log error and use default NoOp service
-                ResizeBatch.SetAiSuperResolutionService(Services.NoOpAiSuperResolutionService.Instance);
-                Logger.LogError($"Exception during AI service initialization: {ex.Message}");
-                finalState = AiAvailabilityState.NotSupported;
-            }
-
-            // Update cached state and notify listeners
-            AiAvailabilityState = finalState;
-            AiInitializationCompleted?.Invoke(null, finalState);
         }
 
         public void Dispose()
