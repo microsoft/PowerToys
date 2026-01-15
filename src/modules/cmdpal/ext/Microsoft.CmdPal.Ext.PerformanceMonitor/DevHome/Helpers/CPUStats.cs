@@ -6,9 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using Microsoft.CmdPal.Core.Common;
 
-// using Serilog;
 namespace CoreWidgetProvider.Helpers;
 
 internal sealed partial class CPUStats : IDisposable
@@ -19,7 +17,6 @@ internal sealed partial class CPUStats : IDisposable
     private readonly PerformanceCounter _procFrequency = new("Processor Information", "Processor Frequency", "_Total");
     private readonly Dictionary<Process, PerformanceCounter> _cpuCounters = new();
 
-    // private readonly ILogger _log = Log.ForContext("SourceContext", nameof(CPUStats));
     internal sealed class ProcessStats
     {
         public Process? Process { get; set; }
@@ -106,7 +103,8 @@ internal sealed partial class CPUStats : IDisposable
         timer.Stop();
         var total = timer.ElapsedMilliseconds;
         var processesMs = total - chartMs;
-        CoreLogger.LogDebug($"[{usageMs}]+[{speedMs}]+[{chartMs}]+[{processesMs}]=[{total}]");
+
+        // CoreLogger.LogDebug($"[{usageMs}]+[{speedMs}]+[{chartMs}]+[{processesMs}]=[{total}]");
     }
 
     internal string CreateCPUImageUrl()

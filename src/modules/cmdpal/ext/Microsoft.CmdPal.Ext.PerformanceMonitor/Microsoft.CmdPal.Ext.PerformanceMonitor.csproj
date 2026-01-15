@@ -14,21 +14,17 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="System.Diagnostics.PerformanceCounter" />
     <PackageReference Include="Microsoft.Windows.CsWin32">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.Management.Infrastructure" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
     <ProjectReference Include="..\..\Core\Microsoft.CmdPal.Core.Common\Microsoft.CmdPal.Core.Common.csproj" />
     <!-- CmdPal Toolkit reference now included via Common.ExtDependencies.props -->
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="System.Diagnostics.PerformanceCounter" />
   </ItemGroup>
 
   <ItemGroup>

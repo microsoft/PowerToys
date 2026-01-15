@@ -7,9 +7,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
-using Microsoft.Management.Infrastructure;
 
-// using Serilog;
 namespace CoreWidgetProvider.Helpers;
 
 internal sealed partial class GPUStats : IDisposable
@@ -19,9 +17,6 @@ internal sealed partial class GPUStats : IDisposable
 
     private readonly List<Data> _stats = new();
 
-    private readonly CimSession _session;
-
-    // private readonly ILogger _log = Log.ForContext("SourceContext", nameof(GPUStats));
     public sealed class Data
     {
         public string? Name { get; set; }
@@ -37,25 +32,26 @@ internal sealed partial class GPUStats : IDisposable
 
     public GPUStats()
     {
-        _session = CimSession.Create(null);
-        LoadGPUs();
         GetGPUPerfCounters();
-    }
-
-    public void LoadGPUs()
-    {
-        var i = 0;
-        _stats.Clear();
-
-        foreach (var obj in _session.QueryInstances("root/cimv2", "WQL", "select * from Win32_VideoController"))
-        {
-            var gpuName = (string)obj.CimInstanceProperties["name"].Value;
-            _stats.Add(new Data() { Name = gpuName, PhysId = i++ });
-        }
+        LoadGPUsFromCounters();
     }
 
     public void GetGPUPerfCounters()
     {
+        // There are really 4 different things we should be tracking the usage
+        // of. Similar to how the instance name ends with `3D`, the following
+        // suffixes are important.
+        //
+        // * `3D`
+        // * `VideoEncode`
+        // * `VideoDecode`
+        // * `VideoProcessing`
+        //
+        // We could totally put each of those sets of counters into their own
+        // set. That's what we should do, so that we can report the sum of those
+        // numbers as the total utilization, and then have them broken out in
+        // the card template and in the details metadata. 
+
         _gpuCounters.Clear();
 
         var pcg = new PerformanceCounterCategory("GPU Engine");
@@ -68,7 +64,10 @@ internal sealed partial class GPUStats : IDisposable
                 continue;
             }
 
-            foreach (var counter in pcg.GetCounters(instanceName).Where(x => x.CounterName.StartsWith("Utilization Percentage", StringComparison.InvariantCulture)))
+            var utilizationCounters = pcg.GetCounters(instanceName)
+                .Where(x => x.CounterName.StartsWith("Utilization Percentage", StringComparison.InvariantCulture));
+
+            foreach (var counter in utilizationCounters)
             {
                 var counterKey = counter.InstanceName;
 
@@ -96,6 +95,25 @@ internal sealed partial class GPUStats : IDisposable
                     value.Add(counter);
                 }
             }
+        }
+    }
+
+    public void LoadGPUsFromCounters()
+    {
+        // The old dev home code tracked GPU stats by querying WMI for the list
+        // of GPUs, and then matching them up with the performance counter IDs.
+        //
+        // We can't use WMI here, because it drags in a dependency on
+        // Microsoft.Management.Infrastructure, which is not compatible with
+        // AOT. 
+        //
+        // For now, we'll just use the indicies as the GPU names.
+        _stats.Clear();
+        foreach (var (k, v) in _gpuCounters)
+        {
+            var id = k;
+            var counters = v;
+            _stats.Add(new Data() { PhysId = id, Name = "GPU " + id });
         }
     }
 
@@ -209,6 +227,13 @@ internal sealed partial class GPUStats : IDisposable
 
     internal string GetGPUTemperature(int gpuActiveIndex)
     {
+        // MG Jan 2026: This code was lifted from the old Dev Home codebase.
+        // However, the performance counters for GPU temperature are not being
+        // collected. So this function always returns "--" for now.
+        //
+        // I have not done the code archeology to figure out why they were
+        // removed. 
+
         if (_stats.Count <= gpuActiveIndex)
         {
             return "--";
@@ -227,7 +252,6 @@ internal sealed partial class GPUStats : IDisposable
     {
         if (!counterKey.StartsWith(key, StringComparison.InvariantCulture))
         {
-            // throw new Exception();
             return "error";
         }
 
