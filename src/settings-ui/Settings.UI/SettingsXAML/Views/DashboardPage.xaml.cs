@@ -65,11 +65,19 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         private void SortAlphabetical_Click(object sender, RoutedEventArgs e)
         {
             ViewModel.DashboardSortOrder = DashboardSortOrder.Alphabetical;
+            if (sender is ToggleMenuFlyoutItem item)
+            {
+                item.IsChecked = true;
+            }
         }
 
         private void SortByStatus_Click(object sender, RoutedEventArgs e)
         {
             ViewModel.DashboardSortOrder = DashboardSortOrder.ByStatus;
+            if (sender is ToggleMenuFlyoutItem item)
+            {
+                item.IsChecked = true;
+            }
         }
     }
 }

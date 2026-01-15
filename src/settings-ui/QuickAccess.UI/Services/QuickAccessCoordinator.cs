@@ -55,37 +55,8 @@ internal sealed class QuickAccessCoordinator : IQuickAccessCoordinator, IDisposa
         return Task.FromResult(false);
     }
 
-    public void NotifyUserSettingsInteraction()
-    {
-        Logger.LogDebug("QuickAccessCoordinator.NotifyUserSettingsInteraction invoked.");
-    }
-
     public bool UpdateModuleEnabled(ModuleType moduleType, bool isEnabled)
-    {
-        GeneralSettings? updatedSettings = null;
-        lock (_generalSettingsLock)
-        {
-            var repository = SettingsRepository<GeneralSettings>.GetInstance(_settingsUtils);
-            var generalSettings = repository.SettingsConfig;
-            var current = ModuleHelper.GetIsModuleEnabled(generalSettings, moduleType);
-            if (current == isEnabled)
-            {
-                return false;
-            }
-
-            ModuleHelper.SetIsModuleEnabled(generalSettings, moduleType, isEnabled);
-            _settingsUtils.SaveSettings(generalSettings.ToJsonString());
-            Logger.LogInfo($"QuickAccess updated module '{moduleType}' enabled state to {isEnabled}.");
-            updatedSettings = generalSettings;
-        }
-
-        if (updatedSettings != null)
-        {
-            SendGeneralSettingsUpdate(updatedSettings);
-        }
-
-        return true;
-    }
+        => TrySendIpcMessage($"{{\"module_status\": {{\"{ModuleHelper.GetModuleKey(moduleType)}\": {isEnabled.ToString().ToLowerInvariant()}}}}}", "module status update");
 
     public void ReportBug()
     {
@@ -131,20 +102,10 @@ internal sealed class QuickAccessCoordinator : IQuickAccessCoordinator, IDisposa
         Logger.LogDebug($"QuickAccessCoordinator received IPC payload: {message}");
     }
 
-    private void SendGeneralSettingsUpdate(GeneralSettings updatedSettings)
+    public void SendSortOrderUpdate(GeneralSettings generalSettings)
     {
-        string payload;
-        try
-        {
-            payload = new OutGoingGeneralSettings(updatedSettings).ToString();
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError("QuickAccessCoordinator: failed to serialize general settings payload.", ex);
-            return;
-        }
-
-        TrySendIpcMessage(payload, "general settings update");
+        var outgoing = new OutGoingGeneralSettings(generalSettings);
+        TrySendIpcMessage(outgoing.ToString(), "sort order update");
     }
 
     private bool TrySendIpcMessage(string payload, string operationDescription)
