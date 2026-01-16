@@ -21,13 +21,7 @@
     <ClCompile Include="ThemeScheduler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ThemeHelper.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="LightSwitchSettings.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="SettingsConstants.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="WinHookEventIDs.cpp">
@@ -47,13 +41,7 @@
     <ClInclude Include="ThemeScheduler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ThemeHelper.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="LightSwitchSettings.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SettingsConstants.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="SettingsObserver.h">

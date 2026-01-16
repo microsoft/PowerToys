@@ -109,7 +109,6 @@ LightSwitchSettings::~LightSwitchSettings()
     Logger::info(L"[LightSwitchSettings] Cleanup complete.");
 }
 
-
 void LightSwitchSettings::AddObserver(SettingsObserver& observer)
 {
     m_observers.insert(&observer);
@@ -143,7 +142,6 @@ void LightSwitchSettings::LoadSettings()
     {
         PowerToysSettings::PowerToyValues values =
             PowerToysSettings::PowerToyValues::load_from_settings_file(L"LightSwitch");
-
 
         if (const auto jsonVal = values.get_string_value(L"scheduleMode"))
         {
@@ -202,7 +200,7 @@ void LightSwitchSettings::LoadSettings()
         }
 
         // Offset
-        if (const auto jsonVal = values.get_int_value(L"sunrise_offset")) 
+        if (const auto jsonVal = values.get_int_value(L"sunrise_offset"))
         {
             auto val = *jsonVal;
             if (m_settings.sunrise_offset != val)
@@ -248,6 +246,39 @@ void LightSwitchSettings::LoadSettings()
             }
         }
 
+        // UseThemeSwitching
+        if (const auto jsonVal = values.get_bool_value(L"use_theme_switching"))
+        {
+            auto val = *jsonVal;
+            if (m_settings.useThemeSwitching != val)
+            {
+                m_settings.useThemeSwitching = val;
+                NotifyObservers(SettingId::UseThemeSwitching);
+            }
+        }
+
+        // Light Theme Path
+        if (const auto jsonVal = values.get_string_value(L"light_theme_path"))
+        {
+            auto val = *jsonVal;
+            if (m_settings.lightThemePath != val)
+            {
+                m_settings.lightThemePath = val;
+                NotifyObservers(SettingId::LightThemePath);
+            }
+        }
+
+        // Dark Theme Path
+        if (const auto jsonVal = values.get_string_value(L"dark_theme_path"))
+        {
+            auto val = *jsonVal;
+            if (m_settings.darkThemePath != val)
+            {
+                m_settings.darkThemePath = val;
+                NotifyObservers(SettingId::DarkThemePath);
+            }
+        }
+      
         // For ChangeSystem/ChangeApps changes, log telemetry
         if (themeTargetChanged)
         {
