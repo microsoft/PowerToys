@@ -51,8 +51,10 @@ Once all `grouped_md/*.md` files are reviewed and approved, consolidate into a s
 
 **2. Module sections** (alphabetical order):
 - One section per product (Advanced Paste, Awake, Command Palette, etc.)
-- Copy bullet summaries from the approved `grouped_md/Product-*.md` files
-- Include `Thanks @contributor!` attributions inline
+- Migrate bullet summaries from the approved `grouped_md/Product-*.md` files
+- One section 'Development' for all the rest summaries from the approved `grouped_md/Area-*.md` files
+- Re-review E2E, group release improvements by section, and move the most important items to the top of each section.
+Some items in the Development section may overlap and should be moved to the Module section where more applicable.
 
 ### Example Final Structure
 
@@ -81,9 +83,6 @@ Once all `grouped_md/*.md` files are reviewed and approved, consolidate into a s
 
 ---
 
-## Contributors
-
-- [@artickc](https://github.com/artickc)
-- [@daverayment](https://github.com/daverayment)
+## Development
 ...
 ```
