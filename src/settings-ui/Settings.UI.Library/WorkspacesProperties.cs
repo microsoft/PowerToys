@@ -20,11 +20,11 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         public WorkspacesProperties()
         {
-            Hotkey = new KeyboardKeysProperty(DefaultHotkeyValue);
+            Hotkey = DefaultHotkeyValue;
         }
 
         [JsonPropertyName("hotkey")]
-        public KeyboardKeysProperty Hotkey { get; set; }
+        public HotkeySettings Hotkey { get; set; }
 
         [JsonPropertyName("sortby")]
         public SortByProperty SortBy { get; set; }

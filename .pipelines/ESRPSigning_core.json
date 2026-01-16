@@ -31,82 +31,59 @@
             "Common.Search.dll",
 
             "PowerToys.AlwaysOnTop.exe",
-            "PowerToys.AlwaysOnTopModuleInterface.dll",
-
-            "PowerToys.CmdNotFoundModuleInterface.dll",
-
 
             "PowerToys.ColorPicker.dll",
             "PowerToys.ColorPickerUI.dll",
             "PowerToys.ColorPickerUI.exe",
 
-            "PowerToys.CropAndLockModuleInterface.dll",
             "PowerToys.CropAndLock.exe",
 
-            "PowerToys.PowerOCRModuleInterface.dll",
             "PowerToys.PowerOCR.dll",
             "PowerToys.PowerOCR.exe",
 
-            "PowerToys.AdvancedPasteModuleInterface.dll",
             "WinUI3Apps\\PowerToys.AdvancedPaste.exe",
             "WinUI3Apps\\PowerToys.AdvancedPaste.dll",
 
-            "PowerToys.AwakeModuleInterface.dll",
             "PowerToys.Awake.exe",
             "PowerToys.Awake.dll",
 
             "PowerToys.FancyZonesEditor.exe",
             "PowerToys.FancyZonesEditor.dll",
             "PowerToys.FancyZonesEditorCommon.dll",
-            "PowerToys.FancyZonesModuleInterface.dll",
             "PowerToys.FancyZones.exe",
             "FancyZonesCLI.exe",
             "FancyZonesCLI.dll",
 
             "PowerToys.GcodePreviewHandler.dll",
             "PowerToys.GcodePreviewHandler.exe",
-            "PowerToys.GcodePreviewHandlerCpp.dll",
             "PowerToys.GcodeThumbnailProvider.dll",
             "PowerToys.GcodeThumbnailProvider.exe",
-            "PowerToys.GcodeThumbnailProviderCpp.dll",
             "PowerToys.BgcodePreviewHandler.dll",
             "PowerToys.BgcodePreviewHandler.exe",
-            "PowerToys.BgcodePreviewHandlerCpp.dll",
             "PowerToys.BgcodeThumbnailProvider.dll",
             "PowerToys.BgcodeThumbnailProvider.exe",
-            "PowerToys.BgcodeThumbnailProviderCpp.dll",
             "PowerToys.ManagedTelemetry.dll",
             "PowerToys.MarkdownPreviewHandler.dll",
             "PowerToys.MarkdownPreviewHandler.exe",
-            "PowerToys.MarkdownPreviewHandlerCpp.dll",
             "PowerToys.MonacoPreviewHandler.dll",
             "PowerToys.MonacoPreviewHandler.exe",
-            "PowerToys.MonacoPreviewHandlerCpp.dll",
             "PowerToys.PdfPreviewHandler.dll",
             "PowerToys.PdfPreviewHandler.exe",
-            "PowerToys.PdfPreviewHandlerCpp.dll",
             "PowerToys.PdfThumbnailProvider.dll",
             "PowerToys.PdfThumbnailProvider.exe",
-            "PowerToys.PdfThumbnailProviderCpp.dll",
             "PowerToys.powerpreview.dll",
             "PowerToys.PreviewHandlerCommon.dll",
             "PowerToys.QoiPreviewHandler.dll",
             "PowerToys.QoiPreviewHandler.exe",
-            "PowerToys.QoiPreviewHandlerCpp.dll",
             "PowerToys.QoiThumbnailProvider.dll",
             "PowerToys.QoiThumbnailProvider.exe",
-            "PowerToys.QoiThumbnailProviderCpp.dll",
             "PowerToys.StlThumbnailProvider.dll",
             "PowerToys.StlThumbnailProvider.exe",
-            "PowerToys.StlThumbnailProviderCpp.dll",
             "PowerToys.SvgPreviewHandler.dll",
             "PowerToys.SvgPreviewHandler.exe",
-            "PowerToys.SvgPreviewHandlerCpp.dll",
             "PowerToys.SvgThumbnailProvider.dll",
             "PowerToys.SvgThumbnailProvider.exe",
-            "PowerToys.SvgThumbnailProviderCpp.dll",
 
-            "WinUI3Apps\\PowerToys.HostsModuleInterface.dll",
             "WinUI3Apps\\PowerToys.HostsUILib.dll",
             "WinUI3Apps\\PowerToys.Hosts.dll",
             "WinUI3Apps\\PowerToys.Hosts.exe",
@@ -129,7 +106,6 @@
             "WinUI3Apps\\PowerToys.QuickAccess.exe",
             "WinUI3Apps\\PowerToys.Settings.UI.Controls.dll",
 
-            "WinUI3Apps\\PowerToys.EnvironmentVariablesModuleInterface.dll",
             "WinUI3Apps\\PowerToys.EnvironmentVariablesUILib.dll",
             "WinUI3Apps\\PowerToys.EnvironmentVariables.dll",
             "WinUI3Apps\\PowerToys.EnvironmentVariables.exe",
@@ -142,7 +118,6 @@
             "PowerToys.ImageResizerContextMenu.dll",
             "ImageResizerContextMenuPackage.msix",
 
-            "PowerToys.LightSwitchModuleInterface.dll",
             "LightSwitchService\\PowerToys.LightSwitchService.exe",
 
             "PowerToys.KeyboardManager.dll",
@@ -178,7 +153,6 @@
             "RunPlugins\\WebSearch\\Community.PowerToys.Run.Plugin.WebSearch.dll",
             "RunPlugins\\WindowsTerminal\\Microsoft.PowerToys.Run.Plugin.WindowsTerminal.dll",
 
-            "WinUI3Apps\\PowerToys.MeasureToolModuleInterface.dll",
             "WinUI3Apps\\PowerToys.MeasureToolCore.dll",
             "WinUI3Apps\\PowerToys.MeasureToolUI.dll",
             "WinUI3Apps\\PowerToys.MeasureToolUI.exe",
@@ -194,7 +168,6 @@
 
             "PowerToys.MouseWithoutBorders.dll",
             "PowerToys.MouseWithoutBorders.exe",
-            "PowerToys.MouseWithoutBordersModuleInterface.dll",
             "PowerToys.MouseWithoutBordersService.dll",
             "PowerToys.MouseWithoutBordersService.exe",
             "PowerToys.MouseWithoutBordersHelper.dll",
@@ -207,7 +180,6 @@
             "PowerAccent.Core.dll",
             "PowerToys.PowerAccent.dll",
             "PowerToys.PowerAccent.exe",
-            "PowerToys.PowerAccentModuleInterface.dll",
             "PowerToys.PowerAccentKeyboardService.dll",
 
             "WinUI3Apps\\PowerToys.PowerRenameExt.dll",
@@ -222,7 +194,6 @@
             "PowerToys.WorkspacesEditor.dll",
             "PowerToys.WorkspacesLauncherUI.exe",
             "PowerToys.WorkspacesLauncherUI.dll",
-            "PowerToys.WorkspacesModuleInterface.dll",
             "PowerToys.WorkspacesCsharpLibrary.dll",
 
             "WinUI3Apps\\PowerToys.RegistryPreviewExt.dll",
@@ -231,16 +202,13 @@
             "WinUI3Apps\\PowerToys.RegistryPreview.exe",
 
             "PowerToys.ShortcutGuide.exe",
-            "PowerToys.ShortcutGuideModuleInterface.dll",
 
             "PowerToys.ZoomIt.exe",
-            "PowerToys.ZoomItModuleInterface.dll",
             "PowerToys.ZoomItSettingsInterop.dll",
 
             "WinUI3Apps\\PowerToys.Settings.dll",
             "WinUI3Apps\\PowerToys.Settings.exe",
 
-            "PowerToys.CmdPalModuleInterface.dll",
             "CmdPalKeyboardService.dll",
             "PowerToys.ModuleContracts.dll",
             "Awake.ModuleServices.dll",
