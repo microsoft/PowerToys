@@ -198,6 +198,19 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public bool ShowTrayIcon
+        {
+            get => ModuleSettings.Properties.ShowTrayIcon;
+            set
+            {
+                if (ModuleSettings.Properties.ShowTrayIcon != value)
+                {
+                    ModuleSettings.Properties.ShowTrayIcon = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
         public void NotifyPropertyChanged([CallerMemberName] string propertyName = null)
         {
             Logger.LogInfo($"Changed the property {propertyName}");
@@ -219,6 +232,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             OnPropertyChanged(nameof(IntervalHours));
             OnPropertyChanged(nameof(IntervalMinutes));
             OnPropertyChanged(nameof(ExpirationDateTime));
+            OnPropertyChanged(nameof(ShowTrayIcon));
         }
 
         private bool _enabledStateIsGPOConfigured;
