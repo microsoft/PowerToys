@@ -201,6 +201,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
     if (action == UPDATE_NOW_LAUNCH_STAGE1)
     {
+        // Check if user has admin permissions before proceeding
+        if (!check_user_is_admin())
+        {
+            Logger::error("Update failed: Administrator permissions required to install updates");
+            return 1;
+        }
+
         bool isUpToDate = false;
         auto installerPath = ObtainInstaller(isUpToDate);
         bool failed = !installerPath.has_value();
@@ -217,6 +224,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     }
     else if (action == UPDATE_NOW_LAUNCH_STAGE2)
     {
+        // Check if user has admin permissions before proceeding
+        if (!check_user_is_admin())
+        {
+            Logger::error("Update failed: Administrator permissions required to install updates");
+            return 1;
+        }
         using namespace std::string_view_literals;
         const bool failed = !InstallNewVersionStage2(args[2]);
         if (failed)
