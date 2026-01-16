@@ -1,6 +1,7 @@
 # Step 1: Collection and Milestones
 
 ## 1.0 To-do
+- 1.0.1 Generate MemberList.md (REQUIRED)
 - 1.1 Collect PRs
 - 1.2 Assign Milestones (REQUIRED)
 
@@ -16,6 +17,23 @@
 **If user hasn't specified `{{ReleaseVersion}}`, ASK:** "What release version are we generating notes for? (e.g., 0.97)"
 
 **`{{PreviousReleaseTag}}` is derived from the releases page, not user input.** Use the latest published release tag (top of the page). You will use its tag name and tag commit SHA in Step 1.
+
+---
+
+## 1.0.1 Generate MemberList.md (REQUIRED)
+
+Create `Generated Files/ReleaseNotes/MemberList.md` from the **PowerToys core team** section in [COMMUNITY.md](../../../COMMUNITY.md).
+
+Rules:
+- One GitHub username per line, **no** `@` prefix.
+- Use the usernames exactly as listed in the core team section.
+- Do not include former team members or other sections.
+
+Example (format only):
+```
+example-user
+another-user
+```
 
 ---
 

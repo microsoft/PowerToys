@@ -5,7 +5,7 @@
 .DESCRIPTION
     Identifies merge/squash commits reachable from EndCommit but not StartCommit, extracts PR numbers,
     queries GitHub for metadata plus (optionally) Copilot review/comment summaries, filters labels, then
-    emits a JSON artifact and a sorted CSV (first label alphabetical) analogous to dump-prs-information.ps1.
+    emits a JSON artifact and a sorted CSV (first label alphabetical).
 
 .PARAMETER StartCommit
     Exclusive starting commit (SHA, tag, or ref). Commits AFTER this one are considered.
@@ -47,7 +47,7 @@ param(
     Dump merged PR information whose merge commits are reachable from EndCommit but not from StartCommit.
 .DESCRIPTION
     Uses git rev-list to compute commits in the (StartCommit, EndCommit] range, extracts PR numbers from merge commit messages,
-    queries GitHub (gh CLI) for details, then outputs a CSV similar to dump-prs-information.ps1.
+    queries GitHub (gh CLI) for details, then outputs a CSV.
 
     PR merge commit messages in PowerToys generally contain patterns like:
         Merge pull request #12345 from ...
@@ -72,17 +72,30 @@ function Write-Warn($msg) { Write-Host $msg -ForegroundColor Yellow }
 function Write-Err($msg) { Write-Host $msg -ForegroundColor Red }
 function Write-DebugMsg($msg) { if ($PSBoundParameters.ContainsKey('Verbose') -or $VerbosePreference -eq 'Continue') { Write-Host "[VERBOSE] $msg" -ForegroundColor DarkGray } }
 
-# Load member list from MemberList.md (internal team - no thanks needed)
+# Load member list from Generated Files/ReleaseNotes/MemberList.md (internal team - no thanks needed)
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
-$memberListPath = Join-Path $scriptDir "..\references\MemberList.md"
+$repoRoot = Resolve-Path (Join-Path $scriptDir "..\..\..\..")
+$defaultMemberListPath = Join-Path $repoRoot "Generated Files\ReleaseNotes\MemberList.md"
+$memberListPath = $defaultMemberListPath
+if ($OutputDir) {
+    $memberListFromOutputDir = Join-Path $OutputDir "MemberList.md"
+    if (Test-Path $memberListFromOutputDir) {
+        $memberListPath = $memberListFromOutputDir
+    }
+}
 $memberList = @()
 if (Test-Path $memberListPath) {
     $memberListContent = Get-Content $memberListPath -Raw
     # Extract usernames - skip markdown code fence lines, get all non-empty lines
     $memberList = ($memberListContent -split "`n") | Where-Object { $_ -notmatch '^\s*```' -and $_.Trim() -ne '' } | ForEach-Object { $_.Trim() }
+    if (-not $memberList -or $memberList.Count -eq 0) {
+        Write-Err "MemberList.md is empty at $memberListPath"
+        exit 1
+    }
     Write-DebugMsg "Loaded $($memberList.Count) members from MemberList.md"
 } else {
-    Write-Warn "MemberList.md not found at $memberListPath - NeedThanks will default to true for all authors"
+    Write-Err "MemberList.md not found at $memberListPath"
+    exit 1
 }
 
 # Validate we are in a git repo
