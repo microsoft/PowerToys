@@ -291,7 +291,7 @@ For an in-depth look at the latest changes, visit the [Windows Command Line blog
 - Stabilized FancyZones UI tests with more reliable selectors and screen recordings.
 
 ## 🛣️ Roadmap 
-We are planning some nice new features and improvements for the next releases – a revamped Keyboard Manager UI, custom endpoint and local model support for Advanced Paste, Command Palette improvements and a brand-new Shortcut Guide experience! Stay tuned for [v0.97][github-next-release-work]!
+We are planning some nice new features and improvements for the next releases – PowerDisplay, Command Palette improvements and a brand-new Shortcut Guide experience! Stay tuned for [v0.97][github-next-release-work]!
 
 ## ❤️ PowerToys Community 
 The PowerToys team is extremely grateful to have the [support of an amazing active community][community-link]. The work you do is incredibly important. PowerToys wouldn't be nearly what it is today without your help filing bugs, updating documentation, guiding the design, or writing features. We want to say thank you and take time to recognize your work. Your contributions and feedback improve PowerToys month after month!
