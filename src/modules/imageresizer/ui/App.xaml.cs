@@ -173,31 +173,8 @@ namespace ImageResizer
         /// </summary>
         private static AiAvailabilityState CheckAiAvailability()
         {
-            try
-            {
-                // Check Windows AI service model ready state
-                // it's so slow, why?
-                var readyState = Services.WinAiSuperResolutionService.GetModelReadyState();
-
-                // Map AI service state to our availability state
-                switch (readyState)
-                {
-                    case Microsoft.Windows.AI.AIFeatureReadyState.Ready:
-                        return AiAvailabilityState.Ready;
-
-                    case Microsoft.Windows.AI.AIFeatureReadyState.NotReady:
-                        return AiAvailabilityState.ModelNotReady;
-
-                    case Microsoft.Windows.AI.AIFeatureReadyState.DisabledByUser:
-                    case Microsoft.Windows.AI.AIFeatureReadyState.NotSupportedOnCurrentSystem:
-                    default:
-                        return AiAvailabilityState.NotSupported;
-                }
-            }
-            catch (Exception)
-            {
-                return AiAvailabilityState.NotSupported;
-            }
+            // AI feature disabled - always return NotSupported
+            return AiAvailabilityState.NotSupported;
         }
 
         /// <summary>
