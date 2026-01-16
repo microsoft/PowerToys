@@ -1,6 +1,10 @@
-# Phase 7-8: Summary Generation and Final Release Notes
+# Step 4: Summaries and Final Release Notes
 
-## Phase 7: Generate Summary Markdown (Agent Mode)
+## 4.0 To-do
+- 4.1 Generate Summary Markdown (Agent Mode)
+- 4.2 Produce Final Release Notes File
+
+## 4.1 Generate Summary Markdown (Agent Mode)
 
 For each CSV in `Generated Files/ReleaseNotes/grouped_csv/`, create a markdown file in `Generated Files/ReleaseNotes/grouped_md/`.
 
@@ -9,12 +13,12 @@ For each CSV in `Generated Files/ReleaseNotes/grouped_csv/`, create a markdown f
 ### Structure per file
 
 **1. Bullet list** - one concise, user-facing line per PR:
-- Use "Verbed + Scenario + Impact" sentence structure—readers should feel "wow, that's what I need" or "yes, that's an awesome fix"
-- If nothing special or unclear, mark as needing human summary
+- Use the “Verbed + Scenario + Impact” sentence structure—make readers think, “That’s exactly what I need” or “Yes, that’s an awesome fix.”; The "impact" can be end-user focused (written to convey user excitement) or technical (performance/stability) when user-facing impact is minimal.
+- If nothing special on impact or unclear impact, mark as needing human summary
 - Source from Title, Body, and CopilotSummary (prefer CopilotSummary when available)
 - If the column `NeedThanks` in CSV is `True`, append: `Thanks [@Author](https://github.com/Author)!`
 - Do NOT include PR numbers in bullet lines
-- Do NOT mention "security fix" directly—describe user-facing scenario impact instead
+- Do NOT mention “security” or “privacy” issues, since these are not known and could be leveraged by attackers in earlier versions. Instead, describe the user-facing scenario, usage, or impact.
 - If confidence < 70%, write: `Human Summary Needed: <PR full link>`
 
 **See [SampleOutput.md](./SampleOutput.md) for examples of well-written bullet summaries.**
@@ -32,7 +36,7 @@ For each CSV in `Generated Files/ReleaseNotes/grouped_csv/`, create a markdown f
 
 ---
 
-## Phase 8: Produce Final Release Notes File
+## 4.2 Produce Final Release Notes File
 
 Once all `grouped_md/*.md` files are reviewed and approved, consolidate into a single release notes file.
 

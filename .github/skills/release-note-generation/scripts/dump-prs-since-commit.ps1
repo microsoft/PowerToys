@@ -11,7 +11,7 @@
     Exclusive starting commit (SHA, tag, or ref). Commits AFTER this one are considered.
 
 .PARAMETER EndCommit
-    Inclusive ending commit (SHA, tag, or ref). Default: HEAD.
+    Inclusive ending commit (SHA, tag, or ref). If not provided, uses origin/<Branch> when Branch is set, otherwise HEAD.
 
 .PARAMETER Repo
     GitHub repository (owner/name). Default: microsoft/PowerToys.
@@ -23,7 +23,7 @@
     Destination JSON path containing raw PR objects. Default: milestone_prs.json.
 
 .EXAMPLE
-    pwsh ./dump-prs-since-commit.ps1 -StartCommit 0123abcd
+    pwsh ./dump-prs-since-commit.ps1 -StartCommit 0123abcd -Branch stable
 
 .EXAMPLE
     pwsh ./dump-prs-since-commit.ps1 -StartCommit 0123abcd -EndCommit 89ef7654 -OutputCsv delta.csv
@@ -34,7 +34,7 @@
 [CmdletBinding()]
 param(
     [Parameter(Mandatory = $true)][string]$StartCommit,  # exclusive start (commits AFTER this one)
-    [string]$EndCommit = "HEAD",
+    [string]$EndCommit,
     [string]$Branch,
     [string]$Repo = "microsoft/PowerToys",
     [string]$OutputDir,
@@ -53,7 +53,7 @@ param(
         Merge pull request #12345 from ...
 
 .EXAMPLE
-    pwsh ./dump-prs-since-commit.ps1 -StartCommit 0123abcd
+    pwsh ./dump-prs-since-commit.ps1 -StartCommit 0123abcd -Branch stable
 
 .EXAMPLE
     pwsh ./dump-prs-since-commit.ps1 -StartCommit 0123abcd -EndCommit 89ef7654 -OutputCsv changes.csv
@@ -106,6 +106,12 @@ if ($OutputDir) {
 
 # Resolve commits
 try {
+    if ($Branch) {
+        Write-Info "Fetching latest '$Branch' from origin (with tags)..."
+        git fetch origin $Branch --tags | Out-Null
+        if ($LASTEXITCODE -ne 0) { throw "git fetch origin $Branch --tags failed" }
+    }
+
     $startSha = (git rev-parse --verify $StartCommit) 2>$null
     if (-not $startSha) { throw "StartCommit '$StartCommit' not found" }
     if ($Branch) {
@@ -116,9 +122,12 @@ try {
             $branchSha = (git rev-parse --verify $branchRef) 2>$null
         }
         if (-not $branchSha) { throw "Branch '$Branch' not found" }
-        if (-not $PSBoundParameters.ContainsKey('EndCommit')) {
+        if (-not $PSBoundParameters.ContainsKey('EndCommit') -or [string]::IsNullOrWhiteSpace($EndCommit)) {
             $EndCommit = $branchRef
         }
+    }
+    if (-not $PSBoundParameters.ContainsKey('EndCommit') -or [string]::IsNullOrWhiteSpace($EndCommit)) {
+        $EndCommit = "HEAD"
     }
     $endSha = (git rev-parse --verify $EndCommit) 2>$null
     if (-not $endSha) { throw "EndCommit '$EndCommit' not found" }
@@ -131,8 +140,7 @@ catch {
 Write-Info "Collecting commits between $startSha..$endSha (excluding start, including end)."
     # Get list of commits reachable from end but not from start.
     # IMPORTANT: In PowerShell, the .. operator creates a numeric/char range. If $startSha and $endSha look like hex strings,
-    # `$startSha..$endSha` will expand unexpectedly (often to empty/undesired) instead of passing the literal "sha1..sha2".
-    # Therefore we build the range explicitly as a single string argument.
+    # `$startSha..$endSha` must be passed as a single string argument.
     $rangeArg = "$startSha..$endSha"
     $commitList = git rev-list $rangeArg
 

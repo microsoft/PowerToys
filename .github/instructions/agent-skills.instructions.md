@@ -109,8 +109,8 @@ Skills can include additional files that Copilot accesses on-demand:
 │   └── helper.ps1        # PowerShell script
 ├── references/           # Optional: Documentation loaded into context
 │   ├── api_reference.md
-│   ├── workflow-setup.md     # Detailed workflow (>5 steps)
-│   └── workflow-deployment.md
+│   ├── step1-setup.md     # Detailed workflow (>3 steps)
+│   └── step2-deployment.md
 ├── assets/               # Optional: Static files used AS-IS in output
 │   ├── baseline.png      # Reference image for comparison
 │   └── report-template.html

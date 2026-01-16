@@ -32,6 +32,10 @@ function Write-Err($msg) { Write-Host $msg -ForegroundColor Red }
 
 Push-Location $RepoPath
 try {
+    Write-Info "Fetching latest '$Branch' from origin (with tags)..."
+    git fetch origin $Branch --tags | Out-Null
+    if ($LASTEXITCODE -ne 0) { throw "git fetch origin $Branch --tags failed" }
+
     $commitSha = (git rev-parse --verify $Commit) 2>$null
     if (-not $commitSha) { throw "Commit '$Commit' not found" }
 

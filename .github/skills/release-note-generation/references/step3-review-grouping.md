@@ -1,6 +1,11 @@
-# Phase 4-6: Copilot Reviews and Grouping
+# Step 3: Copilot Reviews and Grouping
 
-## Phase 4: Request Copilot Reviews (Agent Mode)
+## 3.0 To-do
+- 3.1 Request Copilot Reviews (Agent Mode)
+- 3.2 Refresh PR Data
+- 3.3 Group PRs by Label
+
+## 3.1 Request Copilot Reviews (Agent Mode)
 
 Use MCP tools to request Copilot reviews for all PRs in `Generated Files/ReleaseNotes/sorted_prs.csv`:
 
@@ -9,19 +14,19 @@ Use MCP tools to request Copilot reviews for all PRs in `Generated Files/Release
 
 ---
 
-## Phase 5: Refresh PR Data
+## 3.2 Refresh PR Data
 
 Re-run the collection script to capture Copilot review summaries into the `CopilotSummary` column:
 
 ```powershell
 pwsh ./.github/skills/release-note-generation/scripts/dump-prs-since-commit.ps1 `
-    -StartCommit '{{PreviousReleaseTag}}' -EndCommit HEAD -Branch 'stable' `
+    -StartCommit '{{PreviousReleaseTag}}' -Branch 'stable' `
     -OutputDir 'Generated Files/ReleaseNotes'
 ```
 
 ---
 
-## Phase 6: Group PRs by Label
+## 3.3 Group PRs by Label
 
 ```powershell
 pwsh ./.github/skills/release-note-generation/scripts/group-prs-by-label.ps1 -CsvPath 'Generated Files/ReleaseNotes/sorted_prs.csv' -OutDir 'Generated Files/ReleaseNotes/grouped_csv'
@@ -29,4 +34,4 @@ pwsh ./.github/skills/release-note-generation/scripts/group-prs-by-label.ps1 -Cs
 
 Creates `Generated Files/ReleaseNotes/grouped_csv/` with one CSV per label combination.
 
-**Validation:** The `Unlabeled.csv` file should be minimal (ideally empty). If many PRs remain unlabeled, return to Phase 3 (see [workflow-labeling.md](./workflow-labeling.md)).
+**Validation:** The `Unlabeled.csv` file should be minimal (ideally empty). If many PRs remain unlabeled, return to Step 2 (see [step2-labeling.md](./step2-labeling.md)).

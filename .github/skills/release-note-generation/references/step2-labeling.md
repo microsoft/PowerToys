@@ -1,10 +1,16 @@
-# Phase 3: Label Unlabeled PRs
+# Step 2: Label Unlabeled PRs
+
+## 2.0 To-do
+- 2.1 Identify unlabeled PRs (Agent Mode)
+- 2.2 Suggest labels (Agent Mode)
+- 2.3 Human label low-confidence PRs
+- 2.4 Recheck labels, delete Unlabeled.csv, and re-collect
 
 **Before grouping**, ensure all PRs have appropriate labels for categorization.
 
 ⚠️ **CRITICAL:** Do NOT proceed to grouping until all PRs have labels assigned. PRs without labels will end up in `Unlabeled.csv` and won't appear in the correct release note sections.
 
-## Step 1: Identify unlabeled PRs (Agent Mode)
+## 2.1 Identify unlabeled PRs (Agent Mode)
 
 Read `sorted_prs.csv` and identify PRs with empty or missing `Labels` column.
 
@@ -13,7 +19,7 @@ For each unlabeled PR, analyze:
 - **Body** - PR description with context
 - **CopilotSummary** - AI-generated summary of changes
 
-## Step 2: Suggest labels (Agent Mode)
+## 2.2 Suggest labels (Agent Mode)
 
 For each unlabeled PR, suggest an appropriate label based on the content analysis.
 
@@ -38,47 +44,40 @@ Generated: YYYY-MM-DD HH:mm:ss
 |----|-------|-----------------|------------|--------|
 | [#12347](url) | Some generic fix | ??? | Low | Unclear from content |
 | [#12346](url) | Update dependencies | `Area-Build` | Medium | Body mentions NuGet packages |
-| [#12345](url) | Fix FancyZones crash | `Product-FancyZones` | High | Title mentions FancyZones |
 ```
 
 Sort by confidence (low first) so human reviews uncertain ones first.
 
-## Step 3: Human review
-
-Present the suggestions to human for approval. Human may:
-- Approve suggested label
-- Specify a different label
-- Skip the PR (leave unlabeled)
-
-## Step 4: Apply approved labels
-
-After human approval, create a CSV file `prs_to_label.csv` with approved labels:
-
-```csv
-Id,Label
-12345,Product-FancyZones
-12346,Area-Build
-```
-
-Then run the apply script:
+After writing `prs_label_review.md`, **generate `prs_to_label.csv`, apply labels, and re-run collection** so the CSV/labels stay in sync:
 
 ```powershell
-# Dry run first
-pwsh ./.github/skills/release-note-generation/scripts/apply-labels.ps1 `
-    -InputCsv 'Generated Files/ReleaseNotes/prs_to_label.csv' -WhatIf
-
-# Apply for real
+# Generate CSV from suggestions (agent)
+# Apply labels
 pwsh ./.github/skills/release-note-generation/scripts/apply-labels.ps1 `
     -InputCsv 'Generated Files/ReleaseNotes/prs_to_label.csv'
+
+# Refresh collection
+pwsh ./.github/skills/release-note-generation/scripts/dump-prs-since-commit.ps1 `
+    -StartCommit '{{PreviousReleaseTag}}' -Branch 'stable' `
+    -OutputDir 'Generated Files/ReleaseNotes'
 ```
 
-## Step 5: Re-run collection
+## 2.3 Human label low-confidence PRs
 
-After applying labels, re-run the collection script to update `sorted_prs.csv`:
+Ask the human to label **low-confidence** PRs directly (in GitHub). Skip any they decide not to label.
+
+## 2.4 Recheck labels, delete Unlabeled.csv, and re-collect
+
+Recheck that all PRs now have labels. Delete `Unlabeled.csv` (if present), then re-run the collection script to update `sorted_prs.csv`:
+
+```powershell
+# Remove stale unlabeled output if it exists
+Remove-Item 'Generated Files/ReleaseNotes/Unlabeled.csv' -ErrorAction SilentlyContinue
+```
 
 ```powershell
 pwsh ./.github/skills/release-note-generation/scripts/dump-prs-since-commit.ps1 `
-    -StartCommit '{{PreviousReleaseTag}}' -EndCommit HEAD -Branch 'stable' `
+    -StartCommit '{{PreviousReleaseTag}}' -Branch 'stable' `
     -OutputDir 'Generated Files/ReleaseNotes'
 ```
 

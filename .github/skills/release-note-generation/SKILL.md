@@ -44,46 +44,62 @@ Generated Files/ReleaseNotes/
 | Variable | Description | Example |
 |----------|-------------|---------|
 | `{{ReleaseVersion}}` | Target release version | `0.98` |
-| `{{PreviousReleaseTag}}` | Previous release tag | `v0.97.0` |
 
 ## Workflow Overview
 
+```
+┌────────────────────────────────┐
+│ 1.1 Collect PRs (stable range) │
+└────────────────────────────────┘
+              ↓
+┌────────────────────────────────┐
+│ 1.2 Assign Milestones           │
+└────────────────────────────────┘
+              ↓
+┌────────────────────────────────┐
+│ 2.1–2.4 Label PRs (auto+human)  │
+└────────────────────────────────┘
+              ↓
+┌────────────────────────────────┐
+│ 3.1 Request Reviews (Copilot)  │
+└────────────────────────────────┘
+              ↓
+┌────────────────────────────────┐
+│ 3.2 Refresh PR data             │
+│ (CopilotSummary)                │
+└────────────────────────────────┘
+              ↓
+┌────────────────────────────────┐
+│ 3.3 Group by label              │
+│ (grouped_csv)                   │
+└────────────────────────────────┘
+              ↓
+┌────────────────────────────────┐
+│ 4.1 Summarize (grouped_md)      │
+└────────────────────────────────┘
+              ↓
+┌────────────────────────────────┐
+│ 4.2 Final notes (v{VERSION}.md) │
+└────────────────────────────────┘
+```
+
 | Step | Action | Details |
 |------|--------|---------|
-| 1 | **Collect PRs** | From previous release tag on `stable` branch → `sorted_prs.csv` |
-| 2 | **Assign Milestones** | Ensure all PRs have correct milestone |
-| 3 | **Label PRs** | Ensure all PRs have `Product-*` or `Area-*` labels |
-| 4 | **Request Copilot Reviews** | Via MCP tools for all PRs |
-| 5 | **Refresh & Group** | Re-collect to get summaries, then group by label |
-| 6 | **Generate Summaries** | Create `grouped_md/*.md` files (batch, no pausing) |
-| 7 | **Produce Final Notes** | Consolidate into `v{VERSION}-release-notes.md` |
+| 1.1 | Collect PRs | From previous release tag on `stable` branch → `sorted_prs.csv` |
+| 1.2 | Assign Milestones | Ensure all PRs have correct milestone |
+| 2.1–2.4 | Label PRs | Auto-suggest + human label low-confidence |
+| 3.1–3.3 | Reviews & Grouping | Request Copilot reviews → refresh → group by label |
+| 4.1–4.2 | Summaries & Final | Generate grouped summaries, then consolidate |
 
-**Detailed workflow docs:**
-- [Collection & Milestones](./references/workflow-collection.md) - Steps 1-2
-- [Labeling PRs](./references/workflow-labeling.md) - Step 3, label mappings
-- [Reviews & Grouping](./references/workflow-review-grouping.md) - Steps 4-5
-- [Summarization](./references/workflow-summarization.md) - Steps 6-7, output format
+## Detailed workflow docs
 
-## Quick Commands
+Do not read all steps at once—only read the step you are executing.
 
-**Collect PRs from previous release:**
-```powershell
-pwsh ./.github/skills/release-note-generation/scripts/dump-prs-since-commit.ps1 `
-    -StartCommit '{{SHALastRelease}}' -EndCommit HEAD -Branch 'stable' `
-    -OutputDir 'Generated Files/ReleaseNotes'
-```
+- [Step 1: Collection & Milestones](./references/step1-collection.md)
+- [Step 2: Labeling PRs](./references/step2-labeling.md)
+- [Step 3: Reviews & Grouping](./references/step3-review-grouping.md)
+- [Step 4: Summarization](./references/step4-summarization.md)
 
-**Assign milestones (dry run first):**
-```powershell
-pwsh ./.github/skills/release-note-generation/scripts/collect-or-apply-milestones.ps1 `
-    -InputCsv 'Generated Files/ReleaseNotes/sorted_prs.csv' `
-    -DefaultMilestone 'PowerToys {{ReleaseVersion}}' -ApplyMissing -WhatIf
-```
-
-**Group PRs by label:**
-```powershell
-pwsh ./.github/skills/release-note-generation/scripts/group-prs-by-label.ps1 -CsvPath 'Generated Files/ReleaseNotes/sorted_prs.csv' -OutDir 'Generated Files/ReleaseNotes/grouped_csv'
-```
 
 ## Available Scripts
 

@@ -1,4 +1,8 @@
-# Phase 1-2: PR Collection and Milestone Assignment
+# Step 1: Collection and Milestones
+
+## 1.0 To-do
+- 1.1 Collect PRs
+- 1.2 Assign Milestones (REQUIRED)
 
 ## Required Variables
 
@@ -11,17 +15,19 @@
 
 **If user hasn't specified `{{ReleaseVersion}}`, ASK:** "What release version are we generating notes for? (e.g., 0.97)"
 
+**`{{PreviousReleaseTag}}` is derived from the releases page, not user input.** Use the latest published release tag (top of the page). You will use its tag name and tag commit SHA in Step 1.
+
 ---
 
-## Phase 1: Collect PRs
+## 1.1 Collect PRs
 
-### Step 1: Get the previous release commit
+### 1.1.1 Get the previous release commit
 
 1. Open the [PowerToys releases page](https://github.com/microsoft/PowerToys/releases/)
 2. Find the latest release (e.g., v0.96.1, which should be at the top)
-3. Copy the full commit SHA {{SHALastRelease}} (e.g., `b62f6421845f7e5c92b8186868d98f46720db442`)
+3. Set `{{PreviousReleaseTag}}` to that tag name (e.g., `v0.96.1`)
+4. Copy the full tag commit SHA as `{{SHALastRelease}}`
 
-**Note:** The SHA shown on the release page is the tag target commit, which may be on `stable` even if `main` has advanced. If the SHA does not show up in your current branch history, fetch tags/branches or use the tag name directly (e.g., `v0.96.1`).
 
 **If the release SHA is not in your branch history:** Use the helper script to find an equivalent commit on the target branch by matching the commit title:
 
@@ -31,21 +37,20 @@ pwsh ./.github/skills/release-note-generation/scripts/find-commit-by-title.ps1 `
     -Branch 'stable'
 ```
 
-### Step 2: Run collection script against stable branch
+### 1.1.2 Run collection script against stable branch
 
 ```powershell
 # Collect PRs from previous release to current HEAD of stable branch
 pwsh ./.github/skills/release-note-generation/scripts/dump-prs-since-commit.ps1 `
     -StartCommit '{{SHALastRelease}}' `
-    -EndCommit HEAD `
     -Branch 'stable' `
     -OutputDir 'Generated Files/ReleaseNotes'
 ```
 
 **Parameters:**
-- `-StartCommit` - Previous release tag or commit SHA (exclusive - PRs after this)
-- `-EndCommit` - Usually `HEAD` for current state of stable branch
-- `-Branch` - Always use `stable` branch, not `main`
+- `-StartCommit` - Previous release tag or commit SHA (exclusive)
+- `-Branch` - Always use `stable` branch, not `main` (script uses `origin/stable` as the end ref)
+- `-EndCommit` - Optional override if you need a custom end ref
 - `-OutputDir` - Output directory for generated files
 
 **Reliability check:** If the script reports “No commits found”, the stable branch has not moved since the last release. In that case, either:
@@ -60,13 +65,13 @@ The script detects both merge commits (`Merge pull request #12345`) and squash c
 
 ---
 
-## Phase 2: Assign Milestones to Collected PRs (REQUIRED)
+## 1.2 Assign Milestones (REQUIRED)
 
 **Before generating release notes**, ensure all collected PRs have the correct milestone assigned.
 
 ⚠️ **CRITICAL:** Do NOT proceed to labeling until all PRs have milestones assigned.
 
-### Step 1: Check current milestone status (dry run)
+### 1.2.1 Check current milestone status (dry run)
 
 ```powershell
 # Dry run first to see what would be changed:
@@ -79,7 +84,7 @@ pwsh ./.github/skills/release-note-generation/scripts/collect-or-apply-milestone
 
 This queries GitHub for each PR's current milestone and shows which PRs would be updated.
 
-### Step 2: Apply milestones to PRs missing them
+### 1.2.2 Apply milestones to PRs missing them
 
 ```powershell
 # Apply for real:
