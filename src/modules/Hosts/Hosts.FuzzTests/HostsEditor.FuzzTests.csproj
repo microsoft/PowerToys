@@ -1,7 +1,7 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 	<!-- Look at Directory.Build.props in root for common stuff as well -->
-	<Import Project="..\..\..\Common.Dotnet.CsWinRT.props" />
-	<Import Project="..\..\..\Common.Dotnet.FuzzTest.props" />
+	<Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
+	<Import Project="$(RepoRoot)src\Common.Dotnet.FuzzTest.props" />
 
 	<PropertyGroup>
 		<LangVersion>latest</LangVersion>
@@ -10,7 +10,7 @@
 	</PropertyGroup>
 	
 	<PropertyGroup>
-		<OutputPath>..\..\..\..\$(Platform)\$(Configuration)\tests\Hosts.FuzzTests\</OutputPath>
+		<OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\tests\Hosts.FuzzTests\</OutputPath>
 	</PropertyGroup>
 	
 	<ItemGroup>

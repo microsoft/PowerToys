@@ -1,10 +1,10 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <!-- Look at Directory.Build.props in root for common stuff as well -->
-  <Import Project="..\..\Common.Dotnet.CsWinRT.props" />
+  <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
 
   <PropertyGroup>
     <IsPackable>false</IsPackable>
-    <OutputPath>..\..\..\$(Configuration)\$(Platform)\tests\SettingsTests\</OutputPath>
+    <OutputPath>$(RepoRoot)$(Configuration)\$(Platform)\tests\SettingsTests\</OutputPath>
 
     <!-- TODO: fix issues and reenable -->
     <!-- These are caused by streamjsonrpc dependency on Microsoft.VisualStudio.Threading.Analyzers -->

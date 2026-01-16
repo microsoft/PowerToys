@@ -10,7 +10,6 @@
     <NuGetTargetPlatformVersion>$(WindowsTargetPlatformVersion)</NuGetTargetPlatformVersion>
   </PropertyGroup>
   <PropertyGroup Label="Globals">
-    <RepoRoot>$(MSBuildThisFileDirectory)..\..\..\..\..\</RepoRoot>
     <CppWinRTOptimized>true</CppWinRTOptimized>
     <CppWinRTRootNamespaceAutoMerge>true</CppWinRTRootNamespaceAutoMerge>
     <CppWinRTGenerateWindowsMetadata>true</CppWinRTGenerateWindowsMetadata>

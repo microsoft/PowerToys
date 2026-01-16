@@ -36,7 +36,7 @@
     <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup>
-    <OutDir>$(SolutionDir)..\..\$(Platform)\$(Configuration)\$(ProjectName)\</OutDir>
+    <OutDir>$(RepoRoot)$(Platform)\$(Configuration)\$(ProjectName)\</OutDir>
     <TargetName>PowerToys.$(ProjectName)</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Debug'">

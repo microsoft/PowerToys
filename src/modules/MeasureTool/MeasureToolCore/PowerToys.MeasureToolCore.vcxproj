@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Label="NuGet">
     <!-- Tell NuGet this is PackageReference style -->
@@ -52,13 +52,13 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
-    <OutDir>..\..\..\..\$(Platform)\$(Configuration)\WinUI3Apps\</OutDir>
+    <OutDir>$(RepoRoot)$(Platform)\$(Configuration)\WinUI3Apps\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
       <WarningLevel>Level4</WarningLevel>
       <AdditionalOptions>%(AdditionalOptions) /bigobj</AdditionalOptions>
-      <AdditionalIncludeDirectories>$(SolutionDir)src\;..\..\..\common\Telemetry;..\..\..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(RepoRoot)src\;$(RepoRoot)src\common\Telemetry;$(RepoRoot)src\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -125,19 +125,19 @@
     </Midl>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\common\Display\Display.vcxproj">
+    <ProjectReference Include="$(RepoRoot)src\common\Display\Display.vcxproj">
       <Project>{caba8dfb-823b-4bf2-93ac-3f31984150d9}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\common\logger\logger.vcxproj">
+    <ProjectReference Include="$(RepoRoot)src\common\logger\logger.vcxproj">
       <Project>{d9b8fc84-322a-4f9f-bbb9-20915c47ddfd}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\common\SettingsAPI\SettingsAPI.vcxproj">
+    <ProjectReference Include="$(RepoRoot)src\common\SettingsAPI\SettingsAPI.vcxproj">
       <Project>{6955446d-23f7-4023-9bb3-8657f904af99}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\common\Telemetry\EtwTrace\EtwTrace.vcxproj">
+    <ProjectReference Include="$(RepoRoot)src\common\Telemetry\EtwTrace\EtwTrace.vcxproj">
       <Project>{8f021b46-362b-485c-bfba-ccf83e820cbd}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\common\Themes\Themes.vcxproj">
+    <ProjectReference Include="$(RepoRoot)src\common\Themes\Themes.vcxproj">
       <Project>{98537082-0fdb-40de-abd8-0dc5a4269bab}</Project>
     </ProjectReference>
   </ItemGroup>
@@ -145,5 +145,5 @@
     <ResourceCompile Include="PowerToys.MeasureToolCore.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
-  <Import Project="..\..\..\..\deps\spdlog.props" />
+  <Import Project="$(RepoRoot)deps\spdlog.props" />
 </Project>

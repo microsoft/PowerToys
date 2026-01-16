@@ -1,6 +1,6 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <!-- Look at Directory.Build.props in root for common stuff as well -->
-  <Import Project="..\..\..\Common.Dotnet.CsWinRT.props" />	
+  <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />	
 
   <PropertyGroup>
     <ProjectGuid>{FF742965-9A80-41A5-B042-D6C7D3A21708}</ProjectGuid>
@@ -11,7 +11,7 @@
     
     <ApplicationIcon />
     <StartupObject />
-    <OutputPath>..\..\..\..\$(Platform)\$(Configuration)\tests\WoxTest</OutputPath>
+    <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\tests\WoxTest</OutputPath>
   </PropertyGroup>
 
   <ItemGroup>

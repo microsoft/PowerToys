@@ -1,6 +1,6 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 	<!-- Import common props to satisfy repo audit; override problematic bits below for this console tool. -->
-	<Import Project="..\..\Common.Dotnet.CsWinRT.props" />
+	<Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
 
 	<PropertyGroup>
 		<TargetFramework>net9.0</TargetFramework>

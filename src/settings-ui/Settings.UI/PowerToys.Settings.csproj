@@ -1,7 +1,7 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 	<!-- Look at Directory.Build.props in root for common stuff as well -->
-	<Import Project="..\..\Common.Dotnet.CsWinRT.props" />
-	<Import Project="..\..\Common.SelfContained.props" />
+	<Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
+	<Import Project="$(RepoRoot)src\Common.SelfContained.props" />
 
 	<PropertyGroup>
 		<OutputType>WinExe</OutputType>
@@ -15,7 +15,7 @@
 		<ApplicationIcon>Assets\Settings\icon.ico</ApplicationIcon>
 		<WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
 		<!-- OutputPath looks like this because it has to be called both by settings and publish.cmd -->
-		<OutputPath>..\..\..\$(Platform)\$(Configuration)\WinUI3Apps</OutputPath>
+		<OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\WinUI3Apps</OutputPath>
 		<!-- MRT from windows app sdk will search for a pri file with the same name of the module before defaulting to resources.pri -->
 		<ProjectPriFileName>PowerToys.Settings.pri</ProjectPriFileName>
 	</PropertyGroup>
