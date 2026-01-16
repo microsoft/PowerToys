@@ -162,6 +162,11 @@ public:
         return m_enabled;
     }
 
+    virtual bool is_enabled_by_default() const override
+    {
+        return true;
+    }
+
     // Destroy the powertoy and free memory
     virtual void destroy() override
     {

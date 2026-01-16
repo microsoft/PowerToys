@@ -488,13 +488,13 @@ public:
         StopToggleListener();
     }
 
-    // Returns if the powertoys is enabled
+    // Returns if the module is enabled
     virtual bool is_enabled() override
     {
         return m_enabled;
     }
 
-    // Returns whether the PowerToys should be enabled by default
+    // Returns whether the module should be enabled by default
     virtual bool is_enabled_by_default() const override
     {
         return false;

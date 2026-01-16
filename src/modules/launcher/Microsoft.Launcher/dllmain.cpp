@@ -297,6 +297,11 @@ public:
         return m_enabled;
     }
 
+    virtual bool is_enabled_by_default() const override
+    {
+        return true;
+    }
+
     // Return the invocation hotkey
     virtual size_t get_hotkeys(Hotkey* hotkeys, size_t buffer_size) override
     {
