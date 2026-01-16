@@ -9,6 +9,7 @@
     xmlns:local="using:Microsoft.PowerToys.Settings.UI.Helpers"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
+    xmlns:tkconverters="using:CommunityToolkit.WinUI.Converters"
     xmlns:ui="using:CommunityToolkit.WinUI"
     xmlns:viewModels="using:Microsoft.PowerToys.Settings.UI.ViewModels"
     d:DataContext="{d:DesignInstance Type=viewModels:LightSwitchViewModel}"
@@ -17,6 +18,10 @@
     <local:NavigablePage.Resources>
         <converters:TimeSpanToFriendlyTimeConverter x:Key="TimeSpanToFriendlyTimeConverter" />
         <converters:StringToDoubleConverter x:Key="StringToDoubleConverter" />
+        <tkconverters:BoolToVisibilityConverter
+            x:Key="BoolToInvertedVisibilityConverter"
+            FalseValue="Visible"
+            TrueValue="Collapsed" />
     </local:NavigablePage.Resources>
     <Grid>
         <controls:SettingsPageControl
@@ -208,6 +213,111 @@
                                             x:Uid="LightSwitch_AppsCheckbox"
                                             AutomationProperties.AutomationId="ChangeAppsCheckbox_LightSwitch"
                                             IsChecked="{x:Bind ViewModel.ChangeApps, Mode=TwoWay}" />
+                                    </tkcontrols:SettingsCard>
+                                </tkcontrols:SettingsExpander.Items>
+                            </tkcontrols:SettingsExpander>
+                            <tkcontrols:SettingsExpander
+                                x:Uid="LightSwitch_WallpaperExpander"
+                                HeaderIcon="{ui:FontIcon Glyph=&#xE7f9;}"
+                                IsExpanded="True">
+                                <ToggleSwitch AutomationProperties.AutomationId="Toggle_WallpaperSwitch" IsOn="{x:Bind ViewModel.IsWallpaperEnabled, Mode=TwoWay}" />
+                                <tkcontrols:SettingsExpander.Items>
+                                    <tkcontrols:SettingsCard HorizontalContentAlignment="Stretch" ContentAlignment="Left">
+                                        <Grid HorizontalAlignment="Stretch">
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="*" />
+                                            </Grid.RowDefinitions>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="20px" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock
+                                                x:Uid="LightSwitch_WallpaperImageUnavailable"
+                                                Grid.Row="0"
+                                                Grid.Column="0"
+                                                VerticalAlignment="Center"
+                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                TextWrapping="Wrap"
+                                                Visibility="{x:Bind ViewModel.IsLightWallpaperValid, Converter={StaticResource BoolToInvertedVisibilityConverter}, Mode=OneWay}" />
+                                            <Image
+                                                Grid.Row="0"
+                                                Grid.Column="0"
+                                                VerticalAlignment="Center"
+                                                Source="{x:Bind ViewModel.WallpaperSourceLight, Mode=OneWay}"
+                                                Tag="Light" />
+                                            <TextBlock
+                                                x:Uid="LightSwitch_WallpaperImageUnavailable"
+                                                Grid.Row="0"
+                                                Grid.Column="2"
+                                                VerticalAlignment="Center"
+                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                TextWrapping="Wrap"
+                                                Visibility="{x:Bind ViewModel.IsDarkWallpaperValid, Converter={StaticResource BoolToInvertedVisibilityConverter}, Mode=OneWay}" />
+                                            <Image
+                                                Grid.Row="0"
+                                                Grid.Column="2"
+                                                Source="{x:Bind ViewModel.WallpaperSourceDark, Mode=OneWay}"
+                                                Tag="Dark" />
+                                        </Grid>
+                                    </tkcontrols:SettingsCard>
+                                    <tkcontrols:SettingsCard x:Uid="LightSwitch_WallpaperSelect">
+                                        <StackPanel Orientation="Horizontal" Spacing="8">
+                                            <TextBlock
+                                                x:Uid="LightSwitch_WallpaperLight"
+                                                Grid.Row="2"
+                                                Grid.Column="0"
+                                                VerticalAlignment="Center"
+                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                            <Button
+                                                x:Uid="LightSwitch_WallpaperBrowse"
+                                                Grid.Row="2"
+                                                Grid.Column="0"
+                                                AutomationProperties.AutomationId="Pick_ButtonLight"
+                                                Click="PickWallpaper_Click"
+                                                Tag="Light" />
+                                            <TextBlock
+                                                x:Uid="LightSwitch_WallpaperDark"
+                                                Grid.Row="2"
+                                                Grid.Column="2"
+                                                VerticalAlignment="Center"
+                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                            <Button
+                                                x:Uid="LightSwitch_WallpaperBrowse"
+                                                Grid.Row="2"
+                                                Grid.Column="2"
+                                                AutomationProperties.AutomationId="Pick_ButtonDark"
+                                                Click="PickWallpaper_Click"
+                                                Tag="Dark" />
+                                        </StackPanel>
+                                    </tkcontrols:SettingsCard>
+                                    <tkcontrols:SettingsCard x:Uid="LightSwitch_WallpaperStyle">
+                                        <StackPanel Orientation="Horizontal" Spacing="16">
+                                            <TextBlock
+                                                x:Uid="LightSwitch_WallpaperLight"
+                                                VerticalAlignment="Center"
+                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                            <ComboBox AutomationProperties.AutomationId="Toggle_WallpaperStyleSwitchLight" SelectedIndex="{x:Bind ViewModel.WallpaperStyleLight, Mode=TwoWay}">
+                                                <ComboBoxItem x:Uid="LightSwitch_StyleCenter" AutomationProperties.AutomationId="CenterCBItem_StyleSwitch" />
+                                                <ComboBoxItem x:Uid="LightSwitch_StyleTile" AutomationProperties.AutomationId="TileCBItem_StyleSwitch" />
+                                                <ComboBoxItem x:Uid="LightSwitch_StyleStretch" AutomationProperties.AutomationId="StretchCBItem_StyleSwitch" />
+                                                <ComboBoxItem x:Uid="LightSwitch_StyleFit" AutomationProperties.AutomationId="FitCBItem_StyleSwitch" />
+                                                <ComboBoxItem x:Uid="LightSwitch_StyleFill" AutomationProperties.AutomationId="FillCBItem_StyleSwitch" />
+                                                <ComboBoxItem x:Uid="LightSwitch_StyleSpan" AutomationProperties.AutomationId="SpanCBItem_StyleSwitch" />
+                                            </ComboBox>
+                                            <TextBlock
+                                                x:Uid="LightSwitch_WallpaperDark"
+                                                VerticalAlignment="Center"
+                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                            <ComboBox AutomationProperties.AutomationId="Toggle_WallpaperStyleSwitchDark" SelectedIndex="{x:Bind ViewModel.WallpaperStyleDark, Mode=TwoWay}">
+                                                <ComboBoxItem x:Uid="LightSwitch_StyleCenter" AutomationProperties.AutomationId="CenterCBItem_StyleSwitch" />
+                                                <ComboBoxItem x:Uid="LightSwitch_StyleTile" AutomationProperties.AutomationId="TileCBItem_StyleSwitch" />
+                                                <ComboBoxItem x:Uid="LightSwitch_StyleStretch" AutomationProperties.AutomationId="StretchCBItem_StyleSwitch" />
+                                                <ComboBoxItem x:Uid="LightSwitch_StyleFit" AutomationProperties.AutomationId="FitCBItem_StyleSwitch" />
+                                                <ComboBoxItem x:Uid="LightSwitch_StyleFill" AutomationProperties.AutomationId="FillCBItem_StyleSwitch" />
+                                                <ComboBoxItem x:Uid="LightSwitch_StyleSpan" AutomationProperties.AutomationId="SpanCBItem_StyleSwitch" />
+                                            </ComboBox>
+                                        </StackPanel>
                                     </tkcontrols:SettingsCard>
                                 </tkcontrols:SettingsExpander.Items>
                             </tkcontrols:SettingsExpander>
