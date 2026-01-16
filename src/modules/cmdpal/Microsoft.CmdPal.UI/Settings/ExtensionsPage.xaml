@@ -229,12 +229,26 @@
                                     <controls:SettingsCard.HeaderIcon>
                                         <cpcontrols:ContentIcon>
                                             <cpcontrols:ContentIcon.Content>
-                                                <cpcontrols:IconBox
-                                                    Width="20"
-                                                    Height="20"
+                                                <controls:SwitchPresenter
                                                     AutomationProperties.AccessibilityView="Raw"
-                                                    SourceKey="{x:Bind Icon, Mode=OneWay}"
-                                                    SourceRequested="{x:Bind helpers:IconCacheProvider.SourceRequested}" />
+                                                    TargetType="x:Boolean"
+                                                    Value="{x:Bind Icon.IsSet, FallbackValue=x:False, Mode=OneWay}">
+                                                    <controls:Case Value="True">
+                                                        <cpcontrols:IconBox
+                                                            Width="20"
+                                                            Height="20"
+                                                            AutomationProperties.AccessibilityView="Raw"
+                                                            SourceKey="{x:Bind Icon, Mode=OneWay}"
+                                                            SourceRequested="{x:Bind helpers:IconCacheProvider.SourceRequested}" />
+                                                    </controls:Case>
+                                                    <controls:Case Value="False">
+                                                        <Image
+                                                            Width="20"
+                                                            Height="20"
+                                                            AutomationProperties.AccessibilityView="Raw"
+                                                            Source="ms-appx:///Assets/Icons/ExtensionIconPlaceholder.png" />
+                                                    </controls:Case>
+                                                </controls:SwitchPresenter>
                                             </cpcontrols:ContentIcon.Content>
                                         </cpcontrols:ContentIcon>
                                     </controls:SettingsCard.HeaderIcon>
