@@ -13,7 +13,7 @@ For each CSV in `Generated Files/ReleaseNotes/grouped_csv/`, create a markdown f
 ### Structure per file
 
 **1. Bullet list** - one concise, user-facing line per PR:
-- Use the “Verbed + Scenario + Impact” sentence structure—make readers think, “That’s exactly what I need” or “Yes, that’s an awesome fix.”; The "impact" can be end-user focused (written to convey user excitement) or technical (performance/stability) when user-facing impact is minimal.
+- Use the “Verb-ed + Scenario + Impact” sentence structure—make readers think, “That’s exactly what I need” or “Yes, that’s an awesome fix.”; The "impact" can be end-user focused (written to convey user excitement) or technical (performance/stability) when user-facing impact is minimal.
 - If nothing special on impact or unclear impact, mark as needing human summary
 - Source from Title, Body, and CopilotSummary (prefer CopilotSummary when available)
 - If the column `NeedThanks` in CSV is `True`, append: `Thanks [@Author](https://github.com/Author)!`

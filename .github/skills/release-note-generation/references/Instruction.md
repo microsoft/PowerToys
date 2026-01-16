@@ -36,7 +36,7 @@ Generated Files/
 - `dump-prs-since-commit.ps1`: Fetches PRs between two commits/tags, outputs to `Generated Files/ReleaseNotes/`
 - `group-prs-by-label.ps1`: Groups PRs by label, outputs to `Generated Files/ReleaseNotes/grouped_csv/`
 - `collect-or-apply-milestones.ps1`: Manages milestone assignments, outputs to `Generated Files/ReleaseNotes/`
-- `diff_prs.ps1`: Creates an incremental CSV by diffing two CSVs (in case more PRs cherry pick to stable)
+- `diff_prs.ps1`: Creates an incremental CSV by comparing two CSVs (in case more PRs cherry pick to stable)
 - `MemberList.md`: Internal contributors list (used to decide when to add external thanks)
 - `SampleOutput.md`: Example formatting for summary content
 
@@ -156,7 +156,7 @@ Summarize PRs into per-label Markdown files in Agent mode (MUST NOT generate or 
 - If re-running, overwrite existing markdown files (idempotent generation).
 - After generation, you should have a 1:1 correspondence between files in `grouped_csv/` and `grouped_md/` (excluding any intentionally skipped groups—document if skipped).
 - Generate the summary md file as the following instruction in two parts:
-  1. Markdown list: one concise, user-facing line per PR (no deep technical jargon). Use "Verbed" + "Scenario" + "Impact" as sentence structure. Use `Title`, `Body`, and `CopilotSummary` as sources.
+   1. Markdown list: one concise, user-facing line per PR (no deep technical jargon). Use "Verb" + "Scenario" + "Impact" as sentence structure. Use `Title`, `Body`, and `CopilotSummary` as sources.
      - If `Author` is NOT in `**/MemberList.md`, append a "Thanks @handle!" see `**/SampleOutput.md` as example.
      - Do NOT include PR numbers or IDs in the list line; keep the PR link only in the table mentioned in 2. below, please refer to `**/SampleOutput.md` as example.
      - If confidence to have enough information for summarization according to guideline above is < 70%, write: `Human Summary Needed: <PR full link>` on that line.
@@ -183,7 +183,7 @@ According the generated `Generated Files/ReleaseNotes/grouped_md/*.md`, update t
 ## Notes and conventions
 - Terminal usage: Disabled by default. Do NOT run terminal commands or ps1 scripts unless the user explicitly instructs you to.
 - Do NOT generate/add new ps1 until instructed (and explain why a new script is needed).
-- Label filtering in `dump-prs-information.ps1` currently keeps labels matching: `Product-*`, `Area-*`, `Github*`, `*Plugin`, `Issue-*`.
+- Label filtering in `dump-prs-information.ps1` currently keeps labels matching: `Product-*`, `Area-*`, `GitHub*`, `*Plugin`, `Issue-*`.
 - CSV columns are single‑line (line breaks removed) for easier processing.
 - Keep PRs in the same order as in `sorted_prs.csv` when building summaries.
 - Sanitize filenames: replace spaces with `-`, strip or replace characters that are invalid on Windows (`<>:"/\\|?*`).

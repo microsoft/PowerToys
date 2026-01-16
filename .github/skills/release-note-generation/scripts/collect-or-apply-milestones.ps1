@@ -134,7 +134,7 @@ if ($ApplyMissing) {
                 continue
             }
             if ($WhatIf) {
-                $applySummary += [PSCustomObject]@{ Id=$id; Action='Would set'; Milestone=$DefaultMilestone; Status='DRYRUN' }
+                $applySummary += [PSCustomObject]@{ Id=$id; Action='Would set'; Milestone=$DefaultMilestone; Status='DRY RUN' }
                 continue
             }
             gh api -X PATCH -H 'Accept: application/vnd.github+json' repos/$Repo/issues/$id -f milestone=$msNumber | Out-Null

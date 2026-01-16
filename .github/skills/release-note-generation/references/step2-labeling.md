@@ -124,7 +124,7 @@ pwsh ./.github/skills/release-note-generation/scripts/dump-prs-since-commit.ps1 
 The grouping script keeps labels matching these patterns:
 - `Product-*`
 - `Area-*`
-- `Github*`
+- `GitHub*`
 - `*Plugin`
 - `Issue-*`
 

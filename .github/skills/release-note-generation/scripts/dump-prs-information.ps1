@@ -113,7 +113,7 @@ $csvData = $sorted | ForEach-Object {
     $filteredLabels = $_.labels | Where-Object { 
         ($_.name -like "Product-*") -or 
         ($_.name -like "Area-*") -or 
-        ($_.name -like "Github*") -or 
+        ($_.name -like "GitHub*") -or 
         ($_.name -like "*Plugin") -or 
         ($_.name -like "Issue-*") 
     }

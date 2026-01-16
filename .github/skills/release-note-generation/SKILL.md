@@ -121,7 +121,7 @@ Do not read all steps at once—only read the step you are executing.
 - **Terminal usage**: Disabled by default; only run scripts when user explicitly requests
 - **Batch generation**: Generate ALL grouped_md files in one pass, then human reviews
 - **PR order**: Preserve order from `sorted_prs.csv` in all outputs
-- **Label filtering**: Keeps `Product-*`, `Area-*`, `Github*`, `*Plugin`, `Issue-*`
+- **Label filtering**: Keeps `Product-*`, `Area-*`, `GitHub*`, `*Plugin`, `Issue-*`
 
 ## Troubleshooting
 

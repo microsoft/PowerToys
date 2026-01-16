@@ -11,7 +11,7 @@
     Exclusive starting commit (SHA, tag, or ref). Commits AFTER this one are considered.
 
 .PARAMETER EndCommit
-    Inclusive ending commit (SHA, tag, or ref). If not provided, uses origin/<Branch> when Branch is set, otherwise HEAD.
+    Inclusive ending commit (SHA, tag, or ref). If not provided, uses origin/<Branch> when Branch is set; otherwise uses HEAD.
 
 .PARAMETER Repo
     GitHub repository (owner/name). Default: microsoft/PowerToys.
@@ -268,7 +268,7 @@ function Get-CopilotSummaryFromPrJson {
 foreach ($pr in $prNumbers) {
     Write-Info "Fetching PR #$pr ..."
     try {
-        # Include comments only if Verbose asked, otherwise we lazily pull if reviews missing
+        # Include comments only if Verbose asked; if not, we lazily pull when reviews are missing
         $fields = 'number,title,labels,author,url,body,reviews'
         if ($PSBoundParameters.ContainsKey('Verbose')) { $fields += ',comments' }
         $json = gh pr view $pr --repo $Repo --json $fields 2>$null | ConvertFrom-Json
@@ -285,7 +285,7 @@ foreach ($pr in $prNumbers) {
         $filteredLabels = $json.labels | Where-Object {
             ($_.name -like "Product-*") -or 
             ($_.name -like "Area-*") -or 
-            ($_.name -like "Github*") -or 
+            ($_.name -like "GitHub*") -or 
             ($_.name -like "*Plugin") -or 
             ($_.name -like "Issue-*")
         }
