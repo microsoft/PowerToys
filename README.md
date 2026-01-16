@@ -53,17 +53,17 @@ Go to the <a href="https://aka.ms/installPowerToys">PowerToys GitHub releases</a
 <!-- items that need to be updated release to release -->
 [github-next-release-work]: https://github.com/microsoft/PowerToys/issues?q=is%3Aissue+milestone%3A%22PowerToys+0.97%22
 [github-current-release-work]: https://github.com/microsoft/PowerToys/issues?q=is%3Aissue+milestone%3A%22PowerToys+0.96%22
-[ptUserX64]: https://github.com/microsoft/PowerToys/releases/download/v0.96.1/PowerToysUserSetup-0.96.1-x64.exe 
-[ptUserArm64]: https://github.com/microsoft/PowerToys/releases/download/v0.96.1/PowerToysUserSetup-0.96.1-arm64.exe 
-[ptMachineX64]: https://github.com/microsoft/PowerToys/releases/download/v0.96.1/PowerToysSetup-0.96.1-x64.exe 
-[ptMachineArm64]: https://github.com/microsoft/PowerToys/releases/download/v0.96.1/PowerToysSetup-0.96.1-arm64.exe
+[ptUserX64]: https://github.com/microsoft/PowerToys/releases/download/v0.97.0/PowerToysUserSetup-0.97.0-x64.exe 
+[ptUserArm64]: https://github.com/microsoft/PowerToys/releases/download/v0.97.0/PowerToysUserSetup-0.97.0-arm64.exe 
+[ptMachineX64]: https://github.com/microsoft/PowerToys/releases/download/v0.97.0/PowerToysSetup-0.97.0-x64.exe 
+[ptMachineArm64]: https://github.com/microsoft/PowerToys/releases/download/v0.97.0/PowerToysSetup-0.97.0-arm64.exe
  
 |  Description   | Filename |
 |----------------|----------|
-| Per user - x64       | [PowerToysUserSetup-0.96.1-x64.exe][ptUserX64] |
-| Per user - ARM64     | [PowerToysUserSetup-0.96.1-arm64.exe][ptUserArm64] |
-| Machine wide - x64   | [PowerToysSetup-0.96.1-x64.exe][ptMachineX64] |
-| Machine wide - ARM64 | [PowerToysSetup-0.96.1-arm64.exe][ptMachineArm64] |
+| Per user - x64       | [PowerToysUserSetup-0.97.0-x64.exe][ptUserX64] |
+| Per user - ARM64     | [PowerToysUserSetup-0.97.0-arm64.exe][ptUserArm64] |
+| Machine wide - x64   | [PowerToysSetup-0.97.0-x64.exe][ptMachineX64] |
+| Machine wide - ARM64 | [PowerToysSetup-0.97.0-arm64.exe][ptMachineArm64] |
 
 </details>
 
@@ -103,134 +103,195 @@ There are <a href="https://learn.microsoft.com/windows/powertoys/install#communi
 </details>
 
 ## ✨ What's new
-**Version 0.96 (November 2025)**
+**Version 0.97 (January 2026)**
 
 For an in-depth look at the latest changes, visit the [Windows Command Line blog](https://aka.ms/powertoys-releaseblog).
 
 **✨ Highlights**
- - Advanced Paste now supports multiple online and on-device AI model providers: Azure OpenAI, OpenAI, Google Gemini, Mistral, Foundry Local and Ollama.
- - Command Palette received extensive improvements including file search filters, better clipboard history metadata, context-menu styling, and dozens of bug fixes and enhancements.
- - PowerRename can now extract and use photo metadata (EXIF, XMP) in renaming patterns like `%Camera`, `%Lens`, and `%ExposureTime`.
+- **Command Palette**: Major expansion with PowerToys extension, Remote Desktop built-in extension, theme customization, drag-and-drop support, fallback ranking controls, sections/separators for pages, pinyin Chinese matching, and many UX refinements
+- **Settings**: Quick Access flyout is now a standalone process for significantly faster startup, theme-adaptive tray icon, AOT serialization, and multiple UI/accessibility fixes
+- **CursorWrap (New!)**: New mouse utility that lets your cursor wrap around screen edges, making multi-monitor navigation faster and more seamless.
+- **Advanced Paste**: Image input for AI, color detection in clipboard history, Foundry Local improvements, Azure AI icons, and multiple bug fixes
+- **CLI Support Expanded**: FancyZones, Image Resizer, and File Locksmith can now be controlled from the command line for layout management, batch image resizing, and file lock inspection.
+- **Image Resizer(Copilot+ PCs)**: Bulk image upscaling is now supported locally using the Windows AI Super Resolution API.
+- **LightSwitch**: Added support for automatically following Windows Night Light mode.
+- **Release Experience & Quality**: Refreshed "What’s new" dialog, plus many performance improvements, stability fixes, and refinements across PowerToys.
 
-### Advanced Paste
- - Advanced Paste now lets you connect to multiple AI providers instead of being limited to a single OpenAI provider. See [Advanced Paste documentation](https://learn.microsoft.com/windows/powertoys/advanced-paste) for usage.
+## Advanced Paste
 
-### Awake
- - The Awake countdown timer now stays accurate over long periods. Thanks [@daverayment](https://github.com/daverayment)!
- - Fixed Awake context menu positioning. The fix removed the conversion of the mouse cursor from screen to client-window coordinates, instead using the raw screen coordinates returned by GetCursorPos; the context menu now appears at the correct screen position. Thanks [@lzandman](https://github.com/lzandman)!
+- Added hex color previews in clipboard history. Thanks [@crramirez](https://github.com/crramirez)!
+- Added automatic placeholder endpoints when required fields are left empty.
+- Fixed a grammar issue in the AI settings description. Thanks [@erik-anderson](https://github.com/erik-anderson)!
+- Fixed loading order so custom action hotkeys are read correctly.
+- Updated Advanced Paste descriptions to reflect support for online and local models.
+- Fixed clipboard history item selection so it doesn’t duplicate entries.
+- Prevented placeholder endpoints from being saved for providers that don’t need them.
+- Added image input support for AI transforms and improved clipboard change tracking.
 
-### Command Palette
- - The search field in context menus now matches the look of the Command Palette, with a smoke backdrop and improved padding.
- - Fallback items such as math calculations or the Run command now appear in results more quickly. Thanks [@jiripolasek](https://github.com/jiripolasek)!
- - Ensured the command bar updates correctly after navigating to another page and commands are displayed correctly. Thanks [@jiripolasek](https://github.com/jiripolasek)!
- - The Command Palette settings page has been reorganized. Activation-key options are grouped under an expander and extension settings are framed for improved readability.
- - When you modify a command, its alias, hotkey, and tags now update in the top-level list, keeping the displayed information in sync. Thanks [@jiripolasek](https://github.com/jiripolasek)!
- - Press `Ctrl + ,` to open Command Palette settings from anywhere. Thanks [@jiripolasek](https://github.com/jiripolasek)!
- - You can use `Page Up` and `Page Down` to navigate the list while focus is in the search box. Thanks [@samrueby](https://github.com/samrueby)!
- - Fixed an issue where the search box could disappear when navigating pages. Thanks [@jiripolasek](https://github.com/jiripolasek)!
- - Ensured search text is selected when *Go home when activated* and *Highlight search on activate* are both enabled. Thanks [@jiripolasek](https://github.com/jiripolasek)!
- - Fixed an issue where Command Palette window occasionally appeared on the taskbar under certain Windows settings. Thanks [@jiripolasek](https://github.com/jiripolasek)!
- - Ensured that labels and icons of list items and menu items update when they change. Thanks [@jiripolasek](https://github.com/jiripolasek)!
- - Fixed visibility of list filters when navigating to a content page. Thanks [@DevLGuilherme](https://github.com/DevLGuilherme)!
- - Added search to the extension list and a link to extensions on the Microsoft Store. Thanks [@jiripolasek](https://github.com/jiripolasek)!
- - Added options to open the Command Palette window at its last position or re-center it.
- - The Command Palette now remembers its window size after restarting.
- - Added a global error handler that logs fatal errors and provides feedback when unexpected failures force Command Palette to close. Thanks [@jiripolasek](https://github.com/jiripolasek)!
- - Fixed forms and extension settings not showing on some machines due to a missing VC++ runtime.
- - Restored ranking of fallback commands for built-in extensions (Sleep, Shutdown, Windows settings, Web search, etc.). Thanks [@jiripolasek](https://github.com/jiripolasek).
- - Improved and unified labels and texts across the application!
- - Maintainance: Resolved numerous build warnings in Command Palette projects; no user-visible impact. Thanks [@jiripolasek](https://github.com/jiripolasek)!
- - Maintainance: Fixed a logging issue so exception messages are properly recorded instead of placeholder text, improving troubleshooting. Thanks [@jiripolasek](https://github.com/jiripolasek)!
+## Awake
 
-### Command Palette Extensions
- - Bookmarks: Added hints about bookmark placeholders to the Add/Edit Bookmark form. — Thanks [@jiripolasek](https://github.com/jiripolasek)!
- - Bookmarks: Improved migration of bookmarks from older versions and fixed an issue where aliases or keyboard shortcuts could be lost after restart. Thanks [@jiripolasek](https://github.com/jiripolasek)!
- - Clipboard history: Items shown in Command Palette’s clipboard history now include helpful metadata. For example, image items show dimensions, text files show names and sizes, web links include page titles, and text entries display word counts. Thanks [@jiripolasek](https://github.com/jiripolasek)!
- - File search: Added filter buttons to show *all items*, *files only*, or *folders only*. Selecting a filter adds `kind:folders` or `kind:not folders` to narrow results.
- - System commands: Replaced the `:red_circle:` placeholder with an actual red-circle emoji so the correct icon appears in the UI. Thanks [@samrueby](https://github.com/samrueby)!
- - WinGet: Search performance feels more responsive because typed input is now processed via a task queue rather than complex cancellation tokens!
- - Window Walker: UWP apps no longer show a "not responding" label when suspended. Thanks [@jiripolasek](https://github.com/jiripolasek)!
- - Window Walker: Now displays the actual icon of each window rather than using the process icon, improving recognition of PWAs and Python GUIs. Thanks [@Lee-WonJun](https://github.com/Lee-WonJun)!
-- Windows Terminal profiles: Fixed a rare crash in the Windows Terminal extension when the `LOCALAPPDATA` environment variable was missing. The path is now retrieved via a reliable API. Thanks [@jiripolasek](https://github.com/jiripolasek)!
+- Fixed Awake CLI so help, errors, and logs appear correctly in the console. Thanks [@daverayment](https://github.com/daverayment)!
 
-### Find My Mouse
- - Activating Find My Mouse no longer makes the cursor change to the busy (hourglass) icon or steals focus from your active application.
+## Command Palette
 
-### Hosts File Editor
- - Added customizable backup settings allowing users to configure backup frequency, location, and auto-deletion policies. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+- Fixed background image loading in BlurImageControl. Thanks [@jiripolasek](https://github.com/jiripolasek)!
+- Fixed SDK packaging paths and added a CI SDK build stage.
+- Aligned naming and spell-checking with .NET conventions. Thanks [@jiripolasek](https://github.com/jiripolasek)!
+- Added drag-and-drop support for Command Palette items. Thanks [@jiripolasek](https://github.com/jiripolasek)!
+- Added a PowerToys Command Palette extension to discover and launch PowerToys utilities.
+- Fixed grid view bindings and layout issues. Thanks [@jiripolasek](https://github.com/jiripolasek)!
+- Fixed a line-break issue in RDC extension toast messages. Thanks [@jiripolasek](https://github.com/jiripolasek)!
+- Made the Settings button text localizable. Thanks [@jiripolasek](https://github.com/jiripolasek)!
+- Hid the RDC fallback on the home page and fixed MSTSC working directory handling. Thanks [@jiripolasek](https://github.com/jiripolasek)!
+- Optimized result list merging for better performance. Thanks [@daverayment](https://github.com/daverayment)!
+- Added Small/Medium/Large detail sizes in the extensions API. Thanks [@DevLGuilherme](https://github.com/DevLGuilherme)!
+- Hid fallback commands on the home page when no query is entered. Thanks [@jiripolasek](https://github.com/jiripolasek)!
+- Added back navigation support in the Settings window. Thanks [@jiripolasek](https://github.com/jiripolasek)!
+- Added a Command Palette solution filter. Thanks [@jiripolasek](https://github.com/jiripolasek)!
+- Updated Extension SDK documentation links to Microsoft Learn. Thanks [@RubenFricke](https://github.com/RubenFricke)!
+- Added a custom search engine URL setting for Web Search. Thanks [@jiripolasek](https://github.com/jiripolasek)!
+- Added pinyin matching for Chinese input. Thanks [@frg2089](https://github.com/frg2089)!
+- Bumped Command Palette version to 0.8.
+- Removed subtitles from built-in top-level commands. Thanks [@jiripolasek](https://github.com/jiripolasek)!
+- Refined separator styling in the details pane. Thanks [@jiripolasek](https://github.com/jiripolasek)!
+- Added a built-in Remote Desktop extension.
+- Added a Peek command to the Indexer extension.
+- Improved default browser detection using the Windows Shell API. Thanks [@jiripolasek](https://github.com/jiripolasek)!
+- Added Escape key behavior options. Thanks [@jiripolasek](https://github.com/jiripolasek)!
+- Added theme and background customization options. Thanks [@jiripolasek](https://github.com/jiripolasek)!
+- Improved WinGet package app matching. Thanks [@jiripolasek](https://github.com/jiripolasek)!
+- Added an auto-return-home delay setting. Thanks [@jiripolasek](https://github.com/jiripolasek)!
+- Added fallback ranking and global results settings.
+- Removed the selection indicator in the context menu list. Thanks [@jiripolasek](https://github.com/jiripolasek)!
+- Added a developer ribbon with build and log info. Thanks [@jiripolasek](https://github.com/jiripolasek)!
+- Updated the “Learn more” string for Command Palette. Thanks [@pratnala](https://github.com/pratnala)!
+- Added arrow-key navigation for grid views. Thanks [@samrueby](https://github.com/samrueby)!
+- Fixed version display when running unpackaged. Thanks [@jiripolasek](https://github.com/jiripolasek)!
+- Added a native debugging launch profile. Thanks [@jiripolasek](https://github.com/jiripolasek)!
+- Reduced redundant property change notifications in the SDK. Thanks [@jiripolasek](https://github.com/jiripolasek)!
+- Improved section readability and accessibility. Thanks [@jiripolasek](https://github.com/jiripolasek)!
+- Made gallery spacing uniform. Thanks [@jiripolasek](https://github.com/jiripolasek)!
+- Added sections and separators for list and grid pages. Thanks [@DevLGuilherme](https://github.com/DevLGuilherme)!
 
-### Image Resizer
- - Fixed settings consistency during batch resize operations by capturing settings once before processing. Thanks [@daverayment](https://github.com/daverayment)!
+## Crop & Lock
 
-### Light Switch
-- Introduced new UI to allow users to manually enter their latitude and longitude in Sunrise to Sunset mode.
-- Refactored service with cleaner state management for stability.
-- Removed logs from every tick, only logging key events to largely reduce log size.
+- Added a screenshot mode that freezes a cropped region into its own window. Thanks [@fm-sys](https://github.com/fm-sys)!
 
-### Mouse Pointer Crosshairs
- - Enabled switching between Mouse Pointer Crosshairs and Gliding Cursor modes. Thanks [@mikehall-ms](https://github.com/mikehall-ms)!
+## Cursor Wrap
 
-### Mouse Without Borders
- - Added horizontal scrolling support. Thanks [@MasonBergstrom](https://github.com/MasonBergstrom)!
+- Improved Cursor Wrap behavior on multi-monitor setups by wrapping only at outer edges. Thanks [@mikehall-ms](https://github.com/mikehall-ms)!
 
-### Peek
-- Fixed media files remaining locked after preview window closes. Thanks [@daverayment](https://github.com/daverayment)!
-- Added a command-line interface for file previewing. See the [Peek documentation](https://learn.microsoft.com/windows/powertoys/peek) for usage. Thanks [@prochan2](https://github.com/prochan2)!
+## FancyZones
 
-### PowerRename
-- PowerRename no longer crashes due to a missing resources file.
-- Added photo metadata extraction support using EXIF and XMP for pattern-based renaming with camera info, GPS coordinates, and date taken. See [PowerRename Documentation](https://learn.microsoft.com/en-us/windows/powertoys/powerrename).
+- Fixed editor overlay positioning on mixed-DPI multi-monitor setups. Thanks [@Memphizzz](https://github.com/Memphizzz)!
+- Added a FancyZones CLI for command-line layout management.
 
-### PowerToys Run
- - Added retry logic with exponential backoff to handle DWM composition errors during theme changes. Thanks [@jiripolasek](https://github.com/jiripolasek)!
- - Updated OneNote icons to reflect new Microsoft 365 design. Thanks [@trevorNgo](https://github.com/trevorNgo)!
+## File Locksmith
 
- ### Quick Accent
- - Added diameter symbol (⌀) for Shift+O in Special Characters mode, thanks to [@anselumjuju](https://github.com/anselumjuju)!
+- Added a File Locksmith CLI for querying, waiting on, or killing file locks.
 
-### Zoomit
- - Smoothed out zoom-animation in ZoomIt by coalescing mouse-move and timer events, thanks to [@foxmsft](https://github.com/foxmsft)!
- - Enabled GIF support for ZoomIt, thanks to [@MarioHewardt](https://github.com/MarioHewardt)!
- - Fixed spelling mistakes, and refactored some literal strings to string constants, thanks to [@lzandman](https://github.com/lzandman)!
- - Fixed inaccurate "actual size" screenshots in ZoomIt and resolves a GDI handle leak, improving capture fidelity and long-session stability. thanks to [@daverayment](https://github.com/daverayment)!
+## Find My Mouse
 
-### Settings
-- Fixed title bar overlapping issue at smaller window sizes.
-- Refined shortcut control visual design with improved consistency and spacing.
-- Added dashboard utilities sorting by name or status.
-- Made update notification InfoBar in flyout clickable for direct navigation to update page.
-- Expanded installation instructions by default in README.
-- Improved accessibility for shortcut conflict button with static resource-based automation properties.
-- Added ScrollViewer to Command Palette page in PowerToys Settings. Thanks [@jiripolasek](https://github.com/jiripolasek)!
-- Fixed module list glitches and Sort Status checkmark issue. Thanks [@daverayment](https://github.com/daverayment)!
+- Improved spotlight edge rendering for clearer Find My Mouse visuals.
+- Added telemetry to track how Find My Mouse is triggered.
 
-### Development
-- Fixed accessibility by associating controls with labels for screen readers.
-- Added accessible name to Shortcut Conflicts button for screen readers.
-- Excluded TitleBars from tab navigation across multiple utilities. Thanks [@jiripolasek](https://github.com/jiripolasek)!
-- Migrated build infrastructure from Windows Server 2019 to Server 2022 with improved failure logging and predictable NuGet package paths.
-- Configured build agents to use larger P: drive for release builds to address disk space constraints.
-- Enhanced DSC v3 support by organizing resource manifests in a dedicated subfolder with PATH configuration.
-- Reduced installer bundle size by 6-7MB through centralized Hybrid CRT configuration across all C++ projects.
-- Updated .NET packages to version 9.0.10 for security fixes. Thanks [@snickler](https://github.com/snickler)!
-- Fixed spell check dictionary entries for consistency.
-- Restored accidentally deleted NuGet configuration file for Command Palette extensions.
-- Fixed package identity build by updating AppxManifest entry points to use PowerShell Core.
-- Optimized CI pipeline by replacing file copy operations with hard links and moves, reducing build time and disk usage by 10-15GB.
-- Updated Copilot guidance and PR prompt workflow.
-- Included high-volume bugs in issue template header. Thanks [@daverayment](https://github.com/daverayment)!
-- Fixed incorrect HRESULT logging for inner exceptions. Thanks [@jiripolasek](https://github.com/jiripolasek)!
-- Introduced shared sparse package identity for PowerToys Win32 components to enable access to Windows platform APIs.
-- Consolidated installer builds to produce both machine and user installers simultaneously, reducing build time and complexity.
-- Migrated exclusively to WiX v5 installer infrastructure, removing legacy WiX v3 support.
-- Temporarily removed PowerToys installer path from PATH environment variable to prevent application crashes.
-- Added complete OCR UI test coverage with automated tests for activation, settings, language selection, and text extraction.
-- Fixed test input for drive path normalization in bookmark resolver unit tests.
-- Fixed Peek UI tests by restoring Ctrl+Space activation shortcut for test scenarios.
-- Hided apps in PowerToys.SpareApps package from Start Menu. Thanks [@jiripolasek](https://github.com/jiripolasek)!
+## Image Resizer
+
+- Fixed Fill mode cropping when Shrink Only is enabled. Thanks [@daverayment](https://github.com/daverayment)!
+- Added a dedicated Image Resizer CLI for scripted resizing.
+- Added AI Super Resolution for Image Resizer on supported ARM64 devices.
+
+## Light Switch
+
+- Added telemetry events for Light Switch usage and settings changes.
+- Added a Follow Night Light mode to sync theme changes with Night Light.
+- Clarified LightSwitchService and LightSwitchStateManager roles in docs.
+- Added a Quick Access dashboard button to toggle Light Switch quickly.
+- Ensured Light Switch honors GPO policy states with clear status messaging.
+
+## Mouse Without Borders
+
+- Continued refactoring Mouse Without Borders by splitting the large Common class into focused components. Thanks [@mikeclayton](https://github.com/mikeclayton)!
+- Completed the Common class refactor with Core and IPC helper extraction. Thanks [@mikeclayton](https://github.com/mikeclayton)!
+
+## Peek
+
+- Hardened Peek previews with strict resource filtering and safer external link warnings.
+- Improved SVG preview compatibility by rendering via WebView2.
+
+## PowerRename
+
+- Added HEIF/AVIF EXIF metadata extraction and extension status guidance for related previews.
+- Fixed undefined behavior in file time handling. Thanks [@safocl](https://github.com/safocl)!
+- Optimized memory allocation for depth-based rename processing.
+- Fixed Unicode normalization and non‑breaking space matching. Thanks [@daverayment](https://github.com/daverayment)!
+- Fixed date token replacements followed by capital letters. Thanks [@daverayment](https://github.com/daverayment)!
+
+## PowerToys Run Plugins
+
+- Fixed a plugin name typo and added Project Launcher to the third‑party list. Thanks [@artickc](https://github.com/artickc)!
+- Added the Open With Antigravity plugin to the third‑party list. Thanks [@artickc](https://github.com/artickc)!
+
+## PowerToys Run
+
+- Avoided unnecessary hotkey conflict checks when settings change.
+- Added QuickAI to the third-party PowerToys Run plugin list. Thanks [@ruslanlap](https://github.com/ruslanlap)!
+
+## Quick Accent
+
+- Added localized quotation marks to Quick Accent. Thanks [@warquys](https://github.com/warquys)!
+- Fixed duplicate and redundant characters in Quick Accent sets. Thanks [@noraa-junker](https://github.com/noraa-junker)!
+- Fixed DPI positioning issues for Quick Accent on mixed-DPI setups. Thanks [@noraa-junker](https://github.com/noraa-junker)!
+
+## Settings
+
+- Added a new tray icon that adapts to theme changes. Thanks [@HO-COOH](https://github.com/HO-COOH)!
+- Centralized module enable/disable logic for cleaner Settings UI updates.
+- Simplified Settings utilities by removing ISettingsUtils/ISettingsPath interfaces. Thanks [@noraa-junker](https://github.com/noraa-junker)!
+- Improved Settings UI consistency and disabled-state visuals.
+- Added semantic headings to the Dashboard for better accessibility.
+- Introduced Quick Access as a standalone host with updated Settings integration.
+- Fixed Dashboard toggle flicker and sort menu checkmarks. Thanks [@daverayment](https://github.com/daverayment)!
+- Added Native AOT-compatible settings serialization.
+- Standardized mouse tool description text. Thanks [@daverayment](https://github.com/daverayment)!
+- Added a global SettingsUtils singleton to reduce repeated initialization.
+
+## Development
+
+- Fixed broken devdocs links to the coding style guide. Thanks [@RubenFricke](https://github.com/RubenFricke)!
+- Migrated main and installer solutions to .slnx for improved build tooling.
+- Restored local installer builds after the WiX v5 upgrade with signing and versioning fixes.
+- Added incremental review tooling and structured AI prompts for PR/issue reviews.
+- Documented bot commands and cleaned up devdocs structure. Thanks [@noraa-junker](https://github.com/noraa-junker)!
+- Updated WinAppSDK pipeline defaults to 1.8 and fixed restore handling.
+- Updated the COMMUNITY list to reflect current roles.
+- Maintained community member ordering and added a new entry.
+- Re-enabled centralized PackageReference for native projects with VS auto-restore.
+- Disabled MSBuild caching by default in CI to avoid build instability.
+- Updated the latest WinAppSDK daily pipeline for split-dependency restores.
+- Suppressed experimental build warnings and aligned WrapPanel stretch handling.
+- Reordered the spell-check expect list for consistent automation.
+- Migrated native projects to centralized PackageReference management.
+- Cleaned spell-check dictionary entries and capitalization.
+- Synced commit/PR prompts and wired VS Code to repo prompt files.
+- Added VS Code build tasks and improved build script path handling.
+- Updated Windows App SDK package versions in central package management.
+- Migrated cmdpal extension native project to PackageReference and fixed outputs.
+- Reverted PackageReference changes back to packages.config where needed.
+- Bypassed a release version check for a failing DLL to keep pipelines green.
+- Consolidated Copilot instructions and fixed prompt frontmatter.
+- Added signing entries for new Quick Access binaries and CLI version metadata.
+- Fixed install scope detection to avoid mixed per-user/per-machine installs.
+- Added a Module Loader tool to quickly test PowerToys modules without full builds. Thanks [@mikehall-ms](https://github.com/mikehall-ms)!
+- Added update telemetry to understand auto-update checks and downloads.
+- Updated the telemetry package for new compliance requirements. Thanks [@carlos-zamora](https://github.com/carlos-zamora)!
+- Documented missing telemetry events in DATA_AND_PRIVACY.
+- Fixed UI test pipeline restores for .slnx solutions.
+- Added UI automation coverage for Advanced Paste clipboard history flows.
+- Stabilized FancyZones UI tests with more reliable selectors and screen recordings.
 
 ## 🛣️ Roadmap 
-We are planning some nice new features and improvements for the next releases – a revamped Keyboard Manager UI, custom endpoint and local model support for Advanced Paste, Command Palette improvements and a brand-new Shortcut Guide experience! Stay tuned for [v0.96][github-next-release-work]!
+We are planning some nice new features and improvements for the next releases – a revamped Keyboard Manager UI, custom endpoint and local model support for Advanced Paste, Command Palette improvements and a brand-new Shortcut Guide experience! Stay tuned for [v0.97][github-next-release-work]!
 
 ## ❤️ PowerToys Community 
 The PowerToys team is extremely grateful to have the [support of an amazing active community][community-link]. The work you do is incredibly important. PowerToys wouldn't be nearly what it is today without your help filing bugs, updating documentation, guiding the design, or writing features. We want to say thank you and take time to recognize your work. Your contributions and feedback improve PowerToys month after month!
