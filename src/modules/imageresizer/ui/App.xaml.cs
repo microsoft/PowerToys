@@ -20,7 +20,7 @@ namespace ImageResizer
 {
     public partial class App : Application, IDisposable
     {
-        private const string LogSubFolder = "\\ImageResizer\\Logs";
+        private const string LogSubFolder = "\\Image Resizer\\Logs";
 
         /// <summary>
         /// Gets cached AI availability state, checked at app startup.
