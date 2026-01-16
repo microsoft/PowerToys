@@ -19,7 +19,17 @@
 
 1. Open the [PowerToys releases page](https://github.com/microsoft/PowerToys/releases/)
 2. Find the latest release (e.g., v0.96.1, which should be at the top)
-3. Copy the full commit SHA {{SHALastRelease}} (e.g., `b62f642c4f3e5d6e8f7a9c0b1d2e3f4g5h6i7j8k`)
+3. Copy the full commit SHA {{SHALastRelease}} (e.g., `b62f6421845f7e5c92b8186868d98f46720db442`)
+
+**Note:** The SHA shown on the release page is the tag target commit, which may be on `stable` even if `main` has advanced. If the SHA does not show up in your current branch history, fetch tags/branches or use the tag name directly (e.g., `v0.96.1`).
+
+**If the release SHA is not in your branch history:** Use the helper script to find an equivalent commit on the target branch by matching the commit title:
+
+```powershell
+pwsh ./.github/skills/release-note-generation/scripts/find-commit-by-title.ps1 `
+    -Commit '{{SHALastRelease}}' `
+    -Branch 'stable'
+```
 
 ### Step 2: Run collection script against stable branch
 
@@ -37,6 +47,10 @@ pwsh ./.github/skills/release-note-generation/scripts/dump-prs-since-commit.ps1 
 - `-EndCommit` - Usually `HEAD` for current state of stable branch
 - `-Branch` - Always use `stable` branch, not `main`
 - `-OutputDir` - Output directory for generated files
+
+**Reliability check:** If the script reports “No commits found”, the stable branch has not moved since the last release. In that case, either:
+- Confirm this is expected and stop (no new release notes), or
+- Re-run against `main` to gather pending changes for the next release cycle.
 
 The script detects both merge commits (`Merge pull request #12345`) and squash commits (`Feature (#12345)`).
 

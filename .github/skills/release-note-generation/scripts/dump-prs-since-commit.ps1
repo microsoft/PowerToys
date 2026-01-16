@@ -35,7 +35,9 @@
 param(
     [Parameter(Mandatory = $true)][string]$StartCommit,  # exclusive start (commits AFTER this one)
     [string]$EndCommit = "HEAD",
+    [string]$Branch,
     [string]$Repo = "microsoft/PowerToys",
+    [string]$OutputDir,
     [string]$OutputCsv = "sorted_prs.csv",
     [string]$OutputJson = "milestone_prs.json"
 )
@@ -89,10 +91,35 @@ if (Test-Path $memberListPath) {
 #    exit 1
 #}
 
+# Resolve output directory (if specified)
+if ($OutputDir) {
+    if (-not (Test-Path $OutputDir)) {
+        New-Item -ItemType Directory -Path $OutputDir -Force | Out-Null
+    }
+    if (-not [System.IO.Path]::IsPathRooted($OutputCsv)) {
+        $OutputCsv = Join-Path $OutputDir $OutputCsv
+    }
+    if (-not [System.IO.Path]::IsPathRooted($OutputJson)) {
+        $OutputJson = Join-Path $OutputDir $OutputJson
+    }
+}
+
 # Resolve commits
 try {
     $startSha = (git rev-parse --verify $StartCommit) 2>$null
     if (-not $startSha) { throw "StartCommit '$StartCommit' not found" }
+    if ($Branch) {
+        $branchRef = $Branch
+        $branchSha = (git rev-parse --verify $branchRef) 2>$null
+        if (-not $branchSha) {
+            $branchRef = "origin/$Branch"
+            $branchSha = (git rev-parse --verify $branchRef) 2>$null
+        }
+        if (-not $branchSha) { throw "Branch '$Branch' not found" }
+        if (-not $PSBoundParameters.ContainsKey('EndCommit')) {
+            $EndCommit = $branchRef
+        }
+    }
     $endSha = (git rev-parse --verify $EndCommit) 2>$null
     if (-not $endSha) { throw "EndCommit '$EndCommit' not found" }
 }
