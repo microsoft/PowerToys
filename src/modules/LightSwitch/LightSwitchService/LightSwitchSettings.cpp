@@ -5,6 +5,7 @@
 #include <filesystem>
 #include <fstream>
 #include <logger.h>
+#include <LightSwitchService/trace.h>
 
 using namespace std;
 
@@ -151,6 +152,7 @@ void LightSwitchSettings::LoadSettings()
             if (m_settings.scheduleMode != newMode)
             {
                 m_settings.scheduleMode = newMode;
+                Trace::LightSwitch::ScheduleModeToggled(val);
                 NotifyObservers(SettingId::ScheduleMode);
             }
         }
@@ -220,6 +222,8 @@ void LightSwitchSettings::LoadSettings()
             }
         }
 
+        bool themeTargetChanged = false;
+
         // ChangeSystem
         if (const auto jsonVal = values.get_bool_value(L"changeSystem"))
         {
@@ -227,6 +231,7 @@ void LightSwitchSettings::LoadSettings()
             if (m_settings.changeSystem != val)
             {
                 m_settings.changeSystem = val;
+                themeTargetChanged = true;
                 NotifyObservers(SettingId::ChangeSystem);
             }
         }
@@ -238,8 +243,15 @@ void LightSwitchSettings::LoadSettings()
             if (m_settings.changeApps != val)
             {
                 m_settings.changeApps = val;
+                themeTargetChanged = true;
                 NotifyObservers(SettingId::ChangeApps);
             }
+        }
+
+        // For ChangeSystem/ChangeApps changes, log telemetry
+        if (themeTargetChanged)
+        {
+            Trace::LightSwitch::ThemeTargetChanged(m_settings.changeApps, m_settings.changeSystem);
         }
     }
     catch (...)

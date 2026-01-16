@@ -55,7 +55,7 @@ public class BasicTests : CommandPaletteTestBase
 
         SetTimeAndDaterExtensionSearchBox("year");
 
-        Assert.IsNotNull(this.Find<NavigationViewItem>("2025"));
+        Assert.IsNotNull(this.Find<NavigationViewItem>("2026"));
     }
 
     [TestMethod]
