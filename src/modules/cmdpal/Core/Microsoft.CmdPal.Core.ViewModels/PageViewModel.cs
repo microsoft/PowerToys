@@ -77,11 +77,11 @@ public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
     public IconInfoViewModel Icon { get; protected set; }
 
     public PageViewModel(IPage? model, TaskScheduler scheduler, AppExtensionHost extensionHost)
-        : base((IPageContext?)null)
+        : base(scheduler)
     {
+        InitializeSelfAsPageContext();
         _pageModel = new(model);
         Scheduler = scheduler;
-        PageContext = new(this);
         ExtensionHost = extensionHost;
         Icon = new(null);
 
