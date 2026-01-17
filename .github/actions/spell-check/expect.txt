@@ -32,6 +32,7 @@ advfirewall
 AFeature
 affordances
 AFX
+agentskills
 AGGREGATABLE
 AHK
 AHybrid
@@ -215,6 +216,7 @@ CIELCh
 cim
 CImage
 cla
+claude
 CLASSDC
 classmethod
 CLASSNOTAVAILABLE
@@ -1036,6 +1038,7 @@ mmi
 mmsys
 mobileredirect
 mockapi
+modelcontextprotocol
 MODALFRAME
 MODESPRUNED
 MONITORENUMPROC
@@ -1732,6 +1735,7 @@ STICKYKEYS
 sticpl
 storelogo
 stprintf
+streamable
 streamjsonrpc
 STRINGIZE
 stringtable
@@ -1751,6 +1755,7 @@ SUBMODULEUPDATE
 subresource
 Superbar
 sut
+swe
 svchost
 SVGIn
 SVGIO
@@ -1957,6 +1962,7 @@ visualeffects
 vkey
 vmovl
 VMs
+vnd
 vorrq
 VOS
 vpaddlq
