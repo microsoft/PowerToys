@@ -19,4 +19,9 @@
 	  <PackageReference Include="MSTest" />
 	  <ProjectReference Include="..\..\..\..\common\UITestAutomation\UITestAutomation.csproj" />
   </ItemGroup>
+
+  <Target Name="CopyNativeDll" AfterTargets="Build">
+    <Copy SourceFiles="$(SolutionDir)$(Platform)\$(Configuration)\PowerToys.LightSwitchModuleInterface.dll" DestinationFolder="$(OutputPath)" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="$(SolutionDir)$(Platform)\$(Configuration)\LightSwitchLib\LightSwitchLib.lib" DestinationFolder="$(OutputPath)" SkipUnchangedFiles="true" Condition="Exists('$(SolutionDir)$(Platform)\$(Configuration)\LightSwitchLib\LightSwitchLib.lib')" ContinueOnError="true" />
+  </Target>
 </Project>

@@ -198,6 +198,8 @@ void dispatch_received_json(const std::wstring& json_to_parse)
         return;
     }
 
+    Logger::info(L"dispatch_received_json: {}", json_to_parse);
+
     for (const auto& base_element : j)
     {
         const auto name = base_element.Key();
@@ -206,12 +208,18 @@ void dispatch_received_json(const std::wstring& json_to_parse)
         if (name == L"general")
         {
             apply_general_settings(value.GetObjectW());
-            const std::wstring settings_string{ get_all_settings().Stringify().c_str() };
-            {
-                std::unique_lock lock{ ipc_mutex };
-                if (current_settings_ipc)
-                    current_settings_ipc->send(settings_string);
-            }
+            // const std::wstring settings_string{ get_all_settings().Stringify().c_str() };
+            // {
+            //     std::unique_lock lock{ ipc_mutex };
+            //     if (current_settings_ipc)
+            //         current_settings_ipc->send(settings_string);
+            // }
+        }
+        else if (name == L"module_status")
+        {
+            // Handle single module enable/disable update
+            // Expected format: {"module_status": {"ModuleName": true/false}}
+            apply_module_status_update(value.GetObjectW());
         }
         else if (name == L"powertoys")
         {
@@ -421,7 +429,7 @@ BOOL run_settings_non_elevated(LPCWSTR executable_path, LPWSTR executable_args, 
 
 DWORD g_settings_process_id = 0;
 
-void run_settings_window(bool show_oobe_window, bool show_scoobe_window, std::optional<std::wstring> settings_window, bool show_flyout = false, const std::optional<POINT>& flyout_position = std::nullopt)
+void run_settings_window(bool show_oobe_window, bool show_scoobe_window, std::optional<std::wstring> settings_window)
 {
     g_isLaunchInProgress = true;
 
@@ -491,22 +499,16 @@ void run_settings_window(bool show_oobe_window, bool show_scoobe_window, std::op
     // Arg 9: should scoobe window be shown
     std::wstring settings_showScoobe = show_scoobe_window ? L"true" : L"false";
 
-    // Arg 10: should flyout be shown
-    std::wstring settings_showFlyout = show_flyout ? L"true" : L"false";
-
-    // Arg 11: contains if there's a settings window argument. If true, will add one extra argument with the value to the call.
+    // Arg 10: contains if there's a settings window argument. If true, will add one extra argument with the value to the call.
     std::wstring settings_containsSettingsWindow = settings_window.has_value() ? L"true" : L"false";
 
-    // Arg 12: contains if there's flyout coordinates. If true, will add two extra arguments to the call containing the x and y coordinates.
-    std::wstring settings_containsFlyoutPosition = flyout_position.has_value() ? L"true" : L"false";
-
-    // Args 13, .... : Optional arguments depending on the options presented before. All by the same value.
+    // Args 11, .... : Optional arguments depending on the options presented before. All by the same value.
 
     // create general settings file to initialize the settings file with installation configurations like :
     // 1. Run on start up.
     PTSettingsHelper::save_general_settings(save_settings.to_json());
 
-    std::wstring executable_args = fmt::format(L"\"{}\" {} {} {} {} {} {} {} {} {} {} {}",
+    std::wstring executable_args = fmt::format(L"\"{}\" {} {} {} {} {} {} {} {} {}",
                                                executable_path,
                                                powertoys_pipe_name,
                                                settings_pipe_name,
@@ -516,22 +518,12 @@ void run_settings_window(bool show_oobe_window, bool show_scoobe_window, std::op
                                                settings_isUserAnAdmin,
                                                settings_showOobe,
                                                settings_showScoobe,
-                                               settings_showFlyout,
-                                               settings_containsSettingsWindow,
-                                               settings_containsFlyoutPosition);
+                                               settings_containsSettingsWindow);
 
     if (settings_window.has_value())
     {
         executable_args.append(L" ");
         executable_args.append(settings_window.value());
-    }
-
-    if (flyout_position)
-    {
-        executable_args.append(L" ");
-        executable_args.append(std::to_wstring(flyout_position.value().x));
-        executable_args.append(L" ");
-        executable_args.append(std::to_wstring(flyout_position.value().y));
     }
 
     BOOL process_created = false;
@@ -684,39 +676,22 @@ void bring_settings_to_front()
     EnumWindows(callback, 0);
 }
 
-void open_settings_window(std::optional<std::wstring> settings_window, bool show_flyout = false, const std::optional<POINT>& flyout_position)
+void open_settings_window(std::optional<std::wstring> settings_window)
 {
     if (g_settings_process_id != 0)
     {
-        if (show_flyout)
+        // nl instead of showing the window, send message to it (flyout might need to be hidden, main setting window activated)
+        // bring_settings_to_front();
+        if (current_settings_ipc)
         {
-            if (current_settings_ipc)
+            if (settings_window.has_value())
             {
-                if (!flyout_position.has_value())
-                {
-                    current_settings_ipc->send(L"{\"ShowYourself\":\"flyout\"}");
-                }
-                else
-                {
-                    current_settings_ipc->send(fmt::format(L"{{\"ShowYourself\":\"flyout\", \"x_position\":{}, \"y_position\":{} }}", std::to_wstring(flyout_position.value().x), std::to_wstring(flyout_position.value().y)));
-                }
+                std::wstring msg = L"{\"ShowYourself\":\"" + settings_window.value() + L"\"}";
+                current_settings_ipc->send(msg);
             }
-        }
-        else
-        {
-            // nl instead of showing the window, send message to it (flyout might need to be hidden, main setting window activated)
-            // bring_settings_to_front();
-            if (current_settings_ipc)
+            else
             {
-                if (settings_window.has_value())
-                {
-                    std::wstring msg = L"{\"ShowYourself\":\"" + settings_window.value() + L"\"}";
-                    current_settings_ipc->send(msg);
-                }
-                else
-                {
-                    current_settings_ipc->send(L"{\"ShowYourself\":\"Dashboard\"}");
-                }
+                current_settings_ipc->send(L"{\"ShowYourself\":\"Dashboard\"}");
             }
         }
     }
@@ -724,8 +699,8 @@ void open_settings_window(std::optional<std::wstring> settings_window, bool show
     {
         if (!g_isLaunchInProgress)
         {
-            std::thread([settings_window, show_flyout, flyout_position]() {
-                run_settings_window(false, false, settings_window, show_flyout, flyout_position);
+            std::thread([settings_window]() {
+                run_settings_window(false, false, settings_window);
             }).detach();
         }
     }

@@ -31,7 +31,6 @@ public partial class RemoteDesktopCommandProvider : CommandProvider
 
         listPageCommand = new CommandItem(listPage)
         {
-            Subtitle = Resources.remotedesktop_subtitle,
             Icon = Icons.RDPIcon,
             MoreCommands = [
                 new CommandContextItem(settingsManager.Settings.SettingsPage),

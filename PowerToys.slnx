@@ -665,6 +665,7 @@
     </Project>
   </Folder>
   <Folder Name="/modules/LightSwitch/">
+    <Project Path="src/modules/LightSwitch/LightSwitchLib/LightSwitchLib.vcxproj" Id="79267138-2895-4346-9021-21408d65379f" />
     <Project Path="src/modules/LightSwitch/LightSwitchModuleInterface/LightSwitchModuleInterface.vcxproj" Id="38177d56-6ad1-4adf-88c9-2843a7932166" />
     <Project Path="src/modules/LightSwitch/LightSwitchService/LightSwitchService.vcxproj" Id="08e71c67-6a7e-4ca1-b04e-2fb336410bac" />
   </Folder>
@@ -1005,6 +1006,14 @@
     <Project Path="src/modules/ZoomIt/ZoomItSettingsInterop/ZoomItSettingsInterop.vcxproj" Id="ca7d8106-30b9-4aec-9d05-b69b31b8c461" />
   </Folder>
   <Folder Name="/settings-ui/">
+    <Project Path="src/settings-ui/QuickAccess.UI/PowerToys.QuickAccess.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/settings-ui/Settings.UI.Controls/Settings.UI.Controls.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
     <Project Path="src/settings-ui/Settings.UI.Library/Settings.UI.Library.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
