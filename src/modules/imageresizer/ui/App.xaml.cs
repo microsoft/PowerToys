@@ -67,12 +67,27 @@ namespace ImageResizer
             // Fix for .net 3.1.19 making Image Resizer not adapt to DPI changes.
             NativeMethods.SetProcessDPIAware();
 
+            // TODO: Re-enable AI Super Resolution in next release by removing this #if block
+            // Temporarily disable AI Super Resolution feature (hide from UI but keep code)
+#if true // Set to false to re-enable AI Super Resolution
+            AiAvailabilityState = AiAvailabilityState.NotSupported;
+            ResizeBatch.SetAiSuperResolutionService(Services.NoOpAiSuperResolutionService.Instance);
+
+            // Skip AI detection mode as well
+            if (e?.Args?.Length > 0 && e.Args[0] == "--detect-ai")
+            {
+                Services.AiAvailabilityCacheService.SaveCache(AiAvailabilityState.NotSupported);
+                Environment.Exit(0);
+                return;
+            }
+#else
             // Check for AI detection mode (called by Runner in background)
             if (e?.Args?.Length > 0 && e.Args[0] == "--detect-ai")
             {
                 RunAiDetectionMode();
                 return;
             }
+#endif
 
             if (PowerToys.GPOWrapperProjection.GPOWrapper.GetConfiguredImageResizerEnabledValue() == PowerToys.GPOWrapperProjection.GpoRuleConfigured.Disabled)
             {
