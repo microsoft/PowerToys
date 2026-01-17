@@ -486,6 +486,11 @@ public partial class ListViewModel : PageViewModel, IDisposable
     {
         if (!item.SafeSlowInit())
         {
+            // Even if initialization fails, we need to hide any previously shown details
+            DoOnUiThread(() =>
+            {
+                WeakReferenceMessenger.Default.Send<HideDetailsMessage>();
+            });
             return;
         }
 

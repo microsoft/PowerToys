@@ -132,12 +132,20 @@ public partial class InstallPackageListItem : ListItem
             // These can be l o n g
             { Properties.Resources.winget_release_notes, (metadata.ReleaseNotes, string.Empty) },
         };
-        var docs = metadata.Documentations;
-        var count = docs.Count;
-        for (var i = 0; i < count; i++)
+
+        try
         {
-            var item = docs[i];
-            simpleData.Add(item.DocumentLabel, (string.Empty, item.DocumentUrl));
+            var docs = metadata.Documentations;
+            var count = docs.Count;
+            for (var i = 0; i < count; i++)
+            {
+                var item = docs[i];
+                simpleData.Add(item.DocumentLabel, (string.Empty, item.DocumentUrl));
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogWarning($"Failed to retrieve documentations from metadata: {ex.Message}");
         }
 
         UriCreationOptions options = default;
@@ -159,14 +167,21 @@ public partial class InstallPackageListItem : ListItem
             }
         }
 
-        if (metadata.Tags.Count > 0)
+        try
         {
-            DetailsElement pair = new()
+            if (metadata.Tags.Count > 0)
             {
-                Key = "Tags",
-                Data = new DetailsTags() { Tags = metadata.Tags.Select(t => new Tag(t)).ToArray() },
-            };
-            detailsElements.Add(pair);
+                DetailsElement pair = new()
+                {
+                    Key = "Tags",
+                    Data = new DetailsTags() { Tags = metadata.Tags.Select(t => new Tag(t)).ToArray() },
+                };
+                detailsElements.Add(pair);
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogWarning($"Failed to retrieve tags from metadata: {ex.Message}");
         }
 
         return detailsElements;
