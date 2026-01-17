@@ -36,7 +36,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private const string KeyboardManagerEditorPath = "KeyboardManagerEditor\\PowerToys.KeyboardManagerEditor.exe";
 
         // New WinUI3 editor path. Still in development and do NOT use it in production.
-        private const string KeyboardManagerEditorUIPath = "KeyboardManagerEditorUI\\PowerToys.KeyboardManagerEditorUI.exe";
+        private const string KeyboardManagerEditorUIPath = "WinUI3Apps\\PowerToys.KeyboardManagerEditorUI.exe";
 
         private Process editor;
 
@@ -280,15 +280,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     // Only read the registry value if the experimentation toggle is enabled
                     if (isExperimentationEnabled)
                     {
-                        // Read the registry value to determine which editor to launch
-                        var key = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\PowerToys\Keyboard Manager");
-                        if (key != null && (int?)key.GetValue("UseNewEditor") == 1)
-                        {
-                            editorPath = KeyboardManagerEditorUIPath;
-                        }
-
-                        // Close the registry key
-                        key?.Close();
+                        editorPath = KeyboardManagerEditorUIPath;
                     }
                 }
                 catch (Exception e)
@@ -300,8 +292,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 string path = Path.Combine(Environment.CurrentDirectory, editorPath);
                 Logger.LogInfo($"Starting {PowerToyName} editor from {path}");
 
-                // InvariantCulture: type represents the KeyboardManagerEditorType enum value
-                editor = Process.Start(path, $"{type.ToString(CultureInfo.InvariantCulture)} {Environment.ProcessId}");
+                // InvariantCulture: type represents the KeyboardManagerEditorType enum va
+                ProcessStartInfo startInfo = new ProcessStartInfo(path);
+                startInfo.UseShellExecute = true; // LOAD BEARING
+                startInfo.Arguments = $"{type.ToString(CultureInfo.InvariantCulture)} {Environment.ProcessId}";
+                System.Environment.SetEnvironmentVariable("MICROSOFT_WINDOWSAPPRUNTIME_BASE_DIRECTORY", null);
+                editor = Process.Start(startInfo);
             }
             catch (Exception e)
             {
