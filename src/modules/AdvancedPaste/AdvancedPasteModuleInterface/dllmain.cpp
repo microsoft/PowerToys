@@ -57,6 +57,7 @@ namespace
     const wchar_t JSON_KEY_ADVANCED_PASTE_UI_HOTKEY[] = L"advanced-paste-ui-hotkey";
     const wchar_t JSON_KEY_PASTE_AS_MARKDOWN_HOTKEY[] = L"paste-as-markdown-hotkey";
     const wchar_t JSON_KEY_PASTE_AS_JSON_HOTKEY[] = L"paste-as-json-hotkey";
+    const wchar_t JSON_KEY_PASTE_AS_KEYSTROKE_HOTKEY[] = L"paste-as-keystroke-hotkey";
     const wchar_t JSON_KEY_IS_AI_ENABLED[] = L"IsAIEnabled";
     const wchar_t JSON_KEY_IS_OPEN_AI_ENABLED[] = L"IsOpenAIEnabled";
     const wchar_t JSON_KEY_SHOW_CUSTOM_PREVIEW[] = L"ShowCustomPreview";
@@ -79,12 +80,13 @@ private:
     //contains the non localized key of the powertoy
     std::wstring app_key;
 
-    static const constexpr int NUM_DEFAULT_HOTKEYS = 4;
+    static const constexpr int NUM_DEFAULT_HOTKEYS = 5;
 
     Hotkey m_paste_as_plain_hotkey = { .win = true, .ctrl = true, .shift = false, .alt = true, .key = 'V' };
     Hotkey m_advanced_paste_ui_hotkey = { .win = true, .ctrl = false, .shift = true, .alt = false, .key = 'V' };
     Hotkey m_paste_as_markdown_hotkey{};
     Hotkey m_paste_as_json_hotkey{};
+    Hotkey m_paste_as_keystroke_hotkey{};
 
     template<class Id>
     struct ActionData
@@ -377,7 +379,8 @@ private:
                     { { &m_paste_as_plain_hotkey, JSON_KEY_PASTE_AS_PLAIN_HOTKEY },
                       { &m_advanced_paste_ui_hotkey, JSON_KEY_ADVANCED_PASTE_UI_HOTKEY },
                       { &m_paste_as_markdown_hotkey, JSON_KEY_PASTE_AS_MARKDOWN_HOTKEY },
-                      { &m_paste_as_json_hotkey, JSON_KEY_PASTE_AS_JSON_HOTKEY } }
+                      { &m_paste_as_json_hotkey, JSON_KEY_PASTE_AS_JSON_HOTKEY },
+                      { &m_paste_as_keystroke_hotkey, JSON_KEY_PASTE_AS_KEYSTROKE_HOTKEY } }
                 };
 
                 for (auto& [hotkey, keyName] : defaultHotkeys)
@@ -866,6 +869,13 @@ public:
                 Trace::AdvancedPaste_Invoked(L"JsonDirect");
                 return true;
             }
+            if (hotkeyId == 4)
+            { // m_paste_as_keystroke_hotkey
+                Logger::trace(L"Starting paste as keystrokes directly");
+                m_process_manager.send_message(CommonSharedConstants::ADVANCED_PASTE_KEYSTROKE_MESSAGE);
+                Trace::AdvancedPaste_Invoked(L"KeystrokesDirect");
+                return true;
+            }
 
 
             const auto additional_action_index = hotkeyId - NUM_DEFAULT_HOTKEYS;
@@ -906,7 +916,8 @@ public:
             const std::array default_hotkeys = { m_paste_as_plain_hotkey,
                                                  m_advanced_paste_ui_hotkey,
                                                  m_paste_as_markdown_hotkey,
-                                                 m_paste_as_json_hotkey };
+                                                 m_paste_as_json_hotkey,
+                                                 m_paste_as_keystroke_hotkey };
             std::copy(default_hotkeys.begin(), default_hotkeys.end(), hotkeys);
 
             const auto get_action_hotkey = [](const auto& action) { return action.hotkey; };
