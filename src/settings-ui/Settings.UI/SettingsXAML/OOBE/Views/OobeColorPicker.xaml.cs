@@ -5,6 +5,7 @@
 using System.Threading;
 
 using Microsoft.PowerToys.Settings.UI.Library;
+using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.OOBE.Enums;
 using Microsoft.PowerToys.Settings.UI.OOBE.ViewModel;
 using Microsoft.PowerToys.Settings.UI.Views;
@@ -53,6 +54,10 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             ColorPickerSettings settings = SettingsUtils.Default.GetSettingsOrDefault<ColorPickerSettings, ColorPickerSettingsVersion1>(ColorPickerSettings.ModuleName, settingsUpgrader: ColorPickerSettings.UpgradeSettings);
 
             HotkeyControl.Keys = settings.Properties.ActivationShortcut.GetKeysList();
+
+            // Disable the Launch button if the module is disabled
+            var generalSettings = SettingsRepository<GeneralSettings>.GetInstance(SettingsUtils.Default).SettingsConfig;
+            LaunchButton.IsEnabled = ModuleHelper.GetIsModuleEnabled(generalSettings, ManagedCommon.ModuleType.ColorPicker);
         }
 
         protected override void OnNavigatedFrom(NavigationEventArgs e)
