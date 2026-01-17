@@ -1545,13 +1545,12 @@ public class SpongebotPage : Microsoft.CommandPalette.Extensions.Toolkit.Markdow
         this.Name = "";
         this.Icon = new("https://imgflip.com/s/meme/Mocking-Spongebob.jpg");
     }
-    public void IFallbackHandler.UpdateQuery(string query) {
+    public void UpdateQuery(string query) {
         if (string.IsNullOrEmpty(query)) {
             this.Name = "";
         } else {
             this.Name = ConvertToAlternatingCase(query);
         }
-        return Task.CompletedTask.AsAsyncCommand();
     }
     static string ConvertToAlternatingCase(string input) {
         StringBuilder sb = new StringBuilder();
