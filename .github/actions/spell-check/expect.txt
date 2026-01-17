@@ -206,6 +206,7 @@ certmgr
 cfp
 CHANGECBCHAIN
 changecursor
+checkmarks
 CHILDACTIVATE
 CHILDWINDOW
 CHOOSEFONT
