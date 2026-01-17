@@ -636,6 +636,8 @@ GSM
 gtm
 guiddata
 GUITHREADINFO
+Gotcha
+Gotchas
 GValue
 gwl
 GWLP
