@@ -60,6 +60,7 @@ namespace
     const wchar_t JSON_KEY_IS_AI_ENABLED[] = L"IsAIEnabled";
     const wchar_t JSON_KEY_IS_OPEN_AI_ENABLED[] = L"IsOpenAIEnabled";
     const wchar_t JSON_KEY_SHOW_CUSTOM_PREVIEW[] = L"ShowCustomPreview";
+    const wchar_t JSON_KEY_AUTO_COPY_SELECTION_CUSTOM_ACTION[] = L"AutoCopySelectionForCustomActionHotkey";
     const wchar_t JSON_KEY_PASTE_AI_CONFIGURATION[] = L"paste-ai-configuration";
     const wchar_t JSON_KEY_PROVIDERS[] = L"providers";
     const wchar_t JSON_KEY_SERVICE_TYPE[] = L"service-type";
@@ -102,6 +103,7 @@ private:
     bool m_is_ai_enabled = false;
     bool m_is_advanced_ai_enabled = false;
     bool m_preview_custom_format_output = true;
+    bool m_auto_copy_selection_custom_action = false;
 
     // Event listening for external triggers (e.g., from CmdPal extension)
     EventWaiter m_triggerEventWaiter;
@@ -348,6 +350,11 @@ private:
             {
                 m_preview_custom_format_output = propertiesObject.GetNamedObject(JSON_KEY_SHOW_CUSTOM_PREVIEW).GetNamedBoolean(JSON_KEY_VALUE);
             }
+
+            if (propertiesObject.HasKey(JSON_KEY_AUTO_COPY_SELECTION_CUSTOM_ACTION))
+            {
+                m_auto_copy_selection_custom_action = propertiesObject.GetNamedObject(JSON_KEY_AUTO_COPY_SELECTION_CUSTOM_ACTION).GetNamedBoolean(JSON_KEY_VALUE, false);
+            }
         }
 
         if (old_data_migrated)
@@ -478,6 +485,88 @@ private:
             input_event.type = INPUT_KEYBOARD;
             input_event.ki.wVk = modifier;
             inputs.push_back(input_event);
+        }
+    }
+
+    bool try_send_copy_message()
+    {
+        GUITHREADINFO gui_info = {};
+        gui_info.cbSize = sizeof(GUITHREADINFO);
+
+        if (!GetGUIThreadInfo(0, &gui_info))
+        {
+            return false;
+        }
+
+        HWND target = gui_info.hwndFocus ? gui_info.hwndFocus : gui_info.hwndActive;
+        if (!target)
+        {
+            return false;
+        }
+
+        DWORD_PTR result = 0;
+        return SendMessageTimeout(target,
+                                  WM_COPY,
+                                  0,
+                                  0,
+                                  SMTO_ABORTIFHUNG | SMTO_BLOCK,
+                                  100,
+                                  &result) != 0;
+    }
+
+    void send_copy_selection()
+    {
+        if (try_send_copy_message())
+        {
+            return;
+        }
+
+        std::vector<INPUT> inputs;
+
+        // send Ctrl+C (key downs and key ups)
+        {
+            INPUT input_event = {};
+            input_event.type = INPUT_KEYBOARD;
+            input_event.ki.wVk = VK_CONTROL;
+            input_event.ki.dwExtraInfo = CENTRALIZED_KEYBOARD_HOOK_DONT_TRIGGER_FLAG;
+            inputs.push_back(input_event);
+        }
+
+        {
+            INPUT input_event = {};
+            input_event.type = INPUT_KEYBOARD;
+            input_event.ki.wVk = 0x43; // C
+            // Avoid triggering detection by the centralized keyboard hook.
+            input_event.ki.dwExtraInfo = CENTRALIZED_KEYBOARD_HOOK_DONT_TRIGGER_FLAG;
+            inputs.push_back(input_event);
+        }
+
+        {
+            INPUT input_event = {};
+            input_event.type = INPUT_KEYBOARD;
+            input_event.ki.wVk = 0x43; // C
+            input_event.ki.dwFlags = KEYEVENTF_KEYUP;
+            // Avoid triggering detection by the centralized keyboard hook.
+            input_event.ki.dwExtraInfo = CENTRALIZED_KEYBOARD_HOOK_DONT_TRIGGER_FLAG;
+            inputs.push_back(input_event);
+        }
+
+        {
+            INPUT input_event = {};
+            input_event.type = INPUT_KEYBOARD;
+            input_event.ki.wVk = VK_CONTROL;
+            input_event.ki.dwFlags = KEYEVENTF_KEYUP;
+            input_event.ki.dwExtraInfo = CENTRALIZED_KEYBOARD_HOOK_DONT_TRIGGER_FLAG;
+            inputs.push_back(input_event);
+        }
+
+        auto uSent = SendInput(static_cast<UINT>(inputs.size()), inputs.data(), sizeof(INPUT));
+        if (uSent != inputs.size())
+        {
+            DWORD errorCode = GetLastError();
+            auto errorMessage = get_last_error_message(errorCode);
+            Logger::error(L"SendInput failed for Ctrl+C. Expected to send {} inputs and sent only {}. {}", inputs.size(), uSent, errorMessage.has_value() ? errorMessage.value() : L"");
+            Trace::AdvancedPaste_Error(errorCode, errorMessage.has_value() ? errorMessage.value() : L"", L"input.SendInput");
         }
     }
 
@@ -826,6 +915,25 @@ public:
         Logger::trace(L"AdvancedPaste hotkey pressed");
         if (m_enabled)
         {
+            size_t additional_action_index = 0;
+            size_t custom_action_index = 0;
+            bool is_custom_action_hotkey = false;
+
+            if (hotkeyId >= NUM_DEFAULT_HOTKEYS)
+            {
+                additional_action_index = hotkeyId - NUM_DEFAULT_HOTKEYS;
+                if (additional_action_index >= m_additional_actions.size())
+                {
+                    custom_action_index = additional_action_index - m_additional_actions.size();
+                    is_custom_action_hotkey = custom_action_index < m_custom_actions.size();
+                }
+            }
+
+            if (is_custom_action_hotkey && m_auto_copy_selection_custom_action)
+            {
+                send_copy_selection();
+            }
+
             m_process_manager.start();
 
             // hotkeyId in same order as set by get_hotkeys
@@ -868,7 +976,6 @@ public:
             }
 
 
-            const auto additional_action_index = hotkeyId - NUM_DEFAULT_HOTKEYS;
             if (additional_action_index < m_additional_actions.size())
             {
                 const auto& id = m_additional_actions.at(additional_action_index).id;
@@ -881,7 +988,6 @@ public:
                 return true;
             }
 
-            const auto custom_action_index = additional_action_index - m_additional_actions.size();
             if (custom_action_index < m_custom_actions.size())
             {
                 const auto id = m_custom_actions.at(custom_action_index).id;

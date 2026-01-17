@@ -4631,6 +4631,14 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Show clipboard preview</value>
     <comment>Enables display of clipboard contents preview in the Advanced Paste window</comment>
   </data>
+  <data name="AdvancedPaste_AutoCopySelectionForCustomActionHotkey.Header" xml:space="preserve">
+    <value>Auto-copy selection for custom action hotkeys</value>
+    <comment>Advanced Paste is a product name</comment>
+  </data>
+  <data name="AdvancedPaste_AutoCopySelectionForCustomActionHotkey.Description" xml:space="preserve">
+    <value>Boost productivity with a single shortcut that copies the selection and runs Advanced Paste</value>
+    <comment>Advanced Paste is a product name</comment>
+  </data>
   <data name="GPO_CommandNotFound_ForceDisabled.Title" xml:space="preserve">
     <value>The Command Not Found module is disabled by your organization.</value>
     <comment>"Command Not Found" is a product name</comment>

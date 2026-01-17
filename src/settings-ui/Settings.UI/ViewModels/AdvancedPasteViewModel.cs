@@ -555,6 +555,19 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public bool AutoCopySelectionForCustomActionHotkey
+        {
+            get => _advancedPasteSettings.Properties.AutoCopySelectionForCustomActionHotkey;
+            set
+            {
+                if (value != _advancedPasteSettings.Properties.AutoCopySelectionForCustomActionHotkey)
+                {
+                    _advancedPasteSettings.Properties.AutoCopySelectionForCustomActionHotkey = value;
+                    NotifySettingsChanged();
+                }
+            }
+        }
+
         public bool IsConflictingCopyShortcut =>
             _customActions.Select(customAction => customAction.Shortcut)
                           .Concat([PasteAsPlainTextShortcut, AdvancedPasteUIShortcut, PasteAsMarkdownShortcut, PasteAsJsonShortcut])
@@ -1217,6 +1230,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 target.EnableClipboardPreview = source.EnableClipboardPreview;
                 OnPropertyChanged(nameof(EnableClipboardPreview));
+            }
+
+            if (target.AutoCopySelectionForCustomActionHotkey != source.AutoCopySelectionForCustomActionHotkey)
+            {
+                target.AutoCopySelectionForCustomActionHotkey = source.AutoCopySelectionForCustomActionHotkey;
+                OnPropertyChanged(nameof(AutoCopySelectionForCustomActionHotkey));
             }
 
             var incomingConfig = source.PasteAIConfiguration ?? new PasteAIConfiguration();
