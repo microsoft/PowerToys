@@ -1551,7 +1551,6 @@ public class SpongebotPage : Microsoft.CommandPalette.Extensions.Toolkit.Markdow
         } else {
             this.Name = ConvertToAlternatingCase(query);
         }
-        return Task.CompletedTask.AsAsyncCommand();
     }
     static string ConvertToAlternatingCase(string input) {
         StringBuilder sb = new StringBuilder();
