@@ -21,7 +21,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
         public OobeRegistryPreview()
         {
             this.InitializeComponent();
-            ViewModel = new OobePowerToysModule(OobeShellPage.OobeShellHandler.Modules[(int)PowerToysModules.RegistryPreview]);
+            ViewModel = App.OobeShellViewModel.GetModule(PowerToysModules.RegistryPreview);
             DataContext = ViewModel;
         }
 
@@ -32,9 +32,9 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 
         private void SettingsLaunchButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
-            if (OobeShellPage.OpenMainWindowCallback != null)
+            if (OobeWindow.OpenMainWindowCallback != null)
             {
-                OobeShellPage.OpenMainWindowCallback(typeof(RegistryPreviewPage));
+                OobeWindow.OpenMainWindowCallback(typeof(RegistryPreviewPage));
             }
 
             ViewModel.LogOpeningSettingsEvent();

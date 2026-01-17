@@ -23,15 +23,15 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
         public OobeRun()
         {
             this.InitializeComponent();
-            ViewModel = new OobePowerToysModule(OobeShellPage.OobeShellHandler.Modules[(int)PowerToysModules.Run]);
+            ViewModel = App.OobeShellViewModel.GetModule(PowerToysModules.Run);
             DataContext = ViewModel;
         }
 
         private void Start_Run_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
-            if (OobeShellPage.RunSharedEventCallback != null)
+            if (OobeWindow.RunSharedEventCallback != null)
             {
-                using (var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, OobeShellPage.RunSharedEventCallback()))
+                using (var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, OobeWindow.RunSharedEventCallback()))
                 {
                     eventHandle.Set();
                 }
@@ -42,9 +42,9 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 
         private void SettingsLaunchButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
-            if (OobeShellPage.OpenMainWindowCallback != null)
+            if (OobeWindow.OpenMainWindowCallback != null)
             {
-                OobeShellPage.OpenMainWindowCallback(typeof(PowerLauncherPage));
+                OobeWindow.OpenMainWindowCallback(typeof(PowerLauncherPage));
             }
 
             ViewModel.LogOpeningSettingsEvent();

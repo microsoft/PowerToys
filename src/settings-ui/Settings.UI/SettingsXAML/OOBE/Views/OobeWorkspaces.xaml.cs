@@ -21,15 +21,15 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
         public OobeWorkspaces()
         {
             this.InitializeComponent();
-            ViewModel = new OobePowerToysModule(OobeShellPage.OobeShellHandler.Modules[(int)PowerToysModules.Workspaces]);
+            ViewModel = App.OobeShellViewModel.GetModule(PowerToysModules.Workspaces);
             DataContext = ViewModel;
         }
 
         private void SettingsLaunchButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
-            if (OobeShellPage.OpenMainWindowCallback != null)
+            if (OobeWindow.OpenMainWindowCallback != null)
             {
-                OobeShellPage.OpenMainWindowCallback(typeof(WorkspacesPage));
+                OobeWindow.OpenMainWindowCallback(typeof(WorkspacesPage));
             }
 
             ViewModel.LogOpeningSettingsEvent();

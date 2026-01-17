@@ -20,15 +20,15 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
         public OobeMouseWithoutBorders()
         {
             this.InitializeComponent();
-            ViewModel = new OobePowerToysModule(OobeShellPage.OobeShellHandler.Modules[(int)PowerToysModules.MouseWithoutBorders]);
+            ViewModel = App.OobeShellViewModel.GetModule(PowerToysModules.MouseWithoutBorders);
             DataContext = ViewModel;
         }
 
         private void SettingsLaunchButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
-            if (OobeShellPage.OpenMainWindowCallback != null)
+            if (OobeWindow.OpenMainWindowCallback != null)
             {
-                OobeShellPage.OpenMainWindowCallback(typeof(MouseWithoutBordersPage));
+                OobeWindow.OpenMainWindowCallback(typeof(MouseWithoutBordersPage));
             }
 
             ViewModel.LogOpeningSettingsEvent();

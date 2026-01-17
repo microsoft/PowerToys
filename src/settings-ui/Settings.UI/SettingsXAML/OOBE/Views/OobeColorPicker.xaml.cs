@@ -20,15 +20,15 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
         public OobeColorPicker()
         {
             this.InitializeComponent();
-            ViewModel = new OobePowerToysModule(OobeShellPage.OobeShellHandler.Modules[(int)PowerToysModules.ColorPicker]);
+            ViewModel = ViewModel = App.OobeShellViewModel.GetModule(PowerToysModules.ColorPicker);
             DataContext = ViewModel;
         }
 
         private void Start_ColorPicker_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
-            if (OobeShellPage.ColorPickerSharedEventCallback != null)
+            if (OobeWindow.ColorPickerSharedEventCallback != null)
             {
-                using (var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, OobeShellPage.ColorPickerSharedEventCallback()))
+                using (var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, OobeWindow.ColorPickerSharedEventCallback()))
                 {
                     eventHandle.Set();
                 }
@@ -39,9 +39,9 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 
         private void SettingsLaunchButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
-            if (OobeShellPage.OpenMainWindowCallback != null)
+            if (OobeWindow.OpenMainWindowCallback != null)
             {
-                OobeShellPage.OpenMainWindowCallback(typeof(ColorPickerPage));
+                OobeWindow.OpenMainWindowCallback(typeof(ColorPickerPage));
             }
 
             ViewModel.LogOpeningSettingsEvent();

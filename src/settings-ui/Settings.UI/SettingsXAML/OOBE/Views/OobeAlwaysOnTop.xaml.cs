@@ -18,15 +18,15 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
         public OobeAlwaysOnTop()
         {
             InitializeComponent();
-            ViewModel = new OobePowerToysModule(OobeShellPage.OobeShellHandler.Modules[(int)PowerToysModules.AlwaysOnTop]);
+            ViewModel = new OobeShellViewModel().Modules[(int)PowerToysModules.AlwaysOnTop];
             DataContext = ViewModel;
         }
 
         private void SettingsLaunchButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
-            if (OobeShellPage.OpenMainWindowCallback != null)
+            if (OobeWindow.OpenMainWindowCallback != null)
             {
-                OobeShellPage.OpenMainWindowCallback(typeof(AlwaysOnTopPage));
+                OobeWindow.OpenMainWindowCallback(typeof(AlwaysOnTopPage));
             }
 
             ViewModel.LogOpeningSettingsEvent();
