@@ -5,6 +5,7 @@ Sets up the development environment for building PowerToys.
 .DESCRIPTION
 This script automates the setup of prerequisites needed to build PowerToys locally:
 - Enables Windows long path support (requires elevation)
+- Enables Windows Developer Mode (requires elevation)
 - Installs required Visual Studio workloads from .vsconfig
 - Initializes git submodules
 
@@ -12,6 +13,9 @@ Run this script once after cloning the repository to prepare your development en
 
 .PARAMETER SkipLongPaths
 Skip enabling long path support in Windows.
+
+.PARAMETER SkipDevMode
+Skip enabling Windows Developer Mode.
 
 .PARAMETER SkipVSComponents
 Skip installing Visual Studio components from .vsconfig.
@@ -45,6 +49,7 @@ Runs setup with a custom Visual Studio installation path.
 
 param (
     [switch]$SkipLongPaths,
+    [switch]$SkipDevMode,
     [switch]$SkipVSComponents,
     [switch]$SkipSubmodules,
     [string]$VSInstallPath = '',
@@ -83,7 +88,7 @@ $isAdmin = Test-Administrator
 
 # Step 1: Enable Long Paths
 if (-not $SkipLongPaths) {
-    Write-Host "[1/3] Checking Windows long path support"
+    Write-Host "[1/4] Checking Windows long path support"
 
     $longPathsEnabled = $false
     try {
@@ -108,14 +113,50 @@ if (-not $SkipLongPaths) {
         Write-Host "  Set-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem' -Name 'LongPathsEnabled' -Value 1" -ForegroundColor DarkGray
     }
 } else {
-    Write-Host "[1/3] Skipping long path check" -ForegroundColor DarkGray
+    Write-Host "[1/4] Skipping long path check" -ForegroundColor DarkGray
 }
 
 Write-Host ""
 
-# Step 2: Install Visual Studio Components
+# Step 2: Enable Developer Mode
+if (-not $SkipDevMode) {
+    Write-Host "[2/4] Checking Windows Developer Mode"
+
+    $devModeEnabled = $false
+    try {
+        $regValue = Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock" -Name "AllowDevelopmentWithoutDevLicense" -ErrorAction SilentlyContinue
+        $devModeEnabled = ($regValue.AllowDevelopmentWithoutDevLicense -eq 1)
+    } catch {
+        $devModeEnabled = $false
+    }
+
+    if ($devModeEnabled) {
+        Write-Host "  Developer Mode already enabled" -ForegroundColor Green
+    } elseif ($isAdmin) {
+        Write-Host "  Enabling Developer Mode..."
+        try {
+            $regPath = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock"
+            if (-not (Test-Path $regPath)) {
+                New-Item -Path $regPath -Force | Out-Null
+            }
+            Set-ItemProperty -Path $regPath -Name "AllowDevelopmentWithoutDevLicense" -Value 1 -Type DWord
+            Write-Host "  Developer Mode enabled" -ForegroundColor Green
+        } catch {
+            Write-Warning "  Failed to enable Developer Mode: $_"
+        }
+    } else {
+        Write-Warning "  Developer Mode not enabled. Run as Administrator to enable, or enable manually:"
+        Write-Host "  Settings > System > For developers > Developer Mode" -ForegroundColor DarkGray
+    }
+} else {
+    Write-Host "[2/4] Skipping Developer Mode check" -ForegroundColor DarkGray
+}
+
+Write-Host ""
+
+# Step 3: Install Visual Studio Components
 if (-not $SkipVSComponents) {
-    Write-Host "[2/3] Checking Visual Studio components"
+    Write-Host "[3/4] Checking Visual Studio components"
 
     $vsConfigPath = Join-Path $repoRoot ".vsconfig"
     if (-not (Test-Path $vsConfigPath)) {
@@ -203,14 +244,14 @@ if (-not $SkipVSComponents) {
         }
     }
 } else {
-    Write-Host "[2/3] Skipping VS component check" -ForegroundColor DarkGray
+    Write-Host "[3/4] Skipping VS component check" -ForegroundColor DarkGray
 }
 
 Write-Host ""
 
-# Step 3: Initialize Git Submodules
+# Step 4: Initialize Git Submodules
 if (-not $SkipSubmodules) {
-    Write-Host "[3/3] Initializing git submodules"
+    Write-Host "[4/4] Initializing git submodules"
 
     Push-Location $repoRoot
     try {
@@ -234,7 +275,7 @@ if (-not $SkipSubmodules) {
         Pop-Location
     }
 } else {
-    Write-Host "[3/3] Skipping submodule initialization" -ForegroundColor DarkGray
+    Write-Host "[4/4] Skipping submodule initialization" -ForegroundColor DarkGray
 }
 
 Write-Host ""

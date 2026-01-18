@@ -93,6 +93,7 @@ Run the setup script to automatically configure your development environment:
 
 This script will:
 - Enable Windows long path support (requires administrator privileges)
+- Enable Windows Developer Mode (requires administrator privileges)
 - Guide you through installing required Visual Studio components from `.vsconfig`
 - Initialize git submodules
 
