@@ -171,10 +171,26 @@ if (-not $SkipVSComponents) {
                     $decision = $Host.UI.PromptForChoice("", "Install VS components now?", $choices, 1)
 
                     if ($decision -eq 0) {
-                        Write-Host "  Launching Visual Studio Installer..."
-                        Write-Host "  Close Visual Studio if it's running." -ForegroundColor DarkGray
-                        Start-Process -FilePath $vsInstaller -ArgumentList "modify", "--installPath", "`"$VSInstallPath`"", "--config", "`"$vsConfigPath`"" -Wait
-                        Write-Host "  VS component installation completed" -ForegroundColor Green
+                        # Check if VS Installer is already running (it runs as setup.exe from the Installer folder)
+                        $vsInstallerDir = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer"
+                        $vsInstallerRunning = Get-Process -Name "setup" -ErrorAction SilentlyContinue |
+                            Where-Object { $_.Path -and $_.Path.StartsWith($vsInstallerDir, [System.StringComparison]::OrdinalIgnoreCase) }
+                        if ($vsInstallerRunning) {
+                            Write-Warning "  Visual Studio Installer is already running"
+                            Write-Host "  Close it and run this script again, or import .vsconfig manually" -ForegroundColor DarkGray
+                        } else {
+                            Write-Host "  Launching Visual Studio Installer..."
+                            Write-Host "  Close Visual Studio if it's running." -ForegroundColor DarkGray
+                            $process = Start-Process -FilePath $vsInstaller -ArgumentList "modify", "--installPath", "`"$VSInstallPath`"", "--config", "`"$vsConfigPath`"" -Wait -PassThru
+                            if ($process.ExitCode -eq 0) {
+                                Write-Host "  VS component installation completed" -ForegroundColor Green
+                            } elseif ($process.ExitCode -eq 3010) {
+                                Write-Host "  VS component installation completed (restart may be required)" -ForegroundColor Green
+                            } else {
+                                Write-Warning "  VS Installer exited with code $($process.ExitCode)"
+                                Write-Host "  You may need to run the installer manually" -ForegroundColor DarkGray
+                            }
+                        }
                     } else {
                         Write-Host "  Skipped VS component installation"
                     }
