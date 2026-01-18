@@ -83,14 +83,39 @@ Once you've discussed your proposed feature/fix/etc. with a team member, and an 
 1. A local clone of the PowerToys repository
 1. Enable long paths in Windows (see [Enable Long Paths](https://docs.microsoft.com/windows/win32/fileio/maximum-file-path-limitation#enabling-long-paths-in-windows-10-version-1607-and-later) for details)
 
-### Install Visual Studio dependencies
+### Automated Setup (Recommended)
+
+Run the setup script to automatically configure your development environment:
+
+```powershell
+.\tools\build\setup-dev-environment.ps1
+```
+
+This script will:
+- Enable Windows long path support (requires administrator privileges)
+- Guide you through installing required Visual Studio components from `.vsconfig`
+- Initialize git submodules
+
+Run with `-Help` to see all available options:
+
+```powershell
+.\tools\build\setup-dev-environment.ps1 -Help
+```
+
+### Manual Setup
+
+If you prefer to set up manually, follow these steps:
+
+#### Install Visual Studio dependencies
 
 1. Open the `PowerToys.slnx` file.
 1. If you see a dialog that says `install extra components` in the solution explorer pane, click `install`
 
-### Get Submodules to compile
+Alternatively, import the `.vsconfig` file from the repository root using Visual Studio Installer to install all required workloads.
 
-We have submodules that need to be initialized before you can compile most parts of PowerToys.  This should be a one-time step.
+#### Get Submodules to compile
+
+We have submodules that need to be initialized before you can compile most parts of PowerToys. This should be a one-time step.
 
 1. Open a terminal
 1. Navigate to the folder you cloned PowerToys to.
@@ -98,11 +123,31 @@ We have submodules that need to be initialized before you can compile most parts
 
 ### Compiling Source Code
 
+#### Using Visual Studio
+
 - Open `PowerToys.slnx` in Visual Studio.
 - In the `Solutions Configuration` drop-down menu select `Release` or `Debug`.
 - From the `Build` menu choose `Build Solution`, or press <kbd>Control</kbd>+<kbd>Shift</kbd>+<kbd>b</kbd> on your keyboard.
 - The build process may take several minutes depending on your computer's performance. Once it completes, the PowerToys binaries will be in your repo under `x64\Release\`.
     - You can run `x64\Release\PowerToys.exe` directly without installing PowerToys, but some modules (i.e. PowerRename, ImageResizer, File Explorer extension etc.) will not be available unless you also build the installer and install PowerToys.
+
+#### Using Command Line
+
+You can also build from the command line using the provided scripts in `tools\build\`:
+
+```powershell
+# Build the full solution (auto-detects platform)
+.\tools\build\build.ps1
+
+# Build with specific configuration
+.\tools\build\build.ps1 -Platform x64 -Configuration Release
+
+# Build only essential projects (runner + settings) for faster iteration
+.\tools\build\build-essentials.ps1
+
+# Build everything including the installer (Release only)
+.\tools\build\build-installer.ps1
+```
 
 ## Compile the installer
 
