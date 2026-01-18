@@ -85,6 +85,8 @@ COLORREF	g_CustomColors[16];
 #define DEMOTYPE_RESET_HOTKEY    11
 #define RECORD_GIF_HOTKEY        12
 #define RECORD_GIF_WINDOW_HOTKEY 13
+#define PANORAMA_HOTKEY          14
+#define PANORAMA_SAVE_HOTKEY     15
 
 #define ZOOM_PAGE	  0
 #define LIVE_PAGE	  1
@@ -148,6 +150,7 @@ DWORD	g_BreakToggleMod;
 DWORD	g_DemoTypeToggleMod;
 DWORD	g_RecordToggleMod;
 DWORD   g_SnipToggleMod;
+DWORD   g_PanoramaToggleMod;
 
 BOOLEAN	g_ZoomOnLiveZoom = FALSE;
 DWORD	g_PenWidth = PEN_WIDTH;
@@ -186,6 +189,12 @@ std::wstring	g_RecordingSaveLocationGIF;
 winrt::IDirect3DDevice	g_RecordDevice{ nullptr };
 std::shared_ptr<VideoRecordingSession> g_RecordingSession = nullptr;
 std::shared_ptr<GifRecordingSession> g_GifRecordingSession = nullptr;
+
+// Panorama capture globals
+BOOL    g_PanoramaCapturing = FALSE;
+std::unique_ptr<PanoramaCapture> g_PanoramaCapture = nullptr;
+BOOL    g_PanoramaSaveToFile = FALSE;
+
 type_pGetMonitorInfo		pGetMonitorInfo;
 type_MonitorFromPoint		pMonitorFromPoint;
 type_pSHAutoComplete		pSHAutoComplete;
@@ -1995,6 +2004,8 @@ void UnregisterAllHotkeys( HWND hWnd )
     UnregisterHotKey( hWnd, DEMOTYPE_RESET_HOTKEY );
     UnregisterHotKey( hWnd, RECORD_GIF_HOTKEY );
     UnregisterHotKey( hWnd, RECORD_GIF_WINDOW_HOTKEY );
+    UnregisterHotKey( hWnd, PANORAMA_HOTKEY );
+    UnregisterHotKey( hWnd, PANORAMA_SAVE_HOTKEY );
 }
 
 //----------------------------------------------------------------------------
@@ -2027,6 +2038,16 @@ void RegisterAllHotkeys(HWND hWnd)
     // Register CTRL+8 for GIF recording and CTRL+ALT+8 for GIF window recording
     RegisterHotKey(hWnd, RECORD_GIF_HOTKEY, MOD_CONTROL | MOD_NOREPEAT, 568 && 0xFF);
     RegisterHotKey(hWnd, RECORD_GIF_WINDOW_HOTKEY, MOD_CONTROL | MOD_ALT | MOD_NOREPEAT, 568 && 0xFF);
+
+    // Register panorama capture hotkeys
+    if (g_PanoramaToggleKey) {
+        OutputDebug( L"Registering PANORAMA_HOTKEY: key=0x%X, mod=0x%X\n", g_PanoramaToggleKey & 0xFF, g_PanoramaToggleMod );
+        BOOL reg1 = RegisterHotKey(hWnd, PANORAMA_HOTKEY, g_PanoramaToggleMod, g_PanoramaToggleKey & 0xFF);
+        BOOL reg2 = RegisterHotKey(hWnd, PANORAMA_SAVE_HOTKEY, (g_PanoramaToggleMod ^ MOD_SHIFT), g_PanoramaToggleKey & 0xFF);
+        OutputDebug( L"PANORAMA_HOTKEY registration result: %d, %d (LastError=%d)\n", reg1, reg2, GetLastError() );
+    } else {
+        OutputDebug( L"g_PanoramaToggleKey is 0, not registering panorama hotkey\n" );
+    }
 }
 
 
@@ -3491,6 +3512,54 @@ inline auto CopyBytesFromTexture(winrt::com_ptr<ID3D11Texture2D> const& texture,
     return bytes;
 }
 
+//----------------------------------------------------------------------------
+//
+// TextureToHBITMAP
+//
+// Convert ID3D11Texture2D to HBITMAP
+//
+//----------------------------------------------------------------------------
+HBITMAP TextureToHBITMAP(winrt::com_ptr<ID3D11Texture2D> const& texture)
+{
+    if (!texture)
+    {
+        return nullptr;
+    }
+
+    try
+    {
+        auto bytes = CopyBytesFromTexture(texture);
+        if (bytes.empty())
+        {
+            return nullptr;
+        }
+
+        D3D11_TEXTURE2D_DESC desc;
+        texture->GetDesc(&desc);
+
+        BITMAPINFO bitmapInfo = {};
+        bitmapInfo.bmiHeader.biSize = sizeof(bitmapInfo.bmiHeader);
+        bitmapInfo.bmiHeader.biWidth = desc.Width;
+        bitmapInfo.bmiHeader.biHeight = -static_cast<LONG>(desc.Height); // Top-down
+        bitmapInfo.bmiHeader.biPlanes = 1;
+        bitmapInfo.bmiHeader.biBitCount = 32;
+        bitmapInfo.bmiHeader.biCompression = BI_RGB;
+
+        void* bits = nullptr;
+        HBITMAP hBitmap = CreateDIBSection(nullptr, &bitmapInfo, DIB_RGB_COLORS, &bits, nullptr, 0);
+        if (hBitmap && bits)
+        {
+            CopyMemory(bits, bytes.data(), bytes.size());
+        }
+
+        return hBitmap;
+    }
+    catch (...)
+    {
+        return nullptr;
+    }
+}
+
 
 //----------------------------------------------------------------------------
 //
@@ -3679,7 +3748,7 @@ winrt::fire_and_forget StartRecordingAsync( HWND hWnd, LPRECT rcCrop, HWND hWndR
             static std::filesystem::path lastSaveFolder;
             wil::unique_cotaskmem_string chosenFolderPath;
             wil::com_ptr<IShellItem> currentSelectedFolder;
-            bool bFolderChanged = false; 
+            bool bFolderChanged = false;
             if (SUCCEEDED(saveDialog->GetFolder(currentSelectedFolder.put())))
             {
                 if (SUCCEEDED(currentSelectedFolder->GetDisplayName(SIGDN_FILESYSPATH, chosenFolderPath.put())))
@@ -4109,6 +4178,8 @@ LRESULT APIENTRY MainWndProc(
         g_DemoTypeToggleMod = GetKeyMod( g_DemoTypeToggleKey );
         g_SnipToggleMod = GetKeyMod( g_SnipToggleKey );
         g_RecordToggleMod = GetKeyMod( g_RecordToggleKey );
+        g_PanoramaToggleMod = GetKeyMod( g_PanoramaToggleKey );
+        OutputDebug( L"Panorama hotkey settings: g_PanoramaToggleKey=0x%X, g_PanoramaToggleMod=0x%X\n", g_PanoramaToggleKey, g_PanoramaToggleMod );
 
         if( !g_OptionsShown && !g_StartedByPowerToys ) {
             // First run should show options when running as standalone. If not running as standalone,
@@ -4174,6 +4245,19 @@ LRESULT APIENTRY MainWndProc(
                     APPNAME, MB_ICONERROR);
                 showOptions = TRUE;
             }
+            // Register panorama hotkey at startup
+            if (g_PanoramaToggleKey) {
+                OutputDebug( L"Startup: Registering PANORAMA_HOTKEY: key=0x%X, mod=0x%X\n", g_PanoramaToggleKey & 0xFF, g_PanoramaToggleMod );
+                if (!RegisterHotKey(hWnd, PANORAMA_HOTKEY, g_PanoramaToggleMod, g_PanoramaToggleKey & 0xFF) ||
+                    !RegisterHotKey(hWnd, PANORAMA_SAVE_HOTKEY, (g_PanoramaToggleMod ^ MOD_SHIFT), g_PanoramaToggleKey & 0xFF)) {
+                    OutputDebug( L"Startup: PANORAMA_HOTKEY registration FAILED, LastError=%d\n", GetLastError() );
+                    MessageBox(hWnd, L"The specified panorama hotkey is already in use.\nSelect a different panorama hotkey.",
+                        APPNAME, MB_ICONERROR);
+                    showOptions = TRUE;
+                } else {
+                    OutputDebug( L"Startup: PANORAMA_HOTKEY registration SUCCESS\n" );
+                }
+            }
             if( showOptions ) {
 
                 SendMessage( hWnd, WM_COMMAND, IDC_OPTIONS, 0 );
@@ -4188,6 +4272,7 @@ LRESULT APIENTRY MainWndProc(
         return 0;
 
     case WM_HOTKEY:
+        OutputDebug( L"WM_HOTKEY received: wParam=%d, lParam=0x%X\n", (int)wParam, (int)lParam );
         if( g_RecordCropping == TRUE )
         {
             if( wParam != RECORD_CROP_HOTKEY )
@@ -4373,6 +4458,120 @@ LRESULT APIENTRY MainWndProc(
                 {
                     OutputDebug( L"Exiting liveDraw after snip\n" );
                     SendMessage( hWnd, WM_KEYDOWN, VK_ESCAPE, 0 );
+                }
+            }
+            break;
+        }
+
+        case PANORAMA_SAVE_HOTKEY:
+        case PANORAMA_HOTKEY:
+        {
+            // Handle panorama capture hotkey
+            OutputDebug( L"PANORAMA_HOTKEY received, capturing=%d\n", g_PanoramaCapturing );
+
+            if( g_PanoramaCapturing )
+            {
+                // User pressed hotkey again or ESC - stop and process result
+                if( g_PanoramaCapture )
+                {
+                    HBITMAP hResult = g_PanoramaCapture->Stop();
+
+                    if( hResult )
+                    {
+                        if( g_PanoramaSaveToFile )
+                        {
+                            // Save to file - show Save As dialog
+                            OPENFILENAME openFileName;
+                            TCHAR filePath[MAX_PATH] = L"Panorama.png";
+
+                            memset( &openFileName, 0, sizeof(openFileName) );
+                            openFileName.lStructSize = OPENFILENAME_SIZE_VERSION_400;
+                            openFileName.hwndOwner = hWnd;
+                            openFileName.hInstance = static_cast<HINSTANCE>(g_hInstance);
+                            openFileName.nMaxFile = sizeof(filePath)/sizeof(filePath[0]);
+                            openFileName.Flags = OFN_LONGNAMES | OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT;
+                            openFileName.lpstrTitle = L"Save panorama screenshot...";
+                            openFileName.lpstrDefExt = L"png";
+                            openFileName.nFilterIndex = 1;
+                            openFileName.lpstrFilter = L"PNG Image\0*.png\0\0";
+                            openFileName.lpstrFile = filePath;
+
+                            if( GetSaveFileName( &openFileName ) )
+                            {
+                                TCHAR targetFilePath[MAX_PATH];
+                                _tcscpy( targetFilePath, filePath );
+                                if( !_tcsrchr( targetFilePath, '.' ) )
+                                {
+                                    _tcscat( targetFilePath, L".png" );
+                                }
+                                SavePng( targetFilePath, hResult );
+                            }
+                        }
+                        else
+                        {
+                            // Copy to clipboard
+                            if( OpenClipboard( hWnd ) )
+                            {
+                                EmptyClipboard();
+                                SetClipboardData( CF_BITMAP, hResult );
+                                CloseClipboard();
+                                // Don't delete hResult - clipboard owns it now
+                                hResult = nullptr;
+                            }
+                        }
+
+                        if( hResult )
+                        {
+                            DeleteObject( hResult );
+                        }
+                    }
+
+                    g_PanoramaCapture.reset();
+                }
+                g_PanoramaCapturing = FALSE;
+                g_PanoramaSaveToFile = FALSE;
+            }
+            else
+            {
+                // Block if LiveZoom/LiveDraw is active due to mirroring bug
+                if( IsWindowVisible( g_hWndLiveZoom )
+                    && ( GetWindowLongPtr( hWnd, GWL_EXSTYLE ) & WS_EX_LAYERED ) )
+                {
+                    break;
+                }
+
+                // Start panorama capture
+                g_PanoramaSaveToFile = ( LOWORD( wParam ) == PANORAMA_SAVE_HOTKEY );
+
+                // Let user select the capture rectangle
+                SelectRectangle selectRectangle;
+                if( !selectRectangle.Start( hWnd ) )
+                {
+                    break;
+                }
+
+                RECT captureRect = selectRectangle.SelectedRect();
+                selectRectangle.Stop();
+
+                // Validate rectangle size
+                if( (captureRect.right - captureRect.left) < 50 ||
+                    (captureRect.bottom - captureRect.top) < 50 )
+                {
+                    MessageBox( hWnd, L"Selected region is too small for panorama capture.", APPNAME, MB_OK | MB_ICONWARNING );
+                    break;
+                }
+
+                // Create and start panorama capture
+                g_PanoramaCapture = std::make_unique<PanoramaCapture>();
+                if( g_PanoramaCapture->Start( hWnd, captureRect ) )
+                {
+                    g_PanoramaCapturing = TRUE;
+                    OutputDebug( L"Panorama capture started\n" );
+                }
+                else
+                {
+                    g_PanoramaCapture.reset();
+                    MessageBox( hWnd, L"Failed to start panorama capture.", APPNAME, MB_OK | MB_ICONERROR );
                 }
             }
             break;
@@ -5293,6 +5492,14 @@ LRESULT APIENTRY MainWndProc(
         break;
 
     case WM_KEYDOWN:
+
+        // Handle ESC during panorama capture
+        if( g_PanoramaCapturing && wParam == VK_ESCAPE )
+        {
+            // Stop panorama capture and process result
+            PostMessage( hWnd, WM_HOTKEY, PANORAMA_HOTKEY, 0 );
+            return TRUE;
+        }
 
         if( (g_TypeMode != TypeModeOff) && g_HaveTyped && static_cast<char>(wParam) != VK_UP && static_cast<char>(wParam) != VK_DOWN &&
             (isprint( static_cast<char>(wParam)) ||
@@ -6384,11 +6591,11 @@ LRESULT APIENTRY MainWndProc(
     {
         // Reload the settings. This message is called from PowerToys after a setting is changed by the user.
         reg.ReadRegSettings(RegSettings);
-        
+
         if (g_RecordingFormat == RecordingFormat::GIF)
         {
             g_RecordScaling = g_RecordScalingGIF;
-            g_RecordFrameRate = RECORDING_FORMAT_GIF_DEFAULT_FRAMERATE; 
+            g_RecordFrameRate = RECORDING_FORMAT_GIF_DEFAULT_FRAMERATE;
         }
         else
         {
@@ -6414,6 +6621,7 @@ LRESULT APIENTRY MainWndProc(
         g_DemoTypeToggleMod = GetKeyMod(g_DemoTypeToggleKey);
         g_SnipToggleMod = GetKeyMod(g_SnipToggleKey);
         g_RecordToggleMod = GetKeyMod(g_RecordToggleKey);
+        g_PanoramaToggleMod = GetKeyMod(g_PanoramaToggleKey);
         BOOL showOptions = FALSE;
         if (g_ToggleKey)
         {
@@ -6483,6 +6691,16 @@ LRESULT APIENTRY MainWndProc(
             MessageBox(hWnd, L"The specified GIF recording hotkey is already in use.\nSelect a different GIF recording hotkey.", APPNAME, MB_ICONERROR);
             showOptions = TRUE;
         }
+        // Register panorama hotkeys
+        if (g_PanoramaToggleKey)
+        {
+            if (!RegisterHotKey(hWnd, PANORAMA_HOTKEY, g_PanoramaToggleMod, g_PanoramaToggleKey & 0xFF) ||
+                !RegisterHotKey(hWnd, PANORAMA_SAVE_HOTKEY, (g_PanoramaToggleMod ^ MOD_SHIFT), g_PanoramaToggleKey & 0xFF))
+            {
+                MessageBox(hWnd, L"The specified panorama hotkey is already in use.\nSelect a different panorama hotkey.", APPNAME, MB_ICONERROR);
+                showOptions = TRUE;
+            }
+        }
         if (showOptions)
         {
             // To open the PowerToys settings in the ZoomIt page.
@@ -6490,6 +6708,70 @@ LRESULT APIENTRY MainWndProc(
         }
         break;
     }
+
+    case WM_USER_PANORAMA_STOP:
+    {
+        OutputDebug( L"WM_USER_PANORAMA_STOP received\n" );
+        if( g_PanoramaCapturing && g_PanoramaCapture )
+        {
+            HBITMAP hResult = g_PanoramaCapture->Stop();
+
+            if( hResult )
+            {
+                if( g_PanoramaSaveToFile )
+                {
+                    // Save to file - show Save As dialog
+                    OPENFILENAME openFileName;
+                    TCHAR filePath[MAX_PATH] = L"Panorama.png";
+
+                    memset( &openFileName, 0, sizeof(openFileName) );
+                    openFileName.lStructSize = OPENFILENAME_SIZE_VERSION_400;
+                    openFileName.hwndOwner = hWnd;
+                    openFileName.hInstance = static_cast<HINSTANCE>(g_hInstance);
+                    openFileName.nMaxFile = sizeof(filePath)/sizeof(filePath[0]);
+                    openFileName.Flags = OFN_LONGNAMES | OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT;
+                    openFileName.lpstrTitle = L"Save panorama screenshot...";
+                    openFileName.lpstrDefExt = L"png";
+                    openFileName.nFilterIndex = 1;
+                    openFileName.lpstrFilter = L"PNG Image\0*.png\0\0";
+                    openFileName.lpstrFile = filePath;
+
+                    if( GetSaveFileName( &openFileName ) )
+                    {
+                        TCHAR targetFilePath[MAX_PATH];
+                        _tcscpy( targetFilePath, filePath );
+                        if( !_tcsrchr( targetFilePath, '.' ) )
+                        {
+                            _tcscat( targetFilePath, L".png" );
+                        }
+                        SavePng( targetFilePath, hResult );
+                    }
+                    DeleteObject( hResult );
+                }
+                else
+                {
+                    // Copy to clipboard
+                    if( OpenClipboard( hWnd ) )
+                    {
+                        EmptyClipboard();
+                        SetClipboardData( CF_BITMAP, hResult );
+                        CloseClipboard();
+                        // Don't delete hResult - clipboard owns it now
+                    }
+                    else
+                    {
+                        DeleteObject( hResult );
+                    }
+                }
+            }
+
+            g_PanoramaCapture.reset();
+            g_PanoramaCapturing = FALSE;
+            g_PanoramaSaveToFile = FALSE;
+        }
+        break;
+    }
+
     case WM_COMMAND:
 
         switch(LOWORD( wParam )) {
@@ -7080,6 +7362,14 @@ LRESULT APIENTRY MainWndProc(
         return TRUE;
 
     case WM_DESTROY:
+
+        // Clean up panorama capture if active
+        if( g_PanoramaCapturing && g_PanoramaCapture )
+        {
+            g_PanoramaCapture->Cancel();
+            g_PanoramaCapture.reset();
+            g_PanoramaCapturing = FALSE;
+        }
 
         PostQuitMessage( 0 );
         break;

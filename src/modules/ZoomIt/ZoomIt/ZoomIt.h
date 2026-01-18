@@ -66,10 +66,11 @@ type_pEnableThemeDialogTexture    pEnableThemeDialogTexture;
 #define WM_USER_MAGNIFY_CURSOR	WM_USER+108
 #define WM_USER_EXIT_MODE		WM_USER+109
 #define WM_USER_RELOAD_SETTINGS	WM_USER+110
+#define WM_USER_PANORAMA_STOP   WM_USER+500
 
 typedef struct _TYPED_KEY {
     RECT		rc;
-    struct _TYPED_KEY *Next;	
+    struct _TYPED_KEY *Next;
 } TYPED_KEY, *P_TYPED_KEY;
 
 typedef struct _DRAW_UNDO {
@@ -108,17 +109,17 @@ typedef struct {
 
 typedef BOOL (__stdcall *type_pGetMonitorInfo)(
   HMONITOR hMonitor,  // handle to display monitor
-  LPMONITORINFO lpmi  // display monitor information 
+  LPMONITORINFO lpmi  // display monitor information
 );
 
 typedef HMONITOR (__stdcall *type_MonitorFromPoint)(
-  POINT pt,      // point 
+  POINT pt,      // point
   DWORD dwFlags  // determine return value
 );
 
 typedef HRESULT (__stdcall *type_pSHAutoComplete)(
     HWND hwndEdit,
-    DWORD dwFlags 
+    DWORD dwFlags
 );
 
 // DPI awareness
@@ -151,7 +152,7 @@ typedef BOOL(__stdcall *type_pMagSetWindowFilterList)(
     HWND* pHWND
 );
 typedef BOOL(__stdcall* type_pMagSetLensUseBitmapSmoothing)(
-    _In_ HWND, 
+    _In_ HWND,
     _In_ BOOL
 );
 typedef BOOL(__stdcall* type_MagSetFullscreenUseBitmapSmoothing)(
@@ -169,7 +170,7 @@ typedef BOOL(__stdcall *type_pGetPointerPenInfo)(
     _Out_  POINTER_PEN_INFO *penInfo
     );
 
-typedef HRESULT (__stdcall *type_pDwmIsCompositionEnabled)(          
+typedef HRESULT (__stdcall *type_pDwmIsCompositionEnabled)(
     BOOL *pfEnabled
 );
 
@@ -182,7 +183,7 @@ typedef BOOL (__stdcall *type_pSetLayeredWindowAttributes)(
 );
 
 // Presentation mode check
-typedef HRESULT (__stdcall *type_pSHQueryUserNotificationState)(          
+typedef HRESULT (__stdcall *type_pSHQueryUserNotificationState)(
     QUERY_USER_NOTIFICATION_STATE *pQueryUserNotificationState
 );
 

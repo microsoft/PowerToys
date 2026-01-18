@@ -60,6 +60,7 @@
 #include "SelectRectangle.h"
 #include "DemoType.h"
 #include "versionhelper.h"
+#include "PanoramaCapture.h"
 
 // WIL
 #include <wil/com.h>
@@ -83,6 +84,9 @@
 #include <regex>
 #include <fstream>
 #include <sstream>
+#include <thread>
+#include <mutex>
+#include <chrono>
 
 // robmikh.common
 #include <robmikh.common/composition.interop.h>

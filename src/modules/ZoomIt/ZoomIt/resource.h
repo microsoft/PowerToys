@@ -104,13 +104,16 @@
 #define IDC_COPY_CROP                   40008
 #define IDC_SAVE_CROP                   40009
 #define IDC_DEMOTYPE_HOTKEY             40011
+#define IDC_PANORAMA_HOTKEY             40013
+#define IDC_PANORAMA_CROP               40014
+#define IDC_PANORAMA_SAVE               40015
 
 // Next default values for new objects
-// 
+//
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        118
-#define _APS_NEXT_COMMAND_VALUE         40013
+#define _APS_NEXT_COMMAND_VALUE         40016
 #define _APS_NEXT_CONTROL_VALUE         1078
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
