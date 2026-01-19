@@ -553,6 +553,11 @@ namespace Awake
                         {
                             settings.Properties.ExpirationDateTime = DateTimeOffset.Now.AddMinutes(5);
                             _settingsUtils.SaveSettings(JsonSerializer.Serialize(settings), Core.Constants.AppName);
+
+                            // Return here - the FileSystemWatcher will re-trigger ProcessSettings
+                            // with the corrected expiration time, which will then call SetExpirableKeepAwake.
+                            // This matches the pattern used by mode setters (e.g., SetExpirableKeepAwake line 292).
+                            return;
                         }
 
                         Manager.SetExpirableKeepAwake(settings.Properties.ExpirationDateTime, settings.Properties.KeepDisplayOn);

@@ -184,7 +184,11 @@ namespace Awake.Core
 
         internal static void SetShellIcon(IntPtr hWnd, string text, Icon? icon, TrayIconAction action = TrayIconAction.Add, [CallerMemberName] string callerName = "")
         {
-            if (hWnd != IntPtr.Zero && icon != null)
+            // For Delete operations, we don't need an icon - only hWnd is required
+            // For Add/Update operations, we need both hWnd and icon
+            bool canProceed = hWnd != IntPtr.Zero && (action == TrayIconAction.Delete || icon != null);
+
+            if (canProceed)
             {
                 int message = Native.Constants.NIM_ADD;
 
@@ -278,7 +282,7 @@ namespace Awake.Core
             }
             else
             {
-                Logger.LogInfo($"Cannot set the shell icon - parent window handle is zero or icon is not available. Text: {text} Action: {action}");
+                Logger.LogInfo($"Cannot set the shell icon - parent window handle is zero{(action != TrayIconAction.Delete && icon == null ? " or icon is not available" : string.Empty)}. Text: {text} Action: {action}");
             }
         }
 

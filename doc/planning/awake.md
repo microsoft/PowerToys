@@ -33,6 +33,9 @@ The build ID moniker is made up of two components - a reference to a [Halo](http
 - Investigated [#44134](https://github.com/microsoft/PowerToys/issues/44134) - documented that `ES_DISPLAY_REQUIRED` (used when "Keep display on" is enabled) blocks Task Scheduler idle detection, preventing scheduled maintenance tasks like SSD TRIM. Workaround: disable "Keep display on" or manually run `Optimize-Volume -DriveLetter C -ReTrim`. Additional investigation needed for potential "idle window" feature.
 - [#41738](https://github.com/microsoft/PowerToys/issues/41738) Fixed `--display-on` CLI flag default from `true` to `false` to align with documentation and PowerToys settings behavior. This is a breaking change for scripts relying on the undocumented default.
 - [#41674](https://github.com/microsoft/PowerToys/issues/41674) Fixed silent failure when `SetThreadExecutionState` fails. The monitor thread now handles the return value, logs an error, and reverts to passive mode with updated tray icon.
+- [#38770](https://github.com/microsoft/PowerToys/issues/38770) Fixed tray icon failing to appear after Windows updates. Increased retry attempts and delays for icon Add operations (10 attempts, up to ~15.5 seconds total) while keeping existing fast retry behavior for Update/Delete operations.
+- [#40501](https://github.com/microsoft/PowerToys/issues/40501) Fixed tray icon not disappearing when Awake is disabled. The `SetShellIcon` function was incorrectly requiring an icon for Delete operations, causing the `NIM_DELETE` message to never be sent.
+- [#40659](https://github.com/microsoft/PowerToys/issues/40659) Fixed potential stack overflow crash in EXPIRABLE mode. Added early return after SaveSettings when correcting past expiration times, matching the pattern used by other mode handlers to prevent re-entrant execution.
 
 ### `TILLSON_11272024` (November 27, 2024)
 
