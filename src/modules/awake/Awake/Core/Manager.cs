@@ -78,7 +78,12 @@ namespace Awake.Core
 
                         Logger.LogInfo($"Setting state to {state}");
 
-                        SetAwakeState(state);
+                        if (!SetAwakeState(state))
+                        {
+                            Logger.LogError($"Failed to set execution state to {state}. Reverting to passive mode.");
+                            CurrentOperatingMode = AwakeMode.PASSIVE;
+                            SetModeShellIcon();
+                        }
                     }
                 }
                 catch (OperationCanceledException)
