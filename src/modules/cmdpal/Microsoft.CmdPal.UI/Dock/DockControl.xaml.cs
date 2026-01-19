@@ -157,17 +157,35 @@ public sealed partial class DockControl : UserControl, INotifyPropertyChanged, I
 
     internal void EnterEditMode()
     {
+        // Snapshot current state so we can restore on discard
+        ViewModel.SnapshotBandOrder();
         IsEditMode = true;
     }
 
     internal void ExitEditMode()
     {
         IsEditMode = false;
+
+        // Save all changes when exiting edit mode
+        ViewModel.SaveBandOrder();
+    }
+
+    internal void DiscardEditMode()
+    {
+        IsEditMode = false;
+
+        // Restore the original band order from snapshot
+        ViewModel.RestoreBandOrder();
     }
 
     private void DoneEditingButton_Click(object sender, RoutedEventArgs e)
     {
         ExitEditMode();
+    }
+
+    private void DiscardEditingButton_Click(object sender, RoutedEventArgs e)
+    {
+        DiscardEditMode();
     }
 
     internal void UpdateSettings(DockSettings settings)
@@ -366,18 +384,19 @@ public sealed partial class DockControl : UserControl, INotifyPropertyChanged, I
 
     private void BandListView_DragItemsCompleted(ListViewBase sender, DragItemsCompletedEventArgs args)
     {
-        // This handles reordering within the same list
+        // Reordering within the same list is handled automatically by ListView
+        // We just need to sync the ViewModel order without saving
         if (args.DropResult == DataPackageOperation.Move && _draggedBand != null)
         {
             var isStartList = sender == StartItemsListView;
             var targetSide = isStartList ? DockPinSide.Start : DockPinSide.End;
             var targetCollection = isStartList ? ViewModel.StartItems : ViewModel.EndItems;
 
-            // Find the new index of the dragged band
+            // Find the new index and sync ViewModel (without saving)
             var newIndex = targetCollection.IndexOf(_draggedBand);
             if (newIndex >= 0)
             {
-                ViewModel.MoveBand(_draggedBand, targetSide, newIndex);
+                ViewModel.SyncBandPosition(_draggedBand, targetSide, newIndex);
             }
         }
 
@@ -417,8 +436,8 @@ public sealed partial class DockControl : UserControl, INotifyPropertyChanged, I
 
             var dropIndex = GetDropIndex(targetListView, e, targetCollection.Count);
 
-            // Move the band to the new side
-            ViewModel.MoveBand(_draggedBand, targetSide, dropIndex);
+            // Move the band to the new side (without saving - save happens on Done)
+            ViewModel.MoveBandWithoutSaving(_draggedBand, targetSide, dropIndex);
             e.Handled = true;
         }
     }

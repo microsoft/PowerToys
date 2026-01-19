@@ -140,18 +140,41 @@ public sealed partial class DockViewModel : IDisposable,
     }
 
     /// <summary>
-    /// Moves a dock band to a new position, either within the same side or to the other side.
-    /// This method updates both the UI collections and persists the change to settings.
+    /// Syncs the band position in settings after a same-list reorder.
+    /// Does not save to disk - call SaveBandOrder() when done editing.
     /// </summary>
-    /// <param name="band">The band to move.</param>
-    /// <param name="targetSide">The target side (Start or End) for the band.</param>
-    /// <param name="targetIndex">The index within the target side to insert the band.</param>
-    public void MoveBand(DockBandViewModel band, DockPinSide targetSide, int targetIndex)
+    public void SyncBandPosition(DockBandViewModel band, DockPinSide targetSide, int targetIndex)
     {
         var bandId = band.Id;
         var dockSettings = _settingsModel.DockSettings;
 
-        // Find and remove the band settings from both lists
+        var bandSettings = dockSettings.StartBands.FirstOrDefault(b => b.Id == bandId)
+                        ?? dockSettings.EndBands.FirstOrDefault(b => b.Id == bandId);
+
+        if (bandSettings == null)
+        {
+            return;
+        }
+
+        // Remove from both settings lists
+        dockSettings.StartBands.RemoveAll(b => b.Id == bandId);
+        dockSettings.EndBands.RemoveAll(b => b.Id == bandId);
+
+        // Add to target settings list at the correct index
+        var targetSettings = targetSide == DockPinSide.Start ? dockSettings.StartBands : dockSettings.EndBands;
+        var insertIndex = Math.Min(targetIndex, targetSettings.Count);
+        targetSettings.Insert(insertIndex, bandSettings);
+    }
+
+    /// <summary>
+    /// Moves a dock band to a new position (cross-list drop).
+    /// Does not save to disk - call SaveBandOrder() when done editing.
+    /// </summary>
+    public void MoveBandWithoutSaving(DockBandViewModel band, DockPinSide targetSide, int targetIndex)
+    {
+        var bandId = band.Id;
+        var dockSettings = _settingsModel.DockSettings;
+
         var bandSettings = dockSettings.StartBands.FirstOrDefault(b => b.Id == bandId)
                         ?? dockSettings.EndBands.FirstOrDefault(b => b.Id == bandId);
 
@@ -161,11 +184,9 @@ public sealed partial class DockViewModel : IDisposable,
             return;
         }
 
-        // Remove from both sides
+        // Remove from both sides (settings and UI)
         dockSettings.StartBands.RemoveAll(b => b.Id == bandId);
         dockSettings.EndBands.RemoveAll(b => b.Id == bandId);
-
-        // Also update the UI collections
         StartItems.Remove(band);
         EndItems.Remove(band);
 
@@ -174,33 +195,118 @@ public sealed partial class DockViewModel : IDisposable,
         {
             case DockPinSide.Start:
                 {
-                    var insertIndex = Math.Min(targetIndex, dockSettings.StartBands.Count);
-                    dockSettings.StartBands.Insert(insertIndex, bandSettings);
+                    var settingsIndex = Math.Min(targetIndex, dockSettings.StartBands.Count);
+                    dockSettings.StartBands.Insert(settingsIndex, bandSettings);
 
-                    var uiInsertIndex = Math.Min(targetIndex, StartItems.Count);
-                    StartItems.Insert(uiInsertIndex, band);
+                    var uiIndex = Math.Min(targetIndex, StartItems.Count);
+                    StartItems.Insert(uiIndex, band);
                     break;
                 }
 
             case DockPinSide.End:
                 {
-                    var insertIndex = Math.Min(targetIndex, dockSettings.EndBands.Count);
-                    dockSettings.EndBands.Insert(insertIndex, bandSettings);
+                    var settingsIndex = Math.Min(targetIndex, dockSettings.EndBands.Count);
+                    dockSettings.EndBands.Insert(settingsIndex, bandSettings);
 
-                    var uiInsertIndex = Math.Min(targetIndex, EndItems.Count);
-                    EndItems.Insert(uiInsertIndex, band);
+                    var uiIndex = Math.Min(targetIndex, EndItems.Count);
+                    EndItems.Insert(uiIndex, band);
                     break;
                 }
-
-            case DockPinSide.None:
-            default:
-                // Band is being unpinned - no UI update needed as it won't be visible
-                break;
         }
 
-        // Persist the change
+        Logger.LogDebug($"Moved band {bandId} to {targetSide} at index {targetIndex} (not saved yet)");
+    }
+
+    /// <summary>
+    /// Saves the current band order to settings.
+    /// Call this when exiting edit mode.
+    /// </summary>
+    public void SaveBandOrder()
+    {
+        _snapshotStartBands = null;
+        _snapshotEndBands = null;
         SettingsModel.SaveSettings(_settingsModel);
-        Logger.LogDebug($"Moved band {bandId} to {targetSide} at index {targetIndex}");
+        Logger.LogDebug("Saved band order to settings");
+    }
+
+    private List<DockBandSettings>? _snapshotStartBands;
+    private List<DockBandSettings>? _snapshotEndBands;
+
+    /// <summary>
+    /// Takes a snapshot of the current band order before editing.
+    /// Call this when entering edit mode.
+    /// </summary>
+    public void SnapshotBandOrder()
+    {
+        var dockSettings = _settingsModel.DockSettings;
+        _snapshotStartBands = dockSettings.StartBands.Select(b => new DockBandSettings { Id = b.Id }).ToList();
+        _snapshotEndBands = dockSettings.EndBands.Select(b => new DockBandSettings { Id = b.Id }).ToList();
+        Logger.LogDebug($"Snapshot taken: {_snapshotStartBands.Count} start bands, {_snapshotEndBands.Count} end bands");
+    }
+
+    /// <summary>
+    /// Restores the band order from the snapshot taken when entering edit mode.
+    /// Call this when discarding edit mode changes.
+    /// </summary>
+    public void RestoreBandOrder()
+    {
+        if (_snapshotStartBands == null || _snapshotEndBands == null)
+        {
+            Logger.LogWarning("No snapshot to restore from");
+            return;
+        }
+
+        var dockSettings = _settingsModel.DockSettings;
+
+        // Restore settings from snapshot
+        dockSettings.StartBands.Clear();
+        dockSettings.EndBands.Clear();
+
+        foreach (var bandSnapshot in _snapshotStartBands)
+        {
+            var bandSettings = new DockBandSettings { Id = bandSnapshot.Id };
+            dockSettings.StartBands.Add(bandSettings);
+        }
+
+        foreach (var bandSnapshot in _snapshotEndBands)
+        {
+            var bandSettings = new DockBandSettings { Id = bandSnapshot.Id };
+            dockSettings.EndBands.Add(bandSettings);
+        }
+
+        // Rebuild UI collections from restored settings
+        RebuildUICollections();
+
+        _snapshotStartBands = null;
+        _snapshotEndBands = null;
+        Logger.LogDebug("Restored band order from snapshot");
+    }
+
+    private void RebuildUICollections()
+    {
+        var dockSettings = _settingsModel.DockSettings;
+
+        // Create a lookup of all current band ViewModels
+        var allBands = StartItems.Concat(EndItems).ToDictionary(b => b.Id);
+
+        StartItems.Clear();
+        EndItems.Clear();
+
+        foreach (var bandSettings in dockSettings.StartBands)
+        {
+            if (allBands.TryGetValue(bandSettings.Id, out var bandVM))
+            {
+                StartItems.Add(bandVM);
+            }
+        }
+
+        foreach (var bandSettings in dockSettings.EndBands)
+        {
+            if (allBands.TryGetValue(bandSettings.Id, out var bandVM))
+            {
+                EndItems.Add(bandVM);
+            }
+        }
     }
 
     public void ShowException(Exception ex, string? extensionHint = null)

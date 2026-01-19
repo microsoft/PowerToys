@@ -16,10 +16,9 @@
 
     <UserControl.Resources>
         <ResourceDictionary>
-            <StackLayout
-                x:Key="ItemsOrientation"
-                Orientation="{x:Bind ItemsOrientation, Mode=OneWay}"
-                Spacing="4" />
+            <ItemsPanelTemplate x:Key="ItemsOrientation">
+                <StackPanel Orientation="Horizontal" Spacing="4" />
+            </ItemsPanelTemplate>
 
             <Style x:Key="ResizingIconStyle" TargetType="cpcontrols:IconBox">
                 <Setter Property="Height" Value="{x:Bind IconSize, Mode=OneWay}" />
@@ -45,13 +44,12 @@
                     CornerRadius="{ThemeResource ControlCornerRadius}"
                     PointerEntered="BandItem_PointerEntered"
                     PointerExited="BandItem_PointerExited"
-                    Tapped="BandItem_Tapped"
                     RightTapped="BandItem_RightTapped"
+                    Tapped="BandItem_Tapped"
                     ToolTipService.ToolTip="{x:Bind Tooltip, Mode=OneWay}">
 
                     <Grid AutomationProperties.Name="{x:Bind Title, Mode=OneWay}" Background="Transparent">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
@@ -168,7 +166,6 @@
         BorderBrush="{ThemeResource SurfaceStrokeColorDefaultBrush}"
         BorderThickness="0,0,0,1"
         RightTapped="RootGrid_RightTapped">
-
         <!--  Edit Mode Overlay - shown when in edit mode  -->
         <Border
             x:Name="EditModeOverlay"
@@ -202,15 +199,10 @@
                         Drop="StartItemsListView_Drop"
                         ItemContainerStyle="{StaticResource DockBandListViewItemStyle}"
                         ItemTemplate="{StaticResource DockBandTemplate}"
+                        ItemsPanel="{StaticResource ItemsOrientation}"
                         ItemsSource="{x:Bind ViewModel.StartItems, Mode=OneWay}"
                         SelectionMode="None"
-                        Style="{StaticResource DockBandListViewStyle}">
-                        <ListView.ItemsPanel>
-                            <ItemsPanelTemplate>
-                                <StackPanel Orientation="Horizontal" Spacing="4" />
-                            </ItemsPanelTemplate>
-                        </ListView.ItemsPanel>
-                    </ListView>
+                        Style="{StaticResource DockBandListViewStyle}" />
                 </cpcontrols:ScrollContainer.Source>
             </cpcontrols:ScrollContainer>
 
@@ -227,28 +219,35 @@
                         Drop="EndItemsListView_Drop"
                         ItemContainerStyle="{StaticResource DockBandListViewItemStyle}"
                         ItemTemplate="{StaticResource DockBandTemplate}"
+                        ItemsPanel="{StaticResource ItemsOrientation}"
                         ItemsSource="{x:Bind ViewModel.EndItems, Mode=OneWay}"
                         SelectionMode="None"
-                        Style="{StaticResource DockBandListViewStyle}">
-                        <ListView.ItemsPanel>
-                            <ItemsPanelTemplate>
-                                <StackPanel Orientation="Horizontal" Spacing="4" />
-                            </ItemsPanelTemplate>
-                        </ListView.ItemsPanel>
-                    </ListView>
+                        Style="{StaticResource DockBandListViewStyle}" />
                 </cpcontrols:ScrollContainer.Source>
             </cpcontrols:ScrollContainer>
 
-            <!--  Done button - appears when in edit mode  -->
-            <Button
-                x:Name="DoneEditingButton"
+            <!--  Edit mode buttons - appear when in edit mode  -->
+            <StackPanel
                 Grid.Column="2"
-                Margin="8,0,8,0"
-                Padding="12,4"
                 VerticalAlignment="Center"
-                Click="DoneEditingButton_Click"
-                Content="Done"
-                Visibility="Collapsed" />
+                Orientation="Horizontal"
+                Spacing="4">
+                <Button
+                    x:Name="DiscardEditingButton"
+                    Margin="8,0,0,0"
+                    Padding="12,4"
+                    Click="DiscardEditingButton_Click"
+                    Content="Discard"
+                    Visibility="Collapsed" />
+                <Button
+                    x:Name="DoneEditingButton"
+                    Margin="0,0,8,0"
+                    Padding="12,4"
+                    Click="DoneEditingButton_Click"
+                    Content="Done"
+                    Style="{StaticResource AccentButtonStyle}"
+                    Visibility="Collapsed" />
+            </StackPanel>
         </Grid>
         <VisualStateManager.VisualStateGroups>
             <VisualStateGroup x:Name="DockOrientation">
@@ -336,6 +335,7 @@
                 <VisualState x:Name="EditModeOn">
                     <VisualState.Setters>
                         <Setter Target="DoneEditingButton.Visibility" Value="Visible" />
+                        <Setter Target="DiscardEditingButton.Visibility" Value="Visible" />
                         <Setter Target="EditModeOverlay.Opacity" Value="0.1" />
                     </VisualState.Setters>
                 </VisualState>
