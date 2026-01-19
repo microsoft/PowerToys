@@ -485,12 +485,21 @@ internal static class FancyZonesThumbnailRenderer
 
     private static List<NormalizedRect> GetFocusRects(int zoneCount)
     {
+        // Focus layout parameters from FancyZonesEditor CanvasLayoutModel:
+        // - DefaultOffset = 100px from top-left (normalized: ~0.05 for typical screen)
+        // - OffsetShift = 50px per zone (normalized: ~0.025)
+        // - ZoneSizeMultiplier = 0.4 (zones are 40% of screen)
         zoneCount = Math.Clamp(zoneCount, 1, 8);
         var rects = new List<NormalizedRect>(zoneCount);
+
+        const float defaultOffset = 0.05f;  // ~100px on 1920px screen
+        const float offsetShift = 0.025f;   // ~50px on 1920px screen
+        const float zoneSize = 0.4f;        // 40% of screen
+
         for (var i = 0; i < zoneCount; i++)
         {
-            var offset = i * 0.06f;
-            rects.Add(new NormalizedRect(0.1f + offset, 0.1f + offset, 0.8f, 0.8f));
+            var offset = i * offsetShift;
+            rects.Add(new NormalizedRect(defaultOffset + offset, defaultOffset + offset, zoneSize, zoneSize));
         }
 
         return rects;

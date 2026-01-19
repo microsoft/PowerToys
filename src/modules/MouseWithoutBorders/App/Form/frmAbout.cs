@@ -15,6 +15,8 @@ using System.Globalization;
 using System.Reflection;
 using System.Windows.Forms;
 
+using MouseWithoutBorders.Core;
+
 namespace MouseWithoutBorders
 {
     internal partial class FrmAbout : System.Windows.Forms.Form, IDisposable

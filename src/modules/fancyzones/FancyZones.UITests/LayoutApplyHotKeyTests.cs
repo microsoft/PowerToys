@@ -584,7 +584,7 @@ namespace UITests_FancyZones
             }
 
             windowingElement.Find<Element>("FancyZones").Click();
-            this.Find<ToggleSwitch>("Enable FancyZones").Toggle(true);
+            Find<ToggleSwitch>(By.AccessibilityId("EnableFancyZonesToggleSwitch")).Toggle(true);
             if (isMax == true)
             {
                 this.Find<Button>("Maximize").Click(); // maximize the window
@@ -661,7 +661,7 @@ namespace UITests_FancyZones
             this.Find<NavigationViewItem>("Hosts File Editor").Click();
             Task.Delay(1000).Wait();
 
-            this.Find<ToggleSwitch>("Enable Hosts File Editor").Toggle(true);
+            this.Find<ToggleSwitch>("Hosts File Editor").Toggle(true);
             this.Find<ToggleSwitch>("Launch as administrator").Toggle(launchAsAdmin);
             this.Find<ToggleSwitch>("Show a warning at startup").Toggle(showWarning);
 

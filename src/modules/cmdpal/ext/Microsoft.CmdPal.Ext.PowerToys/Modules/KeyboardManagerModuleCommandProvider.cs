@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using PowerToysExtension.Commands;
 using PowerToysExtension.Helpers;
+using PowerToysExtension.Properties;
 using static Common.UI.SettingsDeepLink;
 
 namespace PowerToysExtension.Modules;
@@ -20,7 +21,7 @@ internal sealed class KeyboardManagerModuleCommandProvider : ModuleCommandProvid
         yield return new ListItem(new OpenInSettingsCommand(SettingsWindow.KBM, title))
         {
             Title = title,
-            Subtitle = "Open Keyboard Manager settings",
+            Subtitle = Resources.KeyboardManager_Settings_Subtitle,
             Icon = icon,
         };
     }

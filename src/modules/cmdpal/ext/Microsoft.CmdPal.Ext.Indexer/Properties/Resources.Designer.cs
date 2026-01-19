@@ -133,6 +133,33 @@ namespace Microsoft.CmdPal.Ext.Indexer.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Peek preview.
+        /// </summary>
+        internal static string Indexer_Command_Peek {
+            get {
+                return ResourceManager.GetString("Indexer_Command_Peek", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to launch Peek.
+        /// </summary>
+        internal static string Indexer_Command_Peek_Failed {
+            get {
+                return ResourceManager.GetString("Indexer_Command_Peek_Failed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to PowerToys Peek is not available.
+        /// </summary>
+        internal static string Indexer_Command_Peek_NotAvailable {
+            get {
+                return ResourceManager.GetString("Indexer_Command_Peek_NotAvailable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Search all files.
         /// </summary>
         internal static string Indexer_Command_SearchAllFiles {

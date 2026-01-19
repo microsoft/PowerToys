@@ -529,6 +529,15 @@ public sealed partial class MainListPage : DynamicListPage,
         var baseScore = Math.Max(Math.Max(nameScore, descriptionScore), isFallback ? 1 : 0);
         var matchScore = baseScore + extensionScore;
 
+        // Apply a penalty to fallback items so they rank below direct matches.
+        // Fallbacks that dynamically match queries (like RDP connections) should
+        // appear after apps and direct command matches.
+        if (isFallback && matchScore > 1)
+        {
+            // Reduce fallback scores by 50% to prioritize direct matches
+            matchScore = matchScore * 0.5;
+        }
+
         // Alias matching: exact match is overwhelming priority, substring match adds a small boost
         var aliasBoost = isAliasMatch ? 9001 : (isAliasSubstringMatch ? 1 : 0);
         var totalMatch = matchScore + aliasBoost;

@@ -1,16 +1,50 @@
 ---
-mode: 'agent'
-model: Claude Sonnet 4.5
-description: 'Generate an 80-character git commit title for the local diff.'
+agent: 'agent'
+model: 'GPT-5.1-Codex-Max'
+description: 'Generate an 80-character git commit title for the local diff'
 ---
 
-**Goal:** Provide a ready-to-paste git commit title (<= 80 characters) that captures the most important local changes since `HEAD`.
+# Generate Commit Title
 
-**Workflow:**
-1. Run a single command to view the local diff since the last commit:
-   ```@terminal
-   git diff HEAD
-   ```
-2. From that diff, identify the dominant area (reference key paths like `src/modules/*`, `doc/devdocs/**`, etc.), the type of change (bug fix, docs update, config tweak), and any notable impact.
-3. Draft a concise, imperative commit title summarizing the dominant change. Keep it plain ASCII, <= 80 characters, and avoid trailing punctuation. Mention the primary component when obvious (for example `FancyZones:` or `Docs:`).
-4. Respond with only the final commit title on a single line so it can be pasted directly into `git commit`.
+## Purpose
+Provide a single-line, ready-to-paste git commit title (<= 80 characters) that reflects the most important local changes since `HEAD`.
+
+## Input to collect
+- Run exactly one command to view the local diff:
+  ```@terminal
+  git diff HEAD
+  ```
+
+## How to decide the title
+1. From the diff, find the dominant area (e.g., `src/modules/*`, `doc/devdocs/**`) and the change type (bug fix, docs update, config tweak).
+2. Draft an imperative, plain-ASCII title that:
+   - Mentions the primary component when obvious (e.g., `FancyZones:` or `Docs:`)
+   - Stays within 80 characters and has no trailing punctuation
+
+## Final output
+- Reply with only the commit title on a single line—no extra text.
+
+## PR title convention (when asked)
+Use Conventional Commits style:
+
+`<type>(<scope>): <summary>`
+
+**Allowed types**
+- feat, fix, docs, refactor, perf, test, build, ci, chore
+
+**Scope rules**
+- Use a short, PowerToys-focused scope (one word preferred). Common scopes:
+  - Core: `runner`, `settings-ui`, `common`, `docs`, `build`, `ci`, `installer`, `gpo`, `dsc`
+  - Modules: `fancyzones`, `powerrename`, `awake`, `colorpicker`, `imageresizer`, `keyboardmanager`, `mouseutils`, `peek`, `hosts`, `file-locksmith`, `screen-ruler`, `text-extractor`, `cropandlock`, `paste`, `powerlauncher`
+- If unclear, pick the closest module or subsystem; omit only if unavoidable
+
+**Summary rules**
+- Imperative, present tense (“add”, “update”, “remove”, “fix”)
+- Keep it <= 72 characters when possible; be specific, avoid “misc changes”
+
+**Examples**
+- `feat(fancyzones): add canvas template duplication`
+- `fix(mouseutils): guard crosshair toggle when dpi info missing`
+- `docs(runner): document tray icon states`
+- `build(installer): align wix v5 suffix flag`
+- `ci(ci): cache pipeline artifacts for x64`
