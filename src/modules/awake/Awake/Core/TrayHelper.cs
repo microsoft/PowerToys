@@ -356,6 +356,15 @@ namespace Awake.Core
                     }
 
                     break;
+                case Native.Constants.WM_POWERBROADCAST:
+                    int eventType = wParam.ToInt32();
+                    if (eventType == Native.Constants.PBT_APMRESUMEAUTOMATIC ||
+                        eventType == Native.Constants.PBT_APMRESUMESUSPEND)
+                    {
+                        Manager.ReapplyAwakeState();
+                    }
+
+                    break;
                 default:
                     if (message == _taskbarCreatedMessage)
                     {

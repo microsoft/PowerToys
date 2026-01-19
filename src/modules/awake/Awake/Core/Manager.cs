@@ -144,6 +144,22 @@ namespace Awake.Core
                 : ExecutionState.ES_SYSTEM_REQUIRED | ExecutionState.ES_CONTINUOUS;
         }
 
+        /// <summary>
+        /// Re-applies the current awake state after system resume.
+        /// Called when WM_POWERBROADCAST indicates system wake.
+        /// </summary>
+        internal static void ReapplyAwakeState()
+        {
+            if (CurrentOperatingMode == AwakeMode.PASSIVE)
+            {
+                // No need to reapply in passive mode
+                return;
+            }
+
+            Logger.LogInfo($"System resumed from sleep. Reapplying awake state for mode: {CurrentOperatingMode}");
+            _stateQueue.Add(ComputeAwakeState(IsDisplayOn));
+        }
+
         internal static void CancelExistingThread()
         {
             Logger.LogInfo("Ensuring the thread is properly cleaned up...");
