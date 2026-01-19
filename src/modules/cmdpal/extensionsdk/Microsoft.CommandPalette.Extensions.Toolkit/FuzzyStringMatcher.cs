@@ -693,7 +693,7 @@ public static class FuzzyStringMatcher
         /// <summary>
         /// Creates a folded string for fast equality comparisons:
         /// - ALWAYS normalizes slashes: '\' -> '/'
-        /// - Uppercases with char.ToUpperInvariant (length-preserving)
+        /// - Upper case with char.ToUpperInvariant (length-preserving)
         /// - Optionally strips diacritics (length-preserving)
         ///
         /// Returns the original <paramref name="input"/> when it is already in the desired form.
