@@ -141,6 +141,26 @@ When running with PowerToys (`--use-pt-config`), settings are stored in:
 %LOCALAPPDATA%\Microsoft\PowerToys\Awake\settings.json
 ```
 
+## Known Limitations
+
+### Task Scheduler Idle Detection ([#44134](https://github.com/microsoft/PowerToys/issues/44134))
+
+When "Keep display on" is enabled, Awake uses the `ES_DISPLAY_REQUIRED` flag which blocks Windows Task Scheduler from detecting the system as idle. This prevents scheduled maintenance tasks (like SSD TRIM, disk defragmentation, and other idle-triggered tasks) from running.
+
+Per [Microsoft's documentation](https://learn.microsoft.com/en-us/windows/win32/taskschd/task-idle-conditions):
+
+> "An exception would be for any presentation type application that sets the ES_DISPLAY_REQUIRED flag. This flag forces Task Scheduler to not consider the system as being idle, regardless of user activity or resource consumption."
+
+**Workarounds:**
+
+1. **Disable "Keep display on"** - With this setting off, Awake only uses `ES_SYSTEM_REQUIRED` which still prevents sleep but allows Task Scheduler to detect idle state.
+
+2. **Manually run maintenance tasks** - For example, to run TRIM manually:
+   ```powershell
+   # Run as Administrator
+   Optimize-Volume -DriveLetter C -ReTrim -Verbose
+   ```
+
 ## Telemetry
 
 The module emits telemetry events for:
