@@ -359,7 +359,8 @@ namespace Awake.Core
                 case Native.Constants.WM_POWERBROADCAST:
                     int eventType = wParam.ToInt32();
                     if (eventType == Native.Constants.PBT_APMRESUMEAUTOMATIC ||
-                        eventType == Native.Constants.PBT_APMRESUMESUSPEND)
+                        eventType == Native.Constants.PBT_APMRESUMESUSPEND ||
+                        eventType == Native.Constants.PBT_APMPOWERSTATUSCHANGE)
                     {
                         Manager.ReapplyAwakeState();
                     }

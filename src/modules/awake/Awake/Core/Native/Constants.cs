@@ -20,6 +20,7 @@ namespace Awake.Core.Native
         // Power Broadcast Event Types
         internal const int PBT_APMRESUMEAUTOMATIC = 0x0012;
         internal const int PBT_APMRESUMESUSPEND = 0x0007;
+        internal const int PBT_APMPOWERSTATUSCHANGE = 0x000A;
 
         // Menu Flags
         internal const uint MF_BYPOSITION = 1024;
