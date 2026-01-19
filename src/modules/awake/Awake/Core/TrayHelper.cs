@@ -225,19 +225,39 @@ namespace Awake.Core
                     };
                 }
 
-                const int maxRetryAttempts = 3;
-                const int baseDelayMs = 100;
+                // Retry configuration based on action type
+                // Add operations need longer delays as Explorer may still be initializing after Windows updates
+                int maxRetryAttempts;
+                int baseDelayMs;
+
+                if (action == TrayIconAction.Add)
+                {
+                    maxRetryAttempts = 10;
+                    baseDelayMs = 500;  // 500, 1000, 2000, 2000, 2000... (capped)
+                }
+                else
+                {
+                    maxRetryAttempts = 3;
+                    baseDelayMs = 100;  // 100, 200, 400 (existing behavior)
+                }
+
+                const int maxDelayMs = 2000;  // Cap delay at 2 seconds
 
                 for (int attempt = 1; attempt <= maxRetryAttempts; attempt++)
                 {
                     if (Bridge.Shell_NotifyIcon(message, ref _notifyIconData))
                     {
+                        if (attempt > 1)
+                        {
+                            Logger.LogInfo($"Successfully set shell icon on attempt {attempt}. Action: {action}");
+                        }
+
                         break;
                     }
                     else
                     {
                         int errorCode = Marshal.GetLastWin32Error();
-                        Logger.LogInfo($"Could not set the shell icon. Action: {action}, error code: {errorCode}. HIcon handle is {icon?.Handle} and HWnd is {hWnd}. Invoked by {callerName}.");
+                        Logger.LogInfo($"Could not set the shell icon. Action: {action}, error code: {errorCode}, attempt: {attempt}/{maxRetryAttempts}. HIcon handle is {icon?.Handle} and HWnd is {hWnd}. Invoked by {callerName}.");
 
                         if (attempt == maxRetryAttempts)
                         {
@@ -245,8 +265,8 @@ namespace Awake.Core
                             break;
                         }
 
-                        // Exponential backoff: 100ms, 200ms, 400ms...
-                        int delayMs = baseDelayMs * (1 << (attempt - 1));
+                        // Exponential backoff with cap
+                        int delayMs = Math.Min(baseDelayMs * (1 << (attempt - 1)), maxDelayMs);
                         Thread.Sleep(delayMs);
                     }
                 }
