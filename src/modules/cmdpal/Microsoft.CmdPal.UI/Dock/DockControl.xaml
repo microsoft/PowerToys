@@ -106,16 +106,17 @@
             </DataTemplate>
 
             <DataTemplate x:Key="DockBandTemplate" x:DataType="dockVm:DockBandViewModel">
-                <ItemsRepeater
-                    x:Name="BandItemsRepeater"
+                <!--  Use ItemsControl instead of ItemsRepeater - it doesn't intercept pointer events  -->
+                <ItemsControl
                     HorizontalAlignment="{x:Bind Items, Converter={StaticResource BandAlignmentConverter}, Mode=OneWay}"
                     ItemTemplate="{StaticResource DeskbandTemplate}"
-                    ItemsSource="{x:Bind Items, Mode=OneWay}"
-                    Layout="{StaticResource ItemsOrientation}">
-                    <ItemsRepeater.Transitions>
-                        <TransitionCollection />
-                    </ItemsRepeater.Transitions>
-                </ItemsRepeater>
+                    ItemsSource="{x:Bind Items, Mode=OneWay}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Orientation="Horizontal" Spacing="4" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                </ItemsControl>
             </DataTemplate>
 
             <Style x:Key="DockBandListViewStyle" TargetType="ListView">

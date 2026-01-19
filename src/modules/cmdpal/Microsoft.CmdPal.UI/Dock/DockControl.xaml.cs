@@ -206,6 +206,12 @@ public sealed partial class DockControl : UserControl, INotifyPropertyChanged, I
 
     private void BandItem_Tapped(object sender, Microsoft.UI.Xaml.Input.TappedRoutedEventArgs e)
     {
+        // Ignore clicks when in edit mode - allow drag behavior instead
+        if (IsEditMode)
+        {
+            return;
+        }
+
         var border = sender as Border;
         var item = border?.DataContext as DockItemViewModel;
 
@@ -226,6 +232,12 @@ public sealed partial class DockControl : UserControl, INotifyPropertyChanged, I
 
     private void BandItem_RightTapped(object sender, Microsoft.UI.Xaml.Input.RightTappedRoutedEventArgs e)
     {
+        // Ignore right-clicks when in edit mode
+        if (IsEditMode)
+        {
+            return;
+        }
+
         var border = sender as Border;
         var item = border?.DataContext as DockItemViewModel;
 
