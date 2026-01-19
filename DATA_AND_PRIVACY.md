@@ -71,6 +71,14 @@ _If you want to find diagnostic data events in the source code, these two links 
     <td>Microsoft.PowerToys.Uninstall_Success</td>
     <td>Logs when PowerToys is successfully uninstalled (who would do such a thing!).</td>
   </tr>
+  <tr>
+    <td>Microsoft.PowerToys.UpdateCheck_Completed</td>
+    <td>Logs when an auto-update check completes, including success status, whether an update is available, and version information.</td>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.UpdateDownload_Completed</td>
+    <td>Logs when an update download completes, including success status and version.</td>
+  </tr>
 </table>
 
 ### OOBE (Out-of-box experience)
@@ -570,7 +578,7 @@ _If you want to find diagnostic data events in the source code, these two links 
   </tr>
   <tr>
     <td>Microsoft.PowerToys.FindMyMouse_MousePointerFocused</td>
-    <td>Occurs when the mouse pointer is focused using Find My Mouse.</td>
+    <td>Occurs when the mouse pointer is focused using Find My Mouse, including the activation method (double-tap left/right Ctrl, shake mouse, or shortcut).</td>
   </tr>
 </table>
 
