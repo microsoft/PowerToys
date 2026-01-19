@@ -10,18 +10,18 @@ Below is our guidance for reporting issues, proposing new features, and submitti
 
 **Importance of Filing an Issue First**
 
-Please follow this rule to help eliminate wasted effort and frustration, and to ensure an efficient and effective use of everyone’s time:
+Please follow this rule to help eliminate wasted effort and frustration, and to ensure an efficient and effective use of everyone's time:
 
-> 👉 If you have a question, think you've discovered an issue, or would like to propose a new feature, please find/file an issue **BEFORE** starting work to fix/implement it.
+> 👉 If you have a question, think you've discovered an issue, or would like to propose a new feature, please find or file an issue **BEFORE** starting work to fix/implement it.
 
 When requesting new features or enhancements, providing additional evidence, data, tweets, blog posts, or research is extremely helpful. This information gives context to the scenario that may otherwise be lost.
 
-* Unsure whether it’s an issue or feature request? File an issue.
-* Have a question that isn't answered in the docs, videos, etc.? File an issue.
-* Want to know if we’re planning a particular feature? File an issue.
-* Got a great idea for a new utility or feature? File an issue/request/idea.
-* Don’t understand how to do something? File an issue/Community Guidance Request.
-* Found an existing issue that describes yours? Great! Upvote and add additional commentary, info, or repro steps.
+- Unsure whether it's an issue or feature request? File an issue.
+- Have a question that isn't answered in the docs, videos, etc.? File an issue.
+- Want to know if we're planning a particular feature? File an issue.
+- Got a great idea for a new utility or feature? File an issue/request/idea.
+- Don't understand how to do something? File an issue/Community Guidance Request.
+- Found an existing issue that describes yours? Great! Upvote and add additional commentary, info, or repro steps.
 
 A quick search before filing an issue could be helpful. It’s likely someone else has found the same problem, and they may even be working on or have already contributed a fix!
 
@@ -33,7 +33,7 @@ To let the team know which issues are important, upvote by clicking the [+😊] 
 
 ## Contributing Fixes/Features
 
-Please comment on our ["Would you like to contribute to PowerToys?"](https://github.com/microsoft/PowerToys/issues/28769) thread to let us know you're interested in working on something before you start. This helps avoid multiple people unexpectedly working on the same thing and ensures everyone is clear on what should be done. It's less work for everyone to establish this up front.
+Please comment on our ["Would you like to contribute to PowerToys?"](https://github.com/microsoft/PowerToys/issues/28769) thread to let us know you're interested in working on something before you start. This helps avoid multiple people unexpectedly working on the same thing and ensures everyone is clear on what should be done. It's less work for everyone to establish this upfront.
 
 ### Localization Issues
 
@@ -57,11 +57,11 @@ Follow the [development guidelines](https://github.com/microsoft/PowerToys/blob/
 
 ### Naming Features and Functionality
 
-Names should be descriptive and straightforward, clearly reflecting functionality and usefulness.
+Names should be descriptive and straightforward, clearly reflecting functionality and purpose.
 
 ### Becoming a Collaborator on the PowerToys Team
 
-Be an active community member! Make helpful contributions by filing bugs, offering suggestions, developing fixes and features, conducting code reviews, and updating documentation. 
+Be an active community member! Make helpful contributions by filing bugs, offering suggestions, developing fixes and features, conducting code reviews, and updating documentation.
 
 When the time comes, Microsoft will reach out to you about becoming a formal team member. Just make sure they have a way to contact you. 😊
 

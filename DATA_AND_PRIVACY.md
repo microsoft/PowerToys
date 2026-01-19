@@ -1,10 +1,16 @@
 # PowerToys Data & Privacy
+
+<style>
+table { width: 100%; }
+</style>
+
 ## Overview
+
 PowerToys diagnostic data is completely optional for users and is off by default in v0.86 and beyond. Our team believes in transparency and trust. As PowerToys is open source, all of our diagnostic data events are in the codebase.
 
 Additionally, this document aims to list each diagnostic data event individually and describe their purpose clearly.
 
-For more information, please read the [Microsoft privacy statement](https://privacy.microsoft.com/privacystatement). 
+For more information, please read the [Microsoft privacy statement](https://privacy.microsoft.com/privacystatement).
 
 ## What does PowerToys collect?
 
@@ -13,9 +19,11 @@ For more information, please read the [Microsoft privacy statement](https://priv
 3. **Performance**: Assessing the performance of PowerToys features to load and execute gives us an understanding of what surfaces are causing slowdowns. This supports our commitment to providing you with tools that are both speedy and effective.
 
 ### Success Story: Fixing FancyZones Bugs with Your Help
+
 FancyZones had numerous bug reports related to virtual desktop interactions. Initially, these were considered lower priority, since the assumption was that virtual desktops were not widely used, so we chose to focus on more urgent issues. However, the volume of bug reports suggested otherwise, prompting us to add additional diagnostics to see virtual desktop usage with FancyZones. We discovered that virtual desktop usage was much higher among FancyZones users. This new understanding led us to prioritize this class of bugs and get them fixed.
- 
+
 ## Transparency and Public Sharing
+
 As much as possible, we aim to share the results of diagnostic data publicly.
 
 We hope this document provides clarity on why and how we collect diagnostic data to improve PowerToys for our users. If you have any questions or concerns, please feel free to reach out to us.
@@ -23,1147 +31,398 @@ We hope this document provides clarity on why and how we collect diagnostic data
 Thank you for using PowerToys!
 
 ## List of Diagnostic Data Events
+
 _**Note:** We're in the process of updating this section with more events and their descriptions. We aim to keep this list current by adding any new diagnostic data events as they become available._
 
 _If you want to find diagnostic data events in the source code, these two links will be good starting points based on the source code's langauge._
+
 - [C# events](https://github.com/search?q=repo%3Amicrosoft/PowerToys%20EventBase&type=code)
 - [C++ events](https://github.com/search?q=repo%3Amicrosoft%2FPowerToys+ProjectTelemetryPrivacyDataTag&type=code)
 
 ### General
-<table style="width:100%">
-  <tr>
-    <th>Event Name</th>
-    <th>Description</th>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.DebugEvent</td>
-    <td>Logs debugging information for diagnostics and troubleshooting.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.GeneralSettingsChanged</td>
-    <td>Logs changes made to general settings within PowerToys.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.Runner_Launch</td>
-    <td>Indicates when the PowerToys Runner is launched.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.SettingsBootEvent</td>
-    <td>Triggered when PowerToys settings are initialized at startup.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.SettingsEnabledEvent</td>
-    <td>Indicates that the PowerToys settings have been enabled.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.ScoobeStartedEvent</td>
-    <td>Triggered when SCOOBE (Secondary Out-of-box experience) starts.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.TrayFlyoutActivatedEvent</td>
-    <td>Indicates when the tray flyout menu is activated.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.TrayFlyoutModuleRunEvent</td>
-    <td>Logs when a utility from the tray flyout menu is run.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.Uninstall_Success</td>
-    <td>Logs when PowerToys is successfully uninstalled (who would do such a thing!).</td>
-  </tr>
-</table>
+
+| Event Name | Description |
+| --- | --- |
+| Microsoft.PowerToys.DebugEvent | Logs debugging information for diagnostics and troubleshooting. |
+| Microsoft.PowerToys.GeneralSettingsChanged | Logs changes made to general settings within PowerToys. |
+| Microsoft.PowerToys.Runner_Launch | Indicates when the PowerToys Runner is launched. |
+| Microsoft.PowerToys.SettingsBootEvent | Triggered when PowerToys settings are initialized at startup. |
+| Microsoft.PowerToys.SettingsEnabledEvent | Indicates that the PowerToys settings have been enabled. |
+| Microsoft.PowerToys.ScoobeStartedEvent | Triggered when SCOOBE (Secondary Out-of-box experience) starts. |
+| Microsoft.PowerToys.TrayFlyoutActivatedEvent | Indicates when the tray flyout menu is activated. |
+| Microsoft.PowerToys.TrayFlyoutModuleRunEvent | Logs when a utility from the tray flyout menu is run. |
+| Microsoft.PowerToys.Uninstall_Success | Logs when PowerToys is successfully uninstalled (who would do such a thing!). |
 
 ### OOBE (Out-of-box experience)
-<table style="width:100%">
-  <tr>
-    <th>Event Name</th>
-    <th>Description</th>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.OobeSectionEvent</td>
-    <td>Occurs when OOBE is shown to the user.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.OobeSettingsEvent</td>
-    <td>Triggers when a Settings page is opened from an OOBE page.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.OobeStartedEvent</td>
-    <td>Indicates when the out-of-box experience has been initiated.</td>
-  </tr>
-</table>
+
+| Event Name | Description |
+| --- | --- |
+| Microsoft.PowerToys.OobeSectionEvent | Occurs when OOBE is shown to the user. |
+| Microsoft.PowerToys.OobeSettingsEvent | Triggers when a Settings page is opened from an OOBE page. |
+| Microsoft.PowerToys.OobeStartedEvent | Indicates when the out-of-box experience has been initiated. |
 
 ### Advanced Paste
-<table style="width:100%">
-  <tr>
-    <th>Event Name</th>
-    <th>Description</th>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.AdvancedPaste_EnableAdvancedPaste</td>
-    <td>Triggered when Advanced Paste is enabled.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.AdvancedPaste_Error</td>
-    <td>Occurs when an error is encountered during the Advanced Paste process.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.AdvancedPaste_InvokeAdvancedPaste</td>
-    <td>Activated when Advanced Paste is called by the user.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.AdvancedPaste_Settings</td>
-    <td>Triggered when settings for Advanced Paste are accessed or modified.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.AdvancedPasteClipboardItemClicked</td>
-    <td>Occurs when a clipboard item is selected from the Advanced Paste menu.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.AdvancedPasteClipboardItemDeletedEvent</td>
-    <td>Triggered when an item is removed from the Advanced Paste clipboard history.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.AdvancedPasteCustomFormatOutputThumbUpDownEvent</td>
-    <td>Triggered when a user gives feedback on a custom format output (thumb up/down).</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.AdvancedPasteFormatClickedEvent</td>
-    <td>Occurs when a specific paste format is clicked in the Advanced Paste menu.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.AdvancedPasteGenerateCustomErrorEvent</td>
-    <td>Triggered when an error occurs while generating a custom paste format.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.AdvancedPasteGenerateCustomFormatEvent</td>
-    <td>Occurs when a custom paste format is successfully generated.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.AdvancedPasteInAppKeyboardShortcutEvent</td>
-    <td>Triggered when a keyboard shortcut is used within the Advanced Paste interface.</td>
-  </tr>  
-  <tr>
-    <td>Microsoft.PowerToys.AdvancedPasteSemanticKernelFormatEvent</td>
-    <td>Triggered when Advanced Paste leverages the Semantic Kernel.</td>
-  </tr> 
-  <tr>
-    <td>Microsoft.PowerToys.AdvancedPasteSemanticKernelErrorEvent</td>
-    <td>Occurs when the Semantic Kernel workflow encounters an error.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.AdvancedPasteEndpointUsageEvent</td>
-    <td>Logs the AI provider, model, and processing duration for each endpoint call.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.AdvancedPasteCustomActionErrorEvent</td>
-    <td>Records provider, model, and status details when a custom action fails.</td>
-  </tr>
-</table>
+
+| Event Name | Description |
+| --- | --- |
+| Microsoft.PowerToys.AdvancedPaste_EnableAdvancedPaste | Triggered when Advanced Paste is enabled. |
+| Microsoft.PowerToys.AdvancedPaste_Error | Occurs when an error is encountered during the Advanced Paste process. |
+| Microsoft.PowerToys.AdvancedPaste_InvokeAdvancedPaste | Activated when Advanced Paste is called by the user. |
+| Microsoft.PowerToys.AdvancedPaste_Settings | Triggered when settings for Advanced Paste are accessed or modified. |
+| Microsoft.PowerToys.AdvancedPasteClipboardItemClicked | Occurs when a clipboard item is selected from the Advanced Paste menu. |
+| Microsoft.PowerToys.AdvancedPasteClipboardItemDeletedEvent | Triggered when an item is removed from the Advanced Paste clipboard history. |
+| Microsoft.PowerToys.AdvancedPasteCustomFormatOutputThumbUpDownEvent | Triggered when a user gives feedback on a custom format output (thumb up/down). |
+| Microsoft.PowerToys.AdvancedPasteFormatClickedEvent | Occurs when a specific paste format is clicked in the Advanced Paste menu. |
+| Microsoft.PowerToys.AdvancedPasteGenerateCustomErrorEvent | Triggered when an error occurs while generating a custom paste format. |
+| Microsoft.PowerToys.AdvancedPasteGenerateCustomFormatEvent | Occurs when a custom paste format is successfully generated. |
+| Microsoft.PowerToys.AdvancedPasteInAppKeyboardShortcutEvent | Triggered when a keyboard shortcut is used within the Advanced Paste interface. |
+| Microsoft.PowerToys.AdvancedPasteSemanticKernelFormatEvent | Triggered when Advanced Paste leverages the Semantic Kernel. |
+| Microsoft.PowerToys.AdvancedPasteSemanticKernelErrorEvent | Occurs when the Semantic Kernel workflow encounters an error. |
+| Microsoft.PowerToys.AdvancedPasteEndpointUsageEvent | Logs the AI provider, model, and processing duration for each endpoint call. |
+| Microsoft.PowerToys.AdvancedPasteCustomActionErrorEvent | Records provider, model, and status details when a custom action fails. |
 
 ### Always on Top
-<table style="width:100%">
-  <tr>
-    <th>Event Name</th>
-    <th>Description</th>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.AlwaysOnTop_EnableAlwaysOnTop</td>
-    <td>Triggered when Always on Top is enabled.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.AlwaysOnTop_PinWindow</td>
-    <td>Occurs when a window is pinned to stay on top of other windows.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.AlwaysOnTop_UnpinWindow</td>
-    <td>Triggered when a pinned window is unpinned, allowing it to be behind other windows.</td>
-  </tr>
-</table>
+
+| Event Name | Description |
+| --- | --- |
+| Microsoft.PowerToys.AlwaysOnTop_EnableAlwaysOnTop | Triggered when Always on Top is enabled. |
+| Microsoft.PowerToys.AlwaysOnTop_PinWindow | Occurs when a window is pinned to stay on top of other windows. |
+| Microsoft.PowerToys.AlwaysOnTop_UnpinWindow | Triggered when a pinned window is unpinned, allowing it to be behind other windows. |
 
 ### Awake
-<table style="width:100%">
-  <tr>
-    <th>Event Name</th>
-    <th>Description</th>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.Awake_EnableAwake</td>
-    <td>Triggered when Awake is enabled.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.AwakeExpirableKeepAwakeEvent</td>
-    <td>Occurs when the system is kept awake for a temporary, expirable duration.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.AwakeIndefinitelyKeepAwakeEvent</td>
-    <td>Triggered when the system is set to stay awake indefinitely.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.AwakeNoKeepAwakeEvent</td>
-    <td>Occurs when Awake is turned off, allowing the computer to enter sleep mode.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.AwakeTimedKeepAwakeEvent</td>
-    <td>Triggered when the system is kept awake for a specified time duration.</td>
-  </tr>  
-</table>
+
+| Event Name | Description |
+| --- | --- |
+| Microsoft.PowerToys.Awake_EnableAwake | Triggered when Awake is enabled. |
+| Microsoft.PowerToys.AwakeExpirableKeepAwakeEvent | Occurs when the system is kept awake for a temporary, expirable duration. |
+| Microsoft.PowerToys.AwakeIndefinitelyKeepAwakeEvent | Triggered when the system is set to stay awake indefinitely. |
+| Microsoft.PowerToys.AwakeNoKeepAwakeEvent | Occurs when Awake is turned off, allowing the computer to enter sleep mode. |
+| Microsoft.PowerToys.AwakeTimedKeepAwakeEvent | Triggered when the system is kept awake for a specified time duration. |
 
 ### Color Picker
-<table style="width:100%">
-  <tr>
-    <th>Event Name</th>
-    <th>Description</th>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.ColorPicker_EnableColorPicker</td>
-    <td>Triggered when Color Picker is enabled.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.ColorPicker_Session</td>
-    <td>Occurs during a Color Picker usage session.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.ColorPicker_Settings</td>
-    <td>Triggered when the settings for the Color Picker are accessed or modified.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.ColorPickerCancelledEvent</td>
-    <td>Occurs when a color picking action is cancelled by the user.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.ColorPickerShowEvent</td>
-    <td>Triggered when the Color Picker UI is displayed on the screen.</td>
-  </tr>  
-</table>
+
+| Event Name | Description |
+| --- | --- |
+| Microsoft.PowerToys.ColorPicker_EnableColorPicker | Triggered when Color Picker is enabled. |
+| Microsoft.PowerToys.ColorPicker_Session | Occurs during a Color Picker usage session. |
+| Microsoft.PowerToys.ColorPicker_Settings | Triggered when the settings for the Color Picker are accessed or modified. |
+| Microsoft.PowerToys.ColorPickerCancelledEvent | Occurs when a color picking action is cancelled by the user. |
+| Microsoft.PowerToys.ColorPickerShowEvent | Triggered when the Color Picker UI is displayed on the screen. |
 
 ### Command Not Found
-<table style="width:100%">
-  <tr>
-    <th>Event Name</th>
-    <th>Description</th>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.CmdNotFound_EnableCmdNotFound</td>
-    <td>Triggered when Command Not Found is enabled or disabled.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.CmdNotFoundInstallEvent</td>
-    <td>Triggered when a Command Not Found is installed.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.CmdNotFoundInstanceCreatedEvent</td>
-    <td>Occurs when an instance of a Command Not Found is created.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.CmdNotFoundUninstallEvent</td>
-    <td>Triggered when Command Not Found is uninstalled after being previously installed.</td>
-  </tr>  
-</table>
+
+| Event Name | Description |
+| --- | --- |
+| Microsoft.PowerToys.CmdNotFound_EnableCmdNotFound | Triggered when Command Not Found is enabled or disabled. |
+| Microsoft.PowerToys.CmdNotFoundInstallEvent | Triggered when a Command Not Found is installed. |
+| Microsoft.PowerToys.CmdNotFoundInstanceCreatedEvent | Occurs when an instance of a Command Not Found is created. |
+| Microsoft.PowerToys.CmdNotFoundUninstallEvent | Triggered when Command Not Found is uninstalled after being previously installed. |
 
 ### Command Palette
 
-<table style="width:100%">
-  <tr>
-    <th>Event Name</th>
-    <th>Description</th>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.CmdPal_BeginInvoke</td>
-    <td>Triggered when the Command Palette is launched by the user.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.CmdPal_ColdLaunch</td>
-    <td>Occurs when Command Palette starts for the first time (cold start).</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.CmdPal_OpenPage</td>
-    <td>Triggered when a page is opened within the Command Palette, tracking navigation depth.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.CmdPal_OpenUri</td>
-    <td>Occurs when a URI is opened through the Command Palette, including whether it's a web URL.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.CmdPal_ReactivateInstance</td>
-    <td>Triggered when an existing Command Palette instance is reactivated.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.CmdPal_RunCommand</td>
-    <td>Logs when a command is executed through the Command Palette, including admin elevation status.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.CmdPal_RunQuery</td>
-    <td>Triggered when a search query is performed, including result count and duration.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.CmdPalDismissedOnEsc</td>
-    <td>Occurs when the Command Palette is dismissed by pressing the Escape key.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.CmdPalDismissedOnLostFocus</td>
-    <td>Triggered when the Command Palette is dismissed due to losing focus.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.CmdPalHotkeySummoned</td>
-    <td>Logs when the Command Palette is summoned via hotkey, distinguishing between global and context-specific hotkeys.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.CmdPalInvokeResult</td>
-    <td>Records the result type of a Command Palette invocation.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.CmdPalProcessStarted</td>
-    <td>Triggered when the Command Palette process is started.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.CmdPal_ExtensionInvoked</td>
-    <td>Tracks extension usage including extension ID, command details, success status, and execution time.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.CmdPal_SessionDuration</td>
-    <td>Logs session metrics from launch to dismissal including duration, commands executed, pages visited, search queries, navigation depth, and errors.</td>
-  </tr>
-</table>
+| Event Name | Description |
+| --- | --- |
+| Microsoft.PowerToys.CmdPal_BeginInvoke | Triggered when the Command Palette is launched by the user. |
+| Microsoft.PowerToys.CmdPal_ColdLaunch | Occurs when Command Palette starts for the first time (cold start). |
+| Microsoft.PowerToys.CmdPal_OpenPage | Triggered when a page is opened within the Command Palette, tracking navigation depth. |
+| Microsoft.PowerToys.CmdPal_OpenUri | Occurs when a URI is opened through the Command Palette, including whether it's a web URL. |
+| Microsoft.PowerToys.CmdPal_ReactivateInstance | Triggered when an existing Command Palette instance is reactivated. |
+| Microsoft.PowerToys.CmdPal_RunCommand | Logs when a command is executed through the Command Palette, including admin elevation status. |
+| Microsoft.PowerToys.CmdPal_RunQuery | Triggered when a search query is performed, including result count and duration. |
+| Microsoft.PowerToys.CmdPalDismissedOnEsc | Occurs when the Command Palette is dismissed by pressing the Escape key. |
+| Microsoft.PowerToys.CmdPalDismissedOnLostFocus | Triggered when the Command Palette is dismissed due to losing focus. |
+| Microsoft.PowerToys.CmdPalHotkeySummoned | Logs when the Command Palette is summoned via hotkey, distinguishing between global and context-specific hotkeys. |
+| Microsoft.PowerToys.CmdPalInvokeResult | Records the result type of a Command Palette invocation. |
+| Microsoft.PowerToys.CmdPalProcessStarted | Triggered when the Command Palette process is started. |
+| Microsoft.PowerToys.CmdPal_ExtensionInvoked | Tracks extension usage including extension ID, command details, success status, and execution time. |
+| Microsoft.PowerToys.CmdPal_SessionDuration | Logs session metrics from launch to dismissal including duration, commands executed, pages visited, search queries, navigation depth, and errors. |
 
 ### Crop And Lock
-<table style="width:100%">
-  <tr>
-    <th>Event Name</th>
-    <th>Description</th>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.CropAndLock_ActivateReparent</td>
-    <td>Triggered when the cropping interface is activated for reparenting the cropped content.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.CropAndLock_ActivateThumbnail</td>
-    <td>Occurs when the thumbnail view for cropped content is activated.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.CropAndLock_EnableCropAndLock</td>
-    <td>Triggered when Crop and Lock is enabled.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.CropAndLock_Settings</td>
-    <td>Occurs when settings related to Crop and Lock are modified.</td>
-  </tr>  
-</table>
+
+| Event Name | Description |
+| --- | --- |
+| Microsoft.PowerToys.CropAndLock_ActivateReparent | Triggered when the cropping interface is activated for reparenting the cropped content. |
+| Microsoft.PowerToys.CropAndLock_ActivateThumbnail | Occurs when the thumbnail view for cropped content is activated. |
+| Microsoft.PowerToys.CropAndLock_EnableCropAndLock | Triggered when Crop and Lock is enabled. |
+| Microsoft.PowerToys.CropAndLock_Settings | Occurs when settings related to Crop and Lock are modified. |
 
 ### Environment Variables
-<table style="width:100%">
-  <tr>
-    <th>Event Name</th>
-    <th>Description</th>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.EnvironmentVariables_Activate</td>
-    <td>Triggered when Environment Variables is launched.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.EnvironmentVariables_EnableEnvironmentVariables</td>
-    <td>Occurs when Environment Variables is enabled.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.EnvironmentVariablesOpenedEvent</td>
-    <td>Triggered when the Environment Variables interface is opened.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.EnvironmentVariablesProfileEnabledEvent</td>
-    <td>Occurs when an environment variable profile is enabled.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.EnvironmentVariablesVariableChangedEvent</td>
-    <td>Triggered when an environment variable is added, modified, or deleted.</td>
-  </tr>  
-</table>
+
+| Event Name | Description |
+| --- | --- |
+| Microsoft.PowerToys.EnvironmentVariables_Activate | Triggered when Environment Variables is launched. |
+| Microsoft.PowerToys.EnvironmentVariables_EnableEnvironmentVariables | Occurs when Environment Variables is enabled. |
+| Microsoft.PowerToys.EnvironmentVariablesOpenedEvent | Triggered when the Environment Variables interface is opened. |
+| Microsoft.PowerToys.EnvironmentVariablesProfileEnabledEvent | Occurs when an environment variable profile is enabled. |
+| Microsoft.PowerToys.EnvironmentVariablesVariableChangedEvent | Triggered when an environment variable is added, modified, or deleted. |
 
 ### FancyZones
-<table style="width:100%">
-  <tr>
-    <th>Event Name</th>
-    <th>Description</th>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.FancyZones_CycleActiveZoneSet</td>
-    <td>Triggered when the active zone set is cycled through.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.FancyZones_EditorLaunch</td>
-    <td>Occurs when the FancyZones editor is launched.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.FancyZones_EnableFancyZones</td>
-    <td>Occurs when FancyZones is enabled.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.FancyZones_KeyboardSnapWindowToZone</td>
-    <td>Triggered when a window is snapped to a zone using the keyboard.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.FancyZones_MoveOrResizeEnded</td>
-    <td>Occurs when a window move or resize action has completed.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.FancyZones_MoveOrResizeStarted</td>
-    <td>Triggered when a window move or resize action is initiated.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.FancyZones_MoveSizeEnd</td>
-    <td>Occurs when the moving or resizing of a window has ended.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.FancyZones_OnKeyDown</td>
-    <td>Triggered when a key is pressed down while interacting with zones.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.FancyZones_QuickLayoutSwitch</td>
-    <td>Occurs when a quick switch between zone layouts is performed.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.FancyZones_Settings</td>
-    <td>Triggered when FancyZones settings are accessed or modified.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.FancyZones_SettingsChanged</td>
-    <td>Occurs when there is a change in the FancyZones settings.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.FancyZones_SnapNewWindowIntoZone</td>
-    <td>Triggered when a new window is snapped into a zone.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.FancyZones_VirtualDesktopChanged</td>
-    <td>Occurs when the virtual desktop changes, affecting zone layout.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.FancyZones_ZoneSettingsChanged</td>
-    <td>Triggered when the settings for specific zones are altered.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.FancyZones_ZoneWindowKeyUp</td>
-    <td>Occurs when a key is released while interacting with zones.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.FancyZones_CLICommand</td>
-    <td>Triggered when a FancyZones CLI command is executed, logging the command name and success status.</td>
-  </tr>
-</table>
+
+| Event Name | Description |
+| --- | --- |
+| Microsoft.PowerToys.FancyZones_CycleActiveZoneSet | Triggered when the active zone set is cycled through. |
+| Microsoft.PowerToys.FancyZones_EditorLaunch | Occurs when the FancyZones editor is launched. |
+| Microsoft.PowerToys.FancyZones_EnableFancyZones | Occurs when FancyZones is enabled. |
+| Microsoft.PowerToys.FancyZones_KeyboardSnapWindowToZone | Triggered when a window is snapped to a zone using the keyboard. |
+| Microsoft.PowerToys.FancyZones_MoveOrResizeEnded | Occurs when a window move or resize action has completed. |
+| Microsoft.PowerToys.FancyZones_MoveOrResizeStarted | Triggered when a window move or resize action is initiated. |
+| Microsoft.PowerToys.FancyZones_MoveSizeEnd | Occurs when the moving or resizing of a window has ended. |
+| Microsoft.PowerToys.FancyZones_OnKeyDown | Triggered when a key is pressed down while interacting with zones. |
+| Microsoft.PowerToys.FancyZones_QuickLayoutSwitch | Occurs when a quick switch between zone layouts is performed. |
+| Microsoft.PowerToys.FancyZones_Settings | Triggered when FancyZones settings are accessed or modified. |
+| Microsoft.PowerToys.FancyZones_SettingsChanged | Occurs when there is a change in the FancyZones settings. |
+| Microsoft.PowerToys.FancyZones_SnapNewWindowIntoZone | Triggered when a new window is snapped into a zone. |
+| Microsoft.PowerToys.FancyZones_VirtualDesktopChanged | Occurs when the virtual desktop changes, affecting zone layout. |
+| Microsoft.PowerToys.FancyZones_ZoneSettingsChanged | Triggered when the settings for specific zones are altered. |
+| Microsoft.PowerToys.FancyZones_ZoneWindowKeyUp | Occurs when a key is released while interacting with zones. |
+| Microsoft.PowerToys.FancyZones_CLICommand | Triggered when a FancyZones CLI command is executed, logging the command name and success status. |
 
 ### FileExplorerAddOns
-<table style="width:100%">
-  <tr>
-    <th>Event Name</th>
-    <th>Description</th>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.GcodeFileHandlerLoaded</td>
-    <td>Triggered when a G-code file handler is loaded.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.GcodeFilePreviewed</td>
-    <td>Occurs when a G-code file is previewed in File Explorer.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.GcodeFilePreviewError</td>
-    <td>Triggered when there is an error previewing a G-code file.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.BgcodeFileHandlerLoaded</td>
-    <td>Triggered when a Binary G-code file handler is loaded.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.BgcodeFilePreviewed</td>
-    <td>Occurs when a Binary G-code file is previewed in File Explorer.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.BgcodeFilePreviewError</td>
-    <td>Triggered when there is an error previewing a Binary G-code file.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.MarkdownFileHandlerLoaded</td>
-    <td>Occurs when a Markdown file handler is loaded.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.MarkdownFilePreviewed</td>
-    <td>Triggered when a Markdown file is previewed in File Explorer.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.PdfFileHandlerLoaded</td>
-    <td>Occurs when a PDF file handler is loaded.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.PdfFilePreviewed</td>
-    <td>Triggered when a PDF file is previewed in File Explorer.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.PowerPreview_Enabled</td>
-    <td>Occurs when preview is enabled.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.PowerPreview_TweakUISettings_Destroyed</td>
-    <td>Triggered when the Tweak UI settings for Power Preview are destroyed.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.PowerPreview_TweakUISettings_FailedUpdatingSettings</td>
-    <td>Occurs when updating Tweak UI settings fails.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.PowerPreview_TweakUISettings_InitSet__ErrorLoadingFile</td>
-    <td>Triggered when there is an error loading a file during Tweak UI settings initialization.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.PowerPreview_TweakUISettings_SuccessfullyUpdatedSettings</td>
-    <td>Occurs when the Tweak UI settings for Power Preview are successfully updated.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.QoiFilePreviewed</td>
-    <td>Triggered when a QOI file is previewed in File Explorer.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.SvgFileHandlerLoaded</td>
-    <td>Occurs when an SVG file handler is loaded.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.SvgFilePreviewed</td>
-    <td>Triggered when an SVG file is previewed in File Explorer.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.SvgFilePreviewError</td>
-    <td>Occurs when there is an error previewing an SVG file.</td>
-  </tr>
-</table>
+
+| Event Name | Description |
+| --- | --- |
+| Microsoft.PowerToys.GcodeFileHandlerLoaded | Triggered when a G-code file handler is loaded. |
+| Microsoft.PowerToys.GcodeFilePreviewed | Occurs when a G-code file is previewed in File Explorer. |
+| Microsoft.PowerToys.GcodeFilePreviewError | Triggered when there is an error previewing a G-code file. |
+| Microsoft.PowerToys.BgcodeFileHandlerLoaded | Triggered when a Binary G-code file handler is loaded. |
+| Microsoft.PowerToys.BgcodeFilePreviewed | Occurs when a Binary G-code file is previewed in File Explorer. |
+| Microsoft.PowerToys.BgcodeFilePreviewError | Triggered when there is an error previewing a Binary G-code file. |
+| Microsoft.PowerToys.MarkdownFileHandlerLoaded | Occurs when a Markdown file handler is loaded. |
+| Microsoft.PowerToys.MarkdownFilePreviewed | Triggered when a Markdown file is previewed in File Explorer. |
+| Microsoft.PowerToys.PdfFileHandlerLoaded | Occurs when a PDF file handler is loaded. |
+| Microsoft.PowerToys.PdfFilePreviewed | Triggered when a PDF file is previewed in File Explorer. |
+| Microsoft.PowerToys.PowerPreview_Enabled | Occurs when preview is enabled. |
+| Microsoft.PowerToys.PowerPreview_TweakUISettings_Destroyed | Triggered when the Tweak UI settings for Power Preview are destroyed. |
+| Microsoft.PowerToys.PowerPreview_TweakUISettings_FailedUpdatingSettings | Occurs when updating Tweak UI settings fails. |
+| Microsoft.PowerToys.PowerPreview_TweakUISettings_InitSet__ErrorLoadingFile | Triggered when there is an error loading a file during Tweak UI settings initialization. |
+| Microsoft.PowerToys.PowerPreview_TweakUISettings_SuccessfullyUpdatedSettings | Occurs when the Tweak UI settings for Power Preview are successfully updated. |
+| Microsoft.PowerToys.QoiFilePreviewed | Triggered when a QOI file is previewed in File Explorer. |
+| Microsoft.PowerToys.SvgFileHandlerLoaded | Occurs when an SVG file handler is loaded. |
+| Microsoft.PowerToys.SvgFilePreviewed | Triggered when an SVG file is previewed in File Explorer. |
+| Microsoft.PowerToys.SvgFilePreviewError | Occurs when there is an error previewing an SVG file. |
 
 ### File Locksmith
-<table style="width:100%">
-  <tr>
-    <th>Event Name</th>
-    <th>Description</th>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.FileLocksmith_EnableFileLocksmith</td>
-    <td>Triggered when File Locksmith is enabled.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.FileLocksmith_Invoked</td>
-    <td>Occurs when File Locksmith is invoked.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.FileLocksmith_InvokedRet</td>
-    <td>Triggered when File Locksmith invocation returns a result.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.FileLocksmith_QueryContextMenuError</td>
-    <td>Occurs when there is an error querying the context menu for File Locksmith.</td>
-  </tr>
-</table>
+
+| Event Name | Description |
+| --- | --- |
+| Microsoft.PowerToys.FileLocksmith_EnableFileLocksmith | Triggered when File Locksmith is enabled. |
+| Microsoft.PowerToys.FileLocksmith_Invoked | Occurs when File Locksmith is invoked. |
+| Microsoft.PowerToys.FileLocksmith_InvokedRet | Triggered when File Locksmith invocation returns a result. |
+| Microsoft.PowerToys.FileLocksmith_QueryContextMenuError | Occurs when there is an error querying the context menu for File Locksmith. |
 
 ### Find My Mouse
-<table style="width:100%">
-  <tr>
-    <th>Event Name</th>
-    <th>Description</th>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.FindMyMouse_EnableFindMyMouse</td>
-    <td>Triggered when Find My Mouse is enabled.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.FindMyMouse_MousePointerFocused</td>
-    <td>Occurs when the mouse pointer is focused using Find My Mouse.</td>
-  </tr>
-</table>
+
+| Event Name | Description |
+| --- | --- |
+| Microsoft.PowerToys.FindMyMouse_EnableFindMyMouse | Triggered when Find My Mouse is enabled. |
+| Microsoft.PowerToys.FindMyMouse_MousePointerFocused | Occurs when the mouse pointer is focused using Find My Mouse. |
 
 ### Hosts File Editor
-<table style="width:100%">
-  <tr>
-    <th>Event Name</th>
-    <th>Description</th>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.HostsFileEditor_Activate</td>
-    <td>Triggered when Hosts File Editor is activated.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.HostsFileEditor_EnableHostsFileEditor</td>
-    <td>Occurs when Hosts File Editor is enabled.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.HostsFileEditorOpenedEvent</td>
-    <td>Fires when Hosts File Editor is opened.</td>
-  </tr>
-</table>
+
+| Event Name | Description |
+| --- | --- |
+| Microsoft.PowerToys.HostsFileEditor_Activate | Triggered when Hosts File Editor is activated. |
+| Microsoft.PowerToys.HostsFileEditor_EnableHostsFileEditor | Occurs when Hosts File Editor is enabled. |
+| Microsoft.PowerToys.HostsFileEditorOpenedEvent | Fires when Hosts File Editor is opened. |
 
 ### Image Resizer
-<table style="width:100%">
-  <tr>
-    <th>Event Name</th>
-    <th>Description</th>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.ImageResizer_EnableImageResizer</td>
-    <td>Triggered when Image Resizer is enabled.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.ImageResizer_Invoked</td>
-    <td>Occurs when Image Resizer is invoked by the user.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.ImageResizer_InvokedRet</td>
-    <td>Fires when the Image Resizer operation is completed and returns a result.</td>
-  </tr>
-</table>
+
+| Event Name | Description |
+| --- | --- |
+| Microsoft.PowerToys.ImageResizer_EnableImageResizer | Triggered when Image Resizer is enabled. |
+| Microsoft.PowerToys.ImageResizer_Invoked | Occurs when Image Resizer is invoked by the user. |
+| Microsoft.PowerToys.ImageResizer_InvokedRet | Fires when the Image Resizer operation is completed and returns a result. |
 
 ### Keyboard Manager
-<table style="width:100%">
-  <tr>
-    <th>Event Name</th>
-    <th>Description</th>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.KeyboardManager_AppSpecificShortcutRemapConfigurationLoaded</td>
-    <td>Indicates that the application-specific shortcut remap configuration has been successfully loaded.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.KeyboardManager_AppSpecificShortcutRemapCount</td>
-    <td>Logs the number of application-specific shortcut remaps configured by the user.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.KeyboardManager_AppSpecificShortcutToShortcutRemapInvoked</td>
-    <td>Logs each instance when an application-specific shortcut-to-shortcut remap is used.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.KeyboardManager_DailyAppSpecificShortcutToKeyRemapInvoked</td>
-    <td>Logs the daily count of application-specific shortcut-to-key remaps executed by the user.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.KeyboardManager_DailyAppSpecificShortcutToShortcutRemapInvoked</td>
-    <td>Logs the daily count of application-specific shortcut-to-shortcut remaps executed by the user.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.KeyboardManager_DailyKeyToKeyRemapInvoked</td>
-    <td>Logs the daily count of key-to-key remaps used by the user.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.KeyboardManager_DailyKeyToShortcutRemapInvoked</td>
-    <td>Logs the daily count of key-to-shortcut remaps used by the user.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.KeyboardManager_DailyShortcutToKeyRemapInvoked</td>
-    <td>Logs the daily count of shortcut-to-key remaps used by the user.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.KeyboardManager_DailyShortcutToShortcutRemapInvoked</td>
-    <td>Logs the daily count of shortcut-to-shortcut remaps used by the user.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.KeyboardManager_EnableKeyboardManager</td>
-    <td>Indicates that the Keyboard Manager has been enabled in PowerToys settings.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.KeyboardManager_KeyRemapConfigurationLoaded</td>
-    <td>Indicates that the key remap configuration has been successfully loaded.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.KeyboardManager_KeyRemapCount</td>
-    <td>Logs the number of individual key remaps configured by the user.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.KeyboardManager_KeyToKeyRemapInvoked</td>
-    <td>Logs each instance of a key-to-key remap being used.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.KeyboardManager_KeyToShortcutRemapInvoked</td>
-    <td>Logs each instance of a key-to-shortcut remap being used.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.KeyboardManager_OSLevelShortcutRemapCount</td>
-    <td>Logs the total number of OS-level shortcut remaps configured by the user.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.KeyboardManager_OSLevelShortcutToKeyRemapInvoked</td>
-    <td>Logs each instance of an OS-level shortcut-to-key remap being used.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.KeyboardManager_OSLevelShortcutToShortcutRemapInvoked</td>
-    <td>Logs each instance of an OS-level shortcut-to-shortcut remap being used.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.KeyboardManager_ShortcutRemapConfigurationLoaded</td>
-    <td>Indicates that the shortcut remap configuration has been successfully loaded.</td>
-  </tr>
-</table>
+
+| Event Name | Description |
+| --- | --- |
+| Microsoft.PowerToys.KeyboardManager_AppSpecificShortcutRemapConfigurationLoaded | Indicates that the application-specific shortcut remap configuration has been successfully loaded. |
+| Microsoft.PowerToys.KeyboardManager_AppSpecificShortcutRemapCount | Logs the number of application-specific shortcut remaps configured by the user. |
+| Microsoft.PowerToys.KeyboardManager_AppSpecificShortcutToShortcutRemapInvoked | Logs each instance when an application-specific shortcut-to-shortcut remap is used. |
+| Microsoft.PowerToys.KeyboardManager_DailyAppSpecificShortcutToKeyRemapInvoked | Logs the daily count of application-specific shortcut-to-key remaps executed by the user. |
+| Microsoft.PowerToys.KeyboardManager_DailyAppSpecificShortcutToShortcutRemapInvoked | Logs the daily count of application-specific shortcut-to-shortcut remaps executed by the user. |
+| Microsoft.PowerToys.KeyboardManager_DailyKeyToKeyRemapInvoked | Logs the daily count of key-to-key remaps used by the user. |
+| Microsoft.PowerToys.KeyboardManager_DailyKeyToShortcutRemapInvoked | Logs the daily count of key-to-shortcut remaps used by the user. |
+| Microsoft.PowerToys.KeyboardManager_DailyShortcutToKeyRemapInvoked | Logs the daily count of shortcut-to-key remaps used by the user. |
+| Microsoft.PowerToys.KeyboardManager_DailyShortcutToShortcutRemapInvoked | Logs the daily count of shortcut-to-shortcut remaps used by the user. |
+| Microsoft.PowerToys.KeyboardManager_EnableKeyboardManager | Indicates that the Keyboard Manager has been enabled in PowerToys settings. |
+| Microsoft.PowerToys.KeyboardManager_KeyRemapConfigurationLoaded | Indicates that the key remap configuration has been successfully loaded. |
+| Microsoft.PowerToys.KeyboardManager_KeyRemapCount | Logs the number of individual key remaps configured by the user. |
+| Microsoft.PowerToys.KeyboardManager_KeyToKeyRemapInvoked | Logs each instance of a key-to-key remap being used. |
+| Microsoft.PowerToys.KeyboardManager_KeyToShortcutRemapInvoked | Logs each instance of a key-to-shortcut remap being used. |
+| Microsoft.PowerToys.KeyboardManager_OSLevelShortcutRemapCount | Logs the total number of OS-level shortcut remaps configured by the user. |
+| Microsoft.PowerToys.KeyboardManager_OSLevelShortcutToKeyRemapInvoked | Logs each instance of an OS-level shortcut-to-key remap being used. |
+| Microsoft.PowerToys.KeyboardManager_OSLevelShortcutToShortcutRemapInvoked | Logs each instance of an OS-level shortcut-to-shortcut remap being used. |
+| Microsoft.PowerToys.KeyboardManager_ShortcutRemapConfigurationLoaded | Indicates that the shortcut remap configuration has been successfully loaded. |
 
 ### Light Switch
-<table style="width:100%">
-  <tr>
-    <th>Event Name</th>
-    <th>Description</th>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.LightSwitch_EnableLightSwitch</td>
-    <td>Triggered when Light Switch is enabled or disabled.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.LightSwitch_ShortcutInvoked</td>
-    <td>Occurs when the shortcut for Light Switch is invoked.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.LightSwitch_ScheduleModeToggled</td>
-    <td>Occurs when a new schedule mode is selected for Light Switch.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.LightSwitch_ThemeTargetChanged</td>
-    <td>Occurs when the options for targeting the system or apps is updated.</td>
-  </tr>
-</table>
+
+| Event Name | Description |
+| --- | --- |
+| Microsoft.PowerToys.LightSwitch_EnableLightSwitch | Triggered when Light Switch is enabled or disabled. |
+| Microsoft.PowerToys.LightSwitch_ShortcutInvoked | Occurs when the shortcut for Light Switch is invoked. |
+| Microsoft.PowerToys.LightSwitch_ScheduleModeToggled | Occurs when a new schedule mode is selected for Light Switch. |
+| Microsoft.PowerToys.LightSwitch_ThemeTargetChanged | Occurs when the options for targeting the system or apps is updated. |
 
 ### Mouse Highlighter
-<table style="width:100%">
-  <tr>
-    <th>Event Name</th>
-    <th>Description</th>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.MouseHighlighter_EnableMouseHighlighter</td>
-    <td>Triggered when Mouse Highlighter is enabled.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.MouseHighlighter_StartHighlightingSession</td>
-    <td>Occurs when a new highlighting session is started.</td>
-  </tr>
-</table>
+
+| Event Name | Description |
+| --- | --- |
+| Microsoft.PowerToys.MouseHighlighter_EnableMouseHighlighter | Triggered when Mouse Highlighter is enabled. |
+| Microsoft.PowerToys.MouseHighlighter_StartHighlightingSession | Occurs when a new highlighting session is started. |
 
 ### Mouse Jump
-<table style="width:100%">
-  <tr>
-    <th>Event Name</th>
-    <th>Description</th>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.MouseJump_EnableJumpTool</td>
-    <td>Triggered when Mouse Jump is enabled.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.MouseJump_InvokeJumpTool</td>
-    <td>Occurs when Mouse Jump is invoked.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.MouseJumpShowEvent</td>
-    <td>Triggered when the Mouse Jump display is shown.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.MouseJumpTeleportCursorEvent</td>
-    <td>Occurs when the cursor is teleported to a new location.</td>
-  </tr>
-</table>
+
+| Event Name | Description |
+| --- | --- |
+| Microsoft.PowerToys.MouseJump_EnableJumpTool | Triggered when Mouse Jump is enabled. |
+| Microsoft.PowerToys.MouseJump_InvokeJumpTool | Occurs when Mouse Jump is invoked. |
+| Microsoft.PowerToys.MouseJumpShowEvent | Triggered when the Mouse Jump display is shown. |
+| Microsoft.PowerToys.MouseJumpTeleportCursorEvent | Occurs when the cursor is teleported to a new location. |
 
 ### Mouse Pointer Crosshairs
-<table style="width:100%">
-  <tr>
-    <th>Event Name</th>
-    <th>Description</th>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.MousePointerCrosshairs_EnableMousePointerCrosshairs</td>
-    <td>Triggered when Mouse Pointer Crosshairs is enabled.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.MousePointerCrosshairs_StartDrawingCrosshairs</td>
-    <td>Occurs when the crosshairs are drawn around the mouse pointer.</td>
-  </tr>
-</table>
+
+| Event Name | Description |
+| --- | --- |
+| Microsoft.PowerToys.MousePointerCrosshairs_EnableMousePointerCrosshairs | Triggered when Mouse Pointer Crosshairs is enabled. |
+| Microsoft.PowerToys.MousePointerCrosshairs_StartDrawingCrosshairs | Occurs when the crosshairs are drawn around the mouse pointer. |
 
 ### Mouse Without Borders
-<table style="width:100%">
-  <tr>
-    <th>Event Name</th>
-    <th>Description</th>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.MouseWithoutBorders_Activate</td>
-    <td>Triggered when Mouse Without Borders is activated.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.MouseWithoutBorders_AddFirewallRule</td>
-    <td>Occurs when a firewall rule is added for Mouse Without Borders.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.MouseWithoutBorders_EnableMouseWithoutBorders</td>
-    <td>Triggered when Mouse Without Borders is enabled.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.MouseWithoutBorders_ToggleServiceRegistration</td>
-    <td>Occurs when the service registration for Mouse Without Borders is toggled.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.MouseWithoutBordersClipboardFileTransferEvent</td>
-    <td>Triggered during a clipboard file transfer between computers.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.MouseWithoutBordersDragAndDropEvent</td>
-    <td>Occurs during a drag-and-drop operation between computers.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.MouseWithoutBordersMultipleModeEvent</td>
-    <td>Triggered when multiple modes are enabled in Mouse Without Borders.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.MouseWithoutBordersOldUIOpenedEvent</td>
-    <td>Occurs when the old user interface for Mouse Without Borders is opened.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.MouseWithoutBordersOldUIQuitEvent</td>
-    <td>Triggered when the old user interface for Mouse Without Borders is closed.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.MouseWithoutBordersOldUIReconfigureEvent</td>
-    <td>Occurs when the old user interface for Mouse Without Borders is reconfigured.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.MouseWithoutBordersStartedEvent</td>
-    <td>Triggered when Mouse Without Borders is started.</td>
-  </tr>
-</table>
+
+| Event Name | Description |
+| --- | --- |
+| Microsoft.PowerToys.MouseWithoutBorders_Activate | Triggered when Mouse Without Borders is activated. |
+| Microsoft.PowerToys.MouseWithoutBorders_AddFirewallRule | Occurs when a firewall rule is added for Mouse Without Borders. |
+| Microsoft.PowerToys.MouseWithoutBorders_EnableMouseWithoutBorders | Triggered when Mouse Without Borders is enabled. |
+| Microsoft.PowerToys.MouseWithoutBorders_ToggleServiceRegistration | Occurs when the service registration for Mouse Without Borders is toggled. |
+| Microsoft.PowerToys.MouseWithoutBordersClipboardFileTransferEvent | Triggered during a clipboard file transfer between computers. |
+| Microsoft.PowerToys.MouseWithoutBordersDragAndDropEvent | Occurs during a drag-and-drop operation between computers. |
+| Microsoft.PowerToys.MouseWithoutBordersMultipleModeEvent | Triggered when multiple modes are enabled in Mouse Without Borders. |
+| Microsoft.PowerToys.MouseWithoutBordersOldUIOpenedEvent | Occurs when the old user interface for Mouse Without Borders is opened. |
+| Microsoft.PowerToys.MouseWithoutBordersOldUIQuitEvent | Triggered when the old user interface for Mouse Without Borders is closed. |
+| Microsoft.PowerToys.MouseWithoutBordersOldUIReconfigureEvent | Occurs when the old user interface for Mouse Without Borders is reconfigured. |
+| Microsoft.PowerToys.MouseWithoutBordersStartedEvent | Triggered when Mouse Without Borders is started. |
 
 ### New+
-<table style="width:100%">
-  <tr>
-    <th>Event Name</th>
-    <th>Description</th>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.NewPlus_ChangedTemplateLocation</td>
-    <td>Triggered when the template folder location is changed.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.NewPlus_EventCopyTemplate</td>
-    <td>Triggered when an item from New+ is created (copied to the current directory).</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.NewPlus_EventCopyTemplateResult</td>
-    <td>Logs the success of item creation (copying).</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.NewPlus_EventOpenTemplates</td>
-    <td>Triggered when the templates folder is opened.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.NewPlus_EventShowTemplateItems</td>
-    <td>Triggered when the New+ context menu flyout is displayed.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.NewPlus_EventToggleOnOff</td>
-    <td>Triggered when New+ is enabled or disabled.</td>
-  </tr>
-</table>
+
+| Event Name | Description |
+| --- | --- |
+| Microsoft.PowerToys.NewPlus_ChangedTemplateLocation | Triggered when the template folder location is changed. |
+| Microsoft.PowerToys.NewPlus_EventCopyTemplate | Triggered when an item from New+ is created (copied to the current directory). |
+| Microsoft.PowerToys.NewPlus_EventCopyTemplateResult | Logs the success of item creation (copying). |
+| Microsoft.PowerToys.NewPlus_EventOpenTemplates | Triggered when the templates folder is opened. |
+| Microsoft.PowerToys.NewPlus_EventShowTemplateItems | Triggered when the New+ context menu flyout is displayed. |
+| Microsoft.PowerToys.NewPlus_EventToggleOnOff | Triggered when New+ is enabled or disabled. |
 
 ### Peek
-<table style="width:100%">
-  <tr>
-    <th>Event Name</th>
-    <th>Description</th>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.Peek_Closed</td>
-    <td>Triggered when Peek is closed.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.Peek_EnablePeek</td>
-    <td>Occurs when Peek is enabled.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.Peek_Error</td>
-    <td>Triggered when an error occurs for Peek.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.Peek_InvokePeek</td>
-    <td>Occurs when Peek is invoked.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.Peek_Opened</td>
-    <td>Triggered when a Peek window is opened.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.Peek_OpenWith</td>
-    <td>Occurs when an item is opened with Peek.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.Peek_Settings</td>
-    <td>Triggered when the settings for Peek are modified.</td>
-  </tr>
-</table>
+
+| Event Name | Description |
+| --- | --- |
+| Microsoft.PowerToys.Peek_Closed | Triggered when Peek is closed. |
+| Microsoft.PowerToys.Peek_EnablePeek | Occurs when Peek is enabled. |
+| Microsoft.PowerToys.Peek_Error | Triggered when an error occurs for Peek. |
+| Microsoft.PowerToys.Peek_InvokePeek | Occurs when Peek is invoked. |
+| Microsoft.PowerToys.Peek_Opened | Triggered when a Peek window is opened. |
+| Microsoft.PowerToys.Peek_OpenWith | Occurs when an item is opened with Peek. |
+| Microsoft.PowerToys.Peek_Settings | Triggered when the settings for Peek are modified. |
 
 ### PowerRename
-<table style="width:100%">
-  <tr>
-    <th>Event Name</th>
-    <th>Description</th>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.PowerRename_EnablePowerRename</td>
-    <td>Triggered when PowerRename is enabled.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.PowerRename_Invoked</td>
-    <td>Occurs when PowerRename is invoked.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.PowerRename_InvokedRet</td>
-    <td>Triggered when the invocation of PowerRename returns a result.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.PowerRename_RenameOperation</td>
-    <td>Triggered during the rename operation within PowerRename.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.PowerRename_SettingsChanged</td>
-    <td>Occurs when the settings for PowerRename are changed.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.PowerRename_UIShownRet</td>
-    <td>Triggered when the PowerRename user interface is shown.</td>
-  </tr>
-</table>
+
+| Event Name | Description |
+| --- | --- |
+| Microsoft.PowerToys.PowerRename_EnablePowerRename | Triggered when PowerRename is enabled. |
+| Microsoft.PowerToys.PowerRename_Invoked | Occurs when PowerRename is invoked. |
+| Microsoft.PowerToys.PowerRename_InvokedRet | Triggered when the invocation of PowerRename returns a result. |
+| Microsoft.PowerToys.PowerRename_RenameOperation | Triggered during the rename operation within PowerRename. |
+| Microsoft.PowerToys.PowerRename_SettingsChanged | Occurs when the settings for PowerRename are changed. |
+| Microsoft.PowerToys.PowerRename_UIShownRet | Triggered when the PowerRename user interface is shown. |
 
 ### PowerToys Run
-<table style="width:100%">
-  <tr>
-    <th>Event Name</th>
-    <th>Description</th>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.LauncherBootEvent</td>
-    <td>Triggered when PowerToys Run is initialized on boot.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.LauncherColdStateHotkeyEvent</td>
-    <td>Occurs when the hotkey is pressed in the cold state (not yet initialized).</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.LauncherFirstDeleteEvent</td>
-    <td>Triggered when the first deletion action is performed in PowerToys Run.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.LauncherHideEvent</td>
-    <td>Occurs when PowerToys Run is hidden.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.LauncherQueryEvent</td>
-    <td>Triggered when a query is made in PowerToys Run.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.LauncherResultActionEvent</td>
-    <td>Occurs when an action is taken on a result in PowerToys Run.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.LauncherShowEvent</td>
-    <td>Triggered when PowerToys Run is shown.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.LauncherWarmStateHotkeyEvent</td>
-    <td>Occurs when the hotkey is pressed in the warm state (initialized).</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.RunPluginsSettingsEvent</td>
-    <td>Triggered when the settings for PowerToys Run plugins are accessed or modified.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.WindowWalker_EnableWindowWalker</td>
-    <td>Triggered when the Window Walker plugin is enabled.</td>
-  </tr>
-</table>
+
+| Event Name | Description |
+| --- | --- |
+| Microsoft.PowerToys.LauncherBootEvent | Triggered when PowerToys Run is initialized on boot. |
+| Microsoft.PowerToys.LauncherColdStateHotkeyEvent | Occurs when the hotkey is pressed in the cold state (not yet initialized). |
+| Microsoft.PowerToys.LauncherFirstDeleteEvent | Triggered when the first deletion action is performed in PowerToys Run. |
+| Microsoft.PowerToys.LauncherHideEvent | Occurs when PowerToys Run is hidden. |
+| Microsoft.PowerToys.LauncherQueryEvent | Triggered when a query is made in PowerToys Run. |
+| Microsoft.PowerToys.LauncherResultActionEvent | Occurs when an action is taken on a result in PowerToys Run. |
+| Microsoft.PowerToys.LauncherShowEvent | Triggered when PowerToys Run is shown. |
+| Microsoft.PowerToys.LauncherWarmStateHotkeyEvent | Occurs when the hotkey is pressed in the warm state (initialized). |
+| Microsoft.PowerToys.RunPluginsSettingsEvent | Triggered when the settings for PowerToys Run plugins are accessed or modified. |
+| Microsoft.PowerToys.WindowWalker_EnableWindowWalker | Triggered when the Window Walker plugin is enabled. |
 
 ### Quick Accent
-<table style="width:100%">
-  <tr>
-    <th>Event Name</th>
-    <th>Description</th>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.PowerAccent_EnablePowerAccent</td>
-    <td>Triggered when Quick Accent is enabled.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.PowerAccentShowAccentMenuEvent</td>
-    <td>Occurs when the accent menu is displayed.</td>
-  </tr>
-</table>
+
+| Event Name | Description |
+| --- | --- |
+| Microsoft.PowerToys.PowerAccent_EnablePowerAccent | Triggered when Quick Accent is enabled. |
+| Microsoft.PowerToys.PowerAccentShowAccentMenuEvent | Occurs when the accent menu is displayed. |
 
 ### Registry Preview
-<table style="width:100%">
-  <tr>
-    <th>Event Name</th>
-    <th>Description</th>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.RegistryPreview_Activate</td>
-    <td>Triggered when Registry Preview is activated.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.RegistryPreview_EnableRegistryPreview</td>
-    <td>Occurs when Registry Preview is enabled.</td>
-  </tr>
-</table>
+
+| Event Name | Description |
+| --- | --- |
+| Microsoft.PowerToys.RegistryPreview_Activate | Triggered when Registry Preview is activated. |
+| Microsoft.PowerToys.RegistryPreview_EnableRegistryPreview | Occurs when Registry Preview is enabled. |
 
 ### Screen Ruler
-<table style="width:100%">
-  <tr>
-    <th>Event Name</th>
-    <th>Description</th>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.MeasureTool_BoundsToolActivated</td>
-    <td>Triggered when Screen Ruler's Bounds tool is activated.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.MeasureTool_EnableMeasureTool</td>
-    <td>Occurs when Screen Ruler is enabled.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.MeasureTool_MeasureToolActivated</td>
-    <td>Triggered when Screen Ruler's Measure tool is activated.</td>
-  </tr>
-</table>
+
+| Event Name | Description |
+| --- | --- |
+| Microsoft.PowerToys.MeasureTool_BoundsToolActivated | Triggered when Screen Ruler's Bounds tool is activated. |
+| Microsoft.PowerToys.MeasureTool_EnableMeasureTool | Occurs when Screen Ruler is enabled. |
+| Microsoft.PowerToys.MeasureTool_MeasureToolActivated | Triggered when Screen Ruler's Measure tool is activated. |
 
 ### Shortcut Guide
-<table style="width:100%">
-  <tr>
-    <th>Event Name</th>
-    <th>Description</th>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.ShortcutGuide_GuideSession</td>
-    <td>Logs a Shortcut Guide session including duration and how it was closed.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.ShortcutGuide_Settings</td>
-    <td>Indicates a change in the settings related to the Shortcut Guide.</td>
-  </tr>
-</table>
+
+| Event Name | Description |
+| --- | --- |
+| Microsoft.PowerToys.ShortcutGuide_GuideSession | Logs a Shortcut Guide session including duration and how it was closed. |
+| Microsoft.PowerToys.ShortcutGuide_Settings | Indicates a change in the settings related to the Shortcut Guide. |
 
 ### Text Extractor
-<table style="width:100%">
-  <tr>
-    <th>Event Name</th>
-    <th>Description</th>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.PowerOCR_EnablePowerOCR</td>
-    <td>Triggered when the Text Extractor (OCR) feature is enabled.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.PowerOCRCancelledEvent</td>
-    <td>Occurs when the text extraction process is cancelled.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.PowerOCRCaptureEvent</td>
-    <td>Occurs when the user has created a capture for text extraction.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.PowerOCRInvokedEvent</td>
-    <td>Triggered when Text Extractor is invoked.</td>
-  </tr>
-</table>
+
+| Event Name | Description |
+| --- | --- |
+| Microsoft.PowerToys.PowerOCR_EnablePowerOCR | Triggered when the Text Extractor (OCR) feature is enabled. |
+| Microsoft.PowerToys.PowerOCRCancelledEvent | Occurs when the text extraction process is cancelled. |
+| Microsoft.PowerToys.PowerOCRCaptureEvent | Occurs when the user has created a capture for text extraction. |
+| Microsoft.PowerToys.PowerOCRInvokedEvent | Triggered when Text Extractor is invoked. |
 
 ### Workspaces
-<table style="width:100%">
-  <tr>
-    <th>Event Name</th>
-    <th>Description</th>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.Projects_CLIUsage</td>
-    <td>Logs usage of command-line arguments for launching apps.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.Workspaces_CreateEvent</td>
-    <td>Triggered when a new workspace is created.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.Workspaces_DeleteEvent</td>
-    <td>Triggered when a workspace is deleted.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.Workspaces_EditEvent</td>
-    <td>Triggered when a workspace is edited or modified.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.Workspaces_Enable</td>
-    <td>Indicates that Workspaces is enabled.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.Workspaces_LaunchEvent</td>
-    <td>Triggered when a workspace is launched.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.Workspaces_Settings</td>
-    <td>Logs changes to workspaces settings.</td>
-  </tr>
-</table>
+
+| Event Name | Description |
+| --- | --- |
+| Microsoft.PowerToys.Projects_CLIUsage | Logs usage of command-line arguments for launching apps. |
+| Microsoft.PowerToys.Workspaces_CreateEvent | Triggered when a new workspace is created. |
+| Microsoft.PowerToys.Workspaces_DeleteEvent | Triggered when a workspace is deleted. |
+| Microsoft.PowerToys.Workspaces_EditEvent | Triggered when a workspace is edited or modified. |
+| Microsoft.PowerToys.Workspaces_Enable | Indicates that Workspaces is enabled. |
+| Microsoft.PowerToys.Workspaces_LaunchEvent | Triggered when a workspace is launched. |
+| Microsoft.PowerToys.Workspaces_Settings | Logs changes to workspaces settings. |
 
 ### ZoomIt
-<table style="width:100%">
-  <tr>
-    <th>Event Name</th>
-    <th>Description</th>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.ZoomIt_EnableZoomIt</td>
-    <td>Triggered when ZoomIt is enabled/disabled.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.ZoomIt_Started</td>
-    <td>Triggered when the ZoomIt process starts.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.ZoomIt_ActivateBreak</td>
-    <td>Triggered when the Break mode is entered.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.ZoomIt_ActivateDraw</td>
-    <td>Triggered when the Draw mode is entered.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.ZoomIt_ActivateZoom</td>
-    <td>Triggered when the Zoom mode is entered.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.ZoomIt_ActivateLiveZoom</td>
-    <td>Triggered when the Live Zoom mode is entered.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.ZoomIt_ActivateDemoType</td>
-    <td>Triggered when the DemoType mode is entered.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.ZoomIt_ActivateRecord</td>
-    <td>Triggered when the Record mode is entered.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.ZoomIt_ActivateSnip</td>
-    <td>Triggered when the Snip mode is entered.</td>
-  </tr>
-</table>
+
+| Event Name | Description |
+| --- | --- |
+| Microsoft.PowerToys.ZoomIt_EnableZoomIt | Triggered when ZoomIt is enabled/disabled. |
+| Microsoft.PowerToys.ZoomIt_Started | Triggered when the ZoomIt process starts. |
+| Microsoft.PowerToys.ZoomIt_ActivateBreak | Triggered when the Break mode is entered. |
+| Microsoft.PowerToys.ZoomIt_ActivateDraw | Triggered when the Draw mode is entered. |
+| Microsoft.PowerToys.ZoomIt_ActivateZoom | Triggered when the Zoom mode is entered. |
+| Microsoft.PowerToys.ZoomIt_ActivateLiveZoom | Triggered when the Live Zoom mode is entered. |
+| Microsoft.PowerToys.ZoomIt_ActivateDemoType | Triggered when the DemoType mode is entered. |
+| Microsoft.PowerToys.ZoomIt_ActivateRecord | Triggered when the Record mode is entered. |
+| Microsoft.PowerToys.ZoomIt_ActivateSnip | Triggered when the Snip mode is entered. |
 
 <!-- back up of table
 
-<table style="width:100%">
-  <tr>
-    <th>Event Name</th>
-    <th>Description</th>
-  </tr>
-  <tr>
-    <td>x</td>
-    <td>x</td>
-  </tr>
-  <tr>
-    <td>x</td>
-    <td>x</td>
-  </tr>
-  <tr>
-    <td>x</td>
-    <td>x</td>
-  </tr>
-</table>
+| Event Name | Description |
+| --- | --- |
+| x | x |
+| x | x |
+| x | x |
+
 -->
