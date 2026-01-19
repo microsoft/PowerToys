@@ -38,12 +38,15 @@
                 Control="{x:Bind}" />
 
             <DataTemplate x:Key="DeskbandTemplate" x:DataType="dockVm:DockItemViewModel">
-                <Button
+                <Border
+                    Padding="4,2,4,2"
                     VerticalAlignment="Stretch"
-                    DataContext="{x:Bind}"
-                    RightTapped="BandItem_RightTapped"
-                    Style="{StaticResource TaskBarButtonStyle}"
-                    Tapped="BandItem_Tapped"
+                    Background="Transparent"
+                    CornerRadius="{ThemeResource ControlCornerRadius}"
+                    PointerEntered="BandItem_PointerEntered"
+                    PointerExited="BandItem_PointerExited"
+                    PointerPressed="BandItem_PointerPressed"
+                    PointerReleased="BandItem_PointerReleased"
                     ToolTipService.ToolTip="{x:Bind Tooltip, Mode=OneWay}">
 
                     <Grid AutomationProperties.Name="{x:Bind Title, Mode=OneWay}" Background="Transparent">
@@ -60,6 +63,7 @@
                             Visibility="{x:Bind Icon, Converter={StaticResource IconInfoVisibilityConverter}, Mode=OneWay}">
                             <cpcontrols:IconBox
                                 x:Name="IconBorder"
+                                Width="16"
                                 VerticalAlignment="Center"
                                 AutomationProperties.AccessibilityView="Raw"
                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
@@ -98,7 +102,7 @@
                                 Visibility="{x:Bind Subtitle, Mode=OneWay, Converter={StaticResource StringNotEmptyToVisibilityConverter}}" />
                         </StackPanel>
                     </Grid>
-                </Button>
+                </Border>
             </DataTemplate>
 
             <DataTemplate x:Key="DockBandTemplate" x:DataType="dockVm:DockBandViewModel">
@@ -113,6 +117,25 @@
                     </ItemsRepeater.Transitions>
                 </ItemsRepeater>
             </DataTemplate>
+
+            <Style x:Key="DockBandListViewStyle" TargetType="ListView">
+                <Setter Property="Background" Value="Transparent" />
+                <Setter Property="Padding" Value="0" />
+                <Setter Property="IsItemClickEnabled" Value="False" />
+                <Setter Property="SelectionMode" Value="None" />
+                <Setter Property="CanDragItems" Value="True" />
+                <Setter Property="CanReorderItems" Value="True" />
+                <Setter Property="AllowDrop" Value="True" />
+            </Style>
+
+            <Style x:Key="DockBandListViewItemStyle" TargetType="ListViewItem">
+                <Setter Property="Padding" Value="0" />
+                <Setter Property="Margin" Value="0,0,4,0" />
+                <Setter Property="MinHeight" Value="0" />
+                <Setter Property="MinWidth" Value="0" />
+                <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                <Setter Property="VerticalContentAlignment" Value="Stretch" />
+            </Style>
 
             <Style
                 x:Name="ContextMenuFlyoutStyle"
@@ -159,16 +182,27 @@
                 HorizontalAlignment="Stretch"
                 VerticalAlignment="Stretch">
                 <cpcontrols:ScrollContainer.Source>
-                    <ItemsRepeater
-                        x:Name="StartItemsRepeater"
+                    <ListView
+                        x:Name="StartItemsListView"
                         HorizontalAlignment="Stretch"
+                        AllowDrop="True"
+                        CanDragItems="True"
+                        CanReorderItems="True"
+                        DragItemsCompleted="BandListView_DragItemsCompleted"
+                        DragItemsStarting="BandListView_DragItemsStarting"
+                        DragOver="BandListView_DragOver"
+                        Drop="StartItemsListView_Drop"
+                        ItemContainerStyle="{StaticResource DockBandListViewItemStyle}"
                         ItemTemplate="{StaticResource DockBandTemplate}"
                         ItemsSource="{x:Bind ViewModel.StartItems, Mode=OneWay}"
-                        Layout="{StaticResource ItemsOrientation}">
-                        <ItemsRepeater.Transitions>
-                            <TransitionCollection />
-                        </ItemsRepeater.Transitions>
-                    </ItemsRepeater>
+                        SelectionMode="None"
+                        Style="{StaticResource DockBandListViewStyle}">
+                        <ListView.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Orientation="Horizontal" Spacing="4" />
+                            </ItemsPanelTemplate>
+                        </ListView.ItemsPanel>
+                    </ListView>
                 </cpcontrols:ScrollContainer.Source>
             </cpcontrols:ScrollContainer>
 
@@ -177,15 +211,26 @@
                 Grid.Column="1"
                 ContentAlignment="End">
                 <cpcontrols:ScrollContainer.Source>
-                    <ItemsRepeater
-                        x:Name="EndItemsRepeater"
+                    <ListView
+                        x:Name="EndItemsListView"
+                        AllowDrop="True"
+                        CanDragItems="True"
+                        CanReorderItems="True"
+                        DragItemsCompleted="BandListView_DragItemsCompleted"
+                        DragItemsStarting="BandListView_DragItemsStarting"
+                        DragOver="BandListView_DragOver"
+                        Drop="EndItemsListView_Drop"
+                        ItemContainerStyle="{StaticResource DockBandListViewItemStyle}"
                         ItemTemplate="{StaticResource DockBandTemplate}"
                         ItemsSource="{x:Bind ViewModel.EndItems, Mode=OneWay}"
-                        Layout="{StaticResource ItemsOrientation}">
-                        <ItemsRepeater.Transitions>
-                            <TransitionCollection />
-                        </ItemsRepeater.Transitions>
-                    </ItemsRepeater>
+                        SelectionMode="None"
+                        Style="{StaticResource DockBandListViewStyle}">
+                        <ListView.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Orientation="Horizontal" Spacing="4" />
+                            </ItemsPanelTemplate>
+                        </ListView.ItemsPanel>
+                    </ListView>
                 </cpcontrols:ScrollContainer.Source>
             </cpcontrols:ScrollContainer>
         </Grid>

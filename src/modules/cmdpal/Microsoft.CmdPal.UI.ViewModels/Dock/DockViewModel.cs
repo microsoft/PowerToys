@@ -19,6 +19,7 @@ public sealed partial class DockViewModel : IDisposable,
     IPageContext
 {
     private readonly TopLevelCommandManager _topLevelCommandManager;
+    private readonly SettingsModel _settingsModel;
 
     private DockSettings _settings;
 
@@ -38,6 +39,7 @@ public sealed partial class DockViewModel : IDisposable,
         TaskScheduler scheduler)
     {
         _topLevelCommandManager = tlcManager;
+        _settingsModel = settings;
         _settings = settings.DockSettings;
         Scheduler = scheduler;
         WeakReferenceMessenger.Default.Register<CommandsReloadedMessage>(this);
@@ -135,6 +137,70 @@ public sealed partial class DockViewModel : IDisposable,
         }
 
         return null;
+    }
+
+    /// <summary>
+    /// Moves a dock band to a new position, either within the same side or to the other side.
+    /// This method updates both the UI collections and persists the change to settings.
+    /// </summary>
+    /// <param name="band">The band to move.</param>
+    /// <param name="targetSide">The target side (Start or End) for the band.</param>
+    /// <param name="targetIndex">The index within the target side to insert the band.</param>
+    public void MoveBand(DockBandViewModel band, DockPinSide targetSide, int targetIndex)
+    {
+        var bandId = band.Id;
+        var dockSettings = _settingsModel.DockSettings;
+
+        // Find and remove the band settings from both lists
+        var bandSettings = dockSettings.StartBands.FirstOrDefault(b => b.Id == bandId)
+                        ?? dockSettings.EndBands.FirstOrDefault(b => b.Id == bandId);
+
+        if (bandSettings == null)
+        {
+            Logger.LogWarning($"Could not find band settings for band {bandId}");
+            return;
+        }
+
+        // Remove from both sides
+        dockSettings.StartBands.RemoveAll(b => b.Id == bandId);
+        dockSettings.EndBands.RemoveAll(b => b.Id == bandId);
+
+        // Also update the UI collections
+        StartItems.Remove(band);
+        EndItems.Remove(band);
+
+        // Add to the target side at the specified index
+        switch (targetSide)
+        {
+            case DockPinSide.Start:
+                {
+                    var insertIndex = Math.Min(targetIndex, dockSettings.StartBands.Count);
+                    dockSettings.StartBands.Insert(insertIndex, bandSettings);
+
+                    var uiInsertIndex = Math.Min(targetIndex, StartItems.Count);
+                    StartItems.Insert(uiInsertIndex, band);
+                    break;
+                }
+
+            case DockPinSide.End:
+                {
+                    var insertIndex = Math.Min(targetIndex, dockSettings.EndBands.Count);
+                    dockSettings.EndBands.Insert(insertIndex, bandSettings);
+
+                    var uiInsertIndex = Math.Min(targetIndex, EndItems.Count);
+                    EndItems.Insert(uiInsertIndex, band);
+                    break;
+                }
+
+            case DockPinSide.None:
+            default:
+                // Band is being unpinned - no UI update needed as it won't be visible
+                break;
+        }
+
+        // Persist the change
+        SettingsModel.SaveSettings(_settingsModel);
+        Logger.LogDebug($"Moved band {bandId} to {targetSide} at index {targetIndex}");
     }
 
     public void ShowException(Exception ex, string? extensionHint = null)

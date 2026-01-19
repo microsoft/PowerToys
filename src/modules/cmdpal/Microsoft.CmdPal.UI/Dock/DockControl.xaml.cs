@@ -16,6 +16,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Media;
+using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 
 namespace Microsoft.CmdPal.UI.Dock;
@@ -129,45 +130,85 @@ public sealed partial class DockControl : UserControl, INotifyPropertyChanged, I
         }
     }
 
-    private void BandItem_Tapped(object sender, Microsoft.UI.Xaml.Input.TappedRoutedEventArgs e)
+    private void BandItem_PointerEntered(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
     {
-        var pos = e.GetPosition(null);
-        var button = sender as Button;
-        var item = button?.DataContext as DockItemViewModel;
-
-        if (item is not null)
+        if (sender is Border border)
         {
-            // Use the center of the button as the point to open at. This is
-            // more reliable than using the tap position. This allows multiple
-            // clicks anywhere in the button to open the palette in a consistent
-            // location.
-            var buttonPos = button!.TransformToVisual(null).TransformPoint(new Point(0, 0));
-            var buttonCenter = new Point(
-                buttonPos.X + (button.ActualWidth / 2),
-                buttonPos.Y + (button.ActualHeight / 2));
-
-            InvokeItem(item, buttonCenter);
+            border.Background = (Brush)Application.Current.Resources["TaskBarButtonBackgroundPointerOver"];
         }
     }
 
-    private void BandItem_RightTapped(object sender, Microsoft.UI.Xaml.Input.RightTappedRoutedEventArgs e)
+    private void BandItem_PointerExited(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
     {
-        var pos = e.GetPosition(null);
-        var button = sender as Button;
-        var item = button?.DataContext as DockItemViewModel;
-        if (item is not null)
+        if (sender is Border border)
+        {
+            border.Background = new SolidColorBrush(Colors.Transparent);
+        }
+    }
+
+    private void BandItem_PointerPressed(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
+    {
+        var border = sender as Border;
+        var item = border?.DataContext as DockItemViewModel;
+
+        if (item is null || border is null)
+        {
+            return;
+        }
+
+        var pointerPoint = e.GetCurrentPoint(border);
+        var properties = pointerPoint.Properties;
+
+        if (properties.IsLeftButtonPressed)
+        {
+            border.Background = (Brush)Application.Current.Resources["TaskBarButtonBackgroundPressed"];
+        }
+        else if (properties.IsRightButtonPressed)
         {
             if (item.HasMoreCommands)
             {
                 ContextControl.ViewModel.SelectedItem = item;
                 ContextMenuFlyout.ShowAt(
-                button,
+                border,
                 new FlyoutShowOptions()
                 {
                     ShowMode = FlyoutShowMode.Standard,
                     Placement = FlyoutPlacementMode.TopEdgeAlignedRight,
                 });
                 e.Handled = true;
+            }
+        }
+    }
+
+    private void BandItem_PointerReleased(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
+    {
+        var border = sender as Border;
+        var item = border?.DataContext as DockItemViewModel;
+
+        if (item is null || border is null)
+        {
+            return;
+        }
+
+        var pointerPoint = e.GetCurrentPoint(border);
+
+        // Reset background to hover state since pointer is still over
+        border.Background = (Brush)Application.Current.Resources["TaskBarButtonBackgroundPointerOver"];
+
+        // Only invoke on left button release
+        if (!pointerPoint.Properties.IsLeftButtonPressed && !pointerPoint.Properties.IsRightButtonPressed)
+        {
+            // Check if pointer is still within bounds (wasn't a drag)
+            var pos = pointerPoint.Position;
+            if (pos.X >= 0 && pos.X <= border.ActualWidth && pos.Y >= 0 && pos.Y <= border.ActualHeight)
+            {
+                // Use the center of the border as the point to open at
+                var borderPos = border.TransformToVisual(null).TransformPoint(new Point(0, 0));
+                var borderCenter = new Point(
+                    borderPos.X + (border.ActualWidth / 2),
+                    borderPos.Y + (border.ActualHeight / 2));
+
+                InvokeItem(item, borderCenter);
             }
         }
     }
@@ -255,6 +296,119 @@ public sealed partial class DockControl : UserControl, INotifyPropertyChanged, I
         }
 
         return HorizontalAlignment.Center;
+    }
+
+    private DockBandViewModel? _draggedBand;
+
+    private void BandListView_DragItemsStarting(object sender, DragItemsStartingEventArgs e)
+    {
+        if (e.Items.Count > 0 && e.Items[0] is DockBandViewModel band)
+        {
+            _draggedBand = band;
+            e.Data.RequestedOperation = DataPackageOperation.Move;
+        }
+    }
+
+    private void BandListView_DragOver(object sender, DragEventArgs e)
+    {
+        if (_draggedBand != null)
+        {
+            e.AcceptedOperation = DataPackageOperation.Move;
+        }
+    }
+
+    private void BandListView_DragItemsCompleted(ListViewBase sender, DragItemsCompletedEventArgs args)
+    {
+        // This handles reordering within the same list
+        if (args.DropResult == DataPackageOperation.Move && _draggedBand != null)
+        {
+            var isStartList = sender == StartItemsListView;
+            var targetSide = isStartList ? DockPinSide.Start : DockPinSide.End;
+            var targetCollection = isStartList ? ViewModel.StartItems : ViewModel.EndItems;
+
+            // Find the new index of the dragged band
+            var newIndex = targetCollection.IndexOf(_draggedBand);
+            if (newIndex >= 0)
+            {
+                ViewModel.MoveBand(_draggedBand, targetSide, newIndex);
+            }
+        }
+
+        _draggedBand = null;
+    }
+
+    private void StartItemsListView_Drop(object sender, DragEventArgs e)
+    {
+        HandleCrossListDrop(DockPinSide.Start, e);
+    }
+
+    private void EndItemsListView_Drop(object sender, DragEventArgs e)
+    {
+        HandleCrossListDrop(DockPinSide.End, e);
+    }
+
+    private void HandleCrossListDrop(DockPinSide targetSide, DragEventArgs e)
+    {
+        if (_draggedBand == null)
+        {
+            return;
+        }
+
+        // Check if this is a cross-list drop (dragging from the other list)
+        var isInStart = ViewModel.StartItems.Contains(_draggedBand);
+        var isInEnd = ViewModel.EndItems.Contains(_draggedBand);
+
+        var sourceIsStart = isInStart;
+        var targetIsStart = targetSide == DockPinSide.Start;
+
+        // Only handle cross-list drops here; same-list reorders are handled in DragItemsCompleted
+        if (sourceIsStart != targetIsStart)
+        {
+            // Calculate drop index based on drop position
+            var targetListView = targetIsStart ? StartItemsListView : EndItemsListView;
+            var targetCollection = targetIsStart ? ViewModel.StartItems : ViewModel.EndItems;
+
+            var dropIndex = GetDropIndex(targetListView, e, targetCollection.Count);
+
+            // Move the band to the new side
+            ViewModel.MoveBand(_draggedBand, targetSide, dropIndex);
+            e.Handled = true;
+        }
+    }
+
+    private int GetDropIndex(ListView listView, DragEventArgs e, int itemCount)
+    {
+        var position = e.GetPosition(listView);
+
+        // Find the item at the drop position
+        for (var i = 0; i < itemCount; i++)
+        {
+            if (listView.ContainerFromIndex(i) is ListViewItem container)
+            {
+                var itemBounds = container.TransformToVisual(listView).TransformBounds(
+                    new Rect(0, 0, container.ActualWidth, container.ActualHeight));
+
+                if (ItemsOrientation == Orientation.Horizontal)
+                {
+                    // For horizontal layout, check X position
+                    if (position.X < itemBounds.X + (itemBounds.Width / 2))
+                    {
+                        return i;
+                    }
+                }
+                else
+                {
+                    // For vertical layout, check Y position
+                    if (position.Y < itemBounds.Y + (itemBounds.Height / 2))
+                    {
+                        return i;
+                    }
+                }
+            }
+        }
+
+        // If we're past all items, insert at the end
+        return itemCount;
     }
 }
 
