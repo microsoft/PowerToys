@@ -29,6 +29,7 @@ The build ID moniker is made up of two components - a reference to a [Halo](http
 - Fixed an issue where toggling "Keep screen on" during an active timed session would disrupt the countdown timer. The display setting now updates directly without restarting the timer, preserving the exact remaining time.
 - [#41918](https://github.com/microsoft/PowerToys/issues/41918) Fixed `WM_COMMAND` message processing flaw in `TrayHelper.WndProc` that incorrectly compared enum values against enum count. Added proper bounds checking for custom tray time entries.
 - Investigated [#44134](https://github.com/microsoft/PowerToys/issues/44134) - documented that `ES_DISPLAY_REQUIRED` (used when "Keep display on" is enabled) blocks Task Scheduler idle detection, preventing scheduled maintenance tasks like SSD TRIM. Workaround: disable "Keep display on" or manually run `Optimize-Volume -DriveLetter C -ReTrim`. Additional investigation needed for potential "idle window" feature.
+- [#41738](https://github.com/microsoft/PowerToys/issues/41738) Fixed `--display-on` CLI flag default from `true` to `false` to align with documentation and PowerToys settings behavior. This is a breaking change for scripts relying on the undocumented default.
 
 ### `TILLSON_11272024` (November 27, 2024)
 

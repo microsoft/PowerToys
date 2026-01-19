@@ -46,7 +46,7 @@ PowerToys.Awake.exe [options]
 
 Options:
   -c, --use-pt-config    Use PowerToys configuration file
-  -d, --display-on       Keep display on (default: true)
+  -d, --display-on       Keep display on (default: false)
   -t, --time-limit       Time limit in seconds
   -p, --pid              Process ID to bind to
   -e, --expire-at        Expiration date/time

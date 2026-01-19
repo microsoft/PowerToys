@@ -139,7 +139,7 @@ namespace Awake
                 IsRequired = false,
             };
 
-            Option<bool> displayOption = new(_aliasesDisplayOption, () => true, Resources.AWAKE_CMD_HELP_DISPLAY_OPTION)
+            Option<bool> displayOption = new(_aliasesDisplayOption, () => false, Resources.AWAKE_CMD_HELP_DISPLAY_OPTION)
             {
                 Arity = ArgumentArity.ZeroOrOne,
                 IsRequired = false,
