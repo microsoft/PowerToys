@@ -2,6 +2,9 @@ parameters:
   - name: displayName
     type: string
     default: ESRP Code Signing
+  - name: timeoutInMinutes
+    type: number
+    default: 90
   - name: inputs
     type: object
     default: {}
@@ -12,6 +15,7 @@ parameters:
 steps:
   - task: EsrpCodeSigning@6
     displayName: 🔏 ${{ parameters.displayName }}
+    timeoutInMinutes: ${{ parameters.timeoutInMinutes }}
     inputs:
       ConnectedServiceName: ${{ parameters.signingIdentity.serviceName }}
       AppRegistrationClientId: ${{ parameters.signingIdentity.appId }}
