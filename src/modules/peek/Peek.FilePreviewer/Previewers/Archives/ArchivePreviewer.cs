@@ -172,6 +172,7 @@ namespace Peek.FilePreviewer.Previewers.Archives
             {
                 using var archive = ArchiveFactory.Open(stream);
                 _extractedSize = (ulong)archive.TotalUncompressSize;
+
                 foreach (var entry in archive.Entries)
                 {
                     cancellationToken.ThrowIfCancellationRequested();
