@@ -1,13 +1,14 @@
 #include "pch.h"
-#include <windows.h>
 #include "ThemeHelper.h"
+#include <logger/logger.h>
 
 // Controls changing the themes.
+
 static void ResetColorPrevalence()
 {
     HKEY hKey;
     if (RegOpenKeyEx(HKEY_CURRENT_USER,
-                     L"Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize",
+                     PERSONALIZATION_REGISTRY_PATH,
                      0,
                      KEY_SET_VALUE,
                      &hKey) == ERROR_SUCCESS)
@@ -28,7 +29,7 @@ void SetAppsTheme(bool mode)
 {
     HKEY hKey;
     if (RegOpenKeyEx(HKEY_CURRENT_USER,
-                     L"Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize",
+                     PERSONALIZATION_REGISTRY_PATH,
                      0,
                      KEY_SET_VALUE,
                      &hKey) == ERROR_SUCCESS)
@@ -47,7 +48,7 @@ void SetSystemTheme(bool mode)
 {
     HKEY hKey;
     if (RegOpenKeyEx(HKEY_CURRENT_USER,
-                     L"Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize",
+                     PERSONALIZATION_REGISTRY_PATH,
                      0,
                      KEY_SET_VALUE,
                      &hKey) == ERROR_SUCCESS)
@@ -56,9 +57,10 @@ void SetSystemTheme(bool mode)
         RegSetValueEx(hKey, L"SystemUsesLightTheme", 0, REG_DWORD, reinterpret_cast<const BYTE*>(&value), sizeof(value));
         RegCloseKey(hKey);
 
-        if (mode) // if are changing to light mode
+        if (mode) // if are changing to light mode 
         {
             ResetColorPrevalence();
+            Logger::info(L"[LightSwitchLib] Reset ColorPrevalence to default when switching to light mode.");
         }
 
         SendMessageTimeout(HWND_BROADCAST, WM_SETTINGCHANGE, 0, reinterpret_cast<LPARAM>(L"ImmersiveColorSet"), SMTO_ABORTIFHUNG, 5000, nullptr);
@@ -67,6 +69,7 @@ void SetSystemTheme(bool mode)
     }
 }
 
+// Can think of this as "is the current theme light?"
 bool GetCurrentSystemTheme()
 {
     HKEY hKey;
@@ -74,7 +77,7 @@ bool GetCurrentSystemTheme()
     DWORD size = sizeof(value);
 
     if (RegOpenKeyEx(HKEY_CURRENT_USER,
-                     L"Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize",
+                     PERSONALIZATION_REGISTRY_PATH,
                      0,
                      KEY_READ,
                      &hKey) == ERROR_SUCCESS)
@@ -93,7 +96,7 @@ bool GetCurrentAppsTheme()
     DWORD size = sizeof(value);
 
     if (RegOpenKeyEx(HKEY_CURRENT_USER,
-                     L"Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize",
+                     PERSONALIZATION_REGISTRY_PATH,
                      0,
                      KEY_READ,
                      &hKey) == ERROR_SUCCESS)
@@ -103,4 +106,31 @@ bool GetCurrentAppsTheme()
     }
 
     return value == 1; // true = light, false = dark
+}
+
+bool IsNightLightEnabled()
+{
+    HKEY hKey;
+    const wchar_t* path = NIGHT_LIGHT_REGISTRY_PATH;
+
+    if (RegOpenKeyExW(HKEY_CURRENT_USER, path, 0, KEY_READ, &hKey) != ERROR_SUCCESS)
+        return false;
+
+    // RegGetValueW will set size to the size of the data and we expect that to be at least 25 bytes (we need to access bytes 23 and 24)
+    DWORD size = 0;
+    if (RegGetValueW(hKey, nullptr, L"Data", RRF_RT_REG_BINARY, nullptr, nullptr, &size) != ERROR_SUCCESS || size < 25)
+    {
+        RegCloseKey(hKey);
+        return false;
+    }
+
+    std::vector<BYTE> data(size);
+    if (RegGetValueW(hKey, nullptr, L"Data", RRF_RT_REG_BINARY, nullptr, data.data(), &size) != ERROR_SUCCESS)
+    {
+        RegCloseKey(hKey);
+        return false;
+    }
+
+    RegCloseKey(hKey);
+    return data[23] == 0x10 && data[24] == 0x00;
 }
