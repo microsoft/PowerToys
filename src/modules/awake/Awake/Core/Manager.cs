@@ -169,25 +169,25 @@ namespace Awake.Core
             switch (CurrentOperatingMode)
             {
                 case AwakeMode.INDEFINITE:
-                    string processText = ProcessId == 0
+                    string pidLine = ProcessId == 0
                         ? string.Empty
-                        : $" - {Resources.AWAKE_TRAY_TEXT_PID_BINDING}: {ProcessId}";
-                    iconText = $"{Constants.FullAppName} [{Resources.AWAKE_TRAY_TEXT_INDEFINITE}{processText}][{ScreenStateString}]";
+                        : $"\nPID: {ProcessId}";
+                    iconText = $"{Constants.FullAppName}\n{Resources.AWAKE_TRAY_TEXT_INDEFINITE}\n{Resources.AWAKE_TRAY_DISPLAY}: {ScreenStateString}{pidLine}";
                     icon = TrayHelper.IndefiniteIcon;
                     break;
 
                 case AwakeMode.PASSIVE:
-                    iconText = $"{Constants.FullAppName} [{Resources.AWAKE_TRAY_TEXT_OFF}]";
+                    iconText = $"{Constants.FullAppName}\n{Resources.AWAKE_SCREEN_OFF}";
                     icon = TrayHelper.DisabledIcon;
                     break;
 
                 case AwakeMode.EXPIRABLE:
-                    iconText = $"{Constants.FullAppName} [{Resources.AWAKE_TRAY_TEXT_EXPIRATION}][{ScreenStateString}][{ExpireAt:yyyy-MM-dd HH:mm:ss}]";
+                    iconText = $"{Constants.FullAppName}\n{Resources.AWAKE_TRAY_UNTIL} {ExpireAt:MMM d, h:mm tt}\n{Resources.AWAKE_TRAY_DISPLAY}: {ScreenStateString}";
                     icon = TrayHelper.ExpirableIcon;
                     break;
 
                 case AwakeMode.TIMED:
-                    iconText = $"{Constants.FullAppName} [{Resources.AWAKE_TRAY_TEXT_TIMED}][{ScreenStateString}]";
+                    iconText = $"{Constants.FullAppName}\n{Resources.AWAKE_TRAY_TEXT_TIMED}\n{Resources.AWAKE_TRAY_DISPLAY}: {ScreenStateString}";
                     icon = TrayHelper.TimedIcon;
                     break;
             }
@@ -362,7 +362,7 @@ namespace Awake.Core
 
                         TrayHelper.SetShellIcon(
                             TrayHelper.WindowHandle,
-                            $"{Constants.FullAppName} [{Resources.AWAKE_TRAY_TEXT_TIMED}][{ScreenStateString}][{remainingTimeSpan.ToHumanReadableString()}]",
+                            $"{Constants.FullAppName}\n{remainingTimeSpan.ToHumanReadableString()} {Resources.AWAKE_TRAY_REMAINING}\n{Resources.AWAKE_TRAY_DISPLAY}: {ScreenStateString}",
                             TrayHelper.TimedIcon,
                             TrayIconAction.Update);
                     },
