@@ -3,6 +3,7 @@
 	<Import Project="..\..\..\..\Common.Dotnet.CsWinRT.props" />
 
 	<PropertyGroup>
+		<RepoRoot>$(MSBuildThisFileDirectory)..\..\..\..\..\</RepoRoot>
 		<IsPackable>false</IsPackable>
 		<IsTestProject>true</IsTestProject>
 		<RootNamespace>Microsoft.CommandPalette.Extensions.Toolkit.UnitTests</RootNamespace>
