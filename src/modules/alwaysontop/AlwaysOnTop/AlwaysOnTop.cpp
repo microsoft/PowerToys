@@ -32,7 +32,7 @@ bool isExcluded(HWND window)
 }
 
 AlwaysOnTop::AlwaysOnTop(bool useLLKH, DWORD mainThreadId) :
-    SettingsObserver({SettingId::FrameEnabled, SettingId::Hotkey, SettingId::TransparencyHotkey, SettingId::ExcludeApps}),
+    SettingsObserver({SettingId::FrameEnabled, SettingId::Hotkey, SettingId::ExcludeApps}),
     m_hinstance(reinterpret_cast<HINSTANCE>(&__ImageBase)),
     m_useCentralizedLLKH(useLLKH),
     m_mainThreadId(mainThreadId),
@@ -105,11 +105,6 @@ void AlwaysOnTop::SettingsUpdate(SettingId id)
         RegisterHotkey();
     }
     break;
-    case SettingId::TransparencyHotkey:
-    {
-        RegisterHotkey();
-    }
-    break;
     case SettingId::FrameEnabled:
     {
         if (AlwaysOnTopSettings::settings().enableFrame)
@@ -163,11 +158,15 @@ LRESULT AlwaysOnTop::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lp
         {
             if (hotkeyId == static_cast<int>(HotkeyId::Pin))
             {
-                ProcessCommand(fw, false);
+                ProcessCommand(fw);
             }
-            else if (hotkeyId == static_cast<int>(HotkeyId::TransparentPin))
+            else if (hotkeyId == static_cast<int>(HotkeyId::IncreaseOpacity))
             {
-                ProcessCommand(fw, true);
+                AdjustTransparency(fw, Settings::transparencyStep);
+            }
+            else if (hotkeyId == static_cast<int>(HotkeyId::DecreaseOpacity))
+            {
+                AdjustTransparency(fw, -Settings::transparencyStep);
             }
         }
     }
@@ -179,7 +178,7 @@ LRESULT AlwaysOnTop::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lp
     return 0;
 }
 
-void AlwaysOnTop::ProcessCommand(HWND window, bool transparent)
+void AlwaysOnTop::ProcessCommand(HWND window)
 {
     bool gameMode = detect_game_mode();
     if (AlwaysOnTopSettings::settings().blockInGameMode && gameMode)
@@ -204,15 +203,9 @@ void AlwaysOnTop::ProcessCommand(HWND window, bool transparent)
                 m_topmostWindows.erase(iter);
             }
 
-            // Restore transparency if the window has layered style
-            if (transparent)
-            {
-                LONG exStyle = GetWindowLong(window, GWL_EXSTYLE);
-                if (exStyle & WS_EX_LAYERED)
-                {
-                    SetWindowLong(window, GWL_EXSTYLE, exStyle & ~WS_EX_LAYERED);
-                }
-            }
+            // Restore transparency when unpinning
+            RemoveTransparency(window);
+            m_windowTransparency.erase(window);
 
             Trace::AlwaysOnTop::UnpinWindow();
         }
@@ -223,11 +216,8 @@ void AlwaysOnTop::ProcessCommand(HWND window, bool transparent)
         {
             soundType = Sound::Type::On;
             AssignBorder(window);
-            
-            if (transparent)
-            {
-                ::MakeWindowTransparent(window, AlwaysOnTopSettings::settings().transparencyPercentage);
-            }
+            // Initialize with full opacity (100%)
+            SetWindowTransparency(window, Settings::maxTransparencyPercentage);
             
             Trace::AlwaysOnTop::PinWindow();
         }
@@ -298,14 +288,22 @@ void AlwaysOnTop::RegisterHotkey() const
 {
     if (m_useCentralizedLLKH)
     {
+        // All hotkeys are handled by centralized LLKH
         return;
     }
 
+    // Register hotkeys only when not using centralized LLKH
     UnregisterHotKey(m_window, static_cast<int>(HotkeyId::Pin));
+    UnregisterHotKey(m_window, static_cast<int>(HotkeyId::IncreaseOpacity));
+    UnregisterHotKey(m_window, static_cast<int>(HotkeyId::DecreaseOpacity));
+
+    // Register pin hotkey
     RegisterHotKey(m_window, static_cast<int>(HotkeyId::Pin), AlwaysOnTopSettings::settings().hotkey.get_modifiers(), AlwaysOnTopSettings::settings().hotkey.get_code());
-    
-    UnregisterHotKey(m_window, static_cast<int>(HotkeyId::TransparentPin));
-    RegisterHotKey(m_window, static_cast<int>(HotkeyId::TransparentPin), AlwaysOnTopSettings::settings().transparencyHotkey.get_modifiers(), AlwaysOnTopSettings::settings().transparencyHotkey.get_code());
+
+    // Register transparency hotkeys using the same modifiers as the pin hotkey
+    UINT modifiers = AlwaysOnTopSettings::settings().hotkey.get_modifiers();
+    RegisterHotKey(m_window, static_cast<int>(HotkeyId::IncreaseOpacity), modifiers, VK_OEM_PLUS);
+    RegisterHotKey(m_window, static_cast<int>(HotkeyId::DecreaseOpacity), modifiers, VK_OEM_MINUS);
 }
 
 void AlwaysOnTop::RegisterLLKH()
@@ -316,18 +314,13 @@ void AlwaysOnTop::RegisterLLKH()
     }
 	
     m_hPinEvent = CreateEventW(nullptr, false, false, CommonSharedConstants::ALWAYS_ON_TOP_PIN_EVENT);
-    m_hTransparentPinEvent = CreateEventW(nullptr, false, false, CommonSharedConstants::ALWAYS_ON_TOP_TRANSPARENT_PIN_EVENT);
     m_hTerminateEvent = CreateEventW(nullptr, false, false, CommonSharedConstants::ALWAYS_ON_TOP_TERMINATE_EVENT);
+    m_hIncreaseOpacityEvent = CreateEventW(nullptr, false, false, CommonSharedConstants::ALWAYS_ON_TOP_INCREASE_OPACITY_EVENT);
+    m_hDecreaseOpacityEvent = CreateEventW(nullptr, false, false, CommonSharedConstants::ALWAYS_ON_TOP_DECREASE_OPACITY_EVENT);
 
     if (!m_hPinEvent)
     {
         Logger::warn(L"Failed to create pinEvent. {}", get_last_error_or_default(GetLastError()));
-        return;
-    }
-
-    if (!m_hTransparentPinEvent)
-    {
-        Logger::warn(L"Failed to create transparentPinEvent. {}", get_last_error_or_default(GetLastError()));
         return;
     }
 
@@ -337,37 +330,54 @@ void AlwaysOnTop::RegisterLLKH()
         return;
     }
 
-    HANDLE handles[3] = { m_hPinEvent,
-                          m_hTransparentPinEvent,
-                          m_hTerminateEvent };
+    if (!m_hIncreaseOpacityEvent)
+    {
+        Logger::warn(L"Failed to create increaseOpacityEvent. {}", get_last_error_or_default(GetLastError()));
+    }
+
+    if (!m_hDecreaseOpacityEvent)
+    {
+        Logger::warn(L"Failed to create decreaseOpacityEvent. {}", get_last_error_or_default(GetLastError()));
+    }
+
+    HANDLE handles[4] = { m_hPinEvent,
+                          m_hTerminateEvent,
+                          m_hIncreaseOpacityEvent,
+                          m_hDecreaseOpacityEvent };
 
     m_thread = std::thread([this, handles]() {
         MSG msg;
         while (m_running)
         {
-            DWORD dwEvt = MsgWaitForMultipleObjects(3, handles, false, INFINITE, QS_ALLINPUT);
+            DWORD dwEvt = MsgWaitForMultipleObjects(4, handles, false, INFINITE, QS_ALLINPUT);
             if (!m_running)
             {
                 break;
             }
             switch (dwEvt)
             {
-            case WAIT_OBJECT_0:
+            case WAIT_OBJECT_0: // Pin event
                 if (HWND fw{ GetForegroundWindow() })
                 {
-                    ProcessCommand(fw, false);
+                    ProcessCommand(fw);
                 }
                 break;
-            case WAIT_OBJECT_0 + 1:
-                if (HWND fw{ GetForegroundWindow() })
-                {
-                    ProcessCommand(fw, true);
-                }
-                break;
-            case WAIT_OBJECT_0 + 2:
+            case WAIT_OBJECT_0 + 1: // Terminate event
                 PostThreadMessage(m_mainThreadId, WM_QUIT, 0, 0);
                 break;
-            case WAIT_OBJECT_0 + 3:
+            case WAIT_OBJECT_0 + 2: // Increase opacity event
+                if (HWND fw{ GetForegroundWindow() })
+                {
+                    AdjustTransparency(fw, Settings::transparencyStep);
+                }
+                break;
+            case WAIT_OBJECT_0 + 3: // Decrease opacity event
+                if (HWND fw{ GetForegroundWindow() })
+                {
+                    AdjustTransparency(fw, -Settings::transparencyStep);
+                }
+                break;
+            case WAIT_OBJECT_0 + 4: // Message queue
                 if (PeekMessageW(&msg, nullptr, 0, 0, PM_REMOVE))
                 {
                     TranslateMessage(&msg);
@@ -416,9 +426,13 @@ void AlwaysOnTop::UnpinAll()
         {
             Logger::error(L"Unpinning topmost window failed");
         }
+        // Restore transparency when unpinning all
+        RemoveTransparency(topWindow);
     }
 
     m_topmostWindows.clear();
+    m_windowTransparency.clear();
+    m_windowOriginalLayeredState.clear();
 }
 
 void AlwaysOnTop::CleanUp()
@@ -502,6 +516,8 @@ void AlwaysOnTop::HandleWinHookEvent(WinHookEvent* data) noexcept
     for (const auto window : toErase)
     {
         m_topmostWindows.erase(window);
+        m_windowTransparency.erase(window);
+        m_windowOriginalLayeredState.erase(window);
     }
 
     switch (data->event)
@@ -602,4 +618,166 @@ void AlwaysOnTop::RefreshBorders()
             }
         }
     }
+}
+
+// Transparency adjustment methods
+void AlwaysOnTop::AdjustTransparency(HWND window, int delta)
+{
+    if (!IsTracked(window) && !IsPinned(window))
+    {
+        // Window is not pinned, can't adjust transparency
+        return;
+    }
+
+    int currentTransparency = GetWindowTransparency(window);
+    int newTransparency = currentTransparency + delta;
+    
+    // Clamp to valid range (using parentheses to avoid Windows min/max macro conflicts)
+    newTransparency = (std::max)(Settings::minTransparencyPercentage, 
+                                 (std::min)(Settings::maxTransparencyPercentage, newTransparency));
+
+    if (newTransparency != currentTransparency)
+    {
+        SetWindowTransparency(window, newTransparency);
+        ApplyTransparency(window, newTransparency);
+
+        // Play sound feedback
+        if (AlwaysOnTopSettings::settings().enableSound)
+        {
+            if (delta > 0)
+            {
+                m_sound.Play(Sound::Type::IncreaseOpacity);
+            }
+            else
+            {
+                m_sound.Play(Sound::Type::DecreaseOpacity);
+            }
+        }
+
+        Logger::trace(L"Transparency adjusted to {}%", newTransparency);
+    }
+}
+
+void AlwaysOnTop::ApplyTransparency(HWND window, int percentage)
+{
+    if (!window || percentage < Settings::minTransparencyPercentage || percentage > Settings::maxTransparencyPercentage)
+    {
+        return;
+    }
+
+    if (percentage == Settings::maxTransparencyPercentage)
+    {
+        // Full opacity - remove layered style
+        RemoveTransparency(window);
+        return;
+    }
+
+    LONG exStyle = GetWindowLong(window, GWL_EXSTYLE);
+    bool isCurrentlyLayered = (exStyle & WS_EX_LAYERED) != 0;
+
+    // First time applying transparency - cache the original state
+    if (m_windowOriginalLayeredState.find(window) == m_windowOriginalLayeredState.end())
+    {
+        WindowLayeredState state;
+        state.hadLayeredStyle = isCurrentlyLayered;
+        
+        if (isCurrentlyLayered)
+        {
+            // Try to get original layered window attributes
+            BYTE alpha = 255;
+            COLORREF colorKey = 0;
+            DWORD flags = 0;
+            if (GetLayeredWindowAttributes(window, &colorKey, &alpha, &flags))
+            {
+                state.originalAlpha = alpha;
+                state.usedColorKey = (flags & LWA_COLORKEY) != 0;
+                state.colorKey = colorKey;
+            }
+        }
+        m_windowOriginalLayeredState[window] = state;
+    }
+
+    // Per documentation: clear WS_EX_LAYERED first, then set it again
+    // This ensures SetLayeredWindowAttributes works even if window was using UpdateLayeredWindow
+    if (isCurrentlyLayered)
+    {
+        SetWindowLong(window, GWL_EXSTYLE, exStyle & ~WS_EX_LAYERED);
+        exStyle = GetWindowLong(window, GWL_EXSTYLE); // Refresh exStyle
+    }
+
+    // Apply transparency
+    BYTE alphaValue = static_cast<BYTE>((255 * percentage) / 100);
+    SetWindowLong(window, GWL_EXSTYLE, exStyle | WS_EX_LAYERED);
+    SetLayeredWindowAttributes(window, 0, alphaValue, LWA_ALPHA);
+}
+
+void AlwaysOnTop::RemoveTransparency(HWND window)
+{
+    if (!window)
+    {
+        return;
+    }
+
+    LONG exStyle = GetWindowLong(window, GWL_EXSTYLE);
+    auto it = m_windowOriginalLayeredState.find(window);
+    
+    if (it != m_windowOriginalLayeredState.end())
+    {
+        const auto& originalState = it->second;
+        
+        if (originalState.hadLayeredStyle)
+        {
+            // Window originally had WS_EX_LAYERED - restore original attributes
+            // Clear and re-add to ensure clean state
+            if (exStyle & WS_EX_LAYERED)
+            {
+                SetWindowLong(window, GWL_EXSTYLE, exStyle & ~WS_EX_LAYERED);
+                exStyle = GetWindowLong(window, GWL_EXSTYLE);
+            }
+            SetWindowLong(window, GWL_EXSTYLE, exStyle | WS_EX_LAYERED);
+            
+            // Restore original alpha and/or color key
+            DWORD flags = LWA_ALPHA;
+            if (originalState.usedColorKey)
+            {
+                flags |= LWA_COLORKEY;
+            }
+            SetLayeredWindowAttributes(window, originalState.colorKey, originalState.originalAlpha, flags);
+        }
+        else
+        {
+            // Window originally didn't have WS_EX_LAYERED - remove it completely
+            if (exStyle & WS_EX_LAYERED)
+            {
+                SetLayeredWindowAttributes(window, 0, 255, LWA_ALPHA);
+                SetWindowLong(window, GWL_EXSTYLE, exStyle & ~WS_EX_LAYERED);
+            }
+        }
+        
+        m_windowOriginalLayeredState.erase(it);
+    }
+    else
+    {
+        // Fallback: no cached state, just remove layered style
+        if (exStyle & WS_EX_LAYERED)
+        {
+            SetLayeredWindowAttributes(window, 0, 255, LWA_ALPHA);
+            SetWindowLong(window, GWL_EXSTYLE, exStyle & ~WS_EX_LAYERED);
+        }
+    }
+}
+
+int AlwaysOnTop::GetWindowTransparency(HWND window) const
+{
+    auto it = m_windowTransparency.find(window);
+    if (it != m_windowTransparency.end())
+    {
+        return it->second;
+    }
+    return Settings::maxTransparencyPercentage; // Default to fully opaque
+}
+
+void AlwaysOnTop::SetWindowTransparency(HWND window, int percentage)
+{
+    m_windowTransparency[window] = percentage;
 }

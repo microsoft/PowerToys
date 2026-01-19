@@ -12,6 +12,8 @@ public:
     {
         On,
         Off,
+        IncreaseOpacity,
+        DecreaseOpacity,
     };
     
     Sound()
@@ -28,6 +30,16 @@ public:
             break;
         case Type::Off:
             success = PlaySound(TEXT("Media\\Speech Sleep.wav"), NULL, SND_FILENAME | SND_ASYNC);
+            break;
+        case Type::IncreaseOpacity:
+            // Use a higher frequency beep for increase (more opaque)
+            Beep(800, 80);
+            success = TRUE;
+            break;
+        case Type::DecreaseOpacity:
+            // Use a lower frequency beep for decrease (more transparent)
+            Beep(400, 80);
+            success = TRUE;
             break;
         default:
             break;

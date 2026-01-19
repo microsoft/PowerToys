@@ -27,7 +27,6 @@ namespace
     const wchar_t JSON_KEY_SHIFT[] = L"shift";
     const wchar_t JSON_KEY_CODE[] = L"code";
     const wchar_t JSON_KEY_HOTKEY[] = L"hotkey";
-    const wchar_t JSON_KEY_TRANSPARENCY_HOTKEY[] = L"transparency-hotkey";
     const wchar_t JSON_KEY_VALUE[] = L"value";
 }
 
@@ -122,7 +121,11 @@ public:
             }
             else if (hotkeyId == 1)
             {
-                SetEvent(m_hTransparentPinEvent);
+                SetEvent(m_hIncreaseOpacityEvent);
+            }
+            else if (hotkeyId == 2)
+            {
+                SetEvent(m_hDecreaseOpacityEvent);
             }
 
             return true;
@@ -135,6 +138,7 @@ public:
     {
         size_t count = 0;
         
+        // Hotkey 0: Pin/Unpin (e.g., Win+Ctrl+T)
         if (m_hotkey.key)
         {
             if (hotkeys && buffer_size > count)
@@ -145,14 +149,29 @@ public:
             }
             count++;
         }
-        
-        if (m_transparencyHotkey.key)
+
+        // Hotkey 1: Increase opacity (same modifiers + VK_OEM_PLUS '=')
+        if (m_hotkey.key)
         {
             if (hotkeys && buffer_size > count)
             {
-                hotkeys[count] = m_transparencyHotkey;
-                Logger::trace(L"AlwaysOnTop hotkey[1]: win={}, ctrl={}, shift={}, alt={}, key={}", 
-                    m_transparencyHotkey.win, m_transparencyHotkey.ctrl, m_transparencyHotkey.shift, m_transparencyHotkey.alt, m_transparencyHotkey.key);
+                hotkeys[count] = m_hotkey;
+                hotkeys[count].key = VK_OEM_PLUS; // '=' key
+                Logger::trace(L"AlwaysOnTop hotkey[1] (increase opacity): win={}, ctrl={}, shift={}, alt={}, key={}", 
+                    hotkeys[count].win, hotkeys[count].ctrl, hotkeys[count].shift, hotkeys[count].alt, hotkeys[count].key);
+            }
+            count++;
+        }
+
+        // Hotkey 2: Decrease opacity (same modifiers + VK_OEM_MINUS '-')
+        if (m_hotkey.key)
+        {
+            if (hotkeys && buffer_size > count)
+            {
+                hotkeys[count] = m_hotkey;
+                hotkeys[count].key = VK_OEM_MINUS; // '-' key
+                Logger::trace(L"AlwaysOnTop hotkey[2] (decrease opacity): win={}, ctrl={}, shift={}, alt={}, key={}", 
+                    hotkeys[count].win, hotkeys[count].ctrl, hotkeys[count].shift, hotkeys[count].alt, hotkeys[count].key);
             }
             count++;
         }
@@ -195,8 +214,9 @@ public:
         app_name = L"AlwaysOnTop"; //TODO: localize
         app_key = NonLocalizable::ModuleKey;
         m_hPinEvent = CreateDefaultEvent(CommonSharedConstants::ALWAYS_ON_TOP_PIN_EVENT);
-        m_hTransparentPinEvent = CreateDefaultEvent(CommonSharedConstants::ALWAYS_ON_TOP_TRANSPARENT_PIN_EVENT);
         m_hTerminateEvent = CreateDefaultEvent(CommonSharedConstants::ALWAYS_ON_TOP_TERMINATE_EVENT);
+        m_hIncreaseOpacityEvent = CreateDefaultEvent(CommonSharedConstants::ALWAYS_ON_TOP_INCREASE_OPACITY_EVENT);
+        m_hDecreaseOpacityEvent = CreateDefaultEvent(CommonSharedConstants::ALWAYS_ON_TOP_DECREASE_OPACITY_EVENT);
         init_settings();
     }
 
@@ -212,7 +232,6 @@ private:
         std::wstring executable_args = L"";
         executable_args.append(std::to_wstring(powertoys_pid));
         ResetEvent(m_hPinEvent);
-        ResetEvent(m_hTransparentPinEvent);
 
         SHELLEXECUTEINFOW sei{ sizeof(sei) };
         sei.fMask = { SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI };
@@ -238,7 +257,6 @@ private:
     {
         m_enabled = false;
         ResetEvent(m_hPinEvent);
-        ResetEvent(m_hTransparentPinEvent);
 
         // Log telemetry
         if (traceEvent)
@@ -277,26 +295,6 @@ private:
             {
                 Logger::error("Failed to initialize AlwaysOnTop start shortcut");
             }
-
-            try
-            {
-                auto jsonTransparencyHotkeyObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_TRANSPARENCY_HOTKEY).GetNamedObject(JSON_KEY_VALUE);
-                m_transparencyHotkey.win = jsonTransparencyHotkeyObject.GetNamedBoolean(JSON_KEY_WIN);
-                m_transparencyHotkey.alt = jsonTransparencyHotkeyObject.GetNamedBoolean(JSON_KEY_ALT);
-                m_transparencyHotkey.shift = jsonTransparencyHotkeyObject.GetNamedBoolean(JSON_KEY_SHIFT);
-                m_transparencyHotkey.ctrl = jsonTransparencyHotkeyObject.GetNamedBoolean(JSON_KEY_CTRL);
-                m_transparencyHotkey.key = static_cast<unsigned char>(jsonTransparencyHotkeyObject.GetNamedNumber(JSON_KEY_CODE));
-            }
-            catch (...)
-            {
-                Logger::info("AlwaysOnTop transparency shortcut not configured, using default");
-                // Set default: Win + Ctrl + Shift + T
-                m_transparencyHotkey.win = true;
-                m_transparencyHotkey.ctrl = true;
-                m_transparencyHotkey.shift = true;
-                m_transparencyHotkey.alt = false;
-                m_transparencyHotkey.key = 0x54; // T
-            }
         }
         else
         {
@@ -332,12 +330,12 @@ private:
     bool m_enabled = false;
     HANDLE m_hProcess = nullptr;
     Hotkey m_hotkey;
-    Hotkey m_transparencyHotkey;
 
     // Handle to event used to pin/unpin windows
     HANDLE m_hPinEvent;
-    HANDLE m_hTransparentPinEvent;
     HANDLE m_hTerminateEvent;
+    HANDLE m_hIncreaseOpacityEvent;
+    HANDLE m_hDecreaseOpacityEvent;
 };
 
 extern "C" __declspec(dllexport) PowertoyModuleIface* __cdecl powertoy_create()

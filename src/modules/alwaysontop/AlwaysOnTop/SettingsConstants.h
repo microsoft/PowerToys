@@ -12,6 +12,4 @@ enum class SettingId
     ExcludeApps,
     FrameAccentColor,
     RoundCornersEnabled,
-    TransparencyHotkey,
-    TransparencyPercentage
 };

@@ -39,7 +39,8 @@ private:
     enum class HotkeyId : int
     {
         Pin = 1,
-        TransparentPin = 2,
+        IncreaseOpacity = 2,
+        DecreaseOpacity = 3,
     };
 
     static inline AlwaysOnTop* s_instance = nullptr;
@@ -50,9 +51,21 @@ private:
     HWND m_window{ nullptr };
     HINSTANCE m_hinstance;
     std::map<HWND, std::unique_ptr<WindowBorder>> m_topmostWindows{};
+    std::map<HWND, int> m_windowTransparency{}; // Track transparency per window (20-100)
+    
+    // Store original window layered state for proper restoration
+    struct WindowLayeredState {
+        bool hadLayeredStyle = false;
+        BYTE originalAlpha = 255;
+        bool usedColorKey = false;
+        COLORREF colorKey = 0;
+    };
+    std::map<HWND, WindowLayeredState> m_windowOriginalLayeredState{};
+    
     HANDLE m_hPinEvent;
-    HANDLE m_hTransparentPinEvent;
     HANDLE m_hTerminateEvent;
+    HANDLE m_hIncreaseOpacityEvent;
+    HANDLE m_hDecreaseOpacityEvent;
     DWORD m_mainThreadId;
     std::thread m_thread;
     const bool m_useCentralizedLLKH;
@@ -67,7 +80,7 @@ private:
     void RegisterLLKH();
     void SubscribeToEvents();
 
-    void ProcessCommand(HWND window, bool transparent = false);
+    void ProcessCommand(HWND window);
     void StartTrackingTopmostWindows();
     void UnpinAll();
     void CleanUp();
@@ -80,6 +93,13 @@ private:
     bool UnpinTopmostWindow(HWND window) const noexcept;
     bool AssignBorder(HWND window);
     void RefreshBorders();
+
+    // Transparency adjustment methods
+    void AdjustTransparency(HWND window, int delta);
+    void ApplyTransparency(HWND window, int percentage);
+    void RemoveTransparency(HWND window);
+    int GetWindowTransparency(HWND window) const;
+    void SetWindowTransparency(HWND window, int percentage);
 
     virtual void SettingsUpdate(SettingId type) override;
 
