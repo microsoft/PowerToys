@@ -37,7 +37,7 @@ namespace Awake.Core
 
         internal static SettingsUtils? ModuleSettings { get; set; }
 
-        private static AwakeMode CurrentOperatingMode { get; set; }
+        internal static AwakeMode CurrentOperatingMode { get; private set; }
 
         private static bool IsDisplayOn { get; set; }
 
@@ -521,15 +521,21 @@ namespace Awake.Core
                     AwakeSettings currentSettings = ModuleSettings!.GetSettings<AwakeSettings>(Constants.AppName) ?? new AwakeSettings();
                     currentSettings.Properties.KeepDisplayOn = !currentSettings.Properties.KeepDisplayOn;
 
-                    // We want to make sure that if the display setting changes (e.g., through the tray)
-                    // then we do not reset the counter from zero. Because the settings are only storing
-                    // hours and minutes, we round up the minutes value up when changes occur.
+                    // For TIMED mode: update state directly without restarting timer
+                    // This preserves the existing timer Observable subscription and targetExpiryTime
                     if (CurrentOperatingMode == AwakeMode.TIMED && TimeRemaining > 0)
                     {
-                        TimeSpan timeSpan = TimeSpan.FromSeconds(TimeRemaining);
+                        // Update internal state
+                        IsDisplayOn = currentSettings.Properties.KeepDisplayOn;
 
-                        currentSettings.Properties.IntervalHours = (uint)timeSpan.TotalHours;
-                        currentSettings.Properties.IntervalMinutes = (uint)Math.Ceiling(timeSpan.TotalMinutes % 60);
+                        // Update execution state without canceling timer
+                        _stateQueue.Add(ComputeAwakeState(IsDisplayOn));
+
+                        // Save settings - ProcessSettings will skip reinitialization
+                        // since we're already in TIMED mode
+                        ModuleSettings!.SaveSettings(JsonSerializer.Serialize(currentSettings), Constants.AppName);
+
+                        return;
                     }
 
                     ModuleSettings!.SaveSettings(JsonSerializer.Serialize(currentSettings), Constants.AppName);
