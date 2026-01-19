@@ -10,23 +10,23 @@ namespace Microsoft.CmdPal.Core.Common.Text;
 
 public sealed class PrecomputedFuzzyMatcherWithPinyin : IPrecomputedFuzzyMatcher
 {
-    private readonly IBloomCalculator _bloom;
+    private readonly IBloomFilter _bloom;
     private readonly PrecomputedFuzzyMatcher _core;
 
-    private readonly INormalizer _normalizer;
+    private readonly IStringFolder _stringFolder;
     private readonly PinyinFuzzyMatcherOptions _pinyin;
 
     public PrecomputedFuzzyMatcherWithPinyin(
         PrecomputedFuzzyMatcherOptions coreOptions,
         PinyinFuzzyMatcherOptions pinyinOptions,
-        INormalizer normalizer,
-        IBloomCalculator bloom)
+        IStringFolder stringFolder,
+        IBloomFilter bloom)
     {
         _pinyin = pinyinOptions;
-        _normalizer = normalizer;
+        _stringFolder = stringFolder;
         _bloom = bloom;
 
-        _core = new PrecomputedFuzzyMatcher(coreOptions, normalizer, bloom);
+        _core = new PrecomputedFuzzyMatcher(coreOptions, stringFolder, bloom);
 
         SchemaId = CombineSchema(_core.SchemaId, _pinyin);
     }
@@ -54,21 +54,18 @@ public sealed class PrecomputedFuzzyMatcherWithPinyin : IPrecomputedFuzzyMatcher
             return primary;
         }
 
-        var secNorm = _normalizer.Normalize(pinyin);
-        var secFold = _normalizer.FoldCase(secNorm);
-        var secBloom = _bloom.ComputeBloomFilter(secFold);
-
+        var secondary = _core.PrecomputeQuery(pinyin);
         return new FuzzyQuery(
-            primary.Text,
-            primary.Normalized,
+            primary.Original,
             primary.Folded,
-            primary.NormalizedNoSep,
-            primary.FoldedNoSep,
-            primary.HasSeparators,
             primary.Bloom,
-            secNorm,
-            secFold,
-            secBloom);
+            primary.EffectiveLength,
+            primary.IsAllLowercaseAsciiOrNonLetter,
+            secondary.Original,
+            secondary.Folded,
+            secondary.Bloom,
+            secondary.EffectiveLength,
+            secondary.SecondaryIsAllLowercaseAsciiOrNonLetter);
     }
 
     public FuzzyTarget PrecomputeTarget(string? input)
@@ -94,17 +91,14 @@ public sealed class PrecomputedFuzzyMatcherWithPinyin : IPrecomputedFuzzyMatcher
             return primary;
         }
 
-        var secNorm = _normalizer.Normalize(pinyin);
-        var secFold = _normalizer.FoldCase(secNorm);
-        var secBloom = _bloom.ComputeBloomFilter(secFold);
-
+        var secondary = _core.PrecomputeTarget(pinyin);
         return new FuzzyTarget(
-            primary.Normalized,
+            primary.Original,
             primary.Folded,
             primary.Bloom,
-            secNorm,
-            secFold,
-            secBloom);
+            secondary.Original,
+            secondary.Folded,
+            secondary.Bloom);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

@@ -12,22 +12,22 @@ namespace Microsoft.CmdPal.Core.Common.Text;
 public sealed class PrecomputedFuzzyMatcher : IPrecomputedFuzzyMatcher
 {
     private const int NoMatchScore = 0;
-    private const int StackallocTargetLenThreshold = 512;
-
-    private static readonly SearchValues<char> AllSeparators = SearchValues.Create("/\\_- '\":.");
-    private readonly IBloomCalculator _bloom;
-    private readonly INormalizer _normalizer;
+    private const int StackallocThresholdChars = 512;
+    private const int FolderSchemaVersion = 1;
+    private const int BloomSchemaVersion = 1;
 
     private readonly PrecomputedFuzzyMatcherOptions _options;
+    private readonly IStringFolder _stringFolder;
+    private readonly IBloomFilter _bloom;
 
     public PrecomputedFuzzyMatcher(
         PrecomputedFuzzyMatcherOptions? options = null,
-        INormalizer? normalization = null,
-        IBloomCalculator? bloomCalculator = null)
+        IStringFolder? normalization = null,
+        IBloomFilter? bloomCalculator = null)
     {
         _options = options ?? PrecomputedFuzzyMatcherOptions.Default;
-        _bloom = bloomCalculator ?? new BloomCalculator();
-        _normalizer = normalization ?? new Normalizer();
+        _bloom = bloomCalculator ?? new BloomFilter();
+        _stringFolder = normalization ?? new StringFolder();
 
         SchemaId = ComputeSchemaId(_options);
     }
@@ -38,173 +38,51 @@ public sealed class PrecomputedFuzzyMatcher : IPrecomputedFuzzyMatcher
 
     public FuzzyTarget PrecomputeTarget(string? input) => PrecomputeTarget(input, null);
 
-    public int Score(scoped in FuzzyQuery query, scoped in FuzzyTarget target)
+    public int Score(in FuzzyQuery query, in FuzzyTarget target)
     {
-        return ScoreFieldNonContiguous(query, target, true);
-    }
-
-    private FuzzyQuery PrecomputeQuery(string? input, string? secondaryInput)
-    {
-        input ??= string.Empty;
-
-        var normalized = _normalizer.Normalize(input);
-        var folded = _normalizer.FoldCase(normalized);
-        var normalizedNoSep = RemoveSeparators(normalized, out var hasSeparators);
-        var foldedNoSep = hasSeparators ? RemoveSeparators(folded, out _) : folded;
-        var bloom = _bloom.ComputeBloomFilter(foldedNoSep);
-
-        string? secondaryNormalized = null;
-        string? secondaryFolded = null;
-        ulong secondaryBloom = 0;
-
-        if (!string.IsNullOrEmpty(secondaryInput))
-        {
-            secondaryNormalized = _normalizer.Normalize(secondaryInput);
-            secondaryFolded = _normalizer.FoldCase(secondaryNormalized);
-            secondaryBloom = _bloom.ComputeBloomFilter(secondaryFolded);
-        }
-
-        return new FuzzyQuery(
-            input,
-            normalized,
-            folded,
-            normalizedNoSep,
-            foldedNoSep,
-            hasSeparators,
-            bloom,
-            secondaryNormalized,
-            secondaryFolded,
-            secondaryBloom);
-    }
-
-    private FuzzyTarget PrecomputeTarget(string? input, string? secondaryInput)
-    {
-        input ??= string.Empty;
-
-        var normalized = _normalizer.Normalize(input);
-        var folded = _normalizer.FoldCase(normalized);
-        var bloom = _bloom.ComputeBloomFilter(folded);
-
-        string? secondaryNormalized = null;
-        string? secondaryFolded = null;
-        ulong secondaryBloom = 0;
-
-        if (!string.IsNullOrEmpty(secondaryInput))
-        {
-            secondaryNormalized = _normalizer.Normalize(secondaryInput);
-            secondaryFolded = _normalizer.FoldCase(secondaryNormalized);
-            secondaryBloom = _bloom.ComputeBloomFilter(secondaryFolded);
-        }
-
-        return new FuzzyTarget(
-            normalized,
-            folded,
-            bloom,
-            secondaryNormalized,
-            secondaryFolded,
-            secondaryBloom);
-    }
-
-    private static string RemoveSeparators(string input, out bool removedAny)
-    {
-        removedAny = false;
-        if (string.IsNullOrEmpty(input))
-        {
-            return input;
-        }
-
-        var src = input.AsSpan();
-        var firstSepIndex = src.IndexOfAny(AllSeparators);
-        if (firstSepIndex < 0)
-        {
-            return input;
-        }
-
-        removedAny = true;
-
-        const int StackAllocLimit = 2048;
-
-        char[]? rented = null;
-        var destination =
-            input.Length <= StackAllocLimit
-                ? stackalloc char[input.Length]
-                : rented = ArrayPool<char>.Shared.Rent(input.Length);
-
-        // If we rented, the span may be larger than input.Length. Limit it.
-        destination = destination[..input.Length];
-
-        try
-        {
-            // 1. Copy the first clean chunk immediately
-            src[..firstSepIndex].CopyTo(destination);
-            var destIndex = firstSepIndex;
-
-            // 2. Scan the rest in chunks
-            var remaining = src[(firstSepIndex + 1)..];
-
-            while (!remaining.IsEmpty)
-            {
-                var nextSep = remaining.IndexOfAny(AllSeparators);
-
-                if (nextSep < 0)
-                {
-                    remaining.CopyTo(destination[destIndex..]);
-                    destIndex += remaining.Length;
-                    break;
-                }
-
-                if (nextSep > 0)
-                {
-                    remaining[..nextSep].CopyTo(destination[destIndex..]);
-                    destIndex += nextSep;
-                }
-
-                remaining = remaining[(nextSep + 1)..];
-            }
-
-            return new string(destination[..destIndex]);
-        }
-        finally
-        {
-            if (rented is not null)
-            {
-                ArrayPool<char>.Shared.Return(rented);
-            }
-        }
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveOptimization)]
-    public int ScoreFieldNonContiguous(in FuzzyQuery query, in FuzzyTarget target, bool ignoreQuerySeparatorsForDp)
-    {
-        var qNorm = ignoreQuerySeparatorsForDp ? query.NormalizedNoSepSpan : query.NormalizedSpan;
-        var qFold = ignoreQuerySeparatorsForDp ? query.FoldedNoSepSpan : query.FoldedSpan;
-
-        var qLen = qNorm.Length;
+        var qFold = query.FoldedSpan;
         var tLen = target.Length;
 
-        if (qLen == 0 || tLen == 0)
+        if (query.EffectiveLength == 0 || tLen == 0)
         {
             return NoMatchScore;
         }
 
+        var skipWordSeparators = _options.SkipWordSeparators;
         var bestScore = 0;
 
         // 1. Primary → Primary
-        if (tLen >= qLen && _bloom.MightContain(target.Bloom, query.Bloom))
+        if (tLen >= query.EffectiveLength && _bloom.MightContain(target.Bloom, query.Bloom))
         {
-            bestScore = ScoreDpNonContiguous(qNorm, qFold, target.NormalizedSpan, target.FoldedSpan);
+            if (CanMatchSubsequence(qFold, target.FoldedSpan, skipWordSeparators))
+            {
+                bestScore = ScoreNonContiguous(
+                    qRaw: query.OriginalSpan,
+                    qFold: qFold,
+                    qEffectiveLen: query.EffectiveLength,
+                    tRaw: target.OriginalSpan,
+                    tFold: target.FoldedSpan,
+                    ignoreSameCaseBonusForThisQuery: _options.IgnoreSameCaseBonusIfQueryIsAllLowercase && query.IsAllLowercaseAsciiOrNonLetter);
+            }
         }
 
-        // 2. Secondary → Secondary (if both have)
+        // 2. Secondary → Secondary
         if (query.HasSecondary && target.HasSecondary)
         {
-            var qSecNorm = query.SecondaryNormalizedSpan;
             var qSecFold = query.SecondaryFoldedSpan;
 
-            if (target.SecondaryLength >= qSecNorm.Length &&
-                _bloom.MightContain(target.SecondaryBloom, query.SecondaryBloom))
+            if (target.SecondaryLength >= query.SecondaryEffectiveLength &&
+                _bloom.MightContain(target.SecondaryBloom, query.SecondaryBloom) &&
+                CanMatchSubsequence(qSecFold, target.SecondaryFoldedSpan, skipWordSeparators))
             {
-                var score = ScoreDpNonContiguous(qSecNorm, qSecFold, target.SecondaryNormalizedSpan, target.SecondaryFoldedSpan);
+                var score = ScoreNonContiguous(
+                    qRaw: query.SecondaryOriginalSpan,
+                    qFold: qSecFold,
+                    qEffectiveLen: query.SecondaryEffectiveLength,
+                    tRaw: target.SecondaryOriginalSpan,
+                    tFold: target.SecondaryFoldedSpan,
+                    ignoreSameCaseBonusForThisQuery: _options.IgnoreSameCaseBonusIfQueryIsAllLowercase && query.SecondaryIsAllLowercaseAsciiOrNonLetter);
+
                 if (score > bestScore)
                 {
                     bestScore = score;
@@ -213,25 +91,44 @@ public sealed class PrecomputedFuzzyMatcher : IPrecomputedFuzzyMatcher
         }
 
         // 3. Primary query → Secondary target
-        if (target.HasSecondary && target.SecondaryLength >= qLen &&
+        if (target.HasSecondary &&
+            target.SecondaryLength >= query.EffectiveLength &&
             _bloom.MightContain(target.SecondaryBloom, query.Bloom))
         {
-            var score = ScoreDpNonContiguous(qNorm, qFold, target.SecondaryNormalizedSpan, target.SecondaryFoldedSpan);
-            if (score > bestScore)
+            if (CanMatchSubsequence(qFold, target.SecondaryFoldedSpan, skipWordSeparators))
             {
-                bestScore = score;
+                var score = ScoreNonContiguous(
+                    qRaw: query.OriginalSpan,
+                    qFold: qFold,
+                    qEffectiveLen: query.EffectiveLength,
+                    tRaw: target.SecondaryOriginalSpan,
+                    tFold: target.SecondaryFoldedSpan,
+                    ignoreSameCaseBonusForThisQuery: _options.IgnoreSameCaseBonusIfQueryIsAllLowercase && query.IsAllLowercaseAsciiOrNonLetter);
+
+                if (score > bestScore)
+                {
+                    bestScore = score;
+                }
             }
         }
 
         // 4. Secondary query → Primary target
-        if (query.HasSecondary)
+        if (query.HasSecondary &&
+            tLen >= query.SecondaryEffectiveLength &&
+            _bloom.MightContain(target.Bloom, query.SecondaryBloom))
         {
-            var qSecNorm = query.SecondaryNormalizedSpan;
             var qSecFold = query.SecondaryFoldedSpan;
 
-            if (tLen >= qSecNorm.Length && _bloom.MightContain(target.Bloom, query.SecondaryBloom))
+            if (CanMatchSubsequence(qSecFold, target.FoldedSpan, skipWordSeparators))
             {
-                var score = ScoreDpNonContiguous(qSecNorm, qSecFold, target.NormalizedSpan, target.FoldedSpan);
+                var score = ScoreNonContiguous(
+                    qRaw: query.SecondaryOriginalSpan,
+                    qFold: qSecFold,
+                    qEffectiveLen: query.SecondaryEffectiveLength,
+                    tRaw: target.OriginalSpan,
+                    tFold: target.FoldedSpan,
+                    ignoreSameCaseBonusForThisQuery: _options.IgnoreSameCaseBonusIfQueryIsAllLowercase && query.SecondaryIsAllLowercaseAsciiOrNonLetter);
+
                 if (score > bestScore)
                 {
                     bestScore = score;
@@ -240,131 +137,328 @@ public sealed class PrecomputedFuzzyMatcher : IPrecomputedFuzzyMatcher
         }
 
         return bestScore;
+    }
 
-        [MethodImpl(MethodImplOptions.AggressiveOptimization)]
-        [SkipLocalsInit]
-        int ScoreDpNonContiguous(
-            scoped in ReadOnlySpan<char> qNorm,
-            scoped in ReadOnlySpan<char> qFold,
-            scoped in ReadOnlySpan<char> tNorm,
-            scoped in ReadOnlySpan<char> tFold)
+    private FuzzyQuery PrecomputeQuery(string? input, string? secondaryInput)
+    {
+        input ??= string.Empty;
+
+        var folded = _stringFolder.Fold(input, _options.RemoveDiacritics);
+        var bloom = _bloom.Compute(folded);
+        var effectiveLength = _options.SkipWordSeparators
+            ? folded.Length - CountWordSeparators(folded)
+            : folded.Length;
+
+        var isAllLowercase = IsAllLowercaseAsciiOrNonLetter(input);
+
+        string? secondaryOriginal = null;
+        string? secondaryFolded = null;
+        ulong secondaryBloom = 0;
+        var secondaryEffectiveLength = 0;
+        var secondaryIsAllLowercase = true;
+
+        if (!string.IsNullOrEmpty(secondaryInput))
         {
-            Debug.Assert(qNorm.Length == qFold.Length, "Normalized and folder spans are traversed in a lockstep: requires qNorm.Length == qFold.Length");
-            Debug.Assert(tNorm.Length == tFold.Length, "Normalized and folder spans are traversed in a lockstep: requires tNorm.Length == tFold.Length");
+            secondaryOriginal = secondaryInput;
+            secondaryFolded = _stringFolder.Fold(secondaryInput, _options.RemoveDiacritics);
+            secondaryBloom = _bloom.Compute(secondaryFolded);
+            secondaryEffectiveLength = _options.SkipWordSeparators
+                ? secondaryFolded.Length - CountWordSeparators(secondaryFolded)
+                : secondaryFolded.Length;
 
-            var tLen = tNorm.Length;
+            secondaryIsAllLowercase = IsAllLowercaseAsciiOrNonLetter(secondaryInput);
+        }
 
-            var charMatchBonus = _options.CharMatchBonus;
-            var sameCaseBonus = _options.SameCaseBonus;
-            var consecutiveMultiplier = _options.ConsecutiveMultiplier;
-            var camelCaseBonus = _options.CamelCaseBonus;
-            var startOfWordBonus = _options.StartOfWordBonus;
-            var pathSeparatorBonus = _options.PathSeparatorBonus;
-            var otherSeparatorBonus = _options.OtherSeparatorBonus;
+        return new FuzzyQuery(
+            original: input,
+            folded: folded,
+            bloom: bloom,
+            effectiveLength: effectiveLength,
+            isAllLowercaseAsciiOrNonLetter: isAllLowercase,
+            secondaryOriginal: secondaryOriginal,
+            secondaryFolded: secondaryFolded,
+            secondaryBloom: secondaryBloom,
+            secondaryEffectiveLength: secondaryEffectiveLength,
+            secondaryIsAllLowercaseAsciiOrNonLetter: secondaryIsAllLowercase);
 
-            var bufferSize = tLen * 2;
-
-            if (tLen <= StackallocTargetLenThreshold)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static int CountWordSeparators(string s)
+        {
+            var count = 0;
+            foreach (var c in s)
             {
-                Span<int> buf = stackalloc int[bufferSize];
-                return ScoreDpWithBuffers(buf, in qNorm, in qFold, in tNorm, in tFold);
-            }
-
-            var rented = ArrayPool<int>.Shared.Rent(bufferSize);
-            try
-            {
-                return ScoreDpWithBuffers(rented.AsSpan(0, bufferSize), in qNorm, in qFold, in tNorm, in tFold);
-            }
-            finally
-            {
-                ArrayPool<int>.Shared.Return(rented);
-            }
-
-            [MethodImpl(MethodImplOptions.AggressiveOptimization)]
-            [SkipLocalsInit]
-            int ScoreDpWithBuffers(
-                Span<int> buf,
-                scoped in ReadOnlySpan<char> qNorm,
-                scoped in ReadOnlySpan<char> qFold,
-                scoped in ReadOnlySpan<char> tNorm,
-                scoped in ReadOnlySpan<char> tFold)
-            {
-                var scores = buf[..tLen];
-                var seqLens = buf.Slice(tLen, tLen);
-
-                scores.Clear();
-                seqLens.Clear();
-
-                ref var scores0 = ref MemoryMarshal.GetReference(scores);
-                ref var seqLens0 = ref MemoryMarshal.GetReference(seqLens);
-                ref var tNorm0 = ref MemoryMarshal.GetReference(tNorm);
-                ref var tFold0 = ref MemoryMarshal.GetReference(tFold);
-
-                for (var qi = 0; qi < qNorm.Length; qi++)
+                if (SymbolClassifier.Classify(c) == SymbolKind.WordSeparator)
                 {
-                    var qn = qNorm[qi];
-                    var qf = qFold[qi];
+                    count++;
+                }
+            }
 
-                    var leftScore = 0;
-                    var diagScore = 0;
-                    var diagSeqLen = 0;
+            return count;
+        }
+    }
 
-                    for (var ti = 0; ti < tLen; ti++)
+    internal FuzzyTarget PrecomputeTarget(string? input, string? secondaryInput)
+    {
+        input ??= string.Empty;
+
+        var folded = _stringFolder.Fold(input, _options.RemoveDiacritics);
+        var bloom = _bloom.Compute(folded);
+
+        string? secondaryFolded = null;
+        ulong secondaryBloom = 0;
+
+        if (!string.IsNullOrEmpty(secondaryInput))
+        {
+            secondaryFolded = _stringFolder.Fold(secondaryInput, _options.RemoveDiacritics);
+            secondaryBloom = _bloom.Compute(secondaryFolded);
+        }
+
+        return new FuzzyTarget(
+            input,
+            folded,
+            bloom,
+            secondaryInput,
+            secondaryFolded,
+            secondaryBloom);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static bool IsAllLowercaseAsciiOrNonLetter(string s)
+    {
+        foreach (var c in s)
+        {
+            if ((uint)(c - 'A') <= ('Z' - 'A'))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static bool CanMatchSubsequence(
+        ReadOnlySpan<char> qFold,
+        ReadOnlySpan<char> tFold,
+        bool skipWordSeparators)
+    {
+        var qi = 0;
+        var ti = 0;
+
+        while (qi < qFold.Length && ti < tFold.Length)
+        {
+            var qChar = qFold[qi];
+
+            if (skipWordSeparators && SymbolClassifier.Classify(qChar) == SymbolKind.WordSeparator)
+            {
+                qi++;
+                continue;
+            }
+
+            if (qChar == tFold[ti])
+            {
+                qi++;
+            }
+
+            ti++;
+        }
+
+        // Skip trailing word separators in query
+        if (skipWordSeparators)
+        {
+            while (qi < qFold.Length && SymbolClassifier.Classify(qFold[qi]) == SymbolKind.WordSeparator)
+            {
+                qi++;
+            }
+        }
+
+        return qi == qFold.Length;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveOptimization)]
+    [SkipLocalsInit]
+    private int ScoreNonContiguous(
+        scoped in ReadOnlySpan<char> qRaw,
+        scoped in ReadOnlySpan<char> qFold,
+        int qEffectiveLen,
+        scoped in ReadOnlySpan<char> tRaw,
+        scoped in ReadOnlySpan<char> tFold,
+        bool ignoreSameCaseBonusForThisQuery)
+    {
+        Debug.Assert(qRaw.Length == qFold.Length, "Original and folded spans are traversed in lockstep: requires qRaw.Length == qFold.Length");
+        Debug.Assert(tRaw.Length == tFold.Length, "Original and folded spans are traversed in lockstep: requires tRaw.Length == tFold.Length");
+        Debug.Assert(qEffectiveLen <= qFold.Length, "Effective length must be less than or equal to folded length");
+
+        var qLen = qFold.Length;
+        var tLen = tFold.Length;
+
+        // Copy options to local variables to avoid repeated field accesses
+        var charMatchBonus = _options.CharMatchBonus;
+        var sameCaseBonus = ignoreSameCaseBonusForThisQuery ? 0 : _options.SameCaseBonus;
+        var consecutiveMultiplier = _options.ConsecutiveMultiplier;
+        var camelCaseBonus = _options.CamelCaseBonus;
+        var startOfWordBonus = _options.StartOfWordBonus;
+        var pathSeparatorBonus = _options.PathSeparatorBonus;
+        var wordSeparatorBonus = _options.WordSeparatorBonus;
+        var separatorAlignmentBonus = _options.SeparatorAlignmentBonus;
+        var exactSeparatorBonus = _options.ExactSeparatorBonus;
+        var skipWordSeparators = _options.SkipWordSeparators;
+
+        // DP buffer: two rows of length tLen
+        var bufferSize = tLen * 2;
+        int[]? rented = null;
+
+        try
+        {
+            scoped Span<int> buffer;
+            if (bufferSize <= StackallocThresholdChars)
+            {
+                buffer = stackalloc int[bufferSize];
+            }
+            else
+            {
+                rented = ArrayPool<int>.Shared.Rent(bufferSize);
+                buffer = rented.AsSpan(0, bufferSize);
+            }
+
+            var scores = buffer[..tLen];
+            var seqLens = buffer.Slice(tLen, tLen);
+
+            scores.Clear();
+            seqLens.Clear();
+
+            ref var scores0 = ref MemoryMarshal.GetReference(scores);
+            ref var seqLens0 = ref MemoryMarshal.GetReference(seqLens);
+            ref var qRaw0 = ref MemoryMarshal.GetReference(qRaw);
+            ref var qFold0 = ref MemoryMarshal.GetReference(qFold);
+            ref var tRaw0 = ref MemoryMarshal.GetReference(tRaw);
+            ref var tFold0 = ref MemoryMarshal.GetReference(tFold);
+
+            var qiEffective = 0;
+
+            for (var qi = 0; qi < qLen; qi++)
+            {
+                var qCharFold = Unsafe.Add(ref qFold0, qi);
+                var qCharKind = SymbolClassifier.Classify(qCharFold);
+
+                if (skipWordSeparators && qCharKind == SymbolKind.WordSeparator)
+                {
+                    continue;
+                }
+
+                // Hoisted values
+                var qRawIsUpper = char.IsUpper(Unsafe.Add(ref qRaw0, qi));
+
+                // row computation
+                var leftScore = 0;
+                var diagScore = 0;
+                var diagSeqLen = 0;
+
+                // limit ti to ensure enough remaining characters to match the rest of the query
+                var tiMax = tLen - qEffectiveLen + qiEffective;
+
+                for (var ti = 0; ti <= tiMax; ti++)
+                {
+                    var upScore = Unsafe.Add(ref scores0, ti);
+                    var upSeqLen = Unsafe.Add(ref seqLens0, ti);
+
+                    var charScore = 0;
+                    if (diagScore != 0 || qiEffective == 0)
                     {
-                        var nextDiagScore = Unsafe.Add(ref scores0, ti);
-                        var nextDiagSeqLen = Unsafe.Add(ref seqLens0, ti);
-
-                        var tcNorm = Unsafe.Add(ref tNorm0, ti);
-                        var tcFold = Unsafe.Add(ref tFold0, ti);
-
-                        var charScore = 0;
-                        if (diagScore != 0 || qi == 0)
-                        {
-                            charScore = ComputeCharScore(qn, qf, ti, tcNorm, tcFold, diagSeqLen, ref tNorm0);
-                        }
-
-                        var diagPlus = diagScore + charScore;
-
-                        if (charScore != 0 && diagPlus >= leftScore)
-                        {
-                            Unsafe.Add(ref seqLens0, ti) = diagSeqLen + 1;
-                            Unsafe.Add(ref scores0, ti) = diagPlus;
-                        }
-                        else
-                        {
-                            Unsafe.Add(ref seqLens0, ti) = 0;
-                            Unsafe.Add(ref scores0, ti) = leftScore;
-                        }
-
-                        leftScore = Unsafe.Add(ref scores0, ti);
-                        diagScore = nextDiagScore;
-                        diagSeqLen = nextDiagSeqLen;
+                        charScore = ComputeCharScore(
+                            qi,
+                            ti,
+                            qCharFold,
+                            qCharKind,
+                            diagSeqLen,
+                            qRawIsUpper,
+                            ref tRaw0,
+                            ref qFold0,
+                            ref tFold0);
                     }
 
-                    if (leftScore == 0)
+                    var candidateScore = diagScore + charScore;
+                    if (charScore != 0 && candidateScore >= leftScore)
+                    {
+                        Unsafe.Add(ref scores0, ti) = candidateScore;
+                        Unsafe.Add(ref seqLens0, ti) = diagSeqLen + 1;
+                        leftScore = candidateScore;
+                    }
+                    else
+                    {
+                        Unsafe.Add(ref scores0, ti) = leftScore;
+                        Unsafe.Add(ref seqLens0, ti) = 0;
+                        /* leftScore remains unchanged */
+                    }
+
+                    diagScore = upScore;
+                    diagSeqLen = upSeqLen;
+                }
+
+                // Early exit: no match possible
+                if (leftScore == 0)
+                {
+                    return NoMatchScore;
+                }
+
+                // Advance effective query index
+                // Only counts non-separator characters if skipWordSeparators is enabled
+                qiEffective++;
+
+                if (qiEffective == qEffectiveLen)
+                {
+                    return leftScore;
+                }
+            }
+
+            return scores[tLen - 1];
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+            int ComputeCharScore(
+                int qi,
+                int ti,
+                char qCharFold,
+                SymbolKind qCharKind,
+                int seqLen,
+                bool qCharRawCurrIsUpper,
+                ref char tRaw0,
+                ref char qFold0,
+                ref char tFold0)
+            {
+                // Match check:
+                // - exact folded char match always ok
+                // - otherwise, allow equivalence only for word separators (e.g. '_' matches '-')
+                var tCharFold = Unsafe.Add(ref tFold0, ti);
+                if (qCharFold != tCharFold)
+                {
+                    if (!skipWordSeparators)
+                    {
+                        return 0;
+                    }
+
+                    if (qCharKind != SymbolKind.WordSeparator ||
+                        SymbolClassifier.Classify(tCharFold) != SymbolKind.WordSeparator)
                     {
                         return 0;
                     }
                 }
 
-                return scores[tLen - 1];
+                // 0. Base char match bonus
+                var score = charMatchBonus;
 
-                [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                int ComputeCharScore(char qn, char qf, int ti, char tcNorm, char tcFold, int seqLen, ref char tNorm0)
+                // 1. Consecutive match bonus
+                if (seqLen > 0)
                 {
-                    if (!ConsiderAsEqual(qf, tcFold))
-                    {
-                        return 0;
-                    }
+                    score += seqLen * consecutiveMultiplier;
+                }
 
-                    var score = charMatchBonus;
-
-                    if (seqLen > 0)
-                    {
-                        score += seqLen * consecutiveMultiplier;
-                    }
-
-                    if (qn == tcNorm)
+                // 2. Same case bonus
+                // Early outs to appease the branch predictor
+                if (sameCaseBonus != 0)
+                {
+                    var tCharRawCurr = Unsafe.Add(ref tRaw0, ti);
+                    var tCharRawCurrIsUpper = char.IsUpper(tCharRawCurr);
+                    if (qCharRawCurrIsUpper == tCharRawCurrIsUpper)
                     {
                         score += sameCaseBonus;
                     }
@@ -375,63 +469,107 @@ public sealed class PrecomputedFuzzyMatcher : IPrecomputedFuzzyMatcher
                         return score;
                     }
 
-                    var prevChar = Unsafe.Add(ref tNorm0, ti - 1);
-                    var sepBonus = ScoreSeparator(prevChar);
-
-                    if (sepBonus > 0)
+                    var tPrevFold = Unsafe.Add(ref tFold0, ti - 1);
+                    var tPrevKind = SymbolClassifier.Classify(tPrevFold);
+                    if (tPrevKind != SymbolKind.Other)
                     {
-                        score += sepBonus;
+                        score += tPrevKind == SymbolKind.PathSeparator
+                            ? pathSeparatorBonus
+                            : wordSeparatorBonus;
+
+                        if (skipWordSeparators && seqLen == 0 && qi > 0)
+                        {
+                            var qPrevFold = Unsafe.Add(ref qFold0, qi - 1);
+                            var qPrevKind = SymbolClassifier.Classify(qPrevFold);
+
+                            if (qPrevKind == SymbolKind.WordSeparator)
+                            {
+                                score += separatorAlignmentBonus;
+
+                                if (tPrevKind == SymbolKind.WordSeparator && qPrevFold == tPrevFold)
+                                {
+                                    score += exactSeparatorBonus;
+                                }
+                            }
+                        }
+
+                        return score;
                     }
-                    else if (char.IsUpper(tcNorm) && seqLen == 0)
+
+                    if (tCharRawCurrIsUpper && seqLen == 0)
                     {
                         score += camelCaseBonus;
+                        return score;
+                    }
+
+                    return score;
+                }
+                else
+                {
+                    if (ti == 0)
+                    {
+                        score += startOfWordBonus;
+                        return score;
+                    }
+
+                    var tPrevFold = Unsafe.Add(ref tFold0, ti - 1);
+                    var tPrevKind = SymbolClassifier.Classify(tPrevFold);
+                    if (tPrevKind != SymbolKind.Other)
+                    {
+                        score += tPrevKind == SymbolKind.PathSeparator
+                            ? pathSeparatorBonus
+                            : wordSeparatorBonus;
+
+                        if (skipWordSeparators && seqLen == 0 && qi > 0)
+                        {
+                            var qPrevFold = Unsafe.Add(ref qFold0, qi - 1);
+                            var qPrevKind = SymbolClassifier.Classify(qPrevFold);
+
+                            if (qPrevKind == SymbolKind.WordSeparator)
+                            {
+                                score += separatorAlignmentBonus;
+
+                                if (tPrevKind == SymbolKind.WordSeparator && qPrevFold == tPrevFold)
+                                {
+                                    score += exactSeparatorBonus;
+                                }
+                            }
+                        }
+
+                        return score;
+                    }
+
+                    if (camelCaseBonus != 0 && seqLen == 0 && char.IsUpper(Unsafe.Add(ref tRaw0, ti)))
+                    {
+                        score += camelCaseBonus;
+                        return score;
                     }
 
                     return score;
                 }
             }
-
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            int ScoreSeparator(char ch)
+        }
+        finally
+        {
+            if (rented is not null)
             {
-                return ch switch
-                {
-                    '/' or '\\' => pathSeparatorBonus,
-                    '_' or '-' or '.' or ' ' or '\'' or '"' or ':' => otherSeparatorBonus,
-                    _ => 0,
-                };
+                ArrayPool<int>.Shared.Return(rented);
             }
         }
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static bool ConsiderAsEqual(char a, char b) => a == b || (a == '/' && b == '\\') || (a == '\\' && b == '/');
-
+    // Schema ID is for cache invalidation of precomputed targets.
+    // Only includes options that affect folding/bloom, not scoring.
     private static uint ComputeSchemaId(PrecomputedFuzzyMatcherOptions o)
     {
         const uint fnvOffset = 2166136261;
         const uint fnvPrime = 16777619;
 
         var h = fnvOffset;
-        h = AddInt(h, o.StartOfWordBonus);
-        h = AddInt(h, o.PathSeparatorBonus);
-        h = AddInt(h, o.OtherSeparatorBonus);
-        h = AddInt(h, o.CamelCaseBonus);
-        h = AddInt(h, o.SameCaseBonus);
-        h = AddInt(h, o.CharMatchBonus);
-        h = AddInt(h, o.ConsecutiveMultiplier);
+        h = unchecked((h ^ FolderSchemaVersion) * fnvPrime);
+        h = unchecked((h ^ BloomSchemaVersion) * fnvPrime);
+        h = unchecked((h ^ (uint)(o.RemoveDiacritics ? 1 : 0)) * fnvPrime);
+
         return h;
-
-        static uint AddInt(uint h, int v)
-        {
-            return unchecked((h ^ (uint)v) * fnvPrime);
-        }
-
-        /*
-        static uint AddBool(uint h, bool v)
-        {
-            return unchecked((h ^ (v ? 1u : 0u)) * fnvPrime);
-        }
-        */
     }
 }

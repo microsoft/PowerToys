@@ -104,7 +104,7 @@ public partial class ContextMenuViewModel : ObservableObject,
 
     private int ScoreFunction(in FuzzyQuery query, CommandContextItemViewModel item)
     {
-        if (string.IsNullOrWhiteSpace(query.Text))
+        if (string.IsNullOrWhiteSpace(query.Original))
         {
             return 1;
         }

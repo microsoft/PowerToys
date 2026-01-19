@@ -4,9 +4,7 @@
 
 namespace Microsoft.CmdPal.Core.Common.Text;
 
-public interface INormalizer
+public interface IStringFolder
 {
-    string Normalize(string input);
-
-    string FoldCase(string input);
+    string Fold(string input, bool removeDiacritics);
 }

@@ -2,86 +2,64 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Runtime.CompilerServices;
-
 namespace Microsoft.CmdPal.Core.Common.Text;
 
 public readonly struct FuzzyQuery
 {
-    public readonly string Text;
-    public readonly string Normalized;
+    public readonly string Original;
+
     public readonly string Folded;
-    public readonly string NormalizedNoSep;
-    public readonly string FoldedNoSep;
-    public readonly bool HasSeparators;
+
     public readonly ulong Bloom;
 
-    // Optional secondary (e.g., PinYin)
-    public readonly string? SecondaryNormalized;
+    public readonly int EffectiveLength;
+
+    public readonly bool IsAllLowercaseAsciiOrNonLetter;
+
+    public readonly string? SecondaryOriginal;
+
     public readonly string? SecondaryFolded;
+
     public readonly ulong SecondaryBloom;
 
-    public int Length => Normalized.Length;
+    public readonly int SecondaryEffectiveLength;
+
+    public readonly bool SecondaryIsAllLowercaseAsciiOrNonLetter;
+
+    public int Length => Folded.Length;
 
     public bool HasSecondary => SecondaryFolded is not null;
 
-    public ReadOnlySpan<char> NormalizedSpan
-    {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get => Normalized.AsSpan();
-    }
+    public ReadOnlySpan<char> OriginalSpan => Original.AsSpan();
 
-    public ReadOnlySpan<char> FoldedSpan
-    {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get => Folded.AsSpan();
-    }
+    public ReadOnlySpan<char> FoldedSpan => Folded.AsSpan();
 
-    public ReadOnlySpan<char> NormalizedNoSepSpan
-    {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get => NormalizedNoSep.AsSpan();
-    }
+    public ReadOnlySpan<char> SecondaryOriginalSpan => SecondaryOriginal.AsSpan();
 
-    public ReadOnlySpan<char> FoldedNoSepSpan
-    {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get => FoldedNoSep.AsSpan();
-    }
-
-    public ReadOnlySpan<char> SecondaryNormalizedSpan
-    {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get => SecondaryNormalized.AsSpan();
-    }
-
-    public ReadOnlySpan<char> SecondaryFoldedSpan
-    {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get => SecondaryFolded.AsSpan();
-    }
+    public ReadOnlySpan<char> SecondaryFoldedSpan => SecondaryFolded.AsSpan();
 
     public FuzzyQuery(
-        string text,
-        string normalized,
+        string original,
         string folded,
-        string normalizedNoSep,
-        string foldedNoSep,
-        bool hasSeparators,
         ulong bloom,
-        string? secondaryNormalized = null,
+        int effectiveLength,
+        bool isAllLowercaseAsciiOrNonLetter,
+        string? secondaryOriginal = null,
         string? secondaryFolded = null,
-        ulong secondaryBloom = 0)
+        ulong secondaryBloom = 0,
+        int secondaryEffectiveLength = 0,
+        bool secondaryIsAllLowercaseAsciiOrNonLetter = true)
     {
-        Text = text;
-        Normalized = normalized;
+        Original = original;
         Folded = folded;
-        NormalizedNoSep = normalizedNoSep;
-        FoldedNoSep = foldedNoSep;
-        HasSeparators = hasSeparators;
         Bloom = bloom;
-        SecondaryNormalized = secondaryNormalized;
+        EffectiveLength = effectiveLength;
+        IsAllLowercaseAsciiOrNonLetter = isAllLowercaseAsciiOrNonLetter;
+
+        SecondaryOriginal = secondaryOriginal;
         SecondaryFolded = secondaryFolded;
         SecondaryBloom = secondaryBloom;
+        SecondaryEffectiveLength = secondaryEffectiveLength;
+        SecondaryIsAllLowercaseAsciiOrNonLetter = secondaryIsAllLowercaseAsciiOrNonLetter;
     }
 }

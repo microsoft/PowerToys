@@ -8,6 +8,9 @@ public sealed class PrecomputedFuzzyMatcherOptions
 {
     public static PrecomputedFuzzyMatcherOptions Default { get; } = new();
 
+    /*
+     * Bonuses
+     */
     public int CharMatchBonus { get; init; } = 1;
 
     public int SameCaseBonus { get; init; } = 1;
@@ -20,5 +23,18 @@ public sealed class PrecomputedFuzzyMatcherOptions
 
     public int PathSeparatorBonus { get; init; } = 5;
 
-    public int OtherSeparatorBonus { get; init; } = 4;
+    public int WordSeparatorBonus { get; init; } = 4;
+
+    public int SeparatorAlignmentBonus { get; init; } = 2;
+
+    public int ExactSeparatorBonus { get; init; } = 1;
+
+    /*
+     * Settings
+     */
+    public bool RemoveDiacritics { get; init; } = true;
+
+    public bool SkipWordSeparators { get; init; } = true;
+
+    public bool IgnoreSameCaseBonusIfQueryIsAllLowercase { get; init; } = true;
 }

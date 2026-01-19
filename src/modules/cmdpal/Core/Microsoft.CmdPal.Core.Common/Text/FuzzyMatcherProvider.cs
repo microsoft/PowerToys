@@ -8,8 +8,8 @@ namespace Microsoft.CmdPal.Core.Common.Text;
 
 public sealed class FuzzyMatcherProvider : IFuzzyMatcherProvider
 {
-    private readonly IBloomCalculator _bloomCalculator = new BloomCalculator();
-    private readonly INormalizer _normalizer = new Normalizer();
+    private readonly IBloomFilter _bloomCalculator = new BloomFilter();
+    private readonly IStringFolder _normalizer = new StringFolder();
 
     private IPrecomputedFuzzyMatcher _current;
 

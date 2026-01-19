@@ -10,7 +10,7 @@ public struct FuzzyTargetCache
     private uint _schemaId;
     private FuzzyTarget _target;
 
-    public FuzzyTarget GetOrUpdate(IPrecomputedFuzzyMatcher matcher, string raw)
+    public FuzzyTarget GetOrUpdate(IPrecomputedFuzzyMatcher matcher, string? raw)
     {
         raw ??= string.Empty;
 
@@ -29,5 +29,6 @@ public struct FuzzyTargetCache
     {
         _lastRaw = null;
         _target = default;
+        _schemaId = 0;
     }
 }

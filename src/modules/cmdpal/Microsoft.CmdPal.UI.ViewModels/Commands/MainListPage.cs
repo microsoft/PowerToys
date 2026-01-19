@@ -477,27 +477,16 @@ public sealed partial class MainListPage : DynamicListPage,
     // Almost verbatim ListHelpers.ScoreListItem, but also accounting for the
     // fact that we want fallback handlers down-weighted, so that they don't
     // _always_ show up first.
-    internal static int ScoreTopLevelItem(in FuzzyQuery query, IListItem topLevelOrAppItem, IRecentCommandsManager history, IPrecomputedFuzzyMatcher precomputedFuzzyMatcher)
+    internal static int ScoreTopLevelItem(
+        in FuzzyQuery query,
+        IListItem topLevelOrAppItem,
+        IRecentCommandsManager history,
+        IPrecomputedFuzzyMatcher precomputedFuzzyMatcher)
     {
         var title = topLevelOrAppItem.Title;
         if (string.IsNullOrWhiteSpace(title))
         {
             return 0;
-        }
-
-        var isWhiteSpace = string.IsNullOrWhiteSpace(query.Text);
-
-        FuzzyTarget titleTarget;
-        FuzzyTarget subtitleTarget;
-        if (topLevelOrAppItem is IPrecomputedListItem precomputedItem)
-        {
-            titleTarget = precomputedItem.GetTitleTarget(precomputedFuzzyMatcher);
-            subtitleTarget = precomputedItem.GetSubtitleTarget(precomputedFuzzyMatcher);
-        }
-        else
-        {
-            titleTarget = precomputedFuzzyMatcher.PrecomputeTarget(title);
-            subtitleTarget = precomputedFuzzyMatcher.PrecomputeTarget(topLevelOrAppItem.Subtitle);
         }
 
         var isFallback = false;
@@ -509,71 +498,59 @@ public sealed partial class MainListPage : DynamicListPage,
         if (topLevelOrAppItem is TopLevelViewModel topLevel)
         {
             isFallback = topLevel.IsFallback;
+            extensionDisplayNameTarget = topLevel.GetExtensionNameTarget(precomputedFuzzyMatcher);
+
             if (topLevel.HasAlias)
             {
                 var alias = topLevel.AliasText;
-                isAliasMatch = alias == query.Text;
-                isAliasSubstringMatch = isAliasMatch || alias.StartsWith(query.Text, StringComparison.CurrentCultureIgnoreCase);
+                isAliasMatch = alias == query.Original;
+                isAliasSubstringMatch = isAliasMatch || alias.StartsWith(query.Original, StringComparison.CurrentCultureIgnoreCase);
             }
-
-            extensionDisplayNameTarget = topLevel.GetExtensionNameTarget(precomputedFuzzyMatcher);
         }
 
-        // StringMatcher.FuzzySearch will absolutely BEEF IT if you give it a
-        // whitespace-only query.
-        //
-        // in that scenario, we'll just use a simple string contains for the
-        // query. Maybe someone is really looking for things with a space in
-        // them, I don't know.
-
-        // Title:
-        // * whitespace query: 1 point
-        // * otherwise full weight match
-        var nameMatch = isWhiteSpace
-            ? title.Contains(query.Text, StringComparison.Ordinal) ? 1 : 0
-            : precomputedFuzzyMatcher.Score(query, titleTarget);
-
-        // Subtitle:
-        // * whitespace query: 1/2 point
-        // * otherwise ~half weight match. Minus a bit, because subtitles tend to be longer
-        var descriptionMatch = isWhiteSpace
-            ? topLevelOrAppItem.Subtitle.Contains(query.Text, StringComparison.Ordinal) ? .5 : 0
-            : (precomputedFuzzyMatcher.Score(query, subtitleTarget) - 4) / 2.0;
-
-        // Extension title: despite not being visible, give the extension name itself some weight
-        // * whitespace query: 0 points
-        // * otherwise more weight than a subtitle, but not much
-        var extensionTitleMatch = isWhiteSpace || extensionDisplayNameTarget is null ? 0 : precomputedFuzzyMatcher.Score(query, extensionDisplayNameTarget.Value) / 1.5;
-
-        var scores = new[]
+        // Handle whitespace query separately - FuzzySearch doesn't handle it well
+        if (string.IsNullOrWhiteSpace(query.Original))
         {
-             nameMatch,
-             descriptionMatch,
-             isFallback ? 1 : 0, // Always give fallbacks a chance
-        };
-        var max = scores.Max();
+            return ScoreWhitespaceQuery(query.Original, title, topLevelOrAppItem.Subtitle, isFallback);
+        }
 
-        // _Add_ the extension name. This will bubble items that match both
-        // title and extension name up above ones that just match title.
-        // e.g. "git" will up-weight "GitHub searches" from the GitHub extension
-        // above "git" from "whatever"
-        max = max + extensionTitleMatch;
+        // Get precomputed targets
+        var (titleTarget, subtitleTarget) = topLevelOrAppItem is IPrecomputedListItem precomputedItem
+            ? (precomputedItem.GetTitleTarget(precomputedFuzzyMatcher), precomputedItem.GetSubtitleTarget(precomputedFuzzyMatcher))
+            : (precomputedFuzzyMatcher.PrecomputeTarget(title), precomputedFuzzyMatcher.PrecomputeTarget(topLevelOrAppItem.Subtitle));
 
-        var matchSomething = max
-            + (isAliasMatch ? 9001 : (isAliasSubstringMatch ? 1 : 0));
+        // Score components
+        var nameScore = precomputedFuzzyMatcher.Score(query, titleTarget);
+        var descriptionScore = (precomputedFuzzyMatcher.Score(query, subtitleTarget) - 4) / 2.0;
+        var extensionScore = extensionDisplayNameTarget is { } extTarget ? precomputedFuzzyMatcher.Score(query, extTarget) / 1.5 : 0;
 
-        // If we matched title, subtitle, or alias (something real), then
-        // here we add the recent command weight boost
-        //
-        // Otherwise something like `x` will still match everything you've run before
-        var finalScore = matchSomething * 10;
-        if (matchSomething > 0)
+        // Take best match from title/description/fallback, then add extension score
+        // Extension adds to max so items matching both title AND extension bubble up
+        var baseScore = Math.Max(Math.Max(nameScore, descriptionScore), isFallback ? 1 : 0);
+        var matchScore = baseScore + extensionScore;
+
+        // Alias matching: exact match is overwhelming priority, substring match adds a small boost
+        var aliasBoost = isAliasMatch ? 9001 : (isAliasSubstringMatch ? 1 : 0);
+        var totalMatch = matchScore + aliasBoost;
+
+        // Apply scaling and history boost only if we matched something real
+        var finalScore = totalMatch * 10;
+        if (totalMatch > 0)
         {
-            var recentWeightBoost = history.GetCommandHistoryWeight(id);
-            finalScore += recentWeightBoost;
+            finalScore += history.GetCommandHistoryWeight(id);
         }
 
         return (int)finalScore;
+    }
+
+    private static int ScoreWhitespaceQuery(string query, string title, string subtitle, bool isFallback)
+    {
+        // Simple contains check for whitespace queries
+        var nameMatch = title.Contains(query, StringComparison.Ordinal) ? 1.0 : 0;
+        var descriptionMatch = subtitle.Contains(query, StringComparison.Ordinal) ? 0.5 : 0;
+        var baseScore = Math.Max(Math.Max(nameMatch, descriptionMatch), isFallback ? 1 : 0);
+
+        return (int)(baseScore * 10);
     }
 
     private static int ScoreFallbackItem(IListItem topLevelOrAppItem, string[] fallbackRanks)

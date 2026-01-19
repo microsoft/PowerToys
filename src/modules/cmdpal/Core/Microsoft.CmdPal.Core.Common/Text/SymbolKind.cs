@@ -4,9 +4,9 @@
 
 namespace Microsoft.CmdPal.Core.Common.Text;
 
-public interface IBloomCalculator
+internal enum SymbolKind : byte
 {
-    ulong ComputeBloomFilter(string input);
-
-    bool MightContain(ulong candidateBloom, ulong queryBloom);
+    Other = 0,
+    PathSeparator = 1,
+    WordSeparator = 2,
 }
