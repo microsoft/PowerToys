@@ -29,6 +29,7 @@
       "src\\modules\\cmdpal\\Tests\\Microsoft.CmdPal.Ext.WindowWalker.UnitTests\\Microsoft.CmdPal.Ext.WindowWalker.UnitTests.csproj",
       "src\\modules\\cmdpal\\Tests\\Microsoft.CmdPal.UI.ViewModels.UnitTests\\Microsoft.CmdPal.UI.ViewModels.UnitTests.csproj",
       "src\\modules\\cmdpal\\Tests\\Microsoft.CmdPal.UITests\\Microsoft.CmdPal.UITests.csproj",
+      "src\\modules\\cmdpal\\Tests\\Microsoft.CommandPalette.Extensions.Toolkit.UnitTests\\Microsoft.CommandPalette.Extensions.Toolkit.UnitTests.csproj",
       "src\\modules\\cmdpal\\ext\\Microsoft.CmdPal.Ext.Apps\\Microsoft.CmdPal.Ext.Apps.csproj",
       "src\\modules\\cmdpal\\ext\\Microsoft.CmdPal.Ext.Bookmark\\Microsoft.CmdPal.Ext.Bookmarks.csproj",
       "src\\modules\\cmdpal\\ext\\Microsoft.CmdPal.Ext.Calc\\Microsoft.CmdPal.Ext.Calc.csproj",
