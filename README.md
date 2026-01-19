@@ -113,7 +113,6 @@ For an in-depth look at the latest changes, visit the [Windows Command Line blog
 - **CursorWrap (New!)**: New mouse utility that lets your cursor wrap around screen edges, making multi-monitor navigation faster and more seamless.
 - **Advanced Paste**: Image input for AI, color detection in clipboard history, Foundry Local improvements, Azure AI icons, and multiple bug fixes
 - **CLI Support Expanded**: FancyZones, Image Resizer, and File Locksmith can now be controlled from the command line for layout management, batch image resizing, and file lock inspection.
-- **Image Resizer(Copilot+ PCs)**: Bulk image upscaling is now supported locally using the Windows AI Super Resolution API.
 - **LightSwitch**: Added support for automatically following Windows Night Light mode.
 - **Release Experience & Quality**: Refreshed "What’s new" dialog, plus many performance improvements, stability fixes, and refinements across PowerToys.
 
@@ -199,7 +198,6 @@ For an in-depth look at the latest changes, visit the [Windows Command Line blog
 
 - Fixed Fill mode cropping when Shrink Only is enabled. Thanks [@daverayment](https://github.com/daverayment)!
 - Added a dedicated Image Resizer CLI for scripted resizing.
-- Added AI Super Resolution for Image Resizer on supported ARM64 devices.
 
 ## Light Switch
 
