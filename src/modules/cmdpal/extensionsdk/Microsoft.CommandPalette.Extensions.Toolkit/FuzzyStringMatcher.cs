@@ -642,17 +642,17 @@ public static class FuzzyStringMatcher
     // Text folding
     // ============================================================
 
-    // Folding: slash normalization + uppercasing + optional diacritics stripping
+    // Folding: slash normalization + upper case + optional diacritics stripping
     private static class Folding
     {
-        // Cache maps an *uppercased* char to its diacritics-stripped *uppercased* char.
+        // Cache maps an upper case char to its diacritics-stripped upper case char.
         // '\0' means "not cached yet".
         private static readonly char[] StripCacheUpper = new char[char.MaxValue + 1];
 
         /// <summary>
         /// Folds <paramref name="input"/> into <paramref name="dest"/>:
         /// - Normalizes slashes: '\' -> '/'
-        /// - Uppercases with char.ToUpperInvariant (length-preserving)
+        /// - Upper case with char.ToUpperInvariant (length-preserving)
         /// - Optionally strips diacritics (length-preserving)
         /// </summary>
         public static void FoldInto(ReadOnlySpan<char> input, bool removeDiacritics, Span<char> dest)
