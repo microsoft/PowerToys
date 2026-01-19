@@ -4,8 +4,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using Microsoft.CmdPal.Ext.WindowWalker.Components;
+using Microsoft.CmdPal.Ext.WindowWalker.Helpers;
 using Microsoft.CmdPal.Ext.WindowWalker.Properties;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -33,10 +33,12 @@ internal sealed partial class WindowWalkerListPage : DynamicListPage, IDisposabl
         };
     }
 
-    public override void UpdateSearchText(string oldSearch, string newSearch) =>
+    public override void UpdateSearchText(string oldSearch, string newSearch)
+    {
         RaiseItemsChanged(0);
+    }
 
-    public List<WindowWalkerListItem> Query(string query)
+    private WindowWalkerListItem[] Query(string query)
     {
         ArgumentNullException.ThrowIfNull(query);
 
@@ -46,13 +48,38 @@ internal sealed partial class WindowWalkerListPage : DynamicListPage, IDisposabl
 
         WindowWalkerCommandsProvider.VirtualDesktopHelperInstance.UpdateDesktopList();
         OpenWindows.Instance.UpdateOpenWindowsList(_cancellationTokenSource.Token);
-        SearchController.Instance.UpdateSearchText(query);
-        var searchControllerResults = SearchController.Instance.SearchMatches;
 
-        return ResultHelper.GetResultList(searchControllerResults, !string.IsNullOrEmpty(query));
+        var windows = OpenWindows.Instance.Windows;
+
+        if (string.IsNullOrWhiteSpace(query))
+        {
+            if (!SettingsManager.Instance.InMruOrder)
+            {
+                windows.Sort(static (a, b) => string.Compare(a?.Title, b?.Title, StringComparison.OrdinalIgnoreCase));
+            }
+
+            var results = new Scored<Window>[windows.Count];
+            for (var i = 0; i < windows.Count; i++)
+            {
+                results[i] = new Scored<Window> { Item = windows[i], Score = 100 };
+            }
+
+            return ResultHelper.GetResultList(results);
+        }
+
+        var scored = ListHelpers.FilterListWithScores(windows, query, ScoreFunction);
+        var filtered = scored as Scored<Window>[] ?? new List<Scored<Window>>(scored).ToArray();
+        return ResultHelper.GetResultList(filtered);
     }
 
-    public override IListItem[] GetItems() => Query(SearchText).ToArray();
+    private static int ScoreFunction(string q, Window window)
+    {
+        var titleScore = FuzzyStringMatcher.ScoreFuzzy(q, window.Title);
+        var processNameScore = FuzzyStringMatcher.ScoreFuzzy(q, window.Process?.Name ?? string.Empty);
+        return Math.Max(titleScore, processNameScore);
+    }
+
+    public override IListItem[] GetItems() => Query(SearchText);
 
     public void Dispose()
     {
