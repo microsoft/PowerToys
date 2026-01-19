@@ -102,7 +102,7 @@ namespace Peek.FilePreviewer.Previewers.Archives
                 // In Zip files, if no explicit encoding is specified, it uses the native encoding
                 // of the creator's OS, which is unknown
                 // If SharpCompress detects a specific encoding (like UTF-8 via Bit 11), it will
-                // override this setting. Otherwise, it will fallback to our provided CP437.
+                // override this setting. Otherwise, it will fall back to our provided CP437.
                 Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
                 // Create a strict version of CP437 that throws exceptions on invalid characters.
