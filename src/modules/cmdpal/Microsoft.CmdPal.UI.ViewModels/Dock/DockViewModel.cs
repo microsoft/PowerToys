@@ -230,18 +230,29 @@ public sealed partial class DockViewModel : IDisposable,
     {
         public DockContextMenuItem()
         {
+            var editDockCommand = new AnonymousCommand(
+                action: () =>
+                {
+                    WeakReferenceMessenger.Default.Send(new EnterDockEditModeMessage());
+                })
+            {
+                Name = "Edit dock", // TODO!Loc
+                Icon = Icons.EditIcon,
+            };
+
             var openSettingsCommand = new AnonymousCommand(
                 action: () =>
                 {
                     WeakReferenceMessenger.Default.Send(new OpenSettingsMessage("Dock"));
                 })
             {
-                Name = "Customize", // TODO!Loc
+                Name = "Dock settings", // TODO!Loc
                 Icon = Icons.SettingsIcon,
             };
 
             MoreCommands = new CommandContextItem[]
             {
+                new CommandContextItem(editDockCommand),
                 new CommandContextItem(openSettingsCommand),
             };
         }

@@ -45,8 +45,8 @@
                     CornerRadius="{ThemeResource ControlCornerRadius}"
                     PointerEntered="BandItem_PointerEntered"
                     PointerExited="BandItem_PointerExited"
-                    PointerPressed="BandItem_PointerPressed"
-                    PointerReleased="BandItem_PointerReleased"
+                    Tapped="BandItem_Tapped"
+                    RightTapped="BandItem_RightTapped"
                     ToolTipService.ToolTip="{x:Bind Tooltip, Mode=OneWay}">
 
                     <Grid AutomationProperties.Name="{x:Bind Title, Mode=OneWay}" Background="Transparent">
@@ -99,7 +99,7 @@
                                 TextAlignment="Center"
                                 TextTrimming="CharacterEllipsis"
                                 TextWrapping="NoWrap"
-                                Visibility="{x:Bind Subtitle, Mode=OneWay, Converter={StaticResource StringNotEmptyToVisibilityConverter}}" />
+                                Visibility="{x:Bind HasSubtitle, Mode=OneWay}" />
                         </StackPanel>
                     </Grid>
                 </Border>
@@ -123,9 +123,10 @@
                 <Setter Property="Padding" Value="0" />
                 <Setter Property="IsItemClickEnabled" Value="False" />
                 <Setter Property="SelectionMode" Value="None" />
-                <Setter Property="CanDragItems" Value="True" />
-                <Setter Property="CanReorderItems" Value="True" />
-                <Setter Property="AllowDrop" Value="True" />
+                <!--  Drag properties controlled by code-behind based on IsEditMode  -->
+                <Setter Property="CanDragItems" Value="False" />
+                <Setter Property="CanReorderItems" Value="False" />
+                <Setter Property="AllowDrop" Value="False" />
             </Style>
 
             <Style x:Key="DockBandListViewItemStyle" TargetType="ListViewItem">
@@ -166,10 +167,19 @@
         BorderBrush="{ThemeResource SurfaceStrokeColorDefaultBrush}"
         BorderThickness="0,0,0,1"
         RightTapped="RootGrid_RightTapped">
+
+        <!--  Edit Mode Overlay - shown when in edit mode  -->
+        <Border
+            x:Name="EditModeOverlay"
+            Background="{ThemeResource SystemAccentColorDark2}"
+            IsHitTestVisible="False"
+            Opacity="0" />
+
         <Grid x:Name="ContentGrid" Padding="0,0,0,0">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="2*" />
                 <ColumnDefinition x:Name="EndColumn" Width="Auto" />
+                <ColumnDefinition x:Name="DoneButtonColumn" Width="Auto" />
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
                 <RowDefinition Height="2*" />
@@ -185,9 +195,6 @@
                     <ListView
                         x:Name="StartItemsListView"
                         HorizontalAlignment="Stretch"
-                        AllowDrop="True"
-                        CanDragItems="True"
-                        CanReorderItems="True"
                         DragItemsCompleted="BandListView_DragItemsCompleted"
                         DragItemsStarting="BandListView_DragItemsStarting"
                         DragOver="BandListView_DragOver"
@@ -213,9 +220,6 @@
                 <cpcontrols:ScrollContainer.Source>
                     <ListView
                         x:Name="EndItemsListView"
-                        AllowDrop="True"
-                        CanDragItems="True"
-                        CanReorderItems="True"
                         DragItemsCompleted="BandListView_DragItemsCompleted"
                         DragItemsStarting="BandListView_DragItemsStarting"
                         DragOver="BandListView_DragOver"
@@ -233,6 +237,17 @@
                     </ListView>
                 </cpcontrols:ScrollContainer.Source>
             </cpcontrols:ScrollContainer>
+
+            <!--  Done button - appears when in edit mode  -->
+            <Button
+                x:Name="DoneEditingButton"
+                Grid.Column="2"
+                Margin="8,0,8,0"
+                Padding="12,4"
+                VerticalAlignment="Center"
+                Click="DoneEditingButton_Click"
+                Content="Done"
+                Visibility="Collapsed" />
         </Grid>
         <VisualStateManager.VisualStateGroups>
             <VisualStateGroup x:Name="DockOrientation">
@@ -310,6 +325,17 @@
                         <Setter Target="EndItemsView.HorizontalAlignment" Value="Stretch" />
                         <Setter Target="ContentGrid.Padding" Value="4,8,4,8" />
                         <Setter Target="RootGrid.BorderThickness" Value="1,0,0,0" />
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+
+            <!--  Edit Mode Visual States  -->
+            <VisualStateGroup x:Name="EditModeStates">
+                <VisualState x:Name="EditModeOff" />
+                <VisualState x:Name="EditModeOn">
+                    <VisualState.Setters>
+                        <Setter Target="DoneEditingButton.Visibility" Value="Visible" />
+                        <Setter Target="EditModeOverlay.Opacity" Value="0.1" />
                     </VisualState.Setters>
                 </VisualState>
             </VisualStateGroup>

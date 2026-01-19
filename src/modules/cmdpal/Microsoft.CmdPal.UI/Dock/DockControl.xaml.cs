@@ -9,6 +9,7 @@ using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
 using Microsoft.CmdPal.Core.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Dock;
+using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.UI;
@@ -23,7 +24,7 @@ namespace Microsoft.CmdPal.UI.Dock;
 
 #pragma warning disable SA1402 // File may only contain a single type
 
-public sealed partial class DockControl : UserControl, INotifyPropertyChanged, IRecipient<CloseContextMenuMessage>
+public sealed partial class DockControl : UserControl, INotifyPropertyChanged, IRecipient<CloseContextMenuMessage>, IRecipient<EnterDockEditModeMessage>
 {
     private DockViewModel _viewModel;
 
@@ -53,6 +54,20 @@ public sealed partial class DockControl : UserControl, INotifyPropertyChanged, I
             {
                 field = value;
                 PropertyChanged?.Invoke(this, new(nameof(DockSide)));
+            }
+        }
+    }
+
+    public bool IsEditMode
+    {
+        get => field;
+        set
+        {
+            if (field != value)
+            {
+                field = value;
+                PropertyChanged?.Invoke(this, new(nameof(IsEditMode)));
+                UpdateEditMode(value);
             }
         }
     }
@@ -110,6 +125,49 @@ public sealed partial class DockControl : UserControl, INotifyPropertyChanged, I
         _viewModel = viewModel;
         InitializeComponent();
         WeakReferenceMessenger.Default.Register<CloseContextMenuMessage>(this);
+        WeakReferenceMessenger.Default.Register<EnterDockEditModeMessage>(this);
+
+        // Start with edit mode disabled - normal click behavior
+        UpdateEditMode(false);
+    }
+
+    public void Receive(EnterDockEditModeMessage message)
+    {
+        // Message may arrive from a background thread, dispatch to UI thread
+        DispatcherQueue.TryEnqueue(() =>
+        {
+            EnterEditMode();
+        });
+    }
+
+    private void UpdateEditMode(bool isEditMode)
+    {
+        // Enable/disable drag-and-drop based on edit mode
+        StartItemsListView.CanDragItems = isEditMode;
+        StartItemsListView.CanReorderItems = isEditMode;
+        StartItemsListView.AllowDrop = isEditMode;
+
+        EndItemsListView.CanDragItems = isEditMode;
+        EndItemsListView.CanReorderItems = isEditMode;
+        EndItemsListView.AllowDrop = isEditMode;
+
+        // Update visual state
+        VisualStateManager.GoToState(this, isEditMode ? "EditModeOn" : "EditModeOff", true);
+    }
+
+    internal void EnterEditMode()
+    {
+        IsEditMode = true;
+    }
+
+    internal void ExitEditMode()
+    {
+        IsEditMode = false;
+    }
+
+    private void DoneEditingButton_Click(object sender, RoutedEventArgs e)
+    {
+        ExitEditMode();
     }
 
     internal void UpdateSettings(DockSettings settings)
@@ -146,7 +204,7 @@ public sealed partial class DockControl : UserControl, INotifyPropertyChanged, I
         }
     }
 
-    private void BandItem_PointerPressed(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
+    private void BandItem_Tapped(object sender, Microsoft.UI.Xaml.Input.TappedRoutedEventArgs e)
     {
         var border = sender as Border;
         var item = border?.DataContext as DockItemViewModel;
@@ -156,60 +214,37 @@ public sealed partial class DockControl : UserControl, INotifyPropertyChanged, I
             return;
         }
 
-        var pointerPoint = e.GetCurrentPoint(border);
-        var properties = pointerPoint.Properties;
+        // Use the center of the border as the point to open at
+        var borderPos = border.TransformToVisual(null).TransformPoint(new Point(0, 0));
+        var borderCenter = new Point(
+            borderPos.X + (border.ActualWidth / 2),
+            borderPos.Y + (border.ActualHeight / 2));
 
-        if (properties.IsLeftButtonPressed)
+        InvokeItem(item, borderCenter);
+        e.Handled = true;
+    }
+
+    private void BandItem_RightTapped(object sender, Microsoft.UI.Xaml.Input.RightTappedRoutedEventArgs e)
+    {
+        var border = sender as Border;
+        var item = border?.DataContext as DockItemViewModel;
+
+        if (item is null || border is null)
         {
-            border.Background = (Brush)Application.Current.Resources["TaskBarButtonBackgroundPressed"];
+            return;
         }
-        else if (properties.IsRightButtonPressed)
+
+        if (item.HasMoreCommands)
         {
-            if (item.HasMoreCommands)
-            {
-                ContextControl.ViewModel.SelectedItem = item;
-                ContextMenuFlyout.ShowAt(
+            ContextControl.ViewModel.SelectedItem = item;
+            ContextMenuFlyout.ShowAt(
                 border,
                 new FlyoutShowOptions()
                 {
                     ShowMode = FlyoutShowMode.Standard,
                     Placement = FlyoutPlacementMode.TopEdgeAlignedRight,
                 });
-                e.Handled = true;
-            }
-        }
-    }
-
-    private void BandItem_PointerReleased(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
-    {
-        var border = sender as Border;
-        var item = border?.DataContext as DockItemViewModel;
-
-        if (item is null || border is null)
-        {
-            return;
-        }
-
-        var pointerPoint = e.GetCurrentPoint(border);
-
-        // Reset background to hover state since pointer is still over
-        border.Background = (Brush)Application.Current.Resources["TaskBarButtonBackgroundPointerOver"];
-
-        // Only invoke on left button release
-        if (!pointerPoint.Properties.IsLeftButtonPressed && !pointerPoint.Properties.IsRightButtonPressed)
-        {
-            // Check if pointer is still within bounds (wasn't a drag)
-            var pos = pointerPoint.Position;
-            if (pos.X >= 0 && pos.X <= border.ActualWidth && pos.Y >= 0 && pos.Y <= border.ActualHeight)
-            {
-                // Use the center of the border as the point to open at
-                var borderPos = border.TransformToVisual(null).TransformPoint(new Point(0, 0));
-                var borderCenter = new Point(
-                    borderPos.X + (border.ActualWidth / 2),
-                    borderPos.Y + (border.ActualHeight / 2));
-
-                InvokeItem(item, borderCenter);
-            }
+            e.Handled = true;
         }
     }
 
