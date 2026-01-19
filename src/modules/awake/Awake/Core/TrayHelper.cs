@@ -297,11 +297,9 @@ namespace Awake.Core
                     Bridge.PostQuitMessage(0);
                     break;
                 case Native.Constants.WM_COMMAND:
-                    int trayCommandsSize = Enum.GetNames<TrayCommands>().Length;
+                    long targetCommandValue = wParam.ToInt64() & 0xFFFF;
 
-                    long targetCommandIndex = wParam.ToInt64() & 0xFFFF;
-
-                    switch (targetCommandIndex)
+                    switch (targetCommandValue)
                     {
                         case (uint)TrayCommands.TC_EXIT:
                             {
@@ -330,7 +328,9 @@ namespace Awake.Core
 
                         default:
                             {
-                                if (targetCommandIndex >= trayCommandsSize)
+                                // Custom tray time commands start at TC_TIME and increment by 1 for each entry.
+                                // Check if this command falls within the custom time range.
+                                if (targetCommandValue >= (uint)TrayCommands.TC_TIME)
                                 {
                                     AwakeSettings settings = Manager.ModuleSettings!.GetSettings<AwakeSettings>(Constants.AppName);
                                     if (settings.Properties.CustomTrayTimes.Count == 0)
@@ -338,9 +338,17 @@ namespace Awake.Core
                                         settings.Properties.CustomTrayTimes.AddRange(Manager.GetDefaultTrayOptions());
                                     }
 
-                                    int index = (int)targetCommandIndex - (int)TrayCommands.TC_TIME;
-                                    uint targetTime = settings.Properties.CustomTrayTimes.ElementAt(index).Value;
-                                    Manager.SetTimedKeepAwake(targetTime, keepDisplayOn: settings.Properties.KeepDisplayOn);
+                                    int index = (int)targetCommandValue - (int)TrayCommands.TC_TIME;
+
+                                    if (index >= 0 && index < settings.Properties.CustomTrayTimes.Count)
+                                    {
+                                        uint targetTime = settings.Properties.CustomTrayTimes.ElementAt(index).Value;
+                                        Manager.SetTimedKeepAwake(targetTime, keepDisplayOn: settings.Properties.KeepDisplayOn);
+                                    }
+                                    else
+                                    {
+                                        Logger.LogError($"Custom tray time index {index} is out of range. Available entries: {settings.Properties.CustomTrayTimes.Count}");
+                                    }
                                 }
 
                                 break;

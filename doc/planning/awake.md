@@ -1,5 +1,5 @@
 ---
-last-update: 7-16-2024
+last-update: 1-18-2026
 ---
 
 # PowerToys Awake Changelog
@@ -12,6 +12,7 @@ The build ID moniker is made up of two components - a reference to a [Halo](http
 
 | Build ID                                                           | Build Date        |
 |:-------------------------------------------------------------------|:------------------|
+| [`DIDACT_01182026`](#DIDACT_01182026-january-18-2026)              | January 18, 2026  |
 | [`TILLSON_11272024`](#TILLSON_11272024-november-27-2024)           | November 27, 2024 |
 | [`PROMETHEAN_09082024`](#PROMETHEAN_09082024-september-8-2024)     | September 8, 2024 |
 | [`VISEGRADRELAY_08152024`](#VISEGRADRELAY_08152024-august-15-2024) | August 15, 2024   |
@@ -19,6 +20,14 @@ The build ID moniker is made up of two components - a reference to a [Halo](http
 | [`ATRIOX_04132023`](#ATRIOX_04132023-april-13-2023)                | April 13, 2023    |
 | [`LIBRARIAN_03202022`](#librarian_03202022-march-20-2022)          | March 20, 2022    |
 | `ARBITER_01312022`                                                 | January 31, 2022  |
+
+### `DIDACT_01182026` (January 18, 2026)
+
+>[!NOTE]
+>See pull request: [Awake - `DIDACT_01182026`](https://github.com/microsoft/PowerToys/pull/44795)
+
+- Fixed an issue where toggling "Keep screen on" during an active timed session would disrupt the countdown timer. The display setting now updates directly without restarting the timer, preserving the exact remaining time.
+- [#41918](https://github.com/microsoft/PowerToys/issues/41918) Fixed `WM_COMMAND` message processing flaw in `TrayHelper.WndProc` that incorrectly compared enum values against enum count. Added proper bounds checking for custom tray time entries.
 
 ### `TILLSON_11272024` (November 27, 2024)
 
