@@ -51,6 +51,18 @@ namespace Awake.Core
             WindowHandle = IntPtr.Zero;
         }
 
+        /// <summary>
+        /// Disposes of all icon resources to prevent GDI handle leaks.
+        /// </summary>
+        internal static void DisposeIcons()
+        {
+            DefaultAwakeIcon?.Dispose();
+            TimedIcon?.Dispose();
+            ExpirableIcon?.Dispose();
+            IndefiniteIcon?.Dispose();
+            DisabledIcon?.Dispose();
+        }
+
         private static void ShowContextMenu(IntPtr hWnd)
         {
             if (TrayMenu == IntPtr.Zero)
@@ -213,7 +225,10 @@ namespace Awake.Core
                     };
                 }
 
-                for (int attempt = 1; attempt <= 3; attempt++)
+                const int maxRetryAttempts = 3;
+                const int baseDelayMs = 100;
+
+                for (int attempt = 1; attempt <= maxRetryAttempts; attempt++)
                 {
                     if (Bridge.Shell_NotifyIcon(message, ref _notifyIconData))
                     {
@@ -224,13 +239,15 @@ namespace Awake.Core
                         int errorCode = Marshal.GetLastWin32Error();
                         Logger.LogInfo($"Could not set the shell icon. Action: {action}, error code: {errorCode}. HIcon handle is {icon?.Handle} and HWnd is {hWnd}. Invoked by {callerName}.");
 
-                        if (attempt == 3)
+                        if (attempt == maxRetryAttempts)
                         {
-                            Logger.LogError($"Failed to change tray icon after 3 attempts. Action: {action} and error code: {errorCode}. Invoked by {callerName}.");
+                            Logger.LogError($"Failed to change tray icon after {maxRetryAttempts} attempts. Action: {action} and error code: {errorCode}. Invoked by {callerName}.");
                             break;
                         }
 
-                        Thread.Sleep(100);
+                        // Exponential backoff: 100ms, 200ms, 400ms...
+                        int delayMs = baseDelayMs * (1 << (attempt - 1));
+                        Thread.Sleep(delayMs);
                     }
                 }
 

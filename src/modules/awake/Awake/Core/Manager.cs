@@ -55,10 +55,12 @@ namespace Awake.Core
         private static readonly CompositeFormat AwakeHours = CompositeFormat.Parse(Resources.AWAKE_HOURS);
         private static readonly BlockingCollection<ExecutionState> _stateQueue;
         private static CancellationTokenSource _tokenSource;
+        private static CancellationTokenSource _monitorTokenSource;
 
         static Manager()
         {
             _tokenSource = new CancellationTokenSource();
+            _monitorTokenSource = new CancellationTokenSource();
             _stateQueue = [];
             ModuleSettings = SettingsUtils.Default;
         }
@@ -68,16 +70,29 @@ namespace Awake.Core
             Thread monitorThread = new(() =>
             {
                 Thread.CurrentThread.IsBackground = false;
-                while (true)
+                try
                 {
-                    ExecutionState state = _stateQueue.Take();
+                    while (!_monitorTokenSource.Token.IsCancellationRequested)
+                    {
+                        ExecutionState state = _stateQueue.Take(_monitorTokenSource.Token);
 
-                    Logger.LogInfo($"Setting state to {state}");
+                        Logger.LogInfo($"Setting state to {state}");
 
-                    SetAwakeState(state);
+                        SetAwakeState(state);
+                    }
+                }
+                catch (OperationCanceledException)
+                {
+                    Logger.LogInfo("Monitor thread received cancellation signal. Exiting gracefully.");
                 }
             });
             monitorThread.Start();
+        }
+
+        internal static void StopMonitor()
+        {
+            _monitorTokenSource.Cancel();
+            _monitorTokenSource.Dispose();
         }
 
         internal static void SetConsoleControlHandler(ConsoleEventHandler handler, bool addHandler)
@@ -110,8 +125,9 @@ namespace Awake.Core
                 ExecutionState stateResult = Bridge.SetThreadExecutionState(state);
                 return stateResult != 0;
             }
-            catch
+            catch (Exception ex)
             {
+                Logger.LogError($"Failed to set awake state to {state}: {ex.Message}");
                 return false;
             }
         }
@@ -383,6 +399,15 @@ namespace Awake.Core
         internal static void CompleteExit(int exitCode)
         {
             SetPassiveKeepAwake(updateSettings: false);
+
+            // Stop the monitor thread gracefully
+            StopMonitor();
+
+            // Dispose the timer token source
+            _tokenSource?.Dispose();
+
+            // Dispose tray icons
+            TrayHelper.DisposeIcons();
 
             if (TrayHelper.WindowHandle != IntPtr.Zero)
             {

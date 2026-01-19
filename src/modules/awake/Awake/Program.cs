@@ -39,15 +39,14 @@ namespace Awake
 
         private static FileSystemWatcher? _watcher;
         private static SettingsUtils? _settingsUtils;
+        private static EventWaitHandle? _exitEventHandle;
 
         private static bool _startedFromPowerToys;
 
         public static Mutex? LockMutex { get; set; }
 
-#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-        private static ConsoleEventHandler _handler;
+        private static ConsoleEventHandler? _handler;
         private static SystemPowerCapabilities _powerCapabilities;
-#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 
         private static async Task<int> Main(string[] args)
         {
@@ -235,8 +234,20 @@ namespace Awake
         private static void Exit(string message, int exitCode)
         {
             _etwTrace?.Dispose();
+            DisposeFileSystemWatcher();
+            _exitEventHandle?.Dispose();
             Logger.LogInfo(message);
             Manager.CompleteExit(exitCode);
+        }
+
+        private static void DisposeFileSystemWatcher()
+        {
+            if (_watcher != null)
+            {
+                _watcher.EnableRaisingEvents = false;
+                _watcher.Dispose();
+                _watcher = null;
+            }
         }
 
         private static bool ProcessExists(int processId)
@@ -252,8 +263,15 @@ namespace Awake
                 using var p = Process.GetProcessById(processId);
                 return !p.HasExited;
             }
-            catch
+            catch (ArgumentException)
             {
+                // Process with the specified ID is not running
+                return false;
+            }
+            catch (InvalidOperationException ex)
+            {
+                // Process has exited or cannot be accessed
+                Logger.LogInfo($"Process {processId} cannot be accessed: {ex.Message}");
                 return false;
             }
         }
@@ -282,10 +300,10 @@ namespace Awake
             // Start the monitor thread that will be used to track the current state.
             Manager.StartMonitor();
 
-            EventWaitHandle eventHandle = new(false, EventResetMode.ManualReset, PowerToys.Interop.Constants.AwakeExitEvent());
+            _exitEventHandle = new EventWaitHandle(false, EventResetMode.ManualReset, PowerToys.Interop.Constants.AwakeExitEvent());
             new Thread(() =>
             {
-                WaitHandle.WaitAny([eventHandle]);
+                WaitHandle.WaitAny([_exitEventHandle]);
                 Exit(Resources.AWAKE_EXIT_SIGNAL_MESSAGE, 0);
             }).Start();
 
@@ -432,7 +450,7 @@ namespace Awake
         {
             Manager.AllocateConsole();
 
-            _handler += new ConsoleEventHandler(ExitHandler);
+            _handler = new ConsoleEventHandler(ExitHandler);
             Manager.SetConsoleControlHandler(_handler, true);
 
             Trace.Listeners.Add(new ConsoleTraceListener());
