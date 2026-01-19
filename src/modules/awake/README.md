@@ -2,6 +2,14 @@
 
 A PowerToys utility that prevents Windows from sleeping or turning off the display.
 
+**Author:** [Den Delimarsky](https://den.dev)
+
+## Resources
+
+- [Awake Website](https://awake.den.dev) - Official documentation and guides
+- [Microsoft Learn Documentation](https://learn.microsoft.com/windows/powertoys/awake) - Usage instructions and feature overview
+- [GitHub Issues (Product-Awake)](https://github.com/microsoft/PowerToys/issues?q=is%3Aissue+label%3AProduct-Awake) - Report bugs or request features
+
 ## Overview
 
 The Awake module consists of three projects:
