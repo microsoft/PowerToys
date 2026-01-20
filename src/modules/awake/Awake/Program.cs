@@ -40,6 +40,7 @@ namespace Awake
         private static FileSystemWatcher? _watcher;
         private static SettingsUtils? _settingsUtils;
         private static EventWaitHandle? _exitEventHandle;
+        private static RegisteredWaitHandle? _registeredWaitHandle;
 
         private static bool _startedFromPowerToys;
 
@@ -235,6 +236,7 @@ namespace Awake
         {
             _etwTrace?.Dispose();
             DisposeFileSystemWatcher();
+            _registeredWaitHandle?.Unregister(null);
             _exitEventHandle?.Dispose();
             Logger.LogInfo(message);
             Manager.CompleteExit(exitCode);
@@ -301,11 +303,12 @@ namespace Awake
             Manager.StartMonitor();
 
             _exitEventHandle = new EventWaitHandle(false, EventResetMode.ManualReset, PowerToys.Interop.Constants.AwakeExitEvent());
-            new Thread(() =>
-            {
-                WaitHandle.WaitAny([_exitEventHandle]);
-                Exit(Resources.AWAKE_EXIT_SIGNAL_MESSAGE, 0);
-            }).Start();
+            _registeredWaitHandle = ThreadPool.RegisterWaitForSingleObject(
+                _exitEventHandle,
+                (state, timedOut) => Exit(Resources.AWAKE_EXIT_SIGNAL_MESSAGE, 0),
+                null,
+                Timeout.Infinite,
+                executeOnlyOnce: true);
 
             if (usePtConfig)
             {
