@@ -291,14 +291,6 @@ _If you want to find diagnostic data events in the source code, these two links 
     <td>Microsoft.PowerToys.ColorPicker_Settings</td>
     <td>Triggered when the settings for the Color Picker are accessed or modified.</td>
   </tr>
-  <tr>
-    <td>Microsoft.PowerToys.ColorPickerCancelledEvent</td>
-    <td>Occurs when a color picking action is cancelled by the user.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.ColorPickerShowEvent</td>
-    <td>Triggered when the Color Picker UI is displayed on the screen.</td>
-  </tr>  
 </table>
 
 ### Command Not Found
@@ -318,10 +310,6 @@ _If you want to find diagnostic data events in the source code, these two links 
   <tr>
     <td>Microsoft.PowerToys.CmdNotFoundInstallEvent</td>
     <td>Triggered when a Command Not Found is installed.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.CmdNotFoundInstanceCreatedEvent</td>
-    <td>Occurs when an instance of a Command Not Found is created.</td>
   </tr>
   <tr>
     <td>Microsoft.PowerToys.CmdNotFoundUninstallEvent</td>
@@ -529,10 +517,6 @@ _If you want to find diagnostic data events in the source code, these two links 
     <td>Triggered when a window move or resize action is initiated.</td>
   </tr>
   <tr>
-    <td>Microsoft.PowerToys.FancyZones_MoveSizeEnd</td>
-    <td>Occurs when the moving or resizing of a window has ended.</td>
-  </tr>
-  <tr>
     <td>Microsoft.PowerToys.FancyZones_OnKeyDown</td>
     <td>Triggered when a key is pressed down while interacting with zones.</td>
   </tr>
@@ -543,10 +527,6 @@ _If you want to find diagnostic data events in the source code, these two links 
   <tr>
     <td>Microsoft.PowerToys.FancyZones_Settings</td>
     <td>Triggered when FancyZones settings are accessed or modified.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.FancyZones_SettingsChanged</td>
-    <td>Occurs when there is a change in the FancyZones settings.</td>
   </tr>
   <tr>
     <td>Microsoft.PowerToys.FancyZones_SnapNewWindowIntoZone</td>
@@ -1204,10 +1184,6 @@ _If you want to find diagnostic data events in the source code, these two links 
     <td>Microsoft.PowerToys.RunPluginsSettingsEvent</td>
     <td>Triggered when the settings for PowerToys Run plugins are accessed or modified.</td>
   </tr>
-  <tr>
-    <td>Microsoft.PowerToys.WindowWalker_EnableWindowWalker</td>
-    <td>Triggered when the Window Walker plugin is enabled.</td>
-  </tr>
 </table>
 
 ### Quick Accent
@@ -1341,10 +1317,6 @@ _If you want to find diagnostic data events in the source code, these two links 
     <th>Description</th>
   </tr>
   <tr>
-    <td>Microsoft.PowerToys.Projects_CLIUsage</td>
-    <td>Logs usage of command-line arguments for launching apps.</td>
-  </tr>
-  <tr>
     <td>Microsoft.PowerToys.Workspaces_CreateEvent</td>
     <td>Triggered when a new workspace is created.</td>
   </tr>
@@ -1363,10 +1335,6 @@ _If you want to find diagnostic data events in the source code, these two links 
   <tr>
     <td>Microsoft.PowerToys.Workspaces_LaunchEvent</td>
     <td>Triggered when a workspace is launched.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.Workspaces_Settings</td>
-    <td>Logs changes to workspaces settings.</td>
   </tr>
   <tr>
     <td>Microsoft.PowerToys.WorkspacesEditorStartEvent</td>
