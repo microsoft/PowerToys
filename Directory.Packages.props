@@ -32,7 +32,6 @@
     <PackageVersion Include="HelixToolkit" Version="2.24.0" />
     <PackageVersion Include="HelixToolkit.Core.Wpf" Version="2.24.0" />
     <PackageVersion Include="HtmlAgilityPack" Version="1.12.3" />
-    <PackageVersion Include="Humanizer" Version="2.14.1" />
     <PackageVersion Include="hyjiacan.pinyin4net" Version="4.1.1" />
     <PackageVersion Include="Mages" Version="3.0.0" />
     <PackageVersion Include="Markdig.Signed" Version="0.34.0" />

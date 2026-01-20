@@ -46,7 +46,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Humanizer" />
     <PackageReference Include="LinqToOneNote" />
     <PackageReference Include="Mages" />
     <PackageReference Include="Microsoft.Data.Sqlite" />

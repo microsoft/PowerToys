@@ -7,7 +7,6 @@ using System.Globalization;
 using System.Reflection;
 using System.Text;
 using System.Windows.Input;
-using Humanizer;
 using LinqToOneNote;
 using LinqToOneNote.Abstractions;
 using Microsoft.PowerToys.Run.Plugin.OneNote.Properties;
@@ -228,7 +227,7 @@ namespace Microsoft.PowerToys.Run.Plugin.OneNote.Components
         {
             var result = CreateOneNoteItemResult(page, false, null);
             result.IcoPath = _iconProvider.Recent;
-            result.SubTitle = $"{page.LastModified.Humanize(culture: CultureInfo.CurrentCulture)} | {result.SubTitle}";
+            result.SubTitle = $"{page.LastModified.ToString(CultureInfo.CurrentCulture)} | {result.SubTitle}";
             return result;
         }
 
