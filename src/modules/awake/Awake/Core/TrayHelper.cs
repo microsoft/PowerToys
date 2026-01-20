@@ -366,7 +366,7 @@ namespace Awake.Core
 
                                     if (index >= 0 && index < settings.Properties.CustomTrayTimes.Count)
                                     {
-                                        uint targetTime = settings.Properties.CustomTrayTimes.ElementAt(index).Value;
+                                        uint targetTime = settings.Properties.CustomTrayTimes.Values.Skip(index).First();
                                         Manager.SetTimedKeepAwake(targetTime, keepDisplayOn: settings.Properties.KeepDisplayOn);
                                     }
                                     else
@@ -498,9 +498,11 @@ namespace Awake.Core
         private static void CreateAwakeTimeSubMenu(Dictionary<string, uint> trayTimeShortcuts, bool isChecked = false)
         {
             nint awakeTimeMenu = Bridge.CreatePopupMenu();
-            for (int i = 0; i < trayTimeShortcuts.Count; i++)
+            int i = 0;
+            foreach (var shortcut in trayTimeShortcuts)
             {
-                Bridge.InsertMenu(awakeTimeMenu, (uint)i, Native.Constants.MF_BYPOSITION | Native.Constants.MF_STRING, (uint)TrayCommands.TC_TIME + (uint)i, trayTimeShortcuts.ElementAt(i).Key);
+                Bridge.InsertMenu(awakeTimeMenu, (uint)i, Native.Constants.MF_BYPOSITION | Native.Constants.MF_STRING, (uint)TrayCommands.TC_TIME + (uint)i, shortcut.Key);
+                i++;
             }
 
             Bridge.InsertMenu(TrayMenu, 0, Native.Constants.MF_BYPOSITION | Native.Constants.MF_POPUP | (isChecked ? Native.Constants.MF_CHECKED : Native.Constants.MF_UNCHECKED), (uint)awakeTimeMenu, Resources.AWAKE_KEEP_ON_INTERVAL);

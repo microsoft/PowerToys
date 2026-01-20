@@ -54,12 +54,11 @@ namespace Awake.Core
         private static readonly CompositeFormat AwakeHour = CompositeFormat.Parse(Resources.AWAKE_HOUR);
         private static readonly CompositeFormat AwakeHours = CompositeFormat.Parse(Resources.AWAKE_HOURS);
         private static readonly BlockingCollection<ExecutionState> _stateQueue;
-        private static CancellationTokenSource _tokenSource;
         private static CancellationTokenSource _monitorTokenSource;
+        private static IDisposable? _timerSubscription;
 
         static Manager()
         {
-            _tokenSource = new CancellationTokenSource();
             _monitorTokenSource = new CancellationTokenSource();
             _stateQueue = [];
             ModuleSettings = SettingsUtils.Default;
@@ -162,24 +161,16 @@ namespace Awake.Core
 
         internal static void CancelExistingThread()
         {
-            Logger.LogInfo("Ensuring the thread is properly cleaned up...");
+            Logger.LogInfo("Canceling existing timer and resetting state...");
 
-            // Reset the thread state and handle cancellation.
+            // Reset the thread state.
             _stateQueue.Add(ExecutionState.ES_CONTINUOUS);
 
-            if (_tokenSource != null)
-            {
-                _tokenSource.Cancel();
-                _tokenSource.Dispose();
-            }
-            else
-            {
-                Logger.LogWarning("Token source is null.");
-            }
+            // Dispose the timer subscription to stop any running timer.
+            _timerSubscription?.Dispose();
+            _timerSubscription = null;
 
-            _tokenSource = new CancellationTokenSource();
-
-            Logger.LogInfo("New token source and thread token instantiated.");
+            Logger.LogInfo("Timer subscription disposed.");
         }
 
         internal static void SetModeShellIcon(bool forceAdd = false)
@@ -317,9 +308,8 @@ namespace Awake.Core
 
             TimeSpan remainingTime = expireAt - DateTimeOffset.Now;
 
-            Observable.Timer(remainingTime).Subscribe(
-                _ => HandleTimerCompletion("expirable"),
-                _tokenSource.Token);
+            _timerSubscription = Observable.Timer(remainingTime).Subscribe(
+                _ => HandleTimerCompletion("expirable"));
         }
 
         internal static void SetTimedKeepAwake(uint seconds, bool keepDisplayOn = true, [CallerMemberName] string callerName = "")
@@ -373,7 +363,7 @@ namespace Awake.Core
 
             var targetExpiryTime = DateTimeOffset.Now.AddSeconds(seconds);
 
-            Observable.Interval(TimeSpan.FromSeconds(1))
+            _timerSubscription = Observable.Interval(TimeSpan.FromSeconds(1))
                 .Select(_ => targetExpiryTime - DateTimeOffset.Now)
                 .TakeWhile(remaining => remaining.TotalSeconds > 0)
                 .Subscribe(
@@ -387,8 +377,7 @@ namespace Awake.Core
                             TrayHelper.TimedIcon,
                             TrayIconAction.Update);
                     },
-                    () => HandleTimerCompletion("timed"),
-                    _tokenSource.Token);
+                    () => HandleTimerCompletion("timed"));
         }
 
         /// <summary>
@@ -424,8 +413,9 @@ namespace Awake.Core
             // Stop the monitor thread gracefully
             StopMonitor();
 
-            // Dispose the timer token source
-            _tokenSource?.Dispose();
+            // Dispose the timer subscription
+            _timerSubscription?.Dispose();
+            _timerSubscription = null;
 
             // Dispose tray icons
             TrayHelper.DisposeIcons();

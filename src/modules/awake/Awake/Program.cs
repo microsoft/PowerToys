@@ -535,13 +535,6 @@ namespace Awake
                         break;
 
                     case AwakeMode.TIMED:
-                        // If already in TIMED mode, skip restart - display changes are handled
-                        // directly by SetDisplay() without needing to restart the timer
-                        if (Manager.CurrentOperatingMode == AwakeMode.TIMED)
-                        {
-                            break;
-                        }
-
                         uint computedTime = (settings.Properties.IntervalHours * 3600) + (settings.Properties.IntervalMinutes * 60);
                         Manager.SetTimedKeepAwake(computedTime, settings.Properties.KeepDisplayOn);
                         break;
