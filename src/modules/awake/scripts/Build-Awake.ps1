@@ -58,6 +58,7 @@ $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $ModuleDir = Split-Path -Parent $ScriptDir
 $RepoRoot = Resolve-Path (Join-Path $ModuleDir "..\..\..") | Select-Object -ExpandProperty Path
 $AwakeProject = Join-Path $ModuleDir "Awake\Awake.csproj"
+$ModuleServicesProject = Join-Path $ModuleDir "Awake.ModuleServices\Awake.ModuleServices.csproj"
 
 Write-Host "======================================" -ForegroundColor Cyan
 Write-Host "  PowerToys Awake Build Script" -ForegroundColor Cyan
@@ -110,7 +111,7 @@ if (-not (Test-Path $AwakeProject)) {
 
 # Build arguments
 $BuildArgs = @(
-    "`"$AwakeProject`"",
+    $AwakeProject,
     "/p:Configuration=$Configuration",
     "/p:Platform=$Platform",
     "/v:minimal",
@@ -141,7 +142,7 @@ if ($Restore) {
     Write-Host ""
 }
 
-# Build
+# Build Awake
 Write-Host "Building Awake..." -ForegroundColor Cyan
 $BuildArgs += "/t:Build"
 & $MSBuild $BuildArgs
@@ -150,6 +151,27 @@ if ($LASTEXITCODE -ne 0) {
     Write-Host ""
     Write-Host "Build FAILED with exit code $LASTEXITCODE" -ForegroundColor Red
     exit $LASTEXITCODE
+}
+
+# Build Awake.ModuleServices if it exists
+if (Test-Path $ModuleServicesProject) {
+    Write-Host ""
+    Write-Host "Building Awake.ModuleServices..." -ForegroundColor Cyan
+    $ModuleServicesArgs = @(
+        $ModuleServicesProject,
+        "/p:Configuration=$Configuration",
+        "/p:Platform=$Platform",
+        "/v:minimal",
+        "/m",
+        "/t:Build"
+    )
+    & $MSBuild $ModuleServicesArgs
+
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host ""
+        Write-Host "Build FAILED with exit code $LASTEXITCODE" -ForegroundColor Red
+        exit $LASTEXITCODE
+    }
 }
 
 # Output location

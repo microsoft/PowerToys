@@ -327,6 +327,8 @@ namespace Awake.Core
                     TimeSpan timeSpan = TimeSpan.FromSeconds(seconds);
 
                     uint totalHours = (uint)timeSpan.TotalHours;
+
+                    // Round up partial minutes to prevent timer from expiring before intended duration
                     uint remainingMinutes = (uint)Math.Ceiling(timeSpan.TotalMinutes % 60);
 
                     bool settingsChanged = currentSettings.Properties.Mode != AwakeMode.TIMED ||

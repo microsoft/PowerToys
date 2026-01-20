@@ -45,6 +45,8 @@ namespace Awake.Core
         internal static readonly Icon IndefiniteIcon = new(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets/Awake/indefinite.ico"));
         internal static readonly Icon DisabledIcon = new(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets/Awake/disabled.ico"));
 
+        private const int TrayIconId = 1000;
+
         static TrayHelper()
         {
             TrayMenu = IntPtr.Zero;
@@ -211,7 +213,7 @@ namespace Awake.Core
                     {
                         CbSize = Marshal.SizeOf<NotifyIconData>(),
                         HWnd = hWnd,
-                        UId = 1000,
+                        UId = TrayIconId,
                         UFlags = Native.Constants.NIF_ICON | Native.Constants.NIF_TIP | Native.Constants.NIF_MESSAGE,
                         UCallbackMessage = (int)Native.Constants.WM_USER,
                         HIcon = icon?.Handle ?? IntPtr.Zero,
@@ -224,7 +226,7 @@ namespace Awake.Core
                     {
                         CbSize = Marshal.SizeOf<NotifyIconData>(),
                         HWnd = hWnd,
-                        UId = 1000,
+                        UId = TrayIconId,
                         UFlags = 0,
                     };
                 }
@@ -339,7 +341,7 @@ namespace Awake.Core
 
                         case (uint)TrayCommands.TC_MODE_INDEFINITE:
                             {
-                                AwakeSettings settings = Manager.ModuleSettings!.GetSettings<AwakeSettings>(Constants.AppName);
+                                AwakeSettings settings = Manager.ModuleSettings!.GetSettings<AwakeSettings>(Constants.AppName) ?? new AwakeSettings();
                                 Manager.SetIndefiniteKeepAwake(keepDisplayOn: settings.Properties.KeepDisplayOn);
                                 break;
                             }
@@ -356,7 +358,7 @@ namespace Awake.Core
                                 // Check if this command falls within the custom time range.
                                 if (targetCommandValue >= (uint)TrayCommands.TC_TIME)
                                 {
-                                    AwakeSettings settings = Manager.ModuleSettings!.GetSettings<AwakeSettings>(Constants.AppName);
+                                    AwakeSettings settings = Manager.ModuleSettings!.GetSettings<AwakeSettings>(Constants.AppName) ?? new AwakeSettings();
                                     if (settings.Properties.CustomTrayTimes.Count == 0)
                                     {
                                         settings.Properties.CustomTrayTimes.AddRange(Manager.GetDefaultTrayOptions());
@@ -416,7 +418,7 @@ namespace Awake.Core
                     }
                     catch (Exception e)
                     {
-                        Console.WriteLine("Error: " + e.Message);
+                        Logger.LogError($"Error in tray thread execution: {e.Message}");
                     }
                 },
                 null);
