@@ -3,8 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using Microsoft.CmdPal.Ext.WindowWalker.Components;
 using Microsoft.CmdPal.Ext.WindowWalker.Helpers;
 using Microsoft.CmdPal.Ext.WindowWalker.Properties;
@@ -68,8 +66,8 @@ internal sealed partial class WindowWalkerListPage : DynamicListPage, IDisposabl
             return ResultHelper.GetResultList(results);
         }
 
-        var scored = ListHelpers.FilterListWithScores(windows, query, ScoreFunction).ToArray();
-        return ResultHelper.GetResultList(scored);
+        var scored = ListHelpers.FilterListWithScores(windows, query, ScoreFunction);
+        return ResultHelper.GetResultList([.. scored]);
     }
 
     private static int ScoreFunction(string q, Window window)
