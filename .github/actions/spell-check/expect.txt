@@ -1520,6 +1520,7 @@ RKey
 RNumber
 rop
 rollups
+ROOTOWNER
 ROUNDSMALL
 ROWSETEXT
 rpcrt
