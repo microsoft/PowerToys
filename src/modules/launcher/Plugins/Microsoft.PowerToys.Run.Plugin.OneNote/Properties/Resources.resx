@@ -159,12 +159,6 @@
     <value>When using "{0}" show items that are in the recycle bin.</value>
     <comment>0 is the NotebookExplorer static keyword</comment>
   </data>
-  <data name="OneNoteComObjectTimeout" xml:space="preserve">
-    <value>OneNote COM object timeout</value>
-  </data>
-  <data name="OneNoteComObjectTimeoutDescription" xml:space="preserve">
-    <value>The delay in milliseconds before the OneNote COM object is removed from memory after user input. Higher values reduce the chances needed for performing the slow action of getting the COM object, but keep the COM object in memory for longer.</value>
-  </data>
   <data name="CreateColoredIconsForNotebooksSections" xml:space="preserve">
     <value>Create colored icons for notebooks and sections</value>
   </data>

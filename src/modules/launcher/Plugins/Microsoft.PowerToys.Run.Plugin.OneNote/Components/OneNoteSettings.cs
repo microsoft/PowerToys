@@ -24,7 +24,7 @@ namespace Microsoft.PowerToys.Run.Plugin.OneNote.Components
         internal bool ShowRecycleBins { get; private set; }
 
         // A timeout value is required as there currently no way to know if the Run window is visible.
-        internal double ComObjectTimeout { get; private set; }
+        internal double ComObjectTimeout { get; private set; } = 30000;
 
         internal bool ColoredIcons
         {
@@ -64,18 +64,19 @@ namespace Microsoft.PowerToys.Run.Plugin.OneNote.Components
                 DisplayDescription = string.Format(CultureInfo.CurrentCulture, ShowRecycleBinDescription, Keywords.NotebookExplorer),
                 Value = true,
             },
-            new PluginAdditionalOption()
-            {
-                Key = nameof(ComObjectTimeout),
-                PluginOptionType = PluginAdditionalOption.AdditionalOptionType.Numberbox,
-                DisplayLabel = Resources.OneNoteComObjectTimeout,
-                DisplayDescription = Resources.OneNoteComObjectTimeoutDescription,
-                NumberValue = 10000,
-                NumberBoxMin = 1000,
-                NumberBoxMax = 120000,
-                NumberBoxSmallChange = 1000,
-                NumberBoxLargeChange = 50000,
-            },
+
+            // new PluginAdditionalOption()
+            // {
+            //    Key = nameof(ComObjectTimeout),
+            //    PluginOptionType = PluginAdditionalOption.AdditionalOptionType.Numberbox,
+            //    DisplayLabel = Resources.OneNoteComObjectTimeout,
+            //    DisplayDescription = Resources.OneNoteComObjectTimeoutDescription,
+            //    NumberValue = 10000,
+            //    NumberBoxMin = 1000,
+            //    NumberBoxMax = 120000,
+            //    NumberBoxSmallChange = 1000,
+            //    NumberBoxLargeChange = 50000,
+            // },
             new PluginAdditionalOption()
             {
                 Key = nameof(ColoredIcons),
@@ -99,9 +100,8 @@ namespace Microsoft.PowerToys.Run.Plugin.OneNote.Components
             ShowEncryptedSections = GetBoolSettingOrDefault(settings, nameof(ShowEncryptedSections));
             ShowRecycleBins = GetBoolSettingOrDefault(settings, nameof(ShowRecycleBins));
 
-            var comObjectTimeout = settings.AdditionalOptions.FirstOrDefault(x => x.Key == nameof(ComObjectTimeout))?.NumberValue;
-            ComObjectTimeout = comObjectTimeout ?? AdditionalOptions.First(x => x.Key == nameof(ComObjectTimeout)).NumberValue;
-
+            // var comObjectTimeout = settings.AdditionalOptions.FirstOrDefault(x => x.Key == nameof(ComObjectTimeout))?.NumberValue;
+            // ComObjectTimeout = comObjectTimeout ?? AdditionalOptions.First(x => x.Key == nameof(ComObjectTimeout)).NumberValue;
             ColoredIcons = GetBoolSettingOrDefault(settings, nameof(ColoredIcons));
         }
 

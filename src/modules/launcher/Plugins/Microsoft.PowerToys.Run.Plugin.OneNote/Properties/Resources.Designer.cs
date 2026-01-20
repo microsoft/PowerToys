@@ -205,24 +205,6 @@ namespace Microsoft.PowerToys.Run.Plugin.OneNote.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to OneNote COM object timeout.
-        /// </summary>
-        internal static string OneNoteComObjectTimeout {
-            get {
-                return ResourceManager.GetString("OneNoteComObjectTimeout", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The delay in milliseconds before the OneNote COM object is removed from memory after user input. Higher values reduce the chances needed for performing the slow action of getting the COM object, but keep the COM object in memory for longer..
-        /// </summary>
-        internal static string OneNoteComObjectTimeoutDescription {
-            get {
-                return ResourceManager.GetString("OneNoteComObjectTimeoutDescription", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to OneNote is not installed.
         /// </summary>
         internal static string OneNoteNotInstalled {
