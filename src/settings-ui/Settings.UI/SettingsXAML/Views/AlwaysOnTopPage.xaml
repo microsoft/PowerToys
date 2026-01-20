@@ -38,12 +38,8 @@
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
-                    <tkcontrols:SettingsCard
-                        x:Uid="AlwaysOnTop_TransparencyInfo"
-                        HeaderIcon="{ui:FontIcon Glyph=&#xE790;}">
-                        <TextBlock
-                            x:Uid="AlwaysOnTop_TransparencyInfo_Value"
-                            Style="{StaticResource SecondaryTextStyle}" />
+                    <tkcontrols:SettingsCard x:Uid="AlwaysOnTop_TransparencyInfo" HeaderIcon="{ui:FontIcon Glyph=&#xE790;}">
+                        <TextBlock x:Uid="AlwaysOnTop_TransparencyInfo_Value" Style="{StaticResource SecondaryTextStyle}" />
                     </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
 
