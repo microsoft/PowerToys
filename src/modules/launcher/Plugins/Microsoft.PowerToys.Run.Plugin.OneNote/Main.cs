@@ -7,8 +7,8 @@ using System.Windows.Controls;
 using Microsoft.PowerToys.Run.Plugin.OneNote.Components;
 using Microsoft.PowerToys.Run.Plugin.OneNote.Properties;
 using Microsoft.PowerToys.Settings.UI.Library;
-using Odotocodot.OneNote.Linq;
 using Wox.Plugin;
+using OneNoteApplication = LinqToOneNote.OneNote;
 using Timer = System.Timers.Timer;
 
 namespace Microsoft.PowerToys.Run.Plugin.OneNote

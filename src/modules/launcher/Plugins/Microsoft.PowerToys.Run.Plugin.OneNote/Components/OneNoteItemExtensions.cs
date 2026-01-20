@@ -4,7 +4,7 @@
 
 using System.Diagnostics;
 using System.Runtime.InteropServices;
-using Odotocodot.OneNote.Linq;
+using LinqToOneNote;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.UI.WindowsAndMessaging;
@@ -17,7 +17,7 @@ namespace Microsoft.PowerToys.Run.Plugin.OneNote.Components
         {
             try
             {
-                item.OpenInOneNote();
+                item.Open();
                 ShowOneNote();
                 return true;
             }

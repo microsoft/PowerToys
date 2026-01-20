@@ -47,11 +47,11 @@
 
   <ItemGroup>
     <PackageReference Include="Humanizer" />
+    <PackageReference Include="LinqToOneNote" />
     <PackageReference Include="Mages" />
     <PackageReference Include="Microsoft.Data.Sqlite" />
     <PackageReference Include="Microsoft.Toolkit.Uwp.Notifications" />
     <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" />
-    <PackageReference Include="Odotocodot.OneNote.Linq" />
     <PackageReference Include="System.Drawing.Common">
       <ExcludeAssets>runtime</ExcludeAssets>      <!-- Should already be present on .net sdk runtime, so we avoid the conflicting runtime version from nuget -->
     </PackageReference>

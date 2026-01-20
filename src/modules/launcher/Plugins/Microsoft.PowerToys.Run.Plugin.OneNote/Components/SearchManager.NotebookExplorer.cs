@@ -4,9 +4,11 @@
 
 using System.Globalization;
 using System.Text;
+using LinqToOneNote;
+using LinqToOneNote.Abstractions;
 using Microsoft.PowerToys.Run.Plugin.OneNote.Properties;
-using Odotocodot.OneNote.Linq;
 using Wox.Plugin;
+using OneNoteApplication = LinqToOneNote.OneNote;
 
 namespace Microsoft.PowerToys.Run.Plugin.OneNote.Components
 {
@@ -34,7 +36,7 @@ namespace Microsoft.PowerToys.Run.Plugin.OneNote.Components
                 string fullSearch = query.Search[(query.Search.IndexOf(Keywords.NotebookExplorer, StringComparison.Ordinal) + Keywords.NotebookExplorer.Length)..];
 
                 IOneNoteItem? parent = null;
-                IEnumerable<IOneNoteItem> collection = OneNoteApplication.GetNotebooks();
+                IEnumerable<IOneNoteItem> collection = OneNoteApplication.GetFullHierarchy().Notebooks;
 
                 string[] searches = fullSearch.Split(Keywords.NotebookExplorerSeparator, StringSplitOptions.None);
 
@@ -63,14 +65,14 @@ namespace Microsoft.PowerToys.Run.Plugin.OneNote.Components
                         => EmptySearch(parent, collection),
 
                     // Search by title
-                    string search when search.StartsWith(Keywords.TitleSearch, StringComparison.Ordinal) && parent is not OneNotePage
+                    string search when search.StartsWith(Keywords.TitleSearch, StringComparison.Ordinal) && parent is not Page
                         => _searchManager.TitleSearch(search, parent, collection),
 
                     // Scoped search
-                    string search when search.StartsWith(Keywords.ScopedSearch, StringComparison.Ordinal) && (parent is OneNoteNotebook || parent is OneNoteSectionGroup)
+                    string search when search.StartsWith(Keywords.ScopedSearch, StringComparison.Ordinal) && (parent is Notebook || parent is SectionGroup)
                         => ScopedSearch(search, parent),
 
-                    // The current children of the parent.
+                    // Default notebook explorer functionality
                     _ => Explorer(lastSearch, parent, collection),
                 };
 
@@ -164,12 +166,11 @@ namespace Microsoft.PowerToys.Run.Plugin.OneNote.Components
                     case null:
                         results.Add(_resultCreator.CreateNewNotebookResult(newItemName));
                         break;
-                    case OneNoteNotebook:
-                    case OneNoteSectionGroup:
-                        results.Add(_resultCreator.CreateNewSectionResult(newItemName, parent));
-                        results.Add(_resultCreator.CreateNewSectionGroupResult(newItemName, parent));
+                    case INotebookOrSectionGroup notebookOrSectionGroup:
+                        results.Add(_resultCreator.CreateNewSectionResult(newItemName, notebookOrSectionGroup));
+                        results.Add(_resultCreator.CreateNewSectionGroupResult(newItemName, notebookOrSectionGroup));
                         break;
-                    case OneNoteSection section when !section.Locked:
+                    case Section section when !section.Locked:
                         results.Add(_resultCreator.CreateNewPageResult(newItemName, section));
                         break;
                     default:

@@ -6,11 +6,10 @@ using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
 using System.Drawing.Imaging;
-using System.IO;
 using System.Runtime.InteropServices;
 using System.Windows.Media.Imaging;
+using LinqToOneNote;
 using ManagedCommon;
-using Odotocodot.OneNote.Linq;
 using Wox.Infrastructure.Image;
 using Wox.Plugin;
 using Wox.Plugin.Logger;
@@ -135,7 +134,7 @@ namespace Microsoft.PowerToys.Run.Plugin.OneNote.Components
             string key;
             switch (item)
             {
-                case OneNoteNotebook notebook:
+                case Notebook notebook:
                     if (!_settings.ColoredIcons || notebook.Color is null)
                     {
                         key = $"{nameof(notebook)}.{_powerToysTheme}";
@@ -146,11 +145,11 @@ namespace Microsoft.PowerToys.Run.Plugin.OneNote.Components
                         return GetColoredIcon(nameof(notebook), notebook.Color.Value);
                     }
 
-                case OneNoteSectionGroup sectionGroup:
+                case SectionGroup sectionGroup:
                     key = $"{(sectionGroup.IsRecycleBin ? $"recycle_bin" : $"section_group")}.{_pluginTheme}";
                     break;
 
-                case OneNoteSection section:
+                case Section section:
                     if (!_settings.ColoredIcons || section.Color is null)
                     {
                         key = $"{nameof(section)}.{_powerToysTheme}";
@@ -161,7 +160,7 @@ namespace Microsoft.PowerToys.Run.Plugin.OneNote.Components
                         return GetColoredIcon(nameof(section), section.Color.Value);
                     }
 
-                case OneNotePage:
+                case LinqToOneNote.Page:
                     key = Path.GetFileNameWithoutExtension(Page);
                     break;
 

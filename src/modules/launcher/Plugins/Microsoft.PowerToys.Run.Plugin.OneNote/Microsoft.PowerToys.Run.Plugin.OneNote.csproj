@@ -35,11 +35,11 @@
 
   <ItemGroup>
     <PackageReference Include="Humanizer" />
+    <PackageReference Include="LinqToOneNote" />
     <PackageReference Include="Microsoft.Windows.CsWin32">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Odotocodot.OneNote.Linq" />
   </ItemGroup>
 
   <ItemGroup>

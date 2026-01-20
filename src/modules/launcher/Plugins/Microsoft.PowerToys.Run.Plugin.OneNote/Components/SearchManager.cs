@@ -2,10 +2,11 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using LinqToOneNote;
 using Microsoft.PowerToys.Run.Plugin.OneNote.Properties;
-using Odotocodot.OneNote.Linq;
 using Wox.Infrastructure;
 using Wox.Plugin;
+using OneNoteApplication = LinqToOneNote.OneNote;
 
 namespace Microsoft.PowerToys.Run.Plugin.OneNote.Components
 {
@@ -45,7 +46,7 @@ namespace Microsoft.PowerToys.Run.Plugin.OneNote.Components
                     => _notebookExplorer.Query(query),
 
                 string s when s.StartsWith(Keywords.TitleSearch, StringComparison.Ordinal)
-                    => TitleSearch(s, null, OneNoteApplication.GetNotebooks()),
+                    => TitleSearch(s, null, OneNoteApplication.GetFullHierarchy().Notebooks),
 
                 _ => DefaultSearch(query.Search),
             };
@@ -78,7 +79,7 @@ namespace Microsoft.PowerToys.Run.Plugin.OneNote.Components
 
             var currentSearch = query[Keywords.TitleSearch.Length..];
 
-            var results = currentCollection.Traverse(item => SettingsCheck(item) && FuzzySearch(item.Name, currentSearch, out highlightData, out score))
+            var results = currentCollection.Descendants(item => SettingsCheck(item) && FuzzySearch(item.Name, currentSearch, out highlightData, out score))
                                            .Select(item => _resultCreator.CreateOneNoteItemResult(item, false, highlightData, score))
                                            .ToList();
 
@@ -87,7 +88,7 @@ namespace Microsoft.PowerToys.Run.Plugin.OneNote.Components
 
         private List<Result> RecentPages(string query)
         {
-            int count = 10; // TODO: Ideally this should match PowerToysRunSettings.MaxResultsToShow
+            int count = 25; // TODO: Ideally this should match PowerToysRunSettings.MaxResultsToShow
             /*          var settingsUtils = new SettingsUtils();
                         var generalSettings = settingsUtils.GetSettings<GeneralSettings>();*/
             if (query.Length > Keywords.RecentPages.Length && int.TryParse(query[Keywords.RecentPages.Length..], out int userChosenCount))
@@ -95,8 +96,9 @@ namespace Microsoft.PowerToys.Run.Plugin.OneNote.Components
                 count = userChosenCount;
             }
 
-            return OneNoteApplication.GetNotebooks()
-                                     .GetPages()
+            return OneNoteApplication.GetFullHierarchy()
+                                     .Notebooks
+                                     .GetAllPages()
                                      .Where(SettingsCheck)
                                      .OrderByDescending(pg => pg.LastModified)
                                      .Take(count)
@@ -115,7 +117,7 @@ namespace Microsoft.PowerToys.Run.Plugin.OneNote.Components
         private bool SettingsCheck(IOneNoteItem item)
         {
             bool success = true;
-            if (!_settings.ShowEncryptedSections && item is OneNoteSection section)
+            if (!_settings.ShowEncryptedSections && item is Section section)
             {
                 success = !section.Encrypted;
             }
