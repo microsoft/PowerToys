@@ -200,15 +200,43 @@ void WindowMouseSnap::SetWindowTransparency()
 {
     if (FancyZonesSettings::settings().makeDraggedWindowTransparent)
     {
-        m_windowProperties.transparency = ::MakeWindowTransparent(m_window, 50);
+        m_windowProperties.exstyle = GetWindowLong(m_window, GWL_EXSTYLE);
+
+        SetWindowLong(m_window, GWL_EXSTYLE, m_windowProperties.exstyle | WS_EX_LAYERED);
+
+        if (!GetLayeredWindowAttributes(m_window, &m_windowProperties.crKey, &m_windowProperties.alpha, &m_windowProperties.dwFlags))
+        {
+            Logger::error(L"Window transparency: GetLayeredWindowAttributes failed, {}", get_last_error_or_default(GetLastError()));
+            return;
+        }
+
+        if (!SetLayeredWindowAttributes(m_window, 0, (255 * 50) / 100, LWA_ALPHA))
+        {
+            Logger::error(L"Window transparency: SetLayeredWindowAttributes failed, {}", get_last_error_or_default(GetLastError()));
+            return;
+        }
+
+        m_windowProperties.transparencySet = true;
     }
 }
 
 void WindowMouseSnap::ResetWindowTransparency()
 {
-    if (FancyZonesSettings::settings().makeDraggedWindowTransparent && m_windowProperties.transparency.transparencySet)
+    if (FancyZonesSettings::settings().makeDraggedWindowTransparent && m_windowProperties.transparencySet)
     {
-        ::RestoreWindowTransparency(m_window, m_windowProperties.transparency);
-        m_windowProperties.transparency.transparencySet = false;
+        bool reset = true;
+        if (!SetLayeredWindowAttributes(m_window, m_windowProperties.crKey, m_windowProperties.alpha, m_windowProperties.dwFlags))
+        {
+            Logger::error(L"Window transparency: SetLayeredWindowAttributes failed, {}", get_last_error_or_default(GetLastError()));
+            reset = false;
+        }
+
+        if (SetWindowLong(m_window, GWL_EXSTYLE, m_windowProperties.exstyle) == 0)
+        {
+            Logger::error(L"Window transparency: SetWindowLong failed, {}", get_last_error_or_default(GetLastError()));
+            reset = false;
+        }
+
+        m_windowProperties.transparencySet = !reset;
     }
 }

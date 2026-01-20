@@ -2,7 +2,6 @@
 
 #include <FancyZonesLib/HighlightedZones.h>
 #include <common/notifications/NotificationUtil.h>
-#include <common/utils/window.h>
 
 class WorkArea;
 
@@ -28,8 +27,12 @@ private:
     {
         // True if the window is a top-level window that does not have a visible owner
         bool hasNoVisibleOwner = false;
-        // Transparency properties for restoration
-        WindowTransparencyProperties transparency;
+        // Properties to restore after dragging
+        long exstyle = 0;
+        COLORREF crKey = RGB(0, 0, 0);
+        DWORD dwFlags = 0;
+        BYTE alpha = 0;
+        bool transparencySet{false};
     };
 
     const HWND m_window;
