@@ -5,6 +5,7 @@
 using System.Runtime.InteropServices;
 using System.Windows.Controls;
 using Microsoft.PowerToys.Run.Plugin.OneNote.Components;
+using Microsoft.PowerToys.Run.Plugin.OneNote.Components.Search;
 using Microsoft.PowerToys.Run.Plugin.OneNote.Properties;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Wox.Plugin;
@@ -80,7 +81,7 @@ namespace Microsoft.PowerToys.Run.Plugin.OneNote
 
             _iconProvider = new IconProvider(_context, _settings);
             _resultCreator = new ResultCreator(_context, _settings, _iconProvider);
-            _searchManager = new SearchManager(_context, _settings, _iconProvider, _resultCreator);
+            _searchManager = new SearchManager(_context, _settings, _resultCreator);
         }
 
         /// <summary>

@@ -417,6 +417,11 @@ namespace Microsoft.PowerToys.Run.Plugin.OneNote.Components
             return results;
         }
 
+        internal List<Result> SearchingByTitle()
+        {
+            return SingleResult(Resources.SearchingByTitle, null, _iconProvider.Search);
+        }
+
         internal static List<Result> SingleResult(string title, string? subTitle, string iconPath)
         {
             return new List<Result>
