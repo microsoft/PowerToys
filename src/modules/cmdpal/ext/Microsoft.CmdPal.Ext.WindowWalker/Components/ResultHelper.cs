@@ -19,9 +19,9 @@ internal static class ResultHelper
     /// <summary>
     /// Returns a list of all results for the query.
     /// </summary>
-    /// <param name="searchControllerResults">List with all search controller matches</param>
+    /// <param name="scoredWindows">List with all search controller matches</param>
     /// <returns>List of results</returns>
-    internal static WindowWalkerListItem[] GetResultList(ICollection<Scored<Window>> scoredWindows)
+    internal static WindowWalkerListItem[] GetResultList(ICollection<Scored<Window>>? scoredWindows)
     {
         if (scoredWindows is null || scoredWindows.Count == 0)
         {
