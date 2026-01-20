@@ -51,6 +51,8 @@ namespace Awake
 
         private static async Task<int> Main(string[] args)
         {
+            Logger.InitializeLogger(Path.Combine("\\", Core.Constants.AppName, "Logs"));
+
             var rootCommand = BuildRootCommand();
 
             Bridge.AttachConsole(Core.Native.Constants.ATTACH_PARENT_PROCESS);
@@ -72,8 +74,6 @@ namespace Awake
             _settingsUtils = SettingsUtils.Default;
 
             LockMutex = new Mutex(true, Core.Constants.AppName, out bool instantiated);
-
-            Logger.InitializeLogger(Path.Combine("\\", Core.Constants.AppName, "Logs"));
 
             try
             {
