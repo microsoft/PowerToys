@@ -697,7 +697,7 @@ void AlwaysOnTop::StepWindowTransparency(HWND window, int delta)
             m_sound.Play(delta > 0 ? Sound::Type::IncreaseOpacity : Sound::Type::DecreaseOpacity);
         }
 
-        Logger::trace(L"Transparency adjusted to {}%", newTransparency);
+        Logger::debug(L"Transparency adjusted to {}%", newTransparency);
     }
 }
 
