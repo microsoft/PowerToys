@@ -126,16 +126,16 @@
             </DataTemplate>
             <DataTemplate x:Key="DetailsSeparatorTemplate" x:DataType="coreViewModels:DetailsSeparatorViewModel">
                 <StackPanel Margin="0,8,8,0" Orientation="Vertical">
+                    <TextBlock
+                        Margin="0,8,0,0"
+                        Style="{StaticResource SeparatorKeyTextBlockStyle}"
+                        Text="{x:Bind Key, Mode=OneWay}"
+                        Visibility="{x:Bind help:BindTransformers.EmptyOrWhitespaceToCollapsed(Key), Mode=OneWay, FallbackValue=Collapsed}" />
                     <Border
                         Margin="0,0,0,0"
                         BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
-                        BorderThickness="0,0,0,2">
-                        <TextBlock
-                            Margin="0,0,0,0"
-                            Style="{StaticResource SeparatorKeyTextBlockStyle}"
-                            Text="{x:Bind Key, Mode=OneWay}"
-                            Visibility="{x:Bind help:BindTransformers.EmptyOrWhitespaceToCollapsed(Key), FallbackValue=Collapsed}" />
-                    </Border>
+                        BorderThickness="0,0,0,1"
+                        Visibility="{x:Bind help:BindTransformers.EmptyOrWhitespaceToVisible(Key), Mode=OneWay, FallbackValue=Collapsed}" />
                 </StackPanel>
             </DataTemplate>
             <DataTemplate x:Key="DetailsTagsTemplate" x:DataType="coreViewModels:DetailsTagsViewModel">

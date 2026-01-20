@@ -55,3 +55,29 @@ void Trace::SettingsChanged(const GeneralSettings& settings)
         TraceLoggingBoolean(TRUE, "UTCReplace_AppSessionGuid"),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
 }
+
+void Trace::UpdateCheckCompleted(bool success, bool updateAvailable, const std::wstring& fromVersion, const std::wstring& toVersion)
+{
+    TraceLoggingWriteWrapper(
+        g_hProvider,
+        "UpdateCheck_Completed",
+        TraceLoggingBoolean(success, "Success"),
+        TraceLoggingBoolean(updateAvailable, "UpdateAvailable"),
+        TraceLoggingWideString(fromVersion.c_str(), "FromVersion"),
+        TraceLoggingWideString(toVersion.c_str(), "ToVersion"),
+        ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
+        TraceLoggingBoolean(TRUE, "UTCReplace_AppSessionGuid"),
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
+}
+
+void Trace::UpdateDownloadCompleted(bool success, const std::wstring& version)
+{
+    TraceLoggingWriteWrapper(
+        g_hProvider,
+        "UpdateDownload_Completed",
+        TraceLoggingBoolean(success, "Success"),
+        TraceLoggingWideString(version.c_str(), "Version"),
+        ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
+        TraceLoggingBoolean(TRUE, "UTCReplace_AppSessionGuid"),
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
+}

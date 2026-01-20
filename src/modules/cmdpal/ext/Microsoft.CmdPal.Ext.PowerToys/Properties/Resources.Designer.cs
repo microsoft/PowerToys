@@ -376,6 +376,24 @@ namespace PowerToysExtension.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Crop and Lock (Screenshot).
+        /// </summary>
+        internal static string CropAndLock_Screenshot_Title {
+            get {
+                return ResourceManager.GetString("CropAndLock_Screenshot_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Create a cropped screenshot window.
+        /// </summary>
+        internal static string CropAndLock_Screenshot_Subtitle {
+            get {
+                return ResourceManager.GetString("CropAndLock_Screenshot_Subtitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Launch Environment Variables editor.
         /// </summary>
         internal static string EnvironmentVariables_Open_Subtitle {

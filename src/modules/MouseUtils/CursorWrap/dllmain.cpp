@@ -506,8 +506,58 @@ public:
         return CallNextHookEx(nullptr, nCode, wParam, lParam);
     }
     
+    // Helper method to check if there's a monitor adjacent in coordinate space (not grid)
+    bool HasAdjacentMonitorInCoordinateSpace(const RECT& currentMonitorRect, int direction)
+    {
+        // direction: 0=left, 1=right, 2=top, 3=bottom
+        const int tolerance = 50; // Allow small gaps
+        
+        for (const auto& monitor : m_monitors)
+        {
+            bool isAdjacent = false;
+            
+            switch (direction)
+            {
+            case 0: // Left - check if another monitor's right edge touches/overlaps our left edge
+                isAdjacent = (abs(monitor.rect.right - currentMonitorRect.left) <= tolerance) &&
+                            (monitor.rect.bottom > currentMonitorRect.top + tolerance) &&
+                            (monitor.rect.top < currentMonitorRect.bottom - tolerance);
+                break;
+                
+            case 1: // Right - check if another monitor's left edge touches/overlaps our right edge
+                isAdjacent = (abs(monitor.rect.left - currentMonitorRect.right) <= tolerance) &&
+                            (monitor.rect.bottom > currentMonitorRect.top + tolerance) &&
+                            (monitor.rect.top < currentMonitorRect.bottom - tolerance);
+                break;
+                
+            case 2: // Top - check if another monitor's bottom edge touches/overlaps our top edge
+                isAdjacent = (abs(monitor.rect.bottom - currentMonitorRect.top) <= tolerance) &&
+                            (monitor.rect.right > currentMonitorRect.left + tolerance) &&
+                            (monitor.rect.left < currentMonitorRect.right - tolerance);
+                break;
+                
+            case 3: // Bottom - check if another monitor's top edge touches/overlaps our bottom edge
+                isAdjacent = (abs(monitor.rect.top - currentMonitorRect.bottom) <= tolerance) &&
+                            (monitor.rect.right > currentMonitorRect.left + tolerance) &&
+                            (monitor.rect.left < currentMonitorRect.right - tolerance);
+                break;
+            }
+            
+            if (isAdjacent)
+            {
+#ifdef _DEBUG
+                Logger::info(L"CursorWrap DEBUG: Found adjacent monitor in coordinate space (direction {})", direction);
+#endif
+                return true;
+            }
+        }
+        
+        return false;
+    }
+
     // *** COMPLETELY REWRITTEN CURSOR WRAPPING LOGIC ***
     // Implements vertical scrolling to bottom/top of vertical stack as requested
+    // Only wraps when there's NO adjacent monitor in the coordinate space
     POINT HandleMouseMove(const POINT& currentPos)
     {
         POINT newPos = currentPos;
@@ -546,11 +596,21 @@ public:
         
         // *** VERTICAL WRAPPING LOGIC - CONFIRMED WORKING ***
         // Move to bottom of vertical stack when hitting top edge
+        // Only wrap if there's NO adjacent monitor in the coordinate space
         if (currentPos.y <= currentMonitorInfo.rcMonitor.top)
         {
 #ifdef _DEBUG
             Logger::info(L"CursorWrap DEBUG: ======= VERTICAL WRAP: TOP EDGE DETECTED =======");
 #endif
+            
+            // Check if there's an adjacent monitor above in coordinate space
+            if (HasAdjacentMonitorInCoordinateSpace(currentMonitorInfo.rcMonitor, 2))
+            {
+#ifdef _DEBUG
+                Logger::info(L"CursorWrap DEBUG: SKIPPING WRAP - Adjacent monitor exists above (Windows will handle)");
+#endif
+                return currentPos; // Let Windows handle natural cursor movement
+            }
             
             // Find the bottom-most monitor in the vertical stack (same column)
             HMONITOR bottomMonitor = nullptr;
@@ -604,6 +664,15 @@ public:
             Logger::info(L"CursorWrap DEBUG: ======= VERTICAL WRAP: BOTTOM EDGE DETECTED =======");
 #endif
             
+            // Check if there's an adjacent monitor below in coordinate space
+            if (HasAdjacentMonitorInCoordinateSpace(currentMonitorInfo.rcMonitor, 3))
+            {
+#ifdef _DEBUG
+                Logger::info(L"CursorWrap DEBUG: SKIPPING WRAP - Adjacent monitor exists below (Windows will handle)");
+#endif
+                return currentPos; // Let Windows handle natural cursor movement
+            }
+            
             // Find the top-most monitor in the vertical stack (same column)
             HMONITOR topMonitor = nullptr;
             
@@ -653,12 +722,21 @@ public:
         
         // *** FIXED HORIZONTAL WRAPPING LOGIC ***
         // Move to opposite end of horizontal stack when hitting left/right edge
-        // Only handle horizontal wrapping if we haven't already wrapped vertically
+        // Only wrap if there's NO adjacent monitor in the coordinate space (let Windows handle natural transitions)
         if (!wrapped && currentPos.x <= currentMonitorInfo.rcMonitor.left)
         {
 #ifdef _DEBUG
             Logger::info(L"CursorWrap DEBUG: ======= HORIZONTAL WRAP: LEFT EDGE DETECTED =======");
 #endif
+            
+            // Check if there's an adjacent monitor to the left in coordinate space
+            if (HasAdjacentMonitorInCoordinateSpace(currentMonitorInfo.rcMonitor, 0))
+            {
+#ifdef _DEBUG
+                Logger::info(L"CursorWrap DEBUG: SKIPPING WRAP - Adjacent monitor exists to the left (Windows will handle)");
+#endif
+                return currentPos; // Let Windows handle natural cursor movement
+            }
             
             // Find the right-most monitor in the horizontal stack (same row)
             HMONITOR rightMonitor = nullptr;
@@ -711,6 +789,15 @@ public:
 #ifdef _DEBUG
             Logger::info(L"CursorWrap DEBUG: ======= HORIZONTAL WRAP: RIGHT EDGE DETECTED =======");
 #endif
+            
+            // Check if there's an adjacent monitor to the right in coordinate space
+            if (HasAdjacentMonitorInCoordinateSpace(currentMonitorInfo.rcMonitor, 1))
+            {
+#ifdef _DEBUG
+                Logger::info(L"CursorWrap DEBUG: SKIPPING WRAP - Adjacent monitor exists to the right (Windows will handle)");
+#endif
+                return currentPos; // Let Windows handle natural cursor movement
+            }
             
             // Find the left-most monitor in the horizontal stack (same row)
             HMONITOR leftMonitor = nullptr;
@@ -981,45 +1068,104 @@ void MonitorTopology::Initialize(const std::vector<MonitorInfo>& monitors)
     }
     else
     {
-        // For more than 2 monitors, use the general algorithm
-        RECT totalBounds = monitors[0].rect;
-        for (const auto& monitor : monitors)
-        {
-            totalBounds.left = min(totalBounds.left, monitor.rect.left);
-            totalBounds.top = min(totalBounds.top, monitor.rect.top);
-            totalBounds.right = max(totalBounds.right, monitor.rect.right);
-            totalBounds.bottom = max(totalBounds.bottom, monitor.rect.bottom);
+        // For more than 2 monitors, use edge-based alignment algorithm
+        // This ensures monitors with aligned edges (e.g., top edges at same Y) are grouped in same row
+        
+        // Helper lambda to check if two ranges overlap or are adjacent (with tolerance)
+        auto rangesOverlapOrTouch = [](int start1, int end1, int start2, int end2, int tolerance = 50) -> bool {
+            // Check if ranges overlap or are within tolerance distance
+            return (start1 <= end2 + tolerance) && (start2 <= end1 + tolerance);
+        };
+        
+        // Sort monitors by horizontal position (left edge) for column assignment
+        std::vector<const MonitorInfo*> monitorsByX;
+        for (const auto& monitor : monitors) {
+            monitorsByX.push_back(&monitor);
+        }
+        std::sort(monitorsByX.begin(), monitorsByX.end(), [](const MonitorInfo* a, const MonitorInfo* b) {
+            return a->rect.left < b->rect.left;
+        });
+        
+        // Sort monitors by vertical position (top edge) for row assignment
+        std::vector<const MonitorInfo*> monitorsByY;
+        for (const auto& monitor : monitors) {
+            monitorsByY.push_back(&monitor);
+        }
+        std::sort(monitorsByY.begin(), monitorsByY.end(), [](const MonitorInfo* a, const MonitorInfo* b) {
+            return a->rect.top < b->rect.top;
+        });
+        
+        // Assign rows based on vertical overlap - monitors that overlap vertically should be in same row
+        std::map<const MonitorInfo*, int> monitorToRow;
+        int currentRow = 0;
+        
+        for (size_t i = 0; i < monitorsByY.size(); i++) {
+            const auto* monitor = monitorsByY[i];
+            
+            // Check if this monitor overlaps vertically with any monitor already assigned to current row
+            bool foundOverlap = false;
+            for (size_t j = 0; j < i; j++) {
+                const auto* other = monitorsByY[j];
+                if (monitorToRow[other] == currentRow) {
+                    // Check vertical overlap
+                    if (rangesOverlapOrTouch(monitor->rect.top, monitor->rect.bottom, 
+                                            other->rect.top, other->rect.bottom)) {
+                        monitorToRow[monitor] = currentRow;
+                        foundOverlap = true;
+                        break;
+                    }
+                }
+            }
+            
+            if (!foundOverlap) {
+                // Start new row if no overlap found and we have room
+                if (currentRow < 2 && i < monitorsByY.size() - 1) {
+                    currentRow++;
+                }
+                monitorToRow[monitor] = currentRow;
+            }
         }
         
-        int totalWidth = totalBounds.right - totalBounds.left;
-        int totalHeight = totalBounds.bottom - totalBounds.top;
-        int gridWidth = max(1, totalWidth / 3);
-        int gridHeight = max(1, totalHeight / 3);
+        // Assign columns based on horizontal position (left-to-right order)
+        // Monitors are already sorted by X coordinate (left edge)
+        std::map<const MonitorInfo*, int> monitorToCol;
         
-        // Place monitors in the 3x3 grid based on their center points
+        // For horizontal arrangement, distribute monitors evenly across columns
+        if (monitorsByX.size() == 1) {
+            // Single monitor - place in middle column
+            monitorToCol[monitorsByX[0]] = 1;
+        }
+        else if (monitorsByX.size() == 2) {
+            // Two monitors - place at opposite ends for wrapping
+            monitorToCol[monitorsByX[0]] = 0;  // Leftmost monitor
+            monitorToCol[monitorsByX[1]] = 2;  // Rightmost monitor
+        }
+        else {
+            // Three or more monitors - distribute across grid
+            for (size_t i = 0; i < monitorsByX.size() && i < 3; i++) {
+                monitorToCol[monitorsByX[i]] = static_cast<int>(i);
+            }
+            // If more than 3 monitors, place extras in rightmost column
+            for (size_t i = 3; i < monitorsByX.size(); i++) {
+                monitorToCol[monitorsByX[i]] = 2;
+            }
+        }
+        
+        // Place monitors in grid using the computed row/column assignments
         for (const auto& monitor : monitors)
         {
             HMONITOR hMonitor = MonitorFromRect(&monitor.rect, MONITOR_DEFAULTTONEAREST);
-            
-            // Calculate center point of monitor
-            int centerX = (monitor.rect.left + monitor.rect.right) / 2;
-            int centerY = (monitor.rect.top + monitor.rect.bottom) / 2;
-            
-            // Map to grid position
-            int col = (centerX - totalBounds.left) / gridWidth;
-            int row = (centerY - totalBounds.top) / gridHeight;
-            
-            // Ensure we stay within bounds
-            col = max(0, min(2, col));
-            row = max(0, min(2, row));
+            int row = monitorToRow[&monitor];
+            int col = monitorToCol[&monitor];
             
             grid[row][col] = hMonitor;
             monitorToPosition[hMonitor] = {row, col, true};
             positionToMonitor[{row, col}] = hMonitor;
             
 #ifdef _DEBUG
-            Logger::info(L"CursorWrap DEBUG: Monitor {} placed at grid[{}][{}], center=({}, {})", 
-                        monitor.monitorId, row, col, centerX, centerY);
+            Logger::info(L"CursorWrap DEBUG: Monitor {} placed at grid[{}][{}] (left={}, top={}, right={}, bottom={})", 
+                        monitor.monitorId, row, col, 
+                        monitor.rect.left, monitor.rect.top, monitor.rect.right, monitor.rect.bottom);
 #endif
         }
     }
