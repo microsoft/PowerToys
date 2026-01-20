@@ -162,11 +162,11 @@ LRESULT AlwaysOnTop::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lp
             }
             else if (hotkeyId == static_cast<int>(HotkeyId::IncreaseOpacity))
             {
-                AdjustTransparency(fw, Settings::transparencyStep);
+                StepWindowTransparency(fw, Settings::transparencyStep);
             }
             else if (hotkeyId == static_cast<int>(HotkeyId::DecreaseOpacity))
             {
-                AdjustTransparency(fw, -Settings::transparencyStep);
+                StepWindowTransparency(fw, -Settings::transparencyStep);
             }
         }
     }
@@ -204,8 +204,8 @@ void AlwaysOnTop::ProcessCommand(HWND window)
             }
 
             // Restore transparency when unpinning
-            RemoveTransparency(window);
-            m_windowTransparency.erase(window);
+            RestoreWindowAlpha(window);
+            m_windowOriginalLayeredState.erase(window);
 
             Trace::AlwaysOnTop::UnpinWindow();
         }
@@ -216,8 +216,6 @@ void AlwaysOnTop::ProcessCommand(HWND window)
         {
             soundType = Sound::Type::On;
             AssignBorder(window);
-            // Initialize with full opacity (100%)
-            SetWindowTransparency(window, Settings::maxTransparencyPercentage);
             
             Trace::AlwaysOnTop::PinWindow();
         }
@@ -368,13 +366,13 @@ void AlwaysOnTop::RegisterLLKH()
             case WAIT_OBJECT_0 + 2: // Increase opacity event
                 if (HWND fw{ GetForegroundWindow() })
                 {
-                    AdjustTransparency(fw, Settings::transparencyStep);
+                    StepWindowTransparency(fw, Settings::transparencyStep);
                 }
                 break;
             case WAIT_OBJECT_0 + 3: // Decrease opacity event
                 if (HWND fw{ GetForegroundWindow() })
                 {
-                    AdjustTransparency(fw, -Settings::transparencyStep);
+                    StepWindowTransparency(fw, -Settings::transparencyStep);
                 }
                 break;
             case WAIT_OBJECT_0 + 4: // Message queue
@@ -427,11 +425,10 @@ void AlwaysOnTop::UnpinAll()
             Logger::error(L"Unpinning topmost window failed");
         }
         // Restore transparency when unpinning all
-        RemoveTransparency(topWindow);
+        RestoreWindowAlpha(topWindow);
     }
 
     m_topmostWindows.clear();
-    m_windowTransparency.clear();
     m_windowOriginalLayeredState.clear();
 }
 
@@ -516,7 +513,6 @@ void AlwaysOnTop::HandleWinHookEvent(WinHookEvent* data) noexcept
     for (const auto window : toErase)
     {
         m_topmostWindows.erase(window);
-        m_windowTransparency.erase(window);
         m_windowOriginalLayeredState.erase(window);
     }
 
@@ -620,62 +616,105 @@ void AlwaysOnTop::RefreshBorders()
     }
 }
 
-// Transparency adjustment methods
-void AlwaysOnTop::AdjustTransparency(HWND window, int delta)
+HWND AlwaysOnTop::ResolveTransparencyTargetWindow(HWND window)
 {
+    if (!window || !IsWindow(window))
+    {
+        return nullptr;
+    }
+
+    // Authorization: only allow if the ORIGINAL selection is tracked/pinned
     if (!IsTracked(window) && !IsPinned(window))
     {
-        // Window is not pinned, can't adjust transparency
+        return nullptr;
+    }
+
+    const HWND desktop = GetDesktopWindow();
+    const HWND shell = GetShellWindow();
+
+    auto isBad = [&](HWND h) {
+        return !h || !IsWindow(h) || h == desktop || h == shell;
+    };
+
+    // Candidates
+    HWND rootOwner = GetAncestor(window, GA_ROOTOWNER);
+    HWND root = GetAncestor(window, GA_ROOT);
+
+    // Prefer a non-bad candidate. Visible is a preference, not a hard gate.
+    if (!isBad(rootOwner) && IsWindowVisible(rootOwner))
+    {
+        return rootOwner;
+    }
+
+    if (!isBad(root) && IsWindowVisible(root))
+    {
+        return root;
+    }
+
+    // If both are not visible but still valid, prefer rootOwner/root over the original.
+    if (!isBad(rootOwner))
+    {
+        return rootOwner;
+    }
+
+    if (!isBad(root))
+    {
+        return root;
+    }
+
+    return window;
+}
+
+
+void AlwaysOnTop::StepWindowTransparency(HWND window, int delta)
+{
+    HWND targetWindow = ResolveTransparencyTargetWindow(window);
+    if (!targetWindow)
+    {
         return;
     }
 
-    int currentTransparency = GetWindowTransparency(window);
-    int newTransparency = currentTransparency + delta;
-    
-    // Clamp to valid range (using parentheses to avoid Windows min/max macro conflicts)
-    newTransparency = (std::max)(Settings::minTransparencyPercentage, 
-                                 (std::min)(Settings::maxTransparencyPercentage, newTransparency));
+    int currentTransparency = Settings::maxTransparencyPercentage;
+    LONG exStyle = GetWindowLong(targetWindow, GWL_EXSTYLE);
+    if (exStyle & WS_EX_LAYERED)
+    {
+        BYTE alpha = 255;
+        if (GetLayeredWindowAttributes(targetWindow, nullptr, &alpha, nullptr))
+        {
+            currentTransparency = (alpha * 100) / 255;
+        }
+    }
+
+    int newTransparency = (std::max)(Settings::minTransparencyPercentage, 
+                                     (std::min)(Settings::maxTransparencyPercentage, currentTransparency + delta));
 
     if (newTransparency != currentTransparency)
     {
-        SetWindowTransparency(window, newTransparency);
-        ApplyTransparency(window, newTransparency);
+        ApplyWindowAlpha(targetWindow, newTransparency);
 
-        // Play sound feedback
         if (AlwaysOnTopSettings::settings().enableSound)
         {
-            if (delta > 0)
-            {
-                m_sound.Play(Sound::Type::IncreaseOpacity);
-            }
-            else
-            {
-                m_sound.Play(Sound::Type::DecreaseOpacity);
-            }
+            m_sound.Play(delta > 0 ? Sound::Type::IncreaseOpacity : Sound::Type::DecreaseOpacity);
         }
 
         Logger::trace(L"Transparency adjusted to {}%", newTransparency);
     }
 }
 
-void AlwaysOnTop::ApplyTransparency(HWND window, int percentage)
+void AlwaysOnTop::ApplyWindowAlpha(HWND window, int percentage)
 {
-    if (!window || percentage < Settings::minTransparencyPercentage || percentage > Settings::maxTransparencyPercentage)
+    if (!window || !IsWindow(window))
     {
         return;
     }
-
-    if (percentage == Settings::maxTransparencyPercentage)
-    {
-        // Full opacity - remove layered style
-        RemoveTransparency(window);
-        return;
-    }
+    
+    percentage = (std::max)(Settings::minTransparencyPercentage, 
+                            (std::min)(Settings::maxTransparencyPercentage, percentage));
 
     LONG exStyle = GetWindowLong(window, GWL_EXSTYLE);
     bool isCurrentlyLayered = (exStyle & WS_EX_LAYERED) != 0;
 
-    // First time applying transparency - cache the original state
+    // Cache original state on first transparency application
     if (m_windowOriginalLayeredState.find(window) == m_windowOriginalLayeredState.end())
     {
         WindowLayeredState state;
@@ -683,7 +722,6 @@ void AlwaysOnTop::ApplyTransparency(HWND window, int percentage)
         
         if (isCurrentlyLayered)
         {
-            // Try to get original layered window attributes
             BYTE alpha = 255;
             COLORREF colorKey = 0;
             DWORD flags = 0;
@@ -693,27 +731,31 @@ void AlwaysOnTop::ApplyTransparency(HWND window, int percentage)
                 state.usedColorKey = (flags & LWA_COLORKEY) != 0;
                 state.colorKey = colorKey;
             }
+            else
+            {
+                Logger::warn(L"GetLayeredWindowAttributes failed for layered window, skipping");
+                return;
+            }
         }
         m_windowOriginalLayeredState[window] = state;
     }
 
-    // Per documentation: clear WS_EX_LAYERED first, then set it again
-    // This ensures SetLayeredWindowAttributes works even if window was using UpdateLayeredWindow
+    // Clear WS_EX_LAYERED first to ensure SetLayeredWindowAttributes works
     if (isCurrentlyLayered)
     {
         SetWindowLong(window, GWL_EXSTYLE, exStyle & ~WS_EX_LAYERED);
-        exStyle = GetWindowLong(window, GWL_EXSTYLE); // Refresh exStyle
+        SetWindowPos(window, nullptr, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED);
+        exStyle = GetWindowLong(window, GWL_EXSTYLE);
     }
 
-    // Apply transparency
     BYTE alphaValue = static_cast<BYTE>((255 * percentage) / 100);
     SetWindowLong(window, GWL_EXSTYLE, exStyle | WS_EX_LAYERED);
     SetLayeredWindowAttributes(window, 0, alphaValue, LWA_ALPHA);
 }
 
-void AlwaysOnTop::RemoveTransparency(HWND window)
+void AlwaysOnTop::RestoreWindowAlpha(HWND window)
 {
-    if (!window)
+    if (!window || !IsWindow(window))
     {
         return;
     }
@@ -743,6 +785,7 @@ void AlwaysOnTop::RemoveTransparency(HWND window)
                 flags |= LWA_COLORKEY;
             }
             SetLayeredWindowAttributes(window, originalState.colorKey, originalState.originalAlpha, flags);
+            SetWindowPos(window, nullptr, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED);
         }
         else
         {
@@ -751,6 +794,7 @@ void AlwaysOnTop::RemoveTransparency(HWND window)
             {
                 SetLayeredWindowAttributes(window, 0, 255, LWA_ALPHA);
                 SetWindowLong(window, GWL_EXSTYLE, exStyle & ~WS_EX_LAYERED);
+                SetWindowPos(window, nullptr, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED);
             }
         }
         
@@ -765,19 +809,4 @@ void AlwaysOnTop::RemoveTransparency(HWND window)
             SetWindowLong(window, GWL_EXSTYLE, exStyle & ~WS_EX_LAYERED);
         }
     }
-}
-
-int AlwaysOnTop::GetWindowTransparency(HWND window) const
-{
-    auto it = m_windowTransparency.find(window);
-    if (it != m_windowTransparency.end())
-    {
-        return it->second;
-    }
-    return Settings::maxTransparencyPercentage; // Default to fully opaque
-}
-
-void AlwaysOnTop::SetWindowTransparency(HWND window, int percentage)
-{
-    m_windowTransparency[window] = percentage;
 }

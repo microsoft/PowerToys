@@ -51,7 +51,6 @@ private:
     HWND m_window{ nullptr };
     HINSTANCE m_hinstance;
     std::map<HWND, std::unique_ptr<WindowBorder>> m_topmostWindows{};
-    std::map<HWND, int> m_windowTransparency{}; // Track transparency per window (20-100)
     
     // Store original window layered state for proper restoration
     struct WindowLayeredState {
@@ -94,12 +93,11 @@ private:
     bool AssignBorder(HWND window);
     void RefreshBorders();
 
-    // Transparency adjustment methods
-    void AdjustTransparency(HWND window, int delta);
-    void ApplyTransparency(HWND window, int percentage);
-    void RemoveTransparency(HWND window);
-    int GetWindowTransparency(HWND window) const;
-    void SetWindowTransparency(HWND window, int percentage);
+    // Transparency methods
+    HWND ResolveTransparencyTargetWindow(HWND window);
+    void StepWindowTransparency(HWND window, int delta);
+    void ApplyWindowAlpha(HWND window, int percentage);
+    void RestoreWindowAlpha(HWND window);
 
     virtual void SettingsUpdate(SettingId type) override;
 
