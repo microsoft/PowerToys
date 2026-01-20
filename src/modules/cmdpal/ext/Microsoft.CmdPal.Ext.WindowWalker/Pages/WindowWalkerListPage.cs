@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.CmdPal.Ext.WindowWalker.Components;
 using Microsoft.CmdPal.Ext.WindowWalker.Helpers;
 using Microsoft.CmdPal.Ext.WindowWalker.Properties;
@@ -67,9 +68,8 @@ internal sealed partial class WindowWalkerListPage : DynamicListPage, IDisposabl
             return ResultHelper.GetResultList(results);
         }
 
-        var scored = ListHelpers.FilterListWithScores(windows, query, ScoreFunction);
-        var filtered = scored as Scored<Window>[] ?? new List<Scored<Window>>(scored).ToArray();
-        return ResultHelper.GetResultList(filtered);
+        var scored = ListHelpers.FilterListWithScores(windows, query, ScoreFunction).ToArray();
+        return ResultHelper.GetResultList(scored);
     }
 
     private static int ScoreFunction(string q, Window window)
