@@ -3,8 +3,9 @@
 // See the LICENSE file in the project root for more information.
 
 using ManagedCommon;
-using Microsoft.CmdPal.Common.Helpers;
-using Microsoft.CmdPal.Common.Services;
+using Microsoft.CmdPal.Core.Common;
+using Microsoft.CmdPal.Core.Common.Helpers;
+using Microsoft.CmdPal.Core.Common.Services;
 using Microsoft.CmdPal.Core.ViewModels;
 using Microsoft.CmdPal.Ext.Apps;
 using Microsoft.CmdPal.Ext.Bookmarks;
@@ -12,6 +13,7 @@ using Microsoft.CmdPal.Ext.Calc;
 using Microsoft.CmdPal.Ext.ClipboardHistory;
 using Microsoft.CmdPal.Ext.Indexer;
 using Microsoft.CmdPal.Ext.Registry;
+using Microsoft.CmdPal.Ext.RemoteDesktop;
 using Microsoft.CmdPal.Ext.Shell;
 using Microsoft.CmdPal.Ext.System;
 using Microsoft.CmdPal.Ext.TimeDate;
@@ -22,9 +24,11 @@ using Microsoft.CmdPal.Ext.WindowsTerminal;
 using Microsoft.CmdPal.Ext.WindowWalker;
 using Microsoft.CmdPal.Ext.WinGet;
 using Microsoft.CmdPal.UI.Helpers;
+using Microsoft.CmdPal.UI.Services;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.BuiltinCommands;
 using Microsoft.CmdPal.UI.ViewModels.Models;
+using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.PowerToys.Telemetry;
@@ -39,6 +43,8 @@ namespace Microsoft.CmdPal.UI;
 /// </summary>
 public partial class App : Application
 {
+    private readonly GlobalErrorHandler _globalErrorHandler = new();
+
     /// <summary>
     /// Gets the current <see cref="App"/> instance in use.
     /// </summary>
@@ -60,6 +66,10 @@ public partial class App : Application
     /// </summary>
     public App()
     {
+#if !CMDPAL_DISABLE_GLOBAL_ERROR_HANDLER
+        _globalErrorHandler.Register(this);
+#endif
+
         Services = ConfigureServices();
 
         this.InitializeComponent();
@@ -74,6 +84,11 @@ public partial class App : Application
                 AppWindow?.Close();
                 Environment.Exit(0);
             });
+
+        // Connect the PT logging to the core project's logging.
+        // This way, log statements from the core project will be captured by the PT logs
+        var logWrapper = new LogWrapper();
+        CoreLogger.InitializeLogger(logWrapper);
     }
 
     /// <summary>
@@ -99,6 +114,17 @@ public partial class App : Application
         // Root services
         services.AddSingleton(TaskScheduler.FromCurrentSynchronizationContext());
 
+        AddBuiltInCommands(services);
+
+        AddCoreServices(services);
+
+        AddUIServices(services);
+
+        return services.BuildServiceProvider();
+    }
+
+    private static void AddBuiltInCommands(ServiceCollection services)
+    {
         // Built-in Commands. Order matters - this is the order they'll be presented by default.
         var allApps = new AllAppsCommandProvider();
         var files = new IndexerCommandsProvider();
@@ -108,7 +134,7 @@ public partial class App : Application
         services.AddSingleton<ICommandProvider, ShellCommandsProvider>();
         services.AddSingleton<ICommandProvider, CalculatorCommandProvider>();
         services.AddSingleton<ICommandProvider>(files);
-        services.AddSingleton<ICommandProvider, BookmarksCommandProvider>();
+        services.AddSingleton<ICommandProvider, BookmarksCommandProvider>(_ => BookmarksCommandProvider.CreateWithDefaultStore());
 
         services.AddSingleton<ICommandProvider, WindowWalkerCommandsProvider>();
         services.AddSingleton<ICommandProvider, WebSearchCommandsProvider>();
@@ -122,8 +148,9 @@ public partial class App : Application
         try
         {
             var winget = new WinGetExtensionCommandsProvider();
-            var callback = allApps.LookupApp;
-            winget.SetAllLookup(callback);
+            winget.SetAllLookup(
+                query => allApps.LookupAppByPackageFamilyName(query, requireSingleMatch: true),
+                query => allApps.LookupAppByProductCode(query, requireSingleMatch: true));
             services.AddSingleton<ICommandProvider>(winget);
         }
         catch (Exception ex)
@@ -139,27 +166,41 @@ public partial class App : Application
         services.AddSingleton<ICommandProvider, BuiltInsCommandProvider>();
         services.AddSingleton<ICommandProvider, TimeDateCommandsProvider>();
         services.AddSingleton<ICommandProvider, SystemCommandExtensionProvider>();
+        services.AddSingleton<ICommandProvider, RemoteDesktopCommandProvider>();
+    }
 
+    private static void AddUIServices(ServiceCollection services)
+    {
         // Models
-        services.AddSingleton<TopLevelCommandManager>();
-        services.AddSingleton<AliasManager>();
-        services.AddSingleton<HotkeyManager>();
         var sm = SettingsModel.LoadSettings();
         services.AddSingleton(sm);
         var state = AppStateModel.LoadState();
         services.AddSingleton(state);
-        services.AddSingleton<IExtensionService, ExtensionService>();
+
+        // Services
+        services.AddSingleton<TopLevelCommandManager>();
+        services.AddSingleton<AliasManager>();
+        services.AddSingleton<HotkeyManager>();
+
+        services.AddSingleton<MainWindowViewModel>();
         services.AddSingleton<TrayIconService>();
+
+        services.AddSingleton<IThemeService, ThemeService>();
+        services.AddSingleton<ResourceSwapper>();
+    }
+
+    private static void AddCoreServices(ServiceCollection services)
+    {
+        // Core services
+        services.AddSingleton<IExtensionService, ExtensionService>();
         services.AddSingleton<IRunHistoryService, RunHistoryService>();
 
         services.AddSingleton<IRootPageService, PowerToysRootPageService>();
         services.AddSingleton<IAppHostService, PowerToysAppHostService>();
-        services.AddSingleton(new TelemetryForwarder());
+        services.AddSingleton<ITelemetryService, TelemetryForwarder>();
 
         // ViewModels
         services.AddSingleton<ShellViewModel>();
         services.AddSingleton<IPageViewModelFactoryService, CommandPalettePageViewModelFactory>();
-
-        return services.BuildServiceProvider();
     }
 }

@@ -34,7 +34,7 @@
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(VCInstallDir)UnitTest\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>$(OutDir)\..\..\WinUI3Apps\PowerRenameLib.lib;comctl32.lib;pathcch.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;Pathcch.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(OutDir)\..\..\WinUI3Apps\PowerRenameLib.lib;comctl32.lib;pathcch.lib;windowscodecs.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;Pathcch.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -49,11 +49,14 @@
     <ClInclude Include="CommonRegExTests.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="HelpersTests.cpp" />
     <ClCompile Include="MockPowerRenameItem.cpp" />
     <ClCompile Include="MockPowerRenameManagerEvents.cpp" />
     <ClCompile Include="MockPowerRenameRegExEvents.cpp" />
     <ClCompile Include="PowerRenameRegExBoostTests.cpp" />
     <ClCompile Include="PowerRenameManagerTests.cpp" />
+    <ClCompile Include="MetadataFormatHelperTests.cpp" />
+    <ClCompile Include="WICMetadataExtractorTests.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(UsePrecompiledHeaders)' != 'false'">Create</PrecompiledHeader>
     </ClCompile>
@@ -73,8 +76,36 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+    <!-- Include all test data files for deployment -->
+    <None Include="testdata\exif_test.jpg">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="testdata\exif_test_2.jpg">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="testdata\xmp_test.jpg">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="testdata\xmp_test_2.jpg">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="testdata\heif_test.heic">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="testdata\avif_test.avif">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="testdata\ATTRIBUTION.md">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <Target Name="CopyTestData" AfterTargets="Build">
+    <ItemGroup>
+      <TestDataFiles Include="$(ProjectDir)testdata\**\*.*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(TestDataFiles)" DestinationFolder="$(OutDir)testdata\%(RecursiveDir)" SkipUnchangedFiles="true" />
+  </Target>
   <ImportGroup Label="ExtensionTargets">
     <Import Project="..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.targets')" />
     <Import Project="..\..\..\..\packages\boost.1.87.0\build\boost.targets" Condition="Exists('..\..\..\..\packages\boost.1.87.0\build\boost.targets')" />

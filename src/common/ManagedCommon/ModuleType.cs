@@ -12,6 +12,7 @@ namespace ManagedCommon
         ColorPicker,
         CmdPal,
         CropAndLock,
+        CursorWrap,
         EnvironmentVariables,
         FancyZones,
         FileLocksmith,
@@ -19,6 +20,7 @@ namespace ManagedCommon
         Hosts,
         ImageResizer,
         KeyboardManager,
+        LightSwitch,
         MouseHighlighter,
         MouseJump,
         MousePointerCrosshairs,
@@ -34,5 +36,6 @@ namespace ManagedCommon
         PowerOCR,
         Workspaces,
         ZoomIt,
+        GeneralSettings,
     }
 }

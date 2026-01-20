@@ -21,7 +21,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
     {
         protected override string ModuleName => CropAndLockSettings.ModuleName;
 
-        private ISettingsUtils SettingsUtils { get; set; }
+        private SettingsUtils SettingsUtils { get; set; }
 
         private GeneralSettings GeneralSettingsConfig { get; set; }
 
@@ -29,7 +29,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private Func<string, int> SendConfigMSG { get; }
 
-        public CropAndLockViewModel(ISettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, ISettingsRepository<CropAndLockSettings> moduleSettingsRepository, Func<string, int> ipcMSGCallBackFunc)
+        public CropAndLockViewModel(SettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, ISettingsRepository<CropAndLockSettings> moduleSettingsRepository, Func<string, int> ipcMSGCallBackFunc)
         {
             ArgumentNullException.ThrowIfNull(settingsUtils);
 
@@ -49,6 +49,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             _reparentHotkey = Settings.Properties.ReparentHotkey.Value;
             _thumbnailHotkey = Settings.Properties.ThumbnailHotkey.Value;
+            _screenshotHotkey = Settings.Properties.ScreenshotHotkey.Value;
 
             // set the callback functions value to handle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
@@ -73,7 +74,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             var hotkeysDict = new Dictionary<string, HotkeySettings[]>
             {
-                [ModuleName] = [ReparentActivationShortcut, ThumbnailActivationShortcut],
+                [ModuleName] = [ReparentActivationShortcut, ThumbnailActivationShortcut, ScreenshotActivationShortcut],
             };
 
             return hotkeysDict;
@@ -172,6 +173,36 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public HotkeySettings ScreenshotActivationShortcut
+        {
+            get => _screenshotHotkey;
+            set
+            {
+                if (value != _screenshotHotkey)
+                {
+                    if (value == null)
+                    {
+                        _screenshotHotkey = CropAndLockProperties.DefaultScreenshotHotkeyValue;
+                    }
+                    else
+                    {
+                        _screenshotHotkey = value;
+                    }
+
+                    Settings.Properties.ScreenshotHotkey.Value = _screenshotHotkey;
+                    NotifyPropertyChanged();
+
+                    // Using InvariantCulture as this is an IPC message
+                    SendConfigMSG(
+                        string.Format(
+                            CultureInfo.InvariantCulture,
+                            "{{ \"powertoys\": {{ \"{0}\": {1} }} }}",
+                            CropAndLockSettings.ModuleName,
+                            JsonSerializer.Serialize(Settings, SourceGenerationContextContext.Default.CropAndLockSettings)));
+                }
+            }
+        }
+
         public void NotifyPropertyChanged([CallerMemberName] string propertyName = null)
         {
             OnPropertyChanged(propertyName);
@@ -189,5 +220,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private bool _isEnabled;
         private HotkeySettings _reparentHotkey;
         private HotkeySettings _thumbnailHotkey;
+        private HotkeySettings _screenshotHotkey;
     }
 }

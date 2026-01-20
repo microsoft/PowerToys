@@ -70,7 +70,7 @@ internal static class Event
             // Check if easy mouse setting is enabled.
             bool isEasyMouseEnabled = IsSwitchingByMouseEnabled();
 
-            if (isEasyMouseEnabled && Common.Sk != null && (Common.DesMachineID == Common.MachineID || !Setting.Values.MoveMouseRelatively) && e.dwFlags == Common.WM_MOUSEMOVE)
+            if (isEasyMouseEnabled && Common.Sk != null && (Common.DesMachineID == Common.MachineID || !Setting.Values.MoveMouseRelatively) && e.dwFlags == WM.WM_MOUSEMOVE)
             {
                 Point p = MachineStuff.MoveToMyNeighbourIfNeeded(e.X, e.Y, MachineStuff.desMachineID);
 
@@ -78,7 +78,7 @@ internal static class Event
                 // if they are, check that there is no application running in fullscreen mode before switching.
                 if (!p.IsEmpty && Common.IsEasyMouseSwitchAllowed())
                 {
-                    Common.HasSwitchedMachineSinceLastCopy = true;
+                    Clipboard.HasSwitchedMachineSinceLastCopy = true;
 
                     Logger.LogDebug(string.Format(
                         CultureInfo.CurrentCulture,
@@ -115,7 +115,7 @@ internal static class Event
 
                 Common.SkSend(MousePackage, null, false);
 
-                if (MousePackage.Md.dwFlags is Common.WM_LBUTTONUP or Common.WM_RBUTTONUP)
+                if (MousePackage.Md.dwFlags is WM.WM_LBUTTONUP or WM.WM_RBUTTONUP)
                 {
                     Thread.Sleep(10);
                 }
@@ -218,10 +218,10 @@ internal static class Event
 
                 if (MachineStuff.desMachineID == Common.MachineID)
                 {
-                    if (Common.GetTick() - Common.clipboardCopiedTime < Common.BIG_CLIPBOARD_DATA_TIMEOUT)
+                    if (Common.GetTick() - Clipboard.clipboardCopiedTime < Clipboard.BIG_CLIPBOARD_DATA_TIMEOUT)
                     {
-                        Common.clipboardCopiedTime = 0;
-                        Common.GetRemoteClipboard("PrepareToSwitchToMachine");
+                        Clipboard.clipboardCopiedTime = 0;
+                        Clipboard.GetRemoteClipboard("PrepareToSwitchToMachine");
                     }
                 }
                 else
@@ -265,7 +265,7 @@ internal static class Event
                 KeybdPackage.Kd = e;
                 KeybdPackage.DateTime = Common.GetTick();
                 Common.SkSend(KeybdPackage, null, false);
-                if (KeybdPackage.Kd.dwFlags is Common.WM_KEYUP or Common.WM_SYSKEYUP)
+                if (KeybdPackage.Kd.dwFlags is WM.WM_KEYUP or WM.WM_SYSKEYUP)
                 {
                     Thread.Sleep(10);
                 }

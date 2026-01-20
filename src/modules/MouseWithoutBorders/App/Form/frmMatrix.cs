@@ -22,6 +22,8 @@ using Microsoft.PowerToys.Telemetry;
 // </history>
 using MouseWithoutBorders.Class;
 using MouseWithoutBorders.Core;
+
+using Clipboard = MouseWithoutBorders.Core.Clipboard;
 using Timer = System.Windows.Forms.Timer;
 
 [module: SuppressMessage("Microsoft.Globalization", "CA1300:SpecifyMessageBoxOptions", Scope = "member", Target = "MouseWithoutBorders.frmMatrix.#buttonOK_Click(System.Object,System.EventArgs)", Justification = "Dotnet port with style preservation")]
@@ -110,7 +112,7 @@ namespace MouseWithoutBorders
             {
                 SocketStuff.InvalidKeyFound = false;
                 showInvalidKeyMessage = false;
-                Common.ReopenSocketDueToReadError = true;
+                InitAndCleanup.ReopenSocketDueToReadError = true;
                 Common.ReopenSockets(true);
 
                 for (int i = 0; i < 10; i++)
@@ -133,7 +135,7 @@ namespace MouseWithoutBorders
         internal void UpdateKeyTextBox()
         {
             _ = Helper.GetUserName();
-            textBoxEnc.Text = Common.MyKey;
+            textBoxEnc.Text = Encryption.MyKey;
         }
 
         private void InitAll()
@@ -503,19 +505,19 @@ namespace MouseWithoutBorders
 
         private bool UpdateKey(string newKey)
         {
-            if (!Common.IsKeyValid(newKey, out string rv))
+            if (!Encryption.IsKeyValid(newKey, out string rv))
             {
                 ShowKeyErrorMsg(rv);
                 return false;
             }
 
-            if (!newKey.Equals(Common.MyKey, StringComparison.OrdinalIgnoreCase))
+            if (!newKey.Equals(Encryption.MyKey, StringComparison.OrdinalIgnoreCase))
             {
-                Common.MyKey = newKey;
-                Common.GeneratedKey = false;
+                Encryption.MyKey = newKey;
+                Encryption.GeneratedKey = false;
             }
 
-            Common.MagicNumber = Common.Get24BitHash(Common.MyKey);
+            Encryption.MagicNumber = Encryption.Get24BitHash(Encryption.MyKey);
             return true;
         }
 
@@ -780,7 +782,7 @@ namespace MouseWithoutBorders
 
             ShowUpdateMessage();
 
-            Common.HasSwitchedMachineSinceLastCopy = true;
+            Clipboard.HasSwitchedMachineSinceLastCopy = true;
         }
 
         private void CheckBoxDisableCAD_CheckedChanged(object sender, EventArgs e)
@@ -1114,10 +1116,10 @@ namespace MouseWithoutBorders
 
             if (MessageBox.Show(message, Application.ProductName, MessageBoxButtons.YesNo, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button2) == DialogResult.Yes)
             {
-                Setting.Values.MyKey = Common.MyKey = Common.CreateRandomKey();
-                textBoxEnc.Text = Common.MyKey;
+                Setting.Values.MyKey = Encryption.MyKey = Encryption.CreateRandomKey();
+                textBoxEnc.Text = Encryption.MyKey;
                 checkBoxShowKey.Checked = true;
-                Common.GeneratedKey = true;
+                Encryption.GeneratedKey = true;
                 ButtonOK_Click(null, null);
                 Common.ShowToolTip("New security key was generated, update other machines to the same key.", 10000, ToolTipIcon.Info, false);
             }

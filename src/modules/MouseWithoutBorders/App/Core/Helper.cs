@@ -119,7 +119,7 @@ internal static class Helper
 
                 if (MachineStuff.NewDesMachineID == Common.MachineID)
                 {
-                    Common.ReleaseAllKeys();
+                    InitAndCleanup.ReleaseAllKeys();
                 }
             }
         }
@@ -290,14 +290,14 @@ internal static class Helper
             return;
         }
 
-        if (!Common.IsMyDesktopActive())
+        if (!WinAPI.IsMyDesktopActive())
         {
             return;
         }
 
-        if (!Common.IpcChannelCreated)
+        if (!IpcChannelHelper.IpcChannelCreated)
         {
-            Logger.TelemetryLogTrace($"{nameof(Common.IpcChannelCreated)} = {Common.IpcChannelCreated}. {Logger.GetStackTrace(new StackTrace())}", SeverityLevel.Warning);
+            Logger.TelemetryLogTrace($"{nameof(IpcChannelHelper.IpcChannelCreated)} = {IpcChannelHelper.IpcChannelCreated}. {Logger.GetStackTrace(new StackTrace())}", SeverityLevel.Warning);
             return;
         }
 
@@ -314,10 +314,10 @@ internal static class Helper
             _ = Launch.CreateProcessInInputDesktopSession(
                 $"\"{Path.GetDirectoryName(Application.ExecutablePath)}\\{HelperProcessName}.exe\"",
                 string.Empty,
-                Common.GetInputDesktop(),
+                WinAPI.GetInputDesktop(),
                 0);
 
-            Common.HasSwitchedMachineSinceLastCopy = true;
+            Clipboard.HasSwitchedMachineSinceLastCopy = true;
 
             // Common.CreateLowIntegrityProcess("\"" + Path.GetDirectoryName(Application.ExecutablePath) + "\\MouseWithoutBordersHelper.exe\"", string.Empty, 0, false, 0);
             var processes = Process.GetProcessesByName(HelperProcessName);
@@ -379,7 +379,7 @@ internal static class Helper
         log += "=============================================================================================================================\r\n";
         log += $"{Application.ProductName} version {Application.ProductVersion}\r\n";
 
-        log += $"{Setting.Values.Username}/{Common.GetDebugInfo(Common.MyKey)}\r\n";
+        log += $"{Setting.Values.Username}/{Encryption.GetDebugInfo(Encryption.MyKey)}\r\n";
         log += $"{Common.MachineName}/{Common.MachineID}/{Common.DesMachineID}\r\n";
         log += $"Id: {Setting.Values.DeviceId}\r\n";
         log += $"Matrix: {string.Join(",", MachineStuff.MachineMatrix)}\r\n";

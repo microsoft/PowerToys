@@ -2,7 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using Microsoft.CmdPal.Core.ViewModels.Messages;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
@@ -11,7 +10,7 @@ namespace Microsoft.CmdPal.UI.ViewModels.BuiltinCommands;
 /// <summary>
 /// Built-in Provider for a top-level command which can quit the application. Invokes the <see cref="QuitCommand"/>, which sends a <see cref="QuitMessage"/>.
 /// </summary>
-public partial class BuiltInsCommandProvider : CommandProvider
+public sealed partial class BuiltInsCommandProvider : CommandProvider
 {
     private readonly OpenSettingsCommand openSettings = new();
     private readonly QuitCommand quitCommand = new();
@@ -21,20 +20,26 @@ public partial class BuiltInsCommandProvider : CommandProvider
 
     public override ICommandItem[] TopLevelCommands() =>
         [
-            new CommandItem(openSettings) { Subtitle = Properties.Resources.builtin_open_settings_subtitle },
-            new CommandItem(_newExtension) { Title = _newExtension.Title, Subtitle = Properties.Resources.builtin_new_extension_subtitle },
+            new CommandItem(openSettings) { },
+            new CommandItem(_newExtension) { Title = _newExtension.Title },
         ];
 
     public override IFallbackCommandItem[] FallbackCommands() =>
         [
-            new FallbackCommandItem(quitCommand, displayTitle: Properties.Resources.builtin_quit_subtitle) { Subtitle = Properties.Resources.builtin_quit_subtitle },
+            new FallbackCommandItem(
+                    quitCommand,
+                    Properties.Resources.builtin_quit_subtitle,
+                    quitCommand.Id)
+            {
+                Subtitle = Properties.Resources.builtin_quit_subtitle,
+            },
             _fallbackReloadItem,
             _fallbackLogItem,
         ];
 
     public BuiltInsCommandProvider()
     {
-        Id = "Core";
+        Id = "com.microsoft.cmdpal.builtin.core";
         DisplayName = Properties.Resources.builtin_display_name;
         Icon = IconHelpers.FromRelativePath("Assets\\StoreLogo.scale-200.png");
     }

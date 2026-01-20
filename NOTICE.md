@@ -75,6 +75,37 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 ```
 
+### ToolGood.Words.Pinyin
+
+We use the ToolGood.Words.Pinyin NuGet package for converting Chinese characters to pinyin.
+
+**Source**: [https://github.com/toolgood/ToolGood.Words.Pinyin](https://github.com/toolgood/ToolGood.Words.Pinyin)
+
+```
+MIT License
+
+Copyright (c) 2020 ToolGood
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
+
+
 ## Utility: Command Palette Built-in Extensions
 
 ### Calculator
@@ -1495,10 +1526,10 @@ SOFTWARE.
 - AdaptiveCards.Rendering.WinUI3
 - AdaptiveCards.Templating
 - Appium.WebDriver
-- Azure.AI.OpenAI
 - CoenM.ImageSharp.ImageHash
 - CommunityToolkit.Common
 - CommunityToolkit.Labs.WinUI.Controls.MarkdownTextBlock
+- CommunityToolkit.Labs.WinUI.Controls.OpacityMaskView
 - CommunityToolkit.Mvvm
 - CommunityToolkit.WinUI.Animations
 - CommunityToolkit.WinUI.Collections
@@ -1509,7 +1540,6 @@ SOFTWARE.
 - CommunityToolkit.WinUI.Converters
 - CommunityToolkit.WinUI.Extensions
 - CommunityToolkit.WinUI.UI.Controls.DataGrid
-- CommunityToolkit.WinUI.UI.Controls.Markdown
 - ControlzEx
 - HelixToolkit
 - HelixToolkit.Core.Wpf
@@ -1522,6 +1552,7 @@ SOFTWARE.
 - ModernWpfUI
 - Moq
 - MSTest
+- NJsonSchema
 - NLog
 - NLog.Extensions.Logging
 - NLog.Schema
@@ -1529,9 +1560,11 @@ SOFTWARE.
 - ReverseMarkdown
 - ScipBe.Common.Office.OneNote
 - SharpCompress
+- Shmuelie.WinRTServer
 - SkiaSharp.Views.WinUI
 - StreamJsonRpc
 - StyleCop.Analyzers
+- ToolGood.Words.Pinyin
 - UnicodeInformation
 - UnitsNet
 - UTF.Unknown

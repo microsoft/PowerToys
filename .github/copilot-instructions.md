@@ -1,43 +1,45 @@
-# PowerToys – Copilot guide (concise)
+---
+description: 'PowerToys AI contributor guidance'
+---
 
-This is the top-level guide for AI changes. Keep edits small, follow existing patterns, and cite exact paths in PRs.
+# PowerToys – Copilot Instructions
 
-Repo map (1‑line per area)
-- Core apps: `src/runner/**` (tray/loader), `src/settings-ui/**` (Settings app)
-- Shared libs: `src/common/**`
-- Modules: `src/modules/*` (one per utility; Command Palette in `src/modules/cmdpal/**`)
-- Build tools/docs: `tools/**`, `doc/devdocs/**`
+Concise guidance for AI contributions. For complete details, see [AGENTS.md](../AGENTS.md).
 
-Build and test (defaults)
-- Prerequisites: Visual Studio 2022 17.4+, minimal Windows 10 1803+.
-- Build discipline:
-  - One terminal per operation (build → test). Don’t switch/open new ones mid-flow.
-  - After making changes, `cd` to the project folder that changed (`.csproj`/`.vcxproj`).
-  - Use script(s) to build, synchronously block and wait in foreground for it to finish: `tools/build/build.ps1|.cmd` (current folder), `build-essentials.*` (once per brand new build for missing nuget packages)
-  - Treat build **exit code 0** as success; any non-zero exit code is a failure, have Copilot read the errors log in the build folder (e.g., `build.*.*.errors.log`) and surface problems.
-  - Don’t start tests or launch Runner until the previous step succeeded.
-- Tests (fast + targeted):
-  - Find the test project by product code prefix (e.g., FancyZones, AdvancedPaste). Look for a sibling folder or 1–2 levels up named like `<Product>*UnitTests` or `<Product>*UITests`.
-  - Build the test project, wait for **exit**, then run only those tests via VS Test Explorer or `vstest.console.exe` with filters. Avoid `dotnet test` in this repo.
-  - Add/adjust tests when changing behavior; if skipped, state why (e.g., comment-only, string rename).
+## Quick Reference
 
-Pull requests (expectations)
-- Atomic: one logical change; no drive‑by refactors.
-- Describe: problem / approach / risk / test evidence.
-- List: touched paths if not obvious.
+- **Build**: `tools\build\build-essentials.cmd` (first time), then `tools\build\build.cmd`
+- **Tests**: Find `<Product>*UnitTests` project, build it, run via VS Test Explorer
+- **Exit code 0 = success** – do not proceed if build fails
 
-When to ask for clarification
-- Ambiguous spec after scanning relevant docs (see below).
-- Cross-module impact (shared enum/struct) not clear.
-- Security / elevation / installer changes.
+## Key Rules
 
-Logging (use existing stacks)
-- C++: `src/common/logger/**` (`Logger::info|warn|error|debug`). Keep hot paths quiet (hooks, tight loops).
-- C#: `ManagedCommon.Logger` (`LogInfo|LogWarning|LogError|LogDebug|LogTrace`). Some UIs use injected `ILogger` via `LoggerInstance.Logger`.
+- One terminal per operation (build → test)
+- Atomic PRs: one logical change, no drive-by refactors
+- Add tests when changing behavior
+- Keep hot paths quiet (no logging in hooks/tight loops)
 
-Docs to consult
-- `tools/build/BUILD-GUIDELINES.md`
-- `doc/devdocs/core/architecture.md`, `doc/devdocs/core/runner.md`, `doc/devdocs/core/settings/readme.md`, `doc/devdocs/modules/readme.md`
+## Style Enforcement
 
-Done checklist (self review before finishing)
-- Build clean? Tests updated/passed? No unintended formatting? Any new dependency? Documented skips?
+- C#: `src/.editorconfig`, StyleCop.Analyzers
+- C++: `src/.clang-format`
+- XAML: XamlStyler
+
+## When to Ask for Clarification
+
+- Ambiguous spec after scanning docs
+- Cross-module impact unclear
+- Security, elevation, or installer changes
+
+## Component-Specific Instructions
+
+These are auto-applied based on file location:
+- [Runner & Settings UI](.github/instructions/runner-settings-ui.instructions.md)
+- [Common Libraries](.github/instructions/common-libraries.instructions.md)
+
+## Detailed Documentation
+
+- [AGENTS.md](../AGENTS.md) – Full contributor guide
+- [Build Guidelines](../tools/build/BUILD-GUIDELINES.md)
+- [Architecture](../doc/devdocs/core/architecture.md)
+- [Coding Style](../doc/devdocs/development/style.md)

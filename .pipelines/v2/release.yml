@@ -20,11 +20,6 @@ parameters:
     type: string
     default: '0.0.1'
 
-  - name: installerSuffix
-    type: string
-    displayName: "WiX5 installer suffix (e.g., 'wix5', 'vnext', etc.)"
-    default: "wix5"
-
   - name: buildConfigurations
     displayName: "Build Configurations"
     type: object
@@ -43,11 +38,6 @@ parameters:
     displayName: "Build Using Visual Studio Preview"
     default: false
 
-  - name: enableAOT
-    type: boolean
-    displayName: "Enable AOT (Ahead-of-Time) Compilation for CmdPal"
-    default: true
-
 name: $(BuildDefinitionName)_$(date:yyMM).$(date:dd)$(rev:rrr)
 
 variables:
@@ -62,8 +52,6 @@ extends:
       name: SHINE-INT-S
       ${{ if eq(parameters.useVSPreview, true) }}:
         demands: ImageOverride -equals SHINE-VS17-Preview
-      ${{ else }}:
-        image: SHINE-VS17-Latest
       os: windows
     sdl:
       tsa:
@@ -83,10 +71,10 @@ extends:
             parameters:
               pool:
                 name: SHINE-INT-L
-                ${{ if eq(parameters.useVSPreview, true) }}:
-                  demands: ImageOverride -equals SHINE-VS17-Preview
-                ${{ else }}:
-                  image: SHINE-VS17-Latest
+                demands:
+                  # Our INT agents have a large disk mounted at P:\
+                  - ${{ if eq(parameters.useVSPreview, true) }}:
+                    - ImageOverride -equals SHINE-VS17-Preview
                 os: windows
               variables:
                 IsPipeline: 1 # The installer uses this to detect whether it should pick up localizations
@@ -109,8 +97,7 @@ extends:
                 useManagedIdentity: $(SigningUseManagedIdentity)
                 clientId: $(SigningOriginalClientId)
               # Have msbuild use the release nuget config profile
-              additionalBuildOptions: /p:RestoreConfigFile="$(Build.SourcesDirectory)\.pipelines\release-nuget.config" /p:EnableCmdPalAOT=${{ parameters.enableAOT }} /p:InstallerSuffix=${{ parameters.installerSuffix }}
-              installerSuffix: ${{ parameters.installerSuffix }}
+              additionalBuildOptions: /p:RestoreConfigFile="$(Build.SourcesDirectory)\.pipelines\release-nuget.config" /p:EnableCmdPalAOT=true
               beforeBuildSteps:
                 # Sets versions for all PowerToy created DLLs
                 - pwsh: |-
@@ -136,7 +123,6 @@ extends:
             parameters:
               pool:
                 name: SHINE-INT-L
-                image: SHINE-VS17-Latest
                 os: windows
               official: true
               codeSign: true
