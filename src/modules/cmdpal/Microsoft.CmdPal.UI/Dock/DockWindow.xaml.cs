@@ -17,7 +17,6 @@ using Microsoft.UI.Dispatching;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Windows.Foundation;
-using Windows.UI;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.Graphics.Dwm;
@@ -44,13 +43,15 @@ public sealed partial class DockWindow : WindowEx,
 #pragma warning restore SA1310 // Field names should not contain underscore
 #pragma warning restore SA1306 // Field names should begin with lower-case letter
 
+    private readonly IThemeService _themeService;
+    private readonly DockWindowViewModel _windowViewModel;
+
     private HWND _hwnd = HWND.Null;
     private APPBARDATA _appBarData;
     private uint _callbackMessageId;
 
     private DockSettings _settings;
     private DockViewModel viewModel;
-    private DockWindowViewModel _windowViewModel;
     private DockControl _dock;
     private DesktopAcrylicController? _acrylicController;
     private SystemBackdropConfiguration? _configurationSource;
@@ -70,8 +71,9 @@ public sealed partial class DockWindow : WindowEx,
         _lastSize = _settings.DockSize;
 
         viewModel = serviceProvider.GetService<DockViewModel>()!;
-        var themeService = serviceProvider.GetRequiredService<IThemeService>();
-        _windowViewModel = new DockWindowViewModel(themeService);
+        _themeService = serviceProvider.GetRequiredService<IThemeService>();
+        _themeService.ThemeChanged += ThemeService_ThemeChanged;
+        _windowViewModel = new DockWindowViewModel(_themeService);
         _dock = new DockControl(viewModel);
 
         InitializeComponent();
@@ -200,7 +202,15 @@ public sealed partial class DockWindow : WindowEx,
             _acrylicController.Dispose();
         }
 
-        _acrylicController = GetAcrylicConfig(Content, _settings);
+        var backdrop = _themeService.CurrentDockTheme.BackdropParameters;
+        _acrylicController = new DesktopAcrylicController
+        {
+            Kind = DesktopAcrylicKind.Thin,
+            TintColor = backdrop.TintColor,
+            TintOpacity = backdrop.TintOpacity,
+            FallbackColor = backdrop.FallbackColor,
+            LuminosityOpacity = backdrop.LuminosityOpacity,
+        };
 
         // Enable the system backdrop.
         // Note: Be sure to have "using WinRT;" to support the Window.As<...>() call.
@@ -218,49 +228,15 @@ public sealed partial class DockWindow : WindowEx,
         }
     }
 
-    private static DesktopAcrylicController GetAcrylicConfig(UIElement content, DockSettings settings)
+    private void ThemeService_ThemeChanged(object? sender, ThemeChangedEventArgs e)
     {
-        var feContent = content as FrameworkElement;
-        var isLight = feContent?.ActualTheme == ElementTheme.Light;
-
-        // Determine if we should apply a custom tint based on colorization mode
-        var useCustomTint = settings.ColorizationMode is ColorizationMode.CustomColor
-                         or ColorizationMode.WindowsAccentColor;
-
-        if (useCustomTint && settings.CustomThemeColor.A > 0)
+        DispatcherQueue.TryEnqueue(() =>
         {
-            var tintColor = settings.CustomThemeColor;
-            var tintIntensity = settings.CustomThemeColorIntensity / 100.0f;
-
-            // Blend the custom color with the base acrylic
-            return new DesktopAcrylicController()
+            if (_settings.Backdrop == DockBackdrop.Acrylic)
             {
-                Kind = DesktopAcrylicKind.Thin,
-                TintColor = tintColor,
-                TintOpacity = tintIntensity * 0.8f, // Scale the intensity for tint opacity
-                LuminosityOpacity = isLight ? 0.90f : 0.96f,
-                FallbackColor = tintColor,
-            };
-        }
-
-        // Default acrylic configuration without custom tint
-        return isLight
-            ? new DesktopAcrylicController()
-            {
-                Kind = DesktopAcrylicKind.Thin,
-                TintColor = Color.FromArgb(255, 243, 243, 243),
-                LuminosityOpacity = 0.90f,
-                TintOpacity = 0.0f,
-                FallbackColor = Color.FromArgb(255, 238, 238, 238),
+                UpdateAcrylic();
             }
-            : new DesktopAcrylicController()
-            {
-                Kind = DesktopAcrylicKind.Thin,
-                TintColor = Color.FromArgb(255, 32, 32, 32),
-                LuminosityOpacity = 0.96f,
-                TintOpacity = 0.5f,
-                FallbackColor = Color.FromArgb(255, 28, 28, 28),
-            };
+        });
     }
 
     private void CreateAppBar(HWND hwnd)
@@ -640,6 +616,7 @@ public sealed partial class DockWindow : WindowEx,
         var serviceProvider = App.Current.Services;
         var settings = serviceProvider.GetService<SettingsModel>();
         settings?.SettingsChanged -= SettingsChangedHandler;
+        _themeService.ThemeChanged -= ThemeService_ThemeChanged;
         DisposeAcrylic();
 
         // Remove our appbar registration
