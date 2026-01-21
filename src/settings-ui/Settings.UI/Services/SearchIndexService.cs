@@ -3,20 +3,15 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
-using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Reflection;
-using System.Text;
 using System.Text.Json;
 using System.Threading;
-using System.Threading.Tasks;
-using Common.Search.FuzzSearch;
 using Microsoft.PowerToys.Settings.UI.Helpers;
+using Microsoft.PowerToys.Settings.UI.Services.Search;
 using Microsoft.PowerToys.Settings.UI.Views;
 using Microsoft.Windows.ApplicationModel.Resources;
 using Settings.UI.Library;
@@ -27,13 +22,42 @@ namespace Microsoft.PowerToys.Settings.UI.Services
     {
         private static readonly object _lockObject = new();
         private static readonly Dictionary<string, string> _pageNameCache = [];
-        private static readonly Dictionary<string, (string HeaderNorm, string DescNorm)> _normalizedTextCache = new();
         private static readonly Dictionary<string, Type> _pageTypeCache = new();
         private static ImmutableArray<SettingEntry> _index = [];
+        private static ISearchProvider _searchProvider;
         private static bool _isIndexBuilt;
         private static bool _isIndexBuilding;
         private const string PrebuiltIndexResourceName = "Microsoft.PowerToys.Settings.UI.Assets.search.index.json";
         private static JsonSerializerOptions _serializerOptions = new() { PropertyNameCaseInsensitive = true };
+
+        /// <summary>
+        /// Gets or sets the search provider. Defaults to FuzzSearchProvider if not set.
+        /// </summary>
+        public static ISearchProvider SearchProvider
+        {
+            get
+            {
+                lock (_lockObject)
+                {
+                    _searchProvider ??= new FuzzSearchProvider();
+                    return _searchProvider;
+                }
+            }
+
+            set
+            {
+                lock (_lockObject)
+                {
+                    _searchProvider = value;
+
+                    // If index is already built, reinitialize the new provider
+                    if (_isIndexBuilt && _searchProvider != null)
+                    {
+                        _searchProvider.InitializeAsync(_index).ConfigureAwait(false);
+                    }
+                }
+            }
+        }
 
         public static ImmutableArray<SettingEntry> Index
         {
@@ -52,7 +76,7 @@ namespace Microsoft.PowerToys.Settings.UI.Services
             {
                 lock (_lockObject)
                 {
-                    return _isIndexBuilt;
+                    return _isIndexBuilt && SearchProvider.IsReady;
                 }
             }
         }
@@ -69,7 +93,6 @@ namespace Microsoft.PowerToys.Settings.UI.Services
                 _isIndexBuilding = true;
 
                 // Clear caches on rebuild
-                _normalizedTextCache.Clear();
                 _pageTypeCache.Clear();
             }
 
@@ -78,12 +101,17 @@ namespace Microsoft.PowerToys.Settings.UI.Services
                 var builder = ImmutableArray.CreateBuilder<SettingEntry>();
                 LoadIndexFromPrebuiltData(builder);
 
+                ImmutableArray<SettingEntry> builtIndex;
                 lock (_lockObject)
                 {
                     _index = builder.ToImmutable();
+                    builtIndex = _index;
                     _isIndexBuilt = true;
                     _isIndexBuilding = false;
                 }
+
+                // Initialize the search provider with the index
+                SearchProvider.InitializeAsync(builtIndex).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -209,57 +237,32 @@ namespace Microsoft.PowerToys.Settings.UI.Services
                 return [];
             }
 
-            var currentIndex = Index;
-            if (currentIndex.IsEmpty)
+            if (!IsIndexReady)
             {
-                Debug.WriteLine("[SearchIndexService] Search called but index is empty.");
+                Debug.WriteLine("[SearchIndexService] Search called but index is not ready.");
                 return [];
             }
 
-            var normalizedQuery = NormalizeString(query);
-            var bag = new ConcurrentBag<(SettingEntry Hit, double Score)>();
-            var po = new ParallelOptions
-            {
-                CancellationToken = token,
-                MaxDegreeOfParallelism = Math.Max(1, Environment.ProcessorCount - 1),
-            };
+            // Delegate search to the pluggable search provider
+            var results = SearchProvider.Search(query, token);
 
-            try
+            // Filter results to ensure page types are valid
+            return FilterValidPageTypes(results);
+        }
+
+        private static List<SettingEntry> FilterValidPageTypes(List<SettingEntry> results)
+        {
+            var filtered = new List<SettingEntry>();
+            foreach (var entry in results)
             {
-                Parallel.ForEach(currentIndex, po, entry =>
+                var pageType = GetPageTypeFromName(entry.PageTypeName);
+                if (pageType != null)
                 {
-                    var (headerNorm, descNorm) = GetNormalizedTexts(entry);
-                    var captionScoreResult = StringMatcher.FuzzyMatch(normalizedQuery, headerNorm);
-                    double score = captionScoreResult.Score;
-
-                    if (!string.IsNullOrEmpty(descNorm))
-                    {
-                        var descriptionScoreResult = StringMatcher.FuzzyMatch(normalizedQuery, descNorm);
-                        if (descriptionScoreResult.Success)
-                        {
-                            score = Math.Max(score, descriptionScoreResult.Score * 0.8);
-                        }
-                    }
-
-                    if (score > 0)
-                    {
-                        var pageType = GetPageTypeFromName(entry.PageTypeName);
-                        if (pageType != null)
-                        {
-                            bag.Add((entry, score));
-                        }
-                    }
-                });
-            }
-            catch (OperationCanceledException)
-            {
-                return [];
+                    filtered.Add(entry);
+                }
             }
 
-            return bag
-                .OrderByDescending(r => r.Score)
-                .Select(r => r.Hit)
-                .ToList();
+            return filtered;
         }
 
         private static Type GetPageTypeFromName(string pageTypeName)
@@ -281,53 +284,6 @@ namespace Microsoft.PowerToys.Settings.UI.Services
                 _pageTypeCache[pageTypeName] = type;
                 return type;
             }
-        }
-
-        private static (string HeaderNorm, string DescNorm) GetNormalizedTexts(SettingEntry entry)
-        {
-            if (entry.ElementUid == null && entry.Header == null)
-            {
-                return (NormalizeString(entry.Header), NormalizeString(entry.Description));
-            }
-
-            var key = entry.ElementUid ?? $"{entry.PageTypeName}|{entry.ElementName}";
-            lock (_lockObject)
-            {
-                if (_normalizedTextCache.TryGetValue(key, out var cached))
-                {
-                    return cached;
-                }
-            }
-
-            var headerNorm = NormalizeString(entry.Header);
-            var descNorm = NormalizeString(entry.Description);
-            lock (_lockObject)
-            {
-                _normalizedTextCache[key] = (headerNorm, descNorm);
-            }
-
-            return (headerNorm, descNorm);
-        }
-
-        private static string NormalizeString(string input)
-        {
-            if (string.IsNullOrEmpty(input))
-            {
-                return string.Empty;
-            }
-
-            var normalized = input.ToLowerInvariant().Normalize(NormalizationForm.FormKD);
-            var stringBuilder = new StringBuilder();
-            foreach (var c in normalized)
-            {
-                var unicodeCategory = CharUnicodeInfo.GetUnicodeCategory(c);
-                if (unicodeCategory != UnicodeCategory.NonSpacingMark)
-                {
-                    stringBuilder.Append(c);
-                }
-            }
-
-            return stringBuilder.ToString();
         }
 
         public static string GetLocalizedPageName(string pageTypeName)

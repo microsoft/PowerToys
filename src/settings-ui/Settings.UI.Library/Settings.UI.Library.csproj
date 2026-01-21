@@ -23,6 +23,7 @@
         <ProjectReference Include="..\..\common\ManagedCommon\ManagedCommon.csproj" />
         <ProjectReference Include="..\..\common\ManagedTelemetry\Telemetry\ManagedTelemetry.csproj" />
         <ProjectReference Include="..\..\modules\MouseUtils\MouseJump.Common\MouseJump.Common.csproj" />
+        <ProjectReference Include="..\..\common\Common.Search\Common.Search.csproj" />
     </ItemGroup>
 
     <ItemGroup>

@@ -4,5 +4,11 @@
 
   <PropertyGroup>
     <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
+
+  <!-- Exclude SemanticSearch until experimental SDK is available -->
+  <ItemGroup>
+    <Compile Remove="SemanticSearch\**" />
+  </ItemGroup>
 </Project>

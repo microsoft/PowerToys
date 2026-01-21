@@ -25,9 +25,9 @@ public class StringMatcher
     /// 6. Move onto the next substring's characters until all substrings are checked.
     /// 7. Consider success and move onto scoring if every char or substring without whitespaces matched
     /// </summary>
-    public static MatchResult FuzzyMatch(string query, string stringToCompare, MatchOption opt = null)
+    public static MatchResult FuzzyMatch(string query, string stringToCompare, MatchOption? opt = null)
     {
-        opt = opt ?? new MatchOption();
+        opt ??= new MatchOption();
 
         if (string.IsNullOrEmpty(stringToCompare))
         {
