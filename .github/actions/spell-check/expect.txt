@@ -187,6 +187,7 @@ Canvascustomlayout
 CAPTUREBLT
 CAPTURECHANGED
 CARETBLINKING
+carlos
 Carlseibert
 CAtl
 caub
@@ -206,6 +207,7 @@ certmgr
 cfp
 CHANGECBCHAIN
 changecursor
+chatasweetie
 checkmarks
 CHILDACTIVATE
 CHILDWINDOW
@@ -2146,6 +2148,7 @@ YSpeed
 YStr
 YTimer
 YVIRTUALSCREEN
+zamora
 ZEROINIT
 zonability
 zonable

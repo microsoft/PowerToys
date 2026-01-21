@@ -1,4 +1,4 @@
-# Telemtry Events
+# Telemetry Events
 
 PowerToys collects limited telemetry to understand feature usage, reliability, and product quality. When adding a new telemetry event, follow the steps below to ensure the event is properly declared, documented, and available after release.
 
