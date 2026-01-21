@@ -25,7 +25,8 @@ namespace Microsoft.PowerToys.Settings.UI.Services
 {
     public static class SearchIndexService
     {
-        private static readonly object _lockObject = new();
+        // Use ReaderWriterLockSlim for better concurrent read performance
+        private static readonly ReaderWriterLockSlim _rwLock = new(LockRecursionPolicy.SupportsRecursion);
         private static readonly Dictionary<string, string> _pageNameCache = [];
         private static readonly Dictionary<string, (string HeaderNorm, string DescNorm)> _normalizedTextCache = new();
         private static readonly Dictionary<string, Type> _pageTypeCache = new();
@@ -39,9 +40,14 @@ namespace Microsoft.PowerToys.Settings.UI.Services
         {
             get
             {
-                lock (_lockObject)
+                _rwLock.EnterReadLock();
+                try
                 {
                     return _index;
+                }
+                finally
+                {
+                    _rwLock.ExitReadLock();
                 }
             }
         }
@@ -50,16 +56,32 @@ namespace Microsoft.PowerToys.Settings.UI.Services
         {
             get
             {
-                lock (_lockObject)
+                _rwLock.EnterReadLock();
+                try
                 {
                     return _isIndexBuilt;
+                }
+                finally
+                {
+                    _rwLock.ExitReadLock();
                 }
             }
         }
 
+        /// <summary>
+        /// Builds the search index asynchronously on a background thread.
+        /// </summary>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        /// <returns>A task representing the async operation.</returns>
+        public static Task BuildIndexAsync(CancellationToken cancellationToken = default)
+        {
+            return Task.Run(() => BuildIndex(), cancellationToken);
+        }
+
         public static void BuildIndex()
         {
-            lock (_lockObject)
+            _rwLock.EnterWriteLock();
+            try
             {
                 if (_isIndexBuilt || _isIndexBuilding)
                 {
@@ -72,26 +94,40 @@ namespace Microsoft.PowerToys.Settings.UI.Services
                 _normalizedTextCache.Clear();
                 _pageTypeCache.Clear();
             }
+            finally
+            {
+                _rwLock.ExitWriteLock();
+            }
 
             try
             {
                 var builder = ImmutableArray.CreateBuilder<SettingEntry>();
                 LoadIndexFromPrebuiltData(builder);
 
-                lock (_lockObject)
+                _rwLock.EnterWriteLock();
+                try
                 {
                     _index = builder.ToImmutable();
                     _isIndexBuilt = true;
                     _isIndexBuilding = false;
                 }
+                finally
+                {
+                    _rwLock.ExitWriteLock();
+                }
             }
             catch (Exception ex)
             {
                 Debug.WriteLine($"[SearchIndexService] CRITICAL ERROR building search index: {ex.Message}\n{ex.StackTrace}");
-                lock (_lockObject)
+                _rwLock.EnterWriteLock();
+                try
                 {
                     _isIndexBuilding = false;
                     _isIndexBuilt = false;
+                }
+                finally
+                {
+                    _rwLock.ExitWriteLock();
                 }
             }
         }
@@ -269,8 +305,25 @@ namespace Microsoft.PowerToys.Settings.UI.Services
                 return null;
             }
 
-            lock (_lockObject)
+            // Try read lock first for cache lookup
+            _rwLock.EnterReadLock();
+            try
             {
+                if (_pageTypeCache.TryGetValue(pageTypeName, out var cached))
+                {
+                    return cached;
+                }
+            }
+            finally
+            {
+                _rwLock.ExitReadLock();
+            }
+
+            // Cache miss - need write lock to add
+            _rwLock.EnterWriteLock();
+            try
+            {
+                // Double-check after acquiring write lock
                 if (_pageTypeCache.TryGetValue(pageTypeName, out var cached))
                 {
                     return cached;
@@ -280,6 +333,10 @@ namespace Microsoft.PowerToys.Settings.UI.Services
                 var type = assembly.GetType($"Microsoft.PowerToys.Settings.UI.Views.{pageTypeName}");
                 _pageTypeCache[pageTypeName] = type;
                 return type;
+            }
+            finally
+            {
+                _rwLock.ExitWriteLock();
             }
         }
 
@@ -291,19 +348,37 @@ namespace Microsoft.PowerToys.Settings.UI.Services
             }
 
             var key = entry.ElementUid ?? $"{entry.PageTypeName}|{entry.ElementName}";
-            lock (_lockObject)
+
+            // Try read lock first for cache lookup
+            _rwLock.EnterReadLock();
+            try
             {
                 if (_normalizedTextCache.TryGetValue(key, out var cached))
                 {
                     return cached;
                 }
             }
+            finally
+            {
+                _rwLock.ExitReadLock();
+            }
 
+            // Cache miss - compute values and add to cache
             var headerNorm = NormalizeString(entry.Header);
             var descNorm = NormalizeString(entry.Description);
-            lock (_lockObject)
+
+            _rwLock.EnterWriteLock();
+            try
             {
-                _normalizedTextCache[key] = (headerNorm, descNorm);
+                // Double-check after acquiring write lock
+                if (!_normalizedTextCache.ContainsKey(key))
+                {
+                    _normalizedTextCache[key] = (headerNorm, descNorm);
+                }
+            }
+            finally
+            {
+                _rwLock.ExitWriteLock();
             }
 
             return (headerNorm, descNorm);

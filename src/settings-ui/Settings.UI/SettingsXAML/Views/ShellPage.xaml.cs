@@ -390,11 +390,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private void ShellPage_Loaded(object sender, RoutedEventArgs e)
         {
-            Task.Run(() =>
-            {
-                SearchIndexService.BuildIndex();
-            })
-            .ContinueWith(_ => { });
+            // Build search index asynchronously on background thread
+            _ = SearchIndexService.BuildIndexAsync();
         }
 
         private void NavigationView_DisplayModeChanged(NavigationView sender, NavigationViewDisplayModeChangedEventArgs args)
