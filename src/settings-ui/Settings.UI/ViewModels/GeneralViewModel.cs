@@ -14,6 +14,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
+using System.Threading;
 using System.Threading.Tasks;
 
 using global::PowerToys.GPOWrapper;
@@ -213,14 +214,31 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 _fileWatcher = Helper.GetFileWatcher(string.Empty, UpdatingSettings.SettingsFile, dispatcherAction);
             }
 
-            // Diagnostic data retention policy
-            string etwDirPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Microsoft\\PowerToys\\etw");
-            DeleteDiagnosticDataOlderThan28Days(etwDirPath);
+            // Defer heavy I/O operations to async initialization
+            // Language initialization moved to InitializeCoreAsync for faster startup
+        }
 
-            string localLowEtwDirPath = Path.Combine(Environment.GetEnvironmentVariable("USERPROFILE"), "AppData", "LocalLow", "Microsoft", "PowerToys", "etw");
-            DeleteDiagnosticDataOlderThan28Days(localLowEtwDirPath);
+        /// <summary>
+        /// Performs deferred initialization tasks that don't need to block the UI.
+        /// </summary>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        /// <returns>A task representing the async operation.</returns>
+        protected override Task InitializeCoreAsync(CancellationToken cancellationToken = default)
+        {
+            return Task.Run(
+                () =>
+                {
+                    // Diagnostic data retention policy - defer to background
+                    string etwDirPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Microsoft\\PowerToys\\etw");
+                    DeleteDiagnosticDataOlderThan28Days(etwDirPath);
 
-            InitializeLanguages();
+                    string localLowEtwDirPath = Path.Combine(Environment.GetEnvironmentVariable("USERPROFILE"), "AppData", "LocalLow", "Microsoft", "PowerToys", "etw");
+                    DeleteDiagnosticDataOlderThan28Days(localLowEtwDirPath);
+
+                    // Initialize languages on background thread
+                    InitializeLanguages();
+                },
+                cancellationToken);
         }
 
         // Supported languages. Taken from Resources.wxs + default + en-US
