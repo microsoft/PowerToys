@@ -38,6 +38,9 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
             InitializeComponent();
             DataContext = ViewModel;
+
+            // Defer heavy file I/O to async initialization
+            this.Loaded += async (s, e) => await ViewModel.InitializeAsync();
         }
 
         private void OnConfigFileUpdate()

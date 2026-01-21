@@ -17,6 +17,9 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             ViewModel = new CmdNotFoundViewModel();
             DataContext = ViewModel;
             InitializeComponent();
+
+            // Defer heavy PowerShell script execution to async initialization
+            this.Loaded += async (s, e) => await ViewModel.InitializeAsync();
         }
     }
 }

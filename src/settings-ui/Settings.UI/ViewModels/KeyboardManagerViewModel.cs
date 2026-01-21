@@ -23,7 +23,7 @@ using Microsoft.Win32;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
-    public partial class KeyboardManagerViewModel : Observable
+    public partial class KeyboardManagerViewModel : Observable, IAsyncInitializable
     {
         private GeneralSettings GeneralSettingsConfig { get; set; }
 
@@ -74,11 +74,63 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             _settingsUtils = settingsUtils ?? throw new ArgumentNullException(nameof(settingsUtils));
 
+            // Defer heavy file I/O to InitializeAsync - just set defaults here
+            Settings = new KeyboardManagerSettings();
+            _profile = new KeyboardManagerProfile();
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether the ViewModel has been initialized.
+        /// </summary>
+        public bool IsInitialized { get; private set; }
+
+        /// <summary>
+        /// Gets a value indicating whether initialization is in progress.
+        /// </summary>
+        public bool IsLoading { get; private set; }
+
+        /// <summary>
+        /// Initializes the ViewModel asynchronously, loading settings from disk.
+        /// </summary>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        /// <returns>A task representing the async operation.</returns>
+        public async Task InitializeAsync(CancellationToken cancellationToken = default)
+        {
+            if (IsInitialized)
+            {
+                return;
+            }
+
+            IsLoading = true;
+            OnPropertyChanged(nameof(IsLoading));
+
+            try
+            {
+                await Task.Run(
+                    () =>
+                    {
+                        LoadSettingsFromDisk();
+                    },
+                    cancellationToken);
+
+                IsInitialized = true;
+            }
+            finally
+            {
+                IsLoading = false;
+                OnPropertyChanged(nameof(IsLoading));
+                OnPropertyChanged(nameof(IsInitialized));
+            }
+        }
+
+        private void LoadSettingsFromDisk()
+        {
             if (_settingsUtils.SettingsExists(PowerToyName))
             {
                 try
                 {
                     Settings = _settingsUtils.GetSettingsOrDefault<KeyboardManagerSettings>(PowerToyName);
+                    OnPropertyChanged(nameof(Settings));
                 }
                 catch (Exception e)
                 {
@@ -96,10 +148,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     _profile = new KeyboardManagerProfile();
                 }
+
+                OnPropertyChanged(nameof(RemapKeys));
+                OnPropertyChanged(nameof(RemapShortcuts));
             }
             else
             {
-                Settings = new KeyboardManagerSettings();
                 _settingsUtils.SaveSettings(Settings.ToJsonString(), PowerToyName);
             }
         }

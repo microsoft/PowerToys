@@ -9,6 +9,8 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Threading;
+using System.Threading.Tasks;
 
 using global::PowerToys.GPOWrapper;
 using ManagedCommon;
@@ -19,7 +21,7 @@ using Microsoft.PowerToys.Telemetry;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
-    public partial class CmdNotFoundViewModel : Observable
+    public partial class CmdNotFoundViewModel : Observable, IAsyncInitializable
     {
         public ButtonClickCommand CheckRequirementsEventHandler => new ButtonClickCommand(CheckCommandNotFoundRequirements);
 
@@ -45,15 +47,58 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public CmdNotFoundViewModel()
         {
-            InitializeEnabledValue();
+            // Lightweight GPO initialization only - heavy work deferred to InitializeAsync
+            _enabledGpoRuleConfiguration = GPOWrapper.GetConfiguredCmdNotFoundEnabledValue();
+            _moduleIsGpoEnabled = _enabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
+            _moduleIsGpoDisabled = _enabledGpoRuleConfiguration == GpoRuleConfigured.Disabled;
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether the ViewModel has been initialized.
+        /// </summary>
+        public bool IsInitialized { get; private set; }
+
+        /// <summary>
+        /// Gets a value indicating whether initialization is in progress.
+        /// </summary>
+        public bool IsLoading { get; private set; }
+
+        /// <summary>
+        /// Initializes the ViewModel asynchronously, performing heavy I/O operations.
+        /// </summary>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        /// <returns>A task representing the async operation.</returns>
+        public async Task InitializeAsync(CancellationToken cancellationToken = default)
+        {
+            if (IsInitialized)
+            {
+                return;
+            }
+
+            IsLoading = true;
+            OnPropertyChanged(nameof(IsLoading));
+
+            try
+            {
+                await Task.Run(
+                    () =>
+                    {
+                        InitializeEnabledValue();
+                    },
+                    cancellationToken);
+
+                IsInitialized = true;
+            }
+            finally
+            {
+                IsLoading = false;
+                OnPropertyChanged(nameof(IsLoading));
+                OnPropertyChanged(nameof(IsInitialized));
+            }
         }
 
         private void InitializeEnabledValue()
         {
-            _enabledGpoRuleConfiguration = GPOWrapper.GetConfiguredCmdNotFoundEnabledValue();
-            _moduleIsGpoEnabled = _enabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
-            _moduleIsGpoDisabled = _enabledGpoRuleConfiguration == GpoRuleConfigured.Disabled;
-
             // Update PATH environment variable to get pwsh.exe on further calls.
             Environment.SetEnvironmentVariable("PATH", (Environment.GetEnvironmentVariable("PATH", EnvironmentVariableTarget.Machine) ?? string.Empty) + ";" + (Environment.GetEnvironmentVariable("PATH", EnvironmentVariableTarget.User) ?? string.Empty), EnvironmentVariableTarget.Process);
 
