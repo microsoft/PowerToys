@@ -83,8 +83,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             _settingsUtils = settingsUtils ?? throw new ArgumentNullException(nameof(settingsUtils));
 
-            ArgumentNullException.ThrowIfNull(advancedPasteSettingsRepository);
-
             _advancedPasteSettings = advancedPasteSettingsRepository.SettingsConfig;
 
             AttachConfigurationHandlers();
