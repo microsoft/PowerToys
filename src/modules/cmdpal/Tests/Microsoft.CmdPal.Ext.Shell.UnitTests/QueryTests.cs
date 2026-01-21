@@ -87,7 +87,7 @@ public class QueryTests : CommandPaletteUnitTestBase
         var pages = new ShellListPage(settings, mockHistory.Object, telemetryService: null);
 
         await UpdatePageAndWaitForItems(pages, () =>
-        { 
+        {
             // Test: Search for a command that exists in history
             pages.UpdateSearchText(string.Empty, command);
         });
