@@ -108,7 +108,7 @@ There are <a href="https://learn.microsoft.com/windows/powertoys/install#communi
 For an in-depth look at the latest changes, visit the [Windows Command Line blog](https://aka.ms/powertoys-releaseblog).
 
 **✨ Highlights**
-- **Command Palette**: Major expansion with PowerToys extension, Remote Desktop built-in extension, theme customization, drag-and-drop support, fallback ranking controls, sections/separators for pages, pinyin Chinese matching, and many UX refinements
+- **Command Palette**: Major expansion with PowerToys extension (Windows 11 only), Remote Desktop built-in extension, theme customization, drag-and-drop support, fallback ranking controls, sections/separators for pages, pinyin Chinese matching, and many UX refinements.
 - **Settings**: Quick Access flyout is now a standalone process for significantly faster startup, theme-adaptive tray icon, AOT serialization, and multiple UI/accessibility fixes
 - **CursorWrap (New!)**: New mouse utility that lets your cursor wrap around screen edges, making multi-monitor navigation faster and more seamless.
 - **Advanced Paste**: Image input for AI, color detection in clipboard history, Foundry Local improvements, Azure AI icons, and multiple bug fixes
