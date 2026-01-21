@@ -83,7 +83,7 @@ jobs:
       displayName: Build UI Test Projects
       inputs:
         solution: '**/*UITest*.csproj'
-        vsVersion: 17.0
+        vsVersion: 18.0
         msbuildArgs: >-
           -restore
           -graph
@@ -104,7 +104,7 @@ jobs:
         displayName: 'Build UI Test Module: ${{ module }}'
         inputs:
           solution: '**/*${{ module }}*.csproj'
-          vsVersion: 17.0
+          vsVersion: 18.0
           msbuildArgs: >-
             -restore
             -graph
