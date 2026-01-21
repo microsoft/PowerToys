@@ -151,6 +151,20 @@ public sealed partial class DockControl : UserControl, INotifyPropertyChanged, I
         EndItemsListView.CanReorderItems = isEditMode;
         EndItemsListView.AllowDrop = isEditMode;
 
+        if (isEditMode)
+        {
+            EditButtonsTeachingTip.PreferredPlacement = DockSide switch
+            {
+                DockSide.Left => TeachingTipPlacementMode.Right,
+                DockSide.Right => TeachingTipPlacementMode.Left,
+                DockSide.Top => TeachingTipPlacementMode.Bottom,
+                DockSide.Bottom => TeachingTipPlacementMode.Top,
+                _ => TeachingTipPlacementMode.Auto,
+            };
+        }
+
+        EditButtonsTeachingTip.IsOpen = isEditMode;
+
         // Update visual state
         VisualStateManager.GoToState(this, isEditMode ? "EditModeOn" : "EditModeOff", true);
     }
@@ -206,22 +220,6 @@ public sealed partial class DockControl : UserControl, INotifyPropertyChanged, I
         }
     }
 
-    private void BandItem_PointerEntered(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
-    {
-        if (sender is Border border)
-        {
-            border.Background = (Brush)Application.Current.Resources["TaskBarButtonBackgroundPointerOver"];
-        }
-    }
-
-    private void BandItem_PointerExited(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
-    {
-        if (sender is Border border)
-        {
-            border.Background = new SolidColorBrush(Colors.Transparent);
-        }
-    }
-
     private void BandItem_Tapped(object sender, Microsoft.UI.Xaml.Input.TappedRoutedEventArgs e)
     {
         // Ignore clicks when in edit mode - allow drag behavior instead
@@ -230,22 +228,17 @@ public sealed partial class DockControl : UserControl, INotifyPropertyChanged, I
             return;
         }
 
-        var border = sender as Border;
-        var item = border?.DataContext as DockItemViewModel;
-
-        if (item is null || border is null)
+        if (sender is DockItemControl dockItem && dockItem.DataContext is DockItemViewModel item)
         {
-            return;
+            // Use the center of the border as the point to open at
+            var borderPos = dockItem.TransformToVisual(null).TransformPoint(new Point(0, 0));
+            var borderCenter = new Point(
+                borderPos.X + (dockItem.ActualWidth / 2),
+                borderPos.Y + (dockItem.ActualHeight / 2));
+
+            InvokeItem(item, borderCenter);
+            e.Handled = true;
         }
-
-        // Use the center of the border as the point to open at
-        var borderPos = border.TransformToVisual(null).TransformPoint(new Point(0, 0));
-        var borderCenter = new Point(
-            borderPos.X + (border.ActualWidth / 2),
-            borderPos.Y + (border.ActualHeight / 2));
-
-        InvokeItem(item, borderCenter);
-        e.Handled = true;
     }
 
     private void BandItem_RightTapped(object sender, Microsoft.UI.Xaml.Input.RightTappedRoutedEventArgs e)
@@ -256,25 +249,20 @@ public sealed partial class DockControl : UserControl, INotifyPropertyChanged, I
             return;
         }
 
-        var border = sender as Border;
-        var item = border?.DataContext as DockItemViewModel;
-
-        if (item is null || border is null)
+        if (sender is DockItemControl dockItem && dockItem.DataContext is DockItemViewModel item)
         {
-            return;
-        }
-
-        if (item.HasMoreCommands)
-        {
-            ContextControl.ViewModel.SelectedItem = item;
-            ContextMenuFlyout.ShowAt(
-                border,
-                new FlyoutShowOptions()
-                {
-                    ShowMode = FlyoutShowMode.Standard,
-                    Placement = FlyoutPlacementMode.TopEdgeAlignedRight,
-                });
-            e.Handled = true;
+            if (item.HasMoreCommands)
+            {
+                ContextControl.ViewModel.SelectedItem = item;
+                ContextMenuFlyout.ShowAt(
+                    dockItem,
+                    new FlyoutShowOptions()
+                    {
+                        ShowMode = FlyoutShowMode.Standard,
+                        Placement = FlyoutPlacementMode.TopEdgeAlignedRight,
+                    });
+                e.Handled = true;
+            }
         }
     }
 
@@ -342,7 +330,7 @@ public sealed partial class DockControl : UserControl, INotifyPropertyChanged, I
         }
 
         var requestedTheme = ActualTheme;
-        var isLight = requestedTheme == Microsoft.UI.Xaml.ElementTheme.Light;
+        var isLight = requestedTheme == ElementTheme.Light;
 
         // Check if any of the items have both an icon and a label.
         //

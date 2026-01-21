@@ -16,10 +16,6 @@
 
     <UserControl.Resources>
         <ResourceDictionary>
-            <ItemsPanelTemplate x:Key="ItemsOrientation">
-                <StackPanel Orientation="Horizontal" Spacing="4" />
-            </ItemsPanelTemplate>
-
             <Style x:Key="ResizingIconStyle" TargetType="cpcontrols:IconBox">
                 <Setter Property="Height" Value="{x:Bind IconSize, Mode=OneWay}" />
                 <Setter Property="MaxWidth" Value="{x:Bind IconSize, Mode=OneWay}" />
@@ -31,34 +27,18 @@
             </Style>
 
             <local:IconInfoVisibilityConverter x:Key="IconInfoVisibilityConverter" />
-            <local:BandAlignmentConverter
-                x:Key="BandAlignmentConverter"
-                x:Name="BandAlignmentConverter"
-                Control="{x:Bind}" />
+            <local:BandAlignmentConverter x:Key="BandAlignmentConverter" Control="{x:Bind}" />
 
             <DataTemplate x:Key="DeskbandTemplate" x:DataType="dockVm:DockItemViewModel">
-                <Border
-                    Padding="4,2,4,2"
-                    VerticalAlignment="Stretch"
-                    Background="Transparent"
-                    CornerRadius="{ThemeResource ControlCornerRadius}"
-                    PointerEntered="BandItem_PointerEntered"
-                    PointerExited="BandItem_PointerExited"
-                    RightTapped="BandItem_RightTapped"
-                    Tapped="BandItem_Tapped"
-                    ToolTipService.ToolTip="{x:Bind Tooltip, Mode=OneWay}">
-
-                    <Grid AutomationProperties.Name="{x:Bind Title, Mode=OneWay}" Background="Transparent">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-
-                        <StackPanel
-                            Grid.Column="0"
-                            VerticalAlignment="Center"
-                            Orientation="Vertical"
-                            Visibility="{x:Bind Icon, Converter={StaticResource IconInfoVisibilityConverter}, Mode=OneWay}">
+                <Grid>
+                    <TextBlock Opacity="0" Style="{StaticResource ResizingTitleTextBlock}" />
+                    <local:DockItemControl
+                        Title="{x:Bind Title, Mode=OneWay}"
+                        RightTapped="BandItem_RightTapped"
+                        Subtitle="{x:Bind Subtitle, Mode=OneWay}"
+                        Tapped="BandItem_Tapped"
+                        ToolTip="{x:Bind Tooltip, Mode=OneWay}">
+                        <local:DockItemControl.Icon>
                             <cpcontrols:IconBox
                                 x:Name="IconBorder"
                                 Width="16"
@@ -68,39 +48,9 @@
                                 SourceKey="{x:Bind Icon, Mode=OneWay}"
                                 SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}"
                                 Style="{StaticResource ResizingIconStyle}" />
-                        </StackPanel>
-                        <StackPanel
-                            Grid.Column="1"
-                            Margin="8,0,8,0"
-                            VerticalAlignment="Center"
-                            Visibility="{x:Bind HasText, Mode=OneWay}">
-                            <TextBlock
-                                x:Name="TitleTextBlock"
-                                Margin="0"
-                                HorizontalAlignment="Left"
-                                VerticalAlignment="Center"
-                                FontSize="12"
-                                Style="{StaticResource ResizingTitleTextBlock}"
-                                Text="{x:Bind Title, Mode=OneWay}"
-                                TextAlignment="Left"
-                                TextTrimming="CharacterEllipsis"
-                                TextWrapping="NoWrap" />
-                            <TextBlock
-                                x:Name="SubTitleTextBlock"
-                                MaxWidth="100"
-                                Margin="0,-4,0,0"
-                                HorizontalAlignment="Left"
-                                VerticalAlignment="Center"
-                                FontSize="10"
-                                Foreground="{ThemeResource TextFillColorTertiary}"
-                                Text="{x:Bind Subtitle, Mode=OneWay}"
-                                TextAlignment="Center"
-                                TextTrimming="CharacterEllipsis"
-                                TextWrapping="NoWrap"
-                                Visibility="{x:Bind HasSubtitle, Mode=OneWay}" />
-                        </StackPanel>
-                    </Grid>
-                </Border>
+                        </local:DockItemControl.Icon>
+                    </local:DockItemControl>
+                </Grid>
             </DataTemplate>
 
             <DataTemplate x:Key="DockBandTemplate" x:DataType="dockVm:DockBandViewModel">
@@ -169,7 +119,7 @@
         <!--  Edit Mode Overlay - shown when in edit mode  -->
         <Border
             x:Name="EditModeOverlay"
-            Background="{ThemeResource SystemAccentColorDark2}"
+            Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
             IsHitTestVisible="False"
             Opacity="0" />
 
@@ -199,10 +149,15 @@
                         Drop="StartItemsListView_Drop"
                         ItemContainerStyle="{StaticResource DockBandListViewItemStyle}"
                         ItemTemplate="{StaticResource DockBandTemplate}"
-                        ItemsPanel="{StaticResource ItemsOrientation}"
                         ItemsSource="{x:Bind ViewModel.StartItems, Mode=OneWay}"
                         SelectionMode="None"
-                        Style="{StaticResource DockBandListViewStyle}" />
+                        Style="{StaticResource DockBandListViewStyle}">
+                        <ListView.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Orientation="Horizontal" Spacing="4" />
+                            </ItemsPanelTemplate>
+                        </ListView.ItemsPanel>
+                    </ListView>
                 </cpcontrols:ScrollContainer.Source>
             </cpcontrols:ScrollContainer>
 
@@ -219,35 +174,39 @@
                         Drop="EndItemsListView_Drop"
                         ItemContainerStyle="{StaticResource DockBandListViewItemStyle}"
                         ItemTemplate="{StaticResource DockBandTemplate}"
-                        ItemsPanel="{StaticResource ItemsOrientation}"
                         ItemsSource="{x:Bind ViewModel.EndItems, Mode=OneWay}"
                         SelectionMode="None"
-                        Style="{StaticResource DockBandListViewStyle}" />
+                        Style="{StaticResource DockBandListViewStyle}">
+                        <ListView.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Orientation="{x:Bind ItemsOrientation, Mode=OneWay}" Spacing="4" />
+                            </ItemsPanelTemplate>
+                        </ListView.ItemsPanel>
+                        <ListView.ItemContainerTransitions>
+                            <TransitionCollection />
+                        </ListView.ItemContainerTransitions>
+                    </ListView>
                 </cpcontrols:ScrollContainer.Source>
             </cpcontrols:ScrollContainer>
-
-            <!--  Edit mode buttons - appear when in edit mode  -->
-            <StackPanel
-                Grid.Column="2"
-                VerticalAlignment="Center"
-                Orientation="Horizontal"
-                Spacing="4">
-                <Button
-                    x:Name="DiscardEditingButton"
-                    Margin="8,0,0,0"
-                    Padding="12,4"
-                    Click="DiscardEditingButton_Click"
-                    Content="Discard"
-                    Visibility="Collapsed" />
-                <Button
-                    x:Name="DoneEditingButton"
-                    Margin="0,0,8,0"
-                    Padding="12,4"
-                    Click="DoneEditingButton_Click"
-                    Content="Done"
-                    Style="{StaticResource AccentButtonStyle}"
-                    Visibility="Collapsed" />
-            </StackPanel>
+            <TeachingTip
+                x:Name="EditButtonsTeachingTip"
+                MinWidth="0"
+                PreferredPlacement="Bottom"
+                ShouldConstrainToRootBounds="False"
+                Target="{x:Bind ContentGrid}">
+                <TeachingTip.Content>
+                    <StackPanel
+                        HorizontalAlignment="Center"
+                        Orientation="Horizontal"
+                        Spacing="4">
+                        <Button Click="DiscardEditingButton_Click" Content="Discard" />
+                        <Button
+                            Click="DoneEditingButton_Click"
+                            Content="Save"
+                            Style="{StaticResource AccentButtonStyle}" />
+                    </StackPanel>
+                </TeachingTip.Content>
+            </TeachingTip>
         </Grid>
         <VisualStateManager.VisualStateGroups>
             <VisualStateGroup x:Name="DockOrientation">
@@ -334,9 +293,7 @@
                 <VisualState x:Name="EditModeOff" />
                 <VisualState x:Name="EditModeOn">
                     <VisualState.Setters>
-                        <Setter Target="DoneEditingButton.Visibility" Value="Visible" />
-                        <Setter Target="DiscardEditingButton.Visibility" Value="Visible" />
-                        <Setter Target="EditModeOverlay.Opacity" Value="0.1" />
+                        <Setter Target="EditModeOverlay.Opacity" Value="0.4" />
                     </VisualState.Setters>
                 </VisualState>
             </VisualStateGroup>

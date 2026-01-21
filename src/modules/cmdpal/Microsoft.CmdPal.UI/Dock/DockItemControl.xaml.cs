@@ -27,7 +27,7 @@ public sealed partial class DockItemControl : Control
     }
 
     public static readonly DependencyProperty TitleProperty =
-        DependencyProperty.Register(nameof(Title), typeof(string), typeof(DockItemControl), new PropertyMetadata(null));
+        DependencyProperty.Register(nameof(Title), typeof(string), typeof(DockItemControl), new PropertyMetadata(null, OnTextPropertyChanged));
 
     public string Title
     {
@@ -35,17 +35,8 @@ public sealed partial class DockItemControl : Control
         set => SetValue(TitleProperty, value);
     }
 
-    public static readonly DependencyProperty HasTextProperty =
-        DependencyProperty.Register(nameof(HasText), typeof(bool), typeof(DockItemControl), new PropertyMetadata(true));
-
-    public bool HasText
-    {
-        get => (bool)GetValue(HasTextProperty);
-        set => SetValue(HasTextProperty, value);
-    }
-
     public static readonly DependencyProperty SubtitleProperty =
-        DependencyProperty.Register(nameof(Subtitle), typeof(string), typeof(DockItemControl), new PropertyMetadata(null));
+        DependencyProperty.Register(nameof(Subtitle), typeof(string), typeof(DockItemControl), new PropertyMetadata(null, OnTextPropertyChanged));
 
     public string Subtitle
     {
@@ -53,17 +44,8 @@ public sealed partial class DockItemControl : Control
         set => SetValue(SubtitleProperty, value);
     }
 
-    public static readonly DependencyProperty HasSubtitleProperty =
-        DependencyProperty.Register(nameof(HasSubtitle), typeof(bool), typeof(DockItemControl), new PropertyMetadata(false));
-
-    public bool HasSubtitle
-    {
-        get => (bool)GetValue(HasSubtitleProperty);
-        set => SetValue(HasSubtitleProperty, value);
-    }
-
     public static readonly DependencyProperty IconProperty =
-        DependencyProperty.Register(nameof(Icon), typeof(object), typeof(DockItemControl), new PropertyMetadata(null));
+        DependencyProperty.Register(nameof(Icon), typeof(object), typeof(DockItemControl), new PropertyMetadata(null, OnIconPropertyChanged));
 
     public object Icon
     {
@@ -71,50 +53,99 @@ public sealed partial class DockItemControl : Control
         set => SetValue(IconProperty, value);
     }
 
-    public static readonly DependencyProperty HasIconProperty =
-        DependencyProperty.Register(nameof(HasIcon), typeof(bool), typeof(DockItemControl), new PropertyMetadata(true));
+    private const string IconPresenterName = "IconPresenter";
+    private const string TitleTextName = "TitleText";
+    private const string SubtitleTextName = "SubtitleText";
 
-    public bool HasIcon
+    private FrameworkElement? _iconPresenter;
+    private FrameworkElement? _titleText;
+    private FrameworkElement? _subtitleText;
+
+    private static void OnTextPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
-        get => (bool)GetValue(HasIconProperty);
-        set => SetValue(HasIconProperty, value);
+        if (d is DockItemControl control)
+        {
+            control.UpdateTextVisibility();
+        }
     }
 
-    public event TappedEventHandler? ItemTapped;
+    private static void OnIconPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        if (d is DockItemControl control)
+        {
+            control.UpdateIconVisibility();
+        }
+    }
 
-    public event RightTappedEventHandler? ItemRightTapped;
+    private static bool IsNullOrEmpty(string? value) => string.IsNullOrEmpty(value);
+
+    private void UpdateTextVisibility()
+    {
+        if (_titleText is not null)
+        {
+            _titleText.Visibility = IsNullOrEmpty(Title) ? Visibility.Collapsed : Visibility.Visible;
+        }
+
+        if (_subtitleText is not null)
+        {
+            _subtitleText.Visibility = IsNullOrEmpty(Subtitle) ? Visibility.Collapsed : Visibility.Visible;
+        }
+    }
+
+    private void UpdateIconVisibility()
+    {
+        if (_iconPresenter is not null)
+        {
+            _iconPresenter.Visibility = Icon is null ? Visibility.Collapsed : Visibility.Visible;
+        }
+    }
+
+    private void UpdateAllVisibility()
+    {
+        UpdateTextVisibility();
+        UpdateIconVisibility();
+    }
 
     protected override void OnApplyTemplate()
     {
         base.OnApplyTemplate();
+        IsEnabledChanged -= OnIsEnabledChanged;
 
-        // Wire up pointer events from the root border
-        if (GetTemplateChild("PART_RootGrid") is Border rootBorder)
-        {
-            rootBorder.Tapped += RootBorder_Tapped;
-            rootBorder.RightTapped += RootBorder_RightTapped;
-            rootBorder.PointerEntered += RootBorder_PointerEntered;
-            rootBorder.PointerExited += RootBorder_PointerExited;
-        }
+        PointerEntered += Control_PointerEntered;
+        PointerExited += Control_PointerExited;
+
+        IsEnabledChanged += OnIsEnabledChanged;
+
+        // Get template children for visibility updates
+        _iconPresenter = GetTemplateChild(IconPresenterName) as FrameworkElement;
+        _titleText = GetTemplateChild(TitleTextName) as FrameworkElement;
+        _subtitleText = GetTemplateChild(SubtitleTextName) as FrameworkElement;
+
+        // Set initial visibility
+        UpdateAllVisibility();
     }
 
-    private void RootBorder_Tapped(object sender, TappedRoutedEventArgs e)
-    {
-        ItemTapped?.Invoke(this, e);
-    }
-
-    private void RootBorder_RightTapped(object sender, RightTappedRoutedEventArgs e)
-    {
-        ItemRightTapped?.Invoke(this, e);
-    }
-
-    private void RootBorder_PointerEntered(object sender, PointerRoutedEventArgs e)
+    private void Control_PointerEntered(object sender, PointerRoutedEventArgs e)
     {
         VisualStateManager.GoToState(this, "PointerOver", true);
     }
 
-    private void RootBorder_PointerExited(object sender, PointerRoutedEventArgs e)
+    private void Control_PointerExited(object sender, PointerRoutedEventArgs e)
     {
         VisualStateManager.GoToState(this, "Normal", true);
+    }
+
+    protected override void OnPointerPressed(PointerRoutedEventArgs e)
+    {
+        if (IsEnabled)
+        {
+            base.OnPointerPressed(e);
+            VisualStateManager.GoToState(this, "Pressed", true);
+        }
+    }
+
+    private void OnIsEnabledChanged(object sender, DependencyPropertyChangedEventArgs e)
+    {
+        VisualStateManager.GoToState(this, IsEnabled ? "Normal" : "Disabled", true);
     }
 }

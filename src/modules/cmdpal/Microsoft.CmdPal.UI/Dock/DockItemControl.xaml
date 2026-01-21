@@ -2,25 +2,64 @@
 <ResourceDictionary
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:converters="using:CommunityToolkit.WinUI.Converters"
     xmlns:local="using:Microsoft.CmdPal.UI.Dock">
 
-    <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+    <ResourceDictionary.ThemeDictionaries>
+        <ResourceDictionary x:Key="Default">
+            <SolidColorBrush x:Key="DockItemBackground" Color="Transparent" />
+            <SolidColorBrush x:Key="DockItemBorderBrush" Color="Transparent" />
+            <SolidColorBrush x:Key="DockItemBackgroundPointerOver" Color="#0FFFFFFF" />
+            <SolidColorBrush x:Key="DockItemBackgroundPressed" Color="#0BFFFFFF" />
+            <LinearGradientBrush x:Key="DockItemBorderBrushPointerOver" MappingMode="Absolute" StartPoint="0,0" EndPoint="0,3">
+                <LinearGradientBrush.GradientStops>
+                    <GradientStop Offset="0.33" Color="#0FFFFFFF" />
+                    <GradientStop Offset="1.0" Color="#19FFFFFF" />
+                </LinearGradientBrush.GradientStops>
+            </LinearGradientBrush>
+            <SolidColorBrush x:Key="DockItemBorderBrushPressed" Color="#0BFFFFFF" />
+        </ResourceDictionary>
+        <ResourceDictionary x:Key="Light">
+            <SolidColorBrush x:Key="DockItemBackground" Color="Transparent" />
+            <SolidColorBrush x:Key="DockItemBorderBrush" Color="Transparent" />
+            <SolidColorBrush x:Key="DockItemBackgroundPointerOver" Color="#80FFFFFF" />
+            <SolidColorBrush x:Key="DockItemBackgroundPressed" Color="#4DFFFFFF" />
+            <LinearGradientBrush x:Key="DockItemBorderBrushPointerOver" MappingMode="Absolute" StartPoint="0,0" EndPoint="0,3">
+                <LinearGradientBrush.GradientStops>
+                    <GradientStop Offset="0.33" Color="#08000000" />
+                    <GradientStop Offset="1.0" Color="#17000000" />
+                </LinearGradientBrush.GradientStops>
+            </LinearGradientBrush>
+            <SolidColorBrush x:Key="DockItemBorderBrushPressed" Color="#05000000" />
+        </ResourceDictionary>
+        <ResourceDictionary x:Key="HighContrast">
+            <SolidColorBrush x:Key="DockItemBackground" Color="Transparent" />
+            <SolidColorBrush x:Key="DockItemBorderBrush" Color="Transparent" />
+            <SolidColorBrush x:Key="DockItemBackgroundPointerOver" Color="{StaticResource SystemColorHighlightTextColor}" />
+            <SolidColorBrush x:Key="DockItemBackgroundPressed" Color="{StaticResource SystemColorHighlightTextColor}" />
+            <SolidColorBrush x:Key="DockItemBorderBrushPointerOver" Color="{StaticResource SystemColorHighlightColor}" />
+            <SolidColorBrush x:Key="DockItemBorderBrushPressed" Color="{StaticResource SystemColorHighlightTextColor}" />
+        </ResourceDictionary>
+    </ResourceDictionary.ThemeDictionaries>
 
     <Style BasedOn="{StaticResource DefaultDockItemControlStyle}" TargetType="local:DockItemControl" />
 
     <Style x:Key="DefaultDockItemControlStyle" TargetType="local:DockItemControl">
         <Style.Setters>
-            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Background" Value="{ThemeResource DockItemBackground}" />
+            <Setter Property="BorderBrush" Value="{ThemeResource DockItemBorderBrush}" />
+            <Setter Property="Padding" Value="4,2,4,2" />
+            <Setter Property="BorderThickness" Value="{ThemeResource ButtonBorderThemeThickness}" />
             <Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="local:DockItemControl">
-                        <Border
+                        <Grid
                             x:Name="PART_RootGrid"
-                            Padding="4,2,4,2"
+                            Padding="{TemplateBinding Padding}"
                             VerticalAlignment="Stretch"
                             Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
                             CornerRadius="{TemplateBinding CornerRadius}"
                             ToolTipService.ToolTip="{TemplateBinding ToolTip}">
                             <Grid AutomationProperties.Name="{TemplateBinding Title}" Background="Transparent">
@@ -31,20 +70,17 @@
 
                                 <!--  Icon  -->
                                 <ContentPresenter
-                                    Grid.Column="0"
+                                    x:Name="IconPresenter"
                                     VerticalAlignment="Center"
-                                    Content="{TemplateBinding Icon}"
-                                    Visibility="{Binding HasIcon, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BoolToVisibilityConverter}}" />
+                                    Content="{TemplateBinding Icon}" />
 
                                 <!--  Text (Title + Subtitle)  -->
                                 <StackPanel
                                     Grid.Column="1"
                                     Margin="8,0,8,0"
-                                    VerticalAlignment="Center"
-                                    Visibility="{Binding HasText, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BoolToVisibilityConverter}}">
+                                    VerticalAlignment="Center">
                                     <TextBlock
-                                        x:Name="TitleTextBlock"
-                                        Margin="0"
+                                        x:Name="TitleText"
                                         HorizontalAlignment="Left"
                                         VerticalAlignment="Center"
                                         FontSize="12"
@@ -53,7 +89,7 @@
                                         TextTrimming="CharacterEllipsis"
                                         TextWrapping="NoWrap" />
                                     <TextBlock
-                                        x:Name="SubTitleTextBlock"
+                                        x:Name="SubtitleText"
                                         MaxWidth="100"
                                         Margin="0,-4,0,0"
                                         HorizontalAlignment="Left"
@@ -63,8 +99,7 @@
                                         Text="{TemplateBinding Subtitle}"
                                         TextAlignment="Center"
                                         TextTrimming="CharacterEllipsis"
-                                        TextWrapping="NoWrap"
-                                        Visibility="{Binding HasSubtitle, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BoolToVisibilityConverter}}" />
+                                        TextWrapping="NoWrap" />
                                 </StackPanel>
                             </Grid>
                             <VisualStateManager.VisualStateGroups>
@@ -72,12 +107,28 @@
                                     <VisualState x:Name="Normal" />
                                     <VisualState x:Name="PointerOver">
                                         <VisualState.Setters>
-                                            <Setter Target="PART_RootGrid.Background" Value="{ThemeResource TaskBarButtonBackgroundPointerOver}" />
+                                            <Setter Target="PART_RootGrid.Background" Value="{ThemeResource DockItemBackgroundPointerOver}" />
+                                            <Setter Target="PART_RootGrid.BorderBrush" Value="{ThemeResource DockItemBorderBrushPointerOver}" />
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                    <VisualState x:Name="Pressed">
+                                        <VisualState.Setters>
+                                            <Setter Target="PART_RootGrid.Background" Value="{ThemeResource DockItemBackgroundPointerOver}" />
+                                            <Setter Target="PART_RootGrid.BorderBrush" Value="{ThemeResource DockItemBorderBrushPressed}" />
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                    <VisualState x:Name="Disabled">
+                                        <VisualState.Setters>
+                                            <Setter Target="PART_RootGrid.Background" Value="Transparent" />
+                                            <Setter Target="PART_RootGrid.BorderBrush" Value="Transparent" />
+                                            <Setter Target="IconPresenter.Foreground" Value="{ThemeResource ButtonForegroundDisabled}" />
+                                            <Setter Target="TitleText.Foreground" Value="{ThemeResource ButtonForegroundDisabled}" />
+                                            <Setter Target="SubtitleText.Foreground" Value="{ThemeResource ButtonForegroundDisabled}" />
                                         </VisualState.Setters>
                                     </VisualState>
                                 </VisualStateGroup>
                             </VisualStateManager.VisualStateGroups>
-                        </Border>
+                        </Grid>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
