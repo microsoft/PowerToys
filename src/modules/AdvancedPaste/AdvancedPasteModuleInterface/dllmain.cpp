@@ -19,6 +19,7 @@
 
 #include <algorithm>
 #include <cwctype>
+#include <chrono>
 #include <thread>
 #include <vector>
 
@@ -510,63 +511,83 @@ private:
                                   0,
                                   0,
                                   SMTO_ABORTIFHUNG | SMTO_BLOCK,
-                                  100,
+                                  0,
                                   &result) != 0;
     }
 
     void send_copy_selection()
     {
-        if (try_send_copy_message())
-        {
-            return;
-        }
+        constexpr int copy_attempts = 2;
+        constexpr auto copy_retry_delay = std::chrono::milliseconds(50);
 
-        std::vector<INPUT> inputs;
-
-        // send Ctrl+C (key downs and key ups)
+        for (int attempt = 0; attempt < copy_attempts; ++attempt)
         {
-            INPUT input_event = {};
-            input_event.type = INPUT_KEYBOARD;
-            input_event.ki.wVk = VK_CONTROL;
-            input_event.ki.dwExtraInfo = CENTRALIZED_KEYBOARD_HOOK_DONT_TRIGGER_FLAG;
-            inputs.push_back(input_event);
-        }
+            bool copy_succeeded = try_send_copy_message();
 
-        {
-            INPUT input_event = {};
-            input_event.type = INPUT_KEYBOARD;
-            input_event.ki.wVk = 0x43; // C
-            // Avoid triggering detection by the centralized keyboard hook.
-            input_event.ki.dwExtraInfo = CENTRALIZED_KEYBOARD_HOOK_DONT_TRIGGER_FLAG;
-            inputs.push_back(input_event);
-        }
+            if (!copy_succeeded)
+            {
+                std::vector<INPUT> inputs;
 
-        {
-            INPUT input_event = {};
-            input_event.type = INPUT_KEYBOARD;
-            input_event.ki.wVk = 0x43; // C
-            input_event.ki.dwFlags = KEYEVENTF_KEYUP;
-            // Avoid triggering detection by the centralized keyboard hook.
-            input_event.ki.dwExtraInfo = CENTRALIZED_KEYBOARD_HOOK_DONT_TRIGGER_FLAG;
-            inputs.push_back(input_event);
-        }
+                // send Ctrl+C (key downs and key ups)
+                {
+                    INPUT input_event = {};
+                    input_event.type = INPUT_KEYBOARD;
+                    input_event.ki.wVk = VK_CONTROL;
+                    input_event.ki.dwExtraInfo = CENTRALIZED_KEYBOARD_HOOK_DONT_TRIGGER_FLAG;
+                    inputs.push_back(input_event);
+                }
 
-        {
-            INPUT input_event = {};
-            input_event.type = INPUT_KEYBOARD;
-            input_event.ki.wVk = VK_CONTROL;
-            input_event.ki.dwFlags = KEYEVENTF_KEYUP;
-            input_event.ki.dwExtraInfo = CENTRALIZED_KEYBOARD_HOOK_DONT_TRIGGER_FLAG;
-            inputs.push_back(input_event);
-        }
+                {
+                    INPUT input_event = {};
+                    input_event.type = INPUT_KEYBOARD;
+                    input_event.ki.wVk = 0x43; // C
+                    // Avoid triggering detection by the centralized keyboard hook.
+                    input_event.ki.dwExtraInfo = CENTRALIZED_KEYBOARD_HOOK_DONT_TRIGGER_FLAG;
+                    inputs.push_back(input_event);
+                }
 
-        auto uSent = SendInput(static_cast<UINT>(inputs.size()), inputs.data(), sizeof(INPUT));
-        if (uSent != inputs.size())
-        {
-            DWORD errorCode = GetLastError();
-            auto errorMessage = get_last_error_message(errorCode);
-            Logger::error(L"SendInput failed for Ctrl+C. Expected to send {} inputs and sent only {}. {}", inputs.size(), uSent, errorMessage.has_value() ? errorMessage.value() : L"");
-            Trace::AdvancedPaste_Error(errorCode, errorMessage.has_value() ? errorMessage.value() : L"", L"input.SendInput");
+                {
+                    INPUT input_event = {};
+                    input_event.type = INPUT_KEYBOARD;
+                    input_event.ki.wVk = 0x43; // C
+                    input_event.ki.dwFlags = KEYEVENTF_KEYUP;
+                    // Avoid triggering detection by the centralized keyboard hook.
+                    input_event.ki.dwExtraInfo = CENTRALIZED_KEYBOARD_HOOK_DONT_TRIGGER_FLAG;
+                    inputs.push_back(input_event);
+                }
+
+                {
+                    INPUT input_event = {};
+                    input_event.type = INPUT_KEYBOARD;
+                    input_event.ki.wVk = VK_CONTROL;
+                    input_event.ki.dwFlags = KEYEVENTF_KEYUP;
+                    input_event.ki.dwExtraInfo = CENTRALIZED_KEYBOARD_HOOK_DONT_TRIGGER_FLAG;
+                    inputs.push_back(input_event);
+                }
+
+                auto uSent = SendInput(static_cast<UINT>(inputs.size()), inputs.data(), sizeof(INPUT));
+                if (uSent != inputs.size())
+                {
+                    DWORD errorCode = GetLastError();
+                    auto errorMessage = get_last_error_message(errorCode);
+                    Logger::error(L"SendInput failed for Ctrl+C. Expected to send {} inputs and sent only {}. {}", inputs.size(), uSent, errorMessage.has_value() ? errorMessage.value() : L"");
+                    Trace::AdvancedPaste_Error(errorCode, errorMessage.has_value() ? errorMessage.value() : L"", L"input.SendInput");
+                }
+                else
+                {
+                    copy_succeeded = true;
+                }
+            }
+
+            if (copy_succeeded)
+            {
+                break;
+            }
+
+            if (attempt + 1 < copy_attempts)
+            {
+                std::this_thread::sleep_for(copy_retry_delay);
+            }
         }
     }
 

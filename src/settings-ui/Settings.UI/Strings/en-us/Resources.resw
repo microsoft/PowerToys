@@ -4660,7 +4660,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <comment>Advanced Paste is a product name</comment>
   </data>
   <data name="AdvancedPaste_AutoCopySelectionForCustomActionHotkey.Description" xml:space="preserve">
-    <value>Boost productivity with a single shortcut that copies the selection and runs Advanced Paste</value>
+    <value>Attempts to copy the current selection before running a custom action shortcut</value>
     <comment>Advanced Paste is a product name</comment>
   </data>
   <data name="GPO_CommandNotFound_ForceDisabled.Title" xml:space="preserve">
