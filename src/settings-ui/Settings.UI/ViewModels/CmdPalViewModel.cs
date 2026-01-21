@@ -10,6 +10,9 @@ using System.Linq;
 using System.Reflection;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using System.Threading;
+using System.Threading.Tasks;
+
 using global::PowerToys.GPOWrapper;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
@@ -38,6 +41,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private Func<string, int> SendConfigMSG { get; }
 
+        private string _settingsPath;
+
         public CmdPalViewModel(SettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, Func<string, int> ipcMSGCallBackFunc, DispatcherQueue uiDispatcherQueue)
         {
             ArgumentNullException.ThrowIfNull(settingsUtils);
@@ -55,26 +60,42 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             var localAppDataDir = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
 
 #if DEBUG
-            var settingsPath = Path.Combine(localAppDataDir, "Packages", "Microsoft.CommandPalette.Dev_8wekyb3d8bbwe", "LocalState", "settings.json");
+            _settingsPath = Path.Combine(localAppDataDir, "Packages", "Microsoft.CommandPalette.Dev_8wekyb3d8bbwe", "LocalState", "settings.json");
 #else
-            var settingsPath = Path.Combine(localAppDataDir, "Packages", "Microsoft.CommandPalette_8wekyb3d8bbwe", "LocalState", "settings.json");
+            _settingsPath = Path.Combine(localAppDataDir, "Packages", "Microsoft.CommandPalette_8wekyb3d8bbwe", "LocalState", "settings.json");
 #endif
 
             _hotkey = _cmdPalProperties.Hotkey;
 
-            _watcher = Helper.GetFileWatcher(settingsPath, () =>
-            {
-                _cmdPalProperties.InitializeHotkey();
-                _hotkey = _cmdPalProperties.Hotkey;
-
-                _uiDispatcherQueue.TryEnqueue(() =>
-                {
-                    OnPropertyChanged(nameof(Hotkey));
-                });
-            });
-
+            // Defer file watcher creation to async initialization
             // set the callback functions value to handle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
+        }
+
+        /// <summary>
+        /// Performs deferred initialization - creates file watcher on background thread.
+        /// </summary>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        /// <returns>A task representing the async operation.</returns>
+        protected override Task InitializeCoreAsync(CancellationToken cancellationToken = default)
+        {
+            return Task.Run(
+                () =>
+                {
+                    _watcher = Helper.GetFileWatcher(
+                        _settingsPath,
+                        () =>
+                        {
+                            _cmdPalProperties.InitializeHotkey();
+                            _hotkey = _cmdPalProperties.Hotkey;
+
+                            _uiDispatcherQueue.TryEnqueue(() =>
+                            {
+                                OnPropertyChanged(nameof(Hotkey));
+                            });
+                        });
+                },
+                cancellationToken);
         }
 
         private void InitializeEnabledValue()
