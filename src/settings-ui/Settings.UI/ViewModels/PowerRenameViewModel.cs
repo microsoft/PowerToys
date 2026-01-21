@@ -134,13 +134,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _autoComplete = Settings.Properties.MRUEnabled.Value;
             _powerRenameUseBoostLib = Settings.Properties.UseBoostLib.Value;
 
-            // Notify UI of property changes
-            OnPropertyChanged(nameof(EnabledOnContextMenu));
-            OnPropertyChanged(nameof(EnabledOnContextExtendedMenu));
-            OnPropertyChanged(nameof(RestoreFlagsOnLaunch));
-            OnPropertyChanged(nameof(MaxDispListNum));
-            OnPropertyChanged(nameof(MRUEnabled));
-            OnPropertyChanged(nameof(UseBoostLib));
+            // Note: OnPropertyChanged calls removed - runs on background thread
         }
 
         private void InitializeEnabledValue()

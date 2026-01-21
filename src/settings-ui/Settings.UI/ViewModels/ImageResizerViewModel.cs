@@ -159,14 +159,8 @@ public partial class ImageResizerViewModel : Observable, IAsyncInitializable
 
         _isInitializing = false;
 
-        // Notify UI of property changes
-        OnPropertyChanged(nameof(Sizes));
-        OnPropertyChanged(nameof(JPEGQualityLevel));
-        OnPropertyChanged(nameof(PngInterlaceOption));
-        OnPropertyChanged(nameof(TiffCompressOption));
-        OnPropertyChanged(nameof(FileName));
-        OnPropertyChanged(nameof(KeepDateModified));
-        OnPropertyChanged(nameof(Encoder));
+        // Note: OnPropertyChanged calls removed - properties updated directly
+        // and UI will refresh when page is navigated to
     }
 
     private void InitializeEnabledValue()

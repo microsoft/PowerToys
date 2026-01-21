@@ -130,7 +130,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 try
                 {
                     Settings = _settingsUtils.GetSettingsOrDefault<KeyboardManagerSettings>(PowerToyName);
-                    OnPropertyChanged(nameof(Settings));
                 }
                 catch (Exception e)
                 {
@@ -148,9 +147,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     _profile = new KeyboardManagerProfile();
                 }
-
-                OnPropertyChanged(nameof(RemapKeys));
-                OnPropertyChanged(nameof(RemapShortcuts));
             }
             else
             {

@@ -191,12 +191,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             _toolbarPositionIndex = Array.IndexOf(_toolbarOptions, _powerAccentSettings.Properties.ToolbarPosition.Value);
 
-            // Notify UI of property changes
-            OnPropertyChanged(nameof(LanguageGroups));
-            OnPropertyChanged(nameof(SelectedLanguageOptions));
-            OnPropertyChanged(nameof(InputTimeMs));
-            OnPropertyChanged(nameof(ExcludedApps));
-            OnPropertyChanged(nameof(ToolbarPositionIndex));
+            // Note: OnPropertyChanged calls removed - runs on background thread
         }
 
         private void InitializeEnabledValue()

@@ -144,14 +144,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 DisableRoundCornersOnWindowSnap = false;
             }
 
-            // Notify UI of property changes
-            OnPropertyChanged(nameof(ShiftDrag));
-            OnPropertyChanged(nameof(MouseSwitch));
-            OnPropertyChanged(nameof(OverrideSnapHotkeys));
-            OnPropertyChanged(nameof(ZoneHighlightColor));
-            OnPropertyChanged(nameof(ZoneBorderColor));
-            OnPropertyChanged(nameof(ZoneInActiveColor));
-            OnPropertyChanged(nameof(ZoneNumberColor));
+            // Note: OnPropertyChanged calls removed - runs on background thread
         }
 
         private void InitializeEnabledValue()

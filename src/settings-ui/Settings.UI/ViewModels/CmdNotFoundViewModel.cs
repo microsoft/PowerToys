@@ -47,10 +47,15 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public CmdNotFoundViewModel()
         {
-            // Lightweight GPO initialization only - heavy work deferred to InitializeAsync
+            // Lightweight GPO initialization only
             _enabledGpoRuleConfiguration = GPOWrapper.GetConfiguredCmdNotFoundEnabledValue();
             _moduleIsGpoEnabled = _enabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
             _moduleIsGpoDisabled = _enabledGpoRuleConfiguration == GpoRuleConfigured.Disabled;
+
+            // Update PATH environment variable to get pwsh.exe on further calls.
+            Environment.SetEnvironmentVariable("PATH", (Environment.GetEnvironmentVariable("PATH", EnvironmentVariableTarget.Machine) ?? string.Empty) + ";" + (Environment.GetEnvironmentVariable("PATH", EnvironmentVariableTarget.User) ?? string.Empty), EnvironmentVariableTarget.Process);
+
+            // CheckCommandNotFoundRequirements() will be called when user navigates to page or clicks button
         }
 
         /// <summary>
@@ -64,45 +69,31 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public bool IsLoading { get; private set; }
 
         /// <summary>
-        /// Initializes the ViewModel asynchronously, performing heavy I/O operations.
+        /// Initializes the ViewModel asynchronously - runs PowerShell checks.
+        /// Note: This must run on UI thread as it updates bound properties.
         /// </summary>
         /// <param name="cancellationToken">Cancellation token.</param>
         /// <returns>A task representing the async operation.</returns>
-        public async Task InitializeAsync(CancellationToken cancellationToken = default)
+        public Task InitializeAsync(CancellationToken cancellationToken = default)
         {
             if (IsInitialized)
             {
-                return;
+                return Task.CompletedTask;
             }
 
             IsLoading = true;
             OnPropertyChanged(nameof(IsLoading));
 
-            try
-            {
-                await Task.Run(
-                    () =>
-                    {
-                        InitializeEnabledValue();
-                    },
-                    cancellationToken);
-
-                IsInitialized = true;
-            }
-            finally
-            {
-                IsLoading = false;
-                OnPropertyChanged(nameof(IsLoading));
-                OnPropertyChanged(nameof(IsInitialized));
-            }
-        }
-
-        private void InitializeEnabledValue()
-        {
-            // Update PATH environment variable to get pwsh.exe on further calls.
-            Environment.SetEnvironmentVariable("PATH", (Environment.GetEnvironmentVariable("PATH", EnvironmentVariableTarget.Machine) ?? string.Empty) + ";" + (Environment.GetEnvironmentVariable("PATH", EnvironmentVariableTarget.User) ?? string.Empty), EnvironmentVariableTarget.Process);
-
+            // Run PowerShell checks synchronously on UI thread since they update many bound properties
+            // This preserves original behavior - the UI shows loading state while checks run
             CheckCommandNotFoundRequirements();
+
+            IsLoading = false;
+            IsInitialized = true;
+            OnPropertyChanged(nameof(IsLoading));
+            OnPropertyChanged(nameof(IsInitialized));
+
+            return Task.CompletedTask;
         }
 
         private string _commandOutputLog;

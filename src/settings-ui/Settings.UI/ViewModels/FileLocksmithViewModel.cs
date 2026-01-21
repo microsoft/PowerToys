@@ -108,7 +108,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
 
             _fileLocksmithEnabledOnContextExtendedMenu = Settings.Properties.ExtendedContextMenuOnly.Value;
-            OnPropertyChanged(nameof(EnabledOnContextExtendedMenu));
         }
 
         public string GetSettingsSubPath()
