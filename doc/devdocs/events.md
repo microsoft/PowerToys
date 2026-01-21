@@ -59,10 +59,10 @@ PowerToys uses ETW (Event Tracing for Windows) for telemetry in both C++ and C# 
 
 | File  | Purpose |
 | ------------- |:-------------:|
-| src\common\Telemetry\ProjectTelemetry.h     | Declares the global ETW provider g_hProvider     |
-| src\common\Telemetry\TraceBase.h      | Base class with RegisterProvider(), UnregisterProvider(), and IsDataDiagnosticsEnabled() check     |
-| src\common\Telemetry\TraceLoggingDefines.h      | Privacy tags and telemetry option group macros
-     |
+| [ProjectTelemetry.h](../../src/common/Telemetry/ProjectTelemetry.h)    | Declares the global ETW provider g_hProvider     |
+| [TraceBase.h](../../src/common/Telemetry/TraceBase.h)      | Base class with RegisterProvider(), UnregisterProvider(), and IsDataDiagnosticsEnabled() check     |
+| [TraceLoggingDefines.h](../../src/common/Telemetry/TraceLoggingDefines.h)      | Privacy tags and telemetry option group macros
+
 
 #### Pattern for C++ Modules
 
@@ -109,11 +109,8 @@ void Trace::MyEvent(bool enabled)
 
 | Macro  | Purpose |
 | ------------- |:-------------:|
-| `TraceLoggingWriteWrapper` installer\PowerToysSetupCustomActionsVNext\CustomAction.cpp      | Wraps `TraceLoggingWrite` with `IsDataDiagnosticsEnabled()` check     |
-| `ProjectTelemetryPrivacyDataTag(tag)` src\common\Telemetry\TraceLoggingDefines.h     | Sets privacy classification
-| `TraceLoggingBoolean/Int32/WideString(...)`      | Type-safe data logging
-
-
+| `TraceLoggingWriteWrapper` [CustomAction.cpp](../../installer/PowerToysSetupCustomActionsVNext/CustomAction.cpp)     | Wraps `TraceLoggingWrite` with `IsDataDiagnosticsEnabled()` check     |
+| `ProjectTelemetryPrivacyDataTag(tag)` [TraceLoggingDefines.h](../../src/common/Telemetry/TraceLoggingDefines.h)     | Sets privacy classification |
 
 ### C# Telemetry Implementation
 
@@ -121,12 +118,12 @@ void Trace::MyEvent(bool enabled)
 
 | File  | Purpose |
 | ------------- |:-------------:|
-| src\common\ManagedTelemetry\Telemetry\PowerToysTelemetry.cs      | Singleton `Log` instance with `WriteEvent<T>()` method     |
-| src\common\ManagedTelemetry\Telemetry\Events\EventBase.cs      | Base class for all events (provides `EventName`, `Version`)     |
-| src\common\ManagedTelemetry\Telemetry\Events\IEvent.cs      | Interface requiring `PartA_PrivTags` property     |
-| src\common\Telemetry\TelemetryBase.cs      | 	Inherits from `EventSource`, defines ETW constants     |
-| src\common\ManagedTelemetry\Telemetry\DataDiagnosticsSettings.cs     | Registry-based enable/disable check
-     |
+| [PowerToysTelemetry.cs](../../src/common/ManagedTelemetry/Telemetry/PowerToysTelemetry.cs)    | Singleton `Log` instance with `WriteEvent<T>()` method     |
+| [EventBase.cs](../../src/common/ManagedTelemetry/Telemetry/Events/EventBase.cs)      | Base class for all events (provides `EventName`, `Version`)     |
+| [IEvent.cs](../../src/common/ManagedTelemetry/Telemetry/Events/IEvent.cs)     | Interface requiring `PartA_PrivTags` property     |
+| [TelemetryBase.cs](../../src/common/Telemetry/TelemetryBase.cs)     | 	Inherits from `EventSource`, defines ETW constants     |
+| [DataDiagnosticsSettings.cs](../../src/common/ManagedTelemetry/Telemetry/DataDiagnosticsSettings.cs)     | Registry-based enable/disable check
+
 
 #### Pattern for C# Modules
 
@@ -172,14 +169,30 @@ PowerToysTelemetry.Log.WriteEvent(new MyModuleEvent("value", 42));
 
 | Tag  | Use Case |
 | ------------- |:-------------:|
-| `PartA_PrivTags.ProductAndServiceUsage`  src\common\Telemetry\TelemetryBase.cs     | Feature usage events
-| `PartA_PrivTags.ProductAndServicePerformance` src\common\Telemetry\TelemetryBase.cs     | Performance/timing events
+| `PartA_PrivTags.ProductAndServiceUsage`  [TelemetryBase.cs](../../src/common/Telemetry/TelemetryBase.cs)     | Feature usage events
+| `PartA_PrivTags.ProductAndServicePerformance` [TelemetryBase.cs](../../src/common/Telemetry/TelemetryBase.cs)     | Performance/timing events
   
-
 ### Update DATA_AND_PRIVACY.md file
 
-Your PR must include adding the telemetry event(s) to `PowerToys/DATA_AND_PRIVACY.md`.
+Add your new event(s) to [DATA_AND_PRIVACY.md](../../DATA_AND_PRIVACY.md).
+
+## Launch Product Version Containing the new events
+
+Events do not become active until they ship in a released PowerToys version. After your PRs are merged:
+
+- The event will begin firing once users install the version that includes it
+- In order for PowerToys to process these events, you must complete the next section
 
 ## Next Steps
 
 Reach out to @carlos-zamora or @chatasweetie so internal scripts can process new event(s).
+
+## Summary
+
+Required steps:
+
+1. In one PR:
+    - Add the event(s) in code
+    - Document event(s) in DATA_AND_PRIVACY.md
+1. Ship the change in a PowerToys release
+1. Reach out for next steps
