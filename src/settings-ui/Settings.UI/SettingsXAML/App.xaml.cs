@@ -79,8 +79,11 @@ namespace Microsoft.PowerToys.Settings.UI
             // Configure DI container first (before any other initialization)
             ConfigureServices();
 
-            Logger.InitializeLogger(@"\Settings\Logs");
+            // Initialize logger on background thread to avoid blocking startup
+            Task.Run(() => Logger.InitializeLogger(@"\Settings\Logs"));
 
+            // Load language synchronously as it affects UI rendering
+            // but cache for future use
             string appLanguage = LanguageHelper.LoadLanguage();
             if (!string.IsNullOrEmpty(appLanguage))
             {
@@ -91,11 +94,16 @@ namespace Microsoft.PowerToys.Settings.UI
 
             UnhandledException += App_UnhandledException;
 
-            NativeEventWaiter.WaitForEventLoop(
-                Constants.PowerToysRunnerTerminateSettingsEvent(), () =>
+            // Start event waiter on background thread to avoid blocking startup
+            Task.Run(() =>
             {
-                EtwTrace?.Dispose();
-                Environment.Exit(0);
+                NativeEventWaiter.WaitForEventLoop(
+                    Constants.PowerToysRunnerTerminateSettingsEvent(),
+                    () =>
+                    {
+                        EtwTrace?.Dispose();
+                        Environment.Exit(0);
+                    });
             });
         }
 
