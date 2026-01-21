@@ -43,26 +43,6 @@ namespace
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
-HMODULE m_hModule;
-
-BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID /*lpReserved*/)
-{
-    m_hModule = hModule;
-    switch (ul_reason_for_call)
-    {
-    case DLL_PROCESS_ATTACH:
-        Trace::RegisterProvider();
-        break;
-    case DLL_THREAD_ATTACH:
-    case DLL_THREAD_DETACH:
-        break;
-    case DLL_PROCESS_DETACH:
-        Trace::UnregisterProvider();
-        break;
-    }
-    return TRUE;
-}
-
 // The PowerToy name that will be shown in the settings.
 const static wchar_t* MODULE_NAME = L"MousePointerCrosshairs";
 // Add a description that will we shown in the module settings page.
@@ -72,16 +52,9 @@ class MousePointerCrosshairs; // fwd
 static std::atomic<MousePointerCrosshairs*> g_instance{ nullptr }; // for hook callback
 
 // Implement the PowerToy Module Interface and all the required methods.
-class MousePointerCrosshairs : public PowertoyModuleIface
+class MousePointerCrosshairs
 {
 private:
-    // The PowerToy state.
-    bool m_enabled = false;
-
-    // Additional hotkeys (legacy API) to support multiple shortcuts
-    Hotkey m_activationHotkey{}; // Crosshairs toggle
-    Hotkey m_glidingHotkey{}; // Gliding cursor state machine
-
     // Low-level keyboard hook (Escape to cancel gliding)
     HHOOK m_keyboardHook = nullptr;
 
@@ -138,84 +111,20 @@ public:
         g_instance.store(this, std::memory_order_release);
     };
 
-    // Destroy the powertoy and free memory
-    virtual void destroy() override
-    {
-        // Ensure all background threads/handles are torn down before destruction to avoid std::terminate/abort on joinable threads
-        disable();
-        g_instance.store(nullptr, std::memory_order_release);
-        m_state.reset();
-        delete this;
-    }
-
-    // Return the localized display name of the powertoy
-    virtual const wchar_t* get_name() override
-    {
-        return MODULE_NAME;
-    }
-
-    // Return the non localized key of the powertoy, this will be cached by the runner
-    virtual const wchar_t* get_key() override
-    {
-        return MODULE_NAME;
-    }
-
-    // Return the configured status for the gpo policy for the module
-    virtual powertoys_gpo::gpo_rule_configured_t gpo_policy_enabled_configuration() override
-    {
-        return powertoys_gpo::getConfiguredMousePointerCrosshairsEnabledValue();
-    }
-
-    // Return JSON with the configuration options.
-    virtual bool get_config(wchar_t* buffer, int* buffer_size) override
-    {
-        HINSTANCE hinstance = reinterpret_cast<HINSTANCE>(&__ImageBase);
-
-        PowerToysSettings::Settings settings(hinstance, get_name());
-
-        return settings.serialize_to_buffer(buffer, buffer_size);
-    }
-
-    // Signal from the Settings editor to call a custom action.
-    // This can be used to spawn more complex editors.
-    virtual void call_custom_action(const wchar_t* /*action*/) override {}
-
-    // Called by the runner to pass the updated settings values as a serialized JSON.
-    virtual void set_config(const wchar_t* config) override
-    {
-        try
-        {
-            // Parse the input JSON string.
-            PowerToysSettings::PowerToyValues values =
-                PowerToysSettings::PowerToyValues::from_json_string(config, get_key());
-
-            parse_settings(values);
-
-            InclusiveCrosshairsApplySettings(m_inclusiveCrosshairsSettings);
-        }
-        catch (std::exception&)
-        {
-            Logger::error("Invalid json when trying to parse Mouse Pointer Crosshairs settings json.");
-        }
-    }
-
-    // Enable the powertoy
     virtual void enable()
     {
-        m_enabled = true;
         Trace::EnableMousePointerCrosshairs(true);
-        std::thread([=]() { InclusiveCrosshairsMain(m_hModule, m_inclusiveCrosshairsSettings); }).detach();
+        std::thread([=]() { InclusiveCrosshairsMain(GetModuleHandle(nullptr), m_inclusiveCrosshairsSettings); }).detach();
+    }
 
-        // Start listening for external trigger event so we can invoke the same logic as the activation hotkey.
-        m_triggerEventWaiter.start(CommonSharedConstants::MOUSE_CROSSHAIRS_TRIGGER_EVENT, [this](DWORD) {
-            on_hotkey(0); // activation hotkey
-        });
+    virtual std::atomic<int>* getCurrentGlideState()
+    {
+        return &m_glideState;
     }
 
     // Disable the powertoy
     virtual void disable()
     {
-        m_enabled = false;
         Trace::EnableMousePointerCrosshairs(false);
         UninstallKeyboardHook();
         StopXTimer();
@@ -224,67 +133,6 @@ public:
         InclusiveCrosshairsDisable();
 
         m_triggerEventWaiter.stop();
-    }
-
-    // Returns if the powertoys is enabled
-    virtual bool is_enabled() override
-    {
-        return m_enabled;
-    }
-
-    // Returns whether the PowerToys should be enabled by default
-    virtual bool is_enabled_by_default() const override
-    {
-        return false;
-    }
-
-    // Legacy multi-hotkey support (like CropAndLock)
-    virtual size_t get_hotkeys(Hotkey* buffer, size_t buffer_size) override
-    {
-        if (buffer && buffer_size >= 2)
-        {
-            buffer[0] = m_activationHotkey; // Crosshairs toggle
-            buffer[1] = m_glidingHotkey; // Gliding cursor toggle
-        }
-        return 2;
-    }
-
-    virtual bool on_hotkey(size_t hotkeyId) override
-    {
-        if (!m_enabled)
-        {
-            return false;
-        }
-
-        if (hotkeyId == 0) // Crosshairs activation
-        {
-            // If gliding cursor is active, cancel it and activate crosshairs
-            if (m_glideState.load() != 0)
-            {
-                CancelGliding(true /*activateCrosshairs*/);
-                return true;
-            }
-            // Otherwise, normal crosshairs toggle
-            InclusiveCrosshairsSwitch();
-            return true;
-        }
-        if (hotkeyId == 1) // Gliding cursor activation
-        {
-            HandleGlidingHotkey();
-            return true;
-        }
-        return false;
-    }
-
-private:
-    static void LeftClick()
-    {
-        INPUT inputs[2]{};
-        inputs[0].type = INPUT_MOUSE;
-        inputs[0].mi.dwFlags = MOUSEEVENTF_LEFTDOWN;
-        inputs[1].type = INPUT_MOUSE;
-        inputs[1].mi.dwFlags = MOUSEEVENTF_LEFTUP;
-        SendInput(2, inputs, sizeof(INPUT));
     }
 
     // Cancel gliding with option to activate crosshairs in user's preferred orientation
@@ -325,6 +173,99 @@ private:
         }
         
         Logger::debug("Gliding cursor cancelled (activateCrosshairs={})", activateCrosshairs ? 1 : 0);
+    }
+
+    void HandleGlidingHotkey()
+    {
+        auto s = m_state;
+        if (!s)
+        {
+            return;
+        }
+        
+        int state = m_glideState.load();
+        switch (state)
+        {
+        case 0: // Starting gliding
+        {
+            // Install keyboard hook for Escape cancellation
+            InstallKeyboardHook();
+            
+            // Force crosshairs visible in BOTH orientation for gliding, regardless of user setting
+            // Set external control before enabling to prevent internal movement hook from attaching
+            InclusiveCrosshairsSetExternalControl(true);
+            InclusiveCrosshairsSetOrientation(CrosshairsOrientation::Both);
+            InclusiveCrosshairsEnsureOn(); // Always ensure they are visible
+
+            // Initialize gliding state
+            s->currentXPos = 0;
+            s->currentXSpeed = s->fastHSpeed;
+            s->xFraction = 0.0;
+            s->yFraction = 0.0;
+            int y = GetSystemMetrics(SM_CYVIRTUALSCREEN) / 2;
+            SetCursorPos(0, y);
+            InclusiveCrosshairsRequestUpdatePosition();
+            
+            m_glideState = 1;
+            StartXTimer();
+            break;
+        }
+        case 1: // Slow horizontal
+            s->currentXSpeed = s->slowHSpeed;
+            m_glideState = 2;
+            break;
+        case 2: // Switch to vertical fast
+        {
+            StopXTimer();
+            s->currentYSpeed = s->fastVSpeed;
+            s->currentYPos = 0;
+            s->yFraction = 0.0;
+            SetCursorPos(s->xPosSnapshot, s->currentYPos);
+            InclusiveCrosshairsRequestUpdatePosition();
+            m_glideState = 3;
+            StartYTimer();
+            break;
+        }
+        case 3: // Slow vertical
+            s->currentYSpeed = s->slowVSpeed;
+            m_glideState = 4;
+            break;
+        case 4: // Finalize (click and end)
+        default:
+        {
+            // Complete the gliding sequence
+            StopYTimer();
+            m_glideState = 0;
+            LeftClick();
+            
+            // Restore normal crosshairs operation and turn them off
+            InclusiveCrosshairsSetExternalControl(false);
+            InclusiveCrosshairsSetOrientation(m_inclusiveCrosshairsSettings.crosshairsOrientation);
+            InclusiveCrosshairsEnsureOff();
+            
+            UninstallKeyboardHook();
+            
+            // Reset state
+            if (auto sp = m_state)
+            {
+                sp->xFraction = 0.0;
+                sp->yFraction = 0.0;
+            }
+            break;
+        }
+        }
+    }
+
+
+private:
+    static void LeftClick()
+    {
+        INPUT inputs[2]{};
+        inputs[0].type = INPUT_MOUSE;
+        inputs[0].mi.dwFlags = MOUSEEVENTF_LEFTDOWN;
+        inputs[1].type = INPUT_MOUSE;
+        inputs[1].mi.dwFlags = MOUSEEVENTF_LEFTUP;
+        SendInput(2, inputs, sizeof(INPUT));
     }
 
     // Stateless helpers operating on shared State
@@ -456,87 +397,6 @@ private:
         }
     }
 
-    void HandleGlidingHotkey()
-    {
-        auto s = m_state;
-        if (!s)
-        {
-            return;
-        }
-        
-        int state = m_glideState.load();
-        switch (state)
-        {
-        case 0: // Starting gliding
-        {
-            // Install keyboard hook for Escape cancellation
-            InstallKeyboardHook();
-            
-            // Force crosshairs visible in BOTH orientation for gliding, regardless of user setting
-            // Set external control before enabling to prevent internal movement hook from attaching
-            InclusiveCrosshairsSetExternalControl(true);
-            InclusiveCrosshairsSetOrientation(CrosshairsOrientation::Both);
-            InclusiveCrosshairsEnsureOn(); // Always ensure they are visible
-
-            // Initialize gliding state
-            s->currentXPos = 0;
-            s->currentXSpeed = s->fastHSpeed;
-            s->xFraction = 0.0;
-            s->yFraction = 0.0;
-            int y = GetSystemMetrics(SM_CYVIRTUALSCREEN) / 2;
-            SetCursorPos(0, y);
-            InclusiveCrosshairsRequestUpdatePosition();
-            
-            m_glideState = 1;
-            StartXTimer();
-            break;
-        }
-        case 1: // Slow horizontal
-            s->currentXSpeed = s->slowHSpeed;
-            m_glideState = 2;
-            break;
-        case 2: // Switch to vertical fast
-        {
-            StopXTimer();
-            s->currentYSpeed = s->fastVSpeed;
-            s->currentYPos = 0;
-            s->yFraction = 0.0;
-            SetCursorPos(s->xPosSnapshot, s->currentYPos);
-            InclusiveCrosshairsRequestUpdatePosition();
-            m_glideState = 3;
-            StartYTimer();
-            break;
-        }
-        case 3: // Slow vertical
-            s->currentYSpeed = s->slowVSpeed;
-            m_glideState = 4;
-            break;
-        case 4: // Finalize (click and end)
-        default:
-        {
-            // Complete the gliding sequence
-            StopYTimer();
-            m_glideState = 0;
-            LeftClick();
-            
-            // Restore normal crosshairs operation and turn them off
-            InclusiveCrosshairsSetExternalControl(false);
-            InclusiveCrosshairsSetOrientation(m_inclusiveCrosshairsSettings.crosshairsOrientation);
-            InclusiveCrosshairsEnsureOff();
-            
-            UninstallKeyboardHook();
-            
-            // Reset state
-            if (auto sp = m_state)
-            {
-                sp->xFraction = 0.0;
-                sp->yFraction = 0.0;
-            }
-            break;
-        }
-        }
-    }
-
     // Low-level keyboard hook for Escape cancellation
     static LRESULT CALLBACK LowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
     {
@@ -547,7 +407,7 @@ private:
             {
                 if (auto inst = g_instance.load(std::memory_order_acquire))
                 {
-                    if (inst->m_enabled && inst->m_glideState.load() != 0)
+                    if (inst->m_glideState.load() != 0)
                     {
                         inst->CancelGliding(false); // Escape cancels without activating crosshairs
                     }
@@ -563,7 +423,7 @@ private:
         {
             return; // already installed
         }
-        m_keyboardHook = SetWindowsHookEx(WH_KEYBOARD_LL, LowLevelKeyboardProc, m_hModule, 0);
+        m_keyboardHook = SetWindowsHookEx(WH_KEYBOARD_LL, LowLevelKeyboardProc, GetModuleHandle(nullptr), 0);
         if (!m_keyboardHook)
         {
             Logger::error("Failed to install low-level keyboard hook for MousePointerCrosshairs (Escape cancel). GetLastError={}.", GetLastError());
@@ -586,7 +446,7 @@ private:
         {
             // Load and parse the settings file for this PowerToy.
             PowerToysSettings::PowerToyValues settings =
-                PowerToysSettings::PowerToyValues::load_from_settings_file(MousePointerCrosshairs::get_key());
+                PowerToysSettings::PowerToyValues::load_from_settings_file(L"MousePointerCrosshairs");
             parse_settings(settings);
         }
         catch (std::exception&)
@@ -594,6 +454,8 @@ private:
             Logger::error("Invalid json when trying to load the Mouse Pointer Crosshairs settings json from file.");
         }
     }
+
+public:
 
     void parse_settings(PowerToysSettings::PowerToyValues& settings)
     {
@@ -606,43 +468,6 @@ private:
             try
             {
                 auto propertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES);
-                
-                // Parse activation hotkey
-                try
-                {
-                    auto jsonHotkeyObject = propertiesObject.GetNamedObject(JSON_KEY_ACTIVATION_SHORTCUT);
-                    auto hotkey = PowerToysSettings::HotkeyObject::from_json(jsonHotkeyObject);
-                    m_activationHotkey.win = hotkey.win_pressed();
-                    m_activationHotkey.ctrl = hotkey.ctrl_pressed();
-                    m_activationHotkey.shift = hotkey.shift_pressed();
-                    m_activationHotkey.alt = hotkey.alt_pressed();
-                    m_activationHotkey.key = static_cast<unsigned char>(hotkey.get_code());
-                }
-                catch (...)
-                {
-                    Logger::warn("Failed to initialize Mouse Pointer Crosshairs activation shortcut");
-                }
-
-                // Parse gliding cursor hotkey
-                try
-                {
-                    auto jsonHotkeyObject = propertiesObject.GetNamedObject(JSON_KEY_GLIDING_ACTIVATION_SHORTCUT);
-                    auto hotkey = PowerToysSettings::HotkeyObject::from_json(jsonHotkeyObject);
-                    m_glidingHotkey.win = hotkey.win_pressed();
-                    m_glidingHotkey.ctrl = hotkey.ctrl_pressed();
-                    m_glidingHotkey.shift = hotkey.shift_pressed();
-                    m_glidingHotkey.alt = hotkey.alt_pressed();
-                    m_glidingHotkey.key = static_cast<unsigned char>(hotkey.get_code());
-                }
-                catch (...)
-                {
-                    Logger::warn("Failed to initialize Gliding Cursor activation shortcut. Using default Win+Alt+.");
-                    m_glidingHotkey.win = true;
-                    m_glidingHotkey.alt = true;
-                    m_glidingHotkey.ctrl = false;
-                    m_glidingHotkey.shift = false;
-                    m_glidingHotkey.key = VK_OEM_PERIOD;
-                }
 
                 // Parse individual properties with error handling and defaults
                 try
@@ -885,29 +710,64 @@ private:
             Logger::info("Mouse Pointer Crosshairs settings are empty");
         }
         
-        // Set default hotkeys if not configured
-        if (m_activationHotkey.key == 0)
-        {
-            m_activationHotkey.win = true;
-            m_activationHotkey.alt = true;
-            m_activationHotkey.ctrl = false;
-            m_activationHotkey.shift = false;
-            m_activationHotkey.key = 'P';
-        }
-        if (m_glidingHotkey.key == 0)
-        {
-            m_glidingHotkey.win = true;
-            m_glidingHotkey.alt = true;
-            m_glidingHotkey.ctrl = false;
-            m_glidingHotkey.shift = false;
-            m_glidingHotkey.key = VK_OEM_PERIOD;
-        }
-        
         m_inclusiveCrosshairsSettings = inclusiveCrosshairsSettings;
     }
 };
 
-extern "C" __declspec(dllexport) PowertoyModuleIface* __cdecl powertoy_create()
+MousePointerCrosshairs* g_mousePointerCrosshairsModule;
+
+EXTERN_C __declspec(dllexport) void DisableMousePointerCrosshairs()
 {
-    return new MousePointerCrosshairs();
+    if (g_mousePointerCrosshairsModule == nullptr)
+    {
+        g_mousePointerCrosshairsModule = new MousePointerCrosshairs();
+    }
+
+    g_mousePointerCrosshairsModule->disable();
+}
+
+EXTERN_C __declspec(dllexport) void EnableMousePointerCrosshairs()
+{
+    if (g_mousePointerCrosshairsModule == nullptr)
+    {
+        g_mousePointerCrosshairsModule = new MousePointerCrosshairs();
+    }
+    g_mousePointerCrosshairsModule->enable();
+}
+
+EXTERN_C __declspec(dllexport) void OnMousePointerCrosshairsActivationShortcut()
+{
+    if (g_mousePointerCrosshairsModule == nullptr)
+    {
+        g_mousePointerCrosshairsModule = new MousePointerCrosshairs();
+    }
+
+    if (g_mousePointerCrosshairsModule->getCurrentGlideState()->load() != 0)
+    {
+        g_mousePointerCrosshairsModule->CancelGliding(true /*activateCrosshairs*/);
+    }
+
+    // Otherwise, normal crosshairs toggle
+    InclusiveCrosshairsSwitch();
+}
+
+EXTERN_C __declspec(dllexport) void OnMousePointerCrosshairsGlidingCursorShortcut()
+{
+    if (g_mousePointerCrosshairsModule == nullptr)
+    {
+        g_mousePointerCrosshairsModule = new MousePointerCrosshairs();
+    }
+
+    g_mousePointerCrosshairsModule->HandleGlidingHotkey();
+}
+
+EXTERN_C __declspec(dllexport) void OnMousePointerCrosshairsSettingsChanged()
+{
+    if (g_mousePointerCrosshairsModule == nullptr)
+    {
+        g_mousePointerCrosshairsModule = new MousePointerCrosshairs();
+    }
+    PowerToysSettings::PowerToyValues settings =
+        PowerToysSettings::PowerToyValues::load_from_settings_file(L"MousePointerCrosshairs");
+    g_mousePointerCrosshairsModule->parse_settings(settings);
 }

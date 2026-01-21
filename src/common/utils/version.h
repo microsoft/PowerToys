@@ -15,3 +15,12 @@
 #define COMPANY_NAME "Microsoft Corporation"
 #define COPYRIGHT_NOTE "Copyright (C) Microsoft Corporation. All rights reserved."
 #define PRODUCT_NAME "PowerToys"
+
+inline std::wstring get_product_version(bool includeV = true)
+{
+    static std::wstring version = (includeV ? L"v" : L"") + std::to_wstring(VERSION_MAJOR) +
+                                  L"." + std::to_wstring(VERSION_MINOR) +
+                                  L"." + std::to_wstring(VERSION_REVISION);
+
+    return version;
+}

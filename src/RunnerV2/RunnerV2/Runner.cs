@@ -36,12 +36,14 @@ namespace RunnerV2
         /// </summary>
         public static List<IPowerToysModule> LoadedModules { get; } = [];
 
+        private static List<IPowerToysModule> _failedModuleLoads = [];
+
         /// <summary>
         /// Gets the list of all available PowerToys modules.
         /// </summary>
         public static FrozenSet<IPowerToysModule> ModulesToLoad { get; } =
         [
-            new ColorPickerModuleInterface(),
+            /*new ColorPickerModuleInterface(),
             new AlwaysOnTopModuleInterface(),
             new HostsModuleInterface(),
             new PowerAccentModuleInterface(),
@@ -63,7 +65,8 @@ namespace RunnerV2
             new LightSwitchModuleInterface(),
             new CursorWrapModuleInterface(),
             new FindMyMouseModuleInterface(),
-            new WorkspacesModuleInterface(),
+            new WorkspacesModuleInterface(),*/
+            new MousePointerCrosshairsModuleInterface(),
         ];
 
         /// <summary>
@@ -152,6 +155,11 @@ namespace RunnerV2
         /// <param name="module">The module to toggle</param>
         public static void ToggleModuleStateBasedOnEnabledProperty(IPowerToysModule module)
         {
+            if (_failedModuleLoads.Contains(module))
+            {
+                return;
+            }
+
             try
             {
                 if ((module.Enabled && (module.GpoRuleConfigured != PowerToys.GPOWrapper.GpoRuleConfigured.Disabled)) || module.GpoRuleConfigured == PowerToys.GPOWrapper.GpoRuleConfigured.Enabled)
@@ -186,6 +194,7 @@ namespace RunnerV2
             catch (Exception e)
             {
                 MessageBox.Show($"The module {module.Name} failed to load: \n" + e.Message, "Error: " + e.GetType().Name, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                _failedModuleLoads.Add(module);
                 return;
             }
 
@@ -208,6 +217,7 @@ namespace RunnerV2
             catch (Exception e)
             {
                 MessageBox.Show($"The module {module.Name} failed to unload: \n" + e.Message, "Error: " + e.GetType().Name, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                _failedModuleLoads.Add(module);
             }
         }
 
