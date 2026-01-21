@@ -114,14 +114,31 @@ public sealed partial class SettingsWindow : WindowEx,
 
     internal void Navigate(string page)
     {
-        var pageType = page switch
+        Type? pageType;
+        switch (page)
         {
-            "General" => typeof(GeneralPage),
-            "Appearance" => typeof(AppearancePage),
-            "Extensions" => typeof(ExtensionsPage),
-            "Internal" => typeof(InternalPage),
-            _ => null,
-        };
+            case "General":
+                pageType = typeof(GeneralPage);
+                break;
+            case "Appearance":
+                pageType = typeof(AppearancePage);
+                break;
+            case "Extensions":
+                pageType = typeof(ExtensionsPage);
+                break;
+            case "Internal":
+                pageType = typeof(InternalPage);
+                break;
+            case "":
+                // intentional no-op: empty tag means no navigation
+                pageType = null;
+                break;
+            default:
+                // unknown page, no-op and log
+                pageType = null;
+                Logger.LogError($"Unknown settings page tag '{page}'");
+                break;
+        }
 
         if (pageType is not null)
         {

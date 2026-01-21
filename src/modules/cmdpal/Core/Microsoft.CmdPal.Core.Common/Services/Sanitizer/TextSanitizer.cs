@@ -12,23 +12,31 @@ namespace Microsoft.CmdPal.Core.Common.Services.Sanitizer;
 /// </summary>
 internal sealed class TextSanitizer : ITextSanitizer
 {
+    // Default guardrail: sanitized text must retain at least 30% of the original length
+    private const double DefaultGuardrailThreshold = 0.3;
     private static readonly TimeSpan DefaultTimeout = TimeSpan.FromMilliseconds(SanitizerDefaults.DefaultMatchTimeoutMs);
 
     private readonly List<SanitizationRule> _rules = [];
+    private readonly double _guardrailThreshold;
+    private readonly Action<GuardrailEventArgs>? _onGuardrailTriggered;
 
-    public TextSanitizer()
+    public TextSanitizer(
+        double guardrailThreshold = DefaultGuardrailThreshold,
+        Action<GuardrailEventArgs>? onGuardrailTriggered = null)
     {
+        _guardrailThreshold = guardrailThreshold;
+        _onGuardrailTriggered = onGuardrailTriggered;
     }
 
-    public TextSanitizer(params IEnumerable<SanitizationRule> rules)
-    {
-        ArgumentNullException.ThrowIfNull(rules);
-        _rules = rules.ToList();
-    }
-
-    public TextSanitizer(params IEnumerable<ISanitizationRuleProvider> providers)
+    public TextSanitizer(
+        IEnumerable<ISanitizationRuleProvider> providers,
+        double guardrailThreshold = DefaultGuardrailThreshold,
+        Action<GuardrailEventArgs>? onGuardrailTriggered = null)
     {
         ArgumentNullException.ThrowIfNull(providers);
+        _guardrailThreshold = guardrailThreshold;
+        _onGuardrailTriggered = onGuardrailTriggered;
+
         foreach (var p in providers)
         {
             try
@@ -61,8 +69,13 @@ internal sealed class TextSanitizer : ITextSanitizer
                     ? rule.Regex.Replace(previous, rule.Replacement!)
                     : rule.Regex.Replace(previous, rule.Evaluator);
 
-                if (result.Length < previous.Length * 0.3)
+                if (result.Length < previous.Length * _guardrailThreshold)
                 {
+                    _onGuardrailTriggered?.Invoke(new GuardrailEventArgs(
+                        rule.Description,
+                        previous.Length,
+                        result.Length,
+                        _guardrailThreshold));
                     result = previous; // Guardrail
                 }
             }

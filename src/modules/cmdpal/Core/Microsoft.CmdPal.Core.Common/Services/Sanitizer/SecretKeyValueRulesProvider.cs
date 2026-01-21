@@ -103,23 +103,23 @@ internal sealed class SecretKeyValueRulesProvider : ISanitizationRuleProvider
                 continue;
             }
 
-            if (starEverything && !key.StartsWith('*'))
+            if (starEverything && key is not ['*', ..])
             {
                 key = "*" + key;
             }
 
-            if (key.StartsWith('*'))
+            if (key is ['*', .. var tail])
             {
                 // Wildcard prefix: allow one non-space token + optional "-" or "_" before the remainder.
                 // Matches: "api key", "api-key", "azure-api-key", "user_api_key"
-                var remainder = key[1..].Trim();
+                var remainder = tail.Trim();
                 if (remainder.Length == 0)
                 {
                     continue;
                 }
 
                 var rem = Normalize(remainder, between);
-                patterns.Add($@"(?:\S+[_-])?{rem}");
+                patterns.Add($@"(?:(?>[A-Za-z0-9_]{{1,128}}[_-]))?{rem}");
             }
             else
             {

@@ -19,6 +19,7 @@ internal sealed partial class GlobalErrorHandler : IDisposable
 {
     private readonly ErrorReportBuilder _errorReportBuilder = new();
     private Options? _options;
+    private App? _app;
 
     // GlobalErrorHandler is designed to be self-contained; it can be registered and invoked before a service provider is available.
     internal void Register(App app, Options options)
@@ -28,7 +29,8 @@ internal sealed partial class GlobalErrorHandler : IDisposable
 
         _options = options;
 
-        app.UnhandledException += App_UnhandledException;
+        _app = app;
+        _app.UnhandledException += App_UnhandledException;
         TaskScheduler.UnobservedTaskException += TaskScheduler_UnobservedTaskException;
         AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
     }
@@ -140,7 +142,7 @@ internal sealed partial class GlobalErrorHandler : IDisposable
 
     public void Dispose()
     {
-        App.Current.UnhandledException -= App_UnhandledException;
+        _app?.UnhandledException -= App_UnhandledException;
         TaskScheduler.UnobservedTaskException -= TaskScheduler_UnobservedTaskException;
         AppDomain.CurrentDomain.UnhandledException -= CurrentDomain_UnhandledException;
     }

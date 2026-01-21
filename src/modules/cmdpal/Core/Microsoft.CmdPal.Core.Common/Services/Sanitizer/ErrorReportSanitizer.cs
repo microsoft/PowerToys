@@ -11,7 +11,13 @@ namespace Microsoft.CmdPal.Core.Common.Services.Sanitizer;
 /// </summary>
 public sealed class ErrorReportSanitizer
 {
-    private readonly TextSanitizer _sanitizer = new(BuildProviders());
+    private readonly TextSanitizer _sanitizer = new(BuildProviders(), onGuardrailTriggered: OnGuardrailTriggered);
+
+    private static void OnGuardrailTriggered(GuardrailEventArgs eventArgs)
+    {
+        var msg = $"Sanitization guardrail triggered for rule '{eventArgs.RuleDescription}': original length={eventArgs.OriginalLength}, result length={eventArgs.ResultLength}, ratio={eventArgs.Ratio:F2}, threshold={eventArgs.Threshold:F2}";
+        CoreLogger.LogDebug(msg);
+    }
 
     private static IEnumerable<ISanitizationRuleProvider> BuildProviders()
     {

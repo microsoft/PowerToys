@@ -32,7 +32,7 @@ public sealed partial class InternalPage : Page
         Task.Run(() =>
         {
             Logger.LogDebug("Throwing test exception from a task");
-            throw new InvalidOperationException("Test exception; throw from a task");
+            throw new InvalidOperationException("Test exception; thrown from a task");
         });
     }
 
