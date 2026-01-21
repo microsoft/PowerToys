@@ -76,8 +76,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             GeneralSettingsConfig = settingsRepository.SettingsConfig;
 
-            // To obtain the settings configurations of Fancy zones.
-            ArgumentNullException.ThrowIfNull(settingsRepository);
+            // To obtain the settings configurations of Advanced Paste.
+            ArgumentNullException.ThrowIfNull(advancedPasteSettingsRepository);
 
             _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
 
