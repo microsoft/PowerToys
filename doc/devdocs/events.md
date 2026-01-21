@@ -1,4 +1,4 @@
-# Events
+# Telemtry Events
 
 PowerToys collects limited telemetry to understand feature usage, reliability, and product quality. When adding a new telemetry event, follow the steps below to ensure the event is properly declared, documented, and available after release.
 
@@ -68,42 +68,42 @@ PowerToys uses ETW (Event Tracing for Windows) for telemetry in both C++ and C# 
 
 1. Create a `Trace` class inheriting from `telemetry::TraceBase` (src/common/Telemetry/TraceBase.h):
 
-```c
-// trace.h
-#pragma once
-#include <common/Telemetry/TraceBase.h>
-
-class Trace : public telemetry::TraceBase
-{
-public:
-    static void MyEvent(/* parameters */);
-};
-```
+    ```c
+    // trace.h
+    #pragma once
+    #include <common/Telemetry/TraceBase.h>
+    
+    class Trace : public telemetry::TraceBase
+    {
+    public:
+        static void MyEvent(/* parameters */);
+    };
+    ```
 
 2. Implement events using `TraceLoggingWriteWrapper`:
 
-```cpp
-// trace.cpp
-#include "trace.h"
-#include <common/Telemetry/TraceBase.h>
-
-TRACELOGGING_DEFINE_PROVIDER(
-    g_hProvider,
-    "Microsoft.PowerToys",
-    (0x38e8889b, 0x9731, 0x53f5, 0xe9, 0x01, 0xe8, 0xa7, 0xc1, 0x75, 0x30, 0x74),
-    TraceLoggingOptionProjectTelemetry());
-
-void Trace::MyEvent(bool enabled)
-{
-    TraceLoggingWriteWrapper(
+    ```cpp
+    // trace.cpp
+    #include "trace.h"
+    #include <common/Telemetry/TraceBase.h>
+    
+    TRACELOGGING_DEFINE_PROVIDER(
         g_hProvider,
-        "ModuleName_EventName",           // Event name
-        TraceLoggingBoolean(enabled, "Enabled"),  // Event data
-        ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
-        TraceLoggingBoolean(TRUE, "UTCReplace_AppSessionGuid"),
-        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
-}
-```
+        "Microsoft.PowerToys",
+        (0x38e8889b, 0x9731, 0x53f5, 0xe9, 0x01, 0xe8, 0xa7, 0xc1, 0x75, 0x30, 0x74),
+        TraceLoggingOptionProjectTelemetry());
+    
+    void Trace::MyEvent(bool enabled)
+    {
+        TraceLoggingWriteWrapper(
+            g_hProvider,
+            "ModuleName_EventName",           // Event name
+            TraceLoggingBoolean(enabled, "Enabled"),  // Event data
+            ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
+            TraceLoggingBoolean(TRUE, "UTCReplace_AppSessionGuid"),
+            TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
+    }
+    ```
 
 **Key C++ Telemetry Macros**
 
@@ -122,42 +122,41 @@ void Trace::MyEvent(bool enabled)
 | [EventBase.cs](../../src/common/ManagedTelemetry/Telemetry/Events/EventBase.cs)      | Base class for all events (provides `EventName`, `Version`)     |
 | [IEvent.cs](../../src/common/ManagedTelemetry/Telemetry/Events/IEvent.cs)     | Interface requiring `PartA_PrivTags` property     |
 | [TelemetryBase.cs](../../src/common/Telemetry/TelemetryBase.cs)     | 	Inherits from `EventSource`, defines ETW constants     |
-| [DataDiagnosticsSettings.cs](../../src/common/ManagedTelemetry/Telemetry/DataDiagnosticsSettings.cs)     | Registry-based enable/disable check
-
+| [DataDiagnosticsSettings.cs](../../src/common/ManagedTelemetry/Telemetry/DataDiagnosticsSettings.cs)     | Registry-based enable/disable check 
 
 #### Pattern for C# Modules
 
 1. Create an event class inheriting from `EventBase` and implementing `IEvent`:
 
-```csharp
-using System.Diagnostics.CodeAnalysis;
-using System.Diagnostics.Tracing;
-using Microsoft.PowerToys.Telemetry;
-using Microsoft.PowerToys.Telemetry.Events;
-
-namespace MyModule.Telemetry
-{
-    [EventData]
-    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)]
-    public class MyModuleEvent : EventBase, IEvent
+    ```csharp
+    using System.Diagnostics.CodeAnalysis;
+    using System.Diagnostics.Tracing;
+    using Microsoft.PowerToys.Telemetry;
+    using Microsoft.PowerToys.Telemetry.Events;
+    
+    namespace MyModule.Telemetry
     {
-        // Event properties (logged as telemetry data)
-        public string SomeProperty { get; set; }
-        public int SomeValue { get; set; }
-
-        // Required: Privacy tag
-        public PartA_PrivTags PartA_PrivTags => PartA_PrivTags.ProductAndServiceUsage;
-
-        // Optional: Set EventName in constructor (defaults to class name)
-        public MyModuleEvent(string prop, int val)
+        [EventData]
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)]
+        public class MyModuleEvent : EventBase, IEvent
         {
-            EventName = "MyModule_EventName";
-            SomeProperty = prop;
-            SomeValue = val;
+            // Event properties (logged as telemetry data)
+            public string SomeProperty { get; set; }
+            public int SomeValue { get; set; }
+    
+            // Required: Privacy tag
+            public PartA_PrivTags PartA_PrivTags => PartA_PrivTags.ProductAndServiceUsage;
+    
+            // Optional: Set EventName in constructor (defaults to class name)
+            public MyModuleEvent(string prop, int val)
+            {
+                EventName = "MyModule_EventName";
+                SomeProperty = prop;
+                SomeValue = val;
+            }
         }
     }
-}
-```
+    ```
 
 2. Log the event:
 
