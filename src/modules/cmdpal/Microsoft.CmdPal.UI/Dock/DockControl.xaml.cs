@@ -22,8 +22,6 @@ using Windows.Foundation;
 
 namespace Microsoft.CmdPal.UI.Dock;
 
-#pragma warning disable SA1402 // File may only contain a single type
-
 public sealed partial class DockControl : UserControl, INotifyPropertyChanged, IRecipient<CloseContextMenuMessage>, IRecipient<EnterDockEditModeMessage>
 {
     private DockViewModel _viewModel;
@@ -41,8 +39,29 @@ public sealed partial class DockControl : UserControl, INotifyPropertyChanged, I
             {
                 field = value;
                 PropertyChanged?.Invoke(this, new(nameof(ItemsOrientation)));
+                UpdateBandTemplates();
             }
         }
+    }
+
+    private void UpdateBandTemplates()
+    {
+        var panelKey = ItemsOrientation == Orientation.Horizontal
+            ? "HorizontalItemsPanel"
+            : "VerticalItemsPanel";
+
+        var panel = (ItemsPanelTemplate)Resources[panelKey];
+
+        StartItemsListView.ItemsPanel = panel;
+        EndItemsListView.ItemsPanel = panel;
+
+        // Force the selector to re-evaluate by refreshing ItemsSource
+        var startItems = StartItemsListView.ItemsSource;
+        var endItems = EndItemsListView.ItemsSource;
+        StartItemsListView.ItemsSource = null;
+        EndItemsListView.ItemsSource = null;
+        StartItemsListView.ItemsSource = startItems;
+        EndItemsListView.ItemsSource = endItems;
     }
 
     public DockSide DockSide
@@ -218,6 +237,9 @@ public sealed partial class DockControl : UserControl, INotifyPropertyChanged, I
         {
             RootGrid.BorderBrush = new SolidColorBrush(Colors.Transparent);
         }
+
+        // Ensure templates are updated on initial load (setter only updates on change)
+        UpdateBandTemplates();
     }
 
     private void BandItem_Tapped(object sender, Microsoft.UI.Xaml.Input.TappedRoutedEventArgs e)
@@ -266,7 +288,7 @@ public sealed partial class DockControl : UserControl, INotifyPropertyChanged, I
         }
     }
 
-    private void InvokeItem(DockItemViewModel item, global::Windows.Foundation.Point pos)
+    private void InvokeItem(DockItemViewModel item, Point pos)
     {
         var command = item.Command;
         try
@@ -465,25 +487,3 @@ public sealed partial class DockControl : UserControl, INotifyPropertyChanged, I
         return itemCount;
     }
 }
-
-internal sealed partial class BandAlignmentConverter : Microsoft.UI.Xaml.Data.IValueConverter
-{
-    public DockControl? Control { get; set; }
-
-    public object Convert(object value, Type targetType, object parameter, string language)
-    {
-        if (value is ObservableCollection<DockItemViewModel> items && Control is not null)
-        {
-            return Control.GetBandAlignment(items);
-        }
-
-        return HorizontalAlignment.Center;
-    }
-
-    public object ConvertBack(object value, Type targetType, object parameter, string language)
-    {
-        throw new NotImplementedException();
-    }
-}
-
-#pragma warning restore SA1402 // File may only contain a single type

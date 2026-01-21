@@ -16,6 +16,13 @@
 
     <UserControl.Resources>
         <ResourceDictionary>
+            <ItemsPanelTemplate x:Key="HorizontalItemsPanel">
+                <StackPanel Orientation="Horizontal" Spacing="4" />
+            </ItemsPanelTemplate>
+            <ItemsPanelTemplate x:Key="VerticalItemsPanel">
+                <StackPanel Orientation="Vertical" Spacing="4" />
+            </ItemsPanelTemplate>
+
             <Style x:Key="ResizingIconStyle" TargetType="cpcontrols:IconBox">
                 <Setter Property="Height" Value="{x:Bind IconSize, Mode=OneWay}" />
                 <Setter Property="MaxWidth" Value="{x:Bind IconSize, Mode=OneWay}" />
@@ -32,6 +39,7 @@
             <DataTemplate x:Key="DeskbandTemplate" x:DataType="dockVm:DockItemViewModel">
                 <Grid>
                     <TextBlock Opacity="0" Style="{StaticResource ResizingTitleTextBlock}" />
+                    <!--  Removing this breaks the app.. and I have no idea why  -->
                     <local:DockItemControl
                         Title="{x:Bind Title, Mode=OneWay}"
                         RightTapped="BandItem_RightTapped"
@@ -53,19 +61,27 @@
                 </Grid>
             </DataTemplate>
 
-            <DataTemplate x:Key="DockBandTemplate" x:DataType="dockVm:DockBandViewModel">
-                <!--  Use ItemsControl instead of ItemsRepeater - it doesn't intercept pointer events  -->
+            <DataTemplate x:Key="HorizontalDockBandTemplate" x:DataType="dockVm:DockBandViewModel">
                 <ItemsControl
                     HorizontalAlignment="{x:Bind Items, Converter={StaticResource BandAlignmentConverter}, Mode=OneWay}"
                     ItemTemplate="{StaticResource DeskbandTemplate}"
-                    ItemsSource="{x:Bind Items, Mode=OneWay}">
-                    <ItemsControl.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <StackPanel Orientation="Horizontal" Spacing="4" />
-                        </ItemsPanelTemplate>
-                    </ItemsControl.ItemsPanel>
-                </ItemsControl>
+                    ItemsPanel="{StaticResource HorizontalItemsPanel}"
+                    ItemsSource="{x:Bind Items, Mode=OneWay}" />
             </DataTemplate>
+
+            <DataTemplate x:Key="VerticalDockBandTemplate" x:DataType="dockVm:DockBandViewModel">
+                <ItemsControl
+                    HorizontalAlignment="{x:Bind Items, Converter={StaticResource BandAlignmentConverter}, Mode=OneWay}"
+                    ItemTemplate="{StaticResource DeskbandTemplate}"
+                    ItemsPanel="{StaticResource VerticalItemsPanel}"
+                    ItemsSource="{x:Bind Items, Mode=OneWay}" />
+            </DataTemplate>
+
+            <local:DockBandTemplateSelector
+                x:Key="DockBandTemplateSelector"
+                Control="{x:Bind}"
+                HorizontalTemplate="{StaticResource HorizontalDockBandTemplate}"
+                VerticalTemplate="{StaticResource VerticalDockBandTemplate}" />
 
             <Style x:Key="DockBandListViewStyle" TargetType="ListView">
                 <Setter Property="Background" Value="Transparent" />
@@ -148,16 +164,11 @@
                         DragOver="BandListView_DragOver"
                         Drop="StartItemsListView_Drop"
                         ItemContainerStyle="{StaticResource DockBandListViewItemStyle}"
-                        ItemTemplate="{StaticResource DockBandTemplate}"
+                        ItemTemplateSelector="{StaticResource DockBandTemplateSelector}"
+                        ItemsPanel="{StaticResource HorizontalItemsPanel}"
                         ItemsSource="{x:Bind ViewModel.StartItems, Mode=OneWay}"
                         SelectionMode="None"
-                        Style="{StaticResource DockBandListViewStyle}">
-                        <ListView.ItemsPanel>
-                            <ItemsPanelTemplate>
-                                <StackPanel Orientation="Horizontal" Spacing="4" />
-                            </ItemsPanelTemplate>
-                        </ListView.ItemsPanel>
-                    </ListView>
+                        Style="{StaticResource DockBandListViewStyle}" />
                 </cpcontrols:ScrollContainer.Source>
             </cpcontrols:ScrollContainer>
 
@@ -173,21 +184,19 @@
                         DragOver="BandListView_DragOver"
                         Drop="EndItemsListView_Drop"
                         ItemContainerStyle="{StaticResource DockBandListViewItemStyle}"
-                        ItemTemplate="{StaticResource DockBandTemplate}"
+                        ItemTemplateSelector="{StaticResource DockBandTemplateSelector}"
+                        ItemsPanel="{StaticResource HorizontalItemsPanel}"
                         ItemsSource="{x:Bind ViewModel.EndItems, Mode=OneWay}"
                         SelectionMode="None"
                         Style="{StaticResource DockBandListViewStyle}">
-                        <ListView.ItemsPanel>
-                            <ItemsPanelTemplate>
-                                <StackPanel Orientation="Horizontal" Spacing="4" />
-                            </ItemsPanelTemplate>
-                        </ListView.ItemsPanel>
                         <ListView.ItemContainerTransitions>
                             <TransitionCollection />
                         </ListView.ItemContainerTransitions>
                     </ListView>
                 </cpcontrols:ScrollContainer.Source>
             </cpcontrols:ScrollContainer>
+
+            <!--  To do: remove the X button  -->
             <TeachingTip
                 x:Name="EditButtonsTeachingTip"
                 MinWidth="0"
@@ -196,14 +205,15 @@
                 Target="{x:Bind ContentGrid}">
                 <TeachingTip.Content>
                     <StackPanel
+                        x:Name="EditButtonsPanel"
                         HorizontalAlignment="Center"
-                        Orientation="Horizontal"
+                        Orientation="Vertical"
                         Spacing="4">
-                        <Button Click="DiscardEditingButton_Click" Content="Discard" />
                         <Button
                             Click="DoneEditingButton_Click"
                             Content="Save"
                             Style="{StaticResource AccentButtonStyle}" />
+                        <Button Click="DiscardEditingButton_Click" Content="Discard" />
                     </StackPanel>
                 </TeachingTip.Content>
             </TeachingTip>
