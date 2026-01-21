@@ -85,10 +85,6 @@
                         <ToggleSwitch IsOn="{x:Bind viewModel.ShowSystemTrayIcon, Mode=TwoWay}" />
                     </controls:SettingsCard>
 
-                    <controls:SettingsCard x:Uid="Settings_GeneralPage_EnableDock_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xF596;}">
-                        <ToggleSwitch IsOn="{x:Bind viewModel.EnableDock, Mode=TwoWay}" />
-                    </controls:SettingsCard>
-
                     <!--  'For Developers' section  -->
 
                     <TextBlock x:Uid="ForDevelopersSettingsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />

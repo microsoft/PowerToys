@@ -390,7 +390,7 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Extensions</value>
   </data>
   <data name="Settings_GeneralPage_NavigationViewItem_Dock.Content" xml:space="preserve">
-    <value>Dock</value>
+    <value>Dock (Preview)</value>
   </data>
   <data name="SettingsButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Open Command Palette settings</value>

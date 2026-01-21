@@ -36,6 +36,11 @@
                   <RepositionThemeTransition IsStaggeringEnabled="False" />
               </StackPanel.ChildrenTransitions>-->
 
+                    <!--  Enable Dock  -->
+                    <controls:SettingsCard x:Uid="Settings_GeneralPage_EnableDock_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xF596;}">
+                        <ToggleSwitch IsOn="{x:Bind viewModel.EnableDock, Mode=TwoWay}" />
+                    </controls:SettingsCard>
+
                     <!--  Appearance Section  -->
                     <TextBlock x:Uid="DockAppearanceSettingsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
 
