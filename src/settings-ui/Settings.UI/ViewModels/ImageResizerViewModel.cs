@@ -10,6 +10,9 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Threading;
+using System.Threading.Tasks;
+
 using global::PowerToys.GPOWrapper;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
@@ -18,7 +21,7 @@ using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels;
 
-public partial class ImageResizerViewModel : Observable
+public partial class ImageResizerViewModel : Observable, IAsyncInitializable
 {
     private static readonly string DefaultPresetNamePrefix =
         Helpers.ResourceLoaderInstance.ResourceLoader.GetString("ImageResizer_DefaultSize_NewSizePrefix");
@@ -36,12 +39,12 @@ public partial class ImageResizerViewModel : Observable
     /// <summary>
     /// Used to skip saving settings to file during initialization.
     /// </summary>
-    private readonly bool _isInitializing;
+    private bool _isInitializing;
 
     /// <summary>
     /// Holds defaults for new presets.
     /// </summary>
-    private readonly ImageSize _customSize;
+    private ImageSize _customSize;
 
     private GeneralSettings GeneralSettingsConfig { get; set; }
 
@@ -53,16 +56,80 @@ public partial class ImageResizerViewModel : Observable
 
     private Func<string, int> SendConfigMSG { get; }
 
+    private Func<string, string> _resourceLoader;
+
     public ImageResizerViewModel(SettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, Func<string, int> ipcMSGCallBackFunc, Func<string, string> resourceLoader)
     {
         _isInitializing = true;
 
         _settingsUtils = settingsUtils ?? throw new ArgumentNullException(nameof(settingsUtils));
+        _resourceLoader = resourceLoader;
 
         // To obtain the general settings configurations of PowerToys.
         ArgumentNullException.ThrowIfNull(settingsRepository);
 
         GeneralSettingsConfig = settingsRepository.SettingsConfig;
+
+        // set the callback functions value to handle outgoing IPC message.
+        SendConfigMSG = ipcMSGCallBackFunc;
+
+        InitializeEnabledValue();
+
+        // Initialize with defaults - actual settings loaded in InitializeAsync
+        Settings = new ImageResizerSettings(resourceLoader);
+        Sizes = new ObservableCollection<ImageSize>();
+        _customSize = Settings.Properties.ImageresizerCustomSize.Value;
+
+        _isInitializing = false;
+    }
+
+    /// <summary>
+    /// Gets a value indicating whether the ViewModel has been initialized.
+    /// </summary>
+    public bool IsInitialized { get; private set; }
+
+    /// <summary>
+    /// Gets a value indicating whether initialization is in progress.
+    /// </summary>
+    public bool IsLoading { get; private set; }
+
+    /// <summary>
+    /// Initializes the ViewModel asynchronously, loading settings from disk.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A task representing the async operation.</returns>
+    public async Task InitializeAsync(CancellationToken cancellationToken = default)
+    {
+        if (IsInitialized)
+        {
+            return;
+        }
+
+        IsLoading = true;
+        OnPropertyChanged(nameof(IsLoading));
+
+        try
+        {
+            await Task.Run(
+                () =>
+                {
+                    LoadSettingsFromDisk();
+                },
+                cancellationToken);
+
+            IsInitialized = true;
+        }
+        finally
+        {
+            IsLoading = false;
+            OnPropertyChanged(nameof(IsLoading));
+            OnPropertyChanged(nameof(IsInitialized));
+        }
+    }
+
+    private void LoadSettingsFromDisk()
+    {
+        _isInitializing = true;
 
         try
         {
@@ -78,14 +145,9 @@ public partial class ImageResizerViewModel : Observable
                 throw;
             }
 #endif
-            Settings = new ImageResizerSettings(resourceLoader);
+            Settings = new ImageResizerSettings(_resourceLoader);
             _settingsUtils.SaveSettings(Settings.ToJsonString(), ModuleName);
         }
-
-        // set the callback functions value to handle outgoing IPC message.
-        SendConfigMSG = ipcMSGCallBackFunc;
-
-        InitializeEnabledValue();
 
         Sizes = new ObservableCollection<ImageSize>(Settings.Properties.ImageresizerSizes.Value);
         JPEGQualityLevel = Settings.Properties.ImageresizerJpegQualityLevel.Value;
@@ -95,9 +157,16 @@ public partial class ImageResizerViewModel : Observable
         KeepDateModified = Settings.Properties.ImageresizerKeepDateModified.Value;
         Encoder = GetEncoderIndex(Settings.Properties.ImageresizerFallbackEncoder.Value);
 
-        _customSize = Settings.Properties.ImageresizerCustomSize.Value;
-
         _isInitializing = false;
+
+        // Notify UI of property changes
+        OnPropertyChanged(nameof(Sizes));
+        OnPropertyChanged(nameof(JPEGQualityLevel));
+        OnPropertyChanged(nameof(PngInterlaceOption));
+        OnPropertyChanged(nameof(TiffCompressOption));
+        OnPropertyChanged(nameof(FileName));
+        OnPropertyChanged(nameof(KeepDateModified));
+        OnPropertyChanged(nameof(Encoder));
     }
 
     private void InitializeEnabledValue()

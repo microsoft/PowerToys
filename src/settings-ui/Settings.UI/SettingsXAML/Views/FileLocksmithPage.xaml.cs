@@ -19,6 +19,9 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             ViewModel = new FileLocksmithViewModel(settingsUtils, SettingsRepository<GeneralSettings>.GetInstance(settingsUtils), ShellPage.SendDefaultIPCMessage);
             DataContext = ViewModel;
             InitializeComponent();
+
+            // Defer heavy file I/O to async initialization
+            this.Loaded += async (s, e) => await ViewModel.InitializeAsync();
         }
 
         public void RefreshEnabledState()

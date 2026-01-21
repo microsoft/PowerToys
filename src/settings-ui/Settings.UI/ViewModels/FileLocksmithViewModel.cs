@@ -5,6 +5,8 @@
 using System;
 using System.Globalization;
 using System.Text.Json;
+using System.Threading;
+using System.Threading.Tasks;
 
 using global::PowerToys.GPOWrapper;
 using Microsoft.PowerToys.Settings.UI.Library;
@@ -14,7 +16,7 @@ using Microsoft.PowerToys.Settings.UI.SerializationContext;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
-    public partial class FileLocksmithViewModel : Observable
+    public partial class FileLocksmithViewModel : Observable, IAsyncInitializable
     {
         private GeneralSettings GeneralSettingsConfig { get; set; }
 
@@ -34,7 +36,65 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             ArgumentNullException.ThrowIfNull(settingsRepository);
 
             GeneralSettingsConfig = settingsRepository.SettingsConfig;
+            _settingsConfigFileFolder = configFileSubfolder;
 
+            // Initialize with defaults - actual settings loaded in InitializeAsync
+            Settings = new FileLocksmithSettings(new FileLocksmithLocalProperties());
+
+            InitializeEnabledValue();
+
+            // set the callback functions value to handle outgoing IPC message.
+            SendConfigMSG = ipcMSGCallBackFunc;
+
+            _fileLocksmithEnabledOnContextExtendedMenu = Settings.Properties.ExtendedContextMenuOnly.Value;
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether the ViewModel has been initialized.
+        /// </summary>
+        public bool IsInitialized { get; private set; }
+
+        /// <summary>
+        /// Gets a value indicating whether initialization is in progress.
+        /// </summary>
+        public bool IsLoading { get; private set; }
+
+        /// <summary>
+        /// Initializes the ViewModel asynchronously, loading settings from disk.
+        /// </summary>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        /// <returns>A task representing the async operation.</returns>
+        public async Task InitializeAsync(CancellationToken cancellationToken = default)
+        {
+            if (IsInitialized)
+            {
+                return;
+            }
+
+            IsLoading = true;
+            OnPropertyChanged(nameof(IsLoading));
+
+            try
+            {
+                await Task.Run(
+                    () =>
+                    {
+                        LoadSettingsFromDisk();
+                    },
+                    cancellationToken);
+
+                IsInitialized = true;
+            }
+            finally
+            {
+                IsLoading = false;
+                OnPropertyChanged(nameof(IsLoading));
+                OnPropertyChanged(nameof(IsInitialized));
+            }
+        }
+
+        private void LoadSettingsFromDisk()
+        {
             try
             {
                 FileLocksmithLocalProperties localSettings = _settingsUtils.GetSettingsOrDefault<FileLocksmithLocalProperties>(GetSettingsSubPath(), "file-locksmith-settings.json");
@@ -47,12 +107,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 _settingsUtils.SaveSettings(localSettings.ToJsonString(), GetSettingsSubPath(), "file-locksmith-settings.json");
             }
 
-            InitializeEnabledValue();
-
-            // set the callback functions value to handle outgoing IPC message.
-            SendConfigMSG = ipcMSGCallBackFunc;
-
             _fileLocksmithEnabledOnContextExtendedMenu = Settings.Properties.ExtendedContextMenuOnly.Value;
+            OnPropertyChanged(nameof(EnabledOnContextExtendedMenu));
         }
 
         public string GetSettingsSubPath()
