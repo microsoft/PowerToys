@@ -23,6 +23,10 @@ public abstract partial class NavigablePage : Page
 
     public NavigablePage()
     {
+        // Enable navigation caching by default for better performance.
+        // This prevents pages from being recreated on every navigation.
+        NavigationCacheMode = Microsoft.UI.Xaml.Navigation.NavigationCacheMode.Enabled;
+
         Loaded += OnPageLoaded;
     }
 

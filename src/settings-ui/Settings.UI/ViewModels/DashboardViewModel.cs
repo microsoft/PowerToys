@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO.Abstractions;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Threading;
 using CommunityToolkit.WinUI.Controls;
@@ -128,6 +129,36 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             BuildModuleList();
             SortModuleList();
             RefreshShortcutModules();
+        }
+
+        /// <summary>
+        /// Asynchronously initializes the Dashboard ViewModel.
+        /// This method performs heavy initialization work on a background thread.
+        /// </summary>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        /// <returns>A task representing the async operation.</returns>
+        protected override async Task InitializeCoreAsync(CancellationToken cancellationToken = default)
+        {
+            // If already initialized synchronously in constructor, skip
+            if (AllModules.Count > 0)
+            {
+                return;
+            }
+
+            await Task.Run(
+                () =>
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    BuildModuleList();
+                },
+                cancellationToken);
+
+            // UI updates must happen on dispatcher thread
+            dispatcher.Invoke(() =>
+            {
+                SortModuleList();
+                RefreshShortcutModules();
+            });
         }
 
         private void OnSettingsChanged(GeneralSettings newSettings)

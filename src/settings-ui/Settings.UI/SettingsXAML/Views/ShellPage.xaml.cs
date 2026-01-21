@@ -135,6 +135,11 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             ViewModel = new ShellViewModel(SettingsRepository<GeneralSettings>.GetInstance(settingsUtils));
             DataContext = ViewModel;
             ShellHandler = this;
+
+            // Enable page caching for better navigation performance
+            // This allows frequently visited pages to be cached instead of recreated
+            shellFrame.CacheSize = 10;
+
             ViewModel.Initialize(shellFrame, navigationView, KeyboardAccelerators);
 
             // NL moved navigation to general page to the moment when the window is first activated (to not make flyout window disappear)

@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
@@ -15,13 +16,33 @@ using Microsoft.PowerToys.Settings.UI.Services;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
-    public abstract class PageViewModelBase : Observable, IDisposable
+    public abstract class PageViewModelBase : Observable, IAsyncInitializable, IDisposable
     {
         private readonly Dictionary<string, bool> _hotkeyConflictStatus = new Dictionary<string, bool>();
         private readonly Dictionary<string, string> _hotkeyConflictTooltips = new Dictionary<string, string>();
         private bool _disposed;
+        private bool _isLoading;
+        private bool _isInitialized;
 
         protected abstract string ModuleName { get; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the ViewModel is currently loading data.
+        /// </summary>
+        public bool IsLoading
+        {
+            get => _isLoading;
+            protected set => Set(ref _isLoading, value);
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether the ViewModel has been initialized.
+        /// </summary>
+        public bool IsInitialized
+        {
+            get => _isInitialized;
+            private set => Set(ref _isInitialized, value);
+        }
 
         protected PageViewModelBase()
         {
@@ -29,6 +50,43 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 GlobalHotkeyConflictManager.Instance.ConflictsUpdated += OnConflictsUpdated;
             }
+        }
+
+        /// <summary>
+        /// Initializes the ViewModel asynchronously. Override this method in derived classes
+        /// to perform async initialization (e.g., loading settings from disk).
+        /// </summary>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        /// <returns>A task representing the async operation.</returns>
+        public virtual async Task InitializeAsync(CancellationToken cancellationToken = default)
+        {
+            if (IsInitialized)
+            {
+                return;
+            }
+
+            IsLoading = true;
+            try
+            {
+                await InitializeCoreAsync(cancellationToken).ConfigureAwait(false);
+                IsInitialized = true;
+            }
+            finally
+            {
+                IsLoading = false;
+            }
+        }
+
+        /// <summary>
+        /// Override this method in derived classes to perform the actual async initialization.
+        /// This is called by <see cref="InitializeAsync"/> and is wrapped with loading state management.
+        /// </summary>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        /// <returns>A task representing the async operation.</returns>
+        protected virtual Task InitializeCoreAsync(CancellationToken cancellationToken = default)
+        {
+            // Default implementation does nothing - derived classes override this
+            return Task.CompletedTask;
         }
 
         public virtual void OnPageLoaded()

@@ -10,6 +10,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 using ManagedCommon;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Telemetry.Events;
@@ -75,6 +76,9 @@ namespace Microsoft.PowerToys.Settings.UI
         /// </summary>
         public App()
         {
+            // Configure DI container first (before any other initialization)
+            ConfigureServices();
+
             Logger.InitializeLogger(@"\Settings\Logs");
 
             string appLanguage = LanguageHelper.LoadLanguage();
@@ -98,6 +102,29 @@ namespace Microsoft.PowerToys.Settings.UI
         private void App_UnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
         {
             Logger.LogError("Unhandled exception", e.Exception);
+        }
+
+        /// <summary>
+        /// Configures the dependency injection container.
+        /// </summary>
+        private static void ConfigureServices()
+        {
+            AppServices.Configure(services =>
+            {
+                // Additional service registrations can be added here
+                // For now, the core services are registered in AppServices.ConfigureCoreServices
+            });
+        }
+
+        /// <summary>
+        /// Gets a service of type T from the DI container.
+        /// </summary>
+        /// <typeparam name="T">The type of service to get.</typeparam>
+        /// <returns>The service instance.</returns>
+        public static T GetService<T>()
+            where T : class
+        {
+            return AppServices.GetService<T>();
         }
 
         public static void OpenSettingsWindow(Type type = null, bool ensurePageIsSelected = false)
