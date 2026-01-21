@@ -179,7 +179,7 @@
                         Style="{StaticResource DockBandListViewStyle}">
                         <ListView.ItemsPanel>
                             <ItemsPanelTemplate>
-                                <StackPanel Orientation="{x:Bind ItemsOrientation, Mode=OneWay}" Spacing="4" />
+                                <StackPanel Orientation="Horizontal" Spacing="4" />
                             </ItemsPanelTemplate>
                         </ListView.ItemsPanel>
                         <ListView.ItemContainerTransitions>
