@@ -23,7 +23,13 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 DispatcherQueue);
             DataContext = ViewModel;
             InitializeComponent();
-            Loaded += (s, e) => ViewModel.OnPageLoaded();
+
+            // Defer heavy settings loading and file watcher setup
+            Loaded += async (s, e) =>
+            {
+                ViewModel.OnPageLoaded();
+                await ViewModel.InitializeAsync();
+            };
         }
 
         public void RefreshEnabledState()

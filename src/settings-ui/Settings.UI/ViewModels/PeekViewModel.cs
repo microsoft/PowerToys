@@ -8,6 +8,9 @@ using System.Globalization;
 using System.IO;
 using System.IO.Abstractions;
 using System.Text.Json;
+using System.Threading;
+using System.Threading.Tasks;
+
 using global::PowerToys.GPOWrapper;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
@@ -36,7 +39,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private readonly DispatcherQueue _dispatcherQueue;
 
         private readonly SettingsUtils _settingsUtils;
-        private readonly PeekPreviewSettings _peekPreviewSettings;
+        private PeekPreviewSettings _peekPreviewSettings;
         private PeekSettings _peekSettings;
 
         private GpoRuleConfigured _enabledGpoRuleConfiguration;
@@ -61,15 +64,42 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             _settingsUtils = settingsUtils ?? throw new ArgumentNullException(nameof(settingsUtils));
 
-            // Load the application-specific settings, including preview items.
-            _peekSettings = _settingsUtils.GetSettingsOrDefault<PeekSettings>(PeekSettings.ModuleName);
-            _peekPreviewSettings = _settingsUtils.GetSettingsOrDefault<PeekPreviewSettings>(PeekSettings.ModuleName, PeekPreviewSettings.FileName);
-
-            SetupSettingsFileWatcher();
+            // Initialize with defaults - heavy I/O deferred to InitializeCoreAsync
+            _peekSettings = new PeekSettings();
+            _peekPreviewSettings = new PeekPreviewSettings();
 
             InitializeEnabledValue();
 
             SendConfigMSG = ipcMSGCallBackFunc;
+        }
+
+        /// <summary>
+        /// Performs deferred initialization - loads settings and sets up file watcher.
+        /// </summary>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        /// <returns>A task representing the async operation.</returns>
+        protected override Task InitializeCoreAsync(CancellationToken cancellationToken = default)
+        {
+            return Task.Run(
+                () =>
+                {
+                    // Load settings from disk
+                    _peekSettings = _settingsUtils.GetSettingsOrDefault<PeekSettings>(PeekSettings.ModuleName);
+                    _peekPreviewSettings = _settingsUtils.GetSettingsOrDefault<PeekPreviewSettings>(PeekSettings.ModuleName, PeekPreviewSettings.FileName);
+
+                    // Set up file watcher
+                    SetupSettingsFileWatcher();
+
+                    // Notify UI of property changes
+                    _dispatcherQueue.TryEnqueue(() =>
+                    {
+                        OnPropertyChanged(nameof(ActivationShortcut));
+                        OnPropertyChanged(nameof(AlwaysRunNotElevated));
+                        OnPropertyChanged(nameof(CloseAfterLosingFocus));
+                        OnPropertyChanged(nameof(ConfirmFileDelete));
+                    });
+                },
+                cancellationToken);
         }
 
         /// <summary>

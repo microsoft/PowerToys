@@ -6,6 +6,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Threading;
+using System.Threading.Tasks;
+
 using global::PowerToys.GPOWrapper;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
@@ -15,13 +18,13 @@ using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
-    public partial class PowerAccentViewModel : Observable
+    public partial class PowerAccentViewModel : Observable, IAsyncInitializable
     {
+        private readonly SettingsUtils _settingsUtils;
+
         private GeneralSettings GeneralSettingsConfig { get; set; }
 
-        private readonly PowerAccentSettings _powerAccentSettings;
-
-        private readonly SettingsUtils _settingsUtils;
+        private PowerAccentSettings _powerAccentSettings;
 
         private const string SpecialGroup = "QuickAccent_Group_Special";
         private const string LanguageGroup = "QuickAccent_Group_Language";
@@ -98,8 +101,66 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             GeneralSettingsConfig = settingsRepository.SettingsConfig;
 
             InitializeEnabledValue();
+
+            // Initialize with defaults - heavy work deferred to InitializeAsync
+            _powerAccentSettings = new PowerAccentSettings();
+            SelectedLanguageOptions = Array.Empty<PowerAccentLanguageModel>();
+            LanguageGroups = Array.Empty<PowerAccentLanguageGroupModel>();
+
+            // set the callback functions value to handle outgoing IPC message.
+            SendConfigMSG = ipcMSGCallBackFunc;
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether the ViewModel has been initialized.
+        /// </summary>
+        public bool IsInitialized { get; private set; }
+
+        /// <summary>
+        /// Gets a value indicating whether initialization is in progress.
+        /// </summary>
+        public bool IsLoading { get; private set; }
+
+        /// <summary>
+        /// Initializes the ViewModel asynchronously, loading settings and languages.
+        /// </summary>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        /// <returns>A task representing the async operation.</returns>
+        public async Task InitializeAsync(CancellationToken cancellationToken = default)
+        {
+            if (IsInitialized)
+            {
+                return;
+            }
+
+            IsLoading = true;
+            OnPropertyChanged(nameof(IsLoading));
+
+            try
+            {
+                await Task.Run(
+                    () =>
+                    {
+                        LoadSettingsAndLanguages();
+                    },
+                    cancellationToken);
+
+                IsInitialized = true;
+            }
+            finally
+            {
+                IsLoading = false;
+                OnPropertyChanged(nameof(IsLoading));
+                OnPropertyChanged(nameof(IsInitialized));
+            }
+        }
+
+        private void LoadSettingsAndLanguages()
+        {
+            // Initialize languages (resource loading + sorting)
             InitializeLanguages();
 
+            // Load settings from disk
             if (_settingsUtils.SettingsExists(PowerAccentSettings.ModuleName))
             {
                 _powerAccentSettings = _settingsUtils.GetSettingsOrDefault<PowerAccentSettings>(PowerAccentSettings.ModuleName);
@@ -110,14 +171,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
 
             _inputTimeMs = _powerAccentSettings.Properties.InputTime.Value;
-
             _excludedApps = _powerAccentSettings.Properties.ExcludedApps.Value;
 
             if (!string.IsNullOrWhiteSpace(_powerAccentSettings.Properties.SelectedLang.Value) && !_powerAccentSettings.Properties.SelectedLang.Value.Contains("ALL"))
             {
                 SelectedLanguageOptions = _powerAccentSettings.Properties.SelectedLang.Value.Split(',')
                    .Select(l => Languages.Find(lang => lang.LanguageCode == l))
-                   .Where(l => l != null) // Wrongly typed languages will appear as null after find. We want to remove those to avoid crashes.
+                   .Where(l => l != null)
                    .ToArray();
             }
             else if (_powerAccentSettings.Properties.SelectedLang.Value.Contains("ALL"))
@@ -131,8 +191,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             _toolbarPositionIndex = Array.IndexOf(_toolbarOptions, _powerAccentSettings.Properties.ToolbarPosition.Value);
 
-            // set the callback functions value to handle outgoing IPC message.
-            SendConfigMSG = ipcMSGCallBackFunc;
+            // Notify UI of property changes
+            OnPropertyChanged(nameof(LanguageGroups));
+            OnPropertyChanged(nameof(SelectedLanguageOptions));
+            OnPropertyChanged(nameof(InputTimeMs));
+            OnPropertyChanged(nameof(ExcludedApps));
+            OnPropertyChanged(nameof(ToolbarPositionIndex));
         }
 
         private void InitializeEnabledValue()

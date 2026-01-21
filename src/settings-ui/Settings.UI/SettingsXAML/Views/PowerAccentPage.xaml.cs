@@ -21,7 +21,13 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             ViewModel = new PowerAccentViewModel(settingsUtils, SettingsRepository<GeneralSettings>.GetInstance(settingsUtils), ShellPage.SendDefaultIPCMessage);
             DataContext = ViewModel;
             this.InitializeComponent();
-            this.InitializeControlsStates();
+
+            // Defer heavy settings loading and language initialization
+            this.Loaded += async (s, e) =>
+            {
+                await ViewModel.InitializeAsync();
+                this.InitializeControlsStates();
+            };
         }
 
         public void RefreshEnabledState()
