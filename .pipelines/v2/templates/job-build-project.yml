@@ -504,6 +504,14 @@ jobs:
         Remove-Item -Force -Recurse "$(JobOutputDirectory)/_appx" -ErrorAction:Ignore
       displayName: Re-pack the new CmdPal package after signing
 
+    - pwsh: |
+        $testsPath = "$(Build.SourcesDirectory)/$(BuildPlatform)/$(BuildConfiguration)/tests"
+        if (Test-Path $testsPath) {
+            Remove-Item -Path $testsPath -Recurse -Force
+            Write-Host "Removed tests folder to reduce signing workload: $testsPath"
+        }
+      displayName: Remove tests folder before signing
+
     - template: steps-esrp-signing.yml
       parameters:
         displayName: Sign Core PowerToys

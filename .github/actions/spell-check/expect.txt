@@ -32,6 +32,7 @@ advfirewall
 AFeature
 affordances
 AFX
+agentskills
 AGGREGATABLE
 AHK
 AHybrid
@@ -64,6 +65,9 @@ apidl
 APIENTRY
 APIIs
 Apm
+APMPOWERSTATUSCHANGE
+APMRESUMEAUTOMATIC
+APMRESUMESUSPEND
 APPBARDATA
 APPEXECLINK
 appext
@@ -206,6 +210,7 @@ certmgr
 cfp
 CHANGECBCHAIN
 changecursor
+checkmarks
 CHILDACTIVATE
 CHILDWINDOW
 CHOOSEFONT
@@ -215,6 +220,7 @@ CIELCh
 cim
 CImage
 cla
+claude
 CLASSDC
 classmethod
 CLASSNOTAVAILABLE
@@ -1036,6 +1042,7 @@ mmi
 mmsys
 mobileredirect
 mockapi
+modelcontextprotocol
 MODALFRAME
 MODESPRUNED
 MONITORENUMPROC
@@ -1344,6 +1351,7 @@ Pomodoro
 Popups
 POPUPWINDOW
 POSITIONITEM
+POWERBROADCAST
 POWERRENAMECONTEXTMENU
 powerrenameinput
 POWERRENAMETEST
@@ -1732,6 +1740,7 @@ STICKYKEYS
 sticpl
 storelogo
 stprintf
+streamable
 streamjsonrpc
 STRINGIZE
 stringtable
@@ -1751,6 +1760,7 @@ SUBMODULEUPDATE
 subresource
 Superbar
 sut
+swe
 svchost
 SVGIn
 SVGIO
@@ -1957,6 +1967,7 @@ visualeffects
 vkey
 vmovl
 VMs
+vnd
 vorrq
 VOS
 vpaddlq
