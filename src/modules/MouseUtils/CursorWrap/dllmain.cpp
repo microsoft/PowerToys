@@ -47,6 +47,7 @@ namespace
     const wchar_t JSON_KEY_ACTIVATION_SHORTCUT[] = L"activation_shortcut";
     const wchar_t JSON_KEY_AUTO_ACTIVATE[] = L"auto_activate";
     const wchar_t JSON_KEY_DISABLE_WRAP_DURING_DRAG[] = L"disable_wrap_during_drag";
+    const wchar_t JSON_KEY_WRAP_MODE[] = L"wrap_mode";
 }
 
 // The PowerToy name that will be shown in the settings.
@@ -97,6 +98,7 @@ private:
     bool m_enabled = false;
     bool m_autoActivate = false;
     bool m_disableWrapDuringDrag = true; // Default to true to prevent wrap during drag
+    int m_wrapMode = 0; // 0=Both (default), 1=VerticalOnly, 2=HorizontalOnly
     
     // Mouse hook
     HHOOK m_mouseHook = nullptr;
@@ -399,6 +401,21 @@ public:
             {
                 Logger::warn("Failed to initialize CursorWrap disable wrap during drag from settings. Will use default value (true)");
             }
+            
+            try
+            {
+                // Parse wrap mode
+                auto propertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES);
+                if (propertiesObject.HasKey(JSON_KEY_WRAP_MODE))
+                {
+                    auto wrapModeObject = propertiesObject.GetNamedObject(JSON_KEY_WRAP_MODE);
+                    m_wrapMode = static_cast<int>(wrapModeObject.GetNamedNumber(JSON_KEY_VALUE));
+                }
+            }
+            catch (...)
+            {
+                Logger::warn("Failed to initialize CursorWrap wrap mode from settings. Will use default value (0=Both)");
+            }
         }
         else
         {
@@ -597,7 +614,8 @@ public:
         // *** VERTICAL WRAPPING LOGIC - CONFIRMED WORKING ***
         // Move to bottom of vertical stack when hitting top edge
         // Only wrap if there's NO adjacent monitor in the coordinate space
-        if (currentPos.y <= currentMonitorInfo.rcMonitor.top)
+        // Only perform vertical wrapping if mode allows it (0=Both, 1=VerticalOnly)
+        if ((m_wrapMode == 0 || m_wrapMode == 1) && currentPos.y <= currentMonitorInfo.rcMonitor.top)
         {
 #ifdef _DEBUG
             Logger::info(L"CursorWrap DEBUG: ======= VERTICAL WRAP: TOP EDGE DETECTED =======");
@@ -658,7 +676,7 @@ public:
 #endif
             }
         }
-        else if (currentPos.y >= currentMonitorInfo.rcMonitor.bottom - 1)
+        else if ((m_wrapMode == 0 || m_wrapMode == 1) && currentPos.y >= currentMonitorInfo.rcMonitor.bottom - 1)
         {
 #ifdef _DEBUG
             Logger::info(L"CursorWrap DEBUG: ======= VERTICAL WRAP: BOTTOM EDGE DETECTED =======");
@@ -723,7 +741,8 @@ public:
         // *** FIXED HORIZONTAL WRAPPING LOGIC ***
         // Move to opposite end of horizontal stack when hitting left/right edge
         // Only wrap if there's NO adjacent monitor in the coordinate space (let Windows handle natural transitions)
-        if (!wrapped && currentPos.x <= currentMonitorInfo.rcMonitor.left)
+        // Only perform horizontal wrapping if mode allows it (0=Both, 2=HorizontalOnly)
+        if (!wrapped && (m_wrapMode == 0 || m_wrapMode == 2) && currentPos.x <= currentMonitorInfo.rcMonitor.left)
         {
 #ifdef _DEBUG
             Logger::info(L"CursorWrap DEBUG: ======= HORIZONTAL WRAP: LEFT EDGE DETECTED =======");
@@ -784,7 +803,7 @@ public:
 #endif
             }
         }
-        else if (!wrapped && currentPos.x >= currentMonitorInfo.rcMonitor.right - 1)
+        else if (!wrapped && (m_wrapMode == 0 || m_wrapMode == 2) && currentPos.x >= currentMonitorInfo.rcMonitor.right - 1)
         {
 #ifdef _DEBUG
             Logger::info(L"CursorWrap DEBUG: ======= HORIZONTAL WRAP: RIGHT EDGE DETECTED =======");

@@ -2728,6 +2728,18 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="MouseUtils_CursorWrap_AutoActivate.Content" xml:space="preserve">
     <value>Automatically activate on utility startup</value>
   </data>
+  <data name="MouseUtils_CursorWrap_WrapMode.Header" xml:space="preserve">
+    <value>Wrap mode</value>
+  </data>
+  <data name="MouseUtils_CursorWrap_WrapMode_VerticalOnly.Content" xml:space="preserve">
+    <value>Vertical only</value>
+  </data>
+  <data name="MouseUtils_CursorWrap_WrapMode_HorizontalOnly.Content" xml:space="preserve">
+    <value>Horizontal only</value>
+  </data>
+  <data name="MouseUtils_CursorWrap_WrapMode_Both.Content" xml:space="preserve">
+    <value>Both vertical and horizontal</value>
+  </data>
   <data name="Oobe_MouseUtils_MousePointerCrosshairs.Text" xml:space="preserve">
     <value>Mouse Pointer Crosshairs</value>
     <comment>Mouse as in the hardware peripheral.</comment>
