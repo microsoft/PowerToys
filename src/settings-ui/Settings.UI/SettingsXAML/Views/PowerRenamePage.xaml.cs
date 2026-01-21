@@ -20,6 +20,9 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             ViewModel = new PowerRenameViewModel(settingsUtils, SettingsRepository<GeneralSettings>.GetInstance(settingsUtils), ShellPage.SendDefaultIPCMessage);
 
             DataContext = ViewModel;
+
+            // Defer heavy settings I/O to async initialization
+            this.Loaded += async (s, e) => await ViewModel.InitializeAsync();
         }
 
         public void RefreshEnabledState()
