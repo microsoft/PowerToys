@@ -9,4 +9,7 @@ namespace Microsoft.CmdPal.Core.ViewModels;
 /// </summary>
 /// <param name="TargetViewModel">A view model that should be navigated to.</param>
 /// <param name="NavigationToken"> A <see cref="CancellationToken"/> that can be used to cancel the pending navigation.</param>
-public record AsyncNavigationRequest(object? TargetViewModel, CancellationToken NavigationToken);
+public record AsyncNavigationRequest(
+    object? TargetViewModel,
+    ShellViewModel ShellViewModel,
+    CancellationToken NavigationToken);

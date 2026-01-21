@@ -11,6 +11,8 @@ public class MediumGridPropertiesViewModel : IGridPropertiesViewModel
 {
     private readonly ExtensionObject<IMediumGridLayout> _model;
 
+    public bool IsGrid => true;
+
     public bool ShowTitle { get; private set; }
 
     public bool ShowSubtitle => false;

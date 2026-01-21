@@ -98,7 +98,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         AddHandler(KeyDownEvent, new KeyEventHandler(ShellPage_OnKeyDown), false);
         AddHandler(PointerPressedEvent, new PointerEventHandler(ShellPage_OnPointerPressed), true);
 
-        RootFrame.Navigate(typeof(LoadingPage), new AsyncNavigationRequest(ViewModel, CancellationToken.None));
+        RootFrame.Navigate(typeof(LoadingPage), new AsyncNavigationRequest(ViewModel, ViewModel, CancellationToken.None));
 
         var pageAnnouncementFormat = ResourceLoaderInstance.GetString("ScreenReader_Announcement_NavigatedToPage0");
         _pageNavigatedAnnouncement = CompositeFormat.Parse(pageAnnouncementFormat);
@@ -156,7 +156,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
                     ContentPageViewModel => typeof(ContentPage),
                     _ => throw new NotSupportedException(),
                 },
-                new AsyncNavigationRequest(message.Page, message.CancellationToken),
+                new AsyncNavigationRequest(message.Page, ViewModel, message.CancellationToken),
                 message.WithAnimation ? DefaultPageAnimation : _noAnimation);
 
             PowerToysTelemetry.Log.WriteEvent(new OpenPage(RootFrame.BackStackDepth, message.Page.Id));
