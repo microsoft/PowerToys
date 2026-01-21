@@ -22,15 +22,19 @@ namespace Microsoft.PowerToys.Settings.UI
 {
     public sealed partial class MainWindow : WindowEx
     {
+        private bool _isFullyInitialized;
+        private bool _createHidden;
+
         public MainWindow(bool createHidden = false)
         {
+            _createHidden = createHidden;
+
             var bootTime = new System.Diagnostics.Stopwatch();
             bootTime.Start();
 
             this.Activated += Window_Activated_SetIcon;
 
             App.ThemeService.ThemeChanged += OnThemeChanged;
-            App.ThemeService.ApplyTheme();
 
             this.ExtendsContentIntoTitleBar = true;
 
@@ -43,8 +47,13 @@ namespace Microsoft.PowerToys.Settings.UI
             {
                 placement.ShowCmd = NativeMethods.SW_HIDE;
 
-                // Restore the last known placement on the first activation
-                this.Activated += Window_Activated;
+                // Defer full initialization until window is shown
+                this.Activated += Window_Activated_LazyInit;
+            }
+            else
+            {
+                // Full initialization for visible windows
+                CompleteInitialization();
             }
 
             NativeMethods.SetWindowPlacement(hWnd, ref placement);
@@ -52,6 +61,16 @@ namespace Microsoft.PowerToys.Settings.UI
             var loader = ResourceLoaderInstance.ResourceLoader;
             Title = App.IsElevated ? loader.GetString("SettingsWindow_AdminTitle") : loader.GetString("SettingsWindow_Title");
 
+            // IPC callbacks must be set up immediately so messages can be received even when hidden
+            SetupIPCCallbacks();
+
+            bootTime.Stop();
+
+            PowerToysTelemetry.Log.WriteEvent(new SettingsBootEvent() { BootTimeMs = bootTime.ElapsedMilliseconds });
+        }
+
+        private void SetupIPCCallbacks()
+        {
             // send IPC Message
             ShellPage.SetDefaultSndMessageCallback(msg =>
             {
@@ -128,13 +147,10 @@ namespace Microsoft.PowerToys.Settings.UI
                 App.GetScoobeWindow().Activate();
             });
 
-            this.InitializeComponent();
-            SetAppTitleBar();
-
             // receive IPC Message
             App.IPCMessageReceivedCallback = (string msg) =>
             {
-                if (ShellPage.ShellHandler.IPCResponseHandleList != null)
+                if (ShellPage.ShellHandler?.IPCResponseHandleList != null)
                 {
                     var success = JsonObject.TryParse(msg, out JsonObject json);
                     if (success)
@@ -150,10 +166,33 @@ namespace Microsoft.PowerToys.Settings.UI
                     }
                 }
             };
+        }
 
-            bootTime.Stop();
+        private void CompleteInitialization()
+        {
+            if (_isFullyInitialized)
+            {
+                return;
+            }
 
-            PowerToysTelemetry.Log.WriteEvent(new SettingsBootEvent() { BootTimeMs = bootTime.ElapsedMilliseconds });
+            _isFullyInitialized = true;
+
+            App.ThemeService.ApplyTheme();
+            this.InitializeComponent();
+            SetAppTitleBar();
+        }
+
+        private void Window_Activated_LazyInit(object sender, WindowActivatedEventArgs args)
+        {
+            if (args.WindowActivationState != WindowActivationState.Deactivated && !_isFullyInitialized)
+            {
+                CompleteInitialization();
+
+                // After lazy init, also restore placement
+                var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
+                var placement = WindowHelper.DeserializePlacementOrDefault(hWnd);
+                NativeMethods.SetWindowPlacement(hWnd, ref placement);
+            }
         }
 
         private void SetAppTitleBar()
@@ -165,6 +204,8 @@ namespace Microsoft.PowerToys.Settings.UI
 
         public void NavigateToSection(System.Type type)
         {
+            // Ensure full initialization before navigation
+            CompleteInitialization();
             ShellPage.Navigate(type);
         }
 
@@ -222,6 +263,8 @@ namespace Microsoft.PowerToys.Settings.UI
 
         internal void EnsurePageIsSelected()
         {
+            // Ensure full initialization before page selection
+            CompleteInitialization();
             ShellPage.EnsurePageIsSelected();
         }
     }

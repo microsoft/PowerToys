@@ -16,7 +16,7 @@ using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 namespace Microsoft.PowerToys.Settings.UI.Library
 {
     // Some functions are marked as virtual to allow mocking in unit tests.
-    public class SettingsUtils
+    public class SettingsUtils : ISettingsUtils
     {
         public const string DefaultFileName = "settings.json";
         private const string DefaultModuleName = "";

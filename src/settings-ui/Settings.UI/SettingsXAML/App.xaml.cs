@@ -10,6 +10,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 using ManagedCommon;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Telemetry.Events;
@@ -83,6 +84,9 @@ namespace Microsoft.PowerToys.Settings.UI
                 Microsoft.Windows.Globalization.ApplicationLanguages.PrimaryLanguageOverride = appLanguage;
             }
 
+            // Initialize dependency injection
+            InitializeServices();
+
             InitializeComponent();
 
             UnhandledException += App_UnhandledException;
@@ -93,6 +97,14 @@ namespace Microsoft.PowerToys.Settings.UI
                 EtwTrace?.Dispose();
                 Environment.Exit(0);
             });
+        }
+
+        private static void InitializeServices()
+        {
+            var services = new ServiceCollection();
+            services.AddSettingsServices();
+            services.AddViewModels();
+            Services.ServiceProvider.Initialize(services);
         }
 
         private void App_UnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)

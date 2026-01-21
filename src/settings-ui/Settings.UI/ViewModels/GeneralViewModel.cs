@@ -213,14 +213,20 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 _fileWatcher = Helper.GetFileWatcher(string.Empty, UpdatingSettings.SettingsFile, dispatcherAction);
             }
 
-            // Diagnostic data retention policy
+            // Defer diagnostic data cleanup to background task to avoid blocking UI
+            _ = Task.Run(CleanupDiagnosticDataAsync);
+
+            InitializeLanguages();
+        }
+
+        private void CleanupDiagnosticDataAsync()
+        {
+            // Diagnostic data retention policy - runs on background thread
             string etwDirPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Microsoft\\PowerToys\\etw");
             DeleteDiagnosticDataOlderThan28Days(etwDirPath);
 
             string localLowEtwDirPath = Path.Combine(Environment.GetEnvironmentVariable("USERPROFILE"), "AppData", "LocalLow", "Microsoft", "PowerToys", "etw");
             DeleteDiagnosticDataOlderThan28Days(localLowEtwDirPath);
-
-            InitializeLanguages();
         }
 
         // Supported languages. Taken from Resources.wxs + default + en-US
@@ -1356,52 +1362,54 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             NotifyAllBackupAndRestoreProperties();
         }
 
-        public void RefreshUpdatingState()
+        public async Task RefreshUpdatingStateAsync()
         {
-            object oLock = new object();
-            lock (oLock)
+            // Load settings with retry on background thread
+            var config = await Task.Run(async () =>
             {
-                var config = UpdatingSettings.LoadSettings();
+                var loadedConfig = UpdatingSettings.LoadSettings();
 
                 // Retry loading if failed
-                for (int i = 0; i < 3 && config == null; i++)
+                for (int i = 0; i < 3 && loadedConfig == null; i++)
                 {
-                    System.Threading.Thread.Sleep(100);
-                    config = UpdatingSettings.LoadSettings();
+                    await Task.Delay(100).ConfigureAwait(false);
+                    loadedConfig = UpdatingSettings.LoadSettings();
                 }
 
-                if (config == null)
-                {
-                    return;
-                }
+                return loadedConfig;
+            }).ConfigureAwait(true);
 
-                UpdatingSettingsConfig = config;
-
-                if (PowerToysUpdatingState != config.State)
-                {
-                    IsNewVersionDownloading = false;
-                }
-                else
-                {
-                    bool dateChanged = UpdateCheckedDate == UpdatingSettingsConfig.LastCheckedDateLocalized;
-                    bool fileDownloaded = string.IsNullOrEmpty(UpdatingSettingsConfig.DownloadedInstallerFilename);
-                    IsNewVersionDownloading = !(dateChanged || fileDownloaded);
-                }
-
-                PowerToysUpdatingState = UpdatingSettingsConfig.State;
-                PowerToysNewAvailableVersion = UpdatingSettingsConfig.NewVersion;
-                PowerToysNewAvailableVersionLink = UpdatingSettingsConfig.ReleasePageLink;
-                UpdateCheckedDate = UpdatingSettingsConfig.LastCheckedDateLocalized;
-
-                _isNoNetwork = PowerToysUpdatingState == UpdatingSettings.UpdatingState.NetworkError;
-                NotifyPropertyChanged(nameof(IsNoNetwork));
-                NotifyPropertyChanged(nameof(IsNewVersionDownloading));
-                NotifyPropertyChanged(nameof(IsUpdatePanelVisible));
-                _isNewVersionChecked = PowerToysUpdatingState == UpdatingSettings.UpdatingState.UpToDate && !IsNewVersionDownloading;
-                NotifyPropertyChanged(nameof(IsNewVersionCheckedAndUpToDate));
-
-                NotifyPropertyChanged(nameof(IsDownloadAllowed));
+            if (config == null)
+            {
+                return;
             }
+
+            UpdatingSettingsConfig = config;
+
+            if (PowerToysUpdatingState != config.State)
+            {
+                IsNewVersionDownloading = false;
+            }
+            else
+            {
+                bool dateChanged = UpdateCheckedDate == UpdatingSettingsConfig.LastCheckedDateLocalized;
+                bool fileDownloaded = string.IsNullOrEmpty(UpdatingSettingsConfig.DownloadedInstallerFilename);
+                IsNewVersionDownloading = !(dateChanged || fileDownloaded);
+            }
+
+            PowerToysUpdatingState = UpdatingSettingsConfig.State;
+            PowerToysNewAvailableVersion = UpdatingSettingsConfig.NewVersion;
+            PowerToysNewAvailableVersionLink = UpdatingSettingsConfig.ReleasePageLink;
+            UpdateCheckedDate = UpdatingSettingsConfig.LastCheckedDateLocalized;
+
+            _isNoNetwork = PowerToysUpdatingState == UpdatingSettings.UpdatingState.NetworkError;
+            NotifyPropertyChanged(nameof(IsNoNetwork));
+            NotifyPropertyChanged(nameof(IsNewVersionDownloading));
+            NotifyPropertyChanged(nameof(IsUpdatePanelVisible));
+            _isNewVersionChecked = PowerToysUpdatingState == UpdatingSettings.UpdatingState.UpToDate && !IsNewVersionDownloading;
+            NotifyPropertyChanged(nameof(IsNewVersionCheckedAndUpToDate));
+
+            NotifyPropertyChanged(nameof(IsDownloadAllowed));
         }
 
         private void InitializeLanguages()
@@ -1489,7 +1497,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        internal void ViewDiagnosticData()
+        internal async Task ViewDiagnosticDataAsync()
         {
             string localLowEtwDirPath = Path.Combine(Environment.GetEnvironmentVariable("USERPROFILE"), "AppData", "LocalLow", "Microsoft", "PowerToys", "etw");
             string etwDirPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Microsoft\\PowerToys\\etw");
@@ -1522,7 +1530,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             string tracerptPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "system32");
 
             ETLConverter converter = new ETLConverter(etwDirPath, tracerptPath);
-            Task.Run(() => converter.ConvertDiagnosticsETLsAsync()).Wait();
+            await converter.ConvertDiagnosticsETLsAsync().ConfigureAwait(false);
 
             if (Directory.Exists(etwDirPath))
             {

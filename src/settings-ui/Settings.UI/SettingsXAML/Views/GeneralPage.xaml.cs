@@ -41,9 +41,9 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
             Action stateUpdatingAction = () =>
             {
-                this.DispatcherQueue.TryEnqueue(() =>
+                this.DispatcherQueue.TryEnqueue(async () =>
                 {
-                    ViewModel.RefreshUpdatingState();
+                    await ViewModel.RefreshUpdatingStateAsync().ConfigureAwait(true);
                 });
             };
 
@@ -92,9 +92,16 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
             CheckBugReportStatus();
 
-            doRefreshBackupRestoreStatus(100);
+            this.Loaded += (s, e) =>
+            {
+                ViewModel.OnPageLoaded();
 
-            this.Loaded += (s, e) => ViewModel.OnPageLoaded();
+                // Defer backup status check to after page is loaded with low priority
+                this.DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () =>
+                {
+                    doRefreshBackupRestoreStatus(100);
+                });
+            };
         }
 
         private void OpenColorsSettings_Click(object sender, RoutedEventArgs e)
@@ -123,11 +130,11 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private void RefreshBackupRestoreStatus(int delayMs = 0)
         {
-            Task.Run(() =>
+            Task.Run(async () =>
             {
                 if (delayMs > 0)
                 {
-                    Thread.Sleep(delayMs);
+                    await Task.Delay(delayMs).ConfigureAwait(false);
                 }
 
                 var settingsBackupAndRestoreUtils = SettingsBackupAndRestoreUtils.Instance;
@@ -171,7 +178,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private async void ViewDiagnosticData_Click(object sender, RoutedEventArgs e)
         {
-            await Task.Run(ViewModel.ViewDiagnosticData);
+            await ViewModel.ViewDiagnosticDataAsync().ConfigureAwait(false);
         }
 
         private void BugReportToolClicked(object sender, RoutedEventArgs e)

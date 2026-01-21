@@ -5,6 +5,7 @@
 using System;
 using System.IO;
 using System.Threading;
+using System.Threading.Tasks;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 
@@ -77,12 +78,12 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
-        private void Watcher_Changed(object sender, FileSystemEventArgs e)
+        private async void Watcher_Changed(object sender, FileSystemEventArgs e)
         {
             // Wait a bit for the file write to complete and retry if needed
             for (int i = 0; i < 5; i++)
             {
-                Thread.Sleep(100);
+                await Task.Delay(100).ConfigureAwait(false);
                 if (ReloadSettings())
                 {
                     SettingsChanged?.Invoke(SettingsConfig);
