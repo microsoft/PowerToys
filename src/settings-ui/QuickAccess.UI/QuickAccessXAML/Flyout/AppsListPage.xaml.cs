@@ -51,6 +51,7 @@ public sealed partial class AppsListPage : Page
         if (ViewModel != null)
         {
             ViewModel.DashboardSortOrder = DashboardSortOrder.Alphabetical;
+            ((ToggleMenuFlyoutItem)sender).IsChecked = true;
         }
     }
 
@@ -59,6 +60,7 @@ public sealed partial class AppsListPage : Page
         if (ViewModel != null)
         {
             ViewModel.DashboardSortOrder = DashboardSortOrder.ByStatus;
+            ((ToggleMenuFlyoutItem)sender).IsChecked = true;
         }
     }
 }
