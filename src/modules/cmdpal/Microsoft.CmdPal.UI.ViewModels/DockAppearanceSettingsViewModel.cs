@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -7,6 +7,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.WinUI;
 using Microsoft.CmdPal.UI.ViewModels.Services;
+using Microsoft.CmdPal.UI.ViewModels.Settings;
 using Microsoft.UI;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
@@ -16,76 +17,14 @@ using Windows.UI.ViewManagement;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
-public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDisposable
+/// <summary>
+/// View model for dock appearance settings, controlling theme, backdrop, colorization,
+/// and background image settings for the dock.
+/// </summary>
+public sealed partial class DockAppearanceSettingsViewModel : ObservableObject, IDisposable
 {
-    internal static readonly ObservableCollection<Color> WindowsColorSwatches = [
-
-        // row 0
-        Color.FromArgb(255, 255, 185, 0), // #ffb900
-        Color.FromArgb(255, 255, 140, 0), // #ff8c00
-        Color.FromArgb(255, 247, 99, 12), // #f7630c
-        Color.FromArgb(255, 202, 80, 16), // #ca5010
-        Color.FromArgb(255, 218, 59, 1), // #da3b01
-        Color.FromArgb(255, 239, 105, 80), // #ef6950
-
-        // row 1
-        Color.FromArgb(255, 209, 52, 56), // #d13438
-        Color.FromArgb(255, 255, 67, 67), // #ff4343
-        Color.FromArgb(255, 231, 72, 86), // #e74856
-        Color.FromArgb(255, 232, 17, 35), // #e81123
-        Color.FromArgb(255, 234, 0, 94), // #ea005e
-        Color.FromArgb(255, 195, 0, 82), // #c30052
-
-        // row 2
-        Color.FromArgb(255, 227, 0, 140), // #e3008c
-        Color.FromArgb(255, 191, 0, 119), // #bf0077
-        Color.FromArgb(255, 194, 57, 179), // #c239b3
-        Color.FromArgb(255, 154, 0, 137), // #9a0089
-        Color.FromArgb(255, 0, 120, 212), // #0078d4
-        Color.FromArgb(255, 0, 99, 177), // #0063b1
-
-        // row 3
-        Color.FromArgb(255, 142, 140, 216), // #8e8cd8
-        Color.FromArgb(255, 107, 105, 214), // #6b69d6
-        Color.FromArgb(255, 135, 100, 184), // #8764b8
-        Color.FromArgb(255, 116, 77, 169), // #744da9
-        Color.FromArgb(255, 177, 70, 194), // #b146c2
-        Color.FromArgb(255, 136, 23, 152), // #881798
-
-        // row 4
-        Color.FromArgb(255, 0, 153, 188), // #0099bc
-        Color.FromArgb(255, 45, 125, 154), // #2d7d9a
-        Color.FromArgb(255, 0, 183, 195), // #00b7c3
-        Color.FromArgb(255, 3, 131, 135), // #038387
-        Color.FromArgb(255, 0, 178, 148), // #00b294
-        Color.FromArgb(255, 1, 133, 116), // #018574
-
-        // row 5
-        Color.FromArgb(255, 0, 204, 106), // #00cc6a
-        Color.FromArgb(255, 16, 137, 62), // #10893e
-        Color.FromArgb(255, 122, 117, 116), // #7a7574
-        Color.FromArgb(255, 93, 90, 88), // #5d5a58
-        Color.FromArgb(255, 104, 118, 138), // #68768a
-        Color.FromArgb(255, 81, 92, 107), // #515c6b
-
-        // row 6
-        Color.FromArgb(255, 86, 124, 115), // #567c73
-        Color.FromArgb(255, 72, 104, 96), // #486860
-        Color.FromArgb(255, 73, 130, 5), // #498205
-        Color.FromArgb(255, 16, 124, 16), // #107c10
-        Color.FromArgb(255, 118, 118, 118), // #767676
-        Color.FromArgb(255, 76, 74, 72), // #4c4a48
-
-        // row 7
-        Color.FromArgb(255, 105, 121, 126), // #69797e
-        Color.FromArgb(255, 74, 84, 89), // #4a5459
-        Color.FromArgb(255, 100, 124, 100), // #647c64
-        Color.FromArgb(255, 82, 94, 84), // #525e54
-        Color.FromArgb(255, 132, 117, 69), // #847545
-        Color.FromArgb(255, 126, 115, 95), // #7e735f
-    ];
-
     private readonly SettingsModel _settings;
+    private readonly DockSettings _dockSettings;
     private readonly UISettings _uiSettings;
     private readonly IThemeService _themeService;
     private readonly DispatcherQueueTimer _saveTimer = DispatcherQueue.GetForCurrentThread().CreateTimer();
@@ -94,22 +33,22 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
     private ElementTheme? _elementThemeOverride;
     private Color _currentSystemAccentColor;
 
-    public ObservableCollection<Color> Swatches => WindowsColorSwatches;
+    public ObservableCollection<Color> Swatches => AppearanceSettingsViewModel.WindowsColorSwatches;
 
     public int ThemeIndex
     {
-        get => (int)_settings.Theme;
+        get => (int)_dockSettings.Theme;
         set => Theme = (UserTheme)value;
     }
 
     public UserTheme Theme
     {
-        get => _settings.Theme;
+        get => _dockSettings.Theme;
         set
         {
-            if (_settings.Theme != value)
+            if (_dockSettings.Theme != value)
             {
-                _settings.Theme = value;
+                _dockSettings.Theme = value;
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(ThemeIndex));
                 Save();
@@ -117,14 +56,35 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
         }
     }
 
-    public ColorizationMode ColorizationMode
+    public int BackdropIndex
     {
-        get => _settings.ColorizationMode;
+        get => (int)_dockSettings.Backdrop;
+        set => Backdrop = (DockBackdrop)value;
+    }
+
+    public DockBackdrop Backdrop
+    {
+        get => _dockSettings.Backdrop;
         set
         {
-            if (_settings.ColorizationMode != value)
+            if (_dockSettings.Backdrop != value)
             {
-                _settings.ColorizationMode = value;
+                _dockSettings.Backdrop = value;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(BackdropIndex));
+                Save();
+            }
+        }
+    }
+
+    public ColorizationMode ColorizationMode
+    {
+        get => _dockSettings.ColorizationMode;
+        set
+        {
+            if (_dockSettings.ColorizationMode != value)
+            {
+                _dockSettings.ColorizationMode = value;
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(ColorizationModeIndex));
                 OnPropertyChanged(nameof(IsCustomTintVisible));
@@ -147,18 +107,18 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
 
     public int ColorizationModeIndex
     {
-        get => (int)_settings.ColorizationMode;
+        get => (int)_dockSettings.ColorizationMode;
         set => ColorizationMode = (ColorizationMode)value;
     }
 
     public Color ThemeColor
     {
-        get => _settings.CustomThemeColor;
+        get => _dockSettings.CustomThemeColor;
         set
         {
-            if (_settings.CustomThemeColor != value)
+            if (_dockSettings.CustomThemeColor != value)
             {
-                _settings.CustomThemeColor = value;
+                _dockSettings.CustomThemeColor = value;
 
                 OnPropertyChanged();
 
@@ -174,10 +134,10 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
 
     public int ColorIntensity
     {
-        get => _settings.CustomThemeColorIntensity;
+        get => _dockSettings.CustomThemeColorIntensity;
         set
         {
-            _settings.CustomThemeColorIntensity = value;
+            _dockSettings.CustomThemeColorIntensity = value;
             OnPropertyChanged();
             Save();
         }
@@ -185,12 +145,12 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
 
     public string BackgroundImagePath
     {
-        get => _settings.BackgroundImagePath ?? string.Empty;
+        get => _dockSettings.BackgroundImagePath ?? string.Empty;
         set
         {
-            if (_settings.BackgroundImagePath != value)
+            if (_dockSettings.BackgroundImagePath != value)
             {
-                _settings.BackgroundImagePath = value;
+                _dockSettings.BackgroundImagePath = value;
                 OnPropertyChanged();
 
                 if (BackgroundImageOpacity == 0)
@@ -205,12 +165,12 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
 
     public int BackgroundImageOpacity
     {
-        get => _settings.BackgroundImageOpacity;
+        get => _dockSettings.BackgroundImageOpacity;
         set
         {
-            if (_settings.BackgroundImageOpacity != value)
+            if (_dockSettings.BackgroundImageOpacity != value)
             {
-                _settings.BackgroundImageOpacity = value;
+                _dockSettings.BackgroundImageOpacity = value;
                 OnPropertyChanged();
                 Save();
             }
@@ -219,12 +179,12 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
 
     public int BackgroundImageBrightness
     {
-        get => _settings.BackgroundImageBrightness;
+        get => _dockSettings.BackgroundImageBrightness;
         set
         {
-            if (_settings.BackgroundImageBrightness != value)
+            if (_dockSettings.BackgroundImageBrightness != value)
             {
-                _settings.BackgroundImageBrightness = value;
+                _dockSettings.BackgroundImageBrightness = value;
                 OnPropertyChanged();
                 Save();
             }
@@ -233,12 +193,12 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
 
     public int BackgroundImageBlurAmount
     {
-        get => _settings.BackgroundImageBlurAmount;
+        get => _dockSettings.BackgroundImageBlurAmount;
         set
         {
-            if (_settings.BackgroundImageBlurAmount != value)
+            if (_dockSettings.BackgroundImageBlurAmount != value)
             {
-                _settings.BackgroundImageBlurAmount = value;
+                _dockSettings.BackgroundImageBlurAmount = value;
                 OnPropertyChanged();
                 Save();
             }
@@ -247,12 +207,12 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
 
     public BackgroundImageFit BackgroundImageFit
     {
-        get => _settings.BackgroundImageFit;
+        get => _dockSettings.BackgroundImageFit;
         set
         {
-            if (_settings.BackgroundImageFit != value)
+            if (_dockSettings.BackgroundImageFit != value)
             {
-                _settings.BackgroundImageFit = value;
+                _dockSettings.BackgroundImageFit = value;
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(BackgroundImageFitIndex));
                 Save();
@@ -262,11 +222,6 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
 
     public int BackgroundImageFitIndex
     {
-        // Naming between UI facing string and enum is a bit confusing, but the enum fields
-        // are based on XAML Stretch enum values. So I'm choosing to keep the confusion here, close
-        // to the UI.
-        // - BackgroundImageFit.Fill corresponds to "Stretch"
-        // - BackgroundImageFit.UniformToFill corresponds to "Fill"
         get => BackgroundImageFit switch
         {
             BackgroundImageFit.Fill => 1,
@@ -282,17 +237,15 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
     [ObservableProperty]
     public partial bool IsColorizationDetailsExpanded { get; set; }
 
-    public bool IsCustomTintVisible => _settings.ColorizationMode is ColorizationMode.CustomColor or ColorizationMode.Image;
+    public bool IsCustomTintVisible => _dockSettings.ColorizationMode is ColorizationMode.CustomColor or ColorizationMode.Image;
 
-    public bool IsCustomTintIntensityVisible => _settings.ColorizationMode is ColorizationMode.CustomColor or ColorizationMode.WindowsAccentColor or ColorizationMode.Image;
+    public bool IsCustomTintIntensityVisible => _dockSettings.ColorizationMode is ColorizationMode.CustomColor or ColorizationMode.WindowsAccentColor or ColorizationMode.Image;
 
-    public bool IsBackgroundControlsVisible => _settings.ColorizationMode is ColorizationMode.Image;
+    public bool IsBackgroundControlsVisible => _dockSettings.ColorizationMode is ColorizationMode.Image;
 
-    public bool IsNoBackgroundVisible => _settings.ColorizationMode is ColorizationMode.None;
+    public bool IsNoBackgroundVisible => _dockSettings.ColorizationMode is ColorizationMode.None;
 
-    public bool IsAccentColorControlsVisible => _settings.ColorizationMode is ColorizationMode.WindowsAccentColor;
-
-    public AcrylicBackdropParameters EffectiveBackdrop { get; private set; } = new(Colors.Black, Colors.Black, 0.5f, 0.5f);
+    public bool IsAccentColorControlsVisible => _dockSettings.ColorizationMode is ColorizationMode.WindowsAccentColor;
 
     public ElementTheme EffectiveTheme => _elementThemeOverride ?? _themeService.Current.Theme;
 
@@ -315,11 +268,12 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
             ? new Microsoft.UI.Xaml.Media.Imaging.BitmapImage(uri)
             : null;
 
-    public AppearanceSettingsViewModel(IThemeService themeService, SettingsModel settings)
+    public DockAppearanceSettingsViewModel(IThemeService themeService, SettingsModel settings)
     {
         _themeService = themeService;
         _themeService.ThemeChanged += ThemeServiceOnThemeChanged;
         _settings = settings;
+        _dockSettings = settings.DockSettings;
 
         _uiSettings = new UISettings();
         _uiSettings.ColorValuesChanged += UiSettingsOnColorValuesChanged;
@@ -327,7 +281,7 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
 
         Reapply();
 
-        IsColorizationDetailsExpanded = _settings.ColorizationMode != ColorizationMode.None;
+        IsColorizationDetailsExpanded = _dockSettings.ColorizationMode != ColorizationMode.None;
     }
 
     private void UiSettingsOnColorValuesChanged(UISettings sender, object args) => _uiDispatcher.TryEnqueue(() => UpdateAccentColor(sender));
@@ -354,9 +308,6 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
 
     private void Reapply()
     {
-        // Theme services recalculates effective color and opacity based on current settings.
-        EffectiveBackdrop = _themeService.Current.BackdropParameters;
-        OnPropertyChanged(nameof(EffectiveBackdrop));
         OnPropertyChanged(nameof(EffectiveBackgroundImageBrightness));
         OnPropertyChanged(nameof(EffectiveBackgroundImageSource));
         OnPropertyChanged(nameof(EffectiveThemeColor));

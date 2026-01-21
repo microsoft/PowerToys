@@ -35,6 +35,8 @@ public partial class SettingsViewModel : INotifyPropertyChanged
 
     public AppearanceSettingsViewModel Appearance { get; }
 
+    public DockAppearanceSettingsViewModel DockAppearance { get; }
+
     public HotkeySettings? Hotkey
     {
         get => _settings.Hotkey;
@@ -240,6 +242,7 @@ public partial class SettingsViewModel : INotifyPropertyChanged
         _topLevelCommandManager = topLevelCommandManager;
 
         Appearance = new AppearanceSettingsViewModel(themeService, _settings);
+        DockAppearance = new DockAppearanceSettingsViewModel(themeService, _settings);
 
         var activeProviders = GetCommandProviders();
         var allProviderSettings = _settings.ProviderSettings;
