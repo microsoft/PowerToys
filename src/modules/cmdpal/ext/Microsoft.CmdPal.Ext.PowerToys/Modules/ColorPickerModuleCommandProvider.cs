@@ -8,6 +8,7 @@ using Microsoft.CommandPalette.Extensions.Toolkit;
 using PowerToysExtension.Commands;
 using PowerToysExtension.Helpers;
 using PowerToysExtension.Pages;
+using PowerToysExtension.Properties;
 
 namespace PowerToysExtension.Modules;
 
@@ -24,7 +25,7 @@ internal sealed class ColorPickerModuleCommandProvider : ModuleCommandProvider
         commands.Add(new ListItem(new OpenInSettingsCommand(module, title))
         {
             Title = title,
-            Subtitle = "Open Color Picker settings",
+            Subtitle = Resources.ColorPicker_Settings_Subtitle,
             Icon = icon,
         });
 
@@ -36,15 +37,15 @@ internal sealed class ColorPickerModuleCommandProvider : ModuleCommandProvider
         // Direct entries in the module list.
         commands.Add(new ListItem(new OpenColorPickerCommand())
         {
-            Title = "Open Color Picker",
-            Subtitle = "Start a color pick session",
+            Title = Resources.ColorPicker_Open_Title,
+            Subtitle = Resources.ColorPicker_Open_Subtitle,
             Icon = icon,
         });
 
         commands.Add(new ListItem(new CommandItem(new ColorPickerSavedColorsPage()))
         {
-            Title = "Saved colors",
-            Subtitle = "Browse and copy saved colors",
+            Title = Resources.ColorPicker_SavedColors_Title,
+            Subtitle = Resources.ColorPicker_SavedColors_Subtitle,
             Icon = icon,
         });
 

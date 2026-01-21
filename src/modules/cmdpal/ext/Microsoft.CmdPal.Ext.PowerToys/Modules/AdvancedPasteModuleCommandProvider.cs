@@ -7,6 +7,7 @@ using Common.UI;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using PowerToysExtension.Commands;
 using PowerToysExtension.Helpers;
+using PowerToysExtension.Properties;
 
 namespace PowerToysExtension.Modules;
 
@@ -22,8 +23,8 @@ internal sealed class AdvancedPasteModuleCommandProvider : ModuleCommandProvider
         {
             yield return new ListItem(new OpenAdvancedPasteCommand())
             {
-                Title = "Open Advanced Paste",
-                Subtitle = "Launch the Advanced Paste UI",
+                Title = Resources.AdvancedPaste_Open_Title,
+                Subtitle = Resources.AdvancedPaste_Open_Subtitle,
                 Icon = icon,
             };
         }
@@ -31,7 +32,7 @@ internal sealed class AdvancedPasteModuleCommandProvider : ModuleCommandProvider
         yield return new ListItem(new OpenInSettingsCommand(module, title))
         {
             Title = title,
-            Subtitle = "Open Advanced Paste settings",
+            Subtitle = Resources.AdvancedPaste_Settings_Subtitle,
             Icon = icon,
         };
     }

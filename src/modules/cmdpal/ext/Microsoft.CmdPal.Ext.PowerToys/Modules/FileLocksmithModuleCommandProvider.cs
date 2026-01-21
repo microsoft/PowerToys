@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using PowerToysExtension.Commands;
 using PowerToysExtension.Helpers;
+using PowerToysExtension.Properties;
 using static Common.UI.SettingsDeepLink;
 
 namespace PowerToysExtension.Modules;
@@ -20,7 +21,7 @@ internal sealed class FileLocksmithModuleCommandProvider : ModuleCommandProvider
         yield return new ListItem(new OpenInSettingsCommand(SettingsWindow.FileLocksmith, title))
         {
             Title = title,
-            Subtitle = "Open File Locksmith settings",
+            Subtitle = Resources.FileLocksmith_Settings_Subtitle,
             Icon = icon,
         };
     }

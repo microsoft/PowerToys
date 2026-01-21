@@ -216,27 +216,15 @@ namespace ImageResizer.Properties
                 {
                     if (e.PropertyName == nameof(Models.CustomSize))
                     {
-                        var oldCustomSize = _customSize;
                         _customSize = settings.CustomSize;
 
-                        OnCollectionChanged(
-                            new NotifyCollectionChangedEventArgs(
-                                NotifyCollectionChangedAction.Replace,
-                                _customSize,
-                                oldCustomSize,
-                                _sizes.Count));
+                        OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
                     }
                     else if (e.PropertyName == nameof(Models.AiSize))
                     {
-                        var oldAiSize = _aiSize;
                         _aiSize = settings.AiSize;
 
-                        OnCollectionChanged(
-                            new NotifyCollectionChangedEventArgs(
-                                NotifyCollectionChangedAction.Replace,
-                                _aiSize,
-                                oldAiSize,
-                                _sizes.Count + 1));
+                        OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
                     }
                     else if (e.PropertyName == nameof(Sizes))
                     {

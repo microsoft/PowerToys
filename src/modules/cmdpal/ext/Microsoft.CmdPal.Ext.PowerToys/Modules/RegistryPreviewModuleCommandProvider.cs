@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using PowerToysExtension.Commands;
 using PowerToysExtension.Helpers;
+using PowerToysExtension.Properties;
 using static Common.UI.SettingsDeepLink;
 
 namespace PowerToysExtension.Modules;
@@ -22,8 +23,8 @@ internal sealed class RegistryPreviewModuleCommandProvider : ModuleCommandProvid
         {
             yield return new ListItem(new OpenRegistryPreviewCommand())
             {
-                Title = "Open Registry Preview",
-                Subtitle = "Launch Registry Preview",
+                Title = Resources.RegistryPreview_Open_Title,
+                Subtitle = Resources.RegistryPreview_Open_Subtitle,
                 Icon = icon,
             };
         }
@@ -31,7 +32,7 @@ internal sealed class RegistryPreviewModuleCommandProvider : ModuleCommandProvid
         yield return new ListItem(new OpenInSettingsCommand(module, title))
         {
             Title = title,
-            Subtitle = "Open Registry Preview settings",
+            Subtitle = Resources.RegistryPreview_Settings_Subtitle,
             Icon = icon,
         };
     }
