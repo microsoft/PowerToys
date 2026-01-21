@@ -236,6 +236,18 @@ public sealed partial class DockWindow : WindowEx,
             {
                 UpdateAcrylic();
             }
+            else if (_settings.Backdrop == DockBackdrop.Transparent)
+            {
+                // TODO use the colorization to apply a tint to the transparent backdrop
+            }
+
+            // ActualTheme / RequestedTheme sync,
+            // as pilfered from WindowThemeSynchronizer
+            // LOAD BEARING: Changing the RequestedTheme to Dark then Light then target forces
+            // a refresh of the theme.
+            Root.RequestedTheme = ElementTheme.Dark;
+            Root.RequestedTheme = ElementTheme.Light;
+            Root.RequestedTheme = _themeService.CurrentDockTheme.Theme;
         });
     }
 
