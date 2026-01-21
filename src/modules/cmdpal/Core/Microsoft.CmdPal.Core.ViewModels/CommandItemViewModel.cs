@@ -66,7 +66,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
 
     public CommandItemViewModel? PrimaryCommand => this;
 
-    public CommandItemViewModel? SecondaryCommand // => HasMoreCommands ? ActualCommands[0] : null;
+    public CommandItemViewModel? SecondaryCommand
     {
         get
         {

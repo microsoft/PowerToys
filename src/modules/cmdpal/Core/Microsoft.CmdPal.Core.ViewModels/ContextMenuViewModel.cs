@@ -53,12 +53,8 @@ public partial class ContextMenuViewModel : ObservableObject,
     {
         if (SelectedItem is not null)
         {
-            // if (SelectedItem.MoreCommands.Count() > 1)
-            // {
             ContextMenuStack.Clear();
             PushContextStack(SelectedItem.AllCommands);
-
-            // }
         }
     }
 

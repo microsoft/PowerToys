@@ -22,8 +22,6 @@ public sealed partial class DockViewModel : IDisposable,
 
     private DockSettings _settings;
 
-    // private DispatcherQueue _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
-    // private DispatcherQueue _updateWindowsQueue = DispatcherQueueController.CreateOnDedicatedThread().DispatcherQueue;
     public TaskScheduler Scheduler { get; }
 
     public ObservableCollection<DockBandViewModel> StartItems { get; } = new();

@@ -163,22 +163,8 @@ public sealed class CommandProviderWrapper
                 UnsafePreCacheApiAdditions(two);
             }
 
-            // if (model is IExtendedAttributesProvider iHaveProperties)
             if (model is ICommandProvider3 supportsDockBands)
             {
-                // var props = iHaveProperties.GetProperties();
-                // var hasBands = props.TryGetValue("DockBands", out var obj);
-                // if (hasBands && obj is not null)
-                // {
-                //    // CoreLogger.LogDebug($"Found bands object on {DisplayName} ({ProviderId}) ");
-                //    // var bands = (ICommandItem[])obj;
-                //    var bands = obj as ICommandItem[];
-                //    if (bands is not null)
-                //    {
-                //        CoreLogger.LogDebug($"Found {bands.Length} bands on {DisplayName} ({ProviderId}) ");
-                //        dockBands = bands;
-                //    }
-                // }
                 var bands = supportsDockBands.GetDockBands();
                 if (bands is not null)
                 {
@@ -309,9 +295,6 @@ public sealed class CommandProviderWrapper
     {
         Logger.LogDebug($"CommandProviderWrapper.PinDockBand: {ProviderId} - {bandVm.Id}");
 
-        // var settings = ExtensionHost.ServiceProvider.GetService<SettingsModel>()!;
-        // settings.DockSettings.PinnedCommands.Add(bandVm.Id);
-        // SettingsModel.SaveSettings(settings);
         var bands = this.DockBandItems.ToList();
         bands.Add(bandVm);
         this.DockBandItems = bands.ToArray();
