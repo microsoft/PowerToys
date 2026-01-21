@@ -5,6 +5,9 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using System.Threading;
+using System.Threading.Tasks;
+
 using global::PowerToys.GPOWrapper;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
@@ -65,6 +68,31 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             LaunchEditorEventHandler = new ButtonClickCommand(LaunchEditor);
 
+            // set the callback functions value to handle outgoing IPC message.
+            SendConfigMSG = ipcMSGCallBackFunc;
+
+            InitializeEnabledValue();
+
+            // Defer heavy property initialization to InitializeCoreAsync
+        }
+
+        /// <summary>
+        /// Performs deferred initialization - loads all settings properties.
+        /// </summary>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        /// <returns>A task representing the async operation.</returns>
+        protected override Task InitializeCoreAsync(CancellationToken cancellationToken = default)
+        {
+            return Task.Run(
+                () =>
+                {
+                    LoadSettingsProperties();
+                },
+                cancellationToken);
+        }
+
+        private void LoadSettingsProperties()
+        {
             _shiftDrag = Settings.Properties.FancyzonesShiftDrag.Value;
             _mouseSwitch = Settings.Properties.FancyzonesMouseSwitch.Value;
             _mouseMiddleButtonSpanningMultipleZones = Settings.Properties.FancyzonesMouseMiddleClickSpanningMultipleZones.Value;
@@ -96,9 +124,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             NextTabHotkey = Settings.Properties.FancyzonesNextTabHotkey.Value;
             PrevTabHotkey = Settings.Properties.FancyzonesPrevTabHotkey.Value;
 
-            // set the callback functions value to handle outgoing IPC message.
-            SendConfigMSG = ipcMSGCallBackFunc;
-
             string inactiveColor = Settings.Properties.FancyzonesInActiveColor.Value;
             _zoneInActiveColor = !string.IsNullOrEmpty(inactiveColor) ? inactiveColor : ConfigDefaults.DefaultFancyZonesInActiveColor;
 
@@ -111,8 +136,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             string numberColor = Settings.Properties.FancyzonesNumberColor.Value;
             _zoneNumberColor = !string.IsNullOrEmpty(numberColor) ? numberColor : ConfigDefaults.DefaultFancyzonesNumberColor;
 
-            InitializeEnabledValue();
-
             _windows11 = OSVersionHelper.IsWindows11();
 
             // Disable setting on windows 10
@@ -120,6 +143,15 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 DisableRoundCornersOnWindowSnap = false;
             }
+
+            // Notify UI of property changes
+            OnPropertyChanged(nameof(ShiftDrag));
+            OnPropertyChanged(nameof(MouseSwitch));
+            OnPropertyChanged(nameof(OverrideSnapHotkeys));
+            OnPropertyChanged(nameof(ZoneHighlightColor));
+            OnPropertyChanged(nameof(ZoneBorderColor));
+            OnPropertyChanged(nameof(ZoneInActiveColor));
+            OnPropertyChanged(nameof(ZoneNumberColor));
         }
 
         private void InitializeEnabledValue()

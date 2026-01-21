@@ -19,7 +19,13 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             var settingsUtils = SettingsUtils.Default;
             ViewModel = new FancyZonesViewModel(settingsUtils, SettingsRepository<GeneralSettings>.GetInstance(settingsUtils), SettingsRepository<FancyZonesSettings>.GetInstance(settingsUtils), ShellPage.SendDefaultIPCMessage);
             DataContext = ViewModel;
-            Loaded += (s, e) => ViewModel.OnPageLoaded();
+
+            // Defer heavy property loading to async initialization
+            Loaded += async (s, e) =>
+            {
+                ViewModel.OnPageLoaded();
+                await ViewModel.InitializeAsync();
+            };
         }
 
         private void OpenColorsSettings_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
