@@ -63,6 +63,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             Loaded += async (s, e) =>
             {
                 ViewModel.OnPageLoaded();
+                await ViewModel.InitializeAsync();
                 UpdatePasteAIUIVisibility();
                 await UpdateFoundryLocalUIAsync();
             };

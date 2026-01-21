@@ -12,6 +12,8 @@ using System.IO.Abstractions;
 using System.Linq;
 using System.Runtime.Versioning;
 using System.Text.Json;
+using System.Threading;
+using System.Threading.Tasks;
 
 using global::PowerToys.GPOWrapper;
 using Microsoft.PowerToys.Settings.UI.Helpers;
@@ -87,33 +89,49 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             _advancedPasteSettings = advancedPasteSettingsRepository.SettingsConfig;
 
-            AttachConfigurationHandlers();
-
             // set the callback functions value to handle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
 
             _additionalActions = _advancedPasteSettings.Properties.AdditionalActions;
             _customActions = _advancedPasteSettings.Properties.CustomActions.Value;
 
-            SetupSettingsFileWatcher();
-
-            InitializePasteAIProviderState();
-
             InitializeEnabledValue();
-            MigrateLegacyAIEnablement();
 
-            foreach (var action in _additionalActions.GetAllActions())
-            {
-                action.PropertyChanged += OnAdditionalActionPropertyChanged;
-            }
+            // Defer heavy initialization to InitializeCoreAsync
+        }
 
-            foreach (var customAction in _customActions)
-            {
-                customAction.PropertyChanged += OnCustomActionPropertyChanged;
-            }
+        /// <summary>
+        /// Performs deferred initialization - sets up file watcher, AI provider, handlers.
+        /// </summary>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        /// <returns>A task representing the async operation.</returns>
+        protected override Task InitializeCoreAsync(CancellationToken cancellationToken = default)
+        {
+            return Task.Run(
+                () =>
+                {
+                    AttachConfigurationHandlers();
+                    SetupSettingsFileWatcher();
+                    InitializePasteAIProviderState();
+                    MigrateLegacyAIEnablement();
 
-            _customActions.CollectionChanged += OnCustomActionsCollectionChanged;
-            UpdateCustomActionsCanMoveUpDown();
+                    foreach (var action in _additionalActions.GetAllActions())
+                    {
+                        action.PropertyChanged += OnAdditionalActionPropertyChanged;
+                    }
+
+                    foreach (var customAction in _customActions)
+                    {
+                        customAction.PropertyChanged += OnCustomActionPropertyChanged;
+                    }
+
+                    _dispatcherQueue.TryEnqueue(() =>
+                    {
+                        _customActions.CollectionChanged += OnCustomActionsCollectionChanged;
+                        UpdateCustomActionsCanMoveUpDown();
+                    });
+                },
+                cancellationToken);
         }
 
         public override Dictionary<string, HotkeySettings[]> GetAllHotkeySettings()
