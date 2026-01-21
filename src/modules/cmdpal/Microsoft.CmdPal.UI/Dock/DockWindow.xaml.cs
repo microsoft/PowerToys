@@ -196,7 +196,7 @@ public sealed partial class DockWindow : WindowEx,
             _acrylicController.Dispose();
         }
 
-        _acrylicController = GetAcrylicConfig(Content);
+        _acrylicController = GetAcrylicConfig(Content, _settings);
 
         // Enable the system backdrop.
         // Note: Be sure to have "using WinRT;" to support the Window.As<...>() call.
@@ -214,11 +214,33 @@ public sealed partial class DockWindow : WindowEx,
         }
     }
 
-    private static DesktopAcrylicController GetAcrylicConfig(UIElement content)
+    private static DesktopAcrylicController GetAcrylicConfig(UIElement content, DockSettings settings)
     {
         var feContent = content as FrameworkElement;
+        var isLight = feContent?.ActualTheme == ElementTheme.Light;
 
-        return feContent?.ActualTheme == ElementTheme.Light
+        // Determine if we should apply a custom tint based on colorization mode
+        var useCustomTint = settings.ColorizationMode is ColorizationMode.CustomColor
+                         or ColorizationMode.WindowsAccentColor;
+
+        if (useCustomTint && settings.CustomThemeColor.A > 0)
+        {
+            var tintColor = settings.CustomThemeColor;
+            var tintIntensity = settings.CustomThemeColorIntensity / 100.0f;
+
+            // Blend the custom color with the base acrylic
+            return new DesktopAcrylicController()
+            {
+                Kind = DesktopAcrylicKind.Thin,
+                TintColor = tintColor,
+                TintOpacity = tintIntensity * 0.8f, // Scale the intensity for tint opacity
+                LuminosityOpacity = isLight ? 0.90f : 0.96f,
+                FallbackColor = tintColor,
+            };
+        }
+
+        // Default acrylic configuration without custom tint
+        return isLight
             ? new DesktopAcrylicController()
             {
                 Kind = DesktopAcrylicKind.Thin,
