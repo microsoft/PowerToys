@@ -18,5 +18,20 @@
     <Grid
         x:Name="Root"
         HorizontalAlignment="Stretch"
-        VerticalAlignment="Stretch" />
+        VerticalAlignment="Stretch">
+
+        <cpcontrols:BlurImageControl
+            HorizontalAlignment="Stretch"
+            VerticalAlignment="Stretch"
+            BlurAmount="{x:Bind WindowViewModel.BackgroundImageBlurAmount, Mode=OneWay}"
+            ImageBrightness="{x:Bind WindowViewModel.BackgroundImageBrightness, Mode=OneWay}"
+            ImageOpacity="{x:Bind WindowViewModel.BackgroundImageOpacity, Mode=OneWay}"
+            ImageSource="{x:Bind WindowViewModel.BackgroundImageSource, Mode=OneWay}"
+            ImageStretch="{x:Bind WindowViewModel.BackgroundImageStretch, Mode=OneWay}"
+            IsHitTestVisible="False"
+            IsHoldingEnabled="False"
+            TintColor="{x:Bind WindowViewModel.BackgroundImageTint, Mode=OneWay}"
+            TintIntensity="{x:Bind WindowViewModel.BackgroundImageTintIntensity, Mode=OneWay}"
+            Visibility="{x:Bind WindowViewModel.ShowBackgroundImage, Mode=OneWay}" />
+    </Grid>
 </winuiex:WindowEx>

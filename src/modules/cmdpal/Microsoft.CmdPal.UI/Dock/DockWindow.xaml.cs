@@ -8,6 +8,7 @@ using ManagedCommon;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Dock;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
+using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Composition;
@@ -49,6 +50,7 @@ public sealed partial class DockWindow : WindowEx,
 
     private DockSettings _settings;
     private DockViewModel viewModel;
+    private DockWindowViewModel _windowViewModel;
     private DockControl _dock;
     private DesktopAcrylicController? _acrylicController;
     private SystemBackdropConfiguration? _configurationSource;
@@ -68,6 +70,8 @@ public sealed partial class DockWindow : WindowEx,
         _lastSize = _settings.DockSize;
 
         viewModel = serviceProvider.GetService<DockViewModel>()!;
+        var themeService = serviceProvider.GetRequiredService<IThemeService>();
+        _windowViewModel = new DockWindowViewModel(themeService);
         _dock = new DockControl(viewModel);
 
         InitializeComponent();
@@ -622,10 +626,13 @@ public sealed partial class DockWindow : WindowEx,
         WeakReferenceMessenger.Default.Send<ShowPaletteAtMessage>(new(screenPosPixels, anchorPoint));
     }
 
+    public DockWindowViewModel WindowViewModel => _windowViewModel;
+
     public void Dispose()
     {
         DisposeAcrylic();
         viewModel.Dispose();
+        _windowViewModel.Dispose();
     }
 
     private void DockWindow_Closed(object sender, WindowEventArgs args)

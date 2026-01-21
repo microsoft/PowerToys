@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.ObjectModel;
-using System.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
 using Microsoft.CmdPal.Core.Common;
@@ -12,26 +11,16 @@ using Microsoft.CmdPal.UI.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
 using Microsoft.CommandPalette.Extensions.Toolkit;
-using Microsoft.UI;
-using Microsoft.UI.Xaml.Media;
-using Microsoft.UI.Xaml.Media.Imaging;
-using Windows.UI;
-using Windows.UI.ViewManagement;
 
 namespace Microsoft.CmdPal.UI.ViewModels.Dock;
 
 public sealed partial class DockViewModel : IDisposable,
     IRecipient<CommandsReloadedMessage>,
-    IPageContext,
-    INotifyPropertyChanged
+    IPageContext
 {
     private readonly TopLevelCommandManager _topLevelCommandManager;
-    private readonly UISettings _uiSettings;
 
     private DockSettings _settings;
-    private Color _currentSystemAccentColor;
-
-    public event PropertyChangedEventHandler? PropertyChanged;
 
     public TaskScheduler Scheduler { get; }
 
@@ -40,23 +29,6 @@ public sealed partial class DockViewModel : IDisposable,
     public ObservableCollection<DockBandViewModel> EndItems { get; } = new();
 
     public ObservableCollection<TopLevelViewModel> AllItems => _topLevelCommandManager.DockBands;
-
-    // Background image properties for BlurImageControl binding
-    public ImageSource? BackgroundImageSource { get; private set; }
-
-    public Stretch BackgroundImageStretch { get; private set; } = Stretch.UniformToFill;
-
-    public double BackgroundImageOpacity { get; private set; }
-
-    public Color BackgroundImageTint { get; private set; }
-
-    public double BackgroundImageTintIntensity { get; private set; }
-
-    public int BackgroundImageBlurAmount { get; private set; }
-
-    public double BackgroundImageBrightness { get; private set; }
-
-    public bool ShowBackgroundImage { get; private set; }
 
     public DockViewModel(
         TopLevelCommandManager tlcManager,
@@ -67,9 +39,6 @@ public sealed partial class DockViewModel : IDisposable,
         _settings = settings.DockSettings;
         Scheduler = scheduler;
         WeakReferenceMessenger.Default.Register<CommandsReloadedMessage>(this);
-
-        _uiSettings = new UISettings();
-        UpdateAccentColor(_uiSettings);
     }
 
     public void UpdateSettings(DockSettings settings)
@@ -77,56 +46,6 @@ public sealed partial class DockViewModel : IDisposable,
         Logger.LogDebug($"DockViewModel.UpdateSettings");
         _settings = settings;
         SetupBands();
-        UpdateBackgroundImageProperties();
-    }
-
-    private void UpdateAccentColor(UISettings sender)
-    {
-        _currentSystemAccentColor = sender.GetColorValue(UIColorType.Accent);
-    }
-
-    private void UpdateBackgroundImageProperties()
-    {
-        // Determine effective theme color based on colorization mode
-        var effectiveThemeColor = _settings.ColorizationMode switch
-        {
-            ColorizationMode.WindowsAccentColor => _currentSystemAccentColor,
-            ColorizationMode.CustomColor or ColorizationMode.Image => _settings.CustomThemeColor,
-            _ => Colors.Transparent,
-        };
-
-        // Determine if we should show a background image
-        var hasBackgroundImage = _settings.ColorizationMode == ColorizationMode.Image
-            && !string.IsNullOrWhiteSpace(_settings.BackgroundImagePath);
-
-        ImageSource? imageSource = null;
-        if (hasBackgroundImage && Uri.TryCreate(_settings.BackgroundImagePath, UriKind.RelativeOrAbsolute, out var uri))
-        {
-            imageSource = new BitmapImage(uri);
-        }
-
-        BackgroundImageSource = imageSource;
-        BackgroundImageStretch = _settings.BackgroundImageFit switch
-        {
-            BackgroundImageFit.Fill => Stretch.Fill,
-            _ => Stretch.UniformToFill,
-        };
-        BackgroundImageOpacity = _settings.BackgroundImageOpacity / 100.0;
-        BackgroundImageTint = effectiveThemeColor;
-        BackgroundImageTintIntensity = _settings.CustomThemeColorIntensity / 100.0;
-        BackgroundImageBlurAmount = _settings.BackgroundImageBlurAmount;
-        BackgroundImageBrightness = _settings.BackgroundImageBrightness / 100.0;
-        ShowBackgroundImage = imageSource != null;
-
-        // Notify property changes
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(BackgroundImageSource)));
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(BackgroundImageStretch)));
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(BackgroundImageOpacity)));
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(BackgroundImageTint)));
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(BackgroundImageTintIntensity)));
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(BackgroundImageBlurAmount)));
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(BackgroundImageBrightness)));
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ShowBackgroundImage)));
     }
 
     private void SetupBands()
