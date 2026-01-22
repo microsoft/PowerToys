@@ -131,6 +131,7 @@ bezelled
 bhid
 BIF
 bigbar
+BIGGERSIZEOK
 bigobj
 binlog
 binres
@@ -312,6 +313,7 @@ CRECT
 CRH
 critsec
 cropandlock
+CROPTOSQUARE
 Crossdevice
 csdevkit
 CSearch
@@ -752,6 +754,7 @@ hyjiacan
 IAI
 ICONERROR
 ICONLOCATION
+ICONONLY
 icf
 IDCANCEL
 IDD
@@ -1659,6 +1662,7 @@ sigdn
 Signedness
 SIGNINGSCENARIO
 signtool
+SIIGBF
 SINGLEKEY
 sipolicy
 SIZEBOX
