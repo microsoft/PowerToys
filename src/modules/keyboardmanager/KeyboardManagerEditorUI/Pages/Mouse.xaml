@@ -1,0 +1,385 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Page
+    x:Class="KeyboardManagerEditorUI.Pages.Mouse"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:KeyboardManagerEditorUI.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:helper="using:KeyboardManagerEditorUI.Helpers"
+    xmlns:local="using:KeyboardManagerEditorUI.Pages"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Grid Padding="16">
+        <Pivot x:Name="MousePivot">
+            <!-- Mouse to Key Remappings Tab -->
+            <PivotItem Header="Mouse → Key">
+                <StackPanel Orientation="Vertical" Spacing="12" Margin="0,12,0,0">
+                    <TextBlock
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        TextWrapping="Wrap"
+                        Text="Remap mouse buttons to keyboard keys, shortcuts, text, programs, or URLs." />
+                    <Button
+                        x:Name="NewMouseToKeyBtn"
+                        Height="36"
+                        Margin="0,12,0,0"
+                        Click="NewMouseToKeyBtn_Click">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <FontIcon
+                                FontSize="14"
+                                Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
+                                Glyph="&#xE109;" />
+                            <TextBlock VerticalAlignment="Center" Text="Add remapping" />
+                        </StackPanel>
+                    </Button>
+                    <Grid
+                        HorizontalAlignment="Stretch"
+                        Background="{ThemeResource LayerFillColorDefaultBrush}"
+                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                        BorderThickness="1"
+                        CornerRadius="{StaticResource OverlayCornerRadius}">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="48" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="180" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="84" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock
+                            Grid.Column="0"
+                            Margin="16,-2,0,0"
+                            VerticalAlignment="Center"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            Text="Mouse Button" />
+                        <AppBarSeparator
+                            Grid.Column="1"
+                            Margin="-6,4,0,4"
+                            HorizontalAlignment="Left" />
+                        <TextBlock
+                            Grid.Column="1"
+                            Margin="12,-2,0,0"
+                            HorizontalAlignment="Left"
+                            VerticalAlignment="Center"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            Text="Action" />
+                        <Rectangle
+                            Grid.ColumnSpan="3"
+                            Height="1"
+                            HorizontalAlignment="Stretch"
+                            VerticalAlignment="Bottom"
+                            Fill="{ThemeResource CardStrokeColorDefaultBrush}" />
+                        <ListView
+                            Grid.Row="1"
+                            Grid.ColumnSpan="3"
+                            IsItemClickEnabled="True"
+                            ItemClick="MouseToKeyListView_ItemClick"
+                            ItemsSource="{x:Bind MouseToKeyMappings}"
+                            SelectionMode="None">
+                            <ListView.ItemTemplate>
+                                <DataTemplate x:DataType="helper:MouseMapping">
+                                    <Grid Height="48">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="180" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="84" />
+                                        </Grid.ColumnDefinitions>
+                                        <Rectangle
+                                            Grid.ColumnSpan="3"
+                                            Height="1"
+                                            Margin="-16,0,-16,0"
+                                            HorizontalAlignment="Stretch"
+                                            VerticalAlignment="Bottom"
+                                            Fill="{ThemeResource CardStrokeColorDefaultBrush}"
+                                            Opacity="0.8" />
+                                        <TextBlock
+                                            Grid.Column="0"
+                                            VerticalAlignment="Center"
+                                            Text="{x:Bind OriginalButton}"
+                                            FontWeight="SemiBold" />
+                                        <StackPanel
+                                            Grid.Column="1"
+                                            Orientation="Horizontal"
+                                            Spacing="8">
+                                            <TextBlock
+                                                VerticalAlignment="Center"
+                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                Text="{x:Bind TargetType}" />
+                                            <TextBlock
+                                                VerticalAlignment="Center"
+                                                Text="{x:Bind TargetDisplayName}" />
+                                        </StackPanel>
+                                        <Button
+                                            Grid.Column="2"
+                                            Margin="0,0,4,0"
+                                            Padding="8,4"
+                                            HorizontalAlignment="Right"
+                                            VerticalAlignment="Center"
+                                            AutomationProperties.Name="Delete mouse remapping"
+                                            Background="Transparent"
+                                            BorderThickness="0"
+                                            Click="DeleteMouseToKeyBtn_Click"
+                                            Tag="{x:Bind}">
+                                            <FontIcon
+                                                FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                                FontSize="16"
+                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                Glyph="&#xE74D;" />
+                                        </Button>
+                                    </Grid>
+                                </DataTemplate>
+                            </ListView.ItemTemplate>
+                        </ListView>
+                    </Grid>
+                </StackPanel>
+            </PivotItem>
+
+            <!-- Key to Mouse Remappings Tab -->
+            <PivotItem Header="Key → Mouse">
+                <StackPanel Orientation="Vertical" Spacing="12" Margin="0,12,0,0">
+                    <TextBlock
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        TextWrapping="Wrap"
+                        Text="Remap keyboard keys to simulate mouse button clicks." />
+                    <Button
+                        x:Name="NewKeyToMouseBtn"
+                        Height="36"
+                        Margin="0,12,0,0"
+                        Click="NewKeyToMouseBtn_Click">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <FontIcon
+                                FontSize="14"
+                                Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
+                                Glyph="&#xE109;" />
+                            <TextBlock VerticalAlignment="Center" Text="Add remapping" />
+                        </StackPanel>
+                    </Button>
+                    <Grid
+                        HorizontalAlignment="Stretch"
+                        Background="{ThemeResource LayerFillColorDefaultBrush}"
+                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                        BorderThickness="1"
+                        CornerRadius="{StaticResource OverlayCornerRadius}">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="48" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="180" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="84" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock
+                            Grid.Column="0"
+                            Margin="16,-2,0,0"
+                            VerticalAlignment="Center"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            Text="Key" />
+                        <AppBarSeparator
+                            Grid.Column="1"
+                            Margin="-6,4,0,4"
+                            HorizontalAlignment="Left" />
+                        <TextBlock
+                            Grid.Column="1"
+                            Margin="12,-2,0,0"
+                            HorizontalAlignment="Left"
+                            VerticalAlignment="Center"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            Text="Mouse Button" />
+                        <Rectangle
+                            Grid.ColumnSpan="3"
+                            Height="1"
+                            HorizontalAlignment="Stretch"
+                            VerticalAlignment="Bottom"
+                            Fill="{ThemeResource CardStrokeColorDefaultBrush}" />
+                        <ListView
+                            Grid.Row="1"
+                            Grid.ColumnSpan="3"
+                            IsItemClickEnabled="True"
+                            ItemClick="KeyToMouseListView_ItemClick"
+                            ItemsSource="{x:Bind KeyToMouseMappings}"
+                            SelectionMode="None">
+                            <ListView.ItemTemplate>
+                                <DataTemplate x:DataType="helper:KeyToMouseMapping">
+                                    <Grid Height="48">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="180" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="84" />
+                                        </Grid.ColumnDefinitions>
+                                        <Rectangle
+                                            Grid.ColumnSpan="3"
+                                            Height="1"
+                                            Margin="-16,0,-16,0"
+                                            HorizontalAlignment="Stretch"
+                                            VerticalAlignment="Bottom"
+                                            Fill="{ThemeResource CardStrokeColorDefaultBrush}"
+                                            Opacity="0.8" />
+                                        <controls:KeyVisual
+                                            Grid.Column="0"
+                                            HorizontalAlignment="Left"
+                                            VerticalAlignment="Center"
+                                            Content="{x:Bind OriginalKeyName}"
+                                            Style="{StaticResource DefaultKeyVisualStyle}" />
+                                        <TextBlock
+                                            Grid.Column="1"
+                                            VerticalAlignment="Center"
+                                            Text="{x:Bind TargetMouseButton}"
+                                            FontWeight="SemiBold" />
+                                        <Button
+                                            Grid.Column="2"
+                                            Margin="0,0,4,0"
+                                            Padding="8,4"
+                                            HorizontalAlignment="Right"
+                                            VerticalAlignment="Center"
+                                            AutomationProperties.Name="Delete key to mouse remapping"
+                                            Background="Transparent"
+                                            BorderThickness="0"
+                                            Click="DeleteKeyToMouseBtn_Click"
+                                            Tag="{x:Bind}">
+                                            <FontIcon
+                                                FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                                FontSize="16"
+                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                Glyph="&#xE74D;" />
+                                        </Button>
+                                    </Grid>
+                                </DataTemplate>
+                            </ListView.ItemTemplate>
+                        </ListView>
+                    </Grid>
+                </StackPanel>
+            </PivotItem>
+        </Pivot>
+
+        <!-- Mouse to Key Dialog -->
+        <ContentDialog
+            x:Name="MouseToKeyDialog"
+            Title="Mouse to Key Remapping"
+            MinWidth="500"
+            MaxWidth="500"
+            PrimaryButtonText="OK"
+            CloseButtonText="Cancel"
+            PrimaryButtonStyle="{StaticResource AccentButtonStyle}">
+            <StackPanel Spacing="16" Margin="0,16,0,0">
+                <ComboBox
+                    x:Name="MouseButtonComboBox"
+                    Header="Mouse Button"
+                    Width="200"
+                    SelectedIndex="0">
+                    <ComboBoxItem Content="Left" />
+                    <ComboBoxItem Content="Right" />
+                    <ComboBoxItem Content="Middle" />
+                    <ComboBoxItem Content="X1 (Back)" />
+                    <ComboBoxItem Content="X2 (Forward)" />
+                </ComboBox>
+                <ComboBox
+                    x:Name="TargetTypeComboBox"
+                    Header="Target Type"
+                    Width="200"
+                    SelectedIndex="0"
+                    SelectionChanged="TargetTypeComboBox_SelectionChanged">
+                    <ComboBoxItem Content="Key" />
+                    <ComboBoxItem Content="Shortcut" />
+                    <ComboBoxItem Content="Text" />
+                    <ComboBoxItem Content="Run Program" />
+                    <ComboBoxItem Content="Open URL" />
+                </ComboBox>
+                
+                <!-- Key input -->
+                <StackPanel x:Name="KeyInputPanel" Spacing="8">
+                    <TextBlock Text="Press a key to capture:" />
+                    <TextBox
+                        x:Name="KeyInputTextBox"
+                        Width="200"
+                        PlaceholderText="Click and press a key"
+                        IsReadOnly="True"
+                        PreviewKeyDown="KeyInputTextBox_PreviewKeyDown" />
+                </StackPanel>
+                
+                <!-- Shortcut input -->
+                <StackPanel x:Name="ShortcutInputPanel" Spacing="8" Visibility="Collapsed">
+                    <TextBlock Text="Enter shortcut key codes (semicolon-separated):" />
+                    <TextBox
+                        x:Name="ShortcutInputTextBox"
+                        Width="300"
+                        PlaceholderText="e.g., 162;67 for Ctrl+C" />
+                </StackPanel>
+                
+                <!-- Text input -->
+                <StackPanel x:Name="TextInputPanel" Spacing="8" Visibility="Collapsed">
+                    <TextBlock Text="Text to type:" />
+                    <TextBox
+                        x:Name="TextInputTextBox"
+                        Width="300"
+                        PlaceholderText="Enter text to type" />
+                </StackPanel>
+                
+                <!-- Program input -->
+                <StackPanel x:Name="ProgramInputPanel" Spacing="8" Visibility="Collapsed">
+                    <TextBlock Text="Program path:" />
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBox
+                            x:Name="ProgramPathTextBox"
+                            PlaceholderText="e.g., notepad.exe" />
+                        <Button Grid.Column="1" Margin="8,0,0,0" Click="BrowseProgramBtn_Click">
+                            <FontIcon Glyph="&#xED25;" FontSize="14" />
+                        </Button>
+                    </Grid>
+                    <TextBlock Text="Arguments (optional):" />
+                    <TextBox
+                        x:Name="ProgramArgsTextBox"
+                        Width="300"
+                        PlaceholderText="Command line arguments" />
+                </StackPanel>
+                
+                <!-- URL input -->
+                <StackPanel x:Name="UrlInputPanel" Spacing="8" Visibility="Collapsed">
+                    <TextBlock Text="URL to open:" />
+                    <TextBox
+                        x:Name="UrlInputTextBox"
+                        Width="300"
+                        PlaceholderText="e.g., https://github.com" />
+                </StackPanel>
+            </StackPanel>
+        </ContentDialog>
+
+        <!-- Key to Mouse Dialog -->
+        <ContentDialog
+            x:Name="KeyToMouseDialog"
+            Title="Key to Mouse Remapping"
+            MinWidth="400"
+            MaxWidth="400"
+            PrimaryButtonText="OK"
+            CloseButtonText="Cancel"
+            PrimaryButtonStyle="{StaticResource AccentButtonStyle}">
+            <StackPanel Spacing="16" Margin="0,16,0,0">
+                <StackPanel Spacing="8">
+                    <TextBlock Text="Press a key to capture:" />
+                    <TextBox
+                        x:Name="KeyToMouseKeyTextBox"
+                        Width="200"
+                        PlaceholderText="Click and press a key"
+                        IsReadOnly="True"
+                        PreviewKeyDown="KeyToMouseKeyTextBox_PreviewKeyDown" />
+                </StackPanel>
+                <ComboBox
+                    x:Name="TargetMouseButtonComboBox"
+                    Header="Target Mouse Button"
+                    Width="200"
+                    SelectedIndex="0">
+                    <ComboBoxItem Content="Left" />
+                    <ComboBoxItem Content="Right" />
+                    <ComboBoxItem Content="Middle" />
+                    <ComboBoxItem Content="X1 (Back)" />
+                    <ComboBoxItem Content="X2 (Forward)" />
+                </ComboBox>
+            </StackPanel>
+        </ContentDialog>
+    </Grid>
+</Page>
