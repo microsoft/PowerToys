@@ -197,103 +197,93 @@
     <Project Path="src/modules/cmdpal/CmdPalModuleInterface/CmdPalModuleInterface.vcxproj" Id="0adeb797-c8c7-4ffa-acd5-2af6cad7ecd8" />
   </Folder>
   <Folder Name="/modules/CommandPalette/Built-in Extensions/">
-    <Project Path="src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.Apps/Microsoft.CmdPal.Ext.Apps.csproj">
+    <Project Path="src/modules/cmdpal/Extensions/Microsoft.CmdPal.Ext.Apps/Microsoft.CmdPal.Ext.Apps.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
-    <Project Path="src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.Bookmark/Microsoft.CmdPal.Ext.Bookmarks.csproj">
+    <Project Path="src/modules/cmdpal/Extensions/Microsoft.CmdPal.Ext.Bookmark/Microsoft.CmdPal.Ext.Bookmarks.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
-    <Project Path="src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.Calc/Microsoft.CmdPal.Ext.Calc.csproj">
+    <Project Path="src/modules/cmdpal/Extensions/Microsoft.CmdPal.Ext.Calc/Microsoft.CmdPal.Ext.Calc.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
-    <Project Path="src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.ClipboardHistory/Microsoft.CmdPal.Ext.ClipboardHistory.csproj">
+    <Project Path="src/modules/cmdpal/Extensions/Microsoft.CmdPal.Ext.ClipboardHistory/Microsoft.CmdPal.Ext.ClipboardHistory.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
-    <Project Path="src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.Indexer/Microsoft.CmdPal.Ext.Indexer.csproj">
+    <Project Path="src/modules/cmdpal/Extensions/Microsoft.CmdPal.Ext.Indexer/Microsoft.CmdPal.Ext.Indexer.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
       <Deploy />
     </Project>
-    <Project Path="src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.PowerToys/Microsoft.CmdPal.Ext.PowerToys.csproj">
+    <Project Path="src/modules/cmdpal/Extensions/Microsoft.CmdPal.Ext.PowerToys/Microsoft.CmdPal.Ext.PowerToys.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
       <Deploy />
     </Project>
-    <Project Path="src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.Registry/Microsoft.CmdPal.Ext.Registry.csproj">
+    <Project Path="src/modules/cmdpal/Extensions/Microsoft.CmdPal.Ext.Registry/Microsoft.CmdPal.Ext.Registry.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
-    <Project Path="src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.RemoteDesktop/Microsoft.CmdPal.Ext.RemoteDesktop.csproj">
+    <Project Path="src/modules/cmdpal/Extensions/Microsoft.CmdPal.Ext.RemoteDesktop/Microsoft.CmdPal.Ext.RemoteDesktop.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
-    <Project Path="src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.Shell/Microsoft.CmdPal.Ext.Shell.csproj">
+    <Project Path="src/modules/cmdpal/Extensions/Microsoft.CmdPal.Ext.Shell/Microsoft.CmdPal.Ext.Shell.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
-    <Project Path="src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.System/Microsoft.CmdPal.Ext.System.csproj">
+    <Project Path="src/modules/cmdpal/Extensions/Microsoft.CmdPal.Ext.System/Microsoft.CmdPal.Ext.System.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
-    <Project Path="src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.TimeDate/Microsoft.CmdPal.Ext.TimeDate.csproj">
+    <Project Path="src/modules/cmdpal/Extensions/Microsoft.CmdPal.Ext.TimeDate/Microsoft.CmdPal.Ext.TimeDate.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
       <Deploy />
     </Project>
-    <Project Path="src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.WebSearch/Microsoft.CmdPal.Ext.WebSearch.csproj">
+    <Project Path="src/modules/cmdpal/Extensions/Microsoft.CmdPal.Ext.WebSearch/Microsoft.CmdPal.Ext.WebSearch.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
-    <Project Path="src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.WindowsServices/Microsoft.CmdPal.Ext.WindowsServices.csproj">
+    <Project Path="src/modules/cmdpal/Extensions/Microsoft.CmdPal.Ext.WindowsServices/Microsoft.CmdPal.Ext.WindowsServices.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
-    <Project Path="src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.WindowsSettings/Microsoft.CmdPal.Ext.WindowsSettings.csproj">
+    <Project Path="src/modules/cmdpal/Extensions/Microsoft.CmdPal.Ext.WindowsSettings/Microsoft.CmdPal.Ext.WindowsSettings.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
-    <Project Path="src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.WindowsTerminal/Microsoft.CmdPal.Ext.WindowsTerminal.csproj">
+    <Project Path="src/modules/cmdpal/Extensions/Microsoft.CmdPal.Ext.WindowsTerminal/Microsoft.CmdPal.Ext.WindowsTerminal.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
-    <Project Path="src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.WindowWalker/Microsoft.CmdPal.Ext.WindowWalker.csproj">
+    <Project Path="src/modules/cmdpal/Extensions/Microsoft.CmdPal.Ext.WindowWalker/Microsoft.CmdPal.Ext.WindowWalker.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
-    <Project Path="src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.WinGet/Microsoft.CmdPal.Ext.WinGet.csproj">
+    <Project Path="src/modules/cmdpal/Extensions/Microsoft.CmdPal.Ext.WinGet/Microsoft.CmdPal.Ext.WinGet.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
       <Deploy />
-    </Project>
-  </Folder>
-  <Folder Name="/modules/CommandPalette/Core/">
-    <Project Path="src/modules/cmdpal/Core/Microsoft.CmdPal.Core.Common/Microsoft.CmdPal.Core.Common.csproj">
-      <Platform Solution="*|ARM64" Project="ARM64" />
-      <Platform Solution="*|x64" Project="x64" />
-    </Project>
-    <Project Path="src/modules/cmdpal/Core/Microsoft.CmdPal.Core.ViewModels/Microsoft.CmdPal.Core.ViewModels.csproj">
-      <Platform Solution="*|ARM64" Project="ARM64" />
-      <Platform Solution="*|x64" Project="x64" />
     </Project>
   </Folder>
   <Folder Name="/modules/CommandPalette/Extension SDK/">
-    <Project Path="src/modules/cmdpal/extensionsdk/Microsoft.CommandPalette.Extensions.Toolkit/Microsoft.CommandPalette.Extensions.Toolkit.csproj">
+    <Project Path="src/modules/cmdpal/SDK/Microsoft.CommandPalette.Extensions.Toolkit/Microsoft.CommandPalette.Extensions.Toolkit.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
-    <Project Path="src/modules/cmdpal/extensionsdk/Microsoft.CommandPalette.Extensions/Microsoft.CommandPalette.Extensions.vcxproj" Id="305dd37e-c85d-4b08-aafe-7381fa890463" />
+    <Project Path="src/modules/cmdpal/SDK/Microsoft.CommandPalette.Extensions/Microsoft.CommandPalette.Extensions.vcxproj" Id="305dd37e-c85d-4b08-aafe-7381fa890463" />
   </Folder>
   <Folder Name="/modules/CommandPalette/Sample Extensions/">
-    <Project Path="src/modules/cmdpal/ext/ProcessMonitorExtension/ProcessMonitorExtension.csproj">
+    <Project Path="src/modules/cmdpal/Extensions/ProcessMonitorExtension/ProcessMonitorExtension.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
       <Deploy />
     </Project>
-    <Project Path="src/modules/cmdpal/ext/SamplePagesExtension/SamplePagesExtension.csproj">
+    <Project Path="src/modules/cmdpal/Extensions/SamplePagesExtension/SamplePagesExtension.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
       <Deploy />
@@ -358,16 +348,24 @@
     </Project>
   </Folder>
   <Folder Name="/modules/CommandPalette/UI/">
-    <Project Path="src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/Microsoft.CmdPal.UI.ViewModels.csproj">
+    <Project Path="src/modules/cmdpal/Microsoft.Terminal.UI/Microsoft.Terminal.UI.vcxproj" Id="6515f03f-e56d-4db4-b23d-ac4fb80db36f" />
+    <Project Path="src/modules/cmdpal/UI/Microsoft.CmdPal.UI.Common/Microsoft.CmdPal.UI.Common.csproj" Id="b0131363-c9e5-41e5-a541-8dc60760f03f">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
-    <Project Path="src/modules/cmdpal/Microsoft.CmdPal.UI/Microsoft.CmdPal.UI.csproj">
+    <Project Path="src/modules/cmdpal/UI/Microsoft.CmdPal.UI.Services/Microsoft.CmdPal.UI.Services.csproj" Id="014f1320-7d89-4d9f-a247-f68737c0f46b">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/cmdpal/UI/Microsoft.CmdPal.UI.ViewModels/Microsoft.CmdPal.UI.ViewModels.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/cmdpal/UI/Microsoft.CmdPal.UI/Microsoft.CmdPal.UI.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
       <Deploy />
     </Project>
-    <Project Path="src/modules/cmdpal/Microsoft.Terminal.UI/Microsoft.Terminal.UI.vcxproj" Id="6515f03f-e56d-4db4-b23d-ac4fb80db36f" />
   </Folder>
   <Folder Name="/modules/CropAndLock/">
     <Project Path="src/modules/CropAndLock/CropAndLock/CropAndLock.vcxproj" Id="f5e1146e-b7b3-4e11-85fd-270a500bd78c" />
@@ -420,7 +418,7 @@
     </Project>
   </Folder>
   <Folder Name="/modules/FileLocksmith/">
-    <Project Path="src/modules/FileLocksmith/FileLocksmithCLI/FileLocksmithCLI.vcxproj" Id="49D456D3-F485-45AF-8875-45B44F193DDC" />
+    <Project Path="src/modules/FileLocksmith/FileLocksmithCLI/FileLocksmithCLI.vcxproj" Id="49d456d3-f485-45af-8875-45b44f193ddc" />
     <Project Path="src/modules/FileLocksmith/FileLocksmithContextMenu/FileLocksmithContextMenu.vcxproj" Id="799a50d8-de89-4ed1-8ff8-ad5a9ed8c0ca" />
     <Project Path="src/modules/FileLocksmith/FileLocksmithExt/FileLocksmithExt.vcxproj" Id="57175ec7-92a5-4c1e-8244-e3fbca2a81de" />
     <Project Path="src/modules/FileLocksmith/FileLocksmithLib/FileLocksmithLib.vcxproj" Id="9d52fd25-ef90-4f9a-a015-91efc5daf54f" />
@@ -431,7 +429,7 @@
     </Project>
   </Folder>
   <Folder Name="/modules/FileLocksmith/Tests/">
-    <Project Path="src/modules/FileLocksmith/FileLocksmithCLI/tests/FileLocksmithCLIUnitTests.vcxproj" Id="A1B2C3D4-E5F6-7890-1234-567890ABCDEF" />
+    <Project Path="src/modules/FileLocksmith/FileLocksmithCLI/tests/FileLocksmithCLIUnitTests.vcxproj" Id="a1b2c3d4-e5f6-7890-1234-567890abcdef" />
   </Folder>
   <Folder Name="/modules/Hosts/">
     <Project Path="src/modules/Hosts/Hosts/Hosts.csproj">
@@ -457,13 +455,13 @@
   </Folder>
   <Folder Name="/modules/imageresizer/">
     <Project Path="src/modules/imageresizer/dll/ImageResizerExt.vcxproj" Id="0b43679e-edfa-4da0-ad30-f4628b308b1b" />
-    <Project Path="src/modules/imageresizer/ImageResizerContextMenu/ImageResizerContextMenu.vcxproj" Id="93b72a06-c8bd-484f-a6f7-c9f280b150bf" />
-    <Project Path="src/modules/imageresizer/ImageResizerLib/ImageResizerLib.vcxproj" Id="18b3db45-4ffe-4d01-97d6-5223feee1853" />
-    <Project Path="src/modules/imageresizer/ui/ImageResizerUI.csproj">
+    <Project Path="src/modules/imageresizer/ImageResizerCLI/ImageResizerCLI.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
-    <Project Path="src/modules/imageresizer/ImageResizerCLI/ImageResizerCLI.csproj">
+    <Project Path="src/modules/imageresizer/ImageResizerContextMenu/ImageResizerContextMenu.vcxproj" Id="93b72a06-c8bd-484f-a6f7-c9f280b150bf" />
+    <Project Path="src/modules/imageresizer/ImageResizerLib/ImageResizerLib.vcxproj" Id="18b3db45-4ffe-4d01-97d6-5223feee1853" />
+    <Project Path="src/modules/imageresizer/ui/ImageResizerUI.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
