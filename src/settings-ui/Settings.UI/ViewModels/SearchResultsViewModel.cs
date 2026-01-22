@@ -14,11 +14,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
     public class SearchResultsViewModel : INotifyPropertyChanged
     {
-        private ObservableCollection<SettingEntry> _moduleResults = new();
+        private ObservableCollection<SettingSearchResult> _moduleResults = new();
         private ObservableCollection<SettingsGroup> _groupedSettingsResults = new();
         private bool _hasNoResults;
 
-        public ObservableCollection<SettingEntry> ModuleResults
+        public ObservableCollection<SettingSearchResult> ModuleResults
         {
             get => _moduleResults;
             set
@@ -48,7 +48,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public void SetSearchResults(string query, List<SettingEntry> results)
+        public void SetSearchResults(string query, List<SettingSearchResult> results)
         {
             if (results == null || results.Count == 0)
             {
@@ -61,8 +61,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             HasNoResults = false;
 
             // Separate modules and settings
-            var modules = results.Where(r => r.Type == EntryType.SettingsPage).ToList();
-            var settings = results.Where(r => r.Type == EntryType.SettingsCard).ToList();
+            var modules = results.Where(r => r.Entry.Type == EntryType.SettingsPage).ToList();
+            var settings = results.Where(r => r.Entry.Type == EntryType.SettingsCard).ToList();
 
             // Update module results
             ModuleResults.Clear();
@@ -73,11 +73,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             // Group settings by their page/module
             var groupedSettings = settings
-                .GroupBy(s => SearchIndexService.GetLocalizedPageName(s.PageTypeName))
+                .GroupBy(s => SettingsSearch.Default.GetLocalizedPageName(s.Entry.PageTypeName))
                 .Select(g => new SettingsGroup
                 {
                     GroupName = g.Key,
-                    Settings = new ObservableCollection<SettingEntry>(g),
+                    Settings = new ObservableCollection<SettingSearchResult>(g),
                 })
                 .ToList();
 
@@ -101,7 +101,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 #pragma warning restore SA1402 // File may only contain a single type
     {
         private string _groupName;
-        private ObservableCollection<SettingEntry> _settings;
+        private ObservableCollection<SettingSearchResult> _settings;
 
         public string GroupName
         {
@@ -113,7 +113,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public ObservableCollection<SettingEntry> Settings
+        public ObservableCollection<SettingSearchResult> Settings
         {
             get => _settings;
             set

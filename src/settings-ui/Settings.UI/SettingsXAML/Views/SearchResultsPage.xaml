@@ -32,12 +32,12 @@
                         IsTabStop="False"
                         ItemsSource="{x:Bind ViewModel.ModuleResults, Mode=OneWay}">
                         <ItemsControl.ItemTemplate>
-                            <DataTemplate x:DataType="models:SettingEntry">
+                            <DataTemplate x:DataType="models:SettingSearchResult">
                                 <tkcontrols:SettingsCard
                                     Margin="0,0,0,2"
                                     Click="ModuleButton_Click"
-                                    Header="{x:Bind Header}"
-                                    HeaderIcon="{x:Bind Icon, Converter={StaticResource IconConverter}, ConverterParameter=&#xE8B7;}"
+                                    Header="{x:Bind Entry.Header}"
+                                    HeaderIcon="{x:Bind Entry.Icon, Converter={StaticResource IconConverter}, ConverterParameter=&#xE8B7;}"
                                     IsClickEnabled="True" />
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
@@ -52,19 +52,19 @@
                     <ItemsControl.ItemTemplate>
                         <DataTemplate x:DataType="vm:SettingsGroup">
                             <controls:SettingsGroup Header="{x:Bind GroupName}">
-                                <ItemsControl IsTabStop="False" ItemsSource="{x:Bind Settings}">
-                                    <ItemsControl.ItemTemplate>
-                                        <DataTemplate x:DataType="models:SettingEntry">
-                                            <tkcontrols:SettingsCard
-                                                Margin="0,0,0,2"
-                                                Click="SettingButton_Click"
-                                                Description="{x:Bind Description}"
-                                                Header="{x:Bind Header}"
-                                                HeaderIcon="{x:Bind Icon, Converter={StaticResource IconConverter}, ConverterParameter=&#xE713;}"
-                                                IsClickEnabled="True" />
-                                        </DataTemplate>
-                                    </ItemsControl.ItemTemplate>
-                                </ItemsControl>
+                                    <ItemsControl IsTabStop="False" ItemsSource="{x:Bind Settings}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate x:DataType="models:SettingSearchResult">
+                                                <tkcontrols:SettingsCard
+                                                    Margin="0,0,0,2"
+                                                    Click="SettingButton_Click"
+                                                    Description="{x:Bind Entry.Description}"
+                                                    Header="{x:Bind Entry.Header}"
+                                                    HeaderIcon="{x:Bind Entry.Icon, Converter={StaticResource IconConverter}, ConverterParameter=&#xE713;}"
+                                                    IsClickEnabled="True" />
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
                             </controls:SettingsGroup>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>

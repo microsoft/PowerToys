@@ -5,10 +5,11 @@
   <PropertyGroup>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <WarningsNotAsErrors>$(WarningsNotAsErrors);CS8305</WarningsNotAsErrors>
   </PropertyGroup>
 
-  <!-- Exclude SemanticSearch until experimental SDK is available -->
   <ItemGroup>
-    <Compile Remove="SemanticSearch\**" />
+    <PackageReference Include="Microsoft.WindowsAppSDK" />
+    <PackageReference Include="Microsoft.WindowsAppSDK.AI" />
   </ItemGroup>
 </Project>

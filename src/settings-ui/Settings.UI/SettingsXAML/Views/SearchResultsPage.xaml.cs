@@ -44,17 +44,17 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private void ModuleButton_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is SettingsCard card && card.DataContext is SettingEntry tagEntry)
+            if (sender is SettingsCard card && card.DataContext is SettingSearchResult tagResult)
             {
-                NavigateToModule(tagEntry);
+                NavigateToModule(tagResult.Entry);
             }
         }
 
         private void SettingButton_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is SettingsCard card && card.DataContext is SettingEntry tagEntry)
+            if (sender is SettingsCard card && card.DataContext is SettingSearchResult tagResult)
             {
-                NavigateToSetting(tagEntry);
+                NavigateToSetting(tagResult.Entry);
             }
         }
 
@@ -98,9 +98,9 @@ namespace Microsoft.PowerToys.Settings.UI.Views
     {
         public string Query { get; set; }
 
-        public List<SettingEntry> Results { get; set; }
+        public List<SettingSearchResult> Results { get; set; }
 
-        public SearchResultsNavigationParams(string query, List<SettingEntry> results)
+        public SearchResultsNavigationParams(string query, List<SettingSearchResult> results)
         {
             Query = query;
             Results = results;

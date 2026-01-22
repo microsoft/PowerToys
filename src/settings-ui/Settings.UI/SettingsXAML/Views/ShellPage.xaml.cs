@@ -8,7 +8,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Common.Search;
-using Common.Search.FuzzSearch;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Controls;
 using Microsoft.PowerToys.Settings.UI.Helpers;
@@ -385,11 +384,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private void ShellPage_Loaded(object sender, RoutedEventArgs e)
         {
-            Task.Run(() =>
-            {
-                SearchIndexService.BuildIndex();
-            })
-            .ContinueWith(_ => { });
+            _ = Task.Run(() => SettingsSearch.Default.BuildIndexAsync());
         }
 
         private void NavigationView_DisplayModeChanged(NavigationView sender, NavigationViewDisplayModeChangedEventArgs args)
@@ -427,7 +422,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             NativeMethods.SendMessage(hWnd, NativeMethods.WM_COMMAND, ID_CLOSE_MENU_COMMAND, 0);
         }
 
-        private List<SettingEntry> _lastSearchResults = new();
+        private List<SettingSearchResult> _lastSearchResults = new();
         private string _lastQueryText = string.Empty;
 
         private async void SearchBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
@@ -470,11 +465,10 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
 
             // Query the index on a background thread to avoid blocking UI
-            List<SettingEntry> results = null;
+            List<SettingSearchResult> results = null;
             try
             {
-                // If the token is already canceled before scheduling, the task won't start.
-                results = await Task.Run(() => SearchIndexService.Search(query, token), token);
+                results = (await SettingsSearch.Default.SearchAsync(query, options: null, token)).ToList();
             }
             catch (OperationCanceledException)
             {
@@ -578,7 +572,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         }
 
         // Centralized suggestion projection logic used by TextChanged & GotFocus restore.
-        private List<SuggestionItem> BuildSuggestionItems(string query, List<SettingEntry> results)
+        private List<SuggestionItem> BuildSuggestionItems(string query, List<SettingSearchResult> results)
         {
             results ??= new();
             if (results.Count == 0)
@@ -601,16 +595,17 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 };
             }
 
-            var list = results.Take(5).Select(e =>
+            var list = results.Take(5).Select(result =>
             {
+                var entry = result.Entry;
                 string subtitle = string.Empty;
-                if (e.Type != EntryType.SettingsPage)
+                if (entry.Type != EntryType.SettingsPage)
                 {
-                    subtitle = SearchIndexService.GetLocalizedPageName(e.PageTypeName);
+                    subtitle = SettingsSearch.Default.GetLocalizedPageName(entry.PageTypeName);
                     if (string.IsNullOrEmpty(subtitle))
                     {
-                        subtitle = SearchIndexService.Index
-                            .Where(x => x.Type == EntryType.SettingsPage && x.PageTypeName == e.PageTypeName)
+                        subtitle = SettingsSearch.Default.Index
+                            .Where(x => x.Type == EntryType.SettingsPage && x.PageTypeName == entry.PageTypeName)
                             .Select(x => x.Header)
                             .FirstOrDefault() ?? string.Empty;
                     }
@@ -618,12 +613,15 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
                 return new SuggestionItem
                 {
-                    Header = e.Header,
-                    Icon = e.Icon,
-                    PageTypeName = e.PageTypeName,
-                    ElementName = e.ElementName,
-                    ParentElementName = e.ParentElementName,
+                    Header = entry.Header,
+                    Icon = entry.Icon,
+                    PageTypeName = entry.PageTypeName,
+                    ElementName = entry.ElementName,
+                    ParentElementName = entry.ParentElementName,
                     Subtitle = subtitle,
+                    Score = result.Score,
+                    MatchKind = result.MatchKind,
+                    MatchSpans = result.MatchSpans ?? Array.Empty<MatchSpan>(),
                     IsShowAll = false,
                 };
             }).ToList();
@@ -655,7 +653,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             // Prefer cached results (from live search); if empty, perform a fresh search
             var matched = _lastSearchResults?.Count > 0 && string.Equals(_lastQueryText, queryText, StringComparison.Ordinal)
                 ? _lastSearchResults
-                : await Task.Run(() => SearchIndexService.Search(queryText));
+                : (await SettingsSearch.Default.SearchAsync(queryText, options: null)).ToList();
 
             var searchParams = new SearchResultsNavigationParams(queryText, matched);
             NavigationService.Navigate<SearchResultsPage>(searchParams);

@@ -2,7 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using Microsoft.Windows.AI.Search.Experimental;
+using Microsoft.Windows.AI.Search.Experimental.AppContentIndex;
 using Windows.Graphics.Imaging;
 
 namespace Common.Search.SemanticSearch;
@@ -11,7 +11,7 @@ namespace Common.Search.SemanticSearch;
 /// A semantic search engine powered by Windows App SDK AI Search APIs.
 /// Provides text and image indexing with lexical and semantic search capabilities.
 /// </summary>
-public sealed class SemanticSearchEngine : IDisposable
+public sealed class SemanticSearchIndex : IDisposable
 {
     private readonly string _indexName;
     private AppContentIndexer? _indexer;
@@ -19,10 +19,10 @@ public sealed class SemanticSearchEngine : IDisposable
     private SemanticSearchCapabilities? _capabilities;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="SemanticSearchEngine"/> class.
+    /// Initializes a new instance of the <see cref="SemanticSearchIndex"/> class.
     /// </summary>
     /// <param name="indexName">The name of the search index.</param>
-    public SemanticSearchEngine(string indexName)
+    public SemanticSearchIndex(string indexName)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(indexName);
         _indexName = indexName;
@@ -203,7 +203,7 @@ public sealed class SemanticSearchEngine : IDisposable
         }
 
         var query = _indexer!.CreateTextQuery(searchText, queryOptions);
-        var matches = query.GetNextMatches((uint)options.MaxResults);
+        var matches = query.GetNextMatches(options.MaxResults);
 
         return ConvertTextMatches(matches);
     }
@@ -229,7 +229,7 @@ public sealed class SemanticSearchEngine : IDisposable
         };
 
         var query = _indexer!.CreateImageQuery(searchText, queryOptions);
-        var matches = query.GetNextMatches((uint)options.MaxResults);
+        var matches = query.GetNextMatches(options.MaxResults);
 
         return ConvertImageMatches(matches);
     }

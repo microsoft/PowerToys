@@ -5,28 +5,28 @@
 namespace Common.Search.SemanticSearch;
 
 /// <summary>
-/// Adapts the SemanticSearchEngine to the generic ISearchEngine interface.
+/// A semantic search engine that implements the common search interface.
 /// </summary>
 /// <typeparam name="T">The type of items to search.</typeparam>
-public sealed class SemanticSearchAdapter<T> : ISearchEngine<T>
+public sealed class SemanticSearchEngine<T> : ISearchEngine<T>
     where T : ISearchable
 {
-    private readonly SemanticSearchEngine _engine;
+    private readonly SemanticSearchIndex _index;
     private readonly Dictionary<string, T> _itemsById = new();
     private readonly object _lockObject = new();
     private bool _disposed;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="SemanticSearchAdapter{T}"/> class.
+    /// Initializes a new instance of the <see cref="SemanticSearchEngine{T}"/> class.
     /// </summary>
     /// <param name="indexName">The name of the search index.</param>
-    public SemanticSearchAdapter(string indexName)
+    public SemanticSearchEngine(string indexName)
     {
-        _engine = new SemanticSearchEngine(indexName);
+        _index = new SemanticSearchIndex(indexName);
     }
 
     /// <inheritdoc/>
-    public bool IsReady => _engine.IsInitialized;
+    public bool IsReady => _index.IsInitialized;
 
     /// <inheritdoc/>
     public SearchEngineCapabilities Capabilities { get; } = new()
@@ -41,22 +41,22 @@ public sealed class SemanticSearchAdapter<T> : ISearchEngine<T>
     /// <summary>
     /// Gets the underlying semantic search capabilities.
     /// </summary>
-    public SemanticSearchCapabilities? SemanticCapabilities => _engine.Capabilities;
+    public SemanticSearchCapabilities? SemanticCapabilities => _index.Capabilities;
 
     /// <summary>
     /// Occurs when the semantic search capabilities change.
     /// </summary>
     public event EventHandler<SemanticSearchCapabilities>? CapabilitiesChanged
     {
-        add => _engine.CapabilitiesChanged += value;
-        remove => _engine.CapabilitiesChanged -= value;
+        add => _index.CapabilitiesChanged += value;
+        remove => _index.CapabilitiesChanged -= value;
     }
 
     /// <inheritdoc/>
     public async Task InitializeAsync(CancellationToken cancellationToken = default)
     {
         ThrowIfDisposed();
-        await _engine.InitializeAsync();
+        _ = await _index.InitializeAsync().ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
@@ -76,7 +76,7 @@ public sealed class SemanticSearchAdapter<T> : ISearchEngine<T>
             _itemsById[item.Id] = item;
         }
 
-        _engine.IndexText(item.Id, text);
+        _index.IndexText(item.Id, text);
         return Task.CompletedTask;
     }
 
@@ -106,7 +106,7 @@ public sealed class SemanticSearchAdapter<T> : ISearchEngine<T>
             }
         }
 
-        _engine.IndexTextBatch(batch);
+        _index.IndexTextBatch(batch);
         return Task.CompletedTask;
     }
 
@@ -121,7 +121,7 @@ public sealed class SemanticSearchAdapter<T> : ISearchEngine<T>
             _itemsById.Remove(id);
         }
 
-        _engine.Remove(id);
+        _index.Remove(id);
         return Task.CompletedTask;
     }
 
@@ -135,7 +135,7 @@ public sealed class SemanticSearchAdapter<T> : ISearchEngine<T>
             _itemsById.Clear();
         }
 
-        _engine.RemoveAll();
+        _index.RemoveAll();
         return Task.CompletedTask;
     }
 
@@ -162,7 +162,7 @@ public sealed class SemanticSearchAdapter<T> : ISearchEngine<T>
             TextMatchType = SemanticSearchTextMatchType.Fuzzy,
         };
 
-        var matches = _engine.SearchText(query, semanticOptions);
+        var matches = _index.SearchText(query, semanticOptions);
         var results = new List<SearchResult<T>>();
 
         lock (_lockObject)
@@ -193,7 +193,7 @@ public sealed class SemanticSearchAdapter<T> : ISearchEngine<T>
     public async Task WaitForIndexingCompleteAsync(TimeSpan timeout)
     {
         ThrowIfDisposed();
-        await _engine.WaitForIndexingCompleteAsync(timeout);
+        await _index.WaitForIndexingCompleteAsync(timeout).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
@@ -204,7 +204,7 @@ public sealed class SemanticSearchAdapter<T> : ISearchEngine<T>
             return;
         }
 
-        _engine.Dispose();
+        _index.Dispose();
 
         lock (_lockObject)
         {
