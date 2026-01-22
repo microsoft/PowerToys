@@ -336,6 +336,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 e.PropertyName == nameof(MonitorInfo.EnableInputSource) ||
                 e.PropertyName == nameof(MonitorInfo.EnableRotation) ||
                 e.PropertyName == nameof(MonitorInfo.EnableColorTemperature) ||
+                e.PropertyName == nameof(MonitorInfo.EnablePowerState) ||
                 e.PropertyName == nameof(MonitorInfo.IsHidden))
             {
                 SignalSettingsUpdated();

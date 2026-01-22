@@ -258,7 +258,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 finally
                 {
                     // Use dispatcher to reset flag after UI updates complete
-                    dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Background, () =>
+                    dispatcher.TryEnqueue(DispatcherQueuePriority.Low, () =>
                     {
                         _isSorting = false;
                     });
