@@ -39,6 +39,13 @@ static std::wstring SanitizeAndNormalize(const std::wstring& input)
         return sanitized; // Return unaltered if normalization fails.
     }
 
+    // If size is 1, it means the normalized form is just a null terminator (empty string).
+    // Return the sanitized input unchanged to preserve the original input.
+    if (size == 1)
+    {
+        return sanitized;
+    }
+
     // Perform the normalization.
     std::wstring normalized;
     normalized.resize(size);

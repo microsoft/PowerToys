@@ -695,6 +695,40 @@ TEST_METHOD(VerifyUnicodeAndWhitespaceNormalizationRegex)
     VerifyNormalizationHelper(UseRegularExpressions);
 }
 
+TEST_METHOD(VerifyDollarSignEndOfLineRegex)
+{
+    CComPtr<IPowerRenameRegEx> renameRegEx;
+    Assert::IsTrue(CPowerRenameRegEx::s_CreateInstance(&renameRegEx) == S_OK);
+    DWORD flags = UseRegularExpressions;
+    Assert::IsTrue(renameRegEx->PutFlags(flags) == S_OK);
+
+    // Test that $ matches end of line and allows appending text
+    PWSTR result = nullptr;
+    Assert::IsTrue(renameRegEx->PutSearchTerm(L"$") == S_OK);
+    Assert::IsTrue(renameRegEx->PutReplaceTerm(L" X") == S_OK);
+    unsigned long index = {};
+    Assert::IsTrue(renameRegEx->Replace(L"foobar", &result, index) == S_OK);
+    Assert::AreEqual(L"foobar X", result);
+    CoTaskMemFree(result);
+}
+
+TEST_METHOD(VerifyDollarSignWithTextRegex)
+{
+    CComPtr<IPowerRenameRegEx> renameRegEx;
+    Assert::IsTrue(CPowerRenameRegEx::s_CreateInstance(&renameRegEx) == S_OK);
+    DWORD flags = UseRegularExpressions;
+    Assert::IsTrue(renameRegEx->PutFlags(flags) == S_OK);
+
+    // Test that word$ matches end of specific word
+    PWSTR result = nullptr;
+    Assert::IsTrue(renameRegEx->PutSearchTerm(L"bar$") == S_OK);
+    Assert::IsTrue(renameRegEx->PutReplaceTerm(L"baz") == S_OK);
+    unsigned long index = {};
+    Assert::IsTrue(renameRegEx->Replace(L"foobar", &result, index) == S_OK);
+    Assert::AreEqual(L"foobaz", result);
+    CoTaskMemFree(result);
+}
+
 #ifndef TESTS_PARTIAL
 };
 }
