@@ -7,6 +7,4 @@ namespace Microsoft.CmdPal.UI.ViewModels.Messages;
 /// <summary>
 /// Message which closes the application. Used by <see cref="QuitCommand"/> via <see cref="BuiltInsCommandProvider"/>.
 /// </summary>
-public record QuitMessage()
-{
-}
+public record QuitMessage;

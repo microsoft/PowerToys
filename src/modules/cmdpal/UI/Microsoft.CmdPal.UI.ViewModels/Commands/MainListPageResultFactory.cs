@@ -146,23 +146,5 @@ internal static class MainListPageResultFactory
 
         return result;
     }
-
-    private static int GetNonEmptyFallbackItemsCount(IList<Scored<IListItem>>? fallbackItems)
-    {
-        int fallbackItemsCount = 0;
-
-        if (fallbackItems is not null)
-        {
-            for (int i = 0; i < fallbackItems.Count; i++)
-            {
-                if (!string.IsNullOrWhiteSpace(fallbackItems[i].Item.Title))
-                {
-                    fallbackItemsCount++;
-                }
-            }
-        }
-
-        return fallbackItemsCount;
-    }
 }
 #pragma warning restore IDE0007 // Use implicit type

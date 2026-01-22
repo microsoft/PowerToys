@@ -5,8 +5,8 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using ManagedCommon;
+using Microsoft.CmdPal.UI.Common.Models;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
-using Microsoft.CmdPal.UI.ViewModels.Settings;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.Extensions.DependencyInjection;
@@ -30,7 +30,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
 
     private string _generatedId = string.Empty;
 
-    private HotkeySettings? _hotkey;
+    private Hotkey? _hotkey;
     private IIconInfo? _initialIcon;
 
     private CommandAlias? Alias { get; set; }
@@ -93,7 +93,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
     // Fallback items
     public string DisplayTitle { get; private set; } = string.Empty;
 
-    public HotkeySettings? Hotkey
+    public Hotkey? Hotkey
     {
         get => _hotkey;
         set

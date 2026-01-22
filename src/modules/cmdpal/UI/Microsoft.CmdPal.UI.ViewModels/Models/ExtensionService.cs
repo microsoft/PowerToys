@@ -2,9 +2,9 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using ManagedCommon;
 using Microsoft.CmdPal.UI.Common.Abstractions;
 using Microsoft.CommandPalette.Extensions;
+using Microsoft.Extensions.Logging;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.AppExtensions;
 using Windows.Foundation;
@@ -14,6 +14,8 @@ namespace Microsoft.CmdPal.UI.ViewModels.Models;
 
 public partial class ExtensionService : IExtensionService, IDisposable
 {
+    private readonly ILogger logger;
+
     public event TypedEventHandler<IExtensionService, IEnumerable<IExtensionWrapper>>? OnExtensionAdded;
 
     public event TypedEventHandler<IExtensionService, IEnumerable<IExtensionWrapper>>? OnExtensionRemoved;
@@ -32,8 +34,10 @@ public partial class ExtensionService : IExtensionService, IDisposable
     private static readonly List<IExtensionWrapper> _installedExtensions = [];
     private static readonly List<IExtensionWrapper> _enabledExtensions = [];
 
-    public ExtensionService()
+    public ExtensionService(ILogger logger)
     {
+        this.logger = logger;
+
         _catalog.PackageInstalling += Catalog_PackageInstalling;
         _catalog.PackageUninstalling += Catalog_PackageUninstalling;
         _catalog.PackageUpdating += Catalog_PackageUpdating;
@@ -99,7 +103,7 @@ public partial class ExtensionService : IExtensionService, IDisposable
                 await _getInstalledExtensionsLock.WaitAsync();
                 try
                 {
-                    var wrappers = await CreateWrappersForExtension(extension);
+                    var wrappers = await CreateWrappersForExtension(extension, logger);
 
                     UpdateExtensionsListsFromWrappers(wrappers);
 
@@ -199,7 +203,7 @@ public partial class ExtensionService : IExtensionService, IDisposable
                 var extensions = await GetInstalledAppExtensionsAsync();
                 foreach (var extension in extensions)
                 {
-                    var wrappers = await CreateWrappersForExtension(extension);
+                    var wrappers = await CreateWrappersForExtension(extension, logger);
                     UpdateExtensionsListsFromWrappers(wrappers);
                 }
             }
@@ -233,7 +237,7 @@ public partial class ExtensionService : IExtensionService, IDisposable
         }
     }
 
-    private static async Task<List<ExtensionWrapper>> CreateWrappersForExtension(AppExtension extension)
+    private static async Task<List<ExtensionWrapper>> CreateWrappersForExtension(AppExtension extension, ILogger logger)
     {
         var (cmdPalProvider, classIds) = await GetCmdPalExtensionPropertiesAsync(extension);
 
@@ -245,16 +249,16 @@ public partial class ExtensionService : IExtensionService, IDisposable
         List<ExtensionWrapper> wrappers = [];
         foreach (var classId in classIds)
         {
-            var extensionWrapper = CreateExtensionWrapper(extension, cmdPalProvider, classId);
+            var extensionWrapper = CreateExtensionWrapper(extension, cmdPalProvider, classId, logger);
             wrappers.Add(extensionWrapper);
         }
 
         return wrappers;
     }
 
-    private static ExtensionWrapper CreateExtensionWrapper(AppExtension extension, IPropertySet cmdPalProvider, string classId)
+    private static ExtensionWrapper CreateExtensionWrapper(AppExtension extension, IPropertySet cmdPalProvider, string classId, ILogger logger)
     {
-        var extensionWrapper = new ExtensionWrapper(extension, classId);
+        var extensionWrapper = new ExtensionWrapper(extension, classId, logger);
 
         var supportedInterfaces = GetSubPropertySet(cmdPalProvider, "SupportedInterfaces");
         if (supportedInterfaces is not null)
@@ -288,7 +292,7 @@ public partial class ExtensionService : IExtensionService, IDisposable
         var installedExtensions = await GetInstalledExtensionsAsync();
         foreach (var installedExtension in installedExtensions)
         {
-            Logger.LogDebug($"Signaling dispose to {installedExtension.ExtensionUniqueId}");
+            Log_ExtensionDisposeSignaled(installedExtension.ExtensionUniqueId);
             try
             {
                 if (installedExtension.IsRunning())
@@ -298,7 +302,7 @@ public partial class ExtensionService : IExtensionService, IDisposable
             }
             catch (Exception ex)
             {
-                Logger.LogError($"Failed to send dispose signal to extension {installedExtension.ExtensionUniqueId}", ex);
+                Log_ExtensionDisposeFailure(installedExtension.ExtensionUniqueId, ex);
             }
         }
     }
@@ -400,23 +404,11 @@ public partial class ExtensionService : IExtensionService, IDisposable
         _enabledExtensions.Remove(extension.First());
     }
 
-    /*
-    ///// <inheritdoc cref="IExtensionService.DisableExtensionIfWindowsFeatureNotAvailable(IExtensionWrapper)"/>
-    //public async Task<bool> DisableExtensionIfWindowsFeatureNotAvailable(IExtensionWrapper extension)
-    //{
-    //    // Only attempt to disable feature if its available.
-    //    if (IsWindowsOptionalFeatureAvailableForExtension(extension.ExtensionClassId))
-    //    {
-    //        return false;
-    //    }
-    //    _log.Warning($"Disabling extension: '{extension.ExtensionDisplayName}' because its feature is absent or unknown");
-    //    // Remove extension from list of enabled extensions to prevent Dev Home from re-querying for this extension
-    //    // for the rest of its process lifetime.
-    //    DisableExtension(extension.ExtensionUniqueId);
-    //    // Update the local settings so the next time the user launches Dev Home the extension will be disabled.
-    //    await _localSettingsService.SaveSettingAsync(extension.ExtensionUniqueId + "-ExtensionDisabled", true);
-    //    return true;
-    //} */
+    [LoggerMessage(Level = LogLevel.Debug, Message = "Signaling dispose to {ExtensionUniqueId}")]
+    private partial void Log_ExtensionDisposeSignaled(string extensionUniqueId);
+
+    [LoggerMessage(Level = LogLevel.Error, Message = "Failed to signal dispose to {ExtensionUniqueId}")]
+    private partial void Log_ExtensionDisposeFailure(string extensionUniqueId, Exception ex);
 }
 
 internal record struct IsExtensionResult(bool IsExtension, AppExtension? Extension)

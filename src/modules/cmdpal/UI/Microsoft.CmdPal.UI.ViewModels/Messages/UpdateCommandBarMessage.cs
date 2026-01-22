@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System.ComponentModel;
-using Microsoft.CmdPal.Core.Common;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
@@ -12,9 +11,7 @@ namespace Microsoft.CmdPal.UI.ViewModels.Messages;
 /// <summary>
 /// Used to update the command bar at the bottom to reflect the commands for a list item
 /// </summary>
-public record UpdateCommandBarMessage(ICommandBarContext? ViewModel)
-{
-}
+public record UpdateCommandBarMessage(ICommandBarContext? ViewModel);
 
 public interface IContextMenuContext : INotifyPropertyChanged
 {

@@ -4,7 +4,7 @@
 
 namespace Microsoft.CmdPal.UI.ViewModels.Settings;
 
-public static class Helper
+public static class LayoutMapHelper
 {
     private static readonly global::PowerToys.Interop.LayoutMapManaged LayoutMap = new();
 

@@ -2,26 +2,26 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Runtime.InteropServices;
-using ManagedCommon;
 using Microsoft.CmdPal.UI.Events;
+using Microsoft.CmdPal.UI.Services;
+using Microsoft.Extensions.Logging;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Dispatching;
 using Microsoft.Windows.AppLifecycle;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.System.Com;
-using Windows.Win32.UI.WindowsAndMessaging;
 
 namespace Microsoft.CmdPal.UI;
 
 // cribbed heavily from
 //
 // https://github.com/microsoft/WindowsAppSDK-Samples/tree/main/Samples/AppLifecycle/Instancing/cs2/cs-winui-packaged/CsWinUiDesktopInstancing
-internal sealed class Program
+internal sealed partial class Program
 {
     private static DispatcherQueueSynchronizationContext? uiContext;
     private static App? app;
+    private static ILogger logger = new CmdPalLogger();
 
     // LOAD BEARING
     //
@@ -37,35 +37,8 @@ internal sealed class Program
             return 0;
         }
 
-        try
-        {
-            Logger.InitializeLogger("\\CmdPal\\Logs\\");
-        }
-        catch (COMException e)
-        {
-            // This is unexpected. For the sake of debugging:
-            // pop a message box
-            PInvoke.MessageBox(
-                (HWND)IntPtr.Zero,
-                $"Failed to initialize the logger. COMException: \r{e.Message}",
-                "Command Palette",
-                MESSAGEBOX_STYLE.MB_OK | MESSAGEBOX_STYLE.MB_ICONERROR);
-            return 0;
-        }
-        catch (Exception e2)
-        {
-            // This is unexpected. For the sake of debugging:
-            // pop a message box
-            PInvoke.MessageBox(
-                (HWND)IntPtr.Zero,
-                $"Failed to initialize the logger. Unknown Exception: \r{e2.Message}",
-                "Command Palette",
-                MESSAGEBOX_STYLE.MB_OK | MESSAGEBOX_STYLE.MB_ICONERROR);
-            return 0;
-        }
-
-        Logger.LogDebug($"Starting at {DateTime.UtcNow}");
-        PowerToysTelemetry.Log.WriteEvent(new CmdPalProcessStarted());
+        Log_AppStart(logger, DateTime.UtcNow);
+        PowerToysTelemetry.Log.WriteEvent(new ProcessStartedEvent());
 
         WinRT.ComWrappersSupport.InitializeComWrappers();
         var isRedirect = DecideRedirection();
@@ -75,7 +48,7 @@ internal sealed class Program
             {
                 uiContext = new DispatcherQueueSynchronizationContext(DispatcherQueue.GetForCurrentThread());
                 SynchronizationContext.SetSynchronizationContext(uiContext);
-                app = new App();
+                app = new App(logger);
             });
         }
 
@@ -90,13 +63,13 @@ internal sealed class Program
 
         if (keyInstance.IsCurrent)
         {
-            PowerToysTelemetry.Log.WriteEvent(new ColdLaunch());
+            PowerToysTelemetry.Log.WriteEvent(new ColdLaunchEvent());
             keyInstance.Activated += OnActivated;
         }
         else
         {
             isRedirect = true;
-            PowerToysTelemetry.Log.WriteEvent(new ReactivateInstance());
+            PowerToysTelemetry.Log.WriteEvent(new ReactivateInstanceEvent());
             RedirectActivationTo(args, keyInstance);
         }
 
@@ -122,11 +95,11 @@ internal sealed class Program
             }
             catch (OperationCanceledException)
             {
-                Logger.LogError($"Failed to activate existing instance; timed out after {redirectTimeout}.");
+                Log_FailedToActivateTimeout(logger, redirectTimeout);
             }
             catch (Exception ex)
             {
-                Logger.LogError("Failed to activate existing instance", ex);
+                Log_FailedToActivate(logger, ex);
             }
             finally
             {
@@ -155,4 +128,13 @@ internal sealed class Program
             mainWindow.HandleLaunchNonUI(args);
         }
     }
+
+    [LoggerMessage(Level = LogLevel.Debug, Message = "Starting at {startTime}")]
+    static partial void Log_AppStart(ILogger logger, DateTime startTime);
+
+    [LoggerMessage(Level = LogLevel.Error, Message = "Failed to activate existing instance; timed out after {redirectTimeout}.")]
+    static partial void Log_FailedToActivateTimeout(ILogger logger, TimeSpan redirectTimeout);
+
+    [LoggerMessage(Level = LogLevel.Error, Message = "Failed to activate existing instance")]
+    static partial void Log_FailedToActivate(ILogger logger, Exception ex);
 }

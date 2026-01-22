@@ -4,6 +4,4 @@
 
 namespace Microsoft.CmdPal.UI.ViewModels.Messages;
 
-public record ShowWindowMessage(IntPtr Hwnd)
-{
-}
+public record ShowWindowMessage(IntPtr Hwnd);

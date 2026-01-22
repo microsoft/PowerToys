@@ -4,7 +4,7 @@
 
 using System.Text.Json.Serialization;
 
-namespace Microsoft.CmdPal.UI.ViewModels;
+namespace Microsoft.CmdPal.UI.Common.Models;
 
 public class CommandAlias
 {

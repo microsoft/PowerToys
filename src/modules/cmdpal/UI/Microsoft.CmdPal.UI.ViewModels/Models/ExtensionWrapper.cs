@@ -3,9 +3,9 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Runtime.InteropServices;
-using ManagedCommon;
 using Microsoft.CmdPal.UI.Common.Abstractions;
 using Microsoft.CommandPalette.Extensions;
+using Microsoft.Extensions.Logging;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.AppExtensions;
 using Windows.Win32;
@@ -14,10 +14,11 @@ using WinRT;
 
 namespace Microsoft.CmdPal.UI.ViewModels.Models;
 
-public class ExtensionWrapper : IExtensionWrapper
+public partial class ExtensionWrapper : IExtensionWrapper
 {
     private const int HResultRpcServerNotRunning = -2147023174;
 
+    private readonly ILogger logger;
     private readonly string _appUserModelId;
     private readonly string _extensionId;
 
@@ -31,8 +32,9 @@ public class ExtensionWrapper : IExtensionWrapper
 
     private IExtension? _extensionObject;
 
-    public ExtensionWrapper(AppExtension appExtension, string classId)
+    public ExtensionWrapper(AppExtension appExtension, string classId, ILogger logger)
     {
+        this.logger = logger;
         PackageDisplayName = appExtension.Package.DisplayName;
         ExtensionDisplayName = appExtension.DisplayName;
         PackageFullName = appExtension.Package.Id.FullName;
@@ -104,7 +106,7 @@ public class ExtensionWrapper : IExtensionWrapper
             {
                 if (!IsRunning())
                 {
-                    Logger.LogDebug($"Starting {ExtensionDisplayName} ({ExtensionClassId})");
+                    Log_StartingExtension(ExtensionDisplayName, ExtensionClassId);
 
                     unsafe
                     {
@@ -120,7 +122,7 @@ public class ExtensionWrapper : IExtensionWrapper
 
                             if (hr.Value == -2147024893)
                             {
-                                Logger.LogError($"Failed to find {ExtensionDisplayName}: {hr}. It may have been uninstalled or deleted.");
+                                Log_FailureToFindExtension(ExtensionDisplayName, hr);
 
                                 // We don't really need to throw this exception.
                                 // We'll just return out nothing.
@@ -128,7 +130,7 @@ public class ExtensionWrapper : IExtensionWrapper
                             }
                             else if (hr.Value != 0)
                             {
-                                Logger.LogError($"Failed to find {ExtensionDisplayName}: {hr.Value}");
+                                Log_FailureToFindExtension(ExtensionDisplayName, hr);
                             }
 
                             // Marshal.ThrowExceptionForHR(hr);
@@ -136,7 +138,7 @@ public class ExtensionWrapper : IExtensionWrapper
                         }
                         catch (Exception e)
                         {
-                            Logger.LogDebug($"Failed to start {ExtensionDisplayName}. ex: {e.Message}");
+                            Log_FailedToStartExtension(ExtensionDisplayName, e);
                         }
                         finally
                         {
@@ -201,4 +203,13 @@ public class ExtensionWrapper : IExtensionWrapper
     public void AddProviderType(ProviderType providerType) => _providerTypes.Add(providerType);
 
     public bool HasProviderType(ProviderType providerType) => _providerTypes.Contains(providerType);
+
+    [LoggerMessage(Level = LogLevel.Debug, Message = "Starting {extensionDisplayName} ({extensionClassId})")]
+    private partial void Log_StartingExtension(string extensionDisplayName, string extensionClassId);
+
+    [LoggerMessage(Level = LogLevel.Error, Message = "Failed to find {extensionDisplayName}. HRESULT: {hResult}")]
+    private partial void Log_FailureToFindExtension(string extensionDisplayName, int hResult);
+
+    [LoggerMessage(Level = LogLevel.Debug, Message = "Failed to start {ExtensionDisplayName}.")]
+    private partial void Log_FailedToStartExtension(string extensionDisplayName, Exception ex);
 }

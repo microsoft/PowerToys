@@ -4,7 +4,7 @@
 
 using Windows.Graphics;
 
-namespace Microsoft.CmdPal.UI.ViewModels;
+namespace Microsoft.CmdPal.UI.Common.Models;
 
 public sealed class WindowPosition
 {

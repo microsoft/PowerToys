@@ -11,12 +11,12 @@ namespace Microsoft.CmdPal.UI.Events;
 
 [EventData]
 [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)]
-public class ReactivateInstance : EventBase, IEvent
+public class ColdLaunchEvent : EventBase, IEvent
 {
     public PartA_PrivTags PartA_PrivTags => PartA_PrivTags.ProductAndServiceUsage;
 
-    public ReactivateInstance()
+    public ColdLaunchEvent()
     {
-        EventName = "CmdPal_ReactivateInstance";
+        EventName = "CmdPal_ColdLaunch";
     }
 }

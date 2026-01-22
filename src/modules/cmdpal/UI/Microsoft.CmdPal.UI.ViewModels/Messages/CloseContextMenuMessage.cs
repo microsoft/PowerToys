@@ -7,6 +7,4 @@ namespace Microsoft.CmdPal.UI.ViewModels.Messages;
 /// <summary>
 /// Used to announce that a context menu should close
 /// </summary>
-public record CloseContextMenuMessage
-{
-}
+public record CloseContextMenuMessage;

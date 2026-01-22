@@ -7,6 +7,4 @@ namespace Microsoft.CmdPal.UI.ViewModels.Messages;
 /// <summary>
 /// Used to navigate down one page in the page when pressing the PageDown key in the SearchBox.
 /// </summary>
-public record NavigatePageDownCommand
-{
-}
+public record NavigatePageDownCommand;

@@ -2,11 +2,11 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-namespace Microsoft.CmdPal.UI.ViewModels;
+namespace Microsoft.CmdPal.UI.Common.Models;
 
-public enum UserTheme
+public record HistoryItem
 {
-    Default,
-    Light,
-    Dark,
+    public required string CommandId { get; set; }
+
+    public required int Uses { get; set; }
 }

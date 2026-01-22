@@ -4,6 +4,10 @@
 
 using Windows.UI;
 
-namespace Microsoft.CmdPal.UI.ViewModels.Services;
+namespace Microsoft.CmdPal.UI.Common.Models;
 
-public sealed record AcrylicBackdropParameters(Color TintColor, Color FallbackColor, float TintOpacity, float LuminosityOpacity);
+public sealed record AcrylicBackdropParameters(
+    Color TintColor,
+    Color FallbackColor,
+    float TintOpacity,
+    float LuminosityOpacity);

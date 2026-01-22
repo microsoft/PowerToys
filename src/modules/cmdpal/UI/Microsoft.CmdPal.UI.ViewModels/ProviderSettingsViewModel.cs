@@ -6,9 +6,9 @@ using System.Diagnostics.CodeAnalysis;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.UI.Common.Abstractions;
+using Microsoft.CmdPal.UI.Common.Models;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Properties;
-using Microsoft.CmdPal.UI.ViewModels;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 

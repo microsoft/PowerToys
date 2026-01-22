@@ -4,6 +4,4 @@
 
 namespace Microsoft.CmdPal.UI.ViewModels.Messages;
 
-public record FocusSearchBoxMessage()
-{
-}
+public record FocusSearchBoxMessage;

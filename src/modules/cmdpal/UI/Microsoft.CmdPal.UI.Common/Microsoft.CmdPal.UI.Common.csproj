@@ -19,6 +19,7 @@
   </ItemGroup>
 
 <ItemGroup>
+	<PackageReference Include="CommunityToolkit.Mvvm" />
 	<PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
 	<PackageReference Include="Microsoft.WindowsAppSDK" />
 	<PackageReference Include="Microsoft.Windows.CsWin32">
@@ -31,6 +32,7 @@
 
 	
 <ItemGroup>
+  <ProjectReference Include="..\..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
   <ProjectReference Include="..\..\SDK\Microsoft.CommandPalette.Extensions.Toolkit\Microsoft.CommandPalette.Extensions.Toolkit.csproj" />
 </ItemGroup>
 	

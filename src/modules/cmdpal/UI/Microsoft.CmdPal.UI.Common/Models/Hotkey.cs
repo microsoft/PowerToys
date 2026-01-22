@@ -6,13 +6,13 @@ using System.Globalization;
 using System.Text;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.CmdPal.UI.ViewModels.Settings;
+namespace Microsoft.CmdPal.UI.Common.Models;
 
-public record HotkeySettings// : ICmdLineRepresentable
+public record Hotkey
 {
     private const int VKTAB = 0x09;
 
-    public HotkeySettings()
+    public Hotkey()
     {
         Win = false;
         Ctrl = false;
@@ -22,14 +22,14 @@ public record HotkeySettings// : ICmdLineRepresentable
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="HotkeySettings"/> class.
+    /// Initializes a new instance of the <see cref="Hotkey"/> class.
     /// </summary>
     /// <param name="win">Should Windows key be used</param>
     /// <param name="ctrl">Should Ctrl key be used</param>
     /// <param name="alt">Should Alt key be used</param>
     /// <param name="shift">Should Shift key be used</param>
     /// <param name="code">Go to https://learn.microsoft.com/windows/win32/inputdev/virtual-key-codes to see list of v-keys</param>
-    public HotkeySettings(bool win, bool ctrl, bool alt, bool shift, int code)
+    public Hotkey(bool win, bool ctrl, bool alt, bool shift, int code)
     {
         Win = win;
         Ctrl = ctrl;
@@ -84,7 +84,7 @@ public record HotkeySettings// : ICmdLineRepresentable
 
         if (Code > 0)
         {
-            var localKey = Helper.GetKeyName((uint)Code);
+            var localKey = LayoutMapHelper.GetKeyName((uint)Code);
             output.Append(localKey);
         }
         else if (output.Length >= 2)
@@ -135,7 +135,7 @@ public record HotkeySettings// : ICmdLineRepresentable
                     shortcutList.Add(Code);
                     break;
                 default:
-                    var localKey = Helper.GetKeyName((uint)Code);
+                    var localKey = LayoutMapHelper.GetKeyName((uint)Code);
                     shortcutList.Add(localKey);
                     break;
             }
@@ -194,7 +194,7 @@ public record HotkeySettings// : ICmdLineRepresentable
             }
         }
 
-        result = new HotkeySettings(win, ctrl, alt, shift, code);
+        result = new Hotkey(win, ctrl, alt, shift, code);
         return true;
     }
 
@@ -216,7 +216,7 @@ public record HotkeySettings// : ICmdLineRepresentable
         // Alias
         else
         {
-            keyCode = (int)Helper.GetKeyValue(key);
+            keyCode = (int)LayoutMapHelper.GetKeyValue(key);
             return keyCode != 0;
         }
     }

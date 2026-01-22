@@ -7,6 +7,4 @@ namespace Microsoft.CmdPal.UI.ViewModels.Messages;
 /// <summary>
 /// Used to perform a list item's secondary command when the user presses ctrl+enter in the search box
 /// </summary>
-public record ActivateSecondaryCommandMessage
-{
-}
+public record ActivateSecondaryCommandMessage;

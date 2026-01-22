@@ -8,4 +8,4 @@ namespace Microsoft.CmdPal.UI.ViewModels.Messages;
 /// Message sent when a search query is executed in the Command Palette.
 /// Used to track session search activity for telemetry.
 /// </summary>
-public record SearchQueryMessage();
+public record SearchQueryMessage;

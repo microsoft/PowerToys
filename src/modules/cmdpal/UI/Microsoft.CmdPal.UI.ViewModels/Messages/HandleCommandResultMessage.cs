@@ -7,6 +7,4 @@ using Microsoft.CommandPalette.Extensions;
 
 namespace Microsoft.CmdPal.UI.ViewModels.Messages;
 
-public record HandleCommandResultMessage(ExtensionObject<ICommandResult> Result)
-{
-}
+public record HandleCommandResultMessage(ExtensionObject<ICommandResult> Result);

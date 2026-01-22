@@ -2,8 +2,10 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using Microsoft.CmdPal.UI.Services;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.CmdPal.UI.ViewModels.BuiltinCommands;
 
@@ -12,10 +14,12 @@ namespace Microsoft.CmdPal.UI.ViewModels.BuiltinCommands;
 /// </summary>
 public sealed partial class BuiltInsCommandProvider : CommandProvider
 {
+    private readonly ILogger logger;
+
     private readonly OpenSettingsCommand openSettings = new();
     private readonly QuitCommand quitCommand = new();
     private readonly FallbackReloadItem _fallbackReloadItem = new();
-    private readonly FallbackLogItem _fallbackLogItem = new();
+    private readonly FallbackLogItem _fallbackLogItem;
     private readonly NewExtensionPage _newExtension = new();
 
     public override ICommandItem[] TopLevelCommands() =>
@@ -37,8 +41,12 @@ public sealed partial class BuiltInsCommandProvider : CommandProvider
             _fallbackLogItem,
         ];
 
-    public BuiltInsCommandProvider()
+    public BuiltInsCommandProvider(ILogger logger)
     {
+        this.logger = logger;
+
+        _fallbackLogItem = new((CmdPalLogger)logger);
+
         Id = "com.microsoft.cmdpal.builtin.core";
         DisplayName = Properties.Resources.builtin_display_name;
         Icon = IconHelpers.FromRelativePath("Assets\\StoreLogo.scale-200.png");

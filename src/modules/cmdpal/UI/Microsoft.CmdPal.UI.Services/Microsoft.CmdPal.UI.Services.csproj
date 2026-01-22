@@ -13,4 +13,10 @@
 		<!-- Disable SA1313 for Primary Constructor fields conflict https://learn.microsoft.com/dotnet/csharp/programming-guide/classes-and-structs/instance-constructors#primary-constructors  -->
 		<NoWarn>SA1313;</NoWarn>
 	</PropertyGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
+	  <ProjectReference Include="..\..\SDK\Microsoft.CommandPalette.Extensions.Toolkit\Microsoft.CommandPalette.Extensions.Toolkit.csproj" />
+	  <ProjectReference Include="..\Microsoft.CmdPal.UI.Common\Microsoft.CmdPal.UI.Common.csproj" />
+	</ItemGroup>
 </Project>

@@ -4,8 +4,9 @@
 
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using Microsoft.CmdPal.UI.Common.Models;
+using Microsoft.CmdPal.UI.Services;
 using Microsoft.CmdPal.UI.ViewModels.Services;
-using Microsoft.CmdPal.UI.ViewModels.Settings;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
@@ -25,14 +26,16 @@ public partial class SettingsViewModel : INotifyPropertyChanged
         TimeSpan.FromSeconds(180),
     ];
 
-    private readonly SettingsModel _settings;
+    private readonly SettingsService _settingsService;
     private readonly TopLevelCommandManager _topLevelCommandManager;
+
+    private readonly SettingsModel _settings;
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
     public AppearanceSettingsViewModel Appearance { get; }
 
-    public HotkeySettings? Hotkey
+    public Hotkey? Hotkey
     {
         get => _settings.Hotkey;
         set
@@ -179,9 +182,14 @@ public partial class SettingsViewModel : INotifyPropertyChanged
 
     public SettingsExtensionsViewModel Extensions { get; }
 
-    public SettingsViewModel(SettingsModel settings, TopLevelCommandManager topLevelCommandManager, TaskScheduler scheduler, IThemeService themeService)
+    public SettingsViewModel(
+        SettingsService settingsService,
+        TopLevelCommandManager topLevelCommandManager,
+        TaskScheduler scheduler,
+        IThemeService themeService)
     {
-        _settings = settings;
+        _settingsService = settingsService;
+        _settings = _settingsService.CurrentSettings;
         _topLevelCommandManager = topLevelCommandManager;
 
         Appearance = new AppearanceSettingsViewModel(themeService, _settings);
@@ -195,7 +203,7 @@ public partial class SettingsViewModel : INotifyPropertyChanged
 
         foreach (var item in activeProviders)
         {
-            var providerSettings = settings.GetProviderSettings(item);
+            var providerSettings = _settings.GetProviderSettings(item);
 
             var settingsModel = new ProviderSettingsViewModel(item, providerSettings, _settings);
             CommandProviders.Add(settingsModel);
@@ -244,5 +252,5 @@ public partial class SettingsViewModel : INotifyPropertyChanged
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(FallbackRankings)));
     }
 
-    private void Save() => SettingsModel.SaveSettings(_settings);
+    private void Save() => _settingsService.SaveSettings(_settings);
 }

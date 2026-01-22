@@ -4,4 +4,4 @@
 
 namespace Microsoft.CmdPal.UI.ViewModels.Messages;
 
-public record ReloadFinishedMessage();
+public record ReloadFinishedMessage;

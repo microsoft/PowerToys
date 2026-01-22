@@ -4,6 +4,7 @@
 
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
+using Microsoft.CmdPal.UI.ViewModels.Messages;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 

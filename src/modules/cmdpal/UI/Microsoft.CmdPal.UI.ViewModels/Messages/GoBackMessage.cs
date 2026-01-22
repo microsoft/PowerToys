@@ -4,7 +4,5 @@
 
 namespace Microsoft.CmdPal.UI.ViewModels.Messages;
 
-public record GoBackMessage(bool WithAnimation = true, bool FocusSearch = true)
-{
-    // TODO! sticking these properties here feels like leaking the UI into the models
-}
+// TODO! sticking these properties here feels like leaking the UI into the models
+public record GoBackMessage(bool WithAnimation = true, bool FocusSearch = true);

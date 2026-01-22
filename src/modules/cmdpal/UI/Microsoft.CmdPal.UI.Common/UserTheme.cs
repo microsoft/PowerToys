@@ -2,12 +2,11 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-namespace Microsoft.CmdPal.UI.ViewModels;
+namespace Microsoft.CmdPal.UI.Common;
 
-public enum ColorizationMode
+public enum UserTheme
 {
-    None,
-    WindowsAccentColor,
-    CustomColor,
-    Image,
+    Default,
+    Light,
+    Dark,
 }

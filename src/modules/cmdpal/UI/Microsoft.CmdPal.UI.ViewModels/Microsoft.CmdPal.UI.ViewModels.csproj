@@ -60,9 +60,9 @@
 
     <ProjectReference Include="..\..\Extensions\Microsoft.CmdPal.Ext.Apps\Microsoft.CmdPal.Ext.Apps.csproj" />
 
-    <ProjectReference Include="..\..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
-
     <ProjectReference Include="..\Microsoft.CmdPal.UI.Common\Microsoft.CmdPal.UI.Common.csproj" />
+
+    <ProjectReference Include="..\Microsoft.CmdPal.UI.Services\Microsoft.CmdPal.UI.Services.csproj" />
 
   </ItemGroup>
 

@@ -6,6 +6,8 @@ using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.WinUI;
+using Microsoft.CmdPal.UI.Common;
+using Microsoft.CmdPal.UI.Common.Models;
 using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.UI;
 using Microsoft.UI.Dispatching;
