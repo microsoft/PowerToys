@@ -12,6 +12,7 @@ using SingleKeyToTextRemapTable = SingleKeyRemapTable;
 using ShortcutRemapTable = std::map<Shortcut, RemapShortcut>;
 using AppSpecificShortcutRemapTable = std::map<std::wstring, ShortcutRemapTable>;
 using MouseButtonRemapTable = std::unordered_map<MouseButton, KeyShortcutTextUnion>;
+using KeyToMouseRemapTable = std::unordered_map<DWORD, MouseButton>;
 
 class MappingConfiguration
 {
@@ -39,6 +40,9 @@ public:
     // Function to clear the mouse button remapping table
     void ClearMouseButtonRemaps();
 
+    // Function to clear the key to mouse remapping table
+    void ClearKeyToMouseRemaps();
+
     // Function to add a new single key to key remapping
     bool AddSingleKeyRemap(const DWORD& originalKey, const KeyShortcutTextUnion& newRemapKey);
 
@@ -53,6 +57,9 @@ public:
 
     // Function to add a new mouse button remapping
     bool AddMouseButtonRemap(const MouseButton& originalButton, const KeyShortcutTextUnion& newRemapTarget);
+
+    // Function to add a new key to mouse remapping
+    bool AddKeyToMouseRemap(const DWORD& originalKey, const MouseButton& targetButton);
 
     // The map members and their mutexes are left as public since the maps are used extensively in dllmain.cpp.
     // Maps which store the remappings for each of the features. The bool fields should be initialized to false. They are used to check the current state of the shortcut (i.e is that particular shortcut currently pressed down or not).
@@ -77,6 +84,9 @@ public:
     // Stores mouse button remappings
     MouseButtonRemapTable mouseButtonReMap;
 
+    // Stores key to mouse remappings
+    KeyToMouseRemapTable keyToMouseReMap;
+
     // Stores the current configuration name.
     std::wstring currentConfig = KeyboardManagerConstants::DefaultConfiguration;
 
@@ -86,4 +96,5 @@ private:
     bool LoadShortcutRemaps(const json::JsonObject& jsonData, const std::wstring& objectName);
     bool LoadAppSpecificShortcutRemaps(const json::JsonObject& remapShortcutsData);
     bool LoadMouseButtonRemaps(const json::JsonObject& jsonData);
+    bool LoadKeyToMouseRemaps(const json::JsonObject& jsonData);
 };

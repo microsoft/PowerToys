@@ -38,6 +38,18 @@ std::optional<MouseButtonRemapTable::iterator> State::GetMouseButtonRemap(const 
     return std::nullopt;
 }
 
+// Function to get the target mouse button for a key remap. Returns nullopt if it isn't remapped
+std::optional<MouseButton> State::GetKeyToMouseRemap(const DWORD& originalKey)
+{
+    auto it = keyToMouseReMap.find(originalKey);
+    if (it != keyToMouseReMap.end())
+    {
+        return it->second;
+    }
+
+    return std::nullopt;
+}
+
 bool State::CheckShortcutRemapInvoked(const std::optional<std::wstring>& appName)
 {
     // Assumes appName exists in the app-specific remap table

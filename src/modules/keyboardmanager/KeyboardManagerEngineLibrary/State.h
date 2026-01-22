@@ -18,6 +18,9 @@ public:
     // Function to get a mouse button remap given the source button. Returns nullopt if it isn't remapped
     std::optional<MouseButtonRemapTable::iterator> GetMouseButtonRemap(const MouseButton& originalButton);
 
+    // Function to get a mouse button target given the source key. Returns nullopt if it isn't remapped
+    std::optional<MouseButton> GetKeyToMouseRemap(const DWORD& originalKey);
+
     bool CheckShortcutRemapInvoked(const std::optional<std::wstring>& appName);
 
     // Function to get the source and target of a shortcut remap given the source shortcut. Returns nullopt if it isn't remapped

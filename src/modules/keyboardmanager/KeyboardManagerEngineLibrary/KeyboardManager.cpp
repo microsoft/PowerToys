@@ -306,6 +306,14 @@ intptr_t KeyboardManager::HandleKeyboardHookEvent(LowlevelKeyboardEvent* data) n
         return 1;
     }
 
+    // Handle key-to-mouse remap (pressing a key triggers a mouse click)
+    intptr_t KeyToMouseRemapResult = KeyboardEventHandlers::HandleKeyToMouseRemapEvent(inputHandler, data, state);
+
+    if (KeyToMouseRemapResult == 1)
+    {
+        return 1;
+    }
+
     /* This feature has not been enabled (code from proof of concept stage)
         // Remap a key to behave like a modifier instead of a toggle
         intptr_t SingleKeyToggleToModResult = KeyboardEventHandlers::HandleSingleKeyToggleToModEvent(inputHandler, data, keyboardManagerState);
