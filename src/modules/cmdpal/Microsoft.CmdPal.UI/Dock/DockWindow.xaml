@@ -20,6 +20,19 @@
         HorizontalAlignment="Stretch"
         VerticalAlignment="Stretch">
 
+        <!--  Colorization overlay for transparent backdrop  -->
+        <Border
+            x:Name="ColorizationOverlay"
+            HorizontalAlignment="Stretch"
+            VerticalAlignment="Stretch"
+            IsHitTestVisible="False"
+            Opacity="{x:Bind WindowViewModel.ColorizationOpacity, Mode=OneWay}"
+            Visibility="{x:Bind WindowViewModel.ShowColorizationOverlay, Mode=OneWay}">
+            <Border.Background>
+                <SolidColorBrush Color="{x:Bind WindowViewModel.ColorizationColor, Mode=OneWay}" />
+            </Border.Background>
+        </Border>
+
         <cpcontrols:BlurImageControl
             HorizontalAlignment="Stretch"
             VerticalAlignment="Stretch"

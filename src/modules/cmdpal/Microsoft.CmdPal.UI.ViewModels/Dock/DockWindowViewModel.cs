@@ -4,6 +4,7 @@
 
 using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.CmdPal.UI.ViewModels.Services;
+using Microsoft.CmdPal.UI.ViewModels.Settings;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml.Media;
 using Windows.UI;
@@ -39,6 +40,15 @@ public partial class DockWindowViewModel : ObservableObject, IDisposable
     [ObservableProperty]
     public partial bool ShowBackgroundImage { get; private set; }
 
+    [ObservableProperty]
+    public partial bool ShowColorizationOverlay { get; private set; }
+
+    [ObservableProperty]
+    public partial Color ColorizationColor { get; private set; }
+
+    [ObservableProperty]
+    public partial double ColorizationOpacity { get; private set; }
+
     public DockWindowViewModel(IThemeService themeService)
     {
         _themeService = themeService;
@@ -65,6 +75,11 @@ public partial class DockWindowViewModel : ObservableObject, IDisposable
         BackgroundImageBlurAmount = snapshot.BlurAmount;
 
         ShowBackgroundImage = BackgroundImageSource != null;
+
+        // Colorization overlay for transparent backdrop
+        ShowColorizationOverlay = snapshot.Backdrop == DockBackdrop.Transparent && snapshot.TintIntensity > 0;
+        ColorizationColor = snapshot.Tint;
+        ColorizationOpacity = snapshot.TintIntensity;
     }
 
     public void Dispose()

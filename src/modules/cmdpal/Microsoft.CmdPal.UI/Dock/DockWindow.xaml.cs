@@ -232,13 +232,12 @@ public sealed partial class DockWindow : WindowEx,
     {
         DispatcherQueue.TryEnqueue(() =>
         {
+            // We only need to handle acrylic here.
+            // Transparent background is handled directly in XAML by binding to
+            // the DockWindowViewModel's ColorizationColor properties.
             if (_settings.Backdrop == DockBackdrop.Acrylic)
             {
                 UpdateAcrylic();
-            }
-            else if (_settings.Backdrop == DockBackdrop.Transparent)
-            {
-                // TODO use the colorization to apply a tint to the transparent backdrop
             }
 
             // ActualTheme / RequestedTheme sync,
