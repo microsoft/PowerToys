@@ -10,7 +10,7 @@ parameters:
     default: {}
 
 steps:
-  - task: EsrpCodeSigning@5
+  - task: EsrpCodeSigning@6
     displayName: 🔏 ${{ parameters.displayName }}
     inputs:
       ConnectedServiceName: ${{ parameters.signingIdentity.serviceName }}

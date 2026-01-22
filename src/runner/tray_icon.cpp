@@ -273,12 +273,19 @@ static HICON get_icon(Theme theme)
 {
     std::wstring icon_path = get_module_folderpath();
     icon_path += theme == Theme::Dark ? L"\\svgs\\PowerToysWhite.ico" : L"\\svgs\\PowerToysDark.ico";
-    return static_cast<HICON>(LoadImage(NULL,
+    Logger::trace(L"get_icon: Loading icon from path: {}", icon_path);
+
+    HICON icon = static_cast<HICON>(LoadImage(NULL,
                                         icon_path.c_str(),
                                         IMAGE_ICON,
                                         0,
                                         0,
                                         LR_LOADFROMFILE | LR_DEFAULTSIZE | LR_SHARED));
+    if (!icon)
+    {
+        Logger::warn(L"get_icon: Failed to load icon from {}, error: {}", icon_path, GetLastError());
+    }
+    return icon;
 }
 
 
@@ -374,13 +381,45 @@ void set_tray_icon_visible(bool shouldIconBeVisible)
 
 void set_tray_icon_theme_adaptive(bool theme_adaptive)
 {
-    theme_adaptive_enabled = theme_adaptive;
+    Logger::info(L"set_tray_icon_theme_adaptive: Called with theme_adaptive={}, current theme_adaptive_enabled={}",
+                 theme_adaptive, theme_adaptive_enabled);
+
     auto h_instance = reinterpret_cast<HINSTANCE>(&__ImageBase);
-    HICON const icon = theme_adaptive ? get_icon(theme_listener.AppTheme) : LoadIcon(h_instance, MAKEINTRESOURCE(APPICON));
+    HICON icon = nullptr;
+
+    if (theme_adaptive)
+    {
+        icon = get_icon(theme_listener.AppTheme);
+        if (!icon)
+        {
+            Logger::warn(L"set_tray_icon_theme_adaptive: Failed to load theme adaptive icon, falling back to default");
+        }
+    }
+
+    // If not requesting adaptive icon, or if adaptive icon failed to load, use default icon
+    if (!icon)
+    {
+        icon = LoadIcon(h_instance, MAKEINTRESOURCE(APPICON));
+        if (theme_adaptive && icon)
+        {
+            // We requested adaptive but had to fall back, so update the flag
+            theme_adaptive = false;
+            Logger::info(L"set_tray_icon_theme_adaptive: Using default icon as fallback");
+        }
+    }
+
+    theme_adaptive_enabled = theme_adaptive;
+
     if (icon)
     {
         tray_icon_data.hIcon = icon;
-        Shell_NotifyIcon(NIM_MODIFY, &tray_icon_data);
+        BOOL result = Shell_NotifyIcon(NIM_MODIFY, &tray_icon_data);
+        Logger::info(L"set_tray_icon_theme_adaptive: Icon updated, theme_adaptive_enabled={}, Shell_NotifyIcon result={}",
+                     theme_adaptive_enabled, result);
+    }
+    else
+    {
+        Logger::error(L"set_tray_icon_theme_adaptive: Failed to load any icon");
     }
 }
 

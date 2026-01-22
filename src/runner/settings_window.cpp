@@ -181,7 +181,10 @@ void dispatch_json_config_to_modules(const json::JsonObject& powertoys_configs)
             const auto properties = settings.GetNamedObject(L"properties");
 
             // Currently, only PowerToys Run settings use the 'hotkey_changed' property.
-            json::get(properties, L"hotkey_changed", hotkeyUpdated, true);
+            if (properties.HasKey(L"hotkey_changed"))
+            {
+                json::get(properties, L"hotkey_changed", hotkeyUpdated, true);
+            }
         }
         
         send_json_config_to_module(powertoy_element.Key().c_str(), element.c_str(), hotkeyUpdated);
@@ -214,6 +217,12 @@ void dispatch_received_json(const std::wstring& json_to_parse)
             //     if (current_settings_ipc)
             //         current_settings_ipc->send(settings_string);
             // }
+        }
+        else if (name == L"module_status")
+        {
+            // Handle single module enable/disable update
+            // Expected format: {"module_status": {"ModuleName": true/false}}
+            apply_module_status_update(value.GetObjectW());
         }
         else if (name == L"powertoys")
         {

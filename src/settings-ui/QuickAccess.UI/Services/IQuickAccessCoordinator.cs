@@ -3,7 +3,9 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Threading.Tasks;
+
 using ManagedCommon;
+using Microsoft.PowerToys.Settings.UI.Library;
 
 namespace Microsoft.PowerToys.QuickAccess.Services;
 
@@ -19,9 +21,9 @@ public interface IQuickAccessCoordinator
 
     Task<bool> ShowDocumentationAsync();
 
-    void NotifyUserSettingsInteraction();
-
     bool UpdateModuleEnabled(ModuleType moduleType, bool isEnabled);
+
+    void SendSortOrderUpdate(GeneralSettings generalSettings);
 
     void ReportBug();
 

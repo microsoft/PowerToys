@@ -125,6 +125,10 @@
             "WinUI3Apps\\Powertoys.Peek.UI.exe",
             "WinUI3Apps\\Powertoys.Peek.dll",
 
+            "WinUI3Apps\\PowerToys.QuickAccess.dll",
+            "WinUI3Apps\\PowerToys.QuickAccess.exe",
+            "WinUI3Apps\\PowerToys.Settings.UI.Controls.dll",
+
             "WinUI3Apps\\PowerToys.EnvironmentVariablesModuleInterface.dll",
             "WinUI3Apps\\PowerToys.EnvironmentVariablesUILib.dll",
             "WinUI3Apps\\PowerToys.EnvironmentVariables.dll",

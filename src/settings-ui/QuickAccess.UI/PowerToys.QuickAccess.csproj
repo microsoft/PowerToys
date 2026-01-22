@@ -7,6 +7,7 @@
     <TargetFramework>net9.0-windows10.0.26100.0</TargetFramework>
     <RootNamespace>Microsoft.PowerToys.QuickAccess</RootNamespace>
     <AssemblyName>PowerToys.QuickAccess</AssemblyName>
+    <ApplicationIcon>..\..\runner\svgs\icon.ico</ApplicationIcon>
     <UseWinUI>true</UseWinUI>
     <WindowsPackageType>None</WindowsPackageType>
     <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
@@ -50,8 +51,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PRIResource Include="..\Settings.UI\Strings\en-us\Resources.resw">
-      <Link>Strings\en-us\Resources.resw</Link>
+    <PRIResource Include="..\Settings.UI\Strings\**\Resources.resw">
+      <Link>Strings\%(RecursiveDir)Resources.resw</Link>
     </PRIResource>
   </ItemGroup>
 

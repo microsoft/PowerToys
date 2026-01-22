@@ -33,6 +33,7 @@ advfirewall
 AFeature
 affordances
 AFX
+agentskills
 AGGREGATABLE
 AHK
 AHybrid
@@ -64,6 +65,9 @@ apidl
 APIENTRY
 APIIs
 Apm
+APMPOWERSTATUSCHANGE
+APMRESUMEAUTOMATIC
+APMRESUMESUSPEND
 APPBARDATA
 APPEXECLINK
 appext
@@ -213,17 +217,21 @@ certmgr
 cfp
 CHANGECBCHAIN
 changecursor
+checkmarks
 CHILDACTIVATE
 CHILDWINDOW
 checkmarks
 CHOOSEFONT
 Chunghwa
+CIBUILD
 cidl
 CIELCh
 cim
 CImage
 cla
+claude
 CLASSDC
+classmethod
 CLASSNOTAVAILABLE
 CLEARTYPE
 clickable
@@ -1076,6 +1084,7 @@ mmi
 mmsys
 mobileredirect
 mockapi
+modelcontextprotocol
 MODALFRAME
 MODESPRUNED
 MONITORENUMPROC
@@ -1392,6 +1401,7 @@ Pomodoro
 Popups
 POPUPWINDOW
 POSITIONITEM
+POWERBROADCAST
 powerdisplay
 POWERDISPLAYMODULEINTERFACE
 POWERRENAMECONTEXTMENU
@@ -1659,7 +1669,7 @@ sharpfuzz
 SHCNE
 SHCNF
 SHCONTF
-Shcore
+shcore
 shellapi
 SHELLDETAILS
 SHELLDLL
@@ -1758,6 +1768,7 @@ srw
 srwlock
 sse
 ssf
+sszzz
 STACKFRAME
 stackoverflow
 STARTF
@@ -1769,6 +1780,7 @@ startupscreen
 STATFLAG
 STATICEDGE
 Staticedge
+staticmethod
 STATSTG
 stdafx
 STDAPI
@@ -1786,6 +1798,7 @@ STICKYKEYS
 sticpl
 storelogo
 stprintf
+streamable
 streamjsonrpc
 STRINGIZE
 stringtable
@@ -1805,6 +1818,7 @@ SUBMODULEUPDATE
 subresource
 Superbar
 sut
+swe
 svchost
 SVGIn
 SVGIO
@@ -1938,6 +1952,7 @@ uild
 uitests
 UITo
 ULONGLONG
+Ultrawide
 ums
 UMax
 UMin
@@ -2016,6 +2031,7 @@ visualeffects
 vkey
 vmovl
 VMs
+vnd
 vorrq
 VOS
 vpaddlq

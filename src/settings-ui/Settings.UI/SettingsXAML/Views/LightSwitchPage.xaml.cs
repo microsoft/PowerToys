@@ -51,7 +51,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             var darkSettings = this.moduleSettingsRepository.SettingsConfig;
 
             // Pass them into the ViewModel
-            this.ViewModel = new LightSwitchViewModel(darkSettings, this.sendConfigMsg);
+            this.ViewModel = new LightSwitchViewModel(this.generalSettingsRepository, darkSettings, ShellPage.SendDefaultIPCMessage);
             this.ViewModel.PropertyChanged += ViewModel_PropertyChanged;
 
             this.LoadSettings(this.generalSettingsRepository, this.moduleSettingsRepository);
@@ -186,7 +186,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             // need to save the values
             this.ViewModel.Latitude = latitude.ToString(CultureInfo.InvariantCulture);
             this.ViewModel.Longitude = longitude.ToString(CultureInfo.InvariantCulture);
-            this.ViewModel.SyncButtonInformation = $"{this.ViewModel.Latitude}�, {this.ViewModel.Longitude}�";
+            this.ViewModel.SyncButtonInformation = $"{this.ViewModel.Latitude}°, {this.ViewModel.Longitude}°";
 
             var result = SunCalc.CalculateSunriseSunset(latitude, longitude, DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day);
 
@@ -294,18 +294,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private void UpdateEnabledState(bool recommendedState)
         {
-            var enabledGpoRuleConfiguration = GPOWrapper.GetConfiguredLightSwitchEnabledValue();
-
-            if (enabledGpoRuleConfiguration == GpoRuleConfigured.Disabled || enabledGpoRuleConfiguration == GpoRuleConfigured.Enabled)
-            {
-                // Get the enabled state from GPO.
-                this.ViewModel.IsEnabledGpoConfigured = true;
-                this.ViewModel.EnabledGPOConfiguration = enabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
-            }
-            else
-            {
-                this.ViewModel.IsEnabled = recommendedState;
-            }
+            ViewModel.RefreshEnabledState();
         }
 
         private async void SyncLocationButton_Click(object sender, RoutedEventArgs e)

@@ -29,6 +29,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
     public partial class DashboardViewModel : PageViewModelBase
     {
+        private readonly object _sortLock = new object();
+
         protected override string ModuleName => "Dashboard";
 
         private DispatcherQueue dispatcher;
@@ -50,7 +52,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         // Flag to prevent circular updates when a UI toggle triggers settings changes.
         private bool _isUpdatingFromUI;
-        private bool _isUpdatingFromSettings;
+
+        // Flag to prevent toggle operations during sorting to avoid race conditions.
+        private bool _isSorting;
 
         private AllHotkeyConflictsData _allHotkeyConflictsData = new AllHotkeyConflictsData();
 
@@ -81,15 +85,17 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             get => generalSettingsConfig.DashboardSortOrder;
             set
             {
-                if (Set(ref _dashboardSortOrder, value))
+                if (_dashboardSortOrder != value)
                 {
+                    _dashboardSortOrder = value;
                     generalSettingsConfig.DashboardSortOrder = value;
                     OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(generalSettingsConfig);
 
-                    // Save settings to file
-                    SettingsUtils.Default.SaveSettings(generalSettingsConfig.ToJsonString());
-
                     SendConfigMSG(outgoing.ToString());
+
+                    // Notify UI before sorting so menu updates its checked state
+                    OnPropertyChanged(nameof(DashboardSortOrder));
+
                     SortModuleList();
                 }
             }
@@ -104,7 +110,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             dispatcher = DispatcherQueue.GetForCurrentThread();
             _settingsRepository = settingsRepository;
             generalSettingsConfig = settingsRepository.SettingsConfig;
-            generalSettingsConfig.AddEnabledModuleChangeNotification(ModuleEnabledChangedOnSettingsPage);
+
             _settingsRepository.SettingsChanged += OnSettingsChanged;
 
             // Initialize dashboard sort order from settings
@@ -129,7 +135,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             dispatcher.TryEnqueue(() =>
             {
                 generalSettingsConfig = newSettings;
-                generalSettingsConfig.AddEnabledModuleChangeNotification(ModuleEnabledChangedOnSettingsPage);
+
+                // Update local field and notify UI if sort order changed
+                if (_dashboardSortOrder != generalSettingsConfig.DashboardSortOrder)
+                {
+                    _dashboardSortOrder = generalSettingsConfig.DashboardSortOrder;
+                    OnPropertyChanged(nameof(DashboardSortOrder));
+                }
+
                 ModuleEnabledChangedOnSettingsPage();
             });
         }
@@ -199,40 +212,58 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         /// Sorts the module list according to the current sort order and updates the AllModules collection.
         /// On first call, populates AllModules. On subsequent calls, uses Move() to reorder items in-place
         /// to avoid destroying and recreating UI elements.
+        /// Temporarily disables interaction on all items during sorting to prevent race conditions.
         /// </summary>
         private void SortModuleList()
         {
-            var sortedItems = (DashboardSortOrder switch
+            if (_isSorting)
             {
-                DashboardSortOrder.ByStatus => _moduleItems.OrderByDescending(x => x.IsEnabled).ThenBy(x => x.Label),
-                _ => _moduleItems.OrderBy(x => x.Label), // Default alphabetical
-            }).ToList();
-
-            // If AllModules is empty (first load), just populate it.
-            if (AllModules.Count == 0)
-            {
-                foreach (var item in sortedItems)
-                {
-                    AllModules.Add(item);
-                }
-
                 return;
             }
 
-            // Otherwise, update the collection in place using Move to avoid UI glitches.
-            for (int i = 0; i < sortedItems.Count; i++)
+            lock (_sortLock)
             {
-                var currentItem = sortedItems[i];
-                var currentIndex = AllModules.IndexOf(currentItem);
-
-                if (currentIndex != -1 && currentIndex != i)
+                _isSorting = true;
+                try
                 {
-                    AllModules.Move(currentIndex, i);
+                    var sortedItems = (DashboardSortOrder switch
+                    {
+                        DashboardSortOrder.ByStatus => _moduleItems.OrderByDescending(x => x.IsEnabled).ThenBy(x => x.Label),
+                        _ => _moduleItems.OrderBy(x => x.Label), // Default alphabetical
+                    }).ToList();
+
+                    // If AllModules is empty (first load), just populate it.
+                    if (AllModules.Count == 0)
+                    {
+                        foreach (var item in sortedItems)
+                        {
+                            AllModules.Add(item);
+                        }
+
+                        return;
+                    }
+
+                    // Otherwise, update the collection in place using Move to avoid UI glitches.
+                    for (int i = 0; i < sortedItems.Count; i++)
+                    {
+                        var currentItem = sortedItems[i];
+                        var currentIndex = AllModules.IndexOf(currentItem);
+
+                        if (currentIndex != -1 && currentIndex != i)
+                        {
+                            AllModules.Move(currentIndex, i);
+                        }
+                    }
+                }
+                finally
+                {
+                    // Use dispatcher to reset flag after UI updates complete
+                    dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Background, () =>
+                    {
+                        _isSorting = false;
+                    });
                 }
             }
-
-            // Notify that DashboardSortOrder changed so the menu updates its checked state.
-            OnPropertyChanged(nameof(DashboardSortOrder));
         }
 
         /// <summary>
@@ -258,7 +289,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 // Only update if there's an actual change to minimize UI notifications.
                 if (item.IsEnabled != newEnabledState)
                 {
-                    item.IsEnabled = newEnabledState;
+                    item.UpdateStatus(newEnabledState);
                 }
 
                 if (item.IsLocked != newLockedState)
@@ -275,19 +306,32 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         /// Sets the _isUpdatingFromUI flag to prevent circular updates, then updates
         /// settings, re-sorts if needed, and refreshes dependent collections.
         /// </summary>
-        private void EnabledChangedOnUI(DashboardListItem dashboardListItem)
+        private void EnabledChangedOnUI(ModuleListItem item)
         {
-            if (_isUpdatingFromSettings)
+            var dashboardListItem = (DashboardListItem)item;
+            var isEnabled = dashboardListItem.IsEnabled;
+
+            // Ignore toggle operations during sorting to prevent race conditions.
+            // Revert the toggle state since UI already changed due to TwoWay binding.
+            if (_isSorting)
             {
+                dashboardListItem.UpdateStatus(!isEnabled);
                 return;
             }
 
             _isUpdatingFromUI = true;
             try
             {
-                Views.ShellPage.UpdateGeneralSettingsCallback(dashboardListItem.Tag, dashboardListItem.IsEnabled);
+                // Send optimized IPC message with only the module status update
+                // Format: {"module_status": {"ModuleName": true/false}}
+                string moduleKey = ModuleHelper.GetModuleKey(dashboardListItem.Tag);
+                string moduleStatusJson = $"{{\"module_status\": {{\"{moduleKey}\": {isEnabled.ToString().ToLowerInvariant()}}}}}";
+                SendConfigMSG(moduleStatusJson);
 
-                if (dashboardListItem.Tag == ModuleType.NewPlus && dashboardListItem.IsEnabled == true)
+                // Update local settings config to keep UI in sync
+                ModuleHelper.SetIsModuleEnabled(generalSettingsConfig, dashboardListItem.Tag, isEnabled);
+
+                if (dashboardListItem.Tag == ModuleType.NewPlus && isEnabled == true)
                 {
                     var settingsUtils = SettingsUtils.Default;
                     var settings = NewPlusViewModel.LoadSettings(settingsUtils);
@@ -325,7 +369,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 return;
             }
 
-            _isUpdatingFromSettings = true;
             try
             {
                 RefreshModuleList();
@@ -339,10 +382,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             catch (Exception ex)
             {
                 Logger.LogError($"Updating active/disabled modules list failed: {ex.Message}");
-            }
-            finally
-            {
-                _isUpdatingFromSettings = false;
             }
         }
 

@@ -140,9 +140,12 @@ internal sealed partial class SetLayoutCommand : FancyZonesBaseCommand
             return null;
         }
 
+        // Normalize GUID to Windows format with braces (supports input with or without braces)
+        string normalizedLayout = GuidHelper.NormalizeGuid(layout) ?? layout;
+
         foreach (var customLayout in customLayouts.CustomLayouts)
         {
-            if (customLayout.Uuid.Equals(layout, StringComparison.OrdinalIgnoreCase))
+            if (customLayout.Uuid.Equals(normalizedLayout, StringComparison.OrdinalIgnoreCase))
             {
                 return customLayout;
             }

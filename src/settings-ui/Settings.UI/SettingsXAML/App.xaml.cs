@@ -9,7 +9,6 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
-
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
@@ -227,7 +226,6 @@ namespace Microsoft.PowerToys.Settings.UI
             {
                 settingsWindow = new MainWindow();
                 settingsWindow.Activate();
-                settingsWindow.ExtendsContentIntoTitleBar = true;
                 settingsWindow.NavigateToSection(StartupPage);
 
                 // https://github.com/microsoft/microsoft-ui-xaml/issues/7595 - Activate doesn't bring window to the foreground
@@ -257,11 +255,10 @@ namespace Microsoft.PowerToys.Settings.UI
                 else if (ShowScoobe)
                 {
                     PowerToysTelemetry.Log.WriteEvent(new ScoobeStartedEvent());
-                    OobeWindow scoobeWindow = new OobeWindow(OOBE.Enums.PowerToysModules.WhatsNew);
-                    scoobeWindow.Activate();
-                    scoobeWindow.ExtendsContentIntoTitleBar = true;
+                    ScoobeWindow newScoobeWindow = new ScoobeWindow();
+                    newScoobeWindow.Activate();
                     WindowHelpers.ForceTopBorder1PixelInsetOnWindows10(WindowNative.GetWindowHandle(settingsWindow));
-                    SetOobeWindow(scoobeWindow);
+                    SetScoobeWindow(newScoobeWindow);
                 }
             }
         }
@@ -339,6 +336,7 @@ namespace Microsoft.PowerToys.Settings.UI
 
         private static MainWindow settingsWindow;
         private static OobeWindow oobeWindow;
+        private static ScoobeWindow scoobeWindow;
 
         public static void ClearSettingsWindow()
         {
@@ -363,6 +361,21 @@ namespace Microsoft.PowerToys.Settings.UI
         public static void ClearOobeWindow()
         {
             oobeWindow = null;
+        }
+
+        public static ScoobeWindow GetScoobeWindow()
+        {
+            return scoobeWindow;
+        }
+
+        public static void SetScoobeWindow(ScoobeWindow window)
+        {
+            scoobeWindow = window;
+        }
+
+        public static void ClearScoobeWindow()
+        {
+            scoobeWindow = null;
         }
 
         public static Type GetPage(string settingWindow)
