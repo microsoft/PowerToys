@@ -37,6 +37,12 @@ void MappingConfiguration::ClearAppSpecificShortcuts()
     appSpecificShortcutReMapSortedKeys.clear();
 }
 
+// Function to clear the mouse button remapping table
+void MappingConfiguration::ClearMouseButtonRemaps()
+{
+    mouseButtonReMap.clear();
+}
+
 // Function to add a new OS level shortcut remapping
 bool MappingConfiguration::AddOSLevelShortcut(const Shortcut& originalSC, const KeyShortcutTextUnion& newSC)
 {
@@ -88,6 +94,20 @@ bool MappingConfiguration::AddSingleKeyToTextRemap(const DWORD originalKey, cons
         singleKeyToTextReMap[originalKey] = text;
         return true;
     }
+}
+
+// Function to add a new mouse button remapping
+bool MappingConfiguration::AddMouseButtonRemap(const MouseButton& originalButton, const KeyShortcutTextUnion& newRemapTarget)
+{
+    // Check if the button is already remapped
+    auto it = mouseButtonReMap.find(originalButton);
+    if (it != mouseButtonReMap.end())
+    {
+        return false;
+    }
+
+    mouseButtonReMap[originalButton] = newRemapTarget;
+    return true;
 }
 
 // Function to add a new App specific shortcut remapping
@@ -304,6 +324,65 @@ bool MappingConfiguration::LoadAppSpecificShortcutRemaps(const json::JsonObject&
     return result;
 }
 
+bool MappingConfiguration::LoadMouseButtonRemaps(const json::JsonObject& jsonData)
+{
+    bool result = true;
+
+    try
+    {
+        auto remapMouseData = jsonData.GetNamedObject(KeyboardManagerConstants::RemapMouseButtonsSettingName);
+        ClearMouseButtonRemaps();
+
+        if (!remapMouseData)
+        {
+            return result;
+        }
+
+        auto inProcessRemaps = remapMouseData.GetNamedArray(KeyboardManagerConstants::InProcessRemapKeysSettingName);
+        for (const auto& it : inProcessRemaps)
+        {
+            try
+            {
+                auto originalButton = it.GetObjectW().GetNamedString(KeyboardManagerConstants::OriginalMouseButtonSettingName);
+                auto newRemapKeys = it.GetObjectW().GetNamedString(KeyboardManagerConstants::NewRemapKeysSettingName, {});
+
+                auto mouseButton = MouseButtonHelpers::MouseButtonFromString(originalButton.c_str());
+                if (!mouseButton.has_value())
+                {
+                    Logger::error(L"Invalid mouse button name: {}", originalButton.c_str());
+                    continue;
+                }
+
+                if (!newRemapKeys.empty())
+                {
+                    // If remapped to a shortcut
+                    if (std::wstring(newRemapKeys).find(L";") != std::string::npos)
+                    {
+                        AddMouseButtonRemap(*mouseButton, Shortcut(newRemapKeys.c_str()));
+                    }
+                    // If remapped to a key
+                    else
+                    {
+                        AddMouseButtonRemap(*mouseButton, std::stoul(newRemapKeys.c_str()));
+                    }
+                }
+            }
+            catch (...)
+            {
+                Logger::error(L"Improper Mouse Button Data JSON. Try the next remap.");
+                result = false;
+            }
+        }
+    }
+    catch (...)
+    {
+        Logger::error(L"Improper JSON format for mouse button remaps. Skip to next remap type");
+        result = false;
+    }
+
+    return result;
+}
+
 bool MappingConfiguration::LoadShortcutRemaps(const json::JsonObject& jsonData, const std::wstring& objectName)
 {
     bool result = true;
@@ -435,6 +514,7 @@ bool MappingConfiguration::LoadSettings()
         result = LoadShortcutRemaps(*configFile, KeyboardManagerConstants::RemapShortcutsSettingName) && result;
         result = LoadShortcutRemaps(*configFile, KeyboardManagerConstants::RemapShortcutsToTextSettingName) && result;
         result = LoadSingleKeyToTextRemaps(*configFile) && result;
+        result = LoadMouseButtonRemaps(*configFile) && result;
 
         return result;
     }

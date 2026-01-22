@@ -7,6 +7,8 @@
 
 #include <keyboardmanager/common/InputInterface.h>
 #include <keyboardmanager/common/Helpers.h>
+#include <keyboardmanager/common/Modifiers.h>
+#include <keyboardmanager/common/KeyboardManagerConstants.h>
 #include <keyboardmanager/KeyboardManagerEngineLibrary/trace.h>
 
 #include <TlHelp32.h>
@@ -1795,6 +1797,66 @@ namespace KeyboardEventHandlers
 
         std::vector<INPUT> keyEventList;
         Helpers::SetTextKeyEvents(keyEventList, *remapping);
+        ii.SendVirtualInput(keyEventList);
+
+        return 1;
+    }
+
+    // Function to handle a mouse button remap
+    intptr_t HandleMouseButtonRemapEvent(KeyboardManagerInput::InputInterface& ii, MouseButton button, bool isButtonDown, State& state) noexcept
+    {
+        const auto remapping = state.GetMouseButtonRemap(button);
+        if (!remapping)
+        {
+            return 0;
+        }
+
+        auto it = remapping.value();
+        const auto& target = it->second;
+
+        // Check if the remap is to a key or a shortcut
+        const bool remapToKey = target.index() == 0;
+
+        std::vector<INPUT> keyEventList;
+
+        if (remapToKey)
+        {
+            DWORD targetKey = std::get<DWORD>(target);
+
+            // If mapped to VK_DISABLED then the button is disabled
+            if (targetKey == CommonSharedConstants::VK_DISABLED)
+            {
+                return 1;
+            }
+
+            if (isButtonDown)
+            {
+                Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(targetKey), 0, KeyboardManagerConstants::KEYBOARDMANAGER_MOUSE_FLAG);
+            }
+            else
+            {
+                Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(targetKey), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_MOUSE_FLAG);
+            }
+        }
+        else
+        {
+            // Remapped to a shortcut
+            Shortcut targetShortcut = std::get<Shortcut>(target);
+
+            if (isButtonDown)
+            {
+                // Send modifier key downs followed by action key down
+                Helpers::SetModifierKeyEvents(targetShortcut, Modifiers(), keyEventList, true, KeyboardManagerConstants::KEYBOARDMANAGER_MOUSE_FLAG);
+                Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(targetShortcut.GetActionKey()), 0, KeyboardManagerConstants::KEYBOARDMANAGER_MOUSE_FLAG);
+            }
+            else
+            {
+                // Send action key up followed by modifier key ups
+                Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(targetShortcut.GetActionKey()), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_MOUSE_FLAG);
+                Helpers::SetModifierKeyEvents(targetShortcut, Modifiers(), keyEventList, false, KeyboardManagerConstants::KEYBOARDMANAGER_MOUSE_FLAG);
+            }
+        }
+
         ii.SendVirtualInput(keyEventList);
 
         return 1;

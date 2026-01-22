@@ -96,4 +96,13 @@ namespace KeyboardManagerConstants
 
     // String constant to represent no activated application in app-specific shortcuts
     inline const std::wstring NoActivatedApp = L"";
+
+    // Name of the property used to store mouse button remaps
+    inline const std::wstring RemapMouseButtonsSettingName = L"remapMouseButtons";
+
+    // Name of the property used to store the original mouse button
+    inline const std::wstring OriginalMouseButtonSettingName = L"originalButton";
+
+    // Flag used for distinguishing mouse events sent by Keyboard Manager
+    inline const ULONG_PTR KEYBOARDMANAGER_MOUSE_FLAG = 0x1011;
 }

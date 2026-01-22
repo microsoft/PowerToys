@@ -75,6 +75,8 @@ int WINAPI wWinMain(_In_ HINSTANCE /*hInstance*/,
     auto kbm = KeyboardManager();
     if (kbm.HasRegisteredRemappings())
         kbm.StartLowlevelKeyboardHook();
+    if (kbm.HasMouseRemappings())
+        kbm.StartLowlevelMouseHook();
 
     auto StartHookFunc = [&kbm]() {
         kbm.StartLowlevelKeyboardHook();
@@ -83,6 +85,7 @@ int WINAPI wWinMain(_In_ HINSTANCE /*hInstance*/,
     run_message_loop({}, {}, { { KeyboardManager::StartHookMessageID, StartHookFunc } });
 
     kbm.StopLowlevelKeyboardHook();
+    kbm.StopLowlevelMouseHook();
     Trace::UnregisterProvider();
 
     trace.Flush();

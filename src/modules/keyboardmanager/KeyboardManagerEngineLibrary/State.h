@@ -1,5 +1,6 @@
 #pragma once
 #include <keyboardmanager/common/MappingConfiguration.h>
+#include <keyboardmanager/common/MouseButton.h>
 
 class State : public MappingConfiguration
 {
@@ -13,6 +14,9 @@ public:
 
     // Function to get a unicode string remap given the source key. Returns nullopt if it isn't remapped
     std::optional<std::wstring> GetSingleKeyToTextRemapEvent(const DWORD originalKey) const;
+
+    // Function to get a mouse button remap given the source button. Returns nullopt if it isn't remapped
+    std::optional<MouseButtonRemapTable::iterator> GetMouseButtonRemap(const MouseButton& originalButton);
 
     bool CheckShortcutRemapInvoked(const std::optional<std::wstring>& appName);
 

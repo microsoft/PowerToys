@@ -26,6 +26,18 @@ std::optional<std::wstring> State::GetSingleKeyToTextRemapEvent(const DWORD orig
     }
 }
 
+// Function to get the iterator of a mouse button remap given the source button. Returns nullopt if it isn't remapped
+std::optional<MouseButtonRemapTable::iterator> State::GetMouseButtonRemap(const MouseButton& originalButton)
+{
+    auto it = mouseButtonReMap.find(originalButton);
+    if (it != mouseButtonReMap.end())
+    {
+        return it;
+    }
+
+    return std::nullopt;
+}
+
 bool State::CheckShortcutRemapInvoked(const std::optional<std::wstring>& appName)
 {
     // Assumes appName exists in the app-specific remap table
