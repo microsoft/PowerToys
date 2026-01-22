@@ -14,7 +14,7 @@ using RunnerV2.Models;
 
 namespace RunnerV2.ModuleInterfaces
 {
-    internal sealed partial class CropAndLockModuleInterface : ProcessModuleAbstractClass, IPowerToysModule, IDisposable
+    internal sealed partial class CropAndLockModuleInterface : ProcessModuleAbstractClass, IPowerToysModule, IDisposable, IPowerToysModuleShortcutsProvider, IPowerToysModuleSettingsChangedSubscriber
     {
         public string Name => "CropAndLock";
 
@@ -44,7 +44,7 @@ namespace RunnerV2.ModuleInterfaces
             Shortcuts.Add((settings.Properties.ReparentHotkey.Value,  () => _reparentEvent.Set()));
         }
 
-        public void OnSettingsChanged(string settingsKind, JsonElement jsonProperties)
+        public void OnSettingsChanged()
         {
             PopulateShortcuts();
         }

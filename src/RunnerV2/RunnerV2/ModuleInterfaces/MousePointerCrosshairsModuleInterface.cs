@@ -12,7 +12,7 @@ using RunnerV2.Models;
 
 namespace RunnerV2.ModuleInterfaces
 {
-    internal sealed partial class MousePointerCrosshairsModuleInterface : IPowerToysModule
+    internal sealed partial class MousePointerCrosshairsModuleInterface : IPowerToysModule, IPowerToysModuleShortcutsProvider, IPowerToysModuleSettingsChangedSubscriber
     {
         public string Name => "MousePointerCrosshairs";
 
@@ -41,7 +41,7 @@ namespace RunnerV2.ModuleInterfaces
             Shortcuts.Add((settings.GlidingCursorActivationShortcut, OnMousePointerCrosshairsGlidingCursorShortcut));
         }
 
-        public void OnSettingsChanged(string settingsKind, JsonElement jsonProperties)
+        public void OnSettingsChanged()
         {
             OnMousePointerCrosshairsSettingsChanged();
             InitializeShortcuts();

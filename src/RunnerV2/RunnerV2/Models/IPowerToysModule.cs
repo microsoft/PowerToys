@@ -43,24 +43,5 @@ namespace RunnerV2.Models
         /// This value shall be read from the GPO settings with the <see cref="GPOWrapper"/> class.
         /// </remarks>
         public GpoRuleConfigured GpoRuleConfigured { get; }
-
-        /// <summary>
-        /// Gets a list of shortcuts, that shall be registered in the keyboard hook, and their associated actions.
-        /// </summary>
-        /// <remarks>
-        /// If this property is not overridden, the module is considered to not have shortcuts.
-        /// </remarks>
-        public List<(HotkeySettings Hotkey, Action Action)> Shortcuts { get => []; }
-
-        public Dictionary<string, Action> CustomActions { get => []; }
-
-        /// <summary>
-        /// This function is called when the settings of the module or the general settings are changed.
-        /// </summary>
-        /// <param name="settingsKind">Value of <see cref="Name"/> or "general" indicating the type of change.</param>
-        /// <param name="jsonProperties">The json element with the new settings.</param>
-        public void OnSettingsChanged(string settingsKind, JsonElement jsonProperties)
-        {
-        }
     }
 }

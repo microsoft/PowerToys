@@ -14,6 +14,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\common\GPOWrapperProjection\GPOWrapperProjection.csproj" />
     <ProjectReference Include="..\..\common\ManagedCommon\ManagedCommon.csproj" />
     <ProjectReference Include="..\..\common\ManagedCsWin32\ManagedCsWin32.csproj" />
     <ProjectReference Include="..\..\modules\poweraccent\PowerAccent.UI\PowerAccent.UI.csproj" />

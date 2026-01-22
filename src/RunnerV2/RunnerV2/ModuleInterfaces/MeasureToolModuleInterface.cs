@@ -11,7 +11,7 @@ using RunnerV2.Models;
 
 namespace RunnerV2.ModuleInterfaces
 {
-    internal sealed class MeasureToolModuleInterface : ProcessModuleAbstractClass, IPowerToysModule
+    internal sealed class MeasureToolModuleInterface : ProcessModuleAbstractClass, IPowerToysModule, IPowerToysModuleShortcutsProvider, IPowerToysModuleSettingsChangedSubscriber
     {
         public string Name => "Measure Tool";
 
@@ -34,7 +34,7 @@ namespace RunnerV2.ModuleInterfaces
             PopulateShortcuts();
         }
 
-        public void OnSettingsChanged(string settingsKind, System.Text.Json.JsonElement jsonProperties)
+        public void OnSettingsChanged()
         {
             PopulateShortcuts();
         }

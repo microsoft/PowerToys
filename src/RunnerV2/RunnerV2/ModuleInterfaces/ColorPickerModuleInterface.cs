@@ -13,7 +13,7 @@ using RunnerV2.Models;
 
 namespace RunnerV2.ModuleInterfaces
 {
-    internal sealed class ColorPickerModuleInterface : ProcessModuleAbstractClass, IPowerToysModule
+    internal sealed class ColorPickerModuleInterface : ProcessModuleAbstractClass, IPowerToysModule, IPowerToysModuleShortcutsProvider, IPowerToysModuleSettingsChangedSubscriber
     {
         public string Name => "ColorPicker";
 
@@ -43,7 +43,7 @@ namespace RunnerV2.ModuleInterfaces
             ));
         }
 
-        public void OnSettingsChanged(string settingsKind, JsonElement jsonProperties)
+        public void OnSettingsChanged()
         {
             InitializeShortcuts();
         }

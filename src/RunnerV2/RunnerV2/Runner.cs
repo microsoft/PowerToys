@@ -43,7 +43,7 @@ namespace RunnerV2
         /// </summary>
         public static FrozenSet<IPowerToysModule> ModulesToLoad { get; } =
         [
-            /*new ColorPickerModuleInterface(),
+            new ColorPickerModuleInterface(),
             new AlwaysOnTopModuleInterface(),
             new HostsModuleInterface(),
             new PowerAccentModuleInterface(),
@@ -65,8 +65,9 @@ namespace RunnerV2
             new LightSwitchModuleInterface(),
             new CursorWrapModuleInterface(),
             new FindMyMouseModuleInterface(),
-            new WorkspacesModuleInterface(),*/
+            new WorkspacesModuleInterface(),
             new MousePointerCrosshairsModuleInterface(),
+            new MouseHighlighterModuleInterface(),
         ];
 
         /// <summary>
@@ -179,9 +180,12 @@ namespace RunnerV2
 
                     CentralizedKeyboardHookManager.RemoveAllHooksFromModule(module.Name);
 
-                    foreach (var shortcut in module.Shortcuts.ToArray())
+                    if (module is IPowerToysModuleShortcutsProvider shortcutsProvider)
                     {
-                        CentralizedKeyboardHookManager.AddKeyboardHook(module.Name, shortcut.Hotkey, shortcut.Action);
+                        foreach (var shortcut in shortcutsProvider.Shortcuts.ToArray())
+                        {
+                            CentralizedKeyboardHookManager.AddKeyboardHook(module.Name, shortcut.Hotkey, shortcut.Action);
+                        }
                     }
 
                     return;

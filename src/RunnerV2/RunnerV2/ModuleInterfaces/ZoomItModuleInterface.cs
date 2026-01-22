@@ -12,7 +12,7 @@ using RunnerV2.Models;
 
 namespace RunnerV2.ModuleInterfaces
 {
-    internal sealed class ZoomItModuleInterface : ProcessModuleAbstractClass, IPowerToysModule
+    internal sealed class ZoomItModuleInterface : ProcessModuleAbstractClass, IPowerToysModule, IPowerToysModuleCustomActionsProvider, IPowerToysModuleSettingsChangedSubscriber
     {
         public string Name => "ZoomIt";
 
@@ -34,9 +34,9 @@ namespace RunnerV2.ModuleInterfaces
         {
         }
 
-        public Dictionary<string, Action> CustomActions { get => new() { { "refresh_settings", () => OnSettingsChanged(null!, default) } }; }
+        public Dictionary<string, Action> CustomActions { get => new() { { "refresh_settings", () => OnSettingsChanged() } }; }
 
-        public void OnSettingsChanged(string settingsKind, System.Text.Json.JsonElement jsonProperties)
+        public void OnSettingsChanged()
         {
             using var refreshSettingsEvent = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.ZoomItRefreshSettingsEvent());
             refreshSettingsEvent.Set();

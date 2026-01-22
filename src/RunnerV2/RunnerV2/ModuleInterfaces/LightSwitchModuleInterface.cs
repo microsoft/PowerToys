@@ -12,7 +12,7 @@ using Settings.UI.Library;
 
 namespace RunnerV2.ModuleInterfaces
 {
-    internal sealed class LightSwitchModuleInterface : ProcessModuleAbstractClass, IPowerToysModule
+    internal sealed class LightSwitchModuleInterface : ProcessModuleAbstractClass, IPowerToysModule, IPowerToysModuleShortcutsProvider
     {
         public string Name => "LightSwitch";
 

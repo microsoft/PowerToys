@@ -13,7 +13,7 @@ using RunnerV2.Models;
 
 namespace RunnerV2.ModuleInterfaces
 {
-    internal sealed class PowerOCRModuleInterface : ProcessModuleAbstractClass, IPowerToysModule
+    internal sealed class PowerOCRModuleInterface : ProcessModuleAbstractClass, IPowerToysModule, IPowerToysModuleShortcutsProvider, IPowerToysModuleSettingsChangedSubscriber
     {
         public string Name => "TextExtractor";
 
@@ -51,7 +51,7 @@ namespace RunnerV2.ModuleInterfaces
             PopulateShortcuts();
         }
 
-        public void OnSettingsChanged(string settingsKind, JsonElement jsonProperties)
+        public void OnSettingsChanged()
         {
             PopulateShortcuts();
         }

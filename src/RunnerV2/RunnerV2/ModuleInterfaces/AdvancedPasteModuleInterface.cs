@@ -15,7 +15,7 @@ using RunnerV2.Models;
 
 namespace RunnerV2.ModuleInterfaces
 {
-    internal sealed class AdvancedPasteModuleInterface : ProcessModuleAbstractClass, IPowerToysModule, IDisposable
+    internal sealed class AdvancedPasteModuleInterface : ProcessModuleAbstractClass, IPowerToysModule, IDisposable, IPowerToysModuleShortcutsProvider, IPowerToysModuleSettingsChangedSubscriber
     {
         public string Name => "AdvancedPaste";
 
@@ -44,7 +44,7 @@ namespace RunnerV2.ModuleInterfaces
             PopulateShortcuts();
         }
 
-        public void OnSettingsChanged(string settingsKind, JsonElement jsonProperties)
+        public void OnSettingsChanged()
         {
             PopulateShortcuts();
         }

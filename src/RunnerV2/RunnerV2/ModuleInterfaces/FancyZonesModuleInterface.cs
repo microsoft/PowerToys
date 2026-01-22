@@ -11,7 +11,7 @@ using RunnerV2.Models;
 
 namespace RunnerV2.ModuleInterfaces
 {
-    internal sealed class FancyZonesModuleInterface : ProcessModuleAbstractClass, IPowerToysModule
+    internal sealed class FancyZonesModuleInterface : ProcessModuleAbstractClass, IPowerToysModule, IPowerToysModuleCustomActionsProvider, IPowerToysModuleShortcutsProvider, IPowerToysModuleSettingsChangedSubscriber
     {
         public string Name => "FancyZones";
 
@@ -33,6 +33,7 @@ namespace RunnerV2.ModuleInterfaces
 
         public void Enable()
         {
+            InitializeShortcuts();
         }
 
         public Dictionary<string, Action> CustomActions => new()
@@ -47,5 +48,25 @@ namespace RunnerV2.ModuleInterfaces
                 }
             },
         };
+
+        public List<(HotkeySettings Hotkey, Action Action)> Shortcuts { get;  } = [];
+
+        public void InitializeShortcuts()
+        {
+            Shortcuts.Clear();
+            var settings = SettingsUtils.Default.GetSettings<FancyZonesSettings>(Name);
+            Shortcuts.Add((settings.Properties.FancyzonesEditorHotkey.Value, () =>
+            {
+                EnsureLaunched();
+                using var invokeFZEditorEvent = new System.Threading.EventWaitHandle(false, System.Threading.EventResetMode.AutoReset, Constants.FZEToggleEvent());
+                invokeFZEditorEvent.Set();
+            }
+            ));
+        }
+
+        public void OnSettingsChanged()
+        {
+            InitializeShortcuts();
+        }
     }
 }

@@ -12,7 +12,7 @@ using RunnerV2.Models;
 
 namespace RunnerV2.ModuleInterfaces
 {
-    internal sealed class CursorWrapModuleInterface : IPowerToysModule
+    internal sealed class CursorWrapModuleInterface : IPowerToysModule, IPowerToysModuleShortcutsProvider, IPowerToysModuleSettingsChangedSubscriber
     {
         public string Name => "CursorWrap";
 
@@ -35,7 +35,7 @@ namespace RunnerV2.ModuleInterfaces
             CursorWrapStartMouseHook();
         }
 
-        public void OnSettingsChanged(string settingsKind, JsonElement jsonProperties)
+        public void OnSettingsChanged()
         {
             InitializeShortcuts();
         }

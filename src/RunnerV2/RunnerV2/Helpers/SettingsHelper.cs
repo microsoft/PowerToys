@@ -146,7 +146,7 @@ namespace RunnerV2.Helpers
 
                             foreach (IPowerToysModule ptModule in Runner.LoadedModules)
                             {
-                                if (ptModule.CustomActions.TryGetValue(moduleName.Value.GetProperty("action_name").GetString() ?? string.Empty, out Action? action))
+                                if (ptModule is IPowerToysModuleCustomActionsProvider customActionsProvider && customActionsProvider.CustomActions.TryGetValue(moduleName.Value.GetProperty("action_name").GetString() ?? string.Empty, out Action? action))
                                 {
                                     action();
                                 }
@@ -180,7 +180,10 @@ namespace RunnerV2.Helpers
 
                         foreach (IPowerToysModule module in Runner.ModulesToLoad)
                         {
-                            module.OnSettingsChanged("general", property.Value);
+                            if (module is IPowerToysModuleSettingsChangedSubscriber settingsChangedSubscriber)
+                            {
+                                settingsChangedSubscriber.OnSettingsChanged();
+                            }
                         }
 
                         break;
@@ -189,16 +192,19 @@ namespace RunnerV2.Helpers
                         {
                             _settingsUtils.SaveSettings(powertoysSettingsPart.Value.ToString(), powertoysSettingsPart.Name);
 
-                            if (Runner.LoadedModules.Find(m => m.Name == powertoysSettingsPart.Name) is IPowerToysModule module)
+                            if (Runner.LoadedModules.Find(m => m.Name == powertoysSettingsPart.Name) is IPowerToysModuleSettingsChangedSubscriber module)
                             {
-                                module.OnSettingsChanged(powertoysSettingsPart.Name, powertoysSettingsPart.Value);
+                                module.OnSettingsChanged();
                             }
                             else
                             {
                                 // If no specific module was found, notify all enabled modules
                                 foreach (IPowerToysModule module2 in Runner.LoadedModules.Where(m => m.Enabled))
                                 {
-                                    module2.OnSettingsChanged(powertoysSettingsPart.Name, powertoysSettingsPart.Value);
+                                    if (module2 is IPowerToysModuleSettingsChangedSubscriber settingsChangedSubscriber)
+                                    {
+                                        settingsChangedSubscriber.OnSettingsChanged();
+                                    }
                                 }
                             }
 

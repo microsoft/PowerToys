@@ -12,7 +12,7 @@ using RunnerV2.Models;
 
 namespace RunnerV2.ModuleInterfaces
 {
-    internal sealed class PowerToysRunModuleInterface : ProcessModuleAbstractClass, IPowerToysModule
+    internal sealed class PowerToysRunModuleInterface : ProcessModuleAbstractClass, IPowerToysModule, IPowerToysModuleShortcutsProvider
     {
         public string Name => "PowerToys Run";
 

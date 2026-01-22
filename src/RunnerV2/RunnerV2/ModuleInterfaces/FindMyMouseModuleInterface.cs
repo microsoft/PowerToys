@@ -14,7 +14,7 @@ using RunnerV2.Models;
 
 namespace RunnerV2.ModuleInterfaces
 {
-    internal sealed class FindMyMouseModuleInterface : IPowerToysModule
+    internal sealed class FindMyMouseModuleInterface : IPowerToysModule, IPowerToysModuleShortcutsProvider, IPowerToysModuleSettingsChangedSubscriber
     {
         public string Name => "FindMyMouse";
 
@@ -46,7 +46,7 @@ namespace RunnerV2.ModuleInterfaces
             thread.Start();
         }
 
-        public void OnSettingsChanged(string settingsKind, JsonElement jsonProperties)
+        public void OnSettingsChanged()
         {
             InitializeShortcuts();
             NativeMethods.PostMessageW(GetSonarHwnd(), GetWmPrivSettingsChanged(), IntPtr.Zero, IntPtr.Zero);

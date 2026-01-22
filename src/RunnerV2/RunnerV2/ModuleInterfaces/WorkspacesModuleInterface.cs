@@ -10,7 +10,7 @@ using RunnerV2.Models;
 
 namespace RunnerV2.ModuleInterfaces
 {
-    internal sealed class WorkspacesModuleInterface : ProcessModuleAbstractClass, IPowerToysModule
+    internal sealed class WorkspacesModuleInterface : ProcessModuleAbstractClass, IPowerToysModule, IPowerToysModuleShortcutsProvider, IPowerToysModuleSettingsChangedSubscriber
     {
         public string Name => "Workspaces";
 
@@ -33,7 +33,7 @@ namespace RunnerV2.ModuleInterfaces
             InitializeShortcuts();
         }
 
-        public void OnSettingsChanged(string settingsKind, System.Text.Json.JsonElement jsonProperties)
+        public void OnSettingsChanged()
         {
             InitializeShortcuts();
         }

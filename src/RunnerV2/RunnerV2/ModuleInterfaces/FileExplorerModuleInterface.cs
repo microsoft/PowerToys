@@ -15,7 +15,7 @@ using RunnerV2.Models;
 
 namespace RunnerV2.ModuleInterfaces
 {
-    internal sealed class FileExplorerModuleInterface : IPowerToysModule
+    internal sealed class FileExplorerModuleInterface : IPowerToysModule, IPowerToysModuleSettingsChangedSubscriber
     {
         private record struct FileExplorerModule(Func<bool> IsEnabled, GpoRuleConfigured GpoRule, RegistryChangeSet RegistryChanges);
 
@@ -304,10 +304,10 @@ namespace RunnerV2.ModuleInterfaces
 
         public void Enable()
         {
-            OnSettingsChanged("File Explorer", default);
+            OnSettingsChanged();
         }
 
-        public void OnSettingsChanged(string settingsKind, JsonElement jsonProperties)
+        public void OnSettingsChanged()
         {
             foreach (FileExplorerModule submodule in _fileExplorerModules)
             {

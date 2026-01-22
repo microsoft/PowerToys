@@ -15,7 +15,7 @@ using RunnerV2.Models;
 
 namespace RunnerV2.ModuleInterfaces
 {
-    internal sealed class RegistryPreviewModuleInterface : ProcessModuleAbstractClass, IPowerToysModule
+    internal sealed class RegistryPreviewModuleInterface : ProcessModuleAbstractClass, IPowerToysModule, IPowerToysModuleCustomActionsProvider, IPowerToysModuleSettingsChangedSubscriber
     {
         public bool Enabled => SettingsUtils.Default.GetSettingsOrDefault<GeneralSettings>().Enabled.RegistryPreview;
 
@@ -37,7 +37,7 @@ namespace RunnerV2.ModuleInterfaces
             }
         }
 
-        public void OnSettingsChanged(string settingsKind, JsonElement jsonProperties)
+        public void OnSettingsChanged()
         {
             bool defaultRegApp = SettingsUtils.Default.GetSettings<RegistryPreviewSettings>(Name).Properties.DefaultRegApp;
             if (defaultRegApp && !RegistryPreviewSetDefaultAppChangeSet.IsApplied)
@@ -67,7 +67,7 @@ namespace RunnerV2.ModuleInterfaces
                 Logger.LogError("Applying registry changes failed");
             }
 
-            OnSettingsChanged(null!, default);
+            OnSettingsChanged();
         }
 
         public Dictionary<string, Action> CustomActions

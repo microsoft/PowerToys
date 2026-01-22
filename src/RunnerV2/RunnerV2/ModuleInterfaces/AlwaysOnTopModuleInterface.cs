@@ -13,7 +13,7 @@ using RunnerV2.Models;
 
 namespace RunnerV2.ModuleInterfaces
 {
-    internal sealed class AlwaysOnTopModuleInterface : ProcessModuleAbstractClass, IPowerToysModule
+    internal sealed class AlwaysOnTopModuleInterface : ProcessModuleAbstractClass, IPowerToysModule, IPowerToysModuleShortcutsProvider, IPowerToysModuleSettingsChangedSubscriber
     {
         public bool Enabled => SettingsUtils.Default.GetSettings<GeneralSettings>().Enabled.AlwaysOnTop;
 
@@ -43,7 +43,7 @@ namespace RunnerV2.ModuleInterfaces
             ));
         }
 
-        public void OnSettingsChanged(string settingsKind, JsonElement jsonProperties)
+        public void OnSettingsChanged()
         {
             InitializeHotkey();
         }

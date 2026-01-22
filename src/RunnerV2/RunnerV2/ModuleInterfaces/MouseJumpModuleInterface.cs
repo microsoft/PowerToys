@@ -11,7 +11,7 @@ using RunnerV2.Models;
 
 namespace RunnerV2.ModuleInterfaces
 {
-    internal sealed class MouseJumpModuleInterface : ProcessModuleAbstractClass, IPowerToysModule
+    internal sealed class MouseJumpModuleInterface : ProcessModuleAbstractClass, IPowerToysModule, IPowerToysModuleShortcutsProvider, IPowerToysModuleSettingsChangedSubscriber
     {
         public string Name => "MouseJump";
 
@@ -36,7 +36,7 @@ namespace RunnerV2.ModuleInterfaces
             PopulateShortcuts();
         }
 
-        public void OnSettingsChanged(string settingsKind, System.Text.Json.JsonElement jsonProperties)
+        public void OnSettingsChanged()
         {
             PopulateShortcuts();
         }
