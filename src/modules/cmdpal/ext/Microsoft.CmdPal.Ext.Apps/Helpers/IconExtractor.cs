@@ -5,13 +5,13 @@
 using System;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
+using ManagedCommon;
 using Windows.Graphics.Imaging;
 using Windows.Storage.Streams;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.Graphics.Gdi;
 using Windows.Win32.UI.Shell;
-using ManagedCommon;
 
 namespace Microsoft.CmdPal.Ext.Apps.Helpers;
 
