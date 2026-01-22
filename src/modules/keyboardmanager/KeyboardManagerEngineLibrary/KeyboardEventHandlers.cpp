@@ -1811,6 +1811,8 @@ namespace KeyboardEventHandlers
             return 0;
         }
 
+        Logger::info(L"Mouse {} -> remap ({})", static_cast<int>(button), isButtonDown ? L"down" : L"up");
+
         auto it = remapping.value();
         const auto& target = it->second;
 
@@ -1950,6 +1952,8 @@ namespace KeyboardEventHandlers
 
         MouseButton targetButton = remapping.value();
         bool isKeyDown = (data->wParam == WM_KEYDOWN || data->wParam == WM_SYSKEYDOWN);
+        
+        Logger::info(L"Key {} -> Mouse {} ({})", keyCode, static_cast<int>(targetButton), isKeyDown ? L"down" : L"up");
 
         // Prepare mouse input
         INPUT mouseInput = {};
