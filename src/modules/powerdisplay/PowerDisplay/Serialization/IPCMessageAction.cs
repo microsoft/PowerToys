@@ -10,7 +10,7 @@ namespace PowerDisplay.Serialization
     /// IPC message wrapper for parsing action-based messages.
     /// Used in App.xaml.cs for dynamic IPC command handling.
     /// </summary>
-    internal sealed class IPCMessageAction
+    internal sealed class IpcMessageAction
     {
         [JsonPropertyName("action")]
         public string? Action { get; set; }
