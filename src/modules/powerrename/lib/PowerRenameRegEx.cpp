@@ -49,12 +49,25 @@ static std::wstring SanitizeAndNormalize(const std::wstring& input)
     // Perform the normalization.
     std::wstring normalized;
     normalized.resize(size);
-    NormalizeString(NormalizationC, sanitized.c_str(), -1, &normalized[0], size);
+    int actualSize = NormalizeString(NormalizationC, sanitized.c_str(), -1, &normalized[0], size);
+    
+    // If normalization failed on the second call, return sanitized input.
+    if (actualSize <= 0)
+    {
+        return sanitized;
+    }
 
     // Remove the explicit null terminator added by NormalizeString.
     if (!normalized.empty() && normalized.back() == L'\0')
     {
         normalized.pop_back();
+    }
+
+    // If normalization resulted in an empty string, return the sanitized input instead.
+    // This can happen with certain edge-case inputs where the normalized form is empty.
+    if (normalized.empty())
+    {
+        return sanitized;
     }
 
     return normalized;
