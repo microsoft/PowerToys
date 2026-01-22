@@ -208,6 +208,8 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
         _showContrast = monitor.SupportsContrast;
         _showVolume = monitor.SupportsVolume;
         _showInputSource = monitor.SupportsInputSource;
+        _showPowerState = monitor.SupportsPowerState;
+        _showColorTemperature = monitor.SupportsColorTemperature;
 
         // Initialize basic properties from monitor
         _brightness = monitor.CurrentBrightness;
