@@ -4,9 +4,9 @@
 
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
-using Microsoft.CmdPal.ViewModels.Messages;
+using Microsoft.CmdPal.UI.ViewModels.Messages;
 
-namespace Microsoft.CmdPal.ViewModels;
+namespace Microsoft.CmdPal.UI.ViewModels;
 
 public partial class ToastViewModel : ObservableObject
 {

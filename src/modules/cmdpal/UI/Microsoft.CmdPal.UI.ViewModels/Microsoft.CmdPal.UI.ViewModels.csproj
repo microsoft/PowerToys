@@ -62,6 +62,8 @@
 
     <ProjectReference Include="..\..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
 
+    <ProjectReference Include="..\Microsoft.CmdPal.UI.Common\Microsoft.CmdPal.UI.Common.csproj" />
+
   </ItemGroup>
 
   <ItemGroup>

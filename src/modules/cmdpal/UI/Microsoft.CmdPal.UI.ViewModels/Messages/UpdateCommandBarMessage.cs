@@ -7,7 +7,7 @@ using Microsoft.CmdPal.Core.Common;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
-namespace Microsoft.CmdPal.ViewModels.Messages;
+namespace Microsoft.CmdPal.UI.ViewModels.Messages;
 
 /// <summary>
 /// Used to update the command bar at the bottom to reflect the commands for a list item
