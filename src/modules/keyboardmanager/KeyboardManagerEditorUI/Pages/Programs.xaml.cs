@@ -6,21 +6,13 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
-using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
 using KeyboardManagerEditorUI.Helpers;
 using KeyboardManagerEditorUI.Interop;
+using KeyboardManagerEditorUI.Settings;
 using ManagedCommon;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Controls.Primitives;
-using Microsoft.UI.Xaml.Data;
-using Microsoft.UI.Xaml.Input;
-using Microsoft.UI.Xaml.Media;
-using Microsoft.UI.Xaml.Navigation;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
 using static KeyboardManagerEditorUI.Interop.ShortcutKeyMapping;
 
 namespace KeyboardManagerEditorUI.Pages
@@ -69,8 +61,9 @@ namespace KeyboardManagerEditorUI.Pages
 
             Shortcuts.Clear();
 
-            foreach (var mapping in _mappingService.GetShortcutMappingsByType(ShortcutOperationType.RunProgram))
+            foreach (var shortcutSettings in SettingsManager.GetShortcutSettingsByOperationType(ShortcutOperationType.RunProgram))
             {
+                ShortcutKeyMapping mapping = shortcutSettings.Shortcut;
                 string[] originalKeyCodes = mapping.OriginalKeys.Split(';');
                 var originalKeyNames = new List<string>();
                 foreach (var keyCode in originalKeyCodes)
@@ -86,6 +79,8 @@ namespace KeyboardManagerEditorUI.Pages
                     Shortcut = originalKeyNames,
                     AppToRun = mapping.ProgramPath,
                     Args = mapping.ProgramArgs,
+                    IsActive = shortcutSettings.IsActive,
+                    Id = shortcutSettings.Id,
                 });
             }
         }
@@ -160,6 +155,8 @@ namespace KeyboardManagerEditorUI.Pages
                         string originalKeys = string.Join(";", _editingMapping.Shortcut.Select(k => _mappingService.GetKeyCodeFromName(k).ToString(CultureInfo.InvariantCulture)));
                         _mappingService.DeleteShortcutMapping(originalKeys);
                     }
+
+                    SettingsManager.RemoveShortcutKeyMappingFromSettings(_editingMapping.Id);
                 }
 
                 // Shortcut to text mapping
@@ -188,6 +185,7 @@ namespace KeyboardManagerEditorUI.Pages
                 if (saved)
                 {
                     _mappingService.SaveSettings();
+                    SettingsManager.AddShortcutKeyMappingToSettings(shortcutKeyMapping);
                     LoadProgramShortcuts(); // Refresh the list
                 }
             }
@@ -228,6 +226,7 @@ namespace KeyboardManagerEditorUI.Pages
                 {
                     _mappingService.SaveSettings();
                     Shortcuts.Remove(shortcut);
+                    SettingsManager.RemoveShortcutKeyMappingFromSettings(shortcut.Id);
                     LoadProgramShortcuts();
                 }
             }
@@ -265,6 +264,70 @@ namespace KeyboardManagerEditorUI.Pages
                 }
 
                 _disposed = true;
+            }
+        }
+
+        private void ToggleSwitch_Toggled(object sender, RoutedEventArgs e)
+        {
+            if (sender is ToggleSwitch toggleSwitch && toggleSwitch.DataContext is ProgramShortcut shortcut && _mappingService != null)
+            {
+                try
+                {
+                    if (toggleSwitch.IsOn)
+                    {
+                        bool saved = false;
+                        ShortcutKeyMapping shortcutKeyMapping = SettingsManager.EditorSettings.ShortcutSettingsDictionary[shortcut.Id].Shortcut;
+
+                        saved = _mappingService.AddShorcutMapping(shortcutKeyMapping);
+
+                        if (saved)
+                        {
+                            shortcut.IsActive = true;
+                            _mappingService.SaveSettings();
+                            SettingsManager.ToggleShortcutKeyMappingActiveState(shortcut.Id);
+                        }
+                        else
+                        {
+                            toggleSwitch.IsOn = false;
+                        }
+                    }
+                    else
+                    {
+                        bool deleted = false;
+                        if (shortcut.Shortcut.Count == 1)
+                        {
+                            // Single key mapping
+                            int originalKey = _mappingService.GetKeyCodeFromName(shortcut.Shortcut[0]);
+                            if (originalKey != 0)
+                            {
+                                deleted = _mappingService.DeleteSingleKeyToTextMapping(originalKey);
+                            }
+                        }
+                        else
+                        {
+                            // Shortcut mapping
+                            string originalKeys = string.Join(";", shortcut.Shortcut.Select(k => _mappingService.GetKeyCodeFromName(k)));
+                            deleted = _mappingService.DeleteShortcutMapping(originalKeys);
+                        }
+
+                        if (deleted)
+                        {
+                            shortcut.IsActive = false;
+                            SettingsManager.ToggleShortcutKeyMappingActiveState(shortcut.Id);
+                            _mappingService.SaveSettings();
+                        }
+                        else
+                        {
+                            toggleSwitch.IsOn = true;
+                        }
+
+                        LoadProgramShortcuts();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError("Error toggling shortcut active state: " + ex.Message);
+                }
             }
         }
     }

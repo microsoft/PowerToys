@@ -7,14 +7,17 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using KeyboardManagerEditorUI.Interop;
 
-namespace KeyboardManagerEditorUI.Helpers
+namespace KeyboardManagerEditorUI.Settings
 {
-    public class URLShortcut
+    public class ShortcutSettings
     {
-        public List<string> Shortcut { get; set; } = new List<string>();
+        public string Id { get; set; } = string.Empty;
 
-        public string URL { get; set; } = string.Empty;
+        public ShortcutKeyMapping Shortcut { get; set; } = new ShortcutKeyMapping();
+
+        public List<string> Profiles { get; set; } = new List<string>();
 
         public bool IsActive { get; set; } = true;
     }

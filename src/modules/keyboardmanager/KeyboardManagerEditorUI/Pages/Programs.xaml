@@ -134,23 +134,32 @@
                                         </ToolTipService.ToolTip>
                                     </FontIcon>
                                 </StackPanel>
-                                <Button
-                                    x:Uid="ProgramsPageDeleteButton"
+                                <StackPanel
+                                    Orientation="Horizontal"
+                                    Spacing="8"
                                     Grid.ColumnSpan="4"
                                     Margin="0,0,4,0"
                                     Padding="8,4"
                                     HorizontalAlignment="Right"
-                                    VerticalAlignment="Center"
-                                    AutomationProperties.Name="Delete program shortcut"
-                                    Background="Transparent"
-                                    BorderThickness="0"
-                                    Click="DeleteButton_Click">
-                                    <FontIcon
-                                        FontFamily="{StaticResource SymbolThemeFontFamily}"
-                                        FontSize="16"
-                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                        Glyph="&#xE74D;" />
-                                </Button>
+                                    VerticalAlignment="Center">
+                                    <ToggleSwitch 
+                                        IsOn="{x:Bind IsActive}"
+                                        Toggled="ToggleSwitch_Toggled"/>
+                                    <Button
+                                        x:Uid="ProgramsPageDeleteButton"
+                                        AutomationProperties.Name="Delete program shortcut"
+                                        Background="Transparent"
+                                        BorderThickness="0"
+                                        Click="DeleteButton_Click">
+                                        <FontIcon
+                                            FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                            FontSize="16"
+                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                            Glyph="&#xE74D;" />
+                                    </Button>
+
+                                </StackPanel>
+                                
                             </Grid>
                         </DataTemplate>
                     </ListView.ItemTemplate>
