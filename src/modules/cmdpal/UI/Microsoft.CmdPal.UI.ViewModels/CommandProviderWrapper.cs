@@ -4,7 +4,8 @@
 
 using ManagedCommon;
 using Microsoft.CmdPal.UI.Common.Abstractions;
-using Microsoft.CmdPal.UI.ViewModels;
+using Microsoft.CmdPal.UI.Common.Models;
+using Microsoft.CmdPal.UI.Services;
 using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.Extensions.DependencyInjection;
@@ -123,7 +124,7 @@ public sealed class CommandProviderWrapper
         return settings.GetProviderSettings(this);
     }
 
-    public async Task LoadTopLevelCommands(IServiceProvider serviceProvider, WeakReference<IPageContext> pageContext)
+    public async Task LoadTopLevelCommands(SettingsService settingsService, WeakReference<IPageContext> pageContext)
     {
         if (!isValid)
         {
@@ -131,7 +132,7 @@ public sealed class CommandProviderWrapper
             return;
         }
 
-        var settings = serviceProvider.GetService<SettingsModel>()!;
+        var settings = settingsService.CurrentSettings!;
 
         IsActive = GetProviderSettings(settings).IsEnabled;
         if (!IsActive)
@@ -168,7 +169,7 @@ public sealed class CommandProviderWrapper
             Settings = new(model.Settings, this, _taskScheduler);
 
             // We do need to explicitly initialize commands though
-            InitializeCommands(commands, fallbacks, serviceProvider, pageContext);
+            InitializeCommands(commands, fallbacks, pageContext);
 
             Logger.LogDebug($"Loaded commands from {DisplayName} ({ProviderId})");
         }
@@ -180,7 +181,7 @@ public sealed class CommandProviderWrapper
         }
     }
 
-    private void InitializeCommands(ICommandItem[] commands, IFallbackCommandItem[] fallbacks, IServiceProvider serviceProvider, WeakReference<IPageContext> pageContext)
+    private void InitializeCommands(ICommandItem[] commands, IFallbackCommandItem[] fallbacks, WeakReference<IPageContext> pageContext)
     {
         var settings = serviceProvider.GetService<SettingsModel>()!;
         var providerSettings = GetProviderSettings(settings);

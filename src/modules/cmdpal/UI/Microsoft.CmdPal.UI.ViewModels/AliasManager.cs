@@ -4,6 +4,8 @@
 
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
+using Microsoft.CmdPal.UI.Common.Models;
+using Microsoft.CmdPal.UI.Services;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
@@ -15,10 +17,10 @@ public partial class AliasManager : ObservableObject
     // REMEMBER, CommandAlias.SearchPrefix is what we use as keys
     private readonly Dictionary<string, CommandAlias> _aliases;
 
-    public AliasManager(TopLevelCommandManager tlcManager, SettingsModel settings)
+    public AliasManager(TopLevelCommandManager tlcManager, SettingsService settingsService)
     {
         _topLevelCommandManager = tlcManager;
-        _aliases = settings.Aliases;
+        _aliases = settingsService.CurrentSettings.Aliases;
 
         if (_aliases.Count == 0)
         {
