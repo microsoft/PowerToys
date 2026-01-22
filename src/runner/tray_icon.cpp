@@ -14,6 +14,7 @@
 #include <common/logger/logger.h>
 #include <common/utils/elevation.h>
 #include <common/Themes/theme_listener.h>
+#include <common/Themes/theme_helpers.h>
 #include "bug_report.h"
 
 namespace
@@ -293,7 +294,7 @@ static void handle_theme_change()
 {
     if (theme_adaptive_enabled)
     {
-        tray_icon_data.hIcon = get_icon(theme_listener.AppTheme);
+        tray_icon_data.hIcon = get_icon(ThemeHelpers::GetSystemTheme());
         Shell_NotifyIcon(NIM_MODIFY, &tray_icon_data);
     }
 }
@@ -310,7 +311,7 @@ void start_tray_icon(bool isProcessElevated, bool theme_adaptive)
 {
     theme_adaptive_enabled = theme_adaptive;
     auto h_instance = reinterpret_cast<HINSTANCE>(&__ImageBase);
-    HICON const icon = theme_adaptive ? get_icon(theme_listener.AppTheme) : LoadIcon(h_instance, MAKEINTRESOURCE(APPICON));
+    HICON const icon = theme_adaptive ? get_icon(ThemeHelpers::GetSystemTheme()) : LoadIcon(h_instance, MAKEINTRESOURCE(APPICON));
     if (icon)
     {
         UINT id_tray_icon = 1;
@@ -357,7 +358,7 @@ void start_tray_icon(bool isProcessElevated, bool theme_adaptive)
         ChangeWindowMessageFilterEx(hwnd, WM_COMMAND, MSGFLT_ALLOW, nullptr);
 
         tray_icon_created = Shell_NotifyIcon(NIM_ADD, &tray_icon_data) == TRUE;
-        theme_listener.AddChangedHandler(&handle_theme_change);
+        theme_listener.AddSystemThemeChangedHandler(&handle_theme_change);
 
         // Register callback to update bug report menu item status
         BugReportManager::instance().register_callback([](bool isRunning) {
@@ -389,7 +390,7 @@ void set_tray_icon_theme_adaptive(bool theme_adaptive)
 
     if (theme_adaptive)
     {
-        icon = get_icon(theme_listener.AppTheme);
+        icon = get_icon(ThemeHelpers::GetSystemTheme());
         if (!icon)
         {
             Logger::warn(L"set_tray_icon_theme_adaptive: Failed to load theme adaptive icon, falling back to default");

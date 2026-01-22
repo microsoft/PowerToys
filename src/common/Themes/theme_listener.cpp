@@ -22,7 +22,38 @@ void ThemeListener::AddChangedHandler(THEME_HANDLE handle)
 void ThemeListener::DelChangedHandler(THEME_HANDLE handle)
 {
     auto it = std::find(handles.begin(), handles.end(), handle);
-    handles.erase(it);
+    if (it != handles.end())
+    {
+        handles.erase(it);
+    }
+}
+
+void ThemeListener::AddAppThemeChangedHandler(THEME_HANDLE handle)
+{
+    appThemeHandles.push_back(handle);
+}
+
+void ThemeListener::DelAppThemeChangedHandler(THEME_HANDLE handle)
+{
+    auto it = std::find(appThemeHandles.begin(), appThemeHandles.end(), handle);
+    if (it != appThemeHandles.end())
+    {
+        appThemeHandles.erase(it);
+    }
+}
+
+void ThemeListener::AddSystemThemeChangedHandler(THEME_HANDLE handle)
+{
+    systemThemeHandles.push_back(handle);
+}
+
+void ThemeListener::DelSystemThemeChangedHandler(THEME_HANDLE handle)
+{
+    auto it = std::find(systemThemeHandles.begin(), systemThemeHandles.end(), handle);
+    if (it != systemThemeHandles.end())
+    {
+        systemThemeHandles.erase(it);
+    }
 }
 
 void ThemeListener::CheckTheme()
@@ -48,13 +79,39 @@ void ThemeListener::CheckTheme()
 
             WaitForSingleObject(hEvent, INFINITE);
 
-            auto _theme = ThemeHelpers::GetAppTheme();
-            if (AppTheme != _theme)
+            auto _appTheme = ThemeHelpers::GetAppTheme();
+            auto _systemTheme = ThemeHelpers::GetSystemTheme();
+            
+            bool appThemeChanged = (AppTheme != _appTheme);
+            bool systemThemeChanged = (SystemTheme != _systemTheme);
+            
+            if (appThemeChanged || systemThemeChanged)
             {
-                AppTheme = _theme;
-                for (int i = 0; i < handles.size(); i++)
+                AppTheme = _appTheme;
+                SystemTheme = _systemTheme;
+                
+                // Call generic handlers (backward compatible)
+                for (size_t i = 0; i < handles.size(); i++)
                 {
                     handles[i]();
+                }
+                
+                // Call app theme specific handlers
+                if (appThemeChanged)
+                {
+                    for (size_t i = 0; i < appThemeHandles.size(); i++)
+                    {
+                        appThemeHandles[i]();
+                    }
+                }
+                
+                // Call system theme specific handlers
+                if (systemThemeChanged)
+                {
+                    for (size_t i = 0; i < systemThemeHandles.size(); i++)
+                    {
+                        systemThemeHandles[i]();
+                    }
                 }
             }
         }

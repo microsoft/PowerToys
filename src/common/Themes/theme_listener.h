@@ -14,6 +14,7 @@ public:
     ThemeListener()
     {
         AppTheme = ThemeHelpers::GetAppTheme();
+        SystemTheme = ThemeHelpers::GetSystemTheme();
         dwThreadHandle = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)_checkTheme, this, 0, &dwThreadId);
     }
     ~ThemeListener()
@@ -23,12 +24,19 @@ public:
     }
 
     Theme AppTheme;
+    Theme SystemTheme;
     void ThemeListener::AddChangedHandler(THEME_HANDLE handle);
     void ThemeListener::DelChangedHandler(THEME_HANDLE handle);
+    void ThemeListener::AddAppThemeChangedHandler(THEME_HANDLE handle);
+    void ThemeListener::DelAppThemeChangedHandler(THEME_HANDLE handle);
+    void ThemeListener::AddSystemThemeChangedHandler(THEME_HANDLE handle);
+    void ThemeListener::DelSystemThemeChangedHandler(THEME_HANDLE handle);
     void CheckTheme();
 
 private:
     HANDLE dwThreadHandle;
     DWORD dwThreadId;
     std::vector<THEME_HANDLE> handles;
+    std::vector<THEME_HANDLE> appThemeHandles;
+    std::vector<THEME_HANDLE> systemThemeHandles;
 };
