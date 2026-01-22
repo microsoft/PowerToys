@@ -345,6 +345,9 @@ bool MappingConfiguration::LoadMouseButtonRemaps(const json::JsonObject& jsonDat
             {
                 auto originalButton = it.GetObjectW().GetNamedString(KeyboardManagerConstants::OriginalMouseButtonSettingName);
                 auto newRemapKeys = it.GetObjectW().GetNamedString(KeyboardManagerConstants::NewRemapKeysSettingName, {});
+                auto unicodeText = it.GetObjectW().GetNamedString(KeyboardManagerConstants::NewTextSettingName, {});
+                auto runProgramFilePath = it.GetObjectW().GetNamedString(KeyboardManagerConstants::RunProgramFilePathSettingName, {});
+                auto openUri = it.GetObjectW().GetNamedString(KeyboardManagerConstants::ShortcutOpenURI, {});
 
                 auto mouseButton = MouseButtonHelpers::MouseButtonFromString(originalButton.c_str());
                 if (!mouseButton.has_value())
@@ -353,7 +356,40 @@ bool MappingConfiguration::LoadMouseButtonRemaps(const json::JsonObject& jsonDat
                     continue;
                 }
 
-                if (!newRemapKeys.empty())
+                // Priority: Text > Run Program > Open URI > Key/Shortcut
+                if (!unicodeText.empty())
+                {
+                    // Remapped to text
+                    AddMouseButtonRemap(*mouseButton, std::wstring(unicodeText));
+                }
+                else if (!runProgramFilePath.empty())
+                {
+                    // Remapped to run program
+                    Shortcut runProgramShortcut;
+                    runProgramShortcut.runProgramFilePath = runProgramFilePath.c_str();
+                    runProgramShortcut.runProgramArgs = it.GetObjectW().GetNamedString(KeyboardManagerConstants::RunProgramArgsSettingName, {}).c_str();
+                    runProgramShortcut.runProgramStartInDir = it.GetObjectW().GetNamedString(KeyboardManagerConstants::RunProgramStartInDirSettingName, {}).c_str();
+
+                    auto runProgramElevationLevel = it.GetObjectW().GetNamedNumber(KeyboardManagerConstants::RunProgramElevationLevelSettingName, 0);
+                    auto runProgramAlreadyRunningAction = it.GetObjectW().GetNamedNumber(KeyboardManagerConstants::RunProgramAlreadyRunningAction, 0);
+                    auto runProgramStartWindowType = it.GetObjectW().GetNamedNumber(KeyboardManagerConstants::RunProgramStartWindowType, 0);
+
+                    runProgramShortcut.elevationLevel = static_cast<Shortcut::ElevationLevel>(runProgramElevationLevel);
+                    runProgramShortcut.alreadyRunningAction = static_cast<Shortcut::ProgramAlreadyRunningAction>(runProgramAlreadyRunningAction);
+                    runProgramShortcut.startWindowType = static_cast<Shortcut::StartWindowType>(runProgramStartWindowType);
+
+                    runProgramShortcut.operationType = Shortcut::OperationType::RunProgram;
+                    AddMouseButtonRemap(*mouseButton, runProgramShortcut);
+                }
+                else if (!openUri.empty())
+                {
+                    // Remapped to open URI
+                    Shortcut openUriShortcut;
+                    openUriShortcut.uriToOpen = openUri.c_str();
+                    openUriShortcut.operationType = Shortcut::OperationType::OpenURI;
+                    AddMouseButtonRemap(*mouseButton, openUriShortcut);
+                }
+                else if (!newRemapKeys.empty())
                 {
                     // If remapped to a shortcut
                     if (std::wstring(newRemapKeys).find(L";") != std::string::npos)

@@ -1814,8 +1814,10 @@ namespace KeyboardEventHandlers
         auto it = remapping.value();
         const auto& target = it->second;
 
-        // Check if the remap is to a key or a shortcut
+        // Check target type: index 0 = DWORD (key), index 1 = Shortcut, index 2 = wstring (text)
         const bool remapToKey = target.index() == 0;
+        const bool remapToShortcut = target.index() == 1;
+        const bool remapToText = target.index() == 2;
 
         std::vector<INPUT> keyEventList;
 
@@ -1837,27 +1839,93 @@ namespace KeyboardEventHandlers
             {
                 Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(targetKey), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_MOUSE_FLAG);
             }
-        }
-        else
-        {
-            // Remapped to a shortcut
-            Shortcut targetShortcut = std::get<Shortcut>(target);
 
-            if (isButtonDown)
+            ii.SendVirtualInput(keyEventList);
+        }
+        else if (remapToShortcut)
+        {
+            Shortcut targetShortcut = std::get<Shortcut>(target);
+            const bool isRunProgram = targetShortcut.IsRunProgram();
+            const bool isOpenUri = targetShortcut.IsOpenURI();
+
+            // Run program and open URI only trigger on button down
+            if (isRunProgram)
             {
-                // Send modifier key downs followed by action key down
-                Helpers::SetModifierKeyEvents(targetShortcut, Modifiers(), keyEventList, true, KeyboardManagerConstants::KEYBOARDMANAGER_MOUSE_FLAG);
-                Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(targetShortcut.GetActionKey()), 0, KeyboardManagerConstants::KEYBOARDMANAGER_MOUSE_FLAG);
+                if (isButtonDown)
+                {
+                    auto threadFunction = [targetShortcut]() {
+                        CreateOrShowProcessForShortcut(targetShortcut);
+                    };
+                    std::thread myThread(threadFunction);
+                    if (myThread.joinable())
+                    {
+                        myThread.detach();
+                    }
+                }
+                // Button up does nothing for run program
+            }
+            else if (isOpenUri)
+            {
+                if (isButtonDown)
+                {
+                    auto uri = targetShortcut.uriToOpen;
+                    auto newUri = uri;
+
+                    if (!PathIsURL(uri.c_str()))
+                    {
+                        WCHAR url[1024];
+                        DWORD bufferSize = 1024;
+
+                        if (UrlCreateFromPathW(uri.c_str(), url, &bufferSize, 0) == S_OK)
+                        {
+                            newUri = url;
+                        }
+                        else
+                        {
+                            toast(L"Error", L"Could not understand the Path or URI");
+                            return 1;
+                        }
+                    }
+
+                    auto threadFunction = [newUri]() {
+                        ShellExecute(NULL, L"open", newUri.c_str(), NULL, NULL, SW_SHOWNORMAL);
+                    };
+                    std::thread myThread(threadFunction);
+                    if (myThread.joinable())
+                    {
+                        myThread.detach();
+                    }
+                }
+                // Button up does nothing for open URI
             }
             else
             {
-                // Send action key up followed by modifier key ups
-                Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(targetShortcut.GetActionKey()), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_MOUSE_FLAG);
-                Helpers::SetModifierKeyEvents(targetShortcut, Modifiers(), keyEventList, false, KeyboardManagerConstants::KEYBOARDMANAGER_MOUSE_FLAG);
+                // Regular shortcut - send modifier keys + action key
+                if (isButtonDown)
+                {
+                    Helpers::SetModifierKeyEvents(targetShortcut, Modifiers(), keyEventList, true, KeyboardManagerConstants::KEYBOARDMANAGER_MOUSE_FLAG);
+                    Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(targetShortcut.GetActionKey()), 0, KeyboardManagerConstants::KEYBOARDMANAGER_MOUSE_FLAG);
+                }
+                else
+                {
+                    Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(targetShortcut.GetActionKey()), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_MOUSE_FLAG);
+                    Helpers::SetModifierKeyEvents(targetShortcut, Modifiers(), keyEventList, false, KeyboardManagerConstants::KEYBOARDMANAGER_MOUSE_FLAG);
+                }
+
+                ii.SendVirtualInput(keyEventList);
             }
         }
-
-        ii.SendVirtualInput(keyEventList);
+        else if (remapToText)
+        {
+            // Text only fires on button down (no repeat since mouse doesn't auto-repeat)
+            if (isButtonDown)
+            {
+                const auto& textToSend = std::get<std::wstring>(target);
+                Helpers::SetTextKeyEvents(keyEventList, textToSend);
+                ii.SendVirtualInput(keyEventList);
+            }
+            // Button up does nothing for text
+        }
 
         return 1;
     }
