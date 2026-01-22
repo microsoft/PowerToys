@@ -646,7 +646,7 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
 
     /// <summary>
     /// Gets available power states for this monitor.
-    /// The "On" state is always shown as selected since the monitor must be on to see the UI.
+    /// The current power state is shown as selected based on the monitor's actual state.
     /// </summary>
     public List<PowerStateItem>? AvailablePowerStates
     {
@@ -677,6 +677,7 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
         {
             Value = value,
             Name = Common.Utils.VcpNames.GetValueName(0xD6, value) ?? $"State 0x{value:X2}",
+            IsSelected = value == _monitor.CurrentPowerState,
             MonitorId = _monitor.Id,
         }).ToList();
 
@@ -693,14 +694,16 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
         {
             var result = await _monitorManager.SetPowerStateAsync(Id, powerState);
 
-            if (!result.IsSuccess)
+            if (result.IsSuccess)
+            {
+                // Update the model's power state and refresh UI
+                _monitor.CurrentPowerState = powerState;
+                RefreshAvailablePowerStates();
+            }
+            else
             {
                 Logger.LogWarning($"[{Id}] Failed to set power state: {result.ErrorMessage}");
             }
-
-            // Note: We don't update UI state here because:
-            // 1. If switching to non-On state, the display will turn off and UI won't be visible
-            // 2. If switching to On, the monitor is already on (otherwise we wouldn't see the UI)
         }
         catch (Exception ex)
         {

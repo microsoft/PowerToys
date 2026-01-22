@@ -23,6 +23,7 @@ namespace PowerDisplay.Common.Models
         private int _currentBrightness;
         private int _currentColorTemperature = 0x05; // Default to 6500K preset (VCP 0x14 value)
         private int _currentInputSource; // VCP 0x60 value
+        private int _currentPowerState = 0x01; // Default to On (VCP 0xD6 value)
         private bool _isAvailable = true;
         private int _orientation;
 
@@ -146,6 +147,23 @@ namespace PowerDisplay.Common.Models
         /// </summary>
         public System.Collections.Generic.IReadOnlyList<int>? SupportedPowerStates =>
             VcpCapabilitiesInfo?.GetSupportedValues(0xD6);
+
+        /// <summary>
+        /// Gets or sets current power state VCP value (from VCP code 0xD6).
+        /// Values: 0x01=On, 0x02=Standby, 0x03=Suspend, 0x04=Off(DPM), 0x05=Off(Hard).
+        /// </summary>
+        public int CurrentPowerState
+        {
+            get => _currentPowerState;
+            set
+            {
+                if (_currentPowerState != value)
+                {
+                    _currentPowerState = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
 
         /// <summary>
         /// Gets a value indicating whether the monitor supports contrast adjustment

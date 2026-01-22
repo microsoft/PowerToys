@@ -107,6 +107,14 @@ namespace PowerDisplay.Common.Interfaces
         Task<MonitorOperationResult> SetPowerStateAsync(Monitor monitor, int powerState, CancellationToken cancellationToken = default);
 
         /// <summary>
+        /// Gets current power state using VCP 0xD6 (Power Mode)
+        /// </summary>
+        /// <param name="monitor">Monitor object</param>
+        /// <param name="cancellationToken">Cancellation token</param>
+        /// <returns>VCP power state value: 0x01=On, 0x02=Standby, 0x03=Suspend, 0x04=Off(DPM), 0x05=Off(Hard)</returns>
+        Task<VcpFeatureValue> GetPowerStateAsync(Monitor monitor, CancellationToken cancellationToken = default);
+
+        /// <summary>
         /// Releases resources
         /// </summary>
         void Dispose();

@@ -371,6 +371,12 @@ namespace PowerDisplay.Common.Drivers.WMI
             return Task.FromResult(MonitorOperationResult.Failure("Power state control not supported via WMI"));
         }
 
+        public Task<VcpFeatureValue> GetPowerStateAsync(Monitor monitor, CancellationToken cancellationToken = default)
+        {
+            // Power state control not supported for internal displays via WMI
+            return Task.FromResult(VcpFeatureValue.Invalid);
+        }
+
         public void Dispose()
         {
             // WmiLight objects are created per-operation and disposed immediately via using statements.

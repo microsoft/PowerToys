@@ -162,6 +162,16 @@ namespace PowerDisplay.Common.Drivers.DDC
             => SetVcpFeatureAsync(monitor, VcpCodePowerMode, powerState, cancellationToken);
 
         /// <summary>
+        /// Get current power state using VCP code 0xD6 (Power Mode).
+        /// Returns the raw VCP value (0x01=On, 0x02=Standby, etc.)
+        /// </summary>
+        public async Task<VcpFeatureValue> GetPowerStateAsync(Monitor monitor, CancellationToken cancellationToken = default)
+        {
+            ArgumentNullException.ThrowIfNull(monitor);
+            return await GetVcpFeatureAsync(monitor, VcpCodePowerMode, cancellationToken);
+        }
+
+        /// <summary>
         /// Get monitor capabilities string with retry logic.
         /// Uses cached CapabilitiesRaw if available to avoid slow I2C operations.
         /// </summary>
@@ -448,6 +458,12 @@ namespace PowerDisplay.Common.Drivers.DDC
                     {
                         InitializeColorTemperature(monitor, candidate.Handle);
                     }
+
+                    // Initialize power state if supported
+                    if (monitor.SupportsPowerState)
+                    {
+                        InitializePowerState(monitor, candidate.Handle);
+                    }
                 }
 
                 // Initialize brightness (always supported for DDC/CI monitors)
@@ -480,6 +496,17 @@ namespace PowerDisplay.Common.Drivers.DDC
             if (TryGetVcpFeature(handle, VcpCodeSelectColorPreset, monitor.Id, out uint current, out uint _))
             {
                 monitor.CurrentColorTemperature = (int)current;
+            }
+        }
+
+        /// <summary>
+        /// Initialize power state value for a monitor using VCP 0xD6.
+        /// </summary>
+        private static void InitializePowerState(Monitor monitor, IntPtr handle)
+        {
+            if (TryGetVcpFeature(handle, VcpCodePowerMode, monitor.Id, out uint current, out uint _))
+            {
+                monitor.CurrentPowerState = (int)current;
             }
         }
 

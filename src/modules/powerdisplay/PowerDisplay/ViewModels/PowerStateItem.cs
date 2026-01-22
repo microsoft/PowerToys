@@ -28,13 +28,13 @@ public class PowerStateItem
     public string Name { get; set; } = string.Empty;
 
     /// <summary>
-    /// Gets whether this power state is the "On" state (always selected in UI).
-    /// Since the monitor must be on to see the UI, we always show "On" as selected.
+    /// Gets or sets whether this power state is currently selected.
+    /// Set based on monitor's actual power state during list creation.
     /// </summary>
-    public bool IsSelected => Value == PowerStateOn;
+    public bool IsSelected { get; set; }
 
     /// <summary>
-    /// Visibility of selection indicator (Visible only for "On" state)
+    /// Visibility of selection indicator (Visible when IsSelected is true)
     /// </summary>
     public Visibility SelectionVisibility => IsSelected ? Visibility.Visible : Visibility.Collapsed;
 
