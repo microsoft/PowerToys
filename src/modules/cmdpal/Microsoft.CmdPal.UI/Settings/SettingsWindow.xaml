@@ -78,11 +78,6 @@
                     x:Uid="Settings_GeneralPage_NavigationViewItem_Dock"
                     Icon="{ui:FontIcon Glyph=&#xF596;}"
                     Tag="Dock" />
-                <NavigationViewItem
-                    x:Name="DockAppearancePageNavItem"
-                    x:Uid="Settings_NavigationViewItem_DockAppearance"
-                    Icon="{ui:FontIcon Glyph=&#xE790;}"
-                    Tag="DockAppearance" />
             </NavigationView.MenuItems>
             <Grid>
                 <Grid.RowDefinitions>

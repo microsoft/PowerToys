@@ -73,21 +73,6 @@
                         </ComboBox>
                     </controls:SettingsCard>
 
-                    <!--  Backdrop Style  -->
-                    <controls:SettingsCard Header="Background Style">
-                        <controls:SettingsCard.Description>
-                            Choose the background effect for your dock
-                        </controls:SettingsCard.Description>
-                        <ComboBox
-                            x:Name="BackdropComboBox"
-                            MinWidth="120"
-                            SelectedIndex="{x:Bind SelectedBackdropIndex, Mode=TwoWay}">
-                            <ComboBoxItem Content="Mica" />
-                            <ComboBoxItem Content="Transparent" />
-                            <ComboBoxItem Content="Acrylic" />
-                        </ComboBox>
-                    </controls:SettingsCard>
-
                     <!--  Show Labels  -->
                     <controls:SettingsCard Header="Show Labels">
                         <controls:SettingsCard.Description>
@@ -98,8 +83,161 @@
                             IsOn="{x:Bind ShowLabels, Mode=TwoWay}"
                             OffContent="Hide labels"
                             OnContent="Show Labels" />
-
                     </controls:SettingsCard>
+
+                    <!--  Theme Section  -->
+                    <TextBlock x:Uid="DockAppearance_ThemeSettingsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
+
+                    <controls:SettingsCard x:Uid="DockAppearance_AppTheme_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE793;}">
+                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.DockAppearance.ThemeIndex, Mode=TwoWay}">
+
+                            <ComboBoxItem x:Uid="Settings_GeneralPage_AppTheme_Mode_System_Automation" Tag="Default">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <FontIcon FontSize="16" Glyph="&#xE770;" />
+                                    <TextBlock x:Uid="Settings_GeneralPage_AppTheme_Mode_System" />
+                                </StackPanel>
+                            </ComboBoxItem>
+
+                            <ComboBoxItem x:Uid="Settings_GeneralPage_AppTheme_Mode_Light_Automation" Tag="Light">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <FontIcon FontSize="16" Glyph="&#xE706;" />
+                                    <TextBlock x:Uid="Settings_GeneralPage_AppTheme_Mode_Light" />
+                                </StackPanel>
+                            </ComboBoxItem>
+
+                            <ComboBoxItem x:Uid="Settings_GeneralPage_AppTheme_Mode_Dark_Automation" Tag="Dark">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <FontIcon FontSize="16" Glyph="&#xE708;" />
+                                    <TextBlock x:Uid="Settings_GeneralPage_AppTheme_Mode_Dark" />
+                                </StackPanel>
+                            </ComboBoxItem>
+
+                        </ComboBox>
+                    </controls:SettingsCard>
+
+                    <!--  Backdrop Style  -->
+                    <controls:SettingsCard x:Uid="DockAppearance_Backdrop_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE81E;}">
+                        <ComboBox
+                            x:Name="BackdropComboBox"
+                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                            SelectedIndex="{x:Bind ViewModel.DockAppearance.BackdropIndex, Mode=TwoWay}">
+                            <ComboBoxItem x:Uid="DockAppearance_Backdrop_Transparent" />
+                            <ComboBoxItem x:Uid="DockAppearance_Backdrop_Acrylic" />
+                        </ComboBox>
+                    </controls:SettingsCard>
+
+                    <!--  Background / Colorization Section  -->
+                    <controls:SettingsExpander
+                        x:Uid="DockAppearance_Background_SettingsExpander"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE790;}"
+                        IsExpanded="{x:Bind ViewModel.DockAppearance.IsColorizationDetailsExpanded, Mode=TwoWay}">
+                        <ComboBox
+                            x:Uid="DockAppearance_ColorizationMode"
+                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                            SelectedIndex="{x:Bind ViewModel.DockAppearance.ColorizationModeIndex, Mode=TwoWay}">
+                            <ComboBoxItem x:Uid="Settings_GeneralPage_ColorizationMode_None" />
+                            <ComboBoxItem x:Uid="Settings_GeneralPage_ColorizationMode_WindowsAccent" />
+                            <ComboBoxItem x:Uid="Settings_GeneralPage_ColorizationMode_CustomColor" />
+                            <ComboBoxItem x:Uid="Settings_GeneralPage_ColorizationMode_Image" />
+                        </ComboBox>
+                        <controls:SettingsExpander.Items>
+                            <!--  none  -->
+                            <controls:SettingsCard
+                                x:Uid="DockAppearance_NoBackground_SettingsCard"
+                                HorizontalContentAlignment="Stretch"
+                                ContentAlignment="Vertical"
+                                Visibility="{x:Bind ViewModel.DockAppearance.IsNoBackgroundVisible, Mode=OneWay}">
+                                <TextBlock
+                                    x:Uid="DockAppearance_NoBackground_DescriptionTextBlock"
+                                    Margin="24"
+                                    HorizontalAlignment="Stretch"
+                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                    HorizontalTextAlignment="Center"
+                                    TextAlignment="Center"
+                                    TextWrapping="WrapWholeWords" />
+                            </controls:SettingsCard>
+
+                            <!--  system accent color  -->
+                            <controls:SettingsCard x:Uid="DockAppearance_WindowsAccentColor_SettingsCard" Visibility="{x:Bind ViewModel.DockAppearance.IsAccentColorControlsVisible, Mode=OneWay}">
+                                <controls:SettingsCard.Description>
+                                    <TextBlock>
+                                        <Run x:Uid="Settings_GeneralPage_WindowsAccentColor_SettingsCard_Description1" />
+                                        <Hyperlink
+                                            Click="OpenWindowsColorsSettings_Click"
+                                            TextDecorations="None"
+                                            UnderlineStyle="None">
+                                            <Run x:Uid="Settings_GeneralPage_WindowsAccentColor_OpenWindowsColorsLinkText" />
+                                        </Hyperlink>
+                                    </TextBlock>
+                                </controls:SettingsCard.Description>
+                                <controls:SettingsCard.Content>
+                                    <Border
+                                        MinWidth="32"
+                                        MinHeight="32"
+                                        CornerRadius="{ThemeResource ControlCornerRadius}">
+                                        <Border.Background>
+                                            <SolidColorBrush Color="{x:Bind ViewModel.DockAppearance.EffectiveThemeColor, Mode=OneWay}" />
+                                        </Border.Background>
+                                    </Border>
+                                </controls:SettingsCard.Content>
+                            </controls:SettingsCard>
+
+                            <!--  background image  -->
+                            <controls:SettingsCard
+                                x:Uid="DockAppearance_BackgroundImage_SettingsCard"
+                                Description="{x:Bind ViewModel.DockAppearance.BackgroundImagePath, Mode=OneWay}"
+                                Visibility="{x:Bind ViewModel.DockAppearance.IsBackgroundControlsVisible, Mode=OneWay}">
+                                <Button x:Uid="Settings_GeneralPage_BackgroundImage_ChooseImageButton" Click="PickBackgroundImage_Click" />
+                            </controls:SettingsCard>
+                            <controls:SettingsCard x:Uid="DockAppearance_BackgroundImageBrightness_SettingsCard" Visibility="{x:Bind ViewModel.DockAppearance.IsBackgroundControlsVisible, Mode=OneWay}">
+                                <Slider
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    Maximum="100"
+                                    Minimum="-100"
+                                    StepFrequency="1"
+                                    Value="{x:Bind ViewModel.DockAppearance.BackgroundImageBrightness, Mode=TwoWay}" />
+                            </controls:SettingsCard>
+                            <controls:SettingsCard x:Uid="DockAppearance_BackgroundImageBlur_SettingsCard" Visibility="{x:Bind ViewModel.DockAppearance.IsBackgroundControlsVisible, Mode=OneWay}">
+                                <Slider
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    Maximum="50"
+                                    Minimum="0"
+                                    StepFrequency="1"
+                                    Value="{x:Bind ViewModel.DockAppearance.BackgroundImageBlurAmount, Mode=TwoWay}" />
+                            </controls:SettingsCard>
+                            <controls:SettingsCard x:Uid="DockAppearance_BackgroundImageFit_SettingsCard" Visibility="{x:Bind ViewModel.DockAppearance.IsBackgroundControlsVisible, Mode=OneWay}">
+                                <ComboBox SelectedIndex="{x:Bind ViewModel.DockAppearance.BackgroundImageFitIndex, Mode=TwoWay}">
+                                    <ComboBoxItem x:Uid="BackgroundImageFit_ComboBoxItem_Fill" />
+                                    <ComboBoxItem x:Uid="BackgroundImageFit_ComboBoxItem_Stretch" />
+                                </ComboBox>
+                            </controls:SettingsCard>
+
+                            <!--  Background tint color and intensity  -->
+                            <controls:SettingsCard x:Uid="DockAppearance_BackgroundTint_SettingsCard" Visibility="{x:Bind ViewModel.DockAppearance.IsCustomTintVisible, Mode=OneWay}">
+                                <cpControls:ColorPickerButton
+                                    HasSelectedColor="True"
+                                    IsAlphaEnabled="False"
+                                    PaletteColors="{x:Bind ViewModel.DockAppearance.Swatches}"
+                                    SelectedColor="{x:Bind ViewModel.DockAppearance.ThemeColor, Mode=TwoWay}" />
+                            </controls:SettingsCard>
+                            <controls:SettingsCard x:Uid="DockAppearance_BackgroundTintIntensity_SettingsCard" Visibility="{x:Bind ViewModel.DockAppearance.IsCustomTintIntensityVisible, Mode=OneWay}">
+                                <Slider
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    Maximum="100"
+                                    Minimum="1"
+                                    StepFrequency="1"
+                                    Value="{x:Bind ViewModel.DockAppearance.ColorIntensity, Mode=TwoWay}" />
+                            </controls:SettingsCard>
+
+                            <!--  Reset background image properties  -->
+                            <controls:SettingsCard x:Uid="DockAppearance_BackgroundImage_ResetProperties_SettingsCard" Visibility="{x:Bind ViewModel.DockAppearance.IsBackgroundControlsVisible, Mode=OneWay}">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <Button x:Uid="Settings_GeneralPage_Background_ResetImagePropertiesButton" Command="{x:Bind ViewModel.DockAppearance.ResetBackgroundImagePropertiesCommand}" />
+                                </StackPanel>
+                            </controls:SettingsCard>
+
+                        </controls:SettingsExpander.Items>
+                    </controls:SettingsExpander>
 
                     <!--  Bands Section  -->
                     <TextBlock x:Uid="DockBandsSettingsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />

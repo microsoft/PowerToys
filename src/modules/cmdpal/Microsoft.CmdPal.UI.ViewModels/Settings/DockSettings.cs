@@ -101,7 +101,6 @@ public enum DockSize
 
 public enum DockBackdrop
 {
-    Mica,
     Transparent,
     Acrylic,
 }

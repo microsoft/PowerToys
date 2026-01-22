@@ -109,7 +109,6 @@ public sealed partial class SettingsWindow : WindowEx,
             "Appearance" => typeof(AppearancePage),
             "Extensions" => typeof(ExtensionsPage),
             "Dock" => typeof(DockSettingsPage),
-            "DockAppearance" => typeof(DockAppearancePage),
             _ => null,
         };
 

@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using Microsoft.CmdPal.UI.ViewModels.Settings;
-using Microsoft.UI.Xaml.Media;
 using Windows.Win32;
 using WinUIEx;
 
@@ -64,7 +63,6 @@ internal static class DockSettingsToViews
     {
         return backdrop switch
         {
-            DockBackdrop.Mica => new MicaBackdrop(),
             DockBackdrop.Transparent => new TransparentTintBackdrop(),
             DockBackdrop.Acrylic => null, // new DesktopAcrylicBackdrop(),
             _ => throw new NotImplementedException(),
