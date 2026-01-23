@@ -22,6 +22,8 @@ namespace KeyboardManagerEditorUI.Pages
     /// </summary>
     public sealed partial class Mouse : Page
     {
+        private const string SettingsEventName = "PowerToys_KeyboardManager_Event_Settings";
+
         private int _capturedKeyCode;
         private string _capturedKeyName = string.Empty;
         private bool _isEditMode;
@@ -87,7 +89,7 @@ namespace KeyboardManagerEditorUI.Pages
                                 mapping.TargetKeyName = GetKeyName(keyCode);
                             }
                         }
-                        else if (item.TryGetProperty("newRemapString", out JsonElement newStr))
+                        else if (item.TryGetProperty("unicodeText", out JsonElement newStr))
                         {
                             mapping.TargetType = "Text";
                             mapping.TargetText = newStr.GetString() ?? string.Empty;
@@ -193,7 +195,7 @@ namespace KeyboardManagerEditorUI.Pages
                             writer.WriteString("newRemapKeys", mapping.TargetShortcutKeys);
                             break;
                         case "Text":
-                            writer.WriteString("newRemapString", mapping.TargetText);
+                            writer.WriteString("unicodeText", mapping.TargetText);
                             break;
                         case "RunProgram":
                             writer.WriteString("runProgramFilePath", mapping.ProgramPath);
@@ -238,12 +240,41 @@ namespace KeyboardManagerEditorUI.Pages
                 File.WriteAllText(configPath, newJson);
 
                 Logger.LogInfo("Mouse mappings saved successfully");
+
+                // Signal the settings event to notify the engine to reload
+                SignalSettingsChanged();
             }
             catch (Exception ex)
             {
                 Logger.LogError($"Failed to save mouse mappings: {ex.Message}");
             }
         }
+
+        private static void SignalSettingsChanged()
+        {
+            IntPtr hEvent = CreateEvent(IntPtr.Zero, false, false, SettingsEventName);
+            if (hEvent != IntPtr.Zero)
+            {
+                SetEvent(hEvent);
+                CloseHandle(hEvent);
+                Logger.LogInfo($"Signaled {SettingsEventName} event");
+            }
+            else
+            {
+                Logger.LogError($"Failed to create {SettingsEventName} event");
+            }
+        }
+
+        [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+        private static extern IntPtr CreateEvent(IntPtr lpEventAttributes, bool bManualReset, bool bInitialState, string lpName);
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool SetEvent(IntPtr hEvent);
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool CloseHandle(IntPtr hObject);
 
         private static string GetConfigFilePath()
         {
@@ -352,6 +383,16 @@ namespace KeyboardManagerEditorUI.Pages
             {
                 MouseToKeyMappings.Add(mapping);
             }
+            else
+            {
+                // Force UI refresh by removing and re-adding the item
+                int index = MouseToKeyMappings.IndexOf(mapping);
+                if (index >= 0)
+                {
+                    MouseToKeyMappings.RemoveAt(index);
+                    MouseToKeyMappings.Insert(index, mapping);
+                }
+            }
 
             SaveMappings();
         }
@@ -408,6 +449,16 @@ namespace KeyboardManagerEditorUI.Pages
             if (!_isEditMode)
             {
                 KeyToMouseMappings.Add(mapping);
+            }
+            else
+            {
+                // Force UI refresh by removing and re-adding the item
+                int index = KeyToMouseMappings.IndexOf(mapping);
+                if (index >= 0)
+                {
+                    KeyToMouseMappings.RemoveAt(index);
+                    KeyToMouseMappings.Insert(index, mapping);
+                }
             }
 
             SaveMappings();
