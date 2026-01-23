@@ -38,7 +38,7 @@
 
                     <!--  Enable Dock  -->
                     <controls:SettingsCard x:Uid="Settings_GeneralPage_EnableDock_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xF596;}">
-                        <ToggleSwitch IsOn="{x:Bind viewModel.EnableDock, Mode=TwoWay}" />
+                        <ToggleSwitch IsOn="{x:Bind ViewModel.EnableDock, Mode=TwoWay}" />
                     </controls:SettingsCard>
 
                     <!--  Appearance Section  -->

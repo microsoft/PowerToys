@@ -35,6 +35,7 @@
 
             <local:IconInfoVisibilityConverter x:Key="IconInfoVisibilityConverter" />
             <local:BandAlignmentConverter x:Key="BandAlignmentConverter" Control="{x:Bind}" />
+            <local:BandAlignmentConverter2 x:Key="BandAlignmentConverter2" Control="{x:Bind}" />
 
             <DataTemplate x:Key="DeskbandTemplate" x:DataType="dockVm:DockItemViewModel">
                 <Grid>
@@ -45,6 +46,7 @@
                         RightTapped="BandItem_RightTapped"
                         Subtitle="{x:Bind Subtitle, Mode=OneWay}"
                         Tapped="BandItem_Tapped"
+                        TextVisibility="{x:Bind HasText, Mode=OneWay}"
                         ToolTip="{x:Bind Tooltip, Mode=OneWay}">
                         <local:DockItemControl.Icon>
                             <cpcontrols:IconBox
@@ -63,7 +65,7 @@
 
             <DataTemplate x:Key="HorizontalDockBandTemplate" x:DataType="dockVm:DockBandViewModel">
                 <ItemsControl
-                    HorizontalAlignment="{x:Bind Items, Converter={StaticResource BandAlignmentConverter}, Mode=OneWay}"
+                    HorizontalAlignment="Left"
                     ItemTemplate="{StaticResource DeskbandTemplate}"
                     ItemsPanel="{StaticResource HorizontalItemsPanel}"
                     ItemsSource="{x:Bind Items, Mode=OneWay}" />
@@ -71,7 +73,7 @@
 
             <DataTemplate x:Key="VerticalDockBandTemplate" x:DataType="dockVm:DockBandViewModel">
                 <ItemsControl
-                    HorizontalAlignment="{x:Bind Items, Converter={StaticResource BandAlignmentConverter}, Mode=OneWay}"
+                    HorizontalAlignment="Stretch"
                     ItemTemplate="{StaticResource DeskbandTemplate}"
                     ItemsPanel="{StaticResource VerticalItemsPanel}"
                     ItemsSource="{x:Bind Items, Mode=OneWay}" />

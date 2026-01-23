@@ -2,6 +2,9 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using Microsoft.CmdPal.Core.ViewModels;
+using Microsoft.CmdPal.UI.Controls;
+using Microsoft.CmdPal.UI.ViewModels.Dock;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
@@ -53,19 +56,31 @@ public sealed partial class DockItemControl : Control
         set => SetValue(IconProperty, value);
     }
 
+    public static readonly DependencyProperty TextVisibilityProperty =
+        DependencyProperty.Register(nameof(TextVisibility), typeof(Visibility), typeof(DockItemControl), new PropertyMetadata(null, OnTextPropertyChanged));
+
+    public Visibility TextVisibility
+    {
+        get => (Visibility)GetValue(TextVisibilityProperty);
+        set => SetValue(TextVisibilityProperty, value);
+    }
+
     private const string IconPresenterName = "IconPresenter";
     private const string TitleTextName = "TitleText";
     private const string SubtitleTextName = "SubtitleText";
+    private const string TextStackName = "TextStack";
 
     private FrameworkElement? _iconPresenter;
     private FrameworkElement? _titleText;
     private FrameworkElement? _subtitleText;
+    private FrameworkElement? _textStack;
 
     private static void OnTextPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
         if (d is DockItemControl control)
         {
             control.UpdateTextVisibility();
+            control.UpdateAlignment();
         }
     }
 
@@ -74,22 +89,32 @@ public sealed partial class DockItemControl : Control
         if (d is DockItemControl control)
         {
             control.UpdateIconVisibility();
+            control.UpdateAlignment();
         }
     }
 
-    private static bool IsNullOrEmpty(string? value) => string.IsNullOrEmpty(value);
+    internal bool HasTitle => !string.IsNullOrEmpty(Title);
+
+    internal bool HasSubtitle => !string.IsNullOrEmpty(Subtitle);
+
+    internal bool HasText => HasTitle || HasSubtitle;
 
     private void UpdateTextVisibility()
     {
-        if (_titleText is not null)
+        if (_textStack is not null)
         {
-            _titleText.Visibility = IsNullOrEmpty(Title) ? Visibility.Collapsed : Visibility.Visible;
+            _textStack.Visibility = HasText ? Visibility.Visible : Visibility.Collapsed;
         }
 
-        if (_subtitleText is not null)
-        {
-            _subtitleText.Visibility = IsNullOrEmpty(Subtitle) ? Visibility.Collapsed : Visibility.Visible;
-        }
+        // if (_titleText is not null)
+        // {
+        //    _titleText.Visibility = IsNullOrEmpty(Title) ? Visibility.Collapsed : Visibility.Visible;
+        // }
+
+        // if (_subtitleText is not null)
+        // {
+        //    _subtitleText.Visibility = IsNullOrEmpty(Subtitle) ? Visibility.Collapsed : Visibility.Visible;
+        // }
     }
 
     private void UpdateIconVisibility()
@@ -98,6 +123,26 @@ public sealed partial class DockItemControl : Control
         {
             _iconPresenter.Visibility = Icon is null ? Visibility.Collapsed : Visibility.Visible;
         }
+    }
+
+    private void UpdateAlignment()
+    {
+        var requestedTheme = ActualTheme;
+        var isLight = requestedTheme == ElementTheme.Light;
+        var showText = /*item.ShowLabel && item.*/HasText;
+        if (Icon is IconBox icoBox &&
+            icoBox.DataContext is DockItemViewModel item &&
+            item.Icon is IconInfoViewModel icon)
+        {
+            var showIcon = icon is not null && icon.HasIcon(isLight);
+            if (showText && showIcon)
+            {
+                HorizontalAlignment = HorizontalAlignment.Left;
+                return;
+            }
+        }
+
+        HorizontalAlignment = HorizontalAlignment.Center;
     }
 
     private void UpdateAllVisibility()
@@ -120,6 +165,7 @@ public sealed partial class DockItemControl : Control
         _iconPresenter = GetTemplateChild(IconPresenterName) as FrameworkElement;
         _titleText = GetTemplateChild(TitleTextName) as FrameworkElement;
         _subtitleText = GetTemplateChild(SubtitleTextName) as FrameworkElement;
+        _textStack = GetTemplateChild(TextStackName) as FrameworkElement;
 
         // Set initial visibility
         UpdateAllVisibility();

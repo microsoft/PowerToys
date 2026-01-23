@@ -50,6 +50,7 @@
             <Setter Property="Padding" Value="4,2,4,2" />
             <Setter Property="BorderThickness" Value="{ThemeResource ButtonBorderThemeThickness}" />
             <Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
+            <Setter Property="TextVisibility" Value="Visible" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="local:DockItemControl">
@@ -57,6 +58,7 @@
                             x:Name="PART_RootGrid"
                             Padding="{TemplateBinding Padding}"
                             VerticalAlignment="Stretch"
+                            MaxWidth="120"
                             Background="{TemplateBinding Background}"
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}"
@@ -78,11 +80,13 @@
                                 <StackPanel
                                     Grid.Column="1"
                                     Margin="8,0,8,0"
-                                    VerticalAlignment="Center">
+                                    VerticalAlignment="Center"
+                                    Visibility="{TemplateBinding TextVisibility}">
                                     <TextBlock
                                         x:Name="TitleText"
                                         HorizontalAlignment="Left"
                                         VerticalAlignment="Center"
+                                        MaxWidth="100"
                                         FontSize="12"
                                         Text="{TemplateBinding Title}"
                                         TextAlignment="Left"

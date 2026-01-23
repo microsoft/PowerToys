@@ -40,7 +40,7 @@
     <PublishSingleFile>false</PublishSingleFile>
     <DisableRuntimeMarshalling>false</DisableRuntimeMarshalling>
     <PublishAot>true</PublishAot>
-  </PropertyGroup> -->
+  </PropertyGroup>
 
   <PropertyGroup Condition="'$(CIBuild)' == 'true' or '$(GeneratePackageLocally)' == 'true'">
     <GenerateAppxPackageOnBuild>true</GenerateAppxPackageOnBuild>
