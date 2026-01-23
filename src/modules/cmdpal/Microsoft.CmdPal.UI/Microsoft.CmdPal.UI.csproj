@@ -30,7 +30,7 @@
   </PropertyGroup>
 
   <!-- For debugging purposes, uncomment this block to enable AOT builds -->
-  <PropertyGroup>
+  <!-- <PropertyGroup>
     <EnableCmdPalAOT>true</EnableCmdPalAOT>
     <GeneratePackageLocally>true</GeneratePackageLocally>
   </PropertyGroup>
@@ -40,7 +40,7 @@
     <PublishSingleFile>false</PublishSingleFile>
     <DisableRuntimeMarshalling>false</DisableRuntimeMarshalling>
     <PublishAot>true</PublishAot>
-  </PropertyGroup>
+  </PropertyGroup> -->
 
   <PropertyGroup Condition="'$(CIBuild)' == 'true' or '$(GeneratePackageLocally)' == 'true'">
     <GenerateAppxPackageOnBuild>true</GenerateAppxPackageOnBuild>
@@ -79,6 +79,7 @@
     <None Remove="Controls\ScreenPreview.xaml" />
     <None Remove="Controls\ScrollContainer.xaml" />
     <None Remove="Controls\SearchBar.xaml" />
+    <None Remove="Dock\DockItemControl.xaml" />
     <None Remove="IsEnabledTextBlock.xaml" />
     <None Remove="ListDetailPage.xaml" />
     <None Remove="LoadingPage.xaml" />
@@ -218,6 +219,12 @@
     <Content Update="Assets\WinGetLogo.svg">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Update="Dock\DockItemControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
 
   <ItemGroup>

@@ -13,4 +13,6 @@ internal sealed class Icons
     internal static IconInfo UnpinIcon => new("\uE77A"); // Unpin icon
 
     internal static IconInfo SettingsIcon => new("\uE713"); // Settings icon
+
+    internal static IconInfo EditIcon => new("\uE70F"); // Edit icon
 }

@@ -9,6 +9,7 @@ using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
 using Microsoft.CmdPal.Core.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Dock;
+using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.UI;
@@ -16,13 +17,12 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Media;
+using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 
 namespace Microsoft.CmdPal.UI.Dock;
 
-#pragma warning disable SA1402 // File may only contain a single type
-
-public sealed partial class DockControl : UserControl, INotifyPropertyChanged, IRecipient<CloseContextMenuMessage>
+public sealed partial class DockControl : UserControl, INotifyPropertyChanged, IRecipient<CloseContextMenuMessage>, IRecipient<EnterDockEditModeMessage>
 {
     private DockViewModel _viewModel;
 
@@ -39,8 +39,29 @@ public sealed partial class DockControl : UserControl, INotifyPropertyChanged, I
             {
                 field = value;
                 PropertyChanged?.Invoke(this, new(nameof(ItemsOrientation)));
+                UpdateBandTemplates();
             }
         }
+    }
+
+    private void UpdateBandTemplates()
+    {
+        var panelKey = ItemsOrientation == Orientation.Horizontal
+            ? "HorizontalItemsPanel"
+            : "VerticalItemsPanel";
+
+        var panel = (ItemsPanelTemplate)Resources[panelKey];
+
+        StartItemsListView.ItemsPanel = panel;
+        EndItemsListView.ItemsPanel = panel;
+
+        // Force the selector to re-evaluate by refreshing ItemsSource
+        var startItems = StartItemsListView.ItemsSource;
+        var endItems = EndItemsListView.ItemsSource;
+        StartItemsListView.ItemsSource = null;
+        EndItemsListView.ItemsSource = null;
+        StartItemsListView.ItemsSource = startItems;
+        EndItemsListView.ItemsSource = endItems;
     }
 
     public DockSide DockSide
@@ -52,6 +73,20 @@ public sealed partial class DockControl : UserControl, INotifyPropertyChanged, I
             {
                 field = value;
                 PropertyChanged?.Invoke(this, new(nameof(DockSide)));
+            }
+        }
+    }
+
+    public bool IsEditMode
+    {
+        get => field;
+        set
+        {
+            if (field != value)
+            {
+                field = value;
+                PropertyChanged?.Invoke(this, new(nameof(IsEditMode)));
+                UpdateEditMode(value);
             }
         }
     }
@@ -109,6 +144,81 @@ public sealed partial class DockControl : UserControl, INotifyPropertyChanged, I
         _viewModel = viewModel;
         InitializeComponent();
         WeakReferenceMessenger.Default.Register<CloseContextMenuMessage>(this);
+        WeakReferenceMessenger.Default.Register<EnterDockEditModeMessage>(this);
+
+        // Start with edit mode disabled - normal click behavior
+        UpdateEditMode(false);
+    }
+
+    public void Receive(EnterDockEditModeMessage message)
+    {
+        // Message may arrive from a background thread, dispatch to UI thread
+        DispatcherQueue.TryEnqueue(() =>
+        {
+            EnterEditMode();
+        });
+    }
+
+    private void UpdateEditMode(bool isEditMode)
+    {
+        // Enable/disable drag-and-drop based on edit mode
+        StartItemsListView.CanDragItems = isEditMode;
+        StartItemsListView.CanReorderItems = isEditMode;
+        StartItemsListView.AllowDrop = isEditMode;
+
+        EndItemsListView.CanDragItems = isEditMode;
+        EndItemsListView.CanReorderItems = isEditMode;
+        EndItemsListView.AllowDrop = isEditMode;
+
+        if (isEditMode)
+        {
+            EditButtonsTeachingTip.PreferredPlacement = DockSide switch
+            {
+                DockSide.Left => TeachingTipPlacementMode.Right,
+                DockSide.Right => TeachingTipPlacementMode.Left,
+                DockSide.Top => TeachingTipPlacementMode.Bottom,
+                DockSide.Bottom => TeachingTipPlacementMode.Top,
+                _ => TeachingTipPlacementMode.Auto,
+            };
+        }
+
+        EditButtonsTeachingTip.IsOpen = isEditMode;
+
+        // Update visual state
+        VisualStateManager.GoToState(this, isEditMode ? "EditModeOn" : "EditModeOff", true);
+    }
+
+    internal void EnterEditMode()
+    {
+        // Snapshot current state so we can restore on discard
+        ViewModel.SnapshotBandOrder();
+        IsEditMode = true;
+    }
+
+    internal void ExitEditMode()
+    {
+        IsEditMode = false;
+
+        // Save all changes when exiting edit mode
+        ViewModel.SaveBandOrder();
+    }
+
+    internal void DiscardEditMode()
+    {
+        IsEditMode = false;
+
+        // Restore the original band order from snapshot
+        ViewModel.RestoreBandOrder();
+    }
+
+    private void DoneEditingButton_Click(object sender, RoutedEventArgs e)
+    {
+        ExitEditMode();
+    }
+
+    private void DiscardEditingButton_Click(object sender, RoutedEventArgs e)
+    {
+        DiscardEditMode();
     }
 
     internal void UpdateSettings(DockSettings settings)
@@ -127,52 +237,58 @@ public sealed partial class DockControl : UserControl, INotifyPropertyChanged, I
         {
             RootGrid.BorderBrush = new SolidColorBrush(Colors.Transparent);
         }
+
+        // Ensure templates are updated on initial load (setter only updates on change)
+        UpdateBandTemplates();
     }
 
     private void BandItem_Tapped(object sender, Microsoft.UI.Xaml.Input.TappedRoutedEventArgs e)
     {
-        var pos = e.GetPosition(null);
-        var button = sender as Button;
-        var item = button?.DataContext as DockItemViewModel;
-
-        if (item is not null)
+        // Ignore clicks when in edit mode - allow drag behavior instead
+        if (IsEditMode)
         {
-            // Use the center of the button as the point to open at. This is
-            // more reliable than using the tap position. This allows multiple
-            // clicks anywhere in the button to open the palette in a consistent
-            // location.
-            var buttonPos = button!.TransformToVisual(null).TransformPoint(new Point(0, 0));
-            var buttonCenter = new Point(
-                buttonPos.X + (button.ActualWidth / 2),
-                buttonPos.Y + (button.ActualHeight / 2));
+            return;
+        }
 
-            InvokeItem(item, buttonCenter);
+        if (sender is DockItemControl dockItem && dockItem.DataContext is DockItemViewModel item)
+        {
+            // Use the center of the border as the point to open at
+            var borderPos = dockItem.TransformToVisual(null).TransformPoint(new Point(0, 0));
+            var borderCenter = new Point(
+                borderPos.X + (dockItem.ActualWidth / 2),
+                borderPos.Y + (dockItem.ActualHeight / 2));
+
+            InvokeItem(item, borderCenter);
+            e.Handled = true;
         }
     }
 
     private void BandItem_RightTapped(object sender, Microsoft.UI.Xaml.Input.RightTappedRoutedEventArgs e)
     {
-        var pos = e.GetPosition(null);
-        var button = sender as Button;
-        var item = button?.DataContext as DockItemViewModel;
-        if (item is not null)
+        // Ignore right-clicks when in edit mode
+        if (IsEditMode)
+        {
+            return;
+        }
+
+        if (sender is DockItemControl dockItem && dockItem.DataContext is DockItemViewModel item)
         {
             if (item.HasMoreCommands)
             {
                 ContextControl.ViewModel.SelectedItem = item;
                 ContextMenuFlyout.ShowAt(
-                button,
-                new FlyoutShowOptions()
-                {
-                    ShowMode = FlyoutShowMode.Standard,
-                    Placement = FlyoutPlacementMode.TopEdgeAlignedRight,
-                });
+                    dockItem,
+                    new FlyoutShowOptions()
+                    {
+                        ShowMode = FlyoutShowMode.Standard,
+                        Placement = FlyoutPlacementMode.TopEdgeAlignedRight,
+                    });
                 e.Handled = true;
             }
         }
     }
 
-    private void InvokeItem(DockItemViewModel item, global::Windows.Foundation.Point pos)
+    private void InvokeItem(DockItemViewModel item, Point pos)
     {
         var command = item.Command;
         try
@@ -236,7 +352,7 @@ public sealed partial class DockControl : UserControl, INotifyPropertyChanged, I
         }
 
         var requestedTheme = ActualTheme;
-        var isLight = requestedTheme == Microsoft.UI.Xaml.ElementTheme.Light;
+        var isLight = requestedTheme == ElementTheme.Light;
 
         // Check if any of the items have both an icon and a label.
         //
@@ -256,26 +372,118 @@ public sealed partial class DockControl : UserControl, INotifyPropertyChanged, I
 
         return HorizontalAlignment.Center;
     }
-}
 
-internal sealed partial class BandAlignmentConverter : Microsoft.UI.Xaml.Data.IValueConverter
-{
-    public DockControl? Control { get; set; }
+    private DockBandViewModel? _draggedBand;
 
-    public object Convert(object value, Type targetType, object parameter, string language)
+    private void BandListView_DragItemsStarting(object sender, DragItemsStartingEventArgs e)
     {
-        if (value is ObservableCollection<DockItemViewModel> items && Control is not null)
+        if (e.Items.Count > 0 && e.Items[0] is DockBandViewModel band)
         {
-            return Control.GetBandAlignment(items);
+            _draggedBand = band;
+            e.Data.RequestedOperation = DataPackageOperation.Move;
+        }
+    }
+
+    private void BandListView_DragOver(object sender, DragEventArgs e)
+    {
+        if (_draggedBand != null)
+        {
+            e.AcceptedOperation = DataPackageOperation.Move;
+        }
+    }
+
+    private void BandListView_DragItemsCompleted(ListViewBase sender, DragItemsCompletedEventArgs args)
+    {
+        // Reordering within the same list is handled automatically by ListView
+        // We just need to sync the ViewModel order without saving
+        if (args.DropResult == DataPackageOperation.Move && _draggedBand != null)
+        {
+            var isStartList = sender == StartItemsListView;
+            var targetSide = isStartList ? DockPinSide.Start : DockPinSide.End;
+            var targetCollection = isStartList ? ViewModel.StartItems : ViewModel.EndItems;
+
+            // Find the new index and sync ViewModel (without saving)
+            var newIndex = targetCollection.IndexOf(_draggedBand);
+            if (newIndex >= 0)
+            {
+                ViewModel.SyncBandPosition(_draggedBand, targetSide, newIndex);
+            }
         }
 
-        return HorizontalAlignment.Center;
+        _draggedBand = null;
     }
 
-    public object ConvertBack(object value, Type targetType, object parameter, string language)
+    private void StartItemsListView_Drop(object sender, DragEventArgs e)
     {
-        throw new NotImplementedException();
+        HandleCrossListDrop(DockPinSide.Start, e);
+    }
+
+    private void EndItemsListView_Drop(object sender, DragEventArgs e)
+    {
+        HandleCrossListDrop(DockPinSide.End, e);
+    }
+
+    private void HandleCrossListDrop(DockPinSide targetSide, DragEventArgs e)
+    {
+        if (_draggedBand == null)
+        {
+            return;
+        }
+
+        // Check if this is a cross-list drop (dragging from the other list)
+        var isInStart = ViewModel.StartItems.Contains(_draggedBand);
+        var isInEnd = ViewModel.EndItems.Contains(_draggedBand);
+
+        var sourceIsStart = isInStart;
+        var targetIsStart = targetSide == DockPinSide.Start;
+
+        // Only handle cross-list drops here; same-list reorders are handled in DragItemsCompleted
+        if (sourceIsStart != targetIsStart)
+        {
+            // Calculate drop index based on drop position
+            var targetListView = targetIsStart ? StartItemsListView : EndItemsListView;
+            var targetCollection = targetIsStart ? ViewModel.StartItems : ViewModel.EndItems;
+
+            var dropIndex = GetDropIndex(targetListView, e, targetCollection.Count);
+
+            // Move the band to the new side (without saving - save happens on Done)
+            ViewModel.MoveBandWithoutSaving(_draggedBand, targetSide, dropIndex);
+            e.Handled = true;
+        }
+    }
+
+    private int GetDropIndex(ListView listView, DragEventArgs e, int itemCount)
+    {
+        var position = e.GetPosition(listView);
+
+        // Find the item at the drop position
+        for (var i = 0; i < itemCount; i++)
+        {
+            if (listView.ContainerFromIndex(i) is ListViewItem container)
+            {
+                var itemBounds = container.TransformToVisual(listView).TransformBounds(
+                    new Rect(0, 0, container.ActualWidth, container.ActualHeight));
+
+                if (ItemsOrientation == Orientation.Horizontal)
+                {
+                    // For horizontal layout, check X position
+                    if (position.X < itemBounds.X + (itemBounds.Width / 2))
+                    {
+                        return i;
+                    }
+                }
+                else
+                {
+                    // For vertical layout, check Y position
+                    if (position.Y < itemBounds.Y + (itemBounds.Height / 2))
+                    {
+                        return i;
+                    }
+                }
+            }
+        }
+
+        // If we're past all items, insert at the end
+        return itemCount;
     }
 }
-
-#pragma warning restore SA1402 // File may only contain a single type
