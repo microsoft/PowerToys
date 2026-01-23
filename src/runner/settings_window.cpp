@@ -3,6 +3,7 @@
 #include <Sddl.h>
 #include <sstream>
 #include <aclapi.h>
+#include <shobjidl.h>
 
 #include "powertoy_module.h"
 #include <common/interop/two_way_pipe_message_ipc.h>
@@ -62,6 +63,74 @@ json::JsonObject get_all_settings()
     result.SetNamedValue(L"general", get_general_settings().to_json());
     result.SetNamedValue(L"powertoys", get_power_toys_settings());
     return result;
+}
+
+namespace
+{
+    constexpr wchar_t SettingsApplicationId[] = L"PowerToys.SettingsUI";
+    constexpr wchar_t SparseAppFamilyDev[] = L"Microsoft.PowerToys.SparseApp_djwsxzxb4ksa8";
+    constexpr wchar_t SparseAppFamilyStore[] = L"Microsoft.PowerToys.SparseApp_8wekyb3d8bbwe";
+
+    bool try_activate_settings_with_identity(const std::wstring& arguments, PROCESS_INFORMATION& process_info)
+    {
+        HRESULT hr = CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
+        const bool should_uninit = SUCCEEDED(hr);
+        if (hr == RPC_E_CHANGED_MODE)
+        {
+            hr = S_OK;
+        }
+
+        if (FAILED(hr))
+        {
+            Logger::warn(L"Settings: CoInitializeEx failed. hr=0x{:x}", hr);
+            return false;
+        }
+
+        IApplicationActivationManager* activation_manager = nullptr;
+        hr = CoCreateInstance(CLSID_ApplicationActivationManager,
+                              nullptr,
+                              CLSCTX_INPROC_SERVER,
+                              IID_PPV_ARGS(&activation_manager));
+        if (FAILED(hr))
+        {
+            Logger::warn(L"Settings: CoCreateInstance(ApplicationActivationManager) failed. hr=0x{:x}", hr);
+            if (should_uninit)
+            {
+                CoUninitialize();
+            }
+            return false;
+        }
+
+        auto try_activate = [&](const wchar_t* family) -> bool {
+            std::wstring aumid = std::wstring(family) + L"!" + SettingsApplicationId;
+            DWORD pid = 0;
+            HRESULT hr_activate = activation_manager->ActivateApplication(aumid.c_str(),
+                                                                          arguments.c_str(),
+                                                                          AO_NONE,
+                                                                          &pid);
+            if (SUCCEEDED(hr_activate) && pid != 0)
+            {
+                process_info = {};
+                process_info.dwProcessId = pid;
+                process_info.hProcess = OpenProcess(SYNCHRONIZE | PROCESS_QUERY_LIMITED_INFORMATION, FALSE, pid);
+                Logger::info(L"Settings: Activated via AUMID {} (pid {}).", aumid, pid);
+                return true;
+            }
+
+            Logger::warn(L"Settings: ActivateApplication failed for {}. hr=0x{:x}", aumid, hr_activate);
+            return false;
+        };
+
+        const bool activated = try_activate(SparseAppFamilyDev) || try_activate(SparseAppFamilyStore);
+
+        activation_manager->Release();
+        if (should_uninit)
+        {
+            CoUninitialize();
+        }
+
+        return activated;
+    }
 }
 
 std::optional<std::wstring> dispatch_json_action_to_module(const json::JsonObject& powertoys_configs)
@@ -522,14 +591,33 @@ void run_settings_window(bool show_oobe_window, bool show_scoobe_window, std::op
                                                settings_showOobe,
                                                settings_showScoobe,
                                                settings_containsSettingsWindow);
+    std::wstring activation_args = fmt::format(L"{} {} {} {} {} {} {} {} {}",
+                                               powertoys_pipe_name,
+                                               settings_pipe_name,
+                                               std::to_wstring(powertoys_pid),
+                                               settings_theme,
+                                               settings_elevatedStatus,
+                                               settings_isUserAnAdmin,
+                                               settings_showOobe,
+                                               settings_showScoobe,
+                                               settings_containsSettingsWindow);
 
     if (settings_window.has_value())
     {
         executable_args.append(L" ");
         executable_args.append(settings_window.value());
+        activation_args.append(L" ");
+        activation_args.append(settings_window.value());
     }
 
     BOOL process_created = false;
+
+    // Prefer activating via package identity so the package graph (framework deps) is applied.
+    if (try_activate_settings_with_identity(activation_args, process_info))
+    {
+        process_created = true;
+        g_isLaunchInProgress = false;
+    }
 
     // Commented out to fix #22659
     // Running settings non-elevated and modules elevated when PowerToys is running elevated results

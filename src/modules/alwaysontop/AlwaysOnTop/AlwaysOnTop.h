@@ -10,6 +10,7 @@
 
 #include <common/hooks/WinHookEvent.h>
 #include <common/notifications/NotificationUtil.h>
+#include <common/utils/window.h>
 
 class AlwaysOnTop : public SettingsObserver
 {
@@ -38,6 +39,8 @@ private:
     enum class HotkeyId : int
     {
         Pin = 1,
+        IncreaseOpacity = 2,
+        DecreaseOpacity = 3,
     };
 
     static inline AlwaysOnTop* s_instance = nullptr;
@@ -48,8 +51,21 @@ private:
     HWND m_window{ nullptr };
     HINSTANCE m_hinstance;
     std::map<HWND, std::unique_ptr<WindowBorder>> m_topmostWindows{};
+    std::map<HWND, int> m_windowTransparency{}; // Track transparency per window (20-100)
+    
+    // Store original window layered state for proper restoration
+    struct WindowLayeredState {
+        bool hadLayeredStyle = false;
+        BYTE originalAlpha = 255;
+        bool usedColorKey = false;
+        COLORREF colorKey = 0;
+    };
+    std::map<HWND, WindowLayeredState> m_windowOriginalLayeredState{};
+    
     HANDLE m_hPinEvent;
     HANDLE m_hTerminateEvent;
+    HANDLE m_hIncreaseOpacityEvent;
+    HANDLE m_hDecreaseOpacityEvent;
     DWORD m_mainThreadId;
     std::thread m_thread;
     const bool m_useCentralizedLLKH;
@@ -77,6 +93,12 @@ private:
     bool UnpinTopmostWindow(HWND window) const noexcept;
     bool AssignBorder(HWND window);
     void RefreshBorders();
+
+    // Transparency methods
+    HWND GetTransparencyTarget(HWND window);
+    void AdjustTransparency(HWND window, int delta);
+    void SetTransparency(HWND window, int percentage);
+    void RemoveTransparency(HWND window);
 
     virtual void SettingsUpdate(SettingId type) override;
 

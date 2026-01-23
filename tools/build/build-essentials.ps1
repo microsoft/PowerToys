@@ -63,7 +63,7 @@ if (-not $Platform -or $Platform -eq '') {
 }
 
 # Ensure solution packages are restored
-RestoreThenBuild 'PowerToys.slnx' '' $Platform $Configuration $true
+RestoreThenBuild 'PowerToys.slnx' '' $Platform $Confi.guration $true
 
 # Build both runner and settings
 $ProjectsToBuild = @(".\src\runner\runner.vcxproj", ".\src\settings-ui\Settings.UI\PowerToys.Settings.csproj")

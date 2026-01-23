@@ -29,6 +29,7 @@
   </Resources>
   <Dependencies>
     <TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.19000.0" MaxVersionTested="10.0.26226.0" />
+    <PackageDependency Name="Microsoft.WindowsAppRuntime.2.0-experimental3" MinVersion="0.676.658.0" Publisher="CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US" />
   </Dependencies>
   <Capabilities>
     <Capability Name="internetClient" />
