@@ -196,6 +196,7 @@ public partial class DockBandSettingsViewModel : ObservableObject
     private void OnPinSideChanged(DockPinSide value)
     {
         SetBandPosition(value, null);
+        _pinSide = value;
     }
 }
 
