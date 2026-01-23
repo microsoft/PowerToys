@@ -68,14 +68,13 @@ jobs:
 
   - template: .\steps-restore-nuget.yml
 
-  - task: NuGetCommand@2
+  - task: MSBuild@1
     displayName: Restore solution-level NuGet packages
     inputs:
-      command: restore
-      feedsToUse: config
-      configPath: nuget.config
-      restoreSolution: PowerToys.slnx
-      restoreDirectory: '$(Build.SourcesDirectory)\packages'
+      solution: PowerToys.slnx
+      msbuildArguments: '/t:restore /p:RestorePackagesConfig=true'
+      platform: $(BuildPlatform)
+      configuration: $(BuildConfiguration)
 
   # Build all UI test projects if no specific modules are specified
   - ${{ if eq(length(parameters.uiTestModules), 0) }}:

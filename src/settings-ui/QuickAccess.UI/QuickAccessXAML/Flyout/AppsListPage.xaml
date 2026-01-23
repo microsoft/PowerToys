@@ -1,0 +1,83 @@
+﻿<Page
+    x:Class="Microsoft.PowerToys.QuickAccess.Flyout.AppsListPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:converters="using:Microsoft.PowerToys.Settings.UI.Controls.Converters"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:Microsoft.PowerToys.QuickAccess.Flyout"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:viewModels="using:Microsoft.PowerToys.QuickAccess.ViewModels"
+    mc:Ignorable="d">
+    <Page.Resources>
+        <converters:EnumToBooleanConverter x:Key="EnumToBooleanConverter" />
+    </Page.Resources>
+    <Grid Background="{ThemeResource LayerOnAcrylicFillColorDefaultBrush}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <Grid Padding="24,32,24,0">
+            <TextBlock
+                x:Uid="AllAppsTxt"
+                VerticalAlignment="Center"
+                Style="{StaticResource BodyStrongTextBlockStyle}" />
+            <StackPanel
+                HorizontalAlignment="Right"
+                Orientation="Horizontal"
+                Spacing="8">
+                <Button
+                    x:Uid="Dashboard_SortBy"
+                    VerticalAlignment="Center"
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                    Style="{StaticResource SubtleButtonStyle}">
+                    <ToolTipService.ToolTip>
+                        <TextBlock x:Uid="Dashboard_SortBy_ToolTip" />
+                    </ToolTipService.ToolTip>
+                    <Button.Content>
+                        <FontIcon FontSize="14" Glyph="&#xE8CB;" />
+                    </Button.Content>
+                    <Button.Flyout>
+                        <MenuFlyout Placement="BottomEdgeAlignedRight">
+                            <ToggleMenuFlyoutItem
+                                x:Uid="Dashboard_SortAlphabetical"
+                                Click="SortAlphabetical_Click"
+                                IsChecked="{x:Bind ViewModel.DashboardSortOrder, Mode=OneWay, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Alphabetical}" />
+                            <ToggleMenuFlyoutItem
+                                x:Uid="Dashboard_SortByStatus"
+                                Click="SortByStatus_Click"
+                                IsChecked="{x:Bind ViewModel.DashboardSortOrder, Mode=OneWay, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=ByStatus}" />
+                        </MenuFlyout>
+                    </Button.Flyout>
+                </Button>
+                <Button
+                    x:Uid="BackBtn"
+                    Padding="8,4,8,4"
+                    VerticalAlignment="Center"
+                    Click="BackButton_Click">
+                    <Button.Content>
+                        <StackPanel
+                            VerticalAlignment="Center"
+                            Orientation="Horizontal"
+                            Spacing="12">
+                            <FontIcon
+                                Margin="0,2,0,0"
+                                FontSize="12"
+                                Glyph="&#xe76b;" />
+                            <TextBlock x:Uid="BackLabel" Style="{StaticResource CaptionTextBlockStyle}" />
+                        </StackPanel>
+                    </Button.Content>
+                </Button>
+            </StackPanel>
+        </Grid>
+        <Grid Grid.Row="1">
+            <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+                <controls:ModuleList
+                    Margin="8,12,12,12"
+                    DividerThickness="0,0,0,0"
+                    IsItemClickable="False"
+                    ItemsSource="{x:Bind ViewModel.FlyoutMenuItems, Mode=OneWay}" />
+            </ScrollViewer>
+        </Grid>
+    </Grid>
+</Page>

@@ -19,44 +19,36 @@ public partial class CommandItem : BaseObservable, ICommandItem, IExtendedAttrib
     private DataPackage? _dataPackage;
     private DataPackageView? _dataPackageView;
 
-    public virtual IIconInfo? Icon
-    {
-        get => field;
-        set
-        {
-            field = value;
-            OnPropertyChanged(nameof(Icon));
-        }
-    }
+    public virtual IIconInfo? Icon { get; set => SetProperty(ref field, value); }
 
     public virtual string Title
     {
         get => !string.IsNullOrEmpty(_title) ? _title : _command?.Name ?? string.Empty;
-
         set
         {
+            var oldTitle = Title;
             _title = value;
-            OnPropertyChanged(nameof(Title));
+            if (Title != oldTitle)
+            {
+                OnPropertyChanged();
+            }
         }
     }
 
-    public virtual string Subtitle
-    {
-        get;
-        set
-        {
-            field = value;
-            OnPropertyChanged(nameof(Subtitle));
-        }
-    }
-
-= string.Empty;
+    public virtual string Subtitle { get; set => SetProperty(ref field, value); } = string.Empty;
 
     public virtual ICommand? Command
     {
         get => _command;
         set
         {
+            if (EqualityComparer<ICommand?>.Default.Equals(value, _command))
+            {
+                return;
+            }
+
+            var oldTitle = Title;
+
             if (_commandListener is not null)
             {
                 _commandListener.Detach();
@@ -71,8 +63,8 @@ public partial class CommandItem : BaseObservable, ICommandItem, IExtendedAttrib
                 value.PropChanged += _commandListener.OnEvent;
             }
 
-            OnPropertyChanged(nameof(Command));
-            if (string.IsNullOrEmpty(_title))
+            OnPropertyChanged();
+            if (string.IsNullOrEmpty(_title) && oldTitle != Title)
             {
                 OnPropertyChanged(nameof(Title));
             }
@@ -88,17 +80,7 @@ public partial class CommandItem : BaseObservable, ICommandItem, IExtendedAttrib
         }
     }
 
-    public virtual IContextItem[] MoreCommands
-    {
-        get;
-        set
-        {
-            field = value;
-            OnPropertyChanged(nameof(MoreCommands));
-        }
-    }
-
-= [];
+    public virtual IContextItem[] MoreCommands { get; set => SetProperty(ref field, value); } = [];
 
     public DataPackage? DataPackage
     {

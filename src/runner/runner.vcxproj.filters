@@ -48,6 +48,9 @@
     <ClCompile Include="hotkey_conflict_detector.cpp">
       <Filter>Utils</Filter>
     </ClCompile>
+    <ClCompile Include="quick_access_host.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -102,6 +105,9 @@
     <ClInclude Include="hotkey_conflict_detector.h">
       <Filter>Utils</Filter>
     </ClInclude>
+    <ClInclude Include="quick_access_host.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Utils">
@@ -116,9 +122,10 @@
   </ItemGroup>
   <ItemGroup>
     <CopyFileToFolders Include="svgs\icon.ico" />
+    <CopyFileToFolders Include="svgs\PowerToysDark.ico" />
+    <CopyFileToFolders Include="svgs\PowerToysWhite.ico" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
     <None Include="runner.base.rc" />
   </ItemGroup>
   <ItemGroup>

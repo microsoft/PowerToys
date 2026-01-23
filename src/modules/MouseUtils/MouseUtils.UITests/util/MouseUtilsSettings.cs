@@ -32,7 +32,6 @@ namespace MouseUtils.UITests
             public const string FindMyMouseExcludedApps = "MouseUtils_FindMyMouseExcludedAppsId";
             public const string FindMyMouseBackgroundColor = "MouseUtils_FindMyMouseBackgroundColorId";
             public const string FindMyMouseSpotlightColor = "MouseUtils_FindMyMouseSpotlightColorId";
-            public const string FindMyMouseOverlayOpacity = "MouseUtils_FindMyMouseOverlayOpacityId";
             public const string FindMyMouseSpotlightZoom = "MouseUtils_FindMyMouseSpotlightZoomId";
             public const string FindMyMouseSpotlightRadius = "MouseUtils_FindMyMouseSpotlightRadiusId";
             public const string FindMyMouseAnimationDuration = "MouseUtils_FindMyMouseAnimationDurationId";
@@ -72,10 +71,10 @@ namespace MouseUtils.UITests
 
         private static readonly Dictionary<MouseUtils, string> MouseUtilUIToggleMap = new()
         {
-            [MouseUtils.MouseHighlighter] = @"Enable Mouse Highlighter",
-            [MouseUtils.FindMyMouse] = @"Enable Find My Mouse",
-            [MouseUtils.MousePointerCrosshairs] = @"Enable Mouse Pointer Crosshairs",
-            [MouseUtils.MouseJump] = @"Enable Mouse Jump",
+            [MouseUtils.MouseHighlighter] = @"Mouse Highlighter",
+            [MouseUtils.FindMyMouse] = @"Find My Mouse",
+            [MouseUtils.MousePointerCrosshairs] = @"Mouse Pointer Crosshairs",
+            [MouseUtils.MouseJump] = @"Mouse Jump",
         };
 
         public static string GetMouseUtilUIName(MouseUtils element)

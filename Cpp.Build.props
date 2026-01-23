@@ -42,6 +42,11 @@
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
+      <!-- Make angle-bracket includes external and turn off code analysis for them -->
+      <TreatAngleIncludeAsExternal>true</TreatAngleIncludeAsExternal>
+      <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
+      <DisableAnalyzeExternal>true</DisableAnalyzeExternal>
+
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <PrecompiledHeader Condition="'$(UsePrecompiledHeaders)' != 'false'">Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
@@ -112,13 +117,11 @@
   </PropertyGroup>
 
   <!-- Debug/Release props -->
-  <PropertyGroup Condition="'$(Configuration)'=='Debug'"
-    Label="Configuration">
+  <PropertyGroup Condition="'$(Configuration)'=='Debug'" Label="Configuration">
     <UseDebugLibraries>true</UseDebugLibraries>
     <LinkIncremental>true</LinkIncremental>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)'=='Release'"
-    Label="Configuration">
+  <PropertyGroup Condition="'$(Configuration)'=='Release'" Label="Configuration">
     <UseDebugLibraries>false</UseDebugLibraries>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <LinkIncremental>false</LinkIncremental>

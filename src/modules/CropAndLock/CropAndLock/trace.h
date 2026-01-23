@@ -12,8 +12,10 @@ public:
         static void Enable(bool enabled) noexcept;
         static void ActivateReparent() noexcept;
         static void ActivateThumbnail() noexcept;
+        static void ActivateScreenshot() noexcept;
         static void CreateReparentWindow() noexcept;
         static void CreateThumbnailWindow() noexcept;
-        static void SettingsTelemetry(PowertoyModuleIface::Hotkey&, PowertoyModuleIface::Hotkey&) noexcept;
+        static void CreateScreenshotWindow() noexcept;
+        static void SettingsTelemetry(PowertoyModuleIface::Hotkey&, PowertoyModuleIface::Hotkey&, PowertoyModuleIface::Hotkey&) noexcept;
     };
 };

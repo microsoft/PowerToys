@@ -89,6 +89,12 @@
     <None Include="testdata\xmp_test_2.jpg">
       <DeploymentContent>true</DeploymentContent>
     </None>
+    <None Include="testdata\heif_test.heic">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="testdata\avif_test.avif">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
     <None Include="testdata\ATTRIBUTION.md">
       <DeploymentContent>true</DeploymentContent>
     </None>
