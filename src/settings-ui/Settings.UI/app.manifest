@@ -2,6 +2,11 @@
 <assembly manifestVersion="1.0" xmlns="urn:schemas-microsoft-com:asm.v1">
   <assemblyIdentity version="1.0.0.0" name="PowerToys.Settings.app"/>
 
+  <msix xmlns="urn:schemas-microsoft-com:msix.v1"
+        packageName="Microsoft.PowerToys.SparseApp"
+        applicationId="PowerToys.SettingsUI"
+        publisher="CN=PowerToys Dev, O=PowerToys, L=Redmond, S=Washington, C=US" />
+
   <application xmlns="urn:schemas-microsoft-com:asm.v3">
     <windowsSettings>
       <!-- The combination of below two tags have the following effect:

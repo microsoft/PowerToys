@@ -12,7 +12,8 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Common.Search;
-using Common.Search.FuzzSearch;
+using Common.Search.SemanticSearch;
+using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Views;
 using Microsoft.Windows.ApplicationModel.Resources;
@@ -37,8 +38,10 @@ namespace Microsoft.PowerToys.Settings.UI.Services
         private const string PrebuiltIndexResourceName = "Microsoft.PowerToys.Settings.UI.Assets.search.index.json";
         private static readonly JsonSerializerOptions SerializerOptions = new() { PropertyNameCaseInsensitive = true };
 
+        private const string DefaultIndexName = "PowerToys.Settings";
+
         public SettingsSearch()
-            : this(new FuzzSearchEngine<SettingEntry>())
+            : this(new SemanticSearchEngine<SettingEntry>(DefaultIndexName))
         {
         }
 
@@ -80,19 +83,23 @@ namespace Microsoft.PowerToys.Settings.UI.Services
             {
                 if (_isIndexBuilt)
                 {
+                    Logger.LogDebug("[SettingsSearch] BuildIndexAsync skipped: index already built.");
                     return Task.CompletedTask;
                 }
 
                 if (_isIndexBuilding)
                 {
+                    Logger.LogDebug("[SettingsSearch] BuildIndexAsync skipped: index build already in progress.");
                     return _buildTask ?? Task.CompletedTask;
                 }
 
                 if (_buildTask != null)
                 {
+                    Logger.LogDebug("[SettingsSearch] BuildIndexAsync skipped: build task already scheduled.");
                     return _buildTask;
                 }
 
+                Logger.LogInfo("[SettingsSearch] BuildIndexAsync started.");
                 _buildTask = BuildIndexInternalAsync(cancellationToken);
                 return _buildTask;
             }
@@ -116,17 +123,25 @@ namespace Microsoft.PowerToys.Settings.UI.Services
                 _pageTypeCache.Clear();
             }
 
+            Logger.LogInfo($"[SettingsSearch] Initializing index. Entries={builtIndex.Length}, Engine={_searchEngine.GetType().Name}.");
             CachePageNames(builtIndex);
 
             try
             {
                 if (_searchEngine.IsReady)
                 {
+                    Logger.LogDebug("[SettingsSearch] Clearing existing search engine index.");
                     await _searchEngine.ClearAsync(cancellationToken).ConfigureAwait(false);
                 }
                 else
                 {
+                    Logger.LogDebug("[SettingsSearch] Initializing search engine.");
                     await _searchEngine.InitializeAsync(cancellationToken).ConfigureAwait(false);
+                }
+
+                if (!_searchEngine.IsReady)
+                {
+                    Logger.LogWarning("[SettingsSearch] Search engine not ready after initialization.");
                 }
 
                 await _searchEngine.IndexBatchAsync(builtIndex, cancellationToken).ConfigureAwait(false);
@@ -135,10 +150,12 @@ namespace Microsoft.PowerToys.Settings.UI.Services
                 {
                     _isIndexBuilt = true;
                 }
+
+                Logger.LogInfo($"[SettingsSearch] Index initialized. Entries={builtIndex.Length}, EngineReady={_searchEngine.IsReady}.");
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"[SettingsSearch] CRITICAL ERROR initializing search engine: {ex.Message}\n{ex.StackTrace}");
+                Logger.LogError($"[SettingsSearch] CRITICAL ERROR initializing search engine: {ex.Message}", ex);
             }
             finally
             {
@@ -163,7 +180,7 @@ namespace Microsoft.PowerToys.Settings.UI.Services
 
             if (!IsReady)
             {
-                Debug.WriteLine("[SettingsSearch] Search called but index is not ready.");
+                Logger.LogWarning("[SettingsSearch] Search called but index is not ready.");
                 return Array.Empty<SettingSearchResult>();
             }
 
@@ -175,13 +192,19 @@ namespace Microsoft.PowerToys.Settings.UI.Services
 
             try
             {
+                var sw = Stopwatch.StartNew();
+                Logger.LogDebug($"[SettingsSearch] Search start. QueryLength={query.Length}, MaxResults={effectiveOptions.MaxResults}.");
                 var results = await Task.Run(
                     () => _searchEngine.SearchAsync(query, effectiveOptions, token),
                     token).ConfigureAwait(false);
-                return FilterValidPageTypes(results);
+                var filtered = FilterValidPageTypes(results);
+                sw.Stop();
+                Logger.LogDebug($"[SettingsSearch] Search complete. Results={filtered.Count}, ElapsedMs={sw.ElapsedMilliseconds}.");
+                return filtered;
             }
             catch (OperationCanceledException)
             {
+                Logger.LogDebug("[SettingsSearch] Search canceled.");
                 return Array.Empty<SettingSearchResult>();
             }
         }
@@ -199,7 +222,7 @@ namespace Microsoft.PowerToys.Settings.UI.Services
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"[SettingsSearch] ERROR: Failed to load index from json: {ex.Message}");
+                Logger.LogError($"[SettingsSearch] ERROR: Failed to load index from json: {ex.Message}", ex);
                 return Array.Empty<SettingEntry>();
             }
         }
@@ -227,12 +250,16 @@ namespace Microsoft.PowerToys.Settings.UI.Services
         {
             try
             {
+                var sw = Stopwatch.StartNew();
                 var entries = LoadIndexFromPrebuiltData();
+                Logger.LogInfo($"[SettingsSearch] Prebuilt index loaded. Entries={entries.Length}.");
                 await InitializeIndexAsync(entries, cancellationToken).ConfigureAwait(false);
+                sw.Stop();
+                Logger.LogInfo($"[SettingsSearch] BuildIndexAsync finished. ElapsedMs={sw.ElapsedMilliseconds}, Ready={IsReady}.");
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"[SettingsSearch] CRITICAL ERROR building search index: {ex.Message}\n{ex.StackTrace}");
+                Logger.LogError($"[SettingsSearch] CRITICAL ERROR building search index: {ex.Message}", ex);
             }
             finally
             {
@@ -262,7 +289,7 @@ namespace Microsoft.PowerToys.Settings.UI.Services
             var assembly = Assembly.GetExecutingAssembly();
             var resourceLoader = ResourceLoaderInstance.ResourceLoader;
 
-            Debug.WriteLine($"[SettingsSearch] Attempting to load prebuilt index from: {PrebuiltIndexResourceName}");
+            Logger.LogInfo($"[SettingsSearch] Attempting to load prebuilt index from: {PrebuiltIndexResourceName}");
 
             string json;
             try
@@ -270,7 +297,7 @@ namespace Microsoft.PowerToys.Settings.UI.Services
                 using Stream stream = assembly.GetManifestResourceStream(PrebuiltIndexResourceName);
                 if (stream == null)
                 {
-                    Debug.WriteLine($"[SettingsSearch] ERROR: Embedded resource '{PrebuiltIndexResourceName}' not found. Ensure it's correctly embedded and the name matches.");
+                    Logger.LogError($"[SettingsSearch] ERROR: Embedded resource '{PrebuiltIndexResourceName}' not found. Ensure it's correctly embedded and the name matches.");
                     return ImmutableArray<SettingEntry>.Empty;
                 }
 
@@ -279,20 +306,20 @@ namespace Microsoft.PowerToys.Settings.UI.Services
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"[SettingsSearch] ERROR: Failed to read prebuilt index: {ex.Message}");
+                Logger.LogError($"[SettingsSearch] ERROR: Failed to read prebuilt index: {ex.Message}", ex);
                 return ImmutableArray<SettingEntry>.Empty;
             }
 
             if (string.IsNullOrWhiteSpace(json))
             {
-                Debug.WriteLine("[SettingsSearch] ERROR: Embedded resource was empty.");
+                Logger.LogError("[SettingsSearch] ERROR: Embedded resource was empty.");
                 return ImmutableArray<SettingEntry>.Empty;
             }
 
             var metadataList = LoadIndexFromJson(json);
             if (metadataList == null || metadataList.Count == 0)
             {
-                Debug.WriteLine("[SettingsSearch] Prebuilt index is empty or deserialization failed.");
+                Logger.LogWarning("[SettingsSearch] Prebuilt index is empty or deserialization failed.");
                 return ImmutableArray<SettingEntry>.Empty;
             }
 
@@ -318,7 +345,7 @@ namespace Microsoft.PowerToys.Settings.UI.Services
                 builder.Add(entry);
             }
 
-            Debug.WriteLine($"[SettingsSearch] Finished loading index. Total entries: {builder.Count}");
+            Logger.LogInfo($"[SettingsSearch] Finished loading index. Total entries: {builder.Count}");
             return builder.ToImmutable();
         }
 
