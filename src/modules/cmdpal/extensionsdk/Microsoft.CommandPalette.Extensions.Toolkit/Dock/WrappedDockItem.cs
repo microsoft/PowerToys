@@ -21,13 +21,16 @@ public partial class WrappedDockItem : CommandItem
 {
     public override string Title => _itemTitle;
 
-    public override IIconInfo? Icon => _icon;
+    public override IIconInfo? Icon
+    {
+        get => _icon; set { _icon = value; }
+    }
 
     public override ICommand? Command => _backingList;
 
     private readonly string _itemTitle;
-    private readonly IIconInfo? _icon;
     private readonly WrappedDockList _backingList;
+    private IIconInfo? _icon;
 
     public IListItem[] Items { get => _backingList.GetItems(); set => _backingList.SetItems(value); }
 
@@ -56,7 +59,10 @@ public partial class WrappedDockItem : CommandItem
     /// Initializes a new instance of the <see cref="WrappedDockItem"/> class.
     /// Create a new dock band for a set of list items
     /// </summary>
-    public WrappedDockItem(IListItem[] items, string id, string displayTitle)
+    public WrappedDockItem(
+        IListItem[] items,
+        string id,
+        string displayTitle)
     {
         _backingList = new WrappedDockList(items, id, displayTitle);
         _itemTitle = displayTitle;

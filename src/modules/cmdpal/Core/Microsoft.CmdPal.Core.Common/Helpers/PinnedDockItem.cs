@@ -19,5 +19,6 @@ public partial class PinnedDockItem : WrappedDockItem
     public PinnedDockItem(IListItem item, string id)
         : base([item], id, item.Title)
     {
+        Icon = item.Icon;
     }
 }
