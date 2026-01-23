@@ -13,12 +13,12 @@
     <Grid Padding="16">
         <Pivot x:Name="MousePivot">
             <!-- Mouse to Key Remappings Tab -->
-            <PivotItem Header="Mouse → Key">
+            <PivotItem x:Uid="MousePage_MouseToKeyPivot">
                 <StackPanel Orientation="Vertical" Spacing="12" Margin="0,12,0,0">
                     <TextBlock
+                        x:Uid="MousePage_MouseToKeyDescription"
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                        TextWrapping="Wrap"
-                        Text="Remap mouse buttons to keyboard keys, shortcuts, text, programs, or URLs." />
+                        TextWrapping="Wrap" />
                     <Button
                         x:Name="NewMouseToKeyBtn"
                         Height="36"
@@ -29,7 +29,7 @@
                                 FontSize="14"
                                 Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
                                 Glyph="&#xE109;" />
-                            <TextBlock VerticalAlignment="Center" Text="Add remapping" />
+                            <TextBlock x:Uid="MousePage_AddRemappingButton" VerticalAlignment="Center" />
                         </StackPanel>
                     </Button>
                     <Grid
@@ -48,22 +48,22 @@
                             <ColumnDefinition Width="84" />
                         </Grid.ColumnDefinitions>
                         <TextBlock
+                            x:Uid="MousePage_MouseButtonHeader"
                             Grid.Column="0"
                             Margin="16,-2,0,0"
                             VerticalAlignment="Center"
-                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                            Text="Mouse Button" />
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                         <AppBarSeparator
                             Grid.Column="1"
                             Margin="-6,4,0,4"
                             HorizontalAlignment="Left" />
                         <TextBlock
+                            x:Uid="MousePage_ActionHeader"
                             Grid.Column="1"
                             Margin="12,-2,0,0"
                             HorizontalAlignment="Left"
                             VerticalAlignment="Center"
-                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                            Text="Action" />
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                         <Rectangle
                             Grid.ColumnSpan="3"
                             Height="1"
@@ -136,12 +136,12 @@
             </PivotItem>
 
             <!-- Key to Mouse Remappings Tab -->
-            <PivotItem Header="Key → Mouse">
+            <PivotItem x:Uid="MousePage_KeyToMousePivot">
                 <StackPanel Orientation="Vertical" Spacing="12" Margin="0,12,0,0">
                     <TextBlock
+                        x:Uid="MousePage_KeyToMouseDescription"
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                        TextWrapping="Wrap"
-                        Text="Remap keyboard keys to simulate mouse button clicks." />
+                        TextWrapping="Wrap" />
                     <Button
                         x:Name="NewKeyToMouseBtn"
                         Height="36"
@@ -152,7 +152,7 @@
                                 FontSize="14"
                                 Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
                                 Glyph="&#xE109;" />
-                            <TextBlock VerticalAlignment="Center" Text="Add remapping" />
+                            <TextBlock x:Uid="MousePage_AddRemappingButton" VerticalAlignment="Center" />
                         </StackPanel>
                     </Button>
                     <Grid
@@ -171,22 +171,22 @@
                             <ColumnDefinition Width="84" />
                         </Grid.ColumnDefinitions>
                         <TextBlock
+                            x:Uid="MousePage_KeyHeader"
                             Grid.Column="0"
                             Margin="16,-2,0,0"
                             VerticalAlignment="Center"
-                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                            Text="Key" />
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                         <AppBarSeparator
                             Grid.Column="1"
                             Margin="-6,4,0,4"
                             HorizontalAlignment="Left" />
                         <TextBlock
+                            x:Uid="MousePage_MouseButtonHeader"
                             Grid.Column="1"
                             Margin="12,-2,0,0"
                             HorizontalAlignment="Left"
                             VerticalAlignment="Center"
-                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                            Text="Mouse Button" />
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                         <Rectangle
                             Grid.ColumnSpan="3"
                             Height="1"
@@ -256,69 +256,67 @@
         <!-- Mouse to Key Dialog -->
         <ContentDialog
             x:Name="MouseToKeyDialog"
-            Title="Mouse to Key Remapping"
+            x:Uid="MousePage_MouseToKeyDialog"
             MinWidth="500"
             MaxWidth="500"
-            PrimaryButtonText="OK"
-            CloseButtonText="Cancel"
             PrimaryButtonStyle="{StaticResource AccentButtonStyle}">
             <StackPanel Spacing="16" Margin="0,16,0,0">
                 <ComboBox
                     x:Name="MouseButtonComboBox"
-                    Header="Mouse Button"
+                    x:Uid="MousePage_MouseButtonComboBox"
                     Width="200"
                     SelectedIndex="0">
-                    <ComboBoxItem Content="Left" />
-                    <ComboBoxItem Content="Right" />
-                    <ComboBoxItem Content="Middle" />
-                    <ComboBoxItem Content="X1 (Back)" />
-                    <ComboBoxItem Content="X2 (Forward)" />
+                    <ComboBoxItem x:Uid="MousePage_MouseButton_Left" />
+                    <ComboBoxItem x:Uid="MousePage_MouseButton_Right" />
+                    <ComboBoxItem x:Uid="MousePage_MouseButton_Middle" />
+                    <ComboBoxItem x:Uid="MousePage_MouseButton_X1" />
+                    <ComboBoxItem x:Uid="MousePage_MouseButton_X2" />
                 </ComboBox>
                 <ComboBox
                     x:Name="TargetTypeComboBox"
-                    Header="Target Type"
+                    x:Uid="MousePage_TargetTypeComboBox"
                     Width="200"
                     SelectedIndex="0"
                     SelectionChanged="TargetTypeComboBox_SelectionChanged">
-                    <ComboBoxItem Content="Key" />
-                    <ComboBoxItem Content="Shortcut" />
-                    <ComboBoxItem Content="Text" />
-                    <ComboBoxItem Content="Run Program" />
-                    <ComboBoxItem Content="Open URL" />
+                    <ComboBoxItem x:Uid="MousePage_TargetType_Key" />
+                    <ComboBoxItem x:Uid="MousePage_TargetType_Shortcut" />
+                    <ComboBoxItem x:Uid="MousePage_TargetType_Text" />
+                    <ComboBoxItem x:Uid="MousePage_TargetType_RunProgram" />
+                    <ComboBoxItem x:Uid="MousePage_TargetType_OpenUrl" />
                 </ComboBox>
                 
                 <!-- Key input -->
                 <StackPanel x:Name="KeyInputPanel" Spacing="8">
-                    <TextBlock Text="Press a key to capture:" />
+                    <TextBlock x:Uid="MousePage_PressKeyToCapture" />
                     <TextBox
                         x:Name="KeyInputTextBox"
+                        x:Uid="MousePage_KeyInputTextBox"
                         Width="200"
-                        PlaceholderText="Click and press a key"
                         IsReadOnly="True"
                         PreviewKeyDown="KeyInputTextBox_PreviewKeyDown" />
                 </StackPanel>
                 
                 <!-- Shortcut input -->
                 <StackPanel x:Name="ShortcutInputPanel" Spacing="8" Visibility="Collapsed">
-                    <TextBlock Text="Enter shortcut key codes (semicolon-separated):" />
+                    <TextBlock x:Uid="MousePage_ShortcutCodesLabel" />
                     <TextBox
                         x:Name="ShortcutInputTextBox"
-                        Width="300"
-                        PlaceholderText="e.g., 162;67 for Ctrl+C" />
+                        x:Uid="MousePage_ShortcutInputTextBox"
+                        Width="300" />
                 </StackPanel>
                 
                 <!-- Text input -->
                 <StackPanel x:Name="TextInputPanel" Spacing="8" Visibility="Collapsed">
-                    <TextBlock Text="Text to type:" />
+                    <TextBlock x:Uid="MousePage_TextToTypeLabel" />
                     <TextBox
                         x:Name="TextInputTextBox"
-                        Width="300"
-                        PlaceholderText="Enter text to type" />
+                        x:Uid="MousePage_TextInputTextBox"
+                        Width="300" />
                 </StackPanel>
                 
                 <!-- Program input -->
                 <StackPanel x:Name="ProgramInputPanel" Spacing="8" Visibility="Collapsed">
-                    <TextBlock Text="Program path:" />
+                    <TextBlock x:Uid="MousePage_ProgramPathLabel" />
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
@@ -326,25 +324,25 @@
                         </Grid.ColumnDefinitions>
                         <TextBox
                             x:Name="ProgramPathTextBox"
-                            PlaceholderText="e.g., notepad.exe" />
+                            x:Uid="MousePage_ProgramPathTextBox" />
                         <Button Grid.Column="1" Margin="8,0,0,0" Click="BrowseProgramBtn_Click">
                             <FontIcon Glyph="&#xED25;" FontSize="14" />
                         </Button>
                     </Grid>
-                    <TextBlock Text="Arguments (optional):" />
+                    <TextBlock x:Uid="MousePage_ProgramArgsLabel" />
                     <TextBox
                         x:Name="ProgramArgsTextBox"
-                        Width="300"
-                        PlaceholderText="Command line arguments" />
+                        x:Uid="MousePage_ProgramArgsTextBox"
+                        Width="300" />
                 </StackPanel>
                 
                 <!-- URL input -->
                 <StackPanel x:Name="UrlInputPanel" Spacing="8" Visibility="Collapsed">
-                    <TextBlock Text="URL to open:" />
+                    <TextBlock x:Uid="MousePage_UrlToOpenLabel" />
                     <TextBox
                         x:Name="UrlInputTextBox"
-                        Width="300"
-                        PlaceholderText="e.g., https://github.com" />
+                        x:Uid="MousePage_UrlInputTextBox"
+                        Width="300" />
                 </StackPanel>
             </StackPanel>
         </ContentDialog>
@@ -352,32 +350,30 @@
         <!-- Key to Mouse Dialog -->
         <ContentDialog
             x:Name="KeyToMouseDialog"
-            Title="Key to Mouse Remapping"
+            x:Uid="MousePage_KeyToMouseDialog"
             MinWidth="400"
             MaxWidth="400"
-            PrimaryButtonText="OK"
-            CloseButtonText="Cancel"
             PrimaryButtonStyle="{StaticResource AccentButtonStyle}">
             <StackPanel Spacing="16" Margin="0,16,0,0">
                 <StackPanel Spacing="8">
-                    <TextBlock Text="Press a key to capture:" />
+                    <TextBlock x:Uid="MousePage_PressKeyToCapture" />
                     <TextBox
                         x:Name="KeyToMouseKeyTextBox"
+                        x:Uid="MousePage_KeyInputTextBox"
                         Width="200"
-                        PlaceholderText="Click and press a key"
                         IsReadOnly="True"
                         PreviewKeyDown="KeyToMouseKeyTextBox_PreviewKeyDown" />
                 </StackPanel>
                 <ComboBox
                     x:Name="TargetMouseButtonComboBox"
-                    Header="Target Mouse Button"
+                    x:Uid="MousePage_TargetMouseButtonComboBox"
                     Width="200"
                     SelectedIndex="0">
-                    <ComboBoxItem Content="Left" />
-                    <ComboBoxItem Content="Right" />
-                    <ComboBoxItem Content="Middle" />
-                    <ComboBoxItem Content="X1 (Back)" />
-                    <ComboBoxItem Content="X2 (Forward)" />
+                    <ComboBoxItem x:Uid="MousePage_MouseButton_Left" />
+                    <ComboBoxItem x:Uid="MousePage_MouseButton_Right" />
+                    <ComboBoxItem x:Uid="MousePage_MouseButton_Middle" />
+                    <ComboBoxItem x:Uid="MousePage_MouseButton_X1" />
+                    <ComboBoxItem x:Uid="MousePage_MouseButton_X2" />
                 </ComboBox>
             </StackPanel>
         </ContentDialog>

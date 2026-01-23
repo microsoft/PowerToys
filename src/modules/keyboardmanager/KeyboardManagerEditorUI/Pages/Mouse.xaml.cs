@@ -6,6 +6,7 @@ using System;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text.Json;
 using KeyboardManagerEditorUI.Helpers;
@@ -252,7 +253,9 @@ namespace KeyboardManagerEditorUI.Pages
 
         private static void SignalSettingsChanged()
         {
-            IntPtr hEvent = CreateEvent(IntPtr.Zero, false, false, SettingsEventName);
+            // Use OpenEvent since the engine already created this event
+            const uint EVENT_MODIFY_STATE = 0x0002;
+            IntPtr hEvent = OpenEvent(EVENT_MODIFY_STATE, false, SettingsEventName);
             if (hEvent != IntPtr.Zero)
             {
                 SetEvent(hEvent);
@@ -261,12 +264,12 @@ namespace KeyboardManagerEditorUI.Pages
             }
             else
             {
-                Logger.LogError($"Failed to create {SettingsEventName} event");
+                Logger.LogError($"Failed to open {SettingsEventName} event. Engine may not be running.");
             }
         }
 
         [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
-        private static extern IntPtr CreateEvent(IntPtr lpEventAttributes, bool bManualReset, bool bInitialState, string lpName);
+        private static extern IntPtr OpenEvent(uint dwDesiredAccess, bool bInheritHandle, string lpName);
 
         [DllImport("kernel32.dll", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
@@ -349,8 +352,24 @@ namespace KeyboardManagerEditorUI.Pages
             }
         }
 
-        private void MouseToKeyDialog_PrimaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
+        private async void MouseToKeyDialog_PrimaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
         {
+            // Validate input
+            var (isValid, errorMessage) = ValidateMouseToKeyMapping();
+            if (!isValid)
+            {
+                args.Cancel = true;
+                var errorDialog = new ContentDialog
+                {
+                    Title = "Validation Error",
+                    Content = errorMessage,
+                    CloseButtonText = "OK",
+                    XamlRoot = this.XamlRoot,
+                };
+                await errorDialog.ShowAsync();
+                return;
+            }
+
             var mapping = _isEditMode && _editingMouseMapping != null
                 ? _editingMouseMapping
                 : new MouseMapping();
@@ -436,8 +455,24 @@ namespace KeyboardManagerEditorUI.Pages
             }
         }
 
-        private void KeyToMouseDialog_PrimaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
+        private async void KeyToMouseDialog_PrimaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
         {
+            // Validate input
+            var (isValid, errorMessage) = ValidateKeyToMouseMapping();
+            if (!isValid)
+            {
+                args.Cancel = true;
+                var errorDialog = new ContentDialog
+                {
+                    Title = "Validation Error",
+                    Content = errorMessage,
+                    CloseButtonText = "OK",
+                    XamlRoot = this.XamlRoot,
+                };
+                await errorDialog.ShowAsync();
+                return;
+            }
+
             var mapping = _isEditMode && _editingKeyToMouseMapping != null
                 ? _editingKeyToMouseMapping
                 : new KeyToMouseMapping();
@@ -620,6 +655,113 @@ namespace KeyboardManagerEditorUI.Pages
                 4 => "OpenUri",
                 _ => "Key",
             };
+        }
+
+        // Validation methods
+        private (bool IsValid, string ErrorMessage) ValidateMouseToKeyMapping()
+        {
+            string targetType = GetTargetTypeName(TargetTypeComboBox.SelectedIndex);
+            string mouseButton = GetMouseButtonName(MouseButtonComboBox.SelectedIndex);
+
+            // Check for duplicate mouse button mapping (only if adding new, not editing same button)
+            if (!_isEditMode || (_editingMouseMapping != null && _editingMouseMapping.OriginalButton != mouseButton))
+            {
+                bool isDuplicate = MouseToKeyMappings.Any(m => m.OriginalButton == mouseButton && m != _editingMouseMapping);
+                if (isDuplicate)
+                {
+                    return (false, $"A remapping for {mouseButton} mouse button already exists.");
+                }
+            }
+
+            switch (targetType)
+            {
+                case "Key":
+                    if (_capturedKeyCode == 0)
+                    {
+                        return (false, "Please capture a key by clicking the key input box and pressing a key.");
+                    }
+
+                    break;
+
+                case "Shortcut":
+                    if (string.IsNullOrWhiteSpace(ShortcutInputTextBox.Text))
+                    {
+                        return (false, "Please enter shortcut key codes (e.g., 162;67 for Ctrl+C).");
+                    }
+
+                    // Validate format: should be semicolon-separated numbers
+                    string[] parts = ShortcutInputTextBox.Text.Split(';');
+                    foreach (string part in parts)
+                    {
+                        if (!int.TryParse(part.Trim(), out _))
+                        {
+                            return (false, $"Invalid shortcut format. '{part}' is not a valid key code.");
+                        }
+                    }
+
+                    break;
+
+                case "Text":
+                    if (string.IsNullOrEmpty(TextInputTextBox.Text))
+                    {
+                        return (false, "Please enter text to type when the mouse button is pressed.");
+                    }
+
+                    break;
+
+                case "RunProgram":
+                    if (string.IsNullOrWhiteSpace(ProgramPathTextBox.Text))
+                    {
+                        return (false, "Please enter a program path.");
+                    }
+
+                    // Warn but don't block if file doesn't exist (could be in PATH)
+                    break;
+
+                case "OpenUri":
+                    if (string.IsNullOrWhiteSpace(UrlInputTextBox.Text))
+                    {
+                        return (false, "Please enter a URL to open.");
+                    }
+
+                    // Validate URL format
+                    string url = UrlInputTextBox.Text.Trim();
+                    if (!url.StartsWith("http://", StringComparison.OrdinalIgnoreCase) &&
+                        !url.StartsWith("https://", StringComparison.OrdinalIgnoreCase) &&
+                        !url.StartsWith("file://", StringComparison.OrdinalIgnoreCase))
+                    {
+                        return (false, "URL should start with http://, https://, or file://");
+                    }
+
+                    if (!Uri.TryCreate(url, UriKind.Absolute, out _))
+                    {
+                        return (false, "Invalid URL format.");
+                    }
+
+                    break;
+            }
+
+            return (true, string.Empty);
+        }
+
+        private (bool IsValid, string ErrorMessage) ValidateKeyToMouseMapping()
+        {
+            if (_capturedKeyCode == 0)
+            {
+                return (false, "Please capture a key by clicking the key input box and pressing a key.");
+            }
+
+            // Check for duplicate key mapping
+            if (!_isEditMode || (_editingKeyToMouseMapping != null && _editingKeyToMouseMapping.OriginalKeyCode != _capturedKeyCode))
+            {
+                bool isDuplicate = KeyToMouseMappings.Any(m => m.OriginalKeyCode == _capturedKeyCode && m != _editingKeyToMouseMapping);
+                if (isDuplicate)
+                {
+                    return (false, $"A remapping for key code {_capturedKeyCode} already exists.");
+                }
+            }
+
+            return (true, string.Empty);
         }
     }
 }

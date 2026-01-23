@@ -309,4 +309,134 @@
   <data name="AppPageInputControlExtraOptionsTextBlock.Text" xml:space="preserve">
     <value>More options</value>
   </data>
+  <!-- Mouse Page Strings -->
+  <data name="MousePage_MouseToKeyPivot.Header" xml:space="preserve">
+    <value>Mouse → Key</value>
+  </data>
+  <data name="MousePage_KeyToMousePivot.Header" xml:space="preserve">
+    <value>Key → Mouse</value>
+  </data>
+  <data name="MousePage_MouseToKeyDescription.Text" xml:space="preserve">
+    <value>Remap mouse buttons to keyboard keys, shortcuts, text, programs, or URLs.</value>
+  </data>
+  <data name="MousePage_KeyToMouseDescription.Text" xml:space="preserve">
+    <value>Remap keyboard keys to simulate mouse button clicks.</value>
+  </data>
+  <data name="MousePage_AddRemappingButton.Text" xml:space="preserve">
+    <value>Add remapping</value>
+  </data>
+  <data name="MousePage_MouseButtonHeader.Text" xml:space="preserve">
+    <value>Mouse Button</value>
+  </data>
+  <data name="MousePage_ActionHeader.Text" xml:space="preserve">
+    <value>Action</value>
+  </data>
+  <data name="MousePage_KeyHeader.Text" xml:space="preserve">
+    <value>Key</value>
+  </data>
+  <data name="MousePage_DeleteMouseRemapping.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Delete mouse remapping</value>
+  </data>
+  <data name="MousePage_DeleteKeyToMouseRemapping.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Delete key to mouse remapping</value>
+  </data>
+  <data name="MousePage_MouseToKeyDialog.Title" xml:space="preserve">
+    <value>Mouse to Key Remapping</value>
+  </data>
+  <data name="MousePage_MouseToKeyDialog.PrimaryButtonText" xml:space="preserve">
+    <value>OK</value>
+  </data>
+  <data name="MousePage_MouseToKeyDialog.CloseButtonText" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="MousePage_MouseButtonComboBox.Header" xml:space="preserve">
+    <value>Mouse Button</value>
+  </data>
+  <data name="MousePage_TargetTypeComboBox.Header" xml:space="preserve">
+    <value>Target Type</value>
+  </data>
+  <data name="MousePage_TargetType_Key.Content" xml:space="preserve">
+    <value>Key</value>
+  </data>
+  <data name="MousePage_TargetType_Shortcut.Content" xml:space="preserve">
+    <value>Shortcut</value>
+  </data>
+  <data name="MousePage_TargetType_Text.Content" xml:space="preserve">
+    <value>Text</value>
+  </data>
+  <data name="MousePage_TargetType_RunProgram.Content" xml:space="preserve">
+    <value>Run Program</value>
+  </data>
+  <data name="MousePage_TargetType_OpenUrl.Content" xml:space="preserve">
+    <value>Open URL</value>
+  </data>
+  <data name="MousePage_PressKeyToCapture.Text" xml:space="preserve">
+    <value>Press a key to capture:</value>
+  </data>
+  <data name="MousePage_KeyInputTextBox.PlaceholderText" xml:space="preserve">
+    <value>Click and press a key</value>
+  </data>
+  <data name="MousePage_ShortcutCodesLabel.Text" xml:space="preserve">
+    <value>Enter shortcut key codes (semicolon-separated):</value>
+  </data>
+  <data name="MousePage_ShortcutInputTextBox.PlaceholderText" xml:space="preserve">
+    <value>e.g., 162;67 for Ctrl+C</value>
+  </data>
+  <data name="MousePage_TextToTypeLabel.Text" xml:space="preserve">
+    <value>Text to type:</value>
+  </data>
+  <data name="MousePage_TextInputTextBox.PlaceholderText" xml:space="preserve">
+    <value>Enter text to type</value>
+  </data>
+  <data name="MousePage_ProgramPathLabel.Text" xml:space="preserve">
+    <value>Program path:</value>
+  </data>
+  <data name="MousePage_ProgramPathTextBox.PlaceholderText" xml:space="preserve">
+    <value>e.g., notepad.exe</value>
+  </data>
+  <data name="MousePage_ProgramArgsLabel.Text" xml:space="preserve">
+    <value>Arguments (optional):</value>
+  </data>
+  <data name="MousePage_ProgramArgsTextBox.PlaceholderText" xml:space="preserve">
+    <value>Command line arguments</value>
+  </data>
+  <data name="MousePage_UrlToOpenLabel.Text" xml:space="preserve">
+    <value>URL to open:</value>
+  </data>
+  <data name="MousePage_UrlInputTextBox.PlaceholderText" xml:space="preserve">
+    <value>e.g., https://github.com</value>
+  </data>
+  <data name="MousePage_KeyToMouseDialog.Title" xml:space="preserve">
+    <value>Key to Mouse Remapping</value>
+  </data>
+  <data name="MousePage_KeyToMouseDialog.PrimaryButtonText" xml:space="preserve">
+    <value>OK</value>
+  </data>
+  <data name="MousePage_KeyToMouseDialog.CloseButtonText" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="MousePage_TargetMouseButtonComboBox.Header" xml:space="preserve">
+    <value>Target Mouse Button</value>
+  </data>
+  <data name="MousePage_MouseButton_Left.Content" xml:space="preserve">
+    <value>Left</value>
+  </data>
+  <data name="MousePage_MouseButton_Right.Content" xml:space="preserve">
+    <value>Right</value>
+  </data>
+  <data name="MousePage_MouseButton_Middle.Content" xml:space="preserve">
+    <value>Middle</value>
+  </data>
+  <data name="MousePage_MouseButton_X1.Content" xml:space="preserve">
+    <value>X1 (Back)</value>
+  </data>
+  <data name="MousePage_MouseButton_X2.Content" xml:space="preserve">
+    <value>X2 (Forward)</value>
+  </data>
+  <data name="MousePage_ValidationError.Title" xml:space="preserve">
+    <value>Validation Error</value>
+  </data>
+  <data name="MousePage_ValidationError.CloseButtonText" xml:space="preserve">
+    <value>OK</value>
+  </data>
 </root>
