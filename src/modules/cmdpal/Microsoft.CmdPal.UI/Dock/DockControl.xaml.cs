@@ -2,7 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.InteropServices;
 using CommunityToolkit.Mvvm.Messaging;
@@ -342,61 +341,6 @@ public sealed partial class DockControl : UserControl, INotifyPropertyChanged, I
             });
             e.Handled = true;
         }
-    }
-
-    internal HorizontalAlignment GetBandAlignment(ObservableCollection<DockItemViewModel> items)
-    {
-        if (DockSide == DockSide.Top || DockSide == DockSide.Bottom)
-        {
-            return HorizontalAlignment.Center;
-        }
-
-        var requestedTheme = ActualTheme;
-        var isLight = requestedTheme == ElementTheme.Light;
-
-        // Check if any of the items have both an icon and a label.
-        //
-        // If so, left align so that the icons don't wobble if the text
-        // changes.
-        //
-        // Otherwise, center align.
-        foreach (var item in items)
-        {
-            var showText = item.ShowLabel && item.HasText;
-            var showIcon = item.Icon is not null && item.Icon.HasIcon(isLight);
-            if (showText && showIcon)
-            {
-                return HorizontalAlignment.Left;
-            }
-        }
-
-        return HorizontalAlignment.Center;
-    }
-
-    internal HorizontalAlignment GetItemAlignment(DockItemViewModel item)
-    {
-        if (DockSide == DockSide.Top || DockSide == DockSide.Bottom)
-        {
-            return HorizontalAlignment.Center;
-        }
-
-        var requestedTheme = ActualTheme;
-        var isLight = requestedTheme == ElementTheme.Light;
-
-        // Check if any of the items have both an icon and a label.
-        //
-        // If so, left align so that the icons don't wobble if the text
-        // changes.
-        //
-        // Otherwise, center align.
-        var showText = item.ShowLabel && item.HasText;
-        var showIcon = item.Icon is not null && item.Icon.HasIcon(isLight);
-        if (showText && showIcon)
-        {
-            return HorizontalAlignment.Left;
-        }
-
-        return HorizontalAlignment.Center;
     }
 
     private DockBandViewModel? _draggedBand;

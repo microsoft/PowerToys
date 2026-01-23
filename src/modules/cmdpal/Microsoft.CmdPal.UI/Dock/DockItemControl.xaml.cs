@@ -105,31 +105,27 @@ public sealed partial class DockItemControl : Control
         {
             _textStack.Visibility = HasText ? Visibility.Visible : Visibility.Collapsed;
         }
-
-        // if (_titleText is not null)
-        // {
-        //    _titleText.Visibility = IsNullOrEmpty(Title) ? Visibility.Collapsed : Visibility.Visible;
-        // }
-
-        // if (_subtitleText is not null)
-        // {
-        //    _subtitleText.Visibility = IsNullOrEmpty(Subtitle) ? Visibility.Collapsed : Visibility.Visible;
-        // }
     }
 
     private void UpdateIconVisibility()
     {
         if (_iconPresenter is not null)
         {
+            // n.b. this might be wrong - I think we always have an Icon (an IconBox),
+            // we need to check if the box has an icon
             _iconPresenter.Visibility = Icon is null ? Visibility.Collapsed : Visibility.Visible;
         }
     }
 
     private void UpdateAlignment()
     {
+        // If this item has both an icon and a label, left align so that the
+        // icons don't wobble if the text changes.
+        //
+        // Otherwise, center align.
         var requestedTheme = ActualTheme;
         var isLight = requestedTheme == ElementTheme.Light;
-        var showText = /*item.ShowLabel && item.*/HasText;
+        var showText = HasText;
         if (Icon is IconBox icoBox &&
             icoBox.DataContext is DockItemViewModel item &&
             item.Icon is IconInfoViewModel icon)
