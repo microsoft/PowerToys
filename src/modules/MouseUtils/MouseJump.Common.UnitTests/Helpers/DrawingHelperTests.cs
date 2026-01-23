@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Drawing.Imaging;
 using System.Globalization;
 using System.Reflection;
 using System.Text;
@@ -19,6 +20,8 @@ public static class DrawingHelperTests
     [TestClass]
     public sealed class RenderPreviewTests
     {
+        public TestContext TestContext { get; set; } = null!;
+
         public sealed class TestCase
         {
             public TestCase(PreviewStyle previewStyle, List<RectangleInfo> screens, PointInfo activatedLocation, string desktopImageFilename, string expectedImageFilename)
@@ -94,7 +97,7 @@ public static class DrawingHelperTests
             var expected = RenderPreviewTests.LoadImageResource(data.ExpectedImageFilename);
 
             // compare the images
-            AssertImagesEqual(expected, actual);
+            AssertImagesEqual(NormalizeFormat(expected), NormalizeFormat(actual));
         }
 
         private static Bitmap LoadImageResource(string filename)
@@ -125,32 +128,109 @@ public static class DrawingHelperTests
         /// <summary>
         /// Naive / brute force image comparison - we can optimize this later :-)
         /// </summary>
-        private static void AssertImagesEqual(Bitmap expected, Bitmap actual)
+        private void AssertImagesEqual(Bitmap expected, Bitmap actual)
         {
-            Assert.AreEqual(
-                expected.Width,
-                actual.Width,
-                $"expected width: {expected.Width}, actual width: {actual.Width}");
-            Assert.AreEqual(
-                expected.Height,
-                actual.Height,
-                $"expected height: {expected.Height}, actual height: {actual.Height}");
+            if (ImagesAreEqual(expected, actual))
+            {
+                return;
+            }
+
+            var outputDir = Path.Combine(TestContext.ResultsDirectory!, TestContext.TestName!);
+
+            Directory.CreateDirectory(outputDir);
+
+            var expectedPath = Path.Combine(outputDir, "expected.png");
+            var actualPath = Path.Combine(outputDir, "actual.png");
+            var diffPath = Path.Combine(outputDir, "diff.png");
+
+            expected.Save(expectedPath, ImageFormat.Png);
+            actual.Save(actualPath, ImageFormat.Png);
+
+            using var diff = CreateDiffBitmap(expected, actual);
+            diff.Save(diffPath, ImageFormat.Png);
+
+            TestContext.AddResultFile(expectedPath);
+            TestContext.AddResultFile(actualPath);
+            TestContext.AddResultFile(diffPath);
+
+            Assert.Fail($"Images differ. Artifacts saved to {outputDir}");
+        }
+
+        private static bool ImagesAreEqual(Bitmap expected, Bitmap actual)
+        {
+            if (expected.Width != actual.Width ||
+                expected.Height != actual.Height)
+            {
+                return false;
+            }
+
             for (var y = 0; y < expected.Height; y++)
             {
                 for (var x = 0; x < expected.Width; x++)
                 {
-                    var expectedPixel = expected.GetPixel(x, y);
-                    var actualPixel = actual.GetPixel(x, y);
+                    var e = expected.GetPixel(x, y);
+                    var a = actual.GetPixel(x, y);
 
-                    // allow a small tolerance for rounding differences in gdi
-                    Assert.IsTrue(
-                        (Math.Abs(expectedPixel.A - actualPixel.A) <= 1) &&
-                        (Math.Abs(expectedPixel.R - actualPixel.R) <= 1) &&
-                        (Math.Abs(expectedPixel.G - actualPixel.G) <= 1) &&
-                        (Math.Abs(expectedPixel.B - actualPixel.B) <= 1),
-                        $"images differ at pixel ({x}, {y}) - expected: {expectedPixel}, actual: {actualPixel}");
+                    if (Math.Abs(e.A - a.A) > 1 ||
+                        Math.Abs(e.R - a.R) > 1 ||
+                        Math.Abs(e.G - a.G) > 1 ||
+                        Math.Abs(e.B - a.B) > 1)
+                    {
+                        return false;
+                    }
                 }
             }
+
+            return true;
+        }
+
+        private static Bitmap CreateDiffBitmap(Bitmap expected, Bitmap actual)
+        {
+            var width = expected.Width;
+            var height = expected.Height;
+
+            var diff = new Bitmap(width, height, PixelFormat.Format32bppArgb);
+
+            for (var y = 0; y < height; y++)
+            {
+                for (var x = 0; x < width; x++)
+                {
+                    var e = expected.GetPixel(x, y);
+                    var a = actual.GetPixel(x, y);
+
+                    var different =
+                        Math.Abs(e.A - a.A) > 1 ||
+                        Math.Abs(e.R - a.R) > 1 ||
+                        Math.Abs(e.G - a.G) > 1 ||
+                        Math.Abs(e.B - a.B) > 1;
+
+                    diff.SetPixel(
+                        x,
+                        y,
+                        different ? Color.Magenta : Color.FromArgb(80, e));
+                }
+            }
+
+            return diff;
+        }
+
+        private static Bitmap NormalizeFormat(Bitmap src)
+        {
+            // Ensure a predictable format.
+            var dst = new Bitmap(src.Width, src.Height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+            using var g = Graphics.FromImage(dst);
+            g.CompositingMode = System.Drawing.Drawing2D.CompositingMode.SourceCopy;
+            g.DrawImageUnscaled(src, 0, 0);
+            return dst;
+        }
+
+        private static Bitmap FlattenOnBackground(Bitmap src, Color bg)
+        {
+            var dst = new Bitmap(src.Width, src.Height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+            using var g = Graphics.FromImage(dst);
+            g.Clear(bg);
+            g.DrawImageUnscaled(src, 0, 0);
+            return dst;
         }
     }
 }
