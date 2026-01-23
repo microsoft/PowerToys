@@ -32,6 +32,7 @@ advfirewall
 AFeature
 affordances
 AFX
+agentskills
 AGGREGATABLE
 AHK
 AHybrid
@@ -102,7 +103,6 @@ ASYNCWINDOWPLACEMENT
 ASYNCWINDOWPOS
 atl
 ATRIOX
-ATX
 aumid
 authenticode
 AUTOBUDDY
@@ -219,6 +219,7 @@ CIELCh
 cim
 CImage
 cla
+claude
 CLASSDC
 classmethod
 CLASSNOTAVAILABLE
@@ -296,7 +297,6 @@ cpcontrols
 cph
 cplusplus
 CPower
-cppcoreguidelines
 cpptools
 cppvsdbg
 cppwinrt
@@ -325,7 +325,7 @@ CURRENTDIR
 CURSORINFO
 cursorpos
 CURSORSHOWING
-CURSORWRAP
+cursorwrap
 customaction
 CUSTOMACTIONTEST
 CUSTOMFORMATPLACEHOLDER
@@ -1040,6 +1040,7 @@ mmi
 mmsys
 mobileredirect
 mockapi
+modelcontextprotocol
 MODALFRAME
 MODESPRUNED
 MONITORENUMPROC
@@ -1737,6 +1738,7 @@ STICKYKEYS
 sticpl
 storelogo
 stprintf
+streamable
 streamjsonrpc
 STRINGIZE
 stringtable
@@ -1962,6 +1964,7 @@ visualeffects
 vkey
 vmovl
 VMs
+vnd
 vorrq
 VOS
 vpaddlq
