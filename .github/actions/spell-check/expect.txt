@@ -103,7 +103,6 @@ ASYNCWINDOWPLACEMENT
 ASYNCWINDOWPOS
 atl
 ATRIOX
-ATX
 aumid
 authenticode
 AUTOBUDDY
@@ -298,7 +297,6 @@ cpcontrols
 cph
 cplusplus
 CPower
-cppcoreguidelines
 cpptools
 cppvsdbg
 cppwinrt
@@ -327,7 +325,7 @@ CURRENTDIR
 CURSORINFO
 cursorpos
 CURSORSHOWING
-CURSORWRAP
+cursorwrap
 customaction
 CUSTOMACTIONTEST
 CUSTOMFORMATPLACEHOLDER
@@ -888,6 +886,7 @@ Ldr
 LEFTALIGN
 LEFTSCROLLBAR
 LEFTTEXT
+leftclick
 LError
 LEVELID
 LExit
@@ -1013,6 +1012,7 @@ MENUITEMINFO
 MENUITEMINFOW
 MERGECOPY
 MERGEPAINT
+Metacharacter
 metadatamatters
 Metadatas
 metafile
@@ -1760,7 +1760,6 @@ SUBMODULEUPDATE
 subresource
 Superbar
 sut
-swe
 svchost
 SVGIn
 SVGIO
