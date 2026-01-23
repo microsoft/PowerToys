@@ -550,12 +550,28 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
 
         private void PinToDock()
         {
-            // TODO! Deal with "the command ID is already pinned in PinnedCommands but not in one of StartBands/EndBands"
-            if (!_settings.DockSettings.PinnedCommands.Contains(_topLevelViewModel.Id))
+            // It's possible that the top-level command shares an ID with a
+            // band. In that case, we don't want to add it to PinnedCommands.
+            // PinnedCommands is just for top-level commands IDs that aren't
+            // otherwise bands.
+            //
+            // Check the top-level command ID against the bands first.
+            if (_topLevelCommandManager.DockBands.Any(band => band.Id == _topLevelViewModel.Id))
             {
-                _settings.DockSettings.PinnedCommands.Add(_topLevelViewModel.Id);
+            }
+            else
+            {
+                // In this case, the ID isn't another band, so add it to PinnedCommands.
+                if (!_settings.DockSettings.PinnedCommands.Contains(_topLevelViewModel.Id))
+                {
+                    _settings.DockSettings.PinnedCommands.Add(_topLevelViewModel.Id);
+                }
             }
 
+            // TODO! Deal with "the command ID is already pinned in
+            // PinnedCommands but not in one of StartBands/EndBands". I think
+            // we're already avoiding adding it to PinnedCommands above, but I
+            // think that PinDockBand below will create a duplicate VM for it.
             _settings.DockSettings.StartBands.Add(new DockBandSettings()
             {
                 Id = _topLevelViewModel.Id,
