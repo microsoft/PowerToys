@@ -40,6 +40,7 @@ namespace
     bool double_click_timer_running = false;
     bool double_clicked = false;
     POINT tray_icon_click_point;
+    std::optional<bool> last_quick_access_state; // Track the last known Quick Access state
 
     static ThemeListener theme_listener;
     static bool theme_adaptive_enabled = false;
@@ -195,6 +196,18 @@ LRESULT __stdcall tray_icon_window_proc(HWND window, UINT message, WPARAM wparam
             case WM_RBUTTONUP:
             case WM_CONTEXTMENU:
             {
+                bool quick_access_enabled = get_general_settings().enableQuickAccess;
+
+                // Reload menu if Quick Access state has changed or is first time
+                if (h_menu && (!last_quick_access_state.has_value() || quick_access_enabled != last_quick_access_state.value()))
+                {
+                    DestroyMenu(h_menu);
+                    h_menu = nullptr;
+                    h_sub_menu = nullptr;
+                }
+
+                last_quick_access_state = quick_access_enabled;
+
                 if (!h_menu)
                 {
                     h_menu = LoadMenu(reinterpret_cast<HINSTANCE>(&__ImageBase), MAKEINTRESOURCE(ID_TRAY_MENU));
@@ -202,17 +215,39 @@ LRESULT __stdcall tray_icon_window_proc(HWND window, UINT message, WPARAM wparam
                 if (h_menu)
                 {
                     static std::wstring settings_menuitem_label = GET_RESOURCE_STRING(IDS_SETTINGS_MENU_TEXT);
+                    static std::wstring settings_menuitem_label_leftclick = GET_RESOURCE_STRING(IDS_SETTINGS_MENU_TEXT_LEFTCLICK);
                     static std::wstring close_menuitem_label = GET_RESOURCE_STRING(IDS_CLOSE_MENU_TEXT);
                     static std::wstring submit_bug_menuitem_label = GET_RESOURCE_STRING(IDS_SUBMIT_BUG_TEXT);
                     static std::wstring documentation_menuitem_label = GET_RESOURCE_STRING(IDS_DOCUMENTATION_MENU_TEXT);
                     static std::wstring quick_access_menuitem_label = GET_RESOURCE_STRING(IDS_QUICK_ACCESS_MENU_TEXT);
-                    change_menu_item_text(ID_SETTINGS_MENU_COMMAND, settings_menuitem_label.data());
+
+                    // Update Settings menu text based on Quick Access state
+                    if (quick_access_enabled)
+                    {
+                        change_menu_item_text(ID_SETTINGS_MENU_COMMAND, settings_menuitem_label.data());
+                    }
+                    else
+                    {
+                        change_menu_item_text(ID_SETTINGS_MENU_COMMAND, settings_menuitem_label_leftclick.data());
+                    }
+
                     change_menu_item_text(ID_CLOSE_MENU_COMMAND, close_menuitem_label.data());
                     change_menu_item_text(ID_REPORT_BUG_COMMAND, submit_bug_menuitem_label.data());
                     bool bug_report_disabled = is_bug_report_running();
                     EnableMenuItem(h_sub_menu, ID_REPORT_BUG_COMMAND, MF_BYCOMMAND | (bug_report_disabled ? MF_GRAYED : MF_ENABLED));
                     change_menu_item_text(ID_DOCUMENTATION_MENU_COMMAND, documentation_menuitem_label.data());
                     change_menu_item_text(ID_QUICK_ACCESS_MENU_COMMAND, quick_access_menuitem_label.data());
+
+                    // Hide or show Quick Access menu item based on setting
+                    if (!h_sub_menu)
+                    {
+                        h_sub_menu = GetSubMenu(h_menu, 0);
+                    }
+                    if (!quick_access_enabled)
+                    {
+                        // Remove Quick Access menu item when disabled
+                        DeleteMenu(h_sub_menu, ID_QUICK_ACCESS_MENU_COMMAND, MF_BYCOMMAND);
+                    }
                 }
                 if (!h_sub_menu)
                 {
