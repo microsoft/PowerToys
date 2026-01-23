@@ -20,6 +20,7 @@
                 <ResourceDictionary Source="ms-appx:///Controls/Tag.xaml" />
                 <ResourceDictionary Source="ms-appx:///Controls/KeyVisual/KeyVisual.xaml" />
                 <ResourceDictionary Source="ms-appx:///Controls/IsEnabledTextBlock.xaml" />
+                <ResourceDictionary Source="ms-appx:///Dock/DockItemControl.xaml" />
                 <!--  Default theme dictionary  -->
                 <ResourceDictionary Source="ms-appx:///Styles/Theme.Normal.xaml" />
                 <services:MutableOverridesDictionary />
