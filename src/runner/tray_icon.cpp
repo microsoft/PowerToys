@@ -39,7 +39,7 @@ namespace
     bool double_click_timer_running = false;
     bool double_clicked = false;
     POINT tray_icon_click_point;
-    bool last_quick_access_state = true; // Track the last known Quick Access state
+    std::optional<bool> last_quick_access_state; // Track the last known Quick Access state
 
     static ThemeListener theme_listener;
     static bool theme_adaptive_enabled = false;
@@ -197,14 +197,15 @@ LRESULT __stdcall tray_icon_window_proc(HWND window, UINT message, WPARAM wparam
             {
                 bool quick_access_enabled = get_general_settings().enableQuickAccess;
 
-                // Reload menu if Quick Access state has changed
-                if (h_menu && quick_access_enabled != last_quick_access_state)
+                // Reload menu if Quick Access state has changed or is first time
+                if (h_menu && (!last_quick_access_state.has_value() || quick_access_enabled != last_quick_access_state.value()))
                 {
                     DestroyMenu(h_menu);
                     h_menu = nullptr;
                     h_sub_menu = nullptr;
-                    last_quick_access_state = quick_access_enabled;
                 }
+
+                last_quick_access_state = quick_access_enabled;
 
                 if (!h_menu)
                 {
