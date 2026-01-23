@@ -511,14 +511,14 @@ private:
                                   0,
                                   0,
                                   SMTO_ABORTIFHUNG | SMTO_BLOCK,
-                                  0,
+                                  50,
                                   &result) != 0;
     }
 
     void send_copy_selection()
     {
         constexpr int copy_attempts = 2;
-        constexpr auto copy_retry_delay = std::chrono::milliseconds(50);
+        constexpr auto copy_retry_delay = std::chrono::milliseconds(100);
 
         for (int attempt = 0; attempt < copy_attempts; ++attempt)
         {
