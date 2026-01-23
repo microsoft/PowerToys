@@ -68,12 +68,10 @@ public sealed partial class DockItemControl : Control
     private const string IconPresenterName = "IconPresenter";
     private const string TitleTextName = "TitleText";
     private const string SubtitleTextName = "SubtitleText";
-    private const string TextStackName = "TextStack";
 
     private FrameworkElement? _iconPresenter;
     private FrameworkElement? _titleText;
     private FrameworkElement? _subtitleText;
-    private FrameworkElement? _textStack;
 
     private static void OnTextPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
@@ -101,9 +99,14 @@ public sealed partial class DockItemControl : Control
 
     private void UpdateTextVisibility()
     {
-        if (_textStack is not null)
+        if (_titleText is not null)
         {
-            _textStack.Visibility = HasText ? Visibility.Visible : Visibility.Collapsed;
+            _titleText.Visibility = HasTitle ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        if (_subtitleText is not null)
+        {
+            _subtitleText.Visibility = HasSubtitle ? Visibility.Visible : Visibility.Collapsed;
         }
     }
 
@@ -145,6 +148,7 @@ public sealed partial class DockItemControl : Control
     {
         UpdateTextVisibility();
         UpdateIconVisibility();
+        UpdateAlignment();
     }
 
     protected override void OnApplyTemplate()
@@ -161,7 +165,6 @@ public sealed partial class DockItemControl : Control
         _iconPresenter = GetTemplateChild(IconPresenterName) as FrameworkElement;
         _titleText = GetTemplateChild(TitleTextName) as FrameworkElement;
         _subtitleText = GetTemplateChild(SubtitleTextName) as FrameworkElement;
-        _textStack = GetTemplateChild(TextStackName) as FrameworkElement;
 
         // Set initial visibility
         UpdateAllVisibility();
