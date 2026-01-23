@@ -16,11 +16,13 @@ DWORD WINAPI _checkTheme(LPVOID lpParam)
 
 void ThemeListener::AddChangedHandler(THEME_HANDLE handle)
 {
+    std::lock_guard<std::mutex> lock(handlesMutex);
     handles.push_back(handle);
 }
 
 void ThemeListener::DelChangedHandler(THEME_HANDLE handle)
 {
+    std::lock_guard<std::mutex> lock(handlesMutex);
     auto it = std::find(handles.begin(), handles.end(), handle);
     if (it != handles.end())
     {
@@ -30,11 +32,13 @@ void ThemeListener::DelChangedHandler(THEME_HANDLE handle)
 
 void ThemeListener::AddAppThemeChangedHandler(THEME_HANDLE handle)
 {
+    std::lock_guard<std::mutex> lock(handlesMutex);
     appThemeHandles.push_back(handle);
 }
 
 void ThemeListener::DelAppThemeChangedHandler(THEME_HANDLE handle)
 {
+    std::lock_guard<std::mutex> lock(handlesMutex);
     auto it = std::find(appThemeHandles.begin(), appThemeHandles.end(), handle);
     if (it != appThemeHandles.end())
     {
@@ -44,11 +48,13 @@ void ThemeListener::DelAppThemeChangedHandler(THEME_HANDLE handle)
 
 void ThemeListener::AddSystemThemeChangedHandler(THEME_HANDLE handle)
 {
+    std::lock_guard<std::mutex> lock(handlesMutex);
     systemThemeHandles.push_back(handle);
 }
 
 void ThemeListener::DelSystemThemeChangedHandler(THEME_HANDLE handle)
 {
+    std::lock_guard<std::mutex> lock(handlesMutex);
     auto it = std::find(systemThemeHandles.begin(), systemThemeHandles.end(), handle);
     if (it != systemThemeHandles.end())
     {
@@ -90,28 +96,40 @@ void ThemeListener::CheckTheme()
                 AppTheme = _appTheme;
                 SystemTheme = _systemTheme;
                 
-                // Call generic handlers (backward compatible)
-                for (size_t i = 0; i < handles.size(); i++)
+                // Copy handlers under lock, then invoke outside lock to avoid deadlock
+                std::vector<THEME_HANDLE> handlesCopy;
+                std::vector<THEME_HANDLE> appThemeHandlesCopy;
+                std::vector<THEME_HANDLE> systemThemeHandlesCopy;
+                
                 {
-                    handles[i]();
+                    std::lock_guard<std::mutex> lock(handlesMutex);
+                    handlesCopy = handles;
+                    if (appThemeChanged)
+                    {
+                        appThemeHandlesCopy = appThemeHandles;
+                    }
+                    if (systemThemeChanged)
+                    {
+                        systemThemeHandlesCopy = systemThemeHandles;
+                    }
+                }
+                
+                // Call generic handlers (backward compatible)
+                for (const auto& handler : handlesCopy)
+                {
+                    handler();
                 }
                 
                 // Call app theme specific handlers
-                if (appThemeChanged)
+                for (const auto& handler : appThemeHandlesCopy)
                 {
-                    for (size_t i = 0; i < appThemeHandles.size(); i++)
-                    {
-                        appThemeHandles[i]();
-                    }
+                    handler();
                 }
                 
                 // Call system theme specific handlers
-                if (systemThemeChanged)
+                for (const auto& handler : systemThemeHandlesCopy)
                 {
-                    for (size_t i = 0; i < systemThemeHandles.size(); i++)
-                    {
-                        systemThemeHandles[i]();
-                    }
+                    handler();
                 }
             }
         }

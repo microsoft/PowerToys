@@ -3,6 +3,7 @@
 #include <windows.h>
 #include <iostream>
 #include <vector>
+#include <mutex>
 
 typedef void (*THEME_HANDLE)();
 DWORD WINAPI _checkTheme(LPVOID lpParam);
@@ -39,4 +40,5 @@ private:
     std::vector<THEME_HANDLE> handles;
     std::vector<THEME_HANDLE> appThemeHandles;
     std::vector<THEME_HANDLE> systemThemeHandles;
+    mutable std::mutex handlesMutex;
 };
