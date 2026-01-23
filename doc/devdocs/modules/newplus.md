@@ -143,7 +143,7 @@ Note: The DllHost process loads the DLL only when the context menu is triggered 
 - For development and testing, using the Windows 10 handler can be easier since it doesn't require signing.
 
 ## Restoring Built-in Windows New context menu
-If the Windows 11 built-in New context menu doesn't repear on uninstalling PowerToys, some issue with settings etc. here's how to restore the built-in New context menu.
+If the Windows 11 built-in New context menu doesn't reappear on uninstalling PowerToys, some issue with settings etc. here's how to restore the built-in New context menu.
 
 1. Open Registry Editor
 1. Go to the key "Computer\HKEY_CURRENT_USER\Software\Classes\Directory\background\ShellEx\ContextMenuHandlers"

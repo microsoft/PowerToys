@@ -359,7 +359,7 @@ If you disable this policy, users will not be able to select or use Foundry Loca
 
 If you enable this policy, then the built-in New context menu will be hidden, and user can only create new files and folders using New+ and the explorer toolbar New button.
 
-If you disable this policy, then the build-in New context menu will be displaeyd as normal in Windows.
+If you disable this policy, then the build-in New context menu will be displayed as normal in Windows.
 
 If you don't configure this policy, the user will be able to control the setting and can enable or disable it.
 </string>        
@@ -376,4 +376,3 @@ If you don't configure this policy, the user will be able to control the setting
 
   </resources>
 </policyDefinitionResources>
-
