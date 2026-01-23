@@ -71,12 +71,13 @@ KeyboardManager::KeyboardManager()
             StopLowlevelKeyboardHook();
 
         // Handle mouse hook based on mouse remappings
+        // Use PostThreadMessage to ensure hooks are managed from the main message loop thread
         const bool newHasMouseRemappings = HasMouseRemappings();
         if (newHasMouseRemappings && !mouseHookHandle)
-            StartLowlevelMouseHook();
+            PostThreadMessageW(mainThreadId, StartMouseHookMessageID, 0, 0);
 
         if (!newHasMouseRemappings && mouseHookHandle)
-            StopLowlevelMouseHook();
+            PostThreadMessageW(mainThreadId, StopMouseHookMessageID, 0, 0);
     };
 
     editorIsRunningEvent = CreateEvent(nullptr, true, false, KeyboardManagerConstants::EditorWindowEventName.c_str());
@@ -179,6 +180,7 @@ void KeyboardManager::StartLowlevelMouseHook()
 
     if (!mouseHookHandle)
     {
+        Logger::info(L"Starting low-level mouse hook");
         mouseHookHandle = SetWindowsHookEx(WH_MOUSE_LL, MouseHookProc, GetModuleHandle(NULL), NULL);
         mouseHookHandleCopy = mouseHookHandle;
         if (!mouseHookHandle)
@@ -188,6 +190,10 @@ void KeyboardManager::StartLowlevelMouseHook()
             auto errorMessage = get_last_error_message(errorCode);
             Trace::Error(errorCode, errorMessage.has_value() ? errorMessage.value() : L"", L"StartLowlevelMouseHook::SetWindowsHookEx");
         }
+        else
+        {
+            Logger::info(L"Low-level mouse hook started successfully");
+        }
     }
 }
 
@@ -195,8 +201,18 @@ void KeyboardManager::StopLowlevelMouseHook()
 {
     if (mouseHookHandle)
     {
-        UnhookWindowsHookEx(mouseHookHandle);
+        Logger::info(L"Stopping low-level mouse hook");
+        if (UnhookWindowsHookEx(mouseHookHandle))
+        {
+            Logger::info(L"Low-level mouse hook stopped successfully");
+        }
+        else
+        {
+            DWORD errorCode = GetLastError();
+            Logger::error(L"Failed to unhook mouse hook. Error: {}", errorCode);
+        }
         mouseHookHandle = nullptr;
+        mouseHookHandleCopy = nullptr;
     }
 }
 

@@ -9,12 +9,16 @@ class KeyboardManager
 {
 public:
     static const inline DWORD StartHookMessageID = WM_APP + 1;
+    static const inline DWORD StartMouseHookMessageID = WM_APP + 2;
+    static const inline DWORD StopMouseHookMessageID = WM_APP + 3;
 
     // Constructor
     KeyboardManager();
 
     ~KeyboardManager()
     {
+        StopLowlevelKeyboardHook();
+        StopLowlevelMouseHook();
         if (editorIsRunningEvent)
         {
             CloseHandle(editorIsRunningEvent);
