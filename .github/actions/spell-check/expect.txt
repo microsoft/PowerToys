@@ -99,7 +99,6 @@ ASYNCWINDOWPLACEMENT
 ASYNCWINDOWPOS
 atl
 ATRIOX
-ATX
 aumid
 authenticode
 AUTOBUDDY
@@ -292,7 +291,6 @@ cpcontrols
 cph
 cplusplus
 CPower
-cppcoreguidelines
 cpptools
 cppvsdbg
 cppwinrt
@@ -321,7 +319,7 @@ CURRENTDIR
 CURSORINFO
 cursorpos
 CURSORSHOWING
-CURSORWRAP
+cursorwrap
 customaction
 CUSTOMACTIONTEST
 CUSTOMFORMATPLACEHOLDER
