@@ -2,12 +2,17 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Diagnostics;
+using ManagedCommon;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Dock;
 using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Documents;
+using Microsoft.Windows.Storage.Pickers;
 
 namespace Microsoft.CmdPal.UI.Settings;
 
@@ -15,7 +20,7 @@ public sealed partial class DockSettingsPage : Page
 {
     private readonly TaskScheduler _mainTaskScheduler = TaskScheduler.FromCurrentSynchronizationContext();
 
-    private readonly SettingsViewModel viewModel;
+    internal SettingsViewModel ViewModel { get; }
 
     public List<DockBandSettingsViewModel> AllDockBandItems => GetAllBandSettings();
 
@@ -27,7 +32,7 @@ public sealed partial class DockSettingsPage : Page
         var themeService = App.Current.Services.GetService<IThemeService>()!;
         var topLevelCommandManager = App.Current.Services.GetService<TopLevelCommandManager>()!;
 
-        viewModel = new SettingsViewModel(settings, topLevelCommandManager, _mainTaskScheduler, themeService);
+        ViewModel = new SettingsViewModel(settings, topLevelCommandManager, _mainTaskScheduler, themeService);
 
         // Initialize UI state
         InitializeSettings();
@@ -41,29 +46,82 @@ public sealed partial class DockSettingsPage : Page
         BackdropComboBox.SelectedIndex = SelectedBackdropIndex;
     }
 
+    private async void PickBackgroundImage_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            if (XamlRoot?.ContentIslandEnvironment is null)
+            {
+                return;
+            }
+
+            var windowId = XamlRoot?.ContentIslandEnvironment?.AppWindowId ?? new Microsoft.UI.WindowId(0);
+
+            var picker = new FileOpenPicker(windowId)
+            {
+                CommitButtonText = ViewModels.Properties.Resources.builtin_settings_appearance_pick_background_image_title!,
+                SuggestedStartLocation = PickerLocationId.PicturesLibrary,
+                ViewMode = PickerViewMode.Thumbnail,
+            };
+
+            string[] extensions = [".png", ".bmp", ".jpg", ".jpeg", ".jfif", ".gif", ".tiff", ".tif", ".webp", ".jxr"];
+            foreach (var ext in extensions)
+            {
+                picker.FileTypeFilter!.Add(ext);
+            }
+
+            var file = await picker.PickSingleFileAsync()!;
+            if (file != null)
+            {
+                ViewModel.DockAppearance.BackgroundImagePath = file.Path ?? string.Empty;
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError("Failed to pick background image file for dock", ex);
+        }
+    }
+
+    private void OpenWindowsColorsSettings_Click(Hyperlink sender, HyperlinkClickEventArgs args)
+    {
+        // LOAD BEARING (or BEAR LOADING?): Process.Start with UseShellExecute inside a XAML input event can trigger WinUI reentrancy
+        // and cause FailFast crashes. Task.Run moves the call off the UI thread to prevent hard process termination.
+        Task.Run(() =>
+        {
+            try
+            {
+                _ = Process.Start(new ProcessStartInfo("ms-settings:colors") { UseShellExecute = true });
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Failed to open Windows Settings", ex);
+            }
+        });
+    }
+
     // Property bindings for ComboBoxes
     public int SelectedDockSizeIndex
     {
-        get => DockSizeToSelectedIndex(viewModel.Dock_DockSize);
-        set => viewModel.Dock_DockSize = SelectedIndexToDockSize(value);
+        get => DockSizeToSelectedIndex(ViewModel.Dock_DockSize);
+        set => ViewModel.Dock_DockSize = SelectedIndexToDockSize(value);
     }
 
     public int SelectedSideIndex
     {
-        get => SideToSelectedIndex(viewModel.Dock_Side);
-        set => viewModel.Dock_Side = SelectedIndexToSide(value);
+        get => SideToSelectedIndex(ViewModel.Dock_Side);
+        set => ViewModel.Dock_Side = SelectedIndexToSide(value);
     }
 
     public int SelectedBackdropIndex
     {
-        get => BackdropToSelectedIndex(viewModel.Dock_Backdrop);
-        set => viewModel.Dock_Backdrop = SelectedIndexToBackdrop(value);
+        get => BackdropToSelectedIndex(ViewModel.Dock_Backdrop);
+        set => ViewModel.Dock_Backdrop = SelectedIndexToBackdrop(value);
     }
 
     public bool ShowLabels
     {
-        get => viewModel.Dock_ShowLabels;
-        set => viewModel.Dock_ShowLabels = value;
+        get => ViewModel.Dock_ShowLabels;
+        set => ViewModel.Dock_ShowLabels = value;
     }
 
     // Conversion methods for ComboBox bindings
@@ -103,17 +161,15 @@ public sealed partial class DockSettingsPage : Page
 
     private static int BackdropToSelectedIndex(DockBackdrop backdrop) => backdrop switch
     {
-        DockBackdrop.Mica => 0,
-        DockBackdrop.Transparent => 1,
-        DockBackdrop.Acrylic => 2,
+        DockBackdrop.Transparent => 0,
+        DockBackdrop.Acrylic => 1,
         _ => 2,
     };
 
     private static DockBackdrop SelectedIndexToBackdrop(int index) => index switch
     {
-        0 => DockBackdrop.Mica,
-        1 => DockBackdrop.Transparent,
-        2 => DockBackdrop.Acrylic,
+        0 => DockBackdrop.Transparent,
+        1 => DockBackdrop.Acrylic,
         _ => DockBackdrop.Acrylic,
     };
 

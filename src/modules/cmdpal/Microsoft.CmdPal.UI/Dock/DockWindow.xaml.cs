@@ -8,6 +8,7 @@ using ManagedCommon;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Dock;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
+using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Composition;
@@ -16,7 +17,6 @@ using Microsoft.UI.Dispatching;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Windows.Foundation;
-using Windows.UI;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.Graphics.Dwm;
@@ -43,6 +43,9 @@ public sealed partial class DockWindow : WindowEx,
 #pragma warning restore SA1310 // Field names should not contain underscore
 #pragma warning restore SA1306 // Field names should begin with lower-case letter
 
+    private readonly IThemeService _themeService;
+    private readonly DockWindowViewModel _windowViewModel;
+
     private HWND _hwnd = HWND.Null;
     private APPBARDATA _appBarData;
     private uint _callbackMessageId;
@@ -68,6 +71,9 @@ public sealed partial class DockWindow : WindowEx,
         _lastSize = _settings.DockSize;
 
         viewModel = serviceProvider.GetService<DockViewModel>()!;
+        _themeService = serviceProvider.GetRequiredService<IThemeService>();
+        _themeService.ThemeChanged += ThemeService_ThemeChanged;
+        _windowViewModel = new DockWindowViewModel(_themeService);
         _dock = new DockControl(viewModel);
 
         InitializeComponent();
@@ -196,7 +202,15 @@ public sealed partial class DockWindow : WindowEx,
             _acrylicController.Dispose();
         }
 
-        _acrylicController = GetAcrylicConfig(Content);
+        var backdrop = _themeService.CurrentDockTheme.BackdropParameters;
+        _acrylicController = new DesktopAcrylicController
+        {
+            Kind = DesktopAcrylicKind.Thin,
+            TintColor = backdrop.TintColor,
+            TintOpacity = backdrop.TintOpacity,
+            FallbackColor = backdrop.FallbackColor,
+            LuminosityOpacity = backdrop.LuminosityOpacity,
+        };
 
         // Enable the system backdrop.
         // Note: Be sure to have "using WinRT;" to support the Window.As<...>() call.
@@ -214,27 +228,26 @@ public sealed partial class DockWindow : WindowEx,
         }
     }
 
-    private static DesktopAcrylicController GetAcrylicConfig(UIElement content)
+    private void ThemeService_ThemeChanged(object? sender, ThemeChangedEventArgs e)
     {
-        var feContent = content as FrameworkElement;
-
-        return feContent?.ActualTheme == ElementTheme.Light
-            ? new DesktopAcrylicController()
+        DispatcherQueue.TryEnqueue(() =>
+        {
+            // We only need to handle acrylic here.
+            // Transparent background is handled directly in XAML by binding to
+            // the DockWindowViewModel's ColorizationColor properties.
+            if (_settings.Backdrop == DockBackdrop.Acrylic)
             {
-                Kind = DesktopAcrylicKind.Thin,
-                TintColor = Color.FromArgb(255, 243, 243, 243),
-                LuminosityOpacity = 0.90f,
-                TintOpacity = 0.0f,
-                FallbackColor = Color.FromArgb(255, 238, 238, 238),
+                UpdateAcrylic();
             }
-            : new DesktopAcrylicController()
-            {
-                Kind = DesktopAcrylicKind.Thin,
-                TintColor = Color.FromArgb(255, 32, 32, 32),
-                LuminosityOpacity = 0.96f,
-                TintOpacity = 0.5f,
-                FallbackColor = Color.FromArgb(255, 28, 28, 28),
-            };
+
+            // ActualTheme / RequestedTheme sync,
+            // as pilfered from WindowThemeSynchronizer
+            // LOAD BEARING: Changing the RequestedTheme to Dark then Light then target forces
+            // a refresh of the theme.
+            Root.RequestedTheme = ElementTheme.Dark;
+            Root.RequestedTheme = ElementTheme.Light;
+            Root.RequestedTheme = _themeService.CurrentDockTheme.Theme;
+        });
     }
 
     private void CreateAppBar(HWND hwnd)
@@ -600,10 +613,13 @@ public sealed partial class DockWindow : WindowEx,
         WeakReferenceMessenger.Default.Send<ShowPaletteAtMessage>(new(screenPosPixels, anchorPoint));
     }
 
+    public DockWindowViewModel WindowViewModel => _windowViewModel;
+
     public void Dispose()
     {
         DisposeAcrylic();
         viewModel.Dispose();
+        _windowViewModel.Dispose();
     }
 
     private void DockWindow_Closed(object sender, WindowEventArgs args)
@@ -611,6 +627,7 @@ public sealed partial class DockWindow : WindowEx,
         var serviceProvider = App.Current.Services;
         var settings = serviceProvider.GetService<SettingsModel>();
         settings?.SettingsChanged -= SettingsChangedHandler;
+        _themeService.ThemeChanged -= ThemeService_ThemeChanged;
         DisposeAcrylic();
 
         // Remove our appbar registration

@@ -18,5 +18,33 @@
     <Grid
         x:Name="Root"
         HorizontalAlignment="Stretch"
-        VerticalAlignment="Stretch" />
+        VerticalAlignment="Stretch">
+
+        <!--  Colorization overlay for transparent backdrop  -->
+        <Border
+            x:Name="ColorizationOverlay"
+            HorizontalAlignment="Stretch"
+            VerticalAlignment="Stretch"
+            IsHitTestVisible="False"
+            Opacity="{x:Bind WindowViewModel.ColorizationOpacity, Mode=OneWay}"
+            Visibility="{x:Bind WindowViewModel.ShowColorizationOverlay, Mode=OneWay}">
+            <Border.Background>
+                <SolidColorBrush Color="{x:Bind WindowViewModel.ColorizationColor, Mode=OneWay}" />
+            </Border.Background>
+        </Border>
+
+        <cpcontrols:BlurImageControl
+            HorizontalAlignment="Stretch"
+            VerticalAlignment="Stretch"
+            BlurAmount="{x:Bind WindowViewModel.BackgroundImageBlurAmount, Mode=OneWay}"
+            ImageBrightness="{x:Bind WindowViewModel.BackgroundImageBrightness, Mode=OneWay}"
+            ImageOpacity="{x:Bind WindowViewModel.BackgroundImageOpacity, Mode=OneWay}"
+            ImageSource="{x:Bind WindowViewModel.BackgroundImageSource, Mode=OneWay}"
+            ImageStretch="{x:Bind WindowViewModel.BackgroundImageStretch, Mode=OneWay}"
+            IsHitTestVisible="False"
+            IsHoldingEnabled="False"
+            TintColor="{x:Bind WindowViewModel.BackgroundImageTint, Mode=OneWay}"
+            TintIntensity="{x:Bind WindowViewModel.BackgroundImageTintIntensity, Mode=OneWay}"
+            Visibility="{x:Bind WindowViewModel.ShowBackgroundImage, Mode=OneWay}" />
+    </Grid>
 </winuiex:WindowEx>

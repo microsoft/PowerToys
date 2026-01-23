@@ -2,6 +2,9 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using Microsoft.UI;
+using Windows.UI;
+
 namespace Microsoft.CmdPal.UI.ViewModels.Settings;
 
 #pragma warning disable SA1402 // File may only contain a single type
@@ -18,8 +21,28 @@ public class DockSettings
 
     public DockSize DockIconsSize { get; set; } = DockSize.Small;
 
+    // Theme settings
     public DockBackdrop Backdrop { get; set; } = DockBackdrop.Acrylic;
 
+    public UserTheme Theme { get; set; } = UserTheme.Default;
+
+    public ColorizationMode ColorizationMode { get; set; }
+
+    public Color CustomThemeColor { get; set; } = Colors.Transparent;
+
+    public int CustomThemeColorIntensity { get; set; } = 100;
+
+    public int BackgroundImageOpacity { get; set; } = 20;
+
+    public int BackgroundImageBlurAmount { get; set; }
+
+    public int BackgroundImageBrightness { get; set; }
+
+    public BackgroundImageFit BackgroundImageFit { get; set; }
+
+    public string? BackgroundImagePath { get; set; }
+
+    // /Theme settings
     public List<string> PinnedCommands { get; set; } = [];
 
     public List<DockBandSettings> StartBands { get; set; } = [];
@@ -78,7 +101,6 @@ public enum DockSize
 
 public enum DockBackdrop
 {
-    Mica,
     Transparent,
     Acrylic,
 }

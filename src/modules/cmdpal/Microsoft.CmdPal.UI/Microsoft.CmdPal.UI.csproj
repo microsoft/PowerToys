@@ -33,7 +33,7 @@
   <!-- <PropertyGroup>
     <EnableCmdPalAOT>true</EnableCmdPalAOT>
     <GeneratePackageLocally>true</GeneratePackageLocally>
-  </PropertyGroup>
+  </PropertyGroup> -->
 
   <PropertyGroup Condition="'$(EnableCmdPalAOT)' == 'true'">
     <SelfContained>true</SelfContained>

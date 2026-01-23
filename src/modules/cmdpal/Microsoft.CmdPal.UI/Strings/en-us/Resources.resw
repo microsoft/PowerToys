@@ -745,4 +745,73 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="Settings_GeneralPage_VersionNo" xml:space="preserve">
     <value>Version {0}</value>
   </data>
+  <data name="Settings_NavigationViewItem_DockAppearance.Content" xml:space="preserve">
+    <value>Dock Appearance</value>
+  </data>
+  <data name="Settings_PageTitles_DockAppearancePage" xml:space="preserve">
+    <value>Dock Appearance</value>
+  </data>
+  <data name="DockAppearance_ThemeSettingsHeader.Text" xml:space="preserve">
+    <value>Theme</value>
+  </data>
+  <data name="DockAppearance_AppTheme_SettingsCard.Header" xml:space="preserve">
+    <value>Dock theme mode</value>
+  </data>
+  <data name="DockAppearance_AppTheme_SettingsCard.Description" xml:space="preserve">
+    <value>Select which theme to display for the dock</value>
+  </data>
+  <data name="DockAppearance_Backdrop_SettingsCard.Header" xml:space="preserve">
+    <value>Backdrop style</value>
+  </data>
+  <data name="DockAppearance_Backdrop_SettingsCard.Description" xml:space="preserve">
+    <value>Choose the background effect for the dock</value>
+  </data>
+  <data name="DockAppearance_Backdrop_Mica.Content" xml:space="preserve">
+    <value>Mica</value>
+  </data>
+  <data name="DockAppearance_Backdrop_Transparent.Content" xml:space="preserve">
+    <value>Transparent</value>
+  </data>
+  <data name="DockAppearance_Backdrop_Acrylic.Content" xml:space="preserve">
+    <value>Acrylic</value>
+  </data>
+  <data name="DockAppearance_Background_SettingsExpander.Header" xml:space="preserve">
+    <value>Background</value>
+  </data>
+  <data name="DockAppearance_Background_SettingsExpander.Description" xml:space="preserve">
+    <value>Choose a custom background color or image for the dock</value>
+  </data>
+  <data name="DockAppearance_ColorizationMode.Header" xml:space="preserve">
+    <value>Colorization mode</value>
+  </data>
+  <data name="DockAppearance_NoBackground_SettingsCard.Header" xml:space="preserve">
+    <value>No background</value>
+  </data>
+  <data name="DockAppearance_NoBackground_DescriptionTextBlock.Text" xml:space="preserve">
+    <value>No settings</value>
+  </data>
+  <data name="DockAppearance_WindowsAccentColor_SettingsCard.Header" xml:space="preserve">
+    <value>System accent color</value>
+  </data>
+  <data name="DockAppearance_BackgroundImage_SettingsCard.Header" xml:space="preserve">
+    <value>Background image</value>
+  </data>
+  <data name="DockAppearance_BackgroundImageBrightness_SettingsCard.Header" xml:space="preserve">
+    <value>Background image brightness</value>
+  </data>
+  <data name="DockAppearance_BackgroundImageBlur_SettingsCard.Header" xml:space="preserve">
+    <value>Background image blur</value>
+  </data>
+  <data name="DockAppearance_BackgroundImageFit_SettingsCard.Header" xml:space="preserve">
+    <value>Background image fit</value>
+  </data>
+  <data name="DockAppearance_BackgroundTint_SettingsCard.Header" xml:space="preserve">
+    <value>Color tint</value>
+  </data>
+  <data name="DockAppearance_BackgroundTintIntensity_SettingsCard.Header" xml:space="preserve">
+    <value>Color intensity</value>
+  </data>
+  <data name="DockAppearance_BackgroundImage_ResetProperties_SettingsCard.Header" xml:space="preserve">
+    <value>Restore defaults</value>
+  </data>
 </root>
