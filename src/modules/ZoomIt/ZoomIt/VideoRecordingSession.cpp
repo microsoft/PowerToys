@@ -3847,6 +3847,8 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
         HWND hTimeline = GetDlgItem(hDlg, IDC_TRIM_TIMELINE);
         if (hTimeline)
         {
+            // Remove WS_EX_TRANSPARENT to prevent flicker during resize
+            SetWindowLongPtr(hTimeline, GWL_EXSTYLE, GetWindowLongPtr(hTimeline, GWL_EXSTYLE) & ~WS_EX_TRANSPARENT);
             SetWindowSubclass(hTimeline, TimelineSubclassProc, 1, reinterpret_cast<DWORD_PTR>(pData));
         }
         HWND hPlayPause = GetDlgItem(hDlg, IDC_TRIM_PLAY_PAUSE);
@@ -4242,7 +4244,14 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
 
         // Re-enable redraw and repaint the entire dialog
         SendMessage(hDlg, WM_SETREDRAW, TRUE, 0);
+        // Use RDW_ERASE for the dialog, but invalidate timeline separately without erase to prevent flicker
+        HWND hTimelineCtrl = GetDlgItem(hDlg, IDC_TRIM_TIMELINE);
         RedrawWindow(hDlg, nullptr, nullptr, RDW_ERASE | RDW_FRAME | RDW_INVALIDATE | RDW_ALLCHILDREN);
+        if (hTimelineCtrl)
+        {
+            // Redraw timeline without erase - double buffering handles the background
+            RedrawWindow(hTimelineCtrl, nullptr, nullptr, RDW_INVALIDATE | RDW_UPDATENOW);
+        }
         return 0;
     }
 
