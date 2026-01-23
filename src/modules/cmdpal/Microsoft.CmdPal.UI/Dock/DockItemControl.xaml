@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <ResourceDictionary
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -56,9 +56,9 @@
                     <ControlTemplate TargetType="local:DockItemControl">
                         <Grid
                             x:Name="PART_RootGrid"
+                            MaxWidth="120"
                             Padding="{TemplateBinding Padding}"
                             VerticalAlignment="Stretch"
-                            MaxWidth="120"
                             Background="{TemplateBinding Background}"
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}"
@@ -84,9 +84,9 @@
                                     Visibility="{TemplateBinding TextVisibility}">
                                     <TextBlock
                                         x:Name="TitleText"
+                                        MaxWidth="100"
                                         HorizontalAlignment="Left"
                                         VerticalAlignment="Center"
-                                        MaxWidth="100"
                                         FontSize="12"
                                         Text="{TemplateBinding Title}"
                                         TextAlignment="Left"
