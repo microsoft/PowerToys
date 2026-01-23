@@ -141,7 +141,8 @@ namespace Microsoft.PowerToys.Settings.UI.Services
 
                 if (!_searchEngine.IsReady)
                 {
-                    Logger.LogWarning("[SettingsSearch] Search engine not ready after initialization.");
+                    Logger.LogWarning("[SettingsSearch] Search engine not ready after initialization. Skipping indexing.");
+                    return;
                 }
 
                 await _searchEngine.IndexBatchAsync(builtIndex, cancellationToken).ConfigureAwait(false);

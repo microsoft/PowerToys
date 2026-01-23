@@ -2,8 +2,11 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using Microsoft.Windows.AI.Search.Experimental.AppContentIndex;
+using ManagedCommon;
+using Microsoft.Windows.Search.AppContentIndex;
 using Windows.Graphics.Imaging;
+using SearchOperationResult = Common.Search.SearchOperationResult;
+using SearchOperationResultT = Common.Search.SearchOperationResult<System.Collections.Generic.IReadOnlyList<Common.Search.SemanticSearch.SemanticSearchResult>>;
 
 namespace Common.Search.SemanticSearch;
 
@@ -29,6 +32,11 @@ public sealed class SemanticSearchIndex : IDisposable
     }
 
     /// <summary>
+    /// Gets the last error that occurred during an operation, or null if no error occurred.
+    /// </summary>
+    public SearchError? LastError { get; private set; }
+
+    /// <summary>
     /// Occurs when the index capabilities change.
     /// </summary>
     public event EventHandler<SemanticSearchCapabilities>? CapabilitiesChanged;
@@ -46,34 +54,52 @@ public sealed class SemanticSearchIndex : IDisposable
     /// <summary>
     /// Initializes the search engine and creates or opens the index.
     /// </summary>
-    /// <returns>A task that represents the asynchronous operation. Returns true if initialization succeeded.</returns>
-    public async Task<bool> InitializeAsync()
+    /// <returns>A task that represents the asynchronous operation. Returns a result indicating success or failure with error details.</returns>
+    public async Task<SearchOperationResult> InitializeAsync()
     {
         ThrowIfDisposed();
+        LastError = null;
 
         if (_indexer != null)
         {
-            return true;
+            Logger.LogDebug($"[SemanticSearchIndex] Already initialized. IndexName={_indexName}");
+            return SearchOperationResult.Success();
         }
 
-        var result = AppContentIndexer.GetOrCreateIndex(_indexName);
-        if (!result.Succeeded)
+        Logger.LogInfo($"[SemanticSearchIndex] Initializing. IndexName={_indexName}");
+
+        try
         {
-            return false;
+            var result = AppContentIndexer.GetOrCreateIndex(_indexName);
+            if (!result.Succeeded)
+            {
+                var errorDetails = $"Succeeded={result.Succeeded}, ExtendedError={result.ExtendedError}";
+                Logger.LogError($"[SemanticSearchIndex] GetOrCreateIndex failed. IndexName={_indexName}, {errorDetails}");
+                LastError = SearchError.InitializationFailed(_indexName, errorDetails);
+                return SearchOperationResult.Failure(LastError);
+            }
+
+            _indexer = result.Indexer;
+
+            // Wait for index capabilities to be ready
+            Logger.LogDebug($"[SemanticSearchIndex] Waiting for index capabilities. IndexName={_indexName}");
+            await _indexer.WaitForIndexCapabilitiesAsync();
+
+            // Load capabilities
+            _capabilities = LoadCapabilities();
+            Logger.LogInfo($"[SemanticSearchIndex] Initialized successfully. IndexName={_indexName}, TextLexical={_capabilities.TextLexicalAvailable}, TextSemantic={_capabilities.TextSemanticAvailable}, ImageSemantic={_capabilities.ImageSemanticAvailable}, ImageOcr={_capabilities.ImageOcrAvailable}");
+
+            // Subscribe to capability changes
+            _indexer.Listener.IndexCapabilitiesChanged += OnIndexCapabilitiesChanged;
+
+            return SearchOperationResult.Success();
         }
-
-        _indexer = result.Indexer;
-
-        // Wait for index capabilities to be ready
-        await _indexer.WaitForIndexCapabilitiesAsync();
-
-        // Load capabilities
-        _capabilities = LoadCapabilities();
-
-        // Subscribe to capability changes
-        _indexer.Listener.IndexCapabilitiesChanged += OnIndexCapabilitiesChanged;
-
-        return true;
+        catch (Exception ex)
+        {
+            Logger.LogError($"[SemanticSearchIndex] Initialization failed with exception. IndexName={_indexName}", ex);
+            LastError = SearchError.InitializationFailed(_indexName, ex.Message, ex);
+            return SearchOperationResult.Failure(LastError);
+        }
     }
 
     /// <summary>
@@ -106,35 +132,65 @@ public sealed class SemanticSearchIndex : IDisposable
     /// </summary>
     /// <param name="id">The unique identifier for the content.</param>
     /// <param name="text">The text content to index.</param>
-    public void IndexText(string id, string text)
+    /// <returns>A result indicating success or failure with error details.</returns>
+    public SearchOperationResult IndexText(string id, string text)
     {
         ThrowIfDisposed();
         ThrowIfNotInitialized();
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
         ArgumentException.ThrowIfNullOrWhiteSpace(text);
 
-        var content = AppManagedIndexableAppContent.CreateFromString(id, text);
-        _indexer!.AddOrUpdate(content);
+        try
+        {
+            var content = AppManagedIndexableAppContent.CreateFromString(id, text);
+            _indexer!.AddOrUpdate(content);
+            return SearchOperationResult.Success();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"[SemanticSearchIndex] IndexText failed. Id={id}", ex);
+            LastError = SearchError.IndexingFailed(id, ex.Message, ex);
+            return SearchOperationResult.Failure(LastError);
+        }
     }
 
     /// <summary>
     /// Adds or updates multiple text contents in the index.
     /// </summary>
     /// <param name="items">A collection of id-text pairs to index.</param>
-    public void IndexTextBatch(IEnumerable<(string Id, string Text)> items)
+    /// <returns>A result indicating success or failure with error details. Contains the first error encountered if any.</returns>
+    public SearchOperationResult IndexTextBatch(IEnumerable<(string Id, string Text)> items)
     {
         ThrowIfDisposed();
         ThrowIfNotInitialized();
         ArgumentNullException.ThrowIfNull(items);
 
+        SearchError? firstError = null;
+
         foreach (var (id, text) in items)
         {
             if (!string.IsNullOrWhiteSpace(id) && !string.IsNullOrWhiteSpace(text))
             {
-                var content = AppManagedIndexableAppContent.CreateFromString(id, text);
-                _indexer!.AddOrUpdate(content);
+                try
+                {
+                    var content = AppManagedIndexableAppContent.CreateFromString(id, text);
+                    _indexer!.AddOrUpdate(content);
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError($"[SemanticSearchIndex] IndexTextBatch item failed. Id={id}", ex);
+                    firstError ??= SearchError.IndexingFailed(id, ex.Message, ex);
+                }
             }
         }
+
+        if (firstError != null)
+        {
+            LastError = firstError;
+            return SearchOperationResult.Failure(firstError);
+        }
+
+        return SearchOperationResult.Success();
     }
 
     /// <summary>
@@ -142,39 +198,72 @@ public sealed class SemanticSearchIndex : IDisposable
     /// </summary>
     /// <param name="id">The unique identifier for the image.</param>
     /// <param name="bitmap">The image bitmap to index.</param>
-    public void IndexImage(string id, SoftwareBitmap bitmap)
+    /// <returns>A result indicating success or failure with error details.</returns>
+    public SearchOperationResult IndexImage(string id, SoftwareBitmap bitmap)
     {
         ThrowIfDisposed();
         ThrowIfNotInitialized();
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
         ArgumentNullException.ThrowIfNull(bitmap);
 
-        var content = AppManagedIndexableAppContent.CreateFromBitmap(id, bitmap);
-        _indexer!.AddOrUpdate(content);
+        try
+        {
+            var content = AppManagedIndexableAppContent.CreateFromBitmap(id, bitmap);
+            _indexer!.AddOrUpdate(content);
+            return SearchOperationResult.Success();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"[SemanticSearchIndex] IndexImage failed. Id={id}", ex);
+            LastError = SearchError.IndexingFailed(id, ex.Message, ex);
+            return SearchOperationResult.Failure(LastError);
+        }
     }
 
     /// <summary>
     /// Removes content from the index by its identifier.
     /// </summary>
     /// <param name="id">The unique identifier of the content to remove.</param>
-    public void Remove(string id)
+    /// <returns>A result indicating success or failure with error details.</returns>
+    public SearchOperationResult Remove(string id)
     {
         ThrowIfDisposed();
         ThrowIfNotInitialized();
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
 
-        _indexer!.Remove(id);
+        try
+        {
+            _indexer!.Remove(id);
+            return SearchOperationResult.Success();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"[SemanticSearchIndex] Remove failed. Id={id}", ex);
+            LastError = SearchError.Unexpected("Remove", ex);
+            return SearchOperationResult.Failure(LastError);
+        }
     }
 
     /// <summary>
     /// Removes all content from the index.
     /// </summary>
-    public void RemoveAll()
+    /// <returns>A result indicating success or failure with error details.</returns>
+    public SearchOperationResult RemoveAll()
     {
         ThrowIfDisposed();
         ThrowIfNotInitialized();
 
-        _indexer!.RemoveAll();
+        try
+        {
+            _indexer!.RemoveAll();
+            return SearchOperationResult.Success();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"[SemanticSearchIndex] RemoveAll failed.", ex);
+            LastError = SearchError.Unexpected("RemoveAll", ex);
+            return SearchOperationResult.Failure(LastError);
+        }
     }
 
     /// <summary>
@@ -182,8 +271,8 @@ public sealed class SemanticSearchIndex : IDisposable
     /// </summary>
     /// <param name="searchText">The text to search for.</param>
     /// <param name="options">Optional search options.</param>
-    /// <returns>A list of search results.</returns>
-    public IReadOnlyList<SemanticSearchResult> SearchText(string searchText, SemanticSearchOptions? options = null)
+    /// <returns>A result containing search results or error details.</returns>
+    public SearchOperationResultT SearchText(string searchText, SemanticSearchOptions? options = null)
     {
         ThrowIfDisposed();
         ThrowIfNotInitialized();
@@ -191,21 +280,30 @@ public sealed class SemanticSearchIndex : IDisposable
 
         options ??= new SemanticSearchOptions();
 
-        var queryOptions = new TextQueryOptions
+        try
         {
-            MatchScope = ConvertMatchScope(options.MatchScope),
-            TextMatchType = ConvertTextMatchType(options.TextMatchType),
-        };
+            var queryOptions = new TextQueryOptions
+            {
+                MatchScope = ConvertMatchScope(options.MatchScope),
+                TextMatchType = ConvertTextMatchType(options.TextMatchType),
+            };
 
-        if (!string.IsNullOrEmpty(options.Language))
-        {
-            queryOptions.Language = options.Language;
+            if (!string.IsNullOrEmpty(options.Language))
+            {
+                queryOptions.Language = options.Language;
+            }
+
+            var query = _indexer!.CreateTextQuery(searchText, queryOptions);
+            var matches = query.GetNextMatches(options.MaxResults);
+
+            return SearchOperationResultT.Success(ConvertTextMatches(matches));
         }
-
-        var query = _indexer!.CreateTextQuery(searchText, queryOptions);
-        var matches = query.GetNextMatches(options.MaxResults);
-
-        return ConvertTextMatches(matches);
+        catch (Exception ex)
+        {
+            Logger.LogError($"[SemanticSearchIndex] SearchText failed. Query={searchText}", ex);
+            LastError = SearchError.SearchFailed(searchText, ex.Message, ex);
+            return SearchOperationResultT.FailureWithFallback(LastError, Array.Empty<SemanticSearchResult>());
+        }
     }
 
     /// <summary>
@@ -213,8 +311,8 @@ public sealed class SemanticSearchIndex : IDisposable
     /// </summary>
     /// <param name="searchText">The text to search for in images.</param>
     /// <param name="options">Optional search options.</param>
-    /// <returns>A list of search results.</returns>
-    public IReadOnlyList<SemanticSearchResult> SearchImages(string searchText, SemanticSearchOptions? options = null)
+    /// <returns>A result containing search results or error details.</returns>
+    public SearchOperationResultT SearchImages(string searchText, SemanticSearchOptions? options = null)
     {
         ThrowIfDisposed();
         ThrowIfNotInitialized();
@@ -222,16 +320,25 @@ public sealed class SemanticSearchIndex : IDisposable
 
         options ??= new SemanticSearchOptions();
 
-        var queryOptions = new ImageQueryOptions
+        try
         {
-            MatchScope = ConvertMatchScope(options.MatchScope),
-            ImageOcrTextMatchType = ConvertTextMatchType(options.TextMatchType),
-        };
+            var queryOptions = new ImageQueryOptions
+            {
+                MatchScope = ConvertMatchScope(options.MatchScope),
+                ImageOcrTextMatchType = ConvertTextMatchType(options.TextMatchType),
+            };
 
-        var query = _indexer!.CreateImageQuery(searchText, queryOptions);
-        var matches = query.GetNextMatches(options.MaxResults);
+            var query = _indexer!.CreateImageQuery(searchText, queryOptions);
+            var matches = query.GetNextMatches(options.MaxResults);
 
-        return ConvertImageMatches(matches);
+            return SearchOperationResultT.Success(ConvertImageMatches(matches));
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"[SemanticSearchIndex] SearchImages failed. Query={searchText}", ex);
+            LastError = SearchError.SearchFailed(searchText, ex.Message, ex);
+            return SearchOperationResultT.FailureWithFallback(LastError, Array.Empty<SemanticSearchResult>());
+        }
     }
 
     /// <inheritdoc/>
@@ -274,6 +381,7 @@ public sealed class SemanticSearchIndex : IDisposable
     private void OnIndexCapabilitiesChanged(AppContentIndexer indexer, IndexCapabilities capabilities)
     {
         _capabilities = LoadCapabilities();
+        Logger.LogInfo($"[SemanticSearchIndex] Capabilities changed. IndexName={_indexName}, TextLexical={_capabilities.TextLexicalAvailable}, TextSemantic={_capabilities.TextSemanticAvailable}, ImageSemantic={_capabilities.ImageSemanticAvailable}, ImageOcr={_capabilities.ImageOcrAvailable}");
         CapabilitiesChanged?.Invoke(this, _capabilities);
     }
 

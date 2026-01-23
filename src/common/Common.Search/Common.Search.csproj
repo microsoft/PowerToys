@@ -12,4 +12,8 @@
     <PackageReference Include="Microsoft.WindowsAppSDK" />
     <PackageReference Include="Microsoft.WindowsAppSDK.AI" />
   </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ManagedCommon\ManagedCommon.csproj" />
+  </ItemGroup>
 </Project>
