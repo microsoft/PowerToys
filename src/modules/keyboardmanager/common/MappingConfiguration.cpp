@@ -49,6 +49,18 @@ void MappingConfiguration::ClearKeyToMouseRemaps()
     keyToMouseReMap.clear();
 }
 
+// Function to clear the app-specific mouse button remapping table
+void MappingConfiguration::ClearAppSpecificMouseButtonRemaps()
+{
+    appSpecificMouseButtonReMap.clear();
+}
+
+// Function to clear the app-specific key to mouse remapping table
+void MappingConfiguration::ClearAppSpecificKeyToMouseRemaps()
+{
+    appSpecificKeyToMouseReMap.clear();
+}
+
 // Function to add a new OS level shortcut remapping
 bool MappingConfiguration::AddOSLevelShortcut(const Shortcut& originalSC, const KeyShortcutTextUnion& newSC)
 {
@@ -127,6 +139,54 @@ bool MappingConfiguration::AddKeyToMouseRemap(const DWORD& originalKey, const Mo
     }
 
     keyToMouseReMap[originalKey] = targetButton;
+    return true;
+}
+
+// Function to add a new app-specific mouse button remapping
+bool MappingConfiguration::AddAppSpecificMouseButtonRemap(const std::wstring& app, const MouseButton& originalButton, const KeyShortcutTextUnion& newRemapTarget)
+{
+    // Convert app name to lower case
+    std::wstring process_name;
+    process_name.resize(app.length());
+    std::transform(app.begin(), app.end(), process_name.begin(), towlower);
+
+    // Check if there are any app specific mouse remaps for this app
+    auto appIt = appSpecificMouseButtonReMap.find(process_name);
+    if (appIt != appSpecificMouseButtonReMap.end())
+    {
+        // Check if the mouse button is already remapped
+        auto buttonIt = appSpecificMouseButtonReMap[process_name].find(originalButton);
+        if (buttonIt != appSpecificMouseButtonReMap[process_name].end())
+        {
+            return false;
+        }
+    }
+
+    appSpecificMouseButtonReMap[process_name][originalButton] = newRemapTarget;
+    return true;
+}
+
+// Function to add a new app-specific key to mouse remapping
+bool MappingConfiguration::AddAppSpecificKeyToMouseRemap(const std::wstring& app, const DWORD& originalKey, const MouseButton& targetButton)
+{
+    // Convert app name to lower case
+    std::wstring process_name;
+    process_name.resize(app.length());
+    std::transform(app.begin(), app.end(), process_name.begin(), towlower);
+
+    // Check if there are any app specific key to mouse remaps for this app
+    auto appIt = appSpecificKeyToMouseReMap.find(process_name);
+    if (appIt != appSpecificKeyToMouseReMap.end())
+    {
+        // Check if the key is already remapped
+        auto keyIt = appSpecificKeyToMouseReMap[process_name].find(originalKey);
+        if (keyIt != appSpecificKeyToMouseReMap[process_name].end())
+        {
+            return false;
+        }
+    }
+
+    appSpecificKeyToMouseReMap[process_name][originalKey] = targetButton;
     return true;
 }
 
@@ -352,14 +412,33 @@ bool MappingConfiguration::LoadMouseButtonRemaps(const json::JsonObject& jsonDat
     {
         auto remapMouseData = jsonData.GetNamedObject(KeyboardManagerConstants::RemapMouseButtonsSettingName);
         ClearMouseButtonRemaps();
+        ClearAppSpecificMouseButtonRemaps();
 
         if (!remapMouseData)
         {
             return result;
         }
 
-        auto inProcessRemaps = remapMouseData.GetNamedArray(KeyboardManagerConstants::InProcessRemapKeysSettingName);
-        for (const auto& it : inProcessRemaps)
+        // Try to load global remaps first (new format), fall back to inProcess (old format) for backward compatibility
+        json::JsonArray globalRemaps;
+        try
+        {
+            globalRemaps = remapMouseData.GetNamedArray(KeyboardManagerConstants::GlobalMouseRemapsSettingName);
+        }
+        catch (...)
+        {
+            // Fall back to old format
+            try
+            {
+                globalRemaps = remapMouseData.GetNamedArray(KeyboardManagerConstants::InProcessRemapKeysSettingName);
+            }
+            catch (...)
+            {
+                // No global remaps found
+            }
+        }
+
+        for (const auto& it : globalRemaps)
         {
             try
             {
@@ -429,11 +508,96 @@ bool MappingConfiguration::LoadMouseButtonRemaps(const json::JsonObject& jsonDat
                 result = false;
             }
         }
+
+        // Load app-specific mouse button remaps
+        result = result && LoadAppSpecificMouseButtonRemaps(remapMouseData);
     }
     catch (...)
     {
         Logger::error(L"Improper JSON format for mouse button remaps. Skip to next remap type");
         result = false;
+    }
+
+    return result;
+}
+
+bool MappingConfiguration::LoadAppSpecificMouseButtonRemaps(const json::JsonObject& remapMouseData)
+{
+    bool result = true;
+
+    try
+    {
+        auto appSpecificRemaps = remapMouseData.GetNamedArray(KeyboardManagerConstants::AppSpecificMouseRemapsSettingName);
+        for (const auto& it : appSpecificRemaps)
+        {
+            try
+            {
+                auto originalButton = it.GetObjectW().GetNamedString(KeyboardManagerConstants::OriginalMouseButtonSettingName);
+                auto targetApp = it.GetObjectW().GetNamedString(KeyboardManagerConstants::TargetAppSettingName);
+                auto newRemapKeys = it.GetObjectW().GetNamedString(KeyboardManagerConstants::NewRemapKeysSettingName, {});
+                auto unicodeText = it.GetObjectW().GetNamedString(KeyboardManagerConstants::NewTextSettingName, {});
+                auto runProgramFilePath = it.GetObjectW().GetNamedString(KeyboardManagerConstants::RunProgramFilePathSettingName, {});
+                auto openUri = it.GetObjectW().GetNamedString(KeyboardManagerConstants::ShortcutOpenURI, {});
+
+                auto mouseButton = MouseButtonHelpers::MouseButtonFromString(originalButton.c_str());
+                if (!mouseButton.has_value())
+                {
+                    Logger::error(L"Invalid mouse button name: {}", originalButton.c_str());
+                    continue;
+                }
+
+                // Priority: Text > Run Program > Open URI > Key/Shortcut
+                if (!unicodeText.empty())
+                {
+                    AddAppSpecificMouseButtonRemap(targetApp.c_str(), *mouseButton, std::wstring(unicodeText));
+                }
+                else if (!runProgramFilePath.empty())
+                {
+                    Shortcut runProgramShortcut;
+                    runProgramShortcut.runProgramFilePath = runProgramFilePath.c_str();
+                    runProgramShortcut.runProgramArgs = it.GetObjectW().GetNamedString(KeyboardManagerConstants::RunProgramArgsSettingName, {}).c_str();
+                    runProgramShortcut.runProgramStartInDir = it.GetObjectW().GetNamedString(KeyboardManagerConstants::RunProgramStartInDirSettingName, {}).c_str();
+
+                    auto runProgramElevationLevel = it.GetObjectW().GetNamedNumber(KeyboardManagerConstants::RunProgramElevationLevelSettingName, 0);
+                    auto runProgramAlreadyRunningAction = it.GetObjectW().GetNamedNumber(KeyboardManagerConstants::RunProgramAlreadyRunningAction, 0);
+                    auto runProgramStartWindowType = it.GetObjectW().GetNamedNumber(KeyboardManagerConstants::RunProgramStartWindowType, 0);
+
+                    runProgramShortcut.elevationLevel = static_cast<Shortcut::ElevationLevel>(runProgramElevationLevel);
+                    runProgramShortcut.alreadyRunningAction = static_cast<Shortcut::ProgramAlreadyRunningAction>(runProgramAlreadyRunningAction);
+                    runProgramShortcut.startWindowType = static_cast<Shortcut::StartWindowType>(runProgramStartWindowType);
+
+                    runProgramShortcut.operationType = Shortcut::OperationType::RunProgram;
+                    AddAppSpecificMouseButtonRemap(targetApp.c_str(), *mouseButton, runProgramShortcut);
+                }
+                else if (!openUri.empty())
+                {
+                    Shortcut openUriShortcut;
+                    openUriShortcut.uriToOpen = openUri.c_str();
+                    openUriShortcut.operationType = Shortcut::OperationType::OpenURI;
+                    AddAppSpecificMouseButtonRemap(targetApp.c_str(), *mouseButton, openUriShortcut);
+                }
+                else if (!newRemapKeys.empty())
+                {
+                    if (std::wstring(newRemapKeys).find(L";") != std::string::npos)
+                    {
+                        AddAppSpecificMouseButtonRemap(targetApp.c_str(), *mouseButton, Shortcut(newRemapKeys.c_str()));
+                    }
+                    else
+                    {
+                        AddAppSpecificMouseButtonRemap(targetApp.c_str(), *mouseButton, std::stoul(newRemapKeys.c_str()));
+                    }
+                }
+            }
+            catch (...)
+            {
+                Logger::error(L"Improper App-Specific Mouse Button Data JSON. Try the next remap.");
+                result = false;
+            }
+        }
+    }
+    catch (...)
+    {
+        // No app-specific mouse button remaps found, that's ok
     }
 
     return result;
@@ -447,15 +611,34 @@ bool MappingConfiguration::LoadKeyToMouseRemaps(const json::JsonObject& jsonData
     {
         auto remapKeyToMouseData = jsonData.GetNamedObject(KeyboardManagerConstants::RemapKeysToMouseSettingName);
         ClearKeyToMouseRemaps();
+        ClearAppSpecificKeyToMouseRemaps();
 
         if (!remapKeyToMouseData)
         {
             return result;
         }
 
-        auto inProcessRemaps = remapKeyToMouseData.GetNamedArray(KeyboardManagerConstants::InProcessRemapKeysSettingName);
-        Logger::info(L"LoadKeyToMouseRemaps: Found {} remaps", inProcessRemaps.Size());
-        for (const auto& it : inProcessRemaps)
+        // Try to load global remaps first (new format), fall back to inProcess (old format) for backward compatibility
+        json::JsonArray globalRemaps;
+        try
+        {
+            globalRemaps = remapKeyToMouseData.GetNamedArray(KeyboardManagerConstants::GlobalMouseRemapsSettingName);
+        }
+        catch (...)
+        {
+            // Fall back to old format
+            try
+            {
+                globalRemaps = remapKeyToMouseData.GetNamedArray(KeyboardManagerConstants::InProcessRemapKeysSettingName);
+            }
+            catch (...)
+            {
+                // No global remaps found
+            }
+        }
+
+        Logger::info(L"LoadKeyToMouseRemaps: Found {} remaps", globalRemaps.Size());
+        for (const auto& it : globalRemaps)
         {
             try
             {
@@ -482,11 +665,55 @@ bool MappingConfiguration::LoadKeyToMouseRemaps(const json::JsonObject& jsonData
                 result = false;
             }
         }
+
+        // Load app-specific key to mouse remaps
+        result = result && LoadAppSpecificKeyToMouseRemaps(remapKeyToMouseData);
     }
     catch (...)
     {
         Logger::error(L"Improper JSON format for key to mouse remaps. Skip to next remap type");
         result = false;
+    }
+
+    return result;
+}
+
+bool MappingConfiguration::LoadAppSpecificKeyToMouseRemaps(const json::JsonObject& remapKeyToMouseData)
+{
+    bool result = true;
+
+    try
+    {
+        auto appSpecificRemaps = remapKeyToMouseData.GetNamedArray(KeyboardManagerConstants::AppSpecificMouseRemapsSettingName);
+        for (const auto& it : appSpecificRemaps)
+        {
+            try
+            {
+                auto originalKey = it.GetObjectW().GetNamedString(KeyboardManagerConstants::OriginalKeysSettingName);
+                auto targetApp = it.GetObjectW().GetNamedString(KeyboardManagerConstants::TargetAppSettingName);
+                auto targetMouseButton = it.GetObjectW().GetNamedString(KeyboardManagerConstants::TargetMouseButtonSettingName);
+
+                DWORD originalKeyCode = std::stoul(originalKey.c_str());
+                auto mouseButton = MouseButtonHelpers::MouseButtonFromString(targetMouseButton.c_str());
+
+                if (!mouseButton.has_value())
+                {
+                    Logger::error(L"Invalid target mouse button name: {}", targetMouseButton.c_str());
+                    continue;
+                }
+
+                AddAppSpecificKeyToMouseRemap(targetApp.c_str(), originalKeyCode, *mouseButton);
+            }
+            catch (...)
+            {
+                Logger::error(L"Improper App-Specific Key to Mouse Data JSON. Try the next remap.");
+                result = false;
+            }
+        }
+    }
+    catch (...)
+    {
+        // No app-specific key to mouse remaps found, that's ok
     }
 
     return result;

@@ -86,8 +86,14 @@ namespace KeyboardEventHandlers
     // Function to handle a mouse button remap
     intptr_t HandleMouseButtonRemapEvent(KeyboardManagerInput::InputInterface& ii, MouseButton button, bool isButtonDown, State& state) noexcept;
 
+    // Function to handle an app-specific mouse button remap
+    intptr_t HandleAppSpecificMouseButtonRemapEvent(KeyboardManagerInput::InputInterface& ii, MouseButton button, bool isButtonDown, State& state) noexcept;
+
     // Function to handle a key-to-mouse remap (pressing a key triggers a mouse click)
     intptr_t HandleKeyToMouseRemapEvent(KeyboardManagerInput::InputInterface& ii, LowlevelKeyboardEvent* data, State& state) noexcept;
+
+    // Function to handle an app-specific key-to-mouse remap
+    intptr_t HandleAppSpecificKeyToMouseRemapEvent(KeyboardManagerInput::InputInterface& ii, LowlevelKeyboardEvent* data, State& state) noexcept;
 
     // Function to ensure Ctrl/Shift/Alt modifier key state is not detected as pressed down by applications which detect keys at a lower level than hooks when it is remapped for scenarios where its required
     void ResetIfModifierKeyForLowerLevelKeyHandlers(KeyboardManagerInput::InputInterface& ii, DWORD key, DWORD target);

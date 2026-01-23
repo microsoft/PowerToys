@@ -27,6 +27,16 @@ namespace KeyboardManagerEditorUI.Helpers
         /// </summary>
         public string TargetMouseButton { get; set; } = string.Empty;
 
+        /// <summary>
+        /// Target application for app-specific remapping. Empty string means all apps.
+        /// </summary>
+        public string TargetApp { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Whether this mapping applies to all applications.
+        /// </summary>
+        public bool IsAllApps => string.IsNullOrEmpty(TargetApp);
+
         private bool _isEnabled = true;
 
         public event PropertyChangedEventHandler? PropertyChanged;

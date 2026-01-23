@@ -63,81 +63,78 @@ namespace KeyboardManagerEditorUI.Pages
                 JsonElement root = doc.RootElement;
 
                 // Load mouse button remappings
-                if (root.TryGetProperty("remapMouseButtons", out JsonElement mouseButtons) &&
-                    mouseButtons.TryGetProperty("inProcess", out JsonElement inProcess))
+                if (root.TryGetProperty("remapMouseButtons", out JsonElement mouseButtons))
                 {
-                    foreach (JsonElement item in inProcess.EnumerateArray())
+                    // Try new format first (global array), fall back to old format (inProcess)
+                    JsonElement globalArray;
+                    if (mouseButtons.TryGetProperty("global", out globalArray) ||
+                        mouseButtons.TryGetProperty("inProcess", out globalArray))
                     {
-                        var mapping = new MouseMapping();
-
-                        if (item.TryGetProperty("originalButton", out JsonElement origBtn))
+                        foreach (JsonElement item in globalArray.EnumerateArray())
                         {
-                            mapping.OriginalButton = origBtn.GetString() ?? string.Empty;
-                        }
-
-                        if (item.TryGetProperty("newRemapKeys", out JsonElement newKeys))
-                        {
-                            string keysStr = newKeys.GetString() ?? string.Empty;
-                            if (keysStr.Contains(';'))
+                            var mapping = ParseMouseMapping(item, string.Empty);
+                            if (mapping != null)
                             {
-                                mapping.TargetType = "Shortcut";
-                                mapping.TargetShortcutKeys = keysStr;
-                            }
-                            else if (int.TryParse(keysStr, out int keyCode))
-                            {
-                                mapping.TargetType = "Key";
-                                mapping.TargetKeyCode = keyCode;
-                                mapping.TargetKeyName = GetKeyName(keyCode);
+                                MouseToKeyMappings.Add(mapping);
                             }
                         }
-                        else if (item.TryGetProperty("unicodeText", out JsonElement newStr))
+                    }
+
+                    // Load app-specific mouse button remaps
+                    if (mouseButtons.TryGetProperty("appSpecific", out JsonElement appSpecificArray))
+                    {
+                        foreach (JsonElement item in appSpecificArray.EnumerateArray())
                         {
-                            mapping.TargetType = "Text";
-                            mapping.TargetText = newStr.GetString() ?? string.Empty;
-                        }
-                        else if (item.TryGetProperty("runProgramFilePath", out JsonElement progPath))
-                        {
-                            mapping.TargetType = "RunProgram";
-                            mapping.ProgramPath = progPath.GetString() ?? string.Empty;
-                            if (item.TryGetProperty("runProgramArgs", out JsonElement progArgs))
+                            string targetApp = string.Empty;
+                            if (item.TryGetProperty("targetApp", out JsonElement targetAppElem))
                             {
-                                mapping.ProgramArgs = progArgs.GetString() ?? string.Empty;
+                                targetApp = targetAppElem.GetString() ?? string.Empty;
+                            }
+
+                            var mapping = ParseMouseMapping(item, targetApp);
+                            if (mapping != null)
+                            {
+                                MouseToKeyMappings.Add(mapping);
                             }
                         }
-                        else if (item.TryGetProperty("openUri", out JsonElement uri))
-                        {
-                            mapping.TargetType = "OpenUri";
-                            mapping.UriToOpen = uri.GetString() ?? string.Empty;
-                        }
-
-                        MouseToKeyMappings.Add(mapping);
                     }
                 }
 
                 // Load key-to-mouse remappings
-                if (root.TryGetProperty("remapKeysToMouse", out JsonElement keysToMouse) &&
-                    keysToMouse.TryGetProperty("inProcess", out JsonElement k2mInProcess))
+                if (root.TryGetProperty("remapKeysToMouse", out JsonElement keysToMouse))
                 {
-                    foreach (JsonElement item in k2mInProcess.EnumerateArray())
+                    // Try new format first (global array), fall back to old format (inProcess)
+                    JsonElement globalArray;
+                    if (keysToMouse.TryGetProperty("global", out globalArray) ||
+                        keysToMouse.TryGetProperty("inProcess", out globalArray))
                     {
-                        var mapping = new KeyToMouseMapping();
-
-                        if (item.TryGetProperty("originalKeys", out JsonElement origKeys))
+                        foreach (JsonElement item in globalArray.EnumerateArray())
                         {
-                            string keysStr = origKeys.GetString() ?? string.Empty;
-                            if (int.TryParse(keysStr, out int keyCode))
+                            var mapping = ParseKeyToMouseMapping(item, string.Empty);
+                            if (mapping != null)
                             {
-                                mapping.OriginalKeyCode = keyCode;
-                                mapping.OriginalKeyName = GetKeyName(keyCode);
+                                KeyToMouseMappings.Add(mapping);
                             }
                         }
+                    }
 
-                        if (item.TryGetProperty("targetMouseButton", out JsonElement targetBtn))
+                    // Load app-specific key to mouse remaps
+                    if (keysToMouse.TryGetProperty("appSpecific", out JsonElement appSpecificArray))
+                    {
+                        foreach (JsonElement item in appSpecificArray.EnumerateArray())
                         {
-                            mapping.TargetMouseButton = targetBtn.GetString() ?? string.Empty;
-                        }
+                            string targetApp = string.Empty;
+                            if (item.TryGetProperty("targetApp", out JsonElement targetAppElem))
+                            {
+                                targetApp = targetAppElem.GetString() ?? string.Empty;
+                            }
 
-                        KeyToMouseMappings.Add(mapping);
+                            var mapping = ParseKeyToMouseMapping(item, targetApp);
+                            if (mapping != null)
+                            {
+                                KeyToMouseMappings.Add(mapping);
+                            }
+                        }
                     }
                 }
             }
@@ -145,6 +142,75 @@ namespace KeyboardManagerEditorUI.Pages
             {
                 Logger.LogError($"Failed to load mouse mappings: {ex.Message}");
             }
+        }
+
+        private static MouseMapping? ParseMouseMapping(JsonElement item, string targetApp)
+        {
+            var mapping = new MouseMapping { TargetApp = targetApp };
+
+            if (item.TryGetProperty("originalButton", out JsonElement origBtn))
+            {
+                mapping.OriginalButton = origBtn.GetString() ?? string.Empty;
+            }
+
+            if (item.TryGetProperty("newRemapKeys", out JsonElement newKeys))
+            {
+                string keysStr = newKeys.GetString() ?? string.Empty;
+                if (keysStr.Contains(';'))
+                {
+                    mapping.TargetType = "Shortcut";
+                    mapping.TargetShortcutKeys = keysStr;
+                }
+                else if (int.TryParse(keysStr, out int keyCode))
+                {
+                    mapping.TargetType = "Key";
+                    mapping.TargetKeyCode = keyCode;
+                    mapping.TargetKeyName = GetKeyName(keyCode);
+                }
+            }
+            else if (item.TryGetProperty("unicodeText", out JsonElement newStr))
+            {
+                mapping.TargetType = "Text";
+                mapping.TargetText = newStr.GetString() ?? string.Empty;
+            }
+            else if (item.TryGetProperty("runProgramFilePath", out JsonElement progPath))
+            {
+                mapping.TargetType = "RunProgram";
+                mapping.ProgramPath = progPath.GetString() ?? string.Empty;
+                if (item.TryGetProperty("runProgramArgs", out JsonElement progArgs))
+                {
+                    mapping.ProgramArgs = progArgs.GetString() ?? string.Empty;
+                }
+            }
+            else if (item.TryGetProperty("openUri", out JsonElement uri))
+            {
+                mapping.TargetType = "OpenUri";
+                mapping.UriToOpen = uri.GetString() ?? string.Empty;
+            }
+
+            return mapping;
+        }
+
+        private static KeyToMouseMapping? ParseKeyToMouseMapping(JsonElement item, string targetApp)
+        {
+            var mapping = new KeyToMouseMapping { TargetApp = targetApp };
+
+            if (item.TryGetProperty("originalKeys", out JsonElement origKeys))
+            {
+                string keysStr = origKeys.GetString() ?? string.Empty;
+                if (int.TryParse(keysStr, out int keyCode))
+                {
+                    mapping.OriginalKeyCode = keyCode;
+                    mapping.OriginalKeyName = GetKeyName(keyCode);
+                }
+            }
+
+            if (item.TryGetProperty("targetMouseButton", out JsonElement targetBtn))
+            {
+                mapping.TargetMouseButton = targetBtn.GetString() ?? string.Empty;
+            }
+
+            return mapping;
         }
 
         private void SaveMappings()
@@ -176,59 +242,51 @@ namespace KeyboardManagerEditorUI.Pages
                     }
                 }
 
-                // Write mouse button remappings
+                // Write mouse button remappings with global/appSpecific structure
                 writer.WritePropertyName("remapMouseButtons");
                 writer.WriteStartObject();
-                writer.WritePropertyName("inProcess");
+
+                // Write global mouse remaps
+                writer.WritePropertyName("global");
                 writer.WriteStartArray();
-
-                foreach (var mapping in MouseToKeyMappings)
+                foreach (var mapping in MouseToKeyMappings.Where(m => m.IsAllApps))
                 {
-                    writer.WriteStartObject();
-                    writer.WriteString("originalButton", mapping.OriginalButton);
+                    WriteMouseMappingJson(writer, mapping, includeTargetApp: false);
+                }
 
-                    switch (mapping.TargetType)
-                    {
-                        case "Key":
-                            writer.WriteString("newRemapKeys", mapping.TargetKeyCode.ToString(CultureInfo.InvariantCulture));
-                            break;
-                        case "Shortcut":
-                            writer.WriteString("newRemapKeys", mapping.TargetShortcutKeys);
-                            break;
-                        case "Text":
-                            writer.WriteString("unicodeText", mapping.TargetText);
-                            break;
-                        case "RunProgram":
-                            writer.WriteString("runProgramFilePath", mapping.ProgramPath);
-                            if (!string.IsNullOrEmpty(mapping.ProgramArgs))
-                            {
-                                writer.WriteString("runProgramArgs", mapping.ProgramArgs);
-                            }
+                writer.WriteEndArray();
 
-                            break;
-                        case "OpenUri":
-                            writer.WriteString("openUri", mapping.UriToOpen);
-                            break;
-                    }
-
-                    writer.WriteEndObject();
+                // Write app-specific mouse remaps
+                writer.WritePropertyName("appSpecific");
+                writer.WriteStartArray();
+                foreach (var mapping in MouseToKeyMappings.Where(m => !m.IsAllApps))
+                {
+                    WriteMouseMappingJson(writer, mapping, includeTargetApp: true);
                 }
 
                 writer.WriteEndArray();
                 writer.WriteEndObject();
 
-                // Write key-to-mouse remappings
+                // Write key-to-mouse remappings with global/appSpecific structure
                 writer.WritePropertyName("remapKeysToMouse");
                 writer.WriteStartObject();
-                writer.WritePropertyName("inProcess");
-                writer.WriteStartArray();
 
-                foreach (var mapping in KeyToMouseMappings)
+                // Write global key-to-mouse remaps
+                writer.WritePropertyName("global");
+                writer.WriteStartArray();
+                foreach (var mapping in KeyToMouseMappings.Where(m => m.IsAllApps))
                 {
-                    writer.WriteStartObject();
-                    writer.WriteString("originalKeys", mapping.OriginalKeyCode.ToString(CultureInfo.InvariantCulture));
-                    writer.WriteString("targetMouseButton", mapping.TargetMouseButton);
-                    writer.WriteEndObject();
+                    WriteKeyToMouseMappingJson(writer, mapping, includeTargetApp: false);
+                }
+
+                writer.WriteEndArray();
+
+                // Write app-specific key-to-mouse remaps
+                writer.WritePropertyName("appSpecific");
+                writer.WriteStartArray();
+                foreach (var mapping in KeyToMouseMappings.Where(m => !m.IsAllApps))
+                {
+                    WriteKeyToMouseMappingJson(writer, mapping, includeTargetApp: true);
                 }
 
                 writer.WriteEndArray();
@@ -249,6 +307,57 @@ namespace KeyboardManagerEditorUI.Pages
             {
                 Logger.LogError($"Failed to save mouse mappings: {ex.Message}");
             }
+        }
+
+        private static void WriteMouseMappingJson(Utf8JsonWriter writer, MouseMapping mapping, bool includeTargetApp)
+        {
+            writer.WriteStartObject();
+            writer.WriteString("originalButton", mapping.OriginalButton);
+
+            if (includeTargetApp)
+            {
+                writer.WriteString("targetApp", mapping.TargetApp);
+            }
+
+            switch (mapping.TargetType)
+            {
+                case "Key":
+                    writer.WriteString("newRemapKeys", mapping.TargetKeyCode.ToString(CultureInfo.InvariantCulture));
+                    break;
+                case "Shortcut":
+                    writer.WriteString("newRemapKeys", mapping.TargetShortcutKeys);
+                    break;
+                case "Text":
+                    writer.WriteString("unicodeText", mapping.TargetText);
+                    break;
+                case "RunProgram":
+                    writer.WriteString("runProgramFilePath", mapping.ProgramPath);
+                    if (!string.IsNullOrEmpty(mapping.ProgramArgs))
+                    {
+                        writer.WriteString("runProgramArgs", mapping.ProgramArgs);
+                    }
+
+                    break;
+                case "OpenUri":
+                    writer.WriteString("openUri", mapping.UriToOpen);
+                    break;
+            }
+
+            writer.WriteEndObject();
+        }
+
+        private static void WriteKeyToMouseMappingJson(Utf8JsonWriter writer, KeyToMouseMapping mapping, bool includeTargetApp)
+        {
+            writer.WriteStartObject();
+            writer.WriteString("originalKeys", mapping.OriginalKeyCode.ToString(CultureInfo.InvariantCulture));
+            writer.WriteString("targetMouseButton", mapping.TargetMouseButton);
+
+            if (includeTargetApp)
+            {
+                writer.WriteString("targetApp", mapping.TargetApp);
+            }
+
+            writer.WriteEndObject();
         }
 
         private static void SignalSettingsChanged()
@@ -324,6 +433,11 @@ namespace KeyboardManagerEditorUI.Pages
                 TargetTypeComboBox.SelectedIndex = GetTargetTypeIndex(mapping.TargetType);
                 UpdateTargetInputVisibility();
 
+                // Populate app-specific checkbox
+                MouseToKeyAllAppsCheckBox.IsChecked = mapping.IsAllApps;
+                MouseToKeyTargetAppTextBox.Text = mapping.TargetApp;
+                MouseToKeyTargetAppTextBox.Visibility = mapping.IsAllApps ? Visibility.Collapsed : Visibility.Visible;
+
                 switch (mapping.TargetType)
                 {
                     case "Key":
@@ -376,6 +490,11 @@ namespace KeyboardManagerEditorUI.Pages
 
             mapping.OriginalButton = GetMouseButtonName(MouseButtonComboBox.SelectedIndex);
             mapping.TargetType = GetTargetTypeName(TargetTypeComboBox.SelectedIndex);
+
+            // Set app-specific target
+            mapping.TargetApp = MouseToKeyAllAppsCheckBox.IsChecked == true
+                ? string.Empty
+                : MouseToKeyTargetAppTextBox.Text.Trim();
 
             switch (mapping.TargetType)
             {
@@ -449,6 +568,11 @@ namespace KeyboardManagerEditorUI.Pages
                 KeyToMouseKeyTextBox.Text = mapping.OriginalKeyName;
                 TargetMouseButtonComboBox.SelectedIndex = GetMouseButtonIndex(mapping.TargetMouseButton);
 
+                // Populate app-specific checkbox
+                KeyToMouseAllAppsCheckBox.IsChecked = mapping.IsAllApps;
+                KeyToMouseTargetAppTextBox.Text = mapping.TargetApp;
+                KeyToMouseTargetAppTextBox.Visibility = mapping.IsAllApps ? Visibility.Collapsed : Visibility.Visible;
+
                 KeyToMouseDialog.PrimaryButtonClick += KeyToMouseDialog_PrimaryButtonClick;
                 await KeyToMouseDialog.ShowAsync();
                 KeyToMouseDialog.PrimaryButtonClick -= KeyToMouseDialog_PrimaryButtonClick;
@@ -480,6 +604,11 @@ namespace KeyboardManagerEditorUI.Pages
             mapping.OriginalKeyCode = _capturedKeyCode;
             mapping.OriginalKeyName = _capturedKeyName;
             mapping.TargetMouseButton = GetMouseButtonName(TargetMouseButtonComboBox.SelectedIndex);
+
+            // Set app-specific target
+            mapping.TargetApp = KeyToMouseAllAppsCheckBox.IsChecked == true
+                ? string.Empty
+                : KeyToMouseTargetAppTextBox.Text.Trim();
 
             if (!_isEditMode)
             {
@@ -594,6 +723,9 @@ namespace KeyboardManagerEditorUI.Pages
             ProgramPathTextBox.Text = string.Empty;
             ProgramArgsTextBox.Text = string.Empty;
             UrlInputTextBox.Text = string.Empty;
+            MouseToKeyAllAppsCheckBox.IsChecked = true;
+            MouseToKeyTargetAppTextBox.Text = string.Empty;
+            MouseToKeyTargetAppTextBox.Visibility = Visibility.Collapsed;
             UpdateTargetInputVisibility();
         }
 
@@ -603,6 +735,29 @@ namespace KeyboardManagerEditorUI.Pages
             _capturedKeyName = string.Empty;
             KeyToMouseKeyTextBox.Text = string.Empty;
             TargetMouseButtonComboBox.SelectedIndex = 0;
+            KeyToMouseAllAppsCheckBox.IsChecked = true;
+            KeyToMouseTargetAppTextBox.Text = string.Empty;
+            KeyToMouseTargetAppTextBox.Visibility = Visibility.Collapsed;
+        }
+
+        private void MouseToKeyAllAppsCheckBox_Changed(object sender, RoutedEventArgs e)
+        {
+            if (MouseToKeyTargetAppTextBox != null)
+            {
+                MouseToKeyTargetAppTextBox.Visibility = MouseToKeyAllAppsCheckBox.IsChecked == true
+                    ? Visibility.Collapsed
+                    : Visibility.Visible;
+            }
+        }
+
+        private void KeyToMouseAllAppsCheckBox_Changed(object sender, RoutedEventArgs e)
+        {
+            if (KeyToMouseTargetAppTextBox != null)
+            {
+                KeyToMouseTargetAppTextBox.Visibility = KeyToMouseAllAppsCheckBox.IsChecked == true
+                    ? Visibility.Collapsed
+                    : Visibility.Visible;
+            }
         }
 
         private static int GetMouseButtonIndex(string buttonName)

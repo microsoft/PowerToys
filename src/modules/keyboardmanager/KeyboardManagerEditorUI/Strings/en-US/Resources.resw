@@ -439,4 +439,13 @@
   <data name="MousePage_ValidationError.CloseButtonText" xml:space="preserve">
     <value>OK</value>
   </data>
+  <data name="MousePage_AllAppsCheckBox.Content" xml:space="preserve">
+    <value>All apps</value>
+  </data>
+  <data name="MousePage_TargetAppTextBox.Header" xml:space="preserve">
+    <value>Target application</value>
+  </data>
+  <data name="MousePage_TargetAppTextBox.PlaceholderText" xml:space="preserve">
+    <value>e.g., notepad.exe</value>
+  </data>
 </root>

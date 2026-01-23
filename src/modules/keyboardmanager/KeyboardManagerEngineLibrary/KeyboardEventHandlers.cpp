@@ -1990,4 +1990,247 @@ namespace KeyboardEventHandlers
 
         return 1;
     }
+
+    // Helper function to get the foreground process name (lowercase, without extension)
+    std::wstring GetForegroundProcessName(KeyboardManagerInput::InputInterface& ii)
+    {
+        std::wstring process_name;
+        process_name.resize(MAX_PATH);
+        ii.GetForegroundProcess(process_name);
+        process_name.erase(std::find(process_name.begin(), process_name.end(), L'\0'), process_name.end());
+        std::transform(process_name.begin(), process_name.end(), process_name.begin(), towlower);
+        return process_name;
+    }
+
+    // Helper function to find app-specific remap table by process name (tries with and without extension)
+    template<typename MapType>
+    typename MapType::iterator FindAppSpecificTable(MapType& appSpecificMap, const std::wstring& processName)
+    {
+        auto it = appSpecificMap.find(processName);
+        if (it != appSpecificMap.end())
+        {
+            return it;
+        }
+
+        // Try without file extension
+        size_t extensionIndex = processName.find_last_of(L".");
+        if (extensionIndex != std::wstring::npos)
+        {
+            std::wstring processNameNoExt = processName.substr(0, extensionIndex);
+            it = appSpecificMap.find(processNameNoExt);
+        }
+
+        return it;
+    }
+
+    // Function to handle an app-specific mouse button remap
+    intptr_t HandleAppSpecificMouseButtonRemapEvent(KeyboardManagerInput::InputInterface& ii, MouseButton button, bool isButtonDown, State& state) noexcept
+    {
+        std::wstring process_name = GetForegroundProcessName(ii);
+        if (process_name.empty())
+        {
+            return 0;
+        }
+
+        // Find the app-specific remap table
+        auto appIt = FindAppSpecificTable(state.appSpecificMouseButtonReMap, process_name);
+        if (appIt == state.appSpecificMouseButtonReMap.end())
+        {
+            return 0;
+        }
+
+        // Look up the button remap in the app-specific table
+        auto buttonIt = appIt->second.find(button);
+        if (buttonIt == appIt->second.end())
+        {
+            return 0;
+        }
+
+        Logger::info(L"App-specific Mouse {} -> remap for {} ({})", static_cast<int>(button), process_name, isButtonDown ? L"down" : L"up");
+
+        const auto& target = buttonIt->second;
+
+        // Check target type: index 0 = DWORD (key), index 1 = Shortcut, index 2 = wstring (text)
+        const bool remapToKey = target.index() == 0;
+        const bool remapToShortcut = target.index() == 1;
+        const bool remapToText = target.index() == 2;
+
+        std::vector<INPUT> keyEventList;
+
+        if (remapToKey)
+        {
+            DWORD targetKey = std::get<DWORD>(target);
+
+            // If mapped to VK_DISABLED then the button is disabled
+            if (targetKey == CommonSharedConstants::VK_DISABLED)
+            {
+                return 1;
+            }
+
+            if (isButtonDown)
+            {
+                Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(targetKey), 0, KeyboardManagerConstants::KEYBOARDMANAGER_MOUSE_FLAG);
+            }
+            else
+            {
+                Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(targetKey), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_MOUSE_FLAG);
+            }
+
+            ii.SendVirtualInput(keyEventList);
+        }
+        else if (remapToShortcut)
+        {
+            Shortcut targetShortcut = std::get<Shortcut>(target);
+            const bool isRunProgram = targetShortcut.IsRunProgram();
+            const bool isOpenUri = targetShortcut.IsOpenURI();
+
+            if (isRunProgram)
+            {
+                if (isButtonDown)
+                {
+                    auto threadFunction = [targetShortcut]() {
+                        CreateOrShowProcessForShortcut(targetShortcut);
+                    };
+                    std::thread myThread(threadFunction);
+                    if (myThread.joinable())
+                    {
+                        myThread.detach();
+                    }
+                }
+            }
+            else if (isOpenUri)
+            {
+                if (isButtonDown)
+                {
+                    auto uri = targetShortcut.uriToOpen;
+                    auto newUri = uri;
+
+                    if (!PathIsURL(uri.c_str()))
+                    {
+                        WCHAR url[1024];
+                        DWORD bufferSize = 1024;
+
+                        if (UrlCreateFromPathW(uri.c_str(), url, &bufferSize, 0) == S_OK)
+                        {
+                            newUri = url;
+                        }
+                        else
+                        {
+                            toast(L"Error", L"Could not understand the Path or URI");
+                            return 1;
+                        }
+                    }
+
+                    auto threadFunction = [newUri]() {
+                        ShellExecute(NULL, L"open", newUri.c_str(), NULL, NULL, SW_SHOWNORMAL);
+                    };
+                    std::thread myThread(threadFunction);
+                    if (myThread.joinable())
+                    {
+                        myThread.detach();
+                    }
+                }
+            }
+            else
+            {
+                if (isButtonDown)
+                {
+                    Helpers::SetModifierKeyEvents(targetShortcut, Modifiers(), keyEventList, true, KeyboardManagerConstants::KEYBOARDMANAGER_MOUSE_FLAG);
+                    Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(targetShortcut.GetActionKey()), 0, KeyboardManagerConstants::KEYBOARDMANAGER_MOUSE_FLAG);
+                }
+                else
+                {
+                    Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(targetShortcut.GetActionKey()), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_MOUSE_FLAG);
+                    Helpers::SetModifierKeyEvents(targetShortcut, Modifiers(), keyEventList, false, KeyboardManagerConstants::KEYBOARDMANAGER_MOUSE_FLAG);
+                }
+
+                ii.SendVirtualInput(keyEventList);
+            }
+        }
+        else if (remapToText)
+        {
+            if (isButtonDown)
+            {
+                const auto& textToSend = std::get<std::wstring>(target);
+                Helpers::SetTextKeyEvents(keyEventList, textToSend);
+                ii.SendVirtualInput(keyEventList);
+            }
+        }
+
+        return 1;
+    }
+
+    // Function to handle an app-specific key-to-mouse remap
+    intptr_t HandleAppSpecificKeyToMouseRemapEvent(KeyboardManagerInput::InputInterface& ii, LowlevelKeyboardEvent* data, State& state) noexcept
+    {
+        const DWORD keyCode = static_cast<DWORD>(data->lParam->vkCode);
+
+        // Ignore key if it was generated by KeyboardManager itself
+        if (data->lParam->dwExtraInfo == KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG ||
+            data->lParam->dwExtraInfo == KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG ||
+            data->lParam->dwExtraInfo == KeyboardManagerConstants::KEYBOARDMANAGER_MOUSE_FLAG)
+        {
+            return 0;
+        }
+
+        std::wstring process_name = GetForegroundProcessName(ii);
+        if (process_name.empty())
+        {
+            return 0;
+        }
+
+        // Find the app-specific remap table
+        auto appIt = FindAppSpecificTable(state.appSpecificKeyToMouseReMap, process_name);
+        if (appIt == state.appSpecificKeyToMouseReMap.end())
+        {
+            return 0;
+        }
+
+        // Look up the key remap in the app-specific table
+        auto keyIt = appIt->second.find(keyCode);
+        if (keyIt == appIt->second.end())
+        {
+            return 0;
+        }
+
+        MouseButton targetButton = keyIt->second;
+        bool isKeyDown = (data->wParam == WM_KEYDOWN || data->wParam == WM_SYSKEYDOWN);
+        
+        Logger::info(L"App-specific Key {} -> Mouse {} for {} ({})", keyCode, static_cast<int>(targetButton), process_name, isKeyDown ? L"down" : L"up");
+
+        // Prepare mouse input
+        INPUT mouseInput = {};
+        mouseInput.type = INPUT_MOUSE;
+        mouseInput.mi.dwExtraInfo = KeyboardManagerConstants::KEYBOARDMANAGER_MOUSE_FLAG;
+
+        // Set the appropriate mouse event flags based on button and key state
+        switch (targetButton)
+        {
+        case MouseButton::Left:
+            mouseInput.mi.dwFlags = isKeyDown ? MOUSEEVENTF_LEFTDOWN : MOUSEEVENTF_LEFTUP;
+            break;
+        case MouseButton::Right:
+            mouseInput.mi.dwFlags = isKeyDown ? MOUSEEVENTF_RIGHTDOWN : MOUSEEVENTF_RIGHTUP;
+            break;
+        case MouseButton::Middle:
+            mouseInput.mi.dwFlags = isKeyDown ? MOUSEEVENTF_MIDDLEDOWN : MOUSEEVENTF_MIDDLEUP;
+            break;
+        case MouseButton::X1:
+            mouseInput.mi.dwFlags = isKeyDown ? MOUSEEVENTF_XDOWN : MOUSEEVENTF_XUP;
+            mouseInput.mi.mouseData = XBUTTON1;
+            break;
+        case MouseButton::X2:
+            mouseInput.mi.dwFlags = isKeyDown ? MOUSEEVENTF_XDOWN : MOUSEEVENTF_XUP;
+            mouseInput.mi.mouseData = XBUTTON2;
+            break;
+        }
+
+        UINT result = SendInput(1, &mouseInput, sizeof(INPUT));
+        if (result != 1)
+        {
+            Logger::warn(L"HandleAppSpecificKeyToMouseRemapEvent: SendInput failed for mouse button {}", static_cast<int>(targetButton));
+        }
+
+        return 1;
+    }
 }

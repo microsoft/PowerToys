@@ -50,6 +50,38 @@ std::optional<MouseButton> State::GetKeyToMouseRemap(const DWORD& originalKey)
     return std::nullopt;
 }
 
+// Function to get an app-specific mouse button remap given the source button and app name. Returns nullopt if it isn't remapped
+std::optional<MouseButtonRemapTable::iterator> State::GetAppSpecificMouseButtonRemap(const MouseButton& originalButton, const std::wstring& appName)
+{
+    auto appIt = appSpecificMouseButtonReMap.find(appName);
+    if (appIt != appSpecificMouseButtonReMap.end())
+    {
+        auto it = appIt->second.find(originalButton);
+        if (it != appIt->second.end())
+        {
+            return it;
+        }
+    }
+
+    return std::nullopt;
+}
+
+// Function to get an app-specific key-to-mouse remap given the source key and app name. Returns nullopt if it isn't remapped
+std::optional<MouseButton> State::GetAppSpecificKeyToMouseRemap(const DWORD& originalKey, const std::wstring& appName)
+{
+    auto appIt = appSpecificKeyToMouseReMap.find(appName);
+    if (appIt != appSpecificKeyToMouseReMap.end())
+    {
+        auto it = appIt->second.find(originalKey);
+        if (it != appIt->second.end())
+        {
+            return it->second;
+        }
+    }
+
+    return std::nullopt;
+}
+
 bool State::CheckShortcutRemapInvoked(const std::optional<std::wstring>& appName)
 {
     // Assumes appName exists in the app-specific remap table

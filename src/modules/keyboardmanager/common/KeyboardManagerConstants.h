@@ -109,6 +109,12 @@ namespace KeyboardManagerConstants
     // Name of the property used to store the target mouse button
     inline const std::wstring TargetMouseButtonSettingName = L"targetMouseButton";
 
+    // Name of the property used to store global (all apps) mouse remaps array
+    inline const std::wstring GlobalMouseRemapsSettingName = L"global";
+
+    // Name of the property used to store app-specific mouse remaps array
+    inline const std::wstring AppSpecificMouseRemapsSettingName = L"appSpecific";
+
     // Flag used for distinguishing mouse events sent by Keyboard Manager
     inline const ULONG_PTR KEYBOARDMANAGER_MOUSE_FLAG = 0x1011;
 }

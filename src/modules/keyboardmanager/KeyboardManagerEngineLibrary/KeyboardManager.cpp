@@ -259,7 +259,14 @@ intptr_t KeyboardManager::HandleMouseHookEvent(WPARAM wParam, MSLLHOOKSTRUCT* da
 
     bool isButtonDown = MouseButtonHelpers::IsMouseButtonDown(wParam);
 
-    // Handle the mouse button remap
+    // Try app-specific mouse button remap first
+    intptr_t appSpecificResult = KeyboardEventHandlers::HandleAppSpecificMouseButtonRemapEvent(inputHandler, *mouseButton, isButtonDown, state);
+    if (appSpecificResult == 1)
+    {
+        return 1;
+    }
+
+    // Handle global mouse button remap
     return KeyboardEventHandlers::HandleMouseButtonRemapEvent(inputHandler, *mouseButton, isButtonDown, state);
 }
 
@@ -291,7 +298,7 @@ bool KeyboardManager::HasRegisteredRemappingsUnchecked() const
 
 bool KeyboardManager::HasMouseRemappings() const
 {
-    return !state.mouseButtonReMap.empty();
+    return !state.mouseButtonReMap.empty() || !state.appSpecificMouseButtonReMap.empty() || !state.appSpecificKeyToMouseReMap.empty();
 }
 
 intptr_t KeyboardManager::HandleKeyboardHookEvent(LowlevelKeyboardEvent* data) noexcept
@@ -322,7 +329,15 @@ intptr_t KeyboardManager::HandleKeyboardHookEvent(LowlevelKeyboardEvent* data) n
         return 1;
     }
 
-    // Handle key-to-mouse remap (pressing a key triggers a mouse click)
+    // Handle app-specific key-to-mouse remap (pressing a key triggers a mouse click in specific app)
+    intptr_t AppSpecificKeyToMouseRemapResult = KeyboardEventHandlers::HandleAppSpecificKeyToMouseRemapEvent(inputHandler, data, state);
+
+    if (AppSpecificKeyToMouseRemapResult == 1)
+    {
+        return 1;
+    }
+
+    // Handle global key-to-mouse remap (pressing a key triggers a mouse click)
     intptr_t KeyToMouseRemapResult = KeyboardEventHandlers::HandleKeyToMouseRemapEvent(inputHandler, data, state);
 
     if (KeyToMouseRemapResult == 1)

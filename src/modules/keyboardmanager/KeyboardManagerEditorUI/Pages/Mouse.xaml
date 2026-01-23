@@ -344,6 +344,21 @@
                         x:Uid="MousePage_UrlInputTextBox"
                         Width="300" />
                 </StackPanel>
+                
+                <!-- App-specific remapping -->
+                <StackPanel Spacing="8" Margin="0,8,0,0">
+                    <CheckBox
+                        x:Name="MouseToKeyAllAppsCheckBox"
+                        x:Uid="MousePage_AllAppsCheckBox"
+                        IsChecked="True"
+                        Checked="MouseToKeyAllAppsCheckBox_Changed"
+                        Unchecked="MouseToKeyAllAppsCheckBox_Changed" />
+                    <TextBox
+                        x:Name="MouseToKeyTargetAppTextBox"
+                        x:Uid="MousePage_TargetAppTextBox"
+                        Width="250"
+                        Visibility="Collapsed" />
+                </StackPanel>
             </StackPanel>
         </ContentDialog>
 
@@ -375,6 +390,21 @@
                     <ComboBoxItem x:Uid="MousePage_MouseButton_X1" />
                     <ComboBoxItem x:Uid="MousePage_MouseButton_X2" />
                 </ComboBox>
+                
+                <!-- App-specific remapping -->
+                <StackPanel Spacing="8" Margin="0,8,0,0">
+                    <CheckBox
+                        x:Name="KeyToMouseAllAppsCheckBox"
+                        x:Uid="MousePage_AllAppsCheckBox"
+                        IsChecked="True"
+                        Checked="KeyToMouseAllAppsCheckBox_Changed"
+                        Unchecked="KeyToMouseAllAppsCheckBox_Changed" />
+                    <TextBox
+                        x:Name="KeyToMouseTargetAppTextBox"
+                        x:Uid="MousePage_TargetAppTextBox"
+                        Width="250"
+                        Visibility="Collapsed" />
+                </StackPanel>
             </StackPanel>
         </ContentDialog>
     </Grid>
