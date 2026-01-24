@@ -95,13 +95,9 @@ std::wstring CursorWrapCore::GenerateTopologyJSON() const
 
 void CursorWrapCore::UpdateMonitorInfo()
 {
-#ifdef _DEBUG
     size_t previousMonitorCount = m_monitors.size();
-    std::wostringstream oss;
-    oss << L"[CursorWrap] ======= UPDATE MONITOR INFO START =======\n";
-    oss << L"[CursorWrap] Previous monitor count: " << previousMonitorCount << L"\n";
-    OutputDebugStringW(oss.str().c_str());
-#endif
+    Logger::info(L"======= UPDATE MONITOR INFO START =======");
+    Logger::info(L"Previous monitor count: {}", previousMonitorCount);
 
     m_monitors.clear();
 
@@ -113,37 +109,30 @@ void CursorWrapCore::UpdateMonitorInfo()
         if (GetMonitorInfo(hMonitor, &mi))
         {
             MonitorInfo info{};
+            info.hMonitor = hMonitor; // Store handle for direct comparison later
             info.rect = mi.rcMonitor;
             info.isPrimary = (mi.dwFlags & MONITORINFOF_PRIMARY) != 0;
             info.monitorId = static_cast<int>(self->m_monitors.size());
             self->m_monitors.push_back(info);
+            
+            Logger::info(L"Enumerated monitor {}: hMonitor={}, rect=({},{},{},{}), primary={}",
+                info.monitorId, reinterpret_cast<uintptr_t>(hMonitor),
+                mi.rcMonitor.left, mi.rcMonitor.top, mi.rcMonitor.right, mi.rcMonitor.bottom,
+                info.isPrimary ? L"yes" : L"no");
         }
 
         return TRUE;
     }, reinterpret_cast<LPARAM>(this));
 
-#ifdef _DEBUG
+    if (previousMonitorCount != m_monitors.size())
     {
-        std::wostringstream oss2;
-        oss2 << L"[CursorWrap] New monitor count: " << m_monitors.size() << L"\n";
-        if (previousMonitorCount != m_monitors.size())
-        {
-            oss2 << L"[CursorWrap] *** MONITOR CONFIGURATION CHANGED: " << previousMonitorCount
-                 << L" -> " << m_monitors.size() << L" monitors ***\n";
-        }
-        OutputDebugStringW(oss2.str().c_str());
-
-        // Output detailed topology JSON
-        std::wstring topologyJson = GenerateTopologyJSON();
-        OutputDebugStringW(L"[CursorWrap] TOPOLOGY JSON:\n");
-        OutputDebugStringW(topologyJson.c_str());
-        OutputDebugStringW(L"\n");
+        Logger::info(L"*** MONITOR CONFIGURATION CHANGED: {} -> {} monitors ***", 
+            previousMonitorCount, m_monitors.size());
     }
-#endif
 
     m_topology.Initialize(m_monitors);
 
-    // Log monitor configuration summary (always, not just debug)
+    // Log monitor configuration summary
     Logger::info(L"Monitor configuration updated: {} monitor(s)", m_monitors.size());
     for (size_t i = 0; i < m_monitors.size(); ++i)
     {
@@ -156,7 +145,7 @@ void CursorWrapCore::UpdateMonitorInfo()
     }
     Logger::info(L"  Detected {} outer edges for cursor wrapping", m_topology.GetOuterEdges().size());
 
-    // Detect and log monitor gaps (always, not just debug)
+    // Detect and log monitor gaps
     auto gaps = m_topology.DetectMonitorGaps();
     if (!gaps.empty())
     {
@@ -171,14 +160,7 @@ void CursorWrapCore::UpdateMonitorInfo()
         Logger::warn(L"  2. Update your GPU drivers");
     }
 
-#ifdef _DEBUG
-    {
-        std::wostringstream oss3;
-        oss3 << L"[CursorWrap] Topology initialized with " << m_topology.GetOuterEdges().size() << L" outer edges\n";
-        oss3 << L"[CursorWrap] ======= UPDATE MONITOR INFO END =======\n";
-        OutputDebugStringW(oss3.str().c_str());
-    }
-#endif
+    Logger::info(L"======= UPDATE MONITOR INFO END =======");
 }
 
 POINT CursorWrapCore::HandleMouseMove(const POINT& currentPos, bool disableWrapDuringDrag, int wrapMode)

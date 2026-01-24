@@ -480,7 +480,10 @@ private:
             return; // Already registered
         }
 
-        // Create a hidden message-only window
+        // Create a hidden top-level window to receive broadcast messages
+        // NOTE: Message-only windows (HWND_MESSAGE parent) do NOT receive
+        // WM_DISPLAYCHANGE, WM_SETTINGCHANGE, or WM_DEVICECHANGE broadcasts.
+        // We must use a real (hidden) top-level window instead.
         WNDCLASSEXW wc = { sizeof(WNDCLASSEXW) };
         wc.lpfnWndProc = MessageWindowProc;
         wc.hInstance = GetModuleHandle(nullptr);
@@ -488,13 +491,15 @@ private:
 
         RegisterClassExW(&wc);
 
+        // Create a hidden top-level window (not message-only)
+        // WS_EX_TOOLWINDOW prevents taskbar button, WS_POPUP with no size makes it invisible
         m_messageWindow = CreateWindowExW(
-            0,
+            WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE,
             L"CursorWrapDisplayChangeWindow",
             nullptr,
-            0,
-            0, 0, 0, 0,
-            HWND_MESSAGE, // Message-only window
+            WS_POPUP,  // Minimal window style
+            0, 0, 0, 0,  // Zero size = invisible
+            nullptr,  // No parent - top-level window to receive broadcasts
             nullptr,
             GetModuleHandle(nullptr),
             nullptr);

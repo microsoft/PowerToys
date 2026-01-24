@@ -10,6 +10,7 @@
 // Monitor information structure
 struct MonitorInfo
 {
+    HMONITOR hMonitor; // Direct handle for accurate lookup after display changes
     RECT rect;
     bool isPrimary;
     int monitorId;
@@ -35,7 +36,7 @@ enum class WrapMode
 // Represents a single edge of a monitor
 struct MonitorEdge
 {
-    HMONITOR monitor;
+    int monitorIndex;  // Index into m_monitors (stable across display changes)
     EdgeType type;
     int start;      // For vertical edges: Y start; horizontal: X start
     int end;        // For vertical edges: Y end; horizontal: X end
@@ -77,8 +78,13 @@ private:
     std::vector<MonitorInfo> m_monitors;
     std::vector<MonitorEdge> m_outerEdges;
 
-    // Map from (monitor, edge type) to edge info
-    std::map<std::pair<HMONITOR, EdgeType>, MonitorEdge> m_edgeMap;
+    // Map from (monitor index, edge type) to edge info
+    // Using monitor index instead of HMONITOR because HMONITOR handles can change
+    // when monitors are added/removed dynamically
+    std::map<std::pair<int, EdgeType>, MonitorEdge> m_edgeMap;
+
+    // Helper to resolve HMONITOR to monitor index at runtime
+    int GetMonitorIndex(HMONITOR monitor) const;
 
     // Helper to get consistent HMONITOR from RECT
     HMONITOR GetMonitorFromRect(const RECT& rect) const;
