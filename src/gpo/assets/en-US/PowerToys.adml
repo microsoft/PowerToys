@@ -34,7 +34,7 @@
       <string id="SUPPORTED_POWERTOYS_0_89_0">PowerToys version 0.89.0 or later</string>
       <string id="SUPPORTED_POWERTOYS_0_90_0">PowerToys version 0.90.0 or later</string>
       <string id="SUPPORTED_POWERTOYS_0_96_0">PowerToys version 0.96.0 or later</string>
-      <string id="SUPPORTED_POWERTOYS_0_96_0">PowerToys version 0.97.0 or later</string>
+      <string id="SUPPORTED_POWERTOYS_0_97_0">PowerToys version 0.97.0 or later</string>
       <string id="SUPPORTED_POWERTOYS_0_64_0_TO_0_87_1">From PowerToys version 0.64.0 until PowerToys version 0.87.1</string>
 
       <string id="ConfigureAllUtilityGlobalEnabledStateDescription">This policy configures the enabled state for all PowerToys utilities.
