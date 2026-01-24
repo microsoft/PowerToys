@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Copyright (c) Microsoft Corporation.
      Licensed under the MIT License. -->
-<policyDefinitionResources xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" revision="1.18" schemaVersion="1.0" xmlns="http://schemas.microsoft.com/GroupPolicy/2006/07/PolicyDefinitions">
+<policyDefinitionResources xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" revision="1.19" schemaVersion="1.0" xmlns="http://schemas.microsoft.com/GroupPolicy/2006/07/PolicyDefinitions">
   <displayName>PowerToys</displayName>
   <description>PowerToys</description>
   <resources>
@@ -34,6 +34,7 @@
       <string id="SUPPORTED_POWERTOYS_0_89_0">PowerToys version 0.89.0 or later</string>
       <string id="SUPPORTED_POWERTOYS_0_90_0">PowerToys version 0.90.0 or later</string>
       <string id="SUPPORTED_POWERTOYS_0_96_0">PowerToys version 0.96.0 or later</string>
+      <string id="SUPPORTED_POWERTOYS_0_96_0">PowerToys version 0.97.0 or later</string>
       <string id="SUPPORTED_POWERTOYS_0_64_0_TO_0_87_1">From PowerToys version 0.64.0 until PowerToys version 0.87.1</string>
 
       <string id="ConfigureAllUtilityGlobalEnabledStateDescription">This policy configures the enabled state for all PowerToys utilities.
@@ -266,6 +267,7 @@ If you don't configure this policy, the user will be able to control the setting
       <string id="ConfigureEnabledUtilityKeyboardManager">Keyboard Manager: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityFindMyMouse">Find My Mouse: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityMouseHighlighter">Mouse Highlighter: Configure enabled state</string>
+      <string id="ConfigureEnabledUtilityCursorWrap">CursorWrap: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityMouseJump">Mouse Jump: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityMousePointerCrosshairs">Mouse Pointer Crosshairs: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityMouseWithoutBorders">Mouse Without Borders: Configure enabled state</string>
