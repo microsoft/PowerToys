@@ -33,6 +33,9 @@
     <ClCompile Include="AudioSampleGenerator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="LoopbackCapture.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="DemoType.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -78,6 +81,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="AudioSampleGenerator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LoopbackCapture.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="DemoType.h">

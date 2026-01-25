@@ -27,6 +27,7 @@ public:
         RECT const& cropRect,
         uint32_t frameRate,
         bool captureAudio,
+        bool captureSystemAudio,
         winrt::Streams::IRandomAccessStream const& stream);
     ~VideoRecordingSession();
 
@@ -186,6 +187,7 @@ private:
         RECT const cropRect,
         uint32_t frameRate,
         bool captureAudio,
+        bool captureSystemAudio,
         winrt::Streams::IRandomAccessStream const& stream);
     void CloseInternal();
 

@@ -3658,6 +3658,9 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
         CheckDlgButton( g_OptionsTabs[BREAK_PAGE].hPage, IDC_CHECK_SHOW_EXPIRED,
             g_ShowExpiredTime ? BST_CHECKED : BST_UNCHECKED );
 
+        CheckDlgButton( g_OptionsTabs[RECORD_PAGE].hPage, IDC_CAPTURE_SYSTEM_AUDIO,
+            g_CaptureSystemAudio ? BST_CHECKED: BST_UNCHECKED );
+
         CheckDlgButton( g_OptionsTabs[RECORD_PAGE].hPage, IDC_CAPTURE_AUDIO,
             g_CaptureAudio ? BST_CHECKED: BST_UNCHECKED );
 
@@ -4077,6 +4080,7 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
             g_DemoTypeSpeedSlider = static_cast<int>(SendMessage( GetDlgItem( g_OptionsTabs[DEMOTYPE_PAGE].hPage, IDC_DEMOTYPE_SPEED_SLIDER ), TBM_GETPOS, 0, 0 ));
 
             g_ShowExpiredTime = IsDlgButtonChecked(  g_OptionsTabs[BREAK_PAGE].hPage, IDC_CHECK_SHOW_EXPIRED ) == BST_CHECKED;
+            g_CaptureSystemAudio = IsDlgButtonChecked(g_OptionsTabs[RECORD_PAGE].hPage, IDC_CAPTURE_SYSTEM_AUDIO) == BST_CHECKED;
             g_CaptureAudio = IsDlgButtonChecked(g_OptionsTabs[RECORD_PAGE].hPage, IDC_CAPTURE_AUDIO) == BST_CHECKED;
             GetDlgItemText( g_OptionsTabs[BREAK_PAGE].hPage, IDC_TIMER, text, 3 );
             text[2] = 0;
@@ -5429,6 +5433,7 @@ winrt::fire_and_forget StartRecordingAsync( HWND hWnd, LPRECT rcCrop, HWND hWndR
                                         *rcCrop,
                                         g_RecordFrameRate,
                                         g_CaptureAudio,
+                                        g_CaptureSystemAudio,
                                         stream );
 
         recordingStarted = (g_RecordingSession != nullptr);

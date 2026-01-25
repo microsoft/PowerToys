@@ -1,9 +1,11 @@
 #pragma once
 
+#include "LoopbackCapture.h"
+
 class AudioSampleGenerator
 {
 public:
-    AudioSampleGenerator();
+    AudioSampleGenerator(bool captureMicrophone = true, bool captureSystemAudio = true);
     ~AudioSampleGenerator();
 
     winrt::Windows::Foundation::IAsyncAction InitializeAsync();
@@ -37,7 +39,18 @@ private:
 private:
     winrt::Windows::Media::Audio::AudioGraph m_audioGraph{ nullptr };
     winrt::Windows::Media::Audio::AudioDeviceInputNode m_audioInputNode{ nullptr };
+    winrt::Windows::Media::Audio::AudioSubmixNode m_submixNode{ nullptr };
     winrt::Windows::Media::Audio::AudioFrameOutputNode m_audioOutputNode{ nullptr };
+    
+    std::unique_ptr<LoopbackCapture> m_loopbackCapture;
+    std::vector<float> m_loopbackBuffer;  // Accumulated loopback samples (resampled to match AudioGraph)
+    wil::srwlock m_loopbackBufferLock;
+    uint32_t m_loopbackChannels = 2;
+    uint32_t m_loopbackSampleRate = 48000;
+    uint32_t m_graphSampleRate = 48000;
+    uint32_t m_graphChannels = 2;
+    double m_resampleRatio = 1.0;  // loopbackSampleRate / graphSampleRate
+    
     wil::srwlock m_lock;
     wil::unique_event m_audioEvent;
     wil::unique_event m_endEvent;
@@ -46,4 +59,6 @@ private:
     std::deque<winrt::Windows::Media::Core::MediaStreamSample> m_samples;
     std::atomic<bool> m_initialized = false;
     std::atomic<bool> m_started = false;
+    bool m_captureMicrophone = true;
+    bool m_captureSystemAudio = true;
 };

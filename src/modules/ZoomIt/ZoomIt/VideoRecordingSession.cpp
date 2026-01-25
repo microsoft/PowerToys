@@ -892,6 +892,7 @@ VideoRecordingSession::VideoRecordingSession(
     RECT const cropRect,
     uint32_t frameRate,
     bool captureAudio,
+    bool captureSystemAudio,
     winrt::Streams::IRandomAccessStream const& stream)
 {
     m_device = device;
@@ -970,13 +971,10 @@ VideoRecordingSession::VideoRecordingSession(
     video.PixelAspectRatio().Denominator(1);
     m_encodingProfile.Video(video);
 
-    // if audio capture, set up audio profile
-    if (captureAudio)
-    {
-        auto audio = m_encodingProfile.Audio();
-        audio = winrt::AudioEncodingProperties::CreateAac(48000, 1, 16);
-        m_encodingProfile.Audio(audio);
-	}
+    // Always set up audio profile for loopback capture (stereo AAC)
+    auto audio = m_encodingProfile.Audio();
+    audio = winrt::AudioEncodingProperties::CreateAac(48000, 2, 192000);
+    m_encodingProfile.Audio(audio);
 
     // Describe our input: uncompressed BGRA8 buffers
     auto properties = winrt::VideoEncodingProperties::CreateUncompressed(
@@ -997,14 +995,8 @@ VideoRecordingSession::VideoRecordingSession(
     winrt::check_hresult(m_previewSwapChain->GetBuffer(0, winrt::guid_of<ID3D11Texture2D>(), backBuffer.put_void()));
     winrt::check_hresult(m_d3dDevice->CreateRenderTargetView(backBuffer.get(), nullptr, m_renderTargetView.put()));
 
-    if( captureAudio ) {
-
-        m_audioGenerator = std::make_unique<AudioSampleGenerator>();
-    }
-    else {
-
-        m_audioGenerator = nullptr;
-    }
+    // Always create audio generator for loopback capture; captureAudio controls microphone
+    m_audioGenerator = std::make_unique<AudioSampleGenerator>(captureAudio, captureSystemAudio);
 }
 
 
@@ -1151,9 +1143,10 @@ std::shared_ptr<VideoRecordingSession> VideoRecordingSession::Create(
     RECT const& crop,
     uint32_t frameRate,
     bool captureAudio,
+    bool captureSystemAudio,
     winrt::Streams::IRandomAccessStream const& stream)
 {
-    return std::shared_ptr<VideoRecordingSession>(new VideoRecordingSession(device, item, crop, frameRate, captureAudio, stream));
+    return std::shared_ptr<VideoRecordingSession>(new VideoRecordingSession(device, item, crop, frameRate, captureAudio, captureSystemAudio, stream));
 }
 
 //----------------------------------------------------------------------------
@@ -4282,6 +4275,19 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
         pData = reinterpret_cast<TrimDialogData*>(GetWindowLongPtr(hDlg, DWLP_USER));
         if (pData)
         {
+            // If the user hasn't manually trimmed (selection was at estimated full duration),
+            // update the selection to the actual full video duration
+            if (pData->trimEnd.count() >= pData->originalTrimEnd.count())
+            {
+                pData->trimEnd = pData->videoDuration;
+                pData->originalTrimEnd = pData->videoDuration;
+            }
+            // Clamp trimEnd to actual duration if it exceeds
+            if (pData->trimEnd.count() > pData->videoDuration.count())
+            {
+                pData->trimEnd = pData->videoDuration;
+            }
+            
             if (pData->currentPosition.count() > pData->trimEnd.count())
             {
                 pData->currentPosition = pData->trimEnd;
