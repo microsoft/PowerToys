@@ -24,6 +24,8 @@ public class DockSettings
 
     public List<DockBandSettings> StartBands { get; set; } = [];
 
+    public List<DockBandSettings> CenterBands { get; set; } = [];
+
     public List<DockBandSettings> EndBands { get; set; } = [];
 
     public bool ShowLabels { get; set; } = true;

@@ -133,36 +133,35 @@
         BorderThickness="0,0,0,1"
         RightTapped="RootGrid_RightTapped">
         <!--  Edit Mode Overlay - shown when in edit mode  -->
-        <Border
-            x:Name="EditModeOverlay"
-            Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-            IsHitTestVisible="False"
-            Opacity="0" />
-
-        <Grid x:Name="ContentGrid" Padding="0,0,0,0">
+        <Grid
+            x:Name="ContentGrid"
+            Background="Transparent"
+            RightTapped="RootGrid_RightTapped">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="2*" />
-                <ColumnDefinition x:Name="EndColumn" Width="Auto" />
-                <ColumnDefinition x:Name="DoneButtonColumn" Width="Auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
-                <RowDefinition Height="2*" />
-                <RowDefinition x:Name="EndRow" Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
             </Grid.RowDefinitions>
 
             <cpcontrols:ScrollContainer
-                x:Name="StartItemsView"
-                Grid.Column="0"
-                HorizontalAlignment="Stretch"
-                VerticalAlignment="Stretch">
+                x:Name="StartScroller"
+                Grid.RowSpan="3"
+                HorizontalAlignment="Left"
+                VerticalAlignment="Stretch"
+                BorderThickness="1">
                 <cpcontrols:ScrollContainer.Source>
                     <ListView
-                        x:Name="StartItemsListView"
+                        x:Name="StartListView"
                         HorizontalAlignment="Stretch"
                         DragItemsCompleted="BandListView_DragItemsCompleted"
                         DragItemsStarting="BandListView_DragItemsStarting"
                         DragOver="BandListView_DragOver"
-                        Drop="StartItemsListView_Drop"
+                        Drop="StartListView_Drop"
                         ItemContainerStyle="{StaticResource DockBandListViewItemStyle}"
                         ItemTemplateSelector="{StaticResource DockBandTemplateSelector}"
                         ItemsPanel="{StaticResource HorizontalItemsPanel}"
@@ -173,16 +172,42 @@
             </cpcontrols:ScrollContainer>
 
             <cpcontrols:ScrollContainer
-                x:Name="EndItemsView"
+                x:Name="CenterScroller"
+                Grid.RowSpan="3"
                 Grid.Column="1"
-                ContentAlignment="End">
+                MinWidth="120"
+                HorizontalAlignment="Center">
                 <cpcontrols:ScrollContainer.Source>
                     <ListView
-                        x:Name="EndItemsListView"
+                        x:Name="CenterListView"
+                        HorizontalAlignment="Stretch"
                         DragItemsCompleted="BandListView_DragItemsCompleted"
                         DragItemsStarting="BandListView_DragItemsStarting"
                         DragOver="BandListView_DragOver"
-                        Drop="EndItemsListView_Drop"
+                        Drop="CenterListView_Drop"
+                        ItemContainerStyle="{StaticResource DockBandListViewItemStyle}"
+                        ItemTemplateSelector="{StaticResource DockBandTemplateSelector}"
+                        ItemsPanel="{StaticResource HorizontalItemsPanel}"
+                        ItemsSource="{x:Bind ViewModel.CenterItems, Mode=OneWay}"
+                        SelectionMode="None"
+                        Style="{StaticResource DockBandListViewStyle}" />
+                </cpcontrols:ScrollContainer.Source>
+            </cpcontrols:ScrollContainer>
+
+            <cpcontrols:ScrollContainer
+                x:Name="EndScroller"
+                Grid.RowSpan="3"
+                Grid.Column="2"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Stretch"
+                ContentAlignment="End">
+                <cpcontrols:ScrollContainer.Source>
+                    <ListView
+                        x:Name="EndListView"
+                        DragItemsCompleted="BandListView_DragItemsCompleted"
+                        DragItemsStarting="BandListView_DragItemsStarting"
+                        DragOver="BandListView_DragOver"
+                        Drop="EndListView_Drop"
                         ItemContainerStyle="{StaticResource DockBandListViewItemStyle}"
                         ItemTemplateSelector="{StaticResource DockBandTemplateSelector}"
                         ItemsPanel="{StaticResource HorizontalItemsPanel}"
@@ -225,16 +250,19 @@
                         <ui:IsEqualStateTrigger Value="{x:Bind DockSide, Mode=OneWay}" To="Top" />
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
-                        <Setter Target="StartItemsView.(Grid.Row)" Value="0" />
-                        <Setter Target="StartItemsView.(Grid.Column)" Value="0" />
-                        <Setter Target="StartItemsView.(Grid.RowSpan)" Value="3" />
-                        <Setter Target="StartItemsView.(Grid.ColumnSpan)" Value="1" />
-                        <Setter Target="EndItemsView.(Grid.Row)" Value="0" />
-                        <Setter Target="EndItemsView.(Grid.Column)" Value="3" />
-                        <Setter Target="EndItemsView.(Grid.RowSpan)" Value="3" />
-                        <Setter Target="EndItemsView.(Grid.ColumnSpan)" Value="1" />
-                        <Setter Target="EndItemsView.HorizontalAlignment" Value="Right" />
-                        <Setter Target="ContentGrid.Margin" Value="8,0,8,0" />
+                        <Setter Target="StartScroller.(Grid.Row)" Value="0" />
+                        <Setter Target="StartScroller.(Grid.Column)" Value="0" />
+                        <Setter Target="StartScroller.(Grid.RowSpan)" Value="3" />
+                        <Setter Target="StartScroller.HorizontalAlignment" Value="Left" />
+                        <Setter Target="CenterScroller.(Grid.Row)" Value="0" />
+                        <Setter Target="CenterScroller.(Grid.Column)" Value="1" />
+                        <Setter Target="CenterScroller.(Grid.RowSpan)" Value="3" />
+                        <Setter Target="CenterScroller.HorizontalAlignment" Value="Center" />
+                        <Setter Target="EndScroller.(Grid.Row)" Value="0" />
+                        <Setter Target="EndScroller.(Grid.Column)" Value="2" />
+                        <Setter Target="EndScroller.(Grid.RowSpan)" Value="3" />
+                        <Setter Target="EndScroller.HorizontalAlignment" Value="Right" />
+                        <Setter Target="ContentGrid.Padding" Value="8,0,8,0" />
                         <Setter Target="RootGrid.BorderThickness" Value="0,0,0,1" />
                     </VisualState.Setters>
                 </VisualState>
@@ -243,16 +271,19 @@
                         <ui:IsEqualStateTrigger Value="{x:Bind DockSide, Mode=OneWay}" To="Bottom" />
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
-                        <Setter Target="StartItemsView.(Grid.Row)" Value="0" />
-                        <Setter Target="StartItemsView.(Grid.Column)" Value="0" />
-                        <Setter Target="StartItemsView.(Grid.RowSpan)" Value="3" />
-                        <Setter Target="StartItemsView.(Grid.ColumnSpan)" Value="1" />
-                        <Setter Target="EndItemsView.(Grid.Row)" Value="0" />
-                        <Setter Target="EndItemsView.(Grid.Column)" Value="3" />
-                        <Setter Target="EndItemsView.(Grid.RowSpan)" Value="3" />
-                        <Setter Target="EndItemsView.(Grid.ColumnSpan)" Value="1" />
-                        <Setter Target="EndItemsView.HorizontalAlignment" Value="Right" />
-                        <Setter Target="ContentGrid.Margin" Value="8,0,8,0" />
+                        <Setter Target="StartScroller.(Grid.Row)" Value="0" />
+                        <Setter Target="StartScroller.(Grid.Column)" Value="0" />
+                        <Setter Target="StartScroller.(Grid.RowSpan)" Value="3" />
+                        <Setter Target="StartScroller.HorizontalAlignment" Value="Left" />
+                        <Setter Target="CenterScroller.(Grid.Row)" Value="0" />
+                        <Setter Target="CenterScroller.(Grid.Column)" Value="1" />
+                        <Setter Target="CenterScroller.(Grid.RowSpan)" Value="3" />
+                        <Setter Target="CenterScroller.HorizontalAlignment" Value="Center" />
+                        <Setter Target="EndScroller.(Grid.Row)" Value="0" />
+                        <Setter Target="EndScroller.(Grid.Column)" Value="2" />
+                        <Setter Target="EndScroller.(Grid.RowSpan)" Value="3" />
+                        <Setter Target="EndScroller.HorizontalAlignment" Value="Right" />
+                        <Setter Target="ContentGrid.Padding" Value="8,0,8,0" />
                         <Setter Target="RootGrid.BorderThickness" Value="0,1,0,0" />
                     </VisualState.Setters>
                 </VisualState>
@@ -261,17 +292,26 @@
                         <ui:IsEqualStateTrigger Value="{x:Bind DockSide, Mode=OneWay}" To="Left" />
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
-                        <Setter Target="StartItemsView.(Grid.Row)" Value="0" />
-                        <Setter Target="StartItemsView.(Grid.Column)" Value="0" />
-                        <Setter Target="StartItemsView.(Grid.RowSpan)" Value="1" />
-                        <Setter Target="StartItemsView.(Grid.ColumnSpan)" Value="3" />
-                        <Setter Target="StartItemsView.Orientation" Value="Vertical" />
-                        <Setter Target="EndItemsView.Orientation" Value="Vertical" />
-                        <Setter Target="EndItemsView.(Grid.Row)" Value="3" />
-                        <Setter Target="EndItemsView.(Grid.Column)" Value="0" />
-                        <Setter Target="EndItemsView.(Grid.RowSpan)" Value="1" />
-                        <Setter Target="EndItemsView.(Grid.ColumnSpan)" Value="3" />
-                        <Setter Target="EndItemsView.HorizontalAlignment" Value="Stretch" />
+                        <Setter Target="StartScroller.(Grid.Row)" Value="0" />
+                        <Setter Target="StartScroller.(Grid.Column)" Value="0" />
+                        <Setter Target="StartScroller.(Grid.ColumnSpan)" Value="3" />
+                        <Setter Target="StartScroller.Orientation" Value="Vertical" />
+                        <Setter Target="StartScroller.HorizontalAlignment" Value="Stretch" />
+                        <Setter Target="StartScroller.VerticalAlignment" Value="Top" />
+
+                        <Setter Target="CenterScroller.(Grid.Row)" Value="1" />
+                        <Setter Target="CenterScroller.(Grid.Column)" Value="0" />
+                        <Setter Target="CenterScroller.(Grid.ColumnSpan)" Value="3" />
+                        <Setter Target="CenterScroller.Orientation" Value="Vertical" />
+                        <Setter Target="CenterScroller.HorizontalAlignment" Value="Stretch" />
+                        <Setter Target="CenterScroller.VerticalAlignment" Value="Center" />
+
+                        <Setter Target="EndScroller.Orientation" Value="Vertical" />
+                        <Setter Target="EndScroller.(Grid.Row)" Value="2" />
+                        <Setter Target="EndScroller.(Grid.Column)" Value="0" />
+                        <Setter Target="EndScroller.(Grid.ColumnSpan)" Value="3" />
+                        <Setter Target="EndScroller.HorizontalAlignment" Value="Stretch" />
+                        <Setter Target="EndScroller.VerticalAlignment" Value="Bottom" />
                         <Setter Target="ContentGrid.Padding" Value="4,8,4,8" />
                         <Setter Target="RootGrid.BorderThickness" Value="0,0,1,0" />
                     </VisualState.Setters>
@@ -281,17 +321,26 @@
                         <ui:IsEqualStateTrigger Value="{x:Bind DockSide, Mode=OneWay}" To="Right" />
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
-                        <Setter Target="StartItemsView.(Grid.Row)" Value="0" />
-                        <Setter Target="StartItemsView.(Grid.Column)" Value="0" />
-                        <Setter Target="StartItemsView.(Grid.RowSpan)" Value="1" />
-                        <Setter Target="StartItemsView.(Grid.ColumnSpan)" Value="3" />
-                        <Setter Target="StartItemsView.Orientation" Value="Vertical" />
-                        <Setter Target="EndItemsView.Orientation" Value="Vertical" />
-                        <Setter Target="EndItemsView.(Grid.Row)" Value="3" />
-                        <Setter Target="EndItemsView.(Grid.Column)" Value="0" />
-                        <Setter Target="EndItemsView.(Grid.RowSpan)" Value="1" />
-                        <Setter Target="EndItemsView.(Grid.ColumnSpan)" Value="3" />
-                        <Setter Target="EndItemsView.HorizontalAlignment" Value="Stretch" />
+                        <Setter Target="StartScroller.(Grid.Row)" Value="0" />
+                        <Setter Target="StartScroller.(Grid.Column)" Value="0" />
+                        <Setter Target="StartScroller.(Grid.ColumnSpan)" Value="3" />
+                        <Setter Target="StartScroller.Orientation" Value="Vertical" />
+                        <Setter Target="StartScroller.HorizontalAlignment" Value="Stretch" />
+                        <Setter Target="StartScroller.VerticalAlignment" Value="Top" />
+
+                        <Setter Target="CenterScroller.(Grid.Row)" Value="1" />
+                        <Setter Target="CenterScroller.(Grid.Column)" Value="0" />
+                        <Setter Target="CenterScroller.(Grid.ColumnSpan)" Value="3" />
+                        <Setter Target="CenterScroller.Orientation" Value="Vertical" />
+                        <Setter Target="CenterScroller.HorizontalAlignment" Value="Stretch" />
+                        <Setter Target="CenterScroller.VerticalAlignment" Value="Center" />
+
+                        <Setter Target="EndScroller.Orientation" Value="Vertical" />
+                        <Setter Target="EndScroller.(Grid.Row)" Value="2" />
+                        <Setter Target="EndScroller.(Grid.Column)" Value="0" />
+                        <Setter Target="EndScroller.(Grid.ColumnSpan)" Value="3" />
+                        <Setter Target="EndScroller.HorizontalAlignment" Value="Stretch" />
+                        <Setter Target="EndScroller.VerticalAlignment" Value="Bottom" />
                         <Setter Target="ContentGrid.Padding" Value="4,8,4,8" />
                         <Setter Target="RootGrid.BorderThickness" Value="1,0,0,0" />
                     </VisualState.Setters>
@@ -303,7 +352,18 @@
                 <VisualState x:Name="EditModeOff" />
                 <VisualState x:Name="EditModeOn">
                     <VisualState.Setters>
-                        <Setter Target="EditModeOverlay.Opacity" Value="0.4" />
+                        <Setter Target="StartScroller.BorderBrush" Value="{ThemeResource CardStrokeColorDefaultBrush}" />
+                        <Setter Target="StartScroller.Background" Value="{ThemeResource CardBackgroundFillColorDefaultBrush}" />
+                        <Setter Target="StartScroller.BorderThickness" Value="1" />
+                        <Setter Target="StartScroller.CornerRadius" Value="{StaticResource OverlayCornerRadius}" />
+                        <Setter Target="CenterScroller.BorderBrush" Value="{ThemeResource CardStrokeColorDefaultBrush}" />
+                        <Setter Target="CenterScroller.Background" Value="{ThemeResource CardBackgroundFillColorDefaultBrush}" />
+                        <Setter Target="CenterScroller.BorderThickness" Value="1" />
+                        <Setter Target="CenterScroller.CornerRadius" Value="{StaticResource OverlayCornerRadius}" />
+                        <Setter Target="EndScroller.BorderBrush" Value="{ThemeResource CardStrokeColorDefaultBrush}" />
+                        <Setter Target="EndScroller.Background" Value="{ThemeResource CardBackgroundFillColorDefaultBrush}" />
+                        <Setter Target="EndScroller.BorderThickness" Value="1" />
+                        <Setter Target="EndScroller.CornerRadius" Value="{StaticResource OverlayCornerRadius}" />
                     </VisualState.Setters>
                 </VisualState>
             </VisualStateGroup>

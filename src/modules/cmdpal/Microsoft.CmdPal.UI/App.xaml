@@ -12,8 +12,6 @@
             <ResourceDictionary.MergedDictionaries>
                 <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
                 <!--  Other merged dictionaries here  -->
-                <ResourceDictionary Source="ms-appx:///Styles/Colors.xaml" />
-                <ResourceDictionary Source="ms-appx:///Styles/Button.xaml" />
                 <ResourceDictionary Source="ms-appx:///Styles/TextBlock.xaml" />
                 <ResourceDictionary Source="ms-appx:///Styles/TextBox.xaml" />
                 <ResourceDictionary Source="ms-appx:///Styles/Settings.xaml" />

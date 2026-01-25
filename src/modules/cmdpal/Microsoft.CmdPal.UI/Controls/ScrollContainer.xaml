@@ -7,8 +7,6 @@
     xmlns:local="using:Microsoft.CmdPal.UI.Controls"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
-
-
     <UserControl.Resources>
         <ResourceDictionary>
             <Style x:Key="ScrollButtonStyle" TargetType="Button">
@@ -108,7 +106,12 @@
             </Style>
         </ResourceDictionary>
     </UserControl.Resources>
-    <Grid x:Name="RootGrid">
+    <Grid
+        x:Name="RootGrid"
+        Background="{x:Bind Background, Mode=OneWay}"
+        BorderBrush="{x:Bind BorderBrush, Mode=OneWay}"
+        BorderThickness="{x:Bind BorderThickness, Mode=OneWay}"
+        CornerRadius="{x:Bind CornerRadius, Mode=OneWay}">
         <ScrollViewer
             x:Name="scroller"
             HorizontalScrollBarVisibility="Hidden"

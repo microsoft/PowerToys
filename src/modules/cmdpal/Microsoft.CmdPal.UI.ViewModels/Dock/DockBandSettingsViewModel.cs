@@ -127,6 +127,12 @@ public partial class DockBandSettingsViewModel : ObservableObject
             return DockPinSide.Start;
         }
 
+        var inCenter = dockSettings.CenterBands.Any(b => b.Id == _dockSettingsModel.Id);
+        if (inCenter)
+        {
+            return DockPinSide.Center;
+        }
+
         var inEnd = dockSettings.EndBands.Any(b => b.Id == _dockSettingsModel.Id);
         if (inEnd)
         {
@@ -163,8 +169,9 @@ public partial class DockBandSettingsViewModel : ObservableObject
     {
         var dockSettings = _settingsModel.DockSettings;
 
-        // Remove from both sides first
+        // Remove from all sides first
         dockSettings.StartBands.RemoveAll(b => b.Id == _dockSettingsModel.Id);
+        dockSettings.CenterBands.RemoveAll(b => b.Id == _dockSettingsModel.Id);
         dockSettings.EndBands.RemoveAll(b => b.Id == _dockSettingsModel.Id);
 
         // Add to the selected side
@@ -174,6 +181,13 @@ public partial class DockBandSettingsViewModel : ObservableObject
                 {
                     var insertIndex = index ?? dockSettings.StartBands.Count;
                     dockSettings.StartBands.Insert(insertIndex, _dockSettingsModel);
+                    break;
+                }
+
+            case DockPinSide.Center:
+                {
+                    var insertIndex = index ?? dockSettings.CenterBands.Count;
+                    dockSettings.CenterBands.Insert(insertIndex, _dockSettingsModel);
                     break;
                 }
 
@@ -203,6 +217,7 @@ public enum DockPinSide
 {
     None,
     Start,
+    Center,
     End,
 }
 

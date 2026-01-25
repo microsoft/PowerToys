@@ -52,16 +52,20 @@ public sealed partial class DockControl : UserControl, INotifyPropertyChanged, I
 
         var panel = (ItemsPanelTemplate)Resources[panelKey];
 
-        StartItemsListView.ItemsPanel = panel;
-        EndItemsListView.ItemsPanel = panel;
+        StartListView.ItemsPanel = panel;
+        CenterListView.ItemsPanel = panel;
+        EndListView.ItemsPanel = panel;
 
         // Force the selector to re-evaluate by refreshing ItemsSource
-        var startItems = StartItemsListView.ItemsSource;
-        var endItems = EndItemsListView.ItemsSource;
-        StartItemsListView.ItemsSource = null;
-        EndItemsListView.ItemsSource = null;
-        StartItemsListView.ItemsSource = startItems;
-        EndItemsListView.ItemsSource = endItems;
+        var startItems = StartListView.ItemsSource;
+        var centerItems = CenterListView.ItemsSource;
+        var endItems = EndListView.ItemsSource;
+        StartListView.ItemsSource = null;
+        CenterListView.ItemsSource = null;
+        EndListView.ItemsSource = null;
+        StartListView.ItemsSource = startItems;
+        CenterListView.ItemsSource = centerItems;
+        EndListView.ItemsSource = endItems;
     }
 
     public DockSide DockSide
@@ -162,13 +166,17 @@ public sealed partial class DockControl : UserControl, INotifyPropertyChanged, I
     private void UpdateEditMode(bool isEditMode)
     {
         // Enable/disable drag-and-drop based on edit mode
-        StartItemsListView.CanDragItems = isEditMode;
-        StartItemsListView.CanReorderItems = isEditMode;
-        StartItemsListView.AllowDrop = isEditMode;
+        StartListView.CanDragItems = isEditMode;
+        StartListView.CanReorderItems = isEditMode;
+        StartListView.AllowDrop = isEditMode;
 
-        EndItemsListView.CanDragItems = isEditMode;
-        EndItemsListView.CanReorderItems = isEditMode;
-        EndItemsListView.AllowDrop = isEditMode;
+        CenterListView.CanDragItems = isEditMode;
+        CenterListView.CanReorderItems = isEditMode;
+        CenterListView.AllowDrop = isEditMode;
+
+        EndListView.CanDragItems = isEditMode;
+        EndListView.CanReorderItems = isEditMode;
+        EndListView.AllowDrop = isEditMode;
 
         if (isEditMode)
         {
@@ -398,9 +406,24 @@ public sealed partial class DockControl : UserControl, INotifyPropertyChanged, I
         // We just need to sync the ViewModel order without saving
         if (args.DropResult == DataPackageOperation.Move && _draggedBand != null)
         {
-            var isStartList = sender == StartItemsListView;
-            var targetSide = isStartList ? DockPinSide.Start : DockPinSide.End;
-            var targetCollection = isStartList ? ViewModel.StartItems : ViewModel.EndItems;
+            DockPinSide targetSide;
+            ObservableCollection<DockBandViewModel> targetCollection;
+
+            if (sender == StartListView)
+            {
+                targetSide = DockPinSide.Start;
+                targetCollection = ViewModel.StartItems;
+            }
+            else if (sender == CenterListView)
+            {
+                targetSide = DockPinSide.Center;
+                targetCollection = ViewModel.CenterItems;
+            }
+            else
+            {
+                targetSide = DockPinSide.End;
+                targetCollection = ViewModel.EndItems;
+            }
 
             // Find the new index and sync ViewModel (without saving)
             var newIndex = targetCollection.IndexOf(_draggedBand);
@@ -413,12 +436,17 @@ public sealed partial class DockControl : UserControl, INotifyPropertyChanged, I
         _draggedBand = null;
     }
 
-    private void StartItemsListView_Drop(object sender, DragEventArgs e)
+    private void StartListView_Drop(object sender, DragEventArgs e)
     {
         HandleCrossListDrop(DockPinSide.Start, e);
     }
 
-    private void EndItemsListView_Drop(object sender, DragEventArgs e)
+    private void CenterListView_Drop(object sender, DragEventArgs e)
+    {
+        HandleCrossListDrop(DockPinSide.Center, e);
+    }
+
+    private void EndListView_Drop(object sender, DragEventArgs e)
     {
         HandleCrossListDrop(DockPinSide.End, e);
     }
@@ -430,19 +458,41 @@ public sealed partial class DockControl : UserControl, INotifyPropertyChanged, I
             return;
         }
 
-        // Check if this is a cross-list drop (dragging from the other list)
+        // Check which list the band is currently in
         var isInStart = ViewModel.StartItems.Contains(_draggedBand);
+        var isInCenter = ViewModel.CenterItems.Contains(_draggedBand);
         var isInEnd = ViewModel.EndItems.Contains(_draggedBand);
 
-        var sourceIsStart = isInStart;
-        var targetIsStart = targetSide == DockPinSide.Start;
+        DockPinSide sourceSide;
+        if (isInStart)
+        {
+            sourceSide = DockPinSide.Start;
+        }
+        else if (isInCenter)
+        {
+            sourceSide = DockPinSide.Center;
+        }
+        else
+        {
+            sourceSide = DockPinSide.End;
+        }
 
         // Only handle cross-list drops here; same-list reorders are handled in DragItemsCompleted
-        if (sourceIsStart != targetIsStart)
+        if (sourceSide != targetSide)
         {
             // Calculate drop index based on drop position
-            var targetListView = targetIsStart ? StartItemsListView : EndItemsListView;
-            var targetCollection = targetIsStart ? ViewModel.StartItems : ViewModel.EndItems;
+            ListView targetListView = targetSide switch
+            {
+                DockPinSide.Start => StartListView,
+                DockPinSide.Center => CenterListView,
+                _ => EndListView,
+            };
+            var targetCollection = targetSide switch
+            {
+                DockPinSide.Start => ViewModel.StartItems,
+                DockPinSide.Center => ViewModel.CenterItems,
+                _ => ViewModel.EndItems,
+            };
 
             var dropIndex = GetDropIndex(targetListView, e, targetCollection.Count);
 

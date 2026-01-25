@@ -89,8 +89,6 @@
     <None Remove="SettingsWindow.xaml" />
     <None Remove="Settings\AppearancePage.xaml" />
     <None Remove="ShellPage.xaml" />
-    <None Remove="Styles\Button.xaml" />
-    <None Remove="Styles\Colors.xaml" />
     <None Remove="Styles\Settings.xaml" />
     <None Remove="Styles\TextBox.xaml" />
     <None Remove="Styles\Theme.Normal.xaml" />
@@ -234,12 +232,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Page Update="Styles\Button.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-  </ItemGroup>
-
-  <ItemGroup>
     <Page Update="Controls\CommandPalettePreview.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -286,11 +278,6 @@
 
   <ItemGroup>
     <Page Update="Controls\KeyVisual\KeyCharPresenter.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-  </ItemGroup>
-  <ItemGroup>
-    <Page Update="Styles\Colors.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
