@@ -88,7 +88,7 @@ BEGIN
             VALUE "FileDescription", "Sysinternals Screen Magnifier"
             VALUE "FileVersion", "10.0"
             VALUE "InternalName", "ZoomIt"
-            VALUE "LegalCopyright", "Copyright � 2006-2025 Mark Russinovich"
+            VALUE "LegalCopyright", "Copyright � 2006-2026 Mark Russinovich"
             VALUE "OriginalFilename", "ZoomIt.exe"
             VALUE "ProductName", "Sysinternals ZoomIt"
             VALUE "ProductVersion", "10.0"
