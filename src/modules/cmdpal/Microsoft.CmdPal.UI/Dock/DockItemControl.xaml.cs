@@ -90,6 +90,14 @@ public sealed partial class DockItemControl : Control
         {
             _subtitleText.Visibility = IsNullOrEmpty(Subtitle) ? Visibility.Collapsed : Visibility.Visible;
         }
+
+        UpdateTextVisibilityState();
+    }
+
+    private void UpdateTextVisibilityState()
+    {
+        var hasText = !IsNullOrEmpty(Title) || !IsNullOrEmpty(Subtitle);
+        VisualStateManager.GoToState(this, hasText ? "TextVisible" : "TextHidden", true);
     }
 
     private void UpdateIconVisibility()

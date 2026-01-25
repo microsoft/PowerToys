@@ -76,6 +76,7 @@
 
                                 <!--  Text (Title + Subtitle)  -->
                                 <StackPanel
+                                    x:Name="TextPanel"
                                     Grid.Column="1"
                                     Margin="8,0,8,0"
                                     VerticalAlignment="Center">
@@ -124,6 +125,14 @@
                                             <Setter Target="IconPresenter.Foreground" Value="{ThemeResource ButtonForegroundDisabled}" />
                                             <Setter Target="TitleText.Foreground" Value="{ThemeResource ButtonForegroundDisabled}" />
                                             <Setter Target="SubtitleText.Foreground" Value="{ThemeResource ButtonForegroundDisabled}" />
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                </VisualStateGroup>
+                                <VisualStateGroup x:Name="TextVisibilityStates">
+                                    <VisualState x:Name="TextVisible" />
+                                    <VisualState x:Name="TextHidden">
+                                        <VisualState.Setters>
+                                            <Setter Target="TextPanel.Margin" Value="0" />
                                         </VisualState.Setters>
                                     </VisualState>
                                 </VisualStateGroup>
