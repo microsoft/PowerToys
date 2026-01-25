@@ -251,4 +251,7 @@
   <data name="Unlocked" xml:space="preserve">
     <value>Unlocked</value>
   </data>
+  <data name="SearchOneNotePagesSubTitle" xml:space="preserve">
+    <value>Try typing something!</value>
+  </data>
 </root>

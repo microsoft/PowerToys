@@ -90,6 +90,7 @@ namespace Microsoft.PowerToys.Run.Plugin.OneNote.Components
                 new Result
                 {
                     Title = Resources.SearchOneNotePages,
+                    SubTitle = Resources.SearchOneNotePagesSubTitle,
                     IcoPath = _iconProvider.Search,
                     Score = 5000,
                 },
@@ -130,28 +131,27 @@ namespace Microsoft.PowerToys.Run.Plugin.OneNote.Components
                         return true;
                     }),
                 },
-                new Result
-                {
-                    Title = Resources.OpenSyncNotebooks,
-                    IcoPath = _iconProvider.Sync,
-                    Score = int.MinValue,
-                    Action = ResultAction(() =>
-                    {
-                        IReadOnlyList<Notebook> notebooks = OneNoteApplication.GetFullHierarchy().Notebooks;
-                        foreach (var notebook in notebooks)
-                        {
-                            notebook.Sync();
-                        }
 
-                        notebooks.GetAllPages()
-                                 .Where(i => !i.IsInRecycleBin)
-                                 .OrderByDescending(pg => pg.LastModified)
-                                 .First()
-                                 .OpenItemInOneNote();
-
-                        return true;
-                    }),
-                },
+                // new Result
+                // {
+                //    Title = Resources.OpenSyncNotebooks,
+                //    IcoPath = _iconProvider.Sync,
+                //    Score = int.MinValue,
+                //    Action = ResultAction(() =>
+                //    {
+                //        IReadOnlyList<Notebook> notebooks = OneNoteApplication.GetFullHierarchy().Notebooks;
+                //        foreach (var notebook in notebooks)
+                //        {
+                //            notebook.Sync();
+                //        }
+                //        notebooks.GetAllPages()
+                //                 .Where(i => !i.IsInRecycleBin)
+                //                 .OrderByDescending(pg => pg.LastModified)
+                //                 .First()
+                //                 .OpenItemInOneNote();
+                //        return true;
+                //    }),
+                // },
             };
         }
 

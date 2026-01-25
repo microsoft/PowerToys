@@ -331,6 +331,15 @@ namespace Microsoft.PowerToys.Run.Plugin.OneNote.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Try typing something!.
+        /// </summary>
+        internal static string SearchOneNotePagesSubTitle {
+            get {
+                return ResourceManager.GetString("SearchOneNotePagesSubTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Section group names cannot contain: {0}.
         /// </summary>
         internal static string SectionGroupNamesCannotContain {
