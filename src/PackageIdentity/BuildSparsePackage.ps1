@@ -320,6 +320,19 @@ try {
             }
         }
     }
+
+    # Include resources.pri in the sparse MSIX if available to enable MRT in packaged mode.
+    # Prefer a prebuilt resources.pri in output root; fall back to Settings pri.
+    $resourcesPriSource = Join-Path $outDir "resources.pri"
+    if (-not (Test-Path $resourcesPriSource)) {
+        $resourcesPriSource = Join-Path $outDir "WinUI3Apps\\PowerToys.Settings.pri"
+    }
+    if (Test-Path $resourcesPriSource) {
+        Copy-Item -Path $resourcesPriSource -Destination (Join-Path $stagingDir "resources.pri") -Force -ErrorAction SilentlyContinue
+        Write-BuildLog "Including resources.pri from: $resourcesPriSource" -Level Info
+    } else {
+        Write-BuildLog "resources.pri not found; strings may be missing in sparse identity." -Level Warning
+    }
     
     # Ensure publisher matches the dev certificate for local builds
     $manifestStagingPath = Join-Path $stagingDir 'AppxManifest.xml'
