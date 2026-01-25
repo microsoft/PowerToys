@@ -124,6 +124,18 @@
                 SystemBackdrop="{ThemeResource AcrylicBackgroundFillColorDefaultBackdrop}">
                 <cpcontrols:ContextMenu x:Name="ContextControl" />
             </Flyout>
+
+            <!--  Edit mode context menu for dock bands  -->
+            <MenuFlyout x:Name="EditModeContextMenu" ShouldConstrainToRootBounds="False">
+                <MenuFlyoutItem
+                    x:Name="ShowLabelsMenuItem"
+                    Click="ShowLabelsMenuItem_Click"
+                    Text="Show labels" />
+                <MenuFlyoutItem
+                    x:Name="HideLabelsMenuItem"
+                    Click="HideLabelsMenuItem_Click"
+                    Text="Hide labels" />
+            </MenuFlyout>
         </ResourceDictionary>
     </UserControl.Resources>
 

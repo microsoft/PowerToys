@@ -271,16 +271,38 @@ public sealed partial class DockControl : UserControl, INotifyPropertyChanged, I
         }
     }
 
+    // Stores the band that was right-clicked for edit mode context menu
+    private DockBandViewModel? _editModeContextBand;
+
     private void BandItem_RightTapped(object sender, Microsoft.UI.Xaml.Input.RightTappedRoutedEventArgs e)
     {
-        // Ignore right-clicks when in edit mode
-        if (IsEditMode)
-        {
-            return;
-        }
-
         if (sender is DockItemControl dockItem && dockItem.DataContext is DockItemViewModel item)
         {
+            // In edit mode, show the edit mode context menu (show/hide labels)
+            if (IsEditMode)
+            {
+                // Find the parent DockBandViewModel for this item
+                _editModeContextBand = FindParentBand(item);
+                if (_editModeContextBand != null)
+                {
+                    // Update menu item visibility based on current state
+                    ShowLabelsMenuItem.Visibility = _editModeContextBand.ShowLabels ? Visibility.Collapsed : Visibility.Visible;
+                    HideLabelsMenuItem.Visibility = _editModeContextBand.ShowLabels ? Visibility.Visible : Visibility.Collapsed;
+
+                    EditModeContextMenu.ShowAt(
+                        dockItem,
+                        new FlyoutShowOptions()
+                        {
+                            ShowMode = FlyoutShowMode.Standard,
+                            Placement = FlyoutPlacementMode.TopEdgeAlignedRight,
+                        });
+                    e.Handled = true;
+                }
+
+                return;
+            }
+
+            // Normal mode - show the command context menu
             if (item.HasMoreCommands)
             {
                 ContextControl.ViewModel.SelectedItem = item;
@@ -293,6 +315,52 @@ public sealed partial class DockControl : UserControl, INotifyPropertyChanged, I
                     });
                 e.Handled = true;
             }
+        }
+    }
+
+    private DockBandViewModel? FindParentBand(DockItemViewModel item)
+    {
+        // Search all bands to find which one contains this item
+        foreach (var band in ViewModel.StartItems)
+        {
+            if (band.Items.Contains(item))
+            {
+                return band;
+            }
+        }
+
+        foreach (var band in ViewModel.CenterItems)
+        {
+            if (band.Items.Contains(item))
+            {
+                return band;
+            }
+        }
+
+        foreach (var band in ViewModel.EndItems)
+        {
+            if (band.Items.Contains(item))
+            {
+                return band;
+            }
+        }
+
+        return null;
+    }
+
+    private void ShowLabelsMenuItem_Click(object sender, RoutedEventArgs e)
+    {
+        if (_editModeContextBand != null)
+        {
+            _editModeContextBand.ShowLabels = true;
+        }
+    }
+
+    private void HideLabelsMenuItem_Click(object sender, RoutedEventArgs e)
+    {
+        if (_editModeContextBand != null)
+        {
+            _editModeContextBand.ShowLabels = false;
         }
     }
 

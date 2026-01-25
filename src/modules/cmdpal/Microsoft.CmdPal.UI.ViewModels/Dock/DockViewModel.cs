@@ -110,9 +110,14 @@ public sealed partial class DockViewModel : IDisposable,
         DockBandSettings bandSettings,
         CommandItemViewModel commandItem)
     {
-        DockBandViewModel band = new(commandItem, new(this), bandSettings, _settings);
+        DockBandViewModel band = new(commandItem, new(this), bandSettings, _settings, SaveSettings);
         band.InitializeProperties(); // TODO! make async
         return band;
+    }
+
+    private void SaveSettings()
+    {
+        SettingsModel.SaveSettings(_settingsModel);
     }
 
     public DockBandViewModel? FindBandByTopLevel(TopLevelViewModel tlc)
@@ -250,11 +255,17 @@ public sealed partial class DockViewModel : IDisposable,
     }
 
     /// <summary>
-    /// Saves the current band order to settings.
+    /// Saves the current band order and label settings to settings.
     /// Call this when exiting edit mode.
     /// </summary>
     public void SaveBandOrder()
     {
+        // Save ShowLabels for all bands
+        foreach (var band in StartItems.Concat(CenterItems).Concat(EndItems))
+        {
+            band.SaveShowLabels();
+        }
+
         _snapshotStartBands = null;
         _snapshotCenterBands = null;
         _snapshotEndBands = null;
@@ -267,20 +278,27 @@ public sealed partial class DockViewModel : IDisposable,
     private List<DockBandSettings>? _snapshotEndBands;
 
     /// <summary>
-    /// Takes a snapshot of the current band order before editing.
+    /// Takes a snapshot of the current band order and label settings before editing.
     /// Call this when entering edit mode.
     /// </summary>
     public void SnapshotBandOrder()
     {
         var dockSettings = _settingsModel.DockSettings;
-        _snapshotStartBands = dockSettings.StartBands.Select(b => new DockBandSettings { Id = b.Id }).ToList();
-        _snapshotCenterBands = dockSettings.CenterBands.Select(b => new DockBandSettings { Id = b.Id }).ToList();
-        _snapshotEndBands = dockSettings.EndBands.Select(b => new DockBandSettings { Id = b.Id }).ToList();
+        _snapshotStartBands = dockSettings.StartBands.Select(b => new DockBandSettings { Id = b.Id, ShowLabels = b.ShowLabels }).ToList();
+        _snapshotCenterBands = dockSettings.CenterBands.Select(b => new DockBandSettings { Id = b.Id, ShowLabels = b.ShowLabels }).ToList();
+        _snapshotEndBands = dockSettings.EndBands.Select(b => new DockBandSettings { Id = b.Id, ShowLabels = b.ShowLabels }).ToList();
+
+        // Snapshot ShowLabels for all bands
+        foreach (var band in StartItems.Concat(CenterItems).Concat(EndItems))
+        {
+            band.SnapshotShowLabels();
+        }
+
         Logger.LogDebug($"Snapshot taken: {_snapshotStartBands.Count} start bands, {_snapshotCenterBands.Count} center bands, {_snapshotEndBands.Count} end bands");
     }
 
     /// <summary>
-    /// Restores the band order from the snapshot taken when entering edit mode.
+    /// Restores the band order and label settings from the snapshot taken when entering edit mode.
     /// Call this when discarding edit mode changes.
     /// </summary>
     public void RestoreBandOrder()
@@ -289,6 +307,12 @@ public sealed partial class DockViewModel : IDisposable,
         {
             Logger.LogWarning("No snapshot to restore from");
             return;
+        }
+
+        // Restore ShowLabels for all bands
+        foreach (var band in StartItems.Concat(CenterItems).Concat(EndItems))
+        {
+            band.RestoreShowLabels();
         }
 
         var dockSettings = _settingsModel.DockSettings;
@@ -300,19 +324,19 @@ public sealed partial class DockViewModel : IDisposable,
 
         foreach (var bandSnapshot in _snapshotStartBands)
         {
-            var bandSettings = new DockBandSettings { Id = bandSnapshot.Id };
+            var bandSettings = new DockBandSettings { Id = bandSnapshot.Id, ShowLabels = bandSnapshot.ShowLabels };
             dockSettings.StartBands.Add(bandSettings);
         }
 
         foreach (var bandSnapshot in _snapshotCenterBands)
         {
-            var bandSettings = new DockBandSettings { Id = bandSnapshot.Id };
+            var bandSettings = new DockBandSettings { Id = bandSnapshot.Id, ShowLabels = bandSnapshot.ShowLabels };
             dockSettings.CenterBands.Add(bandSettings);
         }
 
         foreach (var bandSnapshot in _snapshotEndBands)
         {
-            var bandSettings = new DockBandSettings { Id = bandSnapshot.Id };
+            var bandSettings = new DockBandSettings { Id = bandSnapshot.Id, ShowLabels = bandSnapshot.ShowLabels };
             dockSettings.EndBands.Add(bandSettings);
         }
 

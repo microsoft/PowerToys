@@ -104,6 +104,28 @@ public partial class DockBandSettingsViewModel : ObservableObject
         set => PinSide = (DockPinSide)value;
     }
 
+    /// <summary>
+    /// Gets or sets a value indicating whether the band is pinned to the dock.
+    /// When enabled, pins to Center. When disabled, removes from all sides.
+    /// </summary>
+    public bool IsPinned
+    {
+        get => PinSide != DockPinSide.None;
+        set
+        {
+            if (value && PinSide == DockPinSide.None)
+            {
+                // Pin to Center by default when enabling
+                PinSide = DockPinSide.Center;
+            }
+            else if (!value && PinSide != DockPinSide.None)
+            {
+                // Remove from dock when disabling
+                PinSide = DockPinSide.None;
+            }
+        }
+    }
+
     public DockBandSettingsViewModel(
         DockBandSettings dockSettingsModel,
         TopLevelViewModel topLevelAdapter,
@@ -163,6 +185,7 @@ public partial class DockBandSettingsViewModel : ObservableObject
         OnPinSideChanged(value);
         OnPropertyChanged(nameof(PinSideIndex));
         OnPropertyChanged(nameof(PinSide));
+        OnPropertyChanged(nameof(IsPinned));
     }
 
     public void SetBandPosition(DockPinSide side, int? index)
