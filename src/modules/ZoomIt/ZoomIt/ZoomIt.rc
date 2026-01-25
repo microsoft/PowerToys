@@ -88,7 +88,7 @@ BEGIN
             VALUE "FileDescription", "Sysinternals Screen Magnifier"
             VALUE "FileVersion", "10.0"
             VALUE "InternalName", "ZoomIt"
-            VALUE "LegalCopyright", "Copyright � 2006-2026 Mark Russinovich"
+            VALUE "LegalCopyright", "Copyright © 2006-2026 Mark Russinovich"
             VALUE "OriginalFilename", "ZoomIt.exe"
             VALUE "ProductName", "Sysinternals ZoomIt"
             VALUE "ProductVersion", "10.0"
@@ -115,7 +115,7 @@ BEGIN
     DEFPUSHBUTTON   "OK",IDOK,186,306,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,243,306,50,14
     LTEXT           "ZoomIt v10.0",IDC_VERSION,42,7,73,10
-    LTEXT           "Copyright � 2006-2025 Mark Russinovich",IDC_COPYRIGHT,42,17,251,8
+    LTEXT           "Copyright © 2006-2025 Mark Russinovich",IDC_COPYRIGHT,42,17,251,8
     CONTROL         "<a HREF=""https://www.sysinternals.com"">Sysinternals - www.sysinternals.com</a>",IDC_LINK,
                     "SysLink",WS_TABSTOP,42,26,150,9
     ICON            "APPICON",IDC_STATIC,12,9,20,20
