@@ -5,16 +5,18 @@ The OneNote plugin searches your locally synced OneNote notebooks based on the u
 <p>
 <img src="/doc/images/launcher/plugins/onenote.png" alt="default menu" height="200"/>
 
+<img src="/doc/images/launcher/plugins/onenote_search.png" alt="search" height="200"/>
+
 <img src="/doc/images/launcher/plugins/onenote_notebook_explorer.png" alt="notebook explorer" height="200"/>
 </p>
 
 This is essentially a port of this [OneNote plugin](https://github.com/Odotocodot/Flow.Launcher.Plugin.OneNote) for [Flow Launcher](https://github.com/Flow-Launcher/Flow.Launcher) (also built on Wox) directly into PowerToys Run.
 
-The code is largely a wrapper around the [Linq2OneNote](https://github.com/Odotocodot/Linq2OneNote) library.
+The code is largely a wrapper around the [LinqToOneNote](https://github.com/Odotocodot/LinqToOneNote) library.
 
 ## OneNote Interop COM Object
 
-Typically the slowest part of the plugin is acquiring the OneNote COM object (via `OneNoteApplication.InitComObject` or lazily), and once acquired it stays in memory and is visible in the task manager (See [Linq2OneNote docs](https://odotocodot.github.io/Linq2OneNote/articles/memory_management.html) for more info).
+Typically the slowest part of the plugin is acquiring the OneNote COM object (via `OneNoteApplication.InitComObject` or lazily), and once acquired it stays in memory and is visible in the task manager (See [LinqToOneNote docs](https://odotocodot.github.io/LinqToOneNote/articles/memory_management.html) for more info).
 
 To avoid this, once the COM object is acquired there is a timer (`_comObjectTimeout`) that starts, which is reset whenever the user continues searching. When this timer reaches zero, the COM object is released, freeing it from memory and removing it from the task manager.
 
@@ -26,9 +28,9 @@ The timeout is used because there is currently no way to know when the PTRun win
 
 ## Technical Details
 
-### [`SearchManager.cs`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.OneNote/Components/SearchManager.cs)
+### [`SearchManager.cs`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.OneNote/Components/Search/SearchManager.cs)
 - Responsible for converting the user query into the appropriate OneNote items.
-- [`SearchManager.NotebookExplorer.cs`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.OneNote/Components/SearchManager.NotebookExplorer.cs)
+- [`NotebookExplorer.cs`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.OneNote/Components/Search/NotebookExplorer.cs)
     - Handles the "notebook explorer" feature which allows the user to navigate their OneNote items like Windows File Explorer.
     - The function `AddCreateNewOneNoteItemResults` is responsible for allowing the user to create new OneNote items quickly, the type of items that can be created are dependent on the current parent in the notebook explorer.
 - There are 3 main types of searching:

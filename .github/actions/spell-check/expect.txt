@@ -896,7 +896,6 @@ lindex
 linkid
 LINKOVERLAY
 LINQTo
-LinqToOneNote
 listview
 LIVEDRAW
 livezoom
@@ -1217,8 +1216,6 @@ nullonfailure
 nullref
 numberbox
 nwc
-Objbase
-objidl
 ocid
 ocr
 Ocrsettings
