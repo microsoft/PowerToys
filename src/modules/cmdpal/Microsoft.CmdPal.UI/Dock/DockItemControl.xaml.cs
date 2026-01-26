@@ -114,7 +114,7 @@ public sealed partial class DockItemControl : Control
 
     private void UpdateTextVisibilityState()
     {
-        var hasText = !IsNullOrEmpty(Title) || !IsNullOrEmpty(Subtitle);
+        var hasText = !string.IsNullOrEmpty(Title) || !string.IsNullOrEmpty(Subtitle);
         VisualStateManager.GoToState(this, hasText ? "TextVisible" : "TextHidden", true);
     }
 

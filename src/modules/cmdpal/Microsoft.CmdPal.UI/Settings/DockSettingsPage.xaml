@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8" ?>
 <Page
     x:Class="Microsoft.CmdPal.UI.Settings.DockSettingsPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -66,13 +66,15 @@
                         </ComboBox>
                         <controls:SettingsExpander.Items>
 
-                    <!--  Show Labels  -->
-                    <controls:SettingsCard ContentAlignment="Vertical">
-                        <cpControls:CheckBoxWithDescriptionControl
-                            Content="Show labels"
-                            Description="Choose whether to show labels for dock items by default"
-                            IsChecked="{x:Bind ShowLabels, Mode=TwoWay}" />
-                    </controls:SettingsCard>
+                            <!--  Show Labels  -->
+                            <controls:SettingsCard ContentAlignment="Vertical">
+                                <cpControls:CheckBoxWithDescriptionControl
+                                    Content="Show labels"
+                                    Description="Choose whether to show labels for dock items by default"
+                                    IsChecked="{x:Bind ShowLabels, Mode=TwoWay}" />
+                            </controls:SettingsCard>
+                        </controls:SettingsExpander.Items>
+                    </controls:SettingsExpander>
 
                     <!--  Theme Section  -->
                     <TextBlock x:Uid="DockAppearance_ThemeSettingsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />

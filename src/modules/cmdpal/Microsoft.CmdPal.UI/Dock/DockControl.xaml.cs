@@ -2,12 +2,10 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.ComponentModel;
 using System.Collections.ObjectModel;
 using System.Runtime.InteropServices;
 using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
-using Microsoft.CmdPal.Core.ViewModels;
 using Microsoft.CmdPal.Core.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Dock;
@@ -466,7 +464,7 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
         if (sourceSide != targetSide)
         {
             // Calculate drop index based on drop position
-            ListView targetListView = targetSide switch
+            var targetListView = targetSide switch
             {
                 DockPinSide.Start => StartListView,
                 DockPinSide.Center => CenterListView,
