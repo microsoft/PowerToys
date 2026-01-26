@@ -210,6 +210,8 @@
         <!--  Edit Mode Overlay - shown when in edit mode  -->
         <Grid
             x:Name="ContentGrid"
+            Margin="4"
+            Padding="4,0,4,0"
             Background="Transparent"
             RightTapped="RootGrid_RightTapped">
             <Grid.ColumnDefinitions>
@@ -225,6 +227,7 @@
 
             <cpcontrols:ScrollContainer
                 x:Name="StartScroller"
+                Grid.Row="0"
                 Grid.RowSpan="3"
                 HorizontalAlignment="Left"
                 VerticalAlignment="Stretch">
@@ -257,10 +260,12 @@
 
             <cpcontrols:ScrollContainer
                 x:Name="CenterScroller"
+                Grid.Row="0"
                 Grid.RowSpan="3"
                 Grid.Column="1"
                 MinWidth="48"
-                HorizontalAlignment="Center">
+                HorizontalAlignment="Center"
+                VerticalAlignment="Stretch">
                 <cpcontrols:ScrollContainer.ActionButton>
                     <Button
                         x:Name="CenterAddButton"
@@ -290,6 +295,7 @@
 
             <cpcontrols:ScrollContainer
                 x:Name="EndScroller"
+                Grid.Row="0"
                 Grid.RowSpan="3"
                 Grid.Column="2"
                 HorizontalAlignment="Right"
@@ -332,12 +338,19 @@
                 PreferredPlacement="Bottom"
                 ShouldConstrainToRootBounds="False"
                 Target="{x:Bind ContentGrid}">
-                <TeachingTip.CloseButtonStyle> 
-                    <!--  Workaround to hide the close button  -->
-                    <Style TargetType="Button">
+                <!--<TeachingTip.CloseButtonStyle>
+                -->
+                <!--  Workaround to hide the close button  -->
+                <!--
+                    <Style BasedOn="{StaticResource DefaultButtonStyle}" TargetType="Button">
                         <Setter Property="Visibility" Value="Collapsed" />
+                        <Setter Property="Width" Value="0" />
+                        <Setter Property="MinWidth" Value="0" />
+                        <Setter Property="Foreground" Value="Red" />
+                        <Setter Property="Height" Value="0" />
+                        <Setter Property="MinHeight" Value="0" />
                     </Style>
-                </TeachingTip.CloseButtonStyle>
+                </TeachingTip.CloseButtonStyle>-->
                 <TeachingTip.Content>
                     <StackPanel
                         x:Name="EditButtonsPanel"
@@ -363,41 +376,12 @@
                     <VisualState.StateTriggers>
                         <ui:IsEqualStateTrigger Value="{x:Bind DockSide, Mode=OneWay}" To="Top" />
                     </VisualState.StateTriggers>
-                    <VisualState.Setters>
-                        <Setter Target="StartScroller.(Grid.Row)" Value="0" />
-                        <Setter Target="StartScroller.(Grid.Column)" Value="0" />
-                        <Setter Target="StartScroller.(Grid.RowSpan)" Value="3" />
-                        <Setter Target="StartScroller.HorizontalAlignment" Value="Left" />
-                        <Setter Target="CenterScroller.(Grid.Row)" Value="0" />
-                        <Setter Target="CenterScroller.(Grid.Column)" Value="1" />
-                        <Setter Target="CenterScroller.(Grid.RowSpan)" Value="3" />
-                        <Setter Target="CenterScroller.HorizontalAlignment" Value="Center" />
-                        <Setter Target="EndScroller.(Grid.Row)" Value="0" />
-                        <Setter Target="EndScroller.(Grid.Column)" Value="2" />
-                        <Setter Target="EndScroller.(Grid.RowSpan)" Value="3" />
-                        <Setter Target="EndScroller.HorizontalAlignment" Value="Right" />
-                        <Setter Target="ContentGrid.Padding" Value="8,0,8,0" />
-                        <Setter Target="RootGrid.BorderThickness" Value="0,0,0,1" />
-                    </VisualState.Setters>
                 </VisualState>
                 <VisualState x:Name="DockOnBottom">
                     <VisualState.StateTriggers>
                         <ui:IsEqualStateTrigger Value="{x:Bind DockSide, Mode=OneWay}" To="Bottom" />
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
-                        <Setter Target="StartScroller.(Grid.Row)" Value="0" />
-                        <Setter Target="StartScroller.(Grid.Column)" Value="0" />
-                        <Setter Target="StartScroller.(Grid.RowSpan)" Value="3" />
-                        <Setter Target="StartScroller.HorizontalAlignment" Value="Left" />
-                        <Setter Target="CenterScroller.(Grid.Row)" Value="0" />
-                        <Setter Target="CenterScroller.(Grid.Column)" Value="1" />
-                        <Setter Target="CenterScroller.(Grid.RowSpan)" Value="3" />
-                        <Setter Target="CenterScroller.HorizontalAlignment" Value="Center" />
-                        <Setter Target="EndScroller.(Grid.Row)" Value="0" />
-                        <Setter Target="EndScroller.(Grid.Column)" Value="2" />
-                        <Setter Target="EndScroller.(Grid.RowSpan)" Value="3" />
-                        <Setter Target="EndScroller.HorizontalAlignment" Value="Right" />
-                        <Setter Target="ContentGrid.Padding" Value="8,0,8,0" />
                         <Setter Target="RootGrid.BorderThickness" Value="0,1,0,0" />
                     </VisualState.Setters>
                 </VisualState>
@@ -407,24 +391,26 @@
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
                         <Setter Target="StartScroller.(Grid.Row)" Value="0" />
-                        <Setter Target="StartScroller.(Grid.Row)" Value="0" />
+                        <Setter Target="StartScroller.(Grid.RowSpan)" Value="1" />
                         <Setter Target="StartScroller.(Grid.Column)" Value="0" />
                         <Setter Target="StartScroller.(Grid.ColumnSpan)" Value="3" />
                         <Setter Target="StartScroller.Orientation" Value="Vertical" />
                         <Setter Target="StartScroller.HorizontalAlignment" Value="Stretch" />
                         <Setter Target="StartScroller.VerticalAlignment" Value="Top" />
+                        <Setter Target="StartScroller.Orientation" Value="Vertical" />
 
                         <Setter Target="CenterScroller.(Grid.Row)" Value="1" />
-                        <Setter Target="CenterScroller.(Grid.RowSpan)" Value="0" />
+                        <Setter Target="CenterScroller.(Grid.RowSpan)" Value="1" />
                         <Setter Target="CenterScroller.(Grid.Column)" Value="0" />
                         <Setter Target="CenterScroller.(Grid.ColumnSpan)" Value="3" />
                         <Setter Target="CenterScroller.Orientation" Value="Vertical" />
                         <Setter Target="CenterScroller.HorizontalAlignment" Value="Stretch" />
                         <Setter Target="CenterScroller.VerticalAlignment" Value="Center" />
+                        <Setter Target="CenterScroller.Orientation" Value="Vertical" />
 
                         <Setter Target="EndScroller.Orientation" Value="Vertical" />
                         <Setter Target="EndScroller.(Grid.Row)" Value="2" />
-                        <Setter Target="EndScroller.(Grid.RowSpan)" Value="0" />
+                        <Setter Target="EndScroller.(Grid.RowSpan)" Value="1" />
                         <Setter Target="EndScroller.(Grid.Column)" Value="0" />
                         <Setter Target="EndScroller.(Grid.ColumnSpan)" Value="3" />
                         <Setter Target="EndScroller.HorizontalAlignment" Value="Stretch" />

@@ -123,8 +123,8 @@
                                     </VisualState>
                                     <VisualState x:Name="Disabled">
                                         <VisualState.Setters>
-                                            <Setter Target="PART_RootGrid.Background" Value="Transparent" />
-                                            <Setter Target="PART_RootGrid.BorderBrush" Value="Transparent" />
+                                            <Setter Target="PART_RootGrid.Background" Value="{ThemeResource DockItemBackground}" />
+                                            <Setter Target="PART_RootGrid.BorderBrush" Value="{ThemeResource DockItemBackground}" />
                                             <Setter Target="IconPresenter.Foreground" Value="{ThemeResource ButtonForegroundDisabled}" />
                                             <Setter Target="TitleText.Foreground" Value="{ThemeResource ButtonForegroundDisabled}" />
                                             <Setter Target="SubtitleText.Foreground" Value="{ThemeResource ButtonForegroundDisabled}" />
@@ -135,7 +135,6 @@
                                     <VisualState x:Name="TextVisible" />
                                     <VisualState x:Name="TextHidden">
                                         <VisualState.Setters>
-                                            <Setter Target="TextPanel.Margin" Value="0" />
                                             <Setter Target="ContentGrid.ColumnSpacing" Value="0" />
                                         </VisualState.Setters>
                                     </VisualState>

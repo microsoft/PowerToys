@@ -113,13 +113,13 @@
         BorderThickness="{x:Bind BorderThickness, Mode=OneWay}"
         CornerRadius="{x:Bind CornerRadius, Mode=OneWay}">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition x:Name="Col0" Width="Auto" />
-            <ColumnDefinition x:Name="Col1" Width="*" />
-            <ColumnDefinition x:Name="Col2" Width="Auto" />
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <RowDefinition x:Name="Row0" Height="Auto" />
-            <RowDefinition x:Name="Row1" Height="*" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
             <RowDefinition x:Name="Row2" Height="Auto" />
         </Grid.RowDefinitions>
 
