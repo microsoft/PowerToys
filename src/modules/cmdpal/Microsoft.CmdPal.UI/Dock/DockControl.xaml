@@ -13,6 +13,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="using:CommunityToolkit.WinUI"
     xmlns:vm="using:Microsoft.CmdPal.UI.ViewModels"
+    Loaded="UserControl_Loaded"
     mc:Ignorable="d">
 
     <UserControl.Resources>
@@ -23,8 +24,6 @@
             <ItemsPanelTemplate x:Key="VerticalItemsPanel">
                 <StackPanel Orientation="Vertical" Spacing="4" />
             </ItemsPanelTemplate>
-
-            <local:BandAlignmentConverter x:Key="BandAlignmentConverter" Control="{x:Bind}" />
 
             <DataTemplate x:Key="DeskbandTemplate" x:DataType="dockVm:DockItemViewModel">
                 <local:DockItemControl
@@ -48,7 +47,6 @@
 
             <DataTemplate x:Key="HorizontalDockBandTemplate" x:DataType="dockVm:DockBandViewModel">
                 <ItemsControl
-                    HorizontalAlignment="{x:Bind Items, Converter={StaticResource BandAlignmentConverter}, Mode=OneWay}"
                     ItemTemplate="{StaticResource DeskbandTemplate}"
                     ItemsPanel="{StaticResource HorizontalItemsPanel}"
                     ItemsSource="{x:Bind Items, Mode=OneWay}" />
@@ -56,7 +54,6 @@
 
             <DataTemplate x:Key="VerticalDockBandTemplate" x:DataType="dockVm:DockBandViewModel">
                 <ItemsControl
-                    HorizontalAlignment="{x:Bind Items, Converter={StaticResource BandAlignmentConverter}, Mode=OneWay}"
                     ItemTemplate="{StaticResource DeskbandTemplate}"
                     ItemsPanel="{StaticResource VerticalItemsPanel}"
                     ItemsSource="{x:Bind Items, Mode=OneWay}" />

@@ -49,7 +49,7 @@
             <Setter Property="BorderBrush" Value="{ThemeResource DockItemBorderBrush}" />
             <Setter Property="Padding" Value="4,0,4,0" />
             <Setter Property="BorderThickness" Value="{ThemeResource ButtonBorderThemeThickness}" />
-            <Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
+            <Setter Property="CornerRadius" Value="{StaticResource ControlCornerRadius}" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="local:DockItemControl">

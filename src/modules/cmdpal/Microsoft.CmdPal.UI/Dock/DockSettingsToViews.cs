@@ -22,22 +22,6 @@ internal static class DockSettingsToViews
         };
     }
 
-    public static double TitleTextFontSizeForSize(DockSize size)
-    {
-        return size switch
-        {
-            DockSize.Small => 12,
-            DockSize.Medium => 16,
-            DockSize.Large => 20,
-            _ => throw new NotImplementedException(),
-        };
-    }
-
-    public static double TitleTextMaxWidthForSize(DockSize size)
-    {
-        return WidthForSize(size) - TitleTextFontSizeForSize(size);
-    }
-
     public static double HeightForSize(DockSize size)
     {
         return size switch

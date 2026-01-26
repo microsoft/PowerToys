@@ -79,7 +79,6 @@
     <None Remove="Controls\ScreenPreview.xaml" />
     <None Remove="Controls\ScrollContainer.xaml" />
     <None Remove="Controls\SearchBar.xaml" />
-    <None Remove="Dock\DockItemControl.xaml" />
     <None Remove="IsEnabledTextBlock.xaml" />
     <None Remove="ListDetailPage.xaml" />
     <None Remove="LoadingPage.xaml" />

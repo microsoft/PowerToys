@@ -41,7 +41,8 @@ public sealed partial class DockControl : UserControl, INotifyPropertyChanged, I
             {
                 field = value;
                 PropertyChanged?.Invoke(this, new(nameof(ItemsOrientation)));
-                UpdateBandTemplates();
+
+                // UpdateBandTemplates();
             }
         }
     }
@@ -96,54 +97,6 @@ public sealed partial class DockControl : UserControl, INotifyPropertyChanged, I
             }
         }
     }
-
-    public double IconSize
-    {
-        get => field;
-        set
-        {
-            if (field != value)
-            {
-                field = value;
-                PropertyChanged?.Invoke(this, new(nameof(IconSize)));
-                PropertyChanged?.Invoke(this, new(nameof(IconMinWidth)));
-            }
-        }
-    }
-
-= 16.0;
-
-    public double IconMinWidth => IconSize / 2;
-
-    public double TitleTextMaxWidth
-    {
-        get => field;
-        set
-        {
-            if (field != value)
-            {
-                field = value;
-                PropertyChanged?.Invoke(this, new(nameof(TitleTextMaxWidth)));
-            }
-        }
-    }
-
-= 100;
-
-    public double TitleTextFontSize
-    {
-        get => field;
-        set
-        {
-            if (field != value)
-            {
-                field = value;
-                PropertyChanged?.Invoke(this, new(nameof(TitleTextFontSize)));
-            }
-        }
-    }
-
-= 12;
 
     internal DockControl(DockViewModel viewModel)
     {
@@ -243,9 +196,6 @@ public sealed partial class DockControl : UserControl, INotifyPropertyChanged, I
         {
             RootGrid.BorderBrush = new SolidColorBrush(Colors.Transparent);
         }
-
-        // Ensure templates are updated on initial load (setter only updates on change)
-        UpdateBandTemplates();
     }
 
     private void BandItem_Tapped(object sender, Microsoft.UI.Xaml.Input.TappedRoutedEventArgs e)
@@ -651,5 +601,11 @@ public sealed partial class DockControl : UserControl, INotifyPropertyChanged, I
             // Close the flyout
             AddBandFlyout.Hide();
         }
+    }
+
+    private void UserControl_Loaded(object sender, RoutedEventArgs e)
+    {
+        // Ensure templates are updated on initial load (setter only updates on change)
+        // UpdateBandTemplates();
     }
 }
