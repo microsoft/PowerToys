@@ -11,7 +11,7 @@ using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
 using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CmdPal.Common.Services;
-using Microsoft.CmdPal.Core.ViewModels;
+using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;

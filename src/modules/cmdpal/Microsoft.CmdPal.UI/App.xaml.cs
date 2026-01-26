@@ -6,7 +6,6 @@ using ManagedCommon;
 using Microsoft.CmdPal.Common;
 using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CmdPal.Common.Services;
-using Microsoft.CmdPal.Core.ViewModels;
 using Microsoft.CmdPal.Ext.Apps;
 using Microsoft.CmdPal.Ext.Bookmarks;
 using Microsoft.CmdPal.Ext.Calc;

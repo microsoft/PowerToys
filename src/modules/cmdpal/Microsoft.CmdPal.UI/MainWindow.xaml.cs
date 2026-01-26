@@ -9,7 +9,6 @@ using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
 using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CmdPal.Common.Services;
-using Microsoft.CmdPal.Core.ViewModels.Messages;
 using Microsoft.CmdPal.Ext.ClipboardHistory.Messages;
 using Microsoft.CmdPal.UI.Controls;
 using Microsoft.CmdPal.UI.Events;

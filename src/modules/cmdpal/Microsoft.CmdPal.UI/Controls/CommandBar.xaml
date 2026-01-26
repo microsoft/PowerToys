@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8" ?>
 <UserControl
     x:Class="Microsoft.CmdPal.UI.Controls.CommandBar"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -6,7 +6,7 @@
     xmlns:animations="using:CommunityToolkit.WinUI.Animations"
     xmlns:cmdpalUI="using:Microsoft.CmdPal.UI"
     xmlns:converters="using:CommunityToolkit.WinUI.Converters"
-    xmlns:coreViewModels="using:Microsoft.CmdPal.Core.ViewModels"
+    xmlns:coreViewModels="using:Microsoft.CmdPal.UI.ViewModels"
     xmlns:cpcontrols="using:Microsoft.CmdPal.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:help="using:Microsoft.CmdPal.UI.Helpers"

@@ -3,7 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Diagnostics;
-using Microsoft.CmdPal.Core.ViewModels;
+using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.Terminal.UI;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml.Controls;

@@ -8,7 +8,6 @@ using System.Diagnostics;
 using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
 using Microsoft.CmdPal.Common.Helpers;
-using Microsoft.CmdPal.Core.ViewModels.Messages;
 using Microsoft.CmdPal.Ext.Apps;
 using Microsoft.CmdPal.Ext.Apps.Programs;
 using Microsoft.CmdPal.Ext.Apps.State;

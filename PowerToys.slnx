@@ -274,12 +274,6 @@
       <Deploy />
     </Project>
   </Folder>
-  <Folder Name="/modules/CommandPalette/Core/">
-    <Project Path="src/modules/cmdpal/Core/Microsoft.CmdPal.Core.ViewModels/Microsoft.CmdPal.Core.ViewModels.csproj">
-      <Platform Solution="*|ARM64" Project="ARM64" />
-      <Platform Solution="*|x64" Project="x64" />
-    </Project>
-  </Folder>
   <Folder Name="/modules/CommandPalette/Extension SDK/">
     <Project Path="src/modules/cmdpal/extensionsdk/Microsoft.CommandPalette.Extensions.Toolkit/Microsoft.CommandPalette.Extensions.Toolkit.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />

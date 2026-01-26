@@ -4,8 +4,8 @@
 
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.Common.Services;
-using Microsoft.CmdPal.Core.ViewModels.Messages;
 using Microsoft.CmdPal.UI.Events;
+using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.PowerToys.Telemetry;
 

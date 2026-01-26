@@ -6,7 +6,6 @@ using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using ManagedCommon;
 using Microsoft.CmdPal.Common.Services;
-using Microsoft.CmdPal.Core.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.MainPage;
 using Microsoft.CommandPalette.Extensions;

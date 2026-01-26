@@ -4,9 +4,9 @@
 
 using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.WinUI;
-using Microsoft.CmdPal.Core.ViewModels;
-using Microsoft.CmdPal.Core.ViewModels.Messages;
 using Microsoft.CmdPal.UI.Messages;
+using Microsoft.CmdPal.UI.ViewModels;
+using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;

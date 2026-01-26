@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8" ?>
 <Page
     x:Class="Microsoft.CmdPal.UI.ContentPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -9,7 +9,7 @@
     xmlns:cmdpalUI="using:Microsoft.CmdPal.UI"
     xmlns:controls="using:CommunityToolkit.WinUI.Controls"
     xmlns:converters="using:CommunityToolkit.WinUI.Converters"
-    xmlns:coreViewModels="using:Microsoft.CmdPal.Core.ViewModels"
+    xmlns:coreViewModels="using:Microsoft.CmdPal.UI.ViewModels"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:Microsoft.CmdPal.UI"
     xmlns:markdownImageProviders="using:Microsoft.CmdPal.UI.Helpers.MarkdownImageProviders"
