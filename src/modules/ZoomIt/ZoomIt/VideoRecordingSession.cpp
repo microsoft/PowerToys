@@ -1672,12 +1672,25 @@ INT_PTR VideoRecordingSession::ShowTrimDialogInternal(
                 auto actualDuration = clip.OriginalDuration();
                 if (actualDuration.count() > 0)
                 {
+                    // If trimEnd was at full length (whether estimated or passed in), snap it to the actual end.
+                    // This handles cases where the file-size estimate was longer or shorter than actual.
+                    const int64_t oldDurationTicks = data.videoDuration.count();
+                    const int64_t oldTrimEndTicks = data.trimEnd.count();
+                    const bool endWasFullLength = (oldTrimEndTicks <= 0) ||
+                        (oldDurationTicks > 0 && oldTrimEndTicks >= oldDurationTicks);
+
                     data.videoDuration = actualDuration;
-                    if (data.trimEnd.count() <= 0 || data.trimEnd.count() > actualDuration.count())
-                    {
-                        data.trimEnd = actualDuration;
-                        data.originalTrimEnd = actualDuration;
-                    }
+
+                    const int64_t newTrimEndTicks = endWasFullLength ? actualDuration.count()
+                        : (std::min)(oldTrimEndTicks, actualDuration.count());
+                    data.trimEnd = winrt::TimeSpan{ newTrimEndTicks };
+
+                    const int64_t oldOrigEndTicks = data.originalTrimEnd.count();
+                    const bool origEndWasFullLength = (oldOrigEndTicks <= 0) ||
+                        (oldDurationTicks > 0 && oldOrigEndTicks >= oldDurationTicks);
+                    const int64_t newOrigEndTicks = origEndWasFullLength ? actualDuration.count()
+                        : (std::min)(oldOrigEndTicks, actualDuration.count());
+                    data.originalTrimEnd = winrt::TimeSpan{ newOrigEndTicks };
                 }
 
                 // Get first frame thumbnail
