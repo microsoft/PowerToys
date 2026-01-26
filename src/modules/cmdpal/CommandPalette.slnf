@@ -3,11 +3,22 @@
     "path": "..\\..\\..\\PowerToys.slnx",
     "projects": [
       "src\\common\\CalculatorEngineCommon\\CalculatorEngineCommon.vcxproj",
+      "src\\common\\Common.Search\\Common.Search.csproj",
+      "src\\common\\Common.UI\\Common.UI.csproj",
       "src\\common\\ManagedCommon\\ManagedCommon.csproj",
       "src\\common\\ManagedCsWin32\\ManagedCsWin32.csproj",
       "src\\common\\ManagedTelemetry\\Telemetry\\ManagedTelemetry.csproj",
+      "src\\common\\PowerToys.ModuleContracts\\PowerToys.ModuleContracts.csproj",
+      "src\\common\\SettingsAPI\\SettingsAPI.vcxproj",
       "src\\common\\interop\\PowerToys.Interop.vcxproj",
+      "src\\common\\logger\\logger.vcxproj",
       "src\\common\\version\\version.vcxproj",
+      "src\\logging\\logging.vcxproj",
+      "src\\modules\\MouseUtils\\MouseJump.Common\\MouseJump.Common.csproj",
+      "src\\modules\\Workspaces\\Workspaces.ModuleServices\\Workspaces.ModuleServices.csproj",
+      "src\\modules\\Workspaces\\WorkspacesCsharpLibrary\\WorkspacesCsharpLibrary.csproj",
+      "src\\modules\\ZoomIt\\ZoomItSettingsInterop\\ZoomItSettingsInterop.vcxproj",
+      "src\\modules\\awake\\Awake.ModuleServices\\Awake.ModuleServices.csproj",
       "src\\modules\\cmdpal\\CmdPalKeyboardService\\CmdPalKeyboardService.vcxproj",
       "src\\modules\\cmdpal\\CmdPalModuleInterface\\CmdPalModuleInterface.vcxproj",
       "src\\modules\\cmdpal\\Core\\Microsoft.CmdPal.Core.Common\\Microsoft.CmdPal.Core.Common.csproj",
@@ -34,6 +45,7 @@
       "src\\modules\\cmdpal\\ext\\Microsoft.CmdPal.Ext.Calc\\Microsoft.CmdPal.Ext.Calc.csproj",
       "src\\modules\\cmdpal\\ext\\Microsoft.CmdPal.Ext.ClipboardHistory\\Microsoft.CmdPal.Ext.ClipboardHistory.csproj",
       "src\\modules\\cmdpal\\ext\\Microsoft.CmdPal.Ext.Indexer\\Microsoft.CmdPal.Ext.Indexer.csproj",
+      "src\\modules\\cmdpal\\ext\\Microsoft.CmdPal.Ext.PowerToys\\Microsoft.CmdPal.Ext.PowerToys.csproj",
       "src\\modules\\cmdpal\\ext\\Microsoft.CmdPal.Ext.Registry\\Microsoft.CmdPal.Ext.Registry.csproj",
       "src\\modules\\cmdpal\\ext\\Microsoft.CmdPal.Ext.RemoteDesktop\\Microsoft.CmdPal.Ext.RemoteDesktop.csproj",
       "src\\modules\\cmdpal\\ext\\Microsoft.CmdPal.Ext.Shell\\Microsoft.CmdPal.Ext.Shell.csproj",
@@ -48,7 +60,10 @@
       "src\\modules\\cmdpal\\ext\\ProcessMonitorExtension\\ProcessMonitorExtension.csproj",
       "src\\modules\\cmdpal\\ext\\SamplePagesExtension\\SamplePagesExtension.csproj",
       "src\\modules\\cmdpal\\extensionsdk\\Microsoft.CommandPalette.Extensions.Toolkit\\Microsoft.CommandPalette.Extensions.Toolkit.csproj",
-      "src\\modules\\cmdpal\\extensionsdk\\Microsoft.CommandPalette.Extensions\\Microsoft.CommandPalette.Extensions.vcxproj"
+      "src\\modules\\cmdpal\\extensionsdk\\Microsoft.CommandPalette.Extensions\\Microsoft.CommandPalette.Extensions.vcxproj",
+      "src\\modules\\colorPicker\\ColorPicker.ModuleServices\\ColorPicker.ModuleServices.csproj",
+      "src\\modules\\fancyzones\\FancyZonesEditorCommon\\FancyZonesEditorCommon.csproj",
+      "src\\settings-ui\\Settings.UI.Library\\Settings.UI.Library.csproj"
     ]
   }
 }
