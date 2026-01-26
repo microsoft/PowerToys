@@ -6448,6 +6448,12 @@ LRESULT APIENTRY MainWndProc(
                 break;
             }
 
+            // Ignore recording hotkey when save dialog is open
+            if( g_bSaveInProgress )
+            {
+                break;
+            }
+
             // Start screen recording
             try
             {
