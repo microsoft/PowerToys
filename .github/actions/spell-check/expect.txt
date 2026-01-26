@@ -32,6 +32,7 @@ advfirewall
 AFeature
 affordances
 AFX
+agentskills
 AGGREGATABLE
 AHK
 AHybrid
@@ -64,6 +65,9 @@ apidl
 APIENTRY
 APIIs
 Apm
+APMPOWERSTATUSCHANGE
+APMRESUMEAUTOMATIC
+APMRESUMESUSPEND
 APPBARDATA
 APPEXECLINK
 appext
@@ -99,7 +103,6 @@ ASYNCWINDOWPLACEMENT
 ASYNCWINDOWPOS
 atl
 ATRIOX
-ATX
 aumid
 authenticode
 AUTOBUDDY
@@ -206,16 +209,21 @@ certmgr
 cfp
 CHANGECBCHAIN
 changecursor
+checkmarks
 CHILDACTIVATE
 CHILDWINDOW
 CHOOSEFONT
+CIBUILD
 cidl
 CIELCh
 cim
 CImage
 cla
+claude
 CLASSDC
+classmethod
 CLASSNOTAVAILABLE
+CLEARTYPE
 clickable
 clickonce
 CLIENTEDGE
@@ -253,6 +261,7 @@ colorhistory
 colorhistorylimit
 COLORKEY
 colorref
+Convs
 comctl
 comdlg
 comexp
@@ -288,7 +297,6 @@ cpcontrols
 cph
 cplusplus
 CPower
-cppcoreguidelines
 cpptools
 cppvsdbg
 cppwinrt
@@ -317,7 +325,7 @@ CURRENTDIR
 CURSORINFO
 cursorpos
 CURSORSHOWING
-CURSORWRAP
+cursorwrap
 customaction
 CUSTOMACTIONTEST
 CUSTOMFORMATPLACEHOLDER
@@ -362,7 +370,9 @@ DEFAULTFLAGS
 DEFAULTICON
 defaultlib
 DEFAULTONLY
+DEFAULTSIZE
 DEFAULTTONEAREST
+Defaulttonearest
 DEFAULTTONULL
 DEFAULTTOPRIMARY
 DEFERERASE
@@ -391,6 +401,7 @@ devpal
 dfx
 DIALOGEX
 digicert
+diffs
 DINORMAL
 DISABLEASACTIONKEY
 DISABLENOSCROLL
@@ -528,9 +539,12 @@ eyetracker
 FANCYZONESDRAWLAYOUTTEST
 FANCYZONESEDITOR
 FARPROC
+fdw
 fdx
+FErase
 fesf
 FFFF
+FInc
 Figma
 FILEEXPLORER
 fileexploreraddons
@@ -572,6 +586,7 @@ formatetc
 FORPARSING
 foundrylocal
 FRAMECHANGED
+FRestore
 frm
 FROMTOUCH
 fsanitize
@@ -606,6 +621,7 @@ GETSCREENSAVERRUNNING
 GETSECKEY
 GETSTICKYKEYS
 GETTEXTLENGTH
+gfx
 GHND
 gitmodules
 GMEM
@@ -656,6 +672,7 @@ hdwwiz
 Helpline
 helptext
 HGFE
+hgdiobj
 hglobal
 hhk
 HHmmssfff
@@ -703,7 +720,7 @@ hotlight
 hotspot
 HPAINTBUFFER
 HRAWINPUT
-HREDRAW
+hredraw
 hres
 hresult
 hrgn
@@ -820,9 +837,11 @@ ITHUMBNAIL
 IUI
 IUWP
 IWIC
+jeli
 jfif
 jgeosdfsdsgmkedfgdfgdfgbkmhcgcflmi
 jjw
+JOBOBJECT
 jobject
 jpe
 jpnime
@@ -856,6 +875,7 @@ lastcodeanalysissucceeded
 LASTEXITCODE
 LAYOUTRTL
 lbl
+Lbuttondown
 LCh
 lcid
 LCIDTo
@@ -866,6 +886,7 @@ Ldr
 LEFTALIGN
 LEFTSCROLLBAR
 LEFTTEXT
+leftclick
 LError
 LEVELID
 LExit
@@ -881,7 +902,7 @@ LINKOVERLAY
 LINQTo
 listview
 LIVEDRAW
-LIVEZOOM
+livezoom
 LLKH
 llkhf
 LMEM
@@ -910,6 +931,7 @@ LPBITMAPINFOHEADER
 LPCFHOOKPROC
 LPCITEMIDLIST
 LPCLSID
+lpch
 lpcmi
 LPCMINVOKECOMMANDINFO
 LPCREATESTRUCT
@@ -934,6 +956,7 @@ lptpm
 LPTR
 LPTSTR
 lpv
+LPrivate
 LPW
 lpwcx
 lpwndpl
@@ -976,17 +999,20 @@ maxversiontested
 mber
 MBM
 MBR
+Mbuttondown
 MDICHILD
 MDL
 mdtext
 mdtxt
 mdwn
 meme
+mcp
 memicmp
 MENUITEMINFO
 MENUITEMINFOW
 MERGECOPY
 MERGEPAINT
+Metacharacter
 metadatamatters
 Metadatas
 metafile
@@ -1016,6 +1042,7 @@ mmi
 mmsys
 mobileredirect
 mockapi
+modelcontextprotocol
 MODALFRAME
 MODESPRUNED
 MONITORENUMPROC
@@ -1072,6 +1099,8 @@ muxxc
 muxxh
 MVPs
 mvvm
+myorg
+myrepo
 MVVMTK
 MWBEx
 MYICON
@@ -1216,6 +1245,9 @@ OPENFILENAME
 openrdp
 opensource
 openxmlformats
+ollama
+onnx
+openurl
 OPTIMIZEFORINVOKE
 ORPHANEDDIALOGTITLE
 ORSCANS
@@ -1293,6 +1325,7 @@ phwnd
 pici
 pidl
 PIDLIST
+PII
 pinfo
 pinvoke
 pipename
@@ -1318,6 +1351,7 @@ Pomodoro
 Popups
 POPUPWINDOW
 POSITIONITEM
+POWERBROADCAST
 POWERRENAMECONTEXTMENU
 powerrenameinput
 POWERRENAMETEST
@@ -1341,6 +1375,7 @@ ppv
 ppwsz
 prc
 Prefixer
+Premul
 prependpath
 prepopulate
 prevhost
@@ -1426,6 +1461,7 @@ RAWINPUTHEADER
 RAWMODE
 RAWPATH
 rbhid
+Rbuttondown
 rclsid
 RCZOOMIT
 rdp
@@ -1461,6 +1497,7 @@ remoteip
 Removelnk
 renamable
 RENAMEONCOLLISION
+RENDERFULLCONTENT
 reparented
 reparenting
 reportfileaccesses
@@ -1490,6 +1527,7 @@ riid
 RKey
 RNumber
 rop
+rollups
 ROUNDSMALL
 ROWSETEXT
 rpcrt
@@ -1574,7 +1612,7 @@ sharpfuzz
 SHCNE
 SHCNF
 SHCONTF
-Shcore
+shcore
 shellapi
 SHELLDETAILS
 SHELLDLL
@@ -1634,6 +1672,7 @@ SKIPOWNPROCESS
 sku
 SLGP
 sln
+slnf
 slnx
 SMALLICON
 smartphone
@@ -1672,6 +1711,7 @@ srw
 srwlock
 sse
 ssf
+sszzz
 STACKFRAME
 stackoverflow
 STARTF
@@ -1682,6 +1722,7 @@ STARTUPINFOW
 startupscreen
 STATFLAG
 STATICEDGE
+staticmethod
 STATSTG
 stdafx
 STDAPI
@@ -1699,6 +1740,7 @@ STICKYKEYS
 sticpl
 storelogo
 stprintf
+streamable
 streamjsonrpc
 STRINGIZE
 stringtable
@@ -1725,6 +1767,7 @@ svgz
 SVSI
 SWFO
 SWP
+Swp
 SWPNOSIZE
 SWPNOZORDER
 SWRESTORE
@@ -1744,6 +1787,7 @@ syskeydown
 SYSKEYUP
 SYSLIB
 SYSMENU
+Sysmenu
 systemai
 SYSTEMAPPS
 SYSTEMMODAL
@@ -1789,7 +1833,6 @@ TILEDWINDOW
 TILLSON
 timedate
 timediff
-timeunion
 timeutil
 TITLEBARINFO
 Titlecase
@@ -1847,6 +1890,8 @@ uild
 uitests
 UITo
 ULONGLONG
+Ultrawide
+ums
 UMax
 UMin
 ums
@@ -1894,7 +1939,7 @@ valuegenerator
 variantassignment
 VARTYPE
 vcamp
-VCENTER
+vcenter
 vcgtq
 VCINSTALLDIR
 Vcpkg
@@ -1922,11 +1967,12 @@ visualeffects
 vkey
 vmovl
 VMs
+vnd
 vorrq
 VOS
 vpaddlq
 vqsubq
-VREDRAW
+vredraw
 vreinterpretq
 VSC
 VSCBD
@@ -2069,6 +2115,7 @@ Wwanpp
 xap
 XAxis
 XButton
+Xbuttondown
 xclip
 xcopy
 XDeployment
@@ -2094,6 +2141,7 @@ xstyler
 XTimer
 XUP
 XVIRTUALSCREEN
+XXL
 xxxxxx
 YAxis
 ycombinator

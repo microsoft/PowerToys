@@ -55,6 +55,7 @@
       <PreprocessorDefinitions>%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>
         ./../;
+        ..\LightSwitchLib;
         ..\..\..\common;
         ..\..\..\common\logger;
         ..\..\..\common\utils;
@@ -78,8 +79,8 @@
     <ClCompile Include="LightSwitchStateManager.cpp" />
     <ClCompile Include="NightLightRegistryObserver.cpp" />
     <ClCompile Include="SettingsConstants.cpp" />
-    <ClCompile Include="ThemeHelper.cpp" />
     <ClCompile Include="ThemeScheduler.cpp" />
+    <ClCompile Include="trace.cpp" />
     <ClCompile Include="WinHookEventIDs.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -92,8 +93,8 @@
     <ClInclude Include="NightLightRegistryObserver.h" />
     <ClInclude Include="SettingsConstants.h" />
     <ClInclude Include="SettingsObserver.h" />
-    <ClInclude Include="ThemeHelper.h" />
     <ClInclude Include="ThemeScheduler.h" />
+    <ClInclude Include="trace.h" />
     <ClInclude Include="WinHookEventIDs.h" />
   </ItemGroup>
   <ItemGroup>
@@ -108,6 +109,9 @@
     </ProjectReference>
     <ProjectReference Include="..\..\..\common\Telemetry\EtwTrace\EtwTrace.vcxproj">
       <Project>{8f021b46-362b-485c-bfba-ccf83e820cbd}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\LightSwitchLib\LightSwitchLib.vcxproj">
+      <Project>{79267138-2895-4346-9021-21408d65379f}</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

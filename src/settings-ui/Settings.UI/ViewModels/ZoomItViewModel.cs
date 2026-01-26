@@ -27,7 +27,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private const string FormatGif = "GIF";
         private const string FormatMp4 = "MP4";
 
-        private ISettingsUtils SettingsUtils { get; set; }
+        private SettingsUtils SettingsUtils { get; set; }
 
         private GeneralSettings GeneralSettingsConfig { get; set; }
 
@@ -72,7 +72,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             IncludeFields = true,
         };
 
-        public ZoomItViewModel(ISettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, Func<string, int> ipcMSGCallBackFunc, Func<string, string, string, int, string> pickFileDialog, Func<LOGFONT, LOGFONT> pickFontDialog)
+        public ZoomItViewModel(SettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, Func<string, int> ipcMSGCallBackFunc, Func<string, string, string, int, string> pickFileDialog, Func<LOGFONT, LOGFONT> pickFontDialog)
         {
             ArgumentNullException.ThrowIfNull(settingsUtils);
 

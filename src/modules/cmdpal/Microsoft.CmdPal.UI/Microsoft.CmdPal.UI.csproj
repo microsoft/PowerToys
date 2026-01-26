@@ -53,7 +53,7 @@
 
   <PropertyGroup>
     <!-- This disables the auto-generated main, so we can be single-instanced -->
-    <DefineConstants>DISABLE_XAML_GENERATED_MAIN</DefineConstants>
+    <DefineConstants>$(DefineConstants);DISABLE_XAML_GENERATED_MAIN</DefineConstants>
   </PropertyGroup>
 
   <!-- BODGY: XES Versioning and WinAppSDK get into a fight about the app manifest, which breaks WinAppSDK. -->
@@ -71,6 +71,7 @@
     <None Remove="Controls\ColorPalette.xaml" />
     <None Remove="Controls\CommandPalettePreview.xaml" />
     <None Remove="Controls\DevRibbon.xaml" />
+    <None Remove="Controls\FallbackRankerDialog.xaml" />
     <None Remove="Controls\KeyVisual\KeyCharPresenter.xaml" />
     <None Remove="Controls\ScreenPreview.xaml" />
     <None Remove="Controls\SearchBar.xaml" />
@@ -232,6 +233,12 @@
   </ItemGroup>
 
   <ItemGroup>
+	  <Page Update="Controls\FallbackRankerDialog.xaml">
+		  <Generator>MSBuild:Compile</Generator>
+	  </Page>
+  </ItemGroup>
+
+  <ItemGroup>
     <Page Update="Styles\Theme.Colorful.xaml">
       <SubType>Designer</SubType>
     </Page>
@@ -284,24 +291,15 @@
   </ItemGroup>
   <!-- </AdaptiveCardsWorkaround> -->
 
-  <!-- Metadata for build information  -->
-  <ItemGroup>
-    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
-      <_Parameter1>PublishTrimmed</_Parameter1>
-      <_Parameter2>$(PublishTrimmed)</_Parameter2>
-    </AssemblyAttribute>
-    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
-      <_Parameter1>PublishAot</_Parameter1>
-      <_Parameter2>$(PublishAot)</_Parameter2>
-    </AssemblyAttribute>
-    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
-      <_Parameter1>CIBuild</_Parameter1>
-      <_Parameter2>$(CIBuild)</_Parameter2>
-    </AssemblyAttribute>
-    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
-      <_Parameter1>CommandPaletteBranding</_Parameter1>
-      <_Parameter2>$(CommandPaletteBranding)</_Parameter2>
-    </AssemblyAttribute>
-  </ItemGroup>
+  <!-- Build information  -->
+  <PropertyGroup Condition=" '$(PublishAot)' == 'true' ">
+	<DefineConstants>$(DefineConstants);BUILD_INFO_PUBLISH_AOT</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(PublishTrimmed)' == 'true' ">
+    <DefineConstants>$(DefineConstants);BUILD_INFO_PUBLISH_TRIMMED</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(CIBuild)' == 'true' ">
+    <DefineConstants>$(DefineConstants);BUILD_INFO_CIBUILD</DefineConstants>
+  </PropertyGroup>
 
 </Project>
