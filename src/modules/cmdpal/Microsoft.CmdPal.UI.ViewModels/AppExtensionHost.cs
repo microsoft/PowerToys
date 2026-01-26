@@ -4,15 +4,17 @@
 
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-using Microsoft.CmdPal.Common;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
+using Microsoft.Extensions.Logging;
 using Windows.Foundation;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
 public abstract partial class AppExtensionHost : IExtensionHost
 {
+    private readonly ILogger logger;
+
     private static readonly GlobalLogPageContext _globalLogPageContext = new();
 
     private static ulong _hostingHwnd;
@@ -26,6 +28,11 @@ public abstract partial class AppExtensionHost : IExtensionHost
     public ObservableCollection<StatusMessageViewModel> StatusMessages { get; } = [];
 
     public static void SetHostHwnd(ulong hostHwnd) => _hostingHwnd = hostHwnd;
+
+    public AppExtensionHost(ILogger logger)
+    {
+        this.logger = logger;
+    }
 
     public void DebugLog(string message)
     {
@@ -60,7 +67,7 @@ public abstract partial class AppExtensionHost : IExtensionHost
             return Task.CompletedTask.AsAsyncAction();
         }
 
-        CoreLogger.LogDebug(message.Message);
+        Log_Message(message.Message);
 
         _ = Task.Run(() =>
         {
@@ -158,6 +165,9 @@ public abstract partial class AppExtensionHost : IExtensionHost
     }
 
     public abstract string? GetExtensionDisplayName();
+
+    [LoggerMessage(Level = LogLevel.Debug, Message = "{message}")]
+    partial void Log_Message(string message);
 }
 
 public interface IAppHostService
