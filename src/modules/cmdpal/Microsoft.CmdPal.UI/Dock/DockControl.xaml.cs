@@ -239,10 +239,6 @@ public sealed partial class DockControl : UserControl, INotifyPropertyChanged, I
 
         ItemsOrientation = isHorizontal ? Orientation.Horizontal : Orientation.Vertical;
 
-        IconSize = DockSettingsToViews.IconSizeForSize(settings.DockIconsSize);
-        TitleTextFontSize = DockSettingsToViews.TitleTextFontSizeForSize(settings.DockSize);
-        TitleTextMaxWidth = DockSettingsToViews.TitleTextMaxWidthForSize(settings.DockSize);
-
         if (settings.Backdrop == DockBackdrop.Transparent)
         {
             RootGrid.BorderBrush = new SolidColorBrush(Colors.Transparent);

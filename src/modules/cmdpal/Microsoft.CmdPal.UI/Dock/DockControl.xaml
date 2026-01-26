@@ -24,42 +24,26 @@
                 <StackPanel Orientation="Vertical" Spacing="4" />
             </ItemsPanelTemplate>
 
-            <Style x:Key="ResizingIconStyle" TargetType="cpcontrols:IconBox">
-                <Setter Property="Height" Value="{x:Bind IconSize, Mode=OneWay}" />
-                <Setter Property="MaxWidth" Value="{x:Bind IconSize, Mode=OneWay}" />
-                <Setter Property="MinWidth" Value="{x:Bind IconMinWidth, Mode=OneWay}" />
-            </Style>
-            <Style x:Key="ResizingTitleTextBlock" TargetType="TextBlock">
-                <Setter Property="FontSize" Value="{x:Bind TitleTextFontSize, Mode=OneWay}" />
-                <Setter Property="MaxWidth" Value="{x:Bind TitleTextMaxWidth, Mode=OneWay}" />
-            </Style>
-
-            <local:IconInfoVisibilityConverter x:Key="IconInfoVisibilityConverter" />
             <local:BandAlignmentConverter x:Key="BandAlignmentConverter" Control="{x:Bind}" />
 
             <DataTemplate x:Key="DeskbandTemplate" x:DataType="dockVm:DockItemViewModel">
-                <Grid>
-                    <TextBlock Opacity="0" Style="{StaticResource ResizingTitleTextBlock}" />
-                    <!--  Removing this breaks the app.. and I have no idea why  -->
-                    <local:DockItemControl
-                        Title="{x:Bind Title, Mode=OneWay}"
-                        RightTapped="BandItem_RightTapped"
-                        Subtitle="{x:Bind Subtitle, Mode=OneWay}"
-                        Tapped="BandItem_Tapped"
-                        ToolTip="{x:Bind Tooltip, Mode=OneWay}">
-                        <local:DockItemControl.Icon>
-                            <cpcontrols:IconBox
-                                x:Name="IconBorder"
-                                Width="16"
-                                VerticalAlignment="Center"
-                                AutomationProperties.AccessibilityView="Raw"
-                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                SourceKey="{x:Bind Icon, Mode=OneWay}"
-                                SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}"
-                                Style="{StaticResource ResizingIconStyle}" />
-                        </local:DockItemControl.Icon>
-                    </local:DockItemControl>
-                </Grid>
+                <local:DockItemControl
+                    Title="{x:Bind Title, Mode=OneWay}"
+                    RightTapped="BandItem_RightTapped"
+                    Subtitle="{x:Bind Subtitle, Mode=OneWay}"
+                    Tapped="BandItem_Tapped"
+                    ToolTip="{x:Bind Tooltip, Mode=OneWay}">
+                    <local:DockItemControl.Icon>
+                        <cpcontrols:IconBox
+                            x:Name="IconBorder"
+                            Width="16"
+                            VerticalAlignment="Center"
+                            AutomationProperties.AccessibilityView="Raw"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            SourceKey="{x:Bind Icon, Mode=OneWay}"
+                            SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}" />
+                    </local:DockItemControl.Icon>
+                </local:DockItemControl>
             </DataTemplate>
 
             <DataTemplate x:Key="HorizontalDockBandTemplate" x:DataType="dockVm:DockBandViewModel">
