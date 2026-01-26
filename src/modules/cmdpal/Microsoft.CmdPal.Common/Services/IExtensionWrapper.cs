@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.CommandPalette.Extensions;
 using Windows.ApplicationModel;
 
-namespace Microsoft.CmdPal.Core.Common.Services;
+namespace Microsoft.CmdPal.Common.Services;
 
 public interface IExtensionWrapper
 {

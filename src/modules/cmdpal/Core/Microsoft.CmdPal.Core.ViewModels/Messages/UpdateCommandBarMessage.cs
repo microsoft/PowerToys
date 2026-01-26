@@ -3,7 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.ComponentModel;
-using Microsoft.CmdPal.Core.Common;
+using Microsoft.CmdPal.Common;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 

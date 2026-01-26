@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using ManagedCommon;
-using Microsoft.CmdPal.Core.Common.Helpers;
+using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CmdPal.Ext.ClipboardHistory.Models;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 

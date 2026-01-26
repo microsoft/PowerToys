@@ -7,7 +7,7 @@ using Microsoft.CommandPalette.Extensions.Toolkit;
 
 using Windows.System;
 
-namespace Microsoft.CmdPal.Core.Common.Helpers;
+namespace Microsoft.CmdPal.Common.Helpers;
 
 /// <summary>
 /// Well-known key chords used in the Command Palette and extensions.

@@ -6,7 +6,7 @@ using System.Runtime.CompilerServices;
 using Windows.Win32;
 using Windows.Win32.Storage.FileSystem;
 
-namespace Microsoft.CmdPal.Core.Common.Helpers;
+namespace Microsoft.CmdPal.Common.Helpers;
 
 public static class PathHelper
 {

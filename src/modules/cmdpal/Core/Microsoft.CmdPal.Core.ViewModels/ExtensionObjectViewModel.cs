@@ -3,7 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using CommunityToolkit.Mvvm.ComponentModel;
-using Microsoft.CmdPal.Core.Common;
+using Microsoft.CmdPal.Common;
 
 namespace Microsoft.CmdPal.Core.ViewModels;
 

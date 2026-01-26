@@ -11,7 +11,7 @@
     <None Remove="Assets\Run.svg" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Core\Microsoft.CmdPal.Core.Common\Microsoft.CmdPal.Core.Common.csproj" />
+    <ProjectReference Include="..\..\Microsoft.CmdPal.Common\Microsoft.CmdPal.Common.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="System.CommandLine" />

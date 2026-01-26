@@ -4,7 +4,7 @@
 
 using System;
 
-namespace Microsoft.CmdPal.Core.Common;
+namespace Microsoft.CmdPal.Common;
 
 public static class CoreLogger
 {

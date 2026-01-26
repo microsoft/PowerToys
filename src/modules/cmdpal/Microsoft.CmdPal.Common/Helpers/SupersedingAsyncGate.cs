@@ -6,7 +6,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.CmdPal.Core.Common.Helpers;
+namespace Microsoft.CmdPal.Common.Helpers;
 
 /// <summary>
 /// An async gate that ensures only one operation runs at a time.

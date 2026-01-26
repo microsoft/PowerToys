@@ -1,8 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <Import Project="..\..\CoreCommonProps.props" />
+  <Import Project="..\CoreCommonProps.props" />
 
   <PropertyGroup>
-    <RootNamespace>Microsoft.CmdPal.Core.Common</RootNamespace>
+    <RootNamespace>Microsoft.CmdPal.Common</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>

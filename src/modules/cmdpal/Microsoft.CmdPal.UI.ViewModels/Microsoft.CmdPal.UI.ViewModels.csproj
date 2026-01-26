@@ -56,7 +56,7 @@
 	</ItemGroup>
 	
   <ItemGroup>
-    <ProjectReference Include="..\Core\Microsoft.CmdPal.Core.Common\Microsoft.CmdPal.Core.Common.csproj" />
+    <ProjectReference Include="..\Microsoft.CmdPal.Common\Microsoft.CmdPal.Common.csproj" />
     <ProjectReference Include="..\Core\Microsoft.CmdPal.Core.ViewModels\Microsoft.CmdPal.Core.ViewModels.csproj" />
     <ProjectReference Include="..\extensionsdk\Microsoft.CommandPalette.Extensions.Toolkit\Microsoft.CommandPalette.Extensions.Toolkit.csproj" />
 

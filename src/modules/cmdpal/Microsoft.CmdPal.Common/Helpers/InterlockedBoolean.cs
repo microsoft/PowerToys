@@ -4,7 +4,7 @@
 
 using System.Threading;
 
-namespace Microsoft.CmdPal.Core.Common.Helpers;
+namespace Microsoft.CmdPal.Common.Helpers;
 
 /// <summary>
 /// Thread-safe boolean implementation using atomic operations
