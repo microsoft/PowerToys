@@ -79,7 +79,7 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
             ? "HorizontalItemsPanel"
             : "VerticalItemsPanel";
 
-        if ((ItemsPanelTemplate)Resources[panelKey] is ItemsPanelTemplate panelTemplate)
+        if ((ItemsPanelTemplate)App.Current.Resources[panelKey] is ItemsPanelTemplate panelTemplate)
         {
             StartListView.ItemsPanel = panelTemplate;
             CenterListView.ItemsPanel = panelTemplate;
