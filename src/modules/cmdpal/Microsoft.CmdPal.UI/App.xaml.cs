@@ -30,6 +30,7 @@ using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Xaml;
 
@@ -42,7 +43,9 @@ namespace Microsoft.CmdPal.UI;
 /// </summary>
 public partial class App : Application
 {
-    private readonly GlobalErrorHandler _globalErrorHandler = new();
+    private readonly ILogger logger;
+    private readonly GlobalErrorHandler _globalErrorHandler;
+    private readonly IServiceProvider _services;
 
     /// <summary>
     /// Gets the current <see cref="App"/> instance in use.
@@ -54,22 +57,20 @@ public partial class App : Application
     public ETWTrace EtwTrace { get; private set; } = new ETWTrace();
 
     /// <summary>
-    /// Gets the <see cref="IServiceProvider"/> instance to resolve application services.
-    /// </summary>
-    public IServiceProvider Services { get; }
-
-    /// <summary>
     /// Initializes a new instance of the <see cref="App"/> class.
     /// Initializes the singleton application object.  This is the first line of authored code
     /// executed, and as such is the logical equivalent of main() or WinMain().
     /// </summary>
-    public App()
+    public App(ILogger logger)
     {
+        this.logger = logger;
+        _globalErrorHandler = new((CmdPalLogger)logger);
+
 #if !CMDPAL_DISABLE_GLOBAL_ERROR_HANDLER
         _globalErrorHandler.Register(this);
 #endif
 
-        Services = ConfigureServices();
+        _services = ConfigureServices();
 
         this.InitializeComponent();
 
@@ -83,11 +84,6 @@ public partial class App : Application
                 AppWindow?.Close();
                 Environment.Exit(0);
             });
-
-        // Connect the PT logging to the core project's logging.
-        // This way, log statements from the core project will be captured by the PT logs
-        var logWrapper = new LogWrapper();
-        CoreLogger.InitializeLogger(logWrapper);
     }
 
     /// <summary>
@@ -105,12 +101,13 @@ public partial class App : Application
     /// <summary>
     /// Configures the services for the application
     /// </summary>
-    private static ServiceProvider ConfigureServices()
+    private ServiceProvider ConfigureServices()
     {
         // TODO: It's in the Labs feed, but we can use Sergio's AOT-friendly source generator for this: https://github.com/CommunityToolkit/Labs-Windows/discussions/463
         ServiceCollection services = new();
 
         // Root services
+        services.AddSingleton<ILogger>(logger);
         services.AddSingleton(TaskScheduler.FromCurrentSynchronizationContext());
 
         AddBuiltInCommands(services);
@@ -122,7 +119,7 @@ public partial class App : Application
         return services.BuildServiceProvider();
     }
 
-    private static void AddBuiltInCommands(ServiceCollection services)
+    private void AddBuiltInCommands(ServiceCollection services)
     {
         // Built-in Commands. Order matters - this is the order they'll be presented by default.
         var allApps = new AllAppsCommandProvider();
@@ -168,7 +165,7 @@ public partial class App : Application
         services.AddSingleton<ICommandProvider, RemoteDesktopCommandProvider>();
     }
 
-    private static void AddUIServices(ServiceCollection services)
+    private void AddUIServices(ServiceCollection services)
     {
         // Models
         var sm = SettingsModel.LoadSettings();
@@ -188,7 +185,7 @@ public partial class App : Application
         services.AddSingleton<ResourceSwapper>();
     }
 
-    private static void AddCoreServices(ServiceCollection services)
+    private void AddCoreServices(ServiceCollection services)
     {
         // Core services
         services.AddSingleton<IExtensionService, ExtensionService>();
