@@ -4888,6 +4888,8 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
                     if (hVolumeSlider)
                     {
                         SendMessage(hVolumeSlider, TBM_SETPOS, TRUE, static_cast<LPARAM>(pData->volume * 100));
+                        // Force full redraw to avoid leftover thumb artifacts
+                        InvalidateRect(hVolumeSlider, nullptr, TRUE);
                     }
                     
                     // Persist volume setting
