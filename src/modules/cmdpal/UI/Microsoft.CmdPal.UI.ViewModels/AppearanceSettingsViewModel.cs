@@ -9,6 +9,7 @@ using CommunityToolkit.WinUI;
 using Microsoft.CmdPal.UI.Common;
 using Microsoft.CmdPal.UI.Common.Abstractions;
 using Microsoft.CmdPal.UI.Common.Models;
+using Microsoft.CmdPal.UI.Services;
 using Microsoft.UI;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
@@ -87,11 +88,12 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
         Color.FromArgb(255, 126, 115, 95), // #7e735f
     ];
 
-    private readonly SettingsModel _settings;
-    private readonly UISettings _uiSettings;
     private readonly IThemeService _themeService;
+    private readonly SettingsService _settingsService;
+    private readonly UISettings _uiSettings;
     private readonly DispatcherQueueTimer _saveTimer = DispatcherQueue.GetForCurrentThread().CreateTimer();
     private readonly DispatcherQueue _uiDispatcher = DispatcherQueue.GetForCurrentThread();
+    private SettingsModel _settings;
 
     private ElementTheme? _elementThemeOverride;
     private Color _currentSystemAccentColor;
@@ -317,11 +319,15 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
             ? new Microsoft.UI.Xaml.Media.Imaging.BitmapImage(uri)
             : null;
 
-    public AppearanceSettingsViewModel(IThemeService themeService, SettingsModel settings)
+    public AppearanceSettingsViewModel(IThemeService themeService, SettingsService settingsService)
     {
         _themeService = themeService;
         _themeService.ThemeChanged += ThemeServiceOnThemeChanged;
-        _settings = settings;
+
+        _settingsService = settingsService;
+        _settingsService.SettingsChanged += SettingsService_SettingsChanged;
+
+        _settings = _settingsService.CurrentSettings;
 
         _uiSettings = new UISettings();
         _uiSettings.ColorValuesChanged += UiSettingsOnColorValuesChanged;
@@ -330,6 +336,11 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
         Reapply();
 
         IsColorizationDetailsExpanded = _settings.ColorizationMode != ColorizationMode.None;
+    }
+
+    private void SettingsService_SettingsChanged(SettingsModel sender, object? args)
+    {
+        _settings = sender;
     }
 
     private void UiSettingsOnColorValuesChanged(UISettings sender, object args) => _uiDispatcher.TryEnqueue(() => UpdateAccentColor(sender));
@@ -350,7 +361,7 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
 
     private void Save()
     {
-        SettingsModel.SaveSettings(_settings);
+        _settingsService.SaveSettings(_settings);
         _saveTimer.Debounce(Reapply, TimeSpan.FromMilliseconds(200));
     }
 
@@ -388,5 +399,6 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
     {
         _uiSettings.ColorValuesChanged -= UiSettingsOnColorValuesChanged;
         _themeService.ThemeChanged -= ThemeServiceOnThemeChanged;
+        _settingsService.SettingsChanged -= SettingsService_SettingsChanged;
     }
 }

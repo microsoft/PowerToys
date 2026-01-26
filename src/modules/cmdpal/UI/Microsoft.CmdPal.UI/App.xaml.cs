@@ -2,7 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using ManagedCommon;
 using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CmdPal.Ext.Apps;
 using Microsoft.CmdPal.Ext.Bookmarks;
@@ -20,12 +19,12 @@ using Microsoft.CmdPal.Ext.WindowsSettings;
 using Microsoft.CmdPal.Ext.WindowsTerminal;
 using Microsoft.CmdPal.Ext.WindowWalker;
 using Microsoft.CmdPal.Ext.WinGet;
+using Microsoft.CmdPal.UI.Common.Abstractions;
 using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.Services;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.BuiltinCommands;
 using Microsoft.CmdPal.UI.ViewModels.Models;
-using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -122,17 +121,7 @@ public partial class App : Application
         AddBuiltInCommands(services);
 
         // Register services
-
-
-        // Register view models
-
-        // Register managers
-
-        // Register views
-
-
         AddCoreServices(services);
-
         AddUIServices(services);
 
         return services.BuildServiceProvider();
@@ -219,5 +208,5 @@ public partial class App : Application
     }
 
     [LoggerMessage(level: LogLevel.Error, Message = "Couldn't load winget: {message}")]
-    partial void Log_FailureLoadingWinget(string message)
+    partial void Log_FailureLoadingWinget(string message);
 }
