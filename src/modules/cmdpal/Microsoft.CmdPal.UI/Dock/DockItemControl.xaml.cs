@@ -106,6 +106,14 @@ public sealed partial class DockItemControl : Control
         {
             _iconPresenter.Visibility = Icon is null ? Visibility.Collapsed : Visibility.Visible;
         }
+
+        UpdateIconVisibilityState();
+    }
+
+    private void UpdateIconVisibilityState()
+    {
+        var hasIcon = Icon is not null;
+        VisualStateManager.GoToState(this, hasIcon ? "IconVisible" : "IconHidden", true);
     }
 
     private void UpdateAllVisibility()

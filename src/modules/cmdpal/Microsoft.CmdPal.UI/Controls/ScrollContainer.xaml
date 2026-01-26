@@ -113,10 +113,32 @@
         BorderThickness="{x:Bind BorderThickness, Mode=OneWay}"
         CornerRadius="{x:Bind CornerRadius, Mode=OneWay}">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*" />
-            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition x:Name="Col0" Width="Auto" />
+            <ColumnDefinition x:Name="Col1" Width="*" />
+            <ColumnDefinition x:Name="Col2" Width="Auto" />
         </Grid.ColumnDefinitions>
-        <Grid x:Name="ScrollerContainer">
+        <Grid.RowDefinitions>
+            <RowDefinition x:Name="Row0" Height="Auto" />
+            <RowDefinition x:Name="Row1" Height="*" />
+            <RowDefinition x:Name="Row2" Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!--  Action button - position controlled by visual states  -->
+        <ContentPresenter
+            x:Name="ActionButtonPresenter"
+            Grid.Row="0"
+            Grid.RowSpan="3"
+            Grid.Column="2"
+            Margin="4,0,0,0"
+            VerticalAlignment="Center"
+            Content="{x:Bind ActionButton, Mode=OneWay}"
+            Visibility="{x:Bind ActionButtonVisibility, Mode=OneWay}" />
+
+        <Grid
+            x:Name="ScrollerContainer"
+            Grid.Row="0"
+            Grid.RowSpan="3"
+            Grid.Column="1">
             <ScrollViewer
                 x:Name="scroller"
                 HorizontalScrollBarVisibility="Hidden"
@@ -161,13 +183,7 @@
                     Glyph="&#xEDDA;" />
             </Button>
         </Grid>
-        <ContentPresenter
-            x:Name="ActionButtonPresenter"
-            Grid.Column="1"
-            Margin="4,0,0,0"
-            VerticalAlignment="Center"
-            Content="{x:Bind ActionButton, Mode=OneWay}"
-            Visibility="{x:Bind ActionButtonVisibility, Mode=OneWay}" />
+
         <VisualStateManager.VisualStateGroups>
             <VisualStateGroup x:Name="OrientationStates">
                 <VisualState x:Name="HorizontalState">
@@ -212,6 +228,72 @@
                         <Setter Target="ScrollForwardBtn.(AutomationProperties.Name)" Value="Scroll down" />
                         <Setter Target="ScrollForwardBtn.(ToolTipService.ToolTip)" Value="Scroll down" />
                         <Setter Target="ScrollForwardIcon.Glyph" Value="&#xEDDC;" />
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+            <VisualStateGroup x:Name="LayoutStates">
+                <!--  Horizontal + Start: button on right  -->
+                <VisualState x:Name="HorizontalStartState">
+                    <VisualState.Setters>
+                        <Setter Target="ScrollerContainer.(Grid.Row)" Value="0" />
+                        <Setter Target="ScrollerContainer.(Grid.RowSpan)" Value="3" />
+                        <Setter Target="ScrollerContainer.(Grid.Column)" Value="1" />
+                        <Setter Target="ScrollerContainer.(Grid.ColumnSpan)" Value="1" />
+                        <Setter Target="ActionButtonPresenter.(Grid.Row)" Value="0" />
+                        <Setter Target="ActionButtonPresenter.(Grid.RowSpan)" Value="3" />
+                        <Setter Target="ActionButtonPresenter.(Grid.Column)" Value="2" />
+                        <Setter Target="ActionButtonPresenter.(Grid.ColumnSpan)" Value="1" />
+                        <Setter Target="ActionButtonPresenter.Margin" Value="4,0,0,0" />
+                        <Setter Target="ActionButtonPresenter.HorizontalAlignment" Value="Stretch" />
+                        <Setter Target="ActionButtonPresenter.VerticalAlignment" Value="Center" />
+                    </VisualState.Setters>
+                </VisualState>
+                <!--  Horizontal + End: button on left  -->
+                <VisualState x:Name="HorizontalEndState">
+                    <VisualState.Setters>
+                        <Setter Target="ScrollerContainer.(Grid.Row)" Value="0" />
+                        <Setter Target="ScrollerContainer.(Grid.RowSpan)" Value="3" />
+                        <Setter Target="ScrollerContainer.(Grid.Column)" Value="1" />
+                        <Setter Target="ScrollerContainer.(Grid.ColumnSpan)" Value="1" />
+                        <Setter Target="ActionButtonPresenter.(Grid.Row)" Value="0" />
+                        <Setter Target="ActionButtonPresenter.(Grid.RowSpan)" Value="3" />
+                        <Setter Target="ActionButtonPresenter.(Grid.Column)" Value="0" />
+                        <Setter Target="ActionButtonPresenter.(Grid.ColumnSpan)" Value="1" />
+                        <Setter Target="ActionButtonPresenter.Margin" Value="0,0,4,0" />
+                        <Setter Target="ActionButtonPresenter.HorizontalAlignment" Value="Stretch" />
+                        <Setter Target="ActionButtonPresenter.VerticalAlignment" Value="Center" />
+                    </VisualState.Setters>
+                </VisualState>
+                <!--  Vertical + Start: button on bottom  -->
+                <VisualState x:Name="VerticalStartState">
+                    <VisualState.Setters>
+                        <Setter Target="ScrollerContainer.(Grid.Row)" Value="1" />
+                        <Setter Target="ScrollerContainer.(Grid.RowSpan)" Value="1" />
+                        <Setter Target="ScrollerContainer.(Grid.Column)" Value="0" />
+                        <Setter Target="ScrollerContainer.(Grid.ColumnSpan)" Value="3" />
+                        <Setter Target="ActionButtonPresenter.(Grid.Row)" Value="2" />
+                        <Setter Target="ActionButtonPresenter.(Grid.RowSpan)" Value="1" />
+                        <Setter Target="ActionButtonPresenter.(Grid.Column)" Value="0" />
+                        <Setter Target="ActionButtonPresenter.(Grid.ColumnSpan)" Value="3" />
+                        <Setter Target="ActionButtonPresenter.Margin" Value="0,4,0,0" />
+                        <Setter Target="ActionButtonPresenter.HorizontalAlignment" Value="Center" />
+                        <Setter Target="ActionButtonPresenter.VerticalAlignment" Value="Stretch" />
+                    </VisualState.Setters>
+                </VisualState>
+                <!--  Vertical + End: button on top  -->
+                <VisualState x:Name="VerticalEndState">
+                    <VisualState.Setters>
+                        <Setter Target="ScrollerContainer.(Grid.Row)" Value="1" />
+                        <Setter Target="ScrollerContainer.(Grid.RowSpan)" Value="1" />
+                        <Setter Target="ScrollerContainer.(Grid.Column)" Value="0" />
+                        <Setter Target="ScrollerContainer.(Grid.ColumnSpan)" Value="3" />
+                        <Setter Target="ActionButtonPresenter.(Grid.Row)" Value="0" />
+                        <Setter Target="ActionButtonPresenter.(Grid.RowSpan)" Value="1" />
+                        <Setter Target="ActionButtonPresenter.(Grid.Column)" Value="0" />
+                        <Setter Target="ActionButtonPresenter.(Grid.ColumnSpan)" Value="3" />
+                        <Setter Target="ActionButtonPresenter.Margin" Value="0,0,0,4" />
+                        <Setter Target="ActionButtonPresenter.HorizontalAlignment" Value="Center" />
+                        <Setter Target="ActionButtonPresenter.VerticalAlignment" Value="Stretch" />
                     </VisualState.Setters>
                 </VisualState>
             </VisualStateGroup>

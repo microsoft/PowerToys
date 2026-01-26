@@ -47,7 +47,7 @@
         <Style.Setters>
             <Setter Property="Background" Value="{ThemeResource DockItemBackground}" />
             <Setter Property="BorderBrush" Value="{ThemeResource DockItemBorderBrush}" />
-            <Setter Property="Padding" Value="4,2,4,2" />
+            <Setter Property="Padding" Value="8,2,8,2" />
             <Setter Property="BorderThickness" Value="{ThemeResource ButtonBorderThemeThickness}" />
             <Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
             <Setter Property="Template">
@@ -62,7 +62,11 @@
                             BorderThickness="{TemplateBinding BorderThickness}"
                             CornerRadius="{TemplateBinding CornerRadius}"
                             ToolTipService.ToolTip="{TemplateBinding ToolTip}">
-                            <Grid AutomationProperties.Name="{TemplateBinding Title}" Background="Transparent">
+                            <Grid
+                                x:Name="ContentGrid"
+                                AutomationProperties.Name="{TemplateBinding Title}"
+                                Background="Transparent"
+                                ColumnSpacing="8">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto" />
                                     <ColumnDefinition Width="Auto" />
@@ -78,7 +82,6 @@
                                 <StackPanel
                                     x:Name="TextPanel"
                                     Grid.Column="1"
-                                    Margin="8,0,8,0"
                                     VerticalAlignment="Center">
                                     <TextBlock
                                         x:Name="TitleText"
@@ -133,6 +136,15 @@
                                     <VisualState x:Name="TextHidden">
                                         <VisualState.Setters>
                                             <Setter Target="TextPanel.Margin" Value="0" />
+                                            <Setter Target="ContentGrid.ColumnSpacing" Value="0" />
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                </VisualStateGroup>
+                                <VisualStateGroup x:Name="IconVisibilityStates">
+                                    <VisualState x:Name="IconVisible" />
+                                    <VisualState x:Name="IconHidden">
+                                        <VisualState.Setters>
+                                            <Setter Target="ContentGrid.ColumnSpacing" Value="0" />
                                         </VisualState.Setters>
                                     </VisualState>
                                 </VisualStateGroup>

@@ -36,6 +36,7 @@ public sealed partial class ScrollContainer : UserControl
     private void ScrollContainer_Loaded(object sender, RoutedEventArgs e)
     {
         UpdateOrientationState();
+        UpdateLayoutState();
     }
 
     public object Source
@@ -87,6 +88,7 @@ public sealed partial class ScrollContainer : UserControl
     {
         if (d is ScrollContainer control)
         {
+            control.UpdateLayoutState();
             control.ScrollToAlignment();
         }
     }
@@ -130,6 +132,7 @@ public sealed partial class ScrollContainer : UserControl
         if (d is ScrollContainer control)
         {
             control.UpdateOrientationState();
+            control.UpdateLayoutState();
             control.ScrollToAlignment();
         }
     }
@@ -137,6 +140,22 @@ public sealed partial class ScrollContainer : UserControl
     private void UpdateOrientationState()
     {
         var stateName = Orientation == Orientation.Horizontal ? "HorizontalState" : "VerticalState";
+        VisualStateManager.GoToState(this, stateName, true);
+    }
+
+    private void UpdateLayoutState()
+    {
+        var isHorizontal = Orientation == Orientation.Horizontal;
+        var isStart = ContentAlignment == ScrollContentAlignment.Start;
+
+        var stateName = (isHorizontal, isStart) switch
+        {
+            (true, true) => "HorizontalStartState",
+            (true, false) => "HorizontalEndState",
+            (false, true) => "VerticalStartState",
+            (false, false) => "VerticalEndState",
+        };
+
         VisualStateManager.GoToState(this, stateName, true);
     }
 

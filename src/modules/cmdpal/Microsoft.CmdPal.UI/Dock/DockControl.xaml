@@ -160,40 +160,43 @@
                 x:Name="AddBandFlyout"
                 Placement="Bottom"
                 ShouldConstrainToRootBounds="False">
-                <StackPanel MinWidth="200">
+                <StackPanel Width="320">
                     <TextBlock
                         x:Name="NoAvailableBandsText"
                         Padding="12"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                         Text="No commands available to pin"
+                        TextAlignment="Center"
                         Visibility="Collapsed" />
                     <ListView
                         x:Name="AddBandListView"
                         MaxHeight="300"
-                        ItemClick="AddBandListView_ItemClick"
+                        HorizontalAlignment="Stretch"
                         IsItemClickEnabled="True"
+                        ItemClick="AddBandListView_ItemClick"
                         SelectionMode="None">
-                    <ListView.ItemTemplate>
-                        <DataTemplate x:DataType="vm:TopLevelViewModel">
-                            <Grid Padding="4" ColumnSpacing="8">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto" />
-                                    <ColumnDefinition Width="*" />
-                                </Grid.ColumnDefinitions>
-                                <cpcontrols:IconBox
-                                    Width="20"
-                                    Height="20"
-                                    VerticalAlignment="Center"
-                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                    SourceKey="{x:Bind IconViewModel, Mode=OneWay}"
-                                    SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}" />
-                                <TextBlock
-                                    Grid.Column="1"
-                                    VerticalAlignment="Center"
-                                    Text="{x:Bind Title, Mode=OneWay}"
-                                    TextTrimming="CharacterEllipsis" />
-                            </Grid>
-                        </DataTemplate>
-                    </ListView.ItemTemplate>
+                        <ListView.ItemTemplate>
+                            <DataTemplate x:DataType="vm:TopLevelViewModel">
+                                <Grid Padding="4" ColumnSpacing="8">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <cpcontrols:IconBox
+                                        Width="20"
+                                        Height="20"
+                                        VerticalAlignment="Center"
+                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                        SourceKey="{x:Bind IconViewModel, Mode=OneWay}"
+                                        SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}" />
+                                    <TextBlock
+                                        Grid.Column="1"
+                                        VerticalAlignment="Center"
+                                        Text="{x:Bind Title, Mode=OneWay}"
+                                        TextTrimming="CharacterEllipsis" />
+                                </Grid>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
                     </ListView>
                 </StackPanel>
             </Flyout>
@@ -202,7 +205,6 @@
 
     <Grid
         x:Name="RootGrid"
-        BorderBrush="{ThemeResource SurfaceStrokeColorDefaultBrush}"
         BorderThickness="0,0,0,1"
         RightTapped="RootGrid_RightTapped">
         <!--  Edit Mode Overlay - shown when in edit mode  -->
@@ -225,8 +227,7 @@
                 x:Name="StartScroller"
                 Grid.RowSpan="3"
                 HorizontalAlignment="Left"
-                VerticalAlignment="Stretch"
-                BorderThickness="1">
+                VerticalAlignment="Stretch">
                 <cpcontrols:ScrollContainer.ActionButton>
                     <Button
                         x:Name="StartAddButton"
@@ -258,7 +259,7 @@
                 x:Name="CenterScroller"
                 Grid.RowSpan="3"
                 Grid.Column="1"
-                MinWidth="120"
+                MinWidth="48"
                 HorizontalAlignment="Center">
                 <cpcontrols:ScrollContainer.ActionButton>
                     <Button
@@ -331,17 +332,27 @@
                 PreferredPlacement="Bottom"
                 ShouldConstrainToRootBounds="False"
                 Target="{x:Bind ContentGrid}">
+                <TeachingTip.CloseButtonStyle> 
+                    <!--  Workaround to hide the close button  -->
+                    <Style TargetType="Button">
+                        <Setter Property="Visibility" Value="Collapsed" />
+                    </Style>
+                </TeachingTip.CloseButtonStyle>
                 <TeachingTip.Content>
                     <StackPanel
                         x:Name="EditButtonsPanel"
-                        HorizontalAlignment="Center"
+                        HorizontalAlignment="Stretch"
                         Orientation="Vertical"
                         Spacing="4">
                         <Button
+                            HorizontalAlignment="Stretch"
                             Click="DoneEditingButton_Click"
                             Content="Save"
                             Style="{StaticResource AccentButtonStyle}" />
-                        <Button Click="DiscardEditingButton_Click" Content="Discard" />
+                        <Button
+                            HorizontalAlignment="Stretch"
+                            Click="DiscardEditingButton_Click"
+                            Content="Discard" />
                     </StackPanel>
                 </TeachingTip.Content>
             </TeachingTip>
@@ -396,6 +407,7 @@
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
                         <Setter Target="StartScroller.(Grid.Row)" Value="0" />
+                        <Setter Target="StartScroller.(Grid.Row)" Value="0" />
                         <Setter Target="StartScroller.(Grid.Column)" Value="0" />
                         <Setter Target="StartScroller.(Grid.ColumnSpan)" Value="3" />
                         <Setter Target="StartScroller.Orientation" Value="Vertical" />
@@ -403,6 +415,7 @@
                         <Setter Target="StartScroller.VerticalAlignment" Value="Top" />
 
                         <Setter Target="CenterScroller.(Grid.Row)" Value="1" />
+                        <Setter Target="CenterScroller.(Grid.RowSpan)" Value="0" />
                         <Setter Target="CenterScroller.(Grid.Column)" Value="0" />
                         <Setter Target="CenterScroller.(Grid.ColumnSpan)" Value="3" />
                         <Setter Target="CenterScroller.Orientation" Value="Vertical" />
@@ -411,6 +424,7 @@
 
                         <Setter Target="EndScroller.Orientation" Value="Vertical" />
                         <Setter Target="EndScroller.(Grid.Row)" Value="2" />
+                        <Setter Target="EndScroller.(Grid.RowSpan)" Value="0" />
                         <Setter Target="EndScroller.(Grid.Column)" Value="0" />
                         <Setter Target="EndScroller.(Grid.ColumnSpan)" Value="3" />
                         <Setter Target="EndScroller.HorizontalAlignment" Value="Stretch" />
@@ -425,6 +439,7 @@
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
                         <Setter Target="StartScroller.(Grid.Row)" Value="0" />
+                        <Setter Target="StartScroller.(Grid.Row)" Value="0" />
                         <Setter Target="StartScroller.(Grid.Column)" Value="0" />
                         <Setter Target="StartScroller.(Grid.ColumnSpan)" Value="3" />
                         <Setter Target="StartScroller.Orientation" Value="Vertical" />
@@ -432,6 +447,7 @@
                         <Setter Target="StartScroller.VerticalAlignment" Value="Top" />
 
                         <Setter Target="CenterScroller.(Grid.Row)" Value="1" />
+                        <Setter Target="CenterScroller.(Grid.RowSpan)" Value="0" />
                         <Setter Target="CenterScroller.(Grid.Column)" Value="0" />
                         <Setter Target="CenterScroller.(Grid.ColumnSpan)" Value="3" />
                         <Setter Target="CenterScroller.Orientation" Value="Vertical" />
@@ -440,11 +456,11 @@
 
                         <Setter Target="EndScroller.Orientation" Value="Vertical" />
                         <Setter Target="EndScroller.(Grid.Row)" Value="2" />
+                        <Setter Target="EndScroller.(Grid.RowSpan)" Value="0" />
                         <Setter Target="EndScroller.(Grid.Column)" Value="0" />
                         <Setter Target="EndScroller.(Grid.ColumnSpan)" Value="3" />
                         <Setter Target="EndScroller.HorizontalAlignment" Value="Stretch" />
                         <Setter Target="EndScroller.VerticalAlignment" Value="Bottom" />
-                        <Setter Target="ContentGrid.Padding" Value="4,8,4,8" />
                         <Setter Target="RootGrid.BorderThickness" Value="1,0,0,0" />
                     </VisualState.Setters>
                 </VisualState>
