@@ -2796,6 +2796,7 @@ static winrt::fire_and_forget StartPlaybackAsync(HWND hDlg, VideoRecordingSessio
         newPlayer.IsVideoFrameServerEnabled(true);
         newPlayer.AutoPlay(false);
         newPlayer.Volume(pData->volume);
+        newPlayer.IsMuted(pData->volume == 0.0);
 
         pData->frameCopyInProgress.store(false, std::memory_order_relaxed);
         pData->mediaPlayer = newPlayer;
@@ -4847,6 +4848,7 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
                     try
                     {
                         pData->mediaPlayer.Volume(pData->volume);
+                        pData->mediaPlayer.IsMuted(pData->volume == 0.0);
                     }
                     catch (...)
                     {
@@ -4902,6 +4904,7 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
                         try
                         {
                             pData->mediaPlayer.Volume(pData->volume);
+                            pData->mediaPlayer.IsMuted(pData->volume == 0.0);
                         }
                         catch (...)
                         {
