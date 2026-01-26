@@ -12,6 +12,7 @@
     xmlns:local="using:Microsoft.CmdPal.UI.Dock"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="using:CommunityToolkit.WinUI"
+    xmlns:vm="using:Microsoft.CmdPal.UI.ViewModels"
     mc:Ignorable="d">
 
     <UserControl.Resources>
@@ -130,12 +131,72 @@
                 <MenuFlyoutItem
                     x:Name="ShowLabelsMenuItem"
                     Click="ShowLabelsMenuItem_Click"
-                    Text="Show labels" />
+                    Text="Show labels">
+                    <MenuFlyoutItem.Icon>
+                        <FontIcon Glyph="&#xE8EC;" />
+                    </MenuFlyoutItem.Icon>
+                </MenuFlyoutItem>
                 <MenuFlyoutItem
                     x:Name="HideLabelsMenuItem"
                     Click="HideLabelsMenuItem_Click"
-                    Text="Hide labels" />
+                    Text="Hide labels">
+                    <MenuFlyoutItem.Icon>
+                        <FontIcon Glyph="&#xE8EC;" />
+                    </MenuFlyoutItem.Icon>
+                </MenuFlyoutItem>
+                <MenuFlyoutSeparator />
+                <MenuFlyoutItem
+                    x:Name="UnpinBandMenuItem"
+                    Click="UnpinBandMenuItem_Click"
+                    Text="Unpin">
+                    <MenuFlyoutItem.Icon>
+                        <FontIcon Glyph="&#xE77A;" />
+                    </MenuFlyoutItem.Icon>
+                </MenuFlyoutItem>
             </MenuFlyout>
+
+            <!--  Add band flyout - used in edit mode to add bands to dock sections  -->
+            <Flyout
+                x:Name="AddBandFlyout"
+                Placement="Bottom"
+                ShouldConstrainToRootBounds="False">
+                <StackPanel MinWidth="200">
+                    <TextBlock
+                        x:Name="NoAvailableBandsText"
+                        Padding="12"
+                        Text="No commands available to pin"
+                        Visibility="Collapsed" />
+                    <ListView
+                        x:Name="AddBandListView"
+                        MaxHeight="300"
+                        ItemClick="AddBandListView_ItemClick"
+                        IsItemClickEnabled="True"
+                        SelectionMode="None">
+                    <ListView.ItemTemplate>
+                        <DataTemplate x:DataType="vm:TopLevelViewModel">
+                            <Grid Padding="4" ColumnSpacing="8">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <cpcontrols:IconBox
+                                    Width="20"
+                                    Height="20"
+                                    VerticalAlignment="Center"
+                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                    SourceKey="{x:Bind IconViewModel, Mode=OneWay}"
+                                    SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}" />
+                                <TextBlock
+                                    Grid.Column="1"
+                                    VerticalAlignment="Center"
+                                    Text="{x:Bind Title, Mode=OneWay}"
+                                    TextTrimming="CharacterEllipsis" />
+                            </Grid>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                    </ListView>
+                </StackPanel>
+            </Flyout>
         </ResourceDictionary>
     </UserControl.Resources>
 
@@ -166,6 +227,16 @@
                 HorizontalAlignment="Left"
                 VerticalAlignment="Stretch"
                 BorderThickness="1">
+                <cpcontrols:ScrollContainer.ActionButton>
+                    <Button
+                        x:Name="StartAddButton"
+                        Click="AddBandButton_Click"
+                        Style="{StaticResource SubtleButtonStyle}"
+                        Tag="Start"
+                        ToolTipService.ToolTip="Add band to Start">
+                        <FontIcon FontSize="12" Glyph="&#xE710;" />
+                    </Button>
+                </cpcontrols:ScrollContainer.ActionButton>
                 <cpcontrols:ScrollContainer.Source>
                     <ListView
                         x:Name="StartListView"
@@ -189,6 +260,16 @@
                 Grid.Column="1"
                 MinWidth="120"
                 HorizontalAlignment="Center">
+                <cpcontrols:ScrollContainer.ActionButton>
+                    <Button
+                        x:Name="CenterAddButton"
+                        Click="AddBandButton_Click"
+                        Style="{StaticResource SubtleButtonStyle}"
+                        Tag="Center"
+                        ToolTipService.ToolTip="Add band to Center">
+                        <FontIcon FontSize="12" Glyph="&#xE710;" />
+                    </Button>
+                </cpcontrols:ScrollContainer.ActionButton>
                 <cpcontrols:ScrollContainer.Source>
                     <ListView
                         x:Name="CenterListView"
@@ -213,6 +294,16 @@
                 HorizontalAlignment="Right"
                 VerticalAlignment="Stretch"
                 ContentAlignment="End">
+                <cpcontrols:ScrollContainer.ActionButton>
+                    <Button
+                        x:Name="EndAddButton"
+                        Click="AddBandButton_Click"
+                        Style="{StaticResource SubtleButtonStyle}"
+                        Tag="End"
+                        ToolTipService.ToolTip="Add band to End">
+                        <FontIcon FontSize="12" Glyph="&#xE710;" />
+                    </Button>
+                </cpcontrols:ScrollContainer.ActionButton>
                 <cpcontrols:ScrollContainer.Source>
                     <ListView
                         x:Name="EndListView"
@@ -376,6 +467,9 @@
                         <Setter Target="EndScroller.Background" Value="{ThemeResource CardBackgroundFillColorDefaultBrush}" />
                         <Setter Target="EndScroller.BorderThickness" Value="1" />
                         <Setter Target="EndScroller.CornerRadius" Value="{StaticResource OverlayCornerRadius}" />
+                        <Setter Target="StartScroller.ActionButtonVisibility" Value="Visible" />
+                        <Setter Target="CenterScroller.ActionButtonVisibility" Value="Visible" />
+                        <Setter Target="EndScroller.ActionButtonVisibility" Value="Visible" />
                     </VisualState.Setters>
                 </VisualState>
             </VisualStateGroup>

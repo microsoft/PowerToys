@@ -7,7 +7,9 @@ using System.ComponentModel;
 using System.Runtime.InteropServices;
 using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
+using Microsoft.CmdPal.Core.ViewModels;
 using Microsoft.CmdPal.Core.ViewModels.Messages;
+using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Dock;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
@@ -364,6 +366,15 @@ public sealed partial class DockControl : UserControl, INotifyPropertyChanged, I
         }
     }
 
+    private void UnpinBandMenuItem_Click(object sender, RoutedEventArgs e)
+    {
+        if (_editModeContextBand != null)
+        {
+            ViewModel.UnpinBand(_editModeContextBand);
+            _editModeContextBand = null;
+        }
+    }
+
     private void InvokeItem(DockItemViewModel item, Point pos)
     {
         var command = item.Command;
@@ -603,5 +614,46 @@ public sealed partial class DockControl : UserControl, INotifyPropertyChanged, I
 
         // If we're past all items, insert at the end
         return itemCount;
+    }
+
+    // Tracks which section (Start/Center/End) the add button was clicked for
+    private DockPinSide _addBandTargetSide;
+
+    private void AddBandButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is Button button && button.Tag is string sideTag)
+        {
+            _addBandTargetSide = sideTag switch
+            {
+                "Start" => DockPinSide.Start,
+                "Center" => DockPinSide.Center,
+                "End" => DockPinSide.End,
+                _ => DockPinSide.Center,
+            };
+
+            // Populate the list with available bands (not already in the dock)
+            var availableBands = ViewModel.GetAvailableBandsToAdd().ToList();
+            AddBandListView.ItemsSource = availableBands;
+
+            // Show/hide empty state text based on whether there are bands to add
+            var hasAvailableBands = availableBands.Count > 0;
+            NoAvailableBandsText.Visibility = hasAvailableBands ? Visibility.Collapsed : Visibility.Visible;
+            AddBandListView.Visibility = hasAvailableBands ? Visibility.Visible : Visibility.Collapsed;
+
+            // Show the flyout
+            AddBandFlyout.ShowAt(button);
+        }
+    }
+
+    private void AddBandListView_ItemClick(object sender, ItemClickEventArgs e)
+    {
+        if (e.ClickedItem is TopLevelViewModel topLevel)
+        {
+            // Add the band to the target section
+            ViewModel.AddBandToSection(topLevel, _addBandTargetSide);
+
+            // Close the flyout
+            AddBandFlyout.Hide();
+        }
     }
 }

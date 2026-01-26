@@ -112,49 +112,62 @@
         BorderBrush="{x:Bind BorderBrush, Mode=OneWay}"
         BorderThickness="{x:Bind BorderThickness, Mode=OneWay}"
         CornerRadius="{x:Bind CornerRadius, Mode=OneWay}">
-        <ScrollViewer
-            x:Name="scroller"
-            HorizontalScrollBarVisibility="Hidden"
-            HorizontalScrollMode="Enabled"
-            SizeChanged="Scroller_SizeChanged"
-            VerticalScrollBarVisibility="Hidden"
-            VerticalScrollMode="Disabled"
-            ViewChanging="Scroller_ViewChanging">
-            <Grid x:Name="ContentGrid">
-                <ContentPresenter Content="{x:Bind Source, Mode=OneWay}" />
-            </Grid>
-        </ScrollViewer>
-        <Button
-            x:Name="ScrollBackBtn"
-            Margin="8,0,0,0"
-            Padding="2,8,2,8"
-            HorizontalAlignment="Left"
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
+        <Grid x:Name="ScrollerContainer">
+            <ScrollViewer
+                x:Name="scroller"
+                HorizontalScrollBarVisibility="Hidden"
+                HorizontalScrollMode="Enabled"
+                SizeChanged="Scroller_SizeChanged"
+                VerticalScrollBarVisibility="Hidden"
+                VerticalScrollMode="Disabled"
+                ViewChanging="Scroller_ViewChanging">
+                <Grid x:Name="ContentGrid">
+                    <ContentPresenter Content="{x:Bind Source, Mode=OneWay}" />
+                </Grid>
+            </ScrollViewer>
+            <Button
+                x:Name="ScrollBackBtn"
+                Margin="8,0,0,0"
+                Padding="2,8,2,8"
+                HorizontalAlignment="Left"
+                VerticalAlignment="Center"
+                AutomationProperties.Name="Scroll left"
+                Click="ScrollBackBtn_Click"
+                Style="{StaticResource ScrollButtonStyle}"
+                ToolTipService.ToolTip="Scroll left"
+                Visibility="Collapsed">
+                <FontIcon
+                    x:Name="ScrollBackIcon"
+                    FontSize="{ThemeResource FlipViewButtonFontSize}"
+                    Glyph="&#xEDD9;" />
+            </Button>
+            <Button
+                x:Name="ScrollForwardBtn"
+                Margin="0,0,8,0"
+                Padding="2,8,2,8"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Center"
+                AutomationProperties.Name="Scroll right"
+                Click="ScrollForwardBtn_Click"
+                Style="{StaticResource ScrollButtonStyle}"
+                ToolTipService.ToolTip="Scroll right">
+                <FontIcon
+                    x:Name="ScrollForwardIcon"
+                    FontSize="{ThemeResource FlipViewButtonFontSize}"
+                    Glyph="&#xEDDA;" />
+            </Button>
+        </Grid>
+        <ContentPresenter
+            x:Name="ActionButtonPresenter"
+            Grid.Column="1"
+            Margin="4,0,0,0"
             VerticalAlignment="Center"
-            AutomationProperties.Name="Scroll left"
-            Click="ScrollBackBtn_Click"
-            Style="{StaticResource ScrollButtonStyle}"
-            ToolTipService.ToolTip="Scroll left"
-            Visibility="Collapsed">
-            <FontIcon
-                x:Name="ScrollBackIcon"
-                FontSize="{ThemeResource FlipViewButtonFontSize}"
-                Glyph="&#xEDD9;" />
-        </Button>
-        <Button
-            x:Name="ScrollForwardBtn"
-            Margin="0,0,8,0"
-            Padding="2,8,2,8"
-            HorizontalAlignment="Right"
-            VerticalAlignment="Center"
-            AutomationProperties.Name="Scroll right"
-            Click="ScrollForwardBtn_Click"
-            Style="{StaticResource ScrollButtonStyle}"
-            ToolTipService.ToolTip="Scroll right">
-            <FontIcon
-                x:Name="ScrollForwardIcon"
-                FontSize="{ThemeResource FlipViewButtonFontSize}"
-                Glyph="&#xEDDA;" />
-        </Button>
+            Content="{x:Bind ActionButton, Mode=OneWay}"
+            Visibility="{x:Bind ActionButtonVisibility, Mode=OneWay}" />
         <VisualStateManager.VisualStateGroups>
             <VisualStateGroup x:Name="OrientationStates">
                 <VisualState x:Name="HorizontalState">
