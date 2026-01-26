@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.ObjectModel;
-using System.ComponentModel;
 using System.Runtime.InteropServices;
 using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
@@ -24,26 +23,52 @@ using Windows.Foundation;
 
 namespace Microsoft.CmdPal.UI.Dock;
 
-public sealed partial class DockControl : UserControl, INotifyPropertyChanged, IRecipient<CloseContextMenuMessage>, IRecipient<EnterDockEditModeMessage>
+public sealed partial class DockControl : UserControl, IRecipient<CloseContextMenuMessage>, IRecipient<EnterDockEditModeMessage>
 {
     private DockViewModel _viewModel;
 
     internal DockViewModel ViewModel => _viewModel;
 
-    public event PropertyChangedEventHandler? PropertyChanged;
+    public static readonly DependencyProperty ItemsOrientationProperty =
+        DependencyProperty.Register(nameof(ItemsOrientation), typeof(Orientation), typeof(DockControl), new PropertyMetadata(Orientation.Horizontal, OnItemsOrientationChanged));
 
     public Orientation ItemsOrientation
     {
-        get => field;
-        set
-        {
-            if (field != value)
-            {
-                field = value;
-                PropertyChanged?.Invoke(this, new(nameof(ItemsOrientation)));
+        get => (Orientation)GetValue(ItemsOrientationProperty);
+        set => SetValue(ItemsOrientationProperty, value);
+    }
 
-                // UpdateBandTemplates();
-            }
+    private static void OnItemsOrientationChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        if (d is DockControl control)
+        {
+            control.UpdateBandTemplates();
+        }
+    }
+
+    public static readonly DependencyProperty DockSideProperty =
+        DependencyProperty.Register(nameof(DockSide), typeof(DockSide), typeof(DockControl), new PropertyMetadata(DockSide.Top));
+
+    public DockSide DockSide
+    {
+        get => (DockSide)GetValue(DockSideProperty);
+        set => SetValue(DockSideProperty, value);
+    }
+
+    public static readonly DependencyProperty IsEditModeProperty =
+        DependencyProperty.Register(nameof(IsEditMode), typeof(bool), typeof(DockControl), new PropertyMetadata(false, OnIsEditModeChanged));
+
+    public bool IsEditMode
+    {
+        get => (bool)GetValue(IsEditModeProperty);
+        set => SetValue(IsEditModeProperty, value);
+    }
+
+    private static void OnIsEditModeChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        if (d is DockControl control && e.NewValue is bool isEditMode)
+        {
+            control.UpdateEditMode(isEditMode);
         }
     }
 
@@ -53,48 +78,11 @@ public sealed partial class DockControl : UserControl, INotifyPropertyChanged, I
             ? "HorizontalItemsPanel"
             : "VerticalItemsPanel";
 
-        var panel = (ItemsPanelTemplate)Resources[panelKey];
-
-        StartListView.ItemsPanel = panel;
-        CenterListView.ItemsPanel = panel;
-        EndListView.ItemsPanel = panel;
-
-        // Force the selector to re-evaluate by refreshing ItemsSource
-        var startItems = StartListView.ItemsSource;
-        var centerItems = CenterListView.ItemsSource;
-        var endItems = EndListView.ItemsSource;
-        StartListView.ItemsSource = null;
-        CenterListView.ItemsSource = null;
-        EndListView.ItemsSource = null;
-        StartListView.ItemsSource = startItems;
-        CenterListView.ItemsSource = centerItems;
-        EndListView.ItemsSource = endItems;
-    }
-
-    public DockSide DockSide
-    {
-        get => field;
-        set
+        if ((ItemsPanelTemplate)Resources[panelKey] is ItemsPanelTemplate panelTemplate)
         {
-            if (field != value)
-            {
-                field = value;
-                PropertyChanged?.Invoke(this, new(nameof(DockSide)));
-            }
-        }
-    }
-
-    public bool IsEditMode
-    {
-        get => field;
-        set
-        {
-            if (field != value)
-            {
-                field = value;
-                PropertyChanged?.Invoke(this, new(nameof(IsEditMode)));
-                UpdateEditMode(value);
-            }
+            StartListView.ItemsPanel = panelTemplate;
+            CenterListView.ItemsPanel = panelTemplate;
+            EndListView.ItemsPanel = panelTemplate;
         }
     }
 
@@ -601,11 +589,5 @@ public sealed partial class DockControl : UserControl, INotifyPropertyChanged, I
             // Close the flyout
             AddBandFlyout.Hide();
         }
-    }
-
-    private void UserControl_Loaded(object sender, RoutedEventArgs e)
-    {
-        // Ensure templates are updated on initial load (setter only updates on change)
-        // UpdateBandTemplates();
     }
 }

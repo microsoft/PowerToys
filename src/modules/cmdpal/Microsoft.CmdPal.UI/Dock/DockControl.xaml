@@ -13,7 +13,6 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="using:CommunityToolkit.WinUI"
     xmlns:vm="using:Microsoft.CmdPal.UI.ViewModels"
-    Loaded="UserControl_Loaded"
     mc:Ignorable="d">
 
     <UserControl.Resources>
@@ -406,28 +405,31 @@
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
                         <Setter Target="StartScroller.(Grid.Row)" Value="0" />
-                        <Setter Target="StartScroller.(Grid.Row)" Value="0" />
+                        <Setter Target="StartScroller.(Grid.RowSpan)" Value="1" />
                         <Setter Target="StartScroller.(Grid.Column)" Value="0" />
                         <Setter Target="StartScroller.(Grid.ColumnSpan)" Value="3" />
                         <Setter Target="StartScroller.Orientation" Value="Vertical" />
                         <Setter Target="StartScroller.HorizontalAlignment" Value="Stretch" />
                         <Setter Target="StartScroller.VerticalAlignment" Value="Top" />
+                        <Setter Target="StartScroller.Orientation" Value="Vertical" />
 
                         <Setter Target="CenterScroller.(Grid.Row)" Value="1" />
-                        <Setter Target="CenterScroller.(Grid.RowSpan)" Value="0" />
+                        <Setter Target="CenterScroller.(Grid.RowSpan)" Value="1" />
                         <Setter Target="CenterScroller.(Grid.Column)" Value="0" />
                         <Setter Target="CenterScroller.(Grid.ColumnSpan)" Value="3" />
                         <Setter Target="CenterScroller.Orientation" Value="Vertical" />
                         <Setter Target="CenterScroller.HorizontalAlignment" Value="Stretch" />
                         <Setter Target="CenterScroller.VerticalAlignment" Value="Center" />
+                        <Setter Target="CenterScroller.Orientation" Value="Vertical" />
 
                         <Setter Target="EndScroller.Orientation" Value="Vertical" />
                         <Setter Target="EndScroller.(Grid.Row)" Value="2" />
-                        <Setter Target="EndScroller.(Grid.RowSpan)" Value="0" />
+                        <Setter Target="EndScroller.(Grid.RowSpan)" Value="1" />
                         <Setter Target="EndScroller.(Grid.Column)" Value="0" />
                         <Setter Target="EndScroller.(Grid.ColumnSpan)" Value="3" />
                         <Setter Target="EndScroller.HorizontalAlignment" Value="Stretch" />
                         <Setter Target="EndScroller.VerticalAlignment" Value="Bottom" />
+                        <Setter Target="ContentGrid.Padding" Value="4,8,4,8" />
                         <Setter Target="RootGrid.BorderThickness" Value="1,0,0,0" />
                     </VisualState.Setters>
                 </VisualState>

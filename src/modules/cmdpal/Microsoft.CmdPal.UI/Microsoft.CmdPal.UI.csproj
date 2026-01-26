@@ -30,7 +30,7 @@
   </PropertyGroup>
 
   <!-- For debugging purposes, uncomment this block to enable AOT builds -->
-  <PropertyGroup>
+	<PropertyGroup>
     <EnableCmdPalAOT>true</EnableCmdPalAOT>
     <GeneratePackageLocally>true</GeneratePackageLocally>
   </PropertyGroup>
