@@ -3,6 +3,10 @@
 	<Import Project="..\..\Common.Dotnet.CsWinRT.props" />
 	<Import Project="..\..\Common.SelfContained.props" />
 
+	<PropertyGroup Condition="'$(UseSparseIdentity)'==''">
+		<UseSparseIdentity>true</UseSparseIdentity>
+	</PropertyGroup>
+
 	<PropertyGroup>
 		<OutputType>WinExe</OutputType>
 		<RootNamespace>Microsoft.PowerToys.Settings.UI</RootNamespace>
