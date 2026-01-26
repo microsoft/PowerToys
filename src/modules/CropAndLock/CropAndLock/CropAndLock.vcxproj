@@ -34,10 +34,9 @@
   </ItemGroup>
   <PropertyGroup Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
-    <PlatformToolset>v144</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset Condition="'$(VisualStudioVersion)' == '18.0'">v145</PlatformToolset>
     <PlatformToolset Condition="'$(VisualStudioVersion)' == '16.0'">v142</PlatformToolset>
-    <PlatformToolset Condition="'$(VisualStudioVersion)' == '17.0'">v143</PlatformToolset>
-    <PlatformToolset Condition="'\$\(VisualStudioVersion\)' == '18.0'">v145</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
     <SpectreMitigation>Spectre</SpectreMitigation>
   </PropertyGroup>
