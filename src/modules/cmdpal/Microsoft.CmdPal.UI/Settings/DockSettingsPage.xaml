@@ -45,28 +45,16 @@
                     <TextBlock x:Uid="DockAppearanceSettingsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
 
                     <!--  Dock Size  -->
-                    <controls:SettingsCard Header="Dock Size">
-                        <controls:SettingsCard.Description>
-                            Choose the size of your dock
-                        </controls:SettingsCard.Description>
-                        <ComboBox
-                            x:Name="DockSizeComboBox"
-                            MinWidth="120"
-                            SelectedIndex="{x:Bind SelectedDockSizeIndex, Mode=TwoWay}">
-                            <ComboBoxItem Content="Small" />
-                            <ComboBoxItem Content="Medium" />
-                            <ComboBoxItem Content="Large" />
-                        </ComboBox>
-                    </controls:SettingsCard>
+
 
                     <!--  Dock Position  -->
-                    <controls:SettingsCard Header="Dock Position">
-                        <controls:SettingsCard.HeaderIcon>
+                    <controls:SettingsExpander
+                        Description="Choose where the dock appears on your screen"
+                        Header="Dock position and appearnce"
+                        IsExpanded="True">
+                        <controls:SettingsExpander.HeaderIcon>
                             <SymbolIcon Symbol="MoveToFolder" />
-                        </controls:SettingsCard.HeaderIcon>
-                        <controls:SettingsCard.Description>
-                            Choose where the dock appears on your screen
-                        </controls:SettingsCard.Description>
+                        </controls:SettingsExpander.HeaderIcon>
                         <ComboBox
                             x:Name="DockPositionComboBox"
                             MinWidth="120"
@@ -76,35 +64,28 @@
                             <ComboBoxItem Content="Right" />
                             <ComboBoxItem Content="Bottom" />
                         </ComboBox>
-                    </controls:SettingsCard>
+                        <controls:SettingsExpander.Items>
 
-                    <!--  Backdrop Style  -->
-                    <controls:SettingsCard Header="Background Style">
-                        <controls:SettingsCard.Description>
-                            Choose the background effect for your dock
-                        </controls:SettingsCard.Description>
-                        <ComboBox
-                            x:Name="BackdropComboBox"
-                            MinWidth="120"
-                            SelectedIndex="{x:Bind SelectedBackdropIndex, Mode=TwoWay}">
-                            <ComboBoxItem Content="Mica" />
-                            <ComboBoxItem Content="Transparent" />
-                            <ComboBoxItem Content="Acrylic" />
-                        </ComboBox>
-                    </controls:SettingsCard>
+                            <controls:SettingsCard Description="Choose the background effect" Header="Background style">
+                                <ComboBox
+                                    x:Name="BackdropComboBox"
+                                    MinWidth="120"
+                                    SelectedIndex="{x:Bind SelectedBackdropIndex, Mode=TwoWay}">
+                                    <ComboBoxItem Content="Mica" />
+                                    <ComboBoxItem Content="Transparent" />
+                                    <ComboBoxItem Content="Acrylic" />
+                                </ComboBox>
+                            </controls:SettingsCard>
 
-                    <!--  Show Labels  -->
-                    <controls:SettingsCard Header="Show Labels">
-                        <controls:SettingsCard.Description>
-                            Choose whether to show labels for dock items by default.
-                        </controls:SettingsCard.Description>
+                            <controls:SettingsCard ContentAlignment="Vertical">
+                                <cpControls:CheckBoxWithDescriptionControl
+                                    Content="Show labels"
+                                    Description="Choose whether to show labels for dock items by default"
+                                    IsChecked="{x:Bind ShowLabels, Mode=TwoWay}" />
+                            </controls:SettingsCard>
+                        </controls:SettingsExpander.Items>
+                    </controls:SettingsExpander>
 
-                        <ToggleSwitch
-                            IsOn="{x:Bind ShowLabels, Mode=TwoWay}"
-                            OffContent="Hide labels"
-                            OnContent="Show Labels" />
-
-                    </controls:SettingsCard>
 
                     <!--  Bands Section  -->
                     <TextBlock x:Uid="DockBandsSettingsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />

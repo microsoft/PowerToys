@@ -47,7 +47,7 @@
         <Style.Setters>
             <Setter Property="Background" Value="{ThemeResource DockItemBackground}" />
             <Setter Property="BorderBrush" Value="{ThemeResource DockItemBorderBrush}" />
-            <Setter Property="Padding" Value="8,2,8,2" />
+            <Setter Property="Padding" Value="4,0,4,0" />
             <Setter Property="BorderThickness" Value="{ThemeResource ButtonBorderThemeThickness}" />
             <Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
             <Setter Property="Template">

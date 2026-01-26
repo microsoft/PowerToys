@@ -36,7 +36,6 @@ public sealed partial class DockSettingsPage : Page
     private void InitializeSettings()
     {
         // Initialize UI controls to match current settings
-        DockSizeComboBox.SelectedIndex = SelectedDockSizeIndex;
         DockPositionComboBox.SelectedIndex = SelectedSideIndex;
         BackdropComboBox.SelectedIndex = SelectedBackdropIndex;
     }
