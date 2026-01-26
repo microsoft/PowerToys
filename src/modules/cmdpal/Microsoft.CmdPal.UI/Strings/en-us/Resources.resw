@@ -423,7 +423,7 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Disable animations when switching between pages</value>
   </data>
     <data name="Settings_GeneralPage_EnableDock_SettingsCard.Header" xml:space="preserve">
-    <value>Enable dock</value>
+    <value>Enable Dock</value>
   </data>
   <data name="Settings_GeneralPage_EnableDock_SettingsCard.Description" xml:space="preserve">
     <value>Enable a toolbar with quick access to commands</value>

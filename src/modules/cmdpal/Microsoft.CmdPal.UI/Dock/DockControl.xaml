@@ -12,6 +12,7 @@
     xmlns:local="using:Microsoft.CmdPal.UI.Dock"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="using:CommunityToolkit.WinUI"
+    xmlns:vm="using:Microsoft.CmdPal.UI.ViewModels"
     mc:Ignorable="d">
 
     <UserControl.Resources>
@@ -23,47 +24,28 @@
                 <StackPanel Orientation="Vertical" Spacing="4" />
             </ItemsPanelTemplate>
 
-            <Style x:Key="ResizingIconStyle" TargetType="cpcontrols:IconBox">
-                <Setter Property="Height" Value="{x:Bind IconSize, Mode=OneWay}" />
-                <Setter Property="MaxWidth" Value="{x:Bind IconSize, Mode=OneWay}" />
-                <Setter Property="MinWidth" Value="{x:Bind IconMinWidth, Mode=OneWay}" />
-            </Style>
-            <Style x:Key="ResizingTitleTextBlock" TargetType="TextBlock">
-                <Setter Property="FontSize" Value="{x:Bind TitleTextFontSize, Mode=OneWay}" />
-                <Setter Property="MaxWidth" Value="{x:Bind TitleTextMaxWidth, Mode=OneWay}" />
-            </Style>
-
-            <local:IconInfoVisibilityConverter x:Key="IconInfoVisibilityConverter" />
-
             <DataTemplate x:Key="DeskbandTemplate" x:DataType="dockVm:DockItemViewModel">
-                <Grid>
-                    <TextBlock Opacity="0" Style="{StaticResource ResizingTitleTextBlock}" />
-                    <!--  Removing this breaks the app.. and I have no idea why  -->
-                    <local:DockItemControl
-                        Title="{x:Bind Title, Mode=OneWay}"
-                        RightTapped="BandItem_RightTapped"
-                        Subtitle="{x:Bind Subtitle, Mode=OneWay}"
-                        Tapped="BandItem_Tapped"
-                        TextVisibility="{x:Bind HasText, Mode=OneWay}"
-                        ToolTip="{x:Bind Tooltip, Mode=OneWay}">
-                        <local:DockItemControl.Icon>
-                            <cpcontrols:IconBox
-                                x:Name="IconBorder"
-                                Width="16"
-                                VerticalAlignment="Center"
-                                AutomationProperties.AccessibilityView="Raw"
-                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                SourceKey="{x:Bind Icon, Mode=OneWay}"
-                                SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}"
-                                Style="{StaticResource ResizingIconStyle}" />
-                        </local:DockItemControl.Icon>
-                    </local:DockItemControl>
-                </Grid>
+                <local:DockItemControl
+                    Title="{x:Bind Title, Mode=OneWay}"
+                    RightTapped="BandItem_RightTapped"
+                    Subtitle="{x:Bind Subtitle, Mode=OneWay}"
+                    Tapped="BandItem_Tapped"
+                    ToolTip="{x:Bind Tooltip, Mode=OneWay}">
+                    <local:DockItemControl.Icon>
+                        <cpcontrols:IconBox
+                            x:Name="IconBorder"
+                            Width="16"
+                            VerticalAlignment="Center"
+                            AutomationProperties.AccessibilityView="Raw"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            SourceKey="{x:Bind Icon, Mode=OneWay}"
+                            SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}" />
+                    </local:DockItemControl.Icon>
+                </local:DockItemControl>
             </DataTemplate>
 
             <DataTemplate x:Key="HorizontalDockBandTemplate" x:DataType="dockVm:DockBandViewModel">
                 <ItemsControl
-                    HorizontalAlignment="Left"
                     ItemTemplate="{StaticResource DeskbandTemplate}"
                     ItemsPanel="{StaticResource HorizontalItemsPanel}"
                     ItemsSource="{x:Bind Items, Mode=OneWay}" />
@@ -71,7 +53,6 @@
 
             <DataTemplate x:Key="VerticalDockBandTemplate" x:DataType="dockVm:DockBandViewModel">
                 <ItemsControl
-                    HorizontalAlignment="Stretch"
                     ItemTemplate="{StaticResource DeskbandTemplate}"
                     ItemsPanel="{StaticResource VerticalItemsPanel}"
                     ItemsSource="{x:Bind Items, Mode=OneWay}" />
@@ -124,45 +105,130 @@
                 SystemBackdrop="{ThemeResource AcrylicBackgroundFillColorDefaultBackdrop}">
                 <cpcontrols:ContextMenu x:Name="ContextControl" />
             </Flyout>
+
+            <!--  Edit mode context menu for dock bands  -->
+            <MenuFlyout x:Name="EditModeContextMenu" ShouldConstrainToRootBounds="False">
+                <MenuFlyoutItem
+                    x:Name="ShowLabelsMenuItem"
+                    Click="ShowLabelsMenuItem_Click"
+                    Text="Show labels">
+                    <MenuFlyoutItem.Icon>
+                        <FontIcon Glyph="&#xE8EC;" />
+                    </MenuFlyoutItem.Icon>
+                </MenuFlyoutItem>
+                <MenuFlyoutItem
+                    x:Name="HideLabelsMenuItem"
+                    Click="HideLabelsMenuItem_Click"
+                    Text="Hide labels">
+                    <MenuFlyoutItem.Icon>
+                        <FontIcon Glyph="&#xE8EC;" />
+                    </MenuFlyoutItem.Icon>
+                </MenuFlyoutItem>
+                <MenuFlyoutSeparator />
+                <MenuFlyoutItem
+                    x:Name="UnpinBandMenuItem"
+                    Click="UnpinBandMenuItem_Click"
+                    Text="Unpin">
+                    <MenuFlyoutItem.Icon>
+                        <FontIcon Glyph="&#xE77A;" />
+                    </MenuFlyoutItem.Icon>
+                </MenuFlyoutItem>
+            </MenuFlyout>
+
+            <!--  Add band flyout - used in edit mode to add bands to dock sections  -->
+            <Flyout
+                x:Name="AddBandFlyout"
+                Placement="Bottom"
+                ShouldConstrainToRootBounds="False">
+                <StackPanel Width="320">
+                    <TextBlock
+                        x:Name="NoAvailableBandsText"
+                        Padding="12"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        Text="No commands available to pin"
+                        TextAlignment="Center"
+                        Visibility="Collapsed" />
+                    <ListView
+                        x:Name="AddBandListView"
+                        MaxHeight="300"
+                        HorizontalAlignment="Stretch"
+                        IsItemClickEnabled="True"
+                        ItemClick="AddBandListView_ItemClick"
+                        SelectionMode="None">
+                        <ListView.ItemTemplate>
+                            <DataTemplate x:DataType="vm:TopLevelViewModel">
+                                <Grid Padding="4" ColumnSpacing="8">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <cpcontrols:IconBox
+                                        Width="20"
+                                        Height="20"
+                                        VerticalAlignment="Center"
+                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                        SourceKey="{x:Bind IconViewModel, Mode=OneWay}"
+                                        SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}" />
+                                    <TextBlock
+                                        Grid.Column="1"
+                                        VerticalAlignment="Center"
+                                        Text="{x:Bind Title, Mode=OneWay}"
+                                        TextTrimming="CharacterEllipsis" />
+                                </Grid>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+                </StackPanel>
+            </Flyout>
         </ResourceDictionary>
     </UserControl.Resources>
 
     <Grid
         x:Name="RootGrid"
-        BorderBrush="{ThemeResource SurfaceStrokeColorDefaultBrush}"
         BorderThickness="0,0,0,1"
         RightTapped="RootGrid_RightTapped">
         <!--  Edit Mode Overlay - shown when in edit mode  -->
-        <Border
-            x:Name="EditModeOverlay"
-            Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-            IsHitTestVisible="False"
-            Opacity="0" />
-
-        <Grid x:Name="ContentGrid" Padding="0,0,0,0">
+        <Grid
+            x:Name="ContentGrid"
+            Margin="4"
+            Padding="4,0,4,0"
+            Background="Transparent"
+            RightTapped="RootGrid_RightTapped">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="2*" />
-                <ColumnDefinition x:Name="EndColumn" Width="Auto" />
-                <ColumnDefinition x:Name="DoneButtonColumn" Width="Auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
-                <RowDefinition Height="2*" />
-                <RowDefinition x:Name="EndRow" Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
             </Grid.RowDefinitions>
 
             <cpcontrols:ScrollContainer
-                x:Name="StartItemsView"
-                Grid.Column="0"
-                HorizontalAlignment="Stretch"
+                x:Name="StartScroller"
+                Grid.Row="0"
+                Grid.RowSpan="3"
+                HorizontalAlignment="Left"
                 VerticalAlignment="Stretch">
+                <cpcontrols:ScrollContainer.ActionButton>
+                    <Button
+                        x:Name="StartAddButton"
+                        Click="AddBandButton_Click"
+                        Style="{StaticResource SubtleButtonStyle}"
+                        Tag="Start"
+                        ToolTipService.ToolTip="Add band to Start">
+                        <FontIcon FontSize="12" Glyph="&#xE710;" />
+                    </Button>
+                </cpcontrols:ScrollContainer.ActionButton>
                 <cpcontrols:ScrollContainer.Source>
                     <ListView
-                        x:Name="StartItemsListView"
+                        x:Name="StartListView"
                         HorizontalAlignment="Stretch"
                         DragItemsCompleted="BandListView_DragItemsCompleted"
                         DragItemsStarting="BandListView_DragItemsStarting"
                         DragOver="BandListView_DragOver"
-                        Drop="StartItemsListView_Drop"
+                        Drop="StartListView_Drop"
                         ItemContainerStyle="{StaticResource DockBandListViewItemStyle}"
                         ItemTemplateSelector="{StaticResource DockBandTemplateSelector}"
                         ItemsPanel="{StaticResource HorizontalItemsPanel}"
@@ -173,16 +239,65 @@
             </cpcontrols:ScrollContainer>
 
             <cpcontrols:ScrollContainer
-                x:Name="EndItemsView"
+                x:Name="CenterScroller"
+                Grid.Row="0"
+                Grid.RowSpan="3"
                 Grid.Column="1"
-                ContentAlignment="End">
+                MinWidth="48"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Stretch">
+                <cpcontrols:ScrollContainer.ActionButton>
+                    <Button
+                        x:Name="CenterAddButton"
+                        Click="AddBandButton_Click"
+                        Style="{StaticResource SubtleButtonStyle}"
+                        Tag="Center"
+                        ToolTipService.ToolTip="Add band to Center">
+                        <FontIcon FontSize="12" Glyph="&#xE710;" />
+                    </Button>
+                </cpcontrols:ScrollContainer.ActionButton>
                 <cpcontrols:ScrollContainer.Source>
                     <ListView
-                        x:Name="EndItemsListView"
+                        x:Name="CenterListView"
+                        HorizontalAlignment="Stretch"
                         DragItemsCompleted="BandListView_DragItemsCompleted"
                         DragItemsStarting="BandListView_DragItemsStarting"
                         DragOver="BandListView_DragOver"
-                        Drop="EndItemsListView_Drop"
+                        Drop="CenterListView_Drop"
+                        ItemContainerStyle="{StaticResource DockBandListViewItemStyle}"
+                        ItemTemplateSelector="{StaticResource DockBandTemplateSelector}"
+                        ItemsPanel="{StaticResource HorizontalItemsPanel}"
+                        ItemsSource="{x:Bind ViewModel.CenterItems, Mode=OneWay}"
+                        SelectionMode="None"
+                        Style="{StaticResource DockBandListViewStyle}" />
+                </cpcontrols:ScrollContainer.Source>
+            </cpcontrols:ScrollContainer>
+
+            <cpcontrols:ScrollContainer
+                x:Name="EndScroller"
+                Grid.Row="0"
+                Grid.RowSpan="3"
+                Grid.Column="2"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Stretch"
+                ContentAlignment="End">
+                <cpcontrols:ScrollContainer.ActionButton>
+                    <Button
+                        x:Name="EndAddButton"
+                        Click="AddBandButton_Click"
+                        Style="{StaticResource SubtleButtonStyle}"
+                        Tag="End"
+                        ToolTipService.ToolTip="Add band to End">
+                        <FontIcon FontSize="12" Glyph="&#xE710;" />
+                    </Button>
+                </cpcontrols:ScrollContainer.ActionButton>
+                <cpcontrols:ScrollContainer.Source>
+                    <ListView
+                        x:Name="EndListView"
+                        DragItemsCompleted="BandListView_DragItemsCompleted"
+                        DragItemsStarting="BandListView_DragItemsStarting"
+                        DragOver="BandListView_DragOver"
+                        Drop="EndListView_Drop"
                         ItemContainerStyle="{StaticResource DockBandListViewItemStyle}"
                         ItemTemplateSelector="{StaticResource DockBandTemplateSelector}"
                         ItemsPanel="{StaticResource HorizontalItemsPanel}"
@@ -203,17 +318,34 @@
                 PreferredPlacement="Bottom"
                 ShouldConstrainToRootBounds="False"
                 Target="{x:Bind ContentGrid}">
+                <!--<TeachingTip.CloseButtonStyle>
+                -->
+                <!--  Workaround to hide the close button  -->
+                <!--
+                    <Style BasedOn="{StaticResource DefaultButtonStyle}" TargetType="Button">
+                        <Setter Property="Visibility" Value="Collapsed" />
+                        <Setter Property="Width" Value="0" />
+                        <Setter Property="MinWidth" Value="0" />
+                        <Setter Property="Foreground" Value="Red" />
+                        <Setter Property="Height" Value="0" />
+                        <Setter Property="MinHeight" Value="0" />
+                    </Style>
+                </TeachingTip.CloseButtonStyle>-->
                 <TeachingTip.Content>
                     <StackPanel
                         x:Name="EditButtonsPanel"
-                        HorizontalAlignment="Center"
+                        HorizontalAlignment="Stretch"
                         Orientation="Vertical"
                         Spacing="4">
                         <Button
+                            HorizontalAlignment="Stretch"
                             Click="DoneEditingButton_Click"
                             Content="Save"
                             Style="{StaticResource AccentButtonStyle}" />
-                        <Button Click="DiscardEditingButton_Click" Content="Discard" />
+                        <Button
+                            HorizontalAlignment="Stretch"
+                            Click="DiscardEditingButton_Click"
+                            Content="Discard" />
                     </StackPanel>
                 </TeachingTip.Content>
             </TeachingTip>
@@ -224,35 +356,12 @@
                     <VisualState.StateTriggers>
                         <ui:IsEqualStateTrigger Value="{x:Bind DockSide, Mode=OneWay}" To="Top" />
                     </VisualState.StateTriggers>
-                    <VisualState.Setters>
-                        <Setter Target="StartItemsView.(Grid.Row)" Value="0" />
-                        <Setter Target="StartItemsView.(Grid.Column)" Value="0" />
-                        <Setter Target="StartItemsView.(Grid.RowSpan)" Value="3" />
-                        <Setter Target="StartItemsView.(Grid.ColumnSpan)" Value="1" />
-                        <Setter Target="EndItemsView.(Grid.Row)" Value="0" />
-                        <Setter Target="EndItemsView.(Grid.Column)" Value="3" />
-                        <Setter Target="EndItemsView.(Grid.RowSpan)" Value="3" />
-                        <Setter Target="EndItemsView.(Grid.ColumnSpan)" Value="1" />
-                        <Setter Target="EndItemsView.HorizontalAlignment" Value="Right" />
-                        <Setter Target="ContentGrid.Margin" Value="8,0,8,0" />
-                        <Setter Target="RootGrid.BorderThickness" Value="0,0,0,1" />
-                    </VisualState.Setters>
                 </VisualState>
                 <VisualState x:Name="DockOnBottom">
                     <VisualState.StateTriggers>
                         <ui:IsEqualStateTrigger Value="{x:Bind DockSide, Mode=OneWay}" To="Bottom" />
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
-                        <Setter Target="StartItemsView.(Grid.Row)" Value="0" />
-                        <Setter Target="StartItemsView.(Grid.Column)" Value="0" />
-                        <Setter Target="StartItemsView.(Grid.RowSpan)" Value="3" />
-                        <Setter Target="StartItemsView.(Grid.ColumnSpan)" Value="1" />
-                        <Setter Target="EndItemsView.(Grid.Row)" Value="0" />
-                        <Setter Target="EndItemsView.(Grid.Column)" Value="3" />
-                        <Setter Target="EndItemsView.(Grid.RowSpan)" Value="3" />
-                        <Setter Target="EndItemsView.(Grid.ColumnSpan)" Value="1" />
-                        <Setter Target="EndItemsView.HorizontalAlignment" Value="Right" />
-                        <Setter Target="ContentGrid.Margin" Value="8,0,8,0" />
                         <Setter Target="RootGrid.BorderThickness" Value="0,1,0,0" />
                     </VisualState.Setters>
                 </VisualState>
@@ -261,17 +370,31 @@
                         <ui:IsEqualStateTrigger Value="{x:Bind DockSide, Mode=OneWay}" To="Left" />
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
-                        <Setter Target="StartItemsView.(Grid.Row)" Value="0" />
-                        <Setter Target="StartItemsView.(Grid.Column)" Value="0" />
-                        <Setter Target="StartItemsView.(Grid.RowSpan)" Value="1" />
-                        <Setter Target="StartItemsView.(Grid.ColumnSpan)" Value="3" />
-                        <Setter Target="StartItemsView.Orientation" Value="Vertical" />
-                        <Setter Target="EndItemsView.Orientation" Value="Vertical" />
-                        <Setter Target="EndItemsView.(Grid.Row)" Value="3" />
-                        <Setter Target="EndItemsView.(Grid.Column)" Value="0" />
-                        <Setter Target="EndItemsView.(Grid.RowSpan)" Value="1" />
-                        <Setter Target="EndItemsView.(Grid.ColumnSpan)" Value="3" />
-                        <Setter Target="EndItemsView.HorizontalAlignment" Value="Stretch" />
+                        <Setter Target="StartScroller.(Grid.Row)" Value="0" />
+                        <Setter Target="StartScroller.(Grid.RowSpan)" Value="1" />
+                        <Setter Target="StartScroller.(Grid.Column)" Value="0" />
+                        <Setter Target="StartScroller.(Grid.ColumnSpan)" Value="3" />
+                        <Setter Target="StartScroller.Orientation" Value="Vertical" />
+                        <Setter Target="StartScroller.HorizontalAlignment" Value="Stretch" />
+                        <Setter Target="StartScroller.VerticalAlignment" Value="Top" />
+                        <Setter Target="StartScroller.Orientation" Value="Vertical" />
+
+                        <Setter Target="CenterScroller.(Grid.Row)" Value="1" />
+                        <Setter Target="CenterScroller.(Grid.RowSpan)" Value="1" />
+                        <Setter Target="CenterScroller.(Grid.Column)" Value="0" />
+                        <Setter Target="CenterScroller.(Grid.ColumnSpan)" Value="3" />
+                        <Setter Target="CenterScroller.Orientation" Value="Vertical" />
+                        <Setter Target="CenterScroller.HorizontalAlignment" Value="Stretch" />
+                        <Setter Target="CenterScroller.VerticalAlignment" Value="Center" />
+                        <Setter Target="CenterScroller.Orientation" Value="Vertical" />
+
+                        <Setter Target="EndScroller.Orientation" Value="Vertical" />
+                        <Setter Target="EndScroller.(Grid.Row)" Value="2" />
+                        <Setter Target="EndScroller.(Grid.RowSpan)" Value="1" />
+                        <Setter Target="EndScroller.(Grid.Column)" Value="0" />
+                        <Setter Target="EndScroller.(Grid.ColumnSpan)" Value="3" />
+                        <Setter Target="EndScroller.HorizontalAlignment" Value="Stretch" />
+                        <Setter Target="EndScroller.VerticalAlignment" Value="Bottom" />
                         <Setter Target="ContentGrid.Padding" Value="4,8,4,8" />
                         <Setter Target="RootGrid.BorderThickness" Value="0,0,1,0" />
                     </VisualState.Setters>
@@ -281,17 +404,31 @@
                         <ui:IsEqualStateTrigger Value="{x:Bind DockSide, Mode=OneWay}" To="Right" />
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
-                        <Setter Target="StartItemsView.(Grid.Row)" Value="0" />
-                        <Setter Target="StartItemsView.(Grid.Column)" Value="0" />
-                        <Setter Target="StartItemsView.(Grid.RowSpan)" Value="1" />
-                        <Setter Target="StartItemsView.(Grid.ColumnSpan)" Value="3" />
-                        <Setter Target="StartItemsView.Orientation" Value="Vertical" />
-                        <Setter Target="EndItemsView.Orientation" Value="Vertical" />
-                        <Setter Target="EndItemsView.(Grid.Row)" Value="3" />
-                        <Setter Target="EndItemsView.(Grid.Column)" Value="0" />
-                        <Setter Target="EndItemsView.(Grid.RowSpan)" Value="1" />
-                        <Setter Target="EndItemsView.(Grid.ColumnSpan)" Value="3" />
-                        <Setter Target="EndItemsView.HorizontalAlignment" Value="Stretch" />
+                        <Setter Target="StartScroller.(Grid.Row)" Value="0" />
+                        <Setter Target="StartScroller.(Grid.RowSpan)" Value="1" />
+                        <Setter Target="StartScroller.(Grid.Column)" Value="0" />
+                        <Setter Target="StartScroller.(Grid.ColumnSpan)" Value="3" />
+                        <Setter Target="StartScroller.Orientation" Value="Vertical" />
+                        <Setter Target="StartScroller.HorizontalAlignment" Value="Stretch" />
+                        <Setter Target="StartScroller.VerticalAlignment" Value="Top" />
+                        <Setter Target="StartScroller.Orientation" Value="Vertical" />
+
+                        <Setter Target="CenterScroller.(Grid.Row)" Value="1" />
+                        <Setter Target="CenterScroller.(Grid.RowSpan)" Value="1" />
+                        <Setter Target="CenterScroller.(Grid.Column)" Value="0" />
+                        <Setter Target="CenterScroller.(Grid.ColumnSpan)" Value="3" />
+                        <Setter Target="CenterScroller.Orientation" Value="Vertical" />
+                        <Setter Target="CenterScroller.HorizontalAlignment" Value="Stretch" />
+                        <Setter Target="CenterScroller.VerticalAlignment" Value="Center" />
+                        <Setter Target="CenterScroller.Orientation" Value="Vertical" />
+
+                        <Setter Target="EndScroller.Orientation" Value="Vertical" />
+                        <Setter Target="EndScroller.(Grid.Row)" Value="2" />
+                        <Setter Target="EndScroller.(Grid.RowSpan)" Value="1" />
+                        <Setter Target="EndScroller.(Grid.Column)" Value="0" />
+                        <Setter Target="EndScroller.(Grid.ColumnSpan)" Value="3" />
+                        <Setter Target="EndScroller.HorizontalAlignment" Value="Stretch" />
+                        <Setter Target="EndScroller.VerticalAlignment" Value="Bottom" />
                         <Setter Target="ContentGrid.Padding" Value="4,8,4,8" />
                         <Setter Target="RootGrid.BorderThickness" Value="1,0,0,0" />
                     </VisualState.Setters>
@@ -303,7 +440,21 @@
                 <VisualState x:Name="EditModeOff" />
                 <VisualState x:Name="EditModeOn">
                     <VisualState.Setters>
-                        <Setter Target="EditModeOverlay.Opacity" Value="0.4" />
+                        <Setter Target="StartScroller.BorderBrush" Value="{ThemeResource CardStrokeColorDefaultBrush}" />
+                        <Setter Target="StartScroller.Background" Value="{ThemeResource CardBackgroundFillColorDefaultBrush}" />
+                        <Setter Target="StartScroller.BorderThickness" Value="1" />
+                        <Setter Target="StartScroller.CornerRadius" Value="{StaticResource OverlayCornerRadius}" />
+                        <Setter Target="CenterScroller.BorderBrush" Value="{ThemeResource CardStrokeColorDefaultBrush}" />
+                        <Setter Target="CenterScroller.Background" Value="{ThemeResource CardBackgroundFillColorDefaultBrush}" />
+                        <Setter Target="CenterScroller.BorderThickness" Value="1" />
+                        <Setter Target="CenterScroller.CornerRadius" Value="{StaticResource OverlayCornerRadius}" />
+                        <Setter Target="EndScroller.BorderBrush" Value="{ThemeResource CardStrokeColorDefaultBrush}" />
+                        <Setter Target="EndScroller.Background" Value="{ThemeResource CardBackgroundFillColorDefaultBrush}" />
+                        <Setter Target="EndScroller.BorderThickness" Value="1" />
+                        <Setter Target="EndScroller.CornerRadius" Value="{StaticResource OverlayCornerRadius}" />
+                        <Setter Target="StartScroller.ActionButtonVisibility" Value="Visible" />
+                        <Setter Target="CenterScroller.ActionButtonVisibility" Value="Visible" />
+                        <Setter Target="EndScroller.ActionButtonVisibility" Value="Visible" />
                     </VisualState.Setters>
                 </VisualState>
             </VisualStateGroup>

@@ -526,6 +526,17 @@ public partial class TopLevelCommandManager : ObservableObject,
             {
                 Logger.LogWarning($"Could not find provider '{providerId}' to pin dock band '{bandVm.Id}'.");
             }
+            else
+            {
+                // Add the band to DockBands if not already present
+                if (!DockBands.Any(b => b.Id == bandVm.Id))
+                {
+                    DockBands.Add(bandVm);
+                }
+
+                // Notify DockViewModel to update its collections
+                WeakReferenceMessenger.Default.Send<CommandsReloadedMessage>();
+            }
         }
     }
 

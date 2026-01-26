@@ -16,21 +16,79 @@ namespace Microsoft.CmdPal.UI.ViewModels.Dock;
 public sealed partial class DockBandViewModel : ExtensionObjectViewModel
 {
     private readonly CommandItemViewModel _rootItem;
+    private readonly DockBandSettings _bandSettings;
+    private readonly DockSettings _dockSettings;
+    private readonly Action _saveSettings;
 
     public ObservableCollection<DockItemViewModel> Items { get; } = new();
 
     private bool _showLabels = true;
+    private bool? _showLabelsSnapshot;
 
     public string Id => _rootItem.Command.Id;
+
+    /// <summary>
+    /// Gets or sets a value indicating whether labels are shown for items in this band.
+    /// This is a preview value - call <see cref="SaveShowLabels"/> to persist or
+    /// <see cref="RestoreShowLabels"/> to discard changes.
+    /// </summary>
+    public bool ShowLabels
+    {
+        get => _showLabels;
+        set
+        {
+            if (_showLabels != value)
+            {
+                _showLabels = value;
+                foreach (var item in Items)
+                {
+                    item.ShowLabel = value;
+                }
+            }
+        }
+    }
+
+    /// <summary>
+    /// Takes a snapshot of the current ShowLabels value before editing.
+    /// </summary>
+    internal void SnapshotShowLabels()
+    {
+        _showLabelsSnapshot = _showLabels;
+    }
+
+    /// <summary>
+    /// Saves the current ShowLabels value to settings.
+    /// </summary>
+    internal void SaveShowLabels()
+    {
+        _bandSettings.ShowLabels = _showLabels;
+        _showLabelsSnapshot = null;
+    }
+
+    /// <summary>
+    /// Restores the ShowLabels value from the snapshot.
+    /// </summary>
+    internal void RestoreShowLabels()
+    {
+        if (_showLabelsSnapshot.HasValue)
+        {
+            ShowLabels = _showLabelsSnapshot.Value;
+            _showLabelsSnapshot = null;
+        }
+    }
 
     internal DockBandViewModel(
         CommandItemViewModel commandItemViewModel,
         WeakReference<IPageContext> errorContext,
         DockBandSettings settings,
-        DockSettings dockSettings)
+        DockSettings dockSettings,
+        Action saveSettings)
         : base(errorContext)
     {
         _rootItem = commandItemViewModel;
+        _bandSettings = settings;
+        _dockSettings = dockSettings;
+        _saveSettings = saveSettings;
 
         _showLabels = settings.ResolveShowLabels(dockSettings.ShowLabels);
     }
@@ -92,12 +150,20 @@ public partial class DockItemViewModel : CommandItemViewModel
         get => _showLabel;
         internal set
         {
-            _showLabel = value;
-            UpdateProperty(nameof(HasText));
+            if (_showLabel != value)
+            {
+                _showLabel = value;
+                UpdateProperty(nameof(ShowLabel));
+                UpdateProperty(nameof(HasText));
+                UpdateProperty(nameof(Title));
+                UpdateProperty(nameof(Subtitle));
+            }
         }
     }
 
-    public override string Title => ItemTitle;
+    public override string Title => _showLabel ? ItemTitle : string.Empty;
+
+    public new string Subtitle => _showLabel ? base.Subtitle : string.Empty;
 
     public override bool HasText => _showLabel ? base.HasText : false;
 

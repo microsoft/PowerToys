@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <Page
     x:Class="Microsoft.CmdPal.UI.Settings.DockSettingsPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -45,28 +45,16 @@
                     <TextBlock x:Uid="DockAppearanceSettingsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
 
                     <!--  Dock Size  -->
-                    <controls:SettingsCard Header="Dock Size">
-                        <controls:SettingsCard.Description>
-                            Choose the size of your dock
-                        </controls:SettingsCard.Description>
-                        <ComboBox
-                            x:Name="DockSizeComboBox"
-                            MinWidth="120"
-                            SelectedIndex="{x:Bind SelectedDockSizeIndex, Mode=TwoWay}">
-                            <ComboBoxItem Content="Small" />
-                            <ComboBoxItem Content="Medium" />
-                            <ComboBoxItem Content="Large" />
-                        </ComboBox>
-                    </controls:SettingsCard>
+
 
                     <!--  Dock Position  -->
-                    <controls:SettingsCard Header="Dock Position">
-                        <controls:SettingsCard.HeaderIcon>
+                    <controls:SettingsExpander
+                        Description="Choose where the dock appears on your screen"
+                        Header="Dock position and appearnce"
+                        IsExpanded="True">
+                        <controls:SettingsExpander.HeaderIcon>
                             <SymbolIcon Symbol="MoveToFolder" />
-                        </controls:SettingsCard.HeaderIcon>
-                        <controls:SettingsCard.Description>
-                            Choose where the dock appears on your screen
-                        </controls:SettingsCard.Description>
+                        </controls:SettingsExpander.HeaderIcon>
                         <ComboBox
                             x:Name="DockPositionComboBox"
                             MinWidth="120"
@@ -76,18 +64,14 @@
                             <ComboBoxItem Content="Right" />
                             <ComboBoxItem Content="Bottom" />
                         </ComboBox>
-                    </controls:SettingsCard>
+                        <controls:SettingsExpander.Items>
 
                     <!--  Show Labels  -->
-                    <controls:SettingsCard Header="Show Labels">
-                        <controls:SettingsCard.Description>
-                            Choose whether to show labels for dock items by default.
-                        </controls:SettingsCard.Description>
-
-                        <ToggleSwitch
-                            IsOn="{x:Bind ShowLabels, Mode=TwoWay}"
-                            OffContent="Hide labels"
-                            OnContent="Show Labels" />
+                    <controls:SettingsCard ContentAlignment="Vertical">
+                        <cpControls:CheckBoxWithDescriptionControl
+                            Content="Show labels"
+                            Description="Choose whether to show labels for dock items by default"
+                            IsChecked="{x:Bind ShowLabels, Mode=TwoWay}" />
                     </controls:SettingsCard>
 
                     <!--  Theme Section  -->
@@ -250,7 +234,10 @@
                     <ItemsRepeater ItemsSource="{x:Bind AllDockBandItems, Mode=OneWay}">
                         <ItemsRepeater.ItemTemplate>
                             <DataTemplate x:DataType="dockVm:DockBandSettingsViewModel">
-                                <controls:SettingsCard Description="{x:Bind Description, Mode=OneWay}" Header="{x:Bind Title, Mode=OneWay}">
+                                <controls:SettingsCard
+                                    Description="{x:Bind Description, Mode=OneWay}"
+                                    Header="{x:Bind Title, Mode=OneWay}"
+                                    IsClickEnabled="False">
                                     <controls:SettingsCard.HeaderIcon>
                                         <cpControls:ContentIcon>
                                             <cpControls:ContentIcon.Content>
@@ -264,37 +251,7 @@
                                         </cpControls:ContentIcon>
                                     </controls:SettingsCard.HeaderIcon>
 
-                                    <StackPanel
-                                        VerticalAlignment="Center"
-                                        Orientation="Horizontal"
-                                        Spacing="8">
-                                        <TextBlock VerticalAlignment="Center" Text="Pin to" />
-                                        <ComboBox MinWidth="120" SelectedIndex="{x:Bind PinSideIndex, Mode=TwoWay}">
-                                            <ComboBoxItem>
-                                                <StackPanel Orientation="Horizontal" Spacing="8">
-                                                    <FontIcon Glyph="&#xED1A;" />
-                                                    <TextBlock Text="None" />
-                                                </StackPanel>
-                                            </ComboBoxItem>
-                                            <ComboBoxItem>
-                                                <StackPanel Orientation="Horizontal" Spacing="8">
-                                                    <SymbolIcon Symbol="AlignLeft" />
-                                                    <TextBlock Text="Start" />
-                                                </StackPanel>
-                                            </ComboBoxItem>
-                                            <ComboBoxItem>
-                                                <StackPanel Orientation="Horizontal" Spacing="8">
-                                                    <SymbolIcon Symbol="AlignRight" />
-                                                    <TextBlock Text="End" />
-                                                </StackPanel>
-                                            </ComboBoxItem>
-                                        </ComboBox>
-                                        <ComboBox MinWidth="120" SelectedIndex="{x:Bind ShowLabelsIndex, Mode=TwoWay}">
-                                            <ComboBoxItem Content="Default" />
-                                            <ComboBoxItem Content="Show Labels" />
-                                            <ComboBoxItem Content="Hide Labels" />
-                                        </ComboBox>
-                                    </StackPanel>
+                                    <ToggleSwitch IsOn="{x:Bind IsPinned, Mode=TwoWay}" />
                                 </controls:SettingsCard>
                             </DataTemplate>
                         </ItemsRepeater.ItemTemplate>

@@ -3,10 +3,13 @@
 // See the LICENSE file in the project root for more information.
 
 using System.ComponentModel;
+using System.Collections.ObjectModel;
 using System.Runtime.InteropServices;
 using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
+using Microsoft.CmdPal.Core.ViewModels;
 using Microsoft.CmdPal.Core.ViewModels.Messages;
+using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Dock;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
@@ -21,25 +24,52 @@ using Windows.Foundation;
 
 namespace Microsoft.CmdPal.UI.Dock;
 
-public sealed partial class DockControl : UserControl, INotifyPropertyChanged, IRecipient<CloseContextMenuMessage>, IRecipient<EnterDockEditModeMessage>
+public sealed partial class DockControl : UserControl, IRecipient<CloseContextMenuMessage>, IRecipient<EnterDockEditModeMessage>
 {
     private DockViewModel _viewModel;
 
     internal DockViewModel ViewModel => _viewModel;
 
-    public event PropertyChangedEventHandler? PropertyChanged;
+    public static readonly DependencyProperty ItemsOrientationProperty =
+        DependencyProperty.Register(nameof(ItemsOrientation), typeof(Orientation), typeof(DockControl), new PropertyMetadata(Orientation.Horizontal, OnItemsOrientationChanged));
 
     public Orientation ItemsOrientation
     {
-        get => field;
-        set
+        get => (Orientation)GetValue(ItemsOrientationProperty);
+        set => SetValue(ItemsOrientationProperty, value);
+    }
+
+    private static void OnItemsOrientationChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        if (d is DockControl control)
         {
-            if (field != value)
-            {
-                field = value;
-                PropertyChanged?.Invoke(this, new(nameof(ItemsOrientation)));
-                UpdateBandTemplates();
-            }
+            control.UpdateBandTemplates();
+        }
+    }
+
+    public static readonly DependencyProperty DockSideProperty =
+        DependencyProperty.Register(nameof(DockSide), typeof(DockSide), typeof(DockControl), new PropertyMetadata(DockSide.Top));
+
+    public DockSide DockSide
+    {
+        get => (DockSide)GetValue(DockSideProperty);
+        set => SetValue(DockSideProperty, value);
+    }
+
+    public static readonly DependencyProperty IsEditModeProperty =
+        DependencyProperty.Register(nameof(IsEditMode), typeof(bool), typeof(DockControl), new PropertyMetadata(false, OnIsEditModeChanged));
+
+    public bool IsEditMode
+    {
+        get => (bool)GetValue(IsEditModeProperty);
+        set => SetValue(IsEditModeProperty, value);
+    }
+
+    private static void OnIsEditModeChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        if (d is DockControl control && e.NewValue is bool isEditMode)
+        {
+            control.UpdateEditMode(isEditMode);
         }
     }
 
@@ -49,94 +79,13 @@ public sealed partial class DockControl : UserControl, INotifyPropertyChanged, I
             ? "HorizontalItemsPanel"
             : "VerticalItemsPanel";
 
-        var panel = (ItemsPanelTemplate)Resources[panelKey];
-
-        StartItemsListView.ItemsPanel = panel;
-        EndItemsListView.ItemsPanel = panel;
-
-        // Force the selector to re-evaluate by refreshing ItemsSource
-        var startItems = StartItemsListView.ItemsSource;
-        var endItems = EndItemsListView.ItemsSource;
-        StartItemsListView.ItemsSource = null;
-        EndItemsListView.ItemsSource = null;
-        StartItemsListView.ItemsSource = startItems;
-        EndItemsListView.ItemsSource = endItems;
-    }
-
-    public DockSide DockSide
-    {
-        get => field;
-        set
+        if ((ItemsPanelTemplate)Resources[panelKey] is ItemsPanelTemplate panelTemplate)
         {
-            if (field != value)
-            {
-                field = value;
-                PropertyChanged?.Invoke(this, new(nameof(DockSide)));
-            }
+            StartListView.ItemsPanel = panelTemplate;
+            CenterListView.ItemsPanel = panelTemplate;
+            EndListView.ItemsPanel = panelTemplate;
         }
     }
-
-    public bool IsEditMode
-    {
-        get => field;
-        set
-        {
-            if (field != value)
-            {
-                field = value;
-                PropertyChanged?.Invoke(this, new(nameof(IsEditMode)));
-                UpdateEditMode(value);
-            }
-        }
-    }
-
-    public double IconSize
-    {
-        get => field;
-        set
-        {
-            if (field != value)
-            {
-                field = value;
-                PropertyChanged?.Invoke(this, new(nameof(IconSize)));
-                PropertyChanged?.Invoke(this, new(nameof(IconMinWidth)));
-            }
-        }
-    }
-
-= 16.0;
-
-    public double IconMinWidth => IconSize / 2;
-
-    public double TitleTextMaxWidth
-    {
-        get => field;
-        set
-        {
-            if (field != value)
-            {
-                field = value;
-                PropertyChanged?.Invoke(this, new(nameof(TitleTextMaxWidth)));
-            }
-        }
-    }
-
-= 100;
-
-    public double TitleTextFontSize
-    {
-        get => field;
-        set
-        {
-            if (field != value)
-            {
-                field = value;
-                PropertyChanged?.Invoke(this, new(nameof(TitleTextFontSize)));
-            }
-        }
-    }
-
-= 12;
 
     internal DockControl(DockViewModel viewModel)
     {
@@ -161,13 +110,17 @@ public sealed partial class DockControl : UserControl, INotifyPropertyChanged, I
     private void UpdateEditMode(bool isEditMode)
     {
         // Enable/disable drag-and-drop based on edit mode
-        StartItemsListView.CanDragItems = isEditMode;
-        StartItemsListView.CanReorderItems = isEditMode;
-        StartItemsListView.AllowDrop = isEditMode;
+        StartListView.CanDragItems = isEditMode;
+        StartListView.CanReorderItems = isEditMode;
+        StartListView.AllowDrop = isEditMode;
 
-        EndItemsListView.CanDragItems = isEditMode;
-        EndItemsListView.CanReorderItems = isEditMode;
-        EndItemsListView.AllowDrop = isEditMode;
+        CenterListView.CanDragItems = isEditMode;
+        CenterListView.CanReorderItems = isEditMode;
+        CenterListView.AllowDrop = isEditMode;
+
+        EndListView.CanDragItems = isEditMode;
+        EndListView.CanReorderItems = isEditMode;
+        EndListView.AllowDrop = isEditMode;
 
         if (isEditMode)
         {
@@ -228,17 +181,10 @@ public sealed partial class DockControl : UserControl, INotifyPropertyChanged, I
 
         ItemsOrientation = isHorizontal ? Orientation.Horizontal : Orientation.Vertical;
 
-        IconSize = DockSettingsToViews.IconSizeForSize(settings.DockIconsSize);
-        TitleTextFontSize = DockSettingsToViews.TitleTextFontSizeForSize(settings.DockSize);
-        TitleTextMaxWidth = DockSettingsToViews.TitleTextMaxWidthForSize(settings.DockSize);
-
         if (settings.Backdrop == DockBackdrop.Transparent)
         {
             RootGrid.BorderBrush = new SolidColorBrush(Colors.Transparent);
         }
-
-        // Ensure templates are updated on initial load (setter only updates on change)
-        UpdateBandTemplates();
     }
 
     private void BandItem_Tapped(object sender, Microsoft.UI.Xaml.Input.TappedRoutedEventArgs e)
@@ -262,16 +208,38 @@ public sealed partial class DockControl : UserControl, INotifyPropertyChanged, I
         }
     }
 
+    // Stores the band that was right-clicked for edit mode context menu
+    private DockBandViewModel? _editModeContextBand;
+
     private void BandItem_RightTapped(object sender, Microsoft.UI.Xaml.Input.RightTappedRoutedEventArgs e)
     {
-        // Ignore right-clicks when in edit mode
-        if (IsEditMode)
-        {
-            return;
-        }
-
         if (sender is DockItemControl dockItem && dockItem.DataContext is DockItemViewModel item)
         {
+            // In edit mode, show the edit mode context menu (show/hide labels)
+            if (IsEditMode)
+            {
+                // Find the parent DockBandViewModel for this item
+                _editModeContextBand = FindParentBand(item);
+                if (_editModeContextBand != null)
+                {
+                    // Update menu item visibility based on current state
+                    ShowLabelsMenuItem.Visibility = _editModeContextBand.ShowLabels ? Visibility.Collapsed : Visibility.Visible;
+                    HideLabelsMenuItem.Visibility = _editModeContextBand.ShowLabels ? Visibility.Visible : Visibility.Collapsed;
+
+                    EditModeContextMenu.ShowAt(
+                        dockItem,
+                        new FlyoutShowOptions()
+                        {
+                            ShowMode = FlyoutShowMode.Standard,
+                            Placement = FlyoutPlacementMode.TopEdgeAlignedRight,
+                        });
+                    e.Handled = true;
+                }
+
+                return;
+            }
+
+            // Normal mode - show the command context menu
             if (item.HasMoreCommands)
             {
                 ContextControl.ViewModel.SelectedItem = item;
@@ -284,6 +252,61 @@ public sealed partial class DockControl : UserControl, INotifyPropertyChanged, I
                     });
                 e.Handled = true;
             }
+        }
+    }
+
+    private DockBandViewModel? FindParentBand(DockItemViewModel item)
+    {
+        // Search all bands to find which one contains this item
+        foreach (var band in ViewModel.StartItems)
+        {
+            if (band.Items.Contains(item))
+            {
+                return band;
+            }
+        }
+
+        foreach (var band in ViewModel.CenterItems)
+        {
+            if (band.Items.Contains(item))
+            {
+                return band;
+            }
+        }
+
+        foreach (var band in ViewModel.EndItems)
+        {
+            if (band.Items.Contains(item))
+            {
+                return band;
+            }
+        }
+
+        return null;
+    }
+
+    private void ShowLabelsMenuItem_Click(object sender, RoutedEventArgs e)
+    {
+        if (_editModeContextBand != null)
+        {
+            _editModeContextBand.ShowLabels = true;
+        }
+    }
+
+    private void HideLabelsMenuItem_Click(object sender, RoutedEventArgs e)
+    {
+        if (_editModeContextBand != null)
+        {
+            _editModeContextBand.ShowLabels = false;
+        }
+    }
+
+    private void UnpinBandMenuItem_Click(object sender, RoutedEventArgs e)
+    {
+        if (_editModeContextBand != null)
+        {
+            ViewModel.UnpinBand(_editModeContextBand);
+            _editModeContextBand = null;
         }
     }
 
@@ -368,9 +391,24 @@ public sealed partial class DockControl : UserControl, INotifyPropertyChanged, I
         // We just need to sync the ViewModel order without saving
         if (args.DropResult == DataPackageOperation.Move && _draggedBand != null)
         {
-            var isStartList = sender == StartItemsListView;
-            var targetSide = isStartList ? DockPinSide.Start : DockPinSide.End;
-            var targetCollection = isStartList ? ViewModel.StartItems : ViewModel.EndItems;
+            DockPinSide targetSide;
+            ObservableCollection<DockBandViewModel> targetCollection;
+
+            if (sender == StartListView)
+            {
+                targetSide = DockPinSide.Start;
+                targetCollection = ViewModel.StartItems;
+            }
+            else if (sender == CenterListView)
+            {
+                targetSide = DockPinSide.Center;
+                targetCollection = ViewModel.CenterItems;
+            }
+            else
+            {
+                targetSide = DockPinSide.End;
+                targetCollection = ViewModel.EndItems;
+            }
 
             // Find the new index and sync ViewModel (without saving)
             var newIndex = targetCollection.IndexOf(_draggedBand);
@@ -383,12 +421,17 @@ public sealed partial class DockControl : UserControl, INotifyPropertyChanged, I
         _draggedBand = null;
     }
 
-    private void StartItemsListView_Drop(object sender, DragEventArgs e)
+    private void StartListView_Drop(object sender, DragEventArgs e)
     {
         HandleCrossListDrop(DockPinSide.Start, e);
     }
 
-    private void EndItemsListView_Drop(object sender, DragEventArgs e)
+    private void CenterListView_Drop(object sender, DragEventArgs e)
+    {
+        HandleCrossListDrop(DockPinSide.Center, e);
+    }
+
+    private void EndListView_Drop(object sender, DragEventArgs e)
     {
         HandleCrossListDrop(DockPinSide.End, e);
     }
@@ -400,19 +443,41 @@ public sealed partial class DockControl : UserControl, INotifyPropertyChanged, I
             return;
         }
 
-        // Check if this is a cross-list drop (dragging from the other list)
+        // Check which list the band is currently in
         var isInStart = ViewModel.StartItems.Contains(_draggedBand);
+        var isInCenter = ViewModel.CenterItems.Contains(_draggedBand);
         var isInEnd = ViewModel.EndItems.Contains(_draggedBand);
 
-        var sourceIsStart = isInStart;
-        var targetIsStart = targetSide == DockPinSide.Start;
+        DockPinSide sourceSide;
+        if (isInStart)
+        {
+            sourceSide = DockPinSide.Start;
+        }
+        else if (isInCenter)
+        {
+            sourceSide = DockPinSide.Center;
+        }
+        else
+        {
+            sourceSide = DockPinSide.End;
+        }
 
         // Only handle cross-list drops here; same-list reorders are handled in DragItemsCompleted
-        if (sourceIsStart != targetIsStart)
+        if (sourceSide != targetSide)
         {
             // Calculate drop index based on drop position
-            var targetListView = targetIsStart ? StartItemsListView : EndItemsListView;
-            var targetCollection = targetIsStart ? ViewModel.StartItems : ViewModel.EndItems;
+            ListView targetListView = targetSide switch
+            {
+                DockPinSide.Start => StartListView,
+                DockPinSide.Center => CenterListView,
+                _ => EndListView,
+            };
+            var targetCollection = targetSide switch
+            {
+                DockPinSide.Start => ViewModel.StartItems,
+                DockPinSide.Center => ViewModel.CenterItems,
+                _ => ViewModel.EndItems,
+            };
 
             var dropIndex = GetDropIndex(targetListView, e, targetCollection.Count);
 
@@ -455,5 +520,46 @@ public sealed partial class DockControl : UserControl, INotifyPropertyChanged, I
 
         // If we're past all items, insert at the end
         return itemCount;
+    }
+
+    // Tracks which section (Start/Center/End) the add button was clicked for
+    private DockPinSide _addBandTargetSide;
+
+    private void AddBandButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is Button button && button.Tag is string sideTag)
+        {
+            _addBandTargetSide = sideTag switch
+            {
+                "Start" => DockPinSide.Start,
+                "Center" => DockPinSide.Center,
+                "End" => DockPinSide.End,
+                _ => DockPinSide.Center,
+            };
+
+            // Populate the list with available bands (not already in the dock)
+            var availableBands = ViewModel.GetAvailableBandsToAdd().ToList();
+            AddBandListView.ItemsSource = availableBands;
+
+            // Show/hide empty state text based on whether there are bands to add
+            var hasAvailableBands = availableBands.Count > 0;
+            NoAvailableBandsText.Visibility = hasAvailableBands ? Visibility.Collapsed : Visibility.Visible;
+            AddBandListView.Visibility = hasAvailableBands ? Visibility.Visible : Visibility.Collapsed;
+
+            // Show the flyout
+            AddBandFlyout.ShowAt(button);
+        }
+    }
+
+    private void AddBandListView_ItemClick(object sender, ItemClickEventArgs e)
+    {
+        if (e.ClickedItem is TopLevelViewModel topLevel)
+        {
+            // Add the band to the target section
+            ViewModel.AddBandToSection(topLevel, _addBandTargetSide);
+
+            // Close the flyout
+            AddBandFlyout.Hide();
+        }
     }
 }

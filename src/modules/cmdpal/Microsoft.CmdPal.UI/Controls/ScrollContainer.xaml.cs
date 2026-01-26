@@ -36,6 +36,7 @@ public sealed partial class ScrollContainer : UserControl
     private void ScrollContainer_Loaded(object sender, RoutedEventArgs e)
     {
         UpdateOrientationState();
+        UpdateLayoutState();
     }
 
     public object Source
@@ -65,10 +66,29 @@ public sealed partial class ScrollContainer : UserControl
     public static readonly DependencyProperty ContentAlignmentProperty =
         DependencyProperty.Register(nameof(ContentAlignment), typeof(ScrollContentAlignment), typeof(ScrollContainer), new PropertyMetadata(ScrollContentAlignment.Start, OnContentAlignmentChanged));
 
+    public object ActionButton
+    {
+        get => (object)GetValue(ActionButtonProperty);
+        set => SetValue(ActionButtonProperty, value);
+    }
+
+    public static readonly DependencyProperty ActionButtonProperty =
+        DependencyProperty.Register(nameof(ActionButton), typeof(object), typeof(ScrollContainer), new PropertyMetadata(null));
+
+    public Visibility ActionButtonVisibility
+    {
+        get => (Visibility)GetValue(ActionButtonVisibilityProperty);
+        set => SetValue(ActionButtonVisibilityProperty, value);
+    }
+
+    public static readonly DependencyProperty ActionButtonVisibilityProperty =
+        DependencyProperty.Register(nameof(ActionButtonVisibility), typeof(Visibility), typeof(ScrollContainer), new PropertyMetadata(Visibility.Collapsed));
+
     private static void OnContentAlignmentChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
         if (d is ScrollContainer control)
         {
+            control.UpdateLayoutState();
             control.ScrollToAlignment();
         }
     }
@@ -112,6 +132,7 @@ public sealed partial class ScrollContainer : UserControl
         if (d is ScrollContainer control)
         {
             control.UpdateOrientationState();
+            control.UpdateLayoutState();
             control.ScrollToAlignment();
         }
     }
@@ -119,6 +140,22 @@ public sealed partial class ScrollContainer : UserControl
     private void UpdateOrientationState()
     {
         var stateName = Orientation == Orientation.Horizontal ? "HorizontalState" : "VerticalState";
+        VisualStateManager.GoToState(this, stateName, true);
+    }
+
+    private void UpdateLayoutState()
+    {
+        var isHorizontal = Orientation == Orientation.Horizontal;
+        var isStart = ContentAlignment == ScrollContentAlignment.Start;
+
+        var stateName = (isHorizontal, isStart) switch
+        {
+            (true, true) => "HorizontalStartState",
+            (true, false) => "HorizontalEndState",
+            (false, true) => "VerticalStartState",
+            (false, false) => "VerticalEndState",
+        };
+
         VisualStateManager.GoToState(this, stateName, true);
     }
 

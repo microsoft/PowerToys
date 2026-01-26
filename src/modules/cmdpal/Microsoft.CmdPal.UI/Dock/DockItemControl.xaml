@@ -47,7 +47,7 @@
         <Style.Setters>
             <Setter Property="Background" Value="{ThemeResource DockItemBackground}" />
             <Setter Property="BorderBrush" Value="{ThemeResource DockItemBorderBrush}" />
-            <Setter Property="Padding" Value="4,2,4,2" />
+            <Setter Property="Padding" Value="4,0,4,0" />
             <Setter Property="BorderThickness" Value="{ThemeResource ButtonBorderThemeThickness}" />
             <Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
             <Setter Property="TextVisibility" Value="Visible" />
@@ -64,7 +64,11 @@
                             BorderThickness="{TemplateBinding BorderThickness}"
                             CornerRadius="{TemplateBinding CornerRadius}"
                             ToolTipService.ToolTip="{TemplateBinding ToolTip}">
-                            <Grid AutomationProperties.Name="{TemplateBinding Title}" Background="Transparent">
+                            <Grid
+                                x:Name="ContentGrid"
+                                AutomationProperties.Name="{TemplateBinding Title}"
+                                Background="Transparent"
+                                ColumnSpacing="8">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto" />
                                     <ColumnDefinition Width="Auto" />
@@ -78,8 +82,8 @@
 
                                 <!--  Text (Title + Subtitle)  -->
                                 <StackPanel
+                                    x:Name="TextPanel"
                                     Grid.Column="1"
-                                    Margin="8,0,8,0"
                                     VerticalAlignment="Center"
                                     Visibility="{TemplateBinding TextVisibility}">
                                     <TextBlock
@@ -123,11 +127,27 @@
                                     </VisualState>
                                     <VisualState x:Name="Disabled">
                                         <VisualState.Setters>
-                                            <Setter Target="PART_RootGrid.Background" Value="Transparent" />
-                                            <Setter Target="PART_RootGrid.BorderBrush" Value="Transparent" />
+                                            <Setter Target="PART_RootGrid.Background" Value="{ThemeResource DockItemBackground}" />
+                                            <Setter Target="PART_RootGrid.BorderBrush" Value="{ThemeResource DockItemBackground}" />
                                             <Setter Target="IconPresenter.Foreground" Value="{ThemeResource ButtonForegroundDisabled}" />
                                             <Setter Target="TitleText.Foreground" Value="{ThemeResource ButtonForegroundDisabled}" />
                                             <Setter Target="SubtitleText.Foreground" Value="{ThemeResource ButtonForegroundDisabled}" />
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                </VisualStateGroup>
+                                <VisualStateGroup x:Name="TextVisibilityStates">
+                                    <VisualState x:Name="TextVisible" />
+                                    <VisualState x:Name="TextHidden">
+                                        <VisualState.Setters>
+                                            <Setter Target="ContentGrid.ColumnSpacing" Value="0" />
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                </VisualStateGroup>
+                                <VisualStateGroup x:Name="IconVisibilityStates">
+                                    <VisualState x:Name="IconVisible" />
+                                    <VisualState x:Name="IconHidden">
+                                        <VisualState.Setters>
+                                            <Setter Target="ContentGrid.ColumnSpacing" Value="0" />
                                         </VisualState.Setters>
                                     </VisualState>
                                 </VisualStateGroup>

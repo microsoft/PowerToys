@@ -108,6 +108,14 @@ public sealed partial class DockItemControl : Control
         {
             _subtitleText.Visibility = HasSubtitle ? Visibility.Visible : Visibility.Collapsed;
         }
+
+        UpdateTextVisibilityState();
+    }
+
+    private void UpdateTextVisibilityState()
+    {
+        var hasText = !IsNullOrEmpty(Title) || !IsNullOrEmpty(Subtitle);
+        VisualStateManager.GoToState(this, hasText ? "TextVisible" : "TextHidden", true);
     }
 
     private void UpdateIconVisibility()
@@ -118,6 +126,14 @@ public sealed partial class DockItemControl : Control
             // we need to check if the box has an icon
             _iconPresenter.Visibility = Icon is null ? Visibility.Collapsed : Visibility.Visible;
         }
+
+        UpdateIconVisibilityState();
+    }
+
+    private void UpdateIconVisibilityState()
+    {
+        var hasIcon = Icon is not null;
+        VisualStateManager.GoToState(this, hasIcon ? "IconVisible" : "IconHidden", true);
     }
 
     private void UpdateAlignment()

@@ -104,6 +104,28 @@ public partial class DockBandSettingsViewModel : ObservableObject
         set => PinSide = (DockPinSide)value;
     }
 
+    /// <summary>
+    /// Gets or sets a value indicating whether the band is pinned to the dock.
+    /// When enabled, pins to Center. When disabled, removes from all sides.
+    /// </summary>
+    public bool IsPinned
+    {
+        get => PinSide != DockPinSide.None;
+        set
+        {
+            if (value && PinSide == DockPinSide.None)
+            {
+                // Pin to Center by default when enabling
+                PinSide = DockPinSide.Center;
+            }
+            else if (!value && PinSide != DockPinSide.None)
+            {
+                // Remove from dock when disabling
+                PinSide = DockPinSide.None;
+            }
+        }
+    }
+
     public DockBandSettingsViewModel(
         DockBandSettings dockSettingsModel,
         TopLevelViewModel topLevelAdapter,
@@ -125,6 +147,12 @@ public partial class DockBandSettingsViewModel : ObservableObject
         if (inStart)
         {
             return DockPinSide.Start;
+        }
+
+        var inCenter = dockSettings.CenterBands.Any(b => b.Id == _dockSettingsModel.Id);
+        if (inCenter)
+        {
+            return DockPinSide.Center;
         }
 
         var inEnd = dockSettings.EndBands.Any(b => b.Id == _dockSettingsModel.Id);
@@ -157,14 +185,16 @@ public partial class DockBandSettingsViewModel : ObservableObject
         OnPinSideChanged(value);
         OnPropertyChanged(nameof(PinSideIndex));
         OnPropertyChanged(nameof(PinSide));
+        OnPropertyChanged(nameof(IsPinned));
     }
 
     public void SetBandPosition(DockPinSide side, int? index)
     {
         var dockSettings = _settingsModel.DockSettings;
 
-        // Remove from both sides first
+        // Remove from all sides first
         dockSettings.StartBands.RemoveAll(b => b.Id == _dockSettingsModel.Id);
+        dockSettings.CenterBands.RemoveAll(b => b.Id == _dockSettingsModel.Id);
         dockSettings.EndBands.RemoveAll(b => b.Id == _dockSettingsModel.Id);
 
         // Add to the selected side
@@ -174,6 +204,13 @@ public partial class DockBandSettingsViewModel : ObservableObject
                 {
                     var insertIndex = index ?? dockSettings.StartBands.Count;
                     dockSettings.StartBands.Insert(insertIndex, _dockSettingsModel);
+                    break;
+                }
+
+            case DockPinSide.Center:
+                {
+                    var insertIndex = index ?? dockSettings.CenterBands.Count;
+                    dockSettings.CenterBands.Insert(insertIndex, _dockSettingsModel);
                     break;
                 }
 
@@ -204,6 +241,7 @@ public enum DockPinSide
 {
     None,
     Start,
+    Center,
     End,
 }
 
