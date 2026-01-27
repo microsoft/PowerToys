@@ -141,13 +141,13 @@
   <data name="RemappingsPageOriginalKeysTextBlock.Text" xml:space="preserve">
     <value>Original key(s)</value>
   </data>
-  <data name="RemapingsPageOrphanedKeysTeachingTip.ActionButtonContent" xml:space="preserve">
+  <data name="RemappingsPageOrphanedKeysTeachingTip.ActionButtonContent" xml:space="preserve">
     <value>Continue anyway</value>
   </data>
-  <data name="RemapingsPageOrphanedKeysTeachingTip.CloseButtonContent" xml:space="preserve">
+  <data name="RemappingsPageOrphanedKeysTeachingTip.CloseButtonContent" xml:space="preserve">
     <value>Cancel</value>
   </data>
-  <data name="RemapingsPageOrphanedKeysTeachingTip.Title" xml:space="preserve">
+  <data name="RemappingsPageOrphanedKeysTeachingTip.Title" xml:space="preserve">
     <value>Orphaned Keys Warning</value>
   </data>
   <data name="RemappingsPageValidationTeachingTip.CloseButtonContent" xml:space="preserve">

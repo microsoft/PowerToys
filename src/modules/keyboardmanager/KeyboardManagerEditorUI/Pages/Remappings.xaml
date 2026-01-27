@@ -194,7 +194,7 @@
         </ContentDialog>
         <TeachingTip
             x:Name="OrphanedKeysTeachingTip"
-            x:Uid="RemapingsPageOrphanedKeysTeachingTip"
+            x:Uid="RemappingsPageOrphanedKeysTeachingTip"
             ActionButtonClick="OrphanedKeysTeachingTip_ActionButtonClick"
             ActionButtonStyle="{StaticResource AccentButtonStyle}"
             CloseButtonClick="OrphanedKeysTeachingTip_CloseButtonClick"
