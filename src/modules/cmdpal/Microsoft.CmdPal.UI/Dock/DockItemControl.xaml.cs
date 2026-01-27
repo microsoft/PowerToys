@@ -119,11 +119,6 @@ public sealed partial class DockItemControl : Control
             var dt = icon.DataContext;
             var src = icon.Source;
 
-            if (src is not null)
-            {
-                System.Diagnostics.Debug.WriteLine("Tralala");
-            }
-
             if (_iconPresenter is not null)
             {
                 // n.b. this might be wrong - I think we always have an Icon (an IconBox),
