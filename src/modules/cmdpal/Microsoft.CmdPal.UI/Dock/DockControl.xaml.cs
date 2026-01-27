@@ -220,9 +220,9 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
                 _editModeContextBand = FindParentBand(item);
                 if (_editModeContextBand != null)
                 {
-                    // Update menu item visibility based on current state
-                    ShowLabelsMenuItem.Visibility = _editModeContextBand.ShowLabels ? Visibility.Collapsed : Visibility.Visible;
-                    HideLabelsMenuItem.Visibility = _editModeContextBand.ShowLabels ? Visibility.Visible : Visibility.Collapsed;
+                    // Update toggle menu item checked state based on current settings
+                    ShowTitlesMenuItem.IsChecked = _editModeContextBand.ShowTitles;
+                    ShowSubtitlesMenuItem.IsChecked = _editModeContextBand.ShowSubtitles;
 
                     EditModeContextMenu.ShowAt(
                         dockItem,
@@ -283,19 +283,19 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
         return null;
     }
 
-    private void ShowLabelsMenuItem_Click(object sender, RoutedEventArgs e)
+    private void ShowTitlesMenuItem_Click(object sender, RoutedEventArgs e)
     {
         if (_editModeContextBand != null)
         {
-            _editModeContextBand.ShowLabels = true;
+            _editModeContextBand.ShowTitles = ShowTitlesMenuItem.IsChecked;
         }
     }
 
-    private void HideLabelsMenuItem_Click(object sender, RoutedEventArgs e)
+    private void ShowSubtitlesMenuItem_Click(object sender, RoutedEventArgs e)
     {
         if (_editModeContextBand != null)
         {
-            _editModeContextBand.ShowLabels = false;
+            _editModeContextBand.ShowSubtitles = ShowSubtitlesMenuItem.IsChecked;
         }
     }
 

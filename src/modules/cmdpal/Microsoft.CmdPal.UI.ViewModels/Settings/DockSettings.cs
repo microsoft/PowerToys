@@ -76,14 +76,41 @@ public class DockBandSettings
 {
     public string Id { get; set; } = string.Empty;
 
-    public bool? ShowLabels { get; set; }
+    /// <summary>
+    /// Gets or sets whether titles are shown for items in this band.
+    /// If null, falls back to dock-wide ShowLabels setting.
+    /// </summary>
+    public bool? ShowTitles { get; set; }
 
     /// <summary>
-    /// Resolves the effective value of <see cref="ShowLabels"/> for this band.
+    /// Gets or sets whether subtitles are shown for items in this band.
+    /// If null, falls back to dock-wide ShowLabels setting.
+    /// </summary>
+    public bool? ShowSubtitles { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value for backward compatibility. Maps to ShowTitles.
+    /// </summary>
+    [System.Text.Json.Serialization.JsonIgnore]
+    public bool? ShowLabels
+    {
+        get => ShowTitles;
+        set => ShowTitles = value;
+    }
+
+    /// <summary>
+    /// Resolves the effective value of <see cref="ShowTitles"/> for this band.
     /// If this band doesn't have a specific value set, we'll fall back to the
     /// dock-wide setting (passed as <paramref name="defaultValue"/>).
     /// </summary>
-    public bool ResolveShowLabels(bool defaultValue) => ShowLabels ?? defaultValue;
+    public bool ResolveShowTitles(bool defaultValue) => ShowTitles ?? defaultValue;
+
+    /// <summary>
+    /// Resolves the effective value of <see cref="ShowSubtitles"/> for this band.
+    /// If this band doesn't have a specific value set, we'll fall back to the
+    /// dock-wide setting (passed as <paramref name="defaultValue"/>).
+    /// </summary>
+    public bool ResolveShowSubtitles(bool defaultValue) => ShowSubtitles ?? defaultValue;
 }
 
 public enum DockSide

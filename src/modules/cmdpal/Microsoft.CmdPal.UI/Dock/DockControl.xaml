@@ -108,22 +108,19 @@
 
             <!--  Edit mode context menu for dock bands  -->
             <MenuFlyout x:Name="EditModeContextMenu" ShouldConstrainToRootBounds="False">
-                <MenuFlyoutItem
-                    x:Name="ShowLabelsMenuItem"
-                    Click="ShowLabelsMenuItem_Click"
-                    Text="Show labels">
-                    <MenuFlyoutItem.Icon>
+                <MenuFlyoutSubItem x:Name="LabelsSubMenu" Text="Labels">
+                    <MenuFlyoutSubItem.Icon>
                         <FontIcon Glyph="&#xE8EC;" />
-                    </MenuFlyoutItem.Icon>
-                </MenuFlyoutItem>
-                <MenuFlyoutItem
-                    x:Name="HideLabelsMenuItem"
-                    Click="HideLabelsMenuItem_Click"
-                    Text="Hide labels">
-                    <MenuFlyoutItem.Icon>
-                        <FontIcon Glyph="&#xE8EC;" />
-                    </MenuFlyoutItem.Icon>
-                </MenuFlyoutItem>
+                    </MenuFlyoutSubItem.Icon>
+                    <ToggleMenuFlyoutItem
+                        x:Name="ShowTitlesMenuItem"
+                        Click="ShowTitlesMenuItem_Click"
+                        Text="Show titles" />
+                    <ToggleMenuFlyoutItem
+                        x:Name="ShowSubtitlesMenuItem"
+                        Click="ShowSubtitlesMenuItem_Click"
+                        Text="Show subtitles" />
+                </MenuFlyoutSubItem>
                 <MenuFlyoutSeparator />
                 <MenuFlyoutItem
                     x:Name="UnpinBandMenuItem"

@@ -137,9 +137,21 @@
                                 </VisualStateGroup>
                                 <VisualStateGroup x:Name="TextVisibilityStates">
                                     <VisualState x:Name="TextVisible" />
+                                    <VisualState x:Name="TitleOnly">
+                                        <VisualState.Setters>
+                                            <Setter Target="SubtitleText.Visibility" Value="Collapsed" />
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                    <VisualState x:Name="SubtitleOnly">
+                                        <VisualState.Setters>
+                                            <Setter Target="TitleText.Visibility" Value="Collapsed" />
+                                            <Setter Target="SubtitleText.Margin" Value="0" />
+                                        </VisualState.Setters>
+                                    </VisualState>
                                     <VisualState x:Name="TextHidden">
                                         <VisualState.Setters>
                                             <Setter Target="ContentGrid.ColumnSpacing" Value="0" />
+                                            <Setter Target="TextPanel.Visibility" Value="Collapsed" />
                                         </VisualState.Setters>
                                     </VisualState>
                                 </VisualStateGroup>
