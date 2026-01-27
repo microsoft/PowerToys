@@ -2738,7 +2738,7 @@ From there, simply click on one of the supported files in the File Explorer and 
     <value>Horizontal only</value>
   </data>
   <data name="MouseUtils_CursorWrap_WrapMode_Both.Content" xml:space="preserve">
-    <value>Both vertical and horizontal</value>
+    <value>Vertical and horizontal</value>
   </data>
   <data name="Oobe_MouseUtils_MousePointerCrosshairs.Text" xml:space="preserve">
     <value>Mouse Pointer Crosshairs</value>
