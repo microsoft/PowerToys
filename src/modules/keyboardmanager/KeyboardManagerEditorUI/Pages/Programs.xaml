@@ -172,5 +172,15 @@
                 <controls:AppPageInputControl x:Name="AppShortcutControl" />
             </Grid>
         </ContentDialog>
+
+        <TeachingTip
+            x:Name="ValidationTip"
+            x:Uid="ProgramsPageValidationTip"
+            IsLightDismissEnabled="True"
+            PreferredPlacement="Center">
+            <TeachingTip.IconSource>
+                <SymbolIconSource Symbol="Important" />
+            </TeachingTip.IconSource>
+        </TeachingTip>
     </Grid>
 </Page>

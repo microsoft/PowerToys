@@ -155,5 +155,15 @@
                 <controls:UrlPageInputControl x:Name="UrlShortcutControl" />
             </Grid>
         </ContentDialog>
+
+        <TeachingTip
+            x:Name="ValidationTip"
+            x:Uid="UrlPageValidationTip"
+            IsLightDismissEnabled="True"
+            PreferredPlacement="Center">
+        <TeachingTip.IconSource>
+            <SymbolIconSource Symbol="Important" />
+        </TeachingTip.IconSource>
+        </TeachingTip>
     </Grid>
 </Page>

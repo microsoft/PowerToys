@@ -165,12 +165,6 @@ namespace KeyboardManagerEditorUI.Pages
                 // Shortcut to text mapping
                 string originalKeysString = string.Join(";", keys.Select(k => _mappingService.GetKeyCodeFromName(k).ToString(CultureInfo.InvariantCulture)));
 
-                // if (isAppSpecific && !string.IsNullOrEmpty(appName))
-                // {
-                //    saved = _mappingService.AddShortcutMapping(originalKeysString, programPath, appName, ShortcutOperationType.RemapText);
-                // }
-                // else
-                // {
                 ShortcutKeyMapping shortcutKeyMapping = new ShortcutKeyMapping()
                 {
                     OperationType = ShortcutOperationType.RunProgram,
@@ -183,7 +177,7 @@ namespace KeyboardManagerEditorUI.Pages
                     Elevation = elevationLevel,
                 };
 
-                saved = _mappingService.AddShorcutMapping(shortcutKeyMapping);
+                saved = _mappingService.AddShortcutMapping(shortcutKeyMapping);
 
                 if (saved)
                 {
@@ -239,13 +233,13 @@ namespace KeyboardManagerEditorUI.Pages
 
         private void ShowValidationError(ValidationErrorType errorType, ContentDialogButtonClickEventArgs args)
         {
-            // if (ValidationHelper.ValidationMessages.TryGetValue(errorType, out (string Title, string Message) error))
-            // {
-            //    ValidationTip.Title = error.Title;
-            //    ValidationTip.Subtitle = error.Message;
-            //    ValidationTip.IsOpen = true;
-            //    args.Cancel = true;
-            // }
+            if (ValidationHelper.ValidationMessages.TryGetValue(errorType, out (string Title, string Message) error))
+            {
+                ValidationTip.Title = error.Title;
+                ValidationTip.Subtitle = error.Message;
+                ValidationTip.IsOpen = true;
+                args.Cancel = true;
+            }
         }
 
         public void Dispose()
