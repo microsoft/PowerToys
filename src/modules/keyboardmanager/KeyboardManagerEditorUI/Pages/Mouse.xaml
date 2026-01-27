@@ -359,6 +359,13 @@
                         Width="250"
                         Visibility="Collapsed" />
                 </StackPanel>
+
+                <!-- Validation error message -->
+                <TextBlock
+                    x:Name="MouseToKeyErrorText"
+                    Foreground="{ThemeResource SystemFillColorCriticalBrush}"
+                    TextWrapping="Wrap"
+                    Visibility="Collapsed" />
             </StackPanel>
         </ContentDialog>
 
@@ -405,6 +412,13 @@
                         Width="250"
                         Visibility="Collapsed" />
                 </StackPanel>
+
+                <!-- Validation error message -->
+                <TextBlock
+                    x:Name="KeyToMouseErrorText"
+                    Foreground="{ThemeResource SystemFillColorCriticalBrush}"
+                    TextWrapping="Wrap"
+                    Visibility="Collapsed" />
             </StackPanel>
         </ContentDialog>
     </Grid>

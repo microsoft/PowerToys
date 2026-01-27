@@ -416,6 +416,9 @@ namespace KeyboardManagerEditorUI.Pages
             _editingMouseMapping = null;
             ResetMouseToKeyDialog();
 
+            // Clear any previous error
+            MouseToKeyErrorText.Visibility = Visibility.Collapsed;
+
             MouseToKeyDialog.PrimaryButtonClick += MouseToKeyDialog_PrimaryButtonClick;
             await MouseToKeyDialog.ShowAsync();
             MouseToKeyDialog.PrimaryButtonClick -= MouseToKeyDialog_PrimaryButtonClick;
@@ -460,29 +463,29 @@ namespace KeyboardManagerEditorUI.Pages
                         break;
                 }
 
+                // Clear any previous error
+                MouseToKeyErrorText.Visibility = Visibility.Collapsed;
+
                 MouseToKeyDialog.PrimaryButtonClick += MouseToKeyDialog_PrimaryButtonClick;
                 await MouseToKeyDialog.ShowAsync();
                 MouseToKeyDialog.PrimaryButtonClick -= MouseToKeyDialog_PrimaryButtonClick;
             }
         }
 
-        private async void MouseToKeyDialog_PrimaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
+        private void MouseToKeyDialog_PrimaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
         {
             // Validate input
             var (isValid, errorMessage) = ValidateMouseToKeyMapping();
             if (!isValid)
             {
                 args.Cancel = true;
-                var errorDialog = new ContentDialog
-                {
-                    Title = "Validation Error",
-                    Content = errorMessage,
-                    CloseButtonText = "OK",
-                    XamlRoot = this.XamlRoot,
-                };
-                await errorDialog.ShowAsync();
+                MouseToKeyErrorText.Text = errorMessage;
+                MouseToKeyErrorText.Visibility = Visibility.Visible;
                 return;
             }
+
+            // Clear any previous error
+            MouseToKeyErrorText.Visibility = Visibility.Collapsed;
 
             var mapping = _isEditMode && _editingMouseMapping != null
                 ? _editingMouseMapping
@@ -551,6 +554,9 @@ namespace KeyboardManagerEditorUI.Pages
             _editingKeyToMouseMapping = null;
             ResetKeyToMouseDialog();
 
+            // Clear any previous error
+            KeyToMouseErrorText.Visibility = Visibility.Collapsed;
+
             KeyToMouseDialog.PrimaryButtonClick += KeyToMouseDialog_PrimaryButtonClick;
             await KeyToMouseDialog.ShowAsync();
             KeyToMouseDialog.PrimaryButtonClick -= KeyToMouseDialog_PrimaryButtonClick;
@@ -573,29 +579,29 @@ namespace KeyboardManagerEditorUI.Pages
                 KeyToMouseTargetAppTextBox.Text = mapping.TargetApp;
                 KeyToMouseTargetAppTextBox.Visibility = mapping.IsAllApps ? Visibility.Collapsed : Visibility.Visible;
 
+                // Clear any previous error
+                KeyToMouseErrorText.Visibility = Visibility.Collapsed;
+
                 KeyToMouseDialog.PrimaryButtonClick += KeyToMouseDialog_PrimaryButtonClick;
                 await KeyToMouseDialog.ShowAsync();
                 KeyToMouseDialog.PrimaryButtonClick -= KeyToMouseDialog_PrimaryButtonClick;
             }
         }
 
-        private async void KeyToMouseDialog_PrimaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
+        private void KeyToMouseDialog_PrimaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
         {
             // Validate input
             var (isValid, errorMessage) = ValidateKeyToMouseMapping();
             if (!isValid)
             {
                 args.Cancel = true;
-                var errorDialog = new ContentDialog
-                {
-                    Title = "Validation Error",
-                    Content = errorMessage,
-                    CloseButtonText = "OK",
-                    XamlRoot = this.XamlRoot,
-                };
-                await errorDialog.ShowAsync();
+                KeyToMouseErrorText.Text = errorMessage;
+                KeyToMouseErrorText.Visibility = Visibility.Visible;
                 return;
             }
+
+            // Clear any previous error
+            KeyToMouseErrorText.Visibility = Visibility.Collapsed;
 
             var mapping = _isEditMode && _editingKeyToMouseMapping != null
                 ? _editingKeyToMouseMapping
@@ -818,13 +824,34 @@ namespace KeyboardManagerEditorUI.Pages
             string targetType = GetTargetTypeName(TargetTypeComboBox.SelectedIndex);
             string mouseButton = GetMouseButtonName(MouseButtonComboBox.SelectedIndex);
 
-            // Check for duplicate mouse button mapping (only if adding new, not editing same button)
-            if (!_isEditMode || (_editingMouseMapping != null && _editingMouseMapping.OriginalButton != mouseButton))
+            // Get the target app from the dialog
+            string targetApp = MouseToKeyAllAppsCheckBox.IsChecked == true
+                ? string.Empty
+                : MouseToKeyTargetAppTextBox.Text.Trim().ToLowerInvariant();
+
+            // Check for duplicate mouse button mapping for the same app scope
+            // A button can have one global remap AND separate app-specific remaps
+            // But not two global remaps or two remaps for the same app
+            if (!_isEditMode ||
+                (_editingMouseMapping != null &&
+                 (_editingMouseMapping.OriginalButton != mouseButton ||
+                  !string.Equals(_editingMouseMapping.TargetApp ?? string.Empty, targetApp, StringComparison.OrdinalIgnoreCase))))
             {
-                bool isDuplicate = MouseToKeyMappings.Any(m => m.OriginalButton == mouseButton && m != _editingMouseMapping);
+                bool isDuplicate = MouseToKeyMappings.Any(m =>
+                    m.OriginalButton == mouseButton &&
+                    string.Equals(m.TargetApp ?? string.Empty, targetApp, StringComparison.OrdinalIgnoreCase) &&
+                    m != _editingMouseMapping);
+
                 if (isDuplicate)
                 {
-                    return (false, $"A remapping for {mouseButton} mouse button already exists.");
+                    if (string.IsNullOrEmpty(targetApp))
+                    {
+                        return (false, $"A global remapping for {mouseButton} mouse button already exists.");
+                    }
+                    else
+                    {
+                        return (false, $"A remapping for {mouseButton} mouse button already exists for application '{targetApp}'.");
+                    }
                 }
             }
 
@@ -906,13 +933,34 @@ namespace KeyboardManagerEditorUI.Pages
                 return (false, "Please capture a key by clicking the key input box and pressing a key.");
             }
 
-            // Check for duplicate key mapping
-            if (!_isEditMode || (_editingKeyToMouseMapping != null && _editingKeyToMouseMapping.OriginalKeyCode != _capturedKeyCode))
+            // Get the target app from the dialog
+            string targetApp = KeyToMouseAllAppsCheckBox.IsChecked == true
+                ? string.Empty
+                : KeyToMouseTargetAppTextBox.Text.Trim().ToLowerInvariant();
+
+            // Check for duplicate key mapping for the same app scope
+            // A key can have one global remap AND separate app-specific remaps
+            // But not two global remaps or two remaps for the same app
+            if (!_isEditMode ||
+                (_editingKeyToMouseMapping != null &&
+                 (_editingKeyToMouseMapping.OriginalKeyCode != _capturedKeyCode ||
+                  !string.Equals(_editingKeyToMouseMapping.TargetApp ?? string.Empty, targetApp, StringComparison.OrdinalIgnoreCase))))
             {
-                bool isDuplicate = KeyToMouseMappings.Any(m => m.OriginalKeyCode == _capturedKeyCode && m != _editingKeyToMouseMapping);
+                bool isDuplicate = KeyToMouseMappings.Any(m =>
+                    m.OriginalKeyCode == _capturedKeyCode &&
+                    string.Equals(m.TargetApp ?? string.Empty, targetApp, StringComparison.OrdinalIgnoreCase) &&
+                    m != _editingKeyToMouseMapping);
+
                 if (isDuplicate)
                 {
-                    return (false, $"A remapping for key code {_capturedKeyCode} already exists.");
+                    if (string.IsNullOrEmpty(targetApp))
+                    {
+                        return (false, $"A global remapping for key '{_capturedKeyName}' already exists.");
+                    }
+                    else
+                    {
+                        return (false, $"A remapping for key '{_capturedKeyName}' already exists for application '{targetApp}'.");
+                    }
                 }
             }
 
