@@ -6,10 +6,10 @@ using System.ComponentModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
-using Microsoft.CmdPal.Common;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
@@ -18,6 +18,7 @@ public partial class ShellViewModel : ObservableObject,
     IRecipient<PerformCommandMessage>,
     IRecipient<HandleCommandResultMessage>
 {
+    private readonly ILogger logger;
     private readonly IRootPageService _rootPageService;
     private readonly IAppHostService _appHostService;
     private readonly TaskScheduler _scheduler;
@@ -61,7 +62,7 @@ public partial class ShellViewModel : ObservableObject,
                     }
                     catch (Exception ex)
                     {
-                        CoreLogger.LogError(ex.ToString());
+                        Log_ErrorDisposingOldPage(ex);
                     }
                 }
             }
@@ -88,8 +89,10 @@ public partial class ShellViewModel : ObservableObject,
         TaskScheduler scheduler,
         IRootPageService rootPageService,
         IPageViewModelFactoryService pageViewModelFactory,
-        IAppHostService appHostService)
+        IAppHostService appHostService,
+        ILogger logger)
     {
+        this.logger = logger;
         _pageViewModelFactory = pageViewModelFactory;
         _scheduler = scheduler;
         _rootPageService = rootPageService;
@@ -499,4 +502,9 @@ public partial class ShellViewModel : ObservableObject,
 
         GC.SuppressFinalize(this);
     }
+
+    [LoggerMessage(
+        Level = LogLevel.Error,
+        Message = "Error disposing old page")]
+    partial void Log_ErrorDisposingOldPage(Exception ex);
 }

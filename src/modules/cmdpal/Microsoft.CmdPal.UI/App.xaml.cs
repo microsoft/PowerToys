@@ -2,7 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using ManagedCommon;
 using Microsoft.CmdPal.Common;
 using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CmdPal.Common.Services;
@@ -110,13 +109,36 @@ public partial class App : Application
         services.AddSingleton<ILogger>(logger);
         services.AddSingleton(TaskScheduler.FromCurrentSynchronizationContext());
 
-        AddBuiltInCommands(services);
+        // Register settings & app state services first
+        // because other services depend on them
+        services.AddSingleton<SettingsService>();
+        services.AddSingleton<AppStateService>();
 
         AddCoreServices(services);
+
+        AddBuiltInCommands(services);
 
         AddUIServices(services);
 
         return services.BuildServiceProvider();
+    }
+
+    private void AddCoreServices(ServiceCollection services)
+    {
+        // Core services
+        services.AddSingleton<IExtensionService, ExtensionService>();
+        services.AddSingleton<IRunHistoryService, RunHistoryService>();
+
+        services.AddSingleton<IRootPageService, PowerToysRootPageService>();
+        services.AddSingleton<IAppHostService, PowerToysAppHostService>();
+        services.AddSingleton<ITelemetryService, TelemetryForwarder>();
+
+        // ViewModels
+        services.AddSingleton<ShellViewModel>();
+        services.AddSingleton<IPageViewModelFactoryService, CommandPalettePageViewModelFactory>();
+
+        // Views
+        services.AddSingleton<MainWindow>();
     }
 
     private void AddBuiltInCommands(ServiceCollection services)
@@ -151,8 +173,7 @@ public partial class App : Application
         }
         catch (Exception ex)
         {
-            Logger.LogError("Couldn't load winget");
-            Logger.LogError(ex.ToString());
+            Log_FailedToLoadWinget(ex);
         }
 
         services.AddSingleton<ICommandProvider, WindowsTerminalCommandsProvider>();
@@ -167,12 +188,6 @@ public partial class App : Application
 
     private void AddUIServices(ServiceCollection services)
     {
-        // Models
-        var sm = SettingsModel.LoadSettings();
-        services.AddSingleton(sm);
-        var state = AppStateModel.LoadState();
-        services.AddSingleton(state);
-
         // Services
         services.AddSingleton<TopLevelCommandManager>();
         services.AddSingleton<AliasManager>();
@@ -185,18 +200,7 @@ public partial class App : Application
         services.AddSingleton<ResourceSwapper>();
     }
 
-    private void AddCoreServices(ServiceCollection services)
-    {
-        // Core services
-        services.AddSingleton<IExtensionService, ExtensionService>();
-        services.AddSingleton<IRunHistoryService, RunHistoryService>();
 
-        services.AddSingleton<IRootPageService, PowerToysRootPageService>();
-        services.AddSingleton<IAppHostService, PowerToysAppHostService>();
-        services.AddSingleton<ITelemetryService, TelemetryForwarder>();
-
-        // ViewModels
-        services.AddSingleton<ShellViewModel>();
-        services.AddSingleton<IPageViewModelFactoryService, CommandPalettePageViewModelFactory>();
-    }
+    [LoggerMessage(Level = LogLevel.Error, Message = "Couldn't load winget")]
+    partial void Log_FailedToLoadWinget(Exception ex);
 }
