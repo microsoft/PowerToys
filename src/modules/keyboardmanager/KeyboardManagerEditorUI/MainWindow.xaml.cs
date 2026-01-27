@@ -41,7 +41,7 @@ namespace KeyboardManagerEditorUI
             IntPtr windowHandle = WinRT.Interop.WindowNative.GetWindowHandle(this);
             WindowId windowId = Win32Interop.GetWindowIdFromWindow(windowHandle);
             AppWindow appWindow = AppWindow.GetFromWindowId(windowId);
-            appWindow.SetIcon(@"Assets\Keyboard.ico");
+            appWindow.SetIcon(@"Assets\KBMEditor\Keyboard.ico");
         }
 
         private void MainWindow_Activated(object sender, WindowActivatedEventArgs args)

@@ -26,7 +26,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="Assets\Keyboard.ico" />
+    <None Remove="Assets\KBMEditor\Keyboard.ico" />
     <None Remove="Pages\Programs.xaml" />
     <None Remove="Pages\Text.xaml" />
     <None Remove="Pages\URLs.xaml" />
@@ -59,10 +59,22 @@
     <ProjectReference Include="..\..\..\common\Common.UI\Common.UI.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <Content Update="Assets\Keyboard.ico">
+    <Content Update="Assets\KBMEditor\FluentIconsKeyboardManager.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Update="Assets\Square150x150Logo.png">
+    <Content Update="Assets\KBMEditor\kbm.jpg">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Update="Assets\KBMEditor\Keyboard.ico">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Update="Assets\KBMEditor\Square150x150Logo.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Update="Assets\KBMEditor\Square44x44Logo.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Update="Assets\KBMEditor\StoreLogo.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

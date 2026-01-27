@@ -69,7 +69,7 @@
                     Margin="-6,4,0,4"
                     HorizontalAlignment="Left" />
                 <TextBlock
-                    x:Uid="RemmapingsPageApplicableAppsTextBlock"
+                    x:Uid="RemappingsPageApplicableAppsTextBlock"
                     Grid.Column="2"
                     Margin="12,-2,0,0"
                     HorizontalAlignment="Left"
