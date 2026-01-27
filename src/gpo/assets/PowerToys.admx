@@ -369,12 +369,6 @@
         <decimal value="0" />
       </disabledValue>
     </policy>
-    <policy name="ConfigureEnabledUtilityCursorWrap" class="Both" displayName="$(string.ConfigureEnabledUtilityCursorWrap)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityCursorWrap">
-      <parentCategory ref="PowerToys" />
-      <supportedOn ref="SUPPORTED_POWERTOYS_0_XX_0" />
-      <enabledValue><decimal value="1" /></enabledValue>
-      <disabledValue><decimal value="0" /></disabledValue>
-    </policy>    
     <policy name="ConfigureEnabledUtilityMousePointerCrosshairs" class="Both" displayName="$(string.ConfigureEnabledUtilityMousePointerCrosshairs)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityMousePointerCrosshairs">
       <parentCategory ref="PowerToys" />
       <supportedOn ref="SUPPORTED_POWERTOYS_0_64_0" />
