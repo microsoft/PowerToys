@@ -650,20 +650,20 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public int BreakTimerOpacityIndex
+        public double BreakTimerOpacity
         {
             get
             {
-                return Math.Clamp((_zoomItSettings.Properties.BreakOpacity.Value / 10) - 1, 0, 9);
+                return Math.Clamp(_zoomItSettings.Properties.BreakOpacity.Value, 1, 100);
             }
 
             set
             {
-                int newValue = (value + 1) * 10;
-                if (_zoomItSettings.Properties.BreakOpacity.Value != newValue)
+                int intValue = (int)value;
+                if (_zoomItSettings.Properties.BreakOpacity.Value != intValue)
                 {
-                    _zoomItSettings.Properties.BreakOpacity.Value = newValue;
-                    OnPropertyChanged(nameof(BreakTimerOpacityIndex));
+                    _zoomItSettings.Properties.BreakOpacity.Value = intValue;
+                    OnPropertyChanged(nameof(BreakTimerOpacity));
                     NotifySettingsChanged();
                 }
             }
@@ -783,20 +783,20 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public int RecordScalingIndex
+        public double RecordScaling
         {
             get
             {
-                return Math.Clamp((_zoomItSettings.Properties.RecordScaling.Value / 10) - 1, 0, 9);
+                return Math.Clamp(_zoomItSettings.Properties.RecordScaling.Value / 100.0, 0.1, 1.0);
             }
 
             set
             {
-                int newValue = (value + 1) * 10;
+                int newValue = (int)(value * 100);
                 if (_zoomItSettings.Properties.RecordScaling.Value != newValue)
                 {
                     _zoomItSettings.Properties.RecordScaling.Value = newValue;
-                    OnPropertyChanged(nameof(RecordScalingIndex));
+                    OnPropertyChanged(nameof(RecordScaling));
                     NotifySettingsChanged();
                 }
             }
@@ -844,7 +844,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     if (reloaded != null && reloaded.Properties != null)
                     {
                         _zoomItSettings.Properties.RecordScaling.Value = reloaded.Properties.RecordScaling.Value;
-                        OnPropertyChanged(nameof(RecordScalingIndex));
+                        OnPropertyChanged(nameof(RecordScaling));
                     }
                 }
             }

@@ -1,4 +1,4 @@
-﻿<local:NavigablePage
+<local:NavigablePage
     x:Class="Microsoft.PowerToys.Settings.UI.Views.ZoomItPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -14,6 +14,7 @@
     <local:NavigablePage.Resources>
         <converters:ZoomItInitialZoomConverter x:Key="ZoomItInitialZoomConverter" />
         <converters:ZoomItTypeSpeedSliderConverter x:Key="ZoomItTypeSpeedSliderConverter" />
+        <converters:ZoomItOpacitySliderConverter x:Key="ZoomItOpacitySliderConverter" />
         <converters:HotkeySettingsToLocalizedStringConverter x:Key="HotkeySettingsToLocalizedStringConverter" />
         <tkcontrols:MarkdownThemes
             x:Key="ZoomItMarkdownThemeConfig"
@@ -57,7 +58,7 @@
                         x:Uid="ZoomIt_Zoom_Shortcut"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE71E;}"
                         IsExpanded="True">
-                        <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.ZoomToggleKey, Mode=TwoWay}" />
+                        <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind ViewModel.ZoomToggleKey, Mode=TwoWay}" />
                         <tkcontrols:SettingsExpander.Items>
                             <tkcontrols:SettingsCard Name="ZoomItToggleAnimateZoom" ContentAlignment="Left">
                                 <CheckBox x:Uid="ZoomIt_Toggle_AnimateZoom" IsChecked="{x:Bind ViewModel.AnimateZoom, Mode=TwoWay}" />
@@ -89,11 +90,11 @@
                         x:Uid="ZoomIt_LiveZoom_Shortcut"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE773;}"
                         IsExpanded="True">
-                        <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.LiveZoomToggleKey, Mode=TwoWay}" />
+                        <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind ViewModel.LiveZoomToggleKey, Mode=TwoWay}" />
                         <tkcontrols:SettingsExpander.Items>
                             <tkcontrols:SettingsCard>
                                 <tkcontrols:SettingsCard.Description>
-                                    <tkcontrols:MarkdownTextBlock Config="{StaticResource ZoomItMarkdownConfig}" Text="{x:Bind Path=ViewModel.LiveZoomToggleKeyDraw, Mode=OneWay, Converter={StaticResource HotkeySettingsToLocalizedStringConverter}, ConverterParameter=ZoomIt_LiveZoom_Shortcut_Draw}" />
+                                    <tkcontrols:MarkdownTextBlock Config="{StaticResource ZoomItMarkdownConfig}" Text="{x:Bind ViewModel.LiveZoomToggleKeyDraw, Mode=OneWay, Converter={StaticResource HotkeySettingsToLocalizedStringConverter}, ConverterParameter=ZoomIt_LiveZoom_Shortcut_Draw}" />
                                 </tkcontrols:SettingsCard.Description>
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
@@ -105,7 +106,7 @@
                         x:Uid="ZoomIt_Draw_Shortcut"
                         HeaderIcon="{ui:FontIcon Glyph=&#xEE56;}"
                         IsExpanded="True">
-                        <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.DrawToggleKey, Mode=TwoWay}" />
+                        <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind ViewModel.DrawToggleKey, Mode=TwoWay}" />
                         <tkcontrols:SettingsExpander.Items>
                             <tkcontrols:SettingsCard>
                                 <tkcontrols:SettingsCard.Description>
@@ -147,7 +148,7 @@
                         x:Uid="ZoomIt_DemoType_Shortcut"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE8AC;}"
                         IsExpanded="True">
-                        <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.DemoTypeToggleKey, Mode=TwoWay}" />
+                        <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind ViewModel.DemoTypeToggleKey, Mode=TwoWay}" />
                         <tkcontrols:SettingsExpander.Items>
                             <tkcontrols:SettingsCard
                                 Name="ZoomItDemoTypeFile"
@@ -168,7 +169,7 @@
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard Name="ZoomItDemoTypeShortcutReset">
                                 <tkcontrols:SettingsCard.Description>
-                                    <tkcontrols:MarkdownTextBlock Config="{StaticResource ZoomItMarkdownConfig}" Text="{x:Bind Path=ViewModel.DemoTypeToggleKeyReset, Mode=OneWay, Converter={StaticResource HotkeySettingsToLocalizedStringConverter}, ConverterParameter=ZoomIt_DemoTypeFAQ}" />
+                                    <tkcontrols:MarkdownTextBlock Config="{StaticResource ZoomItMarkdownConfig}" Text="{x:Bind ViewModel.DemoTypeToggleKeyReset, Mode=OneWay, Converter={StaticResource HotkeySettingsToLocalizedStringConverter}, ConverterParameter=ZoomIt_DemoTypeFAQ}" />
                                 </tkcontrols:SettingsCard.Description>
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
@@ -181,7 +182,7 @@
                         x:Uid="ZoomIt_Break_Shortcut"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE916;}"
                         IsExpanded="True">
-                        <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.BreakTimerKey, Mode=TwoWay}" />
+                        <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind ViewModel.BreakTimerKey, Mode=TwoWay}" />
                         <tkcontrols:SettingsExpander.Items>
                             <tkcontrols:SettingsCard Name="ZoomItBreakTimeout" x:Uid="ZoomIt_Break_Timeout">
                                 <NumberBox
@@ -207,21 +208,15 @@
                                 <Button x:Uid="ZoomIt_Break_SoundFile_BrowseButton" Command="{x:Bind ViewModel.SelectBreakSoundFileCommand, Mode=OneWay}" />
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard Name="ZoomItBreakTimerOpacity" x:Uid="ZoomIt_Break_TimerOpacity">
-                                <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.BreakTimerOpacityIndex, Mode=TwoWay}">
-                                    <ComboBoxItem x:Uid="ZoomIt_Break_TimerOpacity_10Percent" />
-                                    <ComboBoxItem x:Uid="ZoomIt_Break_TimerOpacity_20Percent" />
-                                    <ComboBoxItem x:Uid="ZoomIt_Break_TimerOpacity_30Percent" />
-                                    <ComboBoxItem x:Uid="ZoomIt_Break_TimerOpacity_40Percent" />
-                                    <ComboBoxItem x:Uid="ZoomIt_Break_TimerOpacity_50Percent" />
-                                    <ComboBoxItem x:Uid="ZoomIt_Break_TimerOpacity_60Percent" />
-                                    <ComboBoxItem x:Uid="ZoomIt_Break_TimerOpacity_70Percent" />
-                                    <ComboBoxItem x:Uid="ZoomIt_Break_TimerOpacity_80Percent" />
-                                    <ComboBoxItem x:Uid="ZoomIt_Break_TimerOpacity_90Percent" />
-                                    <ComboBoxItem x:Uid="ZoomIt_Break_TimerOpacity_100Percent" />
-                                </ComboBox>
+                                <Slider
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    Maximum="100"
+                                    Minimum="1"
+                                    ThumbToolTipValueConverter="{StaticResource ZoomItOpacitySliderConverter}"
+                                    Value="{x:Bind ViewModel.BreakTimerOpacity, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard Name="ZoomItBreakTimerPosition" x:Uid="ZoomIt_Break_TimerPosition">
-                                <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.BreakTimerPosition, Mode=TwoWay}">
+                                <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.BreakTimerPosition, Mode=TwoWay}">
                                     <ComboBoxItem x:Uid="ZoomIt_Break_TimerPosition_TopLeftCorner" />
                                     <ComboBoxItem x:Uid="ZoomIt_Break_TimerPosition_TopCenter" />
                                     <ComboBoxItem x:Uid="ZoomIt_Break_TimerPosition_TopRightCorner" />
@@ -236,7 +231,7 @@
 
 
                             <tkcontrols:SettingsCard Name="ZoomItBreakShowBackgroundBitmap" x:Uid="ZoomIt_Break_ShowBackgroundBitmap">
-                                <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.BreakBackgroundSelectionIndex, Mode=TwoWay}">
+                                <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.BreakBackgroundSelectionIndex, Mode=TwoWay}">
                                     <ComboBoxItem x:Uid="ZoomIt_Break_BackgroundImage_None" />
                                     <ComboBoxItem x:Uid="ZoomIt_Break_ShowFadedDesktop" />
                                     <ComboBoxItem x:Uid="ZoomIt_Break_ShowImageFile" />
@@ -272,24 +267,20 @@
                         x:Uid="ZoomIt_Record_Shortcut"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE7C8;}"
                         IsExpanded="True">
-                        <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.RecordToggleKey, Mode=TwoWay}" />
+                        <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind ViewModel.RecordToggleKey, Mode=TwoWay}" />
                         <tkcontrols:SettingsExpander.Items>
                             <tkcontrols:SettingsCard Name="ZoomItRecordScaling" x:Uid="ZoomIt_Record_Scaling">
-                                <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.RecordScalingIndex, Mode=TwoWay}">
-                                    <ComboBoxItem>0.1</ComboBoxItem>
-                                    <ComboBoxItem>0.2</ComboBoxItem>
-                                    <ComboBoxItem>0.3</ComboBoxItem>
-                                    <ComboBoxItem>0.4</ComboBoxItem>
-                                    <ComboBoxItem>0.5</ComboBoxItem>
-                                    <ComboBoxItem>0.6</ComboBoxItem>
-                                    <ComboBoxItem>0.7</ComboBoxItem>
-                                    <ComboBoxItem>0.8</ComboBoxItem>
-                                    <ComboBoxItem>0.9</ComboBoxItem>
-                                    <ComboBoxItem>1.0</ComboBoxItem>
-                                </ComboBox>
+                                <Slider
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    Maximum="1"
+                                    Minimum="0.1"
+                                    StepFrequency="0.1"
+                                    TickFrequency="0.1"
+                                    TickPlacement="Outside"
+                                    Value="{x:Bind ViewModel.RecordScaling, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard Name="ZoomItRecordFormat" x:Uid="ZoomIt_Record_Format">
-                                <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.RecordFormatIndex, Mode=TwoWay}">
+                                <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.RecordFormatIndex, Mode=TwoWay}">
                                     <ComboBoxItem>GIF</ComboBoxItem>
                                     <ComboBoxItem>MP4</ComboBoxItem>
                                 </ComboBox>
@@ -305,15 +296,15 @@
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
                                     DisplayMemberPath="Item2"
                                     ItemsSource="{x:Bind ViewModel.MicrophoneList}"
-                                    SelectedValue="{x:Bind Path=ViewModel.RecordMicrophoneDeviceId, Mode=TwoWay}"
+                                    SelectedValue="{x:Bind ViewModel.RecordMicrophoneDeviceId, Mode=TwoWay}"
                                     SelectedValuePath="Item1" />
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard>
                                 <tkcontrols:SettingsCard.Description>
                                     <StackPanel Orientation="Vertical" Spacing="4">
-                                        <tkcontrols:MarkdownTextBlock Config="{StaticResource ZoomItMarkdownConfig}" Text="{x:Bind Path=ViewModel.RecordToggleKey, Mode=OneWay, Converter={StaticResource HotkeySettingsToLocalizedStringConverter}, ConverterParameter=ZoomIt_Record_Shortcut_FullScreen}" />
-                                        <tkcontrols:MarkdownTextBlock Config="{StaticResource ZoomItMarkdownConfig}" Text="{x:Bind Path=ViewModel.RecordToggleKeyCrop, Mode=OneWay, Converter={StaticResource HotkeySettingsToLocalizedStringConverter}, ConverterParameter=ZoomIt_Record_Shortcut_Crop}" />
-                                        <tkcontrols:MarkdownTextBlock Config="{StaticResource ZoomItMarkdownConfig}" Text="{x:Bind Path=ViewModel.RecordToggleKeyWindow, Mode=OneWay, Converter={StaticResource HotkeySettingsToLocalizedStringConverter}, ConverterParameter=ZoomIt_Record_Shortcut_Window}" />
+                                        <tkcontrols:MarkdownTextBlock Config="{StaticResource ZoomItMarkdownConfig}" Text="{x:Bind ViewModel.RecordToggleKey, Mode=OneWay, Converter={StaticResource HotkeySettingsToLocalizedStringConverter}, ConverterParameter=ZoomIt_Record_Shortcut_FullScreen}" />
+                                        <tkcontrols:MarkdownTextBlock Config="{StaticResource ZoomItMarkdownConfig}" Text="{x:Bind ViewModel.RecordToggleKeyCrop, Mode=OneWay, Converter={StaticResource HotkeySettingsToLocalizedStringConverter}, ConverterParameter=ZoomIt_Record_Shortcut_Crop}" />
+                                        <tkcontrols:MarkdownTextBlock Config="{StaticResource ZoomItMarkdownConfig}" Text="{x:Bind ViewModel.RecordToggleKeyWindow, Mode=OneWay, Converter={StaticResource HotkeySettingsToLocalizedStringConverter}, ConverterParameter=ZoomIt_Record_Shortcut_Window}" />
                                     </StackPanel>
                                 </tkcontrols:SettingsCard.Description>
                             </tkcontrols:SettingsCard>
@@ -326,11 +317,11 @@
                         x:Uid="ZoomIt_Snip_Shortcut"
                         HeaderIcon="{ui:FontIcon Glyph=&#xF7ED;}"
                         IsExpanded="True">
-                        <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.SnipToggleKey, Mode=TwoWay}" />
+                        <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind ViewModel.SnipToggleKey, Mode=TwoWay}" />
                         <tkcontrols:SettingsExpander.Items>
                             <tkcontrols:SettingsCard Name="ZoomItSnipShortcutSave">
                                 <tkcontrols:SettingsCard.Description>
-                                    <tkcontrols:MarkdownTextBlock Config="{StaticResource ZoomItMarkdownConfig}" Text="{x:Bind Path=ViewModel.SnipToggleKeySave, Mode=OneWay, Converter={StaticResource HotkeySettingsToLocalizedStringConverter}, ConverterParameter=ZoomIt_Snip_Shortcut_Save}" />
+                                    <tkcontrols:MarkdownTextBlock Config="{StaticResource ZoomItMarkdownConfig}" Text="{x:Bind ViewModel.SnipToggleKeySave, Mode=OneWay, Converter={StaticResource HotkeySettingsToLocalizedStringConverter}, ConverterParameter=ZoomIt_Snip_Shortcut_Save}" />
                                 </tkcontrols:SettingsCard.Description>
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
