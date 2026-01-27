@@ -105,16 +105,34 @@ There are <a href="https://learn.microsoft.com/windows/powertoys/install#communi
 ## ✨ What's new
 **Version 0.97.1 (January 2026)**
 
-This patch release fixes several important stability issues identified in v0.97.0 based on incoming reports.
+This patch release fixes several important stability issues identified in v0.97.0 based on incoming reports. Check out the [v0.97.0](https://github.com/microsoft/PowerToys/releases/tag/v0.97.0) notes for the full list of changes.
 
-**✨ Highlights**
-- **Advanced Paste**: Fixed Settings UI crash by using correct settings repository for null checking
-- **Command Palette**: Fixed personalization section not appearing; fixed loading of icons from internet shortcuts; fixed potential deadlock from lazy-loading AppListItem details. Thanks [@jiripolasek](https://github.com/jiripolasek)!
-- **Cursor Wrap**: Added improved multi-monitor support with laptop lid close detection; added new settings dropdown to constrain wrapping to horizontal-only, vertical-only, or both directions. Thanks [@mikehall-ms](https://github.com/mikehall-ms)!
-- **Peek**: Fixed Space key triggering Peek during file rename, search, or address bar typing
-- **PowerRename**: Fixed regex `$` metacharacter not working, preventing users from adding text at the end of filenames
-- **Runner**: Monochrome tray icon now adapts to Windows system theme instead of app theme; fixed right-click menu to dynamically update based on Quick Access enabled/disabled state
-- **GPO / Enterprise**: Added CursorWrap policy definition to ADMX templates. Thanks [@htcfreek](https://github.com/htcfreek)!
+**Highlights**
+
+### Advanced Paste
+- #44862: Fixed Settings UI crash by using correct settings repository for null checking.
+
+### Command Palette
+- #44886: Fixed personalization section not appearing by using latest MSIX for installation.
+- #44938: Fixed loading of icons from internet shortcuts. Thanks [@jiripolasek](https://github.com/jiripolasek)!
+- #45076: Fixed potential deadlock from lazy-loading AppListItem details. Thanks [@jiripolasek](https://github.com/jiripolasek)!
+
+### Cursor Wrap
+- #44936: Added improved multi-monitor support with laptop lid close detection for dynamic monitor topology updates. Thanks [@mikehall-ms](https://github.com/mikehall-ms)!
+- #44936: Added new settings dropdown to constrain wrapping to horizontal-only, vertical-only, or both directions. Thanks [@mikehall-ms](https://github.com/mikehall-ms)!
+
+### Peek
+- #44995: Fixed Space key triggering Peek during file rename, search, or address bar typing.
+
+### PowerRename
+- #44944: Fixed regex `$` metacharacter not working, preventing users from adding text at the end of filenames.
+
+### Runner
+- #44931: Monochrome tray icon now adapts to Windows system theme instead of app theme.
+- #44982: Fixed right-click menu to dynamically update based on Quick Access enabled/disabled state.
+
+### GPO / Enterprise
+- #45028: Added CursorWrap policy definition to ADMX templates. Thanks [@htcfreek](https://github.com/htcfreek)!
 
 For the full list of v0.97 changes, visit the [Windows Command Line blog](https://aka.ms/powertoys-releaseblog).
 
