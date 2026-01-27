@@ -85,7 +85,7 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
         Color.FromArgb(255, 126, 115, 95), // #7e735f
     ];
 
-    private readonly SettingsModel _settings;
+    private readonly SettingsService _settingsService;
     private readonly UISettings _uiSettings;
     private readonly IThemeService _themeService;
     private readonly DispatcherQueueTimer _saveTimer = DispatcherQueue.GetForCurrentThread().CreateTimer();
@@ -94,22 +94,24 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
     private ElementTheme? _elementThemeOverride;
     private Color _currentSystemAccentColor;
 
+    private SettingsModel Settings => _settingsService.CurrentSettings;
+
     public ObservableCollection<Color> Swatches => WindowsColorSwatches;
 
     public int ThemeIndex
     {
-        get => (int)_settings.Theme;
+        get => (int)Settings.Theme;
         set => Theme = (UserTheme)value;
     }
 
     public UserTheme Theme
     {
-        get => _settings.Theme;
+        get => Settings.Theme;
         set
         {
-            if (_settings.Theme != value)
+            if (Settings.Theme != value)
             {
-                _settings.Theme = value;
+                Settings.Theme = value;
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(ThemeIndex));
                 Save();
@@ -119,12 +121,12 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
 
     public ColorizationMode ColorizationMode
     {
-        get => _settings.ColorizationMode;
+        get => Settings.ColorizationMode;
         set
         {
-            if (_settings.ColorizationMode != value)
+            if (Settings.ColorizationMode != value)
             {
-                _settings.ColorizationMode = value;
+                Settings.ColorizationMode = value;
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(ColorizationModeIndex));
                 OnPropertyChanged(nameof(IsCustomTintVisible));
@@ -147,18 +149,18 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
 
     public int ColorizationModeIndex
     {
-        get => (int)_settings.ColorizationMode;
+        get => (int)Settings.ColorizationMode;
         set => ColorizationMode = (ColorizationMode)value;
     }
 
     public Color ThemeColor
     {
-        get => _settings.CustomThemeColor;
+        get => Settings.CustomThemeColor;
         set
         {
-            if (_settings.CustomThemeColor != value)
+            if (Settings.CustomThemeColor != value)
             {
-                _settings.CustomThemeColor = value;
+                Settings.CustomThemeColor = value;
 
                 OnPropertyChanged();
 
@@ -174,10 +176,10 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
 
     public int ColorIntensity
     {
-        get => _settings.CustomThemeColorIntensity;
+        get => Settings.CustomThemeColorIntensity;
         set
         {
-            _settings.CustomThemeColorIntensity = value;
+            Settings.CustomThemeColorIntensity = value;
             OnPropertyChanged();
             Save();
         }
@@ -185,12 +187,12 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
 
     public string BackgroundImagePath
     {
-        get => _settings.BackgroundImagePath ?? string.Empty;
+        get => Settings.BackgroundImagePath ?? string.Empty;
         set
         {
-            if (_settings.BackgroundImagePath != value)
+            if (Settings.BackgroundImagePath != value)
             {
-                _settings.BackgroundImagePath = value;
+                Settings.BackgroundImagePath = value;
                 OnPropertyChanged();
 
                 if (BackgroundImageOpacity == 0)
@@ -205,12 +207,12 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
 
     public int BackgroundImageOpacity
     {
-        get => _settings.BackgroundImageOpacity;
+        get => Settings.BackgroundImageOpacity;
         set
         {
-            if (_settings.BackgroundImageOpacity != value)
+            if (Settings.BackgroundImageOpacity != value)
             {
-                _settings.BackgroundImageOpacity = value;
+                Settings.BackgroundImageOpacity = value;
                 OnPropertyChanged();
                 Save();
             }
@@ -219,12 +221,12 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
 
     public int BackgroundImageBrightness
     {
-        get => _settings.BackgroundImageBrightness;
+        get => Settings.BackgroundImageBrightness;
         set
         {
-            if (_settings.BackgroundImageBrightness != value)
+            if (Settings.BackgroundImageBrightness != value)
             {
-                _settings.BackgroundImageBrightness = value;
+                Settings.BackgroundImageBrightness = value;
                 OnPropertyChanged();
                 Save();
             }
@@ -233,12 +235,12 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
 
     public int BackgroundImageBlurAmount
     {
-        get => _settings.BackgroundImageBlurAmount;
+        get => Settings.BackgroundImageBlurAmount;
         set
         {
-            if (_settings.BackgroundImageBlurAmount != value)
+            if (Settings.BackgroundImageBlurAmount != value)
             {
-                _settings.BackgroundImageBlurAmount = value;
+                Settings.BackgroundImageBlurAmount = value;
                 OnPropertyChanged();
                 Save();
             }
@@ -247,12 +249,12 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
 
     public BackgroundImageFit BackgroundImageFit
     {
-        get => _settings.BackgroundImageFit;
+        get => Settings.BackgroundImageFit;
         set
         {
-            if (_settings.BackgroundImageFit != value)
+            if (Settings.BackgroundImageFit != value)
             {
-                _settings.BackgroundImageFit = value;
+                Settings.BackgroundImageFit = value;
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(BackgroundImageFitIndex));
                 Save();
@@ -282,15 +284,15 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
     [ObservableProperty]
     public partial bool IsColorizationDetailsExpanded { get; set; }
 
-    public bool IsCustomTintVisible => _settings.ColorizationMode is ColorizationMode.CustomColor or ColorizationMode.Image;
+    public bool IsCustomTintVisible => Settings.ColorizationMode is ColorizationMode.CustomColor or ColorizationMode.Image;
 
-    public bool IsCustomTintIntensityVisible => _settings.ColorizationMode is ColorizationMode.CustomColor or ColorizationMode.WindowsAccentColor or ColorizationMode.Image;
+    public bool IsCustomTintIntensityVisible => Settings.ColorizationMode is ColorizationMode.CustomColor or ColorizationMode.WindowsAccentColor or ColorizationMode.Image;
 
-    public bool IsBackgroundControlsVisible => _settings.ColorizationMode is ColorizationMode.Image;
+    public bool IsBackgroundControlsVisible => Settings.ColorizationMode is ColorizationMode.Image;
 
-    public bool IsNoBackgroundVisible => _settings.ColorizationMode is ColorizationMode.None;
+    public bool IsNoBackgroundVisible => Settings.ColorizationMode is ColorizationMode.None;
 
-    public bool IsAccentColorControlsVisible => _settings.ColorizationMode is ColorizationMode.WindowsAccentColor;
+    public bool IsAccentColorControlsVisible => Settings.ColorizationMode is ColorizationMode.WindowsAccentColor;
 
     public AcrylicBackdropParameters EffectiveBackdrop { get; private set; } = new(Colors.Black, Colors.Black, 0.5f, 0.5f);
 
@@ -315,11 +317,11 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
             ? new Microsoft.UI.Xaml.Media.Imaging.BitmapImage(uri)
             : null;
 
-    public AppearanceSettingsViewModel(IThemeService themeService, SettingsModel settings)
+    public AppearanceSettingsViewModel(IThemeService themeService, SettingsService settingsService)
     {
         _themeService = themeService;
         _themeService.ThemeChanged += ThemeServiceOnThemeChanged;
-        _settings = settings;
+        _settingsService = settingsService;
 
         _uiSettings = new UISettings();
         _uiSettings.ColorValuesChanged += UiSettingsOnColorValuesChanged;
@@ -327,7 +329,7 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
 
         Reapply();
 
-        IsColorizationDetailsExpanded = _settings.ColorizationMode != ColorizationMode.None;
+        IsColorizationDetailsExpanded = Settings.ColorizationMode != ColorizationMode.None;
     }
 
     private void UiSettingsOnColorValuesChanged(UISettings sender, object args) => _uiDispatcher.TryEnqueue(() => UpdateAccentColor(sender));
@@ -348,7 +350,7 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
 
     private void Save()
     {
-        SettingsModel.SaveSettings(_settings);
+        _settingsService.SaveSettings(Settings);
         _saveTimer.Debounce(Reapply, TimeSpan.FromMilliseconds(200));
     }
 

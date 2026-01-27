@@ -14,6 +14,7 @@ using Microsoft.UI.Xaml.Input;
 
 namespace Microsoft.CmdPal.UI.Settings;
 
+#pragma warning disable CA1001 // Types that own disposable fields should be disposable - Page lifecycle manages disposal
 public sealed partial class ExtensionsPage : Page
 {
     private readonly TaskScheduler _mainTaskScheduler = TaskScheduler.FromCurrentSynchronizationContext();
@@ -24,10 +25,10 @@ public sealed partial class ExtensionsPage : Page
     {
         this.InitializeComponent();
 
-        var settings = App.Current.Services.GetService<SettingsModel>()!;
-        var topLevelCommandManager = App.Current.Services.GetService<TopLevelCommandManager>()!;
-        var themeService = App.Current.Services.GetService<IThemeService>()!;
-        viewModel = new SettingsViewModel(settings, topLevelCommandManager, _mainTaskScheduler, themeService);
+        var settingsService = App.Current.Services.GetRequiredService<SettingsService>();
+        var topLevelCommandManager = App.Current.Services.GetRequiredService<TopLevelCommandManager>();
+        var themeService = App.Current.Services.GetRequiredService<IThemeService>();
+        viewModel = new SettingsViewModel(settingsService, topLevelCommandManager, _mainTaskScheduler, themeService);
     }
 
     private void SettingsCard_Click(object sender, RoutedEventArgs e)

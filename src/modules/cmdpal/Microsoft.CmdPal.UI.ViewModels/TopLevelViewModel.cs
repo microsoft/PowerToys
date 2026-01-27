@@ -18,12 +18,14 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 
 public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IExtendedAttributesProvider
 {
-    private readonly SettingsModel _settings;
+    private readonly SettingsService _settingsService;
     private readonly ProviderSettings _providerSettings;
     private readonly IServiceProvider _serviceProvider;
     private readonly CommandItemViewModel _commandItemViewModel;
 
     private readonly string _commandProviderId;
+
+    private SettingsModel Settings => _settingsService.CurrentSettings;
 
     private string IdFromModel => IsFallback && !string.IsNullOrWhiteSpace(_fallbackId) ? _fallbackId : _commandItemViewModel.Command.Id;
 
@@ -181,13 +183,13 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
         bool isFallback,
         CommandPaletteHost extensionHost,
         string commandProviderId,
-        SettingsModel settings,
+        SettingsService settingsService,
         ProviderSettings providerSettings,
         IServiceProvider serviceProvider,
         ICommandItem? commandItem)
     {
         _serviceProvider = serviceProvider;
-        _settings = settings;
+        _settingsService = settingsService;
         _providerSettings = providerSettings;
         _commandProviderId = commandProviderId;
         _commandItemViewModel = item;
@@ -272,7 +274,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
         }
     }
 
-    private void Save() => SettingsModel.SaveSettings(_settings);
+    private void Save() => _settingsService.SaveSettings(Settings);
 
     private void HandleChangeAlias()
     {
@@ -306,7 +308,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
 
     private void UpdateHotkey()
     {
-        var hotkey = _settings.CommandHotkeys.Where(hk => hk.CommandId == Id).FirstOrDefault();
+        var hotkey = Settings.CommandHotkeys.Where(hk => hk.CommandId == Id).FirstOrDefault();
         if (hotkey is not null)
         {
             _hotkey = hotkey.Hotkey;

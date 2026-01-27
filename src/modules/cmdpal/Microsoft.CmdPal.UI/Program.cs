@@ -21,7 +21,7 @@ internal sealed partial class Program
 {
     private static DispatcherQueueSynchronizationContext? uiContext;
     private static App? app;
-    private static ILogger logger = new CmdPalLogger();
+    private static ILogger _logger = new CmdPalLogger();
 
     // LOAD BEARING
     //
@@ -37,7 +37,7 @@ internal sealed partial class Program
             return 0;
         }
 
-        Log_AppStart(logger, DateTime.UtcNow);
+        Log_AppStart(_logger, DateTime.UtcNow);
         PowerToysTelemetry.Log.WriteEvent(new CmdPalProcessStarted());
 
         WinRT.ComWrappersSupport.InitializeComWrappers();
@@ -48,7 +48,7 @@ internal sealed partial class Program
             {
                 uiContext = new DispatcherQueueSynchronizationContext(DispatcherQueue.GetForCurrentThread());
                 SynchronizationContext.SetSynchronizationContext(uiContext);
-                app = new App(logger);
+                app = new App(_logger);
             });
         }
 
@@ -95,11 +95,11 @@ internal sealed partial class Program
             }
             catch (OperationCanceledException)
             {
-                Log_FailedToActivateTimeout(logger, redirectTimeout);
+                Log_FailedToActivateTimeout(_logger, redirectTimeout);
             }
             catch (Exception ex)
             {
-                Log_FailedToActivate(logger, ex);
+                Log_FailedToActivate(_logger, ex);
             }
             finally
             {
@@ -130,11 +130,11 @@ internal sealed partial class Program
     }
 
     [LoggerMessage(Level = LogLevel.Debug, Message = "Starting at {startTime}")]
-    static partial void Log_AppStart(ILogger logger, DateTime startTime);
+    static partial void Log_AppStart(ILogger _logger, DateTime startTime);
 
     [LoggerMessage(Level = LogLevel.Error, Message = "Failed to activate existing instance; timed out after {redirectTimeout}.")]
-    static partial void Log_FailedToActivateTimeout(ILogger logger, TimeSpan redirectTimeout);
+    static partial void Log_FailedToActivateTimeout(ILogger _logger, TimeSpan redirectTimeout);
 
     [LoggerMessage(Level = LogLevel.Error, Message = "Failed to activate existing instance")]
-    static partial void Log_FailedToActivate(ILogger logger, Exception ex);
+    static partial void Log_FailedToActivate(ILogger _logger, Exception ex);
 }

@@ -3,6 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using Microsoft.CmdPal.UI.Helpers;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Markup;
@@ -26,7 +28,8 @@ public sealed partial class ScreenPreview : UserControl
     {
         InitializeComponent();
 
-        var wallpaperHelper = new WallpaperHelper();
+        var logger = App.Current.Services.GetRequiredService<ILogger<WallpaperHelper>>();
+        var wallpaperHelper = new WallpaperHelper(logger);
         WallpaperImage!.Source = wallpaperHelper.GetWallpaperImage()!;
         ScreenBorder!.Background = new SolidColorBrush(wallpaperHelper.GetWallpaperColor());
     }

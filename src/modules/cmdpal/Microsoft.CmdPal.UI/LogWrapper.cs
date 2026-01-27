@@ -3,39 +3,51 @@
 // See the LICENSE file in the project root for more information.
 
 using ManagedCommon;
-using Microsoft.CmdPal.Common;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.CmdPal.UI;
 
-internal sealed class LogWrapper : ILogger
+internal sealed class LogWrapper : Microsoft.Extensions.Logging.ILogger
 {
-    public void LogError(string message, Exception ex, [System.Runtime.CompilerServices.CallerMemberName] string memberName = "", [System.Runtime.CompilerServices.CallerFilePath] string sourceFilePath = "", [System.Runtime.CompilerServices.CallerLineNumber] int sourceLineNumber = 0)
-    {
-        Logger.LogError(message, ex, memberName, sourceFilePath, sourceLineNumber);
-    }
+    public IDisposable? BeginScope<TState>(TState state)
+        where TState : notnull => null;
 
-    public void LogError(string message, [System.Runtime.CompilerServices.CallerMemberName] string memberName = "", [System.Runtime.CompilerServices.CallerFilePath] string sourceFilePath = "", [System.Runtime.CompilerServices.CallerLineNumber] int sourceLineNumber = 0)
-    {
-        Logger.LogError(message, memberName, sourceFilePath, sourceLineNumber);
-    }
+    public bool IsEnabled(LogLevel logLevel) => true;
 
-    public void LogWarning(string message, [System.Runtime.CompilerServices.CallerMemberName] string memberName = "", [System.Runtime.CompilerServices.CallerFilePath] string sourceFilePath = "", [System.Runtime.CompilerServices.CallerLineNumber] int sourceLineNumber = 0)
+    public void Log<TState>(
+        LogLevel logLevel,
+        EventId eventId,
+        TState state,
+        Exception? exception,
+        Func<TState, Exception?, string> formatter)
     {
-        Logger.LogWarning(message, memberName, sourceFilePath, sourceLineNumber);
-    }
+        var message = formatter(state, exception);
+        switch (logLevel)
+        {
+            case LogLevel.Trace:
+                Logger.LogTrace();
+                break;
+            case LogLevel.Debug:
+                Logger.LogDebug(message);
+                break;
+            case LogLevel.Information:
+                Logger.LogInfo(message);
+                break;
+            case LogLevel.Warning:
+                Logger.LogWarning(message);
+                break;
+            case LogLevel.Error:
+            case LogLevel.Critical:
+                if (exception is not null)
+                {
+                    Logger.LogError(message, exception);
+                }
+                else
+                {
+                    Logger.LogError(message);
+                }
 
-    public void LogInfo(string message, [System.Runtime.CompilerServices.CallerMemberName] string memberName = "", [System.Runtime.CompilerServices.CallerFilePath] string sourceFilePath = "", [System.Runtime.CompilerServices.CallerLineNumber] int sourceLineNumber = 0)
-    {
-        Logger.LogInfo(message, memberName, sourceFilePath, sourceLineNumber);
-    }
-
-    public void LogDebug(string message, [System.Runtime.CompilerServices.CallerMemberName] string memberName = "", [System.Runtime.CompilerServices.CallerFilePath] string sourceFilePath = "", [System.Runtime.CompilerServices.CallerLineNumber] int sourceLineNumber = 0)
-    {
-        Logger.LogDebug(message, memberName, sourceFilePath, sourceLineNumber);
-    }
-
-    public void LogTrace([System.Runtime.CompilerServices.CallerMemberName] string memberName = "", [System.Runtime.CompilerServices.CallerFilePath] string sourceFilePath = "", [System.Runtime.CompilerServices.CallerLineNumber] int sourceLineNumber = 0)
-    {
-        Logger.LogTrace(memberName, sourceFilePath, sourceLineNumber);
+                break;
+        }
     }
 }

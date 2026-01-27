@@ -8,6 +8,7 @@ using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 using Windows.Foundation;
 
@@ -22,6 +23,8 @@ public sealed class CommandProviderWrapper
     private readonly ExtensionObject<ICommandProvider> _commandProvider;
 
     private readonly TaskScheduler _taskScheduler;
+
+    private readonly ILogger _logger;
 
     public TopLevelViewModel[] TopLevelItems { get; private set; } = [];
 
@@ -51,15 +54,16 @@ public sealed class CommandProviderWrapper
         }
     }
 
-    public CommandProviderWrapper(ICommandProvider provider, TaskScheduler mainThread)
+    public CommandProviderWrapper(ICommandProvider provider, TaskScheduler mainThread, ILogger logger)
     {
         // This ctor is only used for in-proc builtin commands. So the Unsafe!
         // calls are pretty dang safe actually.
         _commandProvider = new(provider);
         _taskScheduler = mainThread;
+        _logger = logger;
 
         // Hook the extension back into us
-        ExtensionHost = new CommandPaletteHost(provider);
+        ExtensionHost = new CommandPaletteHost(provider, logger);
         _commandProvider.Unsafe!.InitializeWithHost(ExtensionHost);
 
         _commandProvider.Unsafe!.ItemsChanged += CommandProvider_ItemsChanged;
@@ -77,11 +81,12 @@ public sealed class CommandProviderWrapper
         Logger.LogDebug($"Initialized command provider {ProviderId}");
     }
 
-    public CommandProviderWrapper(IExtensionWrapper extension, TaskScheduler mainThread)
+    public CommandProviderWrapper(IExtensionWrapper extension, TaskScheduler mainThread, ILogger logger)
     {
         _taskScheduler = mainThread;
+        _logger = logger;
         Extension = extension;
-        ExtensionHost = new CommandPaletteHost(extension);
+        ExtensionHost = new CommandPaletteHost(extension, logger);
         if (!Extension.IsRunning())
         {
             throw new ArgumentException("You forgot to start the extension. This is a CmdPal error - we need to make sure to call StartExtensionAsync");
@@ -131,7 +136,8 @@ public sealed class CommandProviderWrapper
             return;
         }
 
-        var settings = serviceProvider.GetService<SettingsModel>()!;
+        var settingsService = serviceProvider.GetRequiredService<SettingsService>();
+        var settings = settingsService.CurrentSettings;
 
         IsActive = GetProviderSettings(settings).IsEnabled;
         if (!IsActive)
@@ -168,7 +174,7 @@ public sealed class CommandProviderWrapper
             Settings = new(model.Settings, this, _taskScheduler);
 
             // We do need to explicitly initialize commands though
-            InitializeCommands(commands, fallbacks, serviceProvider, pageContext);
+            InitializeCommands(commands, fallbacks, settingsService, serviceProvider, pageContext);
 
             Logger.LogDebug($"Loaded commands from {DisplayName} ({ProviderId})");
         }
@@ -180,15 +186,15 @@ public sealed class CommandProviderWrapper
         }
     }
 
-    private void InitializeCommands(ICommandItem[] commands, IFallbackCommandItem[] fallbacks, IServiceProvider serviceProvider, WeakReference<IPageContext> pageContext)
+    private void InitializeCommands(ICommandItem[] commands, IFallbackCommandItem[] fallbacks, SettingsService settingsService, IServiceProvider serviceProvider, WeakReference<IPageContext> pageContext)
     {
-        var settings = serviceProvider.GetService<SettingsModel>()!;
+        var settings = settingsService.CurrentSettings;
         var providerSettings = GetProviderSettings(settings);
 
         Func<ICommandItem?, bool, TopLevelViewModel> makeAndAdd = (ICommandItem? i, bool fallback) =>
         {
             CommandItemViewModel commandItemViewModel = new(new(i), pageContext);
-            TopLevelViewModel topLevelViewModel = new(commandItemViewModel, fallback, ExtensionHost, ProviderId, settings, providerSettings, serviceProvider, i);
+            TopLevelViewModel topLevelViewModel = new(commandItemViewModel, fallback, ExtensionHost, ProviderId, settingsService, providerSettings, serviceProvider, i);
             topLevelViewModel.InitializeProperties();
 
             return topLevelViewModel;

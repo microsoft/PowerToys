@@ -131,7 +131,7 @@
             IsItemClickEnabled="True"
             ItemClick="CommandsDropdown_ItemClick"
             ItemTemplateSelector="{StaticResource ContextItemTemplateSelector}"
-            ItemsSource="{x:Bind ViewModel.FilteredItems, Mode=OneWay}"
+            ItemsSource="{x:Bind viewModel.FilteredItems, Mode=OneWay}"
             PreviewKeyDown="CommandsDropdown_PreviewKeyDown"
             SelectionMode="Single">
             <ListView.Resources>
@@ -165,7 +165,7 @@
             <VisualStateGroup x:Name="ContextMenuOrder">
                 <VisualState x:Name="FilterOnTop">
                     <VisualState.StateTriggers>
-                        <ui:IsEqualStateTrigger Value="{x:Bind ViewModel.FilterOnTop, Mode=OneWay}" To="True" />
+                        <ui:IsEqualStateTrigger Value="{x:Bind viewModel.FilterOnTop, Mode=OneWay}" To="True" />
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
                         <Setter Target="CommandsDropdown.(Grid.Row)" Value="1" />
@@ -177,7 +177,7 @@
                 </VisualState>
                 <VisualState x:Name="FilterOnBottom">
                     <VisualState.StateTriggers>
-                        <ui:IsEqualStateTrigger Value="{x:Bind ViewModel.FilterOnTop, Mode=OneWay}" To="False" />
+                        <ui:IsEqualStateTrigger Value="{x:Bind viewModel.FilterOnTop, Mode=OneWay}" To="False" />
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
                         <Setter Target="CommandsDropdown.(Grid.Row)" Value="0" />

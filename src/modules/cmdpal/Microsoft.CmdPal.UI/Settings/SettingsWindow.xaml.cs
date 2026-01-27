@@ -9,6 +9,8 @@ using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.Messages;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.UI.Input;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
@@ -49,7 +51,8 @@ public sealed partial class SettingsWindow : WindowEx,
         WeakReferenceMessenger.Default.Register<NavigateToExtensionSettingsMessage>(this);
         WeakReferenceMessenger.Default.Register<QuitMessage>(this);
 
-        _localKeyboardListener = new LocalKeyboardListener();
+        var logger = App.Current.Services.GetRequiredService<ILogger<LocalKeyboardListener>>();
+        _localKeyboardListener = new LocalKeyboardListener(logger);
         _localKeyboardListener.KeyPressed += LocalKeyboardListener_OnKeyPressed;
         _localKeyboardListener.Start();
         Closed += SettingsWindow_Closed;

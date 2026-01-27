@@ -11,8 +11,10 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 
 public partial class FallbackSettingsViewModel : ObservableObject
 {
-    private readonly SettingsModel _settings;
+    private readonly SettingsService _settingsService;
     private readonly FallbackSettings _fallbackSettings;
+
+    private SettingsModel Settings => _settingsService.CurrentSettings;
 
     public string DisplayName { get; private set; } = string.Empty;
 
@@ -63,10 +65,10 @@ public partial class FallbackSettingsViewModel : ObservableObject
     public FallbackSettingsViewModel(
     TopLevelViewModel fallback,
     FallbackSettings fallbackSettings,
-    SettingsModel settingsModel,
+    SettingsService settingsService,
     ProviderSettingsViewModel providerSettings)
     {
-        _settings = settingsModel;
+        _settingsService = settingsService;
         _fallbackSettings = fallbackSettings;
 
         Id = fallback.Id;
@@ -80,7 +82,7 @@ public partial class FallbackSettingsViewModel : ObservableObject
 
     private void Save()
     {
-        SettingsModel.SaveSettings(_settings);
+        _settingsService.SaveSettings(Settings);
         WeakReferenceMessenger.Default.Send<ReloadCommandsMessage>(new());
     }
 }

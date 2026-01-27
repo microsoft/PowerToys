@@ -13,7 +13,7 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 
 public partial class SettingsService
 {
-    private readonly ILogger logger;
+    private readonly ILogger _logger;
     private readonly string _filePath;
     private const string DeprecatedHotkeyGoesHomeKey = "HotkeyGoesHome";
     private SettingsModel _settingsModel;
@@ -24,14 +24,14 @@ public partial class SettingsService
 
     public SettingsService(ILogger logger)
     {
-        this.logger = logger;
+        this._logger = logger;
         _filePath = PersistenceService.SettingsJsonPath("settings.json");
         _settingsModel = LoadSettings();
     }
 
     private SettingsModel LoadSettings()
     {
-        var settings = PersistenceService.LoadObject<SettingsModel>(_filePath, JsonSerializationContext.Default.SettingsModel!, logger);
+        var settings = PersistenceService.LoadObject<SettingsModel>(_filePath, JsonSerializationContext.Default.SettingsModel!, _logger);
 
         var migratedAny = false;
         try
@@ -64,7 +64,7 @@ public partial class SettingsService
                         JsonSerializationContext.Default.Options,
                         beforeWriteMutation: obj => obj.Remove(DeprecatedHotkeyGoesHomeKey),
                         afterWriteCallback: m => FinalizeSettingsSave(m),
-                        logger);
+                        _logger);
     }
 
     private void FinalizeSettingsSave(SettingsModel model)

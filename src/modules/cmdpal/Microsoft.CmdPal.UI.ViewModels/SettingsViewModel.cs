@@ -4,13 +4,14 @@
 
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
-public partial class SettingsViewModel : INotifyPropertyChanged
+public partial class SettingsViewModel : INotifyPropertyChanged, IDisposable
 {
     private static readonly List<TimeSpan> AutoGoHomeIntervals =
     [
@@ -25,8 +26,11 @@ public partial class SettingsViewModel : INotifyPropertyChanged
         TimeSpan.FromSeconds(180),
     ];
 
-    private readonly SettingsModel _settings;
+    private readonly SettingsService _settingsService;
     private readonly TopLevelCommandManager _topLevelCommandManager;
+    private bool _disposed;
+
+    private SettingsModel Settings => _settingsService.CurrentSettings;
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -34,10 +38,10 @@ public partial class SettingsViewModel : INotifyPropertyChanged
 
     public HotkeySettings? Hotkey
     {
-        get => _settings.Hotkey;
+        get => Settings.Hotkey;
         set
         {
-            _settings.Hotkey = value ?? SettingsModel.DefaultActivationShortcut;
+            Settings.Hotkey = value ?? SettingsModel.DefaultActivationShortcut;
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Hotkey)));
             Save();
         }
@@ -45,10 +49,10 @@ public partial class SettingsViewModel : INotifyPropertyChanged
 
     public bool UseLowLevelGlobalHotkey
     {
-        get => _settings.UseLowLevelGlobalHotkey;
+        get => Settings.UseLowLevelGlobalHotkey;
         set
         {
-            _settings.UseLowLevelGlobalHotkey = value;
+            Settings.UseLowLevelGlobalHotkey = value;
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Hotkey)));
             Save();
         }
@@ -56,90 +60,90 @@ public partial class SettingsViewModel : INotifyPropertyChanged
 
     public bool AllowExternalReload
     {
-        get => _settings.AllowExternalReload;
+        get => Settings.AllowExternalReload;
         set
         {
-            _settings.AllowExternalReload = value;
+            Settings.AllowExternalReload = value;
             Save();
         }
     }
 
     public bool ShowAppDetails
     {
-        get => _settings.ShowAppDetails;
+        get => Settings.ShowAppDetails;
         set
         {
-            _settings.ShowAppDetails = value;
+            Settings.ShowAppDetails = value;
             Save();
         }
     }
 
     public bool BackspaceGoesBack
     {
-        get => _settings.BackspaceGoesBack;
+        get => Settings.BackspaceGoesBack;
         set
         {
-            _settings.BackspaceGoesBack = value;
+            Settings.BackspaceGoesBack = value;
             Save();
         }
     }
 
     public bool SingleClickActivates
     {
-        get => _settings.SingleClickActivates;
+        get => Settings.SingleClickActivates;
         set
         {
-            _settings.SingleClickActivates = value;
+            Settings.SingleClickActivates = value;
             Save();
         }
     }
 
     public bool HighlightSearchOnActivate
     {
-        get => _settings.HighlightSearchOnActivate;
+        get => Settings.HighlightSearchOnActivate;
         set
         {
-            _settings.HighlightSearchOnActivate = value;
+            Settings.HighlightSearchOnActivate = value;
             Save();
         }
     }
 
     public int MonitorPositionIndex
     {
-        get => (int)_settings.SummonOn;
+        get => (int)Settings.SummonOn;
         set
         {
-            _settings.SummonOn = (MonitorBehavior)value;
+            Settings.SummonOn = (MonitorBehavior)value;
             Save();
         }
     }
 
     public bool ShowSystemTrayIcon
     {
-        get => _settings.ShowSystemTrayIcon;
+        get => Settings.ShowSystemTrayIcon;
         set
         {
-            _settings.ShowSystemTrayIcon = value;
+            Settings.ShowSystemTrayIcon = value;
             Save();
         }
     }
 
     public bool IgnoreShortcutWhenFullscreen
     {
-        get => _settings.IgnoreShortcutWhenFullscreen;
+        get => Settings.IgnoreShortcutWhenFullscreen;
         set
         {
-            _settings.IgnoreShortcutWhenFullscreen = value;
+            Settings.IgnoreShortcutWhenFullscreen = value;
             Save();
         }
     }
 
     public bool DisableAnimations
     {
-        get => _settings.DisableAnimations;
+        get => Settings.DisableAnimations;
         set
         {
-            _settings.DisableAnimations = value;
+            Settings.DisableAnimations = value;
             Save();
         }
     }
@@ -148,7 +152,7 @@ public partial class SettingsViewModel : INotifyPropertyChanged
     {
         get
         {
-            var index = AutoGoHomeIntervals.IndexOf(_settings.AutoGoHomeInterval);
+            var index = AutoGoHomeIntervals.IndexOf(Settings.AutoGoHomeInterval);
             return index >= 0 ? index : 0;
         }
 
@@ -156,7 +160,7 @@ public partial class SettingsViewModel : INotifyPropertyChanged
         {
             if (value >= 0 && value < AutoGoHomeIntervals.Count)
             {
-                _settings.AutoGoHomeInterval = AutoGoHomeIntervals[value];
+                Settings.AutoGoHomeInterval = AutoGoHomeIntervals[value];
             }
 
             Save();
@@ -165,10 +169,10 @@ public partial class SettingsViewModel : INotifyPropertyChanged
 
     public int EscapeKeyBehaviorIndex
     {
-        get => (int)_settings.EscapeKeyBehaviorSetting;
+        get => (int)Settings.EscapeKeyBehaviorSetting;
         set
         {
-            _settings.EscapeKeyBehaviorSetting = (EscapeKeyBehavior)value;
+            Settings.EscapeKeyBehaviorSetting = (EscapeKeyBehavior)value;
             Save();
         }
     }
@@ -179,25 +183,25 @@ public partial class SettingsViewModel : INotifyPropertyChanged
 
     public SettingsExtensionsViewModel Extensions { get; }
 
-    public SettingsViewModel(SettingsModel settings, TopLevelCommandManager topLevelCommandManager, TaskScheduler scheduler, IThemeService themeService)
+    public SettingsViewModel(SettingsService settingsService, TopLevelCommandManager topLevelCommandManager, TaskScheduler scheduler, IThemeService themeService)
     {
-        _settings = settings;
+        _settingsService = settingsService;
         _topLevelCommandManager = topLevelCommandManager;
 
-        Appearance = new AppearanceSettingsViewModel(themeService, _settings);
+        Appearance = new AppearanceSettingsViewModel(themeService, _settingsService);
 
         var activeProviders = GetCommandProviders();
-        var allProviderSettings = _settings.ProviderSettings;
+        var allProviderSettings = Settings.ProviderSettings;
 
         var fallbacks = new List<FallbackSettingsViewModel>();
-        var currentRankings = _settings.FallbackRanks;
+        var currentRankings = Settings.FallbackRanks;
         var needsSave = false;
 
         foreach (var item in activeProviders)
         {
-            var providerSettings = settings.GetProviderSettings(item);
+            var providerSettings = Settings.GetProviderSettings(item);
 
-            var settingsModel = new ProviderSettingsViewModel(item, providerSettings, _settings);
+            var settingsModel = new ProviderSettingsViewModel(item, providerSettings, _settingsService);
             CommandProviders.Add(settingsModel);
 
             fallbacks.AddRange(settingsModel.FallbackCommands);
@@ -239,10 +243,22 @@ public partial class SettingsViewModel : INotifyPropertyChanged
 
     public void ApplyFallbackSort()
     {
-        _settings.FallbackRanks = FallbackRankings.Select(s => s.Id).ToArray();
+        Settings.FallbackRanks = FallbackRankings.Select(s => s.Id).ToArray();
         Save();
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(FallbackRankings)));
     }
 
-    private void Save() => SettingsModel.SaveSettings(_settings);
+    private void Save() => _settingsService.SaveSettings(Settings);
+
+    public void Dispose()
+    {
+        if (_disposed)
+        {
+            return;
+        }
+
+        Appearance.Dispose();
+        _disposed = true;
+        GC.SuppressFinalize(this);
+    }
 }

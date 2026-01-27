@@ -42,7 +42,7 @@ namespace Microsoft.CmdPal.UI;
 /// </summary>
 public partial class App : Application
 {
-    private readonly ILogger logger;
+    private readonly ILogger _logger;
     private readonly GlobalErrorHandler _globalErrorHandler;
     private readonly IServiceProvider _services;
 
@@ -62,7 +62,7 @@ public partial class App : Application
     /// </summary>
     public App(ILogger logger)
     {
-        this.logger = logger;
+        _logger = logger;
         _globalErrorHandler = new((CmdPalLogger)logger);
 
 #if !CMDPAL_DISABLE_GLOBAL_ERROR_HANDLER
@@ -91,7 +91,7 @@ public partial class App : Application
     /// <param name="args">Details about the launch request and process.</param>
     protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
     {
-        AppWindow = new MainWindow();
+        AppWindow = _services.GetRequiredService<MainWindow>();
 
         var activatedEventArgs = Microsoft.Windows.AppLifecycle.AppInstance.GetCurrent().GetActivatedEventArgs();
         ((MainWindow)AppWindow).HandleLaunchNonUI(activatedEventArgs);
@@ -106,7 +106,7 @@ public partial class App : Application
         ServiceCollection services = new();
 
         // Root services
-        services.AddSingleton<ILogger>(logger);
+        services.AddSingleton<ILogger>(_logger);
         services.AddSingleton(TaskScheduler.FromCurrentSynchronizationContext());
 
         // Register settings & app state services first
@@ -198,8 +198,16 @@ public partial class App : Application
 
         services.AddSingleton<IThemeService, ThemeService>();
         services.AddSingleton<ResourceSwapper>();
-    }
+        services.AddSingleton<LocalKeyboardListener>();
 
+        // ViewModels
+        services.AddTransient<SettingsViewModel>();
+        services.AddSingleton<CommandBarViewModel>();
+        services.AddSingleton<ContextMenuViewModel>();
+
+        // Windows
+        services.AddSingleton<MainWindow>();
+    }
 
     [LoggerMessage(Level = LogLevel.Error, Message = "Couldn't load winget")]
     partial void Log_FailedToLoadWinget(Exception ex);

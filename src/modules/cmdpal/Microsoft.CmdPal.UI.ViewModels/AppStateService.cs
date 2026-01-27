@@ -10,7 +10,7 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 
 public partial class AppStateService
 {
-    private readonly ILogger logger;
+    private readonly ILogger _logger;
     private readonly string _filePath;
     private AppStateModel _appStateModel;
 
@@ -20,14 +20,14 @@ public partial class AppStateService
 
     public AppStateService(ILogger logger)
     {
-        this.logger = logger;
+        _logger = logger;
         _filePath = PersistenceService.SettingsJsonPath("state.json");
         _appStateModel = LoadState();
     }
 
     private AppStateModel LoadState()
     {
-        return PersistenceService.LoadObject<AppStateModel>(_filePath, JsonSerializationContext.Default.AppStateModel!, logger);
+        return PersistenceService.LoadObject<AppStateModel>(_filePath, JsonSerializationContext.Default.AppStateModel!, _logger);
     }
 
     public void SaveSettings(AppStateModel model)
@@ -39,7 +39,7 @@ public partial class AppStateService
                         JsonSerializationContext.Default.Options,
                         null,
                         afterWriteCallback: m => FinalizeStateSave(m),
-                        logger);
+                        _logger);
     }
 
     private void FinalizeStateSave(AppStateModel model)

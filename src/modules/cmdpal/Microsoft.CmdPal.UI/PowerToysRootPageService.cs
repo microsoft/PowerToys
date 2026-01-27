@@ -8,6 +8,7 @@ using ManagedCommon;
 using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.MainPage;
+using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CommandPalette.Extensions;
 using WinRT;
 
@@ -22,13 +23,13 @@ internal sealed class PowerToysRootPageService : IRootPageService
     private IExtensionWrapper? _activeExtension;
     private Lazy<MainListPage> _mainListPage;
 
-    public PowerToysRootPageService(TopLevelCommandManager topLevelCommandManager, SettingsModel settings, AliasManager aliasManager, AppStateService appStateService)
+    public PowerToysRootPageService(TopLevelCommandManager topLevelCommandManager, SettingsService settingsService, AliasManager aliasManager, AppStateService appStateService)
     {
         _tlcManager = topLevelCommandManager;
 
         _mainListPage = new Lazy<MainListPage>(() =>
         {
-            return new MainListPage(_tlcManager, settings, aliasManager, appStateService);
+            return new MainListPage(_tlcManager, settingsService, aliasManager, appStateService);
         });
     }
 

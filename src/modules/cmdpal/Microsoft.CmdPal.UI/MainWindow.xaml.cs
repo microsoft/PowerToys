@@ -6,7 +6,6 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using CmdPalKeyboardService;
 using CommunityToolkit.Mvvm.Messaging;
-using ManagedCommon;
 using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.Ext.ClipboardHistory.Messages;
@@ -17,8 +16,9 @@ using Microsoft.CmdPal.UI.Messages;
 using Microsoft.CmdPal.UI.Services;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
+using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CmdPal.UI.ViewModels.Services;
-using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI;
 using Microsoft.UI.Composition;
@@ -31,7 +31,6 @@ using Windows.ApplicationModel.Activation;
 using Windows.Foundation;
 using Windows.Graphics;
 using Windows.System;
-using Windows.UI;
 using Windows.UI.WindowManagement;
 using Windows.Win32;
 using Windows.Win32.Foundation;
@@ -75,6 +74,10 @@ public sealed partial class MainWindow : WindowEx,
     private readonly HiddenOwnerWindowBehavior _hiddenOwnerBehavior = new();
     private readonly IThemeService _themeService;
     private readonly WindowThemeSynchronizer _windowThemeSynchronizer;
+    private readonly ILogger _logger;
+    private readonly SettingsService _settingsService;
+    private readonly TrayIconService _trayIconService;
+    private readonly IExtensionService _extensionService;
     private bool _ignoreHotKeyWhenFullScreen = true;
     private bool _themeServiceInitialized;
 
@@ -96,16 +99,26 @@ public sealed partial class MainWindow : WindowEx,
 
     private MainWindowViewModel ViewModel { get; }
 
-    public MainWindow()
+    public MainWindow(
+        MainWindowViewModel mainWindowViewModel,
+        IThemeService themeService,
+        SettingsService settingsService,
+        TrayIconService trayIconService,
+        LocalKeyboardListener localKeyboardListener,
+        IExtensionService extensionService,
+        ILogger logger)
     {
         InitializeComponent();
+        _logger = logger;
+        _trayIconService = trayIconService;
+        _extensionService = extensionService;
 
-        ViewModel = App.Current.Services.GetService<MainWindowViewModel>()!;
+        ViewModel = mainWindowViewModel;
 
         _autoGoHomeTimer = new DispatcherTimer();
         _autoGoHomeTimer.Tick += OnAutoGoHomeTimerOnTick;
 
-        _themeService = App.Current.Services.GetRequiredService<IThemeService>();
+        _themeService = themeService;
         _themeService.ThemeChanged += ThemeServiceOnThemeChanged;
         _windowThemeSynchronizer = new WindowThemeSynchronizer(_themeService, this);
 
@@ -162,7 +175,8 @@ public sealed partial class MainWindow : WindowEx,
 
         // Load our settings, and then also wire up a settings changed handler
         HotReloadSettings();
-        App.Current.Services.GetService<SettingsModel>()!.SettingsChanged += SettingsChangedHandler;
+        _settingsService = settingsService;
+        _settingsService.SettingsChanged += SettingsChangedHandler;
 
         // Make sure that we update the acrylic theme when the OS theme changes
         RootElement.ActualThemeChanged += (s, e) => DispatcherQueue.TryEnqueue(UpdateAcrylic);
@@ -173,7 +187,7 @@ public sealed partial class MainWindow : WindowEx,
             Summon(string.Empty);
         });
 
-        _localKeyboardListener = new LocalKeyboardListener();
+        _localKeyboardListener = localKeyboardListener;
         _localKeyboardListener.KeyPressed += LocalKeyboardListener_OnKeyPressed;
         _localKeyboardListener.Start();
 
@@ -227,7 +241,7 @@ public sealed partial class MainWindow : WindowEx,
 
     private void RestoreWindowPosition()
     {
-        var settings = App.Current.Services.GetService<SettingsModel>();
+        var settings = _settingsService.CurrentSettings;
         if (settings?.LastWindowPosition is not WindowPosition savedPosition)
         {
             PositionCentered();
@@ -275,10 +289,10 @@ public sealed partial class MainWindow : WindowEx,
 
     private void HotReloadSettings()
     {
-        var settings = App.Current.Services.GetService<SettingsModel>()!;
+        var settings = _settingsService.CurrentSettings;
 
         SetupHotkey(settings);
-        App.Current.Services.GetService<TrayIconService>()!.SetupTrayIcon(settings.ShowSystemTrayIcon);
+        _trayIconService.SetupTrayIcon(settings.ShowSystemTrayIcon);
 
         _ignoreHotKeyWhenFullScreen = settings.IgnoreShortcutWhenFullscreen;
 
@@ -326,7 +340,7 @@ public sealed partial class MainWindow : WindowEx,
         }
         catch (Exception ex)
         {
-            Logger.LogError("Failed to update backdrop", ex);
+            Log_FailureToUpdateBackdrop(ex);
         }
     }
 
@@ -391,7 +405,7 @@ public sealed partial class MainWindow : WindowEx,
     /// A window rectangle in physical pixels, moved to the nearest display and resized
     /// if the DPI has changed.
     /// </returns>
-    private static RectInt32 EnsureWindowIsVisible(RectInt32 windowRect, SizeInt32 originalScreen, int originalDpi)
+    private RectInt32 EnsureWindowIsVisible(RectInt32 windowRect, SizeInt32 originalScreen, int originalDpi)
     {
         var displayArea = DisplayArea.GetFromRect(windowRect, DisplayAreaFallback.Nearest);
         if (displayArea is null)
@@ -463,7 +477,7 @@ public sealed partial class MainWindow : WindowEx,
         return new RectInt32(targetX, targetY, targetWidth, targetHeight);
     }
 
-    private static int GetEffectiveDpiFromDisplayId(DisplayArea displayArea)
+    private int GetEffectiveDpiFromDisplayId(DisplayArea displayArea)
     {
         var effectiveDpi = 96;
 
@@ -477,7 +491,7 @@ public sealed partial class MainWindow : WindowEx,
             }
             else
             {
-                Logger.LogWarning($"GetDpiForMonitor failed with HRESULT: 0x{hr.Value:X8} on display {displayArea.DisplayId}");
+                Log_GetDpiForMonitorFailed(hr.Value, displayArea.DisplayId);
             }
         }
 
@@ -537,7 +551,7 @@ public sealed partial class MainWindow : WindowEx,
 
     public void Receive(ShowWindowMessage message)
     {
-        var settings = App.Current.Services.GetService<SettingsModel>()!;
+        var settings = _settingsService.CurrentSettings;
 
         // Start session tracking
         _sessionStopwatch = Stopwatch.StartNew();
@@ -686,7 +700,7 @@ public sealed partial class MainWindow : WindowEx,
             var hr = PInvoke.DwmSetWindowAttribute(_hwnd, DWMWINDOWATTRIBUTE.DWMWA_CLOAK, &value, (uint)sizeof(BOOL));
             if (hr.Failed)
             {
-                Logger.LogWarning($"DWM cloaking of the main window failed. HRESULT: {hr.Value}.");
+                Log_DwmCloakingFailed(hr.Value);
             }
 
             wasCloaked = hr.Succeeded;
@@ -713,10 +727,9 @@ public sealed partial class MainWindow : WindowEx,
 
     internal void MainWindow_Closed(object sender, WindowEventArgs args)
     {
-        var serviceProvider = App.Current.Services;
         UpdateWindowPositionInMemory();
 
-        var settings = serviceProvider.GetService<SettingsModel>();
+        var settings = _settingsService.CurrentSettings;
         if (settings is not null)
         {
             settings.LastWindowPosition = new WindowPosition
@@ -730,13 +743,12 @@ public sealed partial class MainWindow : WindowEx,
                 ScreenHeight = _currentWindowPosition.ScreenHeight,
             };
 
-            SettingsModel.SaveSettings(settings);
+            _settingsService.SaveSettings(settings);
         }
 
-        var extensionService = serviceProvider.GetService<IExtensionService>()!;
-        extensionService.SignalStopExtensionsAsync();
+        _extensionService.SignalStopExtensionsAsync();
 
-        App.Current.Services.GetService<TrayIconService>()!.Destroy();
+        _trayIconService.Destroy();
 
         // WinUI bug is causing a crash on shutdown when FailFastOnErrors is set to true (#51773592).
         // Workaround by turning it off before shutdown.
@@ -811,7 +823,7 @@ public sealed partial class MainWindow : WindowEx,
             }
             catch (Exception ex)
             {
-                Logger.LogError("Failed to initialize ThemeService", ex);
+                Log_FailedToInitializeThemeService(ex);
             }
         }
 
@@ -893,15 +905,15 @@ public sealed partial class MainWindow : WindowEx,
                         }
                         else if (uri.StartsWith("x-cmdpal://reload", StringComparison.OrdinalIgnoreCase))
                         {
-                            var settings = App.Current.Services.GetService<SettingsModel>();
+                            var settings = _settingsService.CurrentSettings;
                             if (settings?.AllowExternalReload == true)
                             {
-                                Logger.LogInfo("External Reload triggered");
+                                Log_ExternalReloadTriggered();
                                 WeakReferenceMessenger.Default.Send<ReloadCommandsMessage>(new());
                             }
                             else
                             {
-                                Logger.LogInfo("External Reload is disabled");
+                                Log_ExternalReloadDisabled();
                             }
 
                             return;
@@ -920,17 +932,11 @@ public sealed partial class MainWindow : WindowEx,
             // if the args are not valid or not passed correctly.
             if (ex.HResult is RPC_S_SERVER_UNAVAILABLE or RPC_S_CALL_FAILED)
             {
-                Logger.LogWarning(
-                    $"COM exception (HRESULT {ex.HResult}) when accessing activation arguments. " +
-                    $"This might be due to the calling application not passing them correctly or exiting before we could read them. " +
-                    $"The application will continue running and fall back to showing the Command Palette window.");
+                Log_ComExceptionAccessingActivationArgs(ex.HResult);
             }
             else
             {
-                Logger.LogError(
-                    $"COM exception (HRESULT {ex.HResult}) when activating the application. " +
-                    $"The application will continue running and fall back to showing the Command Palette window.",
-                    ex);
+                Log_ComExceptionActivatingApplication(ex.HResult, ex);
             }
         }
 
@@ -1158,4 +1164,28 @@ public sealed partial class MainWindow : WindowEx,
             PInvoke.SetForegroundWindow(_hwnd);
         }
     }
+
+    [LoggerMessage(Level = LogLevel.Error, Message = "Failed to update backdrop")]
+    private partial void Log_FailureToUpdateBackdrop(Exception ex);
+
+    [LoggerMessage(Level = LogLevel.Warning, Message = "GetDpiForMonitor failed with HRESULT: 0x{hResult:X8} on display {displayId}")]
+    private partial void Log_GetDpiForMonitorFailed(int hResult, Microsoft.UI.DisplayId displayId);
+
+    [LoggerMessage(Level = LogLevel.Warning, Message = "DWM cloaking of the main window failed. HRESULT: {hResult}.")]
+    private partial void Log_DwmCloakingFailed(int hResult);
+
+    [LoggerMessage(Level = LogLevel.Error, Message = "Failed to initialize ThemeService")]
+    private partial void Log_FailedToInitializeThemeService(Exception ex);
+
+    [LoggerMessage(Level = LogLevel.Information, Message = "External Reload triggered")]
+    private partial void Log_ExternalReloadTriggered();
+
+    [LoggerMessage(Level = LogLevel.Information, Message = "External Reload is disabled")]
+    private partial void Log_ExternalReloadDisabled();
+
+    [LoggerMessage(Level = LogLevel.Warning, Message = "COM exception (HRESULT {hResult}) when accessing activation arguments. This might be due to the calling application not passing them correctly or exiting before we could read them. The application will continue running and fall back to showing the Command Palette window.")]
+    private partial void Log_ComExceptionAccessingActivationArgs(int hResult);
+
+    [LoggerMessage(Level = LogLevel.Error, Message = "COM exception (HRESULT {hResult}) when activating the application. The application will continue running and fall back to showing the Command Palette window.")]
+    private partial void Log_ComExceptionActivatingApplication(int hResult, Exception ex);
 }

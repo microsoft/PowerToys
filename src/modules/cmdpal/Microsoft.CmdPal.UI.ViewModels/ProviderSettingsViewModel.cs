@@ -16,19 +16,21 @@ public partial class ProviderSettingsViewModel : ObservableObject
 {
     private readonly CommandProviderWrapper _provider;
     private readonly ProviderSettings _providerSettings;
-    private readonly SettingsModel _settings;
+    private readonly SettingsService _settingsService;
 
     private readonly Lock _initializeSettingsLock = new();
     private Task? _initializeSettingsTask;
 
+    private SettingsModel Settings => _settingsService.CurrentSettings;
+
     public ProviderSettingsViewModel(
         CommandProviderWrapper provider,
         ProviderSettings providerSettings,
-        SettingsModel settings)
+        SettingsService settingsService)
     {
         _provider = provider;
         _providerSettings = providerSettings;
-        _settings = settings;
+        _settingsService = settingsService;
 
         LoadingSettings = _provider.Settings?.HasSettings ?? false;
 
@@ -172,18 +174,18 @@ public partial class ProviderSettingsViewModel : ObservableObject
         {
             if (_providerSettings.FallbackCommands.TryGetValue(fallbackItem.Id, out var fallbackSettings))
             {
-                fallbackViewModels.Add(new FallbackSettingsViewModel(fallbackItem, fallbackSettings, _settings, this));
+                fallbackViewModels.Add(new FallbackSettingsViewModel(fallbackItem, fallbackSettings, _settingsService, this));
             }
             else
             {
-                fallbackViewModels.Add(new FallbackSettingsViewModel(fallbackItem, new(), _settings, this));
+                fallbackViewModels.Add(new FallbackSettingsViewModel(fallbackItem, new(), _settingsService, this));
             }
         }
 
         FallbackCommands = fallbackViewModels;
     }
 
-    private void Save() => SettingsModel.SaveSettings(_settings);
+    private void Save() => _settingsService.SaveSettings(Settings);
 
     private void InitializeSettingsPage()
     {

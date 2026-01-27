@@ -18,7 +18,7 @@ public partial class ShellViewModel : ObservableObject,
     IRecipient<PerformCommandMessage>,
     IRecipient<HandleCommandResultMessage>
 {
-    private readonly ILogger logger;
+    private readonly ILogger _logger;
     private readonly IRootPageService _rootPageService;
     private readonly IAppHostService _appHostService;
     private readonly TaskScheduler _scheduler;
@@ -92,7 +92,7 @@ public partial class ShellViewModel : ObservableObject,
         IAppHostService appHostService,
         ILogger logger)
     {
-        this.logger = logger;
+        this._logger = logger;
         _pageViewModelFactory = pageViewModelFactory;
         _scheduler = scheduler;
         _rootPageService = rootPageService;

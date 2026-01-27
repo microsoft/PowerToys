@@ -71,4 +71,43 @@ public partial class SettingsModel : ObservableObject
     public BackgroundImageFit BackgroundImageFit { get; set; }
 
     public string? BackgroundImagePath { get; set; }
+
+    // END SETTINGS
+    ///////////////////////////////////////////////////////////////////////////
+
+    public ProviderSettings GetProviderSettings(CommandProviderWrapper provider)
+    {
+        ProviderSettings? settings;
+        if (!ProviderSettings.TryGetValue(provider.ProviderId, out settings))
+        {
+            settings = new ProviderSettings(provider);
+            settings.Connect(provider);
+            ProviderSettings[provider.ProviderId] = settings;
+        }
+        else
+        {
+            settings.Connect(provider);
+        }
+
+        return settings;
+    }
+
+    public string[] GetGlobalFallbacks()
+    {
+        var globalFallbacks = new HashSet<string>();
+
+        foreach (var provider in ProviderSettings.Values)
+        {
+            foreach (var fallback in provider.FallbackCommands)
+            {
+                var fallbackSetting = fallback.Value;
+                if (fallbackSetting.IsEnabled && fallbackSetting.IncludeInGlobalResults)
+                {
+                    globalFallbacks.Add(fallback.Key);
+                }
+            }
+        }
+
+        return globalFallbacks.ToArray();
+    }
 }

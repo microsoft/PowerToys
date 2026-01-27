@@ -7,6 +7,7 @@ using CommunityToolkit.WinUI;
 using Microsoft.CmdPal.UI.Messages;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
+using Microsoft.Extensions.Logging;
 using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -21,27 +22,26 @@ public sealed partial class ContextMenu : UserControl,
     IRecipient<UpdateCommandBarMessage>,
     IRecipient<TryCommandKeybindingMessage>
 {
-    public ContextMenuViewModel ViewModel { get; } = new();
+    private readonly ContextMenuViewModel viewModel;
 
-    public ContextMenu()
+    public ContextMenu(ContextMenuViewModel model, ILogger<ContextMenuViewModel> logger)
     {
         this.InitializeComponent();
+
+        viewModel = model;
 
         // RegisterAll isn't AOT compatible
         WeakReferenceMessenger.Default.Register<OpenContextMenuMessage>(this);
         WeakReferenceMessenger.Default.Register<UpdateCommandBarMessage>(this);
         WeakReferenceMessenger.Default.Register<TryCommandKeybindingMessage>(this);
 
-        if (ViewModel is not null)
-        {
-            ViewModel.PropertyChanged += ViewModel_PropertyChanged;
-        }
+        viewModel.PropertyChanged += ViewModel_PropertyChanged;
     }
 
     public void Receive(OpenContextMenuMessage message)
     {
-        ViewModel.FilterOnTop = message.ContextMenuFilterLocation == ContextMenuFilterLocation.Top;
-        ViewModel.ResetContextMenu();
+        viewModel.FilterOnTop = message.ContextMenuFilterLocation == ContextMenuFilterLocation.Top;
+        viewModel.ResetContextMenu();
 
         UpdateUiForStackChange();
     }
@@ -53,7 +53,7 @@ public sealed partial class ContextMenu : UserControl,
 
     public void Receive(TryCommandKeybindingMessage msg)
     {
-        var result = ViewModel?.CheckKeybinding(msg.Ctrl, msg.Alt, msg.Shift, msg.Win, msg.Key);
+        var result = viewModel?.CheckKeybinding(msg.Ctrl, msg.Alt, msg.Shift, msg.Win, msg.Key);
 
         if (result == ContextKeybindingResult.Hide)
         {
@@ -98,7 +98,7 @@ public sealed partial class ContextMenu : UserControl,
         var winPressed = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.LeftWindows).HasFlag(CoreVirtualKeyStates.Down) ||
             InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.RightWindows).HasFlag(CoreVirtualKeyStates.Down);
 
-        var result = ViewModel?.CheckKeybinding(ctrlPressed, altPressed, shiftPressed, winPressed, e.Key);
+        var result = viewModel?.CheckKeybinding(ctrlPressed, altPressed, shiftPressed, winPressed, e.Key);
 
         if (result == ContextKeybindingResult.Hide)
         {
@@ -146,7 +146,7 @@ public sealed partial class ContextMenu : UserControl,
 
     private void ContextFilterBox_TextChanged(object sender, TextChangedEventArgs e)
     {
-        ViewModel?.SetSearchText(ContextFilterBox.Text);
+        viewModel?.SetSearchText(ContextFilterBox.Text);
 
         if (CommandsDropdown.SelectedIndex == -1)
         {
@@ -179,9 +179,9 @@ public sealed partial class ContextMenu : UserControl,
         else if (e.Key == VirtualKey.Escape ||
             (e.Key == VirtualKey.Left && altPressed))
         {
-            if (ViewModel.CanPopContextStack())
+            if (viewModel.CanPopContextStack())
             {
-                ViewModel.PopContextStack();
+                viewModel.PopContextStack();
                 UpdateUiForStackChange();
             }
             else
@@ -295,7 +295,7 @@ public sealed partial class ContextMenu : UserControl,
     private void UpdateUiForStackChange()
     {
         ContextFilterBox.Text = string.Empty;
-        ViewModel?.SetSearchText(string.Empty);
+        viewModel?.SetSearchText(string.Empty);
         CommandsDropdown.SelectedIndex = 0;
     }
 
@@ -308,5 +308,5 @@ public sealed partial class ContextMenu : UserControl,
         ContextFilterBox.Focus(FocusState.Programmatic);
     }
 
-    private ContextKeybindingResult InvokeCommand(CommandItemViewModel command) => ViewModel.InvokeCommand(command);
+    private ContextKeybindingResult InvokeCommand(CommandItemViewModel command) => viewModel.InvokeCommand(command);
 }

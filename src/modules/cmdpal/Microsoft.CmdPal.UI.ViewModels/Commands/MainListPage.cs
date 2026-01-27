@@ -14,6 +14,7 @@ using Microsoft.CmdPal.Ext.Apps.State;
 using Microsoft.CmdPal.UI.ViewModels.Commands;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Properties;
+using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
@@ -29,10 +30,12 @@ public partial class MainListPage : DynamicListPage,
 {
     private readonly TopLevelCommandManager _tlcManager;
     private readonly AliasManager _aliasManager;
-    private readonly SettingsModel _settings;
+    private readonly SettingsService _settingsService;
     private readonly AppStateService _appStateService;
     private List<Scored<IListItem>>? _filteredItems;
     private List<Scored<IListItem>>? _filteredApps;
+
+    private SettingsModel Settings => _settingsService.CurrentSettings;
 
     // Keep as IEnumerable for deferred execution. Fallback item titles are updated
     // asynchronously, so scoring must happen lazily when GetItems is called.
@@ -49,13 +52,13 @@ public partial class MainListPage : DynamicListPage,
 
     private AppStateModel AppState => _appStateService.CurrentSettings;
 
-    public MainListPage(TopLevelCommandManager topLevelCommandManager, SettingsModel settings, AliasManager aliasManager, AppStateService appStateService)
+    public MainListPage(TopLevelCommandManager topLevelCommandManager, SettingsService settingsService, AliasManager aliasManager, AppStateService appStateService)
     {
         Title = Resources.builtin_home_name;
         Icon = IconHelpers.FromRelativePath("Assets\\StoreLogo.scale-200.png");
         PlaceholderText = Properties.Resources.builtin_main_list_page_searchbar_placeholder;
 
-        _settings = settings;
+        _settingsService = settingsService;
         _aliasManager = aliasManager;
         _appStateService = appStateService;
         _tlcManager = topLevelCommandManager;
@@ -76,8 +79,8 @@ public partial class MainListPage : DynamicListPage,
         WeakReferenceMessenger.Default.Register<ClearSearchMessage>(this);
         WeakReferenceMessenger.Default.Register<UpdateFallbackItemsMessage>(this);
 
-        settings.SettingsChanged += SettingsChangedHandler;
-        HotReloadSettings(settings);
+        _settingsService.SettingsChanged += SettingsChangedHandler;
+        HotReloadSettings(Settings);
         _includeApps = _tlcManager.IsProviderActive(AllAppsCommandProvider.WellKnownId);
 
         IsLoading = true;
@@ -243,7 +246,7 @@ public partial class MainListPage : DynamicListPage,
             }
 
             // prefilter fallbacks
-            var globalFallbacks = _settings.GetGlobalFallbacks();
+            var globalFallbacks = Settings.GetGlobalFallbacks();
             var specialFallbacks = new List<TopLevelViewModel>(globalFallbacks.Length);
             var commonFallbacks = new List<TopLevelViewModel>();
 
@@ -402,7 +405,7 @@ public partial class MainListPage : DynamicListPage,
                 return;
             }
 
-            Func<string, IListItem, int> scoreFallbackItem = (a, b) => { return ScoreFallbackItem(a, b, _settings.FallbackRanks); };
+            Func<string, IListItem, int> scoreFallbackItem = (a, b) => { return ScoreFallbackItem(a, b, Settings.FallbackRanks); };
             _fallbackItems = [.. ListHelpers.FilterListWithScores<IListItem>(newFallbacks ?? [], SearchText, scoreFallbackItem)];
 
             if (token.IsCancellationRequested)
@@ -629,10 +632,7 @@ public partial class MainListPage : DynamicListPage,
         _tlcManager.PropertyChanged -= TlcManager_PropertyChanged;
         _tlcManager.TopLevelCommands.CollectionChanged -= Commands_CollectionChanged;
 
-        if (_settings is not null)
-        {
-            _settings.SettingsChanged -= SettingsChangedHandler;
-        }
+        _settingsService.SettingsChanged -= SettingsChangedHandler;
 
         WeakReferenceMessenger.Default.UnregisterAll(this);
         GC.SuppressFinalize(this);

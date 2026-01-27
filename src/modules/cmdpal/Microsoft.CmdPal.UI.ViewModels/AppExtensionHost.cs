@@ -13,7 +13,7 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 
 public abstract partial class AppExtensionHost : IExtensionHost
 {
-    private readonly ILogger logger;
+    private readonly ILogger _logger;
 
     private static readonly GlobalLogPageContext _globalLogPageContext = new();
 
@@ -31,7 +31,7 @@ public abstract partial class AppExtensionHost : IExtensionHost
 
     public AppExtensionHost(ILogger logger)
     {
-        this.logger = logger;
+        _logger = logger;
     }
 
     public void DebugLog(string message)

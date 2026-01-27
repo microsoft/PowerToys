@@ -16,6 +16,7 @@ using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
@@ -71,9 +72,10 @@ public partial class TopLevelCommandManager : ObservableObject,
         // Load built-In commands first. These are all in-proc, and
         // owned by our ServiceProvider.
         var builtInCommands = _serviceProvider.GetServices<ICommandProvider>();
+        var logger = _serviceProvider.GetRequiredService<ILogger<CommandProviderWrapper>>();
         foreach (var provider in builtInCommands)
         {
-            CommandProviderWrapper wrapper = new(provider, _taskScheduler);
+            CommandProviderWrapper wrapper = new(provider, _taskScheduler, logger);
             lock (_commandProvidersLock)
             {
                 _builtInCommands.Add(wrapper);
@@ -319,7 +321,8 @@ public partial class TopLevelCommandManager : ObservableObject,
         try
         {
             await extension.StartExtensionAsync().WaitAsync(TimeSpan.FromSeconds(10));
-            return new CommandProviderWrapper(extension, _taskScheduler);
+            var logger = _serviceProvider.GetRequiredService<ILogger<CommandProviderWrapper>>();
+            return new CommandProviderWrapper(extension, _taskScheduler, logger);
         }
         catch (Exception ex)
         {
@@ -414,7 +417,7 @@ public partial class TopLevelCommandManager : ObservableObject,
     void IPageContext.ShowException(Exception ex, string? extensionHint)
     {
         var message = DiagnosticsHelper.BuildExceptionMessage(ex, extensionHint ?? "TopLevelCommandManager");
-        CommandPaletteHost.Instance.Log(message);
+        Logger.LogError(message);
     }
 
     internal bool IsProviderActive(string id)

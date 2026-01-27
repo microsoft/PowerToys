@@ -92,7 +92,7 @@ public partial class ExtensionService : IExtensionService, IDisposable
         var extension = isCmdPalExtensionResult.Extension;
         if (isExtension && extension is not null)
         {
-            CommandPaletteHost.Instance.DebugLog($"Installed new extension app {extension.DisplayName}");
+            Logger.LogDebug($"Installed new extension app {extension.DisplayName}");
 
             Task.Run(async () =>
             {
@@ -120,7 +120,7 @@ public partial class ExtensionService : IExtensionService, IDisposable
         {
             if (extension.PackageFullName == package.Id.FullName)
             {
-                CommandPaletteHost.Instance.DebugLog($"Uninstalled extension app {extension.PackageDisplayName}");
+                Logger.LogDebug($"Uninstalled extension app {extension.PackageDisplayName}");
 
                 removedExtensions.Add(extension);
             }
@@ -269,7 +269,7 @@ public partial class ExtensionService : IExtensionService, IDisposable
                 else
                 {
                     // log warning  that extension declared unsupported extension interface
-                    CommandPaletteHost.Instance.DebugLog($"Extension {extension.DisplayName} declared an unsupported interface: {supportedInterface.Key}");
+                    Logger.LogDebug($"Extension {extension.DisplayName} declared an unsupported interface: {supportedInterface.Key}");
                 }
             }
         }

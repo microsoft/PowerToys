@@ -6,6 +6,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CommandPalette.Extensions.Toolkit;
+using Microsoft.Extensions.Logging;
 using Windows.System;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
@@ -13,6 +14,15 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 public partial class CommandBarViewModel : ObservableObject,
     IRecipient<UpdateCommandBarMessage>
 {
+    public ILogger? Logger { get; set; }
+
+
+
+
+
+
+
+
     public ICommandBarContext? SelectedItem
     {
         get => field;

@@ -11,26 +11,27 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 public partial class AliasManager : ObservableObject
 {
     private readonly TopLevelCommandManager _topLevelCommandManager;
+    private readonly SettingsService _settingsService;
 
     // REMEMBER, CommandAlias.SearchPrefix is what we use as keys
-    private readonly Dictionary<string, CommandAlias> _aliases;
+    private Dictionary<string, CommandAlias> Aliases => _settingsService.CurrentSettings.Aliases;
 
-    public AliasManager(TopLevelCommandManager tlcManager, SettingsModel settings)
+    public AliasManager(TopLevelCommandManager tlcManager, SettingsService settingsService)
     {
         _topLevelCommandManager = tlcManager;
-        _aliases = settings.Aliases;
+        _settingsService = settingsService;
 
-        if (_aliases.Count == 0)
+        if (Aliases.Count == 0)
         {
             PopulateDefaultAliases();
         }
     }
 
-    private void AddAlias(CommandAlias a) => _aliases.Add(a.SearchPrefix, a);
+    private void AddAlias(CommandAlias a) => Aliases.Add(a.SearchPrefix, a);
 
     public bool CheckAlias(string searchText)
     {
-        if (_aliases.TryGetValue(searchText, out var alias))
+        if (Aliases.TryGetValue(searchText, out var alias))
         {
             try
             {
@@ -65,7 +66,7 @@ public partial class AliasManager : ObservableObject
 
     public string? KeysFromId(string commandId)
     {
-        return _aliases
+        return Aliases
             .Where(kv => kv.Value.CommandId == commandId)
             .Select(kv => kv.Value.Alias)
             .FirstOrDefault();
@@ -73,7 +74,7 @@ public partial class AliasManager : ObservableObject
 
     public CommandAlias? AliasFromId(string commandId)
     {
-        return _aliases
+        return Aliases
             .Where(kv => kv.Value.CommandId == commandId)
             .Select(kv => kv.Value)
             .FirstOrDefault();
@@ -89,7 +90,7 @@ public partial class AliasManager : ObservableObject
 
         // If we already have _this exact alias_, do nothing
         if (newAlias is not null &&
-            _aliases.TryGetValue(newAlias.SearchPrefix, out var existingAlias))
+            Aliases.TryGetValue(newAlias.SearchPrefix, out var existingAlias))
         {
             if (existingAlias.CommandId == commandId)
             {
@@ -98,7 +99,7 @@ public partial class AliasManager : ObservableObject
         }
 
         List<CommandAlias> toRemove = [];
-        foreach (var kv in _aliases)
+        foreach (var kv in Aliases)
         {
             // Look for the old aliases for the command, and remove it
             if (kv.Value.CommandId == commandId)
@@ -123,7 +124,7 @@ public partial class AliasManager : ObservableObject
         foreach (var alias in toRemove)
         {
             // REMEMBER, SearchPrefix is what we use as keys
-            _aliases.Remove(alias.SearchPrefix);
+            Aliases.Remove(alias.SearchPrefix);
         }
 
         if (newAlias is not null)

@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using CommunityToolkit.WinUI.Controls;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.UI.Xaml.Controls;
 
@@ -12,6 +13,11 @@ internal sealed partial class ImageProvider : IImageProvider
 {
     private readonly ILogger _logger;
     private readonly CompositeImageSourceProvider _compositeProvider = new();
+
+    public ImageProvider()
+        : this(App.Current.Services.GetRequiredService<ILogger<ImageProvider>>())
+    {
+    }
 
     public ImageProvider(ILogger logger)
     {

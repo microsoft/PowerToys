@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -27,10 +27,12 @@ internal sealed partial class ThemeService : IThemeService, IDisposable
 
     private readonly ILogger _logger;
     private readonly UISettings _uiSettings;
-    private readonly SettingsModel _settings;
+    private readonly SettingsService _settingsService;
     private readonly ResourceSwapper _resourceSwapper;
     private readonly NormalThemeProvider _normalThemeProvider;
     private readonly ColorfulThemeProvider _colorfulThemeProvider;
+
+    private SettingsModel Settings => _settingsService.CurrentSettings;
 
     private DispatcherQueue? _dispatcherQueue;
     private DispatcherQueueTimer? _dispatcherQueueTimer;
@@ -73,29 +75,29 @@ internal sealed partial class ThemeService : IThemeService, IDisposable
         }
 
         // provider selection
-        var intensity = Math.Clamp(_settings.CustomThemeColorIntensity, 0, 100);
-        IThemeProvider provider = intensity > 0 && _settings.ColorizationMode is ColorizationMode.CustomColor or ColorizationMode.WindowsAccentColor or ColorizationMode.Image
+        var intensity = Math.Clamp(Settings.CustomThemeColorIntensity, 0, 100);
+        IThemeProvider provider = intensity > 0 && Settings.ColorizationMode is ColorizationMode.CustomColor or ColorizationMode.WindowsAccentColor or ColorizationMode.Image
                 ? _colorfulThemeProvider
                 : _normalThemeProvider;
 
         // Calculate values
-        var tint = _settings.ColorizationMode switch
+        var tint = Settings.ColorizationMode switch
         {
-            ColorizationMode.CustomColor => _settings.CustomThemeColor,
+            ColorizationMode.CustomColor => Settings.CustomThemeColor,
             ColorizationMode.WindowsAccentColor => _uiSettings.GetColorValue(UIColorType.Accent),
-            ColorizationMode.Image => _settings.CustomThemeColor,
+            ColorizationMode.Image => Settings.CustomThemeColor,
             _ => Colors.Transparent,
         };
-        var effectiveTheme = GetElementTheme((ElementTheme)_settings.Theme);
-        var imageSource = _settings.ColorizationMode == ColorizationMode.Image
-            ? LoadImageSafe(_settings.BackgroundImagePath)
+        var effectiveTheme = GetElementTheme((ElementTheme)Settings.Theme);
+        var imageSource = Settings.ColorizationMode == ColorizationMode.Image
+            ? LoadImageSafe(Settings.BackgroundImagePath)
             : null;
-        var stretch = _settings.BackgroundImageFit switch
+        var stretch = Settings.BackgroundImageFit switch
         {
             BackgroundImageFit.Fill => Stretch.Fill,
             _ => Stretch.UniformToFill,
         };
-        var opacity = Math.Clamp(_settings.BackgroundImageOpacity, 0, 100) / 100.0;
+        var opacity = Math.Clamp(Settings.BackgroundImageOpacity, 0, 100) / 100.0;
 
         // create context and offload to actual theme provider
         var context = new ThemeContext
@@ -108,8 +110,8 @@ internal sealed partial class ThemeService : IThemeService, IDisposable
             BackgroundImageOpacity = opacity,
         };
         var backdrop = provider.GetAcrylicBackdrop(context);
-        var blur = _settings.BackgroundImageBlurAmount;
-        var brightness = _settings.BackgroundImageBrightness;
+        var blur = Settings.BackgroundImageBlurAmount;
+        var brightness = Settings.BackgroundImageBrightness;
 
         // Create public snapshot (no provider!)
         var snapshot = new ThemeSnapshot
@@ -139,7 +141,7 @@ internal sealed partial class ThemeService : IThemeService, IDisposable
         ThemeChanged?.Invoke(this, new ThemeChangedEventArgs());
     }
 
-    private static BitmapImage? LoadImageSafe(string? path)
+    private BitmapImage? LoadImageSafe(string? path)
     {
         if (string.IsNullOrWhiteSpace(path))
         {
@@ -168,14 +170,14 @@ internal sealed partial class ThemeService : IThemeService, IDisposable
         }
     }
 
-    public ThemeService(SettingsModel settings, ResourceSwapper resourceSwapper, ILogger logger)
+    public ThemeService(SettingsService settingsService, ResourceSwapper resourceSwapper, ILogger<ThemeService> logger)
     {
-        ArgumentNullException.ThrowIfNull(settings);
+        ArgumentNullException.ThrowIfNull(settingsService);
         ArgumentNullException.ThrowIfNull(resourceSwapper);
 
         _logger = logger;
-        _settings = settings;
-        _settings.SettingsChanged += SettingsOnSettingsChanged;
+        _settingsService = settingsService;
+        _settingsService.SettingsChanged += SettingsOnSettingsChanged;
 
         _resourceSwapper = resourceSwapper;
 
@@ -251,7 +253,7 @@ internal sealed partial class ThemeService : IThemeService, IDisposable
         _disposed = true;
         _dispatcherQueueTimer?.Stop();
         _uiSettings.ColorValuesChanged -= UiSettings_ColorValuesChanged;
-        _settings.SettingsChanged -= SettingsOnSettingsChanged;
+        _settingsService.SettingsChanged -= SettingsOnSettingsChanged;
     }
 
     private sealed class InternalThemeState
