@@ -44,15 +44,15 @@
             </ToggleButton.Content>
         </ToggleButton>
 
-        <TextBox 
+        <TextBox
             x:Name="UrlPathInput"
             x:Uid="UrlPageInputControlToOpenTextBox"
+            Width="360"
             Margin="0,8,0,0"
             AcceptsReturn="True"
             Background="{ThemeResource TextControlBackgroundFocused}"
             BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
             FontSize="13"
-            TextWrapping="Wrap" 
-            Width="360" />
+            TextWrapping="Wrap" />
     </StackPanel>
 </UserControl>

@@ -26,9 +26,7 @@
                         FontSize="14"
                         Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
                         Glyph="&#xE109;" />
-                    <TextBlock 
-                        x:Uid="ProgramsPageNewTextBlock"
-                        VerticalAlignment="Center" />
+                    <TextBlock x:Uid="ProgramsPageNewTextBlock" VerticalAlignment="Center" />
                 </StackPanel>
             </Button>
             <Grid
@@ -116,9 +114,7 @@
                                     Grid.Column="1"
                                     Orientation="Horizontal"
                                     Spacing="8">
-                                    <TextBlock 
-                                        VerticalAlignment="Center" 
-                                        Text="{x:Bind AppToRun}" />
+                                    <TextBlock VerticalAlignment="Center" Text="{x:Bind AppToRun}" />
                                     <FontIcon
                                         VerticalAlignment="Center"
                                         FontSize="14"
@@ -126,9 +122,7 @@
                                         Glyph="&#xE946;">
                                         <ToolTipService.ToolTip>
                                             <TextBlock>
-                                                <Run 
-                                                    x:Uid="ProgramsPageArgumentsRun"
-                                                    FontWeight="SemiBold" />
+                                                <Run x:Uid="ProgramsPageArgumentsRun" FontWeight="SemiBold" />
                                                 <Run Text="{x:Bind Args}" />
                                             </TextBlock>
                                         </ToolTipService.ToolTip>
@@ -161,11 +155,11 @@
             x:Name="KeyDialog"
             x:Uid="ProgramsPageKeyDialog"
             Width="480"
-            MinWidth="600"
-            MaxWidth="600"
-            MinHeight="600"
-            MaxHeight="600"
             Height="600"
+            MinWidth="600"
+            MinHeight="600"
+            MaxWidth="600"
+            MaxHeight="600"
             PrimaryButtonClick="KeyDialog_PrimaryButtonClick"
             PrimaryButtonStyle="{StaticResource AccentButtonStyle}">
             <Grid>
