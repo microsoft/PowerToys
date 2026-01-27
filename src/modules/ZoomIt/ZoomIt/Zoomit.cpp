@@ -5659,6 +5659,9 @@ winrt::fire_and_forget StartRecordingAsync( HWND hWnd, LPRECT rcCrop, HWND hWndR
     g_GifRecordingSession = nullptr;
 } catch( const winrt::hresult_error& error ) {
 
+    // Reset the save-in-progress flag so that hotkeys are not blocked after an error or cancellation
+    g_bSaveInProgress = false;
+
     PostMessage( g_hWndMain, WM_USER_STOP_RECORDING, 0, 0 );
 
     // Suppress the error from canceling the save dialog

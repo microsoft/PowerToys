@@ -4343,18 +4343,18 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
             return TRUE;
         }
 
-        // Force UI + session back to the captured playback start position.
-        pData->currentPosition = pData->playbackStartPosition;
+        // Force UI + session back to the left grip (trim start) position.
+        pData->currentPosition = pData->trimStart;
 #if _DEBUG
-        OutputDebugStringW((L"[Trim] WMU_PLAYBACK_STOP: resetting to playbackStartPos=" +
-            std::to_wstring(pData->playbackStartPosition.count()) + L"\n").c_str());
+        OutputDebugStringW((L"[Trim] WMU_PLAYBACK_STOP: resetting to trimStart=" +
+            std::to_wstring(pData->trimStart.count()) + L"\n").c_str());
 #endif
         StopPlayback(hDlg, pData, false);
 
-        // Fast path: if we have a cached frame at the playback start position, restore it instantly.
+        // Fast path: if we have a cached frame at the trim start position, restore it instantly.
         bool usedCachedFrame = false;
         if (pData->hCachedStartFrame &&
-            pData->cachedStartFramePosition.count() == pData->playbackStartPosition.count())
+            pData->cachedStartFramePosition.count() == pData->trimStart.count())
         {
             std::lock_guard<std::mutex> lock(pData->previewBitmapMutex);
             if (pData->hCachedStartFrame)  // Double-check under lock
@@ -4367,7 +4367,7 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
                 pData->hPreviewBitmap = pData->hCachedStartFrame;
                 pData->previewBitmapOwned = true;
                 pData->hCachedStartFrame = nullptr;  // Transferred ownership
-                pData->lastRenderedPreview.store(pData->playbackStartPosition.count(), std::memory_order_relaxed);
+                pData->lastRenderedPreview.store(pData->trimStart.count(), std::memory_order_relaxed);
                 usedCachedFrame = true;
             }
         }

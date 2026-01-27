@@ -286,15 +286,16 @@ void AudioSampleGenerator::Stop()
         m_loopbackCapture->Stop();
     }
     
-    // Clear any accumulated buffers
+    // Clear intermediate loopback buffer (not yet converted to samples)
     {
         auto lock = m_loopbackBufferLock.lock_exclusive();
         m_loopbackBuffer.clear();
     }
-    {
-        auto lock = m_lock.lock_exclusive();
-        m_samples.clear();
-    }
+    
+    // DO NOT clear m_samples here - allow MediaTranscoder to consume remaining
+    // queued audio samples to avoid audio cutoff at end of recording.
+    // TryGetNextSample() will return nullopt once m_samples is empty and
+    // m_endEvent is signaled.
     
     if (wasStarted)
     {
