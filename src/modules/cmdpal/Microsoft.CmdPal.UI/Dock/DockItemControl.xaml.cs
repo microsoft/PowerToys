@@ -145,7 +145,7 @@ public sealed partial class DockItemControl : Control
         var requestedTheme = ActualTheme;
         var isLight = requestedTheme == ElementTheme.Light;
         var showText = HasText;
-        if (Icon is IconBox icoBox && 
+        if (Icon is IconBox icoBox &&
             icoBox.DataContext is DockItemViewModel item &&
             item.Icon is IconInfoViewModel icon)
         {
