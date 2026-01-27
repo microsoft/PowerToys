@@ -301,7 +301,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 return -LightTime;
             }
         }
-        
+
         public int SunriseOffsetMax
         {
             get
