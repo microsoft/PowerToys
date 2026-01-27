@@ -1052,9 +1052,6 @@ public class Win32Program : IProgram
                 app.FullPath) :
             app.IcoPath;
 
-        icoPath = icoPath.EndsWith(".lnk", System.StringComparison.InvariantCultureIgnoreCase) ?
-            app.FullPath :
-            icoPath;
         return new AppItem()
         {
             Name = app.Name,

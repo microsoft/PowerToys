@@ -32,6 +32,7 @@ advfirewall
 AFeature
 affordances
 AFX
+agentskills
 AGGREGATABLE
 AHK
 AHybrid
@@ -64,6 +65,9 @@ apidl
 APIENTRY
 APIIs
 Apm
+APMPOWERSTATUSCHANGE
+APMRESUMEAUTOMATIC
+APMRESUMESUSPEND
 APPBARDATA
 APPEXECLINK
 appext
@@ -99,7 +103,6 @@ ASYNCWINDOWPLACEMENT
 ASYNCWINDOWPOS
 atl
 ATRIOX
-ATX
 aumid
 authenticode
 AUTOBUDDY
@@ -206,6 +209,7 @@ certmgr
 cfp
 CHANGECBCHAIN
 changecursor
+checkmarks
 CHILDACTIVATE
 CHILDWINDOW
 CHOOSEFONT
@@ -215,6 +219,7 @@ CIELCh
 cim
 CImage
 cla
+claude
 CLASSDC
 classmethod
 CLASSNOTAVAILABLE
@@ -292,7 +297,6 @@ cpcontrols
 cph
 cplusplus
 CPower
-cppcoreguidelines
 cpptools
 cppvsdbg
 cppwinrt
@@ -321,7 +325,7 @@ CURRENTDIR
 CURSORINFO
 cursorpos
 CURSORSHOWING
-CURSORWRAP
+cursorwrap
 customaction
 CUSTOMACTIONTEST
 CUSTOMFORMATPLACEHOLDER
@@ -882,6 +886,7 @@ Ldr
 LEFTALIGN
 LEFTSCROLLBAR
 LEFTTEXT
+leftclick
 LError
 LEVELID
 LExit
@@ -1007,6 +1012,7 @@ MENUITEMINFO
 MENUITEMINFOW
 MERGECOPY
 MERGEPAINT
+Metacharacter
 metadatamatters
 Metadatas
 metafile
@@ -1036,6 +1042,7 @@ mmi
 mmsys
 mobileredirect
 mockapi
+modelcontextprotocol
 MODALFRAME
 MODESPRUNED
 MONITORENUMPROC
@@ -1344,6 +1351,7 @@ Pomodoro
 Popups
 POPUPWINDOW
 POSITIONITEM
+POWERBROADCAST
 POWERRENAMECONTEXTMENU
 powerrenameinput
 POWERRENAMETEST
@@ -1732,6 +1740,7 @@ STICKYKEYS
 sticpl
 storelogo
 stprintf
+streamable
 streamjsonrpc
 STRINGIZE
 stringtable
@@ -1957,6 +1966,7 @@ visualeffects
 vkey
 vmovl
 VMs
+vnd
 vorrq
 VOS
 vpaddlq

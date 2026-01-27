@@ -1,0 +1,19 @@
+{
+  "name": "github-artifacts",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "test": "node test-github_issue_images.js && node test-github_issue_attachments.js",
+    "start": "node server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.25.2",
+    "jszip": "^3.10.1",
+    "zod": "^3.25.76"
+  }
+}
