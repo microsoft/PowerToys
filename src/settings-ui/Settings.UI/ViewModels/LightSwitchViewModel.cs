@@ -293,10 +293,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        /// <summary>
-        /// Gets the minimum valid sunrise offset (negative of distance to previous sunset).
-        /// Prevents the adjusted sunrise from going before midnight (wrapping issues).
-        /// </summary>
         public int SunriseOffsetMin
         {
             get
@@ -305,41 +301,27 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 return -LightTime;
             }
         }
-
-        /// <summary>
-        /// Gets the maximum valid sunrise offset (distance to the adjusted sunset).
-        /// Ensures adjusted sunrise stays before adjusted sunset.
-        /// </summary>
+        
         public int SunriseOffsetMax
         {
             get
             {
                 // Maximum: adjusted sunrise must stay before adjusted sunset
-                // (DarkTime + SunsetOffset) - LightTime - 1 minute buffer
                 int adjustedSunset = DarkTime + SunsetOffset;
                 return Math.Max(0, adjustedSunset - LightTime - 1);
             }
         }
 
-        /// <summary>
-        /// Gets the minimum valid sunset offset (must stay after adjusted sunrise).
-        /// Ensures adjusted sunset stays after adjusted sunrise.
-        /// </summary>
         public int SunsetOffsetMin
         {
             get
             {
                 // Minimum: adjusted sunset must stay after adjusted sunrise
-                // (LightTime + SunriseOffset) - DarkTime + 1 minute buffer
                 int adjustedSunrise = LightTime + SunriseOffset;
                 return Math.Min(0, adjustedSunrise - DarkTime + 1);
             }
         }
 
-        /// <summary>
-        /// Gets the maximum valid sunset offset (don't let adjusted sunset go past 23:59).
-        /// Prevents the adjusted sunset from exceeding end of day.
-        /// </summary>
         public int SunsetOffsetMax
         {
             get
