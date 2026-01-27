@@ -12,7 +12,7 @@
     Width="360"
     Height="506"
     IsMaximizable="False"
-    IsMinimizable="True"
+    IsMinimizable="False"
     IsResizable="False"
     mc:Ignorable="d">
     <ContentPresenter x:Name="contentPresenter" />

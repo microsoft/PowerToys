@@ -35,6 +35,26 @@ namespace ImageResizer
             // Center the window on screen
             this.CenterOnScreen();
 
+            // Set window icon
+            try
+            {
+                var iconPath = System.IO.Path.Combine(AppContext.BaseDirectory, "Assets", "ImageResizer", "ImageResizer.ico");
+                if (System.IO.File.Exists(iconPath))
+                {
+                    this.SetIcon(iconPath);  // WinUIEx extension method
+                }
+            }
+            catch
+            {
+                // Icon loading failed, continue without icon
+            }
+
+            // Add Mica backdrop on Windows 11
+            if (Microsoft.UI.Composition.SystemBackdrops.MicaController.IsSupported())
+            {
+                this.SystemBackdrop = new Microsoft.UI.Xaml.Media.MicaBackdrop();
+            }
+
             // Listen to ViewModel property changes
             ViewModel.PropertyChanged += ViewModel_PropertyChanged;
 
@@ -63,17 +83,63 @@ namespace ImageResizer
             {
                 var inputPage = new InputPage { ViewModel = inputVM, DataContext = inputVM };
                 contentPresenter.Content = inputPage;
+
+                // Adjust window height based on selected size type
+                AdjustWindowHeightForInputPage(inputVM);
             }
             else if (page is ProgressViewModel progressVM)
             {
                 var progressPage = new ProgressPage { ViewModel = progressVM, DataContext = progressVM };
                 contentPresenter.Content = progressPage;
+
+                // Fixed height for progress page
+                this.Height = 400;
             }
             else if (page is ResultsViewModel resultsVM)
             {
                 var resultsPage = new ResultsPage { ViewModel = resultsVM, DataContext = resultsVM };
                 contentPresenter.Content = resultsPage;
+
+                // Fixed height for results page
+                this.Height = 450;
             }
+        }
+
+        private void AdjustWindowHeightForInputPage(InputViewModel inputVM)
+        {
+            // Subscribe to SelectedSize changes to adjust height dynamically
+            inputVM.Settings.PropertyChanged += (s, e) =>
+            {
+                if (e.PropertyName == nameof(inputVM.Settings.SelectedSize))
+                {
+                    UpdateWindowHeightForSelectedSize(inputVM.Settings.SelectedSize);
+                }
+            };
+
+            // Set initial height
+            UpdateWindowHeightForSelectedSize(inputVM.Settings.SelectedSize);
+        }
+
+        private void UpdateWindowHeightForSelectedSize(ImageResizer.Models.ResizeSize selectedSize)
+        {
+            DispatcherQueue.TryEnqueue(() =>
+            {
+                if (selectedSize is ImageResizer.Models.CustomSize)
+                {
+                    // Custom template with additional controls
+                    this.Height = 640;
+                }
+                else if (selectedSize is ImageResizer.Models.AiSize)
+                {
+                    // AI template with slider and descriptions
+                    this.Height = 650;
+                }
+                else
+                {
+                    // Normal preset template (Small, Medium, Large, Phone)
+                    this.Height = 506;
+                }
+            });
         }
 
         public IEnumerable<string> OpenPictureFiles()

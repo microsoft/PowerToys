@@ -8,11 +8,65 @@
     xmlns:core="using:Microsoft.Xaml.Interactions.Core"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:interactivity="using:Microsoft.Xaml.Interactivity"
+    xmlns:local="using:ImageResizer.Views"
     xmlns:m="using:ImageResizer.Models"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:tkconverters="using:CommunityToolkit.WinUI.Converters"
     xmlns:vm="using:ImageResizer.ViewModels"
     mc:Ignorable="d">
+
+    <Page.Resources>
+        <!--  Template for normal ResizeSize presets (Small, Medium, Large, Phone)  -->
+        <DataTemplate x:Key="ResizeSizeTemplate" x:DataType="m:ResizeSize">
+            <Grid VerticalAlignment="Center">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <TextBlock Style="{StaticResource BodyStrongTextBlockStyle}" Text="{x:Bind Name}" />
+                <StackPanel Grid.Row="1" Orientation="Horizontal">
+                    <TextBlock Text="{x:Bind Fit, Converter={StaticResource EnumValueConverter}, ConverterParameter=ThirdPersonSingular}" />
+                    <TextBlock
+                        Margin="4,0,0,0"
+                        Style="{StaticResource BodyStrongTextBlockStyle}"
+                        Text="{x:Bind Width, Converter={StaticResource AutoDoubleConverter}, ConverterParameter=Auto}" />
+                    <TextBlock
+                        Margin="4,0,0,0"
+                        Foreground="{StaticResource TextFillColorSecondaryBrush}"
+                        Text="×"
+                        Visibility="{x:Bind ShowHeight, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+                    <TextBlock
+                        Margin="4,0,0,0"
+                        Style="{StaticResource BodyStrongTextBlockStyle}"
+                        Text="{x:Bind Height, Converter={StaticResource AutoDoubleConverter}, ConverterParameter=Auto}"
+                        Visibility="{x:Bind ShowHeight, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+                    <TextBlock Margin="4,0,0,0" Text="{x:Bind Unit, Converter={StaticResource EnumValueConverter}, ConverterParameter=ToLower}" />
+                </StackPanel>
+            </Grid>
+        </DataTemplate>
+
+        <!--  Template for CustomSize - shows only name  -->
+        <DataTemplate x:Key="CustomSizeTemplate" x:DataType="m:CustomSize">
+            <Grid VerticalAlignment="Center">
+                <TextBlock Style="{StaticResource BodyStrongTextBlockStyle}" Text="{x:Bind Name}" />
+            </Grid>
+        </DataTemplate>
+
+        <!--  Template for AiSize - shows name and description  -->
+        <DataTemplate x:Key="AiSizeTemplate" x:DataType="m:AiSize">
+            <StackPanel VerticalAlignment="Center" Orientation="Vertical">
+                <TextBlock Style="{StaticResource BodyStrongTextBlockStyle}" Text="{x:Bind Name}" />
+                <TextBlock x:Uid="Input_AiSuperResolutionDescription" />
+            </StackPanel>
+        </DataTemplate>
+
+        <!--  DataTemplateSelector to choose the right template based on item type  -->
+        <local:SizeDataTemplateSelector
+            x:Key="SizeTemplateSelector"
+            AiSizeTemplate="{StaticResource AiSizeTemplate}"
+            CustomSizeTemplate="{StaticResource CustomSizeTemplate}"
+            ResizeSizeTemplate="{StaticResource ResizeSizeTemplate}" />
+    </Page.Resources>
 
     <Grid>
         <Grid.RowDefinitions>
@@ -27,39 +81,9 @@
                 HorizontalAlignment="Stretch"
                 VerticalAlignment="Stretch"
                 VerticalContentAlignment="Stretch"
+                ItemTemplateSelector="{StaticResource SizeTemplateSelector}"
                 ItemsSource="{Binding Settings.AllSizes, Mode=OneWay}"
-                SelectedItem="{Binding Settings.SelectedSize, Mode=TwoWay}">
-                <ComboBox.ItemTemplate>
-                    <DataTemplate>
-                        <Grid VerticalAlignment="Center">
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="Auto" />
-                            </Grid.RowDefinitions>
-                            <TextBlock Style="{StaticResource BodyStrongTextBlockStyle}" Text="{Binding Name}" />
-                            <StackPanel
-                                Grid.Row="1"
-                                Orientation="Horizontal"
-                                Visibility="{Binding ShowHeight, Converter={StaticResource BoolToVisibilityConverter}}">
-                                <TextBlock Text="{Binding Fit, Converter={StaticResource EnumValueConverter}, ConverterParameter=ThirdPersonSingular}" />
-                                <TextBlock
-                                    Margin="4,0,0,0"
-                                    Style="{StaticResource BodyStrongTextBlockStyle}"
-                                    Text="{Binding Width, Converter={StaticResource AutoDoubleConverter}, ConverterParameter=Auto}" />
-                                <TextBlock
-                                    Margin="4,0,0,0"
-                                    Foreground="{StaticResource TextFillColorSecondaryBrush}"
-                                    Text="x" />
-                                <TextBlock
-                                    Margin="4,0,0,0"
-                                    Style="{StaticResource BodyStrongTextBlockStyle}"
-                                    Text="{Binding Height, Converter={StaticResource AutoDoubleConverter}, ConverterParameter=Auto}" />
-                                <TextBlock Margin="4,0,0,0" Text="{Binding Unit, Converter={StaticResource EnumValueConverter}, ConverterParameter=ToLower}" />
-                            </StackPanel>
-                        </Grid>
-                    </DataTemplate>
-                </ComboBox.ItemTemplate>
-            </ComboBox>
+                SelectedItem="{Binding Settings.SelectedSize, Mode=TwoWay}" />
         </StackPanel>
 
         <Grid Grid.Row="1">
@@ -81,15 +105,11 @@
             <Grid Margin="16">
                 <!-- AI Model Download Prompt -->
                 <StackPanel Visibility="{Binding ShowModelDownloadPrompt, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
-                    <!-- InfoBar temporarily replaced with Border+TextBlock for WPF/WinUI3 compatibility -->
-                    <Border
-                        Background="{StaticResource LayerFillColorDefaultBrush}"
-                        BorderBrush="{StaticResource CardStrokeColorDefaultBrush}"
-                        BorderThickness="1"
-                        CornerRadius="4"
-                        Padding="12">
-                        <TextBlock Text="{Binding ModelStatusMessage, Mode=OneWay}" TextWrapping="Wrap" />
-                    </Border>
+                    <InfoBar
+                        IsClosable="False"
+                        IsOpen="True"
+                        Message="{Binding ModelStatusMessage, Mode=OneWay}"
+                        Severity="Informational" />
 
                     <Button
                         Margin="0,8,0,0"
@@ -266,18 +286,14 @@
                 VerticalAlignment="Top"
                 Background="{StaticResource DividerStrokeColorDefaultBrush}" />
 
-            <!-- InfoBar temporarily replaced with Border+TextBlock for WPF/WinUI3 compatibility -->
-            <Border
+            <InfoBar
                 Grid.Row="3"
                 Margin="16,0"
-                Background="{StaticResource SystemFillColorCautionBackgroundBrush}"
-                BorderBrush="{StaticResource SystemFillColorCautionBrush}"
-                BorderThickness="1"
-                CornerRadius="4"
-                Padding="12"
-                Visibility="{Binding TryingToResizeGifFiles, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
-                <TextBlock x:Uid="Input_GifWarning" TextWrapping="Wrap" />
-            </Border>
+                IsClosable="False"
+                IsOpen="{Binding TryingToResizeGifFiles, Mode=OneWay}"
+                Severity="Warning">
+                <TextBlock x:Uid="Input_GifWarning" />
+            </InfoBar>
 
             <!-- Buttons -->
             <Grid Grid.Row="4" Margin="16,8,16,16">
@@ -304,7 +320,7 @@
                     Command="{Binding ResizeCommand}"
                     Style="{StaticResource AccentButtonStyle}">
                     <StackPanel Orientation="Horizontal">
-                        <FontIcon FontSize="16" Glyph="&#xE799;" />
+                        <FontIcon FontSize="16" Glyph="&#xE740;" />
                         <TextBlock x:Uid="Input_Resize" Margin="8,0,0,0" />
                     </StackPanel>
                 </Button>
