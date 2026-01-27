@@ -27,7 +27,7 @@
       <definition name="SUPPORTED_POWERTOYS_0_89_0" displayName="$(string.SUPPORTED_POWERTOYS_0_89_0)"/>
       <definition name="SUPPORTED_POWERTOYS_0_90_0" displayName="$(string.SUPPORTED_POWERTOYS_0_90_0)"/>
       <definition name="SUPPORTED_POWERTOYS_0_96_0" displayName="$(string.SUPPORTED_POWERTOYS_0_96_0)"/>
-      <definition name="SUPPORTED_POWERTOYS_0_97_0" displayName="$(string.SUPPORTED_POWERTOYS_0_97_0)"/>      
+      <definition name="SUPPORTED_POWERTOYS_0_97_0" displayName="$(string.SUPPORTED_POWERTOYS_0_97_0)"/>
       <definition name="SUPPORTED_POWERTOYS_0_64_0_TO_0_87_1" displayName="$(string.SUPPORTED_POWERTOYS_0_64_0_TO_0_87_1)"/>
     </definitions>
   </supportedOn>
@@ -332,6 +332,16 @@
     <policy name="ConfigureEnabledUtilityKeyboardManager" class="Both" displayName="$(string.ConfigureEnabledUtilityKeyboardManager)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityKeyboardManager">
       <parentCategory ref="PowerToys" />
       <supportedOn ref="SUPPORTED_POWERTOYS_0_64_0" />
+      <enabledValue>
+        <decimal value="1" />
+      </enabledValue>
+      <disabledValue>
+        <decimal value="0" />
+      </disabledValue>
+    </policy>
+    <policy name="ConfigureEnabledUtilityCursorWrap" class="Both" displayName="$(string.ConfigureEnabledUtilityCursorWrap)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityCursorWrap">
+      <parentCategory ref="PowerToys" />
+      <supportedOn ref="SUPPORTED_POWERTOYS_0_97_0" />
       <enabledValue>
         <decimal value="1" />
       </enabledValue>
