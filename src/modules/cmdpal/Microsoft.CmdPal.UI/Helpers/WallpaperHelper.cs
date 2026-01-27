@@ -5,8 +5,8 @@
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.Marshalling;
-using ManagedCommon;
 using ManagedCsWin32;
+using Microsoft.Extensions.Logging;
 using Microsoft.UI;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Windows.UI;
@@ -18,10 +18,13 @@ namespace Microsoft.CmdPal.UI.Helpers;
 /// </summary>
 internal sealed partial class WallpaperHelper
 {
+    private readonly ILogger _logger;
     private readonly IDesktopWallpaper? _desktopWallpaper;
 
-    public WallpaperHelper()
+    public WallpaperHelper(ILogger logger)
     {
+        _logger = logger;
+
         try
         {
             var desktopWallpaper = ComHelper.CreateComInstance<IDesktopWallpaper>(
@@ -33,7 +36,7 @@ internal sealed partial class WallpaperHelper
         catch (Exception ex)
         {
             // If COM initialization fails, keep helper usable with safe fallbacks
-            Logger.LogError("Failed to initialize DesktopWallpaper COM interface", ex);
+            Log_FailedToInitializeDesktopWallpaper(ex);
             _desktopWallpaper = null;
         }
     }
@@ -67,7 +70,7 @@ internal sealed partial class WallpaperHelper
         }
         catch (Exception ex)
         {
-            Logger.LogError("Failed to query wallpaper path", ex);
+            Log_FailedToQueryWallpaperPath(ex);
         }
 
         return null;
@@ -94,7 +97,7 @@ internal sealed partial class WallpaperHelper
         }
         catch (Exception ex)
         {
-            Logger.LogError("Failed to load wallpaper color", ex);
+            Log_FailedToLoadWallpaperColor(ex);
             return Colors.Black;
         }
     }
@@ -118,7 +121,7 @@ internal sealed partial class WallpaperHelper
             var randomAccessStream = stream.AsRandomAccessStream();
             if (randomAccessStream == null)
             {
-                Logger.LogError("Failed to convert file stream to RandomAccessStream for wallpaper image.");
+                Log_FailedToConvertStream();
                 return null;
             }
 
@@ -127,10 +130,25 @@ internal sealed partial class WallpaperHelper
         }
         catch (Exception ex)
         {
-            Logger.LogError("Failed to load wallpaper image", ex);
+            Log_FailedToLoadWallpaperImage(ex);
             return null;
         }
     }
+
+    [LoggerMessage(Level = LogLevel.Error, Message = "Failed to initialize DesktopWallpaper COM interface")]
+    partial void Log_FailedToInitializeDesktopWallpaper(Exception ex);
+
+    [LoggerMessage(Level = LogLevel.Error, Message = "Failed to query wallpaper path")]
+    partial void Log_FailedToQueryWallpaperPath(Exception ex);
+
+    [LoggerMessage(Level = LogLevel.Error, Message = "Failed to load wallpaper color")]
+    partial void Log_FailedToLoadWallpaperColor(Exception ex);
+
+    [LoggerMessage(Level = LogLevel.Error, Message = "Failed to convert file stream to RandomAccessStream for wallpaper image")]
+    partial void Log_FailedToConvertStream();
+
+    [LoggerMessage(Level = LogLevel.Error, Message = "Failed to load wallpaper image")]
+    partial void Log_FailedToLoadWallpaperImage(Exception ex);
 
     // blittable type for COM interop
     [StructLayout(LayoutKind.Sequential)]

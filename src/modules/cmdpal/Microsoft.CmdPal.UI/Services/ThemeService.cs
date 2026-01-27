@@ -3,10 +3,10 @@
 // See the LICENSE file in the project root for more information.
 
 using CommunityToolkit.WinUI;
-using ManagedCommon;
 using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Services;
+using Microsoft.Extensions.Logging;
 using Microsoft.UI;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
@@ -25,6 +25,7 @@ internal sealed partial class ThemeService : IThemeService, IDisposable
 {
     private static readonly TimeSpan ReloadDebounceInterval = TimeSpan.FromMilliseconds(500);
 
+    private readonly ILogger _logger;
     private readonly UISettings _uiSettings;
     private readonly SettingsModel _settings;
     private readonly ResourceSwapper _resourceSwapper;
@@ -162,16 +163,17 @@ internal sealed partial class ThemeService : IThemeService, IDisposable
         }
         catch (Exception ex)
         {
-            Logger.LogWarning($"Failed to load background image '{path}'. {ex.Message}");
+            Log_FailedToLoadBackgroundImage(path, ex);
             return null;
         }
     }
 
-    public ThemeService(SettingsModel settings, ResourceSwapper resourceSwapper)
+    public ThemeService(SettingsModel settings, ResourceSwapper resourceSwapper, ILogger logger)
     {
         ArgumentNullException.ThrowIfNull(settings);
         ArgumentNullException.ThrowIfNull(resourceSwapper);
 
+        _logger = logger;
         _settings = settings;
         _settings.SettingsChanged += SettingsOnSettingsChanged;
 
@@ -258,4 +260,7 @@ internal sealed partial class ThemeService : IThemeService, IDisposable
 
         public required IThemeProvider Provider { get; init; }
     }
+
+    [LoggerMessage(Level = LogLevel.Warning, Message = "Failed to load background image '{Path}'")]
+    partial void Log_FailedToLoadBackgroundImage(string path, Exception ex);
 }

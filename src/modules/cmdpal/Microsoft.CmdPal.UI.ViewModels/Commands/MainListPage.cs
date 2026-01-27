@@ -30,7 +30,7 @@ public partial class MainListPage : DynamicListPage,
     private readonly TopLevelCommandManager _tlcManager;
     private readonly AliasManager _aliasManager;
     private readonly SettingsModel _settings;
-    private readonly AppStateModel _appStateModel;
+    private readonly AppStateService _appStateService;
     private List<Scored<IListItem>>? _filteredItems;
     private List<Scored<IListItem>>? _filteredApps;
 
@@ -47,7 +47,9 @@ public partial class MainListPage : DynamicListPage,
 
     private CancellationTokenSource? _cancellationTokenSource;
 
-    public MainListPage(TopLevelCommandManager topLevelCommandManager, SettingsModel settings, AliasManager aliasManager, AppStateModel appStateModel)
+    private AppStateModel AppState => _appStateService.CurrentSettings;
+
+    public MainListPage(TopLevelCommandManager topLevelCommandManager, SettingsModel settings, AliasManager aliasManager, AppStateService appStateService)
     {
         Title = Resources.builtin_home_name;
         Icon = IconHelpers.FromRelativePath("Assets\\StoreLogo.scale-200.png");
@@ -55,7 +57,7 @@ public partial class MainListPage : DynamicListPage,
 
         _settings = settings;
         _aliasManager = aliasManager;
-        _appStateModel = appStateModel;
+        _appStateService = appStateService;
         _tlcManager = topLevelCommandManager;
         _tlcManager.PropertyChanged += TlcManager_PropertyChanged;
         _tlcManager.TopLevelCommands.CollectionChanged += Commands_CollectionChanged;
@@ -375,7 +377,7 @@ public partial class MainListPage : DynamicListPage,
                 }
             }
 
-            var history = _appStateModel.RecentCommands!;
+            var history = AppState.RecentCommands!;
             Func<string, IListItem, int> scoreItem = (a, b) => { return ScoreTopLevelItem(a, b, history); };
 
             // Produce a list of everything that matches the current filter.
@@ -593,9 +595,9 @@ public partial class MainListPage : DynamicListPage,
     public void UpdateHistory(IListItem topLevelOrAppItem)
     {
         var id = IdForTopLevelOrAppItem(topLevelOrAppItem);
-        var history = _appStateModel.RecentCommands;
+        var history = AppState.RecentCommands;
         history.AddHistoryItem(id);
-        AppStateModel.SaveState(_appStateModel);
+        _appStateService.SaveSettings(AppState);
     }
 
     private static string IdForTopLevelOrAppItem(IListItem topLevelOrAppItem)

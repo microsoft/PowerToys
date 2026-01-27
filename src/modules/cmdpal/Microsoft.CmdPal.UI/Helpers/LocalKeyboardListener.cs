@@ -2,8 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using ManagedCommon;
-
+using Microsoft.Extensions.Logging;
 using Windows.System;
 using Windows.Win32;
 using Windows.Win32.Foundation;
@@ -16,6 +15,8 @@ namespace Microsoft.CmdPal.UI.Helpers;
 /// </summary>
 internal sealed partial class LocalKeyboardListener : IDisposable
 {
+    private readonly ILogger _logger;
+
     /// <summary>
     /// Event that is raised when a key is pressed down.
     /// </summary>
@@ -24,6 +25,11 @@ internal sealed partial class LocalKeyboardListener : IDisposable
     private bool _disposed;
     private UnhookWindowsHookExSafeHandle? _handle;
     private HOOKPROC? _hookProc; // Keep reference to prevent GC collection
+
+    public LocalKeyboardListener(ILogger logger)
+    {
+        _logger = logger;
+    }
 
     /// <summary>
     /// Registers a global keyboard hook to listen for key down events.
@@ -68,7 +74,7 @@ internal sealed partial class LocalKeyboardListener : IDisposable
         }
         catch (Exception ex)
         {
-            Logger.LogError("Failed to register hook", ex);
+            Log_FailedToRegisterHook(ex);
             return false;
         }
     }
@@ -121,7 +127,7 @@ internal sealed partial class LocalKeyboardListener : IDisposable
         }
         catch (Exception ex)
         {
-            Logger.LogError("Failed when invoking key down keyboard hook event", ex);
+            Log_KeyDownHookError(ex);
         }
 
         // Call next hook in chain - pass null as first parameter for current hook
@@ -154,4 +160,10 @@ internal sealed partial class LocalKeyboardListener : IDisposable
             _disposed = true;
         }
     }
+
+    [LoggerMessage(Level = LogLevel.Error, Message = "Failed to register hook")]
+    partial void Log_FailedToRegisterHook(Exception ex);
+
+    [LoggerMessage(Level = LogLevel.Error, Message = "Failed when invoking key down keyboard hook event")]
+    partial void Log_KeyDownHookError(Exception ex);
 }

@@ -5,10 +5,10 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
-using Microsoft.CmdPal.Common;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
+using Microsoft.Extensions.Logging;
 using Windows.System;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
@@ -16,6 +16,8 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 public partial class ContextMenuViewModel : ObservableObject,
     IRecipient<UpdateCommandBarMessage>
 {
+    private readonly ILogger _logger;
+
     public ICommandBarContext? SelectedItem
     {
         get => field;
@@ -39,8 +41,9 @@ public partial class ContextMenuViewModel : ObservableObject,
 
     private string _lastSearchText = string.Empty;
 
-    public ContextMenuViewModel()
+    public ContextMenuViewModel(ILogger logger)
     {
+        _logger = logger;
         WeakReferenceMessenger.Default.Register<UpdateCommandBarMessage>(this);
     }
 
@@ -141,7 +144,7 @@ public partial class ContextMenuViewModel : ObservableObject,
                 var added = result.TryAdd(key, cmd);
                 if (!added)
                 {
-                    CoreLogger.LogWarning($"Ignoring duplicate keyboard shortcut {KeyChordHelpers.FormatForDebug(key)} on command '{cmd.Title ?? cmd.Name ?? "(unknown)"}'");
+                    Log_DuplicateKeyboardShortcut(KeyChordHelpers.FormatForDebug(key), cmd.Title ?? cmd.Name ?? "(unknown)");
                 }
             }
         }
@@ -223,4 +226,7 @@ public partial class ContextMenuViewModel : ObservableObject,
             return ContextKeybindingResult.Hide;
         }
     }
+
+    [LoggerMessage(Level = LogLevel.Warning, Message = "Ignoring duplicate keyboard shortcut {KeyChord} on command '{CommandName}'")]
+    partial void Log_DuplicateKeyboardShortcut(string keyChord, string commandName);
 }

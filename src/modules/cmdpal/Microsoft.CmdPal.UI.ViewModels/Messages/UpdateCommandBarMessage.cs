@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System.ComponentModel;
-using Microsoft.CmdPal.Common;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
@@ -47,11 +46,9 @@ public interface IContextMenuContext : INotifyPropertyChanged
             if (item is CommandContextItemViewModel cmd && cmd.HasRequestedShortcut)
             {
                 var key = cmd.RequestedShortcut ?? new KeyChord(0, 0, 0);
-                var added = result.TryAdd(key, cmd);
-                if (!added)
-                {
-                    CoreLogger.LogWarning($"Ignoring duplicate keyboard shortcut {KeyChordHelpers.FormatForDebug(key)} on command '{cmd.Title ?? cmd.Name ?? "(unknown)"}'");
-                }
+
+                // Silently ignore duplicate shortcuts - ContextMenuViewModel logs these
+                result.TryAdd(key, cmd);
             }
         }
 

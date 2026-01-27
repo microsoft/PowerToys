@@ -9,27 +9,29 @@ namespace Microsoft.CmdPal.UI;
 
 internal sealed class RunHistoryService : IRunHistoryService
 {
-    private readonly AppStateModel _appStateModel;
+    private readonly AppStateService _appStateService;
 
-    public RunHistoryService(AppStateModel appStateModel)
+    private AppStateModel AppState => _appStateService.CurrentSettings;
+
+    public RunHistoryService(AppStateService appStateService)
     {
-        _appStateModel = appStateModel;
+        _appStateService = appStateService;
     }
 
     public IReadOnlyList<string> GetRunHistory()
     {
-        if (_appStateModel.RunHistory.Count == 0)
+        if (AppState.RunHistory.Count == 0)
         {
             var history = Microsoft.Terminal.UI.RunHistory.CreateRunHistory();
-            _appStateModel.RunHistory.AddRange(history);
+            AppState.RunHistory.AddRange(history);
         }
 
-        return _appStateModel.RunHistory;
+        return AppState.RunHistory;
     }
 
     public void ClearRunHistory()
     {
-        _appStateModel.RunHistory.Clear();
+        AppState.RunHistory.Clear();
     }
 
     public void AddRunHistoryItem(string item)
@@ -40,11 +42,11 @@ internal sealed class RunHistoryService : IRunHistoryService
             return; // Do not add empty or whitespace items
         }
 
-        _appStateModel.RunHistory.Remove(item);
+        AppState.RunHistory.Remove(item);
 
         // Add the item to the front of the history
-        _appStateModel.RunHistory.Insert(0, item);
+        AppState.RunHistory.Insert(0, item);
 
-        AppStateModel.SaveState(_appStateModel);
+        _appStateService.SaveSettings(AppState);
     }
 }

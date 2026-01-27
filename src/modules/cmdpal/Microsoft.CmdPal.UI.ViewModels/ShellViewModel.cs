@@ -166,7 +166,7 @@ public partial class ShellViewModel : ObservableObject,
                     {
                         if (viewModel.InitializeCommand.ExecutionTask.Exception is AggregateException ex)
                         {
-                            CoreLogger.LogError(ex.ToString());
+                            Log_PageViewModelInitError(ex);
                         }
                     }
                     else
@@ -184,7 +184,7 @@ public partial class ShellViewModel : ObservableObject,
                                         }
                                         catch (Exception ex)
                                         {
-                                            CoreLogger.LogError(ex.ToString());
+                                            Log_DisposeError(ex);
                                         }
                                     }
 
@@ -214,7 +214,7 @@ public partial class ShellViewModel : ObservableObject,
                     }
                     catch (Exception ex)
                     {
-                        CoreLogger.LogError(ex.ToString());
+                        Log_DisposeError(ex);
                     }
                 }
 
@@ -244,7 +244,7 @@ public partial class ShellViewModel : ObservableObject,
             }
             catch (Exception ex)
             {
-                CoreLogger.LogError(ex.ToString());
+                Log_CancelNavigationError(ex);
             }
             finally
             {
@@ -268,7 +268,7 @@ public partial class ShellViewModel : ObservableObject,
         {
             if (command is IPage page)
             {
-                CoreLogger.LogDebug($"Navigating to page");
+                Log_NavigatingToPage();
 
                 var isMainPage = command == _rootPage;
                 _isNested = !isMainPage;
@@ -287,7 +287,7 @@ public partial class ShellViewModel : ObservableObject,
                 var pageViewModel = _pageViewModelFactory.TryCreatePageViewModel(page, _isNested, host!);
                 if (pageViewModel is null)
                 {
-                    CoreLogger.LogError($"Failed to create ViewModel for page {page.GetType().Name}");
+                    Log_FailedToCreatePageViewModel(page.GetType().Name);
                     throw new NotSupportedException();
                 }
 
@@ -317,7 +317,7 @@ public partial class ShellViewModel : ObservableObject,
             }
             else if (command is IInvokableCommand invokable)
             {
-                CoreLogger.LogDebug($"Invoking command");
+                Log_InvokingCommand();
 
                 WeakReferenceMessenger.Default.Send<TelemetryBeginInvokeMessage>();
                 StartInvoke(message, invokable, host);
@@ -403,7 +403,7 @@ public partial class ShellViewModel : ObservableObject,
         }
 
         var kind = result.Kind;
-        CoreLogger.LogDebug($"handling {kind.ToString()}");
+        Log_HandlingCommandResult(kind.ToString());
 
         WeakReferenceMessenger.Default.Send<TelemetryInvokeResultMessage>(new(kind));
         switch (kind)
@@ -507,4 +507,25 @@ public partial class ShellViewModel : ObservableObject,
         Level = LogLevel.Error,
         Message = "Error disposing old page")]
     partial void Log_ErrorDisposingOldPage(Exception ex);
+
+    [LoggerMessage(Level = LogLevel.Error, Message = "Error during page ViewModel initialization")]
+    partial void Log_PageViewModelInitError(Exception ex);
+
+    [LoggerMessage(Level = LogLevel.Error, Message = "Error disposing ViewModel")]
+    partial void Log_DisposeError(Exception ex);
+
+    [LoggerMessage(Level = LogLevel.Error, Message = "Error cancelling navigation")]
+    partial void Log_CancelNavigationError(Exception ex);
+
+    [LoggerMessage(Level = LogLevel.Debug, Message = "Navigating to page")]
+    partial void Log_NavigatingToPage();
+
+    [LoggerMessage(Level = LogLevel.Error, Message = "Failed to create ViewModel for page {PageTypeName}")]
+    partial void Log_FailedToCreatePageViewModel(string pageTypeName);
+
+    [LoggerMessage(Level = LogLevel.Debug, Message = "Invoking command")]
+    partial void Log_InvokingCommand();
+
+    [LoggerMessage(Level = LogLevel.Debug, Message = "Handling command result: {ResultKind}")]
+    partial void Log_HandlingCommandResult(string resultKind);
 }

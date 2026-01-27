@@ -3,12 +3,24 @@
 // See the LICENSE file in the project root for more information.
 
 using CommunityToolkit.Mvvm.ComponentModel;
-using Microsoft.CmdPal.Common;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
 public abstract partial class ExtensionObjectViewModel : ObservableObject
 {
+    private ILogger _logger = NullLogger.Instance;
+
+    /// <summary>
+    /// Gets or sets the logger for this ViewModel. Subclasses can set this in their constructor.
+    /// </summary>
+    protected ILogger Logger
+    {
+        get => _logger;
+        set => _logger = value;
+    }
+
     public WeakReference<IPageContext> PageContext { get; set; }
 
     internal ExtensionObjectViewModel(IPageContext? context)
@@ -114,7 +126,10 @@ public abstract partial class ExtensionObjectViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            CoreLogger.LogDebug(ex.ToString());
+            Log_CleanupException(ex);
         }
     }
+
+    [LoggerMessage(Level = LogLevel.Debug, Message = "Exception during cleanup")]
+    partial void Log_CleanupException(Exception ex);
 }

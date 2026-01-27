@@ -7,7 +7,6 @@ using System.Text.Json;
 using AdaptiveCards.ObjectModel.WinUI3;
 using AdaptiveCards.Templating;
 using CommunityToolkit.Mvvm.Messaging;
-using ManagedCommon;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Models;
@@ -52,7 +51,7 @@ public partial class ContentFormViewModel(IFormContent _form, WeakReference<IPag
         }
         catch (Exception ex)
         {
-            Logger.LogError("Error building card from template", ex);
+            // Error is returned via output parameter for caller to handle
             error = ex;
             return false;
         }
