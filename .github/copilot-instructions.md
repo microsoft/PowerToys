@@ -6,15 +6,8 @@ description: 'PowerToys AI contributor guidance'
 
 Concise guidance for AI contributions. For complete details, see [AGENTS.md](../AGENTS.md).
 
-## Quick Reference
-
-- **Build**: `tools\build\build-essentials.cmd` (first time), then `tools\build\build.cmd`
-- **Tests**: Find `<Product>*UnitTests` project, build it, run via VS Test Explorer
-- **Exit code 0 = success** – do not proceed if build fails
-
 ## Key Rules
 
-- One terminal per operation (build → test)
 - Atomic PRs: one logical change, no drive-by refactors
 - Add tests when changing behavior
 - Keep hot paths quiet (no logging in hooks/tight loops)
@@ -39,7 +32,5 @@ These are auto-applied based on file location:
 
 ## Detailed Documentation
 
-- [AGENTS.md](../AGENTS.md) – Full contributor guide
-- [Build Guidelines](../tools/build/BUILD-GUIDELINES.md)
 - [Architecture](../doc/devdocs/core/architecture.md)
 - [Coding Style](../doc/devdocs/development/style.md)

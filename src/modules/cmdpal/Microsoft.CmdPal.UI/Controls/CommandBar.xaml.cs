@@ -44,13 +44,14 @@ public sealed partial class CommandBar : UserControl,
 
     public void Receive(OpenContextMenuMessage message)
     {
-        if (!ViewModel.ShouldShowContextMenu)
-        {
-            return;
-        }
-
         if (message.Element is null)
         {
+            // This is invoked from the "More" button on the command bar
+            if (!ViewModel.ShouldShowContextMenu)
+            {
+                return;
+            }
+
             _ = DispatcherQueue.TryEnqueue(
                 () =>
                 {
@@ -65,6 +66,7 @@ public sealed partial class CommandBar : UserControl,
         }
         else
         {
+            // This is invoked from a specific element
             _ = DispatcherQueue.TryEnqueue(
             () =>
             {
