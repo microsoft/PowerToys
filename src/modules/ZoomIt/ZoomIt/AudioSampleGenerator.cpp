@@ -150,8 +150,8 @@ winrt::IAsyncAction AudioSampleGenerator::InitializeAsync()
             }
         }
 
-        // Loopback capture is required
-        if (!m_loopbackCapture)
+        // Loopback capture is only required when system audio capture is enabled
+        if (m_captureSystemAudio && !m_loopbackCapture)
         {
             throw winrt::hresult_error(E_FAIL, L"Failed to initialize loopback audio capture!");
         }
