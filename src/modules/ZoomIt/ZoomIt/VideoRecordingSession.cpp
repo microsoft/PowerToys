@@ -1786,7 +1786,9 @@ static void UpdatePositionUI(HWND hDlg, VideoRecordingSession::TrimDialogData* p
     }
 
     const auto previewTime = pData->previewOverrideActive ? pData->previewOverride : pData->currentPosition;
-    SetTimeText(hDlg, IDC_TRIM_POSITION_LABEL, previewTime, true);
+    // Show time relative to left grip (trimStart)
+    const auto relativeTime = winrt::TimeSpan{ (std::max)(previewTime.count() - pData->trimStart.count(), int64_t{ 0 }) };
+    SetTimeText(hDlg, IDC_TRIM_POSITION_LABEL, relativeTime, true);
     if (invalidateTimeline)
     {
         InvalidateRect(GetDlgItem(hDlg, IDC_TRIM_TIMELINE), nullptr, FALSE);
@@ -3930,7 +3932,9 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
             // No preloaded preview - start async video load
             UpdateVideoPreview(hDlg, pData);
         }
-        SetTimeText(hDlg, IDC_TRIM_POSITION_LABEL, pData->currentPosition, true);
+        // Show time relative to left grip (trimStart)
+        const auto relativePos = winrt::TimeSpan{ (std::max)(pData->currentPosition.count() - pData->trimStart.count(), int64_t{ 0 }) };
+        SetTimeText(hDlg, IDC_TRIM_POSITION_LABEL, relativePos, true);
 
         // Initialize currentDpi to actual dialog DPI (for WM_DPICHANGED handling)
         currentDpi = GetDpiForWindowHelper(hDlg);
@@ -4719,7 +4723,11 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
                     UpdateWindow(hTimeline);
                 }
             }
-            SetTimeText(hDlg, IDC_TRIM_POSITION_LABEL, pData->currentPosition, true);
+            // Show time relative to left grip (trimStart)
+            {
+                const auto relativePos = winrt::TimeSpan{ (std::max)(pData->currentPosition.count() - pData->trimStart.count(), int64_t{ 0 }) };
+                SetTimeText(hDlg, IDC_TRIM_POSITION_LABEL, relativePos, true);
+            }
             
             if (elapsedMs >= frameDurationMs)
             {
@@ -4807,7 +4815,11 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
                             UpdateWindow(hTimeline);
                         }
                     }
-                    SetTimeText(hDlg, IDC_TRIM_POSITION_LABEL, pData->currentPosition, true);
+                    // Show time relative to left grip (trimStart)
+                    {
+                        const auto relativePos = winrt::TimeSpan{ (std::max)(pData->currentPosition.count() - pData->trimStart.count(), int64_t{ 0 }) };
+                        SetTimeText(hDlg, IDC_TRIM_POSITION_LABEL, relativePos, true);
+                    }
                 }
             }
             catch (...)
