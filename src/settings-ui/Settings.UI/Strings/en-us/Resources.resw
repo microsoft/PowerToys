@@ -3245,8 +3245,14 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="AlwaysOnTop_TransparencyInfo.Header" xml:space="preserve">
     <value>Transparency adjustment</value>
   </data>
-  <data name="AlwaysOnTop_TransparencyInfo_Value.Text" xml:space="preserve">
-    <value>Use modifier keys + (+) to increase opacity or modifier keys + (-) to decrease. For example: Win+Ctrl+(+) or Win+Ctrl+(-). Range: 20%-100%</value>
+  <data name="AlwaysOnTop_IncreaseOpacity.Text" xml:space="preserve">
+    <value>Increase opacity</value>
+  </data>
+  <data name="AlwaysOnTop_DecreaseOpacity.Text" xml:space="preserve">
+    <value>Decrease opacity</value>
+  </data>
+  <data name="AlwaysOnTop_TransparencyRange.Text" xml:space="preserve">
+    <value>Range: 20%-100%</value>
   </data>
   <data name="Oobe_AlwaysOnTop.Title" xml:space="preserve">
     <value>Always On Top</value>

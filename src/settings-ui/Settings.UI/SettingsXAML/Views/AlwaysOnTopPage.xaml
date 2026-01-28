@@ -38,9 +38,28 @@
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
-                    <tkcontrols:SettingsCard x:Uid="AlwaysOnTop_TransparencyInfo" HeaderIcon="{ui:FontIcon Glyph=&#xE790;}">
-                        <TextBlock x:Uid="AlwaysOnTop_TransparencyInfo_Value" Style="{StaticResource SecondaryTextStyle}" />
-                    </tkcontrols:SettingsCard>
+                    <tkcontrols:SettingsExpander
+                        x:Uid="AlwaysOnTop_TransparencyInfo"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE790;}"
+                        IsExpanded="True">
+                        <tkcontrols:SettingsExpander.Items>
+                            <tkcontrols:SettingsCard ContentAlignment="Left">
+                                <controls:ShortcutWithTextLabelControl
+                                    x:Uid="AlwaysOnTop_IncreaseOpacity"
+                                    Keys="{x:Bind ViewModel.IncreaseOpacityKeysList, Mode=OneWay}" />
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard ContentAlignment="Left">
+                                <controls:ShortcutWithTextLabelControl
+                                    x:Uid="AlwaysOnTop_DecreaseOpacity"
+                                    Keys="{x:Bind ViewModel.DecreaseOpacityKeysList, Mode=OneWay}" />
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard>
+                                <tkcontrols:SettingsCard.Description>
+                                    <TextBlock x:Uid="AlwaysOnTop_TransparencyRange" Style="{StaticResource SecondaryTextStyle}" />
+                                </tkcontrols:SettingsCard.Description>
+                            </tkcontrols:SettingsCard>
+                        </tkcontrols:SettingsExpander.Items>
+                    </tkcontrols:SettingsExpander>
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup x:Uid="AlwaysOnTop_Behavior_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
