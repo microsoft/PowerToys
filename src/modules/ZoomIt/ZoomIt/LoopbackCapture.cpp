@@ -95,7 +95,7 @@ HRESULT LoopbackCapture::Start()
     }
 
     m_stopEvent.ResetEvent();
-    
+
     HRESULT hr = m_audioClient->Start();
     if (FAILED(hr))
     {
@@ -169,12 +169,12 @@ void LoopbackCapture::DrainCaptureClient()
             {
                 if (flags & AUDCLNT_BUFFERFLAGS_SILENT)
                 {
-                    samples.resize(numFramesAvailable * m_pwfx->nChannels, 0.0f);
+                    samples.resize(static_cast<size_t>(numFramesAvailable) * m_pwfx->nChannels, 0.0f);
                 }
                 else
                 {
                     float* floatData = reinterpret_cast<float*>(pData);
-                    samples.assign(floatData, floatData + (numFramesAvailable * m_pwfx->nChannels));
+                    samples.assign(floatData, floatData + (static_cast<size_t>(numFramesAvailable) * m_pwfx->nChannels));
                 }
             }
             else if (m_pwfx->wFormatTag == WAVE_FORMAT_PCM ||
@@ -183,12 +183,12 @@ void LoopbackCapture::DrainCaptureClient()
             {
                 if (flags & AUDCLNT_BUFFERFLAGS_SILENT)
                 {
-                    samples.resize(numFramesAvailable * m_pwfx->nChannels, 0.0f);
+                    samples.resize(static_cast<size_t>(numFramesAvailable) * m_pwfx->nChannels, 0.0f);
                 }
                 else if (m_pwfx->wBitsPerSample == 16)
                 {
                     int16_t* pcmData = reinterpret_cast<int16_t*>(pData);
-                    samples.resize(numFramesAvailable * m_pwfx->nChannels);
+                    samples.resize(static_cast<size_t>(numFramesAvailable) * m_pwfx->nChannels);
                     for (size_t i = 0; i < samples.size(); i++)
                     {
                         samples[i] = static_cast<float>(pcmData[i]) / 32768.0f;
@@ -197,7 +197,7 @@ void LoopbackCapture::DrainCaptureClient()
                 else if (m_pwfx->wBitsPerSample == 32)
                 {
                     int32_t* pcmData = reinterpret_cast<int32_t*>(pData);
-                    samples.resize(numFramesAvailable * m_pwfx->nChannels);
+                    samples.resize(static_cast<size_t>(numFramesAvailable) * m_pwfx->nChannels);
                     for (size_t i = 0; i < samples.size(); i++)
                     {
                         samples[i] = static_cast<float>(pcmData[i]) / 2147483648.0f;
@@ -247,7 +247,7 @@ void LoopbackCapture::CaptureThread()
             if (numFramesAvailable > 0)
             {
                 std::vector<float> samples;
-                
+
                 // Convert to float samples
                 if (m_pwfx->wFormatTag == WAVE_FORMAT_IEEE_FLOAT ||
                     (m_pwfx->wFormatTag == WAVE_FORMAT_EXTENSIBLE &&
@@ -257,12 +257,12 @@ void LoopbackCapture::CaptureThread()
                     if (flags & AUDCLNT_BUFFERFLAGS_SILENT)
                     {
                         // Insert silence
-                        samples.resize(numFramesAvailable * m_pwfx->nChannels, 0.0f);
+                        samples.resize(static_cast<size_t>(numFramesAvailable) * m_pwfx->nChannels, 0.0f);
                     }
                     else
                     {
                         float* floatData = reinterpret_cast<float*>(pData);
-                        samples.assign(floatData, floatData + (numFramesAvailable * m_pwfx->nChannels));
+                        samples.assign(floatData, floatData + (static_cast<size_t>(numFramesAvailable) * m_pwfx->nChannels));
                     }
                 }
                 else if (m_pwfx->wFormatTag == WAVE_FORMAT_PCM ||
@@ -272,12 +272,12 @@ void LoopbackCapture::CaptureThread()
                     // Convert PCM to float
                     if (flags & AUDCLNT_BUFFERFLAGS_SILENT)
                     {
-                        samples.resize(numFramesAvailable * m_pwfx->nChannels, 0.0f);
+                        samples.resize(static_cast<size_t>(numFramesAvailable) * m_pwfx->nChannels, 0.0f);
                     }
                     else if (m_pwfx->wBitsPerSample == 16)
                     {
                         int16_t* pcmData = reinterpret_cast<int16_t*>(pData);
-                        samples.resize(numFramesAvailable * m_pwfx->nChannels);
+                        samples.resize(static_cast<size_t>(numFramesAvailable) * m_pwfx->nChannels);
                         for (size_t i = 0; i < samples.size(); i++)
                         {
                             samples[i] = static_cast<float>(pcmData[i]) / 32768.0f;
@@ -286,7 +286,7 @@ void LoopbackCapture::CaptureThread()
                     else if (m_pwfx->wBitsPerSample == 32)
                     {
                         int32_t* pcmData = reinterpret_cast<int32_t*>(pData);
-                        samples.resize(numFramesAvailable * m_pwfx->nChannels);
+                        samples.resize(static_cast<size_t>(numFramesAvailable) * m_pwfx->nChannels);
                         for (size_t i = 0; i < samples.size(); i++)
                         {
                             samples[i] = static_cast<float>(pcmData[i]) / 2147483648.0f;
@@ -327,11 +327,11 @@ bool LoopbackCapture::TryGetSamples(std::vector<float>& samples)
 
     samples = std::move(m_sampleQueue.front());
     m_sampleQueue.pop_front();
-    
+
     if (m_sampleQueue.empty())
     {
         m_samplesReadyEvent.ResetEvent();
     }
-    
+
     return true;
 }

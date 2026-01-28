@@ -124,7 +124,7 @@ static size_t FindGifFrameIndex(const std::vector<VideoRecordingSession::TrimDia
 static bool LoadGifFrames(const std::wstring& gifPath, VideoRecordingSession::TrimDialogData* pData)
 {
     OutputDebugStringW((L"[GIF Trim] LoadGifFrames called for: " + gifPath + L"\n").c_str());
-    
+
     if (!pData)
     {
         OutputDebugStringW(L"[GIF Trim] pData is null\n");
@@ -204,7 +204,7 @@ static bool LoadGifFrames(const std::wstring& gifPath, VideoRecordingSession::Tr
 
         std::wstring tempPath = std::wstring(tempDir) + L"ZoomIt\\";
         CreateDirectoryW(tempPath.c_str(), nullptr);
-        
+
         std::wstring tempName = L"gif_trim_cache_" + std::to_wstring(GetTickCount64()) + L".gif";
         tempPath += tempName;
 
@@ -221,7 +221,7 @@ static bool LoadGifFrames(const std::wstring& gifPath, VideoRecordingSession::Tr
             return true;
         }
         logHr(L"CreateDecoderFromFilename(temp copy)", hr);
-        
+
         // Clean up temp file on failure
         DeleteFileW(tempPath.c_str());
         return false;
@@ -804,25 +804,6 @@ static void ResetSmoothPlayback(VideoRecordingSession::TrimDialogData* pData)
 
 static void LogSmoothingEvent(const wchar_t* label, int64_t predictedTicks, int64_t mediaTicks, int64_t driftTicks);
 
-static int64_t GetSmoothedPositionTicks(
-    VideoRecordingSession::TrimDialogData* pData,
-    int64_t minTicks,
-    int64_t maxTicks);
-
-static void BeginSmoothPlayback(VideoRecordingSession::TrimDialogData* pData, int64_t mediaTicks)
-{
-    if (!pData)
-    {
-        return;
-    }
-
-    const int64_t nowUs = SteadyClockMicros();
-    pData->smoothBaseTicks.store(mediaTicks, std::memory_order_relaxed);
-    pData->smoothLastSyncMicroseconds.store(nowUs, std::memory_order_relaxed);
-    pData->smoothActive.store(true, std::memory_order_relaxed);
-    pData->smoothHasNonZeroSample.store(mediaTicks > 0, std::memory_order_relaxed);
-}
-
 static void SyncSmoothPlayback(VideoRecordingSession::TrimDialogData* pData, int64_t mediaTicks, int64_t /*minTicks*/, int64_t /*maxTicks*/)
 {
     if (!pData)
@@ -837,36 +818,6 @@ static void SyncSmoothPlayback(VideoRecordingSession::TrimDialogData* pData, int
     pData->smoothHasNonZeroSample.store(mediaTicks > 0, std::memory_order_relaxed);
 
     LogSmoothingEvent(L"setBase", mediaTicks, mediaTicks, 0);
-}
-
-static int64_t GetSmoothedPositionTicks(
-    VideoRecordingSession::TrimDialogData* pData,
-    int64_t minTicks,
-    int64_t maxTicks)
-{
-    if (!pData)
-    {
-        return minTicks;
-    }
-
-    if (!pData->smoothActive.load(std::memory_order_relaxed))
-    {
-        const int64_t rawTicks = pData->currentPosition.count();
-        return std::clamp<int64_t>(rawTicks, minTicks, maxTicks);
-    }
-
-    const int64_t lastSyncUs = pData->smoothLastSyncMicroseconds.load(std::memory_order_relaxed);
-    const int64_t baseTicks = pData->smoothBaseTicks.load(std::memory_order_relaxed);
-
-    if (lastSyncUs == 0)
-    {
-        return std::clamp<int64_t>(baseTicks, minTicks, maxTicks);
-    }
-
-    const int64_t nowUs = SteadyClockMicros();
-    const int64_t deltaUs = (std::max<int64_t>)(0, nowUs - lastSyncUs);
-    const int64_t predicted = baseTicks + deltaUs * kTicksPerMicrosecond;
-    return std::clamp<int64_t>(predicted, minTicks, maxTicks);
 }
 
 static void LogSmoothingEvent(const wchar_t* label, int64_t predictedTicks, int64_t mediaTicks, int64_t driftTicks)
@@ -1819,78 +1770,6 @@ static void SyncMediaPlayerPosition(VideoRecordingSession::TrimDialogData* pData
     }
 }
 
-static HBITMAP CreateBitmapFromSoftwareBitmap(winrt::SoftwareBitmap const& sourceBitmap)
-{
-    if (!sourceBitmap)
-    {
-        return nullptr;
-    }
-
-    winrt::SoftwareBitmap bitmap = sourceBitmap;
-    if (bitmap.BitmapPixelFormat() != winrt::BitmapPixelFormat::Bgra8 ||
-        bitmap.BitmapAlphaMode() != winrt::BitmapAlphaMode::Premultiplied)
-    {
-        bitmap = winrt::SoftwareBitmap::Convert(bitmap, winrt::BitmapPixelFormat::Bgra8, winrt::BitmapAlphaMode::Premultiplied);
-    }
-
-    auto buffer = bitmap.LockBuffer(winrt::BitmapBufferAccessMode::Read);
-    auto reference = buffer.CreateReference();
-    auto byteAccess = reference.as<IMemoryBufferByteAccess>();
-
-    BYTE* data = nullptr;
-    UINT32 capacity = 0;
-    if (FAILED(byteAccess->GetBuffer(&data, &capacity)))
-    {
-        return nullptr;
-    }
-
-    auto desc = buffer.GetPlaneDescription(0);
-    if (desc.Width <= 0 || desc.Height <= 0)
-    {
-        return nullptr;
-    }
-
-    const UINT32 requiredBytes = static_cast<UINT32>(desc.Width * 4) * static_cast<UINT32>(desc.Height);
-    if (capacity < requiredBytes + desc.StartIndex)
-    {
-        return nullptr;
-    }
-
-    BITMAPINFO bmi{};
-    bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-    bmi.bmiHeader.biWidth = desc.Width;
-    bmi.bmiHeader.biHeight = -desc.Height; // Top-down bitmap
-    bmi.bmiHeader.biPlanes = 1;
-    bmi.bmiHeader.biBitCount = 32;
-    bmi.bmiHeader.biCompression = BI_RGB;
-
-    void* bits = nullptr;
-    HDC hdcScreen = GetDC(nullptr);
-    HBITMAP hBitmap = CreateDIBSection(hdcScreen, &bmi, DIB_RGB_COLORS, &bits, nullptr, 0);
-    ReleaseDC(nullptr, hdcScreen);
-
-    if (!hBitmap || !bits)
-    {
-        if (hBitmap)
-        {
-            DeleteObject(hBitmap);
-        }
-        return nullptr;
-    }
-
-    const LONG srcStride = desc.Stride;
-    BYTE* destBytes = static_cast<BYTE*>(bits);
-    const size_t destStride = static_cast<size_t>(desc.Width) * 4;
-    const BYTE* srcBase = data + desc.StartIndex;
-
-    for (int row = 0; row < desc.Height; ++row)
-    {
-        memcpy(destBytes + row * destStride, srcBase + row * srcStride, destStride);
-    }
-
-    return hBitmap;
-}
-
 static void CleanupMediaPlayer(VideoRecordingSession::TrimDialogData* pData)
 {
     if (!pData || !pData->mediaPlayer)
@@ -2406,16 +2285,16 @@ static bool StartMMTimer(HWND hDlg, VideoRecordingSession::TrimDialogData* pData
     {
         return false;
     }
-    
+
     StopMMTimer(pData);
-    
+
     pData->mmTimerId = timeSetEvent(
         kMMTimerIntervalMs,
         1,  // 1ms resolution
         MMTimerCallback,
         reinterpret_cast<DWORD_PTR>(hDlg),
         TIME_PERIODIC | TIME_KILL_SYNCHRONOUS);
-    
+
     return pData->mmTimerId != 0;
 }
 
@@ -2684,7 +2563,7 @@ static winrt::fire_and_forget StartPlaybackAsync(HWND hDlg, VideoRecordingSessio
         {
             pData->gifFrameStartTime = now;
         }
-        
+
         // Update lastPlayheadX to current position so timer ticks can track movement properly
         {
             HWND hTimeline = GetDlgItem(hDlg, IDC_TRIM_TIMELINE);
@@ -2885,7 +2764,7 @@ static winrt::fire_and_forget StartPlaybackAsync(HWND hDlg, VideoRecordingSessio
                                     const BYTE* src = static_cast<const BYTE*>(mapped.pData);
                                     for (UINT y = 0; y < height; ++y)
                                     {
-                                        memcpy(dest + y * destStride, src + y * rowPitch, destStride);
+                                        memcpy(dest + static_cast<size_t>(y) * destStride, src + static_cast<size_t>(y) * rowPitch, destStride);
                                     }
 
                                     {
@@ -3210,7 +3089,7 @@ static LRESULT CALLBACK TimelineSubclassProc(
         // - Playhead is hittable in the knob band (below track) or stem band
         // - When clicking in the knob area (below track), playhead always wins
         // - When in the gripper band, grippers take priority for horizontal overlaps
-        
+
         const bool startHit = inGripperBand && distToStart <= timelineHandleHitRadius;
         const bool endHit = inGripperBand && distToEnd <= timelineHandleHitRadius;
         const bool posHitKnob = inKnobBand && distToPos <= timelineHandleHitRadius;
@@ -3367,9 +3246,8 @@ static LRESULT CALLBACK TimelineSubclassProc(
 
         case VideoRecordingSession::TrimDialogData::Position:
         {
-            const UINT dpi = GetDpiForWindowHelper(hWnd);
             const int previousPosX = TimelineTimeToClientX(pData, pData->currentPosition, width, dpi);
-            
+
             // Allow playhead to move anywhere within video bounds (0 to videoDuration)
             const int64_t clampedTicks = std::clamp(newTime.count(), 0LL, pData->videoDuration.count());
             pData->currentPosition = winrt::TimeSpan{ clampedTicks };
@@ -4215,7 +4093,7 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
 
         HWND hVolumeIcon = GetDlgItem(hDlg, IDC_TRIM_VOLUME_ICON);
         HWND hVolumeSlider = GetDlgItem(hDlg, IDC_TRIM_VOLUME);
-        
+
         if (hVolumeIcon)
         {
             const int iconX = buttonX + volumeSpacing;
@@ -4223,7 +4101,7 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
             SetWindowPos(hVolumeIcon, nullptr, iconX, iconY, volumeIconWidth, volumeIconHeight,
                 SWP_NOZORDER | SWP_NOACTIVATE);
         }
-        
+
         if (hVolumeSlider)
         {
             const int sliderX = buttonX + volumeSpacing + volumeIconWidth + 4;
@@ -4305,7 +4183,7 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
             {
                 pData->trimEnd = pData->videoDuration;
             }
-            
+
             if (pData->currentPosition.count() > pData->trimEnd.count())
             {
                 pData->currentPosition = pData->trimEnd;
@@ -4540,16 +4418,16 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
             if (pData && pData->volume > 0.0)
             {
                 float waveX = speakerLeft + speakerWidth + 4.0f * scale;
-                
+
                 // First wave (always visible when volume > 0)
                 graphics.DrawArc(&iconPen, waveX, centerY - 2.5f * scale, 3.0f * scale, 5.0f * scale, -60.0f, 120.0f);
-                
+
                 // Second wave (visible when volume > 33%)
                 if (pData->volume > 0.33)
                 {
                     graphics.DrawArc(&iconPen, waveX + 1.5f * scale, centerY - 4.0f * scale, 4.5f * scale, 8.0f * scale, -60.0f, 120.0f);
                 }
-                
+
                 // Third wave (visible when volume > 66%)
                 if (pData->volume > 0.66)
                 {
@@ -4684,12 +4562,12 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
                 pData->videoDuration.count());
             const size_t frameIndex = FindGifFrameIndex(pData->gifFrames, clampedTicks);
             const auto& frame = pData->gifFrames[frameIndex];
-            
+
             // Check if enough real time has passed to advance to the next frame
             auto now = std::chrono::steady_clock::now();
             auto elapsedMs = std::chrono::duration_cast<std::chrono::milliseconds>(now - pData->gifFrameStartTime).count();
             auto frameDurationMs = frame.duration.count() / 10'000; // Convert 100-ns ticks to ms
-            
+
             // Update playhead position smoothly based on elapsed time within current frame
             const int64_t frameElapsedTicks = static_cast<int64_t>(elapsedMs) * 10'000;
             const int64_t smoothPosition = frame.start.count() + (std::min)(frameElapsedTicks, frame.duration.count());
@@ -4705,9 +4583,9 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
                 PostMessage(hDlg, WMU_PLAYBACK_STOP, 0, 0);
                 return TRUE;
             }
-            
+
             pData->currentPosition = winrt::TimeSpan{ clampedPosition };
-            
+
             // Update playhead
             HWND hTimeline = GetDlgItem(hDlg, IDC_TRIM_TIMELINE);
             if (hTimeline)
@@ -4723,12 +4601,17 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
                     UpdateWindow(hTimeline);
                 }
             }
+<<<<<<< HEAD
             // Show time relative to left grip (trimStart)
             {
                 const auto relativePos = winrt::TimeSpan{ (std::max)(pData->currentPosition.count() - pData->trimStart.count(), int64_t{ 0 }) };
                 SetTimeText(hDlg, IDC_TRIM_POSITION_LABEL, relativePos, true);
             }
             
+=======
+            SetTimeText(hDlg, IDC_TRIM_POSITION_LABEL, pData->currentPosition, true);
+
+>>>>>>> 906538437 (Compilation fixes)
             if (elapsedMs >= frameDurationMs)
             {
                 // Time to advance to next frame
@@ -4780,7 +4663,7 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
                     pData->pendingInitialSeek.store(false, std::memory_order_relaxed);
                     pData->pendingInitialSeekTicks.store(0, std::memory_order_relaxed);
                 }
-                
+
                 // Allow playing from before trimStart - only clamp to video bounds and trimEnd
                 const int64_t clampedTicks = std::clamp<int64_t>(
                     mediaTicks,
@@ -4850,11 +4733,11 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
             {
                 int pos = static_cast<int>(SendMessage(hVolumeSlider, TBM_GETPOS, 0, 0));
                 pData->volume = pos / 100.0;
-                
+
                 // Persist volume setting
                 g_TrimDialogVolume = static_cast<DWORD>(pos);
                 reg.WriteRegSettings(RegSettings);
-                
+
                 if (pData->mediaPlayer)
                 {
                     try
@@ -4885,7 +4768,7 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
                 if (pData)
                 {
                     HWND hVolumeSlider = GetDlgItem(hDlg, IDC_TRIM_VOLUME);
-                    
+
                     if (pData->volume > 0.0)
                     {
                         // Mute: save current volume and set to 0
@@ -4897,7 +4780,7 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
                         // Unmute: restore previous volume (default to 70% if never set)
                         pData->volume = (pData->previousVolume > 0.0) ? pData->previousVolume : 0.70;
                     }
-                    
+
                     // Update slider position
                     if (hVolumeSlider)
                     {
@@ -4905,11 +4788,11 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
                         // Force full redraw to avoid leftover thumb artifacts
                         InvalidateRect(hVolumeSlider, nullptr, TRUE);
                     }
-                    
+
                     // Persist volume setting
                     g_TrimDialogVolume = static_cast<DWORD>(pData->volume * 100);
                     reg.WriteRegSettings(RegSettings);
-                    
+
                     // Apply to media player
                     if (pData->mediaPlayer)
                     {
@@ -4922,7 +4805,7 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
                         {
                         }
                     }
-                    
+
                     // Update icon appearance
                     InvalidateRect(GetDlgItem(hDlg, IDC_TRIM_VOLUME_ICON), nullptr, FALSE);
                 }

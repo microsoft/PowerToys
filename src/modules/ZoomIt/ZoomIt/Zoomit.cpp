@@ -2047,7 +2047,7 @@ VOID RepositionTabPages( HWND hTabCtrl )
     RECT rc, pageRc;
     GetWindowRect( hTabCtrl, &rc );
     TabCtrl_AdjustRect( hTabCtrl, FALSE, &rc );
-    
+
     // Inset the display area to leave room for border in dark mode
     if (IsDarkModeEnabled())
     {
@@ -2056,16 +2056,16 @@ VOID RepositionTabPages( HWND hTabCtrl )
         rc.right -= 2;
         rc.bottom -= 2;
     }
-    
+
     // Get the parent dialog to convert coordinates correctly
     HWND hParent = GetParent( hTabCtrl );
-    
+
     for( int i = 0; i < sizeof( g_OptionsTabs )/sizeof(g_OptionsTabs[0]); i++ ) {
         if( g_OptionsTabs[i].hPage ) {
             pageRc = rc;
             // Convert screen coords to parent dialog client coords
             MapWindowPoints( NULL, hParent, reinterpret_cast<LPPOINT>(&pageRc), 2);
-            
+
             SetWindowPos( g_OptionsTabs[i].hPage,
                  HWND_TOP,
                  pageRc.left, pageRc.top,
@@ -2097,7 +2097,7 @@ VOID OptionsAddTabs( HWND hOptionsDlg, HWND hTabCtrl )
     }
 
     TabCtrl_AdjustRect( hTabCtrl, FALSE, &rc );
-    
+
     // Inset the display area to leave room for border in dark mode
     // Need 2 pixels so tab pages don't cover the 1-pixel border
     if (IsDarkModeEnabled())
@@ -2107,7 +2107,7 @@ VOID OptionsAddTabs( HWND hOptionsDlg, HWND hTabCtrl )
         rc.right -= 2;
         rc.bottom -= 2;
     }
-    
+
     for( i = 0; i < sizeof( g_OptionsTabs )/sizeof(g_OptionsTabs[0]); i++ ) {
 
         pageRc = rc;
@@ -2241,7 +2241,7 @@ void UpdateDrawTabHeaderFont()
 
     if( !hBaseFont )
     {
-        hBaseFont = reinterpret_cast<HFONT>(GetStockObject( DEFAULT_GUI_FONT ));
+        hBaseFont = static_cast<HFONT>(GetStockObject( DEFAULT_GUI_FONT ));
     }
 
     LOGFONT lf{};
@@ -2315,10 +2315,10 @@ LRESULT CALLBACK CheckboxSubclassProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
             LONG dbgStyle = GetWindowLong(hWnd, GWL_STYLE);
             LONG dbgType = dbgStyle & BS_TYPEMASK;
             bool dbgIsRadio = (dbgType == BS_RADIOBUTTON || dbgType == BS_AUTORADIOBUTTON);
-            OutputDebugStringW((std::wstring(L"[Checkbox] WM_PAINT: ") + dbgText + 
-                L" enabled=" + (dbgEnabled ? L"1" : L"0") + 
+            OutputDebugStringW((std::wstring(L"[Checkbox] WM_PAINT: ") + dbgText +
+                L" enabled=" + (dbgEnabled ? L"1" : L"0") +
                 L" isRadio=" + (dbgIsRadio ? L"1" : L"0") + L"\n").c_str());
-            
+
             PAINTSTRUCT ps;
             HDC hdc = BeginPaint(hWnd, &ps);
 
@@ -2332,12 +2332,12 @@ LRESULT CALLBACK CheckboxSubclassProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
             LRESULT state = SendMessage(hWnd, BM_GETCHECK, 0, 0);
             bool isChecked = (state == BST_CHECKED);
             bool isEnabled = IsWindowEnabled(hWnd);
-            
+
             // Check if this is a radio button
             LONG style = GetWindowLong(hWnd, GWL_STYLE);
             LONG buttonType = style & BS_TYPEMASK;
             bool isRadioButton = (buttonType == BS_RADIOBUTTON || buttonType == BS_AUTORADIOBUTTON);
-            
+
             // Check if checkbox should be on the right (BS_LEFTTEXT or WS_EX_RIGHT)
             bool checkOnRight = (style & BS_LEFTTEXT) != 0;
             LONG exStyle = GetWindowLong(hWnd, GWL_EXSTYLE);
@@ -2389,7 +2389,7 @@ LRESULT CALLBACK CheckboxSubclassProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
                     HBRUSH hInnerBrush = CreateSolidBrush(isEnabled ? RGB(255, 255, 255) : RGB(140, 140, 140));
                     HBRUSH hOldInnerBrush = static_cast<HBRUSH>(SelectObject(hdc, hInnerBrush));
                     HPEN hNullPen = static_cast<HPEN>(SelectObject(hdc, GetStockObject(NULL_PEN)));
-                    Ellipse(hdc, rcCheck.left + innerMargin, rcCheck.top + innerMargin, 
+                    Ellipse(hdc, rcCheck.left + innerMargin, rcCheck.top + innerMargin,
                             rcCheck.right - innerMargin, rcCheck.bottom - innerMargin);
                     SelectObject(hdc, hNullPen);
                     SelectObject(hdc, hOldInnerBrush);
@@ -2523,7 +2523,7 @@ LRESULT CALLBACK HotkeyControlSubclassProc(HWND hWnd, UINT uMsg, WPARAM wParam, 
                     TCHAR keyName[64] = { 0 };
                     LONG lParamKey = (scanCode << 16);
                     // Set extended key bit for certain keys
-                    if ((vk >= VK_PRIOR && vk <= VK_DELETE) || 
+                    if ((vk >= VK_PRIOR && vk <= VK_DELETE) ||
                         (vk >= VK_LWIN && vk <= VK_APPS) ||
                         vk == VK_DIVIDE || vk == VK_NUMLOCK)
                     {
@@ -2622,41 +2622,41 @@ LRESULT CALLBACK HotkeyControlSubclassProc(HWND hWnd, UINT uMsg, WPARAM wParam, 
                 rc.top = 0;
                 rc.right = width;
                 rc.bottom = height;
-                
+
                 // Get NC border size
                 RECT rcClient;
                 GetClientRect(hWnd, &rcClient);
                 MapWindowPoints(hWnd, nullptr, reinterpret_cast<LPPOINT>(&rcClient), 2);
-                
+
                 RECT rcWindow;
                 GetWindowRect(hWnd, &rcWindow);
-                
+
                 int borderLeft = rcClient.left - rcWindow.left;
                 int borderTop = rcClient.top - rcWindow.top;
                 int borderRight = rcWindow.right - rcClient.right;
                 int borderBottom = rcWindow.bottom - rcClient.bottom;
-                
+
                 // Fill the entire NC border area with background color
                 HBRUSH hBrush = CreateSolidBrush(DarkMode::BackgroundColor);
-                
+
                 // Top border
                 RECT rcTop = { 0, 0, width, borderTop };
                 FillRect(hdc, &rcTop, hBrush);
-                
+
                 // Bottom border
                 RECT rcBottom = { 0, height - borderBottom, width, height };
                 FillRect(hdc, &rcBottom, hBrush);
-                
+
                 // Left border
                 RECT rcLeft = { 0, borderTop, borderLeft, height - borderBottom };
                 FillRect(hdc, &rcLeft, hBrush);
-                
+
                 // Right border
                 RECT rcRight = { width - borderRight, borderTop, width, height - borderBottom };
                 FillRect(hdc, &rcRight, hBrush);
-                
+
                 DeleteObject(hBrush);
-                
+
                 // Draw thin border around the control
                 HPEN hPen = CreatePen(PS_SOLID, 1, DarkMode::BorderColor);
                 HPEN hOldPen = static_cast<HPEN>(SelectObject(hdc, hPen));
@@ -2665,7 +2665,7 @@ LRESULT CALLBACK HotkeyControlSubclassProc(HWND hWnd, UINT uMsg, WPARAM wParam, 
                 SelectObject(hdc, hOldBrush);
                 SelectObject(hdc, hOldPen);
                 DeleteObject(hPen);
-                
+
                 ReleaseDC(hWnd, hdc);
             }
             return 0;
@@ -2692,30 +2692,30 @@ LRESULT CALLBACK EditControlSubclassProc(HWND hWnd, UINT uMsg, WPARAM wParam, LP
     auto AdjustTextRect = [](HWND hEdit) {
         RECT rcClient;
         GetClientRect(hEdit, &rcClient);
-        
+
         // Get font metrics to calculate text height
         HDC hdc = GetDC(hEdit);
         HFONT hFont = reinterpret_cast<HFONT>(SendMessage(hEdit, WM_GETFONT, 0, 0));
         HFONT hOldFont = hFont ? static_cast<HFONT>(SelectObject(hdc, hFont)) : nullptr;
-        
+
         TEXTMETRIC tm;
         GetTextMetrics(hdc, &tm);
         int textHeight = tm.tmHeight;
-        
+
         if (hOldFont)
             SelectObject(hdc, hOldFont);
         ReleaseDC(hEdit, hdc);
-        
+
         // Calculate vertical offset to center text
         int clientHeight = rcClient.bottom - rcClient.top;
         int topOffset = (clientHeight - textHeight) / 2;
         if (topOffset < 0) topOffset = 0;
-        
+
         RECT rcFormat = rcClient;
         rcFormat.top = topOffset;
         rcFormat.left += 2;  // Small left margin
         rcFormat.right -= 2; // Small right margin
-        
+
         SendMessage(hEdit, EM_SETRECT, 0, reinterpret_cast<LPARAM>(&rcFormat));
     };
 
@@ -2741,7 +2741,7 @@ LRESULT CALLBACK EditControlSubclassProc(HWND hWnd, UINT uMsg, WPARAM wParam, LP
         if (IsDarkModeEnabled())
         {
             OutputDebugStringW(L"[Edit] WM_NCPAINT in dark mode\n");
-            
+
             // Get the window DC which includes NC area
             HDC hdc = GetWindowDC(hWnd);
             if (hdc)
@@ -2754,44 +2754,44 @@ LRESULT CALLBACK EditControlSubclassProc(HWND hWnd, UINT uMsg, WPARAM wParam, LP
                 rc.top = 0;
                 rc.right = width;
                 rc.bottom = height;
-                
+
                 // Get NC border size
                 RECT rcClient;
                 GetClientRect(hWnd, &rcClient);
                 MapWindowPoints(hWnd, nullptr, reinterpret_cast<LPPOINT>(&rcClient), 2);
-                
+
                 RECT rcWindow;
                 GetWindowRect(hWnd, &rcWindow);
-                
+
                 int borderLeft = rcClient.left - rcWindow.left;
                 int borderTop = rcClient.top - rcWindow.top;
                 int borderRight = rcWindow.right - rcClient.right;
                 int borderBottom = rcWindow.bottom - rcClient.bottom;
-                
-                OutputDebugStringW((L"[Edit] Border: L=" + std::to_wstring(borderLeft) + L" T=" + std::to_wstring(borderTop) + 
+
+                OutputDebugStringW((L"[Edit] Border: L=" + std::to_wstring(borderLeft) + L" T=" + std::to_wstring(borderTop) +
                     L" R=" + std::to_wstring(borderRight) + L" B=" + std::to_wstring(borderBottom) + L"\n").c_str());
-                
+
                 // Fill the entire NC border area with background color
                 HBRUSH hBrush = CreateSolidBrush(DarkMode::BackgroundColor);
-                
+
                 // Top border
                 RECT rcTop = { 0, 0, width, borderTop };
                 FillRect(hdc, &rcTop, hBrush);
-                
+
                 // Bottom border
                 RECT rcBottom = { 0, height - borderBottom, width, height };
                 FillRect(hdc, &rcBottom, hBrush);
-                
+
                 // Left border
                 RECT rcLeft = { 0, borderTop, borderLeft, height - borderBottom };
                 FillRect(hdc, &rcLeft, hBrush);
-                
+
                 // Right border
                 RECT rcRight = { width - borderRight, borderTop, width, height - borderBottom };
                 FillRect(hdc, &rcRight, hBrush);
-                
+
                 DeleteObject(hBrush);
-                
+
                 // Draw thin border around the control
                 HPEN hPen = CreatePen(PS_SOLID, 1, DarkMode::BorderColor);
                 HPEN hOldPen = static_cast<HPEN>(SelectObject(hdc, hPen));
@@ -2800,7 +2800,7 @@ LRESULT CALLBACK EditControlSubclassProc(HWND hWnd, UINT uMsg, WPARAM wParam, LP
                 SelectObject(hdc, hOldBrush);
                 SelectObject(hdc, hOldPen);
                 DeleteObject(hPen);
-                
+
                 ReleaseDC(hWnd, hdc);
             }
             return 0;
@@ -2843,20 +2843,20 @@ LRESULT CALLBACK SliderSubclassProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM 
         {
             PAINTSTRUCT ps;
             HDC hdc = BeginPaint(hWnd, &ps);
-            
+
             RECT rc;
             GetClientRect(hWnd, &rc);
-            
+
             // Fill background
             FillRect(hdc, &rc, GetDarkModeBrush());
-            
+
             // Get slider info
             RECT rcChannel = { 0 };
             SendMessage(hWnd, TBM_GETCHANNELRECT, 0, reinterpret_cast<LPARAM>(&rcChannel));
-            
+
             RECT rcThumb = { 0 };
             SendMessage(hWnd, TBM_GETTHUMBRECT, 0, reinterpret_cast<LPARAM>(&rcThumb));
-            
+
             // Draw channel (track) - simple dark line
             int channelHeight = 4;
             int channelY = (rc.bottom + rc.top) / 2 - channelHeight / 2;
@@ -2864,18 +2864,18 @@ LRESULT CALLBACK SliderSubclassProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM 
             HBRUSH hTrackBrush = CreateSolidBrush(RGB(80, 80, 85));
             FillRect(hdc, &rcTrack, hTrackBrush);
             DeleteObject(hTrackBrush);
-            
+
             // Center thumb vertically - at high DPI the thumb rect may not be centered
             int thumbHeight = rcThumb.bottom - rcThumb.top;
             int thumbCenterY = (rc.bottom + rc.top) / 2;
             rcThumb.top = thumbCenterY - thumbHeight / 2;
             rcThumb.bottom = rcThumb.top + thumbHeight;
-            
+
             // Draw thumb - dark rectangle
             HBRUSH hThumbBrush = CreateSolidBrush(RGB(160, 160, 165));
             FillRect(hdc, &rcThumb, hThumbBrush);
             DeleteObject(hThumbBrush);
-            
+
             // Draw thumb border
             HPEN hPen = CreatePen(PS_SOLID, 1, RGB(100, 100, 105));
             HPEN hOldPen = static_cast<HPEN>(SelectObject(hdc, hPen));
@@ -2884,7 +2884,7 @@ LRESULT CALLBACK SliderSubclassProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM 
             SelectObject(hdc, hOldBrush);
             SelectObject(hdc, hOldPen);
             DeleteObject(hPen);
-            
+
             EndPaint(hWnd, &ps);
             return 0;
         }
@@ -2948,15 +2948,15 @@ LRESULT CALLBACK GroupBoxSubclassProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
             // Fill top strip (above frame line)
             RECT rcTop = { rc.left, rc.top, rc.right, frameTop + 1 };
             FillRect(hdc, &rcTop, GetDarkModeBrush());
-            
+
             // Fill left edge strip
             RECT rcLeft = { rc.left, frameTop, rc.left + 1, rc.bottom };
             FillRect(hdc, &rcLeft, GetDarkModeBrush());
-            
-            // Fill right edge strip  
+
+            // Fill right edge strip
             RECT rcRight = { rc.right - 1, frameTop, rc.right, rc.bottom };
             FillRect(hdc, &rcRight, GetDarkModeBrush());
-            
+
             // Fill bottom edge strip
             RECT rcBottom = { rc.left, rc.bottom - 1, rc.right, rc.bottom };
             FillRect(hdc, &rcBottom, GetDarkModeBrush());
@@ -3060,7 +3060,7 @@ LRESULT CALLBACK StaticTextSubclassProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPA
 
         // Try to get the font from a window property first (for header controls where
         // WM_GETFONT may not work reliably), then fall back to WM_GETFONT.
-        HFONT hFont = reinterpret_cast<HFONT>(GetPropW( hWnd, L"ZoomIt.HeaderFont" ));
+        HFONT hFont = static_cast<HFONT>(GetPropW( hWnd, L"ZoomIt.HeaderFont" ));
         HFONT hCreatedFont = nullptr; // Track if we created a font that needs cleanup
 
         // For IDC_VERSION, create a large title font on-demand if the property font doesn't work
@@ -3259,42 +3259,42 @@ LRESULT CALLBACK TabControlSubclassProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPA
         {
             PAINTSTRUCT ps;
             HDC hdc = BeginPaint(hWnd, &ps);
-            
+
             RECT rcClient;
             GetClientRect(hWnd, &rcClient);
-            
+
             // Fill entire background with dark color
             FillRect(hdc, &rcClient, GetDarkModeBrush());
-            
+
             // Get the display area (content area below tabs)
             RECT rcDisplay = rcClient;
             TabCtrl_AdjustRect(hWnd, FALSE, &rcDisplay);
-            
+
             // Debug output
             TCHAR dbg[256];
             _stprintf_s(dbg, _T("TabCtrl: client=(%d,%d,%d,%d) display=(%d,%d,%d,%d)\n"),
                 rcClient.left, rcClient.top, rcClient.right, rcClient.bottom,
                 rcDisplay.left, rcDisplay.top, rcDisplay.right, rcDisplay.bottom);
             OutputDebugString(dbg);
-            
+
             // Draw grey border around the display area
             HPEN hPen = CreatePen(PS_SOLID, 1, DarkMode::BorderColor);
             HPEN hOldPen = static_cast<HPEN>(SelectObject(hdc, hPen));
             HBRUSH hOldBrush = static_cast<HBRUSH>(SelectObject(hdc, GetStockObject(NULL_BRUSH)));
-            
+
             // Draw border at the edges of the display area (inset by 1 to be visible)
             int left = rcDisplay.left;
             int top = rcDisplay.top - 1;
             int right = (rcDisplay.right < rcClient.right) ? rcDisplay.right : rcClient.right - 1;
             int bottom = (rcDisplay.bottom < rcClient.bottom) ? rcDisplay.bottom : rcClient.bottom - 1;
-            
+
             _stprintf_s(dbg, _T("TabCtrl border: left=%d top=%d right=%d bottom=%d\n"), left, top, right, bottom);
             OutputDebugString(dbg);
-            
+
             // Top line
             MoveToEx(hdc, left, top, NULL);
             LineTo(hdc, right, top);
-            // Right line  
+            // Right line
             MoveToEx(hdc, right - 1, top, NULL);
             LineTo(hdc, right - 1, bottom);
             // Bottom line
@@ -3303,33 +3303,33 @@ LRESULT CALLBACK TabControlSubclassProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPA
             // Left line
             MoveToEx(hdc, left, top, NULL);
             LineTo(hdc, left, bottom);
-            
+
             // Draw each tab
             int tabCount = TabCtrl_GetItemCount(hWnd);
             int selectedTab = TabCtrl_GetCurSel(hWnd);
-            
+
             // Get the font from the tab control
             HFONT hFont = reinterpret_cast<HFONT>(SendMessage(hWnd, WM_GETFONT, 0, 0));
             HFONT hOldFont = hFont ? static_cast<HFONT>(SelectObject(hdc, hFont)) : nullptr;
-            
+
             SetBkMode(hdc, TRANSPARENT);
-            
+
             for (int i = 0; i < tabCount; i++)
             {
                 RECT rcTab;
                 TabCtrl_GetItemRect(hWnd, i, &rcTab);
-                
+
                 bool isSelected = (i == selectedTab);
-                
+
                 // Fill tab background
                 FillRect(hdc, &rcTab, GetDarkModeBrush());
-                
+
                 // Draw grey border around tab (left, top, right)
                 MoveToEx(hdc, rcTab.left, rcTab.bottom - 1, NULL);
                 LineTo(hdc, rcTab.left, rcTab.top);
                 LineTo(hdc, rcTab.right - 1, rcTab.top);
                 LineTo(hdc, rcTab.right - 1, rcTab.bottom);
-                
+
                 // For selected tab, erase the bottom border to merge with content
                 if (isSelected)
                 {
@@ -3340,7 +3340,7 @@ LRESULT CALLBACK TabControlSubclassProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPA
                     SelectObject(hdc, hPen);
                     DeleteObject(hBgPen);
                 }
-                
+
                 // Get tab text
                 TCITEM tci = {};
                 tci.mask = TCIF_TEXT;
@@ -3348,13 +3348,13 @@ LRESULT CALLBACK TabControlSubclassProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPA
                 tci.pszText = szText;
                 tci.cchTextMax = _countof(szText);
                 TabCtrl_GetItem(hWnd, i, &tci);
-                
+
                 // Draw text
                 SetTextColor(hdc, isSelected ? DarkMode::TextColor : DarkMode::DisabledTextColor);
                 RECT rcText = rcTab;
                 rcText.top += 4;
                 DrawText(hdc, szText, -1, &rcText, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
-                
+
                 // Draw underline for selected tab
                 if (isSelected)
                 {
@@ -3367,13 +3367,13 @@ LRESULT CALLBACK TabControlSubclassProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPA
                     DeleteObject(hAccent);
                 }
             }
-            
+
             if (hOldFont)
                 SelectObject(hdc, hOldFont);
             SelectObject(hdc, hOldBrush);
             SelectObject(hdc, hOldPen);
             DeleteObject(hPen);
-            
+
             EndPaint(hWnd, &ps);
             return 0;
         }
@@ -3470,7 +3470,7 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
             // Also store in a property so our subclass paint can reliably retrieve it.
             SetPropW( hVersion, L"ZoomIt.HeaderFont", reinterpret_cast<HANDLE>(hFontVersion) );
 #if _DEBUG
-            HFONT checkFont = reinterpret_cast<HFONT>(GetPropW( hVersion, L"ZoomIt.HeaderFont" ));
+            HFONT checkFont = static_cast<HFONT>(GetPropW( hVersion, L"ZoomIt.HeaderFont" ));
             OutputDebug( L"SetPropW HeaderFont: hwnd=%p font=%p verify=%p\n", hVersion, hFontVersion, checkFont );
 #endif
         }
@@ -3796,14 +3796,14 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
         }
 
         UnregisterAllHotkeys(GetParent( hDlg ));
-        
+
         // Center dialog on screen, clamping to fit if it's too large for the work area
         {
             RECT rcDlg;
             GetWindowRect(hDlg, &rcDlg);
             int dlgWidth = rcDlg.right - rcDlg.left;
             int dlgHeight = rcDlg.bottom - rcDlg.top;
-            
+
             // Get the monitor where the cursor is
             POINT pt;
             GetCursorPos(&pt);
@@ -3831,7 +3831,7 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
             {
                 SetWindowPos(hDlg, nullptr, 0, 0, dlgWidth, dlgHeight, SWP_NOMOVE | SWP_NOZORDER);
             }
-            
+
             int x = mi.rcWork.left + (workWidth - dlgWidth) / 2;
             int y = mi.rcWork.top + (workHeight - dlgHeight) / 2;
             SetWindowPos(hDlg, nullptr, x, y, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
@@ -3840,7 +3840,7 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
         // Capture a stable window size so per-monitor DPI changes won't resize/reflow the dialog.
         GetWindowRect(hDlg, &stableWindowRect);
         stableWindowRectValid = true;
-        
+
         PostMessage( hDlg, WM_USER, 0, 0 );
         // Reapply header fonts once the dialog has finished any late initialization.
         PostMessage( hDlg, WM_APPLY_HEADER_FONTS, 0, 0 );
@@ -5281,7 +5281,7 @@ auto GetUniqueFilename(const std::wstring& lastSavePath, const wchar_t* defaultF
         // Use folder from last save location
         saveFolder = std::filesystem::path(lastSavePath).parent_path();
     }
-    
+
     if (saveFolder.empty())
     {
         // Default to specified known folder
@@ -5296,11 +5296,11 @@ auto GetUniqueFilename(const std::wstring& lastSavePath, const wchar_t* defaultF
     std::filesystem::path defaultPath = defaultFilename;
     auto base = defaultPath.stem().wstring();
     auto ext = defaultPath.extension().wstring();
-    
+
     // Check for existing files and find unique name
     std::wstring candidateName = base + ext;
     std::filesystem::path checkPath = saveFolder / candidateName;
-    
+
     int index = 1;
     std::error_code ec;
     while (std::filesystem::exists(checkPath, ec))
@@ -5309,7 +5309,7 @@ auto GetUniqueFilename(const std::wstring& lastSavePath, const wchar_t* defaultF
         checkPath = saveFolder / candidateName;
         index++;
     }
-    
+
     return candidateName;
 }
 
@@ -5325,10 +5325,10 @@ auto GetUniqueFilename(const std::wstring& lastSavePath, const wchar_t* defaultF
 //----------------------------------------------------------------------------
 auto GetUniqueRecordingFilename()
 {
-    const wchar_t* defaultFile = (g_RecordingFormat == RecordingFormat::GIF) 
-        ? DEFAULT_GIF_RECORDING_FILE 
+    const wchar_t* defaultFile = (g_RecordingFormat == RecordingFormat::GIF)
+        ? DEFAULT_GIF_RECORDING_FILE
         : DEFAULT_RECORDING_FILE;
-    
+
     return GetUniqueFilename(g_RecordingSaveLocation, defaultFile, FOLDERID_Videos);
 }
 
@@ -5482,11 +5482,11 @@ winrt::fire_and_forget StartRecordingAsync( HWND hWnd, LPRECT rcCrop, HWND hWndR
 
     // Recording completed (closed via hotkey or item close). Proceed to save/trim workflow.
     OutputDebugStringW(L"[Recording] StartAsync completed, entering save workflow\n");
-    
+
     // Resume on the UI thread for the save dialog
     co_await uiThread;
     OutputDebugStringW(L"[Recording] Resumed on UI thread\n");
-    
+
     {
 
         g_bSaveInProgress = true;
@@ -5571,7 +5571,7 @@ winrt::fire_and_forget StartRecordingAsync( HWND hWnd, LPRECT rcCrop, HWND hWndR
             //static std::filesystem::path lastSaveFolder;
             //wil::unique_cotaskmem_string chosenFolderPath;
             //wil::com_ptr<IShellItem> currentSelectedFolder;
-            //bool bFolderChanged = false; 
+            //bool bFolderChanged = false;
             //if (SUCCEEDED(saveDialog->GetFolder(currentSelectedFolder.put())))
             //{
             //    if (SUCCEEDED(currentSelectedFolder->GetDisplayName(SIGDN_FILESYSPATH, chosenFolderPath.put())))
@@ -6199,10 +6199,10 @@ LRESULT APIENTRY MainWndProc(
         case SNIP_SAVE_HOTKEY:
         case SNIP_HOTKEY:
         {
-            OutputDebugStringW((L"[Snip] Hotkey received: " + std::to_wstring(LOWORD(wParam)) + 
-                L" (SNIP_SAVE=" + std::to_wstring(SNIP_SAVE_HOTKEY) + 
+            OutputDebugStringW((L"[Snip] Hotkey received: " + std::to_wstring(LOWORD(wParam)) +
+                L" (SNIP_SAVE=" + std::to_wstring(SNIP_SAVE_HOTKEY) +
                 L" SNIP=" + std::to_wstring(SNIP_HOTKEY) + L")\n").c_str());
-            
+
             // Block liveZoom liveDraw snip due to mirroring bug
             if( IsWindowVisible( g_hWndLiveZoom )
                 && ( GetWindowLongPtr( hWnd, GWL_EXSTYLE ) & WS_EX_LAYERED ) )
@@ -8321,14 +8321,14 @@ LRESULT APIENTRY MainWndProc(
     {
         // Reload the settings. This message is called from PowerToys after a setting is changed by the user.
         reg.ReadRegSettings(RegSettings);
-        
+
         // Refresh dark mode state after loading theme override from registry
         RefreshDarkModeState();
 
         if (g_RecordingFormat == RecordingFormat::GIF)
         {
             g_RecordScaling = g_RecordScalingGIF;
-            g_RecordFrameRate = RECORDING_FORMAT_GIF_DEFAULT_FRAMERATE; 
+            g_RecordFrameRate = RECORDING_FORMAT_GIF_DEFAULT_FRAMERATE;
         }
         else
         {
@@ -8507,11 +8507,11 @@ LRESULT APIENTRY MainWndProc(
             // Open the Save As dialog and capture the desired file path and whether to
             // save the zoomed display or the source bitmap pixels.
             g_bSaveInProgress = true;
-            
+
             // Get a unique filename suggestion
             auto suggestedName = GetUniqueScreenshotFilename();
             _tcscpy(filePath, suggestedName.c_str());
-            
+
             memset( &openFileName, 0, sizeof(openFileName ));
             openFileName.lStructSize       = OPENFILENAME_SIZE_VERSION_400;
             openFileName.hwndOwner         = hWnd;
@@ -8568,7 +8568,7 @@ LRESULT APIENTRY MainWndProc(
 
                     SavePng( targetFilePath, hbmZoomed.get() );
                 }
-                
+
                 // Remember the save location for next time and persist to registry
                 g_ScreenshotSaveLocation = targetFilePath;
                 wcsncpy_s(g_ScreenshotSaveLocationBuffer, g_ScreenshotSaveLocation.c_str(), _TRUNCATE);
