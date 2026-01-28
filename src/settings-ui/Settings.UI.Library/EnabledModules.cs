@@ -546,6 +546,23 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
+        private bool altBacktick = true;
+
+        [JsonPropertyName("AltBacktick")]
+        public bool AltBacktick
+        {
+            get => altBacktick;
+            set
+            {
+                if (altBacktick != value)
+                {
+                    LogTelemetryEvent(value);
+                    altBacktick = value;
+                    NotifyChange();
+                }
+            }
+        }
+
         private void NotifyChange()
         {
             notifyEnabledChangedAction?.Invoke();

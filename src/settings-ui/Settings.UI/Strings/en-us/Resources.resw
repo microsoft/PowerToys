@@ -3181,6 +3181,47 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="Oobe_CropAndLock_HowToUse_Screenshot.Text" xml:space="preserve">
     <value>to crop an application's window into a screenshot window. The screenshot won't update with the original window's content.</value>
   </data>
+  <data name="AltBacktick.ModuleDescription" xml:space="preserve">
+    <value>AltBacktick enables quick switching between windows of the same application.</value>
+    <comment>{Locked="AltBacktick"}</comment>
+  </data>
+  <data name="AltBacktick.ModuleTitle" xml:space="preserve">
+    <value>AltBacktick</value>
+    <comment>{Locked}</comment>
+  </data>
+  <data name="AltBacktick_Enable.Header" xml:space="preserve">
+    <value>Enable AltBacktick</value>
+  </data>
+  <data name="AltBacktick_Settings_GroupSettings.Header" xml:space="preserve">
+    <value>Settings</value>
+  </data>
+  <data name="AltBacktick_ModifierKey.Header" xml:space="preserve">
+    <value>Modifier key</value>
+  </data>
+  <data name="AltBacktick_ModifierKey.Description" xml:space="preserve">
+    <value>Choose which modifier key to use with the backtick key (`) to switch windows</value>
+  </data>
+  <data name="AltBacktick_IgnoreMinimizedWindows.Header" xml:space="preserve">
+    <value>Ignore minimized windows</value>
+  </data>
+  <data name="AltBacktick_IgnoreMinimizedWindows.Description" xml:space="preserve">
+    <value>When enabled, minimized windows will be skipped when cycling through windows</value>
+  </data>
+  <data name="About_AltBacktick.Header" xml:space="preserve">
+    <value>About</value>
+  </data>
+  <data name="AltBacktick_Description.Text" xml:space="preserve">
+    <value>Press the modifier key + backtick (`) to cycle through windows of the same application. Hold Shift to cycle backwards.</value>
+  </data>
+  <data name="AltBacktick_ThirdPartyNotice.Content" xml:space="preserve">
+    <value>Based on AltBacktick by Anthony Kiver</value>
+  </data>
+  <data name="LearnMore_AltBacktick.Text" xml:space="preserve">
+    <value>Learn more about AltBacktick</value>
+  </data>
+  <data name="Shell_AltBacktick.Content" xml:space="preserve">
+    <value>AltBacktick</value>
+  </data>
   <data name="AlwaysOnTop.ModuleDescription" xml:space="preserve">
     <value>Always On Top is a quick and easy way to pin windows on top.</value>
     <comment>{Locked="Always On Top"}</comment>
