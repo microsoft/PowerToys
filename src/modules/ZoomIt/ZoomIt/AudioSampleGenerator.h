@@ -20,6 +20,10 @@ private:
         winrt::Windows::Media::Audio::AudioGraph const& sender,
         winrt::Windows::Foundation::IInspectable const& args);
 
+    void FlushRemainingAudio();
+    void CombineQueuedSamples();
+    void AppendResampledLoopbackSamples(std::vector<float> const& rawLoopbackSamples, bool flushRemaining = false);
+
     void CheckInitialized()
     {
         if (!m_initialized.load())
@@ -50,6 +54,11 @@ private:
     uint32_t m_graphSampleRate = 48000;
     uint32_t m_graphChannels = 2;
     double m_resampleRatio = 1.0;  // loopbackSampleRate / graphSampleRate
+    winrt::Windows::Foundation::TimeSpan m_lastSampleTimestamp{};
+    winrt::Windows::Foundation::TimeSpan m_lastSampleDuration{};
+    bool m_hasLastSampleTimestamp = false;
+    std::vector<float> m_resampleInputBuffer; // raw loopback samples buffered for resampling
+    double m_resampleInputPos = 0.0; // fractional input frame position for resampling
     
     wil::srwlock m_lock;
     wil::unique_event m_audioEvent;

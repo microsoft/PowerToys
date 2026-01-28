@@ -63,7 +63,7 @@ HRESULT LoopbackCapture::Initialize()
     hr = m_audioClient->Initialize(
         AUDCLNT_SHAREMODE_SHARED,
         AUDCLNT_STREAMFLAGS_LOOPBACK,
-        10000000, // 1 second buffer
+        1000000, // 100ms buffer to reduce capture latency
         0,
         m_pwfx,
         nullptr);
@@ -124,12 +124,101 @@ void LoopbackCapture::Stop()
         m_captureThread.join();
     }
 
+    DrainCaptureClient();
+
     if (m_audioClient)
     {
         m_audioClient->Stop();
     }
 
     m_started.store(false);
+}
+
+void LoopbackCapture::DrainCaptureClient()
+{
+    if (!m_captureClient)
+    {
+        return;
+    }
+
+    while (true)
+    {
+        UINT32 packetLength = 0;
+        HRESULT hr = m_captureClient->GetNextPacketSize(&packetLength);
+        if (FAILED(hr) || packetLength == 0)
+        {
+            break;
+        }
+
+        BYTE* pData = nullptr;
+        UINT32 numFramesAvailable = 0;
+        DWORD flags = 0;
+        hr = m_captureClient->GetBuffer(&pData, &numFramesAvailable, &flags, nullptr, nullptr);
+        if (FAILED(hr))
+        {
+            break;
+        }
+
+        if (numFramesAvailable > 0)
+        {
+            std::vector<float> samples;
+
+            if (m_pwfx->wFormatTag == WAVE_FORMAT_IEEE_FLOAT ||
+                (m_pwfx->wFormatTag == WAVE_FORMAT_EXTENSIBLE &&
+                 reinterpret_cast<WAVEFORMATEXTENSIBLE*>(m_pwfx)->SubFormat == KSDATAFORMAT_SUBTYPE_IEEE_FLOAT))
+            {
+                if (flags & AUDCLNT_BUFFERFLAGS_SILENT)
+                {
+                    samples.resize(numFramesAvailable * m_pwfx->nChannels, 0.0f);
+                }
+                else
+                {
+                    float* floatData = reinterpret_cast<float*>(pData);
+                    samples.assign(floatData, floatData + (numFramesAvailable * m_pwfx->nChannels));
+                }
+            }
+            else if (m_pwfx->wFormatTag == WAVE_FORMAT_PCM ||
+                     (m_pwfx->wFormatTag == WAVE_FORMAT_EXTENSIBLE &&
+                      reinterpret_cast<WAVEFORMATEXTENSIBLE*>(m_pwfx)->SubFormat == KSDATAFORMAT_SUBTYPE_PCM))
+            {
+                if (flags & AUDCLNT_BUFFERFLAGS_SILENT)
+                {
+                    samples.resize(numFramesAvailable * m_pwfx->nChannels, 0.0f);
+                }
+                else if (m_pwfx->wBitsPerSample == 16)
+                {
+                    int16_t* pcmData = reinterpret_cast<int16_t*>(pData);
+                    samples.resize(numFramesAvailable * m_pwfx->nChannels);
+                    for (size_t i = 0; i < samples.size(); i++)
+                    {
+                        samples[i] = static_cast<float>(pcmData[i]) / 32768.0f;
+                    }
+                }
+                else if (m_pwfx->wBitsPerSample == 32)
+                {
+                    int32_t* pcmData = reinterpret_cast<int32_t*>(pData);
+                    samples.resize(numFramesAvailable * m_pwfx->nChannels);
+                    for (size_t i = 0; i < samples.size(); i++)
+                    {
+                        samples[i] = static_cast<float>(pcmData[i]) / 2147483648.0f;
+                    }
+                }
+            }
+
+            if (!samples.empty())
+            {
+                auto lock = m_lock.lock_exclusive();
+                m_sampleQueue.push_back(std::move(samples));
+                m_samplesReadyEvent.SetEvent();
+            }
+        }
+
+        hr = m_captureClient->ReleaseBuffer(numFramesAvailable);
+        if (FAILED(hr))
+        {
+            break;
+        }
+    }
 }
 
 void LoopbackCapture::CaptureThread()

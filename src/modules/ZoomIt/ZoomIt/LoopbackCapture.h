@@ -26,6 +26,7 @@ public:
 
 private:
     void CaptureThread();
+    void DrainCaptureClient();
 
     winrt::com_ptr<IMMDeviceEnumerator> m_deviceEnumerator;
     winrt::com_ptr<IMMDevice> m_device;

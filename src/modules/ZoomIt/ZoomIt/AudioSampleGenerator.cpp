@@ -191,6 +191,14 @@ std::optional<winrt::MediaStreamSample> AudioSampleGenerator::TryGetNextSample()
 
         if (events[eventIndex] == m_endEvent.get())
         {
+            // End event signaled, but check if there are any remaining samples in the queue
+            auto lock = m_lock.lock_exclusive();
+            if (!m_samples.empty())
+            {
+                std::optional result(m_samples.front());
+                m_samples.pop_front();
+                return result;
+            }
             return std::nullopt;
         }
     }
@@ -225,11 +233,25 @@ std::optional<winrt::MediaStreamSample> AudioSampleGenerator::TryGetNextSample()
     auto signaledEvent = events[eventIndex];
     if (signaledEvent == m_endEvent.get())
     {
+        // End was signaled, but check for any remaining samples before returning nullopt
+        auto lock = m_lock.lock_exclusive();
+        if (!m_samples.empty())
+        {
+            std::optional result(m_samples.front());
+            m_samples.pop_front();
+            return result;
+        }
         return std::nullopt;
     }
     else
     {
         auto lock = m_lock.lock_exclusive();
+        if (m_samples.empty())
+        {
+            // Spurious wake or race - no samples available
+            // If end is signaled, return nullopt; otherwise this shouldn't happen
+            return m_endEvent.is_signaled() ? std::nullopt : std::optional<winrt::MediaStreamSample>{};
+        }
         std::optional result(m_samples.front());
         m_samples.pop_front();
         return result;
@@ -253,14 +275,14 @@ void AudioSampleGenerator::Start()
                 auto lock = m_loopbackBufferLock.lock_exclusive();
                 m_loopbackBuffer.clear();
             }
+
+            m_resampleInputBuffer.clear();
+            m_resampleInputPos = 0.0;
             
-            OutputDebugStringA("Starting loopback capture...\n");
             m_loopbackCapture->Start();
-            OutputDebugStringA("Loopback capture started\n");
         }
         
         m_audioGraph.Start();
-        OutputDebugStringA("AudioGraph started\n");
     }
 }
 
@@ -268,39 +290,313 @@ void AudioSampleGenerator::Stop()
 {
     // Stop may be called during teardown even if initialization hasn't completed.
     // It must never throw.
-    m_endEvent.SetEvent();
 
     if (!m_initialized.load())
     {
+        m_endEvent.SetEvent();
         return;
     }
 
     m_asyncInitialized.wait();
-    
-    // Mark as stopped first to prevent further sample processing
-    auto wasStarted = m_started.exchange(false);
-    
-    // Stop loopback capture
+
+    // Stop loopback capture first
     if (m_loopbackCapture)
     {
         m_loopbackCapture->Stop();
     }
     
-    // Clear intermediate loopback buffer (not yet converted to samples)
-    {
-        auto lock = m_loopbackBufferLock.lock_exclusive();
-        m_loopbackBuffer.clear();
-    }
+    // Flush any remaining samples from the loopback capture before stopping the audio graph
+    FlushRemainingAudio();
     
-    // DO NOT clear m_samples here - allow MediaTranscoder to consume remaining
-    // queued audio samples to avoid audio cutoff at end of recording.
+    // Stop the audio graph - no more quantum callbacks will run
+    m_audioGraph.Stop();
+    
+    // Mark as stopped
+    m_started.store(false);
+    
+    // Combine all remaining queued samples into one final sample so it can be
+    // returned immediately without waiting for additional TryGetNextSample calls
+    CombineQueuedSamples();
+    
+    // NOW signal end event - this allows TryGetNextSample to return remaining
+    // queued samples and then return nullopt
+    m_endEvent.SetEvent();
+    m_audioEvent.SetEvent(); // Also wake any waiting TryGetNextSample
+    
+    // DO NOT clear m_loopbackBuffer or m_samples here - allow MediaTranscoder to 
+    // consume remaining queued audio samples to avoid audio cutoff at end of recording.
     // TryGetNextSample() will return nullopt once m_samples is empty and
-    // m_endEvent is signaled.
-    
-    if (wasStarted)
+    // m_endEvent is signaled. Buffers will be cleaned up on destruction.
+}
+
+void AudioSampleGenerator::AppendResampledLoopbackSamples(std::vector<float> const& rawLoopbackSamples, bool flushRemaining)
+{
+    if (rawLoopbackSamples.empty())
     {
-        m_audioGraph.Stop();
+        return;
     }
+
+    m_resampleInputBuffer.insert(m_resampleInputBuffer.end(), rawLoopbackSamples.begin(), rawLoopbackSamples.end());
+
+    if (m_loopbackChannels == 0 || m_graphChannels == 0 || m_resampleRatio <= 0.0)
+    {
+        return;
+    }
+
+    std::vector<float> resampledSamples;
+    while (true)
+    {
+        const uint32_t inputFrames = static_cast<uint32_t>(m_resampleInputBuffer.size() / m_loopbackChannels);
+        if (inputFrames == 0)
+        {
+            break;
+        }
+
+        if (!flushRemaining)
+        {
+            if (inputFrames < 2 || (m_resampleInputPos + 1.0) >= inputFrames)
+            {
+                break;
+            }
+        }
+        else
+        {
+            if (m_resampleInputPos >= inputFrames)
+            {
+                break;
+            }
+        }
+
+        uint32_t inputFrame = static_cast<uint32_t>(m_resampleInputPos);
+        double frac = m_resampleInputPos - inputFrame;
+        uint32_t nextFrame = (inputFrame + 1 < inputFrames) ? (inputFrame + 1) : inputFrame;
+
+        for (uint32_t outCh = 0; outCh < m_graphChannels; outCh++)
+        {
+            float sample = 0.0f;
+
+            if (m_loopbackChannels == m_graphChannels)
+            {
+                uint32_t idx1 = inputFrame * m_loopbackChannels + outCh;
+                uint32_t idx2 = nextFrame * m_loopbackChannels + outCh;
+                float s1 = m_resampleInputBuffer[idx1];
+                float s2 = m_resampleInputBuffer[idx2];
+                sample = static_cast<float>(s1 * (1.0 - frac) + s2 * frac);
+            }
+            else if (m_loopbackChannels > m_graphChannels)
+            {
+                float sum = 0.0f;
+                for (uint32_t inCh = 0; inCh < m_loopbackChannels; inCh++)
+                {
+                    uint32_t idx1 = inputFrame * m_loopbackChannels + inCh;
+                    uint32_t idx2 = nextFrame * m_loopbackChannels + inCh;
+                    float s1 = m_resampleInputBuffer[idx1];
+                    float s2 = m_resampleInputBuffer[idx2];
+                    sum += static_cast<float>(s1 * (1.0 - frac) + s2 * frac);
+                }
+                sample = sum / m_loopbackChannels;
+            }
+            else
+            {
+                uint32_t idx1 = inputFrame * m_loopbackChannels;
+                uint32_t idx2 = nextFrame * m_loopbackChannels;
+                float s1 = m_resampleInputBuffer[idx1];
+                float s2 = m_resampleInputBuffer[idx2];
+                sample = static_cast<float>(s1 * (1.0 - frac) + s2 * frac);
+            }
+
+            resampledSamples.push_back(sample);
+        }
+
+        m_resampleInputPos += m_resampleRatio;
+    }
+
+    uint32_t consumedFrames = static_cast<uint32_t>(m_resampleInputPos);
+    if (consumedFrames > 0)
+    {
+        size_t samplesToErase = static_cast<size_t>(consumedFrames) * m_loopbackChannels;
+        if (samplesToErase >= m_resampleInputBuffer.size())
+        {
+            m_resampleInputBuffer.clear();
+            m_resampleInputPos = 0.0;
+        }
+        else
+        {
+            m_resampleInputBuffer.erase(m_resampleInputBuffer.begin(), m_resampleInputBuffer.begin() + samplesToErase);
+            m_resampleInputPos -= consumedFrames;
+        }
+    }
+
+    if (flushRemaining)
+    {
+        m_resampleInputBuffer.clear();
+        m_resampleInputPos = 0.0;
+    }
+
+    if (!resampledSamples.empty())
+    {
+        auto loopbackLock = m_loopbackBufferLock.lock_exclusive();
+        const size_t maxBufferSize = m_graphSampleRate * m_graphChannels;
+
+        if (m_loopbackBuffer.size() + resampledSamples.size() > maxBufferSize)
+        {
+            size_t overflow = (m_loopbackBuffer.size() + resampledSamples.size()) - maxBufferSize;
+            if (overflow >= m_loopbackBuffer.size())
+            {
+                m_loopbackBuffer.clear();
+            }
+            else
+            {
+                m_loopbackBuffer.erase(m_loopbackBuffer.begin(), m_loopbackBuffer.begin() + overflow);
+            }
+        }
+
+        m_loopbackBuffer.insert(m_loopbackBuffer.end(), resampledSamples.begin(), resampledSamples.end());
+    }
+}
+
+void AudioSampleGenerator::FlushRemainingAudio()
+{
+    // Called during stop to drain any remaining samples from loopback capture
+    // and convert them to MediaStreamSamples before the audio graph stops.
+    
+    if (!m_loopbackCapture)
+    {
+        return;
+    }
+    
+    auto lock = m_lock.lock_exclusive();
+    
+    // Drain all remaining samples from the loopback capture client
+    std::vector<float> rawLoopbackSamples;
+    {
+        std::vector<float> tempSamples;
+        while (m_loopbackCapture->TryGetSamples(tempSamples))
+        {
+            rawLoopbackSamples.insert(rawLoopbackSamples.end(), tempSamples.begin(), tempSamples.end());
+        }
+    }
+    
+    // Resample and channel-convert the loopback audio to match AudioGraph format
+    if (!rawLoopbackSamples.empty())
+    {
+        AppendResampledLoopbackSamples(rawLoopbackSamples, true);
+    }
+    
+    // Now convert everything in m_loopbackBuffer to MediaStreamSamples
+    auto loopbackLock = m_loopbackBufferLock.lock_exclusive();
+    
+    if (!m_loopbackBuffer.empty())
+    {
+        uint32_t outputSampleCount = static_cast<uint32_t>(m_loopbackBuffer.size());
+        std::vector<uint8_t> outputData(outputSampleCount * sizeof(float), 0);
+        float* outputFloats = reinterpret_cast<float*>(outputData.data());
+        
+        for (uint32_t i = 0; i < outputSampleCount; i++)
+        {
+            float sample = m_loopbackBuffer[i];
+            if (sample > 1.0f) sample = 1.0f;
+            else if (sample < -1.0f) sample = -1.0f;
+            outputFloats[i] = sample;
+        }
+        
+        m_loopbackBuffer.clear();
+        
+        // Create buffer and sample
+        winrt::Buffer sampleBuffer(outputSampleCount * sizeof(float));
+        memcpy(sampleBuffer.data(), outputData.data(), outputData.size());
+        sampleBuffer.Length(static_cast<uint32_t>(outputData.size()));
+        
+        if (sampleBuffer.Length() > 0)
+        {
+            const uint32_t sampleCount = sampleBuffer.Length() / sizeof(float);
+            const uint32_t frames = (m_graphChannels > 0) ? (sampleCount / m_graphChannels) : 0;
+            const int64_t durationTicks = (m_graphSampleRate > 0) ? (static_cast<int64_t>(frames) * 10000000LL / m_graphSampleRate) : 0;
+            const winrt::TimeSpan duration{ durationTicks };
+            
+            winrt::TimeSpan timestamp{ 0 };
+            if (m_hasLastSampleTimestamp)
+            {
+                timestamp = winrt::TimeSpan{ m_lastSampleTimestamp.count() + m_lastSampleDuration.count() };
+            }
+            
+            auto sample = winrt::MediaStreamSample::CreateFromBuffer(sampleBuffer, timestamp);
+            m_samples.push_back(sample);
+            m_audioEvent.SetEvent();
+            
+            m_lastSampleTimestamp = timestamp;
+            m_lastSampleDuration = duration;
+            m_hasLastSampleTimestamp = true;
+        }
+    }
+}
+
+void AudioSampleGenerator::CombineQueuedSamples()
+{
+    // Combine all queued samples into a single sample so it can be returned
+    // immediately in the next TryGetNextSample call. This is critical because
+    // once video ends, the MediaTranscoder may only request one more audio sample.
+    
+    auto lock = m_lock.lock_exclusive();
+    
+    if (m_samples.size() <= 1)
+    {
+        return;
+    }
+    
+    // Calculate total size and collect all sample data
+    size_t totalBytes = 0;
+    std::vector<std::pair<winrt::Windows::Storage::Streams::IBuffer, winrt::Windows::Foundation::TimeSpan>> buffers;
+    winrt::Windows::Foundation::TimeSpan firstTimestamp{ 0 };
+    bool hasFirstTimestamp = false;
+    
+    for (auto& sample : m_samples)
+    {
+        auto buffer = sample.Buffer();
+        if (buffer)
+        {
+            totalBytes += buffer.Length();
+            if (!hasFirstTimestamp)
+            {
+                firstTimestamp = sample.Timestamp();
+                hasFirstTimestamp = true;
+            }
+            buffers.push_back({ buffer, sample.Timestamp() });
+        }
+    }
+    
+    if (totalBytes == 0)
+    {
+        return;
+    }
+    
+    // Create combined buffer
+    winrt::Buffer combinedBuffer(static_cast<uint32_t>(totalBytes));
+    uint8_t* dest = combinedBuffer.data();
+    uint32_t offset = 0;
+    
+    for (auto& [buffer, ts] : buffers)
+    {
+        uint32_t len = buffer.Length();
+        memcpy(dest + offset, buffer.data(), len);
+        offset += len;
+    }
+    combinedBuffer.Length(static_cast<uint32_t>(totalBytes));
+    
+    // Create combined sample with first timestamp
+    auto combinedSample = winrt::Windows::Media::Core::MediaStreamSample::CreateFromBuffer(combinedBuffer, firstTimestamp);
+    
+    // Clear queue and add combined sample
+    m_samples.clear();
+    m_samples.push_back(combinedSample);
+    
+    // Update timestamp tracking
+    const uint32_t sampleCount = static_cast<uint32_t>(totalBytes) / sizeof(float);
+    const uint32_t frames = (m_graphChannels > 0) ? (sampleCount / m_graphChannels) : 0;
+    const int64_t durationTicks = (m_graphSampleRate > 0) ? (static_cast<int64_t>(frames) * 10000000LL / m_graphSampleRate) : 0;
+    m_lastSampleTimestamp = firstTimestamp;
+    m_lastSampleDuration = winrt::Windows::Foundation::TimeSpan{ durationTicks };
+    m_hasLastSampleTimestamp = true;
 }
 
 void AudioSampleGenerator::OnAudioQuantumStarted(winrt::AudioGraph const& sender, winrt::IInspectable const& args)
@@ -310,7 +606,7 @@ void AudioSampleGenerator::OnAudioQuantumStarted(winrt::AudioGraph const& sender
     {
         return;
     }
-    
+
     {
         auto lock = m_lock.lock_exclusive();
 
@@ -342,86 +638,7 @@ void AudioSampleGenerator::OnAudioQuantumStarted(winrt::AudioGraph const& sender
             // Resample and channel-convert the loopback audio to match AudioGraph format
             if (!rawLoopbackSamples.empty())
             {
-                uint32_t inputFrames = static_cast<uint32_t>(rawLoopbackSamples.size()) / m_loopbackChannels;
-                uint32_t outputFrames = static_cast<uint32_t>(inputFrames / m_resampleRatio);
-                
-                if (outputFrames > 0)
-                {
-                    std::vector<float> resampledSamples;
-                    resampledSamples.reserve(outputFrames * m_graphChannels);
-                    
-                    for (uint32_t outFrame = 0; outFrame < outputFrames; outFrame++)
-                    {
-                        double inputPos = outFrame * m_resampleRatio;
-                        uint32_t inputFrame = static_cast<uint32_t>(inputPos);
-                        double frac = inputPos - inputFrame;
-                        
-                        if (inputFrame >= inputFrames - 1)
-                        {
-                            inputFrame = inputFrames > 1 ? inputFrames - 2 : 0;
-                            frac = 1.0;
-                        }
-                        
-                        for (uint32_t outCh = 0; outCh < m_graphChannels; outCh++)
-                        {
-                            float sample;
-                            
-                            if (m_loopbackChannels == m_graphChannels)
-                            {
-                                uint32_t idx1 = inputFrame * m_loopbackChannels + outCh;
-                                uint32_t idx2 = (inputFrame + 1) * m_loopbackChannels + outCh;
-                                
-                                if (idx2 < rawLoopbackSamples.size())
-                                {
-                                    sample = static_cast<float>(rawLoopbackSamples[idx1] * (1.0 - frac) + 
-                                                                rawLoopbackSamples[idx2] * frac);
-                                }
-                                else
-                                {
-                                    sample = rawLoopbackSamples[idx1];
-                                }
-                            }
-                            else if (m_loopbackChannels > m_graphChannels)
-                            {
-                                float sum = 0.0f;
-                                for (uint32_t inCh = 0; inCh < m_loopbackChannels; inCh++)
-                                {
-                                    uint32_t idx = inputFrame * m_loopbackChannels + inCh;
-                                    if (idx < rawLoopbackSamples.size())
-                                    {
-                                        sum += rawLoopbackSamples[idx];
-                                    }
-                                }
-                                sample = sum / m_loopbackChannels;
-                            }
-                            else
-                            {
-                                uint32_t idx = inputFrame * m_loopbackChannels;
-                                sample = (idx < rawLoopbackSamples.size()) ? rawLoopbackSamples[idx] : 0.0f;
-                            }
-                            
-                            resampledSamples.push_back(sample);
-                        }
-                    }
-                    
-                    auto loopbackLock = m_loopbackBufferLock.lock_exclusive();
-                    const size_t maxBufferSize = m_graphSampleRate * m_graphChannels;
-                    
-                    if (m_loopbackBuffer.size() + resampledSamples.size() > maxBufferSize)
-                    {
-                        size_t overflow = (m_loopbackBuffer.size() + resampledSamples.size()) - maxBufferSize;
-                        if (overflow >= m_loopbackBuffer.size())
-                        {
-                            m_loopbackBuffer.clear();
-                        }
-                        else
-                        {
-                            m_loopbackBuffer.erase(m_loopbackBuffer.begin(), m_loopbackBuffer.begin() + overflow);
-                        }
-                    }
-                    
-                    m_loopbackBuffer.insert(m_loopbackBuffer.end(), resampledSamples.begin(), resampledSamples.end());
-                }
+                AppendResampledLoopbackSamples(rawLoopbackSamples);
             }
         }
         
@@ -439,13 +656,6 @@ void AudioSampleGenerator::OnAudioQuantumStarted(winrt::AudioGraph const& sender
             {
                 auto loopbackLock = m_loopbackBufferLock.lock_exclusive();
                 uint32_t samplesToUse = min(outputSampleCount, static_cast<uint32_t>(m_loopbackBuffer.size()));
-                
-                static int noMicDebugCounter = 0;
-                if (noMicDebugCounter++ % 50 == 0)
-                {
-                    OutputDebugStringA(("Loopback-only mode: using " + std::to_string(samplesToUse) + " loopback samples, outputCount=" + 
-                        std::to_string(outputSampleCount) + "\n").c_str());
-                }
                 
                 for (uint32_t i = 0; i < samplesToUse; i++)
                 {
@@ -473,13 +683,6 @@ void AudioSampleGenerator::OnAudioQuantumStarted(winrt::AudioGraph const& sender
             float* bufferData = reinterpret_cast<float*>(sampleBuffer.data());
             uint32_t samplesToMix = min(numMicSamples, static_cast<uint32_t>(m_loopbackBuffer.size()));
             
-            static int mixDebugCounter = 0;
-            if (samplesToMix > 0 && mixDebugCounter++ % 50 == 0)
-            {
-                OutputDebugStringA(("Mixing " + std::to_string(samplesToMix) + " loopback into " + 
-                    std::to_string(numMicSamples) + " mic samples\n").c_str());
-            }
-            
             for (uint32_t i = 0; i < samplesToMix; i++)
             {
                 float mixed = bufferData[i] + m_loopbackBuffer[i];
@@ -498,6 +701,13 @@ void AudioSampleGenerator::OnAudioQuantumStarted(winrt::AudioGraph const& sender
         {
             auto sample = winrt::MediaStreamSample::CreateFromBuffer(sampleBuffer, timestamp.value());
             m_samples.push_back(sample);
+
+            const uint32_t sampleCount = sampleBuffer.Length() / sizeof(float);
+            const uint32_t frames = (m_graphChannels > 0) ? (sampleCount / m_graphChannels) : 0;
+            const int64_t durationTicks = (m_graphSampleRate > 0) ? (static_cast<int64_t>(frames) * 10000000LL / m_graphSampleRate) : 0;
+            m_lastSampleTimestamp = timestamp.value();
+            m_lastSampleDuration = winrt::TimeSpan{ durationTicks };
+            m_hasLastSampleTimestamp = true;
         }
     }
     m_audioEvent.SetEvent();
