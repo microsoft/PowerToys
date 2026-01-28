@@ -230,12 +230,11 @@ jobs:
   - ${{ if eq(parameters.useLatestWinAppSDK, false)}}:
     - template: .\steps-restore-nuget.yml
 
-  - pwsh: |-
-      & "$(build.sourcesdirectory)\.pipelines\verifyAndSetLatestVCToolsVersion.ps1"
-    displayName: Work around DD-1541167 (VCToolsVersion)
-    ${{ if eq(parameters.useVS2026, true) }}:
-      env:
-        VCWhereExtraVersionTarget: '-version [18.0,19.0)'
+  # VS2026 doesn't need VCToolsVersion workaround - let MSBuild auto-select toolset
+  - ${{ if ne(parameters.useVS2026, true) }}:
+    - pwsh: |-
+        & "$(build.sourcesdirectory)\.pipelines\verifyAndSetLatestVCToolsVersion.ps1"
+      displayName: Work around DD-1541167 (VCToolsVersion)
 
   - ${{ if eq(parameters.official, true) }}:
     - template: .\steps-setup-versioning.yml
