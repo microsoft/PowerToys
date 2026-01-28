@@ -170,7 +170,7 @@ internal sealed partial class ThemeService : IThemeService, IDisposable
         }
     }
 
-    public ThemeService(SettingsService settingsService, ResourceSwapper resourceSwapper, ILogger<ThemeService> logger)
+    public ThemeService(SettingsService settingsService, ResourceSwapper resourceSwapper, ILogger logger)
     {
         ArgumentNullException.ThrowIfNull(settingsService);
         ArgumentNullException.ThrowIfNull(resourceSwapper);

@@ -10,7 +10,6 @@ using Microsoft.CmdPal.UI.ViewModels.Commands;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CmdPal.UI.Views;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
@@ -28,6 +27,8 @@ public sealed partial class SearchBar : UserControl,
     ICurrentPageAware
 {
     private readonly DispatcherQueue _queue = DispatcherQueue.GetForCurrentThread();
+
+    private readonly SettingsService _settingsService;
 
     /// <summary>
     /// Gets the <see cref="DispatcherQueueTimer"/> that we create to track keyboard input and throttle/debounce before we make queries.
@@ -51,7 +52,7 @@ public sealed partial class SearchBar : UserControl,
     // 0.6+ suggestions
     private string? _textToSuggest;
 
-    private SettingsModel Settings => App.Current.Services.GetRequiredService<SettingsModel>();
+    private SettingsModel settings;
 
     public PageViewModel? CurrentPageViewModel
     {
@@ -86,9 +87,13 @@ public sealed partial class SearchBar : UserControl,
         }
     }
 
-    public SearchBar()
+    public SearchBar(SettingsService settingsService)
     {
         this.InitializeComponent();
+
+        _settingsService = settingsService;
+        settings = _settingsService.CurrentSettings;
+
         WeakReferenceMessenger.Default.Register<GoHomeMessage>(this);
         WeakReferenceMessenger.Default.Register<FocusSearchBoxMessage>(this);
         WeakReferenceMessenger.Default.Register<UpdateSuggestionMessage>(this);
@@ -135,7 +140,7 @@ public sealed partial class SearchBar : UserControl,
         }
         else if (e.Key == VirtualKey.Escape)
         {
-            switch (Settings.EscapeKeyBehaviorSetting)
+            switch (settings.EscapeKeyBehaviorSetting)
             {
                 case EscapeKeyBehavior.AlwaysGoBack:
                     WeakReferenceMessenger.Default.Send<NavigateBackMessage>(new());

@@ -3,9 +3,12 @@
 // See the LICENSE file in the project root for more information.
 
 using CommunityToolkit.Mvvm.Messaging;
+using CommunityToolkit.WinUI.Controls;
+using Microsoft.CmdPal.UI.Helpers.MarkdownImageProviders;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.UI.Dispatching;
+using Microsoft.UI.Text;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
@@ -21,6 +24,12 @@ public sealed partial class ContentPage : Page,
 {
     private readonly DispatcherQueue _queue = DispatcherQueue.GetForCurrentThread();
 
+    private readonly MarkdownThemes _markdownThemes = new()
+    {
+        H3FontSize = 12,
+        H3FontWeight = FontWeights.Normal,
+    };
+
     public ContentPageViewModel? ViewModel
     {
         get => (ContentPageViewModel?)GetValue(ViewModelProperty);
@@ -31,10 +40,19 @@ public sealed partial class ContentPage : Page,
     public static readonly DependencyProperty ViewModelProperty =
         DependencyProperty.Register(nameof(ViewModel), typeof(ContentPageViewModel), typeof(ContentPage), new PropertyMetadata(null));
 
-    public ContentPage()
+    public ContentPage(ImageProvider imageProvider)
     {
         this.InitializeComponent();
         this.Unloaded += OnUnloaded;
+
+        var markdownConfig = new MarkdownConfig()
+        {
+            ImageProvider = imageProvider,
+            Themes = _markdownThemes,
+        };
+
+        // Add the MarkdownConfig as a resource so DataTemplates can reference it
+        Resources["DefaultMarkdownConfig"] = markdownConfig;
     }
 
     private void OnUnloaded(object sender, RoutedEventArgs e)

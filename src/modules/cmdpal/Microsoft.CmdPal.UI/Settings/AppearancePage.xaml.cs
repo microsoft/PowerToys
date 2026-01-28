@@ -3,13 +3,14 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Diagnostics;
-using ManagedCommon;
+using Microsoft.CmdPal.UI.Controls;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Services;
-using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Documents;
 using Microsoft.Windows.Storage.Pickers;
 
@@ -21,17 +22,35 @@ namespace Microsoft.CmdPal.UI.Settings;
 public sealed partial class AppearancePage : Page
 {
     private readonly TaskScheduler _mainTaskScheduler = TaskScheduler.FromCurrentSynchronizationContext();
+    private readonly ILogger _logger;
 
     internal SettingsViewModel ViewModel { get; }
 
-    public AppearancePage()
+    public AppearancePage(SettingsService settingsService, IThemeService themeService, TopLevelCommandManager topLevelCommandManager, ScreenPreview screenPreview, ILogger logger)
     {
         InitializeComponent();
-
-        var settingsService = App.Current.Services.GetRequiredService<SettingsService>();
-        var themeService = App.Current.Services.GetRequiredService<IThemeService>();
-        var topLevelCommandManager = App.Current.Services.GetRequiredService<TopLevelCommandManager>();
+        _logger = logger;
         ViewModel = new SettingsViewModel(settingsService, topLevelCommandManager, _mainTaskScheduler, themeService);
+
+        BindScreenPreview(screenPreview);
+    }
+
+    private void BindScreenPreview(ScreenPreview screenPreview)
+    {
+        // Create CommandPalettePreview and set up bindings
+        var commandPalettePreview = new CommandPalettePreview();
+        commandPalettePreview.SetBinding(CommandPalettePreview.PreviewBackgroundColorProperty, new Binding { Source = ViewModel, Path = new PropertyPath("Appearance.EffectiveBackdrop.TintColor"), Mode = BindingMode.OneWay });
+        commandPalettePreview.SetBinding(CommandPalettePreview.PreviewBackgroundImageBlurAmountProperty, new Binding { Source = ViewModel, Path = new PropertyPath("Appearance.EffectiveBackgroundImageBlurAmount"), Mode = BindingMode.OneWay });
+        commandPalettePreview.SetBinding(CommandPalettePreview.PreviewBackgroundImageBrightnessProperty, new Binding { Source = ViewModel, Path = new PropertyPath("Appearance.EffectiveBackgroundImageBrightness"), Mode = BindingMode.OneWay });
+        commandPalettePreview.SetBinding(CommandPalettePreview.PreviewBackgroundImageFitProperty, new Binding { Source = ViewModel, Path = new PropertyPath("Appearance.BackgroundImageFit"), Mode = BindingMode.OneWay });
+        commandPalettePreview.SetBinding(CommandPalettePreview.PreviewBackgroundImageSourceProperty, new Binding { Source = ViewModel, Path = new PropertyPath("Appearance.EffectiveBackgroundImageSource"), Mode = BindingMode.OneWay });
+        commandPalettePreview.SetBinding(CommandPalettePreview.PreviewBackgroundImageTintProperty, new Binding { Source = ViewModel, Path = new PropertyPath("Appearance.EffectiveThemeColor"), Mode = BindingMode.OneWay });
+        commandPalettePreview.SetBinding(CommandPalettePreview.PreviewBackgroundImageTintIntensityProperty, new Binding { Source = ViewModel, Path = new PropertyPath("Appearance.ColorIntensity"), Mode = BindingMode.OneWay });
+        commandPalettePreview.SetBinding(CommandPalettePreview.PreviewBackgroundOpacityProperty, new Binding { Source = ViewModel, Path = new PropertyPath("Appearance.EffectiveBackdrop.TintOpacity"), Mode = BindingMode.OneWay });
+        commandPalettePreview.SetBinding(FrameworkElement.RequestedThemeProperty, new Binding { Source = ViewModel, Path = new PropertyPath("Appearance.EffectiveTheme"), Mode = BindingMode.OneWay });
+
+        screenPreview.PreviewContent = commandPalettePreview;
+        ScreenPreviewContainer.Child = screenPreview;
     }
 
     private async void PickBackgroundImage_Click(object sender, RoutedEventArgs e)
@@ -66,7 +85,7 @@ public sealed partial class AppearancePage : Page
         }
         catch (Exception ex)
         {
-            Logger.LogError("Failed to pick background image file", ex);
+            Log_FailureToPickBackgroundImage(ex);
         }
     }
 
@@ -82,8 +101,14 @@ public sealed partial class AppearancePage : Page
             }
             catch (Exception ex)
             {
-                Logger.LogError("Failed to open Windows Settings", ex);
+                Log_FailureToOpenWindowsSettings(ex);
             }
         });
     }
+
+    [LoggerMessage(Level = LogLevel.Error, Message = "Failed to open Windows Settings")]
+    partial void Log_FailureToOpenWindowsSettings(Exception ex);
+
+    [LoggerMessage(Level = LogLevel.Error, Message = "Failed to pick background image file")]
+    partial void Log_FailureToPickBackgroundImage(Exception ex);
 }

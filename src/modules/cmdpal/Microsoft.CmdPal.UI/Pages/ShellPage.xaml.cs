@@ -7,23 +7,28 @@ using System.Globalization;
 using System.Text;
 using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.WinUI;
-using ManagedCommon;
+using CommunityToolkit.WinUI.Controls;
+using Microsoft.CmdPal.UI.Controls;
 using Microsoft.CmdPal.UI.Events;
 using Microsoft.CmdPal.UI.Helpers;
+using Microsoft.CmdPal.UI.Helpers.MarkdownImageProviders;
 using Microsoft.CmdPal.UI.Messages;
 using Microsoft.CmdPal.UI.Settings;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CommandPalette.Extensions;
-using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Input;
+using Microsoft.UI.Text;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media.Animation;
 using Windows.UI.Core;
+using CommandBar = Microsoft.CmdPal.UI.Controls.CommandBar;
 using DispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue;
 using VirtualKey = Windows.System.VirtualKey;
 
@@ -55,6 +60,12 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
     private readonly TaskScheduler _mainTaskScheduler = TaskScheduler.FromCurrentSynchronizationContext();
 
+    private readonly ILogger _logger;
+    private readonly SettingsService _settingsService;
+    private readonly TopLevelCommandManager _topLevelCommandManager;
+    private readonly ShellViewModel viewModel;
+    private readonly SearchBar _searchBar;
+
     private readonly SlideNavigationTransitionInfo _slideRightTransition = new() { Effect = SlideNavigationTransitionEffect.FromRight };
     private readonly SuppressNavigationTransitionInfo _noAnimation = new();
 
@@ -62,18 +73,64 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
     private readonly CompositeFormat _pageNavigatedAnnouncement;
 
-    private SettingsWindow? _settingsWindow;
-
     private CancellationTokenSource? _focusAfterLoadedCts;
     private WeakReference<Page>? _lastNavigatedPageRef;
-
-    public ShellViewModel ViewModel { get; private set; } = App.Current.Services.GetService<ShellViewModel>()!;
+    private SettingsWindow? _settingsWindow;
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
-    public ShellPage()
+    private readonly MarkdownThemes _markdownThemes = new()
+    {
+        H3FontSize = 12,
+        H3FontWeight = FontWeights.Normal,
+    };
+
+    public ShellPage(
+        ShellViewModel shellViewModel,
+        SettingsService settingsService,
+        TopLevelCommandManager topLevelCommandManager,
+        SearchBar searchBar,
+        CommandBar commandBar,
+        ImageProvider imageProvider,
+        ILogger logger)
     {
         this.InitializeComponent();
+
+        _logger = logger;
+        _settingsService = settingsService;
+        _topLevelCommandManager = topLevelCommandManager;
+        _searchBar = searchBar;
+        viewModel = shellViewModel;
+
+        // Bind viewModel.CurrentPage to commandBar.CurrentPageViewModel
+        commandBar.SetBinding(
+            Controls.CommandBar.CurrentPageViewModelProperty,
+            new Binding
+            {
+                Source = viewModel,
+                Path = new PropertyPath(nameof(viewModel.CurrentPage)),
+                Mode = BindingMode.OneWay,
+            });
+        CommandBarGrid.Children.Add(commandBar);
+
+        searchBar.HorizontalAlignment = HorizontalAlignment.Stretch;
+        searchBar.SetBinding(
+           Controls.SearchBar.CurrentPageViewModelProperty,
+           new Binding
+           {
+               Source = viewModel,
+               Path = new PropertyPath(nameof(viewModel.CurrentPage)),
+               Mode = BindingMode.OneWay,
+           });
+
+        SearchBoxGrid.Children.Add(searchBar);
+
+        var markdownConfig = new MarkdownConfig()
+        {
+            ImageProvider = imageProvider,
+            Themes = _markdownThemes,
+        };
+        MarkdownTextBlock.Config = markdownConfig;
 
         // how we are doing navigation around
         WeakReferenceMessenger.Default.Register<NavigateBackMessage>(this);
@@ -97,7 +154,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         AddHandler(KeyDownEvent, new KeyEventHandler(ShellPage_OnKeyDown), false);
         AddHandler(PointerPressedEvent, new PointerEventHandler(ShellPage_OnPointerPressed), true);
 
-        RootFrame.Navigate(typeof(LoadingPage), new AsyncNavigationRequest(ViewModel, CancellationToken.None));
+        RootFrame.Navigate(typeof(LoadingPage), new AsyncNavigationRequest(viewModel, CancellationToken.None));
 
         var pageAnnouncementFormat = ResourceLoaderInstance.GetString("ScreenReader_Announcement_NavigatedToPage0");
         _pageNavigatedAnnouncement = CompositeFormat.Parse(pageAnnouncementFormat);
@@ -110,14 +167,14 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     {
         get
         {
-            var settings = App.Current.Services.GetService<SettingsModel>()!;
+            var settings = _settingsService.CurrentSettings;
             return settings.DisableAnimations ? _noAnimation : _slideRightTransition;
         }
     }
 
     public void Receive(NavigateBackMessage message)
     {
-        var settings = App.Current.Services.GetService<SettingsModel>()!;
+        var settings = _settingsService.CurrentSettings;
 
         if (RootFrame.CanGoBack)
         {
@@ -163,7 +220,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
             // Telemetry: Send navigation depth for session max depth tracking
             WeakReferenceMessenger.Default.Send(new NavigationDepthMessage(RootFrame.BackStackDepth));
 
-            if (!ViewModel.IsNested)
+            if (!viewModel.IsNested)
             {
                 // todo BODGY
                 RootFrame.BackStack.Clear();
@@ -181,7 +238,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex.ToString());
+                Log_ErrorShowingConfirmationMessage(ex);
             }
         });
     }
@@ -202,7 +259,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
             return;
         }
 
-        ConfirmResultViewModel vm = new(args, new(ViewModel.CurrentPage));
+        ConfirmResultViewModel vm = new(args, new(viewModel.CurrentPage));
         var initializeDialogTask = Task.Run(() => { InitializeConfirmationDialog(vm); });
         await initializeDialogTask;
 
@@ -264,7 +321,8 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     {
         if (_settingsWindow is null)
         {
-            _settingsWindow = new SettingsWindow();
+            var localKeyboardListener = new LocalKeyboardListener(_logger);
+            _settingsWindow = new SettingsWindow(localKeyboardListener, _logger);
         }
 
         _settingsWindow.Activate();
@@ -273,21 +331,21 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
     public void Receive(ShowDetailsMessage message)
     {
-        if (ViewModel is not null &&
-            ViewModel.CurrentPage is not null)
+        if (viewModel is not null &&
+            viewModel.CurrentPage is not null)
         {
-            if (ViewModel.CurrentPage.PageContext.TryGetTarget(out var pageContext))
+            if (viewModel.CurrentPage.PageContext.TryGetTarget(out var pageContext))
             {
                 Task.Factory.StartNew(
                     () =>
                     {
                         // TERRIBLE HACK TODO GH #245
                         // There's weird wacky bugs with debounce currently.
-                        if (!ViewModel.IsDetailsVisible)
+                        if (!viewModel.IsDetailsVisible)
                         {
-                            ViewModel.Details = message.Details;
+                            viewModel.Details = message.Details;
                             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasHeroImage)));
-                            ViewModel.IsDetailsVisible = true;
+                            viewModel.IsDetailsVisible = true;
                             return;
                         }
 
@@ -298,15 +356,15 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
                         _debounceTimer.Debounce(
                             () =>
                             {
-                                ViewModel.Details = message.Details;
+                                viewModel.Details = message.Details;
 
                                 // Trigger a re-evaluation of whether we have a hero image based on
                                 // the current theme
                                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasHeroImage)));
                             },
                             interval: TimeSpan.FromMilliseconds(50),
-                            immediate: ViewModel.IsDetailsVisible == false);
-                        ViewModel.IsDetailsVisible = true;
+                            immediate: viewModel.IsDetailsVisible == false);
+                        viewModel.IsDetailsVisible = true;
                     },
                     CancellationToken.None,
                     TaskCreationOptions.None,
@@ -321,11 +379,11 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
     private void HideDetails()
     {
-        ViewModel.Details = null;
-        ViewModel.IsDetailsVisible = false;
+        viewModel.Details = null;
+        viewModel.IsDetailsVisible = false;
     }
 
-    public void Receive(ClearSearchMessage message) => SearchBox.ClearSearch();
+    public void Receive(ClearSearchMessage message) => _searchBar.ClearSearch();
 
     public void Receive(HotkeySummonMessage message)
     {
@@ -336,7 +394,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
     private void SummonOnUiThread(HotkeySummonMessage message)
     {
-        var settings = App.Current.Services.GetService<SettingsModel>()!;
+        var settings = _settingsService.CurrentSettings;
         var commandId = message.CommandId;
         var isRoot = string.IsNullOrEmpty(commandId);
         if (isRoot)
@@ -353,7 +411,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
             }
             else if (settings.HighlightSearchOnActivate)
             {
-                SearchBox.SelectSearch();
+                _searchBar.SelectSearch();
             }
         }
         else
@@ -362,8 +420,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
             {
                 // For a hotkey bound to a command, first lookup the
                 // command from our list of toplevel commands.
-                var tlcManager = App.Current.Services.GetService<TopLevelCommandManager>()!;
-                var topLevelCommand = tlcManager.LookupCommand(commandId);
+                var topLevelCommand = _topLevelCommandManager.LookupCommand(commandId);
                 if (topLevelCommand is not null)
                 {
                     var command = topLevelCommand.CommandViewModel.Model.Unsafe;
@@ -408,7 +465,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     {
         HideDetails();
 
-        ViewModel.CancelNavigation();
+        viewModel.CancelNavigation();
 
         // Note: That we restore the VM state below in RootFrame_Navigated call back after this occurs.
         // In the future, we may want to manage the back stack ourselves vs. relying on Frame
@@ -433,13 +490,13 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
         if (!RootFrame.CanGoBack)
         {
-            ViewModel.GoHome();
+            viewModel.GoHome();
         }
 
         if (focusSearch)
         {
-            SearchBox.Focus(Microsoft.UI.Xaml.FocusState.Programmatic);
-            SearchBox.SelectSearch();
+            _searchBar.Focus(Microsoft.UI.Xaml.FocusState.Programmatic);
+            _searchBar.SelectSearch();
         }
     }
 
@@ -459,8 +516,8 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         // focus search box, even if we were already home
         if (focusSearch)
         {
-            SearchBox.Focus(Microsoft.UI.Xaml.FocusState.Programmatic);
-            SearchBox.SelectSearch();
+            _searchBar.Focus(Microsoft.UI.Xaml.FocusState.Programmatic);
+            _searchBar.SelectSearch();
         }
     }
 
@@ -481,22 +538,22 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
             switch (request.TargetViewModel)
             {
                 case PageViewModel pageViewModel:
-                    ViewModel.CurrentPage = pageViewModel;
+                    viewModel.CurrentPage = pageViewModel;
                     break;
                 case ShellViewModel:
                     // This one is an exception, for now (LoadingPage is tied to ShellViewModel,
                     // but ShellViewModel is not PageViewModel.
-                    ViewModel.CurrentPage = ViewModel.NullPage;
+                    viewModel.CurrentPage = viewModel.NullPage;
                     break;
                 default:
-                    ViewModel.CurrentPage = ViewModel.NullPage;
-                    Logger.LogWarning($"Invalid navigation target: AsyncNavigationRequest.{nameof(AsyncNavigationRequest.TargetViewModel)} must be {nameof(PageViewModel)}");
+                    viewModel.CurrentPage = viewModel.NullPage;
+                    Log_InvalidNavigationTargetWarning(nameof(AsyncNavigationRequest.TargetViewModel), nameof(PageViewModel));
                     break;
             }
         }
         else
         {
-            Logger.LogWarning("Unrecognized target for shell navigation: " + e.Parameter);
+            Log_UnrecognizedShellNavigationTargetWarning(e.Parameter);
         }
 
         if (e.Content is Page element)
@@ -525,13 +582,13 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
         AnnounceNavigationToPage(page);
 
-        var shouldSearchBoxBeVisible = ViewModel.CurrentPage?.HasSearchBox ?? false;
+        var shouldSearchBoxBeVisible = viewModel.CurrentPage?.HasSearchBox ?? false;
 
         if (shouldSearchBoxBeVisible || page is not ContentPage)
         {
-            ViewModel.IsSearchBoxVisible = shouldSearchBoxBeVisible;
-            SearchBox.Focus(FocusState.Programmatic);
-            SearchBox.SelectSearch();
+            viewModel.IsSearchBoxVisible = shouldSearchBoxBeVisible;
+            _searchBar.Focus(FocusState.Programmatic);
+            _searchBar.SelectSearch();
         }
         else
         {
@@ -573,7 +630,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
                                 //   it messes with screen readers if we do it too early
                                 // - Since this should hide the search box on content pages, it's not a problem if we
                                 //   wait for the code above to finish trying to focus the content
-                                ViewModel.IsSearchBoxVisible = ViewModel.CurrentPage?.HasSearchBox ?? false;
+                                viewModel.IsSearchBoxVisible = viewModel.CurrentPage?.HasSearchBox ?? false;
                             });
                     }
                     catch (OperationCanceledException)
@@ -582,7 +639,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
                     }
                     catch (Exception ex)
                     {
-                        Logger.LogError("Error during FocusAfterLoaded async focus work", ex);
+                        Log_FocusAfterLoadedFailure(ex);
                     }
                 },
                 token);
@@ -618,7 +675,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         get
         {
             var requestedTheme = ActualTheme;
-            var iconInfoVM = ViewModel.Details?.HeroImage;
+            var iconInfoVM = viewModel.Details?.HeroImage;
             return iconInfoVM?.HasIcon(requestedTheme == Microsoft.UI.Xaml.ElementTheme.Light) ?? false;
         }
     }
@@ -711,7 +768,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         }
         catch (Exception ex)
         {
-            Logger.LogError("Error handling mouse button press event", ex);
+            Log_ErrorHandlingMouseButtonPressEvent(ex);
         }
     }
 
@@ -721,4 +778,27 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         _focusAfterLoadedCts?.Dispose();
         _focusAfterLoadedCts = null;
     }
+
+    [LoggerMessage(Level = LogLevel.Error)]
+    partial void Log_ErrorHandlingMouseButtonPressEvent(Exception ex);
+
+    [LoggerMessage(
+        Level = LogLevel.Error,
+        Message = "Error handling mouse button press event")]
+    partial void Log_ErrorShowingConfirmationMessage(Exception ex);
+
+    [LoggerMessage(
+        Level = LogLevel.Warning,
+        Message = "Invalid navigation target: AsyncNavigationRequest.{target} must be {pageViewModel}")]
+    partial void Log_InvalidNavigationTargetWarning(string target, string pageViewModel);
+
+    [LoggerMessage(
+        Level = LogLevel.Warning,
+        Message = "Unrecognized target for shell navigation: {paramter}")]
+    partial void Log_UnrecognizedShellNavigationTargetWarning(object paramter);
+
+    [LoggerMessage(
+        Level = LogLevel.Error,
+        Message = "Error during FocusAfterLoaded async focus work")]
+    partial void Log_FocusAfterLoadedFailure(Exception ex);
 }

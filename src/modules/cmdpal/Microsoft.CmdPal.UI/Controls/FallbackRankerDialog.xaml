@@ -18,7 +18,7 @@
         <ContentDialog.Resources>
             <x:Double x:Key="ContentDialogMaxWidth">800</x:Double>
         </ContentDialog.Resources>
-        <Grid Width="560" MinWidth="420">
+        <Grid Width="560" MinWidth="420" x:Name="RankerGrid">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
@@ -34,10 +34,6 @@
                 Margin="0,16,0,16"
                 HorizontalAlignment="Stretch"
                 Fill="{ThemeResource DividerStrokeColorDefaultBrush}" />
-            <cpcontrols:FallbackRanker
-                x:Name="FallbackRanker"
-                Grid.Row="2"
-                Margin="-24,0,-24,0" />
         </Grid>
     </ContentDialog>
 </UserControl>

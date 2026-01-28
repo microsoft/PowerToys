@@ -4,7 +4,6 @@
 
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Services;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.CmdPal.UI.Controls;
@@ -15,13 +14,10 @@ public sealed partial class FallbackRanker : UserControl
     private readonly TaskScheduler _mainTaskScheduler = TaskScheduler.FromCurrentSynchronizationContext();
     private SettingsViewModel? viewModel;
 
-    public FallbackRanker()
+    public FallbackRanker(SettingsService settingsService, TopLevelCommandManager topLevelCommandManager, IThemeService themeService)
     {
         this.InitializeComponent();
 
-        var settingsService = App.Current.Services.GetRequiredService<SettingsService>();
-        var topLevelCommandManager = App.Current.Services.GetRequiredService<TopLevelCommandManager>();
-        var themeService = App.Current.Services.GetRequiredService<IThemeService>();
         viewModel = new SettingsViewModel(settingsService, topLevelCommandManager, _mainTaskScheduler, themeService);
     }
 

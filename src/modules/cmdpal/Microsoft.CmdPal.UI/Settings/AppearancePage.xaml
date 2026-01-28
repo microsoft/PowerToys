@@ -22,18 +22,7 @@
                     HorizontalAlignment="Stretch"
                     Spacing="{StaticResource SettingsCardSpacing}">
 
-                    <ptControls:ScreenPreview Margin="0,0,0,16" HorizontalAlignment="Left">
-                        <ptControls:CommandPalettePreview
-                            PreviewBackgroundColor="{x:Bind ViewModel.Appearance.EffectiveBackdrop.TintColor, Mode=OneWay}"
-                            PreviewBackgroundImageBlurAmount="{x:Bind ViewModel.Appearance.EffectiveBackgroundImageBlurAmount, Mode=OneWay}"
-                            PreviewBackgroundImageBrightness="{x:Bind ViewModel.Appearance.EffectiveBackgroundImageBrightness, Mode=OneWay}"
-                            PreviewBackgroundImageFit="{x:Bind ViewModel.Appearance.BackgroundImageFit, Mode=OneWay}"
-                            PreviewBackgroundImageSource="{x:Bind ViewModel.Appearance.EffectiveBackgroundImageSource, Mode=OneWay}"
-                            PreviewBackgroundImageTint="{x:Bind ViewModel.Appearance.EffectiveThemeColor, Mode=OneWay}"
-                            PreviewBackgroundImageTintIntensity="{x:Bind ViewModel.Appearance.ColorIntensity, Mode=OneWay}"
-                            PreviewBackgroundOpacity="{x:Bind ViewModel.Appearance.EffectiveBackdrop.TintOpacity, Mode=OneWay}"
-                            RequestedTheme="{x:Bind ViewModel.Appearance.EffectiveTheme, Mode=OneWay}" />
-                    </ptControls:ScreenPreview>
+                    <Border x:Name="ScreenPreviewContainer" Margin="0,0,0,16" HorizontalAlignment="Left" />
 
                     <controls:SettingsCard x:Uid="Settings_GeneralPage_AppTheme_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE793;}">
                         <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.Appearance.ThemeIndex, Mode=TwoWay}">

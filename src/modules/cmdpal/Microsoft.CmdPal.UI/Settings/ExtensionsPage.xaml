@@ -54,7 +54,7 @@
         </ResourceDictionary>
     </Page.Resources>
 
-    <Grid>
+    <Grid x:Name="SettingsGrid">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
@@ -246,7 +246,11 @@
                 </StackPanel>
             </Grid>
         </ScrollViewer>
-        <cpcontrols:FallbackRankerDialog x:Name="FallbackRankerDialog" />
+
+        <ContentControl x:Name="FallbackRankerContainer">
+            <!-- FallbackRankerDialog will be injected here. -->
+        </ContentControl>
+        
         <VisualStateManager.VisualStateGroups>
             <VisualStateGroup x:Name="LayoutVisualStates">
                 <VisualState x:Name="WideLayout">

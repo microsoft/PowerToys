@@ -4,12 +4,10 @@
 
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.Messaging;
-using ManagedCommon;
 using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.Messages;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.UI.Input;
 using Microsoft.UI.Windowing;
@@ -31,15 +29,19 @@ public sealed partial class SettingsWindow : WindowEx,
     IRecipient<QuitMessage>
 {
     private readonly LocalKeyboardListener _localKeyboardListener;
+    private readonly ILogger _logger;
 
     public ObservableCollection<Crumb> BreadCrumbs { get; } = [];
 
     // Gets or sets optional action invoked after NavigationView is loaded.
     public Action NavigationViewLoaded { get; set; } = () => { };
 
-    public SettingsWindow()
+    public SettingsWindow(LocalKeyboardListener localKeyboardListener, ILogger logger)
     {
         this.InitializeComponent();
+
+        _logger = logger;
+
         this.ExtendsContentIntoTitleBar = true;
         this.SetIcon();
         var title = RS_.GetString("SettingsWindowTitle");
@@ -51,10 +53,10 @@ public sealed partial class SettingsWindow : WindowEx,
         WeakReferenceMessenger.Default.Register<NavigateToExtensionSettingsMessage>(this);
         WeakReferenceMessenger.Default.Register<QuitMessage>(this);
 
-        var logger = App.Current.Services.GetRequiredService<ILogger<LocalKeyboardListener>>();
-        _localKeyboardListener = new LocalKeyboardListener(logger);
+        _localKeyboardListener = localKeyboardListener;
         _localKeyboardListener.KeyPressed += LocalKeyboardListener_OnKeyPressed;
         _localKeyboardListener.Start();
+
         Closed += SettingsWindow_Closed;
         RootElement.AddHandler(UIElement.PointerPressedEvent, new PointerEventHandler(RootElement_OnPointerPressed), true);
     }
@@ -233,7 +235,7 @@ public sealed partial class SettingsWindow : WindowEx,
         }
         catch (Exception ex)
         {
-            Logger.LogError("Error handling mouse button press event", ex);
+            Log_ErrorHandlingMouseButtonPress(ex);
         }
     }
 
@@ -274,9 +276,19 @@ public sealed partial class SettingsWindow : WindowEx,
         else
         {
             BreadCrumbs.Add(new($"[{e.SourcePageType?.Name}]", string.Empty));
-            Logger.LogError($"Unknown breadcrumb for page type '{e.SourcePageType}'");
+            Log_UnknownBreadcrumbForPageType(e.SourcePageType);
         }
     }
+
+    [LoggerMessage(
+        Level = LogLevel.Error,
+        Message = "Error handling mouse button press event")]
+    partial void Log_ErrorHandlingMouseButtonPress(Exception ex);
+
+    [LoggerMessage(
+        Level = LogLevel.Error,
+        Message = "Unknown breadcrumb for page type '{sourcePageType}'")]
+    partial void Log_UnknownBreadcrumbForPageType(Type? sourcePageType);
 }
 
 public readonly struct Crumb

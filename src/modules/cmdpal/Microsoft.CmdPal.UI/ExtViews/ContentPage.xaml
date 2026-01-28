@@ -21,16 +21,6 @@
 
     <Page.Resources>
         <ResourceDictionary>
-            <tkcontrols:MarkdownThemes
-                x:Key="DefaultMarkdownThemeConfig"
-                H3FontSize="12"
-                H3FontWeight="Normal" />
-            <markdownImageProviders:ImageProvider x:Key="ImageProvider" />
-            <tkcontrols:MarkdownConfig
-                x:Key="DefaultMarkdownConfig"
-                ImageProvider="{StaticResource ImageProvider}"
-                Themes="{StaticResource DefaultMarkdownThemeConfig}" />
-
             <StackLayout
                 x:Name="VerticalStackLayout"
                 Orientation="Vertical"

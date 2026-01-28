@@ -130,11 +130,11 @@ internal sealed partial class Program
     }
 
     [LoggerMessage(Level = LogLevel.Debug, Message = "Starting at {startTime}")]
-    static partial void Log_AppStart(ILogger _logger, DateTime startTime);
+    static partial void Log_AppStart(ILogger logger, DateTime startTime);
 
     [LoggerMessage(Level = LogLevel.Error, Message = "Failed to activate existing instance; timed out after {redirectTimeout}.")]
-    static partial void Log_FailedToActivateTimeout(ILogger _logger, TimeSpan redirectTimeout);
+    static partial void Log_FailedToActivateTimeout(ILogger logger, TimeSpan redirectTimeout);
 
     [LoggerMessage(Level = LogLevel.Error, Message = "Failed to activate existing instance")]
-    static partial void Log_FailedToActivate(ILogger _logger, Exception ex);
+    static partial void Log_FailedToActivate(ILogger logger, Exception ex);
 }

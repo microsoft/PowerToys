@@ -30,7 +30,5 @@
             TintColor="{x:Bind ViewModel.BackgroundImageTint, Mode=OneWay}"
             TintIntensity="{x:Bind ViewModel.BackgroundImageTintIntensity, Mode=OneWay}"
             Visibility="{x:Bind ViewModel.ShowBackgroundImage, Mode=OneWay}" />
-
-        <pages:ShellPage />
     </Grid>
 </winuiex:WindowEx>

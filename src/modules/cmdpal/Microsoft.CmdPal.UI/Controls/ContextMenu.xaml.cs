@@ -7,7 +7,6 @@ using CommunityToolkit.WinUI;
 using Microsoft.CmdPal.UI.Messages;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
-using Microsoft.Extensions.Logging;
 using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -24,11 +23,11 @@ public sealed partial class ContextMenu : UserControl,
 {
     private readonly ContextMenuViewModel viewModel;
 
-    public ContextMenu(ContextMenuViewModel model, ILogger<ContextMenuViewModel> logger)
+    public ContextMenu(ContextMenuViewModel contextMenuViewModel)
     {
         this.InitializeComponent();
 
-        viewModel = model;
+        viewModel = contextMenuViewModel;
 
         // RegisterAll isn't AOT compatible
         WeakReferenceMessenger.Default.Register<OpenContextMenuMessage>(this);

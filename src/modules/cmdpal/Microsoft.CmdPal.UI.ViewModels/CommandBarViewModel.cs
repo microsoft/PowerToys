@@ -14,14 +14,7 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 public partial class CommandBarViewModel : ObservableObject,
     IRecipient<UpdateCommandBarMessage>
 {
-    public ILogger? Logger { get; set; }
-
-
-
-
-
-
-
+    private readonly ILogger _logger;
 
     public ICommandBarContext? SelectedItem
     {
@@ -58,8 +51,9 @@ public partial class CommandBarViewModel : ObservableObject,
     [ObservableProperty]
     public partial PageViewModel? CurrentPage { get; set; }
 
-    public CommandBarViewModel()
+    public CommandBarViewModel(ILogger logger)
     {
+        _logger = logger;
         WeakReferenceMessenger.Default.Register<UpdateCommandBarMessage>(this);
     }
 

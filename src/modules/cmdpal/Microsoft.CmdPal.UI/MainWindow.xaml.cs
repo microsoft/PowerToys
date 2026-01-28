@@ -13,6 +13,7 @@ using Microsoft.CmdPal.UI.Controls;
 using Microsoft.CmdPal.UI.Events;
 using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.Messages;
+using Microsoft.CmdPal.UI.Pages;
 using Microsoft.CmdPal.UI.Services;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
@@ -106,6 +107,7 @@ public sealed partial class MainWindow : WindowEx,
         TrayIconService trayIconService,
         LocalKeyboardListener localKeyboardListener,
         IExtensionService extensionService,
+        ShellPage shellPage,
         ILogger logger)
     {
         InitializeComponent();
@@ -115,12 +117,17 @@ public sealed partial class MainWindow : WindowEx,
 
         ViewModel = mainWindowViewModel;
 
+        _settingsService = settingsService;
+        _settingsService.SettingsChanged += SettingsChangedHandler;
+
         _autoGoHomeTimer = new DispatcherTimer();
         _autoGoHomeTimer.Tick += OnAutoGoHomeTimerOnTick;
 
         _themeService = themeService;
         _themeService.ThemeChanged += ThemeServiceOnThemeChanged;
         _windowThemeSynchronizer = new WindowThemeSynchronizer(_themeService, this);
+
+        RootElement.Children.Add(shellPage);
 
         _hwnd = new HWND(WinRT.Interop.WindowNative.GetWindowHandle(this).ToInt32());
 
@@ -175,8 +182,6 @@ public sealed partial class MainWindow : WindowEx,
 
         // Load our settings, and then also wire up a settings changed handler
         HotReloadSettings();
-        _settingsService = settingsService;
-        _settingsService.SettingsChanged += SettingsChangedHandler;
 
         // Make sure that we update the acrylic theme when the OS theme changes
         RootElement.ActualThemeChanged += (s, e) => DispatcherQueue.TryEnqueue(UpdateAcrylic);

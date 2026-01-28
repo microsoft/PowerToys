@@ -210,7 +210,9 @@
                                                 IsIndeterminate="True" />
                                         </controls:Case>
                                         <controls:Case Value="False">
-                                            <cmdpalUI:ContentPage ViewModel="{x:Bind ViewModel.SettingsPage, Mode=OneWay}" />
+                                            <ContentControl x:Name="ContentPageContainer">
+                                                <!-- ContentPage will be inserted here -->
+                                            </ContentControl>
                                         </controls:Case>
                                     </controls:SwitchPresenter>
                                 </Frame>
@@ -248,6 +250,10 @@
                 </StackPanel>
             </Grid>
         </ScrollViewer>
-        <cpcontrols:FallbackRankerDialog x:Name="FallbackRankerDialog" />
+
+        <ContentControl x:Name="FallbackRankerContainer">
+            <!-- FallbackRankerDialog will be injected here. -->
+        </ContentControl>
+
     </Grid>
 </Page>

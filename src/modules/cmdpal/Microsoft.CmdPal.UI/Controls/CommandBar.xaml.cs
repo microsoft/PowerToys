@@ -20,7 +20,8 @@ public sealed partial class CommandBar : UserControl,
     IRecipient<TryCommandKeybindingMessage>,
     ICurrentPageAware
 {
-    private CommandBarViewModel viewModel = new();
+    private readonly ContextMenu contextMenuControl;
+    private CommandBarViewModel viewModel;
 
     public PageViewModel? CurrentPageViewModel
     {
@@ -32,9 +33,13 @@ public sealed partial class CommandBar : UserControl,
     public static readonly DependencyProperty CurrentPageViewModelProperty =
         DependencyProperty.Register(nameof(CurrentPageViewModel), typeof(PageViewModel), typeof(CommandBar), new PropertyMetadata(null));
 
-    public CommandBar()
+    public CommandBar(CommandBarViewModel commandBarViewModel, ContextMenu contextMenu)
     {
         this.InitializeComponent();
+        this.viewModel = commandBarViewModel;
+        contextMenuControl = contextMenu;
+
+        ContextMenuFlyout.Content = contextMenuControl;
 
         // RegisterAll isn't AOT compatible
         WeakReferenceMessenger.Default.Register<OpenContextMenuMessage>(this);
@@ -147,6 +152,6 @@ public sealed partial class CommandBar : UserControl,
     {
         // We need to wait until our flyout is opened to try and toss focus
         // at its search box. The control isn't in the UI tree before that
-        ContextControl.FocusSearchBox();
+        contextMenuControl.FocusSearchBox();
     }
 }

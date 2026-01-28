@@ -13,7 +13,7 @@ internal sealed class PowerToysAppHostService : IAppHostService
 {
     private readonly AppExtensionHost _defaultHost;
 
-    public PowerToysAppHostService(ILogger<PowerToysAppHostService> logger)
+    public PowerToysAppHostService(ILogger logger)
     {
         // Create a minimal default host for cases where no specific command host is available
         _defaultHost = new DefaultAppExtensionHost(logger);

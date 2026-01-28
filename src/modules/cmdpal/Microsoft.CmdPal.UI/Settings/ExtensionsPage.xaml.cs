@@ -4,10 +4,10 @@
 
 using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.WinUI.Controls;
-using ManagedCommon;
+using Microsoft.CmdPal.UI.Controls;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Services;
-using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
@@ -18,17 +18,19 @@ namespace Microsoft.CmdPal.UI.Settings;
 public sealed partial class ExtensionsPage : Page
 {
     private readonly TaskScheduler _mainTaskScheduler = TaskScheduler.FromCurrentSynchronizationContext();
+    private readonly ILogger _logger;
+    private readonly FallbackRankerDialog _fallbackRankerDialog;
 
     private readonly SettingsViewModel? viewModel;
 
-    public ExtensionsPage()
+    public ExtensionsPage(SettingsService settingsService, TopLevelCommandManager topLevelCommandManager, IThemeService themeService, FallbackRankerDialog fallbackRankerDialog, ILogger logger)
     {
         this.InitializeComponent();
-
-        var settingsService = App.Current.Services.GetRequiredService<SettingsService>();
-        var topLevelCommandManager = App.Current.Services.GetRequiredService<TopLevelCommandManager>();
-        var themeService = App.Current.Services.GetRequiredService<IThemeService>();
+        _logger = logger;
         viewModel = new SettingsViewModel(settingsService, topLevelCommandManager, _mainTaskScheduler, themeService);
+        _fallbackRankerDialog = fallbackRankerDialog;
+
+        FallbackRankerContainer.Content = _fallbackRankerDialog;
     }
 
     private void SettingsCard_Click(object sender, RoutedEventArgs e)
@@ -52,11 +54,16 @@ public sealed partial class ExtensionsPage : Page
     {
         try
         {
-            await FallbackRankerDialog!.ShowAsync();
+            await _fallbackRankerDialog!.ShowAsync();
         }
         catch (Exception ex)
         {
-            Logger.LogError("Error when showing FallbackRankerDialog", ex);
+            Log_FallbackRankerDialogError(ex);
         }
     }
+
+    [LoggerMessage(
+        Level = LogLevel.Error,
+        Message = "Error when showing FallbackRankerDialog")]
+    partial void Log_FallbackRankerDialogError(Exception ex);
 }

@@ -21,8 +21,12 @@ using Microsoft.CmdPal.Ext.WindowsSettings;
 using Microsoft.CmdPal.Ext.WindowsTerminal;
 using Microsoft.CmdPal.Ext.WindowWalker;
 using Microsoft.CmdPal.Ext.WinGet;
+using Microsoft.CmdPal.UI.Controls;
 using Microsoft.CmdPal.UI.Helpers;
+using Microsoft.CmdPal.UI.Helpers.MarkdownImageProviders;
+using Microsoft.CmdPal.UI.Pages;
 using Microsoft.CmdPal.UI.Services;
+using Microsoft.CmdPal.UI.Settings;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.BuiltinCommands;
 using Microsoft.CmdPal.UI.ViewModels.Models;
@@ -136,9 +140,28 @@ public partial class App : Application
         // ViewModels
         services.AddSingleton<ShellViewModel>();
         services.AddSingleton<IPageViewModelFactoryService, CommandPalettePageViewModelFactory>();
+        services.AddTransient<SettingsViewModel>();
+        services.AddSingleton<CommandBarViewModel>();
+        services.AddSingleton<ContextMenuViewModel>();
 
-        // Views
+        // Controls
+        services.AddSingleton<ContextMenu>();
+        services.AddSingleton<CommandBar>();
+        services.AddSingleton<SearchBar>();
+        services.AddTransient<ScreenPreview>();
+        services.AddTransient<FallbackRanker>();
+        services.AddTransient<FallbackRankerDialog>();
+        services.AddSingleton<ImageProvider>();
+
+        // Windows & Pages
         services.AddSingleton<MainWindow>();
+        services.AddSingleton<SettingsWindow>();
+        services.AddSingleton<ShellPage>();
+        services.AddTransient<ListPage>();
+        services.AddTransient<GeneralPage>();
+        services.AddTransient<ExtensionPage>();
+        services.AddTransient<ExtensionsPage>();
+        services.AddTransient<AppearancePage>();
     }
 
     private void AddBuiltInCommands(ServiceCollection services)
@@ -198,15 +221,7 @@ public partial class App : Application
 
         services.AddSingleton<IThemeService, ThemeService>();
         services.AddSingleton<ResourceSwapper>();
-        services.AddSingleton<LocalKeyboardListener>();
-
-        // ViewModels
-        services.AddTransient<SettingsViewModel>();
-        services.AddSingleton<CommandBarViewModel>();
-        services.AddSingleton<ContextMenuViewModel>();
-
-        // Windows
-        services.AddSingleton<MainWindow>();
+        services.AddTransient<LocalKeyboardListener>();
     }
 
     [LoggerMessage(Level = LogLevel.Error, Message = "Couldn't load winget")]
