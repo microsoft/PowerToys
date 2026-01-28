@@ -44,14 +44,10 @@
                         IsExpanded="True">
                         <tkcontrols:SettingsExpander.Items>
                             <tkcontrols:SettingsCard ContentAlignment="Left">
-                                <controls:ShortcutWithTextLabelControl
-                                    x:Uid="AlwaysOnTop_IncreaseOpacity"
-                                    Keys="{x:Bind ViewModel.IncreaseOpacityKeysList, Mode=OneWay}" />
+                                <controls:ShortcutWithTextLabelControl x:Uid="AlwaysOnTop_IncreaseOpacity" Keys="{x:Bind ViewModel.IncreaseOpacityKeysList, Mode=OneWay}" />
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard ContentAlignment="Left">
-                                <controls:ShortcutWithTextLabelControl
-                                    x:Uid="AlwaysOnTop_DecreaseOpacity"
-                                    Keys="{x:Bind ViewModel.DecreaseOpacityKeysList, Mode=OneWay}" />
+                                <controls:ShortcutWithTextLabelControl x:Uid="AlwaysOnTop_DecreaseOpacity" Keys="{x:Bind ViewModel.DecreaseOpacityKeysList, Mode=OneWay}" />
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard>
                                 <tkcontrols:SettingsCard.Description>
