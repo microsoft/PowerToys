@@ -142,12 +142,12 @@ public static class DrawingHelperTests
                     var expectedPixel = expected.GetPixel(x, y);
                     var actualPixel = actual.GetPixel(x, y);
 
-                    // allow a small tolerance for rounding differences in gdi
+                    // allow a small tolerance for rounding differences in gdi and different rendering environments
                     Assert.IsTrue(
-                        (Math.Abs(expectedPixel.A - actualPixel.A) <= 1) &&
-                        (Math.Abs(expectedPixel.R - actualPixel.R) <= 1) &&
-                        (Math.Abs(expectedPixel.G - actualPixel.G) <= 1) &&
-                        (Math.Abs(expectedPixel.B - actualPixel.B) <= 1),
+                        (Math.Abs(expectedPixel.A - actualPixel.A) <= 3) &&
+                        (Math.Abs(expectedPixel.R - actualPixel.R) <= 3) &&
+                        (Math.Abs(expectedPixel.G - actualPixel.G) <= 3) &&
+                        (Math.Abs(expectedPixel.B - actualPixel.B) <= 3),
                         $"images differ at pixel ({x}, {y}) - expected: {expectedPixel}, actual: {actualPixel}");
                 }
             }

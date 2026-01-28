@@ -230,8 +230,9 @@ jobs:
   - ${{ if eq(parameters.useLatestWinAppSDK, false)}}:
     - template: .\steps-restore-nuget.yml
 
-  # VCToolsVersion workaround disabled for VS2026 compatibility
-  # MSBuild will auto-select the correct toolset version
+  - pwsh: |-
+      & "$(build.sourcesdirectory)\.pipelines\verifyAndSetLatestVCToolsVersion.ps1"
+    displayName: Work around DD-1541167 (VCToolsVersion)
 
   - ${{ if eq(parameters.official, true) }}:
     - template: .\steps-setup-versioning.yml

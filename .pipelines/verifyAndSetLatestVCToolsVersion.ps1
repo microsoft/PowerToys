@@ -37,5 +37,12 @@ If ($Null -Eq (Get-Item $PackageVCToolPath -ErrorAction:Ignore)) {
 }
 
 Write-Output "Latest VCToolsVersion: $LatestVCToolsVersion"
-Write-Output "Updating VCToolsVersion environment variable for job"
-Write-Output "##vso[task.setvariable variable=VCToolsVersion]$LatestVCToolsVersion"
+
+# VS2026 (MSVC 14.50+) doesn't need explicit VCToolsVersion - let MSBuild auto-select
+$MajorMinorVersion = [Version]::Parse($LatestVCToolsVersion)
+If ($MajorMinorVersion.Major -eq 14 -and $MajorMinorVersion.Minor -ge 50) {
+    Write-Output "VS2026 detected (MSVC 14.50+). Skipping VCToolsVersion override to allow MSBuild auto-selection."
+} Else {
+    Write-Output "Updating VCToolsVersion environment variable for job"
+    Write-Output "##vso[task.setvariable variable=VCToolsVersion]$LatestVCToolsVersion"
+}
