@@ -84,6 +84,10 @@ public partial class SettingsModel : ObservableObject
 
     public string? BackgroundImagePath { get; set; }
 
+    public BackdropStyle BackdropStyle { get; set; }
+
+    public int BackdropOpacity { get; set; } = 100;
+
     // END SETTINGS
     ///////////////////////////////////////////////////////////////////////////
 

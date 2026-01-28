@@ -16,17 +16,29 @@
         CornerRadius="8"
         Translation="0,0,8">
         <Grid>
+            <!-- Clear style: SolidColorBrush with computed alpha -->
             <Border
                 HorizontalAlignment="Stretch"
                 VerticalAlignment="Stretch"
                 BorderBrush="{ThemeResource SurfaceStrokeColorDefaultBrush}"
                 BorderThickness="1"
-                Visibility="{x:Bind h:BindTransformers.NegateVisibility(ShowBackgroundImage), Mode=OneWay}">
+                Visibility="{x:Bind ClearVisibility, Mode=OneWay}">
+                <Border.Background>
+                    <SolidColorBrush Color="{x:Bind EffectiveClearColor, Mode=OneWay}" />
+                </Border.Background>
+            </Border>
+            <!-- Acrylic style: AcrylicBrush with effective opacity -->
+            <Border
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch"
+                BorderBrush="{ThemeResource SurfaceStrokeColorDefaultBrush}"
+                BorderThickness="1"
+                Visibility="{x:Bind AcrylicVisibility, Mode=OneWay}">
                 <Border.Background>
                     <AcrylicBrush
                         FallbackColor="{x:Bind PreviewBackgroundColor, Mode=OneWay}"
                         TintColor="{x:Bind PreviewBackgroundColor, Mode=OneWay}"
-                        TintOpacity="{x:Bind PreviewBackgroundOpacity, Mode=OneWay}" />
+                        TintOpacity="{x:Bind PreviewEffectiveOpacity, Mode=OneWay}" />
                 </Border.Background>
             </Border>
             <local:BlurImageControl
@@ -34,6 +46,7 @@
                 VerticalAlignment="Stretch"
                 BlurAmount="{x:Bind PreviewBackgroundImageBlurAmount, Mode=OneWay}"
                 ImageBrightness="{x:Bind PreviewBackgroundImageBrightness, Mode=OneWay}"
+                ImageOpacity="{x:Bind PreviewBackgroundImageOpacity, Mode=OneWay}"
                 ImageSource="{x:Bind PreviewBackgroundImageSource, Mode=OneWay}"
                 ImageStretch="{x:Bind ToStretch(PreviewBackgroundImageFit), Mode=OneWay}"
                 IsHitTestVisible="False"

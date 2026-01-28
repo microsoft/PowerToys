@@ -4,6 +4,7 @@
 
 using CommunityToolkit.WinUI.Helpers;
 using Microsoft.CmdPal.UI.Helpers;
+using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.UI.Xaml;
 using Windows.UI;
@@ -34,7 +35,7 @@ internal sealed class ColorfulThemeProvider : IThemeProvider
         _uiSettings = uiSettings;
     }
 
-    public AcrylicBackdropParameters GetAcrylicBackdrop(ThemeContext context)
+    public BackdropParameters GetBackdropParameters(ThemeContext context)
     {
         var isLight = context.Theme == ElementTheme.Light ||
                       (context.Theme == ElementTheme.Default &&
@@ -53,7 +54,30 @@ internal sealed class ColorfulThemeProvider : IThemeProvider
         var colorIntensity = isLight ? 0.6f * colorIntensityUser : colorIntensityUser;
         var effectiveBgColor = ColorBlender.Blend(baseColor, blended, colorIntensity);
 
-        return new AcrylicBackdropParameters(effectiveBgColor, effectiveBgColor, 0.8f, 0.8f);
+        var transparencyMode = context.TransparencyMode ?? BackdropStyle.Acrylic;
+
+        // because it looks so on acrylics, always force some transparency
+        var isAcrylic = transparencyMode == BackdropStyle.Acrylic;
+
+        // Base opacities before applying user's backdrop opacity
+        var baseTintOpacity = isAcrylic ? 0.8f : 1.0f;
+        var baseLuminosityOpacity = isAcrylic ? 0.8f : 1.0f;
+
+        // Compute effective opacities based on style
+        // For Clear: only BackdropOpacity matters (controls alpha of solid color)
+        // For Acrylic: multiply base opacity with BackdropOpacity
+        var effectiveOpacity = transparencyMode == BackdropStyle.Clear
+            ? context.BackdropOpacity
+            : baseTintOpacity * context.BackdropOpacity;
+
+        var effectiveLuminosityOpacity = baseLuminosityOpacity * context.BackdropOpacity;
+
+        return new BackdropParameters(
+            TintColor: effectiveBgColor,
+            FallbackColor: effectiveBgColor,
+            EffectiveOpacity: effectiveOpacity,
+            EffectiveLuminosityOpacity: effectiveLuminosityOpacity,
+            Style: transparencyMode);
     }
 
     private static class ColorBlender

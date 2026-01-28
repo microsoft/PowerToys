@@ -105,8 +105,10 @@ internal sealed partial class ThemeService : IThemeService, IDisposable
             BackgroundImageSource = imageSource,
             BackgroundImageStretch = stretch,
             BackgroundImageOpacity = opacity,
+            TransparencyMode = _settings.BackdropStyle,
+            BackdropOpacity = Math.Clamp(_settings.BackdropOpacity, 0, 100) / 100f,
         };
-        var backdrop = provider.GetAcrylicBackdrop(context);
+        var backdrop = provider.GetBackdropParameters(context);
         var blur = _settings.BackgroundImageBlurAmount;
         var brightness = _settings.BackgroundImageBrightness;
 
@@ -120,6 +122,7 @@ internal sealed partial class ThemeService : IThemeService, IDisposable
             BackgroundImageStretch = stretch,
             BackgroundImageOpacity = opacity,
             BackdropParameters = backdrop,
+            BackdropOpacity = context.BackdropOpacity,
             BlurAmount = blur,
             BackgroundBrightness = brightness / 100f,
         };
@@ -195,7 +198,8 @@ internal sealed partial class ThemeService : IThemeService, IDisposable
             {
                 Tint = Colors.Transparent,
                 Theme = ElementTheme.Light,
-                BackdropParameters = new AcrylicBackdropParameters(Colors.Black, Colors.Black, 0.5f, 0.5f),
+                BackdropParameters = new BackdropParameters(Colors.Black, Colors.Black, EffectiveOpacity: 0.5f, EffectiveLuminosityOpacity: 0.5f),
+                BackdropOpacity = 1.0f,
                 BackgroundImageOpacity = 1,
                 BackgroundImageSource = null,
                 BackgroundImageStretch = Stretch.Fill,

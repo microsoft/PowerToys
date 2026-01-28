@@ -20,6 +20,7 @@ using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Graphics.Canvas.Effects;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI;
 using Microsoft.UI.Composition;
@@ -43,6 +44,8 @@ using Windows.Win32.UI.Input.KeyboardAndMouse;
 using Windows.Win32.UI.WindowsAndMessaging;
 using WinRT;
 using WinUIEx;
+using CompositionBrush = Windows.UI.Composition.CompositionBrush;
+using Compositor = Windows.UI.Composition.Compositor;
 using RS_ = Microsoft.CmdPal.UI.Helpers.ResourceLoaderInstance;
 
 namespace Microsoft.CmdPal.UI;
@@ -291,44 +294,94 @@ public sealed partial class MainWindow : WindowEx,
     {
         if (DesktopAcrylicController.IsSupported())
         {
-            // Hooking up the policy object.
             _configurationSource = new SystemBackdropConfiguration
             {
-                // Initial configuration state.
                 IsInputActive = true,
             };
-            UpdateAcrylic();
         }
     }
 
     private void UpdateAcrylic()
     {
+        var backdrop = _themeService.Current.BackdropParameters;
+        var isImageMode = ViewModel.ShowBackgroundImage;
+
         try
         {
-            if (_acrylicController != null)
+            if (backdrop.Style == BackdropStyle.Clear)
             {
-                _acrylicController.RemoveAllSystemBackdropTargets();
-                _acrylicController.Dispose();
+                CleanupAcrylicController();
+                var tintColor = Color.FromArgb(
+                    (byte)(backdrop.EffectiveOpacity * 255),
+                    backdrop.TintColor.R,
+                    backdrop.TintColor.G,
+                    backdrop.TintColor.B);
+
+                SetupTransparentBackdrop(tintColor);
             }
-
-            var backdrop = _themeService.Current.BackdropParameters;
-            _acrylicController = new DesktopAcrylicController
+            else
             {
-                TintColor = backdrop.TintColor,
-                TintOpacity = backdrop.TintOpacity,
-                FallbackColor = backdrop.FallbackColor,
-                LuminosityOpacity = backdrop.LuminosityOpacity,
-            };
-
-            // Enable the system backdrop.
-            // Note: Be sure to have "using WinRT;" to support the Window.As<...>() call.
-            _acrylicController.AddSystemBackdropTarget(this.As<ICompositionSupportsSystemBackdrop>());
-            _acrylicController.SetSystemBackdropConfiguration(_configurationSource);
+                SetupDesktopAcrylic(backdrop, isImageMode);
+            }
         }
         catch (Exception ex)
         {
             Logger.LogError("Failed to update backdrop", ex);
         }
+    }
+
+    private void SetupTransparentBackdrop(Color tintColor)
+    {
+        if (SystemBackdrop is TransparentTintBackdrop existingBackdrop)
+        {
+            existingBackdrop.TintColor = tintColor;
+        }
+        else
+        {
+            SystemBackdrop = new TransparentTintBackdrop { TintColor = tintColor };
+        }
+    }
+
+    private void CleanupAcrylicController()
+    {
+        if (_acrylicController != null)
+        {
+            _acrylicController.RemoveAllSystemBackdropTargets();
+            _acrylicController.Dispose();
+            _acrylicController = null;
+        }
+    }
+
+    private void SetupDesktopAcrylic(BackdropParameters backdrop, bool isImageMode)
+    {
+        CleanupAcrylicController();
+
+        // Fall back to solid color if acrylic not supported
+        if (_configurationSource is null)
+        {
+            SetupTransparentBackdrop(backdrop.FallbackColor);
+            return;
+        }
+
+        // DesktopAcrylicController and SystemBackdrop can't be active simultaneously
+        SystemBackdrop = null;
+
+        // Image mode: no tint here, BlurImageControl handles it (avoids double-tinting)
+        var effectiveTintOpacity = isImageMode && backdrop.Style == BackdropStyle.Acrylic
+            ? 0.0f
+            : backdrop.EffectiveOpacity;
+
+        _acrylicController = new DesktopAcrylicController
+        {
+            TintColor = backdrop.TintColor,
+            TintOpacity = effectiveTintOpacity,
+            FallbackColor = backdrop.FallbackColor,
+            LuminosityOpacity = backdrop.EffectiveLuminosityOpacity,
+        };
+
+        // Requires "using WinRT;" for Window.As<>()
+        _acrylicController.AddSystemBackdropTarget(this.As<ICompositionSupportsSystemBackdrop>());
+        _acrylicController.SetSystemBackdropConfiguration(_configurationSource);
     }
 
     private void ShowHwnd(IntPtr hwndValue, MonitorBehavior target)
@@ -751,12 +804,8 @@ public sealed partial class MainWindow : WindowEx,
 
     private void DisposeAcrylic()
     {
-        if (_acrylicController is not null)
-        {
-            _acrylicController.Dispose();
-            _acrylicController = null!;
-            _configurationSource = null!;
-        }
+        CleanupAcrylicController();
+        _configurationSource = null!;
     }
 
     // Updates our window s.t. the top of the window is draggable.

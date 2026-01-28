@@ -12,13 +12,11 @@ namespace Microsoft.CmdPal.UI.Controls;
 
 public sealed partial class CommandPalettePreview : UserControl
 {
-    public static readonly DependencyProperty PreviewBackgroundOpacityProperty = DependencyProperty.Register(nameof(PreviewBackgroundOpacity), typeof(double), typeof(CommandPalettePreview), new PropertyMetadata(0d));
+    public static readonly DependencyProperty PreviewBackgroundColorProperty = DependencyProperty.Register(nameof(PreviewBackgroundColor), typeof(Color), typeof(CommandPalettePreview), new PropertyMetadata(default(Color), OnBackdropPropertyChanged));
 
-    public static readonly DependencyProperty PreviewBackgroundColorProperty = DependencyProperty.Register(nameof(PreviewBackgroundColor), typeof(Color), typeof(CommandPalettePreview), new PropertyMetadata(default(Color)));
+    public static readonly DependencyProperty PreviewBackgroundImageSourceProperty = DependencyProperty.Register(nameof(PreviewBackgroundImageSource), typeof(ImageSource), typeof(CommandPalettePreview), new PropertyMetadata(null, OnBackgroundImageSourceChanged));
 
-    public static readonly DependencyProperty PreviewBackgroundImageSourceProperty = DependencyProperty.Register(nameof(PreviewBackgroundImageSource), typeof(ImageSource), typeof(CommandPalettePreview), new PropertyMetadata(null, PropertyChangedCallback));
-
-    public static readonly DependencyProperty PreviewBackgroundImageOpacityProperty = DependencyProperty.Register(nameof(PreviewBackgroundImageOpacity), typeof(int), typeof(CommandPalettePreview), new PropertyMetadata(0));
+    public static readonly DependencyProperty PreviewBackgroundImageOpacityProperty = DependencyProperty.Register(nameof(PreviewBackgroundImageOpacity), typeof(double), typeof(CommandPalettePreview), new PropertyMetadata(1.0));
 
     public static readonly DependencyProperty PreviewBackgroundImageFitProperty = DependencyProperty.Register(nameof(PreviewBackgroundImageFit), typeof(BackgroundImageFit), typeof(CommandPalettePreview), new PropertyMetadata(default(BackgroundImageFit)));
 
@@ -30,18 +28,23 @@ public sealed partial class CommandPalettePreview : UserControl
 
     public static readonly DependencyProperty PreviewBackgroundImageTintIntensityProperty = DependencyProperty.Register(nameof(PreviewBackgroundImageTintIntensity), typeof(int), typeof(CommandPalettePreview), new PropertyMetadata(0));
 
-    public static readonly DependencyProperty ShowBackgroundImageProperty = DependencyProperty.Register(nameof(ShowBackgroundImage), typeof(Visibility), typeof(CommandPalettePreview), new PropertyMetadata(Visibility.Collapsed));
+    public static readonly DependencyProperty ShowBackgroundImageProperty = DependencyProperty.Register(nameof(ShowBackgroundImage), typeof(Visibility), typeof(CommandPalettePreview), new PropertyMetadata(Visibility.Collapsed, OnVisibilityPropertyChanged));
+
+    public static readonly DependencyProperty PreviewBackdropStyleProperty = DependencyProperty.Register(nameof(PreviewBackdropStyle), typeof(BackdropStyle?), typeof(CommandPalettePreview), new PropertyMetadata(null, OnVisibilityPropertyChanged));
+
+    public static readonly DependencyProperty PreviewEffectiveOpacityProperty = DependencyProperty.Register(nameof(PreviewEffectiveOpacity), typeof(double), typeof(CommandPalettePreview), new PropertyMetadata(1.0, OnBackdropPropertyChanged));
+
+    // Computed read-only dependency properties
+    public static readonly DependencyProperty EffectiveClearColorProperty = DependencyProperty.Register(nameof(EffectiveClearColor), typeof(Color), typeof(CommandPalettePreview), new PropertyMetadata(default(Color)));
+
+    public static readonly DependencyProperty AcrylicVisibilityProperty = DependencyProperty.Register(nameof(AcrylicVisibility), typeof(Visibility), typeof(CommandPalettePreview), new PropertyMetadata(Visibility.Visible));
+
+    public static readonly DependencyProperty ClearVisibilityProperty = DependencyProperty.Register(nameof(ClearVisibility), typeof(Visibility), typeof(CommandPalettePreview), new PropertyMetadata(Visibility.Collapsed));
 
     public BackgroundImageFit PreviewBackgroundImageFit
     {
         get { return (BackgroundImageFit)GetValue(PreviewBackgroundImageFitProperty); }
         set { SetValue(PreviewBackgroundImageFitProperty, value); }
-    }
-
-    public double PreviewBackgroundOpacity
-    {
-        get { return (double)GetValue(PreviewBackgroundOpacityProperty); }
-        set { SetValue(PreviewBackgroundOpacityProperty, value); }
     }
 
     public Color PreviewBackgroundColor
@@ -56,10 +59,10 @@ public sealed partial class CommandPalettePreview : UserControl
         set { SetValue(PreviewBackgroundImageSourceProperty, value); }
     }
 
-    public int PreviewBackgroundImageOpacity
+    public double PreviewBackgroundImageOpacity
     {
-        get { return (int)GetValue(PreviewBackgroundImageOpacityProperty); }
-        set { SetValue(PreviewBackgroundImageOpacityProperty, value); }
+        get => (double)GetValue(PreviewBackgroundImageOpacityProperty);
+        set => SetValue(PreviewBackgroundImageOpacityProperty, value);
     }
 
     public double PreviewBackgroundImageBrightness
@@ -92,12 +95,48 @@ public sealed partial class CommandPalettePreview : UserControl
         set => SetValue(ShowBackgroundImageProperty, value);
     }
 
+    public BackdropStyle? PreviewBackdropStyle
+    {
+        get => (BackdropStyle?)GetValue(PreviewBackdropStyleProperty);
+        set => SetValue(PreviewBackdropStyleProperty, value);
+    }
+
+    /// <summary>
+    /// Gets or sets the effective opacity for the backdrop, pre-computed by the theme provider.
+    /// For Acrylic style: used directly as TintOpacity.
+    /// For Clear style: used to compute the alpha channel of the solid color.
+    /// </summary>
+    public double PreviewEffectiveOpacity
+    {
+        get => (double)GetValue(PreviewEffectiveOpacityProperty);
+        set => SetValue(PreviewEffectiveOpacityProperty, value);
+    }
+
+    // Computed read-only properties
+    public Color EffectiveClearColor
+    {
+        get => (Color)GetValue(EffectiveClearColorProperty);
+        private set => SetValue(EffectiveClearColorProperty, value);
+    }
+
+    public Visibility AcrylicVisibility
+    {
+        get => (Visibility)GetValue(AcrylicVisibilityProperty);
+        private set => SetValue(AcrylicVisibilityProperty, value);
+    }
+
+    public Visibility ClearVisibility
+    {
+        get => (Visibility)GetValue(ClearVisibilityProperty);
+        private set => SetValue(ClearVisibilityProperty, value);
+    }
+
     public CommandPalettePreview()
     {
         InitializeComponent();
     }
 
-    private static void PropertyChangedCallback(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    private static void OnBackgroundImageSourceChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
         if (d is not CommandPalettePreview preview)
         {
@@ -107,7 +146,42 @@ public sealed partial class CommandPalettePreview : UserControl
         preview.ShowBackgroundImage = e.NewValue is ImageSource ? Visibility.Visible : Visibility.Collapsed;
     }
 
-    private double ToOpacity(int value) => value / 100.0;
+    private static void OnBackdropPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        if (d is not CommandPalettePreview preview)
+        {
+            return;
+        }
+
+        preview.UpdateComputedClearColor();
+    }
+
+    private static void OnVisibilityPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        if (d is not CommandPalettePreview preview)
+        {
+            return;
+        }
+
+        preview.UpdateComputedVisibilityProperties();
+    }
+
+    private void UpdateComputedClearColor()
+    {
+        EffectiveClearColor = Color.FromArgb(
+            (byte)(PreviewEffectiveOpacity * 255),
+            PreviewBackgroundColor.R,
+            PreviewBackgroundColor.G,
+            PreviewBackgroundColor.B);
+    }
+
+    private void UpdateComputedVisibilityProperties()
+    {
+        AcrylicVisibility = ShowBackgroundImage == Visibility.Collapsed && PreviewBackdropStyle != BackdropStyle.Clear
+            ? Visibility.Visible : Visibility.Collapsed;
+        ClearVisibility = ShowBackgroundImage == Visibility.Collapsed && PreviewBackdropStyle == BackdropStyle.Clear
+            ? Visibility.Visible : Visibility.Collapsed;
+    }
 
     private double ToTintIntensity(int value) => value / 100.0;
 

@@ -132,6 +132,7 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
                 OnPropertyChanged(nameof(IsBackgroundControlsVisible));
                 OnPropertyChanged(nameof(IsNoBackgroundVisible));
                 OnPropertyChanged(nameof(IsAccentColorControlsVisible));
+                OnPropertyChanged(nameof(IsResetButtonVisible));
 
                 if (value == ColorizationMode.WindowsAccentColor)
                 {
@@ -279,6 +280,49 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
         };
     }
 
+    public int BackdropOpacity
+    {
+        get => _settings.BackdropOpacity;
+        set
+        {
+            if (_settings.BackdropOpacity != value)
+            {
+                _settings.BackdropOpacity = value;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(EffectiveBackdropStyle));
+                OnPropertyChanged(nameof(EffectiveImageOpacity));
+                Save();
+            }
+        }
+    }
+
+    public bool UseAcrylic
+    {
+        get => _settings.BackdropStyle == BackdropStyle.Acrylic;
+        set
+        {
+            var newStyle = value ? BackdropStyle.Acrylic : BackdropStyle.Clear;
+            if (_settings.BackdropStyle != newStyle)
+            {
+                _settings.BackdropStyle = newStyle;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(EffectiveBackdropStyle));
+                OnPropertyChanged(nameof(EffectiveImageOpacity));
+                Save();
+            }
+        }
+    }
+
+    public BackdropStyle? EffectiveBackdropStyle =>
+        _settings.BackdropStyle == BackdropStyle.Clear || _settings.BackdropOpacity < 100
+            ? _settings.BackdropStyle
+            : null;
+
+    public double EffectiveImageOpacity =>
+        EffectiveBackdropStyle is not null
+            ? (BackgroundImageOpacity / 100f) * Math.Sqrt(_settings.BackdropOpacity / 100.0)
+            : (BackgroundImageOpacity / 100f);
+
     [ObservableProperty]
     public partial bool IsColorizationDetailsExpanded { get; set; }
 
@@ -292,7 +336,9 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
 
     public bool IsAccentColorControlsVisible => _settings.ColorizationMode is ColorizationMode.WindowsAccentColor;
 
-    public AcrylicBackdropParameters EffectiveBackdrop { get; private set; } = new(Colors.Black, Colors.Black, 0.5f, 0.5f);
+    public bool IsResetButtonVisible => _settings.ColorizationMode is not ColorizationMode.None;
+
+    public BackdropParameters EffectiveBackdrop { get; private set; } = new(Colors.Black, Colors.Black, 0.5f, 0.5f);
 
     public ElementTheme EffectiveTheme => _elementThemeOverride ?? _themeService.Current.Theme;
 
@@ -357,6 +403,8 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
         // Theme services recalculates effective color and opacity based on current settings.
         EffectiveBackdrop = _themeService.Current.BackdropParameters;
         OnPropertyChanged(nameof(EffectiveBackdrop));
+        OnPropertyChanged(nameof(EffectiveBackdropStyle));
+        OnPropertyChanged(nameof(EffectiveImageOpacity));
         OnPropertyChanged(nameof(EffectiveBackgroundImageBrightness));
         OnPropertyChanged(nameof(EffectiveBackgroundImageSource));
         OnPropertyChanged(nameof(EffectiveThemeColor));
@@ -379,7 +427,11 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
         BackgroundImageBlurAmount = 0;
         BackgroundImageFit = BackgroundImageFit.UniformToFill;
         BackgroundImageOpacity = 100;
-        ColorIntensity = 0;
+        BackdropOpacity = 100;
+        UseAcrylic = true;
+
+        // For color modes, full intensity; for image mode, no tint overlay
+        ColorIntensity = ColorizationMode == ColorizationMode.Image ? 0 : 100;
     }
 
     public void Dispose()

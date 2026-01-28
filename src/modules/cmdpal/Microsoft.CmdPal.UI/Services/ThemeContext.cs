@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Media;
 using Windows.UI;
@@ -21,4 +22,8 @@ internal sealed record ThemeContext
     public double BackgroundImageOpacity { get; init; }
 
     public int? ColorIntensity { get; init; }
+
+    public BackdropStyle? TransparencyMode { get; init; }
+
+    public float BackdropOpacity { get; init; } = 1.0f;
 }

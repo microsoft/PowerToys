@@ -51,10 +51,16 @@ public sealed class ThemeSnapshot
     public required double BackgroundImageOpacity { get; init; }
 
     /// <summary>
-    /// Gets the effective acrylic backdrop parameters based on current settings and theme.
+    /// Gets the effective backdrop parameters based on current settings and theme.
     /// </summary>
-    /// <returns>The resolved <c>AcrylicBackdropParameters</c> to apply.</returns>
-    public required AcrylicBackdropParameters BackdropParameters { get; init; }
+    /// <returns>The resolved <c>BackdropParameters</c> to apply.</returns>
+    public required BackdropParameters BackdropParameters { get; init; }
+
+    /// <summary>
+    /// Gets the raw backdrop opacity setting (0-1 range).
+    /// Used for determining if transparency is enabled and for image opacity calculations.
+    /// </summary>
+    public required float BackdropOpacity { get; init; }
 
     public required int BlurAmount { get; init; }
 
