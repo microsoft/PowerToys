@@ -102,7 +102,7 @@
                 BorderThickness="0,1,0,0" />
 
             <!-- AI Configuration Panel -->
-            <Grid Margin="16">
+            <Grid Grid.Row="0" Margin="16">
                 <!-- AI Model Download Prompt -->
                 <StackPanel Visibility="{Binding ShowModelDownloadPrompt, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
                     <InfoBar
@@ -166,6 +166,7 @@
 
             <!-- Custom input matrix -->
             <Grid
+                Grid.Row="0"
                 Margin="16"
                 Visibility="{Binding Settings.SelectedSize, Mode=OneWay, Converter={StaticResource SizeTypeToVisibilityConverter}}">
                 <Grid.ColumnDefinitions>
@@ -245,6 +246,7 @@
                     Grid.Row="2"
                     Grid.Column="4"
                     Margin="8,0,0,0"
+                    HorizontalAlignment="Stretch"
                     ItemsSource="{Binding ResizeUnitValues, Mode=OneWay}"
                     SelectedIndex="{Binding Settings.SelectedSize.Unit, Mode=TwoWay, Converter={StaticResource EnumToIntConverter}}">
                     <ComboBox.ItemTemplate>

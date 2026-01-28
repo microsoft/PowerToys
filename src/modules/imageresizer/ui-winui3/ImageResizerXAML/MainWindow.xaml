@@ -9,7 +9,7 @@
     xmlns:views="using:ImageResizer.Views"
     xmlns:vm="using:ImageResizer.ViewModels"
     xmlns:winuiEx="using:WinUIEx"
-    Width="360"
+    Width="400"
     Height="506"
     IsMaximizable="False"
     IsMinimizable="False"

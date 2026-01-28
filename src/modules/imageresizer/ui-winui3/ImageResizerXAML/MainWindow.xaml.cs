@@ -11,6 +11,7 @@ using ImageResizer.Helpers;
 using ImageResizer.ViewModels;
 using ImageResizer.Views;
 using Microsoft.UI.Dispatching;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Windows.Storage.Pickers;
 using WinRT.Interop;
@@ -21,6 +22,12 @@ namespace ImageResizer
     public sealed partial class MainWindow : WindowEx, IMainView
     {
         public MainViewModel ViewModel { get; }
+
+        private PropertyChangedEventHandler _selectedSizeChangedHandler;
+        private InputViewModel _currentInputViewModel;
+
+        // Window chrome height (title bar)
+        private const double WindowChromeHeight = 32;
 
         public MainWindow(MainViewModel viewModel)
         {
@@ -92,54 +99,74 @@ namespace ImageResizer
                 var progressPage = new ProgressPage { ViewModel = progressVM, DataContext = progressVM };
                 contentPresenter.Content = progressPage;
 
-                // Fixed height for progress page
-                this.Height = 400;
+                // Size to content after layout
+                DispatcherQueue.TryEnqueue(DispatcherQueuePriority.Low, () => SizeToContent());
             }
             else if (page is ResultsViewModel resultsVM)
             {
                 var resultsPage = new ResultsPage { ViewModel = resultsVM, DataContext = resultsVM };
                 contentPresenter.Content = resultsPage;
 
-                // Fixed height for results page
-                this.Height = 450;
+                // Size to content after layout
+                DispatcherQueue.TryEnqueue(DispatcherQueuePriority.Low, () => SizeToContent());
             }
         }
 
         private void AdjustWindowHeightForInputPage(InputViewModel inputVM)
         {
-            // Subscribe to SelectedSize changes to adjust height dynamically
-            inputVM.Settings.PropertyChanged += (s, e) =>
+            // Unsubscribe previous handler to prevent memory leak
+            if (_selectedSizeChangedHandler != null && _currentInputViewModel?.Settings != null)
+            {
+                _currentInputViewModel.Settings.PropertyChanged -= _selectedSizeChangedHandler;
+            }
+
+            _currentInputViewModel = inputVM;
+
+            // Create and store handler reference for future cleanup
+            _selectedSizeChangedHandler = (s, e) =>
             {
                 if (e.PropertyName == nameof(inputVM.Settings.SelectedSize))
                 {
-                    UpdateWindowHeightForSelectedSize(inputVM.Settings.SelectedSize);
+                    // Delay to allow layout to update
+                    DispatcherQueue.TryEnqueue(DispatcherQueuePriority.Low, () => SizeToContent());
                 }
             };
 
-            // Set initial height
-            UpdateWindowHeightForSelectedSize(inputVM.Settings.SelectedSize);
+            inputVM.Settings.PropertyChanged += _selectedSizeChangedHandler;
+
+            // Set initial height after layout
+            DispatcherQueue.TryEnqueue(DispatcherQueuePriority.Low, () => SizeToContent());
         }
 
-        private void UpdateWindowHeightForSelectedSize(ImageResizer.Models.ResizeSize selectedSize)
+        private void SizeToContent()
         {
-            DispatcherQueue.TryEnqueue(() =>
+            // Get the content element
+            var content = contentPresenter.Content as FrameworkElement;
+            if (content == null)
             {
-                if (selectedSize is ImageResizer.Models.CustomSize)
-                {
-                    // Custom template with additional controls
-                    this.Height = 640;
-                }
-                else if (selectedSize is ImageResizer.Models.AiSize)
-                {
-                    // AI template with slider and descriptions
-                    this.Height = 650;
-                }
-                else
-                {
-                    // Normal preset template (Small, Medium, Large, Phone)
-                    this.Height = 506;
-                }
-            });
+                return;
+            }
+
+            // Measure the content to get its desired size
+            content.Measure(new Windows.Foundation.Size(double.PositiveInfinity, double.PositiveInfinity));
+            var desiredHeight = content.DesiredSize.Height;
+
+            if (desiredHeight <= 0)
+            {
+                return;
+            }
+
+            // Add window chrome height and extra padding for safety
+            var totalHeight = desiredHeight + WindowChromeHeight + 16;
+
+            var appWindow = this.AppWindow;
+            if (appWindow != null)
+            {
+                var scaleFactor = Content?.XamlRoot?.RasterizationScale ?? 1.0;
+                var currentSize = appWindow.Size;
+                var newHeightInPixels = (int)(totalHeight * scaleFactor);
+                appWindow.Resize(new Windows.Graphics.SizeInt32(currentSize.Width, newHeightInPixels));
+            }
         }
 
         public IEnumerable<string> OpenPictureFiles()
