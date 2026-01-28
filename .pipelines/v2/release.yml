@@ -51,7 +51,9 @@ extends:
     pool:
       name: SHINE-INT-S
       ${{ if eq(parameters.useVSPreview, true) }}:
-        demands: ImageOverride -equals SHINE-VS17-Preview
+        demands: ImageOverride -equals SHINE-VS18-Preview
+      ${{ else }}:
+        demands: ImageOverride -equals SHINE-VS18-Latest
       os: windows
     sdl:
       tsa:
@@ -74,7 +76,9 @@ extends:
                 demands:
                   # Our INT agents have a large disk mounted at P:\
                   - ${{ if eq(parameters.useVSPreview, true) }}:
-                    - ImageOverride -equals SHINE-VS17-Preview
+                    - ImageOverride -equals SHINE-VS18-Latest-Preview
+                  - ${{ else }}:
+                    - ImageOverride -equals SHINE-VS18-Latest
                 os: windows
               variables:
                 IsPipeline: 1 # The installer uses this to detect whether it should pick up localizations
