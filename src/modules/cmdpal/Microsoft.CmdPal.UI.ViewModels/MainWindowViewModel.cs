@@ -52,7 +52,9 @@ public partial class MainWindowViewModel : ObservableObject, IDisposable
 
     // Returns null when no transparency needed (BlurImageControl uses this to decide source type)
     public BackdropStyle? EffectiveBackdropStyle =>
-        BackdropStyle == BackdropStyle.Clear || BackdropOpacity < 1.0f
+        BackdropStyle == BackdropStyle.Clear ||
+        BackdropStyle == BackdropStyle.Mica ||
+        BackdropOpacity < 1.0f
             ? BackdropStyle
             : null;
 

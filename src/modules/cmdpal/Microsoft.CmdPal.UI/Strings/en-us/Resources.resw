@@ -728,9 +728,21 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Version {0}</value>
   </data>
   <data name="Settings_GeneralPage_BackdropOpacity_SettingsCard.Header" xml:space="preserve">
-    <value>Background opacity</value>
+    <value>Opacity</value>
   </data>
-  <data name="Settings_GeneralPage_UseAcrylic_SettingsCard.Header" xml:space="preserve">
-    <value>Use acrylic background</value>
+  <data name="Settings_GeneralPage_BackdropStyle_SettingsCard.Header" xml:space="preserve">
+    <value>Material</value>
+  </data>
+  <data name="Settings_GeneralPage_BackdropStyle_SettingsCard.Description" xml:space="preserve">
+    <value>Select the visual material used for the window background</value>
+  </data>
+  <data name="Settings_GeneralPage_BackdropStyle_Acrylic.Content" xml:space="preserve">
+    <value>Acrylic</value>
+  </data>
+  <data name="Settings_GeneralPage_BackdropStyle_Transparent.Content" xml:space="preserve">
+    <value>Transparent</value>
+  </data>
+  <data name="Settings_GeneralPage_BackdropStyle_Mica.Content" xml:space="preserve">
+    <value>Mica</value>
   </data>
 </root>

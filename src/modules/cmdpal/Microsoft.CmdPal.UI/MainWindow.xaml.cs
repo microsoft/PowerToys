@@ -20,7 +20,6 @@ using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Graphics.Canvas.Effects;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI;
 using Microsoft.UI.Composition;
@@ -34,7 +33,6 @@ using Windows.Foundation;
 using Windows.Graphics;
 using Windows.System;
 using Windows.UI;
-using Windows.UI.WindowManagement;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.Graphics.Dwm;
@@ -44,8 +42,6 @@ using Windows.Win32.UI.Input.KeyboardAndMouse;
 using Windows.Win32.UI.WindowsAndMessaging;
 using WinRT;
 using WinUIEx;
-using CompositionBrush = Windows.UI.Composition.CompositionBrush;
-using Compositor = Windows.UI.Composition.Compositor;
 using RS_ = Microsoft.CmdPal.UI.Helpers.ResourceLoaderInstance;
 
 namespace Microsoft.CmdPal.UI;
@@ -91,6 +87,7 @@ public sealed partial class MainWindow : WindowEx,
     private int _sessionErrorCount;
 
     private DesktopAcrylicController? _acrylicController;
+    private MicaController? _micaController;
     private SystemBackdropConfiguration? _configurationSource;
     private TimeSpan _autoGoHomeInterval = Timeout.InfiniteTimeSpan;
 
@@ -292,7 +289,7 @@ public sealed partial class MainWindow : WindowEx,
 
     private void SetAcrylic()
     {
-        if (DesktopAcrylicController.IsSupported())
+        if (DesktopAcrylicController.IsSupported() || MicaController.IsSupported())
         {
             _configurationSource = new SystemBackdropConfiguration
             {
@@ -308,20 +305,26 @@ public sealed partial class MainWindow : WindowEx,
 
         try
         {
-            if (backdrop.Style == BackdropStyle.Clear)
+            switch (backdrop.Style)
             {
-                CleanupAcrylicController();
-                var tintColor = Color.FromArgb(
-                    (byte)(backdrop.EffectiveOpacity * 255),
-                    backdrop.TintColor.R,
-                    backdrop.TintColor.G,
-                    backdrop.TintColor.B);
+                case BackdropStyle.Clear:
+                    CleanupBackdropControllers();
+                    var tintColor = Color.FromArgb(
+                        (byte)(backdrop.EffectiveOpacity * 255),
+                        backdrop.TintColor.R,
+                        backdrop.TintColor.G,
+                        backdrop.TintColor.B);
+                    SetupTransparentBackdrop(tintColor);
+                    break;
 
-                SetupTransparentBackdrop(tintColor);
-            }
-            else
-            {
-                SetupDesktopAcrylic(backdrop, isImageMode);
+                case BackdropStyle.Mica:
+                    SetupMica(backdrop, isImageMode);
+                    break;
+
+                case BackdropStyle.Acrylic:
+                default:
+                    SetupDesktopAcrylic(backdrop, isImageMode);
+                    break;
             }
         }
         catch (Exception ex)
@@ -342,19 +345,26 @@ public sealed partial class MainWindow : WindowEx,
         }
     }
 
-    private void CleanupAcrylicController()
+    private void CleanupBackdropControllers()
     {
-        if (_acrylicController != null)
+        if (_acrylicController is not null)
         {
             _acrylicController.RemoveAllSystemBackdropTargets();
             _acrylicController.Dispose();
             _acrylicController = null;
         }
+
+        if (_micaController is not null)
+        {
+            _micaController.RemoveAllSystemBackdropTargets();
+            _micaController.Dispose();
+            _micaController = null;
+        }
     }
 
     private void SetupDesktopAcrylic(BackdropParameters backdrop, bool isImageMode)
     {
-        CleanupAcrylicController();
+        CleanupBackdropControllers();
 
         // Fall back to solid color if acrylic not supported
         if (_configurationSource is null)
@@ -382,6 +392,37 @@ public sealed partial class MainWindow : WindowEx,
         // Requires "using WinRT;" for Window.As<>()
         _acrylicController.AddSystemBackdropTarget(this.As<ICompositionSupportsSystemBackdrop>());
         _acrylicController.SetSystemBackdropConfiguration(_configurationSource);
+    }
+
+    private void SetupMica(BackdropParameters backdrop, bool isImageMode)
+    {
+        CleanupBackdropControllers();
+
+        // Fall back to solid color if Mica not supported
+        if (_configurationSource is null || !MicaController.IsSupported())
+        {
+            SetupTransparentBackdrop(backdrop.FallbackColor);
+            return;
+        }
+
+        // MicaController and SystemBackdrop can't be active simultaneously
+        SystemBackdrop = null;
+
+        // Image mode: no tint here, BlurImageControl handles it (avoids double-tinting)
+        var effectiveTintOpacity = isImageMode
+            ? 0.0f
+            : backdrop.EffectiveOpacity;
+
+        _micaController = new MicaController
+        {
+            TintColor = backdrop.TintColor,
+            TintOpacity = effectiveTintOpacity,
+            FallbackColor = backdrop.FallbackColor,
+            LuminosityOpacity = backdrop.EffectiveLuminosityOpacity,
+        };
+
+        _micaController.AddSystemBackdropTarget(this.As<ICompositionSupportsSystemBackdrop>());
+        _micaController.SetSystemBackdropConfiguration(_configurationSource);
     }
 
     private void ShowHwnd(IntPtr hwndValue, MonitorBehavior target)
@@ -804,7 +845,7 @@ public sealed partial class MainWindow : WindowEx,
 
     private void DisposeAcrylic()
     {
-        CleanupAcrylicController();
+        CleanupBackdropControllers();
         _configurationSource = null!;
     }
 

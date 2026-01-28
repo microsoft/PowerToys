@@ -56,16 +56,18 @@ internal sealed class ColorfulThemeProvider : IThemeProvider
 
         var transparencyMode = context.TransparencyMode ?? BackdropStyle.Acrylic;
 
-        // because it looks so on acrylics, always force some transparency
-        var isAcrylic = transparencyMode == BackdropStyle.Acrylic;
-
         // Base opacities before applying user's backdrop opacity
-        var baseTintOpacity = isAcrylic ? 0.8f : 1.0f;
-        var baseLuminosityOpacity = isAcrylic ? 0.8f : 1.0f;
+        // For Acrylic/Mica: force some transparency for the blur effect to show through
+        var (baseTintOpacity, baseLuminosityOpacity) = transparencyMode switch
+        {
+            BackdropStyle.Acrylic => (0.8f, 0.8f),
+            BackdropStyle.Mica => (0.85f, 1.0f),
+            _ => (1.0f, 1.0f), // Clear
+        };
 
         // Compute effective opacities based on style
         // For Clear: only BackdropOpacity matters (controls alpha of solid color)
-        // For Acrylic: multiply base opacity with BackdropOpacity
+        // For Acrylic/Mica: multiply base opacity with BackdropOpacity
         var effectiveOpacity = transparencyMode == BackdropStyle.Clear
             ? context.BackdropOpacity
             : baseTintOpacity * context.BackdropOpacity;

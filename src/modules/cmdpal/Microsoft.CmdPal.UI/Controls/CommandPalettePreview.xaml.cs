@@ -37,7 +37,7 @@ public sealed partial class CommandPalettePreview : UserControl
     // Computed read-only dependency properties
     public static readonly DependencyProperty EffectiveClearColorProperty = DependencyProperty.Register(nameof(EffectiveClearColor), typeof(Color), typeof(CommandPalettePreview), new PropertyMetadata(default(Color)));
 
-    public static readonly DependencyProperty AcrylicVisibilityProperty = DependencyProperty.Register(nameof(AcrylicVisibility), typeof(Visibility), typeof(CommandPalettePreview), new PropertyMetadata(Visibility.Visible));
+    public static readonly DependencyProperty AcrylicVisibilityProperty = DependencyProperty.Register(nameof(AcrylicVisibility), typeof(Visibility), typeof(CommandPalettePreview), new PropertyMetadata(Visibility.Collapsed));
 
     public static readonly DependencyProperty ClearVisibilityProperty = DependencyProperty.Register(nameof(ClearVisibility), typeof(Visibility), typeof(CommandPalettePreview), new PropertyMetadata(Visibility.Collapsed));
 

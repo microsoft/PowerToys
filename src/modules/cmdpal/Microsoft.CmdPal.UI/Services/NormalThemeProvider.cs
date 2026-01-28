@@ -36,15 +36,18 @@ internal sealed class NormalThemeProvider : IThemeProvider
                        _uiSettings.GetColorValue(UIColorType.Background).R > 128);
 
         var backdropStyle = context.TransparencyMode ?? BackdropStyle.Acrylic;
-        var isAcrylic = backdropStyle == BackdropStyle.Acrylic;
 
         // Base opacities before applying user's backdrop opacity
-        var baseTintOpacity = isAcrylic ? 0.5f : 1.0f;
-        var baseLuminosityOpacity = isAcrylic ? (isLight ? 0.9f : 0.96f) : 1.0f;
+        var (baseTintOpacity, baseLuminosityOpacity) = backdropStyle switch
+        {
+            BackdropStyle.Acrylic => (0.5f, isLight ? 0.9f : 0.96f),
+            BackdropStyle.Mica => (0.8f, 1.0f),
+            _ => (1.0f, 1.0f), // Clear
+        };
 
         // Compute effective opacities based on style
         // For Clear: only BackdropOpacity matters (controls alpha of solid color)
-        // For Acrylic: multiply base opacity with BackdropOpacity
+        // For Acrylic/Mica: multiply base opacity with BackdropOpacity
         var effectiveOpacity = backdropStyle == BackdropStyle.Clear
             ? context.BackdropOpacity
             : baseTintOpacity * context.BackdropOpacity;

@@ -16,7 +16,7 @@
         CornerRadius="8"
         Translation="0,0,8">
         <Grid>
-            <!-- Clear style: SolidColorBrush with computed alpha -->
+            <!--  Clear style: SolidColorBrush with computed alpha  -->
             <Border
                 HorizontalAlignment="Stretch"
                 VerticalAlignment="Stretch"
@@ -27,7 +27,7 @@
                     <SolidColorBrush Color="{x:Bind EffectiveClearColor, Mode=OneWay}" />
                 </Border.Background>
             </Border>
-            <!-- Acrylic style: AcrylicBrush with effective opacity -->
+            <!--  Acrylic/Mica style: AcrylicBrush with effective opacity (approximation for Mica)  -->
             <Border
                 HorizontalAlignment="Stretch"
                 VerticalAlignment="Stretch"

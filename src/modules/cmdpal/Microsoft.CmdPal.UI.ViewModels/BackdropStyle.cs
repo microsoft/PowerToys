@@ -8,4 +8,5 @@ public enum BackdropStyle
 {
     Acrylic,
     Clear,
+    Mica,
 }

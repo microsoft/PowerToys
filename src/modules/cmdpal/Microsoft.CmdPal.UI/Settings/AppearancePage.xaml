@@ -65,6 +65,27 @@
                     </controls:SettingsCard>
 
                     <controls:SettingsExpander
+                        x:Uid="Settings_GeneralPage_BackdropStyle_SettingsCard"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xF5EF;}"
+                        IsExpanded="True">
+                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.Appearance.BackdropStyleIndex, Mode=TwoWay}">
+                            <ComboBoxItem x:Uid="Settings_GeneralPage_BackdropStyle_Acrylic" />
+                            <ComboBoxItem x:Uid="Settings_GeneralPage_BackdropStyle_Transparent" />
+                            <ComboBoxItem x:Uid="Settings_GeneralPage_BackdropStyle_Mica" />
+                        </ComboBox>
+                        <controls:SettingsExpander.Items>
+                            <controls:SettingsCard x:Uid="Settings_GeneralPage_BackdropOpacity_SettingsCard">
+                                <Slider
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    Maximum="100"
+                                    Minimum="0"
+                                    StepFrequency="1"
+                                    Value="{x:Bind ViewModel.Appearance.BackdropOpacity, Mode=TwoWay}" />
+                            </controls:SettingsCard>
+                        </controls:SettingsExpander.Items>
+                    </controls:SettingsExpander>
+
+                    <controls:SettingsExpander
                         x:Uid="Settings_GeneralPage_Background_SettingsExpander"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE790;}"
                         IsExpanded="{x:Bind ViewModel.Appearance.IsColorizationDetailsExpanded, Mode=TwoWay}">
@@ -175,20 +196,6 @@
 
                         </controls:SettingsExpander.Items>
                     </controls:SettingsExpander>
-
-                    <!-- Backdrop (always visible) -->
-                    <controls:SettingsCard x:Uid="Settings_GeneralPage_BackdropOpacity_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xEB42;}">
-                        <Slider
-                            MinWidth="{StaticResource SettingActionControlMinWidth}"
-                            Maximum="100"
-                            Minimum="0"
-                            StepFrequency="1"
-                            Value="{x:Bind ViewModel.Appearance.BackdropOpacity, Mode=TwoWay}" />
-                    </controls:SettingsCard>
-
-                    <controls:SettingsCard x:Uid="Settings_GeneralPage_UseAcrylic_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xEF20;}">
-                        <ToggleSwitch IsOn="{x:Bind ViewModel.Appearance.UseAcrylic, Mode=TwoWay}" />
-                    </controls:SettingsCard>
 
                     <!--  'Behavior' section  -->
 

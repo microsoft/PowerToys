@@ -296,12 +296,12 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
         }
     }
 
-    public bool UseAcrylic
+    public int BackdropStyleIndex
     {
-        get => _settings.BackdropStyle == BackdropStyle.Acrylic;
+        get => (int)_settings.BackdropStyle;
         set
         {
-            var newStyle = value ? BackdropStyle.Acrylic : BackdropStyle.Clear;
+            var newStyle = (BackdropStyle)value;
             if (_settings.BackdropStyle != newStyle)
             {
                 _settings.BackdropStyle = newStyle;
@@ -314,7 +314,9 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
     }
 
     public BackdropStyle? EffectiveBackdropStyle =>
-        _settings.BackdropStyle == BackdropStyle.Clear || _settings.BackdropOpacity < 100
+        _settings.BackdropStyle == BackdropStyle.Clear ||
+        _settings.BackdropStyle == BackdropStyle.Mica ||
+        _settings.BackdropOpacity < 100
             ? _settings.BackdropStyle
             : null;
 
@@ -428,7 +430,7 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
         BackgroundImageFit = BackgroundImageFit.UniformToFill;
         BackgroundImageOpacity = 100;
         BackdropOpacity = 100;
-        UseAcrylic = true;
+        BackdropStyleIndex = (int)BackdropStyle.Acrylic;
 
         // For color modes, full intensity; for image mode, no tint overlay
         ColorIntensity = ColorizationMode == ColorizationMode.Image ? 0 : 100;
