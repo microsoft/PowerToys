@@ -104,6 +104,66 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             }
         }
     }
+    else if (action == RUN_AS_USER || action == RUN_AS_ADMIN)
+    {
+        // Handle "Run as different user" and "Run as administrator" actions.
+        // This is used by Command Palette to work around WinUI3/MSIX packaging limitations
+        // where ShellExecute with "runasuser"/"runas" verbs doesn't work properly from packaged apps.
+        int nextArg = 2;
+
+        std::wstring_view target;
+        std::wstring_view workingDir;
+
+        while (nextArg < nArgs)
+        {
+            if (std::wstring_view(args[nextArg]) == L"-target" && nextArg + 1 < nArgs)
+            {
+                target = args[nextArg + 1];
+                nextArg += 2;
+            }
+            else if (std::wstring_view(args[nextArg]) == L"-workingDir" && nextArg + 1 < nArgs)
+            {
+                workingDir = args[nextArg + 1];
+                nextArg += 2;
+            }
+            else
+            {
+                nextArg++;
+            }
+        }
+
+        if (target.empty())
+        {
+            Logger::error(L"ActionRunner: {} called without -target argument", action);
+            return 1;
+        }
+
+        Logger::trace(L"ActionRunner: {} target='{}' workingDir='{}'", action, target, workingDir);
+
+        SHELLEXECUTEINFOW sei = { sizeof(sei) };
+        sei.fMask = SEE_MASK_FLAG_NO_UI;
+        sei.lpFile = target.data();
+        sei.lpDirectory = workingDir.empty() ? nullptr : workingDir.data();
+        sei.lpVerb = (action == RUN_AS_ADMIN) ? L"runas" : L"runasuser";
+        sei.nShow = SW_SHOWNORMAL;
+
+        if (!ShellExecuteExW(&sei))
+        {
+            DWORD error = GetLastError();
+            if (error == ERROR_CANCELLED)
+            {
+                // User cancelled the UAC/credential dialog - this is expected behavior
+                Logger::trace(L"ActionRunner: User cancelled {} dialog for '{}'", action, target);
+            }
+            else
+            {
+                Logger::error(L"ActionRunner: ShellExecuteEx failed for {} '{}': error {}", action, target, error);
+            }
+            return static_cast<int>(error);
+        }
+
+        Logger::trace(L"ActionRunner: Successfully launched '{}' with {}", target, action);
+    }
 
     return 0;
 }
