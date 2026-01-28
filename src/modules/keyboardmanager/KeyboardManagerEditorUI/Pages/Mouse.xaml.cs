@@ -775,6 +775,8 @@ namespace KeyboardManagerEditorUI.Pages
                 "Middle" => 2,
                 "X1" => 3,
                 "X2" => 4,
+                "ScrollUp" => 5,
+                "ScrollDown" => 6,
                 _ => 0,
             };
         }
@@ -788,6 +790,8 @@ namespace KeyboardManagerEditorUI.Pages
                 2 => "Middle",
                 3 => "X1",
                 4 => "X2",
+                5 => "ScrollUp",
+                6 => "ScrollDown",
                 _ => "Left",
             };
         }

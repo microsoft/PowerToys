@@ -117,4 +117,8 @@ namespace KeyboardManagerConstants
 
     // Flag used for distinguishing mouse events sent by Keyboard Manager
     inline const ULONG_PTR KEYBOARDMANAGER_MOUSE_FLAG = 0x1011;
+
+    // Scroll wheel rate limiting: minimum milliseconds between scroll remap triggers
+    // This prevents infinite scroll wheels from spamming remapped actions
+    inline const int SCROLL_WHEEL_DEBOUNCE_MS = 100;
 }

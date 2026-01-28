@@ -433,6 +433,12 @@
   <data name="MousePage_MouseButton_X2.Content" xml:space="preserve">
     <value>X2 (Forward)</value>
   </data>
+  <data name="MousePage_MouseButton_ScrollUp.Content" xml:space="preserve">
+    <value>Scroll Up</value>
+  </data>
+  <data name="MousePage_MouseButton_ScrollDown.Content" xml:space="preserve">
+    <value>Scroll Down</value>
+  </data>
   <data name="MousePage_ValidationError.Title" xml:space="preserve">
     <value>Validation Error</value>
   </data>

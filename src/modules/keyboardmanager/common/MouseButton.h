@@ -11,7 +11,9 @@ enum class MouseButton : DWORD
     Right = 1,
     Middle = 2,
     X1 = 3,  // Back button
-    X2 = 4   // Forward button
+    X2 = 4,  // Forward button
+    ScrollUp = 5,
+    ScrollDown = 6
 };
 
 namespace MouseButtonHelpers
@@ -39,6 +41,12 @@ namespace MouseButtonHelpers
             else if (HIWORD(mouseData) == XBUTTON2)
                 return MouseButton::X2;
             return std::nullopt;
+        case WM_MOUSEWHEEL:
+            // HIWORD of mouseData contains wheel delta (positive = up, negative = down)
+            if (static_cast<short>(HIWORD(mouseData)) > 0)
+                return MouseButton::ScrollUp;
+            else
+                return MouseButton::ScrollDown;
         default:
             return std::nullopt;
         }
@@ -53,6 +61,7 @@ namespace MouseButtonHelpers
         case WM_RBUTTONDOWN:
         case WM_MBUTTONDOWN:
         case WM_XBUTTONDOWN:
+        case WM_MOUSEWHEEL:  // Scroll events are treated as "down" events (one-shot)
             return true;
         default:
             return false;
@@ -74,6 +83,12 @@ namespace MouseButtonHelpers
         }
     }
 
+    // Check if a button is a scroll wheel event (no up/down semantics)
+    inline constexpr bool IsScrollWheelButton(MouseButton button)
+    {
+        return button == MouseButton::ScrollUp || button == MouseButton::ScrollDown;
+    }
+
     // Get the display name for a mouse button (for UI)
     inline std::wstring GetMouseButtonName(MouseButton button)
     {
@@ -89,6 +104,10 @@ namespace MouseButtonHelpers
             return L"X1 (Back)";
         case MouseButton::X2:
             return L"X2 (Forward)";
+        case MouseButton::ScrollUp:
+            return L"Scroll Up";
+        case MouseButton::ScrollDown:
+            return L"Scroll Down";
         default:
             return L"Unknown";
         }
@@ -109,6 +128,10 @@ namespace MouseButtonHelpers
             return L"X1";
         case MouseButton::X2:
             return L"X2";
+        case MouseButton::ScrollUp:
+            return L"ScrollUp";
+        case MouseButton::ScrollDown:
+            return L"ScrollDown";
         default:
             return L"";
         }
@@ -127,6 +150,10 @@ namespace MouseButtonHelpers
             return MouseButton::X1;
         else if (str == L"X2")
             return MouseButton::X2;
+        else if (str == L"ScrollUp")
+            return MouseButton::ScrollUp;
+        else if (str == L"ScrollDown")
+            return MouseButton::ScrollDown;
         return std::nullopt;
     }
 
@@ -144,6 +171,9 @@ namespace MouseButtonHelpers
         case MouseButton::X1:
         case MouseButton::X2:
             return MOUSEEVENTF_XDOWN;
+        case MouseButton::ScrollUp:
+        case MouseButton::ScrollDown:
+            return MOUSEEVENTF_WHEEL;
         default:
             return 0;
         }
@@ -163,18 +193,25 @@ namespace MouseButtonHelpers
         case MouseButton::X1:
         case MouseButton::X2:
             return MOUSEEVENTF_XUP;
+        case MouseButton::ScrollUp:
+        case MouseButton::ScrollDown:
+            return 0;  // Scroll wheel doesn't have up/down events
         default:
             return 0;
         }
     }
 
-    // Get the mouseData value for X buttons (used with SendInput)
+    // Get the mouseData value for X buttons and scroll wheel (used with SendInput)
     inline DWORD GetXButtonData(MouseButton button)
     {
         if (button == MouseButton::X1)
             return XBUTTON1;
         else if (button == MouseButton::X2)
             return XBUTTON2;
+        else if (button == MouseButton::ScrollUp)
+            return static_cast<DWORD>(WHEEL_DELTA);  // Positive for scroll up
+        else if (button == MouseButton::ScrollDown)
+            return static_cast<DWORD>(-WHEEL_DELTA);  // Negative for scroll down
         return 0;
     }
 }

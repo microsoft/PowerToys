@@ -1802,6 +1802,10 @@ namespace KeyboardEventHandlers
         return 1;
     }
 
+    // Static variables for scroll wheel debouncing
+    static std::chrono::steady_clock::time_point lastScrollUpTime;
+    static std::chrono::steady_clock::time_point lastScrollDownTime;
+
     // Function to handle a mouse button remap
     intptr_t HandleMouseButtonRemapEvent(KeyboardManagerInput::InputInterface& ii, MouseButton button, bool isButtonDown, State& state) noexcept
     {
@@ -1809,6 +1813,28 @@ namespace KeyboardEventHandlers
         if (!remapping)
         {
             return 0;
+        }
+
+        // Scroll wheel events are one-shot (no up/down pairs), so only process on "down"
+        // For regular buttons, we process both down and up events
+        const bool isScrollWheel = MouseButtonHelpers::IsScrollWheelButton(button);
+        if (isScrollWheel && !isButtonDown)
+        {
+            return 0;  // Scroll wheel has no "up" event
+        }
+
+        // Rate limiting for scroll wheel to prevent infinite scroll wheels from spamming
+        if (isScrollWheel)
+        {
+            auto now = std::chrono::steady_clock::now();
+            auto& lastTime = (button == MouseButton::ScrollUp) ? lastScrollUpTime : lastScrollDownTime;
+            auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - lastTime).count();
+            
+            if (elapsed < KeyboardManagerConstants::SCROLL_WHEEL_DEBOUNCE_MS)
+            {
+                return 1;  // Suppress but don't remap (within debounce window)
+            }
+            lastTime = now;
         }
 
         Logger::info(L"Mouse {} -> remap ({})", static_cast<int>(button), isButtonDown ? L"down" : L"up");
@@ -1952,6 +1978,13 @@ namespace KeyboardEventHandlers
 
         MouseButton targetButton = remapping.value();
         bool isKeyDown = (data->wParam == WM_KEYDOWN || data->wParam == WM_SYSKEYDOWN);
+
+        // Scroll wheel events are one-shot, only trigger on key down
+        const bool isScrollWheel = MouseButtonHelpers::IsScrollWheelButton(targetButton);
+        if (isScrollWheel && !isKeyDown)
+        {
+            return 1;  // Suppress key up but don't send scroll
+        }
         
         Logger::info(L"Key {} -> Mouse {} ({})", keyCode, static_cast<int>(targetButton), isKeyDown ? L"down" : L"up");
 
@@ -1979,6 +2012,14 @@ namespace KeyboardEventHandlers
         case MouseButton::X2:
             mouseInput.mi.dwFlags = isKeyDown ? MOUSEEVENTF_XDOWN : MOUSEEVENTF_XUP;
             mouseInput.mi.mouseData = XBUTTON2;
+            break;
+        case MouseButton::ScrollUp:
+            mouseInput.mi.dwFlags = MOUSEEVENTF_WHEEL;
+            mouseInput.mi.mouseData = WHEEL_DELTA;
+            break;
+        case MouseButton::ScrollDown:
+            mouseInput.mi.dwFlags = MOUSEEVENTF_WHEEL;
+            mouseInput.mi.mouseData = static_cast<DWORD>(-WHEEL_DELTA);
             break;
         }
 
@@ -2044,6 +2085,27 @@ namespace KeyboardEventHandlers
         if (buttonIt == appIt->second.end())
         {
             return 0;
+        }
+
+        // Scroll wheel events are one-shot (no up/down pairs), so only process on "down"
+        const bool isScrollWheel = MouseButtonHelpers::IsScrollWheelButton(button);
+        if (isScrollWheel && !isButtonDown)
+        {
+            return 0;  // Scroll wheel has no "up" event
+        }
+
+        // Rate limiting for scroll wheel to prevent infinite scroll wheels from spamming
+        if (isScrollWheel)
+        {
+            auto now = std::chrono::steady_clock::now();
+            auto& lastTime = (button == MouseButton::ScrollUp) ? lastScrollUpTime : lastScrollDownTime;
+            auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - lastTime).count();
+            
+            if (elapsed < KeyboardManagerConstants::SCROLL_WHEEL_DEBOUNCE_MS)
+            {
+                return 1;  // Suppress but don't remap (within debounce window)
+            }
+            lastTime = now;
         }
 
         Logger::info(L"App-specific Mouse {} -> remap for {} ({})", static_cast<int>(button), process_name, isButtonDown ? L"down" : L"up");
@@ -2195,6 +2257,13 @@ namespace KeyboardEventHandlers
 
         MouseButton targetButton = keyIt->second;
         bool isKeyDown = (data->wParam == WM_KEYDOWN || data->wParam == WM_SYSKEYDOWN);
+
+        // Scroll wheel events are one-shot, only trigger on key down
+        const bool isScrollWheel = MouseButtonHelpers::IsScrollWheelButton(targetButton);
+        if (isScrollWheel && !isKeyDown)
+        {
+            return 1;  // Suppress key up but don't send scroll
+        }
         
         Logger::info(L"App-specific Key {} -> Mouse {} for {} ({})", keyCode, static_cast<int>(targetButton), process_name, isKeyDown ? L"down" : L"up");
 
@@ -2222,6 +2291,14 @@ namespace KeyboardEventHandlers
         case MouseButton::X2:
             mouseInput.mi.dwFlags = isKeyDown ? MOUSEEVENTF_XDOWN : MOUSEEVENTF_XUP;
             mouseInput.mi.mouseData = XBUTTON2;
+            break;
+        case MouseButton::ScrollUp:
+            mouseInput.mi.dwFlags = MOUSEEVENTF_WHEEL;
+            mouseInput.mi.mouseData = WHEEL_DELTA;
+            break;
+        case MouseButton::ScrollDown:
+            mouseInput.mi.dwFlags = MOUSEEVENTF_WHEEL;
+            mouseInput.mi.mouseData = static_cast<DWORD>(-WHEEL_DELTA);
             break;
         }
 
