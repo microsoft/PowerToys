@@ -231,7 +231,7 @@ jobs:
     - template: .\steps-restore-nuget.yml
 
   # VS2026 doesn't need VCToolsVersion workaround - let MSBuild auto-select toolset
-  - ${{ if ne(parameters.useVS2026, true) }}:
+  - ${{ if eq(parameters.useVS2026, false) }}:
     - pwsh: |-
         & "$(build.sourcesdirectory)\.pipelines\verifyAndSetLatestVCToolsVersion.ps1"
       displayName: Work around DD-1541167 (VCToolsVersion)
