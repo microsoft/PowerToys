@@ -247,6 +247,9 @@
                             <ComboBoxItem>MP4</ComboBoxItem>
                         </ComboBox>
                     </tkcontrols:SettingsCard>
+                    <tkcontrols:SettingsCard Name="ZoomItRecordCaptureSystemAudio" x:Uid="ZoomIt_Record_CaptureSystemAudio">
+                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.RecordCaptureSystemAudio, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
                     <tkcontrols:SettingsCard Name="ZoomItRecordCaptureAudio" x:Uid="ZoomIt_Record_CaptureAudio">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.RecordCaptureAudio, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>

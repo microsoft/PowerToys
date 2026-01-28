@@ -4601,17 +4601,13 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
                     UpdateWindow(hTimeline);
                 }
             }
-<<<<<<< HEAD
+
             // Show time relative to left grip (trimStart)
             {
                 const auto relativePos = winrt::TimeSpan{ (std::max)(pData->currentPosition.count() - pData->trimStart.count(), int64_t{ 0 }) };
                 SetTimeText(hDlg, IDC_TRIM_POSITION_LABEL, relativePos, true);
             }
             
-=======
-            SetTimeText(hDlg, IDC_TRIM_POSITION_LABEL, pData->currentPosition, true);
-
->>>>>>> 906538437 (Compilation fixes)
             if (elapsedMs >= frameDurationMs)
             {
                 // Time to advance to next frame
