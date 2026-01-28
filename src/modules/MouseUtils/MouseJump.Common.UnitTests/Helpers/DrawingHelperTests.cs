@@ -143,7 +143,7 @@ public static class DrawingHelperTests
                     var actualPixel = actual.GetPixel(x, y);
 
                     // allow a small tolerance for rounding differences in gdi
-                    // using a tolerance of 3 for support of minor differences in Windows Server 2025 CI 
+                    // using a tolerance of 3 for support of minor differences in Windows Server 2025 CI
                     Assert.IsTrue(
                         (Math.Abs(expectedPixel.A - actualPixel.A) <= 3) &&
                         (Math.Abs(expectedPixel.R - actualPixel.R) <= 3) &&
