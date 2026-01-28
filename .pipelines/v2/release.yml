@@ -33,9 +33,9 @@ parameters:
       - x64
       - arm64
 
-  - name: useVSPreview
+  - name: useVS2026
     type: boolean
-    displayName: "Build Using Visual Studio Preview"
+    displayName: "Build with VS2026"
     default: false
 
 name: $(BuildDefinitionName)_$(date:yyMM).$(date:dd)$(rev:rrr)
@@ -50,8 +50,8 @@ extends:
     - 1ES.PT.ViaStartRight
     pool:
       name: SHINE-INT-S
-      ${{ if eq(parameters.useVSPreview, true) }}:
-        demands: ImageOverride -equals SHINE-VS17-Preview
+      ${{ if eq(parameters.useVS2026, true) }}:
+        demands: ImageOverride -equals SHINE-VS18-Latest
       os: windows
     sdl:
       tsa:
@@ -73,8 +73,8 @@ extends:
                 name: SHINE-INT-L
                 demands:
                   # Our INT agents have a large disk mounted at P:\
-                  - ${{ if eq(parameters.useVSPreview, true) }}:
-                    - ImageOverride -equals SHINE-VS17-Preview
+                  - ${{ if eq(parameters.useVS2026, true) }}:
+                    - ImageOverride -equals SHINE-VS18-Latest
                 os: windows
               variables:
                 IsPipeline: 1 # The installer uses this to detect whether it should pick up localizations

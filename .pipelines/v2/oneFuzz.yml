@@ -18,9 +18,9 @@ parameters:
     type: boolean
     displayName: "Enable MSBuild Caching"
     default: false
-  - name: useVSPreview
+  - name: useVS2026
     type: boolean
-    displayName: "Build Using Visual Studio Preview"
+    displayName: "Build with VS2026"
     default: false
 
 stages:
@@ -34,15 +34,15 @@ stages:
               name: SHINE-INT-L
             ${{ else }}:
               name: SHINE-OSS-L
-            ${{ if eq(parameters.useVSPreview, true) }}:
-              demands: ImageOverride -equals SHINE-VS17-Preview
+            ${{ if eq(parameters.useVS2026, true) }}:
+              demands: ImageOverride -equals SHINE-VS18-Latest
           buildPlatforms:
             - ${{ parameters.platform }}
           buildConfigurations: [Release]
           enablePackageCaching: true
           enableMsBuildCaching: ${{ parameters.enableMsBuildCaching }}
           runTests: true
-          useVSPreview: ${{ parameters.useVSPreview }}
+          useVS2026: ${{ parameters.useVS2026 }}
           timeoutInMinutes: 90
 
   - stage: OneFuzz

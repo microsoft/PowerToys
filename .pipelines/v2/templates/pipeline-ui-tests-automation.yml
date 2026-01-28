@@ -13,7 +13,7 @@ parameters:
   - name: enableMsBuildCaching
     type: boolean
     default: false
-  - name: useVSPreview
+  - name: useVS2026
     type: boolean
     default: false
   - name: useLatestWebView2
@@ -43,7 +43,7 @@ stages:
         parameters:
           platform: ${{ platform }}
           enableMsBuildCaching: ${{ parameters.enableMsBuildCaching }}
-          useVSPreview: ${{ parameters.useVSPreview }}
+          useVS2026: ${{ parameters.useVS2026 }}
           useLatestWebView2: ${{ parameters.useLatestWebView2 }}
           uiTestModules: ${{ parameters.uiTestModules }}
 

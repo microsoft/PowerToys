@@ -19,7 +19,7 @@ parameters:
   - name: runTests
     type: boolean
     default: true
-  - name: useVSPreview
+  - name: useVS2026
     type: boolean
     default: false
   - name: useLatestWebView2
@@ -48,8 +48,8 @@ stages:
                 name: SHINE-INT-L
               ${{ else }}:
                 name: SHINE-OSS-L
-              ${{ if eq(parameters.useVSPreview, true) }}:
-                demands: ImageOverride -equals SHINE-VS17-Preview
+              ${{ if eq(parameters.useVS2026, true) }}:
+                demands: ImageOverride -equals SHINE-VS18-Latest
             buildPlatforms:
               - ${{ platform }}
             buildConfigurations: [Release]
@@ -57,7 +57,7 @@ stages:
             enableMsBuildCaching: ${{ parameters.enableMsBuildCaching }}
             msBuildCacheIsReadOnly: ${{ parameters.msBuildCacheIsReadOnly }}
             runTests: ${{ parameters.runTests }}
-            useVSPreview: ${{ parameters.useVSPreview }}
+            useVS2026: ${{ parameters.useVS2026 }}
             useLatestWinAppSDK: ${{ parameters.useLatestWinAppSDK }}
             ${{ if eq(parameters.useLatestWinAppSDK, true) }}:
               winAppSDKVersionNumber: ${{ parameters.winAppSDKVersionNumber }}
@@ -75,8 +75,8 @@ stages:
               name: SHINE-INT-L
             ${{ else }}:
               name: SHINE-OSS-L
-            ${{ if eq(parameters.useVSPreview, true) }}:
-              demands: ImageOverride -equals SHINE-VS17-Preview
+            ${{ if eq(parameters.useVS2026, true) }}:
+              demands: ImageOverride -equals SHINE-VS18-Latest
           buildConfigurations: [Release]
           official: false
           codeSign: false

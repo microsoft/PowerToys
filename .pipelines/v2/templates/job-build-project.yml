@@ -59,7 +59,7 @@ parameters:
   - name: buildTests
     type: boolean
     default: true
-  - name: useVSPreview
+  - name: useVS2026
     type: boolean
     default: false
   - name: versionNumber
@@ -233,9 +233,9 @@ jobs:
   - pwsh: |-
       & "$(build.sourcesdirectory)\.pipelines\verifyAndSetLatestVCToolsVersion.ps1"
     displayName: Work around DD-1541167 (VCToolsVersion)
-    ${{ if eq(parameters.useVSPreview, true) }}:
+    ${{ if eq(parameters.useVS2026, true) }}:
       env:
-        VCWhereExtraVersionTarget: '-prerelease'
+        VCWhereExtraVersionTarget: '-version [18.0,19.0)'
 
   - ${{ if eq(parameters.official, true) }}:
     - template: .\steps-setup-versioning.yml
