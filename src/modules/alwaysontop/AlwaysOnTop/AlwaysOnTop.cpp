@@ -623,43 +623,10 @@ HWND AlwaysOnTop::ResolveTransparencyTargetWindow(HWND window)
         return nullptr;
     }
 
-    // Authorization: only allow if the ORIGINAL selection is tracked/pinned
-    if (!IsTracked(window) && !IsPinned(window))
+    // Only allow transparency changes on pinned windows
+    if (!IsPinned(window))
     {
         return nullptr;
-    }
-
-    const HWND desktop = GetDesktopWindow();
-    const HWND shell = GetShellWindow();
-
-    auto isBad = [&](HWND h) {
-        return !h || !IsWindow(h) || h == desktop || h == shell;
-    };
-
-    // Candidates
-    HWND rootOwner = GetAncestor(window, GA_ROOTOWNER);
-    HWND root = GetAncestor(window, GA_ROOT);
-
-    // Prefer a non-bad candidate. Visible is a preference, not a hard gate.
-    if (!isBad(rootOwner) && IsWindowVisible(rootOwner))
-    {
-        return rootOwner;
-    }
-
-    if (!isBad(root) && IsWindowVisible(root))
-    {
-        return root;
-    }
-
-    // If both are not visible but still valid, prefer rootOwner/root over the original.
-    if (!isBad(rootOwner))
-    {
-        return rootOwner;
-    }
-
-    if (!isBad(root))
-    {
-        return root;
     }
 
     return window;
