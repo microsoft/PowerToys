@@ -41,7 +41,7 @@ Tip: Add `D:\PowerToys\tools\build` to your PATH to use the wrappers anywhere.
   - `build.<configuration>.<platform>.trace.binlog` — open with MSBuild Structured Log Viewer
 - VS environment init:
   - Scripts try DevShell first (`Microsoft.VisualStudio.DevShell.dll` / `Enter-VsDevShell`), then fall back to `VsDevCmd.bat`.
-  - If VS isn’t found, run from “Developer PowerShell for VS 2022”, or ensure `vswhere.exe` exists under `Program Files (x86)\Microsoft Visual Studio\Installer`.
+  - If VS isn't found, run from "Developer PowerShell for VS 2022" or "Developer PowerShell for VS", or ensure `vswhere.exe` exists under `Program Files (x86)\Microsoft Visual Studio\Installer`.
 
 ## Notes
 - Override platform explicitly with `-Platform x64|arm64` if needed.
