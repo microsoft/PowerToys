@@ -27,133 +27,177 @@ namespace Microsoft.PowerToys.Settings.UI
             var bootTime = new System.Diagnostics.Stopwatch();
             bootTime.Start();
 
-            this.Activated += Window_Activated_SetIcon;
-
-            App.ThemeService.ThemeChanged += OnThemeChanged;
-            App.ThemeService.ApplyTheme();
-
+            // Initialize UI components immediately for faster visual feedback
+            this.InitializeComponent();
             this.ExtendsContentIntoTitleBar = true;
+            SetAppTitleBar();
 
+            // Set up critical event handlers
+            this.Activated += Window_Activated_SetIcon;
+            App.ThemeService.ThemeChanged += OnThemeChanged;
+
+            // Set elevation status immediately (required for UI)
             ShellPage.SetElevationStatus(App.IsElevated);
             ShellPage.SetIsUserAnAdmin(App.IsUserAnAdmin);
 
+            // Apply theme immediately
+            App.ThemeService.ApplyTheme();
+
+            // Set window title immediately
+            var loader = ResourceLoaderInstance.ResourceLoader;
+            Title = App.IsElevated ? loader.GetString("SettingsWindow_AdminTitle") : loader.GetString("SettingsWindow_Title");
+
+            // Handle window visibility
             var hWnd = WindowNative.GetWindowHandle(this);
-            var placement = WindowHelper.DeserializePlacementOrDefault(hWnd);
             if (createHidden)
             {
-                placement.ShowCmd = NativeMethods.SW_HIDE;
+                var placement = new WINDOWPLACEMENT
+                {
+                    ShowCmd = NativeMethods.SW_HIDE,
+                };
+                NativeMethods.SetWindowPlacement(hWnd, ref placement);
 
                 // Restore the last known placement on the first activation
                 this.Activated += Window_Activated;
             }
 
-            NativeMethods.SetWindowPlacement(hWnd, ref placement);
+            // Initialize remaining components asynchronously
+            _ = InitializeAsync(hWnd, createHidden, bootTime);
+        }
 
-            var loader = ResourceLoaderInstance.ResourceLoader;
-            Title = App.IsElevated ? loader.GetString("SettingsWindow_AdminTitle") : loader.GetString("SettingsWindow_Title");
-
-            // send IPC Message
-            ShellPage.SetDefaultSndMessageCallback(msg =>
+        private async Task InitializeAsync(IntPtr hWnd, bool createHidden, System.Diagnostics.Stopwatch bootTime)
+        {
+            try
             {
-                // IPC Manager is null when launching runner directly
-                App.GetTwoWayIPCManager()?.Send(msg);
-            });
-
-            // send IPC Message
-            ShellPage.SetRestartAdminSndMessageCallback(msg =>
-            {
-                App.GetTwoWayIPCManager()?.Send(msg);
-                Environment.Exit(0); // close application
-            });
-
-            // send IPC Message
-            ShellPage.SetCheckForUpdatesMessageCallback(msg =>
-            {
-                App.GetTwoWayIPCManager()?.Send(msg);
-            });
-
-            // open main window
-            ShellPage.SetOpenMainWindowCallback(type =>
-            {
-                DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal, () =>
-                     App.OpenSettingsWindow(type));
-            });
-
-            // open main window
-            ShellPage.SetUpdatingGeneralSettingsCallback((ModuleType moduleType, bool isEnabled) =>
-            {
-                SettingsRepository<GeneralSettings> repository = SettingsRepository<GeneralSettings>.GetInstance(SettingsUtils.Default);
-                GeneralSettings generalSettingsConfig = repository.SettingsConfig;
-                bool needToUpdate = ModuleHelper.GetIsModuleEnabled(generalSettingsConfig, moduleType) != isEnabled;
-
-                if (needToUpdate)
+                // Load window placement asynchronously (non-blocking file I/O)
+                if (!createHidden)
                 {
-                    ModuleHelper.SetIsModuleEnabled(generalSettingsConfig, moduleType, isEnabled);
-                    var outgoing = new OutGoingGeneralSettings(generalSettingsConfig);
-
-                    // Save settings to file
-                    SettingsUtils.Default.SaveSettings(generalSettingsConfig.ToJsonString());
-
-                    // Send IPC message asynchronously to avoid blocking UI and potential recursive calls
-                    Task.Run(() =>
+                    await Task.Run(() =>
                     {
-                        ShellPage.SendDefaultIPCMessage(outgoing.ToString());
+                        var placement = WindowHelper.DeserializePlacementOrDefault(hWnd);
+                        NativeMethods.SetWindowPlacement(hWnd, ref placement);
+                    });
+                }
+
+                // Set up IPC callbacks on UI thread
+                DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal, () =>
+                {
+                    // send IPC Message
+                    ShellPage.SetDefaultSndMessageCallback(msg =>
+                    {
+                        // Use SendIPCMessage which handles queuing if IPC is not yet initialized
+                        App.SendIPCMessage(msg);
                     });
 
-                    ShellPage.ShellHandler?.SignalGeneralDataUpdate();
-                }
-
-                return needToUpdate;
-            });
-
-            // open oobe
-            ShellPage.SetOpenOobeCallback(() =>
-            {
-                if (App.GetOobeWindow() == null)
-                {
-                    App.SetOobeWindow(new OobeWindow(OOBE.Enums.PowerToysModules.Overview));
-                }
-
-                App.GetOobeWindow().Activate();
-            });
-
-            // open whats new window
-            ShellPage.SetOpenWhatIsNewCallback(() =>
-            {
-                if (App.GetScoobeWindow() == null)
-                {
-                    App.SetScoobeWindow(new ScoobeWindow());
-                }
-
-                App.GetScoobeWindow().Activate();
-            });
-
-            this.InitializeComponent();
-            SetAppTitleBar();
-
-            // receive IPC Message
-            App.IPCMessageReceivedCallback = (string msg) =>
-            {
-                if (ShellPage.ShellHandler.IPCResponseHandleList != null)
-                {
-                    var success = JsonObject.TryParse(msg, out JsonObject json);
-                    if (success)
+                    // send IPC Message
+                    ShellPage.SetRestartAdminSndMessageCallback(msg =>
                     {
-                        foreach (Action<JsonObject> handle in ShellPage.ShellHandler.IPCResponseHandleList)
+                        App.SendIPCMessage(msg);
+                        Environment.Exit(0); // close application
+                    });
+
+                    // send IPC Message
+                    ShellPage.SetCheckForUpdatesMessageCallback(msg =>
+                    {
+                        App.SendIPCMessage(msg);
+                    });
+
+                    // open main window
+                    ShellPage.SetOpenMainWindowCallback(type =>
+                    {
+                        DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal, () =>
+                             App.OpenSettingsWindow(type));
+                    });
+
+                    // open main window
+                    ShellPage.SetUpdatingGeneralSettingsCallback((ModuleType moduleType, bool isEnabled) =>
+                    {
+                        SettingsRepository<GeneralSettings> repository = SettingsRepository<GeneralSettings>.GetInstance(SettingsUtils.Default);
+                        GeneralSettings generalSettingsConfig = repository.SettingsConfig;
+                        bool needToUpdate = ModuleHelper.GetIsModuleEnabled(generalSettingsConfig, moduleType) != isEnabled;
+
+                        if (needToUpdate)
                         {
-                            handle(json);
+                            ModuleHelper.SetIsModuleEnabled(generalSettingsConfig, moduleType, isEnabled);
+                            var outgoing = new OutGoingGeneralSettings(generalSettingsConfig);
+
+                            // Save settings to file
+                            SettingsUtils.Default.SaveSettings(generalSettingsConfig.ToJsonString());
+
+                            // Send IPC message asynchronously to avoid blocking UI and potential recursive calls
+                            Task.Run(() =>
+                            {
+                                ShellPage.SendDefaultIPCMessage(outgoing.ToString());
+                            });
+
+                            ShellPage.ShellHandler?.SignalGeneralDataUpdate();
                         }
-                    }
-                    else
+
+                        return needToUpdate;
+                    });
+
+                    // open oobe
+                    ShellPage.SetOpenOobeCallback(() =>
                     {
-                        Logger.LogError("Failed to parse JSON from IPC message.");
-                    }
-                }
-            };
+                        if (App.GetOobeWindow() == null)
+                        {
+                            App.SetOobeWindow(new OobeWindow(OOBE.Enums.PowerToysModules.Overview));
+                        }
 
-            bootTime.Stop();
+                        App.GetOobeWindow().Activate();
+                    });
 
-            PowerToysTelemetry.Log.WriteEvent(new SettingsBootEvent() { BootTimeMs = bootTime.ElapsedMilliseconds });
+                    // open whats new window
+                    ShellPage.SetOpenWhatIsNewCallback(() =>
+                    {
+                        if (App.GetScoobeWindow() == null)
+                        {
+                            App.SetScoobeWindow(new ScoobeWindow());
+                        }
+
+                        App.GetScoobeWindow().Activate();
+                    });
+
+                    // receive IPC Message
+                    App.IPCMessageReceivedCallback = (string msg) =>
+                    {
+                        // Ignore empty or whitespace-only messages
+                        if (string.IsNullOrWhiteSpace(msg))
+                        {
+                            return;
+                        }
+
+                        if (ShellPage.ShellHandler.IPCResponseHandleList != null)
+                        {
+                            var success = JsonObject.TryParse(msg, out JsonObject json);
+                            if (success)
+                            {
+                                foreach (Action<JsonObject> handle in ShellPage.ShellHandler.IPCResponseHandleList)
+                                {
+                                    handle(json);
+                                }
+                            }
+                            else
+                            {
+                                // Log with message preview for debugging (limit to 100 chars to avoid log spam)
+                                var msgPreview = msg.Length > 100 ? string.Concat(msg.AsSpan(0, 100), "...") : msg;
+                                Logger.LogError($"Failed to parse JSON from IPC message. Message preview: {msgPreview}");
+                            }
+                        }
+                    };
+                });
+
+                // Record telemetry asynchronously
+                bootTime.Stop();
+                await Task.Run(() =>
+                {
+                    PowerToysTelemetry.Log.WriteEvent(new SettingsBootEvent() { BootTimeMs = bootTime.ElapsedMilliseconds });
+                });
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Error during async initialization: {ex.Message}");
+            }
         }
 
         private void SetAppTitleBar()

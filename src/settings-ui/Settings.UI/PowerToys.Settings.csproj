@@ -18,6 +18,19 @@
 		<OutputPath>..\..\..\$(Platform)\$(Configuration)\WinUI3Apps</OutputPath>
 		<!-- MRT from windows app sdk will search for a pri file with the same name of the module before defaulting to resources.pri -->
 		<ProjectPriFileName>PowerToys.Settings.pri</ProjectPriFileName>
+
+		<!-- .NET Performance Optimizations -->
+		<TieredCompilation>true</TieredCompilation>
+		<TieredCompilationQuickJit>true</TieredCompilationQuickJit>
+		<PublishReadyToRun>true</PublishReadyToRun>
+		<ReadyToRunUseCrossgen2>true</ReadyToRunUseCrossgen2>
+	</PropertyGroup>
+
+	<!-- Additional optimizations for Release builds -->
+	<PropertyGroup Condition="'$(Configuration)' == 'Release'">
+		<IlcOptimizationPreference>Speed</IlcOptimizationPreference>
+		<DebugType>none</DebugType>
+		<DebugSymbols>false</DebugSymbols>
 	</PropertyGroup>
 	<ItemGroup>
 		<None Remove="Assets\Settings\Icons\Models\Azure.svg" />

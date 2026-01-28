@@ -49,8 +49,12 @@ namespace Microsoft.PowerToys.Settings.UI
 
         private const int RequiredArgumentsLaunchedFromRunnerQty = 10;
 
+        // IPC message queue for messages sent before IPC manager is initialized
+        private static readonly System.Collections.Concurrent.ConcurrentQueue<string> PendingIPCMessages = new System.Collections.Concurrent.ConcurrentQueue<string>();
+
         // Create an instance of the  IPC wrapper.
         private static TwoWayPipeMessageIPCManaged ipcmanager;
+        private static bool isIPCInitialized;
 
         public static bool IsElevated { get; set; }
 
@@ -207,19 +211,37 @@ namespace Microsoft.PowerToys.Settings.UI
                 Environment.Exit(0);
             });
 
-            ipcmanager = new TwoWayPipeMessageIPCManaged(cmdArgs[(int)Arguments.SettingsPipeName], cmdArgs[(int)Arguments.PTPipeName], (string message) =>
+            // Initialize IPC manager asynchronously to avoid blocking window creation
+            string settingsPipeName = cmdArgs[(int)Arguments.SettingsPipeName];
+            string ptPipeName = cmdArgs[(int)Arguments.PTPipeName];
+            _ = Task.Run(() =>
             {
-                if (IPCMessageReceivedCallback != null && message.Length > 0)
+                try
                 {
-                    IPCMessageReceivedCallback(message);
-                }
-            });
-            ipcmanager.Start();
+                    ipcmanager = new TwoWayPipeMessageIPCManaged(settingsPipeName, ptPipeName, (string message) =>
+                    {
+                        if (IPCMessageReceivedCallback != null && message.Length > 0)
+                        {
+                            IPCMessageReceivedCallback(message);
+                        }
+                    });
+                    ipcmanager.Start();
 
-            GlobalHotkeyConflictManager.Initialize(message =>
-            {
-                ipcmanager.Send(message);
-                return 0;
+                    // Mark as initialized and process any pending messages
+                    isIPCInitialized = true;
+                    ProcessPendingIPCMessages();
+
+                    // Initialize GlobalHotkeyConflictManager after IPC is ready
+                    GlobalHotkeyConflictManager.Initialize(message =>
+                    {
+                        SendIPCMessage(message);
+                        return 0;
+                    });
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError($"Error initializing IPC manager: {ex.Message}");
+                }
             });
 
             if (!ShowOobe && !ShowScoobe)
@@ -235,6 +257,9 @@ namespace Microsoft.PowerToys.Settings.UI
                 // https://github.com/microsoft/microsoft-ui-xaml/issues/8948 - A window's top border incorrectly
                 // renders as black on Windows 10.
                 WindowHelpers.ForceTopBorder1PixelInsetOnWindows10(WindowNative.GetWindowHandle(settingsWindow));
+
+                // Warm up search index in the background to avoid delay on first search
+                _ = Task.Run(() => SearchIndexService.BuildIndex());
             }
             else
             {
@@ -242,6 +267,9 @@ namespace Microsoft.PowerToys.Settings.UI
                 // it will be ready to receive the notification if the user opens
                 // the Settings from the tray icon.
                 settingsWindow = new MainWindow(true);
+
+                // Warm up search index in the background
+                _ = Task.Run(() => SearchIndexService.BuildIndex());
 
                 if (ShowOobe)
                 {
@@ -317,6 +345,33 @@ namespace Microsoft.PowerToys.Settings.UI
         public static TwoWayPipeMessageIPCManaged GetTwoWayIPCManager()
         {
             return ipcmanager;
+        }
+
+        /// <summary>
+        /// Sends an IPC message, queuing it if the IPC manager is not yet initialized.
+        /// </summary>
+        public static void SendIPCMessage(string message)
+        {
+            if (isIPCInitialized && ipcmanager != null)
+            {
+                ipcmanager.Send(message);
+            }
+            else
+            {
+                // Queue the message to be sent after IPC manager is initialized
+                PendingIPCMessages.Enqueue(message);
+            }
+        }
+
+        /// <summary>
+        /// Process all pending IPC messages after the IPC manager is initialized.
+        /// </summary>
+        private static void ProcessPendingIPCMessages()
+        {
+            while (PendingIPCMessages.TryDequeue(out string message))
+            {
+                ipcmanager?.Send(message);
+            }
         }
 
         public static bool IsDarkTheme()
