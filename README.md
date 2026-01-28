@@ -110,7 +110,7 @@ This patch release fixes several important stability issues identified in v0.97.
 **Highlights**
 
 ### Advanced Paste
-- #44862: Fixed Settings UI crash by using correct settings repository for null checking.
+- #44862: Fixed Settings UI advanced paste page crash by using correct settings repository for null checking.
 
 ### Command Palette
 - #44886: Fixed personalization section not appearing by using latest MSIX for installation.
@@ -125,7 +125,7 @@ This patch release fixes several important stability issues identified in v0.97.
 - #44995: Fixed Space key triggering Peek during file rename, search, or address bar typing.
 
 ### PowerRename
-- #44944: Fixed regex `$` metacharacter not working, preventing users from adding text at the end of filenames.
+- #44944: Fixed regex `$` not working, preventing users from adding text at the end of filenames.
 
 ### Runner
 - #44931: Monochrome tray icon now adapts to Windows system theme instead of app theme.
