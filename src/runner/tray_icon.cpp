@@ -7,6 +7,7 @@
 #include "centralized_kb_hook.h"
 #include "quick_access_host.h"
 #include "hotkey_conflict_detector.h"
+#include "trace.h"
 #include <Windows.h>
 
 #include <common/utils/resources.h>
@@ -131,6 +132,9 @@ void click_timer_elapsed()
     double_click_timer_running = false;
     if (!double_clicked)
     {
+        // Log telemetry for single click (confirmed it's not a double click)
+        Trace::TrayIconLeftClick(get_general_settings().enableQuickAccess);
+
         if (get_general_settings().enableQuickAccess)
         {
             open_quick_access_flyout_window();
@@ -197,6 +201,9 @@ LRESULT __stdcall tray_icon_window_proc(HWND window, UINT message, WPARAM wparam
             case WM_CONTEXTMENU:
             {
                 bool quick_access_enabled = get_general_settings().enableQuickAccess;
+
+                // Log telemetry
+                Trace::TrayIconRightClick(quick_access_enabled);
 
                 // Reload menu if Quick Access state has changed or is first time
                 if (h_menu && (!last_quick_access_state.has_value() || quick_access_enabled != last_quick_access_state.value()))
@@ -278,6 +285,9 @@ LRESULT __stdcall tray_icon_window_proc(HWND window, UINT message, WPARAM wparam
             }
             case WM_LBUTTONDBLCLK:
             {
+                // Log telemetry
+                Trace::TrayIconDoubleClick(get_general_settings().enableQuickAccess);
+
                 double_clicked = true;
                 open_settings_window(std::nullopt);
                 break;
