@@ -31,7 +31,7 @@ internal sealed partial class RunAsUserCommand : InvokableCommand
         await Task.Run(() =>
         {
             // Use ActionRunner helper process to work around WinUI3/MSIX packaging limitation.
-            // When running from a packaged app, ShellExecute with "runasuser" verb causes
+            // When running from a packaged app, ShellExecute with the "runas user" verb causes
             // CredentialUIBroker.exe to spawn infinitely without showing the credential dialog.
             // ActionRunner runs outside the MSIX container, so it can properly invoke the credential UI.
             var actionRunnerPath = ActionRunnerHelper.GetActionRunnerPath();

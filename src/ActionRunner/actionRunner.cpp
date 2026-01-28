@@ -108,7 +108,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     {
         // Handle "Run as different user" and "Run as administrator" actions.
         // This is used by Command Palette to work around WinUI3/MSIX packaging limitations
-        // where ShellExecute with "runasuser"/"runas" verbs doesn't work properly from packaged apps.
+        // where ShellExecute with "runas user"/"runas" verbs doesn't work properly from packaged apps.
         int nextArg = 2;
 
         std::wstring_view target;
