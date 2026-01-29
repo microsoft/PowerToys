@@ -300,6 +300,10 @@
     </Project>
   </Folder>
   <Folder Name="/modules/CommandPalette/Tests/">
+    <Project Path="src/modules/cmdpal/Tests/Microsoft.CmdPal.Core.Common.UnitTests/Microsoft.CmdPal.Core.Common.UnitTests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
     <Project Path="src/modules/cmdpal/Tests/Microsoft.CmdPal.Ext.Apps.UnitTests/Microsoft.CmdPal.Ext.Apps.UnitTests.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />

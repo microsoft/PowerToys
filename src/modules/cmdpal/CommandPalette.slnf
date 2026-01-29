@@ -15,6 +15,7 @@
       "src\\modules\\cmdpal\\Microsoft.CmdPal.UI.ViewModels\\Microsoft.CmdPal.UI.ViewModels.csproj",
       "src\\modules\\cmdpal\\Microsoft.CmdPal.UI\\Microsoft.CmdPal.UI.csproj",
       "src\\modules\\cmdpal\\Microsoft.Terminal.UI\\Microsoft.Terminal.UI.vcxproj",
+      "src\\modules\\cmdpal\\Tests\\Microsoft.CmdPal.Core.Common.UnitTests\\Microsoft.CmdPal.Core.Common.UnitTests.csproj",
       "src\\modules\\cmdpal\\Tests\\Microsoft.CmdPal.Ext.Apps.UnitTests\\Microsoft.CmdPal.Ext.Apps.UnitTests.csproj",
       "src\\modules\\cmdpal\\Tests\\Microsoft.CmdPal.Ext.Bookmarks.UnitTests\\Microsoft.CmdPal.Ext.Bookmarks.UnitTests.csproj",
       "src\\modules\\cmdpal\\Tests\\Microsoft.CmdPal.Ext.Calc.UnitTests\\Microsoft.CmdPal.Ext.Calc.UnitTests.csproj",

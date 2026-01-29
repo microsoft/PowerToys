@@ -41,7 +41,7 @@ namespace Microsoft.CmdPal.UI;
 /// <summary>
 /// Provides application-specific behavior to supplement the default Application class.
 /// </summary>
-public partial class App : Application
+public partial class App : Application, IDisposable
 {
     private readonly GlobalErrorHandler _globalErrorHandler = new();
 
@@ -67,7 +67,7 @@ public partial class App : Application
     public App()
     {
 #if !CMDPAL_DISABLE_GLOBAL_ERROR_HANDLER
-        _globalErrorHandler.Register(this);
+        _globalErrorHandler.Register(this, GlobalErrorHandler.Options.Default);
 #endif
 
         Services = ConfigureServices();
@@ -202,5 +202,12 @@ public partial class App : Application
         // ViewModels
         services.AddSingleton<ShellViewModel>();
         services.AddSingleton<IPageViewModelFactoryService, CommandPalettePageViewModelFactory>();
+    }
+
+    public void Dispose()
+    {
+        _globalErrorHandler.Dispose();
+        EtwTrace.Dispose();
+        GC.SuppressFinalize(this);
     }
 }
