@@ -18,13 +18,14 @@ public sealed partial class AppListItem : ListItem, IPrecomputedListItem
 {
     private readonly AppCommand _appCommand;
     private readonly AppItem _app;
-    private readonly Lazy<Details> _details;
     private readonly Lazy<Task<IconInfo?>> _iconLoadTask;
+    private readonly Lazy<Task<Details>> _detailsLoadTask;
+
+    private InterlockedBoolean _isLoadingIcon;
+    private InterlockedBoolean _isLoadingDetails;
 
     private FuzzyTargetCache _titleCache;
     private FuzzyTargetCache _subtitleCache;
-
-    private InterlockedBoolean _isLoadingIcon;
 
     public override string Title
     {
@@ -52,7 +53,19 @@ public sealed partial class AppListItem : ListItem, IPrecomputedListItem
         }
     }
 
-    public override IDetails? Details { get => _details.Value; set => base.Details = value; }
+    public override IDetails? Details
+    {
+        get
+        {
+            if (_isLoadingDetails.Set())
+            {
+                _ = LoadDetailsAsync();
+            }
+
+            return base.Details;
+        }
+        set => base.Details = value;
+    }
 
     public override IIconInfo? Icon
     {
@@ -82,14 +95,20 @@ public sealed partial class AppListItem : ListItem, IPrecomputedListItem
 
         MoreCommands = AddPinCommands(_app.Commands!, isPinned);
 
-        _details = new Lazy<Details>(() =>
-        {
-            var t = BuildDetails();
-            t.Wait();
-            return t.Result;
-        });
-
+        _detailsLoadTask = new Lazy<Task<Details>>(BuildDetails);
         _iconLoadTask = new Lazy<Task<IconInfo?>>(async () => await FetchIcon(useThumbnails));
+    }
+
+    private async Task LoadDetailsAsync()
+    {
+        try
+        {
+            Details = await _detailsLoadTask.Value;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogWarning($"Failed to load details for {AppIdentifier}\n{ex}");
+        }
     }
 
     private async Task LoadIconAsync()
@@ -128,18 +147,16 @@ public sealed partial class AppListItem : ListItem, IPrecomputedListItem
         }
         else
         {
-            try
+            // do nothing if we fail to load an icon.
+            // Logging it would be too NOISY, there's really no need.
+            if (!string.IsNullOrEmpty(_app.IcoPath))
             {
-                var stream = await ThumbnailHelper.GetThumbnail(_app.ExePath, true);
-                if (stream is not null)
-                {
-                    heroImage = IconInfo.FromStream(stream);
-                }
+                heroImage = await TryLoadThumbnail(_app.IcoPath, jumbo: true, logOnFailure: false);
             }
-            catch (Exception)
+
+            if (heroImage == null && !string.IsNullOrEmpty(_app.ExePath))
             {
-                // do nothing if we fail to load an icon.
-                // Logging it would be too NOISY, there's really no need.
+                heroImage = await TryLoadThumbnail(_app.ExePath, jumbo: true, logOnFailure: false);
             }
         }
 
@@ -162,25 +179,18 @@ public sealed partial class AppListItem : ListItem, IPrecomputedListItem
 
         if (useThumbnails)
         {
-            try
+            if (!string.IsNullOrEmpty(_app.IcoPath))
             {
-                var stream = await ThumbnailHelper.GetThumbnail(_app.ExePath);
-                if (stream is not null)
-                {
-                    icon = IconInfo.FromStream(stream);
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.LogDebug($"Failed to load icon for {AppIdentifier}:\n{ex}");
+                icon = await TryLoadThumbnail(_app.IcoPath, jumbo: false, logOnFailure: true);
             }
 
-            icon = icon ?? new IconInfo(_app.IcoPath);
+            if (icon == null && !string.IsNullOrEmpty(_app.ExePath))
+            {
+                icon = await TryLoadThumbnail(_app.ExePath, jumbo: false, logOnFailure: true);
+            }
         }
-        else
-        {
-            icon = new IconInfo(_app.IcoPath);
-        }
+
+        icon ??= new IconInfo(_app.IcoPath);
 
         return icon;
     }
@@ -212,6 +222,27 @@ public sealed partial class AppListItem : ListItem, IPrecomputedListItem
         }
 
         return newCommands.ToArray();
+    }
+
+    private async Task<IconInfo?> TryLoadThumbnail(string path, bool jumbo, bool logOnFailure)
+    {
+        try
+        {
+            var stream = await ThumbnailHelper.GetThumbnail(path, jumbo);
+            if (stream is not null)
+            {
+                return IconInfo.FromStream(stream);
+            }
+        }
+        catch (Exception ex)
+        {
+            if (logOnFailure)
+            {
+                Logger.LogDebug($"Failed to load icon {path} for {AppIdentifier}:\n{ex}");
+            }
+        }
+
+        return null;
     }
 
     public FuzzyTarget GetTitleTarget(IPrecomputedFuzzyMatcher matcher)

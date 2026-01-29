@@ -253,7 +253,7 @@ jobs:
       displayName: Build PowerToys main project
     inputs:
       solution: 'PowerToys.slnx'
-      vsVersion: 17.0
+      vsVersion: 18.0
       msbuildArgs: >-
         -restore -graph
         /p:RestorePackagesConfig=true
@@ -276,7 +276,7 @@ jobs:
     condition: and(succeeded(), eq(variables['BuildPlatform'], 'arm64'))
     inputs:
       solution: PowerToys.slnx
-      vsVersion: 17.0
+      vsVersion: 18.0
       msbuildArgs: >-
         -restore
         /p:Configuration=$(BuildConfiguration)
@@ -338,7 +338,7 @@ jobs:
     displayName: Build BugReportTool
     inputs:
       solution: '**/tools/BugReportTool/BugReportTool.sln'
-      vsVersion: 17.0
+      vsVersion: 18.0
       msbuildArgs: >-
         -restore -graph
         /p:RestorePackagesConfig=true
@@ -359,7 +359,7 @@ jobs:
     displayName: Build StylesReportTool
     inputs:
       solution: '**/tools/StylesReportTool/StylesReportTool.sln'
-      vsVersion: 17.0
+      vsVersion: 18.0
       msbuildArgs: >-
         -restore -graph
         /p:RestorePackagesConfig=true
@@ -381,7 +381,7 @@ jobs:
       displayName: Publish ${{ project }} for Packaging
       inputs:
         solution: ${{ project }}
-        vsVersion: 17.0
+        vsVersion: 18.0
         msbuildArgs: >-
           /target:Publish
           /graph
@@ -503,6 +503,14 @@ jobs:
         Remove-Item -Force -Recurse "$(JobOutputDirectory)/CmdPalPackageContents" -ErrorAction:Ignore
         Remove-Item -Force -Recurse "$(JobOutputDirectory)/_appx" -ErrorAction:Ignore
       displayName: Re-pack the new CmdPal package after signing
+
+    - pwsh: |
+        $testsPath = "$(Build.SourcesDirectory)/$(BuildPlatform)/$(BuildConfiguration)/tests"
+        if (Test-Path $testsPath) {
+            Remove-Item -Path $testsPath -Recurse -Force
+            Write-Host "Removed tests folder to reduce signing workload: $testsPath"
+        }
+      displayName: Remove tests folder before signing
 
     - template: steps-esrp-signing.yml
       parameters:

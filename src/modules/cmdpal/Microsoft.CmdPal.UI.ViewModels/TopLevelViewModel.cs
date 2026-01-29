@@ -209,7 +209,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
             _fallbackId = fallback.Id;
         }
 
-        item.PropertyChanged += Item_PropertyChanged;
+        item.PropertyChangedBackground += Item_PropertyChanged;
 
         // UpdateAlias();
         // UpdateHotkey();

@@ -181,7 +181,10 @@ void dispatch_json_config_to_modules(const json::JsonObject& powertoys_configs)
             const auto properties = settings.GetNamedObject(L"properties");
 
             // Currently, only PowerToys Run settings use the 'hotkey_changed' property.
-            json::get(properties, L"hotkey_changed", hotkeyUpdated, true);
+            if (properties.HasKey(L"hotkey_changed"))
+            {
+                json::get(properties, L"hotkey_changed", hotkeyUpdated, true);
+            }
         }
         
         send_json_config_to_module(powertoy_element.Key().c_str(), element.c_str(), hotkeyUpdated);

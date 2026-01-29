@@ -40,7 +40,7 @@ These instruction files are automatically applied when working in their respecti
 
 ### Prerequisites
 
-- Visual Studio 2022 17.4+
+- Visual Studio 2022 17.4+ or Visual Studio 2026
 - Windows 10 1803+ (April 2018 Update or newer)
 - Initialize submodules once: `git submodule update --init --recursive`
 
