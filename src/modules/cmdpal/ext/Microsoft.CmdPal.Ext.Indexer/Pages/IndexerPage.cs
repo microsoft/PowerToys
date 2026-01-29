@@ -19,6 +19,10 @@ namespace Microsoft.CmdPal.Ext.Indexer;
 
 internal sealed partial class IndexerPage : DynamicListPage, IDisposable
 {
+    // Cookie to identify our queries; since we replace the SearchEngine on each search,
+    // this can be a constant.
+    private const uint HardQueryCookie = 10;
+
     private readonly List<IListItem> _indexerListItems = [];
     private readonly Lock _searchLock = new();
 
@@ -156,7 +160,7 @@ internal sealed partial class IndexerPage : DynamicListPage, IDisposable
             offset = _indexerListItems.Count;
         }
 
-        var results = searchEngine?.FetchItems(offset, 20, queryCookie: 10, out hasMore) ?? [];
+        var results = searchEngine?.FetchItems(offset, 20, queryCookie: HardQueryCookie, out hasMore) ?? [];
 
         if (ct?.IsCancellationRequested == true)
         {
@@ -184,7 +188,7 @@ internal sealed partial class IndexerPage : DynamicListPage, IDisposable
         lock (_searchLock)
         {
             _indexerListItems.Clear();
-            _searchEngine?.Query(query, queryCookie: 10);
+            _searchEngine?.Query(query, queryCookie: HardQueryCookie);
         }
     }
 

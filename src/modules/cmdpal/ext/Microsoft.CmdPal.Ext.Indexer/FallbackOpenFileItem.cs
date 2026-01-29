@@ -23,6 +23,10 @@ namespace Microsoft.CmdPal.Ext.Indexer;
 internal sealed partial class FallbackOpenFileItem : FallbackCommandItem, IDisposable
 {
     private const string CommandId = "com.microsoft.cmdpal.builtin.indexer.fallback";
+
+    // Cookie to identify our queries; since we replace the SearchEngine on each search,
+    // this can be a constant.
+    private const uint HardQueryCookie = 10;
     private static readonly NoOpCommand BaseCommandWithId = new() { Id = CommandId };
 
     private readonly CompositeFormat _fallbackItemSearchPageTitleFormat = CompositeFormat.Parse(Resources.Indexer_fallback_searchPage_title);
@@ -112,11 +116,11 @@ internal sealed partial class FallbackOpenFileItem : FallbackCommandItem, IDispo
 
         try
         {
-            searchEngine.Query(query, queryCookie: 10);
+            searchEngine.Query(query, queryCookie: HardQueryCookie);
             ct.ThrowIfCancellationRequested();
 
             // We only need to know whether there are 0, 1, or more than one result
-            var results = searchEngine.FetchItems(0, 2, queryCookie: 10, out _, noIcons: true);
+            var results = searchEngine.FetchItems(0, 2, queryCookie: HardQueryCookie, out _, noIcons: true);
             var count = results.Count;
 
             if (count == 0)

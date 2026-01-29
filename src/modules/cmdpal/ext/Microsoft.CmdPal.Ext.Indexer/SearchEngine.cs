@@ -20,12 +20,12 @@ public sealed partial class SearchEngine : IDisposable
 {
     private SearchQuery? _searchQuery = new();
 
-    public int Query(string query, uint queryCookie)
+    public void Query(string query, uint queryCookie)
     {
         var searchQuery = _searchQuery;
         if (searchQuery is null)
         {
-            return 0;
+            return;
         }
 
         searchQuery.SearchResults.Clear();
@@ -33,18 +33,16 @@ public sealed partial class SearchEngine : IDisposable
 
         if (string.IsNullOrWhiteSpace(query))
         {
-            return 0;
+            return;
         }
 
         Stopwatch stopwatch = new();
         stopwatch.Start();
 
-        var totalResultsCount = searchQuery.Execute(query, queryCookie);
+        searchQuery.Execute(query, queryCookie);
 
         stopwatch.Stop();
         Logger.LogDebug($"Query time: {stopwatch.ElapsedMilliseconds} ms, query: \"{query}\"");
-
-        return totalResultsCount;
     }
 
     public IList<IListItem> FetchItems(int offset, int limit, uint queryCookie, out bool hasMore, bool noIcons = false)

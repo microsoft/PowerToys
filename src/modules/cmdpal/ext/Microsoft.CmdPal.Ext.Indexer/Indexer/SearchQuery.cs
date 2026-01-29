@@ -48,12 +48,11 @@ internal sealed partial class SearchQuery : IDisposable
         }
     }
 
-    public int Execute(string searchText, uint cookie)
+    public void Execute(string searchText, uint cookie)
     {
         SearchText = searchText;
         Cookie = cookie;
         ExecuteSyncInternal();
-        return 0;
     }
 
     private void ExecuteSyncInternal()
