@@ -21,7 +21,10 @@
         <DesktopAcrylicBackdrop />
     </winuiex:WindowEx.SystemBackdrop>
 
-    <Grid x:Name="RootGrid" IsTabStop="True">
+    <Grid
+        x:Name="RootGrid"
+        IsTabStop="True"
+        TabFocusNavigation="Local">
         <Grid.Resources>
             <Style
                 x:Key="FlyoutButtonStyle"
@@ -93,7 +96,7 @@
                                 x:Name="MonitorsRepeater"
                                 HorizontalAlignment="Stretch"
                                 ItemsSource="{x:Bind ViewModel.Monitors, Mode=OneWay}"
-                                TabFocusNavigation="Once"
+                                TabFocusNavigation="Local"
                                 Visibility="{x:Bind helpers:VisibilityConverter.BoolToVisibility(ViewModel.HasMonitors), Mode=OneWay}">
                                 <ItemsRepeater.Layout>
                                     <StackLayout Orientation="Vertical" Spacing="32" />
