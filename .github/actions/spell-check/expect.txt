@@ -898,6 +898,7 @@ leftclick
 LError
 LEVELID
 LExit
+LFU
 lhwnd
 LIBFUZZER
 LIBID
