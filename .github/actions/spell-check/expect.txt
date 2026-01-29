@@ -446,6 +446,9 @@ DROPFILES
 DSTINVERT
 DString
 DSVG
+DscJsonFiles
+DscJsonFilesPath
+DscResourcesComponentGroup
 dto
 DUMMYUNIONNAME
 dutil
