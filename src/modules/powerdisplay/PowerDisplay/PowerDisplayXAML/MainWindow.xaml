@@ -182,8 +182,14 @@
                                                         Style="{StaticResource SubtleButtonStyle}"
                                                         Visibility="{x:Bind helpers:VisibilityConverter.BoolToVisibility(ShowMoreButton), Mode=OneWay}">
                                                         <Button.Flyout>
-                                                            <Flyout Opened="Flyout_Opened" Placement="BottomEdgeAlignedRight" ShouldConstrainToRootBounds="False">
-                                                                <StackPanel MinWidth="240" MaxWidth="320" Orientation="Vertical">
+                                                            <Flyout
+                                                                Opened="Flyout_Opened"
+                                                                Placement="BottomEdgeAlignedRight"
+                                                                ShouldConstrainToRootBounds="False">
+                                                                <StackPanel
+                                                                    MinWidth="240"
+                                                                    MaxWidth="320"
+                                                                    Orientation="Vertical">
                                                                     <!--  Input Source Section  -->
                                                                     <StackPanel Visibility="{x:Bind helpers:VisibilityConverter.BoolToVisibility(ShowInputSource), Mode=OneWay}">
                                                                         <ListView
@@ -480,7 +486,10 @@
                             Style="{StaticResource SubtleButtonStyle}"
                             Visibility="{x:Bind helpers:VisibilityConverter.BoolToVisibility(ViewModel.ShowProfileSwitcherButton), Mode=OneWay}">
                             <Button.Flyout>
-                                <Flyout x:Name="ProfilesFlyout" Opened="Flyout_Opened" ShouldConstrainToRootBounds="False">
+                                <Flyout
+                                    x:Name="ProfilesFlyout"
+                                    Opened="Flyout_Opened"
+                                    ShouldConstrainToRootBounds="False">
                                     <ListView
                                         x:Name="ProfilesListView"
                                         ItemsSource="{x:Bind ViewModel.Profiles, Mode=OneWay}"
