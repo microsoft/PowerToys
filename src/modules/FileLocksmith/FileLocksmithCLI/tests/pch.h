@@ -1,0 +1,9 @@
+#pragma once
+#include <winrt/base.h>
+#include <Windows.h>
+#include <shellapi.h>
+#include <string>
+#include <vector>
+#include <iostream>
+#include <sstream>
+#include "CppUnitTest.h"

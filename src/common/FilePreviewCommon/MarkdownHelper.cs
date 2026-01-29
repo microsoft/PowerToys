@@ -39,7 +39,7 @@ namespace Microsoft.PowerToys.FilePreviewCommon
             var softlineBreak = new Markdig.Extensions.Hardlines.SoftlineBreakAsHardlineExtension();
 
             MarkdownPipelineBuilder pipelineBuilder;
-            pipelineBuilder = new MarkdownPipelineBuilder().UseAdvancedExtensions().UseEmojiAndSmiley().UseYamlFrontMatter().UseMathematics().DisableHtml();
+            pipelineBuilder = new MarkdownPipelineBuilder().UseAdvancedExtensions().UseEmojiAndSmiley().UseYamlFrontMatter().UseMathematics();
             pipelineBuilder.Extensions.Add(extension);
             pipelineBuilder.Extensions.Add(softlineBreak);
 

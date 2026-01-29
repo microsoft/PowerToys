@@ -62,7 +62,7 @@
 
   <PropertyGroup>
     <!-- This disables the auto-generated main, so we can be single-instanced -->
-    <DefineConstants>DISABLE_XAML_GENERATED_MAIN</DefineConstants>
+    <DefineConstants>$(DefineConstants);DISABLE_XAML_GENERATED_MAIN</DefineConstants>
   </PropertyGroup>
 
   <!-- BODGY: XES Versioning and WinAppSDK get into a fight about the app manifest, which breaks WinAppSDK. -->
@@ -92,6 +92,7 @@
     <None Remove="Pages\Settings\GeneralPage.xaml" />
     <None Remove="SettingsWindow.xaml" />
     <None Remove="Settings\AppearancePage.xaml" />
+    <None Remove="Settings\InternalPage.xaml" />
     <None Remove="ShellPage.xaml" />
     <None Remove="Styles\Colors.xaml" />
     <None Remove="Styles\Settings.xaml" />
@@ -274,6 +275,11 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
+    <Page Update="Settings\InternalPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
     <Page Update="Styles\Colors.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -300,24 +306,15 @@
   </ItemGroup>
   <!-- </AdaptiveCardsWorkaround> -->
 
-  <!-- Metadata for build information  -->
-  <ItemGroup>
-    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
-      <_Parameter1>PublishTrimmed</_Parameter1>
-      <_Parameter2>$(PublishTrimmed)</_Parameter2>
-    </AssemblyAttribute>
-    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
-      <_Parameter1>PublishAot</_Parameter1>
-      <_Parameter2>$(PublishAot)</_Parameter2>
-    </AssemblyAttribute>
-    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
-      <_Parameter1>CIBuild</_Parameter1>
-      <_Parameter2>$(CIBuild)</_Parameter2>
-    </AssemblyAttribute>
-    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
-      <_Parameter1>CommandPaletteBranding</_Parameter1>
-      <_Parameter2>$(CommandPaletteBranding)</_Parameter2>
-    </AssemblyAttribute>
-  </ItemGroup>
+  <!-- Build information  -->
+  <PropertyGroup Condition=" '$(PublishAot)' == 'true' ">
+	<DefineConstants>$(DefineConstants);BUILD_INFO_PUBLISH_AOT</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(PublishTrimmed)' == 'true' ">
+    <DefineConstants>$(DefineConstants);BUILD_INFO_PUBLISH_TRIMMED</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(CIBuild)' == 'true' ">
+    <DefineConstants>$(DefineConstants);BUILD_INFO_CIBUILD</DefineConstants>
+  </PropertyGroup>
 
 </Project>
