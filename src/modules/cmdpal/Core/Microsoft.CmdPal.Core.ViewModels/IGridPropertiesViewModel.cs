@@ -6,6 +6,8 @@ namespace Microsoft.CmdPal.Core.ViewModels;
 
 public interface IGridPropertiesViewModel
 {
+    bool IsGrid { get; }
+
     bool ShowTitle { get; }
 
     bool ShowSubtitle { get; }

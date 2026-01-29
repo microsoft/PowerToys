@@ -10,36 +10,44 @@ namespace Microsoft.CmdPal.UI;
 
 public sealed partial class ListItemTemplateSelector : DataTemplateSelector
 {
+    public ListItemViewMode ListItemViewMode { get; set; }
+
     public DataTemplate? ListItem { get; set; }
 
     public DataTemplate? Separator { get; set; }
 
     public DataTemplate? Section { get; set; }
 
+    public DataTemplate? SingleRowListItem { get; set; }
+
     protected override DataTemplate? SelectTemplateCore(object item, DependencyObject container)
     {
-        DataTemplate? dataTemplate = ListItem;
+        DataTemplate? dataTemplate = ListItemViewMode == ListItemViewMode.Singleline ? SingleRowListItem : ListItem;
 
-        if (container is ListViewItem listItem)
+        if (container is not ListViewItem listItem)
         {
-            if (item is ListItemViewModel element)
-            {
-                if (container is ListViewItem li && element.IsSectionOrSeparator)
-                {
-                    li.IsEnabled = false;
-                    li.AllowFocusWhenDisabled = false;
-                    li.AllowFocusOnInteraction = false;
-                    li.IsHitTestVisible = false;
-                    dataTemplate = string.IsNullOrWhiteSpace(element.Section) ? Separator : Section;
-                }
-                else
-                {
-                    listItem.IsEnabled = true;
-                    listItem.AllowFocusWhenDisabled = true;
-                    listItem.AllowFocusOnInteraction = true;
-                    listItem.IsHitTestVisible = true;
-                }
-            }
+            return dataTemplate;
+        }
+
+        if (item is not ListItemViewModel element)
+        {
+            return dataTemplate;
+        }
+
+        if (container is ListViewItem li && element.IsSectionOrSeparator)
+        {
+            li.IsEnabled = false;
+            li.AllowFocusWhenDisabled = false;
+            li.AllowFocusOnInteraction = false;
+            li.IsHitTestVisible = false;
+            dataTemplate = string.IsNullOrWhiteSpace(element.Section) ? Separator : Section;
+        }
+        else
+        {
+            listItem.IsEnabled = true;
+            listItem.AllowFocusWhenDisabled = true;
+            listItem.AllowFocusOnInteraction = true;
+            listItem.IsHitTestVisible = true;
         }
 
         return dataTemplate;

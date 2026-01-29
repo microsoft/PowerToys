@@ -45,9 +45,9 @@ public partial class ListViewModel : PageViewModel, IDisposable
         (!_isFetching) &&
         IsLoading == false;
 
-    public bool IsGridView { get; private set; }
+    public bool IsGridView => GridProperties.IsGrid;
 
-    public IGridPropertiesViewModel? GridProperties { get; private set; }
+    public IGridPropertiesViewModel GridProperties { get; private set; } = SinglelineListPropertiesViewModel.Default;
 
     // Remember - "observable" properties from the model (via PropChanged)
     // cannot be marked [ObservableProperty]
@@ -585,12 +585,9 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
         _isDynamic = model is IDynamicListPage;
 
-        IsGridView = model.GridProperties is not null;
-        UpdateProperty(nameof(IsGridView));
-
         GridProperties = LoadGridPropertiesViewModel(model.GridProperties);
         GridProperties?.InitializeProperties();
-        UpdateProperty(nameof(GridProperties));
+        UpdateProperty(nameof(GridProperties), nameof(IsGridView));
         ApplyLayoutToItems();
 
         ShowDetails = model.ShowDetails;
@@ -617,14 +614,16 @@ public partial class ListViewModel : PageViewModel, IDisposable
         model.ItemsChanged += Model_ItemsChanged;
     }
 
-    private static IGridPropertiesViewModel? LoadGridPropertiesViewModel(IGridProperties? gridProperties)
+    private static IGridPropertiesViewModel LoadGridPropertiesViewModel(IGridProperties? gridProperties)
     {
         return gridProperties switch
         {
             IMediumGridLayout mediumGridLayout => new MediumGridPropertiesViewModel(mediumGridLayout),
             IGalleryGridLayout galleryGridLayout => new GalleryGridPropertiesViewModel(galleryGridLayout),
             ISmallGridLayout smallGridLayout => new SmallGridPropertiesViewModel(smallGridLayout),
-            _ => null,
+            ISinglelineListLayout layout => new SinglelineListPropertiesViewModel(layout),
+            IMultilineListLayout layout => new MultiLineListPropertiesViewModel(layout),
+            _ => SinglelineListPropertiesViewModel.Default,
         };
     }
 
@@ -683,9 +682,9 @@ public partial class ListViewModel : PageViewModel, IDisposable
         switch (propertyName)
         {
             case nameof(GridProperties):
-                IsGridView = model.GridProperties is not null;
                 GridProperties = LoadGridPropertiesViewModel(model.GridProperties);
                 GridProperties?.InitializeProperties();
+                UpdateProperty(nameof(GridProperties));
                 UpdateProperty(nameof(IsGridView));
                 ApplyLayoutToItems();
                 break;
