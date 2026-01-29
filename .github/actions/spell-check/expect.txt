@@ -1532,6 +1532,7 @@ riid
 RKey
 RNumber
 rollups
+ROOTOWNER
 rop
 ROUNDSMALL
 ROWSETEXT
