@@ -18,8 +18,9 @@ public sealed partial class AppListItem : ListItem
 {
     private readonly AppCommand _appCommand;
     private readonly AppItem _app;
-    private readonly Lazy<Task<Details>> _detailsLoadTask;
+
     private readonly Lazy<Task<IconInfo?>> _iconLoadTask;
+    private readonly Lazy<Task<Details>> _detailsLoadTask;
 
     private InterlockedBoolean _isLoadingIcon;
     private InterlockedBoolean _isLoadingDetails;

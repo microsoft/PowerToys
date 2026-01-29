@@ -72,6 +72,10 @@ namespace CommonSharedConstants
 
     const wchar_t ALWAYS_ON_TOP_TERMINATE_EVENT[] = L"Local\\AlwaysOnTopTerminateEvent-cfdf1eae-791f-4953-8021-2f18f3837eae";
 
+    const wchar_t ALWAYS_ON_TOP_INCREASE_OPACITY_EVENT[] = L"Local\\AlwaysOnTopIncreaseOpacityEvent-a1b2c3d4-e5f6-7890-abcd-ef1234567890";
+
+    const wchar_t ALWAYS_ON_TOP_DECREASE_OPACITY_EVENT[] = L"Local\\AlwaysOnTopDecreaseOpacityEvent-b2c3d4e5-f6a7-8901-bcde-f12345678901";
+
     // Path to the event used by PowerAccent
     const wchar_t POWERACCENT_EXIT_EVENT[] = L"Local\\PowerToysPowerAccentExitEvent-53e93389-d19a-4fbb-9b36-1981c8965e17";
 

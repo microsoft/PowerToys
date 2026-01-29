@@ -47,6 +47,13 @@
                             <tkcontrols:SettingsCard ContentAlignment="Left" IsEnabled="{x:Bind ViewModel.IsCursorWrapEnabled, Mode=OneWay}">
                                 <CheckBox x:Uid="MouseUtils_CursorWrap_DisableWrapDuringDrag" IsChecked="{x:Bind ViewModel.CursorWrapDisableWrapDuringDrag, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard Name="MouseUtilsCursorWrapWrapMode" x:Uid="MouseUtils_CursorWrap_WrapMode">
+                                <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.CursorWrapWrapMode, Mode=TwoWay}">
+                                    <ComboBoxItem x:Uid="MouseUtils_CursorWrap_WrapMode_Both" />
+                                    <ComboBoxItem x:Uid="MouseUtils_CursorWrap_WrapMode_VerticalOnly" />
+                                    <ComboBoxItem x:Uid="MouseUtils_CursorWrap_WrapMode_HorizontalOnly" />
+                                </ComboBox>
+                            </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
                 </controls:SettingsGroup>

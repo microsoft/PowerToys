@@ -113,6 +113,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             // Null-safe access in case property wasn't upgraded yet - default to TRUE
             _cursorWrapDisableWrapDuringDrag = CursorWrapSettingsConfig.Properties.DisableWrapDuringDrag?.Value ?? true;
 
+            // Null-safe access in case property wasn't upgraded yet - default to 0 (Both)
+            _cursorWrapWrapMode = CursorWrapSettingsConfig.Properties.WrapMode?.Value ?? 0;
+
             int isEnabled = 0;
 
             Utilities.NativeMethods.SystemParametersInfo(Utilities.NativeMethods.SPI_GETCLIENTAREAANIMATION, 0, ref isEnabled, 0);
@@ -1083,6 +1086,34 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public int CursorWrapWrapMode
+        {
+            get
+            {
+                return _cursorWrapWrapMode;
+            }
+
+            set
+            {
+                if (value != _cursorWrapWrapMode)
+                {
+                    _cursorWrapWrapMode = value;
+
+                    // Ensure the property exists before setting value
+                    if (CursorWrapSettingsConfig.Properties.WrapMode == null)
+                    {
+                        CursorWrapSettingsConfig.Properties.WrapMode = new IntProperty(value);
+                    }
+                    else
+                    {
+                        CursorWrapSettingsConfig.Properties.WrapMode.Value = value;
+                    }
+
+                    NotifyCursorWrapPropertyChanged();
+                }
+            }
+        }
+
         public void NotifyCursorWrapPropertyChanged([CallerMemberName] string propertyName = null)
         {
             OnPropertyChanged(propertyName);
@@ -1154,5 +1185,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private bool _isCursorWrapEnabled;
         private bool _cursorWrapAutoActivate;
         private bool _cursorWrapDisableWrapDuringDrag; // Will be initialized in constructor from settings
+        private int _cursorWrapWrapMode; // 0=Both, 1=VerticalOnly, 2=HorizontalOnly
     }
 }
