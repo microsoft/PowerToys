@@ -1063,6 +1063,7 @@ MENUITEMINFOW
 MERGECOPY
 MERGEPAINT
 metadatamatters
+Metacharacter
 Metadatas
 metafile
 mfc
@@ -1979,6 +1980,7 @@ UNLEN
 UNORM
 unremapped
 Unsubscribes
+unsubscribes
 unvirtualized
 unwide
 unzoom
