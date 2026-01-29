@@ -33,11 +33,6 @@ namespace ViewModelTests
                 : base(settingsUtils, generalSettingsRepository, advancedPasteSettingsRepository, ipcMSGCallBackFunc)
             {
             }
-
-            protected override Microsoft.UI.Dispatching.DispatcherQueue GetDispatcherQueue()
-            {
-                return null;
-            }
         }
 
         [TestMethod]

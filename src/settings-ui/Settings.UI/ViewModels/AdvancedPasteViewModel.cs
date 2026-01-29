@@ -1430,8 +1430,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
 
             pasteConfig.Providers ??= new ObservableCollection<PasteAIProviderDefinition>();
-
-            SubscribeToPasteAIProviders(pasteConfig);
         }
 
         private static string RetrieveCredentialValue(string credentialResource, string credentialUserName)
