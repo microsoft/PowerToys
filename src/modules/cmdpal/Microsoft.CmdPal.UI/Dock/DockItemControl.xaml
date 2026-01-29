@@ -42,7 +42,7 @@
     </ResourceDictionary.ThemeDictionaries>
 
     <CornerRadius x:Key="DockItemCornerRadius">4</CornerRadius>
-    <CornerRadius x:Key="DockItemPadding">4,0,4,0</CornerRadius>
+    <Thickness x:Key="DockItemPadding">4,0,4,0</Thickness>
 
     <Style BasedOn="{StaticResource DefaultDockItemControlStyle}" TargetType="local:DockItemControl" />
 
