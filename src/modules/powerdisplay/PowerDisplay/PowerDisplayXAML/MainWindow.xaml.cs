@@ -11,6 +11,8 @@ using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Controls.Primitives;
+using Microsoft.UI.Xaml.Input;
 using PowerDisplay.Common.Models;
 using PowerDisplay.Configuration;
 using PowerDisplay.Helpers;
@@ -621,6 +623,26 @@ namespace PowerDisplay
 
             // Clear selection to allow reselecting the same preset
             listView.SelectedItem = null;
+        }
+
+        /// <summary>
+        /// Flyout opened event handler - sets focus to the first focusable element inside the flyout.
+        /// This enables keyboard navigation when the flyout opens.
+        /// </summary>
+        private void Flyout_Opened(object sender, object e)
+        {
+            if (sender is Flyout flyout && flyout.Content is FrameworkElement content)
+            {
+                // Use DispatcherQueue to ensure the flyout content is fully rendered before setting focus
+                DispatcherQueue.TryEnqueue(() =>
+                {
+                    var firstFocusable = FocusManager.FindFirstFocusableElement(content);
+                    if (firstFocusable is Control control)
+                    {
+                        control.Focus(FocusState.Programmatic);
+                    }
+                });
+            }
         }
 
         public void Dispose()

@@ -131,7 +131,7 @@
                                                         Style="{StaticResource SubtleButtonStyle}"
                                                         Visibility="{x:Bind helpers:VisibilityConverter.BoolToVisibility(ShowColorTemperature), Mode=OneWay}">
                                                         <Button.Flyout>
-                                                            <Flyout>
+                                                            <Flyout Opened="Flyout_Opened" ShouldConstrainToRootBounds="False">
                                                                 <StackPanel Orientation="Vertical">
                                                                     <ListView
                                                                         ItemsSource="{x:Bind AvailableColorPresets, Mode=OneWay}"
@@ -174,7 +174,7 @@
                                                         Style="{StaticResource SubtleButtonStyle}"
                                                         Visibility="{x:Bind helpers:VisibilityConverter.BoolToVisibility(ShowMoreButton), Mode=OneWay}">
                                                         <Button.Flyout>
-                                                            <Flyout>
+                                                            <Flyout Opened="Flyout_Opened" ShouldConstrainToRootBounds="False">
                                                                 <StackPanel MinWidth="200" Orientation="Vertical">
                                                                     <!--  Input Source Section  -->
                                                                     <StackPanel Visibility="{x:Bind helpers:VisibilityConverter.BoolToVisibility(ShowInputSource), Mode=OneWay}">
@@ -258,7 +258,9 @@
                                                 Background="{ThemeResource LayerOnAcrylicFillColorDefaultBrush}"
                                                 BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                                                 BorderThickness="1"
-                                                CornerRadius="{StaticResource OverlayCornerRadius}">
+                                                CornerRadius="{StaticResource OverlayCornerRadius}"
+                                                TabFocusNavigation="Local"
+                                                XYFocusKeyboardNavigation="Enabled">
                                                 <!--  Brightness Control  -->
                                                 <Grid Margin="0,8,0,0" HorizontalAlignment="Stretch">
                                                     <Grid.ColumnDefinitions>
@@ -456,7 +458,7 @@
                             Style="{StaticResource SubtleButtonStyle}"
                             Visibility="{x:Bind helpers:VisibilityConverter.BoolToVisibility(ViewModel.ShowProfileSwitcherButton), Mode=OneWay}">
                             <Button.Flyout>
-                                <Flyout x:Name="ProfilesFlyout">
+                                <Flyout x:Name="ProfilesFlyout" Opened="Flyout_Opened" ShouldConstrainToRootBounds="False">
                                     <ListView
                                         x:Name="ProfilesListView"
                                         ItemsSource="{x:Bind ViewModel.Profiles, Mode=OneWay}"

@@ -464,6 +464,12 @@ namespace PowerDisplay.Common.Drivers.DDC
                     {
                         InitializePowerState(monitor, candidate.Handle);
                     }
+
+                    // Initialize contrast if supported
+                    if (monitor.SupportsContrast)
+                    {
+                        InitializeContrast(monitor, candidate.Handle);
+                    }
                 }
 
                 // Initialize brightness (always supported for DDC/CI monitors)
@@ -519,6 +525,18 @@ namespace PowerDisplay.Common.Drivers.DDC
             {
                 var brightnessInfo = new VcpFeatureValue((int)current, 0, (int)max);
                 monitor.CurrentBrightness = brightnessInfo.ToPercentage();
+            }
+        }
+
+        /// <summary>
+        /// Initialize contrast value for a monitor using VCP 0x12.
+        /// </summary>
+        private static void InitializeContrast(Monitor monitor, IntPtr handle)
+        {
+            if (TryGetVcpFeature(handle, VcpCodeContrast, monitor.Id, out uint current, out uint max))
+            {
+                var contrastInfo = new VcpFeatureValue((int)current, 0, (int)max);
+                monitor.CurrentContrast = contrastInfo.ToPercentage();
             }
         }
 
