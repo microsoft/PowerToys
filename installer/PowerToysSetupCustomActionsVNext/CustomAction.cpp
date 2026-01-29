@@ -610,6 +610,13 @@ UINT __stdcall InstallPackageIdentityMSIXCA(MSIHANDLE hInstall)
     hr = WcaInitialize(hInstall, "InstallPackageIdentityMSIXCA");
     ExitOnFailure(hr, "Failed to initialize");
 
+    // Double-check: Only install on Windows 11 or greater
+    if (!package::IsWin11OrGreater())
+    {
+        Logger::info(L"Skipping PackageIdentity MSIX installation - not Windows 11 or greater");
+        goto LExit;
+    }
+
     hr = WcaGetProperty(L"CustomActionData", &customActionData);
     ExitOnFailure(hr, "Failed to get CustomActionData property");
     
