@@ -95,6 +95,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _advancedPasteSettings.Properties.AdditionalActions ??= new AdvancedPasteAdditionalActions();
             _advancedPasteSettings.Properties.CustomActions ??= new AdvancedPasteCustomActions();
 
+            // Ensure PasteAIConfiguration is initialized before attaching handlers
+            // This prevents crashes when settings file doesn't have PasteAIConfiguration property
+            InitializePasteAIProviderState();
+
             AttachConfigurationHandlers();
 
             // set the callback functions value to handle outgoing IPC message.
@@ -104,8 +108,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _customActions = _advancedPasteSettings.Properties.CustomActions.Value ?? new ObservableCollection<AdvancedPasteCustomAction>();
 
             SetupSettingsFileWatcher();
-
-            InitializePasteAIProviderState();
 
             InitializeEnabledValue();
             MigrateLegacyAIEnablement();
