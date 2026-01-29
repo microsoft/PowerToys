@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using global::PowerToys.GPOWrapper;
@@ -132,6 +133,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
                     Settings.Properties.Hotkey.Value = _hotkey;
                     NotifyPropertyChanged();
+
+                    // Also notify that transparency keys have changed
+                    OnPropertyChanged(nameof(IncreaseOpacityKeysList));
+                    OnPropertyChanged(nameof(DecreaseOpacityKeysList));
 
                     // Using InvariantCulture as this is an IPC message
                     SendConfigMSG(
@@ -287,6 +292,62 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 _windows11 = value;
             }
+        }
+
+        /// <summary>
+        /// Gets the keys list for increasing window opacity (modifier keys + "+").
+        /// </summary>
+        public List<object> IncreaseOpacityKeysList
+        {
+            get
+            {
+                var keys = GetModifierKeysList();
+                keys.Add("+");
+                return keys;
+            }
+        }
+
+        /// <summary>
+        /// Gets the keys list for decreasing window opacity (modifier keys + "-").
+        /// </summary>
+        public List<object> DecreaseOpacityKeysList
+        {
+            get
+            {
+                var keys = GetModifierKeysList();
+                keys.Add("-");
+                return keys;
+            }
+        }
+
+        /// <summary>
+        /// Gets only the modifier keys from the current hotkey setting.
+        /// </summary>
+        private List<object> GetModifierKeysList()
+        {
+            var modifierKeys = new List<object>();
+
+            if (_hotkey.Win)
+            {
+                modifierKeys.Add(92); // The Windows key
+            }
+
+            if (_hotkey.Ctrl)
+            {
+                modifierKeys.Add("Ctrl");
+            }
+
+            if (_hotkey.Alt)
+            {
+                modifierKeys.Add("Alt");
+            }
+
+            if (_hotkey.Shift)
+            {
+                modifierKeys.Add(16); // The Shift key
+            }
+
+            return modifierKeys;
         }
 
         public void NotifyPropertyChanged([CallerMemberName] string propertyName = null)
