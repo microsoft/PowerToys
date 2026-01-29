@@ -56,7 +56,6 @@
                     <ControlTemplate TargetType="local:DockItemControl">
                         <Grid
                             x:Name="PART_RootGrid"
-                            MaxWidth="120"
                             Padding="{TemplateBinding Padding}"
                             VerticalAlignment="Stretch"
                             Background="{TemplateBinding Background}"

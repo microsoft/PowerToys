@@ -44,13 +44,10 @@
                     <!--  Appearance Section  -->
                     <TextBlock x:Uid="DockAppearanceSettingsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
 
-                    <!--  Dock Size  -->
-
-
                     <!--  Dock Position  -->
                     <controls:SettingsExpander
                         Description="Choose where the dock appears on your screen"
-                        Header="Dock position and appearnce"
+                        Header="Dock position and appearance"
                         IsExpanded="True">
                         <controls:SettingsExpander.HeaderIcon>
                             <SymbolIcon Symbol="MoveToFolder" />
@@ -67,10 +64,10 @@
                         <controls:SettingsExpander.Items>
 
                             <!--  Show Labels  -->
-                            <controls:SettingsCard ContentAlignment="Vertical">
+                            <controls:SettingsCard ContentAlignment="Left">
                                 <cpControls:CheckBoxWithDescriptionControl
-                                    Content="Show labels"
                                     Description="Choose whether to show labels for dock items by default"
+                                    Header="Show labels"
                                     IsChecked="{x:Bind ShowLabels, Mode=TwoWay}" />
                             </controls:SettingsCard>
                         </controls:SettingsExpander.Items>
@@ -122,10 +119,7 @@
                         x:Uid="DockAppearance_Background_SettingsExpander"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE790;}"
                         IsExpanded="{x:Bind ViewModel.DockAppearance.IsColorizationDetailsExpanded, Mode=TwoWay}">
-                        <ComboBox
-                            x:Uid="DockAppearance_ColorizationMode"
-                            MinWidth="{StaticResource SettingActionControlMinWidth}"
-                            SelectedIndex="{x:Bind ViewModel.DockAppearance.ColorizationModeIndex, Mode=TwoWay}">
+                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.DockAppearance.ColorizationModeIndex, Mode=TwoWay}">
                             <ComboBoxItem x:Uid="Settings_GeneralPage_ColorizationMode_None" />
                             <ComboBoxItem x:Uid="Settings_GeneralPage_ColorizationMode_WindowsAccent" />
                             <ComboBoxItem x:Uid="Settings_GeneralPage_ColorizationMode_CustomColor" />
