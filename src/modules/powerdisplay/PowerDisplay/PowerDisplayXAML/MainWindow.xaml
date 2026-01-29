@@ -92,6 +92,7 @@
                                 x:Name="MonitorsRepeater"
                                 HorizontalAlignment="Stretch"
                                 ItemsSource="{x:Bind ViewModel.Monitors, Mode=OneWay}"
+                                TabFocusNavigation="Once"
                                 Visibility="{x:Bind helpers:VisibilityConverter.BoolToVisibility(ViewModel.HasMonitors), Mode=OneWay}">
                                 <ItemsRepeater.Layout>
                                     <StackLayout Orientation="Vertical" Spacing="32" />
@@ -174,8 +175,8 @@
                                                         Style="{StaticResource SubtleButtonStyle}"
                                                         Visibility="{x:Bind helpers:VisibilityConverter.BoolToVisibility(ShowMoreButton), Mode=OneWay}">
                                                         <Button.Flyout>
-                                                            <Flyout Opened="Flyout_Opened" ShouldConstrainToRootBounds="False">
-                                                                <StackPanel MinWidth="200" Orientation="Vertical">
+                                                            <Flyout Opened="Flyout_Opened" Placement="BottomEdgeAlignedRight" ShouldConstrainToRootBounds="False">
+                                                                <StackPanel MinWidth="240" MaxWidth="320" Orientation="Vertical">
                                                                     <!--  Input Source Section  -->
                                                                     <StackPanel Visibility="{x:Bind helpers:VisibilityConverter.BoolToVisibility(ShowInputSource), Mode=OneWay}">
                                                                         <ListView
@@ -282,6 +283,7 @@
                                                         VerticalAlignment="Center"
                                                         DataContext="{x:Bind}"
                                                         IsEnabled="{x:Bind IsInteractionEnabled, Mode=OneWay}"
+                                                        IsTabStop="True"
                                                         Maximum="{x:Bind MaxBrightness, Mode=OneWay}"
                                                         Minimum="{x:Bind MinBrightness, Mode=OneWay}"
                                                         PointerCaptureLost="Slider_PointerCaptureLost"
@@ -314,6 +316,7 @@
                                                         VerticalAlignment="Center"
                                                         DataContext="{x:Bind}"
                                                         IsEnabled="{x:Bind IsInteractionEnabled, Mode=OneWay}"
+                                                        IsTabStop="True"
                                                         Maximum="100"
                                                         Minimum="0"
                                                         PointerCaptureLost="Slider_PointerCaptureLost"
@@ -347,6 +350,7 @@
                                                         VerticalAlignment="Center"
                                                         DataContext="{x:Bind}"
                                                         IsEnabled="{x:Bind IsInteractionEnabled, Mode=OneWay}"
+                                                        IsTabStop="True"
                                                         Maximum="{x:Bind MaxVolume, Mode=OneWay}"
                                                         Minimum="{x:Bind MinVolume, Mode=OneWay}"
                                                         PointerCaptureLost="Slider_PointerCaptureLost"
@@ -373,7 +377,11 @@
                                                         FontSize="16"
                                                         Glyph="&#xE7AD;" />
 
-                                                    <Grid Grid.Column="2" HorizontalAlignment="Stretch">
+                                                    <Grid
+                                                        Grid.Column="2"
+                                                        HorizontalAlignment="Stretch"
+                                                        TabFocusNavigation="Local"
+                                                        XYFocusKeyboardNavigation="Enabled">
                                                         <Grid.ColumnDefinitions>
                                                             <ColumnDefinition Width="*" />
                                                             <ColumnDefinition Width="4" />
@@ -392,6 +400,7 @@
                                                             DataContext="{x:Bind}"
                                                             IsChecked="{x:Bind IsRotation0, Mode=OneWay}"
                                                             IsEnabled="{x:Bind IsInteractionEnabled, Mode=OneWay}"
+                                                            IsTabStop="True"
                                                             Tag="0">
                                                             <FontIcon FontSize="14" Glyph="&#xE74A;" />
                                                         </ToggleButton>
@@ -404,6 +413,7 @@
                                                             DataContext="{x:Bind}"
                                                             IsChecked="{x:Bind IsRotation3, Mode=OneWay}"
                                                             IsEnabled="{x:Bind IsInteractionEnabled, Mode=OneWay}"
+                                                            IsTabStop="True"
                                                             Tag="3">
                                                             <FontIcon FontSize="14" Glyph="&#xE76B;" />
                                                         </ToggleButton>
@@ -416,6 +426,7 @@
                                                             DataContext="{x:Bind}"
                                                             IsChecked="{x:Bind IsRotation1, Mode=OneWay}"
                                                             IsEnabled="{x:Bind IsInteractionEnabled, Mode=OneWay}"
+                                                            IsTabStop="True"
                                                             Tag="1">
                                                             <FontIcon FontSize="14" Glyph="&#xE76C;" />
                                                         </ToggleButton>
@@ -428,6 +439,7 @@
                                                             DataContext="{x:Bind}"
                                                             IsChecked="{x:Bind IsRotation2, Mode=OneWay}"
                                                             IsEnabled="{x:Bind IsInteractionEnabled, Mode=OneWay}"
+                                                            IsTabStop="True"
                                                             Tag="2">
                                                             <FontIcon FontSize="14" Glyph="&#xE74B;" />
                                                         </ToggleButton>
