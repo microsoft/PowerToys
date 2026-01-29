@@ -577,6 +577,9 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="Settings_GeneralPage_BackgroundTintIntensity_SettingsCard.Header" xml:space="preserve">
     <value>Color intensity</value>
   </data>
+  <data name="Settings_GeneralPage_ImageTintIntensity_SettingsCard.Header" xml:space="preserve">
+    <value>Color intensity</value>
+  </data>
   <data name="OptionalColorPickerButton_UnsetTextBlock.Text" xml:space="preserve">
     <value>Choose color</value>
   </data>
@@ -668,13 +671,16 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Background image</value>
   </data>
   <data name="Settings_GeneralPage_NoBackground_DescriptionTextBlock.Text" xml:space="preserve">
-    <value>No settings</value>
+    <value>No additional settings are available.</value>
   </data>
   <data name="Settings_GeneralPage_Background_SettingsExpander.Header" xml:space="preserve">
     <value>Background</value>
   </data>
   <data name="Settings_GeneralPage_Background_SettingsExpander.Description" xml:space="preserve">
     <value>Choose a custom background color or image</value>
+  </data>
+  <data name="Settings_GeneralPage_Background_NotAvailable.Text" xml:space="preserve">
+    <value>Not available with Mica</value>
   </data>
   <data name="Settings_GeneralPage_WindowsAccentColor_SettingsCard.Header" xml:space="preserve">
     <value>System accent color</value>
@@ -692,7 +698,7 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Restore defaults</value>
   </data>
   <data name="Settings_GeneralPage_Background_ResetImagePropertiesButton.Content" xml:space="preserve">
-    <value>Reset</value>
+    <value>Reset image settings</value>
   </data>
   <data name="Settings_GeneralPage_WindowsAccentColor_SettingsCard_Description1.Text" xml:space="preserve">
     <value>Change the system accent in Windows Settings:</value>
@@ -737,12 +743,35 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Select the visual material used for the window background</value>
   </data>
   <data name="Settings_GeneralPage_BackdropStyle_Acrylic.Content" xml:space="preserve">
-    <value>Acrylic</value>
+    <value>Acrylic (default)</value>
   </data>
   <data name="Settings_GeneralPage_BackdropStyle_Transparent.Content" xml:space="preserve">
     <value>Transparent</value>
   </data>
   <data name="Settings_GeneralPage_BackdropStyle_Mica.Content" xml:space="preserve">
     <value>Mica</value>
+  </data>
+  <data name="Settings_GeneralPage_BackdropStyle_AcrylicThin.Content" xml:space="preserve">
+    <value>Thin Acrylic</value>
+  </data>
+  <data name="Settings_GeneralPage_BackdropStyle_MicaAlt.Content" xml:space="preserve">
+    <value>Mica Alt</value>
+  </data>
+  <data name="Settings_GeneralPage_MicaBackdrop_DescriptionTextBlock.Text" xml:space="preserve">
+    <value>Mica automatically adapts to your desktop wallpaper. Custom backgrounds and opacity settings are not available for this material.</value>
+  </data>
+  <data name="Settings_AppearancePage_OpenCommandPaletteButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Open Command Palette</value>
+    <comment>Button to open the Command Palette window to preview appearance changes</comment>
+  </data>
+  <data name="Settings_AppearancePage_OpenCommandPaletteButton_Text.Text" xml:space="preserve">
+    <value>Open Command Palette</value>
+  </data>
+  <data name="Settings_AppearancePage_ResetAppearanceButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Reset appearance settings</value>
+    <comment>Button to reset all appearance settings to their default values</comment>
+  </data>
+  <data name="Settings_AppearancePage_ResetAppearanceButton_Text.Text" xml:space="preserve">
+    <value>Reset to defaults</value>
   </data>
 </root>

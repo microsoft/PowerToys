@@ -65,4 +65,9 @@ public sealed class ThemeSnapshot
     public required int BlurAmount { get; init; }
 
     public required float BackgroundBrightness { get; init; }
+
+    /// <summary>
+    /// Gets whether colorization is active (accent color, custom color, or image mode).
+    /// </summary>
+    public required bool HasColorization { get; init; }
 }

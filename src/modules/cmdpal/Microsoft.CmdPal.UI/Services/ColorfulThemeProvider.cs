@@ -54,25 +54,19 @@ internal sealed class ColorfulThemeProvider : IThemeProvider
         var colorIntensity = isLight ? 0.6f * colorIntensityUser : colorIntensityUser;
         var effectiveBgColor = ColorBlender.Blend(baseColor, blended, colorIntensity);
 
-        var transparencyMode = context.TransparencyMode ?? BackdropStyle.Acrylic;
+        var transparencyMode = context.BackdropStyle ?? BackdropStyle.Acrylic;
+        var config = BackdropStyles.Get(transparencyMode);
 
-        // Base opacities before applying user's backdrop opacity
-        // For Acrylic/Mica: force some transparency for the blur effect to show through
-        var (baseTintOpacity, baseLuminosityOpacity) = transparencyMode switch
-        {
-            BackdropStyle.Acrylic => (0.8f, 0.8f),
-            BackdropStyle.Mica => (0.85f, 1.0f),
-            _ => (1.0f, 1.0f), // Clear
-        };
+        // For colorful theme, boost tint opacity to show color better through blur
+        // But not for styles with fixed opacity (Mica) - they handle their own opacity
+        var baseTintOpacity = config.ControllerKind == BackdropControllerKind.Solid || !config.SupportsOpacity
+            ? (float?)null // Use default
+            : Math.Max(config.BaseTintOpacity, 0.8f);
 
-        // Compute effective opacities based on style
-        // For Clear: only BackdropOpacity matters (controls alpha of solid color)
-        // For Acrylic/Mica: multiply base opacity with BackdropOpacity
-        var effectiveOpacity = transparencyMode == BackdropStyle.Clear
-            ? context.BackdropOpacity
-            : baseTintOpacity * context.BackdropOpacity;
-
-        var effectiveLuminosityOpacity = baseLuminosityOpacity * context.BackdropOpacity;
+        var effectiveOpacity = config.ComputeEffectiveOpacity(context.BackdropOpacity, baseTintOpacity);
+        var effectiveLuminosityOpacity = config.SupportsOpacity
+            ? config.BaseLuminosityOpacity * context.BackdropOpacity
+            : config.BaseLuminosityOpacity;
 
         return new BackdropParameters(
             TintColor: effectiveBgColor,

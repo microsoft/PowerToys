@@ -37,7 +37,7 @@ public sealed partial class CommandPalettePreview : UserControl
     // Computed read-only dependency properties
     public static readonly DependencyProperty EffectiveClearColorProperty = DependencyProperty.Register(nameof(EffectiveClearColor), typeof(Color), typeof(CommandPalettePreview), new PropertyMetadata(default(Color)));
 
-    public static readonly DependencyProperty AcrylicVisibilityProperty = DependencyProperty.Register(nameof(AcrylicVisibility), typeof(Visibility), typeof(CommandPalettePreview), new PropertyMetadata(Visibility.Collapsed));
+    public static readonly DependencyProperty AcrylicVisibilityProperty = DependencyProperty.Register(nameof(AcrylicVisibility), typeof(Visibility), typeof(CommandPalettePreview), new PropertyMetadata(Visibility.Visible));
 
     public static readonly DependencyProperty ClearVisibilityProperty = DependencyProperty.Register(nameof(ClearVisibility), typeof(Visibility), typeof(CommandPalettePreview), new PropertyMetadata(Visibility.Collapsed));
 
@@ -164,6 +164,7 @@ public sealed partial class CommandPalettePreview : UserControl
         }
 
         preview.UpdateComputedVisibilityProperties();
+        preview.UpdateComputedClearColor();
     }
 
     private void UpdateComputedClearColor()
@@ -177,9 +178,12 @@ public sealed partial class CommandPalettePreview : UserControl
 
     private void UpdateComputedVisibilityProperties()
     {
-        AcrylicVisibility = ShowBackgroundImage == Visibility.Collapsed && PreviewBackdropStyle != BackdropStyle.Clear
+        var config = BackdropStyles.Get(PreviewBackdropStyle ?? BackdropStyle.Acrylic);
+
+        // Show backdrop effect based on style (on top of any background image)
+        AcrylicVisibility = config.PreviewBrush == PreviewBrushKind.Acrylic
             ? Visibility.Visible : Visibility.Collapsed;
-        ClearVisibility = ShowBackgroundImage == Visibility.Collapsed && PreviewBackdropStyle == BackdropStyle.Clear
+        ClearVisibility = config.PreviewBrush == PreviewBrushKind.Solid
             ? Visibility.Visible : Visibility.Collapsed;
     }
 

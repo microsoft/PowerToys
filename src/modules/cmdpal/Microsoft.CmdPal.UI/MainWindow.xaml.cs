@@ -89,6 +89,7 @@ public sealed partial class MainWindow : WindowEx,
     private DesktopAcrylicController? _acrylicController;
     private MicaController? _micaController;
     private SystemBackdropConfiguration? _configurationSource;
+    private bool _isUpdatingBackdrop;
     private TimeSpan _autoGoHomeInterval = Timeout.InfiniteTimeSpan;
 
     private WindowPosition _currentWindowPosition = new();
@@ -117,7 +118,7 @@ public sealed partial class MainWindow : WindowEx,
             CommandPaletteHost.SetHostHwnd((ulong)_hwnd.Value);
         }
 
-        SetAcrylic();
+        InitializeBackdropSupport();
 
         _hiddenOwnerBehavior.ShowInTaskbar(this, Debugger.IsAttached);
 
@@ -166,7 +167,7 @@ public sealed partial class MainWindow : WindowEx,
         App.Current.Services.GetService<SettingsModel>()!.SettingsChanged += SettingsChangedHandler;
 
         // Make sure that we update the acrylic theme when the OS theme changes
-        RootElement.ActualThemeChanged += (s, e) => DispatcherQueue.TryEnqueue(UpdateAcrylic);
+        RootElement.ActualThemeChanged += (s, e) => DispatcherQueue.TryEnqueue(UpdateBackdrop);
 
         // Hardcoding event name to avoid bringing in the PowerToys.interop dependency. Event name must match CMDPAL_SHOW_EVENT from shared_constants.h
         NativeEventWaiter.WaitForEventLoop("Local\\PowerToysCmdPal-ShowEvent-62336fcd-8611-4023-9b30-091a6af4cc5a", () =>
@@ -193,7 +194,7 @@ public sealed partial class MainWindow : WindowEx,
 
     private void ThemeServiceOnThemeChanged(object? sender, ThemeChangedEventArgs e)
     {
-        UpdateAcrylic();
+        UpdateBackdrop();
     }
 
     private static void LocalKeyboardListener_OnKeyPressed(object? sender, LocalKeyboardListenerKeyPressedEventArgs e)
@@ -287,7 +288,7 @@ public sealed partial class MainWindow : WindowEx,
         _autoGoHomeTimer.Interval = _autoGoHomeInterval;
     }
 
-    private void SetAcrylic()
+    private void InitializeBackdropSupport()
     {
         if (DesktopAcrylicController.IsSupported() || MicaController.IsSupported())
         {
@@ -298,16 +299,25 @@ public sealed partial class MainWindow : WindowEx,
         }
     }
 
-    private void UpdateAcrylic()
+    private void UpdateBackdrop()
     {
+        // Prevent re-entrance when backdrop changes trigger ActualThemeChanged
+        if (_isUpdatingBackdrop)
+        {
+            return;
+        }
+
+        _isUpdatingBackdrop = true;
+
         var backdrop = _themeService.Current.BackdropParameters;
         var isImageMode = ViewModel.ShowBackgroundImage;
+        var config = BackdropStyles.Get(backdrop.Style);
 
         try
         {
-            switch (backdrop.Style)
+            switch (config.ControllerKind)
             {
-                case BackdropStyle.Clear:
+                case BackdropControllerKind.Solid:
                     CleanupBackdropControllers();
                     var tintColor = Color.FromArgb(
                         (byte)(backdrop.EffectiveOpacity * 255),
@@ -317,19 +327,25 @@ public sealed partial class MainWindow : WindowEx,
                     SetupTransparentBackdrop(tintColor);
                     break;
 
-                case BackdropStyle.Mica:
-                    SetupMica(backdrop, isImageMode);
+                case BackdropControllerKind.Mica:
+                case BackdropControllerKind.MicaAlt:
+                    SetupMica(backdrop, isImageMode, config.ControllerKind);
                     break;
 
-                case BackdropStyle.Acrylic:
+                case BackdropControllerKind.Acrylic:
+                case BackdropControllerKind.AcrylicThin:
                 default:
-                    SetupDesktopAcrylic(backdrop, isImageMode);
+                    SetupDesktopAcrylic(backdrop, isImageMode, config.ControllerKind);
                     break;
             }
         }
         catch (Exception ex)
         {
             Logger.LogError("Failed to update backdrop", ex);
+        }
+        finally
+        {
+            _isUpdatingBackdrop = false;
         }
     }
 
@@ -362,12 +378,12 @@ public sealed partial class MainWindow : WindowEx,
         }
     }
 
-    private void SetupDesktopAcrylic(BackdropParameters backdrop, bool isImageMode)
+    private void SetupDesktopAcrylic(BackdropParameters backdrop, bool isImageMode, BackdropControllerKind kind)
     {
         CleanupBackdropControllers();
 
         // Fall back to solid color if acrylic not supported
-        if (_configurationSource is null)
+        if (_configurationSource is null || !DesktopAcrylicController.IsSupported())
         {
             SetupTransparentBackdrop(backdrop.FallbackColor);
             return;
@@ -377,12 +393,15 @@ public sealed partial class MainWindow : WindowEx,
         SystemBackdrop = null;
 
         // Image mode: no tint here, BlurImageControl handles it (avoids double-tinting)
-        var effectiveTintOpacity = isImageMode && backdrop.Style == BackdropStyle.Acrylic
+        var effectiveTintOpacity = isImageMode
             ? 0.0f
             : backdrop.EffectiveOpacity;
 
         _acrylicController = new DesktopAcrylicController
         {
+            Kind = kind == BackdropControllerKind.AcrylicThin
+                ? DesktopAcrylicKind.Thin
+                : DesktopAcrylicKind.Default,
             TintColor = backdrop.TintColor,
             TintOpacity = effectiveTintOpacity,
             FallbackColor = backdrop.FallbackColor,
@@ -394,7 +413,7 @@ public sealed partial class MainWindow : WindowEx,
         _acrylicController.SetSystemBackdropConfiguration(_configurationSource);
     }
 
-    private void SetupMica(BackdropParameters backdrop, bool isImageMode)
+    private void SetupMica(BackdropParameters backdrop, bool isImageMode, BackdropControllerKind kind)
     {
         CleanupBackdropControllers();
 
@@ -407,19 +426,29 @@ public sealed partial class MainWindow : WindowEx,
 
         // MicaController and SystemBackdrop can't be active simultaneously
         SystemBackdrop = null;
+        _configurationSource.Theme = _themeService.Current.Theme == ElementTheme.Dark
+            ? SystemBackdropTheme.Dark
+            : SystemBackdropTheme.Light;
 
-        // Image mode: no tint here, BlurImageControl handles it (avoids double-tinting)
-        var effectiveTintOpacity = isImageMode
-            ? 0.0f
-            : backdrop.EffectiveOpacity;
+        var hasColorization = _themeService.Current.HasColorization || isImageMode;
 
         _micaController = new MicaController
         {
-            TintColor = backdrop.TintColor,
-            TintOpacity = effectiveTintOpacity,
-            FallbackColor = backdrop.FallbackColor,
-            LuminosityOpacity = backdrop.EffectiveLuminosityOpacity,
+            Kind = kind == BackdropControllerKind.MicaAlt
+                ? MicaKind.BaseAlt
+                : MicaKind.Base,
         };
+
+        // Only set tint properties when colorization is active
+        // Otherwise let system handle light/dark theme defaults automatically
+        if (hasColorization)
+        {
+            // Image mode: no tint here, BlurImageControl handles it (avoids double-tinting)
+            _micaController.TintColor = backdrop.TintColor;
+            _micaController.TintOpacity = isImageMode ? 0.0f : backdrop.EffectiveOpacity;
+            _micaController.FallbackColor = backdrop.FallbackColor;
+            _micaController.LuminosityOpacity = backdrop.EffectiveLuminosityOpacity;
+        }
 
         _micaController.AddSystemBackdropTarget(this.As<ICompositionSupportsSystemBackdrop>());
         _micaController.SetSystemBackdropConfiguration(_configurationSource);

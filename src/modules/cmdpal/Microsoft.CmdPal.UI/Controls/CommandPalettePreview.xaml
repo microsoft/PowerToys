@@ -16,7 +16,7 @@
         CornerRadius="8"
         Translation="0,0,8">
         <Grid>
-            <!--  Clear style: SolidColorBrush with computed alpha  -->
+            <!--  Clear style: SolidColorBrush with computed alpha (window backdrop)  -->
             <Border
                 HorizontalAlignment="Stretch"
                 VerticalAlignment="Stretch"
@@ -27,7 +27,7 @@
                     <SolidColorBrush Color="{x:Bind EffectiveClearColor, Mode=OneWay}" />
                 </Border.Background>
             </Border>
-            <!--  Acrylic/Mica style: AcrylicBrush with effective opacity (approximation for Mica)  -->
+            <!--  Acrylic/Mica style: AcrylicBrush with effective opacity (window backdrop)  -->
             <Border
                 HorizontalAlignment="Stretch"
                 VerticalAlignment="Stretch"
@@ -41,6 +41,7 @@
                         TintOpacity="{x:Bind PreviewEffectiveOpacity, Mode=OneWay}" />
                 </Border.Background>
             </Border>
+            <!--  Background image (inside window, on top of backdrop)  -->
             <local:BlurImageControl
                 HorizontalAlignment="Stretch"
                 VerticalAlignment="Stretch"

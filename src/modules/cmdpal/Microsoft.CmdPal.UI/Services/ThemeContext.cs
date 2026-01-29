@@ -9,6 +9,9 @@ using Windows.UI;
 
 namespace Microsoft.CmdPal.UI.Services;
 
+/// <summary>
+/// Input parameters for theme computation, passed to theme providers.
+/// </summary>
 internal sealed record ThemeContext
 {
     public ElementTheme Theme { get; init; }
@@ -23,7 +26,7 @@ internal sealed record ThemeContext
 
     public int? ColorIntensity { get; init; }
 
-    public BackdropStyle? TransparencyMode { get; init; }
+    public BackdropStyle? BackdropStyle { get; init; }
 
     public float BackdropOpacity { get; init; } = 1.0f;
 }
