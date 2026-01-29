@@ -24,6 +24,7 @@ using MouseWithoutBorders.Class;
 using MouseWithoutBorders.Exceptions;
 
 using Clipboard = MouseWithoutBorders.Core.Clipboard;
+using SocketStatus = MouseWithoutBorders.Class.SocketStatus;
 using Thread = MouseWithoutBorders.Core.Thread;
 
 // Log is enough

@@ -51,7 +51,11 @@ using Thread = MouseWithoutBorders.Core.Thread;
 
 namespace MouseWithoutBorders.Class
 {
-    internal enum SocketStatus : int
+    /// <summary>
+    /// Socket status enumeration - made public for IPC serialization.
+    /// Must match Settings.UI.Library\MouseWithoutBordersIpcModels.cs
+    /// </summary>
+    public enum SocketStatus : int
     {
         NA = 0,
         Resolving = 1,

@@ -27,11 +27,9 @@ public sealed class SetSettingCommandLineCommand
 
     public static void Execute(string settingName, string settingValue, SettingsUtils settingsUtils)
     {
-        Assembly settingsLibraryAssembly = CommandLineUtils.GetSettingsAssembly();
-
         var (moduleName, propertyName) = ParseSettingName(settingName);
 
-        var settingsConfig = CommandLineUtils.GetSettingsConfigFor(moduleName, settingsUtils, settingsLibraryAssembly);
+        var settingsConfig = CommandLineUtils.GetSettingsConfigFor(moduleName, settingsUtils);
 
         var propertyInfo = CommandLineUtils.GetSettingPropertyInfo(propertyName, settingsConfig);
         if (propertyInfo == null)

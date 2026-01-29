@@ -8,6 +8,9 @@
 
     <!-- Suppress DynamicallyAccessedMemberTypes.PublicParameterlessConstructor in fallback code path of Windows SDK projection -->
     <!-- Suppress CA1416 for Windows-specific APIs that are used in PowerToys which only runs on Windows 10.0.19041.0+ -->
-    <WarningsNotAsErrors>IL2081;CsWinRT1028;CA1416;$(WarningsNotAsErrors)</WarningsNotAsErrors>
+    <!-- Suppress IL2026/IL3050 for JSON serialization in specific scenarios (backup/restore, CLI commands) -->
+    <!-- Suppress IL2067/IL2070/IL2072/IL2075/IL2087/IL2098 for reflection in CLI/DSC command utilities -->
+    <!-- Suppress IL3000/IL3002 for Assembly.Location and Marshal.GetHINSTANCE in single-file/AOT scenarios -->
+    <WarningsNotAsErrors>IL2026;IL2067;IL2070;IL2072;IL2075;IL2081;IL2087;IL2098;IL3000;IL3002;IL3050;CsWinRT1028;CA1416;$(WarningsNotAsErrors)</WarningsNotAsErrors>
   </PropertyGroup>
 </Project>

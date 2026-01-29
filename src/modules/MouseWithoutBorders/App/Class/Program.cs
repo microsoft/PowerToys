@@ -19,6 +19,7 @@ using System.Globalization;
 using System.IO;
 using System.IO.Pipes;
 using System.Linq;
+using System.Security.AccessControl;
 using System.Security.Authentication.ExtendedProtection;
 using System.Security.Principal;
 using System.ServiceModel.Channels;
@@ -276,7 +277,7 @@ namespace MouseWithoutBorders.Class
             Task<MachineSocketState[]> RequestMachineSocketStateAsync();
         }
 
-        private sealed class SettingsSyncHelper : ISettingsSyncHelper
+        private sealed class SettingsSyncHelper : ISettingsSyncHelper, ISettingsSyncHandler
         {
             public Task<ISettingsSyncHelper.MachineSocketState[]> RequestMachineSocketStateAsync()
             {
@@ -297,6 +298,28 @@ namespace MouseWithoutBorders.Class
                 }
 
                 return Task.FromResult(machineStates.Select((state) => new ISettingsSyncHelper.MachineSocketState { Name = state.Key, Status = state.Value }).ToArray());
+            }
+
+            // ISettingsSyncHandler implementation (AOT-compatible)
+            Task<MachineSocketState[]> ISettingsSyncHandler.RequestMachineSocketStateAsync()
+            {
+                var machineStates = new Dictionary<string, SocketStatus>();
+                if (Common.Sk == null || Common.Sk.TcpSockets == null)
+                {
+                    return Task.FromResult(Array.Empty<MachineSocketState>());
+                }
+
+                foreach (var client in Common.Sk.TcpSockets
+                    .Where(t => t != null && t.IsClient && !string.IsNullOrEmpty(t.MachineName)))
+                {
+                    var exists = machineStates.TryGetValue(client.MachineName, out var existingStatus);
+                    if (!exists || existingStatus == SocketStatus.NA)
+                    {
+                        machineStates[client.MachineName] = client.Status;
+                    }
+                }
+
+                return Task.FromResult(machineStates.Select((state) => new MachineSocketState { Name = state.Key, Status = state.Value }).ToArray());
             }
 
             public void ConnectToMachine(string pcName, string securityKey)
@@ -379,7 +402,64 @@ namespace MouseWithoutBorders.Class
             var serverTaskCancellationSource = new CancellationTokenSource();
             CancellationToken cancellationToken = serverTaskCancellationSource.Token;
 
+            // Use AOT-compatible IPC server if available, otherwise use StreamJsonRpc
+#if BUILD_INFO_PUBLISH_AOT || true // Enable for all builds
+            StartAotCompatibleIpcServer("MouseWithoutBorders/SettingsSync", cancellationToken);
+#else
             IpcChannel<SettingsSyncHelper>.StartIpcServer("MouseWithoutBorders/SettingsSync", cancellationToken);
+#endif
+        }
+
+        private static void StartAotCompatibleIpcServer(string pipeName, CancellationToken cancellationToken)
+        {
+            var handler = new SettingsSyncHelper();
+            var server = new MouseWithoutBordersIpcServer(handler);
+
+            _ = Task.Factory.StartNew(
+                async () =>
+                {
+                    try
+                    {
+                        while (!cancellationToken.IsCancellationRequested)
+                        {
+                            using (var serverPipe = NamedPipeServerStreamAcl.Create(
+                                pipeName,
+                                PipeDirection.InOut,
+                                NamedPipeServerStream.MaxAllowedServerInstances,
+                                PipeTransmissionMode.Byte,
+                                PipeOptions.Asynchronous,
+                                0,
+                                0,
+                                CreatePipeSecurity()))
+                            {
+                                await serverPipe.WaitForConnectionAsync(cancellationToken);
+                                await server.HandleClientAsync(serverPipe, cancellationToken);
+                            }
+                        }
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        // Normal shutdown
+                    }
+                    catch (Exception e)
+                    {
+                        Logger.Log(e);
+                    }
+                },
+                cancellationToken,
+                TaskCreationOptions.LongRunning,
+                TaskScheduler.Default);
+        }
+
+        private static PipeSecurity CreatePipeSecurity()
+        {
+            var securityIdentifier = new SecurityIdentifier(WellKnownSidType.AuthenticatedUserSid, null);
+            var pipeSecurity = new PipeSecurity();
+            pipeSecurity.AddAccessRule(new PipeAccessRule(
+                securityIdentifier,
+                PipeAccessRights.ReadWrite | PipeAccessRights.CreateNewInstance,
+                AccessControlType.Allow));
+            return pipeSecurity;
         }
 
         internal static void StartInputCallbackThread()

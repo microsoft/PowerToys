@@ -2,12 +2,13 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 
 namespace Microsoft.PowerToys.Settings.UI.Library
 {
-    public class GenericProperty<T> : ICmdLineRepresentable
+    public class GenericProperty<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] T> : ICmdLineRepresentable
     {
         [JsonPropertyName("value")]
         public T Value { get; set; }

@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Reflection;
 
@@ -17,7 +18,7 @@ public interface ICmdLineRepresentable
 
     public abstract bool TryToCmdRepresentable(out string result);
 
-    public static sealed bool TryToCmdRepresentableFor(Type type, object value, out string result)
+    public static sealed bool TryToCmdRepresentableFor([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] Type type, object value, out string result)
     {
         result = null;
         if (!typeof(ICmdLineRepresentable).IsAssignableFrom(type))
@@ -36,7 +37,7 @@ public interface ICmdLineRepresentable
         return false;
     }
 
-    public static sealed bool TryParseFromCmdFor(Type type, string cmd, out object result)
+    public static sealed bool TryParseFromCmdFor([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] Type type, string cmd, out object result)
     {
         result = null;
         if (!typeof(ICmdLineRepresentable).IsAssignableFrom(type))
@@ -55,7 +56,7 @@ public interface ICmdLineRepresentable
         return false;
     }
 
-    public static sealed object ParseFor(Type type, string cmdRepr)
+    public static sealed object ParseFor([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] Type type, string cmdRepr)
     {
         if (type.IsEnum)
         {
@@ -98,7 +99,7 @@ public interface ICmdLineRepresentable
         throw new NotImplementedException($"Parsing type {type} is not supported yet");
     }
 
-    public static string ToCmdRepr(Type type, object value)
+    public static string ToCmdRepr([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] Type type, object value)
     {
         if (type.IsEnum || type.IsPrimitive)
         {

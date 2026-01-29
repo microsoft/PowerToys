@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Collections.Generic;
 using System.Text.Json.Serialization;
 using SettingsUILibrary = Settings.UI.Library;
 using SettingsUILibraryHelpers = Settings.UI.Library.Helpers;
@@ -166,6 +167,15 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     [JsonSerializable(typeof(SndModuleSettings<SndPowerPreviewSettings>))]
     [JsonSerializable(typeof(SndModuleSettings<SndPowerRenameSettings>))]
     [JsonSerializable(typeof(SndModuleSettings<SndShortcutGuideSettings>))]
+
+    // CLI/DSC command support types
+    [JsonSerializable(typeof(PowerLauncherPluginSettings))]
+    [JsonSerializable(typeof(PowerLauncherPluginSettings[]))]
+
+    // MouseWithoutBorders IPC types
+    [JsonSerializable(typeof(MachineSocketState))]
+    [JsonSerializable(typeof(MachineSocketState[]))]
+    [JsonSerializable(typeof(SocketStatus))]
 
     public partial class SettingsSerializationContext : JsonSerializerContext
     {

@@ -246,10 +246,8 @@ public sealed class SetAdditionalSettingsCommandLineCommand
 
     public static void Execute(string moduleName, JsonDocument settings, SettingsUtils settingsUtils)
     {
-        Assembly settingsLibraryAssembly = CommandLineUtils.GetSettingsAssembly();
-
-        var settingsConfig = CommandLineUtils.GetSettingsConfigFor(moduleName, settingsUtils, settingsLibraryAssembly);
-        var settingsConfigType = settingsConfig.GetType();
+        var settingsConfig = CommandLineUtils.GetSettingsConfigFor(moduleName, settingsUtils);
+        var settingsConfigType = settingsConfig?.GetType();
 
         if (!SupportedAdditionalPropertiesInfoForModules.TryGetValue(moduleName, out var additionalPropertiesInfo))
         {

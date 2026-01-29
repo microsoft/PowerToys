@@ -47,9 +47,7 @@ public sealed class GetSettingCommandLineCommand
     {
         var modulesSettings = new Dictionary<string, Dictionary<string, object>>();
 
-        var settingsAssembly = CommandLineUtils.GetSettingsAssembly();
         var settingsUtils = SettingsUtils.Default;
-
         var enabledModules = SettingsRepository<GeneralSettings>.GetInstance(settingsUtils).SettingsConfig.Enabled;
 
         foreach (var (moduleName, settings) in settingNamesForModules)
@@ -57,10 +55,10 @@ public sealed class GetSettingCommandLineCommand
             var moduleSettings = new Dictionary<string, object>();
             if (moduleName != nameof(GeneralSettings))
             {
-                moduleSettings.Add("Enabled", typeof(EnabledModules).GetProperty(moduleName).GetValue(enabledModules));
+                moduleSettings.Add("Enabled", CommandLineUtils.GetEnabledModuleValue(moduleName, enabledModules));
             }
 
-            var settingsConfig = CommandLineUtils.GetSettingsConfigFor(moduleName, settingsUtils, settingsAssembly);
+            var settingsConfig = CommandLineUtils.GetSettingsConfigFor(moduleName, settingsUtils);
             foreach (var settingName in settings)
             {
                 var value = CommandLineUtils.GetPropertyValue(settingName, settingsConfig);

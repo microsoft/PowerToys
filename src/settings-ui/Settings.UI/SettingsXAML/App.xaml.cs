@@ -79,6 +79,9 @@ namespace Microsoft.PowerToys.Settings.UI
         /// </summary>
         public App()
         {
+#if BUILD_INFO_PUBLISH_AOT
+            Helpers.TypePreservation.PreserveTypes();
+#endif
             Logger.InitializeLogger(@"\Settings\Logs");
 
             string appLanguage = LanguageHelper.LoadLanguage();

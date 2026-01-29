@@ -24,7 +24,9 @@ using Microsoft.PowerToys.Settings.UI.SerializationContext;
 using Microsoft.UI;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml.Media;
+#if !BUILD_INFO_PUBLISH_AOT
 using StreamJsonRpc;
+#endif
 using Windows.ApplicationModel.DataTransfer;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
@@ -235,20 +237,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             get => _enabledStateIsGPOConfigured;
         }
 
-        private enum SocketStatus : int
-        {
-            NA = 0,
-            Resolving = 1,
-            Connecting = 2,
-            Handshaking = 3,
-            Error = 4,
-            ForceClosed = 5,
-            InvalidKey = 6,
-            Timeout = 7,
-            SendError = 8,
-            Connected = 9,
-        }
-
+        // SocketStatus enum is now defined in Settings.UI.Library\MouseWithoutBordersIpcModels.cs
+#if !BUILD_INFO_PUBLISH_AOT
         private interface ISettingsSyncHelper
         {
             [Newtonsoft.Json.JsonObject(Newtonsoft.Json.MemberSerialization.OptIn)]
@@ -274,13 +264,73 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             Task<MachineSocketState[]> RequestMachineSocketStateAsync();
         }
+#endif
 
         private static CancellationTokenSource _cancellationTokenSource;
 
         private static Task _machinePollingThreadTask;
 
-        private static VisualStudio.Threading.AsyncSemaphore _ipcSemaphore = new VisualStudio.Threading.AsyncSemaphore(1);
+        private static SemaphoreSlim _ipcSemaphore = new SemaphoreSlim(1, 1);
+        private static NamedPipeClientStream syncHelperStream;
 
+#if BUILD_INFO_PUBLISH_AOT
+        // AOT-compatible IPC client wrapper
+        private sealed partial class SyncHelper : IDisposable
+        {
+            public SyncHelper(NamedPipeClientStream stream)
+            {
+                Stream = stream;
+                Client = new MouseWithoutBordersIpcClient(stream);
+            }
+
+            public NamedPipeClientStream Stream { get; }
+
+            public MouseWithoutBordersIpcClient Client { get; private set; }
+
+            public void Dispose()
+            {
+                Client?.Dispose();
+            }
+        }
+
+        private async Task<SyncHelper> GetSettingsSyncHelperAsync()
+        {
+            try
+            {
+                var recreateStream = false;
+                if (syncHelperStream == null)
+                {
+                    recreateStream = true;
+                }
+                else
+                {
+                    if (!syncHelperStream.IsConnected || !syncHelperStream.CanWrite)
+                    {
+                        await syncHelperStream.DisposeAsync();
+                        recreateStream = true;
+                    }
+                }
+
+                if (recreateStream)
+                {
+                    syncHelperStream = new NamedPipeClientStream(".", "MouseWithoutBorders/SettingsSync", PipeDirection.InOut, PipeOptions.Asynchronous);
+                    await syncHelperStream.ConnectAsync(10000);
+                }
+
+                return new SyncHelper(syncHelperStream);
+            }
+            catch (Exception ex)
+            {
+                if (IsEnabled)
+                {
+                    Logger.LogError($"Couldn't create SettingsSync (AOT): {ex}");
+                }
+
+                return null;
+            }
+        }
+#else
+        // StreamJsonRpc-based IPC client wrapper (non-AOT builds)
         private sealed partial class SyncHelper : IDisposable
         {
             public SyncHelper(NamedPipeClientStream stream)
@@ -298,8 +348,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 ((IDisposable)Endpoint).Dispose();
             }
         }
-
-        private static NamedPipeClientStream syncHelperStream;
 
         private async Task<SyncHelper> GetSettingsSyncHelperAsync()
         {
@@ -337,87 +385,153 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 return null;
             }
         }
+#endif
 
         public async Task SubmitShutdownRequestAsync()
         {
-            using (await _ipcSemaphore.EnterAsync())
+            await _ipcSemaphore.WaitAsync();
+            try
             {
                 using (var syncHelper = await GetSettingsSyncHelperAsync())
                 {
-                    syncHelper?.Endpoint?.Shutdown();
-                    var task = syncHelper?.Stream.FlushAsync();
-                    if (task != null)
+                    if (syncHelper != null)
                     {
-                        await task;
+#if BUILD_INFO_PUBLISH_AOT
+                        await syncHelper.Client.ShutdownAsync();
+#else
+                        syncHelper.Endpoint?.Shutdown();
+                        var task = syncHelper.Stream.FlushAsync();
+                        if (task != null)
+                        {
+                            await task;
+                        }
+#endif
                     }
                 }
+            }
+            finally
+            {
+                _ipcSemaphore.Release();
             }
         }
 
         public async Task SubmitReconnectRequestAsync()
         {
-            using (await _ipcSemaphore.EnterAsync())
+            await _ipcSemaphore.WaitAsync();
+            try
             {
                 using (var syncHelper = await GetSettingsSyncHelperAsync())
                 {
-                    syncHelper?.Endpoint?.Reconnect();
-                    var task = syncHelper?.Stream.FlushAsync();
-                    if (task != null)
+                    if (syncHelper != null)
                     {
-                        await task;
+#if BUILD_INFO_PUBLISH_AOT
+                        await syncHelper.Client.ReconnectAsync();
+#else
+                        syncHelper.Endpoint?.Reconnect();
+                        var task = syncHelper.Stream.FlushAsync();
+                        if (task != null)
+                        {
+                            await task;
+                        }
+#endif
                     }
                 }
+            }
+            finally
+            {
+                _ipcSemaphore.Release();
             }
         }
 
         public async Task SubmitNewKeyRequestAsync()
         {
-            using (await _ipcSemaphore.EnterAsync())
+            await _ipcSemaphore.WaitAsync();
+            try
             {
                 using (var syncHelper = await GetSettingsSyncHelperAsync())
                 {
-                    syncHelper?.Endpoint?.GenerateNewKey();
-                    var task = syncHelper?.Stream.FlushAsync();
-                    if (task != null)
+                    if (syncHelper != null)
                     {
-                        await task;
+#if BUILD_INFO_PUBLISH_AOT
+                        await syncHelper.Client.GenerateNewKeyAsync();
+#else
+                        syncHelper.Endpoint?.GenerateNewKey();
+                        var task = syncHelper.Stream.FlushAsync();
+                        if (task != null)
+                        {
+                            await task;
+                        }
+#endif
                     }
                 }
+            }
+            finally
+            {
+                _ipcSemaphore.Release();
             }
         }
 
         public async Task SubmitConnectionRequestAsync(string pcName, string securityKey)
         {
-            using (await _ipcSemaphore.EnterAsync())
+            await _ipcSemaphore.WaitAsync();
+            try
             {
                 using (var syncHelper = await GetSettingsSyncHelperAsync())
                 {
-                    syncHelper?.Endpoint?.ConnectToMachine(pcName, securityKey);
-                    var task = syncHelper?.Stream.FlushAsync();
-                    if (task != null)
+                    if (syncHelper != null)
                     {
-                        await task;
+#if BUILD_INFO_PUBLISH_AOT
+                        await syncHelper.Client.ConnectToMachineAsync(pcName, securityKey);
+#else
+                        syncHelper.Endpoint?.ConnectToMachine(pcName, securityKey);
+                        var task = syncHelper.Stream.FlushAsync();
+                        if (task != null)
+                        {
+                            await task;
+                        }
+#endif
                     }
                 }
             }
+            finally
+            {
+                _ipcSemaphore.Release();
+            }
         }
 
-        private async Task<ISettingsSyncHelper.MachineSocketState[]> PollMachineSocketStateAsync()
+        private async Task<MachineSocketState[]> PollMachineSocketStateAsync()
         {
-            using (await _ipcSemaphore.EnterAsync())
+            await _ipcSemaphore.WaitAsync();
+            try
             {
                 using (var syncHelper = await GetSettingsSyncHelperAsync())
                 {
-                    var task = syncHelper?.Endpoint?.RequestMachineSocketStateAsync();
-                    if (task != null)
+                    if (syncHelper != null)
                     {
-                        return await task;
+#if BUILD_INFO_PUBLISH_AOT
+                        return await syncHelper.Client.RequestMachineSocketStateAsync();
+#else
+                        var task = syncHelper.Endpoint?.RequestMachineSocketStateAsync();
+                        if (task != null)
+                        {
+                            var oldStates = await task;
+
+                            // Convert from ISettingsSyncHelper.MachineSocketState to MachineSocketState
+                            return oldStates.Select(s => new MachineSocketState
+                            {
+                                Name = s.Name,
+                                Status = (SocketStatus)s.Status,
+                            }).ToArray();
+                        }
+#endif
                     }
-                    else
-                    {
-                        return null;
-                    }
+
+                    return Array.Empty<MachineSocketState>();
                 }
+            }
+            finally
+            {
+                _ipcSemaphore.Release();
             }
         }
 
@@ -464,14 +578,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
                     while (!token.IsCancellationRequested)
                     {
-                        Dictionary<string, ISettingsSyncHelper.MachineSocketState> states = null;
+                        Dictionary<string, MachineSocketState> states = null;
                         try
                         {
                             states = (await PollMachineSocketStateAsync())?.ToDictionary(s => s.Name, StringComparer.OrdinalIgnoreCase);
                         }
                         catch (Exception ex)
                         {
-                            Logger.LogInfo($"Poll ISettingsSyncHelper.MachineSocketState error: {ex}");
+                            Logger.LogInfo($"Poll MachineSocketState error: {ex}");
                             continue;
                         }
 

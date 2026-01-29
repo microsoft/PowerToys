@@ -1,6 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <Import Project="..\..\Common.Dotnet.CsWinRT.props" />
   <Import Project="..\..\Common.SelfContained.props" />
+  <Import Project="..\..\Common.Dotnet.AotCompatibility.props" />
+
+  <PropertyGroup Condition="'$(EnableSettingsAOT)' == 'true'">
+    <PublishAot>true</PublishAot>
+  </PropertyGroup>
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
