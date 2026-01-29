@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using ManagedCommon;
 using Microsoft.UI.Dispatching;
+using Microsoft.Win32;
 using Windows.Devices.Display;
 using Windows.Devices.Enumeration;
 
@@ -41,6 +42,7 @@ public sealed partial class DisplayChangeWatcher : IDisposable
     {
         _dispatcherQueue = dispatcherQueue ?? throw new ArgumentNullException(nameof(dispatcherQueue));
         _debounceDelay = debounceDelay;
+        SystemEvents.PowerModeChanged += OnPowerModeChanged;
     }
 
     /// <summary>
@@ -165,8 +167,86 @@ public sealed partial class DisplayChangeWatcher : IDisposable
         _dispatcherQueue.TryEnqueue(() =>
         {
             _isRunning = false;
-            _initialEnumerationComplete = false;
+
+            // If not disposed, this is an unexpected stop (e.g., during sleep/wake)
+            // Try to auto-restart the watcher
+            if (!_disposed)
+            {
+                Logger.LogInfo("[DisplayChangeWatcher] Watcher stopped unexpectedly, attempting restart");
+
+                // Clean up the old watcher
+                CleanupDeviceWatcher();
+
+                // Restart after a short delay to allow system to stabilize
+                Task.Run(async () =>
+                {
+                    await Task.Delay(TimeSpan.FromSeconds(1));
+                    _dispatcherQueue.TryEnqueue(() =>
+                    {
+                        if (!_disposed && !_isRunning)
+                        {
+                            Start();
+                        }
+                    });
+                });
+            }
+            else
+            {
+                _initialEnumerationComplete = false;
+            }
         });
+    }
+
+    /// <summary>
+    /// Handles system power mode changes (suspend/resume).
+    /// </summary>
+    private void OnPowerModeChanged(object? sender, PowerModeChangedEventArgs e)
+    {
+        if (_disposed)
+        {
+            return;
+        }
+
+        if (e.Mode == PowerModes.Resume)
+        {
+            Logger.LogInfo("[DisplayChangeWatcher] System resumed from sleep, scheduling display refresh");
+
+            // Schedule a display refresh after system resumes
+            // Use a longer delay to allow hardware to fully reinitialize
+            _dispatcherQueue.TryEnqueue(() =>
+            {
+                if (!_disposed)
+                {
+                    // Trigger a display changed event after wake-up
+                    // The debounce mechanism will handle rapid successive events
+                    ScheduleDisplayChanged();
+                }
+            });
+        }
+    }
+
+    /// <summary>
+    /// Cleans up the current device watcher and unsubscribes from events.
+    /// </summary>
+    private void CleanupDeviceWatcher()
+    {
+        if (_deviceWatcher != null)
+        {
+            try
+            {
+                _deviceWatcher.Added -= OnDeviceAdded;
+                _deviceWatcher.Removed -= OnDeviceRemoved;
+                _deviceWatcher.Updated -= OnDeviceUpdated;
+                _deviceWatcher.EnumerationCompleted -= OnEnumerationCompleted;
+                _deviceWatcher.Stopped -= OnWatcherStopped;
+            }
+            catch
+            {
+                // Ignore errors during cleanup
+            }
+
+            _deviceWatcher = null;
+        }
     }
 
     /// <summary>
@@ -238,19 +318,14 @@ public sealed partial class DisplayChangeWatcher : IDisposable
 
         _disposed = true;
 
+        // Unsubscribe from power mode changes
+        SystemEvents.PowerModeChanged -= OnPowerModeChanged;
+
         // Stop watching
         Stop();
 
-        // Unsubscribe from events
-        if (_deviceWatcher != null)
-        {
-            _deviceWatcher.Added -= OnDeviceAdded;
-            _deviceWatcher.Removed -= OnDeviceRemoved;
-            _deviceWatcher.Updated -= OnDeviceUpdated;
-            _deviceWatcher.EnumerationCompleted -= OnEnumerationCompleted;
-            _deviceWatcher.Stopped -= OnWatcherStopped;
-            _deviceWatcher = null;
-        }
+        // Unsubscribe from device watcher events
+        CleanupDeviceWatcher();
 
         // Cancel debounce
         CancelDebounce();
