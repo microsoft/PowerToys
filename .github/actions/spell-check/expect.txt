@@ -635,6 +635,7 @@ GMEM
 GNumber
 googleai
 googlegemini
+Gotchas
 gpedit
 gpo
 GPOCA
@@ -1023,6 +1024,7 @@ MERGEPAINT
 metadatamatters
 Metadatas
 metafile
+Metacharacter
 mfc
 Mgmt
 Microwaved
@@ -1487,7 +1489,9 @@ regfile
 REGISTERCLASSFAILED
 REGISTRYHEADER
 REGISTRYPREVIEWEXT
+registryroot
 regkey
+regroot
 regsvr
 REINSTALLMODE
 releaseblog
@@ -1532,7 +1536,6 @@ riid
 RKey
 RNumber
 rollups
-ROOTOWNER
 rop
 ROUNDSMALL
 ROWSETEXT
