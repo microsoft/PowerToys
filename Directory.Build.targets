@@ -5,18 +5,9 @@
   <Import Project="$(MSBuildCacheSharedCompilationPackageRoot)\build\Microsoft.MSBuildCache.SharedCompilation.targets" Condition="'$(MSBuildCacheEnabled)' == 'true'" />
 
   <!-- Skip building test projects when BuildTests=false (e.g., Release pipeline) -->
-  <Target Name="SkipTestProjectBuild" BeforeTargets="BeforeBuild;Build;CoreBuild;Compile;CoreCompile"
-          Condition="'$(BuildTests)' == 'false' and '$(IsTestProject)' == 'true'">
+  <Target Name="Build" Condition="'$(BuildTests)' == 'false' and '$(IsTestProject)' == 'true'">
     <Message Importance="high" Text="Skipping test project $(MSBuildProjectName) because BuildTests=false" />
   </Target>
-  
-  <PropertyGroup Condition="'$(BuildTests)' == 'false' and '$(IsTestProject)' == 'true'">
-    <EnableDefaultItems>false</EnableDefaultItems>
-    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>
-    <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
-  </PropertyGroup>
 
   <!-- Override ManifestTool to the x64 host tool under WindowsSdkDir for all projects once the SDK path is known. -->
   <PropertyGroup Label="ManifestToolOverride">
