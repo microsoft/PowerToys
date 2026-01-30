@@ -29,6 +29,11 @@ MediaPreviewHandler::MediaPreviewHandler() :
 
 MediaPreviewHandler::~MediaPreviewHandler()
 {
+    if (m_resizeEvent)
+    {
+        CloseHandle(m_resizeEvent);
+        m_resizeEvent = NULL;
+    }
     InterlockedDecrement(&g_cDllRef);
 }
 
@@ -194,6 +199,7 @@ IFACEMETHODIMP MediaPreviewHandler::DoPreview()
         if (m_process)
         {
             TerminateProcess(m_process, 0);
+            CloseHandle(m_process);
         }
 
         m_process = sei.hProcess;
@@ -212,6 +218,7 @@ IFACEMETHODIMP MediaPreviewHandler::Unload()
     if (m_process)
     {
         TerminateProcess(m_process, 0);
+        CloseHandle(m_process);
         m_process = NULL;
     }
     return S_OK;

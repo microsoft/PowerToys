@@ -99,8 +99,9 @@ namespace Microsoft.PowerToys.PreviewHandler.Media
         {
             try
             {
-                var userDataFolder = Environment.GetEnvironmentVariable("USERPROFILE") +
-                                     "\\AppData\\LocalLow\\Microsoft\\PowerToys\\MediaPreviewHandler-Temp";
+                var userDataFolder = Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+                    "AppData", "LocalLow", "Microsoft", "PowerToys", "MediaPreviewHandler-Temp");
 
                 var environment = await CoreWebView2Environment.CreateAsync(userDataFolder: userDataFolder);
                 await _webView2Control!.EnsureCoreWebView2Async(environment);
@@ -109,6 +110,17 @@ namespace Microsoft.PowerToys.PreviewHandler.Media
                 _webView2Control.CoreWebView2.Settings.IsScriptEnabled = true;
                 _webView2Control.CoreWebView2.Settings.AreDefaultContextMenusEnabled = false;
                 _webView2Control.CoreWebView2.Settings.AreDevToolsEnabled = false;
+
+                // Block navigation to external content
+                _webView2Control.CoreWebView2.NavigationStarting += (s, e) =>
+                {
+                    // Only allow the initial about:blank and data: URIs for our HTML content
+                    if (!e.Uri.StartsWith("about:", StringComparison.OrdinalIgnoreCase) &&
+                        !e.Uri.StartsWith("data:", StringComparison.OrdinalIgnoreCase))
+                    {
+                        e.Cancel = true;
+                    }
+                };
 
                 // Generate and navigate to HTML content
                 var htmlContent = GenerateMediaHtml(filePath);
@@ -159,7 +171,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Media
                             <source src=""{fileUrl}"" type=""{mimeType}"">
                             Your browser does not support the audio tag.
                         </audio>
-                        <div class=""file-name"">{Path.GetFileName(filePath)}</div>
+                        <div class=""file-name"">{System.Net.WebUtility.HtmlEncode(Path.GetFileName(filePath))}</div>
                      </div>";
 
             return $@"

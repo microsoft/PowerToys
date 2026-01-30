@@ -28,43 +28,60 @@ namespace Microsoft.PowerToys.PreviewHandler.Media
             {
                 if (args.Length == 6)
                 {
-                    ETWTrace etwTrace = new ETWTrace(Path.Combine(Environment.GetEnvironmentVariable("USERPROFILE"), "AppData", "LocalLow", "Microsoft", "PowerToys", "etw"));
+                    ETWTrace etwTrace = new ETWTrace(Path.Combine(
+                        Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+                        "AppData", "LocalLow", "Microsoft", "PowerToys", "etw"));
 
-                    string filePath = args[0];
-                    IntPtr hwnd = IntPtr.Parse(args[1], NumberStyles.HexNumber, CultureInfo.InvariantCulture);
-
-                    int left = Convert.ToInt32(args[2], 10);
-                    int right = Convert.ToInt32(args[3], 10);
-                    int top = Convert.ToInt32(args[4], 10);
-                    int bottom = Convert.ToInt32(args[5], 10);
-                    Rectangle s = new Rectangle(left, top, right - left, bottom - top);
-
-                    _previewHandlerControl = new MediaPreviewControl();
-
-                    if (!_previewHandlerControl.SetWindow(hwnd, s))
+                    try
                     {
+                        string filePath = args[0];
+                        IntPtr hwnd = IntPtr.Parse(args[1], NumberStyles.HexNumber, CultureInfo.InvariantCulture);
+
+                        int left = Convert.ToInt32(args[2], 10);
+                        int right = Convert.ToInt32(args[3], 10);
+                        int top = Convert.ToInt32(args[4], 10);
+                        int bottom = Convert.ToInt32(args[5], 10);
+                        Rectangle s = new Rectangle(left, top, right - left, bottom - top);
+
+                        _previewHandlerControl = new MediaPreviewControl();
+
+                        if (!_previewHandlerControl.SetWindow(hwnd, s))
+                        {
+                            return;
+                        }
+
+                        _previewHandlerControl.DoPreview(filePath);
+
+                        NativeEventWaiter.WaitForEventLoop(
+                            Constants.MediaPreviewResizeEvent(),
+                            () =>
+                            {
+                                Rectangle s = default;
+                                if (!_previewHandlerControl.SetRect(s))
+                                {
+                                    etwTrace?.Dispose();
+
+                                    // When the parent HWND became invalid, the application won't respond to Application.Exit().
+                                    Environment.Exit(0);
+                                }
+                            },
+                            Dispatcher.CurrentDispatcher,
+                            _tokenSource.Token);
+                    }
+                    catch (FormatException)
+                    {
+                        // Invalid argument format - silently exit
                         return;
                     }
-
-                    _previewHandlerControl.DoPreview(filePath);
-
-                    NativeEventWaiter.WaitForEventLoop(
-                        Constants.MediaPreviewResizeEvent(),
-                        () =>
-                        {
-                            Rectangle s = default;
-                            if (!_previewHandlerControl.SetRect(s))
-                            {
-                                etwTrace?.Dispose();
-
-                                // When the parent HWND became invalid, the application won't respond to Application.Exit().
-                                Environment.Exit(0);
-                            }
-                        },
-                        Dispatcher.CurrentDispatcher,
-                        _tokenSource.Token);
-
-                    etwTrace?.Dispose();
+                    catch (OverflowException)
+                    {
+                        // Argument value out of range - silently exit
+                        return;
+                    }
+                    finally
+                    {
+                        etwTrace?.Dispose();
+                    }
                 }
                 else
                 {
