@@ -40,6 +40,8 @@ namespace CommonSharedConstants
     const wchar_t ADVANCED_PASTE_CUSTOM_ACTION_MESSAGE[] = L"CustomAction";
 
     const wchar_t ADVANCED_PASTE_TERMINATE_APP_MESSAGE[] = L"TerminateApp";
+    
+    const wchar_t ADVANCED_PASTE_SHOW_UI_EVENT[] = L"Local\\PowerToys_AdvancedPaste_ShowUI";
 
     // Path to the event used to show Color Picker
     const wchar_t SHOW_COLOR_PICKER_SHARED_EVENT[] = L"Local\\ShowColorPickerEvent-8c46be2a-3e05-4186-b56b-4ae986ef2525";
@@ -70,6 +72,10 @@ namespace CommonSharedConstants
 
     const wchar_t ALWAYS_ON_TOP_TERMINATE_EVENT[] = L"Local\\AlwaysOnTopTerminateEvent-cfdf1eae-791f-4953-8021-2f18f3837eae";
 
+    const wchar_t ALWAYS_ON_TOP_INCREASE_OPACITY_EVENT[] = L"Local\\AlwaysOnTopIncreaseOpacityEvent-a1b2c3d4-e5f6-7890-abcd-ef1234567890";
+
+    const wchar_t ALWAYS_ON_TOP_DECREASE_OPACITY_EVENT[] = L"Local\\AlwaysOnTopDecreaseOpacityEvent-b2c3d4e5-f6a7-8901-bcde-f12345678901";
+
     // Path to the event used by PowerAccent
     const wchar_t POWERACCENT_EXIT_EVENT[] = L"Local\\PowerToysPowerAccentExitEvent-53e93389-d19a-4fbb-9b36-1981c8965e17";
 
@@ -83,11 +89,20 @@ namespace CommonSharedConstants
 
     const wchar_t TERMINATE_MOUSE_JUMP_SHARED_EVENT[] = L"Local\\TerminateMouseJumpEvent-252fa337-317f-4c37-a61f-99464c3f9728";
 
+    // Paths to the events used by other Mouse Utilities
+    const wchar_t FIND_MY_MOUSE_TRIGGER_EVENT[] = L"Local\\FindMyMouseTriggerEvent-5a9dc5f4-1c74-4f2f-a66f-1b9b6a2f9b23";
+    const wchar_t MOUSE_HIGHLIGHTER_TRIGGER_EVENT[] = L"Local\\MouseHighlighterTriggerEvent-1e3c9c3d-3fdf-4f9a-9a52-31c9b3c3a8f4";
+    const wchar_t MOUSE_CROSSHAIRS_TRIGGER_EVENT[] = L"Local\\MouseCrosshairsTriggerEvent-0d4c7f92-0a5c-4f5c-b64b-8a2a2f7e0b21";
+    const wchar_t CURSOR_WRAP_TRIGGER_EVENT[] = L"Local\\CursorWrapTriggerEvent-1f8452b5-4e6e-45b3-8b09-13f14a5900c9";
+
     // Path to the event used by RegistryPreview
     const wchar_t REGISTRY_PREVIEW_TRIGGER_EVENT[] = L"Local\\RegistryPreviewEvent-4C559468-F75A-4E7F-BC4F-9C9688316687";
 
     // Path to the event used by MeasureTool
     const wchar_t MEASURE_TOOL_TRIGGER_EVENT[] = L"Local\\MeasureToolEvent-3d46745f-09b3-4671-a577-236be7abd199";
+
+    // Path to the event used by LightSwitch
+    const wchar_t LIGHTSWITCH_TOGGLE_EVENT[] = L"Local\\PowerToys-LightSwitch-ToggleEvent-d8dc2f29-8c94-4ca1-8c5f-3e2b1e3c4f5a";
 
     // Path to the event used by GcodePreviewHandler
     const wchar_t GCODE_PREVIEW_RESIZE_EVENT[] = L"Local\\PowerToysGcodePreviewResizeEvent-6ff1f9bd-ccbd-4b24-a79f-40a34fb0317d";
@@ -124,6 +139,7 @@ namespace CommonSharedConstants
     // Path to the events used by CropAndLock
     const wchar_t CROP_AND_LOCK_REPARENT_EVENT[] = L"Local\\PowerToysCropAndLockReparentEvent-6060860a-76a1-44e8-8d0e-6355785e9c36";
     const wchar_t CROP_AND_LOCK_THUMBNAIL_EVENT[] = L"Local\\PowerToysCropAndLockThumbnailEvent-1637be50-da72-46b2-9220-b32b206b2434";
+    const wchar_t CROP_AND_LOCK_SCREENSHOT_EVENT[] = L"Local\\PowerToysCropAndLockScreenshotEvent-ff077ab2-8360-4bd1-864a-637389d35593";
     const wchar_t CROP_AND_LOCK_EXIT_EVENT[] = L"Local\\PowerToysCropAndLockExitEvent-d995d409-7b70-482b-bad6-e7c8666f375a";
 
     // Path to the events used by EnvironmentVariables
@@ -133,6 +149,12 @@ namespace CommonSharedConstants
     // Path to the events used by ZoomIt
     const wchar_t ZOOMIT_REFRESH_SETTINGS_EVENT[] = L"Local\\PowerToysZoomIt-RefreshSettingsEvent-f053a563-d519-4b0d-8152-a54489c13324";
     const wchar_t ZOOMIT_EXIT_EVENT[] = L"Local\\PowerToysZoomIt-ExitEvent-36641ce6-df02-4eac-abea-a3fbf9138220";
+    const wchar_t ZOOMIT_ZOOM_EVENT[] = L"Local\\PowerToysZoomIt-ZoomEvent-1e4190d7-94bc-4ad5-adc0-9a8fd07cb393";
+    const wchar_t ZOOMIT_DRAW_EVENT[] = L"Local\\PowerToysZoomIt-DrawEvent-56338997-404d-4549-bd9a-d132b6766975";
+    const wchar_t ZOOMIT_BREAK_EVENT[] = L"Local\\PowerToysZoomIt-BreakEvent-17f2e63c-4c56-41dd-90a0-2d12f9f50c6b";
+    const wchar_t ZOOMIT_LIVEZOOM_EVENT[] = L"Local\\PowerToysZoomIt-LiveZoomEvent-390bf0c7-616f-47dc-bafe-a2d228add20d";
+    const wchar_t ZOOMIT_SNIP_EVENT[] = L"Local\\PowerToysZoomIt-SnipEvent-2fd9c211-436d-4f17-a902-2528aaae3e30";
+    const wchar_t ZOOMIT_RECORD_EVENT[] = L"Local\\PowerToysZoomIt-RecordEvent-74539344-eaad-4711-8e83-23946e424512";
 
     // used from quick access window
     const wchar_t CMDPAL_SHOW_EVENT[] = L"Local\\PowerToysCmdPal-ShowEvent-62336fcd-8611-4023-9b30-091a6af4cc5a";

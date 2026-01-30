@@ -22,7 +22,6 @@ ADate
 ADDSTRING
 ADDUNDORECORD
 ADifferent
-adjacents
 ADMINS
 adml
 admx
@@ -32,6 +31,7 @@ advfirewall
 AFeature
 affordances
 AFX
+agentskills
 AGGREGATABLE
 AHK
 AHybrid
@@ -64,6 +64,9 @@ apidl
 APIENTRY
 APIIs
 Apm
+APMPOWERSTATUSCHANGE
+APMRESUMEAUTOMATIC
+APMRESUMESUSPEND
 APPBARDATA
 APPEXECLINK
 appext
@@ -99,7 +102,6 @@ ASYNCWINDOWPLACEMENT
 ASYNCWINDOWPOS
 atl
 ATRIOX
-ATX
 aumid
 authenticode
 AUTOBUDDY
@@ -141,8 +143,11 @@ BITSPIXEL
 bla
 BLACKFRAME
 BLENDFUNCTION
+blittable
 Blockquotes
 blt
+bluelightreduction
+bluelightreductionstate
 BLURBEHIND
 BLURREGION
 bmi
@@ -203,16 +208,22 @@ certmgr
 cfp
 CHANGECBCHAIN
 changecursor
+checkmarks
 CHILDACTIVATE
 CHILDWINDOW
 CHOOSEFONT
+CIBUILD
 cidl
 CIELCh
 cim
 CImage
 cla
 CLASSDC
+classguid
+classmethod
 CLASSNOTAVAILABLE
+claude
+CLEARTYPE
 clickable
 clickonce
 CLIENTEDGE
@@ -249,6 +260,7 @@ colorformat
 colorhistory
 colorhistorylimit
 COLORKEY
+colorref
 comctl
 comdlg
 comexp
@@ -269,6 +281,7 @@ CONTEXTHELP
 CONTEXTMENUHANDLER
 contractversion
 CONTROLPARENT
+Convs
 copiedcolorrepresentation
 coppied
 copyable
@@ -284,7 +297,6 @@ cpcontrols
 cph
 cplusplus
 CPower
-cppcoreguidelines
 cpptools
 cppvsdbg
 cppwinrt
@@ -313,14 +325,13 @@ CURRENTDIR
 CURSORINFO
 cursorpos
 CURSORSHOWING
-CURSORWRAP
+cursorwrap
 customaction
 CUSTOMACTIONTEST
 CUSTOMFORMATPLACEHOLDER
 CVal
 cvd
 CVirtual
-CVS
 CWMO
 CXSCREEN
 CXSMICON
@@ -337,12 +348,14 @@ datareader
 datatracker
 dataversion
 Dayof
+dbcc
 DBID
 DBLCLKS
 DBLEPSILON
 DBPROP
 DBPROPIDSET
 DBPROPSET
+DBT
 DCBA
 DCOM
 DComposition
@@ -359,7 +372,8 @@ DEFAULTFLAGS
 DEFAULTICON
 defaultlib
 DEFAULTONLY
-DEFAULTTONEAREST
+DEFAULTSIZE
+defaulttonearest
 DEFAULTTONULL
 DEFAULTTOPRIMARY
 DEFERERASE
@@ -381,12 +395,18 @@ DESKTOPVERTRES
 devblogs
 devdocs
 devenv
+DEVICEINTERFACE
+devicetype
+DEVINTERFACE
 devmgmt
 DEVMODE
 DEVMODEW
+DEVNODES
 devpal
+DEVTYP
 dfx
 DIALOGEX
+diffs
 digicert
 DINORMAL
 DISABLEASACTIONKEY
@@ -525,7 +545,9 @@ eyetracker
 FANCYZONESDRAWLAYOUTTEST
 FANCYZONESEDITOR
 FARPROC
+fdw
 fdx
+FErase
 fesf
 FFFF
 Figma
@@ -548,6 +570,7 @@ FILESYSPATH
 Filetime
 FILEVERSION
 FILTERMODE
+FInc
 findfast
 findmymouse
 FIXEDFILEINFO
@@ -569,10 +592,12 @@ formatetc
 FORPARSING
 foundrylocal
 FRAMECHANGED
+FRestore
 frm
 FROMTOUCH
 fsanitize
 fsmgmt
+ftps
 fuzzingtesting
 fxf
 FZE
@@ -603,6 +628,7 @@ GETSCREENSAVERRUNNING
 GETSECKEY
 GETSTICKYKEYS
 GETTEXTLENGTH
+gfx
 GHND
 gitmodules
 GMEM
@@ -647,11 +673,13 @@ HCRYPTPROV
 hcursor
 hcwhite
 hdc
+HDEVNOTIFY
 hdr
 hdrop
 hdwwiz
 Helpline
 helptext
+hgdiobj
 HGFE
 hglobal
 hhk
@@ -700,7 +728,7 @@ hotlight
 hotspot
 HPAINTBUFFER
 HRAWINPUT
-HREDRAW
+hredraw
 hres
 hresult
 hrgn
@@ -817,10 +845,12 @@ ITHUMBNAIL
 IUI
 IUWP
 IWIC
+jeli
 jfif
 jgeosdfsdsgmkedfgdfgdfgbkmhcgcflmi
 jjw
 jobject
+JOBOBJECT
 jpe
 jpnime
 Jsons
@@ -853,6 +883,7 @@ lastcodeanalysissucceeded
 LASTEXITCODE
 LAYOUTRTL
 lbl
+Lbuttondown
 LCh
 lcid
 LCIDTo
@@ -863,6 +894,7 @@ Ldr
 LEFTALIGN
 LEFTSCROLLBAR
 LEFTTEXT
+leftclick
 LError
 LEVELID
 LExit
@@ -878,7 +910,7 @@ LINKOVERLAY
 LINQTo
 listview
 LIVEDRAW
-LIVEZOOM
+livezoom
 LLKH
 llkhf
 LMEM
@@ -905,6 +937,7 @@ LOWORD
 lparam
 LPBITMAPINFOHEADER
 LPCFHOOKPROC
+lpch
 LPCITEMIDLIST
 LPCLSID
 lpcmi
@@ -922,6 +955,7 @@ LPMONITORINFO
 LPOSVERSIONINFOEXW
 LPQUERY
 lprc
+LPrivate
 LPSAFEARRAY
 lpstr
 lpsz
@@ -974,6 +1008,8 @@ maxversiontested
 mber
 MBM
 MBR
+Mbuttondown
+mcp
 MDICHILD
 MDL
 mdtext
@@ -1016,6 +1052,7 @@ mmsys
 mobileredirect
 mockapi
 MODALFRAME
+modelcontextprotocol
 MODESPRUNED
 MONITORENUMPROC
 MONITORINFO
@@ -1075,6 +1112,8 @@ mvvm
 MVVMTK
 MWBEx
 MYICON
+myorg
+myrepo
 NAMECHANGE
 namespaceanddescendants
 nao
@@ -1114,6 +1153,7 @@ NEWPLUSSHELLEXTENSIONWIN
 newrow
 nicksnettravels
 NIF
+nightlight
 NLog
 NLSTEXT
 NMAKE
@@ -1214,6 +1254,7 @@ opencode
 OPENFILENAME
 openrdp
 opensource
+openurl
 openxmlformats
 OPTIMIZEFORINVOKE
 ORPHANEDDIALOGTITLE
@@ -1292,6 +1333,7 @@ phwnd
 pici
 pidl
 PIDLIST
+pii
 pinfo
 pinvoke
 pipename
@@ -1317,6 +1359,7 @@ Pomodoro
 Popups
 POPUPWINDOW
 POSITIONITEM
+POWERBROADCAST
 POWERRENAMECONTEXTMENU
 powerrenameinput
 POWERRENAMETEST
@@ -1340,6 +1383,7 @@ ppv
 ppwsz
 prc
 Prefixer
+Premul
 prependpath
 prepopulate
 prevhost
@@ -1426,6 +1470,7 @@ RAWINPUTHEADER
 RAWMODE
 RAWPATH
 rbhid
+Rbuttondown
 rclsid
 RCZOOMIT
 rdp
@@ -1461,6 +1506,7 @@ remoteip
 Removelnk
 renamable
 RENAMEONCOLLISION
+RENDERFULLCONTENT
 reparented
 reparenting
 reportfileaccesses
@@ -1483,11 +1529,14 @@ rgh
 rgn
 rgs
 rguid
+rhk
 RIDEV
 RIGHTSCROLLBAR
 riid
 RKey
 RNumber
+rollups
+ROOTOWNER
 rop
 ROUNDSMALL
 ROWSETEXT
@@ -1573,7 +1622,7 @@ sharpfuzz
 SHCNE
 SHCNF
 SHCONTF
-Shcore
+shcore
 shellapi
 SHELLDETAILS
 SHELLDLL
@@ -1588,6 +1637,7 @@ SHGDNF
 SHGFI
 SHIL
 shinfo
+shk
 shlwapi
 shobjidl
 SHORTCUTATLEAST
@@ -1632,6 +1682,7 @@ SKIPOWNPROCESS
 sku
 SLGP
 sln
+slnf
 slnx
 SMALLICON
 smartphone
@@ -1670,6 +1721,8 @@ srw
 srwlock
 sse
 ssf
+Ssn
+sszzz
 STACKFRAME
 stackoverflow
 STARTF
@@ -1680,6 +1733,7 @@ STARTUPINFOW
 startupscreen
 STATFLAG
 STATICEDGE
+staticmethod
 STATSTG
 stdafx
 STDAPI
@@ -1697,6 +1751,7 @@ STICKYKEYS
 sticpl
 storelogo
 stprintf
+streamable
 streamjsonrpc
 STRINGIZE
 stringtable
@@ -1722,7 +1777,7 @@ SVGIO
 svgz
 SVSI
 SWFO
-SWP
+swp
 SWPNOSIZE
 SWPNOZORDER
 SWRESTORE
@@ -1741,7 +1796,7 @@ SYSKEY
 syskeydown
 SYSKEYUP
 SYSLIB
-SYSMENU
+sysmenu
 systemai
 SYSTEMAPPS
 SYSTEMMODAL
@@ -1776,6 +1831,7 @@ TEXTBOXNEWLINE
 textextractor
 TEXTINCLUDE
 tfopen
+tgamma
 tgz
 THEMECHANGED
 themeresources
@@ -1787,7 +1843,6 @@ TILEDWINDOW
 TILLSON
 timedate
 timediff
-timeunion
 timeutil
 TITLEBARINFO
 Titlecase
@@ -1846,6 +1901,9 @@ uild
 uitests
 UITo
 ULONGLONG
+Ultrawide
+UMax
+UMin
 ums
 uncompilable
 UNCPRIORITY
@@ -1860,6 +1918,7 @@ unittests
 UNLEN
 UNORM
 unremapped
+Unsubscribes
 unvirtualized
 unwide
 unzoom
@@ -1890,7 +1949,7 @@ valuegenerator
 variantassignment
 VARTYPE
 vcamp
-VCENTER
+vcenter
 vcgtq
 VCINSTALLDIR
 Vcpkg
@@ -1918,11 +1977,12 @@ visualeffects
 vkey
 vmovl
 VMs
+vnd
 vorrq
 VOS
 vpaddlq
 vqsubq
-VREDRAW
+vredraw
 vreinterpretq
 VSC
 VSCBD
@@ -1944,7 +2004,7 @@ vswhere
 Vtbl
 WANTNUKEWARNING
 WANTPALM
-wasdk
+WASDK
 wbem
 WBounds
 Wca
@@ -2065,6 +2125,7 @@ Wwanpp
 xap
 XAxis
 XButton
+Xbuttondown
 xclip
 xcopy
 XDeployment
@@ -2090,6 +2151,7 @@ xstyler
 XTimer
 XUP
 XVIRTUALSCREEN
+XXL
 xxxxxx
 YAxis
 ycombinator

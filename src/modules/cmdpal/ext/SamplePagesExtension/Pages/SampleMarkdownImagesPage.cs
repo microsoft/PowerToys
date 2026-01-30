@@ -69,14 +69,14 @@ internal sealed partial class SampleMarkdownImagesPage : ContentPage
 
             ### Web URL
             ```xml
-            ![painting](https://i.imgur.com/93XJSNh.png)
+            ![painting](https://raw.githubusercontent.com/microsoft/PowerToys/refs/heads/main/doc/images/overview/Original/AdvancedPaste.png)
             ```
-            ![painting](https://i.imgur.com/93XJSNh.png)
+            ![painting](https://raw.githubusercontent.com/microsoft/PowerToys/refs/heads/main/doc/images/overview/Original/AdvancedPaste.png)
             
             ```xml
-            ![painting](https://i.imgur.com/93XJSNh.png?--x-cmdpal-fit=fit)
+            ![painting](https://raw.githubusercontent.com/microsoft/PowerToys/refs/heads/main/doc/images/overview/Original/AdvancedPaste.png?--x-cmdpal-fit=fit)
             ```
-            ![painting](https://i.imgur.com/93XJSNh.png?--x-cmdpal-fit=fit)
+            ![painting](https://raw.githubusercontent.com/microsoft/PowerToys/refs/heads/main/doc/images/overview/Original/AdvancedPaste.png?--x-cmdpal-fit=fit)
 
             ### File URL (PNG):
             ```xml

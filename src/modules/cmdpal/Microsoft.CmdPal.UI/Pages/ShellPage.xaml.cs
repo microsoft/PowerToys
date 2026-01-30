@@ -133,7 +133,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
             if (!message.FromBackspace)
             {
                 // If we can't go back then we must be at the top and thus escape again should quit.
-                WeakReferenceMessenger.Default.Send<DismissMessage>();
+                WeakReferenceMessenger.Default.Send(new DismissMessage());
 
                 PowerToysTelemetry.Log.WriteEvent(new CmdPalDismissedOnEsc());
             }
@@ -160,6 +160,9 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
                 message.WithAnimation ? DefaultPageAnimation : _noAnimation);
 
             PowerToysTelemetry.Log.WriteEvent(new OpenPage(RootFrame.BackStackDepth, message.Page.Id));
+
+            // Telemetry: Send navigation depth for session max depth tracking
+            WeakReferenceMessenger.Default.Send(new NavigationDepthMessage(RootFrame.BackStackDepth));
 
             if (!ViewModel.IsNested)
             {
@@ -254,11 +257,11 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     {
         _ = DispatcherQueue.TryEnqueue(() =>
         {
-            OpenSettings();
+            OpenSettings(message.SettingsPageTag);
         });
     }
 
-    public void OpenSettings()
+    public void OpenSettings(string pageTag)
     {
         if (_settingsWindow is null)
         {
@@ -267,6 +270,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
         _settingsWindow.Activate();
         _settingsWindow.BringToFront();
+        _settingsWindow.Navigate(pageTag);
     }
 
     public void Receive(ShowDetailsMessage message)

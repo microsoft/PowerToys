@@ -21,10 +21,10 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             ViewModel = new OobePowerToysModule(OobeShellPage.OobeShellHandler.Modules[(int)PowerToysModules.Overview]);
             DataContext = ViewModel;
 
-            FancyZonesHotkeyControl.Keys = SettingsRepository<FancyZonesSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.FancyzonesEditorHotkey.Value.GetKeysList();
-            RunHotkeyControl.Keys = SettingsRepository<PowerLauncherSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.OpenPowerLauncher.GetKeysList();
-            ColorPickerHotkeyControl.Keys = SettingsRepository<ColorPickerSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.ActivationShortcut.GetKeysList();
-            AlwaysOnTopHotkeyControl.Keys = SettingsRepository<AlwaysOnTopSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.Hotkey.Value.GetKeysList();
+            FancyZonesHotkeyControl.Keys = SettingsRepository<FancyZonesSettings>.GetInstance(SettingsUtils.Default).SettingsConfig.Properties.FancyzonesEditorHotkey.Value.GetKeysList();
+            RunHotkeyControl.Keys = SettingsRepository<PowerLauncherSettings>.GetInstance(SettingsUtils.Default).SettingsConfig.Properties.OpenPowerLauncher.GetKeysList();
+            ColorPickerHotkeyControl.Keys = SettingsRepository<ColorPickerSettings>.GetInstance(SettingsUtils.Default).SettingsConfig.Properties.ActivationShortcut.GetKeysList();
+            AlwaysOnTopHotkeyControl.Keys = SettingsRepository<AlwaysOnTopSettings>.GetInstance(SettingsUtils.Default).SettingsConfig.Properties.Hotkey.Value.GetKeysList();
         }
 
         private void SettingsLaunchButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)

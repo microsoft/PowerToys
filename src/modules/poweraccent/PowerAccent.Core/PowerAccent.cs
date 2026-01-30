@@ -324,13 +324,12 @@ public partial class PowerAccent : IDisposable
     public Point GetDisplayCoordinates(Size window)
     {
         (Point Location, Size Size, double Dpi) activeDisplay = WindowsFunctions.GetActiveDisplay();
-        double primaryDPI = Screen.PrimaryScreen.Bounds.Width / SystemParameters.PrimaryScreenWidth;
-        Rect screen = new Rect(activeDisplay.Location, activeDisplay.Size) / primaryDPI;
+        Rect screen = new(activeDisplay.Location, activeDisplay.Size);
         Position position = _settingService.Position;
 
         /* Debug.WriteLine("Dpi: " + activeDisplay.Dpi); */
 
-        return Calculation.GetRawCoordinatesFromPosition(position, screen, window);
+        return Calculation.GetRawCoordinatesFromPosition(position, screen, window, activeDisplay.Dpi) / activeDisplay.Dpi;
     }
 
     public double GetDisplayMaxWidth()
@@ -359,20 +358,21 @@ public partial class PowerAccent : IDisposable
 
     public static string[] ToUpper(string[] array)
     {
-        string[] result = new string[array.Length];
+        List<string> result = new(array.Length);
         for (int i = 0; i < array.Length; i++)
         {
             switch (array[i])
             {
-                case "ß": result[i] = "ẞ"; break;
-                case "ǰ": result[i] = "J\u030c"; break;
-                case "ı\u0307\u0304": result[i] = "İ\u0304"; break;
-                case "ı": result[i] = "İ"; break;
-                case "ᵛ": result[i] = "ⱽ"; break;
-                default: result[i] = array[i].ToUpper(System.Globalization.CultureInfo.InvariantCulture); break;
+                case "ß": result.Add("ẞ"); break;
+                case "ǰ": result.Add("J\u030c"); break;
+                case "ı\u0307\u0304": result.Add("İ\u0304"); break;
+                case "ı": result.Add("İ"); break;
+                case "ᵛ": result.Add("ⱽ"); break;
+                case "ϑ": break;
+                default: result.Add(array[i].ToUpper(CultureInfo.InvariantCulture)); break;
             }
         }
 
-        return result;
+        return [..result];
     }
 }

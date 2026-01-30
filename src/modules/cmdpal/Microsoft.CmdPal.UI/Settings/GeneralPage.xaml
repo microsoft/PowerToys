@@ -81,24 +81,8 @@
 
                     <TextBlock x:Uid="BehaviorSettingsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
 
-                    <controls:SettingsCard x:Uid="Settings_GeneralPage_ShowAppDetails_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE8A0;}">
-                        <ToggleSwitch IsOn="{x:Bind viewModel.ShowAppDetails, Mode=TwoWay}" />
-                    </controls:SettingsCard>
-
-                    <controls:SettingsCard x:Uid="Settings_GeneralPage_BackspaceGoesBack_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE750;}">
-                        <ToggleSwitch IsOn="{x:Bind viewModel.BackspaceGoesBack, Mode=TwoWay}" />
-                    </controls:SettingsCard>
-
-                    <controls:SettingsCard x:Uid="Settings_GeneralPage_SingleClickActivation_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE962;}">
-                        <ToggleSwitch IsOn="{x:Bind viewModel.SingleClickActivates, Mode=TwoWay}" />
-                    </controls:SettingsCard>
-
                     <controls:SettingsCard x:Uid="Settings_GeneralPage_ShowSystemTrayIcon_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE75B;}">
                         <ToggleSwitch IsOn="{x:Bind viewModel.ShowSystemTrayIcon, Mode=TwoWay}" />
-                    </controls:SettingsCard>
-
-                    <controls:SettingsCard x:Uid="Settings_GeneralPage_DisableAnimations_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE945;}">
-                        <ToggleSwitch IsOn="{x:Bind viewModel.DisableAnimations, Mode=TwoWay}" />
                     </controls:SettingsCard>
 
                     <!--  'For Developers' section  -->
@@ -122,7 +106,7 @@
                             <controls:SettingsCard HorizontalContentAlignment="Left" ContentAlignment="Left">
                                 <StackPanel Margin="-12,0,0,0" Orientation="Vertical">
                                     <HyperlinkButton x:Uid="Settings_GeneralPage_About_GithubLink_Hyperlink" NavigateUri="https://go.microsoft.com/fwlink/?linkid=2310837" />
-                                    <HyperlinkButton x:Uid="Settings_GeneralPage_About_SDKDocs_Hyperlink" NavigateUri="https://go.microsoft.com/fwlink/?linkid=2310639" />
+                                    <HyperlinkButton x:Uid="Settings_GeneralPage_About_SDKDocs_Hyperlink" NavigateUri="https://aka.ms/cmdpalextensions-devdocs" />
                                 </StackPanel>
                             </controls:SettingsCard>
                         </controls:SettingsExpander.Items>

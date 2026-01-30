@@ -20,6 +20,19 @@ namespace PowerToys
             static String AdvancedPasteAdditionalActionMessage();
             static String AdvancedPasteCustomActionMessage();
             static String AdvancedPasteTerminateAppMessage();
+            static String AdvancedPasteShowUIEvent();
+            static String AlwaysOnTopPinEvent();
+            static String FindMyMouseTriggerEvent();
+            static String MouseHighlighterTriggerEvent();
+            static String MouseCrosshairsTriggerEvent();
+            static String CursorWrapTriggerEvent();
+            static String LightSwitchToggleEvent();
+            static String ZoomItZoomEvent();
+            static String ZoomItDrawEvent();
+            static String ZoomItBreakEvent();
+            static String ZoomItLiveZoomEvent();
+            static String ZoomItSnipEvent();
+            static String ZoomItRecordEvent();
             static String ShowPowerOCRSharedEvent();
             static String TerminatePowerOCRSharedEvent();
             static String MouseJumpShowPreviewEvent();
@@ -44,6 +57,7 @@ namespace PowerToys
             static String TerminateHostsSharedEvent();
             static String CropAndLockThumbnailEvent();
             static String CropAndLockReparentEvent();
+            static String CropAndLockScreenshotEvent();
             static String ShowEnvironmentVariablesSharedEvent();
             static String ShowEnvironmentVariablesAdminSharedEvent();
             static String WorkspacesLaunchEditorEvent();

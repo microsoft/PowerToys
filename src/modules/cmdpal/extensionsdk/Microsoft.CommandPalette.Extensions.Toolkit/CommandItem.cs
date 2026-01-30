@@ -2,52 +2,53 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using Windows.ApplicationModel.DataTransfer;
+using Windows.Foundation.Collections;
+using WinRT;
+
 namespace Microsoft.CommandPalette.Extensions.Toolkit;
 
-public partial class CommandItem : BaseObservable, ICommandItem
+public partial class CommandItem : BaseObservable, ICommandItem, IExtendedAttributesProvider
 {
+    private readonly PropertySet _extendedAttributes = new();
+
     private ICommand? _command;
     private WeakEventListener<CommandItem, object, IPropChangedEventArgs>? _commandListener;
     private string _title = string.Empty;
 
-    public virtual IIconInfo? Icon
-    {
-        get => field;
-        set
-        {
-            field = value;
-            OnPropertyChanged(nameof(Icon));
-        }
-    }
+    private DataPackage? _dataPackage;
+    private DataPackageView? _dataPackageView;
+
+    public virtual IIconInfo? Icon { get; set => SetProperty(ref field, value); }
 
     public virtual string Title
     {
         get => !string.IsNullOrEmpty(_title) ? _title : _command?.Name ?? string.Empty;
-
         set
         {
+            var oldTitle = Title;
             _title = value;
-            OnPropertyChanged(nameof(Title));
+            if (Title != oldTitle)
+            {
+                OnPropertyChanged();
+            }
         }
     }
 
-    public virtual string Subtitle
-    {
-        get;
-        set
-        {
-            field = value;
-            OnPropertyChanged(nameof(Subtitle));
-        }
-    }
-
-= string.Empty;
+    public virtual string Subtitle { get; set => SetProperty(ref field, value); } = string.Empty;
 
     public virtual ICommand? Command
     {
         get => _command;
         set
         {
+            if (EqualityComparer<ICommand?>.Default.Equals(value, _command))
+            {
+                return;
+            }
+
+            var oldTitle = Title;
+
             if (_commandListener is not null)
             {
                 _commandListener.Detach();
@@ -62,8 +63,8 @@ public partial class CommandItem : BaseObservable, ICommandItem
                 value.PropChanged += _commandListener.OnEvent;
             }
 
-            OnPropertyChanged(nameof(Command));
-            if (string.IsNullOrEmpty(_title))
+            OnPropertyChanged();
+            if (string.IsNullOrEmpty(_title) && oldTitle != Title)
             {
                 OnPropertyChanged(nameof(Title));
             }
@@ -79,17 +80,33 @@ public partial class CommandItem : BaseObservable, ICommandItem
         }
     }
 
-    public virtual IContextItem[] MoreCommands
+    public virtual IContextItem[] MoreCommands { get; set => SetProperty(ref field, value); } = [];
+
+    public DataPackage? DataPackage
     {
-        get;
+        get => _dataPackage;
         set
         {
-            field = value;
-            OnPropertyChanged(nameof(MoreCommands));
+            _dataPackage = value;
+            _dataPackageView = null;
+            _extendedAttributes[WellKnownExtensionAttributes.DataPackage] = value?.AsAgile().Get()?.GetView()!;
+            OnPropertyChanged(nameof(DataPackage));
+            OnPropertyChanged(nameof(DataPackageView));
         }
     }
 
-= [];
+    public DataPackageView? DataPackageView
+    {
+        get => _dataPackageView;
+        set
+        {
+            _dataPackage = null;
+            _dataPackageView = value;
+            _extendedAttributes[WellKnownExtensionAttributes.DataPackage] = value?.AsAgile().Get()!;
+            OnPropertyChanged(nameof(DataPackage));
+            OnPropertyChanged(nameof(DataPackageView));
+        }
+    }
 
     public CommandItem()
         : this(new NoOpCommand())
@@ -131,5 +148,10 @@ public partial class CommandItem : BaseObservable, ICommandItem
 
         Title = title;
         Subtitle = subtitle;
+    }
+
+    public IDictionary<string, object> GetProperties()
+    {
+        return _extendedAttributes;
     }
 }

@@ -6,6 +6,8 @@ using System;
 using System.Globalization;
 using System.Windows.Forms;
 
+using MouseWithoutBorders.Core;
+
 namespace MouseWithoutBorders
 {
     public partial class FrmMessage : System.Windows.Forms.Form

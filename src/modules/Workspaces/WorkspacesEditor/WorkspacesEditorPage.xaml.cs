@@ -9,7 +9,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 
-using WorkspacesEditor.Data;
+using WorkspacesCsharpLibrary.Data;
 using WorkspacesEditor.Models;
 using WorkspacesEditor.ViewModels;
 
