@@ -21,12 +21,11 @@ namespace Microsoft.CmdPal.Ext.PerformanceMonitor;
 #pragma warning disable SA1402 // File may only contain a single type
 
 /// <summary>
-///  asdfasdf
+///  Page for displaying performance monitor widgets. Can be used as both a list 
+/// in the main window, or as a band in the dock.
+/// By using OnLoadStaticListPage, we can get onload/onunload events to start/stop
+/// the data gathering.
 /// </summary>
-/// <remarks>
-/// Intentionally, we're using IListPage rather than ListPage. This is so we
-/// can get the onload/onunload
-/// </remarks>
 internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDisposable
 {
     public override string Id => "com.microsoft.cmdpal.performanceWidget";

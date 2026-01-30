@@ -42,8 +42,8 @@ internal sealed partial class NetworkStats : IDisposable
 
     private void InitNetworkPerfCounters()
     {
-        var pcc = new PerformanceCounterCategory("Network Interface");
-        var instanceNames = pcc.GetInstanceNames();
+        var perfCounterCategory = new PerformanceCounterCategory("Network Interface");
+        var instanceNames = perfCounterCategory.GetInstanceNames();
         foreach (var instanceName in instanceNames)
         {
             var instanceCounters = new List<PerformanceCounter>();

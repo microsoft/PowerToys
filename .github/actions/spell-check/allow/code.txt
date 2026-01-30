@@ -38,6 +38,7 @@ Gbps
 gcode
 Heatshrink
 Mbits
+Kbits
 MBs
 mkv
 msix
@@ -97,6 +98,7 @@ Yubico
 Perplexity
 Groq
 svgl
+devhome
 
 # KEYS
 
@@ -342,3 +344,7 @@ reportbug
 #ffmpeg
 crf
 nostdin
+
+# Performance counter keys
+engtype
+Nonpaged
