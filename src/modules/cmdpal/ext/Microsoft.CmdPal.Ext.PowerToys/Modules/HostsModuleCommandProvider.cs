@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using PowerToysExtension.Commands;
 using PowerToysExtension.Helpers;
+using PowerToysExtension.Properties;
 using static Common.UI.SettingsDeepLink;
 
 namespace PowerToysExtension.Modules;
@@ -22,15 +23,15 @@ internal sealed class HostsModuleCommandProvider : ModuleCommandProvider
         {
             yield return new ListItem(new OpenHostsEditorCommand())
             {
-                Title = "Open Hosts File Editor",
-                Subtitle = "Launch Hosts File Editor",
+                Title = Resources.Hosts_Open_Title,
+                Subtitle = Resources.Hosts_Open_Subtitle,
                 Icon = icon,
             };
 
             yield return new ListItem(new OpenHostsEditorAdminCommand())
             {
-                Title = "Open Hosts File Editor (Admin)",
-                Subtitle = "Launch Hosts File Editor as admin",
+                Title = Resources.Hosts_OpenAdmin_Title,
+                Subtitle = Resources.Hosts_OpenAdmin_Subtitle,
                 Icon = icon,
             };
         }
@@ -38,7 +39,7 @@ internal sealed class HostsModuleCommandProvider : ModuleCommandProvider
         yield return new ListItem(new OpenInSettingsCommand(module, title))
         {
             Title = title,
-            Subtitle = "Open Hosts File Editor settings",
+            Subtitle = Resources.Hosts_Settings_Subtitle,
             Icon = icon,
         };
     }

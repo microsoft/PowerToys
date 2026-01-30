@@ -203,6 +203,12 @@
 
                                     </Grid>
                                 </Border>
+
+                                <!--  More section  -->
+                                <TextBlock Style="{ThemeResource SettingsSectionHeaderTextBlockStyle}" Text="More" />
+                                <Border>
+                                    <Button Command="{x:Bind ViewModel.OpenInternalToolsCommand}" Content="Open internal tools" />
+                                </Border>
                             </StackPanel>
 
                             <!--  Footer  -->

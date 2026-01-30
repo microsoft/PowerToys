@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using PowerToysExtension.Commands;
 using PowerToysExtension.Helpers;
+using PowerToysExtension.Properties;
 using static Common.UI.SettingsDeepLink;
 
 namespace PowerToysExtension.Modules;
@@ -20,7 +21,7 @@ internal sealed class FileExplorerAddonsModuleCommandProvider : ModuleCommandPro
         yield return new ListItem(new OpenInSettingsCommand(SettingsWindow.FileExplorer, title))
         {
             Title = title,
-            Subtitle = "Open File Explorer add-ons settings",
+            Subtitle = Resources.FileExplorerAddons_Settings_Subtitle,
             Icon = icon,
         };
     }

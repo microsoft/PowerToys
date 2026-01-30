@@ -32,7 +32,7 @@
   <ImportGroup Label="Shared" />
   <PropertyGroup Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
-    <PlatformToolset>v143</PlatformToolset>
+    
     <WindowsPackageType>None</WindowsPackageType>
     <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
     <WindowsAppSdkUndockedRegFreeWinRTInitialize>true</WindowsAppSdkUndockedRegFreeWinRTInitialize>
@@ -70,6 +70,7 @@
     </ClCompile>
     <ClCompile Include="powertoy_module.cpp" />
     <ClCompile Include="main.cpp" />
+  <ClCompile Include="quick_access_host.cpp" />
     <ClCompile Include="restart_elevated.cpp" />
     <ClCompile Include="centralized_kb_hook.cpp" />
     <ClCompile Include="settings_telemetry.cpp" />
@@ -85,6 +86,7 @@
     <ClInclude Include="auto_start_helper.h" />
     <ClInclude Include="bug_report.h" />
     <ClInclude Include="centralized_hotkeys.h" />
+  <ClInclude Include="quick_access_host.h" />
     <ClInclude Include="general_settings.h" />
     <ClInclude Include="hotkey_conflict_detector.h" />
     <ClInclude Include="pch.h" />
@@ -138,6 +140,28 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources.resx" />
+  </ItemGroup>
+  <ItemGroup>
+    <CopyFileToFolders Include="svgs\PowerToysDark.ico">
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">true</DeploymentContent>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">true</DeploymentContent>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DeploymentContent>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</DeploymentContent>
+      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">$(OutDir)\svgs</DestinationFolders>
+      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">$(OutDir)\svgs</DestinationFolders>
+      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)\svgs</DestinationFolders>
+      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)\svgs</DestinationFolders>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="svgs\PowerToysWhite.ico">
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">true</DeploymentContent>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">true</DeploymentContent>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DeploymentContent>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</DeploymentContent>
+      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">$(OutDir)\svgs</DestinationFolders>
+      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">$(OutDir)\svgs</DestinationFolders>
+      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)\svgs</DestinationFolders>
+      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)\svgs</DestinationFolders>
+    </CopyFileToFolders>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <Import Project="..\..\deps\spdlog.props" />

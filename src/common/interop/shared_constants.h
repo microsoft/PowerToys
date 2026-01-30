@@ -72,6 +72,10 @@ namespace CommonSharedConstants
 
     const wchar_t ALWAYS_ON_TOP_TERMINATE_EVENT[] = L"Local\\AlwaysOnTopTerminateEvent-cfdf1eae-791f-4953-8021-2f18f3837eae";
 
+    const wchar_t ALWAYS_ON_TOP_INCREASE_OPACITY_EVENT[] = L"Local\\AlwaysOnTopIncreaseOpacityEvent-a1b2c3d4-e5f6-7890-abcd-ef1234567890";
+
+    const wchar_t ALWAYS_ON_TOP_DECREASE_OPACITY_EVENT[] = L"Local\\AlwaysOnTopDecreaseOpacityEvent-b2c3d4e5-f6a7-8901-bcde-f12345678901";
+
     // Path to the event used by PowerAccent
     const wchar_t POWERACCENT_EXIT_EVENT[] = L"Local\\PowerToysPowerAccentExitEvent-53e93389-d19a-4fbb-9b36-1981c8965e17";
 
@@ -132,6 +136,7 @@ namespace CommonSharedConstants
     // Path to the events used by CropAndLock
     const wchar_t CROP_AND_LOCK_REPARENT_EVENT[] = L"Local\\PowerToysCropAndLockReparentEvent-6060860a-76a1-44e8-8d0e-6355785e9c36";
     const wchar_t CROP_AND_LOCK_THUMBNAIL_EVENT[] = L"Local\\PowerToysCropAndLockThumbnailEvent-1637be50-da72-46b2-9220-b32b206b2434";
+    const wchar_t CROP_AND_LOCK_SCREENSHOT_EVENT[] = L"Local\\PowerToysCropAndLockScreenshotEvent-ff077ab2-8360-4bd1-864a-637389d35593";
     const wchar_t CROP_AND_LOCK_EXIT_EVENT[] = L"Local\\PowerToysCropAndLockExitEvent-d995d409-7b70-482b-bad6-e7c8666f375a";
 
     // Path to the events used by EnvironmentVariables

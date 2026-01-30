@@ -44,6 +44,7 @@ namespace Microsoft.PowerToys.Settings.UI
             _windowId = Win32Interop.GetWindowIdFromWindow(_hWnd);
             _appWindow = AppWindow.GetFromWindowId(_windowId);
             this.Activated += Window_Activated_SetIcon;
+            this.ExtendsContentIntoTitleBar = true;
 
             var dpi = NativeMethods.GetDpiForWindow(_hWnd);
             _currentDPI = dpi;
@@ -60,7 +61,7 @@ namespace Microsoft.PowerToys.Settings.UI
 
             this.SizeChanged += OobeWindow_SizeChanged;
 
-            var loader = Helpers.ResourceLoaderInstance.ResourceLoader;
+            var loader = ResourceLoaderInstance.ResourceLoader;
             Title = loader.GetString("OobeWindow_Title");
 
             if (shellPage != null)
