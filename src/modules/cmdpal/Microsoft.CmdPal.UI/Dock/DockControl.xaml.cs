@@ -313,16 +313,16 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
         var command = item.Command;
         try
         {
+            PerformCommandMessage m = new(command.Model);
+            m.WithAnimation = false;
+            m.TransientPage = true;
+            WeakReferenceMessenger.Default.Send(m);
+
             var isPage = command.Model.Unsafe is not IInvokableCommand invokable;
             if (isPage)
             {
                 WeakReferenceMessenger.Default.Send<RequestShowPaletteAtMessage>(new(pos));
             }
-
-            PerformCommandMessage m = new(command.Model);
-            m.WithAnimation = false;
-            m.TransientPage = true;
-            WeakReferenceMessenger.Default.Send(m);
         }
         catch (COMException e)
         {

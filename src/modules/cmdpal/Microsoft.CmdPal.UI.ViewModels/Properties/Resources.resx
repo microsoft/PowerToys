@@ -269,4 +269,12 @@
   <data name="fallbacks" xml:space="preserve">
     <value>Fallbacks</value>
   </data>
+  <data name="dock_edit_dock_name" xml:space="preserve">
+    <value>Edit dock</value>
+    <comment>Command name for editing the dock</comment>
+  </data>
+  <data name="dock_settings_name" xml:space="preserve">
+    <value>Dock settings</value>
+    <comment>Command name for opening dock settings</comment>
+  </data>
 </root>

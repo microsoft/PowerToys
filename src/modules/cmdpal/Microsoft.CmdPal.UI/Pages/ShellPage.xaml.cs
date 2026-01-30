@@ -156,7 +156,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     public void Receive(NavigateToPageMessage message)
     {
         // TODO GH #526 This needs more better locking too
-        _ = _queue.TryEnqueue(() =>
+        _ = _queue.TryEnqueue(DispatcherQueuePriority.High, () =>
         {
             // Also hide our details pane about here, if we had one
             HideDetails();

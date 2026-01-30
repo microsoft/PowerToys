@@ -448,6 +448,15 @@ namespace Microsoft.CmdPal.UI.ViewModels.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Edit dock.
+        /// </summary>
+        public static string dock_edit_dock_name {
+            get {
+                return ResourceManager.GetString("dock_edit_dock_name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to {0} items.
         /// </summary>
         public static string dock_item_count_plural {
@@ -471,6 +480,15 @@ namespace Microsoft.CmdPal.UI.ViewModels.Properties {
         public static string dock_pin_command_name {
             get {
                 return ResourceManager.GetString("dock_pin_command_name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Dock settings.
+        /// </summary>
+        public static string dock_settings_name {
+            get {
+                return ResourceManager.GetString("dock_settings_name", resourceCulture);
             }
         }
         

@@ -541,7 +541,7 @@ public sealed partial class DockWindow : WindowEx,
 
     void IRecipient<RequestShowPaletteAtMessage>.Receive(RequestShowPaletteAtMessage message)
     {
-        DispatcherQueue.TryEnqueue(() => RequestShowPaletteOnUiThread(message.PosDips));
+        DispatcherQueue.TryEnqueue(DispatcherQueuePriority.Low, () => RequestShowPaletteOnUiThread(message.PosDips));
     }
 
     private void RequestShowPaletteOnUiThread(Point posDips)

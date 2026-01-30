@@ -576,7 +576,7 @@ public sealed partial class DockViewModel : IDisposable,
                     WeakReferenceMessenger.Default.Send(new EnterDockEditModeMessage());
                 })
             {
-                Name = "Edit dock", // TODO!Loc
+                Name = Properties.Resources.dock_edit_dock_name,
                 Icon = Icons.EditIcon,
             };
 
@@ -586,7 +586,7 @@ public sealed partial class DockViewModel : IDisposable,
                     WeakReferenceMessenger.Default.Send(new OpenSettingsMessage("Dock"));
                 })
             {
-                Name = "Dock settings", // TODO!Loc
+                Name = Properties.Resources.dock_settings_name,
                 Icon = Icons.SettingsIcon,
             };
 
