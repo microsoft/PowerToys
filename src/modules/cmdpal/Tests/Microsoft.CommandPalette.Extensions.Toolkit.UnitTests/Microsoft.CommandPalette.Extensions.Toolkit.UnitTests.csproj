@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<!-- Look at Directory.Build.props in root for common stuff as well -->
-	<Import Project="..\..\..\..\Common.Dotnet.CsWinRT.props" />
+	<Import Project="..\..\..\..\Common.Dotnet.CsWinRT.props" Condition="'$(BuildTests)' != 'false'" />
 
 	<PropertyGroup>
 		<RepoRoot>$(MSBuildThisFileDirectory)..\..\..\..\..\</RepoRoot>
@@ -13,16 +13,24 @@
 		<Nullable>enable</Nullable>
 	</PropertyGroup>
 
-	<ItemGroup>
+	<!-- Skip building when BuildTests=false (e.g., Release pipeline) -->
+	<PropertyGroup Condition="'$(BuildTests)' == 'false'">
+		<TargetFramework>net9.0</TargetFramework>
+		<EnableDefaultItems>false</EnableDefaultItems>
+		<EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+	</PropertyGroup>
+
+	<ItemGroup Condition="'$(BuildTests)' != 'false'">
 		<PackageReference Include="Moq" />
 		<PackageReference Include="MSTest" />
 	</ItemGroup>
 
-	<ItemGroup>
+	<ItemGroup Condition="'$(BuildTests)' != 'false'">
 	  <ProjectReference Include="..\..\extensionsdk\Microsoft.CommandPalette.Extensions.Toolkit\Microsoft.CommandPalette.Extensions.Toolkit.csproj" />
 	</ItemGroup>
 
-	<PropertyGroup Condition="'$(CIBuild)'=='true'">
+	<PropertyGroup Condition="'$(CIBuild)'=='true' and '$(BuildTests)' != 'false'">
 		<SignAssembly>true</SignAssembly>
 		<DelaySign>true</DelaySign>
 		<AssemblyOriginatorKeyFile>$(RepoRoot).pipelines\272MSSharedLibSN2048.snk</AssemblyOriginatorKeyFile>
