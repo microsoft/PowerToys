@@ -22,9 +22,18 @@
   <!--
     Completely skip building test projects when BuildTests=false (e.g., Release pipeline).
     This avoids InternalsVisibleTo/signing issues by not compiling test code at all.
-    Note: IsTestProject is evaluated later, so we use a convention-based check on the project name/path.
+    Match: projects ending in UnitTests, UITests, FuzzTests, .Test, .Tests, UnitTest, or in a folder named Tests.
+    Also removes all PackageReference/ProjectReference to prevent NuGet restore and dependency builds.
   -->
-  <PropertyGroup Condition="'$(BuildTests)' == 'false' and ( $([System.String]::Copy('$(MSBuildProjectName)')).EndsWith('UnitTests') or $([System.String]::Copy($([System.IO.Path]::GetFileName('$(MSBuildProjectDirectory)'))).Equals('Tests')) )">
+  <PropertyGroup Condition="'$(BuildTests)' == 'false' and (
+      $([System.String]::Copy('$(MSBuildProjectName)')).EndsWith('UnitTests') or
+      $([System.String]::Copy('$(MSBuildProjectName)')).EndsWith('UITests') or
+      $([System.String]::Copy('$(MSBuildProjectName)')).EndsWith('FuzzTests') or
+      $([System.String]::Copy('$(MSBuildProjectName)')).EndsWith('.Test') or
+      $([System.String]::Copy('$(MSBuildProjectName)')).EndsWith('.Tests') or
+      $([System.String]::Copy('$(MSBuildProjectName)')).EndsWith('UnitTest') or
+      $([System.String]::Copy($([System.IO.Path]::GetFileName('$(MSBuildProjectDirectory)'))).Equals('Tests'))
+    )">
     <_IsSkippedTestProject>true</_IsSkippedTestProject>
     <EnableDefaultItems>false</EnableDefaultItems>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
@@ -35,6 +44,17 @@
     <RunAnalyzersDuringBuild>false</RunAnalyzersDuringBuild>
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
   </PropertyGroup>
+
+  <!-- Remove all references from skipped test projects to prevent NuGet restore and dependency builds -->
+  <ItemGroup Condition="'$(_IsSkippedTestProject)' == 'true'">
+    <PackageReference Remove="@(PackageReference)" />
+    <ProjectReference Remove="@(ProjectReference)" />
+    <Reference Remove="@(Reference)" />
+    <Compile Remove="@(Compile)" />
+    <Content Remove="@(Content)" />
+    <EmbeddedResource Remove="@(EmbeddedResource)" />
+    <None Remove="@(None)" />
+  </ItemGroup>
 
   <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.csproj'">
     <Version>$(Version).0</Version>
