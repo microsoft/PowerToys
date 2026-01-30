@@ -2,17 +2,13 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Collections.Immutable;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.Common.Helpers;
-using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
-using Microsoft.CommandPalette.Extensions;
-using Microsoft.CommandPalette.Extensions.Toolkit;
+using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
@@ -23,30 +19,30 @@ public partial class TopLevelCommandManager : ObservableObject,
     IDisposable
 {
     private readonly TaskScheduler _taskScheduler;
-    private readonly IEnumerable<ICommandProvider> _commandProviders;
+    private readonly IEnumerable<IExtensionService> _extensionServices;
     private readonly ILogger _logger;
     private readonly SettingsService _settingsService;
-    private readonly IExtensionService _extensionService;
 
-    private readonly List<CommandProviderWrapper> _builtInCommands = [];
-    private readonly List<CommandProviderWrapper> _extensionCommandProviders = [];
-    private readonly Lock _commandProvidersLock = new();
+    private readonly List<CommandProviderWrapper> _commandProviderWrappers = [];
+    private readonly Lock _commandProviderWrappersLock = new();
+
+    private readonly List<TopLevelViewModel> _commandProviderCommands = [];
+    private readonly Lock _commandProviderCommandsLock = new();
+
     private readonly SupersedingAsyncGate _reloadCommandsGate;
 
     TaskScheduler IPageContext.Scheduler => _taskScheduler;
 
     public TopLevelCommandManager(
-        IEnumerable<ICommandProvider> commandProviders,
+        IEnumerable<IExtensionService> extensionServices,
         TaskScheduler taskScheduler,
         SettingsService settingsService,
-        IExtensionService extensionService,
         ILogger logger)
     {
         this._logger = logger;
-        _commandProviders = commandProviders;
+        _extensionServices = extensionServices;
         _taskScheduler = taskScheduler;
         _settingsService = settingsService;
-        _extensionService = extensionService;
         WeakReferenceMessenger.Default.Register<ReloadCommandsMessage>(this);
         _reloadCommandsGate = new(ReloadAllCommandsAsyncCore);
     }
@@ -60,158 +56,80 @@ public partial class TopLevelCommandManager : ObservableObject,
     {
         get
         {
-            lock (_commandProvidersLock)
+            lock (_commandProviderWrappersLock)
             {
-                return _builtInCommands.Concat(_extensionCommandProviders).ToList();
+                return _commandProviderWrappers.ToList();
             }
         }
     }
 
-    public async Task<bool> LoadBuiltinsAsync()
+    [RelayCommand]
+    public async Task LoadExtensionsAsync()
     {
-        var s = new Stopwatch();
-        s.Start();
-
-        lock (_commandProvidersLock)
+        lock (_commandProviderWrappersLock)
         {
-            _builtInCommands.Clear();
+            _commandProviderWrappers.Clear();
         }
 
-        // Load built-In commands first. These are all in-proc, and
-        // owned by our ServiceProvider.
-        var builtInCommands = _commandProviders;
-        foreach (var provider in builtInCommands)
-        {
-            CommandProviderWrapper wrapper = new(provider, _taskScheduler, _hotkeyManager, _aliasManager, _logger);
-            lock (_commandProvidersLock)
-            {
-                _builtInCommands.Add(wrapper);
-            }
+        var weakSelf = new WeakReference<IPageContext>(this);
 
-            var commands = await LoadTopLevelCommandsFromProvider(wrapper);
-            lock (TopLevelCommands)
+        foreach (var extensionService in _extensionServices)
+        {
+            // extensionService.OnCommandProviderAdded -= ExtensionService_OnProviderAdded;
+            // extensionService.OnCommandProviderRemoved -= ExtensionService_OnProviderRemoved;
+            extensionService.OnCommandsAdded -= ExtensionService_OnCommandsAdded;
+            extensionService.OnCommandsRemoved -= ExtensionService_OnCommandsRemoved;
+
+            _ = Task.Run(async () =>
             {
-                foreach (var c in commands)
+                var providers = await extensionService.GetCommandProviderWrappersAsync(weakSelf);
+                lock (_commandProviderWrappersLock)
                 {
-                    TopLevelCommands.Add(c);
+                    _commandProviderWrappers.AddRange(providers);
                 }
-            }
+
+                var commands = await extensionService.GetTopLevelCommandsAsync();
+                lock (_commandProviderCommandsLock)
+                {
+                    _commandProviderCommands.AddRange(commands);
+                }
+            });
+
+            // extensionService.OnCommandProviderAdded += ExtensionService_OnProviderAdded;
+            // extensionService.OnCommandProviderRemoved += ExtensionService_OnProviderRemoved;
+            extensionService.OnCommandsAdded += ExtensionService_OnCommandsAdded;
+            extensionService.OnCommandsRemoved += ExtensionService_OnCommandsRemoved;
         }
 
-        s.Stop();
+        IsLoading = false;
 
-        Log_LoadingBuiltInsTook(s.ElapsedMilliseconds);
-
-        return true;
+        // Send on the current thread; receivers should marshal to UI if needed
+        WeakReferenceMessenger.Default.Send<ReloadFinishedMessage>();
     }
 
-    // May be called from a background thread
-    private async Task<IEnumerable<TopLevelViewModel>> LoadTopLevelCommandsFromProvider(CommandProviderWrapper commandProvider)
+    private void ExtensionService_OnCommandsAdded(CommandProviderWrapper commandProviderWrapper, IEnumerable<TopLevelViewModel> commands)
     {
-        WeakReference<IPageContext> weakSelf = new(this);
-
-        await commandProvider.LoadTopLevelCommands(_settingsService, weakSelf);
-
-        var commands = await Task.Factory.StartNew(
-            () =>
-            {
-                List<TopLevelViewModel> commands = [];
-                foreach (var item in commandProvider.TopLevelItems)
-                {
-                    commands.Add(item);
-                }
-
-                foreach (var item in commandProvider.FallbackItems)
-                {
-                    if (item.IsEnabled)
-                    {
-                        commands.Add(item);
-                    }
-                }
-
-                return commands;
-            },
-            CancellationToken.None,
-            TaskCreationOptions.None,
-            _taskScheduler);
-
-        commandProvider.CommandsChanged -= CommandProvider_CommandsChanged;
-        commandProvider.CommandsChanged += CommandProvider_CommandsChanged;
-
-        return commands;
+        // _ = Task.Run(async () =>
+        // {
+        //    await Task.Factory.StartNew(
+        //    () =>
+        //    {
+        //        lock (TopLevelCommands)
+        //        {
+        //            foreach (var command in commands)
+        //            {
+        //                TopLevelCommands.Add(command);
+        //            }
+        //        }
+        //    },
+        //    CancellationToken.None,
+        //    TaskCreationOptions.None,
+        //    _taskScheduler);
+        // });
     }
 
-    // By all accounts, we're already on a background thread (the COM call
-    // to handle the event shouldn't be on the main thread.). But just to
-    // be sure we don't block the caller, hop off this thread
-    private void CommandProvider_CommandsChanged(CommandProviderWrapper sender, IItemsChangedEventArgs args) =>
-        _ = Task.Run(async () => await UpdateCommandsForProvider(sender, args));
-
-    /// <summary>
-    /// Called when a command provider raises its ItemsChanged event. We'll
-    /// remove the old commands from the top-level list and try to put the new
-    /// ones in the same place in the list.
-    /// </summary>
-    /// <param name="sender">The provider who's commands changed</param>
-    /// <param name="args">the ItemsChangedEvent the provider raised</param>
-    /// <returns>an awaitable task</returns>
-    private async Task UpdateCommandsForProvider(CommandProviderWrapper sender, IItemsChangedEventArgs args)
+    private void ExtensionService_OnCommandsRemoved(CommandProviderWrapper commandProviderWrapper, IEnumerable<TopLevelViewModel> commands)
     {
-        WeakReference<IPageContext> weakSelf = new(this);
-        await sender.LoadTopLevelCommands(_settingsService, weakSelf);
-
-        List<TopLevelViewModel> newItems = [.. sender.TopLevelItems];
-        foreach (var i in sender.FallbackItems)
-        {
-            if (i.IsEnabled)
-            {
-                newItems.Add(i);
-            }
-        }
-
-        // modify the TopLevelCommands under shared lock; event if we clone it, we don't want
-        // TopLevelCommands to get modified while we're working on it. Otherwise, we might
-        // out clone would be stale at the end of this method.
-        lock (TopLevelCommands)
-        {
-            // Work on a clone of the list, so that we can just do one atomic
-            // update to the actual observable list at the end
-            // TODO: just added a lock around all of this anyway, but keeping the clone
-            // while looking on some other ways to improve this; can be removed later.
-            List<TopLevelViewModel> clone = [.. TopLevelCommands];
-
-            var startIndex = FindIndexForFirstProviderItem(clone, sender.ProviderId);
-            clone.RemoveAll(item => item.CommandProviderId == sender.ProviderId);
-            clone.InsertRange(startIndex, newItems);
-
-            ListHelpers.InPlaceUpdateList(TopLevelCommands, clone);
-        }
-
-        return;
-
-        static int FindIndexForFirstProviderItem(List<TopLevelViewModel> topLevelItems, string providerId)
-        {
-            // Tricky: all Commands from a single provider get added to the
-            // top-level list all together, in a row. So if we find just the first
-            // one, we can slice it out and insert the new ones there.
-            for (var i = 0; i < topLevelItems.Count; i++)
-            {
-                var wrapper = topLevelItems[i];
-                try
-                {
-                    if (providerId == wrapper.CommandProviderId)
-                    {
-                        return i;
-                    }
-                }
-                catch
-                {
-                }
-            }
-
-            // If we didn't find any, then we just append the new commands to the end of the list.
-            return topLevelItems.Count;
-        }
     }
 
     public async Task ReloadAllCommandsAsync()
@@ -225,187 +143,18 @@ public partial class TopLevelCommandManager : ObservableObject,
     private async Task ReloadAllCommandsAsyncCore(CancellationToken cancellationToken)
     {
         IsLoading = true;
-        await _extensionService.SignalStopExtensionsAsync();
+
+        foreach (var extensionService in _extensionServices)
+        {
+            await extensionService.SignalStopExtensionsAsync();
+        }
 
         lock (TopLevelCommands)
         {
             TopLevelCommands.Clear();
         }
 
-        await LoadBuiltinsAsync();
-        _ = Task.Run(LoadExtensionsAsync);
-    }
-
-    // Load commands from our extensions. Called on a background thread.
-    // Currently, this
-    // * queries the package catalog,
-    // * starts all the extensions,
-    // * then fetches the top-level commands from them.
-    // TODO In the future, we'll probably abstract some of this away, to have
-    // separate extension tracking vs stub loading.
-    [RelayCommand]
-    public async Task<bool> LoadExtensionsAsync()
-    {
-        _extensionService.OnExtensionAdded -= ExtensionService_OnExtensionAdded;
-        _extensionService.OnExtensionRemoved -= ExtensionService_OnExtensionRemoved;
-
-        var extensions = (await _extensionService.GetInstalledExtensionsAsync()).ToImmutableList();
-        lock (_commandProvidersLock)
-        {
-            _extensionCommandProviders.Clear();
-        }
-
-        if (extensions is not null)
-        {
-            await StartExtensionsAndGetCommands(extensions);
-        }
-
-        _extensionService.OnExtensionAdded += ExtensionService_OnExtensionAdded;
-        _extensionService.OnExtensionRemoved += ExtensionService_OnExtensionRemoved;
-
-        IsLoading = false;
-
-        // Send on the current thread; receivers should marshal to UI if needed
-        WeakReferenceMessenger.Default.Send<ReloadFinishedMessage>();
-
-        return true;
-    }
-
-    private void ExtensionService_OnExtensionAdded(IExtensionService sender, IEnumerable<IExtensionWrapper> extensions)
-    {
-        // When we get an extension install event, hop off to a BG thread
-        _ = Task.Run(async () =>
-        {
-            // for each newly installed extension, start it and get commands
-            // from it. One single package might have more than one
-            // IExtensionWrapper in it.
-            await StartExtensionsAndGetCommands(extensions);
-        });
-    }
-
-    private async Task StartExtensionsAndGetCommands(IEnumerable<IExtensionWrapper> extensions)
-    {
-        var timer = new Stopwatch();
-        timer.Start();
-
-        // Start all extensions in parallel
-        var startTasks = extensions.Select(StartExtensionWithTimeoutAsync);
-
-        // Wait for all extensions to start
-        var wrappers = (await Task.WhenAll(startTasks)).Where(wrapper => wrapper is not null).Select(w => w!).ToList();
-
-        lock (_commandProvidersLock)
-        {
-            _extensionCommandProviders.AddRange(wrappers);
-        }
-
-        // Load the commands from the providers in parallel
-        var loadTasks = wrappers.Select(LoadCommandsWithTimeoutAsync);
-
-        var commandSets = (await Task.WhenAll(loadTasks)).Where(results => results is not null).Select(r => r!).ToList();
-
-        lock (TopLevelCommands)
-        {
-            foreach (var commands in commandSets)
-            {
-                foreach (var c in commands)
-                {
-                    TopLevelCommands.Add(c);
-                }
-            }
-        }
-
-        timer.Stop();
-        Log_LoadingExtensionsTook(timer.ElapsedMilliseconds);
-    }
-
-    private async Task<CommandProviderWrapper?> StartExtensionWithTimeoutAsync(IExtensionWrapper extension)
-    {
-        Log_StartingExtension(extension.PackageFullName);
-        try
-        {
-            await extension.StartExtensionAsync().WaitAsync(TimeSpan.FromSeconds(10));
-            return new CommandProviderWrapper(extension, _taskScheduler, _hotkeyManager, _aliasManager, _logger);
-
-
-
-
-
-
-
-
-
-
-        }
-        catch (Exception ex)
-        {
-            Log_FailedToStartExtension(extension.PackageFullName, ex);
-            return null; // Return null for failed extensions
-        }
-    }
-
-    private async Task<IEnumerable<TopLevelViewModel>?> LoadCommandsWithTimeoutAsync(CommandProviderWrapper wrapper)
-    {
-        try
-        {
-            return await LoadTopLevelCommandsFromProvider(wrapper!).WaitAsync(TimeSpan.FromSeconds(10));
-        }
-        catch (TimeoutException)
-        {
-            Log_LoadingCommandsTimedOut(wrapper!.ExtensionHost?.Extension?.PackageFullName);
-        }
-        catch (Exception ex)
-        {
-            Log_FailedToLoadCommands(wrapper!.ExtensionHost?.Extension?.PackageFullName, ex);
-        }
-
-        return null;
-    }
-
-    private void ExtensionService_OnExtensionRemoved(IExtensionService sender, IEnumerable<IExtensionWrapper> extensions)
-    {
-        // When we get an extension uninstall event, hop off to a BG thread
-        _ = Task.Run(
-            async () =>
-            {
-                // Then find all the top-level commands that belonged to that extension
-                List<TopLevelViewModel> commandsToRemove = [];
-                lock (TopLevelCommands)
-                {
-                    foreach (var extension in extensions)
-                    {
-                        foreach (var command in TopLevelCommands)
-                        {
-                            var host = command.ExtensionHost;
-                            if (host?.Extension == extension)
-                            {
-                                commandsToRemove.Add(command);
-                            }
-                        }
-                    }
-                }
-
-                // Then back on the UI thread (remember, TopLevelCommands is
-                // Observable, so you can't touch it on the BG thread)...
-                await Task.Factory.StartNew(
-                () =>
-                {
-                    // ... remove all the deleted commands.
-                    lock (TopLevelCommands)
-                    {
-                        if (commandsToRemove.Count != 0)
-                        {
-                            foreach (var deleted in commandsToRemove)
-                            {
-                                TopLevelCommands.Remove(deleted);
-                            }
-                        }
-                    }
-                },
-                CancellationToken.None,
-                TaskCreationOptions.None,
-                _taskScheduler);
-            });
+        _ = Task.Run(LoadExtensionsAsync, cancellationToken);
     }
 
     public TopLevelViewModel? LookupCommand(string id)
@@ -435,10 +184,9 @@ public partial class TopLevelCommandManager : ObservableObject,
 
     internal bool IsProviderActive(string id)
     {
-        lock (_commandProvidersLock)
+        lock (_commandProviderWrappersLock)
         {
-            return _builtInCommands.Any(wrapper => wrapper.Id == id && wrapper.IsActive)
-                   || _extensionCommandProviders.Any(wrapper => wrapper.Id == id && wrapper.IsActive);
+            return _commandProviderWrappers.Any(wrapper => wrapper.Id == id && wrapper.IsActive);
         }
     }
 

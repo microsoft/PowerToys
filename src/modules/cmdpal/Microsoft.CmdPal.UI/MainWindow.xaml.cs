@@ -7,7 +7,6 @@ using System.Runtime.InteropServices;
 using CmdPalKeyboardService;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.Common.Helpers;
-using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.Ext.ClipboardHistory.Messages;
 using Microsoft.CmdPal.UI.Controls;
 using Microsoft.CmdPal.UI.Events;
@@ -78,7 +77,7 @@ public sealed partial class MainWindow : WindowEx,
     private readonly ILogger _logger;
     private readonly SettingsService _settingsService;
     private readonly TrayIconService _trayIconService;
-    private readonly IExtensionService _extensionService;
+    private readonly IEnumerable<IExtensionService> _extensionServices;
     private bool _ignoreHotKeyWhenFullScreen = true;
     private bool _themeServiceInitialized;
 
@@ -106,14 +105,14 @@ public sealed partial class MainWindow : WindowEx,
         SettingsService settingsService,
         TrayIconService trayIconService,
         LocalKeyboardListener localKeyboardListener,
-        IExtensionService extensionService,
+        IEnumerable<IExtensionService> extensionServices,
         ShellPage shellPage,
         ILogger logger)
     {
         InitializeComponent();
         _logger = logger;
         _trayIconService = trayIconService;
-        _extensionService = extensionService;
+        _extensionServices = extensionServices;
 
         ViewModel = mainWindowViewModel;
 
@@ -751,7 +750,10 @@ public sealed partial class MainWindow : WindowEx,
             _settingsService.SaveSettings(settings);
         }
 
-        _extensionService.SignalStopExtensionsAsync();
+        foreach (var extensionService in _extensionServices)
+        {
+            extensionService.SignalStopExtensionsAsync();
+        }
 
         _trayIconService.Destroy();
 

@@ -4,27 +4,34 @@
 
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
-using ManagedCommon;
-using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.MainPage;
 using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CommandPalette.Extensions;
+using Microsoft.Extensions.Logging;
+using Windows.Win32.Foundation;
 using WinRT;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
 namespace Microsoft.CmdPal.UI;
 
-internal sealed class PowerToysRootPageService : IRootPageService
+internal sealed partial class PowerToysRootPageService : IRootPageService
 {
     private readonly TopLevelCommandManager _tlcManager;
+    private readonly ILogger _logger;
 
     private IExtensionWrapper? _activeExtension;
     private Lazy<MainListPage> _mainListPage;
 
-    public PowerToysRootPageService(TopLevelCommandManager topLevelCommandManager, SettingsService settingsService, AliasManager aliasManager, AppStateService appStateService)
+    public PowerToysRootPageService(
+        TopLevelCommandManager topLevelCommandManager,
+        SettingsService settingsService,
+        AliasManager aliasManager,
+        AppStateService appStateService,
+        ILogger logger)
     {
+        _logger = logger;
         _tlcManager = topLevelCommandManager;
 
         _mainListPage = new Lazy<MainListPage>(() =>
@@ -35,7 +42,7 @@ internal sealed class PowerToysRootPageService : IRootPageService
 
     public async Task PreLoadAsync()
     {
-        await _tlcManager.LoadBuiltinsAsync();
+        await _tlcManager.LoadExtensionsAsync();
     }
 
     public Microsoft.CommandPalette.Extensions.IPage GetRootPage()
@@ -45,14 +52,6 @@ internal sealed class PowerToysRootPageService : IRootPageService
 
     public async Task PostLoadRootPageAsync()
     {
-        // After loading built-ins, and starting navigation, kick off a thread to load extensions.
-        _tlcManager.LoadExtensionsCommand.Execute(null);
-
-        await _tlcManager.LoadExtensionsCommand.ExecutionTask!;
-        if (_tlcManager.LoadExtensionsCommand.ExecutionTask.Status != TaskStatus.RanToCompletion)
-        {
-            // TODO: Handle failure case
-        }
     }
 
     private void OnPerformTopLevelCommand(object? context)
@@ -66,8 +65,7 @@ internal sealed class PowerToysRootPageService : IRootPageService
         }
         catch (Exception ex)
         {
-            Logger.LogError("Failed to update history in PowerToysRootPageService");
-            Logger.LogError(ex.ToString());
+            Log_FailedToUpdateHistory(ex);
         }
     }
 
@@ -108,7 +106,7 @@ internal sealed class PowerToysRootPageService : IRootPageService
                         var hr = Native.CoAllowSetForegroundWindow(intPtr);
                         if (hr != 0)
                         {
-                            Logger.LogWarning($"Error giving foreground rights: 0x{hr.Value:X8}");
+                            Log_FailureToGiveForegroundRights(hr);
                         }
                     }
                 }
@@ -138,4 +136,14 @@ internal sealed class PowerToysRootPageService : IRootPageService
         [SupportedOSPlatform("windows5.0")]
         internal static extern unsafe global::Windows.Win32.Foundation.HRESULT CoAllowSetForegroundWindow(nint pUnk, [Optional] void* lpvReserved);
     }
+
+    [LoggerMessage(
+        Level = LogLevel.Error,
+        Message = "Failed to update history after performing top-level command.")]
+    partial void Log_FailedToUpdateHistory(Exception ex);
+
+    [LoggerMessage(
+        Level = LogLevel.Error,
+        Message = "Error giving foreground rights: 0x{hr.Value:X8}")]
+    partial void Log_FailureToGiveForegroundRights(HRESULT hr);
 }

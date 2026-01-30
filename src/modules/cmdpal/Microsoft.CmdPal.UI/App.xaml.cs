@@ -29,7 +29,6 @@ using Microsoft.CmdPal.UI.Services;
 using Microsoft.CmdPal.UI.Settings;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.BuiltinCommands;
-using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.Extensions.DependencyInjection;
@@ -130,7 +129,7 @@ public partial class App : Application
     private void AddCoreServices(ServiceCollection services)
     {
         // Core services
-        services.AddSingleton<IExtensionService, ExtensionService>();
+        // services.AddSingleton<IExtensionService, WinRTExtensionService>();
         services.AddSingleton<IRunHistoryService, RunHistoryService>();
 
         services.AddSingleton<IRootPageService, PowerToysRootPageService>();
