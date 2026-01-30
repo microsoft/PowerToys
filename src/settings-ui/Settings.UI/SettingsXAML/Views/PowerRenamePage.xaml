@@ -7,9 +7,17 @@
     xmlns:local="using:Microsoft.PowerToys.Settings.UI.Helpers"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
+    xmlns:tkconverters="using:CommunityToolkit.WinUI.Converters"
     xmlns:ui="using:CommunityToolkit.WinUI"
     AutomationProperties.LandmarkType="Main"
     mc:Ignorable="d">
+
+    <local:NavigablePage.Resources>
+        <tkconverters:BoolToVisibilityConverter
+            x:Key="BoolToInvertedVisibilityConverter"
+            FalseValue="Visible"
+            TrueValue="Collapsed" />
+    </local:NavigablePage.Resources>
 
     <controls:SettingsPageControl x:Uid="PowerRename" ModuleImageSource="ms-appx:///Assets/Settings/Modules/PowerRename.png">
         <controls:SettingsPageControl.ModuleContent>
@@ -95,6 +103,48 @@
                             x:Uid="ToggleSwitch"
                             AutomationProperties.Name="{Binding ElementName=PowerRenameToggleUseBoostLib, Path=Header}"
                             IsOn="{x:Bind ViewModel.UseBoostLib, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
+                </controls:SettingsGroup>
+                <controls:SettingsGroup x:Uid="PowerRename_ExtensionsHeader" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                    <tkcontrols:SettingsCard
+                        Name="PowerRenameHeifExtension"
+                        x:Uid="PowerRename_HeifExtension"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xEB9F;}">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <FontIcon
+                                VerticalAlignment="Center"
+                                Foreground="{ThemeResource SystemFillColorSuccessBrush}"
+                                Glyph="&#xEC61;"
+                                Visibility="{x:Bind ViewModel.IsHeifExtensionInstalled, Mode=OneWay}" />
+                            <TextBlock
+                                x:Uid="PowerRename_HeifExtension_Installed"
+                                VerticalAlignment="Center"
+                                Visibility="{x:Bind ViewModel.IsHeifExtensionInstalled, Mode=OneWay}" />
+                            <Button
+                                x:Uid="PowerRename_HeifExtension_Install"
+                                Command="{x:Bind ViewModel.InstallHeifExtensionCommand}"
+                                Visibility="{x:Bind ViewModel.IsHeifExtensionInstalled, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}" />
+                        </StackPanel>
+                    </tkcontrols:SettingsCard>
+                    <tkcontrols:SettingsCard
+                        Name="PowerRenameAvifExtension"
+                        x:Uid="PowerRename_AvifExtension"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xEB9F;}">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <FontIcon
+                                VerticalAlignment="Center"
+                                Foreground="{ThemeResource SystemFillColorSuccessBrush}"
+                                Glyph="&#xEC61;"
+                                Visibility="{x:Bind ViewModel.IsAvifExtensionInstalled, Mode=OneWay}" />
+                            <TextBlock
+                                x:Uid="PowerRename_AvifExtension_Installed"
+                                VerticalAlignment="Center"
+                                Visibility="{x:Bind ViewModel.IsAvifExtensionInstalled, Mode=OneWay}" />
+                            <Button
+                                x:Uid="PowerRename_AvifExtension_Install"
+                                Command="{x:Bind ViewModel.InstallAvifExtensionCommand}"
+                                Visibility="{x:Bind ViewModel.IsAvifExtensionInstalled, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}" />
+                        </StackPanel>
                     </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
             </StackPanel>

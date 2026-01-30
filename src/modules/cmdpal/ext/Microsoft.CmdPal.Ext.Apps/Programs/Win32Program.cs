@@ -1052,9 +1052,6 @@ public class Win32Program : IProgram
                 app.FullPath) :
             app.IcoPath;
 
-        icoPath = icoPath.EndsWith(".lnk", System.StringComparison.InvariantCultureIgnoreCase) ?
-            app.FullPath :
-            icoPath;
         return new AppItem()
         {
             Name = app.Name,
@@ -1065,6 +1062,7 @@ public class Win32Program : IProgram
             DirPath = app.Location,
             Commands = app.GetCommands(),
             AppIdentifier = app.GetAppIdentifier(),
+            FullExecutablePath = app.FullPath,
         };
     }
 }

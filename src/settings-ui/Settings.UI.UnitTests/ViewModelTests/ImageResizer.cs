@@ -19,9 +19,9 @@ namespace ViewModelTests
     [TestClass]
     public class ImageResizer
     {
-        private Mock<ISettingsUtils> _mockGeneralSettingsUtils;
+        private Mock<SettingsUtils> _mockGeneralSettingsUtils;
 
-        private Mock<ISettingsUtils> _mockImgResizerSettingsUtils;
+        private Mock<SettingsUtils> _mockImgResizerSettingsUtils;
 
         [TestInitialize]
         public void SetUpStubSettingUtils()
@@ -41,7 +41,7 @@ namespace ViewModelTests
         [DataRow("v0.22.0", "settings.json")]
         public void OriginalFilesModificationTest(string version, string fileName)
         {
-            var settingPathMock = new Mock<ISettingsPath>();
+            var settingPathMock = new Mock<SettingPath>();
 
             var fileMock = BackCompatTestProperties.GetModuleIOProvider(version, ImageResizerSettings.ModuleName, fileName);
             var mockSettingsUtils = new SettingsUtils(fileMock.Object, settingPathMock.Object);

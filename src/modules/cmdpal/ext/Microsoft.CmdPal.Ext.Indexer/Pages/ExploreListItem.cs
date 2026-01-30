@@ -5,6 +5,7 @@
 using System.Collections.Generic;
 using Microsoft.CmdPal.Core.Common.Commands;
 using Microsoft.CmdPal.Ext.Indexer.Data;
+using Microsoft.CmdPal.Ext.Indexer.Helpers;
 using Microsoft.CmdPal.Ext.Indexer.Properties;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.Foundation;
@@ -28,6 +29,9 @@ internal sealed partial class ExploreListItem : ListItem
 
         Title = indexerItem.FileName;
         Subtitle = indexerItem.FullPath;
+
+        DataPackage = DataPackageHelper.CreateDataPackageForPath(this, FilePath);
+
         List<CommandContextItem> context = [];
         if (indexerItem.IsDirectory())
         {

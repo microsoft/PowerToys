@@ -87,12 +87,12 @@
                         FontSize="24"
                         Glyph="&#xF158;" />
                     <TextBlock
-                        x:Uid="AdvancedPaste_FL_NoModelsDownloaded."
+                        x:Uid="AdvancedPaste_FL_NoModelsDownloaded"
                         HorizontalAlignment="Center"
                         Style="{StaticResource BodyStrongTextBlockStyle}"
                         TextAlignment="Center" />
                     <TextBlock
-                        x:Uid="AdvancedPaste_FL_RunFoundryLocalText.Text"
+                        x:Uid="AdvancedPaste_FL_RunFoundryLocalText"
                         HorizontalAlignment="Center"
                         FontSize="12"
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"

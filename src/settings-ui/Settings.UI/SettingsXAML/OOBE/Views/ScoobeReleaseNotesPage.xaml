@@ -1,0 +1,63 @@
+<Page
+    x:Class="Microsoft.PowerToys.Settings.UI.OOBE.Views.ScoobeReleaseNotesPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
+    Loaded="Page_Loaded"
+    mc:Ignorable="d">
+    <Page.Resources>
+        <tkcontrols:MarkdownThemes
+            x:Key="ReleaseNotesMarkdownThemeConfig"
+            BoldFontWeight="SemiBold"
+            H1FontSize="28"
+            H1FontWeight="SemiBold"
+            H1Margin="0, 36, 0, 8"
+            H2FontSize="20"
+            H2FontWeight="SemiBold"
+            H2Margin="0, 16, 0, 4"
+            H3FontSize="16"
+            H3FontWeight="SemiBold"
+            H3Margin="0, 16, 0, 4"
+            HorizontalRuleBrush="{StaticResource DividerStrokeColorDefaultBrush}"
+            HorizontalRuleThickness="1"
+            ImageStretch="Uniform"
+            ListBulletSpacing="1"
+            ListGutterWidth="10" />
+        <tkcontrols:MarkdownConfig x:Key="ReleaseNotesMarkdownConfig" Themes="{StaticResource ReleaseNotesMarkdownThemeConfig}" />
+    </Page.Resources>
+
+    <!--  Main layout container  -->
+    <Grid MaxWidth="1000">
+        <ScrollViewer Padding="0,0,0,0" VerticalScrollBarVisibility="Auto">
+            <Grid Margin="0,0,0,24">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <Image
+                    x:Name="HeroImageHolder"
+                    Height="186"
+                    HorizontalAlignment="Left"
+                    Stretch="UniformToFill" />
+                <Grid Grid.Row="1" Margin="24,16,24,24">
+                    <ProgressRing
+                        x:Name="LoadingProgressRing"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        IsIndeterminate="True"
+                        Visibility="Visible" />
+                    <tkcontrols:MarkdownTextBlock
+                        x:Name="ReleaseNotesMarkdown"
+                        Config="{StaticResource ReleaseNotesMarkdownConfig}"
+                        UseAutoLinks="True"
+                        UseEmphasisExtras="True"
+                        UseListExtras="True"
+                        UsePipeTables="True"
+                        UseTaskLists="True" />
+                </Grid>
+            </Grid>
+        </ScrollViewer>
+    </Grid>
+</Page>
