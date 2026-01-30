@@ -285,6 +285,9 @@
                                     <ComboBoxItem>MP4</ComboBoxItem>
                                 </ComboBox>
                             </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard Name="ZoomItRecordCaptureSystemAudio" ContentAlignment="Left">
+                                <CheckBox x:Uid="ZoomIt_Record_CaptureSystemAudio" IsChecked="{x:Bind ViewModel.RecordCaptureSystemAudio, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard Name="ZoomItRecordCaptureAudio" ContentAlignment="Left">
                                 <CheckBox x:Uid="ZoomIt_Record_CaptureAudio" IsChecked="{x:Bind ViewModel.RecordCaptureAudio, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
@@ -310,48 +313,6 @@
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
-                </controls:SettingsGroup>
-                <controls:SettingsGroup x:Uid="ZoomIt_RecordGroup" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-                    <tkcontrols:SettingsCard
-                        Name="ZoomItRecordShortcut"
-                        x:Uid="ZoomIt_Record_Shortcut"
-                        HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
-                        <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.RecordToggleKey, Mode=TwoWay}" />
-                    </tkcontrols:SettingsCard>
-                    <tkcontrols:SettingsCard Name="ZoomItRecordScaling" x:Uid="ZoomIt_Record_Scaling">
-                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.RecordScalingIndex, Mode=TwoWay}">
-                            <ComboBoxItem>0.1</ComboBoxItem>
-                            <ComboBoxItem>0.2</ComboBoxItem>
-                            <ComboBoxItem>0.3</ComboBoxItem>
-                            <ComboBoxItem>0.4</ComboBoxItem>
-                            <ComboBoxItem>0.5</ComboBoxItem>
-                            <ComboBoxItem>0.6</ComboBoxItem>
-                            <ComboBoxItem>0.7</ComboBoxItem>
-                            <ComboBoxItem>0.8</ComboBoxItem>
-                            <ComboBoxItem>0.9</ComboBoxItem>
-                            <ComboBoxItem>1.0</ComboBoxItem>
-                        </ComboBox>
-                    </tkcontrols:SettingsCard>
-                    <tkcontrols:SettingsCard Name="ZoomItRecordFormat" x:Uid="ZoomIt_Record_Format">
-                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.RecordFormatIndex, Mode=TwoWay}">
-                            <ComboBoxItem>GIF</ComboBoxItem>
-                            <ComboBoxItem>MP4</ComboBoxItem>
-                        </ComboBox>
-                    </tkcontrols:SettingsCard>
-                    <tkcontrols:SettingsCard Name="ZoomItRecordCaptureSystemAudio" x:Uid="ZoomIt_Record_CaptureSystemAudio">
-                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.RecordCaptureSystemAudio, Mode=TwoWay}" />
-                    </tkcontrols:SettingsCard>
-                    <tkcontrols:SettingsCard Name="ZoomItRecordCaptureAudio" x:Uid="ZoomIt_Record_CaptureAudio">
-                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.RecordCaptureAudio, Mode=TwoWay}" />
-                    </tkcontrols:SettingsCard>
-                    <tkcontrols:SettingsCard Name="ZoomItRecordMicrophone" x:Uid="ZoomIt_Record_Microphone">
-                        <ComboBox
-                            MinWidth="{StaticResource SettingActionControlMinWidth}"
-                            DisplayMemberPath="Item2"
-                            ItemsSource="{x:Bind ViewModel.MicrophoneList}"
-                            SelectedValue="{x:Bind Path=ViewModel.RecordMicrophoneDeviceId, Mode=TwoWay}"
-                            SelectedValuePath="Item1" />
-                    </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
                 <controls:SettingsGroup x:Uid="ZoomIt_SnipGroup" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsExpander
