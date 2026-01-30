@@ -218,7 +218,6 @@ changecursor
 checkmarks
 CHILDACTIVATE
 CHILDWINDOW
-checkmarks
 CHOOSEFONT
 Chunghwa
 CIBUILD
