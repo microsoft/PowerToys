@@ -25,16 +25,18 @@
     Match: projects ending in UnitTests, UITests, FuzzTests, .Test, .Tests, UnitTest, or in a folder named Tests.
     Also removes all PackageReference/ProjectReference to prevent NuGet restore and dependency builds.
   -->
-  <PropertyGroup Condition="'$(BuildTests)' == 'false' and (
-      $([System.String]::Copy('$(MSBuildProjectName)')).EndsWith('UnitTests') or
-      $([System.String]::Copy('$(MSBuildProjectName)')).EndsWith('UITests') or
-      $([System.String]::Copy('$(MSBuildProjectName)')).EndsWith('FuzzTests') or
-      $([System.String]::Copy('$(MSBuildProjectName)')).EndsWith('.Test') or
-      $([System.String]::Copy('$(MSBuildProjectName)')).EndsWith('.Tests') or
-      $([System.String]::Copy('$(MSBuildProjectName)')).EndsWith('UnitTest') or
-      $([System.String]::Copy($([System.IO.Path]::GetFileName('$(MSBuildProjectDirectory)'))).Equals('Tests'))
-    )">
-    <_IsSkippedTestProject>true</_IsSkippedTestProject>
+  <PropertyGroup Condition="'$(BuildTests)' == 'false'">
+    <_ProjectName>$(MSBuildProjectName)</_ProjectName>
+    <_IsSkippedTestProject Condition="$(_ProjectName.EndsWith('UnitTests'))">true</_IsSkippedTestProject>
+    <_IsSkippedTestProject Condition="$(_ProjectName.EndsWith('UITests'))">true</_IsSkippedTestProject>
+    <_IsSkippedTestProject Condition="$(_ProjectName.EndsWith('FuzzTests'))">true</_IsSkippedTestProject>
+    <_IsSkippedTestProject Condition="$(_ProjectName.EndsWith('.Test'))">true</_IsSkippedTestProject>
+    <_IsSkippedTestProject Condition="$(_ProjectName.EndsWith('.Tests'))">true</_IsSkippedTestProject>
+    <_IsSkippedTestProject Condition="$(_ProjectName.EndsWith('UnitTest'))">true</_IsSkippedTestProject>
+    <_IsSkippedTestProject Condition="$(MSBuildProjectDirectory.Contains('\Tests\'))">true</_IsSkippedTestProject>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(_IsSkippedTestProject)' == 'true'">
     <EnableDefaultItems>false</EnableDefaultItems>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
