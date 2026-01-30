@@ -1071,7 +1071,7 @@ mouseutils
 MOVESIZEEND
 MOVESIZESTART
 MRM
-MRT
+Mrt
 mru
 MSAL
 msc
