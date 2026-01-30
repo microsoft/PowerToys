@@ -25,9 +25,15 @@
     Note: IsTestProject is evaluated later, so we use a convention-based check on the project path.
   -->
   <PropertyGroup Condition="'$(BuildTests)' == 'false' and ($(MSBuildProjectFullPath.Contains('UnitTests')) or $(MSBuildProjectFullPath.Contains('\Tests\')))">
+    <_IsSkippedTestProject>true</_IsSkippedTestProject>
     <EnableDefaultItems>false</EnableDefaultItems>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <!-- Disable all code analysis for skipped test projects -->
+    <EnableNETAnalyzers>false</EnableNETAnalyzers>
+    <RunAnalyzers>false</RunAnalyzers>
+    <RunAnalyzersDuringBuild>false</RunAnalyzersDuringBuild>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.csproj'">
@@ -42,10 +48,6 @@
     <ForceImportBeforeCppProps>$(MsbuildThisFileDirectory)\Cpp.Build.props</ForceImportBeforeCppProps>
   </PropertyGroup>
 
-  <!-- Define a property to detect if this is a test project that should be skipped -->
-  <PropertyGroup>
-    <_IsSkippedTestProject Condition="'$(BuildTests)' == 'false' and ($(MSBuildProjectFullPath.Contains('UnitTests')) or $(MSBuildProjectFullPath.Contains('\Tests\')))">true</_IsSkippedTestProject>
-  </PropertyGroup>
 
   <ItemGroup Condition="'$(MSBuildProjectExtension)' == '.csproj' and '$(_IsSkippedTestProject)' != 'true'">
     <PackageReference Include="StyleCop.Analyzers">
