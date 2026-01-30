@@ -22,9 +22,9 @@
   <!--
     Completely skip building test projects when BuildTests=false (e.g., Release pipeline).
     This avoids InternalsVisibleTo/signing issues by not compiling test code at all.
-    Note: IsTestProject is evaluated later, so we use a convention-based check on the project path.
+    Note: IsTestProject is evaluated later, so we use a convention-based check on the project name/path.
   -->
-  <PropertyGroup Condition="'$(BuildTests)' == 'false' and ($(MSBuildProjectFullPath.Contains('UnitTests')) or $(MSBuildProjectFullPath.Contains('\Tests\')))">
+  <PropertyGroup Condition="'$(BuildTests)' == 'false' and ( $([System.String]::Copy('$(MSBuildProjectName)')).EndsWith('UnitTests') or $([System.String]::Copy($([System.IO.Path]::GetFileName('$(MSBuildProjectDirectory)'))).Equals('Tests')) )">
     <_IsSkippedTestProject>true</_IsSkippedTestProject>
     <EnableDefaultItems>false</EnableDefaultItems>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
