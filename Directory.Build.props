@@ -25,11 +25,9 @@
     Note: IsTestProject is evaluated later, so we use a convention-based check on the project path.
   -->
   <PropertyGroup Condition="'$(BuildTests)' == 'false' and ($(MSBuildProjectFullPath.Contains('UnitTests')) or $(MSBuildProjectFullPath.Contains('\Tests\')))">
-    <TargetFramework>net9.0</TargetFramework>
     <EnableDefaultItems>false</EnableDefaultItems>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.csproj'">
@@ -43,7 +41,13 @@
     <_PropertySheetDisplayName>PowerToys.Root.Props</_PropertySheetDisplayName>
     <ForceImportBeforeCppProps>$(MsbuildThisFileDirectory)\Cpp.Build.props</ForceImportBeforeCppProps>
   </PropertyGroup>
-  <ItemGroup Condition="'$(MSBuildProjectExtension)' == '.csproj'">
+
+  <!-- Define a property to detect if this is a test project that should be skipped -->
+  <PropertyGroup>
+    <_IsSkippedTestProject Condition="'$(BuildTests)' == 'false' and ($(MSBuildProjectFullPath.Contains('UnitTests')) or $(MSBuildProjectFullPath.Contains('\Tests\')))">true</_IsSkippedTestProject>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(MSBuildProjectExtension)' == '.csproj' and '$(_IsSkippedTestProject)' != 'true'">
     <PackageReference Include="StyleCop.Analyzers">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
