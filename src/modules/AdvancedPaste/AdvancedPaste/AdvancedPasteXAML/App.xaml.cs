@@ -84,6 +84,7 @@ namespace AdvancedPaste
                 services.AddSingleton<ICustomActionTransformService, CustomActionTransformService>();
                 services.AddSingleton<IKernelService, AdvancedAIKernelService>();
                 services.AddSingleton<IPasteFormatExecutor, PasteFormatExecutor>();
+                services.AddSingleton<IKeystrokeService, KeystrokeService>();
                 services.AddSingleton<OptionsViewModel>();
             }).Build();
 
@@ -159,6 +160,10 @@ namespace AdvancedPaste
             else if (messageType == PowerToys.Interop.Constants.AdvancedPasteJsonMessage())
             {
                 await viewModel.ExecutePasteFormatAsync(PasteFormats.Json, PasteActionSource.GlobalKeyboardShortcut);
+            }
+            else if (messageType == PowerToys.Interop.Constants.AdvancedPasteKeystrokeMessage())
+            {
+                await viewModel.ExecutePasteFormatAsync(PasteFormats.PasteAsKeystrokes, PasteActionSource.GlobalKeyboardShortcut);
             }
             else if (messageType == PowerToys.Interop.Constants.AdvancedPasteAdditionalActionMessage())
             {
