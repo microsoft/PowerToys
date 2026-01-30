@@ -12,7 +12,7 @@ public interface ILanguageModelProvider
 
     string ProviderDescription { get; }
 
-    Task<IEnumerable<ModelDetails>> GetModelsAsync(bool ignoreCached = false, CancellationToken cancelationToken = default);
+    Task<IEnumerable<ModelDetails>> GetModelsAsync(CancellationToken cancelationToken = default);
 
     IChatClient? GetIChatClient(string modelId);
 

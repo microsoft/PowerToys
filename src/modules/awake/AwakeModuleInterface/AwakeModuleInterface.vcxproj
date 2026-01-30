@@ -8,7 +8,7 @@
     <RootNamespace>Awake</RootNamespace>
     <ProjectName>AwakeModuleInterface</ProjectName>
     <TargetName>PowerToys.AwakeModuleInterface</TargetName>
-    <PlatformToolset>v143</PlatformToolset>
+    
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Label="Configuration">

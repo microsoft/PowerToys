@@ -39,7 +39,6 @@ public partial class ShellCommandsProvider : CommandProvider
         {
             Icon = Icons.RunV2Icon,
             Title = Resources.shell_command_name,
-            Subtitle = Resources.cmd_plugin_description,
             MoreCommands = [
                 new CommandContextItem(Settings.SettingsPage),
             ],

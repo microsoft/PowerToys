@@ -38,9 +38,11 @@ namespace AdvancedPaste.Controls
 
         public bool HasImage => ContentImage is not null;
 
-        public bool HasText => !string.IsNullOrEmpty(ContentText) && !HasImage;
+        public bool HasText => !string.IsNullOrEmpty(ContentText) && !HasImage && !HasColor;
 
-        public bool HasGlyph => !HasImage && !HasText && !string.IsNullOrEmpty(IconGlyph);
+        public bool HasGlyph => !HasImage && !HasText && !HasColor && !string.IsNullOrEmpty(IconGlyph);
+
+        public bool HasColor => ClipboardItemHelper.IsRgbHexColor(ContentText);
 
         public ClipboardHistoryItemPreviewControl()
         {

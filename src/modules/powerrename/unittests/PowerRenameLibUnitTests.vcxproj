@@ -9,7 +9,7 @@
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Label="Configuration">
-    <PlatformToolset>v143</PlatformToolset>
+    
   </PropertyGroup>
   <PropertyGroup>
     <ConfigurationType>DynamicLibrary</ConfigurationType>
@@ -87,6 +87,12 @@
       <DeploymentContent>true</DeploymentContent>
     </None>
     <None Include="testdata\xmp_test_2.jpg">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="testdata\heif_test.heic">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="testdata\avif_test.avif">
       <DeploymentContent>true</DeploymentContent>
     </None>
     <None Include="testdata\ATTRIBUTION.md">

@@ -22,7 +22,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             {
                 // By mistake, the first release of Find My Mouse was saving settings in two places at the same time.
                 // Delete the wrong path for Find My Mouse settings.
-                var tempSettingsUtils = new SettingsUtils();
+                var tempSettingsUtils = SettingsUtils.Default;
                 if (tempSettingsUtils.SettingsExists("Find My Mouse"))
                 {
                     var settingsFilePath = tempSettingsUtils.GetSettingsFilePath("Find My Mouse");
@@ -34,7 +34,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             {
             }
 
-            var settingsUtils = new SettingsUtils();
+            var settingsUtils = SettingsUtils.Default;
             ViewModel = new MouseUtilsViewModel(
                 settingsUtils,
                 SettingsRepository<GeneralSettings>.GetInstance(settingsUtils),

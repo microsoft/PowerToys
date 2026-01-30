@@ -12,9 +12,9 @@ namespace winrt::Microsoft::Terminal::UI::implementation
         // Check if the code point is in the Private Use Area range used by Fluent UI icons.
         [[nodiscard]] constexpr bool _isFluentIconPua(const UChar32 cp) noexcept
         {
-            static constexpr UChar32 _fluentIconsPrivateUseAreaStart = 0xE700;
-            static constexpr UChar32 _fluentIconsPrivateUseAreaEnd = 0xF8FF;
-            return cp >= _fluentIconsPrivateUseAreaStart && cp <= _fluentIconsPrivateUseAreaEnd;
+            constexpr UChar32 fluentIconsPrivateUseAreaStart = 0xE700;
+            constexpr UChar32 fluentIconsPrivateUseAreaEnd = 0xF8FF;
+            return cp >= fluentIconsPrivateUseAreaStart && cp <= fluentIconsPrivateUseAreaEnd;
         }
 
         // Determine if the given text (as a sequence of UChar code units) is emoji

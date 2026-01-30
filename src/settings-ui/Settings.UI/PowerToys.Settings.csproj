@@ -28,6 +28,8 @@
 		<None Remove="Assets\Settings\Icons\Models\WindowsML.svg" />
 		<None Remove="Assets\Settings\Modules\APDialog.dark.png" />
 		<None Remove="Assets\Settings\Modules\APDialog.light.png" />
+		<None Remove="Assets\Settings\Modules\CmdPal_Background.png" />
+		<None Remove="Assets\Settings\Modules\CmdPal_Hero.png" />
 		<None Remove="Assets\Settings\Modules\LightSwitch.png" />
 		<None Remove="SettingsXAML\Controls\Dashboard\CheckUpdateControl.xaml" />
 		<None Remove="SettingsXAML\Controls\Dashboard\ShortcutConflictControl.xaml" />
@@ -71,6 +73,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<PackageReference Include="CommunityToolkit.Labs.WinUI.Controls.OpacityMaskView" />
 		<PackageReference Include="CommunityToolkit.WinUI.Controls.Segmented" />
 		<PackageReference Include="CommunityToolkit.WinUI.Controls.SettingsControls" />
 		<PackageReference Include="CommunityToolkit.WinUI.Controls.Primitives" />
@@ -121,6 +124,7 @@
 		<ProjectReference Include="..\..\common\LanguageModelProvider\LanguageModelProvider.csproj" />
 		<ProjectReference Include="..\..\modules\MouseUtils\MouseJump.Common\MouseJump.Common.csproj" />
 		<ProjectReference Include="..\Settings.UI.Library\Settings.UI.Library.csproj" />
+		<ProjectReference Include="..\Settings.UI.Controls\Settings.UI.Controls.csproj" />
 	</ItemGroup>
 
 	<!-- XamlIndexBuilder now outputs directly to Assets\Settings -->
@@ -172,6 +176,9 @@
 		<None Update="Assets\Settings\Scripts\DisableModule.ps1">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
+		<Page Update="SettingsXAML\Controls\ShortcutControl\ShortcutWithTextLabelControl.xaml">
+		  <Generator>MSBuild:Compile</Generator>
+		</Page>
 		<Page Update="SettingsXAML\Controls\TitleBar\TitleBar.xaml">
 			<Generator>MSBuild:Compile</Generator>
 		</Page>
