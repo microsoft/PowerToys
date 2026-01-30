@@ -13,14 +13,6 @@
 		<Nullable>enable</Nullable>
 	</PropertyGroup>
 
-	<!-- Skip building when BuildTests=false (e.g., Release pipeline) -->
-	<PropertyGroup Condition="'$(BuildTests)' == 'false'">
-		<TargetFramework>net9.0</TargetFramework>
-		<EnableDefaultItems>false</EnableDefaultItems>
-		<EnableDefaultCompileItems>false</EnableDefaultCompileItems>
-		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-	</PropertyGroup>
-
 	<ItemGroup Condition="'$(BuildTests)' != 'false'">
 		<PackageReference Include="Moq" />
 		<PackageReference Include="MSTest" />
