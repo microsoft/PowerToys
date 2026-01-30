@@ -19,6 +19,19 @@
     <PlatformTarget>$(Platform)</PlatformTarget>
   </PropertyGroup>
 
+  <!--
+    Completely skip building test projects when BuildTests=false (e.g., Release pipeline).
+    This avoids InternalsVisibleTo/signing issues by not compiling test code at all.
+    Note: IsTestProject is evaluated later, so we use a convention-based check on the project path.
+  -->
+  <PropertyGroup Condition="'$(BuildTests)' == 'false' and ($(MSBuildProjectFullPath.Contains('UnitTests')) or $(MSBuildProjectFullPath.Contains('\Tests\')))">
+    <TargetFramework>net9.0</TargetFramework>
+    <EnableDefaultItems>false</EnableDefaultItems>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
+  </PropertyGroup>
+
   <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.csproj'">
     <Version>$(Version).0</Version>
     <RepositoryUrl>https://github.com/microsoft/PowerToys</RepositoryUrl>
