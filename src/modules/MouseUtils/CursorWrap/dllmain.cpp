@@ -210,8 +210,16 @@ public:
                 // Create message window for display change notifications
                 RegisterForDisplayChanges();
 
-                StartMouseHook();
-                Logger::info("CursorWrap enabled - mouse hook started");
+                // Only start the mouse hook automatically if auto-activate is enabled
+                if (m_autoActivate)
+                {
+                    StartMouseHook();
+                    Logger::info("CursorWrap enabled - mouse hook started (auto-activate on)");
+                }
+                else
+                {
+                    Logger::info("CursorWrap enabled - waiting for activation hotkey (auto-activate off)");
+                }
 
                 while (m_listening)
                 {
