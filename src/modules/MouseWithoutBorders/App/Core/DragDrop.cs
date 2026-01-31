@@ -67,23 +67,23 @@ internal static class DragDrop
             return;
         }
 
-        if (wParam == Common.WM_LBUTTONDOWN)
+        if (wParam == WM.WM_LBUTTONDOWN)
         {
             MouseDown = true;
             DragMachine = MachineStuff.desMachineID;
             MachineStuff.dropMachineID = ID.NONE;
             Logger.LogDebug("DragDropStep01: MouseDown");
         }
-        else if (wParam == Common.WM_LBUTTONUP)
+        else if (wParam == WM.WM_LBUTTONUP)
         {
             MouseDown = false;
             Logger.LogDebug("DragDropStep01: MouseUp");
         }
 
-        if (wParam == Common.WM_RBUTTONUP && IsDropping)
+        if (wParam == WM.WM_RBUTTONUP && IsDropping)
         {
             IsDropping = false;
-            Common.LastIDWithClipboardData = ID.NONE;
+            Clipboard.LastIDWithClipboardData = ID.NONE;
         }
     }
 
@@ -193,7 +193,7 @@ internal static class DragDrop
             {
                 if (!string.IsNullOrEmpty(dragFileName) && (File.Exists(dragFileName) || Directory.Exists(dragFileName)))
                 {
-                    Common.LastDragDropFile = dragFileName;
+                    Clipboard.LastDragDropFile = dragFileName;
                     /*
                      * possibleDropMachineID is used as desID sent in DragDropStep06();
                      * */
@@ -252,7 +252,7 @@ internal static class DragDrop
 
     internal static void DragDropStep09(int wParam)
     {
-        if (wParam == Common.WM_MOUSEMOVE && IsDropping)
+        if (wParam == WM.WM_MOUSEMOVE && IsDropping)
         {
             // Show/Move form
             Common.DoSomethingInUIThread(() =>
@@ -260,7 +260,7 @@ internal static class DragDrop
                 _ = NativeMethods.PostMessage(Common.MainForm.Handle, NativeMethods.WM_SHOW_DRAG_DROP, (IntPtr)0, (IntPtr)0);
             });
         }
-        else if (wParam == Common.WM_LBUTTONUP && (IsDropping || IsDragging))
+        else if (wParam == WM.WM_LBUTTONUP && (IsDropping || IsDragging))
         {
             if (IsDropping)
             {
@@ -270,7 +270,7 @@ internal static class DragDrop
             else
             {
                 IsDragging = false;
-                Common.LastIDWithClipboardData = ID.NONE;
+                Clipboard.LastIDWithClipboardData = ID.NONE;
             }
         }
     }
@@ -280,7 +280,7 @@ internal static class DragDrop
         Logger.LogDebug("DragDropStep10: Hide the form and get data...");
         IsDropping = false;
         IsDragging = false;
-        Common.LastIDWithClipboardData = ID.NONE;
+        Clipboard.LastIDWithClipboardData = ID.NONE;
 
         Common.DoSomethingInUIThread(() =>
         {
@@ -288,7 +288,7 @@ internal static class DragDrop
         });
 
         PowerToysTelemetry.Log.WriteEvent(new MouseWithoutBorders.Telemetry.MouseWithoutBordersDragAndDropEvent());
-        Common.GetRemoteClipboard("desktop");
+        Clipboard.GetRemoteClipboard("desktop");
     }
 
     internal static void DragDropStep11()
@@ -298,8 +298,8 @@ internal static class DragDrop
         IsDropping = false;
         IsDragging = false;
         DragMachine = (ID)1;
-        Common.LastIDWithClipboardData = ID.NONE;
-        Common.LastDragDropFile = null;
+        Clipboard.LastIDWithClipboardData = ID.NONE;
+        Clipboard.LastDragDropFile = null;
         MouseDown = false;
     }
 
@@ -307,7 +307,7 @@ internal static class DragDrop
     {
         Logger.LogDebug("DragDropStep12: ClipboardDragDropEnd received");
         IsDropping = false;
-        Common.LastIDWithClipboardData = ID.NONE;
+        Clipboard.LastIDWithClipboardData = ID.NONE;
 
         Common.DoSomethingInUIThread(() =>
         {

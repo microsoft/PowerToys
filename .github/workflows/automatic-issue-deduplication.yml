@@ -1,0 +1,19 @@
+name: Automatic New Issue Deduplication
+on:
+  issues:
+    types: [opened, reopened]
+permissions:
+  models: read
+  issues: write
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.issue.number }}
+  cancel-in-progress: true
+jobs:
+  deduplicate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run Deduplicate Action
+        uses: pelikhan/action-genai-issue-dedup@v0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          label_as_duplicate: true

@@ -84,7 +84,7 @@ namespace MouseWithoutBorders
                 if ((connectedClientSocket = Common.GetConnectedClientSocket()) != null)
                 {
                     ShowStatus($"Connected from local IP Address: {connectedClientSocket.Address}.");
-                    Common.UpdateMachineTimeAndID();
+                    InitAndCleanup.UpdateMachineTimeAndID();
 
                     Common.MMSleep(1);
                     connected = true;

@@ -18,24 +18,17 @@
                 ChildrenTransitions="{StaticResource SettingsCardsAnimations}"
                 Orientation="Vertical"
                 Spacing="2">
-                <tkcontrols:SettingsCard
-                    Name="NewPlusEnableToggle"
-                    x:Uid="NewPlus_Enable_Toggle"
-                    HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/NewPlus.png}"
-                    IsEnabled="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
-                    <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
-                </tkcontrols:SettingsCard>
-                <InfoBar
-                    x:Uid="GPO_SettingIsManaged"
-                    IsClosable="False"
-                    IsOpen="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
-                    IsTabStop="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
-                    Severity="Informational">
-                    <InfoBar.IconSource>
-                        <FontIconSource FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE72E;" />
-                    </InfoBar.IconSource>
-                </InfoBar>
-
+                <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}">
+                    <tkcontrols:SettingsCard
+                        Name="NewPlusEnableToggle"
+                        x:Uid="NewPlus_Enable_Toggle"
+                        HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/NewPlus.png}">
+                        <ToggleSwitch
+                            x:Uid="ToggleSwitch"
+                            AutomationProperties.Name="{Binding ElementName=NewPlusEnableToggle, Path=Header}"
+                            IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
+                </controls:GPOInfoControl>
                 <controls:SettingsGroup x:Uid="NewPlus_Templates" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsCard
                         Name="NewPlusTemplatesLocation"
@@ -55,7 +48,6 @@
                                 <HyperlinkButton x:Uid="NewPlus_Templates_Location_Learn_More" NavigateUri="https://aka.ms/PowerToysOverview_NewPlus_TemplatesLocation" />
                             </StackPanel>
                         </tkcontrols:SettingsCard.Description>
-
                     </tkcontrols:SettingsCard>
 
                     <InfoBar
@@ -64,28 +56,25 @@
                         IsOpen="{x:Bind ViewModel.IsEnabled, Mode=OneWay}"
                         IsTabStop="{x:Bind ViewModel.IsEnabled, Mode=OneWay}"
                         Severity="Informational" />
-
                 </controls:SettingsGroup>
-
                 <controls:SettingsGroup x:Uid="NewPlus_Display_Options" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-                    <tkcontrols:SettingsCard
-                        Name="NewPlusHideFileExtensionToggle"
-                        x:Uid="NewPlus_Hide_File_Extension_Toggle"
-                        IsEnabled="{x:Bind ViewModel.IsHideFileExtSettingsCardEnabled, Mode=OneWay}">
-                        <ToggleSwitch x:Uid="HideFileExtensionToggle" IsOn="{x:Bind ViewModel.HideFileExtension, Mode=TwoWay}" />
-                    </tkcontrols:SettingsCard>
-                    <InfoBar
-                        x:Uid="GPO_SettingIsManaged"
-                        IsClosable="False"
-                        IsOpen="{x:Bind ViewModel.IsHideFileExtSettingGPOConfigured, Mode=OneWay}"
-                        IsTabStop="{x:Bind ViewModel.IsHideFileExtSettingGPOConfigured, Mode=OneWay}"
-                        Severity="Informational">
-                        <InfoBar.IconSource>
-                            <FontIconSource FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE72E;" />
-                        </InfoBar.IconSource>
-                    </InfoBar>
+                    <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsHideFileExtSettingGPOConfigured, Mode=OneWay}">
+                        <tkcontrols:SettingsCard
+                            Name="NewPlusHideFileExtensionToggle"
+                            x:Uid="NewPlus_Hide_File_Extension_Toggle"
+                            IsEnabled="{x:Bind ViewModel.IsHideFileExtSettingsCardEnabled, Mode=OneWay}">
+                            <ToggleSwitch
+                                x:Uid="HideFileExtensionToggle"
+                                AutomationProperties.Name="{Binding ElementName=NewPlusHideFileExtensionToggle, Path=Header}"
+                                IsOn="{x:Bind ViewModel.HideFileExtension, Mode=TwoWay}" />
+                        </tkcontrols:SettingsCard>
+                    </controls:GPOInfoControl>
                     <tkcontrols:SettingsCard Name="NewPlusHideStartingDigitsToggle" x:Uid="NewPlus_Hide_Starting_Digits_Toggle">
-                        <ToggleSwitch x:Uid="HideStartingDigitsToggle" IsOn="{x:Bind ViewModel.HideStartingDigits, Mode=TwoWay}" />
+
+                        <ToggleSwitch
+                            x:Uid="HideStartingDigitsToggle"
+                            AutomationProperties.Name="{Binding ElementName=NewPlusHideStartingDigitsToggle, Path=Header}"
+                            IsOn="{x:Bind ViewModel.HideStartingDigits, Mode=TwoWay}" />
                         <tkcontrols:SettingsCard.Description>
                             <TextBlock x:Uid="NewPlus_Hide_Starting_Digits_Description" />
                         </tkcontrols:SettingsCard.Description>
@@ -93,116 +82,114 @@
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup x:Uid="NewPlus_behavior" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-                    <tkcontrols:SettingsCard
-                        Name="NewPlusBehaviourReplaceVariablesToggle"
-                        x:Uid="NewPlus_Behaviour_Replace_Variables_Toggle"
-                        IsEnabled="{x:Bind ViewModel.IsReplaceVariablesSettingsCardEnabled, Mode=OneWay}">
-                        <StackPanel Orientation="Horizontal" Spacing="4">
-                            <ToggleSwitch x:Uid="ReplaceVariablesToggle" IsOn="{x:Bind ViewModel.ReplaceVariables, Mode=TwoWay}" />
-                            <Button
-                                x:Uid="FileCreationButton"
-                                Width="28"
-                                Height="40"
-                                Margin="0,0,-4,0"
-                                Padding="0"
-                                HorizontalAlignment="Right"
-                                VerticalAlignment="Center"
-                                Background="Transparent"
-                                BorderBrush="Transparent"
-                                Content="&#xE946;"
-                                FontFamily="{ThemeResource SymbolThemeFontFamily}">
-                                <Button.Flyout>
-                                    <Flyout x:Name="VariableExamplesFlyout" ShouldConstrainToRootBounds="False">
-                                        <Grid>
-                                            <Grid.RowDefinitions>
-                                                <RowDefinition Height="Auto" />
-                                                <RowDefinition Height="Auto" />
-                                                <RowDefinition Height="Auto" />
-                                                <RowDefinition Height="Auto" />
-                                                <RowDefinition Height="Auto" />
-                                                <RowDefinition Height="Auto" />
-                                            </Grid.RowDefinitions>
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="62" />
-                                                <ColumnDefinition Width="300" />
-                                            </Grid.ColumnDefinitions>
+                    <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsReplaceVariablesSettingGPOConfigured, Mode=OneWay}">
+                        <tkcontrols:SettingsCard
+                            Name="NewPlusBehaviourReplaceVariablesToggle"
+                            x:Uid="NewPlus_Behaviour_Replace_Variables_Toggle"
+                            IsEnabled="{x:Bind ViewModel.IsReplaceVariablesSettingsCardEnabled, Mode=OneWay}">
+                            <StackPanel Orientation="Horizontal" Spacing="4">
+                                <ToggleSwitch
+                                    x:Uid="ReplaceVariablesToggle"
+                                    AutomationProperties.Name="{Binding ElementName=NewPlusBehaviourReplaceVariablesToggle, Path=Header}"
+                                    IsOn="{x:Bind ViewModel.ReplaceVariables, Mode=TwoWay}" />
+                                <Button
+                                    x:Uid="FileCreationButton"
+                                    Width="28"
+                                    Height="40"
+                                    Margin="0,0,-4,0"
+                                    Padding="0"
+                                    HorizontalAlignment="Right"
+                                    VerticalAlignment="Center"
+                                    Background="Transparent"
+                                    BorderBrush="Transparent"
+                                    Content="&#xE946;"
+                                    FontFamily="{ThemeResource SymbolThemeFontFamily}">
+                                    <Button.Flyout>
+                                        <Flyout x:Name="VariableExamplesFlyout" ShouldConstrainToRootBounds="False">
+                                            <Grid>
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="Auto" />
+                                                    <RowDefinition Height="Auto" />
+                                                    <RowDefinition Height="Auto" />
+                                                    <RowDefinition Height="Auto" />
+                                                    <RowDefinition Height="Auto" />
+                                                    <RowDefinition Height="Auto" />
+                                                </Grid.RowDefinitions>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="62" />
+                                                    <ColumnDefinition Width="300" />
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock
+                                                    Grid.Row="0"
+                                                    Grid.Column="0"
+                                                    Text="$YYYY" />
+                                                <TextBlock
+                                                    Grid.Row="0"
+                                                    Grid.Column="1"
+                                                    Margin="0,0,0,5"
+                                                    TextWrapping="Wrap"><Run x:Uid="NewPlus_Year_YYYY_Variable_Description" /></TextBlock>
 
-                                            <TextBlock
-                                                Grid.Row="0"
-                                                Grid.Column="0"
-                                                Text="$YYYY" />
-                                            <TextBlock
-                                                Grid.Row="0"
-                                                Grid.Column="1"
-                                                Margin="0,0,0,5"
-                                                TextWrapping="Wrap"><Run x:Uid="NewPlus_Year_YYYY_Variable_Description" /></TextBlock>
+                                                <TextBlock
+                                                    Grid.Row="1"
+                                                    Grid.Column="0"
+                                                    Text="$MM" />
+                                                <TextBlock
+                                                    Grid.Row="1"
+                                                    Grid.Column="1"
+                                                    Margin="0,0,0,5"
+                                                    TextWrapping="Wrap"><Run x:Uid="NewPlus_Month_MM_Variable_Description" /></TextBlock>
 
-                                            <TextBlock
-                                                Grid.Row="1"
-                                                Grid.Column="0"
-                                                Text="$MM" />
-                                            <TextBlock
-                                                Grid.Row="1"
-                                                Grid.Column="1"
-                                                Margin="0,0,0,5"
-                                                TextWrapping="Wrap"><Run x:Uid="NewPlus_Month_MM_Variable_Description" /></TextBlock>
+                                                <TextBlock
+                                                    Grid.Row="2"
+                                                    Grid.Column="0"
+                                                    Text="$DD" />
+                                                <TextBlock
+                                                    Grid.Row="2"
+                                                    Grid.Column="1"
+                                                    Margin="0,0,0,5"
+                                                    TextWrapping="Wrap"><Run x:Uid="NewPlus_Day_DD_Variable_Description" /></TextBlock>
 
-                                            <TextBlock
-                                                Grid.Row="2"
-                                                Grid.Column="0"
-                                                Text="$DD" />
-                                            <TextBlock
-                                                Grid.Row="2"
-                                                Grid.Column="1"
-                                                Margin="0,0,0,5"
-                                                TextWrapping="Wrap"><Run x:Uid="NewPlus_Day_DD_Variable_Description" /></TextBlock>
+                                                <TextBlock
+                                                    Grid.Row="3"
+                                                    Grid.Column="0"
+                                                    Text="$hh" />
+                                                <TextBlock
+                                                    Grid.Row="3"
+                                                    Grid.Column="1"
+                                                    Margin="0,0,0,5"
+                                                    TextWrapping="Wrap"><Run x:Uid="NewPlus_Hour_hh_Variable_Description" /></TextBlock>
 
-                                            <TextBlock
-                                                Grid.Row="3"
-                                                Grid.Column="0"
-                                                Text="$hh" />
-                                            <TextBlock
-                                                Grid.Row="3"
-                                                Grid.Column="1"
-                                                Margin="0,0,0,5"
-                                                TextWrapping="Wrap"><Run x:Uid="NewPlus_Hour_hh_Variable_Description" /></TextBlock>
+                                                <TextBlock
+                                                    Grid.Row="4"
+                                                    Grid.Column="0"
+                                                    Text="$mm" />
+                                                <TextBlock
+                                                    Grid.Row="4"
+                                                    Grid.Column="1"
+                                                    Margin="0,0,0,5"
+                                                    TextWrapping="Wrap"><Run x:Uid="NewPlus_Minute_mm_Variable_Description" /></TextBlock>
 
-                                            <TextBlock
-                                                Grid.Row="4"
-                                                Grid.Column="0"
-                                                Text="$mm" />
-                                            <TextBlock
-                                                Grid.Row="4"
-                                                Grid.Column="1"
-                                                Margin="0,0,0,5"
-                                                TextWrapping="Wrap"><Run x:Uid="NewPlus_Minute_mm_Variable_Description" /></TextBlock>
-
-                                            <TextBlock
-                                                Grid.Row="5"
-                                                Grid.Column="0"
-                                                Text="$ss" />
-                                            <TextBlock
-                                                Grid.Row="5"
-                                                Grid.Column="1"
-                                                Margin="0,0,0,0"
-                                                TextWrapping="Wrap"><Run x:Uid="NewPlus_Second_ss_Variable_Description" /></TextBlock>
-                                        </Grid>
-                                    </Flyout>
-                                </Button.Flyout>
-                            </Button>
-                        </StackPanel>
-                        <tkcontrols:SettingsCard.Description>
-                            <StackPanel>
-                                <HyperlinkButton x:Uid="NewPlus_Behaviour_Replace_Variables_Learn_More" NavigateUri="https://aka.ms/PowerToysOverview_NewPlus" />
+                                                <TextBlock
+                                                    Grid.Row="5"
+                                                    Grid.Column="0"
+                                                    Text="$ss" />
+                                                <TextBlock
+                                                    Grid.Row="5"
+                                                    Grid.Column="1"
+                                                    Margin="0,0,0,0"
+                                                    TextWrapping="Wrap"><Run x:Uid="NewPlus_Second_ss_Variable_Description" /></TextBlock>
+                                            </Grid>
+                                        </Flyout>
+                                    </Button.Flyout>
+                                </Button>
                             </StackPanel>
-                        </tkcontrols:SettingsCard.Description>
-                    </tkcontrols:SettingsCard>
-                    <InfoBar
-                        x:Uid="GPO_SettingIsManaged"
-                        IsClosable="False"
-                        IsOpen="{x:Bind ViewModel.IsReplaceVariablesSettingGPOConfigured, Mode=OneWay}"
-                        IsTabStop="{x:Bind ViewModel.IsReplaceVariablesSettingGPOConfigured, Mode=OneWay}"
-                        Severity="Informational" />
+                            <tkcontrols:SettingsCard.Description>
+                                <StackPanel>
+                                    <HyperlinkButton x:Uid="NewPlus_Behaviour_Replace_Variables_Learn_More" NavigateUri="https://aka.ms/PowerToysOverview_NewPlus" />
+                                </StackPanel>
+                            </tkcontrols:SettingsCard.Description>
+                        </tkcontrols:SettingsCard>
+                    </controls:GPOInfoControl>
                 </controls:SettingsGroup>
             </StackPanel>
         </controls:SettingsPageControl.ModuleContent>

@@ -31,13 +31,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Remove="Assets\WebSearch.svg" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Update="Assets\WebSearch.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Update="Assets\WebSearch.svg">
+    <Content Update="Assets\**\*.*">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

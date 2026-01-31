@@ -1,0 +1,51 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Look at Directory.Build.props in root for common stuff as well -->
+  <Import Project="..\..\..\Common.Dotnet.CsWinRT.props" />
+  <Import Project="..\..\..\Common.SelfContained.props" />
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <OutputPath>..\..\..\..\$(Platform)\$(Configuration)</OutputPath>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+    <AssemblyName>PowerToys.DSC</AssemblyName>
+    <AssemblyDescription>PowerToys DSC</AssemblyDescription>
+    <RootNamespace>PowerToys.DSC</RootNamespace>
+    <Nullable>enable</Nullable>
+    <!-- Ensure WindowsDesktop runtime pack is included for consistent WindowsBase.dll version -->
+    <UseWPF>true</UseWPF>
+    </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="NJsonSchema" />
+    <PackageReference Include="System.CommandLine" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Properties\Resources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+
+  <!-- Generate the DSC resource JSON files to DSCModules subfolder -->
+  <!-- Skip generation in CI/CD builds (CIBuild=true) to avoid unnecessary work during pipeline -->
+  <Target Name="GenerateDscResourceJsonFiles" AfterTargets="Build" Condition="'$(CIBuild)' != 'true'">
+    <Message Text="Generating DSC resource JSON files to DSCModules subfolder..." Importance="high" />
+    <MakeDir Directories="$(TargetDir)DSCModules" />
+    
+    <Exec Command="dotnet &quot;$(TargetPath)&quot; manifest --resource settings --outputDir &quot;$(TargetDir)DSCModules&quot;" />
+  </Target>
+</Project>

@@ -26,6 +26,7 @@
   <PropertyGroup Condition="'$(SkipCppCodeAnalysis)' == ''">
     <RunCodeAnalysis>true</RunCodeAnalysis>
     <CodeAnalysisRuleSet>$(MsbuildThisFileDirectory)\CppRuleSet.ruleset</CodeAnalysisRuleSet>
+    <CAExcludePath>$(MSBuildThisFileDirectory)deps;$(MSBuildThisFileDirectory)packages;$(CAExcludePath)</CAExcludePath>
   </PropertyGroup>
 
   <!-- C++ source compile-specific things for all configurations -->
@@ -34,18 +35,23 @@
     <PreferredToolArchitecture Condition="'$(PROCESSOR_ARCHITECTURE)' == 'ARM64' or '$(PROCESSOR_ARCHITEW6432)' == 'ARM64'">arm64</PreferredToolArchitecture>
     <VcpkgEnabled>false</VcpkgEnabled>
     <ReplaceWildcardsInProjectItems>true</ReplaceWildcardsInProjectItems>
-    <ExternalIncludePath>$(MSBuildThisFileFullPath)\..\deps\;$(MSBuildThisFileFullPath)\..\packages\;$(ExternalIncludePath)</ExternalIncludePath>
+    <ExternalIncludePath>$(MSBuildThisFileDirectory)deps;$(MSBuildThisFileDirectory)packages;$(ExternalIncludePath)</ExternalIncludePath>
     <!-- Enable control flow guard for C++ projects that don't consume any C++ files -->
     <!-- This covers the case where a .dll exports a .lib, but doesn't have any ClCompile entries. -->
     <LinkControlFlowGuard>Guard</LinkControlFlowGuard>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
+      <!-- Make angle-bracket includes external and turn off code analysis for them -->
+      <TreatAngleIncludeAsExternal>true</TreatAngleIncludeAsExternal>
+      <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
+      <DisableAnalyzeExternal>true</DisableAnalyzeExternal>
+
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <PrecompiledHeader Condition="'$(UsePrecompiledHeaders)' != 'false'">Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <WarningLevel>Level4</WarningLevel>
-      <DisableSpecificWarnings>4679;5271;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4679;4706;4874;5271;%(DisableSpecificWarnings)</DisableSpecificWarnings>
       <DisableAnalyzeExternal >true</DisableAnalyzeExternal>
       <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
       <ConformanceMode>false</ConformanceMode>
@@ -104,19 +110,18 @@
   <!-- Props that are constant for both Debug and Release configurations -->
   <PropertyGroup Label="Configuration">
     <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset Condition="'$(VisualStudioVersion)' == '18.0'">v145</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
     <DesktopCompatible>true</DesktopCompatible>
     <SpectreMitigation>Spectre</SpectreMitigation>
   </PropertyGroup>
 
   <!-- Debug/Release props -->
-  <PropertyGroup Condition="'$(Configuration)'=='Debug'"
-    Label="Configuration">
+  <PropertyGroup Condition="'$(Configuration)'=='Debug'" Label="Configuration">
     <UseDebugLibraries>true</UseDebugLibraries>
     <LinkIncremental>true</LinkIncremental>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)'=='Release'"
-    Label="Configuration">
+  <PropertyGroup Condition="'$(Configuration)'=='Release'" Label="Configuration">
     <UseDebugLibraries>false</UseDebugLibraries>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <LinkIncremental>false</LinkIncremental>

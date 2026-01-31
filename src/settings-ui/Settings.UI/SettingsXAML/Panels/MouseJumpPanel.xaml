@@ -21,26 +21,18 @@
         </ResourceDictionary>
     </UserControl.Resources>
 
-    <controls:SettingsGroup x:Uid="MouseUtils_MouseJump">
-
-        <tkcontrols:SettingsCard
-            x:Name="MouseUtilsEnableMouseJump"
-            x:Uid="MouseUtils_Enable_MouseJump"
-            HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/MouseJump.png}"
-            IsEnabled="{x:Bind ViewModel.IsJumpEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
-            <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsMouseJumpEnabled, Mode=TwoWay}" />
-        </tkcontrols:SettingsCard>
-
-        <InfoBar
-            x:Uid="GPO_SettingIsManaged"
-            IsClosable="False"
-            IsOpen="{x:Bind ViewModel.IsJumpEnabledGpoConfigured, Mode=OneWay}"
-            IsTabStop="{x:Bind ViewModel.IsJumpEnabledGpoConfigured, Mode=OneWay}"
-            Severity="Informational">
-            <InfoBar.IconSource>
-                <FontIconSource FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE72E;" />
-            </InfoBar.IconSource>
-        </InfoBar>
+    <controls:SettingsGroup x:Uid="MouseUtils_MouseJump" AutomationProperties.AutomationId="MouseUtils_MouseJumpTestId">
+        <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsJumpEnabledGpoConfigured, Mode=OneWay}">
+            <tkcontrols:SettingsCard
+                x:Name="MouseUtilsEnableMouseJump"
+                x:Uid="MouseUtils_Enable_MouseJump"
+                HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/MouseJump.png}">
+                <ToggleSwitch
+                    x:Uid="ToggleSwitch"
+                    AutomationProperties.AutomationId="MouseUtils_MouseJumpToggleId"
+                    IsOn="{x:Bind ViewModel.IsMouseJumpEnabled, Mode=TwoWay}" />
+            </tkcontrols:SettingsCard>
+        </controls:GPOInfoControl>
 
         <tkcontrols:SettingsCard
             x:Name="MouseUtilsMouseJumpActivationShortcut"
@@ -56,39 +48,13 @@
             HeaderIcon="{ui:FontIcon Glyph=&#xE740;}"
             IsEnabled="{x:Bind ViewModel.IsMouseJumpEnabled, Mode=OneWay}">
             <tkcontrols:SettingsCard.Description>
-                <StackPanel
-                    Grid.Row="1"
-                    Grid.Column="1"
-                    Margin="0,4,0,0"
-                    Orientation="Horizontal">
-                    <TextBlock
-                        x:Uid="MouseUtils_MouseJump_ThumbnailSize_Description_Prefix"
-                        Margin="0,0,4,0"
-                        Style="{ThemeResource SecondaryTextStyle}" />
-                    <TextBlock
-                        Margin="0,0,4,0"
-                        FontWeight="SemiBold"
-                        Style="{ThemeResource SecondaryTextStyle}"
-                        Text="{x:Bind ViewModel.MouseJumpThumbnailSize.Width, Mode=OneWay}" />
-                    <TextBlock
-                        Margin="0,5,4,0"
-                        AutomationProperties.AccessibilityView="Raw"
-                        FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                        FontSize="10"
-                        Foreground="{ThemeResource SystemBaseMediumColor}"
-                        Style="{ThemeResource SecondaryTextStyle}"
-                        Text="&#xE947;" />
-                    <TextBlock
-                        Margin="0,0,4,0"
-                        FontWeight="SemiBold"
-                        Style="{ThemeResource SecondaryTextStyle}"
-                        Text="{x:Bind ViewModel.MouseJumpThumbnailSize.Height, Mode=OneWay}" />
-                    <TextBlock
-                        x:Uid="MouseUtils_MouseJump_ThumbnailSize_Description_Suffix"
-                        Margin="0,0,4,0"
-                        Foreground="{ThemeResource SystemBaseMediumColor}"
-                        Style="{ThemeResource SecondaryTextStyle}" />
-                </StackPanel>
+                <TextBlock>
+                    <Run x:Uid="MouseUtils_MouseJump_ThumbnailSize_Description_Prefix" />
+                    <Run FontWeight="SemiBold" Text="{x:Bind ViewModel.MouseJumpThumbnailSize.Width, Mode=OneWay}" />
+                    <Run Text="x" />
+                    <Run FontWeight="SemiBold" Text="{x:Bind ViewModel.MouseJumpThumbnailSize.Height, Mode=OneWay}" />
+                    <Run x:Uid="MouseUtils_MouseJump_ThumbnailSize_Description_Suffix" />
+                </TextBlock>
             </tkcontrols:SettingsCard.Description>
             <StackPanel
                 Grid.Column="2"

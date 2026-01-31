@@ -48,7 +48,6 @@
                                     FontWeight="SemiBold"
                                     Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                             </StackPanel>
-
                             <Button
                                 x:Uid="GeneralPage_CheckForUpdates"
                                 HorizontalAlignment="Right"
@@ -142,7 +141,6 @@
                                     Style="{StaticResource TextButtonStyle}" />
                             </InfoBar.ActionButton>
                         </InfoBar>
-
 
                         <!--  Ready to install  -->
                         <InfoBar
@@ -242,6 +240,7 @@
                         <ComboBox
                             x:Name="Languages_ComboBox"
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
+                            AutomationProperties.Name="{Binding ElementName=LanguageHeader, Path=Header}"
                             DisplayMemberPath="Language"
                             ItemsSource="{Binding Languages, Mode=TwoWay}"
                             SelectedIndex="{Binding LanguagesIndex, Mode=TwoWay}" />
@@ -264,7 +263,10 @@
                         <tkcontrols:SettingsCard.Description>
                             <HyperlinkButton x:Uid="Windows_Color_Settings" Click="OpenColorsSettings_Click" />
                         </tkcontrols:SettingsCard.Description>
-                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.ThemeIndex, Mode=TwoWay}">
+                        <ComboBox
+                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                            AutomationProperties.Name="{Binding ElementName=ColorModeHeader, Path=Header}"
+                            SelectedIndex="{x:Bind ViewModel.ThemeIndex, Mode=TwoWay}">
                             <ComboBoxItem x:Uid="Radio_Theme_Dark" />
                             <ComboBoxItem x:Uid="Radio_Theme_Light" />
                             <ComboBoxItem x:Uid="Radio_Theme_Default" />
@@ -275,26 +277,50 @@
                         Name="GeneralPageRunAtStartUp"
                         x:Uid="GeneralPage_RunAtStartUp"
                         IsEnabled="{x:Bind ViewModel.IsRunAtStartupGPOManaged, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
-                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.Startup, Mode=TwoWay}" />
-                    </tkcontrols:SettingsCard>
-                    <tkcontrols:SettingsCard x:Uid="ShowSystemTrayIcon">
                         <ToggleSwitch
-                            x:Uid="ShowSystemTrayIcon_ToggleSwitch"
-                            IsOn="{x:Bind ViewModel.ShowSysTrayIcon, Mode=TwoWay}"
-                            Toggled="ShowSystemTrayIcon_Toggled" />
+                            x:Uid="ToggleSwitch"
+                            AutomationProperties.Name="{Binding ElementName=GeneralPageRunAtStartUp, Path=Header}"
+                            IsOn="{x:Bind ViewModel.Startup, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
-                    <InfoBar
-                        x:Uid="GPO_SettingIsManaged"
-                        BorderThickness="0"
-                        CornerRadius="0"
-                        IsClosable="False"
-                        IsOpen="{x:Bind ViewModel.IsRunAtStartupGPOManaged, Mode=OneWay}"
-                        IsTabStop="{x:Bind ViewModel.IsRunAtStartupGPOManaged, Mode=OneWay}"
-                        Severity="Informational">
-                        <InfoBar.IconSource>
-                            <FontIconSource FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE72E;" />
-                        </InfoBar.IconSource>
-                    </InfoBar>
+                    <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsRunAtStartupGPOManaged, Mode=OneWay}">
+                        <tkcontrols:SettingsExpander x:Name="ShowSystemTrayIconCard" x:Uid="ShowSystemTrayIcon">
+                            <ToggleSwitch
+                                x:Uid="ShowSystemTrayIcon_ToggleSwitch"
+                                AutomationProperties.Name="{Binding ElementName=ShowSystemTrayIconCard, Path=Header}"
+                                IsOn="{x:Bind ViewModel.ShowSysTrayIcon, Mode=TwoWay}"
+                                Toggled="ShowSystemTrayIcon_Toggled" />
+                            <tkcontrols:SettingsExpander.Items>
+                                <tkcontrols:SettingsCard
+                                    x:Name="ShowThemeAdaptiveTrayIconCard"
+                                    ContentAlignment="Left"
+                                    IsEnabled="{x:Bind ViewModel.ShowSysTrayIcon, Mode=OneWay}">
+                                    <CheckBox x:Uid="ShowThemeAdaptiveTrayIcon" IsChecked="{x:Bind ViewModel.ShowThemeAdaptiveTrayIcon, Mode=TwoWay}" />
+                                </tkcontrols:SettingsCard>
+                            </tkcontrols:SettingsExpander.Items>
+                        </tkcontrols:SettingsExpander>
+                    </controls:GPOInfoControl>
+
+                    <tkcontrols:SettingsExpander
+                        Name="GeneralPageEnableQuickAccess"
+                        x:Uid="GeneralPage_EnableQuickAccess"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE91C;}"
+                        IsExpanded="True">
+                        <ToggleSwitch
+                            x:Uid="ToggleSwitch"
+                            AutomationProperties.Name="{Binding ElementName=GeneralPageEnableQuickAccess, Path=Header}"
+                            IsOn="{x:Bind ViewModel.EnableQuickAccess, Mode=TwoWay}" />
+                        <tkcontrols:SettingsExpander.Items>
+                            <!--  HACK: For some weird reason, a ShortcutControl does not work correctly if it's the first or last item in the expander, so we add an invisible card.  -->
+                            <tkcontrols:SettingsCard Visibility="Collapsed" />
+                            <tkcontrols:SettingsCard
+                                Name="QuickAccessShortcut"
+                                x:Uid="GeneralPage_QuickAccessShortcut"
+                                IsEnabled="{x:Bind ViewModel.EnableQuickAccess, Mode=OneWay}">
+                                <controls:ShortcutControl HotkeySettings="{x:Bind ViewModel.QuickAccessShortcut, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard Visibility="Collapsed" />
+                        </tkcontrols:SettingsExpander.Items>
+                    </tkcontrols:SettingsExpander>
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup x:Uid="General_SettingsBackupAndRestoreTitle" Visibility="Visible">
@@ -405,28 +431,21 @@
                     IsTabStop="{x:Bind ViewModel.SettingsBackupRestoreMessageVisible, Mode=OneWay}"
                     Severity="{x:Bind ViewModel.BackupRestoreMessageSeverity, Converter={StaticResource StringToInfoBarSeverityConverter}}" />
                 <controls:SettingsGroup x:Uid="General_Experimentation" Visibility="Visible">
-                    <tkcontrols:SettingsCard
-                        Name="GeneralPageEnableExperimentation"
-                        x:Uid="GeneralPage_EnableExperimentation"
-                        IsEnabled="{x:Bind ViewModel.IsExperimentationGpoDisallowed, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
-                        <tkcontrols:SettingsCard.HeaderIcon>
-                            <PathIcon Data="M1859 1758q14 23 21 47t7 51q0 40-15 75t-41 61-61 41-75 15H354q-40 0-75-15t-61-41-41-61-15-75q0-27 6-51t21-47l569-992q10-14 10-34V128H640V0h768v128h-128v604q0 19 10 35l569 991zM896 732q0 53-27 99l-331 577h972l-331-577q-27-46-27-99V128H896v604zm799 1188q26 0 44-19t19-45q0-10-2-17t-8-16l-164-287H464l-165 287q-9 15-9 33 0 26 18 45t46 19h1341z" />
-                        </tkcontrols:SettingsCard.HeaderIcon>
-                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.EnableExperimentation, Mode=TwoWay}" />
-                    </tkcontrols:SettingsCard>
-                    <InfoBar
-                        x:Uid="GPO_SettingIsManaged"
-                        IsClosable="False"
-                        IsOpen="{x:Bind ViewModel.IsExperimentationGpoDisallowed, Mode=OneWay}"
-                        IsTabStop="{x:Bind ViewModel.IsExperimentationGpoDisallowed, Mode=OneWay}"
-                        Severity="Informational">
-                        <InfoBar.IconSource>
-                            <FontIconSource FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE72E;" />
-                        </InfoBar.IconSource>
-                    </InfoBar>
+                    <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsExperimentationGpoDisallowed, Mode=OneWay}">
+                        <tkcontrols:SettingsCard Name="GeneralPageEnableExperimentation" x:Uid="GeneralPage_EnableExperimentation">
+                            <tkcontrols:SettingsCard.HeaderIcon>
+                                <PathIcon Data="M1859 1758q14 23 21 47t7 51q0 40-15 75t-41 61-61 41-75 15H354q-40 0-75-15t-61-41-41-61-15-75q0-27 6-51t21-47l569-992q10-14 10-34V128H640V0h768v128h-128v604q0 19 10 35l569 991zM896 732q0 53-27 99l-331 577h972l-331-577q-27-46-27-99V128H896v604zm799 1188q26 0 44-19t19-45q0-10-2-17t-8-16l-164-287H464l-165 287q-9 15-9 33 0 26 18 45t46 19h1341z" />
+                            </tkcontrols:SettingsCard.HeaderIcon>
+                            <ToggleSwitch
+                                x:Uid="ToggleSwitch"
+                                AutomationProperties.Name="{Binding ElementName=GeneralPageEnableExperimentation, Path=Header}"
+                                IsOn="{x:Bind ViewModel.EnableExperimentation, Mode=TwoWay}" />
+                        </tkcontrols:SettingsCard>
+                    </controls:GPOInfoControl>
                 </controls:SettingsGroup>
                 <controls:SettingsGroup x:Uid="General_DiagnosticsAndFeedback">
                     <tkcontrols:SettingsExpander
+                        x:Name="GeneralPageEnableDataDiagnostics"
                         x:Uid="GeneralPage_EnableDataDiagnostics"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE9D9;}"
                         IsEnabled="{x:Bind ViewModel.IsDataDiagnosticsGPOManaged, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}"
@@ -444,10 +463,19 @@
                                     NavigateUri="https://aka.ms/powertoys-data-and-privacy-documentation" />
                             </StackPanel>
                         </tkcontrols:SettingsExpander.Description>
-                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.EnableDataDiagnostics, Mode=TwoWay}" />
+                        <ToggleSwitch
+                            x:Uid="ToggleSwitch"
+                            AutomationProperties.Name="{Binding ElementName=GeneralPageEnableDataDiagnostics, Path=Header}"
+                            IsOn="{x:Bind ViewModel.EnableDataDiagnostics, Mode=TwoWay}" />
                         <tkcontrols:SettingsExpander.Items>
-                            <tkcontrols:SettingsCard x:Uid="GeneralPage_EnableViewDiagnosticData" IsEnabled="{x:Bind ViewModel.EnableDataDiagnostics, Mode=TwoWay}">
-                                <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.EnableViewDataDiagnostics, Mode=TwoWay}" />
+                            <tkcontrols:SettingsCard
+                                x:Name="GeneralPageEnableViewDiagnosticData"
+                                x:Uid="GeneralPage_EnableViewDiagnosticData"
+                                IsEnabled="{x:Bind ViewModel.EnableDataDiagnostics, Mode=TwoWay}">
+                                <ToggleSwitch
+                                    x:Uid="ToggleSwitch"
+                                    AutomationProperties.Name="{Binding ElementName=GeneralPageEnableViewDiagnosticData, Path=Header}"
+                                    IsOn="{x:Bind ViewModel.EnableViewDataDiagnostics, Mode=TwoWay}" />
                                 <tkcontrols:SettingsCard.Description>
                                     <StackPanel Orientation="Vertical">
                                         <TextBlock
@@ -478,30 +506,22 @@
                             </InfoBar>
                         </tkcontrols:SettingsExpander.ItemsFooter>
                     </tkcontrols:SettingsExpander>
-                    <InfoBar
-                        x:Uid="GPO_SettingIsManaged"
-                        IsClosable="False"
-                        IsOpen="{x:Bind ViewModel.IsDataDiagnosticsGPOManaged, Mode=OneWay}"
-                        IsTabStop="{x:Bind ViewModel.IsDataDiagnosticsGPOManaged, Mode=OneWay}"
-                        Severity="Informational">
-                        <InfoBar.IconSource>
-                            <FontIconSource FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE72E;" />
-                        </InfoBar.IconSource>
-                    </InfoBar>
-                    <tkcontrols:SettingsCard x:Uid="GeneralPage_ReportBugPackage" HeaderIcon="{ui:FontIcon Glyph=&#xEBE8;}">
-                        <StackPanel Orientation="Horizontal">
-                            <Button
-                                x:Uid="GeneralPageReportBugPackage"
-                                Click="BugReportToolClicked"
-                                Visibility="{x:Bind ViewModel.IsBugReportRunning, Converter={StaticResource ReverseBoolToVisibilityConverter}, Mode=OneWay}" />
-                            <ProgressRing
-                                Width="24"
-                                Height="24"
-                                HorizontalAlignment="Right"
-                                VerticalAlignment="Center"
-                                Visibility="{x:Bind ViewModel.IsBugReportRunning, Mode=OneWay}" />
-                        </StackPanel>
-                    </tkcontrols:SettingsCard>
+                    <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsDataDiagnosticsGPOManaged, Mode=OneWay}">
+                        <tkcontrols:SettingsCard x:Uid="GeneralPage_ReportBugPackage" HeaderIcon="{ui:FontIcon Glyph=&#xEBE8;}">
+                            <StackPanel Orientation="Horizontal">
+                                <Button
+                                    x:Uid="GeneralPageReportBugPackage"
+                                    Click="BugReportToolClicked"
+                                    Visibility="{x:Bind ViewModel.IsBugReportRunning, Converter={StaticResource ReverseBoolToVisibilityConverter}, Mode=OneWay}" />
+                                <ProgressRing
+                                    Width="24"
+                                    Height="24"
+                                    HorizontalAlignment="Right"
+                                    VerticalAlignment="Center"
+                                    Visibility="{x:Bind ViewModel.IsBugReportRunning, Mode=OneWay}" />
+                            </StackPanel>
+                        </tkcontrols:SettingsCard>
+                    </controls:GPOInfoControl>
                 </controls:SettingsGroup>
             </StackPanel>
 

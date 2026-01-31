@@ -40,6 +40,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("crosshairs_border_size")]
         public IntProperty CrosshairsBorderSize { get; set; }
 
+        [JsonPropertyName("crosshairs_orientation")]
+        public IntProperty CrosshairsOrientation { get; set; }
+
         [JsonPropertyName("crosshairs_auto_hide")]
         public BoolProperty CrosshairsAutoHide { get; set; }
 
@@ -68,6 +71,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             CrosshairsThickness = new IntProperty(5);
             CrosshairsBorderColor = new StringProperty("#FFFFFF");
             CrosshairsBorderSize = new IntProperty(1);
+            CrosshairsOrientation = new IntProperty(0); // Default to both (0=Both, 1=Vertical, 2=Horizontal)
             CrosshairsAutoHide = new BoolProperty(false);
             CrosshairsIsFixedLengthEnabled = new BoolProperty(false);
             CrosshairsFixedLength = new IntProperty(1);

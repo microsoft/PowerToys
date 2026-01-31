@@ -117,9 +117,6 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="AWAKE_CHECKED" xml:space="preserve">
-    <value>Checked</value>
-  </data>
   <data name="AWAKE_EXIT" xml:space="preserve">
     <value>Exit</value>
   </data>
@@ -158,9 +155,6 @@
     <value>Off (keep using the selected power plan)</value>
     <comment>Don't keep the system awake, use the selected system power plan</comment>
   </data>
-  <data name="AWAKE_UNCHECKED" xml:space="preserve">
-    <value>Unchecked</value>
-  </data>
   <data name="AWAKE_CMD_HELP_CONFIG_OPTION" xml:space="preserve">
     <value>Specifies whether Awake will be using the PowerToys configuration file for managing the state.</value>
   </data>
@@ -195,35 +189,36 @@
     <value>Passive</value>
   </data>
   <data name="AWAKE_TRAY_TEXT_TIMED" xml:space="preserve">
-    <value>Interval</value>
-  </data>
-  <data name="AWAKE_LABEL_DAYS" xml:space="preserve">
-    <value>d</value>
-    <comment>Used to display number of days in the system tray tooltip.</comment>
-  </data>
-  <data name="AWAKE_LABEL_HOURS" xml:space="preserve">
-    <value>h</value>
-    <comment>Used to display number of hours in the system tray tooltip.</comment>
-  </data>
-  <data name="AWAKE_LABEL_MINUTES" xml:space="preserve">
-    <value>m</value>
-    <comment>Used to display number of minutes in the system tray tooltip.</comment>
-  </data>
-  <data name="AWAKE_LABEL_SECONDS" xml:space="preserve">
-    <value>s</value>
-    <comment>Used to display number of seconds in the system tray tooltip.</comment>
+    <value>Timed</value>
   </data>
   <data name="AWAKE_CMD_PARENT_PID_OPTION" xml:space="preserve">
     <value>Uses the parent process as the bound target - once the process terminates, Awake stops.</value>
-  </data>
-  <data name="AWAKE_TRAY_TEXT_PID_BINDING" xml:space="preserve">
-    <value>Bound to</value>
-    <comment>Describes the process ID Awake is bound to when running.</comment>
   </data>
   <data name="AWAKE_SCREEN_ON" xml:space="preserve">
     <value>On</value>
   </data>
   <data name="AWAKE_SCREEN_OFF" xml:space="preserve">
     <value>Off</value>
+  </data>
+  <data name="AWAKE_EXIT_PARENT_BINDING_FAILURE_MESSAGE" xml:space="preserve">
+    <value>Exiting because the parent process ID could not be found.</value>
+  </data>
+  <data name="AWAKE_EXIT_PROCESS_BINDING_FAILURE_MESSAGE" xml:space="preserve">
+    <value>Exiting because the requested process ID could not be found.</value>
+  </data>
+  <data name="AWAKE_EXIT_BIND_TO_SELF_FAILURE_MESSAGE" xml:space="preserve">
+    <value>Exiting because the provided process ID is Awake's own.</value>
+  </data>
+  <data name="AWAKE_TRAY_DISPLAY" xml:space="preserve">
+    <value>Screen</value>
+    <comment>Label for the screen/display line in tray tooltip.</comment>
+  </data>
+  <data name="AWAKE_TRAY_UNTIL" xml:space="preserve">
+    <value>Until</value>
+    <comment>Label for expiration mode showing end date/time.</comment>
+  </data>
+  <data name="AWAKE_TRAY_REMAINING" xml:space="preserve">
+    <value>remaining</value>
+    <comment>Suffix for timed mode showing time remaining, e.g. "1:30:00 remaining".</comment>
   </data>
 </root>

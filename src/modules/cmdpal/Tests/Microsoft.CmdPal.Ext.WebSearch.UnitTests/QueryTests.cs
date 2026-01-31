@@ -26,8 +26,9 @@ public class QueryTests : CommandPaletteUnitTestBase
     {
         // Setup
         var settings = new MockSettingsInterface();
+        var browserInfoService = new MockBrowserInfoService();
 
-        var page = new WebSearchListPage(settings);
+        var page = new WebSearchListPage(settings, browserInfoService);
 
         // Act
         page.UpdateSearchText(string.Empty, query);
@@ -45,7 +46,7 @@ public class QueryTests : CommandPaletteUnitTestBase
     }
 
     [TestMethod]
-    public async Task LoadHistoryReturnsExpectedItems()
+    public async Task HistoryReturnsExpectedItems()
     {
         // Setup
         var mockHistoryItems = new List<HistoryItem>
@@ -54,9 +55,10 @@ public class QueryTests : CommandPaletteUnitTestBase
             new HistoryItem("another search", DateTime.Parse("2024-01-02 13:00:00", CultureInfo.CurrentCulture)),
         };
 
-        var settings = new MockSettingsInterface(mockHistory: mockHistoryItems, showHistory: "5");
+        var settings = new MockSettingsInterface(mockHistory: mockHistoryItems, historyItemCount: 5);
+        var browserInfoService = new MockBrowserInfoService();
 
-        var page = new WebSearchListPage(settings);
+        var page = new WebSearchListPage(settings, browserInfoService);
 
         // Act
         page.UpdateSearchText("abcdef", string.Empty);
@@ -77,7 +79,7 @@ public class QueryTests : CommandPaletteUnitTestBase
     }
 
     [TestMethod]
-    public async Task LoadHistoryMoreThanLimitation()
+    public async Task HistoryExceedingLimitReturnsMaxItems()
     {
         // Setup
         var mockHistoryItems = new List<HistoryItem>
@@ -89,9 +91,10 @@ public class QueryTests : CommandPaletteUnitTestBase
             new HistoryItem("another search4", DateTime.Parse("2024-01-05 13:00:00", CultureInfo.CurrentCulture)),
         };
 
-        var settings = new MockSettingsInterface(mockHistory: mockHistoryItems, showHistory: "5");
+        var settings = new MockSettingsInterface(mockHistory: mockHistoryItems, historyItemCount: 5);
+        var browserInfoService = new MockBrowserInfoService();
 
-        var page = new WebSearchListPage(settings);
+        var page = new WebSearchListPage(settings, browserInfoService);
 
         mockHistoryItems.Add(new HistoryItem("another search5", DateTime.Parse("2024-01-06 13:00:00", CultureInfo.CurrentCulture)));
 
@@ -109,7 +112,7 @@ public class QueryTests : CommandPaletteUnitTestBase
     }
 
     [TestMethod]
-    public async Task LoadHistoryWithDisableSetting()
+    public async Task HistoryWhenSetToNoneReturnEmptyList()
     {
         // Setup
         var mockHistoryItems = new List<HistoryItem>
@@ -122,9 +125,10 @@ public class QueryTests : CommandPaletteUnitTestBase
             new HistoryItem("another search5", DateTime.Parse("2024-01-06 13:00:00", CultureInfo.CurrentCulture)),
         };
 
-        var settings = new MockSettingsInterface(mockHistory: mockHistoryItems, showHistory: "None");
+        var settings = new MockSettingsInterface(mockHistory: mockHistoryItems, historyItemCount: 0);
+        var browserInfoService = new MockBrowserInfoService();
 
-        var page = new WebSearchListPage(settings);
+        var page = new WebSearchListPage(settings, browserInfoService);
 
         // Act
         page.UpdateSearchText("abcdef", string.Empty);

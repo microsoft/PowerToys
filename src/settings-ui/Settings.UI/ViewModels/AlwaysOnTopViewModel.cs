@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using global::PowerToys.GPOWrapper;
@@ -22,7 +23,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
     {
         protected override string ModuleName => AlwaysOnTopSettings.ModuleName;
 
-        private ISettingsUtils SettingsUtils { get; set; }
+        private SettingsUtils SettingsUtils { get; set; }
 
         private GeneralSettings GeneralSettingsConfig { get; set; }
 
@@ -30,7 +31,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private Func<string, int> SendConfigMSG { get; }
 
-        public AlwaysOnTopViewModel(ISettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, ISettingsRepository<AlwaysOnTopSettings> moduleSettingsRepository, Func<string, int> ipcMSGCallBackFunc)
+        public AlwaysOnTopViewModel(SettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, ISettingsRepository<AlwaysOnTopSettings> moduleSettingsRepository, Func<string, int> ipcMSGCallBackFunc)
         {
             ArgumentNullException.ThrowIfNull(settingsUtils);
 
@@ -128,17 +129,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 if (value != _hotkey)
                 {
-                    if (value == null || value.IsEmpty())
-                    {
-                        _hotkey = AlwaysOnTopProperties.DefaultHotkeyValue;
-                    }
-                    else
-                    {
-                        _hotkey = value;
-                    }
+                    _hotkey = value ?? AlwaysOnTopProperties.DefaultHotkeyValue;
 
                     Settings.Properties.Hotkey.Value = _hotkey;
                     NotifyPropertyChanged();
+
+                    // Also notify that transparency keys have changed
+                    OnPropertyChanged(nameof(IncreaseOpacityKeysList));
+                    OnPropertyChanged(nameof(DecreaseOpacityKeysList));
 
                     // Using InvariantCulture as this is an IPC message
                     SendConfigMSG(
@@ -294,6 +292,62 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 _windows11 = value;
             }
+        }
+
+        /// <summary>
+        /// Gets the keys list for increasing window opacity (modifier keys + "+").
+        /// </summary>
+        public List<object> IncreaseOpacityKeysList
+        {
+            get
+            {
+                var keys = GetModifierKeysList();
+                keys.Add("+");
+                return keys;
+            }
+        }
+
+        /// <summary>
+        /// Gets the keys list for decreasing window opacity (modifier keys + "-").
+        /// </summary>
+        public List<object> DecreaseOpacityKeysList
+        {
+            get
+            {
+                var keys = GetModifierKeysList();
+                keys.Add("-");
+                return keys;
+            }
+        }
+
+        /// <summary>
+        /// Gets only the modifier keys from the current hotkey setting.
+        /// </summary>
+        private List<object> GetModifierKeysList()
+        {
+            var modifierKeys = new List<object>();
+
+            if (_hotkey.Win)
+            {
+                modifierKeys.Add(92); // The Windows key
+            }
+
+            if (_hotkey.Ctrl)
+            {
+                modifierKeys.Add("Ctrl");
+            }
+
+            if (_hotkey.Alt)
+            {
+                modifierKeys.Add("Alt");
+            }
+
+            if (_hotkey.Shift)
+            {
+                modifierKeys.Add(16); // The Shift key
+            }
+
+            return modifierKeys;
         }
 
         public void NotifyPropertyChanged([CallerMemberName] string propertyName = null)

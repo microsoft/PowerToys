@@ -15,7 +15,6 @@ public partial class CalculatorCommandProvider : CommandProvider
     private static ISettingsInterface settings = new SettingsManager();
     private readonly ListItem _listItem = new(new CalculatorListPage(settings))
     {
-        Subtitle = Resources.calculator_top_level_subtitle,
         MoreCommands = [new CommandContextItem(((SettingsManager)settings).Settings.SettingsPage)],
     };
 
@@ -23,7 +22,7 @@ public partial class CalculatorCommandProvider : CommandProvider
 
     public CalculatorCommandProvider()
     {
-        Id = "Calculator";
+        Id = "com.microsoft.cmdpal.builtin.calculator";
         DisplayName = Resources.calculator_display_name;
         Icon = Icons.CalculatorIcon;
         Settings = ((SettingsManager)settings).Settings;

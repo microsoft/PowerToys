@@ -144,4 +144,46 @@
   <data name="clipboard_failed_to_load" xml:space="preserve">
     <value>Loading clipboard history failed</value>
   </data>
+  <data name="delete_command_name" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="delete_toast_text" xml:space="preserve">
+    <value>Deleted from clipboard history</value>
+  </data>
+  <data name="settings_keep_after_paste_description" xml:space="preserve">
+    <value>Keep items in clipboard history after pasting</value>
+  </data>
+  <data name="settings_keep_after_paste_title" xml:space="preserve">
+    <value>Keep items after pasting</value>
+  </data>
+  <data name="settings_confirm_delete_title" xml:space="preserve">
+    <value>Ask for confirmation before deleting items</value>
+  </data>
+  <data name="settings_confirm_delete_description" xml:space="preserve">
+    <value>Show a confirmation dialog when manually deleting an item</value>
+  </data>
+  <data name="delete_confirmation_title" xml:space="preserve">
+    <value>Delete item?</value>
+  </data>
+  <data name="delete_confirmation_message" xml:space="preserve">
+    <value>Are you sure you want to delete this item from clipboard history? This action cannot be undone.</value>
+  </data>
+  <data name="settings_primary_action_title" xml:space="preserve">
+    <value>Primary action</value>
+  </data>
+  <data name="settings_primary_action_description" xml:space="preserve">
+    <value>Primary action (Enter key)</value>
+  </data>
+  <data name="settings_primary_action_default" xml:space="preserve">
+    <value>Default (Copy to Clipboard)</value>
+  </data>
+  <data name="settings_primary_action_paste" xml:space="preserve">
+    <value>Paste</value>
+  </data>
+  <data name="settings_primary_action_copy" xml:space="preserve">
+    <value>Copy to Clipboard</value>
+  </data>
+  <data name="open_url_command_name" xml:space="preserve">
+    <value>Open URL</value>
+  </data>
 </root>

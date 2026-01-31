@@ -81,9 +81,13 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("AnimnateZoom")]
         public BoolProperty AnimateZoom { get; set; }
 
+        public BoolProperty SmoothImage { get; set; }
+
         public IntProperty ZoominSliderLevel { get; set; }
 
         public IntProperty RecordScaling { get; set; }
+
+        public StringProperty RecordFormat { get; set; }
 
         public BoolProperty CaptureAudio { get; set; }
 

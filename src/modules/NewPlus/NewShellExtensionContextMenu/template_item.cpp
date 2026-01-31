@@ -70,7 +70,7 @@ std::wstring template_item::remove_starting_digits_from_filename(std::wstring fi
     }
     
     // Otherwise, remove starting digits as before
-    filename.erase(0, first_non_digit);
+    filename.erase(0, std::min(first_non_digit, filename.size()));
     filename.erase(0, min(filename.find_first_not_of(L" ."), filename.size()));
 
     return filename;

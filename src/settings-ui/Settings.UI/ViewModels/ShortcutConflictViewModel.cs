@@ -12,7 +12,6 @@ using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
-using System.Windows;
 using System.Windows.Threading;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
@@ -38,7 +37,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private ResourceLoader resourceLoader;
 
         public ShortcutConflictViewModel(
-            ISettingsUtils settingsUtils,
+            SettingsUtils settingsUtils,
             ISettingsRepository<GeneralSettings> settingsRepository,
             Func<string, int> ipcMSGCallBackFunc)
         {
@@ -69,6 +68,36 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         }
 
         protected override string ModuleName => "ShortcutConflictsWindow";
+
+        /// <summary>
+        /// Ignore a specific HotkeySettings
+        /// </summary>
+        /// <param name="hotkeySettings">The HotkeySettings to ignore</param>
+        public void IgnoreShortcut(HotkeySettings hotkeySettings)
+        {
+            if (hotkeySettings == null)
+            {
+                return;
+            }
+
+            HotkeyConflictIgnoreHelper.AddToIgnoredList(hotkeySettings);
+            GlobalHotkeyConflictManager.Instance?.RequestAllConflicts();
+        }
+
+        /// <summary>
+        /// Remove a HotkeySettings from the ignored list
+        /// </summary>
+        /// <param name="hotkeySettings">The HotkeySettings to unignore</param>
+        public void UnignoreShortcut(HotkeySettings hotkeySettings)
+        {
+            if (hotkeySettings == null)
+            {
+                return;
+            }
+
+            HotkeyConflictIgnoreHelper.RemoveFromIgnoredList(hotkeySettings);
+            GlobalHotkeyConflictManager.Instance?.RequestAllConflicts();
+        }
 
         private IHotkeyConfig GetModuleSettings(string moduleKey)
         {
@@ -120,20 +149,24 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             foreach (var conflict in conflicts)
             {
-                ProcessConflictGroup(conflict, isSystemConflict);
+                HotkeySettings hotkey = new(conflict.Hotkey.Win, conflict.Hotkey.Ctrl, conflict.Hotkey.Alt, conflict.Hotkey.Shift, conflict.Hotkey.Key);
+                var isIgnored = HotkeyConflictIgnoreHelper.IsIgnoringConflicts(hotkey);
+                conflict.ConflictIgnored = isIgnored;
+
+                ProcessConflictGroup(conflict, isSystemConflict, isIgnored);
                 items.Add(conflict);
             }
         }
 
-        private void ProcessConflictGroup(HotkeyConflictGroupData conflict, bool isSystemConflict)
+        private void ProcessConflictGroup(HotkeyConflictGroupData conflict, bool isSystemConflict, bool isIgnored)
         {
             foreach (var module in conflict.Modules)
             {
-                SetupModuleData(module, isSystemConflict);
+                SetupModuleData(module, isSystemConflict, isIgnored);
             }
         }
 
-        private void SetupModuleData(ModuleHotkeyData module, bool isSystemConflict)
+        private void SetupModuleData(ModuleHotkeyData module, bool isSystemConflict, bool isIgnored)
         {
             try
             {
@@ -210,62 +243,25 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     // No need to save settings here, the runner will call module interface to save it
                     // SaveSettingsToFile(settings);
 
+                    // For PowerToys Run, we should set the 'HotkeyChanged' property here to avoid issue #41468
+                    if (string.Equals(moduleName, PowerLauncherSettings.ModuleName, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if (settings is PowerLauncherSettings powerLauncherSettings)
+                        {
+                            powerLauncherSettings.Properties.HotkeyChanged = true;
+                        }
+                    }
+
                     // Send IPC notification using the same format as other ViewModels
                     SendConfigMSG(settingsConfig, moduleName);
+
+                    // Request updated conflicts after changing a hotkey
+                    GlobalHotkeyConflictManager.Instance?.RequestAllConflicts();
                 }
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"Error updating hotkey settings for {moduleName}.{hotkeyID}: {ex.Message}");
-            }
-        }
-
-        private void SaveModuleSettingsAndNotify(string moduleName)
-        {
-            try
-            {
-                var settings = GetModuleSettings(moduleName);
-
-                if (settings is ISettingsConfig settingsConfig)
-                {
-                    // No need to save settings here, the runner will call module interface to save it
-                    // SaveSettingsToFile(settings);
-
-                    // Send IPC notification using the same format as other ViewModels
-                    SendConfigMSG(settingsConfig, moduleName);
-
-                    System.Diagnostics.Debug.WriteLine($"Saved settings and sent IPC notification for module: {moduleName}");
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"Error saving settings and notifying for {moduleName}: {ex.Message}");
-            }
-        }
-
-        private void SaveSettingsToFile(IHotkeyConfig settings)
-        {
-            try
-            {
-                // Get the repository for this settings type using reflection
-                var settingsType = settings.GetType();
-                var repositoryMethod = typeof(SettingsFactory).GetMethod("GetRepository");
-                if (repositoryMethod != null)
-                {
-                    var genericMethod = repositoryMethod.MakeGenericMethod(settingsType);
-                    var repository = genericMethod.Invoke(_settingsFactory, null);
-
-                    if (repository != null)
-                    {
-                        var saveMethod = repository.GetType().GetMethod("SaveSettingsToFile");
-                        saveMethod?.Invoke(repository, null);
-                        System.Diagnostics.Debug.WriteLine($"Saved settings to file for type: {settingsType.Name}");
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"Error saving settings to file: {ex.Message}");
             }
         }
 
@@ -281,11 +277,22 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     ? JsonSerializer.Serialize(settingsConfig, jsonTypeInfo)
                     : JsonSerializer.Serialize(settingsConfig);
 
-                var ipcMessage = string.Format(
-                    CultureInfo.InvariantCulture,
-                    "{{ \"powertoys\": {{ \"{0}\": {1} }} }}",
-                    moduleName,
-                    serializedSettings);
+                string ipcMessage;
+                if (string.Equals(moduleName, "GeneralSettings", StringComparison.OrdinalIgnoreCase))
+                {
+                    ipcMessage = string.Format(
+                        CultureInfo.InvariantCulture,
+                        "{{ \"general\": {0} }}",
+                        serializedSettings);
+                }
+                else
+                {
+                    ipcMessage = string.Format(
+                        CultureInfo.InvariantCulture,
+                        "{{ \"powertoys\": {{ \"{0}\": {1} }} }}",
+                        moduleName,
+                        serializedSettings);
+                }
 
                 var result = _ipcMSGCallBackFunc(ipcMessage);
                 System.Diagnostics.Debug.WriteLine($"Sent IPC notification for {moduleName}, result: {result}");

@@ -160,6 +160,15 @@ namespace Microsoft.CommandPalette.Extensions
     [uuid("6a6dd345-37a3-4a1e-914d-4f658a4d583d")]
     [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
     interface IDetailsData {}
+
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    enum ContentSize
+    {
+        Small = 0,
+        Medium = 1,
+        Large = 2,
+    };
+
     [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
     interface IDetailsElement {
         String Key { get; };
@@ -273,10 +282,26 @@ namespace Microsoft.CommandPalette.Extensions
         String Section { get; };
         String TextToSuggest { get; };
     }
+
+    [uuid("50C6F080-1CBE-4CE4-B92F-DA2F116ED524")]
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface IGridProperties requires INotifyPropChanged { }
+
+    [uuid("05914D59-6ECB-4992-9CF2-5982B5120A26")]
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface ISmallGridLayout requires IGridProperties { }
     
     [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
-    interface IGridProperties  {
-        Windows.Foundation.Size TileSize { get; };
+    interface IMediumGridLayout requires IGridProperties
+    {
+        Boolean ShowTitle { get; };
+    }
+    
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface IGalleryGridLayout requires IGridProperties
+    {
+        Boolean ShowTitle { get; };
+        Boolean ShowSubtitle { get; };
     }
     
     [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
@@ -345,6 +370,11 @@ namespace Microsoft.CommandPalette.Extensions
     interface IFallbackCommandItem requires ICommandItem {
         IFallbackHandler FallbackHandler{ get; };
         String DisplayTitle { get; };
+    };
+
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface IFallbackCommandItem2 requires IFallbackCommandItem {
+        String Id { get; };
     };
     
     [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]

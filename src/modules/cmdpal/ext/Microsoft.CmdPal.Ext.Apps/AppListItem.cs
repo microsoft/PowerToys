@@ -5,50 +5,92 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using ManagedCommon;
+using Microsoft.CmdPal.Core.Common.Helpers;
 using Microsoft.CmdPal.Ext.Apps.Commands;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
-using Windows.Storage.Streams;
 
 namespace Microsoft.CmdPal.Ext.Apps.Programs;
 
-internal sealed partial class AppListItem : ListItem
+public sealed partial class AppListItem : ListItem
 {
+    private readonly AppCommand _appCommand;
     private readonly AppItem _app;
-    private static readonly Tag _appTag = new("App");
+    private readonly Lazy<Task<IconInfo?>> _iconLoadTask;
+    private readonly Lazy<Task<Details>> _detailsLoadTask;
 
-    private readonly Lazy<Details> _details;
-    private readonly Lazy<IconInfo> _icon;
+    private InterlockedBoolean _isLoadingIcon;
+    private InterlockedBoolean _isLoadingDetails;
 
-    public override IDetails? Details { get => _details.Value; set => base.Details = value; }
+    public override IDetails? Details
+    {
+        get
+        {
+            if (_isLoadingDetails.Set())
+            {
+                _ = LoadDetailsAsync();
+            }
 
-    public override IIconInfo? Icon { get => _icon.Value; set => base.Icon = value; }
+            return base.Details;
+        }
+        set => base.Details = value;
+    }
+
+    public override IIconInfo? Icon
+    {
+        get
+        {
+            if (_isLoadingIcon.Set())
+            {
+                _ = LoadIconAsync();
+            }
+
+            return base.Icon;
+        }
+        set => base.Icon = value;
+    }
 
     public string AppIdentifier => _app.AppIdentifier;
 
+    public AppItem App => _app;
+
     public AppListItem(AppItem app, bool useThumbnails, bool isPinned)
-        : base(new AppCommand(app))
     {
+        Command = _appCommand = new AppCommand(app);
         _app = app;
         Title = app.Name;
         Subtitle = app.Subtitle;
-        Tags = [_appTag];
+        Icon = Icons.GenericAppIcon;
 
         MoreCommands = AddPinCommands(_app.Commands!, isPinned);
 
-        _details = new Lazy<Details>(() =>
-        {
-            var t = BuildDetails();
-            t.Wait();
-            return t.Result;
-        });
+        _detailsLoadTask = new Lazy<Task<Details>>(BuildDetails);
+        _iconLoadTask = new Lazy<Task<IconInfo?>>(async () => await FetchIcon(useThumbnails));
+    }
 
-        _icon = new Lazy<IconInfo>(() =>
+    private async Task LoadDetailsAsync()
+    {
+        try
         {
-            var t = FetchIcon(useThumbnails);
-            t.Wait();
-            return t.Result;
-        });
+            Details = await _detailsLoadTask.Value;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogWarning($"Failed to load details for {AppIdentifier}\n{ex}");
+        }
+    }
+
+    private async Task LoadIconAsync()
+    {
+        try
+        {
+            Icon = _appCommand.Icon = await _iconLoadTask.Value ?? Icons.GenericAppIcon;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogWarning($"Failed to load icon for {AppIdentifier}\n{ex}");
+        }
     }
 
     private async Task<Details> BuildDetails()
@@ -61,6 +103,12 @@ internal sealed partial class AppListItem : ListItem
             metadata.Add(new DetailsElement() { Key = "Path", Data = new DetailsLink() { Text = _app.ExePath } });
         }
 
+#if DEBUG
+        metadata.Add(new DetailsElement() { Key = "[DEBUG] AppIdentifier", Data = new DetailsLink() { Text = _app.AppIdentifier } });
+        metadata.Add(new DetailsElement() { Key = "[DEBUG] ExePath", Data = new DetailsLink() { Text = _app.ExePath } });
+        metadata.Add(new DetailsElement() { Key = "[DEBUG] IcoPath", Data = new DetailsLink() { Text = _app.IcoPath } });
+#endif
+
         // Icon
         IconInfo? heroImage = null;
         if (_app.IsPackaged)
@@ -69,30 +117,28 @@ internal sealed partial class AppListItem : ListItem
         }
         else
         {
-            try
+            // do nothing if we fail to load an icon.
+            // Logging it would be too NOISY, there's really no need.
+            if (!string.IsNullOrEmpty(_app.IcoPath))
             {
-                var stream = await ThumbnailHelper.GetThumbnail(_app.ExePath, true);
-                if (stream is not null)
-                {
-                    heroImage = IconInfo.FromStream(stream);
-                }
+                heroImage = await TryLoadThumbnail(_app.IcoPath, jumbo: true, logOnFailure: false);
             }
-            catch (Exception)
+
+            if (heroImage == null && !string.IsNullOrEmpty(_app.ExePath))
             {
-                // do nothing if we fail to load an icon.
-                // Logging it would be too NOISY, there's really no need.
+                heroImage = await TryLoadThumbnail(_app.ExePath, jumbo: true, logOnFailure: false);
             }
         }
 
         return new Details()
         {
             Title = this.Title,
-            HeroImage = heroImage ?? this.Icon ?? new IconInfo(string.Empty),
+            HeroImage = heroImage ?? this.Icon ?? Icons.GenericAppIcon,
             Metadata = metadata.ToArray(),
         };
     }
 
-    public async Task<IconInfo> FetchIcon(bool useThumbnails)
+    private async Task<IconInfo> FetchIcon(bool useThumbnails)
     {
         IconInfo? icon = null;
         if (_app.IsPackaged)
@@ -103,25 +149,18 @@ internal sealed partial class AppListItem : ListItem
 
         if (useThumbnails)
         {
-            try
+            if (!string.IsNullOrEmpty(_app.IcoPath))
             {
-                var stream = await ThumbnailHelper.GetThumbnail(_app.ExePath);
-                if (stream is not null)
-                {
-                    var data = new IconData(RandomAccessStreamReference.CreateFromStream(stream));
-                    icon = new IconInfo(data, data);
-                }
-            }
-            catch
-            {
+                icon = await TryLoadThumbnail(_app.IcoPath, jumbo: false, logOnFailure: true);
             }
 
-            icon = icon ?? new IconInfo(_app.IcoPath);
+            if (icon == null && !string.IsNullOrEmpty(_app.ExePath))
+            {
+                icon = await TryLoadThumbnail(_app.ExePath, jumbo: false, logOnFailure: true);
+            }
         }
-        else
-        {
-            icon = new IconInfo(_app.IcoPath);
-        }
+
+        icon ??= new IconInfo(_app.IcoPath);
 
         return icon;
     }
@@ -133,17 +172,13 @@ internal sealed partial class AppListItem : ListItem
 
         newCommands.Add(new Separator());
 
-        // 0x50 = P
-        // Full key chord would be Ctrl+P
-        var pinKeyChord = KeyChordHelpers.FromModifiers(true, false, false, false, 0x50, 0);
-
         if (isPinned)
         {
             newCommands.Add(
                 new CommandContextItem(
                     new UnpinAppCommand(this.AppIdentifier))
                 {
-                    RequestedShortcut = pinKeyChord,
+                    RequestedShortcut = KeyChords.TogglePin,
                 });
         }
         else
@@ -152,10 +187,31 @@ internal sealed partial class AppListItem : ListItem
                 new CommandContextItem(
                     new PinAppCommand(this.AppIdentifier))
                 {
-                    RequestedShortcut = pinKeyChord,
+                    RequestedShortcut = KeyChords.TogglePin,
                 });
         }
 
         return newCommands.ToArray();
+    }
+
+    private async Task<IconInfo?> TryLoadThumbnail(string path, bool jumbo, bool logOnFailure)
+    {
+        try
+        {
+            var stream = await ThumbnailHelper.GetThumbnail(path, jumbo);
+            if (stream is not null)
+            {
+                return IconInfo.FromStream(stream);
+            }
+        }
+        catch (Exception ex)
+        {
+            if (logOnFailure)
+            {
+                Logger.LogDebug($"Failed to load icon {path} for {AppIdentifier}:\n{ex}");
+            }
+        }
+
+        return null;
     }
 }

@@ -13,6 +13,9 @@ parameters:
   - name: enableMsBuildCaching
     type: boolean
     default: false
+  - name: msBuildCacheIsReadOnly
+    type: boolean
+    default: true
   - name: runTests
     type: boolean
     default: true
@@ -46,12 +49,15 @@ stages:
               ${{ else }}:
                 name: SHINE-OSS-L
               ${{ if eq(parameters.useVSPreview, true) }}:
-                demands: ImageOverride -equals SHINE-VS17-Preview
+                demands: ImageOverride -equals SHINE-VS18-Preview
+              ${{ else }}:
+                demands: ImageOverride -equals SHINE-VS18-Latest
             buildPlatforms:
               - ${{ platform }}
             buildConfigurations: [Release]
             enablePackageCaching: true
             enableMsBuildCaching: ${{ parameters.enableMsBuildCaching }}
+            msBuildCacheIsReadOnly: ${{ parameters.msBuildCacheIsReadOnly }}
             runTests: ${{ parameters.runTests }}
             useVSPreview: ${{ parameters.useVSPreview }}
             useLatestWinAppSDK: ${{ parameters.useLatestWinAppSDK }}
@@ -59,3 +65,20 @@ stages:
               winAppSDKVersionNumber: ${{ parameters.winAppSDKVersionNumber }}
               useExperimentalVersion: ${{ parameters.useExperimentalVersion }}
             timeoutInMinutes: 90
+
+  - stage: Build_SDK
+    displayName: Build Command Palette Toolkit SDK
+    dependsOn: []
+    jobs:
+      - template: job-build-sdk.yml
+        parameters:
+          pool:
+            ${{ if eq(variables['System.CollectionId'], 'cb55739e-4afe-46a3-970f-1b49d8ee7564') }}:
+              name: SHINE-INT-L
+            ${{ else }}:
+              name: SHINE-OSS-L
+            ${{ if eq(parameters.useVSPreview, true) }}:
+              demands: ImageOverride -equals SHINE-VS17-Preview
+          buildConfigurations: [Release]
+          official: false
+          codeSign: false

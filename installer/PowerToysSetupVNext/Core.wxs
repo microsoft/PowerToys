@@ -9,6 +9,25 @@
           <RegistryValue Type="string" Name="InstallScope" Value="$(var.InstallScope)" />
         </RegistryKey>
       </Component>
+      <?if $(var.PerUser) = "true" ?>
+      <Component Id="powertoys_env_path_user" Bitness="always64">
+        <!-- Anchor registry for component key path -->
+        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
+          <RegistryValue Type="string" Name="powertoys_env_path_user" Value="" KeyPath="yes" />
+        </RegistryKey>
+        <!-- Append DSCModules folder to current user's PATH for DSC v3 usage -->
+        <Environment Id="AddPowerToysToUserPath" Name="PATH" Action="set" Part="last" System="no" Value="[DSCModulesReferenceFolder]" />
+      </Component>
+      <?else?>
+      <Component Id="powertoys_env_path_machine" Bitness="always64">
+        <!-- Anchor registry for component key path -->
+        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
+          <RegistryValue Type="string" Name="powertoys_env_path_machine" Value="" KeyPath="yes" />
+        </RegistryKey>
+        <!-- Append DSCModules folder to machine PATH for DSC v3 usage -->
+        <Environment Id="AddPowerToysToMachinePath" Name="PATH" Action="set" Part="last" System="yes" Value="[DSCModulesReferenceFolder]" />
+      </Component>
+      <?endif?>
       <Component Id="powertoys_toast_clsid" Bitness="always64">
         <RemoveFolder Id="Remove_powertoys_toast_clsid" On="uninstall" />
         <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\CLSID\{DD5CACDA-7C2E-4997-A62A-04A597B58F76}">
@@ -42,16 +61,16 @@
         </RegistryKey>
         <File Source="$(var.RepoDir)\Notice.md" Id="Notice.md" />
       </Component>
-    </DirectoryRef>
-
-    <DirectoryRef Id="DSCModulesReferenceFolder">
-      <Component Id="PowerToysDSCReference" Guid="40869ACB-0BEB-4911-AE41-5E73BC1586A9" Bitness="always64">
-        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
-          <RegistryValue Type="string" Name="DSCModulesReference" Value="" KeyPath="yes" />
-        </RegistryKey>
-        <File Source="$(var.RepoDir)\src\dsc\Microsoft.PowerToys.Configure\Generated\Microsoft.PowerToys.Configure\$(var.Version).0\Microsoft.PowerToys.Configure.psd1" Id="PTConfReference.psd1" />
-        <File Source="$(var.RepoDir)\src\dsc\Microsoft.PowerToys.Configure\Generated\Microsoft.PowerToys.Configure\$(var.Version).0\Microsoft.PowerToys.Configure.psm1" Id="PTConfReference.psm1" />
-      </Component>
+      <Directory Id="SvgsFolder" Name="svgs">
+        <Component Id="svgs_icons" Guid="A9B7C5D3-E1F2-4A6B-8C9D-0E1F2A3B4C5D" Bitness="always64">
+          <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
+            <RegistryValue Type="string" Name="svgs_icons" Value="" KeyPath="yes" />
+          </RegistryKey>
+          <File Id="icon.ico" Source="$(var.BinDir)svgs\icon.ico" />
+          <File Id="PowerToysWhite.ico" Source="$(var.BinDir)svgs\PowerToysWhite.ico" />
+          <File Id="PowerToysDark.ico" Source="$(var.BinDir)svgs\PowerToysDark.ico" />
+        </Component>
+      </Directory>
     </DirectoryRef>
 
     <?if $(var.PerUser) = "true" ?>
@@ -101,9 +120,9 @@
           <RegistryValue Type="string" Name="RemoveCoreFolder" Value="" KeyPath="yes" />
         </RegistryKey>
         <RemoveFolder Id="RemoveBaseApplicationsAssetsFolder" Directory="BaseApplicationsAssetsFolder" On="uninstall" />
-        <RemoveFolder Id="RemoveDSCModulesReferenceFolder" Directory="DSCModulesReferenceFolder" On="uninstall" />
         <RemoveFolder Id="RemoveWinUI3AppsInstallFolder" Directory="WinUI3AppsInstallFolder" On="uninstall" />
         <RemoveFolder Id="RemoveWinUI3AppsAssetsFolder" Directory="WinUI3AppsAssetsFolder" On="uninstall" />
+        <RemoveFolder Id="RemoveSvgsFolder" Directory="SvgsFolder" On="uninstall" />
         <RemoveFolder Id="RemoveINSTALLFOLDER" Directory="INSTALLFOLDER" On="uninstall" />
       </Component>
       <ComponentRef Id="powertoys_exe" />
@@ -112,8 +131,13 @@
       <ComponentRef Id="powertoys_toast_clsid" />
       <ComponentRef Id="License_rtf" />
       <ComponentRef Id="Notice_md" />
+      <ComponentRef Id="svgs_icons" />
       <ComponentRef Id="DesktopShortcut" />
-      <ComponentRef Id="PowerToysDSCReference" />
+      <?if $(var.PerUser) = "true" ?>
+      <ComponentRef Id="powertoys_env_path_user" />
+      <?else?>
+      <ComponentRef Id="powertoys_env_path_machine" />
+      <?endif?>
       <?if $(var.PerUser) = "false" ?>
       <ComponentRef Id="PowerToysDSC" />
       <?endif?>

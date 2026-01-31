@@ -3,6 +3,8 @@
 #include "RcResource.h"
 #include <ProjectTelemetry.h>
 #include <spdlog/sinks/base_sink.h>
+#include <filesystem>
+#include <string_view>
 
 #include "../../src/common/logger/logger.h"
 #include "../../src/common/utils/gpo.h"
@@ -232,7 +234,9 @@ UINT __stdcall LaunchPowerToysCA(MSIHANDLE hInstall)
 
         auto action = [&commandLine](HANDLE userToken)
         {
-            STARTUPINFO startupInfo{.cb = sizeof(STARTUPINFO), .wShowWindow = SW_SHOWNORMAL};
+            STARTUPINFO startupInfo = { 0 };
+            startupInfo.cb = sizeof(STARTUPINFO);
+            startupInfo.wShowWindow = SW_SHOWNORMAL;
             PROCESS_INFORMATION processInformation;
 
             PVOID lpEnvironment = NULL;
@@ -271,7 +275,9 @@ UINT __stdcall LaunchPowerToysCA(MSIHANDLE hInstall)
     }
     else
     {
-        STARTUPINFO startupInfo{.cb = sizeof(STARTUPINFO), .wShowWindow = SW_SHOWNORMAL};
+        STARTUPINFO startupInfo = { 0 };
+        startupInfo.cb = sizeof(STARTUPINFO);
+        startupInfo.wShowWindow = SW_SHOWNORMAL;
 
         PROCESS_INFORMATION processInformation;
 
@@ -424,7 +430,7 @@ UINT __stdcall InstallDSCModuleCA(MSIHANDLE hInstall)
         const auto modulesPath = baseModulesPath / L"Microsoft.PowerToys.Configure" / (get_product_version(false) + L".0");
 
         std::error_code errorCode;
-        fs::create_directories(modulesPath, errorCode);
+        std::filesystem::create_directories(modulesPath, errorCode);
         if (errorCode)
         {
             hr = E_FAIL;
@@ -433,7 +439,7 @@ UINT __stdcall InstallDSCModuleCA(MSIHANDLE hInstall)
 
         for (const auto *filename : {DSC_CONFIGURE_PSD1_NAME, DSC_CONFIGURE_PSM1_NAME})
         {
-            fs::copy_file(fs::path(installationFolder) / "DSCModules" / filename, modulesPath / filename, fs::copy_options::overwrite_existing, errorCode);
+            std::filesystem::copy_file(std::filesystem::path(installationFolder) / "DSCModules" / filename, modulesPath / filename, std::filesystem::copy_options::overwrite_existing, errorCode);
 
             if (errorCode)
             {
@@ -481,7 +487,7 @@ UINT __stdcall UninstallDSCModuleCA(MSIHANDLE hInstall)
 
         for (const auto *filename : {DSC_CONFIGURE_PSD1_NAME, DSC_CONFIGURE_PSM1_NAME})
         {
-            fs::remove(versionedModulePath / filename, errorCode);
+            std::filesystem::remove(versionedModulePath / filename, errorCode);
 
             if (errorCode)
             {
@@ -492,7 +498,7 @@ UINT __stdcall UninstallDSCModuleCA(MSIHANDLE hInstall)
 
         for (const auto *modulePath : {&versionedModulePath, &powerToysModulePath})
         {
-            fs::remove(*modulePath, errorCode);
+            std::filesystem::remove(*modulePath, errorCode);
 
             if (errorCode)
             {
@@ -589,6 +595,216 @@ LExit:
     return WcaFinalize(er);
 }
 
+UINT __stdcall InstallPackageIdentityMSIXCA(MSIHANDLE hInstall)
+{
+    HRESULT hr = S_OK;
+    UINT er = ERROR_SUCCESS;
+    LPWSTR customActionData = nullptr;
+    std::wstring installFolderPath;
+    std::wstring installScope;
+    std::wstring msixPath;
+    std::wstring data;
+    size_t delimiterPos;
+    bool isMachineLevel = false;
+    
+    hr = WcaInitialize(hInstall, "InstallPackageIdentityMSIXCA");
+    ExitOnFailure(hr, "Failed to initialize");
+
+    hr = WcaGetProperty(L"CustomActionData", &customActionData);
+    ExitOnFailure(hr, "Failed to get CustomActionData property");
+    
+    // Parse CustomActionData: "[INSTALLFOLDER];[InstallScope]"
+    data = customActionData;
+    delimiterPos = data.find(L';');
+    installFolderPath = data.substr(0, delimiterPos);
+    installScope = data.substr(delimiterPos + 1);
+    
+    // Check if this is a machine-level installation
+    if (installScope == L"perMachine")
+    {
+        isMachineLevel = true;
+    }
+    
+    Logger::info(L"Installing PackageIdentity MSIX - perUser: {}", !isMachineLevel);
+
+    // Construct path to PackageIdentity MSIX
+    msixPath = installFolderPath;
+    msixPath += L"PowerToysSparse.msix";
+
+    if (std::filesystem::exists(msixPath))
+    {
+        using namespace winrt::Windows::Management::Deployment;
+        using namespace winrt::Windows::Foundation;
+
+        try
+        {
+            
+            std::wstring externalLocation = installFolderPath; // External content location (PowerToys install folder)
+            Uri externalUri{ externalLocation };               // External location URI for sparse package content
+            Uri packageUri{ msixPath };                        // The MSIX file URI
+            
+            PackageManager packageManager;
+            
+            if (isMachineLevel)
+            {
+                // Machine-level installation
+                
+                StagePackageOptions stageOptions;
+                stageOptions.ExternalLocationUri(externalUri);
+                
+                auto stageResult = packageManager.StagePackageByUriAsync(packageUri, stageOptions).get();
+                
+                uint32_t stageErrorCode = static_cast<uint32_t>(stageResult.ExtendedErrorCode());
+                if (stageErrorCode == 0)
+                {
+                    std::wstring packageFamilyName = L"Microsoft.PowerToys.SparseApp_8wekyb3d8bbwe";
+                    
+                    try
+                    {
+                        auto provisionResult = packageManager.ProvisionPackageForAllUsersAsync(packageFamilyName).get();
+                        uint32_t provisionErrorCode = static_cast<uint32_t>(provisionResult.ExtendedErrorCode());
+                        
+                        if (provisionErrorCode != 0)
+                        {
+                            Logger::error(L"Machine-level provisioning failed: 0x{:08X}", provisionErrorCode);
+                        }
+                    }
+                    catch (const winrt::hresult_error& ex)
+                    {
+                        Logger::error(L"Provisioning exception: HRESULT 0x{:08X}", static_cast<uint32_t>(ex.code()));
+                    }
+                }
+                else
+                {
+                    Logger::error(L"Package staging failed: 0x{:08X}", stageErrorCode);
+                }
+            }
+            else
+            {
+                AddPackageOptions addOptions;
+                addOptions.ExternalLocationUri(externalUri);
+                
+                auto addResult = packageManager.AddPackageByUriAsync(packageUri, addOptions).get();
+                
+                if (!addResult.IsRegistered())
+                {
+                    uint32_t errorCode = static_cast<uint32_t>(addResult.ExtendedErrorCode());
+                    Logger::error(L"Per-user installation failed: 0x{:08X}", errorCode);
+                }
+            }
+        }
+        catch (const std::exception& ex)
+        {
+            Logger::error(L"PackageIdentity MSIX installation failed - Exception: {}", 
+                         winrt::to_hstring(ex.what()).c_str());
+        }
+    }
+    else
+    {
+        Logger::error(L"PackageIdentity MSIX not found: " + msixPath);
+    }
+
+LExit:
+    ReleaseStr(customActionData);
+    er = SUCCEEDED(hr) ? ERROR_SUCCESS : ERROR_INSTALL_FAILURE;
+    return WcaFinalize(er);
+}
+
+UINT __stdcall UninstallPackageIdentityMSIXCA(MSIHANDLE hInstall)
+{
+    HRESULT hr = S_OK;
+    UINT er = ERROR_SUCCESS;
+    using namespace winrt::Windows::Management::Deployment; 
+    using namespace winrt::Windows::Foundation;
+    
+    LPWSTR installScope = nullptr;
+    bool isMachineLevel = false;
+    
+    PackageManager pm;
+
+    hr = WcaInitialize(hInstall, "UninstallPackageIdentityMSIXCA");
+    ExitOnFailure(hr, "Failed to initialize");
+    
+    // Check if this was a machine-level installation
+    hr = WcaGetProperty(L"InstallScope", &installScope);
+    if (SUCCEEDED(hr) && installScope && wcscmp(installScope, L"perMachine") == 0)
+    {
+        isMachineLevel = true;
+    }
+    
+    Logger::info(L"Uninstalling PackageIdentity MSIX - perUser: {}", !isMachineLevel);
+
+    try
+    {
+        std::wstring packageFamilyName = L"Microsoft.PowerToys.SparseApp_8wekyb3d8bbwe";
+        
+        if (isMachineLevel)
+        {
+            // Machine-level uninstallation: deprovision + remove for all users
+            
+            // First deprovision the package
+            try
+            {
+                auto deprovisionResult = pm.DeprovisionPackageForAllUsersAsync(packageFamilyName).get();
+                if (deprovisionResult.IsRegistered())
+                {
+                    Logger::warn(L"Machine-level deprovisioning completed with warnings");
+                }
+            }
+            catch (const winrt::hresult_error& ex)
+            {
+                Logger::warn(L"Machine-level deprovisioning failed: HRESULT 0x{:08X}", static_cast<uint32_t>(ex.code()));
+            }
+            
+            // Then remove packages for all users
+            auto packages = pm.FindPackagesForUserWithPackageTypes({}, packageFamilyName, PackageTypes::Main);
+            for (const auto& package : packages)
+            {
+                try
+                {
+                    auto machineResult = pm.RemovePackageAsync(package.Id().FullName(), RemovalOptions::RemoveForAllUsers).get();
+                    if (machineResult.IsRegistered())
+                    {
+                        uint32_t errorCode = static_cast<uint32_t>(machineResult.ExtendedErrorCode());
+                        Logger::error(L"Machine-level removal failed: 0x{:08X} - {}", errorCode, machineResult.ErrorText());
+                    }
+                }
+                catch (const winrt::hresult_error& ex)
+                {
+                    Logger::error(L"Machine-level removal exception: HRESULT 0x{:08X}", static_cast<uint32_t>(ex.code()));
+                }
+            }
+        }
+        else
+        {
+            // Per-user uninstallation: standard removal
+            
+            auto packages = pm.FindPackagesForUserWithPackageTypes({}, packageFamilyName, PackageTypes::Main);
+            for (const auto& package : packages)
+            {
+                auto userResult = pm.RemovePackageAsync(package.Id().FullName()).get();
+                if (userResult.IsRegistered())
+                {
+                    uint32_t errorCode = static_cast<uint32_t>(userResult.ExtendedErrorCode());
+                    Logger::error(L"Per-user removal failed: 0x{:08X} - {}", errorCode, userResult.ErrorText());
+                }
+            }
+        }
+    }
+    catch (const std::exception& ex)
+    {
+        std::string errorMsg = "Failed to uninstall PackageIdentity MSIX: " + std::string(ex.what());
+        Logger::error(errorMsg);
+        // Don't fail the entire uninstallation if PackageIdentity fails
+        Logger::warn(L"Continuing uninstallation despite PackageIdentity MSIX error");
+    }
+
+LExit:
+    ReleaseStr(installScope);
+    er = SUCCEEDED(hr) ? ERROR_SUCCESS : ERROR_INSTALL_FAILURE;
+    return WcaFinalize(er);
+}
+
 UINT __stdcall RemoveWindowsServiceByName(std::wstring serviceName)
 {
     SC_HANDLE hSCManager = OpenSCManager(NULL, NULL, SC_MANAGER_CONNECT);
@@ -641,14 +857,69 @@ UINT __stdcall UnsetAdvancedPasteAPIKeyCA(MSIHANDLE hInstall)
 
     try
     {
-        winrt::Windows::Security::Credentials::PasswordVault vault;
-        winrt::Windows::Security::Credentials::PasswordCredential cred;
-
         hr = WcaInitialize(hInstall, "UnsetAdvancedPasteAPIKey");
         ExitOnFailure(hr, "Failed to initialize");
 
-        cred = vault.Retrieve(L"https://platform.openai.com/api-keys", L"PowerToys_AdvancedPaste_OpenAIKey");
-        vault.Remove(cred);
+        winrt::Windows::Security::Credentials::PasswordVault vault;
+
+        auto hasPrefix = [](std::wstring_view value, wchar_t const* prefix) {
+            std::wstring_view prefixView{ prefix };
+            return value.compare(0, prefixView.size(), prefixView) == 0;
+        };
+
+        const wchar_t* resourcePrefixes[] = {
+            L"https://platform.openai.com/api-keys",
+            L"https://azure.microsoft.com/products/ai-services/openai-service",
+            L"https://azure.microsoft.com/products/ai-services/ai-inference",
+            L"https://console.mistral.ai/account/api-keys",
+            L"https://ai.google.dev/",
+        };
+
+        const wchar_t* usernamePrefixes[] = {
+            L"PowerToys_AdvancedPaste_",
+        };
+
+        auto credentials = vault.RetrieveAll();
+        for (auto const& credential : credentials)
+        {
+            bool shouldRemove = false;
+
+            std::wstring resource{ credential.Resource() };
+            for (auto const prefix : resourcePrefixes)
+            {
+                if (hasPrefix(resource, prefix))
+                {
+                    shouldRemove = true;
+                    break;
+                }
+            }
+
+            if (!shouldRemove)
+            {
+                std::wstring username{ credential.UserName() };
+                for (auto const prefix : usernamePrefixes)
+                {
+                    if (hasPrefix(username, prefix))
+                    {
+                        shouldRemove = true;
+                        break;
+                    }
+                }
+            }
+
+            if (!shouldRemove)
+            {
+                continue;
+            }
+
+            try
+            {
+                vault.Remove(credential);
+            }
+            catch (...)
+            {
+            }
+        }
     }
     catch (...)
     {
@@ -1278,7 +1549,7 @@ UINT __stdcall TerminateProcessesCA(MSIHANDLE hInstall)
     }
     processes.resize(bytes / sizeof(processes[0]));
 
-    std::array<std::wstring_view, 41> processesToTerminate = {
+    std::array<std::wstring_view, 44> processesToTerminate = {
         L"PowerToys.PowerLauncher.exe",
         L"PowerToys.Settings.exe",
         L"PowerToys.AdvancedPaste.exe",
@@ -1293,6 +1564,7 @@ UINT __stdcall TerminateProcessesCA(MSIHANDLE hInstall)
         L"PowerToys.Hosts.exe",
         L"PowerToys.PowerRename.exe",
         L"PowerToys.ImageResizer.exe",
+        L"PowerToys.LightSwitchService.exe",
         L"PowerToys.GcodeThumbnailProvider.exe",
         L"PowerToys.BgcodeThumbnailProvider.exe",
         L"PowerToys.PdfThumbnailProvider.exe",
@@ -1312,12 +1584,14 @@ UINT __stdcall TerminateProcessesCA(MSIHANDLE hInstall)
         L"PowerToys.MouseWithoutBordersService.exe",
         L"PowerToys.CropAndLock.exe",
         L"PowerToys.EnvironmentVariables.exe",
+        L"PowerToys.QuickAccess.exe",
         L"PowerToys.WorkspacesSnapshotTool.exe",
         L"PowerToys.WorkspacesLauncher.exe",
         L"PowerToys.WorkspacesLauncherUI.exe",
         L"PowerToys.WorkspacesEditor.exe",
         L"PowerToys.WorkspacesWindowArranger.exe",
         L"Microsoft.CmdPal.UI.exe",
+        L"Microsoft.CmdPal.Ext.PowerToys.exe",
         L"PowerToys.ZoomIt.exe",
         L"PowerToys.exe",
     };
@@ -1371,6 +1645,120 @@ UINT __stdcall TerminateProcessesCA(MSIHANDLE hInstall)
         CloseHandle(hProcess);
     }
 
+    er = SUCCEEDED(hr) ? ERROR_SUCCESS : ERROR_INSTALL_FAILURE;
+    return WcaFinalize(er);
+}
+
+UINT __stdcall SetBundleInstallLocationCA(MSIHANDLE hInstall)
+{
+    HRESULT hr = S_OK;
+    UINT er = ERROR_SUCCESS;
+    
+    // Declare all variables at the beginning to avoid goto issues
+    std::wstring customActionData;
+    std::wstring installationFolder;
+    std::wstring bundleUpgradeCode;
+    std::wstring installScope;
+    bool isPerUser = false;
+    size_t pos1 = std::wstring::npos;
+    size_t pos2 = std::wstring::npos;
+    std::vector<HKEY> keysToTry;
+
+    hr = WcaInitialize(hInstall, "SetBundleInstallLocationCA");
+    ExitOnFailure(hr, "Failed to initialize");
+    
+    // Parse CustomActionData: "installFolder;upgradeCode;installScope"
+    hr = getInstallFolder(hInstall, customActionData);
+    ExitOnFailure(hr, "Failed to get CustomActionData.");
+    
+    pos1 = customActionData.find(L';');
+    if (pos1 == std::wstring::npos) 
+    {
+        hr = E_INVALIDARG;
+        ExitOnFailure(hr, "Invalid CustomActionData format - missing first semicolon");
+    }
+    
+    pos2 = customActionData.find(L';', pos1 + 1);
+    if (pos2 == std::wstring::npos) 
+    {
+        hr = E_INVALIDARG;
+        ExitOnFailure(hr, "Invalid CustomActionData format - missing second semicolon");
+    }
+    
+    installationFolder = customActionData.substr(0, pos1);
+    bundleUpgradeCode = customActionData.substr(pos1 + 1, pos2 - pos1 - 1);
+    installScope = customActionData.substr(pos2 + 1);
+    
+    isPerUser = (installScope == L"perUser");
+    
+    // Use the appropriate registry based on install scope
+    HKEY targetKey = isPerUser ? HKEY_CURRENT_USER : HKEY_LOCAL_MACHINE;
+    const wchar_t* keyName = isPerUser ? L"HKCU" : L"HKLM";
+    
+    WcaLog(LOGMSG_STANDARD, "SetBundleInstallLocationCA: Searching for Bundle in %ls registry", keyName);
+    
+    HKEY uninstallKey;
+    LONG openResult = RegOpenKeyExW(targetKey, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall", 0, KEY_READ | KEY_ENUMERATE_SUB_KEYS, &uninstallKey);
+    if (openResult != ERROR_SUCCESS)
+    {
+        WcaLog(LOGMSG_STANDARD, "SetBundleInstallLocationCA: Failed to open uninstall key, error: %ld", openResult);
+        goto LExit;
+    }
+    
+    DWORD index = 0;
+    wchar_t subKeyName[256];
+    DWORD subKeyNameSize = sizeof(subKeyName) / sizeof(wchar_t);
+    
+    while (RegEnumKeyExW(uninstallKey, index, subKeyName, &subKeyNameSize, nullptr, nullptr, nullptr, nullptr) == ERROR_SUCCESS)
+    {
+        HKEY productKey;
+        if (RegOpenKeyExW(uninstallKey, subKeyName, 0, KEY_READ | KEY_WRITE, &productKey) == ERROR_SUCCESS)
+        {
+            wchar_t upgradeCode[256];
+            DWORD upgradeCodeSize = sizeof(upgradeCode);
+            DWORD valueType;
+            
+            if (RegQueryValueExW(productKey, L"BundleUpgradeCode", nullptr, &valueType, 
+                               reinterpret_cast<LPBYTE>(upgradeCode), &upgradeCodeSize) == ERROR_SUCCESS)
+            {
+                // Remove brackets from registry upgradeCode for comparison (bundleUpgradeCode doesn't have brackets)
+                std::wstring regUpgradeCode = upgradeCode;
+                if (!regUpgradeCode.empty() && regUpgradeCode.front() == L'{' && regUpgradeCode.back() == L'}')
+                {
+                    regUpgradeCode = regUpgradeCode.substr(1, regUpgradeCode.length() - 2);
+                }
+                
+                if (_wcsicmp(regUpgradeCode.c_str(), bundleUpgradeCode.c_str()) == 0)
+                {
+                    // Found matching Bundle, set InstallLocation
+                    LONG setResult = RegSetValueExW(productKey, L"InstallLocation", 0, REG_SZ,
+                                 reinterpret_cast<const BYTE*>(installationFolder.c_str()),
+                                 static_cast<DWORD>((installationFolder.length() + 1) * sizeof(wchar_t)));
+                    
+                    if (setResult == ERROR_SUCCESS)
+                    {
+                        WcaLog(LOGMSG_STANDARD, "SetBundleInstallLocationCA: InstallLocation set successfully");
+                    }
+                    else
+                    {
+                        WcaLog(LOGMSG_STANDARD, "SetBundleInstallLocationCA: Failed to set InstallLocation, error: %ld", setResult);
+                    }
+                    
+                    RegCloseKey(productKey);
+                    RegCloseKey(uninstallKey);
+                    goto LExit;
+                }
+            }
+            RegCloseKey(productKey);
+        }
+        
+        index++;
+        subKeyNameSize = sizeof(subKeyName) / sizeof(wchar_t);
+    }
+    
+    RegCloseKey(uninstallKey);
+    
+LExit:
     er = SUCCEEDED(hr) ? ERROR_SUCCESS : ERROR_INSTALL_FAILURE;
     return WcaFinalize(er);
 }

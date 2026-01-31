@@ -70,6 +70,15 @@ namespace Microsoft.CommandPalette.Extensions.Toolkit.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Copy failed ({0}). Please try again..
+        /// </summary>
+        internal static string copy_failed {
+            get {
+                return ResourceManager.GetString("copy_failed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Copy path.
         /// </summary>
         internal static string CopyPathTextCommand_Name {
@@ -108,9 +117,45 @@ namespace Microsoft.CommandPalette.Extensions.Toolkit.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Open.
         /// </summary>
+        internal static string OpenFileCommand_Name {
+            get {
+                return ResourceManager.GetString("OpenFileCommand_Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Open path in console.
+        /// </summary>
+        internal static string OpenInConsoleCommand_Name {
+            get {
+                return ResourceManager.GetString("OpenInConsoleCommand_Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Properties.
+        /// </summary>
+        internal static string OpenPropertiesCommand_Name {
+            get {
+                return ResourceManager.GetString("OpenPropertiesCommand_Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Open.
+        /// </summary>
         internal static string OpenUrlCommand_Open {
             get {
                 return ResourceManager.GetString("OpenUrlCommand_Open", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Open with.
+        /// </summary>
+        internal static string OpenWithCommand_Name {
+            get {
+                return ResourceManager.GetString("OpenWithCommand_Name", resourceCulture);
             }
         }
         

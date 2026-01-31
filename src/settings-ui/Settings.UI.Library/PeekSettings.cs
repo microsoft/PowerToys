@@ -15,7 +15,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     public class PeekSettings : BasePTModuleSettings, ISettingsConfig, IHotkeyConfig
     {
         public const string ModuleName = "Peek";
-        public const string ModuleVersion = "0.0.1";
+        public const string InitialModuleVersion = "0.0.1";
+        public const string SpaceActivationIntroducedVersion = "0.0.2";
+        public const string CurrentModuleVersion = SpaceActivationIntroducedVersion;
 
         private static readonly JsonSerializerOptions _serializerOptions = new JsonSerializerOptions
         {
@@ -28,7 +30,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public PeekSettings()
         {
             Name = ModuleName;
-            Version = ModuleVersion;
+            Version = CurrentModuleVersion;
             Properties = new PeekProperties();
         }
 
@@ -54,10 +56,18 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         public bool UpgradeSettingsConfiguration()
         {
+            if (string.IsNullOrEmpty(Version) ||
+                Version.Equals(InitialModuleVersion, StringComparison.OrdinalIgnoreCase))
+            {
+                Version = CurrentModuleVersion;
+                Properties.EnableSpaceToActivate.Value = false;
+                return true;
+            }
+
             return false;
         }
 
-        public virtual void Save(ISettingsUtils settingsUtils)
+        public virtual void Save(SettingsUtils settingsUtils)
         {
             // Save settings to file
             var options = _serializerOptions;

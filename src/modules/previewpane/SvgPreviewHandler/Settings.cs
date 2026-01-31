@@ -8,7 +8,7 @@ namespace SvgPreviewHandler
 {
     internal sealed class Settings
     {
-        private static readonly SettingsUtils ModuleSettings = new SettingsUtils();
+        private static readonly SettingsUtils ModuleSettings = SettingsUtils.Default;
 
         public int ColorMode
         {

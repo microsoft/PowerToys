@@ -142,9 +142,9 @@
                     FontSize="16"
                     Glyph="&#xE713;" />
                 <TextBlock
+                    x:Uid="SettingsButtonTextBlock"
                     VerticalAlignment="Center"
-                    Style="{StaticResource CaptionTextBlockStyle}"
-                    Text="Settings" />
+                    Style="{StaticResource CaptionTextBlockStyle}" />
             </StackPanel>
         </Button>
         <TextBlock
@@ -173,9 +173,13 @@
                 Visibility="{x:Bind ViewModel.HasPrimaryCommand, Mode=OneWay}">
                 <StackPanel Orientation="Horizontal" Spacing="8">
                     <TextBlock
+                        MaxWidth="160"
                         VerticalAlignment="Center"
+                        MaxLines="1"
                         Style="{StaticResource CaptionTextBlockStyle}"
-                        Text="{x:Bind ViewModel.PrimaryCommand.Name, Mode=OneWay}" />
+                        Text="{x:Bind ViewModel.PrimaryCommand.Name, Mode=OneWay}"
+                        TextTrimming="CharacterEllipsis"
+                        TextWrapping="NoWrap" />
                     <Border Style="{StaticResource HotkeyStyle}">
                         <FontIcon Glyph="&#xE751;" Style="{StaticResource HotkeyFontIconStyle}" />
                     </Border>
@@ -192,9 +196,13 @@
                 Visibility="{x:Bind ViewModel.HasSecondaryCommand, Mode=OneWay}">
                 <StackPanel Orientation="Horizontal" Spacing="8">
                     <TextBlock
+                        MaxWidth="160"
                         VerticalAlignment="Center"
+                        MaxLines="1"
                         Style="{StaticResource CaptionTextBlockStyle}"
-                        Text="{x:Bind ViewModel.SecondaryCommand.Name, Mode=OneWay}" />
+                        Text="{x:Bind ViewModel.SecondaryCommand.Name, Mode=OneWay}"
+                        TextTrimming="CharacterEllipsis"
+                        TextWrapping="NoWrap" />
                     <StackPanel Orientation="Horizontal" Spacing="4">
                         <Border Padding="4,2,4,2" Style="{StaticResource HotkeyStyle}">
                             <TextBlock Style="{StaticResource HotkeyTextBlockStyle}" Text="Ctrl" />
@@ -218,7 +226,9 @@
                     <TextBlock
                         VerticalAlignment="Center"
                         Style="{StaticResource CaptionTextBlockStyle}"
-                        Text="More" />
+                        Text="More"
+                        TextTrimming="WordEllipsis"
+                        TextWrapping="NoWrap" />
                     <StackPanel Orientation="Horizontal" Spacing="4">
                         <Border Padding="4,2,4,2" Style="{StaticResource HotkeyStyle}">
                             <TextBlock Style="{StaticResource HotkeyTextBlockStyle}" Text="Ctrl" />

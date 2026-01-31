@@ -77,7 +77,7 @@ namespace Peek.UI
 
         public UserSettings()
         {
-            _settingsUtils = new SettingsUtils();
+            _settingsUtils = SettingsUtils.Default;
 
             LoadSettingsFromJson();
 

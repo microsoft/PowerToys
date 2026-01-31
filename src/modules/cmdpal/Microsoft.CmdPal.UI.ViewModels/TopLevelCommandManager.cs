@@ -9,10 +9,11 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
-using Microsoft.CmdPal.Common.Helpers;
-using Microsoft.CmdPal.Common.Services;
+using Microsoft.CmdPal.Core.Common.Helpers;
+using Microsoft.CmdPal.Core.Common.Services;
 using Microsoft.CmdPal.Core.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
+using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.Extensions.DependencyInjection;
@@ -25,6 +26,7 @@ public partial class TopLevelCommandManager : ObservableObject,
     IDisposable
 {
     private readonly IServiceProvider _serviceProvider;
+    private readonly ICommandProviderCache _commandProviderCache;
     private readonly TaskScheduler _taskScheduler;
 
     private readonly List<CommandProviderWrapper> _builtInCommands = [];
@@ -34,9 +36,10 @@ public partial class TopLevelCommandManager : ObservableObject,
 
     TaskScheduler IPageContext.Scheduler => _taskScheduler;
 
-    public TopLevelCommandManager(IServiceProvider serviceProvider)
+    public TopLevelCommandManager(IServiceProvider serviceProvider, ICommandProviderCache commandProviderCache)
     {
         _serviceProvider = serviceProvider;
+        _commandProviderCache = commandProviderCache;
         _taskScheduler = _serviceProvider.GetService<TaskScheduler>()!;
         WeakReferenceMessenger.Default.Register<ReloadCommandsMessage>(this);
         _reloadCommandsGate = new(ReloadAllCommandsAsyncCore);
@@ -259,6 +262,9 @@ public partial class TopLevelCommandManager : ObservableObject,
 
         IsLoading = false;
 
+        // Send on the current thread; receivers should marshal to UI if needed
+        WeakReferenceMessenger.Default.Send<ReloadFinishedMessage>();
+
         return true;
     }
 
@@ -316,7 +322,7 @@ public partial class TopLevelCommandManager : ObservableObject,
         try
         {
             await extension.StartExtensionAsync().WaitAsync(TimeSpan.FromSeconds(10));
-            return new CommandProviderWrapper(extension, _taskScheduler);
+            return new CommandProviderWrapper(extension, _taskScheduler, _commandProviderCache);
         }
         catch (Exception ex)
         {
