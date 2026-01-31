@@ -5,6 +5,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using AdvancedPaste.Helpers;
@@ -327,10 +329,13 @@ public abstract class KernelServiceBase(
                                                    (c >= '0' && c <= '9') ||
                                                    c == '_').ToArray());
 
-        // If all characters were stripped (pure non-ASCII name), use a hash-based fallback
+        // If all characters were stripped (pure non-ASCII name), use a SHA256 hash-based fallback
+        // for stronger uniqueness guarantee compared to GetHashCode
         if (string.IsNullOrEmpty(sanitized))
         {
-            sanitized = $"CustomAction_{Math.Abs(name.GetHashCode(StringComparison.Ordinal)):X8}";
+            var hashBytes = SHA256.HashData(Encoding.UTF8.GetBytes(name));
+            var hashHex = Convert.ToHexString(hashBytes, 0, 4); // First 8 hex chars (4 bytes)
+            sanitized = $"CustomAction_{hashHex}";
         }
 
         // Ensure it starts with a letter or underscore (not a digit)
