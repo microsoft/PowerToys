@@ -1187,8 +1187,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private void UpdateNowClick()
         {
-            // Check if user has admin permissions before starting update
-            if (!IsAdmin)
+            // Check if process is elevated before starting update
+            if (!IsElevated)
             {
                 _isInsufficientPermissions = true;
                 NotifyPropertyChanged(nameof(IsInsufficientPermissions));
