@@ -2139,7 +2139,7 @@ static void DrawTimeline(HDC hdc, RECT rc, VideoRecordingSession::TrimDialogData
                 const bool showMilliseconds = (pData->videoDuration.count() < 600000000LL); // 60 seconds in 100ns ticks
                 const std::wstring markerText = FormatTrimTime(markerTime, showMilliseconds);
                 const int markerHalfWidth = ScaleForDpi(showMilliseconds ? 45 : 35, dpi);
-                const int markerHeight = ScaleForDpi(20, dpi);
+                const int markerHeight = ScaleForDpi(26, dpi);
                 RECT rcMarker{ x - markerHalfWidth, tickMajorBottom + ScaleForDpi(2, dpi), x + markerHalfWidth, tickMajorBottom + ScaleForDpi(2, dpi) + markerHeight };
                 DrawText(hdcMem, markerText.c_str(), -1, &rcMarker, DT_CENTER | DT_TOP | DT_SINGLELINE | DT_NOPREFIX);
             }
@@ -2219,8 +2219,12 @@ static void DrawTimeline(HDC hdc, RECT rc, VideoRecordingSession::TrimDialogData
         DEFAULT_PITCH | FF_SWISS, L"Segoe UI");
     HFONT hOldFont = static_cast<HFONT>(SelectObject(hdcMem, hFont));
 
-    int labelTop = trackBottom + ScaleForDpi(16, dpi);
-    int labelBottom = trackBottom + ScaleForDpi(36, dpi);
+    // Align with intermediate marker labels: use same calculation as rcMarker
+    // tickTop = trackBottom + 2, tickMajorBottom = tickTop + 10, marker starts at tickMajorBottom + 2
+    const int tickTopForLabels = trackBottom + ScaleForDpi(2, dpi);
+    const int tickMajorBottomForLabels = tickTopForLabels + ScaleForDpi(10, dpi);
+    int labelTop = tickMajorBottomForLabels + ScaleForDpi(2, dpi);
+    int labelBottom = labelTop + ScaleForDpi(26, dpi);
     // For short videos (under 60 seconds), show fractional seconds
     const bool showMilliseconds = (pData->videoDuration.count() < 600000000LL); // 60 seconds in 100ns ticks
     int labelWidth = ScaleForDpi(showMilliseconds ? 80 : 70, dpi);
