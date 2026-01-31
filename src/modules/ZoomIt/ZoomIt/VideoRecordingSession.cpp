@@ -675,7 +675,13 @@ namespace
     void SetTimeText(HWND hDlg, int controlId, const winrt::TimeSpan& value, bool includeMilliseconds)
     {
         const std::wstring formatted = FormatTrimTime(value, includeMilliseconds);
-        SetDlgItemText(hDlg, controlId, formatted.c_str());
+        // Only update if the text has changed to prevent flashing
+        wchar_t currentText[64] = {};
+        GetDlgItemText(hDlg, controlId, currentText, _countof(currentText));
+        if (formatted != currentText)
+        {
+            SetDlgItemText(hDlg, controlId, formatted.c_str());
+        }
     }
 
     int TimelineTimeToClientX(const VideoRecordingSession::TrimDialogData* pData, winrt::TimeSpan value, int clientWidth, UINT dpi = DPI_BASELINE)
@@ -702,7 +708,13 @@ namespace
 
         const int64_t selectionTicks = (std::max)(pData->trimEnd.count() - pData->trimStart.count(), int64_t{ 0 });
         const std::wstring durationText = FormatDurationString(winrt::TimeSpan{ selectionTicks });
-        SetDlgItemText(hDlg, IDC_TRIM_DURATION_LABEL, durationText.c_str());
+        // Only update if the text has changed to prevent flashing
+        wchar_t currentText[64] = {};
+        GetDlgItemText(hDlg, IDC_TRIM_DURATION_LABEL, currentText, _countof(currentText));
+        if (durationText != currentText)
+        {
+            SetDlgItemText(hDlg, IDC_TRIM_DURATION_LABEL, durationText.c_str());
+        }
 
         // Enable OK when trimming is active (even if unchanged since dialog opened),
         // or when the user changed the selection (including reverting to full length).
@@ -3934,6 +3946,31 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
             RECT rc;
             GetClientRect(hDlg, &rc);
             FillRect(hdc, &rc, GetDarkModeBrush());
+
+            // Draw the resize grip at the bottom-right corner (dark mode only for now)
+            if (!IsZoomed(hDlg))
+            {
+                const int gripWidth = GetSystemMetrics(SM_CXHSCROLL);
+                const int gripHeight = GetSystemMetrics(SM_CYVSCROLL);
+                RECT rcGrip = {
+                    rc.right - gripWidth,
+                    rc.bottom - gripHeight,
+                    rc.right,
+                    rc.bottom
+                };
+
+                HTHEME hTheme = OpenThemeData(hDlg, L"STATUS");
+                if (hTheme)
+                {
+                    DrawThemeBackground(hTheme, hdc, SP_GRIPPER, 0, &rcGrip, nullptr);
+                    CloseThemeData(hTheme);
+                }
+                else
+                {
+                    DrawFrameControl(hdc, &rcGrip, DFC_SCROLL, DFCS_SCROLLSIZEGRIP);
+                }
+            }
+
             return TRUE;
         }
         break;

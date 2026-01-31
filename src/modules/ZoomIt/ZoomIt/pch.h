@@ -10,6 +10,7 @@
 #include <shcore.h>
 #include <magnification.h>
 #include <Uxtheme.h>
+#include <vssym32.h>
 #include <math.h>
 #include <shellapi.h>
 #include <shlwapi.h>
