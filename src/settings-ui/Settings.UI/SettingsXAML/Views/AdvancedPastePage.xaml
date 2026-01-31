@@ -81,6 +81,19 @@
                             </InfoBar.IconSource>
                         </InfoBar>
 
+                        <InfoBar
+                            x:Uid="AdvancedPaste_AIPrivacyNotice"
+                            IsClosable="True"
+                            IsOpen="{x:Bind ViewModel.IsAIEnabled, Mode=OneWay}"
+                            IsTabStop="{x:Bind ViewModel.IsAIEnabled, Mode=OneWay}"
+                            Severity="Informational">
+                            <InfoBar.ActionButton>
+                                <HyperlinkButton
+                                    x:Uid="AdvancedPaste_AIPrivacyNotice_LearnMore"
+                                    NavigateUri="https://learn.microsoft.com/windows/powertoys/advanced-paste#privacy-and-data-handling" />
+                            </InfoBar.ActionButton>
+                        </InfoBar>
+
                         <!--  Paste with AI  -->
                         <tkcontrols:SettingsExpander
                             Name="AdvancedPasteEnableAISettingsCard"
