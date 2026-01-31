@@ -635,7 +635,7 @@ GMEM
 GNumber
 googleai
 googlegemini
-gotcha
+Gotcha
 gpedit
 gpo
 GPOCA
@@ -648,8 +648,6 @@ GSM
 gtm
 guiddata
 GUITHREADINFO
-Gotcha
-Gotchas
 GValue
 gwl
 GWLP
@@ -1023,7 +1021,7 @@ MENUITEMINFO
 MENUITEMINFOW
 MERGECOPY
 MERGEPAINT
-metacharacter
+Metacharacter
 metadatamatters
 Metadatas
 metafile
