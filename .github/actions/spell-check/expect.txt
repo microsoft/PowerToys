@@ -635,7 +635,6 @@ GMEM
 GNumber
 googleai
 googlegemini
-Gotcha
 Gotchas
 gpedit
 gpo
