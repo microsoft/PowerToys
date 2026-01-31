@@ -543,6 +543,19 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public bool ShowAIPaste
+        {
+            get => _advancedPasteSettings.Properties.ShowAIPaste;
+            set
+            {
+                if (value != _advancedPasteSettings.Properties.ShowAIPaste)
+                {
+                    _advancedPasteSettings.Properties.ShowAIPaste = value;
+                    NotifySettingsChanged();
+                }
+            }
+        }
+
         public bool CloseAfterLosingFocus
         {
             get => _advancedPasteSettings.Properties.CloseAfterLosingFocus;
@@ -1219,6 +1232,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 target.ShowCustomPreview = source.ShowCustomPreview;
                 OnPropertyChanged(nameof(ShowCustomPreview));
+            }
+
+            if (target.ShowAIPaste != source.ShowAIPaste)
+            {
+                target.ShowAIPaste = source.ShowAIPaste;
+                OnPropertyChanged(nameof(ShowAIPaste));
             }
 
             if (target.CloseAfterLosingFocus != source.CloseAfterLosingFocus)

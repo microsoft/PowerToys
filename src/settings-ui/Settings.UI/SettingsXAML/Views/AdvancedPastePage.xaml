@@ -183,6 +183,9 @@
                                 <tkcontrols:SettingsCard Name="AdvancedPasteShowCustomPreviewSettingsCard" ContentAlignment="Left">
                                     <controls:CheckBoxWithDescriptionControl x:Uid="AdvancedPaste_ShowCustomPreviewSettingsCard" IsChecked="{x:Bind ViewModel.ShowCustomPreview, Mode=TwoWay}" />
                                 </tkcontrols:SettingsCard>
+                                <tkcontrols:SettingsCard Name="AdvancedPasteShowAIPasteSettingsCard" ContentAlignment="Left">
+                                    <controls:CheckBoxWithDescriptionControl x:Uid="AdvancedPaste_ShowAIPasteSettingsCard" IsChecked="{x:Bind ViewModel.ShowAIPaste, Mode=TwoWay}" />
+                                </tkcontrols:SettingsCard>
                             </tkcontrols:SettingsExpander.Items>
                         </tkcontrols:SettingsExpander>
                     </controls:SettingsGroup>
