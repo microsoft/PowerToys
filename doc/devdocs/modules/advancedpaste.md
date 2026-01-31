@@ -29,7 +29,7 @@ The implementation flow:
 4. If preview is enabled, the cached result is displayed in the preview UI
 5. User can paste the cached result without any additional API calls
 
-See `OptionsViewModel.cs` lines 702-717 for the implementation.
+See the `ExecutePasteFormatAsync(PasteFormat, PasteActionSource)` method in `OptionsViewModel.cs` for the implementation.
 
 ## Debugging
 
