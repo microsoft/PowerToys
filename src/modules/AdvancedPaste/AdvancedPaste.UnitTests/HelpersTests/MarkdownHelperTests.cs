@@ -4,7 +4,6 @@
 
 using System.Reflection;
 using AdvancedPaste.Helpers;
-using HtmlAgilityPack;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace AdvancedPaste.UnitTests.HelpersTests;

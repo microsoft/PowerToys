@@ -61,6 +61,11 @@ namespace AdvancedPaste.Helpers
             foreach (var googleSheetsWrapper in node.DescendantsAndSelf("google-sheets-html-origin").ToArray())
             {
                 var parent = googleSheetsWrapper.ParentNode;
+                if (parent == null)
+                {
+                    continue;
+                }
+
                 foreach (var child in googleSheetsWrapper.ChildNodes.ToArray())
                 {
                     parent.InsertBefore(child, googleSheetsWrapper);
