@@ -15,7 +15,6 @@ using ManagedCommon;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Storage.Streams;
@@ -257,7 +256,7 @@ namespace AdvancedPaste.Pages
                 if (listView.SelectedItem is PasteFormat format)
                 {
                     e.Handled = true;
-                    await ViewModel.ExecutePasteFormatAsync(format, PasteActionSource.ContextMenu);
+                    await ViewModel.ExecutePasteFormatAsync(format, PasteActionSource.InAppKeyboardShortcut);
                 }
             }
         }
