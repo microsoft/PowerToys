@@ -29,8 +29,14 @@
     <NoWarn>$(NoWarn);CS8305;SA1500;CA1852</NoWarn>
   </PropertyGroup>
 
-  <!-- Remove all references from skipped test projects to prevent NuGet restore and dependency builds.
+  <!-- Skipped test projects when BuildTests=false: no-op build and remove references.
        This must be in targets (not props) so it runs AFTER the project file adds its items. -->
+  <PropertyGroup Condition="'$(_IsSkippedTestProject)' == 'true'">
+    <BuildDependsOn />
+    <CoreBuildDependsOn />
+    <RebuildDependsOn />
+  </PropertyGroup>
+
   <ItemGroup Condition="'$(_IsSkippedTestProject)' == 'true'">
     <PackageReference Remove="@(PackageReference)" />
     <ProjectReference Remove="@(ProjectReference)" />
@@ -39,5 +45,7 @@
     <Content Remove="@(Content)" />
     <EmbeddedResource Remove="@(EmbeddedResource)" />
     <None Remove="@(None)" />
+    <Using Remove="@(Using)" />
+    <GlobalUsing Remove="@(GlobalUsing)" />
   </ItemGroup>
 </Project>

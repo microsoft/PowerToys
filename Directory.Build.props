@@ -40,6 +40,8 @@
     <EnableDefaultItems>false</EnableDefaultItems>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <GenerateGlobalUsings>false</GenerateGlobalUsings>
+    <ImplicitUsings>disable</ImplicitUsings>
     <!-- Disable all code analysis for skipped test projects -->
     <EnableNETAnalyzers>false</EnableNETAnalyzers>
     <RunAnalyzers>false</RunAnalyzers>
