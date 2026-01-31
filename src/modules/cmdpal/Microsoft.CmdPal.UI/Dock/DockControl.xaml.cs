@@ -29,20 +29,12 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
     internal DockViewModel ViewModel => _viewModel;
 
     public static readonly DependencyProperty ItemsOrientationProperty =
-        DependencyProperty.Register(nameof(ItemsOrientation), typeof(Orientation), typeof(DockControl), new PropertyMetadata(Orientation.Horizontal, OnItemsOrientationChanged));
+        DependencyProperty.Register(nameof(ItemsOrientation), typeof(Orientation), typeof(DockControl), new PropertyMetadata(Orientation.Horizontal));
 
     public Orientation ItemsOrientation
     {
         get => (Orientation)GetValue(ItemsOrientationProperty);
         set => SetValue(ItemsOrientationProperty, value);
-    }
-
-    private static void OnItemsOrientationChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-    {
-        if (d is DockControl control)
-        {
-            control.UpdateBandTemplates();
-        }
     }
 
     public static readonly DependencyProperty DockSideProperty =
@@ -68,20 +60,6 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
         if (d is DockControl control && e.NewValue is bool isEditMode)
         {
             control.UpdateEditMode(isEditMode);
-        }
-    }
-
-    private void UpdateBandTemplates()
-    {
-        var panelKey = ItemsOrientation == Orientation.Horizontal
-            ? "HorizontalItemsPanel"
-            : "VerticalItemsPanel";
-
-        if ((ItemsPanelTemplate)App.Current.Resources[panelKey] is ItemsPanelTemplate panelTemplate)
-        {
-            StartListView.ItemsPanel = panelTemplate;
-            CenterListView.ItemsPanel = panelTemplate;
-            EndListView.ItemsPanel = panelTemplate;
         }
     }
 
