@@ -37,7 +37,8 @@
     <RebuildDependsOn />
   </PropertyGroup>
 
-  <ItemGroup Condition="'$(_IsSkippedTestProject)' == 'true'">
+  <!-- For C# projects: remove all items -->
+  <ItemGroup Condition="'$(_IsSkippedTestProject)' == 'true' and '$(MSBuildProjectExtension)' == '.csproj'">
     <PackageReference Remove="@(PackageReference)" />
     <ProjectReference Remove="@(ProjectReference)" />
     <Reference Remove="@(Reference)" />
@@ -48,4 +49,21 @@
     <Using Remove="@(Using)" />
     <GlobalUsing Remove="@(GlobalUsing)" />
   </ItemGroup>
+
+  <!-- For C++ projects (vcxproj): remove all compile/link items to prevent build -->
+  <ItemGroup Condition="'$(_IsSkippedTestProject)' == 'true' and '$(MSBuildProjectExtension)' == '.vcxproj'">
+    <ClCompile Remove="@(ClCompile)" />
+    <ClInclude Remove="@(ClInclude)" />
+    <Link Remove="@(Link)" />
+    <Lib Remove="@(Lib)" />
+    <ProjectReference Remove="@(ProjectReference)" />
+    <None Remove="@(None)" />
+    <ResourceCompile Remove="@(ResourceCompile)" />
+    <Midl Remove="@(Midl)" />
+  </ItemGroup>
+
+  <!-- For C++ skipped test projects: override targets to no-op -->
+  <Target Name="Build" Condition="'$(_IsSkippedTestProject)' == 'true' and '$(MSBuildProjectExtension)' == '.vcxproj'" />
+  <Target Name="Rebuild" Condition="'$(_IsSkippedTestProject)' == 'true' and '$(MSBuildProjectExtension)' == '.vcxproj'" />
+  <Target Name="Clean" Condition="'$(_IsSkippedTestProject)' == 'true' and '$(MSBuildProjectExtension)' == '.vcxproj'" />
 </Project>

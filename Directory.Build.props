@@ -22,17 +22,19 @@
   <!--
     Completely skip building test projects when BuildTests=false (e.g., Release pipeline).
     This avoids InternalsVisibleTo/signing issues by not compiling test code at all.
-    Match: projects ending in UnitTests, UITests, FuzzTests, .Test, .Tests, UnitTest, or in a folder named Tests.
+    Match: projects ending in Test, Tests, UnitTests, UITests, FuzzTests, or in a folder named Tests.
+    Also matches projects starting with UnitTests- (e.g., UnitTests-CommonLib).
     Also removes all PackageReference/ProjectReference to prevent NuGet restore and dependency builds.
   -->
   <PropertyGroup Condition="'$(BuildTests)' == 'false'">
     <_ProjectName>$(MSBuildProjectName)</_ProjectName>
-    <_IsSkippedTestProject Condition="$(_ProjectName.EndsWith('UnitTests'))">true</_IsSkippedTestProject>
-    <_IsSkippedTestProject Condition="$(_ProjectName.EndsWith('UITests'))">true</_IsSkippedTestProject>
-    <_IsSkippedTestProject Condition="$(_ProjectName.EndsWith('FuzzTests'))">true</_IsSkippedTestProject>
-    <_IsSkippedTestProject Condition="$(_ProjectName.EndsWith('.Test'))">true</_IsSkippedTestProject>
-    <_IsSkippedTestProject Condition="$(_ProjectName.EndsWith('.Tests'))">true</_IsSkippedTestProject>
-    <_IsSkippedTestProject Condition="$(_ProjectName.EndsWith('UnitTest'))">true</_IsSkippedTestProject>
+    <!-- Match any project ending with "Test" or "Tests" (covers UnitTests, UITests, FuzzTests, etc.) -->
+    <_IsSkippedTestProject Condition="$(_ProjectName.EndsWith('Test'))">true</_IsSkippedTestProject>
+    <_IsSkippedTestProject Condition="$(_ProjectName.EndsWith('Tests'))">true</_IsSkippedTestProject>
+    <!-- Match projects starting with UnitTests- or UITest- prefix -->
+    <_IsSkippedTestProject Condition="$(_ProjectName.StartsWith('UnitTests-'))">true</_IsSkippedTestProject>
+    <_IsSkippedTestProject Condition="$(_ProjectName.StartsWith('UITest-'))">true</_IsSkippedTestProject>
+    <!-- Match projects in a Tests folder -->
     <_IsSkippedTestProject Condition="$(MSBuildProjectDirectory.Contains('\Tests\'))">true</_IsSkippedTestProject>
   </PropertyGroup>
 
