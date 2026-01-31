@@ -137,13 +137,6 @@ namespace winrt::PowerToys::FileLocksmithLib::Interop::implementation
             return ReadPathsFromFile();
         }
 
-        // Set read timeout to prevent hanging
-        COMMTIMEOUTS timeouts = { 0 };
-        timeouts.ReadIntervalTimeout = 100;
-        timeouts.ReadTotalTimeoutConstant = 3000; // 3 second timeout
-        timeouts.ReadTotalTimeoutMultiplier = 0;
-        SetCommTimeouts(hPipe, &timeouts);
-
         // Read from pipe - collect all data first
         const DWORD BUFSIZE = 4096;
         std::wstring allData;
@@ -164,9 +157,6 @@ namespace winrt::PowerToys::FileLocksmithLib::Interop::implementation
 
             // Append to accumulated data
             allData.append(chBuf, dwRead / sizeof(WCHAR));
-
-            if (!bSuccess)
-                break;
         }
 
         CloseHandle(hPipe);

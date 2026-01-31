@@ -14,7 +14,7 @@ constexpr DWORD DefaultPipeTimeoutMillis = 200;
 
 namespace ipc
 {
-    Writer::Writer() : m_pipe_handle(INVALID_HANDLE_VALUE), m_use_pipes(true)
+    Writer::Writer() : m_pipe_handle(INVALID_HANDLE_VALUE), m_use_pipes(true), m_started(false)
     {
         start();
     }
@@ -26,6 +26,13 @@ namespace ipc
 
     HRESULT Writer::start()
     {
+        // Prevent double initialization
+        if (m_started)
+        {
+            return S_OK;
+        }
+        m_started = true;
+        
         // Try to use pipes first, fall back to file-based IPC if needed
         if (m_use_pipes)
         {

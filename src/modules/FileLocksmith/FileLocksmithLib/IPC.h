@@ -28,5 +28,6 @@ namespace ipc
         std::wstring m_pipe_name;
         std::thread m_pipe_thread;
         bool m_use_pipes;
+        bool m_started;
     };
 }
