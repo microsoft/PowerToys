@@ -3299,6 +3299,7 @@ static LRESULT CALLBACK TimelineSubclassProc(
             RECT clientRect{};
             GetClientRect(hWnd, &clientRect);
             InvalidatePlayheadRegion(hWnd, clientRect, previousPosX, newPosX, dpi);
+            UpdateWindow(hWnd);  // Force immediate visual update for smooth dragging
             pData->previewOverrideActive = false;
             UpdateVideoPreview(pData->hDialog, pData, false);
             break;
@@ -3346,12 +3347,16 @@ static LRESULT CALLBACK TimelineSubclassProc(
             pData->previewOverride = overrideTime;
         }
 
+        // Force immediate visual update of gripper for smooth dragging
+        InvalidateRect(hWnd, nullptr, FALSE);
+        UpdateWindow(hWnd);
+
+        // Request preview update asynchronously (don't block gripper movement)
         if (requestPreviewUpdate)
         {
-            UpdateVideoPreview(pData->hDialog, pData);
+            UpdateVideoPreview(pData->hDialog, pData, false);
         }
 
-        InvalidateRect(hWnd, nullptr, FALSE);
         return 0;
     }
 
