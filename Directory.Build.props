@@ -25,9 +25,9 @@
     Match: projects ending in Test, Tests, UnitTests, UITests, FuzzTests, or in a folder named Tests.
     Also matches projects starting with UnitTests- (e.g., UnitTests-CommonLib).
     Also removes all PackageReference/ProjectReference to prevent NuGet restore and dependency builds.
-    Note: Using case-insensitive comparison for BuildTests (handles 'false', 'False', 'FALSE').
+    Note: Checking both 'false' and 'False' to handle YAML boolean serialization.
   -->
-  <PropertyGroup Condition="'$(BuildTests.ToLower())' == 'false'">
+  <PropertyGroup Condition="'$(BuildTests)' == 'false' or '$(BuildTests)' == 'False'">
     <_ProjectName>$(MSBuildProjectName)</_ProjectName>
     <!-- Match any project ending with "Test" or "Tests" (covers UnitTests, UITests, FuzzTests, etc.) -->
     <_IsSkippedTestProject Condition="$(_ProjectName.EndsWith('Test'))">true</_IsSkippedTestProject>
