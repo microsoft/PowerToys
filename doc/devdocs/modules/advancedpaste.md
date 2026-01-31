@@ -18,13 +18,28 @@ Advanced Paste is a PowerToys module that provides enhanced clipboard pasting wi
 
 TODO: Add implementation details
 
+### Paste with AI Preview
+
+The "Show preview" setting (`ShowCustomPreview`) controls whether AI-generated results are displayed in a preview window before pasting. **The preview feature does not consume additional AI credits**—the preview displays the same AI response that was already generated, cached locally from a single API call.
+
+The implementation flow:
+1. User initiates "Paste with AI" action
+2. A single AI API call is made via `ExecutePasteFormatAsync`
+3. The result is cached in `GeneratedResponses`
+4. If preview is enabled, the cached result is displayed in the preview UI
+5. User can paste the cached result without any additional API calls
+
+See the `ExecutePasteFormatAsync(PasteFormat, PasteActionSource)` method in `OptionsViewModel.cs` for the implementation.
+
 ## Debugging
 
 TODO: Add debugging information
 
 ## Settings
 
-TODO: Add settings documentation
+| Setting | Description |
+|---------|-------------|
+| `ShowCustomPreview` | When enabled, shows AI-generated results in a preview window before pasting. Does not affect AI credit consumption. |
 
 ## Future Improvements
 
