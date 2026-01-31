@@ -303,27 +303,14 @@
                     </ListView>
                 </cpcontrols:ScrollContainer.Source>
             </cpcontrols:ScrollContainer>
-
-            <!--  To do: remove the X button  -->
             <TeachingTip
                 x:Name="EditButtonsTeachingTip"
                 MinWidth="0"
                 PreferredPlacement="Bottom"
                 ShouldConstrainToRootBounds="False"
+                Style="{StaticResource TeachingTipWithoutCloseButtonStyle}"
                 Target="{x:Bind ContentGrid}">
-                <!--<TeachingTip.CloseButtonStyle>
-                -->
-                <!--  Workaround to hide the close button  -->
-                <!--
-                    <Style BasedOn="{StaticResource DefaultButtonStyle}" TargetType="Button">
-                        <Setter Property="Visibility" Value="Collapsed" />
-                        <Setter Property="Width" Value="0" />
-                        <Setter Property="MinWidth" Value="0" />
-                        <Setter Property="Foreground" Value="Red" />
-                        <Setter Property="Height" Value="0" />
-                        <Setter Property="MinHeight" Value="0" />
-                    </Style>
-                </TeachingTip.CloseButtonStyle>-->
+
                 <TeachingTip.Content>
                     <StackPanel
                         x:Name="EditButtonsPanel"
