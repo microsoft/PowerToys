@@ -319,19 +319,27 @@ public abstract class KernelServiceBase(
         }
     }
 
-    private static string SanitizeFunctionName(string name)
+    internal static string SanitizeFunctionName(string name)
     {
-        // Remove invalid characters and ensure the function name is valid for kernel
-        var sanitized = new string(name.Where(c => char.IsLetterOrDigit(c) || c == '_').ToArray());
+        // Semantic Kernel only accepts ASCII letters, digits, and underscores
+        var sanitized = new string(name.Where(c => (c >= 'a' && c <= 'z') ||
+                                                   (c >= 'A' && c <= 'Z') ||
+                                                   (c >= '0' && c <= '9') ||
+                                                   c == '_').ToArray());
 
-        // Ensure it starts with a letter or underscore
-        if (sanitized.Length > 0 && !char.IsLetter(sanitized[0]) && sanitized[0] != '_')
+        // If all characters were stripped (pure non-ASCII name), use a hash-based fallback
+        if (string.IsNullOrEmpty(sanitized))
+        {
+            sanitized = $"CustomAction_{Math.Abs(name.GetHashCode(StringComparison.Ordinal)):X8}";
+        }
+
+        // Ensure it starts with a letter or underscore (not a digit)
+        if (sanitized.Length > 0 && char.IsAsciiDigit(sanitized[0]))
         {
             sanitized = "_" + sanitized;
         }
 
-        // Ensure it's not empty
-        return string.IsNullOrEmpty(sanitized) ? "_CustomAction" : sanitized;
+        return sanitized;
     }
 
     private Task<string> ExecuteCustomActionAsync(Kernel kernel, string fixedPrompt) =>
