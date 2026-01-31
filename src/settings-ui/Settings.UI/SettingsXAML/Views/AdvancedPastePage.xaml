@@ -177,6 +177,12 @@
                                     IsEnabled="{x:Bind ViewModel.ClipboardHistoryEnabled, Mode=OneWay}">
                                     <controls:CheckBoxWithDescriptionControl x:Uid="AdvancedPaste_Clipboard_History_Enabled_SettingsCard" IsChecked="{x:Bind ViewModel.ClipboardHistoryEnabled, Mode=TwoWay}" />
                                 </tkcontrols:SettingsCard>
+                                <tkcontrols:SettingsCard
+                                    Name="AdvancedPasteShowClipboardHistorySettingsCard"
+                                    ContentAlignment="Left"
+                                    IsEnabled="{x:Bind ViewModel.ClipboardHistoryEnabled, Mode=OneWay}">
+                                    <controls:CheckBoxWithDescriptionControl x:Uid="AdvancedPaste_ShowClipboardHistory" IsChecked="{x:Bind ViewModel.ShowClipboardHistory, Mode=TwoWay}" />
+                                </tkcontrols:SettingsCard>
                                 <tkcontrols:SettingsCard Name="AdvancedPasteCloseAfterLosingFocus" ContentAlignment="Left">
                                     <CheckBox x:Uid="AdvancedPaste_CloseAfterLosingFocus" IsChecked="{x:Bind ViewModel.CloseAfterLosingFocus, Mode=TwoWay}" />
                                 </tkcontrols:SettingsCard>
