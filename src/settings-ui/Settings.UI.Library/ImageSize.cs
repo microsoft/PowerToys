@@ -38,6 +38,13 @@ public partial class ImageSize : INotifyPropertyChanged, IHasId
         _width = width < 0 || double.IsNaN(width) ? 0 : width;
         _height = height < 0 || double.IsNaN(height) ? 0 : height;
         _unit = unit;
+        
+        // If constructed with Percent unit, store these as the last percent values
+        if (unit == ResizeUnit.Percent)
+        {
+            _lastPercentWidth = _width;
+            _lastPercentHeight = _height;
+        }
     }
 
     private int _id;
@@ -46,6 +53,10 @@ public partial class ImageSize : INotifyPropertyChanged, IHasId
     private double _height;
     private double _width;
     private ResizeUnit _unit;
+    
+    // Store last percent values to restore when switching back to Percent
+    private double _lastPercentWidth = 100.0;
+    private double _lastPercentHeight = 100.0;
 
     public int Id
     {
@@ -89,14 +100,36 @@ public partial class ImageSize : INotifyPropertyChanged, IHasId
     public double Width
     {
         get => _width;
-        set => SetProperty(ref _width, value < 0 || double.IsNaN(value) ? 0 : value);
+        set
+        {
+            var newValue = value < 0 || double.IsNaN(value) ? 0 : value;
+            if (SetProperty(ref _width, newValue))
+            {
+                // Store the value if we're currently in Percent unit
+                if (_unit == ResizeUnit.Percent)
+                {
+                    _lastPercentWidth = newValue;
+                }
+            }
+        }
     }
 
     [JsonPropertyName("height")]
     public double Height
     {
         get => _height;
-        set => SetProperty(ref _height, value < 0 || double.IsNaN(value) ? 0 : value);
+        set
+        {
+            var newValue = value < 0 || double.IsNaN(value) ? 0 : value;
+            if (SetProperty(ref _height, newValue))
+            {
+                // Store the value if we're currently in Percent unit
+                if (_unit == ResizeUnit.Percent)
+                {
+                    _lastPercentHeight = newValue;
+                }
+            }
+        }
     }
 
     [JsonPropertyName("unit")]
@@ -108,11 +141,18 @@ public partial class ImageSize : INotifyPropertyChanged, IHasId
             var previousUnit = _unit;
             if (SetProperty(ref _unit, value))
             {
-                // When switching to Percent unit, set width and height to 100 (representing 100%)
+                // When switching to Percent unit from another unit, restore last percent values
+                // or default to 100% if this is the first time switching to Percent
                 if (value == ResizeUnit.Percent && previousUnit != ResizeUnit.Percent)
                 {
-                    Width = 100.0;
-                    Height = 100.0;
+                    Width = _lastPercentWidth;
+                    Height = _lastPercentHeight;
+                }
+                // When switching from Percent to another unit, save the current percent values
+                else if (previousUnit == ResizeUnit.Percent && value != ResizeUnit.Percent)
+                {
+                    _lastPercentWidth = _width;
+                    _lastPercentHeight = _height;
                 }
                 
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsHeightUsed)));
