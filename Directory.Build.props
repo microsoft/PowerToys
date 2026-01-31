@@ -47,17 +47,6 @@
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
   </PropertyGroup>
 
-  <!-- Remove all references from skipped test projects to prevent NuGet restore and dependency builds -->
-  <ItemGroup Condition="'$(_IsSkippedTestProject)' == 'true'">
-    <PackageReference Remove="@(PackageReference)" />
-    <ProjectReference Remove="@(ProjectReference)" />
-    <Reference Remove="@(Reference)" />
-    <Compile Remove="@(Compile)" />
-    <Content Remove="@(Content)" />
-    <EmbeddedResource Remove="@(EmbeddedResource)" />
-    <None Remove="@(None)" />
-  </ItemGroup>
-
   <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.csproj'">
     <Version>$(Version).0</Version>
     <RepositoryUrl>https://github.com/microsoft/PowerToys</RepositoryUrl>
