@@ -635,6 +635,7 @@ GMEM
 GNumber
 googleai
 googlegemini
+gotcha
 gpedit
 gpo
 GPOCA
@@ -892,9 +893,9 @@ Lclean
 Ldone
 Ldr
 LEFTALIGN
+leftclick
 LEFTSCROLLBAR
 LEFTTEXT
-leftclick
 LError
 LEVELID
 LExit
@@ -1020,6 +1021,7 @@ MENUITEMINFO
 MENUITEMINFOW
 MERGECOPY
 MERGEPAINT
+metacharacter
 metadatamatters
 Metadatas
 metafile
@@ -1487,7 +1489,9 @@ regfile
 REGISTERCLASSFAILED
 REGISTRYHEADER
 REGISTRYPREVIEWEXT
+registryroot
 regkey
+regroot
 regsvr
 REINSTALLMODE
 releaseblog
@@ -1532,7 +1536,6 @@ riid
 RKey
 RNumber
 rollups
-ROOTOWNER
 rop
 ROUNDSMALL
 ROWSETEXT
