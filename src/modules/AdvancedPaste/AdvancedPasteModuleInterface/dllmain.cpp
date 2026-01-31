@@ -519,9 +519,12 @@ private:
     {
         constexpr int copy_attempts = 2;
         constexpr auto copy_retry_delay = std::chrono::milliseconds(100);
+        constexpr int clipboard_poll_attempts = 5;
+        constexpr auto clipboard_poll_delay = std::chrono::milliseconds(30);
 
         for (int attempt = 0; attempt < copy_attempts; ++attempt)
         {
+            const auto initial_sequence = GetClipboardSequenceNumber();
             bool copy_succeeded = try_send_copy_message();
 
             if (!copy_succeeded)
@@ -577,6 +580,23 @@ private:
                 {
                     copy_succeeded = true;
                 }
+            }
+
+            if (copy_succeeded)
+            {
+                bool sequence_changed = false;
+                for (int poll_attempt = 0; poll_attempt < clipboard_poll_attempts; ++poll_attempt)
+                {
+                    if (GetClipboardSequenceNumber() != initial_sequence)
+                    {
+                        sequence_changed = true;
+                        break;
+                    }
+
+                    std::this_thread::sleep_for(clipboard_poll_delay);
+                }
+
+                copy_succeeded = sequence_changed;
             }
 
             if (copy_succeeded)
