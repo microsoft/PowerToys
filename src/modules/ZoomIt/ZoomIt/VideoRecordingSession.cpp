@@ -3130,6 +3130,8 @@ static LRESULT CALLBACK TimelineSubclassProc(
                 pData->previewOverride = (pData->dragMode == VideoRecordingSession::TrimDialogData::TrimStart) ?
                     pData->trimStart : pData->trimEnd;
                 UpdateVideoPreview(pData->hDialog, pData);
+                // Show resize cursor during grip drag
+                SetCursor(LoadCursor(nullptr, IDC_SIZEWE));
             }
             SetCapture(hWnd);
             return 0;
@@ -3187,13 +3189,24 @@ static LRESULT CALLBACK TimelineSubclassProc(
             }
             else if (abs(clampedX - startX) < timelineHandleHitRadius || abs(clampedX - endX) < timelineHandleHitRadius)
             {
-                SetCursor(LoadCursor(nullptr, IDC_SIZEWE));
+                SetCursor(LoadCursor(nullptr, IDC_HAND));
             }
             else
             {
                 SetCursor(LoadCursor(nullptr, IDC_ARROW));
             }
             return 0;
+        }
+
+        // Set appropriate cursor during drag
+        if (pData->dragMode == VideoRecordingSession::TrimDialogData::TrimStart ||
+            pData->dragMode == VideoRecordingSession::TrimDialogData::TrimEnd)
+        {
+            SetCursor(LoadCursor(nullptr, IDC_SIZEWE));
+        }
+        else if (pData->dragMode == VideoRecordingSession::TrimDialogData::Position)
+        {
+            SetCursor(LoadCursor(nullptr, IDC_HAND));
         }
 
         // Get DPI for pixel-to-time conversion during drag
@@ -3783,6 +3796,19 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
         {
             SendMessage(hVolume, TBM_SETRANGE, TRUE, MAKELPARAM(0, 100));
             SendMessage(hVolume, TBM_SETPOS, TRUE, static_cast<LPARAM>(pData->volume * 100));
+        }
+
+        // Disable volume controls for GIF (no audio)
+        if (pData->isGif)
+        {
+            if (hVolumeIcon)
+            {
+                EnableWindow(hVolumeIcon, FALSE);
+            }
+            if (hVolume)
+            {
+                EnableWindow(hVolume, FALSE);
+            }
         }
 
         // Ensure incoming times are sane and within bounds.
