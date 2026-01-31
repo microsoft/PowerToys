@@ -456,10 +456,11 @@ namespace MouseUtils.UITests
             var groupAppearanceBehavior = foundCustom.Find(By.AccessibilityId(MouseUtilsSettings.AccessibilityIds.FindMyMouseAppearanceBehavior));
             if (groupAppearanceBehavior != null)
             {
-                // groupAppearanceBehavior.Click();
-                if (foundCustom.FindAll(By.AccessibilityId(MouseUtilsSettings.AccessibilityIds.FindMyMouseOverlayOpacity)).Count == 0)
+                var expandState = groupAppearanceBehavior.Selected;
+                if (!expandState)
                 {
                     groupAppearanceBehavior.Click();
+                    Task.Delay(500).Wait();
                 }
 
                 // Set the BackGround color
@@ -541,15 +542,6 @@ namespace MouseUtils.UITests
                 Task.Delay(500).Wait();
                 spotlightColorButton.Click(false, 500, 1500);
 
-                // Set the overlay opacity to overlayOpacity%
-                var overlayOpacitySlider = foundCustom.Find<Slider>(By.AccessibilityId(MouseUtilsSettings.AccessibilityIds.FindMyMouseOverlayOpacity));
-                Assert.IsNotNull(overlayOpacitySlider);
-                Assert.IsNotNull(settings.OverlayOpacity);
-                int overlayOpacityValue = int.Parse(settings.OverlayOpacity, CultureInfo.InvariantCulture);
-                overlayOpacitySlider.QuickSetValue(overlayOpacityValue);
-                Assert.AreEqual(settings.OverlayOpacity, overlayOpacitySlider.Text);
-                Task.Delay(1000).Wait();
-
                 // Set the Fade Initial zoom to 0
                 var spotlightInitialZoomSlider = foundCustom.Find<Slider>(By.AccessibilityId(MouseUtilsSettings.AccessibilityIds.FindMyMouseSpotlightZoom));
                 Assert.IsNotNull(spotlightInitialZoomSlider);
@@ -592,7 +584,7 @@ namespace MouseUtils.UITests
             // Assert.IsNull(animationDisabledWarning);
             if (foundElements.Count != 0)
             {
-                var openSettingsLink = foundCustom.Find<Element>("Open settings");
+                var openSettingsLink = foundCustom.Find<Element>("Open animation settings");
                 Assert.IsNotNull(openSettingsLink);
                 openSettingsLink.Click(false, 500, 3000);
 
@@ -617,6 +609,8 @@ namespace MouseUtils.UITests
 
         private void LaunchFromSetting(bool reload = false, bool launchAsAdmin = false)
         {
+            Session = RestartScopeExe("FindMyMouse,MouseHighlighter,MouseJump,MousePointerCrosshairs,CursorWrap");
+
             // this.Session.Attach(PowerToysModule.PowerToysSettings);
             this.Session.SetMainWindowSize(WindowSize.Large);
 

@@ -14,6 +14,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Peek.Common.Constants;
 using Peek.Common.Extensions;
+using Peek.Common.Helpers;
 using Peek.FilePreviewer.Models;
 using Peek.FilePreviewer.Previewers;
 using Peek.UI.Extensions;
@@ -195,6 +196,14 @@ namespace Peek.UI
             bootTime.Start();
 
             ViewModel.Initialize(selectedItem);
+
+            // If no files were found (e.g., user is typing in rename/search box, or in virtual folders),
+            // don't show anything - just return silently to avoid stealing focus
+            if (ViewModel.CurrentItem == null)
+            {
+                return;
+            }
+
             ViewModel.ScalingFactor = this.GetMonitorScale();
             this.Content.KeyUp += Content_KeyUp;
 
@@ -301,6 +310,25 @@ namespace Peek.UI
         public void Dispose()
         {
             themeListener?.Dispose();
+        }
+
+        /// <summary>
+        /// Returns Visibility.Collapsed when error is showing, Visibility.Visible when not.
+        /// </summary>
+        public Visibility ContentVisibility(bool isErrorVisible)
+        {
+            return isErrorVisible ? Visibility.Collapsed : Visibility.Visible;
+        }
+
+        /// <summary>
+        /// Handle InfoBar closed - if there's no current item, close the window.
+        /// </summary>
+        private void ErrorInfoBar_Closed(InfoBar sender, InfoBarClosedEventArgs args)
+        {
+            if (ViewModel.CurrentItem == null)
+            {
+                Uninitialize();
+            }
         }
     }
 }
