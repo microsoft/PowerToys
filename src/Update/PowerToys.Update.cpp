@@ -201,7 +201,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
     if (action == UPDATE_NOW_LAUNCH_STAGE1)
     {
-        // Check if process is elevated before proceeding
+        // Check if the process is elevated before proceeding
         if (!is_process_elevated())
         {
             Logger::error("Update failed: Process is not elevated. Administrator permissions required to install updates");
@@ -224,7 +224,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     }
     else if (action == UPDATE_NOW_LAUNCH_STAGE2)
     {
-        // Check if process is elevated before proceeding
+        // Check if the process is elevated before proceeding
         if (!is_process_elevated())
         {
             Logger::error("Update failed: Process is not elevated. Administrator permissions required to install updates");

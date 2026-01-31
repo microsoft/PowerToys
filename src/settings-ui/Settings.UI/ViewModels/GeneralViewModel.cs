@@ -1187,7 +1187,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private void UpdateNowClick()
         {
-            // Check if process is elevated before starting update
+            // Check if the process is elevated before starting update
             if (!IsElevated)
             {
                 _isInsufficientPermissions = true;
