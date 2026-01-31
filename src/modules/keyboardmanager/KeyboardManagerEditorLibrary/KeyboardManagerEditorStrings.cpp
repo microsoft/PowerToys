@@ -20,8 +20,6 @@ winrt::hstring KeyboardManagerEditorStrings::GetErrorMessage(ShortcutErrorType e
         return GET_RESOURCE_STRING(IDS_ERRORMESSAGE_MAPTOSAMESHORTCUT).c_str();
     case ShortcutErrorType::ConflictingModifierShortcut:
         return GET_RESOURCE_STRING(IDS_ERRORMESSAGE_CONFLICTINGMODIFIERSHORTCUT).c_str();
-    case ShortcutErrorType::WinL:
-        return GET_RESOURCE_STRING(IDS_ERRORMESSAGE_WINL).c_str();
     case ShortcutErrorType::CtrlAltDel:
         return GET_RESOURCE_STRING(IDS_ERRORMESSAGE_CTRLALTDEL).c_str();
     case ShortcutErrorType::RemapUnsuccessful:

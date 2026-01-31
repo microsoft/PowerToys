@@ -10,7 +10,6 @@ enum class ShortcutErrorType
     SameShortcutPreviouslyMapped,
     MapToSameShortcut,
     ConflictingModifierShortcut,
-    WinL,
     CtrlAltDel,
     RemapUnsuccessful,
     SaveFailed,
