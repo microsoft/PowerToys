@@ -2044,6 +2044,9 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="PasteAsPlainText_Shortcut.Header" xml:space="preserve">
     <value>Paste as plain text directly</value>
   </data>
+  <data name="PasteAsPlainTextTrimmed_Shortcut.Header" xml:space="preserve">
+    <value>Paste as plain text (trimmed) directly</value>
+  </data>
   <data name="AdvancedPasteUI_Actions.Header" xml:space="preserve">
     <value>Actions</value>
   </data>

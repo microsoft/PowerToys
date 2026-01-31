@@ -129,6 +129,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             var hotkeySettings = new List<HotkeySettings>
             {
                 PasteAsPlainTextShortcut,
+                PasteAsPlainTextTrimmedShortcut,
                 AdvancedPasteUIShortcut,
                 PasteAsMarkdownShortcut,
                 PasteAsJsonShortcut,
@@ -445,6 +446,21 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public HotkeySettings PasteAsPlainTextTrimmedShortcut
+        {
+            get => _advancedPasteSettings.Properties.PasteAsPlainTextTrimmedShortcut;
+            set
+            {
+                if (_advancedPasteSettings.Properties.PasteAsPlainTextTrimmedShortcut != value)
+                {
+                    _advancedPasteSettings.Properties.PasteAsPlainTextTrimmedShortcut = value ?? AdvancedPasteProperties.DefaultPasteAsPlainTextTrimmedShortcut;
+                    OnPropertyChanged(nameof(IsConflictingCopyShortcut));
+                    OnPropertyChanged(nameof(PasteAsPlainTextTrimmedShortcut));
+                    SaveAndNotifySettings();
+                }
+            }
+        }
+
         public HotkeySettings PasteAsMarkdownShortcut
         {
             get => _advancedPasteSettings.Properties.PasteAsMarkdownShortcut;
@@ -571,7 +587,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public bool IsConflictingCopyShortcut =>
             _customActions.Select(customAction => customAction.Shortcut)
-                          .Concat([PasteAsPlainTextShortcut, AdvancedPasteUIShortcut, PasteAsMarkdownShortcut, PasteAsJsonShortcut])
+                          .Concat([PasteAsPlainTextShortcut, PasteAsPlainTextTrimmedShortcut, AdvancedPasteUIShortcut, PasteAsMarkdownShortcut, PasteAsJsonShortcut])
                           .Any(hotkey => WarnHotkeys.Contains(hotkey.ToString()));
 
         public bool IsAdditionalActionConflictingCopyShortcut =>

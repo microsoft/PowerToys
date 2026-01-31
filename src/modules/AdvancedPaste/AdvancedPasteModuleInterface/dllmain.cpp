@@ -54,6 +54,7 @@ namespace
     const wchar_t JSON_KEY_SHIFT[] = L"shift";
     const wchar_t JSON_KEY_CODE[] = L"code";
     const wchar_t JSON_KEY_PASTE_AS_PLAIN_HOTKEY[] = L"paste-as-plain-hotkey";
+    const wchar_t JSON_KEY_PASTE_AS_PLAIN_TRIMMED_HOTKEY[] = L"paste-as-plain-trimmed-hotkey";
     const wchar_t JSON_KEY_ADVANCED_PASTE_UI_HOTKEY[] = L"advanced-paste-ui-hotkey";
     const wchar_t JSON_KEY_PASTE_AS_MARKDOWN_HOTKEY[] = L"paste-as-markdown-hotkey";
     const wchar_t JSON_KEY_PASTE_AS_JSON_HOTKEY[] = L"paste-as-json-hotkey";
@@ -79,9 +80,10 @@ private:
     //contains the non localized key of the powertoy
     std::wstring app_key;
 
-    static const constexpr int NUM_DEFAULT_HOTKEYS = 4;
+    static const constexpr int NUM_DEFAULT_HOTKEYS = 5;
 
     Hotkey m_paste_as_plain_hotkey = { .win = true, .ctrl = true, .shift = false, .alt = true, .key = 'V' };
+    Hotkey m_paste_as_plain_trimmed_hotkey{};
     Hotkey m_advanced_paste_ui_hotkey = { .win = true, .ctrl = false, .shift = true, .alt = false, .key = 'V' };
     Hotkey m_paste_as_markdown_hotkey{};
     Hotkey m_paste_as_json_hotkey{};
@@ -375,6 +377,7 @@ private:
             {
                 const std::array<std::pair<Hotkey*, LPCWSTR>, NUM_DEFAULT_HOTKEYS> defaultHotkeys{
                     { { &m_paste_as_plain_hotkey, JSON_KEY_PASTE_AS_PLAIN_HOTKEY },
+                      { &m_paste_as_plain_trimmed_hotkey, JSON_KEY_PASTE_AS_PLAIN_TRIMMED_HOTKEY },
                       { &m_advanced_paste_ui_hotkey, JSON_KEY_ADVANCED_PASTE_UI_HOTKEY },
                       { &m_paste_as_markdown_hotkey, JSON_KEY_PASTE_AS_MARKDOWN_HOTKEY },
                       { &m_paste_as_json_hotkey, JSON_KEY_PASTE_AS_JSON_HOTKEY } }
@@ -844,6 +847,14 @@ public:
             }
 
             if (hotkeyId == 1)
+            { // m_paste_as_plain_trimmed_hotkey
+                Logger::trace(L"Starting paste as plain text (trimmed) directly");
+                m_process_manager.send_message(CommonSharedConstants::ADVANCED_PASTE_PLAIN_TEXT_TRIMMED_MESSAGE);
+                Trace::AdvancedPaste_Invoked(L"PlainTextTrimmedDirect");
+                return true;
+            }
+
+            if (hotkeyId == 2)
             { // m_advanced_paste_ui_hotkey
                 Logger::trace(L"Setting start up event");
 
@@ -852,14 +863,14 @@ public:
                 Trace::AdvancedPaste_Invoked(L"AdvancedPasteUI");
                 return true;
             }
-            if (hotkeyId == 2)
+            if (hotkeyId == 3)
             { // m_paste_as_markdown_hotkey
                 Logger::trace(L"Starting paste as markdown directly");
                 m_process_manager.send_message(CommonSharedConstants::ADVANCED_PASTE_MARKDOWN_MESSAGE);
                 Trace::AdvancedPaste_Invoked(L"MarkdownDirect");
                 return true;
             }
-            if (hotkeyId == 3)
+            if (hotkeyId == 4)
             { // m_paste_as_json_hotkey
                 Logger::trace(L"Starting paste as json directly");
                 m_process_manager.send_message(CommonSharedConstants::ADVANCED_PASTE_JSON_MESSAGE);
@@ -904,6 +915,7 @@ public:
         if (hotkeys && buffer_size >= num_hotkeys)
         {
             const std::array default_hotkeys = { m_paste_as_plain_hotkey,
+                                                 m_paste_as_plain_trimmed_hotkey,
                                                  m_advanced_paste_ui_hotkey,
                                                  m_paste_as_markdown_hotkey,
                                                  m_paste_as_json_hotkey };

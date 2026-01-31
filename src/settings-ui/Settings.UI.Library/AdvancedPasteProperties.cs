@@ -16,10 +16,13 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         public static readonly HotkeySettings DefaultPasteAsPlainTextShortcut = new HotkeySettings(true, true, true, false, 0x56); // Ctrl+Win+Alt+V
 
+        public static readonly HotkeySettings DefaultPasteAsPlainTextTrimmedShortcut = new HotkeySettings();
+
         public AdvancedPasteProperties()
         {
             AdvancedPasteUIShortcut = DefaultAdvancedPasteUIShortcut;
             PasteAsPlainTextShortcut = DefaultPasteAsPlainTextShortcut;
+            PasteAsPlainTextTrimmedShortcut = DefaultPasteAsPlainTextTrimmedShortcut;
             PasteAsMarkdownShortcut = new();
             PasteAsJsonShortcut = new();
             CustomActions = new();
@@ -84,6 +87,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         [JsonPropertyName("paste-as-plain-hotkey")]
         public HotkeySettings PasteAsPlainTextShortcut { get; set; }
+
+        [JsonPropertyName("paste-as-plain-trimmed-hotkey")]
+        public HotkeySettings PasteAsPlainTextTrimmedShortcut { get; set; }
 
         [JsonPropertyName("paste-as-markdown-hotkey")]
         public HotkeySettings PasteAsMarkdownShortcut { get; set; }
