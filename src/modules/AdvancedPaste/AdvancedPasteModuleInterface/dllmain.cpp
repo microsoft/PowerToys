@@ -515,17 +515,18 @@ private:
                                   &result) != 0;
     }
 
-    void send_copy_selection()
+    bool send_copy_selection()
     {
         constexpr int copy_attempts = 2;
         constexpr auto copy_retry_delay = std::chrono::milliseconds(100);
         constexpr int clipboard_poll_attempts = 5;
         constexpr auto clipboard_poll_delay = std::chrono::milliseconds(30);
 
+        bool copy_succeeded = false;
         for (int attempt = 0; attempt < copy_attempts; ++attempt)
         {
             const auto initial_sequence = GetClipboardSequenceNumber();
-            bool copy_succeeded = try_send_copy_message();
+            copy_succeeded = try_send_copy_message();
 
             if (!copy_succeeded)
             {
@@ -609,6 +610,8 @@ private:
                 std::this_thread::sleep_for(copy_retry_delay);
             }
         }
+
+        return copy_succeeded;
     }
 
     void try_to_paste_as_plain_text()
@@ -972,7 +975,10 @@ public:
 
             if (is_custom_action_hotkey && m_auto_copy_selection_custom_action)
             {
-                send_copy_selection();
+                if (!send_copy_selection())
+                {
+                    return false;
+                }
             }
 
             m_process_manager.start();
