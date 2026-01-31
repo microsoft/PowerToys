@@ -3891,16 +3891,16 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
             SendMessage(hVolume, TBM_SETPOS, TRUE, static_cast<LPARAM>(pData->volume * 100));
         }
 
-        // Disable volume controls for GIF (no audio)
+        // Hide volume controls for GIF (no audio)
         if (pData->isGif)
         {
             if (hVolumeIcon)
             {
-                EnableWindow(hVolumeIcon, FALSE);
+                ShowWindow(hVolumeIcon, SW_HIDE);
             }
             if (hVolume)
             {
-                EnableWindow(hVolume, FALSE);
+                ShowWindow(hVolume, SW_HIDE);
             }
         }
 
@@ -4061,8 +4061,8 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
         // Set minimum dialog size to prevent controls from overlapping
         MINMAXINFO* mmi = reinterpret_cast<MINMAXINFO*>(lParam);
         // Use MapDialogRect to convert dialog units to pixels
-        // Minimum size: 400x300 dialog units (smaller than original 521x380)
-        RECT rcMin = { 0, 0, 400, 300 };
+        // Minimum size: 440x300 dialog units (smaller than original 521x380)
+        RECT rcMin = { 0, 0, 440, 300 };
         MapDialogRect(hDlg, &rcMin);
         // Add frame/border size
         RECT rcFrame = { 0, 0, 0, 0 };
