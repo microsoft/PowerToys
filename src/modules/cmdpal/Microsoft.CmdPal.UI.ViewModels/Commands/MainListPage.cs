@@ -6,7 +6,6 @@ using System.Collections.Immutable;
 using System.Collections.Specialized;
 using System.Diagnostics;
 using CommunityToolkit.Mvvm.Messaging;
-using ManagedCommon;
 using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CmdPal.Ext.Apps;
 using Microsoft.CmdPal.Ext.Apps.Programs;
@@ -14,9 +13,9 @@ using Microsoft.CmdPal.Ext.Apps.State;
 using Microsoft.CmdPal.UI.ViewModels.Commands;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Properties;
-using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.CmdPal.UI.ViewModels.MainPage;
 
@@ -28,6 +27,7 @@ public partial class MainListPage : DynamicListPage,
     IRecipient<ClearSearchMessage>,
     IRecipient<UpdateFallbackItemsMessage>, IDisposable
 {
+    private readonly ILogger _logger;
     private readonly TopLevelCommandManager _tlcManager;
     private readonly AliasManager _aliasManager;
     private readonly SettingsService _settingsService;
@@ -52,12 +52,18 @@ public partial class MainListPage : DynamicListPage,
 
     private AppStateModel AppState => _appStateService.CurrentSettings;
 
-    public MainListPage(TopLevelCommandManager topLevelCommandManager, SettingsService settingsService, AliasManager aliasManager, AppStateService appStateService)
+    public MainListPage(
+        TopLevelCommandManager topLevelCommandManager,
+        SettingsService settingsService,
+        AliasManager aliasManager,
+        AppStateService appStateService,
+        ILogger logger)
     {
         Title = Resources.builtin_home_name;
         Icon = IconHelpers.FromRelativePath("Assets\\StoreLogo.scale-200.png");
         PlaceholderText = Properties.Resources.builtin_main_list_page_searchbar_placeholder;
 
+        _logger = logger;
         _settingsService = settingsService;
         _aliasManager = aliasManager;
         _appStateService = appStateService;
@@ -140,7 +146,7 @@ public partial class MainListPage : DynamicListPage,
         }
         catch (Exception e)
         {
-            Logger.LogError("Failed to reload search", e);
+            Log_SearchReloadFailed(e);
         }
         finally
         {
@@ -438,7 +444,7 @@ public partial class MainListPage : DynamicListPage,
             RaiseItemsChanged();
 
             timer.Stop();
-            Logger.LogDebug($"Filter with '{newSearch}' in {timer.ElapsedMilliseconds}ms");
+            Log_FilterCompleted(newSearch, timer.ElapsedMilliseconds);
         }
     }
 
@@ -637,4 +643,10 @@ public partial class MainListPage : DynamicListPage,
         WeakReferenceMessenger.Default.UnregisterAll(this);
         GC.SuppressFinalize(this);
     }
+
+    [LoggerMessage(Level = LogLevel.Error, Message = "Failed to reload search results")]
+    partial void Log_SearchReloadFailed(Exception ex);
+
+    [LoggerMessage(Level = LogLevel.Debug, Message = "Filter completed for '{searchText}' in {elapsedMs}ms")]
+    partial void Log_FilterCompleted(string searchText, long elapsedMs);
 }

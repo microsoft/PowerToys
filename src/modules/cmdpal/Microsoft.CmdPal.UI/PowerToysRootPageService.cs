@@ -12,8 +12,6 @@ using Microsoft.Extensions.Logging;
 using Windows.Win32.Foundation;
 using WinRT;
 
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
 namespace Microsoft.CmdPal.UI;
 
 internal sealed partial class PowerToysRootPageService : IRootPageService
@@ -21,23 +19,26 @@ internal sealed partial class PowerToysRootPageService : IRootPageService
     private readonly TopLevelCommandManager _tlcManager;
     private readonly ILogger _logger;
 
+    private readonly MainListPage _mainListPage; // Lazy<MainListPage> _mainListPage;
     private IExtensionWrapper? _activeExtension;
-    private Lazy<MainListPage> _mainListPage;
 
     public PowerToysRootPageService(
         TopLevelCommandManager topLevelCommandManager,
         SettingsService settingsService,
         AliasManager aliasManager,
         AppStateService appStateService,
+        MainListPage mainListPage,
         ILogger logger)
     {
         _logger = logger;
         _tlcManager = topLevelCommandManager;
 
-        _mainListPage = new Lazy<MainListPage>(() =>
-        {
-            return new MainListPage(_tlcManager, settingsService, aliasManager, appStateService);
-        });
+        _mainListPage = mainListPage;
+
+        // new Lazy<MainListPage>(() =>
+        // {
+        // return new MainListPage(_tlcManager, settingsService, aliasManager, appStateService, _logger);
+        // });
     }
 
     public async Task PreLoadAsync()
@@ -47,7 +48,7 @@ internal sealed partial class PowerToysRootPageService : IRootPageService
 
     public Microsoft.CommandPalette.Extensions.IPage GetRootPage()
     {
-        return _mainListPage.Value;
+        return _mainListPage;
     }
 
     public async Task PostLoadRootPageAsync()
@@ -60,7 +61,7 @@ internal sealed partial class PowerToysRootPageService : IRootPageService
         {
             if (context is IListItem listItem)
             {
-                _mainListPage.Value.UpdateHistory(listItem);
+                _mainListPage.UpdateHistory(listItem);
             }
         }
         catch (Exception ex)

@@ -77,7 +77,6 @@ public sealed partial class MainWindow : WindowEx,
     private readonly ILogger _logger;
     private readonly SettingsService _settingsService;
     private readonly TrayIconService _trayIconService;
-    private readonly IEnumerable<IExtensionService> _extensionServices;
     private bool _ignoreHotKeyWhenFullScreen = true;
     private bool _themeServiceInitialized;
 
@@ -105,14 +104,12 @@ public sealed partial class MainWindow : WindowEx,
         SettingsService settingsService,
         TrayIconService trayIconService,
         LocalKeyboardListener localKeyboardListener,
-        IEnumerable<IExtensionService> extensionServices,
         ShellPage shellPage,
         ILogger logger)
     {
         InitializeComponent();
         _logger = logger;
         _trayIconService = trayIconService;
-        _extensionServices = extensionServices;
 
         ViewModel = mainWindowViewModel;
 
@@ -748,11 +745,6 @@ public sealed partial class MainWindow : WindowEx,
             };
 
             _settingsService.SaveSettings(settings);
-        }
-
-        foreach (var extensionService in _extensionServices)
-        {
-            extensionService.SignalStopExtensionsAsync();
         }
 
         _trayIconService.Destroy();

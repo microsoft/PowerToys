@@ -204,6 +204,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
             // Also hide our details pane about here, if we had one
             HideDetails();
 
+
             // Navigate to the appropriate host page for that VM
             RootFrame.Navigate(
                 message.Page switch

@@ -14,6 +14,11 @@ public sealed partial class CommandPaletteHost : AppExtensionHost, IExtensionHos
 
     private readonly ICommandProvider? _builtInProvider;
 
+    public CommandPaletteHost(ILogger logger)
+        : base(logger)
+    {
+    }
+
     public CommandPaletteHost(IExtensionWrapper source, ILogger logger)
         : base(logger)
     {

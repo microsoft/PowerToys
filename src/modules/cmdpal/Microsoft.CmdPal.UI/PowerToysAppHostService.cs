@@ -11,17 +11,16 @@ namespace Microsoft.CmdPal.UI;
 
 internal sealed class PowerToysAppHostService : IAppHostService
 {
-    private readonly AppExtensionHost _defaultHost;
+    private readonly AppExtensionHost _defaultAppExtensionHost;
 
-    public PowerToysAppHostService(ILogger logger)
+    public PowerToysAppHostService(AppExtensionHost appExtensionHost, ILogger logger)
     {
-        // Create a minimal default host for cases where no specific command host is available
-        _defaultHost = new DefaultAppExtensionHost(logger);
+        _defaultAppExtensionHost = appExtensionHost;
     }
 
     public AppExtensionHost GetDefaultHost()
     {
-        return _defaultHost;
+        return _defaultAppExtensionHost;
     }
 
     public AppExtensionHost GetHostForCommand(object? context, AppExtensionHost? currentHost)
@@ -32,16 +31,6 @@ internal sealed class PowerToysAppHostService : IAppHostService
             topLevelHost = topLevelViewModel.ExtensionHost;
         }
 
-        return topLevelHost ?? currentHost ?? _defaultHost;
-    }
-
-    private sealed class DefaultAppExtensionHost : AppExtensionHost
-    {
-        public DefaultAppExtensionHost(ILogger logger)
-            : base(logger)
-        {
-        }
-
-        public override string? GetExtensionDisplayName() => "CmdPal";
+        return topLevelHost ?? currentHost ?? _defaultAppExtensionHost;
     }
 }

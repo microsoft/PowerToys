@@ -29,6 +29,7 @@ using Microsoft.CmdPal.UI.Services;
 using Microsoft.CmdPal.UI.Settings;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.BuiltinCommands;
+using Microsoft.CmdPal.UI.ViewModels.MainPage;
 using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.Extensions.DependencyInjection;
@@ -130,8 +131,10 @@ public partial class App : Application
     {
         // Core services
         // services.AddSingleton<IExtensionService, WinRTExtensionService>();
+        // services.AddSingleton<IExtensionService, BuiltInExtensionService>();
         services.AddSingleton<IRunHistoryService, RunHistoryService>();
 
+        services.AddSingleton<AppExtensionHost, CommandPaletteHost>();
         services.AddSingleton<IRootPageService, PowerToysRootPageService>();
         services.AddSingleton<IAppHostService, PowerToysAppHostService>();
         services.AddSingleton<ITelemetryService, TelemetryForwarder>();
@@ -155,6 +158,7 @@ public partial class App : Application
         // Windows & Pages
         services.AddSingleton<MainWindow>();
         services.AddSingleton<SettingsWindow>();
+        services.AddSingleton<MainListPage>();
         services.AddSingleton<ShellPage>();
         services.AddTransient<ListPage>();
         services.AddTransient<GeneralPage>();
