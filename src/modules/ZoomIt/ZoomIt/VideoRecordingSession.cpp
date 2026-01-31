@@ -3724,6 +3724,52 @@ static LRESULT CALLBACK PlaybackButtonSubclassProc(
 
 //----------------------------------------------------------------------------
 //
+// TrimDialogSubclassProc
+//
+// Subclass procedure for the trim dialog to handle resize grip hit testing
+//
+//----------------------------------------------------------------------------
+static LRESULT CALLBACK TrimDialogSubclassProc(
+    HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam,
+    UINT_PTR uIdSubclass, DWORD_PTR /*dwRefData*/)
+{
+    switch (message)
+    {
+    case WM_NCDESTROY:
+        RemoveWindowSubclass(hWnd, TrimDialogSubclassProc, uIdSubclass);
+        break;
+
+    case WM_NCHITTEST:
+    {
+        // First let the default handler process it
+        LRESULT ht = DefSubclassProc(hWnd, message, wParam, lParam);
+
+        // If it's in the client area and not maximized, check for resize grip
+        if (ht == HTCLIENT && !IsZoomed(hWnd))
+        {
+            RECT rcClient;
+            GetClientRect(hWnd, &rcClient);
+
+            POINT pt = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
+            ScreenToClient(hWnd, &pt);
+
+            const int gripWidth = GetSystemMetrics(SM_CXHSCROLL);
+            const int gripHeight = GetSystemMetrics(SM_CYVSCROLL);
+
+            if (pt.x >= rcClient.right - gripWidth && pt.y >= rcClient.bottom - gripHeight)
+            {
+                return HTBOTTOMRIGHT;
+            }
+        }
+        return ht;
+    }
+    }
+
+    return DefSubclassProc(hWnd, message, wParam, lParam);
+}
+
+//----------------------------------------------------------------------------
+//
 // VideoRecordingSession::TrimDialogProc
 //
 // Dialog procedure for trim dialog
@@ -3759,6 +3805,9 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
 
         // Make OK the default button
         SendMessage(hDlg, DM_SETDEFID, IDOK, 0);
+
+        // Subclass the dialog to handle resize grip hit testing
+        SetWindowSubclass(hDlg, TrimDialogSubclassProc, 0, reinterpret_cast<DWORD_PTR>(pData));
 
         HWND hTimeline = GetDlgItem(hDlg, IDC_TRIM_TIMELINE);
         if (hTimeline)
