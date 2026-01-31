@@ -1936,9 +1936,11 @@ INT_PTR CALLBACK OptionsTabProc( HWND hDlg, UINT message,
                     }
                 }
 
-                // Enable/disable microphone controls based on selection
-                EnableWindow(GetDlgItem(hDlg, IDC_MICROPHONE), !isGifSelected);
+                // Enable/disable audio controls based on selection (GIF has no audio)
+                EnableWindow(GetDlgItem(hDlg, IDC_CAPTURE_SYSTEM_AUDIO), !isGifSelected);
                 EnableWindow(GetDlgItem(hDlg, IDC_CAPTURE_AUDIO), !isGifSelected);
+                EnableWindow(GetDlgItem(hDlg, IDC_MICROPHONE_LABEL), !isGifSelected);
+                EnableWindow(GetDlgItem(hDlg, IDC_MICROPHONE), !isGifSelected);
             }
         }
 
@@ -3732,10 +3734,12 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
         }
         SendMessage( GetDlgItem( g_OptionsTabs[RECORD_PAGE].hPage, IDC_MICROPHONE ), CB_SETCURSEL, static_cast<WPARAM>(selection), static_cast<LPARAM>(0) );
 
-        // Set initial state of microphone controls based on recording format
+        // Set initial state of audio controls based on recording format (GIF has no audio)
         bool isGifSelected = (g_RecordingFormat == RecordingFormat::GIF);
-        EnableWindow(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_MICROPHONE), !isGifSelected);
+        EnableWindow(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_CAPTURE_SYSTEM_AUDIO), !isGifSelected);
         EnableWindow(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_CAPTURE_AUDIO), !isGifSelected);
+        EnableWindow(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_MICROPHONE_LABEL), !isGifSelected);
+        EnableWindow(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_MICROPHONE), !isGifSelected);
 
         if( GetFileAttributes( g_DemoTypeFile ) == -1 )
         {

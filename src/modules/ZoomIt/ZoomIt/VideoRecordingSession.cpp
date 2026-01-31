@@ -457,6 +457,8 @@ namespace
     constexpr UINT WMU_DURATION_CHANGED = WM_USER + 3;
     constexpr UINT WMU_PLAYBACK_POSITION = WM_USER + 4;
     constexpr UINT WMU_PLAYBACK_STOP = WM_USER + 5;
+    constexpr UINT_PTR kPreviewDebounceTimerId = 100;
+    constexpr UINT kPreviewDebounceDelayMs = 50;  // Debounce delay for preview updates during dragging
 
     std::atomic<int> g_highResTimerRefs{ 0 };
 
@@ -3155,12 +3157,20 @@ static LRESULT CALLBACK TimelineSubclassProc(
     {
         if (pData->isDragging)
         {
+            // Kill debounce timer and do immediate final update
+            KillTimer(hWnd, kPreviewDebounceTimerId);
+            const bool wasPositionDrag = (pData->dragMode == VideoRecordingSession::TrimDialogData::Position);
             pData->isDragging = false;
             ReleaseCapture();
             SetCursor(LoadCursor(nullptr, IDC_ARROW));
             restorePreviewIfNeeded();
             pData->dragMode = VideoRecordingSession::TrimDialogData::None;
             InvalidateRect(hWnd, nullptr, FALSE);
+            // Ensure final preview update for playhead drag (restorePreviewIfNeeded doesn't update for this case)
+            if (wasPositionDrag && pData->hDialog)
+            {
+                UpdateVideoPreview(pData->hDialog, pData, false);
+            }
             return 0;
         }
         break;
@@ -3301,7 +3311,8 @@ static LRESULT CALLBACK TimelineSubclassProc(
             InvalidatePlayheadRegion(hWnd, clientRect, previousPosX, newPosX, dpi);
             UpdateWindow(hWnd);  // Force immediate visual update for smooth dragging
             pData->previewOverrideActive = false;
-            UpdateVideoPreview(pData->hDialog, pData, false);
+            // Debounce preview update for playhead drag as well
+            SetTimer(hWnd, kPreviewDebounceTimerId, kPreviewDebounceDelayMs, nullptr);
             break;
         }
 
@@ -3351,13 +3362,28 @@ static LRESULT CALLBACK TimelineSubclassProc(
         InvalidateRect(hWnd, nullptr, FALSE);
         UpdateWindow(hWnd);
 
-        // Request preview update asynchronously (don't block gripper movement)
+        // Debounce preview update - use a timer to avoid overwhelming the system with requests
+        // Each mouse move resets the timer; preview only updates after dragging pauses
         if (requestPreviewUpdate)
         {
-            UpdateVideoPreview(pData->hDialog, pData, false);
+            SetTimer(hWnd, kPreviewDebounceTimerId, kPreviewDebounceDelayMs, nullptr);
         }
 
         return 0;
+    }
+
+    case WM_TIMER:
+    {
+        if (wParam == kPreviewDebounceTimerId)
+        {
+            KillTimer(hWnd, kPreviewDebounceTimerId);
+            if (pData && pData->hDialog)
+            {
+                UpdateVideoPreview(pData->hDialog, pData, false);
+            }
+            return 0;
+        }
+        break;
     }
 
     case WM_ERASEBKGND:
@@ -3373,6 +3399,7 @@ static LRESULT CALLBACK TimelineSubclassProc(
     case WM_CAPTURECHANGED:
         if (pData->isDragging)
         {
+            KillTimer(hWnd, kPreviewDebounceTimerId);
             pData->isDragging = false;
             pData->dragMode = VideoRecordingSession::TrimDialogData::None;
             restorePreviewIfNeeded();
