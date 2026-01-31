@@ -62,8 +62,7 @@
     <Midl Remove="@(Midl)" />
   </ItemGroup>
 
-  <!-- For C++ skipped test projects: override targets to no-op -->
-  <Target Name="Build" Condition="'$(_IsSkippedTestProject)' == 'true' and '$(MSBuildProjectExtension)' == '.vcxproj'" />
-  <Target Name="Rebuild" Condition="'$(_IsSkippedTestProject)' == 'true' and '$(MSBuildProjectExtension)' == '.vcxproj'" />
-  <Target Name="Clean" Condition="'$(_IsSkippedTestProject)' == 'true' and '$(MSBuildProjectExtension)' == '.vcxproj'" />
+  <!-- Note: For C++ skipped test projects, build is effectively skipped by removing all compile items above.
+       We don't define empty Build/Rebuild/Clean targets here because MSBuild Target definitions with Condition
+       on the Target element still override the default targets even when condition is false. -->
 </Project>
