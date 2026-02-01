@@ -3792,7 +3792,7 @@ winrt::fire_and_forget StartRecordingAsync( HWND hWnd, LPRECT rcCrop, HWND hWndR
 
         const auto suggestedName = GetUniqueRecordingFilename();
 
-        const std::wstring title = L"Save Recording";
+        const std::wstring title = L"Save recording";
         const std::wstring defaultExtension = isGif ? L"gif" : L"mp4";
         const std::vector<COMDLG_FILTERSPEC> fileTypes = isGif ?
             std::vector<COMDLG_FILTERSPEC>{ { L"GIF animation (*.gif)", L"*.gif" } } :
@@ -6641,7 +6641,7 @@ LRESULT APIENTRY MainWndProc(
             g_bSaveInProgress = true;
 
             const auto& fileTypes = GetScreenshotFilterSpecs();
-            const auto dialogResult = ShowSaveDialog( hWnd, L"Save Zoomed Screen", L"ZoomIt.png", fileTypes, L"png" );
+            const auto dialogResult = ShowSaveDialog( hWnd, L"Save zoomed screen", L"ZoomIt.png", fileTypes, L"png" );
 
             if( dialogResult.has_value() )
             {
