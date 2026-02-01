@@ -36,6 +36,7 @@ namespace ManagedCommon
         PowerOCR,
         Workspaces,
         ZoomIt,
+        HotkeyLauncher,
         GeneralSettings,
     }
 }

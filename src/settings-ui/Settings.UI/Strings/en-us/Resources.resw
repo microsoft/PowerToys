@@ -5424,6 +5424,67 @@ The break timer font matches the text font.</value>
   <data name="GeneralPage_EnableViewDiagnosticDataText.Text" xml:space="preserve">
     <value>Stores diagnostic data locally in .xml format; folder may include .etl files as well. May use up 1 GB or more of disk space.</value>
   </data>
+  <data name="Shell_HotkeyLauncher.Content" xml:space="preserve">
+    <value>Hotkey Launcher</value>
+  </data>
+  <data name="HotkeyLauncher.ModuleTitle" xml:space="preserve">
+    <value>Hotkey Launcher</value>
+  </data>
+  <data name="HotkeyLauncher.ModuleDescription" xml:space="preserve">
+    <value>Define custom keyboard shortcuts to quickly launch applications with optional arguments and working directory.</value>
+  </data>
+  <data name="LearnMore_HotkeyLauncher.Text" xml:space="preserve">
+    <value>Learn more about Hotkey Launcher</value>
+  </data>
+  <data name="HotkeyLauncher_EnableSettingsCard.Header" xml:space="preserve">
+    <value>Hotkey Launcher</value>
+  </data>
+  <data name="HotkeyLauncher_ActionsGroup.Header" xml:space="preserve">
+    <value>Hotkey Actions</value>
+  </data>
+  <data name="HotkeyLauncher_ActionPath.Header" xml:space="preserve">
+    <value>Executable path</value>
+  </data>
+  <data name="HotkeyLauncher_ActionPath.Description" xml:space="preserve">
+    <value>Full path to the application or file to launch</value>
+  </data>
+  <data name="HotkeyLauncher_Arguments.Header" xml:space="preserve">
+    <value>Arguments</value>
+  </data>
+  <data name="HotkeyLauncher_Arguments.Description" xml:space="preserve">
+    <value>Optional command-line arguments</value>
+  </data>
+  <data name="HotkeyLauncher_WorkingDir.Header" xml:space="preserve">
+    <value>Working directory</value>
+  </data>
+  <data name="HotkeyLauncher_WorkingDir.Description" xml:space="preserve">
+    <value>Optional starting directory for the application</value>
+  </data>
+  <data name="HotkeyLauncher_AddAction.Content" xml:space="preserve">
+    <value>Add new action</value>
+  </data>
+  <data name="HotkeyLauncher_AddActionText.Text" xml:space="preserve">
+    <value>Add new action</value>
+  </data>
+  <data name="HotkeyLauncher_RemoveAction.AutomationProperties.Name" xml:space="preserve">
+    <value>Remove action</value>
+  </data>
+  <data name="Oobe_HotkeyLauncher.Title" xml:space="preserve">
+    <value>Hotkey Launcher</value>
+    <comment>Product name. Do not localize this string</comment>
+  </data>
+  <data name="Oobe_HotkeyLauncher.Description" xml:space="preserve">
+    <value>Hotkey Launcher lets you assign custom keyboard shortcuts to launch any application, script, or file with optional arguments and working directory.</value>
+    <comment>Hotkey Launcher is a product name, do not localize</comment>
+  </data>
+  <data name="Oobe_HotkeyLauncher_HowToUse.Text" xml:space="preserve">
+    <value>Open **PowerToys Settings**, enable Hotkey Launcher, and add hotkey-action pairs to define your custom shortcuts.</value>
+    <comment>Hotkey Launcher is a product name, do not localize</comment>
+  </data>
+  <data name="Oobe_HotkeyLauncher_TipsAndTricks.Text" xml:space="preserve">
+    <value>You can add **multiple actions**, each with their own keyboard shortcut. Specify a **working directory** if your application needs to start in a specific folder.</value>
+    <comment>Hotkey Launcher is a product name, do not localize</comment>
+  </data>
   <data name="Shell_LightSwitch.Content" xml:space="preserve">
     <value>Light Switch</value>
   </data>
