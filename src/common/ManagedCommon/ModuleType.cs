@@ -12,6 +12,7 @@ namespace ManagedCommon
         ColorPicker,
         CmdPal,
         CropAndLock,
+        CursorWrap,
         EnvironmentVariables,
         FancyZones,
         FileLocksmith,
@@ -35,5 +36,6 @@ namespace ManagedCommon
         PowerOCR,
         Workspaces,
         ZoomIt,
+        GeneralSettings,
     }
 }

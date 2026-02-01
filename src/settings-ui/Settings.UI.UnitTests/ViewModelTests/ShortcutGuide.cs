@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.IO.Abstractions;
 using System.Text.Json;
 
 using Microsoft.PowerToys.Settings.UI.Library;
@@ -30,7 +31,7 @@ namespace ViewModelTests
         [DataRow("v0.22.0", "settings.json")]
         public void OriginalFilesModificationTest(string version, string fileName)
         {
-            var settingPathMock = new Mock<ISettingsPath>();
+            var settingPathMock = new Mock<SettingPath>();
             var mockIOProvider = BackCompatTestProperties.GetModuleIOProvider(version, ShortcutGuideSettings.ModuleName, fileName);
             var mockSettingsUtils = new SettingsUtils(mockIOProvider.Object, settingPathMock.Object);
             ShortcutGuideSettings originalSettings = mockSettingsUtils.GetSettingsOrDefault<ShortcutGuideSettings>(ShortcutGuideSettings.ModuleName);
@@ -54,9 +55,9 @@ namespace ViewModelTests
             BackCompatTestProperties.VerifyGeneralSettingsIOProviderWasRead(mockGeneralIOProvider, expectedCallCount);
         }
 
-        private Mock<ISettingsUtils> mockGeneralSettingsUtils;
+        private Mock<SettingsUtils> mockGeneralSettingsUtils;
 
-        private Mock<ISettingsUtils> mockShortcutGuideSettingsUtils;
+        private Mock<SettingsUtils> mockShortcutGuideSettingsUtils;
 
         [TestInitialize]
         public void SetUpStubSettingUtils()
@@ -68,7 +69,7 @@ namespace ViewModelTests
         [TestMethod]
         public void IsEnabledShouldEnableModuleWhenSuccessful()
         {
-            var settingsUtilsMock = new Mock<SettingsUtils>();
+            var settingsUtilsMock = new Mock<SettingsUtils>(new FileSystem(), null);
 
             // Assert
             // Initialize mock function of sending IPC message.
@@ -90,7 +91,7 @@ namespace ViewModelTests
         public void ThemeIndexShouldSetThemeToDarkWhenSuccessful()
         {
             // Arrange
-            var settingsUtilsMock = new Mock<ISettingsUtils>();
+            var settingsUtilsMock = new Mock<SettingsUtils>(new FileSystem(), null);
             ShortcutGuideViewModel viewModel = new ShortcutGuideViewModel(settingsUtilsMock.Object, SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), SettingsRepository<ShortcutGuideSettings>.GetInstance(mockShortcutGuideSettingsUtils.Object), msg => { return 0; }, ShortCutGuideTestFolderName);
 
             // Initialize shortcut guide settings theme to 'system' to be in sync with shortcut_guide.h.

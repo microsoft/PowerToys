@@ -6,27 +6,7 @@ namespace Microsoft.CommandPalette.Extensions.Toolkit;
 
 public partial class ProgressState : BaseObservable, IProgressState
 {
-    private bool _isIndeterminate;
+    public virtual bool IsIndeterminate { get; set => SetProperty(ref field, value); }
 
-    private uint _progressPercent;
-
-    public virtual bool IsIndeterminate
-    {
-        get => _isIndeterminate;
-        set
-        {
-            _isIndeterminate = value;
-            OnPropertyChanged(nameof(IsIndeterminate));
-        }
-    }
-
-    public virtual uint ProgressPercent
-    {
-        get => _progressPercent;
-        set
-        {
-            _progressPercent = value;
-            OnPropertyChanged(nameof(ProgressPercent));
-        }
-    }
+    public virtual uint ProgressPercent { get; set => SetProperty(ref field, value); }
 }

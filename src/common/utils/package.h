@@ -2,6 +2,7 @@
 
 #include <Windows.h>
 
+#include <algorithm>
 #include <appxpackaging.h>
 #include <exception>
 #include <filesystem>
@@ -337,6 +338,30 @@ namespace package
                     }
                 }
             }
+
+            // Sort by package version in descending order (newest first)
+            std::sort(matchedFiles.begin(), matchedFiles.end(), [](const std::wstring& a, const std::wstring& b) {
+                std::wstring nameA, nameB;
+                PACKAGE_VERSION versionA{}, versionB{};
+
+                bool gotA = GetPackageNameAndVersionFromAppx(a, nameA, versionA);
+                bool gotB = GetPackageNameAndVersionFromAppx(b, nameB, versionB);
+
+                // Files that failed to parse go to the end
+                if (!gotA)
+                    return false;
+                if (!gotB)
+                    return true;
+
+                // Compare versions: Major, Minor, Build, Revision (descending)
+                if (versionA.Major != versionB.Major)
+                    return versionA.Major > versionB.Major;
+                if (versionA.Minor != versionB.Minor)
+                    return versionA.Minor > versionB.Minor;
+                if (versionA.Build != versionB.Build)
+                    return versionA.Build > versionB.Build;
+                return versionA.Revision > versionB.Revision;
+            });
         }
         catch (const std::exception& ex)
         {

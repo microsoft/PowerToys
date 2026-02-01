@@ -349,10 +349,7 @@ src/common/Telemetry/*.etl
 /src/modules/powerrename/ui/RCb24464
 
 # Generated installer file for Monaco source files.
-/installer/PowerToysSetup/MonacoSRC.wxs
-/installer/PowerToysSetup/DscResources.wxs
 /installer/PowerToysSetupVNext/MonacoSRC.wxs
-/installer/PowerToysSetupVNext/DscResources.wxs
 
 # MSBuildCache
 /MSBuildCacheLogs/
@@ -362,3 +359,4 @@ src/common/Telemetry/*.etl
 
 # PowerToysInstaller Build Temp Files
 installer/*/*.wxs.bk
+/src/modules/awake/.claude
