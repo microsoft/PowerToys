@@ -50,6 +50,7 @@ ALPHATYPE
 AModifier
 amr
 ANDSCANS
+Ångström
 animatedvisuals
 Animnate
 ANull
