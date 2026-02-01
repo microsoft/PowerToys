@@ -12,7 +12,7 @@ public sealed class StringFolder : IStringFolder
 {
     // Cache for diacritic-stripped uppercase characters.
     // Benign race: worst case is redundant computation writing the same value.
-    // 0 = uncached, otherwise cachedChar + 1
+    // 0 = uncached, else cachedChar + 1
     private static readonly ushort[] StripCacheUpper = new ushort[char.MaxValue + 1];
 
     public string Fold(string input, bool removeDiacritics)
