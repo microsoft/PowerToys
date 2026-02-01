@@ -699,8 +699,7 @@ namespace ImageResizer.Properties
             CustomSize = jsonSettings.CustomSize ?? _defaultCustomSize;
             AiSize = jsonSettings.AiSize ?? _defaultAiSize;
 
-            // Default to the index from the settings file on first load or if there is an issue
-            // restoring the previous selection.
+            // Default to the index from the settings file on first load.
             int targetIndex = jsonSettings.SelectedSizeIndex;
 
             if (_isFirstLoad)
@@ -720,7 +719,10 @@ namespace ImageResizer.Properties
                 }
                 else if (selectedId is not null)
                 {
-                    // Match by Id for user-defined size presets.
+                    // Match by Id for user-defined size presets, defaulting to CustomSize if not
+                    // found.
+                    targetIndex = jsonSettings.Sizes.Count;
+
                     for (int i = 0; i < jsonSettings.Sizes.Count; i++)
                     {
                         if (jsonSettings.Sizes[i].Id == selectedId)
