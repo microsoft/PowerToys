@@ -45,6 +45,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
                 case ModuleType.ShortcutGuide: return GPOWrapper.GetConfiguredShortcutGuideEnabledValue();
                 case ModuleType.PowerOCR: return GPOWrapper.GetConfiguredTextExtractorEnabledValue();
                 case ModuleType.ZoomIt: return GPOWrapper.GetConfiguredZoomItEnabledValue();
+                case ModuleType.HotkeyLauncher: return GPOWrapper.GetConfiguredHotkeyLauncherEnabledValue();
                 default: return GpoRuleConfigured.Unavailable;
             }
         }
@@ -60,6 +61,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
                 ModuleType.ColorPicker => typeof(ColorPickerPage),
                 ModuleType.CropAndLock => typeof(CropAndLockPage),
                 ModuleType.CursorWrap => typeof(MouseUtilsPage),
+                ModuleType.HotkeyLauncher => typeof(HotkeyLauncherPage),
                 ModuleType.LightSwitch => typeof(LightSwitchPage),
                 ModuleType.EnvironmentVariables => typeof(EnvironmentVariablesPage),
                 ModuleType.FancyZones => typeof(FancyZonesPage),

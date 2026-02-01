@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<local:NavigablePage
+    x:Class="Microsoft.PowerToys.Settings.UI.Views.HotkeyLauncherPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:library="using:Microsoft.PowerToys.Settings.UI.Library"
+    xmlns:local="using:Microsoft.PowerToys.Settings.UI.Helpers"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
+    xmlns:ui="using:CommunityToolkit.WinUI"
+    xmlns:viewModels="using:Microsoft.PowerToys.Settings.UI.ViewModels"
+    d:DataContext="{d:DesignInstance Type=viewModels:HotkeyLauncherViewModel}"
+    AutomationProperties.LandmarkType="Main"
+    mc:Ignorable="d">
+    <Grid>
+        <controls:SettingsPageControl
+            x:Uid="HotkeyLauncher"
+            IsTabStop="False"
+            ModuleImageSource="ms-appx:///Assets/Settings/Modules/HotkeyLauncher.png">
+            <controls:SettingsPageControl.ModuleContent>
+                <StackPanel Orientation="Vertical">
+                    <!-- Enable/Disable toggle -->
+                    <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}">
+                        <tkcontrols:SettingsCard
+                            x:Uid="HotkeyLauncher_EnableSettingsCard"
+                            HeaderIcon="{ui:FontIcon Glyph=&#xE768;}"
+                            IsEnabled="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
+                            <ToggleSwitch AutomationProperties.AutomationId="Toggle_HotkeyLauncher" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
+                        </tkcontrols:SettingsCard>
+                    </controls:GPOInfoControl>
+
+                    <!-- Hotkey Actions List -->
+                    <controls:SettingsGroup x:Uid="HotkeyLauncher_ActionsGroup" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                        <ItemsControl
+                            IsTabStop="False"
+                            ItemsSource="{x:Bind ViewModel.HotkeyActions, Mode=OneWay}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="library:HotkeyLauncherAction">
+                                    <tkcontrols:SettingsExpander
+                                        Margin="0,0,0,4"
+                                        IsExpanded="True">
+                                        <tkcontrols:SettingsExpander.Header>
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+                                                <controls:ShortcutControl
+                                                    Grid.Column="0"
+                                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                                    HotkeySettings="{x:Bind Hotkey, Mode=TwoWay}" />
+                                                <Button
+                                                    x:Uid="HotkeyLauncher_RemoveAction"
+                                                    Grid.Column="1"
+                                                    Margin="8,0,0,0"
+                                                    Click="RemoveAction_Click"
+                                                    Style="{StaticResource SubtleButtonStyle}"
+                                                    Tag="{x:Bind}">
+                                                    <FontIcon FontSize="14" Glyph="&#xE711;" />
+                                                </Button>
+                                            </Grid>
+                                        </tkcontrols:SettingsExpander.Header>
+                                        <tkcontrols:SettingsExpander.Items>
+                                            <tkcontrols:SettingsCard x:Uid="HotkeyLauncher_ActionPath">
+                                                <TextBox
+                                                    MinWidth="300"
+                                                    AutomationProperties.AutomationId="TextBox_ActionPath"
+                                                    Text="{x:Bind ActionPath, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
+                                            </tkcontrols:SettingsCard>
+                                            <tkcontrols:SettingsCard x:Uid="HotkeyLauncher_Arguments">
+                                                <TextBox
+                                                    MinWidth="300"
+                                                    AutomationProperties.AutomationId="TextBox_Arguments"
+                                                    Text="{x:Bind Arguments, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
+                                            </tkcontrols:SettingsCard>
+                                            <tkcontrols:SettingsCard x:Uid="HotkeyLauncher_WorkingDir">
+                                                <TextBox
+                                                    MinWidth="300"
+                                                    AutomationProperties.AutomationId="TextBox_WorkingDir"
+                                                    Text="{x:Bind WorkingDirectory, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
+                                            </tkcontrols:SettingsCard>
+                                        </tkcontrols:SettingsExpander.Items>
+                                    </tkcontrols:SettingsExpander>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
+                        <Button
+                            x:Uid="HotkeyLauncher_AddAction"
+                            Margin="0,8,0,0"
+                            AutomationProperties.AutomationId="Button_AddAction"
+                            Click="AddAction_Click"
+                            Style="{StaticResource AccentButtonStyle}">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <FontIcon FontSize="14" Glyph="&#xE710;" />
+                                <TextBlock x:Uid="HotkeyLauncher_AddActionText" />
+                            </StackPanel>
+                        </Button>
+                    </controls:SettingsGroup>
+                </StackPanel>
+            </controls:SettingsPageControl.ModuleContent>
+        </controls:SettingsPageControl>
+    </Grid>
+</local:NavigablePage>

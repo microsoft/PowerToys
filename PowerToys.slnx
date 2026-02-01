@@ -672,6 +672,9 @@
       <Platform Solution="*|x64" Project="x64" />
     </Project>
   </Folder>
+  <Folder Name="/modules/HotkeyLauncher/">
+    <Project Path="src/modules/HotkeyLauncher/HotkeyLauncherModuleInterface/HotkeyLauncherModuleInterface.vcxproj" Id="B7A3E5F1-2C4D-4E6F-8A9B-0D1E2F3A4B5C" />
+  </Folder>
   <Folder Name="/modules/LightSwitch/">
     <Project Path="src/modules/LightSwitch/LightSwitchLib/LightSwitchLib.vcxproj" Id="79267138-2895-4346-9021-21408d65379f" />
     <Project Path="src/modules/LightSwitch/LightSwitchModuleInterface/LightSwitchModuleInterface.vcxproj" Id="38177d56-6ad1-4adf-88c9-2843a7932166" />
@@ -1075,6 +1078,7 @@
     <BuildDependency Project="src/modules/imageresizer/ui/ImageResizerUI.csproj" />
     <BuildDependency Project="src/modules/keyboardmanager/dll/KeyboardManager.vcxproj" />
     <BuildDependency Project="src/modules/launcher/Microsoft.Launcher/Microsoft.Launcher.vcxproj" />
+    <BuildDependency Project="src/modules/HotkeyLauncher/HotkeyLauncherModuleInterface/HotkeyLauncherModuleInterface.vcxproj" />
     <BuildDependency Project="src/modules/LightSwitch/LightSwitchModuleInterface/LightSwitchModuleInterface.vcxproj" />
     <BuildDependency Project="src/modules/LightSwitch/LightSwitchService/LightSwitchService.vcxproj" />
     <BuildDependency Project="src/modules/powerrename/dll/PowerRenameExt.vcxproj" />

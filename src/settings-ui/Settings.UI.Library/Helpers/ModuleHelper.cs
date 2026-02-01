@@ -59,6 +59,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Helpers
                 ModuleType.Hosts => generalSettingsConfig.Enabled.Hosts,
                 ModuleType.ImageResizer => generalSettingsConfig.Enabled.ImageResizer,
                 ModuleType.KeyboardManager => generalSettingsConfig.Enabled.KeyboardManager,
+                ModuleType.HotkeyLauncher => generalSettingsConfig.Enabled.HotkeyLauncher,
                 ModuleType.LightSwitch => generalSettingsConfig.Enabled.LightSwitch,
                 ModuleType.MouseHighlighter => generalSettingsConfig.Enabled.MouseHighlighter,
                 ModuleType.MouseJump => generalSettingsConfig.Enabled.MouseJump,
@@ -98,6 +99,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Helpers
                 case ModuleType.Hosts: generalSettingsConfig.Enabled.Hosts = isEnabled; break;
                 case ModuleType.ImageResizer: generalSettingsConfig.Enabled.ImageResizer = isEnabled; break;
                 case ModuleType.KeyboardManager: generalSettingsConfig.Enabled.KeyboardManager = isEnabled; break;
+                case ModuleType.HotkeyLauncher: generalSettingsConfig.Enabled.HotkeyLauncher = isEnabled; break;
                 case ModuleType.LightSwitch: generalSettingsConfig.Enabled.LightSwitch = isEnabled; break;
                 case ModuleType.MouseHighlighter: generalSettingsConfig.Enabled.MouseHighlighter = isEnabled; break;
                 case ModuleType.MouseJump: generalSettingsConfig.Enabled.MouseJump = isEnabled; break;
@@ -140,6 +142,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Helpers
                 ModuleType.Hosts => HostsSettings.ModuleName,
                 ModuleType.ImageResizer => ImageResizerSettings.ModuleName,
                 ModuleType.KeyboardManager => KeyboardManagerSettings.ModuleName,
+                ModuleType.HotkeyLauncher => HotkeyLauncherSettings.ModuleName,
                 ModuleType.LightSwitch => LightSwitchSettings.ModuleName,
                 ModuleType.MouseHighlighter => MouseHighlighterSettings.ModuleName,
                 ModuleType.MouseJump => MouseJumpSettings.ModuleName,

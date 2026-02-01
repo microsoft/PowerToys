@@ -217,6 +217,12 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 ModuleName = "ZoomIt",
                 IsNew = true,
             });
+
+            Modules.Insert((int)PowerToysModules.HotkeyLauncher, new OobePowerToysModule()
+            {
+                ModuleName = "HotkeyLauncher",
+                IsNew = true,
+            });
         }
 
         public void OnClosing()
@@ -302,6 +308,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                     case "NewPlus": NavigationFrame.Navigate(typeof(OobeNewPlus)); break;
                     case "Workspaces": NavigationFrame.Navigate(typeof(OobeWorkspaces)); break;
                     case "ZoomIt": NavigationFrame.Navigate(typeof(OobeZoomIt)); break;
+                    case "HotkeyLauncher": NavigationFrame.Navigate(typeof(OobeHotkeyLauncher)); break;
                 }
             }
         }

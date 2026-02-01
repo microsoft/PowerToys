@@ -529,6 +529,23 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
+        private bool hotkeyLauncher;
+
+        [JsonPropertyName("HotkeyLauncher")]
+        public bool HotkeyLauncher
+        {
+            get => hotkeyLauncher;
+            set
+            {
+                if (hotkeyLauncher != value)
+                {
+                    LogTelemetryEvent(value);
+                    hotkeyLauncher = value;
+                    NotifyChange();
+                }
+            }
+        }
+
         private bool lightSwitch;
 
         [JsonPropertyName("LightSwitch")]
