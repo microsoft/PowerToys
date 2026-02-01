@@ -418,7 +418,7 @@ namespace ImageResizer.Properties
             var json = System.IO.File.ReadAllText(Settings.SettingsPath);
             var wrapper = JsonSerializer.Deserialize<SettingsWrapper>(json);
             wrapper.Properties.Sizes.RemoveAt(1);
-            wrapper.Properties.SelectedSizeIndex = 0; // Simulate fallback to first preset.
+            wrapper.Properties.SelectedSizeIndex = 0; // Simulate fall back to the first preset.
             json = JsonSerializer.Serialize(wrapper, _serializerOptions);
             System.IO.File.WriteAllText(Settings.SettingsPath, json);
 
