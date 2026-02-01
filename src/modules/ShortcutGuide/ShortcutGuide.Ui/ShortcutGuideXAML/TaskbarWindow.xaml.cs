@@ -36,6 +36,12 @@ namespace ShortcutGuide.ShortcutGuideXAML
             AppWindow.Move(App.MainWindow.AppWindow.Position);
 
             TasklistButton[] buttons = TasklistPositions.GetButtons();
+            if (buttons.Length == 0)
+            {
+                AppWindow.Hide();
+                return;
+            }
+
             double windowsLogoColumnWidth = WindowsLogoColumnWidth.Width.Value;
             double windowHeight = 58;
             double windowMargin = 8 * DPI;

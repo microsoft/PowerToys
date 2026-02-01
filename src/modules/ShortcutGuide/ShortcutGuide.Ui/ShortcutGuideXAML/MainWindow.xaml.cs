@@ -301,7 +301,7 @@ namespace ShortcutGuide
 
         private void Settings_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            SettingsDeepLink.OpenSettings(SettingsDeepLink.SettingsWindow.ShortcutGuide, true);
+            SettingsDeepLink.OpenSettings(SettingsDeepLink.SettingsWindow.ShortcutGuide);
         }
     }
 }

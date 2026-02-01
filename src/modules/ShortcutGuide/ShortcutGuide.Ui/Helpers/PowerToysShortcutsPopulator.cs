@@ -31,7 +31,7 @@ namespace ShortcutGuide.Helpers
 
             content = new(PopulateRegex().Replace(content.ToString(), populateStartString + Environment.NewLine));
 
-            ISettingsUtils settingsUtils = new SettingsUtils();
+            SettingsUtils settingsUtils = SettingsUtils.Default;
             EnabledModules enabledModules = SettingsRepository<GeneralSettings>.GetInstance(settingsUtils).SettingsConfig.Enabled;
             if (enabledModules.AdvancedPaste)
             {
@@ -81,9 +81,19 @@ namespace ShortcutGuide.Helpers
                 content.Append(HotkeySettingsToYaml(cropAndLockProperties.ReparentHotkey, SettingsResourceLoader.GetString("CropAndLock/ModuleTitle"), SettingsResourceLoader.GetString("CropAndLock_Reparent")));
             }
 
+            if (enabledModules.CursorWrap)
+            {
+                content.Append(HotkeySettingsToYaml(SettingsRepository<CursorWrapSettings>.GetInstance(settingsUtils).SettingsConfig.Properties.ActivationShortcut, SettingsResourceLoader.GetString("MouseUtils_CursorWrap/Header"), SettingsResourceLoader.GetString("MouseUtils_CursorWrap/Description")));
+            }
+
             if (enabledModules.FancyZones)
             {
                 content.Append(HotkeySettingsToYaml(SettingsRepository<FancyZonesSettings>.GetInstance(settingsUtils).SettingsConfig.Properties.FancyzonesEditorHotkey, SettingsResourceLoader.GetString("FancyZones/ModuleTitle"), SettingsResourceLoader.GetString("FancyZones_OpenEditor")));
+            }
+
+            if (enabledModules.LightSwitch)
+            {
+                content.Append(HotkeySettingsToYaml(SettingsRepository<LightSwitchSettings>.GetInstance(settingsUtils).SettingsConfig.Properties.ToggleThemeHotkey, SettingsResourceLoader.GetString("LightSwitch/ModuleTitle"), SettingsResourceLoader.GetString("LightSwitch_ForceDarkMode")));
             }
 
             if (enabledModules.MouseHighlighter)

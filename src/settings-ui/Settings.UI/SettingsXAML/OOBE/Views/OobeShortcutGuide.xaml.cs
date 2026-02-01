@@ -59,14 +59,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             ViewModel.LogOpeningModuleEvent();
             var settingsProperties = SettingsRepository<ShortcutGuideSettings>.GetInstance(SettingsUtils.Default).SettingsConfig.Properties;
 
-            if ((bool)settingsProperties.UseLegacyPressWinKeyBehavior.Value)
-            {
-                HotkeyControl.Keys = new List<object> { 92 };
-            }
-            else
-            {
-                HotkeyControl.Keys = settingsProperties.OpenShortcutGuide.GetKeysList();
-            }
+            HotkeyControl.Keys = settingsProperties.OpenShortcutGuide.GetKeysList();
 
             // Disable the Launch button if the module is disabled
             var generalSettings = SettingsRepository<GeneralSettings>.GetInstance(SettingsUtils.Default).SettingsConfig;

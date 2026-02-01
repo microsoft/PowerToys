@@ -245,6 +245,9 @@
                             AutomationProperties.AutomationId="ZoomItNavItem"
                             Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/ZoomIt.png}" />
                     </NavigationViewItem.MenuItems>
+                    <NavigationViewItem.InfoBadge>
+                        <InfoBadge Style="{StaticResource NewInfoBadge}" />
+                    </NavigationViewItem.InfoBadge>
                 </NavigationViewItem>
 
                 <!--  Windowing & Layouts  -->

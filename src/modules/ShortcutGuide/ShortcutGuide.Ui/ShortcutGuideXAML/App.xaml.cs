@@ -43,7 +43,7 @@ namespace ShortcutGuide
 
         private void LoadData()
         {
-            SettingsUtils settingsUtils = new();
+            SettingsUtils settingsUtils = SettingsUtils.Default;
 
             if (settingsUtils.SettingsExists(ShortcutGuideSettings.ModuleName, "Pinned.json"))
             {
