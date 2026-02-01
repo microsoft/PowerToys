@@ -19,6 +19,7 @@ public class CloseOnEnterTests
     {
         var settings = new Settings(closeOnEnter: true);
         TypedEventHandler<object, object> handleSave = (s, e) => { };
+        TypedEventHandler<object, object> handleReplace = (s, e) => { };
 
         var item = ResultHelper.CreateResult(
             4m,
@@ -26,7 +27,8 @@ public class CloseOnEnterTests
             CultureInfo.CurrentCulture,
             "2+2",
             settings,
-            handleSave);
+            handleSave,
+            handleReplace);
 
         Assert.IsNotNull(item);
         Assert.IsInstanceOfType(item.Command, typeof(CopyTextCommand));
@@ -41,6 +43,7 @@ public class CloseOnEnterTests
     {
         var settings = new Settings(closeOnEnter: false);
         TypedEventHandler<object, object> handleSave = (s, e) => { };
+        TypedEventHandler<object, object> handleReplace = (s, e) => { };
 
         var item = ResultHelper.CreateResult(
             4m,
@@ -48,7 +51,8 @@ public class CloseOnEnterTests
             CultureInfo.CurrentCulture,
             "2+2",
             settings,
-            handleSave);
+            handleSave,
+            handleReplace);
 
         Assert.IsNotNull(item);
         Assert.IsInstanceOfType(item.Command, typeof(SaveCommand));

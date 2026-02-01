@@ -45,6 +45,18 @@ public class SettingsManager : JsonSettingsManager, ISettingsInterface
         Properties.Resources.calculator_settings_close_on_enter_description,
         true);
 
+    private readonly ToggleSetting _copyResultToSearchBarIfQueryEndsWithEqualSign = new(
+        Namespaced(nameof(CopyResultToSearchBarIfQueryEndsWithEqualSign)),
+        Properties.Resources.calculator_settings_copy_result_to_search_bar,
+        Properties.Resources.calculator_settings_copy_result_to_search_bar_description,
+        false);
+
+    private readonly ToggleSetting _autoFixQuery = new(
+        Namespaced(nameof(AutoFixQuery)),
+        Properties.Resources.calculator_settings_auto_fix_query,
+        Properties.Resources.calculator_settings_auto_fix_query_description,
+        true);
+
     public CalculateEngine.TrigMode TrigUnit
     {
         get
@@ -81,6 +93,10 @@ public class SettingsManager : JsonSettingsManager, ISettingsInterface
 
     public bool CloseOnEnter => _closeOnEnter.Value;
 
+    public bool CopyResultToSearchBarIfQueryEndsWithEqualSign => _copyResultToSearchBarIfQueryEndsWithEqualSign.Value;
+
+    public bool AutoFixQuery => _autoFixQuery.Value;
+
     internal static string SettingsJsonPath()
     {
         var directory = Utilities.BaseSettingsPath("Microsoft.CmdPal");
@@ -98,6 +114,8 @@ public class SettingsManager : JsonSettingsManager, ISettingsInterface
         Settings.Add(_inputUseEnNumberFormat);
         Settings.Add(_outputUseEnNumberFormat);
         Settings.Add(_closeOnEnter);
+        Settings.Add(_copyResultToSearchBarIfQueryEndsWithEqualSign);
+        Settings.Add(_autoFixQuery);
 
         // Load settings from file upon initialization
         LoadSettings();
