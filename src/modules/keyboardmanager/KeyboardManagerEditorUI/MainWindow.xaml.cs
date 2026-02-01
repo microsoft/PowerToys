@@ -69,6 +69,7 @@ namespace KeyboardManagerEditorUI
             {
                 switch ((string)selectedItem.Tag)
                 {
+                    case "All": NavigationFrame.Navigate(typeof(Pages.All)); break;
                     case "Remappings": NavigationFrame.Navigate(typeof(Pages.Remappings)); break;
                     case "Programs": NavigationFrame.Navigate(typeof(Pages.Programs)); break;
                     case "Text": NavigationFrame.Navigate(typeof(Pages.Text)); break;

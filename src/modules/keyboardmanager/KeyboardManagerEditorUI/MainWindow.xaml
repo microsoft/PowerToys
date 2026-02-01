@@ -44,6 +44,11 @@
             PaneDisplayMode="Top"
             SelectionChanged="RootView_SelectionChanged">
             <NavigationView.MenuItems>
+                <NavigationViewItem Content="All" Tag="All">
+                    <NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xE8FD;" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
                 <NavigationViewItem Content="Remappings" Tag="Remappings">
                     <NavigationViewItem.Icon>
                         <FontIcon Glyph="&#xEDA7;" />
