@@ -20,6 +20,6 @@ public sealed partial class TaskbarIndicator : UserControl
 
     public TaskbarIndicator()
     {
-        InitializeComponent();
+        this.InitializeComponent();
     }
 }

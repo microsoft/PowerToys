@@ -20,19 +20,19 @@ namespace ShortcutGuide.Pages
         private ObservableCollection<ShortcutEntry>? _pinnedShortcuts;
         private ObservableCollection<ShortcutEntry>? _taskbarShortcuts;
 
-        private int PinnedShortcutsCount => _pinnedShortcuts?.Count ?? 0;
+        private int PinnedShortcutsCount => this._pinnedShortcuts?.Count ?? 0;
 
         private string _appName = string.Empty;
         private ShortcutFile _shortcutFile;
 
         public OverviewPage()
         {
-            InitializeComponent();
+            this.InitializeComponent();
         }
 
         private void OnPropertyChanged(string propertyName)
         {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
         public event PropertyChangedEventHandler? PropertyChanged;
@@ -41,20 +41,20 @@ namespace ShortcutGuide.Pages
         {
             if (e.Parameter is ShortcutPageNavParam param)
             {
-                _appName = param.AppName;
-                _shortcutFile = param.ShortcutFile;
-                _recommendedShortcuts = [.. _shortcutFile.Shortcuts.SelectMany(list => list.Properties.Where(s => s.Recommended))];
-                if (App.PinnedShortcuts.TryGetValue(_appName, out var shortcuts))
+                this._appName = param.AppName;
+                this._shortcutFile = param.ShortcutFile;
+                this._recommendedShortcuts = [.. this._shortcutFile.Shortcuts.SelectMany(list => list.Properties.Where(s => s.Recommended))];
+                if (App.PinnedShortcuts.TryGetValue(this._appName, out var shortcuts))
                 {
-                    _pinnedShortcuts = [.. shortcuts];
+                    this._pinnedShortcuts = [.. shortcuts];
                 }
 
-                if (_appName == ManifestInterpreter.GetIndexYamlFile().DefaultShellName)
+                if (this._appName == ManifestInterpreter.GetIndexYamlFile().DefaultShellName)
                 {
-                    TaskbarShortcutsPanel.Visibility = Visibility.Visible;
-                    _taskbarShortcuts =
+                    this.TaskbarShortcutsPanel.Visibility = Visibility.Visible;
+                    this._taskbarShortcuts =
                     [
-                        .. _shortcutFile.Shortcuts.First(x => x.SectionName.StartsWith("<TASKBAR1-9>", StringComparison.InvariantCulture)).Properties,
+                        .. this._shortcutFile.Shortcuts.First(x => x.SectionName.StartsWith("<TASKBAR1-9>", StringComparison.InvariantCulture)).Properties,
                     ];
                 }
             }
@@ -64,7 +64,7 @@ namespace ShortcutGuide.Pages
         {
             if (sender is MenuFlyout fl && fl.Target is Grid g && g.Tag is ShortcutEntry dataObject && fl.Items[0] is MenuFlyoutItem pinItem)
             {
-                bool isItemPinned = App.PinnedShortcuts[_appName].Any(x => x.Equals(dataObject));
+                bool isItemPinned = App.PinnedShortcuts[this._appName].Any(x => x.Equals(dataObject));
                 pinItem.Text = isItemPinned ? ResourceLoaderInstance.ResourceLoader.GetString("UnpinShortcut") : ResourceLoaderInstance.ResourceLoader.GetString("PinShortcut");
                 pinItem.Icon = new SymbolIcon(isItemPinned ? Symbol.UnPin : Symbol.Pin);
             }
@@ -74,12 +74,12 @@ namespace ShortcutGuide.Pages
         {
             if (sender is MenuFlyoutItem { CommandParameter: ShortcutEntry shortcutEntry })
             {
-                PinnedShortcutsHelper.UpdatePinnedShortcuts(_appName, shortcutEntry);
+                PinnedShortcutsHelper.UpdatePinnedShortcuts(this._appName, shortcutEntry);
 
                 // Update ListView to reflect changes
-                _pinnedShortcuts = [.. App.PinnedShortcuts[_appName]];
-                PinnedShortcutsListView.ItemsSource = _pinnedShortcuts;
-                OnPropertyChanged(nameof(PinnedShortcutsCount));
+                this._pinnedShortcuts = [.. App.PinnedShortcuts[this._appName]];
+                this.PinnedShortcutsListView.ItemsSource = this._pinnedShortcuts;
+                this.OnPropertyChanged(nameof(this.PinnedShortcutsCount));
             }
         }
     }

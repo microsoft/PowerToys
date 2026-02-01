@@ -45,10 +45,10 @@ internal static partial class NativeMethods
     [LibraryImport("user32.dll")]
     internal static partial short GetAsyncKeyState(int vKey);
 
-    [LibraryImport("ShortcutGuide.CPPProject.dll", EntryPoint = "get_buttons")]
-    internal static partial IntPtr GetTasklistButtons(IntPtr monitor, out int size);
+    [DllImport("../PowerToys.Interop.dll", EntryPoint = "get_buttons")]
+    internal static extern IntPtr GetTasklistButtons(IntPtr monitor, out int size);
 
-    [LibraryImport("ShortcutGuide.CPPProject.dll", EntryPoint = "IsCurrentWindowExcludedFromShortcutGuide")]
+    [LibraryImport("../PowerToys.Interop.dll", EntryPoint = "IsCurrentWindowExcludedFromShortcutGuide")]
     [return: MarshalAs(UnmanagedType.Bool)]
     internal static partial bool IsCurrentWindowExcludedFromShortcutGuide();
 
@@ -101,23 +101,6 @@ internal static partial class NativeMethods
         {
             return new PointInt32(point.X, point.Y);
         }
-    }
-
-    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
-    public struct TasklistButton
-    {
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 256)]
-        public string Name;
-
-        public int X;
-
-        public int Y;
-
-        public int Width;
-
-        public int Height;
-
-        public int Keynum;
     }
 
     public enum MonitorFromWindowDwFlags

@@ -26,12 +26,12 @@ namespace ShortcutGuide
 
         public App()
         {
-            InitializeComponent();
+            this.InitializeComponent();
         }
 
         protected override void OnLaunched(LaunchActivatedEventArgs args)
         {
-            LoadData();
+            this.LoadData();
             MainWindow = new MainWindow();
             TaskBarWindow = new TaskbarWindow();
             MainWindow.Activate();

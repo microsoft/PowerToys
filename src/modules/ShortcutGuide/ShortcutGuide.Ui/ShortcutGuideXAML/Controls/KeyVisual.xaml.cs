@@ -52,9 +52,9 @@ namespace ShortcutGuide.Controls
         protected override void OnApplyTemplate()
         {
             IsEnabledChanged -= KeyVisual_IsEnabledChanged;
-            _keyPresenter = (KeyCharPresenter)this.GetTemplateChild(KeyPresenter);
-            Update();
-            SetVisualStates();
+            this._keyPresenter = (KeyCharPresenter)this.GetTemplateChild(KeyPresenter);
+            this.Update();
+            this.SetVisualStates();
             IsEnabledChanged += KeyVisual_IsEnabledChanged;
             base.OnApplyTemplate();
         }
@@ -73,7 +73,7 @@ namespace ShortcutGuide.Controls
         {
             if (this != null)
             {
-                if (IsInvalid)
+                if (this.IsInvalid)
                 {
                     VisualStateManager.GoToState(this, InvalidState, true);
                 }
@@ -90,13 +90,13 @@ namespace ShortcutGuide.Controls
 
         private void Update()
         {
-            if (Content == null)
+            if (this.Content == null)
             {
                 Visibility = Visibility.Collapsed;
                 return;
             }
 
-            if (Content is string key)
+            if (this.Content is string key)
             {
                 SetGlyphOrText(key switch
                 {
@@ -115,55 +115,55 @@ namespace ShortcutGuide.Controls
                     _ => key,
                 });
 
-                _keyPresenter.Style = key switch
+                this._keyPresenter.Style = key switch
                 {
                     "<Copilot>" => (Style)Application.Current.Resources["CopilotKeyCharPresenterStyle"],
                     "<Office>" => (Style)Application.Current.Resources["OfficeKeyCharPresenterStyle"],
                     "<Underlined letter>" => (Style)Application.Current.Resources["UnderlinedLetterKeyCharPresenterStyle"],
-                    _ => _keyPresenter.Style,
+                    _ => this._keyPresenter.Style,
                 };
 
                 return;
             }
 
-            if (Content is int keyCode)
+            if (this.Content is int keyCode)
             {
                 VirtualKey virtualKey = (VirtualKey)keyCode;
                 switch (virtualKey)
                 {
                     case VirtualKey.Enter:
-                        SetGlyphOrText("\uE751");
+                        this.SetGlyphOrText("\uE751");
                         break;
 
                     case VirtualKey.Back:
-                        SetGlyphOrText("\uE750");
+                        this.SetGlyphOrText("\uE750");
                         break;
 
                     case VirtualKey.Shift:
                     case (VirtualKey)160: // Left Shift
                     case (VirtualKey)161: // Right Shift
-                        SetGlyphOrText("\uE752");
+                        this.SetGlyphOrText("\uE752");
                         break;
 
                     case VirtualKey.Up:
-                        SetGlyphOrText("\uE0E4");
+                        this.SetGlyphOrText("\uE0E4");
                         break;
 
                     case VirtualKey.Down:
-                        SetGlyphOrText("\uE0E5");
+                        this.SetGlyphOrText("\uE0E5");
                         break;
 
                     case VirtualKey.Left:
-                        SetGlyphOrText("\uE0E2");
+                        this.SetGlyphOrText("\uE0E2");
                         break;
 
                     case VirtualKey.Right:
-                        SetGlyphOrText("\uE0E3");
+                        this.SetGlyphOrText("\uE0E3");
                         break;
 
                     case VirtualKey.LeftWindows:
                     case VirtualKey.RightWindows:
-                        _keyPresenter.Style = (Style)Application.Current.Resources["WindowsKeyCharPresenterStyle"];
+                        this._keyPresenter.Style = (Style)Application.Current.Resources["WindowsKeyCharPresenterStyle"];
                         break;
                     default: // For all other keys, we will use the key name.
                         SetGlyphOrText(virtualKey.ToString());
@@ -178,17 +178,17 @@ namespace ShortcutGuide.Controls
 
         private void SetGlyphOrText(string glyphOrText)
         {
-            RenderKeyAsGlyph = ((glyphOrText[0] >> 12) & 0xF) is 0xE or 0xF;
-            _keyPresenter.Content = glyphOrText;
+            this.RenderKeyAsGlyph = ((glyphOrText[0] >> 12) & 0xF) is 0xE or 0xF;
+            this._keyPresenter.Content = glyphOrText;
 
-            _keyPresenter.Style = RenderKeyAsGlyph
+            this._keyPresenter.Style = this.RenderKeyAsGlyph
                 ? (Style)Application.Current.Resources["GlyphKeyCharPresenterStyle"]
                 : (Style)Application.Current.Resources["DefaultKeyCharPresenterStyle"];
         }
 
         private void KeyVisual_IsEnabledChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
-            SetVisualStates();
+            this.SetVisualStates();
         }
     }
 }

@@ -105,7 +105,6 @@
     <ProjectReference Include="..\..\..\common\GPOWrapper\GPOWrapper.vcxproj" />
     <ProjectReference Include="..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
     <ProjectReference Include="..\..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
-    <ProjectReference Include="..\ShortcutGuide.CPPProject\ShortcutGuide.CPPProject.vcxproj" />
   </ItemGroup>
   <ItemGroup>
     <Page Update="ShortcutGuideXAML\Pages\OverviewPage.xaml">

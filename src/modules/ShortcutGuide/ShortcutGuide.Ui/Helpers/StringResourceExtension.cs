@@ -20,11 +20,11 @@ namespace ShortcutGuide.Helpers
 
         public SpecialTreatment Treatment { get; set; } = SpecialTreatment.None;
 
-        protected override object ProvideValue() => Treatment switch
+        protected override object ProvideValue() => this.Treatment switch
         {
-            SpecialTreatment.FirstCharOnly => ResourceLoaderInstance.ResourceLoader.GetString(Key)[0].ToString(),
-            SpecialTreatment.EverythingExceptFirstChar => ResourceLoaderInstance.ResourceLoader.GetString(Key)[1..],
-            _ => ResourceLoaderInstance.ResourceLoader.GetString(Key),
+            SpecialTreatment.FirstCharOnly => ResourceLoaderInstance.ResourceLoader.GetString(this.Key)[0].ToString(),
+            SpecialTreatment.EverythingExceptFirstChar => ResourceLoaderInstance.ResourceLoader.GetString(this.Key)[1..],
+            _ => ResourceLoaderInstance.ResourceLoader.GetString(this.Key),
         };
     }
 }

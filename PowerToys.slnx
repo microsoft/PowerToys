@@ -961,8 +961,7 @@
       <Platform Solution="*|x64" Project="x64" />
     </Project>
   </Folder>
-  <Folder Name="/modules/shortcutguide/">
-    <Project Path="src/modules/ShortcutGuide/ShortcutGuide.CPPProject/ShortcutGuide.CPPProject.vcxproj" Id="2d604c07-51fc-46bb-9eb7-75aecc7f5e81" />
+  <Folder Name="/modules/ShortcutGuide/">
     <Project Path="src/modules/ShortcutGuide/ShortcutGuide.IndexYmlGenerator/ShortcutGuide.IndexYmlGenerator.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />

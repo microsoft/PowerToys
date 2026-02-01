@@ -26,17 +26,17 @@ namespace ShortcutGuide.Pages
 
         public ShortcutsPage()
         {
-            InitializeComponent();
+            this.InitializeComponent();
         }
 
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
             if (e.Parameter is ShortcutPageNavParam param)
             {
-                _appName = param.AppName;
-                _shortcutFile = param.ShortcutFile;
-                _pageIndex = param.PageIndex;
-                _shortcuts = [.. _shortcutFile.Shortcuts[_pageIndex].Properties ?? Enumerable.Empty<ShortcutEntry>()];
+                this._appName = param.AppName;
+                this._shortcutFile = param.ShortcutFile;
+                this._pageIndex = param.PageIndex;
+                this._shortcuts = [.. this._shortcutFile.Shortcuts[this._pageIndex].Properties ?? Enumerable.Empty<ShortcutEntry>()];
             }
         }
 
@@ -44,7 +44,7 @@ namespace ShortcutGuide.Pages
         {
             if (sender is MenuFlyout fl && fl.Target is Grid g && g.Tag is ShortcutEntry dataObject && fl.Items[0] is MenuFlyoutItem pinItem)
             {
-                bool isItemPinned = App.PinnedShortcuts[_appName].Any(x => x.Equals(dataObject));
+                bool isItemPinned = App.PinnedShortcuts[this._appName].Any(x => x.Equals(dataObject));
                 pinItem.Text = isItemPinned ? ResourceLoaderInstance.ResourceLoader.GetString("UnpinShortcut") : ResourceLoaderInstance.ResourceLoader.GetString("PinShortcut");
                 pinItem.Icon = new SymbolIcon(isItemPinned ? Symbol.UnPin : Symbol.Pin);
             }
@@ -54,7 +54,7 @@ namespace ShortcutGuide.Pages
         {
             if (sender is MenuFlyoutItem { CommandParameter: ShortcutEntry shortcutEntry })
             {
-                PinnedShortcutsHelper.UpdatePinnedShortcuts(_appName, shortcutEntry);
+                PinnedShortcutsHelper.UpdatePinnedShortcuts(this._appName, shortcutEntry);
             }
         }
     }

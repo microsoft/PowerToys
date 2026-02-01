@@ -35,11 +35,11 @@ namespace ShortcutGuide.Models
 
         public override bool Equals(object? obj)
         {
-            return obj is ShortcutDescription other && Ctrl == other.Ctrl &&
-                   Shift == other.Shift &&
-                   Alt == other.Alt &&
-                   Win == other.Win &&
-                   Keys.SequenceEqual(other.Keys);
+            return obj is ShortcutDescription other && this.Ctrl == other.Ctrl &&
+                   this.Shift == other.Shift &&
+                   this.Alt == other.Alt &&
+                   this.Win == other.Win &&
+                   this.Keys.SequenceEqual(other.Keys);
         }
 
         public override int GetHashCode()

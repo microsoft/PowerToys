@@ -1,6 +1,6 @@
 #include "pch.h"
 #include "excluded_app.h"
-#include <string_utils.h>
+#include <../utils/string_utils.h>
 
 extern "C"
 {

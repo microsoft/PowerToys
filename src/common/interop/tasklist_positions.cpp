@@ -95,6 +95,61 @@ extern "C"
         winrt::check_hresult(automation->ElementFromHandle(tasklist_hwnd, element.put()));
     }
 
+    void update_new(HMONITOR monitor)
+    {
+        // Get HWND of the tasklist for the monitor under the cursor
+        auto taskbar_hwnd = GetTaskbarHwndForCursorMonitor(monitor);
+        if (!taskbar_hwnd)
+            return;
+
+        wchar_t class_name[64] = {};
+        GetClassNameW(taskbar_hwnd, class_name, 64);
+
+        HWND tasklist_hwnd = nullptr;
+
+        if (wcscmp(class_name, L"Shell_TrayWnd") == 0)
+        {
+            // Primary taskbar structure
+            tasklist_hwnd = FindWindowExW(taskbar_hwnd, 0, L"ReBarWindow32", nullptr);
+            if (!tasklist_hwnd)
+                return;
+            tasklist_hwnd = FindWindowExW(tasklist_hwnd, 0, L"MSTaskSwWClass", nullptr);
+            if (!tasklist_hwnd)
+                return;
+            tasklist_hwnd = FindWindowExW(tasklist_hwnd, 0, L"MSTaskListWClass", nullptr);
+            if (!tasklist_hwnd)
+                return;
+        }
+        else if (wcscmp(class_name, L"Shell_SecondaryTrayWnd") == 0)
+        {
+            // Secondary taskbar structure
+            HWND worker_hwnd = FindWindowExW(taskbar_hwnd, 0, L"WorkerW", nullptr);
+            if (!worker_hwnd)
+                return;
+            tasklist_hwnd = FindWindowExW(worker_hwnd, 0, L"MSTaskListWClass", nullptr);
+            if (!tasklist_hwnd)
+                return;
+        }
+        else
+        {
+            // Unknown taskbar type
+            return;
+        }
+
+        if (!automation)
+        {
+            winrt::check_hresult(CoCreateInstance(CLSID_CUIAutomation,
+                                                  nullptr,
+                                                  CLSCTX_INPROC_SERVER,
+                                                  IID_IUIAutomation,
+                                                  automation.put_void()));
+            winrt::check_hresult(automation->CreateTrueCondition(true_condition.put()));
+        }
+        element = nullptr;
+        winrt::check_hresult(automation->ElementFromHandle(tasklist_hwnd, element.put()));
+    }
+
+
     bool update_buttons(std::vector<TasklistButton>& buttons)
     {
         if (!automation || !element)

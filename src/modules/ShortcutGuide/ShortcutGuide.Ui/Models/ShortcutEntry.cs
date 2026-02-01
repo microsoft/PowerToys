@@ -22,10 +22,10 @@ namespace ShortcutGuide.Models
     {
         public override bool Equals(object? obj)
         {
-            return obj is ShortcutEntry other && Name == other.Name &&
-                   Description == other.Description &&
-                   Shortcut.Length == other.Shortcut.Length &&
-                   Shortcut.SequenceEqual(other.Shortcut);
+            return obj is ShortcutEntry other && this.Name == other.Name &&
+                   this.Description == other.Description &&
+                   this.Shortcut.Length == other.Shortcut.Length &&
+                   this.Shortcut.SequenceEqual(other.Shortcut);
         }
 
         public override int GetHashCode()

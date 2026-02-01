@@ -19,7 +19,7 @@ namespace ShortcutGuide.Converters
             if (value is ShortcutDescription description)
             {
                 // Populate keysList with the keys from the ShortcutDescription
-                return GetKeysList(description);
+                return this.GetKeysList(description);
             }
             else
             {

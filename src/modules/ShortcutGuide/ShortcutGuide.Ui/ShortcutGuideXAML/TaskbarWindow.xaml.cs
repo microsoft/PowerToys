@@ -24,9 +24,9 @@ namespace ShortcutGuide.ShortcutGuideXAML
 
         public TaskbarWindow()
         {
-            InitializeComponent();
-            UpdateTasklistButtons();
-            this.Activated += (_, _) => UpdateTasklistButtons();
+            this.InitializeComponent();
+            this.UpdateTasklistButtons();
+            this.Activated += (_, _) => this.UpdateTasklistButtons();
         }
 
         public void UpdateTasklistButtons()
@@ -42,29 +42,29 @@ namespace ShortcutGuide.ShortcutGuideXAML
                 return;
             }
 
-            double windowsLogoColumnWidth = WindowsLogoColumnWidth.Width.Value;
+            double windowsLogoColumnWidth = this.WindowsLogoColumnWidth.Width.Value;
             double windowHeight = 58;
-            double windowMargin = 8 * DPI;
+            double windowMargin = 8 * this.DPI;
             double windowWidth = windowsLogoColumnWidth;
-            double xPosition = buttons[0].X - (windowsLogoColumnWidth * DPI);
-            double yPosition = WorkArea.Bottom - (windowHeight * DPI);
+            double xPosition = buttons[0].X - (windowsLogoColumnWidth * this.DPI);
+            double yPosition = this.WorkArea.Bottom - (windowHeight * this.DPI);
 
-            KeyHolder.Children.Clear();
+            this.KeyHolder.Children.Clear();
 
             foreach (TasklistButton b in buttons)
             {
                 TaskbarIndicator indicator = new()
                 {
                     Label = b.Keynum >= 10 ? "0" : b.Keynum.ToString(CultureInfo.InvariantCulture),
-                    Height = b.Height / DPI,
-                    Width = b.Width / DPI,
+                    Height = b.Height / this.DPI,
+                    Width = b.Width / this.DPI,
                 };
 
                 windowWidth += indicator.Width;
 
-                KeyHolder.Children.Add(indicator);
+                this.KeyHolder.Children.Add(indicator);
 
-                double indicatorPos = (b.X - xPosition) / DPI;
+                double indicatorPos = (b.X - xPosition) / this.DPI;
                 Canvas.SetLeft(indicator, indicatorPos - windowsLogoColumnWidth);
             }
 

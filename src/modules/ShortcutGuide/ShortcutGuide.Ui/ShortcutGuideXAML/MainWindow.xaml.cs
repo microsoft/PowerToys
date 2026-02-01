@@ -34,9 +34,9 @@ namespace ShortcutGuide
 
         public MainWindow()
         {
-            _currentApplicationIds = ManifestInterpreter.GetAllCurrentApplicationIds();
+            this._currentApplicationIds = ManifestInterpreter.GetAllCurrentApplicationIds();
 
-            InitializeComponent();
+            this.InitializeComponent();
 
             Title = ResourceLoaderInstance.ResourceLoader.GetString("Title")!;
             ExtendsContentIntoTitleBar = true;
@@ -71,11 +71,11 @@ namespace ShortcutGuide
             {
                 case "dark":
                     ((FrameworkElement)Content).RequestedTheme = ElementTheme.Dark;
-                    MainPage.RequestedTheme = ElementTheme.Dark;
+                    this.MainPage.RequestedTheme = ElementTheme.Dark;
                     break;
                 case "light":
                     ((FrameworkElement)Content).RequestedTheme = ElementTheme.Light;
-                    MainPage.RequestedTheme = ElementTheme.Light;
+                    this.MainPage.RequestedTheme = ElementTheme.Light;
                     break;
                 case "system":
                     // Ignore, as the theme will be set by the system.
@@ -90,41 +90,41 @@ namespace ShortcutGuide
         {
             if (state == WindowState.Maximized)
             {
-                SetWindowPosition();
+                this.SetWindowPosition();
             }
         }
 
         protected override void OnPositionChanged(PointInt32 position)
         {
-            SetWindowPosition();
+            this.SetWindowPosition();
         }
 
         private void Window_Activated(object sender, WindowActivatedEventArgs e)
         {
-            if (e.WindowActivationState == WindowActivationState.Deactivated && !_taskBarWindowActivated)
+            if (e.WindowActivationState == WindowActivationState.Deactivated && !this._taskBarWindowActivated)
             {
 #if !DEBUG
                 Close();
 #endif
             }
 
-            if (_taskBarWindowActivated)
+            if (this._taskBarWindowActivated)
             {
-                _taskBarWindowActivated = false;
+                this._taskBarWindowActivated = false;
                 this.BringToFront();
             }
 
             // The code below sets the position of the window to the center of the monitor, but only if it hasn't been set before.
-            if (!_setPosition)
+            if (!this._setPosition)
             {
                 Content.GettingFocus += (_, _) =>
                 {
-                    FakeSettingsButton.Height = 10;
-                    FakeSettingsButton.Height = 0;
+                    this.FakeSettingsButton.Height = 10;
+                    this.FakeSettingsButton.Height = 0;
                 };
 
-                SetWindowPosition();
-                _setPosition = true;
+                this.SetWindowPosition();
+                this._setPosition = true;
 
                 AppWindow.Changed += (_, a) =>
                 {
@@ -133,30 +133,30 @@ namespace ShortcutGuide
                         return;
                     }
 
-                    SetWindowPosition();
+                    this.SetWindowPosition();
                 };
             }
 
-            SetNavItems();
+            this.SetNavItems();
         }
 
         private void SetNavItems()
         {
             // Populate the window selector with the current application IDs if it is empty.
             // TO DO: Check if Settings button is considered an item too.
-            if (WindowSelector.MenuItems.Count == 0)
+            if (this.WindowSelector.MenuItems.Count == 0)
             {
-                foreach (var item in _currentApplicationIds)
+                foreach (var item in this._currentApplicationIds)
                 {
                     if (item == ManifestInterpreter.GetIndexYamlFile().DefaultShellName)
                     {
-                        WindowSelector.MenuItems.Add(new NavigationViewItem { Name = item, Content = "Windows", Icon = new FontIcon() { Glyph = "\xE770" } });
+                        this.WindowSelector.MenuItems.Add(new NavigationViewItem { Name = item, Content = "Windows", Icon = new FontIcon() { Glyph = "\xE770" } });
                     }
                     else
                     {
                         try
                         {
-                            WindowSelector.MenuItems.Add(new NavigationViewItem { Name = item, Content = ManifestInterpreter.GetShortcutsOfApplication(item).Name, Icon = new FontIcon { Glyph = "\uEB91" } });
+                            this.WindowSelector.MenuItems.Add(new NavigationViewItem { Name = item, Content = ManifestInterpreter.GetShortcutsOfApplication(item).Name, Icon = new FontIcon { Glyph = "\uEB91" } });
                         }
                         catch (IOException)
                         {
@@ -164,7 +164,7 @@ namespace ShortcutGuide
                     }
                 }
 
-                WindowSelector.SelectedItem = WindowSelector.MenuItems[0];
+                this.WindowSelector.SelectedItem = this.WindowSelector.MenuItems[0];
             }
         }
 
@@ -172,11 +172,11 @@ namespace ShortcutGuide
 
         private void SetWindowPosition()
         {
-            if (!_hasMovedToRightMonitor)
+            if (!this._hasMovedToRightMonitor)
             {
                 NativeMethods.GetCursorPos(out NativeMethods.POINT lpPoint);
                 AppWindow.Move(new NativeMethods.POINT { Y = lpPoint.Y - ((int)Height / 2), X = lpPoint.X - ((int)Width / 2) });
-                _hasMovedToRightMonitor = true;
+                this._hasMovedToRightMonitor = true;
             }
 
             var hwnd = WindowNative.GetWindowHandle(this);
@@ -228,16 +228,16 @@ namespace ShortcutGuide
         {
             if (args.SelectedItem is NavigationViewItem selectedItem)
             {
-                _selectedAppName = selectedItem.Name;
-                _shortcutFile = ManifestInterpreter.GetShortcutsOfApplication(_selectedAppName);
-                PopulateCategorySelector();
+                this._selectedAppName = selectedItem.Name;
+                this._shortcutFile = ManifestInterpreter.GetShortcutsOfApplication(this._selectedAppName);
+                this.PopulateCategorySelector();
             }
         }
 
         private void PopulateCategorySelector()
         {
-            SubNav.MenuItems.Clear();
-            SubNav.MenuItems.Add(new NavigationViewItem()
+            this.SubNav.MenuItems.Clear();
+            this.SubNav.MenuItems.Add(new NavigationViewItem()
             {
                 Content = ResourceLoaderInstance.ResourceLoader.GetString("Overview"),
                 Tag = -1,
@@ -245,7 +245,7 @@ namespace ShortcutGuide
 
             int i = 0;
 
-            if (_shortcutFile is ShortcutFile file)
+            if (this._shortcutFile is ShortcutFile file)
             {
                 foreach (var category in file.Shortcuts)
                 {
@@ -256,16 +256,16 @@ namespace ShortcutGuide
                         case { } name when name.StartsWith('<') && name.EndsWith('>'):
                             break;
                         default:
-                            SubNav.MenuItems.Add(new NavigationViewItem() { Content = category.SectionName, Tag = i });
+                            this.SubNav.MenuItems.Add(new NavigationViewItem() { Content = category.SectionName, Tag = i });
                             break;
                     }
 
                     i++;
                 }
 
-                if (SubNav.MenuItems.Count > 0)
+                if (this.SubNav.MenuItems.Count > 0)
                 {
-                    SubNav.SelectedItem = SubNav.MenuItems[0];
+                    this.SubNav.SelectedItem = this.SubNav.MenuItems[0];
                 }
             }
         }
@@ -277,7 +277,7 @@ namespace ShortcutGuide
 
         private void SubNav_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
         {
-            if (args.SelectedItem is NavigationViewItem selectedItem && selectedItem.Tag is int param && _shortcutFile is ShortcutFile file)
+            if (args.SelectedItem is NavigationViewItem selectedItem && selectedItem.Tag is int param && this._shortcutFile is ShortcutFile file)
             {
                 Type selectedPage = typeof(ShortcutsPage);
                 App.TaskBarWindow.Hide();
@@ -286,16 +286,16 @@ namespace ShortcutGuide
                     selectedPage = typeof(OverviewPage);
 
                     // We only show the taskbar button window when the overview page of Windows is selected.
-                    if (_shortcutFile is not null && _shortcutFile.Value.Shortcuts.Any(c => c.SectionName.Contains("<TASKBAR1-9>")))
+                    if (this._shortcutFile is not null && this._shortcutFile.Value.Shortcuts.Any(c => c.SectionName.Contains("<TASKBAR1-9>")))
                     {
-                        _taskBarWindowActivated = true;
+                        this._taskBarWindowActivated = true;
                         App.TaskBarWindow.Activate();
                     }
                 }
 
                 // Set window position so that the taskbar window does not potentially clip into the main window
-                SetWindowPosition();
-                ContentFrame.Navigate(selectedPage, new ShortcutPageNavParam() { ShortcutFile = file, PageIndex = param, AppName = _selectedAppName });
+                this.SetWindowPosition();
+                this.ContentFrame.Navigate(selectedPage, new ShortcutPageNavParam() { ShortcutFile = file, PageIndex = param, AppName = this._selectedAppName });
             }
         }
 
