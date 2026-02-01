@@ -12,7 +12,8 @@ public sealed class StringFolder : IStringFolder
 {
     // Cache for diacritic-stripped uppercase characters.
     // Benign race: worst case is redundant computation writing the same value.
-    private static readonly char[] StripCacheUpper = new char[char.MaxValue + 1];
+    // 0 = uncached, otherwise cachedChar + 1
+    private static readonly ushort[] StripCacheUpper = new ushort[char.MaxValue + 1];
 
     public string Fold(string input, bool removeDiacritics)
     {
@@ -102,31 +103,46 @@ public sealed class StringFolder : IStringFolder
             return upper;
         }
 
-        var cached = StripCacheUpper[upper];
-        if (cached != '\0')
+        // Never attempt normalization on lone UTF-16 surrogates.
+        if (char.IsSurrogate(upper))
         {
-            return cached;
+            return upper;
+        }
+
+        var cachedPlus1 = StripCacheUpper[upper];
+        if (cachedPlus1 != 0)
+        {
+            return (char)(cachedPlus1 - 1);
         }
 
         var mapped = StripDiacriticsSlow(upper);
-        StripCacheUpper[upper] = mapped;
+        StripCacheUpper[upper] = (ushort)(mapped + 1);
         return mapped;
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
     private static char StripDiacriticsSlow(char upper)
     {
-        var baseChar = FirstNonMark(upper, NormalizationForm.FormD);
-        if (baseChar == '\0' || baseChar == upper)
+        try
         {
-            var kd = FirstNonMark(upper, NormalizationForm.FormKD);
-            if (kd != '\0')
+            var baseChar = FirstNonMark(upper, NormalizationForm.FormD);
+            if (baseChar == '\0' || baseChar == upper)
             {
-                baseChar = kd;
+                var kd = FirstNonMark(upper, NormalizationForm.FormKD);
+                if (kd != '\0')
+                {
+                    baseChar = kd;
+                }
             }
-        }
 
-        return char.ToUpperInvariant(baseChar == '\0' ? upper : baseChar);
+            return char.ToUpperInvariant(baseChar == '\0' ? upper : baseChar);
+        }
+        catch
+        {
+            // Absolute safety: if globalization tables ever throw for some reason,
+            // degrade gracefully rather than failing hard.
+            return upper;
+        }
 
         static char FirstNonMark(char c, NormalizationForm form)
         {
