@@ -30,7 +30,7 @@ public sealed class FuzzyMatcherNormalizationTests
         var normalizedKeep = Fold(input, removeDiacritics: false);
         Assert.AreEqual(expectedLength, normalizedKeep.Length, "Normalization (removeDiacritics=false) must be length preserving for 'Straße'");
 
-        // ß uppercases to ß in invariant culture (length 1)
+        // ß maps to ß in invariant culture (length 1)
         Assert.AreEqual("STRAßE", normalizedKeep);
     }
 
@@ -49,8 +49,8 @@ public sealed class FuzzyMatcherNormalizationTests
     [TestMethod]
     public void Normalization_ShouldBeLengthPreserving_MixedComposed()
     {
-        // "Ångström" -> A + ring, o + umlaut
-        var input = "Ångström";
+        // "Ångström" -> A + ring, o + umlaut /* #no-spell-check-line */
+        var input = "Ångström"; /* #no-spell-check-line */
         var expected = "ANGSTROM";
 
         var normalized = Fold(input, removeDiacritics: true);
