@@ -19,6 +19,39 @@
     <PlatformTarget>$(Platform)</PlatformTarget>
   </PropertyGroup>
 
+  <!--
+    Completely skip building test projects when BuildTests=false (e.g., Release pipeline).
+    This avoids InternalsVisibleTo/signing issues by not compiling test code at all.
+    Match: projects ending in Test, Tests, UnitTests, UITests, FuzzTests, or in a folder named Tests.
+    Also matches projects starting with UnitTests- (e.g., UnitTests-CommonLib).
+    Also removes all PackageReference/ProjectReference to prevent NuGet restore and dependency builds.
+    Note: Checking both 'false' and 'False' to handle YAML boolean serialization.
+  -->
+  <PropertyGroup Condition="'$(BuildTests)' == 'false' or '$(BuildTests)' == 'False'">
+    <_ProjectName>$(MSBuildProjectName)</_ProjectName>
+    <!-- Match any project ending with "Test" or "Tests" (covers UnitTests, UITests, FuzzTests, etc.) -->
+    <_IsSkippedTestProject Condition="$(_ProjectName.EndsWith('Test'))">true</_IsSkippedTestProject>
+    <_IsSkippedTestProject Condition="$(_ProjectName.EndsWith('Tests'))">true</_IsSkippedTestProject>
+    <!-- Match projects starting with UnitTests- or UITest- prefix -->
+    <_IsSkippedTestProject Condition="$(_ProjectName.StartsWith('UnitTests-'))">true</_IsSkippedTestProject>
+    <_IsSkippedTestProject Condition="$(_ProjectName.StartsWith('UITest-'))">true</_IsSkippedTestProject>
+    <!-- Match projects in a Tests folder -->
+    <_IsSkippedTestProject Condition="$(MSBuildProjectDirectory.Contains('\Tests\'))">true</_IsSkippedTestProject>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(_IsSkippedTestProject)' == 'true'">
+    <EnableDefaultItems>false</EnableDefaultItems>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <GenerateGlobalUsings>false</GenerateGlobalUsings>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <!-- Disable all code analysis for skipped test projects -->
+    <EnableNETAnalyzers>false</EnableNETAnalyzers>
+    <RunAnalyzers>false</RunAnalyzers>
+    <RunAnalyzersDuringBuild>false</RunAnalyzersDuringBuild>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+  </PropertyGroup>
+
   <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.csproj'">
     <Version>$(Version).0</Version>
     <RepositoryUrl>https://github.com/microsoft/PowerToys</RepositoryUrl>
@@ -30,7 +63,9 @@
     <_PropertySheetDisplayName>PowerToys.Root.Props</_PropertySheetDisplayName>
     <ForceImportBeforeCppProps>$(MsbuildThisFileDirectory)\Cpp.Build.props</ForceImportBeforeCppProps>
   </PropertyGroup>
-  <ItemGroup Condition="'$(MSBuildProjectExtension)' == '.csproj'">
+
+
+  <ItemGroup Condition="'$(MSBuildProjectExtension)' == '.csproj' and '$(_IsSkippedTestProject)' != 'true'">
     <PackageReference Include="StyleCop.Analyzers">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

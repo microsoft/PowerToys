@@ -635,6 +635,7 @@ GMEM
 GNumber
 googleai
 googlegemini
+Gotchas
 gpedit
 gpo
 GPOCA
@@ -647,8 +648,6 @@ GSM
 gtm
 guiddata
 GUITHREADINFO
-Gotcha
-Gotchas
 GValue
 gwl
 GWLP
@@ -894,9 +893,9 @@ Lclean
 Ldone
 Ldr
 LEFTALIGN
+leftclick
 LEFTSCROLLBAR
 LEFTTEXT
-leftclick
 LError
 LEVELID
 LExit
@@ -1022,9 +1021,12 @@ MENUITEMINFO
 MENUITEMINFOW
 MERGECOPY
 MERGEPAINT
+Metacharacter
 metadatamatters
 Metadatas
+Metacharacter
 metafile
+Metacharacter
 mfc
 Mgmt
 Microwaved
@@ -1071,7 +1073,7 @@ mouseutils
 MOVESIZEEND
 MOVESIZESTART
 MRM
-MRT
+Mrt
 mru
 MSAL
 msc
@@ -1489,7 +1491,9 @@ regfile
 REGISTERCLASSFAILED
 REGISTRYHEADER
 REGISTRYPREVIEWEXT
+registryroot
 regkey
+regroot
 regsvr
 REINSTALLMODE
 releaseblog
@@ -1534,7 +1538,6 @@ riid
 RKey
 RNumber
 rollups
-ROOTOWNER
 rop
 ROUNDSMALL
 ROWSETEXT

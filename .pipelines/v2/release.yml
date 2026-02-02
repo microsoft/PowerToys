@@ -91,6 +91,7 @@ extends:
               official: true
               codeSign: true
               runTests: false
+              buildTests: false
               signingIdentity:
                 serviceName: $(SigningServiceName)
                 appId: $(SigningAppId)
