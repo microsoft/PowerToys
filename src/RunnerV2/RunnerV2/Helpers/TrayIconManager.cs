@@ -8,6 +8,7 @@ using System.Drawing;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using Microsoft.PowerToys.Settings.UI.Library;
 using static RunnerV2.NativeMethods;
 
 namespace RunnerV2.Helpers
@@ -88,7 +89,14 @@ namespace RunnerV2.Helpers
                     {
                         if (!_doubleClickDetected)
                         {
-                            SettingsHelper.OpenSettingsWindow(showFlyout: true, flyoutPosition: Cursor.Position);
+                            if (SettingsUtils.Default.GetSettings<GeneralSettings>().EnableQuickAccess)
+                            {
+                                QuickAccessHelper.Show();
+                            }
+                            else
+                            {
+                                SettingsHelper.OpenSettingsWindow();
+                            }
                         }
 
                         _doubleClickDetected = false;

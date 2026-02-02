@@ -14,6 +14,7 @@ using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using ManagedCommon;
+using Microsoft.PowerToys.Settings.UI.Library;
 using RunnerV2.Helpers;
 using RunnerV2.Models;
 using RunnerV2.ModuleInterfaces;
@@ -82,6 +83,12 @@ namespace RunnerV2
             InitializeTrayWindow();
             TrayIconManager.StartTrayIcon();
 
+            if (SettingsUtils.Default.GetSettings<GeneralSettings>().EnableQuickAccess)
+            {
+                QuickAccessHelper.Start();
+                CentralizedKeyboardHookManager.AddKeyboardHook("QuickAccess", SettingsUtils.Default.GetSettings<GeneralSettings>().QuickAccessShortcut, QuickAccessHelper.Show);
+            }
+
             Task.Run(UpdateUtilities.UninstallPreviousMsixVersions);
 
             foreach (IPowerToysModule module in ModulesToLoad)
@@ -130,6 +137,7 @@ namespace RunnerV2
             TrayIconManager.StopTrayIcon();
             SettingsHelper.CloseSettingsWindow();
             ElevationHelper.RestartIfScheudled();
+            QuickAccessHelper.Stop();
 
             foreach (IPowerToysModule module in LoadedModules)
             {

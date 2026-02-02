@@ -22,11 +22,6 @@
     <ProjectPriFileName>PowerToys.QuickAccess.pri</ProjectPriFileName>
   </PropertyGroup>
 
-  <PropertyGroup>
-    <CsWinRTIncludes>PowerToys.GPOWrapper</CsWinRTIncludes>
-    <CsWinRTGeneratedFilesDir>$(OutDir)</CsWinRTGeneratedFilesDir>
-  </PropertyGroup>
-
   <ItemGroup>
     <ApplicationDefinition Include="QuickAccessXaml\App.xaml" />
     <Page Include="QuickAccessXaml\MainWindow.xaml" />
@@ -75,7 +70,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\common\GPOWrapper\GPOWrapper.vcxproj" />
+    <ProjectReference Include="..\..\common\GPOWrapperProjection\GPOWrapperProjection.csproj" />
     <ProjectReference Include="..\..\common\ManagedCommon\ManagedCommon.csproj" />
     <ProjectReference Include="..\..\common\ManagedTelemetry\Telemetry\ManagedTelemetry.csproj" />
     <ProjectReference Include="..\..\common\interop\PowerToys.Interop.vcxproj" />

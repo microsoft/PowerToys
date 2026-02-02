@@ -28,18 +28,11 @@ namespace RunnerV2.Helpers
         private static Process? _process;
         private static TwoWayPipeMessageIPCManaged? _ipc;
 
-        public static void OpenSettingsWindow(bool showOobeWindow = false, bool showScoobeWindow = false, bool showFlyout = false, Point? flyoutPosition = null, string? additionalArguments = null)
+        public static void OpenSettingsWindow(bool showOobeWindow = false, bool showScoobeWindow = false, string? additionalArguments = null)
         {
             if (_process is not null && _ipc is not null && !_process.HasExited)
             {
-                if (showFlyout)
-                {
-                    _ipc.Send(@"{""ShowYourself"": ""flyout""}");
-                }
-                else
-                {
-                    _ipc.Send($@"{{""ShowYourself"": ""{additionalArguments ?? "Dashboard"}""}}");
-                }
+                _ipc.Send($@"{{""ShowYourself"": ""{additionalArguments ?? "Dashboard"}""}}");
 
                 return;
             }
@@ -82,25 +75,14 @@ namespace RunnerV2.Helpers
             // Arg 9: Show SCOOBE window
             string showScoobeArg = showScoobeWindow ? "true" : "false";
 
-            // Arg 10: Show flyout
-            string showFlyoutArg = showFlyout ? "true" : "false";
-
-            // Arg 11: Are there additional settings window arguments
+            // Arg 10: Are there additional settings window arguments
             string areThereadditionalArgs = string.IsNullOrEmpty(additionalArguments) ? "false" : "true";
 
-            // Arg 12: Are there flyout position arguments
-            string areThereFlyoutPositionArgs = flyoutPosition.HasValue ? "true" : "false";
-
-            string executableArgs = $"{powerToysPipeName} {settingsPipeName} {currentProcessId} {theme} {isElevated} {isAdmin} {showOobeArg} {showScoobeArg} {showFlyoutArg} {areThereadditionalArgs} {areThereFlyoutPositionArgs}";
+            string executableArgs = $"{powerToysPipeName} {settingsPipeName} {currentProcessId} {theme} {isElevated} {isAdmin} {showOobeArg} {showScoobeArg} {areThereadditionalArgs}";
 
             if (!string.IsNullOrEmpty(additionalArguments))
             {
                 executableArgs += $" {additionalArguments}";
-            }
-
-            if (flyoutPosition is not null)
-            {
-                executableArgs += $" {flyoutPosition.Value.X} {flyoutPosition.Value.Y}";
             }
 
             _process = Process.Start(executablePath, executableArgs);
@@ -110,7 +92,7 @@ namespace RunnerV2.Helpers
             _ipc.Start();
         }
 
-        private static void OnSettingsMessageReceived(string message)
+        public static void OnSettingsMessageReceived(string message)
         {
             JsonDocument messageDocument = JsonDocument.Parse(message);
 
@@ -184,6 +166,17 @@ namespace RunnerV2.Helpers
                             {
                                 settingsChangedSubscriber.OnSettingsChanged();
                             }
+                        }
+
+                        CentralizedKeyboardHookManager.RemoveAllHooksFromModule("QuickAccess");
+                        if (SettingsUtils.Default.GetSettings<GeneralSettings>().EnableQuickAccess)
+                        {
+                            CentralizedKeyboardHookManager.AddKeyboardHook("QuickAccess", SettingsUtils.Default.GetSettings<GeneralSettings>().QuickAccessShortcut, QuickAccessHelper.Show);
+                        }
+                        else
+                        {
+                            CentralizedKeyboardHookManager.RemoveAllHooksFromModule("QuickAccess");
+                            QuickAccessHelper.Stop();
                         }
 
                         break;
