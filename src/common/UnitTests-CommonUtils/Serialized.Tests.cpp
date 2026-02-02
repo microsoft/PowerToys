@@ -176,9 +176,16 @@ namespace UnitTestsCommonUtils
             Serialized<int> s;
             std::atomic<bool> done{ false };
             std::atomic<int> accessCount{ 0 };
+            std::atomic<int> readersReady{ 0 };
+            std::atomic<bool> start{ false };
 
             // Writer thread
-            std::thread writer([&s, &done, &accessCount]() {
+            std::thread writer([&s, &done, &accessCount, &readersReady, &start]() {
+                while (readersReady.load() < 5)
+                {
+                    std::this_thread::yield();
+                }
+                start = true;
                 for (int i = 0; i < 100; ++i)
                 {
                     s.Access([i](int& v) {
@@ -195,7 +202,12 @@ namespace UnitTestsCommonUtils
 
             for (int i = 0; i < 5; ++i)
             {
-                readers.emplace_back([&s, &done, &readAttempts]() {
+                readers.emplace_back([&s, &done, &readAttempts, &readersReady, &start]() {
+                    readersReady++;
+                    while (!start)
+                    {
+                        std::this_thread::yield();
+                    }
                     while (!done)
                     {
                         s.Read([](const int& v) {

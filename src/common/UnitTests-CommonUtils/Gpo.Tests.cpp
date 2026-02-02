@@ -11,7 +11,7 @@ namespace UnitTestsCommonUtils
     {
     public:
         // Helper to check if result is a valid gpo_rule_configured_t value
-        static bool IsValidGpoResult(gpo_rule_configured_t result)
+        static constexpr bool IsValidGpoResult(gpo_rule_configured_t result)
         {
             return result == gpo_rule_configured_wrong_value ||
                    result == gpo_rule_configured_unavailable ||

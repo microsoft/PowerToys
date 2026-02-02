@@ -8,6 +8,7 @@
 #include <optional>
 #include <functional>
 #include <unordered_map>
+#include <type_traits>
 
 // Initializes and runs windows message loop
 inline int run_message_loop(const bool until_idle = false,
@@ -69,6 +70,10 @@ template<typename T>
 inline T GetWindowCreateParam(LPARAM lparam)
 {
     static_assert(sizeof(T) <= sizeof(void*));
+    if (!lparam)
+    {
+        return T{};
+    }
     T data{ static_cast<T>(reinterpret_cast<CREATESTRUCT*>(lparam)->lpCreateParams) };
     return data;
 }
@@ -77,11 +82,26 @@ template<typename T>
 inline void StoreWindowParam(HWND window, T data)
 {
     static_assert(sizeof(T) <= sizeof(void*));
-    SetWindowLongPtrW(window, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(data));
+    if constexpr (std::is_pointer_v<T>)
+    {
+        SetWindowLongPtrW(window, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(data));
+    }
+    else
+    {
+        SetWindowLongPtrW(window, GWLP_USERDATA, static_cast<LONG_PTR>(data));
+    }
 }
 
 template<typename T>
 inline T GetWindowParam(HWND window)
 {
-    return reinterpret_cast<T>(GetWindowLongPtrW(window, GWLP_USERDATA));
+    LONG_PTR data = GetWindowLongPtrW(window, GWLP_USERDATA);
+    if constexpr (std::is_pointer_v<T>)
+    {
+        return reinterpret_cast<T>(data);
+    }
+    else
+    {
+        return static_cast<T>(data);
+    }
 }
