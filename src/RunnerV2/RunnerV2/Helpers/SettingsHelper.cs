@@ -179,6 +179,8 @@ namespace RunnerV2.Helpers
                             QuickAccessHelper.Stop();
                         }
 
+                        TrayIconManager.UpdateTrayIcon();
+
                         break;
                     case "powertoys":
                         foreach (var powertoysSettingsPart in property.Value.EnumerateObject())

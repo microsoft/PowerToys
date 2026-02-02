@@ -8,13 +8,40 @@ using System.Drawing;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
+using PowerToys.Interop;
 using static RunnerV2.NativeMethods;
 
 namespace RunnerV2.Helpers
 {
     internal static partial class TrayIconManager
     {
+        private static nint GetTrayIcon()
+        {
+            if (SettingsUtils.Default.GetSettings<GeneralSettings>().ShowThemeAdaptiveTrayIcon)
+            {
+                return Icon.ExtractAssociatedIcon(ThemeHelper.GetCurrentSystemTheme() ? "./svgs/PowerToysDark.ico" : "./svgs/PowerToysLight.ico")!.Handle;
+            }
+            else
+            {
+                return Icon.ExtractAssociatedIcon(Environment.ProcessPath!)!.Handle;
+            }
+        }
+
+        public static void UpdateTrayIcon()
+        {
+            NOTIFYICONDATA notifyicondata = new()
+            {
+                CbSize = (uint)Marshal.SizeOf<NOTIFYICONDATA>(),
+                HWnd = Runner.RunnerHwnd,
+                UId = 1,
+                HIcon = GetTrayIcon(),
+                UFlags = 0x0000001 | 0x0000002,
+            };
+            Shell_NotifyIcon(0x1, ref notifyicondata);
+        }
+
         internal static void StartTrayIcon()
         {
             NOTIFYICONDATA notifyicondata = new()
@@ -22,13 +49,18 @@ namespace RunnerV2.Helpers
                 CbSize = (uint)Marshal.SizeOf<NOTIFYICONDATA>(),
                 HWnd = Runner.RunnerHwnd,
                 UId = 1,
-                HIcon = Icon.ExtractAssociatedIcon(Environment.ProcessPath!)!.Handle,
+                HIcon = GetTrayIcon(),
                 UFlags = 0x0000001 | 0x00000002 | 0x4,
                 UCallbackMessage = (uint)WindowMessages.ICON_NOTIFY,
                 SzTip = "PowerToys Runner",
             };
 
             ChangeWindowMessageFilterEx(Runner.RunnerHwnd, 0x0111, 0x0001, IntPtr.Zero);
+
+            new ThemeListener().ThemeChanged += (_) =>
+            {
+                PostMessageW(Runner.RunnerHwnd, 0x0800, IntPtr.Zero, 0x9000);
+            };
 
             Shell_NotifyIcon(NIMADD, ref notifyicondata);
         }
@@ -106,6 +138,9 @@ namespace RunnerV2.Helpers
                 case 0x0203: // WM_LBUTTONDBLCLK
                     _doubleClickDetected = true;
                     SettingsHelper.OpenSettingsWindow();
+                    break;
+                case 0x9000: // Update tray icon
+                    UpdateTrayIcon();
                     break;
             }
         }
