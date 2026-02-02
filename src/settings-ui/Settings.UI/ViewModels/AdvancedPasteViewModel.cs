@@ -76,16 +76,24 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             GeneralSettingsConfig = settingsRepository.SettingsConfig;
 
-            // To obtain the settings configurations of Fancy zones.
-            ArgumentNullException.ThrowIfNull(settingsRepository);
+            // To obtain the settings configurations of Advanced Paste.
+            ArgumentNullException.ThrowIfNull(advancedPasteSettingsRepository);
 
             _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
 
             _settingsUtils = settingsUtils ?? throw new ArgumentNullException(nameof(settingsUtils));
 
-            ArgumentNullException.ThrowIfNull(advancedPasteSettingsRepository);
+            _advancedPasteSettings = advancedPasteSettingsRepository.SettingsConfig ?? throw new ArgumentException("SettingsConfig cannot be null", nameof(advancedPasteSettingsRepository));
 
-            _advancedPasteSettings = advancedPasteSettingsRepository.SettingsConfig;
+            if (_advancedPasteSettings.Properties is null)
+            {
+                throw new ArgumentException("AdvancedPasteSettings.Properties cannot be null", nameof(advancedPasteSettingsRepository));
+            }
+
+            // Ensure AdditionalActions and CustomActions are initialized to prevent null reference exceptions
+            // This handles legacy settings files that may be missing these properties
+            _advancedPasteSettings.Properties.AdditionalActions ??= new AdvancedPasteAdditionalActions();
+            _advancedPasteSettings.Properties.CustomActions ??= new AdvancedPasteCustomActions();
 
             AttachConfigurationHandlers();
 
@@ -93,7 +101,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             SendConfigMSG = ipcMSGCallBackFunc;
 
             _additionalActions = _advancedPasteSettings.Properties.AdditionalActions;
-            _customActions = _advancedPasteSettings.Properties.CustomActions.Value;
+            _customActions = _advancedPasteSettings.Properties.CustomActions.Value ?? new ObservableCollection<AdvancedPasteCustomAction>();
 
             SetupSettingsFileWatcher();
 
@@ -469,7 +477,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public PasteAIConfiguration PasteAIConfiguration
         {
-            get => _advancedPasteSettings.Properties.PasteAIConfiguration;
+            get
+            {
+                // Ensure PasteAIConfiguration is never null for XAML binding
+                _advancedPasteSettings.Properties.PasteAIConfiguration ??= new PasteAIConfiguration();
+                return _advancedPasteSettings.Properties.PasteAIConfiguration;
+            }
+
             set
             {
                 if (!ReferenceEquals(value, _advancedPasteSettings.Properties.PasteAIConfiguration))

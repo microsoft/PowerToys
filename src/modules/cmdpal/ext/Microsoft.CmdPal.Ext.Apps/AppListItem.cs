@@ -17,12 +17,25 @@ public sealed partial class AppListItem : ListItem
 {
     private readonly AppCommand _appCommand;
     private readonly AppItem _app;
-    private readonly Lazy<Details> _details;
     private readonly Lazy<Task<IconInfo?>> _iconLoadTask;
+    private readonly Lazy<Task<Details>> _detailsLoadTask;
 
     private InterlockedBoolean _isLoadingIcon;
+    private InterlockedBoolean _isLoadingDetails;
 
-    public override IDetails? Details { get => _details.Value; set => base.Details = value; }
+    public override IDetails? Details
+    {
+        get
+        {
+            if (_isLoadingDetails.Set())
+            {
+                _ = LoadDetailsAsync();
+            }
+
+            return base.Details;
+        }
+        set => base.Details = value;
+    }
 
     public override IIconInfo? Icon
     {
@@ -52,14 +65,20 @@ public sealed partial class AppListItem : ListItem
 
         MoreCommands = AddPinCommands(_app.Commands!, isPinned);
 
-        _details = new Lazy<Details>(() =>
-        {
-            var t = BuildDetails();
-            t.Wait();
-            return t.Result;
-        });
-
+        _detailsLoadTask = new Lazy<Task<Details>>(BuildDetails);
         _iconLoadTask = new Lazy<Task<IconInfo?>>(async () => await FetchIcon(useThumbnails));
+    }
+
+    private async Task LoadDetailsAsync()
+    {
+        try
+        {
+            Details = await _detailsLoadTask.Value;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogWarning($"Failed to load details for {AppIdentifier}\n{ex}");
+        }
     }
 
     private async Task LoadIconAsync()
