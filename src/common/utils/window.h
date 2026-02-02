@@ -8,34 +8,6 @@
 #include <optional>
 #include <functional>
 #include <unordered_map>
-#include <type_traits>
-
-namespace detail
-{
-    template<typename T, std::enable_if_t<std::is_pointer_v<T>, int> = 0>
-    inline LONG_PTR to_long_ptr(T value)
-    {
-        return reinterpret_cast<LONG_PTR>(value);
-    }
-
-    template<typename T, std::enable_if_t<!std::is_pointer_v<T>, int> = 0>
-    inline LONG_PTR to_long_ptr(T value)
-    {
-        return static_cast<LONG_PTR>(value);
-    }
-
-    template<typename T, std::enable_if_t<std::is_pointer_v<T>, int> = 0>
-    inline T from_long_ptr(LONG_PTR value)
-    {
-        return reinterpret_cast<T>(value);
-    }
-
-    template<typename T, std::enable_if_t<!std::is_pointer_v<T>, int> = 0>
-    inline T from_long_ptr(LONG_PTR value)
-    {
-        return static_cast<T>(value);
-    }
-}
 
 // Initializes and runs windows message loop
 inline int run_message_loop(const bool until_idle = false,
@@ -97,10 +69,6 @@ template<typename T>
 inline T GetWindowCreateParam(LPARAM lparam)
 {
     static_assert(sizeof(T) <= sizeof(void*));
-    if (!lparam)
-    {
-        return T{};
-    }
     T data{ static_cast<T>(reinterpret_cast<CREATESTRUCT*>(lparam)->lpCreateParams) };
     return data;
 }
@@ -109,11 +77,11 @@ template<typename T>
 inline void StoreWindowParam(HWND window, T data)
 {
     static_assert(sizeof(T) <= sizeof(void*));
-    SetWindowLongPtrW(window, GWLP_USERDATA, detail::to_long_ptr(data));
+    SetWindowLongPtrW(window, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(data));
 }
 
 template<typename T>
 inline T GetWindowParam(HWND window)
 {
-    return detail::from_long_ptr<T>(GetWindowLongPtrW(window, GWLP_USERDATA));
+    return reinterpret_cast<T>(GetWindowLongPtrW(window, GWLP_USERDATA));
 }

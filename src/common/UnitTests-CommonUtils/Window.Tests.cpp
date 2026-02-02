@@ -72,12 +72,6 @@ namespace UnitTestsCommonUtils
             Assert::AreEqual(42, result->value);
         }
 
-        TEST_METHOD(GetWindowCreateParam_NullLparam_ReturnsNull)
-        {
-            auto result = GetWindowCreateParam<void*>(0);
-            Assert::IsNull(result);
-        }
-
         // Window data storage tests
         TEST_METHOD(WindowData_StoreAndRetrieve_Works)
         {
@@ -94,11 +88,11 @@ namespace UnitTestsCommonUtils
 
             if (hwnd)
             {
-                // Use pointer-sized value since StoreWindowParam requires sizeof(T) <= sizeof(void*)
-                LONG_PTR testValue = 42;
+                int value = 42;
+                int* testValue = &value;
                 StoreWindowParam(hwnd, testValue);
 
-                auto retrieved = GetWindowParam<LONG_PTR>(hwnd);
+                auto retrieved = GetWindowParam<int*>(hwnd);
                 Assert::AreEqual(testValue, retrieved);
 
                 DestroyWindow(hwnd);
