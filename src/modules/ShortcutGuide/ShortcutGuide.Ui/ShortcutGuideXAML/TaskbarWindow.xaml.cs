@@ -31,11 +31,18 @@ namespace ShortcutGuide.ShortcutGuideXAML
 
         public void UpdateTasklistButtons()
         {
-            // This move ensures the window spawns on the same monitor as the main window
+            // This move ensures the window spawns on thesame monitor as the main window
             AppWindow.MoveInZOrderAtBottom();
             AppWindow.Move(App.MainWindow.AppWindow.Position);
+            TasklistButton[] buttons = [];
+            try
+            {
+                buttons = TasklistPositions.GetButtons();
+            }
+            catch
+            {
+            }
 
-            TasklistButton[] buttons = TasklistPositions.GetButtons();
             if (buttons.Length == 0)
             {
                 AppWindow.Hide();

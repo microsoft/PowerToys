@@ -38,4 +38,3 @@
 #include <common/utils/excluded_apps.h>
 #include <common/utils/process_path.h>
 #include <../SettingsAPI/settings_objects.h>
-

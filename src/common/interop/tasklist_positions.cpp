@@ -107,26 +107,13 @@ extern "C"
 
         HWND tasklist_hwnd = nullptr;
 
-        if (wcscmp(class_name, L"Shell_TrayWnd") == 0)
+        if (wcscmp(class_name, L"Shell_TrayWnd") == 0 || wcscmp(class_name, L"Shell_SecondaryTrayWnd") == 0)
         {
             // Primary taskbar structure
-            tasklist_hwnd = FindWindowExW(taskbar_hwnd, 0, L"ReBarWindow32", nullptr);
+            tasklist_hwnd = FindWindowExW(taskbar_hwnd, 0, L"Windows.UI.Composition.DesktopWindowContentBridge", nullptr);
             if (!tasklist_hwnd)
                 return;
-            tasklist_hwnd = FindWindowExW(tasklist_hwnd, 0, L"MSTaskSwWClass", nullptr);
-            if (!tasklist_hwnd)
-                return;
-            tasklist_hwnd = FindWindowExW(tasklist_hwnd, 0, L"MSTaskListWClass", nullptr);
-            if (!tasklist_hwnd)
-                return;
-        }
-        else if (wcscmp(class_name, L"Shell_SecondaryTrayWnd") == 0)
-        {
-            // Secondary taskbar structure
-            HWND worker_hwnd = FindWindowExW(taskbar_hwnd, 0, L"WorkerW", nullptr);
-            if (!worker_hwnd)
-                return;
-            tasklist_hwnd = FindWindowExW(worker_hwnd, 0, L"MSTaskListWClass", nullptr);
+            tasklist_hwnd = FindWindowExW(tasklist_hwnd, 0, L"Windows.UI.Input.InputSite.WindowClass", nullptr);
             if (!tasklist_hwnd)
                 return;
         }
@@ -145,10 +132,14 @@ extern "C"
                                                   automation.put_void()));
             winrt::check_hresult(automation->CreateTrueCondition(true_condition.put()));
         }
-        element = nullptr;
-        winrt::check_hresult(automation->ElementFromHandle(tasklist_hwnd, element.put()));
-    }
 
+        winrt::com_ptr<IUIAutomationElement> tempElement;
+        element = nullptr;
+        winrt::check_hresult(automation->ElementFromHandle(tasklist_hwnd, tempElement.put()));
+
+        winrt::check_hresult(
+            tempElement->FindFirst(TreeScope_Children, true_condition.get(), element.put()));
+    }
 
     bool update_buttons(std::vector<TasklistButton>& buttons)
     {
@@ -167,7 +158,7 @@ extern "C"
         winrt::com_ptr<IUIAutomationElement> child;
         std::vector<TasklistButton> found_buttons;
         found_buttons.reserve(count);
-        for (int i = 0; i < count; ++i)
+        for (int i = 3; i < count; ++i)
         {
             child = nullptr;
             if (elements->GetElement(i, child.put()) < 0)
@@ -202,6 +193,10 @@ extern "C"
             {
                 wcsncpy_s(button.name, automation_id, _countof(button.name));
                 SysFreeString(automation_id);
+                if (wcsncmp(button.name, L"Appid:", wcslen(L"Appid:")) != 0)
+                {
+                    continue;
+                }
             }
             found_buttons.push_back(button);
         }
@@ -235,6 +230,13 @@ extern "C"
         static std::vector<TasklistButton> buttons;
         update_buttons(buttons);
         *size = static_cast<int>(buttons.size());
+        if (*size == 0)
+        {
+            // After a certain Windows update, the old method stopped working, try the new one
+            update_new(monitor);
+            update_buttons(buttons);
+            *size = static_cast<int>(buttons.size());
+        }
         return buttons.data();
     }
 }
