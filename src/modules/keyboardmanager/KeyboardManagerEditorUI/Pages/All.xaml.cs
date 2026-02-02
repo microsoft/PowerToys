@@ -411,7 +411,7 @@ namespace KeyboardManagerEditorUI.Pages
                                 int originalKey = _mappingService.GetKeyCodeFromName(originalKeys[0]);
                                 if (originalKey != 0)
                                 {
-                                    deleted = _mappingService.DeleteSingleKeyToTextMapping(originalKey);
+                                    deleted = _mappingService.DeleteSingleKeyMapping(originalKey);
                                 }
                             }
                             else
@@ -439,7 +439,7 @@ namespace KeyboardManagerEditorUI.Pages
                             int originalKey = _mappingService.GetKeyCodeFromName(originalKeys[0]);
                             if (originalKey != 0)
                             {
-                                deleted = _mappingService.DeleteSingleKeyToTextMapping(originalKey);
+                                deleted = _mappingService.DeleteSingleKeyMapping(originalKey);
                             }
                         }
                         else
@@ -618,8 +618,11 @@ namespace KeyboardManagerEditorUI.Pages
                     case Remapping remapping:
                         if (RemappingHelper.DeleteRemapping(_mappingService, remapping))
                         {
-                            _mappingService.SaveSettings();
                             LoadRemappings();
+                        }
+                        else
+                        {
+                            Logger.LogWarning($"Failed to delete remapping: {string.Join("+", remapping.OriginalKeys)}");
                         }
 
                         break;
@@ -646,6 +649,10 @@ namespace KeyboardManagerEditorUI.Pages
                                 _mappingService.SaveSettings();
                                 LoadTextMappings();
                             }
+                            else
+                            {
+                                Logger.LogWarning($"Failed to delete text mapping: {string.Join("+", textMapping.Keys)}");
+                            }
                         }
 
                         break;
@@ -658,7 +665,7 @@ namespace KeyboardManagerEditorUI.Pages
                                 int originalKey = _mappingService.GetKeyCodeFromName(programShortcut.Shortcut[0]);
                                 if (originalKey != 0)
                                 {
-                                    deleted = _mappingService.DeleteSingleKeyToTextMapping(originalKey);
+                                    deleted = _mappingService.DeleteSingleKeyMapping(originalKey);
                                 }
                             }
                             else
@@ -673,6 +680,10 @@ namespace KeyboardManagerEditorUI.Pages
                                 SettingsManager.RemoveShortcutKeyMappingFromSettings(programShortcut.Id);
                                 LoadProgramShortcuts();
                             }
+                            else
+                            {
+                                Logger.LogWarning($"Failed to delete program shortcut: {string.Join("+", programShortcut.Shortcut)}");
+                            }
                         }
 
                         break;
@@ -685,7 +696,7 @@ namespace KeyboardManagerEditorUI.Pages
                                 int originalKey = _mappingService.GetKeyCodeFromName(urlShortcut.Shortcut[0]);
                                 if (originalKey != 0)
                                 {
-                                    deleted = _mappingService.DeleteSingleKeyToTextMapping(originalKey);
+                                    deleted = _mappingService.DeleteSingleKeyMapping(originalKey);
                                 }
                             }
                             else
@@ -699,14 +710,88 @@ namespace KeyboardManagerEditorUI.Pages
                                 _mappingService.SaveSettings();
                                 LoadUrlShortcuts();
                             }
+                            else
+                            {
+                                Logger.LogWarning($"Failed to delete URL shortcut: {string.Join("+", urlShortcut.Shortcut)}");
+                            }
                         }
 
+                        break;
+
+                    default:
+                        Logger.LogWarning($"Unknown DataContext type for delete: {button.DataContext?.GetType().Name ?? "null"}");
                         break;
                 }
             }
             catch (Exception ex)
             {
                 Logger.LogError("Error deleting mapping: " + ex.Message);
+            }
+        }
+
+        #endregion
+
+        #region Toggle Switch Handlers
+
+        private void ProgramToggleSwitch_Toggled(object sender, RoutedEventArgs e)
+        {
+            if (sender is ToggleSwitch toggleSwitch && toggleSwitch.DataContext is ProgramShortcut shortcut && _mappingService != null)
+            {
+                try
+                {
+                    if (toggleSwitch.IsOn)
+                    {
+                        bool saved = false;
+                        ShortcutKeyMapping shortcutKeyMapping = SettingsManager.EditorSettings.ShortcutSettingsDictionary[shortcut.Id].Shortcut;
+
+                        saved = _mappingService.AddShorcutMapping(shortcutKeyMapping);
+
+                        if (saved)
+                        {
+                            shortcut.IsActive = true;
+                            _mappingService.SaveSettings();
+                            SettingsManager.ToggleShortcutKeyMappingActiveState(shortcut.Id);
+                        }
+                        else
+                        {
+                            toggleSwitch.IsOn = false;
+                        }
+                    }
+                    else
+                    {
+                        bool deleted = false;
+                        if (shortcut.Shortcut.Count == 1)
+                        {
+                            int originalKey = _mappingService.GetKeyCodeFromName(shortcut.Shortcut[0]);
+                            if (originalKey != 0)
+                            {
+                                deleted = _mappingService.DeleteSingleKeyToTextMapping(originalKey);
+                            }
+                        }
+                        else
+                        {
+                            string originalKeys = string.Join(";", shortcut.Shortcut.Select(k => _mappingService.GetKeyCodeFromName(k)));
+                            deleted = _mappingService.DeleteShortcutMapping(originalKeys);
+                        }
+
+                        if (deleted)
+                        {
+                            shortcut.IsActive = false;
+                            SettingsManager.ToggleShortcutKeyMappingActiveState(shortcut.Id);
+                            _mappingService.SaveSettings();
+                        }
+                        else
+                        {
+                            toggleSwitch.IsOn = true;
+                        }
+
+                        LoadProgramShortcuts();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError("Error toggling program shortcut active state: " + ex.Message);
+                }
             }
         }
 
