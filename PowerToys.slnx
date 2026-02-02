@@ -821,7 +821,6 @@
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
-    <Project Path="src/modules/MouseWithoutBorders/ModuleInterface/MouseWithoutBordersModuleInterface.vcxproj" Id="2833c9c6-ab32-4048-a5c7-a70898337b57" />
   </Folder>
   <Folder Name="/modules/MouseWithoutBorders/Tests/">
     <Project Path="src/modules/MouseWithoutBorders/MouseWithoutBorders.UnitTests/MouseWithoutBorders.UnitTests.csproj">

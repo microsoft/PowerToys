@@ -242,5 +242,108 @@ namespace RunnerV2
 
         internal const uint SHCNE_ASSOCCHANGED = 0x8000000;
         internal const uint SHCNF_IDLIST = 0x0;
+
+        [LibraryImport("Advapi32.dll", StringMarshalling = StringMarshalling.Utf16)]
+        internal static partial IntPtr OpenSCManagerW(string lpMachineName, string lpDatabaseName, uint dwDesiredAccess);
+
+        [LibraryImport("Advapi32.dll", StringMarshalling = StringMarshalling.Utf16)]
+        internal static partial IntPtr OpenServiceW(IntPtr hSCManager, string lpServiceName, uint dwDesiredAccess);
+
+        [LibraryImport("Advapi32.dll", StringMarshalling = StringMarshalling.Utf16)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static partial bool ControlService(IntPtr hService, uint dwControl, ref ServiceStatus lpServiceStatus);
+
+        [LibraryImport("Advapi32.dll", StringMarshalling = StringMarshalling.Utf16)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static partial bool CloseServiceHandle(IntPtr hSCObject);
+
+        [LibraryImport("Advapi32.dll", StringMarshalling = StringMarshalling.Utf16)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static partial bool StartServiceW(IntPtr hService, uint dwNumServiceArgs, IntPtr lpServiceArgVectors);
+
+        [DllImport("Advapi32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool QueryServiceStatusW(IntPtr hService, ref ServiceStatus lpServiceStatus);
+
+        [LibraryImport("Advapi32.dll", StringMarshalling = StringMarshalling.Utf16)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static partial bool DeleteService(IntPtr hService);
+
+        [DllImport("Advapi32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool QueryServiceConfigW(IntPtr hService, IntPtr lpServiceConfig, uint cbBufSize, out uint pcbBytesNeeded);
+
+        [DllImport("Advapi32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool ChangeServiceConfigW(
+            IntPtr hService,
+            uint dwServiceType,
+            uint dwStartType,
+            uint dwErrorControl,
+            [MarshalAs(UnmanagedType.LPWStr)] string lpBinaryPathName,
+            [MarshalAs(UnmanagedType.LPWStr)] string lpLoadOrderGroup,
+            IntPtr lpdwTagId,
+            [MarshalAs(UnmanagedType.LPWStr)] string lpDependencies,
+            [MarshalAs(UnmanagedType.LPWStr)] string lpServiceStartName,
+            [MarshalAs(UnmanagedType.LPWStr)] string lpPassword,
+            [MarshalAs(UnmanagedType.LPWStr)] string lpDisplayName);
+
+        [DllImport("Advapi32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool SetServiceObjectSecurity(
+            IntPtr hService,
+            uint dwSecurityInformation,
+            IntPtr pSecurityDescriptor);
+
+        [DllImport("Advapi32.dll")]
+        internal static extern IntPtr CreateServiceW(
+            IntPtr hSCManager,
+            [MarshalAs(UnmanagedType.LPWStr)] string lpServiceName,
+            [MarshalAs(UnmanagedType.LPWStr)] string lpDisplayName,
+            uint dwDesiredAccess,
+            uint dwServiceType,
+            uint dwStartType,
+            uint dwErrorControl,
+            [MarshalAs(UnmanagedType.LPWStr)] string lpBinaryPathName,
+            [MarshalAs(UnmanagedType.LPWStr)] string lpLoadOrderGroup,
+            IntPtr lpdwTagId,
+            [MarshalAs(UnmanagedType.LPWStr)] string lpDependencies,
+            [MarshalAs(UnmanagedType.LPWStr)] string lpServiceStartName,
+            [MarshalAs(UnmanagedType.LPWStr)] string lpPassword);
+
+        internal const uint SCMANAGERALLACCESS = 0x000F0000 | 0x0001 | 0x0002 | 0x0004 | 0x0008 | 0x0010 | 0x0020;
+
+        internal const uint SERVICEALLACCESS = 0x000F0000 | 0x0001 | 0x0002 | 0x0004 | 0x0008 | 0x0010 | 0x0020 | 0x0040 | 0x0080 | 0x0100;
+
+        [StructLayout(LayoutKind.Sequential)]
+        internal struct ServiceStatus
+        {
+            public uint dwServiceType;
+            public uint dwCurrentState;
+            public uint dwControlsAccepted;
+            public uint dwWin32ExitCode;
+            public uint dwServiceSpecificExitCode;
+            public uint dwCheckPoint;
+            public uint dwWaitHint;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        internal struct QueryServiceConfig
+        {
+            public uint dwServiceType;
+            public uint dwStartType;
+            public uint dwErrorControl;
+            [MarshalAs(UnmanagedType.LPWStr)]
+            public string lpBinaryPathName;
+            [MarshalAs(UnmanagedType.LPWStr)]
+            public string lpLoadOrderGroup;
+            public uint dwTagId;
+            [MarshalAs(UnmanagedType.LPWStr)]
+            public string lpDependencies;
+            [MarshalAs(UnmanagedType.LPWStr)]
+            public string lpServiceStartName;
+            [MarshalAs(UnmanagedType.LPWStr)]
+            public string lpDisplayName;
+        }
     }
 }

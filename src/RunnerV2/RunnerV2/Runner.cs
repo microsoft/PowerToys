@@ -68,6 +68,7 @@ namespace RunnerV2
             new WorkspacesModuleInterface(),
             new MousePointerCrosshairsModuleInterface(),
             new MouseHighlighterModuleInterface(),
+            new MouseWithoutBordersModuleInterface(),
         ];
 
         /// <summary>
