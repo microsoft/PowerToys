@@ -1074,6 +1074,7 @@ MOVESIZEEND
 MOVESIZESTART
 MRM
 Mrt
+mrt
 mru
 MSAL
 msc
@@ -1844,6 +1845,7 @@ TILEDWINDOW
 TILLSON
 timedate
 timediff
+timespan
 timeutil
 TITLEBARINFO
 Titlecase

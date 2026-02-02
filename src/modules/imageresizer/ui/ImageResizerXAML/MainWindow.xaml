@@ -1,5 +1,5 @@
-<!-- Copyright (c) Microsoft Corporation. All rights reserved. -->
-<!-- Licensed under the MIT License. -->
+﻿<!--  Copyright (c) Microsoft Corporation. All rights reserved.  -->
+<!--  Licensed under the MIT License.  -->
 <winuiEx:WindowEx
     x:Class="ImageResizer.MainWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"

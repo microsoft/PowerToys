@@ -1,5 +1,5 @@
-<!-- Copyright (c) Microsoft Corporation. All rights reserved. -->
-<!-- Licensed under the MIT License. -->
+﻿<!--  Copyright (c) Microsoft Corporation. All rights reserved.  -->
+<!--  Licensed under the MIT License.  -->
 <Page
     x:Class="ImageResizer.Views.InputPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -101,9 +101,9 @@
                 BorderBrush="{StaticResource CardStrokeColorDefaultBrush}"
                 BorderThickness="0,1,0,0" />
 
-            <!-- AI Configuration Panel -->
+            <!--  AI Configuration Panel  -->
             <Grid Grid.Row="0" Margin="16">
-                <!-- AI Model Download Prompt -->
+                <!--  AI Model Download Prompt  -->
                 <StackPanel Visibility="{Binding ShowModelDownloadPrompt, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
                     <InfoBar
                         IsClosable="False"
@@ -120,10 +120,8 @@
                         <TextBlock x:Uid="Input_AiModelDownloadButton" />
                     </Button>
 
-                    <StackPanel
-                        Margin="0,8,0,0"
-                        Visibility="{Binding IsModelDownloading, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
-                        <!-- ProgressRing commented out for WPF compatibility -->
+                    <StackPanel Margin="0,8,0,0" Visibility="{Binding IsModelDownloading, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <!--  ProgressRing commented out for WPF compatibility  -->
                         <TextBlock
                             Margin="0,8,0,0"
                             HorizontalAlignment="Center"
@@ -131,7 +129,7 @@
                     </StackPanel>
                 </StackPanel>
 
-                <!-- AI Scale Controls -->
+                <!--  AI Scale Controls  -->
                 <StackPanel Visibility="{Binding ShowAiControls, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
                     <Grid>
                         <TextBlock x:Uid="Input_AiCurrentLabel" />
@@ -146,9 +144,7 @@
                         TickPlacement="BottomRight"
                         Value="{Binding AiSuperResolutionScale, Mode=TwoWay}" />
 
-                    <StackPanel
-                        Margin="0,16,0,0"
-                        Visibility="{Binding ShowAiSizeDescriptions, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <StackPanel Margin="0,16,0,0" Visibility="{Binding ShowAiSizeDescriptions, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
                         <Grid>
                             <TextBlock x:Uid="Input_AiCurrentLabel" Foreground="{StaticResource TextFillColorSecondaryBrush}" />
                             <TextBlock
@@ -164,7 +160,7 @@
                 </StackPanel>
             </Grid>
 
-            <!-- Custom input matrix -->
+            <!--  Custom input matrix  -->
             <Grid
                 Grid.Row="0"
                 Margin="16"
@@ -212,8 +208,8 @@
                     KeyDown="NumberBox_KeyDown"
                     Minimum="0"
                     SpinButtonPlacementMode="Inline"
-                    Value="{Binding Settings.SelectedSize.Height, Mode=TwoWay}"
-                    Visibility="{Binding Settings.SelectedSize.ShowHeight, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+                    Visibility="{Binding Settings.SelectedSize.ShowHeight, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}"
+                    Value="{Binding Settings.SelectedSize.Height, Mode=TwoWay}" />
 
                 <FontIcon
                     Grid.Row="2"
@@ -257,7 +253,7 @@
                 </ComboBox>
             </Grid>
 
-            <!-- CheckBoxes -->
+            <!--  CheckBoxes  -->
             <StackPanel
                 Grid.Row="1"
                 Margin="16"
@@ -279,7 +275,7 @@
                 </CheckBox>
             </StackPanel>
 
-            <!-- Separator line -->
+            <!--  Separator line  -->
             <Border
                 Grid.Row="2"
                 Height="1"
@@ -297,7 +293,7 @@
                 <TextBlock x:Uid="Input_GifWarning" />
             </InfoBar>
 
-            <!-- Buttons -->
+            <!--  Buttons  -->
             <Grid Grid.Row="4" Margin="16,8,16,16">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition />
