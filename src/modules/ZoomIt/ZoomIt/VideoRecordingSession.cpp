@@ -1415,6 +1415,7 @@ std::wstring VideoRecordingSession::ShowSaveDialogWithTrim(
         saveDialog->SetFileTypes(_countof(fileTypes), fileTypes);
     }
     saveDialog->SetFileName(suggestedFileName.c_str());
+    saveDialog->SetTitle(L"ZoomIt: Save Video As...");
 
     // Add custom Trim button
     wil::com_ptr<IFileDialogCustomize> pfdCustomize;
