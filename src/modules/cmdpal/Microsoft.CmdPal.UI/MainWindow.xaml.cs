@@ -53,7 +53,8 @@ public sealed partial class MainWindow : WindowEx,
     IRecipient<ErrorOccurredMessage>,
     IRecipient<DragStartedMessage>,
     IRecipient<DragCompletedMessage>,
-    IDisposable
+    IDisposable,
+    IHostWindow
 {
     [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1310:Field names should not contain underscore", Justification = "Stylistically, window messages are WM_")]
     [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1306:Field names should begin with lower-case letter", Justification = "Stylistically, window messages are WM_")]
@@ -88,6 +89,8 @@ public sealed partial class MainWindow : WindowEx,
     private bool _preventHideWhenDeactivated;
 
     private MainWindowViewModel ViewModel { get; }
+
+    public bool IsVisibleToUser { get; private set; } = true;
 
     public MainWindow()
     {
@@ -575,15 +578,12 @@ public sealed partial class MainWindow : WindowEx,
             {
                 Logger.LogWarning($"DWM cloaking of the main window failed. HRESULT: {hr.Value}.");
             }
+            else
+            {
+                IsVisibleToUser = false;
+            }
 
             wasCloaked = hr.Succeeded;
-        }
-
-        if (wasCloaked)
-        {
-            // Because we're only cloaking the window, bury it at the bottom in case something can
-            // see it - e.g. some accessibility helper (note: this also removes the top-most status).
-            PInvoke.SetWindowPos(_hwnd, HWND.HWND_BOTTOM, 0, 0, 0, 0, SET_WINDOW_POS_FLAGS.SWP_NOMOVE | SET_WINDOW_POS_FLAGS.SWP_NOSIZE);
         }
 
         return wasCloaked;
@@ -595,6 +595,7 @@ public sealed partial class MainWindow : WindowEx,
         {
             BOOL value = false;
             PInvoke.DwmSetWindowAttribute(_hwnd, DWMWINDOWATTRIBUTE.DWMWA_CLOAK, &value, (uint)sizeof(BOOL));
+            IsVisibleToUser = true;
         }
     }
 
