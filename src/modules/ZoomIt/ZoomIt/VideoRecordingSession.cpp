@@ -26,6 +26,7 @@ extern DWORD g_TrimDialogHeight;
 extern DWORD g_TrimDialogVolume;
 extern class ClassRegistry reg;
 extern REG_SETTING RegSettings[];
+extern HINSTANCE g_hInstance;
 
 namespace winrt
 {
@@ -1236,6 +1237,7 @@ private:
     winrt::TimeSpan* m_pTrimStart;
     winrt::TimeSpan* m_pTrimEnd;
     bool* m_pShouldTrim;
+    bool m_bIconSet;
 
 public:
     CTrimFileDialogEvents(HWND hParent, const std::wstring& videoPath,
@@ -1243,7 +1245,7 @@ public:
                           winrt::TimeSpan* pTrimEnd, bool* pShouldTrim)
         : m_cRef(1), m_hParent(hParent), m_videoPath(videoPath),
           m_pTrimmedPath(pTrimmedPath), m_pTrimStart(pTrimStart),
-          m_pTrimEnd(pTrimEnd), m_pShouldTrim(pShouldTrim)
+          m_pTrimEnd(pTrimEnd), m_pShouldTrim(pShouldTrim), m_bIconSet(false)
     {
     }
 
@@ -1273,7 +1275,31 @@ public:
 
     // IFileDialogEvents
     IFACEMETHODIMP OnFileOk(IFileDialog*) { return S_OK; }
-    IFACEMETHODIMP OnFolderChange(IFileDialog*) { return S_OK; }
+
+    IFACEMETHODIMP OnFolderChange(IFileDialog* pfd)
+    {
+        // Set the ZoomIt icon on the save dialog (only once)
+        if (!m_bIconSet)
+        {
+            m_bIconSet = true;
+            wil::com_ptr<IOleWindow> pOleWnd;
+            if (SUCCEEDED(pfd->QueryInterface(IID_PPV_ARGS(&pOleWnd))))
+            {
+                HWND hDlg = nullptr;
+                if (SUCCEEDED(pOleWnd->GetWindow(&hDlg)) && hDlg)
+                {
+                    HICON hIcon = LoadIcon(g_hInstance, L"APPICON");
+                    if (hIcon)
+                    {
+                        SendMessage(hDlg, WM_SETICON, ICON_BIG, reinterpret_cast<LPARAM>(hIcon));
+                        SendMessage(hDlg, WM_SETICON, ICON_SMALL, reinterpret_cast<LPARAM>(hIcon));
+                    }
+                }
+            }
+        }
+        return S_OK;
+    }
+    
     IFACEMETHODIMP OnFolderChanging(IFileDialog*, IShellItem*) { return S_OK; }
     IFACEMETHODIMP OnSelectionChange(IFileDialog*) { return S_OK; }
     IFACEMETHODIMP OnShareViolation(IFileDialog*, IShellItem*, FDE_SHAREVIOLATION_RESPONSE*) { return S_OK; }
