@@ -47,13 +47,13 @@ public:
 private:
     void worker_thread()
     {
-        while (true)
+        while (!_shutdown_request)
         {
             task_t task;
             {
                 std::unique_lock task_lock{ _task_mutex };
                 _task_cv.wait(task_lock, [this] { return !_task_queue.empty() || _shutdown_request; });
-                if (_shutdown_request && _task_queue.empty())
+                if (_shutdown_request)
                 {
                     return;
                 }
