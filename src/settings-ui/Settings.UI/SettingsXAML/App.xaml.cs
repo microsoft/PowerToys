@@ -321,8 +321,8 @@ namespace Microsoft.PowerToys.Settings.UI
             }
             else
             {
-#if DEBUG
-                // For debugging purposes
+#if DEBUG || STANDALONE
+                // For debugging purposes or standalone mode
                 // Window is also needed to show MessageDialog
                 settingsWindow = new MainWindow();
                 settingsWindow.ExtendsContentIntoTitleBar = true;
@@ -330,10 +330,10 @@ namespace Microsoft.PowerToys.Settings.UI
                 settingsWindow.Activate();
                 settingsWindow.NavigateToSection(StartupPage);
 
-                // In DEBUG mode, we might not have IPC set up, so provide a dummy implementation
+                // In DEBUG/STANDALONE mode, we might not have IPC set up, so provide a dummy implementation
                 GlobalHotkeyConflictManager.Initialize(message =>
                 {
-                    // In debug mode, just log or do nothing
+                    // In standalone mode, just log or do nothing
                     System.Diagnostics.Debug.WriteLine($"IPC Message: {message}");
                     return 0;
                 });

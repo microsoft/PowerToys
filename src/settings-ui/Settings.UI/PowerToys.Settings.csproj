@@ -44,6 +44,7 @@
 		<PublishSingleFile>false</PublishSingleFile>
 		<DisableRuntimeMarshalling>false</DisableRuntimeMarshalling>
 		<PublishAot>true</PublishAot>
+		<DefineConstants>$(DefineConstants);BUILD_INFO_PUBLISH_AOT;STANDALONE</DefineConstants>
 	</PropertyGroup>
 	<ItemGroup>
 		<None Remove="Assets\Settings\Icons\Models\Azure.svg" />
@@ -114,6 +115,7 @@
 		<!-- StreamJsonRpc and MessagePack are excluded in AOT builds due to reflection dependencies -->
 		<PackageReference Include="MessagePack" Condition="'$(EnableSettingsAOT)' != 'true'" />
 		<PackageReference Include="StreamJsonRpc" Condition="'$(EnableSettingsAOT)' != 'true'" />
+		<!-- Microsoft.DotNet.ILCompiler is implicitly referenced when PublishAot=true, version defined in Directory.Packages.props -->
 		<PackageReference Include="Microsoft.WindowsAppSDK" />
 		<PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
 		<PackageReference Include="Microsoft.Xaml.Behaviors.WinUI.Managed" />
@@ -135,6 +137,26 @@
 
 	<ItemGroup Condition="'$(DisableMsixProjectCapabilityAddedByProject)'!='true' and '$(EnablePreviewMsixTooling)'=='true'">
 		<ProjectCapability Include="Msix" />
+	</ItemGroup>
+
+	<!-- Protect assemblies from being trimmed when PublishTrimmed=true -->
+	<PropertyGroup>
+		<TrimMode>partial</TrimMode>
+		<ILLinkTreatWarningsAsErrors>false</ILLinkTreatWarningsAsErrors>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<TrimmerRootDescriptor Include="ILLink.Descriptors.xml" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<TrimmerRootAssembly Include="StreamJsonRpc" />
+		<TrimmerRootAssembly Include="Newtonsoft.Json" />
+		<TrimmerRootAssembly Include="Nerdbank.Streams" />
+		<TrimmerRootAssembly Include="Microsoft.VisualStudio.Threading" />
+		<TrimmerRootAssembly Include="Microsoft.VisualStudio.Validation" />
+		<TrimmerRootAssembly Include="PowerToys.Settings.UI.Lib" />
+		<TrimmerRootAssembly Include="PowerToys.ManagedCommon" />
 	</ItemGroup>
 
 	<ItemGroup>

@@ -234,6 +234,7 @@
     <Project Path="src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.Shell/Microsoft.CmdPal.Ext.Shell.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
+      <Build Solution="Release|x64" Project="false" />
     </Project>
     <Project Path="src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.System/Microsoft.CmdPal.Ext.System.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />

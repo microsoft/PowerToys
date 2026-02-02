@@ -26,6 +26,7 @@ using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml.Media;
 #if !BUILD_INFO_PUBLISH_AOT
 using StreamJsonRpc;
+using Newtonsoft.Json;
 #endif
 using Windows.ApplicationModel.DataTransfer;
 
