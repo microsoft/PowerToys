@@ -46,6 +46,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.Common" />
+    <PackageReference Include="CommunityToolkit.WinUI.Controls.Primitives" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
     <PackageReference Include="Microsoft.WindowsAppSDK" />
     <PackageReference Include="CommunityToolkit.WinUI.UI.Controls.Markdown" />
