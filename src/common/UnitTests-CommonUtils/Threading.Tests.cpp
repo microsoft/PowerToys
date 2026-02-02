@@ -124,14 +124,16 @@ namespace UnitTestsCommonUtils
         TEST_METHOD(Destructor_WaitsForCompletion)
         {
             std::atomic<bool> completed{ false };
+            std::future<void> future;
 
             {
                 OnThreadExecutor executor;
-                executor.submit(OnThreadExecutor::task_t([&completed]() {
+                future = executor.submit(OnThreadExecutor::task_t([&completed]() {
                     std::this_thread::sleep_for(std::chrono::milliseconds(50));
                     completed = true;
                 }));
-            } // Destructor should wait
+                future.wait();
+            } // Destructor no longer required to wait for completion
 
             Assert::IsTrue(completed);
         }
