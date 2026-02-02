@@ -33,9 +33,6 @@
   <ItemGroup>
     <PackageReference Include="NLog.Schema" />
     <PackageReference Include="hyjiacan.pinyin4net" />
-    <PackageReference Include="System.Drawing.Common">
-      <ExcludeAssets>runtime</ExcludeAssets> <!-- Should already be present on .net sdk runtime, so we avoid the conflicting runtime version from nuget -->
-    </PackageReference>
     <PackageReference Include="System.IO.Abstractions" />
   </ItemGroup>
 </Project>

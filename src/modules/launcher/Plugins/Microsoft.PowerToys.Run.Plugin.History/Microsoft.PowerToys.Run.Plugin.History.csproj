@@ -36,9 +36,6 @@
 
   <ItemGroup>
     <PackageReference Include="Mages" />
-    <PackageReference Include="System.Drawing.Common">
-      <ExcludeAssets>runtime</ExcludeAssets> <!-- Should already be present on .net sdk runtime, so we avoid the conflicting runtime version from nuget -->
-    </PackageReference>
   </ItemGroup>
 
   <ItemGroup>

@@ -17,7 +17,6 @@
     <PackageReference Include="Appium.WebDriver" />
     <PackageReference Include="MSTest" />
     <PackageReference Include="System.IO.Abstractions" />
-    <PackageReference Include="System.Text.RegularExpressions" />
     <PackageReference Include="CoenM.ImageSharp.ImageHash" />
   </ItemGroup>
 

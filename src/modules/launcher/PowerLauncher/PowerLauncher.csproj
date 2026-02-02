@@ -53,9 +53,6 @@
     <PackageReference Include="Microsoft.Toolkit.Uwp.Notifications" />
     <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" />
     <PackageReference Include="ScipBe.Common.Office.OneNote" />
-    <PackageReference Include="System.Drawing.Common">
-      <ExcludeAssets>runtime</ExcludeAssets> <!-- Should already be present on .net sdk runtime, so we avoid the conflicting runtime version from nuget -->
-    </PackageReference>
     <PackageReference Include="System.Reactive" />
     <PackageReference Include="System.Data.OleDb" />
     <PackageReference Include="System.ServiceProcess.ServiceController" />
