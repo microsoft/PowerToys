@@ -2131,7 +2131,7 @@ static void DrawTimeline(HDC hdc, RECT rc, VideoRecordingSession::TrimDialogData
         SetTextColor(hdcMem, darkMode ? RGB(140, 140, 140) : RGB(80, 80, 80));
 
         // Use consistent font for all timeline text - scale for DPI (12pt)
-        const int fontSize = -MulDiv(12, static_cast<int>(dpi), 72);
+        const int fontSize = -MulDiv(12, static_cast<int>(dpi), USER_DEFAULT_SCREEN_DPI);
         HFONT hTimelineFont = CreateFont(fontSize, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, DEFAULT_CHARSET,
             OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, CLEARTYPE_QUALITY,
             DEFAULT_PITCH | FF_SWISS, L"Segoe UI");
@@ -2227,7 +2227,7 @@ static void DrawTimeline(HDC hdc, RECT rc, VideoRecordingSession::TrimDialogData
     // Set font for start/end labels (same font used for tick labels - 12pt)
     SetBkMode(hdcMem, TRANSPARENT);
     SetTextColor(hdcMem, darkMode ? RGB(140, 140, 140) : RGB(80, 80, 80));
-    int labelFontSize = -MulDiv(12, static_cast<int>(dpi), 72);
+    int labelFontSize = -MulDiv(12, static_cast<int>(dpi), USER_DEFAULT_SCREEN_DPI);
     HFONT hFont = CreateFont(labelFontSize, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, DEFAULT_CHARSET,
         OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, CLEARTYPE_QUALITY,
         DEFAULT_PITCH | FF_SWISS, L"Segoe UI");
@@ -3942,7 +3942,7 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
 
         // Create a larger font for the time position label
         {
-            int fontSize = -MulDiv(12, static_cast<int>(currentDpi), 72);  // 12pt font
+            int fontSize = -MulDiv(12, static_cast<int>(currentDpi), USER_DEFAULT_SCREEN_DPI);  // 12pt font
             pData->hTimeLabelFont = CreateFont(fontSize, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, DEFAULT_CHARSET,
                 OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, CLEARTYPE_QUALITY, DEFAULT_PITCH | FF_DONTCARE, L"Segoe UI");
             if (pData->hTimeLabelFont)
