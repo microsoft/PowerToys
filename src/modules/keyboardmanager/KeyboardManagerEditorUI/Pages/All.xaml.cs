@@ -99,7 +99,7 @@ namespace KeyboardManagerEditorUI.Pages
 
             // Reset the control before showing
             UnifiedMappingControl.Reset();
-            RemappingDialog.Title = "Add new remapping";
+            RemappingDialog.Title = "New remapping";
 
             await ShowRemappingDialog();
         }
@@ -149,7 +149,7 @@ namespace KeyboardManagerEditorUI.Pages
                 UnifiedMappingControl.SetTextContent(textMapping.Text);
                 UnifiedMappingControl.SetAppSpecific(!textMapping.IsAllApps, textMapping.AppName);
 
-                RemappingDialog.Title = "Edit text mapping";
+                RemappingDialog.Title = "Edit remapping";
                 await ShowRemappingDialog();
             }
         }
@@ -183,7 +183,7 @@ namespace KeyboardManagerEditorUI.Pages
                     UnifiedMappingControl.SetIfRunningAction(mapping.IfRunningAction);
                 }
 
-                RemappingDialog.Title = "Edit program shortcut";
+                RemappingDialog.Title = "Edit remapping";
                 await ShowRemappingDialog();
             }
         }
@@ -205,7 +205,7 @@ namespace KeyboardManagerEditorUI.Pages
                 UnifiedMappingControl.SetActionType(UnifiedMappingControl.ActionType.OpenUrl);
                 UnifiedMappingControl.SetUrl(urlShortcut.URL);
 
-                RemappingDialog.Title = "Edit URL shortcut";
+                RemappingDialog.Title = "Edit remapping";
                 await ShowRemappingDialog();
             }
         }
@@ -234,9 +234,13 @@ namespace KeyboardManagerEditorUI.Pages
         #region Save Logic
         private void RemappingDialog_PrimaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
         {
+            // Hide any previous validation error
+            UnifiedMappingControl.HideValidationMessage();
+
             if (_mappingService == null)
             {
                 Logger.LogError("Mapping service is null, cannot save mapping");
+                UnifiedMappingControl.ShowValidationError("Error", "Mapping service is not available.");
                 args.Cancel = true;
                 return;
             }
@@ -247,9 +251,19 @@ namespace KeyboardManagerEditorUI.Pages
                 var actionType = UnifiedMappingControl.CurrentActionType;
                 List<string> triggerKeys = UnifiedMappingControl.GetTriggerKeys();
 
+                // Validate trigger keys
                 if (triggerKeys == null || triggerKeys.Count == 0)
                 {
-                    // No trigger keys specified
+                    UnifiedMappingControl.ShowValidationError("Missing Original Keys", "Please enter at least one original key to create a remapping.");
+                    args.Cancel = true;
+                    return;
+                }
+
+                // Validate based on action type
+                ValidationErrorType validationError = ValidateMapping(actionType, triggerKeys);
+                if (validationError != ValidationErrorType.NoError)
+                {
+                    UnifiedMappingControl.ShowValidationErrorFromType(validationError);
                     args.Cancel = true;
                     return;
                 }
@@ -279,7 +293,7 @@ namespace KeyboardManagerEditorUI.Pages
                         break;
 
                     case UnifiedMappingControl.ActionType.MouseClick:
-                        // Not implemented yet
+                        UnifiedMappingControl.ShowValidationError("Not Implemented", "Mouse click remapping is not yet supported.");
                         args.Cancel = true;
                         return;
                 }
@@ -290,13 +304,58 @@ namespace KeyboardManagerEditorUI.Pages
                 }
                 else
                 {
+                    UnifiedMappingControl.ShowValidationError("Save Failed", "Failed to save the remapping. Please try again.");
                     args.Cancel = true;
                 }
             }
             catch (Exception ex)
             {
                 Logger.LogError("Error saving mapping: " + ex.Message);
+                UnifiedMappingControl.ShowValidationError("Error", "An error occurred while saving: " + ex.Message);
                 args.Cancel = true;
+            }
+        }
+
+        private ValidationErrorType ValidateMapping(UnifiedMappingControl.ActionType actionType, List<string> triggerKeys)
+        {
+            bool isAppSpecific = UnifiedMappingControl.GetIsAppSpecific();
+            string appName = UnifiedMappingControl.GetAppName();
+
+            // Get the original remapping for edit mode comparison
+            Remapping? editingRemapping = _isEditMode && _editingItem?.Item is Remapping r ? r : null;
+
+            switch (actionType)
+            {
+                case UnifiedMappingControl.ActionType.KeyOrShortcut:
+                    List<string> actionKeys = UnifiedMappingControl.GetActionKeys();
+                    return ValidationHelper.ValidateKeyMapping(
+                        triggerKeys,
+                        actionKeys,
+                        isAppSpecific,
+                        appName,
+                        _mappingService!,
+                        _isEditMode,
+                        editingRemapping);
+
+                case UnifiedMappingControl.ActionType.Text:
+                    string textContent = UnifiedMappingControl.GetTextContent();
+                    return ValidationHelper.ValidateTextMapping(
+                        triggerKeys,
+                        textContent,
+                        isAppSpecific,
+                        appName,
+                        _mappingService!);
+
+                case UnifiedMappingControl.ActionType.OpenUrl:
+                case UnifiedMappingControl.ActionType.OpenApp:
+                    return ValidationHelper.ValidateProgramOrUrlMapping(
+                        triggerKeys,
+                        isAppSpecific,
+                        appName,
+                        _mappingService!);
+
+                default:
+                    return ValidationErrorType.NoError;
             }
         }
 

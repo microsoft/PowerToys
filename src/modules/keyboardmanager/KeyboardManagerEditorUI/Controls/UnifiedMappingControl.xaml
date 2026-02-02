@@ -11,15 +11,20 @@
     Loaded="UserControl_Loaded"
     mc:Ignorable="d">
 
-    <Grid>
+    <Grid ColumnSpacing="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="280" />
+            <ColumnDefinition Width="*" />
             <ColumnDefinition Width="Auto" />
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
 
-        <!-- Left Column: Original Input (Trigger) -->
+        <!--  Left Column: Original Input (Trigger)  -->
         <StackPanel
+            Grid.Row="0"
             Grid.Column="0"
             Orientation="Vertical"
             Spacing="8">
@@ -32,7 +37,10 @@
                 x:Name="TriggerTypeComboBox"
                 HorizontalAlignment="Stretch"
                 SelectionChanged="TriggerTypeComboBox_SelectionChanged">
-                <ComboBoxItem Content="Key or shortcut" Tag="KeyOrShortcut" IsSelected="True" />
+                <ComboBoxItem
+                    Content="Key or shortcut"
+                    IsSelected="True"
+                    Tag="KeyOrShortcut" />
                 <ComboBoxItem Content="Mouse button" Tag="Mouse" />
             </ComboBox>
 
@@ -41,7 +49,7 @@
                 TargetType="x:String"
                 Value="{Binding SelectedItem.Tag, ElementName=TriggerTypeComboBox}">
 
-                <!-- Key or Shortcut Trigger -->
+                <!--  Key or Shortcut Trigger  -->
                 <tkcontrols:Case Value="KeyOrShortcut">
                     <ToggleButton
                         x:Name="TriggerKeyToggleBtn"
@@ -73,7 +81,7 @@
                     </ToggleButton>
                 </tkcontrols:Case>
 
-                <!-- Mouse Button Trigger -->
+                <!--  Mouse Button Trigger  -->
                 <tkcontrols:Case Value="Mouse">
                     <ComboBox
                         x:Name="MouseTriggerComboBox"
@@ -89,18 +97,40 @@
             </tkcontrols:SwitchPresenter>
         </StackPanel>
 
-        <!-- Arrow Separator -->
-        <TextBlock
+        <!--  Arrow Separator  -->
+        <Grid
+            Grid.Row="0"
             Grid.Column="1"
-            Margin="24,0,24,0"
-            HorizontalAlignment="Center"
-            VerticalAlignment="Center"
-            FontFamily="{ThemeResource SymbolThemeFontFamily}"
-            FontSize="20"
-            Text="&#xE0AB;" />
+            RowSpacing="8">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
 
-        <!-- Right Column: Action Output -->
+
+            <Rectangle
+                Width="1"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Stretch"
+                Fill="{ThemeResource DividerStrokeColorDefaultBrush}" />
+
+            <Viewbox
+                Grid.Row="1"
+                Width="12"
+                Height="12">
+                <PathIcon Data="{StaticResource ArrowIconData}" Foreground="{ThemeResource DividerStrokeColorDefaultBrush}" />
+            </Viewbox>
+            <Rectangle
+                Grid.Row="2"
+                Width="1"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Stretch"
+                Fill="{ThemeResource DividerStrokeColorDefaultBrush}" />
+        </Grid>
+        <!--  Right Column: Action Output  -->
         <StackPanel
+            Grid.Row="0"
             Grid.Column="2"
             MinWidth="360"
             Orientation="Vertical"
@@ -114,7 +144,10 @@
                 x:Name="ActionTypeComboBox"
                 HorizontalAlignment="Stretch"
                 SelectionChanged="ActionTypeComboBox_SelectionChanged">
-                <ComboBoxItem Content="Key or shortcut" Tag="KeyOrShortcut" IsSelected="True" />
+                <ComboBoxItem
+                    Content="Key or shortcut"
+                    IsSelected="True"
+                    Tag="KeyOrShortcut" />
                 <ComboBoxItem Content="Text" Tag="Text" />
                 <ComboBoxItem Content="Open URL" Tag="OpenUrl" />
                 <ComboBoxItem Content="Open app" Tag="OpenApp" />
@@ -126,7 +159,7 @@
                 TargetType="x:String"
                 Value="{Binding SelectedItem.Tag, ElementName=ActionTypeComboBox}">
 
-                <!-- Key or Shortcut Action -->
+                <!--  Key or Shortcut Action  -->
                 <tkcontrols:Case Value="KeyOrShortcut">
                     <StackPanel Orientation="Vertical" Spacing="8">
                         <ToggleButton
@@ -158,7 +191,7 @@
                             </ToggleButton.Content>
                         </ToggleButton>
 
-                        <!-- App-specific remapping (only for shortcuts) -->
+                        <!--  App-specific remapping (only for shortcuts)  -->
                         <CheckBox
                             x:Name="AppSpecificCheckBox"
                             x:Uid="UnifiedMappingControlAppSpecificCheckBox"
@@ -175,7 +208,7 @@
                     </StackPanel>
                 </tkcontrols:Case>
 
-                <!-- Text Action -->
+                <!--  Text Action  -->
                 <tkcontrols:Case Value="Text">
                     <StackPanel Orientation="Vertical" Spacing="8">
                         <TextBox
@@ -191,7 +224,7 @@
                             PlaceholderText="Enter the text to type when triggered"
                             TextWrapping="Wrap" />
 
-                        <!-- App-specific for text -->
+                        <!--  App-specific for text  -->
                         <CheckBox
                             x:Name="TextAppSpecificCheckBox"
                             x:Uid="UnifiedMappingControlTextAppSpecificCheckBox"
@@ -208,7 +241,7 @@
                     </StackPanel>
                 </tkcontrols:Case>
 
-                <!-- Open URL Action -->
+                <!--  Open URL Action  -->
                 <tkcontrols:Case Value="OpenUrl">
                     <TextBox
                         x:Name="UrlPathInput"
@@ -221,7 +254,7 @@
                         PlaceholderText="https://example.com" />
                 </tkcontrols:Case>
 
-                <!-- Open App Action -->
+                <!--  Open App Action  -->
                 <tkcontrols:Case Value="OpenApp">
                     <StackPanel Orientation="Vertical" Spacing="8">
                         <StackPanel Orientation="Horizontal" Spacing="4">
@@ -301,7 +334,7 @@
                     </StackPanel>
                 </tkcontrols:Case>
 
-                <!-- Mouse Click Action (Placeholder) -->
+                <!--  Mouse Click Action (Placeholder)  -->
                 <tkcontrols:Case Value="MouseClick">
                     <TextBlock
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
@@ -310,5 +343,15 @@
                 </tkcontrols:Case>
             </tkcontrols:SwitchPresenter>
         </StackPanel>
+
+        <!--  Validation InfoBar spanning all columns  -->
+        <InfoBar
+            x:Name="ValidationInfoBar"
+            Grid.Row="1"
+            Grid.ColumnSpan="3"
+            Margin="0,16,0,0"
+            IsClosable="True"
+            IsOpen="False"
+            Severity="Warning" />
     </Grid>
 </UserControl>

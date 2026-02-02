@@ -33,9 +33,6 @@ namespace KeyboardManagerEditorUI.Controls
         private readonly ObservableCollection<string> _triggerKeys = new();
         private readonly ObservableCollection<string> _actionKeys = new();
 
-        private TeachingTip? _currentNotification;
-        private DispatcherTimer? _notificationTimer;
-
         private bool _disposed;
         private bool _internalUpdate;
 
@@ -762,6 +759,9 @@ namespace KeyboardManagerEditorUI.Controls
 
             _currentInputMode = KeyInputMode.OriginalKeys;
 
+            // Hide any validation messages
+            HideValidationMessage();
+
             // Reset combo boxes
             if (TriggerTypeComboBox != null)
             {
@@ -845,7 +845,7 @@ namespace KeyboardManagerEditorUI.Controls
                 VisibilityComboBox.SelectedIndex = 0;
             }
 
-            CloseExistingNotification();
+            HideValidationMessage();
         }
 
         /// <summary>
@@ -860,54 +860,59 @@ namespace KeyboardManagerEditorUI.Controls
 
         #region Notifications
 
+        /// <summary>
+        /// Shows a warning notification in the InfoBar.
+        /// </summary>
         public void ShowNotificationTip(string message)
         {
-            CloseExistingNotification();
+            ShowValidationMessage("Warning", message, InfoBarSeverity.Warning);
+        }
 
-            _currentNotification = new TeachingTip
+        /// <summary>
+        /// Shows an error in the InfoBar with title and message.
+        /// </summary>
+        public void ShowValidationError(string title, string message)
+        {
+            ShowValidationMessage(title, message, InfoBarSeverity.Error);
+        }
+
+        /// <summary>
+        /// Shows a validation error based on the error type.
+        /// </summary>
+        public void ShowValidationErrorFromType(ValidationErrorType errorType)
+        {
+            if (ValidationHelper.ValidationMessages.TryGetValue(errorType, out var messageInfo))
             {
-                Title = "Input Limit Reached",
-                Subtitle = message,
-                IsLightDismissEnabled = true,
-                PreferredPlacement = TeachingTipPlacementMode.Top,
-                XamlRoot = this.XamlRoot,
-                IconSource = new SymbolIconSource { Symbol = Symbol.Important },
-            };
-
-            // Target the appropriate toggle button
-            _currentNotification.Target = _currentInputMode == KeyInputMode.RemappedKeys
-                ? ActionKeyToggleBtn
-                : TriggerKeyToggleBtn;
-
-            if (this.Content is Panel rootPanel)
+                ShowValidationError(messageInfo.Title, messageInfo.Message);
+            }
+            else
             {
-                rootPanel.Children.Add(_currentNotification);
-                _currentNotification.IsOpen = true;
-
-                _notificationTimer = new DispatcherTimer
-                {
-                    Interval = TimeSpan.FromMilliseconds(EditorConstants.DefaultNotificationTimeout),
-                };
-                _notificationTimer.Tick += (s, e) => CloseExistingNotification();
-                _notificationTimer.Start();
+                ShowValidationError("Validation Error", "An unknown validation error occurred.");
             }
         }
 
-        private void CloseExistingNotification()
+        /// <summary>
+        /// Shows a message in the InfoBar with the specified severity.
+        /// </summary>
+        private void ShowValidationMessage(string title, string message, InfoBarSeverity severity)
         {
-            _notificationTimer?.Stop();
-            _notificationTimer = null;
-
-            if (_currentNotification != null && _currentNotification.IsOpen)
+            if (ValidationInfoBar != null)
             {
-                _currentNotification.IsOpen = false;
+                ValidationInfoBar.Title = title;
+                ValidationInfoBar.Message = message;
+                ValidationInfoBar.Severity = severity;
+                ValidationInfoBar.IsOpen = true;
+            }
+        }
 
-                if (this.Content is Panel rootPanel && rootPanel.Children.Contains(_currentNotification))
-                {
-                    rootPanel.Children.Remove(_currentNotification);
-                }
-
-                _currentNotification = null;
+        /// <summary>
+        /// Hides the validation InfoBar.
+        /// </summary>
+        public void HideValidationMessage()
+        {
+            if (ValidationInfoBar != null)
+            {
+                ValidationInfoBar.IsOpen = false;
             }
         }
 
@@ -928,8 +933,7 @@ namespace KeyboardManagerEditorUI.Controls
                 if (disposing)
                 {
                     CleanupKeyboardHook();
-                    CloseExistingNotification();
-                    Reset();
+                    HideValidationMessage();
                 }
 
                 _disposed = true;
