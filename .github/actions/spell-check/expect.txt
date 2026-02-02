@@ -218,7 +218,6 @@ changecursor
 checkmarks
 CHILDACTIVATE
 CHILDWINDOW
-checkmarks
 CHOOSEFONT
 Chunghwa
 CIBUILD
@@ -575,6 +574,7 @@ fdx
 FErase
 fesf
 FFFF
+FFh
 Figma
 FILEEXPLORER
 fileexploreraddons
@@ -1064,9 +1064,7 @@ MERGEPAINT
 Metacharacter
 metadatamatters
 Metadatas
-Metacharacter
 metafile
-Metacharacter
 mfc
 Mgmt
 Microwaved
@@ -1139,7 +1137,6 @@ MSLLHOOKSTRUCT
 Mso
 msrc
 msstore
-mstsc
 mstsc
 mswhql
 msvcp
@@ -1303,18 +1300,8 @@ opencode
 OPENFILENAME
 openrdp
 opensource
-
+openurl
 openxmlformats
-onnx
-openurl
-onnx
-openurl
-onnx
-openurl
-onnx
-openurl
-onnx
-openurl
 OPTIMIZEFORINVOKE
 Optronics
 ORPHANEDDIALOGTITLE
@@ -1991,6 +1978,7 @@ UNLEN
 UNORM
 unremapped
 Unsubscribes
+unsubscribes
 unvirtualized
 unwide
 unzoom

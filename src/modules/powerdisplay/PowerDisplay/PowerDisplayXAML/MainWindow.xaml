@@ -21,7 +21,10 @@
         <DesktopAcrylicBackdrop />
     </winuiex:WindowEx.SystemBackdrop>
 
-    <Grid x:Name="RootGrid" IsTabStop="True">
+    <Grid
+        x:Name="RootGrid"
+        IsTabStop="True"
+        TabFocusNavigation="Local">
         <Grid.Resources>
             <Style
                 x:Key="FlyoutButtonStyle"
@@ -85,6 +88,7 @@
                             VerticalAlignment="Stretch"
                             HorizontalScrollBarVisibility="Disabled"
                             HorizontalScrollMode="Disabled"
+                            IsTabStop="False"
                             VerticalScrollBarVisibility="Auto"
                             ZoomMode="Disabled">
                             <!--  Monitors List with modern card design  -->
@@ -92,13 +96,17 @@
                                 x:Name="MonitorsRepeater"
                                 HorizontalAlignment="Stretch"
                                 ItemsSource="{x:Bind ViewModel.Monitors, Mode=OneWay}"
+                                TabFocusNavigation="Local"
                                 Visibility="{x:Bind helpers:VisibilityConverter.BoolToVisibility(ViewModel.HasMonitors), Mode=OneWay}">
                                 <ItemsRepeater.Layout>
                                     <StackLayout Orientation="Vertical" Spacing="32" />
                                 </ItemsRepeater.Layout>
                                 <ItemsRepeater.ItemTemplate>
                                     <DataTemplate x:DataType="vm:MonitorViewModel">
-                                        <StackPanel HorizontalAlignment="Stretch" Spacing="4">
+                                        <StackPanel
+                                            HorizontalAlignment="Stretch"
+                                            Spacing="4"
+                                            TabFocusNavigation="Local">
                                             <!--  Monitor Name with Icon  -->
                                             <Grid Margin="2,0,0,0" HorizontalAlignment="Stretch">
                                                 <Grid.ColumnDefinitions>
@@ -131,7 +139,7 @@
                                                         Style="{StaticResource SubtleButtonStyle}"
                                                         Visibility="{x:Bind helpers:VisibilityConverter.BoolToVisibility(ShowColorTemperature), Mode=OneWay}">
                                                         <Button.Flyout>
-                                                            <Flyout>
+                                                            <Flyout Opened="Flyout_Opened" ShouldConstrainToRootBounds="False">
                                                                 <StackPanel Orientation="Vertical">
                                                                     <ListView
                                                                         ItemsSource="{x:Bind AvailableColorPresets, Mode=OneWay}"
@@ -174,8 +182,14 @@
                                                         Style="{StaticResource SubtleButtonStyle}"
                                                         Visibility="{x:Bind helpers:VisibilityConverter.BoolToVisibility(ShowMoreButton), Mode=OneWay}">
                                                         <Button.Flyout>
-                                                            <Flyout>
-                                                                <StackPanel MinWidth="200" Orientation="Vertical">
+                                                            <Flyout
+                                                                Opened="Flyout_Opened"
+                                                                Placement="BottomEdgeAlignedRight"
+                                                                ShouldConstrainToRootBounds="False">
+                                                                <StackPanel
+                                                                    MinWidth="240"
+                                                                    MaxWidth="320"
+                                                                    Orientation="Vertical">
                                                                     <!--  Input Source Section  -->
                                                                     <StackPanel Visibility="{x:Bind helpers:VisibilityConverter.BoolToVisibility(ShowInputSource), Mode=OneWay}">
                                                                         <ListView
@@ -258,7 +272,9 @@
                                                 Background="{ThemeResource LayerOnAcrylicFillColorDefaultBrush}"
                                                 BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                                                 BorderThickness="1"
-                                                CornerRadius="{StaticResource OverlayCornerRadius}">
+                                                CornerRadius="{StaticResource OverlayCornerRadius}"
+                                                TabFocusNavigation="Local"
+                                                XYFocusKeyboardNavigation="Enabled">
                                                 <!--  Brightness Control  -->
                                                 <Grid Margin="0,8,0,0" HorizontalAlignment="Stretch">
                                                     <Grid.ColumnDefinitions>
@@ -280,6 +296,8 @@
                                                         VerticalAlignment="Center"
                                                         DataContext="{x:Bind}"
                                                         IsEnabled="{x:Bind IsInteractionEnabled, Mode=OneWay}"
+                                                        IsTabStop="True"
+                                                        KeyUp="Slider_KeyUp"
                                                         Maximum="{x:Bind MaxBrightness, Mode=OneWay}"
                                                         Minimum="{x:Bind MinBrightness, Mode=OneWay}"
                                                         PointerCaptureLost="Slider_PointerCaptureLost"
@@ -312,6 +330,8 @@
                                                         VerticalAlignment="Center"
                                                         DataContext="{x:Bind}"
                                                         IsEnabled="{x:Bind IsInteractionEnabled, Mode=OneWay}"
+                                                        IsTabStop="True"
+                                                        KeyUp="Slider_KeyUp"
                                                         Maximum="100"
                                                         Minimum="0"
                                                         PointerCaptureLost="Slider_PointerCaptureLost"
@@ -345,6 +365,8 @@
                                                         VerticalAlignment="Center"
                                                         DataContext="{x:Bind}"
                                                         IsEnabled="{x:Bind IsInteractionEnabled, Mode=OneWay}"
+                                                        IsTabStop="True"
+                                                        KeyUp="Slider_KeyUp"
                                                         Maximum="{x:Bind MaxVolume, Mode=OneWay}"
                                                         Minimum="{x:Bind MinVolume, Mode=OneWay}"
                                                         PointerCaptureLost="Slider_PointerCaptureLost"
@@ -371,7 +393,11 @@
                                                         FontSize="16"
                                                         Glyph="&#xE7AD;" />
 
-                                                    <Grid Grid.Column="2" HorizontalAlignment="Stretch">
+                                                    <Grid
+                                                        Grid.Column="2"
+                                                        HorizontalAlignment="Stretch"
+                                                        TabFocusNavigation="Local"
+                                                        XYFocusKeyboardNavigation="Enabled">
                                                         <Grid.ColumnDefinitions>
                                                             <ColumnDefinition Width="*" />
                                                             <ColumnDefinition Width="4" />
@@ -390,6 +416,7 @@
                                                             DataContext="{x:Bind}"
                                                             IsChecked="{x:Bind IsRotation0, Mode=OneWay}"
                                                             IsEnabled="{x:Bind IsInteractionEnabled, Mode=OneWay}"
+                                                            IsTabStop="True"
                                                             Tag="0">
                                                             <FontIcon FontSize="14" Glyph="&#xE74A;" />
                                                         </ToggleButton>
@@ -402,6 +429,7 @@
                                                             DataContext="{x:Bind}"
                                                             IsChecked="{x:Bind IsRotation3, Mode=OneWay}"
                                                             IsEnabled="{x:Bind IsInteractionEnabled, Mode=OneWay}"
+                                                            IsTabStop="True"
                                                             Tag="3">
                                                             <FontIcon FontSize="14" Glyph="&#xE76B;" />
                                                         </ToggleButton>
@@ -414,6 +442,7 @@
                                                             DataContext="{x:Bind}"
                                                             IsChecked="{x:Bind IsRotation1, Mode=OneWay}"
                                                             IsEnabled="{x:Bind IsInteractionEnabled, Mode=OneWay}"
+                                                            IsTabStop="True"
                                                             Tag="1">
                                                             <FontIcon FontSize="14" Glyph="&#xE76C;" />
                                                         </ToggleButton>
@@ -426,6 +455,7 @@
                                                             DataContext="{x:Bind}"
                                                             IsChecked="{x:Bind IsRotation2, Mode=OneWay}"
                                                             IsEnabled="{x:Bind IsInteractionEnabled, Mode=OneWay}"
+                                                            IsTabStop="True"
                                                             Tag="2">
                                                             <FontIcon FontSize="14" Glyph="&#xE74B;" />
                                                         </ToggleButton>
@@ -456,7 +486,10 @@
                             Style="{StaticResource SubtleButtonStyle}"
                             Visibility="{x:Bind helpers:VisibilityConverter.BoolToVisibility(ViewModel.ShowProfileSwitcherButton), Mode=OneWay}">
                             <Button.Flyout>
-                                <Flyout x:Name="ProfilesFlyout">
+                                <Flyout
+                                    x:Name="ProfilesFlyout"
+                                    Opened="Flyout_Opened"
+                                    ShouldConstrainToRootBounds="False">
                                     <ListView
                                         x:Name="ProfilesListView"
                                         ItemsSource="{x:Bind ViewModel.Profiles, Mode=OneWay}"

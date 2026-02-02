@@ -11,6 +11,8 @@ using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Controls.Primitives;
+using Microsoft.UI.Xaml.Input;
 using PowerDisplay.Common.Models;
 using PowerDisplay.Configuration;
 using PowerDisplay.Helpers;
@@ -166,6 +168,11 @@ namespace PowerDisplay
                 // Ensure window stays on top of other windows
                 this.IsAlwaysOnTop = true;
                 Logger.LogTrace("ShowWindow: IsAlwaysOnTop set to true");
+
+                // Ensure window gets keyboard focus using WinUIEx's BringToFront
+                // This is necessary for Tab navigation to work without clicking first
+                this.BringToFront();
+                Logger.LogTrace("ShowWindow: BringToFront called");
 
                 // Clear focus from any interactive element (e.g., Slider) to prevent
                 // showing the value tooltip when the window opens
@@ -439,6 +446,53 @@ namespace PowerDisplay
         }
 
         /// <summary>
+        /// Slider KeyUp event handler - updates ViewModel when arrow keys are released
+        /// This handles keyboard navigation for accessibility
+        /// </summary>
+        private void Slider_KeyUp(object sender, Microsoft.UI.Xaml.Input.KeyRoutedEventArgs e)
+        {
+            // Only handle arrow keys (Left, Right, Up, Down)
+            if (e.Key != Windows.System.VirtualKey.Left &&
+                e.Key != Windows.System.VirtualKey.Right &&
+                e.Key != Windows.System.VirtualKey.Up &&
+                e.Key != Windows.System.VirtualKey.Down)
+            {
+                return;
+            }
+
+            var slider = sender as Slider;
+            if (slider == null)
+            {
+                return;
+            }
+
+            var propertyName = slider.Tag as string;
+            var monitorVm = slider.DataContext as MonitorViewModel;
+
+            if (monitorVm == null || propertyName == null)
+            {
+                return;
+            }
+
+            // Get the current value after key press
+            int finalValue = (int)slider.Value;
+
+            // Update the ViewModel, which will trigger hardware operation
+            switch (propertyName)
+            {
+                case "Brightness":
+                    monitorVm.Brightness = finalValue;
+                    break;
+                case "Contrast":
+                    monitorVm.ContrastPercent = finalValue;
+                    break;
+                case "Volume":
+                    monitorVm.Volume = finalValue;
+                    break;
+            }
+        }
+
+        /// <summary>
         /// Input source ListView selection changed handler - switches the monitor input source
         /// </summary>
         private async void InputSourceListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -621,6 +675,26 @@ namespace PowerDisplay
 
             // Clear selection to allow reselecting the same preset
             listView.SelectedItem = null;
+        }
+
+        /// <summary>
+        /// Flyout opened event handler - sets focus to the first focusable element inside the flyout.
+        /// This enables keyboard navigation when the flyout opens.
+        /// </summary>
+        private void Flyout_Opened(object sender, object e)
+        {
+            if (sender is Flyout flyout && flyout.Content is FrameworkElement content)
+            {
+                // Use DispatcherQueue to ensure the flyout content is fully rendered before setting focus
+                DispatcherQueue.TryEnqueue(() =>
+                {
+                    var firstFocusable = FocusManager.FindFirstFocusableElement(content);
+                    if (firstFocusable is Control control)
+                    {
+                        control.Focus(FocusState.Programmatic);
+                    }
+                });
+            }
         }
 
         public void Dispose()

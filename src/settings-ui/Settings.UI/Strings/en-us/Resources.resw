@@ -5793,7 +5793,7 @@ The break timer font matches the text font.</value>
     <value>Monitor refresh delay</value>
   </data>
   <data name="PowerDisplay_MonitorRefreshDelay.Description" xml:space="preserve">
-    <value>Seconds to wait after display changes before refreshing monitors. Increase if monitors are not detected after hot-plug.</value>
+    <value>Number of seconds to wait after display changes before refreshing monitors. Increase if monitors are not detected after hot-plug.</value>
   </data>
   <data name="PowerDisplay_Profiles_GroupSettings.Header" xml:space="preserve">
     <value>Profiles</value>
