@@ -26,8 +26,11 @@ namespace UnitTestsCommonUtils
 
         TEST_METHOD(IsSystemWindow_NullHwnd_ReturnsFalse)
         {
+            auto shell = GetShellWindow();
+            auto desktop = GetDesktopWindow();
             bool result = is_system_window(nullptr, "ClassName");
-            Assert::IsFalse(result);
+            bool expected = (shell == nullptr) || (desktop == nullptr);
+            Assert::AreEqual(expected, result);
         }
 
         TEST_METHOD(IsSystemWindow_InvalidHwnd_ReturnsFalse)

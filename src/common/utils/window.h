@@ -10,6 +10,33 @@
 #include <unordered_map>
 #include <type_traits>
 
+namespace detail
+{
+    template<typename T, std::enable_if_t<std::is_pointer_v<T>, int> = 0>
+    inline LONG_PTR to_long_ptr(T value)
+    {
+        return reinterpret_cast<LONG_PTR>(value);
+    }
+
+    template<typename T, std::enable_if_t<!std::is_pointer_v<T>, int> = 0>
+    inline LONG_PTR to_long_ptr(T value)
+    {
+        return static_cast<LONG_PTR>(value);
+    }
+
+    template<typename T, std::enable_if_t<std::is_pointer_v<T>, int> = 0>
+    inline T from_long_ptr(LONG_PTR value)
+    {
+        return reinterpret_cast<T>(value);
+    }
+
+    template<typename T, std::enable_if_t<!std::is_pointer_v<T>, int> = 0>
+    inline T from_long_ptr(LONG_PTR value)
+    {
+        return static_cast<T>(value);
+    }
+}
+
 // Initializes and runs windows message loop
 inline int run_message_loop(const bool until_idle = false,
                             const std::optional<uint32_t> timeout_ms = {},
@@ -82,26 +109,11 @@ template<typename T>
 inline void StoreWindowParam(HWND window, T data)
 {
     static_assert(sizeof(T) <= sizeof(void*));
-    if constexpr (std::is_pointer_v<T>)
-    {
-        SetWindowLongPtrW(window, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(data));
-    }
-    else
-    {
-        SetWindowLongPtrW(window, GWLP_USERDATA, static_cast<LONG_PTR>(data));
-    }
+    SetWindowLongPtrW(window, GWLP_USERDATA, detail::to_long_ptr(data));
 }
 
 template<typename T>
 inline T GetWindowParam(HWND window)
 {
-    LONG_PTR data = GetWindowLongPtrW(window, GWLP_USERDATA);
-    if constexpr (std::is_pointer_v<T>)
-    {
-        return reinterpret_cast<T>(data);
-    }
-    else
-    {
-        return static_cast<T>(data);
-    }
+    return detail::from_long_ptr<T>(GetWindowLongPtrW(window, GWLP_USERDATA));
 }
