@@ -2154,7 +2154,7 @@ static void DrawTimeline(HDC hdc, RECT rc, VideoRecordingSession::TrimDialogData
                 const std::wstring markerText = FormatTrimTime(markerTime, showMilliseconds);
                 const int markerHalfWidth = ScaleForDpi(showMilliseconds ? 45 : 35, dpi);
                 const int markerHeight = ScaleForDpi(26, dpi);
-                RECT rcMarker{ x - markerHalfWidth, tickMajorBottom + ScaleForDpi(2, dpi), x + markerHalfWidth, tickMajorBottom + ScaleForDpi(2, dpi) + markerHeight };
+                RECT rcMarker{ x - markerHalfWidth, tickMajorBottom + ScaleForDpi(10, dpi), x + markerHalfWidth, tickMajorBottom + ScaleForDpi(2, dpi) + markerHeight };
                 DrawText(hdcMem, markerText.c_str(), -1, &rcMarker, DT_CENTER | DT_TOP | DT_SINGLELINE | DT_NOPREFIX);
             }
         }
@@ -2234,8 +2234,8 @@ static void DrawTimeline(HDC hdc, RECT rc, VideoRecordingSession::TrimDialogData
     HFONT hOldFont = static_cast<HFONT>(SelectObject(hdcMem, hFont));
 
     // Align with intermediate marker labels: use same calculation as rcMarker
-    // tickTop = trackBottom + 2, tickMajorBottom = tickTop + 10, marker starts at tickMajorBottom + 2
-    const int tickTopForLabels = trackBottom + ScaleForDpi(2, dpi);
+    // tickTop = trackBottom + 10, tickMajorBottom = tickTop + 10, marker starts at tickMajorBottom + 2
+    const int tickTopForLabels = trackBottom + ScaleForDpi(10, dpi);
     const int tickMajorBottomForLabels = tickTopForLabels + ScaleForDpi(10, dpi);
     int labelTop = tickMajorBottomForLabels + ScaleForDpi(2, dpi);
     int labelBottom = labelTop + ScaleForDpi(26, dpi);
@@ -4110,7 +4110,7 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
         // Fixed heights from RC file (in dialog units) converted to pixels
         int labelHeight, timelineHeight, buttonRowHeight, okCancelHeight, bottomMargin;
         int spacing4, spacing2, spacing8;
-        DluToPixels(0, 16, nullptr, &labelHeight);     // Label height: 16 DLU (for 12pt font)
+        DluToPixels(0, 10, nullptr, &labelHeight);     // Label height: 10 DLU (for 8pt font)
         DluToPixels(0, 47, nullptr, &timelineHeight);  // Timeline height: 47 DLU
         DluToPixels(0, 32, nullptr, &buttonRowHeight); // Play button height: 32 DLU
         DluToPixels(0, 14, nullptr, &okCancelHeight);  // OK/Cancel height: 14 DLU
@@ -4122,7 +4122,7 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
         // Calculate vertical positions from bottom up
         const int okCancelY = clientHeight - bottomMargin - okCancelHeight;
         const int buttonRowY = okCancelY - spacing4 - buttonRowHeight;
-        const int timelineY = buttonRowY - spacing2 - timelineHeight;
+        const int timelineY = buttonRowY - spacing4 - timelineHeight;
         const int labelY = timelineY - spacing2 - labelHeight;
 
         // Preview fills from top to above labels
