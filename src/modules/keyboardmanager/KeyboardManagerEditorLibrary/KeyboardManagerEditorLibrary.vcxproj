@@ -32,6 +32,8 @@
       <AdditionalIncludeDirectories>./;$(SolutionDir)src\modules\;$(SolutionDir)src\common\Display;$(SolutionDir)src\common\inc;$(SolutionDir)src\common\Telemetry;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <!-- Uses WinRT coroutines (co_await) -->
+      <AdditionalOptions>/await %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>

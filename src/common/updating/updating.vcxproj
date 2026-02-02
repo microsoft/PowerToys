@@ -28,6 +28,8 @@
     <ClCompile>
       <AdditionalIncludeDirectories>..\;..\..\;..\..\..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <!-- Uses WinRT coroutines (co_await) -->
+      <AdditionalOptions>/await %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Lib>
       <AdditionalDependencies>Version.lib</AdditionalDependencies>
