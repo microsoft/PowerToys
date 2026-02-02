@@ -1296,6 +1296,10 @@ public:
                         SendMessage(hDlg, WM_SETICON, ICON_BIG, reinterpret_cast<LPARAM>(hIcon));
                         SendMessage(hDlg, WM_SETICON, ICON_SMALL, reinterpret_cast<LPARAM>(hIcon));
                     }
+
+                    // Make dialog appear in taskbar
+                    LONG_PTR exStyle = GetWindowLongPtr(hDlg, GWL_EXSTYLE);
+                    SetWindowLongPtr(hDlg, GWL_EXSTYLE, exStyle | WS_EX_APPWINDOW);
                 }
             }
         }
@@ -3866,6 +3870,7 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
 
         hDlgTrimDialog = hDlg;
         SetWindowLongPtr(hDlg, DWLP_USER, lParam);
+
         pData->hDialog = hDlg;
         pData->hoverPlay = false;
         pData->hoverRewind = false;
