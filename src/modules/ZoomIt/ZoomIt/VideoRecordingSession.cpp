@@ -28,6 +28,8 @@ extern class ClassRegistry reg;
 extern REG_SETTING RegSettings[];
 extern HINSTANCE g_hInstance;
 
+HWND hDlgTrimDialog = nullptr;
+
 namespace winrt
 {
     using namespace Windows::Foundation;
@@ -1538,17 +1540,30 @@ INT_PTR VideoRecordingSession::ShowTrimDialog(
         }
     });
 
-    while (resultFuture.wait_for(std::chrono::milliseconds(20)) != std::future_status::ready)
+    bool quitReceived = false;
+    while (!quitReceived && resultFuture.wait_for(std::chrono::milliseconds(20)) != std::future_status::ready)
     {
         MSG msg;
         while (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
         {
+            if (msg.message == WM_QUIT)
+            {
+                // WM_QUIT must be reposted so the main application loop can exit cleanly.
+                quitReceived = true;
+            }
             TranslateMessage(&msg);
             DispatchMessage(&msg);
         }
     }
 
-    INT_PTR dialogResult = resultFuture.get();
+    // Repost WM_QUIT after waiting for the dialog thread to finish, so the main loop can handle it.
+    if (quitReceived && hDlgTrimDialog != nullptr)
+    {
+        EndDialog(hDlgTrimDialog, IDCANCEL);
+        PostQuitMessage(0);
+    }
+
+    INT_PTR dialogResult = quitReceived ? IDCANCEL : resultFuture.get();
     if (staThread.joinable())
     {
         staThread.join();
@@ -3849,6 +3864,7 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
             return FALSE;
         }
 
+        hDlgTrimDialog = hDlg;
         SetWindowLongPtr(hDlg, DWLP_USER, lParam);
         pData->hDialog = hDlg;
         pData->hoverPlay = false;
@@ -4705,6 +4721,7 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
                 pData->hTimeLabelFont = nullptr;
             }
         }
+        hDlgTrimDialog = nullptr;
 
         ReleaseHighResTimer();
         break;
