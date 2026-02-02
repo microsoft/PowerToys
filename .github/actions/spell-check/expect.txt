@@ -1113,6 +1113,7 @@ MOVESIZEEND
 MOVESIZESTART
 MRM
 Mrt
+mrt
 mru
 MSAL
 msc
@@ -1825,6 +1826,8 @@ STYLECHANGED
 STYLECHANGING
 subkeys
 sublang
+SUBMODULEUPDATE
+subresource
 swp
 Superbar
 sut
