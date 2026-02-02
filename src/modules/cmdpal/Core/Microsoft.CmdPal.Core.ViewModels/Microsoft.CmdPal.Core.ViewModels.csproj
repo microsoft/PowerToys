@@ -1,5 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <Import Project="..\..\CoreCommonProps.props" />
+
+  <PropertyGroup>
+    <EnableCoreMrtTooling>false</EnableCoreMrtTooling>
+  </PropertyGroup>
 	
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.Common" />

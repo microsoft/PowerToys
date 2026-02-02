@@ -93,11 +93,11 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         [JsonPropertyName("custom-actions")]
         [CmdConfigureIgnoreAttribute]
-        public AdvancedPasteCustomActions CustomActions { get; init; }
+        public AdvancedPasteCustomActions CustomActions { get; set; }
 
         [JsonPropertyName("additional-actions")]
         [CmdConfigureIgnoreAttribute]
-        public AdvancedPasteAdditionalActions AdditionalActions { get; init; }
+        public AdvancedPasteAdditionalActions AdditionalActions { get; set; }
 
         [JsonPropertyName("paste-ai-configuration")]
         [CmdConfigureIgnoreAttribute]
