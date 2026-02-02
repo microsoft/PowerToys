@@ -164,11 +164,12 @@ namespace UnitTestsCommonUtils
             Assert::IsTrue(find_app_name_in_path(path, apps));
         }
 
-        TEST_METHOD(FindAppNameInPath_JustFilename_ReturnsTrue)
+        TEST_METHOD(FindAppNameInPath_JustFilename_ReturnsFalse)
         {
             std::wstring path = L"notepad.exe";
             std::vector<std::wstring> apps = { L"notepad.exe" };
-            Assert::IsTrue(find_app_name_in_path(path, apps));
+            // find_app_name_in_path expects a path separator to validate the executable segment
+            Assert::IsFalse(find_app_name_in_path(path, apps));
         }
 
         TEST_METHOD(FindFolderInPath_JustFilename_ReturnsFalse)

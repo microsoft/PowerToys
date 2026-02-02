@@ -3,6 +3,7 @@
 #include <ProcessWaiter.h>
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
+using namespace ProcessWaiter;
 
 namespace UnitTestsCommonUtils
 {

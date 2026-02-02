@@ -6,112 +6,109 @@ using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
 namespace UnitTestsCommonUtils
 {
+    static std::wstring GetInstallDir()
+    {
+        wchar_t path[MAX_PATH];
+        GetModuleFileNameW(nullptr, path, MAX_PATH);
+        return std::filesystem::path{ path }.parent_path().wstring();
+    }
+
     TEST_CLASS(ModulesRegistryTests)
     {
     public:
         // Test that all changeset generator functions return valid changesets
         TEST_METHOD(GetSvgPreviewHandlerChangeSet_ReturnsChangeSet)
         {
-            bool enabled = true;
-            auto changeSet = getSvgPreviewHandlerChangeSet(enabled);
+            auto changeSet = getSvgPreviewHandlerChangeSet(GetInstallDir(), false);
 
-            Assert::IsFalse(changeSet.keyPath.empty());
+            Assert::IsFalse(changeSet.changes.empty());
         }
 
         TEST_METHOD(GetSvgThumbnailProviderChangeSet_ReturnsChangeSet)
         {
-            bool enabled = true;
-            auto changeSet = getSvgThumbnailProviderChangeSet(enabled);
+            auto changeSet = getSvgThumbnailHandlerChangeSet(GetInstallDir(), false);
 
-            Assert::IsFalse(changeSet.keyPath.empty());
+            Assert::IsFalse(changeSet.changes.empty());
         }
 
         TEST_METHOD(GetMarkdownPreviewHandlerChangeSet_ReturnsChangeSet)
         {
-            bool enabled = true;
-            auto changeSet = getMarkdownPreviewHandlerChangeSet(enabled);
+            auto changeSet = getMdPreviewHandlerChangeSet(GetInstallDir(), false);
 
-            Assert::IsFalse(changeSet.keyPath.empty());
+            Assert::IsFalse(changeSet.changes.empty());
         }
 
         TEST_METHOD(GetMonacoPreviewHandlerChangeSet_ReturnsChangeSet)
         {
-            bool enabled = true;
-            auto changeSet = getMonacoPreviewHandlerChangeSet(enabled);
+            auto changeSet = getMonacoPreviewHandlerChangeSet(GetInstallDir(), false);
 
-            Assert::IsFalse(changeSet.keyPath.empty());
+            Assert::IsFalse(changeSet.changes.empty());
         }
 
         TEST_METHOD(GetPdfPreviewHandlerChangeSet_ReturnsChangeSet)
         {
-            bool enabled = true;
-            auto changeSet = getPdfPreviewHandlerChangeSet(enabled);
+            auto changeSet = getPdfPreviewHandlerChangeSet(GetInstallDir(), false);
 
-            Assert::IsFalse(changeSet.keyPath.empty());
+            Assert::IsFalse(changeSet.changes.empty());
         }
 
         TEST_METHOD(GetPdfThumbnailProviderChangeSet_ReturnsChangeSet)
         {
-            bool enabled = true;
-            auto changeSet = getPdfThumbnailProviderChangeSet(enabled);
+            auto changeSet = getPdfThumbnailHandlerChangeSet(GetInstallDir(), false);
 
-            Assert::IsFalse(changeSet.keyPath.empty());
+            Assert::IsFalse(changeSet.changes.empty());
         }
 
         TEST_METHOD(GetGcodePreviewHandlerChangeSet_ReturnsChangeSet)
         {
-            bool enabled = true;
-            auto changeSet = getGcodePreviewHandlerChangeSet(enabled);
+            auto changeSet = getGcodePreviewHandlerChangeSet(GetInstallDir(), false);
 
-            Assert::IsFalse(changeSet.keyPath.empty());
+            Assert::IsFalse(changeSet.changes.empty());
         }
 
         TEST_METHOD(GetGcodeThumbnailProviderChangeSet_ReturnsChangeSet)
         {
-            bool enabled = true;
-            auto changeSet = getGcodeThumbnailProviderChangeSet(enabled);
+            auto changeSet = getGcodeThumbnailHandlerChangeSet(GetInstallDir(), false);
 
-            Assert::IsFalse(changeSet.keyPath.empty());
+            Assert::IsFalse(changeSet.changes.empty());
         }
 
         TEST_METHOD(GetStlThumbnailProviderChangeSet_ReturnsChangeSet)
         {
-            bool enabled = true;
-            auto changeSet = getStlThumbnailProviderChangeSet(enabled);
+            auto changeSet = getStlThumbnailHandlerChangeSet(GetInstallDir(), false);
 
-            Assert::IsFalse(changeSet.keyPath.empty());
+            Assert::IsFalse(changeSet.changes.empty());
         }
 
         TEST_METHOD(GetQoiPreviewHandlerChangeSet_ReturnsChangeSet)
         {
-            bool enabled = true;
-            auto changeSet = getQoiPreviewHandlerChangeSet(enabled);
+            auto changeSet = getQoiPreviewHandlerChangeSet(GetInstallDir(), false);
 
-            Assert::IsFalse(changeSet.keyPath.empty());
+            Assert::IsFalse(changeSet.changes.empty());
         }
 
         TEST_METHOD(GetQoiThumbnailProviderChangeSet_ReturnsChangeSet)
         {
-            bool enabled = true;
-            auto changeSet = getQoiThumbnailProviderChangeSet(enabled);
+            auto changeSet = getQoiThumbnailHandlerChangeSet(GetInstallDir(), false);
 
-            Assert::IsFalse(changeSet.keyPath.empty());
+            Assert::IsFalse(changeSet.changes.empty());
         }
 
         // Test enabled vs disabled state
         TEST_METHOD(ChangeSet_EnabledVsDisabled_MayDiffer)
         {
-            auto enabledSet = getSvgPreviewHandlerChangeSet(true);
-            auto disabledSet = getSvgPreviewHandlerChangeSet(false);
+            auto enabledSet = getSvgPreviewHandlerChangeSet(GetInstallDir(), true);
+            auto disabledSet = getSvgPreviewHandlerChangeSet(GetInstallDir(), false);
 
-            // Both should have same key path
-            Assert::AreEqual(enabledSet.keyPath, disabledSet.keyPath);
+            // Both should be valid change sets
+            Assert::IsFalse(enabledSet.changes.empty());
+            Assert::IsFalse(disabledSet.changes.empty());
         }
 
         // Test getAllOnByDefaultModulesChangeSets
         TEST_METHOD(GetAllOnByDefaultModulesChangeSets_ReturnsMultipleChangeSets)
         {
-            auto changeSets = getAllOnByDefaultModulesChangeSets();
+            auto changeSets = getAllOnByDefaultModulesChangeSets(GetInstallDir());
 
             // Should return multiple changesets for all default-enabled modules
             Assert::IsTrue(changeSets.size() > 0);
@@ -120,7 +117,7 @@ namespace UnitTestsCommonUtils
         // Test getAllModulesChangeSets
         TEST_METHOD(GetAllModulesChangeSets_ReturnsChangeSets)
         {
-            auto changeSets = getAllModulesChangeSets();
+            auto changeSets = getAllModulesChangeSets(GetInstallDir());
 
             // Should return changesets for all modules
             Assert::IsTrue(changeSets.size() > 0);
@@ -128,8 +125,8 @@ namespace UnitTestsCommonUtils
 
         TEST_METHOD(GetAllModulesChangeSets_ContainsMoreThanOnByDefault)
         {
-            auto allSets = getAllModulesChangeSets();
-            auto defaultSets = getAllOnByDefaultModulesChangeSets();
+            auto allSets = getAllModulesChangeSets(GetInstallDir());
+            auto defaultSets = getAllOnByDefaultModulesChangeSets(GetInstallDir());
 
             // All modules should be >= on-by-default modules
             Assert::IsTrue(allSets.size() >= defaultSets.size());
@@ -138,41 +135,37 @@ namespace UnitTestsCommonUtils
         // Test that changesets have valid structure
         TEST_METHOD(ChangeSet_HasValidKeyPath)
         {
-            auto changeSet = getSvgPreviewHandlerChangeSet(true);
+            auto changeSet = getSvgPreviewHandlerChangeSet(GetInstallDir(), false);
 
-            // Key path should not be empty and should be a valid registry path
-            Assert::IsFalse(changeSet.keyPath.empty());
-            Assert::IsTrue(changeSet.keyPath.find(L"\\") != std::wstring::npos ||
-                          changeSet.keyPath.find(L"Software") != std::wstring::npos ||
-                          changeSet.keyPath.find(L"Classes") != std::wstring::npos ||
-                          changeSet.keyPath.length() > 0);
+            Assert::IsFalse(changeSet.changes.empty());
         }
 
         // Test all changeset functions don't crash
         TEST_METHOD(AllChangeSetFunctions_DoNotCrash)
         {
-            getSvgPreviewHandlerChangeSet(true);
-            getSvgPreviewHandlerChangeSet(false);
-            getSvgThumbnailProviderChangeSet(true);
-            getSvgThumbnailProviderChangeSet(false);
-            getMarkdownPreviewHandlerChangeSet(true);
-            getMarkdownPreviewHandlerChangeSet(false);
-            getMonacoPreviewHandlerChangeSet(true);
-            getMonacoPreviewHandlerChangeSet(false);
-            getPdfPreviewHandlerChangeSet(true);
-            getPdfPreviewHandlerChangeSet(false);
-            getPdfThumbnailProviderChangeSet(true);
-            getPdfThumbnailProviderChangeSet(false);
-            getGcodePreviewHandlerChangeSet(true);
-            getGcodePreviewHandlerChangeSet(false);
-            getGcodeThumbnailProviderChangeSet(true);
-            getGcodeThumbnailProviderChangeSet(false);
-            getStlThumbnailProviderChangeSet(true);
-            getStlThumbnailProviderChangeSet(false);
-            getQoiPreviewHandlerChangeSet(true);
-            getQoiPreviewHandlerChangeSet(false);
-            getQoiThumbnailProviderChangeSet(true);
-            getQoiThumbnailProviderChangeSet(false);
+            auto installDir = GetInstallDir();
+            getSvgPreviewHandlerChangeSet(installDir, true);
+            getSvgPreviewHandlerChangeSet(installDir, false);
+            getSvgThumbnailHandlerChangeSet(installDir, true);
+            getSvgThumbnailHandlerChangeSet(installDir, false);
+            getMdPreviewHandlerChangeSet(installDir, true);
+            getMdPreviewHandlerChangeSet(installDir, false);
+            getMonacoPreviewHandlerChangeSet(installDir, true);
+            getMonacoPreviewHandlerChangeSet(installDir, false);
+            getPdfPreviewHandlerChangeSet(installDir, true);
+            getPdfPreviewHandlerChangeSet(installDir, false);
+            getPdfThumbnailHandlerChangeSet(installDir, true);
+            getPdfThumbnailHandlerChangeSet(installDir, false);
+            getGcodePreviewHandlerChangeSet(installDir, true);
+            getGcodePreviewHandlerChangeSet(installDir, false);
+            getGcodeThumbnailHandlerChangeSet(installDir, true);
+            getGcodeThumbnailHandlerChangeSet(installDir, false);
+            getStlThumbnailHandlerChangeSet(installDir, true);
+            getStlThumbnailHandlerChangeSet(installDir, false);
+            getQoiPreviewHandlerChangeSet(installDir, true);
+            getQoiPreviewHandlerChangeSet(installDir, false);
+            getQoiThumbnailHandlerChangeSet(installDir, true);
+            getQoiThumbnailHandlerChangeSet(installDir, false);
 
             Assert::IsTrue(true);
         }

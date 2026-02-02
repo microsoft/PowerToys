@@ -25,13 +25,12 @@ namespace UnitTestsCommonUtils
             Assert::IsTrue(result == L"fallback" || result.empty());
         }
 
-        TEST_METHOD(GetResourceString_NullFallback_ReturnsEmptyOrResource)
+        TEST_METHOD(GetResourceString_EmptyFallback_ReturnsEmpty)
         {
             HINSTANCE instance = GetModuleHandleW(nullptr);
 
-            auto result = get_resource_string(99999, instance, nullptr);
-            // Should return empty string for non-existent resource with null fallback
-            Assert::IsTrue(result.empty() || !result.empty()); // Just don't crash
+            auto result = get_resource_string(99999, instance, L"");
+            Assert::IsTrue(result.empty());
         }
 
         // get_english_fallback_string tests
@@ -141,11 +140,5 @@ namespace UnitTestsCommonUtils
             Assert::IsTrue(true);
         }
 
-        TEST_METHOD(GetResourceString_EmptyFallback_Works)
-        {
-            HINSTANCE instance = GetModuleHandleW(nullptr);
-            auto result = get_resource_string(99999, instance, L"");
-            Assert::IsTrue(result.empty() || !result.empty());
-        }
     };
 }

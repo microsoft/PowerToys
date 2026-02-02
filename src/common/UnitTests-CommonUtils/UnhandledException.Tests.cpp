@@ -13,134 +13,135 @@ namespace UnitTestsCommonUtils
         TEST_METHOD(ExceptionDescription_AccessViolation_ReturnsDescription)
         {
             auto result = exceptionDescription(EXCEPTION_ACCESS_VIOLATION);
-            Assert::IsFalse(result.empty());
+            Assert::IsTrue(result && *result != '\0');
             // Should contain meaningful description
-            Assert::IsTrue(result.find(L"access") != std::wstring::npos ||
-                          result.find(L"Access") != std::wstring::npos ||
-                          result.find(L"violation") != std::wstring::npos ||
-                          result.find(L"Violation") != std::wstring::npos ||
-                          result.length() > 0);
+            std::string desc{ result };
+            Assert::IsTrue(desc.find("ACCESS") != std::string::npos ||
+                          desc.find("access") != std::string::npos ||
+                          desc.find("violation") != std::string::npos ||
+                          desc.length() > 0);
         }
 
         TEST_METHOD(ExceptionDescription_StackOverflow_ReturnsDescription)
         {
             auto result = exceptionDescription(EXCEPTION_STACK_OVERFLOW);
-            Assert::IsFalse(result.empty());
+            Assert::IsTrue(result && *result != '\0');
         }
 
         TEST_METHOD(ExceptionDescription_DivideByZero_ReturnsDescription)
         {
             auto result = exceptionDescription(EXCEPTION_INT_DIVIDE_BY_ZERO);
-            Assert::IsFalse(result.empty());
+            Assert::IsTrue(result && *result != '\0');
         }
 
         TEST_METHOD(ExceptionDescription_IllegalInstruction_ReturnsDescription)
         {
             auto result = exceptionDescription(EXCEPTION_ILLEGAL_INSTRUCTION);
-            Assert::IsFalse(result.empty());
+            Assert::IsTrue(result && *result != '\0');
         }
 
         TEST_METHOD(ExceptionDescription_ArrayBoundsExceeded_ReturnsDescription)
         {
             auto result = exceptionDescription(EXCEPTION_ARRAY_BOUNDS_EXCEEDED);
-            Assert::IsFalse(result.empty());
+            Assert::IsTrue(result && *result != '\0');
         }
 
         TEST_METHOD(ExceptionDescription_Breakpoint_ReturnsDescription)
         {
             auto result = exceptionDescription(EXCEPTION_BREAKPOINT);
-            Assert::IsFalse(result.empty());
+            Assert::IsTrue(result && *result != '\0');
         }
 
         TEST_METHOD(ExceptionDescription_SingleStep_ReturnsDescription)
         {
             auto result = exceptionDescription(EXCEPTION_SINGLE_STEP);
-            Assert::IsFalse(result.empty());
+            Assert::IsTrue(result && *result != '\0');
         }
 
         TEST_METHOD(ExceptionDescription_FloatDivideByZero_ReturnsDescription)
         {
             auto result = exceptionDescription(EXCEPTION_FLT_DIVIDE_BY_ZERO);
-            Assert::IsFalse(result.empty());
+            Assert::IsTrue(result && *result != '\0');
         }
 
         TEST_METHOD(ExceptionDescription_FloatOverflow_ReturnsDescription)
         {
             auto result = exceptionDescription(EXCEPTION_FLT_OVERFLOW);
-            Assert::IsFalse(result.empty());
+            Assert::IsTrue(result && *result != '\0');
         }
 
         TEST_METHOD(ExceptionDescription_FloatUnderflow_ReturnsDescription)
         {
             auto result = exceptionDescription(EXCEPTION_FLT_UNDERFLOW);
-            Assert::IsFalse(result.empty());
+            Assert::IsTrue(result && *result != '\0');
         }
 
         TEST_METHOD(ExceptionDescription_FloatInvalidOperation_ReturnsDescription)
         {
             auto result = exceptionDescription(EXCEPTION_FLT_INVALID_OPERATION);
-            Assert::IsFalse(result.empty());
+            Assert::IsTrue(result && *result != '\0');
         }
 
         TEST_METHOD(ExceptionDescription_PrivilegedInstruction_ReturnsDescription)
         {
             auto result = exceptionDescription(EXCEPTION_PRIV_INSTRUCTION);
-            Assert::IsFalse(result.empty());
+            Assert::IsTrue(result && *result != '\0');
         }
 
         TEST_METHOD(ExceptionDescription_InPageError_ReturnsDescription)
         {
             auto result = exceptionDescription(EXCEPTION_IN_PAGE_ERROR);
-            Assert::IsFalse(result.empty());
+            Assert::IsTrue(result && *result != '\0');
         }
 
         TEST_METHOD(ExceptionDescription_UnknownCode_ReturnsDescription)
         {
             auto result = exceptionDescription(0x12345678);
             // Should return something (possibly "Unknown exception" or similar)
-            Assert::IsFalse(result.empty());
+            Assert::IsTrue(result && *result != '\0');
         }
 
         TEST_METHOD(ExceptionDescription_ZeroCode_ReturnsDescription)
         {
             auto result = exceptionDescription(0);
             // Should handle zero gracefully
-            Assert::IsFalse(result.empty());
+            Assert::IsTrue(result && *result != '\0');
         }
 
         // GetFilenameStart tests (if accessible)
         TEST_METHOD(GetFilenameStart_ValidPath_ReturnsFilename)
         {
             wchar_t path[] = L"C:\\folder\\subfolder\\file.exe";
-            wchar_t* result = GetFilenameStart(path);
+            int start = GetFilenameStart(path);
 
-            Assert::IsNotNull(result);
-            Assert::AreEqual(std::wstring(L"file.exe"), std::wstring(result));
+            Assert::IsTrue(start >= 0);
+            Assert::AreEqual(std::wstring(L"file.exe"), std::wstring(path + start));
         }
 
         TEST_METHOD(GetFilenameStart_NoPath_ReturnsOriginal)
         {
             wchar_t path[] = L"file.exe";
-            wchar_t* result = GetFilenameStart(path);
+            int start = GetFilenameStart(path);
 
-            Assert::IsNotNull(result);
-            Assert::AreEqual(std::wstring(L"file.exe"), std::wstring(result));
+            Assert::IsTrue(start >= 0);
+            Assert::AreEqual(std::wstring(L"file.exe"), std::wstring(path + start));
         }
 
         TEST_METHOD(GetFilenameStart_TrailingBackslash_ReturnsEmpty)
         {
             wchar_t path[] = L"C:\\folder\\";
-            wchar_t* result = GetFilenameStart(path);
+            int start = GetFilenameStart(path);
 
             // Should point to empty string after last backslash
-            Assert::IsNotNull(result);
+            Assert::IsTrue(start >= 0);
         }
 
         TEST_METHOD(GetFilenameStart_NullPath_HandlesGracefully)
         {
             // This might crash or return null depending on implementation
             // Just document the behavior
-            wchar_t* result = GetFilenameStart(nullptr);
+            int start = GetFilenameStart(nullptr);
+            (void)start;
             // Result is implementation-defined for null input
             Assert::IsTrue(true);
         }
@@ -157,7 +158,7 @@ namespace UnitTestsCommonUtils
                     for (int j = 0; j < 10; ++j)
                     {
                         auto desc = exceptionDescription(EXCEPTION_ACCESS_VIOLATION);
-                        if (!desc.empty())
+                        if (desc && *desc != '\0')
                         {
                             successCount++;
                         }
@@ -202,7 +203,7 @@ namespace UnitTestsCommonUtils
             for (DWORD code : codes)
             {
                 auto desc = exceptionDescription(code);
-                Assert::IsFalse(desc.empty(), (L"Empty description for code: " + std::to_wstring(code)).c_str());
+                Assert::IsTrue(desc && *desc != '\0', (L"Empty description for code: " + std::to_wstring(code)).c_str());
             }
         }
     };

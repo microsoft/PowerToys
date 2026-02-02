@@ -23,88 +23,39 @@ namespace UnitTestsCommonUtils
 
         TEST_METHOD(Registry_ValueChange_StringValue)
         {
-            // Test the ValueChange structure for string values
-            registry::ValueChange change;
-            change.value = L"TestValue";
-            change.data = L"TestData";
-            change.isString = true;
+            registry::ValueChange change{ HKEY_CURRENT_USER, L"Software\\PowerToys\\Test", L"TestValue", std::wstring{ L"TestData" } };
 
-            Assert::AreEqual(std::wstring(L"TestValue"), change.value);
-            Assert::AreEqual(std::wstring(L"TestData"), std::get<std::wstring>(change.data));
-            Assert::IsTrue(change.isString);
+            Assert::AreEqual(std::wstring(L"Software\\PowerToys\\Test"), change.path);
+            Assert::IsTrue(change.name.has_value());
+            Assert::AreEqual(std::wstring(L"TestValue"), *change.name);
+            Assert::AreEqual(std::wstring(L"TestData"), std::get<std::wstring>(change.value));
         }
 
         TEST_METHOD(Registry_ValueChange_DwordValue)
         {
-            registry::ValueChange change;
-            change.value = L"TestDword";
-            change.data = static_cast<DWORD>(42);
-            change.isString = false;
+            registry::ValueChange change{ HKEY_CURRENT_USER, L"Software\\PowerToys\\Test", L"TestDword", static_cast<DWORD>(42) };
 
-            Assert::AreEqual(std::wstring(L"TestDword"), change.value);
-            Assert::AreEqual(static_cast<DWORD>(42), std::get<DWORD>(change.data));
-            Assert::IsFalse(change.isString);
+            Assert::AreEqual(std::wstring(L"Software\\PowerToys\\Test"), change.path);
+            Assert::IsTrue(change.name.has_value());
+            Assert::AreEqual(std::wstring(L"TestDword"), *change.name);
+            Assert::AreEqual(static_cast<DWORD>(42), std::get<DWORD>(change.value));
         }
 
         TEST_METHOD(Registry_ChangeSet_AddChanges)
         {
             registry::ChangeSet changeSet;
 
-            registry::ValueChange change1;
-            change1.value = L"Value1";
-            change1.data = L"Data1";
-            change1.isString = true;
-
-            registry::ValueChange change2;
-            change2.value = L"Value2";
-            change2.data = static_cast<DWORD>(123);
-            change2.isString = false;
-
-            changeSet.changes.push_back(change1);
-            changeSet.changes.push_back(change2);
+            changeSet.changes.push_back({ HKEY_CURRENT_USER, L"Software\\PowerToys\\Test", L"Value1", std::wstring{ L"Data1" } });
+            changeSet.changes.push_back({ HKEY_CURRENT_USER, L"Software\\PowerToys\\Test", L"Value2", static_cast<DWORD>(123) });
 
             Assert::AreEqual(static_cast<size_t>(2), changeSet.changes.size());
         }
 
-        TEST_METHOD(Registry_ChangeSet_KeyPath)
+        TEST_METHOD(InstallScope_GetCurrentInstallScope_ReturnsValidValue)
         {
-            registry::ChangeSet changeSet;
-            changeSet.keyPath = L"Software\\PowerToys\\TestKey";
-
-            Assert::AreEqual(std::wstring(L"Software\\PowerToys\\TestKey"), changeSet.keyPath);
-        }
-
-        TEST_METHOD(InstallScope_DetectBundleInstall_DoesNotCrash)
-        {
-            // This function checks registry for bundle installation
-            // It should not crash regardless of installation state
-            auto result = registry::install_scope::detect_bundle_install();
-
-            // Result depends on installation state
-            Assert::IsTrue(true);
-        }
-
-        TEST_METHOD(InstallScope_IsPerUserInstallation_ReturnsBoolean)
-        {
-            bool result = registry::install_scope::is_peruser_installation();
-            Assert::IsTrue(result == true || result == false);
-        }
-
-        TEST_METHOD(InstallScope_IsPerMachineInstallation_ReturnsBoolean)
-        {
-            bool result = registry::install_scope::is_permachine_installation();
-            Assert::IsTrue(result == true || result == false);
-        }
-
-        TEST_METHOD(InstallScope_BothInstallationTypes_MutuallyExclusive)
-        {
-            // A system shouldn't be both per-user and per-machine installed
-            // (unless there's some edge case)
-            bool perUser = registry::install_scope::is_peruser_installation();
-            bool perMachine = registry::install_scope::is_permachine_installation();
-
-            // At least one should be false (or both if not installed)
-            Assert::IsTrue(!perUser || !perMachine || (!perUser && !perMachine));
+            auto scope = registry::install_scope::get_current_install_scope();
+            Assert::IsTrue(scope == registry::install_scope::InstallScope::PerMachine ||
+                          scope == registry::install_scope::InstallScope::PerUser);
         }
     };
 }

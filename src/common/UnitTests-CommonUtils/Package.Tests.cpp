@@ -3,6 +3,7 @@
 #include <package.h>
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
+using namespace package;
 
 namespace UnitTestsCommonUtils
 {
@@ -83,13 +84,13 @@ namespace UnitTestsCommonUtils
             auto result = GetRegisteredPackage(L"NonExistentPackage12345", false);
 
             // Should return empty for non-existent package
-            Assert::IsTrue(result.empty());
+            Assert::IsFalse(result.has_value());
         }
 
-        TEST_METHOD(GetRegisteredPackage_EmptyName_ReturnsEmpty)
+        TEST_METHOD(GetRegisteredPackage_EmptyName_ReturnsFirstMatch)
         {
             auto result = GetRegisteredPackage(L"", false);
-            Assert::IsTrue(result.empty());
+            Assert::IsTrue(result.has_value());
         }
 
         // IsPackageRegisteredWithPowerToysVersion tests

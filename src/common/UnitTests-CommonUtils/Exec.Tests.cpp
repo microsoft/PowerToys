@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "TestHelpers.h"
 #include <exec.h>
+#include <cctype>
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
@@ -16,7 +17,7 @@ namespace UnitTestsCommonUtils
             Assert::IsTrue(result.has_value());
             Assert::IsFalse(result->empty());
             // Output should contain "hello"
-            Assert::IsTrue(result->find(L"hello") != std::wstring::npos);
+            Assert::IsTrue(result->find("hello") != std::string::npos);
         }
 
         TEST_METHOD(ExecAndReadOutput_WhereCommand_ReturnsPath)
@@ -26,7 +27,7 @@ namespace UnitTestsCommonUtils
             Assert::IsTrue(result.has_value());
             Assert::IsFalse(result->empty());
             // Should contain path to cmd.exe
-            Assert::IsTrue(result->find(L"cmd") != std::wstring::npos);
+            Assert::IsTrue(result->find("cmd") != std::string::npos);
         }
 
         TEST_METHOD(ExecAndReadOutput_DirCommand_ReturnsListing)
@@ -36,10 +37,10 @@ namespace UnitTestsCommonUtils
             Assert::IsTrue(result.has_value());
             Assert::IsFalse(result->empty());
             // Should contain some common Windows folder names
-            std::wstring output = *result;
-            std::transform(output.begin(), output.end(), output.begin(), ::towlower);
-            Assert::IsTrue(output.find(L"system32") != std::wstring::npos ||
-                          output.find(L"system") != std::wstring::npos);
+            std::string output = *result;
+            std::transform(output.begin(), output.end(), output.begin(), [](unsigned char ch) { return static_cast<char>(std::tolower(ch)); });
+            Assert::IsTrue(output.find("system32") != std::string::npos ||
+                          output.find("system") != std::string::npos);
         }
 
         TEST_METHOD(ExecAndReadOutput_InvalidCommand_ReturnsEmptyOrError)
@@ -48,8 +49,8 @@ namespace UnitTestsCommonUtils
 
             // Invalid command should either return nullopt or an error message
             Assert::IsTrue(!result.has_value() || result->empty() ||
-                          result->find(L"not recognized") != std::wstring::npos ||
-                          result->find(L"error") != std::wstring::npos);
+                          result->find("not recognized") != std::string::npos ||
+                          result->find("error") != std::string::npos);
         }
 
         TEST_METHOD(ExecAndReadOutput_EmptyCommand_DoesNotCrash)
@@ -81,9 +82,9 @@ namespace UnitTestsCommonUtils
 
             Assert::IsTrue(result.has_value());
             // Should contain multiple lines
-            Assert::IsTrue(result->find(L"line1") != std::wstring::npos);
-            Assert::IsTrue(result->find(L"line2") != std::wstring::npos);
-            Assert::IsTrue(result->find(L"line3") != std::wstring::npos);
+            Assert::IsTrue(result->find("line1") != std::string::npos);
+            Assert::IsTrue(result->find("line2") != std::string::npos);
+            Assert::IsTrue(result->find("line3") != std::string::npos);
         }
 
         TEST_METHOD(ExecAndReadOutput_UnicodeOutput_Works)
@@ -92,7 +93,7 @@ namespace UnitTestsCommonUtils
             auto result = exec_and_read_output(L"cmd /c echo test123", 5000);
 
             Assert::IsTrue(result.has_value());
-            Assert::IsTrue(result->find(L"test123") != std::wstring::npos);
+            Assert::IsTrue(result->find("test123") != std::string::npos);
         }
 
         TEST_METHOD(ExecAndReadOutput_LongTimeout_Works)
@@ -100,7 +101,7 @@ namespace UnitTestsCommonUtils
             auto result = exec_and_read_output(L"cmd /c echo test", 60000);
 
             Assert::IsTrue(result.has_value());
-            Assert::IsTrue(result->find(L"test") != std::wstring::npos);
+            Assert::IsTrue(result->find("test") != std::string::npos);
         }
 
         TEST_METHOD(ExecAndReadOutput_QuotedArguments_Work)
@@ -108,7 +109,7 @@ namespace UnitTestsCommonUtils
             auto result = exec_and_read_output(L"cmd /c echo \"hello world\"", 5000);
 
             Assert::IsTrue(result.has_value());
-            Assert::IsTrue(result->find(L"hello") != std::wstring::npos);
+            Assert::IsTrue(result->find("hello") != std::string::npos);
         }
 
         TEST_METHOD(ExecAndReadOutput_EnvironmentVariable_Expanded)

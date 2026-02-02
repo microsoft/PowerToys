@@ -27,8 +27,9 @@
   <PropertyGroup Label="UserMacros" />
   <ItemDefinitionGroup>
     <ClCompile>
-      <AdditionalIncludeDirectories>..\;..\utils;..\Telemetry;..\..\;..\..\..\deps\;..\..\..\deps\spdlog\include;$(VCInstallDir)UnitTest\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <LanguageStandard>stdcpp20</LanguageStandard>
+      <AdditionalIncludeDirectories>..\;..\utils;..\Telemetry;..\..\;..\..\..\deps\;..\..\..\deps\spdlog\include;..\..\..\packages\Microsoft.Windows.ImplementationLibrary.1.0.231216.1\include;$(VCInstallDir)UnitTest\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp23</LanguageStandard>
+      <PreprocessorDefinitions>SPDLOG_WCHAR_TO_UTF8_SUPPORT;SPDLOG_HEADER_ONLY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(VCInstallDir)UnitTest\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -54,7 +55,21 @@
     <ClCompile Include="MsiUtils.Tests.cpp" />
     <ClCompile Include="HttpClient.Tests.cpp" />
     <ClCompile Include="ComObjectFactory.Tests.cpp" />
+    <ClCompile Include="AppMutex.Tests.cpp" />
+    <ClCompile Include="Elevation.Tests.cpp" />
+    <ClCompile Include="Exec.Tests.cpp" />
+    <ClCompile Include="ExcludedApps.Tests.cpp" />
     <ClCompile Include="HDropIterator.Tests.cpp" />
+    <ClCompile Include="LoggerHelper.Tests.cpp" />
+    <ClCompile Include="ModulesRegistry.Tests.cpp" />
+    <ClCompile Include="MsWindowsSettings.Tests.cpp" />
+    <ClCompile Include="Package.Tests.cpp" />
+    <ClCompile Include="ProcessApi.Tests.cpp" />
+    <ClCompile Include="ProcessWaiter.Tests.cpp" />
+    <ClCompile Include="Registry.Tests.cpp" />
+    <ClCompile Include="Resources.Tests.cpp" />
+    <ClCompile Include="TestStubs.cpp" />
+    <ClCompile Include="UnhandledException.Tests.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />

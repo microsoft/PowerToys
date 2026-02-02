@@ -26,11 +26,7 @@ namespace UnitTestsCommonUtils
             // Should find at least our own process
             Assert::IsFalse(handles.empty());
 
-            // Clean up handles
-            for (auto handle : handles)
-            {
-                CloseHandle(handle);
-            }
+            // Handles are RAII-managed
         }
 
         TEST_METHOD(GetProcessHandlesByName_NonExistentProcess_ReturnsEmpty)
@@ -50,11 +46,7 @@ namespace UnitTestsCommonUtils
             // Explorer.exe should typically be running
             auto handles = getProcessHandlesByName(L"explorer.exe", PROCESS_QUERY_LIMITED_INFORMATION);
 
-            // Clean up any handles we got
-            for (auto handle : handles)
-            {
-                CloseHandle(handle);
-            }
+            // Handles are RAII-managed
 
             // May or may not find explorer depending on system state
             // Just verify it doesn't crash
@@ -78,11 +70,7 @@ namespace UnitTestsCommonUtils
 
             auto handles = getProcessHandlesByName(upperName, PROCESS_QUERY_LIMITED_INFORMATION);
 
-            // Clean up handles
-            for (auto handle : handles)
-            {
-                CloseHandle(handle);
-            }
+            // Handles are RAII-managed
 
             // The function may or may not be case insensitive - just don't crash
             Assert::IsTrue(true);
@@ -102,9 +90,7 @@ namespace UnitTestsCommonUtils
             auto handles1 = getProcessHandlesByName(exeName, PROCESS_QUERY_INFORMATION);
             auto handles2 = getProcessHandlesByName(exeName, PROCESS_VM_READ);
 
-            // Clean up
-            for (auto handle : handles1) CloseHandle(handle);
-            for (auto handle : handles2) CloseHandle(handle);
+            // Handles are RAII-managed
 
             // Just verify no crashes
             Assert::IsTrue(true);
@@ -115,10 +101,7 @@ namespace UnitTestsCommonUtils
             // System processes might require elevation
             auto handles = getProcessHandlesByName(L"System", PROCESS_QUERY_LIMITED_INFORMATION);
 
-            for (auto handle : handles)
-            {
-                CloseHandle(handle);
-            }
+            // Handles are RAII-managed
 
             // Just verify no crashes
             Assert::IsTrue(true);
@@ -137,15 +120,14 @@ namespace UnitTestsCommonUtils
             auto handles = getProcessHandlesByName(exeName, PROCESS_QUERY_LIMITED_INFORMATION);
 
             bool foundValidHandle = false;
-            for (auto handle : handles)
+            for (auto& handle : handles)
             {
                 // Try to use the handle
                 DWORD exitCode;
-                if (GetExitCodeProcess(handle, &exitCode))
+                if (GetExitCodeProcess(handle.get(), &exitCode))
                 {
                     foundValidHandle = true;
                 }
-                CloseHandle(handle);
             }
 
             Assert::IsTrue(foundValidHandle || handles.empty());

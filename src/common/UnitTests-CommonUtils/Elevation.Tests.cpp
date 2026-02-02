@@ -62,6 +62,7 @@ namespace UnitTestsCommonUtils
         {
             bool elevated = is_process_elevated(false);
             bool admin = check_user_is_admin();
+            (void)admin;
 
             // If elevated, user should typically be admin
             // But user can be admin without process being elevated
@@ -97,7 +98,7 @@ namespace UnitTestsCommonUtils
         TEST_METHOD(ProcessInfo_DefaultConstruction)
         {
             ProcessInfo info{};
-            Assert::AreEqual(0u, info.processID);
+            Assert::AreEqual(static_cast<DWORD>(0), info.processID);
         }
 
         // Thread safety tests

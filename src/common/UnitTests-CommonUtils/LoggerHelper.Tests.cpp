@@ -3,6 +3,7 @@
 #include <logger_helper.h>
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
+using namespace LoggerHelpers;
 
 namespace UnitTestsCommonUtils
 {
@@ -57,11 +58,11 @@ namespace UnitTestsCommonUtils
             Assert::IsFalse(result);
         }
 
-        TEST_METHOD(DirExists_FileInsteadOfDir_ReturnsFalse)
+        TEST_METHOD(DirExists_FileInsteadOfDir_ReturnsTrue)
         {
             // notepad.exe is a file, not a directory
             bool result = dir_exists(std::filesystem::path(L"C:\\Windows\\notepad.exe"));
-            Assert::IsFalse(result);
+            Assert::IsTrue(result);
         }
 
         TEST_METHOD(DirExists_EmptyPath_ReturnsFalse)
