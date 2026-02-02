@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<linker>
+  <!-- Preserve all of StreamJsonRpc -->
+  <assembly fullname="StreamJsonRpc" preserve="all" />
+
+  <!-- Preserve all of Newtonsoft.Json -->
+  <assembly fullname="Newtonsoft.Json" preserve="all" />
+
+  <!-- Preserve all of Nerdbank.Streams -->
+  <assembly fullname="Nerdbank.Streams" preserve="all" />
+
+  <!-- Preserve Microsoft.VisualStudio assemblies -->
+  <assembly fullname="Microsoft.VisualStudio.Threading" preserve="all" />
+  <assembly fullname="Microsoft.VisualStudio.Validation" preserve="all" />
+
+  <!-- Preserve PowerToys assemblies -->
+  <assembly fullname="PowerToys.Settings.UI.Lib" preserve="all" />
+  <assembly fullname="PowerToys.ManagedCommon" preserve="all" />
+  <assembly fullname="PowerToys.Common.UI" preserve="all" />
+  <assembly fullname="PowerToys.ManagedTelemetry" preserve="all" />
+  <assembly fullname="Common.Search" preserve="all" />
+  <assembly fullname="LanguageModelProvider" preserve="all" />
+  <assembly fullname="PowerToys.AllExperiments" preserve="all" />
+</linker>
