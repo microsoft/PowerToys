@@ -2,6 +2,12 @@
 <Project ToolsVersion="4.0"
   xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
+  <!-- Skip building C++ test projects when BuildTests=false -->
+  <PropertyGroup Condition="'$(_IsSkippedTestProject)' == 'true'">
+    <UsePrecompiledHeaders>false</UsePrecompiledHeaders>
+    <RunCodeAnalysis>false</RunCodeAnalysis>
+  </PropertyGroup>
+
   <!-- Project configurations -->
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|x64">
