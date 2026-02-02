@@ -28,34 +28,33 @@
                 <StackPanel Orientation="Vertical" Spacing="4" />
             </ItemsPanelTemplate>
 
-            <DataTemplate x:Key="DeskbandTemplate" x:DataType="dockVm:DockItemViewModel">
-                <local:DockItemControl
-                    Title="{x:Bind Title, Mode=OneWay}"
-                    RightTapped="BandItem_RightTapped"
-                    Subtitle="{x:Bind Subtitle, Mode=OneWay}"
-                    Tapped="BandItem_Tapped"
-                    ToolTip="{x:Bind Tooltip, Mode=OneWay}">
-                    <local:DockItemControl.Icon>
-                        <cpcontrols:IconBox
-                            x:Name="IconBorder"
-                            Width="16"
-                            VerticalAlignment="Center"
-                            AutomationProperties.AccessibilityView="Raw"
-                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                            SourceKey="{x:Bind Icon, Mode=OneWay}"
-                            SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}" />
-                    </local:DockItemControl.Icon>
-                </local:DockItemControl>
-            </DataTemplate>
-
             <DataTemplate x:Key="DockBandTemplate" x:DataType="dockVm:DockBandViewModel">
-                <ItemsRepeater
-                    ItemTemplate="{StaticResource DeskbandTemplate}"
-                    ItemsSource="{x:Bind Items, Mode=OneWay}"
-                    Layout="{StaticResource ItemsOrientationLayout}">
+                <ItemsRepeater ItemsSource="{x:Bind Items, Mode=OneWay}" Layout="{StaticResource ItemsOrientationLayout}">
                     <ItemsRepeater.Transitions>
                         <TransitionCollection />
                     </ItemsRepeater.Transitions>
+                    <ItemsRepeater.ItemTemplate>
+                        <DataTemplate x:DataType="dockVm:DockItemViewModel">
+                            <local:DockItemControl
+                                Title="{x:Bind Title, Mode=OneWay}"
+                                RightTapped="BandItem_RightTapped"
+                                Subtitle="{x:Bind Subtitle, Mode=OneWay}"
+                                Tag="{x:Bind}"
+                                Tapped="BandItem_Tapped"
+                                ToolTip="{x:Bind Tooltip, Mode=OneWay}">
+                                <local:DockItemControl.Icon>
+                                    <cpcontrols:IconBox
+                                        x:Name="IconBorder"
+                                        Width="16"
+                                        VerticalAlignment="Center"
+                                        AutomationProperties.AccessibilityView="Raw"
+                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                        SourceKey="{x:Bind Icon, Mode=OneWay}"
+                                        SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}" />
+                                </local:DockItemControl.Icon>
+                            </local:DockItemControl>
+                        </DataTemplate>
+                    </ItemsRepeater.ItemTemplate>
                 </ItemsRepeater>
             </DataTemplate>
 

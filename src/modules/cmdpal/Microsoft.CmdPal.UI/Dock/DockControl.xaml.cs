@@ -189,13 +189,13 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
 
     private void BandItem_RightTapped(object sender, Microsoft.UI.Xaml.Input.RightTappedRoutedEventArgs e)
     {
-        if (sender is DockItemControl dockItem && dockItem.DataContext is DockItemViewModel item)
+        if (sender is DockItemControl dockItem && dockItem.DataContext is DockBandViewModel band && dockItem.Tag is DockItemViewModel item)
         {
             // In edit mode, show the edit mode context menu (show/hide labels)
             if (IsEditMode)
             {
                 // Find the parent DockBandViewModel for this item
-                _editModeContextBand = FindParentBand(item);
+                _editModeContextBand = band;
                 if (_editModeContextBand != null)
                 {
                     // Update toggle menu item checked state based on current settings
@@ -229,36 +229,6 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
                 e.Handled = true;
             }
         }
-    }
-
-    private DockBandViewModel? FindParentBand(DockItemViewModel item)
-    {
-        // Search all bands to find which one contains this item
-        foreach (var band in ViewModel.StartItems)
-        {
-            if (band.Items.Contains(item))
-            {
-                return band;
-            }
-        }
-
-        foreach (var band in ViewModel.CenterItems)
-        {
-            if (band.Items.Contains(item))
-            {
-                return band;
-            }
-        }
-
-        foreach (var band in ViewModel.EndItems)
-        {
-            if (band.Items.Contains(item))
-            {
-                return band;
-            }
-        }
-
-        return null;
     }
 
     private void ShowTitlesMenuItem_Click(object sender, RoutedEventArgs e)
