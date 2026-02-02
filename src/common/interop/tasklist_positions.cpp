@@ -158,7 +158,7 @@ extern "C"
         winrt::com_ptr<IUIAutomationElement> child;
         std::vector<TasklistButton> found_buttons;
         found_buttons.reserve(count);
-        for (int i = 3; i < count; ++i)
+        for (int i = 0; i < count; ++i)
         {
             child = nullptr;
             if (elements->GetElement(i, child.put()) < 0)

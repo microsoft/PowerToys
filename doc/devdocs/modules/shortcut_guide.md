@@ -46,9 +46,7 @@ This is the main UI project for the Shortcut Guide module. Upon startup it does 
 3. Populate the PowerToys shortcut manifest with the user-defined shortcuts.
 4. Starts the UI.
 
-### [`ShortcutGuide.CPPProject`](/src/modules/ShortcutGuide/ShortcutGuide.CPPProject/ShortcutGuide.CPPProject.vcxproj)
-
-This project exports certain functions to be used by the Shortcut Guide module, that were not able to be implemented in C#.
+### Related files in PowerToys.Interop
 
 #### [`excluded_app.cpp`](/src/modules/ShortcutGuide/ShortcutGuide.CPPProject/excluded_app.cpp)
 
@@ -87,6 +85,14 @@ For any secondary taskbar it searches for:
 * that contains a window called "MSTaskListWClass"
 
 It then enumerates all the button elements inside "MSTaskListWClass" while skipping such with a same name (which implies the user does not use combining taskbar buttons) 
+
+If this method fails, which it will for newer versions of Windows, it falls back to searching for:
+* A window called "Shell_TrayWnd" or "Shell_SecondaryTrayWnd"
+* that contains a window called "Windows.UI.Composition.DesktopWindowContentBridge"
+* that contains a window called "Windows.UI.Input.InputSite.WindowClass"
+* the first child element
+
+It then enumerates all the button elements inside the selected while skipping such with a same name (which implies the user does not use combining taskbar buttons) and such that do not start with "Appid:" (which are not actual taskbar buttons related to apps, but others like the widgets or the search button).
 
 ### [`ShortcutGuide.IndexYmlGenerator`](/src/modules/ShortcutGuide/ShortcutGuide.IndexYmlGenerator/)
 
