@@ -1025,6 +1025,7 @@ Metacharacter
 metadatamatters
 Metadatas
 metafile
+Metacharacter
 mfc
 Mgmt
 Microwaved
@@ -1071,7 +1072,7 @@ mouseutils
 MOVESIZEEND
 MOVESIZESTART
 MRM
-MRT
+Mrt
 mru
 MSAL
 msc
