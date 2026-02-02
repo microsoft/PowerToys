@@ -2,8 +2,10 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections.Generic;
 using System.Threading;
+using Microsoft.CmdPal.Common.Commands;
 using Microsoft.CmdPal.Ext.Calc.Helper;
 using Microsoft.CmdPal.Ext.Calc.Properties;
 using Microsoft.CommandPalette.Extensions;
@@ -23,10 +25,11 @@ namespace Microsoft.CmdPal.Ext.Calc.Pages;
 public sealed partial class CalculatorListPage : DynamicListPage
 {
     private readonly Lock _resultsLock = new();
+    private readonly Lock _historyLock = new();
     private readonly ISettingsInterface _settingsManager;
     private readonly List<ListItem> _items = [];
-    private readonly List<ListItem> _history = [];
     private readonly ListItem _emptyItem;
+    private List<ListItem> _historyItems = [];
 
     // This is the text that saved when the user click the result.
     // We need to avoid the double calculation. This may cause some wierd behaviors.
@@ -51,7 +54,24 @@ public sealed partial class CalculatorListPage : DynamicListPage
             Title = Resources.calculator_placeholder_text,
         };
 
+        _settingsManager.HistoryChanged += SettingsManagerOnHistoryChanged;
+        _settingsManager.SettingsChanged += SettingsManagerOnSettingsChanged;
+
+        UpdateHistory();
+        AppendResult(null);
         UpdateSearchText(string.Empty, string.Empty);
+    }
+
+    private void SettingsManagerOnHistoryChanged(object sender, EventArgs e)
+    {
+        UpdateHistory();
+        AppendResult(GetCurrentResultItem());
+    }
+
+    private void SettingsManagerOnSettingsChanged(object sender, EventArgs e)
+    {
+        UpdateHistory();
+        AppendResult(RequeryCurrentResult());
     }
 
     private void HandleReplaceQuery(object sender, object args)
@@ -90,9 +110,9 @@ public sealed partial class CalculatorListPage : DynamicListPage
 
         _emptyItem.Subtitle = newSearch;
 
-        var result = QueryHelper.Query(newSearch, _settingsManager, isFallbackSearch: false, out var displayQuery, HandleSave, HandleReplaceQuery);
+        var result = QueryHelper.Query(newSearch, _settingsManager, isFallbackSearch: false, out var displayQuery, HandleReplaceQuery);
 
-        UpdateResult(result);
+        AppendResult(result);
 
         if (copyResultToSearchText && result is not null)
         {
@@ -105,7 +125,7 @@ public sealed partial class CalculatorListPage : DynamicListPage
         }
     }
 
-    private void UpdateResult(ListItem result)
+    private void AppendResult(ListItem result)
     {
         lock (_resultsLock)
         {
@@ -120,42 +140,103 @@ public sealed partial class CalculatorListPage : DynamicListPage
                 _items.Add(_emptyItem);
             }
 
-            this._items.AddRange(_history);
+            lock (_historyLock)
+            {
+                if (_historyItems.Count > 0)
+                {
+                    this._items.Add(CreateSectionHeader(Resources.calculator_history_header));
+                    this._items.AddRange(_historyItems);
+                }
+            }
         }
 
         RaiseItemsChanged(this._items.Count);
     }
 
-    private void HandleSave(object sender, object args)
+    private void UpdateHistory()
     {
-        var lastResult = _items[0].Title;
-        if (!string.IsNullOrEmpty(lastResult))
+        List<ListItem> history = [];
+
+        var items = _settingsManager.HistoryItems;
+        for (var index = items.Count - 1; index >= 0; index--)
         {
-            var li = new ListItem(new CopyTextCommand(lastResult))
-            {
-                Title = _items[0].Title,
-                Subtitle = _items[0].Subtitle,
-                TextToSuggest = lastResult,
-            };
+            var historyItem = items[index];
+            history.Add(CreateHistoryItem(historyItem));
+        }
 
-            _history.Insert(0, li);
-            _items.Insert(1, li);
-
-            // Why we need to clean the query record? Removed, but if necessary, please move it back.
-            // _items[0].Subtitle = string.Empty;
-
-            // this change will call the UpdateSearchText again.
-            // We need to avoid it.
-            _skipQuerySearchText = lastResult;
-            SearchText = lastResult;
-
-            // LOAD BEARING: The SearchText setter does not raise a PropertyChanged notification,
-            // so we must raise it explicitly to ensure the UI updates correctly.
-            OnPropertyChanged(nameof(SearchText));
-
-            RaiseItemsChanged(this._items.Count);
+        lock (_historyLock)
+        {
+            _historyItems = history;
         }
     }
 
+    private ListItem CreateHistoryItem(HistoryItem historyItem)
+    {
+        var copyCommand = new CalculatorCopyCommand(historyItem.Result, historyItem.Query, _settingsManager, canStoreHistory: false);
+        var pasteCommand = new CalculatorPasteCommand(historyItem.Result, historyItem.Query, _settingsManager, canStoreHistory: false);
+        var primaryCommand = _settingsManager.PrimaryAction == PrimaryAction.Paste ? (ICommand)pasteCommand : copyCommand;
+        var secondaryCommand = _settingsManager.PrimaryAction == PrimaryAction.Paste ? (ICommand)copyCommand : pasteCommand;
+
+        var deleteConfirmationCommand = new ConfirmableCommand
+        {
+            Command = new DeleteHistoryItemCommand(_settingsManager, historyItem.Id),
+            ConfirmationTitle = Resources.calculator_delete_confirmation_title,
+            ConfirmationMessage = Resources.calculator_delete_confirmation_message,
+            IsConfirmationRequired = () => _settingsManager.DeleteHistoryRequiresConfirmation,
+        };
+
+        var deleteAllConfirmationCommand = new ConfirmableCommand
+        {
+            Command = new ClearHistoryCommand(_settingsManager),
+            ConfirmationTitle = Resources.calculator_delete_all_confirmation_title,
+            ConfirmationMessage = Resources.calculator_delete_all_confirmation_message,
+            IsConfirmationRequired = () => _settingsManager.DeleteHistoryRequiresConfirmation,
+        };
+
+        return new ListItem(primaryCommand)
+        {
+            Icon = Icons.HistoryIcon,
+            Title = historyItem.Result,
+            Subtitle = historyItem.Query,
+            TextToSuggest = historyItem.Result,
+            MoreCommands =
+            [
+                new CommandContextItem(secondaryCommand),
+                new Separator(),
+                new CommandContextItem(deleteConfirmationCommand) { IsCritical = true, RequestedShortcut = KeyChords.DeleteItemFromHistory, },
+                new CommandContextItem(deleteAllConfirmationCommand) { IsCritical = true, RequestedShortcut = KeyChords.ClearHistory, },
+            ],
+        };
+    }
+
+    private ListItem GetCurrentResultItem()
+    {
+        lock (_resultsLock)
+        {
+            return _items.Count > 0 ? _items[0] : _emptyItem;
+        }
+    }
+
+    private ListItem RequeryCurrentResult()
+    {
+        var searchText = SearchText ?? string.Empty;
+        if (string.IsNullOrEmpty(searchText))
+        {
+            return null;
+        }
+
+        return QueryHelper.Query(searchText, _settingsManager, isFallbackSearch: false, out _, HandleReplaceQuery);
+    }
+
     public override IListItem[] GetItems() => _items.ToArray();
+
+    private static ListItem CreateSectionHeader(string title)
+    {
+        return new ListItem(new NoOpCommand())
+        {
+            Title = title,
+            Section = title,
+            Command = null!,
+        };
+    }
 }
