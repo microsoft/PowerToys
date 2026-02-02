@@ -12,7 +12,7 @@ namespace ImageResizer.Helpers
 
         static ResourceLoaderInstance()
         {
-            ResourceLoader = new ResourceLoader("PowerToys.ImageResizer.pri", "PowerToys.ImageResizer/Resources");
+            ResourceLoader = new ResourceLoader("PowerToys.ImageResizer.pri");
         }
     }
 }
