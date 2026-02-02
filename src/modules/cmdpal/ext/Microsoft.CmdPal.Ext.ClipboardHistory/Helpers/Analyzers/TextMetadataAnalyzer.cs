@@ -27,9 +27,9 @@ internal partial class TextMetadataAnalyzer
 
     private LineEndingType DetectLineEnding(string text)
     {
-        var crlfCount = Regex.Matches(text, "\r\n").Count;
-        var lfCount = Regex.Matches(text, "(?<!\r)\n").Count;
-        var crCount = Regex.Matches(text, "\r(?!\n)").Count;
+        var crlfCount = Regex.Count(text, "\r\n");
+        var lfCount = Regex.Count(text, "(?<!\r)\n");
+        var crCount = Regex.Count(text, "\r(?!\n)");
 
         var endingTypes = (crlfCount > 0 ? 1 : 0) + (lfCount > 0 ? 1 : 0) + (crCount > 0 ? 1 : 0);
 
@@ -87,7 +87,7 @@ internal partial class TextMetadataAnalyzer
             return 0;
         }
 
-        return Regex.Matches(text, @"\b\w+\b").Count;
+        return Regex.Count(text, @"\b\w+\b");
     }
 
     private int CountSentences(string text)
