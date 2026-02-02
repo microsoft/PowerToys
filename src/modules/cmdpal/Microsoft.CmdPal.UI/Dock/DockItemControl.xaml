@@ -41,22 +41,24 @@
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 
+    <CornerRadius x:Key="DockItemCornerRadius">4</CornerRadius>
+    <Thickness x:Key="DockItemPadding">4,0,4,0</Thickness>
+
     <Style BasedOn="{StaticResource DefaultDockItemControlStyle}" TargetType="local:DockItemControl" />
 
     <Style x:Key="DefaultDockItemControlStyle" TargetType="local:DockItemControl">
         <Style.Setters>
             <Setter Property="Background" Value="{ThemeResource DockItemBackground}" />
             <Setter Property="BorderBrush" Value="{ThemeResource DockItemBorderBrush}" />
-            <Setter Property="Padding" Value="4,0,4,0" />
+            <Setter Property="Padding" Value="{StaticResource DockItemPadding}" />
             <Setter Property="BorderThickness" Value="{ThemeResource ButtonBorderThemeThickness}" />
-            <Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
+            <Setter Property="CornerRadius" Value="{StaticResource DockItemCornerRadius}" />
             <Setter Property="TextVisibility" Value="Visible" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="local:DockItemControl">
                         <Grid
                             x:Name="PART_RootGrid"
-                            MaxWidth="120"
                             Padding="{TemplateBinding Padding}"
                             VerticalAlignment="Stretch"
                             Background="{TemplateBinding Background}"
@@ -137,9 +139,21 @@
                                 </VisualStateGroup>
                                 <VisualStateGroup x:Name="TextVisibilityStates">
                                     <VisualState x:Name="TextVisible" />
+                                    <VisualState x:Name="TitleOnly">
+                                        <VisualState.Setters>
+                                            <Setter Target="SubtitleText.Visibility" Value="Collapsed" />
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                    <VisualState x:Name="SubtitleOnly">
+                                        <VisualState.Setters>
+                                            <Setter Target="TitleText.Visibility" Value="Collapsed" />
+                                            <Setter Target="SubtitleText.Margin" Value="0" />
+                                        </VisualState.Setters>
+                                    </VisualState>
                                     <VisualState x:Name="TextHidden">
                                         <VisualState.Setters>
                                             <Setter Target="ContentGrid.ColumnSpacing" Value="0" />
+                                            <Setter Target="TextPanel.Visibility" Value="Collapsed" />
                                         </VisualState.Setters>
                                     </VisualState>
                                 </VisualStateGroup>

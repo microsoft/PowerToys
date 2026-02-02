@@ -17,6 +17,10 @@
 
     <UserControl.Resources>
         <ResourceDictionary>
+            <StackLayout
+                x:Key="ItemsOrientationLayout"
+                Orientation="{x:Bind ItemsOrientation, Mode=OneWay}"
+                Spacing="4" />
             <ItemsPanelTemplate x:Key="HorizontalItemsPanel">
                 <StackPanel Orientation="Horizontal" Spacing="4" />
             </ItemsPanelTemplate>
@@ -44,25 +48,16 @@
                 </local:DockItemControl>
             </DataTemplate>
 
-            <DataTemplate x:Key="HorizontalDockBandTemplate" x:DataType="dockVm:DockBandViewModel">
-                <ItemsControl
+            <DataTemplate x:Key="DockBandTemplate" x:DataType="dockVm:DockBandViewModel">
+                <ItemsRepeater
                     ItemTemplate="{StaticResource DeskbandTemplate}"
-                    ItemsPanel="{StaticResource HorizontalItemsPanel}"
-                    ItemsSource="{x:Bind Items, Mode=OneWay}" />
+                    ItemsSource="{x:Bind Items, Mode=OneWay}"
+                    Layout="{StaticResource ItemsOrientationLayout}">
+                    <ItemsRepeater.Transitions>
+                        <TransitionCollection />
+                    </ItemsRepeater.Transitions>
+                </ItemsRepeater>
             </DataTemplate>
-
-            <DataTemplate x:Key="VerticalDockBandTemplate" x:DataType="dockVm:DockBandViewModel">
-                <ItemsControl
-                    ItemTemplate="{StaticResource DeskbandTemplate}"
-                    ItemsPanel="{StaticResource VerticalItemsPanel}"
-                    ItemsSource="{x:Bind Items, Mode=OneWay}" />
-            </DataTemplate>
-
-            <local:DockBandTemplateSelector
-                x:Key="DockBandTemplateSelector"
-                Control="{x:Bind}"
-                HorizontalTemplate="{StaticResource HorizontalDockBandTemplate}"
-                VerticalTemplate="{StaticResource VerticalDockBandTemplate}" />
 
             <Style x:Key="DockBandListViewStyle" TargetType="ListView">
                 <Setter Property="Background" Value="Transparent" />
@@ -79,6 +74,7 @@
                 <Setter Property="Padding" Value="0" />
                 <Setter Property="Margin" Value="0,0,4,0" />
                 <Setter Property="MinHeight" Value="0" />
+                <Setter Property="MaxWidth" Value="160" />
                 <Setter Property="MinWidth" Value="0" />
                 <Setter Property="HorizontalContentAlignment" Value="Stretch" />
                 <Setter Property="VerticalContentAlignment" Value="Stretch" />
@@ -108,22 +104,19 @@
 
             <!--  Edit mode context menu for dock bands  -->
             <MenuFlyout x:Name="EditModeContextMenu" ShouldConstrainToRootBounds="False">
-                <MenuFlyoutItem
-                    x:Name="ShowLabelsMenuItem"
-                    Click="ShowLabelsMenuItem_Click"
-                    Text="Show labels">
-                    <MenuFlyoutItem.Icon>
+                <MenuFlyoutSubItem x:Name="LabelsSubMenu" Text="Labels">
+                    <MenuFlyoutSubItem.Icon>
                         <FontIcon Glyph="&#xE8EC;" />
-                    </MenuFlyoutItem.Icon>
-                </MenuFlyoutItem>
-                <MenuFlyoutItem
-                    x:Name="HideLabelsMenuItem"
-                    Click="HideLabelsMenuItem_Click"
-                    Text="Hide labels">
-                    <MenuFlyoutItem.Icon>
-                        <FontIcon Glyph="&#xE8EC;" />
-                    </MenuFlyoutItem.Icon>
-                </MenuFlyoutItem>
+                    </MenuFlyoutSubItem.Icon>
+                    <ToggleMenuFlyoutItem
+                        x:Name="ShowTitlesMenuItem"
+                        Click="ShowTitlesMenuItem_Click"
+                        Text="Show titles" />
+                    <ToggleMenuFlyoutItem
+                        x:Name="ShowSubtitlesMenuItem"
+                        Click="ShowSubtitlesMenuItem_Click"
+                        Text="Show subtitles" />
+                </MenuFlyoutSubItem>
                 <MenuFlyoutSeparator />
                 <MenuFlyoutItem
                     x:Name="UnpinBandMenuItem"
@@ -230,7 +223,7 @@
                         DragOver="BandListView_DragOver"
                         Drop="StartListView_Drop"
                         ItemContainerStyle="{StaticResource DockBandListViewItemStyle}"
-                        ItemTemplateSelector="{StaticResource DockBandTemplateSelector}"
+                        ItemTemplate="{StaticResource DockBandTemplate}"
                         ItemsPanel="{StaticResource HorizontalItemsPanel}"
                         ItemsSource="{x:Bind ViewModel.StartItems, Mode=OneWay}"
                         SelectionMode="None"
@@ -265,7 +258,7 @@
                         DragOver="BandListView_DragOver"
                         Drop="CenterListView_Drop"
                         ItemContainerStyle="{StaticResource DockBandListViewItemStyle}"
-                        ItemTemplateSelector="{StaticResource DockBandTemplateSelector}"
+                        ItemTemplate="{StaticResource DockBandTemplate}"
                         ItemsPanel="{StaticResource HorizontalItemsPanel}"
                         ItemsSource="{x:Bind ViewModel.CenterItems, Mode=OneWay}"
                         SelectionMode="None"
@@ -299,7 +292,7 @@
                         DragOver="BandListView_DragOver"
                         Drop="EndListView_Drop"
                         ItemContainerStyle="{StaticResource DockBandListViewItemStyle}"
-                        ItemTemplateSelector="{StaticResource DockBandTemplateSelector}"
+                        ItemTemplate="{StaticResource DockBandTemplate}"
                         ItemsPanel="{StaticResource HorizontalItemsPanel}"
                         ItemsSource="{x:Bind ViewModel.EndItems, Mode=OneWay}"
                         SelectionMode="None"
@@ -310,27 +303,14 @@
                     </ListView>
                 </cpcontrols:ScrollContainer.Source>
             </cpcontrols:ScrollContainer>
-
-            <!--  To do: remove the X button  -->
             <TeachingTip
                 x:Name="EditButtonsTeachingTip"
                 MinWidth="0"
                 PreferredPlacement="Bottom"
                 ShouldConstrainToRootBounds="False"
+                Style="{StaticResource TeachingTipWithoutCloseButtonStyle}"
                 Target="{x:Bind ContentGrid}">
-                <!--<TeachingTip.CloseButtonStyle>
-                -->
-                <!--  Workaround to hide the close button  -->
-                <!--
-                    <Style BasedOn="{StaticResource DefaultButtonStyle}" TargetType="Button">
-                        <Setter Property="Visibility" Value="Collapsed" />
-                        <Setter Property="Width" Value="0" />
-                        <Setter Property="MinWidth" Value="0" />
-                        <Setter Property="Foreground" Value="Red" />
-                        <Setter Property="Height" Value="0" />
-                        <Setter Property="MinHeight" Value="0" />
-                    </Style>
-                </TeachingTip.CloseButtonStyle>-->
+
                 <TeachingTip.Content>
                     <StackPanel
                         x:Name="EditButtonsPanel"
@@ -397,6 +377,10 @@
                         <Setter Target="EndScroller.VerticalAlignment" Value="Bottom" />
                         <Setter Target="ContentGrid.Padding" Value="4,8,4,8" />
                         <Setter Target="RootGrid.BorderThickness" Value="0,0,1,0" />
+
+                        <Setter Target="StartListView.ItemsPanel" Value="{StaticResource VerticalItemsPanel}" />
+                        <Setter Target="CenterListView.ItemsPanel" Value="{StaticResource VerticalItemsPanel}" />
+                        <Setter Target="EndListView.ItemsPanel" Value="{StaticResource VerticalItemsPanel}" />
                     </VisualState.Setters>
                 </VisualState>
                 <VisualState x:Name="DockOnRight">
@@ -431,6 +415,10 @@
                         <Setter Target="EndScroller.VerticalAlignment" Value="Bottom" />
                         <Setter Target="ContentGrid.Padding" Value="4,8,4,8" />
                         <Setter Target="RootGrid.BorderThickness" Value="1,0,0,0" />
+
+                        <Setter Target="StartListView.ItemsPanel" Value="{StaticResource VerticalItemsPanel}" />
+                        <Setter Target="CenterListView.ItemsPanel" Value="{StaticResource VerticalItemsPanel}" />
+                        <Setter Target="EndListView.ItemsPanel" Value="{StaticResource VerticalItemsPanel}" />
                     </VisualState.Setters>
                 </VisualState>
             </VisualStateGroup>

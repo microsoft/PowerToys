@@ -29,20 +29,12 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
     internal DockViewModel ViewModel => _viewModel;
 
     public static readonly DependencyProperty ItemsOrientationProperty =
-        DependencyProperty.Register(nameof(ItemsOrientation), typeof(Orientation), typeof(DockControl), new PropertyMetadata(Orientation.Horizontal, OnItemsOrientationChanged));
+        DependencyProperty.Register(nameof(ItemsOrientation), typeof(Orientation), typeof(DockControl), new PropertyMetadata(Orientation.Horizontal));
 
     public Orientation ItemsOrientation
     {
         get => (Orientation)GetValue(ItemsOrientationProperty);
         set => SetValue(ItemsOrientationProperty, value);
-    }
-
-    private static void OnItemsOrientationChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-    {
-        if (d is DockControl control)
-        {
-            control.UpdateBandTemplates();
-        }
     }
 
     public static readonly DependencyProperty DockSideProperty =
@@ -68,20 +60,6 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
         if (d is DockControl control && e.NewValue is bool isEditMode)
         {
             control.UpdateEditMode(isEditMode);
-        }
-    }
-
-    private void UpdateBandTemplates()
-    {
-        var panelKey = ItemsOrientation == Orientation.Horizontal
-            ? "HorizontalItemsPanel"
-            : "VerticalItemsPanel";
-
-        if ((ItemsPanelTemplate)App.Current.Resources[panelKey] is ItemsPanelTemplate panelTemplate)
-        {
-            StartListView.ItemsPanel = panelTemplate;
-            CenterListView.ItemsPanel = panelTemplate;
-            EndListView.ItemsPanel = panelTemplate;
         }
     }
 
@@ -220,9 +198,9 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
                 _editModeContextBand = FindParentBand(item);
                 if (_editModeContextBand != null)
                 {
-                    // Update menu item visibility based on current state
-                    ShowLabelsMenuItem.Visibility = _editModeContextBand.ShowLabels ? Visibility.Collapsed : Visibility.Visible;
-                    HideLabelsMenuItem.Visibility = _editModeContextBand.ShowLabels ? Visibility.Visible : Visibility.Collapsed;
+                    // Update toggle menu item checked state based on current settings
+                    ShowTitlesMenuItem.IsChecked = _editModeContextBand.ShowTitles;
+                    ShowSubtitlesMenuItem.IsChecked = _editModeContextBand.ShowSubtitles;
 
                     EditModeContextMenu.ShowAt(
                         dockItem,
@@ -283,19 +261,19 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
         return null;
     }
 
-    private void ShowLabelsMenuItem_Click(object sender, RoutedEventArgs e)
+    private void ShowTitlesMenuItem_Click(object sender, RoutedEventArgs e)
     {
         if (_editModeContextBand != null)
         {
-            _editModeContextBand.ShowLabels = true;
+            _editModeContextBand.ShowTitles = ShowTitlesMenuItem.IsChecked;
         }
     }
 
-    private void HideLabelsMenuItem_Click(object sender, RoutedEventArgs e)
+    private void ShowSubtitlesMenuItem_Click(object sender, RoutedEventArgs e)
     {
         if (_editModeContextBand != null)
         {
-            _editModeContextBand.ShowLabels = false;
+            _editModeContextBand.ShowSubtitles = ShowSubtitlesMenuItem.IsChecked;
         }
     }
 

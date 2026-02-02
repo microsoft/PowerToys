@@ -66,12 +66,8 @@ public sealed partial class DockItemControl : Control
     }
 
     private const string IconPresenterName = "IconPresenter";
-    private const string TitleTextName = "TitleText";
-    private const string SubtitleTextName = "SubtitleText";
 
     private FrameworkElement? _iconPresenter;
-    private FrameworkElement? _titleText;
-    private FrameworkElement? _subtitleText;
 
     private static void OnTextPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
@@ -99,35 +95,39 @@ public sealed partial class DockItemControl : Control
 
     private void UpdateTextVisibility()
     {
-        if (_titleText is not null)
-        {
-            _titleText.Visibility = HasTitle ? Visibility.Visible : Visibility.Collapsed;
-        }
-
-        if (_subtitleText is not null)
-        {
-            _subtitleText.Visibility = HasSubtitle ? Visibility.Visible : Visibility.Collapsed;
-        }
-
         UpdateTextVisibilityState();
     }
 
     private void UpdateTextVisibilityState()
     {
-        var hasText = !string.IsNullOrEmpty(Title) || !string.IsNullOrEmpty(Subtitle);
-        VisualStateManager.GoToState(this, hasText ? "TextVisible" : "TextHidden", true);
+        // Determine which visual state to use based on title/subtitle presence
+        var stateName = (HasTitle, HasSubtitle) switch
+        {
+            (true, true) => "TextVisible",
+            (true, false) => "TitleOnly",
+            (false, true) => "SubtitleOnly",
+            (false, false) => "TextHidden",
+        };
+
+        VisualStateManager.GoToState(this, stateName, true);
     }
 
     private void UpdateIconVisibility()
     {
-        if (_iconPresenter is not null)
+        if (Icon is IconBox icon)
         {
-            // n.b. this might be wrong - I think we always have an Icon (an IconBox),
-            // we need to check if the box has an icon
-            _iconPresenter.Visibility = Icon is null ? Visibility.Collapsed : Visibility.Visible;
-        }
+            var dt = icon.DataContext;
+            var src = icon.Source;
 
-        UpdateIconVisibilityState();
+            if (_iconPresenter is not null)
+            {
+                // n.b. this might be wrong - I think we always have an Icon (an IconBox),
+                // we need to check if the box has an icon
+                _iconPresenter.Visibility = Icon is null ? Visibility.Collapsed : Visibility.Visible;
+            }
+
+            UpdateIconVisibilityState();
+        }
     }
 
     private void UpdateIconVisibilityState()
@@ -172,6 +172,9 @@ public sealed partial class DockItemControl : Control
         base.OnApplyTemplate();
         IsEnabledChanged -= OnIsEnabledChanged;
 
+        PointerEntered -= Control_PointerEntered;
+        PointerExited -= Control_PointerExited;
+
         PointerEntered += Control_PointerEntered;
         PointerExited += Control_PointerExited;
 
@@ -179,8 +182,6 @@ public sealed partial class DockItemControl : Control
 
         // Get template children for visibility updates
         _iconPresenter = GetTemplateChild(IconPresenterName) as FrameworkElement;
-        _titleText = GetTemplateChild(TitleTextName) as FrameworkElement;
-        _subtitleText = GetTemplateChild(SubtitleTextName) as FrameworkElement;
 
         // Set initial visibility
         UpdateAllVisibility();

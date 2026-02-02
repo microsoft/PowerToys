@@ -22,58 +22,104 @@ public sealed partial class DockBandViewModel : ExtensionObjectViewModel
 
     public ObservableCollection<DockItemViewModel> Items { get; } = new();
 
-    private bool _showLabels = true;
-    private bool? _showLabelsSnapshot;
+    private bool _showTitles = true;
+    private bool _showSubtitles = true;
+    private bool? _showTitlesSnapshot;
+    private bool? _showSubtitlesSnapshot;
 
     public string Id => _rootItem.Command.Id;
 
     /// <summary>
-    /// Gets or sets a value indicating whether labels are shown for items in this band.
-    /// This is a preview value - call <see cref="SaveShowLabels"/> to persist or
-    /// <see cref="RestoreShowLabels"/> to discard changes.
+    /// Gets or sets a value indicating whether titles are shown for items in this band.
+    /// This is a preview value - call <see cref="SaveLabelSettings"/> to persist or
+    /// <see cref="RestoreLabelSettings"/> to discard changes.
     /// </summary>
-    public bool ShowLabels
+    public bool ShowTitles
     {
-        get => _showLabels;
+        get => _showTitles;
         set
         {
-            if (_showLabels != value)
+            if (_showTitles != value)
             {
-                _showLabels = value;
+                _showTitles = value;
                 foreach (var item in Items)
                 {
-                    item.ShowLabel = value;
+                    item.ShowTitle = value;
                 }
             }
         }
     }
 
     /// <summary>
-    /// Takes a snapshot of the current ShowLabels value before editing.
+    /// Gets or sets a value indicating whether subtitles are shown for items in this band.
+    /// This is a preview value - call <see cref="SaveLabelSettings"/> to persist or
+    /// <see cref="RestoreLabelSettings"/> to discard changes.
+    /// </summary>
+    public bool ShowSubtitles
+    {
+        get => _showSubtitles;
+        set
+        {
+            if (_showSubtitles != value)
+            {
+                _showSubtitles = value;
+                foreach (var item in Items)
+                {
+                    item.ShowSubtitle = value;
+                }
+            }
+        }
+    }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether labels (both titles and subtitles) are shown.
+    /// Provided for backward compatibility - setting this sets both ShowTitles and ShowSubtitles.
+    /// </summary>
+    public bool ShowLabels
+    {
+        get => _showTitles && _showSubtitles;
+        set
+        {
+            ShowTitles = value;
+            ShowSubtitles = value;
+        }
+    }
+
+    /// <summary>
+    /// Takes a snapshot of the current label settings before editing.
     /// </summary>
     internal void SnapshotShowLabels()
     {
-        _showLabelsSnapshot = _showLabels;
+        _showTitlesSnapshot = _showTitles;
+        _showSubtitlesSnapshot = _showSubtitles;
     }
 
     /// <summary>
-    /// Saves the current ShowLabels value to settings.
+    /// Saves the current label settings to settings.
     /// </summary>
     internal void SaveShowLabels()
     {
-        _bandSettings.ShowLabels = _showLabels;
-        _showLabelsSnapshot = null;
+        _bandSettings.ShowTitles = _showTitles;
+        _bandSettings.ShowSubtitles = _showSubtitles;
+        _showTitlesSnapshot = null;
+        _showSubtitlesSnapshot = null;
     }
 
     /// <summary>
-    /// Restores the ShowLabels value from the snapshot.
+    /// Restores the label settings from the snapshot.
     /// </summary>
     internal void RestoreShowLabels()
     {
-        if (_showLabelsSnapshot.HasValue)
+        if (_showTitlesSnapshot.HasValue)
         {
-            ShowLabels = _showLabelsSnapshot.Value;
-            _showLabelsSnapshot = null;
+            ShowTitles = _showTitlesSnapshot.Value;
+            _showTitlesSnapshot = null;
+        }
+
+        if (_showSubtitlesSnapshot.HasValue)
+        {
+            ShowSubtitles = _showSubtitlesSnapshot.Value;
+            _showSubtitlesSnapshot = null;
         }
     }
 
@@ -90,7 +136,8 @@ public sealed partial class DockBandViewModel : ExtensionObjectViewModel
         _dockSettings = dockSettings;
         _saveSettings = saveSettings;
 
-        _showLabels = settings.ResolveShowLabels(dockSettings.ShowLabels);
+        _showTitles = settings.ResolveShowTitles(dockSettings.ShowLabels);
+        _showSubtitles = settings.ResolveShowSubtitles(dockSettings.ShowLabels);
     }
 
     private void InitializeFromList(IListPage list)
@@ -99,7 +146,7 @@ public sealed partial class DockBandViewModel : ExtensionObjectViewModel
         var newViewModels = new List<DockItemViewModel>();
         foreach (var item in items)
         {
-            var newItemVm = new DockItemViewModel(new(item), this.PageContext, _showLabels);
+            var newItemVm = new DockItemViewModel(new(item), this.PageContext, _showTitles, _showSubtitles);
             newItemVm.SlowInitializeProperties();
             newViewModels.Add(newItemVm);
         }
@@ -124,11 +171,11 @@ public sealed partial class DockBandViewModel : ExtensionObjectViewModel
         else
         {
             DoOnUiThread(() =>
-             {
-                 var dockItem = new DockItemViewModel(_rootItem, _showLabels);
-                 dockItem.SlowInitializeProperties();
-                 Items.Add(dockItem);
-             });
+            {
+                var dockItem = new DockItemViewModel(_rootItem, _showTitles, _showSubtitles);
+                dockItem.SlowInitializeProperties();
+                Items.Add(dockItem);
+            });
         }
     }
 
@@ -143,29 +190,59 @@ public sealed partial class DockBandViewModel : ExtensionObjectViewModel
 
 public partial class DockItemViewModel : CommandItemViewModel
 {
-    private bool _showLabel = true;
+    private bool _showTitle = true;
+    private bool _showSubtitle = true;
 
-    public bool ShowLabel
+    public bool ShowTitle
     {
-        get => _showLabel;
+        get => _showTitle;
         internal set
         {
-            if (_showLabel != value)
+            if (_showTitle != value)
             {
-                _showLabel = value;
+                _showTitle = value;
+                UpdateProperty(nameof(ShowTitle));
                 UpdateProperty(nameof(ShowLabel));
                 UpdateProperty(nameof(HasText));
                 UpdateProperty(nameof(Title));
+            }
+        }
+    }
+
+    public bool ShowSubtitle
+    {
+        get => _showSubtitle;
+        internal set
+        {
+            if (_showSubtitle != value)
+            {
+                _showSubtitle = value;
+                UpdateProperty(nameof(ShowSubtitle));
+                UpdateProperty(nameof(ShowLabel));
                 UpdateProperty(nameof(Subtitle));
             }
         }
     }
 
-    public override string Title => _showLabel ? ItemTitle : string.Empty;
+    /// <summary>
+    /// Gets a value indicating whether labels are shown (either titles or subtitles).
+    /// Setting this sets both ShowTitle and ShowSubtitle.
+    /// </summary>
+    public bool ShowLabel
+    {
+        get => _showTitle || _showSubtitle;
+        internal set
+        {
+            ShowTitle = value;
+            ShowSubtitle = value;
+        }
+    }
 
-    public new string Subtitle => _showLabel ? base.Subtitle : string.Empty;
+    public override string Title => _showTitle ? ItemTitle : string.Empty;
 
-    public override bool HasText => _showLabel ? base.HasText : false;
+    public new string Subtitle => _showSubtitle ? base.Subtitle : string.Empty;
+
+    public override bool HasText => (_showTitle && !string.IsNullOrEmpty(ItemTitle)) || (_showSubtitle && !string.IsNullOrEmpty(base.Subtitle));
 
     /// <summary>
     /// Gets the tooltip for the dock item, which includes the title and
@@ -176,19 +253,20 @@ public partial class DockItemViewModel : CommandItemViewModel
     /// always only be the one that's non-empty
     /// </remarks>
     public string Tooltip =>
-        !string.IsNullOrEmpty(Title) && !string.IsNullOrEmpty(Subtitle) ?
-            $"{Title}\n{Subtitle}" :
-            Title + Subtitle;
+        !string.IsNullOrEmpty(ItemTitle) && !string.IsNullOrEmpty(base.Subtitle) ?
+            $"{ItemTitle}\n{base.Subtitle}" :
+            ItemTitle + base.Subtitle;
 
-    public DockItemViewModel(CommandItemViewModel root, bool showLabel)
-        : this(root.Model, root.PageContext, showLabel)
+    public DockItemViewModel(CommandItemViewModel root, bool showTitle, bool showSubtitle)
+        : this(root.Model, root.PageContext, showTitle, showSubtitle)
     {
     }
 
-    public DockItemViewModel(ExtensionObject<ICommandItem> item, WeakReference<IPageContext> errorContext, bool showLabel)
+    public DockItemViewModel(ExtensionObject<ICommandItem> item, WeakReference<IPageContext> errorContext, bool showTitle, bool showSubtitle)
         : base(item, errorContext)
     {
-        _showLabel = showLabel;
+        _showTitle = showTitle;
+        _showSubtitle = showSubtitle;
     }
 }
 
