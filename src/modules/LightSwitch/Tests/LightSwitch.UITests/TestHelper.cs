@@ -18,20 +18,6 @@ namespace LightSwitch.UITests
     {
         private static readonly string[] ShortcutSeparators = { " + ", "+", " " };
 
-        [DllImport("PowerToys.LightSwitchModuleInterface.dll", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void LightSwitch_SetSystemTheme(bool isLight);
-
-        [DllImport("PowerToys.LightSwitchModuleInterface.dll", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void LightSwitch_SetAppsTheme(bool isLight);
-
-        [DllImport("PowerToys.LightSwitchModuleInterface.dll", CallingConvention = CallingConvention.Cdecl)]
-        [return: MarshalAs(UnmanagedType.I1)]
-        private static extern bool LightSwitch_GetCurrentSystemTheme();
-
-        [DllImport("PowerToys.LightSwitchModuleInterface.dll", CallingConvention = CallingConvention.Cdecl)]
-        [return: MarshalAs(UnmanagedType.I1)]
-        private static extern bool LightSwitch_GetCurrentAppsTheme();
-
         /// <summary>
         /// Performs common test initialization: navigate to settings, enable toggle, verify shortcut
         /// </summary>
@@ -134,70 +120,6 @@ namespace LightSwitch.UITests
             }
 
             return keys.Count > 0 ? keys.ToArray() : new Key[] { Key.Win, Key.Ctrl, Key.Shift, Key.D };
-        }
-
-        /// <summary>
-        /// Performs common test cleanup: close LightSwitch task
-        /// </summary>
-        /// <param name="testBase">The test base instance</param>
-        public static void CleanupTest(UITestBase testBase)
-        {
-            CloseLightSwitch(testBase);
-
-            // Ensure we're attached to settings after cleanup
-            try
-            {
-                testBase.Session.Attach(PowerToysModule.PowerToysSettings);
-            }
-            catch
-            {
-                // Ignore attachment errors - this is just cleanup
-            }
-        }
-
-        /// <summary>
-        /// Switch to white/light theme for both system and apps
-        /// </summary>
-        /// <param name="testBase">The test base instance</param>
-        public static void CloseLightSwitch(UITestBase testBase)
-        {
-            // Kill LightSwitch process before setting themes
-            KillLightSwitchProcess();
-
-            // Set both themes to light (white)
-            SetSystemTheme(true);
-            SetAppsTheme(true);
-        }
-
-        /// <summary>
-        /// Kill the LightSwitch service process if it's running
-        /// </summary>
-        private static void KillLightSwitchProcess()
-        {
-            try
-            {
-                var processes = System.Diagnostics.Process.GetProcessesByName("PowerToys.LightSwitchService");
-                foreach (var process in processes)
-                {
-                    try
-                    {
-                        process.Kill();
-                        process.WaitForExit(2000);
-                    }
-                    catch
-                    {
-                        // Ignore errors killing individual processes
-                    }
-                    finally
-                    {
-                        process.Dispose();
-                    }
-                }
-            }
-            catch
-            {
-                // Ignore errors enumerating processes
-            }
         }
 
         /// <summary>
@@ -385,104 +307,6 @@ namespace LightSwitch.UITests
             string updatedEndValue = GetHelpTextValue(helpText, "End");
 
             Assert.AreNotEqual(originalEndValue, updatedEndValue, "Timeline end time should have been updated.");
-        }
-
-        /// <summary>
-        /// Perform a test for shortcut changing themes
-        /// </summary>
-        public static void PerformShortcutTest(UITestBase testBase, Key[] activationKeys)
-        {
-            // Test when both are checked
-            var systemCheckbox = testBase.Session.Find<Element>(By.AccessibilityId("ChangeSystemCheckbox_LightSwitch"), 5000);
-            Assert.IsNotNull(systemCheckbox, "System checkbox not found.");
-
-            var scrollViewer = testBase.Session.Find<Element>(By.AccessibilityId("PageScrollViewer"));
-            systemCheckbox.EnsureVisible(scrollViewer);
-
-            int neededTabs = 10;
-
-            if (!systemCheckbox.Selected)
-            {
-                for (int i = 0; i < neededTabs; i++)
-                {
-                    testBase.Session.SendKeys(Key.Tab);
-                }
-
-                systemCheckbox.Click();
-            }
-
-            Assert.IsTrue(systemCheckbox.Selected, "System checkbox should be checked.");
-
-            var appsCheckbox = testBase.Session.Find<Element>(By.AccessibilityId("ChangeAppsCheckbox_LightSwitch"), 5000);
-            Assert.IsNotNull(appsCheckbox, "Apps checkbox not found.");
-
-            if (!appsCheckbox.Selected)
-            {
-                appsCheckbox.Click();
-            }
-
-            Assert.IsTrue(appsCheckbox.Selected, "Apps checkbox should be checked.");
-
-            var systemBeforeValue = GetSystemTheme();
-            var appsBeforeValue = GetAppsTheme();
-
-            Task.Delay(1000).Wait();
-            testBase.Session.SendKeys(activationKeys);
-            Task.Delay(5000).Wait();
-
-            var systemAfterValue = GetSystemTheme();
-            var appsAfterValue = GetAppsTheme();
-
-            Assert.AreNotEqual(systemBeforeValue, systemAfterValue, "System theme should have changed.");
-            Assert.AreNotEqual(appsBeforeValue, appsAfterValue, "Apps theme should have changed.");
-
-            // Test with nothing checked
-            if (systemCheckbox.Selected)
-            {
-                systemCheckbox.Click();
-            }
-
-            if (appsCheckbox.Selected)
-            {
-                appsCheckbox.Click();
-            }
-
-            Assert.IsFalse(systemCheckbox.Selected, "System checkbox should be unchecked.");
-            Assert.IsFalse(appsCheckbox.Selected, "Apps checkbox should be unchecked.");
-
-            var noneSystemBeforeValue = GetSystemTheme();
-            var noneAppsBeforeValue = GetAppsTheme();
-
-            Task.Delay(1000).Wait();
-            testBase.Session.SendKeys(activationKeys);
-            Task.Delay(5000).Wait();
-
-            var noneSystemAfterValue = GetSystemTheme();
-            var noneAppsAfterValue = GetAppsTheme();
-
-            Assert.AreEqual(noneSystemBeforeValue, noneSystemAfterValue, "System theme should not have changed.");
-            Assert.AreEqual(noneAppsBeforeValue, noneAppsAfterValue, "Apps theme should not have changed.");
-        }
-
-        /* Helpers */
-        private static int GetSystemTheme()
-        {
-            return LightSwitch_GetCurrentSystemTheme() ? 1 : 0;
-        }
-
-        private static int GetAppsTheme()
-        {
-            return LightSwitch_GetCurrentAppsTheme() ? 1 : 0;
-        }
-
-        private static void SetSystemTheme(bool isLight)
-        {
-            LightSwitch_SetSystemTheme(isLight);
-        }
-
-        private static void SetAppsTheme(bool isLight)
-        {
-            LightSwitch_SetAppsTheme(isLight);
         }
 
         private static string GetHelpTextValue(string helpText, string key)
