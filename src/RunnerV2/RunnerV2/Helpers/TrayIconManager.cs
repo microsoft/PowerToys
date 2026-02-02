@@ -17,6 +17,8 @@ namespace RunnerV2.Helpers
 {
     internal static partial class TrayIconManager
     {
+        private static bool _trayIconVisible;
+
         private static nint GetTrayIcon()
         {
             if (SettingsUtils.Default.GetSettings<GeneralSettings>().ShowThemeAdaptiveTrayIcon)
@@ -31,19 +33,31 @@ namespace RunnerV2.Helpers
 
         public static void UpdateTrayIcon()
         {
+            if (!_trayIconVisible)
+            {
+                return;
+            }
+
             NOTIFYICONDATA notifyicondata = new()
             {
                 CbSize = (uint)Marshal.SizeOf<NOTIFYICONDATA>(),
                 HWnd = Runner.RunnerHwnd,
                 UId = 1,
                 HIcon = GetTrayIcon(),
-                UFlags = 0x0000001 | 0x0000002,
+                UFlags = 0x0000001 | 0x00000002 | 0x4,
+                UCallbackMessage = (uint)WindowMessages.ICON_NOTIFY,
+                SzTip = "PowerToys Runner",
             };
             Shell_NotifyIcon(0x1, ref notifyicondata);
         }
 
         internal static void StartTrayIcon()
         {
+            if (_trayIconVisible)
+            {
+                return;
+            }
+
             NOTIFYICONDATA notifyicondata = new()
             {
                 CbSize = (uint)Marshal.SizeOf<NOTIFYICONDATA>(),
@@ -57,16 +71,17 @@ namespace RunnerV2.Helpers
 
             ChangeWindowMessageFilterEx(Runner.RunnerHwnd, 0x0111, 0x0001, IntPtr.Zero);
 
-            new ThemeListener().ThemeChanged += (_) =>
-            {
-                PostMessageW(Runner.RunnerHwnd, 0x0800, IntPtr.Zero, 0x9000);
-            };
-
             Shell_NotifyIcon(NIMADD, ref notifyicondata);
+            _trayIconVisible = true;
         }
 
         internal static void StopTrayIcon()
         {
+            if (!_trayIconVisible)
+            {
+                return;
+            }
+
             NOTIFYICONDATA notifyicondata = new()
             {
                 CbSize = (uint)Marshal.SizeOf<NOTIFYICONDATA>(),
@@ -75,6 +90,7 @@ namespace RunnerV2.Helpers
             };
 
             Shell_NotifyIcon(NIMDELETE, ref notifyicondata);
+            _trayIconVisible = false;
         }
 
         internal enum TrayButton : uint
@@ -99,6 +115,10 @@ namespace RunnerV2.Helpers
             AppendMenuW(_trayIconMenu, 0u, new UIntPtr((uint)TrayButton.ReportBug), "Report a Bug");
             AppendMenuW(_trayIconMenu, 0x00000800u, UIntPtr.Zero, string.Empty); // separator
             AppendMenuW(_trayIconMenu, 0u, new UIntPtr((uint)TrayButton.Close), "Close");
+            new ThemeListener().ThemeChanged += (_) =>
+            {
+                PostMessageW(Runner.RunnerHwnd, 0x0800, IntPtr.Zero, 0x9000);
+            };
         }
 
         internal static void ProcessTrayIconMessage(long lParam)

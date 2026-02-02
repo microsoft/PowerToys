@@ -81,7 +81,10 @@ namespace RunnerV2
             Logger.LogInfo("Runner started");
 
             InitializeTrayWindow();
-            TrayIconManager.StartTrayIcon();
+            if (SettingsUtils.Default.GetSettings<GeneralSettings>().ShowSysTrayIcon)
+            {
+                TrayIconManager.StartTrayIcon();
+            }
 
             if (SettingsUtils.Default.GetSettings<GeneralSettings>().EnableQuickAccess)
             {
@@ -295,7 +298,11 @@ namespace RunnerV2
                     TrayIconManager.ProcessTrayMenuCommand((nuint)wParam);
                     break;
                 case (uint)WindowMessages.WINDOWPOSCHANGING:
-                    TrayIconManager.StartTrayIcon();
+                    if (SettingsUtils.Default.GetSettings<GeneralSettings>().ShowSysTrayIcon)
+                    {
+                        TrayIconManager.StartTrayIcon();
+                    }
+
                     break;
                 case (uint)WindowMessages.DESTROY:
                     Close();
@@ -306,9 +313,31 @@ namespace RunnerV2
                         ToggleModuleStateBasedOnEnabledProperty(module);
                     }
 
+                    CentralizedKeyboardHookManager.RemoveAllHooksFromModule("QuickAccess");
+                    if (SettingsUtils.Default.GetSettings<GeneralSettings>().EnableQuickAccess)
+                    {
+                        CentralizedKeyboardHookManager.AddKeyboardHook("QuickAccess", SettingsUtils.Default.GetSettings<GeneralSettings>().QuickAccessShortcut, QuickAccessHelper.Show);
+                    }
+                    else
+                    {
+                        CentralizedKeyboardHookManager.RemoveAllHooksFromModule("QuickAccess");
+                        QuickAccessHelper.Stop();
+                    }
+
+                    TrayIconManager.UpdateTrayIcon();
+
+                    if (SettingsUtils.Default.GetSettings<GeneralSettings>().ShowSysTrayIcon)
+                    {
+                        TrayIconManager.StartTrayIcon();
+                    }
+                    else
+                    {
+                        TrayIconManager.StopTrayIcon();
+                    }
+
                     break;
                 default:
-                    if (msg == _taskbarCreatedMessage)
+                    if (msg == _taskbarCreatedMessage && SettingsUtils.Default.GetSettings<GeneralSettings>().ShowSysTrayIcon)
                     {
                         TrayIconManager.StartTrayIcon();
                     }

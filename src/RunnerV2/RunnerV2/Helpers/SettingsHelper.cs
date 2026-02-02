@@ -168,19 +168,6 @@ namespace RunnerV2.Helpers
                             }
                         }
 
-                        CentralizedKeyboardHookManager.RemoveAllHooksFromModule("QuickAccess");
-                        if (SettingsUtils.Default.GetSettings<GeneralSettings>().EnableQuickAccess)
-                        {
-                            CentralizedKeyboardHookManager.AddKeyboardHook("QuickAccess", SettingsUtils.Default.GetSettings<GeneralSettings>().QuickAccessShortcut, QuickAccessHelper.Show);
-                        }
-                        else
-                        {
-                            CentralizedKeyboardHookManager.RemoveAllHooksFromModule("QuickAccess");
-                            QuickAccessHelper.Stop();
-                        }
-
-                        TrayIconManager.UpdateTrayIcon();
-
                         break;
                     case "powertoys":
                         foreach (var powertoysSettingsPart in property.Value.EnumerateObject())
