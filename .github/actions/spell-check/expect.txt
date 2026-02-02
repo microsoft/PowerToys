@@ -1017,6 +1017,7 @@ MERGEPAINT
 Metacharacter
 metadatamatters
 Metadatas
+Metacharacter
 metafile
 mfc
 Mgmt
