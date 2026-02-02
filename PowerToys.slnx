@@ -155,6 +155,9 @@
       <Platform Solution="*|x64" Project="x64" />
     </Project>
   </Folder>
+  <Folder Name="/modules/AltBacktick/">
+    <Project Path="src/modules/AltBacktick/AltBacktickModuleInterface/AltBacktickModuleInterface.vcxproj" Id="f9d36b15-a3c8-4b3e-9f1a-7b8c9d5e4f2a" />
+  </Folder>
   <Folder Name="/modules/AlwaysOnTop/">
     <Project Path="src/modules/alwaysontop/AlwaysOnTop/AlwaysOnTop.vcxproj" Id="1dc3be92-ce89-43fb-8110-9c043a2fe7a2" />
     <Project Path="src/modules/alwaysontop/AlwaysOnTopModuleInterface/AlwaysOnTopModuleInterface.vcxproj" Id="48a0a19e-a0be-4256-acf8-cc3b80291af9" />

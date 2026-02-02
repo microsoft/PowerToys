@@ -1,0 +1,78 @@
+<local:NavigablePage
+    x:Class="Microsoft.PowerToys.Settings.UI.Views.AltBacktickPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:Microsoft.PowerToys.Settings.UI.Helpers"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
+    xmlns:ui="using:CommunityToolkit.WinUI"
+    AutomationProperties.LandmarkType="Main"
+    mc:Ignorable="d">
+
+    <controls:SettingsPageControl
+        x:Uid="AltBacktick"
+        IsTabStop="False"
+        ModuleImageSource="ms-appx:///Assets/Settings/Modules/AltBacktick.png">
+        <controls:SettingsPageControl.ModuleContent>
+            <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
+                <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}">
+                    <tkcontrols:SettingsCard
+                        x:Uid="AltBacktick_Enable"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE8A7;}">
+                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
+                </controls:GPOInfoControl>
+
+                <controls:SettingsGroup 
+                    x:Uid="AltBacktick_Settings_GroupSettings" 
+                    IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                    
+                    <tkcontrols:SettingsCard
+                        x:Uid="AltBacktick_ModifierKey"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE92E;}">
+                        <ComboBox 
+                            MinWidth="{StaticResource SettingActionControlMinWidth}" 
+                            SelectedIndex="{x:Bind Path=ViewModel.ModifierKey, Mode=TwoWay}">
+                            <ComboBoxItem Content="Alt + `" />
+                            <ComboBoxItem Content="Win + `" />
+                        </ComboBox>
+                    </tkcontrols:SettingsCard>
+
+                    <tkcontrols:SettingsCard 
+                        x:Uid="AltBacktick_IgnoreMinimizedWindows"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE921;}">
+                        <ToggleSwitch IsOn="{x:Bind ViewModel.IgnoreMinimizedWindows, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
+
+                </controls:SettingsGroup>
+
+                <controls:SettingsGroup x:Uid="About">
+                    <tkcontrols:SettingsExpander
+                        x:Uid="About_AltBacktick"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE946;}">
+                        <tkcontrols:SettingsExpander.Items>
+                            <tkcontrols:SettingsCard HorizontalContentAlignment="Left" ContentAlignment="Left">
+                                <StackPanel Orientation="Vertical">
+                                    <TextBlock 
+                                        x:Uid="AltBacktick_Description"
+                                        Style="{StaticResource SecondaryTextStyle}"
+                                        TextWrapping="WrapWholeWords" />
+                                    <HyperlinkButton 
+                                        x:Uid="AltBacktick_ThirdPartyNotice"
+                                        NavigateUri="https://github.com/akiver/AltBacktick" />
+                                </StackPanel>
+                            </tkcontrols:SettingsCard>
+                        </tkcontrols:SettingsExpander.Items>
+                    </tkcontrols:SettingsExpander>
+                </controls:SettingsGroup>
+
+            </StackPanel>
+        </controls:SettingsPageControl.ModuleContent>
+
+        <controls:SettingsPageControl.PrimaryLinks>
+            <controls:PageLink x:Uid="LearnMore_AltBacktick" Link="https://aka.ms/PowerToysOverview_AltBacktick" />
+        </controls:SettingsPageControl.PrimaryLinks>
+    </controls:SettingsPageControl>
+</local:NavigablePage>

@@ -252,6 +252,12 @@
                     SelectsOnInvoked="False">
                     <NavigationViewItem.MenuItems>
                         <NavigationViewItem
+                            x:Name="AltBacktickNavigationItem"
+                            x:Uid="Shell_AltBacktick"
+                            helpers:NavHelper.NavigateTo="views:AltBacktickPage"
+                            AutomationProperties.AutomationId="AltBacktickNavItem"
+                            Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/AltBacktick.png}" />
+                        <NavigationViewItem
                             x:Name="AlwaysOnTopNavigationItem"
                             x:Uid="Shell_AlwaysOnTop"
                             helpers:NavHelper.NavigateTo="views:AlwaysOnTopPage"

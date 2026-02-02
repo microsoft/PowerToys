@@ -385,6 +385,7 @@ namespace Microsoft.PowerToys.Settings.UI
                 case "Dashboard": return typeof(DashboardPage);
                 case "Overview": return typeof(GeneralPage);
                 case "AdvancedPaste": return typeof(AdvancedPastePage);
+                case "AltBacktick": return typeof(AltBacktickPage);
                 case "AlwaysOnTop": return typeof(AlwaysOnTopPage);
                 case "Awake": return typeof(AwakePage);
                 case "CmdNotFound": return typeof(CmdNotFoundPage);
