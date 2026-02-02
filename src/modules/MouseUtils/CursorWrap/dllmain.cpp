@@ -54,6 +54,7 @@ namespace
     const wchar_t JSON_KEY_AUTO_ACTIVATE[] = L"auto_activate";
     const wchar_t JSON_KEY_DISABLE_WRAP_DURING_DRAG[] = L"disable_wrap_during_drag";
     const wchar_t JSON_KEY_WRAP_MODE[] = L"wrap_mode";
+    const wchar_t JSON_KEY_DISABLE_ON_SINGLE_MONITOR[] = L"disable_cursor_wrap_on_single_monitor";
 }
 
 // The PowerToy name that will be shown in the settings.
@@ -80,6 +81,7 @@ private:
     bool m_enabled = false;
     bool m_autoActivate = false;
     bool m_disableWrapDuringDrag = true; // Default to true to prevent wrap during drag
+    bool m_disableOnSingleMonitor = false; // Default to false
     int m_wrapMode = 0; // 0=Both (default), 1=VerticalOnly, 2=HorizontalOnly
     
     // Mouse hook
@@ -415,6 +417,21 @@ private:
             {
                 Logger::warn("Failed to initialize CursorWrap wrap mode from settings. Will use default value (0=Both)");
             }
+            
+            try
+            {
+                // Parse disable on single monitor
+                auto propertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES);
+                if (propertiesObject.HasKey(JSON_KEY_DISABLE_ON_SINGLE_MONITOR))
+                {
+                    auto disableOnSingleMonitorObject = propertiesObject.GetNamedObject(JSON_KEY_DISABLE_ON_SINGLE_MONITOR);
+                    m_disableOnSingleMonitor = disableOnSingleMonitorObject.GetNamedBoolean(JSON_KEY_VALUE);
+                }
+            }
+            catch (...)
+            {
+                Logger::warn("Failed to initialize CursorWrap disable on single monitor from settings. Will use default value (false)");
+            }
         }
         else
         {
@@ -646,7 +663,8 @@ private:
                 POINT newPos = g_cursorWrapInstance->m_core.HandleMouseMove(
                     currentPos,
                     g_cursorWrapInstance->m_disableWrapDuringDrag,
-                    g_cursorWrapInstance->m_wrapMode);
+                    g_cursorWrapInstance->m_wrapMode,
+                    g_cursorWrapInstance->m_disableOnSingleMonitor);
                     
                 if (newPos.x != currentPos.x || newPos.y != currentPos.y)
                 {
