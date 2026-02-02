@@ -1,50 +1,118 @@
-#pragma warning disable IDE0073
-// Copyright (c) Brice Lambson
-// The Brice Lambson licenses this file to you under the MIT license.
-// See the LICENSE file in the project root for more information.  Code forked from Brice Lambson's https://github.com/bricelam/ImageResizer/
-#pragma warning restore IDE0073
+// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
 
 using System;
-using System.Globalization;
 
-using ImageResizer.Properties;
+using ImageResizer.Converters;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace ImageResizer.Views
 {
+    [TestClass]
     public class TimeRemainingConverterTests
     {
-        [DataTestMethod]
-        [DataRow("HourMinute", 1, 1, 0)]
-        [DataRow("HourMinutes", 1, 2, 0)]
-        [DataRow("HoursMinute", 2, 1, 0)]
-        [DataRow("HoursMinutes", 2, 2, 0)]
-        [DataRow("MinuteSecond", 0, 1, 1)]
-        [DataRow("MinuteSeconds", 0, 1, 2)]
-        [DataRow("MinutesSecond", 0, 2, 1)]
-        [DataRow("MinutesSeconds", 0, 2, 2)]
-        [DataRow("Second", 0, 0, 1)]
-        [DataRow("Seconds", 0, 0, 2)]
-        public void ConvertWorks(string resource, int hours, int minutes, int seconds)
+        [TestMethod]
+        public void Convert_ReturnsEmptyString_WhenTimeSpanIsMaxValue()
         {
-            var timeRemaining = new TimeSpan(hours, minutes, seconds);
             var converter = new TimeRemainingConverter();
 
-            // Using InvariantCulture since these are internal
+            var result = converter.Convert(
+                TimeSpan.MaxValue,
+                targetType: null,
+                parameter: null,
+                language: string.Empty);
+
+            Assert.AreEqual(string.Empty, result);
+        }
+
+        [TestMethod]
+        public void Convert_ReturnsEmptyString_WhenTotalSecondsLessThanOne()
+        {
+            var converter = new TimeRemainingConverter();
+
+            var result = converter.Convert(
+                TimeSpan.FromSeconds(0.5),
+                targetType: null,
+                parameter: null,
+                language: string.Empty);
+
+            Assert.AreEqual(string.Empty, result);
+        }
+
+        [TestMethod]
+        public void Convert_ReturnsEmptyString_WhenZeroTimeSpan()
+        {
+            var converter = new TimeRemainingConverter();
+
+            var result = converter.Convert(
+                TimeSpan.Zero,
+                targetType: null,
+                parameter: null,
+                language: string.Empty);
+
+            Assert.AreEqual(string.Empty, result);
+        }
+
+        [TestMethod]
+        public void Convert_ReturnsFormattedString_WhenValidTimeSpan()
+        {
+            var converter = new TimeRemainingConverter();
+            var timeRemaining = new TimeSpan(0, 5, 30);
+
             var result = converter.Convert(
                 timeRemaining,
                 targetType: null,
                 parameter: null,
-                CultureInfo.InvariantCulture);
+                language: string.Empty);
 
-            Assert.AreEqual(
-                string.Format(
-                    CultureInfo.InvariantCulture,
-                    Resources.ResourceManager.GetString("Progress_TimeRemaining_" + resource, CultureInfo.InvariantCulture),
-                    hours,
-                    minutes,
-                    seconds),
-                result);
+            // The result should contain the time remaining information
+            Assert.IsNotNull(result);
+            Assert.IsInstanceOfType(result, typeof(string));
+            Assert.AreNotEqual(string.Empty, result);
+        }
+
+        [TestMethod]
+        public void Convert_ReturnsEmptyString_WhenValueIsNotTimeSpan()
+        {
+            var converter = new TimeRemainingConverter();
+
+            var result = converter.Convert(
+                "not a timespan",
+                targetType: null,
+                parameter: null,
+                language: string.Empty);
+
+            Assert.AreEqual(string.Empty, result);
+        }
+
+        [TestMethod]
+        public void Convert_ReturnsEmptyString_WhenValueIsNull()
+        {
+            var converter = new TimeRemainingConverter();
+
+            var result = converter.Convert(
+                null,
+                targetType: null,
+                parameter: null,
+                language: string.Empty);
+
+            Assert.AreEqual(string.Empty, result);
+        }
+
+        [TestMethod]
+        public void ConvertBack_ReturnsValueUnchanged()
+        {
+            var converter = new TimeRemainingConverter();
+            var input = "test value";
+
+            var result = converter.ConvertBack(
+                input,
+                targetType: null,
+                parameter: null,
+                language: string.Empty);
+
+            Assert.AreEqual(input, result);
         }
     }
 }

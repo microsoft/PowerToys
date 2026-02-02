@@ -11,7 +11,7 @@ namespace ImageResizer.Cli.Options
         private static readonly string[] _aliases = ["--destination", "-d", "/d"];
 
         public DestinationOption()
-            : base(_aliases, Properties.Resources.CLI_Option_Destination)
+            : base(_aliases[0], Properties.Resources.CLI_Option_Destination)
         {
         }
     }

@@ -11,7 +11,7 @@ namespace ImageResizer.Cli.Options
         private static readonly string[] _aliases = ["--shrink-only"];
 
         public ShrinkOnlyOption()
-            : base(_aliases, Properties.Resources.CLI_Option_ShrinkOnly)
+            : base(_aliases[0], Properties.Resources.CLI_Option_ShrinkOnly)
         {
         }
     }

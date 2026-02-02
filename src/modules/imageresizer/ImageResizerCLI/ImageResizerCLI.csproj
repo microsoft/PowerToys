@@ -20,9 +20,4 @@
   <ItemGroup>
     <ProjectReference Include="..\ui\ImageResizerUI.csproj" />
   </ItemGroup>
-
-  <!-- Force using WindowsDesktop runtime to ensure consistent dll versions with other projects -->
-  <ItemGroup>
-    <FrameworkReference Include="Microsoft.WindowsDesktop.App.WPF" />
-  </ItemGroup>
 </Project>

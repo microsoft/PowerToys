@@ -7,11 +7,27 @@ using ImageResizer.Helpers;
 namespace ImageResizer.Properties
 {
     /// <summary>
-    /// Resource accessor class for compatibility with CLI code.
+    /// Resource accessor class for compatibility with CLI code and tests.
     /// Wraps ResourceLoader for resource string access.
     /// </summary>
     internal static class Resources
     {
+        // Size names (used by tests and ResizeSize token replacement)
+        public static string Small => ResourceLoaderInstance.ResourceLoader.GetString("Small");
+
+        public static string Medium => ResourceLoaderInstance.ResourceLoader.GetString("Medium");
+
+        public static string Large => ResourceLoaderInstance.ResourceLoader.GetString("Large");
+
+        public static string Phone => ResourceLoaderInstance.ResourceLoader.GetString("Phone");
+
+        // Input page resources
+        public static string Input_Custom => ResourceLoaderInstance.ResourceLoader.GetString("Input_Custom");
+
+        // Validation messages
+        public static string ValueMustBeBetween => ResourceLoaderInstance.ResourceLoader.GetString("ValueMustBeBetween");
+
+        // CLI options
         public static string CLI_Option_Destination => ResourceLoaderInstance.ResourceLoader.GetString("CLI_Option_Destination");
 
         public static string CLI_Option_FileName => ResourceLoaderInstance.ResourceLoader.GetString("CLI_Option_FileName");
