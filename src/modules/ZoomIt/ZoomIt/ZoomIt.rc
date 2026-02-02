@@ -2,6 +2,13 @@
 //
 #include "resource.h"
 
+// version.h and branding.h are different in the Sysinternals repository,
+// keep the includes as such, here.
+// From $(MSBuildThisFileDirectory)..\..\..\common\version
+#include "version.h"
+// From $(MSBuildThisFileDirectory)PowerToys
+#include "branding.h"
+
 #define APSTUDIO_READONLY_SYMBOLS
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -68,8 +75,8 @@ APPICON                 ICON                    "appicon.ico"
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 10,0,0,0
- PRODUCTVERSION 10,0,0,0
+ FILEVERSION FILE_VERSION
+ PRODUCTVERSION PRODUCT_VERSION
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -84,14 +91,14 @@ BEGIN
     BEGIN
         BLOCK "040904b0"
         BEGIN
-            VALUE "CompanyName", "Sysinternals - www.sysinternals.com"
-            VALUE "FileDescription", "Sysinternals Screen Magnifier"
-            VALUE "FileVersion", "10.0"
-            VALUE "InternalName", "ZoomIt"
-            VALUE "LegalCopyright", "Copyright \251 2006-2026 Mark Russinovich"
-            VALUE "OriginalFilename", "ZoomIt.exe"
-            VALUE "ProductName", "Sysinternals ZoomIt"
-            VALUE "ProductVersion", "10.0"
+            VALUE "CompanyName", COMPANY_NAME
+            VALUE "FileDescription", FILE_DESCRIPTION
+            VALUE "FileVersion", FILE_VERSION_STRING
+            VALUE "InternalName", INTERNAL_NAME
+            VALUE "LegalCopyright", COPYRIGHT_NOTE
+            VALUE "OriginalFilename", ORIGINAL_FILENAME
+            VALUE "ProductName", ZOOMIT_PRODUCT_NAME
+            VALUE "ProductVersion", PRODUCT_VERSION_STRING
         END
     END
     BLOCK "VarFileInfo"
