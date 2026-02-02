@@ -9,93 +9,56 @@
     xmlns:local="using:KeyboardManagerEditorUI.Pages"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.UI.Controls"
+    xmlns:tkconverters="using:CommunityToolkit.WinUI.Converters"
     mc:Ignorable="d">
 
-    <Grid Padding="16">
+    <Page.Resources>
+        <tkconverters:DoubleToVisibilityConverter
+            x:Key="CountToVisibilityConverter"
+            FalseValue="Collapsed"
+            GreaterThan="0"
+            TrueValue="Visible" />
+    </Page.Resources>
+
+    <Grid Padding="24" RowSpacing="16">
         <Grid.RowDefinitions>
             <RowDefinition Height="64" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
         <!--  Add New Remapping Button  -->
-        <Button
-            x:Name="NewRemappingBtn"
-            Grid.Row="0"
-            Height="36"
-            Margin="0,0,0,16"
-            Click="NewRemappingBtn_Click">
-            <StackPanel Orientation="Horizontal" Spacing="8">
-                <FontIcon
-                    FontSize="14"
-                    Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
-                    Glyph="&#xE109;" />
-                <TextBlock VerticalAlignment="Center" Text="Add new remapping" />
-            </StackPanel>
-        </Button>
+        <Grid>
+            <Button x:Name="NewRemappingBtn" Click="NewRemappingBtn_Click">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <FontIcon
+                        FontSize="14"
+                        Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
+                        Glyph="&#xE109;" />
+                    <TextBlock VerticalAlignment="Center" Text="Add new remapping" />
+                </StackPanel>
+            </Button>
+        </Grid>
 
-        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
-            <StackPanel Orientation="Vertical" Spacing="24">
-
-                <!--  Remappings Section  -->
-                <StackPanel Orientation="Vertical" Spacing="12">
-                    <TextBlock Style="{StaticResource SubtitleTextBlockStyle}" Text="Remappings" />
-                    <Grid
-                        HorizontalAlignment="Stretch"
-                        Background="{ThemeResource LayerFillColorDefaultBrush}"
-                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                        BorderThickness="1"
-                        CornerRadius="{StaticResource OverlayCornerRadius}">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="48" />
-                            <RowDefinition Height="*" />
-                        </Grid.RowDefinitions>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="236" />
-                            <ColumnDefinition Width="236" />
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="84" />
-                        </Grid.ColumnDefinitions>
-                        <TextBlock
-                            x:Uid="RemappingsPageOriginalKeysTextBlock"
-                            Grid.Column="0"
-                            Margin="16,-2,0,0"
-                            VerticalAlignment="Center"
-                            Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                        <AppBarSeparator
-                            Grid.Column="1"
-                            Margin="-6,4,0,4"
-                            HorizontalAlignment="Left" />
-                        <TextBlock
-                            x:Uid="RemappingsPageNewKeysTextBlock"
-                            Grid.Column="1"
-                            Margin="12,-2,0,0"
-                            HorizontalAlignment="Left"
-                            VerticalAlignment="Center"
-                            Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                        <AppBarSeparator
-                            Grid.Column="2"
-                            Margin="-6,4,0,4"
-                            HorizontalAlignment="Left" />
-                        <TextBlock
-                            x:Uid="RemmapingsPageApplicableAppsTextBlock"
-                            Grid.Column="2"
-                            Margin="12,-2,0,0"
-                            HorizontalAlignment="Left"
-                            VerticalAlignment="Center"
-                            Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                        <Rectangle
-                            Grid.ColumnSpan="4"
-                            Height="1"
-                            HorizontalAlignment="Stretch"
-                            VerticalAlignment="Bottom"
-                            Fill="{ThemeResource CardStrokeColorDefaultBrush}" />
+        <Grid
+            Grid.Row="1"
+            Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+            BorderThickness="1"
+            CornerRadius="{ThemeResource OverlayCornerRadius}">
+            <ScrollViewer VerticalAlignment="Stretch" VerticalScrollBarVisibility="Auto">
+                <Grid Padding="16">
+                    <StackPanel Orientation="Vertical" Spacing="24">
+                        <!--  Remappings Section  -->
                         <ListView
-                            Grid.Row="1"
-                            Grid.ColumnSpan="4"
                             IsItemClickEnabled="True"
                             ItemClick="RemappingsList_ItemClick"
                             ItemsSource="{x:Bind RemappingList}"
-                            SelectionMode="None">
+                            ScrollViewer.VerticalScrollMode="Disabled"
+                            SelectionMode="None"
+                            Visibility="{x:Bind RemappingList.Count, Mode=OneWay, Converter={StaticResource CountToVisibilityConverter}}">
+                            <ListView.Header>
+                                <TextBlock Style="{StaticResource BodyStrongTextBlockStyle}" Text="Remappings" />
+                            </ListView.Header>
                             <ListView.ItemTemplate>
                                 <DataTemplate x:DataType="helper:Remapping">
                                     <Grid Height="Auto" MinHeight="48">
@@ -103,16 +66,8 @@
                                             <ColumnDefinition Width="Auto" MinWidth="236" />
                                             <ColumnDefinition Width="Auto" MinWidth="236" />
                                             <ColumnDefinition Width="*" />
-                                            <ColumnDefinition Width="84" />
+                                            <ColumnDefinition Width="Auto" />
                                         </Grid.ColumnDefinitions>
-                                        <Rectangle
-                                            Grid.ColumnSpan="5"
-                                            Height="1"
-                                            Margin="-16,0,-16,0"
-                                            HorizontalAlignment="Stretch"
-                                            VerticalAlignment="Bottom"
-                                            Fill="{ThemeResource CardStrokeColorDefaultBrush}"
-                                            Opacity="0.8" />
                                         <ItemsControl
                                             Grid.Column="0"
                                             VerticalAlignment="Center"
@@ -165,74 +120,37 @@
                                             VerticalAlignment="Center"
                                             FontSize="12"
                                             Text="{x:Bind AppName}" />
+                                        <Button
+                                            Grid.Column="3"
+                                            Margin="0,0,4,0"
+                                            Padding="8,4"
+                                            HorizontalAlignment="Right"
+                                            VerticalAlignment="Center"
+                                            Background="Transparent"
+                                            BorderThickness="0"
+                                            Click="DeleteMapping_Click">
+                                            <FontIcon
+                                                FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                                FontSize="16"
+                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                Glyph="&#xE74D;" />
+                                        </Button>
                                     </Grid>
                                 </DataTemplate>
                             </ListView.ItemTemplate>
                         </ListView>
-                    </Grid>
-                </StackPanel>
 
-                <!--  Text Section  -->
-                <StackPanel Orientation="Vertical" Spacing="12">
-                    <TextBlock Style="{StaticResource SubtitleTextBlockStyle}" Text="Text" />
-                    <Grid
-                        HorizontalAlignment="Stretch"
-                        Background="{ThemeResource LayerFillColorDefaultBrush}"
-                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                        BorderThickness="1"
-                        CornerRadius="{StaticResource OverlayCornerRadius}">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="48" />
-                            <RowDefinition Height="*" />
-                        </Grid.RowDefinitions>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="236" />
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="120" />
-                            <ColumnDefinition Width="84" />
-                        </Grid.ColumnDefinitions>
-                        <TextBlock
-                            x:Uid="TextPageOriginalKeysTextBlock"
-                            Grid.Column="0"
-                            Margin="16,-2,0,0"
-                            VerticalAlignment="Center"
-                            Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                        <AppBarSeparator
-                            Grid.Column="1"
-                            Margin="-6,4,0,4"
-                            HorizontalAlignment="Left" />
-                        <TextBlock
-                            x:Uid="TextPageTextTextBlock"
-                            Grid.Column="1"
-                            Margin="12,-2,0,0"
-                            HorizontalAlignment="Left"
-                            VerticalAlignment="Center"
-                            Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                        <AppBarSeparator
-                            Grid.Column="2"
-                            Margin="-6,4,0,4"
-                            HorizontalAlignment="Left" />
-                        <TextBlock
-                            x:Uid="TextPageApplicableAppsTextBlock"
-                            Grid.Column="2"
-                            Margin="12,-2,0,0"
-                            HorizontalAlignment="Left"
-                            VerticalAlignment="Center"
-                            Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                        <Rectangle
-                            Grid.Row="0"
-                            Grid.ColumnSpan="4"
-                            Height="1"
-                            HorizontalAlignment="Stretch"
-                            VerticalAlignment="Bottom"
-                            Fill="{ThemeResource CardStrokeColorDefaultBrush}" />
+                        <!--  Text Section  -->
                         <ListView
-                            Grid.Row="1"
-                            Grid.ColumnSpan="4"
                             IsItemClickEnabled="True"
                             ItemClick="TextMappingsList_ItemClick"
                             ItemsSource="{x:Bind TextMappings}"
-                            SelectionMode="None">
+                            ScrollViewer.VerticalScrollMode="Disabled"
+                            SelectionMode="None"
+                            Visibility="{x:Bind TextMappings.Count, Mode=OneWay, Converter={StaticResource CountToVisibilityConverter}}">
+                            <ListView.Header>
+                                <TextBlock Style="{StaticResource BodyStrongTextBlockStyle}" Text="Text" />
+                            </ListView.Header>
                             <ListView.ItemTemplate>
                                 <DataTemplate x:DataType="helper:TextMapping">
                                     <Grid MinHeight="48">
@@ -240,7 +158,7 @@
                                             <ColumnDefinition Width="236" />
                                             <ColumnDefinition Width="*" />
                                             <ColumnDefinition Width="120" />
-                                            <ColumnDefinition Width="48" />
+                                            <ColumnDefinition Width="Auto" />
                                         </Grid.ColumnDefinitions>
                                         <Rectangle
                                             Grid.ColumnSpan="4"
@@ -285,62 +203,37 @@
                                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                             Text="{x:Bind AppName}"
                                             TextTrimming="CharacterEllipsis" />
+                                        <Button
+                                            Grid.Column="3"
+                                            Margin="0,0,4,0"
+                                            Padding="8,4"
+                                            HorizontalAlignment="Right"
+                                            VerticalAlignment="Center"
+                                            Background="Transparent"
+                                            BorderThickness="0"
+                                            Click="DeleteMapping_Click">
+                                            <FontIcon
+                                                FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                                FontSize="16"
+                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                Glyph="&#xE74D;" />
+                                        </Button>
                                     </Grid>
                                 </DataTemplate>
                             </ListView.ItemTemplate>
                         </ListView>
-                    </Grid>
-                </StackPanel>
 
-                <!--  Programs Section  -->
-                <StackPanel Orientation="Vertical" Spacing="12">
-                    <TextBlock Style="{StaticResource SubtitleTextBlockStyle}" Text="Programs" />
-                    <Grid
-                        HorizontalAlignment="Stretch"
-                        Background="{ThemeResource LayerFillColorDefaultBrush}"
-                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                        BorderThickness="1"
-                        CornerRadius="{StaticResource OverlayCornerRadius}">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="48" />
-                            <RowDefinition Height="*" />
-                        </Grid.RowDefinitions>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="348" />
-                            <ColumnDefinition Width="236" />
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="84" />
-                        </Grid.ColumnDefinitions>
-                        <TextBlock
-                            x:Uid="ProgramsPageShortcutTextBlock"
-                            Grid.Column="0"
-                            Margin="16,-2,0,0"
-                            VerticalAlignment="Center"
-                            Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                        <AppBarSeparator
-                            Grid.Column="1"
-                            Margin="-6,4,0,4"
-                            HorizontalAlignment="Left" />
-                        <TextBlock
-                            x:Uid="ProgramsPageProgramsTextBlock"
-                            Grid.Column="1"
-                            Margin="12,-2,0,0"
-                            HorizontalAlignment="Left"
-                            VerticalAlignment="Center"
-                            Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                        <Rectangle
-                            Grid.ColumnSpan="4"
-                            Height="1"
-                            HorizontalAlignment="Stretch"
-                            VerticalAlignment="Bottom"
-                            Fill="{ThemeResource CardStrokeColorDefaultBrush}" />
+                        <!--  Programs Section  -->
                         <ListView
-                            Grid.Row="1"
-                            Grid.ColumnSpan="4"
                             IsItemClickEnabled="True"
                             ItemClick="ProgramShortcutsList_ItemClick"
                             ItemsSource="{x:Bind ProgramShortcuts}"
-                            SelectionMode="None">
+                            ScrollViewer.VerticalScrollMode="Disabled"
+                            SelectionMode="None"
+                            Visibility="{x:Bind ProgramShortcuts.Count, Mode=OneWay, Converter={StaticResource CountToVisibilityConverter}}">
+                            <ListView.Header>
+                                <TextBlock Style="{StaticResource BodyStrongTextBlockStyle}" Text="Programs" />
+                            </ListView.Header>
                             <ListView.ItemTemplate>
                                 <DataTemplate x:DataType="helper:ProgramShortcut">
                                     <Grid Height="48">
@@ -394,62 +287,37 @@
                                                 </ToolTipService.ToolTip>
                                             </FontIcon>
                                         </StackPanel>
+                                        <Button
+                                            Grid.Column="3"
+                                            Margin="0,0,4,0"
+                                            Padding="8,4"
+                                            HorizontalAlignment="Right"
+                                            VerticalAlignment="Center"
+                                            Background="Transparent"
+                                            BorderThickness="0"
+                                            Click="DeleteMapping_Click">
+                                            <FontIcon
+                                                FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                                FontSize="16"
+                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                Glyph="&#xE74D;" />
+                                        </Button>
                                     </Grid>
                                 </DataTemplate>
                             </ListView.ItemTemplate>
                         </ListView>
-                    </Grid>
-                </StackPanel>
 
-                <!--  URLs Section  -->
-                <StackPanel Orientation="Vertical" Spacing="12">
-                    <TextBlock Style="{StaticResource SubtitleTextBlockStyle}" Text="URLs" />
-                    <Grid
-                        HorizontalAlignment="Stretch"
-                        Background="{ThemeResource LayerFillColorDefaultBrush}"
-                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                        BorderThickness="1"
-                        CornerRadius="{ThemeResource OverlayCornerRadius}">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="48" />
-                            <RowDefinition Height="*" />
-                        </Grid.RowDefinitions>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="348" />
-                            <ColumnDefinition Width="236" />
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="84" />
-                        </Grid.ColumnDefinitions>
-                        <TextBlock
-                            x:Uid="UrlPageShortcutTextBlock"
-                            Grid.Column="0"
-                            Margin="16,-2,0,0"
-                            VerticalAlignment="Center"
-                            Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                        <AppBarSeparator
-                            Grid.Column="1"
-                            Margin="-6,4,0,4"
-                            HorizontalAlignment="Left" />
-                        <TextBlock
-                            x:Uid="UrlPageUrlTextBlock"
-                            Grid.Column="1"
-                            Margin="12,-2,0,0"
-                            HorizontalAlignment="Left"
-                            VerticalAlignment="Center"
-                            Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                        <Rectangle
-                            Grid.ColumnSpan="4"
-                            Height="1"
-                            HorizontalAlignment="Stretch"
-                            VerticalAlignment="Bottom"
-                            Fill="{ThemeResource CardStrokeColorDefaultBrush}" />
+                        <!--  URLs Section  -->
                         <ListView
-                            Grid.Row="1"
-                            Grid.ColumnSpan="4"
                             IsItemClickEnabled="True"
                             ItemClick="UrlShortcutsList_ItemClick"
                             ItemsSource="{x:Bind UrlShortcuts}"
-                            SelectionMode="None">
+                            ScrollViewer.VerticalScrollMode="Disabled"
+                            SelectionMode="None"
+                            Visibility="{x:Bind UrlShortcuts.Count, Mode=OneWay, Converter={StaticResource CountToVisibilityConverter}}">
+                            <ListView.Header>
+                                <TextBlock Style="{StaticResource BodyStrongTextBlockStyle}" Text="URLs" />
+                            </ListView.Header>
                             <ListView.ItemTemplate>
                                 <DataTemplate x:DataType="helper:URLShortcut">
                                     <Grid Height="48">
@@ -489,15 +357,29 @@
                                             Grid.Column="1"
                                             Margin="-12,0,0,0"
                                             Content="{x:Bind URL}" />
+                                        <Button
+                                            Grid.Column="3"
+                                            Margin="0,0,4,0"
+                                            Padding="8,4"
+                                            HorizontalAlignment="Right"
+                                            VerticalAlignment="Center"
+                                            Background="Transparent"
+                                            BorderThickness="0"
+                                            Click="DeleteMapping_Click">
+                                            <FontIcon
+                                                FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                                FontSize="16"
+                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                Glyph="&#xE74D;" />
+                                        </Button>
                                     </Grid>
                                 </DataTemplate>
                             </ListView.ItemTemplate>
                         </ListView>
-                    </Grid>
-                </StackPanel>
-
-            </StackPanel>
-        </ScrollViewer>
+                    </StackPanel>
+                </Grid>
+            </ScrollViewer>
+        </Grid>
 
         <!--  Content Dialog for new remapping  -->
         <ContentDialog
@@ -511,6 +393,16 @@
             PrimaryButtonStyle="{StaticResource AccentButtonStyle}"
             PrimaryButtonText="Save">
             <controls:UnifiedMappingControl x:Name="UnifiedMappingControl" Margin="0,16,0,0" />
+        </ContentDialog>
+
+        <!--  Confirmation Dialog for delete  -->
+        <ContentDialog
+            x:Name="DeleteConfirmationDialog"
+            Title="Are you sure?"
+            CloseButtonText="Cancel"
+            DefaultButton="Primary"
+            PrimaryButtonText="Delete">
+            <TextBlock Text="You are about to delete this remapping." TextWrapping="Wrap" />
         </ContentDialog>
     </Grid>
 </Page>

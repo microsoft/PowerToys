@@ -369,6 +369,7 @@ namespace KeyboardManagerEditorUI.Pages
             try
             {
                 var originalKeys = _editingItem.OriginalTriggerKeys;
+                bool deleted = false;
 
                 switch (_editingItem.Type)
                 {
@@ -386,13 +387,18 @@ namespace KeyboardManagerEditorUI.Pages
                             int originalKey = _mappingService.GetKeyCodeFromName(originalKeys[0]);
                             if (originalKey != 0)
                             {
-                                _mappingService.DeleteSingleKeyToTextMapping(originalKey);
+                                deleted = _mappingService.DeleteSingleKeyToTextMapping(originalKey);
                             }
                         }
                         else
                         {
                             string originalKeysString = string.Join(";", originalKeys.Select(k => _mappingService.GetKeyCodeFromName(k).ToString(CultureInfo.InvariantCulture)));
-                            _mappingService.DeleteShortcutMapping(originalKeysString, _editingItem.IsAllApps ? string.Empty : _editingItem.AppName ?? string.Empty);
+                            deleted = _mappingService.DeleteShortcutMapping(originalKeysString, _editingItem.IsAllApps ? string.Empty : _editingItem.AppName ?? string.Empty);
+                        }
+
+                        if (deleted)
+                        {
+                            _mappingService.SaveSettings();
                         }
 
                         break;
@@ -405,13 +411,18 @@ namespace KeyboardManagerEditorUI.Pages
                                 int originalKey = _mappingService.GetKeyCodeFromName(originalKeys[0]);
                                 if (originalKey != 0)
                                 {
-                                    _mappingService.DeleteSingleKeyMapping(originalKey);
+                                    deleted = _mappingService.DeleteSingleKeyToTextMapping(originalKey);
                                 }
                             }
                             else
                             {
                                 string originalKeysString = string.Join(";", originalKeys.Select(k => _mappingService.GetKeyCodeFromName(k).ToString(CultureInfo.InvariantCulture)));
-                                _mappingService.DeleteShortcutMapping(originalKeysString);
+                                deleted = _mappingService.DeleteShortcutMapping(originalKeysString);
+                            }
+
+                            if (deleted)
+                            {
+                                _mappingService.SaveSettings();
                             }
 
                             if (!string.IsNullOrEmpty(programShortcut.Id))
@@ -428,13 +439,18 @@ namespace KeyboardManagerEditorUI.Pages
                             int originalKey = _mappingService.GetKeyCodeFromName(originalKeys[0]);
                             if (originalKey != 0)
                             {
-                                _mappingService.DeleteSingleKeyMapping(originalKey);
+                                deleted = _mappingService.DeleteSingleKeyToTextMapping(originalKey);
                             }
                         }
                         else
                         {
                             string originalKeysString = string.Join(";", originalKeys.Select(k => _mappingService.GetKeyCodeFromName(k).ToString(CultureInfo.InvariantCulture)));
-                            _mappingService.DeleteShortcutMapping(originalKeysString);
+                            deleted = _mappingService.DeleteShortcutMapping(originalKeysString);
+                        }
+
+                        if (deleted)
+                        {
+                            _mappingService.SaveSettings();
                         }
 
                         break;
@@ -576,6 +592,122 @@ namespace KeyboardManagerEditorUI.Pages
             }
 
             return false;
+        }
+
+        #endregion
+
+        #region Delete Handlers
+
+        private async void DeleteMapping_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is not Button button || _mappingService == null)
+            {
+                return;
+            }
+
+            var result = await DeleteConfirmationDialog.ShowAsync();
+            if (result != ContentDialogResult.Primary)
+            {
+                return;
+            }
+
+            try
+            {
+                switch (button.DataContext)
+                {
+                    case Remapping remapping:
+                        if (RemappingHelper.DeleteRemapping(_mappingService, remapping))
+                        {
+                            _mappingService.SaveSettings();
+                            LoadRemappings();
+                        }
+
+                        break;
+
+                    case TextMapping textMapping:
+                        {
+                            bool deleted = false;
+                            if (textMapping.Keys.Count == 1)
+                            {
+                                int originalKey = _mappingService.GetKeyCodeFromName(textMapping.Keys[0]);
+                                if (originalKey != 0)
+                                {
+                                    deleted = _mappingService.DeleteSingleKeyToTextMapping(originalKey);
+                                }
+                            }
+                            else
+                            {
+                                string originalKeys = string.Join(";", textMapping.Keys.Select(k => _mappingService.GetKeyCodeFromName(k)));
+                                deleted = _mappingService.DeleteShortcutMapping(originalKeys, textMapping.IsAllApps ? string.Empty : textMapping.AppName ?? string.Empty);
+                            }
+
+                            if (deleted)
+                            {
+                                _mappingService.SaveSettings();
+                                LoadTextMappings();
+                            }
+                        }
+
+                        break;
+
+                    case ProgramShortcut programShortcut:
+                        {
+                            bool deleted = false;
+                            if (programShortcut.Shortcut.Count == 1)
+                            {
+                                int originalKey = _mappingService.GetKeyCodeFromName(programShortcut.Shortcut[0]);
+                                if (originalKey != 0)
+                                {
+                                    deleted = _mappingService.DeleteSingleKeyToTextMapping(originalKey);
+                                }
+                            }
+                            else
+                            {
+                                string originalKeys = string.Join(";", programShortcut.Shortcut.Select(k => _mappingService.GetKeyCodeFromName(k)));
+                                deleted = _mappingService.DeleteShortcutMapping(originalKeys);
+                            }
+
+                            if (deleted)
+                            {
+                                _mappingService.SaveSettings();
+                                SettingsManager.RemoveShortcutKeyMappingFromSettings(programShortcut.Id);
+                                LoadProgramShortcuts();
+                            }
+                        }
+
+                        break;
+
+                    case URLShortcut urlShortcut:
+                        {
+                            bool deleted = false;
+                            if (urlShortcut.Shortcut.Count == 1)
+                            {
+                                int originalKey = _mappingService.GetKeyCodeFromName(urlShortcut.Shortcut[0]);
+                                if (originalKey != 0)
+                                {
+                                    deleted = _mappingService.DeleteSingleKeyToTextMapping(originalKey);
+                                }
+                            }
+                            else
+                            {
+                                string originalKeys = string.Join(";", urlShortcut.Shortcut.Select(k => _mappingService.GetKeyCodeFromName(k)));
+                                deleted = _mappingService.DeleteShortcutMapping(originalKeys);
+                            }
+
+                            if (deleted)
+                            {
+                                _mappingService.SaveSettings();
+                                LoadUrlShortcuts();
+                            }
+                        }
+
+                        break;
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Error deleting mapping: " + ex.Message);
+            }
         }
 
         #endregion
