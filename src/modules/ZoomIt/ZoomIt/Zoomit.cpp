@@ -1627,6 +1627,15 @@ INT_PTR CALLBACK AdvancedBreakProc( HWND hDlg, UINT message, WPARAM wParam, LPAR
 
     switch ( message )  {
     case WM_INITDIALOG:
+        // Set the dialog icon
+        {
+            HICON hIcon = LoadIcon( g_hInstance, L"APPICON" );
+            if( hIcon )
+            {
+                SendMessage( hDlg, WM_SETICON, ICON_BIG, (LPARAM)hIcon );
+                SendMessage( hDlg, WM_SETICON, ICON_SMALL, (LPARAM)hIcon );
+            }
+        }
         if( pSHAutoComplete ) {
             pSHAutoComplete( GetDlgItem( hDlg, IDC_SOUND_FILE), SHACF_FILESYSTEM );
             pSHAutoComplete( GetDlgItem( hDlg, IDC_BACKGROUND_FILE), SHACF_FILESYSTEM );
@@ -3699,6 +3708,16 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
             return FALSE;
         }
         hWndOptions = hDlg;
+
+        // Set the dialog icon
+        {
+            HICON hIcon = LoadIcon( g_hInstance, L"APPICON" );
+            if( hIcon )
+            {
+                SendMessage( hDlg, WM_SETICON, ICON_BIG, (LPARAM)hIcon );
+                SendMessage( hDlg, WM_SETICON, ICON_SMALL, (LPARAM)hIcon );
+            }
+        }
 
         SetForegroundWindow( hDlg );
         SetActiveWindow( hDlg );
