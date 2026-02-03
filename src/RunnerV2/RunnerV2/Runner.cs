@@ -75,6 +75,7 @@ namespace RunnerV2
             new ImageResizerModuleInterface(),
             new FileLocksmithModuleInterface(),
             new ShortcutGuideModuleInterface(),
+            new PeekModuleInterface(),
         ];
 
         /// <summary>
