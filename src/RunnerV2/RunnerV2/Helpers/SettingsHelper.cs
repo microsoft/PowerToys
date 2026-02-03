@@ -148,7 +148,7 @@ namespace RunnerV2.Helpers
                         TrayIconManager.ProcessTrayMenuCommand((nuint)TrayIconManager.TrayButton.ReportBug);
                         break;
                     case "bug_report_status":
-                        _ipc?.Send($@"{{""bug_report_running:"" {(TrayIconManager.IsBugReportToolRunning ? "true" : "false")}");
+                        _ipc?.Send($@"{{""bug_report_running"": {(TrayIconManager.IsBugReportToolRunning ? "true" : "false")}}}");
                         break;
                     case "killrunner":
                         Runner.Close();

@@ -212,7 +212,9 @@ namespace RunnerV2
             }
             catch (Exception e)
             {
+#if RELEASE
                 MessageBox.Show($"The module {module.Name} failed to load: \n" + e.Message, "Error: " + e.GetType().Name, MessageBoxButtons.OK, MessageBoxIcon.Error);
+#endif
                 Logger.LogError($"The module {module.Name} failed to load: \n", e);
                 _failedModuleLoads.Add(module);
                 return;
@@ -236,7 +238,9 @@ namespace RunnerV2
             }
             catch (Exception e)
             {
+#if RELEASE
                 MessageBox.Show($"The module {module.Name} failed to unload: \n" + e.Message, "Error: " + e.GetType().Name, MessageBoxButtons.OK, MessageBoxIcon.Error);
+#endif
                 Logger.LogError($"The module {module.Name} failed to unload: \n", e);
                 _failedModuleLoads.Add(module);
             }

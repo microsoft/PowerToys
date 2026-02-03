@@ -38,7 +38,7 @@ namespace RunnerV2.ModuleInterfaces
 
         public void Enable()
         {
-            _ipc = new TwoWayPipeMessageIPCManaged(string.Empty, IpcName, (_) => { });
+            _ipc = new TwoWayPipeMessageIPCManaged(@"\\.\pipe\PowerToys.AdvancedPast.Input", IpcName, (_) => { });
             _ipc.Start();
 
             PopulateShortcuts();
@@ -51,7 +51,7 @@ namespace RunnerV2.ModuleInterfaces
 
         public void PopulateShortcuts()
         {
-            _ipc ??= new TwoWayPipeMessageIPCManaged(string.Empty, @"\\.\pipe\PowerToys.AdvancedPaste", (_) => { });
+            _ipc ??= new TwoWayPipeMessageIPCManaged(@"\\.\pipe\PowerToys.AdvancedPast.Input", @"\\.\pipe\PowerToys.AdvancedPaste", (_) => { });
 
             Shortcuts.Clear();
 
