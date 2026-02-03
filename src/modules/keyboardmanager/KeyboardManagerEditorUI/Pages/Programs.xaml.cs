@@ -222,13 +222,15 @@ namespace KeyboardManagerEditorUI.Pages
                     deleted = _mappingService.DeleteShortcutMapping(originalKeys);
                 }
 
+                Shortcuts.Remove(shortcut);
+                SettingsManager.RemoveShortcutKeyMappingFromSettings(shortcut.Id);
+
                 if (deleted)
                 {
                     _mappingService.SaveSettings();
-                    Shortcuts.Remove(shortcut);
-                    SettingsManager.RemoveShortcutKeyMappingFromSettings(shortcut.Id);
-                    LoadProgramShortcuts();
                 }
+
+                LoadProgramShortcuts();
             }
             catch (Exception ex)
             {

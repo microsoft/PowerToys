@@ -677,13 +677,10 @@ namespace KeyboardManagerEditorUI.Pages
                             if (deleted)
                             {
                                 _mappingService.SaveSettings();
-                                SettingsManager.RemoveShortcutKeyMappingFromSettings(programShortcut.Id);
-                                LoadProgramShortcuts();
                             }
-                            else
-                            {
-                                Logger.LogWarning($"Failed to delete program shortcut: {string.Join("+", programShortcut.Shortcut)}");
-                            }
+
+                            SettingsManager.RemoveShortcutKeyMappingFromSettings(programShortcut.Id);
+                            LoadProgramShortcuts();
                         }
 
                         break;
