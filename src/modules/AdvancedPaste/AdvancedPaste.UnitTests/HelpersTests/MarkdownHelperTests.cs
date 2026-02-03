@@ -16,8 +16,10 @@ public sealed class MarkdownHelperTests
     /// </summary>
     private static string InvokeCleanHtml(string html)
     {
-        var methodInfo = typeof(MarkdownHelper).GetMethod("CleanHtml", BindingFlags.NonPublic | BindingFlags.Static);
-        return (string)methodInfo!.Invoke(null, [html])!;
+        var methodInfo = typeof(MarkdownHelper).GetMethod("CleanHtml", BindingFlags.NonPublic | BindingFlags.Static)
+            ?? throw new InvalidOperationException($"Method 'CleanHtml' not found on {nameof(MarkdownHelper)}. The method may have been renamed or removed.");
+        return (string?)methodInfo.Invoke(null, [html])
+            ?? throw new InvalidOperationException("CleanHtml returned null unexpectedly.");
     }
 
     /// <summary>
@@ -25,8 +27,10 @@ public sealed class MarkdownHelperTests
     /// </summary>
     private static string InvokeConvertHtmlToMarkdown(string html)
     {
-        var methodInfo = typeof(MarkdownHelper).GetMethod("ConvertHtmlToMarkdown", BindingFlags.NonPublic | BindingFlags.Static);
-        return (string)methodInfo!.Invoke(null, [html])!;
+        var methodInfo = typeof(MarkdownHelper).GetMethod("ConvertHtmlToMarkdown", BindingFlags.NonPublic | BindingFlags.Static)
+            ?? throw new InvalidOperationException($"Method 'ConvertHtmlToMarkdown' not found on {nameof(MarkdownHelper)}. The method may have been renamed or removed.");
+        return (string?)methodInfo.Invoke(null, [html])
+            ?? throw new InvalidOperationException("ConvertHtmlToMarkdown returned null unexpectedly.");
     }
 
     [TestMethod]
@@ -139,7 +143,7 @@ public sealed class MarkdownHelperTests
     }
 
     [TestMethod]
-    public void CleanHtml_NestedGoogleSheetsTable_PreservesNestedContent()
+    public void CleanHtml_ComplexGoogleSheetsTable_PreservesAllContent()
     {
         // Arrange - More complex Google Sheets HTML
         const string complexGoogleSheetsHtml = @"<google-sheets-html-origin>
