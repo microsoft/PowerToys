@@ -19,6 +19,8 @@ public sealed partial class SettingsWindowViewModel : ObservableObject
 
     private readonly Stack<NavItem> _navigationStack = new();
 
+
+
     public bool CanGoBack => _navigationStack.Count > 1;
 
     [ObservableProperty]
