@@ -225,10 +225,10 @@ namespace KeyboardManagerEditorUI.Pages
                 if (deleted)
                 {
                     _mappingService.SaveSettings();
-                    Shortcuts.Remove(shortcut);
-                    SettingsManager.RemoveShortcutKeyMappingFromSettings(shortcut.Id);
-                    LoadProgramShortcuts();
                 }
+
+                SettingsManager.RemoveShortcutKeyMappingFromSettings(shortcut.Id);
+                LoadProgramShortcuts();
             }
             catch (Exception ex)
             {
