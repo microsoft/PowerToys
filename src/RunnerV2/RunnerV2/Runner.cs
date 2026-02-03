@@ -74,6 +74,7 @@ namespace RunnerV2
             new PowerRenameModuleInterface(),
             new ImageResizerModuleInterface(),
             new FileLocksmithModuleInterface(),
+            new ShortcutGuideModuleInterface(),
         ];
 
         /// <summary>

@@ -1,5 +1,4 @@
 #include "pch.h"
-#include <interface/powertoy_module_interface.h>
 #include <common/SettingsAPI/settings_objects.h>
 #include "trace.h"
 #include "InclusiveCrosshairs.h"

@@ -909,7 +909,6 @@
   </Folder>
   <Folder Name="/modules/shortcutguide/">
     <Project Path="src/modules/ShortcutGuide/ShortcutGuide/ShortcutGuide.vcxproj" Id="2edb3eb4-fa92-4bff-b2d8-566584837231" />
-    <Project Path="src/modules/ShortcutGuide/ShortcutGuideModuleInterface/ShortcutGuideModuleInterface.vcxproj" Id="2d604c07-51fc-46bb-9eb7-75aecc7f5e81" />
   </Folder>
   <Folder Name="/modules/Workspaces/">
     <Project Path="src/modules/Workspaces/Workspaces.ModuleServices/Workspaces.ModuleServices.csproj">
