@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using System.Windows.Forms;
+using System.Windows.Interop;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using PowerToys.GPOWrapper;
@@ -80,13 +81,7 @@ namespace RunnerV2.ModuleInterfaces
 
         private void TryToPasteAsPlainText()
         {
-            if (Clipboard.ContainsText())
-            {
-                string text = Clipboard.GetText();
-                SendKeys.SendWait(text);
-            }
-
-            throw new NotImplementedException();
+            PowerToys.Interop.Clipboard.PasteAsPlainText();
         }
 
         public void Dispose()

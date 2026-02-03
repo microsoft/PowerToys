@@ -94,6 +94,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="async_message_queue.h" />
+    <ClInclude Include="Clipboard.h" />
     <ClInclude Include="CommonManaged.h">
       <DependentUpon>CommonManaged.idl</DependentUpon>
     </ClInclude>
@@ -123,6 +124,7 @@
     <ClInclude Include="two_way_pipe_message_ipc_impl.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Clipboard.cpp" />
     <ClCompile Include="CommonManaged.cpp">
       <DependentUpon>CommonManaged.idl</DependentUpon>
     </ClCompile>
@@ -163,6 +165,7 @@
     <None Include="PropertySheet.props" />
   </ItemGroup>
   <ItemGroup>
+    <Midl Include="Clipboard.idl" />
     <Midl Include="CommonManaged.idl" />
     <Midl Include="Constants.idl" />
     <Midl Include="HotkeyManager.idl" />
