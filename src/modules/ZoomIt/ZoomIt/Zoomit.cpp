@@ -1958,6 +1958,15 @@ static UINT_PTR CALLBACK ChooseFontHookProc(HWND hDlg, UINT message, WPARAM wPar
     switch (message)
     {
     case WM_INITDIALOG:
+        // Set the dialog icon
+        {
+            HICON hIcon = LoadIcon( g_hInstance, L"APPICON" );
+            if( hIcon )
+            {
+                SendMessage( hDlg, WM_SETICON, ICON_BIG, (LPARAM)hIcon );
+                SendMessage( hDlg, WM_SETICON, ICON_SMALL, (LPARAM)hIcon );
+            }
+        }
         // Basic (incomplete) dark mode attempt: theme the main common dialog window.
         ApplyDarkModeToDialog(hDlg);
         return 0;
