@@ -73,6 +73,7 @@ $languageHashTable = @{ "en" = @("ENU", "ENGLISH", "ENGLISH_US", "English (Unite
                         "pt-PT" = @("PTG", "PORTUGUESE", "PORTUGUESE", "Portuguese (Portugal)");
                         "zh-Hant" = @("CHT", "CHINESE", "CHINESE_TRADITIONAL", "Chinese (Traditional)")
                         "zh-TW" = @("CHT", "CHINESE", "CHINESE_TRADITIONAL", "Chinese (Traditional)")
+                        "vi" = @("VIT", "VIETNAMESE", "NEUTRAL", "Vietnamese")
                         }
 
 # Store the content to be written to a buffer
