@@ -28,7 +28,7 @@
     <ClCompile>
       <AdditionalIncludeDirectories>..\;..\..\;$(RepoRoot)src\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <!-- Uses WinRT coroutines (co_await) -->
+      <!-- Required for std::future coroutines in HttpClient.h -->
       <AdditionalOptions>/await %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Lib>
