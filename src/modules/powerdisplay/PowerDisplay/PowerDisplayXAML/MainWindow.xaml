@@ -1,0 +1,552 @@
+﻿<winuiex:WindowEx
+    x:Class="PowerDisplay.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:animatedVisuals="using:Microsoft.UI.Xaml.Controls.AnimatedVisuals"
+    xmlns:helpers="using:PowerDisplay.Helpers"
+    xmlns:local="using:PowerDisplay"
+    xmlns:models="using:PowerDisplay.Common.Models"
+    xmlns:toolkit="using:CommunityToolkit.WinUI.Controls"
+    xmlns:ui="using:CommunityToolkit.WinUI"
+    xmlns:vm="using:PowerDisplay.ViewModels"
+    xmlns:winuiex="using:WinUIEx"
+    MinWidth="0"
+    MinHeight="0"
+    IsMaximizable="False"
+    IsMinimizable="False"
+    IsResizable="False"
+    IsShownInSwitchers="False"
+    IsTitleBarVisible="False">
+    <winuiex:WindowEx.SystemBackdrop>
+        <DesktopAcrylicBackdrop />
+    </winuiex:WindowEx.SystemBackdrop>
+
+    <Grid
+        x:Name="RootGrid"
+        IsTabStop="True"
+        TabFocusNavigation="Local">
+        <Grid.Resources>
+            <Style
+                x:Key="FlyoutButtonStyle"
+                BasedOn="{StaticResource SubtleButtonStyle}"
+                TargetType="Button">
+                <Setter Property="Padding" Value="6" />
+                <Setter Property="Width" Value="32" />
+                <Setter Property="Height" Value="32" />
+                <Setter Property="FontFamily" Value="{ThemeResource SymbolThemeFontFamily}" />
+            </Style>
+        </Grid.Resources>
+        <Border x:Name="MainContainer">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="48" />
+                </Grid.RowDefinitions>
+
+                <!--  Main Content Area with modern design  -->
+                <Border
+                    x:Name="ContentArea"
+                    Background="{ThemeResource LayerOnAcrylicFillColorDefaultBrush}"
+                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                    BorderThickness="0,0,0,1">
+                    <Grid>
+                        <StackPanel
+                            Margin="0,16,0,16"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Orientation="Vertical"
+                            Spacing="16"
+                            Visibility="{x:Bind helpers:VisibilityConverter.BoolToVisibility(ViewModel.IsScanning), Mode=OneWay}">
+                            <ProgressRing
+                                Width="24"
+                                Height="24"
+                                Foreground="{ThemeResource AccentFillColorDefaultBrush}"
+                                IsActive="True" />
+                            <TextBlock
+                                x:Name="ScanningMonitorsTextBlock"
+                                x:Uid="ScanningMonitorsText"
+                                HorizontalAlignment="Center"
+                                FontSize="12"
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                TextAlignment="Center" />
+                        </StackPanel>
+
+                        <!--  No Monitors State with InfoBar  -->
+                        <InfoBar
+                            x:Name="NoMonitorsInfoBar"
+                            x:Uid="NoMonitorsText"
+                            IconSource="{ui:FontIconSource Glyph=&#xE7F4;}"
+                            IsClosable="False"
+                            IsOpen="{x:Bind ViewModel.ShowNoMonitorsMessage, Mode=OneWay}"
+                            Severity="Informational"
+                            Visibility="{x:Bind helpers:VisibilityConverter.BoolToVisibility(ViewModel.ShowNoMonitorsMessage), Mode=OneWay}" />
+
+                        <!--  Content Area  -->
+                        <ScrollViewer
+                            x:Name="MainScrollViewer"
+                            Padding="16,16,16,16"
+                            VerticalAlignment="Stretch"
+                            HorizontalScrollBarVisibility="Disabled"
+                            HorizontalScrollMode="Disabled"
+                            IsTabStop="False"
+                            VerticalScrollBarVisibility="Auto"
+                            ZoomMode="Disabled">
+                            <!--  Monitors List with modern card design  -->
+                            <ItemsRepeater
+                                x:Name="MonitorsRepeater"
+                                HorizontalAlignment="Stretch"
+                                ItemsSource="{x:Bind ViewModel.Monitors, Mode=OneWay}"
+                                TabFocusNavigation="Local"
+                                Visibility="{x:Bind helpers:VisibilityConverter.BoolToVisibility(ViewModel.HasMonitors), Mode=OneWay}">
+                                <ItemsRepeater.Layout>
+                                    <StackLayout Orientation="Vertical" Spacing="32" />
+                                </ItemsRepeater.Layout>
+                                <ItemsRepeater.ItemTemplate>
+                                    <DataTemplate x:DataType="vm:MonitorViewModel">
+                                        <StackPanel
+                                            HorizontalAlignment="Stretch"
+                                            Spacing="4"
+                                            TabFocusNavigation="Local">
+                                            <!--  Monitor Name with Icon  -->
+                                            <Grid Margin="2,0,0,0" HorizontalAlignment="Stretch">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="22" />
+                                                    <ColumnDefinition Width="16" />
+                                                    <!--  Spacing  -->
+                                                    <ColumnDefinition Width="*" />
+                                                </Grid.ColumnDefinitions>
+                                                <local:MonitorIcon
+                                                    VerticalAlignment="Center"
+                                                    IsBuiltIn="{x:Bind IsInternal, Mode=OneWay}"
+                                                    MonitorNumber="{x:Bind MonitorNumber, Mode=OneWay}" />
+                                                <TextBlock
+                                                    Grid.Column="2"
+                                                    Margin="0,0,0,2"
+                                                    VerticalAlignment="Center"
+                                                    Text="{x:Bind DisplayName, Mode=OneWay}" />
+                                                <!--  Icon buttons for InputSource and ColorTemperature  -->
+                                                <StackPanel
+                                                    Grid.Column="2"
+                                                    HorizontalAlignment="Right"
+                                                    Orientation="Horizontal"
+                                                    Spacing="4">
+                                                    <!--  Color Temperature Button  -->
+                                                    <Button
+                                                        x:Uid="ColorTemperatureTooltip"
+                                                        Content="{ui:FontIcon Glyph=&#xE790;,
+                                                                              FontSize=16}"
+                                                        IsEnabled="{x:Bind IsInteractionEnabled, Mode=OneWay}"
+                                                        Style="{StaticResource SubtleButtonStyle}"
+                                                        Visibility="{x:Bind helpers:VisibilityConverter.BoolToVisibility(ShowColorTemperature), Mode=OneWay}">
+                                                        <Button.Flyout>
+                                                            <Flyout Opened="Flyout_Opened" ShouldConstrainToRootBounds="False">
+                                                                <StackPanel Orientation="Vertical">
+                                                                    <ListView
+                                                                        ItemsSource="{x:Bind AvailableColorPresets, Mode=OneWay}"
+                                                                        SelectionChanged="ColorTemperatureListView_SelectionChanged"
+                                                                        SelectionMode="Single">
+                                                                        <ListView.Header>
+                                                                            <TextBlock
+                                                                                x:Uid="ColorTemperatureHeader"
+                                                                                Margin="16,0,8,0"
+                                                                                FontSize="12"
+                                                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                                                        </ListView.Header>
+                                                                        <ListView.ItemTemplate>
+                                                                            <DataTemplate x:DataType="vm:ColorTemperatureItem">
+                                                                                <Grid Padding="0,4">
+                                                                                    <Grid.ColumnDefinitions>
+                                                                                        <ColumnDefinition Width="*" />
+                                                                                        <ColumnDefinition Width="Auto" />
+                                                                                    </Grid.ColumnDefinitions>
+                                                                                    <TextBlock VerticalAlignment="Center" Text="{x:Bind DisplayName}" />
+                                                                                    <FontIcon
+                                                                                        Grid.Column="1"
+                                                                                        Margin="8,0,0,0"
+                                                                                        FontSize="12"
+                                                                                        Glyph="&#xE73E;"
+                                                                                        Visibility="{x:Bind helpers:VisibilityConverter.BoolToVisibility(IsSelected)}" />
+                                                                                </Grid>
+                                                                            </DataTemplate>
+                                                                        </ListView.ItemTemplate>
+                                                                    </ListView>
+                                                                </StackPanel>
+                                                            </Flyout>
+                                                        </Button.Flyout>
+                                                    </Button>
+                                                    <!--  More Button (Input Source + Power State)  -->
+                                                    <Button
+                                                        x:Uid="MoreOptionsTooltip"
+                                                        Content="{ui:FontIcon Glyph=&#xE712;,
+                                                                              FontSize=16}"
+                                                        Style="{StaticResource SubtleButtonStyle}"
+                                                        Visibility="{x:Bind helpers:VisibilityConverter.BoolToVisibility(ShowMoreButton), Mode=OneWay}">
+                                                        <Button.Flyout>
+                                                            <Flyout
+                                                                Opened="Flyout_Opened"
+                                                                Placement="BottomEdgeAlignedRight"
+                                                                ShouldConstrainToRootBounds="False">
+                                                                <StackPanel
+                                                                    MinWidth="240"
+                                                                    MaxWidth="320"
+                                                                    Orientation="Vertical">
+                                                                    <!--  Input Source Section  -->
+                                                                    <StackPanel Visibility="{x:Bind helpers:VisibilityConverter.BoolToVisibility(ShowInputSource), Mode=OneWay}">
+                                                                        <ListView
+                                                                            ItemsSource="{x:Bind AvailableInputSources, Mode=OneWay}"
+                                                                            SelectionChanged="InputSourceListView_SelectionChanged"
+                                                                            SelectionMode="Single">
+                                                                            <ListView.Header>
+                                                                                <TextBlock
+                                                                                    x:Uid="InputSourceHeader"
+                                                                                    Margin="16,0,8,0"
+                                                                                    FontSize="12"
+                                                                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                                                            </ListView.Header>
+                                                                            <ListView.ItemTemplate>
+                                                                                <DataTemplate x:DataType="vm:InputSourceItem">
+                                                                                    <Grid Padding="0,4">
+                                                                                        <Grid.ColumnDefinitions>
+                                                                                            <ColumnDefinition Width="*" />
+                                                                                            <ColumnDefinition Width="Auto" />
+                                                                                        </Grid.ColumnDefinitions>
+                                                                                        <TextBlock VerticalAlignment="Center" Text="{x:Bind Name}" />
+                                                                                        <FontIcon
+                                                                                            Grid.Column="1"
+                                                                                            Margin="8,0,0,0"
+                                                                                            FontSize="12"
+                                                                                            Glyph="&#xE73E;"
+                                                                                            Visibility="{x:Bind SelectionVisibility}" />
+                                                                                    </Grid>
+                                                                                </DataTemplate>
+                                                                            </ListView.ItemTemplate>
+                                                                        </ListView>
+                                                                    </StackPanel>
+                                                                    <!--  Separator between Input Source and Power State  -->
+                                                                    <Border
+                                                                        Height="1"
+                                                                        Margin="8,8"
+                                                                        Background="{ThemeResource DividerStrokeColorDefaultBrush}"
+                                                                        Visibility="{x:Bind helpers:VisibilityConverter.BoolToVisibility(ShowSeparatorAfterInputSource), Mode=OneWay}" />
+                                                                    <!--  Power State Section  -->
+                                                                    <StackPanel Visibility="{x:Bind helpers:VisibilityConverter.BoolToVisibility(ShowPowerState), Mode=OneWay}">
+                                                                        <ListView
+                                                                            ItemsSource="{x:Bind AvailablePowerStates, Mode=OneWay}"
+                                                                            SelectionChanged="PowerStateListView_SelectionChanged"
+                                                                            SelectionMode="Single">
+                                                                            <ListView.Header>
+                                                                                <TextBlock
+                                                                                    x:Uid="PowerStateHeader"
+                                                                                    Margin="16,0,8,0"
+                                                                                    FontSize="12"
+                                                                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                                                            </ListView.Header>
+                                                                            <ListView.ItemTemplate>
+                                                                                <DataTemplate x:DataType="vm:PowerStateItem">
+                                                                                    <Grid Padding="0,4">
+                                                                                        <Grid.ColumnDefinitions>
+                                                                                            <ColumnDefinition Width="*" />
+                                                                                            <ColumnDefinition Width="Auto" />
+                                                                                        </Grid.ColumnDefinitions>
+                                                                                        <TextBlock VerticalAlignment="Center" Text="{x:Bind Name}" />
+                                                                                        <FontIcon
+                                                                                            Grid.Column="1"
+                                                                                            Margin="8,0,0,0"
+                                                                                            FontSize="12"
+                                                                                            Glyph="&#xE73E;"
+                                                                                            Visibility="{x:Bind SelectionVisibility}" />
+                                                                                    </Grid>
+                                                                                </DataTemplate>
+                                                                            </ListView.ItemTemplate>
+                                                                        </ListView>
+                                                                    </StackPanel>
+                                                                </StackPanel>
+                                                            </Flyout>
+                                                        </Button.Flyout>
+                                                    </Button>
+                                                </StackPanel>
+                                            </Grid>
+                                            <StackPanel
+                                                Margin="0,8,0,0"
+                                                Padding="8,0,16,8"
+                                                Background="{ThemeResource LayerOnAcrylicFillColorDefaultBrush}"
+                                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                                BorderThickness="1"
+                                                CornerRadius="{StaticResource OverlayCornerRadius}"
+                                                TabFocusNavigation="Local"
+                                                XYFocusKeyboardNavigation="Enabled">
+                                                <!--  Brightness Control  -->
+                                                <Grid Margin="0,8,0,0" HorizontalAlignment="Stretch">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="16" />
+                                                        <ColumnDefinition Width="16" />
+                                                        <!--  Spacing  -->
+                                                        <ColumnDefinition Width="*" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <FontIcon
+                                                        x:Uid="BrightnessTooltip"
+                                                        VerticalAlignment="Center"
+                                                        AutomationProperties.AccessibilityView="Raw"
+                                                        FontSize="18"
+                                                        Glyph="&#xEC8A;" />
+                                                    <Slider
+                                                        x:Uid="BrightnessAutomation"
+                                                        Grid.Column="2"
+                                                        HorizontalAlignment="Stretch"
+                                                        VerticalAlignment="Center"
+                                                        DataContext="{x:Bind}"
+                                                        IsEnabled="{x:Bind IsInteractionEnabled, Mode=OneWay}"
+                                                        IsTabStop="True"
+                                                        KeyUp="Slider_KeyUp"
+                                                        Maximum="{x:Bind MaxBrightness, Mode=OneWay}"
+                                                        Minimum="{x:Bind MinBrightness, Mode=OneWay}"
+                                                        PointerCaptureLost="Slider_PointerCaptureLost"
+                                                        Tag="Brightness"
+                                                        Value="{x:Bind Brightness, Mode=OneWay}" />
+                                                </Grid>
+
+                                                <!--  Contrast Control  -->
+                                                <Grid
+                                                    Margin="0,8,0,0"
+                                                    HorizontalAlignment="Stretch"
+                                                    Visibility="{x:Bind helpers:VisibilityConverter.BoolToVisibility(ShowContrast), Mode=OneWay}">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="16" />
+                                                        <ColumnDefinition Width="16" />
+                                                        <!--  Spacing  -->
+                                                        <ColumnDefinition Width="*" />
+                                                    </Grid.ColumnDefinitions>
+
+                                                    <FontIcon
+                                                        x:Uid="ContrastTooltip"
+                                                        VerticalAlignment="Center"
+                                                        AutomationProperties.AccessibilityView="Raw"
+                                                        FontSize="12"
+                                                        Glyph="&#xE7A1;" />
+
+                                                    <Slider
+                                                        x:Uid="ContrastAutomation"
+                                                        Grid.Column="2"
+                                                        VerticalAlignment="Center"
+                                                        DataContext="{x:Bind}"
+                                                        IsEnabled="{x:Bind IsInteractionEnabled, Mode=OneWay}"
+                                                        IsTabStop="True"
+                                                        KeyUp="Slider_KeyUp"
+                                                        Maximum="100"
+                                                        Minimum="0"
+                                                        PointerCaptureLost="Slider_PointerCaptureLost"
+                                                        Tag="Contrast"
+                                                        Value="{x:Bind ContrastPercent, Mode=OneWay}" />
+                                                </Grid>
+
+                                                <!--  Volume Control  -->
+                                                <Grid
+                                                    Margin="0,8,0,0"
+                                                    HorizontalAlignment="Stretch"
+                                                    Visibility="{x:Bind helpers:VisibilityConverter.BoolToVisibility(ShowVolume), Mode=OneWay}">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="16" />
+                                                        <ColumnDefinition Width="16" />
+                                                        <!--  Spacing  -->
+                                                        <ColumnDefinition Width="*" />
+                                                    </Grid.ColumnDefinitions>
+
+                                                    <FontIcon
+                                                        x:Uid="VolumeTooltip"
+                                                        Margin="2,0,0,0"
+                                                        VerticalAlignment="Center"
+                                                        AutomationProperties.AccessibilityView="Raw"
+                                                        FontSize="16"
+                                                        Glyph="&#xE993;" />
+                                                    <Slider
+                                                        x:Uid="VolumeAutomation"
+                                                        Grid.Column="2"
+                                                        HorizontalAlignment="Stretch"
+                                                        VerticalAlignment="Center"
+                                                        DataContext="{x:Bind}"
+                                                        IsEnabled="{x:Bind IsInteractionEnabled, Mode=OneWay}"
+                                                        IsTabStop="True"
+                                                        KeyUp="Slider_KeyUp"
+                                                        Maximum="{x:Bind MaxVolume, Mode=OneWay}"
+                                                        Minimum="{x:Bind MinVolume, Mode=OneWay}"
+                                                        PointerCaptureLost="Slider_PointerCaptureLost"
+                                                        Tag="Volume"
+                                                        Value="{x:Bind Volume, Mode=OneWay}" />
+                                                </Grid>
+
+                                                <!--  Rotation Controls  -->
+                                                <Grid
+                                                    Margin="0,8,0,0"
+                                                    HorizontalAlignment="Stretch"
+                                                    Visibility="{x:Bind helpers:VisibilityConverter.BoolToVisibility(ShowRotation), Mode=OneWay}">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="16" />
+                                                        <ColumnDefinition Width="16" />
+                                                        <!--  Spacing  -->
+                                                        <ColumnDefinition Width="*" />
+                                                    </Grid.ColumnDefinitions>
+
+                                                    <FontIcon
+                                                        x:Uid="RotationTooltip"
+                                                        VerticalAlignment="Center"
+                                                        AutomationProperties.AccessibilityView="Raw"
+                                                        FontSize="16"
+                                                        Glyph="&#xE7AD;" />
+
+                                                    <Grid
+                                                        Grid.Column="2"
+                                                        HorizontalAlignment="Stretch"
+                                                        TabFocusNavigation="Local"
+                                                        XYFocusKeyboardNavigation="Enabled">
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="*" />
+                                                            <ColumnDefinition Width="4" />
+                                                            <ColumnDefinition Width="*" />
+                                                            <ColumnDefinition Width="4" />
+                                                            <ColumnDefinition Width="*" />
+                                                            <ColumnDefinition Width="4" />
+                                                            <ColumnDefinition Width="*" />
+                                                        </Grid.ColumnDefinitions>
+                                                        <!--  Normal (0°)  -->
+                                                        <ToggleButton
+                                                            x:Uid="RotateNormalTooltip"
+                                                            Grid.Column="0"
+                                                            HorizontalAlignment="Stretch"
+                                                            Click="RotationButton_Click"
+                                                            DataContext="{x:Bind}"
+                                                            IsChecked="{x:Bind IsRotation0, Mode=OneWay}"
+                                                            IsEnabled="{x:Bind IsInteractionEnabled, Mode=OneWay}"
+                                                            IsTabStop="True"
+                                                            Tag="0">
+                                                            <FontIcon FontSize="14" Glyph="&#xE74A;" />
+                                                        </ToggleButton>
+                                                        <!--  Left (270°)  -->
+                                                        <ToggleButton
+                                                            x:Uid="RotateLeftTooltip"
+                                                            Grid.Column="2"
+                                                            HorizontalAlignment="Stretch"
+                                                            Click="RotationButton_Click"
+                                                            DataContext="{x:Bind}"
+                                                            IsChecked="{x:Bind IsRotation3, Mode=OneWay}"
+                                                            IsEnabled="{x:Bind IsInteractionEnabled, Mode=OneWay}"
+                                                            IsTabStop="True"
+                                                            Tag="3">
+                                                            <FontIcon FontSize="14" Glyph="&#xE76B;" />
+                                                        </ToggleButton>
+                                                        <!--  Right (90°)  -->
+                                                        <ToggleButton
+                                                            x:Uid="RotateRightTooltip"
+                                                            Grid.Column="4"
+                                                            HorizontalAlignment="Stretch"
+                                                            Click="RotationButton_Click"
+                                                            DataContext="{x:Bind}"
+                                                            IsChecked="{x:Bind IsRotation1, Mode=OneWay}"
+                                                            IsEnabled="{x:Bind IsInteractionEnabled, Mode=OneWay}"
+                                                            IsTabStop="True"
+                                                            Tag="1">
+                                                            <FontIcon FontSize="14" Glyph="&#xE76C;" />
+                                                        </ToggleButton>
+                                                        <!--  Inverted (180°)  -->
+                                                        <ToggleButton
+                                                            x:Uid="RotateInvertedTooltip"
+                                                            Grid.Column="6"
+                                                            HorizontalAlignment="Stretch"
+                                                            Click="RotationButton_Click"
+                                                            DataContext="{x:Bind}"
+                                                            IsChecked="{x:Bind IsRotation2, Mode=OneWay}"
+                                                            IsEnabled="{x:Bind IsInteractionEnabled, Mode=OneWay}"
+                                                            IsTabStop="True"
+                                                            Tag="2">
+                                                            <FontIcon FontSize="14" Glyph="&#xE74B;" />
+                                                        </ToggleButton>
+                                                    </Grid>
+                                                </Grid>
+                                            </StackPanel>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ItemsRepeater.ItemTemplate>
+                            </ItemsRepeater>
+                        </ScrollViewer>
+                    </Grid>
+                </Border>
+
+                <Grid x:Name="StatusBar" Grid.Row="1">
+                    <!--  Action Buttons  -->
+                    <StackPanel
+                        Margin="0,0,8,8"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Center"
+                        Orientation="Horizontal"
+                        Spacing="8">
+                        <Button
+                            x:Name="ProfilesButton"
+                            x:Uid="ProfilesTooltip"
+                            Content="{ui:FontIcon Glyph=&#xE748;,
+                                                  FontSize=16}"
+                            Style="{StaticResource SubtleButtonStyle}"
+                            Visibility="{x:Bind helpers:VisibilityConverter.BoolToVisibility(ViewModel.ShowProfileSwitcherButton), Mode=OneWay}">
+                            <Button.Flyout>
+                                <Flyout
+                                    x:Name="ProfilesFlyout"
+                                    Opened="Flyout_Opened"
+                                    ShouldConstrainToRootBounds="False">
+                                    <ListView
+                                        x:Name="ProfilesListView"
+                                        ItemsSource="{x:Bind ViewModel.Profiles, Mode=OneWay}"
+                                        SelectionChanged="ProfileListView_SelectionChanged"
+                                        SelectionMode="Single">
+                                        <ListView.Header>
+                                            <TextBlock
+                                                x:Uid="ProfilesHeader"
+                                                Margin="16,0,8,0"
+                                                FontSize="12"
+                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                        </ListView.Header>
+                                        <ListView.ItemTemplate>
+                                            <DataTemplate x:DataType="models:PowerDisplayProfile">
+                                                <TextBlock Padding="0,4" Text="{x:Bind Name}" />
+                                            </DataTemplate>
+                                        </ListView.ItemTemplate>
+                                    </ListView>
+                                </Flyout>
+                            </Button.Flyout>
+                        </Button>
+                        <Button
+                            x:Name="RefreshButton"
+                            x:Uid="RefreshTooltip"
+                            Click="OnRefreshClick"
+                            Content="{ui:FontIcon Glyph=&#xE72C;,
+                                                  FontSize=16}"
+                            Style="{StaticResource SubtleButtonStyle}" />
+                        <Button
+                            x:Name="IdentifyButton"
+                            x:Uid="IdentifyTooltip"
+                            Command="{x:Bind ViewModel.IdentifyMonitorsCommand}"
+                            Content="{ui:FontIcon Glyph=&#xE9D9;,
+                                                  FontSize=16}"
+                            Style="{StaticResource SubtleButtonStyle}"
+                            Visibility="{x:Bind helpers:VisibilityConverter.BoolToVisibility(ViewModel.ShowIdentifyMonitorsButton), Mode=OneWay}" />
+                        <Button
+                            x:Name="SettingsBtn"
+                            x:Uid="SettingsTooltip"
+                            Padding="6"
+                            Click="OnSettingsClick"
+                            Style="{StaticResource FlyoutButtonStyle}">
+                            <ToolTipService.ToolTip>
+                                <TextBlock x:Uid="SettingsTooltip" />
+                            </ToolTipService.ToolTip>
+                            <AnimatedIcon x:Name="SearchAnimatedIcon">
+                                <AnimatedIcon.Source>
+                                    <animatedVisuals:AnimatedSettingsVisualSource />
+                                </AnimatedIcon.Source>
+                                <AnimatedIcon.FallbackIconSource>
+                                    <SymbolIconSource Symbol="Setting" />
+                                </AnimatedIcon.FallbackIconSource>
+                            </AnimatedIcon>
+                        </Button>
+                    </StackPanel>
+                </Grid>
+            </Grid>
+        </Border>
+    </Grid>
+</winuiex:WindowEx>

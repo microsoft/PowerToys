@@ -1,3 +1,7 @@
+// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
 #include "pch.h"
 #include "../../../common/logger/logger.h"
 #include <atomic>
@@ -19,27 +23,6 @@ struct MonitorInfo
     RECT rect;
     bool isPrimary;
     int monitorId; // Add monitor ID for easier debugging
-};
-
-// Add structure for logical monitor grid position
-struct LogicalPosition
-{
-    int row;
-    int col;
-    bool isValid;
-};
-
-// Add monitor topology helper
-struct MonitorTopology
-{
-    std::vector<std::vector<HMONITOR>> grid; // 3x3 grid of monitors
-    std::map<HMONITOR, LogicalPosition> monitorToPosition;
-    std::map<std::pair<int, int>, HMONITOR> positionToMonitor;
-    
-    void Initialize(const std::vector<MonitorInfo>& monitors);
-    LogicalPosition GetPosition(HMONITOR monitor) const;
-    HMONITOR GetMonitorAt(int row, int col) const;
-    HMONITOR FindAdjacentMonitor(HMONITOR current, int deltaRow, int deltaCol) const;
 };
 
 // Forward declaration
@@ -131,179 +114,69 @@ private:
 
     static LRESULT CALLBACK MouseHookProc(int nCode, WPARAM wParam, LPARAM lParam)
     {
-        if (nCode >= 0 && wParam == WM_MOUSEMOVE)
+        if (m_messageWindow)
         {
-            auto* pMouseStruct = reinterpret_cast<MSLLHOOKSTRUCT*>(lParam);
-            POINT currentPos = { pMouseStruct->pt.x, pMouseStruct->pt.y };
-            
-            if (g_cursorWrapInstance && g_cursorWrapInstance->m_hookActive)
-            {
-                POINT newPos = g_cursorWrapInstance->HandleMouseMove(currentPos);
-                if (newPos.x != currentPos.x || newPos.y != currentPos.y)
-                {
-#ifdef _DEBUG
-                    Logger::info(L"CursorWrap DEBUG: Wrapping cursor from ({}, {}) to ({}, {})", 
-                                currentPos.x, currentPos.y, newPos.x, newPos.y);
-#endif
-                    SetCursorPos(newPos.x, newPos.y);
-                    return 1; // Suppress the original message
-                }
-            }
-        }
-        
-        return CallNextHookEx(nullptr, nCode, wParam, lParam);
-    }
-    
-    // Helper method to check if there's a monitor adjacent in coordinate space (not grid)
-    bool HasAdjacentMonitorInCoordinateSpace(const RECT& currentMonitorRect, int direction)
-    {
-        // direction: 0=left, 1=right, 2=top, 3=bottom
-        const int tolerance = 50; // Allow small gaps
-        
-        for (const auto& monitor : m_monitors)
-        {
-            bool isAdjacent = false;
-            
-            switch (direction)
-            {
-            case 0: // Left - check if another monitor's right edge touches/overlaps our left edge
-                isAdjacent = (abs(monitor.rect.right - currentMonitorRect.left) <= tolerance) &&
-                            (monitor.rect.bottom > currentMonitorRect.top + tolerance) &&
-                            (monitor.rect.top < currentMonitorRect.bottom - tolerance);
-                break;
-                
-            case 1: // Right - check if another monitor's left edge touches/overlaps our right edge
-                isAdjacent = (abs(monitor.rect.left - currentMonitorRect.right) <= tolerance) &&
-                            (monitor.rect.bottom > currentMonitorRect.top + tolerance) &&
-                            (monitor.rect.top < currentMonitorRect.bottom - tolerance);
-                break;
-                
-            case 2: // Top - check if another monitor's bottom edge touches/overlaps our top edge
-                isAdjacent = (abs(monitor.rect.bottom - currentMonitorRect.top) <= tolerance) &&
-                            (monitor.rect.right > currentMonitorRect.left + tolerance) &&
-                            (monitor.rect.left < currentMonitorRect.right - tolerance);
-                break;
-                
-            case 3: // Bottom - check if another monitor's top edge touches/overlaps our bottom edge
-                isAdjacent = (abs(monitor.rect.top - currentMonitorRect.bottom) <= tolerance) &&
-                            (monitor.rect.right > currentMonitorRect.left + tolerance) &&
-                            (monitor.rect.left < currentMonitorRect.right - tolerance);
-                break;
-            }
-            
-            if (isAdjacent)
-            {
-#ifdef _DEBUG
-                Logger::info(L"CursorWrap DEBUG: Found adjacent monitor in coordinate space (direction {})", direction);
-#endif
-                return true;
-            }
-        }
-        
-        return false;
-    }
-
-    // *** COMPLETELY REWRITTEN CURSOR WRAPPING LOGIC ***
-    // Implements vertical scrolling to bottom/top of vertical stack as requested
-    // Only wraps when there's NO adjacent monitor in the coordinate space
-    POINT HandleMouseMove(const POINT& currentPos)
-    {
-        POINT newPos = currentPos;
-        
-        // Check if we should skip wrapping during drag if the setting is enabled
-        if (m_disableWrapDuringDrag && (GetAsyncKeyState(VK_LBUTTON) & 0x8000))
-        {
-#ifdef _DEBUG
-            Logger::info(L"CursorWrap DEBUG: Left mouse button is down and disable_wrap_during_drag is enabled - skipping wrap");
-#endif
-            return currentPos; // Return unchanged position (no wrapping)
+            return; // Already registered
         }
 
-#ifdef _DEBUG
-        Logger::info(L"CursorWrap DEBUG: ======= HANDLE MOUSE MOVE START =======");
-        Logger::info(L"CursorWrap DEBUG: Input position ({}, {})", currentPos.x, currentPos.y);
-#endif
-        
-        // Find which monitor the cursor is currently on
-        HMONITOR currentMonitor = MonitorFromPoint(currentPos, MONITOR_DEFAULTTONEAREST);
-        MONITORINFO currentMonitorInfo{};
-        currentMonitorInfo.cbSize = sizeof(MONITORINFO);
-        GetMonitorInfo(currentMonitor, &currentMonitorInfo);
-        
-        LogicalPosition currentLogicalPos = m_topology.GetPosition(currentMonitor);
-        
-#ifdef _DEBUG
-        Logger::info(L"CursorWrap DEBUG: Current monitor bounds: Left={}, Top={}, Right={}, Bottom={}", 
-                    currentMonitorInfo.rcMonitor.left, currentMonitorInfo.rcMonitor.top, 
-                    currentMonitorInfo.rcMonitor.right, currentMonitorInfo.rcMonitor.bottom);
-        Logger::info(L"CursorWrap DEBUG: Logical position: Row={}, Col={}, Valid={}", 
-                    currentLogicalPos.row, currentLogicalPos.col, currentLogicalPos.isValid);
-#endif
-        
-        bool wrapped = false;
-        
-        // *** VERTICAL WRAPPING LOGIC - CONFIRMED WORKING ***
-        // Move to bottom of vertical stack when hitting top edge
-        // Only wrap if there's NO adjacent monitor in the coordinate space
-        if (currentPos.y <= currentMonitorInfo.rcMonitor.top)
+        // Create a hidden top-level window to receive broadcast messages
+        // NOTE: Message-only windows (HWND_MESSAGE parent) do NOT receive
+        // WM_DISPLAYCHANGE, WM_SETTINGCHANGE, or WM_DEVICECHANGE broadcasts.
+        // We must use a real (hidden) top-level window instead.
+        WNDCLASSEXW wc = { sizeof(WNDCLASSEXW) };
+        wc.lpfnWndProc = MessageWindowProc;
+        wc.hInstance = GetModuleHandle(nullptr);
+        wc.lpszClassName = L"CursorWrapDisplayChangeWindow";
+
+        RegisterClassExW(&wc);
+
+        // Create a hidden top-level window (not message-only)
+        // WS_EX_TOOLWINDOW prevents taskbar button, WS_POPUP with no size makes it invisible
+        m_messageWindow = CreateWindowExW(
+            WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE,
+            L"CursorWrapDisplayChangeWindow",
+            nullptr,
+            WS_POPUP,  // Minimal window style
+            0, 0, 0, 0,  // Zero size = invisible
+            nullptr,  // No parent - top-level window to receive broadcasts
+            nullptr,
+            GetModuleHandle(nullptr),
+            nullptr);
+
+        if (m_messageWindow)
         {
 #ifdef _DEBUG
-            Logger::info(L"CursorWrap DEBUG: ======= VERTICAL WRAP: TOP EDGE DETECTED =======");
+            OutputDebugStringW(L"[CursorWrap] Registered for display change notifications\n");
 #endif
-            
-            // Check if there's an adjacent monitor above in coordinate space
-            if (HasAdjacentMonitorInCoordinateSpace(currentMonitorInfo.rcMonitor, 2))
+            Logger::info("Registered for display change notifications");
+
+            // Register for device notifications (monitor hardware add/remove)
+            DEV_BROADCAST_DEVICEINTERFACE filter = {};
+            filter.dbcc_size = sizeof(DEV_BROADCAST_DEVICEINTERFACE);
+            filter.dbcc_devicetype = DBT_DEVTYP_DEVICEINTERFACE;
+            filter.dbcc_classguid = GUID_DEVINTERFACE_MONITOR;
+
+            m_deviceNotify = RegisterDeviceNotificationW(
+                m_messageWindow,
+                &filter,
+                DEVICE_NOTIFY_WINDOW_HANDLE);
+
+            if (m_deviceNotify)
             {
 #ifdef _DEBUG
-                Logger::info(L"CursorWrap DEBUG: SKIPPING WRAP - Adjacent monitor exists above (Windows will handle)");
+                OutputDebugStringW(L"[CursorWrap] Registered for device notifications (monitor hardware changes)\n");
 #endif
-                return currentPos; // Let Windows handle natural cursor movement
+                Logger::info("Registered for device notifications (monitor hardware changes)");
             }
-            
-            // Find the bottom-most monitor in the vertical stack (same column)
-            HMONITOR bottomMonitor = nullptr;
-            
-            if (currentLogicalPos.isValid) {
-                // Search down from current position to find the bottom-most monitor in same column
-                for (int row = 2; row >= 0; row--) { // Start from bottom and work up
-                    HMONITOR candidateMonitor = m_topology.GetMonitorAt(row, currentLogicalPos.col);
-                    if (candidateMonitor) {
-                        bottomMonitor = candidateMonitor;
-                        break; // Found the bottom-most monitor
-                    }
-                }
-            }
-            
-            if (bottomMonitor && bottomMonitor != currentMonitor) {
-                // *** MOVE TO BOTTOM OF VERTICAL STACK ***
-                MONITORINFO bottomInfo{};
-                bottomInfo.cbSize = sizeof(MONITORINFO);
-                GetMonitorInfo(bottomMonitor, &bottomInfo);
-                
-                // Calculate relative X position to maintain cursor X alignment
-                double relativeX = static_cast<double>(currentPos.x - currentMonitorInfo.rcMonitor.left) / 
-                                  (currentMonitorInfo.rcMonitor.right - currentMonitorInfo.rcMonitor.left);
-                
-                int targetWidth = bottomInfo.rcMonitor.right - bottomInfo.rcMonitor.left;
-                newPos.x = bottomInfo.rcMonitor.left + static_cast<int>(relativeX * targetWidth);
-                newPos.y = bottomInfo.rcMonitor.bottom - 1; // Bottom edge of bottom monitor
-                
-                // Clamp X to target monitor bounds
-                newPos.x = max(bottomInfo.rcMonitor.left, min(newPos.x, bottomInfo.rcMonitor.right - 1));
-                wrapped = true;
-                
+            else
+            {
+                DWORD error = GetLastError();
 #ifdef _DEBUG
-                Logger::info(L"CursorWrap DEBUG: VERTICAL WRAP SUCCESS - Moved to bottom of vertical stack");
-                Logger::info(L"CursorWrap DEBUG: New position: ({}, {})", newPos.x, newPos.y);
+                std::wostringstream oss;
+                oss << L"[CursorWrap] Failed to register device notifications. Error: " << error << L"\n";
+                OutputDebugStringW(oss.str().c_str());
 #endif
-            } else {
-                // *** NO OTHER MONITOR IN VERTICAL STACK - WRAP WITHIN CURRENT MONITOR ***
-                newPos.y = currentMonitorInfo.rcMonitor.bottom - 1;
-                wrapped = true;
-                
-#ifdef _DEBUG
-                Logger::info(L"CursorWrap DEBUG: VERTICAL WRAP - No other monitor in stack, wrapping within current monitor");
-#endif
+                Logger::warn("Failed to register device notifications. Error: {}", error);
             }
         }
         else if (currentPos.y >= currentMonitorInfo.rcMonitor.bottom - 1)
@@ -382,536 +255,117 @@ private:
             if (HasAdjacentMonitorInCoordinateSpace(currentMonitorInfo.rcMonitor, 0))
             {
 #ifdef _DEBUG
-                Logger::info(L"CursorWrap DEBUG: SKIPPING WRAP - Adjacent monitor exists to the left (Windows will handle)");
+            OutputDebugStringW(L"[CursorWrap] Unregistering device notifications...\n");
 #endif
-                return currentPos; // Let Windows handle natural cursor movement
-            }
-            
-            // Find the right-most monitor in the horizontal stack (same row)
-            HMONITOR rightMonitor = nullptr;
-            
-            if (currentLogicalPos.isValid) {
-                // Search right from current position to find the right-most monitor in same row
-                for (int col = 2; col >= 0; col--) { // Start from right and work left
-                    HMONITOR candidateMonitor = m_topology.GetMonitorAt(currentLogicalPos.row, col);
-                    if (candidateMonitor) {
-                        rightMonitor = candidateMonitor;
-                        break; // Found the right-most monitor
-                    }
-                }
-            }
-            
-            if (rightMonitor && rightMonitor != currentMonitor) {
-                // *** MOVE TO RIGHT END OF HORIZONTAL STACK ***
-                MONITORINFO rightInfo{};
-                rightInfo.cbSize = sizeof(MONITORINFO);
-                GetMonitorInfo(rightMonitor, &rightInfo);
-                
-                // Calculate relative Y position to maintain cursor Y alignment
-                double relativeY = static_cast<double>(currentPos.y - currentMonitorInfo.rcMonitor.top) / 
-                                  (currentMonitorInfo.rcMonitor.bottom - currentMonitorInfo.rcMonitor.top);
-                
-                int targetHeight = rightInfo.rcMonitor.bottom - rightInfo.rcMonitor.top;
-                newPos.y = rightInfo.rcMonitor.top + static_cast<int>(relativeY * targetHeight);
-                newPos.x = rightInfo.rcMonitor.right - 1; // Right edge of right monitor
-                
-                // Clamp Y to target monitor bounds
-                newPos.y = max(rightInfo.rcMonitor.top, min(newPos.y, rightInfo.rcMonitor.bottom - 1));
-                wrapped = true;
-                
-#ifdef _DEBUG
-                Logger::info(L"CursorWrap DEBUG: HORIZONTAL WRAP SUCCESS - Moved to right end of horizontal stack");
-                Logger::info(L"CursorWrap DEBUG: New position: ({}, {})", newPos.x, newPos.y);
-#endif
-            } else {
-                // *** NO OTHER MONITOR IN HORIZONTAL STACK - WRAP WITHIN CURRENT MONITOR ***
-                newPos.x = currentMonitorInfo.rcMonitor.right - 1;
-                wrapped = true;
-                
-#ifdef _DEBUG
-                Logger::info(L"CursorWrap DEBUG: HORIZONTAL WRAP - No other monitor in stack, wrapping within current monitor");
-#endif
-            }
+            UnregisterDeviceNotification(m_deviceNotify);
+            m_deviceNotify = nullptr;
+            Logger::info("Unregistered device notifications");
         }
-        else if (!wrapped && currentPos.x >= currentMonitorInfo.rcMonitor.right - 1)
+
+        if (m_messageWindow)
         {
+            KillTimer(m_messageWindow, TIMER_UPDATE_MONITORS);
+            DestroyWindow(m_messageWindow);
+            m_messageWindow = nullptr;
+            UnregisterClassW(L"CursorWrapDisplayChangeWindow", GetModuleHandle(nullptr));
 #ifdef _DEBUG
-            Logger::info(L"CursorWrap DEBUG: ======= HORIZONTAL WRAP: RIGHT EDGE DETECTED =======");
+            OutputDebugStringW(L"[CursorWrap] Unregistered display change notifications\n");
 #endif
-            
-            // Check if there's an adjacent monitor to the right in coordinate space
-            if (HasAdjacentMonitorInCoordinateSpace(currentMonitorInfo.rcMonitor, 1))
-            {
-#ifdef _DEBUG
-                Logger::info(L"CursorWrap DEBUG: SKIPPING WRAP - Adjacent monitor exists to the right (Windows will handle)");
-#endif
-                return currentPos; // Let Windows handle natural cursor movement
-            }
-            
-            // Find the left-most monitor in the horizontal stack (same row)
-            HMONITOR leftMonitor = nullptr;
-            
-            if (currentLogicalPos.isValid) {
-                // Search left from current position to find the left-most monitor in same row
-                for (int col = 0; col <= 2; col++) { // Start from left and work right
-                    HMONITOR candidateMonitor = m_topology.GetMonitorAt(currentLogicalPos.row, col);
-                    if (candidateMonitor) {
-                        leftMonitor = candidateMonitor;
-                        break; // Found the left-most monitor
-                    }
-                }
-            }
-            
-            if (leftMonitor && leftMonitor != currentMonitor) {
-                // *** MOVE TO LEFT END OF HORIZONTAL STACK ***
-                MONITORINFO leftInfo{};
-                leftInfo.cbSize = sizeof(MONITORINFO);
-                GetMonitorInfo(leftMonitor, &leftInfo);
-                
-                // Calculate relative Y position to maintain cursor Y alignment
-                double relativeY = static_cast<double>(currentPos.y - currentMonitorInfo.rcMonitor.top) / 
-                                  (currentMonitorInfo.rcMonitor.bottom - currentMonitorInfo.rcMonitor.top);
-                
-                int targetHeight = leftInfo.rcMonitor.bottom - leftInfo.rcMonitor.top;
-                newPos.y = leftInfo.rcMonitor.top + static_cast<int>(relativeY * targetHeight);
-                newPos.x = leftInfo.rcMonitor.left; // Left edge of left monitor
-                
-                // Clamp Y to target monitor bounds
-                newPos.y = max(leftInfo.rcMonitor.top, min(newPos.y, leftInfo.rcMonitor.bottom - 1));
-                wrapped = true;
-                
-#ifdef _DEBUG
-                Logger::info(L"CursorWrap DEBUG: HORIZONTAL WRAP SUCCESS - Moved to left end of horizontal stack");
-                Logger::info(L"CursorWrap DEBUG: New position: ({}, {})", newPos.x, newPos.y);
-#endif
-            } else {
-                // *** NO OTHER MONITOR IN HORIZONTAL STACK - WRAP WITHIN CURRENT MONITOR ***
-                newPos.x = currentMonitorInfo.rcMonitor.left;
-                wrapped = true;
-                
-#ifdef _DEBUG
-                Logger::info(L"CursorWrap DEBUG: HORIZONTAL WRAP - No other monitor in stack, wrapping within current monitor");
-#endif
-            }
+            Logger::info("Unregistered display change notifications");
         }
-        
-#ifdef _DEBUG
-        if (wrapped)
-        {
-            Logger::info(L"CursorWrap DEBUG: ======= WRAP RESULT =======");
-            Logger::info(L"CursorWrap DEBUG: Original: ({}, {}) -> New: ({}, {})", 
-                        currentPos.x, currentPos.y, newPos.x, newPos.y);
-        }
-        else
-        {
-            Logger::info(L"CursorWrap DEBUG: No wrapping performed - cursor not at edge");
-        }
-        Logger::info(L"CursorWrap DEBUG: ======= HANDLE MOUSE MOVE END =======");
-#endif
-        
-        return newPos;
     }
 
-    // Add test method for monitor topology validation
-    void RunMonitorTopologyTests()
+    static LRESULT CALLBACK MessageWindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     {
-#ifdef _DEBUG
-        Logger::info(L"CursorWrap: Running monitor topology tests...");
-        
-        // Test all 9 possible monitor positions in 3x3 grid
-        const char* gridNames[3][3] = {
-            {"TL", "TC", "TR"},  // Top-Left, Top-Center, Top-Right
-            {"ML", "MC", "MR"},  // Middle-Left, Middle-Center, Middle-Right  
-            {"BL", "BC", "BR"}   // Bottom-Left, Bottom-Center, Bottom-Right
-        };
-        
-        for (int row = 0; row < 3; row++)
+        if (!g_cursorWrapInstance)
         {
-            for (int col = 0; col < 3; col++)
+            return DefWindowProcW(hwnd, msg, wParam, lParam);
+        }
+
+        switch (msg)
+        {
+        case WM_DISPLAYCHANGE:
+#ifdef _DEBUG
+            OutputDebugStringW(L"[CursorWrap] WM_DISPLAYCHANGE received - monitor resolution/DPI changed\n");
+#endif
+            Logger::info("WM_DISPLAYCHANGE received - resolution/DPI changed");
+            // Debounce: Wait for multiple changes to settle
+            KillTimer(hwnd, TIMER_UPDATE_MONITORS);
+            SetTimer(hwnd, TIMER_UPDATE_MONITORS, DEBOUNCE_DELAY_MS, nullptr);
+            break;
+
+        case WM_SETTINGCHANGE:
+            if (wParam == SPI_SETWORKAREA)
             {
-                HMONITOR monitor = m_topology.GetMonitorAt(row, col);
-                if (monitor)
+#ifdef _DEBUG
+                OutputDebugStringW(L"[CursorWrap] WM_SETTINGCHANGE (SPI_SETWORKAREA) received - taskbar changed\n");
+#endif
+                Logger::info("WM_SETTINGCHANGE (SPI_SETWORKAREA) received");
+                // Taskbar position/size changed
+                KillTimer(hwnd, TIMER_UPDATE_MONITORS);
+                SetTimer(hwnd, TIMER_UPDATE_MONITORS, DEBOUNCE_DELAY_MS, nullptr);
+            }
+            break;
+
+        case WM_DEVICECHANGE:
+            // Handle monitor hardware add/remove
+            if (wParam == DBT_DEVNODES_CHANGED)
+            {
+#ifdef _DEBUG
+                OutputDebugStringW(L"[CursorWrap] DBT_DEVNODES_CHANGED received - monitor hardware change detected\n");
+#endif
+                Logger::info("DBT_DEVNODES_CHANGED received - monitor hardware change detected");
+                // Debounce: Wait for multiple changes to settle
+                KillTimer(hwnd, TIMER_UPDATE_MONITORS);
+                SetTimer(hwnd, TIMER_UPDATE_MONITORS, DEBOUNCE_DELAY_MS, nullptr);
+                return TRUE;
+            }
+            break;
+
+        case WM_TIMER:
+            if (wParam == TIMER_UPDATE_MONITORS)
+            {
+#ifdef _DEBUG
+                OutputDebugStringW(L"[CursorWrap] Debounce timer expired - triggering topology update\n");
+#endif
+                KillTimer(hwnd, TIMER_UPDATE_MONITORS);
+                g_cursorWrapInstance->OnDisplayChange();
+            }
+            break;
+        }
+
+        return DefWindowProcW(hwnd, msg, wParam, lParam);
+    }
+
+    static LRESULT CALLBACK MouseHookProc(int nCode, WPARAM wParam, LPARAM lParam)
+    {
+        if (nCode >= 0 && wParam == WM_MOUSEMOVE)
+        {
+            auto* pMouseStruct = reinterpret_cast<MSLLHOOKSTRUCT*>(lParam);
+            POINT currentPos = { pMouseStruct->pt.x, pMouseStruct->pt.y };
+            
+            if (g_cursorWrapInstance && g_cursorWrapInstance->m_hookActive)
+            {
+                POINT newPos = g_cursorWrapInstance->m_core.HandleMouseMove(
+                    currentPos,
+                    g_cursorWrapInstance->m_disableWrapDuringDrag,
+                    g_cursorWrapInstance->m_wrapMode);
+                    
+                if (newPos.x != currentPos.x || newPos.y != currentPos.y)
                 {
-                    std::string gridName(gridNames[row][col]);
-                    std::wstring wGridName(gridName.begin(), gridName.end());
-                    Logger::info(L"CursorWrap TEST: Monitor at [{}][{}] ({}) exists", 
-                                row, col, wGridName.c_str());
-                    
-                    // Test adjacent monitor finding
-                    HMONITOR up = m_topology.FindAdjacentMonitor(monitor, -1, 0);
-                    HMONITOR down = m_topology.FindAdjacentMonitor(monitor, 1, 0);
-                    HMONITOR left = m_topology.FindAdjacentMonitor(monitor, 0, -1);
-                    HMONITOR right = m_topology.FindAdjacentMonitor(monitor, 0, 1);
-                    
-                    Logger::info(L"CursorWrap TEST: Adjacent monitors - Up: {}, Down: {}, Left: {}, Right: {}",
-                                up ? L"YES" : L"NO", down ? L"YES" : L"NO", 
-                                left ? L"YES" : L"NO", right ? L"YES" : L"NO");
+#ifdef _DEBUG
+                    Logger::info(L"CursorWrap DEBUG: Wrapping cursor from ({}, {}) to ({}, {})", 
+                                currentPos.x, currentPos.y, newPos.x, newPos.y);
+#endif
+                    SetCursorPos(newPos.x, newPos.y);
+                    return 1; // Suppress the original message
                 }
             }
         }
         
-        Logger::info(L"CursorWrap: Monitor topology tests completed.");
-#endif
-    }
-
-    // Add method to trigger test suite (can be called via hotkey in debug builds)
-    void RunComprehensiveTests()
-    {
-#ifdef _DEBUG
-        RunMonitorTopologyTests();
-        
-        // Test cursor wrapping scenarios
-        Logger::info(L"CursorWrap: Testing cursor wrapping scenarios...");
-        
-        // Simulate cursor positions at each monitor edge and verify expected behavior
-        for (const auto& monitor : m_monitors)
-        {
-            HMONITOR hMonitor = MonitorFromRect(&monitor.rect, MONITOR_DEFAULTTONEAREST);
-            LogicalPosition pos = m_topology.GetPosition(hMonitor);
-            
-            if (pos.isValid)
-            {
-                Logger::info(L"CursorWrap TEST: Testing monitor at position [{}][{}]", pos.row, pos.col);
-                
-                // Test top edge
-                POINT topEdge = {(monitor.rect.left + monitor.rect.right) / 2, monitor.rect.top};
-                POINT newPos = HandleMouseMove(topEdge);
-                Logger::info(L"CursorWrap TEST: Top edge ({}, {}) -> ({}, {})", 
-                            topEdge.x, topEdge.y, newPos.x, newPos.y);
-                
-                // Test bottom edge
-                POINT bottomEdge = {(monitor.rect.left + monitor.rect.right) / 2, monitor.rect.bottom - 1};
-                newPos = HandleMouseMove(bottomEdge);
-                Logger::info(L"CursorWrap TEST: Bottom edge ({}, {}) -> ({}, {})", 
-                            bottomEdge.x, bottomEdge.y, newPos.x, newPos.y);
-                
-                // Test left edge
-                POINT leftEdge = {monitor.rect.left, (monitor.rect.top + monitor.rect.bottom) / 2};
-                newPos = HandleMouseMove(leftEdge);
-                Logger::info(L"CursorWrap TEST: Left edge ({}, {}) -> ({}, {})", 
-                            leftEdge.x, leftEdge.y, newPos.x, newPos.y);
-                
-                // Test right edge
-                POINT rightEdge = {monitor.rect.right - 1, (monitor.rect.top + monitor.rect.bottom) / 2};
-                newPos = HandleMouseMove(rightEdge);
-                Logger::info(L"CursorWrap TEST: Right edge ({}, {}) -> ({}, {})", 
-                            rightEdge.x, rightEdge.y, newPos.x, newPos.y);
-            }
-        }
-        
-        Logger::info(L"CursorWrap: Comprehensive tests completed.");
-#endif
+        return CallNextHookEx(nullptr, nCode, wParam, lParam);
     }
 };
-
-// Implementation of MonitorTopology methods
-void MonitorTopology::Initialize(const std::vector<MonitorInfo>& monitors)
-{
-    // Clear existing data
-    grid.assign(3, std::vector<HMONITOR>(3, nullptr));
-    monitorToPosition.clear();
-    positionToMonitor.clear();
-    
-    if (monitors.empty()) return;
-    
-#ifdef _DEBUG
-    Logger::info(L"CursorWrap DEBUG: ======= TOPOLOGY INITIALIZATION START =======");
-    Logger::info(L"CursorWrap DEBUG: Initializing topology for {} monitors", monitors.size());
-    for (const auto& monitor : monitors)
-    {
-        Logger::info(L"CursorWrap DEBUG: Monitor {}: bounds=({},{},{},{}), isPrimary={}", 
-                    monitor.monitorId, monitor.rect.left, monitor.rect.top, 
-                    monitor.rect.right, monitor.rect.bottom, monitor.isPrimary);
-    }
-#endif
-    
-    // Special handling for 2 monitors - use physical position, not discovery order
-    if (monitors.size() == 2)
-    {
-        // Determine if arrangement is horizontal or vertical by comparing centers
-        POINT center0 = {(monitors[0].rect.left + monitors[0].rect.right) / 2, 
-                        (monitors[0].rect.top + monitors[0].rect.bottom) / 2};
-        POINT center1 = {(monitors[1].rect.left + monitors[1].rect.right) / 2,
-                        (monitors[1].rect.top + monitors[1].rect.bottom) / 2};
-        
-        int xDiff = abs(center0.x - center1.x);
-        int yDiff = abs(center0.y - center1.y);
-        
-        bool isHorizontal = xDiff > yDiff;
-        
-#ifdef _DEBUG
-        Logger::info(L"CursorWrap DEBUG: Monitor centers: M0=({}, {}), M1=({}, {})", 
-                    center0.x, center0.y, center1.x, center1.y);
-        Logger::info(L"CursorWrap DEBUG: Differences: X={}, Y={}, IsHorizontal={}", 
-                    xDiff, yDiff, isHorizontal);
-#endif
-        
-        if (isHorizontal)
-        {
-            // Horizontal arrangement - place in middle row [1,0] and [1,2]
-            for (const auto& monitor : monitors)
-            {
-                HMONITOR hMonitor = MonitorFromRect(&monitor.rect, MONITOR_DEFAULTTONEAREST);
-                POINT center = {(monitor.rect.left + monitor.rect.right) / 2, 
-                               (monitor.rect.top + monitor.rect.bottom) / 2};
-                
-                int row = 1; // Middle row
-                int col = (center.x < (center0.x + center1.x) / 2) ? 0 : 2; // Left or right based on center
-                
-                grid[row][col] = hMonitor;
-                monitorToPosition[hMonitor] = {row, col, true};
-                positionToMonitor[{row, col}] = hMonitor;
-                
-#ifdef _DEBUG
-                Logger::info(L"CursorWrap DEBUG: Monitor {} (horizontal) placed at grid[{}][{}]", 
-                            monitor.monitorId, row, col);
-#endif
-            }
-        }
-        else
-        {
-            // *** VERTICAL ARRANGEMENT - CRITICAL LOGIC ***
-            // Sort monitors by Y coordinate to determine vertical order
-            std::vector<std::pair<int, MonitorInfo>> sortedMonitors;
-            for (int i = 0; i < 2; i++) {
-                sortedMonitors.push_back({i, monitors[i]});
-            }
-            
-            // Sort by Y coordinate (top to bottom)
-            std::sort(sortedMonitors.begin(), sortedMonitors.end(), 
-                [](const std::pair<int, MonitorInfo>& a, const std::pair<int, MonitorInfo>& b) {
-                    int centerA = (a.second.rect.top + a.second.rect.bottom) / 2;
-                    int centerB = (b.second.rect.top + b.second.rect.bottom) / 2;
-                    return centerA < centerB; // Top first
-                });
-            
-#ifdef _DEBUG
-            Logger::info(L"CursorWrap DEBUG: VERTICAL ARRANGEMENT DETECTED");
-            Logger::info(L"CursorWrap DEBUG: Top monitor: ID={}, Y-center={}", 
-                        sortedMonitors[0].second.monitorId,
-                        (sortedMonitors[0].second.rect.top + sortedMonitors[0].second.rect.bottom) / 2);
-            Logger::info(L"CursorWrap DEBUG: Bottom monitor: ID={}, Y-center={}", 
-                        sortedMonitors[1].second.monitorId,
-                        (sortedMonitors[1].second.rect.top + sortedMonitors[1].second.rect.bottom) / 2);
-#endif
-            
-            // Place monitors in grid based on sorted order
-            for (int i = 0; i < 2; i++) {
-                const auto& monitorPair = sortedMonitors[i];
-                const auto& monitor = monitorPair.second;
-                HMONITOR hMonitor = MonitorFromRect(&monitor.rect, MONITOR_DEFAULTTONEAREST);
-                
-                int col = 1; // Middle column for vertical arrangement
-                int row = (i == 0) ? 0 : 2; // Top monitor at row 0, bottom at row 2
-                
-                grid[row][col] = hMonitor;
-                monitorToPosition[hMonitor] = {row, col, true};
-                positionToMonitor[{row, col}] = hMonitor;
-                
-#ifdef _DEBUG
-                Logger::info(L"CursorWrap DEBUG: Monitor {} (vertical) placed at grid[{}][{}] - {} position", 
-                            monitor.monitorId, row, col, (i == 0) ? L"TOP" : L"BOTTOM");
-#endif
-            }
-        }
-    }
-    else
-    {
-        // For more than 2 monitors, use edge-based alignment algorithm
-        // This ensures monitors with aligned edges (e.g., top edges at same Y) are grouped in same row
-        
-        // Helper lambda to check if two ranges overlap or are adjacent (with tolerance)
-        auto rangesOverlapOrTouch = [](int start1, int end1, int start2, int end2, int tolerance = 50) -> bool {
-            // Check if ranges overlap or are within tolerance distance
-            return (start1 <= end2 + tolerance) && (start2 <= end1 + tolerance);
-        };
-        
-        // Sort monitors by horizontal position (left edge) for column assignment
-        std::vector<const MonitorInfo*> monitorsByX;
-        for (const auto& monitor : monitors) {
-            monitorsByX.push_back(&monitor);
-        }
-        std::sort(monitorsByX.begin(), monitorsByX.end(), [](const MonitorInfo* a, const MonitorInfo* b) {
-            return a->rect.left < b->rect.left;
-        });
-        
-        // Sort monitors by vertical position (top edge) for row assignment
-        std::vector<const MonitorInfo*> monitorsByY;
-        for (const auto& monitor : monitors) {
-            monitorsByY.push_back(&monitor);
-        }
-        std::sort(monitorsByY.begin(), monitorsByY.end(), [](const MonitorInfo* a, const MonitorInfo* b) {
-            return a->rect.top < b->rect.top;
-        });
-        
-        // Assign rows based on vertical overlap - monitors that overlap vertically should be in same row
-        std::map<const MonitorInfo*, int> monitorToRow;
-        int currentRow = 0;
-        
-        for (size_t i = 0; i < monitorsByY.size(); i++) {
-            const auto* monitor = monitorsByY[i];
-            
-            // Check if this monitor overlaps vertically with any monitor already assigned to current row
-            bool foundOverlap = false;
-            for (size_t j = 0; j < i; j++) {
-                const auto* other = monitorsByY[j];
-                if (monitorToRow[other] == currentRow) {
-                    // Check vertical overlap
-                    if (rangesOverlapOrTouch(monitor->rect.top, monitor->rect.bottom, 
-                                            other->rect.top, other->rect.bottom)) {
-                        monitorToRow[monitor] = currentRow;
-                        foundOverlap = true;
-                        break;
-                    }
-                }
-            }
-            
-            if (!foundOverlap) {
-                // Start new row if no overlap found and we have room
-                if (currentRow < 2 && i < monitorsByY.size() - 1) {
-                    currentRow++;
-                }
-                monitorToRow[monitor] = currentRow;
-            }
-        }
-        
-        // Assign columns based on horizontal position (left-to-right order)
-        // Monitors are already sorted by X coordinate (left edge)
-        std::map<const MonitorInfo*, int> monitorToCol;
-        
-        // For horizontal arrangement, distribute monitors evenly across columns
-        if (monitorsByX.size() == 1) {
-            // Single monitor - place in middle column
-            monitorToCol[monitorsByX[0]] = 1;
-        }
-        else if (monitorsByX.size() == 2) {
-            // Two monitors - place at opposite ends for wrapping
-            monitorToCol[monitorsByX[0]] = 0;  // Leftmost monitor
-            monitorToCol[monitorsByX[1]] = 2;  // Rightmost monitor
-        }
-        else {
-            // Three or more monitors - distribute across grid
-            for (size_t i = 0; i < monitorsByX.size() && i < 3; i++) {
-                monitorToCol[monitorsByX[i]] = static_cast<int>(i);
-            }
-            // If more than 3 monitors, place extras in rightmost column
-            for (size_t i = 3; i < monitorsByX.size(); i++) {
-                monitorToCol[monitorsByX[i]] = 2;
-            }
-        }
-        
-        // Place monitors in grid using the computed row/column assignments
-        for (const auto& monitor : monitors)
-        {
-            HMONITOR hMonitor = MonitorFromRect(&monitor.rect, MONITOR_DEFAULTTONEAREST);
-            int row = monitorToRow[&monitor];
-            int col = monitorToCol[&monitor];
-            
-            grid[row][col] = hMonitor;
-            monitorToPosition[hMonitor] = {row, col, true};
-            positionToMonitor[{row, col}] = hMonitor;
-            
-#ifdef _DEBUG
-            Logger::info(L"CursorWrap DEBUG: Monitor {} placed at grid[{}][{}] (left={}, top={}, right={}, bottom={})", 
-                        monitor.monitorId, row, col, 
-                        monitor.rect.left, monitor.rect.top, monitor.rect.right, monitor.rect.bottom);
-#endif
-        }
-    }
-    
-#ifdef _DEBUG
-    // *** CRITICAL: Print topology map using OutputDebugString for debug builds ***
-    Logger::info(L"CursorWrap DEBUG: ======= FINAL TOPOLOGY MAP =======");
-    OutputDebugStringA("CursorWrap TOPOLOGY MAP:\n");
-    for (int r = 0; r < 3; r++)
-    {
-        std::string rowStr = "  ";
-        for (int c = 0; c < 3; c++)
-        {
-            if (grid[r][c])
-            {
-                // Find monitor ID for this handle
-                int monitorId = -1;
-                for (const auto& monitor : monitors)
-                {
-                    HMONITOR handle = MonitorFromRect(&monitor.rect, MONITOR_DEFAULTTONEAREST);
-                    if (handle == grid[r][c])
-                    {
-                        monitorId = monitor.monitorId + 1; // Convert to 1-based for display
-                        break;
-                    }
-                }
-                rowStr += std::to_string(monitorId) + " ";
-            }
-            else
-            {
-                rowStr += ". ";
-            }
-        }
-        rowStr += "\n";
-        OutputDebugStringA(rowStr.c_str());
-        
-        // Also log to PowerToys logger
-        std::wstring wRowStr(rowStr.begin(), rowStr.end());
-        Logger::info(wRowStr.c_str());
-    }
-    OutputDebugStringA("======= END TOPOLOGY MAP =======\n");
-    
-    // Additional validation logging
-    Logger::info(L"CursorWrap DEBUG: ======= GRID POSITION VALIDATION =======");
-    for (const auto& monitor : monitors)
-    {
-        HMONITOR hMonitor = MonitorFromRect(&monitor.rect, MONITOR_DEFAULTTONEAREST);
-        LogicalPosition pos = GetPosition(hMonitor);
-        if (pos.isValid)
-        {
-            Logger::info(L"CursorWrap DEBUG: Monitor {} -> grid[{}][{}]", monitor.monitorId, pos.row, pos.col);
-            OutputDebugStringA(("Monitor " + std::to_string(monitor.monitorId) + " -> grid[" + std::to_string(pos.row) + "][" + std::to_string(pos.col) + "]\n").c_str());
-            
-            // Test adjacent finding
-            HMONITOR up = FindAdjacentMonitor(hMonitor, -1, 0);
-            HMONITOR down = FindAdjacentMonitor(hMonitor, 1, 0);
-            HMONITOR left = FindAdjacentMonitor(hMonitor, 0, -1);
-            HMONITOR right = FindAdjacentMonitor(hMonitor, 0, 1);
-            
-            Logger::info(L"CursorWrap DEBUG: Monitor {} adjacents - Up: {}, Down: {}, Left: {}, Right: {}",
-                        monitor.monitorId, up ? L"YES" : L"NO", down ? L"YES" : L"NO", 
-                        left ? L"YES" : L"NO", right ? L"YES" : L"NO");
-        }
-    }
-    Logger::info(L"CursorWrap DEBUG: ======= TOPOLOGY INITIALIZATION COMPLETE =======");
-#endif
-}
-
-LogicalPosition MonitorTopology::GetPosition(HMONITOR monitor) const
-{
-    auto it = monitorToPosition.find(monitor);
-    if (it != monitorToPosition.end())
-    {
-        return it->second;
-    }
-    return {-1, -1, false};
-}
-
-HMONITOR MonitorTopology::GetMonitorAt(int row, int col) const
-{
-    if (row >= 0 && row < 3 && col >= 0 && col < 3)
-    {
-        return grid[row][col];
-    }
-    return nullptr;
-}
-
-HMONITOR MonitorTopology::FindAdjacentMonitor(HMONITOR current, int deltaRow, int deltaCol) const
-{
-    LogicalPosition currentPos = GetPosition(current);
-    if (!currentPos.isValid) return nullptr;
-    
-    int newRow = currentPos.row + deltaRow;
-    int newCol = currentPos.col + deltaCol;
-    
-    return GetMonitorAt(newRow, newCol);
-}
 
 EXTERN_C __declspec(dllexport) void CursorWrapStartMouseHook()
 {

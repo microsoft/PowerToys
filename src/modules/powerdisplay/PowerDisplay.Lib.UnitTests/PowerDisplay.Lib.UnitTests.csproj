@@ -1,0 +1,41 @@
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. -->
+<!-- Licensed under the MIT License. See LICENSE file in the project root for license information. -->
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="..\..\..\Common.Dotnet.CsWinRT.props" />
+
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <RootNamespace>PowerDisplay.UnitTests</RootNamespace>
+    <Platforms>x64;ARM64</Platforms>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+    <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\tests\PowerDisplay.Lib.UnitTests\</OutputPath>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Hide build log files from Solution Explorer -->
+    <None Remove="*.log" />
+    <None Remove="*.binlog" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MSTest" />
+    <PackageReference Include="Moq" />
+    <PackageReference Include="System.CodeDom">
+      <!-- This package is a transitive dependency, but we need to set it here so we can exclude the assets,
+           so it doesn't conflict with the dll coming from .NET SDK. -->
+      <ExcludeAssets>runtime</ExcludeAssets>
+    </PackageReference>
+    <PackageReference Include="System.Diagnostics.EventLog">
+      <!-- This package is a transitive dependency, but we need to set it here so we can exclude the assets,
+           so it doesn't conflict with the dll coming from .NET SDK. -->
+      <ExcludeAssets>runtime</ExcludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\PowerDisplay.Lib\PowerDisplay.Lib.csproj" />
+  </ItemGroup>
+</Project>
