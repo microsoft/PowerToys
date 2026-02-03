@@ -222,6 +222,70 @@ ClassRegistry	reg( _T("Software\\Sysinternals\\") APPNAME );
 ComputerGraphicsInit	g_GraphicsInit;
 
 
+// Event handler to set icon and extended style on dialog creation
+class OpenSaveDialogEvents : public IFileDialogEvents
+{
+public:
+    OpenSaveDialogEvents() : m_refCount(1), m_initialized(false) {}
+
+    // IUnknown
+    IFACEMETHODIMP QueryInterface(REFIID riid, void** ppv)
+    {
+        static const QITAB qit[] = {
+            QITABENT(OpenSaveDialogEvents, IFileDialogEvents),
+            { 0 },
+        };
+        return QISearch(this, qit, riid, ppv);
+    }
+    IFACEMETHODIMP_(ULONG) AddRef() { return InterlockedIncrement(&m_refCount); }
+    IFACEMETHODIMP_(ULONG) Release()
+    {
+        ULONG count = InterlockedDecrement(&m_refCount);
+        if (count == 0) delete this;
+        return count;
+    }
+
+    // IFileDialogEvents
+    IFACEMETHODIMP OnFileOk(IFileDialog*) { return S_OK; }
+    IFACEMETHODIMP OnFolderChange(IFileDialog* pfd)
+    {
+        if (!m_initialized)
+        {
+            m_initialized = true;
+            wil::com_ptr<IOleWindow> pWindow;
+            if (SUCCEEDED(pfd->QueryInterface(IID_PPV_ARGS(&pWindow))))
+            {
+                HWND hwndDialog = nullptr;
+                if (SUCCEEDED(pWindow->GetWindow(&hwndDialog)) && hwndDialog)
+                {
+                    // Set WS_EX_APPWINDOW extended style
+                    LONG_PTR exStyle = GetWindowLongPtr(hwndDialog, GWL_EXSTYLE);
+                    SetWindowLongPtr(hwndDialog, GWL_EXSTYLE, exStyle | WS_EX_APPWINDOW);
+
+                    // Set the dialog icon
+                    HICON hIcon = LoadIcon(g_hInstance, L"APPICON");
+                    if (hIcon)
+                    {
+                        SendMessage(hwndDialog, WM_SETICON, ICON_BIG, (LPARAM)hIcon);
+                        SendMessage(hwndDialog, WM_SETICON, ICON_SMALL, (LPARAM)hIcon);
+                    }
+                }
+            }
+        }
+        return S_OK;
+    }
+    IFACEMETHODIMP OnFolderChanging(IFileDialog*, IShellItem*) { return S_OK; }
+    IFACEMETHODIMP OnSelectionChange(IFileDialog*) { return S_OK; }
+    IFACEMETHODIMP OnShareViolation(IFileDialog*, IShellItem*, FDE_SHAREVIOLATION_RESPONSE*) { return S_OK; }
+    IFACEMETHODIMP OnTypeChange(IFileDialog*) { return S_OK; }
+    IFACEMETHODIMP OnOverwrite(IFileDialog*, IShellItem*, FDE_OVERWRITE_RESPONSE*) { return S_OK; }
+
+private:
+    LONG m_refCount;
+    bool m_initialized;
+};
+
+
 //----------------------------------------------------------------------------
 //
 // Saves specified filePath to clipboard.
@@ -1420,7 +1484,7 @@ HBITMAP LoadImageFile( PTCHAR Filename )
 // Use gdi+ to save a PNG.
 //
 //----------------------------------------------------------------------------
-DWORD SavePng( PTCHAR Filename, HBITMAP hBitmap )
+DWORD SavePng( LPCTSTR Filename, HBITMAP hBitmap )
 {
     Gdiplus::Bitmap		bitmap( hBitmap, NULL );
     CLSID pngClsid;
@@ -1559,7 +1623,6 @@ INT_PTR CALLBACK AdvancedBreakProc( HWND hDlg, UINT message, WPARAM wParam, LPAR
     static	TCHAR newBackgroundFile[MAX_PATH];
     TCHAR	filePath[MAX_PATH], initDir[MAX_PATH];
     DWORD	i;
-    OPENFILENAME	openFileName;
     static UINT currentDpi = DPI_BASELINE;
 
     switch ( message )  {
@@ -1695,77 +1758,126 @@ INT_PTR CALLBACK AdvancedBreakProc( HWND hDlg, UINT message, WPARAM wParam, LPAR
         }
         switch ( LOWORD( wParam )) {
         case IDC_SOUND_BROWSE:
-            memset( &openFileName, 0, sizeof(openFileName ));
-            openFileName.lStructSize       = OPENFILENAME_SIZE_VERSION_400;
-            openFileName.hwndOwner         = hDlg;
-            openFileName.hInstance         = static_cast<HINSTANCE>(g_hInstance);
-            openFileName.nMaxFile          = sizeof(filePath)/sizeof(filePath[0]);
-            openFileName.Flags				= OFN_LONGNAMES;
-            openFileName.lpstrTitle        = L"Specify sound file...";
-            openFileName.lpstrDefExt       = L"*.wav";
-            openFileName.nFilterIndex      = 1;
-            openFileName.lpstrFilter       = L"Sounds\0*.wav\0All Files\0*.*\0";
+        {
+            auto openDialog = wil::CoCreateInstance<IFileOpenDialog>( CLSID_FileOpenDialog );
 
-            GetDlgItemText( hDlg, IDC_SOUND_FILE, filePath, sizeof(filePath ));
-            if( _tcsrchr( filePath, '\\' )) {
+            FILEOPENDIALOGOPTIONS options;
+            if( SUCCEEDED( openDialog->GetOptions( &options ) ) )
+                openDialog->SetOptions( options | FOS_FORCEFILESYSTEM );
 
+            COMDLG_FILTERSPEC fileTypes[] = {
+                { L"Sounds", L"*.wav" },
+                { L"All Files", L"*.*" }
+            };
+            openDialog->SetFileTypes( _countof( fileTypes ), fileTypes );
+            openDialog->SetFileTypeIndex( 1 );
+            openDialog->SetDefaultExtension( L"wav" );
+            openDialog->SetTitle( L"ZoomIt: Specify Sound File..." );
+
+            // Set initial folder
+            GetDlgItemText( hDlg, IDC_SOUND_FILE, filePath, _countof( filePath ) );
+            if( _tcsrchr( filePath, '\\' ) )
+            {
                 _tcscpy( initDir, filePath );
-                _tcscpy( filePath, _tcsrchr( initDir, '\\' )+1);
-                *(_tcsrchr( initDir, '\\' )+1) = 0;
-            } else {
-
+                *( _tcsrchr( initDir, '\\' ) + 1 ) = 0;
+            }
+            else
+            {
                 _tcscpy( filePath, L"%WINDIR%\\Media" );
-                ExpandEnvironmentStrings( filePath, initDir, sizeof(initDir)/sizeof(initDir[0]));
-                GetDlgItemText( hDlg, IDC_SOUND_FILE, filePath, sizeof(filePath ));
+                ExpandEnvironmentStrings( filePath, initDir, _countof( initDir ) );
             }
-            openFileName.lpstrInitialDir = initDir;
-            openFileName.lpstrFile = filePath;
-            if( GetOpenFileName( &openFileName )) {
+            wil::com_ptr<IShellItem> folderItem;
+            if( SUCCEEDED( SHCreateItemFromParsingName( initDir, nullptr, IID_PPV_ARGS( &folderItem ) ) ) )
+            {
+                openDialog->SetFolder( folderItem.get() );
+            }
 
-                _tcscpy( newSoundFile, filePath );
-                if(_tcsrchr( filePath, '\\' )) _tcscpy( filePath, _tcsrchr( newSoundFile, '\\' )+1);
-                if(_tcsrchr( filePath, '.' )) *_tcsrchr( filePath, '.' ) = 0;
-                SetDlgItemText( hDlg, IDC_SOUND_FILE, filePath );
+            OpenSaveDialogEvents* pEvents = new OpenSaveDialogEvents();
+            DWORD dwCookie = 0;
+            openDialog->Advise( pEvents, &dwCookie );
+
+            if( SUCCEEDED( openDialog->Show( hDlg ) ) )
+            {
+                wil::com_ptr<IShellItem> resultItem;
+                if( SUCCEEDED( openDialog->GetResult( &resultItem ) ) )
+                {
+                    wil::unique_cotaskmem_string pathStr;
+                    if( SUCCEEDED( resultItem->GetDisplayName( SIGDN_FILESYSPATH, &pathStr ) ) )
+                    {
+                        _tcscpy( newSoundFile, pathStr.get() );
+                        _tcscpy( filePath, pathStr.get() );
+                        if( _tcsrchr( filePath, '\\' ) ) _tcscpy( filePath, _tcsrchr( filePath, '\\' ) + 1 );
+                        if( _tcsrchr( filePath, '.' ) ) *_tcsrchr( filePath, '.' ) = 0;
+                        SetDlgItemText( hDlg, IDC_SOUND_FILE, filePath );
+                    }
+                }
             }
+
+            openDialog->Unadvise( dwCookie );
+            pEvents->Release();
             break;
+        }
 
         case IDC_BACKGROUND_BROWSE:
-            memset( &openFileName, 0, sizeof(openFileName ));
-            openFileName.lStructSize       = OPENFILENAME_SIZE_VERSION_400;
-            openFileName.hwndOwner         = hDlg;
-            openFileName.hInstance         = static_cast<HINSTANCE>(g_hInstance);
-            openFileName.nMaxFile          = sizeof(filePath)/sizeof(filePath[0]);
-            openFileName.Flags				= OFN_LONGNAMES;
-            openFileName.lpstrTitle        = L"Specify background file...";
-            openFileName.lpstrDefExt       = L"*.bmp";
-            openFileName.nFilterIndex      = 5;
-            openFileName.lpstrFilter       = L"Bitmap Files (*.bmp;*.dib)\0*.bmp;*.dib\0"
-                                             "PNG (*.png)\0*.png\0"
-                                             "JPEG (*.jpg;*.jpeg;*.jpe;*.jfif)\0*.jpg;*.jpeg;*.jpe;*.jfif\0"
-                                             "GIF (*.gif)\0*.gif\0"
-                                             "All Picture Files\0.bmp;*.dib;*.png;*.jpg;*.jpeg;*.jpe;*.jfif;*.gif)\0"
-                                             "All Files\0*.*\0\0";
+        {
+            auto openDialog = wil::CoCreateInstance<IFileOpenDialog>( CLSID_FileOpenDialog );
 
-            GetDlgItemText( hDlg, IDC_BACKGROUND_FILE, filePath, sizeof(filePath ));
-            if(_tcsrchr( filePath, '\\' )) {
+            FILEOPENDIALOGOPTIONS options;
+            if( SUCCEEDED( openDialog->GetOptions( &options ) ) )
+                openDialog->SetOptions( options | FOS_FORCEFILESYSTEM );
 
+            COMDLG_FILTERSPEC fileTypes[] = {
+                { L"Bitmap Files (*.bmp;*.dib)", L"*.bmp;*.dib" },
+                { L"PNG (*.png)", L"*.png" },
+                { L"JPEG (*.jpg;*.jpeg;*.jpe;*.jfif)", L"*.jpg;*.jpeg;*.jpe;*.jfif" },
+                { L"GIF (*.gif)", L"*.gif" },
+                { L"All Picture Files", L"*.bmp;*.dib;*.png;*.jpg;*.jpeg;*.jpe;*.jfif;*.gif" },
+                { L"All Files", L"*.*" }
+            };
+            openDialog->SetFileTypes( _countof( fileTypes ), fileTypes );
+            openDialog->SetFileTypeIndex( 5 ); // Default to "All Picture Files"
+            openDialog->SetTitle( L"ZoomIt: Specify Background File..." );
+
+            // Set initial folder
+            GetDlgItemText( hDlg, IDC_BACKGROUND_FILE, filePath, _countof( filePath ) );
+            if( _tcsrchr( filePath, '\\' ) )
+            {
                 _tcscpy( initDir, filePath );
-                _tcscpy( filePath, _tcsrchr( initDir, '\\' )+1);
-                *(_tcsrchr( initDir, '\\' )+1) = 0;
-            } else {
-
+                *( _tcsrchr( initDir, '\\' ) + 1 ) = 0;
+            }
+            else
+            {
                 _tcscpy( filePath, L"%USERPROFILE%\\Pictures" );
-                ExpandEnvironmentStrings( filePath, initDir, sizeof(initDir)/sizeof(initDir[0]));
-                GetDlgItemText( hDlg, IDC_BACKGROUND_FILE, filePath, sizeof(filePath ));
+                ExpandEnvironmentStrings( filePath, initDir, _countof( initDir ) );
             }
-            openFileName.lpstrInitialDir = initDir;
-            openFileName.lpstrFile = filePath;
-            if( GetOpenFileName( &openFileName )) {
+            wil::com_ptr<IShellItem> folderItem;
+            if( SUCCEEDED( SHCreateItemFromParsingName( initDir, nullptr, IID_PPV_ARGS( &folderItem ) ) ) )
+            {
+                openDialog->SetFolder( folderItem.get() );
+            }
 
-                _tcscpy( newBackgroundFile, filePath );
-                SetDlgItemText( hDlg, IDC_BACKGROUND_FILE, filePath );
+            OpenSaveDialogEvents* pEvents = new OpenSaveDialogEvents();
+            DWORD dwCookie = 0;
+            openDialog->Advise( pEvents, &dwCookie );
+
+            if( SUCCEEDED( openDialog->Show( hDlg ) ) )
+            {
+                wil::com_ptr<IShellItem> resultItem;
+                if( SUCCEEDED( openDialog->GetResult( &resultItem ) ) )
+                {
+                    wil::unique_cotaskmem_string pathStr;
+                    if( SUCCEEDED( resultItem->GetDisplayName( SIGDN_FILESYSPATH, &pathStr ) ) )
+                    {
+                        _tcscpy( newBackgroundFile, pathStr.get() );
+                        SetDlgItemText( hDlg, IDC_BACKGROUND_FILE, pathStr.get() );
+                    }
+                }
             }
+
+            openDialog->Unadvise( dwCookie );
+            pEvents->Release();
             break;
+        }
 
         case IDOK:
 
@@ -5861,7 +5973,6 @@ LRESULT APIENTRY MainWndProc(
     HWND			hWndRecord;
     int				x, y, delta;
     HMENU			hPopupMenu;
-    OPENFILENAME	openFileName;
     static TCHAR	filePath[MAX_PATH] = {L"zoomit"};
     NOTIFYICONDATA	tNotifyIconData;
     static DWORD64  g_TelescopingZoomLastTick = 0ull;
@@ -8527,36 +8638,76 @@ LRESULT APIENTRY MainWndProc(
 
             // Get a unique filename suggestion
             auto suggestedName = GetUniqueScreenshotFilename();
-            _tcscpy(filePath, suggestedName.c_str());
 
-            memset( &openFileName, 0, sizeof(openFileName ));
-            openFileName.lStructSize       = OPENFILENAME_SIZE_VERSION_400;
-            openFileName.hwndOwner         = hWnd;
-            openFileName.hInstance         = static_cast<HINSTANCE>(g_hInstance);
-            openFileName.nMaxFile          = sizeof(filePath)/sizeof(filePath[0]);
-            openFileName.Flags				= OFN_LONGNAMES|OFN_HIDEREADONLY|OFN_OVERWRITEPROMPT;
-            openFileName.lpstrTitle        = L"Save zoomed screen...";
-            openFileName.lpstrDefExt       = NULL; // "*.png";
-            openFileName.nFilterIndex      = 1;
-            openFileName.lpstrFilter       = L"Zoomed PNG\0*.png\0"
-                                             //"Zoomed BMP\0*.bmp\0"
-                                             "Actual size PNG\0*.png\0\0";
-                                             //"Actual size BMP\0*.bmp\0\0";
-            openFileName.lpstrFile			= filePath;
+            // Create modern IFileSaveDialog
+            auto saveDialog = wil::CoCreateInstance<IFileSaveDialog>( CLSID_FileSaveDialog );
 
-            if( GetSaveFileName( &openFileName ) )
+            FILEOPENDIALOGOPTIONS options;
+            if( SUCCEEDED( saveDialog->GetOptions( &options ) ) )
+                saveDialog->SetOptions( options | FOS_FORCEFILESYSTEM | FOS_OVERWRITEPROMPT );
+
+            // Set file types - index is 1-based when retrieved via GetFileTypeIndex
+            COMDLG_FILTERSPEC fileTypes[] = {
+                { L"Zoomed PNG", L"*.png" },
+                { L"Actual size PNG", L"*.png" }
+            };
+            saveDialog->SetFileTypes( _countof( fileTypes ), fileTypes );
+            saveDialog->SetFileTypeIndex( 1 ); // Default to "Zoomed PNG"
+            saveDialog->SetDefaultExtension( L"png" );
+            saveDialog->SetFileName( suggestedName.c_str() );
+            saveDialog->SetTitle( L"ZoomIt: Save Zoomed Screen..." );
+
+            // Set default folder to the last save location if available
+            if( !g_ScreenshotSaveLocation.empty() )
             {
-                TCHAR targetFilePath[MAX_PATH];
-                _tcscpy( targetFilePath, filePath );
-                if( !_tcsrchr( targetFilePath, '.' ) )
+                std::filesystem::path lastPath( g_ScreenshotSaveLocation );
+                if( lastPath.has_parent_path() )
                 {
-                    _tcscat( targetFilePath, L".png" );
+                    wil::com_ptr<IShellItem> folderItem;
+                    if( SUCCEEDED( SHCreateItemFromParsingName( lastPath.parent_path().c_str(),
+                        nullptr, IID_PPV_ARGS( &folderItem ) ) ) )
+                    {
+                        saveDialog->SetFolder( folderItem.get() );
+                    }
+                }
+            }
+
+            OpenSaveDialogEvents* pEvents = new OpenSaveDialogEvents();
+            DWORD dwCookie = 0;
+            saveDialog->Advise(pEvents, &dwCookie);
+
+            UINT selectedFilterIndex = 1;
+            std::wstring selectedFilePath;
+
+            if( SUCCEEDED( saveDialog->Show( hWnd ) ) )
+            {
+                wil::com_ptr<IShellItem> resultItem;
+                if( SUCCEEDED( saveDialog->GetResult( &resultItem ) ) )
+                {
+                    wil::unique_cotaskmem_string pathStr;
+                    if( SUCCEEDED( resultItem->GetDisplayName( SIGDN_FILESYSPATH, &pathStr ) ) )
+                    {
+                        selectedFilePath = pathStr.get();
+                    }
+                }
+                saveDialog->GetFileTypeIndex( &selectedFilterIndex );
+            }
+
+            saveDialog->Unadvise(dwCookie);
+            pEvents->Release();
+
+            if( !selectedFilePath.empty() )
+            {
+                std::wstring targetFilePath = selectedFilePath;
+                if( targetFilePath.find(L'.') == std::wstring::npos )
+                {
+                    targetFilePath += L".png";
                 }
 
-                if( openFileName.nFilterIndex == 2 )
+                if( selectedFilterIndex == 2 )
                 {
                     // Save at actual size.
-                    SavePng( targetFilePath, hbmActualSize.get() );
+                    SavePng( targetFilePath.c_str(), hbmActualSize.get() );
                 }
                 else
                 {
@@ -8583,7 +8734,7 @@ LRESULT APIENTRY MainWndProc(
                                 saveWidth, saveHeight,
                                 SRCCOPY | CAPTUREBLT );
 
-                    SavePng( targetFilePath, hbmZoomed.get() );
+                    SavePng(targetFilePath.c_str(), hbmZoomed.get());
                 }
 
                 // Remember the save location for next time and persist to registry
