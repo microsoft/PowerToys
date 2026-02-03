@@ -44,6 +44,7 @@ ALLCHILDREN
 ALLINPUT
 Allman
 Allmodule
+ALLNOISE
 ALLOWUNDO
 ALLVIEW
 ALPHATYPE
@@ -129,6 +130,7 @@ bezelled
 bhid
 BIF
 bigbar
+BIGGERSIZEOK
 bigobj
 binlog
 binres
@@ -310,6 +312,7 @@ CRECT
 CRH
 critsec
 cropandlock
+CROPTOSQUARE
 Crossdevice
 csdevkit
 CSearch
@@ -760,6 +763,7 @@ IAI
 icf
 ICONERROR
 ICONLOCATION
+ICONONLY
 IDCANCEL
 IDD
 idk
@@ -899,6 +903,7 @@ LEFTTEXT
 LError
 LEVELID
 LExit
+LFU
 lhwnd
 LIBFUZZER
 LIBID
@@ -1670,6 +1675,7 @@ sigdn
 Signedness
 SIGNINGSCENARIO
 signtool
+SIIGBF
 SINGLEKEY
 sipolicy
 SIZEBOX

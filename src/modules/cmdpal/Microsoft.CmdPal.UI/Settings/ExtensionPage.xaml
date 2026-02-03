@@ -60,7 +60,7 @@
                                         Height="20"
                                         AutomationProperties.AccessibilityView="Raw"
                                         SourceKey="{x:Bind ViewModel.Icon, Mode=OneWay}"
-                                        SourceRequested="{x:Bind helpers:IconCacheProvider.SourceRequested}" />
+                                        SourceRequested="{x:Bind helpers:IconCacheProvider.SourceRequested20}" />
                                 </cpcontrols:ContentIcon.Content>
                             </cpcontrols:ContentIcon>
                         </controls:SettingsCard.HeaderIcon>
@@ -94,7 +94,7 @@
                                                                 Height="20"
                                                                 AutomationProperties.AccessibilityView="Raw"
                                                                 SourceKey="{x:Bind Icon, Mode=OneWay}"
-                                                                SourceRequested="{x:Bind helpers:IconCacheProvider.SourceRequested}" />
+                                                                SourceRequested="{x:Bind helpers:IconCacheProvider.SourceRequested20}" />
                                                         </cpcontrols:ContentIcon.Content>
                                                     </cpcontrols:ContentIcon>
                                                 </controls:SettingsExpander.HeaderIcon>
@@ -165,7 +165,7 @@
                                                                 Height="20"
                                                                 AutomationProperties.AccessibilityView="Raw"
                                                                 SourceKey="{x:Bind Icon, Mode=OneWay}"
-                                                                SourceRequested="{x:Bind helpers:IconCacheProvider.SourceRequested}" />
+                                                                SourceRequested="{x:Bind helpers:IconCacheProvider.SourceRequested20}" />
                                                         </cpcontrols:ContentIcon.Content>
                                                     </cpcontrols:ContentIcon>
                                                 </controls:SettingsExpander.HeaderIcon>
