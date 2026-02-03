@@ -84,6 +84,7 @@ internal sealed class Program
         {
             afterInitializationAction += () =>
             {
+                Logger.LogInfo("Open SCOOBE window because the version differs from the last run version");
                 SettingsHelper.OpenSettingsWindow(showScoobeWindow: true);
             };
         }
@@ -92,6 +93,7 @@ internal sealed class Program
         {
             afterInitializationAction += () =>
             {
+                Logger.LogInfo("Open OOBE window because it is the first launch");
                 SettingsHelper.OpenSettingsWindow(showOobeWindow: true);
             };
         }
@@ -158,6 +160,8 @@ internal sealed class Program
     /// </summary>
     private static void UpdateNow()
     {
+        Logger.LogInfo("Starting update process for PowerToys.");
+
         Process.Start(new ProcessStartInfo()
         {
             UseShellExecute = false,

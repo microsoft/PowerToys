@@ -64,6 +64,7 @@ namespace ManagedCommon
             var logFilePath = Path.Combine(versionedPath, logFile);
             CurrentLogFile = logFilePath;
 
+            Trace.Listeners.Clear();
             Trace.Listeners.Add(new TextWriterTraceListener(logFilePath));
 
             Trace.AutoFlush = true;

@@ -175,6 +175,7 @@ namespace RunnerV2.Helpers
                     });
                     break;
                 case TrayButton.ReportBug:
+                    Logger.LogInfo("Starting bug report tool from tray menu");
                     Process bugReportProcess = new();
                     bugReportProcess.StartInfo = new ProcessStartInfo
                     {
@@ -191,6 +192,7 @@ namespace RunnerV2.Helpers
                         bugReportProcess.Dispose();
                         EnableMenuItem(_trayIconMenu, (uint)TrayButton.ReportBug, 0x00000000);
                         IsBugReportToolRunning = false;
+                        Logger.LogInfo("Bug report tool exited");
                     };
 
                     bugReportProcess.Start();

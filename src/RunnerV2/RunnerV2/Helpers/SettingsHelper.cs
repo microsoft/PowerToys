@@ -85,6 +85,8 @@ namespace RunnerV2.Helpers
                 executableArgs += $" {additionalArguments}";
             }
 
+            Logger.LogInfo($"Starting Settings with arguments: {executableArgs}");
+
             _process = Process.Start(executablePath, executableArgs);
 
             // Initialize listening to pipes
@@ -130,7 +132,9 @@ namespace RunnerV2.Helpers
                             {
                                 if (ptModule is IPowerToysModuleCustomActionsProvider customActionsProvider && customActionsProvider.CustomActions.TryGetValue(moduleName.Value.GetProperty("action_name").GetString() ?? string.Empty, out Action? action))
                                 {
+                                    Logger.InitializeLogger("\\" + ptModule.Name + "\\ModuleInterface\\Logs");
                                     action();
+                                    Logger.InitializeLogger("\\RunnerLogs");
                                 }
                             }
                         }
@@ -140,6 +144,7 @@ namespace RunnerV2.Helpers
                         // Todo: Handle hotkey conflict
                         break;
                     case "bugreport":
+                        Logger.LogInfo("Starting bug report tool from Settings window");
                         TrayIconManager.ProcessTrayMenuCommand((nuint)TrayIconManager.TrayButton.ReportBug);
                         break;
                     case "bug_report_status":
@@ -153,9 +158,9 @@ namespace RunnerV2.Helpers
                         {
                             _settingsUtils.SaveSettings(property.Value.ToString(), string.Empty);
                         }
-                        catch (Exception)
+                        catch (Exception ex)
                         {
-                            // TODO: Log error
+                            Logger.LogError("Failed writing general settings from Settings window", ex);
                         }
 
                         NativeMethods.PostMessageW(Runner.RunnerHwnd, (uint)NativeMethods.WindowMessages.REFRESH_SETTINGS, 0, 0);
@@ -164,7 +169,9 @@ namespace RunnerV2.Helpers
                         {
                             if (module is IPowerToysModuleSettingsChangedSubscriber settingsChangedSubscriber)
                             {
+                                Logger.InitializeLogger("\\" + module.Name + "\\ModuleInterface\\Logs");
                                 settingsChangedSubscriber.OnSettingsChanged();
+                                Logger.InitializeLogger("\\RunnerLogs");
                             }
                         }
 
@@ -172,11 +179,20 @@ namespace RunnerV2.Helpers
                     case "powertoys":
                         foreach (var powertoysSettingsPart in property.Value.EnumerateObject())
                         {
-                            _settingsUtils.SaveSettings(powertoysSettingsPart.Value.ToString(), powertoysSettingsPart.Name);
-
-                            if (Runner.LoadedModules.Find(m => m.Name == powertoysSettingsPart.Name) is IPowerToysModuleSettingsChangedSubscriber module)
+                            try
                             {
+                                _settingsUtils.SaveSettings(powertoysSettingsPart.Value.ToString(), powertoysSettingsPart.Name);
+                            }
+                            catch (Exception ex)
+                            {
+                                Logger.LogError($"Failed writing {powertoysSettingsPart.Name} settings from Settings window", ex);
+                            }
+
+                            if (Runner.LoadedModules.Find(m => m.Name == powertoysSettingsPart.Name) is IPowerToysModuleSettingsChangedSubscriber module && module is IPowerToysModule ptModule && ptModule.Enabled)
+                            {
+                                Logger.InitializeLogger("\\" + ptModule.Name + "\\ModuleInterface\\Logs");
                                 module.OnSettingsChanged();
+                                Logger.InitializeLogger("\\RunnerLogs");
                             }
                             else
                             {

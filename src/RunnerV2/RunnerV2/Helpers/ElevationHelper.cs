@@ -5,6 +5,7 @@
 using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using ManagedCommon;
 using static RunnerV2.NativeMethods;
 
 namespace RunnerV2.Helpers
@@ -43,6 +44,8 @@ namespace RunnerV2.Helpers
 
         private static void RestartAsAdministrator(string arguments)
         {
+            Logger.LogInfo("Restarting as administrator, because it was scheudled.");
+
             ProcessStartInfo processStartInfo = new()
             {
                 Arguments = arguments,
@@ -57,7 +60,7 @@ namespace RunnerV2.Helpers
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Failed to restart as administrator: " + ex);
+                Logger.LogError("Failed to restart as administrator.", ex);
             }
         }
 

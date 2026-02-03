@@ -29,7 +29,7 @@ namespace Update
 
                 foreach (var package in packages)
                 {
-                    Version msixVersion = new Version(package.Id.Version.Major, package.Id.Version.Minor, package.Id.Version.Revision);
+                    Version msixVersion = new(package.Id.Version.Major, package.Id.Version.Minor, package.Id.Version.Revision);
                     if (msixVersion < currentVersion)
                     {
                         await packageManager.RemovePackageAsync(package.Id.FullName);

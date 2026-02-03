@@ -99,6 +99,8 @@ namespace RunnerV2
                 ToggleModuleStateBasedOnEnabledProperty(module);
             }
 
+            Logger.InitializeLogger("\\RunnerLogs");
+
             CentralizedKeyboardHookManager.Start();
 
             afterInitializationAction();
@@ -168,6 +170,7 @@ namespace RunnerV2
         /// <param name="module">The module to toggle</param>
         public static void ToggleModuleStateBasedOnEnabledProperty(IPowerToysModule module)
         {
+            Logger.InitializeLogger("\\" + module.Name + "\\ModuleInterface\\Logs");
             if (_failedModuleLoads.Contains(module))
             {
                 return;
@@ -210,6 +213,7 @@ namespace RunnerV2
             catch (Exception e)
             {
                 MessageBox.Show($"The module {module.Name} failed to load: \n" + e.Message, "Error: " + e.GetType().Name, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                Logger.LogError($"The module {module.Name} failed to load: \n", e);
                 _failedModuleLoads.Add(module);
                 return;
             }
@@ -233,6 +237,7 @@ namespace RunnerV2
             catch (Exception e)
             {
                 MessageBox.Show($"The module {module.Name} failed to unload: \n" + e.Message, "Error: " + e.GetType().Name, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                Logger.LogError($"The module {module.Name} failed to unload: \n", e);
                 _failedModuleLoads.Add(module);
             }
         }
@@ -312,6 +317,8 @@ namespace RunnerV2
                     {
                         ToggleModuleStateBasedOnEnabledProperty(module);
                     }
+
+                    Logger.InitializeLogger("\\RunnerLogs");
 
                     CentralizedKeyboardHookManager.RemoveAllHooksFromModule("QuickAccess");
                     if (SettingsUtils.Default.GetSettings<GeneralSettings>().EnableQuickAccess)

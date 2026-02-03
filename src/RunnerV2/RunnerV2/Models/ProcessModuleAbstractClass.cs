@@ -5,6 +5,7 @@
 using System;
 using System.Diagnostics;
 using System.Globalization;
+using ManagedCommon;
 using RunnerV2.Helpers;
 
 namespace RunnerV2.Models
@@ -144,7 +145,7 @@ namespace RunnerV2.Models
                 }
                 catch (Exception ex)
                 {
-                    Debug.WriteLine($"[ProcessModuleAbstractClass] Failed to set realtime priority for process {ProcessName}", ex);
+                    Logger.LogError($"Failed to set realtime priority for process {ProcessName}", ex);
                 }
             }
         }
