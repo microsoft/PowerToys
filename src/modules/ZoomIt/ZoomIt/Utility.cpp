@@ -99,7 +99,7 @@ static void InitializeDarkModeSupport()
             {
                 useDarkMode = pShouldAppsUseDarkMode(); // Use system setting
             }
-            
+
             if (useDarkMode)
             {
                 pSetPreferredAppMode(PreferredAppMode::ForceDark);
@@ -401,7 +401,7 @@ void ApplyDarkModeToDialog(HWND hDlg)
         // Light mode - remove dark mode
         SetDarkModeForWindow(hDlg, false);
         SetWindowTheme(hDlg, nullptr, nullptr);
-        
+
         EnumChildWindows(hDlg, [](HWND hChild, LPARAM) -> BOOL {
             // Remove subclass from controls
             wchar_t className[64] = { 0 };
@@ -883,10 +883,10 @@ void HandleDialogDpiChange( HWND hDlg, WPARAM wParam, LPARAM lParam, UINT& curre
     if( newDpi != currentDpi && newDpi != 0 )
     {
         const RECT* pSuggestedRect = reinterpret_cast<const RECT*>(lParam);
-        
+
         // Scale the dialog controls from the current DPI to the new DPI
         ScaleDialogForDpi( hDlg, newDpi, currentDpi );
-        
+
         // Move and resize the dialog to the suggested rectangle
         SetWindowPos( hDlg, nullptr,
             pSuggestedRect->left,
@@ -894,7 +894,7 @@ void HandleDialogDpiChange( HWND hDlg, WPARAM wParam, LPARAM lParam, UINT& curre
             pSuggestedRect->right - pSuggestedRect->left,
             pSuggestedRect->bottom - pSuggestedRect->top,
             SWP_NOZORDER | SWP_NOACTIVATE );
-        
+
         currentDpi = newDpi;
     }
 }

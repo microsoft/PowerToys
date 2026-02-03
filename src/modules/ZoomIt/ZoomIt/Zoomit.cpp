@@ -269,8 +269,8 @@ public:
                     HICON hIcon = LoadIcon(g_hInstance, L"APPICON");
                     if (hIcon)
                     {
-                        SendMessage(hwndDialog, WM_SETICON, ICON_BIG, (LPARAM)hIcon);
-                        SendMessage(hwndDialog, WM_SETICON, ICON_SMALL, (LPARAM)hIcon);
+                        SendMessage(hwndDialog, WM_SETICON, ICON_BIG, reinterpret_cast<LPARAM>(hIcon));
+                        SendMessage(hwndDialog, WM_SETICON, ICON_SMALL, reinterpret_cast<LPARAM>(hIcon));
                     }
                 }
             }
@@ -1636,8 +1636,8 @@ INT_PTR CALLBACK AdvancedBreakProc( HWND hDlg, UINT message, WPARAM wParam, LPAR
             HICON hIcon = LoadIcon( g_hInstance, L"APPICON" );
             if( hIcon )
             {
-                SendMessage( hDlg, WM_SETICON, ICON_BIG, (LPARAM)hIcon );
-                SendMessage( hDlg, WM_SETICON, ICON_SMALL, (LPARAM)hIcon );
+                SendMessage( hDlg, WM_SETICON, ICON_BIG, reinterpret_cast<LPARAM>(hIcon) );
+                SendMessage( hDlg, WM_SETICON, ICON_SMALL, reinterpret_cast<LPARAM>(hIcon) );
             }
         }
         if( pSHAutoComplete ) {
@@ -1963,8 +1963,8 @@ static UINT_PTR CALLBACK ChooseFontHookProc(HWND hDlg, UINT message, WPARAM wPar
             HICON hIcon = LoadIcon( g_hInstance, L"APPICON" );
             if( hIcon )
             {
-                SendMessage( hDlg, WM_SETICON, ICON_BIG, (LPARAM)hIcon );
-                SendMessage( hDlg, WM_SETICON, ICON_SMALL, (LPARAM)hIcon );
+                SendMessage( hDlg, WM_SETICON, ICON_BIG, reinterpret_cast<LPARAM>(hIcon) );
+                SendMessage( hDlg, WM_SETICON, ICON_SMALL, reinterpret_cast<LPARAM>(hIcon) );
             }
         }
         // Basic (incomplete) dark mode attempt: theme the main common dialog window.
@@ -3744,8 +3744,8 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
             HICON hIcon = LoadIcon( g_hInstance, L"APPICON" );
             if( hIcon )
             {
-                SendMessage( hDlg, WM_SETICON, ICON_BIG, (LPARAM)hIcon );
-                SendMessage( hDlg, WM_SETICON, ICON_SMALL, (LPARAM)hIcon );
+                SendMessage( hDlg, WM_SETICON, ICON_BIG, reinterpret_cast<LPARAM>(hIcon) );
+                SendMessage( hDlg, WM_SETICON, ICON_SMALL, reinterpret_cast<LPARAM>(hIcon) );
             }
         }
 
