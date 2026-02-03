@@ -1,0 +1,730 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="AppName" xml:space="preserve">
+    <value>Command Palette</value>
+    <comment>{Locked=qps-ploc,qps-ploca,qps-plocm}</comment>
+  </data>
+  <data name="AppNameDev" xml:space="preserve">
+    <value>Command Palette Dev</value>
+    <comment>{Locked} The dev build will never be seen in multiple languages</comment>
+  </data>
+  <data name="AppNameCan" xml:space="preserve">
+    <value>Command Palette Canary</value>
+    <comment>{Locked=qps-ploc,qps-ploca,qps-plocm}</comment>
+  </data>
+  <data name="AppNamePre" xml:space="preserve">
+    <value>Command Palette Preview</value>
+    <comment>{Locked=qps-ploc,qps-ploca,qps-plocm}</comment>
+  </data>
+  <data name="AppStoreName" xml:space="preserve">
+    <value>Windows Command Palette</value>
+    <comment>{Locked=qps-ploc,qps-ploca,qps-plocm}</comment>
+  </data>
+  <data name="AppStoreNameDev" xml:space="preserve">
+    <value>Windows Command Palette Dev</value>
+    <comment>{Locked} The dev build will never be seen in multiple languages</comment>
+  </data>
+  <data name="AppStoreNameCan" xml:space="preserve">
+    <value>Windows Command Palette Canary</value>
+    <comment>{Locked=qps-ploc,qps-ploca,qps-plocm}. "Canary" in this context means an unstable or nightly build of a software product, not the bird.</comment>
+  </data>
+  <data name="AppStoreNamePre" xml:space="preserve">
+    <value>Windows Command Palette Preview</value>
+    <comment>{Locked=qps-ploc,qps-ploca,qps-plocm}</comment>
+  </data>
+  <data name="AppShortName" xml:space="preserve">
+    <value>Command Palette</value>
+    <comment>{Locked=qps-ploc,qps-ploca,qps-plocm}</comment>
+  </data>
+  <data name="AppShortNameDev" xml:space="preserve">
+    <value>Command Palette Dev</value>
+    <comment>{Locked} The dev build will never be seen in multiple languages</comment>
+  </data>
+  <data name="AppShortNameCan" xml:space="preserve">
+    <value>Command Palette Canary</value>
+    <comment>{Locked=qps-ploc,qps-ploca,qps-plocm}</comment>
+  </data>
+  <data name="AppShortNamePre" xml:space="preserve">
+    <value>Command Palette Preview</value>
+    <comment>{Locked=qps-ploc,qps-ploca,qps-plocm}</comment>
+  </data>
+  <data name="AppDescription" xml:space="preserve">
+    <value>Windows Command Palette</value>
+  </data>
+  <data name="AppDescriptionDev" xml:space="preserve">
+    <value>A dev build of the Command Palette</value>
+    <comment>{Locked} The dev build will never be seen in multiple languages</comment>
+  </data>
+  <data name="AppDescriptionCan" xml:space="preserve">
+    <value>The Windows Command Palette (Canary build)</value>
+    <comment>{Locked}</comment>
+  </data>
+  <data name="AppDescriptionPre" xml:space="preserve">
+    <value>Windows Command Palette (bản Preview)</value>
+  </data>
+  <data name="StartupTaskName" xml:space="preserve">
+    <value>Command Palette</value>
+    <comment>{Locked=qps-ploc,qps-ploca,qps-plocm}</comment>
+  </data>
+  <data name="StartupTaskNameDev" xml:space="preserve">
+    <value>Command Palette Dev</value>
+    <comment>{Locked} The dev build will never be seen in multiple languages</comment>
+  </data>
+  <data name="Activation_Shortcut_Cancel" xml:space="preserve">
+    <value>Hủy</value>
+  </data>
+  <data name="Activation_Shortcut_Description" xml:space="preserve">
+    <value>Nhấn một tổ hợp phím để thay đổi phím tắt này</value>
+  </data>
+  <data name="Activation_Shortcut_With_Disable_Description" xml:space="preserve">
+    <value>Nhấn một tổ hợp phím để thay đổi phím tắt này.
+Nhấp chuột phải để xóa tổ hợp phím, qua đó vô hiệu hóa phím tắt.</value>
+  </data>
+  <data name="Activation_Shortcut_Reset" xml:space="preserve">
+    <value>Đặt lại</value>
+  </data>
+  <data name="Activation_Shortcut_Save" xml:space="preserve">
+    <value>Lưu</value>
+  </data>
+  <data name="Activation_Shortcut_Title" xml:space="preserve">
+    <value>Phím tắt kích hoạt</value>
+  </data>
+  <data name="InvalidShortcut.Title" xml:space="preserve">
+    <value>Phím tắt không hợp lệ</value>
+  </data>
+  <data name="InvalidShortcutWarningLabel.Text" xml:space="preserve">
+    <value>Chỉ phím tắt bắt đầu bằng **Windows**, **Ctrl**, **Alt** hoặc **Shift** là hợp lệ.</value>
+    <comment>The ** sequences are used for text formatting of the key names. Don't remove them on translation.</comment>
+  </data>
+  <data name="WarningShortcutAltGr.Title" xml:space="preserve">
+    <value>Có thể xung đột phím tắt với Alt Gr</value>
+    <comment>Alt Gr refers to the right alt key on some international keyboards</comment>
+  </data>
+  <data name="WarningShortcutAltGr.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Phím tắt có **Ctrl** và **Alt** có thể làm mất chức năng trên một số bàn phím quốc tế, vì **Ctrl** + **Alt** = **Alt Gr** trên các bàn phím đó.</value>
+    <comment>The ** sequences are used for text formatting of the key names. Don't remove them on translation.</comment>
+  </data>
+  <data name="CmdPalSettingsHeader.Text" xml:space="preserve">
+    <value>Cài đặt Command Palette</value>
+    <comment>A section header for app-wide settings. "Command Palette" is the name of the app.</comment>
+  </data>
+  <data name="AboutSettingsHeader.Text" xml:space="preserve">
+    <value>Giới thiệu</value>
+    <comment>A section header for information about the app</comment>
+  </data>
+  <data name="ExtensionAboutHeader.Text" xml:space="preserve">
+    <value>Giới thiệu</value>
+    <comment>A section header for information about the app</comment>
+  </data>
+  <data name="ExtensionSettingsHeader.Text" xml:space="preserve">
+    <value>Cài đặt tiện ích mở rộng</value>
+    <comment>A section header for extension-specific settings.</comment>
+  </data>
+  <data name="ExtensionCommandsHeader.Text" xml:space="preserve">
+    <value>Lệnh</value>
+    <comment>A section header for information about the app</comment>
+  </data>
+  <data name="ExtensionFallbackCommandsHeader.Text" xml:space="preserve">
+    <value>Lệnh dự phòng</value>
+    <comment>A section header for information about the commands presented to the user when the search text doesn't exactly match the name of a command.</comment>
+  </data>
+  <data name="ExtensionDisabledHeader.Text" xml:space="preserve">
+    <value>Tiện ích mở rộng này đã bị tắt</value>
+    <comment>A header to inform the user that an extension is not currently active</comment>
+  </data>
+  <data name="ExtensionDisabledDetails.Text" xml:space="preserve">
+    <value>Bật tiện ích mở rộng này để xem lệnh và cài đặt</value>
+    <comment>Additional details for when an extension is disabled. Displayed under ExtensionDisabledHeader.Text</comment>
+  </data>
+  <data name="ExtensionDisabledText" xml:space="preserve">
+    <value>Đã tắt</value>
+    <comment>Displayed when an extension is disabled</comment>
+  </data>
+  <data name="ExtensionEnable.Text" xml:space="preserve">
+    <value>Bật</value>
+    <comment>Displayed on a toggle controlling the extension's enabled / disabled state</comment>
+  </data>
+  <data name="ExtensionEnableCard.Description" xml:space="preserve">
+    <value>Tải lệnh và cài đặt từ tiện ích mở rộng này</value>
+    <comment>Displayed on a toggle controlling the extension's enabled / disabled state</comment>
+  </data>
+  <data name="SettingsWindowTitle" xml:space="preserve">
+    <value>Cài đặt Command Palette</value>
+    <comment>The title of the settings window for the app</comment>
+  </data>
+  <data name="ToastWindowTitle" xml:space="preserve">
+    <value>Thông báo Command Palette</value>
+    <comment>The title of the toast window for the command palette</comment>
+  </data>
+  <data name="DefaultSearchPlaceholderText" xml:space="preserve">
+    <value>Gõ ở đây để tìm kiếm...</value>
+  </data>
+  <data name="Run_PositionHeader.Header" xml:space="preserve">
+    <value>Vị trí màn hình ưu tiên</value>
+    <comment>as in Show Command Palette on primary monitor</comment>
+  </data>
+  <data name="Run_PositionHeader.Description" xml:space="preserve">
+    <value>Nếu đang dùng nhiều màn hình, Command Palette có thể được mở trên màn hình mong muốn</value>
+    <comment>as in Show Command Palette on primary monitor</comment>
+  </data>
+  <data name="Run_Radio_Position_Cursor.Content" xml:space="preserve">
+    <value>Màn hình có con trỏ chuột</value>
+  </data>
+  <data name="Run_Radio_Position_Focus.Content" xml:space="preserve">
+    <value>Màn hình có cửa sổ đang được tập trung</value>
+  </data>
+  <data name="Run_Radio_Position_Primary_Monitor.Content" xml:space="preserve">
+    <value>Màn hình chính</value>
+  </data>
+  <data name="Run_Radio_Position_In_Place.Content" xml:space="preserve">
+    <value>Không di chuyển</value>
+  </data>
+  <data name="ConfirmationDialog_ConfirmButtonText" xml:space="preserve">
+    <value>Xác nhận</value>
+  </data>
+  <data name="ConfirmationDialog_CancelButtonText" xml:space="preserve">
+    <value>Hủy</value>
+  </data>
+  <data name="Settings_ExtensionPage_GlobalHotkey_SettingsCard.Header" xml:space="preserve">
+    <value>Phím tắt toàn cục</value>
+  </data>
+  <data name="Settings_ExtensionPage_GlobalHotkey_SettingsCard.Description" xml:space="preserve">
+    <value>Mở Command Palette trực tiếp tới lệnh này.</value>
+  </data>
+  <data name="Settings_ExtensionPage_Alias_SettingsCard.Header" xml:space="preserve">
+    <value>Bí danh</value>
+  </data>
+  <data name="Settings_ExtensionPage_Alias_SettingsCard.Description" xml:space="preserve">
+    <value>Từ khóa ngắn để điều hướng tới lệnh này.</value>
+  </data>
+  <data name="Settings_ExtensionPage_AliasActivation_SettingsCard.Header" xml:space="preserve">
+    <value>Kích hoạt bí danh</value>
+  </data>
+  <data name="Settings_ExtensionPage_AliasActivation_SettingsCard.Description" xml:space="preserve">
+    <value>Chọn khi nào bí danh chạy. Trực tiếp chạy ngay khi bạn gõ bí danh. Gián tiếp chạy sau một dấu cách ở cuối.</value>
+  </data>
+  <data name="Settings_ExtensionPage_Builtin_SettingsCard.Header" xml:space="preserve">
+    <value>Tích hợp</value>
+  </data>
+  <data name="Settings_ExtensionPage_Builtin_SettingsCard.Description" xml:space="preserve">
+    <value>Các lệnh này được tích hợp trong Windows Command Palette.</value>
+  </data>
+  <data name="Settings_GeneralPage_ActivationKey_SettingsExpander.Header" xml:space="preserve">
+    <value>Phím kích hoạt</value>
+  </data>
+  <data name="Settings_GeneralPage_ActivationKey_SettingsExpander.Description" xml:space="preserve">
+    <value>Phím này sẽ mở Command Palette.</value>
+  </data>
+  <data name="Settings_GeneralPage_LowLevelHook_SettingsCard.Header" xml:space="preserve">
+    <value>Sử dụng hook bàn phím mức thấp</value>
+  </data>
+  <data name="Settings_GeneralPage_LowLevelHook_SettingsCard.Description" xml:space="preserve">
+    <value>Hãy thử nếu có sự cố với phím tắt (Command Palette có thể không nhận tiêu điểm khi kích hoạt từ cửa sổ nâng quyền)</value>
+  </data>
+  <data name="Settings_GeneralPage_IgnoreShortcutWhenFullscreen_SettingsCard.Header" xml:space="preserve">
+    <value>Bỏ qua phím tắt ở chế độ toàn màn hình</value>
+  </data>
+  <data name="Settings_GeneralPage_IgnoreShortcutWhenFullscreen_SettingsCard.Description" xml:space="preserve">
+    <value>Ngăn làm gián đoạn chương trình đang chạy toàn màn hình do kích hoạt phím tắt ngoài ý muốn</value>
+  </data>
+  <data name="Settings_GeneralPage_HighlightSearch_SettingsCard.Header" xml:space="preserve">
+    <value>Tô sáng tìm kiếm khi kích hoạt</value>
+  </data>
+  <data name="Settings_GeneralPage_HighlightSearch_SettingsCard.Description" xml:space="preserve">
+    <value>Chọn văn bản tìm kiếm trước đó khi mở</value>
+  </data>
+  <data name="Settings_GeneralPage_ShowAppDetails_SettingsCard.Header" xml:space="preserve">
+    <value>Hiển thị chi tiết ứng dụng</value>
+  </data>
+  <data name="Settings_GeneralPage_ShowAppDetails_SettingsCard.Description" xml:space="preserve">
+    <value>Điều khiển việc chi tiết ứng dụng được mở rộng tự động hay không.</value>
+  </data>
+  <data name="Settings_GeneralPage_BackspaceGoesBack_SettingsCard.Header" xml:space="preserve">
+    <value>Backspace quay lại</value>
+  </data>
+  <data name="Settings_GeneralPage_BackspaceGoesBack_SettingsCard.Description" xml:space="preserve">
+    <value>Nếu ô tìm kiếm trống, Backspace sẽ quay lại trang trước</value>
+  </data>
+  <data name="Settings_GeneralPage_SingleClickActivation_SettingsCard.Header" xml:space="preserve">
+    <value>Kích hoạt một lần nhấp</value>
+  </data>
+  <data name="Settings_GeneralPage_SingleClickActivation_SettingsCard.Description" xml:space="preserve">
+    <value>Chọn cách tương tác với mục danh sách: nhấp một lần để kích hoạt, hoặc nhấp một lần để chọn và nhấp đúp để kích hoạt</value>
+  </data>
+  <data name="Settings_GeneralPage_About_SettingsExpander.Header" xml:space="preserve">
+    <value>Windows Command Palette</value>
+  </data>
+  <data name="Settings_GeneralPage_About_SettingsExpander.Description" xml:space="preserve">
+    <value>© 2026. All rights reserved.</value>
+  </data>
+  <data name="Settings_GeneralPage_About_GithubLink_Hyperlink.Content" xml:space="preserve">
+    <value>Xem kho lưu trữ GitHub</value>
+  </data>
+  <data name="Settings_GeneralPage_About_SDKDocs_Hyperlink.Content" xml:space="preserve">
+    <value>Tài liệu SDK tiện ích mở rộng</value>
+  </data>
+  <data name="Settings_GeneralPage_SendFeedback_Hyperlink.Content" xml:space="preserve">
+    <value>Gửi phản hồi</value>
+  </data>
+  <data name="Settings_GeneralPage_NavigationViewItem_General.Content" xml:space="preserve">
+    <value>Chung</value>
+  </data>
+  <data name="Settings_GeneralPage_NavigationViewItem_Extensions.Content" xml:space="preserve">
+    <value>Tiện ích mở rộng</value>
+  </data>
+  <data name="SettingsButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Mở cài đặt Command Palette</value>
+  </data>
+  <data name="ActivationSettingsHeader.Text" xml:space="preserve">
+    <value>Kích hoạt</value>
+  </data>
+  <data name="BehaviorSettingsHeader.Text" xml:space="preserve">
+    <value>Hành vi</value>
+  </data>
+  <data name="ContextFilterBox.PlaceholderText" xml:space="preserve">
+    <value>Tìm kiếm lệnh...</value>
+  </data>
+  <data name="Settings_GeneralPage_ShowSystemTrayIcon_SettingsCard.Header" xml:space="preserve">
+    <value>Hiển thị biểu tượng khay hệ thống</value>
+  </data>
+  <data name="Settings_GeneralPage_ShowSystemTrayIcon_SettingsCard.Description" xml:space="preserve">
+    <value>Chọn nếu Command Palette hiển thị trong khay hệ thống</value>
+  </data>
+  <data name="Settings_GeneralPage_DisableAnimations_SettingsCard.Header" xml:space="preserve">
+    <value>Tắt hoạt ảnh</value>
+  </data>
+  <data name="Settings_GeneralPage_DisableAnimations_SettingsCard.Description" xml:space="preserve">
+    <value>Tắt hoạt ảnh khi chuyển giữa các trang</value>
+  </data>
+  <data name="BackButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Quay lại</value>
+  </data>
+  <data name="BackButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Quay lại (Alt + mũi tên trái)</value>
+  </data>
+  <data name="MoreCommandsButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Thêm</value>
+  </data>
+  <data name="Run_Radio_Position_LastPosition.Content" xml:space="preserve">
+    <value>Vị trí lần trước</value>
+    <comment>Reopen the window where it was last closed</comment>
+  </data>
+  <data name="TrayMenu_Settings" xml:space="preserve">
+    <value>Cài đặt</value>
+  </data>
+  <data name="TrayMenu_Close" xml:space="preserve">
+    <value>Đóng</value>
+    <comment>Close as a verb, as in Close the application</comment>
+  </data>
+  <data name="Settings_ExtensionPage_Alias_DirectComboBox.Content" xml:space="preserve">
+    <value>Trực tiếp</value>
+  </data>
+  <data name="Settings_ExtensionPage_Alias_InDirectComboBox.Content" xml:space="preserve">
+    <value>Gián tiếp</value>
+  </data>
+  <data name="Settings_ExtensionPage_Alias_PlaceholderText.PlaceholderText" xml:space="preserve">
+    <value>Nhập bí danh</value>
+  </data>
+  <data name="StatusMessagesButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Hiển thị thông báo trạng thái</value>
+  </data>
+  <data name="StatusMessagesButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Hiển thị thông báo trạng thái</value>
+  </data>
+  <data name="NavigationPaneClosed" xml:space="preserve">
+    <value>Ngăn điều hướng đã đóng</value>
+  </data>
+  <data name="NavigationPaneOpened" xml:space="preserve">
+    <value>Ngăn điều hướng đã mở</value>
+  </data>
+  <data name="Settings_GeneralPage_AllowExternalReload_SettingsCard.Header" xml:space="preserve">
+    <value>Bật tải lại từ bên ngoài</value>
+  </data>
+  <data name="Settings_GeneralPage_AllowExternalReload_SettingsCard.Description" xml:space="preserve">
+    <value>Kích hoạt tải lại tiện ích mở rộng từ bên ngoài bằng lệnh x-cmdpal://reload</value>
+  </data>
+  <data name="ForDevelopersSettingsHeader.Text" xml:space="preserve">
+    <value>Dành cho nhà phát triển</value>
+  </data>
+  <data name="UntitledPageTitle" xml:space="preserve">
+    <value>trang chưa có tiêu đề</value>
+  </data>
+  <data name="ScreenReader_Announcement_NavigatedToPage0" xml:space="preserve">
+    <value>Đã điều hướng tới trang {0}</value>
+  </data>
+  <data name="SettingsButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Cài đặt (Ctrl+,)</value>
+  </data>
+  <data name="Settings_ExtensionsPage_NoResults_Primary.Text" xml:space="preserve">
+    <value>Không tìm thấy tiện ích mở rộng</value>
+  </data>
+  <data name="Settings_ExtensionsPage_NoResults_Secondary.Text" xml:space="preserve">
+    <value>Thử một từ khóa khác</value>
+  </data>
+  <data name="Settings_ExtensionsPage_More_Button.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Tùy chọn khác</value>
+  </data>
+  <data name="Settings_ExtensionsPage_More_Reload_MenuFlyoutItem.Text" xml:space="preserve">
+    <value>Tải lại tiện ích mở rộng</value>
+  </data>
+  <data name="Settings_ExtensionsPage_Reloading_Text.Text" xml:space="preserve">
+    <value>Đang tải lại tiện ích mở rộng..</value>
+  </data>
+  <data name="Settings_ExtensionsPage_Banner_Header.Text" xml:space="preserve">
+    <value>Khám phá thêm tiện ích mở rộng</value>
+  </data>
+  <data name="Settings_ExtensionsPage_Banner_Description.Text" xml:space="preserve">
+    <value>Tìm thêm tiện ích mở rộng trên Microsoft Store hoặc WinGet.</value>
+  </data>
+  <data name="Settings_ExtensionsPage_Banner_Hyperlink.Content" xml:space="preserve">
+    <value>Tìm hiểu cách tạo tiện ích mở rộng của riêng bạn</value>
+  </data>
+  <data name="Settings_ExtensionsPage_FindExtensions_MicrosoftStore.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Tìm tiện ích mở rộng trên Microsoft Store</value>
+  </data>
+  <data name="Settings_ExtensionsPage_FindExtensions_MicrosoftStore.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Microsoft Store</value>
+  </data>
+  <data name="Settings_ExtensionsPage_FindExtensions_WinGet.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Tìm tiện ích mở rộng trên WinGet</value>
+  </data>
+  <data name="Settings_ExtensionsPage_FindExtensions_WinGet.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Microsoft Store</value>
+  </data>
+  <data name="Settings_ExtensionsPage_SearchBox_Placeholder.PlaceholderText" xml:space="preserve">
+    <value>Tìm kiếm tiện ích mở rộng</value>
+  </data>
+  <data name="GlobalErrorHandler_CrashMessageBox_Message" xml:space="preserve">
+    <value>Command Palette gặp lỗi nghiêm trọng và phải đóng.</value>
+  </data>
+  <data name="GlobalErrorHandler_CrashMessageBox_Caption" xml:space="preserve">
+    <value>Command Palette - Lỗi nghiêm trọng</value>
+  </data>
+  <data name="Settings_GeneralPage_AutoGoHome_Item_Never.Content" xml:space="preserve">
+    <value>Không bao giờ</value>
+  </data>
+  <data name="Settings_GeneralPage_AutoGoHome_Item_Immediately.Content" xml:space="preserve">
+    <value>Ngay lập tức</value>
+  </data>
+  <data name="Settings_GeneralPage_AutoGoHome_Item_After10Seconds.Content" xml:space="preserve">
+    <value>10 giây</value>
+  </data>
+  <data name="Settings_GeneralPage_AutoGoHome_Item_After20Seconds.Content" xml:space="preserve">
+    <value>20 giây</value>
+  </data>
+  <data name="Settings_GeneralPage_AutoGoHome_Item_After30Seconds.Content" xml:space="preserve">
+    <value>30 giây</value>
+  </data>
+  <data name="Settings_GeneralPage_AutoGoHome_Item_After60Seconds.Content" xml:space="preserve">
+    <value>60 giây</value>
+  </data>
+  <data name="Settings_GeneralPage_AutoGoHome_Item_After90Seconds.Content" xml:space="preserve">
+    <value>90 giây</value>
+  </data>
+  <data name="Settings_GeneralPage_AutoGoHome_Item_After120Seconds.Content" xml:space="preserve">
+    <value>2 phút</value>
+  </data>
+  <data name="Settings_GeneralPage_AutoGoHome_Item_After180Seconds.Content" xml:space="preserve">
+    <value>3 phút</value>
+  </data>
+  <data name="Settings_GeneralPage_AutoGoHome_SettingsCard.Header" xml:space="preserve">
+    <value>Tự động quay về trang chủ</value>
+  </data>
+  <data name="Settings_GeneralPage_AutoGoHome_SettingsCard.Description" xml:space="preserve">
+    <value>Tự động trở về trang chủ sau một thời gian không hoạt động khi Command Palette bị đóng</value>
+  </data>
+  <data name="Settings_GeneralPage_NavigationViewItem_Appearance.Content" xml:space="preserve">
+    <value>Cá nhân hóa</value>
+  </data>
+  <data name="Settings_GeneralPage_AppTheme_SettingsCard.Header" xml:space="preserve">
+    <value>Chế độ giao diện ứng dụng</value>
+  </data>
+  <data name="Settings_GeneralPage_AppTheme_SettingsCard.Description" xml:space="preserve">
+    <value>Chọn giao diện ứng dụng để hiển thị</value>
+  </data>
+  <data name="AppearanceSettingsHeader.Text" xml:space="preserve">
+    <value>Giao diện</value>
+  </data>
+  <data name="Settings_GeneralPage_AppTheme_Mode_System.Text" xml:space="preserve">
+    <value>Dùng cài đặt hệ thống</value>
+  </data>
+  <data name="Settings_GeneralPage_AppTheme_Mode_Light.Text" xml:space="preserve">
+    <value>Sáng</value>
+  </data>
+  <data name="Settings_GeneralPage_AppTheme_Mode_Dark.Text" xml:space="preserve">
+    <value>Tối</value>
+  </data>
+  <data name="Settings_GeneralPage_BackgroundTint_SettingsCard.Header" xml:space="preserve">
+    <value>Sắc màu</value>
+  </data>
+  <data name="Settings_GeneralPage_BackgroundTintIntensity_SettingsCard.Header" xml:space="preserve">
+    <value>Cường độ màu</value>
+  </data>
+  <data name="OptionalColorPickerButton_UnsetTextBlock.Text" xml:space="preserve">
+    <value>Chọn màu</value>
+  </data>
+  <data name="OptionalColorPickerButton_ResetButton.Content" xml:space="preserve">
+    <value>Dùng mặc định</value>
+  </data>
+  <data name="OptionalColorPickerButton_TransparentColorButton.Content" xml:space="preserve">
+    <value>Dùng màu mặc định</value>
+  </data>
+  <data name="OptionalColorPickerButton_WindowsColorsSectionHeading.Text" xml:space="preserve">
+    <value>Màu của Windows</value>
+  </data>
+  <data name="Settings_GeneralPage_BackgroundImage_SettingsExpander.Header" xml:space="preserve">
+    <value>Ảnh nền</value>
+  </data>
+  <data name="Settings_GeneralPage_BackgroundImageOpacity_SettingsCard.Header" xml:space="preserve">
+    <value>Độ mờ ảnh nền</value>
+  </data>
+  <data name="Settings_GeneralPage_BackgroundImageFit_SettingsCard.Header" xml:space="preserve">
+    <value>Kiểu khớp ảnh nền</value>
+  </data>
+  <data name="BackgroundImageFit_ComboBoxItem_Fill.Content" xml:space="preserve">
+    <value>Lấp đầy</value>
+  </data>
+  <data name="BackgroundImageFit_ComboBoxItem_Fit.Content" xml:space="preserve">
+    <value>Vừa khít</value>
+  </data>
+  <data name="BackgroundImageFit_ComboBoxItem_Stretch.Content" xml:space="preserve">
+    <value>Kéo giãn</value>
+  </data>
+  <data name="Settings_PageTitles_GeneralPage" xml:space="preserve">
+    <value>Chung</value>
+  </data>
+  <data name="Settings_PageTitles_AppearancePage" xml:space="preserve">
+    <value>Cá nhân hóa</value>
+  </data>
+  <data name="Settings_PageTitles_ExtensionsPage" xml:space="preserve">
+    <value>Tiện ích mở rộng</value>
+  </data>
+  <data name="Settings_GeneralPage_EscapeKeyBehavior_Option_DismissEmptySearchOrGoBack.Content" xml:space="preserve">
+    <value>Xóa tìm kiếm trước, rồi quay lại</value>
+  </data>
+  <data name="Settings_GeneralPage_EscapeKeyBehavior_Option_AlwaysGoBack.Content" xml:space="preserve">
+    <value>Quay lại</value>
+  </data>
+  <data name="Settings_GeneralPage_EscapeKeyBehavior_Option_AlwaysDismiss.Content" xml:space="preserve">
+    <value>Ẩn cửa sổ và về trang chủ</value>
+  </data>
+  <data name="Settings_GeneralPage_EscapeKeyBehavior_Option_AlwaysHide.Content" xml:space="preserve">
+    <value>Ẩn cửa sổ</value>
+  </data>
+  <data name="Settings_GeneralPage_EscapeKeyBehavior_SettingsCard.Header" xml:space="preserve">
+    <value>Hành vi phím Escape</value>
+  </data>
+  <data name="Settings_GeneralPage_EscapeKeyBehavior_SettingsCard.Description" xml:space="preserve">
+    <value>Chọn cách phím Escape hoạt động</value>
+  </data>
+  <data name="SettingsButtonTextBlock.Text" xml:space="preserve">
+    <value>Cài đặt</value>
+  </data>
+  <data name="OptionalColorPickerButton_CustomColorsSectionHeading.Text" xml:space="preserve">
+    <value>Màu tùy chỉnh</value>
+  </data>
+  <data name="Settings_GeneralPage_ColorizationMode_None.Content" xml:space="preserve">
+    <value>Không</value>
+  </data>
+  <data name="Settings_GeneralPage_ColorizationMode_CustomColor.Content" xml:space="preserve">
+    <value>Màu tùy chỉnh</value>
+  </data>
+  <data name="Settings_GeneralPage_ColorizationMode_WindowsAccent.Content" xml:space="preserve">
+    <value>Màu nhấn hệ thống</value>
+  </data>
+  <data name="Settings_GeneralPage_ColorizationMode_Image.Content" xml:space="preserve">
+    <value>Hình ảnh</value>
+  </data>
+  <data name="Settings_GeneralPage_BackgroundImage_ChooseImageButton.Content" xml:space="preserve">
+    <value>Duyệt...</value>
+  </data>
+  <data name="Settings_GeneralPage_BackgroundImage_ResetImageButton.Content" xml:space="preserve">
+    <value>Xóa ảnh</value>
+  </data>
+  <data name="Settings_GeneralPage_BackgroundColor_SettingsExpander.Header" xml:space="preserve">
+    <value>Màu nền</value>
+  </data>
+  <data name="Settings_GeneralPage_BackgroundColor_SettingsExpander.Description" xml:space="preserve">
+    <value>Chọn màu nền tùy chỉnh hoặc dùng màu nhấn hiện tại</value>
+  </data>
+  <data name="Settings_GeneralPage_BackgroundImage_SettingsCard.Header" xml:space="preserve">
+    <value>Ảnh nền</value>
+  </data>
+  <data name="Settings_GeneralPage_NoBackground_DescriptionTextBlock.Text" xml:space="preserve">
+    <value>Không có cài đặt</value>
+  </data>
+  <data name="Settings_GeneralPage_Background_SettingsExpander.Header" xml:space="preserve">
+    <value>Nền</value>
+  </data>
+  <data name="Settings_GeneralPage_Background_SettingsExpander.Description" xml:space="preserve">
+    <value>Chọn màu nền hoặc ảnh nền tùy chỉnh</value>
+  </data>
+  <data name="Settings_GeneralPage_WindowsAccentColor_SettingsCard.Header" xml:space="preserve">
+    <value>Màu nhấn hệ thống</value>
+  </data>
+  <data name="Settings_GeneralPage_WindowsAccentColor_OpenWindowsColorsLinkText.Text" xml:space="preserve">
+    <value>Cá nhân hóa › Màu sắc</value>
+  </data>
+  <data name="Settings_GeneralPage_BackgroundImageBlur_SettingsCard.Header" xml:space="preserve">
+    <value>Làm mờ ảnh nền</value>
+  </data>
+  <data name="Settings_GeneralPage_BackgroundImageBrightness_SettingsCard.Header" xml:space="preserve">
+    <value>Độ sáng ảnh nền</value>
+  </data>
+  <data name="Settings_GeneralPage_BackgroundImage_ResetProperties_SettingsCard.Header" xml:space="preserve">
+    <value>Khôi phục mặc định</value>
+  </data>
+  <data name="Settings_GeneralPage_Background_ResetImagePropertiesButton.Content" xml:space="preserve">
+    <value>Đặt lại</value>
+  </data>
+  <data name="Settings_GeneralPage_WindowsAccentColor_SettingsCard_Description1.Text" xml:space="preserve">
+    <value>Thay đổi màu nhấn hệ thống trong Cài đặt Windows:</value>
+  </data>
+  <data name="Settings_GeneralPage_AppTheme_Mode_Light_Automation.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Sáng</value>
+  </data>
+  <data name="Settings_GeneralPage_AppTheme_Mode_Dark_Automation.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Tối</value>
+  </data>
+  <data name="Settings_GeneralPage_AppTheme_Mode_System_Automation.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Dùng cài đặt hệ thống</value>
+  </data>
+  <data name="Settings_FallbacksPage_GlobalResults_SettingsCard.Header" xml:space="preserve">
+    <value>Bao gồm trong kết quả toàn cục</value>
+  </data>
+  <data name="Settings_FallbacksPage_GlobalResults_SettingsCard.Description" xml:space="preserve">
+    <value>Hiển thị kết quả cho truy vấn không có lệnh kích hoạt trực tiếp</value>
+  </data>
+  <data name="ManageFallbackRankAutomation.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Quản lý thứ tự dự phòng</value>
+  </data>
+  <data name="ManageFallbackRank.Text" xml:space="preserve">
+    <value>Quản lý thứ tự dự phòng</value>
+  </data>
+  <data name="ManageFallbackOrderDialogDescription.Text" xml:space="preserve">
+    <value>Kéo các mục để đặt lệnh dự phòng chạy trước; lệnh ở trên cùng có ưu tiên.</value>
+  </data>
+  <data name="Settings_ExtensionsPage_More_ReorderFallbacks_MenuFlyoutItem.Text" xml:space="preserve">
+    <value>Quản lý thứ tự dự phòng</value>
+  </data>
+  <data name="Settings_GeneralPage_VersionNo" xml:space="preserve">
+    <value>Phiên bản {0}</value>
+  </data>
+</root>
