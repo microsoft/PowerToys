@@ -572,9 +572,6 @@
       <Platform Solution="*|x64" Project="x64" />
     </Project>
   </Folder>
-  <Folder Name="/modules/interface/">
-    <File Path="src/modules/interface/powertoy_module_interface.h" />
-  </Folder>
   <Folder Name="/modules/keyboardmanager/">
     <Project Path="src/modules/keyboardmanager/common/KeyboardManagerCommon.vcxproj" Id="8affa899-0b73-49ec-8c50-0fadda57b2fc" />
     <Project Path="src/modules/keyboardmanager/KeyboardManagerEditor/KeyboardManagerEditor.vcxproj" Id="8df78b53-200e-451f-9328-01eb907193ae" />
