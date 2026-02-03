@@ -171,7 +171,7 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
             return;
         }
 
-        if (sender is DockItemControl dockItem && dockItem.DataContext is DockItemViewModel item)
+        if (sender is DockItemControl dockItem && dockItem.DataContext is DockBandViewModel band && dockItem.Tag is DockItemViewModel item)
         {
             // Use the center of the border as the point to open at
             var borderPos = dockItem.TransformToVisual(null).TransformPoint(new Point(0, 0));
