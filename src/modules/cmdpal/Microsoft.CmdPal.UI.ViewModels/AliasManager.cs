@@ -3,22 +3,21 @@
 // See the LICENSE file in the project root for more information.
 
 using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Messaging;
-using Microsoft.CmdPal.UI.ViewModels.Messages;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
 public partial class AliasManager : ObservableObject
 {
-    private readonly TopLevelCommandManager _topLevelCommandManager;
+    // private readonly TopLevelCommandManager _topLevelCommandManager;
     private readonly SettingsService _settingsService;
 
     // REMEMBER, CommandAlias.SearchPrefix is what we use as keys
     private Dictionary<string, CommandAlias> Aliases => _settingsService.CurrentSettings.Aliases;
 
-    public AliasManager(TopLevelCommandManager tlcManager, SettingsService settingsService)
+    // TopLevelCommandManager tlcManager,
+    public AliasManager(SettingsService settingsService)
     {
-        _topLevelCommandManager = tlcManager;
+        // _topLevelCommandManager = tlcManager;
         _settingsService = settingsService;
 
         if (Aliases.Count == 0)
@@ -35,14 +34,13 @@ public partial class AliasManager : ObservableObject
         {
             try
             {
-                var topLevelCommand = _topLevelCommandManager.LookupCommand(alias.CommandId);
-                if (topLevelCommand is not null)
-                {
-                    WeakReferenceMessenger.Default.Send<ClearSearchMessage>();
-
-                    WeakReferenceMessenger.Default.Send<PerformCommandMessage>(topLevelCommand.GetPerformCommandMessage());
-                    return true;
-                }
+                // var topLevelCommand = _topLevelCommandManager.LookupCommand(alias.CommandId);
+                // if (topLevelCommand is not null)
+                // {
+                //    WeakReferenceMessenger.Default.Send<ClearSearchMessage>();
+                //    WeakReferenceMessenger.Default.Send<PerformCommandMessage>(topLevelCommand.GetPerformCommandMessage());
+                //    return true;
+                // }
             }
             catch
             {
@@ -113,11 +111,11 @@ public partial class AliasManager : ObservableObject
                 toRemove.Add(kv.Value);
 
                 // Remove alias from other TopLevelViewModels it may be assigned to
-                var topLevelCommand = _topLevelCommandManager.LookupCommand(kv.Value.CommandId);
-                if (topLevelCommand is not null)
-                {
-                    topLevelCommand.AliasText = string.Empty;
-                }
+                // var topLevelCommand = _topLevelCommandManager.LookupCommand(kv.Value.CommandId);
+                // if (topLevelCommand is not null)
+                // {
+                //    topLevelCommand.AliasText = string.Empty;
+                // }
             }
         }
 

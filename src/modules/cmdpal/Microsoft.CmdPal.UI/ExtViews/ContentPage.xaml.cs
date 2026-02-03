@@ -40,6 +40,12 @@ public sealed partial class ContentPage : Page,
     public static readonly DependencyProperty ViewModelProperty =
         DependencyProperty.Register(nameof(ViewModel), typeof(ContentPageViewModel), typeof(ContentPage), new PropertyMetadata(null));
 
+    public ContentPage()
+    {
+        this.InitializeComponent();
+        this.Unloaded += OnUnloaded;
+    }
+
     public ContentPage(ImageProvider imageProvider)
     {
         this.InitializeComponent();
@@ -64,17 +70,31 @@ public sealed partial class ContentPage : Page,
 
     protected override void OnNavigatedTo(NavigationEventArgs e)
     {
-        if (e.Parameter is not AsyncNavigationRequest navigationRequest)
+        if (e.Parameter is not AsyncContentPageNavigationRequest navigationRequest)
         {
-            throw new InvalidOperationException($"Invalid navigation parameter: {nameof(e.Parameter)} must be {nameof(AsyncNavigationRequest)}");
+            throw new InvalidOperationException($"Invalid navigation parameter: {nameof(e.Parameter)} must be {nameof(AsyncContentPageNavigationRequest)}");
         }
 
         if (navigationRequest.TargetViewModel is not ContentPageViewModel contentPageViewModel)
         {
-            throw new InvalidOperationException($"Invalid navigation target: AsyncNavigationRequest.{nameof(AsyncNavigationRequest.TargetViewModel)} must be {nameof(ContentPageViewModel)}");
+            throw new InvalidOperationException($"Invalid navigation target: AsyncContentPageNavigationRequest.{nameof(AsyncContentPageNavigationRequest.TargetViewModel)} must be {nameof(ContentPageViewModel)}");
+        }
+
+        if (navigationRequest.ImageProvider is not ImageProvider imageProvider)
+        {
+            throw new InvalidOperationException($"Invalid image provider: AsyncContentPageNavigationRequest.{nameof(AsyncContentPageNavigationRequest.ImageProvider)} must be {nameof(ImageProvider)}");
         }
 
         ViewModel = contentPageViewModel;
+
+        var markdownConfig = new MarkdownConfig()
+        {
+            ImageProvider = imageProvider,
+            Themes = _markdownThemes,
+        };
+
+        // Add the MarkdownConfig as a resource so DataTemplates can reference it
+        Resources["DefaultMarkdownConfig"] = markdownConfig;
 
         if (!WeakReferenceMessenger.Default.IsRegistered<ActivateSelectedListItemMessage>(this))
         {

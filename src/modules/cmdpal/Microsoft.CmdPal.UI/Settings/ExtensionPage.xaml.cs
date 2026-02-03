@@ -7,7 +7,6 @@ using Microsoft.CmdPal.UI.Helpers.MarkdownImageProviders;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Data;
-using Microsoft.UI.Xaml.Navigation;
 
 namespace Microsoft.CmdPal.UI.Settings;
 
@@ -20,7 +19,9 @@ public sealed partial class ExtensionPage : Page
 
     private ContentPage _contentPage;
 
-    public ExtensionPage(FallbackRankerDialog fallbackRankerDialog, ImageProvider imageProvider)
+    public ExtensionPage(
+        FallbackRankerDialog fallbackRankerDialog,
+        ImageProvider imageProvider)
     {
         this.InitializeComponent();
         _fallbackRankerDialog = fallbackRankerDialog;
@@ -31,11 +32,14 @@ public sealed partial class ExtensionPage : Page
         ContentPageContainer.Content = _contentPage;
     }
 
-    protected override void OnNavigatedTo(NavigationEventArgs e)
+    internal void OnNavigatedTo(ProviderSettingsViewModel viewModel)
     {
-        ViewModel = e.Parameter is ProviderSettingsViewModel vm
-            ? vm
-            : throw new ArgumentException($"{nameof(ExtensionPage)} navigation args should be passed a {nameof(ProviderSettingsViewModel)}");
+        if (viewModel is not ProviderSettingsViewModel)
+        {
+            throw new ArgumentException($"{nameof(ExtensionPage)} navigation args should be passed a {nameof(ProviderSettingsViewModel)}");
+        }
+
+        ViewModel = viewModel;
 
         _contentPage.SetBinding(
            ContentPage.ViewModelProperty,

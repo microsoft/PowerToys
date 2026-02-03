@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.ObjectModel;
-using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.Common.Helpers;
@@ -11,6 +10,7 @@ using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
+using Microsoft.Extensions.Logging;
 using Windows.Foundation;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
@@ -89,9 +89,10 @@ public partial class ListViewModel : PageViewModel, IDisposable
         }
     }
 
-    public ListViewModel(IListPage model, TaskScheduler scheduler, AppExtensionHost host)
+    public ListViewModel(IListPage model, TaskScheduler scheduler, AppExtensionHost host, ILogger logger)
         : base(model, scheduler, host)
     {
+        Logger = logger;
         _model = new(model);
         EmptyContent = new(new(null), PageContext);
     }

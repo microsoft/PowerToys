@@ -51,7 +51,12 @@ public sealed partial class CommandProviderWrapper
         }
     }
 
-    public CommandProviderWrapper(ICommandProvider provider, TaskScheduler mainThread, HotkeyManager hotkeyManager, AliasManager aliasManager, ILogger logger)
+    public CommandProviderWrapper(
+        ICommandProvider provider,
+        TaskScheduler mainThread,
+        HotkeyManager hotkeyManager,
+        AliasManager aliasManager,
+        ILogger logger)
     {
         _hotkeyManager = hotkeyManager;
         _aliasManager = aliasManager;

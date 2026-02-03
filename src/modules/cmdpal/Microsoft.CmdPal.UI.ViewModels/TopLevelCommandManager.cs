@@ -26,9 +26,6 @@ public partial class TopLevelCommandManager : ObservableObject,
     private readonly List<CommandProviderWrapper> _commandProviderWrappers = [];
     private readonly Lock _commandProviderWrappersLock = new();
 
-    private readonly List<TopLevelViewModel> _commandProviderCommands = [];
-    private readonly Lock _commandProviderCommandsLock = new();
-
     private readonly SupersedingAsyncGate _reloadCommandsGate;
 
     TaskScheduler IPageContext.Scheduler => _taskScheduler;
@@ -89,9 +86,12 @@ public partial class TopLevelCommandManager : ObservableObject,
                 }
 
                 var commands = await extensionService.GetTopLevelCommandsAsync();
-                lock (_commandProviderCommandsLock)
+                lock (TopLevelCommands)
                 {
-                    _commandProviderCommands.AddRange(commands);
+                    foreach (var command in commands)
+                    {
+                        TopLevelCommands.Add(command);
+                    }
                 }
             });
 
@@ -109,23 +109,23 @@ public partial class TopLevelCommandManager : ObservableObject,
 
     private void ExtensionService_OnCommandsAdded(CommandProviderWrapper commandProviderWrapper, IEnumerable<TopLevelViewModel> commands)
     {
-        // _ = Task.Run(async () =>
-        // {
-        //    await Task.Factory.StartNew(
-        //    () =>
-        //    {
-        //        lock (TopLevelCommands)
-        //        {
-        //            foreach (var command in commands)
-        //            {
-        //                TopLevelCommands.Add(command);
-        //            }
-        //        }
-        //    },
-        //    CancellationToken.None,
-        //    TaskCreationOptions.None,
-        //    _taskScheduler);
-        // });
+        _ = Task.Run(async () =>
+        {
+            await Task.Factory.StartNew(
+             () =>
+             {
+                 lock (TopLevelCommands)
+                 {
+                     foreach (var command in commands)
+                     {
+                         TopLevelCommands.Add(command);
+                     }
+                 }
+             },
+             CancellationToken.None,
+             TaskCreationOptions.None,
+             _taskScheduler);
+        });
     }
 
     private void ExtensionService_OnCommandsRemoved(CommandProviderWrapper commandProviderWrapper, IEnumerable<TopLevelViewModel> commands)

@@ -65,6 +65,8 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     private readonly TopLevelCommandManager _topLevelCommandManager;
     private readonly ShellViewModel viewModel;
     private readonly SearchBar _searchBar;
+    private readonly ImageProvider _imageProvider;
+    private readonly SettingsWindow _settingsWindow;
 
     private readonly SlideNavigationTransitionInfo _slideRightTransition = new() { Effect = SlideNavigationTransitionEffect.FromRight };
     private readonly SuppressNavigationTransitionInfo _noAnimation = new();
@@ -75,7 +77,6 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
     private CancellationTokenSource? _focusAfterLoadedCts;
     private WeakReference<Page>? _lastNavigatedPageRef;
-    private SettingsWindow? _settingsWindow;
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -92,15 +93,18 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         SearchBar searchBar,
         CommandBar commandBar,
         ImageProvider imageProvider,
+        SettingsWindow settingsWindow,
         ILogger logger)
     {
         this.InitializeComponent();
 
         _logger = logger;
+        _imageProvider = imageProvider;
         _settingsService = settingsService;
         _topLevelCommandManager = topLevelCommandManager;
         _searchBar = searchBar;
         viewModel = shellViewModel;
+        _settingsWindow = settingsWindow;
 
         // Bind viewModel.CurrentPage to commandBar.CurrentPageViewModel
         commandBar.SetBinding(
@@ -204,17 +208,24 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
             // Also hide our details pane about here, if we had one
             HideDetails();
 
-
             // Navigate to the appropriate host page for that VM
-            RootFrame.Navigate(
-                message.Page switch
-                {
-                    ListViewModel => typeof(ListPage),
-                    ContentPageViewModel => typeof(ContentPage),
-                    _ => throw new NotSupportedException(),
-                },
-                new AsyncNavigationRequest(message.Page, message.CancellationToken),
-                message.WithAnimation ? DefaultPageAnimation : _noAnimation);
+            switch (message.Page)
+            {
+                case ListViewModel:
+                    RootFrame.Navigate(
+                        typeof(ListPage),
+                        new AsyncListPageNavigationRequest(message.Page, _settingsService, _logger, message.CancellationToken),
+                        message.WithAnimation ? DefaultPageAnimation : _noAnimation);
+                    break;
+                case ContentPageViewModel:
+                    RootFrame.Navigate(
+                        typeof(ContentPage),
+                        new AsyncContentPageNavigationRequest(message.Page, _imageProvider, message.CancellationToken),
+                        message.WithAnimation ? DefaultPageAnimation : _noAnimation);
+                    break;
+                default:
+                    throw new NotSupportedException();
+            }
 
             PowerToysTelemetry.Log.WriteEvent(new OpenPage(RootFrame.BackStackDepth, message.Page.Id));
 
@@ -320,12 +331,6 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
     public void OpenSettings()
     {
-        if (_settingsWindow is null)
-        {
-            var localKeyboardListener = new LocalKeyboardListener(_logger);
-            _settingsWindow = new SettingsWindow(localKeyboardListener, _logger);
-        }
-
         _settingsWindow.Activate();
         _settingsWindow.BringToFront();
     }
@@ -391,7 +396,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         _ = DispatcherQueue.TryEnqueue(() => SummonOnUiThread(message));
     }
 
-    public void Receive(SettingsWindowClosedMessage message) => _settingsWindow = null;
+    public void Receive(SettingsWindowClosedMessage message) => _settingsWindow.Close();
 
     private void SummonOnUiThread(HotkeySummonMessage message)
     {

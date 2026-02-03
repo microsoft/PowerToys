@@ -30,6 +30,7 @@ using Microsoft.CmdPal.UI.Settings;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.BuiltinCommands;
 using Microsoft.CmdPal.UI.ViewModels.MainPage;
+using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.Extensions.DependencyInjection;
@@ -130,8 +131,9 @@ public partial class App : Application
     private void AddCoreServices(ServiceCollection services)
     {
         // Core services
+        services.AddSingleton<IExtensionService, BuiltInExtensionService>();
+
         // services.AddSingleton<IExtensionService, WinRTExtensionService>();
-        // services.AddSingleton<IExtensionService, BuiltInExtensionService>();
         services.AddSingleton<IRunHistoryService, RunHistoryService>();
 
         services.AddSingleton<AppExtensionHost, CommandPaletteHost>();
@@ -145,6 +147,7 @@ public partial class App : Application
         services.AddTransient<SettingsViewModel>();
         services.AddSingleton<CommandBarViewModel>();
         services.AddSingleton<ContextMenuViewModel>();
+        services.AddTransient<SettingsWindowViewModel>();
 
         // Controls
         services.AddSingleton<ContextMenu>();
@@ -162,9 +165,9 @@ public partial class App : Application
         services.AddSingleton<ShellPage>();
         services.AddTransient<ListPage>();
         services.AddTransient<GeneralPage>();
-        services.AddTransient<ExtensionPage>();
-        services.AddTransient<ExtensionsPage>();
         services.AddTransient<AppearancePage>();
+        services.AddTransient<ExtensionsPage>();
+        services.AddTransient<ExtensionPage>();
     }
 
     private void AddBuiltInCommands(ServiceCollection services)

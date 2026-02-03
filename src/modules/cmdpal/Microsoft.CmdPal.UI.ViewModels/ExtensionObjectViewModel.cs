@@ -15,7 +15,7 @@ public abstract partial class ExtensionObjectViewModel : ObservableObject
     /// <summary>
     /// Gets or sets the logger for this ViewModel. Subclasses can set this in their constructor.
     /// </summary>
-    protected ILogger Logger
+    public ILogger Logger
     {
         get => _logger;
         set => _logger = value;

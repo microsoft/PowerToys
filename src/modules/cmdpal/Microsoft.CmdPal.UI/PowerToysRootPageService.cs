@@ -16,17 +16,14 @@ namespace Microsoft.CmdPal.UI;
 
 internal sealed partial class PowerToysRootPageService : IRootPageService
 {
-    private readonly TopLevelCommandManager _tlcManager;
     private readonly ILogger _logger;
+    private readonly TopLevelCommandManager _tlcManager;
 
     private readonly MainListPage _mainListPage; // Lazy<MainListPage> _mainListPage;
     private IExtensionWrapper? _activeExtension;
 
     public PowerToysRootPageService(
         TopLevelCommandManager topLevelCommandManager,
-        SettingsService settingsService,
-        AliasManager aliasManager,
-        AppStateService appStateService,
         MainListPage mainListPage,
         ILogger logger)
     {
@@ -113,7 +110,7 @@ internal sealed partial class PowerToysRootPageService : IRootPageService
                 }
                 catch (Exception ex)
                 {
-                    ManagedCommon.Logger.LogError(ex.ToString());
+                    Log_FailureToSetActiveExtension(ex);
                 }
             }
         }
@@ -147,4 +144,9 @@ internal sealed partial class PowerToysRootPageService : IRootPageService
         Level = LogLevel.Error,
         Message = "Error giving foreground rights: 0x{hr.Value:X8}")]
     partial void Log_FailureToGiveForegroundRights(HRESULT hr);
+
+    [LoggerMessage(
+        Level = LogLevel.Error,
+        Message = "Failed to set active extension.")]
+    partial void Log_FailureToSetActiveExtension(Exception ex);
 }

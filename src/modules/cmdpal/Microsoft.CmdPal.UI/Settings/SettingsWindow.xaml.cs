@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.Messages;
@@ -14,7 +15,6 @@ using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
-using Microsoft.UI.Xaml.Navigation;
 using Windows.System;
 using Windows.UI.Core;
 using WinUIEx;
@@ -31,16 +31,24 @@ public sealed partial class SettingsWindow : WindowEx,
     private readonly LocalKeyboardListener _localKeyboardListener;
     private readonly ILogger _logger;
 
+    private readonly SettingsWindowViewModel viewModel;
+
     public ObservableCollection<Crumb> BreadCrumbs { get; } = [];
 
     // Gets or sets optional action invoked after NavigationView is loaded.
     public Action NavigationViewLoaded { get; set; } = () => { };
 
-    public SettingsWindow(LocalKeyboardListener localKeyboardListener, ILogger logger)
+    public SettingsWindow(
+        SettingsWindowViewModel viewModel,
+        LocalKeyboardListener localKeyboardListener,
+        ILogger logger)
     {
         this.InitializeComponent();
 
+        this.viewModel = viewModel;
         _logger = logger;
+
+        this.viewModel.PropertyChanged += NavFrame_OnNavigated;
 
         this.ExtendsContentIntoTitleBar = true;
         this.SetIcon();
@@ -74,7 +82,6 @@ public sealed partial class SettingsWindow : WindowEx,
         Task.Delay(500).ContinueWith(_ => this.NavigationViewLoaded?.Invoke(), TaskScheduler.FromCurrentSynchronizationContext());
 
         NavView.SelectedItem = NavView.MenuItems[0];
-        Navigate("General");
 
         if (sender is NavigationView navigationView)
         {
@@ -98,28 +105,7 @@ public sealed partial class SettingsWindow : WindowEx,
     private void NavView_ItemInvoked(NavigationView sender, NavigationViewItemInvokedEventArgs args)
     {
         var selectedItem = args.InvokedItemContainer;
-        Navigate((selectedItem.Tag as string)!);
-    }
-
-    private void Navigate(string page)
-    {
-        var pageType = page switch
-        {
-            "General" => typeof(GeneralPage),
-            "Appearance" => typeof(AppearancePage),
-            "Extensions" => typeof(ExtensionsPage),
-            _ => null,
-        };
-
-        if (pageType is not null)
-        {
-            NavFrame.Navigate(pageType);
-        }
-    }
-
-    private void Navigate(ProviderSettingsViewModel extension)
-    {
-        NavFrame.Navigate(typeof(ExtensionPage), extension);
+        viewModel.Navigate((selectedItem.Tag as string)!);
     }
 
     private void PositionCentered()
@@ -134,7 +120,7 @@ public sealed partial class SettingsWindow : WindowEx,
         }
     }
 
-    public void Receive(NavigateToExtensionSettingsMessage message) => Navigate(message.ProviderSettingsVM);
+    public void Receive(NavigateToExtensionSettingsMessage message) => viewModel.Navigate(message.ProviderSettingsVM);
 
     private void NavigationBreadcrumbBar_ItemClicked(BreadcrumbBar sender, BreadcrumbBarItemClickedEventArgs args)
     {
@@ -144,7 +130,7 @@ public sealed partial class SettingsWindow : WindowEx,
             {
                 if (!string.IsNullOrEmpty(data))
                 {
-                    Navigate(data);
+                    viewModel.Navigate(data);
                 }
             }
         }
@@ -187,18 +173,9 @@ public sealed partial class SettingsWindow : WindowEx,
         NavView.IsPaneOpen = !NavView.IsPaneOpen;
     }
 
-    private void TryGoBack()
-    {
-        if (NavFrame.CanGoBack)
-        {
-            NavFrame.GoBack();
-        }
-    }
+    private void TryGoBack() => viewModel.TryGoBack();
 
-    private void TitleBar_BackRequested(TitleBar sender, object args)
-    {
-        TryGoBack();
-    }
+    private void TitleBar_BackRequested(TitleBar sender, object args) => TryGoBack();
 
     private void LocalKeyboardListener_OnKeyPressed(object? sender, LocalKeyboardListenerKeyPressedEventArgs e)
     {
@@ -244,39 +221,48 @@ public sealed partial class SettingsWindow : WindowEx,
         _localKeyboardListener?.Dispose();
     }
 
-    private void NavFrame_OnNavigated(object sender, NavigationEventArgs e)
+    private void NavFrame_OnNavigated(object? sender, PropertyChangedEventArgs e)
     {
-        BreadCrumbs.Clear();
+        if (e.PropertyName == nameof(SettingsWindowViewModel.CurrentPage))
+        {
+            BreadCrumbs.Clear();
 
-        if (e.SourcePageType == typeof(GeneralPage))
-        {
-            NavView.SelectedItem = GeneralPageNavItem;
-            var pageType = RS_.GetString("Settings_PageTitles_GeneralPage");
-            BreadCrumbs.Add(new(pageType, pageType));
-        }
-        else if (e.SourcePageType == typeof(AppearancePage))
-        {
-            NavView.SelectedItem = AppearancePageNavItem;
-            var pageType = RS_.GetString("Settings_PageTitles_AppearancePage");
-            BreadCrumbs.Add(new(pageType, pageType));
-        }
-        else if (e.SourcePageType == typeof(ExtensionsPage))
-        {
-            NavView.SelectedItem = ExtensionPageNavItem;
-            var pageType = RS_.GetString("Settings_PageTitles_ExtensionsPage");
-            BreadCrumbs.Add(new(pageType, pageType));
-        }
-        else if (e.SourcePageType == typeof(ExtensionPage) && e.Parameter is ProviderSettingsViewModel vm)
-        {
-            NavView.SelectedItem = ExtensionPageNavItem;
-            var extensionsPageType = RS_.GetString("Settings_PageTitles_ExtensionsPage");
-            BreadCrumbs.Add(new(extensionsPageType, extensionsPageType));
-            BreadCrumbs.Add(new(vm.DisplayName, vm));
-        }
-        else
-        {
-            BreadCrumbs.Add(new($"[{e.SourcePageType?.Name}]", string.Empty));
-            Log_UnknownBreadcrumbForPageType(e.SourcePageType);
+            var currentPageType = viewModel.CurrentPage.GetType();
+            var generalPageType = typeof(GeneralPage);
+            var appearancePageType = typeof(AppearancePage);
+            var extensionsPageType = typeof(ExtensionsPage);
+            var extensionPageType = typeof(ExtensionPage);
+
+            string? pageType;
+
+            switch (currentPageType)
+            {
+                case var t when t == generalPageType:
+                    NavView.SelectedItem = GeneralPageNavItem;
+                    pageType = RS_.GetString("Settings_PageTitles_GeneralPage");
+                    BreadCrumbs.Add(new(pageType, pageType));
+                    break;
+                case var t when t == appearancePageType:
+                    NavView.SelectedItem = AppearancePageNavItem;
+                    pageType = RS_.GetString("Settings_PageTitles_AppearancePage");
+                    BreadCrumbs.Add(new(pageType, pageType));
+                    break;
+                case var t when t == typeof(ExtensionsPage):
+                    NavView.SelectedItem = ExtensionPageNavItem;
+                    pageType = RS_.GetString("Settings_PageTitles_ExtensionsPage");
+                    BreadCrumbs.Add(new(pageType, pageType));
+                    break;
+                case var t when t == extensionPageType && e.Parameter is ProviderSettingsViewModel vm:
+                    NavView.SelectedItem = ExtensionPageNavItem;
+                    var extensionsPageType = RS_.GetString("Settings_PageTitles_ExtensionsPage");
+                    BreadCrumbs.Add(new(extensionsPageType, extensionsPageType));
+                    BreadCrumbs.Add(new(vm.DisplayName, vm));
+                    break;
+                default:
+                    BreadCrumbs.Add(new($"[{currentPageType?.Name}]", string.Empty));
+                    Log_UnknownBreadcrumbForPageType(currentPageType);
+                    break;
+            }
         }
     }
 

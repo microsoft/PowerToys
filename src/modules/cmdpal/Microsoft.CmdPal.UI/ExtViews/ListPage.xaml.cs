@@ -4,12 +4,13 @@
 
 using System.Diagnostics;
 using CommunityToolkit.Mvvm.Messaging;
-using ManagedCommon;
 using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.Messages;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Commands;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
@@ -32,7 +33,8 @@ public sealed partial class ListPage : Page,
     IRecipient<ActivateSelectedListItemMessage>,
     IRecipient<ActivateSecondaryCommandMessage>
 {
-    private readonly SettingsService _settingsService;
+    private SettingsService? _settingsService;
+    private ILogger? _logger;
 
     private InputSource _lastInputSource;
 
@@ -54,11 +56,9 @@ public sealed partial class ListPage : Page,
         }
     }
 
-    public ListPage(SettingsService settingsService)
+    public ListPage()
     {
         this.InitializeComponent();
-
-        _settingsService = settingsService;
 
         this.NavigationCacheMode = NavigationCacheMode.Disabled;
         this.ItemView.Loaded += Items_Loaded;
@@ -68,16 +68,28 @@ public sealed partial class ListPage : Page,
 
     protected override void OnNavigatedTo(NavigationEventArgs e)
     {
-        if (e.Parameter is not AsyncNavigationRequest navigationRequest)
+        if (e.Parameter is not AsyncListPageNavigationRequest navigationRequest)
         {
-            throw new InvalidOperationException($"Invalid navigation parameter: {nameof(e.Parameter)} must be {nameof(AsyncNavigationRequest)}");
+            throw new InvalidOperationException($"Invalid navigation parameter: {nameof(e.Parameter)} must be {nameof(AsyncListPageNavigationRequest)}");
         }
 
         if (navigationRequest.TargetViewModel is not ListViewModel listViewModel)
         {
-            throw new InvalidOperationException($"Invalid navigation target: AsyncNavigationRequest.{nameof(AsyncNavigationRequest.TargetViewModel)} must be {nameof(ListViewModel)}");
+            throw new InvalidOperationException($"Invalid navigation target: AsyncListPageNavigationRequest.{nameof(AsyncListPageNavigationRequest.TargetViewModel)} must be {nameof(ListViewModel)}");
         }
 
+        if (navigationRequest.SettingsService is not SettingsService settingsService)
+        {
+            throw new InvalidOperationException($"Invalid settings service: AsyncListPageNavigationRequest.{nameof(AsyncListPageNavigationRequest.SettingsService)} must be {nameof(SettingsService)}");
+        }
+
+        if (navigationRequest.Logger is not ILogger logger)
+        {
+            throw new InvalidOperationException($"Invalid logger: AsyncListPageNavigationRequest.{nameof(AsyncListPageNavigationRequest.Logger)} must be {nameof(ILogger)}");
+        }
+
+        _logger = logger;
+        _settingsService = settingsService;
         ViewModel = listViewModel;
 
         if (e.NavigationMode == NavigationMode.Back)
@@ -172,15 +184,25 @@ public sealed partial class ListPage : Page,
                 return;
             }
 
-            var settings = _settingsService.CurrentSettings;
-            if (settings.SingleClickActivates)
+            var settings = _settingsService?.CurrentSettings;
+            if (settings != null)
             {
-                ViewModel?.InvokeItemCommand.Execute(item);
+                if (settings.SingleClickActivates)
+                {
+                    ViewModel?.InvokeItemCommand.Execute(item);
+                }
+                else
+                {
+                    ViewModel?.UpdateSelectedItemCommand.Execute(item);
+                    WeakReferenceMessenger.Default.Send<FocusSearchBoxMessage>();
+                }
             }
             else
             {
-                ViewModel?.UpdateSelectedItemCommand.Execute(item);
-                WeakReferenceMessenger.Default.Send<FocusSearchBoxMessage>();
+                if (_logger is not null && _logger is not NullLogger)
+                {
+                    Log_SettingsNotInjected(_logger);
+                }
             }
         }
     }
@@ -189,10 +211,20 @@ public sealed partial class ListPage : Page,
     {
         if (ItemView.SelectedItem is ListItemViewModel vm)
         {
-            var settings = _settingsService.CurrentSettings;
-            if (!settings.SingleClickActivates)
+            var settings = _settingsService?.CurrentSettings;
+            if (settings != null)
             {
-                ViewModel?.InvokeItemCommand.Execute(vm);
+                if (!settings.SingleClickActivates)
+                {
+                    ViewModel?.InvokeItemCommand.Execute(vm);
+                }
+            }
+            else
+            {
+                if (_logger is not null && _logger is not NullLogger)
+                {
+                    Log_SettingsNotInjected(_logger);
+                }
             }
         }
     }
@@ -546,7 +578,11 @@ public sealed partial class ListPage : Page,
             }
             else if (e.NewValue is null)
             {
-                Logger.LogDebug("cleared view model");
+                if (e.OldValue is ListViewModel oldModel &&
+                    oldModel.Logger is not NullLogger)
+                {
+                    Log_ClearedViewModel(oldModel.Logger);
+                }
             }
         }
     }
@@ -936,11 +972,14 @@ public sealed partial class ListPage : Page,
         catch (Exception ex)
         {
             WeakReferenceMessenger.Default.Send(new DragCompletedMessage());
-            Logger.LogError("Failed to start dragging an item", ex);
+            if (_logger is not null && _logger is not NullLogger)
+            {
+                Log_StartDragFailure(_logger, ex);
+            }
         }
     }
 
-    private static void DelayRenderer(DataProviderRequest request, ListItemViewModel item, string format)
+    private void DelayRenderer(DataProviderRequest request, ListItemViewModel item, string format)
     {
         var deferral = request.GetDeferral();
         try
@@ -957,7 +996,10 @@ public sealed partial class ListPage : Page,
                         }
                         else if (dataTask.IsFaulted && dataTask.Exception is not null)
                         {
-                            Logger.LogError($"Failed to get data for format '{format}' during drag-and-drop", dataTask.Exception);
+                            if (_logger is not null && _logger is not NullLogger)
+                            {
+                                Log_FailedToGetData(_logger, format, dataTask.Exception);
+                            }
                         }
                     }
                     finally
@@ -968,7 +1010,11 @@ public sealed partial class ListPage : Page,
         }
         catch (Exception ex)
         {
-            Logger.LogError($"Failed to set data for format '{format}' during drag-and-drop", ex);
+            if (_logger is not null && _logger is not NullLogger)
+            {
+                Log_FailedToSetData(_logger, format, ex);
+            }
+
             deferral.Complete();
         }
     }
@@ -1040,4 +1086,29 @@ public sealed partial class ListPage : Page,
         Keyboard,
         Pointer,
     }
+
+    [LoggerMessage(
+        Level = LogLevel.Warning,
+        Message = "SettingsService not injected")]
+    static partial void Log_SettingsNotInjected(ILogger logger);
+
+    [LoggerMessage(
+        Level = LogLevel.Information,
+        Message = "Cleared view model")]
+    static partial void Log_ClearedViewModel(ILogger logger);
+
+    [LoggerMessage(
+        Level = LogLevel.Error,
+        Message = "Failed to start dragging an item")]
+    static partial void Log_StartDragFailure(ILogger logger, Exception ex);
+
+    [LoggerMessage(
+        Level = LogLevel.Error,
+        Message = "Failed to get data for format '{format}' during drag-and-drop")]
+    static partial void Log_FailedToGetData(ILogger logger, string format, Exception ex);
+
+    [LoggerMessage(
+        Level = LogLevel.Error,
+        Message = "Failed to set data for format '{format}' during drag-and-drop")]
+    static partial void Log_FailedToSetData(ILogger logger, string format, Exception ex);
 }

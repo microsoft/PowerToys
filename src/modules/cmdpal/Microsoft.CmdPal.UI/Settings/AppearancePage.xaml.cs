@@ -5,7 +5,6 @@
 using System.Diagnostics;
 using Microsoft.CmdPal.UI.Controls;
 using Microsoft.CmdPal.UI.ViewModels;
-using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.Extensions.Logging;
 using Microsoft.UI;
 using Microsoft.UI.Xaml;
@@ -21,16 +20,18 @@ namespace Microsoft.CmdPal.UI.Settings;
 /// </summary>
 public sealed partial class AppearancePage : Page
 {
-    private readonly TaskScheduler _mainTaskScheduler = TaskScheduler.FromCurrentSynchronizationContext();
     private readonly ILogger _logger;
 
     internal SettingsViewModel ViewModel { get; }
 
-    public AppearancePage(SettingsService settingsService, IThemeService themeService, TopLevelCommandManager topLevelCommandManager, ScreenPreview screenPreview, ILogger logger)
+    public AppearancePage(
+        SettingsViewModel settingsViewModel,
+        ScreenPreview screenPreview,
+        ILogger logger)
     {
         InitializeComponent();
         _logger = logger;
-        ViewModel = new SettingsViewModel(settingsService, topLevelCommandManager, _mainTaskScheduler, themeService);
+        ViewModel = settingsViewModel;
 
         BindScreenPreview(screenPreview);
     }

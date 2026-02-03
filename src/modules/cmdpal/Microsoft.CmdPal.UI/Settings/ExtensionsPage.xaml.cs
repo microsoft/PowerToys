@@ -6,7 +6,6 @@ using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.WinUI.Controls;
 using Microsoft.CmdPal.UI.Controls;
 using Microsoft.CmdPal.UI.ViewModels;
-using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.Extensions.Logging;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -17,17 +16,19 @@ namespace Microsoft.CmdPal.UI.Settings;
 #pragma warning disable CA1001 // Types that own disposable fields should be disposable - Page lifecycle manages disposal
 public sealed partial class ExtensionsPage : Page
 {
-    private readonly TaskScheduler _mainTaskScheduler = TaskScheduler.FromCurrentSynchronizationContext();
     private readonly ILogger _logger;
     private readonly FallbackRankerDialog _fallbackRankerDialog;
 
     private readonly SettingsViewModel? viewModel;
 
-    public ExtensionsPage(SettingsService settingsService, TopLevelCommandManager topLevelCommandManager, IThemeService themeService, FallbackRankerDialog fallbackRankerDialog, ILogger logger)
+    public ExtensionsPage(
+        SettingsViewModel settingsViewModel,
+        FallbackRankerDialog fallbackRankerDialog,
+        ILogger logger)
     {
         this.InitializeComponent();
         _logger = logger;
-        viewModel = new SettingsViewModel(settingsService, topLevelCommandManager, _mainTaskScheduler, themeService);
+        viewModel = settingsViewModel;
         _fallbackRankerDialog = fallbackRankerDialog;
 
         FallbackRankerContainer.Content = _fallbackRankerDialog;

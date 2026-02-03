@@ -28,7 +28,7 @@
         <TitleBar
             x:Name="AppTitleBar"
             BackRequested="TitleBar_BackRequested"
-            IsBackButtonVisible="{x:Bind NavFrame.CanGoBack, Mode=OneWay}"
+            IsBackButtonVisible="{x:Bind viewModel.CanGoBack, Mode=OneWay}"
             IsTabStop="False"
             PaneToggleRequested="AppTitleBar_PaneToggleRequested">
             <!--  This is a workaround for https://github.com/microsoft/microsoft-ui-xaml/issues/10374, once fixed we should just be using IconSource  -->
@@ -102,7 +102,7 @@
                 <Frame
                     x:Name="NavFrame"
                     Grid.Row="1"
-                    Navigated="NavFrame_OnNavigated" />
+                    Content="{x:Bind viewModel.CurrentPage, Mode=OneWay}"/>
             </Grid>
         </NavigationView>
     </Grid>

@@ -6,7 +6,6 @@ using System.Diagnostics;
 using System.Globalization;
 using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.ViewModels;
-using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.Extensions.Logging;
 using Microsoft.UI.Xaml.Controls;
 using Windows.ApplicationModel;
@@ -16,16 +15,16 @@ namespace Microsoft.CmdPal.UI.Settings;
 #pragma warning disable CA1001 // Types that own disposable fields should be disposable - Page lifecycle manages disposal
 public sealed partial class GeneralPage : Page
 {
-    private readonly TaskScheduler _mainTaskScheduler = TaskScheduler.FromCurrentSynchronizationContext();
-    private readonly ILogger _logger;
-    private readonly SettingsViewModel viewModel;
+    private ILogger _logger;
+    private SettingsViewModel viewModel;
 
-    public GeneralPage(SettingsService settingsService, TopLevelCommandManager topLevelCommandManager, IThemeService themeService, ILogger logger)
+    public GeneralPage(
+        SettingsViewModel settingsViewModel,
+        ILogger logger)
     {
         this.InitializeComponent();
-
-        _logger = logger;
-        viewModel = new SettingsViewModel(settingsService, topLevelCommandManager, _mainTaskScheduler, themeService);
+        this._logger = logger;
+        this.viewModel = settingsViewModel;
     }
 
     public string ApplicationVersion

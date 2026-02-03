@@ -214,20 +214,17 @@ public partial class BuiltInExtensionService : IExtensionService, IDisposable
                 _builtInCommandWrappers.Add(wrapper);
             }
 
-            if (wrapper.IsActive)
+            lock (_getEnabledBuiltInCommandWrappersLock)
             {
-                lock (_getEnabledBuiltInCommandWrappersLock)
-                {
-                    _enabledBuiltInCommandWrappers.Add(wrapper);
-                }
+                _enabledBuiltInCommandWrappers.Add(wrapper);
+            }
 
-                var commands = await LoadTopLevelCommandsFromProvider(wrapper);
-                lock (_getTopLevelCommandsLock)
+            var commands = await LoadTopLevelCommandsFromProvider(wrapper);
+            lock (_getTopLevelCommandsLock)
+            {
+                foreach (var c in commands)
                 {
-                    foreach (var c in commands)
-                    {
-                        _topLevelCommands.Add(c);
-                    }
+                    _topLevelCommands.Add(c);
                 }
             }
         }
