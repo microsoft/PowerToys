@@ -454,6 +454,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 ModuleType.FancyZones => GetModuleItemsFancyZones(),
                 ModuleType.FindMyMouse => GetModuleItemsFindMyMouse(),
                 ModuleType.Hosts => GetModuleItemsHosts(),
+                ModuleType.HotkeyLauncher => GetModuleItemsHotkeyLauncher(),
                 ModuleType.LightSwitch => GetModuleItemsLightSwitch(),
                 ModuleType.MouseHighlighter => GetModuleItemsMouseHighlighter(),
                 ModuleType.MouseJump => GetModuleItemsMouseJump(),
@@ -501,6 +502,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 new DashboardModuleShortcutItem() { Label = resourceLoader.GetString("ColorPicker_ShortDescription"), Shortcut = hotkey.GetKeysList() },
             };
             return new ObservableCollection<DashboardModuleItem>(list);
+        }
+
+        private ObservableCollection<DashboardModuleItem> GetModuleItemsHotkeyLauncher()
+        {
+            return new ObservableCollection<DashboardModuleItem>();
         }
 
         private ObservableCollection<DashboardModuleItem> GetModuleItemsLightSwitch()

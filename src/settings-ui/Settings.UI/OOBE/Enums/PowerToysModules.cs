@@ -35,5 +35,6 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Enums
         RegistryPreview,
         NewPlus,
         ZoomIt,
+        HotkeyLauncher,
     }
 }
