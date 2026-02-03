@@ -32,7 +32,7 @@ namespace RunnerV2.ModuleInterfaces
             UpdateNewPlusRegistrationWin10(true);
             if (Environment.OSVersion.Version.Build >= 22000)
             {
-                PackageHelper.InstallPackage(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, "WinUI3Apps", "NewPlusPackage.msix"), []);
+                PackageHelper.InstallPackage(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, "WinUI3Apps", "NewPlusPackage.msix"), [], true);
             }
         }
 

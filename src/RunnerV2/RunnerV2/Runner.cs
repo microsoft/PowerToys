@@ -71,6 +71,7 @@ namespace RunnerV2
             new MouseHighlighterModuleInterface(),
             new MouseWithoutBordersModuleInterface(),
             new NewPlusModuleInterface(),
+            new PowerRenameModuleInterface(),
         ];
 
         /// <summary>

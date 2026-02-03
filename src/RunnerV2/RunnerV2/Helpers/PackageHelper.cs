@@ -75,7 +75,7 @@ namespace RunnerV2.Helpers
         /// <param name="packagePath">Path to the package</param>
         /// <param name="dependencies">Array of dependency package paths</param>
         /// <returns>True if the installation was successful, false otherwise</returns>
-        internal static bool InstallPackage(string packagePath, string[] dependencies)
+        internal static bool InstallPackage(string packagePath, string[] dependencies, bool isSparsePackage = false)
         {
             Logger.LogInfo("Starting package install of package \"" + packagePath + "\"");
             PackageManager packageManager = new();
@@ -108,7 +108,9 @@ namespace RunnerV2.Helpers
 
             try
             {
-                IAsyncOperationWithProgress<DeploymentResult, DeploymentProgress> deploymentOperation = packageManager.AddPackageAsync(new Uri(packagePath), uris, DeploymentOptions.ForceApplicationShutdown);
+                IAsyncOperationWithProgress<DeploymentResult, DeploymentProgress> deploymentOperation = isSparsePackage
+                    ? packageManager.AddPackageByUriAsync(new Uri(packagePath), new AddPackageOptions { ExternalLocationUri = new Uri(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)! + "\\WinUi3Apps"), ForceUpdateFromAnyVersion = true })
+                    : packageManager.AddPackageAsync(new Uri(packagePath), uris, DeploymentOptions.ForceApplicationShutdown);
                 deploymentOperation.Get();
 
                 switch (deploymentOperation.Status)
@@ -144,7 +146,6 @@ namespace RunnerV2.Helpers
         /// <returns>True if the package is already installed and satisfies the required version, false otherwise.</returns>
         private static bool IsPackageSatisfied(string packagePath)
         {
-            rceturn new PackageVersion
             if (!GetPackageNameAndVersionFromAppx(packagePath, out string name, out PackageVersion version))
             {
                 Logger.LogError("Could not get package name and version from dependency package at path \"" + packagePath + "\"");
@@ -156,7 +157,7 @@ namespace RunnerV2.Helpers
             foreach (var package in packageManager.FindPackagesForUser(null))
             {
                 if (package.Id.Name.Equals(name, StringComparison.OrdinalIgnoreCase) &&
-                    package.Id.Version.ToVersion() > version.ToVersion())
+                    package.Id.Version.ToVersion() >= version.ToVersion())
                 {
                     Logger.LogInfo($@"Package ""{name}"" is already statisfied with version: {package.Id.Version}. Target version: {version}. PackagePath: {packagePath}");
                     return true;
