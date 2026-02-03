@@ -21,7 +21,7 @@ namespace Microsoft.CmdPal.Ext.PerformanceMonitor;
 #pragma warning disable SA1402 // File may only contain a single type
 
 /// <summary>
-///  Page for displaying performance monitor widgets. Can be used as both a list 
+///  Page for displaying performance monitor widgets. Can be used as both a list
 /// in the main window, or as a band in the dock.
 /// By using OnLoadStaticListPage, we can get onload/onunload events to start/stop
 /// the data gathering.
