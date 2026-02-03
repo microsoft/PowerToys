@@ -1,0 +1,288 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="TEXT_COLOR_WHITE" xml:space="preserve">
+    <value>Trắng</value>
+    <comment>White color</comment>
+  </data>
+  <data name="TEXT_COLOR_BLACK" xml:space="preserve">
+    <value>Đen</value>
+    <comment>Black color</comment>
+  </data>
+  <data name="TEXT_COLOR_LIGHTGRAY" xml:space="preserve">
+    <value>Xám nhạt</value>
+    <comment>Light gray color</comment>
+  </data>
+  <data name="TEXT_COLOR_GRAY" xml:space="preserve">
+    <value>Xám</value>
+    <comment>Gray color</comment>
+  </data>
+  <data name="TEXT_COLOR_DARKGRAY" xml:space="preserve">
+    <value>Xám đậm</value>
+    <comment>Dark gray color</comment>
+  </data>
+  <data name="TEXT_COLOR_CORAL" xml:space="preserve">
+    <value>San hô</value>
+    <comment>Coral color</comment>
+  </data>
+  <data name="TEXT_COLOR_ROSE" xml:space="preserve">
+    <value>Hồng nhạt</value>
+    <comment>Rose color</comment>
+  </data>
+  <data name="TEXT_COLOR_LIGHTORANGE" xml:space="preserve">
+    <value>Cam nhạt</value>
+    <comment>Light orange color</comment>
+  </data>
+  <data name="TEXT_COLOR_TAN" xml:space="preserve">
+    <value>Nâu rám</value>
+    <comment>Tan color</comment>
+  </data>
+  <data name="TEXT_COLOR_LIGHTYELLOW" xml:space="preserve">
+    <value>Vàng nhạt</value>
+    <comment>Light yellow color</comment>
+  </data>
+  <data name="TEXT_COLOR_LIGHTGREEN" xml:space="preserve">
+    <value>Xanh lá nhạt</value>
+    <comment>Light green color</comment>
+  </data>
+  <data name="TEXT_COLOR_LIME" xml:space="preserve">
+    <value>Xanh chanh</value>
+    <comment>Lime color</comment>
+  </data>
+  <data name="TEXT_COLOR_AQUA" xml:space="preserve">
+    <value>Xanh nước biển</value>
+    <comment>Aqua color</comment>
+  </data>
+  <data name="TEXT_COLOR_SKYBLUE" xml:space="preserve">
+    <value>Xanh da trời</value>
+    <comment>Sky blue color</comment>
+  </data>
+  <data name="TEXT_COLOR_LIGHTTURQUOISE" xml:space="preserve">
+    <value>Ngọc lam nhạt</value>
+    <comment>Light turquoise color</comment>
+  </data>
+  <data name="TEXT_COLOR_PALEBLUE" xml:space="preserve">
+    <value>Xanh lam nhạt</value>
+    <comment>Pale blue color</comment>
+  </data>
+  <data name="TEXT_COLOR_LIGHTBLUE" xml:space="preserve">
+    <value>Xanh dương nhạt</value>
+    <comment>Light blue color</comment>
+  </data>
+  <data name="TEXT_COLOR_ICEBLUE" xml:space="preserve">
+    <value>Xanh băng</value>
+    <comment>Ice blue color</comment>
+  </data>
+  <data name="TEXT_COLOR_PERIWINKLE" xml:space="preserve">
+    <value>Xanh tím nhạt</value>
+    <comment>Periwinkle color</comment>
+  </data>
+  <data name="TEXT_COLOR_LAVENDER" xml:space="preserve">
+    <value>Oải hương</value>
+    <comment>Lavender color</comment>
+  </data>
+  <data name="TEXT_COLOR_PINK" xml:space="preserve">
+    <value>Hồng</value>
+    <comment>Pink color</comment>
+  </data>
+  <data name="TEXT_COLOR_RED" xml:space="preserve">
+    <value>Đỏ</value>
+    <comment>Red color</comment>
+  </data>
+  <data name="TEXT_COLOR_ORANGE" xml:space="preserve">
+    <value>Cam</value>
+    <comment>Orange color</comment>
+  </data>
+  <data name="TEXT_COLOR_BROWN" xml:space="preserve">
+    <value>Nâu</value>
+    <comment>Brown color</comment>
+  </data>
+  <data name="TEXT_COLOR_GOLD" xml:space="preserve">
+    <value>Vàng kim</value>
+    <comment>Gold color</comment>
+  </data>
+  <data name="TEXT_COLOR_YELLOW" xml:space="preserve">
+    <value>Vàng</value>
+    <comment>Yellow color</comment>
+  </data>
+  <data name="TEXT_COLOR_OLIVEGREEN" xml:space="preserve">
+    <value>Xanh ô liu</value>
+    <comment>Olive green color</comment>
+  </data>
+  <data name="TEXT_COLOR_GREEN" xml:space="preserve">
+    <value>Xanh lá</value>
+    <comment>Green color</comment>
+  </data>
+  <data name="TEXT_COLOR_BRIGHTGREEN" xml:space="preserve">
+    <value>Xanh lá sáng</value>
+    <comment>Rose color</comment>
+  </data>
+  <data name="TEXT_COLOR_TEAL" xml:space="preserve">
+    <value>Xanh mòng két</value>
+    <comment>Teal color</comment>
+  </data>
+  <data name="TEXT_COLOR_TURQUOISE" xml:space="preserve">
+    <value>Ngọc lam</value>
+    <comment>Turquoise color</comment>
+  </data>
+  <data name="TEXT_COLOR_BLUE" xml:space="preserve">
+    <value>Xanh dương</value>
+    <comment>Blue color</comment>
+  </data>
+  <data name="TEXT_COLOR_BLUEGRAY" xml:space="preserve">
+    <value>Xanh xám</value>
+    <comment>Blue gray color</comment>
+  </data>
+  <data name="TEXT_COLOR_INDIGO" xml:space="preserve">
+    <value>Chàm</value>
+    <comment>Indigo color</comment>
+  </data>
+  <data name="TEXT_COLOR_PURPLE" xml:space="preserve">
+    <value>Tím</value>
+    <comment>Purple color</comment>
+  </data>
+  <data name="TEXT_COLOR_DARKRED" xml:space="preserve">
+    <value>Đỏ đậm</value>
+    <comment>Dark red color</comment>
+  </data>
+  <data name="TEXT_COLOR_DARKYELLOW" xml:space="preserve">
+    <value>Vàng đậm</value>
+    <comment>Dark yellow color</comment>
+  </data>
+  <data name="TEXT_COLOR_DARKGREEN" xml:space="preserve">
+    <value>Xanh lá đậm</value>
+    <comment>Dark green color</comment>
+  </data>
+  <data name="TEXT_COLOR_DARKTEAL" xml:space="preserve">
+    <value>Xanh mòng két đậm</value>
+    <comment>Dark teal color</comment>
+  </data>
+  <data name="TEXT_COLOR_DARKBLUE" xml:space="preserve">
+    <value>Xanh dương đậm</value>
+    <comment>Dark blue color</comment>
+  </data>
+  <data name="TEXT_COLOR_DARKPURPLE" xml:space="preserve">
+    <value>Tím đậm</value>
+    <comment>Dark purple color</comment>
+  </data>
+  <data name="TEXT_COLOR_PLUM" xml:space="preserve">
+    <value>Mận</value>
+    <comment>Plum color</comment>
+  </data>
+</root>
