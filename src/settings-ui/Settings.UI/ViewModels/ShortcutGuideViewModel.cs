@@ -54,10 +54,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             InitializeEnabledValue();
 
-            _useLegacyPressWinKeyBehavior = Settings.Properties.UseLegacyPressWinKeyBehavior.Value;
-            _pressTimeForGlobalWindowsShortcuts = Settings.Properties.PressTimeForGlobalWindowsShortcuts.Value;
-            _pressTimeForTaskbarIconShortcuts = Settings.Properties.PressTimeForTaskbarIconShortcuts.Value;
-            _opacity = Settings.Properties.OverlayOpacity.Value;
             _disabledApps = Settings.Properties.DisabledApps.Value;
 
             switch (Settings.Properties.Theme.Value)
@@ -97,10 +93,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private bool _enabledStateIsGPOConfigured;
         private bool _isEnabled;
         private int _themeIndex;
-        private bool _useLegacyPressWinKeyBehavior;
-        private int _pressTimeForGlobalWindowsShortcuts;
-        private int _pressTimeForTaskbarIconShortcuts;
-        private int _opacity;
 
         public bool IsEnabled
         {
@@ -172,78 +164,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     }
 
                     _themeIndex = value;
-                    NotifyPropertyChanged();
-                }
-            }
-        }
-
-        public int OverlayOpacity
-        {
-            get
-            {
-                return _opacity;
-            }
-
-            set
-            {
-                if (_opacity != value)
-                {
-                    _opacity = value;
-                    Settings.Properties.OverlayOpacity.Value = value;
-                    NotifyPropertyChanged();
-                }
-            }
-        }
-
-        public bool UseLegacyPressWinKeyBehavior
-        {
-            get
-            {
-                return _useLegacyPressWinKeyBehavior;
-            }
-
-            set
-            {
-                if (_useLegacyPressWinKeyBehavior != value)
-                {
-                    _useLegacyPressWinKeyBehavior = value;
-                    Settings.Properties.UseLegacyPressWinKeyBehavior.Value = value;
-                    NotifyPropertyChanged();
-                }
-            }
-        }
-
-        public int PressTime
-        {
-            get
-            {
-                return _pressTimeForGlobalWindowsShortcuts;
-            }
-
-            set
-            {
-                if (_pressTimeForGlobalWindowsShortcuts != value)
-                {
-                    _pressTimeForGlobalWindowsShortcuts = value;
-                    Settings.Properties.PressTimeForGlobalWindowsShortcuts.Value = value;
-                    NotifyPropertyChanged();
-                }
-            }
-        }
-
-        public int DelayTime
-        {
-            get
-            {
-                return _pressTimeForTaskbarIconShortcuts;
-            }
-
-            set
-            {
-                if (_pressTimeForTaskbarIconShortcuts != value)
-                {
-                    _pressTimeForTaskbarIconShortcuts = value;
-                    Settings.Properties.PressTimeForTaskbarIconShortcuts.Value = value;
                     NotifyPropertyChanged();
                 }
             }

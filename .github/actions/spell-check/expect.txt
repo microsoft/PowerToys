@@ -861,6 +861,8 @@ jpnime
 Jsons
 jsonval
 jxr
+KBSC
+kdc
 keybd
 KEYBDDATA
 KEYBDINPUT
@@ -1275,6 +1277,7 @@ OUTOFCONTEXT
 Outptr
 outputtype
 outsettings
+outsourced
 OVERLAPPEDWINDOW
 Oversampling
 OVERWRITEPROMPT
@@ -1340,6 +1343,7 @@ pici
 pidl
 PIDLIST
 pii
+pinboard
 pinfo
 pinvoke
 pipename
@@ -1420,6 +1424,7 @@ projectname
 PROPERTYKEY
 Propset
 PROPVARIANT
+Prt
 PRTL
 prvpane
 psapi
@@ -2097,6 +2102,7 @@ WNDCLASSW
 WNDPROC
 wnode
 wom
+workerw
 WORKSPACESEDITOR
 WORKSPACESLAUNCHER
 WORKSPACESSNAPSHOTTOOL

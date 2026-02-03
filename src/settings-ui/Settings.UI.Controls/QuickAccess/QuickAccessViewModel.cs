@@ -126,17 +126,9 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                 ModuleType.PowerOCR => SettingsRepository<PowerOcrSettings>.GetInstance(SettingsUtils.Default).SettingsConfig.Properties.ActivationShortcut.ToString(),
                 ModuleType.Workspaces => SettingsRepository<WorkspacesSettings>.GetInstance(SettingsUtils.Default).SettingsConfig.Properties.Hotkey.Value.ToString(),
                 ModuleType.MeasureTool => SettingsRepository<MeasureToolSettings>.GetInstance(SettingsUtils.Default).SettingsConfig.Properties.ActivationShortcut.ToString(),
-                ModuleType.ShortcutGuide => GetShortcutGuideToolTip(),
+                ModuleType.ShortcutGuide => SettingsRepository<ShortcutGuideSettings>.GetInstance(SettingsUtils.Default).SettingsConfig.Properties.OpenShortcutGuide.ToString(),
                 _ => string.Empty,
             };
-        }
-
-        private string GetShortcutGuideToolTip()
-        {
-            var shortcutGuideSettings = SettingsRepository<ShortcutGuideSettings>.GetInstance(SettingsUtils.Default).SettingsConfig;
-            return shortcutGuideSettings.Properties.UseLegacyPressWinKeyBehavior.Value
-                ? "Win"
-                : shortcutGuideSettings.Properties.OpenShortcutGuide.ToString();
         }
     }
 }

@@ -227,7 +227,11 @@
                             x:Uid="Shell_ShortcutGuide"
                             helpers:NavHelper.NavigateTo="views:ShortcutGuidePage"
                             AutomationProperties.AutomationId="ShortcutGuideNavItem"
-                            Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/ShortcutGuide.png}" />
+                            Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/ShortcutGuide.png}">
+                            <NavigationViewItem.InfoBadge>
+                                <InfoBadge Style="{StaticResource NewInfoBadge}" />
+                            </NavigationViewItem.InfoBadge>
+                        </NavigationViewItem>
                         <NavigationViewItem
                             x:Name="TextExtractorNavigationItem"
                             x:Uid="Shell_TextExtractor"
@@ -241,6 +245,9 @@
                             AutomationProperties.AutomationId="ZoomItNavItem"
                             Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/ZoomIt.png}" />
                     </NavigationViewItem.MenuItems>
+                    <NavigationViewItem.InfoBadge>
+                        <InfoBadge Style="{StaticResource NewInfoBadge}" />
+                    </NavigationViewItem.InfoBadge>
                 </NavigationViewItem>
 
                 <!--  Windowing & Layouts  -->

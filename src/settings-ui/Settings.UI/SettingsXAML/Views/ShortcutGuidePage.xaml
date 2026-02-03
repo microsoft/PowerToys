@@ -23,63 +23,13 @@
                     </tkcontrols:SettingsCard>
                 </controls:GPOInfoControl>
                 <controls:SettingsGroup x:Uid="Shortcut" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-                    <tkcontrols:SettingsCard Name="ShortcutGuideActivationMethod" x:Uid="ShortcutGuide_ActivationMethod">
-                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.UseLegacyPressWinKeyBehavior, Mode=TwoWay, Converter={StaticResource BoolToComboBoxIndexConverter}}">
-                            <ComboBoxItem x:Uid="Radio_ShortcutGuide_ActivationMethod_CustomizedShortcut" />
-                            <ComboBoxItem x:Uid="Radio_ShortcutGuide_ActivationMethod_LongPressWindowsKey" />
-                        </ComboBox>
-                    </tkcontrols:SettingsCard>
-
-                    <tkcontrols:SettingsCard
-                        Name="ActivationShortcut"
-                        x:Uid="Activation_Shortcut"
-                        HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}"
-                        Visibility="{x:Bind ViewModel.UseLegacyPressWinKeyBehavior, Mode=OneWay, Converter={StaticResource ReverseBoolToVisibilityConverter}}">
+                    <tkcontrols:SettingsCard x:Uid="Activation_Shortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
                         <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.OpenShortcutGuide, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
-
-                    <tkcontrols:SettingsCard
-                        Name="ShortcutGuidePressTimeForGlobalWindowsShortcuts"
-                        x:Uid="ShortcutGuide_PressTimeForGlobalWindowsShortcuts"
-                        HeaderIcon="{ui:FontIcon Glyph=&#xE916;}"
-                        Visibility="{x:Bind ViewModel.UseLegacyPressWinKeyBehavior, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
-                        <NumberBox
-                            MinWidth="{StaticResource SettingActionControlMinWidth}"
-                            LargeChange="100"
-                            Minimum="100"
-                            SmallChange="50"
-                            SpinButtonPlacementMode="Compact"
-                            Value="{x:Bind ViewModel.PressTime, Mode=TwoWay}" />
-                    </tkcontrols:SettingsCard>
-
-                    <tkcontrols:SettingsCard
-                        Name="ShortcutGuidePressTimeForTaskbarIconShortcuts"
-                        x:Uid="ShortcutGuide_PressTimeForTaskbarIconShortcuts"
-                        HeaderIcon="{ui:FontIcon Glyph=&#xE916;}"
-                        Visibility="{x:Bind ViewModel.UseLegacyPressWinKeyBehavior, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
-                        <NumberBox
-                            MinWidth="{StaticResource SettingActionControlMinWidth}"
-                            LargeChange="100"
-                            Minimum="100"
-                            SmallChange="50"
-                            SpinButtonPlacementMode="Compact"
-                            Value="{x:Bind ViewModel.DelayTime, Mode=TwoWay}" />
-                    </tkcontrols:SettingsCard>
-
-                    <InfoBar
-                        x:Uid="ShortcutGuide_PressWinKeyWarning"
-                        IsClosable="False"
-                        IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}"
-                        IsOpen="{x:Bind ViewModel.UseLegacyPressWinKeyBehavior, Mode=OneWay}"
-                        IsTabStop="True"
-                        Severity="Warning" />
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup x:Uid="Appearance_Behavior" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-                    <tkcontrols:SettingsCard
-                        Name="ColorModeHeader"
-                        x:Uid="ColorModeHeader"
-                        HeaderIcon="{ui:FontIcon Glyph=&#xE790;}">
+                    <tkcontrols:SettingsCard x:Uid="ColorModeHeader" HeaderIcon="{ui:FontIcon Glyph=&#xE790;}">
                         <tkcontrols:SettingsCard.Description>
                             <HyperlinkButton x:Uid="Windows_Color_Settings" Click="OpenColorsSettings_Click" />
                         </tkcontrols:SettingsCard.Description>
@@ -88,14 +38,6 @@
                             <ComboBoxItem x:Uid="Radio_Theme_Light" />
                             <ComboBoxItem x:Uid="Radio_Theme_Default" />
                         </ComboBox>
-                    </tkcontrols:SettingsCard>
-
-                    <tkcontrols:SettingsCard Name="ShortcutGuideOverlayOpacity" x:Uid="ShortcutGuide_OverlayOpacity">
-                        <Slider
-                            MinWidth="{StaticResource SettingActionControlMinWidth}"
-                            Maximum="100"
-                            Minimum="0"
-                            Value="{x:Bind ViewModel.OverlayOpacity, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
 
@@ -126,5 +68,8 @@
         <controls:SettingsPageControl.PrimaryLinks>
             <controls:PageLink x:Uid="LearnMore_ShortcutGuide" Link="https://aka.ms/PowerToysOverview_ShortcutGuide" />
         </controls:SettingsPageControl.PrimaryLinks>
+        <controls:SettingsPageControl.SecondaryLinks>
+            <controls:PageLink Link="https://noraajunker.ch" Text="Noraa Junker's work on Shortcut Guide V2" />
+        </controls:SettingsPageControl.SecondaryLinks>
     </controls:SettingsPageControl>
 </local:NavigablePage>

@@ -230,8 +230,12 @@
             "WinUI3Apps\\PowerToys.RegistryPreview.dll",
             "WinUI3Apps\\PowerToys.RegistryPreview.exe",
 
-            "PowerToys.ShortcutGuide.exe",
-            "PowerToys.ShortcutGuideModuleInterface.dll",
+            "WinUI3Apps\\PowerToys.ShortcutGuide.exe",
+            "WinUI3Apps\\PowerToys.ShortcutGuide.dll",
+            "WinUI3Apps\\PowerToys.ShortcutGuideModuleInterface.dll",
+            "WinUI3Apps\\PowerToys.ShortcutGuide.IndexYmlGenerator.dll",
+            "WinUI3Apps\\PowerToys.ShortcutGuide.IndexYmlGenerator.exe",
+            "WinUI3Apps\\ShortcutGuide.CPPProject.dll",
 
             "PowerToys.ZoomIt.exe",
             "PowerToys.ZoomItModuleInterface.dll",

@@ -33,7 +33,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 
         private void Start_ShortcutGuide_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
-            var executablePath = Path.Combine(System.AppDomain.CurrentDomain.BaseDirectory, "..", @"PowerToys.ShortcutGuide.exe");
+            var executablePath = Path.Combine(System.AppDomain.CurrentDomain.BaseDirectory, "..", @"WinUI3Apps//PowerToys.ShortcutGuide.exe");
             var id = System.Environment.ProcessId.ToString(CultureInfo.InvariantCulture);
             var p = Process.Start(executablePath, id);
             if (p != null)
@@ -59,14 +59,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             ViewModel.LogOpeningModuleEvent();
             var settingsProperties = SettingsRepository<ShortcutGuideSettings>.GetInstance(SettingsUtils.Default).SettingsConfig.Properties;
 
-            if ((bool)settingsProperties.UseLegacyPressWinKeyBehavior.Value)
-            {
-                HotkeyControl.Keys = new List<object> { 92 };
-            }
-            else
-            {
-                HotkeyControl.Keys = settingsProperties.OpenShortcutGuide.GetKeysList();
-            }
+            HotkeyControl.Keys = settingsProperties.OpenShortcutGuide.GetKeysList();
 
             // Disable the Launch button if the module is disabled
             var generalSettings = SettingsRepository<GeneralSettings>.GetInstance(SettingsUtils.Default).SettingsConfig;

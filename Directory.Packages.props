@@ -135,6 +135,7 @@
     <PackageVersion Include="WinUIEx" Version="2.8.0" />
     <PackageVersion Include="WPF-UI" Version="3.0.5" />
     <PackageVersion Include="WyHash" Version="1.0.5" />
+    <PackageVersion Include="YamlDotNet" Version="16.3.0" />
     <PackageVersion Include="WixToolset.Heat" Version="5.0.2" />
     <PackageVersion Include="WixToolset.Firewall.wixext" Version="5.0.2" />
     <PackageVersion Include="WixToolset.Util.wixext" Version="5.0.2" />

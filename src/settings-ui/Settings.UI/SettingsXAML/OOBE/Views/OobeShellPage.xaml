@@ -144,7 +144,11 @@
                 <NavigationViewItem
                     x:Uid="Shell_ShortcutGuide"
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/ShortcutGuide.png}"
-                    Tag="ShortcutGuide" />
+                    Tag="ShortcutGuide">
+                    <NavigationViewItem.InfoBadge>
+                        <InfoBadge Style="{StaticResource NewInfoBadge}" />
+                    </NavigationViewItem.InfoBadge>
+                </NavigationViewItem>
                 <NavigationViewItem
                     x:Uid="Shell_TextExtractor"
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/TextExtractor.png}"
