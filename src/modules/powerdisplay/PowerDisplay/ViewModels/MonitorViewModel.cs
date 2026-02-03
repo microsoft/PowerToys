@@ -279,6 +279,16 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
     // Advanced control display logic
     public bool HasAdvancedControls => ShowContrast || ShowVolume;
 
+    /// <summary>
+    /// Gets a value indicating whether this monitor supports contrast control via VCP 0x12
+    /// </summary>
+    public bool SupportsContrast => _monitor.SupportsContrast;
+
+    /// <summary>
+    /// Gets a value indicating whether this monitor supports volume control via VCP 0x62
+    /// </summary>
+    public bool SupportsVolume => _monitor.SupportsVolume;
+
     public bool ShowContrast
     {
         get => _showContrast;

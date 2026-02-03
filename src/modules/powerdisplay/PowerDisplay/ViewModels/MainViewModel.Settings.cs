@@ -304,7 +304,8 @@ public partial class MainViewModel
     }
 
     /// <summary>
-    /// Apply feature visibility settings to a monitor ViewModel
+    /// Apply feature visibility settings to a monitor ViewModel.
+    /// Only shows features that are both enabled by user AND supported by hardware.
     /// </summary>
     private void ApplyFeatureVisibility(MonitorViewModel monitorVm, PowerDisplaySettings settings)
     {
@@ -313,12 +314,13 @@ public partial class MainViewModel
 
         if (monitorSettings != null)
         {
-            monitorVm.ShowContrast = monitorSettings.EnableContrast;
-            monitorVm.ShowVolume = monitorSettings.EnableVolume;
-            monitorVm.ShowInputSource = monitorSettings.EnableInputSource;
+            // Only show features that are both enabled by user AND supported by hardware
+            monitorVm.ShowContrast = monitorSettings.EnableContrast && monitorVm.SupportsContrast;
+            monitorVm.ShowVolume = monitorSettings.EnableVolume && monitorVm.SupportsVolume;
+            monitorVm.ShowInputSource = monitorSettings.EnableInputSource && monitorVm.SupportsInputSource;
             monitorVm.ShowRotation = monitorSettings.EnableRotation;
-            monitorVm.ShowColorTemperature = monitorSettings.EnableColorTemperature;
-            monitorVm.ShowPowerState = monitorSettings.EnablePowerState;
+            monitorVm.ShowColorTemperature = monitorSettings.EnableColorTemperature && monitorVm.SupportsColorTemperature;
+            monitorVm.ShowPowerState = monitorSettings.EnablePowerState && monitorVm.SupportsPowerState;
         }
     }
 

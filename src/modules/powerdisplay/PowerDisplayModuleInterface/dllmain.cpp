@@ -9,6 +9,8 @@
 #include <common/utils/winapi_error.h>
 #include <common/utils/logger_helper.h>
 #include <common/utils/resources.h>
+#include <thread>
+#include <atomic>
 
 #include "resource.h"
 
@@ -48,6 +50,11 @@ private:
     HANDLE m_hRefreshEvent = nullptr;
     HANDLE m_hSendSettingsTelemetryEvent = nullptr;
 
+    // Toggle event handle and listener thread for Quick Access support
+    HANDLE m_hToggleEvent = nullptr;
+    std::thread m_toggleEventThread;
+    std::atomic<bool> m_toggleEventThreadRunning = false;
+
 public:
     PowerDisplayModule()
     {
@@ -62,16 +69,25 @@ public:
         m_hSendSettingsTelemetryEvent = CreateDefaultEvent(CommonSharedConstants::POWER_DISPLAY_SEND_SETTINGS_TELEMETRY_EVENT);
         Logger::trace(L"Created SEND_SETTINGS_TELEMETRY_EVENT: handle={}", reinterpret_cast<void*>(m_hSendSettingsTelemetryEvent));
 
-        if (!m_hRefreshEvent || !m_hSendSettingsTelemetryEvent)
+        // Create Toggle event for Quick Access support
+        // This allows Quick Access to launch PowerDisplay even when module is not enabled
+        m_hToggleEvent = CreateDefaultEvent(CommonSharedConstants::TOGGLE_POWER_DISPLAY_EVENT);
+        Logger::trace(L"Created TOGGLE_EVENT: handle={}", reinterpret_cast<void*>(m_hToggleEvent));
+
+        if (!m_hRefreshEvent || !m_hSendSettingsTelemetryEvent || !m_hToggleEvent)
         {
-            Logger::error(L"Failed to create one or more event handles: Refresh={}, SettingsTelemetry={}",
+            Logger::error(L"Failed to create one or more event handles: Refresh={}, SettingsTelemetry={}, Toggle={}",
                          reinterpret_cast<void*>(m_hRefreshEvent),
-                         reinterpret_cast<void*>(m_hSendSettingsTelemetryEvent));
+                         reinterpret_cast<void*>(m_hSendSettingsTelemetryEvent),
+                         reinterpret_cast<void*>(m_hToggleEvent));
         }
         else
         {
             Logger::info(L"All Windows Events created successfully");
         }
+
+        // Start toggle event listener thread for Quick Access support
+        StartToggleEventListener();
     }
 
     ~PowerDisplayModule()
@@ -80,6 +96,9 @@ public:
         {
             disable();
         }
+
+        // Stop toggle event listener thread
+        StopToggleEventListener();
 
         // Clean up event handles
         if (m_hRefreshEvent)
@@ -92,6 +111,67 @@ public:
             CloseHandle(m_hSendSettingsTelemetryEvent);
             m_hSendSettingsTelemetryEvent = nullptr;
         }
+        if (m_hToggleEvent)
+        {
+            CloseHandle(m_hToggleEvent);
+            m_hToggleEvent = nullptr;
+        }
+    }
+
+    void StartToggleEventListener()
+    {
+        if (m_toggleEventThreadRunning || !m_hToggleEvent)
+        {
+            return;
+        }
+
+        m_toggleEventThreadRunning = true;
+        m_toggleEventThread = std::thread([this]() {
+            Logger::info(L"Toggle event listener thread started");
+            while (m_toggleEventThreadRunning)
+            {
+                DWORD result = WaitForSingleObject(m_hToggleEvent, 100);
+                if (result == WAIT_OBJECT_0)
+                {
+                    Logger::trace(L"Toggle event received");
+                    TogglePowerDisplay();
+                }
+            }
+            Logger::info(L"Toggle event listener thread stopped");
+        });
+    }
+
+    void StopToggleEventListener()
+    {
+        m_toggleEventThreadRunning = false;
+        if (m_toggleEventThread.joinable())
+        {
+            m_toggleEventThread.join();
+        }
+    }
+
+    /// <summary>
+    /// Toggle PowerDisplay window visibility.
+    /// If process is running, launches again to trigger redirect activation (OnActivated handles toggle).
+    /// If process is not running, starts it via Named Pipe and sends toggle message.
+    /// </summary>
+    void TogglePowerDisplay()
+    {
+        if (m_processManager.is_running())
+        {
+            // Process running - launch to trigger single instance redirect, OnActivated will toggle
+            SHELLEXECUTEINFOW sei{ sizeof(sei) };
+            sei.fMask = SEE_MASK_FLAG_NO_UI;
+            sei.lpFile = L"WinUI3Apps\\PowerToys.PowerDisplay.exe";
+            sei.nShow = SW_SHOWNORMAL;
+            ShellExecuteExW(&sei);
+        }
+        else
+        {
+            // Process not running - start and send toggle via Named Pipe
+            m_processManager.send_message(CommonSharedConstants::POWER_DISPLAY_TOGGLE_MESSAGE);
+        }
+        Trace::ActivatePowerDisplay();
     }
 
     virtual void destroy() override
@@ -135,10 +215,7 @@ public:
             if (action_object.get_name() == L"Launch")
             {
                 Logger::trace(L"Launch action received");
-
-                // Send Toggle message via Named Pipe (will start process if needed)
-                m_processManager.send_message(CommonSharedConstants::POWER_DISPLAY_TOGGLE_MESSAGE);
-                Trace::ActivatePowerDisplay();
+                TogglePowerDisplay();
             }
             else if (action_object.get_name() == L"RefreshMonitors")
             {
