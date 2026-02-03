@@ -8,7 +8,8 @@ using System.Linq;
 using System.Reflection;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
-using PowerToys.GPOWrapperProjection;
+using Microsoft.Win32;
+using PowerToys.GPOWrapper;
 using RunnerV2;
 using RunnerV2.Helpers;
 using RunnerV2.Models;
@@ -66,9 +67,10 @@ internal sealed class Program
             return;
         }
 
-        /*
-         * Todo: Data diagnotics
-        */
+        if (GPOWrapper.GetAllowDataDiagnosticsValue() == GpoRuleConfigured.Disabled)
+        {
+            Registry.CurrentUser.OpenSubKey("Software\\Classes\\PowerToys", true)?.SetValue("AllowDataDiagnostics", 0, RegistryValueKind.DWord);
+        }
 
         bool isElevated = ElevationHelper.IsProcessElevated();
         bool hasDontElevateArgument = args.Contains("--dont-elevate");
