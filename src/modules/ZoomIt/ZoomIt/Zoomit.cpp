@@ -226,7 +226,7 @@ ComputerGraphicsInit	g_GraphicsInit;
 class OpenSaveDialogEvents : public IFileDialogEvents
 {
 public:
-    OpenSaveDialogEvents() : m_refCount(1), m_initialized(false) {}
+    OpenSaveDialogEvents(bool showOnTaskbar = true) : m_refCount(1), m_initialized(false), m_showOnTaskbar(showOnTaskbar) {}
 
     // IUnknown
     IFACEMETHODIMP QueryInterface(REFIID riid, void** ppv)
@@ -258,9 +258,12 @@ public:
                 HWND hwndDialog = nullptr;
                 if (SUCCEEDED(pWindow->GetWindow(&hwndDialog)) && hwndDialog)
                 {
-                    // Set WS_EX_APPWINDOW extended style
-                    LONG_PTR exStyle = GetWindowLongPtr(hwndDialog, GWL_EXSTYLE);
-                    SetWindowLongPtr(hwndDialog, GWL_EXSTYLE, exStyle | WS_EX_APPWINDOW);
+                    if (m_showOnTaskbar)
+                    {
+                        // Set WS_EX_APPWINDOW extended style
+                        LONG_PTR exStyle = GetWindowLongPtr(hwndDialog, GWL_EXSTYLE);
+                        SetWindowLongPtr(hwndDialog, GWL_EXSTYLE, exStyle | WS_EX_APPWINDOW);
+                    }
 
                     // Set the dialog icon
                     HICON hIcon = LoadIcon(g_hInstance, L"APPICON");
@@ -283,6 +286,7 @@ public:
 private:
     LONG m_refCount;
     bool m_initialized;
+    bool m_showOnTaskbar;
 };
 
 
@@ -1801,7 +1805,7 @@ INT_PTR CALLBACK AdvancedBreakProc( HWND hDlg, UINT message, WPARAM wParam, LPAR
                 openDialog->SetFolder( folderItem.get() );
             }
 
-            OpenSaveDialogEvents* pEvents = new OpenSaveDialogEvents();
+            OpenSaveDialogEvents* pEvents = new OpenSaveDialogEvents(false);
             DWORD dwCookie = 0;
             openDialog->Advise( pEvents, &dwCookie );
 
@@ -1865,7 +1869,7 @@ INT_PTR CALLBACK AdvancedBreakProc( HWND hDlg, UINT message, WPARAM wParam, LPAR
                 openDialog->SetFolder( folderItem.get() );
             }
 
-            OpenSaveDialogEvents* pEvents = new OpenSaveDialogEvents();
+            OpenSaveDialogEvents* pEvents = new OpenSaveDialogEvents(false);
             DWORD dwCookie = 0;
             openDialog->Advise( pEvents, &dwCookie );
 
@@ -1989,8 +1993,6 @@ INT_PTR CALLBACK OptionsTabProc( HWND hDlg, UINT message,
     HWND		hTextPreview;
     HDC			hDc;
     RECT		previewRc;
-    TCHAR	    filePath[MAX_PATH] = {0};
-    OPENFILENAME	openFileName;
 
     switch ( message )  {
     case WM_INITDIALOG:
@@ -2108,30 +2110,49 @@ INT_PTR CALLBACK OptionsTabProc( HWND hDlg, UINT message,
             }
             break;
         case IDC_DEMOTYPE_BROWSE:
-            memset( &openFileName, 0, sizeof( openFileName ) );
-            openFileName.lStructSize  = OPENFILENAME_SIZE_VERSION_400;
-            openFileName.hwndOwner    = hDlg;
-            openFileName.hInstance    = static_cast<HINSTANCE>(g_hInstance);
-            openFileName.nMaxFile     = sizeof( filePath ) / sizeof( filePath[0] );
-            openFileName.Flags        = OFN_LONGNAMES;
-            openFileName.lpstrTitle   = L"Specify DemoType file...";
-            openFileName.nFilterIndex = 1;
-            openFileName.lpstrFilter  = L"All Files\0*.*\0\0";
-            openFileName.lpstrFile    = filePath;
+        {
+            auto openDialog = wil::CoCreateInstance<IFileOpenDialog>( CLSID_FileOpenDialog );
 
-            if( GetOpenFileName( &openFileName ) )
+            FILEOPENDIALOGOPTIONS options;
+            if( SUCCEEDED( openDialog->GetOptions( &options ) ) )
+                openDialog->SetOptions( options | FOS_FORCEFILESYSTEM );
+
+            COMDLG_FILTERSPEC fileTypes[] = {
+                { L"All Files", L"*.*" }
+            };
+            openDialog->SetFileTypes( _countof( fileTypes ), fileTypes );
+            openDialog->SetFileTypeIndex( 1 );
+            openDialog->SetTitle( L"ZoomIt: Specify DemoType File..." );
+
+            OpenSaveDialogEvents* pEvents = new OpenSaveDialogEvents(false);
+            DWORD dwCookie = 0;
+            openDialog->Advise( pEvents, &dwCookie );
+
+            if( SUCCEEDED( openDialog->Show( hDlg ) ) )
             {
-                if( GetFileAttributes( filePath ) == -1 )
+                wil::com_ptr<IShellItem> resultItem;
+                if( SUCCEEDED( openDialog->GetResult( &resultItem ) ) )
                 {
-                    MessageBox( hDlg, L"The specified file is inaccessible", APPNAME, MB_ICONERROR );
-                }
-                else
-                {
-                    SetDlgItemText( g_OptionsTabs[DEMOTYPE_PAGE].hPage, IDC_DEMOTYPE_FILE, filePath );
-                    _tcscpy( g_DemoTypeFile, filePath );
+                    wil::unique_cotaskmem_string pathStr;
+                    if( SUCCEEDED( resultItem->GetDisplayName( SIGDN_FILESYSPATH, &pathStr ) ) )
+                    {
+                        if( GetFileAttributes( pathStr.get() ) == INVALID_FILE_ATTRIBUTES )
+                        {
+                            MessageBox( hDlg, L"The specified file is inaccessible", APPNAME, MB_ICONERROR );
+                        }
+                        else
+                        {
+                            SetDlgItemText( g_OptionsTabs[DEMOTYPE_PAGE].hPage, IDC_DEMOTYPE_FILE, pathStr.get() );
+                            _tcscpy( g_DemoTypeFile, pathStr.get() );
+                        }
+                    }
                 }
             }
+
+            openDialog->Unadvise( dwCookie );
+            pEvents->Release();
             break;
+        }
         }
         break;
 
