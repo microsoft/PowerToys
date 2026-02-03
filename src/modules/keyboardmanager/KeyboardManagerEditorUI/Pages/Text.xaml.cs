@@ -105,7 +105,7 @@ namespace KeyboardManagerEditorUI.Pages
                     Keys = new List<string> { _mappingService.GetKeyDisplayName(mapping.OriginalKey) },
                     Text = mapping.TargetText,
                     IsAllApps = true,
-                    AppName = "All Apps",
+                    AppName = string.Empty,
                 });
             }
 
@@ -127,7 +127,7 @@ namespace KeyboardManagerEditorUI.Pages
                     Keys = originalKeyNames,
                     Text = mapping.TargetText,
                     IsAllApps = string.IsNullOrEmpty(mapping.TargetApp),
-                    AppName = string.IsNullOrEmpty(mapping.TargetApp) ? "All Apps" : mapping.TargetApp,
+                    AppName = string.IsNullOrEmpty(mapping.TargetApp) ? string.Empty : mapping.TargetApp,
                 });
             }
         }

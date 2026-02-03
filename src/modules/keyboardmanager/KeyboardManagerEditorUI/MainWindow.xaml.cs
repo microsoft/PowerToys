@@ -37,7 +37,7 @@ namespace KeyboardManagerEditorUI
             this.Closed += MainWindow_Closed;
 
             // Set the default page
-            RootView.SelectedItem = RootView.MenuItems[0];
+            // RootView.SelectedItem = RootView.MenuItems[0];
             IntPtr windowHandle = WinRT.Interop.WindowNative.GetWindowHandle(this);
             WindowId windowId = Win32Interop.GetWindowIdFromWindow(windowHandle);
             AppWindow appWindow = AppWindow.GetFromWindowId(windowId);
@@ -63,7 +63,7 @@ namespace KeyboardManagerEditorUI
         private void RootView_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
         {
             // Cleanup the keyboard hook when the selected page changes
-            KeyboardHookHelper.Instance.CleanupHook();
+            /* KeyboardHookHelper.Instance.CleanupHook();
 
             if (args.SelectedItem is NavigationViewItem selectedItem)
             {
@@ -75,7 +75,7 @@ namespace KeyboardManagerEditorUI
                     case "Text": NavigationFrame.Navigate(typeof(Pages.Text)); break;
                     case "URLs": NavigationFrame.Navigate(typeof(Pages.URLs)); break;
                 }
-            }
+            } */
         }
     }
 }

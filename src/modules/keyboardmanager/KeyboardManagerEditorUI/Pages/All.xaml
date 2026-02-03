@@ -8,25 +8,70 @@
     xmlns:helper="using:KeyboardManagerEditorUI.Helpers"
     xmlns:local="using:KeyboardManagerEditorUI.Pages"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:tkcontrols="using:CommunityToolkit.WinUI.UI.Controls"
+    xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     xmlns:tkconverters="using:CommunityToolkit.WinUI.Converters"
+    xmlns:ui="using:CommunityToolkit.WinUI"
     mc:Ignorable="d">
 
     <Page.Resources>
+        <Style
+            x:Key="OriginalKeyVisualStyle"
+            BasedOn="{StaticResource DefaultKeyVisualStyle}"
+            TargetType="controls:KeyVisual">
+            <Setter Property="Padding" Value="6" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Background" Value="{ThemeResource ControlFillColorDefaultBrush}" />
+            <Setter Property="CornerRadius" Value="{StaticResource ControlCornerRadius}" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="IsTabStop" Value="False" />
+            <Setter Property="RenderKeyAsGlyph" Value="True" />
+        </Style>
+        <Style
+            x:Key="RemappedKeyVisualStyle"
+            BasedOn="{StaticResource OriginalKeyVisualStyle}"
+            TargetType="controls:KeyVisual">
+            <Setter Property="Background" Value="{ThemeResource CustomAccentBackgroundBrush}" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Foreground" Value="{ThemeResource AccentTextFillColorPrimaryBrush}" />
+        </Style>
+        <Style
+            x:Key="RemappedIconLabelControlStyle"
+            BasedOn="{StaticResource DefaultIconLabelControlStyle}"
+            TargetType="controls:IconLabelControl">
+            <Setter Property="Background" Value="{ThemeResource CustomAccentBackgroundBrush}" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Padding" Value="6" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="CornerRadius" Value="{StaticResource ControlCornerRadius}" />
+            <Setter Property="Foreground" Value="{ThemeResource AccentTextFillColorPrimaryBrush}" />
+        </Style>
+        <Style x:Key="ItemDividerStyle" TargetType="Rectangle">
+            <Style.Setters>
+                <Setter Property="Grid.ColumnSpan" Value="2" />
+                <Setter Property="Height" Value="1" />
+                <Setter Property="Margin" Value="-16,0,-16,-8" />
+                <Setter Property="Fill" Value="{ThemeResource CardStrokeColorDefaultBrush}" />
+                <Setter Property="HorizontalAlignment" Value="Stretch" />
+                <Setter Property="VerticalAlignment" Value="Bottom" />
+            </Style.Setters>
+        </Style>
         <tkconverters:DoubleToVisibilityConverter
             x:Key="CountToVisibilityConverter"
             FalseValue="Collapsed"
             GreaterThan="0"
             TrueValue="Visible" />
+        <tkconverters:StringVisibilityConverter
+            x:Key="StringVisibilityConverter"
+            EmptyValue="Collapsed"
+            NotEmptyValue="Visible" />
     </Page.Resources>
 
-    <Grid Padding="24" RowSpacing="16">
+    <Grid Padding="16" RowSpacing="16">
         <Grid.RowDefinitions>
             <RowDefinition Height="64" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-
-        <!--  Add New Remapping Button  -->
         <Grid>
             <Button x:Name="NewRemappingBtn" Click="NewRemappingBtn_Click">
                 <StackPanel Orientation="Horizontal" Spacing="8">
@@ -38,351 +83,339 @@
                 </StackPanel>
             </Button>
         </Grid>
-
-        <Grid
-            Grid.Row="1"
-            Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-            BorderThickness="1"
-            CornerRadius="{ThemeResource OverlayCornerRadius}">
+        <Grid Grid.Row="1">
             <ScrollViewer VerticalAlignment="Stretch" VerticalScrollBarVisibility="Auto">
-                <Grid Padding="16">
+                <Grid
+                    Background="{ThemeResource LayerFillColorDefaultBrush}"
+                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                    BorderThickness="1"
+                    CornerRadius="{ThemeResource OverlayCornerRadius}">
                     <StackPanel Orientation="Vertical" Spacing="24">
                         <!--  Remappings Section  -->
-                        <ListView
-                            IsItemClickEnabled="True"
-                            ItemClick="RemappingsList_ItemClick"
-                            ItemsSource="{x:Bind RemappingList}"
-                            ScrollViewer.VerticalScrollMode="Disabled"
-                            SelectionMode="None"
-                            Visibility="{x:Bind RemappingList.Count, Mode=OneWay, Converter={StaticResource CountToVisibilityConverter}}">
-                            <ListView.Header>
-                                <TextBlock Style="{StaticResource BodyStrongTextBlockStyle}" Text="Remappings" />
-                            </ListView.Header>
-                            <ListView.ItemTemplate>
-                                <DataTemplate x:DataType="helper:Remapping">
-                                    <Grid Height="Auto" MinHeight="48">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="Auto" MinWidth="236" />
-                                            <ColumnDefinition Width="Auto" MinWidth="236" />
-                                            <ColumnDefinition Width="*" />
-                                            <ColumnDefinition Width="Auto" />
-                                        </Grid.ColumnDefinitions>
-                                        <ItemsControl
-                                            Grid.Column="0"
-                                            VerticalAlignment="Center"
-                                            IsEnabled="{x:Bind IsEnabled, Mode=OneWay}"
-                                            ItemsSource="{x:Bind OriginalKeys}">
-                                            <ItemsControl.ItemsPanel>
-                                                <ItemsPanelTemplate>
-                                                    <tkcontrols:WrapPanel
-                                                        MaxWidth="230"
-                                                        HorizontalSpacing="4"
-                                                        Orientation="Horizontal" />
-                                                </ItemsPanelTemplate>
-                                            </ItemsControl.ItemsPanel>
-                                            <ItemsControl.ItemTemplate>
-                                                <DataTemplate>
-                                                    <controls:KeyVisual
-                                                        HorizontalAlignment="Left"
-                                                        Content="{Binding}"
-                                                        Style="{StaticResource DefaultKeyVisualStyle}" />
-                                                </DataTemplate>
-                                            </ItemsControl.ItemTemplate>
-                                        </ItemsControl>
-                                        <ItemsControl
-                                            Grid.Column="1"
-                                            Margin="0,6,0,6"
-                                            VerticalAlignment="Center"
-                                            IsEnabled="{x:Bind IsEnabled, Mode=OneWay}"
-                                            ItemsSource="{x:Bind RemappedKeys}">
-                                            <ItemsControl.ItemsPanel>
-                                                <ItemsPanelTemplate>
-                                                    <tkcontrols:WrapPanel
-                                                        MaxWidth="230"
-                                                        HorizontalSpacing="4"
-                                                        Orientation="Horizontal" />
-                                                </ItemsPanelTemplate>
-                                            </ItemsControl.ItemsPanel>
-                                            <ItemsControl.ItemTemplate>
-                                                <DataTemplate>
-                                                    <controls:KeyVisual
-                                                        HorizontalAlignment="Left"
-                                                        Content="{Binding}"
-                                                        Style="{StaticResource AccentKeyVisualStyle}" />
-                                                </DataTemplate>
-                                            </ItemsControl.ItemTemplate>
-                                        </ItemsControl>
-                                        <TextBlock
-                                            Grid.Column="2"
-                                            Margin="-4,0,0,0"
-                                            HorizontalAlignment="Left"
-                                            VerticalAlignment="Center"
-                                            FontSize="12"
-                                            Text="{x:Bind AppName}" />
-                                        <Button
-                                            Grid.Column="3"
-                                            Margin="0,0,4,0"
-                                            Padding="8,4"
-                                            HorizontalAlignment="Right"
-                                            VerticalAlignment="Center"
-                                            Background="Transparent"
-                                            BorderThickness="0"
-                                            Click="DeleteMapping_Click">
-                                            <FontIcon
-                                                FontFamily="{StaticResource SymbolThemeFontFamily}"
-                                                FontSize="16"
-                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                                Glyph="&#xE74D;" />
-                                        </Button>
-                                    </Grid>
-                                </DataTemplate>
-                            </ListView.ItemTemplate>
-                        </ListView>
+                        <StackPanel Orientation="Vertical" Visibility="{x:Bind RemappingList.Count, Mode=OneWay, Converter={StaticResource CountToVisibilityConverter}}">
+                            <TextBlock
+                                Margin="16,16,0,8"
+                                Style="{StaticResource BodyStrongTextBlockStyle}"
+                                Text="Keys and shortcuts" />
+                            <Rectangle
+                                Height="1"
+                                HorizontalAlignment="Stretch"
+                                Fill="{ThemeResource CardStrokeColorDefaultBrush}" />
+                            <ListView
+                                IsItemClickEnabled="True"
+                                ItemClick="RemappingsList_ItemClick"
+                                ItemsSource="{x:Bind RemappingList}"
+                                ScrollViewer.VerticalScrollMode="Disabled"
+                                SelectionMode="None">
+                                <ListView.ItemTemplate>
+                                    <DataTemplate x:DataType="helper:Remapping">
+                                        <Grid MinHeight="48" Padding="0,8,0,8">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <Rectangle Style="{StaticResource ItemDividerStyle}" />
+                                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                                <ItemsControl VerticalAlignment="Center" ItemsSource="{x:Bind OriginalKeys}">
+                                                    <ItemsControl.ItemsPanel>
+                                                        <ItemsPanelTemplate>
+                                                            <StackPanel Orientation="Horizontal" Spacing="4" />
+                                                        </ItemsPanelTemplate>
+                                                    </ItemsControl.ItemsPanel>
+                                                    <ItemsControl.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <controls:KeyVisual Content="{Binding}" Style="{StaticResource OriginalKeyVisualStyle}" />
+                                                        </DataTemplate>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
+                                                <TextBlock
+                                                    VerticalAlignment="Center"
+                                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                    Text="maps to" />
+                                                <ItemsControl VerticalAlignment="Center" ItemsSource="{x:Bind RemappedKeys}">
+                                                    <ItemsControl.ItemsPanel>
+                                                        <ItemsPanelTemplate>
+                                                            <StackPanel Orientation="Horizontal" Spacing="4" />
+                                                        </ItemsPanelTemplate>
+                                                    </ItemsControl.ItemsPanel>
+                                                    <ItemsControl.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <controls:KeyVisual Content="{Binding}" Style="{StaticResource RemappedKeyVisualStyle}" />
+                                                        </DataTemplate>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
+                                                <StackPanel
+                                                    Orientation="Horizontal"
+                                                    Spacing="8"
+                                                    Visibility="{x:Bind AppName, Converter={StaticResource StringVisibilityConverter}}">
+                                                    <TextBlock
+                                                        VerticalAlignment="Center"
+                                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                        Text="in" />
+                                                    <controls:IconLabelControl ActionType="Program" Label="{x:Bind AppName}" />
+                                                </StackPanel>
+                                            </StackPanel>
+                                            <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                                <!--  TO DO: Add ToggleSwitch  -->
+                                                <Button
+                                                    VerticalAlignment="Center"
+                                                    Content="{ui:FontIcon Glyph=&#xE712;,
+                                                                          FontSize=14}"
+                                                    Style="{StaticResource SubtleButtonStyle}">
+                                                    <Button.Flyout>
+                                                        <MenuFlyout>
+                                                            <MenuFlyoutItem
+                                                                Click="DeleteMapping_Click"
+                                                                Icon="{ui:FontIcon Glyph=&#xE74D;,
+                                                                                   FontSize=14}"
+                                                                Tag="{x:Bind}"
+                                                                Text="Delete" />
+                                                        </MenuFlyout>
+                                                    </Button.Flyout>
+                                                </Button>
+                                            </StackPanel>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ListView.ItemTemplate>
+                            </ListView>
+                        </StackPanel>
 
                         <!--  Text Section  -->
-                        <ListView
-                            IsItemClickEnabled="True"
-                            ItemClick="TextMappingsList_ItemClick"
-                            ItemsSource="{x:Bind TextMappings}"
-                            ScrollViewer.VerticalScrollMode="Disabled"
-                            SelectionMode="None"
-                            Visibility="{x:Bind TextMappings.Count, Mode=OneWay, Converter={StaticResource CountToVisibilityConverter}}">
-                            <ListView.Header>
-                                <TextBlock Style="{StaticResource BodyStrongTextBlockStyle}" Text="Text" />
-                            </ListView.Header>
-                            <ListView.ItemTemplate>
-                                <DataTemplate x:DataType="helper:TextMapping">
-                                    <Grid MinHeight="48">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="236" />
-                                            <ColumnDefinition Width="*" />
-                                            <ColumnDefinition Width="120" />
-                                            <ColumnDefinition Width="Auto" />
-                                        </Grid.ColumnDefinitions>
-                                        <Rectangle
-                                            Grid.ColumnSpan="4"
-                                            Height="1"
-                                            Margin="-16,0,-16,0"
-                                            HorizontalAlignment="Stretch"
-                                            VerticalAlignment="Bottom"
-                                            Fill="{ThemeResource CardStrokeColorDefaultBrush}"
-                                            Opacity="0.8" />
-                                        <ItemsControl
-                                            Grid.Column="0"
-                                            VerticalAlignment="Center"
-                                            ItemsSource="{x:Bind Keys}">
-                                            <ItemsControl.ItemsPanel>
-                                                <ItemsPanelTemplate>
-                                                    <StackPanel Orientation="Horizontal" Spacing="4" />
-                                                </ItemsPanelTemplate>
-                                            </ItemsControl.ItemsPanel>
-                                            <ItemsControl.ItemTemplate>
-                                                <DataTemplate>
-                                                    <controls:KeyVisual
-                                                        HorizontalAlignment="Left"
-                                                        Content="{Binding}"
-                                                        Style="{StaticResource DefaultKeyVisualStyle}" />
-                                                </DataTemplate>
-                                            </ItemsControl.ItemTemplate>
-                                        </ItemsControl>
-                                        <TextBlock
-                                            Grid.Column="1"
-                                            Margin="-4,0,0,0"
-                                            HorizontalAlignment="Left"
-                                            VerticalAlignment="Center"
-                                            FontSize="12"
-                                            Text="{x:Bind Text}"
-                                            TextTrimming="CharacterEllipsis" />
-                                        <TextBlock
-                                            Grid.Column="2"
-                                            Margin="-4,0,0,0"
-                                            HorizontalAlignment="Left"
-                                            VerticalAlignment="Center"
-                                            FontSize="12"
-                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                            Text="{x:Bind AppName}"
-                                            TextTrimming="CharacterEllipsis" />
-                                        <Button
-                                            Grid.Column="3"
-                                            Margin="0,0,4,0"
-                                            Padding="8,4"
-                                            HorizontalAlignment="Right"
-                                            VerticalAlignment="Center"
-                                            Background="Transparent"
-                                            BorderThickness="0"
-                                            Click="DeleteMapping_Click">
-                                            <FontIcon
-                                                FontFamily="{StaticResource SymbolThemeFontFamily}"
-                                                FontSize="16"
-                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                                Glyph="&#xE74D;" />
-                                        </Button>
-                                    </Grid>
-                                </DataTemplate>
-                            </ListView.ItemTemplate>
-                        </ListView>
+                        <StackPanel Orientation="Vertical" Visibility="{x:Bind TextMappings.Count, Mode=OneWay, Converter={StaticResource CountToVisibilityConverter}}">
+                            <TextBlock
+                                Margin="16,16,0,8"
+                                Style="{StaticResource BodyStrongTextBlockStyle}"
+                                Text="Text" />
+                            <Rectangle
+                                Height="1"
+                                HorizontalAlignment="Stretch"
+                                Fill="{ThemeResource CardStrokeColorDefaultBrush}" />
+                            <ListView
+                                IsItemClickEnabled="True"
+                                ItemClick="TextMappingsList_ItemClick"
+                                ItemsSource="{x:Bind TextMappings}"
+                                ScrollViewer.VerticalScrollMode="Disabled"
+                                SelectionMode="None">
+                                <ListView.ItemTemplate>
+                                    <DataTemplate x:DataType="helper:TextMapping">
+                                        <Grid MinHeight="48" Padding="0,8,0,8">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <Rectangle Style="{StaticResource ItemDividerStyle}" />
+
+                                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                                <ItemsControl VerticalAlignment="Center" ItemsSource="{x:Bind Keys}">
+                                                    <ItemsControl.ItemsPanel>
+                                                        <ItemsPanelTemplate>
+                                                            <StackPanel Orientation="Horizontal" Spacing="4" />
+                                                        </ItemsPanelTemplate>
+                                                    </ItemsControl.ItemsPanel>
+                                                    <ItemsControl.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <controls:KeyVisual Content="{Binding}" Style="{StaticResource OriginalKeyVisualStyle}" />
+                                                        </DataTemplate>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
+                                                <TextBlock
+                                                    VerticalAlignment="Center"
+                                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                    Text="inserts" />
+                                                <controls:IconLabelControl
+                                                    ActionType="Text"
+                                                    Label="{x:Bind Text}"
+                                                    Style="{StaticResource RemappedIconLabelControlStyle}" />
+                                                <StackPanel
+                                                    Orientation="Horizontal"
+                                                    Spacing="8"
+                                                    Visibility="{x:Bind AppName, Converter={StaticResource StringVisibilityConverter}}">
+                                                    <TextBlock
+                                                        VerticalAlignment="Center"
+                                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                        Text="in" />
+                                                    <controls:IconLabelControl ActionType="Program" Label="{x:Bind AppName}" />
+                                                </StackPanel>
+                                            </StackPanel>
+                                            <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                                <!--  TO DO: Add ToggleSwitch  -->
+                                                <Button
+                                                    VerticalAlignment="Center"
+                                                    Content="{ui:FontIcon Glyph=&#xE712;,
+                                                                          FontSize=14}"
+                                                    Style="{StaticResource SubtleButtonStyle}">
+                                                    <Button.Flyout>
+                                                        <MenuFlyout>
+                                                            <MenuFlyoutItem
+                                                                Click="DeleteMapping_Click"
+                                                                Icon="{ui:FontIcon Glyph=&#xE74D;,
+                                                                                   FontSize=14}"
+                                                                Tag="{x:Bind}"
+                                                                Text="Delete" />
+                                                        </MenuFlyout>
+                                                    </Button.Flyout>
+                                                </Button>
+                                            </StackPanel>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ListView.ItemTemplate>
+                            </ListView>
+                        </StackPanel>
 
                         <!--  Programs Section  -->
-                        <ListView
-                            IsItemClickEnabled="True"
-                            ItemClick="ProgramShortcutsList_ItemClick"
-                            ItemsSource="{x:Bind ProgramShortcuts}"
-                            ScrollViewer.VerticalScrollMode="Disabled"
-                            SelectionMode="None"
-                            Visibility="{x:Bind ProgramShortcuts.Count, Mode=OneWay, Converter={StaticResource CountToVisibilityConverter}}">
-                            <ListView.Header>
-                                <TextBlock Style="{StaticResource BodyStrongTextBlockStyle}" Text="Programs" />
-                            </ListView.Header>
-                            <ListView.ItemTemplate>
-                                <DataTemplate x:DataType="helper:ProgramShortcut">
-                                    <Grid Height="48">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="348" />
-                                            <ColumnDefinition Width="476" />
-                                            <ColumnDefinition Width="*" />
-                                            <ColumnDefinition Width="Auto" />
-                                        </Grid.ColumnDefinitions>
-                                        <Rectangle
-                                            Grid.ColumnSpan="4"
-                                            Height="1"
-                                            Margin="-16,0,-16,0"
-                                            HorizontalAlignment="Stretch"
-                                            VerticalAlignment="Bottom"
-                                            Fill="{ThemeResource CardStrokeColorDefaultBrush}"
-                                            Opacity="0.8" />
-                                        <ItemsControl
-                                            Grid.Column="0"
-                                            VerticalAlignment="Center"
-                                            ItemsSource="{x:Bind Shortcut}">
-                                            <ItemsControl.ItemsPanel>
-                                                <ItemsPanelTemplate>
-                                                    <StackPanel Orientation="Horizontal" Spacing="4" />
-                                                </ItemsPanelTemplate>
-                                            </ItemsControl.ItemsPanel>
-                                            <ItemsControl.ItemTemplate>
-                                                <DataTemplate>
-                                                    <controls:KeyVisual
-                                                        HorizontalAlignment="Left"
-                                                        Content="{Binding}"
-                                                        Style="{StaticResource DefaultKeyVisualStyle}" />
-                                                </DataTemplate>
-                                            </ItemsControl.ItemTemplate>
-                                        </ItemsControl>
-                                        <StackPanel
-                                            Grid.Column="1"
-                                            Orientation="Horizontal"
-                                            Spacing="8">
-                                            <TextBlock VerticalAlignment="Center" Text="{x:Bind AppToRun}" />
-                                            <FontIcon
-                                                VerticalAlignment="Center"
-                                                FontSize="14"
-                                                Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
-                                                Glyph="&#xE946;">
-                                                <ToolTipService.ToolTip>
-                                                    <TextBlock>
-                                                        <Run x:Uid="ProgramsPageArgumentsRun" FontWeight="SemiBold" />
-                                                        <Run Text="{x:Bind Args}" />
-                                                    </TextBlock>
-                                                </ToolTipService.ToolTip>
-                                            </FontIcon>
-                                        </StackPanel>
-                                        <StackPanel
-                                            Grid.Column="3"
-                                            Margin="0,0,4,0"
-                                            HorizontalAlignment="Right"
-                                            VerticalAlignment="Center"
-                                            Orientation="Horizontal"
-                                            Spacing="8">
-                                            <ToggleSwitch
-                                                IsOn="{x:Bind IsActive}"
-                                                Toggled="ProgramToggleSwitch_Toggled" />
-                                            <Button
-                                                Padding="8,4"
-                                                Background="Transparent"
-                                                BorderThickness="0"
-                                                Click="DeleteMapping_Click">
-                                                <FontIcon
-                                                    FontFamily="{StaticResource SymbolThemeFontFamily}"
-                                                    FontSize="16"
+                        <StackPanel Orientation="Vertical" Visibility="{x:Bind ProgramShortcuts.Count, Mode=OneWay, Converter={StaticResource CountToVisibilityConverter}}">
+                            <TextBlock
+                                Margin="16,16,0,8"
+                                Style="{StaticResource BodyStrongTextBlockStyle}"
+                                Text="Programs" />
+                            <Rectangle
+                                Height="1"
+                                HorizontalAlignment="Stretch"
+                                Fill="{ThemeResource CardStrokeColorDefaultBrush}" />
+
+                            <ListView
+                                IsItemClickEnabled="True"
+                                ItemClick="ProgramShortcutsList_ItemClick"
+                                ItemsSource="{x:Bind ProgramShortcuts}"
+                                ScrollViewer.VerticalScrollMode="Disabled"
+                                SelectionMode="None">
+                                <ListView.ItemTemplate>
+                                    <DataTemplate x:DataType="helper:ProgramShortcut">
+                                        <Grid MinHeight="48" Padding="0,8,0,8">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <Rectangle Style="{StaticResource ItemDividerStyle}" />
+                                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                                <ItemsControl VerticalAlignment="Center" ItemsSource="{x:Bind Shortcut}">
+                                                    <ItemsControl.ItemsPanel>
+                                                        <ItemsPanelTemplate>
+                                                            <StackPanel Orientation="Horizontal" Spacing="4" />
+                                                        </ItemsPanelTemplate>
+                                                    </ItemsControl.ItemsPanel>
+                                                    <ItemsControl.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <controls:KeyVisual Content="{Binding}" Style="{StaticResource OriginalKeyVisualStyle}" />
+                                                        </DataTemplate>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
+                                                <TextBlock
+                                                    VerticalAlignment="Center"
                                                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                                    Glyph="&#xE74D;" />
-                                            </Button>
-                                        </StackPanel>
-                                    </Grid>
-                                </DataTemplate>
-                            </ListView.ItemTemplate>
-                        </ListView>
+                                                    Text="opens" />
+                                                <controls:IconLabelControl
+                                                    ActionType="Program"
+                                                    Label="{x:Bind AppToRun}"
+                                                    Style="{StaticResource RemappedIconLabelControlStyle}" />
+                                                <!--  TO DO: Add a ToolTip or Flyout with some of the important advanced info like args  -->
+                                                <!--  {x:Bind Args}  -->
+                                            </StackPanel>
+                                            <StackPanel
+                                                Grid.Column="1"
+                                                Margin="0,0,4,0"
+                                                VerticalAlignment="Center"
+                                                Orientation="Horizontal"
+                                                Spacing="8">
+                                                <ToggleSwitch
+                                                    IsOn="{x:Bind IsActive}"
+                                                    Style="{StaticResource RightAlignedCompactToggleSwitchStyle}"
+                                                    Toggled="ProgramToggleSwitch_Toggled" />
+                                                <Button
+                                                    VerticalAlignment="Center"
+                                                    Content="{ui:FontIcon Glyph=&#xE712;,
+                                                                          FontSize=14}"
+                                                    Style="{StaticResource SubtleButtonStyle}">
+                                                    <Button.Flyout>
+                                                        <MenuFlyout>
+                                                            <MenuFlyoutItem
+                                                                Click="DeleteMapping_Click"
+                                                                Icon="{ui:FontIcon Glyph=&#xE74D;,
+                                                                                   FontSize=14}"
+                                                                Tag="{x:Bind}"
+                                                                Text="Delete" />
+                                                        </MenuFlyout>
+                                                    </Button.Flyout>
+                                                </Button>
+                                            </StackPanel>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ListView.ItemTemplate>
+                            </ListView>
+                        </StackPanel>
 
                         <!--  URLs Section  -->
-                        <ListView
-                            IsItemClickEnabled="True"
-                            ItemClick="UrlShortcutsList_ItemClick"
-                            ItemsSource="{x:Bind UrlShortcuts}"
-                            ScrollViewer.VerticalScrollMode="Disabled"
-                            SelectionMode="None"
-                            Visibility="{x:Bind UrlShortcuts.Count, Mode=OneWay, Converter={StaticResource CountToVisibilityConverter}}">
-                            <ListView.Header>
-                                <TextBlock Style="{StaticResource BodyStrongTextBlockStyle}" Text="URLs" />
-                            </ListView.Header>
-                            <ListView.ItemTemplate>
-                                <DataTemplate x:DataType="helper:URLShortcut">
-                                    <Grid Height="48">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="348" />
-                                            <ColumnDefinition Width="476" />
-                                            <ColumnDefinition Width="*" />
-                                            <ColumnDefinition Width="84" />
-                                        </Grid.ColumnDefinitions>
-                                        <Rectangle
-                                            Grid.ColumnSpan="5"
-                                            Height="1"
-                                            Margin="-16,0,-16,0"
-                                            HorizontalAlignment="Stretch"
-                                            VerticalAlignment="Bottom"
-                                            Fill="{ThemeResource CardStrokeColorDefaultBrush}"
-                                            Opacity="0.8" />
-                                        <ItemsControl
-                                            Grid.Column="0"
-                                            VerticalAlignment="Center"
-                                            ItemsSource="{x:Bind Shortcut}">
-                                            <ItemsControl.ItemsPanel>
-                                                <ItemsPanelTemplate>
-                                                    <StackPanel Orientation="Horizontal" Spacing="4" />
-                                                </ItemsPanelTemplate>
-                                            </ItemsControl.ItemsPanel>
-                                            <ItemsControl.ItemTemplate>
-                                                <DataTemplate>
-                                                    <controls:KeyVisual
-                                                        HorizontalAlignment="Left"
-                                                        Content="{Binding}"
-                                                        Style="{StaticResource DefaultKeyVisualStyle}" />
-                                                </DataTemplate>
-                                            </ItemsControl.ItemTemplate>
-                                        </ItemsControl>
-                                        <HyperlinkButton
-                                            Grid.Column="1"
-                                            Margin="-12,0,0,0"
-                                            Content="{x:Bind URL}" />
-                                        <Button
-                                            Grid.Column="3"
-                                            Margin="0,0,4,0"
-                                            Padding="8,4"
-                                            HorizontalAlignment="Right"
-                                            VerticalAlignment="Center"
-                                            Background="Transparent"
-                                            BorderThickness="0"
-                                            Click="DeleteMapping_Click">
-                                            <FontIcon
-                                                FontFamily="{StaticResource SymbolThemeFontFamily}"
-                                                FontSize="16"
-                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                                Glyph="&#xE74D;" />
-                                        </Button>
-                                    </Grid>
-                                </DataTemplate>
-                            </ListView.ItemTemplate>
-                        </ListView>
+                        <StackPanel Orientation="Vertical" Visibility="{x:Bind UrlShortcuts.Count, Mode=OneWay, Converter={StaticResource CountToVisibilityConverter}}">
+                            <TextBlock
+                                Margin="16,16,0,8"
+                                Style="{StaticResource BodyStrongTextBlockStyle}"
+                                Text="Urls" />
+                            <Rectangle
+                                Height="1"
+                                HorizontalAlignment="Stretch"
+                                Fill="{ThemeResource CardStrokeColorDefaultBrush}" />
+                            <ListView
+                                IsItemClickEnabled="True"
+                                ItemClick="UrlShortcutsList_ItemClick"
+                                ItemsSource="{x:Bind UrlShortcuts}"
+                                ScrollViewer.VerticalScrollMode="Disabled"
+                                SelectionMode="None">
+                                <ListView.ItemTemplate>
+                                    <DataTemplate x:DataType="helper:URLShortcut">
+                                        <Grid MinHeight="48" Padding="0,8,0,8">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <Rectangle Style="{StaticResource ItemDividerStyle}" />
+
+                                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                                <ItemsControl VerticalAlignment="Center" ItemsSource="{x:Bind Shortcut}">
+                                                    <ItemsControl.ItemsPanel>
+                                                        <ItemsPanelTemplate>
+                                                            <StackPanel Orientation="Horizontal" Spacing="4" />
+                                                        </ItemsPanelTemplate>
+                                                    </ItemsControl.ItemsPanel>
+                                                    <ItemsControl.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <controls:KeyVisual Content="{Binding}" Style="{StaticResource OriginalKeyVisualStyle}" />
+                                                        </DataTemplate>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
+                                                <TextBlock
+                                                    VerticalAlignment="Center"
+                                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                    Text="opens" />
+                                                <controls:IconLabelControl
+                                                    ActionType="Url"
+                                                    Label="{x:Bind URL}"
+                                                    Style="{StaticResource RemappedIconLabelControlStyle}" />
+
+                                            </StackPanel>
+                                            <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                                <!--  TO DO: Add ToggleSwitch  -->
+                                                <Button
+                                                    VerticalAlignment="Center"
+                                                    Content="{ui:FontIcon Glyph=&#xE712;,
+                                                                          FontSize=14}"
+                                                    Style="{StaticResource SubtleButtonStyle}">
+                                                    <Button.Flyout>
+                                                        <MenuFlyout>
+                                                            <MenuFlyoutItem
+                                                                Click="DeleteMapping_Click"
+                                                                Icon="{ui:FontIcon Glyph=&#xE74D;,
+                                                                                   FontSize=14}"
+                                                                Tag="{x:Bind}"
+                                                                Text="Delete" />
+                                                        </MenuFlyout>
+                                                    </Button.Flyout>
+                                                </Button>
+                                            </StackPanel>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ListView.ItemTemplate>
+                            </ListView>
+                        </StackPanel>
                     </StackPanel>
                 </Grid>
             </ScrollViewer>
@@ -392,6 +425,7 @@
         <ContentDialog
             x:Name="RemappingDialog"
             Title="Add new remapping"
+            Width="720"
             MinWidth="800"
             MinHeight="500"
             MaxWidth="900"

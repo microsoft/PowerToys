@@ -600,7 +600,7 @@ namespace KeyboardManagerEditorUI.Pages
 
         private async void DeleteMapping_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is not Button button || _mappingService == null)
+            if (sender is not MenuFlyoutItem menuFlyoutItem || _mappingService == null)
             {
                 return;
             }
@@ -613,7 +613,7 @@ namespace KeyboardManagerEditorUI.Pages
 
             try
             {
-                switch (button.DataContext)
+                switch (menuFlyoutItem.Tag)
                 {
                     case Remapping remapping:
                         if (RemappingHelper.DeleteRemapping(_mappingService, remapping))
@@ -716,7 +716,7 @@ namespace KeyboardManagerEditorUI.Pages
                         break;
 
                     default:
-                        Logger.LogWarning($"Unknown DataContext type for delete: {button.DataContext?.GetType().Name ?? "null"}");
+                        Logger.LogWarning($"Unknown DataContext type for delete: {menuFlyoutItem.Tag?.GetType().Name ?? "null"}");
                         break;
                 }
             }
@@ -865,7 +865,7 @@ namespace KeyboardManagerEditorUI.Pages
                     OriginalKeys = originalKeyNames,
                     RemappedKeys = targetKeyNames,
                     IsAllApps = string.IsNullOrEmpty(mapping.TargetApp),
-                    AppName = string.IsNullOrEmpty(mapping.TargetApp) ? "All Apps" : mapping.TargetApp,
+                    AppName = string.IsNullOrEmpty(mapping.TargetApp) ? string.Empty : mapping.TargetApp,
                 });
             }
         }
@@ -888,7 +888,7 @@ namespace KeyboardManagerEditorUI.Pages
                     Keys = new List<string> { _mappingService.GetKeyDisplayName(mapping.OriginalKey) },
                     Text = mapping.TargetText,
                     IsAllApps = true,
-                    AppName = "All Apps",
+                    AppName = string.Empty,
                 });
             }
 
@@ -910,7 +910,7 @@ namespace KeyboardManagerEditorUI.Pages
                     Keys = originalKeyNames,
                     Text = mapping.TargetText,
                     IsAllApps = string.IsNullOrEmpty(mapping.TargetApp),
-                    AppName = string.IsNullOrEmpty(mapping.TargetApp) ? "All Apps" : mapping.TargetApp,
+                    AppName = string.IsNullOrEmpty(mapping.TargetApp) ? string.Empty : mapping.TargetApp,
                 });
             }
         }

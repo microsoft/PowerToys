@@ -328,7 +328,7 @@ namespace KeyboardManagerEditorUI.Pages
                     OriginalKeys = originalKeyNames,
                     RemappedKeys = targetKeyNames,
                     IsAllApps = string.IsNullOrEmpty(mapping.TargetApp),
-                    AppName = string.IsNullOrEmpty(mapping.TargetApp) ? "All Apps" : mapping.TargetApp,
+                    AppName = string.IsNullOrEmpty(mapping.TargetApp) ? string.Empty : mapping.TargetApp,
                 });
             }
         }

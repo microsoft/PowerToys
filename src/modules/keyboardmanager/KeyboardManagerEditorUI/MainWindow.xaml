@@ -34,7 +34,12 @@
                     Source="/Assets/FluentIconsKeyboardManager.png" />
             </TitleBar.LeftHeader>
         </TitleBar>
-        <NavigationView
+
+        <pages:All
+            Grid.Row="1"
+            HorizontalAlignment="Stretch"
+            VerticalAlignment="Stretch" />
+        <!--<NavigationView
             x:Name="RootView"
             Grid.Row="1"
             IsBackButtonVisible="Collapsed"
@@ -73,6 +78,6 @@
             <NavigationView.Content>
                 <Frame x:Name="NavigationFrame" Margin="0,0,0,0" />
             </NavigationView.Content>
-        </NavigationView>
+        </NavigationView>-->
     </Grid>
 </winuiex:WindowEx>
