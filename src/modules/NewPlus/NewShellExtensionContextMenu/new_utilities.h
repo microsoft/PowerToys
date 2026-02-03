@@ -148,20 +148,6 @@ namespace newplus::utilities
             LogSettings::newLoggerName);
     }
 
-    inline void register_msix_package()
-    {
-        if (package::IsWin11OrGreater())
-        {
-            static const auto new_dll_path = get_module_folderpath(module_instance_handle);
-            auto new_package_uri = new_dll_path + L"\\" + constants::non_localizable::msix_package_name;
-
-            if (!package::IsPackageRegisteredWithPowerToysVersion(constants::non_localizable::context_menu_package_name))
-            {
-                package::RegisterSparsePackage(new_dll_path, new_package_uri);
-            }
-        }
-    }
-
     inline std::wstring get_path_from_unknown_site(const ComPtr<IUnknown> site_of_folder)
     {
         ComPtr<IServiceProvider> service_provider;

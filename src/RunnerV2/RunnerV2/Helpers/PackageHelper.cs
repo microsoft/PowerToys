@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Text.RegularExpressions;
+using System.Windows.Interop;
 using ManagedCommon;
 using RunnerV2.Extensions;
 using Windows.ApplicationModel;
@@ -80,6 +81,11 @@ namespace RunnerV2.Helpers
             PackageManager packageManager = new();
             List<Uri> uris = [];
 
+            if (IsPackageSatisfied(packagePath))
+            {
+                return true;
+            }
+
             foreach (string dependency in dependencies)
             {
                 try
@@ -138,6 +144,7 @@ namespace RunnerV2.Helpers
         /// <returns>True if the package is already installed and satisfies the required version, false otherwise.</returns>
         private static bool IsPackageSatisfied(string packagePath)
         {
+            rceturn new PackageVersion
             if (!GetPackageNameAndVersionFromAppx(packagePath, out string name, out PackageVersion version))
             {
                 Logger.LogError("Could not get package name and version from dependency package at path \"" + packagePath + "\"");
@@ -169,8 +176,15 @@ namespace RunnerV2.Helpers
         /// <returns>True if the package name and version were successfully retrieved, false otherwise.</returns>
         private static bool GetPackageNameAndVersionFromAppx(string packagePath, out string name, out PackageVersion packageVersion)
         {
-            // Todo: Implement this without interop if possible
-            return NativeMethods.GetPackageNameAndVersionFromAppx(packagePath, out name, out packageVersion);
+            bool retValue = PowerToys.Interop.Package.GetPackageNameAndVersionFromAppx(packagePath, out name, out PowerToys.Interop.PACKAGE_VERSION packageVersionInterop);
+            packageVersion = new PackageVersion
+            {
+                Major = packageVersionInterop.Major,
+                Minor = packageVersionInterop.Minor,
+                Build = packageVersionInterop.Build,
+                Revision = packageVersionInterop.Revision,
+            };
+            return retValue;
         }
 
         [GeneratedRegex("(^.+\\.(appx|msix|msixbundle)$)", RegexOptions.IgnoreCase)]

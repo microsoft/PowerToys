@@ -230,12 +230,6 @@ namespace RunnerV2
         [DllImport("user32.dll")]
         internal static extern uint SendInput(uint nInputs, NativeKeyboardHelper.INPUT[] pInputs, int cbSize);
 
-        [DllImport("PowerToys.Interop.dll", CallingConvention = CallingConvention.Cdecl)]
-        internal static extern bool GetPackageNameAndVersionFromAppx(
-            [MarshalAs(UnmanagedType.LPWStr)] string appxPath,
-            [MarshalAs(UnmanagedType.LPWStr)] out string outName,
-            out PackageVersion outVersion);
-
         [LibraryImport("Shell32.dll", SetLastError = true)]
         internal static partial void SHChangeNotify(
             uint wEventId,

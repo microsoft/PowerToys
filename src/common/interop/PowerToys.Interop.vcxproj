@@ -86,14 +86,13 @@
       <AdditionalOptions>%(AdditionalOptions) /bigobj /Zc:twoPhase- </AdditionalOptions>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>WindowsApp.lib;shell32.lib;advapi32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>WindowsApp.lib;shell32.lib;advapi32.lib;Shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Console</SubSystem>
       <GenerateWindowsMetadata>false</GenerateWindowsMetadata>
       <ModuleDefinitionFile>PowerToys.Interop.def</ModuleDefinitionFile>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\utils\package.h" />
     <ClInclude Include="async_message_queue.h" />
     <ClInclude Include="CommonManaged.h">
       <DependentUpon>CommonManaged.idl</DependentUpon>
@@ -112,6 +111,7 @@
     <ClInclude Include="LayoutMapManaged.h">
       <DependentUpon>LayoutMapManaged.idl</DependentUpon>
     </ClInclude>
+    <ClInclude Include="Package.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="shared_constants.h" />
@@ -139,6 +139,7 @@
     <ClCompile Include="LayoutMapManaged.cpp">
       <DependentUpon>LayoutMapManaged.idl</DependentUpon>
     </ClCompile>
+    <ClCompile Include="Package.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
@@ -167,6 +168,7 @@
     <Midl Include="HotkeyManager.idl" />
     <Midl Include="KeyboardHook.idl" />
     <Midl Include="LayoutMapManaged.idl" />
+    <Midl Include="Package.idl" />
     <Midl Include="ThemeHelper.idl" />
     <Midl Include="TwoWayPipeMessageIPCManaged.idl" />
   </ItemGroup>
