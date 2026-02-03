@@ -112,8 +112,8 @@
                                             <controls:IsEnabledTextBlock x:Uid="LightSwitch_SunriseText" VerticalAlignment="Center" />
                                             <NumberBox
                                                 AutomationProperties.AutomationId="SunriseOffset_LightSwitch"
-                                                Maximum="60"
-                                                Minimum="-60"
+                                                Maximum="{x:Bind ViewModel.SunriseOffsetMax, Mode=OneWay}"
+                                                Minimum="{x:Bind ViewModel.SunriseOffsetMin, Mode=OneWay}"
                                                 SpinButtonPlacementMode="Compact"
                                                 Value="{x:Bind ViewModel.SunriseOffset, Mode=TwoWay}" />
                                         </StackPanel>
@@ -121,8 +121,8 @@
                                             <controls:IsEnabledTextBlock x:Uid="LightSwitch_SunsetText" VerticalAlignment="Center" />
                                             <NumberBox
                                                 AutomationProperties.AutomationId="SunsetOffset_LightSwitch"
-                                                Maximum="60"
-                                                Minimum="-60"
+                                                Maximum="{x:Bind ViewModel.SunsetOffsetMax, Mode=OneWay}"
+                                                Minimum="{x:Bind ViewModel.SunsetOffsetMin, Mode=OneWay}"
                                                 SpinButtonPlacementMode="Compact"
                                                 Value="{x:Bind ViewModel.SunsetOffset, Mode=TwoWay}" />
                                         </StackPanel>

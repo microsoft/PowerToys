@@ -28,7 +28,7 @@ public:
     void OnSettingsChanged();
 
     // Called every minute (from service worker tick).
-    void OnTick(int currentMinutes);
+    void OnTick();
 
     // Called when manual override is toggled (via shortcut or system change).
     void OnManualOverride();

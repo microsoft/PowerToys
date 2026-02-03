@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using ManagedCommon;
 using Microsoft.CmdPal.Core.Common.Helpers;
 using Microsoft.CmdPal.Ext.Apps.Commands;
+using Microsoft.CmdPal.Ext.Apps.Helpers;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
@@ -17,6 +18,7 @@ public sealed partial class AppListItem : ListItem
 {
     private readonly AppCommand _appCommand;
     private readonly AppItem _app;
+
     private readonly Lazy<Task<IconInfo?>> _iconLoadTask;
     private readonly Lazy<Task<Details>> _detailsLoadTask;
 
@@ -66,7 +68,7 @@ public sealed partial class AppListItem : ListItem
         MoreCommands = AddPinCommands(_app.Commands!, isPinned);
 
         _detailsLoadTask = new Lazy<Task<Details>>(BuildDetails);
-        _iconLoadTask = new Lazy<Task<IconInfo?>>(async () => await FetchIcon(useThumbnails));
+        _iconLoadTask = new Lazy<Task<IconInfo?>>(async () => await FetchIcon(useThumbnails).ConfigureAwait(false));
     }
 
     private async Task LoadDetailsAsync()
@@ -85,12 +87,27 @@ public sealed partial class AppListItem : ListItem
     {
         try
         {
-            Icon = _appCommand.Icon = await _iconLoadTask.Value ?? Icons.GenericAppIcon;
+            Icon = _appCommand.Icon = CoalesceIcon(await _iconLoadTask.Value);
         }
         catch (Exception ex)
         {
             Logger.LogWarning($"Failed to load icon for {AppIdentifier}\n{ex}");
         }
+    }
+
+    private static IconInfo CoalesceIcon(IconInfo? value)
+    {
+        return CoalesceIcon(value, Icons.GenericAppIcon)!;
+    }
+
+    private static IconInfo? CoalesceIcon(IconInfo? value, IconInfo? replacement)
+    {
+        return IconIsNullOrEmpty(value) ? replacement : value;
+    }
+
+    private static bool IconIsNullOrEmpty(IconInfo? value)
+    {
+        return value == null || (string.IsNullOrEmpty(value.Light?.Icon) && value.Light?.Data is null) || (string.IsNullOrEmpty(value.Dark?.Icon) && value.Dark?.Data is null);
     }
 
     private async Task<Details> BuildDetails()
@@ -107,24 +124,49 @@ public sealed partial class AppListItem : ListItem
         metadata.Add(new DetailsElement() { Key = "[DEBUG] AppIdentifier", Data = new DetailsLink() { Text = _app.AppIdentifier } });
         metadata.Add(new DetailsElement() { Key = "[DEBUG] ExePath", Data = new DetailsLink() { Text = _app.ExePath } });
         metadata.Add(new DetailsElement() { Key = "[DEBUG] IcoPath", Data = new DetailsLink() { Text = _app.IcoPath } });
+        metadata.Add(new DetailsElement() { Key = "[DEBUG] JumboIconPath", Data = new DetailsLink() { Text = _app.JumboIconPath ?? "(null)" } });
 #endif
 
         // Icon
         IconInfo? heroImage = null;
         if (_app.IsPackaged)
         {
-            heroImage = new IconInfo(_app.IcoPath);
+            heroImage = new IconInfo(_app.JumboIconPath ?? _app.IcoPath);
         }
         else
         {
+            // Get the icon from the system
+            if (!string.IsNullOrEmpty(_app.JumboIconPath))
+            {
+                var randomAccessStream = await IconExtractor.GetIconStreamAsync(_app.JumboIconPath, 64);
+                if (randomAccessStream != null)
+                {
+                    heroImage = IconInfo.FromStream(randomAccessStream);
+                }
+            }
+
+            if (IconIsNullOrEmpty(heroImage) && !string.IsNullOrEmpty(_app.IcoPath))
+            {
+                var randomAccessStream = await IconExtractor.GetIconStreamAsync(_app.IcoPath, 64);
+                if (randomAccessStream != null)
+                {
+                    heroImage = IconInfo.FromStream(randomAccessStream);
+                }
+            }
+
             // do nothing if we fail to load an icon.
             // Logging it would be too NOISY, there's really no need.
-            if (!string.IsNullOrEmpty(_app.IcoPath))
+            if (IconIsNullOrEmpty(heroImage) && !string.IsNullOrEmpty(_app.JumboIconPath))
+            {
+                heroImage = await TryLoadThumbnail(_app.JumboIconPath, jumbo: true, logOnFailure: false);
+            }
+
+            if (IconIsNullOrEmpty(heroImage) && !string.IsNullOrEmpty(_app.IcoPath))
             {
                 heroImage = await TryLoadThumbnail(_app.IcoPath, jumbo: true, logOnFailure: false);
             }
 
-            if (heroImage == null && !string.IsNullOrEmpty(_app.ExePath))
+            if (IconIsNullOrEmpty(heroImage) && !string.IsNullOrEmpty(_app.ExePath))
             {
                 heroImage = await TryLoadThumbnail(_app.ExePath, jumbo: true, logOnFailure: false);
             }
@@ -133,8 +175,8 @@ public sealed partial class AppListItem : ListItem
         return new Details()
         {
             Title = this.Title,
-            HeroImage = heroImage ?? this.Icon ?? Icons.GenericAppIcon,
-            Metadata = metadata.ToArray(),
+            HeroImage = CoalesceIcon(CoalesceIcon(heroImage, this.Icon as IconInfo)),
+            Metadata = [..metadata],
         };
     }
 
@@ -154,7 +196,7 @@ public sealed partial class AppListItem : ListItem
                 icon = await TryLoadThumbnail(_app.IcoPath, jumbo: false, logOnFailure: true);
             }
 
-            if (icon == null && !string.IsNullOrEmpty(_app.ExePath))
+            if (IconIsNullOrEmpty(icon) && !string.IsNullOrEmpty(_app.ExePath))
             {
                 icon = await TryLoadThumbnail(_app.ExePath, jumbo: false, logOnFailure: true);
             }
@@ -196,22 +238,25 @@ public sealed partial class AppListItem : ListItem
 
     private async Task<IconInfo?> TryLoadThumbnail(string path, bool jumbo, bool logOnFailure)
     {
-        try
+        return await Task.Run(async () =>
         {
-            var stream = await ThumbnailHelper.GetThumbnail(path, jumbo);
-            if (stream is not null)
+            try
             {
-                return IconInfo.FromStream(stream);
+                var stream = await ThumbnailHelper.GetThumbnail(path, jumbo).ConfigureAwait(false);
+                if (stream is not null)
+                {
+                    return IconInfo.FromStream(stream);
+                }
             }
-        }
-        catch (Exception ex)
-        {
-            if (logOnFailure)
+            catch (Exception ex)
             {
-                Logger.LogDebug($"Failed to load icon {path} for {AppIdentifier}:\n{ex}");
+                if (logOnFailure)
+                {
+                    Logger.LogDebug($"Failed to load icon {path} for {AppIdentifier}:\n{ex}");
+                }
             }
-        }
 
-        return null;
+            return null;
+        }).ConfigureAwait(false);
     }
 }

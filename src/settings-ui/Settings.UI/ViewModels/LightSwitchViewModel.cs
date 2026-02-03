@@ -251,6 +251,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     NotifyPropertyChanged();
 
                     OnPropertyChanged(nameof(LightTimeTimeSpan));
+                    OnPropertyChanged(nameof(SunriseOffsetMin));
+                    OnPropertyChanged(nameof(SunsetOffsetMin));
 
                     if (ScheduleMode == "SunsetToSunrise")
                     {
@@ -271,6 +273,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     NotifyPropertyChanged();
 
                     OnPropertyChanged(nameof(DarkTimeTimeSpan));
+                    OnPropertyChanged(nameof(SunriseOffsetMax));
+                    OnPropertyChanged(nameof(SunsetOffsetMax));
 
                     if (ScheduleMode == "SunsetToSunrise")
                     {
@@ -289,6 +293,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     ModuleSettings.Properties.SunriseOffset.Value = value;
                     OnPropertyChanged(nameof(LightTimeTimeSpan));
+                    OnPropertyChanged(nameof(SunsetOffsetMin));
                 }
             }
         }
@@ -302,7 +307,46 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     ModuleSettings.Properties.SunsetOffset.Value = value;
                     OnPropertyChanged(nameof(DarkTimeTimeSpan));
+                    OnPropertyChanged(nameof(SunriseOffsetMax));
                 }
+            }
+        }
+
+        public int SunriseOffsetMin
+        {
+            get
+            {
+                // Minimum: don't let adjusted sunrise go before 00:00
+                return -LightTime;
+            }
+        }
+
+        public int SunriseOffsetMax
+        {
+            get
+            {
+                // Maximum: adjusted sunrise must stay before adjusted sunset
+                int adjustedSunset = DarkTime + SunsetOffset;
+                return Math.Max(0, adjustedSunset - LightTime - 1);
+            }
+        }
+
+        public int SunsetOffsetMin
+        {
+            get
+            {
+                // Minimum: adjusted sunset must stay after adjusted sunrise
+                int adjustedSunrise = LightTime + SunriseOffset;
+                return Math.Min(0, adjustedSunrise - DarkTime + 1);
+            }
+        }
+
+        public int SunsetOffsetMax
+        {
+            get
+            {
+                // Maximum: don't let adjusted sunset go past 23:59 (1439 minutes)
+                return 1439 - DarkTime;
             }
         }
 
