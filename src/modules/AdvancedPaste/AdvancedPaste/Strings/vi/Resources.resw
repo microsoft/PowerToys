@@ -1,0 +1,375 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="AIMistakeNote.Text" xml:space="preserve">
+    <value>AI có thể mắc lỗi.</value>
+  </data>
+  <data name="ClipboardEmptyWarning" xml:space="preserve">
+    <value>Bộ nhớ tạm không chứa bất kỳ định dạng nào có thể sử dụng</value>
+  </data>
+  <data name="OpenAINotConfigured" xml:space="preserve">
+    <value>Tùy chỉnh với AI chưa được bật</value>
+  </data>
+  <data name="OpenAIApiKeyUnauthorized" xml:space="preserve">
+    <value>Khóa API hoặc điểm cuối không hợp lệ</value>
+  </data>
+  <data name="OpenAIApiKeyTooManyRequests" xml:space="preserve">
+    <value>Đã vượt quá hạn mức khóa API</value>
+  </data>
+  <data name="OpenAIApiKeyError" xml:space="preserve">
+    <value>Yêu cầu OpenAI thất bại với mã trạng thái: </value>
+  </data>
+  <data name="PasteActionCanceled" xml:space="preserve">
+    <value>Thao tác dán đã bị hủy</value>
+  </data>
+  <data name="PasteError" xml:space="preserve">
+    <value>Đã xảy ra lỗi trong quá trình dán</value>
+  </data>
+  <data name="PasteActionModerated" xml:space="preserve">
+    <value>Thao tác dán đã bị kiểm duyệt do nội dung nhạy cảm. Vui lòng thử truy vấn khác.</value>
+  </data>
+  <data name="ClipboardHistoryButtonToolTip.Text" xml:space="preserve">
+    <value>Lịch sử bộ nhớ tạm</value>
+  </data>
+  <data name="ClipboardHistoryButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Lịch sử bộ nhớ tạm</value>
+  </data>
+  <data name="AIProviderButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Bộ chọn nhà cung cấp AI</value>
+  </data>
+  <data name="AIProviderButtonTooltipEmpty" xml:space="preserve">
+    <value>Chọn một nhà cung cấp AI</value>
+  </data>
+  <data name="AIProviderButtonTooltipFormat" xml:space="preserve">
+    <value>Nhà cung cấp đang hoạt động: {0}</value>
+  </data>
+  <data name="AIProvidersFlyoutHeader.Text" xml:space="preserve">
+    <value>Mô hình đã cấu hình</value>
+  </data>
+  <data name="AIProvidersEmptyText.Text" xml:space="preserve">
+    <value>Chưa có mô hình nào được cấu hình</value>
+  </data>
+  <data name="AIProvidersManageButtonContent.Content" xml:space="preserve">
+    <value>Cấu hình mô hình trong Cài đặt</value>
+  </data>
+  <data name="ClipboardHistoryImage" xml:space="preserve">
+    <value>Dữ liệu hình ảnh</value>
+    <comment>Label used to represent an image in the clipboard history</comment>
+  </data>
+  <data name="ClipboardPreviewCategoryText" xml:space="preserve">
+    <value>Văn bản</value>
+  </data>
+  <data name="ClipboardPreviewCategoryImage" xml:space="preserve">
+    <value>Hình ảnh</value>
+  </data>
+  <data name="ClipboardPreviewCategoryAudio" xml:space="preserve">
+    <value>Âm thanh</value>
+  </data>
+  <data name="ClipboardPreviewCategoryVideo" xml:space="preserve">
+    <value>Video</value>
+  </data>
+  <data name="ClipboardPreviewCategoryFile" xml:space="preserve">
+    <value>Tệp</value>
+  </data>
+  <data name="ClipboardPreviewCategoryUnknown" xml:space="preserve">
+    <value>Bộ nhớ tạm</value>
+  </data>
+  <data name="ClipboardPreviewCopiedJustNow" xml:space="preserve">
+    <value>Đã sao chép</value>
+  </data>
+  <data name="ClipboardPreviewCopiedSeconds" xml:space="preserve">
+    <value>Đã sao chép {0} giây trước</value>
+  </data>
+  <data name="ClipboardPreviewCopiedMinutes" xml:space="preserve">
+    <value>Đã sao chép {0} phút trước</value>
+  </data>
+  <data name="ClipboardPreviewCopiedHours" xml:space="preserve">
+    <value>Đã sao chép {0} giờ trước</value>
+  </data>
+  <data name="ClipboardPreviewCopiedDays" xml:space="preserve">
+    <value>Đã sao chép {0} ngày trước</value>
+  </data>
+  <data name="ClipboardHistoryItemMoreOptionsButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Tùy chọn khác</value>
+  </data>
+  <data name="ClipboardHistoryItemDeleteButton.Text" xml:space="preserve">
+    <value>Xóa</value>
+  </data>
+  <data name="CustomFormatTextBox.PlaceholderText" xml:space="preserve">
+    <value>Mô tả định dạng bạn muốn..</value>
+  </data>
+  <data name="InputTxtBoxTooltip.Text" xml:space="preserve">
+    <value>Mô tả định dạng bạn muốn..</value>
+  </data>
+  <data name="LearnMoreLink.Text" xml:space="preserve">
+    <value>Quyền riêng tư</value>
+  </data>
+  <data name="LoadingText.Text" xml:space="preserve">
+    <value>Đang tạo kết quả...</value>
+  </data>
+  <data name="PasteAsJson" xml:space="preserve">
+    <value>Dán dưới dạng JSON</value>
+  </data>
+  <data name="PasteAsMarkdown" xml:space="preserve">
+    <value>Dán dưới dạng markdown</value>
+  </data>
+  <data name="PasteAsPlainText" xml:space="preserve">
+    <value>Dán dưới dạng văn bản thuần túy</value>
+  </data>
+  <data name="ImageToText" xml:space="preserve">
+    <value>Hình ảnh sang văn bản</value>
+  </data>
+  <data name="PasteAsTxtFile" xml:space="preserve">
+    <value>Dán dưới dạng tệp .txt</value>
+  </data>
+  <data name="PasteAsPngFile" xml:space="preserve">
+    <value>Dán dưới dạng tệp .png</value>
+  </data>
+  <data name="PasteAsHtmlFile" xml:space="preserve">
+    <value>Dán dưới dạng tệp .html</value>
+  </data>
+  <data name="TranscodeToMp3" xml:space="preserve">
+    <value>Chuyển đổi sang .mp3</value>
+    <comment>Option to transcode audio files to MP3 format</comment>
+  </data>
+  <data name="TranscodeToMp4" xml:space="preserve">
+    <value>Chuyển đổi sang .mp4 (H.264/AAC)</value>
+    <comment>Option to transcode video files to MP4 format with H.264 video codec and AAC audio codec</comment>
+  </data>
+  <data name="TranscodeErrorGeneral" xml:space="preserve">
+    <value>Đã xảy ra lỗi khi chuyển đổi tệp phương tiện</value>
+    <comment>Error message displayed when media conversion fails for an unknown or general reason</comment>
+  </data>
+  <data name="TranscodeErrorUnsupportedCodec" xml:space="preserve">
+    <value>Tệp phương tiện chứa codec không được hỗ trợ</value>
+    <comment>Error message displayed when media conversion fails due to an unsupported codec in the source file</comment>
+  </data>
+  <data name="PasteButtonAutomation.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Dán</value>
+  </data>
+  <data name="PasteText.Text" xml:space="preserve">
+    <value>Dán</value>
+  </data>
+  <data name="ResultTitleTxt.Text" xml:space="preserve">
+    <value>Kết quả</value>
+  </data>
+  <data name="RecallBtnToolTip.Text" xml:space="preserve">
+    <value>Hoàn tác về lời nhắc và dữ liệu bộ nhớ tạm trước đó</value>
+  </data>
+  <data name="RecallButtonAutomation.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Hoàn tác về lời nhắc và dữ liệu bộ nhớ tạm trước đó</value>
+  </data>
+  <data name="SendBtnToolTip.Text" xml:space="preserve">
+    <value>Tạo và dán dữ liệu</value>
+  </data>
+  <data name="CancelBtnToolTip.Text" xml:space="preserve">
+    <value>Hủy thao tác dán</value>
+  </data>
+  <data name="RegenerateBtnToolTip.Text" xml:space="preserve">
+    <value>Tạo lại</value>
+  </data>
+  <data name="RegenerateBtnAutomation.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Tạo lại</value>
+  </data>
+  <data name="SendButtonAutomation.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Tạo và dán dữ liệu</value>
+  </data>
+  <data name="CancelBtnAutomation.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Hủy thao tác dán</value>
+  </data>
+  <data name="SettingsBtn.Content" xml:space="preserve">
+    <value>Mở cài đặt</value>
+  </data>
+  <data name="SettingsBtn.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Mở cài đặt</value>
+  </data>
+  <data name="AIErrorMessage.Header" xml:space="preserve">
+    <value>Trợ lý AI đã cung cấp thông báo sau:</value>
+  </data>
+  <data name="ThumbsDownFeedback.Text" xml:space="preserve">
+    <value>Phản hồi không thích</value>
+  </data>
+  <data name="ThumbsUpFeedback.Text" xml:space="preserve">
+    <value>Phản hồi thích</value>
+  </data>
+  <data name="WindowTitle" xml:space="preserve">
+    <value>Advanced Paste</value>
+  </data>
+  <data name="PreviousResultBtnToolTip.Text" xml:space="preserve">
+    <value>Kết quả trước</value>
+  </data>
+  <data name="PreviousResultBtnAutomation.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Kết quả trước</value>
+  </data>
+  <data name="NextResultBtnToolTip.Text" xml:space="preserve">
+    <value>Kết quả tiếp theo</value>
+  </data>
+  <data name="NextResultBtnAutomation.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Kết quả tiếp theo</value>
+  </data>
+  <data name="PrivacyLink.Content" xml:space="preserve">
+    <value>Chính sách quyền riêng tư</value>
+  </data>
+  <data name="TermsLink.Content" xml:space="preserve">
+    <value>Điều khoản</value>
+  </data>
+  <data name="OpenAIGpoDisabled" xml:space="preserve">
+    <value>Tùy chỉnh với AI đã bị tổ chức của bạn vô hiệu hóa</value>
+  </data>
+  <data name="CtrlKey" xml:space="preserve">
+    <value>Ctrl</value>
+  </data>
+  <data name="PasteAsFile_FilePrefix" xml:space="preserve">
+    <value>PowerToys_Paste_</value>
+  </data>
+  <data name="Relative_JustNow" xml:space="preserve">
+    <value>Vừa xong</value>
+  </data>
+  <data name="Relative_MinuteAgo" xml:space="preserve">
+    <value>1 phút trước</value>
+  </data>
+  <data name="Relative_MinutesAgo_Format" xml:space="preserve">
+    <value>{0} phút trước</value>
+  </data>
+  <data name="Relative_Today_TimeFormat" xml:space="preserve">
+    <value>Hôm nay, {0}</value>
+  </data>
+  <data name="Relative_Yesterday_TimeFormat" xml:space="preserve">
+    <value>Hôm qua, {0}</value>
+  </data>
+  <data name="Relative_Weekday_TimeFormat" xml:space="preserve">
+    <value>{0}, {1}</value>
+    <comment>(e.g., "Wednesday, 17:05")</comment>
+  </data>
+  <data name="Relative_Date_TimeFormat" xml:space="preserve">
+    <value>{0}, {1}</value>
+    <comment>(e.g., "10/20/2025, 17:05" in the user's locale)</comment>
+  </data>
+  <data name="CustomEndpointWarning" xml:space="preserve">
+    <value>Bạn đang sử dụng điểm cuối tùy chỉnh. Hãy xác minh tất cả các câu trả lời.</value>
+  </data>
+  <data name="LocalModelBadge.Text" xml:space="preserve">
+    <value>Cục bộ</value>
+    <comment>Badge label displayed next to local AI model providers (e.g., Ollama, Foundry Local) to indicate the model runs locally</comment>
+  </data>
+  <data name="FoundryLocal_UnableToLoadModel" xml:space="preserve">
+    <value>Không thể tải mô hình Foundry Local: {0}</value>
+    <comment>{0} is the model identifier. Do not translate {0}.</comment>
+  </data>
+</root>
