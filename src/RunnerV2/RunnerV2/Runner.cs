@@ -72,6 +72,7 @@ namespace RunnerV2
             new MouseWithoutBordersModuleInterface(),
             new NewPlusModuleInterface(),
             new PowerRenameModuleInterface(),
+            new ImageResizerModuleInterface(),
         ];
 
         /// <summary>

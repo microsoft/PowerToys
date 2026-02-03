@@ -10,7 +10,6 @@
 #include <common/utils/process_path.h>
 #include <common/utils/resources.h>
 #include <common/utils/HDropIterator.h>
-#include <common/utils/package.h>
 
 extern HINSTANCE g_hInst_imageResizer;
 
