@@ -2,15 +2,11 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using CommunityToolkit.WinUI.Deferred;
 using ManagedCommon;
-using Microsoft.CmdPal.Core.ViewModels;
-using Microsoft.CmdPal.UI.Deferred;
-using Microsoft.Terminal.UI;
-using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
-
 using Windows.Foundation;
 
 namespace Microsoft.CmdPal.UI.Controls;
@@ -20,7 +16,11 @@ namespace Microsoft.CmdPal.UI.Controls;
 /// </summary>
 public partial class IconBox : ContentControl
 {
-    private readonly DispatcherQueue _queue = DispatcherQueue.GetForCurrentThread();
+    private double _lastScale;
+    private ElementTheme _lastTheme;
+    private double _lastFontSize;
+
+    private const double DefaultIconFontSize = 16.0;
 
     /// <summary>
     /// Gets or sets the <see cref="IconSource"/> to display within the <see cref="IconBox"/>. Overwritten, if <see cref="SourceKey"/> is used instead.
@@ -48,10 +48,23 @@ public partial class IconBox : ContentControl
     public static readonly DependencyProperty SourceKeyProperty =
         DependencyProperty.Register(nameof(SourceKey), typeof(object), typeof(IconBox), new PropertyMetadata(null, OnSourceKeyPropertyChanged));
 
+    private TypedEventHandler<IconBox, SourceRequestedEventArgs>? _sourceRequested;
+
     /// <summary>
     /// Gets or sets the <see cref="SourceRequested"/> event handler to provide the value of the <see cref="IconSource"/> for the <see cref="Source"/> property from the provided <see cref="SourceKey"/>.
     /// </summary>
-    public event TypedEventHandler<IconBox, SourceRequestedEventArgs>? SourceRequested;
+    public event TypedEventHandler<IconBox, SourceRequestedEventArgs>? SourceRequested
+    {
+        add
+        {
+            _sourceRequested += value;
+            if (_sourceRequested?.GetInvocationList().Length == 1)
+            {
+                Refresh();
+            }
+        }
+        remove => _sourceRequested -= value;
+    }
 
     public IconBox()
     {
@@ -59,119 +72,208 @@ public partial class IconBox : ContentControl
         IsTabStop = false;
         HorizontalContentAlignment = HorizontalAlignment.Center;
         VerticalContentAlignment = VerticalAlignment.Center;
+
+        Loaded += OnLoaded;
+        Unloaded += OnUnloaded;
+        ActualThemeChanged += OnActualThemeChanged;
+        SizeChanged += OnSizeChanged;
+
+        UpdateLastFontSize();
+    }
+
+    private void UpdateLastFontSize()
+    {
+        _lastFontSize =
+            Pick(Width)
+            ?? Pick(Height)
+            ?? Pick(ActualWidth)
+            ?? Pick(ActualHeight)
+            ?? DefaultIconFontSize;
+
+        return;
+
+        static double? Pick(double value) => double.IsFinite(value) && value > 0 ? value : null;
+    }
+
+    private void OnSizeChanged(object s, SizeChangedEventArgs e)
+    {
+        UpdateLastFontSize();
+
+        if (Source is FontIconSource fontIcon)
+        {
+            fontIcon.FontSize = _lastFontSize;
+        }
+    }
+
+    private void OnActualThemeChanged(FrameworkElement sender, object args)
+    {
+        if (_lastTheme == ActualTheme)
+        {
+            return;
+        }
+
+        _lastTheme = ActualTheme;
+        Refresh();
+    }
+
+    private void OnLoaded(object sender, RoutedEventArgs e)
+    {
+        _lastTheme = ActualTheme;
+        UpdateLastFontSize();
+
+        if (XamlRoot is not null)
+        {
+            _lastScale = XamlRoot.RasterizationScale;
+            XamlRoot.Changed += OnXamlRootChanged;
+        }
+    }
+
+    private void OnUnloaded(object sender, RoutedEventArgs e)
+    {
+        if (XamlRoot is not null)
+        {
+            XamlRoot.Changed -= OnXamlRootChanged;
+        }
+    }
+
+    private void OnXamlRootChanged(XamlRoot sender, XamlRootChangedEventArgs args)
+    {
+        var newScale = sender.RasterizationScale;
+        var changedLastTheme = _lastTheme != ActualTheme;
+        _lastTheme = ActualTheme;
+        if ((changedLastTheme || Math.Abs(newScale - _lastScale) > 0.01) && SourceKey is not null)
+        {
+            _lastScale = newScale;
+            UpdateSourceKey(this, SourceKey);
+        }
+    }
+
+    private void Refresh()
+    {
+        if (SourceKey is not null)
+        {
+            UpdateSourceKey(this, SourceKey);
+        }
     }
 
     private static void OnSourcePropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
-        if (d is IconBox @this)
+        if (d is not IconBox self)
         {
-            switch (e.NewValue)
-            {
-                case null:
-                    @this.Content = null;
-                    break;
-                case FontIconSource fontIco:
-                    fontIco.FontSize = double.IsNaN(@this.Width) ? @this.Height : @this.Width;
+            return;
+        }
+
+        switch (e.NewValue)
+        {
+            case null:
+                self.Content = null;
+                self.Padding = default;
+                break;
+            case FontIconSource fontIcon:
+                if (self.Content is IconSourceElement iconSourceElement)
+                {
+                    iconSourceElement.IconSource = fontIcon;
+                }
+                else
+                {
+                    fontIcon.FontSize = self._lastFontSize;
 
                     // For inexplicable reasons, FontIconSource.CreateIconElement
                     // doesn't work, so do it ourselves
                     // TODO: File platform bug?
                     IconSourceElement elem = new()
                     {
-                        IconSource = fontIco,
                         HorizontalAlignment = HorizontalAlignment.Center,
                         VerticalAlignment = VerticalAlignment.Center,
+                        IconSource = fontIcon,
                     };
-                    @this.Content = elem;
-                    break;
-                case IconSource source:
-                    @this.Content = source.CreateIconElement();
-                    break;
-                default:
-                    throw new InvalidOperationException($"New value of {e.NewValue} is not of type IconSource.");
-            }
+                    self.Content = elem;
+                }
+
+                self.Padding = new Thickness(Math.Round(self._lastFontSize * -0.2));
+
+                break;
+            case BitmapIconSource bitmapIcon:
+                if (self.Content is IconSourceElement iconSourceElement2)
+                {
+                    iconSourceElement2.IconSource = bitmapIcon;
+                }
+                else
+                {
+                    self.Content = bitmapIcon.CreateIconElement();
+                }
+
+                self.Padding = default;
+
+                break;
+            case IconSource source:
+                self.Content = source.CreateIconElement();
+                self.Padding = default;
+                break;
+            default:
+                throw new InvalidOperationException($"New value of {e.NewValue} is not of type IconSource.");
         }
     }
 
     private static void OnSourceKeyPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
-        if (d is IconBox @this)
+        if (d is not IconBox self)
         {
-            if (e.NewValue is null)
+            return;
+        }
+
+        UpdateSourceKey(self, e.NewValue);
+    }
+
+    private static void UpdateSourceKey(IconBox iconBox, object? sourceKey)
+    {
+        if (sourceKey is null)
+        {
+            iconBox.Source = null;
+            return;
+        }
+
+        Callback(iconBox, sourceKey);
+    }
+
+    private static async void Callback(IconBox iconBox, object? sourceKey)
+    {
+        try
+        {
+            var iconBoxSourceRequestedHandler = iconBox._sourceRequested;
+
+            if (iconBoxSourceRequestedHandler is null)
             {
-                @this.Source = null;
+                return;
             }
-            else
+
+            var eventArgs = new SourceRequestedEventArgs(sourceKey, iconBox._lastTheme, iconBox._lastScale);
+            await iconBoxSourceRequestedHandler.InvokeAsync(iconBox, eventArgs);
+
+            // After the await:
+            // Is the icon we're looking up now, the one we still
+            // want to find? Since this IconBox might be used in a
+            // list virtualization situation, it's very possible we
+            // may have already been set to a new icon before we
+            // even got back from the await.
+            if (eventArgs.Key != sourceKey)
             {
-                // TODO GH #239 switch back when using the new MD text block
-                // Switching back to EnqueueAsync has broken icons in tags (they don't show)
-                // _ = @this._queue.EnqueueAsync(() =>
-                @this._queue.TryEnqueue(async void () =>
-                {
-                    try
-                    {
-                        if (@this.SourceRequested is null)
-                        {
-                            return;
-                        }
-
-                        var requestedTheme = @this.ActualTheme;
-                        var eventArgs = new SourceRequestedEventArgs(e.NewValue, requestedTheme);
-
-                        await @this.SourceRequested.InvokeAsync(@this, eventArgs);
-
-                        // After the await:
-                        // Is the icon we're looking up now, the one we still
-                        // want to find? Since this IconBox might be used in a
-                        // list virtualization situation, it's very possible we
-                        // may have already been set to a new icon before we
-                        // even got back from the await.
-                        if (eventArgs.Key != @this.SourceKey)
-                        {
-                            // If the requested icon has changed, then just bail
-                            return;
-                        }
-
-                        @this.Source = eventArgs.Value;
-
-                        // Here's a little lesson in trickery:
-                        // Emoji are rendered just a bit bigger than Segoe Icons.
-                        // Just enough bigger that they get clipped if you put
-                        // them in a box at the same size.
-                        //
-                        // So, if the icon we get back was a font icon,
-                        // and the glyph for that icon is NOT in the range of
-                        // Segoe icons, then let's give the icon some extra space
-                        var iconData = eventArgs.Key switch
-                        {
-                            IconDataViewModel key => key,
-                            IconInfoViewModel info => requestedTheme == ElementTheme.Light ? info.Light : info.Dark,
-                            _ => null,
-                        };
-
-                        if (iconData?.Icon is not null && @this.Source is FontIconSource)
-                        {
-                            var iconSize =
-                                !double.IsNaN(@this.Width) ? @this.Width :
-                                !double.IsNaN(@this.Height) ? @this.Height :
-                                @this.ActualWidth > 0 ? @this.ActualWidth :
-                                @this.ActualHeight;
-
-                            @this.Padding = new Thickness(Math.Round(iconSize * -0.2));
-                        }
-                        else
-                        {
-                            @this.Padding = default;
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        // Exception from TryEnqueue bypasses the global error handler,
-                        // and crashes the app.
-                        Logger.LogError("Failed to set icon", ex);
-                    }
-                });
+                // If the requested icon has changed, then just bail
+                return;
             }
+
+            if (eventArgs.Value == iconBox.Source)
+            {
+                return;
+            }
+
+            iconBox.Source = eventArgs.Value;
+        }
+        catch (Exception ex)
+        {
+            // Exception from TryEnqueue bypasses the global error handler,
+            // and crashes the app.
+            Logger.LogError("Failed to set icon", ex);
         }
     }
 }

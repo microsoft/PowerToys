@@ -44,6 +44,7 @@ ALLCHILDREN
 ALLINPUT
 Allman
 Allmodule
+ALLNOISE
 ALLOWUNDO
 ALLVIEW
 ALPHATYPE
@@ -129,6 +130,7 @@ bezelled
 bhid
 BIF
 bigbar
+BIGGERSIZEOK
 bigobj
 binlog
 binres
@@ -310,6 +312,7 @@ CRECT
 CRH
 critsec
 cropandlock
+CROPTOSQUARE
 Crossdevice
 csdevkit
 CSearch
@@ -635,6 +638,7 @@ GMEM
 GNumber
 googleai
 googlegemini
+Gotchas
 gpedit
 gpo
 GPOCA
@@ -647,8 +651,6 @@ GSM
 gtm
 guiddata
 GUITHREADINFO
-Gotcha
-Gotchas
 GValue
 gwl
 GWLP
@@ -761,6 +763,7 @@ IAI
 icf
 ICONERROR
 ICONLOCATION
+ICONONLY
 IDCANCEL
 IDD
 idk
@@ -894,12 +897,13 @@ Lclean
 Ldone
 Ldr
 LEFTALIGN
+leftclick
 LEFTSCROLLBAR
 LEFTTEXT
-leftclick
 LError
 LEVELID
 LExit
+LFU
 lhwnd
 LIBFUZZER
 LIBID
@@ -1022,9 +1026,12 @@ MENUITEMINFO
 MENUITEMINFOW
 MERGECOPY
 MERGEPAINT
+Metacharacter
 metadatamatters
 Metadatas
+Metacharacter
 metafile
+Metacharacter
 mfc
 Mgmt
 Microwaved
@@ -1071,7 +1078,7 @@ mouseutils
 MOVESIZEEND
 MOVESIZESTART
 MRM
-MRT
+Mrt
 mru
 MSAL
 msc
@@ -1489,7 +1496,9 @@ regfile
 REGISTERCLASSFAILED
 REGISTRYHEADER
 REGISTRYPREVIEWEXT
+registryroot
 regkey
+regroot
 regsvr
 REINSTALLMODE
 releaseblog
@@ -1534,7 +1543,6 @@ riid
 RKey
 RNumber
 rollups
-ROOTOWNER
 rop
 ROUNDSMALL
 ROWSETEXT
@@ -1667,6 +1675,7 @@ sigdn
 Signedness
 SIGNINGSCENARIO
 signtool
+SIIGBF
 SINGLEKEY
 sipolicy
 SIZEBOX
