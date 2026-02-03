@@ -30,7 +30,7 @@ namespace RunnerV2
         /// </summary>
         public static nint RunnerHwnd { get; private set; }
 
-        private const string TrayWindowClassName = "pt_tray_icon_window_class";
+        public const string TrayWindowClassName = "pt_tray_icon_window_class";
 
         /// <summary>
         /// Gets all the currently loaded modules.

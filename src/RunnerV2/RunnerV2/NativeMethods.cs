@@ -52,6 +52,9 @@ namespace RunnerV2
         [LibraryImport("user32.dll", SetLastError = true)]
         internal static partial IntPtr CreatePopupMenu();
 
+        [LibraryImport("user32.dll", SetLastError = true, StringMarshalling = StringMarshalling.Utf16)]
+        internal static partial IntPtr FindWindowW(string lpClassName, string lpWindowName);
+
         [LibraryImport("user32.dll", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static partial bool SetForegroundWindow(IntPtr hWnd);

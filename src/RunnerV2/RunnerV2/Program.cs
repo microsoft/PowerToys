@@ -61,7 +61,9 @@ internal sealed class Program
         // Check if PowerToys is already running
         if (Process.GetProcessesByName(Process.GetCurrentProcess().ProcessName).Length > 1)
         {
-            throw new NotImplementedException("Opening another instance window is not supported yet.");
+            IntPtr hwndMain = NativeMethods.FindWindowW(Runner.TrayWindowClassName, null!);
+            NativeMethods.PostMessageW(hwndMain, 0x0111, 1, IntPtr.Zero);
+            return;
         }
 
         /*
