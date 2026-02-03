@@ -25,8 +25,8 @@ namespace PowerToys.TestReviewLoop
             return input?.ToUpper().Trim() ?? string.Empty;
         }
 
-        // Fix 3: Improved variable naming
-        public void DoSomething(int multiplier, string prefix)
+        // Fix 3: Improved variable naming and method naming
+        public void PrintDoubledValueWithPrefix(int multiplier, string prefix)
         {
             var doubledValue = multiplier * 2;
             var combinedText = prefix + "test";
@@ -52,9 +52,10 @@ namespace PowerToys.TestReviewLoop
             {
                 throw new InvalidOperationException("Test");
             }
-            catch (Exception ex)
+            catch (InvalidOperationException ex)
             {
                 // Log the exception - never silently swallow
+                // Note: In production code, use PowerToys Logger: Logger.LogError("Operation failed", ex);
                 System.Diagnostics.Debug.WriteLine($"Operation failed: {ex.Message}");
             }
         }
