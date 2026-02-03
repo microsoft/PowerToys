@@ -6,15 +6,63 @@ namespace Microsoft.CommandPalette.Extensions.Toolkit;
 
 public partial class Tag : BaseObservable, ITag
 {
-    public virtual OptionalColor Foreground { get; set => SetProperty(ref field, value); }
+    private OptionalColor _foreground;
+    private OptionalColor _background;
+    private string _text = string.Empty;
 
-    public virtual OptionalColor Background { get; set => SetProperty(ref field, value); }
+    public virtual OptionalColor Foreground
+    {
+        get => _foreground;
+        set
+        {
+            _foreground = value;
+            OnPropertyChanged(nameof(Foreground));
+        }
+    }
 
-    public virtual IIconInfo Icon { get; set => SetProperty(ref field, value); } = new IconInfo();
+    public virtual OptionalColor Background
+    {
+        get => _background;
+        set
+        {
+            _background = value;
+            OnPropertyChanged(nameof(Background));
+        }
+    }
 
-    public virtual string Text { get; set => SetProperty(ref field, value); } = string.Empty;
+    public virtual IIconInfo Icon
+    {
+        get;
+        set
+        {
+            field = value;
+            OnPropertyChanged(nameof(Icon));
+        }
+    }
 
-    public virtual string ToolTip { get; set => SetProperty(ref field, value); } = string.Empty;
+= new IconInfo();
+
+    public virtual string Text
+    {
+        get => _text;
+        set
+        {
+            _text = value;
+            OnPropertyChanged(nameof(Text));
+        }
+    }
+
+    public virtual string ToolTip
+    {
+        get;
+        set
+        {
+            field = value;
+            OnPropertyChanged(nameof(ToolTip));
+        }
+    }
+
+= string.Empty;
 
     public Tag()
     {
@@ -22,6 +70,6 @@ public partial class Tag : BaseObservable, ITag
 
     public Tag(string text)
     {
-        Text = text;
+        _text = text;
     }
 }

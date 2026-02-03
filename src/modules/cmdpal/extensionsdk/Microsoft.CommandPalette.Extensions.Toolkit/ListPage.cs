@@ -8,23 +8,85 @@ namespace Microsoft.CommandPalette.Extensions.Toolkit;
 
 public partial class ListPage : Page, IListPage
 {
+    private string _placeholderText = string.Empty;
+    private string _searchText = string.Empty;
+    private bool _showDetails;
+    private bool _hasMore;
+    private IFilters? _filters;
+    private IGridProperties? _gridProperties;
+    private ICommandItem? _emptyContent;
+
     public event TypedEventHandler<object, IItemsChangedEventArgs>? ItemsChanged;
 
-    private string _searchText = string.Empty;
+    public virtual string PlaceholderText
+    {
+        get => _placeholderText;
+        set
+        {
+            _placeholderText = value;
+            OnPropertyChanged(nameof(PlaceholderText));
+        }
+    }
 
-    public virtual string PlaceholderText { get; set => SetProperty(ref field, value); } = string.Empty;
+    public virtual string SearchText
+    {
+        get => _searchText;
+        set
+        {
+            _searchText = value;
+            OnPropertyChanged(nameof(SearchText));
+        }
+    }
 
-    public virtual string SearchText { get => _searchText; set => SetProperty(ref _searchText, value); }
+    public virtual bool ShowDetails
+    {
+        get => _showDetails;
+        set
+        {
+            _showDetails = value;
+            OnPropertyChanged(nameof(ShowDetails));
+        }
+    }
 
-    public virtual bool ShowDetails { get; set => SetProperty(ref field, value); }
+    public virtual bool HasMoreItems
+    {
+        get => _hasMore;
+        set
+        {
+            _hasMore = value;
+            OnPropertyChanged(nameof(HasMoreItems));
+        }
+    }
 
-    public virtual bool HasMoreItems { get; set => SetProperty(ref field, value); }
+    public virtual IFilters? Filters
+    {
+        get => _filters;
+        set
+        {
+            _filters = value;
+            OnPropertyChanged(nameof(Filters));
+        }
+    }
 
-    public virtual IFilters? Filters { get; set => SetProperty(ref field, value); }
+    public virtual IGridProperties? GridProperties
+    {
+        get => _gridProperties;
+        set
+        {
+            _gridProperties = value;
+            OnPropertyChanged(nameof(GridProperties));
+        }
+    }
 
-    public virtual IGridProperties? GridProperties { get; set => SetProperty(ref field, value); }
-
-    public virtual ICommandItem? EmptyContent { get; set => SetProperty(ref field, value); }
+    public virtual ICommandItem? EmptyContent
+    {
+        get => _emptyContent;
+        set
+        {
+            _emptyContent = value;
+            OnPropertyChanged(nameof(EmptyContent));
+        }
+    }
 
     public virtual IListItem[] GetItems() => [];
 

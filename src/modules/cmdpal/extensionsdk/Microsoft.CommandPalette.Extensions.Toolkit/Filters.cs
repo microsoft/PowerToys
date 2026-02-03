@@ -6,7 +6,17 @@ namespace Microsoft.CommandPalette.Extensions.Toolkit;
 
 public abstract partial class Filters : BaseObservable, IFilters
 {
-    public string CurrentFilterId { get; set => SetProperty(ref field, value); } = string.Empty;
+    public string CurrentFilterId
+    {
+        get => field;
+        set
+        {
+            field = value;
+            OnPropertyChanged(nameof(CurrentFilterId));
+        }
+    }
+
+    = string.Empty;
 
     // This method should be overridden in derived classes to provide the actual filters.
     public abstract IFilterItem[] GetFilters();

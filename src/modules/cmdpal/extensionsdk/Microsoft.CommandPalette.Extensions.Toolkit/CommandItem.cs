@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -8,7 +8,7 @@ using WinRT;
 
 namespace Microsoft.CommandPalette.Extensions.Toolkit;
 
-public partial class CommandItem : BaseObservable, ICommandItem, IExtendedAttributesProvider
+public partial class CommandItem : BaseObservable, ICommandItem
 {
     private readonly PropertySet _extendedAttributes = new();
 
@@ -19,36 +19,44 @@ public partial class CommandItem : BaseObservable, ICommandItem, IExtendedAttrib
     private DataPackage? _dataPackage;
     private DataPackageView? _dataPackageView;
 
-    public virtual IIconInfo? Icon { get; set => SetProperty(ref field, value); }
+    public virtual IIconInfo? Icon
+    {
+        get => field;
+        set
+        {
+            field = value;
+            OnPropertyChanged(nameof(Icon));
+        }
+    }
 
     public virtual string Title
     {
         get => !string.IsNullOrEmpty(_title) ? _title : _command?.Name ?? string.Empty;
+
         set
         {
-            var oldTitle = Title;
             _title = value;
-            if (Title != oldTitle)
-            {
-                OnPropertyChanged();
-            }
+            OnPropertyChanged(nameof(Title));
         }
     }
 
-    public virtual string Subtitle { get; set => SetProperty(ref field, value); } = string.Empty;
+    public virtual string Subtitle
+    {
+        get;
+        set
+        {
+            field = value;
+            OnPropertyChanged(nameof(Subtitle));
+        }
+    }
+
+= string.Empty;
 
     public virtual ICommand? Command
     {
         get => _command;
         set
         {
-            if (EqualityComparer<ICommand?>.Default.Equals(value, _command))
-            {
-                return;
-            }
-
-            var oldTitle = Title;
-
             if (_commandListener is not null)
             {
                 _commandListener.Detach();
@@ -63,8 +71,8 @@ public partial class CommandItem : BaseObservable, ICommandItem, IExtendedAttrib
                 value.PropChanged += _commandListener.OnEvent;
             }
 
-            OnPropertyChanged();
-            if (string.IsNullOrEmpty(_title) && oldTitle != Title)
+            OnPropertyChanged(nameof(Command));
+            if (string.IsNullOrEmpty(_title))
             {
                 OnPropertyChanged(nameof(Title));
             }
@@ -80,7 +88,17 @@ public partial class CommandItem : BaseObservable, ICommandItem, IExtendedAttrib
         }
     }
 
-    public virtual IContextItem[] MoreCommands { get; set => SetProperty(ref field, value); } = [];
+    public virtual IContextItem[] MoreCommands
+    {
+        get;
+        set
+        {
+            field = value;
+            OnPropertyChanged(nameof(MoreCommands));
+        }
+    }
+
+= [];
 
     public DataPackage? DataPackage
     {

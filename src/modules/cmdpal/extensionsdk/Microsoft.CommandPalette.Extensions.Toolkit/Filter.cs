@@ -6,9 +6,39 @@ namespace Microsoft.CommandPalette.Extensions.Toolkit;
 
 public partial class Filter : BaseObservable, IFilter
 {
-    public virtual IIconInfo Icon { get; set => SetProperty(ref field, value); } = new IconInfo();
+    public virtual IIconInfo Icon
+    {
+        get => field;
+        set
+        {
+            field = value;
+            OnPropertyChanged(nameof(Icon));
+        }
+    }
 
-    public virtual string Id { get; set => SetProperty(ref field, value); } = string.Empty;
+= new IconInfo();
 
-    public virtual string Name { get; set => SetProperty(ref field, value); } = string.Empty;
+    public virtual string Id
+    {
+        get;
+        set
+        {
+            field = value;
+            OnPropertyChanged(nameof(Id));
+        }
+    }
+
+= string.Empty;
+
+    public virtual string Name
+    {
+        get;
+        set
+        {
+            field = value;
+            OnPropertyChanged(nameof(Name));
+        }
+    }
+
+= string.Empty;
 }

@@ -12,6 +12,11 @@ public sealed partial class Section : IEnumerable<IListItem>
 
     public string SectionTitle { get; set; } = string.Empty;
 
+    private Separator CreateSectionListItem()
+    {
+        return new Separator(SectionTitle);
+    }
+
     public Section(string sectionName, IListItem[] items)
     {
         SectionTitle = sectionName;
@@ -26,11 +31,6 @@ public sealed partial class Section : IEnumerable<IListItem>
 
     public Section()
     {
-    }
-
-    private Separator CreateSectionListItem()
-    {
-        return new Separator(SectionTitle);
     }
 
     public IEnumerator<IListItem> GetEnumerator() => Items.ToList().GetEnumerator();

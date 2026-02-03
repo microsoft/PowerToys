@@ -6,9 +6,9 @@ namespace Microsoft.CommandPalette.Extensions.Toolkit;
 
 public partial class CommandResult : ICommandResult
 {
-    public ICommandResultArgs? Args { get; private init; }
+    public ICommandResultArgs? Args { get; private set; }
 
-    public CommandResultKind Kind { get; private init; } = CommandResultKind.Dismiss;
+    public CommandResultKind Kind { get; private set; } = CommandResultKind.Dismiss;
 
     public static CommandResult Dismiss()
     {

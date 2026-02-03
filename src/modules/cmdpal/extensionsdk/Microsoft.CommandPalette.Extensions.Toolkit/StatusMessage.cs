@@ -6,9 +6,37 @@ namespace Microsoft.CommandPalette.Extensions.Toolkit;
 
 public partial class StatusMessage : BaseObservable, IStatusMessage
 {
-    public virtual string Message { get; set => SetProperty(ref field, value); } = string.Empty;
+    public virtual string Message
+    {
+        get;
+        set
+        {
+            field = value;
+            OnPropertyChanged(nameof(Message));
+        }
+    }
 
-    public virtual MessageState State { get; set => SetProperty(ref field, value); } = MessageState.Info;
+= string.Empty;
 
-    public virtual IProgressState? Progress { get; set => SetProperty(ref field, value); }
+    public virtual MessageState State
+    {
+        get;
+        set
+        {
+            field = value;
+            OnPropertyChanged(nameof(State));
+        }
+    }
+
+= MessageState.Info;
+
+    public virtual IProgressState? Progress
+    {
+        get;
+        set
+        {
+            field = value;
+            OnPropertyChanged(nameof(Progress));
+        }
+    }
 }

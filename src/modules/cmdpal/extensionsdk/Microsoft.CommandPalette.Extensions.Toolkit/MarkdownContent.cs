@@ -6,7 +6,17 @@ namespace Microsoft.CommandPalette.Extensions.Toolkit;
 
 public partial class MarkdownContent : BaseObservable, IMarkdownContent
 {
-    public virtual string Body { get; set => SetProperty(ref field, value); } = string.Empty;
+    public virtual string Body
+    {
+        get;
+        set
+        {
+            field = value;
+            OnPropertyChanged(nameof(Body));
+        }
+    }
+
+= string.Empty;
 
     public MarkdownContent()
     {

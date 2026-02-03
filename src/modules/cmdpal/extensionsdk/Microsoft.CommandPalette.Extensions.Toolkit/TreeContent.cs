@@ -8,11 +8,19 @@ namespace Microsoft.CommandPalette.Extensions.Toolkit;
 
 public partial class TreeContent : BaseObservable, ITreeContent
 {
-    public event TypedEventHandler<object, IItemsChangedEventArgs>? ItemsChanged;
-
     public IContent[] Children { get; set; } = [];
 
-    public virtual IContent? RootContent { get; set => SetProperty(ref field, value); }
+    public virtual IContent? RootContent
+    {
+        get;
+        set
+        {
+            field = value;
+            OnPropertyChanged(nameof(RootContent));
+        }
+    }
+
+    public event TypedEventHandler<object, IItemsChangedEventArgs>? ItemsChanged;
 
     public virtual IContent[] GetChildren() => Children;
 

@@ -4,8 +4,15 @@
 
 namespace Microsoft.CommandPalette.Extensions.Toolkit;
 
-public partial class Separator : BaseObservable, IListItem, ISeparatorContextItem, ISeparatorFilterItem
+public partial class Separator : IListItem, ISeparatorContextItem, ISeparatorFilterItem
 {
+    public Separator(string? title = "")
+        : base()
+    {
+        Section = title ?? string.Empty;
+        Command = null;
+    }
+
     public IDetails? Details => null;
 
     public string? Section { get; private set; }
@@ -14,7 +21,7 @@ public partial class Separator : BaseObservable, IListItem, ISeparatorContextIte
 
     public string? TextToSuggest => null;
 
-    public ICommand? Command => null;
+    public ICommand? Command { get; private set; }
 
     public IIconInfo? Icon => null;
 
@@ -25,19 +32,12 @@ public partial class Separator : BaseObservable, IListItem, ISeparatorContextIte
     public string? Title
     {
         get => Section;
-        set
-        {
-            if (Section != value)
-            {
-                Section = value;
-                OnPropertyChanged();
-                OnPropertyChanged(Section);
-            }
-        }
+        set => Section = value;
     }
 
-    public Separator(string? title = "")
+    public event Windows.Foundation.TypedEventHandler<object, IPropChangedEventArgs>? PropChanged
     {
-        Section = title ?? string.Empty;
+        add { }
+        remove { }
     }
 }

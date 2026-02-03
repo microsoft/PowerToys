@@ -7,15 +7,65 @@ namespace Microsoft.CommandPalette.Extensions.Toolkit;
 
 public partial class Details : BaseObservable, IDetails, IExtendedAttributesProvider
 {
-    public virtual IIconInfo HeroImage { get; set => SetProperty(ref field, value); } = new IconInfo();
+    public virtual IIconInfo HeroImage
+    {
+        get => field;
+        set
+        {
+            field = value;
+            OnPropertyChanged(nameof(HeroImage));
+        }
+    }
 
-    public virtual string Title { get; set => SetProperty(ref field, value); } = string.Empty;
+= new IconInfo();
 
-    public virtual string Body { get; set => SetProperty(ref field, value); } = string.Empty;
+    public virtual string Title
+    {
+        get;
+        set
+        {
+            field = value;
+            OnPropertyChanged(nameof(Title));
+        }
+    }
 
-    public virtual IDetailsElement[] Metadata { get; set => SetProperty(ref field, value); } = [];
+= string.Empty;
 
-    public virtual ContentSize Size { get; set => SetProperty(ref field, value); } = ContentSize.Small;
+    public virtual string Body
+    {
+        get;
+        set
+        {
+            field = value;
+            OnPropertyChanged(nameof(Body));
+        }
+    }
+
+= string.Empty;
+
+    public virtual IDetailsElement[] Metadata
+    {
+        get;
+        set
+        {
+            field = value;
+            OnPropertyChanged(nameof(Metadata));
+        }
+    }
+
+= [];
+
+    public virtual ContentSize Size
+    {
+        get;
+        set
+        {
+            field = value;
+            OnPropertyChanged(nameof(Size));
+        }
+    }
+
+= ContentSize.Small;
 
     public IDictionary<string, object>? GetProperties() => new ValueSet()
     {
