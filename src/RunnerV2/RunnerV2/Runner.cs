@@ -73,6 +73,7 @@ namespace RunnerV2
             new NewPlusModuleInterface(),
             new PowerRenameModuleInterface(),
             new ImageResizerModuleInterface(),
+            new FileLocksmithModuleInterface(),
         ];
 
         /// <summary>
