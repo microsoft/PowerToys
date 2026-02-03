@@ -2063,7 +2063,7 @@ INT_PTR CALLBACK OptionsTabProc( HWND hDlg, UINT message,
                 // Check if GIF is selected by comparing the text
                 bool isGifSelected = (wcscmp(selectedText, L"GIF") == 0);
 
-                // If GIF is selected, set the scaling to the g_RecordScalingGIF value; otherwise to the g_RecordScalingMP4 value
+                // If GIF is selected, set the scaling to the g_RecordScalingGIF value
                 if (isGifSelected) {
                     g_RecordScaling = g_RecordScalingGIF;
 
@@ -4082,7 +4082,7 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
         HWND hCtrl = reinterpret_cast<HWND>(lParam);
 
         // Always force the Options header title to use the large version font.
-        // Note: We must also return a brush in light mode, otherwise the default
+        // Note: We must also return a brush in light mode
         // dialog proc may ignore our HDC changes.
         if( message == WM_CTLCOLORSTATIC && hCtrl == GetDlgItem( hDlg, IDC_VERSION ) && hFontVersion )
         {
@@ -5249,7 +5249,6 @@ inline auto PrepareStagingTexture(winrt::com_ptr<ID3D11Device> const& device,
             winrt::com_ptr<ID3D11Texture2D> const& texture)
 {
     // If our texture is already set up for staging, then use it.
-    // Otherwise, create a staging texture.
     D3D11_TEXTURE2D_DESC desc = {};
     texture->GetDesc(&desc);
     if (desc.Usage == D3D11_USAGE_STAGING && desc.CPUAccessFlags & D3D11_CPU_ACCESS_READ)
@@ -5446,8 +5445,7 @@ void StopRecording()
 // GetUniqueFilename
 //
 // Returns a unique filename by checking for existing files and adding (1), (2), etc.
-// suffixes as needed. Uses the folder from lastSavePath if available, otherwise
-// uses the default folder.
+// suffixes as needed. Uses the folder from lastSavePath if available
 //
 //----------------------------------------------------------------------------
 auto GetUniqueFilename(const std::wstring& lastSavePath, const wchar_t* defaultFilename, REFKNOWNFOLDERID defaultFolderId)
@@ -5690,7 +5688,7 @@ winrt::fire_and_forget StartRecordingAsync( HWND hWnd, LPRECT rcCrop, HWND hWndR
                 winrt::StorageFolder folder{ co_await winrt::StorageFolder::GetFolderFromPathAsync(path.parent_path().c_str()) };
                 destFile = co_await folder.CreateFileAsync(path.filename().c_str(), winrt::CreationCollisionOption::ReplaceExisting);
 
-                // If user trimmed, use the trimmed file; otherwise use the original capture
+                // If user trimmed, use the trimmed file
                 winrt::StorageFile sourceFile = file;
                 if (!trimmedFilePath.empty())
                 {
@@ -8342,7 +8340,7 @@ LRESULT APIENTRY MainWndProc(
             DeleteTypedText( &typedKeyList );
 
             // 1 means don't reset the cursor. We get that for font resizing
-            // Only move the cursor if we're drawing, because otherwise the screen moves to center
+            // Only move the cursor if we're drawing, else the screen moves to center
             // on the new cursor position
             if( wParam != 1 && g_Drawing ) {
 
@@ -10106,7 +10104,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
     // Windows Server 2022 (and including Windows 11) introduced a bug where the cursor disappears
     // in live zoom. Use the full-screen magnifier as a workaround on those versions only. It is
     // currently impractical as a replacement; it requires calling MagSetInputTransform for all
-    // input to be transformed. Otherwise, some hit-testing is misdirected. MagSetInputTransform
+    // input to be transformed. Else, some hit-testing is misdirected. MagSetInputTransform
     // fails without token UI access, which is impractical; it requires copying the executable
     // under either %ProgramFiles% or %SystemRoot%, which requires elevation.
     //

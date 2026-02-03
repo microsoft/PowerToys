@@ -1335,7 +1335,7 @@ public:
                     }
                 }
 
-                // Use file dialog window as parent if found, otherwise use original parent
+                // Use file dialog window as parent if found
                 HWND hParent = hFileDlg ? hFileDlg : m_hParent;
 
                 auto trimResult = VideoRecordingSession::ShowTrimDialog(hParent, m_videoPath, *m_pTrimStart, *m_pTrimEnd);
@@ -2416,7 +2416,7 @@ static void HandlePlaybackCommand(int controlId, VideoRecordingSession::TrimDial
     case IDC_TRIM_REWIND:
     {
         StopPlayback(hDlg, pData, false);
-        // Use 1 second step for timelines < 20 seconds, 2 seconds otherwise
+        // Use 1 second step for timelines < 20 seconds, 2 seconds 
         const int64_t duration = pData->trimEnd.count() - pData->trimStart.count();
         const int64_t stepTicks = (duration < 200'000'000) ? 10'000'000 : kJogStepTicks;
         const int64_t newTicks = (std::max)(pData->trimStart.count(), pData->currentPosition.count() - stepTicks);
@@ -2432,7 +2432,7 @@ static void HandlePlaybackCommand(int controlId, VideoRecordingSession::TrimDial
     case IDC_TRIM_FORWARD:
     {
         StopPlayback(hDlg, pData, false);
-        // Use 1 second step for timelines < 20 seconds, 2 seconds otherwise
+        // Use 1 second step for timelines < 20 seconds, 2 seconds 
         const int64_t duration = pData->trimEnd.count() - pData->trimStart.count();
         const int64_t stepTicks = (duration < 200'000'000) ? 10'000'000 : kJogStepTicks;
         const int64_t newTicks = (std::min)(pData->trimEnd.count(), pData->currentPosition.count() + stepTicks);

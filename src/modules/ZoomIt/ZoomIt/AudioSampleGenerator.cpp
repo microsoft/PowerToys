@@ -249,7 +249,7 @@ std::optional<winrt::MediaStreamSample> AudioSampleGenerator::TryGetNextSample()
         if (m_samples.empty())
         {
             // Spurious wake or race - no samples available
-            // If end is signaled, return nullopt; otherwise this shouldn't happen
+            // If end is signaled, return nullopt
             return m_endEvent.is_signaled() ? std::nullopt : std::optional<winrt::MediaStreamSample>{};
         }
         std::optional result(m_samples.front());
@@ -643,7 +643,7 @@ void AudioSampleGenerator::OnAudioQuantumStarted(winrt::AudioGraph const& sender
         }
 
         // Determine the actual number of samples we'll output
-        // Use mic sample count if mic is enabled, otherwise use expected quantum size
+        // Use mic sample count if mic is enabled
         uint32_t outputSampleCount = m_captureMicrophone ? numMicSamples : expectedSamplesPerQuantum;
 
         // If microphone is disabled, create a buffer with only loopback audio
