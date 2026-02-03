@@ -5,6 +5,7 @@
 using System;
 using System.Diagnostics;
 using System.Drawing;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -38,18 +39,20 @@ namespace RunnerV2.Helpers
                 return;
             }
 
-            NOTIFYICONDATA notifyicondata = new()
-            {
-                CbSize = (uint)Marshal.SizeOf<NOTIFYICONDATA>(),
-                HWnd = Runner.RunnerHwnd,
-                UId = 1,
-                HIcon = GetTrayIcon(),
-                UFlags = 0x0000001 | 0x00000002 | 0x4,
-                UCallbackMessage = (uint)WindowMessages.ICON_NOTIFY,
-                SzTip = "PowerToys Runner",
-            };
+            NOTIFYICONDATA notifyicondata = GetNOTIFYICONDATA();
             Shell_NotifyIcon(0x1, ref notifyicondata);
         }
+
+        private static NOTIFYICONDATA GetNOTIFYICONDATA() => new()
+        {
+            CbSize = (uint)Marshal.SizeOf<NOTIFYICONDATA>(),
+            HWnd = Runner.RunnerHwnd,
+            UId = 1,
+            HIcon = GetTrayIcon(),
+            UFlags = 0x0000001 | 0x00000002 | 0x4,
+            UCallbackMessage = (uint)WindowMessages.ICON_NOTIFY,
+            SzTip = "PowerToys v" + Assembly.GetExecutingAssembly().GetName().Version!.Major + "." + Assembly.GetExecutingAssembly().GetName().Version!.Minor + "." + Assembly.GetExecutingAssembly().GetName().Version!.Build,
+        };
 
         internal static void StartTrayIcon()
         {
@@ -58,17 +61,7 @@ namespace RunnerV2.Helpers
                 return;
             }
 
-            NOTIFYICONDATA notifyicondata = new()
-            {
-                CbSize = (uint)Marshal.SizeOf<NOTIFYICONDATA>(),
-                HWnd = Runner.RunnerHwnd,
-                UId = 1,
-                HIcon = GetTrayIcon(),
-                UFlags = 0x0000001 | 0x00000002 | 0x4,
-                UCallbackMessage = (uint)WindowMessages.ICON_NOTIFY,
-                SzTip = "PowerToys Runner",
-            };
-
+            NOTIFYICONDATA notifyicondata = GetNOTIFYICONDATA();
             ChangeWindowMessageFilterEx(Runner.RunnerHwnd, 0x0111, 0x0001, IntPtr.Zero);
 
             Shell_NotifyIcon(NIMADD, ref notifyicondata);
