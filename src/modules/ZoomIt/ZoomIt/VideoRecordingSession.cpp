@@ -4159,7 +4159,7 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
         int labelHeight, timelineHeight, buttonRowHeight, okCancelHeight, bottomMargin;
         int spacing4, spacing2, spacing8;
         DluToPixels(0, 10, nullptr, &labelHeight);     // Label height: 10 DLU (for 8pt font)
-        DluToPixels(0, 47, nullptr, &timelineHeight);  // Timeline height: 47 DLU
+        DluToPixels(0, 50, nullptr, &timelineHeight);  // Timeline height: 50 DLU
         DluToPixels(0, 32, nullptr, &buttonRowHeight); // Play button height: 32 DLU
         DluToPixels(0, 14, nullptr, &okCancelHeight);  // OK/Cancel height: 14 DLU
         DluToPixels(0, 8, nullptr, &bottomMargin);     // Bottom margin
