@@ -643,7 +643,7 @@ public static class FuzzyStringMatcher
     // ============================================================
 
     // Folding: slash normalization + upper case + optional diacritics stripping
-    private static class Folding
+    internal static class Folding
     {
         // Cache maps an upper case char to its diacritics-stripped upper case char.
         // '\0' means "not cached yet".
@@ -816,6 +816,13 @@ public static class FuzzyStringMatcher
         private static char StripDiacriticsFromUpper(char upper)
         {
             if (upper <= 0x7F)
+            {
+                return upper;
+            }
+
+            // Emoji and other astral symbols come through as surrogate pairs in UTF-16.
+            // We process char-by-char, so never try to normalize a lone surrogate.
+            if (char.IsSurrogate(upper))
             {
                 return upper;
             }
