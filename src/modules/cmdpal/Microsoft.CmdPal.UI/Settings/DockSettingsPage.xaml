@@ -228,6 +228,9 @@
                     <TextBlock x:Uid="DockBandsSettingsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
 
                     <ItemsRepeater ItemsSource="{x:Bind AllDockBandItems, Mode=OneWay}">
+                        <ItemsRepeater.Layout>
+                            <StackLayout Spacing="{StaticResource SettingsCardSpacing}" />
+                        </ItemsRepeater.Layout>
                         <ItemsRepeater.ItemTemplate>
                             <DataTemplate x:DataType="dockVm:DockBandSettingsViewModel">
                                 <controls:SettingsCard
@@ -246,13 +249,11 @@
                                             </cpControls:ContentIcon.Content>
                                         </cpControls:ContentIcon>
                                     </controls:SettingsCard.HeaderIcon>
-
                                     <ToggleSwitch IsOn="{x:Bind IsPinned, Mode=TwoWay}" />
                                 </controls:SettingsCard>
                             </DataTemplate>
                         </ItemsRepeater.ItemTemplate>
                     </ItemsRepeater>
-
                 </StackPanel>
             </Grid>
         </ScrollViewer>
