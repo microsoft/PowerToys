@@ -11,7 +11,10 @@
     Loaded="UserControl_Loaded"
     mc:Ignorable="d">
 
-    <Grid ColumnSpacing="16">
+    <Grid
+        Width="720"
+        MinHeight="480"
+        ColumnSpacing="24">
         <Grid.RowDefinitions>
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
@@ -44,6 +47,12 @@
                 <ComboBoxItem Content="Mouse button" Tag="Mouse" />
             </ComboBox>
 
+            <Rectangle
+                Height="1"
+                Margin="0,12,0,12"
+                HorizontalAlignment="Stretch"
+                Fill="{ThemeResource DividerStrokeColorDefaultBrush}" />
+
             <tkcontrols:SwitchPresenter
                 x:Name="TriggerSwitchPresenter"
                 TargetType="x:String"
@@ -73,7 +82,14 @@
                                 </ItemsControl.ItemsPanel>
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
-                                        <local:KeyVisual Content="{Binding}" Style="{StaticResource DefaultKeyVisualStyle}" />
+                                        <local:KeyVisual
+                                            Padding="8"
+                                            Background="{ThemeResource ControlFillColorDefaultBrush}"
+                                            BorderThickness="1"
+                                            Content="{Binding}"
+                                            CornerRadius="{StaticResource OverlayCornerRadius}"
+                                            FontSize="16"
+                                            Style="{StaticResource DefaultKeyVisualStyle}" />
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
@@ -108,38 +124,35 @@
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
 
-
             <Rectangle
                 Width="1"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Stretch"
-                Fill="{ThemeResource DividerStrokeColorDefaultBrush}" />
+                Fill="{ThemeResource TextFillColorTertiaryBrush}" />
 
             <Viewbox
                 Grid.Row="1"
                 Width="12"
                 Height="12">
-                <PathIcon Data="{StaticResource ArrowIconData}" Foreground="{ThemeResource DividerStrokeColorDefaultBrush}" />
+                <PathIcon Data="{StaticResource ArrowIconData}" Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
             </Viewbox>
             <Rectangle
                 Grid.Row="2"
                 Width="1"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Stretch"
-                Fill="{ThemeResource DividerStrokeColorDefaultBrush}" />
+                Fill="{ThemeResource TextFillColorTertiaryBrush}" />
         </Grid>
         <!--  Right Column: Action Output  -->
         <StackPanel
             Grid.Row="0"
             Grid.Column="2"
-            MinWidth="360"
             Orientation="Vertical"
             Spacing="8">
             <TextBlock
                 x:Uid="UnifiedMappingControlActionTextBlock"
                 FontWeight="SemiBold"
                 Text="Action" />
-
             <ComboBox
                 x:Name="ActionTypeComboBox"
                 HorizontalAlignment="Stretch"
@@ -154,6 +167,12 @@
                 <ComboBoxItem Content="Mouse click" Tag="MouseClick" />
             </ComboBox>
 
+            <Rectangle
+                Height="1"
+                Margin="0,12,0,12"
+                HorizontalAlignment="Stretch"
+                Fill="{ThemeResource DividerStrokeColorDefaultBrush}" />
+
             <tkcontrols:SwitchPresenter
                 x:Name="ActionSwitchPresenter"
                 TargetType="x:String"
@@ -161,7 +180,7 @@
 
                 <!--  Key or Shortcut Action  -->
                 <tkcontrols:Case Value="KeyOrShortcut">
-                    <StackPanel Orientation="Vertical" Spacing="8">
+                    <StackPanel Orientation="Vertical" Spacing="16">
                         <ToggleButton
                             x:Name="ActionKeyToggleBtn"
                             MinHeight="86"
@@ -184,7 +203,15 @@
                                     </ItemsControl.ItemsPanel>
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate>
-                                            <local:KeyVisual Content="{Binding}" Style="{StaticResource AccentKeyVisualStyle}" />
+                                            <local:KeyVisual
+                                                Padding="8"
+                                                Background="{ThemeResource CustomAccentBackgroundBrush}"
+                                                BorderThickness="0"
+                                                Content="{Binding}"
+                                                CornerRadius="{StaticResource OverlayCornerRadius}"
+                                                FontSize="16"
+                                                Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
+                                                Style="{StaticResource DefaultKeyVisualStyle}" />
                                         </DataTemplate>
                                     </ItemsControl.ItemTemplate>
                                 </ItemsControl>
@@ -210,7 +237,7 @@
 
                 <!--  Text Action  -->
                 <tkcontrols:Case Value="Text">
-                    <StackPanel Orientation="Vertical" Spacing="8">
+                    <StackPanel Orientation="Vertical" Spacing="16">
                         <TextBox
                             x:Name="TextContentBox"
                             x:Uid="UnifiedMappingControlTextContentTextBox"
@@ -256,7 +283,7 @@
 
                 <!--  Open App Action  -->
                 <tkcontrols:Case Value="OpenApp">
-                    <StackPanel Orientation="Vertical" Spacing="8">
+                    <StackPanel Orientation="Vertical" Spacing="16">
                         <StackPanel Orientation="Horizontal" Spacing="4">
                             <TextBox
                                 x:Name="ProgramPathInput"

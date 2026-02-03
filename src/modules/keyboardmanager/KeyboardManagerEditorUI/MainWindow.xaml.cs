@@ -30,18 +30,22 @@ namespace KeyboardManagerEditorUI
         public MainWindow()
         {
             this.InitializeComponent();
-            this.ExtendsContentIntoTitleBar = true;
-            this.SetTitleBar(titleBar);
 
             this.Activated += MainWindow_Activated;
             this.Closed += MainWindow_Closed;
 
+            SetTitleBar();
+
             // Set the default page
             // RootView.SelectedItem = RootView.MenuItems[0];
-            IntPtr windowHandle = WinRT.Interop.WindowNative.GetWindowHandle(this);
-            WindowId windowId = Win32Interop.GetWindowIdFromWindow(windowHandle);
-            AppWindow appWindow = AppWindow.GetFromWindowId(windowId);
-            appWindow.SetIcon(@"Assets\Keyboard.ico");
+        }
+
+        private void SetTitleBar()
+        {
+            ExtendsContentIntoTitleBar = true;
+            this.SetIcon(@"Assets\Keyboard.ico");
+            this.SetTitleBar(titleBar);
+            Title = "Keyboard Manager";
         }
 
         private void MainWindow_Activated(object sender, WindowActivatedEventArgs args)

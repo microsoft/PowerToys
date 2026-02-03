@@ -11,7 +11,7 @@
     Title="KeyboardManagerEditorUI"
     Width="1440"
     Height="900"
-    MinWidth="480"
+    MinWidth="860"
     MinHeight="320"
     mc:Ignorable="d">
     <Window.SystemBackdrop>

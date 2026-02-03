@@ -14,6 +14,8 @@
     mc:Ignorable="d">
 
     <Page.Resources>
+        <x:Double x:Key="ContentDialogMaxWidth">800</x:Double>
+        <x:Double x:Key="ContentDialogMaxHeight">800</x:Double>
         <Style
             x:Key="OriginalKeyVisualStyle"
             BasedOn="{StaticResource DefaultKeyVisualStyle}"
@@ -425,7 +427,7 @@
         <ContentDialog
             x:Name="RemappingDialog"
             Title="Add new remapping"
-            Width="720"
+            Width="760"
             MinWidth="800"
             MinHeight="500"
             MaxWidth="900"
