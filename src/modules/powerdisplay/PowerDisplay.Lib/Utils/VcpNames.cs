@@ -3,6 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Generic;
+using System.Linq;
+using PowerDisplay.Common.Models;
 
 namespace PowerDisplay.Common.Utils
 {
@@ -417,6 +419,50 @@ namespace PowerDisplay.Common.Utils
         public static string GetFormattedValueName(byte vcpCode, int value)
         {
             var name = GetValueName(vcpCode, value);
+            if (name != null)
+            {
+                return $"{name} (0x{value:X2})";
+            }
+
+            return $"0x{value:X2}";
+        }
+
+        /// <summary>
+        /// Get human-readable name for a VCP value with custom mapping support.
+        /// Custom mappings take priority over built-in mappings.
+        /// </summary>
+        /// <param name="vcpCode">VCP code (e.g., 0x14)</param>
+        /// <param name="value">Value to translate</param>
+        /// <param name="customMappings">Optional custom mappings that take priority</param>
+        /// <returns>Name string like "sRGB" or null if unknown</returns>
+        public static string? GetValueName(byte vcpCode, int value, IEnumerable<CustomVcpValueMapping>? customMappings)
+        {
+            // 1. Priority: Check custom mappings first
+            if (customMappings != null)
+            {
+                var custom = customMappings.FirstOrDefault(m =>
+                    m.VcpCode == vcpCode && m.Value == value);
+                if (custom != null && !string.IsNullOrEmpty(custom.CustomName))
+                {
+                    return custom.CustomName;
+                }
+            }
+
+            // 2. Fallback to built-in mappings
+            return GetValueName(vcpCode, value);
+        }
+
+        /// <summary>
+        /// Get formatted display name for a VCP value with custom mapping support.
+        /// Custom mappings take priority over built-in mappings.
+        /// </summary>
+        /// <param name="vcpCode">VCP code (e.g., 0x14)</param>
+        /// <param name="value">Value to translate</param>
+        /// <param name="customMappings">Optional custom mappings that take priority</param>
+        /// <returns>Formatted string like "sRGB (0x01)" or "0x01" if unknown</returns>
+        public static string GetFormattedValueName(byte vcpCode, int value, IEnumerable<CustomVcpValueMapping>? customMappings)
+        {
+            var name = GetValueName(vcpCode, value, customMappings);
             if (name != null)
             {
                 return $"{name} (0x{value:X2})";

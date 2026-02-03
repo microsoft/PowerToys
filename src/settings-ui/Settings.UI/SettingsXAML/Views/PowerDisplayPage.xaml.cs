@@ -133,6 +133,65 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             return ProfileHelper.GenerateUniqueProfileName(existingNames, baseName);
         }
 
+        // Custom VCP Mapping event handlers
+        private async void AddCustomMapping_Click(object sender, RoutedEventArgs e)
+        {
+            var dialog = new CustomVcpMappingEditorDialog(ViewModel.Monitors);
+            dialog.XamlRoot = this.XamlRoot;
+
+            var result = await dialog.ShowAsync();
+
+            if (result == ContentDialogResult.Primary && dialog.ResultMapping != null)
+            {
+                ViewModel.AddCustomVcpMapping(dialog.ResultMapping);
+            }
+        }
+
+        private async void EditCustomMapping_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is not Button button || button.Tag is not Library.CustomVcpValueMapping mapping)
+            {
+                return;
+            }
+
+            var dialog = new CustomVcpMappingEditorDialog(ViewModel.Monitors);
+            dialog.XamlRoot = this.XamlRoot;
+            dialog.PreFillMapping(mapping);
+
+            var result = await dialog.ShowAsync();
+
+            if (result == ContentDialogResult.Primary && dialog.ResultMapping != null)
+            {
+                ViewModel.UpdateCustomVcpMapping(mapping, dialog.ResultMapping);
+            }
+        }
+
+        private async void DeleteCustomMapping_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is not Button button || button.Tag is not Library.CustomVcpValueMapping mapping)
+            {
+                return;
+            }
+
+            var resourceLoader = ResourceLoaderInstance.ResourceLoader;
+            var dialog = new ContentDialog
+            {
+                XamlRoot = this.XamlRoot,
+                Title = resourceLoader.GetString("PowerDisplay_CustomMapping_Delete_Title"),
+                Content = resourceLoader.GetString("PowerDisplay_CustomMapping_Delete_Message"),
+                PrimaryButtonText = resourceLoader.GetString("Yes"),
+                CloseButtonText = resourceLoader.GetString("No"),
+                DefaultButton = ContentDialogButton.Close,
+            };
+
+            var result = await dialog.ShowAsync();
+
+            if (result == ContentDialogResult.Primary)
+            {
+                ViewModel.DeleteCustomVcpMapping(mapping);
+            }
+        }
+
         // Flag to prevent reentrant handling during programmatic checkbox changes
         private bool _isRestoringColorTempCheckbox;
 

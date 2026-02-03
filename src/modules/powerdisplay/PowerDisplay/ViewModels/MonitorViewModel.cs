@@ -466,8 +466,10 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
 
     /// <summary>
     /// Gets human-readable color temperature preset name (e.g., "6500K", "sRGB")
+    /// Uses custom mappings if available, otherwise falls back to built-in names.
     /// </summary>
-    public string ColorTemperaturePresetName => _monitor.ColorTemperaturePresetName;
+    public string ColorTemperaturePresetName =>
+        Common.Utils.VcpNames.GetFormattedValueName(0x14, _monitor.CurrentColorTemperature, _mainViewModel?.CustomVcpMappings);
 
     /// <summary>
     /// Gets a value indicating whether this monitor supports color temperature via VCP 0x14
@@ -547,7 +549,7 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
         _availableColorPresets = presetValues.Select(value => new ColorTemperatureItem
         {
             VcpValue = value,
-            DisplayName = Common.Utils.VcpNames.GetFormattedValueName(0x14, value),
+            DisplayName = Common.Utils.VcpNames.GetFormattedValueName(0x14, value, _mainViewModel?.CustomVcpMappings),
             IsSelected = value == _monitor.CurrentColorTemperature,
             MonitorId = _monitor.Id,
         }).ToList();
@@ -567,8 +569,11 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
 
     /// <summary>
     /// Gets human-readable current input source name (e.g., "HDMI-1", "DisplayPort-1")
+    /// Uses custom mappings if available, otherwise falls back to built-in names.
     /// </summary>
-    public string CurrentInputSourceName => _monitor.InputSourceName;
+    public string CurrentInputSourceName =>
+        Common.Utils.VcpNames.GetValueName(0x60, _monitor.CurrentInputSource, _mainViewModel?.CustomVcpMappings)
+        ?? $"Source 0x{_monitor.CurrentInputSource:X2}";
 
     private List<InputSourceItem>? _availableInputSources;
 
@@ -603,7 +608,7 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
         _availableInputSources = supportedSources.Select(value => new InputSourceItem
         {
             Value = value,
-            Name = Common.Utils.VcpNames.GetValueName(0x60, value) ?? $"Source 0x{value:X2}",
+            Name = Common.Utils.VcpNames.GetValueName(0x60, value, _mainViewModel?.CustomVcpMappings) ?? $"Source 0x{value:X2}",
             SelectionVisibility = value == _monitor.CurrentInputSource ? Visibility.Visible : Visibility.Collapsed,
             MonitorId = _monitor.Id,
         }).ToList();

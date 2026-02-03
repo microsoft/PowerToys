@@ -5992,6 +5992,57 @@ The break timer font matches the text font.</value>
   <data name="PowerDisplay_ShowIdentifyMonitorsButton.Description" xml:space="preserve">
     <value>Show or hide the identify monitors button in the Power Display flyout</value>
   </data>
+  <data name="PowerDisplay_CustomVcpMappings_GroupSettings.Header" xml:space="preserve">
+    <value>Custom VCP Name Mappings</value>
+  </data>
+  <data name="PowerDisplay_CustomVcpMappings.Header" xml:space="preserve">
+    <value>Custom name mappings</value>
+  </data>
+  <data name="PowerDisplay_CustomVcpMappings.Description" xml:space="preserve">
+    <value>Define custom display names for color temperature presets and input sources</value>
+  </data>
+  <data name="PowerDisplay_AddCustomMappingButton.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Add custom mapping</value>
+  </data>
+  <data name="PowerDisplay_AddCustomMapping_Text.Text" xml:space="preserve">
+    <value>Add mapping</value>
+  </data>
+  <data name="PowerDisplay_CustomMappingEditor_Title" xml:space="preserve">
+    <value>Custom VCP Name Mapping</value>
+  </data>
+  <data name="PowerDisplay_CustomMappingEditor_VcpCode.Header" xml:space="preserve">
+    <value>VCP Code</value>
+  </data>
+  <data name="PowerDisplay_CustomMappingEditor_ColorTemperature.Content" xml:space="preserve">
+    <value>Color Temperature (0x14)</value>
+  </data>
+  <data name="PowerDisplay_CustomMappingEditor_InputSource.Content" xml:space="preserve">
+    <value>Input Source (0x60)</value>
+  </data>
+  <data name="PowerDisplay_CustomMappingEditor_CustomName.Header" xml:space="preserve">
+    <value>Custom Name</value>
+  </data>
+  <data name="PowerDisplay_CustomMappingEditor_CustomName.PlaceholderText" xml:space="preserve">
+    <value>Enter custom name</value>
+  </data>
+  <data name="PowerDisplay_CustomMappingEditor_ValueComboBox.Header" xml:space="preserve">
+    <value>Value</value>
+  </data>
+  <data name="PowerDisplay_CustomMappingEditor_CustomValueOption" xml:space="preserve">
+    <value>Custom value...</value>
+  </data>
+  <data name="PowerDisplay_CustomMappingEditor_CustomValueInput.Header" xml:space="preserve">
+    <value>Enter custom value (hex)</value>
+  </data>
+  <data name="PowerDisplay_CustomMappingEditor_CustomValueInput.PlaceholderText" xml:space="preserve">
+    <value>e.g., 0x11 or 17</value>
+  </data>
+  <data name="PowerDisplay_CustomMapping_Delete_Title" xml:space="preserve">
+    <value>Delete custom mapping?</value>
+  </data>
+  <data name="PowerDisplay_CustomMapping_Delete_Message" xml:space="preserve">
+    <value>This custom name mapping will be permanently removed.</value>
+  </data>
   <data name="Hosts_Backup_GroupSettings.Header" xml:space="preserve">
     <value>Backup</value>
   </data>

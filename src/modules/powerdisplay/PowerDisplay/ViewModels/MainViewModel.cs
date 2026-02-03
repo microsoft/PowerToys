@@ -163,6 +163,23 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
         }
     }
 
+    // Custom VCP mappings - loaded from settings
+    private List<Common.Models.CustomVcpValueMapping> _customVcpMappings = new();
+
+    /// <summary>
+    /// Gets or sets the custom VCP value name mappings.
+    /// These mappings override the default VCP value names for color temperature and input source.
+    /// </summary>
+    public List<Common.Models.CustomVcpValueMapping> CustomVcpMappings
+    {
+        get => _customVcpMappings;
+        set
+        {
+            _customVcpMappings = value ?? new List<Common.Models.CustomVcpValueMapping>();
+            OnPropertyChanged();
+        }
+    }
+
     public bool IsScanning
     {
         get => _isScanning;
@@ -389,6 +406,23 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
             var settings = _settingsUtils.GetSettingsOrDefault<PowerDisplaySettings>(PowerDisplaySettings.ModuleName);
             ShowProfileSwitcher = settings.Properties.ShowProfileSwitcher;
             ShowIdentifyMonitorsButton = settings.Properties.ShowIdentifyMonitorsButton;
+
+            // Load custom VCP mappings (convert from Settings.UI.Library type to PowerDisplay.Common.Models type)
+            var uiMappings = settings.Properties.CustomVcpMappings;
+            if (uiMappings != null && uiMappings.Count > 0)
+            {
+                CustomVcpMappings = uiMappings.Select(m => new Common.Models.CustomVcpValueMapping
+                {
+                    VcpCode = m.VcpCode,
+                    Value = m.Value,
+                    CustomName = m.CustomName,
+                }).ToList();
+                Logger.LogInfo($"[Settings] Loaded {CustomVcpMappings.Count} custom VCP mappings");
+            }
+            else
+            {
+                CustomVcpMappings = new List<Common.Models.CustomVcpValueMapping>();
+            }
         }
         catch (Exception ex)
         {

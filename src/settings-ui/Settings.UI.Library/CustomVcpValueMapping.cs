@@ -1,0 +1,58 @@
+// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System.Text.Json.Serialization;
+using PowerDisplay.Common.Utils;
+
+namespace Microsoft.PowerToys.Settings.UI.Library
+{
+    /// <summary>
+    /// Represents a custom name mapping for a VCP code value.
+    /// Used in Settings UI to allow users to define custom names for VCP values.
+    /// </summary>
+    public class CustomVcpValueMapping
+    {
+        /// <summary>
+        /// Gets or sets the VCP code (e.g., 0x14 for color temperature, 0x60 for input source).
+        /// </summary>
+        [JsonPropertyName("vcpCode")]
+        public byte VcpCode { get; set; }
+
+        /// <summary>
+        /// Gets or sets the VCP value to map (e.g., 0x11 for HDMI-1).
+        /// </summary>
+        [JsonPropertyName("value")]
+        public int Value { get; set; }
+
+        /// <summary>
+        /// Gets or sets the custom name to display instead of the default name.
+        /// </summary>
+        [JsonPropertyName("customName")]
+        public string CustomName { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets the display name for the VCP code (for UI display).
+        /// </summary>
+        [JsonIgnore]
+        public string VcpCodeDisplayName => VcpCode switch
+        {
+            0x14 => "Color Temperature",
+            0x60 => "Input Source",
+            _ => $"VCP 0x{VcpCode:X2}",
+        };
+
+        /// <summary>
+        /// Gets the display name for the VCP value (using built-in mapping).
+        /// </summary>
+        [JsonIgnore]
+        public string ValueDisplayName => VcpNames.GetFormattedValueName(VcpCode, Value);
+
+        /// <summary>
+        /// Gets a summary string for display in the UI list.
+        /// Format: "VcpCodeName: OriginalValue → CustomName"
+        /// </summary>
+        [JsonIgnore]
+        public string DisplaySummary => $"{VcpNames.GetValueName(VcpCode, Value) ?? $"0x{Value:X2}"} → {CustomName}";
+    }
+}

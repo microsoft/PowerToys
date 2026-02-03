@@ -59,6 +59,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             // Load profiles
             LoadProfiles();
 
+            // Load custom VCP mappings
+            LoadCustomVcpMappings();
+
             // Listen for monitor refresh events from PowerDisplay.exe
             NativeEventWaiter.WaitForEventLoop(
                 Constants.RefreshPowerDisplayMonitorsEvent(),
@@ -446,6 +449,25 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         // Profile-related fields
         private ObservableCollection<PowerDisplayProfile> _profiles = new ObservableCollection<PowerDisplayProfile>();
 
+        // Custom VCP mapping fields
+        private ObservableCollection<Library.CustomVcpValueMapping> _customVcpMappings = new ObservableCollection<Library.CustomVcpValueMapping>();
+
+        /// <summary>
+        /// Gets or sets collection of custom VCP value name mappings
+        /// </summary>
+        public ObservableCollection<Library.CustomVcpValueMapping> CustomVcpMappings
+        {
+            get => _customVcpMappings;
+            set
+            {
+                if (_customVcpMappings != value)
+                {
+                    _customVcpMappings = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
         /// <summary>
         /// Gets or sets collection of available profiles (for button display)
         /// </summary>
@@ -644,6 +666,102 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 Logger.LogError($"Failed to delete profile: {ex.Message}");
             }
+        }
+
+        /// <summary>
+        /// Load custom VCP mappings from settings
+        /// </summary>
+        private void LoadCustomVcpMappings()
+        {
+            try
+            {
+                var mappings = _settings.Properties.CustomVcpMappings ?? new List<Library.CustomVcpValueMapping>();
+                CustomVcpMappings = new ObservableCollection<Library.CustomVcpValueMapping>(mappings);
+                Logger.LogInfo($"Loaded {CustomVcpMappings.Count} custom VCP mappings");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Failed to load custom VCP mappings: {ex.Message}");
+                CustomVcpMappings = new ObservableCollection<Library.CustomVcpValueMapping>();
+            }
+        }
+
+        /// <summary>
+        /// Add a new custom VCP mapping
+        /// </summary>
+        public void AddCustomVcpMapping(Library.CustomVcpValueMapping mapping)
+        {
+            if (mapping == null)
+            {
+                return;
+            }
+
+            // Check if a mapping for the same VcpCode+Value already exists
+            var existing = CustomVcpMappings.FirstOrDefault(m =>
+                m.VcpCode == mapping.VcpCode && m.Value == mapping.Value);
+
+            if (existing != null)
+            {
+                // Update the existing mapping's custom name
+                existing.CustomName = mapping.CustomName;
+                Logger.LogInfo($"Updated existing custom VCP mapping: VCP=0x{mapping.VcpCode:X2}, Value=0x{mapping.Value:X2}");
+            }
+            else
+            {
+                // Add new mapping
+                CustomVcpMappings.Add(mapping);
+                Logger.LogInfo($"Added custom VCP mapping: VCP=0x{mapping.VcpCode:X2}, Value=0x{mapping.Value:X2} -> {mapping.CustomName}");
+            }
+
+            SaveCustomVcpMappings();
+        }
+
+        /// <summary>
+        /// Update an existing custom VCP mapping
+        /// </summary>
+        public void UpdateCustomVcpMapping(Library.CustomVcpValueMapping oldMapping, Library.CustomVcpValueMapping newMapping)
+        {
+            if (oldMapping == null || newMapping == null)
+            {
+                return;
+            }
+
+            var index = CustomVcpMappings.IndexOf(oldMapping);
+            if (index >= 0)
+            {
+                CustomVcpMappings[index] = newMapping;
+                Logger.LogInfo($"Updated custom VCP mapping at index {index}");
+                SaveCustomVcpMappings();
+            }
+        }
+
+        /// <summary>
+        /// Delete a custom VCP mapping
+        /// </summary>
+        public void DeleteCustomVcpMapping(Library.CustomVcpValueMapping mapping)
+        {
+            if (mapping == null)
+            {
+                return;
+            }
+
+            if (CustomVcpMappings.Remove(mapping))
+            {
+                Logger.LogInfo($"Deleted custom VCP mapping: VCP=0x{mapping.VcpCode:X2}, Value=0x{mapping.Value:X2}");
+                SaveCustomVcpMappings();
+            }
+        }
+
+        /// <summary>
+        /// Save custom VCP mappings to settings
+        /// </summary>
+        private void SaveCustomVcpMappings()
+        {
+            _settings.Properties.CustomVcpMappings = CustomVcpMappings.ToList();
+            NotifySettingsChanged();
+
+            // Signal PowerDisplay to reload settings
+            SignalSettingsUpdated();
         }
 
         private void NotifySettingsChanged()
