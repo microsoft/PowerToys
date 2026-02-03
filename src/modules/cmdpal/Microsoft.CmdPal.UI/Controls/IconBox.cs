@@ -256,13 +256,13 @@ public partial class IconBox : ContentControl
             // list virtualization situation, it's very possible we
             // may have already been set to a new icon before we
             // even got back from the await.
-            if (eventArgs.Key != sourceKey)
+            if (!Equals(sourceKey, iconBox.SourceKey))
             {
                 // If the requested icon has changed, then just bail
                 return;
             }
 
-            if (eventArgs.Value == iconBox.Source)
+            if (Equals(eventArgs.Value, iconBox.Source))
             {
                 return;
             }

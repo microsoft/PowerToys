@@ -11,6 +11,8 @@ public class GalleryGridPropertiesViewModel : IGridPropertiesViewModel
 {
     private readonly ExtensionObject<IGalleryGridLayout> _model;
 
+    public bool IsGrid => true;
+
     public bool ShowTitle { get; private set; }
 
     public bool ShowSubtitle { get; private set; }

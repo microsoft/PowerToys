@@ -19,7 +19,7 @@ public partial class DetailsViewModel(IDetails _details, WeakReference<IPageCont
 
     public string Body { get; private set; } = string.Empty;
 
-    public ContentSize? Size { get; private set; } = ContentSize.Small;
+    public ContentSize Size { get; private set; } = ContentSize.Small;
 
     // Metadata is an array of IDetailsElement,
     //   where IDetailsElement = {IDetailsTags, IDetailsLink, IDetailsSeparator}
@@ -42,18 +42,19 @@ public partial class DetailsViewModel(IDetails _details, WeakReference<IPageCont
         UpdateProperty(nameof(Body));
         UpdateProperty(nameof(HeroImage));
 
+        ContentSize? contentSize = null;
         if (model is IExtendedAttributesProvider provider)
         {
             if (provider.GetProperties()?.TryGetValue("Size", out var rawValue) == true)
             {
                 if (rawValue is int sizeAsInt)
                 {
-                    Size = (ContentSize)sizeAsInt;
+                    contentSize = (ContentSize)sizeAsInt;
                 }
             }
         }
 
-        Size ??= ContentSize.Small;
+        Size = contentSize ?? ContentSize.Small;
 
         UpdateProperty(nameof(Size));
 

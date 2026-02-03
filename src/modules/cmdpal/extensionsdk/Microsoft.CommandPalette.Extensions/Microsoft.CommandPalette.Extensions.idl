@@ -303,6 +303,17 @@ namespace Microsoft.CommandPalette.Extensions
         Boolean ShowTitle { get; };
         Boolean ShowSubtitle { get; };
     }
+
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface ISinglelineListLayout requires IGridProperties
+    {
+        Boolean IsAutomaticWrappingEnabled { get; };
+        ContentSize AutomaticWrappingBreakpoint { get; };
+    }
+
+    [uuid("05914D59-6ECB-4992-9CF2-5982B5121112")]
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface IMultilineListLayout requires IGridProperties { }
     
     [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
     interface IListPage requires IPage, INotifyItemsChanged {

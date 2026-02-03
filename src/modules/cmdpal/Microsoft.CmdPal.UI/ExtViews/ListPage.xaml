@@ -246,7 +246,8 @@
             x:DataType="coreViewModels:ListItemViewModel"
             ListItem="{StaticResource ListItemSingleRowViewModelTemplate}"
             Section="{StaticResource ListSectionViewModelTemplate}"
-            Separator="{StaticResource ListSeparatorViewModelTemplate}" />
+            Separator="{StaticResource ListSeparatorViewModelTemplate}"
+            SingleRowListItem="{StaticResource ListItemSingleRowViewModelTemplate}" />
 
         <cmdpalUI:ListItemContainerStyleSelector
             x:Key="ListItemContainerStyleSelector"
