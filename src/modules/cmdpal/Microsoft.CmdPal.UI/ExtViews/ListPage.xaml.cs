@@ -36,6 +36,10 @@ public sealed partial class ListPage : Page,
 {
     private InputSource _lastInputSource;
 
+    private bool _selectionLostDuringUpdate;
+    private ListItemViewModel? _lastRemovedSelectedItem;
+    private bool _suppressSelectionSideEffects;
+
     internal ListViewModel? ViewModel
     {
         get => (ListViewModel?)GetValue(ViewModelProperty);
@@ -76,6 +80,7 @@ public sealed partial class ListPage : Page,
         }
 
         ViewModel = listViewModel;
+        ViewModel.SelectionChanged += ViewModelOnSelectionChanged;
 
         if (e.NavigationMode == NavigationMode.Back)
         {
@@ -102,6 +107,11 @@ public sealed partial class ListPage : Page,
         WeakReferenceMessenger.Default.Register<ActivateSecondaryCommandMessage>(this);
 
         base.OnNavigatedTo(e);
+    }
+
+    private void ViewModelOnSelectionChanged(ListViewModel sender, EventArgs args)
+    {
+        this.ItemView.SelectedItem = sender.SelectedItem;
     }
 
     protected override void OnNavigatingFrom(NavigatingCancelEventArgs e)
@@ -198,22 +208,46 @@ public sealed partial class ListPage : Page,
     private void Items_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         var vm = ViewModel;
+
+        // During incremental updates, WinUI can transiently clear selection when
+        // containers recycle / items move. Treat this as "selection lost during update"
+        // and restore it in Page_ItemsUpdated once the dust settles.
+        if (ItemView.SelectedItem is null)
+        {
+            if (e.RemovedItems.Count > 0 && e.RemovedItems[0] is ListItemViewModel removed)
+            {
+                _lastRemovedSelectedItem = removed;
+            }
+
+            _selectionLostDuringUpdate = true;
+            return;
+        }
+
+        // Skip separators/headers.
+        if (IsSeparator(ItemView.SelectedItem))
+        {
+            _selectionLostDuringUpdate = false;
+            return;
+        }
+
         var li = ItemView.SelectedItem as ListItemViewModel;
-        _ = Task.Run(() =>
+
+        // Preserve ordering: stay on the UI thread, but defer to a lower priority
+        // to avoid fighting with item-source updates (and GH #322 style issues).
+        _ = DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () =>
         {
             vm?.UpdateSelectedItemCommand.Execute(li);
         });
 
-        // There's mysterious behavior here, where the selection seemingly
-        // changes to _nothing_ when we're backspacing to a single character.
-        // And at that point, seemingly the item that's getting removed is not
-        // a member of FilteredItems. Very bizarre.
-        //
-        // Might be able to fix in the future by stashing the removed item
-        // here, then in Page_ItemsUpdated trying to select that cached item if
-        // it's in the list (otherwise, clear the cache), but that seems
-        // aggressively BODGY for something that mostly just works today.
-        if (ItemView.SelectedItem is not null && !IsSeparator(ItemView.SelectedItem))
+        _selectionLostDuringUpdate = false;
+
+        if (_suppressSelectionSideEffects)
+        {
+            return;
+        }
+
+        // Scroll + accessibility announce (unchanged logic, but use li already captured)
+        if (li is not null && !IsSeparator(li))
         {
             var items = ItemView.Items;
             var firstUsefulIndex = GetFirstSelectableIndex();
@@ -230,12 +264,11 @@ public sealed partial class ListPage : Page,
 
             if (shouldScroll)
             {
-                ItemView.ScrollIntoView(ItemView.SelectedItem);
+                ItemView.ScrollIntoView(li);
             }
 
-            // Automation notification for screen readers
             var listViewPeer = Microsoft.UI.Xaml.Automation.Peers.ListViewAutomationPeer.CreatePeerForElement(ItemView);
-            if (listViewPeer is not null && li is not null)
+            if (listViewPeer is not null)
             {
                 UIHelper.AnnounceActionForAccessibility(
                     ItemsList,
@@ -566,56 +599,104 @@ public sealed partial class ListPage : Page,
         {
             var items = ItemView.Items;
 
-            // If the list is null or empty, clears the selection and return
             if (items is null || items.Count == 0)
             {
-                ItemView.SelectedIndex = -1;
+                _suppressSelectionSideEffects = true;
+                try
+                {
+                    ItemView.SelectedIndex = -1;
+                }
+                finally
+                {
+                    _lastRemovedSelectedItem = null;
+                    _selectionLostDuringUpdate = false;
+                    _ = DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () =>
+                    {
+                        _suppressSelectionSideEffects = false;
+                    });
+                }
+
                 return;
             }
 
-            // Finds the first item that is not a separator
             var firstUsefulIndex = GetFirstSelectableIndex();
-
-            // If there is only separators in the list, don't select anything.
             if (firstUsefulIndex == -1)
             {
-                ItemView.SelectedIndex = -1;
+                _suppressSelectionSideEffects = true;
+                try
+                {
+                    ItemView.SelectedIndex = -1;
+                }
+                finally
+                {
+                    _ = DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () =>
+                    {
+                        _suppressSelectionSideEffects = false;
+                    });
+                }
 
                 return;
             }
 
             var shouldUpdateSelection = false;
+            object? targetSelection = null; // either ListItemViewModel or null
+            var targetIndex = -1;
 
-            // If it's a top level list update we force the reset to the top useful item
-            if (!sender.IsNested)
+            // If we observed a transient "selection cleared" during update,
+            // prefer restoring the removed item if it still exists.
+            if (_selectionLostDuringUpdate)
             {
-                shouldUpdateSelection = true;
-            }
+                _selectionLostDuringUpdate = false;
 
-            // No current selection or current selection is null
-            else if (ItemView.SelectedItem is null)
-            {
-                shouldUpdateSelection = true;
-            }
-
-            // The current selected item is a separator
-            else if (IsSeparator(ItemView.SelectedItem))
-            {
-                shouldUpdateSelection = true;
-            }
-
-            // The selected item does not exist in the new list
-            else if (!items.Contains(ItemView.SelectedItem))
-            {
-                shouldUpdateSelection = true;
-            }
-
-            if (shouldUpdateSelection)
-            {
-                if (firstUsefulIndex != -1)
+                if (_lastRemovedSelectedItem is not null &&
+                    items.Contains(_lastRemovedSelectedItem) &&
+                    !IsSeparator(_lastRemovedSelectedItem))
                 {
-                    ItemView.SelectedIndex = firstUsefulIndex;
+                    shouldUpdateSelection = true;
+                    targetSelection = _lastRemovedSelectedItem;
                 }
+
+                _lastRemovedSelectedItem = null;
+            }
+
+            // Normal repair logic: only change selection if current selection is missing/invalid.
+            if (!shouldUpdateSelection)
+            {
+                if (ItemView.SelectedItem is not ListItemViewModel current ||
+                    IsSeparator(current) ||
+                    !items.Contains(current))
+                {
+                    shouldUpdateSelection = true;
+                    targetIndex = firstUsefulIndex;
+                }
+            }
+
+            if (!shouldUpdateSelection)
+            {
+                return;
+            }
+
+            _suppressSelectionSideEffects = true;
+            try
+            {
+                if (targetSelection is not null)
+                {
+                    ItemView.SelectedItem = targetSelection;
+                }
+                else
+                {
+                    ItemView.SelectedIndex = targetIndex;
+                }
+
+                // IMPORTANT: no ScrollIntoView here — this is selection repair.
+            }
+            finally
+            {
+                // Release suppression on the next UI tick, after SelectionChanged fires.
+                _ = DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () =>
+                {
+                    _suppressSelectionSideEffects = false;
+                });
             }
         });
     }
@@ -1036,5 +1117,14 @@ public sealed partial class ListPage : Page,
         None,
         Keyboard,
         Pointer,
+    }
+
+    private void ItemsList_OnContainerContentChanging(ListViewBase sender, ContainerContentChangingEventArgs args)
+    {
+        if (args.Item is ListItemViewModel item)
+        {
+            // Check if we need to initialize any properties on a background thread.
+            _ = Task.Run(() => item.SafeInitializeProperties());
+        }
     }
 }

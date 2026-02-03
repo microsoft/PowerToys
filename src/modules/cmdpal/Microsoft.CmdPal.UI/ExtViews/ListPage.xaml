@@ -32,7 +32,7 @@
         <x:Double x:Key="MediumGridContainerSize">100</x:Double>
         <x:Double x:Key="GalleryGridSize">160</x:Double>
 
-        <x:Double x:Key="ListViewItemMinHeight">40</x:Double>
+        <x:Double x:Key="ListViewItemMinHeight">48</x:Double>
         <x:Double x:Key="ListViewSectionMinHeight">0</x:Double>
         <x:Double x:Key="ListViewSeparatorMinHeight">0</x:Double>
 
@@ -199,7 +199,8 @@
             x:Key="ListDefaultContainerStyle"
             BasedOn="{StaticResource DefaultListViewItemStyle}"
             TargetType="ListViewItem">
-            <Setter Property="MinHeight" Value="{StaticResource ListViewItemMinHeight}" />
+            <!-- Static height helps with stable item container recycling and selection experience -->
+            <Setter Property="Height" Value="{StaticResource ListViewItemMinHeight}" />
         </Style>
 
         <Style
@@ -243,7 +244,7 @@
         <cmdpalUI:ListItemTemplateSelector
             x:Key="ListItemTemplateSelector"
             x:DataType="coreViewModels:ListItemViewModel"
-            ListItem="{StaticResource ListItemViewModelTemplate}"
+            ListItem="{StaticResource ListItemSingleRowViewModelTemplate}"
             Section="{StaticResource ListSectionViewModelTemplate}"
             Separator="{StaticResource ListSeparatorViewModelTemplate}" />
 
@@ -320,6 +321,71 @@
                 <ItemsControl
                     Grid.RowSpan="2"
                     Grid.Column="2"
+                    Margin="0,0,8,0"
+                    VerticalAlignment="Center"
+                    IsHitTestVisible="False"
+                    IsTabStop="False"
+                    ItemTemplate="{StaticResource TagTemplate}"
+                    ItemsSource="{x:Bind Tags, Mode=OneWay}"
+                    Visibility="{x:Bind HasTags, Mode=OneWay}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Orientation="Horizontal" Spacing="4" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                </ItemsControl>
+            </Grid>
+        </DataTemplate>
+
+        <DataTemplate x:Key="ListItemSingleRowViewModelTemplate" x:DataType="coreViewModels:ListItemViewModel">
+            <Grid
+                Padding="0,12,0,12"
+                AutomationProperties.Name="{x:Bind Title, Mode=OneWay}"
+                ColumnSpacing="12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="28" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <cpcontrols:IconBox
+                    x:Name="IconBorder"
+                    Grid.Column="0"
+                    Width="20"
+                    Height="20"
+                    Margin="4,0,4,0"
+                    AutomationProperties.AccessibilityView="Raw"
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                    SourceKey="{x:Bind Icon, Mode=OneWay}"
+                    SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested20}" />
+
+                <TextBlock
+                    Grid.Column="1"
+                    VerticalAlignment="Center"
+                    CharacterSpacing="12"
+                    FontSize="14"
+                    MaxLines="1"
+                    Style="{StaticResource CaptionTextBlockStyle}"
+                    Text="{x:Bind Title, Mode=OneWay}"
+                    TextTrimming="CharacterEllipsis"
+                    TextWrapping="NoWrap" />
+
+                <TextBlock
+                    Grid.Column="2"
+                    VerticalAlignment="Center"
+                    CharacterSpacing="12"
+                    FontSize="14"
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                    MaxLines="1"
+                    Style="{StaticResource CaptionTextBlockStyle}"
+                    Text="{x:Bind Subtitle, Mode=OneWay}"
+                    TextTrimming="CharacterEllipsis"
+                    TextWrapping="NoWrap"
+                    Visibility="{x:Bind ShowSubtitle, Mode=OneWay}" />
+
+                <ItemsControl
+                    Grid.Column="3"
                     Margin="0,0,8,0"
                     VerticalAlignment="Center"
                     IsHitTestVisible="False"
@@ -535,6 +601,15 @@
                             ItemsSource="{x:Bind ViewModel.FilteredItems, Mode=OneWay}"
                             RightTapped="Items_RightTapped"
                             SelectionChanged="Items_SelectionChanged">
+                            <ListView.Resources>
+                                <!-- 
+                                    Disable indicator (pill) until we can make the first item selection ultra stable.
+                                    At the moment the selection can still temporarily flicker when the list is updated,
+                                    and pill movement across items is noticeable.
+                                    When present, it will be good item to disable animation of the pill anyway.
+                                -->
+                                <x:Boolean x:Key="ListViewItemSelectionIndicatorVisualEnabled">False</x:Boolean>
+                            </ListView.Resources>
                             <ListView.ItemContainerTransitions>
                                 <TransitionCollection />
                             </ListView.ItemContainerTransitions>

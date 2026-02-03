@@ -12,7 +12,7 @@ namespace Microsoft.CmdPal.Core.ViewModels;
 
 public partial class ListItemViewModel : CommandItemViewModel
 {
-    public new ExtensionObject<IListItem> Model { get; }
+    public new ExtensionObject<IListItem> Model { get; private set; }
 
     public List<TagViewModel>? Tags { get; set; }
 
@@ -65,6 +65,23 @@ public partial class ListItemViewModel : CommandItemViewModel
         : base(new(model), context)
     {
         Model = new ExtensionObject<IListItem>(model);
+    }
+
+    public void Rebind(ExtensionObject<IListItem> model)
+    {
+        // Swap the model + owner/context.
+        // Make sure this does NOT double-subscribe events.
+        Model = model;
+
+        // Update lightweight bound props.
+        SafeFastInit();
+        UpdateProperty(
+            nameof(Name),
+            nameof(Subtitle),
+            nameof(Command),
+            nameof(SecondaryCommand),
+            nameof(AllCommands),
+            nameof(Details));
     }
 
     public override void InitializeProperties()
