@@ -6,53 +6,56 @@ using System;
 namespace PowerToys.TestReviewLoop
 {
     /// <summary>
-    /// Test utility class with INTENTIONAL issues for review testing.
+    /// Test utility class - issues fixed per code review.
     /// </summary>
     public class TestUtility
     {
-        // Issue 1: Magic numbers - should be constants
+        // Fix 1: Magic numbers extracted as constants
+        private const int MillisecondsPerSecond = 1000;
+        private const int BaseTimeoutMs = 5000;
+
         public int CalculateTimeout(int baseValue)
         {
-            return baseValue * 1000 + 5000; // Magic numbers: 1000, 5000
+            return baseValue * MillisecondsPerSecond + BaseTimeoutMs;
         }
 
-        // Issue 2: Missing null check
+        // Fix 2: Added null check
         public string ProcessInput(string input)
         {
-            return input.ToUpper().Trim(); // No null check!
+            return input?.ToUpper().Trim() ?? string.Empty;
         }
 
-        // Issue 3: Poor variable naming
-        public void DoSomething(int x, string y)
+        // Fix 3: Improved variable naming
+        public void DoSomething(int multiplier, string prefix)
         {
-            var a = x * 2;
-            var b = y + "test";
-            Console.WriteLine($"{a} - {b}");
+            var doubledValue = multiplier * 2;
+            var combinedText = prefix + "test";
+            Console.WriteLine($"{doubledValue} - {combinedText}");
         }
 
-        // Issue 4: Missing exception handling
+        // Fix 4: Using TryParse for safe parsing
         public int ParseNumber(string text)
         {
-            return int.Parse(text); // Should use TryParse or try-catch
+            return int.TryParse(text, out var result) ? result : 0;
         }
 
-        // Issue 5: Unused variable
+        // Fix 5: Removed unused variable
         public void UnusedExample()
         {
-            var unusedValue = "This is never used";
             Console.WriteLine("Hello");
         }
 
-        // Issue 6: Empty catch block (swallowing exceptions)
+        // Fix 6: Logging exception instead of swallowing
         public void BadExceptionHandling()
         {
             try
             {
                 throw new InvalidOperationException("Test");
             }
-            catch
+            catch (Exception ex)
             {
-                // Silently swallowing exception - bad practice!
+                // Log the exception - never silently swallow
+                System.Diagnostics.Debug.WriteLine($"Operation failed: {ex.Message}");
             }
         }
     }
