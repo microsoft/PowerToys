@@ -11,9 +11,7 @@
     mc:Ignorable="d">
 
     <Grid Padding="16">
-        <StackPanel 
-            Orientation="Vertical" 
-            Spacing="12">
+        <StackPanel Orientation="Vertical" Spacing="12">
             <TextBlock
                 x:Uid="UrlPageInstructionTextBlock"
                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
@@ -28,9 +26,7 @@
                         FontSize="14"
                         Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
                         Glyph="&#xE109;" />
-                    <TextBlock 
-                        x:Uid="UrlPageNewTextBlock"
-                        VerticalAlignment="Center" />
+                    <TextBlock x:Uid="UrlPageNewTextBlock" VerticalAlignment="Center" />
                 </StackPanel>
             </Button>
 
@@ -155,5 +151,15 @@
                 <controls:UrlPageInputControl x:Name="UrlShortcutControl" />
             </Grid>
         </ContentDialog>
+
+        <TeachingTip
+            x:Name="ValidationTip"
+            x:Uid="UrlPageValidationTip"
+            IsLightDismissEnabled="True"
+            PreferredPlacement="Center">
+            <TeachingTip.IconSource>
+                <SymbolIconSource Symbol="Important" />
+            </TeachingTip.IconSource>
+        </TeachingTip>
     </Grid>
 </Page>

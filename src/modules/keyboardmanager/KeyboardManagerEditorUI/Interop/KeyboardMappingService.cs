@@ -185,7 +185,7 @@ namespace KeyboardManagerEditorUI.Interop
             return KeyboardManagerInterop.AddShortcutRemap(_configHandle, originalKeys, targetKeys, targetApp, (int)operationType);
         }
 
-        public bool AddShorcutMapping(ShortcutKeyMapping shortcutKeyMapping)
+        public bool AddShortcutMapping(ShortcutKeyMapping shortcutKeyMapping)
         {
             if (string.IsNullOrEmpty(shortcutKeyMapping.OriginalKeys) || string.IsNullOrEmpty(shortcutKeyMapping.TargetKeys))
             {

@@ -27,6 +27,11 @@
         <CornerRadius x:Key="SmallGridViewItemCornerRadius">8</CornerRadius>
         <CornerRadius x:Key="MediumGridViewItemCornerRadius">8</CornerRadius>
 
+        <x:Double x:Key="SmallGridSize">32</x:Double>
+        <x:Double x:Key="MediumGridSize">48</x:Double>
+        <x:Double x:Key="MediumGridContainerSize">100</x:Double>
+        <x:Double x:Key="GalleryGridSize">160</x:Double>
+
         <x:Double x:Key="ListViewItemMinHeight">40</x:Double>
         <x:Double x:Key="ListViewSectionMinHeight">0</x:Double>
         <x:Double x:Key="ListViewSeparatorMinHeight">0</x:Double>
@@ -288,7 +293,7 @@
                     AutomationProperties.AccessibilityView="Raw"
                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                     SourceKey="{x:Bind Icon, Mode=OneWay}"
-                    SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}" />
+                    SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested20}" />
 
                 <StackPanel
                     Grid.Column="1"
@@ -377,21 +382,21 @@
 
                 <cpcontrols:IconBox
                     x:Name="GridIconBorder"
-                    Width="28"
-                    Height="28"
+                    Width="{StaticResource SmallGridSize}"
+                    Height="{StaticResource SmallGridSize}"
                     Margin="0"
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
                     Foreground="{ThemeResource TextFillColorPrimary}"
                     SourceKey="{x:Bind Icon, Mode=OneWay}"
-                    SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}" />
+                    SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested32}" />
             </StackPanel>
         </DataTemplate>
 
         <DataTemplate x:Key="MediumGridItemViewModelTemplate" x:DataType="coreViewModels:ListItemViewModel">
             <Grid
-                Width="100"
-                Height="100"
+                Width="{StaticResource MediumGridContainerSize}"
+                Height="{StaticResource MediumGridContainerSize}"
                 Padding="8"
                 AutomationProperties.Name="{x:Bind Title, Mode=OneWay}"
                 CornerRadius="{StaticResource MediumGridViewItemCornerRadius}"
@@ -403,15 +408,15 @@
                 <cpcontrols:IconBox
                     x:Name="GridIconBorder"
                     Grid.Row="0"
-                    Width="36"
-                    Height="36"
+                    Width="{StaticResource MediumGridSize}"
+                    Height="{StaticResource MediumGridSize}"
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
                     CharacterSpacing="12"
                     FontSize="14"
                     Foreground="{ThemeResource TextFillColorPrimary}"
                     SourceKey="{x:Bind Icon, Mode=OneWay}"
-                    SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}" />
+                    SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested64}" />
                 <TextBlock
                     x:Name="TitleTextBlock"
                     Grid.Row="1"
@@ -430,7 +435,7 @@
 
         <DataTemplate x:Key="GalleryGridItemViewModelTemplate" x:DataType="coreViewModels:ListItemViewModel">
             <StackPanel
-                Width="160"
+                Width="{StaticResource GalleryGridSize}"
                 Margin="4"
                 Padding="0"
                 HorizontalAlignment="Center"
@@ -442,8 +447,8 @@
                 ToolTipService.ToolTip="{x:Bind Title, Mode=OneWay}">
 
                 <Grid
-                    Width="160"
-                    Height="160"
+                    Width="{StaticResource GalleryGridSize}"
+                    Height="{StaticResource GalleryGridSize}"
                     Margin="0"
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
@@ -456,7 +461,7 @@
                             CornerRadius="4"
                             Foreground="{ThemeResource TextFillColorPrimary}"
                             SourceKey="{x:Bind Icon, Mode=OneWay}"
-                            SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}" />
+                            SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested256}" />
                     </Viewbox>
                 </Grid>
 
@@ -582,7 +587,7 @@
                         Margin="8"
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                         SourceKey="{x:Bind ViewModel.EmptyContent.Icon, Mode=OneWay}"
-                        SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}" />
+                        SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested64}" />
                     <TextBlock
                         Margin="0,4,0,0"
                         HorizontalAlignment="Center"

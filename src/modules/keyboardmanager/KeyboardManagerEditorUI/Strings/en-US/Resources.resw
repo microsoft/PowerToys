@@ -141,13 +141,13 @@
   <data name="RemappingsPageOriginalKeysTextBlock.Text" xml:space="preserve">
     <value>Original key(s)</value>
   </data>
-  <data name="RemmapingsPageOrphanedKeysTeachingTip.ActionButtonContent" xml:space="preserve">
+  <data name="RemappingsPageOrphanedKeysTeachingTip.ActionButtonContent" xml:space="preserve">
     <value>Continue anyway</value>
   </data>
-  <data name="RemmapingsPageOrphanedKeysTeachingTip.CloseButtonContent" xml:space="preserve">
+  <data name="RemappingsPageOrphanedKeysTeachingTip.CloseButtonContent" xml:space="preserve">
     <value>Cancel</value>
   </data>
-  <data name="RemmapingsPageOrphanedKeysTeachingTip.Title" xml:space="preserve">
+  <data name="RemappingsPageOrphanedKeysTeachingTip.Title" xml:space="preserve">
     <value>Orphaned Keys Warning</value>
   </data>
   <data name="RemappingsPageValidationTeachingTip.CloseButtonContent" xml:space="preserve">
@@ -308,5 +308,11 @@
   </data>
   <data name="AppPageInputControlExtraOptionsTextBlock.Text" xml:space="preserve">
     <value>More options</value>
+  </data>
+  <data name="ProgramsPageValidationTip.CloseButtonContent" xml:space="preserve">
+    <value>OK</value>
+  </data>
+  <data name="UrlPageValidationTip.CloseButtonContent" xml:space="preserve">
+    <value>OK</value>
   </data>
 </root>

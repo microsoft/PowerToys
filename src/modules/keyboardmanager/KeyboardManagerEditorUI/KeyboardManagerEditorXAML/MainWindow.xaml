@@ -1,0 +1,73 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<winuiex:WindowEx
+    x:Class="KeyboardManagerEditorUI.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:KeyboardManagerEditorUI"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:pages="using:KeyboardManagerEditorUI.Pages"
+    xmlns:winuiex="using:WinUIEx"
+    Title="KeyboardManagerEditorUI"
+    Width="1440"
+    Height="900"
+    MinWidth="480"
+    MinHeight="320"
+    mc:Ignorable="d">
+    <Window.SystemBackdrop>
+        <MicaBackdrop />
+    </Window.SystemBackdrop>
+    <Grid
+        x:Name="LayoutRoot"
+        HorizontalAlignment="Stretch"
+        VerticalAlignment="Stretch">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <TitleBar x:Name="titleBar" Title="Keyboard Manager">
+            <!--  This is a workaround for https://github.com/microsoft/microsoft-ui-xaml/issues/10374, once fixed we should just be using IconSource  -->
+            <TitleBar.LeftHeader>
+                <ImageIcon
+                    Height="16"
+                    Margin="16,0,0,0"
+                    Source="/Assets/KBMEditor/FluentIconsKeyboardManager.png" />
+            </TitleBar.LeftHeader>
+        </TitleBar>
+        <NavigationView
+            x:Name="RootView"
+            Grid.Row="1"
+            IsBackButtonVisible="Collapsed"
+            IsBackEnabled="False"
+            IsPaneToggleButtonVisible="False"
+            IsSettingsVisible="False"
+            PaneDisplayMode="Top"
+            SelectionChanged="RootView_SelectionChanged">
+            <NavigationView.MenuItems>
+                <NavigationViewItem Content="Remappings" Tag="Remappings">
+                    <NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xEDA7;" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+                <NavigationViewItem Content="Text" Tag="Text">
+                    <NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xE8D2;" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+                <NavigationViewItem Content="Programs" Tag="Programs">
+                    <NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xECAA;" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+                <NavigationViewItem Content="URLs" Tag="URLs">
+                    <NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xE8A7;" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+            </NavigationView.MenuItems>
+            <NavigationView.Content>
+                <Frame x:Name="NavigationFrame" Margin="0,0,0,0" />
+            </NavigationView.Content>
+        </NavigationView>
+    </Grid>
+</winuiex:WindowEx>

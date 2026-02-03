@@ -42,13 +42,13 @@ internal static class Commands
         var results = new List<IListItem>();
         results.AddRange(new[]
         {
-            new ListItem(new ExecuteCommandConfirmation(Resources.Microsoft_plugin_command_name_shutdown, confirmCommands, Resources.Microsoft_plugin_sys_shutdown_computer_confirmation, () => OpenInShellHelper.OpenInShell("shutdown", "/s /hybrid /t 0")))
+            new ListItem(new ExecuteCommandConfirmation(Resources.Microsoft_plugin_command_name_shutdown, confirmCommands, Resources.Microsoft_plugin_sys_shutdown_computer_confirmation, () => OpenInShellHelper.OpenInShell("shutdown", "/s /hybrid /t 0", runWithHiddenWindow: true)))
             {
                 Title = Resources.Microsoft_plugin_sys_shutdown_computer,
                 Subtitle = Resources.Microsoft_plugin_sys_shutdown_computer_description,
                 Icon = Icons.ShutdownIcon,
             },
-            new ListItem(new ExecuteCommandConfirmation(Resources.Microsoft_plugin_command_name_restart, confirmCommands, Resources.Microsoft_plugin_sys_restart_computer_confirmation, () => OpenInShellHelper.OpenInShell("shutdown", "/g /t 0")))
+            new ListItem(new ExecuteCommandConfirmation(Resources.Microsoft_plugin_command_name_restart, confirmCommands, Resources.Microsoft_plugin_sys_restart_computer_confirmation, () => OpenInShellHelper.OpenInShell("shutdown", "/g /t 0", runWithHiddenWindow: true)))
             {
                 Title = Resources.Microsoft_plugin_sys_restart_computer,
                 Subtitle = Resources.Microsoft_plugin_sys_restart_computer_description,

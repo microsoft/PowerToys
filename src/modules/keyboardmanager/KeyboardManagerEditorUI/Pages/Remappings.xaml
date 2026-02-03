@@ -69,7 +69,7 @@
                     Margin="-6,4,0,4"
                     HorizontalAlignment="Left" />
                 <TextBlock
-                    x:Uid="RemmapingsPageApplicableAppsTextBlock"
+                    x:Uid="RemappingsPageApplicableAppsTextBlock"
                     Grid.Column="2"
                     Margin="12,-2,0,0"
                     HorizontalAlignment="Left"
@@ -194,7 +194,7 @@
         </ContentDialog>
         <TeachingTip
             x:Name="OrphanedKeysTeachingTip"
-            x:Uid="RemmapingsPageOrphanedKeysTeachingTip"
+            x:Uid="RemappingsPageOrphanedKeysTeachingTip"
             ActionButtonClick="OrphanedKeysTeachingTip_ActionButtonClick"
             ActionButtonStyle="{StaticResource AccentButtonStyle}"
             CloseButtonClick="OrphanedKeysTeachingTip_CloseButtonClick"
