@@ -28,7 +28,7 @@ void LightSwitchStateManager::OnSettingsChanged()
 }
 
 // Called once per minute
-void LightSwitchStateManager::OnTick(int currentMinutes)
+void LightSwitchStateManager::OnTick()
 {
     std::lock_guard<std::mutex> lock(_stateMutex);
     if (_state.lastAppliedMode != ScheduleMode::FollowNightLight)
@@ -109,10 +109,14 @@ void LightSwitchStateManager::SyncInitialThemeState()
     std::lock_guard<std::mutex> lock(_stateMutex);
     _state.isSystemLightActive = GetCurrentSystemTheme();
     _state.isAppsLightActive = GetCurrentAppsTheme();
+    _state.isNightLightActive = IsNightLightEnabled();
     Logger::debug(L"[LightSwitchStateManager] Synced initial state to current system theme ({})",
                   _state.isSystemLightActive ? L"light" : L"dark");
     Logger::debug(L"[LightSwitchStateManager] Synced initial state to current apps theme ({})",
                   _state.isAppsLightActive ? L"light" : L"dark");
+    
+    // This will ensure that the theme is applied according to current settings at startup
+    EvaluateAndApplyIfNeeded();
 }
 
 static std::pair<int, int> update_sun_times(auto& settings)
