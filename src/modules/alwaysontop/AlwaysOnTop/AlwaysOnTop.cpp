@@ -1,6 +1,10 @@
 #include "pch.h"
 #include "AlwaysOnTop.h"
 
+#include <filesystem>
+#include <string>
+#include <cstring>
+
 #include <common/display/dpi_aware.h>
 #include <common/utils/game_mode.h>
 #include <common/utils/excluded_apps.h>
@@ -16,11 +20,21 @@
 #include <trace.h>
 #include <WinHookEventIDs.h>
 
+#ifndef EVENT_OBJECT_COMMAND
+#define EVENT_OBJECT_COMMAND 0x8010
+#endif
+
+// Raised when a window's system menu is about to be displayed.
+#ifndef EVENT_SYSTEM_MENUPOPUPSTART
+#define EVENT_SYSTEM_MENUPOPUPSTART 0x0006
+#endif
+
 
 namespace NonLocalizable
 {
     const static wchar_t* TOOL_WINDOW_CLASS_NAME = L"AlwaysOnTopWindow";
     const static wchar_t* WINDOW_IS_PINNED_PROP = L"AlwaysOnTop_Pinned";
+    const static UINT ALWAYS_ON_TOP_MENU_ITEM_ID = 0x1000;
 }
 
 bool isExcluded(HWND window)
@@ -53,6 +67,11 @@ AlwaysOnTop::AlwaysOnTop(bool useLLKH, DWORD mainThreadId) :
         
         SubscribeToEvents();
         StartTrackingTopmostWindows();
+
+        if (HWND foreground = GetForegroundWindow())
+        {
+            EnsureSystemMenuForWindow(foreground);
+        }
     }
     else
     {
@@ -158,7 +177,7 @@ LRESULT AlwaysOnTop::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lp
         {
             if (hotkeyId == static_cast<int>(HotkeyId::Pin))
             {
-                ProcessCommand(fw);
+                ProcessCommandWithSource(fw, L"hotkey");
             }
             else if (hotkeyId == static_cast<int>(HotkeyId::IncreaseOpacity))
             {
@@ -193,6 +212,7 @@ void AlwaysOnTop::ProcessCommand(HWND window)
 
     Sound::Type soundType = Sound::Type::Off;
     bool topmost = IsTopmost(window);
+    Logger::trace(L"[AOT] ProcessCommand toggle start hwnd={:#x} topmost={}", reinterpret_cast<uintptr_t>(window), topmost);
     if (topmost)
     {
         if (UnpinTopmostWindow(window))
@@ -208,6 +228,7 @@ void AlwaysOnTop::ProcessCommand(HWND window)
             m_windowOriginalLayeredState.erase(window);
 
             Trace::AlwaysOnTop::UnpinWindow();
+            Logger::trace(L"[AOT] Unpinned hwnd={:#x}", reinterpret_cast<uintptr_t>(window));
         }
     }
     else
@@ -218,6 +239,7 @@ void AlwaysOnTop::ProcessCommand(HWND window)
             AssignBorder(window);
             
             Trace::AlwaysOnTop::PinWindow();
+            Logger::trace(L"[AOT] Pinned hwnd={:#x}", reinterpret_cast<uintptr_t>(window));
         }
     }
 
@@ -225,6 +247,8 @@ void AlwaysOnTop::ProcessCommand(HWND window)
     {
         m_sound.Play(soundType);    
     }
+
+    EnsureSystemMenuForWindow(window);
 }
 
 void AlwaysOnTop::StartTrackingTopmostWindows()
@@ -357,7 +381,7 @@ void AlwaysOnTop::RegisterLLKH()
             case WAIT_OBJECT_0: // Pin event
                 if (HWND fw{ GetForegroundWindow() })
                 {
-                    ProcessCommand(fw);
+                    ProcessCommandWithSource(fw, L"llkh");
                 }
                 break;
             case WAIT_OBJECT_0 + 1: // Terminate event
@@ -392,7 +416,7 @@ void AlwaysOnTop::RegisterLLKH()
 void AlwaysOnTop::SubscribeToEvents()
 {
     // subscribe to windows events
-    std::array<DWORD, 7> events_to_subscribe = {
+    std::array<DWORD, 10> events_to_subscribe = {
         EVENT_OBJECT_LOCATIONCHANGE,
         EVENT_SYSTEM_MINIMIZESTART,
         EVENT_SYSTEM_MINIMIZEEND,
@@ -400,6 +424,9 @@ void AlwaysOnTop::SubscribeToEvents()
         EVENT_SYSTEM_FOREGROUND,
         EVENT_OBJECT_DESTROY,
         EVENT_OBJECT_FOCUS,
+        EVENT_OBJECT_INVOKED,
+        EVENT_OBJECT_COMMAND,
+        EVENT_SYSTEM_MENUPOPUPSTART,
     };
 
     for (const auto event : events_to_subscribe)
@@ -492,7 +519,60 @@ bool AlwaysOnTop::IsTracked(HWND window) const noexcept
 
 void AlwaysOnTop::HandleWinHookEvent(WinHookEvent* data) noexcept
 {
-    if (!AlwaysOnTopSettings::settings().enableFrame || !data->hwnd)
+    if (!data || !data->hwnd)
+    {
+        return;
+    }
+
+    if (data->event == EVENT_SYSTEM_FOREGROUND || data->event == EVENT_SYSTEM_MENUPOPUPSTART)
+    {
+        HWND target = ResolveMenuTargetWindow(data->hwnd);
+        Logger::trace(L"[AOT:SystemMenu] Ensure on event {} (src={:#x}, target={:#x})", data->event, reinterpret_cast<uintptr_t>(data->hwnd), reinterpret_cast<uintptr_t>(target));
+        EnsureSystemMenuForWindow(target);
+    }
+
+    if ((data->event == EVENT_OBJECT_INVOKED || data->event == EVENT_OBJECT_COMMAND) &&
+        data->idChild == static_cast<LONG>(NonLocalizable::ALWAYS_ON_TOP_MENU_ITEM_ID))
+    {
+        HWND target = ResolveMenuTargetWindow(data->hwnd);
+        Logger::trace(L"System menu click captured (event={}, src={:#x}, target={:#x})", data->event, reinterpret_cast<uintptr_t>(data->hwnd), reinterpret_cast<uintptr_t>(target));
+        auto hasItem = [](HWND w) {
+            if (!w)
+            {
+                return false;
+            }
+            HMENU m = GetSystemMenu(w, FALSE);
+            return m && GetMenuState(m, NonLocalizable::ALWAYS_ON_TOP_MENU_ITEM_ID, MF_BYCOMMAND) != static_cast<UINT>(-1);
+        };
+
+        if (!hasItem(target))
+        {
+            HWND fg = GetForegroundWindow();
+            HWND fgRoot = fg ? GetAncestor(fg, GA_ROOT) : nullptr;
+            Logger::trace(L"[AOT:SystemMenu] Fallback to foreground (src={:#x}, fg={:#x}, fgRoot={:#x})",
+                          reinterpret_cast<uintptr_t>(data->hwnd),
+                          reinterpret_cast<uintptr_t>(fg),
+                          reinterpret_cast<uintptr_t>(fgRoot));
+            if (hasItem(fgRoot))
+            {
+                target = fgRoot;
+            }
+        }
+
+        HMENU systemMenu = GetSystemMenu(target, FALSE);
+        if (systemMenu && GetMenuState(systemMenu, NonLocalizable::ALWAYS_ON_TOP_MENU_ITEM_ID, MF_BYCOMMAND) != static_cast<UINT>(-1))
+        {
+            ProcessCommandWithSource(target, L"systemmenu");
+            EnsureSystemMenuForWindow(target);
+        }
+        else
+        {
+            Logger::trace(L"Menu click ignored; menu item not present (target={:#x})", reinterpret_cast<uintptr_t>(target));
+        }
+        return;
+    }
+
+    if (!AlwaysOnTopSettings::settings().enableFrame)
     {
         return;
     }
@@ -614,6 +694,200 @@ void AlwaysOnTop::RefreshBorders()
             }
         }
     }
+}
+
+void AlwaysOnTop::ProcessCommandWithSource(HWND window, const wchar_t* sourceTag)
+{
+    Logger::trace(L"[AOT] ProcessCommand source={} hwnd={:#x}", sourceTag ? sourceTag : L"unknown", reinterpret_cast<uintptr_t>(window));
+    ProcessCommand(window);
+}
+
+bool AlwaysOnTop::ShouldInjectSystemMenu(HWND window) const noexcept
+{
+    if (!window || !IsWindow(window))
+    {
+        Logger::trace(L"[AOT:SystemMenu] Skip: invalid window handle");
+        return false;
+    }
+
+    // Only consider top-level, visible windows that expose a system menu.
+    LONG style = GetWindowLong(window, GWL_STYLE);
+    if ((style & WS_SYSMENU) == 0 || (style & WS_CHILD) == WS_CHILD)
+    {
+        Logger::trace(L"[AOT:SystemMenu] Skip: missing WS_SYSMENU or is child (hwnd={:#x})", reinterpret_cast<uintptr_t>(window));
+        return false;
+    }
+
+    if (!IsWindowVisible(window))
+    {
+        Logger::trace(L"[AOT:SystemMenu] Skip: not visible (hwnd={:#x})", reinterpret_cast<uintptr_t>(window));
+        return false;
+    }
+
+    if (GetAncestor(window, GA_ROOT) != window)
+    {
+        Logger::trace(L"[AOT:SystemMenu] Skip: not root window (hwnd={:#x})", reinterpret_cast<uintptr_t>(window));
+        return false;
+    }
+
+    char className[256]{};
+    if (GetClassNameA(window, className, ARRAYSIZE(className)) && is_system_window(window, className))
+    {
+        const std::wstring classNameW{ std::wstring(className, className + std::strlen(className)) };
+        Logger::trace(L"[AOT:SystemMenu] Skip: system window class {}", classNameW);
+        return false;
+    }
+
+    if (isExcluded(window))
+    {
+        Logger::trace(L"[AOT:SystemMenu] Skip: user excluded (hwnd={:#x})", reinterpret_cast<uintptr_t>(window));
+        return false;
+    }
+
+    DWORD processId = 0;
+    GetWindowThreadProcessId(window, &processId);
+    if (processId == GetCurrentProcessId())
+    {
+        Logger::trace(L"[AOT:SystemMenu] Skip: PowerToys process (hwnd={:#x})", reinterpret_cast<uintptr_t>(window));
+        return false;
+    }
+
+    auto processPath = get_process_path(window);
+    if (!processPath.empty())
+    {
+        const std::filesystem::path path{ processPath };
+        const auto fileName = path.filename().wstring();
+
+        if (_wcsnicmp(fileName.c_str(), L"PowerToys", 9) == 0 ||
+            _wcsicmp(fileName.c_str(), L"PowerLauncher.exe") == 0)
+        {
+            Logger::trace(L"[AOT:SystemMenu] Skip: PowerToys executable {}", fileName.c_str());
+            return false;
+        }
+    }
+
+    return true;
+}
+
+void AlwaysOnTop::UpdateSystemMenuItemState(HWND window, HMENU systemMenu) const noexcept
+{
+    if (!systemMenu)
+    {
+        Logger::trace(L"[AOT:SystemMenu] Update state skipped: null menu");
+        return;
+    }
+
+    const UINT state = IsTopmost(window) ? MF_CHECKED : MF_UNCHECKED;
+    CheckMenuItem(systemMenu, NonLocalizable::ALWAYS_ON_TOP_MENU_ITEM_ID, MF_BYCOMMAND | state);
+}
+
+HWND AlwaysOnTop::ResolveMenuTargetWindow(HWND window) const noexcept
+{
+    if (!window)
+    {
+        return nullptr;
+    }
+
+    HWND candidate = window;
+    auto log_choice = [&](const wchar_t* stage, HWND hwnd) {
+        Logger::trace(L"[AOT:SystemMenu] Resolve target: {} -> {:#x}", stage, reinterpret_cast<uintptr_t>(hwnd));
+    };
+
+    LONG style = GetWindowLong(candidate, GWL_STYLE);
+    if ((style & WS_SYSMENU) == 0 || (style & WS_CHILD) == WS_CHILD)
+    {
+        HWND owner = GetWindow(candidate, GW_OWNER);
+        if (owner)
+        {
+            candidate = owner;
+            log_choice(L"GW_OWNER", candidate);
+        }
+        else
+        {
+            candidate = GetAncestor(window, GA_ROOTOWNER);
+            log_choice(L"GA_ROOTOWNER", candidate);
+        }
+
+        if (!candidate)
+        {
+            candidate = GetAncestor(window, GA_ROOT);
+            log_choice(L"GA_ROOT", candidate);
+        }
+        if (!candidate)
+        {
+            candidate = GetForegroundWindow();
+            log_choice(L"Foreground fallback", candidate);
+        }
+    }
+
+    return candidate;
+}
+
+void AlwaysOnTop::EnsureSystemMenuForWindow(HWND window)
+{
+    Logger::trace(L"[AOT:SystemMenu] Ensure request (hwnd={:#x})", reinterpret_cast<uintptr_t>(window));
+
+    if (!ShouldInjectSystemMenu(window))
+    {
+        return;
+    }
+
+    HMENU systemMenu = GetSystemMenu(window, FALSE);
+    if (!systemMenu)
+    {
+        Logger::trace(L"[AOT:SystemMenu] GetSystemMenu failed (hwnd={:#x})", reinterpret_cast<uintptr_t>(window));
+        return;
+    }
+
+    // Insert menu item once per window.
+    if (GetMenuState(systemMenu, NonLocalizable::ALWAYS_ON_TOP_MENU_ITEM_ID, MF_BYCOMMAND) == static_cast<UINT>(-1))
+    {
+        Logger::trace(L"[AOT:SystemMenu] Inserting menu item (hwnd={:#x})", reinterpret_cast<uintptr_t>(window));
+        int itemCount = GetMenuItemCount(systemMenu);
+        if (itemCount == -1)
+        {
+            Logger::trace(L"[AOT:SystemMenu] GetMenuItemCount failed (hwnd={:#x}, lastError={})", reinterpret_cast<uintptr_t>(window), GetLastError());
+            return;
+        }
+
+        int insertPos = itemCount;
+        for (int i = 0; i < itemCount; ++i)
+        {
+            if (GetMenuItemID(systemMenu, i) == SC_CLOSE)
+            {
+                insertPos = i;
+                break;
+            }
+        }
+
+        // Add a separator only if the previous item is not already a separator
+        if (insertPos > 0)
+        {
+            MENUITEMINFOW prevInfo{};
+            prevInfo.cbSize = sizeof(MENUITEMINFOW);
+            prevInfo.fMask = MIIM_FTYPE;
+            if (GetMenuItemInfoW(systemMenu, insertPos - 1, TRUE, &prevInfo) && !(prevInfo.fType & MFT_SEPARATOR))
+            {
+                InsertMenuW(systemMenu, insertPos, MF_BYPOSITION | MF_SEPARATOR, 0, nullptr);
+                ++insertPos;
+            }
+        }
+
+        const std::wstring menuLabel = GET_RESOURCE_STRING_FALLBACK(IDS_SYSTEM_MENU_ALWAYS_ON_TOP, L"Always on top");
+        InsertMenuW(systemMenu,
+                    insertPos + 1,
+                    MF_BYPOSITION | MF_STRING,
+                    NonLocalizable::ALWAYS_ON_TOP_MENU_ITEM_ID,
+                    menuLabel.c_str());
+
+        DrawMenuBar(window);
+    }
+    else
+    {
+        Logger::trace(L"[AOT:SystemMenu] Already present, updating state only (hwnd={:#x})", reinterpret_cast<uintptr_t>(window));
+    }
+
+    UpdateSystemMenuItemState(window, systemMenu);
 }
 
 HWND AlwaysOnTop::ResolveTransparencyTargetWindow(HWND window)

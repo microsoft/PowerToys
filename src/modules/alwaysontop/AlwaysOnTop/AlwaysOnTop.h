@@ -80,6 +80,7 @@ private:
     void SubscribeToEvents();
 
     void ProcessCommand(HWND window);
+    void ProcessCommandWithSource(HWND window, const wchar_t* sourceTag);
     void StartTrackingTopmostWindows();
     void UnpinAll();
     void CleanUp();
@@ -92,6 +93,10 @@ private:
     bool UnpinTopmostWindow(HWND window) const noexcept;
     bool AssignBorder(HWND window);
     void RefreshBorders();
+    void EnsureSystemMenuForWindow(HWND window);
+    bool ShouldInjectSystemMenu(HWND window) const noexcept;
+    void UpdateSystemMenuItemState(HWND window, HMENU systemMenu) const noexcept;
+    HWND ResolveMenuTargetWindow(HWND window) const noexcept;
 
     // Transparency methods
     HWND ResolveTransparencyTargetWindow(HWND window);

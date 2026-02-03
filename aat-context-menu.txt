@@ -1,0 +1,152 @@
+整体架构概览
+┌────────────────────┐
+│ PowerToys (AOT)    │
+│  自身进程          │
+│                    │
+│  1. 监听前台窗口   │
+│  2. 修改 SystemMenu│
+│  3. 处理命令       │
+│                    │
+└─────────┬──────────┘
+          │  USER32 / HWND
+          ▼
+┌────────────────────┐
+│ 目标应用窗口        │
+│ (任意 Win32 app)   │
+│                    │
+│  System Menu       │
+│  ├ Restore         │
+│  ├ Move            │
+│  ├ Minimize        │
+│  ├ Maximize        │
+│  ├ ──────────     │
+│  ├ Always on top   │ ← 我们加的
+│  └ Close           │
+└────────────────────┘
+
+技术分解（按执行顺序）
+Step 1：识别目标窗口（Foreground Window）
+
+PowerToys 侧需要始终知道“当前操作对象”：
+
+GetForegroundWindow()
+
+可选：SetWinEventHook(EVENT_SYSTEM_FOREGROUND, …)
+
+过滤条件（非常重要）：
+
+排除：
+
+Desktop / Shell / Taskbar
+
+PowerToys 自己
+
+无 WS_SYSMENU 的窗口
+
+可选：
+
+只对顶层窗口生效
+
+只对 visible 窗口
+
+Step 2：获取并修改 System Menu（官方 API）
+HMENU hMenu = GetSystemMenu(hwnd, FALSE);
+
+插入位置
+
+推荐插在 SC_CLOSE 前
+
+或统一放在 separator 后
+
+插入示例（伪代码）
+AppendMenu(hMenu, MF_SEPARATOR, 0, nullptr);
+
+AppendMenu(
+    hMenu,
+    MF_STRING | (isTopMost ? MF_CHECKED : MF_UNCHECKED),
+    IDM_ALWAYS_ON_TOP,   // 自定义 ID，>= 0x1000
+    L"Always on top"
+);
+
+
+⚠️ 关键规则：
+
+不能使用 SC_* 范围的 ID
+
+推荐 0x1000 ~ 0xEFFF
+
+Step 3：避免重复插入（必做）
+
+因为 System Menu 是持久的：
+
+同一个窗口只插一次
+
+切换窗口时同步状态（checked / unchecked）
+
+常见做法：
+
+在 PowerToys 内部维护：
+
+HWND → 已注入菜单标记
+
+或在插入前：
+
+GetMenuItemInfo 检查是否已有该 ID
+
+Step 4：用户点击菜单项（系统行为）
+
+当用户点击：
+
+Always on top
+
+
+消息会送到目标窗口：
+
+WM_SYSCOMMAND
+wParam = IDM_ALWAYS_ON_TOP
+
+
+⚠️ 注意：
+
+目标窗口 不会处理这个命令
+
+默认行为是忽略
+
+Step 5：PowerToys 在“外部进程”执行动作
+
+这是关键设计点：
+
+PowerToys 不需要接管目标窗口的 WindowProc
+
+而是：
+
+PowerToys 自己知道：
+
+当前 foreground HWND
+
+上一次点击的菜单项
+
+直接对该 HWND 执行动作
+
+例如：
+
+SetWindowPos(
+    hwnd,
+    isTopMost ? HWND_NOTOPMOST : HWND_TOPMOST,
+    0, 0, 0, 0,
+    SWP_NOMOVE | SWP_NOSIZE
+);
+
+
+👉 所有动作都是合法的跨进程窗口管理 API
+
+权限 / UIPI 行为（现实边界）
+场景	行为
+普通 → 普通窗口	✅ 可用
+普通 → 管理员窗口	❌ 菜单不可改
+管理员 → 普通窗口	✅
+管理员 → 管理员窗口	✅
+
+结论：
+
+和 PowerToys 现有 AOT 行为 一致
