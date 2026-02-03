@@ -1,5 +1,4 @@
 #pragma once
-#include <interface/powertoy_module_interface.h>
 #include <string>
 #include <memory>
 #include <mutex>

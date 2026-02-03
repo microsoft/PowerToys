@@ -76,6 +76,7 @@ namespace RunnerV2
             new FileLocksmithModuleInterface(),
             new ShortcutGuideModuleInterface(),
             new PeekModuleInterface(),
+            new PowerDisplayModuleInterface(),
         ];
 
         /// <summary>

@@ -1,7 +1,5 @@
 #pragma once
 
-#include <common/updating/updating.h>
-
 void PeriodicUpdateWorker();
 void CheckForUpdatesCallback();
 

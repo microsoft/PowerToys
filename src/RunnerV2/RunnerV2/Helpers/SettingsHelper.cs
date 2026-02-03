@@ -130,7 +130,7 @@ namespace RunnerV2.Helpers
 
                             foreach (IPowerToysModule ptModule in Runner.LoadedModules)
                             {
-                                if (ptModule is IPowerToysModuleCustomActionsProvider customActionsProvider && customActionsProvider.CustomActions.TryGetValue(moduleName.Value.GetProperty("action_name").GetString() ?? string.Empty, out Action? action))
+                                if (ptModule.Name == moduleName.Name && ptModule is IPowerToysModuleCustomActionsProvider customActionsProvider && customActionsProvider.CustomActions.TryGetValue(moduleName.Value.GetProperty("action_name").GetString() ?? string.Empty, out Action? action))
                                 {
                                     Logger.InitializeLogger("\\" + ptModule.Name + "\\ModuleInterface\\Logs");
                                     action();

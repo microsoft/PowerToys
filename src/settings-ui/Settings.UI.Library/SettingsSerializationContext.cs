@@ -4,8 +4,8 @@
 
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
-using Settings.UI.Library;
 using PowerDisplay.Common.Models;
+using Settings.UI.Library;
 using SettingsUILibrary = Settings.UI.Library;
 using SettingsUILibraryHelpers = Settings.UI.Library.Helpers;
 
