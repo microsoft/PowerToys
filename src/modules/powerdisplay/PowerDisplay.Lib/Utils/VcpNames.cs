@@ -249,7 +249,7 @@ namespace PowerDisplay.Common.Utils
 
         /// <summary>
         /// Get the friendly name for a VCP code.
-        /// Uses LocalizedCodeNameProvider if set, otherwise falls back to built-in MCCS names.
+        /// Uses LocalizedCodeNameProvider if set; falls back to built-in MCCS names if not.
         /// </summary>
         /// <param name="code">VCP code (e.g., 0x10)</param>
         /// <returns>Friendly name, or hex representation if unknown</returns>

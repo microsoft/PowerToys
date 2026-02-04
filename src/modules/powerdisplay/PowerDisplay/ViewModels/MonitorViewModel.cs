@@ -466,7 +466,7 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
 
     /// <summary>
     /// Gets human-readable color temperature preset name (e.g., "6500K", "sRGB")
-    /// Uses custom mappings if available, otherwise falls back to built-in names.
+    /// Uses custom mappings if available; falls back to built-in names if not.
     /// </summary>
     public string ColorTemperaturePresetName =>
         Common.Utils.VcpNames.GetFormattedValueName(0x14, _monitor.CurrentColorTemperature, _mainViewModel?.CustomVcpMappings, _monitor.Id);
@@ -569,7 +569,7 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
 
     /// <summary>
     /// Gets human-readable current input source name (e.g., "HDMI-1", "DisplayPort-1")
-    /// Uses custom mappings if available, otherwise falls back to built-in names.
+    /// Uses custom mappings if available; falls back to built-in names if not.
     /// </summary>
     public string CurrentInputSourceName =>
         Common.Utils.VcpNames.GetValueName(0x60, _monitor.CurrentInputSource, _mainViewModel?.CustomVcpMappings, _monitor.Id)
