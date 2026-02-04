@@ -36,11 +36,11 @@ namespace RunnerV2.ModuleInterfaces
             InitializeShortcuts();
         }
 
-        public Dictionary<string, Action> CustomActions => new()
+        public Dictionary<string, Action<string>> CustomActions => new()
         {
             {
                 "ToggledFZEditor",
-                () =>
+                (_) =>
                 {
                     EnsureLaunched();
                     using var invokeFZEditorEvent = new System.Threading.EventWaitHandle(false, System.Threading.EventResetMode.AutoReset, Constants.FZEToggleEvent());

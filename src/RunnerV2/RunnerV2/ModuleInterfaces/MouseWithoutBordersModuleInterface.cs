@@ -43,10 +43,10 @@ namespace RunnerV2.ModuleInterfaces
             }
         }
 
-        public Dictionary<string, Action> CustomActions => new Dictionary<string, Action>
+        public Dictionary<string, Action<string>> CustomActions => new()
         {
-            { "add_firewall", LaunchAddFirewallProcess },
-            { "uninstall_service", () => { new Thread(UnregisterService).Start(); } },
+            { "add_firewall", (_) => LaunchAddFirewallProcess() },
+            { "uninstall_service", (_) => { new Thread(UnregisterService).Start(); } },
         };
 
         private void RegisterService()

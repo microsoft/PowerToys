@@ -70,9 +70,9 @@ namespace RunnerV2.ModuleInterfaces
             OnSettingsChanged();
         }
 
-        public Dictionary<string, Action> CustomActions
+        public Dictionary<string, Action<string>> CustomActions
         {
-            get => new() { { "Launch", () => LaunchProcess() } };
+            get => new() { { "Launch", (_) => LaunchProcess() } };
         }
 
         private RegistryChangeSet RegistryPreviewSetDefaultAppChangeSet

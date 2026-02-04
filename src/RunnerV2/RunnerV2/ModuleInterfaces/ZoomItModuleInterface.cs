@@ -34,7 +34,7 @@ namespace RunnerV2.ModuleInterfaces
         {
         }
 
-        public Dictionary<string, Action> CustomActions { get => new() { { "refresh_settings", () => OnSettingsChanged() } }; }
+        public Dictionary<string, Action<string>> CustomActions { get => new() { { "refresh_settings", (_) => OnSettingsChanged() } }; }
 
         public void OnSettingsChanged()
         {

@@ -12,6 +12,6 @@ namespace RunnerV2.Models
 {
     internal interface IPowerToysModuleCustomActionsProvider
     {
-        public Dictionary<string, Action> CustomActions { get; }
+        public Dictionary<string, Action<string>> CustomActions { get; }
     }
 }

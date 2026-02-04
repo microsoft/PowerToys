@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using Microsoft.PowerToys.Settings.UI.Library;
 using PowerToys.GPOWrapper;
 using PowerToys.Interop;
@@ -13,6 +14,8 @@ namespace RunnerV2.ModuleInterfaces
 {
     internal sealed class PowerDisplayModuleInterface : ProcessModuleAbstractClass, IPowerToysModule, IPowerToysModuleCustomActionsProvider, IDisposable
     {
+        private EventWaitHandle _refreshMonitorsEvent = new(false, EventResetMode.AutoReset, Constants.RefreshPowerDisplayMonitorsEvent());
+
         public string Name => "PowerDisplay";
 
         public bool Enabled => SettingsUtils.Default.GetSettings<GeneralSettings>().Enabled.PowerDisplay;
@@ -44,14 +47,15 @@ namespace RunnerV2.ModuleInterfaces
         public void Dispose()
         {
             _ipc.Dispose();
+            _refreshMonitorsEvent.Dispose();
             GC.SuppressFinalize(this);
         }
 
-        public Dictionary<string, Action> CustomActions => new()
+        public Dictionary<string, Action<string>> CustomActions => new()
         {
-            { "Launch", () => { _ipc.Send(Constants.PowerDisplayToggleMessage()); } },
-            { "RefreshMonitors", () => { _ipc.Send(Constants.RefreshPowerDisplayMonitorsEvent()); } },
-            { "ApplyProfile", () => { _ipc.Send(Constants.PowerDisplayApplyProfileMessage()); } },
+            { "Launch", (_) => { _ipc.Send(Constants.PowerDisplayToggleMessage()); } },
+            { "RefreshMonitors", (_) => { _refreshMonitorsEvent.Set(); } },
+            { "ApplyProfile", (string profile) => { _ipc.Send(Constants.PowerDisplayApplyProfileMessage() + " " + profile); } },
         };
     }
 }
