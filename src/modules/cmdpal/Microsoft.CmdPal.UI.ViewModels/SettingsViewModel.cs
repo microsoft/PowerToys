@@ -3,9 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.ComponentModel;
-using CommunityToolkit.Mvvm.Messaging;
-using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
@@ -15,7 +14,6 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 
 public partial class SettingsViewModel
     : INotifyPropertyChanged,
-    IRecipient<ReloadFinishedMessage>,
     IDisposable
 {
     private static readonly List<TimeSpan> AutoGoHomeIntervals =
@@ -197,17 +195,15 @@ public partial class SettingsViewModel
     {
         _settingsService = settingsService;
         _topLevelCommandManager = topLevelCommandManager;
+        _topLevelCommandManager.TopLevelCommands.CollectionChanged += Commands_CollectionChanged;
+
         _scheduler = scheduler;
 
         Appearance = new AppearanceSettingsViewModel(themeService, _settingsService);
-
         Extensions = new SettingsExtensionsViewModel(CommandProviders, _scheduler);
-        LoadProvidersAndCommands();
-
-        WeakReferenceMessenger.Default.Register<ReloadFinishedMessage>(this);
     }
 
-    public void Receive(ReloadFinishedMessage message)
+    private void Commands_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
         LoadProvidersAndCommands();
     }
@@ -220,6 +216,8 @@ public partial class SettingsViewModel
         var fallbacks = new List<FallbackSettingsViewModel>();
         var currentRankings = Settings.FallbackRanks;
         var needsSave = false;
+
+        CommandProviders.Clear();
 
         foreach (var item in activeProviders)
         {
@@ -251,7 +249,6 @@ public partial class SettingsViewModel
         }
 
         FallbackRankings = new ObservableCollection<FallbackSettingsViewModel>(fallbackRankings.OrderBy(o => o.Score).Select(fr => fr.Item));
-        Extensions = new SettingsExtensionsViewModel(CommandProviders, _scheduler);
 
         if (needsSave)
         {
