@@ -55,7 +55,7 @@ namespace MouseWithoutBorders.Core
                     while (!cancel.IsCancellationRequested)
                     {
                         int result = WaitHandle.WaitAny(waitHandles);
-                        if (result == 1) // Event signaled
+                        if (result == 1)
                         {
                             // Execute callback on UI thread using Common.DoSomethingInUIThread
                             Common.DoSomethingInUIThread(callback);
