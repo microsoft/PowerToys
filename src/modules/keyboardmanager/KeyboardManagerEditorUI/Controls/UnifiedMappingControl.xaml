@@ -60,41 +60,45 @@
 
                 <!--  Key or Shortcut Trigger  -->
                 <tkcontrols:Case Value="KeyOrShortcut">
-                    <ToggleButton
-                        x:Name="TriggerKeyToggleBtn"
-                        MinHeight="86"
-                        Padding="8,24,8,24"
-                        HorizontalAlignment="Stretch"
-                        HorizontalContentAlignment="Center"
-                        VerticalContentAlignment="Center"
-                        Checked="TriggerKeyToggleBtn_Checked"
-                        Style="{StaticResource CustomShortcutToggleButtonStyle}"
-                        Unchecked="TriggerKeyToggleBtn_Unchecked">
-                        <ToggleButton.Content>
-                            <ItemsControl x:Name="TriggerKeys">
-                                <ItemsControl.ItemsPanel>
-                                    <ItemsPanelTemplate>
-                                        <controls:WrapPanel
-                                            HorizontalSpacing="4"
-                                            Orientation="Horizontal"
-                                            VerticalSpacing="4" />
-                                    </ItemsPanelTemplate>
-                                </ItemsControl.ItemsPanel>
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate>
-                                        <local:KeyVisual
-                                            Padding="8"
-                                            Background="{ThemeResource ControlFillColorDefaultBrush}"
-                                            BorderThickness="1"
-                                            Content="{Binding}"
-                                            CornerRadius="{StaticResource OverlayCornerRadius}"
-                                            FontSize="16"
-                                            Style="{StaticResource DefaultKeyVisualStyle}" />
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
-                        </ToggleButton.Content>
-                    </ToggleButton>
+                    <StackPanel Orientation="Vertical" Spacing="16">
+                        <ToggleButton
+                            x:Name="TriggerKeyToggleBtn"
+                            MinHeight="86"
+                            Padding="8,24,8,24"
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"
+                            VerticalContentAlignment="Center"
+                            Checked="TriggerKeyToggleBtn_Checked"
+                            Style="{StaticResource CustomShortcutToggleButtonStyle}"
+                            Unchecked="TriggerKeyToggleBtn_Unchecked">
+                            <ToggleButton.Content>
+                                <ItemsControl x:Name="TriggerKeys">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <controls:WrapPanel
+                                                HorizontalSpacing="4"
+                                                Orientation="Horizontal"
+                                                VerticalSpacing="4" />
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <local:KeyVisual
+                                                Padding="8"
+                                                Background="{ThemeResource ControlFillColorDefaultBrush}"
+                                                BorderThickness="1"
+                                                Content="{Binding}"
+                                                CornerRadius="{StaticResource OverlayCornerRadius}"
+                                                FontSize="16"
+                                                Style="{StaticResource DefaultKeyVisualStyle}" />
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </ToggleButton.Content>
+                        </ToggleButton>
+                        <CheckBox Content="Allow chords" IsChecked="True" />
+                        <CheckBox Content="Exact match" IsChecked="True" />
+                    </StackPanel>
                 </tkcontrols:Case>
 
                 <!--  Mouse Button Trigger  -->
@@ -104,10 +108,11 @@
                         MinHeight="86"
                         HorizontalAlignment="Stretch"
                         VerticalContentAlignment="Center">
-                        <ComboBoxItem Content="Left mouse button" Tag="LeftMouse" />
-                        <ComboBoxItem Content="Right mouse button" Tag="RightMouse" />
-                        <ComboBoxItem Content="Scroll up" Tag="ScrollUp" />
-                        <ComboBoxItem Content="Scroll down" Tag="ScrollDown" />
+                        <ComboBoxItem Content="Left" Tag="LeftMouse" />
+                        <ComboBoxItem Content="Center" Tag="RightMouse" />
+                        <ComboBoxItem Content="Right" Tag="RightMouse" />
+                        <ComboBoxItem Content="Button 1" Tag="ScrollUp" />
+                        <ComboBoxItem Content="Button 2" Tag="ScrollDown" />
                     </ComboBox>
                 </tkcontrols:Case>
             </tkcontrols:SwitchPresenter>
@@ -128,20 +133,20 @@
                 Width="1"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Stretch"
-                Fill="{ThemeResource TextFillColorTertiaryBrush}" />
+                Fill="{ThemeResource TextFillColorDisabledBrush}" />
 
             <Viewbox
                 Grid.Row="1"
                 Width="12"
                 Height="12">
-                <PathIcon Data="{StaticResource ArrowIconData}" Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
+                <PathIcon Data="{StaticResource ArrowIconData}" Foreground="{ThemeResource TextFillColorDisabledBrush}" />
             </Viewbox>
             <Rectangle
                 Grid.Row="2"
                 Width="1"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Stretch"
-                Fill="{ThemeResource TextFillColorTertiaryBrush}" />
+                Fill="{ThemeResource TextFillColorDisabledBrush}" />
         </Grid>
         <!--  Right Column: Action Output  -->
         <StackPanel
@@ -158,13 +163,13 @@
                 HorizontalAlignment="Stretch"
                 SelectionChanged="ActionTypeComboBox_SelectionChanged">
                 <ComboBoxItem
-                    Content="Key or shortcut"
+                    Content="Remap to key or shortcut"
                     IsSelected="True"
                     Tag="KeyOrShortcut" />
-                <ComboBoxItem Content="Text" Tag="Text" />
+                <ComboBoxItem Content="Insert text" Tag="Text" />
                 <ComboBoxItem Content="Open URL" Tag="OpenUrl" />
                 <ComboBoxItem Content="Open app" Tag="OpenApp" />
-                <ComboBoxItem Content="Mouse click" Tag="MouseClick" />
+                <ComboBoxItem Content="Remap to mouse click" Tag="MouseClick" />
             </ComboBox>
 
             <Rectangle
