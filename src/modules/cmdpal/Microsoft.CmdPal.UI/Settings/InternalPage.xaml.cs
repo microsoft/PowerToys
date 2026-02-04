@@ -4,9 +4,9 @@
 
 using ManagedCommon;
 using Microsoft.CmdPal.Core.Common.Services;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Windows.System;
-using Microsoft.Extensions.DependencyInjection;
 using Page = Microsoft.UI.Xaml.Controls.Page;
 
 namespace Microsoft.CmdPal.UI.Settings;
