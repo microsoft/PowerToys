@@ -73,7 +73,6 @@
                 <Setter Property="Padding" Value="0" />
                 <Setter Property="Margin" Value="0,0,4,0" />
                 <Setter Property="MinHeight" Value="0" />
-                <Setter Property="MaxWidth" Value="160" />
                 <Setter Property="MinWidth" Value="0" />
                 <Setter Property="HorizontalContentAlignment" Value="Stretch" />
                 <Setter Property="VerticalContentAlignment" Value="Stretch" />
