@@ -196,6 +196,10 @@ public:
         // Start listening for external trigger event so we can invoke the same logic as the activation hotkey.
         m_triggerEventHandle = CreateEventW(nullptr, false, false, CommonSharedConstants::CURSOR_WRAP_TRIGGER_EVENT);
         m_terminateEventHandle = CreateEventW(nullptr, false, false, nullptr);
+        if (m_triggerEventHandle)
+        {
+            ResetEvent(m_triggerEventHandle);
+        }
         if (m_triggerEventHandle && m_terminateEventHandle)
         {
             m_listening = true;
