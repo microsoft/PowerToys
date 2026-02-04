@@ -101,6 +101,7 @@
 ^doc/devdocs/akaLinks\.md$
 ^NOTICE\.md$
 ^src/common/CalculatorEngineCommon/exprtk\.hpp$
+^src/common/UnitTests-CommonUtils/
 ^src/common/ManagedCommon/ColorFormatHelper\.cs$
 ^src/common/notifications/BackgroundActivatorDLL/cpp\.hint$
 ^src/common/sysinternals/Eula/

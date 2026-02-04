@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Globalization;
 using System.Runtime.CompilerServices;
 using ManagedCommon;
 using ManagedCsWin32;
@@ -11,20 +10,16 @@ using Microsoft.CmdPal.Ext.Indexer.Indexer.SystemSearch;
 
 namespace Microsoft.CmdPal.Ext.Indexer.Indexer.Utils;
 
-internal sealed partial class QueryStringBuilder
+internal static class QueryStringBuilder
 {
     private const string Properties = "System.ItemUrl, System.ItemNameDisplay, path, System.Search.EntryID, System.Kind, System.KindText";
     private const string SystemIndex = "SystemIndex";
     private const string ScopeFileConditions = "SCOPE='file:'";
     private const string OrderConditions = "System.DateModified DESC";
-    private const string SelectQueryWithScope = "SELECT " + Properties + " FROM " + SystemIndex + " WHERE (" + ScopeFileConditions + ")";
-    private const string SelectQueryWithScopeAndOrderConditions = SelectQueryWithScope + " ORDER BY " + OrderConditions;
 
     private static ISearchQueryHelper queryHelper;
 
-    public static string GeneratePrimingQuery() => SelectQueryWithScopeAndOrderConditions;
-
-    public static string GenerateQuery(string searchText, uint whereId)
+    public static string GenerateQuery(string searchText)
     {
         if (queryHelper is null)
         {
@@ -40,7 +35,7 @@ internal sealed partial class QueryStringBuilder
                 throw;
             }
 
-            ISearchCatalogManager catalogManager = searchManager.GetCatalog(SystemIndex);
+            var catalogManager = searchManager.GetCatalog(SystemIndex);
             if (catalogManager is null)
             {
                 throw new ArgumentException($"Failed to get catalog manager for {SystemIndex}");
@@ -57,7 +52,7 @@ internal sealed partial class QueryStringBuilder
             queryHelper.SetQuerySorting(OrderConditions);
         }
 
-        queryHelper.SetQueryWhereRestrictions("AND " + ScopeFileConditions + "AND ReuseWhere(" + whereId.ToString(CultureInfo.InvariantCulture) + ")");
+        queryHelper.SetQueryWhereRestrictions($"AND {ScopeFileConditions}");
         return queryHelper.GenerateSQLFromUserQuery(searchText);
     }
 }
