@@ -47,6 +47,13 @@ namespace UnitTestsCommonUtils
             Assert::AreEqual(L"Hello...", result.c_str());
         }
 
+        TEST_METHOD(TruncateString_WhenVeryShortMaxLength_HandlesGracefully)
+        {
+            std::wstring input = L"Hello World";
+            std::wstring result = TruncateString(input, 2);
+            Assert::AreEqual(L"He", result.c_str());
+        }
+
         TEST_METHOD(TruncateString_WhenEmptyString_ReturnsEmpty)
         {
             std::wstring input = L"";
