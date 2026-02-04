@@ -258,7 +258,6 @@ jobs:
         -restore -graph
         /p:RestorePackagesConfig=true
         /p:CIBuild=true
-        /p:BuildTests=${{ parameters.buildTests }}
         /bl:$(LogOutputDirectory)\build-0-main.binlog
         ${{ parameters.additionalBuildOptions }}
         $(MSBuildCacheParameters)
