@@ -41,19 +41,29 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             public bool IsCustomOption => Value == CustomValueMarker;
         }
 
+        /// <summary>
+        /// Represents a selectable monitor item in the Monitor ComboBox
+        /// </summary>
+        public class MonitorItem
+        {
+            public string Id { get; set; } = string.Empty;
+
+            public string DisplayName { get; set; } = string.Empty;
+        }
+
         private readonly IEnumerable<MonitorInfo>? _monitors;
         private ObservableCollection<VcpValueItem> _availableValues = new();
+        private ObservableCollection<MonitorItem> _availableMonitors = new();
         private byte _selectedVcpCode;
         private int _selectedValue;
         private string _customName = string.Empty;
         private bool _canSave;
         private bool _showCustomValueInput;
+        private bool _showMonitorSelector;
         private int _customValueParsed;
-
-        public CustomVcpMappingEditorDialog()
-            : this(null)
-        {
-        }
+        private bool _applyToAll = true;
+        private string _selectedMonitorId = string.Empty;
+        private string _selectedMonitorName = string.Empty;
 
         public CustomVcpMappingEditorDialog(IEnumerable<MonitorInfo>? monitors)
         {
@@ -65,6 +75,9 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             Title = resourceLoader.GetString("PowerDisplay_CustomMappingEditor_Title");
             PrimaryButtonText = resourceLoader.GetString("PowerDisplay_Dialog_Save");
             CloseButtonText = resourceLoader.GetString("PowerDisplay_Dialog_Cancel");
+
+            // Populate monitor list
+            PopulateMonitorList();
 
             // Default to Color Temperature (0x14)
             VcpCodeComboBox.SelectedIndex = 0;
@@ -89,6 +102,19 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         }
 
         /// <summary>
+        /// Gets the available monitors for selection
+        /// </summary>
+        public ObservableCollection<MonitorItem> AvailableMonitors
+        {
+            get => _availableMonitors;
+            private set
+            {
+                _availableMonitors = value;
+                OnPropertyChanged();
+            }
+        }
+
+        /// <summary>
         /// Gets a value indicating whether the dialog can be saved
         /// </summary>
         public bool CanSave
@@ -107,17 +133,40 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         /// <summary>
         /// Gets a value indicating whether to show the custom value input TextBox
         /// </summary>
-        public Visibility ShowCustomValueInput
+        public Visibility ShowCustomValueInput => _showCustomValueInput ? Visibility.Visible : Visibility.Collapsed;
+
+        /// <summary>
+        /// Gets a value indicating whether to show the monitor selector ComboBox
+        /// </summary>
+        public Visibility ShowMonitorSelector => _showMonitorSelector ? Visibility.Visible : Visibility.Collapsed;
+
+        private void SetShowCustomValueInput(bool value)
         {
-            get => _showCustomValueInput ? Visibility.Visible : Visibility.Collapsed;
-            private set
+            if (_showCustomValueInput != value)
             {
-                var newValue = value == Visibility.Visible;
-                if (_showCustomValueInput != newValue)
-                {
-                    _showCustomValueInput = newValue;
-                    OnPropertyChanged();
-                }
+                _showCustomValueInput = value;
+                OnPropertyChanged(nameof(ShowCustomValueInput));
+            }
+        }
+
+        private void SetShowMonitorSelector(bool value)
+        {
+            if (_showMonitorSelector != value)
+            {
+                _showMonitorSelector = value;
+                OnPropertyChanged(nameof(ShowMonitorSelector));
+            }
+        }
+
+        private void PopulateMonitorList()
+        {
+            AvailableMonitors = new ObservableCollection<MonitorItem>(
+                _monitors?.Select(m => new MonitorItem { Id = m.Id, DisplayName = m.DisplayName })
+                ?? Enumerable.Empty<MonitorItem>());
+
+            if (AvailableMonitors.Count > 0)
+            {
+                MonitorComboBox.SelectedIndex = 0;
             }
         }
 
@@ -138,27 +187,15 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             PopulateValuesForVcpCode(mapping.VcpCode);
 
             // Try to select the value in the ComboBox
-            bool foundInList = false;
-            foreach (var item in AvailableValues)
+            var matchingItem = AvailableValues.FirstOrDefault(v => !v.IsCustomOption && v.Value == mapping.Value);
+            if (matchingItem != null)
             {
-                if (!item.IsCustomOption && item.Value == mapping.Value)
-                {
-                    ValueComboBox.SelectedItem = item;
-                    foundInList = true;
-                    break;
-                }
+                ValueComboBox.SelectedItem = matchingItem;
             }
-
-            // If value not found in list, select "Custom value" option and fill the TextBox
-            if (!foundInList)
+            else
             {
-                // Select the "Custom value" option (last item)
-                var customOption = AvailableValues.FirstOrDefault(v => v.IsCustomOption);
-                if (customOption != null)
-                {
-                    ValueComboBox.SelectedItem = customOption;
-                }
-
+                // Value not found in list, select "Custom value" option and fill the TextBox
+                ValueComboBox.SelectedItem = AvailableValues.FirstOrDefault(v => v.IsCustomOption);
                 CustomValueTextBox.Text = $"0x{mapping.Value:X2}";
                 _customValueParsed = mapping.Value;
             }
@@ -166,6 +203,23 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             // Set the custom name
             CustomNameTextBox.Text = mapping.CustomName;
             _customName = mapping.CustomName;
+
+            // Set apply scope
+            _applyToAll = mapping.ApplyToAll;
+            ApplyToAllToggle.IsOn = mapping.ApplyToAll;
+            SetShowMonitorSelector(!mapping.ApplyToAll);
+
+            // Select the target monitor if not applying to all
+            if (!mapping.ApplyToAll && !string.IsNullOrEmpty(mapping.TargetMonitorId))
+            {
+                var targetMonitor = AvailableMonitors.FirstOrDefault(m => m.Id == mapping.TargetMonitorId);
+                if (targetMonitor != null)
+                {
+                    MonitorComboBox.SelectedItem = targetMonitor;
+                    _selectedMonitorId = targetMonitor.Id;
+                    _selectedMonitorName = targetMonitor.DisplayName;
+                }
+            }
 
             UpdateCanSave();
         }
@@ -227,23 +281,20 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 }
             }
 
-            // If no values found from monitors, fall back to built-in values
+            // If no values found from monitors, fall back to built-in values from VcpNames
             if (values.Count == 0)
             {
-                Dictionary<int, string> builtInValues = vcpCode switch
+                var builtInValues = VcpNames.GetValueMappings(vcpCode);
+                if (builtInValues != null)
                 {
-                    0x14 => GetColorTemperatureValues(),
-                    0x60 => GetInputSourceValues(),
-                    _ => new Dictionary<int, string>(),
-                };
-
-                foreach (var kvp in builtInValues)
-                {
-                    values.Add(new VcpValueItem
+                    foreach (var kvp in builtInValues)
                     {
-                        Value = kvp.Key,
-                        DisplayName = $"{kvp.Value} (0x{kvp.Key:X2})",
-                    });
+                        values.Add(new VcpValueItem
+                        {
+                            Value = kvp.Key,
+                            DisplayName = $"{kvp.Value} (0x{kvp.Key:X2})",
+                        });
+                    }
                 }
             }
 
@@ -279,85 +330,19 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             return int.TryParse(cleanHex, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out result);
         }
 
-        private static Dictionary<int, string> GetColorTemperatureValues()
-        {
-            return new Dictionary<int, string>
-            {
-                { 0x01, "sRGB" },
-                { 0x02, "Display Native" },
-                { 0x03, "4000K" },
-                { 0x04, "5000K" },
-                { 0x05, "6500K" },
-                { 0x06, "7500K" },
-                { 0x07, "8200K" },
-                { 0x08, "9300K" },
-                { 0x09, "10000K" },
-                { 0x0A, "11500K" },
-                { 0x0B, "User 1" },
-                { 0x0C, "User 2" },
-                { 0x0D, "User 3" },
-            };
-        }
-
-        private static Dictionary<int, string> GetInputSourceValues()
-        {
-            return new Dictionary<int, string>
-            {
-                { 0x01, "VGA-1" },
-                { 0x02, "VGA-2" },
-                { 0x03, "DVI-1" },
-                { 0x04, "DVI-2" },
-                { 0x05, "Composite Video 1" },
-                { 0x06, "Composite Video 2" },
-                { 0x07, "S-Video-1" },
-                { 0x08, "S-Video-2" },
-                { 0x09, "Tuner-1" },
-                { 0x0A, "Tuner-2" },
-                { 0x0B, "Tuner-3" },
-                { 0x0C, "Component Video 1" },
-                { 0x0D, "Component Video 2" },
-                { 0x0E, "Component Video 3" },
-                { 0x0F, "DisplayPort-1" },
-                { 0x10, "DisplayPort-2" },
-                { 0x11, "HDMI-1" },
-                { 0x12, "HDMI-2" },
-                { 0x1B, "USB-C" },
-            };
-        }
-
         private void ValueComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (ValueComboBox.SelectedItem is VcpValueItem selectedItem)
             {
-                if (selectedItem.IsCustomOption)
-                {
-                    // Show custom value input
-                    ShowCustomValueInput = Visibility.Visible;
-                    _selectedValue = 0; // Will be set from TextBox
-                }
-                else
-                {
-                    // Hide custom value input and use selected value
-                    ShowCustomValueInput = Visibility.Collapsed;
-                    _selectedValue = selectedItem.Value;
-                }
-
+                SetShowCustomValueInput(selectedItem.IsCustomOption);
+                _selectedValue = selectedItem.IsCustomOption ? 0 : selectedItem.Value;
                 UpdateCanSave();
             }
         }
 
         private void CustomValueTextBox_TextChanged(object sender, TextChangedEventArgs e)
         {
-            var text = CustomValueTextBox.Text?.Trim() ?? string.Empty;
-            if (TryParseHexCode(text, out int parsed))
-            {
-                _customValueParsed = parsed;
-            }
-            else
-            {
-                _customValueParsed = 0;
-            }
-
+            _customValueParsed = TryParseHexCode(CustomValueTextBox.Text?.Trim(), out int parsed) ? parsed : 0;
             UpdateCanSave();
         }
 
@@ -367,21 +352,33 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             UpdateCanSave();
         }
 
+        private void ApplyToAllToggle_Toggled(object sender, RoutedEventArgs e)
+        {
+            _applyToAll = ApplyToAllToggle.IsOn;
+            SetShowMonitorSelector(!_applyToAll);
+            UpdateCanSave();
+        }
+
+        private void MonitorComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (MonitorComboBox.SelectedItem is MonitorItem selectedMonitor)
+            {
+                _selectedMonitorId = selectedMonitor.Id;
+                _selectedMonitorName = selectedMonitor.DisplayName;
+                UpdateCanSave();
+            }
+        }
+
         private void UpdateCanSave()
         {
-            bool hasValidValue;
-            if (_showCustomValueInput)
-            {
-                hasValidValue = _customValueParsed > 0;
-            }
-            else
-            {
-                hasValidValue = ValueComboBox.SelectedItem is VcpValueItem item && !item.IsCustomOption;
-            }
+            var hasValidValue = _showCustomValueInput
+                ? _customValueParsed > 0
+                : ValueComboBox.SelectedItem is VcpValueItem item && !item.IsCustomOption;
 
             CanSave = _selectedVcpCode > 0 &&
                       hasValidValue &&
-                      !string.IsNullOrWhiteSpace(_customName);
+                      !string.IsNullOrWhiteSpace(_customName) &&
+                      (_applyToAll || !string.IsNullOrEmpty(_selectedMonitorId));
         }
 
         private void ContentDialog_PrimaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
@@ -394,13 +391,11 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                     VcpCode = _selectedVcpCode,
                     Value = finalValue,
                     CustomName = _customName,
+                    ApplyToAll = _applyToAll,
+                    TargetMonitorId = _applyToAll ? string.Empty : _selectedMonitorId,
+                    TargetMonitorName = _applyToAll ? string.Empty : _selectedMonitorName,
                 };
             }
-        }
-
-        private void ContentDialog_CloseButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
-        {
-            ResultMapping = null;
         }
 
         public event PropertyChangedEventHandler? PropertyChanged;

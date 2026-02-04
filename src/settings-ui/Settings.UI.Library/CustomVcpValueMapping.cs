@@ -32,6 +32,26 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public string CustomName { get; set; } = string.Empty;
 
         /// <summary>
+        /// Gets or sets a value indicating whether this mapping applies to all monitors.
+        /// When true, the mapping is applied globally. When false, only applies to TargetMonitorId.
+        /// </summary>
+        [JsonPropertyName("applyToAll")]
+        public bool ApplyToAll { get; set; } = true;
+
+        /// <summary>
+        /// Gets or sets the target monitor ID when ApplyToAll is false.
+        /// This is the monitor's unique identifier.
+        /// </summary>
+        [JsonPropertyName("targetMonitorId")]
+        public string TargetMonitorId { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets the target monitor display name (for UI display only, not serialized).
+        /// </summary>
+        [JsonIgnore]
+        public string TargetMonitorName { get; set; } = string.Empty;
+
+        /// <summary>
         /// Gets the display name for the VCP code (for UI display).
         /// </summary>
         [JsonIgnore]
@@ -50,9 +70,21 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         /// <summary>
         /// Gets a summary string for display in the UI list.
-        /// Format: "VcpCodeName: OriginalValue → CustomName"
+        /// Format: "OriginalValue → CustomName" or "OriginalValue → CustomName (MonitorName)"
         /// </summary>
         [JsonIgnore]
-        public string DisplaySummary => $"{VcpNames.GetValueName(VcpCode, Value) ?? $"0x{Value:X2}"} → {CustomName}";
+        public string DisplaySummary
+        {
+            get
+            {
+                var baseSummary = $"{VcpNames.GetValueName(VcpCode, Value) ?? $"0x{Value:X2}"} → {CustomName}";
+                if (!ApplyToAll && !string.IsNullOrEmpty(TargetMonitorName))
+                {
+                    return $"{baseSummary} ({TargetMonitorName})";
+                }
+
+                return baseSummary;
+            }
+        }
     }
 }

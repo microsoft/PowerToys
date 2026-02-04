@@ -68,7 +68,7 @@
                     <tkcontrols:SettingsExpander
                         x:Uid="PowerDisplay_CustomVcpMappings"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE70F;}"
-                        IsExpanded="True"
+                        IsExpanded="{x:Bind ViewModel.HasCustomVcpMappings, Mode=OneWay}"
                         ItemsSource="{x:Bind ViewModel.CustomVcpMappings, Mode=OneWay}">
                         <tkcontrols:SettingsExpander.ItemTemplate>
                             <DataTemplate x:DataType="library:CustomVcpValueMapping">
@@ -107,7 +107,7 @@
                     <tkcontrols:SettingsExpander
                         x:Uid="PowerDisplay_QuickProfiles"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE8B7;}"
-                        IsExpanded="True"
+                        IsExpanded="{x:Bind ViewModel.HasProfiles, Mode=OneWay}"
                         ItemsSource="{x:Bind ViewModel.Profiles, Mode=OneWay}">
                         <tkcontrols:SettingsExpander.ItemTemplate>
                             <DataTemplate x:DataType="pdmodels:PowerDisplayProfile">

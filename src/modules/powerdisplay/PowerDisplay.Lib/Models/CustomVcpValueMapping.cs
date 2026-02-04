@@ -29,5 +29,19 @@ namespace PowerDisplay.Common.Models
         /// </summary>
         [JsonPropertyName("customName")]
         public string CustomName { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this mapping applies to all monitors.
+        /// When true, the mapping is applied globally. When false, only applies to TargetMonitorId.
+        /// </summary>
+        [JsonPropertyName("applyToAll")]
+        public bool ApplyToAll { get; set; } = true;
+
+        /// <summary>
+        /// Gets or sets the target monitor ID when ApplyToAll is false.
+        /// This is the monitor's unique identifier.
+        /// </summary>
+        [JsonPropertyName("targetMonitorId")]
+        public string TargetMonitorId { get; set; } = string.Empty;
     }
 }

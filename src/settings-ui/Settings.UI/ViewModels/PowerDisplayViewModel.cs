@@ -56,6 +56,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             // set the callback functions value to handle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
 
+            // Subscribe to collection changes for HasProfiles binding
+            _profiles.CollectionChanged += (s, e) => OnPropertyChanged(nameof(HasProfiles));
+
             // Load profiles
             LoadProfiles();
 
@@ -450,39 +453,27 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private ObservableCollection<PowerDisplayProfile> _profiles = new ObservableCollection<PowerDisplayProfile>();
 
         // Custom VCP mapping fields
-        private ObservableCollection<Library.CustomVcpValueMapping> _customVcpMappings = new ObservableCollection<Library.CustomVcpValueMapping>();
+        private ObservableCollection<Library.CustomVcpValueMapping> _customVcpMappings;
 
         /// <summary>
-        /// Gets or sets collection of custom VCP value name mappings
+        /// Gets collection of custom VCP value name mappings
         /// </summary>
-        public ObservableCollection<Library.CustomVcpValueMapping> CustomVcpMappings
-        {
-            get => _customVcpMappings;
-            set
-            {
-                if (_customVcpMappings != value)
-                {
-                    _customVcpMappings = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
+        public ObservableCollection<Library.CustomVcpValueMapping> CustomVcpMappings => _customVcpMappings;
 
         /// <summary>
-        /// Gets or sets collection of available profiles (for button display)
+        /// Gets whether there are any custom VCP mappings (for UI binding)
         /// </summary>
-        public ObservableCollection<PowerDisplayProfile> Profiles
-        {
-            get => _profiles;
-            set
-            {
-                if (_profiles != value)
-                {
-                    _profiles = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
+        public bool HasCustomVcpMappings => _customVcpMappings?.Count > 0;
+
+        /// <summary>
+        /// Gets collection of available profiles (for button display)
+        /// </summary>
+        public ObservableCollection<PowerDisplayProfile> Profiles => _profiles;
+
+        /// <summary>
+        /// Gets whether there are any profiles (for UI binding)
+        /// </summary>
+        public bool HasProfiles => _profiles?.Count > 0;
 
         public void RefreshEnabledState()
         {
@@ -676,18 +667,25 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             try
             {
                 var mappings = _settings.Properties.CustomVcpMappings ?? new List<Library.CustomVcpValueMapping>();
-                CustomVcpMappings = new ObservableCollection<Library.CustomVcpValueMapping>(mappings);
+                _customVcpMappings = new ObservableCollection<Library.CustomVcpValueMapping>(mappings);
+                _customVcpMappings.CollectionChanged += (s, e) => OnPropertyChanged(nameof(HasCustomVcpMappings));
+                OnPropertyChanged(nameof(CustomVcpMappings));
+                OnPropertyChanged(nameof(HasCustomVcpMappings));
                 Logger.LogInfo($"Loaded {CustomVcpMappings.Count} custom VCP mappings");
             }
             catch (Exception ex)
             {
                 Logger.LogError($"Failed to load custom VCP mappings: {ex.Message}");
-                CustomVcpMappings = new ObservableCollection<Library.CustomVcpValueMapping>();
+                _customVcpMappings = new ObservableCollection<Library.CustomVcpValueMapping>();
+                _customVcpMappings.CollectionChanged += (s, e) => OnPropertyChanged(nameof(HasCustomVcpMappings));
+                OnPropertyChanged(nameof(CustomVcpMappings));
+                OnPropertyChanged(nameof(HasCustomVcpMappings));
             }
         }
 
         /// <summary>
-        /// Add a new custom VCP mapping
+        /// Add a new custom VCP mapping.
+        /// No duplicate checking - mappings are resolved by order (first match wins in VcpNames).
         /// </summary>
         public void AddCustomVcpMapping(Library.CustomVcpValueMapping mapping)
         {
@@ -696,23 +694,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 return;
             }
 
-            // Check if a mapping for the same VcpCode+Value already exists
-            var existing = CustomVcpMappings.FirstOrDefault(m =>
-                m.VcpCode == mapping.VcpCode && m.Value == mapping.Value);
-
-            if (existing != null)
-            {
-                // Update the existing mapping's custom name
-                existing.CustomName = mapping.CustomName;
-                Logger.LogInfo($"Updated existing custom VCP mapping: VCP=0x{mapping.VcpCode:X2}, Value=0x{mapping.Value:X2}");
-            }
-            else
-            {
-                // Add new mapping
-                CustomVcpMappings.Add(mapping);
-                Logger.LogInfo($"Added custom VCP mapping: VCP=0x{mapping.VcpCode:X2}, Value=0x{mapping.Value:X2} -> {mapping.CustomName}");
-            }
-
+            CustomVcpMappings.Add(mapping);
+            Logger.LogInfo($"Added custom VCP mapping: VCP=0x{mapping.VcpCode:X2}, Value=0x{mapping.Value:X2} -> {mapping.CustomName}");
             SaveCustomVcpMappings();
         }
 

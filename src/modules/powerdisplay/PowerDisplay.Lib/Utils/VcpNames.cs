@@ -392,6 +392,16 @@ namespace PowerDisplay.Common.Utils
         };
 
         /// <summary>
+        /// Get all known values for a VCP code
+        /// </summary>
+        /// <param name="vcpCode">VCP code (e.g., 0x14)</param>
+        /// <returns>Dictionary of value to name mappings, or null if no mappings exist</returns>
+        public static IReadOnlyDictionary<int, string>? GetValueMappings(byte vcpCode)
+        {
+            return ValueNames.TryGetValue(vcpCode, out var values) ? values : null;
+        }
+
+        /// <summary>
         /// Get human-readable name for a VCP value
         /// </summary>
         /// <param name="vcpCode">VCP code (e.g., 0x14)</param>
@@ -430,18 +440,26 @@ namespace PowerDisplay.Common.Utils
         /// <summary>
         /// Get human-readable name for a VCP value with custom mapping support.
         /// Custom mappings take priority over built-in mappings.
+        /// Monitor ID is required to properly filter monitor-specific mappings.
         /// </summary>
         /// <param name="vcpCode">VCP code (e.g., 0x14)</param>
         /// <param name="value">Value to translate</param>
         /// <param name="customMappings">Optional custom mappings that take priority</param>
+        /// <param name="monitorId">Monitor ID to filter mappings</param>
         /// <returns>Name string like "sRGB" or null if unknown</returns>
-        public static string? GetValueName(byte vcpCode, int value, IEnumerable<CustomVcpValueMapping>? customMappings)
+        public static string? GetValueName(byte vcpCode, int value, IEnumerable<CustomVcpValueMapping>? customMappings, string monitorId)
         {
             // 1. Priority: Check custom mappings first
             if (customMappings != null)
             {
+                // Find a matching custom mapping:
+                // - ApplyToAll = true (global), OR
+                // - ApplyToAll = false AND TargetMonitorId matches the given monitorId
                 var custom = customMappings.FirstOrDefault(m =>
-                    m.VcpCode == vcpCode && m.Value == value);
+                    m.VcpCode == vcpCode &&
+                    m.Value == value &&
+                    (m.ApplyToAll || (!m.ApplyToAll && m.TargetMonitorId == monitorId)));
+
                 if (custom != null && !string.IsNullOrEmpty(custom.CustomName))
                 {
                     return custom.CustomName;
@@ -455,14 +473,16 @@ namespace PowerDisplay.Common.Utils
         /// <summary>
         /// Get formatted display name for a VCP value with custom mapping support.
         /// Custom mappings take priority over built-in mappings.
+        /// Monitor ID is required to properly filter monitor-specific mappings.
         /// </summary>
         /// <param name="vcpCode">VCP code (e.g., 0x14)</param>
         /// <param name="value">Value to translate</param>
         /// <param name="customMappings">Optional custom mappings that take priority</param>
+        /// <param name="monitorId">Monitor ID to filter mappings</param>
         /// <returns>Formatted string like "sRGB (0x01)" or "0x01" if unknown</returns>
-        public static string GetFormattedValueName(byte vcpCode, int value, IEnumerable<CustomVcpValueMapping>? customMappings)
+        public static string GetFormattedValueName(byte vcpCode, int value, IEnumerable<CustomVcpValueMapping>? customMappings, string monitorId)
         {
-            var name = GetValueName(vcpCode, value, customMappings);
+            var name = GetValueName(vcpCode, value, customMappings, monitorId);
             if (name != null)
             {
                 return $"{name} (0x{value:X2})";

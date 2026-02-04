@@ -6,7 +6,6 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     Width="400"
     MinWidth="400"
-    CloseButtonClick="ContentDialog_CloseButtonClick"
     DefaultButton="Primary"
     IsPrimaryButtonEnabled="{x:Bind CanSave, Mode=OneWay}"
     PrimaryButtonClick="ContentDialog_PrimaryButtonClick"
@@ -52,5 +51,25 @@
             HorizontalAlignment="Stretch"
             MaxLength="50"
             TextChanged="CustomNameTextBox_TextChanged" />
+
+        <!-- Apply Scope -->
+        <StackPanel Spacing="8">
+            <ToggleSwitch
+                x:Name="ApplyToAllToggle"
+                x:Uid="PowerDisplay_CustomMappingEditor_ApplyToAll"
+                IsOn="True"
+                Toggled="ApplyToAllToggle_Toggled" />
+
+            <!-- Monitor Selection (shown when ApplyToAll is off) -->
+            <ComboBox
+                x:Name="MonitorComboBox"
+                x:Uid="PowerDisplay_CustomMappingEditor_SelectMonitor"
+                HorizontalAlignment="Stretch"
+                DisplayMemberPath="DisplayName"
+                ItemsSource="{x:Bind AvailableMonitors, Mode=OneWay}"
+                SelectedValuePath="Id"
+                SelectionChanged="MonitorComboBox_SelectionChanged"
+                Visibility="{x:Bind ShowMonitorSelector, Mode=OneWay}" />
+        </StackPanel>
     </StackPanel>
 </ContentDialog>

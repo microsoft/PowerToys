@@ -416,6 +416,8 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
                     VcpCode = m.VcpCode,
                     Value = m.Value,
                     CustomName = m.CustomName,
+                    ApplyToAll = m.ApplyToAll,
+                    TargetMonitorId = m.TargetMonitorId,
                 }).ToList();
                 Logger.LogInfo($"[Settings] Loaded {CustomVcpMappings.Count} custom VCP mappings");
             }

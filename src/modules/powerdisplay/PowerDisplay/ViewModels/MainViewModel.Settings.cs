@@ -43,6 +43,10 @@ public partial class MainViewModel
             // UpdateMonitorList already handles filtering hidden monitors
             UpdateMonitorList(_monitorManager.Monitors, isInitialLoad: false);
 
+            // Reload UI display settings first (includes custom VCP mappings)
+            // Must be loaded before ApplyUIConfiguration so names are available for UI refresh
+            LoadUIDisplaySettings();
+
             // Apply UI configuration changes only (feature visibility toggles, etc.)
             // Hardware parameters (brightness, color temperature) are applied via custom actions
             var settings = _settingsUtils.GetSettingsOrDefault<PowerDisplaySettings>("PowerDisplay");
@@ -51,8 +55,11 @@ public partial class MainViewModel
             // Reload profiles in case they were added/updated/deleted in Settings UI
             LoadProfiles();
 
-            // Reload UI display settings (profile switcher, identify button, color temp switcher)
-            LoadUIDisplaySettings();
+            // Notify MonitorViewModels to refresh their custom VCP name displays
+            foreach (var monitor in Monitors)
+            {
+                monitor.RefreshCustomVcpNames();
+            }
         }
         catch (Exception ex)
         {

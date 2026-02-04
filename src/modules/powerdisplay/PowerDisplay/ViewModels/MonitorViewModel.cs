@@ -469,7 +469,7 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
     /// Uses custom mappings if available, otherwise falls back to built-in names.
     /// </summary>
     public string ColorTemperaturePresetName =>
-        Common.Utils.VcpNames.GetFormattedValueName(0x14, _monitor.CurrentColorTemperature, _mainViewModel?.CustomVcpMappings);
+        Common.Utils.VcpNames.GetFormattedValueName(0x14, _monitor.CurrentColorTemperature, _mainViewModel?.CustomVcpMappings, _monitor.Id);
 
     /// <summary>
     /// Gets a value indicating whether this monitor supports color temperature via VCP 0x14
@@ -549,7 +549,7 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
         _availableColorPresets = presetValues.Select(value => new ColorTemperatureItem
         {
             VcpValue = value,
-            DisplayName = Common.Utils.VcpNames.GetFormattedValueName(0x14, value, _mainViewModel?.CustomVcpMappings),
+            DisplayName = Common.Utils.VcpNames.GetFormattedValueName(0x14, value, _mainViewModel?.CustomVcpMappings, _monitor.Id),
             IsSelected = value == _monitor.CurrentColorTemperature,
             MonitorId = _monitor.Id,
         }).ToList();
@@ -572,7 +572,7 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
     /// Uses custom mappings if available, otherwise falls back to built-in names.
     /// </summary>
     public string CurrentInputSourceName =>
-        Common.Utils.VcpNames.GetValueName(0x60, _monitor.CurrentInputSource, _mainViewModel?.CustomVcpMappings)
+        Common.Utils.VcpNames.GetValueName(0x60, _monitor.CurrentInputSource, _mainViewModel?.CustomVcpMappings, _monitor.Id)
         ?? $"Source 0x{_monitor.CurrentInputSource:X2}";
 
     private List<InputSourceItem>? _availableInputSources;
@@ -608,11 +608,28 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
         _availableInputSources = supportedSources.Select(value => new InputSourceItem
         {
             Value = value,
-            Name = Common.Utils.VcpNames.GetValueName(0x60, value, _mainViewModel?.CustomVcpMappings) ?? $"Source 0x{value:X2}",
+            Name = Common.Utils.VcpNames.GetValueName(0x60, value, _mainViewModel?.CustomVcpMappings, _monitor.Id) ?? $"Source 0x{value:X2}",
             SelectionVisibility = value == _monitor.CurrentInputSource ? Visibility.Visible : Visibility.Collapsed,
             MonitorId = _monitor.Id,
         }).ToList();
 
+        OnPropertyChanged(nameof(AvailableInputSources));
+    }
+
+    /// <summary>
+    /// Refresh custom VCP name displays after settings change.
+    /// Called when CustomVcpMappings is updated from Settings UI.
+    /// </summary>
+    public void RefreshCustomVcpNames()
+    {
+        // Refresh color temperature names
+        OnPropertyChanged(nameof(ColorTemperaturePresetName));
+        _availableColorPresets = null;  // Force rebuild with new custom names
+        OnPropertyChanged(nameof(AvailableColorPresets));
+
+        // Refresh input source names
+        OnPropertyChanged(nameof(CurrentInputSourceName));
+        _availableInputSources = null;  // Force rebuild with new custom names
         OnPropertyChanged(nameof(AvailableInputSources));
     }
 
