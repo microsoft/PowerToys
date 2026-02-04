@@ -272,7 +272,7 @@ namespace KeyboardManagerEditorUI.Pages
                         bool saved = false;
                         ShortcutKeyMapping shortcutKeyMapping = SettingsManager.EditorSettings.ShortcutSettingsDictionary[shortcut.Id].Shortcut;
 
-                        saved = _mappingService.AddShorcutMapping(shortcutKeyMapping);
+                        saved = _mappingService.AddShortcutMapping(shortcutKeyMapping);
 
                         if (saved)
                         {
