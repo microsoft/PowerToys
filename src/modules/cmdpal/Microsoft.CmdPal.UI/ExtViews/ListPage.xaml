@@ -33,8 +33,8 @@
         <x:Double x:Key="GalleryGridSize">160</x:Double>
 
         <x:Double x:Key="ListViewItemMinHeight">48</x:Double>
-        <x:Double x:Key="ListViewSectionMinHeight">0</x:Double>
-        <x:Double x:Key="ListViewSeparatorMinHeight">0</x:Double>
+        <x:Double x:Key="ListViewSectionMinHeight">24</x:Double>
+        <x:Double x:Key="ListViewSeparatorMinHeight">24</x:Double>
 
         <Style x:Key="IconGridViewItemStyle" TargetType="GridViewItem">
             <Setter Property="HorizontalContentAlignment" Value="Stretch" />
@@ -611,6 +611,11 @@
                                 -->
                                 <x:Boolean x:Key="ListViewItemSelectionIndicatorVisualEnabled">False</x:Boolean>
                             </ListView.Resources>
+                            <ListView.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <ItemsStackPanel CacheLength="4" ItemsUpdatingScrollMode="KeepItemsInView" />
+                                </ItemsPanelTemplate>
+                            </ListView.ItemsPanel>
                             <ListView.ItemContainerTransitions>
                                 <TransitionCollection />
                             </ListView.ItemContainerTransitions>

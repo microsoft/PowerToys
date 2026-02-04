@@ -6,6 +6,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
+using Microsoft.CmdPal.Core.Common;
 using Microsoft.CmdPal.Core.Common.Helpers;
 using Microsoft.CmdPal.Core.ViewModels.Messages;
 using Microsoft.CmdPal.Core.ViewModels.Models;
@@ -25,6 +26,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
     private readonly ViewModelCache<IListItem, ListItemViewModel> _vmCache;
     private readonly Lock _fetchLock = new(); // serialize FetchItems to protect cache + Items
+    private readonly BulkObservableCollection<ListItemViewModel> _filteredItems = [];
 
     private readonly TaskFactory filterTaskFactory = new(new ConcurrentExclusiveSchedulerPair().ExclusiveScheduler);
 
@@ -44,6 +46,9 @@ public partial class ListViewModel : PageViewModel, IDisposable
     private ListItemViewModel? _lastSelectedItem;
 
     private string _modelPlaceholderText = string.Empty;
+
+    private int _vmsCreatedCount;
+    private int _vmsReusedCount;
 
     // For cancelling ongoing calls to update the extension's SearchText
     private CancellationTokenSource? filterCancellationTokenSource;
@@ -72,7 +77,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
     // Observable from MVVM Toolkit will auto create public properties that use INotifyPropertyChange change
     // https://learn.microsoft.com/dotnet/communitytoolkit/mvvm/observablegroupedcollections for grouping support
-    public ObservableCollection<ListItemViewModel> FilteredItems { get; } = [];
+    public ObservableCollection<ListItemViewModel> FilteredItems => _filteredItems;
 
     public FiltersViewModel? Filters { get; set; }
 
@@ -226,7 +231,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
         });
     }
 
-    //// Run on background thread, from InitializeAsync or Model_ItemsChanged
+    // Run on background thread, from InitializeAsync or Model_ItemsChanged
     private void FetchItems()
     {
         lock (_fetchLock)
@@ -269,6 +274,17 @@ public partial class ListViewModel : PageViewModel, IDisposable
                     // Reuse VMs across refreshes.
                     var vm = _vmCache.GetOrCreate(item, out var created);
 
+                    if (created)
+                    {
+                        _vmsCreatedCount++;
+                    }
+                    else
+                    {
+                        _vmsReusedCount++;
+                    }
+
+                    CoreLogger.LogInfo($"ListViewModel.FetchItems: VM Created={created} TotalCreated={_vmsCreatedCount} TotalReused={_vmsReusedCount} for Item='{item.Title}'");
+
                     // If this is a newly created VM, we should validate it.
                     if (created && !vm.SafeFastInit())
                     {
@@ -290,7 +306,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
                     newViewModels.Add(vm);
                 }
 
-                // Initialize first twenty items (same as you do today)
+                // Initialize first twenty items
                 foreach (var item in newViewModels.Take(20))
                 {
                     if (cancellationToken.IsCancellationRequested)
@@ -360,7 +376,15 @@ public partial class ListViewModel : PageViewModel, IDisposable
                     {
                         // A dynamic list? Even better! Just stick everything into
                         // FilteredItems. The extension already did any filtering it cared about.
-                        ListHelpers.InPlaceUpdateList(FilteredItems, Items.Where(i => !i.IsInErrorState).ToList());
+                        try
+                        {
+                            // _filteredItems.BeginBulkOperation();
+                            ListHelpers.InPlaceUpdateList(FilteredItems, Items.Where(i => !i.IsInErrorState));
+                        }
+                        finally
+                        {
+                            // _filteredItems.EndBulkOperation();
+                        }
                     }
 
                     UpdateEmptyContent();

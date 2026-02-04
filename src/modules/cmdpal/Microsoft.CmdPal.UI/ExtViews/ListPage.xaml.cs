@@ -1186,7 +1186,7 @@ public sealed partial class ListPage : Page,
     /// <summary>
     ///  Code stealed from <see cref="Controls.ContextMenu.IsSeparator(object)"/>
     /// </summary>
-    private bool IsSeparator(object? item) => item is ListItemViewModel li && li.IsSectionOrSeparator;
+    private static bool IsSeparator(object? item) => item is ListItemViewModel li && li.IsSectionOrSeparator;
 
     private enum InputSource
     {
@@ -1195,12 +1195,83 @@ public sealed partial class ListPage : Page,
         Pointer,
     }
 
-    private void ItemsList_OnContainerContentChanging(ListViewBase sender, ContainerContentChangingEventArgs args)
+    private void ItemsList_ChoosingItemContainer(ListViewBase sender, ChoosingItemContainerEventArgs args)
     {
-        if (args.Item is ListItemViewModel item)
+        if (args.ItemContainer is not null)
         {
-            // Check if we need to initialize any properties on a background thread.
-            _ = Task.Run(() => item.SafeInitializeProperties());
+            // Platform already picked one; let it.
+            return;
         }
+
+        var item = (ListItemViewModel)args.Item;
+
+        args.ItemContainer = GetKind(item) switch
+        {
+            ItemKind.Section => PopOrNull(_sectionPool) ?? new ListViewItem(),
+            ItemKind.Separator => PopOrNull(_separatorPool) ?? new ListViewItem(),
+            _ => PopOrNull(_normalPool) ?? new ListViewItem(),
+        };
+
+        // Let the normal prep happen (style/template selector etc.)
+        args.IsContainerPrepared = false;
+    }
+
+    private void ItemsList_ContainerContentChanging(ListViewBase sender, ContainerContentChangingEventArgs args)
+    {
+        if (!args.InRecycleQueue)
+        {
+            return;
+        }
+
+        if (args.ItemContainer is not ListViewItem lvi || args.Item is not ListItemViewModel item)
+        {
+            return;
+        }
+
+        lvi.ClearValue(FrameworkElement.HeightProperty);
+        lvi.ClearValue(Control.PaddingProperty);
+        lvi.ClearValue(Control.HorizontalContentAlignmentProperty);
+        lvi.ClearValue(Control.VerticalContentAlignmentProperty);
+
+        lvi.ClearValue(ContentControl.ContentTemplateProperty);
+        lvi.ClearValue(ContentControl.ContentTemplateSelectorProperty);
+        lvi.ClearValue(FrameworkElement.StyleProperty);
+
+        // Return to pool by kind (bounded).
+        var pool = GetKind(item) switch
+        {
+            ItemKind.Section => _sectionPool,
+            ItemKind.Separator => _separatorPool,
+            _ => _normalPool,
+        };
+
+        if (pool.Count < PoolLimit)
+        {
+            pool.Push(lvi);
+        }
+
+        // Don't set args.Handled; let the framework continue its recycle bookkeeping.
+    }
+
+    private const int PoolLimit = 64;
+    private readonly Stack<ListViewItem> _normalPool = new();
+    private readonly Stack<ListViewItem> _sectionPool = new();
+    private readonly Stack<ListViewItem> _separatorPool = new();
+
+    private static ListViewItem? PopOrNull(Stack<ListViewItem> pool)
+        => pool.Count > 0 ? pool.Pop() : null;
+
+    private static ItemKind GetKind(ListItemViewModel item)
+    {
+        return item.IsSectionOrSeparator
+            ? !string.IsNullOrWhiteSpace(item.Section) ? ItemKind.Section : ItemKind.Separator
+            : ItemKind.Normal;
+    }
+
+    private enum ItemKind
+    {
+        Normal,
+        Section,
+        Separator,
     }
 }

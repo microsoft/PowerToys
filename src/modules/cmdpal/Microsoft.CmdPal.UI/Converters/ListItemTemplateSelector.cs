@@ -36,18 +36,7 @@ public sealed partial class ListItemTemplateSelector : DataTemplateSelector
 
         if (container is ListViewItem li && element.IsSectionOrSeparator)
         {
-            li.IsEnabled = false;
-            li.AllowFocusWhenDisabled = false;
-            li.AllowFocusOnInteraction = false;
-            li.IsHitTestVisible = false;
             dataTemplate = string.IsNullOrWhiteSpace(element.Section) ? Separator : Section;
-        }
-        else
-        {
-            listItem.IsEnabled = true;
-            listItem.AllowFocusWhenDisabled = true;
-            listItem.AllowFocusOnInteraction = true;
-            listItem.IsHitTestVisible = true;
         }
 
         return dataTemplate;

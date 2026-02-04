@@ -2,6 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Collections.ObjectModel;
+
 namespace Microsoft.CommandPalette.Extensions.Toolkit;
 
 public partial class ListHelpers
@@ -158,6 +160,92 @@ public partial class ListHelpers
             {
                 original.Add(item);
             }
+        }
+    }
+
+    public static void InPlaceUpdateListWithMove<T>(IList<T> original, IEnumerable<T> newContents)
+        where T : class
+    {
+        InPlaceUpdateList(original, newContents, out _);
+    }
+
+    public static void InPlaceUpdateListWithMove<T>(IList<T> original, IEnumerable<T> newContents, out List<T> removedItems)
+        where T : class
+    {
+        removedItems = [];
+
+        // Materialize once (avoids re-enumeration and gives us Count cheaply)
+        var newList = newContents as IList<T> ?? newContents.ToList();
+        var newCount = newList.Count;
+
+        // Short circuit: new contents empty
+        if (newCount == 0)
+        {
+            removedItems.AddRange(original);
+            original.Clear();
+            return;
+        }
+
+        var comparer = EqualityComparer<T>.Default;
+        var canMove = original is ObservableCollection<T>;
+        var oc = original as ObservableCollection<T>;
+
+        // Make original match newList, one position at a time.
+        for (var i = 0; i < newCount; i++)
+        {
+            // If we're past the end, everything else is just appended.
+            if (i >= original.Count)
+            {
+                original.Add(newList[i]);
+                continue;
+            }
+
+            var desired = newList[i];
+
+            // Already correct at this index
+            if (comparer.Equals(original[i], desired))
+            {
+                continue;
+            }
+
+            // Look for the desired item later in the current list.
+            var foundIndex = -1;
+            for (var j = i + 1; j < original.Count; j++)
+            {
+                if (comparer.Equals(original[j], desired))
+                {
+                    foundIndex = j;
+                    break;
+                }
+            }
+
+            if (foundIndex >= 0)
+            {
+                // Prefer Move for ObservableCollection to preserve move semantics
+                if (canMove)
+                {
+                    oc!.Move(foundIndex, i);
+                }
+                else
+                {
+                    // Fallback: emulate a move for non-observable lists
+                    var item = original[foundIndex];
+                    original.RemoveAt(foundIndex);
+                    original.Insert(i, item);
+                }
+            }
+            else
+            {
+                // Not present -> insert new item at the right spot
+                original.Insert(i, desired);
+            }
+        }
+
+        // Remove any extra trailing items
+        while (original.Count > newCount)
+        {
+            removedItems.Add(original[original.Count - 1]);
+            original.RemoveAt(original.Count - 1);
         }
     }
 }

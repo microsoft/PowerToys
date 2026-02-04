@@ -16,6 +16,8 @@ public partial class ListItemViewModel : CommandItemViewModel
 
     public List<TagViewModel>? Tags { get; set; }
 
+    public string Uiid { get; } = Guid.NewGuid().ToString();
+
     // Remember - "observable" properties from the model (via PropChanged)
     // cannot be marked [ObservableProperty]
     public bool HasTags => (Tags?.Count ?? 0) > 0;

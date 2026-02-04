@@ -7,6 +7,7 @@ using ManagedCommon;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Media.Imaging;
 using Windows.Foundation;
 
 namespace Microsoft.CmdPal.UI.Controls;
@@ -21,6 +22,15 @@ public partial class IconBox : ContentControl
     private double _lastFontSize;
 
     private const double DefaultIconFontSize = 16.0;
+
+    public static readonly DependencyProperty ContextProperty = DependencyProperty.Register(
+        nameof(Context), typeof(string), typeof(IconBox), new PropertyMetadata(default(string)));
+
+    public string Context
+    {
+        get { return (string)GetValue(ContextProperty); }
+        set { SetValue(ContextProperty, value); }
+    }
 
     /// <summary>
     /// Gets or sets the <see cref="IconSource"/> to display within the <see cref="IconBox"/>. Overwritten, if <see cref="SourceKey"/> is used instead.
