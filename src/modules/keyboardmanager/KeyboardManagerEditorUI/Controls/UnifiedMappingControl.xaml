@@ -60,7 +60,7 @@
 
                 <!--  Key or Shortcut Trigger  -->
                 <tkcontrols:Case Value="KeyOrShortcut">
-                    <StackPanel Orientation="Vertical" Spacing="16">
+                    <StackPanel Orientation="Vertical" Spacing="8">
                         <ToggleButton
                             x:Name="TriggerKeyToggleBtn"
                             MinHeight="86"
@@ -116,6 +116,20 @@
                     </ComboBox>
                 </tkcontrols:Case>
             </tkcontrols:SwitchPresenter>
+
+            <CheckBox
+                x:Name="AppSpecificCheckBox"
+                x:Uid="UnifiedMappingControlAppSpecificCheckBox"
+                Content="Only apply to a specific app"
+                IsEnabled="False" />
+            <TextBox
+                x:Name="AppNameTextBox"
+                x:Uid="UnifiedMappingControlAppNameTextBox"
+                Background="{ThemeResource TextControlBackgroundFocused}"
+                BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
+                GotFocus="AppNameTextBox_GotFocus"
+                PlaceholderText="Enter app name (e.g., notepad.exe)"
+                Visibility="Collapsed" />
         </StackPanel>
 
         <!--  Arrow Separator  -->
@@ -185,92 +199,58 @@
 
                 <!--  Key or Shortcut Action  -->
                 <tkcontrols:Case Value="KeyOrShortcut">
-                    <StackPanel Orientation="Vertical" Spacing="16">
-                        <ToggleButton
-                            x:Name="ActionKeyToggleBtn"
-                            MinHeight="86"
-                            Padding="8,24,8,24"
-                            HorizontalAlignment="Stretch"
-                            HorizontalContentAlignment="Center"
-                            VerticalContentAlignment="Center"
-                            Checked="ActionKeyToggleBtn_Checked"
-                            Style="{StaticResource CustomShortcutToggleButtonStyle}"
-                            Unchecked="ActionKeyToggleBtn_Unchecked">
-                            <ToggleButton.Content>
-                                <ItemsControl x:Name="ActionKeys">
-                                    <ItemsControl.ItemsPanel>
-                                        <ItemsPanelTemplate>
-                                            <controls:WrapPanel
-                                                HorizontalSpacing="4"
-                                                Orientation="Horizontal"
-                                                VerticalSpacing="4" />
-                                        </ItemsPanelTemplate>
-                                    </ItemsControl.ItemsPanel>
-                                    <ItemsControl.ItemTemplate>
-                                        <DataTemplate>
-                                            <local:KeyVisual
-                                                Padding="8"
-                                                Background="{ThemeResource CustomAccentBackgroundBrush}"
-                                                BorderThickness="0"
-                                                Content="{Binding}"
-                                                CornerRadius="{StaticResource OverlayCornerRadius}"
-                                                FontSize="16"
-                                                Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
-                                                Style="{StaticResource DefaultKeyVisualStyle}" />
-                                        </DataTemplate>
-                                    </ItemsControl.ItemTemplate>
-                                </ItemsControl>
-                            </ToggleButton.Content>
-                        </ToggleButton>
-
-                        <!--  App-specific remapping (only for shortcuts)  -->
-                        <CheckBox
-                            x:Name="AppSpecificCheckBox"
-                            x:Uid="UnifiedMappingControlAppSpecificCheckBox"
-                            Content="Make this app-specific"
-                            IsEnabled="False" />
-                        <TextBox
-                            x:Name="AppNameTextBox"
-                            x:Uid="UnifiedMappingControlAppNameTextBox"
-                            Background="{ThemeResource TextControlBackgroundFocused}"
-                            BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
-                            GotFocus="AppNameTextBox_GotFocus"
-                            PlaceholderText="Enter app name (e.g., notepad.exe)"
-                            Visibility="Collapsed" />
-                    </StackPanel>
+                    <ToggleButton
+                        x:Name="ActionKeyToggleBtn"
+                        MinHeight="86"
+                        Padding="8,24,8,24"
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Center"
+                        VerticalContentAlignment="Center"
+                        Checked="ActionKeyToggleBtn_Checked"
+                        Style="{StaticResource CustomShortcutToggleButtonStyle}"
+                        Unchecked="ActionKeyToggleBtn_Unchecked">
+                        <ToggleButton.Content>
+                            <ItemsControl x:Name="ActionKeys">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <controls:WrapPanel
+                                            HorizontalSpacing="4"
+                                            Orientation="Horizontal"
+                                            VerticalSpacing="4" />
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <local:KeyVisual
+                                            Padding="8"
+                                            Background="{ThemeResource CustomAccentBackgroundBrush}"
+                                            BorderThickness="0"
+                                            Content="{Binding}"
+                                            CornerRadius="{StaticResource OverlayCornerRadius}"
+                                            FontSize="16"
+                                            Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
+                                            Style="{StaticResource DefaultKeyVisualStyle}" />
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ToggleButton.Content>
+                    </ToggleButton>
                 </tkcontrols:Case>
 
                 <!--  Text Action  -->
                 <tkcontrols:Case Value="Text">
-                    <StackPanel Orientation="Vertical" Spacing="16">
-                        <TextBox
-                            x:Name="TextContentBox"
-                            x:Uid="UnifiedMappingControlTextContentTextBox"
-                            Height="120"
-                            AcceptsReturn="True"
-                            Background="{ThemeResource TextControlBackgroundFocused}"
-                            BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
-                            FontSize="13"
-                            GotFocus="TextContentBox_GotFocus"
-                            Header="Text to type"
-                            PlaceholderText="Enter the text to type when triggered"
-                            TextWrapping="Wrap" />
-
-                        <!--  App-specific for text  -->
-                        <CheckBox
-                            x:Name="TextAppSpecificCheckBox"
-                            x:Uid="UnifiedMappingControlTextAppSpecificCheckBox"
-                            Content="Make this app-specific"
-                            IsEnabled="False" />
-                        <TextBox
-                            x:Name="TextAppNameTextBox"
-                            x:Uid="UnifiedMappingControlTextAppNameTextBox"
-                            Background="{ThemeResource TextControlBackgroundFocused}"
-                            BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
-                            GotFocus="TextAppNameTextBox_GotFocus"
-                            PlaceholderText="Enter app name (e.g., notepad.exe)"
-                            Visibility="Collapsed" />
-                    </StackPanel>
+                    <TextBox
+                        x:Name="TextContentBox"
+                        x:Uid="UnifiedMappingControlTextContentTextBox"
+                        Height="120"
+                        AcceptsReturn="True"
+                        Background="{ThemeResource TextControlBackgroundFocused}"
+                        BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
+                        FontSize="13"
+                        GotFocus="TextContentBox_GotFocus"
+                        Header="Text to type"
+                        PlaceholderText="Enter the text to type when triggered"
+                        TextWrapping="Wrap" />
                 </tkcontrols:Case>
 
                 <!--  Open URL Action  -->

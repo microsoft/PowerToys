@@ -141,11 +141,9 @@ namespace KeyboardManagerEditorUI.Controls
 
         private void UserControl_Loaded(object sender, RoutedEventArgs e)
         {
-            // Set up event handlers for app-specific checkboxes
+            // Set up event handlers for app-specific checkbox
             AppSpecificCheckBox.Checked += AppSpecificCheckBox_Changed;
             AppSpecificCheckBox.Unchecked += AppSpecificCheckBox_Changed;
-            TextAppSpecificCheckBox.Checked += TextAppSpecificCheckBox_Changed;
-            TextAppSpecificCheckBox.Unchecked += TextAppSpecificCheckBox_Changed;
 
             // Activate keyboard hook for the trigger input
             if (TriggerKeyToggleBtn.IsChecked == true)
@@ -273,21 +271,6 @@ namespace KeyboardManagerEditorUI.Controls
                 : Visibility.Collapsed;
         }
 
-        private void TextAppSpecificCheckBox_Changed(object sender, RoutedEventArgs e)
-        {
-            if (_internalUpdate)
-            {
-                return;
-            }
-
-            CleanupKeyboardHook();
-            UncheckAllToggleButtons();
-
-            TextAppNameTextBox.Visibility = TextAppSpecificCheckBox.IsChecked == true
-                ? Visibility.Visible
-                : Visibility.Collapsed;
-        }
-
         private void UpdateAppSpecificCheckBoxState()
         {
             // Only enable app-specific remapping for shortcuts (multiple keys)
@@ -297,20 +280,11 @@ namespace KeyboardManagerEditorUI.Controls
             {
                 _internalUpdate = true;
 
-                // Update Key/Shortcut action checkbox
                 AppSpecificCheckBox.IsEnabled = isShortcut;
                 if (!isShortcut)
                 {
                     AppSpecificCheckBox.IsChecked = false;
                     AppNameTextBox.Visibility = Visibility.Collapsed;
-                }
-
-                // Update Text action checkbox
-                TextAppSpecificCheckBox.IsEnabled = isShortcut;
-                if (!isShortcut)
-                {
-                    TextAppSpecificCheckBox.IsChecked = false;
-                    TextAppNameTextBox.Visibility = Visibility.Collapsed;
                 }
             }
             finally
@@ -330,12 +304,6 @@ namespace KeyboardManagerEditorUI.Controls
         }
 
         private void TextContentBox_GotFocus(object sender, RoutedEventArgs e)
-        {
-            CleanupKeyboardHook();
-            UncheckAllToggleButtons();
-        }
-
-        private void TextAppNameTextBox_GotFocus(object sender, RoutedEventArgs e)
         {
             CleanupKeyboardHook();
             UncheckAllToggleButtons();
@@ -510,12 +478,7 @@ namespace KeyboardManagerEditorUI.Controls
         /// </summary>
         public bool GetIsAppSpecific()
         {
-            return CurrentActionType switch
-            {
-                ActionType.KeyOrShortcut => AppSpecificCheckBox?.IsChecked ?? false,
-                ActionType.Text => TextAppSpecificCheckBox?.IsChecked ?? false,
-                _ => false,
-            };
+            return AppSpecificCheckBox?.IsChecked ?? false;
         }
 
         /// <summary>
@@ -523,12 +486,7 @@ namespace KeyboardManagerEditorUI.Controls
         /// </summary>
         public string GetAppName()
         {
-            return CurrentActionType switch
-            {
-                ActionType.KeyOrShortcut => GetIsAppSpecific() ? (AppNameTextBox?.Text ?? string.Empty) : string.Empty,
-                ActionType.Text => GetIsAppSpecific() ? (TextAppNameTextBox?.Text ?? string.Empty) : string.Empty,
-                _ => string.Empty,
-            };
+            return GetIsAppSpecific() ? (AppNameTextBox?.Text ?? string.Empty) : string.Empty;
         }
 
         /// <summary>
@@ -695,33 +653,14 @@ namespace KeyboardManagerEditorUI.Controls
         /// </summary>
         public void SetAppSpecific(bool isAppSpecific, string appName)
         {
-            switch (CurrentActionType)
+            if (AppSpecificCheckBox != null)
             {
-                case ActionType.KeyOrShortcut:
-                    if (AppSpecificCheckBox != null)
-                    {
-                        AppSpecificCheckBox.IsChecked = isAppSpecific;
-                        if (isAppSpecific && AppNameTextBox != null)
-                        {
-                            AppNameTextBox.Text = appName;
-                            AppNameTextBox.Visibility = Visibility.Visible;
-                        }
-                    }
-
-                    break;
-
-                case ActionType.Text:
-                    if (TextAppSpecificCheckBox != null)
-                    {
-                        TextAppSpecificCheckBox.IsChecked = isAppSpecific;
-                        if (isAppSpecific && TextAppNameTextBox != null)
-                        {
-                            TextAppNameTextBox.Text = appName;
-                            TextAppNameTextBox.Visibility = Visibility.Visible;
-                        }
-                    }
-
-                    break;
+                AppSpecificCheckBox.IsChecked = isAppSpecific;
+                if (isAppSpecific && AppNameTextBox != null)
+                {
+                    AppNameTextBox.Text = appName;
+                    AppNameTextBox.Visibility = Visibility.Visible;
+                }
             }
         }
 
@@ -810,23 +749,11 @@ namespace KeyboardManagerEditorUI.Controls
                 AppNameTextBox.Visibility = Visibility.Collapsed;
             }
 
-            if (TextAppNameTextBox != null)
-            {
-                TextAppNameTextBox.Text = string.Empty;
-                TextAppNameTextBox.Visibility = Visibility.Collapsed;
-            }
-
             // Reset checkboxes
             if (AppSpecificCheckBox != null)
             {
                 AppSpecificCheckBox.IsChecked = false;
                 AppSpecificCheckBox.IsEnabled = false;
-            }
-
-            if (TextAppSpecificCheckBox != null)
-            {
-                TextAppSpecificCheckBox.IsChecked = false;
-                TextAppSpecificCheckBox.IsEnabled = false;
             }
 
             // Reset app combo boxes
