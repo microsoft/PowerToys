@@ -85,13 +85,14 @@
                 </StackPanel>
             </Button>
         </Grid>
-        <Grid Grid.Row="1">
+        <Grid
+            Grid.Row="1"
+            Background="{ThemeResource LayerFillColorDefaultBrush}"
+            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+            BorderThickness="1"
+            CornerRadius="{ThemeResource OverlayCornerRadius}">
             <ScrollViewer VerticalAlignment="Stretch" VerticalScrollBarVisibility="Auto">
-                <Grid
-                    Background="{ThemeResource LayerFillColorDefaultBrush}"
-                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                    BorderThickness="1"
-                    CornerRadius="{ThemeResource OverlayCornerRadius}">
+                <Grid>
                     <StackPanel Orientation="Vertical" Spacing="24">
                         <!--  Remappings Section  -->
                         <StackPanel Orientation="Vertical" Visibility="{x:Bind RemappingList.Count, Mode=OneWay, Converter={StaticResource CountToVisibilityConverter}}">

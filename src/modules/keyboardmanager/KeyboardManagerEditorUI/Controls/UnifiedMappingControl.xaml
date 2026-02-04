@@ -41,10 +41,20 @@
                 HorizontalAlignment="Stretch"
                 SelectionChanged="TriggerTypeComboBox_SelectionChanged">
                 <ComboBoxItem
-                    Content="Key or shortcut"
+                    AutomationProperties.Name="Key or shortcut"
                     IsSelected="True"
-                    Tag="KeyOrShortcut" />
-                <ComboBoxItem Content="Mouse button" Tag="Mouse" />
+                    Tag="KeyOrShortcut">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <FontIcon FontSize="14" Glyph="&#xEDA7;" />
+                        <TextBlock Text="Key or shortcut" />
+                    </StackPanel>
+                </ComboBoxItem>
+                <ComboBoxItem AutomationProperties.Name="Mouse button" Tag="Mouse">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <FontIcon FontSize="16" Glyph="&#xE962;" />
+                        <TextBlock Text="Mouse button" />
+                    </StackPanel>
+                </ComboBoxItem>
             </ComboBox>
 
             <Rectangle
@@ -177,13 +187,38 @@
                 HorizontalAlignment="Stretch"
                 SelectionChanged="ActionTypeComboBox_SelectionChanged">
                 <ComboBoxItem
-                    Content="Remap to key or shortcut"
+                    AutomationProperties.Name="Remap to key or shortcut"
                     IsSelected="True"
-                    Tag="KeyOrShortcut" />
-                <ComboBoxItem Content="Insert text" Tag="Text" />
-                <ComboBoxItem Content="Open URL" Tag="OpenUrl" />
-                <ComboBoxItem Content="Open app" Tag="OpenApp" />
-                <ComboBoxItem Content="Remap to mouse click" Tag="MouseClick" />
+                    Tag="KeyOrShortcut">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <FontIcon FontSize="14" Glyph="&#xEDA7;" />
+                        <TextBlock Text="Remap to key or shortcut" />
+                    </StackPanel>
+                </ComboBoxItem>
+                <ComboBoxItem AutomationProperties.Name="Insert text" Tag="Text">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <FontIcon FontSize="14" Glyph="&#xE8D2;" />
+                        <TextBlock Text="Insert text" />
+                    </StackPanel>
+                </ComboBoxItem>
+                <ComboBoxItem AutomationProperties.Name="Open URL" Tag="OpenUrl">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <FontIcon FontSize="14" Glyph="&#xE774;" />
+                        <TextBlock Text="Open URL" />
+                    </StackPanel>
+                </ComboBoxItem>
+                <ComboBoxItem AutomationProperties.Name="Open app" Tag="OpenApp">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <FontIcon FontSize="14" Glyph="&#xECAA;" />
+                        <TextBlock Text="Open app" />
+                    </StackPanel>
+                </ComboBoxItem>
+                <ComboBoxItem AutomationProperties.Name="Remap to mouse click" Tag="MouseClick">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <FontIcon FontSize="14" Glyph="&#xE962;" />
+                        <TextBlock Text="Remap to mouse click" />
+                    </StackPanel>
+                </ComboBoxItem>
             </ComboBox>
 
             <Rectangle

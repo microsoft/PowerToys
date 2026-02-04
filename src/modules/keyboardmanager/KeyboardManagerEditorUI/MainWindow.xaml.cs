@@ -30,11 +30,9 @@ namespace KeyboardManagerEditorUI
         public MainWindow()
         {
             this.InitializeComponent();
-
+            SetTitleBar();
             this.Activated += MainWindow_Activated;
             this.Closed += MainWindow_Closed;
-
-            SetTitleBar();
 
             // Set the default page
             // RootView.SelectedItem = RootView.MenuItems[0];
