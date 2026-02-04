@@ -208,7 +208,7 @@
                                             <Rectangle Style="{StaticResource ItemDividerStyle}" />
 
                                             <StackPanel Orientation="Horizontal" Spacing="8">
-                                                <ItemsControl VerticalAlignment="Center" ItemsSource="{x:Bind Keys}">
+                                                <ItemsControl VerticalAlignment="Center" ItemsSource="{x:Bind Shortcut}">
                                                     <ItemsControl.ItemsPanel>
                                                         <ItemsPanelTemplate>
                                                             <StackPanel Orientation="Horizontal" Spacing="4" />
@@ -322,7 +322,7 @@
                                                 <ToggleSwitch
                                                     IsOn="{x:Bind IsActive}"
                                                     Style="{StaticResource RightAlignedCompactToggleSwitchStyle}"
-                                                    Toggled="ProgramToggleSwitch_Toggled" />
+                                                    Toggled="ToggleSwitch_Toggled" />
                                                 <Button
                                                     VerticalAlignment="Center"
                                                     Content="{ui:FontIcon Glyph=&#xE712;,
@@ -395,7 +395,10 @@
 
                                             </StackPanel>
                                             <StackPanel Grid.Column="1" Orientation="Horizontal">
-                                                <!--  TO DO: Add ToggleSwitch  -->
+                                                <ToggleSwitch
+                                                    IsOn="{x:Bind IsActive}"
+                                                    Style="{StaticResource RightAlignedCompactToggleSwitchStyle}"
+                                                    Toggled="ToggleSwitch_Toggled" />
                                                 <Button
                                                     VerticalAlignment="Center"
                                                     Content="{ui:FontIcon Glyph=&#xE712;,

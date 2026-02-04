@@ -112,7 +112,7 @@
                                 <ItemsControl
                                     Grid.Column="0"
                                     VerticalAlignment="Center"
-                                    ItemsSource="{x:Bind Keys}">
+                                    ItemsSource="{x:Bind Shortcut}">
                                     <ItemsControl.ItemsPanel>
                                         <ItemsPanelTemplate>
                                             <StackPanel Orientation="Horizontal" Spacing="4" />

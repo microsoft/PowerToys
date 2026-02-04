@@ -12,7 +12,7 @@ namespace KeyboardManagerEditorUI.Helpers
 {
     public class TextMapping
     {
-        public List<string> Keys { get; set; } = new List<string>();
+        public List<string> Shortcut { get; set; } = new List<string>();
 
         public string Text { get; set; } = string.Empty;
 

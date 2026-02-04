@@ -10,12 +10,14 @@ using System.Threading.Tasks;
 
 namespace KeyboardManagerEditorUI.Helpers
 {
-    public class URLShortcut
+    public class URLShortcut : IToggleableShortcut
     {
         public List<string> Shortcut { get; set; } = new List<string>();
 
         public string URL { get; set; } = string.Empty;
 
         public bool IsActive { get; set; } = true;
+
+        public string Id { get; set; } = string.Empty;
     }
 }

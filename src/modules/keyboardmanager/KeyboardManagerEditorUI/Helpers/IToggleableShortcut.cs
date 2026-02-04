@@ -10,16 +10,12 @@ using System.Threading.Tasks;
 
 namespace KeyboardManagerEditorUI.Helpers
 {
-    public class ProgramShortcut : IToggleableShortcut
+    internal interface IToggleableShortcut
     {
-        public List<string> Shortcut { get; set; } = new List<string>();
+        public List<string> Shortcut { get; set; }
 
-        public string AppToRun { get; set; } = string.Empty;
+        bool IsActive { get; set; }
 
-        public string Args { get; set; } = string.Empty;
-
-        public bool IsActive { get; set; } = true;
-
-        public string Id { get; set; } = string.Empty;
+        string Id { get; set; }
     }
 }

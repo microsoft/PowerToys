@@ -102,7 +102,7 @@ namespace KeyboardManagerEditorUI.Pages
             {
                 TextMappings.Add(new TextMapping
                 {
-                    Keys = new List<string> { _mappingService.GetKeyDisplayName(mapping.OriginalKey) },
+                    Shortcut = new List<string> { _mappingService.GetKeyDisplayName(mapping.OriginalKey) },
                     Text = mapping.TargetText,
                     IsAllApps = true,
                     AppName = string.Empty,
@@ -124,7 +124,7 @@ namespace KeyboardManagerEditorUI.Pages
 
                 TextMappings.Add(new TextMapping
                 {
-                    Keys = originalKeyNames,
+                    Shortcut = originalKeyNames,
                     Text = mapping.TargetText,
                     IsAllApps = string.IsNullOrEmpty(mapping.TargetApp),
                     AppName = string.IsNullOrEmpty(mapping.TargetApp) ? string.Empty : mapping.TargetApp,
@@ -158,7 +158,7 @@ namespace KeyboardManagerEditorUI.Pages
                 _isEditMode = true;
                 _editingMapping = selectedMapping;
 
-                TextInputControl.SetShortcutKeys(selectedMapping.Keys);
+                TextInputControl.SetShortcutKeys(selectedMapping.Shortcut);
                 TextInputControl.SetTextContent(selectedMapping.Text);
                 TextInputControl.SetAppSpecific(!selectedMapping.IsAllApps, selectedMapping.AppName);
 
@@ -207,9 +207,9 @@ namespace KeyboardManagerEditorUI.Pages
                 // Delete existing mapping if in edit mode
                 if (_isEditMode && _editingMapping != null)
                 {
-                    if (_editingMapping.Keys.Count == 1)
+                    if (_editingMapping.Shortcut.Count == 1)
                     {
-                        int originalKey = _mappingService.GetKeyCodeFromName(_editingMapping.Keys[0]);
+                        int originalKey = _mappingService.GetKeyCodeFromName(_editingMapping.Shortcut[0]);
                         if (originalKey != 0)
                         {
                             _mappingService.DeleteSingleKeyToTextMapping(originalKey);
@@ -217,7 +217,7 @@ namespace KeyboardManagerEditorUI.Pages
                     }
                     else
                     {
-                        string originalKeys = string.Join(";", _editingMapping.Keys.Select(k => _mappingService.GetKeyCodeFromName(k).ToString(CultureInfo.InvariantCulture)));
+                        string originalKeys = string.Join(";", _editingMapping.Shortcut.Select(k => _mappingService.GetKeyCodeFromName(k).ToString(CultureInfo.InvariantCulture)));
                         _mappingService.DeleteShortcutMapping(originalKeys, _editingMapping.IsAllApps ? string.Empty : _editingMapping.AppName);
                     }
                 }
@@ -270,10 +270,10 @@ namespace KeyboardManagerEditorUI.Pages
             try
             {
                 bool deleted = false;
-                if (mapping.Keys.Count == 1)
+                if (mapping.Shortcut.Count == 1)
                 {
                     // Single key mapping
-                    int originalKey = _mappingService.GetKeyCodeFromName(mapping.Keys[0]);
+                    int originalKey = _mappingService.GetKeyCodeFromName(mapping.Shortcut[0]);
                     if (originalKey != 0)
                     {
                         deleted = _mappingService.DeleteSingleKeyToTextMapping(originalKey);
@@ -282,7 +282,7 @@ namespace KeyboardManagerEditorUI.Pages
                 else
                 {
                     // Shortcut mapping
-                    string originalKeys = string.Join(";", mapping.Keys.Select(k => _mappingService.GetKeyCodeFromName(k)));
+                    string originalKeys = string.Join(";", mapping.Shortcut.Select(k => _mappingService.GetKeyCodeFromName(k)));
                     deleted = _mappingService.DeleteShortcutMapping(originalKeys, mapping.IsAllApps ? string.Empty : mapping.AppName);
                 }
 
