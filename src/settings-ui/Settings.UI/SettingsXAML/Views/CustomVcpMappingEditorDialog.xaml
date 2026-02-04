@@ -1,4 +1,4 @@
-<ContentDialog
+﻿<ContentDialog
     x:Class="Microsoft.PowerToys.Settings.UI.Views.CustomVcpMappingEditorDialog"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -13,7 +13,7 @@
     mc:Ignorable="d">
 
     <StackPanel MinWidth="350" Spacing="16">
-        <!-- VCP Code Selection -->
+        <!--  VCP Code Selection  -->
         <ComboBox
             x:Name="VcpCodeComboBox"
             x:Uid="PowerDisplay_CustomMappingEditor_VcpCode"
@@ -23,7 +23,7 @@
             <ComboBoxItem x:Name="VcpCodeItem_0x60" Tag="96" />
         </ComboBox>
 
-        <!-- Value Selection from monitors -->
+        <!--  Value Selection from monitors  -->
         <StackPanel Spacing="8">
             <ComboBox
                 x:Name="ValueComboBox"
@@ -34,7 +34,7 @@
                 SelectedValuePath="Value"
                 SelectionChanged="ValueComboBox_SelectionChanged" />
 
-            <!-- Custom Value Input (shown when "Custom value" is selected) -->
+            <!--  Custom Value Input (shown when "Custom value" is selected)  -->
             <TextBox
                 x:Name="CustomValueTextBox"
                 x:Uid="PowerDisplay_CustomMappingEditor_CustomValueInput"
@@ -44,7 +44,7 @@
                 Visibility="{x:Bind ShowCustomValueInput, Mode=OneWay}" />
         </StackPanel>
 
-        <!-- Custom Name Input -->
+        <!--  Custom Name Input  -->
         <TextBox
             x:Name="CustomNameTextBox"
             x:Uid="PowerDisplay_CustomMappingEditor_CustomName"
@@ -52,7 +52,7 @@
             MaxLength="50"
             TextChanged="CustomNameTextBox_TextChanged" />
 
-        <!-- Apply Scope -->
+        <!--  Apply Scope  -->
         <StackPanel Spacing="8">
             <ToggleSwitch
                 x:Name="ApplyToAllToggle"
@@ -60,7 +60,7 @@
                 IsOn="True"
                 Toggled="ApplyToAllToggle_Toggled" />
 
-            <!-- Monitor Selection (shown when ApplyToAll is off) -->
+            <!--  Monitor Selection (shown when ApplyToAll is off)  -->
             <ComboBox
                 x:Name="MonitorComboBox"
                 x:Uid="PowerDisplay_CustomMappingEditor_SelectMonitor"
