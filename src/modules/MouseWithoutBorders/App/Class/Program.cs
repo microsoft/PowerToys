@@ -229,6 +229,7 @@ namespace MouseWithoutBorders.Class
                 if (!Common.RunOnLogonDesktop)
                 {
                     StartSettingSyncThread();
+                    CommandEventHandler.StartListening();
                 }
 
                 Application.EnableVisualStyles();

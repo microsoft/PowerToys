@@ -24,5 +24,19 @@ internal sealed class MouseWithoutBordersModuleCommandProvider : ModuleCommandPr
             Subtitle = Resources.MouseWithoutBorders_Settings_Subtitle,
             Icon = icon,
         };
+
+        yield return new ListItem(new ToggleMWBEasyMouseCommand())
+        {
+            Title = Resources.MouseWithoutBorders_ToggleEasyMouse_Title,
+            Subtitle = Resources.MouseWithoutBorders_ToggleEasyMouse_Subtitle,
+            Icon = icon,
+        };
+
+        yield return new ListItem(new MWBReconnectCommand())
+        {
+            Title = Resources.MouseWithoutBorders_Reconnect_Title,
+            Subtitle = Resources.MouseWithoutBorders_Reconnect_Subtitle,
+            Icon = icon,
+        };
     }
 }

@@ -15,13 +15,13 @@ internal sealed partial class PowerToysListPage : ListPage
 
     public PowerToysListPage()
     {
-        Icon = PowerToysResourcesHelper.IconFromSettingsIcon("PowerToys.png");
+        Icon = PowerToysResourcesHelper.ProviderIcon();
         Name = Title = Resources.PowerToys_DisplayName;
         Id = "com.microsoft.cmdpal.powertoys";
         SettingsChangeNotifier.SettingsChanged += OnSettingsChanged;
         _empty = new CommandItem()
         {
-            Icon = PowerToysResourcesHelper.IconFromSettingsIcon("PowerToys.png"),
+            Icon = PowerToysResourcesHelper.ProviderIcon(),
             Title = Resources.PowerToys_NoMatchingModule,
             Subtitle = SearchText,
         };
