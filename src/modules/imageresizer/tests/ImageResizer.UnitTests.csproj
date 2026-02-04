@@ -8,8 +8,11 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>ImageResizer</RootNamespace>
     <AssemblyName>ImageResizer.Test</AssemblyName>
-    
+
     <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\tests\$(AssemblyName)\</OutputPath>
+
+    <!-- Enable WPF for System.Windows.Media.Imaging support in tests -->
+    <UseWPF>true</UseWPF>
   </PropertyGroup>
 
   <ItemGroup>

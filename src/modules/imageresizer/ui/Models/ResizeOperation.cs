@@ -1,4 +1,4 @@
-﻿#pragma warning disable IDE0073
+#pragma warning disable IDE0073
 // Copyright (c) Brice Lambson
 // The Brice Lambson licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.  Code forked from Brice Lambson's https://github.com/bricelam/ImageResizer/
@@ -14,13 +14,12 @@ using System.Text;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-
 using ImageResizer.Extensions;
+using ImageResizer.Helpers;
 using ImageResizer.Properties;
 using ImageResizer.Services;
 using ImageResizer.Utilities;
 using Microsoft.VisualBasic.FileIO;
-
 using FileSystem = Microsoft.VisualBasic.FileIO.FileSystem;
 
 namespace ImageResizer.Models
@@ -35,7 +34,20 @@ namespace ImageResizer.Models
         private readonly IAISuperResolutionService _aiSuperResolutionService;
 
         // Cache CompositeFormat for AI error message formatting (CA1863)
-        private static readonly CompositeFormat _aiErrorFormat = CompositeFormat.Parse(Resources.Error_AiProcessingFailed);
+        private static CompositeFormat _aiErrorFormat;
+
+        private static CompositeFormat AiErrorFormat
+        {
+            get
+            {
+                if (_aiErrorFormat == null)
+                {
+                    _aiErrorFormat = CompositeFormat.Parse(ResourceLoaderInstance.ResourceLoader.GetString("Error_AiProcessingFailed"));
+                }
+
+                return _aiErrorFormat;
+            }
+        }
 
         // Filenames to avoid according to https://learn.microsoft.com/windows/win32/fileio/naming-a-file#file-and-directory-names
         private static readonly string[] _avoidFilenames =
@@ -187,8 +199,6 @@ namespace ImageResizer.Models
             double height = _settings.SelectedSize.GetPixelHeight(originalHeight, source.DpiY);
 
             // Swap target width/height dimensions if orientation correction is required.
-            // Ensures that we don't try to fit a landscape image into a portrait box by
-            // distorting it, unless specific Auto/Percent rules are applied.
             bool canSwapDimensions = _settings.IgnoreOrientation &&
                 !_settings.SelectedSize.HasAuto &&
                 _settings.SelectedSize.Unit != ResizeUnit.Percent;
@@ -214,15 +224,11 @@ namespace ImageResizer.Models
             // Normalize scales based on the chosen Fit/Fill mode.
             if (_settings.SelectedSize.Fit == ResizeFit.Fit)
             {
-                // Fit: use the smaller scale to ensure the image fits within the target.
                 scaleX = Math.Min(scaleX, scaleY);
                 scaleY = scaleX;
             }
             else if (_settings.SelectedSize.Fit == ResizeFit.Fill)
             {
-                // Fill: use the larger scale to ensure the target area is fully covered.
-                // This often results in one dimension overflowing, which is handled by
-                // cropping later.
                 scaleX = Math.Max(scaleX, scaleY);
                 scaleY = scaleX;
             }
@@ -230,21 +236,14 @@ namespace ImageResizer.Models
             // Handle Shrink Only mode.
             if (_settings.ShrinkOnly && _settings.SelectedSize.Unit != ResizeUnit.Percent)
             {
-                // Shrink Only mode should never return an image larger than the original.
                 if (scaleX > 1 || scaleY > 1)
                 {
                     return source;
                 }
 
-                // Allow for crop-only when in Fill mode.
-                // At this point, the scale is <= 1.0. In Fill mode, it is possible for
-                // the scale to be 1.0 (no resize needed) while the target dimensions are
-                // smaller than the originals, requiring a crop.
                 bool isFillCropRequired = _settings.SelectedSize.Fit == ResizeFit.Fill &&
                     (originalWidth > width || originalHeight > height);
 
-                // If the scale is exactly 1.0 and a crop isn't required, we return the
-                // original image to prevent a re-encode.
                 if (scaleX == 1 && scaleY == 1 && !isFillCropRequired)
                 {
                     return source;
@@ -254,8 +253,7 @@ namespace ImageResizer.Models
             // Apply the scaling.
             var scaledBitmap = new TransformedBitmap(source, new ScaleTransform(scaleX, scaleY));
 
-            // Apply the centered crop for Fill mode, if necessary. Applies when Fill
-            // mode caused the scaled image to exceed the target dimensions.
+            // Apply the centered crop for Fill mode, if necessary.
             if (_settings.SelectedSize.Fit == ResizeFit.Fill
                 && (scaledBitmap.PixelWidth > width
                 || scaledBitmap.PixelHeight > height))
@@ -280,25 +278,18 @@ namespace ImageResizer.Models
 
                 if (result == null)
                 {
-                    throw new InvalidOperationException(Properties.Resources.Error_AiConversionFailed);
+                    throw new InvalidOperationException(ResourceLoaderInstance.ResourceLoader.GetString("Error_AiConversionFailed"));
                 }
 
                 return result;
             }
             catch (Exception ex)
             {
-                // Wrap the exception with a localized message
-                // This will be caught by ResizeBatch.Process() and displayed to the user
-                var errorMessage = string.Format(CultureInfo.CurrentCulture, _aiErrorFormat, ex.Message);
+                var errorMessage = string.Format(CultureInfo.CurrentCulture, AiErrorFormat, ex.Message);
                 throw new InvalidOperationException(errorMessage, ex);
             }
         }
 
-        /// <summary>
-        /// Checks original metadata by writing an image containing the given metadata into a memory stream.
-        /// In case of errors, we try to rebuild the metadata object and check again.
-        /// We return null if we were not able to get hold of valid metadata.
-        /// </summary>
         private BitmapMetadata GetValidMetadata(BitmapMetadata originalMetadata, BitmapSource transformedBitmap, Guid containerFormat)
         {
             if (originalMetadata == null)
@@ -306,14 +297,12 @@ namespace ImageResizer.Models
                 return null;
             }
 
-            // Check if the original metadata is valid
             var frameWithOriginalMetadata = CreateBitmapFrame(transformedBitmap, originalMetadata);
             if (EnsureFrameIsValid(frameWithOriginalMetadata))
             {
                 return originalMetadata;
             }
 
-            // Original metadata was invalid. We try to rebuild the metadata object from the scratch and discard invalid metadata fields
             var recreatedMetadata = BuildMetadataFromTheScratch(originalMetadata);
             var frameWithRecreatedMetadata = CreateBitmapFrame(transformedBitmap, recreatedMetadata);
             if (EnsureFrameIsValid(frameWithRecreatedMetadata))
@@ -321,11 +310,8 @@ namespace ImageResizer.Models
                 return recreatedMetadata;
             }
 
-            // Seems like we have an invalid metadata object. ImageResizer will fail when trying to write the image to disk. We discard all metadata to be able to save the image.
             return null;
 
-            // The safest way to check if the metadata object is valid is to call Save() on the encoder.
-            // I tried other ways to check if metadata is valid (like calling Clone() on the metadata object) but this was not reliable resulting in a few github issues.
             bool EnsureFrameIsValid(BitmapFrame frameToBeChecked)
             {
                 try
@@ -346,9 +332,6 @@ namespace ImageResizer.Models
             }
         }
 
-        /// <summary>
-        /// Read all metadata and build up metadata object from the scratch. Discard invalid (unreadable/unwritable) metadata.
-        /// </summary>
         private static BitmapMetadata BuildMetadataFromTheScratch(BitmapMetadata originalMetadata)
         {
             try
@@ -382,9 +365,9 @@ namespace ImageResizer.Models
         {
             return BitmapFrame.Create(
                 transformedBitmap,
-                thumbnail: null, /* should be null, see #15413 */
+                thumbnail: null,
                 metadata,
-                colorContexts: null /* should be null, see #14866 */ );
+                colorContexts: null);
         }
 
         private string GetDestinationPath(BitmapEncoder encoder)
@@ -399,8 +382,6 @@ namespace ImageResizer.Models
                 extension = supportedExtensions.FirstOrDefault();
             }
 
-            // Remove directory characters from the size's name.
-            // For AI Size, use the scale display (e.g., "2×") instead of the full name
             string sizeName = _settings.SelectedSize is AiSize aiSize
                 ? aiSize.ScaleDisplay
                 : _settings.SelectedSize.Name;
@@ -408,7 +389,6 @@ namespace ImageResizer.Models
                 .Replace('\\', '_')
                 .Replace('/', '_');
 
-            // Using CurrentCulture since this is user facing
             var selectedWidth = _settings.SelectedSize is AiSize ? encoder.Frames[0].PixelWidth : _settings.SelectedSize.Width;
             var selectedHeight = _settings.SelectedSize is AiSize ? encoder.Frames[0].PixelHeight : _settings.SelectedSize.Height;
             var fileName = string.Format(
@@ -421,7 +401,6 @@ namespace ImageResizer.Models
                 encoder.Frames[0].PixelWidth,
                 encoder.Frames[0].PixelHeight);
 
-            // Remove invalid characters from the final file name.
             fileName = fileName
                 .Replace(':', '_')
                 .Replace('*', '_')
@@ -431,7 +410,6 @@ namespace ImageResizer.Models
                 .Replace('>', '_')
                 .Replace('|', '_');
 
-            // Avoid creating not recommended filenames
             if (_avoidFilenames.Contains(fileName.ToUpperInvariant()))
             {
                 fileName = fileName + "_";

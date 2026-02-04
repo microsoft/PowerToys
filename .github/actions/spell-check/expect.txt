@@ -1912,6 +1912,7 @@ TILEDWINDOW
 TILLSON
 timedate
 timediff
+timespan
 timeutil
 TITLEBARINFO
 Titlecase
