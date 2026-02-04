@@ -4,6 +4,8 @@
 
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using CommunityToolkit.Mvvm.Messaging;
+using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
@@ -11,7 +13,10 @@ using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
-public partial class SettingsViewModel : INotifyPropertyChanged, IDisposable
+public partial class SettingsViewModel
+    : INotifyPropertyChanged,
+    IRecipient<ReloadFinishedMessage>,
+    IDisposable
 {
     private static readonly List<TimeSpan> AutoGoHomeIntervals =
     [
@@ -28,6 +33,7 @@ public partial class SettingsViewModel : INotifyPropertyChanged, IDisposable
 
     private readonly SettingsService _settingsService;
     private readonly TopLevelCommandManager _topLevelCommandManager;
+    private readonly TaskScheduler _scheduler;
     private bool _disposed;
 
     private SettingsModel Settings => _settingsService.CurrentSettings;
@@ -181,15 +187,33 @@ public partial class SettingsViewModel : INotifyPropertyChanged, IDisposable
 
     public ObservableCollection<FallbackSettingsViewModel> FallbackRankings { get; set; } = new();
 
-    public SettingsExtensionsViewModel Extensions { get; }
+    public SettingsExtensionsViewModel Extensions { get; private set; }
 
-    public SettingsViewModel(SettingsService settingsService, TopLevelCommandManager topLevelCommandManager, TaskScheduler scheduler, IThemeService themeService)
+    public SettingsViewModel(
+        SettingsService settingsService,
+        TopLevelCommandManager topLevelCommandManager,
+        TaskScheduler scheduler,
+        IThemeService themeService)
     {
         _settingsService = settingsService;
         _topLevelCommandManager = topLevelCommandManager;
+        _scheduler = scheduler;
 
         Appearance = new AppearanceSettingsViewModel(themeService, _settingsService);
 
+        Extensions = new SettingsExtensionsViewModel(CommandProviders, _scheduler);
+        LoadProvidersAndCommands();
+
+        WeakReferenceMessenger.Default.Register<ReloadFinishedMessage>(this);
+    }
+
+    public void Receive(ReloadFinishedMessage message)
+    {
+        LoadProvidersAndCommands();
+    }
+
+    private void LoadProvidersAndCommands()
+    {
         var activeProviders = GetCommandProviders();
         var allProviderSettings = Settings.ProviderSettings;
 
@@ -227,7 +251,7 @@ public partial class SettingsViewModel : INotifyPropertyChanged, IDisposable
         }
 
         FallbackRankings = new ObservableCollection<FallbackSettingsViewModel>(fallbackRankings.OrderBy(o => o.Score).Select(fr => fr.Item));
-        Extensions = new SettingsExtensionsViewModel(CommandProviders, scheduler);
+        Extensions = new SettingsExtensionsViewModel(CommandProviders, _scheduler);
 
         if (needsSave)
         {

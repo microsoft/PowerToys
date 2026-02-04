@@ -8,6 +8,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:text="using:Windows.UI.Text"
     xmlns:ui="using:CommunityToolkit.WinUI"
+    xmlns:vm="using:Microsoft.CmdPal.UI.ViewModels"
     xmlns:winuiex="using:WinUIEx"
     Title="SettingsWindow"
     Width="1280"
@@ -50,7 +51,8 @@
             IsPaneToggleButtonVisible="False"
             IsSettingsVisible="False"
             ItemInvoked="NavView_ItemInvoked"
-            Loaded="NavView_Loaded">
+            Loaded="NavView_Loaded"
+            >
             <NavigationView.Resources>
                 <SolidColorBrush x:Key="NavigationViewContentBackground" Color="Transparent" />
                 <SolidColorBrush x:Key="NavigationViewContentGridBorderBrush" Color="Transparent" />
@@ -83,9 +85,9 @@
                         x:Name="NavigationBreadcrumbBar"
                         MaxWidth="1000"
                         ItemClicked="NavigationBreadcrumbBar_ItemClicked"
-                        ItemsSource="{x:Bind BreadCrumbs, Mode=OneWay}">
+                        ItemsSource="{x:Bind viewModel.BreadCrumbs, Mode=OneWay}">
                         <BreadcrumbBar.ItemTemplate>
-                            <DataTemplate x:DataType="local:Crumb">
+                            <DataTemplate x:DataType="vm:Crumb">
                                 <TextBlock Text="{x:Bind Label}" />
                             </DataTemplate>
                         </BreadcrumbBar.ItemTemplate>

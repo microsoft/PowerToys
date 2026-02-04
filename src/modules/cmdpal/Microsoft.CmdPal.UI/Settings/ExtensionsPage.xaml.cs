@@ -19,7 +19,7 @@ public sealed partial class ExtensionsPage : Page
     private readonly ILogger _logger;
     private readonly FallbackRankerDialog _fallbackRankerDialog;
 
-    private readonly SettingsViewModel? viewModel;
+    private readonly SettingsViewModel viewModel;
 
     public ExtensionsPage(
         SettingsViewModel settingsViewModel,

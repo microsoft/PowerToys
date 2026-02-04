@@ -144,10 +144,10 @@ public partial class App : Application
         // ViewModels
         services.AddSingleton<ShellViewModel>();
         services.AddSingleton<IPageViewModelFactoryService, CommandPalettePageViewModelFactory>();
-        services.AddTransient<SettingsViewModel>();
+        services.AddSingleton<SettingsViewModel>();
         services.AddSingleton<CommandBarViewModel>();
         services.AddSingleton<ContextMenuViewModel>();
-        services.AddTransient<SettingsWindowViewModel>();
+        services.AddSingleton<SettingsWindowViewModel>();
 
         // Controls
         services.AddSingleton<ContextMenu>();
@@ -163,11 +163,10 @@ public partial class App : Application
         services.AddSingleton<SettingsWindow>();
         services.AddSingleton<MainListPage>();
         services.AddSingleton<ShellPage>();
-        services.AddTransient<ListPage>();
-        services.AddTransient<GeneralPage>();
-        services.AddTransient<AppearancePage>();
-        services.AddTransient<ExtensionsPage>();
-        services.AddTransient<ExtensionPage>();
+        services.AddSingleton<GeneralPage>();
+        services.AddSingleton<AppearancePage>();
+        services.AddSingleton<ExtensionsPage>();
+        services.AddSingleton<ExtensionPage>();
     }
 
     private void AddBuiltInCommands(ServiceCollection services)

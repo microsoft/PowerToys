@@ -2,8 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Collections.ObjectModel;
-using System.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.Messages;
@@ -33,8 +31,6 @@ public sealed partial class SettingsWindow : WindowEx,
 
     private readonly SettingsWindowViewModel viewModel;
 
-    public ObservableCollection<Crumb> BreadCrumbs { get; } = [];
-
     // Gets or sets optional action invoked after NavigationView is loaded.
     public Action NavigationViewLoaded { get; set; } = () => { };
 
@@ -48,7 +44,7 @@ public sealed partial class SettingsWindow : WindowEx,
         this.viewModel = viewModel;
         _logger = logger;
 
-        this.viewModel.PropertyChanged += NavFrame_OnNavigated;
+        this.viewModel.PropertyChanged += ViewModel_PropertyChanged;
 
         this.ExtendsContentIntoTitleBar = true;
         this.SetIcon();
@@ -67,6 +63,14 @@ public sealed partial class SettingsWindow : WindowEx,
 
         Closed += SettingsWindow_Closed;
         RootElement.AddHandler(UIElement.PointerPressedEvent, new PointerEventHandler(RootElement_OnPointerPressed), true);
+    }
+
+    private void ViewModel_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(SettingsWindowViewModel.BreadCrumbs))
+        {
+            NavigationBreadcrumbBar.ItemsSource = viewModel.BreadCrumbs;
+        }
     }
 
     private void SettingsWindow_Closed(object sender, WindowEventArgs args)
@@ -221,73 +225,8 @@ public sealed partial class SettingsWindow : WindowEx,
         _localKeyboardListener?.Dispose();
     }
 
-    private void NavFrame_OnNavigated(object? sender, PropertyChangedEventArgs e)
-    {
-        if (e.PropertyName == nameof(SettingsWindowViewModel.CurrentPage))
-        {
-            BreadCrumbs.Clear();
-
-            var currentPageType = viewModel.CurrentPage.GetType();
-            var generalPageType = typeof(GeneralPage);
-            var appearancePageType = typeof(AppearancePage);
-            var extensionsPageType = typeof(ExtensionsPage);
-            var extensionPageType = typeof(ExtensionPage);
-
-            string? pageType;
-
-            switch (currentPageType)
-            {
-                case var t when t == generalPageType:
-                    NavView.SelectedItem = GeneralPageNavItem;
-                    pageType = RS_.GetString("Settings_PageTitles_GeneralPage");
-                    BreadCrumbs.Add(new(pageType, pageType));
-                    break;
-                case var t when t == appearancePageType:
-                    NavView.SelectedItem = AppearancePageNavItem;
-                    pageType = RS_.GetString("Settings_PageTitles_AppearancePage");
-                    BreadCrumbs.Add(new(pageType, pageType));
-                    break;
-                case var t when t == typeof(ExtensionsPage):
-                    NavView.SelectedItem = ExtensionPageNavItem;
-                    pageType = RS_.GetString("Settings_PageTitles_ExtensionsPage");
-                    BreadCrumbs.Add(new(pageType, pageType));
-                    break;
-                case var t when t == extensionPageType && e.Parameter is ProviderSettingsViewModel vm:
-                    NavView.SelectedItem = ExtensionPageNavItem;
-                    var extensionsPageType = RS_.GetString("Settings_PageTitles_ExtensionsPage");
-                    BreadCrumbs.Add(new(extensionsPageType, extensionsPageType));
-                    BreadCrumbs.Add(new(vm.DisplayName, vm));
-                    break;
-                default:
-                    BreadCrumbs.Add(new($"[{currentPageType?.Name}]", string.Empty));
-                    Log_UnknownBreadcrumbForPageType(currentPageType);
-                    break;
-            }
-        }
-    }
-
     [LoggerMessage(
         Level = LogLevel.Error,
         Message = "Error handling mouse button press event")]
     partial void Log_ErrorHandlingMouseButtonPress(Exception ex);
-
-    [LoggerMessage(
-        Level = LogLevel.Error,
-        Message = "Unknown breadcrumb for page type '{sourcePageType}'")]
-    partial void Log_UnknownBreadcrumbForPageType(Type? sourcePageType);
-}
-
-public readonly struct Crumb
-{
-    public Crumb(string label, object data)
-    {
-        Label = label;
-        Data = data;
-    }
-
-    public string Label { get; }
-
-    public object Data { get; }
-
-    public override string ToString() => Label;
 }
