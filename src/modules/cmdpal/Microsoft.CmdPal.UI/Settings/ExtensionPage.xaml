@@ -60,7 +60,7 @@
                                         Height="20"
                                         AutomationProperties.AccessibilityView="Raw"
                                         SourceKey="{x:Bind ViewModel.Icon, Mode=OneWay}"
-                                        SourceRequested="{x:Bind helpers:IconCacheProvider.SourceRequested}" />
+                                        SourceRequested="{x:Bind helpers:IconCacheProvider.SourceRequested20}" />
                                 </cpcontrols:ContentIcon.Content>
                             </cpcontrols:ContentIcon>
                         </controls:SettingsCard.HeaderIcon>
@@ -94,7 +94,7 @@
                                                                 Height="20"
                                                                 AutomationProperties.AccessibilityView="Raw"
                                                                 SourceKey="{x:Bind Icon, Mode=OneWay}"
-                                                                SourceRequested="{x:Bind helpers:IconCacheProvider.SourceRequested}" />
+                                                                SourceRequested="{x:Bind helpers:IconCacheProvider.SourceRequested20}" />
                                                         </cpcontrols:ContentIcon.Content>
                                                     </cpcontrols:ContentIcon>
                                                 </controls:SettingsExpander.HeaderIcon>
@@ -122,33 +122,65 @@
                                     </ItemsRepeater.ItemTemplate>
                                 </ItemsRepeater>
 
-                                <TextBlock
-                                    x:Uid="ExtensionFallbackCommandsHeader"
-                                    Style="{StaticResource SettingsSectionHeaderTextBlockStyle}"
-                                    Visibility="{x:Bind ViewModel.HasFallbackCommands}" />
+                                <Grid Visibility="{x:Bind ViewModel.HasFallbackCommands}">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock x:Uid="ExtensionFallbackCommandsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
+                                    <HyperlinkButton
+                                        x:Uid="ManageFallbackRankAutomation"
+                                        Grid.Column="1"
+                                        Margin="0,0,0,4"
+                                        Padding="0"
+                                        VerticalAlignment="Bottom"
+                                        Click="RankButton_Click">
+                                        <HyperlinkButton.Content>
+                                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                                <FontIcon
+                                                    AutomationProperties.AccessibilityView="Raw"
+                                                    FontSize="16"
+                                                    Glyph="&#xE8CB;" />
+                                                <TextBlock x:Uid="ManageFallbackRank" />
+                                            </StackPanel>
+                                        </HyperlinkButton.Content>
+                                    </HyperlinkButton>
+                                </Grid>
 
                                 <ItemsRepeater
                                     ItemsSource="{x:Bind ViewModel.FallbackCommands, Mode=OneWay}"
                                     Layout="{StaticResource VerticalStackLayout}"
                                     Visibility="{x:Bind ViewModel.HasFallbackCommands}">
                                     <ItemsRepeater.ItemTemplate>
-                                        <DataTemplate x:DataType="viewModels:TopLevelViewModel">
-                                            <controls:SettingsCard DataContext="{x:Bind}" Header="{x:Bind DisplayTitle, Mode=OneWay}">
-                                                <controls:SettingsCard.HeaderIcon>
+                                        <DataTemplate x:DataType="viewModels:FallbackSettingsViewModel">
+                                            <controls:SettingsExpander
+                                                Grid.Column="1"
+                                                Header="{x:Bind DisplayName, Mode=OneWay}"
+                                                IsExpanded="False">
+                                                <controls:SettingsExpander.HeaderIcon>
                                                     <cpcontrols:ContentIcon>
                                                         <cpcontrols:ContentIcon.Content>
                                                             <cpcontrols:IconBox
                                                                 Width="20"
                                                                 Height="20"
                                                                 AutomationProperties.AccessibilityView="Raw"
-                                                                SourceKey="{x:Bind InitialIcon, Mode=OneWay}"
-                                                                SourceRequested="{x:Bind helpers:IconCacheProvider.SourceRequested}" />
+                                                                SourceKey="{x:Bind Icon, Mode=OneWay}"
+                                                                SourceRequested="{x:Bind helpers:IconCacheProvider.SourceRequested20}" />
                                                         </cpcontrols:ContentIcon.Content>
                                                     </cpcontrols:ContentIcon>
-                                                </controls:SettingsCard.HeaderIcon>
-                                                <!--  Content goes here  -->
+                                                </controls:SettingsExpander.HeaderIcon>
+
                                                 <ToggleSwitch IsOn="{x:Bind IsEnabled, Mode=TwoWay}" />
-                                            </controls:SettingsCard>
+
+                                                <controls:SettingsExpander.Items>
+                                                    <controls:SettingsCard ContentAlignment="Left">
+                                                        <cpcontrols:CheckBoxWithDescriptionControl
+                                                            x:Uid="Settings_FallbacksPage_GlobalResults_SettingsCard"
+                                                            IsChecked="{x:Bind IncludeInGlobalResults, Mode=TwoWay}"
+                                                            IsEnabled="{x:Bind IsEnabled, Mode=OneWay}" />
+                                                    </controls:SettingsCard>
+                                                </controls:SettingsExpander.Items>
+                                            </controls:SettingsExpander>
                                         </DataTemplate>
                                     </ItemsRepeater.ItemTemplate>
                                 </ItemsRepeater>
@@ -192,7 +224,6 @@
                                         Text="{x:Bind ViewModel.ExtensionVersion}" />
                                 </controls:SettingsCard>
                             </StackPanel>
-
                         </controls:Case>
 
                         <controls:Case Value="False">
@@ -211,5 +242,6 @@
                 </StackPanel>
             </Grid>
         </ScrollViewer>
+        <cpcontrols:FallbackRankerDialog x:Name="FallbackRankerDialog" />
     </Grid>
 </Page>

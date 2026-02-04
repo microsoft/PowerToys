@@ -28,6 +28,20 @@
 #include <common/utils/logger_helper.h>
 #include <common/utils/winapi_error.h>
 #include <common/utils/gpo.h>
+#include <array>
+#include <vector>
+#endif // __ZOOMIT_POWERTOYS__
+
+#ifdef __ZOOMIT_POWERTOYS__
+enum class ZoomItCommand
+{
+    Zoom,
+    Draw,
+    Break,
+    LiveZoom,
+    Snip,
+    Record,
+};
 #endif // __ZOOMIT_POWERTOYS__
 
 namespace winrt
@@ -168,10 +182,10 @@ BOOL	g_RecordToggle = FALSE;
 BOOL	g_RecordCropping = FALSE;
 SelectRectangle g_SelectRectangle;
 std::wstring	g_RecordingSaveLocation;
+std::wstring	g_RecordingSaveLocationGIF;
 winrt::IDirect3DDevice	g_RecordDevice{ nullptr };
 std::shared_ptr<VideoRecordingSession> g_RecordingSession = nullptr;
 std::shared_ptr<GifRecordingSession> g_GifRecordingSession = nullptr;
-
 type_pGetMonitorInfo		pGetMonitorInfo;
 type_MonitorFromPoint		pMonitorFromPoint;
 type_pSHAutoComplete		pSHAutoComplete;
@@ -2173,7 +2187,10 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
         CheckDlgButton( g_OptionsTabs[RECORD_PAGE].hPage, IDC_CAPTURE_AUDIO,
             g_CaptureAudio ? BST_CHECKED: BST_UNCHECKED );
 
-        for (int i = 0; i < _countof(g_FramerateOptions); i++) {
+        //
+        // The framerate drop down list is not used in the current version (might be added in the future)
+        //
+        /*for (int i = 0; i < _countof(g_FramerateOptions); i++) {
 
             _stprintf(text, L"%d", g_FramerateOptions[i]);
             SendMessage(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_RECORD_FRAME_RATE), static_cast<UINT>(CB_ADDSTRING),
@@ -2182,7 +2199,7 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
 
                 SendMessage(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_RECORD_FRAME_RATE), CB_SETCURSEL, static_cast<WPARAM>(i), static_cast<LPARAM>(0));
             }
-        }
+        }*/
 
         // Add the recording format to the combo box and set the current selection
         size_t selection = 0;
@@ -2345,17 +2362,8 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
             text[2] = 0;
             newTimeout = _tstoi( text );
 
-            if( g_RecordingFormat == RecordingFormat::GIF )
-            {
-                // Hardcode lower frame rate for GIFs
-                g_RecordFrameRate = 15;
-            }
-            else
-            {
-                g_RecordFrameRate = g_FramerateOptions[SendMessage(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_RECORD_FRAME_RATE), static_cast<UINT>(CB_GETCURSEL), static_cast<WPARAM>(0), static_cast<LPARAM>(0))];
-            }
-
             g_RecordingFormat = static_cast<RecordingFormat>(SendMessage(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_RECORD_FORMAT), static_cast<UINT>(CB_GETCURSEL), static_cast<WPARAM>(0), static_cast<LPARAM>(0)));
+            g_RecordFrameRate = (g_RecordingFormat == RecordingFormat::GIF) ? RECORDING_FORMAT_GIF_DEFAULT_FRAMERATE : RECORDING_FORMAT_MP4_DEFAULT_FRAMERATE;
             g_RecordScaling = static_cast<int>(SendMessage(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_RECORD_SCALING), static_cast<UINT>(CB_GETCURSEL), static_cast<WPARAM>(0), static_cast<LPARAM>(0)) * 10 + 10);
 
             // Get the selected microphone
@@ -3536,7 +3544,16 @@ void StopRecording()
 //----------------------------------------------------------------------------
 auto GetUniqueRecordingFilename()
 {
-    std::filesystem::path path{ g_RecordingSaveLocation };
+    std::filesystem::path path;
+
+    if (g_RecordingFormat == RecordingFormat::GIF)
+    {
+        path = g_RecordingSaveLocationGIF;
+    }
+    else
+    {
+        path = g_RecordingSaveLocation;
+    }
 
     // Chop off index if it's there
     auto base = std::regex_replace( path.stem().wstring(), std::wregex( L" [(][0-9]+[)]$" ), L"" );
@@ -3591,6 +3608,7 @@ winrt::fire_and_forget StartRecordingAsync( HWND hWnd, LPRECT rcCrop, HWND hWndR
     auto stream = co_await file.OpenAsync( winrt::FileAccessMode::ReadWrite );
 
     // Create the appropriate recording session based on format
+    OutputDebugStringW((L"Starting recording session. Framerate:  " + std::to_wstring(g_RecordFrameRate) + L" scaling: " + std::to_wstring(g_RecordScaling) + L" Format: " + (g_RecordingFormat == RecordingFormat::GIF ? L"GIF" : L"MP4") + L"\n").c_str());
     if (g_RecordingFormat == RecordingFormat::GIF)
     {
         g_GifRecordingSession = GifRecordingSession::Create(
@@ -3657,18 +3675,44 @@ winrt::fire_and_forget StartRecordingAsync( HWND hWnd, LPRECT rcCrop, HWND hWndR
                 saveDialog->SetFileTypes( _countof( fileTypes ), fileTypes );
             }
 
-            if( g_RecordingSaveLocation.size() == 0) {
+            // Peek the folder Windows has chosen to display
+            static std::filesystem::path lastSaveFolder;
+            wil::unique_cotaskmem_string chosenFolderPath;
+            wil::com_ptr<IShellItem> currentSelectedFolder;
+            bool bFolderChanged = false; 
+            if (SUCCEEDED(saveDialog->GetFolder(currentSelectedFolder.put())))
+            {
+                if (SUCCEEDED(currentSelectedFolder->GetDisplayName(SIGDN_FILESYSPATH, chosenFolderPath.put())))
+                {
+                    if (lastSaveFolder != chosenFolderPath.get())
+                    {
+                        lastSaveFolder = chosenFolderPath.get() ? chosenFolderPath.get() : std::filesystem::path{};
+                        bFolderChanged = true;
+                    }
+                }
+            }
+
+            if( (g_RecordingFormat == RecordingFormat::GIF && g_RecordingSaveLocationGIF.size() == 0) || (g_RecordingFormat == RecordingFormat::MP4 && g_RecordingSaveLocation.size() == 0) || (bFolderChanged)) {
 
                 wil::com_ptr<IShellItem> shellItem;
                 wil::unique_cotaskmem_string folderPath;
-                if (SUCCEEDED(saveDialog->GetFolder(shellItem.put())) && SUCCEEDED(shellItem->GetDisplayName(SIGDN_FILESYSPATH, folderPath.put())))
-                    g_RecordingSaveLocation = folderPath.get();
+                if (SUCCEEDED(saveDialog->GetFolder(shellItem.put())) && SUCCEEDED(shellItem->GetDisplayName(SIGDN_FILESYSPATH, folderPath.put()))) {
+                    if (g_RecordingFormat == RecordingFormat::GIF) {
+                        g_RecordingSaveLocationGIF = folderPath.get();
+                        std::filesystem::path currentPath{ g_RecordingSaveLocationGIF };
+                        g_RecordingSaveLocationGIF = currentPath / DEFAULT_GIF_RECORDING_FILE;
+                    }
+                    else {
+                        g_RecordingSaveLocation = folderPath.get();
+                        if (g_RecordingFormat == RecordingFormat::MP4) {
+                            std::filesystem::path currentPath{ g_RecordingSaveLocation };
+                            g_RecordingSaveLocation = currentPath / DEFAULT_RECORDING_FILE;
+                        }
+                    }
+                }
             }
 
             // Always use appropriate default filename based on current format
-            std::filesystem::path currentPath{ g_RecordingSaveLocation };
-            const wchar_t* defaultFile = (g_RecordingFormat == RecordingFormat::GIF) ? DEFAULT_GIF_RECORDING_FILE : DEFAULT_RECORDING_FILE;
-            g_RecordingSaveLocation = currentPath.parent_path() / defaultFile;
             auto suggestedName = GetUniqueRecordingFilename();
             saveDialog->SetFileName( suggestedName.c_str() );
 
@@ -3696,9 +3740,15 @@ winrt::fire_and_forget StartRecordingAsync( HWND hWnd, LPRECT rcCrop, HWND hWndR
         }
         else {
 
-            co_await file.MoveAndReplaceAsync( destFile );
-            g_RecordingSaveLocation = file.Path();
-            SaveToClipboard(g_RecordingSaveLocation.c_str(), hWnd);
+            co_await file.MoveAndReplaceAsync(destFile);
+            if (g_RecordingFormat == RecordingFormat::GIF) {
+                g_RecordingSaveLocationGIF = file.Path();
+                SaveToClipboard(g_RecordingSaveLocationGIF.c_str(), hWnd);
+            }
+            else {
+                g_RecordingSaveLocation = file.Path();
+                SaveToClipboard(g_RecordingSaveLocation.c_str(), hWnd);
+            }
         }
         g_bSaveInProgress = false;
 
@@ -4039,8 +4089,10 @@ LRESULT APIENTRY MainWndProc(
         // Set g_RecordScaling based on the current recording format
         if (g_RecordingFormat == RecordingFormat::GIF) {
             g_RecordScaling = g_RecordScalingGIF;
+            g_RecordFrameRate = RECORDING_FORMAT_GIF_DEFAULT_FRAMERATE;
         } else {
             g_RecordScaling = g_RecordScalingMP4;
+            g_RecordFrameRate = RECORDING_FORMAT_MP4_DEFAULT_FRAMERATE;
         }
 
         // to support migrating from
@@ -6332,6 +6384,17 @@ LRESULT APIENTRY MainWndProc(
     {
         // Reload the settings. This message is called from PowerToys after a setting is changed by the user.
         reg.ReadRegSettings(RegSettings);
+        
+        if (g_RecordingFormat == RecordingFormat::GIF)
+        {
+            g_RecordScaling = g_RecordScalingGIF;
+            g_RecordFrameRate = RECORDING_FORMAT_GIF_DEFAULT_FRAMERATE; 
+        }
+        else
+        {
+            g_RecordScaling = g_RecordScalingMP4;
+            g_RecordFrameRate = RECORDING_FORMAT_MP4_DEFAULT_FRAMERATE;
+        }
 
         // Apply tray icon setting
         EnableDisableTrayIcon(hWnd, g_ShowTrayIcon);
@@ -7662,6 +7725,53 @@ HWND InitInstance( HINSTANCE hInstance, int nCmdShow )
 
 }
 
+// Dispatch commands coming from the PowerToys IPC channel.
+#ifdef __ZOOMIT_POWERTOYS__
+void ZoomIt_DispatchCommand(ZoomItCommand cmd)
+{
+    auto post_hotkey = [](WPARAM id)
+    {
+        if (g_hWndMain != nullptr)
+        {
+            PostMessage(g_hWndMain, WM_HOTKEY, id, 0);
+        }
+    };
+
+    switch (cmd)
+    {
+    case ZoomItCommand::Zoom:
+        if (g_hWndMain != nullptr)
+        {
+            PostMessage(g_hWndMain, WM_COMMAND, IDC_ZOOM, 0);
+        }
+        Trace::ZoomItActivateZoom();
+        break;
+    case ZoomItCommand::Draw:
+        post_hotkey(DRAW_HOTKEY);
+        Trace::ZoomItActivateDraw();
+        break;
+    case ZoomItCommand::Break:
+        post_hotkey(BREAK_HOTKEY);
+        Trace::ZoomItActivateBreak();
+        break;
+    case ZoomItCommand::LiveZoom:
+        post_hotkey(LIVE_HOTKEY);
+        Trace::ZoomItActivateLiveZoom();
+        break;
+    case ZoomItCommand::Snip:
+        post_hotkey(SNIP_HOTKEY);
+        Trace::ZoomItActivateSnip();
+        break;
+    case ZoomItCommand::Record:
+        post_hotkey(RECORD_HOTKEY);
+        Trace::ZoomItActivateRecord();
+        break;
+    default:
+        break;
+    }
+}
+#endif
+
 //----------------------------------------------------------------------------
 //
 // WinMain
@@ -7696,7 +7806,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 
         // Initialize logger
         LoggerHelpers::init_logger(L"ZoomIt", L"", LogSettings::zoomItLoggerName);
-
         ProcessWaiter::OnProcessTerminate(pid, [mainThreadId](int err) {
             if (err != ERROR_SUCCESS)
             {
@@ -7855,26 +7964,62 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 #ifdef __ZOOMIT_POWERTOYS__
     HANDLE m_reload_settings_event_handle = NULL;
     HANDLE m_exit_event_handle = NULL;
+    HANDLE m_zoom_event_handle = NULL;
+    HANDLE m_draw_event_handle = NULL;
+    HANDLE m_break_event_handle = NULL;
+    HANDLE m_live_zoom_event_handle = NULL;
+    HANDLE m_snip_event_handle = NULL;
+    HANDLE m_record_event_handle = NULL;
     std::thread m_event_triggers_thread;
 
     if( g_StartedByPowerToys ) {
         // Start a thread to listen to PowerToys Events.
         m_reload_settings_event_handle = CreateEventW(nullptr, false, false, CommonSharedConstants::ZOOMIT_REFRESH_SETTINGS_EVENT);
         m_exit_event_handle = CreateEventW(nullptr, false, false, CommonSharedConstants::ZOOMIT_EXIT_EVENT);
-        if (!m_reload_settings_event_handle || !m_exit_event_handle)
+        m_zoom_event_handle = CreateEventW(nullptr, false, false, CommonSharedConstants::ZOOMIT_ZOOM_EVENT);
+        m_draw_event_handle = CreateEventW(nullptr, false, false, CommonSharedConstants::ZOOMIT_DRAW_EVENT);
+        m_break_event_handle = CreateEventW(nullptr, false, false, CommonSharedConstants::ZOOMIT_BREAK_EVENT);
+        m_live_zoom_event_handle = CreateEventW(nullptr, false, false, CommonSharedConstants::ZOOMIT_LIVEZOOM_EVENT);
+        m_snip_event_handle = CreateEventW(nullptr, false, false, CommonSharedConstants::ZOOMIT_SNIP_EVENT);
+        m_record_event_handle = CreateEventW(nullptr, false, false, CommonSharedConstants::ZOOMIT_RECORD_EVENT);
+        if (!m_reload_settings_event_handle || !m_exit_event_handle || !m_zoom_event_handle || !m_draw_event_handle || !m_break_event_handle || !m_live_zoom_event_handle || !m_snip_event_handle || !m_record_event_handle)
         {
             Logger::warn(L"Failed to create events. {}", get_last_error_or_default(GetLastError()));
             return 1;
         }
-        m_event_triggers_thread = std::thread([&]() {
+        const std::array<HANDLE, 8> event_handles{
+            m_reload_settings_event_handle,
+            m_exit_event_handle,
+            m_zoom_event_handle,
+            m_draw_event_handle,
+            m_break_event_handle,
+            m_live_zoom_event_handle,
+            m_snip_event_handle,
+            m_record_event_handle,
+        };
+        const DWORD handle_count = static_cast<DWORD>(event_handles.size());
+        m_event_triggers_thread = std::thread([event_handles, handle_count]() {
             MSG msg;
-            HANDLE event_handles[2] = {m_reload_settings_event_handle, m_exit_event_handle};
             while (g_running)
             {
-                DWORD dwEvt = MsgWaitForMultipleObjects(2, event_handles, false, INFINITE, QS_ALLINPUT);
+                DWORD dwEvt = MsgWaitForMultipleObjects(handle_count, event_handles.data(), false, INFINITE, QS_ALLINPUT);
+                if (dwEvt == WAIT_FAILED)
+                {
+                    Logger::error(L"ZoomIt event wait failed. {}", get_last_error_or_default(GetLastError()));
+                    break;
+                }
                 if (!g_running)
                 {
                     break;
+                }
+                if (dwEvt == WAIT_OBJECT_0 + handle_count)
+                {
+                    if (PeekMessageW(&msg, nullptr, 0, 0, PM_REMOVE))
+                    {
+                        TranslateMessage(&msg);
+                        DispatchMessageW(&msg);
+                    }
+                    continue;
                 }
                 switch (dwEvt)
                 {
@@ -7888,19 +8033,28 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
                 case WAIT_OBJECT_0 + 1:
                 {
                     // Exit Event
-                    Logger::trace(L"Received an exit event.");
                     PostMessage(g_hWndMain, WM_QUIT, 0, 0);
                     break;
                 }
                 case WAIT_OBJECT_0 + 2:
-                    if (PeekMessageW(&msg, nullptr, 0, 0, PM_REMOVE))
-                    {
-                        TranslateMessage(&msg);
-                        DispatchMessageW(&msg);
-                    }
+                    ZoomIt_DispatchCommand(ZoomItCommand::Zoom);
                     break;
-                default:
+                case WAIT_OBJECT_0 + 3:
+                    ZoomIt_DispatchCommand(ZoomItCommand::Draw);
                     break;
+                case WAIT_OBJECT_0 + 4:
+                    ZoomIt_DispatchCommand(ZoomItCommand::Break);
+                    break;
+                case WAIT_OBJECT_0 + 5:
+                    ZoomIt_DispatchCommand(ZoomItCommand::LiveZoom);
+                    break;
+                case WAIT_OBJECT_0 + 6:
+                    ZoomIt_DispatchCommand(ZoomItCommand::Snip);
+                    break;
+                case WAIT_OBJECT_0 + 7:
+                    ZoomIt_DispatchCommand(ZoomItCommand::Record);
+                    break;
+                default: break;
                 }
             }
         });
@@ -7930,6 +8084,12 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
         SetEvent(m_reload_settings_event_handle);
         CloseHandle(m_reload_settings_event_handle);
         CloseHandle(m_exit_event_handle);
+        CloseHandle(m_zoom_event_handle);
+        CloseHandle(m_draw_event_handle);
+        CloseHandle(m_break_event_handle);
+        CloseHandle(m_live_zoom_event_handle);
+        CloseHandle(m_snip_event_handle);
+        CloseHandle(m_record_event_handle);
         m_event_triggers_thread.join();
     }
 #endif // __ZOOMIT_POWERTOYS__

@@ -45,7 +45,7 @@ public partial class ImageResizerViewModel : Observable
 
     private GeneralSettings GeneralSettingsConfig { get; set; }
 
-    private readonly ISettingsUtils _settingsUtils;
+    private readonly SettingsUtils _settingsUtils;
 
     private ImageResizerSettings Settings { get; set; }
 
@@ -53,7 +53,7 @@ public partial class ImageResizerViewModel : Observable
 
     private Func<string, int> SendConfigMSG { get; }
 
-    public ImageResizerViewModel(ISettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, Func<string, int> ipcMSGCallBackFunc, Func<string, string> resourceLoader)
+    public ImageResizerViewModel(SettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, Func<string, int> ipcMSGCallBackFunc, Func<string, string> resourceLoader)
     {
         _isInitializing = true;
 

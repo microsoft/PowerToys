@@ -250,8 +250,16 @@
     <comment>Dialog showed when an URI is clicked. Button to copy the URI.</comment>
   </data>
   <data name="OpenUriDialog.Title" xml:space="preserve">
-    <value>Do you want Peek to open the external application?</value>
+    <value>Do you want Peek to open this link?</value>
     <comment>Title of the dialog showed when an URI is clicked,"Peek" is the name of the utility. </comment>
+  </data>
+  <data name="OpenUriWarningBanner.Title" xml:space="preserve">
+    <value>Security Warning</value>
+    <comment>Title of the warning banner in the open URI dialog.</comment>
+  </data>
+  <data name="OpenUriWarningBanner.Message" xml:space="preserve">
+    <value>This link will open externally. Make sure you trust the source before proceeding.</value>
+    <comment>Warning message displayed in the banner when opening an external URI.</comment>
   </data>
   <data name="ReadableString_BytesString" xml:space="preserve">
     <value> ({1:N0} bytes)</value>
@@ -332,6 +340,10 @@
   <data name="NoMoreFiles" xml:space="preserve">
     <value>No more files to preview.</value>
     <comment>The message to show when there are no files remaining to preview.</comment>
+  </data>
+  <data name="NoFilesSelected" xml:space="preserve">
+    <value>No files selected or this folder is not supported for preview.</value>
+    <comment>Displayed when Peek is activated in a virtual folder (like Home or Recent) where file selection cannot be retrieved.</comment>
   </data>
   <data name="DeleteFileError_NotFound" xml:space="preserve">
     <value>The file cannot be found. Please check if the file has been moved, renamed, or deleted.</value>

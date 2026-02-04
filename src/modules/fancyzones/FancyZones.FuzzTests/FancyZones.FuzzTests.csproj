@@ -10,9 +10,16 @@
 
 	<ItemGroup>
 		<Compile Include="..\editor\FancyZonesEditor\Utils\ParsingResult.cs" Link="ParsingResult.cs" />
+		<Compile Include="..\FancyZonesEditorCommon\Data\AppliedLayouts.cs" Link="AppliedLayouts.cs" />
 		<Compile Include="..\FancyZonesEditorCommon\Data\CustomLayouts.cs" Link="CustomLayouts.cs" />
+		<Compile Include="..\FancyZonesEditorCommon\Data\DefaultLayouts.cs" Link="DefaultLayouts.cs" />
 		<Compile Include="..\FancyZonesEditorCommon\Data\EditorData`1.cs" Link="EditorData`1.cs" />
+		<Compile Include="..\FancyZonesEditorCommon\Data\EditorParameters.cs" Link="EditorParameters.cs" />
+		<Compile Include="..\FancyZonesEditorCommon\Data\FancyZonesJsonContext.cs" Link="FancyZonesJsonContext.cs" />
+		<Compile Include="..\FancyZonesEditorCommon\Data\FancyZonesPaths.cs" Link="FancyZonesPaths.cs" />
 		<Compile Include="..\FancyZonesEditorCommon\Data\LayoutDefaultSettings.cs" Link="LayoutDefaultSettings.cs" />
+		<Compile Include="..\FancyZonesEditorCommon\Data\LayoutHotkeys.cs" Link="LayoutHotkeys.cs" />
+		<Compile Include="..\FancyZonesEditorCommon\Data\LayoutTemplates.cs" Link="LayoutTemplates.cs" />
 		<Compile Include="..\FancyZonesEditorCommon\Utils\DashCaseNamingPolicy.cs" Link="DashCaseNamingPolicy.cs" />
 		<Compile Include="..\FancyZonesEditorCommon\Utils\IOUtils.cs" Link="IOUtils.cs" />
 		<Compile Include="..\FancyZonesEditorCommon\Utils\StringUtils.cs" Link="StringUtils.cs" />

@@ -130,9 +130,13 @@ namespace Microsoft.PowerToys.UITest
         /// </summary>
         /// <param name="appPath">The path to the application executable.</param>
         /// <param name="args">Optional command line arguments to pass to the application.</param>
-        public void StartExe(string appPath, string[]? args = null)
+        public void StartExe(string appPath, string[]? args = null, string? enableModules = null)
         {
             var opts = new AppiumOptions();
+            if (!string.IsNullOrEmpty(enableModules))
+            {
+                opts.AddAdditionalCapability("enableModules", enableModules);
+            }
 
             if (scope == PowerToysModule.PowerToysSettings)
             {
@@ -169,27 +173,66 @@ namespace Microsoft.PowerToys.UITest
 
         private void TryLaunchPowerToysSettings(AppiumOptions opts)
         {
-            try
+            if (opts.ToCapabilities().HasCapability("enableModules"))
             {
-                var runnerProcessInfo = new ProcessStartInfo
+                var modulesString = (string)opts.ToCapabilities().GetCapability("enableModules");
+                var modulesArray = modulesString.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+                SettingsConfigHelper.ConfigureGlobalModuleSettings(modulesArray);
+            }
+            else
+            {
+                SettingsConfigHelper.ConfigureGlobalModuleSettings();
+            }
+
+            const int maxTries = 3;
+            const int delayMs = 5000;
+            const int maxRetries = 3;
+
+            for (int tryCount = 1; tryCount <= maxTries; tryCount++)
+            {
+                try
                 {
-                    FileName = locationPath + runnerPath,
-                    Verb = "runas",
-                    Arguments = "--open-settings",
-                };
+                    var runnerProcessInfo = new ProcessStartInfo
+                    {
+                        FileName = locationPath + runnerPath,
+                        Verb = "runas",
+                        Arguments = "--open-settings",
+                    };
 
-                ExitExe(runnerProcessInfo.FileName);
-                runner = Process.Start(runnerProcessInfo);
+                    ExitExe(runnerProcessInfo.FileName);
 
-                WaitForWindowAndSetCapability(opts, "PowerToys Settings", 5000, 5);
+                    // Verify process was killed
+                    string exeName = Path.GetFileNameWithoutExtension(runnerProcessInfo.FileName);
+                    var remainingProcesses = Process.GetProcessesByName(exeName);
 
-                // Exit CmdPal UI before launching new process if use installer for test
-                ExitExeByName("Microsoft.CmdPal.UI");
+                    runner = Process.Start(runnerProcessInfo);
+
+                    if (WaitForWindowAndSetCapability(opts, "PowerToys Settings", delayMs, maxRetries))
+                    {
+                        // Exit CmdPal UI before launching new process if use installer for test
+                        ExitExeByName("Microsoft.CmdPal.UI");
+                        return;
+                    }
+
+                    // Window not found, kill all PowerToys processes and retry
+                    if (tryCount < maxTries)
+                    {
+                        KillPowerToysProcesses();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    if (tryCount == maxTries)
+                    {
+                        throw new InvalidOperationException($"Failed to launch PowerToys Settings after {maxTries} attempts: {ex.Message}", ex);
+                    }
+
+                    // Kill processes and retry
+                    KillPowerToysProcesses();
+                }
             }
-            catch (Exception ex)
-            {
-                throw new InvalidOperationException($"Failed to launch PowerToys Settings: {ex.Message}", ex);
-            }
+
+            throw new InvalidOperationException($"Failed to launch PowerToys Settings: Window not found after {maxTries} attempts.");
         }
 
         private void TryLaunchCommandPalette(AppiumOptions opts)
@@ -211,7 +254,10 @@ namespace Microsoft.PowerToys.UITest
                 var process = Process.Start(processStartInfo);
                 process?.WaitForExit();
 
-                WaitForWindowAndSetCapability(opts, "Command Palette", 5000, 10);
+                if (!WaitForWindowAndSetCapability(opts, "Command Palette", 5000, 10))
+                {
+                    throw new TimeoutException("Failed to find Command Palette window after multiple attempts.");
+                }
             }
             catch (Exception ex)
             {
@@ -219,7 +265,7 @@ namespace Microsoft.PowerToys.UITest
             }
         }
 
-        private void WaitForWindowAndSetCapability(AppiumOptions opts, string windowName, int delayMs, int maxRetries)
+        private bool WaitForWindowAndSetCapability(AppiumOptions opts, string windowName, int delayMs, int maxRetries)
         {
             for (int attempt = 1; attempt <= maxRetries; attempt++)
             {
@@ -230,18 +276,16 @@ namespace Microsoft.PowerToys.UITest
                 {
                     var hexHwnd = window[0].HWnd.ToString("x");
                     opts.AddAdditionalCapability("appTopLevelWindow", hexHwnd);
-                    return;
+                    return true;
                 }
 
                 if (attempt < maxRetries)
                 {
                     Thread.Sleep(delayMs);
                 }
-                else
-                {
-                    throw new TimeoutException($"Failed to find {windowName} window after multiple attempts.");
-                }
             }
+
+            return false;
         }
 
         /// <summary>
@@ -292,17 +336,17 @@ namespace Microsoft.PowerToys.UITest
             catch (Exception ex)
             {
                 // Handle exceptions if needed
-                Debug.WriteLine($"Exception during Cleanup: {ex.Message}");
+                Console.WriteLine($"Exception during Cleanup: {ex.Message}");
             }
         }
 
         /// <summary>
         /// Restarts now exe and takes control of it.
         /// </summary>
-        public void RestartScopeExe()
+        public void RestartScopeExe(string? enableModules = null)
         {
             ExitScopeExe();
-            StartExe(locationPath + sessionPath, this.commandLineArgs);
+            StartExe(locationPath + sessionPath, commandLineArgs, enableModules);
         }
 
         public WindowsDriver<WindowsElement> GetRoot()
@@ -326,6 +370,32 @@ namespace Microsoft.PowerToys.UITest
 
             this.ExitExe(winAppDriverProcessInfo.FileName);
             SessionHelper.appDriver = Process.Start(winAppDriverProcessInfo);
+        }
+
+        private void KillPowerToysProcesses()
+        {
+            var powerToysProcessNames = new[] { "PowerToys", "Microsoft.CmdPal.UI" };
+
+            foreach (var processName in powerToysProcessNames)
+            {
+                try
+                {
+                    var processes = Process.GetProcessesByName(processName);
+
+                    foreach (var process in processes)
+                    {
+                        process.Kill();
+                        process.WaitForExit();
+                    }
+
+                    // Verify processes are actually gone
+                    var remainingProcesses = Process.GetProcessesByName(processName);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"[KillPowerToysProcesses] Failed to kill process {processName}: {ex.Message}");
+                }
+            }
         }
     }
 }

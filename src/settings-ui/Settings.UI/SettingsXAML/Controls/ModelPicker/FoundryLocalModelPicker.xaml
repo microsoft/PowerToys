@@ -30,6 +30,24 @@
     </UserControl.Resources>
 
     <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <InfoBar
+            x:Uid="AdvancedPaste_FL_PreviewMessage"
+            Grid.Row="1"
+            Padding="4"
+            IsClosable="False"
+            IsOpen="True"
+            Message="Foundry Local is still in Public Preview">
+            <InfoBar.ActionButton>
+                <HyperlinkButton
+                    x:Uid="AdvancedPaste_FL_LearnMoreFoundryLocal"
+                    Content="Learn more"
+                    NavigateUri="https://learn.microsoft.com/azure/ai-foundry/foundry-local/what-is-foundry-local" />
+            </InfoBar.ActionButton>
+        </InfoBar>
         <StackPanel
             x:Name="LoadingPanel"
             HorizontalAlignment="Center"
@@ -69,12 +87,12 @@
                         FontSize="24"
                         Glyph="&#xF158;" />
                     <TextBlock
-                        x:Uid="AdvancedPaste_FL_NoModelsDownloaded."
+                        x:Uid="AdvancedPaste_FL_NoModelsDownloaded"
                         HorizontalAlignment="Center"
                         Style="{StaticResource BodyStrongTextBlockStyle}"
                         TextAlignment="Center" />
                     <TextBlock
-                        x:Uid="AdvancedPaste_FL_RunFoundryLocalText.Text"
+                        x:Uid="AdvancedPaste_FL_RunFoundryLocalText"
                         HorizontalAlignment="Center"
                         FontSize="12"
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
@@ -106,7 +124,7 @@
                             <ComboBox.Header>
                                 <TextBlock>
                                     <Run x:Uid="AdvancedPaste_FL_LocalModel" /><LineBreak /><Run
-                                        x:Uid="AdvancedPaste_FL_UseCLIToDownloadModels"
+                                        x:Uid="AdvancedPaste_FL_UseCliToDownloadModels"
                                         FontSize="12"
                                         Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                 </TextBlock>
@@ -152,7 +170,7 @@
                 Spacing="8">
                 <Image Width="36" Source="ms-appx:///Assets/Settings/Icons/Models/FoundryLocal.svg" />
                 <TextBlock
-                    x:Uid="AdvancedPaste_FL_FLNotavailableYet"
+                    x:Uid="AdvancedPaste_FL_FLNotAvailableYet"
                     HorizontalAlignment="Center"
                     FontWeight="SemiBold"
                     TextAlignment="Center"

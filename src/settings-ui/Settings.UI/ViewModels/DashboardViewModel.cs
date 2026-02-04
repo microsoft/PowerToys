@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -8,10 +8,10 @@ using System.Collections.ObjectModel;
 using System.IO.Abstractions;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Windows.Threading;
 using CommunityToolkit.WinUI.Controls;
 using global::PowerToys.GPOWrapper;
 using ManagedCommon;
+using Microsoft.PowerToys.Settings.UI.Controls;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
@@ -20,6 +20,7 @@ using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Settings.UI.Services;
 using Microsoft.PowerToys.Settings.UI.Views;
+using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Settings.UI.Library;
@@ -28,9 +29,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
     public partial class DashboardViewModel : PageViewModelBase
     {
+        private readonly object _sortLock = new object();
+
         protected override string ModuleName => "Dashboard";
 
-        private Dispatcher dispatcher;
+        private DispatcherQueue dispatcher;
 
         public Func<string, int> SendConfigMSG { get; }
 
@@ -39,6 +42,19 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public ObservableCollection<DashboardListItem> ShortcutModules { get; set; } = new ObservableCollection<DashboardListItem>();
 
         public ObservableCollection<DashboardListItem> ActionModules { get; set; } = new ObservableCollection<DashboardListItem>();
+
+        public ObservableCollection<QuickAccessItem> QuickAccessItems => _quickAccessViewModel.Items;
+
+        private readonly QuickAccessViewModel _quickAccessViewModel;
+
+        // Master list of module items that is sorted and projected into AllModules.
+        private List<DashboardListItem> _moduleItems = new List<DashboardListItem>();
+
+        // Flag to prevent circular updates when a UI toggle triggers settings changes.
+        private bool _isUpdatingFromUI;
+
+        // Flag to prevent toggle operations during sorting to avoid race conditions.
+        private bool _isSorting;
 
         private AllHotkeyConflictsData _allHotkeyConflictsData = new AllHotkeyConflictsData();
 
@@ -69,12 +85,18 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             get => generalSettingsConfig.DashboardSortOrder;
             set
             {
-                if (Set(ref _dashboardSortOrder, value))
+                if (_dashboardSortOrder != value)
                 {
+                    _dashboardSortOrder = value;
                     generalSettingsConfig.DashboardSortOrder = value;
                     OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(generalSettingsConfig);
+
                     SendConfigMSG(outgoing.ToString());
-                    RefreshModuleList();
+
+                    // Notify UI before sorting so menu updates its checked state
+                    OnPropertyChanged(nameof(DashboardSortOrder));
+
+                    SortModuleList();
                 }
             }
         }
@@ -85,10 +107,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public DashboardViewModel(ISettingsRepository<GeneralSettings> settingsRepository, Func<string, int> ipcMSGCallBackFunc)
         {
-            dispatcher = Dispatcher.CurrentDispatcher;
+            dispatcher = DispatcherQueue.GetForCurrentThread();
             _settingsRepository = settingsRepository;
             generalSettingsConfig = settingsRepository.SettingsConfig;
-            generalSettingsConfig.AddEnabledModuleChangeNotification(ModuleEnabledChangedOnSettingsPage);
+
+            _settingsRepository.SettingsChanged += OnSettingsChanged;
 
             // Initialize dashboard sort order from settings
             _dashboardSortOrder = generalSettingsConfig.DashboardSortOrder;
@@ -96,13 +119,37 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             // set the callback functions value to handle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
 
-            RefreshModuleList();
-            GetShortcutModules();
+            _quickAccessViewModel = new QuickAccessViewModel(
+                _settingsRepository,
+                new Microsoft.PowerToys.Settings.UI.Controls.QuickAccessLauncher(App.IsElevated),
+                moduleType => Helpers.ModuleGpoHelper.GetModuleGpoConfiguration(moduleType) == global::PowerToys.GPOWrapper.GpoRuleConfigured.Disabled,
+                resourceLoader);
+
+            BuildModuleList();
+            SortModuleList();
+            RefreshShortcutModules();
+        }
+
+        private void OnSettingsChanged(GeneralSettings newSettings)
+        {
+            dispatcher.TryEnqueue(() =>
+            {
+                generalSettingsConfig = newSettings;
+
+                // Update local field and notify UI if sort order changed
+                if (_dashboardSortOrder != generalSettingsConfig.DashboardSortOrder)
+                {
+                    _dashboardSortOrder = generalSettingsConfig.DashboardSortOrder;
+                    OnPropertyChanged(nameof(DashboardSortOrder));
+                }
+
+                ModuleEnabledChangedOnSettingsPage();
+            });
         }
 
         protected override void OnConflictsUpdated(object sender, AllHotkeyConflictsEventArgs e)
         {
-            dispatcher.BeginInvoke(() =>
+            dispatcher.TryEnqueue(() =>
             {
                 var allConflictData = e.Conflicts;
                 foreach (var inAppConflict in allConflictData.InAppConflicts)
@@ -129,15 +176,22 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             GlobalHotkeyConflictManager.Instance?.RequestAllConflicts();
         }
 
-        private void RefreshModuleList()
+        /// <summary>
+        /// Builds the master list of module items. Called once during initialization.
+        /// Each module item contains its configuration, enabled state, and GPO lock status.
+        /// </summary>
+        private void BuildModuleList()
         {
-            AllModules.Clear();
-
-            var moduleItems = new List<DashboardListItem>();
+            _moduleItems.Clear();
 
             foreach (ModuleType moduleType in Enum.GetValues<ModuleType>())
             {
-                GpoRuleConfigured gpo = ModuleHelper.GetModuleGpoConfiguration(moduleType);
+                if (moduleType == ModuleType.GeneralSettings)
+                {
+                    continue;
+                }
+
+                GpoRuleConfigured gpo = ModuleGpoHelper.GetModuleGpoConfiguration(moduleType);
                 var newItem = new DashboardListItem()
                 {
                     Tag = moduleType,
@@ -145,51 +199,184 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     IsEnabled = gpo == GpoRuleConfigured.Enabled || (gpo != GpoRuleConfigured.Disabled && ModuleHelper.GetIsModuleEnabled(generalSettingsConfig, moduleType)),
                     IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
                     Icon = ModuleHelper.GetModuleTypeFluentIconName(moduleType),
-                    IsNew = moduleType == ModuleType.CursorWrap,
+                    IsNew = moduleType == ModuleType.CursorWrap || moduleType == ModuleType.PowerDisplay,
                     DashboardModuleItems = GetModuleItems(moduleType),
+                    ClickCommand = new RelayCommand<object>(DashboardListItemClick),
                 };
                 newItem.EnabledChangedCallback = EnabledChangedOnUI;
-                moduleItems.Add(newItem);
-            }
-
-            // Sort based on current sort order
-            var sortedItems = DashboardSortOrder switch
-            {
-                DashboardSortOrder.ByStatus => moduleItems.OrderByDescending(x => x.IsEnabled).ThenBy(x => x.Label),
-                _ => moduleItems.OrderBy(x => x.Label), // Default alphabetical
-            };
-
-            foreach (var item in sortedItems)
-            {
-                AllModules.Add(item);
+                _moduleItems.Add(newItem);
             }
         }
 
-        private void EnabledChangedOnUI(DashboardListItem dashboardListItem)
+        /// <summary>
+        /// Sorts the module list according to the current sort order and updates the AllModules collection.
+        /// On first call, populates AllModules. On subsequent calls, uses Move() to reorder items in-place
+        /// to avoid destroying and recreating UI elements.
+        /// Temporarily disables interaction on all items during sorting to prevent race conditions.
+        /// </summary>
+        private void SortModuleList()
         {
-            Views.ShellPage.UpdateGeneralSettingsCallback(dashboardListItem.Tag, dashboardListItem.IsEnabled);
-
-            if (dashboardListItem.Tag == ModuleType.NewPlus && dashboardListItem.IsEnabled == true)
+            if (_isSorting)
             {
-                var settingsUtils = new SettingsUtils();
-                var settings = NewPlusViewModel.LoadSettings(settingsUtils);
-                NewPlusViewModel.CopyTemplateExamples(settings.Properties.TemplateLocation.Value);
+                return;
             }
 
-            // Request updated conflicts after module state change
-            RequestConflictData();
+            lock (_sortLock)
+            {
+                _isSorting = true;
+                try
+                {
+                    var sortedItems = (DashboardSortOrder switch
+                    {
+                        DashboardSortOrder.ByStatus => _moduleItems.OrderByDescending(x => x.IsEnabled).ThenBy(x => x.Label),
+                        _ => _moduleItems.OrderBy(x => x.Label), // Default alphabetical
+                    }).ToList();
+
+                    // If AllModules is empty (first load), just populate it.
+                    if (AllModules.Count == 0)
+                    {
+                        foreach (var item in sortedItems)
+                        {
+                            AllModules.Add(item);
+                        }
+
+                        return;
+                    }
+
+                    // Otherwise, update the collection in place using Move to avoid UI glitches.
+                    for (int i = 0; i < sortedItems.Count; i++)
+                    {
+                        var currentItem = sortedItems[i];
+                        var currentIndex = AllModules.IndexOf(currentItem);
+
+                        if (currentIndex != -1 && currentIndex != i)
+                        {
+                            AllModules.Move(currentIndex, i);
+                        }
+                    }
+                }
+                finally
+                {
+                    // Use dispatcher to reset flag after UI updates complete
+                    dispatcher.TryEnqueue(DispatcherQueuePriority.Low, () =>
+                    {
+                        _isSorting = false;
+                    });
+                }
+            }
         }
 
+        /// <summary>
+        /// Refreshes module enabled/locked states by re-reading GPO configuration. Only
+        /// updates properties that have actually changed to minimize UI notifications
+        /// then re-sorts the list according to the current sort order.
+        /// </summary>
+        private void RefreshModuleList()
+        {
+            foreach (var item in _moduleItems)
+            {
+                GpoRuleConfigured gpo = ModuleGpoHelper.GetModuleGpoConfiguration(item.Tag);
+
+                // GPO can force-enable (Enabled) or force-disable (Disabled) a module.
+                // If Enabled: module is on and the user cannot disable it.
+                // If Disabled: module is off and the user cannot enable it.
+                // Otherwise, the setting is unlocked and the user can enable/disable it.
+                bool newEnabledState = gpo == GpoRuleConfigured.Enabled || (gpo != GpoRuleConfigured.Disabled && ModuleHelper.GetIsModuleEnabled(generalSettingsConfig, item.Tag));
+
+                // Lock the toggle when GPO is controlling the module.
+                bool newLockedState = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled;
+
+                // Only update if there's an actual change to minimize UI notifications.
+                if (item.IsEnabled != newEnabledState)
+                {
+                    item.UpdateStatus(newEnabledState);
+                }
+
+                if (item.IsLocked != newLockedState)
+                {
+                    item.IsLocked = newLockedState;
+                }
+            }
+
+            SortModuleList();
+        }
+
+        /// <summary>
+        /// Callback invoked when a user toggles a module's enabled state in the UI.
+        /// Sets the _isUpdatingFromUI flag to prevent circular updates, then updates
+        /// settings, re-sorts if needed, and refreshes dependent collections.
+        /// </summary>
+        private void EnabledChangedOnUI(ModuleListItem item)
+        {
+            var dashboardListItem = (DashboardListItem)item;
+            var isEnabled = dashboardListItem.IsEnabled;
+
+            // Ignore toggle operations during sorting to prevent race conditions.
+            // Revert the toggle state since UI already changed due to TwoWay binding.
+            if (_isSorting)
+            {
+                dashboardListItem.UpdateStatus(!isEnabled);
+                return;
+            }
+
+            _isUpdatingFromUI = true;
+            try
+            {
+                // Send optimized IPC message with only the module status update
+                // Format: {"module_status": {"ModuleName": true/false}}
+                string moduleKey = ModuleHelper.GetModuleKey(dashboardListItem.Tag);
+                string moduleStatusJson = $"{{\"module_status\": {{\"{moduleKey}\": {isEnabled.ToString().ToLowerInvariant()}}}}}";
+                SendConfigMSG(moduleStatusJson);
+
+                // Update local settings config to keep UI in sync
+                ModuleHelper.SetIsModuleEnabled(generalSettingsConfig, dashboardListItem.Tag, isEnabled);
+
+                if (dashboardListItem.Tag == ModuleType.NewPlus && isEnabled == true)
+                {
+                    var settingsUtils = SettingsUtils.Default;
+                    var settings = NewPlusViewModel.LoadSettings(settingsUtils);
+                    NewPlusViewModel.CopyTemplateExamples(settings.Properties.TemplateLocation.Value);
+                }
+
+                // Re-sort only required if sorting by enabled status.
+                if (DashboardSortOrder == DashboardSortOrder.ByStatus)
+                {
+                    SortModuleList();
+                }
+
+                // Always refresh shortcuts/actions to reflect enabled state changes.
+                RefreshShortcutModules();
+
+                // Request updated conflicts after module state change.
+                RequestConflictData();
+            }
+            finally
+            {
+                _isUpdatingFromUI = false;
+            }
+        }
+
+        /// <summary>
+        /// Callback invoked when module enabled state changes from other parts of the
+        /// settings UI. Ignores the notification if it was triggered by a UI toggle
+        /// we're already handling, to prevent circular updates.
+        /// </summary>
         public void ModuleEnabledChangedOnSettingsPage()
         {
+            // Ignore if this was triggered by a UI change that we're already handling.
+            if (_isUpdatingFromUI)
+            {
+                return;
+            }
+
             try
             {
                 RefreshModuleList();
-                GetShortcutModules();
+                RefreshShortcutModules();
 
                 OnPropertyChanged(nameof(ShortcutModules));
 
-                // Request updated conflicts after module state change
+                // Request updated conflicts after module state change.
                 RequestConflictData();
             }
             catch (Exception ex)
@@ -198,7 +385,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        private void GetShortcutModules()
+        /// <summary>
+        /// Rebuilds ShortcutModules and ActionModules collections by filtering AllModules
+        /// to only include enabled modules and their respective shortcut/action items.
+        /// </summary>
+        private void RefreshShortcutModules()
         {
             ShortcutModules.Clear();
             ActionModules.Clear();
@@ -268,6 +459,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 ModuleType.MouseJump => GetModuleItemsMouseJump(),
                 ModuleType.MousePointerCrosshairs => GetModuleItemsMousePointerCrosshairs(),
                 ModuleType.Peek => GetModuleItemsPeek(),
+                ModuleType.PowerDisplay => GetModuleItemsPowerDisplay(),
                 ModuleType.PowerLauncher => GetModuleItemsPowerLauncher(),
                 ModuleType.PowerAccent => GetModuleItemsPowerAccent(),
                 ModuleType.Workspaces => GetModuleItemsWorkspaces(),
@@ -281,7 +473,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private ObservableCollection<DashboardModuleItem> GetModuleItemsAlwaysOnTop()
         {
-            ISettingsRepository<AlwaysOnTopSettings> moduleSettingsRepository = SettingsRepository<AlwaysOnTopSettings>.GetInstance(new SettingsUtils());
+            ISettingsRepository<AlwaysOnTopSettings> moduleSettingsRepository = SettingsRepository<AlwaysOnTopSettings>.GetInstance(SettingsUtils.Default);
             var list = new List<DashboardModuleItem>
             {
                 new DashboardModuleShortcutItem() { Label = resourceLoader.GetString("AlwaysOnTop_ShortDescription"), Shortcut = moduleSettingsRepository.SettingsConfig.Properties.Hotkey.Value.GetKeysList() },
@@ -302,7 +494,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private ObservableCollection<DashboardModuleItem> GetModuleItemsColorPicker()
         {
-            ISettingsRepository<ColorPickerSettings> moduleSettingsRepository = SettingsRepository<ColorPickerSettings>.GetInstance(new SettingsUtils());
+            ISettingsRepository<ColorPickerSettings> moduleSettingsRepository = SettingsRepository<ColorPickerSettings>.GetInstance(SettingsUtils.Default);
             var settings = moduleSettingsRepository.SettingsConfig;
             var hotkey = settings.Properties.ActivationShortcut;
             var list = new List<DashboardModuleItem>
@@ -314,7 +506,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private ObservableCollection<DashboardModuleItem> GetModuleItemsLightSwitch()
         {
-            ISettingsRepository<LightSwitchSettings> moduleSettingsRepository = SettingsRepository<LightSwitchSettings>.GetInstance(new SettingsUtils());
+            ISettingsRepository<LightSwitchSettings> moduleSettingsRepository = SettingsRepository<LightSwitchSettings>.GetInstance(SettingsUtils.Default);
             var settings = moduleSettingsRepository.SettingsConfig;
             var list = new List<DashboardModuleItem>
             {
@@ -325,12 +517,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private ObservableCollection<DashboardModuleItem> GetModuleItemsCropAndLock()
         {
-            ISettingsRepository<CropAndLockSettings> moduleSettingsRepository = SettingsRepository<CropAndLockSettings>.GetInstance(new SettingsUtils());
+            ISettingsRepository<CropAndLockSettings> moduleSettingsRepository = SettingsRepository<CropAndLockSettings>.GetInstance(SettingsUtils.Default);
             var settings = moduleSettingsRepository.SettingsConfig;
             var list = new List<DashboardModuleItem>
             {
                 new DashboardModuleShortcutItem() { Label = resourceLoader.GetString("CropAndLock_Thumbnail"), Shortcut = settings.Properties.ThumbnailHotkey.Value.GetKeysList() },
                 new DashboardModuleShortcutItem() { Label = resourceLoader.GetString("CropAndLock_Reparent"), Shortcut = settings.Properties.ReparentHotkey.Value.GetKeysList() },
+                new DashboardModuleShortcutItem() { Label = resourceLoader.GetString("CropAndLock_Screenshot"), Shortcut = settings.Properties.ScreenshotHotkey.Value.GetKeysList() },
             };
             return new ObservableCollection<DashboardModuleItem>(list);
         }
@@ -346,7 +539,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private ObservableCollection<DashboardModuleItem> GetModuleItemsFancyZones()
         {
-            ISettingsRepository<FancyZonesSettings> moduleSettingsRepository = SettingsRepository<FancyZonesSettings>.GetInstance(new SettingsUtils());
+            ISettingsRepository<FancyZonesSettings> moduleSettingsRepository = SettingsRepository<FancyZonesSettings>.GetInstance(SettingsUtils.Default);
             var settings = moduleSettingsRepository.SettingsConfig;
             string activationMode = $"{resourceLoader.GetString(settings.Properties.FancyzonesShiftDrag.Value ? "FancyZones_ActivationShiftDrag" : "FancyZones_ActivationNoShiftDrag")}.";
 
@@ -361,7 +554,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private ObservableCollection<DashboardModuleItem> GetModuleItemsFindMyMouse()
         {
-            ISettingsRepository<FindMyMouseSettings> moduleSettingsRepository = SettingsRepository<FindMyMouseSettings>.GetInstance(new SettingsUtils());
+            ISettingsRepository<FindMyMouseSettings> moduleSettingsRepository = SettingsRepository<FindMyMouseSettings>.GetInstance(SettingsUtils.Default);
             string shortDescription = resourceLoader.GetString("FindMyMouse_ShortDescription");
             var settings = moduleSettingsRepository.SettingsConfig;
             var activationMethod = settings.Properties.ActivationMethod.Value;
@@ -399,7 +592,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private ObservableCollection<DashboardModuleItem> GetModuleItemsMouseHighlighter()
         {
-            ISettingsRepository<MouseHighlighterSettings> moduleSettingsRepository = SettingsRepository<MouseHighlighterSettings>.GetInstance(new SettingsUtils());
+            ISettingsRepository<MouseHighlighterSettings> moduleSettingsRepository = SettingsRepository<MouseHighlighterSettings>.GetInstance(SettingsUtils.Default);
             var list = new List<DashboardModuleItem>
             {
                 new DashboardModuleShortcutItem() { Label = resourceLoader.GetString("MouseHighlighter_ShortDescription"), Shortcut = moduleSettingsRepository.SettingsConfig.Properties.ActivationShortcut.GetKeysList() },
@@ -409,7 +602,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private ObservableCollection<DashboardModuleItem> GetModuleItemsMouseJump()
         {
-            ISettingsRepository<MouseJumpSettings> moduleSettingsRepository = SettingsRepository<MouseJumpSettings>.GetInstance(new SettingsUtils());
+            ISettingsRepository<MouseJumpSettings> moduleSettingsRepository = SettingsRepository<MouseJumpSettings>.GetInstance(SettingsUtils.Default);
             var list = new List<DashboardModuleItem>
             {
                 new DashboardModuleShortcutItem() { Label = resourceLoader.GetString("MouseJump_ShortDescription"), Shortcut = moduleSettingsRepository.SettingsConfig.Properties.ActivationShortcut.GetKeysList() },
@@ -419,7 +612,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private ObservableCollection<DashboardModuleItem> GetModuleItemsMousePointerCrosshairs()
         {
-            ISettingsRepository<MousePointerCrosshairsSettings> moduleSettingsRepository = SettingsRepository<MousePointerCrosshairsSettings>.GetInstance(new SettingsUtils());
+            ISettingsRepository<MousePointerCrosshairsSettings> moduleSettingsRepository = SettingsRepository<MousePointerCrosshairsSettings>.GetInstance(SettingsUtils.Default);
             var list = new List<DashboardModuleItem>
             {
                 new DashboardModuleShortcutItem() { Label = resourceLoader.GetString("MouseCrosshairs_ShortDescription"), Shortcut = moduleSettingsRepository.SettingsConfig.Properties.ActivationShortcut.GetKeysList() },
@@ -429,7 +622,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private ObservableCollection<DashboardModuleItem> GetModuleItemsAdvancedPaste()
         {
-            ISettingsRepository<AdvancedPasteSettings> moduleSettingsRepository = SettingsRepository<AdvancedPasteSettings>.GetInstance(new SettingsUtils());
+            ISettingsRepository<AdvancedPasteSettings> moduleSettingsRepository = SettingsRepository<AdvancedPasteSettings>.GetInstance(SettingsUtils.Default);
             var list = new List<DashboardModuleItem>
             {
                 new DashboardModuleShortcutItem() { Label = resourceLoader.GetString("AdvancedPasteUI_Shortcut/Header"), Shortcut = moduleSettingsRepository.SettingsConfig.Properties.AdvancedPasteUIShortcut.GetKeysList() },
@@ -451,7 +644,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private ObservableCollection<DashboardModuleItem> GetModuleItemsPeek()
         {
-            ISettingsRepository<PeekSettings> moduleSettingsRepository = SettingsRepository<PeekSettings>.GetInstance(new SettingsUtils());
+            ISettingsRepository<PeekSettings> moduleSettingsRepository = SettingsRepository<PeekSettings>.GetInstance(SettingsUtils.Default);
             var list = new List<DashboardModuleItem>
             {
                 new DashboardModuleShortcutItem() { Label = resourceLoader.GetString("Peek_ShortDescription"), Shortcut = moduleSettingsRepository.SettingsConfig.Properties.ActivationShortcut.GetKeysList() },
@@ -461,7 +654,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private ObservableCollection<DashboardModuleItem> GetModuleItemsPowerLauncher()
         {
-            ISettingsRepository<PowerLauncherSettings> moduleSettingsRepository = SettingsRepository<PowerLauncherSettings>.GetInstance(new SettingsUtils());
+            ISettingsRepository<PowerLauncherSettings> moduleSettingsRepository = SettingsRepository<PowerLauncherSettings>.GetInstance(SettingsUtils.Default);
             var list = new List<DashboardModuleItem>
             {
                 new DashboardModuleShortcutItem() { Label = resourceLoader.GetString("Run_ShortDescription"), Shortcut = moduleSettingsRepository.SettingsConfig.Properties.OpenPowerLauncher.GetKeysList() },
@@ -471,7 +664,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private ObservableCollection<DashboardModuleItem> GetModuleItemsPowerAccent()
         {
-            var settingsUtils = new SettingsUtils();
+            var settingsUtils = SettingsUtils.Default;
             PowerAccentSettings moduleSettings = settingsUtils.GetSettingsOrDefault<PowerAccentSettings>(PowerAccentSettings.ModuleName);
             var activationMethod = moduleSettings.Properties.ActivationKey;
             string activation = string.Empty;
@@ -491,7 +684,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private ObservableCollection<DashboardModuleItem> GetModuleItemsWorkspaces()
         {
-            ISettingsRepository<WorkspacesSettings> moduleSettingsRepository = SettingsRepository<WorkspacesSettings>.GetInstance(new SettingsUtils());
+            ISettingsRepository<WorkspacesSettings> moduleSettingsRepository = SettingsRepository<WorkspacesSettings>.GetInstance(SettingsUtils.Default);
             var settings = moduleSettingsRepository.SettingsConfig;
 
             var list = new List<DashboardModuleItem>
@@ -513,7 +706,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private ObservableCollection<DashboardModuleItem> GetModuleItemsMeasureTool()
         {
-            ISettingsRepository<MeasureToolSettings> moduleSettingsRepository = SettingsRepository<MeasureToolSettings>.GetInstance(new SettingsUtils());
+            ISettingsRepository<MeasureToolSettings> moduleSettingsRepository = SettingsRepository<MeasureToolSettings>.GetInstance(SettingsUtils.Default);
             var list = new List<DashboardModuleItem>
             {
                 new DashboardModuleShortcutItem() { Label = resourceLoader.GetString("ScreenRuler_ShortDescription"), Shortcut = moduleSettingsRepository.SettingsConfig.Properties.ActivationShortcut.GetKeysList() },
@@ -523,7 +716,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private ObservableCollection<DashboardModuleItem> GetModuleItemsShortcutGuide()
         {
-            ISettingsRepository<ShortcutGuideSettings> moduleSettingsRepository = SettingsRepository<ShortcutGuideSettings>.GetInstance(new SettingsUtils());
+            ISettingsRepository<ShortcutGuideSettings> moduleSettingsRepository = SettingsRepository<ShortcutGuideSettings>.GetInstance(SettingsUtils.Default);
 
             var shortcut = moduleSettingsRepository.SettingsConfig.Properties.UseLegacyPressWinKeyBehavior.Value
                 ? new List<object> { 92 } // Right Windows key code
@@ -538,10 +731,22 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private ObservableCollection<DashboardModuleItem> GetModuleItemsPowerOCR()
         {
-            ISettingsRepository<PowerOcrSettings> moduleSettingsRepository = SettingsRepository<PowerOcrSettings>.GetInstance(new SettingsUtils());
+            ISettingsRepository<PowerOcrSettings> moduleSettingsRepository = SettingsRepository<PowerOcrSettings>.GetInstance(SettingsUtils.Default);
             var list = new List<DashboardModuleItem>
             {
                 new DashboardModuleShortcutItem() { Label = resourceLoader.GetString("PowerOcr_ShortDescription"), Shortcut = moduleSettingsRepository.SettingsConfig.Properties.ActivationShortcut.GetKeysList() },
+            };
+            return new ObservableCollection<DashboardModuleItem>(list);
+        }
+
+        private ObservableCollection<DashboardModuleItem> GetModuleItemsPowerDisplay()
+        {
+            ISettingsRepository<PowerDisplaySettings> moduleSettingsRepository = SettingsRepository<PowerDisplaySettings>.GetInstance(SettingsUtils.Default);
+            var settings = moduleSettingsRepository.SettingsConfig;
+            var list = new List<DashboardModuleItem>
+            {
+                new DashboardModuleShortcutItem() { Label = resourceLoader.GetString("PowerDisplay_ToggleWindow"), Shortcut = settings.Properties.ActivationShortcut.GetKeysList() },
+                new DashboardModuleButtonItem() { ButtonTitle = resourceLoader.GetString("PowerDisplay_LaunchButtonControl/Header"), IsButtonDescriptionVisible = true, ButtonDescription = resourceLoader.GetString("PowerDisplay_LaunchButtonControl/Description"), ButtonGlyph = "ms-appx:///Assets/Settings/Icons/PowerDisplay.png", ButtonClickHandler = PowerDisplayLaunchClicked },
             };
             return new ObservableCollection<DashboardModuleItem>(list);
         }
@@ -553,14 +758,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private void EnvironmentVariablesLaunchClicked(object sender, RoutedEventArgs e)
         {
-            var settingsUtils = new SettingsUtils();
+            var settingsUtils = SettingsUtils.Default;
             var environmentVariablesViewModel = new EnvironmentVariablesViewModel(settingsUtils, SettingsRepository<GeneralSettings>.GetInstance(settingsUtils), SettingsRepository<EnvironmentVariablesSettings>.GetInstance(settingsUtils), ShellPage.SendDefaultIPCMessage, App.IsElevated);
             environmentVariablesViewModel.Launch();
         }
 
         private void HostLaunchClicked(object sender, RoutedEventArgs e)
         {
-            var settingsUtils = new SettingsUtils();
+            var settingsUtils = SettingsUtils.Default;
             var hostsViewModel = new HostsViewModel(settingsUtils, SettingsRepository<GeneralSettings>.GetInstance(settingsUtils), SettingsRepository<HostsSettings>.GetInstance(settingsUtils), ShellPage.SendDefaultIPCMessage, App.IsElevated);
             hostsViewModel.Launch();
         }
@@ -583,12 +788,29 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             SendConfigMSG("{\"action\":{\"RegistryPreview\":{\"action_name\":\"" + actionName + "\", \"value\":\"\"}}}");
         }
 
+        private void PowerDisplayLaunchClicked(object sender, RoutedEventArgs e)
+        {
+            var actionName = "Launch";
+            SendConfigMSG("{\"action\":{\"PowerDisplay\":{\"action_name\":\"" + actionName + "\", \"value\":\"\"}}}");
+        }
+
         internal void DashboardListItemClick(object sender)
         {
-            if (sender is SettingsCard card && card.Tag is ModuleType moduleType)
+            if (sender is ModuleType moduleType)
             {
-                NavigationService.Navigate(ModuleHelper.GetModulePageType(moduleType));
+                NavigationService.Navigate(ModuleGpoHelper.GetModulePageType(moduleType));
             }
+        }
+
+        public override void Dispose()
+        {
+            base.Dispose();
+            if (_settingsRepository != null)
+            {
+                _settingsRepository.SettingsChanged -= OnSettingsChanged;
+            }
+
+            GC.SuppressFinalize(this);
         }
     }
 }
