@@ -19,8 +19,8 @@
             x:Uid="PowerDisplay_CustomMappingEditor_VcpCode"
             HorizontalAlignment="Stretch"
             SelectionChanged="VcpCodeComboBox_SelectionChanged">
-            <ComboBoxItem x:Uid="PowerDisplay_CustomMappingEditor_ColorTemperature" Tag="20" />
-            <ComboBoxItem x:Uid="PowerDisplay_CustomMappingEditor_InputSource" Tag="96" />
+            <ComboBoxItem x:Name="VcpCodeItem_0x14" Tag="20" />
+            <ComboBoxItem x:Name="VcpCodeItem_0x60" Tag="96" />
         </ComboBox>
 
         <!-- Value Selection from monitors -->

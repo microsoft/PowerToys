@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using PowerDisplay.Common.Models;
@@ -11,9 +12,17 @@ namespace PowerDisplay.Common.Utils
     /// <summary>
     /// Provides human-readable names for VCP codes and their values based on MCCS v2.2a specification.
     /// Combines VCP code names (e.g., 0x10 = "Brightness") and VCP value names (e.g., 0x14:0x05 = "6500K").
+    /// Supports localization through the LocalizedCodeNameProvider delegate.
     /// </summary>
     public static class VcpNames
     {
+        /// <summary>
+        /// Optional delegate to provide localized VCP code names.
+        /// Set this at application startup to enable localization.
+        /// The delegate receives a VCP code and should return the localized name, or null to use the default.
+        /// </summary>
+        public static Func<byte, string?>? LocalizedCodeNameProvider { get; set; }
+
         /// <summary>
         /// VCP code to name mapping
         /// </summary>
@@ -239,12 +248,21 @@ namespace PowerDisplay.Common.Utils
         };
 
         /// <summary>
-        /// Get the friendly name for a VCP code
+        /// Get the friendly name for a VCP code.
+        /// Uses LocalizedCodeNameProvider if set, otherwise falls back to built-in MCCS names.
         /// </summary>
         /// <param name="code">VCP code (e.g., 0x10)</param>
         /// <returns>Friendly name, or hex representation if unknown</returns>
         public static string GetCodeName(byte code)
         {
+            // Try localized name first
+            var localizedName = LocalizedCodeNameProvider?.Invoke(code);
+            if (!string.IsNullOrEmpty(localizedName))
+            {
+                return localizedName;
+            }
+
+            // Fallback to built-in MCCS names
             return CodeNames.TryGetValue(code, out var name) ? name : $"Unknown (0x{code:X2})";
         }
 

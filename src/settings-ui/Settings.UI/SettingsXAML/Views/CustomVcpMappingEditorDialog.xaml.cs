@@ -15,6 +15,7 @@ using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using PowerDisplay.Common.Models;
 using PowerDisplay.Common.Utils;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
@@ -75,6 +76,10 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             Title = resourceLoader.GetString("PowerDisplay_CustomMappingEditor_Title");
             PrimaryButtonText = resourceLoader.GetString("PowerDisplay_Dialog_Save");
             CloseButtonText = resourceLoader.GetString("PowerDisplay_Dialog_Cancel");
+
+            // Set VCP code ComboBox items content dynamically using localized names
+            VcpCodeItem_0x14.Content = GetFormattedVcpCodeName(resourceLoader, 0x14);
+            VcpCodeItem_0x60.Content = GetFormattedVcpCodeName(resourceLoader, 0x60);
 
             // Populate monitor list
             PopulateMonitorList();
@@ -175,7 +180,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         /// </summary>
         public void PreFillMapping(CustomVcpValueMapping mapping)
         {
-            if (mapping == null)
+            if (mapping is null)
             {
                 return;
             }
@@ -188,7 +193,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
             // Try to select the value in the ComboBox
             var matchingItem = AvailableValues.FirstOrDefault(v => !v.IsCustomOption && v.Value == mapping.Value);
-            if (matchingItem != null)
+            if (matchingItem is not null)
             {
                 ValueComboBox.SelectedItem = matchingItem;
             }
@@ -213,7 +218,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             if (!mapping.ApplyToAll && !string.IsNullOrEmpty(mapping.TargetMonitorId))
             {
                 var targetMonitor = AvailableMonitors.FirstOrDefault(m => m.Id == mapping.TargetMonitorId);
-                if (targetMonitor != null)
+                if (targetMonitor is not null)
                 {
                     MonitorComboBox.SelectedItem = targetMonitor;
                     _selectedMonitorId = targetMonitor.Id;
@@ -242,11 +247,11 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             var seenValues = new HashSet<int>();
 
             // Collect values from all monitors
-            if (_monitors != null)
+            if (_monitors is not null)
             {
                 foreach (var monitor in _monitors)
                 {
-                    if (monitor.VcpCodesFormatted == null)
+                    if (monitor.VcpCodesFormatted is null)
                     {
                         continue;
                     }
@@ -257,7 +262,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                         TryParseHexCode(v.Code, out int code) &&
                         code == vcpCode);
 
-                    if (vcpEntry?.ValueList == null)
+                    if (vcpEntry?.ValueList is null)
                     {
                         continue;
                     }
@@ -285,7 +290,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             if (values.Count == 0)
             {
                 var builtInValues = VcpNames.GetValueMappings(vcpCode);
-                if (builtInValues != null)
+                if (builtInValues is not null)
                 {
                     foreach (var kvp in builtInValues)
                     {
@@ -328,6 +333,14 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
             var cleanHex = hex.StartsWith("0x", StringComparison.OrdinalIgnoreCase) ? hex[2..] : hex;
             return int.TryParse(cleanHex, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out result);
+        }
+
+        private static string GetFormattedVcpCodeName(Windows.ApplicationModel.Resources.ResourceLoader resourceLoader, byte vcpCode)
+        {
+            var resourceKey = $"PowerDisplay_VcpCode_Name_0x{vcpCode:X2}";
+            var localizedName = resourceLoader.GetString(resourceKey);
+            var name = string.IsNullOrEmpty(localizedName) ? VcpNames.GetCodeName(vcpCode) : localizedName;
+            return $"{name} (0x{vcpCode:X2})";
         }
 
         private void ValueComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)

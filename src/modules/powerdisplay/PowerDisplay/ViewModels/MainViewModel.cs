@@ -164,18 +164,18 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
     }
 
     // Custom VCP mappings - loaded from settings
-    private List<Common.Models.CustomVcpValueMapping> _customVcpMappings = new();
+    private List<CustomVcpValueMapping> _customVcpMappings = new();
 
     /// <summary>
     /// Gets or sets the custom VCP value name mappings.
     /// These mappings override the default VCP value names for color temperature and input source.
     /// </summary>
-    public List<Common.Models.CustomVcpValueMapping> CustomVcpMappings
+    public List<CustomVcpValueMapping> CustomVcpMappings
     {
         get => _customVcpMappings;
         set
         {
-            _customVcpMappings = value ?? new List<Common.Models.CustomVcpValueMapping>();
+            _customVcpMappings = value ?? new List<CustomVcpValueMapping>();
             OnPropertyChanged();
         }
     }
@@ -407,24 +407,9 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
             ShowProfileSwitcher = settings.Properties.ShowProfileSwitcher;
             ShowIdentifyMonitorsButton = settings.Properties.ShowIdentifyMonitorsButton;
 
-            // Load custom VCP mappings (convert from Settings.UI.Library type to PowerDisplay.Common.Models type)
-            var uiMappings = settings.Properties.CustomVcpMappings;
-            if (uiMappings != null && uiMappings.Count > 0)
-            {
-                CustomVcpMappings = uiMappings.Select(m => new Common.Models.CustomVcpValueMapping
-                {
-                    VcpCode = m.VcpCode,
-                    Value = m.Value,
-                    CustomName = m.CustomName,
-                    ApplyToAll = m.ApplyToAll,
-                    TargetMonitorId = m.TargetMonitorId,
-                }).ToList();
-                Logger.LogInfo($"[Settings] Loaded {CustomVcpMappings.Count} custom VCP mappings");
-            }
-            else
-            {
-                CustomVcpMappings = new List<Common.Models.CustomVcpValueMapping>();
-            }
+            // Load custom VCP mappings (now using shared type from PowerDisplay.Common.Models)
+            CustomVcpMappings = settings.Properties.CustomVcpMappings?.ToList() ?? new List<CustomVcpValueMapping>();
+            Logger.LogInfo($"[Settings] Loaded {CustomVcpMappings.Count} custom VCP mappings");
         }
         catch (Exception ex)
         {

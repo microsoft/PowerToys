@@ -71,7 +71,7 @@
                         IsExpanded="{x:Bind ViewModel.HasCustomVcpMappings, Mode=OneWay}"
                         ItemsSource="{x:Bind ViewModel.CustomVcpMappings, Mode=OneWay}">
                         <tkcontrols:SettingsExpander.ItemTemplate>
-                            <DataTemplate x:DataType="library:CustomVcpValueMapping">
+                            <DataTemplate x:DataType="pdmodels:CustomVcpValueMapping">
                                 <tkcontrols:SettingsCard Description="{x:Bind VcpCodeDisplayName}" Header="{x:Bind DisplaySummary}">
                                     <StackPanel Orientation="Horizontal" Spacing="8">
                                         <Button

@@ -6013,11 +6013,11 @@ The break timer font matches the text font.</value>
   <data name="PowerDisplay_CustomMappingEditor_VcpCode.Header" xml:space="preserve">
     <value>VCP Code</value>
   </data>
-  <data name="PowerDisplay_CustomMappingEditor_ColorTemperature.Content" xml:space="preserve">
-    <value>Color Temperature (0x14)</value>
+  <data name="PowerDisplay_VcpCode_Name_0x14" xml:space="preserve">
+    <value>Color Temperature</value>
   </data>
-  <data name="PowerDisplay_CustomMappingEditor_InputSource.Content" xml:space="preserve">
-    <value>Input Source (0x60)</value>
+  <data name="PowerDisplay_VcpCode_Name_0x60" xml:space="preserve">
+    <value>Input Source</value>
   </data>
   <data name="PowerDisplay_CustomMappingEditor_CustomName.Header" xml:space="preserve">
     <value>Custom Name</value>

@@ -149,7 +149,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private async void EditCustomMapping_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is not Button button || button.Tag is not Library.CustomVcpValueMapping mapping)
+            if (sender is not Button button || button.Tag is not CustomVcpValueMapping mapping)
             {
                 return;
             }
@@ -168,7 +168,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private async void DeleteCustomMapping_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is not Button button || button.Tag is not Library.CustomVcpValueMapping mapping)
+            if (sender is not Button button || button.Tag is not CustomVcpValueMapping mapping)
             {
                 return;
             }
