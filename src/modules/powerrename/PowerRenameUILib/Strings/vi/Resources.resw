@@ -1,0 +1,572 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="SearchBox.PlaceholderText" xml:space="preserve">
+    <value>Tìm kiếm</value>
+  </data>
+  <data name="RegExCheatSheet_Title.Text" xml:space="preserve">
+    <value>Trợ giúp RegEx</value>
+  </data>
+  <data name="RegExCheatSheet_StartOfString" xml:space="preserve">
+    <value>Bắt đầu chuỗi</value>
+  </data>
+  <data name="RegExCheatSheet_EndOfString" xml:space="preserve">
+    <value>Kết thúc chuỗi</value>
+  </data>
+  <data name="RegExCheatSheet_MatchAny" xml:space="preserve">
+    <value>Khớp với bất kỳ ký tự nào</value>
+  </data>
+  <data name="RegExCheatSheet_ZeroOrOne" xml:space="preserve">
+    <value>Khớp với 0 hoặc 1 lần của token trước đó</value>
+  </data>
+  <data name="RegExCheatSheet_ZeroOrMore" xml:space="preserve">
+    <value>Khớp với 0 hoặc nhiều lần của token trước đó</value>
+  </data>
+  <data name="RegExCheatSheet_OneOrMore" xml:space="preserve">
+    <value>Khớp với 1 hoặc nhiều lần của token trước đó</value>
+  </data>
+  <data name="RegExCheatSheet_MatchDigit" xml:space="preserve">
+    <value>Bất kỳ chữ số nào, viết tắt của [0-9]</value>
+  </data>
+  <data name="RegExCheatSheet_MatchNonDigit" xml:space="preserve">
+    <value>Ký tự không phải chữ số, viết tắt của [^0-9]</value>
+  </data>
+  <data name="RegExCheatSheet_MatchWS" xml:space="preserve">
+    <value>Bất kỳ ký tự khoảng trắng nào</value>
+  </data>
+  <data name="RegExCheatSheet_MatchNonWS" xml:space="preserve">
+    <value>Ký tự không phải khoảng trắng, viết tắt của [^\s]</value>
+  </data>
+  <data name="RegExCheatSheet_MatchWordChar" xml:space="preserve">
+    <value>Ký tự từ, viết tắt của [a-zA-Z_0-9]</value>
+  </data>
+  <data name="RegExCheatSheet_MatchWordBoundary" xml:space="preserve">
+    <value>Khớp với ranh giới từ nơi ký tự từ là [a-zA-Z0-9_].</value>
+  </data>
+  <data name="RegExCheatSheet_LearnMore.Text" xml:space="preserve">
+    <value>Tìm hiểu thêm về RegEx</value>
+  </data>
+  <data name="ReplaceBox.PlaceholderText" xml:space="preserve">
+    <value>Thay thế bằng</value>
+  </data>
+  <data name="CounterCheatSheet_Title.Text" xml:space="preserve">
+    <value>Thay thế bằng cú pháp bộ đếm nâng cao</value>
+  </data>
+  <data name="CounterCheatSheet_Simple" xml:space="preserve">
+    <value>Một bộ đếm đơn giản có thể dùng ở bất kỳ đâu trong chuỗi thay thế.</value>
+  </data>
+  <data name="CounterCheatSheet_Start" xml:space="preserve">
+    <value>Bộ đếm với giá trị bắt đầu tùy chỉnh.</value>
+  </data>
+  <data name="CounterCheatSheet_Increment" xml:space="preserve">
+    <value>Bộ đếm với giá trị tăng tùy chỉnh.</value>
+  </data>
+  <data name="CounterCheatSheet_Padding" xml:space="preserve">
+    <value>Bộ đếm với số chữ số 0 đệm đầu tùy chỉnh.</value>
+  </data>
+  <data name="CounterCheatSheet_Complex" xml:space="preserve">
+    <value>Bộ đếm hiển thị nhiều thuộc tính tùy chỉnh.</value>
+  </data>
+  <data name="DateTimeCheatSheet_Title.Text" xml:space="preserve">
+    <value>Thay thế bằng ngày giờ tạo tệp</value>
+  </data>
+  <data name="DateTimeCheatSheet_FullYear" xml:space="preserve">
+    <value>Năm được biểu diễn bằng bốn hoặc năm chữ số đầy đủ, tùy theo lịch dùng.</value>
+  </data>
+  <data name="DateTimeCheatSheet_YearLastTwoDigits" xml:space="preserve">
+    <value>Năm chỉ bằng hai chữ số cuối. Thêm 0 ở đầu cho năm một chữ số.</value>
+  </data>
+  <data name="DateTimeCheatSheet_YearLastDigit" xml:space="preserve">
+    <value>Năm chỉ bằng chữ số cuối.</value>
+  </data>
+  <data name="DateTimeCheatSheet_MonthName" xml:space="preserve">
+    <value>Tên tháng.</value>
+  </data>
+  <data name="DateTimeCheatSheet_MonthNameAbbr" xml:space="preserve">
+    <value>Tên tháng viết tắt.</value>
+  </data>
+  <data name="DateTimeCheatSheet_MonthDigitLZero" xml:space="preserve">
+    <value>Tháng dạng số có thêm 0 ở đầu cho tháng một chữ số.</value>
+  </data>
+  <data name="DateTimeCheatSheet_MonthDigit" xml:space="preserve">
+    <value>Tháng dạng số không thêm 0 ở đầu cho tháng một chữ số.</value>
+  </data>
+  <data name="DateTimeCheatSheet_DayName" xml:space="preserve">
+    <value>Tên thứ trong tuần.</value>
+  </data>
+  <data name="DateTimeCheatSheet_DayNameAbbr" xml:space="preserve">
+    <value>Tên thứ trong tuần viết tắt.</value>
+  </data>
+  <data name="DateTimeCheatSheet_DayDigitLZero" xml:space="preserve">
+    <value>Ngày trong tháng dạng số có thêm 0 ở đầu cho ngày một chữ số.</value>
+  </data>
+  <data name="DateTimeCheatSheet_DayDigit" xml:space="preserve">
+    <value>Ngày trong tháng dạng số không thêm 0 ở đầu cho ngày một chữ số.</value>
+  </data>
+  <data name="DateTimeCheatSheet_Hours12LZero" xml:space="preserve">
+    <value>Giờ dạng 12 giờ (01-12) có thêm 0 ở đầu.</value>
+  </data>
+  <data name="DateTimeCheatSheet_Hours12" xml:space="preserve">
+    <value>Giờ dạng 12 giờ (1-12) không thêm 0 ở đầu.</value>
+  </data>
+  <data name="DateTimeCheatSheet_AMPMUpperCase" xml:space="preserve">
+    <value>Chỉ báo AM/PM viết hoa (AM hoặc PM).</value>
+  </data>
+  <data name="DateTimeCheatSheet_AMPMLowerCase" xml:space="preserve">
+    <value>Chỉ báo AM/PM viết thường (am hoặc pm).</value>
+  </data>
+  <data name="DateTimeCheatSheet_Hours24LZero" xml:space="preserve">
+    <value>Giờ dạng 24 giờ (00-23) có thêm 0 ở đầu.</value>
+  </data>
+  <data name="DateTimeCheatSheet_Hours24" xml:space="preserve">
+    <value>Giờ dạng 24 giờ (0-23) không thêm 0 ở đầu.</value>
+  </data>
+  <data name="DateTimeCheatSheet_MinutesLZero" xml:space="preserve">
+    <value>Phút có thêm 0 ở đầu cho phút một chữ số.</value>
+  </data>
+  <data name="DateTimeCheatSheet_Minutes" xml:space="preserve">
+    <value>Phút không thêm 0 ở đầu cho phút một chữ số.</value>
+  </data>
+  <data name="DateTimeCheatSheet_SecondsLZero" xml:space="preserve">
+    <value>Giây có thêm 0 ở đầu cho giây một chữ số.</value>
+  </data>
+  <data name="DateTimeCheatSheet_Seconds" xml:space="preserve">
+    <value>Giây không thêm 0 ở đầu cho giây một chữ số.</value>
+  </data>
+  <data name="DateTimeCheatSheet_MilliSeconds3D" xml:space="preserve">
+    <value>Miligiây được biểu diễn bằng 3 chữ số đầy đủ.</value>
+  </data>
+  <data name="DateTimeCheatSheet_MilliSeconds2D" xml:space="preserve">
+    <value>Miligiây chỉ bằng 2 chữ số đầu.</value>
+  </data>
+  <data name="DateTimeCheatSheet_MilliSeconds1D" xml:space="preserve">
+    <value>Miligiây chỉ bằng chữ số đầu.</value>
+  </data>
+  <data name="CheckBox_RegEx.Content" xml:space="preserve">
+    <value>Dùng biểu thức chính quy</value>
+  </data>
+  <data name="CheckBox_MatchAll.Content" xml:space="preserve">
+    <value>Khớp tất cả vị trí</value>
+  </data>
+  <data name="CheckBox_Case.Content" xml:space="preserve">
+    <value>Phân biệt chữ hoa thường</value>
+  </data>
+  <data name="TextBox_ApplyTo.Text" xml:space="preserve">
+    <value>Áp dụng cho</value>
+  </data>
+  <data name="DocsButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Tài liệu</value>
+  </data>
+  <data name="DocsButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Tài liệu</value>
+  </data>
+  <data name="ToggleButton_IncludeFiles.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Bao gồm tệp</value>
+  </data>
+  <data name="ToggleButton_IncludeFiles.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Bao gồm tệp</value>
+  </data>
+  <data name="ToggleButton_IncludeFolders.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Bao gồm thư mục</value>
+  </data>
+  <data name="ToggleButton_IncludeFolders.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Bao gồm thư mục</value>
+  </data>
+  <data name="ToggleButton_IncludeSubFolders.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Bao gồm thư mục con</value>
+  </data>
+  <data name="ToggleButton_IncludeSubFolders.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Bao gồm thư mục con</value>
+  </data>
+  <data name="TextBlock_TextFormatting.Text" xml:space="preserve">
+    <value>Định dạng văn bản</value>
+  </data>
+  <data name="ToggleButton_Lowercase.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>chữ thường</value>
+  </data>
+  <data name="ToggleButton_Lowercase.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Chữ thường</value>
+  </data>
+  <data name="ToggleButton_Uppercase.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>CHỮ HOA</value>
+  </data>
+  <data name="ToggleButton_Uppercase.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Chữ hoa</value>
+  </data>
+  <data name="ToggleButton_Titlecase.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Chữ hoa tiêu đề</value>
+  </data>
+  <data name="ToggleButton_Titlecase.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Chữ hoa tiêu đề</value>
+  </data>
+  <data name="ToggleButton_Capitalize.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Viết hoa từng từ</value>
+  </data>
+  <data name="ToggleButton_Capitalize.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Viết hoa từng từ</value>
+  </data>
+  <data name="ToggleButton_EnumItems.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Tính năng đánh số</value>
+  </data>
+  <data name="ToggleButton_EnumItems.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Tính năng đánh số</value>
+  </data>
+  <data name="SelectAllCheckBox.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Chọn hoặc bỏ chọn tất cả</value>
+  </data>
+  <data name="FilterButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Lọc</value>
+  </data>
+  <data name="FilterButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Lọc</value>
+  </data>
+  <data name="ShowAll.Text" xml:space="preserve">
+    <value>Hiển thị tất cả tệp</value>
+  </data>
+  <data name="ShowOnly.Text" xml:space="preserve">
+    <value>Chỉ hiển thị các tệp sẽ được đổi tên</value>
+  </data>
+  <data name="TxtBlock_Original.Text" xml:space="preserve">
+    <value>Gốc</value>
+  </data>
+  <data name="TxtBlock_Renamed.Text" xml:space="preserve">
+    <value>Đã đổi tên</value>
+  </data>
+  <data name="TxtBlock_ButtonSettings.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Cài đặt</value>
+  </data>
+  <data name="TxtBlock_ButtonSettings.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Cài đặt</value>
+  </data>
+  <data name="TxtBlock_ButtonApply.Text" xml:space="preserve">
+    <value>Áp dụng</value>
+  </data>
+  <data name="ButtonApply.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Áp dụng</value>
+  </data>
+  <data name="TxtBlock_ButtonApplyAndClose.Text" xml:space="preserve">
+    <value>Áp dụng và đóng</value>
+  </data>
+  <data name="RegExButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Trợ giúp RegEx</value>
+  </data>
+  <data name="RegExButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Trợ giúp RegEx</value>
+  </data>
+  <data name="FileCreationButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Trợ giúp điều khoản thay thế</value>
+  </data>
+  <data name="FileCreationButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Trợ giúp điều khoản thay thế</value>
+  </data>
+  <data name="ErrorMessage_FileNameTooLong" xml:space="preserve">
+    <value>Tên tệp quá dài</value>
+  </data>
+  <data name="ErrorMessage_InvalidChar" xml:space="preserve">
+    <value>Tên tệp chứa ký tự không hợp lệ:&#xD;&#xA; &gt; &lt; | " : ? * \ /</value>
+  </data>
+  <data name="RenameParts_FilenameAndExtension.Content" xml:space="preserve">
+    <value>Tên tệp + phần mở rộng</value>
+  </data>
+  <data name="RenameParts_FilenameOnly.Content" xml:space="preserve">
+    <value>Chỉ tên tệp</value>
+  </data>
+  <data name="RenameParts_ExtensionOnly.Content" xml:space="preserve">
+    <value>Chỉ phần mở rộng</value>
+  </data>
+  <data name="RandomizerCheatSheet_Alnum" xml:space="preserve">
+    <value>Chuỗi ngẫu nhiên gồm chữ hoa, chữ thường và chữ số 0-9, độ dài tùy chỉnh.</value>
+  </data>
+  <data name="RandomizerCheatSheet_Alpha" xml:space="preserve">
+    <value>Chuỗi ngẫu nhiên gồm chữ hoa và chữ thường, độ dài tùy chỉnh.</value>
+  </data>
+  <data name="RandomizerCheatSheet_Digit" xml:space="preserve">
+    <value>Chuỗi ngẫu nhiên gồm chữ số 0-9, độ dài tùy chỉnh.</value>
+  </data>
+  <data name="RandomizerCheatSheet_Title.Text" xml:space="preserve">
+    <value>Thay thế bằng giá trị ngẫu nhiên</value>
+  </data>
+  <data name="RandomizerCheatSheet_Uuid" xml:space="preserve">
+    <value>UUID ngẫu nhiên theo đặc tả v4.</value>
+  </data>
+  <data name="ToggleButton_RandItems.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Tính năng chuỗi ngẫu nhiên</value>
+  </data>
+  <data name="ToggleButton_RandItems.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Tính năng chuỗi ngẫu nhiên</value>
+  </data>
+  <data name="TextBlock_FileTime.Text" xml:space="preserve">
+    <value>Thời gian dùng để thay thế</value>
+  </data>
+  <data name="TextBlock_MetadataSource.Text" xml:space="preserve">
+    <value>Nguồn metadata để thay thế</value>
+  </data>
+  <data name="FileTimeParts_CreationTime.Content" xml:space="preserve">
+    <value>Thời gian tạo</value>
+  </data>
+  <data name="FileTimeParts_ModificationTime.Content" xml:space="preserve">
+    <value>Thời gian sửa đổi</value>
+  </data>
+  <data name="FileTimeParts_AccessTime.Content" xml:space="preserve">
+    <value>Thời gian truy cập</value>
+  </data>
+  <data name="MetadataSource_EXIF.Content" xml:space="preserve">
+    <value>Metadata EXIF</value>
+  </data>
+  <data name="MetadataSource_XMP.Content" xml:space="preserve">
+    <value>Metadata XMP</value>
+  </data>
+  <data name="MetadataCheatSheet_Title.Text" xml:space="preserve">
+    <value>Thay thế bằng metadata phương tiện</value>
+  </data>
+  <data name="MetadataCheatSheet_CameraMake" xml:space="preserve">
+    <value>Tên hãng máy ảnh</value>
+  </data>
+  <data name="MetadataCheatSheet_CameraModel" xml:space="preserve">
+    <value>Tên mẫu máy ảnh</value>
+  </data>
+  <data name="MetadataCheatSheet_Lens" xml:space="preserve">
+    <value>Tên mẫu ống kính</value>
+  </data>
+  <data name="MetadataCheatSheet_ISO" xml:space="preserve">
+    <value>Giá trị độ nhạy ISO</value>
+  </data>
+  <data name="MetadataCheatSheet_Aperture" xml:space="preserve">
+    <value>Giá trị khẩu độ F-number</value>
+  </data>
+  <data name="MetadataCheatSheet_Shutter" xml:space="preserve">
+    <value>Giá trị tốc độ màn trập</value>
+  </data>
+  <data name="MetadataCheatSheet_Focal" xml:space="preserve">
+    <value>Tiêu cự tính bằng milimét</value>
+  </data>
+  <data name="MetadataCheatSheet_Flash" xml:space="preserve">
+    <value>Trạng thái flash (Bật/Tắt)</value>
+  </data>
+  <data name="MetadataCheatSheet_Width" xml:space="preserve">
+    <value>Chiều rộng ảnh tính bằng pixel</value>
+  </data>
+  <data name="MetadataCheatSheet_Height" xml:space="preserve">
+    <value>Chiều cao ảnh tính bằng pixel</value>
+  </data>
+  <data name="MetadataCheatSheet_Author" xml:space="preserve">
+    <value>Tác giả/nghệ sĩ của ảnh</value>
+  </data>
+  <data name="MetadataCheatSheet_Copyright" xml:space="preserve">
+    <value>Thông tin bản quyền</value>
+  </data>
+  <data name="MetadataCheatSheet_Latitude" xml:space="preserve">
+    <value>Tọa độ vĩ độ GPS</value>
+  </data>
+  <data name="MetadataCheatSheet_Longitude" xml:space="preserve">
+    <value>Tọa độ kinh độ GPS</value>
+  </data>
+  <data name="MetadataCheatSheet_Altitude" xml:space="preserve">
+    <value>Độ cao GPS tính bằng mét</value>
+  </data>
+  <data name="MetadataCheatSheet_ExposureBias" xml:space="preserve">
+    <value>Giá trị bù phơi sáng</value>
+  </data>
+  <data name="MetadataCheatSheet_Orientation" xml:space="preserve">
+    <value>Hướng ảnh</value>
+  </data>
+  <data name="MetadataCheatSheet_ColorSpace" xml:space="preserve">
+    <value>Thông tin không gian màu</value>
+  </data>
+  <data name="MetadataCheatSheet_DateTakenYear4" xml:space="preserve">
+    <value>Năm chụp ảnh (4 chữ số)</value>
+  </data>
+  <data name="MetadataCheatSheet_DateTakenYear2" xml:space="preserve">
+    <value>Năm chụp ảnh (2 chữ số)</value>
+  </data>
+  <data name="MetadataCheatSheet_DateTakenMonth" xml:space="preserve">
+    <value>Tháng chụp ảnh (01-12)</value>
+  </data>
+  <data name="MetadataCheatSheet_DateTakenDay" xml:space="preserve">
+    <value>Ngày chụp ảnh (01-31)</value>
+  </data>
+  <data name="MetadataCheatSheet_DateTakenHour" xml:space="preserve">
+    <value>Giờ chụp ảnh (00-23)</value>
+  </data>
+  <data name="MetadataCheatSheet_DateTakenMinute" xml:space="preserve">
+    <value>Phút chụp ảnh (00-59)</value>
+  </data>
+  <data name="MetadataCheatSheet_DateTakenSecond" xml:space="preserve">
+    <value>Giây chụp ảnh (00-59)</value>
+  </data>
+  <data name="MetadataCheatSheet_CreateDateYear4" xml:space="preserve">
+    <value>Năm từ ngày tạo XMP (4 chữ số)</value>
+  </data>
+  <data name="MetadataCheatSheet_CreateDateYear2" xml:space="preserve">
+    <value>Năm từ ngày tạo XMP (2 chữ số)</value>
+  </data>
+  <data name="MetadataCheatSheet_CreateDateMonth" xml:space="preserve">
+    <value>Tháng từ ngày tạo XMP (01-12)</value>
+  </data>
+  <data name="MetadataCheatSheet_CreateDateDay" xml:space="preserve">
+    <value>Ngày từ ngày tạo XMP (01-31)</value>
+  </data>
+  <data name="MetadataCheatSheet_CreateDateHour" xml:space="preserve">
+    <value>Giờ từ ngày tạo XMP (00-23)</value>
+  </data>
+  <data name="MetadataCheatSheet_CreateDateMinute" xml:space="preserve">
+    <value>Phút từ ngày tạo XMP (00-59)</value>
+  </data>
+  <data name="MetadataCheatSheet_CreateDateSecond" xml:space="preserve">
+    <value>Giây từ ngày tạo XMP (00-59)</value>
+  </data>
+
+  <!-- XMP patterns -->
+  <data name="MetadataCheatSheet_CreatorTool" xml:space="preserve">
+    <value>Phần mềm dùng để tạo/chỉnh sửa</value>
+  </data>
+  
+  <!-- Dublin Core patterns -->
+  <data name="MetadataCheatSheet_DocTitle" xml:space="preserve">
+    <value>Tiêu đề tài liệu</value>
+  </data>
+  <data name="MetadataCheatSheet_DocDescription" xml:space="preserve">
+    <value>Mô tả tài liệu</value>
+  </data>
+  <data name="MetadataCheatSheet_DocCreator" xml:space="preserve">
+    <value>Tác giả/người tạo tài liệu</value>
+  </data>
+  <data name="MetadataCheatSheet_DocSubject" xml:space="preserve">
+    <value>Từ khóa/thẻ</value>
+  </data>
+  
+  <!-- XMP Rights pattern -->
+  <data name="MetadataCheatSheet_Rights" xml:space="preserve">
+    <value>Thông tin bản quyền/quyền</value>
+  </data>
+
+  <!-- XMP Media Management schema patterns -->
+  <data name="MetadataCheatSheet_DocumentId" xml:space="preserve">
+    <value>Mã định danh duy nhất của tài liệu</value>
+  </data>
+  <data name="MetadataCheatSheet_InstanceId" xml:space="preserve">
+    <value>Mã định danh duy nhất của phiên bản</value>
+  </data>
+  <data name="MetadataCheatSheet_OriginalDocumentId" xml:space="preserve">
+    <value>Mã định danh tài liệu gốc</value>
+  </data>
+  <data name="MetadataCheatSheet_VersionId" xml:space="preserve">
+    <value>Mã định danh phiên bản</value>
+  </data>
+</root>

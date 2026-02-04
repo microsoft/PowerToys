@@ -1,0 +1,345 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Active.Header" xml:space="preserve">
+    <value>Hoạt động</value>
+  </data>
+  <data name="ActiveToggle.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Hoạt động</value>
+  </data>
+  <data name="AddBtn" xml:space="preserve">
+    <value>Thêm</value>
+  </data>
+  <data name="AddEntry.Text" xml:space="preserve">
+    <value>Mục mới</value>
+  </data>
+  <data name="AddEntryBtn.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Mục mới</value>
+  </data>
+  <data name="AddEntryBtn.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Mục mới (Ctrl+N)</value>
+  </data>
+  <data name="AddEntryLink.Content" xml:space="preserve">
+    <value>Thêm một mục</value>
+  </data>
+  <data name="AdditionalLinesBtn.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Nội dung bổ sung</value>
+  </data>
+  <data name="AdditionalLinesBtn.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Nội dung bổ sung</value>
+  </data>
+  <data name="AdditionalLinesDialog.CloseButtonText" xml:space="preserve">
+    <value>Hủy</value>
+  </data>
+  <data name="AdditionalLinesDialog.PrimaryButtonText" xml:space="preserve">
+    <value>Lưu</value>
+  </data>
+  <data name="AdditionalLinesDialog.Title" xml:space="preserve">
+    <value>Nội dung bổ sung</value>
+  </data>
+  <data name="AddNewEntryDialog_Title" xml:space="preserve">
+    <value>Thêm mục mới</value>
+  </data>
+  <data name="Address.Header" xml:space="preserve">
+    <value>Địa chỉ</value>
+    <comment>"Address" refers to the IP address of the entry</comment>
+  </data>
+  <data name="AddressFilter.Header" xml:space="preserve">
+    <value>Địa chỉ</value>
+    <comment>"Address" refers to the IP address of the entry</comment>
+  </data>
+  <data name="ClearFiltersBtn.Content" xml:space="preserve">
+    <value>Xóa bộ lọc</value>
+  </data>
+  <data name="ClearFiltersBtn.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Xóa bộ lọc</value>
+  </data>
+  <data name="ClearFiltersLink.Content" xml:space="preserve">
+    <value>Xóa bộ lọc</value>
+  </data>
+  <data name="Comment.Header" xml:space="preserve">
+    <value>Ghi chú</value>
+    <comment>"Comment" refers to the comment of the entry</comment>
+  </data>
+  <data name="CommentFilter.Header" xml:space="preserve">
+    <value>Ghi chú</value>
+    <comment>"Comment" refers to the comment of the entry</comment>
+  </data>
+  <data name="Delete.Text" xml:space="preserve">
+    <value>Xóa</value>
+  </data>
+  <data name="DeleteDialog.CloseButtonText" xml:space="preserve">
+    <value>Không</value>
+  </data>
+  <data name="DeleteDialog.PrimaryButtonText" xml:space="preserve">
+    <value>Có</value>
+  </data>
+  <data name="DeleteDialogAreYouSure.Text" xml:space="preserve">
+    <value>Bạn có chắc chắn muốn xóa mục này không?</value>
+  </data>
+  <data name="DeleteEntryBtn.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Xóa</value>
+  </data>
+  <data name="DeleteEntryBtn.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Xóa (Delete)</value>
+    <comment>"Delete" between parentheses refers to the Delete keyboard key</comment>
+  </data>
+  <data name="Duplicate.Text" xml:space="preserve">
+    <value>Nhân bản</value>
+    <comment>Refers to the action of duplicate an existing entry</comment>
+  </data>
+  <data name="DuplicateEntryIcon.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Nhân bản mục</value>
+  </data>
+  <data name="Edit.Text" xml:space="preserve">
+    <value>Sửa</value>
+  </data>
+  <data name="EmptyFilterResults.Text" xml:space="preserve">
+    <value>Không có kết quả bộ lọc</value>
+  </data>
+  <data name="EmptyHosts.Text" xml:space="preserve">
+    <value>Không có mục nào trong tệp hosts</value>
+    <comment>"Hosts" refers to the system hosts file, do not loc</comment>
+  </data>
+  <data name="Entries.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Các mục</value>
+  </data>
+  <data name="EntryDialog.CloseButtonText" xml:space="preserve">
+    <value>Hủy</value>
+  </data>
+  <data name="FileChanged.Message" xml:space="preserve">
+    <value>Tệp hosts đã được sửa đổi bên ngoài.</value>
+    <comment>"Hosts" refers to the system hosts file, do not loc</comment>
+  </data>
+  <data name="FileSaveError_FileInUse" xml:space="preserve">
+    <value>Không thể lưu tệp hosts vì đang được một tiến trình khác sử dụng.</value>
+    <comment>"Hosts" refers to the system hosts file, do not loc</comment>
+  </data>
+  <data name="FileSaveError_Generic" xml:space="preserve">
+    <value>Không thể lưu tệp hosts.</value>
+    <comment>"Hosts" refers to the system hosts file, do not loc</comment>
+  </data>
+  <data name="FileSaveError_NotElevated" xml:space="preserve">
+    <value>Không thể lưu tệp hosts vì chương trình không chạy với quyền quản trị viên.</value>
+    <comment>"Hosts" refers to the system hosts file, do not loc</comment>
+  </data>
+  <data name="FileSaveError_ReadOnly" xml:space="preserve">
+    <value>Không thể lưu tệp hosts vì tệp ở chế độ chỉ đọc.</value>
+    <comment>"Hosts" refers to the system hosts file, do not loc</comment>
+  </data>
+  <data name="FilterBtn.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Bộ lọc</value>
+  </data>
+  <data name="FilterBtn.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Bộ lọc</value>
+  </data>
+  <data name="Hosts.Header" xml:space="preserve">
+    <value>Hosts</value>
+    <comment>"Hosts" refers to the system hosts file, do not loc</comment>
+  </data>
+  <data name="Hosts.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Tách nhiều hosts bằng dấu cách (ví dụ: server server.local). Tối đa 9 hosts mỗi mục.</value>
+    <comment>Do not localize "server" and "server.local"</comment>
+  </data>
+  <data name="HostsFilter.Header" xml:space="preserve">
+    <value>Hosts</value>
+    <comment>"Hosts" refers to the system hosts file, do not loc</comment>
+  </data>
+  <data name="MakeWritable.Content" xml:space="preserve">
+    <value>Cho phép ghi</value>
+  </data>
+  <data name="MoveDown.Text" xml:space="preserve">
+    <value>Di chuyển xuống</value>
+  </data>
+  <data name="MoveUp.Text" xml:space="preserve">
+    <value>Di chuyển lên</value>
+  </data>
+  <data name="OpenHostsFileBtn.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Mở tệp hosts</value>
+    <comment>"Hosts" refers to the system hosts file, do not loc</comment>
+  </data>
+  <data name="OpenHostsFileBtn.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Mở tệp hosts</value>
+    <comment>"Hosts" refers to the system hosts file, do not loc</comment>
+  </data>
+  <data name="Ping.Text" xml:space="preserve">
+    <value>Ping</value>
+    <comment>"Ping" refers to the command-line utility, do not loc</comment>
+  </data>
+  <data name="PingIcon.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Phản hồi ping</value>
+    <comment>"Ping" refers to the command-line utility, do not loc</comment>
+  </data>
+  <data name="Reload.Content" xml:space="preserve">
+    <value>Tải lại</value>
+  </data>
+  <data name="SettingsBtn.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Cài đặt</value>
+  </data>
+  <data name="SettingsBtn.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Cài đặt</value>
+  </data>
+  <data name="ShowOnlyDuplicates.Header" xml:space="preserve">
+    <value>Chỉ hiển thị mục trùng lặp</value>
+  </data>
+  <data name="TooManyHostsTeachingTip.Subtitle" xml:space="preserve">
+    <value>Chỉ hỗ trợ 9 hosts mỗi mục. Các mục bị ảnh hưởng đã được tách. Điều này sẽ có hiệu lực ở lần thay đổi tiếp theo.</value>
+    <comment>"Hosts" refers to the system hosts file, do not loc</comment>
+  </data>
+  <data name="TooManyHostsTeachingTip.Title" xml:space="preserve">
+    <value>Các mục chứa quá nhiều hosts</value>
+    <comment>"Hosts" refers to the system hosts file, do not loc</comment>
+  </data>
+  <data name="EntryAddressIsInvalidWarning.Text" xml:space="preserve">
+    <value>Phải là địa chỉ IPv4 hoặc IPv6 hợp lệ</value>
+  </data>
+  <data name="EntryHostsIsInvalidWarning.Text" xml:space="preserve">
+    <value>Phải là một hoặc nhiều tên host hợp lệ, phân tách bằng dấu cách</value>
+  </data>
+  <data name="UpdateBtn" xml:space="preserve">
+    <value>Cập nhật</value>
+  </data>
+  <data name="UpdateEntry_Title" xml:space="preserve">
+    <value>Cập nhật mục</value>
+  </data>
+  <data name="WarningDialog_AcceptBtn" xml:space="preserve">
+    <value>Chấp nhận</value>
+  </data>
+  <data name="WarningDialog_QuitBtn" xml:space="preserve">
+    <value>Thoát</value>
+  </data>
+  <data name="WarningDialog_Text" xml:space="preserve">
+    <value>Việc thay đổi tệp hosts ảnh hưởng trực tiếp đến cách máy tính này phân giải tên miền trong thực tế.</value>
+    <comment>"Hosts" refers to the system hosts file, do not loc</comment>
+  </data>
+  <data name="WarningDialog_Title" xml:space="preserve">
+    <value>Cảnh báo</value>
+  </data>
+  <data name="WarningDialog_LearnMore" xml:space="preserve">
+    <value>Tìm hiểu thêm</value>
+  </data>
+  <data name="WindowAdminTitle" xml:space="preserve">
+    <value>Quản trị viên: Hosts File Editor</value>
+    <comment>Title of the window when running as administrator. "Hosts File Editor" is the name of the utility. "Hosts" refers to the system hosts file, do not loc</comment>
+  </data>
+  <data name="WindowTitle" xml:space="preserve">
+    <value>Hosts File Editor</value>
+    <comment>Title of the window when running as user. "Hosts File Editor" is the name of the utility. "Hosts" refers to the system hosts file, do not loc</comment>
+  </data>
+</root>
