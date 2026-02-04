@@ -6,8 +6,16 @@ using ManagedCommon;
 
 namespace Microsoft.PowerToys.Settings.UI.Library.Helpers
 {
+    /// <summary>
+    /// Provides helper methods for working with PowerToys modules.
+    /// </summary>
     public static class ModuleHelper
     {
+        /// <summary>
+        /// Gets the resource name used for the module's label in the UI.
+        /// </summary>
+        /// <param name="moduleType">The type of the module.</param>
+        /// <returns>The resource name string for the module's label.</returns>
         public static string GetModuleLabelResourceName(ModuleType moduleType)
         {
             return moduleType switch
@@ -25,6 +33,11 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Helpers
             };
         }
 
+        /// <summary>
+        /// Gets the path to the module's icon asset.
+        /// </summary>
+        /// <param name="moduleType">The type of the module.</param>
+        /// <returns>The application resource path to the module's icon.</returns>
         public static string GetModuleTypeFluentIconName(ModuleType moduleType)
         {
             return moduleType switch
@@ -41,6 +54,12 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Helpers
             };
         }
 
+        /// <summary>
+        /// Gets whether the specified module is enabled in the general settings.
+        /// </summary>
+        /// <param name="generalSettingsConfig">The general settings configuration.</param>
+        /// <param name="moduleType">The type of the module.</param>
+        /// <returns><c>true</c> if the module is enabled; otherwise, <c>false</c>.</returns>
         public static bool GetIsModuleEnabled(GeneralSettings generalSettingsConfig, ModuleType moduleType)
         {
             return moduleType switch
@@ -81,6 +100,12 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Helpers
             };
         }
 
+        /// <summary>
+        /// Sets the enabled state of the specified module in the general settings.
+        /// </summary>
+        /// <param name="generalSettingsConfig">The general settings configuration to modify.</param>
+        /// <param name="moduleType">The type of the module.</param>
+        /// <param name="isEnabled">The enabled state to set.</param>
         public static void SetIsModuleEnabled(GeneralSettings generalSettingsConfig, ModuleType moduleType, bool isEnabled)
         {
             switch (moduleType)
@@ -124,6 +149,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Helpers
         /// Gets the module key name used in IPC messages and settings JSON.
         /// These names match the JsonPropertyName attributes in EnabledModules class.
         /// </summary>
+        /// <param name="moduleType">The type of the module.</param>
+        /// <returns>The module key name used for serialization and IPC.</returns>
         public static string GetModuleKey(ModuleType moduleType)
         {
             return moduleType switch
