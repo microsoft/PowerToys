@@ -318,6 +318,16 @@
                                                     Style="{StaticResource RemappedIconLabelControlStyle}" />
                                                 <!--  TO DO: Add a ToolTip or Flyout with some of the important advanced info like args  -->
                                                 <!--  {x:Bind Args}  -->
+                                                <!--<StackPanel
+                                                    Orientation="Horizontal"
+                                                    Spacing="8"
+                                                    Visibility="{x:Bind AppName, Converter={StaticResource StringVisibilityConverter}}">
+                                                    <TextBlock
+                                                        VerticalAlignment="Center"
+                                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                        Text="in" />
+                                                    <controls:IconLabelControl ActionType="Program" Label="{x:Bind AppName}" />
+                                                </StackPanel>-->
                                             </StackPanel>
                                             <StackPanel
                                                 Grid.Column="1"
@@ -397,7 +407,16 @@
                                                     ActionType="Url"
                                                     Label="{x:Bind URL}"
                                                     Style="{StaticResource RemappedIconLabelControlStyle}" />
-
+                                                <!--<StackPanel
+                                                    Orientation="Horizontal"
+                                                    Spacing="8"
+                                                    Visibility="{x:Bind AppName, Converter={StaticResource StringVisibilityConverter}}">
+                                                    <TextBlock
+                                                        VerticalAlignment="Center"
+                                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                        Text="in" />
+                                                    <controls:IconLabelControl ActionType="Program" Label="{x:Bind AppName}" />
+                                                </StackPanel>-->
                                             </StackPanel>
                                             <StackPanel
                                                 Grid.Column="1"
