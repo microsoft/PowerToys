@@ -78,6 +78,8 @@ public partial class IconBox : ContentControl
         ActualThemeChanged += OnActualThemeChanged;
         SizeChanged += OnSizeChanged;
 
+        ContentTransitions = [];
+
         UpdateLastFontSize();
     }
 
@@ -200,7 +202,8 @@ public partial class IconBox : ContentControl
                 }
                 else
                 {
-                    self.Content = bitmapIcon.CreateIconElement();
+                    var c = bitmapIcon.CreateIconElement();
+                    self.Content = c;
                 }
 
                 self.Padding = default;
