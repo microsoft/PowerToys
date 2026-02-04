@@ -2,7 +2,9 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
+using Microsoft.CmdPal.UI.Messages;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.UI.Xaml;
 using Windows.System;
@@ -88,5 +90,10 @@ public sealed partial class InternalPage : Page
         {
             Logger.LogError("Failed to open directory in Explorer", ex);
         }
+    }
+
+    private void ToggleDevRibbonClicked(object sender, RoutedEventArgs e)
+    {
+        WeakReferenceMessenger.Default.Send(new ToggleDevRibbonMessage());
     }
 }

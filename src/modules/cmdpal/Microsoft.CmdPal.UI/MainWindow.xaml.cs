@@ -53,6 +53,7 @@ public sealed partial class MainWindow : WindowEx,
     IRecipient<ErrorOccurredMessage>,
     IRecipient<DragStartedMessage>,
     IRecipient<DragCompletedMessage>,
+    IRecipient<ToggleDevRibbonMessage>,
     IDisposable
 {
     [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1310:Field names should not contain underscore", Justification = "Stylistically, window messages are WM_")]
@@ -86,6 +87,8 @@ public sealed partial class MainWindow : WindowEx,
     private WindowPosition _currentWindowPosition = new();
 
     private bool _preventHideWhenDeactivated;
+
+    private DevRibbon? _devRibbon;
 
     private MainWindowViewModel ViewModel { get; }
 
@@ -133,6 +136,7 @@ public sealed partial class MainWindow : WindowEx,
         WeakReferenceMessenger.Default.Register<ErrorOccurredMessage>(this);
         WeakReferenceMessenger.Default.Register<DragStartedMessage>(this);
         WeakReferenceMessenger.Default.Register<DragCompletedMessage>(this);
+        WeakReferenceMessenger.Default.Register<ToggleDevRibbonMessage>(this);
 
         // Hide our titlebar.
         // We need to both ExtendsContentIntoTitleBar, then set the height to Collapsed
@@ -206,7 +210,8 @@ public sealed partial class MainWindow : WindowEx,
         // Add dev ribbon if enabled
         if (!BuildInfo.IsCiBuild)
         {
-            RootElement.Children.Add(new DevRibbon { Margin = new Thickness(-1, -1, 120, -1) });
+            _devRibbon = new DevRibbon { Margin = new Thickness(-1, -1, 120, -1) };
+            RootElement.Children.Add(_devRibbon);
         }
     }
 
@@ -1010,6 +1015,11 @@ public sealed partial class MainWindow : WindowEx,
         _localKeyboardListener.Dispose();
         _windowThemeSynchronizer.Dispose();
         DisposeAcrylic();
+    }
+
+    public void Receive(ToggleDevRibbonMessage message)
+    {
+        _devRibbon?.Visibility = _devRibbon.Visibility == Visibility.Visible ? Visibility.Collapsed : Visibility.Visible;
     }
 
     public void Receive(DragStartedMessage message)
