@@ -157,7 +157,10 @@
                                                     <controls:IconLabelControl ActionType="Program" Label="{x:Bind AppName}" />
                                                 </StackPanel>
                                             </StackPanel>
-                                            <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                            <StackPanel
+                                                Grid.Column="1"
+                                                Orientation="Horizontal"
+                                                Spacing="8">
                                                 <!--  TO DO: Add ToggleSwitch  -->
                                                 <Button
                                                     VerticalAlignment="Center"
@@ -239,7 +242,10 @@
                                                     <controls:IconLabelControl ActionType="Program" Label="{x:Bind AppName}" />
                                                 </StackPanel>
                                             </StackPanel>
-                                            <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                            <StackPanel
+                                                Grid.Column="1"
+                                                Orientation="Horizontal"
+                                                Spacing="8">
                                                 <!--  TO DO: Add ToggleSwitch  -->
                                                 <Button
                                                     VerticalAlignment="Center"
@@ -315,7 +321,6 @@
                                             </StackPanel>
                                             <StackPanel
                                                 Grid.Column="1"
-                                                Margin="0,0,4,0"
                                                 VerticalAlignment="Center"
                                                 Orientation="Horizontal"
                                                 Spacing="8">
@@ -394,7 +399,10 @@
                                                     Style="{StaticResource RemappedIconLabelControlStyle}" />
 
                                             </StackPanel>
-                                            <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                            <StackPanel
+                                                Grid.Column="1"
+                                                Orientation="Horizontal"
+                                                Spacing="8">
                                                 <ToggleSwitch
                                                     IsOn="{x:Bind IsActive}"
                                                     Style="{StaticResource RightAlignedCompactToggleSwitchStyle}"
