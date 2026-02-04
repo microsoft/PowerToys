@@ -9,6 +9,10 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Helpers
     /// <summary>
     /// Provides helper methods for working with PowerToys modules.
     /// </summary>
+    /// <remarks>
+    /// This class centralizes module-related utility methods used throughout
+    /// the Settings UI for consistent module handling and display.
+    /// </remarks>
     public static class ModuleHelper
     {
         /// <summary>
