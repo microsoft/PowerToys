@@ -861,6 +861,7 @@ VideoRecordingSession::VideoRecordingSession(
     uint32_t frameRate,
     bool captureAudio,
     bool captureSystemAudio,
+    bool micMonoMix,
     winrt::Streams::IRandomAccessStream const& stream)
 {
     m_device = device;
@@ -964,7 +965,7 @@ VideoRecordingSession::VideoRecordingSession(
     winrt::check_hresult(m_d3dDevice->CreateRenderTargetView(backBuffer.get(), nullptr, m_renderTargetView.put()));
 
     // Always create audio generator for loopback capture; captureAudio controls microphone
-    m_audioGenerator = std::make_unique<AudioSampleGenerator>(captureAudio, captureSystemAudio);
+    m_audioGenerator = std::make_unique<AudioSampleGenerator>(captureAudio, captureSystemAudio, micMonoMix);
 }
 
 
@@ -1112,9 +1113,10 @@ std::shared_ptr<VideoRecordingSession> VideoRecordingSession::Create(
     uint32_t frameRate,
     bool captureAudio,
     bool captureSystemAudio,
+    bool micMonoMix,
     winrt::Streams::IRandomAccessStream const& stream)
 {
-    return std::shared_ptr<VideoRecordingSession>(new VideoRecordingSession(device, item, crop, frameRate, captureAudio, captureSystemAudio, stream));
+    return std::shared_ptr<VideoRecordingSession>(new VideoRecordingSession(device, item, crop, frameRate, captureAudio, captureSystemAudio, micMonoMix, stream));
 }
 
 //----------------------------------------------------------------------------
