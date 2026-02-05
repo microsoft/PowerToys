@@ -87,6 +87,7 @@
             CustomContextMenu="{x:Bind BrowserPreviewer.CustomContextMenu, Mode=OneWay}"
             DOMContentLoaded="BrowserPreview_DOMContentLoaded"
             FlowDirection="LeftToRight"
+            FullScreenChanged="BrowserPreview_FullScreenChanged"
             IsDevFilePreview="{x:Bind BrowserPreviewer.IsDevFilePreview, Mode=OneWay}"
             NavigationCompleted="PreviewBrowser_NavigationCompleted"
             Source="{x:Bind BrowserPreviewer.Preview, Mode=OneWay}"
