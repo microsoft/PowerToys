@@ -76,13 +76,14 @@ namespace ImageResizer.ViewModels
 
             var selectedSizeIndex = Settings.SelectedSizeIndex;
             var shrinkOnly = Settings.ShrinkOnly;
-            var replace = Settings.Replace;
+
+            // Replace is intentionally NOT preserved - safety default per #30340
             var ignoreOrientation = Settings.IgnoreOrientation;
 
             Settings.Reload();
             Settings.SelectedSizeIndex = selectedSizeIndex;
             Settings.ShrinkOnly = shrinkOnly;
-            Settings.Replace = replace;
+            Settings.Replace = false; // Always reset to safe default
             Settings.IgnoreOrientation = ignoreOrientation;
         }
     }
