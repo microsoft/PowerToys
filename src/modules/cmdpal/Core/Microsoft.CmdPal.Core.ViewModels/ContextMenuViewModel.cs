@@ -15,7 +15,7 @@ namespace Microsoft.CmdPal.Core.ViewModels;
 
 public partial class ContextMenuViewModel : ObservableObject
 {
-    public ICommandBarContext? SelectedItem
+    public IContextMenuContext? SelectedItem
     {
         get => field;
         set
