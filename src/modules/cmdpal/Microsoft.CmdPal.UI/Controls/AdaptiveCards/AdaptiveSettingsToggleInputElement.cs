@@ -13,7 +13,7 @@ using Windows.Data.Json;
 
 namespace Microsoft.CmdPal.UI.Controls.AdaptiveCards;
 
-internal sealed class AdaptiveSettingsToggleInputElement : IAdaptiveInputElement, IAdaptiveCardElement, ICustomAdaptiveCardElement
+internal sealed partial class AdaptiveSettingsToggleInputElement : IAdaptiveInputElement, IAdaptiveCardElement, ICustomAdaptiveCardElement
 {
     public static string CustomInputType => "SettingsCard.Input.Toggle";
 
@@ -54,7 +54,7 @@ internal sealed class AdaptiveSettingsToggleInputElement : IAdaptiveInputElement
     public string? Header { get; set; }
 }
 
-internal sealed class AdaptiveSettingsToggleInputParser : IAdaptiveElementParser
+internal sealed partial class AdaptiveSettingsToggleInputParser : IAdaptiveElementParser
 {
     public IAdaptiveCardElement FromJson(JsonObject inputJson, AdaptiveElementParserRegistration elementParsers, AdaptiveActionParserRegistration actionParsers, IList<AdaptiveWarning> warnings)
     {
@@ -71,7 +71,7 @@ internal sealed class AdaptiveSettingsToggleInputParser : IAdaptiveElementParser
     }
 }
 
-internal sealed class AdaptiveSettingsToggleInputValue : IAdaptiveInputValue
+internal sealed partial class AdaptiveSettingsToggleInputValue : IAdaptiveInputValue
 {
     public SettingsCard Card { get; }
 
@@ -99,7 +99,7 @@ internal sealed class AdaptiveSettingsToggleInputValue : IAdaptiveInputValue
     }
 }
 
-internal sealed class AdaptiveSettingsToggleInputElementRenderer : IAdaptiveElementRenderer
+internal sealed partial class AdaptiveSettingsToggleInputElementRenderer : IAdaptiveElementRenderer
 {
     public UIElement Render(IAdaptiveCardElement element, AdaptiveRenderContext context, AdaptiveRenderArgs renderArgs)
     {

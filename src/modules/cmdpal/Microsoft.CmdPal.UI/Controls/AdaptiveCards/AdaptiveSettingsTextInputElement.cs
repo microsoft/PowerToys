@@ -13,7 +13,7 @@ using Windows.Data.Json;
 
 namespace Microsoft.CmdPal.UI.Controls.AdaptiveCards;
 
-internal sealed class AdaptiveSettingsTextInputElement : IAdaptiveInputElement, IAdaptiveCardElement, ICustomAdaptiveCardElement
+internal sealed partial class AdaptiveSettingsTextInputElement : IAdaptiveInputElement, IAdaptiveCardElement, ICustomAdaptiveCardElement
 {
     public static string CustomInputType => "SettingsCard.Input.Text";
 
@@ -75,7 +75,7 @@ public partial class AdaptiveSettingsTextInputParser : IAdaptiveElementParser
     }
 }
 
-internal sealed class AdaptiveSettingsTextInputValue : IAdaptiveInputValue
+internal sealed partial class AdaptiveSettingsTextInputValue : IAdaptiveInputValue
 {
     public AdaptiveSettingsTextInputValue(AdaptiveSettingsTextInputElement element, SettingsCard card)
     {
@@ -102,7 +102,7 @@ internal sealed class AdaptiveSettingsTextInputValue : IAdaptiveInputValue
     }
 }
 
-internal sealed class AdaptiveSettingsTextInputElementRenderer : IAdaptiveElementRenderer
+internal sealed partial class AdaptiveSettingsTextInputElementRenderer : IAdaptiveElementRenderer
 {
     public UIElement Render(IAdaptiveCardElement element, AdaptiveRenderContext context, AdaptiveRenderArgs renderArgs)
     {

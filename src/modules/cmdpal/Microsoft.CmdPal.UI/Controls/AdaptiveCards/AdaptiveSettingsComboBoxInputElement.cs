@@ -13,7 +13,7 @@ using Windows.Data.Json;
 
 namespace Microsoft.CmdPal.UI.Controls.AdaptiveCards;
 
-internal sealed class AdaptiveSettingsComboBoxInputElement : IAdaptiveInputElement, IAdaptiveCardElement, ICustomAdaptiveCardElement
+internal sealed partial class AdaptiveSettingsComboBoxInputElement : IAdaptiveInputElement, IAdaptiveCardElement, ICustomAdaptiveCardElement
 {
     public static string CustomInputType => "SettingsCard.Input.ComboBox";
 
@@ -56,7 +56,7 @@ internal sealed class AdaptiveSettingsComboBoxInputElement : IAdaptiveInputEleme
     public string? Label { get; set; }
 }
 
-internal sealed class AdaptiveSettingsComboBoxInputParser : IAdaptiveElementParser
+internal sealed partial class AdaptiveSettingsComboBoxInputParser : IAdaptiveElementParser
 {
     public IAdaptiveCardElement FromJson(
         JsonObject inputJson,
@@ -92,7 +92,7 @@ internal sealed class AdaptiveSettingsComboBoxInputParser : IAdaptiveElementPars
     }
 }
 
-internal sealed class ComboBoxWithValue : IAdaptiveInputValue
+internal sealed partial class ComboBoxWithValue : IAdaptiveInputValue
 {
     public ComboBoxWithValue(AdaptiveSettingsComboBoxInputElement element, SettingsCard card)
     {
@@ -135,7 +135,7 @@ internal sealed class ComboBoxWithValue : IAdaptiveInputValue
     }
 }
 
-internal sealed class AdaptiveSettingsComboBoxInputRenderer : IAdaptiveElementRenderer
+internal sealed partial class AdaptiveSettingsComboBoxInputRenderer : IAdaptiveElementRenderer
 {
     public UIElement Render(IAdaptiveCardElement element, AdaptiveRenderContext context, AdaptiveRenderArgs renderArgs)
     {

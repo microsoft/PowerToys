@@ -12,7 +12,7 @@ using Windows.Data.Json;
 
 namespace Microsoft.CmdPal.UI.Controls.AdaptiveCards;
 
-internal sealed class AdaptiveSettingsCheckBoxInputElement : IAdaptiveInputElement, IAdaptiveCardElement, ICustomAdaptiveCardElement
+internal sealed partial class AdaptiveSettingsCheckBoxInputElement : IAdaptiveInputElement, IAdaptiveCardElement, ICustomAdaptiveCardElement
 {
     public static string CustomInputType => "SettingsCard.Input.CheckBox";
 
@@ -53,7 +53,7 @@ internal sealed class AdaptiveSettingsCheckBoxInputElement : IAdaptiveInputEleme
     public string? Header { get; set; }
 }
 
-internal sealed class AdaptiveSettingsCheckBoxInputParser : IAdaptiveElementParser
+internal sealed partial class AdaptiveSettingsCheckBoxInputParser : IAdaptiveElementParser
 {
     public IAdaptiveCardElement FromJson(JsonObject inputJson, AdaptiveElementParserRegistration elementParsers, AdaptiveActionParserRegistration actionParsers, IList<AdaptiveWarning> warnings)
     {
@@ -70,7 +70,7 @@ internal sealed class AdaptiveSettingsCheckBoxInputParser : IAdaptiveElementPars
     }
 }
 
-internal sealed class CheckBoxInputValue : IAdaptiveInputValue
+internal sealed partial class CheckBoxInputValue : IAdaptiveInputValue
 {
     public SettingsCard Card { get; }
 
@@ -98,7 +98,7 @@ internal sealed class CheckBoxInputValue : IAdaptiveInputValue
     }
 }
 
-internal sealed class AdaptiveSettingsCheckBoxInputRenderer : IAdaptiveElementRenderer
+internal sealed partial class AdaptiveSettingsCheckBoxInputRenderer : IAdaptiveElementRenderer
 {
     public UIElement Render(IAdaptiveCardElement element, AdaptiveRenderContext context, AdaptiveRenderArgs renderArgs)
     {

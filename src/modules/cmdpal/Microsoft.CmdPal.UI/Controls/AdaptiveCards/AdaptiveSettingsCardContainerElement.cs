@@ -12,7 +12,7 @@ using Windows.Data.Json;
 
 namespace Microsoft.CmdPal.UI.Controls.AdaptiveCards;
 
-internal sealed class AdaptiveSettingsCardContainerElement : IAdaptiveCardElement, ICustomAdaptiveCardElement
+internal sealed partial class AdaptiveSettingsCardContainerElement : IAdaptiveCardElement, ICustomAdaptiveCardElement
 {
     public static string CustomInputType => "SettingsCard.Container";
 
@@ -47,7 +47,7 @@ internal sealed class AdaptiveSettingsCardContainerElement : IAdaptiveCardElemen
     public Spacing Spacing { get; set; }
 }
 
-internal sealed class AdaptiveSettingsCardContainerElementParser : IAdaptiveElementParser
+internal sealed partial class AdaptiveSettingsCardContainerElementParser : IAdaptiveElementParser
 {
     public IAdaptiveCardElement FromJson(
         JsonObject inputJson,
@@ -76,7 +76,7 @@ internal sealed class AdaptiveSettingsCardContainerElementParser : IAdaptiveElem
     }
 }
 
-internal sealed class AdaptiveSettingsCardContainerElementRenderer : IAdaptiveElementRenderer
+internal sealed partial class AdaptiveSettingsCardContainerElementRenderer : IAdaptiveElementRenderer
 {
     public UIElement Render(IAdaptiveCardElement element, AdaptiveRenderContext context, AdaptiveRenderArgs renderArgs)
     {
