@@ -9,6 +9,7 @@
 #include <common/SettingsAPI/settings_helpers.h>
 #include "powertoy_module.h"
 #include <common/themes/windows_colors.h>
+#include <common/logger/logger.h>
 
 #include "trace.h"
 #include "ai_detection.h"

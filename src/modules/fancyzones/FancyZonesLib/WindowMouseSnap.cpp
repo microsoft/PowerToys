@@ -10,8 +10,10 @@
 
 #include <FancyZonesLib/trace.h>
 
+#include <common/logger/logger.h>
 #include <common/utils/elevation.h>
 #include <common/utils/resources.h>
+#include <common/utils/winapi_error.h>
 
 WindowMouseSnap::WindowMouseSnap(HWND window, const std::unordered_map<HMONITOR, std::unique_ptr<WorkArea>>& activeWorkAreas) :
     m_window(window),

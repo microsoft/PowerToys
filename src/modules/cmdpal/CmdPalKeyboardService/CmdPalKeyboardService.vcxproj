@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="15.0"
-  xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.props')" />
   <PropertyGroup Label="Globals">
     <CppWinRTRootNamespaceAutoMerge>true</CppWinRTRootNamespaceAutoMerge>
@@ -10,7 +9,6 @@
     <RootNamespace>CmdPalKeyboardService</RootNamespace>
     <AppxPackage>false</AppxPackage>
   </PropertyGroup>
-
   <!-- BEGIN common.build.pre.props -->
   <PropertyGroup Label="Configuration">
     <EnableHybridCRT>true</EnableHybridCRT>
@@ -30,7 +28,8 @@
     <AppContainerApplication>true</AppContainerApplication>
     <WindowsStoreApp>true</WindowsStoreApp>
     <ApplicationType>Windows Store</ApplicationType>
-    <UseCrtSDKReference Condition="'$(EnableHybridCRT)'=='true'">false</UseCrtSDKReference> <!-- The SDK reference breaks the Hybrid CRT -->
+    <UseCrtSDKReference Condition="'$(EnableHybridCRT)'=='true'">false</UseCrtSDKReference>
+    <!-- The SDK reference breaks the Hybrid CRT -->
   </PropertyGroup>
   <PropertyGroup>
     <!-- We have to use the Desktop platform for Hybrid CRT to work. -->
@@ -38,11 +37,9 @@
     <_NoWinAPIFamilyApp>true</_NoWinAPIFamilyApp>
   </PropertyGroup>
   <!-- END cppwinrt.build.pre.props -->
-
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
-    
     <CharacterSet>Unicode</CharacterSet>
     <GenerateManifest>false</GenerateManifest>
   </PropertyGroup>
@@ -55,9 +52,7 @@
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
-
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
-
   <ImportGroup Label="ExtensionSettings">
   </ImportGroup>
   <ImportGroup Label="Shared">
@@ -128,7 +123,6 @@
   <ItemGroup>
     <None Include="PropertySheet.props" />
   </ItemGroup>
-
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <Import Project="..\..\..\..\deps\spdlog.props" />
   <ImportGroup Label="ExtensionTargets">
@@ -141,7 +135,6 @@
     <Error Condition="!Exists('..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.props'))" />
     <Error Condition="!Exists('..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.targets'))" />
   </Target>
-
   <!-- BEGIN common.build.post.props -->
   <!--
     The Hybrid CRT model statically links the runtime and STL and dynamically
@@ -179,5 +172,9 @@
     </Link>
   </ItemDefinitionGroup>
   <!-- END common.build.post.props -->
-
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\common\utils\CommonUtils.vcxproj">
+      <Project>{74485049-C722-400F-ABE5-86AC41736D21}</Project>
+    </ProjectReference>
+  </ItemGroup>
 </Project>

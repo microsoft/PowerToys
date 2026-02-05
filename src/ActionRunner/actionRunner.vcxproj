@@ -12,7 +12,6 @@
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Label="Configuration">
-    
   </PropertyGroup>
   <Import Project="..\..\deps\expected.props" />
   <PropertyGroup>
@@ -46,6 +45,9 @@
     </ProjectReference>
     <ProjectReference Include="..\common\SettingsAPI\SettingsAPI.vcxproj">
       <Project>{6955446d-23f7-4023-9bb3-8657f904af99}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\common\utils\CommonUtils.vcxproj">
+      <Project>{74485049-C722-400F-ABE5-86AC41736D21}</Project>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

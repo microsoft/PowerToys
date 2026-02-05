@@ -4,7 +4,6 @@
 #include <shldisp.h>
 #include <exdisp.h>
 #include <comdef.h>
-#include <fmt/format.h>
 
 #include <common/logger/logger.h>
 #include <common/utils/winapi_error.h>
@@ -331,7 +330,7 @@ std::optional<ProcessInfo> RunNonElevatedFailsafe(const std::wstring& file, cons
     {
         Logger::warn(L"RunNonElevatedEx() failed. Trying fallback");
         std::wstring action_runner_path = get_module_folderpath() + L"\\PowerToys.ActionRunner.exe";
-        std::wstring newParams = fmt::format(L"-run-non-elevated -target \"{}\" {}", file, params);
+        std::wstring newParams = L"-run-non-elevated -target \"" + file + L"\" " + params;
         launched = run_non_elevated(action_runner_path, newParams, nullptr, working_dir.c_str());
         if (launched)
         {

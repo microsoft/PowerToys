@@ -2,7 +2,11 @@
   "permissions": {
     "allow": [
       "Bash(grep:*)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(powershell -File:*)",
+      "Bash(Select-Object -Last 60)",
+      "Bash(tee:*)",
+      "Bash(powershell -ExecutionPolicy Bypass -Command \"cd ''C:\\\\Users\\\\kaitao\\\\codes\\\\PowerToys''; $vswhere = ''C:\\\\Program Files \\(x86\\)\\\\Microsoft Visual Studio\\\\Installer\\\\vswhere.exe''; $msbuild = & $vswhere -latest -requires Microsoft.Component.MSBuild -find ''MSBuild\\\\**\\\\Bin\\\\MSBuild.exe'' | Select-Object -First 1; Write-Host \"\"Using: $msbuild\"\"; & $msbuild src\\\\common\\\\utils\\\\CommonUtils.vcxproj /p:Configuration=Release /p:Platform=x64 2>&1\")"
     ]
   }
 }

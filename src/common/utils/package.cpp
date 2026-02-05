@@ -152,7 +152,7 @@ namespace package
             {
                 const auto& packageFullName = std::wstring{ package.Id().FullName() };
 
-                if (packageFullName.contains(pkgDisplayName))
+                if (packageFullName.find(pkgDisplayName) != std::wstring::npos)
                 {
                     auto deploymentOperation{ packageManager.RemovePackageAsync(packageFullName) };
                     deploymentOperation.get();

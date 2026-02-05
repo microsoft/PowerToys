@@ -57,6 +57,7 @@
     <Project Path="src/common/UnitTests-CommonLib/UnitTests-CommonLib.vcxproj" Id="1a066c63-64b3-45f8-92fe-664e1cce8077" />
     <Project Path="src/common/UnitTests-CommonUtils/UnitTests-CommonUtils.vcxproj" Id="8b5cfb38-ccba-40a8-ad7a-89c57b070884" />
     <Project Path="src/common/updating/updating.vcxproj" Id="17da04df-e393-4397-9cf0-84dabe11032e" />
+    <Project Path="src/common/utils/CommonUtils.vcxproj" Id="74485049-c722-400f-abe5-86ac41736d21" />
     <Project Path="src/common/version/version.vcxproj" Id="cc6e41ac-8174-4e8a-8d22-85dd7f4851df" />
   </Folder>
   <Folder Name="/common/interop/">

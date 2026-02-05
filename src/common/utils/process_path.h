@@ -118,5 +118,5 @@ inline std::wstring get_module_folderpath(HMODULE mod = nullptr, const bool remo
     {
         PathRemoveFileSpecW(buffer);
     }
-    return { buffer, static_cast<uint64_t>(lstrlenW(buffer))};
+    return { buffer, static_cast<size_t>(lstrlenW(buffer))};
 }

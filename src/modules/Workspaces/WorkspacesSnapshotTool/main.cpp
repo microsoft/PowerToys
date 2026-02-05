@@ -13,6 +13,7 @@
 #include <common/utils/gpo.h>
 #include <common/utils/logger_helper.h>
 #include <common/utils/UnhandledExceptionHandler.h>
+#include <common/utils/winapi_error.h>
 #include <WorkspacesLib/utils.h>
 
 const std::wstring moduleName = L"Workspaces\\WorkspacesSnapshotTool";

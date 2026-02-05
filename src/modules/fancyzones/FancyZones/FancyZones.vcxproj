@@ -57,7 +57,6 @@
   <!-- Props that are constant for both Debug and Release configurations -->
   <PropertyGroup Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
-    
     <CharacterSet>Unicode</CharacterSet>
     <SpectreMitigation>Spectre</SpectreMitigation>
   </PropertyGroup>
@@ -151,6 +150,9 @@
     </ProjectReference>
     <ProjectReference Include="..\FancyZonesLib\FancyZonesLib.vcxproj">
       <Project>{f9c68edf-ac74-4b77-9af1-005d9c9f6a99}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\common\utils\CommonUtils.vcxproj">
+      <Project>{74485049-C722-400F-ABE5-86AC41736D21}</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

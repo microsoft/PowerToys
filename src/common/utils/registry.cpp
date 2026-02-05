@@ -122,7 +122,7 @@ namespace registry
                     }
                     RegCloseKey(perUserKey);
 
-                    if (data.contains(L"perUser"))
+                    if (data.find(L"perUser") != std::wstring::npos)
                     {
                         return InstallScope::PerUser;
                     }

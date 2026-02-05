@@ -102,7 +102,7 @@ namespace package
             const auto& packageFullName = std::wstring{ package.Id().FullName() };
             const auto& packageVersion = package.Id().Version();
 
-            if (packageFullName.contains(packageDisplayName))
+            if (packageFullName.find(packageDisplayName) != std::wstring::npos)
             {
                 // If checkVersion is true, verify if the package has the same version as PowerToys.
                 if ((!checkVersion) || (packageVersion.Major == VERSION_MAJOR && packageVersion.Minor == VERSION_MINOR && packageVersion.Revision == VERSION_REVISION))
