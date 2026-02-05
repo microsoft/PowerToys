@@ -359,7 +359,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
         private void InitializeIndexFileAndSelectedFile(string filePath)
         {
             Logger.LogInfo("Starting getting monaco language id out of filetype");
-            _vsCodeLangSet = FileHandler.GetLanguage(Path.GetExtension(filePath));
+            _vsCodeLangSet = FileHandler.GetLanguage(Path.GetExtension(filePath), Path.GetFileName(filePath));
 
             DetectionResult result = CharsetDetector.DetectFromFile(filePath);
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);

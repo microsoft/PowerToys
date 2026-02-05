@@ -17,6 +17,7 @@ namespace Peek.FilePreviewer.Previewers
     public class MonacoHelper
     {
         public static readonly HashSet<string> SupportedMonacoFileTypes = GetExtensions();
+        public static readonly HashSet<string> SupportedMonacoFileNames = GetFileNames();
 
         public static HashSet<string> GetExtensions()
         {
@@ -45,18 +46,55 @@ namespace Peek.FilePreviewer.Previewers
             return set;
         }
 
+        public static HashSet<string> GetFileNames()
+        {
+            HashSet<string> set = new(StringComparer.OrdinalIgnoreCase);
+
+            try
+            {
+                using JsonDocument languageListDocument = Microsoft.PowerToys.FilePreviewCommon.MonacoHelper.GetLanguages();
+                JsonElement languageList = languageListDocument.RootElement.GetProperty("list");
+                foreach (JsonElement e in languageList.EnumerateArray())
+                {
+                    if (e.TryGetProperty("filenames", out var filenames))
+                    {
+                        for (int j = 0; j < filenames.GetArrayLength(); j++)
+                        {
+                            set.Add(filenames[j].ToString());
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Failed to get monaco filenames: " + ex.Message);
+            }
+
+            return set;
+        }
+
         /// <summary>
         /// Prepares temp html for the previewing
         /// </summary>
-        public static string PreviewTempFile(string fileText, string extension, string tempFolder, bool tryFormat, bool wrapText, bool stickyScroll, int fontSize, bool minimap)
+        public static string PreviewTempFile(string fileText, string extension, string fileName, string tempFolder, bool tryFormat, bool wrapText, bool stickyScroll, int fontSize, bool minimap)
         {
             // TODO: check if file is too big, add MaxFileSize to settings
-            return InitializeIndexFileAndSelectedFile(fileText, extension, tempFolder, tryFormat, wrapText, stickyScroll, fontSize, minimap);
+            return InitializeIndexFileAndSelectedFile(fileText, extension, fileName, tempFolder, tryFormat, wrapText, stickyScroll, fontSize, minimap);
         }
 
-        private static string InitializeIndexFileAndSelectedFile(string fileContent, string extension, string tempFolder, bool tryFormat, bool wrapText, bool stickyScroll, int fontSize, bool minimap)
+        private static string InitializeIndexFileAndSelectedFile(string fileContent, string extension, string fileName, string tempFolder, bool tryFormat, bool wrapText, bool stickyScroll, int fontSize, bool minimap)
         {
             string vsCodeLangSet = Microsoft.PowerToys.FilePreviewCommon.MonacoHelper.GetLanguage(extension);
+
+            // Fallback to filename matching for files without extensions (e.g., Dockerfile)
+            if (vsCodeLangSet == "plaintext" && !string.IsNullOrEmpty(fileName))
+            {
+                string languageByFileName = Microsoft.PowerToys.FilePreviewCommon.MonacoHelper.GetLanguageByFileName(fileName);
+                if (languageByFileName != null)
+                {
+                    vsCodeLangSet = languageByFileName;
+                }
+            }
 
             if (tryFormat)
             {

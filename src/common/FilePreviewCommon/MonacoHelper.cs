@@ -101,6 +101,81 @@ namespace Microsoft.PowerToys.FilePreviewCommon
             }
         }
 
+        /// <summary>
+        /// Converts a filename to a Monaco language ID based on the filenames array.
+        /// </summary>
+        /// <param name="fileName">The filename (e.g., "Dockerfile", not full path).</param>
+        /// <returns>The Monaco language ID, or null if no match found.</returns>
+        public static string? GetLanguageByFileName(string fileName)
+        {
+            if (string.IsNullOrEmpty(fileName))
+            {
+                return null;
+            }
+
+            try
+            {
+                JsonDocument languageListDocument = GetLanguages();
+                JsonElement languageList = languageListDocument.RootElement.GetProperty("list");
+
+                foreach (JsonElement e in languageList.EnumerateArray())
+                {
+                    if (e.TryGetProperty("filenames", out var filenames))
+                    {
+                        for (int j = 0; j < filenames.GetArrayLength(); j++)
+                        {
+                            if (string.Equals(filenames[j].GetString(), fileName, StringComparison.OrdinalIgnoreCase))
+                            {
+                                return e.GetProperty("id").GetString() ?? "plaintext";
+                            }
+                        }
+                    }
+                }
+
+                return null;
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Gets all filenames defined in the Monaco languages configuration.
+        /// </summary>
+        /// <returns>A HashSet of supported filenames (case-insensitive comparison recommended).</returns>
+        public static HashSet<string> GetSupportedFileNames()
+        {
+            HashSet<string> set = new(StringComparer.OrdinalIgnoreCase);
+
+            try
+            {
+                JsonDocument languageListDocument = GetLanguages();
+                JsonElement languageList = languageListDocument.RootElement.GetProperty("list");
+
+                foreach (JsonElement e in languageList.EnumerateArray())
+                {
+                    if (e.TryGetProperty("filenames", out var filenames))
+                    {
+                        for (int j = 0; j < filenames.GetArrayLength(); j++)
+                        {
+                            var filename = filenames[j].GetString();
+                            if (filename != null)
+                            {
+                                set.Add(filename);
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                // Return empty set on failure
+            }
+
+            return set;
+        }
+
         public static string ReadIndexHtml()
         {
             string html;

@@ -114,6 +114,7 @@ namespace Peek.FilePreviewer.Previewers
                 await Dispatcher.RunOnUiThread(async () =>
                 {
                     string extension = File.Extension;
+                    string fileName = File.Name;
 
                     // Default: non-dev file preview with standard context menu
                     IsDevFilePreview = false;
@@ -137,13 +138,13 @@ namespace Peek.FilePreviewer.Previewers
                         // Simple html file to preview. Shouldn't do things like enabling scripts or using a virtual mapped directory.
                         Preview = new Uri(File.Path);
                     }
-                    else if (MonacoHelper.SupportedMonacoFileTypes.Contains(extension))
+                    else if (MonacoHelper.SupportedMonacoFileTypes.Contains(extension) || MonacoHelper.SupportedMonacoFileNames.Contains(fileName))
                     {
                         // Source code files use Monaco editor
                         IsDevFilePreview = true;
                         CustomContextMenu = true;
                         var raw = await ReadHelper.Read(File.Path.ToString());
-                        Preview = new Uri(MonacoHelper.PreviewTempFile(raw, extension, TempFolderPath.Path, _previewSettings.SourceCodeTryFormat, _previewSettings.SourceCodeWrapText, _previewSettings.SourceCodeStickyScroll, _previewSettings.SourceCodeFontSize, _previewSettings.SourceCodeMinimap));
+                        Preview = new Uri(MonacoHelper.PreviewTempFile(raw, extension, fileName, TempFolderPath.Path, _previewSettings.SourceCodeTryFormat, _previewSettings.SourceCodeWrapText, _previewSettings.SourceCodeStickyScroll, _previewSettings.SourceCodeFontSize, _previewSettings.SourceCodeMinimap));
                     }
                     else
                     {
@@ -165,7 +166,9 @@ namespace Peek.FilePreviewer.Previewers
 
         public static bool IsItemSupported(IFileSystemItem item)
         {
-            return _supportedFileTypes.Contains(item.Extension) || MonacoHelper.SupportedMonacoFileTypes.Contains(item.Extension);
+            return _supportedFileTypes.Contains(item.Extension) ||
+                   MonacoHelper.SupportedMonacoFileTypes.Contains(item.Extension) ||
+                   MonacoHelper.SupportedMonacoFileNames.Contains(item.Name);
         }
 
         private bool HasFailedLoadingPreview()
