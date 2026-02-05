@@ -68,6 +68,7 @@ Once you've discussed your proposed feature/fix/etc. with a team member, and an 
 - Add the `In progress` label to the issue, if not already present. Also add a `Cost-Small/Medium/Large` estimate and make sure all appropriate labels are set.
 - If you are a community contributor, you will not be able to add labels to the issue; in that case just add a comment saying that you have started work on the issue and try to give an estimate for the delivery date.
 - If the work item has a medium/large cost, using the markdown task list, list each sub item and update the list with a check mark after completing each sub item.
+- **Before opening a PR, ensure your changes build successfully locally and functionality tests pass.**
 - When opening a PR, follow the PR template.
 - When you'd like the team to take a look (even if the work is not yet fully complete) mark the PR as 'Ready For Review' so that the team can review your work and provide comments, suggestions, and request changes. It may take several cycles, but the end result will be solid, testable, conformant code that is safe for us to merge.
 - When the PR is approved, let the owner of the PR merge it. For community contributions, the reviewer who approved the PR can also merge it.
