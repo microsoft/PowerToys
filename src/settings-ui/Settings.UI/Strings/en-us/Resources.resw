@@ -2744,7 +2744,19 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="MouseUtils_CursorWrap_WrapMode_Both.Content" xml:space="preserve">
     <value>Vertical and horizontal</value>
   </data>
-  <data name="Oobe_MouseUtils_MousePointerCrosshairs.Text" xml:space="preserve">
+	<data name="MouseUtils_CursorWrap_StickyEdge.Content" xml:space="preserve">
+  <value>Enable sticky edge</value>
+  <comment>Checkbox to enable sticky edge behavior - cursor must stay at edge before wrapping</comment>
+  </data>
+    <data name="MouseUtils_CursorWrap_StickyEdgeDelay.Header" xml:space="preserve">
+    <value>Sticky edge delay (ms)</value>
+    <comment>Header for the sticky edge delay setting</comment>
+  </data>
+  <data name="MouseUtils_CursorWrap_StickyEdgeDelay.Description" xml:space="preserve">
+    <value>Time in milliseconds the cursor must stay at the edge before wrapping (250-1000)</value>
+    <comment>Description for the sticky edge delay setting</comment>
+  </data>
+	<data name="Oobe_MouseUtils_MousePointerCrosshairs.Text" xml:space="preserve">
     <value>Mouse Pointer Crosshairs</value>
     <comment>Mouse as in the hardware peripheral.</comment>
   </data>

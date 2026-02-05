@@ -116,6 +116,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             // Null-safe access in case property wasn't upgraded yet - default to 0 (Both)
             _cursorWrapWrapMode = CursorWrapSettingsConfig.Properties.WrapMode?.Value ?? 0;
 
+            // Null-safe access in case property wasn't upgraded yet - default to false
+            _cursorWrapStickyEdgeEnabled = CursorWrapSettingsConfig.Properties.StickyEdgeEnabled?.Value ?? false;
+
+            // Null-safe access in case property wasn't upgraded yet - default to 250ms
+            _cursorWrapStickyEdgeDelayMs = CursorWrapSettingsConfig.Properties.StickyEdgeDelayMs?.Value ?? 250;
+
             int isEnabled = 0;
 
             Utilities.NativeMethods.SystemParametersInfo(Utilities.NativeMethods.SPI_GETCLIENTAREAANIMATION, 0, ref isEnabled, 0);
@@ -1114,6 +1120,62 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public bool CursorWrapStickyEdgeEnabled
+        {
+            get
+            {
+                return _cursorWrapStickyEdgeEnabled;
+            }
+
+            set
+            {
+                if (value != _cursorWrapStickyEdgeEnabled)
+                {
+                    _cursorWrapStickyEdgeEnabled = value;
+
+                    // Ensure the property exists before setting value
+                    if (CursorWrapSettingsConfig.Properties.StickyEdgeEnabled == null)
+                    {
+                        CursorWrapSettingsConfig.Properties.StickyEdgeEnabled = new BoolProperty(value);
+                    }
+                    else
+                    {
+                        CursorWrapSettingsConfig.Properties.StickyEdgeEnabled.Value = value;
+                    }
+
+                    NotifyCursorWrapPropertyChanged();
+                }
+            }
+        }
+
+        public int CursorWrapStickyEdgeDelayMs
+        {
+            get
+            {
+                return _cursorWrapStickyEdgeDelayMs;
+            }
+
+            set
+            {
+                if (value != _cursorWrapStickyEdgeDelayMs)
+                {
+                    _cursorWrapStickyEdgeDelayMs = value;
+
+                    // Ensure the property exists before setting value
+                    if (CursorWrapSettingsConfig.Properties.StickyEdgeDelayMs == null)
+                    {
+                        CursorWrapSettingsConfig.Properties.StickyEdgeDelayMs = new IntProperty(value);
+                    }
+                    else
+                    {
+                        CursorWrapSettingsConfig.Properties.StickyEdgeDelayMs.Value = value;
+                    }
+
+                    NotifyCursorWrapPropertyChanged();
+                }
+            }
+        }
+
         public void NotifyCursorWrapPropertyChanged([CallerMemberName] string propertyName = null)
         {
             OnPropertyChanged(propertyName);
@@ -1186,5 +1248,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private bool _cursorWrapAutoActivate;
         private bool _cursorWrapDisableWrapDuringDrag; // Will be initialized in constructor from settings
         private int _cursorWrapWrapMode; // 0=Both, 1=VerticalOnly, 2=HorizontalOnly
+        private bool _cursorWrapStickyEdgeEnabled; // Enable sticky edge behavior
+        private int _cursorWrapStickyEdgeDelayMs; // Delay in milliseconds before wrap
     }
 }

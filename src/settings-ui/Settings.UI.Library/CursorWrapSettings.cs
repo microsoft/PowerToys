@@ -56,6 +56,20 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 settingsUpgraded = true;
             }
 
+            // Add StickyEdgeEnabled property if it doesn't exist (for users upgrading from older versions)
+            if (Properties.StickyEdgeEnabled == null)
+            {
+                Properties.StickyEdgeEnabled = new BoolProperty(false); // Default to disabled
+                settingsUpgraded = true;
+            }
+
+            // Add StickyEdgeDelayMs property if it doesn't exist (for users upgrading from older versions)
+            if (Properties.StickyEdgeDelayMs == null)
+            {
+                Properties.StickyEdgeDelayMs = new IntProperty(250); // Default to 0.25 seconds
+                settingsUpgraded = true;
+            }
+
             return settingsUpgraded;
         }
     }

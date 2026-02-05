@@ -11,6 +11,28 @@
 
 CursorWrapCore::CursorWrapCore()
 {
+    ResetStickyEdgeState();
+}
+
+void CursorWrapCore::ResetStickyEdgeState()
+{
+    m_stickyEdgeActive = false;
+    m_stickyEdgeStartTime = 0;
+    m_stickyEdgePosition = {0, 0};
+    m_stickyEdgeType = EdgeType::Left;
+    m_stickyEdgeMonitor = nullptr;
+}
+
+// Static configuration for future extensibility (not exposed to users yet)
+namespace
+{
+    // When true, movement parallel to the edge doesn't reset the sticky timer
+    // e.g., vertical movement while on a left/right edge, or horizontal movement on top/bottom edge
+    static constexpr bool s_allowParallelMovement = false;
+    
+    // When true, small movements (wobble) don't reset the sticky timer
+    static constexpr bool s_allowWobbleTolerance = false;
+    static constexpr int s_wobbleTolerancePixels = 3; // Max pixels of wobble allowed
 }
 
 #ifdef _DEBUG
@@ -163,14 +185,17 @@ void CursorWrapCore::UpdateMonitorInfo()
     Logger::info(L"======= UPDATE MONITOR INFO END =======");
 }
 
-POINT CursorWrapCore::HandleMouseMove(const POINT& currentPos, bool disableWrapDuringDrag, int wrapMode)
+POINT CursorWrapCore::HandleMouseMove(const POINT& currentPos, bool disableWrapDuringDrag, int wrapMode,
+                                       bool stickyEdgeEnabled, int stickyEdgeDelayMs)
 {
     // Check if wrapping should be disabled during drag
+    // Sticky edge is also disabled during drag
     if (disableWrapDuringDrag && (GetAsyncKeyState(VK_LBUTTON) & 0x8000))
     {
 #ifdef _DEBUG
         OutputDebugStringW(L"[CursorWrap] [DRAG] Left mouse button down - skipping wrap\n");
 #endif
+        ResetStickyEdgeState();
         return currentPos;
     }
 
@@ -227,7 +252,9 @@ POINT CursorWrapCore::HandleMouseMove(const POINT& currentPos, bool disableWrapD
             lastWasNotOuter = true;
         }
 #endif
-        return currentPos; // Not on an outer edge
+        // Not on an outer edge - reset sticky state
+        ResetStickyEdgeState();
+        return currentPos;
     }
 
 #ifdef _DEBUG
@@ -245,6 +272,110 @@ POINT CursorWrapCore::HandleMouseMove(const POINT& currentPos, bool disableWrapD
         OutputDebugStringW(oss.str().c_str());
     }
 #endif
+
+    // Handle sticky edge behavior if enabled
+    if (stickyEdgeEnabled)
+    {
+        ULONGLONG currentTime = GetTickCount64();
+        
+        // Check if this is a new sticky edge trigger or continuation
+        if (!m_stickyEdgeActive)
+        {
+            // Start new sticky edge timer
+            m_stickyEdgeActive = true;
+            m_stickyEdgeStartTime = currentTime;
+            m_stickyEdgePosition = currentPos;
+            m_stickyEdgeType = edgeType;
+            m_stickyEdgeMonitor = currentMonitor;
+            
+#ifdef _DEBUG
+            OutputDebugStringW(L"[CursorWrap] [STICKY] Started sticky edge timer\n");
+#endif
+            return currentPos; // Don't wrap yet, wait for timer
+        }
+        
+        // Sticky edge is active - check if cursor has moved
+        bool cursorMoved = false;
+        
+        // Check for movement that would reset the timer
+        int deltaX = currentPos.x - m_stickyEdgePosition.x;
+        int deltaY = currentPos.y - m_stickyEdgePosition.y;
+        
+        if (s_allowWobbleTolerance)
+        {
+            // Allow small wobble without resetting
+            if (abs(deltaX) > s_wobbleTolerancePixels || abs(deltaY) > s_wobbleTolerancePixels)
+            {
+                cursorMoved = true;
+            }
+        }
+        else if (s_allowParallelMovement)
+        {
+            // Only reset if movement is perpendicular to the edge
+            bool isHorizontalEdge = (edgeType == EdgeType::Top || edgeType == EdgeType::Bottom);
+            bool isVerticalEdge = (edgeType == EdgeType::Left || edgeType == EdgeType::Right);
+            
+            if (isVerticalEdge && deltaX != 0)
+            {
+                cursorMoved = true; // Horizontal movement on vertical edge resets
+            }
+            else if (isHorizontalEdge && deltaY != 0)
+            {
+                cursorMoved = true; // Vertical movement on horizontal edge resets
+            }
+        }
+        else
+        {
+            // Default: any movement resets the timer
+            if (deltaX != 0 || deltaY != 0)
+            {
+                cursorMoved = true;
+            }
+        }
+        
+        // Also reset if edge type or monitor changed
+        if (edgeType != m_stickyEdgeType || currentMonitor != m_stickyEdgeMonitor)
+        {
+            cursorMoved = true;
+        }
+        
+        if (cursorMoved)
+        {
+            // Cursor moved - restart the timer
+            m_stickyEdgeStartTime = currentTime;
+            m_stickyEdgePosition = currentPos;
+            m_stickyEdgeType = edgeType;
+            m_stickyEdgeMonitor = currentMonitor;
+            
+#ifdef _DEBUG
+            OutputDebugStringW(L"[CursorWrap] [STICKY] Cursor moved - restarting timer\n");
+#endif
+            return currentPos; // Don't wrap yet
+        }
+        
+        // Check if timer has elapsed
+        ULONGLONG elapsed = currentTime - m_stickyEdgeStartTime;
+        if (elapsed < static_cast<ULONGLONG>(stickyEdgeDelayMs))
+        {
+#ifdef _DEBUG
+            static ULONGLONG lastLogTime = 0;
+            if (currentTime - lastLogTime > 100) // Log every 100ms to avoid spam
+            {
+                std::wostringstream oss;
+                oss << L"[CursorWrap] [STICKY] Waiting... " << elapsed << L"ms / " << stickyEdgeDelayMs << L"ms\n";
+                OutputDebugStringW(oss.str().c_str());
+                lastLogTime = currentTime;
+            }
+#endif
+            return currentPos; // Still waiting
+        }
+        
+#ifdef _DEBUG
+        OutputDebugStringW(L"[CursorWrap] [STICKY] Timer elapsed - triggering wrap!\n");
+#endif
+        // Timer elapsed - reset state and proceed with wrap
+        ResetStickyEdgeState();
+    }
 
     // Calculate wrap destination
     POINT newPos = m_topology.GetWrapDestination(currentMonitor, currentPos, edgeType);

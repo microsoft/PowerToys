@@ -25,12 +25,20 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("wrap_mode")]
         public IntProperty WrapMode { get; set; }
 
+        [JsonPropertyName("sticky_edge_enabled")]
+        public BoolProperty StickyEdgeEnabled { get; set; }
+
+        [JsonPropertyName("sticky_edge_delay_ms")]
+        public IntProperty StickyEdgeDelayMs { get; set; }
+
         public CursorWrapProperties()
         {
             ActivationShortcut = DefaultActivationShortcut;
             AutoActivate = new BoolProperty(false);
             DisableWrapDuringDrag = new BoolProperty(true);
             WrapMode = new IntProperty(0); // 0=Both (default), 1=VerticalOnly, 2=HorizontalOnly
+            StickyEdgeEnabled = new BoolProperty(false); // Default to disabled
+            StickyEdgeDelayMs = new IntProperty(250); // Default to 0.25 seconds
         }
     }
 }

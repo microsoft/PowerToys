@@ -54,6 +54,8 @@ namespace
     const wchar_t JSON_KEY_AUTO_ACTIVATE[] = L"auto_activate";
     const wchar_t JSON_KEY_DISABLE_WRAP_DURING_DRAG[] = L"disable_wrap_during_drag";
     const wchar_t JSON_KEY_WRAP_MODE[] = L"wrap_mode";
+    const wchar_t JSON_KEY_STICKY_EDGE_ENABLED[] = L"sticky_edge_enabled";
+    const wchar_t JSON_KEY_STICKY_EDGE_DELAY_MS[] = L"sticky_edge_delay_ms";
 }
 
 // The PowerToy name that will be shown in the settings.
@@ -76,13 +78,15 @@ static CursorWrap* g_cursorWrapInstance = nullptr;
 class CursorWrap : public PowertoyModuleIface
 {
 private:
-    // The PowerToy state.
-    bool m_enabled = false;
-    bool m_autoActivate = false;
-    bool m_disableWrapDuringDrag = true; // Default to true to prevent wrap during drag
-    int m_wrapMode = 0; // 0=Both (default), 1=VerticalOnly, 2=HorizontalOnly
+// The PowerToy state.
+bool m_enabled = false;
+bool m_autoActivate = false;
+bool m_disableWrapDuringDrag = true; // Default to true to prevent wrap during drag
+int m_wrapMode = 0; // 0=Both (default), 1=VerticalOnly, 2=HorizontalOnly
+bool m_stickyEdgeEnabled = false; // Default to disabled
+int m_stickyEdgeDelayMs = 250; // Default to 0.25 seconds
     
-    // Mouse hook
+// Mouse hook
     HHOOK m_mouseHook = nullptr;
     std::atomic<bool> m_hookActive{ false };
     
@@ -415,6 +419,36 @@ private:
             {
                 Logger::warn("Failed to initialize CursorWrap wrap mode from settings. Will use default value (0=Both)");
             }
+            
+            try
+            {
+                // Parse sticky edge enabled
+                auto propertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES);
+                if (propertiesObject.HasKey(JSON_KEY_STICKY_EDGE_ENABLED))
+                {
+                    auto stickyEdgeObject = propertiesObject.GetNamedObject(JSON_KEY_STICKY_EDGE_ENABLED);
+                    m_stickyEdgeEnabled = stickyEdgeObject.GetNamedBoolean(JSON_KEY_VALUE);
+                }
+            }
+            catch (...)
+            {
+                Logger::warn("Failed to initialize CursorWrap sticky edge enabled from settings. Will use default value (false)");
+            }
+            
+            try
+            {
+                // Parse sticky edge delay
+                auto propertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES);
+                if (propertiesObject.HasKey(JSON_KEY_STICKY_EDGE_DELAY_MS))
+                {
+                    auto stickyDelayObject = propertiesObject.GetNamedObject(JSON_KEY_STICKY_EDGE_DELAY_MS);
+                    m_stickyEdgeDelayMs = static_cast<int>(stickyDelayObject.GetNamedNumber(JSON_KEY_VALUE));
+                }
+            }
+            catch (...)
+            {
+                Logger::warn("Failed to initialize CursorWrap sticky edge delay from settings. Will use default value (250ms)");
+            }
         }
         else
         {
@@ -646,7 +680,9 @@ private:
                 POINT newPos = g_cursorWrapInstance->m_core.HandleMouseMove(
                     currentPos,
                     g_cursorWrapInstance->m_disableWrapDuringDrag,
-                    g_cursorWrapInstance->m_wrapMode);
+                    g_cursorWrapInstance->m_wrapMode,
+                    g_cursorWrapInstance->m_stickyEdgeEnabled,
+                    g_cursorWrapInstance->m_stickyEdgeDelayMs);
                     
                 if (newPos.x != currentPos.x || newPos.y != currentPos.y)
                 {

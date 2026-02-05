@@ -54,6 +54,22 @@
                                     <ComboBoxItem x:Uid="MouseUtils_CursorWrap_WrapMode_HorizontalOnly" />
                                 </ComboBox>
                             </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard ContentAlignment="Left" IsEnabled="{x:Bind ViewModel.IsCursorWrapEnabled, Mode=OneWay}">
+                                <CheckBox x:Uid="MouseUtils_CursorWrap_StickyEdge" IsChecked="{x:Bind ViewModel.CursorWrapStickyEdgeEnabled, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard
+                                Name="MouseUtilsCursorWrapStickyEdgeDelay"
+                                x:Uid="MouseUtils_CursorWrap_StickyEdgeDelay"
+                                IsEnabled="{x:Bind ViewModel.CursorWrapStickyEdgeEnabled, Mode=OneWay}">
+                                <NumberBox
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    LargeChange="250"
+                                    Maximum="1000"
+                                    Minimum="250"
+                                    SmallChange="50"
+                                    SpinButtonPlacementMode="Compact"
+                                    Value="{x:Bind Path=ViewModel.CursorWrapStickyEdgeDelayMs, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
                 </controls:SettingsGroup>
