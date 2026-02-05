@@ -79,8 +79,6 @@ public sealed partial class ContentFormControl : UserControl
         this.InitializeComponent();
         var lightTheme = ActualTheme == Microsoft.UI.Xaml.ElementTheme.Light;
         _renderer.HostConfig = lightTheme ? AdaptiveCardsConfig.Light : AdaptiveCardsConfig.Dark;
-
-        // TODO: #1 padding of entire adaptive card
         _renderer.HostConfig.Spacing.Padding = 0;
 
         // 5% BODGY: if we set this multiple times over the lifetime of the app,

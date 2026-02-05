@@ -51,7 +51,6 @@
                 TreeTemplate="{StaticResource TreeContentTemplate}" />
 
             <DataTemplate x:Key="FormContentTemplate" x:DataType="viewModels:ContentFormViewModel">
-                <!--  // TODO: #2 another padding  -->
                 <Grid Margin="{StaticResource ContentPageContentMargin}" Padding="{StaticResource ContentPageContentPadding}">
                     <cmdPalControls:ContentFormControl ViewModel="{x:Bind}" />
                 </Grid>
