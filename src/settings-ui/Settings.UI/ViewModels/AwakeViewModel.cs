@@ -96,6 +96,27 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public bool IsScreenConfigurationPossibleEnabled => ModuleSettings.Properties.Mode != AwakeMode.PASSIVE && IsEnabled;
 
+        public bool IsLidConfigurationPossibleEnabled => ModuleSettings.Properties.Mode != AwakeMode.PASSIVE && IsEnabled && IsLidPresentOnDevice;
+
+        public bool IsLidPresentOnDevice
+        {
+            get => _isLidPresentOnDevice;
+            private set
+            {
+                if (_isLidPresentOnDevice != value)
+                {
+                    _isLidPresentOnDevice = value;
+                    OnPropertyChanged(nameof(IsLidPresentOnDevice));
+                    OnPropertyChanged(nameof(IsLidConfigurationPossibleEnabled));
+                }
+            }
+        }
+
+        public void SetLidPresent(bool lidPresent)
+        {
+            IsLidPresentOnDevice = lidPresent;
+        }
+
         public AwakeMode Mode
         {
             get => ModuleSettings.Properties.Mode;
@@ -128,6 +149,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     OnPropertyChanged(nameof(IsTimeConfigurationEnabled));
                     OnPropertyChanged(nameof(IsScreenConfigurationPossibleEnabled));
                     OnPropertyChanged(nameof(IsExpirationConfigurationEnabled));
+                    OnPropertyChanged(nameof(IsLidConfigurationPossibleEnabled));
 
                     NotifyPropertyChanged();
                 }
@@ -142,6 +164,19 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 if (ModuleSettings.Properties.KeepDisplayOn != value)
                 {
                     ModuleSettings.Properties.KeepDisplayOn = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
+        public bool KeepAwakeOnLidClose
+        {
+            get => ModuleSettings.Properties.KeepAwakeOnLidClose;
+            set
+            {
+                if (ModuleSettings.Properties.KeepAwakeOnLidClose != value)
+                {
+                    ModuleSettings.Properties.KeepAwakeOnLidClose = value;
                     NotifyPropertyChanged();
                 }
             }
@@ -210,12 +245,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             OnPropertyChanged(nameof(IsTimeConfigurationEnabled));
             OnPropertyChanged(nameof(IsScreenConfigurationPossibleEnabled));
             OnPropertyChanged(nameof(IsExpirationConfigurationEnabled));
+            OnPropertyChanged(nameof(IsLidConfigurationPossibleEnabled));
         }
 
         public void RefreshModuleSettings()
         {
             OnPropertyChanged(nameof(Mode));
             OnPropertyChanged(nameof(KeepDisplayOn));
+            OnPropertyChanged(nameof(KeepAwakeOnLidClose));
             OnPropertyChanged(nameof(IntervalHours));
             OnPropertyChanged(nameof(IntervalMinutes));
             OnPropertyChanged(nameof(ExpirationDateTime));
@@ -225,5 +262,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private bool _enabledGPOConfiguration;
         private AwakeSettings _moduleSettings;
         private bool _isEnabled;
+        private bool _isLidPresentOnDevice;
     }
 }

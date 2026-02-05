@@ -99,6 +99,14 @@
                         IsEnabled="{x:Bind ViewModel.IsScreenConfigurationPossibleEnabled, Mode=OneWay}">
                         <ToggleSwitch IsOn="{x:Bind ViewModel.KeepDisplayOn, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
+
+                    <tkcontrols:SettingsCard
+                        x:Uid="Awake_LidSettingsCard"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE7F7;}"
+                        IsEnabled="{x:Bind ViewModel.IsLidConfigurationPossibleEnabled, Mode=OneWay}"
+                        Visibility="{x:Bind ViewModel.IsLidPresentOnDevice, Mode=OneWay}">
+                        <ToggleSwitch IsOn="{x:Bind ViewModel.KeepAwakeOnLidClose, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
             </StackPanel>
         </controls:SettingsPageControl.ModuleContent>
