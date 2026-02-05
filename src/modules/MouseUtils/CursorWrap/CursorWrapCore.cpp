@@ -14,13 +14,110 @@ CursorWrapCore::CursorWrapCore()
     ResetStickyEdgeState();
 }
 
+CursorWrapCore::~CursorWrapCore()
+{
+    CancelStickyEdgeTimer();
+}
+
 void CursorWrapCore::ResetStickyEdgeState()
 {
+    CancelStickyEdgeTimer();
     m_stickyEdgeActive = false;
-    m_stickyEdgeStartTime = 0;
     m_stickyEdgePosition = {0, 0};
     m_stickyEdgeType = EdgeType::Left;
     m_stickyEdgeMonitor = nullptr;
+}
+
+void CursorWrapCore::SetStickyEdgeWrapCallback(std::function<void(POINT)> callback)
+{
+    m_wrapCallback = callback;
+}
+
+void CursorWrapCore::StartStickyEdgeTimer(int delayMs)
+{
+    CancelStickyEdgeTimer();
+    
+    m_stickyEdgeTimer = CreateThreadpoolTimer(StickyEdgeTimerCallback, this, nullptr);
+    if (m_stickyEdgeTimer)
+    {
+        // Negative value means relative time in 100-nanosecond intervals
+        FILETIME dueTime;
+        LARGE_INTEGER li;
+        li.QuadPart = -static_cast<LONGLONG>(delayMs) * 10000LL; // Convert ms to 100-ns intervals
+        dueTime.dwLowDateTime = li.LowPart;
+        dueTime.dwHighDateTime = li.HighPart;
+        
+        SetThreadpoolTimer(m_stickyEdgeTimer, &dueTime, 0, 0);
+        
+        Logger::info(L"CursorWrap: Started sticky edge timer for {}ms", delayMs);
+    }
+}
+
+void CursorWrapCore::CancelStickyEdgeTimer()
+{
+    if (m_stickyEdgeTimer)
+    {
+        SetThreadpoolTimer(m_stickyEdgeTimer, nullptr, 0, 0);
+        WaitForThreadpoolTimerCallbacks(m_stickyEdgeTimer, TRUE);
+        CloseThreadpoolTimer(m_stickyEdgeTimer);
+        m_stickyEdgeTimer = nullptr;
+        
+        Logger::info(L"CursorWrap: Cancelled sticky edge timer");
+    }
+}
+
+void CALLBACK CursorWrapCore::StickyEdgeTimerCallback(PTP_CALLBACK_INSTANCE /*instance*/, PVOID context, PTP_TIMER /*timer*/)
+{
+    auto* self = static_cast<CursorWrapCore*>(context);
+    self->OnStickyEdgeTimerFired();
+}
+
+void CursorWrapCore::OnStickyEdgeTimerFired()
+{
+    Logger::info(L"CursorWrap: Sticky edge timer fired!");
+    
+    if (!m_stickyEdgeActive)
+    {
+        Logger::info(L"CursorWrap: Timer fired but sticky edge no longer active");
+        return;
+    }
+    
+    // Get current cursor position
+    POINT currentPos;
+    if (!GetCursorPos(&currentPos))
+    {
+        Logger::warn(L"CursorWrap: Failed to get cursor position in timer callback");
+        ResetStickyEdgeState();
+        return;
+    }
+    
+    // Check if cursor is still on the same outer edge
+    HMONITOR currentMonitor = MonitorFromPoint(currentPos, MONITOR_DEFAULTTONEAREST);
+    WrapMode mode = static_cast<WrapMode>(m_currentWrapMode);
+    EdgeType edgeType;
+    
+    if (!m_topology.IsOnOuterEdge(currentMonitor, currentPos, edgeType, mode))
+    {
+        Logger::info(L"CursorWrap: Cursor no longer on outer edge - cancelling wrap");
+        ResetStickyEdgeState();
+        return;
+    }
+    
+    // Calculate wrap destination
+    POINT newPos = m_topology.GetWrapDestination(currentMonitor, currentPos, edgeType);
+    
+    Logger::info(L"CursorWrap: Performing sticky edge wrap from ({}, {}) to ({}, {})", 
+                 currentPos.x, currentPos.y, newPos.x, newPos.y);
+    
+    // Reset state before performing wrap
+    m_stickyEdgeActive = false;
+    m_stickyEdgeTimer = nullptr; // Timer has fired, don't close it again
+    
+    // Perform the wrap via callback (which calls SetCursorPos)
+    if (m_wrapCallback && (newPos.x != currentPos.x || newPos.y != currentPos.y))
+    {
+        m_wrapCallback(newPos);
+    }
 }
 
 // Static configuration for future extensibility (not exposed to users yet)
@@ -276,21 +373,22 @@ POINT CursorWrapCore::HandleMouseMove(const POINT& currentPos, bool disableWrapD
     // Handle sticky edge behavior if enabled
     if (stickyEdgeEnabled)
     {
-        ULONGLONG currentTime = GetTickCount64();
+        // Cache wrap mode for timer callback
+        m_currentWrapMode = wrapMode;
         
         // Check if this is a new sticky edge trigger or continuation
         if (!m_stickyEdgeActive)
         {
             // Start new sticky edge timer
             m_stickyEdgeActive = true;
-            m_stickyEdgeStartTime = currentTime;
             m_stickyEdgePosition = currentPos;
             m_stickyEdgeType = edgeType;
             m_stickyEdgeMonitor = currentMonitor;
             
-#ifdef _DEBUG
-            OutputDebugStringW(L"[CursorWrap] [STICKY] Started sticky edge timer\n");
-#endif
+            // Start the timer - when it fires, it will perform the wrap if cursor is still at edge
+            StartStickyEdgeTimer(stickyEdgeDelayMs);
+            
+            Logger::info(L"CursorWrap: [STICKY] Started sticky edge timer at ({}, {})", currentPos.x, currentPos.y);
             return currentPos; // Don't wrap yet, wait for timer
         }
         
@@ -341,40 +439,21 @@ POINT CursorWrapCore::HandleMouseMove(const POINT& currentPos, bool disableWrapD
         
         if (cursorMoved)
         {
-            // Cursor moved - restart the timer
-            m_stickyEdgeStartTime = currentTime;
+            // Cursor moved - cancel current timer and restart
+            CancelStickyEdgeTimer();
             m_stickyEdgePosition = currentPos;
             m_stickyEdgeType = edgeType;
             m_stickyEdgeMonitor = currentMonitor;
             
-#ifdef _DEBUG
-            OutputDebugStringW(L"[CursorWrap] [STICKY] Cursor moved - restarting timer\n");
-#endif
+            // Restart the timer
+            StartStickyEdgeTimer(stickyEdgeDelayMs);
+            
+            Logger::info(L"CursorWrap: [STICKY] Cursor moved - restarting timer at ({}, {})", currentPos.x, currentPos.y);
             return currentPos; // Don't wrap yet
         }
         
-        // Check if timer has elapsed
-        ULONGLONG elapsed = currentTime - m_stickyEdgeStartTime;
-        if (elapsed < static_cast<ULONGLONG>(stickyEdgeDelayMs))
-        {
-#ifdef _DEBUG
-            static ULONGLONG lastLogTime = 0;
-            if (currentTime - lastLogTime > 100) // Log every 100ms to avoid spam
-            {
-                std::wostringstream oss;
-                oss << L"[CursorWrap] [STICKY] Waiting... " << elapsed << L"ms / " << stickyEdgeDelayMs << L"ms\n";
-                OutputDebugStringW(oss.str().c_str());
-                lastLogTime = currentTime;
-            }
-#endif
-            return currentPos; // Still waiting
-        }
-        
-#ifdef _DEBUG
-        OutputDebugStringW(L"[CursorWrap] [STICKY] Timer elapsed - triggering wrap!\n");
-#endif
-        // Timer elapsed - reset state and proceed with wrap
-        ResetStickyEdgeState();
+        // Cursor hasn't moved significantly - timer is still running, just return current position
+        return currentPos;
     }
 
     // Calculate wrap destination

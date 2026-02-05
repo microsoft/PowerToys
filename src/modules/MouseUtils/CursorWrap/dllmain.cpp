@@ -477,6 +477,12 @@ private:
         // Refresh monitor info before starting hook
         m_core.UpdateMonitorInfo();
         
+        // Set up the callback for sticky edge timer-based wrapping
+        m_core.SetStickyEdgeWrapCallback([](POINT newPos) {
+            Logger::info(L"CursorWrap: Sticky edge callback - setting cursor to ({}, {})", newPos.x, newPos.y);
+            SetCursorPos(newPos.x, newPos.y);
+        });
+        
         m_mouseHook = SetWindowsHookEx(WH_MOUSE_LL, MouseHookProc, GetModuleHandle(nullptr), 0);
         if (m_mouseHook)
         {
