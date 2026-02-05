@@ -85,7 +85,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [CmdConfigureIgnoreAttribute]
         public ImageResizerCustomSizeProperty ImageresizerCustomSize { get; set; }
 
-        [JsonPropertyName("bool_show_extended_menu")]
+        [JsonPropertyName("ExtendedContextMenuOnly")]
         public BoolProperty ExtendedContextMenuOnly { get; set; }
 
         public string ToJsonString()
