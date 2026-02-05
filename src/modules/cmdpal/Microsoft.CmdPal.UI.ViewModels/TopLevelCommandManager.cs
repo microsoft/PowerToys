@@ -53,7 +53,7 @@ public partial class TopLevelCommandManager : ObservableObject,
     {
         get
         {
-            lock (_commandProviderWrappersLock)
+            lock (_commandProviderWrappers)
             {
                 return _commandProviderWrappers.ToList();
             }
@@ -63,7 +63,7 @@ public partial class TopLevelCommandManager : ObservableObject,
     [RelayCommand]
     public async Task LoadExtensionsAsync()
     {
-        lock (_commandProviderWrappersLock)
+        lock (_commandProviderWrappers)
         {
             _commandProviderWrappers.Clear();
         }
@@ -80,7 +80,7 @@ public partial class TopLevelCommandManager : ObservableObject,
             _ = Task.Run(async () =>
             {
                 var providers = await extensionService.GetCommandProviderWrappersAsync(weakSelf);
-                lock (_commandProviderWrappersLock)
+                lock (_commandProviderWrappers)
                 {
                     _commandProviderWrappers.AddRange(providers);
                 }
@@ -184,7 +184,7 @@ public partial class TopLevelCommandManager : ObservableObject,
 
     internal bool IsProviderActive(string id)
     {
-        lock (_commandProviderWrappersLock)
+        lock (_commandProviderWrappers)
         {
             return _commandProviderWrappers.Any(wrapper => wrapper.Id == id && wrapper.IsActive);
         }

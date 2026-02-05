@@ -4,6 +4,4 @@
 
 namespace Microsoft.CmdPal.UI.ViewModels.Messages;
 
-public record ReloadCommandsMessage()
-{
-}
+public record ReloadCommandsMessage();
