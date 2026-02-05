@@ -59,6 +59,7 @@ stages:
             enableMsBuildCaching: ${{ parameters.enableMsBuildCaching }}
             msBuildCacheIsReadOnly: ${{ parameters.msBuildCacheIsReadOnly }}
             runTests: ${{ parameters.runTests }}
+            buildTests: true
             useVSPreview: ${{ parameters.useVSPreview }}
             useLatestWinAppSDK: ${{ parameters.useLatestWinAppSDK }}
             ${{ if eq(parameters.useLatestWinAppSDK, true) }}:
@@ -78,7 +79,9 @@ stages:
             ${{ else }}:
               name: SHINE-OSS-L
             ${{ if eq(parameters.useVSPreview, true) }}:
-              demands: ImageOverride -equals SHINE-VS17-Preview
+              demands: ImageOverride -equals SHINE-VS18-Preview
+            ${{ else }}:
+              demands: ImageOverride -equals SHINE-VS18-Latest
           buildConfigurations: [Release]
           official: false
           codeSign: false
