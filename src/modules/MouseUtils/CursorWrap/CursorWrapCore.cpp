@@ -163,8 +163,22 @@ void CursorWrapCore::UpdateMonitorInfo()
     Logger::info(L"======= UPDATE MONITOR INFO END =======");
 }
 
-POINT CursorWrapCore::HandleMouseMove(const POINT& currentPos, bool disableWrapDuringDrag, int wrapMode)
+POINT CursorWrapCore::HandleMouseMove(const POINT& currentPos, bool disableWrapDuringDrag, int wrapMode, bool disableOnSingleMonitor)
 {
+    // Check if wrapping should be disabled on single monitor
+    if (disableOnSingleMonitor && m_monitors.size() <= 1)
+    {
+#ifdef _DEBUG
+        static bool loggedOnce = false;
+        if (!loggedOnce)
+        {
+            OutputDebugStringW(L"[CursorWrap] Single monitor detected - cursor wrapping disabled\n");
+            loggedOnce = true;
+        }
+#endif
+        return currentPos;
+    }
+
     // Check if wrapping should be disabled during drag
     if (disableWrapDuringDrag && (GetAsyncKeyState(VK_LBUTTON) & 0x8000))
     {
