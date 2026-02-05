@@ -15,7 +15,7 @@ public partial class CommandItem : BaseObservable, ICommandItem
     // appropriate.
     //
     // Putting it directly here will cause out-of-proc extensions to fail to
-    // load the context menu commands, for unknown cswinrt reasons.
+    // load the context menu commands, for unknown CsWinRT reasons.
     private readonly PropertySet _extendedAttributes = new();
 
     private ICommand? _command;
