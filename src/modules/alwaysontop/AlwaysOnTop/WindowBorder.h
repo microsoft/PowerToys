@@ -2,6 +2,8 @@
 
 #include <SettingsObserver.h>
 
+#include <memory>
+
 class FrameDrawer;
 
 class WindowBorder : public SettingsObserver
@@ -15,6 +17,7 @@ public:
 
     void UpdateBorderPosition() const;
     void UpdateBorderProperties() const;
+    HWND Hwnd() const noexcept { return m_window; }
 
 protected:
     static LRESULT CALLBACK s_WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lparam) noexcept

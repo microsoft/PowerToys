@@ -16,6 +16,11 @@
 #include <trace.h>
 #include <WinHookEventIDs.h>
 
+#include <dwmapi.h>
+#include <ScalingUtils.h>
+#include <WindowCornersUtil.h>
+
+#include <cmath>
 
 namespace NonLocalizable
 {
@@ -29,6 +34,14 @@ bool isExcluded(HWND window)
     CharUpperBuffW(processPath.data(), static_cast<DWORD>(processPath.length()));
 
     return check_excluded_app(window, processPath, AlwaysOnTopSettings::settings().excludedApps);
+}
+
+namespace
+{
+    bool TryGetExtendedFrameBounds(HWND window, RECT& rect) noexcept
+    {
+        return DwmGetWindowAttribute(window, DWMWA_EXTENDED_FRAME_BOUNDS, &rect, sizeof(rect)) == S_OK;
+    }
 }
 
 AlwaysOnTop::AlwaysOnTop(bool useLLKH, DWORD mainThreadId) :
@@ -47,6 +60,13 @@ AlwaysOnTop::AlwaysOnTop(bool useLLKH, DWORD mainThreadId) :
 
         AlwaysOnTopSettings::instance().InitFileWatcher();
         AlwaysOnTopSettings::instance().LoadSettings();
+
+        m_dimOverlay = std::make_unique<DimOverlay>();
+        if (!m_dimOverlay->Initialize(m_hinstance))
+        {
+            Logger::warn("Failed to initialize AlwaysOnTop dim overlay.");
+            m_dimOverlay.reset();
+        }
 
         RegisterHotkey();
         RegisterLLKH();
@@ -124,6 +144,7 @@ void AlwaysOnTop::SettingsUpdate(SettingId id)
                 iter.second = nullptr;
             }
         }    
+        UpdateDimOverlay();
     }
     break;
     case SettingId::ExcludeApps:
@@ -142,6 +163,7 @@ void AlwaysOnTop::SettingsUpdate(SettingId id)
         {
             m_topmostWindows.erase(window);
         }
+        UpdateDimOverlay();
     }
     break;
     default:
@@ -221,6 +243,8 @@ void AlwaysOnTop::ProcessCommand(HWND window)
         }
     }
 
+    UpdateDimOverlay();
+
     if (AlwaysOnTopSettings::settings().enableSound)
     {
         m_sound.Play(soundType);    
@@ -262,6 +286,7 @@ void AlwaysOnTop::StartTrackingTopmostWindows()
             AssignBorder(window);
         }
     }
+
 }
 
 bool AlwaysOnTop::AssignBorder(HWND window)
@@ -430,11 +455,18 @@ void AlwaysOnTop::UnpinAll()
 
     m_topmostWindows.clear();
     m_windowOriginalLayeredState.clear();
+
+    UpdateDimOverlay();
 }
 
 void AlwaysOnTop::CleanUp()
 {
     UnpinAll();
+    if (m_dimOverlay)
+    {
+        m_dimOverlay->Terminate();
+        m_dimOverlay.reset();
+    }
     if (m_window)
     {
         DestroyWindow(m_window);
@@ -492,10 +524,12 @@ bool AlwaysOnTop::IsTracked(HWND window) const noexcept
 
 void AlwaysOnTop::HandleWinHookEvent(WinHookEvent* data) noexcept
 {
-    if (!AlwaysOnTopSettings::settings().enableFrame || !data->hwnd)
+    if (!data->hwnd)
     {
         return;
     }
+
+    const bool frameEnabled = AlwaysOnTopSettings::settings().enableFrame;
 
     std::vector<HWND> toErase{};
     for (const auto& [window, border] : m_topmostWindows)
@@ -520,23 +554,29 @@ void AlwaysOnTop::HandleWinHookEvent(WinHookEvent* data) noexcept
     {
     case EVENT_OBJECT_LOCATIONCHANGE:
     {
-        auto iter = m_topmostWindows.find(data->hwnd);
-        if (iter != m_topmostWindows.end())
+        if (frameEnabled)
         {
-            const auto& border = iter->second;
-            if (border)
+            auto iter = m_topmostWindows.find(data->hwnd);
+            if (iter != m_topmostWindows.end())
             {
-                border->UpdateBorderPosition();
+                const auto& border = iter->second;
+                if (border)
+                {
+                    border->UpdateBorderPosition();
+                }
             }
         }
     }
     break;
     case EVENT_SYSTEM_MINIMIZESTART:
     {
-        auto iter = m_topmostWindows.find(data->hwnd);
-        if (iter != m_topmostWindows.end())
+        if (frameEnabled)
         {
-            m_topmostWindows[data->hwnd] = nullptr;
+            auto iter = m_topmostWindows.find(data->hwnd);
+            if (iter != m_topmostWindows.end())
+            {
+                m_topmostWindows[data->hwnd] = nullptr;
+            }
         }
     }
     break;
@@ -546,20 +586,26 @@ void AlwaysOnTop::HandleWinHookEvent(WinHookEvent* data) noexcept
         if (iter != m_topmostWindows.end())
         {
             // pin border again, in some cases topmost flag stops working: https://github.com/microsoft/PowerToys/issues/17332
-            PinTopmostWindow(data->hwnd); 
-            AssignBorder(data->hwnd);
+            PinTopmostWindow(data->hwnd);
+            if (frameEnabled)
+            {
+                AssignBorder(data->hwnd);
+            }
         }
     }
     break;
     case EVENT_SYSTEM_MOVESIZEEND:
     {
-        auto iter = m_topmostWindows.find(data->hwnd);
-        if (iter != m_topmostWindows.end())
+        if (frameEnabled)
         {
-            const auto& border = iter->second;
-            if (border)
+            auto iter = m_topmostWindows.find(data->hwnd);
+            if (iter != m_topmostWindows.end())
             {
-                border->UpdateBorderPosition();
+                const auto& border = iter->second;
+                if (border)
+                {
+                    border->UpdateBorderPosition();
+                }
             }
         }
     }
@@ -573,7 +619,10 @@ void AlwaysOnTop::HandleWinHookEvent(WinHookEvent* data) noexcept
                                                           GET_RESOURCE_STRING(IDS_SYSTEM_FOREGROUND_ELEVATED_LEARN_MORE),
                                                           GET_RESOURCE_STRING(IDS_SYSTEM_FOREGROUND_ELEVATED_DIALOG_DONT_SHOW_AGAIN));
         }
-        RefreshBorders();
+        if (frameEnabled)
+        {
+            RefreshBorders();
+        }
     }
     break;
     case EVENT_OBJECT_FOCUS:
@@ -593,6 +642,8 @@ void AlwaysOnTop::HandleWinHookEvent(WinHookEvent* data) noexcept
     default:
         break;
     }
+
+    UpdateDimOverlay();
 }
 
 void AlwaysOnTop::RefreshBorders()
@@ -612,6 +663,97 @@ void AlwaysOnTop::RefreshBorders()
             {
                 m_topmostWindows[window] = nullptr;
             }
+        }
+    }
+
+    UpdateDimOverlay();
+}
+
+void AlwaysOnTop::UpdateDimOverlay()
+{
+    if (!m_dimOverlay)
+    {
+        return;
+    }
+
+    struct PinnedEntry
+    {
+        HWND window = nullptr;
+        HWND border = nullptr;
+    };
+
+    std::vector<DimOverlayHole> holes;
+    std::vector<PinnedEntry> pinnedEntries;
+    holes.reserve(m_topmostWindows.size());
+    pinnedEntries.reserve(m_topmostWindows.size());
+
+    for (const auto& [window, border] : m_topmostWindows)
+    {
+        if (!IsWindow(window) || !IsPinned(window))
+        {
+            continue;
+        }
+
+        if (!IsWindowVisible(window) || IsIconic(window))
+        {
+            continue;
+        }
+
+        if (!m_virtualDesktopUtils.IsWindowOnCurrentDesktop(window))
+        {
+            continue;
+        }
+
+        RECT rect{};
+        if (!TryGetExtendedFrameBounds(window, rect))
+        {
+            if (!GetWindowRect(window, &rect))
+            {
+                continue;
+            }
+        }
+
+        int radius = WindowCornerUtils::CornersRadius(window);
+        if (radius > 0)
+        {
+            const float scale = ScalingUtils::ScalingFactor(window);
+            radius = static_cast<int>(std::lround(radius * scale));
+        }
+        else
+        {
+            radius = 0;
+        }
+
+        holes.push_back({ rect, radius });
+        pinnedEntries.push_back({ window, border ? border->Hwnd() : nullptr });
+    }
+
+    const bool visible = !holes.empty();
+    m_dimOverlay->Update(std::move(holes), visible);
+
+    if (!visible)
+    {
+        return;
+    }
+
+    const HWND overlayHwnd = m_dimOverlay->Hwnd();
+    if (!overlayHwnd)
+    {
+        return;
+    }
+
+    SetWindowPos(overlayHwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+
+    for (const auto& entry : pinnedEntries)
+    {
+        if (entry.border)
+        {
+            SetWindowPos(entry.border, overlayHwnd, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+            SetWindowPos(entry.window, entry.border, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+        }
+        else
+        {
+            SetWindowPos(entry.window, overlayHwnd, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
         }
     }
 }

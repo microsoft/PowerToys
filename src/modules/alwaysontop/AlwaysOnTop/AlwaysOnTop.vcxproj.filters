@@ -30,6 +30,9 @@
     <ClCompile Include="AlwaysOnTop.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="DimOverlay.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="FrameDrawer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -77,6 +80,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="AlwaysOnTop.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DimOverlay.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="FrameDrawer.h">

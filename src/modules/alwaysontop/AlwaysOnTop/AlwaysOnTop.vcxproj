@@ -121,6 +121,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="AlwaysOnTop.cpp" />
+    <ClCompile Include="DimOverlay.cpp" />
     <ClCompile Include="FrameDrawer.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="pch.cpp">
@@ -136,6 +137,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AlwaysOnTop.h" />
+    <ClInclude Include="DimOverlay.h" />
     <ClInclude Include="FrameDrawer.h" />
     <ClInclude Include="Generated Files/resource.h" />
     <ClInclude Include="ModuleConstants.h" />

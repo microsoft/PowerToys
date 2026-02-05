@@ -1,12 +1,14 @@
 #pragma once
 
 #include <map>
+#include <memory>
 
 #include <Settings.h>
 #include <SettingsObserver.h>
 #include <Sound.h>
 #include <VirtualDesktopUtils.h>
 #include <WindowBorder.h>
+#include <DimOverlay.h>
 
 #include <common/hooks/WinHookEvent.h>
 #include <common/notifications/NotificationUtil.h>
@@ -60,6 +62,8 @@ private:
         COLORREF colorKey = 0;
     };
     std::map<HWND, WindowLayeredState> m_windowOriginalLayeredState{};
+
+    std::unique_ptr<DimOverlay> m_dimOverlay;
     
     HANDLE m_hPinEvent;
     HANDLE m_hTerminateEvent;
@@ -92,6 +96,7 @@ private:
     bool UnpinTopmostWindow(HWND window) const noexcept;
     bool AssignBorder(HWND window);
     void RefreshBorders();
+    void UpdateDimOverlay();
 
     // Transparency methods
     HWND ResolveTransparencyTargetWindow(HWND window);
