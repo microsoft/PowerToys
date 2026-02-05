@@ -84,6 +84,7 @@ private:
     void SubscribeToEvents();
 
     void ProcessCommand(HWND window);
+    void MinimizeOtherWindows(HWND pinnedWindow);
     void StartTrackingTopmostWindows();
     void UnpinAll();
     void CleanUp();

@@ -238,6 +238,7 @@ void AlwaysOnTop::ProcessCommand(HWND window)
         {
             soundType = Sound::Type::On;
             AssignBorder(window);
+            MinimizeOtherWindows(window);
             
             Trace::AlwaysOnTop::PinWindow();
         }
@@ -249,6 +250,58 @@ void AlwaysOnTop::ProcessCommand(HWND window)
     {
         m_sound.Play(soundType);    
     }
+}
+
+void AlwaysOnTop::MinimizeOtherWindows(HWND pinnedWindow)
+{
+    struct EnumState
+    {
+        AlwaysOnTop* self{};
+        HWND pinned{};
+    };
+
+    EnumState state{ this, pinnedWindow };
+    EnumWindows([](HWND window, LPARAM lparam) -> BOOL {
+        auto* state = reinterpret_cast<EnumState*>(lparam);
+        if (!state || !state->self)
+        {
+            return FALSE;
+        }
+
+        if (window == state->pinned)
+        {
+            return TRUE;
+        }
+
+        if (!IsWindowVisible(window) || IsIconic(window))
+        {
+            return TRUE;
+        }
+
+        if (window == state->self->m_window)
+        {
+            return TRUE;
+        }
+
+        if (state->self->m_dimOverlay && window == state->self->m_dimOverlay->Hwnd())
+        {
+            return TRUE;
+        }
+
+        auto exStyle = GetWindowLongPtr(window, GWL_EXSTYLE);
+        if ((exStyle & WS_EX_TOOLWINDOW) == WS_EX_TOOLWINDOW)
+        {
+            return TRUE;
+        }
+
+        if (!state->self->m_virtualDesktopUtils.IsWindowOnCurrentDesktop(window))
+        {
+            return TRUE;
+        }
+
+        ShowWindow(window, SW_MINIMIZE);
+        return TRUE;
+    }, reinterpret_cast<LPARAM>(&state));
 }
 
 void AlwaysOnTop::StartTrackingTopmostWindows()
