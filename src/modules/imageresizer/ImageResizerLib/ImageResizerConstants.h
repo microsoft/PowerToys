@@ -15,6 +15,7 @@ namespace ImageResizerConstants
 
     // List of supported image extensions that Image Resizer can process
     // This must match the list in RuntimeRegistration.h
+    // Note: All extensions must be in lowercase for case-insensitive comparison
     inline const std::vector<std::wstring> SupportedImageExtensions = {
         L".bmp", L".dib", L".gif", L".jfif", L".jpe", L".jpeg", L".jpg", 
         L".jxr", L".png", L".rle", L".tif", L".tiff", L".wdp"
@@ -23,7 +24,7 @@ namespace ImageResizerConstants
     // Helper function to check if a file extension is supported by Image Resizer
     inline bool IsSupportedImageExtension(LPCWSTR extension)
     {
-        if (nullptr == extension || wcslen(extension) == 0)
+        if (extension == nullptr || wcslen(extension) == 0)
         {
             return false;
         }
