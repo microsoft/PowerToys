@@ -44,7 +44,8 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
-    <TargetName>notifications</TargetName>
+    <!-- Use unique name to avoid conflict with parent notifications.vcxproj -->
+    <TargetName>BackgroundActivator</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Debug'">
     <ClCompile>
