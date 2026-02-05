@@ -64,7 +64,14 @@ public partial class OCROverlay : Window
 
         InitializeComponent();
 
-        Wpf.Ui.Appearance.SystemThemeWatcher.Watch(this, Wpf.Ui.Controls.WindowBackdropType.None);
+        try
+        {
+            Wpf.Ui.Appearance.SystemThemeWatcher.Watch(this, Wpf.Ui.Controls.WindowBackdropType.None);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"Failed to initialize theme watcher: {ex.Message}");
+        }
 
         PopulateLanguageMenu();
     }

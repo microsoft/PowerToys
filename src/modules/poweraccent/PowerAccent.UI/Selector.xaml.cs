@@ -41,7 +41,14 @@ public partial class Selector : FluentWindow, IDisposable, INotifyPropertyChange
     {
         InitializeComponent();
 
-        Wpf.Ui.Appearance.SystemThemeWatcher.Watch(this);
+        try
+        {
+            Wpf.Ui.Appearance.SystemThemeWatcher.Watch(this);
+        }
+        catch (Exception ex)
+        {
+            ManagedCommon.Logger.LogError($"Failed to initialize theme watcher: {ex.Message}");
+        }
 
         Application.Current.MainWindow.ShowActivated = false;
     }

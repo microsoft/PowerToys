@@ -33,7 +33,14 @@ namespace ImageResizer.Views
                 WindowBackdropType = WindowBackdropType.None;
             }
 
-            Wpf.Ui.Appearance.SystemThemeWatcher.Watch(this, WindowBackdropType);
+            try
+            {
+                Wpf.Ui.Appearance.SystemThemeWatcher.Watch(this, WindowBackdropType);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Failed to initialize theme watcher: {ex.Message}");
+            }
         }
 
         public IEnumerable<string> OpenPictureFiles()
