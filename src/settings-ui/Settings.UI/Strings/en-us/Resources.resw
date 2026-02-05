@@ -2722,6 +2722,9 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="MouseUtils_CursorWrap_DisableWrapDuringDrag.Content" xml:space="preserve">
     <value>Disable wrapping while dragging</value>
   </data>
+  <data name="MouseUtils_CursorWrap_DisableOnSingleMonitor.Content" xml:space="preserve">
+    <value>Disable wrapping when using a single monitor</value>
+  </data>	
   <data name="MouseUtils_CursorWrap_AutoActivate.Header" xml:space="preserve">
     <value>Auto-activate on startup</value>
   </data>
