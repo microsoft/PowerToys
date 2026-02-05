@@ -41,7 +41,7 @@ public partial class WrappedDockItem : CommandItem
         _icon = command.Icon;
     }
 
-    // This was too much of a footgun - we'd internally create a ListItem that
+    // This was too much of a foot gun - we'd internally create a ListItem that
     // didn't bubble the prop change events back up. That was bad.
     // public WrappedDockItem(
     //    ICommandItem item,
