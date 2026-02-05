@@ -69,7 +69,14 @@ public partial class ImageSize : INotifyPropertyChanged, IHasId
     public string Name
     {
         get => _name;
-        set => SetProperty(ref _name, value);
+        set
+        {
+            // Prevent setting empty or null names
+            if (!string.IsNullOrWhiteSpace(value))
+            {
+                SetProperty(ref _name, value);
+            }
+        }
     }
 
     [JsonPropertyName("fit")]
