@@ -11,6 +11,9 @@
 .PARAMETER CLIType
     AI CLI type (copilot/claude).
 
+.PARAMETER Model
+    Copilot CLI model to use (e.g., gpt-5.2-codex).
+
 .PARAMETER Force
     Skip confirmation prompts in Start-PRFix.ps1.
 #>
@@ -24,6 +27,8 @@ param(
     [ValidateSet('claude', 'copilot')]
     [string]$CLIType = 'copilot',
 
+    [string]$Model,
+
     [switch]$Force
 )
 
@@ -36,6 +41,7 @@ $results = $PRNumbers | ForEach-Object -Parallel {
     $repoRoot = $using:repoRoot
     $scriptPath = $using:scriptPath
     $cliType = $using:CLIType
+    $model = $using:Model
     $force = $using:Force
 
     Set-Location $repoRoot
@@ -54,6 +60,9 @@ $results = $PRNumbers | ForEach-Object -Parallel {
     Set-Location $worktree
 
     $args = @('-PRNumber', $pr, '-CLIType', $cliType)
+    if ($model) {
+        $args += @('-Model', $model)
+    }
     if ($force) {
         $args += '-Force'
     }

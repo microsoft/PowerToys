@@ -138,6 +138,7 @@ gh api graphql -f query='
 |-----------|-------------|---------|
 | `-PRNumber` | PR number to fix | Required |
 | `-CLIType` | AI CLI: `copilot` or `claude` | `copilot` |
+| `-Model` | Copilot model (e.g., `gpt-5.2-codex`) | (optional) |
 | `-Force` | Skip confirmation prompts | `false` |
 | `-DryRun` | Show what would be done | `false` |
 

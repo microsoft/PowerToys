@@ -219,10 +219,10 @@ If no signal file appears within timeout:
 
 ```powershell
 # Issue fixes in parallel
-.github/skills/issue-fix/scripts/Start-IssueFixParallel.ps1 -IssueNumbers 28726,13336,27507,3054,37800 -CLIType copilot -ThrottleLimit 5 -Force
+.github/skills/issue-fix/scripts/Start-IssueFixParallel.ps1 -IssueNumbers 28726,13336,27507,3054,37800 -CLIType copilot -Model gpt-5.2-codex -ThrottleLimit 5 -Force
 
 # PR fixes in parallel
-.github/skills/pr-fix/scripts/Start-PRFixParallel.ps1 -PRNumbers 45256,45257,45285,45286 -CLIType copilot -ThrottleLimit 3 -Force
+.github/skills/pr-fix/scripts/Start-PRFixParallel.ps1 -PRNumbers 45256,45257,45285,45286 -CLIType copilot -Model gpt-5.2-codex -ThrottleLimit 3 -Force
 ```
 
 ## Worktree Mapping

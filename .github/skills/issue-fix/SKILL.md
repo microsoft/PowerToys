@@ -120,6 +120,7 @@ To fix AND submit in one command:
 |-----------|-------------|---------|
 | `-IssueNumber` | Issue to fix | Required |
 | `-CLIType` | AI CLI: `copilot` or `claude` | `copilot` |
+| `-Model` | Copilot model (e.g., `gpt-5.2-codex`) | (optional) |
 | `-CreatePR` | Auto-create PR after fix | `false` |
 | `-SkipWorktree` | Fix in current repo (no worktree) | `false` |
 | `-Force` | Skip confirmation prompts | `false` |
