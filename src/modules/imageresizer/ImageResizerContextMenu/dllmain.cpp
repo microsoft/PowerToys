@@ -6,6 +6,8 @@
 #include <Shlwapi.h>
 #include <shobjidl_core.h>
 #include <string>
+#include <algorithm>
+#include <vector>
 
 #include <common/telemetry/EtwTrace/EtwTrace.h>
 #include <common/utils/elevation.h>
@@ -24,6 +26,28 @@ HINSTANCE g_hInst = 0;
 Shared::Trace::ETWTrace trace(L"ImageResizerContextMenu");
 
 #define BUFSIZE 4096 * 4
+
+// List of supported image extensions that Image Resizer can process
+// This must match the list in RuntimeRegistration.h
+static const std::vector<std::wstring> g_supportedExtensions = {
+    L".bmp", L".dib", L".gif", L".jfif", L".jpe", L".jpeg", L".jpg", 
+    L".jxr", L".png", L".rle", L".tif", L".tiff", L".wdp"
+};
+
+// Helper function to check if a file extension is supported by Image Resizer
+static bool IsSupportedImageExtension(LPCWSTR extension)
+{
+    if (nullptr == extension || wcslen(extension) == 0)
+    {
+        return false;
+    }
+
+    // Convert to lowercase for case-insensitive comparison
+    std::wstring ext(extension);
+    std::transform(ext.begin(), ext.end(), ext.begin(), ::towlower);
+
+    return std::find(g_supportedExtensions.begin(), g_supportedExtensions.end(), ext) != g_supportedExtensions.end();
+}
 
 BOOL APIENTRY DllMain( HMODULE hModule,
                        DWORD  ul_reason_for_call,
@@ -118,6 +142,16 @@ public:
             CoTaskMemFree(pszPath);
             // Avoid crashes in the following code.
             return E_FAIL;
+        }
+
+        // Check if the extension is actually supported by Image Resizer
+        // This prevents showing the menu for file types like .psd that Windows
+        // perceives as images but Image Resizer cannot process
+        if (!IsSupportedImageExtension(pszExt))
+        {
+            CoTaskMemFree(pszPath);
+            *cmdState = ECS_HIDDEN;
+            return S_OK;
         }
 
         // TODO: Instead, detect whether there's a WIC codec installed that can handle this file

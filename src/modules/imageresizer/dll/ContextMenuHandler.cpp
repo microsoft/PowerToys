@@ -12,7 +12,33 @@
 #include <common/utils/HDropIterator.h>
 #include <common/utils/package.h>
 
+#include <algorithm>
+#include <vector>
+#include <string>
+
 extern HINSTANCE g_hInst_imageResizer;
+
+// List of supported image extensions that Image Resizer can process
+// This must match the list in RuntimeRegistration.h
+static const std::vector<std::wstring> g_supportedExtensions = {
+    L".bmp", L".dib", L".gif", L".jfif", L".jpe", L".jpeg", L".jpg", 
+    L".jxr", L".png", L".rle", L".tif", L".tiff", L".wdp"
+};
+
+// Helper function to check if a file extension is supported by Image Resizer
+static bool IsSupportedImageExtension(LPCWSTR extension)
+{
+    if (nullptr == extension || wcslen(extension) == 0)
+    {
+        return false;
+    }
+
+    // Convert to lowercase for case-insensitive comparison
+    std::wstring ext(extension);
+    std::transform(ext.begin(), ext.end(), ext.begin(), ::towlower);
+
+    return std::find(g_supportedExtensions.begin(), g_supportedExtensions.end(), ext) != g_supportedExtensions.end();
+}
 
 CContextMenuHandler::CContextMenuHandler()
 {
@@ -95,6 +121,15 @@ HRESULT CContextMenuHandler::QueryContextMenu(_In_ HMENU hmenu, UINT indexMenu, 
         free(pszPath);
         // Avoid crashes in the following code.
         return E_FAIL;
+    }
+
+    // Check if the extension is actually supported by Image Resizer
+    // This prevents showing the menu for file types like .psd that Windows
+    // perceives as images but Image Resizer cannot process
+    if (!IsSupportedImageExtension(pszExt))
+    {
+        free(pszPath);
+        return S_OK;
     }
 
     // TODO: Instead, detect whether there's a WIC codec installed that can handle this file
@@ -415,6 +450,16 @@ HRESULT __stdcall CContextMenuHandler::GetState(IShellItemArray* psiItemArray, B
         CoTaskMemFree(pszPath);
         // Avoid crashes in the following code.
         return E_FAIL;
+    }
+
+    // Check if the extension is actually supported by Image Resizer
+    // This prevents showing the menu for file types like .psd that Windows
+    // perceives as images but Image Resizer cannot process
+    if (!IsSupportedImageExtension(pszExt))
+    {
+        CoTaskMemFree(pszPath);
+        *pCmdState = ECS_HIDDEN;
+        return S_OK;
     }
 
     // TODO: Instead, detect whether there's a WIC codec installed that can handle this file
