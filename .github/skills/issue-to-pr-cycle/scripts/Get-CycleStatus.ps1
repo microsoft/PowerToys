@@ -305,6 +305,7 @@ foreach ($prNum in $prsToCheck) {
 # Output
 if ($JsonOutput) {
     $results | ConvertTo-Json -Depth 5
+    return $results
 }
 else {
     if ($results.Issues.Count -gt 0) {
