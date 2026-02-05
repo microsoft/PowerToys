@@ -40,6 +40,16 @@ public sealed partial class CommandBar : UserControl,
         WeakReferenceMessenger.Default.Register<OpenContextMenuMessage>(this);
         WeakReferenceMessenger.Default.Register<CloseContextMenuMessage>(this);
         WeakReferenceMessenger.Default.Register<TryCommandKeybindingMessage>(this);
+
+        ViewModel.PropertyChanged += ViewModel_PropertyChanged;
+    }
+
+    private void ViewModel_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(CommandBarViewModel.SelectedItem))
+        {
+            ContextControl.ViewModel.SelectedItem = ViewModel.SelectedItem;
+        }
     }
 
     public void Receive(OpenContextMenuMessage message)

@@ -18,7 +18,6 @@ namespace Microsoft.CmdPal.UI.Controls;
 
 public sealed partial class ContextMenu : UserControl,
     IRecipient<OpenContextMenuMessage>,
-    IRecipient<UpdateCommandBarMessage>,
     IRecipient<TryCommandKeybindingMessage>
 {
     public ContextMenuViewModel ViewModel { get; } = new();
@@ -29,7 +28,6 @@ public sealed partial class ContextMenu : UserControl,
 
         // RegisterAll isn't AOT compatible
         WeakReferenceMessenger.Default.Register<OpenContextMenuMessage>(this);
-        WeakReferenceMessenger.Default.Register<UpdateCommandBarMessage>(this);
         WeakReferenceMessenger.Default.Register<TryCommandKeybindingMessage>(this);
 
         if (ViewModel is not null)
@@ -43,11 +41,6 @@ public sealed partial class ContextMenu : UserControl,
         ViewModel.FilterOnTop = message.ContextMenuFilterLocation == ContextMenuFilterLocation.Top;
         ViewModel.ResetContextMenu();
 
-        UpdateUiForStackChange();
-    }
-
-    public void Receive(UpdateCommandBarMessage message)
-    {
         UpdateUiForStackChange();
     }
 
@@ -138,7 +131,8 @@ public sealed partial class ContextMenu : UserControl,
     {
         var prop = e.PropertyName;
 
-        if (prop == nameof(ContextMenuViewModel.FilteredItems))
+        if (prop == nameof(ContextMenuViewModel.FilteredItems) ||
+            prop == nameof(ContextMenuViewModel.SelectedItem))
         {
             UpdateUiForStackChange();
         }

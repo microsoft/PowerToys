@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -13,15 +13,20 @@ using Windows.System;
 
 namespace Microsoft.CmdPal.Core.ViewModels;
 
-public partial class ContextMenuViewModel : ObservableObject,
-    IRecipient<UpdateCommandBarMessage>
+public partial class ContextMenuViewModel : ObservableObject
 {
     public ICommandBarContext? SelectedItem
     {
         get => field;
         set
         {
+            if (field == value)
+            {
+                return;
+            }
+
             field = value;
+            OnPropertyChanged(nameof(SelectedItem));
             UpdateContextItems();
         }
     }
@@ -38,16 +43,6 @@ public partial class ContextMenuViewModel : ObservableObject,
     public partial bool FilterOnTop { get; set; } = false;
 
     private string _lastSearchText = string.Empty;
-
-    public ContextMenuViewModel()
-    {
-        WeakReferenceMessenger.Default.Register<UpdateCommandBarMessage>(this);
-    }
-
-    public void Receive(UpdateCommandBarMessage message)
-    {
-        SelectedItem = message.ViewModel;
-    }
 
     public void UpdateContextItems()
     {
