@@ -27,6 +27,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             ImageresizerKeepDateModified = new BoolProperty();
             ImageresizerFallbackEncoder = new StringProperty(new System.Guid("19e4a5aa-5662-4fc5-a0c0-1758028e1057").ToString());
             ImageresizerCustomSize = new ImageResizerCustomSizeProperty(new ImageSize(4, "custom", ResizeFit.Fit, 1024, 640, ResizeUnit.Pixel));
+            ExtendedContextMenuOnly = new BoolProperty();
         }
 
         public ImageResizerProperties(Func<string, string> resourceLoader)
@@ -83,6 +84,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("imageresizer_customSize")]
         [CmdConfigureIgnoreAttribute]
         public ImageResizerCustomSizeProperty ImageresizerCustomSize { get; set; }
+
+        [JsonPropertyName("bool_show_extended_menu")]
+        public BoolProperty ExtendedContextMenuOnly { get; set; }
 
         public string ToJsonString()
         {

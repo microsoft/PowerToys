@@ -39,6 +39,25 @@
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                 </controls:GPOInfoControl>
+                <controls:SettingsGroup x:Uid="ImageResizer_ShellIntegration" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                    <tkcontrols:SettingsCard
+                        Name="ImageResizerToggleContextMenu"
+                        x:Uid="ImageResizer_Toggle_ContextMenu">
+                        <ComboBox
+                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                            AutomationProperties.Name="{Binding ElementName=ImageResizerToggleContextMenu, Path=Header}"
+                            SelectedIndex="{x:Bind ViewModel.ExtendedContextMenuOnly, Mode=TwoWay, Converter={StaticResource BoolToComboBoxIndexConverter}}">
+                            <ComboBoxItem x:Uid="ImageResizer_Toggle_StandardContextMenu" />
+                            <ComboBoxItem x:Uid="ImageResizer_Toggle_ExtendedContextMenu" />
+                        </ComboBox>
+                    </tkcontrols:SettingsCard>
+                    <InfoBar
+                        x:Uid="ExtendedContextMenuInfo"
+                        IsClosable="False"
+                        IsOpen="True"
+                        IsTabStop="True"
+                        Severity="Informational" />
+                </controls:SettingsGroup>
                 <controls:SettingsGroup x:Uid="ImageResizer_CustomSizes" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsCard
                         Name="ImageResizerPresets"
