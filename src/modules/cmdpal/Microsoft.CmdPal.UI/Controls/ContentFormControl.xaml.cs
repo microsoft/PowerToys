@@ -25,6 +25,19 @@ public sealed partial class ContentFormControl : UserControl
 
     public ContentFormViewModel? ViewModel { get => _viewModel; set => AttachViewModel(value); }
 
+    public static readonly DependencyProperty ItemSpacingProperty =
+        DependencyProperty.Register(
+            nameof(ItemSpacing),
+            typeof(int),
+            typeof(ContentFormControl),
+            new PropertyMetadata(8));
+
+    public int ItemSpacing
+    {
+        get => (int)GetValue(ItemSpacingProperty);
+        set => SetValue(ItemSpacingProperty, value);
+    }
+
     static ContentFormControl()
     {
         // We can't use `CardOverrideStyles` here yet, because we haven't called InitializeComponent once.
@@ -122,6 +135,9 @@ public sealed partial class ContentFormControl : UserControl
 
     private void DisplayCard(AdaptiveCardParseResult result)
     {
+        // Apply configured item spacing before rendering
+        _renderer.HostConfig.Spacing.Default = (uint)ItemSpacing;
+
         _renderedCard = _renderer.RenderAdaptiveCard(result.AdaptiveCard);
         ContentGrid.Children.Clear();
         if (_renderedCard.FrameworkElement is not null)

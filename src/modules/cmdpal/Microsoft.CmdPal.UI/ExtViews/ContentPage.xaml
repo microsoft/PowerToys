@@ -36,6 +36,9 @@
                 Orientation="Vertical"
                 Spacing="8" />
 
+            <Thickness x:Key="ContentPageContentMargin">0,4,4,4</Thickness>
+            <Thickness x:Key="ContentPageContentPadding">12,8,8,8</Thickness>
+
             <cmdpalUI:ContentTemplateSelector
                 x:Key="ContentTemplateSelector"
                 FormTemplate="{StaticResource FormContentTemplate}"
@@ -49,13 +52,13 @@
 
             <DataTemplate x:Key="FormContentTemplate" x:DataType="viewModels:ContentFormViewModel">
                 <!--  // TODO: #2 another padding  -->
-                <Grid Margin="0,4,4,4" Padding="12,8,8,8">
+                <Grid Margin="{StaticResource ContentPageContentMargin}" Padding="{StaticResource ContentPageContentPadding}">
                     <cmdPalControls:ContentFormControl ViewModel="{x:Bind}" />
                 </Grid>
             </DataTemplate>
 
             <DataTemplate x:Key="MarkdownContentTemplate" x:DataType="viewModels:ContentMarkdownViewModel">
-                <Grid Margin="0,4,4,4" Padding="12,8,8,8">
+                <Grid Margin="{StaticResource ContentPageContentMargin}" Padding="{StaticResource ContentPageContentPadding}">
                     <tkcontrols:MarkdownTextBlock
                         Config="{StaticResource DefaultMarkdownConfig}"
                         Text="{x:Bind Body, Mode=OneWay}"
@@ -78,8 +81,8 @@
 
             <DataTemplate x:Key="TreeContentTemplate" x:DataType="viewModels:ContentTreeViewModel">
                 <StackPanel
-                    Margin="0,4,4,4"
-                    Padding="12,8,8,8"
+                    Margin="{StaticResource ContentPageContentMargin}"
+                    Padding="{StaticResource ContentPageContentPadding}"
                     Orientation="Vertical">
                     <ItemsRepeater
                         Margin="8"
@@ -116,7 +119,9 @@
     <Grid>
         <ScrollView VerticalAlignment="Top" VerticalScrollMode="Enabled">
             <ItemsRepeater
+                x:Name="ContentItemsRepeater"
                 VerticalAlignment="Stretch"
+                ElementPrepared="ContentItemsRepeater_ElementPrepared"
                 ItemTemplate="{StaticResource ContentTemplateSelector}"
                 ItemsSource="{x:Bind ViewModel.Content, Mode=OneWay}"
                 Layout="{StaticResource VerticalStackLayout}" />

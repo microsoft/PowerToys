@@ -204,7 +204,11 @@
                                                 IsIndeterminate="True" />
                                         </controls:Case>
                                         <controls:Case Value="False">
-                                            <cmdpalUI:ContentPage ViewModel="{x:Bind ViewModel.SettingsPage, Mode=OneWay}" />
+                                            <cmdpalUI:ContentPage
+                                                ContentMargin="0"
+                                                ContentPadding="0"
+                                                ItemSpacing="4"
+                                                ViewModel="{x:Bind ViewModel.SettingsPage, Mode=OneWay}" />
                                         </controls:Case>
                                     </controls:SwitchPresenter>
                                 </Frame>
