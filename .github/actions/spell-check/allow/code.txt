@@ -324,6 +324,7 @@ REGSTR
 
 # Misc Win32 APIs and PInvokes
 INVOKEIDLIST
+MEMORYSTATUSEX
 
 # PowerRename metadata pattern abbreviations (used in tests and regex patterns)
 DDDD
