@@ -21,7 +21,7 @@
     <CppWinRTEnableComponentProjection>false</CppWinRTEnableComponentProjection>
     <CppWinRTGenerateWindowsMetadata>false</CppWinRTGenerateWindowsMetadata>
     <WindowsAppSdkBootstrapInitialize>false</WindowsAppSdkBootstrapInitialize>
-    <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+    <WindowsAppSDKSelfContained>false</WindowsAppSDKSelfContained>
     <WindowsAppSDKVerifyTransitiveDependencies>false</WindowsAppSDKVerifyTransitiveDependencies>
   </PropertyGroup>
   <ItemGroup>
