@@ -11,6 +11,7 @@
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     xmlns:tkconverters="using:CommunityToolkit.WinUI.Converters"
     xmlns:ui="using:CommunityToolkit.WinUI"
+    xmlns:viewmodels="using:Microsoft.PowerToys.Settings.UI.ViewModels"
     x:Name="RootPage"
     AutomationProperties.LandmarkType="Main"
     mc:Ignorable="d">
@@ -46,6 +47,7 @@
                         HeaderIcon="{ui:FontIcon Glyph=&#xE792;}">
                         <Button
                             x:Uid="ImageResizer_AddSizeButton"
+                            AutomationProperties.Name="{x:Bind viewmodels:ImageResizerViewModel.AddSizeButtonAccessibleName}"
                             Click="AddSizeButton_Click"
                             Style="{ThemeResource AccentButtonStyle}" />
                     </tkcontrols:SettingsCard>

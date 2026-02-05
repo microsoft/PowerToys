@@ -23,6 +23,12 @@ public partial class ImageResizerViewModel : Observable
     private static readonly string DefaultPresetNamePrefix =
         Helpers.ResourceLoaderInstance.ResourceLoader.GetString("ImageResizer_DefaultSize_NewSizePrefix");
 
+    /// <summary>
+    /// Gets the accessible name for the Add new size button, used by screen readers.
+    /// </summary>
+    public static string AddSizeButtonAccessibleName =>
+        Helpers.ResourceLoaderInstance.ResourceLoader.GetString("ImageResizer_AddSizeButton_AccessibleName");
+
     private static readonly List<string> EncoderGuids =
     [
         "1b7cfaf4-713f-473c-bbcd-6137425faeaf",  // PNG Encoder

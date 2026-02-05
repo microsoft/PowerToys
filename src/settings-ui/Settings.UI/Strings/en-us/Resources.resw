@@ -2564,6 +2564,10 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="ImageResizer_AddSizeButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Add a new preset</value>
   </data>
+  <data name="ImageResizer_AddSizeButton_AccessibleName" xml:space="preserve">
+    <value>Add a new preset</value>
+    <comment>Accessible name for the Add new size button, used by screen readers</comment>
+  </data>
   <data name="ImageResizer_RemoveButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Remove</value>
   </data>
