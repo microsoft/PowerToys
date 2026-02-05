@@ -2,6 +2,7 @@
 
 #include <optional>
 #include <string>
+#include <future>
 #include <filesystem>
 #include <variant>
 #include <winrt/Windows.Foundation.h>
@@ -31,12 +32,12 @@ namespace updating
     };
     using github_version_info = std::variant<new_version_download_info, version_up_to_date>;
 
-    std::optional<std::filesystem::path> download_new_version(const new_version_download_info& new_version);
+    std::future<std::optional<std::filesystem::path>> download_new_version(const new_version_download_info& new_version);
     std::filesystem::path get_pending_updates_path();
 #if USE_STD_EXPECTED
-    std::expected<github_version_info, std::wstring> get_github_version_info_async(const bool prerelease = false);
+    std::future<std::expected<github_version_info, std::wstring>> get_github_version_info_async(const bool prerelease = false);
 #else
-    nonstd::expected<github_version_info, std::wstring> get_github_version_info_async(const bool prerelease = false);
+    std::future<nonstd::expected<github_version_info, std::wstring>> get_github_version_info_async(const bool prerelease = false);
 #endif
     void cleanup_updates();
 

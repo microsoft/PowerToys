@@ -57,7 +57,7 @@ std::optional<fs::path> ObtainInstaller(bool& isUpToDate)
 
     auto state = UpdateState::read();
 
-    const auto new_version_info = get_github_version_info_async();
+    const auto new_version_info = get_github_version_info_async().get();
     if (std::holds_alternative<version_up_to_date>(*new_version_info))
     {
         isUpToDate = true;
@@ -76,7 +76,7 @@ std::optional<fs::path> ObtainInstaller(bool& isUpToDate)
         // Cleanup old updates before downloading the latest
         updating::cleanup_updates();
 
-        auto downloaded_installer = download_new_version(std::get<new_version_download_info>(*new_version_info));
+        auto downloaded_installer = download_new_version(std::get<new_version_download_info>(*new_version_info)).get();
         if (!downloaded_installer)
         {
             Logger::error("Couldn't download new installer");
