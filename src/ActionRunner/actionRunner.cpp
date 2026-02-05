@@ -144,6 +144,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
         sei.fMask = SEE_MASK_FLAG_NO_UI;
         sei.lpFile = target.data();
         sei.lpDirectory = workingDir.empty() ? nullptr : workingDir.data();
+        // cspell:ignore runasuser (Windows shell verb for "Run as different user")
         sei.lpVerb = (action == RUN_AS_ADMIN) ? L"runas" : L"runasuser";
         sei.nShow = SW_SHOWNORMAL;
 

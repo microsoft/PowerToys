@@ -10,6 +10,7 @@ using Microsoft.CmdPal.Ext.Apps.Properties;
 using Microsoft.CmdPal.Ext.Apps.Utils;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
+// cspell:ignore runasuser
 namespace Microsoft.CmdPal.Ext.Apps.Commands;
 
 internal sealed partial class RunAsUserCommand : InvokableCommand
