@@ -7,19 +7,19 @@ using System.Text.Json.Nodes;
 
 namespace Microsoft.CommandPalette.Extensions.Toolkit;
 
-public sealed class CheckBoxSettings : Setting<bool>
+public sealed class CheckBoxCardSettings : Setting<bool>
 {
-    private CheckBoxSettings()
+    private CheckBoxCardSettings()
         : base()
     {
     }
 
-    public CheckBoxSettings(string key, bool defaultValue)
+    public CheckBoxCardSettings(string key, bool defaultValue)
         : base(key, defaultValue)
     {
     }
 
-    public CheckBoxSettings(string key, string label, string description, bool defaultValue)
+    public CheckBoxCardSettings(string key, string label, string description, bool defaultValue)
         : base(key, label, description, defaultValue)
     {
     }
@@ -39,7 +39,7 @@ public sealed class CheckBoxSettings : Setting<bool>
         };
     }
 
-    public static CheckBoxSettings LoadFromJson(JsonObject jsonObject) => new() { Value = jsonObject["value"]?.GetValue<bool>() ?? false };
+    public static CheckBoxCardSettings LoadFromJson(JsonObject jsonObject) => new() { Value = jsonObject["value"]?.GetValue<bool>() ?? false };
 
     public override void Update(JsonObject payload)
     {

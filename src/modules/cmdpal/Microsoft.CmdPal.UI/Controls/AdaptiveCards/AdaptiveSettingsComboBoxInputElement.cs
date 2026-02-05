@@ -64,16 +64,14 @@ internal sealed partial class AdaptiveSettingsComboBoxInputParser : IAdaptiveEle
         AdaptiveActionParserRegistration actionParsers,
         IList<AdaptiveWarning> warnings)
     {
-        var element = new AdaptiveSettingsComboBoxInputElement
-        {
-            Id = inputJson.GetNamedString("id"),
-            Label = inputJson.GetNamedString("label"),
-            Header = inputJson.GetNamedString("header"),
-            Description = inputJson.GetNamedString("description"),
-            IsRequired = inputJson.GetNamedBoolean("isRequired", false),
-            ErrorMessage = inputJson.GetNamedString("errorMessage"),
-            Value = inputJson.GetNamedString("value"),
-        };
+        var element = new AdaptiveSettingsComboBoxInputElement();
+        element.Id = inputJson.GetNamedString("id");
+        element.Label = inputJson.GetNamedString("label");
+        element.Header = inputJson.GetNamedString("header");
+        element.Description = inputJson.GetNamedString("description");
+        element.IsRequired = inputJson.GetNamedBoolean("isRequired", false);
+        element.ErrorMessage = inputJson.GetNamedString("errorMessage");
+        element.Value = inputJson.GetNamedString("value");
 
         if (inputJson.TryGetValue("choices", out var choicesValue) &&
             choicesValue.ValueType == JsonValueType.Array)

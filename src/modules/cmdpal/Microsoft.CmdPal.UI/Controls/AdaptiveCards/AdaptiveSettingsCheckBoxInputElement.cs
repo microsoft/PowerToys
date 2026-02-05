@@ -57,16 +57,15 @@ internal sealed partial class AdaptiveSettingsCheckBoxInputParser : IAdaptiveEle
 {
     public IAdaptiveCardElement FromJson(JsonObject inputJson, AdaptiveElementParserRegistration elementParsers, AdaptiveActionParserRegistration actionParsers, IList<AdaptiveWarning> warnings)
     {
-        return new AdaptiveSettingsCheckBoxInputElement
-        {
-            Id = inputJson.GetNamedString("id"),
-            Label = inputJson.GetNamedString("label"),
-            Header = inputJson.GetNamedString("header"),
-            Description = inputJson.GetNamedString("description"),
-            IsRequired = inputJson.GetNamedBoolean("isRequired"),
-            ErrorMessage = inputJson.GetNamedString("errorMessage"),
-            Value = bool.TryParse(inputJson.GetNamedString("value"), out var result) && result,
-        };
+        var json = new AdaptiveSettingsCheckBoxInputElement();
+        json.Id = inputJson.GetNamedString("id");
+        json.Label = inputJson.GetNamedString("label");
+        json.Header = inputJson.GetNamedString("header");
+        json.Description = inputJson.GetNamedString("description");
+        json.IsRequired = inputJson.GetNamedBoolean("isRequired", false);
+        json.ErrorMessage = inputJson.GetNamedString("errorMessage");
+        json.Value = bool.TryParse(inputJson.GetNamedString("value"), out var result) && result;
+        return json;
     }
 }
 

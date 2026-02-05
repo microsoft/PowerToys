@@ -18,12 +18,12 @@ public class AllAppsSettings : JsonSettingsManager, ISettingsInterface
 
     private static string Namespaced(string propertyName) => $"{_namespace}.{propertyName}";
 
-    private static readonly List<ChoiceSetSetting.Choice> _searchResultLimitChoices =
+    private static readonly List<ChoiceSetCardSetting.Entry> _searchResultLimitChoices =
     [
-        new ChoiceSetSetting.Choice(Resources.limit_0, "0"),
-        new ChoiceSetSetting.Choice(Resources.limit_1, "1"),
-        new ChoiceSetSetting.Choice(Resources.limit_5, "5"),
-        new ChoiceSetSetting.Choice(Resources.limit_10, "10"),
+        new ChoiceSetCardSetting.Entry(Resources.limit_0, "0"),
+        new ChoiceSetCardSetting.Entry(Resources.limit_1, "1"),
+        new ChoiceSetCardSetting.Entry(Resources.limit_5, "5"),
+        new ChoiceSetCardSetting.Entry(Resources.limit_10, "10"),
     ];
 
 #pragma warning disable SA1401 // Fields should be private
@@ -48,7 +48,7 @@ public class AllAppsSettings : JsonSettingsManager, ISettingsInterface
 
     public bool EnablePathEnvironmentVariableSource => _enablePathEnvironmentVariableSource.Value;
 
-    private readonly ChoiceSetSetting _searchResultLimitSource = new(
+    private readonly ChoiceSetCardSetting _searchResultLimitSource = new(
         Namespaced(nameof(SearchResultLimit)),
         Resources.limit_fallback_results_source,
         Resources.limit_fallback_results_source_description,
@@ -56,25 +56,25 @@ public class AllAppsSettings : JsonSettingsManager, ISettingsInterface
 
     public string SearchResultLimit => _searchResultLimitSource.Value ?? string.Empty;
 
-    private readonly ToggleSetting _enableStartMenuSource = new(
+    private readonly ToggleCardSetting _enableStartMenuSource = new(
         Namespaced(nameof(EnableStartMenuSource)),
         Resources.enable_start_menu_source,
         string.Empty,
         true);
 
-    private readonly ToggleSetting _enableDesktopSource = new(
+    private readonly ToggleCardSetting _enableDesktopSource = new(
         Namespaced(nameof(EnableDesktopSource)),
         Resources.enable_desktop_source,
         string.Empty,
         true);
 
-    private readonly ToggleSetting _enableRegistrySource = new(
+    private readonly ToggleCardSetting _enableRegistrySource = new(
         Namespaced(nameof(EnableRegistrySource)),
         Resources.enable_registry_source,
         string.Empty,
         false); // This one is very noisy
 
-    private readonly ToggleSetting _enablePathEnvironmentVariableSource = new(
+    private readonly ToggleCardSetting _enablePathEnvironmentVariableSource = new(
         Namespaced(nameof(EnablePathEnvironmentVariableSource)),
         Resources.enable_path_environment_variable_source,
         string.Empty,

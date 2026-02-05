@@ -31,24 +31,12 @@ public partial class TextSetting : Setting<string>
 
     public override Dictionary<string, object> ToDictionary()
     {
-        /*
-        return SettingsAdaptiveCardBuilder.BuildSettingsCardWithControlOnRight(Label, Description, ErrorMessage, IsRequired, () =>
-            new Dictionary<string, object>
-            {
-                { "type", "Input.Text" },
-                { "id", Key },
-                { "value", Value ?? string.Empty },
-                { "isRequired", IsRequired },
-                { "errorMessage", ErrorMessage },
-                { "isMultiline", Multiline },
-                { "placeholder", Placeholder },
-            });*/
         return new Dictionary<string, object>
         {
-            { "type", "SettingsCard.Input.Text" },
+            { "type", "Input.Text" },
+            { "title", Label },
             { "id", Key },
-            { "header", Label },
-            { "description", Description },
+            { "label", Description },
             { "value", Value ?? string.Empty },
             { "isRequired", IsRequired },
             { "errorMessage", ErrorMessage },

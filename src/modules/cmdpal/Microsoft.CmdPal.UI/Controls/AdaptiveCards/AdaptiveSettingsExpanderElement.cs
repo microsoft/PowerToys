@@ -60,16 +60,14 @@ internal sealed partial class AdaptiveSettingsExpanderElementParser : IAdaptiveE
 {
     public IAdaptiveCardElement FromJson(JsonObject inputJson, AdaptiveElementParserRegistration elementParsers, AdaptiveActionParserRegistration actionParsers, IList<AdaptiveWarning> warnings)
     {
-        var expander = new AdaptiveSettingsExpanderElement
-        {
-            Id = inputJson.GetNamedString("id"),
-            Label = inputJson.GetNamedString("label"),
-            Header = inputJson.GetNamedString("header"),
-            Description = inputJson.GetNamedString("description"),
-            IsRequired = inputJson.GetNamedBoolean("isRequired"),
-            ErrorMessage = inputJson.GetNamedString("errorMessage"),
-            Value = bool.TryParse(inputJson.GetNamedString("value"), out var result) && result,
-        };
+        var expander = new AdaptiveSettingsExpanderElement();
+        expander.Id = inputJson.GetNamedString("id");
+        expander.Label = inputJson.GetNamedString("label");
+        expander.Header = inputJson.GetNamedString("header");
+        expander.Description = inputJson.GetNamedString("description");
+        expander.IsRequired = inputJson.GetNamedBoolean("isRequired", false);
+        expander.ErrorMessage = inputJson.GetNamedString("errorMessage");
+        expander.Value = bool.TryParse(inputJson.GetNamedString("value"), out var result) && result;
 
         // parse items
         if (inputJson.TryGetValue("items", out var itemsValue) && itemsValue.ValueType == JsonValueType.Array)

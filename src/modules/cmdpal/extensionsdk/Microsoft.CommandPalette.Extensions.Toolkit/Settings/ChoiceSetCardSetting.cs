@@ -8,9 +8,9 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.CommandPalette.Extensions.Toolkit;
 
-public sealed class ChoiceSetSetting : Setting<string>
+public sealed class ChoiceSetCardSetting : Setting<string>
 {
-    public partial class Choice
+    public partial class Entry
     {
         [JsonPropertyName("value")]
         public string Value { get; set; }
@@ -18,29 +18,34 @@ public sealed class ChoiceSetSetting : Setting<string>
         [JsonPropertyName("title")]
         public string Title { get; set; }
 
-        public Choice(string title, string value)
+        public Entry(string title, string value)
         {
             Value = value;
             Title = title;
         }
     }
 
-    public List<Choice> Choices { get; set; }
+    public List<Entry> Choices { get; set; }
 
-    private ChoiceSetSetting()
-        : base()
+    private ChoiceSetCardSetting()
     {
         Choices = [];
     }
 
-    public ChoiceSetSetting(string key, List<Choice> choices)
+    public ChoiceSetCardSetting(string key, List<Entry> choices)
         : base(key, choices.ElementAt(0).Value)
     {
         Choices = choices;
     }
 
-    public ChoiceSetSetting(string key, string label, string description, List<Choice> choices)
+    public ChoiceSetCardSetting(string key, string label, string description, List<Entry> choices)
         : base(key, label, description, choices.ElementAt(0).Value)
+    {
+        Choices = choices;
+    }
+
+    public ChoiceSetCardSetting(string key, string label, string description, List<Entry> choices, string defaultValue)
+        : base(key, label, description, defaultValue)
     {
         Choices = choices;
     }
@@ -49,18 +54,19 @@ public sealed class ChoiceSetSetting : Setting<string>
     {
         return new Dictionary<string, object>
         {
-            { "type", "Input.ChoiceSet" },
-            { "title", Label },
+            { "type", "SettingsCard.Input.ComboBox" },
             { "id", Key },
-            { "label", Description },
             { "choices", Choices },
+            { "label", string.Empty },
+            { "header", Label },
+            { "description", Description },
             { "value", Value ?? string.Empty },
             { "isRequired", IsRequired },
             { "errorMessage", ErrorMessage },
         };
     }
 
-    public static ChoiceSetSetting LoadFromJson(JsonObject jsonObject) => new() { Value = jsonObject["value"]?.GetValue<string>() ?? string.Empty };
+    public static ChoiceSetCardSetting LoadFromJson(JsonObject jsonObject) => new() { Value = jsonObject["value"]?.GetValue<string>() ?? string.Empty };
 
     public override void Update(JsonObject payload)
     {

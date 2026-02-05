@@ -13,25 +13,25 @@ public class SettingsManager : JsonSettingsManager, ISettingsInterface
 
     private static string Namespaced(string propertyName) => $"{_namespace}.{propertyName}";
 
-    private readonly ToggleSetting _showDialogToConfirmCommand = new(
+    private readonly ToggleCardSetting _showDialogToConfirmCommand = new(
         Namespaced(nameof(ShowDialogToConfirmCommand)),
         Resources.confirm_system_commands,
         Resources.confirm_system_commands,
         false); // TODO -- double check default value
 
-    private readonly ToggleSetting _showSuccessMessageAfterEmptyingRecycleBin = new(
+    private readonly ToggleCardSetting _showSuccessMessageAfterEmptyingRecycleBin = new(
         Namespaced(nameof(ShowSuccessMessageAfterEmptyingRecycleBin)),
         Resources.Microsoft_plugin_sys_RecycleBin_ShowEmptySuccessMessage,
         Resources.Microsoft_plugin_sys_RecycleBin_ShowEmptySuccessMessage,
         false); // TODO -- double check default value
 
-    private readonly ToggleSetting _hideEmptyRecycleBin = new(
+    private readonly ToggleCardSetting _hideEmptyRecycleBin = new(
         Namespaced(nameof(HideEmptyRecycleBin)),
         Resources.Microsoft_plugin_sys_RecycleBin_HideEmpty,
         Resources.Microsoft_plugin_sys_RecycleBin_HideEmpty,
         false);
 
-    private readonly ToggleSetting _hideDisconnectedNetworkInfo = new(
+    private readonly ToggleCardSetting _hideDisconnectedNetworkInfo = new(
         Namespaced(nameof(HideDisconnectedNetworkInfo)),
         Resources.Microsoft_plugin_ext_settings_hideDisconnectedNetworkInfo,
         Resources.Microsoft_plugin_ext_settings_hideDisconnectedNetworkInfo,

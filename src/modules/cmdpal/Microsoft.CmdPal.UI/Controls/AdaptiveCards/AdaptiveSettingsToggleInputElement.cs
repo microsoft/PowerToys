@@ -58,16 +58,15 @@ internal sealed partial class AdaptiveSettingsToggleInputParser : IAdaptiveEleme
 {
     public IAdaptiveCardElement FromJson(JsonObject inputJson, AdaptiveElementParserRegistration elementParsers, AdaptiveActionParserRegistration actionParsers, IList<AdaptiveWarning> warnings)
     {
-        return new AdaptiveSettingsToggleInputElement
-        {
-            Id = inputJson.GetNamedString("id"),
-            Label = inputJson.GetNamedString("label"),
-            Header = inputJson.GetNamedString("header"),
-            Description = inputJson.GetNamedString("description"),
-            IsRequired = inputJson.GetNamedBoolean("isRequired"),
-            ErrorMessage = inputJson.GetNamedString("errorMessage"),
-            Value = bool.TryParse(inputJson.GetNamedString("value"), out var result) && result,
-        };
+        var json = new AdaptiveSettingsToggleInputElement();
+        json.Id = inputJson.GetNamedString("id");
+        json.Label = inputJson.GetNamedString("label", string.Empty);
+        json.Header = inputJson.GetNamedString("header", string.Empty);
+        json.Description = inputJson.GetNamedString("description", string.Empty);
+        json.IsRequired = inputJson.GetNamedBoolean("isRequired", false);
+        json.ErrorMessage = inputJson.GetNamedString("errorMessage", string.Empty);
+        json.Value = bool.TryParse(inputJson.GetNamedString("value", string.Empty), out var result) && result;
+        return json;
     }
 }
 

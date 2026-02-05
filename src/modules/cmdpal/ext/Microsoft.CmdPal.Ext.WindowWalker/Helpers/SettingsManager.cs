@@ -16,61 +16,61 @@ public class SettingsManager : JsonSettingsManager, ISettingsInterface
 
     private static SettingsManager? instance;
 
-    private readonly ToggleSetting _resultsFromVisibleDesktopOnly = new(
+    private readonly ToggleCardSetting _resultsFromVisibleDesktopOnly = new(
         Namespaced(nameof(ResultsFromVisibleDesktopOnly)),
         Resources.windowwalker_SettingResultsVisibleDesktop,
         Resources.windowwalker_SettingResultsVisibleDesktop,
         false);
 
-    private readonly ToggleSetting _subtitleShowPid = new(
+    private readonly ToggleCardSetting _subtitleShowPid = new(
         Namespaced(nameof(SubtitleShowPid)),
         Resources.windowwalker_SettingTagPid,
         Resources.windowwalker_SettingTagPid,
         false);
 
-    private readonly ToggleSetting _subtitleShowDesktopName = new(
+    private readonly ToggleCardSetting _subtitleShowDesktopName = new(
         Namespaced(nameof(SubtitleShowDesktopName)),
         Resources.windowwalker_SettingTagDesktopName,
         Resources.windowwalker_SettingSubtitleDesktopName_Description,
         true);
 
-    private readonly ToggleSetting _confirmKillProcess = new(
+    private readonly ToggleCardSetting _confirmKillProcess = new(
         Namespaced(nameof(ConfirmKillProcess)),
         Resources.windowwalker_SettingConfirmKillProcess,
         Resources.windowwalker_SettingConfirmKillProcess,
         true);
 
-    private readonly ToggleSetting _killProcessTree = new(
+    private readonly ToggleCardSetting _killProcessTree = new(
         Namespaced(nameof(KillProcessTree)),
         Resources.windowwalker_SettingKillProcessTree,
         Resources.windowwalker_SettingKillProcessTree_Description,
         false);
 
-    private readonly ToggleSetting _openAfterKillAndClose = new(
+    private readonly ToggleCardSetting _openAfterKillAndClose = new(
         Namespaced(nameof(OpenAfterKillAndClose)),
         Resources.windowwalker_SettingOpenAfterKillAndClose,
         Resources.windowwalker_SettingOpenAfterKillAndClose_Description,
         false);
 
-    private readonly ToggleSetting _hideKillProcessOnElevatedProcesses = new(
+    private readonly ToggleCardSetting _hideKillProcessOnElevatedProcesses = new(
         Namespaced(nameof(HideKillProcessOnElevatedProcesses)),
         Resources.windowwalker_SettingHideKillProcess,
         Resources.windowwalker_SettingHideKillProcess,
         false);
 
-    private readonly ToggleSetting _hideExplorerSettingInfo = new(
+    private readonly ToggleCardSetting _hideExplorerSettingInfo = new(
         Namespaced(nameof(HideExplorerSettingInfo)),
         Resources.windowwalker_SettingExplorerSettingInfo,
         Resources.windowwalker_SettingExplorerSettingInfo_Description,
         true);
 
-    private readonly ToggleSetting _inMruOrder = new(
+    private readonly ToggleCardSetting _inMruOrder = new(
         Namespaced(nameof(InMruOrder)),
         Resources.windowwalker_SettingInMruOrder,
         Resources.windowwalker_SettingInMruOrder_Description,
         true);
 
-    private readonly ToggleSetting _useWindowIcon = new(
+    private readonly ToggleCardSetting _useWindowIcon = new(
         Namespaced(nameof(UseWindowIcon)),
         Resources.windowwalker_SettingUseWindowIcon,
         Resources.windowwalker_SettingUseWindowIcon_Description,

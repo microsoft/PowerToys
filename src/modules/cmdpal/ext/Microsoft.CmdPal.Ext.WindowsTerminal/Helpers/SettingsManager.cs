@@ -16,38 +16,38 @@ public class SettingsManager : JsonSettingsManager
 
     private static string Namespaced(string propertyName) => $"{_namespace}.{propertyName}";
 
-    private readonly ToggleSetting _showHiddenProfiles = new(
+    private readonly ToggleCardSetting _showHiddenProfiles = new(
         Namespaced(nameof(ShowHiddenProfiles)),
         Resources.show_hidden_profiles,
         Resources.show_hidden_profiles,
         false);
 
-    private readonly ToggleSetting _openNewTab = new(
+    private readonly ToggleCardSetting _openNewTab = new(
         Namespaced(nameof(OpenNewTab)),
         Resources.open_new_tab,
         Resources.open_new_tab,
         false);
 
-    private readonly ToggleSetting _openQuake = new(
+    private readonly ToggleCardSetting _openQuake = new(
         Namespaced(nameof(OpenQuake)),
         Resources.open_quake,
         Resources.open_quake_description,
         false);
 
-    private readonly ToggleSetting _saveLastSelectedChannel = new(
+    private readonly ToggleCardSetting _saveLastSelectedChannel = new(
         Namespaced(nameof(SaveLastSelectedChannel)),
         Resources.save_last_selected_channel!,
         Resources.save_last_selected_channel_description!,
         false);
 
-    private readonly ChoiceSetSetting _profileSortOrder = new(
+    private readonly ChoiceSetCardSetting _profileSortOrder = new(
         Namespaced(nameof(ProfileSortOrder)),
         Resources.profile_sort_order!,
         Resources.profile_sort_order_description!,
         [
-            new ChoiceSetSetting.Choice(Resources.profile_sort_order_item_default!, ProfileSortOrder.Default.ToString("G")),
-            new ChoiceSetSetting.Choice(Resources.profile_sort_order_item_alphabetical!, ProfileSortOrder.Alphabetical.ToString("G")),
-            new ChoiceSetSetting.Choice(Resources.profile_sort_order_item_mru!, ProfileSortOrder.MostRecentlyUsed.ToString("G")),
+            new ChoiceSetCardSetting.Entry(Resources.profile_sort_order_item_default!, ProfileSortOrder.Default.ToString("G")),
+            new ChoiceSetCardSetting.Entry(Resources.profile_sort_order_item_alphabetical!, ProfileSortOrder.Alphabetical.ToString("G")),
+            new ChoiceSetCardSetting.Entry(Resources.profile_sort_order_item_mru!, ProfileSortOrder.MostRecentlyUsed.ToString("G")),
         ]);
 
     public bool ShowHiddenProfiles => _showHiddenProfiles.Value;

@@ -4,6 +4,7 @@
 
 using AdaptiveCards.ObjectModel.WinUI3;
 using AdaptiveCards.Rendering.WinUI3;
+using ManagedCommon;
 using Microsoft.CmdPal.UI.Controls.AdaptiveCards;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.UI.Xaml;
@@ -52,6 +53,7 @@ public sealed partial class ContentFormControl : UserControl
         Register<AdaptiveSettingsToggleInputElement, AdaptiveSettingsToggleInputParser, AdaptiveSettingsToggleInputElementRenderer>();
         Register<AdaptiveSettingsCheckBoxInputElement, AdaptiveSettingsCheckBoxInputParser, AdaptiveSettingsCheckBoxInputRenderer>();
         Register<AdaptiveSettingsTextInputElement, AdaptiveSettingsTextInputParser, AdaptiveSettingsTextInputElementRenderer>();
+        Register<AdaptiveSettingsTextAreaElement, AdaptiveSettingsTextAreaParser, AdaptiveSettingsTextAreaElementRenderer>();
         Register<AdaptiveSettingsComboBoxInputElement, AdaptiveSettingsComboBoxInputParser, AdaptiveSettingsComboBoxInputRenderer>();
 
         // generic
@@ -136,7 +138,42 @@ public sealed partial class ContentFormControl : UserControl
         // Apply configured item spacing before rendering
         _renderer.HostConfig.Spacing.Default = (uint)ItemSpacing;
 
+        /*
+         * ########################################################
+         * TODO:
+         * ########################################################
+         */
+
+        // This will remove extra spacing labels and errors, since we want a more compact form layout
+        // to keep Settings cards look good and spaced uniformly.
+        // On the other hand, collapsing this with break normal forms (without settings card) .
+        _renderer.HostConfig.Inputs.ErrorMessage.Spacing = Spacing.None;
+        _renderer.HostConfig.Inputs.Label.InputSpacing = Spacing.None;
+
+        // Print the warnings to the debug console, since they can be helpful for debugging but aren't surfaced in the UI
+        foreach (var warning in result.Warnings)
+        {
+            Logger.LogWarning($"Adaptive cards: {warning.StatusCode}: {warning.Message}");
+        }
+
+        foreach (var error in result.Errors)
+        {
+            Logger.LogError($"Adaptive cards: {error.StatusCode}: {error.Message}");
+        }
+
         _renderedCard = _renderer.RenderAdaptiveCard(result.AdaptiveCard);
+
+        // Print the warnings to the debug console, since they can be helpful for debugging but aren't surfaced in the UI
+        foreach (var warning in _renderedCard.Warnings)
+        {
+            Logger.LogWarning($"Rendered adaptive card: {warning.StatusCode}: {warning.Message}");
+        }
+
+        foreach (var error in _renderedCard.Errors)
+        {
+            Logger.LogError($"Rendered adaptive card: {error.StatusCode}: {error.Message}");
+        }
+
         ContentGrid.Children.Clear();
         if (_renderedCard.FrameworkElement is not null)
         {
