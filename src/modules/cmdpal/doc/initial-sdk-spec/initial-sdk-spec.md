@@ -2061,6 +2061,7 @@ bands via the new `DockBand` property on `ICommandProvider3`.
 interface ICommandProvider3 requires ICommandProvider2
 {
     ICommandItem[] GetDockBands();
+    ICommandItem GetCommandItemById(String id);
 };
 ```
 

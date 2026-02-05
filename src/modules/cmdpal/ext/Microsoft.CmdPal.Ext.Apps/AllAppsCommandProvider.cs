@@ -188,4 +188,14 @@ public partial class AllAppsCommandProvider : CommandProvider
     {
         RaiseItemsChanged(0);
     }
+
+    public override ICommandItem? GetCommandItemById(string id)
+    {
+        if (id == _listItem.Command.Id)
+        {
+            return _listItem;
+        }
+
+        return _page.GetAppCommandItemById(id);
+    }
 }

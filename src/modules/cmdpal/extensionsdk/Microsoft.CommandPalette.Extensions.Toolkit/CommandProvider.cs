@@ -56,6 +56,11 @@ public abstract partial class CommandProvider :
         return null;
     }
 
+    public virtual ICommandItem? GetCommandItemById(string id)
+    {
+        return null;
+    }
+
     /// <summary>
     /// This is used to manually populate the WinRT type cache in CmdPal with
     /// any interfaces that might not follow a straight linear path of requires.

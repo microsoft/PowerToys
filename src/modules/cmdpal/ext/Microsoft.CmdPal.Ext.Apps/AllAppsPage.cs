@@ -205,4 +205,19 @@ public sealed partial class AllAppsPage : ListPage
 
         RaiseItemsChanged(0);
     }
+
+    internal ICommandItem? GetAppCommandItemById(string id)
+    {
+        var items = this.GetItems();
+
+        foreach (var item in items)
+        {
+            if (item.Command.Id == id)
+            {
+                return item;
+            }
+        }
+
+        return null;
+    }
 }
