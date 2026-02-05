@@ -18,6 +18,8 @@ This skill is **self-contained** with all required resources:
 ├── LICENSE.txt           # MIT License
 ├── scripts/
 │   ├── Start-IssueAutoFix.ps1  # Main fix script (creates worktree, applies fix)
+│   ├── Start-IssueFixParallel.ps1 # Parallel runner (single terminal)
+│   ├── Get-WorktreeStatus.ps1  # Worktree status helper
 │   ├── Submit-IssueFix.ps1     # Commit and create PR
 │   └── IssueReviewLib.ps1      # Shared helpers
 └── references/
@@ -146,24 +148,14 @@ Fix multiple issues:
 
 ## Parallel Execution (IMPORTANT)
 
-**DO NOT** spawn separate terminals for each issue. Use PowerShell 7's `-Parallel` in a SINGLE terminal:
+**DO NOT** spawn separate terminals for each issue. Use the dedicated scripts:
 
 ```powershell
-# CORRECT: Single terminal with parallel execution
-$issues = @(28726, 13336, 27507, 3054, 37800)
-$issues | ForEach-Object -Parallel {
-    Set-Location Q:\PowerToys
-    .\.github\skills\issue-fix\scripts\Start-IssueAutoFix.ps1 -IssueNumber $_ -CLIType copilot -Force
-} -ThrottleLimit 5
+# Run fixes in parallel (single terminal)
+.github/skills/issue-fix/scripts/Start-IssueFixParallel.ps1 -IssueNumbers 28726,13336,27507,3054,37800 -CLIType copilot -ThrottleLimit 5 -Force
 
-# Check status of all worktrees
-git worktree list | Select-String "issue/" | ForEach-Object {
-    $path = ($_ -split "\s+")[0]
-    $branch = ($_ -split "\s+")[2] -replace "\[|\]",""
-    $ahead = (git -C $path rev-list main..HEAD --count 2>$null)
-    $uncommitted = (git -C $path status --porcelain 2>$null | Measure-Object).Count
-    Write-Host "$branch : $ahead commits, $uncommitted uncommitted"
-}
+# Check worktree status
+.github/skills/issue-fix/scripts/Get-WorktreeStatus.ps1
 ```
 
 This allows:

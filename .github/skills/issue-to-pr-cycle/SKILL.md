@@ -131,48 +131,26 @@ Signal format:
 
 ### Phase A: Issue Review
 
-```powershell
-# For each issue (parallel):
-Start-Process -NoNewWindow -FilePath "gh" -ArgumentList @(
-    "copilot", "-p",
-    "Run skill issue-review for issue #$IssueNumber. Follow .github/skills/issue-review/SKILL.md"
-)
+Use the orchestration script instead of inline commands:
 
-# Wait for signal
-while (-not (Test-Path "Generated Files/issueReview/$IssueNumber/.signal")) {
-    Start-Sleep -Seconds 5
-}
-$signal = Get-Content "Generated Files/issueReview/$IssueNumber/.signal" | ConvertFrom-Json
+```powershell
+.github/skills/issue-to-pr-cycle/scripts/Start-FullIssueCycle.ps1 -IssueNumbers 45363,45364
 ```
 
 ### Phase B: Issue Fix
 
-```powershell
-# For each high-confidence issue (parallel):
-Start-Process -NoNewWindow -FilePath "gh" -ArgumentList @(
-    "copilot", "-p",
-    "Run skill issue-fix for issue #$IssueNumber. Follow .github/skills/issue-fix/SKILL.md"
-)
+Use the parallel runner script:
 
-# Wait for signal
-while (-not (Test-Path "Generated Files/issueFix/$IssueNumber/.signal")) {
-    Start-Sleep -Seconds 5
-}
+```powershell
+.github/skills/issue-fix/scripts/Start-IssueFixParallel.ps1 -IssueNumbers 45363,45364 -CLIType copilot -ThrottleLimit 5 -Force
 ```
 
 ### Phase C: PR Review
 
-```powershell
-# For each PR (parallel):
-Start-Process -NoNewWindow -FilePath "gh" -ArgumentList @(
-    "copilot", "-p",
-    "Run skill pr-review for PR #$PRNumber. Follow .github/skills/pr-review/SKILL.md"
-)
+Use the pr-review script for each PR, or run the full cycle script to orchestrate:
 
-# Wait for signal
-while (-not (Test-Path "Generated Files/prReview/$PRNumber/.signal")) {
-    Start-Sleep -Seconds 5
-}
+```powershell
+.github/skills/pr-review/scripts/Start-PRReviewWorkflow.ps1 -PRNumber 45392
 ```
 
 ### Phase D: Review/Fix Loop (VS Code Agent Orchestrated)
@@ -237,43 +215,15 @@ If no signal file appears within timeout:
 
 ## Parallel Execution (CRITICAL)
 
-**DO NOT spawn separate terminals for each operation.** The orchestrator agent cannot effectively track multiple background terminals.
-
-### CORRECT: Use PowerShell 7 ForEach-Object -Parallel
+**DO NOT spawn separate terminals for each operation.** Use the dedicated scripts to run parallel work from a single terminal:
 
 ```powershell
-# Run multiple issue fixes in parallel with proper tracking
-$issues = @(28726, 13336, 27507, 3054, 37800)
-$results = $issues | ForEach-Object -Parallel {
-    Set-Location Q:\PowerToys
-    .\.github\skills\issue-fix\scripts\Start-IssueAutoFix.ps1 -IssueNumber $_ -CLIType copilot -Force
-    @{ IssueNumber = $_; ExitCode = $LASTEXITCODE }
-} -ThrottleLimit 5
+# Issue fixes in parallel
+.github/skills/issue-fix/scripts/Start-IssueFixParallel.ps1 -IssueNumbers 28726,13336,27507,3054,37800 -CLIType copilot -ThrottleLimit 5 -Force
 
-# Check results
-$results | ForEach-Object { Write-Host "Issue $($_.IssueNumber): Exit $($_.ExitCode)" }
+# PR fixes in parallel
+.github/skills/pr-fix/scripts/Start-PRFixParallel.ps1 -PRNumbers 45256,45257,45285,45286 -CLIType copilot -ThrottleLimit 3 -Force
 ```
-
-### INCORRECT: Do NOT do this
-```powershell
-# BAD - spawns terminals that cannot be tracked
-foreach ($issue in $issues) {
-    Start-Process -NoNewWindow ...
-}
-
-# BAD - creates background jobs that lose context
-$jobs = @()
-foreach ($issue in $IssueNumbers) {
-    $jobs += Start-Job -ScriptBlock { ... }
-}
-```
-
-### Why Single Terminal Matters
-
-1. **Trackability** - All output visible in one place
-2. **Synchronization** - `-Parallel` blocks until all complete
-3. **Resource control** - `-ThrottleLimit` prevents overload
-4. **Error handling** - Failures captured in results array
 
 ## Worktree Mapping
 

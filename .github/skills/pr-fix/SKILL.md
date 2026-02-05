@@ -31,6 +31,8 @@ This skill requires **both** CLI scripts AND VS Code MCP tools:
 │   └── mcp-config.json             # MCP configuration
 └── scripts/
     ├── Start-PRFix.ps1             # Main fix script
+  ├── Start-PRFixParallel.ps1     # Parallel runner (single terminal)
+  ├── Resolve-PRThreads.ps1       # Resolve threads helper
     ├── Get-UnresolvedThreads.ps1   # Get threads needing resolution
     └── IssueReviewLib.ps1          # Shared helpers
 ```
@@ -205,29 +207,14 @@ foreach ($threadId in $threads) {
 
 ## Batch Processing Multiple PRs (CRITICAL)
 
-**DO NOT spawn separate terminals for each PR.** Use PowerShell 7 parallel execution:
+**DO NOT spawn separate terminals for each PR.** Use the dedicated scripts:
 
 ```powershell
-# CORRECT: Single terminal with parallel execution
-$prs = @(45256, 45257, 45285, 45286)
-$prs | ForEach-Object -Parallel {
-    Set-Location Q:\PowerToys
-    # Find worktree for this PR
-    $branch = (gh pr view $_ --json headRefName -q .headRefName)
-    $worktree = (git worktree list | Select-String $branch | ForEach-Object { ($_ -split '\s+')[0] })
-    if ($worktree) {
-        Set-Location $worktree
-        .\\.github\\skills\\pr-fix\\scripts\\Start-PRFix.ps1 -PRNumber $_ -CLIType copilot -Force
-    }
-} -ThrottleLimit 3
+# Run fixes in parallel (single terminal)
+.github/skills/pr-fix/scripts/Start-PRFixParallel.ps1 -PRNumbers 45256,45257,45285,45286 -CLIType copilot -ThrottleLimit 3 -Force
 
-# Then resolve threads (VS Code agent must do this)
-foreach ($pr in $prs) {
-    $threads = gh api graphql -f query="query { repository(owner:`"microsoft`",name:`"PowerToys`") { pullRequest(number:$pr) { reviewThreads(first:50) { nodes { id isResolved } } } } }" --jq '.data.repository.pullRequest.reviewThreads.nodes[] | select(.isResolved==false) | .id'
-    foreach ($t in $threads) {
-        gh api graphql -f query="mutation { resolveReviewThread(input:{threadId:`"$t`"}) { thread { isResolved } } }"
-    }
-}
+# Resolve threads (VS Code agent)
+.github/skills/pr-fix/scripts/Resolve-PRThreads.ps1 -PRNumber 45256
 ```
 
 ## Related Skills
