@@ -10,6 +10,7 @@ using Microsoft.CmdPal.Core.Common;
 using Microsoft.CmdPal.Core.ViewModels.Messages;
 using Microsoft.CmdPal.Core.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
+using Windows.Foundation;
 
 namespace Microsoft.CmdPal.Core.ViewModels;
 
@@ -136,6 +137,28 @@ public partial class ShellViewModel : ObservableObject,
         return true;
     }
 
+    private async Task ShowPageAsFlyoutAsync(PageViewModel viewModel, Point flyoutPosition, CancellationToken cancellationToken = default)
+    {
+        if (viewModel is not IContextMenuContext ctx)
+        {
+            return;
+        }
+
+        // Instead of doing normal page navigation, we want to open this
+        // page as a flyout anchored to the given position.
+        var initialized = await InitializePageViewModelAsync(viewModel, cancellationToken);
+        if (initialized)
+        {
+            await SetCurrentPageAsync(viewModel, cancellationToken);
+
+            // send message
+            WeakReferenceMessenger.Default.Send(new ShowCommandInContextMenuMessage(ctx, flyoutPosition));
+
+            //// now cleanup navigation
+            // await CleanupNavigationTokenAsync(cancellationToken);
+        }
+    }
+
     private async Task LoadPageViewModelAsync(PageViewModel viewModel, CancellationToken cancellationToken = default)
     {
         var initialized = await InitializePageViewModelAsync(viewModel, cancellationToken);
@@ -215,6 +238,15 @@ public partial class ShellViewModel : ObservableObject,
             _scheduler);
     }
 
+    private async Task CleanupNavigationTokenAsync(CancellationTokenSource cts)
+    {
+        // clean up the navigation token if it's still ours
+        if (Interlocked.CompareExchange(ref _navigationCts, null, cts) == cts)
+        {
+            cts.Dispose();
+        }
+    }
+
     public void Receive(PerformCommandMessage message)
     {
         PerformCommand(message);
@@ -259,62 +291,7 @@ public partial class ShellViewModel : ObservableObject,
             if (command is IPage page)
             {
                 CoreLogger.LogDebug($"Navigating to page");
-
-                var isMainPage = command == _rootPage;
-
-                // Telemetry: Track extension page navigation for session metrics
-                if (host is not null)
-                {
-                    var extensionId = host.GetExtensionDisplayName() ?? "builtin";
-                    var commandId = command?.Id ?? "unknown";
-                    var commandName = command?.Name ?? "unknown";
-                    WeakReferenceMessenger.Default.Send<TelemetryExtensionInvokedMessage>(
-                        new(extensionId, commandId, commandName, true, 0));
-                }
-
-                // Construct our ViewModel of the appropriate type and pass it the UI Thread context.
-                var pageViewModel = _pageViewModelFactory.TryCreatePageViewModel(page, !isMainPage, host!);
-                if (pageViewModel is null)
-                {
-                    CoreLogger.LogError($"Failed to create ViewModel for page {page.GetType().Name}");
-                    throw new NotSupportedException();
-                }
-
-                // -------------------------------------------------------------
-                // Slice it here.
-                // Stuff above this, we need to always do, for both commands in the palette and flyout items
-                //
-                // Below here, this is all specific to navigating the current page of the palette
-                _isNested = !isMainPage;
-                _currentlyTransient = message.TransientPage;
-
-                pageViewModel.IsRootPage = isMainPage;
-                pageViewModel.HasBackButton = IsNested;
-
-                // Clear command bar, ViewModel initialization can already set new commands if it wants to
-                OnUIThread(() => WeakReferenceMessenger.Default.Send<UpdateCommandBarMessage>(new(null)));
-
-                // Kick off async loading of our ViewModel
-                LoadPageViewModelAsync(pageViewModel, navigationToken)
-                    .ContinueWith(
-                        (Task t) =>
-                        {
-                            // clean up the navigation token if it's still ours
-                            if (Interlocked.CompareExchange(ref _navigationCts, null, newCts) == newCts)
-                            {
-                                newCts.Dispose();
-                            }
-                        },
-                        navigationToken,
-                        TaskContinuationOptions.None,
-                        _scheduler);
-
-                // While we're loading in the background, immediately move to the next page.
-                NavigateToPageMessage msg = new(pageViewModel, message.WithAnimation, navigationToken, message.TransientPage);
-                WeakReferenceMessenger.Default.Send(msg);
-
-                // Note: Originally we set our page back in the ViewModel here, but that now happens in response to the Frame navigating triggered from the above
-                // See RootFrame_Navigated event handler.
+                StartOpenPage(message, page, host, newCts, navigationToken);
             }
             else if (command is IInvokableCommand invokable)
             {
@@ -464,6 +441,71 @@ public partial class ShellViewModel : ObservableObject,
                     break;
                 }
         }
+    }
+
+    private void StartOpenPage(PerformCommandMessage message, IPage page, AppExtensionHost? host, CancellationTokenSource cts, CancellationToken navigationToken)
+    {
+        var isMainPage = page == _rootPage;
+
+        // Telemetry: Track extension page navigation for session metrics
+        // TODO! this block is unsafe
+        if (host is not null)
+        {
+            var extensionId = host.GetExtensionDisplayName() ?? "builtin";
+            var commandId = page.Id ?? "unknown";
+            var commandName = page.Name ?? "unknown";
+            WeakReferenceMessenger.Default.Send<TelemetryExtensionInvokedMessage>(
+                new(extensionId, commandId, commandName, true, 0));
+        }
+
+        // Construct our ViewModel of the appropriate type and pass it the UI Thread context.
+        var pageViewModel = _pageViewModelFactory.TryCreatePageViewModel(page, !isMainPage, host!);
+        if (pageViewModel is null)
+        {
+            CoreLogger.LogError($"Failed to create ViewModel for page {page.GetType().Name}");
+            throw new NotSupportedException();
+        }
+
+        if (pageViewModel is ListViewModel listViewModel
+            && message.OpenAsFlyout
+            && message.FlyoutPosition is Point flyoutPosition)
+        {
+            ShowPageAsFlyoutAsync(listViewModel, flyoutPosition, navigationToken)
+                .ContinueWith(
+                    (Task t) => CleanupNavigationTokenAsync(cts),
+                    navigationToken,
+                    TaskContinuationOptions.None,
+                    _scheduler);
+        }
+
+        // -------------------------------------------------------------
+        // Slice it here.
+        // Stuff above this, we need to always do, for both commands in the palette and flyout items
+        //
+        // Below here, this is all specific to navigating the current page of the palette
+        _isNested = !isMainPage;
+        _currentlyTransient = message.TransientPage;
+
+        pageViewModel.IsRootPage = isMainPage;
+        pageViewModel.HasBackButton = IsNested;
+
+        // Clear command bar, ViewModel initialization can already set new commands if it wants to
+        OnUIThread(() => WeakReferenceMessenger.Default.Send<UpdateCommandBarMessage>(new(null)));
+
+        // Kick off async loading of our ViewModel
+        LoadPageViewModelAsync(pageViewModel, navigationToken)
+            .ContinueWith(
+                (Task t) => CleanupNavigationTokenAsync(cts),
+                navigationToken,
+                TaskContinuationOptions.None,
+                _scheduler);
+
+        // While we're loading in the background, immediately move to the next page.
+        NavigateToPageMessage msg = new(pageViewModel, message.WithAnimation, navigationToken, message.TransientPage);
+        WeakReferenceMessenger.Default.Send(msg);
+
+        // Note: Originally we set our page back in the ViewModel here, but that now happens in response to the Frame navigating triggered from the above
+        // See RootFrame_Navigated event handler.
     }
 
     public void GoHome(bool withAnimation = true, bool focusSearch = true)

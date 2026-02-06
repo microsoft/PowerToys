@@ -16,6 +16,29 @@
     Closed="MainWindow_Closed"
     mc:Ignorable="d">
     <Grid x:Name="RootElement">
+        <Grid.Resources>
+            <Style
+                x:Name="ContextMenuFlyoutStyle"
+                BasedOn="{StaticResource DefaultFlyoutPresenterStyle}"
+                TargetType="FlyoutPresenter">
+                <Style.Setters>
+                    <Setter Property="Margin" Value="0" />
+                    <Setter Property="Padding" Value="0" />
+                    <Setter Property="Background" Value="{ThemeResource DesktopAcrylicTransparentBrush}" />
+                    <Setter Property="BorderBrush" Value="{ThemeResource DividerStrokeColorDefaultBrush}" />
+                </Style.Setters>
+            </Style>
+
+            <!--  Backdrop requires ShouldConstrainToRootBounds="False"  -->
+            <Flyout
+                x:Name="ContextMenuFlyout"
+                FlyoutPresenterStyle="{StaticResource ContextMenuFlyoutStyle}"
+                Opened="ContextMenuFlyout_Opened"
+                ShouldConstrainToRootBounds="False"
+                SystemBackdrop="{ThemeResource AcrylicBackgroundFillColorDefaultBackdrop}">
+                <controls:ContextMenu x:Name="ContextMenuControl" />
+            </Flyout>
+        </Grid.Resources>
 
         <controls:BlurImageControl
             HorizontalAlignment="Stretch"

@@ -29,7 +29,7 @@
                 Separator="{StaticResource SeparatorContextMenuViewModelTemplate}" />
 
             <!--  Template for context items in the context item menu  -->
-            <DataTemplate x:Key="DefaultContextMenuViewModelTemplate" x:DataType="coreViewModels:CommandContextItemViewModel">
+            <DataTemplate x:Key="DefaultContextMenuViewModelTemplate" x:DataType="coreViewModels:ICommandContextItemViewModel">
                 <Grid Padding="{StaticResource DefaultContextMenuItemPadding}" AutomationProperties.Name="{x:Bind Title, Mode=OneWay}">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="32" />

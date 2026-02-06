@@ -10,7 +10,7 @@ using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Core.ViewModels;
 
-public partial class ListItemViewModel : CommandItemViewModel, IContextItemViewModel
+public partial class ListItemViewModel : CommandItemViewModel, ICommandContextItemViewModel
 {
     public new ExtensionObject<IListItem> Model { get; }
 
@@ -60,6 +60,12 @@ public partial class ListItemViewModel : CommandItemViewModel, IContextItemViewM
             }
         }
     }
+
+    bool ICommandContextItemViewModel.IsCritical => false;
+
+    KeyChord? ICommandContextItemViewModel.RequestedShortcut => null;
+
+    bool ICommandContextItemViewModel.HasRequestedShortcut => false;
 
     public ListItemViewModel(IListItem model, WeakReference<IPageContext> context)
         : base(new(model), context)

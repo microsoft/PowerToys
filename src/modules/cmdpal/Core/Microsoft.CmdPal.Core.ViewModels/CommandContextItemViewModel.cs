@@ -5,12 +5,13 @@
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.CmdPal.Core.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
-using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Core.ViewModels;
 
 [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
-public partial class CommandContextItemViewModel(ICommandContextItem contextItem, WeakReference<IPageContext> context) : CommandItemViewModel(new(contextItem), context), IContextItemViewModel
+public partial class CommandContextItemViewModel(ICommandContextItem contextItem, WeakReference<IPageContext> context) :
+    CommandItemViewModel(new(contextItem), context),
+    ICommandContextItemViewModel
 {
     private readonly KeyChord nullKeyChord = new(0, 0, 0);
 
@@ -44,4 +45,17 @@ public partial class CommandContextItemViewModel(ICommandContextItem contextItem
             contextItem.RequestedShortcut.Vkey,
             contextItem.RequestedShortcut.ScanCode);
     }
+}
+
+public interface ICommandContextItemViewModel : IContextItemViewModel
+{
+    public string Title { get; }
+
+    public IconInfoViewModel Icon { get; }
+
+    public bool IsCritical { get; }
+
+    public KeyChord? RequestedShortcut { get; }
+
+    public bool HasRequestedShortcut { get; }
 }

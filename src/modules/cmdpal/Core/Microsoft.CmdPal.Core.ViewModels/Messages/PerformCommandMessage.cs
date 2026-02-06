@@ -4,6 +4,7 @@
 
 using Microsoft.CmdPal.Core.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
+using Windows.Foundation;
 
 namespace Microsoft.CmdPal.Core.ViewModels.Messages;
 
@@ -20,10 +21,26 @@ public record PerformCommandMessage
 
     public bool TransientPage { get; set; }
 
+    public bool OpenAsFlyout { get; private set; }
+
+    public Point? FlyoutPosition { get; private set; }
+
     public PerformCommandMessage(ExtensionObject<ICommand> command)
     {
         Command = command;
         Context = null;
+    }
+
+    public static PerformCommandMessage CreateFlyoutMessage(ExtensionObject<ICommand> command, Point flyoutPosition)
+    {
+        var message = new PerformCommandMessage(command)
+        {
+            WithAnimation = false,
+            TransientPage = true,
+            OpenAsFlyout = true,
+            FlyoutPosition = flyoutPosition,
+        };
+        return message;
     }
 
     public PerformCommandMessage(ExtensionObject<ICommand> command, ExtensionObject<IListItem> context)

@@ -11,7 +11,6 @@ using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Dock;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
-using Microsoft.CommandPalette.Extensions;
 using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -262,22 +261,19 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
         try
         {
             // TODO! This is where we need to decide whether to open the command
-            // as a context menu or as a full page. 
+            // as a context menu or as a full page.
             //
             // It might be the case that we should just have like... a
             // PerformDockCommandMessage like PerformCommandMessage but with the
-            // context that we should be opening the command as a flyout. 
-
-            PerformCommandMessage m = new(command.Model);
-            m.WithAnimation = false;
-            m.TransientPage = true;
+            // context that we should be opening the command as a flyout.
+            var m = PerformCommandMessage.CreateFlyoutMessage(command.Model, pos);
             WeakReferenceMessenger.Default.Send(m);
 
-            var isPage = command.Model.Unsafe is not IInvokableCommand invokable;
-            if (isPage)
-            {
-                WeakReferenceMessenger.Default.Send<RequestShowPaletteAtMessage>(new(pos));
-            }
+            // var isPage = command.Model.Unsafe is not IInvokableCommand invokable;
+            // if (isPage)
+            // {
+            //     WeakReferenceMessenger.Default.Send<RequestShowPaletteAtMessage>(new(pos));
+            // }
         }
         catch (COMException e)
         {
