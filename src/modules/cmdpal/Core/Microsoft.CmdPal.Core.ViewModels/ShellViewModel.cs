@@ -138,95 +138,81 @@ public partial class ShellViewModel : ObservableObject,
 
     private async Task LoadPageViewModelAsync(PageViewModel viewModel, CancellationToken cancellationToken = default)
     {
-        // Note: We removed the general loading state, extensions sometimes use their `IsLoading`, but it's inconsistently implemented it seems.
-        // IsInitialized is our main indicator of the general overall state of loading props/items from a page we use for the progress bar
-        // This triggers that load generally with the InitializeCommand asynchronously when we navigate to a page.
-        // We could re-track the page loading status, if we need it more granularly below again, but between the initialized and error message, we can infer some status.
-        // We could also maybe move this thread offloading we do for loading into PageViewModel and better communicate between the two... a few different options.
-
-        ////LoadedState = ViewModelLoadedState.Loading;
-        if (!viewModel.IsInitialized
-            && viewModel.InitializeCommand is not null)
+        var initialized = await InitializePageViewModelAsync(viewModel, cancellationToken);
+        if (initialized)
         {
-            var outer = Task.Run(
-                async () =>
-                {
-                    // You know, this creates the situation where we wait for
-                    // both loading page properties, AND the items, before we
-                    // display anything.
-                    //
-                    // We almost need to do an async await on initialize, then
-                    // just a fire-and-forget on FetchItems.
-                    // RE: We do set the CurrentPage in ShellPage.xaml.cs as well, so, we kind of are doing two different things here.
-                    // Definitely some more clean-up to do, but at least its centralized to one spot now.
-                    viewModel.InitializeCommand.Execute(null);
-
-                    await viewModel.InitializeCommand.ExecutionTask!;
-
-                    if (viewModel.InitializeCommand.ExecutionTask.Status != TaskStatus.RanToCompletion)
-                    {
-                        if (viewModel.InitializeCommand.ExecutionTask.Exception is AggregateException ex)
-                        {
-                            CoreLogger.LogError(ex.ToString());
-                        }
-                    }
-                    else
-                    {
-                        // We successfully initialized the page. 
-                        // Now, hop to the UI thread to set our CurrentPage to the new one. 
-                        // (but don't if we got cancelled while waiting for initialization or the UI thread)
-                        var t = Task.Factory.StartNew(
-                            () =>
-                            {
-                                if (cancellationToken.IsCancellationRequested)
-                                {
-                                    if (viewModel is IDisposable disposable)
-                                    {
-                                        try
-                                        {
-                                            disposable.Dispose();
-                                        }
-                                        catch (Exception ex)
-                                        {
-                                            CoreLogger.LogError(ex.ToString());
-                                        }
-                                    }
-
-                                    return;
-                                }
-
-                                CurrentPage = viewModel;
-                            },
-                            cancellationToken,
-                            TaskCreationOptions.None,
-                            _scheduler);
-                        await t;
-                    }
-                },
-                cancellationToken);
-            await outer;
+            await SetCurrentPageAsync(viewModel, cancellationToken);
         }
-        else
+    }
+
+    /// <summary>
+    /// Runs the async initialization for a page view model on a background thread.
+    /// Returns true if the page is ready to be displayed, false otherwise.
+    /// </summary>
+    private async Task<bool> InitializePageViewModelAsync(PageViewModel viewModel, CancellationToken cancellationToken)
+    {
+        if (viewModel.IsInitialized
+            || viewModel.InitializeCommand is null)
         {
-            if (cancellationToken.IsCancellationRequested)
+            // Already initialized (or nothing to do), ready to display.
+            return true;
+        }
+
+        var success = false;
+        await Task.Run(
+            async () =>
             {
-                if (viewModel is IDisposable disposable)
+                viewModel.InitializeCommand.Execute(null);
+                await viewModel.InitializeCommand.ExecutionTask!;
+
+                if (viewModel.InitializeCommand.ExecutionTask.Status != TaskStatus.RanToCompletion)
                 {
-                    try
-                    {
-                        disposable.Dispose();
-                    }
-                    catch (Exception ex)
+                    if (viewModel.InitializeCommand.ExecutionTask.Exception is AggregateException ex)
                     {
                         CoreLogger.LogError(ex.ToString());
                     }
                 }
+                else
+                {
+                    success = true;
+                }
+            },
+            cancellationToken);
 
-                return;
-            }
+        return success;
+    }
 
-            CurrentPage = viewModel;
-        }
+    /// <summary>
+    /// Hops to the UI thread to set <see cref="CurrentPage"/>, or disposes the
+    /// view model if the operation was cancelled.
+    /// </summary>
+    private async Task SetCurrentPageAsync(PageViewModel viewModel, CancellationToken cancellationToken)
+    {
+        await Task.Factory.StartNew(
+            () =>
+            {
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    if (viewModel is IDisposable disposable)
+                    {
+                        try
+                        {
+                            disposable.Dispose();
+                        }
+                        catch (Exception ex)
+                        {
+                            CoreLogger.LogError(ex.ToString());
+                        }
+                    }
+
+                    return;
+                }
+
+                CurrentPage = viewModel;
+            },
+            cancellationToken,
+            TaskCreationOptions.None,
+            _scheduler);
     }
 
     public void Receive(PerformCommandMessage message)
@@ -279,9 +265,9 @@ public partial class ShellViewModel : ObservableObject,
                 // Telemetry: Track extension page navigation for session metrics
                 if (host is not null)
                 {
-                    string extensionId = host.GetExtensionDisplayName() ?? "builtin";
-                    string commandId = command?.Id ?? "unknown";
-                    string commandName = command?.Name ?? "unknown";
+                    var extensionId = host.GetExtensionDisplayName() ?? "builtin";
+                    var commandId = command?.Id ?? "unknown";
+                    var commandName = command?.Name ?? "unknown";
                     WeakReferenceMessenger.Default.Send<TelemetryExtensionInvokedMessage>(
                         new(extensionId, commandId, commandName, true, 0));
                 }
@@ -295,11 +281,10 @@ public partial class ShellViewModel : ObservableObject,
                 }
 
                 // -------------------------------------------------------------
-                // Slice it here. 
+                // Slice it here.
                 // Stuff above this, we need to always do, for both commands in the palette and flyout items
                 //
                 // Below here, this is all specific to navigating the current page of the palette
-
                 _isNested = !isMainPage;
                 _currentlyTransient = message.TransientPage;
 
@@ -371,10 +356,10 @@ public partial class ShellViewModel : ObservableObject,
         // Telemetry: Track command execution time and success
         var stopwatch = System.Diagnostics.Stopwatch.StartNew();
         var command = message.Command.Unsafe;
-        string extensionId = host?.GetExtensionDisplayName() ?? "builtin";
-        string commandId = command?.Id ?? "unknown";
-        string commandName = command?.Name ?? "unknown";
-        bool success = false;
+        var extensionId = host?.GetExtensionDisplayName() ?? "builtin";
+        var commandId = command?.Id ?? "unknown";
+        var commandName = command?.Name ?? "unknown";
+        var success = false;
 
         try
         {
@@ -531,5 +516,4 @@ public partial class ShellViewModel : ObservableObject,
 
         GC.SuppressFinalize(this);
     }
-
 }
