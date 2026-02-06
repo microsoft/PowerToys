@@ -155,6 +155,9 @@
     <ProjectReference Include="..\..\..\common\Themes\Themes.vcxproj">
       <Project>{98537082-0fdb-40de-abd8-0dc5a4269bab}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\..\..\common\utils\CommonUtils.vcxproj">
+      <Project>{74485049-C722-400F-ABE5-86AC41736D21}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <Import Project="..\..\..\..\deps\spdlog.props" />

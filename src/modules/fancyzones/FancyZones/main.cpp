@@ -4,6 +4,7 @@
 #include <common/utils/window.h>
 #include <common/utils/UnhandledExceptionHandler.h>
 #include <common/utils/gpo.h>
+#include <common/utils/winapi_error.h>
 
 #include <FancyZonesLib/trace.h>
 #include <FancyZonesLib/Generated Files/resource.h>

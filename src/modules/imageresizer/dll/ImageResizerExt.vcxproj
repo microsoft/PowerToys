@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.props')" />
   <Target Name="GenerateResourceFiles" BeforeTargets="PrepareForBuild">
@@ -15,7 +15,6 @@
     <UseOfAtl>Static</UseOfAtl>
   </PropertyGroup>
   <PropertyGroup Label="Configuration">
-    
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -131,6 +130,9 @@
     </ProjectReference>
     <ProjectReference Include="..\ImageResizerLib\ImageResizerLib.vcxproj">
       <Project>{18b3db45-4ffe-4d01-97d6-5223feee1853}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\common\utils\CommonUtils.vcxproj">
+      <Project>{74485049-C722-400F-ABE5-86AC41736D21}</Project>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

@@ -6,6 +6,7 @@
 #include <common/utils/process_path.h>
 #include <common/utils/UnhandledExceptionHandler.h>
 #include <common/utils/resources.h>
+#include <common/utils/winapi_error.h>
 
 #include <common/Telemetry/EtwTrace/EtwTrace.h>
 

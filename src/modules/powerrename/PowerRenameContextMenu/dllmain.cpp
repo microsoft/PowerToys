@@ -18,10 +18,12 @@
 
 #include "Generated Files/resource.h"
 
+#include <common/logger/logger.h>
 #include <common/telemetry/EtwTrace/EtwTrace.h>
 #include <common/utils/elevation.h>
 #include <common/utils/process_path.h>
 #include <common/utils/resources.h>
+#include <common/utils/winapi_error.h>
 #include <Helpers.h>
 #include <Settings.h>
 #include <trace.h>

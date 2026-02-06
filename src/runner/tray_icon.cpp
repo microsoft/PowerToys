@@ -14,6 +14,7 @@
 #include <common/version/version.h>
 #include <common/logger/logger.h>
 #include <common/utils/elevation.h>
+#include <common/utils/process_path.h>
 #include <common/Themes/theme_listener.h>
 #include <common/Themes/theme_helpers.h>
 #include "bug_report.h"

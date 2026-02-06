@@ -8,6 +8,7 @@
 #include <common/SettingsAPI/settings_objects.h>
 #include <common/utils/elevation.h>
 #include <common/utils/logger_helper.h>
+#include <common/utils/process_path.h>
 #include <common/utils/winapi_error.h>
 #include <exdisp.h>
 #include <filesystem>

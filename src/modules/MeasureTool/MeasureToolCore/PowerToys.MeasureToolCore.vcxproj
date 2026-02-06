@@ -1,12 +1,10 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Label="NuGet">
     <!-- Tell NuGet this is PackageReference style -->
     <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
-
     <!-- Tell NuGet we're a native project -->
     <NuGetTargetMoniker>native,Version=v0.0</NuGetTargetMoniker>
-
     <!-- Tell NuGet we target Windows (use your existing WindowsTargetPlatformVersion) -->
     <NuGetTargetPlatformIdentifier>Windows</NuGetTargetPlatformIdentifier>
     <NuGetTargetPlatformVersion>$(WindowsTargetPlatformVersion)</NuGetTargetPlatformVersion>
@@ -139,6 +137,9 @@
     </ProjectReference>
     <ProjectReference Include="..\..\..\common\Themes\Themes.vcxproj">
       <Project>{98537082-0fdb-40de-abd8-0dc5a4269bab}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\common\utils\CommonUtils.vcxproj">
+      <Project>{74485049-C722-400F-ABE5-86AC41736D21}</Project>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

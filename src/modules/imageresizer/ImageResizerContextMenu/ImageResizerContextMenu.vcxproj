@@ -13,12 +13,10 @@
   <PropertyGroup Condition="'$(Configuration)'=='Debug'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)'=='Release'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    
     <WholeProgramOptimization>true</WholeProgramOptimization>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
@@ -136,6 +134,9 @@ MakeAppx.exe pack /d . /p $(OutDir)ImageResizerContextMenuPackage.msix /nv</Comm
     </ProjectReference>
     <ProjectReference Include="..\ImageResizerLib\ImageResizerLib.vcxproj">
       <Project>{18b3db45-4ffe-4d01-97d6-5223feee1853}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\common\utils\CommonUtils.vcxproj">
+      <Project>{74485049-C722-400F-ABE5-86AC41736D21}</Project>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
