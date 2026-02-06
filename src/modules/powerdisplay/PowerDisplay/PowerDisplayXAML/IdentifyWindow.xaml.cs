@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Threading.Tasks;
 using Microsoft.UI.Windowing;
 using Windows.Graphics;
@@ -24,6 +25,17 @@ namespace PowerDisplay.PowerDisplayXAML
         {
             InitializeComponent();
             NumberText.Text = displayText;
+            try
+            {
+                this.SetIsShownInSwitchers(false);
+            }
+            catch (NotImplementedException)
+            {
+                // WinUI will throw if explorer is not running, safely ignore
+            }
+            catch (Exception)
+            {
+            }
 
             // Configure window style
             ConfigureWindow();
