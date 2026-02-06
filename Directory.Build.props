@@ -17,6 +17,7 @@
     <NuGetAuditMode>direct</NuGetAuditMode>
     <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>    <!-- Don't add source revision hash to the product version of binaries. -->
     <PlatformTarget>$(Platform)</PlatformTarget>
+	<RestoreEnablePackagePruning Condition=" '$(VisualStudioVersion)' == '17.0'">false </RestoreEnablePackagePruning>
   </PropertyGroup>
 
   <!--

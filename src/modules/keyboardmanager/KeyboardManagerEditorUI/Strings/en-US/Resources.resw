@@ -1,0 +1,318 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="RemappingsPageApplicableAppsTextBlock.Text" xml:space="preserve">
+    <value>Applicable apps</value>
+  </data>
+  <data name="RemappingsPageDeleteButton.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Delete app shortcut</value>
+  </data>
+  <data name="RemappingsPageKeyDialog.PrimaryButtonText" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="RemappingsPageKeyDialog.SecondaryButtonText" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="RemappingsPageKeyDialog.Title" xml:space="preserve">
+    <value>Remappings</value>
+  </data>
+  <data name="RemappingsPageInstructionTextBlock.Text" xml:space="preserve">
+    <value>Remappings allow you to reconfigure a single key or shortcut to a new key or shortcut</value>
+  </data>
+  <data name="RemappingsPageNewTextBlock.Text" xml:space="preserve">
+    <value>New</value>
+  </data>
+  <data name="RemappingsPageOriginalKeysTextBlock.Text" xml:space="preserve">
+    <value>Original key(s)</value>
+  </data>
+  <data name="RemappingsPageOrphanedKeysTeachingTip.ActionButtonContent" xml:space="preserve">
+    <value>Continue anyway</value>
+  </data>
+  <data name="RemappingsPageOrphanedKeysTeachingTip.CloseButtonContent" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="RemappingsPageOrphanedKeysTeachingTip.Title" xml:space="preserve">
+    <value>Orphaned Keys Warning</value>
+  </data>
+  <data name="RemappingsPageValidationTeachingTip.CloseButtonContent" xml:space="preserve">
+    <value>OK</value>
+  </data>
+  <data name="RemappingsPageNewKeysTextBlock.Text" xml:space="preserve">
+    <value>New key(s)</value>
+  </data>
+  <data name="TextPageInstructionTextBlock.Text" xml:space="preserve">
+    <value>Text shortcuts allow you to insert text in any input field when you use the configured keyboard shortcut</value>
+  </data>
+  <data name="TextPageNewTextBlock.Text" xml:space="preserve">
+    <value>New</value>
+  </data>
+  <data name="TextPageOriginalKeysTextBlock.Text" xml:space="preserve">
+    <value>Original key(s)</value>
+  </data>
+  <data name="TextPageApplicableAppsTextBlock.Text" xml:space="preserve">
+    <value>Applicable apps</value>
+  </data>
+  <data name="TextPageTextTextBlock.Text" xml:space="preserve">
+    <value>Text</value>
+  </data>
+  <data name="TextPageKeyDialog.Title" xml:space="preserve">
+    <value>Text shortcut</value>
+  </data>
+  <data name="TextPageKeyDialog.PrimaryButtonText" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="TextPageKeyDialog.SecondaryButtonText" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="TextPageValidationTip.CloseButtonContent" xml:space="preserve">
+    <value>OK</value>
+  </data>
+  <data name="ProgramsPageInstructionTextBlock.Text" xml:space="preserve">
+    <value>Program shortcuts allow you to open specific applications when you use the configured shortcut</value>
+  </data>
+  <data name="ProgramsPageKeyDialog.Title" xml:space="preserve">
+    <value>New program shortcut</value>
+  </data>
+  <data name="AppPageInputControlExampleTextBox.Header" xml:space="preserve">
+    <value>Program</value>
+  </data>
+  <data name="ProgramsPageNewTextBlock.Text" xml:space="preserve">
+    <value>New</value>
+  </data>
+  <data name="ProgramsPageShortcutTextBlock.Text" xml:space="preserve">
+    <value>Shortcut</value>
+  </data>
+  <data name="ProgramsPageProgramsTextBlock.Text" xml:space="preserve">
+    <value>Program</value>
+  </data>
+  <data name="ProgramsPageArgumentsRun.Text" xml:space="preserve">
+    <value>Arguments</value>
+  </data>
+  <data name="ProgramsPageKeyDialog.PrimaryButtonText" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="ProgramsPageKeyDialog.SecondaryButtonText" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="UrlPageInstructionTextBlock.Text" xml:space="preserve">
+    <value>URL shortcuts allow you to open a URL when you use the configured shortcut</value>
+  </data>
+  <data name="UrlPageNewTextBlock.Text" xml:space="preserve">
+    <value>New</value>
+  </data>
+  <data name="UrlPageUrlTextBlock.Text" xml:space="preserve">
+    <value>URL</value>
+  </data>
+  <data name="UrlPageShortcutTextBlock.Text" xml:space="preserve">
+    <value>Shortcut</value>
+  </data>
+  <data name="UrlPageKeyDialog.Title" xml:space="preserve">
+    <value>New URL shortcut</value>
+  </data>
+  <data name="UrlPageKeyDialog.PrimaryButtonText" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="UrlPageKeyDialog.SecondaryButtonText" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="InputControlOriginalKeysTextBlock.Text" xml:space="preserve">
+    <value>Original key(s)</value>
+  </data>
+  <data name="InputControlNewKeysTextBlock.Text" xml:space="preserve">
+    <value>New key(s)</value>
+  </data>
+  <data name="InputControlAllAppsCheckBox.Content" xml:space="preserve">
+    <value>Only apply this remapping to a specific application</value>
+  </data>
+  <data name="InputControlAllAppsTextBox.PlaceholderText" xml:space="preserve">
+    <value>e.g.: outlook.exe</value>
+  </data>
+  <data name="InputControlAllAppsTextBox.Header" xml:space="preserve">
+    <value>Application name</value>
+  </data>
+  <data name="TextPageInputControlShortcutKeysTextBlock.Text" xml:space="preserve">
+    <value>Shortcut key(s)</value>
+  </data>
+  <data name="TextPageInputControlTextContentTextBox.PlaceholderText" xml:space="preserve">
+    <value>Enter text that will be inserted when the shortcut is pressed</value>
+  </data>
+  <data name="TextPageInputControlTextContentTextBox.Header" xml:space="preserve">
+    <value>Text to insert</value>
+  </data>
+  <data name="TextPageDeleteButton.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="TextPageInputControlAllAppsCheckBox.Content" xml:space="preserve">
+    <value>Only apply this remapping to a specific application</value>
+  </data>
+  <data name="TextPageInputControlAllAppsTextBox.Header" xml:space="preserve">
+    <value>Application name</value>
+  </data>
+  <data name="TextPageInputControlAllAppsTextBox.PlaceholderText" xml:space="preserve">
+    <value>e.g.: outlook.exe</value>
+  </data>
+  <data name="ProgramsPageDeleteButton.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Delete remapping</value>
+  </data>
+  <data name="AppPageInputControlShortcutTextBlock.Text" xml:space="preserve">
+    <value>Shortcut</value>
+  </data>
+  <data name="AppPageInputControlPathSelectButton.Content" xml:space="preserve">
+    <value>Select Program</value>
+  </data>
+  <data name="AppPageInputControlArgumentsTextBox.Header" xml:space="preserve">
+    <value>Arguments</value>
+  </data>
+  <data name="AppPageInputControlStartInTextBox.Header" xml:space="preserve">
+    <value>Start in</value>
+  </data>
+  <data name="AppPageInputControlStartInSelectButton.Content" xml:space="preserve">
+    <value>Select directory</value>
+  </data>
+  <data name="AppPageInputControlElevationComboBox.Header" xml:space="preserve">
+    <value>Elevation</value>
+  </data>
+  <data name="AppPageInputControlIfRunningComboBox.Header" xml:space="preserve">
+    <value>If running action</value>
+  </data>
+  <data name="AppPageInputControlVisibilityComboBox.Header" xml:space="preserve">
+    <value>Visibility</value>
+  </data>
+  <data name="UrlPageDeleteButton.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Delete URL remapping</value>
+  </data>
+  <data name="UrlPageInputControlShortcutTextBlock.Text" xml:space="preserve">
+    <value>Shortcut key(s)</value>
+  </data>
+  <data name="UrlPageInputControlToOpenTextBox.Header" xml:space="preserve">
+    <value>URL to open</value>
+  </data>
+  <data name="UrlPageInputControlToOpenTextBox.PlaceholderText" xml:space="preserve">
+    <value>https://github.com/microsoft/PowerToys</value>
+  </data>
+  <data name="AppPageInputControlExtraOptionsTextBlock.Text" xml:space="preserve">
+    <value>More options</value>
+  </data>
+  <data name="ProgramsPageValidationTip.CloseButtonContent" xml:space="preserve">
+    <value>OK</value>
+  </data>
+  <data name="UrlPageValidationTip.CloseButtonContent" xml:space="preserve">
+    <value>OK</value>
+  </data>
+</root>

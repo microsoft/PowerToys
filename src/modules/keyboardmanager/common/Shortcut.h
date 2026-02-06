@@ -47,7 +47,7 @@ public:
         Normal = 0,
         Hidden = 1,
         Minimized = 2,
-        Maximized = 2
+        Maximized = 3
     };
 
     enum ProgramAlreadyRunningAction
