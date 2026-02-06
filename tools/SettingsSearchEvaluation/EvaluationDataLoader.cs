@@ -1,0 +1,180 @@
+// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System.Collections.ObjectModel;
+using System.Text.Json;
+using System.Text.RegularExpressions;
+using Settings.UI.Library;
+
+namespace SettingsSearchEvaluation;
+
+internal static partial class EvaluationDataLoader
+{
+    private static readonly JsonSerializerOptions JsonOptions = new()
+    {
+        PropertyNameCaseInsensitive = true,
+        ReadCommentHandling = JsonCommentHandling.Skip,
+    };
+
+    public static (IReadOnlyList<SettingEntry> Entries, DatasetDiagnostics Diagnostics) LoadEntriesFromFile(string path)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(path);
+        var json = File.ReadAllText(path);
+        return LoadEntriesFromJson(json);
+    }
+
+    public static (IReadOnlyList<SettingEntry> Entries, DatasetDiagnostics Diagnostics) LoadEntriesFromJson(string json)
+    {
+        if (string.IsNullOrWhiteSpace(json))
+        {
+            return (Array.Empty<SettingEntry>(), DatasetDiagnostics.Empty);
+        }
+
+        var rawEntries = JsonSerializer.Deserialize<List<RawSettingEntry>>(json, JsonOptions) ?? new List<RawSettingEntry>();
+        var normalized = new List<SettingEntry>(rawEntries.Count);
+
+        foreach (var raw in rawEntries)
+        {
+            var pageType = raw.PageTypeName?.Trim() ?? string.Empty;
+            var elementName = raw.ElementName?.Trim() ?? string.Empty;
+            var elementUid = raw.ElementUid?.Trim() ?? string.Empty;
+
+            if (string.IsNullOrEmpty(elementUid))
+            {
+                elementUid = $"{pageType}|{elementName}";
+            }
+
+            var header = raw.Header?.Trim();
+            if (string.IsNullOrEmpty(header))
+            {
+                header = BuildFallbackHeader(elementUid, elementName, pageType);
+            }
+
+            var description = raw.Description?.Trim() ?? string.Empty;
+            var parent = raw.ParentElementName?.Trim() ?? string.Empty;
+            var icon = raw.Icon?.Trim() ?? string.Empty;
+
+            normalized.Add(new SettingEntry(
+                raw.Type,
+                header,
+                pageType,
+                elementName,
+                elementUid,
+                parent,
+                description,
+                icon));
+        }
+
+        return (normalized, BuildDiagnostics(normalized));
+    }
+
+    public static IReadOnlyList<EvaluationCase> LoadCases(string? casesPath, IReadOnlyList<SettingEntry> entries)
+    {
+        if (!string.IsNullOrWhiteSpace(casesPath))
+        {
+            var json = File.ReadAllText(casesPath);
+            var parsed = JsonSerializer.Deserialize<List<RawEvaluationCase>>(json, JsonOptions) ?? new List<RawEvaluationCase>();
+            var normalized = parsed
+                .Where(c => !string.IsNullOrWhiteSpace(c.Query))
+                .Select(c => new EvaluationCase
+                {
+                    Query = c.Query!.Trim(),
+                    ExpectedIds = c.ExpectedIds?
+                        .Where(id => !string.IsNullOrWhiteSpace(id))
+                        .Select(id => id.Trim())
+                        .Distinct(StringComparer.OrdinalIgnoreCase)
+                        .ToArray() ?? Array.Empty<string>(),
+                    Notes = c.Notes,
+                })
+                .Where(c => c.ExpectedIds.Count > 0)
+                .ToList();
+
+            if (normalized.Count > 0)
+            {
+                return normalized;
+            }
+        }
+
+        return GenerateFallbackCases(entries);
+    }
+
+    private static DatasetDiagnostics BuildDiagnostics(IReadOnlyList<SettingEntry> entries)
+    {
+        var duplicateBuckets = entries
+            .GroupBy(x => x.Id, StringComparer.OrdinalIgnoreCase)
+            .Where(group => group.Count() > 1)
+            .OrderByDescending(group => group.Count())
+            .ToDictionary(group => group.Key, group => group.Count(), StringComparer.OrdinalIgnoreCase);
+
+        return new DatasetDiagnostics
+        {
+            TotalEntries = entries.Count,
+            DistinctIds = entries.Select(x => x.Id).Distinct(StringComparer.OrdinalIgnoreCase).Count(),
+            DuplicateIdBucketCount = duplicateBuckets.Count,
+            DuplicateIdCounts = new ReadOnlyDictionary<string, int>(duplicateBuckets),
+        };
+    }
+
+    private static IReadOnlyList<EvaluationCase> GenerateFallbackCases(IReadOnlyList<SettingEntry> entries)
+    {
+        return entries
+            .Where(entry => !string.IsNullOrWhiteSpace(entry.Header) && !string.IsNullOrWhiteSpace(entry.Id))
+            .GroupBy(entry => entry.Id, StringComparer.OrdinalIgnoreCase)
+            .Select(group => group.First())
+            .Take(40)
+            .Select(entry => new EvaluationCase
+            {
+                Query = entry.Header,
+                ExpectedIds = new[] { entry.Id },
+                Notes = "Autogenerated case from index entry header.",
+            })
+            .ToArray();
+    }
+
+    private static string BuildFallbackHeader(string elementUid, string elementName, string pageTypeName)
+    {
+        var candidate = !string.IsNullOrWhiteSpace(elementUid)
+            ? elementUid
+            : (!string.IsNullOrWhiteSpace(elementName) ? elementName : pageTypeName);
+
+        candidate = candidate.Replace('_', ' ').Trim();
+        candidate = ConsecutiveWhitespaceRegex().Replace(candidate, " ");
+        candidate = CamelBoundaryRegex().Replace(candidate, "$1 $2");
+        return candidate;
+    }
+
+    [GeneratedRegex(@"\s+")]
+    private static partial Regex ConsecutiveWhitespaceRegex();
+
+    [GeneratedRegex("([a-z0-9])([A-Z])")]
+    private static partial Regex CamelBoundaryRegex();
+
+    private sealed class RawSettingEntry
+    {
+        public EntryType Type { get; init; }
+
+        public string? Header { get; init; }
+
+        public string? PageTypeName { get; init; }
+
+        public string? ElementName { get; init; }
+
+        public string? ElementUid { get; init; }
+
+        public string? ParentElementName { get; init; }
+
+        public string? Description { get; init; }
+
+        public string? Icon { get; init; }
+    }
+
+    private sealed class RawEvaluationCase
+    {
+        public string? Query { get; init; }
+
+        public List<string>? ExpectedIds { get; init; }
+
+        public string? Notes { get; init; }
+    }
+}

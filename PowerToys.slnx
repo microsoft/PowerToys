@@ -1059,6 +1059,16 @@
       <Platform Solution="*|x64" Project="x64" />
     </Project>
   </Folder>
+  <Folder Name="/tools/SettingsSearchEvaluation/">
+    <Project Path="tools/SettingsSearchEvaluation/SettingsSearchEvaluation.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="tools/SettingsSearchEvaluation.Tests/SettingsSearchEvaluation.Tests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+  </Folder>
   <Folder Name="/Solution Items/">
     <File Path=".vsconfig" />
     <File Path="Cpp.Build.props" />

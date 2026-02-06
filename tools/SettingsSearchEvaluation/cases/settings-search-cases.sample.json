@@ -1,0 +1,72 @@
+[
+  {
+    "query": "always on top",
+    "expectedIds": [ "AlwaysOnTop" ],
+    "notes": "Module entry"
+  },
+  {
+    "query": "awake mode",
+    "expectedIds": [ "Awake_ModeSettingsCard" ],
+    "notes": "Feature setting"
+  },
+  {
+    "query": "color picker",
+    "expectedIds": [ "ColorPicker" ],
+    "notes": "Module entry"
+  },
+  {
+    "query": "fancy zones",
+    "expectedIds": [ "FancyZones" ],
+    "notes": "Module entry"
+  },
+  {
+    "query": "launch cmd pal",
+    "expectedIds": [ "CmdPal_Launch" ],
+    "notes": "CmdPal launch setting"
+  },
+  {
+    "query": "image resizer",
+    "expectedIds": [ "ImageResizer" ],
+    "notes": "Module entry"
+  },
+  {
+    "query": "keyboard manager",
+    "expectedIds": [ "KeyboardManager" ],
+    "notes": "Module entry"
+  },
+  {
+    "query": "mouse jump",
+    "expectedIds": [ "MouseUtils_Enable_MouseJump" ],
+    "notes": "Module entry"
+  },
+  {
+    "query": "mouse without borders",
+    "expectedIds": [ "MouseWithoutBorders" ],
+    "notes": "Module setting"
+  },
+  {
+    "query": "peek",
+    "expectedIds": [ "Peek" ],
+    "notes": "Module entry"
+  },
+  {
+    "query": "power rename",
+    "expectedIds": [ "PowerRename" ],
+    "notes": "Module entry"
+  },
+  {
+    "query": "power toys run",
+    "expectedIds": [ "PowerLauncher" ],
+    "notes": "Module entry"
+  },
+  {
+    "query": "registry preview",
+    "expectedIds": [ "RegistryPreview" ],
+    "notes": "Module entry"
+  },
+  {
+    "query": "workspaces",
+    "expectedIds": [ "Workspaces_EnableToggleControl_HeaderText" ],
+    "notes": "Module setting"
+  }
+]
