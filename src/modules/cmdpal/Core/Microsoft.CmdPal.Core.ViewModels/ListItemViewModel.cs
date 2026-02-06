@@ -10,7 +10,7 @@ using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Core.ViewModels;
 
-public partial class ListItemViewModel : CommandItemViewModel
+public partial class ListItemViewModel : CommandItemViewModel, IContextItemViewModel
 {
     public new ExtensionObject<IListItem> Model { get; }
 

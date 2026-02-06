@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.ObjectModel;
-using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.Core.Common.Helpers;
@@ -15,7 +14,7 @@ using Windows.Foundation;
 
 namespace Microsoft.CmdPal.Core.ViewModels;
 
-public partial class ListViewModel : PageViewModel, IDisposable
+public partial class ListViewModel : PageViewModel, IDisposable, IContextMenuContext
 {
     // private readonly HashSet<ListItemViewModel> _itemCache = [];
     private readonly TaskFactory filterTaskFactory = new(new ConcurrentExclusiveSchedulerPair().ExclusiveScheduler);
@@ -64,6 +63,13 @@ public partial class ListViewModel : PageViewModel, IDisposable
     public CommandItemViewModel EmptyContent { get; private set; }
 
     public bool IsMainPage { get; init; }
+
+    // IContextMenuContext implementation
+    bool IContextMenuContext.HasMoreCommands => true;
+
+    List<IContextItemViewModel> IContextMenuContext.AllCommands => Items.Cast<IContextItemViewModel>().ToList();
+
+    IEnumerable<IContextItemViewModel> IContextMenuContext.MoreCommands => ((IContextMenuContext)this).AllCommands;
 
     private bool _isDynamic;
 

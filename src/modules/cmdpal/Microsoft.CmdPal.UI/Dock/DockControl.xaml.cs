@@ -261,6 +261,13 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
         var command = item.Command;
         try
         {
+            // TODO! This is where we need to decide whether to open the command
+            // as a context menu or as a full page. 
+            //
+            // It might be the case that we should just have like... a
+            // PerformDockCommandMessage like PerformCommandMessage but with the
+            // context that we should be opening the command as a flyout. 
+
             PerformCommandMessage m = new(command.Model);
             m.WithAnimation = false;
             m.TransientPage = true;
