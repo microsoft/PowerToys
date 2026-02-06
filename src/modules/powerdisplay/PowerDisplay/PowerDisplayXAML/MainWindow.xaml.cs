@@ -318,7 +318,6 @@ namespace PowerDisplay
             {
                 // Window properties (IsResizable, IsMaximizable, IsMinimizable,
                 // IsTitleBarVisible, IsShownInSwitchers) are set in XAML
-                this.AppWindow.IsShownInSwitchers = false;
 
                 // Set minimal initial window size - will be adjusted before showing
                 // Using minimal height to prevent "large window shrinking" flicker
