@@ -50,10 +50,10 @@
       <EnableUAC>false</EnableUAC>
       <ModuleDefinitionFile>Source.def</ModuleDefinitionFile>
     </Link>
-    <!--<PreBuildEvent>
-      <Command>del $(OutDir)\ImageResizerContextMenuPackage.msix /q
-MakeAppx.exe pack /d . /p $(OutDir)ImageResizerContextMenuPackage.msix /nv</Command>
-    </PreBuildEvent>-->
+    <PostBuildEvent>
+      <Command>if exist "$(OutDir)ImageResizerContextMenuPackage.msix" del "$(OutDir)ImageResizerContextMenuPackage.msix" /q
+MakeAppx.exe pack /d "$(MSBuildThisFileDirectory)." /p "$(OutDir)ImageResizerContextMenuPackage.msix" /nv</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Release'">
     <ClCompile>
@@ -73,10 +73,10 @@ MakeAppx.exe pack /d . /p $(OutDir)ImageResizerContextMenuPackage.msix /nv</Comm
       <EnableUAC>false</EnableUAC>
       <ModuleDefinitionFile>Source.def</ModuleDefinitionFile>
     </Link>
-    <!--<PreBuildEvent>
-      <Command>del $(OutDir)\ImageResizerContextMenuPackage.msix /q
-MakeAppx.exe pack /d . /p $(OutDir)ImageResizerContextMenuPackage.msix /nv</Command>
-    </PreBuildEvent>-->
+    <PostBuildEvent>
+      <Command>if exist "$(OutDir)ImageResizerContextMenuPackage.msix" del "$(OutDir)ImageResizerContextMenuPackage.msix" /q
+MakeAppx.exe pack /d "$(MSBuildThisFileDirectory)." /p "$(OutDir)ImageResizerContextMenuPackage.msix" /nv</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="framework.h" />
