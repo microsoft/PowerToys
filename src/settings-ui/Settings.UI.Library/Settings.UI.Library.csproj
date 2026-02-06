@@ -24,6 +24,7 @@
         <ProjectReference Include="..\..\common\ManagedTelemetry\Telemetry\ManagedTelemetry.csproj" />
         <ProjectReference Include="..\..\modules\MouseUtils\MouseJump.Common\MouseJump.Common.csproj" />
         <ProjectReference Include="..\..\common\Common.Search\Common.Search.csproj" />
+        <ProjectReference Include="..\..\modules\powerdisplay\PowerDisplay.Lib\PowerDisplay.Lib.csproj" />
     </ItemGroup>
 
     <ItemGroup>

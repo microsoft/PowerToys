@@ -162,11 +162,11 @@ LRESULT AlwaysOnTop::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lp
             }
             else if (hotkeyId == static_cast<int>(HotkeyId::IncreaseOpacity))
             {
-                AdjustTransparency(fw, Settings::transparencyStep);
+                StepWindowTransparency(fw, Settings::transparencyStep);
             }
             else if (hotkeyId == static_cast<int>(HotkeyId::DecreaseOpacity))
             {
-                AdjustTransparency(fw, -Settings::transparencyStep);
+                StepWindowTransparency(fw, -Settings::transparencyStep);
             }
         }
     }
@@ -204,9 +204,8 @@ void AlwaysOnTop::ProcessCommand(HWND window)
             }
 
             // Restore transparency when unpinning
-            RemoveTransparency(window);
+            RestoreWindowAlpha(window);
             m_windowOriginalLayeredState.erase(window);
-            m_windowTransparency.erase(window);
 
             Trace::AlwaysOnTop::UnpinWindow();
         }
@@ -367,13 +366,13 @@ void AlwaysOnTop::RegisterLLKH()
             case WAIT_OBJECT_0 + 2: // Increase opacity event
                 if (HWND fw{ GetForegroundWindow() })
                 {
-                    AdjustTransparency(fw, Settings::transparencyStep);
+                    StepWindowTransparency(fw, Settings::transparencyStep);
                 }
                 break;
             case WAIT_OBJECT_0 + 3: // Decrease opacity event
                 if (HWND fw{ GetForegroundWindow() })
                 {
-                    AdjustTransparency(fw, -Settings::transparencyStep);
+                    StepWindowTransparency(fw, -Settings::transparencyStep);
                 }
                 break;
             case WAIT_OBJECT_0 + 4: // Message queue
@@ -426,11 +425,10 @@ void AlwaysOnTop::UnpinAll()
             Logger::error(L"Unpinning topmost window failed");
         }
         // Restore transparency when unpinning all
-        RemoveTransparency(topWindow);
+        RestoreWindowAlpha(topWindow);
     }
 
     m_topmostWindows.clear();
-    m_windowTransparency.clear();
     m_windowOriginalLayeredState.clear();
 }
 
@@ -515,7 +513,6 @@ void AlwaysOnTop::HandleWinHookEvent(WinHookEvent* data) noexcept
     for (const auto window : toErase)
     {
         m_topmostWindows.erase(window);
-        m_windowTransparency.erase(window);
         m_windowOriginalLayeredState.erase(window);
     }
 
@@ -615,184 +612,6 @@ void AlwaysOnTop::RefreshBorders()
             {
                 m_topmostWindows[window] = nullptr;
             }
-        }
-    }
-}
-
-// Transparency adjustment methods
-HWND AlwaysOnTop::GetTransparencyTarget(HWND window)
-{
-    if (!window || !IsWindow(window))
-    {
-        return nullptr;
-    }
-
-    // Only allow transparency adjustment on tracked/pinned windows
-    if (!IsTracked(window) && !IsPinned(window))
-    {
-        return nullptr;
-    }
-
-    // Use GA_ROOTOWNER to get the root owner window
-    HWND targetWindow = GetAncestor(window, GA_ROOTOWNER);
-    if (!targetWindow)
-    {
-        targetWindow = window;
-    }
-
-    // Filter out desktop, shell, invisible windows
-    if (targetWindow == GetDesktopWindow() || targetWindow == GetShellWindow())
-    {
-        return nullptr;
-    }
-    if (!IsWindowVisible(targetWindow))
-    {
-        return nullptr;
-    }
-
-    return targetWindow;
-}
-
-void AlwaysOnTop::AdjustTransparency(HWND window, int delta)
-{
-    HWND targetWindow = GetTransparencyTarget(window);
-    if (!targetWindow)
-    {
-        return;
-    }
-
-    auto it = m_windowTransparency.find(targetWindow);
-    int currentTransparency = (it != m_windowTransparency.end()) ? it->second : Settings::maxTransparencyPercentage;
-    int newTransparency = (std::max)(Settings::minTransparencyPercentage, 
-                                     (std::min)(Settings::maxTransparencyPercentage, currentTransparency + delta));
-
-    if (newTransparency != currentTransparency)
-    {
-        SetTransparency(targetWindow, newTransparency);
-
-        if (AlwaysOnTopSettings::settings().enableSound)
-        {
-            m_sound.Play(delta > 0 ? Sound::Type::IncreaseOpacity : Sound::Type::DecreaseOpacity);
-        }
-
-        Logger::trace(L"Transparency adjusted to {}%", newTransparency);
-    }
-}
-
-void AlwaysOnTop::SetTransparency(HWND window, int percentage)
-{
-    if (!window || !IsWindow(window))
-    {
-        return;
-    }
-    
-    percentage = (std::max)(Settings::minTransparencyPercentage, 
-                            (std::min)(Settings::maxTransparencyPercentage, percentage));
-
-    m_windowTransparency[window] = percentage;
-
-    if (percentage == Settings::maxTransparencyPercentage)
-    {
-        RemoveTransparency(window);
-        return;
-    }
-
-    LONG exStyle = GetWindowLong(window, GWL_EXSTYLE);
-    bool isCurrentlyLayered = (exStyle & WS_EX_LAYERED) != 0;
-
-    // Cache original state on first transparency application
-    if (m_windowOriginalLayeredState.find(window) == m_windowOriginalLayeredState.end())
-    {
-        WindowLayeredState state;
-        state.hadLayeredStyle = isCurrentlyLayered;
-        
-        if (isCurrentlyLayered)
-        {
-            BYTE alpha = 255;
-            COLORREF colorKey = 0;
-            DWORD flags = 0;
-            if (GetLayeredWindowAttributes(window, &colorKey, &alpha, &flags))
-            {
-                state.originalAlpha = alpha;
-                state.usedColorKey = (flags & LWA_COLORKEY) != 0;
-                state.colorKey = colorKey;
-            }
-            else
-            {
-                Logger::warn(L"GetLayeredWindowAttributes failed for layered window, skipping");
-                return;
-            }
-        }
-        m_windowOriginalLayeredState[window] = state;
-    }
-
-    // Clear WS_EX_LAYERED first to ensure SetLayeredWindowAttributes works
-    if (isCurrentlyLayered)
-    {
-        SetWindowLong(window, GWL_EXSTYLE, exStyle & ~WS_EX_LAYERED);
-        SetWindowPos(window, nullptr, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED);
-        exStyle = GetWindowLong(window, GWL_EXSTYLE);
-    }
-
-    BYTE alphaValue = static_cast<BYTE>((255 * percentage) / 100);
-    SetWindowLong(window, GWL_EXSTYLE, exStyle | WS_EX_LAYERED);
-    SetLayeredWindowAttributes(window, 0, alphaValue, LWA_ALPHA);
-}
-
-void AlwaysOnTop::RemoveTransparency(HWND window)
-{
-    if (!window || !IsWindow(window))
-    {
-        return;
-    }
-
-    LONG exStyle = GetWindowLong(window, GWL_EXSTYLE);
-    auto it = m_windowOriginalLayeredState.find(window);
-    
-    if (it != m_windowOriginalLayeredState.end())
-    {
-        const auto& originalState = it->second;
-        
-        if (originalState.hadLayeredStyle)
-        {
-            // Window originally had WS_EX_LAYERED - restore original attributes
-            // Clear and re-add to ensure clean state
-            if (exStyle & WS_EX_LAYERED)
-            {
-                SetWindowLong(window, GWL_EXSTYLE, exStyle & ~WS_EX_LAYERED);
-                exStyle = GetWindowLong(window, GWL_EXSTYLE);
-            }
-            SetWindowLong(window, GWL_EXSTYLE, exStyle | WS_EX_LAYERED);
-            
-            // Restore original alpha and/or color key
-            DWORD flags = LWA_ALPHA;
-            if (originalState.usedColorKey)
-            {
-                flags |= LWA_COLORKEY;
-            }
-            SetLayeredWindowAttributes(window, originalState.colorKey, originalState.originalAlpha, flags);
-            SetWindowPos(window, nullptr, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED);
-        }
-        else
-        {
-            // Window originally didn't have WS_EX_LAYERED - remove it completely
-            if (exStyle & WS_EX_LAYERED)
-            {
-                SetLayeredWindowAttributes(window, 0, 255, LWA_ALPHA);
-                SetWindowLong(window, GWL_EXSTYLE, exStyle & ~WS_EX_LAYERED);
-                SetWindowPos(window, nullptr, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED);
-            }
-        }
-        
-        m_windowOriginalLayeredState.erase(it);
-    }
-    else
-    {
-        // Fallback: no cached state, just remove layered style
-        if (exStyle & WS_EX_LAYERED)
-        {
-            SetLayeredWindowAttributes(window, 0, 255, LWA_ALPHA);
-            SetWindowLong(window, GWL_EXSTYLE, exStyle & ~WS_EX_LAYERED);
         }
     }
 }
