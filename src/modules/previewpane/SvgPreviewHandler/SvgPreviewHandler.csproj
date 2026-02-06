@@ -7,6 +7,8 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWindowsForms>true</UseWindowsForms>
     <UseWindowsForms>true</UseWindowsForms>
+    <!-- Force classic WebView2 managed references (Core/WinForms/Wpf) instead of CsWinRT projection. -->
+    <WebView2EnableCsWinRTProjection>false</WebView2EnableCsWinRTProjection>
     <AssemblyTitle>PowerToys.SvgPreviewHandler</AssemblyTitle>
     <AssemblyDescription>PowerToys SvgPreviewHandler</AssemblyDescription>
     <Description>PowerToys SvgPreviewHandler</Description>
