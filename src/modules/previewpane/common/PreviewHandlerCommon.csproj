@@ -1,6 +1,6 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <!-- Look at Directory.Build.props in root for common stuff as well -->
-  <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
+  <Import Project="..\..\..\Common.Dotnet.CsWinRT.props" />
 
   <PropertyGroup>
     <UseWindowsForms>true</UseWindowsForms>
@@ -8,7 +8,7 @@
     <AssemblyDescription>PowerToys PreviewHandlerCommon</AssemblyDescription>
     <Description>PowerToys PreviewHandlerCommon</Description>
     <DocumentationFile>..\..\..\..\$(Platform)\$(Configuration)\PreviewHandlerCommonDocumentation.xml</DocumentationFile>
-    <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)</OutputPath>
+    <OutputPath>..\..\..\..\$(Platform)\$(Configuration)</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
