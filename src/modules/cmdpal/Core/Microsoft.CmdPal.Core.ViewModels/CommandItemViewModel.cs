@@ -30,6 +30,8 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
 
     protected bool IsSelectedInitialized => IsInErrorState || Initialized.HasFlag(InitializedState.SelectionInitialized);
 
+    protected bool IsContextMenuItem { get; init; }
+
     public bool IsInErrorState => Initialized.HasFlag(InitializedState.Error);
 
     // These are properties that are "observable" from the extension object
@@ -544,23 +546,24 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
                     results.Add(new SeparatorViewModel());
                 }
             }
-
-            // MoreCommands = more
-            //     .Select<IContextItem, IContextItemViewModel>(item =>
-            //     {
-            //         return item is ICommandContextItem contextItem ? new CommandContextItemViewModel(contextItem, PageContext) : new SeparatorViewModel();
-            //     })
-            //     .ToList();
         }
 
+        // TODO! move to a factory or something, so that the UI layer is
+        // responsible for stealth-adding this pin command.
         if (PageContext.TryGetTarget(out var pageContext))
         {
-            if (pageContext.ExtensionSupportsPinning)
+            // * The extension needs to support the GetCommandItem API to support pinning
+            // * We need to have an ID to pin it by
+            // * We don't want to show "Pin to Dock" on items that are already context menu items
+            if (pageContext.ExtensionSupportsPinning &&
+                !string.IsNullOrEmpty(Command.Id) &&
+                !IsContextMenuItem)
             {
-                // test: just add a bunch of separators
                 results.Add(new SeparatorViewModel());
-                results.Add(new SeparatorViewModel());
-                results.Add(new SeparatorViewModel());
+                var pinCommand = new PinToDockIten(this);
+                var pinCommandViewModel = new CommandContextItemViewModel(pinCommand, PageContext);
+                pinCommandViewModel.SlowInitializeProperties();
+                results.Add(pinCommandViewModel);
             }
         }
 
@@ -575,6 +578,43 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
         freedItems.OfType<CommandContextItemViewModel>()
                   .ToList()
                   .ForEach(c => c.SafeCleanup());
+    }
+
+    private sealed partial class PinToDockIten : CommandContextItem
+    {
+        private static readonly PinToDockCommand PinCommand = new();
+        private readonly CommandItemViewModel _owner;
+
+        internal CommandItemViewModel Owner => _owner;
+
+        public PinToDockIten(CommandItemViewModel owner)
+            : base(PinCommand)
+        {
+            _owner = owner;
+        }
+    }
+
+    private sealed partial class PinToDockCommand : InvokableCommand
+    {
+        public override string Name => "Toggle pinned to dock"; // TODO!LOC
+
+        public PinToDockCommand()
+        {
+        }
+
+        public override ICommandResult Invoke(object? sender)
+        {
+            if (sender is PinToDockIten contextItemViewModel)
+            {
+                // if (contextItemViewModel.PageContext.TryGetTarget(out var pageContext))
+                // {
+                //     pageContext.TogglePinnedToDock(contextItemViewModel);
+                // }
+                return CommandResult.ShowToast($"Attempted to toggle pin to dock for {contextItemViewModel.Owner.Title}");
+            }
+
+            return CommandResult.ShowToast($"Failed to get sender for command");
+        }
     }
 }
 
