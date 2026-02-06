@@ -79,6 +79,8 @@ public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
 
     public IconInfoViewModel Icon { get; protected set; }
 
+    bool IPageContext.ExtensionSupportsPinning => ExtensionHost.SupportsDockBands;
+
     public PageViewModel(IPage? model, TaskScheduler scheduler, AppExtensionHost extensionHost)
         : base((IPageContext?)null)
     {
@@ -267,6 +269,8 @@ public interface IPageContext
     void ShowException(Exception ex, string? extensionHint = null);
 
     TaskScheduler Scheduler { get; }
+
+    bool ExtensionSupportsPinning { get; }
 }
 
 public interface IPageViewModelFactoryService

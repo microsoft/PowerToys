@@ -165,6 +165,7 @@ public sealed class CommandProviderWrapper
 
             if (model is ICommandProvider3 supportsDockBands)
             {
+                ExtensionHost.SupportsDockBands = true;
                 var bands = supportsDockBands.GetDockBands();
                 if (bands is not null)
                 {
@@ -213,7 +214,16 @@ public sealed class CommandProviderWrapper
         Func<ICommandItem?, TopLevelType, TopLevelViewModel> make = (ICommandItem? i, TopLevelType t) =>
         {
             CommandItemViewModel commandItemViewModel = new(new(i), pageContext);
-            TopLevelViewModel topLevelViewModel = new(commandItemViewModel, t, ExtensionHost, ProviderId, settings, providerSettings, serviceProvider, i);
+            TopLevelViewModel topLevelViewModel = new(
+                item: commandItemViewModel,
+                topLevelType: t,
+                extensionHost: ExtensionHost,
+                commandProviderId: ProviderId,
+                settings: settings,
+                providerSettings: providerSettings,
+                serviceProvider: serviceProvider,
+                commandItem: i/*,
+                providerSupportsPinning: SupportsDockBands*/);
             topLevelViewModel.InitializeProperties();
 
             return topLevelViewModel;

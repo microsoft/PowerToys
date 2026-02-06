@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -167,7 +167,7 @@ public partial class AllAppsCommandProvider : CommandProvider
         }
 
         // ... Now, combine those two
-        List<ICommandItem> both = bestAppMatch is null ? nameMatches : [.. nameMatches, bestAppMatch];
+        var both = bestAppMatch is null ? nameMatches : [.. nameMatches, bestAppMatch];
 
         if (both.Count == 1)
         {
@@ -191,7 +191,7 @@ public partial class AllAppsCommandProvider : CommandProvider
 
     public override ICommandItem? GetCommandItemById(string id)
     {
-        if (id == _listItem.Command.Id)
+        if (id == _listItem.Command?.Id)
         {
             return _listItem;
         }

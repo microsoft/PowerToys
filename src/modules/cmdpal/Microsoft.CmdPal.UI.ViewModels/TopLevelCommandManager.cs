@@ -60,6 +60,8 @@ public partial class TopLevelCommandManager : ObservableObject,
         }
     }
 
+    bool IPageContext.ExtensionSupportsPinning => false;
+
     public async Task<bool> LoadBuiltinsAsync()
     {
         var s = new Stopwatch();

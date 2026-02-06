@@ -33,6 +33,8 @@ public sealed partial class DockViewModel : IDisposable,
 
     public ObservableCollection<TopLevelViewModel> AllItems => _topLevelCommandManager.DockBands;
 
+    bool IPageContext.ExtensionSupportsPinning => false;
+
     public DockViewModel(
         TopLevelCommandManager tlcManager,
         SettingsModel settings,

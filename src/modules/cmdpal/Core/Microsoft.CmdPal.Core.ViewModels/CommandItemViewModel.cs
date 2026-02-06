@@ -212,27 +212,28 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
             return;
         }
 
-        var more = model.MoreCommands;
-        if (more is not null)
-        {
-            MoreCommands = more
-                .Select<IContextItem, IContextItemViewModel>(item =>
-                {
-                    return item is ICommandContextItem contextItem ? new CommandContextItemViewModel(contextItem, PageContext) : new SeparatorViewModel();
-                })
-                .ToList();
-        }
+        BuildAndInitMoreCommands();
 
-        // Here, we're already theoretically in the async context, so we can
-        // use Initialize straight up
-        MoreCommands
-            .OfType<CommandContextItemViewModel>()
-            .ToList()
-            .ForEach(contextItem =>
-            {
-                contextItem.SlowInitializeProperties();
-            });
+        // var more = model.MoreCommands;
+        // if (more is not null)
+        // {
+        //     MoreCommands = more
+        //         .Select<IContextItem, IContextItemViewModel>(item =>
+        //         {
+        //             return item is ICommandContextItem contextItem ? new CommandContextItemViewModel(contextItem, PageContext) : new SeparatorViewModel();
+        //         })
+        //         .ToList();
+        // }
 
+        // // Here, we're already theoretically in the async context, so we can
+        // // use Initialize straight up
+        // MoreCommands
+        //     .OfType<CommandContextItemViewModel>()
+        //     .ToList()
+        //     .ForEach(contextItem =>
+        //     {
+        //         contextItem.SlowInitializeProperties();
+        //     });
         if (!string.IsNullOrEmpty(model.Command?.Name))
         {
             _defaultCommandContextItemViewModel = new CommandContextItemViewModel(new CommandContextItem(model.Command!), PageContext)
@@ -382,36 +383,36 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
                 break;
 
             case nameof(model.MoreCommands):
-                var more = model.MoreCommands;
-                if (more is not null)
-                {
-                    var newContextMenu = more
-                        .Select<IContextItem, IContextItemViewModel>(item =>
-                        {
-                            return item is ICommandContextItem contextItem ? new CommandContextItemViewModel(contextItem, PageContext) : new SeparatorViewModel();
-                        })
-                        .ToList();
-                    lock (MoreCommands)
-                    {
-                        ListHelpers.InPlaceUpdateList(MoreCommands, newContextMenu);
-                    }
+                // var more = model.MoreCommands;
+                // if (more is not null)
+                // {
+                //     var newContextMenu = more
+                //         .Select<IContextItem, IContextItemViewModel>(item =>
+                //         {
+                //             return item is ICommandContextItem contextItem ? new CommandContextItemViewModel(contextItem, PageContext) : new SeparatorViewModel();
+                //         })
+                //         .ToList();
+                //     lock (MoreCommands)
+                //     {
+                //         ListHelpers.InPlaceUpdateList(MoreCommands, newContextMenu);
+                //     }
 
-                    newContextMenu
-                        .OfType<CommandContextItemViewModel>()
-                        .ToList()
-                        .ForEach(contextItem =>
-                        {
-                            contextItem.InitializeProperties();
-                        });
-                }
-                else
-                {
-                    lock (MoreCommands)
-                    {
-                        MoreCommands.Clear();
-                    }
-                }
-
+                // newContextMenu
+                //         .OfType<CommandContextItemViewModel>()
+                //         .ToList()
+                //         .ForEach(contextItem =>
+                //         {
+                //             contextItem.InitializeProperties();
+                //         });
+                // }
+                // else
+                // {
+                //     lock (MoreCommands)
+                //     {
+                //         MoreCommands.Clear();
+                //     }
+                // }
+                BuildAndInitMoreCommands();
                 UpdateProperty(nameof(SecondaryCommand));
                 UpdateProperty(nameof(SecondaryCommandName));
                 UpdateProperty(nameof(HasMoreCommands));
@@ -512,6 +513,68 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
     {
         base.SafeCleanup();
         Initialized |= InitializedState.CleanedUp;
+    }
+
+    /// <remarks>
+    /// * Does call SlowInitializeProperties on the created items.
+    /// * does NOT call UpdateProperty ; caller must do that.
+    /// </remarks>
+    private void BuildAndInitMoreCommands()
+    {
+        var model = _commandItemModel.Unsafe;
+        if (model is null)
+        {
+            return;
+        }
+
+        var more = model.MoreCommands;
+        List<IContextItemViewModel> results = [];
+        if (more is not null)
+        {
+            foreach (var item in more)
+            {
+                if (item is ICommandContextItem contextItem)
+                {
+                    var contextItemViewModel = new CommandContextItemViewModel(contextItem, PageContext);
+                    contextItemViewModel.SlowInitializeProperties();
+                    results.Add(contextItemViewModel);
+                }
+                else
+                {
+                    results.Add(new SeparatorViewModel());
+                }
+            }
+
+            // MoreCommands = more
+            //     .Select<IContextItem, IContextItemViewModel>(item =>
+            //     {
+            //         return item is ICommandContextItem contextItem ? new CommandContextItemViewModel(contextItem, PageContext) : new SeparatorViewModel();
+            //     })
+            //     .ToList();
+        }
+
+        if (PageContext.TryGetTarget(out var pageContext))
+        {
+            if (pageContext.ExtensionSupportsPinning)
+            {
+                // test: just add a bunch of separators
+                results.Add(new SeparatorViewModel());
+                results.Add(new SeparatorViewModel());
+                results.Add(new SeparatorViewModel());
+            }
+        }
+
+        // var oldMoreCommands = MoreCommands;
+        // MoreCommands = results;
+        List<IContextItemViewModel>? freedItems;
+        lock (MoreCommands)
+        {
+            ListHelpers.InPlaceUpdateList(MoreCommands, results, out freedItems);
+        }
+
+        freedItems.OfType<CommandContextItemViewModel>()
+                  .ToList()
+                  .ForEach(c => c.SafeCleanup());
     }
 }
 

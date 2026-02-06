@@ -28,6 +28,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
 
     private readonly string _commandProviderId;
 
+    // private readonly bool _providerSupportsPinning;
     private string IdFromModel => IsFallback && !string.IsNullOrWhiteSpace(_fallbackId) ? _fallbackId : _commandItemViewModel.Command.Id;
 
     private string _fallbackId = string.Empty;
@@ -57,6 +58,8 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
     public string CommandProviderId => _commandProviderId;
 
     public IconInfoViewModel IconViewModel => _commandItemViewModel.Icon;
+
+    // public bool ProviderSupportsPinning => _providerSupportsPinning;
 
     ////// ICommandItem
     public string Title => _commandItemViewModel.Title;
@@ -204,12 +207,15 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
         SettingsModel settings,
         ProviderSettings providerSettings,
         IServiceProvider serviceProvider,
-        ICommandItem? commandItem)
+        ICommandItem? commandItem)/*,
+        bool providerSupportsPinning*/
     {
         _serviceProvider = serviceProvider;
         _settings = settings;
         _providerSettings = providerSettings;
         _commandProviderId = commandProviderId;
+
+        // _providerSupportsPinning = providerSupportsPinning;
         _commandItemViewModel = item;
 
         IsFallback = topLevelType == TopLevelType.Fallback;
