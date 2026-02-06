@@ -67,6 +67,7 @@ public partial class ListViewModel : PageViewModel, IDisposable, IContextMenuCon
     // IContextMenuContext implementation
     bool IContextMenuContext.HasMoreCommands => true;
 
+    // TODO! should this be FilteredItems? We'd need a way to plumb searchText through IContextMenuContext (but we probably should anyways)
     List<IContextItemViewModel> IContextMenuContext.AllCommands => Items.Cast<IContextItemViewModel>().ToList();
 
     IEnumerable<IContextItemViewModel> IContextMenuContext.MoreCommands => ((IContextMenuContext)this).AllCommands;

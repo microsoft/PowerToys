@@ -172,6 +172,9 @@ public partial class ShellViewModel : ObservableObject,
                     }
                     else
                     {
+                        // We successfully initialized the page. 
+                        // Now, hop to the UI thread to set our CurrentPage to the new one. 
+                        // (but don't if we got cancelled while waiting for initialization or the UI thread)
                         var t = Task.Factory.StartNew(
                             () =>
                             {
@@ -272,8 +275,6 @@ public partial class ShellViewModel : ObservableObject,
                 CoreLogger.LogDebug($"Navigating to page");
 
                 var isMainPage = command == _rootPage;
-                _isNested = !isMainPage;
-                _currentlyTransient = message.TransientPage;
 
                 // Telemetry: Track extension page navigation for session metrics
                 if (host is not null)
@@ -286,12 +287,21 @@ public partial class ShellViewModel : ObservableObject,
                 }
 
                 // Construct our ViewModel of the appropriate type and pass it the UI Thread context.
-                var pageViewModel = _pageViewModelFactory.TryCreatePageViewModel(page, _isNested, host!);
+                var pageViewModel = _pageViewModelFactory.TryCreatePageViewModel(page, !isMainPage, host!);
                 if (pageViewModel is null)
                 {
                     CoreLogger.LogError($"Failed to create ViewModel for page {page.GetType().Name}");
                     throw new NotSupportedException();
                 }
+
+                // -------------------------------------------------------------
+                // Slice it here. 
+                // Stuff above this, we need to always do, for both commands in the palette and flyout items
+                //
+                // Below here, this is all specific to navigating the current page of the palette
+
+                _isNested = !isMainPage;
+                _currentlyTransient = message.TransientPage;
 
                 pageViewModel.IsRootPage = isMainPage;
                 pageViewModel.HasBackButton = IsNested;
@@ -521,4 +531,5 @@ public partial class ShellViewModel : ObservableObject,
 
         GC.SuppressFinalize(this);
     }
+
 }
