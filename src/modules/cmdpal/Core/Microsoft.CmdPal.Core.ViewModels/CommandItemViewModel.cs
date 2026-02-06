@@ -30,7 +30,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
 
     protected bool IsSelectedInitialized => IsInErrorState || Initialized.HasFlag(InitializedState.SelectionInitialized);
 
-    protected bool IsContextMenuItem { get; init; }
+    public bool IsContextMenuItem { get; protected init; }
 
     public bool IsInErrorState => Initialized.HasFlag(InitializedState.Error);
 
@@ -108,6 +108,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
     }
 
     private static readonly IconInfoViewModel _errorIcon;
+    private static readonly IContextMenuFactory _contextMenuFactory = new DefaultContextMenuFactory();
 
     static CommandItemViewModel()
     {
@@ -530,42 +531,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
         }
 
         var more = model.MoreCommands;
-        List<IContextItemViewModel> results = [];
-        if (more is not null)
-        {
-            foreach (var item in more)
-            {
-                if (item is ICommandContextItem contextItem)
-                {
-                    var contextItemViewModel = new CommandContextItemViewModel(contextItem, PageContext);
-                    contextItemViewModel.SlowInitializeProperties();
-                    results.Add(contextItemViewModel);
-                }
-                else
-                {
-                    results.Add(new SeparatorViewModel());
-                }
-            }
-        }
-
-        // TODO! move to a factory or something, so that the UI layer is
-        // responsible for stealth-adding this pin command.
-        if (PageContext.TryGetTarget(out var pageContext))
-        {
-            // * The extension needs to support the GetCommandItem API to support pinning
-            // * We need to have an ID to pin it by
-            // * We don't want to show "Pin to Dock" on items that are already context menu items
-            if (pageContext.ExtensionSupportsPinning &&
-                !string.IsNullOrEmpty(Command.Id) &&
-                !IsContextMenuItem)
-            {
-                results.Add(new SeparatorViewModel());
-                var pinCommand = new PinToDockIten(this);
-                var pinCommandViewModel = new CommandContextItemViewModel(pinCommand, PageContext);
-                pinCommandViewModel.SlowInitializeProperties();
-                results.Add(pinCommandViewModel);
-            }
-        }
+        var results = _contextMenuFactory.UnsafeBuildAndInitMoreCommands(more, this);
 
         // var oldMoreCommands = MoreCommands;
         // MoreCommands = results;
@@ -578,43 +544,6 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
         freedItems.OfType<CommandContextItemViewModel>()
                   .ToList()
                   .ForEach(c => c.SafeCleanup());
-    }
-
-    private sealed partial class PinToDockIten : CommandContextItem
-    {
-        private static readonly PinToDockCommand PinCommand = new();
-        private readonly CommandItemViewModel _owner;
-
-        internal CommandItemViewModel Owner => _owner;
-
-        public PinToDockIten(CommandItemViewModel owner)
-            : base(PinCommand)
-        {
-            _owner = owner;
-        }
-    }
-
-    private sealed partial class PinToDockCommand : InvokableCommand
-    {
-        public override string Name => "Toggle pinned to dock"; // TODO!LOC
-
-        public PinToDockCommand()
-        {
-        }
-
-        public override ICommandResult Invoke(object? sender)
-        {
-            if (sender is PinToDockIten contextItemViewModel)
-            {
-                // if (contextItemViewModel.PageContext.TryGetTarget(out var pageContext))
-                // {
-                //     pageContext.TogglePinnedToDock(contextItemViewModel);
-                // }
-                return CommandResult.ShowToast($"Attempted to toggle pin to dock for {contextItemViewModel.Owner.Title}");
-            }
-
-            return CommandResult.ShowToast($"Failed to get sender for command");
-        }
     }
 }
 
