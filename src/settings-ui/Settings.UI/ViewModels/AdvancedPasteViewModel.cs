@@ -569,6 +569,19 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public bool ShowClipboardHistory
+        {
+            get => _advancedPasteSettings.Properties.ShowClipboardHistory;
+            set
+            {
+                if (value != _advancedPasteSettings.Properties.ShowClipboardHistory)
+                {
+                    _advancedPasteSettings.Properties.ShowClipboardHistory = value;
+                    NotifySettingsChanged();
+                }
+            }
+        }
+
         public bool IsConflictingCopyShortcut =>
             _customActions.Select(customAction => customAction.Shortcut)
                           .Concat([PasteAsPlainTextShortcut, AdvancedPasteUIShortcut, PasteAsMarkdownShortcut, PasteAsJsonShortcut])
@@ -1231,6 +1244,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 target.EnableClipboardPreview = source.EnableClipboardPreview;
                 OnPropertyChanged(nameof(EnableClipboardPreview));
+            }
+
+            if (target.ShowClipboardHistory != source.ShowClipboardHistory)
+            {
+                target.ShowClipboardHistory = source.ShowClipboardHistory;
+                OnPropertyChanged(nameof(ShowClipboardHistory));
             }
 
             var incomingConfig = source.PasteAIConfiguration ?? new PasteAIConfiguration();

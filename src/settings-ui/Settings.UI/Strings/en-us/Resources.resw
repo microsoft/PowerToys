@@ -654,6 +654,12 @@ Please review the placeholder content that represents the final terms and usage 
   <data name="AdvancedPaste_Clipboard_History_Enabled_SettingsCard.Description" xml:space="preserve">
     <value>View and select previously copied items</value>
   </data>
+  <data name="AdvancedPaste_ShowClipboardHistory.Header" xml:space="preserve">
+    <value>Show clipboard history in Advanced Paste</value>
+  </data>
+  <data name="AdvancedPaste_ShowClipboardHistory.Description" xml:space="preserve">
+    <value>Display the clipboard history button in the Advanced Paste window</value>
+  </data>
   <data name="AdvancedPaste_Direct_Access_Hotkeys_GroupSettings.Header" xml:space="preserve">
     <value>Actions</value>
   </data>
