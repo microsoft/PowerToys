@@ -211,12 +211,58 @@ internal sealed partial class IconLoaderService : IIconLoaderService
         }
     }
 
+    private static void ApplyDecodeSize(SvgImageSource svgImageSource, Size size)
+    {
+        if (size.IsEmpty)
+        {
+            return;
+        }
+
+        if (size.Width >= size.Height)
+        {
+            svgImageSource.RasterizePixelWidth = (int)size.Width;
+        }
+        else
+        {
+            svgImageSource.RasterizePixelHeight = (int)size.Height;
+        }
+    }
+
     private static IconSource? GetStringIconSource(string iconString, string? fontFamily, Size size)
     {
         var iconSize = (int)Math.Max(size.Width, size.Height);
         if (iconSize == 0)
         {
             iconSize = DefaultIconSize;
+        }
+
+        if (!string.IsNullOrWhiteSpace(iconString) && iconString[0] < 128)
+        {
+            try
+            {
+                if (iconString.EndsWith(".svg", StringComparison.OrdinalIgnoreCase))
+                {
+                    var svgSource = new SvgImageSource(new Uri(iconString));
+                    ApplyDecodeSize(svgSource, size);
+                    return new ImageIconSource
+                    {
+                        ImageSource = svgSource,
+                    };
+                }
+                else
+                {
+                    var imageSource = new BitmapImage(new Uri(iconString));
+                    ApplyDecodeSize(imageSource, size);
+                    return new ImageIconSource
+                    {
+                        ImageSource = imageSource,
+                    };
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Failed to load icon from string '{iconString}'", ex);
+            }
         }
 
         return IconPathConverter.IconSourceMUX(iconString, false, fontFamily, iconSize);

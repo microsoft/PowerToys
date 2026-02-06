@@ -2,7 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Diagnostics;
 using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
 using Microsoft.CmdPal.Core.ViewModels;
@@ -36,6 +35,10 @@ public sealed partial class ListPage : Page,
 {
     private InputSource _lastInputSource;
 
+    private bool _selectionLostDuringUpdate;
+    private ListItemViewModel? _lastRemovedSelectedItem;
+    private bool _suppressSelectionSideEffects;
+
     internal ListViewModel? ViewModel
     {
         get => (ListViewModel?)GetValue(ViewModelProperty);
@@ -46,13 +49,15 @@ public sealed partial class ListPage : Page,
     public static readonly DependencyProperty ViewModelProperty =
         DependencyProperty.Register(nameof(ViewModel), typeof(ListViewModel), typeof(ListPage), new PropertyMetadata(null, OnViewModelChanged));
 
-    private ListViewBase ItemView
+    public ShellViewModel ShellViewModel
     {
-        get
-        {
-            return ViewModel?.IsGridView == true ? ItemsGrid : ItemsList;
-        }
+        get => (ShellViewModel)GetValue(ShellViewModelProperty);
+        set => SetValue(ShellViewModelProperty, value);
     }
+
+    public static readonly DependencyProperty ShellViewModelProperty = DependencyProperty.Register(nameof(ShellViewModel), typeof(ShellViewModel), typeof(ListPage), new PropertyMetadata(null, OnShellViewModelChanged));
+
+    private ListViewBase ItemView => ViewModel?.IsGridView == true ? ItemsGrid : ItemsList;
 
     public ListPage()
     {
@@ -76,6 +81,9 @@ public sealed partial class ListPage : Page,
         }
 
         ViewModel = listViewModel;
+        ViewModel.SelectionChanged += ViewModelOnSelectionChanged;
+        ShellViewModel = navigationRequest.ShellViewModel;
+        PokeTemplateSelector();
 
         if (e.NavigationMode == NavigationMode.Back)
         {
@@ -102,6 +110,11 @@ public sealed partial class ListPage : Page,
         WeakReferenceMessenger.Default.Register<ActivateSecondaryCommandMessage>(this);
 
         base.OnNavigatedTo(e);
+    }
+
+    private void ViewModelOnSelectionChanged(ListViewModel sender, EventArgs args)
+    {
+        this.ItemView.SelectedItem = sender.SelectedItem;
     }
 
     protected override void OnNavigatingFrom(NavigatingCancelEventArgs e)
@@ -198,22 +211,46 @@ public sealed partial class ListPage : Page,
     private void Items_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         var vm = ViewModel;
+
+        // During incremental updates, WinUI can transiently clear selection when
+        // containers recycle / items move. Treat this as "selection lost during update"
+        // and restore it in Page_ItemsUpdated once the dust settles.
+        if (ItemView.SelectedItem is null)
+        {
+            if (e.RemovedItems.Count > 0 && e.RemovedItems[0] is ListItemViewModel removed)
+            {
+                _lastRemovedSelectedItem = removed;
+            }
+
+            _selectionLostDuringUpdate = true;
+            return;
+        }
+
+        // Skip separators/headers.
+        if (IsSeparator(ItemView.SelectedItem))
+        {
+            _selectionLostDuringUpdate = false;
+            return;
+        }
+
         var li = ItemView.SelectedItem as ListItemViewModel;
-        _ = Task.Run(() =>
+
+        // Preserve ordering: stay on the UI thread, but defer to a lower priority
+        // to avoid fighting with item-source updates (and GH #322 style issues).
+        _ = DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () =>
         {
             vm?.UpdateSelectedItemCommand.Execute(li);
         });
 
-        // There's mysterious behavior here, where the selection seemingly
-        // changes to _nothing_ when we're backspacing to a single character.
-        // And at that point, seemingly the item that's getting removed is not
-        // a member of FilteredItems. Very bizarre.
-        //
-        // Might be able to fix in the future by stashing the removed item
-        // here, then in Page_ItemsUpdated trying to select that cached item if
-        // it's in the list (otherwise, clear the cache), but that seems
-        // aggressively BODGY for something that mostly just works today.
-        if (ItemView.SelectedItem is not null && !IsSeparator(ItemView.SelectedItem))
+        _selectionLostDuringUpdate = false;
+
+        if (_suppressSelectionSideEffects)
+        {
+            return;
+        }
+
+        // Scroll + accessibility announce (unchanged logic, but use li already captured)
+        if (li is not null && !IsSeparator(li))
         {
             var items = ItemView.Items;
             var firstUsefulIndex = GetFirstSelectableIndex();
@@ -230,12 +267,11 @@ public sealed partial class ListPage : Page,
 
             if (shouldScroll)
             {
-                ItemView.ScrollIntoView(ItemView.SelectedItem);
+                ItemView.ScrollIntoView(li);
             }
 
-            // Automation notification for screen readers
             var listViewPeer = Microsoft.UI.Xaml.Automation.Peers.ListViewAutomationPeer.CreatePeerForElement(ItemView);
-            if (listViewPeer is not null && li is not null)
+            if (listViewPeer is not null)
             {
                 UIHelper.AnnounceActionForAccessibility(
                     ItemsList,
@@ -526,6 +562,22 @@ public sealed partial class ListPage : Page,
         return (currentIndex, targetIndex);
     }
 
+    private static void OnShellViewModelChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        if (d is ListPage @this)
+        {
+            if (e.OldValue is ShellViewModel old)
+            {
+                old.PropertyChanged -= @this.ShellViewModel_PropertyChanged;
+            }
+
+            if (e.NewValue is ShellViewModel shellViewModel)
+            {
+                shellViewModel.PropertyChanged += @this.ShellViewModel_PropertyChanged;
+            }
+        }
+    }
+
     private static void OnViewModelChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
         if (d is ListPage @this)
@@ -566,56 +618,104 @@ public sealed partial class ListPage : Page,
         {
             var items = ItemView.Items;
 
-            // If the list is null or empty, clears the selection and return
             if (items is null || items.Count == 0)
             {
-                ItemView.SelectedIndex = -1;
+                _suppressSelectionSideEffects = true;
+                try
+                {
+                    ItemView.SelectedIndex = -1;
+                }
+                finally
+                {
+                    _lastRemovedSelectedItem = null;
+                    _selectionLostDuringUpdate = false;
+                    _ = DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () =>
+                    {
+                        _suppressSelectionSideEffects = false;
+                    });
+                }
+
                 return;
             }
 
-            // Finds the first item that is not a separator
             var firstUsefulIndex = GetFirstSelectableIndex();
-
-            // If there is only separators in the list, don't select anything.
             if (firstUsefulIndex == -1)
             {
-                ItemView.SelectedIndex = -1;
+                _suppressSelectionSideEffects = true;
+                try
+                {
+                    ItemView.SelectedIndex = -1;
+                }
+                finally
+                {
+                    _ = DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () =>
+                    {
+                        _suppressSelectionSideEffects = false;
+                    });
+                }
 
                 return;
             }
 
             var shouldUpdateSelection = false;
+            object? targetSelection = null; // either ListItemViewModel or null
+            var targetIndex = -1;
 
-            // If it's a top level list update we force the reset to the top useful item
-            if (!sender.IsNested)
+            // If we observed a transient "selection cleared" during update,
+            // prefer restoring the removed item if it still exists.
+            if (_selectionLostDuringUpdate)
             {
-                shouldUpdateSelection = true;
-            }
+                _selectionLostDuringUpdate = false;
 
-            // No current selection or current selection is null
-            else if (ItemView.SelectedItem is null)
-            {
-                shouldUpdateSelection = true;
-            }
-
-            // The current selected item is a separator
-            else if (IsSeparator(ItemView.SelectedItem))
-            {
-                shouldUpdateSelection = true;
-            }
-
-            // The selected item does not exist in the new list
-            else if (!items.Contains(ItemView.SelectedItem))
-            {
-                shouldUpdateSelection = true;
-            }
-
-            if (shouldUpdateSelection)
-            {
-                if (firstUsefulIndex != -1)
+                if (_lastRemovedSelectedItem is not null &&
+                    items.Contains(_lastRemovedSelectedItem) &&
+                    !IsSeparator(_lastRemovedSelectedItem))
                 {
-                    ItemView.SelectedIndex = firstUsefulIndex;
+                    shouldUpdateSelection = true;
+                    targetSelection = _lastRemovedSelectedItem;
                 }
+
+                _lastRemovedSelectedItem = null;
+            }
+
+            // Normal repair logic: only change selection if current selection is missing/invalid.
+            if (!shouldUpdateSelection)
+            {
+                if (ItemView.SelectedItem is not ListItemViewModel current ||
+                    IsSeparator(current) ||
+                    !items.Contains(current))
+                {
+                    shouldUpdateSelection = true;
+                    targetIndex = firstUsefulIndex;
+                }
+            }
+
+            if (!shouldUpdateSelection)
+            {
+                return;
+            }
+
+            _suppressSelectionSideEffects = true;
+            try
+            {
+                if (targetSelection is not null)
+                {
+                    ItemView.SelectedItem = targetSelection;
+                }
+                else
+                {
+                    ItemView.SelectedIndex = targetIndex;
+                }
+
+                // IMPORTANT: no ScrollIntoView here — this is selection repair.
+            }
+            finally
+            {
+                // Release suppression on the next UI tick, after SelectionChanged fires.
+                _ = DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () =>
+                {
+                    _suppressSelectionSideEffects = false;
+                });
             }
         });
     }
@@ -623,9 +723,66 @@ public sealed partial class ListPage : Page,
     private void ViewModel_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
         var prop = e.PropertyName;
-        if (prop == nameof(ViewModel.FilteredItems))
+        if (prop == nameof(ViewModel.GridProperties))
         {
-            Debug.WriteLine($"ViewModel.FilteredItems {ItemView.SelectedItem}");
+            PokeTemplateSelector();
+        }
+    }
+
+    private void ShellViewModel_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        var prop = e.PropertyName;
+        if (prop == nameof(ShellViewModel.IsDetailsVisible))
+        {
+            PokeTemplateSelector();
+        }
+    }
+
+    private void PokeTemplateSelector()
+    {
+        if (Resources["ListItemTemplateSelector"] is not ListItemTemplateSelector selector)
+        {
+            return;
+        }
+
+        var newMode = ComputeListItemViewMode();
+        if (selector.ListItemViewMode == newMode)
+        {
+            return;
+        }
+
+        selector.ListItemViewMode = newMode;
+        ItemsList.ItemTemplateSelector = null;
+        ItemsList.ItemTemplateSelector = selector;
+        return;
+
+        ListItemViewMode ComputeListItemViewMode()
+        {
+            var useCompact =
+                ViewModel?.GridProperties is SinglelineListPropertiesViewModel p &&
+                IsCompactFeasible(p, ShellViewModel);
+
+            return useCompact ? ListItemViewMode.Singleline : ListItemViewMode.Multiline;
+        }
+
+        static bool IsCompactFeasible(SinglelineListPropertiesViewModel propertiesViewModel, ShellViewModel shellViewModel)
+        {
+            if (!shellViewModel.IsDetailsVisible)
+            {
+                return true;
+            }
+
+            if (!propertiesViewModel.IsAutomaticWrappingEnabled)
+            {
+                return true;
+            }
+
+            if (shellViewModel.Details is null)
+            {
+                return true;
+            }
+
+            return shellViewModel.Details.Size < propertiesViewModel.AutomaticWrappingBreakpoint;
         }
     }
 
@@ -1029,12 +1186,92 @@ public sealed partial class ListPage : Page,
     /// <summary>
     ///  Code stealed from <see cref="Controls.ContextMenu.IsSeparator(object)"/>
     /// </summary>
-    private bool IsSeparator(object? item) => item is ListItemViewModel li && li.IsSectionOrSeparator;
+    private static bool IsSeparator(object? item) => item is ListItemViewModel li && li.IsSectionOrSeparator;
 
     private enum InputSource
     {
         None,
         Keyboard,
         Pointer,
+    }
+
+    private void ItemsList_ChoosingItemContainer(ListViewBase sender, ChoosingItemContainerEventArgs args)
+    {
+        if (args.ItemContainer is not null)
+        {
+            // Platform already picked one; let it.
+            return;
+        }
+
+        var item = (ListItemViewModel)args.Item;
+
+        args.ItemContainer = GetKind(item) switch
+        {
+            ItemKind.Section => PopOrNull(_sectionPool) ?? new ListViewItem(),
+            ItemKind.Separator => PopOrNull(_separatorPool) ?? new ListViewItem(),
+            _ => PopOrNull(_normalPool) ?? new ListViewItem(),
+        };
+
+        // Let the normal prep happen (style/template selector etc.)
+        args.IsContainerPrepared = false;
+    }
+
+    private void ItemsList_ContainerContentChanging(ListViewBase sender, ContainerContentChangingEventArgs args)
+    {
+        if (!args.InRecycleQueue)
+        {
+            return;
+        }
+
+        if (args.ItemContainer is not ListViewItem lvi || args.Item is not ListItemViewModel item)
+        {
+            return;
+        }
+
+        lvi.ClearValue(FrameworkElement.HeightProperty);
+        lvi.ClearValue(Control.PaddingProperty);
+        lvi.ClearValue(Control.HorizontalContentAlignmentProperty);
+        lvi.ClearValue(Control.VerticalContentAlignmentProperty);
+
+        lvi.ClearValue(ContentControl.ContentTemplateProperty);
+        lvi.ClearValue(ContentControl.ContentTemplateSelectorProperty);
+        lvi.ClearValue(FrameworkElement.StyleProperty);
+
+        // Return to pool by kind (bounded).
+        var pool = GetKind(item) switch
+        {
+            ItemKind.Section => _sectionPool,
+            ItemKind.Separator => _separatorPool,
+            _ => _normalPool,
+        };
+
+        if (pool.Count < PoolLimit)
+        {
+            pool.Push(lvi);
+        }
+
+        // Don't set args.Handled; let the framework continue its recycle bookkeeping.
+    }
+
+    private const int PoolLimit = 64;
+    private readonly Stack<ListViewItem> _normalPool = new();
+    private readonly Stack<ListViewItem> _sectionPool = new();
+    private readonly Stack<ListViewItem> _separatorPool = new();
+
+    private static ListViewItem? PopOrNull(Stack<ListViewItem> pool)
+        => pool.Count > 0 ? pool.Pop() : null;
+
+    private static ItemKind GetKind(ListItemViewModel item)
+    {
+        return item.IsSectionOrSeparator
+            ? !string.IsNullOrWhiteSpace(item.Section) ? ItemKind.Section : ItemKind.Separator
+            : ItemKind.Normal;
+    }
+
+    private enum ItemKind
+    {
+        Normal,
+        Section,
+        Separator,
     }
 }

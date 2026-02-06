@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Runtime.CompilerServices;
+using Microsoft.CmdPal.Core.Common;
 using Microsoft.CmdPal.Core.ViewModels;
 using Microsoft.UI.Xaml.Controls;
 using Windows.Foundation;
@@ -47,6 +48,11 @@ internal sealed class CachedIconSourceProvider : IIconSourceProvider
             }
 
             var tcs = new TaskCompletionSource<IconSource?>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+#if DEBUG
+            var logMessage = $"Cache miss for icon: '{icon.Icon}', FontFamily: '{icon.FontFamily}', StreamRefHash: '{key.GetHashCode()}', Scale: {scale}";
+            CoreLogger.LogInfo(logMessage);
+#endif
 
             _loader.EnqueueLoad(
                 icon.Icon,

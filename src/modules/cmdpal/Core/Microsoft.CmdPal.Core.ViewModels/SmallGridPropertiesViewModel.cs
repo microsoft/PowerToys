@@ -11,6 +11,8 @@ public class SmallGridPropertiesViewModel : IGridPropertiesViewModel
 {
     private readonly ExtensionObject<ISmallGridLayout> _model;
 
+    public bool IsGrid => true;
+
     public bool ShowTitle => false;
 
     public bool ShowSubtitle => false;

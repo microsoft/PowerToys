@@ -7,6 +7,7 @@ using ManagedCommon;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Media.Imaging;
 using Windows.Foundation;
 
 namespace Microsoft.CmdPal.UI.Controls;
@@ -21,6 +22,15 @@ public partial class IconBox : ContentControl
     private double _lastFontSize;
 
     private const double DefaultIconFontSize = 16.0;
+
+    public static readonly DependencyProperty ContextProperty = DependencyProperty.Register(
+        nameof(Context), typeof(string), typeof(IconBox), new PropertyMetadata(default(string)));
+
+    public string Context
+    {
+        get { return (string)GetValue(ContextProperty); }
+        set { SetValue(ContextProperty, value); }
+    }
 
     /// <summary>
     /// Gets or sets the <see cref="IconSource"/> to display within the <see cref="IconBox"/>. Overwritten, if <see cref="SourceKey"/> is used instead.
@@ -77,6 +87,8 @@ public partial class IconBox : ContentControl
         Unloaded += OnUnloaded;
         ActualThemeChanged += OnActualThemeChanged;
         SizeChanged += OnSizeChanged;
+
+        ContentTransitions = [];
 
         UpdateLastFontSize();
     }
@@ -200,7 +212,8 @@ public partial class IconBox : ContentControl
                 }
                 else
                 {
-                    self.Content = bitmapIcon.CreateIconElement();
+                    var c = bitmapIcon.CreateIconElement();
+                    self.Content = c;
                 }
 
                 self.Padding = default;
@@ -256,13 +269,13 @@ public partial class IconBox : ContentControl
             // list virtualization situation, it's very possible we
             // may have already been set to a new icon before we
             // even got back from the await.
-            if (eventArgs.Key != sourceKey)
+            if (!Equals(sourceKey, iconBox.SourceKey))
             {
                 // If the requested icon has changed, then just bail
                 return;
             }
 
-            if (eventArgs.Value == iconBox.Source)
+            if (Equals(eventArgs.Value, iconBox.Source))
             {
                 return;
             }
