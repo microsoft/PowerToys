@@ -8,11 +8,6 @@
       "env": {
         "GITHUB_TOKEN": "${env:GITHUB_TOKEN}"
       }
-    },
-    "ado": {
-      "type": "stdio",
-      "command": "npx",
-      "args": ["-y", "@azure-devops/mcp", "shine-oss", "-d", "core", "pipelines"]
     }
   }
 }
