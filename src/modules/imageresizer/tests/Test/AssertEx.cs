@@ -8,10 +8,13 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.IO;
 using System.IO.Abstractions;
-using System.Windows.Media.Imaging;
+using System.Threading.Tasks;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+using Windows.Graphics.Imaging;
 
 [module: System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1636:FileHeaderCopyrightTextMustMatch", Justification = "File created under PowerToys.")]
 
@@ -29,17 +32,20 @@ namespace ImageResizer.Test
             }
         }
 
-        public static void Image(string path, Action<BitmapDecoder> action)
+        public static async Task ImageAsync(string path, Action<BitmapDecoder> action)
         {
-            using (var stream = _fileSystem.File.OpenRead(path))
-            {
-                var image = BitmapDecoder.Create(
-                    stream,
-                    BitmapCreateOptions.PreservePixelFormat,
-                    BitmapCacheOption.None);
+            using var stream = _fileSystem.File.OpenRead(path);
+            var winrtStream = stream.AsRandomAccessStream();
+            var decoder = await BitmapDecoder.CreateAsync(winrtStream);
+            action(decoder);
+        }
 
-                action(image);
-            }
+        public static async Task ImageAsync(string path, Func<BitmapDecoder, Task> action)
+        {
+            using var stream = _fileSystem.File.OpenRead(path);
+            var winrtStream = stream.AsRandomAccessStream();
+            var decoder = await BitmapDecoder.CreateAsync(winrtStream);
+            await action(decoder);
         }
 
         public static RaisedEvent<NotifyCollectionChangedEventArgs> Raises<T>(

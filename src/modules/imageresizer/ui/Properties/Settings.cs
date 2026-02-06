@@ -17,7 +17,6 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
 using System.Threading;
-using System.Windows.Media.Imaging;
 using ImageResizer.Helpers;
 using ImageResizer.Models;
 using ManagedCommon;
@@ -89,8 +88,8 @@ namespace ImageResizer.Properties
             IgnoreOrientation = true;
             RemoveMetadata = false;
             JpegQualityLevel = 90;
-            PngInterlaceOption = System.Windows.Media.Imaging.PngInterlaceOption.Default;
-            TiffCompressOption = System.Windows.Media.Imaging.TiffCompressOption.Default;
+            PngInterlaceOption = Models.PngInterlaceOption.Default;
+            TiffCompressOption = Models.TiffCompressOption.Default;
             FileName = "%1 (%2)";
             Sizes = new ObservableCollection<ResizeSize>
             {

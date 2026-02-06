@@ -9,7 +9,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Windows.Media.Imaging;
+using Windows.Graphics.Imaging;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Common.UI;
@@ -244,7 +244,7 @@ namespace ImageResizer.ViewModels
             }
         }
 
-        private void UpdateAiDetails()
+        private async void UpdateAiDetails()
         {
             if (Settings == null || Settings.SelectedSize is not AiSize)
             {
@@ -262,7 +262,7 @@ namespace ImageResizer.ViewModels
                 return;
             }
 
-            EnsureOriginalDimensionsLoaded();
+            await EnsureOriginalDimensionsLoadedAsync();
 
             var hasConcreteSize = _originalWidth.HasValue && _originalHeight.HasValue;
             CurrentResolutionDescription = hasConcreteSize
@@ -280,7 +280,7 @@ namespace ImageResizer.ViewModels
             return string.Format(CultureInfo.CurrentCulture, "{0} x {1}", width, height);
         }
 
-        private void EnsureOriginalDimensionsLoaded()
+        private async Task EnsureOriginalDimensionsLoadedAsync()
         {
             if (_originalDimensionsLoaded)
             {
@@ -296,14 +296,11 @@ namespace ImageResizer.ViewModels
 
             try
             {
-                using var stream = File.OpenRead(file);
-                var decoder = BitmapDecoder.Create(stream, BitmapCreateOptions.PreservePixelFormat, BitmapCacheOption.None);
-                var frame = decoder.Frames.FirstOrDefault();
-                if (frame != null)
-                {
-                    _originalWidth = frame.PixelWidth;
-                    _originalHeight = frame.PixelHeight;
-                }
+                using var fileStream = File.OpenRead(file);
+                using var stream = fileStream.AsRandomAccessStream();
+                var decoder = await BitmapDecoder.CreateAsync(stream);
+                _originalWidth = (int)decoder.PixelWidth;
+                _originalHeight = (int)decoder.PixelHeight;
             }
             catch (Exception)
             {

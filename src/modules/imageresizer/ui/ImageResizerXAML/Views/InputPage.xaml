@@ -121,7 +121,7 @@
                     </Button>
 
                     <StackPanel Margin="0,8,0,0" Visibility="{Binding IsModelDownloading, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
-                        <!--  ProgressRing commented out for WPF compatibility  -->
+                        <!--  TODO: Add ProgressRing here  -->
                         <TextBlock
                             Margin="0,8,0,0"
                             HorizontalAlignment="Center"

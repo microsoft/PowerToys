@@ -47,13 +47,13 @@ namespace ImageResizer.ViewModels
         [RelayCommand]
         public void Start()
         {
-            _ = Task.Factory.StartNew(StartExecutingWork, _cancellationTokenSource.Token, TaskCreationOptions.None, TaskScheduler.Current);
+            _ = Task.Run(() => StartExecutingWorkAsync());
         }
 
-        private void StartExecutingWork()
+        private async Task StartExecutingWorkAsync()
         {
             _stopwatch.Restart();
-            var errors = _batch.Process(
+            var errors = await _batch.ProcessAsync(
                 (completed, total) =>
                 {
                     var progress = completed / total;

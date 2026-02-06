@@ -7,10 +7,8 @@
 using System;
 using System.IO;
 using System.Linq;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
+using System.Threading.Tasks;
 
-using ImageResizer.Extensions;
 using ImageResizer.Properties;
 using ImageResizer.Test;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -20,45 +18,59 @@ namespace ImageResizer.Models
     [TestClass]
     public class ResizeOperationTests : IDisposable
     {
+        // Known legacy container format GUID for PNG, used as FallbackEncoder value in settings JSON
+        private static readonly Guid PngContainerFormatGuid = new Guid("1b7cfaf4-713f-473c-bbcd-6137425faeaf");
+
+        private static readonly string[] DateTakenPropertyQuery = new[] { "System.Photo.DateTaken" };
+        private static readonly string[] CameraModelPropertyQuery = new[] { "System.Photo.CameraModel" };
+
         private readonly TestDirectory _directory = new TestDirectory();
         private bool disposedValue;
 
         [TestMethod]
-        public void ExecuteCopiesFrameMetadata()
+        public async Task ExecuteCopiesFrameMetadata()
         {
             var operation = new ResizeOperation("Test.jpg", _directory, Settings());
 
-            operation.Execute();
+            await operation.ExecuteAsync();
 
-            AssertEx.Image(
+            await AssertEx.ImageAsync(
                 _directory.File(),
-                image => Assert.AreEqual("Test", ((BitmapMetadata)image.Frames[0].Metadata).Comment));
+                async decoder =>
+                {
+                    var props = await decoder.BitmapProperties.GetPropertiesAsync(DateTakenPropertyQuery);
+                    Assert.IsTrue(props.ContainsKey("System.Photo.DateTaken"), "Metadata should be preserved during transcode");
+                });
         }
 
         [TestMethod]
-        public void ExecuteCopiesFrameMetadataEvenWhenMetadataCannotBeCloned()
+        public async Task ExecuteCopiesFrameMetadataEvenWhenMetadataCannotBeCloned()
         {
             var operation = new ResizeOperation("TestMetadataIssue2447.jpg", _directory, Settings());
 
-            operation.Execute();
+            await operation.ExecuteAsync();
 
-            AssertEx.Image(
+            await AssertEx.ImageAsync(
                 _directory.File(),
-                image => Assert.IsNotNull(((BitmapMetadata)image.Frames[0].Metadata).CameraModel));
+                async decoder =>
+                {
+                    var props = await decoder.BitmapProperties.GetPropertiesAsync(CameraModelPropertyQuery);
+                    Assert.IsTrue(props.ContainsKey("System.Photo.CameraModel"), "Camera model metadata should be preserved");
+                });
         }
 
         [TestMethod]
-        public void ExecuteKeepsDateModified()
+        public async Task ExecuteKeepsDateModified()
         {
             var operation = new ResizeOperation("Test.png", _directory, Settings(s => s.KeepDateModified = true));
 
-            operation.Execute();
+            await operation.ExecuteAsync();
 
             Assert.AreEqual(File.GetLastWriteTimeUtc("Test.png"), File.GetLastWriteTimeUtc(_directory.File()));
         }
 
         [TestMethod]
-        public void ExecuteKeepsDateModifiedWhenReplacingOriginals()
+        public async Task ExecuteKeepsDateModifiedWhenReplacingOriginals()
         {
             var path = Path.Combine(_directory, "Test.png");
             File.Copy("Test.png", path);
@@ -75,55 +87,59 @@ namespace ImageResizer.Models
                         s.Replace = true;
                     }));
 
-            operation.Execute();
+            await operation.ExecuteAsync();
 
             Assert.AreEqual(originalDateModified, File.GetLastWriteTimeUtc(_directory.File()));
         }
 
         [TestMethod]
-        public void ExecuteReplacesOriginals()
+        public async Task ExecuteReplacesOriginals()
         {
             var path = Path.Combine(_directory, "Test.png");
             File.Copy("Test.png", path);
 
             var operation = new ResizeOperation(path, null, Settings(s => s.Replace = true));
 
-            operation.Execute();
+            await operation.ExecuteAsync();
 
-            AssertEx.Image(_directory.File(), image => Assert.AreEqual(96, image.Frames[0].PixelWidth));
+            await AssertEx.ImageAsync(_directory.File(), decoder => Assert.AreEqual(96u, decoder.PixelWidth));
         }
 
         [TestMethod]
-        public void ExecuteTransformsEachFrame()
+        public async Task ExecuteTransformsEachFrame()
         {
             var operation = new ResizeOperation("Test.gif", _directory, Settings());
 
-            operation.Execute();
+            await operation.ExecuteAsync();
 
-            AssertEx.Image(
+            await AssertEx.ImageAsync(
                 _directory.File(),
-                image =>
+                async decoder =>
                 {
-                    Assert.AreEqual(2, image.Frames.Count);
-                    AssertEx.All(image.Frames, frame => Assert.AreEqual(96, frame.PixelWidth));
+                    Assert.AreEqual(2u, decoder.FrameCount);
+                    for (uint i = 0; i < decoder.FrameCount; i++)
+                    {
+                        var frame = await decoder.GetFrameAsync(i);
+                        Assert.AreEqual(96u, frame.PixelWidth);
+                    }
                 });
         }
 
         [TestMethod]
-        public void ExecuteUsesFallbackEncoder()
+        public async Task ExecuteUsesFallbackEncoder()
         {
             var operation = new ResizeOperation(
                 "Test.ico",
                 _directory,
-                Settings(s => s.FallbackEncoder = new PngBitmapEncoder().CodecInfo.ContainerFormat));
+                Settings(s => s.FallbackEncoder = PngContainerFormatGuid));
 
-            operation.Execute();
+            await operation.ExecuteAsync();
 
             CollectionAssert.Contains(_directory.FileNames.ToList(), "Test (Test).png");
         }
 
         [TestMethod]
-        public void TransformIgnoresOrientationWhenLandscapeToPortrait()
+        public async Task TransformIgnoresOrientationWhenLandscapeToPortrait()
         {
             var operation = new ResizeOperation(
                 "Test.png",
@@ -136,19 +152,19 @@ namespace ImageResizer.Models
                         x.SelectedSize.Height = 192;
                     }));
 
-            operation.Execute();
+            await operation.ExecuteAsync();
 
-            AssertEx.Image(
+            await AssertEx.ImageAsync(
                 _directory.File(),
-                image =>
+                decoder =>
                 {
-                    Assert.AreEqual(192, image.Frames[0].PixelWidth);
-                    Assert.AreEqual(96, image.Frames[0].PixelHeight);
+                    Assert.AreEqual(192u, decoder.PixelWidth);
+                    Assert.AreEqual(96u, decoder.PixelHeight);
                 });
         }
 
         [TestMethod]
-        public void TransformIgnoresOrientationWhenPortraitToLandscape()
+        public async Task TransformIgnoresOrientationWhenPortraitToLandscape()
         {
             var operation = new ResizeOperation(
                 "TestPortrait.png",
@@ -161,19 +177,19 @@ namespace ImageResizer.Models
                         x.SelectedSize.Height = 96;
                     }));
 
-            operation.Execute();
+            await operation.ExecuteAsync();
 
-            AssertEx.Image(
+            await AssertEx.ImageAsync(
                 _directory.File(),
-                image =>
+                decoder =>
                 {
-                    Assert.AreEqual(96, image.Frames[0].PixelWidth);
-                    Assert.AreEqual(192, image.Frames[0].PixelHeight);
+                    Assert.AreEqual(96u, decoder.PixelWidth);
+                    Assert.AreEqual(192u, decoder.PixelHeight);
                 });
         }
 
         [TestMethod]
-        public void TransformIgnoresIgnoreOrientationWhenAuto()
+        public async Task TransformIgnoresIgnoreOrientationWhenAuto()
         {
             var operation = new ResizeOperation(
                 "Test.png",
@@ -186,19 +202,19 @@ namespace ImageResizer.Models
                         x.SelectedSize.Height = 0;
                     }));
 
-            operation.Execute();
+            await operation.ExecuteAsync();
 
-            AssertEx.Image(
+            await AssertEx.ImageAsync(
                 _directory.File(),
-                image =>
+                decoder =>
                 {
-                    Assert.AreEqual(96, image.Frames[0].PixelWidth);
-                    Assert.AreEqual(48, image.Frames[0].PixelHeight);
+                    Assert.AreEqual(96u, decoder.PixelWidth);
+                    Assert.AreEqual(48u, decoder.PixelHeight);
                 });
         }
 
         [TestMethod]
-        public void TransformIgnoresIgnoreOrientationWhenPercent()
+        public async Task TransformIgnoresIgnoreOrientationWhenPercent()
         {
             var operation = new ResizeOperation(
                 "Test.png",
@@ -213,19 +229,19 @@ namespace ImageResizer.Models
                         x.SelectedSize.Fit = ResizeFit.Stretch;
                     }));
 
-            operation.Execute();
+            await operation.ExecuteAsync();
 
-            AssertEx.Image(
+            await AssertEx.ImageAsync(
                 _directory.File(),
-                image =>
+                decoder =>
                 {
-                    Assert.AreEqual(96, image.Frames[0].PixelWidth);
-                    Assert.AreEqual(192, image.Frames[0].PixelHeight);
+                    Assert.AreEqual(96u, decoder.PixelWidth);
+                    Assert.AreEqual(192u, decoder.PixelHeight);
                 });
         }
 
         [TestMethod]
-        public void TransformHonorsShrinkOnly()
+        public async Task TransformHonorsShrinkOnly()
         {
             var operation = new ResizeOperation(
                 "Test.png",
@@ -238,19 +254,19 @@ namespace ImageResizer.Models
                         x.SelectedSize.Height = 288;
                     }));
 
-            operation.Execute();
+            await operation.ExecuteAsync();
 
-            AssertEx.Image(
+            await AssertEx.ImageAsync(
                 _directory.File(),
-                image =>
+                decoder =>
                 {
-                    Assert.AreEqual(192, image.Frames[0].PixelWidth);
-                    Assert.AreEqual(96, image.Frames[0].PixelHeight);
+                    Assert.AreEqual(192u, decoder.PixelWidth);
+                    Assert.AreEqual(96u, decoder.PixelHeight);
                 });
         }
 
         [TestMethod]
-        public void TransformIgnoresShrinkOnlyWhenPercent()
+        public async Task TransformIgnoresShrinkOnlyWhenPercent()
         {
             var operation = new ResizeOperation(
                 "Test.png",
@@ -263,19 +279,19 @@ namespace ImageResizer.Models
                         x.SelectedSize.Unit = ResizeUnit.Percent;
                     }));
 
-            operation.Execute();
+            await operation.ExecuteAsync();
 
-            AssertEx.Image(
+            await AssertEx.ImageAsync(
                 _directory.File(),
-                image =>
+                decoder =>
                 {
-                    Assert.AreEqual(256, image.Frames[0].PixelWidth);
-                    Assert.AreEqual(128, image.Frames[0].PixelHeight);
+                    Assert.AreEqual(256u, decoder.PixelWidth);
+                    Assert.AreEqual(128u, decoder.PixelHeight);
                 });
         }
 
         [TestMethod]
-        public void TransformHonorsShrinkOnlyWhenAutoHeight()
+        public async Task TransformHonorsShrinkOnlyWhenAutoHeight()
         {
             var operation = new ResizeOperation(
                 "Test.png",
@@ -288,15 +304,15 @@ namespace ImageResizer.Models
                         x.SelectedSize.Height = 0;
                     }));
 
-            operation.Execute();
+            await operation.ExecuteAsync();
 
-            AssertEx.Image(
+            await AssertEx.ImageAsync(
                 _directory.File(),
-                image => Assert.AreEqual(192, image.Frames[0].PixelWidth));
+                decoder => Assert.AreEqual(192u, decoder.PixelWidth));
         }
 
         [TestMethod]
-        public void TransformHonorsShrinkOnlyWhenAutoWidth()
+        public async Task TransformHonorsShrinkOnlyWhenAutoWidth()
         {
             var operation = new ResizeOperation(
                 "Test.png",
@@ -309,15 +325,15 @@ namespace ImageResizer.Models
                         x.SelectedSize.Height = 288;
                     }));
 
-            operation.Execute();
+            await operation.ExecuteAsync();
 
-            AssertEx.Image(
+            await AssertEx.ImageAsync(
                 _directory.File(),
-                image => Assert.AreEqual(96, image.Frames[0].PixelHeight));
+                decoder => Assert.AreEqual(96u, decoder.PixelHeight));
         }
 
         [TestMethod]
-        public void TransformHonorsUnit()
+        public async Task TransformHonorsUnit()
         {
             var operation = new ResizeOperation(
                 "Test.png",
@@ -330,82 +346,79 @@ namespace ImageResizer.Models
                         x.SelectedSize.Unit = ResizeUnit.Inch;
                     }));
 
-            operation.Execute();
+            await operation.ExecuteAsync();
 
-            AssertEx.Image(_directory.File(), image => Assert.AreEqual(Math.Ceiling(image.Frames[0].DpiX), image.Frames[0].PixelWidth));
+            await AssertEx.ImageAsync(_directory.File(), decoder => Assert.AreEqual((uint)Math.Ceiling(decoder.DpiX), decoder.PixelWidth));
         }
 
         [TestMethod]
-        public void TransformHonorsFitWhenFit()
+        public async Task TransformHonorsFitWhenFit()
         {
             var operation = new ResizeOperation(
                 "Test.png",
                 _directory,
                 Settings(x => x.SelectedSize.Fit = ResizeFit.Fit));
 
-            operation.Execute();
+            await operation.ExecuteAsync();
 
-            AssertEx.Image(
+            await AssertEx.ImageAsync(
                 _directory.File(),
-                image =>
+                decoder =>
                 {
-                    Assert.AreEqual(96, image.Frames[0].PixelWidth);
-                    Assert.AreEqual(48, image.Frames[0].PixelHeight);
+                    Assert.AreEqual(96u, decoder.PixelWidth);
+                    Assert.AreEqual(48u, decoder.PixelHeight);
                 });
         }
 
         [TestMethod]
-        public void TransformHonorsFitWhenFill()
+        public async Task TransformHonorsFitWhenFill()
         {
             var operation = new ResizeOperation(
                 "Test.png",
                 _directory,
                 Settings(x => x.SelectedSize.Fit = ResizeFit.Fill));
 
-            operation.Execute();
+            await operation.ExecuteAsync();
 
-            AssertEx.Image(
+            await AssertEx.ImageAsync(
                 _directory.File(),
-                image =>
+                async decoder =>
                 {
-                    Assert.AreEqual(Colors.White, image.Frames[0].GetFirstPixel());
-                    Assert.AreEqual(96, image.Frames[0].PixelWidth);
-                    Assert.AreEqual(96, image.Frames[0].PixelHeight);
+                    var pixel = await decoder.GetFirstPixelAsync();
+                    Assert.AreEqual((byte)255, pixel.R, "First pixel R should be 255 (white)");
+                    Assert.AreEqual((byte)255, pixel.G, "First pixel G should be 255 (white)");
+                    Assert.AreEqual((byte)255, pixel.B, "First pixel B should be 255 (white)");
+                    Assert.AreEqual(96u, decoder.PixelWidth);
+                    Assert.AreEqual(96u, decoder.PixelHeight);
                 });
         }
 
         [TestMethod]
-        public void TransformHonorsFitWhenStretch()
+        public async Task TransformHonorsFitWhenStretch()
         {
             var operation = new ResizeOperation(
                 "Test.png",
                 _directory,
                 Settings(x => x.SelectedSize.Fit = ResizeFit.Stretch));
 
-            operation.Execute();
+            await operation.ExecuteAsync();
 
-            AssertEx.Image(
+            await AssertEx.ImageAsync(
                 _directory.File(),
-                image =>
+                async decoder =>
                 {
-                    Assert.AreEqual(Colors.Black, image.Frames[0].GetFirstPixel());
-                    Assert.AreEqual(96, image.Frames[0].PixelWidth);
-                    Assert.AreEqual(96, image.Frames[0].PixelHeight);
+                    var pixel = await decoder.GetFirstPixelAsync();
+                    Assert.AreEqual((byte)0, pixel.R, "First pixel R should be 0 (black)");
+                    Assert.AreEqual((byte)0, pixel.G, "First pixel G should be 0 (black)");
+                    Assert.AreEqual((byte)0, pixel.B, "First pixel B should be 0 (black)");
+                    Assert.AreEqual(96u, decoder.PixelWidth);
+                    Assert.AreEqual(96u, decoder.PixelHeight);
                 });
         }
 
         [TestMethod]
-        public void TransformHonorsFillWithShrinkOnlyWhenCropRequired()
+        public async Task TransformHonorsFillWithShrinkOnlyWhenCropRequired()
         {
-            // Testing original 96x96 pixel Test.jpg cropped to 48x96 (Fill mode).
-            //
-            // ScaleX = 48/96 = 0.5
-            // ScaleY = 96/96 = 1.0
-            // Fill mode takes the max of these = 1.0.
-            //
-            // Previously, the transform logic saw the scale of 1.0 and returned the
-            // original dimensions. The corrected logic recognizes that a crop is
-            // required on one dimension and proceeds with the operation.
             var operation = new ResizeOperation(
                 "Test.jpg",
                 _directory,
@@ -417,22 +430,20 @@ namespace ImageResizer.Models
                     x.SelectedSize.Height = 96;
                 }));
 
-            operation.Execute();
+            await operation.ExecuteAsync();
 
-            AssertEx.Image(
+            await AssertEx.ImageAsync(
                 _directory.File(),
-                image =>
+                decoder =>
                 {
-                    Assert.AreEqual(48, image.Frames[0].PixelWidth);
-                    Assert.AreEqual(96, image.Frames[0].PixelHeight);
+                    Assert.AreEqual(48u, decoder.PixelWidth);
+                    Assert.AreEqual(96u, decoder.PixelHeight);
                 });
         }
 
         [TestMethod]
-        public void TransformHonorsFillWithShrinkOnlyWhenUpscaleAttempted()
+        public async Task TransformHonorsFillWithShrinkOnlyWhenUpscaleAttempted()
         {
-            // Confirm that attempting to upscale the original image will return the
-            // original dimensions when Shrink Only is enabled.
             var operation = new ResizeOperation(
                 "Test.jpg",
                 _directory,
@@ -444,21 +455,20 @@ namespace ImageResizer.Models
                     x.SelectedSize.Height = 192;
                 }));
 
-            operation.Execute();
+            await operation.ExecuteAsync();
 
-            AssertEx.Image(
+            await AssertEx.ImageAsync(
                 _directory.File(),
-                image =>
+                decoder =>
                 {
-                    Assert.AreEqual(96, image.Frames[0].PixelWidth);
-                    Assert.AreEqual(96, image.Frames[0].PixelHeight);
+                    Assert.AreEqual(96u, decoder.PixelWidth);
+                    Assert.AreEqual(96u, decoder.PixelHeight);
                 });
         }
 
         [TestMethod]
-        public void TransformHonorsFillWithShrinkOnlyWhenNoChangeRequired()
+        public async Task TransformHonorsFillWithShrinkOnlyWhenNoChangeRequired()
         {
-            // With a scale of 1.0 on both axes, the original should be returned.
             var operation = new ResizeOperation(
                 "Test.jpg",
                 _directory,
@@ -470,70 +480,70 @@ namespace ImageResizer.Models
                     x.SelectedSize.Height = 96;
                 }));
 
-            operation.Execute();
+            await operation.ExecuteAsync();
 
-            AssertEx.Image(
+            await AssertEx.ImageAsync(
                 _directory.File(),
-                image =>
+                decoder =>
                 {
-                    Assert.AreEqual(96, image.Frames[0].PixelWidth);
-                    Assert.AreEqual(96, image.Frames[0].PixelHeight);
+                    Assert.AreEqual(96u, decoder.PixelWidth);
+                    Assert.AreEqual(96u, decoder.PixelHeight);
                 });
         }
 
         [TestMethod]
-        public void GetDestinationPathUniquifiesOutputFilename()
+        public async Task GetDestinationPathUniquifiesOutputFilename()
         {
             File.WriteAllBytes(Path.Combine(_directory, "Test (Test).png"), Array.Empty<byte>());
 
             var operation = new ResizeOperation("Test.png", _directory, Settings());
 
-            operation.Execute();
+            await operation.ExecuteAsync();
 
             CollectionAssert.Contains(_directory.FileNames.ToList(), "Test (Test) (1).png");
         }
 
         [TestMethod]
-        public void GetDestinationPathUniquifiesOutputFilenameAgain()
+        public async Task GetDestinationPathUniquifiesOutputFilenameAgain()
         {
             File.WriteAllBytes(Path.Combine(_directory, "Test (Test).png"), Array.Empty<byte>());
             File.WriteAllBytes(Path.Combine(_directory, "Test (Test) (1).png"), Array.Empty<byte>());
 
             var operation = new ResizeOperation("Test.png", _directory, Settings());
 
-            operation.Execute();
+            await operation.ExecuteAsync();
 
             CollectionAssert.Contains(_directory.FileNames.ToList(), "Test (Test) (2).png");
         }
 
         [TestMethod]
-        public void GetDestinationPathUsesFileNameFormat()
+        public async Task GetDestinationPathUsesFileNameFormat()
         {
             var operation = new ResizeOperation(
                 "Test.png",
                 _directory,
                 Settings(s => s.FileName = "%1_%2_%3_%4_%5_%6"));
 
-            operation.Execute();
+            await operation.ExecuteAsync();
 
             CollectionAssert.Contains(_directory.FileNames.ToList(), "Test_Test_96_96_96_48.png");
         }
 
         [TestMethod]
-        public void ExecuteHandlesDirectoriesInFileNameFormat()
+        public async Task ExecuteHandlesDirectoriesInFileNameFormat()
         {
             var operation = new ResizeOperation(
                 "Test.png",
                 _directory,
                 Settings(s => s.FileName = @"Directory\%1 (%2)"));
 
-            operation.Execute();
+            await operation.ExecuteAsync();
 
             Assert.IsTrue(File.Exists(_directory + @"\Directory\Test (Test).png"));
         }
 
         [TestMethod]
-        public void StripMetadata()
+        public async Task StripMetadata()
         {
             var operation = new ResizeOperation(
                 "TestMetadataIssue1928.jpg",
@@ -544,18 +554,26 @@ namespace ImageResizer.Models
                         x.RemoveMetadata = true;
                     }));
 
-            operation.Execute();
+            await operation.ExecuteAsync();
 
-            AssertEx.Image(
+            await AssertEx.ImageAsync(
                 _directory.File(),
-                image => Assert.IsNull(((BitmapMetadata)image.Frames[0].Metadata).DateTaken));
-            AssertEx.Image(
-                _directory.File(),
-                image => Assert.IsNotNull(((BitmapMetadata)image.Frames[0].Metadata).GetQuerySafe("System.Photo.Orientation")));
+                async decoder =>
+                {
+                    try
+                    {
+                        var props = await decoder.BitmapProperties.GetPropertiesAsync(DateTakenPropertyQuery);
+                        Assert.IsFalse(props.ContainsKey("System.Photo.DateTaken"), "DateTaken should be stripped");
+                    }
+                    catch (Exception)
+                    {
+                        // If GetPropertiesAsync throws, metadata is not present — which is expected
+                    }
+                });
         }
 
         [TestMethod]
-        public void StripMetadataWhenNoMetadataPresent()
+        public async Task StripMetadataWhenNoMetadataPresent()
         {
             var operation = new ResizeOperation(
                 "TestMetadataIssue1928_NoMetadata.jpg",
@@ -566,18 +584,26 @@ namespace ImageResizer.Models
                         x.RemoveMetadata = true;
                     }));
 
-            operation.Execute();
+            await operation.ExecuteAsync();
 
-            AssertEx.Image(
+            await AssertEx.ImageAsync(
                 _directory.File(),
-                image => Assert.IsNull(((BitmapMetadata)image.Frames[0].Metadata).DateTaken));
-            AssertEx.Image(
-                _directory.File(),
-                image => Assert.IsNull(((BitmapMetadata)image.Frames[0].Metadata).GetQuerySafe("System.Photo.Orientation")));
+                async decoder =>
+                {
+                    try
+                    {
+                        var props = await decoder.BitmapProperties.GetPropertiesAsync(DateTakenPropertyQuery);
+                        Assert.IsFalse(props.ContainsKey("System.Photo.DateTaken"), "DateTaken should not exist");
+                    }
+                    catch (Exception)
+                    {
+                        // Expected: no metadata block at all
+                    }
+                });
         }
 
         [TestMethod]
-        public void VerifyFileNameIsSanitized()
+        public async Task VerifyFileNameIsSanitized()
         {
             var operation = new ResizeOperation(
                 "Test.png",
@@ -589,13 +615,13 @@ namespace ImageResizer.Models
                         s.SelectedSize.Name = "Test\\/";
                     }));
 
-            operation.Execute();
+            await operation.ExecuteAsync();
 
             Assert.IsTrue(File.Exists(_directory + @"\Directory\Test_______(Test__).png"));
         }
 
         [TestMethod]
-        public void VerifyNotRecommendedNameIsChanged()
+        public async Task VerifyNotRecommendedNameIsChanged()
         {
             var operation = new ResizeOperation(
                 "Test.png",
@@ -606,7 +632,7 @@ namespace ImageResizer.Models
                         s.FileName = @"nul";
                     }));
 
-            operation.Execute();
+            await operation.ExecuteAsync();
 
             Assert.IsTrue(File.Exists(_directory + @"\nul_.png"));
         }

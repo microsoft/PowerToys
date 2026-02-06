@@ -11,8 +11,7 @@
 
     <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\tests\$(AssemblyName)\</OutputPath>
 
-    <!-- Enable WPF for System.Windows.Media.Imaging support in tests -->
-    <UseWPF>true</UseWPF>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>
