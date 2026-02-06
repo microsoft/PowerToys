@@ -316,8 +316,8 @@ namespace PowerDisplay
         {
             try
             {
-                // Window properties (IsResizable, IsMaximizable, IsMinimizable, IsTitleBarVisible)
-                // are set in XAML. IsShownInSwitchers must be set programmatically due to WinUIEx limitations.
+                // Window properties (IsResizable, IsMaximizable, IsMinimizable,
+                // IsTitleBarVisible, IsShownInSwitchers) are set in XAML
                 this.AppWindow.IsShownInSwitchers = false;
 
                 // Set minimal initial window size - will be adjusted before showing

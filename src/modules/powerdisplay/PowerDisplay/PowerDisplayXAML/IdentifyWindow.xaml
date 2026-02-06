@@ -8,6 +8,7 @@
     IsMaximizable="False"
     IsMinimizable="False"
     IsResizable="False"
+    IsShownInSwitchers="False"
     IsTitleBarVisible="False"
     mc:Ignorable="d">
     <Grid Background="#1A000000">

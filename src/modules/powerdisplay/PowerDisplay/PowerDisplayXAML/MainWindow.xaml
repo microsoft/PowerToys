@@ -15,6 +15,7 @@
     IsMaximizable="False"
     IsMinimizable="False"
     IsResizable="False"
+    IsShownInSwitchers="False"
     IsTitleBarVisible="False">
     <winuiex:WindowEx.SystemBackdrop>
         <DesktopAcrylicBackdrop />
