@@ -8,5 +8,5 @@ namespace Microsoft.CmdPal.Core.ViewModels;
 
 public interface IContextMenuFactory
 {
-    IEnumerable<IContextItemViewModel> UnsafeBuildAndInitMoreCommands(IContextItem[] items, CommandItemViewModel commandItem);
+    List<IContextItemViewModel> UnsafeBuildAndInitMoreCommands(IContextItem[] items, CommandItemViewModel commandItem);
 }

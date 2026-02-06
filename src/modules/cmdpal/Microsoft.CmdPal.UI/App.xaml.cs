@@ -205,6 +205,7 @@ public partial class App : Application
         // ViewModels
         services.AddSingleton<ShellViewModel>();
         services.AddSingleton<DockViewModel>();
+        services.AddSingleton<IContextMenuFactory, CommandPaletteContextMenuFactory>();
         services.AddSingleton<IPageViewModelFactoryService, CommandPalettePageViewModelFactory>();
     }
 }

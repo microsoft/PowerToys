@@ -11,17 +11,19 @@ public class CommandPalettePageViewModelFactory
     : IPageViewModelFactoryService
 {
     private readonly TaskScheduler _scheduler;
+    private readonly IContextMenuFactory _contextMenuFactory;
 
-    public CommandPalettePageViewModelFactory(TaskScheduler scheduler)
+    public CommandPalettePageViewModelFactory(TaskScheduler scheduler, IContextMenuFactory contextMenuFactory)
     {
         _scheduler = scheduler;
+        _contextMenuFactory = contextMenuFactory;
     }
 
     public PageViewModel? TryCreatePageViewModel(IPage page, bool nested, AppExtensionHost host)
     {
         return page switch
         {
-            IListPage listPage => new ListViewModel(listPage, _scheduler, host) { IsRootPage = !nested },
+            IListPage listPage => new ListViewModel(listPage, _scheduler, host, _contextMenuFactory) { IsRootPage = !nested },
             IContentPage contentPage => new CommandPaletteContentPageViewModel(contentPage, _scheduler, host),
             _ => null,
         };

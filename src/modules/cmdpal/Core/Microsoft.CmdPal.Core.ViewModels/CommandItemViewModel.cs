@@ -20,6 +20,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
     private ExtensionObject<IExtendedAttributesProvider>? ExtendedAttributesProvider { get; set; }
 
     private readonly ExtensionObject<ICommandItem> _commandItemModel = new(null);
+    private readonly IContextMenuFactory? _contextMenuFactory;
     private CommandContextItemViewModel? _defaultCommandContextItemViewModel;
 
     internal InitializedState Initialized { get; private set; } = InitializedState.Uninitialized;
@@ -108,7 +109,6 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
     }
 
     private static readonly IconInfoViewModel _errorIcon;
-    private static readonly IContextMenuFactory _contextMenuFactory = new DefaultContextMenuFactory();
 
     static CommandItemViewModel()
     {
@@ -116,10 +116,14 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
         _errorIcon.InitializeProperties();
     }
 
-    public CommandItemViewModel(ExtensionObject<ICommandItem> item, WeakReference<IPageContext> errorContext)
+    public CommandItemViewModel(
+        ExtensionObject<ICommandItem> item,
+        WeakReference<IPageContext> errorContext,
+        IContextMenuFactory? contextMenuFactory = null)
         : base(errorContext)
     {
         _commandItemModel = item;
+        _contextMenuFactory = contextMenuFactory;
         Command = new(null, errorContext);
     }
 
@@ -531,7 +535,8 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
         }
 
         var more = model.MoreCommands;
-        var results = _contextMenuFactory.UnsafeBuildAndInitMoreCommands(more, this);
+        var factory = _contextMenuFactory ?? DefaultContextMenuFactory.Instance;
+        var results = factory.UnsafeBuildAndInitMoreCommands(more, this);
 
         // var oldMoreCommands = MoreCommands;
         // MoreCommands = results;

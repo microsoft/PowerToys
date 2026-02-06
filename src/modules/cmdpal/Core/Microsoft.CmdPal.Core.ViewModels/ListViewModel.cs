@@ -19,6 +19,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
 {
     // private readonly HashSet<ListItemViewModel> _itemCache = [];
     private readonly TaskFactory filterTaskFactory = new(new ConcurrentExclusiveSchedulerPair().ExclusiveScheduler);
+    private readonly IContextMenuFactory? _contextMenuFactory;
 
     // TODO: Do we want a base "ItemsPageViewModel" for anything that's going to have items?
 
@@ -89,10 +90,11 @@ public partial class ListViewModel : PageViewModel, IDisposable
         }
     }
 
-    public ListViewModel(IListPage model, TaskScheduler scheduler, AppExtensionHost host)
+    public ListViewModel(IListPage model, TaskScheduler scheduler, AppExtensionHost host, IContextMenuFactory? contextMenuFactory)
         : base(model, scheduler, host)
     {
         _model = new(model);
+        _contextMenuFactory = contextMenuFactory;
         EmptyContent = new(new(null), PageContext);
     }
 
@@ -233,7 +235,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
                     return;
                 }
 
-                ListItemViewModel viewModel = new(item, new(this));
+                ListItemViewModel viewModel = new(item, new(this), _contextMenuFactory);
 
                 // If an item fails to load, silently ignore it.
                 if (viewModel.SafeFastInit())
