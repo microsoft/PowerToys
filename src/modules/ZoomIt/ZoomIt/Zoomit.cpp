@@ -16,6 +16,8 @@
 #include "WindowsVersions.h"
 #include "ZoomItSettings.h"
 #include "GifRecordingSession.h"
+#include "BreakTimer.h"
+#include <wtsapi32.h>
 
 #ifdef __ZOOMIT_POWERTOYS__
 #include <common/interop/shared_constants.h>
@@ -1676,6 +1678,324 @@ void EnableDisableScreenSaver( BOOLEAN Enable )
     SystemParametersInfo(SPI_SETLOWPOWERACTIVE,Enable,0,0);
 }
 
+
+//----------------------------------------------------------------------------
+//
+// SaveBitmapToFile
+//
+// Save an HBITMAP to a BMP file using GDI+.
+//
+//----------------------------------------------------------------------------
+static BOOLEAN SaveBitmapToFile( HBITMAP hBitmap, PTCHAR filePath )
+{
+    Gdiplus::Bitmap bitmap( hBitmap, NULL );
+    if( bitmap.GetLastStatus() != Gdiplus::Ok )
+        return FALSE;
+
+    // Find the BMP encoder CLSID.
+    UINT num = 0, size = 0;
+    Gdiplus::GetImageEncodersSize( &num, &size );
+    if( size == 0 ) return FALSE;
+
+    Gdiplus::ImageCodecInfo* pInfo = static_cast<Gdiplus::ImageCodecInfo*>( malloc( size ) );
+    if( !pInfo ) return FALSE;
+
+    Gdiplus::GetImageEncoders( num, size, pInfo );
+    CLSID clsid = {};
+    BOOLEAN found = FALSE;
+    for( UINT i = 0; i < num; i++ )
+    {
+        if( wcscmp( pInfo[i].MimeType, L"image/bmp" ) == 0 )
+        {
+            clsid = pInfo[i].Clsid;
+            found = TRUE;
+            break;
+        }
+    }
+    free( pInfo );
+    if( !found ) return FALSE;
+
+    return bitmap.Save( filePath, &clsid, NULL ) == Gdiplus::Ok;
+}
+
+
+//----------------------------------------------------------------------------
+//
+// ExtractResourceToFile
+//
+// Extracts a BINRES resource to a file on disk.
+//
+//----------------------------------------------------------------------------
+static BOOLEAN ExtractResourceToFile( LPCTSTR resName, LPCTSTR resType, LPCTSTR destPath )
+{
+    HRSRC hRes = FindResource( NULL, resName, resType );
+    if( !hRes ) return FALSE;
+
+    HGLOBAL hData = LoadResource( NULL, hRes );
+    if( !hData ) return FALSE;
+
+    LPVOID pData = LockResource( hData );
+    DWORD  size  = SizeofResource( NULL, hRes );
+    if( !pData || size == 0 ) return FALSE;
+
+    HANDLE hFile = CreateFile( destPath, GENERIC_WRITE, 0, NULL,
+                               CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL );
+    if( hFile == INVALID_HANDLE_VALUE ) return FALSE;
+
+    DWORD written;
+    BOOL ok = WriteFile( hFile, pData, size, &written, NULL );
+    CloseHandle( hFile );
+
+    return ok && written == size;
+}
+
+
+//----------------------------------------------------------------------------
+//
+// Screensaver settings save / restore for crash recovery.
+//
+// Before swapping in our .scr, save the user's current screensaver
+// settings.  On startup and WM_ENDSESSION, check for orphaned settings
+// and restore them.
+//
+//----------------------------------------------------------------------------
+#define SCREENSAVER_BACKUP_KEY  L"Software\\Sysinternals\\ZoomIt\\SavedScreenSaver"
+
+static void SaveScreenSaverSettings( void )
+{
+    HKEY hKey;
+    if( RegCreateKeyEx( HKEY_CURRENT_USER, SCREENSAVER_BACKUP_KEY, 0, NULL,
+                        0, KEY_SET_VALUE, NULL, &hKey, NULL ) == ERROR_SUCCESS )
+    {
+        TCHAR scrPath[MAX_PATH] = {};
+        DWORD cbPath = sizeof( scrPath );
+        RegGetValue( HKEY_CURRENT_USER, L"Control Panel\\Desktop", L"SCRNSAVE.EXE",
+                     RRF_RT_REG_SZ, NULL, scrPath, &cbPath );
+        RegSetValueEx( hKey, L"SCRNSAVE.EXE", 0, REG_SZ,
+                       reinterpret_cast<const BYTE*>( scrPath ),
+                       static_cast<DWORD>( ( _tcslen( scrPath ) + 1 ) * sizeof( TCHAR ) ) );
+
+        BOOL active = FALSE;
+        SystemParametersInfo( SPI_GETSCREENSAVEACTIVE, 0, &active, 0 );
+        DWORD dwActive = active ? 1 : 0;
+        RegSetValueEx( hKey, L"ScreenSaveActive", 0, REG_DWORD,
+                       reinterpret_cast<const BYTE*>( &dwActive ), sizeof( DWORD ) );
+
+        TCHAR secure[8] = {};
+        DWORD cbSecure = sizeof( secure );
+        RegGetValue( HKEY_CURRENT_USER, L"Control Panel\\Desktop", L"ScreenSaverIsSecure",
+                     RRF_RT_REG_SZ, NULL, secure, &cbSecure );
+        RegSetValueEx( hKey, L"ScreenSaverIsSecure", 0, REG_SZ,
+                       reinterpret_cast<const BYTE*>( secure ),
+                       static_cast<DWORD>( ( _tcslen( secure ) + 1 ) * sizeof( TCHAR ) ) );
+
+        RegCloseKey( hKey );
+    }
+}
+
+static void RestoreScreenSaverSettings( void )
+{
+    HKEY hKey;
+    if( RegOpenKeyEx( HKEY_CURRENT_USER, SCREENSAVER_BACKUP_KEY, 0,
+                      KEY_QUERY_VALUE, &hKey ) == ERROR_SUCCESS )
+    {
+        TCHAR scrPath[MAX_PATH] = {};
+        DWORD cbPath = sizeof( scrPath );
+        if( RegQueryValueEx( hKey, L"SCRNSAVE.EXE", NULL, NULL,
+                             reinterpret_cast<BYTE*>( scrPath ), &cbPath ) == ERROR_SUCCESS )
+        {
+            RegSetKeyValue( HKEY_CURRENT_USER, L"Control Panel\\Desktop",
+                            L"SCRNSAVE.EXE", REG_SZ, scrPath,
+                            static_cast<DWORD>( ( _tcslen( scrPath ) + 1 ) * sizeof( TCHAR ) ) );
+        }
+
+        DWORD dwActive = 0;
+        DWORD cbActive = sizeof( dwActive );
+        if( RegQueryValueEx( hKey, L"ScreenSaveActive", NULL, NULL,
+                             reinterpret_cast<BYTE*>( &dwActive ), &cbActive ) == ERROR_SUCCESS )
+        {
+            SystemParametersInfo( SPI_SETSCREENSAVEACTIVE, dwActive, 0, SPIF_SENDCHANGE );
+        }
+
+        TCHAR secure[8] = {};
+        DWORD cbSecure = sizeof( secure );
+        if( RegQueryValueEx( hKey, L"ScreenSaverIsSecure", NULL, NULL,
+                             reinterpret_cast<BYTE*>( secure ), &cbSecure ) == ERROR_SUCCESS )
+        {
+            RegSetKeyValue( HKEY_CURRENT_USER, L"Control Panel\\Desktop",
+                            L"ScreenSaverIsSecure", REG_SZ, secure,
+                            static_cast<DWORD>( ( _tcslen( secure ) + 1 ) * sizeof( TCHAR ) ) );
+        }
+
+        RegCloseKey( hKey );
+        RegDeleteKey( HKEY_CURRENT_USER, SCREENSAVER_BACKUP_KEY );
+    }
+}
+
+static BOOLEAN HasOrphanedScreenSaverSettings( void )
+{
+    HKEY hKey;
+    if( RegOpenKeyEx( HKEY_CURRENT_USER, SCREENSAVER_BACKUP_KEY, 0,
+                      KEY_QUERY_VALUE, &hKey ) == ERROR_SUCCESS )
+    {
+        RegCloseKey( hKey );
+        return TRUE;
+    }
+    return FALSE;
+}
+
+
+//----------------------------------------------------------------------------
+//
+// ScreenSaverRestoreThread
+//
+// Background thread that waits for the screensaver to fully launch,
+// then restores the user's original screensaver settings.
+//
+//----------------------------------------------------------------------------
+static DWORD WINAPI ScreenSaverRestoreThread( LPVOID /*param*/ )
+{
+    Sleep( 3000 );
+    RestoreScreenSaverSettings();
+    OutputDebugString( L"[ZoomIt] Screensaver settings restored (from restore thread)\n" );
+    return 0;
+}
+
+
+//----------------------------------------------------------------------------
+//
+// ActivateBreakScreenSaver
+//
+// Extracts the embedded .scr, writes a config file with the current break
+// timer settings, saves/swaps/triggers/restores the screensaver via
+// the SC_SCREENSAVE system command.
+//
+//----------------------------------------------------------------------------
+static BOOLEAN ActivateBreakScreenSaver( HWND hWnd, int breakTimeoutSeconds )
+{
+    TCHAR tempDir[MAX_PATH];
+    GetTempPath( MAX_PATH, tempDir );
+
+    OutputDebugString( L"[ZoomIt] ActivateBreakScreenSaver: starting\n" );
+
+    //
+    // 1. Extract the embedded .scr to %TEMP%.
+    //
+    TCHAR scrPath[MAX_PATH];
+    _stprintf( scrPath, L"%sZoomItBreak.scr", tempDir );
+    if( !ExtractResourceToFile( L"RCZOOMITSCR", L"BINRES", scrPath ) )
+    {
+        TCHAR dbg[256];
+        _stprintf( dbg, L"[ZoomIt] ExtractResourceToFile FAILED, err=%lu\n", GetLastError() );
+        OutputDebugString( dbg );
+        return FALSE;
+    }
+    OutputDebugString( L"[ZoomIt] .scr extracted OK\n" );
+
+    //
+    // 2. Capture desktop screenshot if the user wants "show desktop" background.
+    //
+    TCHAR screenshotPath[MAX_PATH] = {};
+    if( g_BreakShowBackgroundFile && g_BreakShowDesktop )
+    {
+        _stprintf( screenshotPath, L"%sZoomItBreakBg.bmp", tempDir );
+        HDC hdcDesktop = GetDC( NULL );
+        MONITORINFO monInfo = { sizeof( monInfo ) };
+        POINT pt;
+        GetCursorPos( &pt );
+        HMONITOR hMon = MonitorFromPoint( pt, MONITOR_DEFAULTTONEAREST );
+        GetMonitorInfo( hMon, &monInfo );
+        HBITMAP hBmp = CreateFadedDesktopBackground( hdcDesktop, &monInfo.rcMonitor, NULL );
+        ReleaseDC( NULL, hdcDesktop );
+        if( hBmp )
+        {
+            SaveBitmapToFile( hBmp, screenshotPath );
+            DeleteObject( hBmp );
+        }
+    }
+
+    //
+    // 3. Write the config file for the screensaver to read.
+    //
+    BreakScrConfig config = {};
+    config.magic = BREAKSCR_CONFIG_MAGIC;
+    config.timeoutSeconds = breakTimeoutSeconds;
+    config.settings.penColor         = g_BreakPenColor;
+    config.settings.timerPosition    = g_BreakTimerPosition;
+    config.settings.opacity          = g_BreakOpacity;
+    config.settings.showExpiredTime  = g_ShowExpiredTime;
+    config.settings.smoothImage      = g_SmoothImage;
+    config.settings.backgroundStretch = g_BreakBackgroundStretch;
+    config.settings.playSound        = g_BreakPlaySoundFile;
+    _tcscpy( config.settings.soundFile, g_BreakSoundFile );
+    config.settings.showDesktop      = g_BreakShowDesktop;
+    config.settings.showBackgroundFile = g_BreakShowBackgroundFile;
+    _tcscpy( config.settings.backgroundFile, g_BreakBackgroundFile );
+    config.settings.logFont          = g_LogFont;
+    _tcscpy( config.screenshotPath, screenshotPath );
+
+    // If a desktop screenshot was captured, tell the screensaver to load it
+    // as its background file.
+    if( screenshotPath[0] )
+    {
+        config.settings.showBackgroundFile = TRUE;
+        config.settings.showDesktop = FALSE;
+        _tcscpy( config.settings.backgroundFile, screenshotPath );
+    }
+
+    if( !BreakScrConfig_Write( &config ) )
+    {
+        OutputDebugString( L"[ZoomIt] BreakScrConfig_Write FAILED\n" );
+        return FALSE;
+    }
+    OutputDebugString( L"[ZoomIt] Config written OK\n" );
+
+    //
+    // 4. Save current screensaver settings (crash recovery).
+    //
+    SaveScreenSaverSettings();
+
+    //
+    // 5. Swap in our screensaver.
+    //
+    RegSetKeyValue( HKEY_CURRENT_USER, L"Control Panel\\Desktop",
+                    L"SCRNSAVE.EXE", REG_SZ, scrPath,
+                    static_cast<DWORD>( ( _tcslen( scrPath ) + 1 ) * sizeof( TCHAR ) ) );
+
+    // Ensure screensaver is enabled and password-protected.
+    SystemParametersInfo( SPI_SETSCREENSAVEACTIVE, TRUE, 0, SPIF_SENDCHANGE );
+    RegSetKeyValue( HKEY_CURRENT_USER, L"Control Panel\\Desktop",
+                    L"ScreenSaverIsSecure", REG_SZ, L"1",
+                    static_cast<DWORD>( 2 * sizeof( TCHAR ) ) );
+
+    //
+    // 6. Trigger the screensaver via DefWindowProc.  This is a direct
+    //    call into the system's SC_SCREENSAVE handler which will launch
+    //    the registered screensaver process.  Unlike SendMessage/HWND_BROADCAST
+    //    (which deadlocks) or PostMessage to the desktop (which is ignored),
+    //    DefWindowProc directly invokes the kernel screensaver mechanism.
+    //
+    {
+        TCHAR dbg[512];
+        _stprintf( dbg, L"[ZoomIt] Triggering SC_SCREENSAVE via DefWindowProc, scrPath=%s\n", scrPath );
+        OutputDebugString( dbg );
+    }
+
+    //
+    // 7. Restore settings on a background thread — we can't Sleep here
+    //    without blocking the UI.  The thread waits for the screensaver
+    //    to launch, then puts back the user's original settings.
+    //
+    HANDLE hThread = CreateThread( NULL, 0, ScreenSaverRestoreThread, NULL, 0, NULL );
+    if( hThread )
+        CloseHandle( hThread );
+
+    DefWindowProc( hWnd, WM_SYSCOMMAND, SC_SCREENSAVE, 0 );
+    OutputDebugString( L"[ZoomIt] DefWindowProc(SC_SCREENSAVE) returned\n" );
+
+    return TRUE;
+}
+
 //----------------------------------------------------------------------------
 //
 // EnableDisableStickyKeys
@@ -1768,6 +2088,8 @@ INT_PTR CALLBACK AdvancedBreakProc( HWND hDlg, UINT message, WPARAM wParam, LPAR
             g_ShowExpiredTime ? BST_CHECKED : BST_UNCHECKED );
         CheckDlgButton( hDlg, IDC_CHECK_BACKGROUND_STRETCH,
             g_BreakBackgroundStretch ? BST_CHECKED : BST_UNCHECKED );
+        CheckDlgButton( hDlg, IDC_CHECK_LOCK_WORKSTATION,
+            g_BreakLockWorkstation ? BST_CHECKED : BST_UNCHECKED );
 #if 0
         CheckDlgButton( hDlg, IDC_CHECK_SECONDARYDISPLAY,
             g_BreakOnSecondary ? BST_CHECKED : BST_UNCHECKED );
@@ -2014,6 +2336,7 @@ INT_PTR CALLBACK AdvancedBreakProc( HWND hDlg, UINT message, WPARAM wParam, LPAR
             g_BreakPlaySoundFile = IsDlgButtonChecked( hDlg, IDC_CHECK_SOUND_FILE ) == BST_CHECKED;
             g_BreakShowBackgroundFile = IsDlgButtonChecked( hDlg, IDC_CHECK_BACKGROUND_FILE ) == BST_CHECKED;
             g_BreakBackgroundStretch = IsDlgButtonChecked( hDlg, IDC_CHECK_BACKGROUND_STRETCH ) == BST_CHECKED;
+            g_BreakLockWorkstation = IsDlgButtonChecked( hDlg, IDC_CHECK_LOCK_WORKSTATION ) == BST_CHECKED;
 #if 0
             g_BreakOnSecondary = IsDlgButtonChecked( hDlg, IDC_CHECK_SECONDARYDISPLAY ) == BST_CHECKED;
 #endif
@@ -6340,6 +6663,13 @@ LRESULT APIENTRY MainWndProc(
 
         reg.ReadRegSettings( RegSettings );
 
+        // Recover screensaver settings if ZoomIt crashed while the break
+        // screensaver was active (or was force-killed).
+        if( HasOrphanedScreenSaverSettings() )
+        {
+            RestoreScreenSaverSettings();
+        }
+
         // Refresh dark mode state after loading theme override from registry
         RefreshDarkModeState();
 
@@ -9347,7 +9677,6 @@ LRESULT APIENTRY MainWndProc(
             activeBreakShowBackgroundFile = g_BreakShowBackgroundFile;
             activeBreakShowDesktop = g_BreakShowDesktop;
 
-            g_TimerActive = TRUE;
 #ifdef __ZOOMIT_POWERTOYS__
             if( g_StartedByPowerToys )
             {
@@ -9356,6 +9685,24 @@ LRESULT APIENTRY MainWndProc(
 #endif // __ZOOMIT_POWERTOYS__
 
             breakTimeout = g_BreakTimeout * 60 + 1;
+
+            //
+            // If lock workstation is enabled, skip the local break timer
+            // window entirely — the embedded screensaver will run it on
+            // the secure desktop.
+            //
+            if( g_BreakLockWorkstation )
+            {
+                OutputDebugString( L"[ZoomIt] IDC_BREAK: lock path — launching screensaver, skipping local timer\n" );
+                DeleteDC( hdcScreen );
+                if( !ActivateBreakScreenSaver( hWnd, breakTimeout ) )
+                {
+                    OutputDebugString( L"[ZoomIt] ActivateBreakScreenSaver FAILED\n" );
+                }
+                break;
+            }
+
+            g_TimerActive = TRUE;
 
             // Create font
             g_LogFont.lfHeight = height / 5;
@@ -9604,6 +9951,10 @@ LRESULT APIENTRY MainWndProc(
         return TRUE;
 
     case WM_DESTROY:
+        // Restore screensaver settings on clean shutdown in case the
+        // break screensaver was still active.
+        if( HasOrphanedScreenSaverSettings() )
+            RestoreScreenSaverSettings();
         CleanupDarkModeResources();
         PostQuitMessage( 0 );
         break;

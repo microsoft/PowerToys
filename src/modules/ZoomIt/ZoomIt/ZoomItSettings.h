@@ -41,6 +41,7 @@ BOOLEAN	g_ShowTrayIcon = TRUE;
 BOOLEAN g_SnapToGrid = TRUE;
 BOOLEAN	g_TelescopeZoomOut = TRUE;
 BOOLEAN	g_BreakOnSecondary = FALSE;
+BOOLEAN	g_BreakLockWorkstation = FALSE;
 LOGFONT	g_LogFont;
 BOOLEAN g_DemoTypeUserDriven = false;
 TCHAR   g_DemoTypeFile[MAX_PATH] = {0};
@@ -86,6 +87,7 @@ REG_SETTING RegSettings[] = {
     { L"BreakTimerPosition", SETTING_TYPE_DWORD, 0, &g_BreakTimerPosition, static_cast<DOUBLE>(g_BreakTimerPosition) },
     { L"BreakShowDesktop", SETTING_TYPE_BOOLEAN, 0, &g_BreakShowDesktop, static_cast<DOUBLE>(g_BreakShowDesktop) },
     { L"BreakOnSecondary", SETTING_TYPE_BOOLEAN, 0, &g_BreakOnSecondary,static_cast<DOUBLE>(g_BreakOnSecondary) },
+    { L"BreakLockWorkstation", SETTING_TYPE_BOOLEAN, 0, &g_BreakLockWorkstation, static_cast<DOUBLE>(g_BreakLockWorkstation) },
     { L"FontScale", SETTING_TYPE_DWORD, 0, &g_FontScale, static_cast<DOUBLE>(g_FontScale) },
     { L"ShowExpiredTime", SETTING_TYPE_BOOLEAN, 0, &g_ShowExpiredTime, static_cast<DOUBLE>(g_ShowExpiredTime) },
     { L"ShowTrayIcon", SETTING_TYPE_BOOLEAN, 0, &g_ShowTrayIcon, static_cast<DOUBLE>(g_ShowTrayIcon) },
