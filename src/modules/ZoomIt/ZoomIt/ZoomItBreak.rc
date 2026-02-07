@@ -1,0 +1,22 @@
+//============================================================================
+//
+// ZoomItBreak.rc
+//
+// Minimal resources required by Scrnsavw.lib.
+//
+//============================================================================
+#include <windows.h>
+#include <scrnsave.h>
+
+// IDS_DESCRIPTION is used by scrnsavw.lib as the window class name.
+STRINGTABLE
+BEGIN
+    IDS_DESCRIPTION, "ZoomIt Break Timer"
+END
+
+// Stub configuration dialog - never shown (ScreenSaverConfigureDialog returns FALSE).
+DLG_SCRNSAVECONFIGURE DIALOG 0, 0, 200, 60
+STYLE WS_DLGFRAME | WS_POPUP | WS_VISIBLE | DS_MODALFRAME | WS_CAPTION
+CAPTION "ZoomIt Break Timer"
+BEGIN
+END
