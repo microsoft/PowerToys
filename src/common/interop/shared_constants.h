@@ -151,6 +151,7 @@ namespace CommonSharedConstants
     const wchar_t ZOOMIT_BREAK_EVENT[] = L"Local\\PowerToysZoomIt-BreakEvent-17f2e63c-4c56-41dd-90a0-2d12f9f50c6b";
     const wchar_t ZOOMIT_LIVEZOOM_EVENT[] = L"Local\\PowerToysZoomIt-LiveZoomEvent-390bf0c7-616f-47dc-bafe-a2d228add20d";
     const wchar_t ZOOMIT_SNIP_EVENT[] = L"Local\\PowerToysZoomIt-SnipEvent-2fd9c211-436d-4f17-a902-2528aaae3e30";
+    const wchar_t ZOOMIT_SNIPOCR_EVENT[] = L"Local\\PowerToysZoomIt-SnipOcrEvent-a7c3b1d2-9e4f-4a6b-8d5c-1f2e3a4b5c6d";
     const wchar_t ZOOMIT_RECORD_EVENT[] = L"Local\\PowerToysZoomIt-RecordEvent-74539344-eaad-4711-8e83-23946e424512";
 
     // used from quick access window

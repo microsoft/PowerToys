@@ -88,7 +88,7 @@ BEGIN
             VALUE "FileDescription", "Sysinternals Screen Magnifier"
             VALUE "FileVersion", "10.0"
             VALUE "InternalName", "ZoomIt"
-            VALUE "LegalCopyright", "Copyright © 2006-2026 Mark Russinovich"
+            VALUE "LegalCopyright", "Copyright ï¿½ 2006-2026 Mark Russinovich"
             VALUE "OriginalFilename", "ZoomIt.exe"
             VALUE "ProductName", "Sysinternals ZoomIt"
             VALUE "ProductVersion", "10.0"
@@ -115,7 +115,7 @@ BEGIN
     DEFPUSHBUTTON   "OK",IDOK,186,306,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,243,306,50,14
     LTEXT           "ZoomIt v10.0",IDC_VERSION,42,7,73,10
-    LTEXT           "Copyright © 2006-2026 Mark Russinovich",IDC_COPYRIGHT,42,17,251,8
+    LTEXT           "Copyright ï¿½ 2006-2026 Mark Russinovich",IDC_COPYRIGHT,42,17,251,8
     CONTROL         "<a HREF=""https://www.sysinternals.com"">Sysinternals - www.sysinternals.com</a>",IDC_LINK,
                     "SysLink",WS_TABSTOP,42,26,150,9
     ICON            "APPICON",IDC_STATIC,12,9,20,20
@@ -277,13 +277,16 @@ BEGIN
     PUSHBUTTON      "&Trim",IDC_TRIM_FILE,215,209,53,14
 END
 
-SNIP DIALOGEX 0, 0, 260, 68
-STYLE DS_SETFONT | DS_CONTROL | WS_CHILD | WS_CLIPSIBLINGS | WS_SYSMENU
+SNIP DIALOGEX 0, 0, 260, 125
+STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_CLIPSIBLINGS | WS_SYSMENU
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     CONTROL         "",IDC_SNIP_HOTKEY,"msctls_hotkey32",WS_BORDER | WS_TABSTOP,55,32,80,12
     LTEXT           "Snip Toggle:",IDC_STATIC,7,33,45,8
     LTEXT           "Copy a region of the screen to the clipboard or enter the hotkey with the Shift key in the opposite mode to save it to a file. ",IDC_STATIC,7,7,230,19
+    CONTROL         "",IDC_SNIP_OCR_HOTKEY,"msctls_hotkey32",WS_BORDER | WS_TABSTOP,55,63,80,12
+    LTEXT           "OCR Toggle:",IDC_STATIC,7,65,45,8
+    LTEXT           "Copy OCR text from a screen region to the clipboard.",IDC_STATIC,7,50,230,10
 END
 
 DEMOTYPE DIALOGEX 0, 0, 260, 249
@@ -404,7 +407,7 @@ BEGIN
     BEGIN
         LEFTMARGIN, 7
         TOPMARGIN, 7
-        BOTTOMMARGIN, 61
+        BOTTOMMARGIN, 104
     END
 
     "DEMOTYPE", DIALOG

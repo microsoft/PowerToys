@@ -5118,6 +5118,12 @@ The break timer font matches the text font.</value>
   <data name="ZoomIt_Snip_Shortcut_Save" xml:space="preserve">
     <value>Press **{0}** to save the snip to a file instead of the clipboard.</value>
   </data>
+  <data name="ZoomIt_SnipOcr_Shortcut.Header" xml:space="preserve">
+    <value>Snip OCR activation</value>
+  </data>
+  <data name="ZoomIt_SnipOcr_Shortcut.Description" xml:space="preserve">
+    <value>Copy OCR text from a screen region to the clipboard.</value>
+  </data>
   <data name="Oobe_ZoomIt.Description" xml:space="preserve">
     <value>ZoomIt is a screen zoom, annotation, and recording tool for technical presentations and demos. You can also use ZoomIt to snip screenshots to the clipboard or to a file.</value>
     <comment>{Locked="ZoomIt"}</comment>
