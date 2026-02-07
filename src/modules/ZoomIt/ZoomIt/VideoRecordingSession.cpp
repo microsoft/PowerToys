@@ -1502,12 +1502,13 @@ INT_PTR VideoRecordingSession::ShowTrimDialog(
     HWND hParent,
     const std::wstring& videoPath,
     winrt::TimeSpan& trimStart,
-    winrt::TimeSpan& trimEnd)
+    winrt::TimeSpan& trimEnd,
+    bool standaloneMode)
 {
     std::promise<INT_PTR> resultPromise;
     auto resultFuture = resultPromise.get_future();
 
-    std::thread staThread([hParent, videoPath, &trimStart, &trimEnd, promise = std::move(resultPromise)]() mutable
+    std::thread staThread([hParent, videoPath, &trimStart, &trimEnd, standaloneMode, promise = std::move(resultPromise)]() mutable
     {
         bool coInitialized = false;
         try
@@ -1525,7 +1526,7 @@ INT_PTR VideoRecordingSession::ShowTrimDialog(
 
         try
         {
-            INT_PTR dlgResult = ShowTrimDialogInternal(hParent, videoPath, trimStart, trimEnd);
+            INT_PTR dlgResult = ShowTrimDialogInternal(hParent, videoPath, trimStart, trimEnd, standaloneMode);
             promise.set_value(dlgResult);
         }
         catch (const winrt::hresult_error& e)
@@ -1584,7 +1585,8 @@ INT_PTR VideoRecordingSession::ShowTrimDialogInternal(
     HWND hParent,
     const std::wstring& videoPath,
     winrt::TimeSpan& trimStart,
-    winrt::TimeSpan& trimEnd)
+    winrt::TimeSpan& trimEnd,
+    bool standaloneMode)
 {
     TrimDialogData data;
     data.videoPath = videoPath;
@@ -1592,6 +1594,7 @@ INT_PTR VideoRecordingSession::ShowTrimDialogInternal(
     data.trimStart = trimStart;
     data.trimEnd = trimEnd;
     data.isGif = IsGifPath(videoPath);
+    data.standaloneMode = standaloneMode;
 
     if (data.isGif)
     {
@@ -3890,6 +3893,12 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
         // Make OK the default button
         SendMessage(hDlg, DM_SETDEFID, IDOK, 0);
 
+        // In standalone mode, change OK button text to "Save As"
+        if (pData->standaloneMode)
+        {
+            SetDlgItemText(hDlg, IDOK, L"Save As");
+        }
+
         // Subclass the dialog to handle resize grip hit testing
         SetWindowSubclass(hDlg, TrimDialogSubclassProc, 0, reinterpret_cast<DWORD_PTR>(pData));
 
@@ -5029,6 +5038,115 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
         case IDOK:
             pData = reinterpret_cast<TrimDialogData*>(GetWindowLongPtr(hDlg, DWLP_USER));
             StopPlayback(hDlg, pData);
+
+            if (pData->standaloneMode)
+            {
+                // In standalone mode, "Save As" shows a save dialog and performs the trim
+                auto saveDialog = wil::CoCreateInstance<::IFileSaveDialog>(CLSID_FileSaveDialog);
+
+                FILEOPENDIALOGOPTIONS options;
+                if (SUCCEEDED(saveDialog->GetOptions(&options)))
+                    saveDialog->SetOptions(options | FOS_FORCEFILESYSTEM);
+
+                wil::com_ptr<::IShellItem> videosItem;
+                if (SUCCEEDED(SHGetKnownFolderItem(FOLDERID_Videos, KF_FLAG_DEFAULT, nullptr,
+                    IID_IShellItem, (void**)videosItem.put())))
+                    saveDialog->SetDefaultFolder(videosItem.get());
+
+                // Derive suggested filename from source
+                std::wstring suggestedName;
+                {
+                    auto pos = pData->videoPath.find_last_of(L"\\/");
+                    suggestedName = (pos != std::wstring::npos) ? pData->videoPath.substr(pos + 1) : pData->videoPath;
+                    auto dot = suggestedName.find_last_of(L'.');
+                    if (dot != std::wstring::npos)
+                        suggestedName.insert(dot, L"_trimmed");
+                    else
+                        suggestedName += L"_trimmed";
+                }
+
+                if (pData->isGif)
+                {
+                    saveDialog->SetDefaultExtension(L".gif");
+                    COMDLG_FILTERSPEC fileTypes[] = { { L"GIF Animation", L"*.gif" } };
+                    saveDialog->SetFileTypes(_countof(fileTypes), fileTypes);
+                }
+                else
+                {
+                    saveDialog->SetDefaultExtension(L".mp4");
+                    COMDLG_FILTERSPEC fileTypes[] = { { L"MP4 Video", L"*.mp4" } };
+                    saveDialog->SetFileTypes(_countof(fileTypes), fileTypes);
+                }
+                saveDialog->SetFileName(suggestedName.c_str());
+                saveDialog->SetTitle(L"ZoomIt: Save Trimmed Video As...");
+
+                HRESULT hr = saveDialog->Show(hDlg);
+                if (FAILED(hr))
+                {
+                    // User cancelled save dialog — return to trim editor
+                    return TRUE;
+                }
+
+                wil::com_ptr<::IShellItem> resultItem;
+                THROW_IF_FAILED(saveDialog->GetResult(resultItem.put()));
+                wil::unique_cotaskmem_string savePath;
+                THROW_IF_FAILED(resultItem->GetDisplayName(SIGDN_FILESYSPATH, savePath.put()));
+
+                // Capture what we need before closing the dialog
+                std::wstring videoPath = pData->videoPath;
+                bool isGif = pData->isGif;
+                auto trimStart = pData->trimStart;
+                auto trimEnd = pData->trimEnd;
+                std::wstring savePathStr(savePath.get());
+
+                // Close the trim dialog immediately
+                EndDialog(hDlg, IDOK);
+
+                // Perform the trim after the dialog is closed
+                try
+                {
+                    auto trimOp = isGif
+                        ? TrimGifAsync(videoPath, trimStart, trimEnd)
+                        : TrimVideoAsync(videoPath, trimStart, trimEnd);
+
+                    // Pump messages while waiting for async operation
+                    while (trimOp.Status() == winrt::AsyncStatus::Started)
+                    {
+                        MSG msg;
+                        while (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
+                        {
+                            TranslateMessage(&msg);
+                            DispatchMessage(&msg);
+                        }
+                        Sleep(10);
+                    }
+
+                    auto trimmedPath = std::wstring(trimOp.GetResults());
+                    if (trimmedPath.empty())
+                    {
+                        MessageBox(nullptr, L"Failed to trim video.", L"Error", MB_OK | MB_ICONERROR);
+                        return TRUE;
+                    }
+
+                    // Copy trimmed file to the user-chosen save location
+                    if (!CopyFile(trimmedPath.c_str(), savePathStr.c_str(), FALSE))
+                    {
+                        MessageBox(nullptr, L"Failed to save the trimmed file.", L"Error", MB_OK | MB_ICONERROR);
+                        DeleteFile(trimmedPath.c_str());
+                        return TRUE;
+                    }
+
+                    // Clean up temp file
+                    DeleteFile(trimmedPath.c_str());
+                }
+                catch (...)
+                {
+                    MessageBox(nullptr, L"Failed to trim video.", L"Error", MB_OK | MB_ICONERROR);
+                }
+
+                return TRUE;
+            }
+
             // Trim times are already set by mouse dragging
             EndDialog(hDlg, IDOK);
             return TRUE;
