@@ -124,7 +124,7 @@ BEGIN
     CONTROL         "Run ZoomIt when Windows starts",IDC_AUTOSTART,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,309,122,10
 END
 
-ADVANCED_BREAK DIALOGEX 0, 0, 209, 225
+ADVANCED_BREAK DIALOGEX 0, 0, 209, 240
 STYLE DS_SETFONT | DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Advanced Break Options"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
@@ -151,8 +151,10 @@ BEGIN
     EDITTEXT        IDC_BACKGROUND_FILE,62,164,125,12,ES_AUTOHSCROLL | ES_READONLY
     PUSHBUTTON      "&...",IDC_BACKGROUND_BROWSE,188,164,13,11
     CONTROL         "Scale to screen:",IDC_CHECK_BACKGROUND_STRETCH,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,58,180,67,10,WS_EX_RIGHT
-    DEFPUSHBUTTON   "OK",IDOK,97,199,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,150,199,50,14
+    CONTROL         "Lock workstation during break:",IDC_CHECK_LOCK_WORKSTATION,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,3,196,117,10,WS_EX_RIGHT
+    DEFPUSHBUTTON   "OK",IDOK,97,214,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,150,214,50,14
     LTEXT           "Alarm Sound File:",IDC_STATIC_SOUND_FILE,61,26,56,8
     LTEXT           "Timer Opacity:",IDC_STATIC,8,59,48,8
     LTEXT           "Timer Position:",IDC_STATIC,8,77,48,8
@@ -282,12 +284,12 @@ SNIP DIALOGEX 0, 0, 260, 125
 STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_CLIPSIBLINGS | WS_SYSMENU
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    CONTROL         "",IDC_SNIP_HOTKEY,"msctls_hotkey32",WS_BORDER | WS_TABSTOP,55,32,80,12
+    CONTROL         "",IDC_SNIP_HOTKEY,"msctls_hotkey32",WS_BORDER | WS_TABSTOP,67,32,80,12
     LTEXT           "Snip Toggle:",IDC_STATIC,7,33,45,8
     LTEXT           "Copy a region of the screen to the clipboard or enter the hotkey with the Shift key in the opposite mode to save it to a file. ",IDC_STATIC,7,7,230,19
-    CONTROL         "",IDC_SNIP_OCR_HOTKEY,"msctls_hotkey32",WS_BORDER | WS_TABSTOP,55,63,80,12
-    LTEXT           "OCR Toggle:",IDC_STATIC,7,65,45,8
-    LTEXT           "Copy OCR text from a screen region to the clipboard.",IDC_STATIC,7,50,230,10
+    CONTROL         "",IDC_SNIP_OCR_HOTKEY,"msctls_hotkey32",WS_BORDER | WS_TABSTOP,67,63,80,12
+    LTEXT           "Text Toggle:",IDC_STATIC,7,65,55,8
+    LTEXT           "Copy text from the selected region to the clipboard:",IDC_STATIC,7,50,230,10
 END
 
 DEMOTYPE DIALOGEX 0, 0, 260, 249
