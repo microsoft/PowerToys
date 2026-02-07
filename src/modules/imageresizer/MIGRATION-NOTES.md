@@ -31,3 +31,23 @@ The ImageResizer module's core image processing was migrated from WPF (`System.W
 ### Pixel-Level Differences
 
 WinRT's `BitmapInterpolationMode.Fant` may produce slightly different pixel values compared to WPF's internal scaling algorithm. Both are high-quality interpolation methods, but they are not guaranteed to produce bit-identical output. This is expected and does not affect visual quality.
+
+## Installer / Build Pipeline Issues
+
+### Satellite Assembly References Removed from Resources.wxs
+
+**Problem**: After migrating to WinUI 3, the WiX installer failed with `WIX0103` errors — it could not find `PowerToys.ImageResizer.resources.dll` satellite assemblies in `WinUI3Apps/{locale}/` directories.
+
+**Root cause**: WPF uses `.resx` files which compile into satellite assemblies (`.resources.dll`). WinUI 3 uses `.resw` files which compile into `.pri` files. The installer's `Resources.wxs` still referenced the old satellite assembly pattern.
+
+**Fix**: Removed the ImageResizer satellite assembly component, `WinUI3AppsInstallFolder` from the `ParentDirectory` foreach loop, and the corresponding `RemoveFolder` entry from `Resources.wxs`.
+
+### Phantom Root-Level Build Artifacts
+
+**Problem**: `PowerToys.ImageResizer.exe`, `.deps.json`, and `.runtimeconfig.json` appear in the root output directory (`x64/Release/`) even though the project's `OutputPath` is `WinUI3Apps/`. This caused the installer to include an incomplete, non-functional copy (missing the managed `.dll`) and the ESRP signing check to fail.
+
+**Root cause**: `ImageResizerCLI` (`OutputType=Exe`, `SelfContained=true`) has a `<ProjectReference>` to `ImageResizerUI` (`OutputType=WinExe`, `SelfContained=true`). When MSBuild processes an Exe→WinExe dependency between two self-contained projects, it copies the referenced project's apphost (`.exe`) and runtime config files to the root output directory as a side effect. This is the **only** Exe→WinExe `ProjectReference` in the entire PowerToys codebase — other CLI tools (e.g., FancyZonesCLI) correctly reference a shared Library project instead.
+
+**Temporary fix**: `generateAllFileComponents.ps1` strips the leaked ImageResizer files from the `BaseApplicationsFiles` list after generation. The signing config (`ESRPSigning_core.json`) only references `WinUI3Apps\\` paths.
+
+**TODO**: Refactor the dependency — extract shared CLI logic from `ImageResizerUI` (`ui/Cli/` folder) into a separate Library project, so `ImageResizerCLI` references a Library instead of a WinExe. This follows the pattern used by `FancyZonesCLI` → `FancyZonesEditorCommon`.
