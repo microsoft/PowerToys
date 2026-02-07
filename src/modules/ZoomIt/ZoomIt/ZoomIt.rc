@@ -68,8 +68,8 @@ APPICON                 ICON                    "appicon.ico"
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 10,0,0,0
- PRODUCTVERSION 10,0,0,0
+ FILEVERSION 10,1,0,0
+ PRODUCTVERSION 10,1,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -86,12 +86,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Sysinternals - www.sysinternals.com"
             VALUE "FileDescription", "Sysinternals Screen Magnifier"
-            VALUE "FileVersion", "10.0"
+            VALUE "FileVersion", "10.1"
             VALUE "InternalName", "ZoomIt"
             VALUE "LegalCopyright", "Copyright � 2006-2026 Mark Russinovich"
             VALUE "OriginalFilename", "ZoomIt.exe"
             VALUE "ProductName", "Sysinternals ZoomIt"
-            VALUE "ProductVersion", "10.0"
+            VALUE "ProductVersion", "19.1"
         END
     END
     BLOCK "VarFileInfo"
@@ -254,7 +254,7 @@ BEGIN
     LTEXT           "Use LiveDraw to draw and annotate the live desktop. To activate LiveDraw, enter the hotkey with the Shift key in the opposite mode. You can remove LiveDraw annotations by activating LiveDraw and enter the escape key",IDC_STATIC,7,62,230,32
 END
 
-RECORD DIALOGEX 0, 0, 271, 224
+RECORD DIALOGEX 0, 0, 263, 224
 STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_SYSMENU
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
@@ -274,7 +274,7 @@ BEGIN
     CONTROL         "&Capture audio input:",IDC_CAPTURE_AUDIO,"Button",BS_AUTOCHECKBOX | BS_LEFTTEXT | WS_TABSTOP,7,161,83,10
     COMBOBOX        IDC_MICROPHONE,81,176,152,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Microphone:",IDC_MICROPHONE_LABEL,32,178,47,8
-    PUSHBUTTON      "&Trim",IDC_TRIM_FILE,215,209,53,14
+    PUSHBUTTON      "&Trim",IDC_TRIM_FILE,207,209,53,14
 END
 
 SNIP DIALOGEX 0, 0, 260, 125
@@ -398,7 +398,7 @@ BEGIN
     "RECORD", DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 268
+        RIGHTMARGIN, 260
         TOPMARGIN, 7
         BOTTOMMARGIN, 223
     END
