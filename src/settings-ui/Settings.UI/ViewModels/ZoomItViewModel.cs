@@ -367,6 +367,20 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public HotkeySettings SnipOcrToggleKey
+        {
+            get => _zoomItSettings.Properties.SnipOcrToggleKey.Value;
+            set
+            {
+                if (_zoomItSettings.Properties.SnipOcrToggleKey.Value != value)
+                {
+                    _zoomItSettings.Properties.SnipOcrToggleKey.Value = value ?? ZoomItProperties.DefaultSnipOcrToggleKey;
+                    OnPropertyChanged(nameof(SnipOcrToggleKey));
+                    NotifySettingsChanged();
+                }
+            }
+        }
+
         public HotkeySettings BreakTimerKey
         {
             get => _zoomItSettings.Properties.BreakTimerKey.Value;

@@ -325,6 +325,13 @@
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
+                    <tkcontrols:SettingsExpander
+                        Name="ZoomItSnipOcrShortcut"
+                        x:Uid="ZoomIt_SnipOcr_Shortcut"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xF7ED;}"
+                        IsExpanded="True">
+                        <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind ViewModel.SnipOcrToggleKey, Mode=TwoWay}" />
+                    </tkcontrols:SettingsExpander>
                 </controls:SettingsGroup>
             </StackPanel>
         </controls:SettingsPageControl.ModuleContent>

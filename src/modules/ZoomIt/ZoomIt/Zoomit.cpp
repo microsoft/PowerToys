@@ -40,6 +40,7 @@ enum class ZoomItCommand
     Break,
     LiveZoom,
     Snip,
+    SnipOcr,
     Record,
 };
 #endif // __ZOOMIT_POWERTOYS__
@@ -55,6 +56,7 @@ namespace winrt
     using namespace Windows::Storage::Pickers;
     using namespace Windows::System;
     using namespace Windows::Devices::Enumeration;
+    using namespace Windows::Media::Ocr;
 }
 
 namespace util
@@ -89,6 +91,7 @@ COLORREF	g_CustomColors[16];
 #define SAVE_CROP_HOTKEY         15
 #define COPY_IMAGE_HOTKEY        16
 #define COPY_CROP_HOTKEY         17
+#define SNIP_OCR_HOTKEY          18
 
 #define ZOOM_PAGE	  0
 #define LIVE_PAGE	  1
@@ -152,6 +155,7 @@ DWORD	g_BreakToggleMod;
 DWORD	g_DemoTypeToggleMod;
 DWORD	g_RecordToggleMod;
 DWORD   g_SnipToggleMod;
+DWORD   g_SnipOcrToggleMod;
 
 BOOLEAN	g_ZoomOnLiveZoom = FALSE;
 DWORD	g_PenWidth = PEN_WIDTH;
@@ -1503,6 +1507,118 @@ DWORD SavePng( LPCTSTR Filename, HBITMAP hBitmap )
 
 //----------------------------------------------------------------------------
 //
+// OcrFromHBITMAP
+//
+// Perform OCR on an HBITMAP and return the recognized text.
+// Uses WIC to convert HBITMAP to IWICBitmap, then ISoftwareBitmapNativeFactory
+// for zero-copy conversion to SoftwareBitmap, then Windows.Media.Ocr.
+//
+//----------------------------------------------------------------------------
+std::wstring OcrFromHBITMAP( HBITMAP hBitmap )
+{
+    try
+    {
+        // The main thread is STA (CoInitialize), but RecognizeAsync().get()
+        // asserts if called on an STA thread. Run the entire OCR pipeline
+        // on a background MTA thread.
+        auto future = std::async( std::launch::async, [hBitmap]() -> std::wstring
+        {
+            // Initialize COM as MTA on this worker thread
+            CoInitializeEx( nullptr, COINIT_MULTITHREADED );
+            auto comCleanup = wil::scope_exit( [] { CoUninitialize(); } );
+
+            // Create WIC factory
+            wil::com_ptr<IWICImagingFactory> wicFactory;
+            THROW_IF_FAILED( CoCreateInstance(
+                CLSID_WICImagingFactory, nullptr, CLSCTX_INPROC_SERVER,
+                IID_PPV_ARGS( wicFactory.put() ) ) );
+
+            // Create IWICBitmap from HBITMAP
+            wil::com_ptr<IWICBitmap> wicBitmap;
+            THROW_IF_FAILED( wicFactory->CreateBitmapFromHBITMAP(
+                hBitmap, nullptr, WICBitmapIgnoreAlpha, wicBitmap.put() ) );
+
+            // Convert to SoftwareBitmap via ISoftwareBitmapNativeFactory (zero-copy)
+            auto softwareBitmap = winrt::capture<winrt::SoftwareBitmap>(
+                winrt::create_instance<ISoftwareBitmapNativeFactory>( CLSID_SoftwareBitmapNativeFactory ),
+                &ISoftwareBitmapNativeFactory::CreateFromWICBitmap,
+                wicBitmap.get(),
+                false );
+
+            // OcrEngine requires Gray8 or Bgra8 pixel format
+            if( softwareBitmap.BitmapPixelFormat() != winrt::BitmapPixelFormat::Bgra8 ||
+                softwareBitmap.BitmapAlphaMode() != winrt::BitmapAlphaMode::Premultiplied )
+            {
+                softwareBitmap = winrt::SoftwareBitmap::Convert(
+                    softwareBitmap,
+                    winrt::BitmapPixelFormat::Bgra8,
+                    winrt::BitmapAlphaMode::Premultiplied );
+            }
+
+            // Scale down if image exceeds OCR engine's max dimension (2600px)
+            const uint32_t maxDim = winrt::OcrEngine::MaxImageDimension();
+            if( softwareBitmap.PixelWidth() > static_cast<int32_t>( maxDim ) ||
+                softwareBitmap.PixelHeight() > static_cast<int32_t>( maxDim ) )
+            {
+                // Calculate scale factor to fit within max dimensions
+                float scale = min(
+                    static_cast<float>( maxDim ) / softwareBitmap.PixelWidth(),
+                    static_cast<float>( maxDim ) / softwareBitmap.PixelHeight() );
+
+                int32_t newWidth = static_cast<int32_t>( softwareBitmap.PixelWidth() * scale );
+                int32_t newHeight = static_cast<int32_t>( softwareBitmap.PixelHeight() * scale );
+
+                // Use WIC scaler for high-quality downscale
+                wil::com_ptr<IWICBitmapScaler> scaler;
+                THROW_IF_FAILED( wicFactory->CreateBitmapScaler( scaler.put() ) );
+                THROW_IF_FAILED( scaler->Initialize(
+                    wicBitmap.get(), newWidth, newHeight, WICBitmapInterpolationModeHighQualityCubic ) );
+
+                // Create new WICBitmap from scaled result
+                wil::com_ptr<IWICBitmap> scaledBitmap;
+                THROW_IF_FAILED( wicFactory->CreateBitmapFromSource(
+                    scaler.get(), WICBitmapCacheOnDemand, scaledBitmap.put() ) );
+
+                softwareBitmap = winrt::capture<winrt::SoftwareBitmap>(
+                    winrt::create_instance<ISoftwareBitmapNativeFactory>( CLSID_SoftwareBitmapNativeFactory ),
+                    &ISoftwareBitmapNativeFactory::CreateFromWICBitmap,
+                    scaledBitmap.get(),
+                    false );
+
+                if( softwareBitmap.BitmapPixelFormat() != winrt::BitmapPixelFormat::Bgra8 ||
+                    softwareBitmap.BitmapAlphaMode() != winrt::BitmapAlphaMode::Premultiplied )
+                {
+                    softwareBitmap = winrt::SoftwareBitmap::Convert(
+                        softwareBitmap,
+                        winrt::BitmapPixelFormat::Bgra8,
+                        winrt::BitmapAlphaMode::Premultiplied );
+                }
+            }
+
+            // Create OCR engine from user profile languages
+            winrt::OcrEngine engine = winrt::OcrEngine::TryCreateFromUserProfileLanguages();
+            if( !engine )
+            {
+                return std::wstring{};
+            }
+
+            // Run OCR — safe to call .get() on an MTA thread
+            winrt::OcrResult result = engine.RecognizeAsync( softwareBitmap ).get();
+            return std::wstring( result.Text() );
+        } );
+
+        return future.get();
+    }
+    catch( ... )
+    {
+        OutputDebug( L"OcrFromHBITMAP failed\n" );
+        return {};
+    }
+}
+
+
+//----------------------------------------------------------------------------
+//
 // EnableDisableTrayIcon
 //
 //----------------------------------------------------------------------------
@@ -2368,6 +2484,7 @@ void UnregisterAllHotkeys( HWND hWnd )
     UnregisterHotKey( hWnd, RECORD_WINDOW_HOTKEY );
     UnregisterHotKey( hWnd, SNIP_HOTKEY );
     UnregisterHotKey( hWnd, SNIP_SAVE_HOTKEY);
+    UnregisterHotKey( hWnd, SNIP_OCR_HOTKEY );
     UnregisterHotKey( hWnd, DEMOTYPE_HOTKEY );
     UnregisterHotKey( hWnd, DEMOTYPE_RESET_HOTKEY );
     UnregisterHotKey( hWnd, RECORD_GIF_HOTKEY );
@@ -2399,6 +2516,9 @@ void RegisterAllHotkeys(HWND hWnd)
     if (g_SnipToggleKey) {
         RegisterHotKey(hWnd, SNIP_HOTKEY, g_SnipToggleMod, g_SnipToggleKey & 0xFF);
         RegisterHotKey(hWnd, SNIP_SAVE_HOTKEY, (g_SnipToggleMod ^ MOD_SHIFT), g_SnipToggleKey & 0xFF);
+    }
+    if (g_SnipOcrToggleKey) {
+        RegisterHotKey(hWnd, SNIP_OCR_HOTKEY, g_SnipOcrToggleMod, g_SnipOcrToggleKey & 0xFF);
     }
     if (g_RecordToggleKey) {
         RegisterHotKey(hWnd, RECORD_HOTKEY, g_RecordToggleMod | MOD_NOREPEAT, g_RecordToggleKey & 0xFF);
@@ -3619,8 +3739,8 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
     static RECT     stableWindowRect{};
     static bool     stableWindowRectValid = false;
     TCHAR			text[32];
-    DWORD			newToggleKey, newTimeout, newToggleMod, newBreakToggleKey, newDemoTypeToggleKey, newRecordToggleKey, newSnipToggleKey;
-    DWORD			newDrawToggleKey, newDrawToggleMod, newBreakToggleMod, newDemoTypeToggleMod, newRecordToggleMod, newSnipToggleMod;
+    DWORD			newToggleKey, newTimeout, newToggleMod, newBreakToggleKey, newDemoTypeToggleKey, newRecordToggleKey, newSnipToggleKey, newSnipOcrToggleKey;
+    DWORD			newDrawToggleKey, newDrawToggleMod, newBreakToggleMod, newDemoTypeToggleMod, newRecordToggleMod, newSnipToggleMod, newSnipOcrToggleMod;
     DWORD			newLiveZoomToggleKey, newLiveZoomToggleMod;
     static std::vector<std::pair<std::wstring, std::wstring>>	microphones;
 
@@ -3855,6 +3975,7 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
         if( g_DemoTypeToggleKey ) SendMessage( GetDlgItem( g_OptionsTabs[DEMOTYPE_PAGE].hPage, IDC_DEMOTYPE_HOTKEY ), HKM_SETHOTKEY, g_DemoTypeToggleKey, 0 );
         if( g_RecordToggleKey )	SendMessage( GetDlgItem( g_OptionsTabs[RECORD_PAGE].hPage, IDC_RECORD_HOTKEY), HKM_SETHOTKEY, g_RecordToggleKey, 0 );
         if( g_SnipToggleKey) 	SendMessage( GetDlgItem( g_OptionsTabs[SNIP_PAGE].hPage, IDC_SNIP_HOTKEY), HKM_SETHOTKEY, g_SnipToggleKey, 0 );
+        if( g_SnipOcrToggleKey) SendMessage( GetDlgItem( g_OptionsTabs[SNIP_PAGE].hPage, IDC_SNIP_OCR_HOTKEY), HKM_SETHOTKEY, g_SnipOcrToggleKey, 0 );
         CheckDlgButton( hDlg, IDC_SHOW_TRAY_ICON,
             g_ShowTrayIcon ? BST_CHECKED: BST_UNCHECKED );
         CheckDlgButton( hDlg, IDC_AUTOSTART,
@@ -4295,6 +4416,7 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
             newDemoTypeToggleKey = static_cast<DWORD>(SendMessage( GetDlgItem( g_OptionsTabs[DEMOTYPE_PAGE].hPage, IDC_DEMOTYPE_HOTKEY ), HKM_GETHOTKEY, 0, 0 ));
             newRecordToggleKey = static_cast<DWORD>(SendMessage(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_RECORD_HOTKEY), HKM_GETHOTKEY, 0, 0));
             newSnipToggleKey = static_cast<DWORD>(SendMessage( GetDlgItem( g_OptionsTabs[SNIP_PAGE].hPage, IDC_SNIP_HOTKEY), HKM_GETHOTKEY, 0, 0 ));
+            newSnipOcrToggleKey = static_cast<DWORD>(SendMessage( GetDlgItem( g_OptionsTabs[SNIP_PAGE].hPage, IDC_SNIP_OCR_HOTKEY), HKM_GETHOTKEY, 0, 0 ));
 
             newToggleMod = GetKeyMod( newToggleKey );
             newLiveZoomToggleMod = GetKeyMod( newLiveZoomToggleKey );
@@ -4303,6 +4425,7 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
             newDemoTypeToggleMod = GetKeyMod( newDemoTypeToggleKey );
             newRecordToggleMod = GetKeyMod(newRecordToggleKey);
             newSnipToggleMod = GetKeyMod( newSnipToggleKey );
+            newSnipOcrToggleMod = GetKeyMod( newSnipOcrToggleKey );
 
             g_SliderZoomLevel = static_cast<int>(SendMessage( GetDlgItem(g_OptionsTabs[ZOOM_PAGE].hPage, IDC_ZOOM_SLIDER), TBM_GETPOS, 0, 0 ));
             g_DemoTypeSpeedSlider = static_cast<int>(SendMessage( GetDlgItem( g_OptionsTabs[DEMOTYPE_PAGE].hPage, IDC_DEMOTYPE_SPEED_SLIDER ), TBM_GETPOS, 0, 0 ));
@@ -4373,6 +4496,15 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
                 break;
 
             }
+            else if (newSnipOcrToggleKey &&
+                !RegisterHotKey(GetParent(hDlg), SNIP_OCR_HOTKEY, newSnipOcrToggleMod, newSnipOcrToggleKey & 0xFF)) {
+
+                MessageBox(hDlg, L"The specified snip OCR hotkey is already in use.\nSelect a different snip OCR hotkey.",
+                    APPNAME, MB_ICONERROR);
+                UnregisterAllHotkeys(GetParent(hDlg));
+                break;
+
+            }
             else if( newRecordToggleKey &&
                 (!RegisterHotKey(GetParent(hDlg), RECORD_HOTKEY,      newRecordToggleMod | MOD_NOREPEAT, newRecordToggleKey & 0xFF) ||
                  !RegisterHotKey(GetParent(hDlg), RECORD_CROP_HOTKEY, (newRecordToggleMod ^ MOD_SHIFT) | MOD_NOREPEAT, newRecordToggleKey & 0xFF) ||
@@ -4399,6 +4531,8 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
                 g_RecordToggleMod = newRecordToggleMod;
                 g_SnipToggleKey = newSnipToggleKey;
                 g_SnipToggleMod = newSnipToggleMod;
+                g_SnipOcrToggleKey = newSnipOcrToggleKey;
+                g_SnipOcrToggleMod = newSnipOcrToggleMod;
                 reg.WriteRegSettings( RegSettings );
                 EnableDisableTrayIcon( GetParent( hDlg ), g_ShowTrayIcon );
 
@@ -6265,6 +6399,7 @@ LRESULT APIENTRY MainWndProc(
         g_BreakToggleMod = GetKeyMod( g_BreakToggleKey );
         g_DemoTypeToggleMod = GetKeyMod( g_DemoTypeToggleKey );
         g_SnipToggleMod = GetKeyMod( g_SnipToggleKey );
+        g_SnipOcrToggleMod = GetKeyMod( g_SnipOcrToggleKey );
         g_RecordToggleMod = GetKeyMod( g_RecordToggleKey );
 
         if( !g_OptionsShown && !g_StartedByPowerToys ) {
@@ -6318,6 +6453,14 @@ LRESULT APIENTRY MainWndProc(
                  !RegisterHotKey(hWnd, SNIP_SAVE_HOTKEY, (g_SnipToggleMod ^ MOD_SHIFT), g_SnipToggleKey & 0xFF))) {
 
                 MessageBox(hWnd, L"The specified snip hotkey is already in use.\nSelect a different snip hotkey.",
+                    APPNAME, MB_ICONERROR);
+                showOptions = TRUE;
+
+            }
+            else if (g_SnipOcrToggleKey &&
+                !RegisterHotKey(hWnd, SNIP_OCR_HOTKEY, g_SnipOcrToggleMod, g_SnipOcrToggleKey & 0xFF)) {
+
+                MessageBox(hWnd, L"The specified snip OCR hotkey is already in use.\nSelect a different snip OCR hotkey.",
                     APPNAME, MB_ICONERROR);
                 showOptions = TRUE;
 
@@ -6531,6 +6674,79 @@ LRESULT APIENTRY MainWndProc(
                 if( GetWindowLong( hWnd, GWL_EXSTYLE ) & WS_EX_LAYERED )
                 {
                     OutputDebug( L"Exiting liveDraw after snip\n" );
+                    SendMessage( hWnd, WM_KEYDOWN, VK_ESCAPE, 0 );
+                }
+            }
+            break;
+        }
+
+        case SNIP_OCR_HOTKEY:
+        {
+            OutputDebugStringW( L"[SnipOCR] Hotkey received\n" );
+
+            // Block liveZoom liveDraw snip OCR due to mirroring bug
+            if( IsWindowVisible( g_hWndLiveZoom )
+                && ( GetWindowLongPtr( hWnd, GWL_EXSTYLE ) & WS_EX_LAYERED ) )
+            {
+                break;
+            }
+
+            bool zoomed = true;
+#ifdef __ZOOMIT_POWERTOYS__
+            if( g_StartedByPowerToys )
+            {
+                Trace::ZoomItActivateSnipOcr();
+            }
+#endif // __ZOOMIT_POWERTOYS__
+
+            // First, static zoom at 1x
+            if( !g_Zoomed )
+            {
+                zoomed = false;
+                if( IsWindowVisible( g_hWndLiveZoom ) && !g_LiveZoomLevelOne )
+                {
+                    SendMessage( hWnd, WM_HOTKEY, ZOOM_HOTKEY, SHALLOW_ZOOM );
+                }
+                else
+                {
+                    SendMessage( hWnd, WM_HOTKEY, ZOOM_HOTKEY, LIVE_DRAW_ZOOM );
+                }
+                zoomLevel = zoomTelescopeTarget = 1;
+            }
+            else if( g_Drawing )
+            {
+                SendMessage( hWnd, WM_USER_EXIT_MODE, 0, 0 );
+                if( g_Drawing )
+                {
+                    SendMessage( hWnd, WM_USER_EXIT_MODE, 0, 0 );
+                }
+            }
+            ShowMainWindow( hWnd, monInfo, width, height );
+
+            // Perform OCR on the selected region
+            SendMessage( hWnd, WM_COMMAND, IDC_COPY_OCR, ( zoomed ? 0 : SHALLOW_ZOOM ) );
+
+            // Now if we weren't zoomed, unzoom
+            if( !zoomed )
+            {
+                if( g_ZoomOnLiveZoom )
+                {
+                    ShowCursor( false );
+                    SendMessage( hWnd, WM_HOTKEY, ZOOM_HOTKEY, 0 );
+                    ShowCursor( true );
+                }
+                else
+                {
+                    SendMessage( hWnd, WM_HOTKEY, ZOOM_HOTKEY, SHALLOW_ZOOM );
+                }
+            }
+
+            // exit zoom
+            if( g_Zoomed )
+            {
+                if( GetWindowLong( hWnd, GWL_EXSTYLE ) & WS_EX_LAYERED )
+                {
+                    OutputDebug( L"Exiting liveDraw after snip OCR\n" );
                     SendMessage( hWnd, WM_KEYDOWN, VK_ESCAPE, 0 );
                 }
             }
@@ -8605,6 +8821,7 @@ LRESULT APIENTRY MainWndProc(
         g_BreakToggleMod = GetKeyMod(g_BreakToggleKey);
         g_DemoTypeToggleMod = GetKeyMod(g_DemoTypeToggleKey);
         g_SnipToggleMod = GetKeyMod(g_SnipToggleKey);
+        g_SnipOcrToggleMod = GetKeyMod(g_SnipOcrToggleKey);
         g_RecordToggleMod = GetKeyMod(g_RecordToggleKey);
         BOOL showOptions = FALSE;
         if (g_ToggleKey)
@@ -8655,6 +8872,14 @@ LRESULT APIENTRY MainWndProc(
                 !RegisterHotKey(hWnd, SNIP_SAVE_HOTKEY, (g_SnipToggleMod ^ MOD_SHIFT), g_SnipToggleKey & 0xFF))
             {
                 MessageBox(hWnd, L"The specified snip hotkey is already in use.\nSelect a different snip hotkey.", APPNAME, MB_ICONERROR);
+                showOptions = TRUE;
+            }
+        }
+        if (g_SnipOcrToggleKey)
+        {
+            if (!RegisterHotKey(hWnd, SNIP_OCR_HOTKEY, g_SnipOcrToggleMod, g_SnipOcrToggleKey & 0xFF))
+            {
+                MessageBox(hWnd, L"The specified snip OCR hotkey is already in use.\nSelect a different snip OCR hotkey.", APPNAME, MB_ICONERROR);
                 showOptions = TRUE;
             }
         }
@@ -8952,6 +9177,93 @@ LRESULT APIENTRY MainWndProc(
             DeleteDC( hSaveDc );
             }
             break;
+
+        case IDC_COPY_OCR:
+        {
+            int         copyX, copyY;
+            int         copyWidth, copyHeight;
+
+            g_RecordCropping = TRUE;
+            POINT local_savedCursorPos{};
+            if( lParam != SHALLOW_ZOOM )
+            {
+                GetCursorPos( &local_savedCursorPos );
+            }
+            SelectRectangle selectRectangle;
+            if( !selectRectangle.Start( hWnd ) )
+            {
+                g_RecordCropping = FALSE;
+                break;
+            }
+            auto copyRc = selectRectangle.SelectedRect();
+            selectRectangle.Stop();
+            if( lParam != SHALLOW_ZOOM )
+            {
+                SetCursorPos( local_savedCursorPos.x, local_savedCursorPos.y );
+            }
+            g_RecordCropping = FALSE;
+
+            copyX = copyRc.left;
+            copyY = copyRc.top;
+            copyWidth = copyRc.right - copyRc.left;
+            copyHeight = copyRc.bottom - copyRc.top;
+
+            if( copyWidth <= 0 || copyHeight <= 0 )
+            {
+                break;
+            }
+
+            // Capture the selected region into an HBITMAP
+            HBITMAP hSaveBitmap = CreateCompatibleBitmap( hdcScreen, copyWidth, copyHeight );
+            HDC hSaveDc = CreateCompatibleDC( hdcScreen );
+            SelectObject( hSaveDc, hSaveBitmap );
+            if( g_SmoothImage )
+            {
+                SetStretchBltMode( hSaveDc, HALFTONE );
+            }
+            else
+            {
+                SetStretchBltMode( hSaveDc, COLORONCOLOR );
+            }
+            StretchBlt( hSaveDc,
+                        0, 0,
+                        copyWidth, copyHeight,
+                        hdcScreen,
+                        monInfo.rcMonitor.left + copyX,
+                        monInfo.rcMonitor.top + copyY,
+                        copyWidth, copyHeight,
+                        SRCCOPY | CAPTUREBLT );
+
+            // Run OCR on the captured bitmap
+            std::wstring ocrText = OcrFromHBITMAP( hSaveBitmap );
+
+            // Copy OCR text to clipboard
+            if( !ocrText.empty() && OpenClipboard( hWnd ) )
+            {
+                EmptyClipboard();
+                size_t cbSize = ( ocrText.size() + 1 ) * sizeof( wchar_t );
+                HGLOBAL hGlobal = GlobalAlloc( GMEM_MOVEABLE, cbSize );
+                if( hGlobal )
+                {
+                    void* pMem = GlobalLock( hGlobal );
+                    if( pMem )
+                    {
+                        memcpy( pMem, ocrText.c_str(), cbSize );
+                        GlobalUnlock( hGlobal );
+                        SetClipboardData( CF_UNICODETEXT, hGlobal );
+                    }
+                    else
+                    {
+                        GlobalFree( hGlobal );
+                    }
+                }
+                CloseClipboard();
+            }
+
+            DeleteObject( hSaveBitmap );
+            DeleteDC( hSaveDc );
+            break;
+        }
 
         case IDC_DRAW:
             PostMessage( hWnd, WM_HOTKEY, DRAW_HOTKEY, 1 );
@@ -10004,6 +10316,10 @@ void ZoomIt_DispatchCommand(ZoomItCommand cmd)
         post_hotkey(SNIP_HOTKEY);
         Trace::ZoomItActivateSnip();
         break;
+    case ZoomItCommand::SnipOcr:
+        post_hotkey(SNIP_OCR_HOTKEY);
+        Trace::ZoomItActivateSnipOcr();
+        break;
     case ZoomItCommand::Record:
         post_hotkey(RECORD_HOTKEY);
         Trace::ZoomItActivateRecord();
@@ -10216,6 +10532,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
     HANDLE m_break_event_handle = NULL;
     HANDLE m_live_zoom_event_handle = NULL;
     HANDLE m_snip_event_handle = NULL;
+    HANDLE m_snip_ocr_event_handle = NULL;
     HANDLE m_record_event_handle = NULL;
     std::thread m_event_triggers_thread;
 
@@ -10228,13 +10545,14 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
         m_break_event_handle = CreateEventW(nullptr, false, false, CommonSharedConstants::ZOOMIT_BREAK_EVENT);
         m_live_zoom_event_handle = CreateEventW(nullptr, false, false, CommonSharedConstants::ZOOMIT_LIVEZOOM_EVENT);
         m_snip_event_handle = CreateEventW(nullptr, false, false, CommonSharedConstants::ZOOMIT_SNIP_EVENT);
+        m_snip_ocr_event_handle = CreateEventW(nullptr, false, false, CommonSharedConstants::ZOOMIT_SNIPOCR_EVENT);
         m_record_event_handle = CreateEventW(nullptr, false, false, CommonSharedConstants::ZOOMIT_RECORD_EVENT);
-        if (!m_reload_settings_event_handle || !m_exit_event_handle || !m_zoom_event_handle || !m_draw_event_handle || !m_break_event_handle || !m_live_zoom_event_handle || !m_snip_event_handle || !m_record_event_handle)
+        if (!m_reload_settings_event_handle || !m_exit_event_handle || !m_zoom_event_handle || !m_draw_event_handle || !m_break_event_handle || !m_live_zoom_event_handle || !m_snip_event_handle || !m_snip_ocr_event_handle || !m_record_event_handle)
         {
             Logger::warn(L"Failed to create events. {}", get_last_error_or_default(GetLastError()));
             return 1;
         }
-        const std::array<HANDLE, 8> event_handles{
+        const std::array<HANDLE, 9> event_handles{
             m_reload_settings_event_handle,
             m_exit_event_handle,
             m_zoom_event_handle,
@@ -10242,6 +10560,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
             m_break_event_handle,
             m_live_zoom_event_handle,
             m_snip_event_handle,
+            m_snip_ocr_event_handle,
             m_record_event_handle,
         };
         const DWORD handle_count = static_cast<DWORD>(event_handles.size());
@@ -10299,6 +10618,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
                     ZoomIt_DispatchCommand(ZoomItCommand::Snip);
                     break;
                 case WAIT_OBJECT_0 + 7:
+                    ZoomIt_DispatchCommand(ZoomItCommand::SnipOcr);
+                    break;
+                case WAIT_OBJECT_0 + 8:
                     ZoomIt_DispatchCommand(ZoomItCommand::Record);
                     break;
                 default: break;
@@ -10336,6 +10658,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
         CloseHandle(m_break_event_handle);
         CloseHandle(m_live_zoom_event_handle);
         CloseHandle(m_snip_event_handle);
+        CloseHandle(m_snip_ocr_event_handle);
         CloseHandle(m_record_event_handle);
         m_event_triggers_thread.join();
     }
