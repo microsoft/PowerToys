@@ -2162,6 +2162,53 @@ INT_PTR CALLBACK OptionsTabProc( HWND hDlg, UINT message,
             pEvents->Release();
             break;
         }
+        case IDC_TRIM_FILE:
+        {
+            // Open a video file for trimming
+            auto openDialog = wil::CoCreateInstance<IFileOpenDialog>( CLSID_FileOpenDialog );
+
+            FILEOPENDIALOGOPTIONS options;
+            if( SUCCEEDED( openDialog->GetOptions( &options ) ) )
+                openDialog->SetOptions( options | FOS_FORCEFILESYSTEM );
+
+            COMDLG_FILTERSPEC fileTypes[] = {
+                { L"Video Files (*.mp4;*.gif)", L"*.mp4;*.gif" },
+                { L"MP4 Video (*.mp4)", L"*.mp4" },
+                { L"GIF Animation (*.gif)", L"*.gif" }
+            };
+            openDialog->SetFileTypes( _countof( fileTypes ), fileTypes );
+            openDialog->SetFileTypeIndex( 1 );
+            openDialog->SetTitle( L"ZoomIt: Open Video for Trimming..." );
+
+            wil::com_ptr<IShellItem> videosFolder;
+            if( SUCCEEDED( SHGetKnownFolderItem( FOLDERID_Videos, KF_FLAG_DEFAULT, nullptr, IID_PPV_ARGS( &videosFolder ) ) ) )
+                openDialog->SetDefaultFolder( videosFolder.get() );
+
+            OpenSaveDialogEvents* pEvents = new OpenSaveDialogEvents(false);
+            DWORD dwCookie = 0;
+            openDialog->Advise( pEvents, &dwCookie );
+
+            if( SUCCEEDED( openDialog->Show( hDlg ) ) )
+            {
+                wil::com_ptr<IShellItem> resultItem;
+                if( SUCCEEDED( openDialog->GetResult( &resultItem ) ) )
+                {
+                    wil::unique_cotaskmem_string pathStr;
+                    if( SUCCEEDED( resultItem->GetDisplayName( SIGDN_FILESYSPATH, &pathStr ) ) )
+                    {
+                        std::wstring videoPath( pathStr.get() );
+                        winrt::Windows::Foundation::TimeSpan trimStart{ 0 };
+                        winrt::Windows::Foundation::TimeSpan trimEnd{ 0 };
+                        VideoRecordingSession::ShowTrimDialog(
+                            GetParent( hDlg ), videoPath, trimStart, trimEnd, true );
+                    }
+                }
+            }
+
+            openDialog->Unadvise( dwCookie );
+            pEvents->Release();
+            break;
+        }
         }
         break;
 
