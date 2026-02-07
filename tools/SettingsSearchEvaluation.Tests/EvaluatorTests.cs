@@ -66,4 +66,64 @@ public class EvaluatorTests
         Assert.IsTrue(engine.CaseResults[0].HitAtK);
         Assert.AreEqual(1, engine.CaseResults[0].BestRank);
     }
+
+    [TestMethod]
+    public async Task RunAsync_SemanticEngine_ReturnsReportWithoutThrowing()
+    {
+        const string json = """
+[
+  {
+    "type": 0,
+    "header": "Fancy Zones",
+    "pageTypeName": "FancyZonesPage",
+    "elementName": "",
+    "elementUid": "FancyZones",
+    "parentElementName": "",
+    "description": "",
+    "icon": null
+  }
+]
+""";
+
+        var (entries, diagnostics) = EvaluationDataLoader.LoadEntriesFromJson(json);
+        var cases = new[]
+        {
+            new EvaluationCase
+            {
+                Query = "Fancy Zones",
+                ExpectedIds = new[] { "FancyZones" },
+                Notes = "Semantic smoke test.",
+            },
+        };
+
+        var options = new RunnerOptions
+        {
+            IndexJsonPath = "test-index.json",
+            CasesJsonPath = null,
+            Engines = new[] { SearchEngineKind.Semantic },
+            MaxResults = 5,
+            TopK = 5,
+            Iterations = 1,
+            WarmupIterations = 0,
+            SemanticIndexTimeout = TimeSpan.FromSeconds(3),
+            OutputJsonPath = null,
+        };
+
+        var report = await Evaluator.RunAsync(options, entries, diagnostics, cases);
+
+        Assert.AreEqual(1, report.Engines.Count);
+        var engine = report.Engines[0];
+        Assert.AreEqual(SearchEngineKind.Semantic, engine.Engine);
+
+        if (!engine.IsAvailable)
+        {
+            Assert.IsFalse(string.IsNullOrWhiteSpace(engine.AvailabilityError));
+            Assert.AreEqual(0, engine.QueryCount);
+        }
+        else
+        {
+            Assert.AreEqual(1, engine.QueryCount);
+            Assert.AreEqual(1, engine.CaseResults.Count);
+        }
+    }
 }

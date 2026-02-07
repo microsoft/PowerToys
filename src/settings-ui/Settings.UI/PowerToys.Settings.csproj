@@ -227,4 +227,23 @@
 		<Message Importance="high" Text="[Settings] Building XamlIndexBuilder prior to compile. Views='$(MSBuildProjectDirectory)\SettingsXAML\Views' Out='$(GeneratedJsonFile)'" />
 		<MSBuild Projects="..\Settings.UI.XamlIndexBuilder\Settings.UI.XamlIndexBuilder.csproj" Targets="Build" Properties="Configuration=$(Configuration);Platform=Any CPU;TargetFramework=net9.0;XamlViewsDir=$(MSBuildProjectDirectory)\SettingsXAML\Views;GeneratedJsonFile=$(GeneratedJsonFile)" />
 	</Target>
+
+	<!--
+	When Settings is activated via sparse package identity, package resource lookup can resolve from
+	the external location root (..\$(Platform)\$(Configuration)). Mirror Settings assets there so
+	ms-appx:///Assets/Settings/... resolves consistently in both identity and non-identity launches.
+	-->
+	<Target Name="MirrorSettingsAssetsToSparseRoot" AfterTargets="Build" Condition="'$(DesignTimeBuild)' != 'true' and '$(UseSparseIdentity)'=='true'">
+		<PropertyGroup>
+			<_SparseRootDir>$([System.IO.Path]::GetFullPath('$(OutputPath)..\'))</_SparseRootDir>
+			<_SparseSettingsAssetsDir>$(_SparseRootDir)Assets\Settings\</_SparseSettingsAssetsDir>
+		</PropertyGroup>
+		<ItemGroup>
+			<_SettingsAssetsFiles Include="$(MSBuildProjectDirectory)\Assets\Settings\**\*" />
+		</ItemGroup>
+		<Copy
+			SourceFiles="@(_SettingsAssetsFiles)"
+			DestinationFiles="@(_SettingsAssetsFiles->'$(_SparseSettingsAssetsDir)%(RecursiveDir)%(Filename)%(Extension)')"
+			SkipUnchangedFiles="true" />
+	</Target>
 </Project>

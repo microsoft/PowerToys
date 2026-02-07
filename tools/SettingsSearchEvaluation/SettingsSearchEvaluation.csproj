@@ -6,6 +6,7 @@
     <OutputType>Exe</OutputType>
     <RootNamespace>SettingsSearchEvaluation</RootNamespace>
     <AssemblyName>SettingsSearchEvaluation</AssemblyName>
+    <WindowsPackageType>None</WindowsPackageType>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <DefaultItemExcludes>$(DefaultItemExcludes);artifacts\**\*;bin\**\*;obj\**\*</DefaultItemExcludes>
