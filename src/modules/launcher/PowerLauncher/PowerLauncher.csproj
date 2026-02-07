@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <!-- Look at Directory.Build.props in root for common stuff as well -->
-  <Import Project="..\..\..\Common.Dotnet.CsWinRT.props" />	
+  <Import Project="..\..\..\Common.Dotnet.CsWinRT.props" />
   <Import Project="..\..\..\Common.SelfContained.props" />
 
   <PropertyGroup>
@@ -46,15 +46,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Interop.Microsoft.Office.Interop.OneNote" />
+    <PackageReference Include="LinqToOneNote" />
     <PackageReference Include="Mages" />
-    <PackageReference Include="LazyCache" />
     <PackageReference Include="Microsoft.Data.Sqlite" />
     <PackageReference Include="Microsoft.Toolkit.Uwp.Notifications" />
     <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" />
-    <PackageReference Include="ScipBe.Common.Office.OneNote" />
     <PackageReference Include="System.Drawing.Common">
-      <ExcludeAssets>runtime</ExcludeAssets> <!-- Should already be present on .net sdk runtime, so we avoid the conflicting runtime version from nuget -->
+      <ExcludeAssets>runtime</ExcludeAssets>      <!-- Should already be present on .net sdk runtime, so we avoid the conflicting runtime version from nuget -->
     </PackageReference>
     <PackageReference Include="System.Reactive" />
     <PackageReference Include="System.Data.OleDb" />

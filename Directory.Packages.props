@@ -10,6 +10,7 @@
     <PackageVersion Include="boost" Version="1.87.0" TargetFramework="native" />
     <PackageVersion Include="boost_regex-vc143" Version="1.87.0" TargetFramework="native" />
     <PackageVersion Include="CommunityToolkit.Labs.WinUI.Controls.OpacityMaskView" Version="0.1.251101-build.2372" />
+    <PackageVersion Include="LinqToOneNote" Version="2.1.0" />
     <PackageVersion Include="Microsoft.Bot.AdaptiveExpressions.Core" Version="4.23.0" />
     <PackageVersion Include="Appium.WebDriver" Version="4.4.5" />
     <PackageVersion Include="CoenM.ImageSharp.ImageHash" Version="1.3.6" />
@@ -32,8 +33,6 @@
     <PackageVersion Include="HelixToolkit.Core.Wpf" Version="2.24.0" />
     <PackageVersion Include="HtmlAgilityPack" Version="1.12.3" />
     <PackageVersion Include="hyjiacan.pinyin4net" Version="4.1.1" />
-    <PackageVersion Include="Interop.Microsoft.Office.Interop.OneNote" Version="1.1.0.2" />
-    <PackageVersion Include="LazyCache" Version="2.4.0" />
     <PackageVersion Include="Mages" Version="3.0.0" />
     <PackageVersion Include="Markdig.Signed" Version="0.34.0" />
     <!-- Including MessagePack to force version, since it's used by StreamJsonRpc but contains vulnerabilities. After StreamJsonRpc updates the version of MessagePack, we can upgrade StreamJsonRpc instead. -->

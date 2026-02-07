@@ -1284,9 +1284,11 @@ nullonfailure
 nullref
 numberbox
 nwc
+ocid
 ocr
 Ocrsettings
 odbccp
+odotocodot
 OEMCONVERT
 officehubintl
 OFN
@@ -1362,6 +1364,7 @@ pdisp
 PDLL
 pdmodels
 pdo
+pdpshare
 pdto
 pdtobj
 pdw
@@ -2210,6 +2213,7 @@ XDocument
 XElement
 xfd
 XFile
+XIn
 XIncrement
 XLoc
 xmp
