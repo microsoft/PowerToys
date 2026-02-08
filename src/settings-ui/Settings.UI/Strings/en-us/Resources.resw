@@ -555,6 +555,10 @@ opera.exe</value>
     <value>Color Picker</value>
     <comment>Product name: Navigation view item name for Color Picker</comment>
   </data>
+  <data name="Shell_PowerDisplay.Content" xml:space="preserve">
+    <value>Power Display</value>
+    <comment>Product name: Navigation view item name for Power Display</comment>
+  </data>
   <data name="Shell_KeyboardManager.Content" xml:space="preserve">
     <value>Keyboard Manager</value>
     <comment>Product name: Navigation view item name for Keyboard Manager</comment>
@@ -4129,7 +4133,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Advanced AI</value>
   </data>
   <data name="Oobe_AdvancedPaste.Description" xml:space="preserve">
-    <value>Advanced Paste is a tool to put your clipboard content into any format you need, focused towards developer workflows. It can paste as plain text, markdown, or json directly with the UX or with a direct keystroke invoke. These are fully locally executed. In addition, it has an AI powered option that is 100% opt-in and requires an Open AI key. Note: this will replace the formatted text in your clipboard with the selected format.</value>
+    <value>Advanced Paste is a tool to put your clipboard content into any format you need, focused towards developer workflows. It can paste as plain text, Markdown, or JSON directly with the UX or with a direct keystroke invoke. These are fully locally executed. In addition, it has an opt-in AI feature that can use an online or local language model endpoint. Note: this will replace the formatted text in your clipboard with the selected format.</value>
   </data>
   <data name="Oobe_AdvancedPaste.Title" xml:space="preserve">
     <value>Advanced Paste</value>
@@ -5447,6 +5451,9 @@ The break timer font matches the text font.</value>
   <data name="LightSwitch_BehaviorSettingsGroup.Header" xml:space="preserve">
     <value>Behavior</value>
   </data>
+  <data name="LightSwitch_MonitorSettingsGroup.Header" xml:space="preserve">
+    <value>Monitor settings</value>
+  </data>
   <data name="LightSwitch_EnableSettingsCard.Header" xml:space="preserve">
     <value>Light Switch</value>
   </data>
@@ -5515,6 +5522,45 @@ The break timer font matches the text font.</value>
   </data>
   <data name="LightSwitch_AppsCheckbox.Description" xml:space="preserve">
     <value>Supported applications</value>
+  </data>
+  <data name="LightSwitch_PowerDisplayDisabledWarningBar.Title" xml:space="preserve">
+    <value>Enable PowerDisplay module to use automatic monitor profile switching</value>
+  </data>
+  <data name="LightSwitch_PowerDisplayDisabledWarningBar.Message" xml:space="preserve">
+    <value />
+  </data>
+  <data name="LightSwitch_PowerDisplayDisabledWarning.Text" xml:space="preserve">
+    <value>Enable PowerDisplay module to use automatic monitor profile switching</value>
+  </data>
+  <data name="LightSwitch_ApplyMonitorSettingsExpander.Header" xml:space="preserve">
+    <value>Apply monitor settings to</value>
+  </data>
+  <data name="LightSwitch_ApplyMonitorSettingsExpander.Description" xml:space="preserve">
+    <value>Automatically switch PowerDisplay profiles when theme changes</value>
+  </data>
+  <data name="LightSwitch_EnableMonitorSettings.Content" xml:space="preserve">
+    <value>Enable monitor settings integration</value>
+  </data>
+  <data name="LightSwitch_DarkModeProfileCheckbox.Content" xml:space="preserve">
+    <value>Dark mode profile</value>
+  </data>
+  <data name="LightSwitch_LightModeProfileCheckbox.Content" xml:space="preserve">
+    <value>Light mode profile</value>
+  </data>
+  <data name="LightSwitch_DarkModeProfileCard.Header" xml:space="preserve">
+    <value>Dark mode profile</value>
+  </data>
+  <data name="LightSwitch_DarkModeProfileCard.Description" xml:space="preserve">
+    <value>Profile to apply when switching to dark mode</value>
+  </data>
+  <data name="LightSwitch_LightModeProfileCard.Header" xml:space="preserve">
+    <value>Light mode profile</value>
+  </data>
+  <data name="LightSwitch_LightModeProfileCard.Description" xml:space="preserve">
+    <value>Profile to apply when switching to light mode</value>
+  </data>
+  <data name="LightSwitch_NavigatePowerDisplaySettings.Content" xml:space="preserve">
+    <value>Open PowerDisplay settings</value>
   </data>
   <data name="LightSwitch_LocationDialog.Title" xml:space="preserve">
     <value>Select a location</value>
@@ -5694,6 +5740,265 @@ The break timer font matches the text font.</value>
   </data>
   <data name="Shortcut_Conflict_LearnMore.Content" xml:space="preserve">
     <value>Learn more</value>
+  </data>
+  <data name="PowerDisplay.ModuleTitle" xml:space="preserve">
+    <value>Power Display</value>
+  </data>
+  <data name="PowerDisplay.ModuleDescription" xml:space="preserve">
+    <value>A display management utility for brightness and power control</value>
+  </data>
+  <data name="PowerDisplay_Enable_PowerDisplay.Header" xml:space="preserve">
+    <value>Enable Power Display</value>
+  </data>
+  <data name="PowerDisplay_Configuration_GroupSettings.Header" xml:space="preserve">
+    <value>Configuration</value>
+  </data>
+  <data name="PowerDisplay_ToggleWindow" xml:space="preserve">
+    <value>Toggle Power Display</value>
+    <comment>Dashboard: Label for the PowerDisplay activation hotkey</comment>
+  </data>
+  <data name="PowerDisplay_ActivationShortcut.Header" xml:space="preserve">
+    <value>Activation shortcut</value>
+    <comment>Header for the PowerDisplay activation shortcut setting</comment>
+  </data>
+  <data name="PowerDisplay_LaunchButtonControl.Header" xml:space="preserve">
+    <value>Open Power Display</value>
+  </data>
+  <data name="PowerDisplay_LaunchButtonControl.Description" xml:space="preserve">
+    <value>Launch the Power Display utility</value>
+  </data>
+  <data name="PowerDisplay_LaunchAtStartup.Header" xml:space="preserve">
+    <value>Launch at startup</value>
+  </data>
+  <data name="PowerDisplay_LaunchAtStartup.Description" xml:space="preserve">
+    <value>Automatically start Power Display when Windows starts</value>
+  </data>
+  <data name="PowerDisplay_LaunchAtStartup_ToggleSwitch.OnContent" xml:space="preserve">
+    <value>On</value>
+  </data>
+  <data name="PowerDisplay_LaunchAtStartup_ToggleSwitch.OffContent" xml:space="preserve">
+    <value>Off</value>
+  </data>
+  <data name="PowerDisplay_RestoreSettingsOnStartup.Header" xml:space="preserve">
+    <value>Restore settings on startup</value>
+  </data>
+  <data name="PowerDisplay_RestoreSettingsOnStartup.Description" xml:space="preserve">
+    <value>Restore monitor brightness and color temperature when Power Display launches</value>
+  </data>
+  <data name="PowerDisplay_RestoreSettingsOnStartup_ToggleSwitch.OnContent" xml:space="preserve">
+    <value>On</value>
+  </data>
+  <data name="PowerDisplay_RestoreSettingsOnStartup_ToggleSwitch.OffContent" xml:space="preserve">
+    <value>Off</value>
+  </data>
+  <data name="PowerDisplay_ShowSystemTrayIcon.Header" xml:space="preserve">
+    <value>Show system tray icon</value>
+  </data>
+  <data name="PowerDisplay_ShowSystemTrayIcon.Description" xml:space="preserve">
+    <value>Choose if PowerDisplay is visible in the system tray</value>
+  </data>
+  <data name="PowerDisplay_MonitorRefreshDelay.Header" xml:space="preserve">
+    <value>Monitor refresh delay</value>
+  </data>
+  <data name="PowerDisplay_MonitorRefreshDelay.Description" xml:space="preserve">
+    <value>Number of seconds to wait after display changes before refreshing monitors. Increase if monitors are not detected after hot-plug.</value>
+  </data>
+  <data name="PowerDisplay_Profiles_GroupSettings.Header" xml:space="preserve">
+    <value>Profiles</value>
+  </data>
+  <data name="PowerDisplay_QuickProfiles.Header" xml:space="preserve">
+    <value>Quick apply profiles</value>
+  </data>
+  <data name="PowerDisplay_QuickProfiles.Description" xml:space="preserve">
+    <value>Click a profile button to quickly apply saved monitor settings</value>
+  </data>
+  <data name="PowerDisplay_AddProfile_Text.Text" xml:space="preserve">
+    <value>Add profile</value>
+  </data>
+  <data name="PowerDisplay_Monitors.Header" xml:space="preserve">
+    <value>Monitors</value>
+  </data>
+  <data name="PowerDisplay_NoMonitorsDetected.Text" xml:space="preserve">
+    <value>No monitors detected. Ensure your external monitors are connected and powered on.</value>
+  </data>
+  <data name="LearnMore_PowerDisplay.Text" xml:space="preserve">
+    <value>Learn more about Power Display</value>
+  </data>
+  <data name="Oobe_PowerDisplay.Title" xml:space="preserve">
+    <value>Power Display</value>
+  </data>
+  <data name="Oobe_PowerDisplay.Description" xml:space="preserve">
+    <value>Power Display provides unified control over display settings across multiple monitors. Adjust brightness, contrast, volume, color temperature, and input source for all connected displays from a single overlay. Supports DDC/CI for external monitors and WMI for laptop displays, with profile support for quick configuration switching and LightSwitch integration for automatic theme-based adjustments.</value>
+  </data>
+  <data name="Oobe_PowerDisplay_Activation.Text" xml:space="preserve">
+    <value>to open the Power Display overlay.</value>
+  </data>
+  <data name="Oobe_PowerDisplay_TipsAndTricks.Text" xml:space="preserve">
+    <value>**Create profiles** to save your preferred display settings, then configure them in **LightSwitch** to automatically switch profiles when the system theme changes.</value>
+  </data>
+  <data name="Launch_PowerDisplay.Content" xml:space="preserve">
+    <value>Open Power Display</value>
+  </data>
+  <data name="PowerDisplay_Monitor_EnableContrast.Content" xml:space="preserve">
+    <value>Display contrast slider</value>
+  </data>
+  <data name="PowerDisplay_Monitor_EnableVolume.Content" xml:space="preserve">
+    <value>Display volume slider</value>
+  </data>
+  <data name="PowerDisplay_Monitor_EnableInputSource.Content" xml:space="preserve">
+    <value>Show input source control</value>
+  </data>
+  <data name="PowerDisplay_Monitor_EnableRotation.Content" xml:space="preserve">
+    <value>Show rotation control</value>
+  </data>
+  <data name="PowerDisplay_Monitor_EnableColorTemperature.Content" xml:space="preserve">
+    <value>Show color temperature switcher</value>
+  </data>
+  <data name="PowerDisplay_Monitor_EnablePowerState.Content" xml:space="preserve">
+    <value>Show power state control</value>
+  </data>
+  <data name="PowerDisplay_Monitor_HideMonitor.Content" xml:space="preserve">
+    <value>Hide monitor</value>
+  </data>
+  <data name="PowerDisplay_ColorTemperature_WarningTitle" xml:space="preserve">
+    <value>Confirm Color Temperature Change</value>
+  </data>
+  <data name="PowerDisplay_ColorTemperature_WarningHeader" xml:space="preserve">
+    <value>⚠️ Warning: This is a potentially dangerous operation!</value>
+  </data>
+  <data name="PowerDisplay_ColorTemperature_WarningDescription" xml:space="preserve">
+    <value>Changing the color temperature setting may cause unpredictable results including:</value>
+  </data>
+  <data name="PowerDisplay_ColorTemperature_WarningList" xml:space="preserve">
+    <value>• Incorrect display colors
+• Display malfunction
+• Settings that cannot be reverted</value>
+  </data>
+  <data name="PowerDisplay_ColorTemperature_WarningConfirm" xml:space="preserve">
+    <value>Do you want to enable color temperature control for this monitor?</value>
+  </data>
+  <data name="PowerDisplay_ColorTemperature_EnableButton" xml:space="preserve">
+    <value>Enable</value>
+  </data>
+  <data name="PowerDisplay_Dialog_Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="PowerDisplay_Dialog_Save" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="PowerDisplay_ProfileEditor_Title" xml:space="preserve">
+    <value>Edit Profile</value>
+  </data>
+  <data name="PowerDisplay_ProfileEditor_ProfileName.Header" xml:space="preserve">
+    <value>Profile name</value>
+  </data>
+  <data name="PowerDisplay_ProfileEditor_ProfileName.PlaceholderText" xml:space="preserve">
+    <value>Enter profile name (e.g., 'Gaming Mode', 'Work')</value>
+  </data>
+  <data name="PowerDisplay_ProfileEditor_Description.Text" xml:space="preserve">
+    <value>Select what monitors and settings to include for this profile</value>
+  </data>
+  <data name="PowerDisplay_ProfileEditor_Brightness.Text" xml:space="preserve">
+    <value>Brightness</value>
+  </data>
+  <data name="PowerDisplay_ProfileEditor_Contrast.Text" xml:space="preserve">
+    <value>Contrast</value>
+  </data>
+  <data name="PowerDisplay_ProfileEditor_Volume.Text" xml:space="preserve">
+    <value>Volume</value>
+  </data>
+  <data name="PowerDisplay_ProfileEditor_ColorTemperature.Text" xml:space="preserve">
+    <value>Color temperature</value>
+  </data>
+  <data name="PowerDisplay_ProfileEditor_ColorTemperature_ComboBox.PlaceholderText" xml:space="preserve">
+    <value>Select..</value>
+  </data>
+  <data name="PowerDisplay_Profile_DefaultBaseName" xml:space="preserve">
+    <value>Profile</value>
+  </data>
+  <data name="PowerDisplay_DeleteProfile_Title" xml:space="preserve">
+    <value>Delete Profile</value>
+  </data>
+  <data name="PowerDisplay_DeleteProfile_Content" xml:space="preserve">
+    <value>Are you sure you want to delete '{0}'?</value>
+  </data>
+  <data name="PowerDisplay_DeleteProfile_PrimaryButton" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="PowerDisplay_Profile_ApplyButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Apply profile</value>
+  </data>
+  <data name="PowerDisplay_Profile_MoreButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>More profile options</value>
+  </data>
+  <data name="PowerDisplay_Profile_EditMenuItem.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Edit profile</value>
+  </data>
+  <data name="PowerDisplay_Profile_DeleteMenuItem.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Delete profile</value>
+  </data>
+  <data name="PowerDisplay_Profile_AddButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Add new profile</value>
+  </data>
+  <data name="PowerDisplay_Profile_ApplyButton.Content" xml:space="preserve">
+    <value>Apply</value>
+  </data>
+  <data name="PowerDisplay_Profile_MoreButton.ToolTipService.ToolTip" xml:space="preserve">
+    <value>More settings</value>
+  </data>
+  <data name="PowerDisplay_Profile_EditMenuItem.Text" xml:space="preserve">
+    <value>Edit</value>
+  </data>
+  <data name="PowerDisplay_Profile_DeleteMenuItem.Text" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="PowerDisplay_AddProfileButton.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Save current settings as new profile</value>
+  </data>
+  <data name="PowerDisplay_Monitor_CapabilitiesWarning.Title" xml:space="preserve">
+    <value>Monitor capabilities unavailable</value>
+  </data>
+  <data name="PowerDisplay_Monitor_CapabilitiesWarning.Message" xml:space="preserve">
+    <value>This monitor did not report DDC/CI capabilities. Advanced controls may be limited.</value>
+  </data>
+  <data name="PowerDisplay_Monitor_VcpCapabilities.Header" xml:space="preserve">
+    <value>VCP capabilities</value>
+  </data>
+  <data name="PowerDisplay_Monitor_VcpCapabilities.Description" xml:space="preserve">
+    <value>DDC/CI VCP codes and supported values (for debugging purposes)</value>
+  </data>
+  <data name="PowerDisplay_Monitor_VcpDetails_Button.ToolTipService.ToolTip" xml:space="preserve">
+    <value>View VCP details</value>
+  </data>
+  <data name="PowerDisplay_Monitor_VcpDetails_Button.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>View VCP details</value>
+  </data>
+  <data name="PowerDisplay_Monitor_VcpCodes_Header.Text" xml:space="preserve">
+    <value>Detected VCP Codes</value>
+  </data>
+  <data name="PowerDisplay_Monitor_VcpCodes_CopyButton.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Copy all VCP codes to clipboard</value>
+  </data>
+  <data name="PowerDisplay_Monitor_VcpCodes_CopyButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Copy VCP codes to clipboard</value>
+  </data>
+  <data name="PowerDisplay_Monitor_VcpCodes_CopyText.Text" xml:space="preserve">
+    <value>Copy</value>
+  </data>
+  <data name="PowerDisplay_FlyoutOptions_GroupSettings.Header" xml:space="preserve">
+    <value>Flyout options</value>
+  </data>
+  <data name="PowerDisplay_ShowProfileSwitcher.Header" xml:space="preserve">
+    <value>Show profile switcher</value>
+  </data>
+  <data name="PowerDisplay_ShowProfileSwitcher.Description" xml:space="preserve">
+    <value>Show or hide the profile switcher button in the Power Display flyout</value>
+  </data>
+  <data name="PowerDisplay_ShowIdentifyMonitorsButton.Header" xml:space="preserve">
+    <value>Show identify monitors button</value>
+  </data>
+  <data name="PowerDisplay_ShowIdentifyMonitorsButton.Description" xml:space="preserve">
+    <value>Show or hide the identify monitors button in the Power Display flyout</value>
   </data>
   <data name="Hosts_Backup_GroupSettings.Header" xml:space="preserve">
     <value>Backup</value>
