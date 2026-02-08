@@ -6,6 +6,7 @@
   <PropertyGroup>
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWindowsForms>true</UseWindowsForms>
+    <UseWPF>true</UseWPF>
     <AssemblyTitle>PowerToys.MediaPreviewHandler</AssemblyTitle>
     <AssemblyDescription>PowerToys MediaPreviewHandler</AssemblyDescription>
     <Description>PowerToys MediaPreviewHandler</Description>
@@ -43,10 +44,6 @@
     <ProjectReference Include="..\..\..\common\ManagedTelemetry\Telemetry\ManagedTelemetry.csproj" />
     <ProjectReference Include="..\..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
     <ProjectReference Include="..\common\PreviewHandlerCommon.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Microsoft.Web.WebView2" />
   </ItemGroup>
 
 </Project>
