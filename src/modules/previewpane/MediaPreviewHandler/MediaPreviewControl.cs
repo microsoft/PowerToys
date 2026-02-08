@@ -2,7 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Runtime.InteropServices;
+using Common;
 using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.WinForms;
 
@@ -13,23 +13,19 @@ namespace Microsoft.PowerToys.PreviewHandler.Media
     /// </summary>
     public class MediaPreviewControl : FormHandlerControl
     {
+        private const string VirtualHostName = "powertoys-media-preview";
+
         /// <summary>
         /// WebView2 Control to display media content.
         /// </summary>
-        private WebView2? _webView2Control;
-
-        /// <summary>
-        /// File path of the media file to preview.
-        /// </summary>
-        private string? _filePath;
+        private WebView2 _webView2Control;
 
         /// <summary>
         /// Supported video file extensions.
         /// </summary>
         private static readonly HashSet<string> VideoExtensions = new(StringComparer.OrdinalIgnoreCase)
         {
-            ".mp4", ".3g2", ".3gp", ".3gp2", ".3gpp", ".asf", ".avi", ".m2t", ".m2ts",
-            ".m4v", ".mkv", ".mov", ".mp4v", ".mts", ".wm", ".wmv", ".webm",
+            ".mp4", ".avi", ".mkv", ".mov", ".webm", ".wmv", ".m4v", ".3gp", ".3g2",
         };
 
         /// <summary>
@@ -37,7 +33,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Media
         /// </summary>
         private static readonly HashSet<string> AudioExtensions = new(StringComparer.OrdinalIgnoreCase)
         {
-            ".aac", ".ac3", ".amr", ".flac", ".m4a", ".mp3", ".ogg", ".wav", ".wma",
+            ".mp3", ".wav", ".flac", ".m4a", ".aac", ".ogg", ".wma",
         };
 
         /// <summary>
@@ -55,18 +51,8 @@ namespace Microsoft.PowerToys.PreviewHandler.Media
         {
             try
             {
-                _filePath = filePath;
-                InvokeOnControlThread(() =>
-                {
-                    try
-                    {
-                        AddWebViewControl(filePath);
-                    }
-                    catch (Exception ex)
-                    {
-                        PreviewError(ex);
-                    }
-                });
+                base.DoPreview(filePath);
+                AddWebViewControl(filePath);
             }
             catch (Exception ex)
             {
@@ -101,10 +87,14 @@ namespace Microsoft.PowerToys.PreviewHandler.Media
             {
                 var userDataFolder = Path.Combine(
                     Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
-                    "AppData", "LocalLow", "Microsoft", "PowerToys", "MediaPreviewHandler-Temp");
+                    "AppData",
+                    "LocalLow",
+                    "Microsoft",
+                    "PowerToys",
+                    "MediaPreviewHandler-Temp");
 
                 var environment = await CoreWebView2Environment.CreateAsync(userDataFolder: userDataFolder);
-                await _webView2Control!.EnsureCoreWebView2Async(environment);
+                await _webView2Control.EnsureCoreWebView2Async(environment);
 
                 // Disable external navigation
                 _webView2Control.CoreWebView2.Settings.IsScriptEnabled = true;
@@ -114,16 +104,17 @@ namespace Microsoft.PowerToys.PreviewHandler.Media
                 // Block navigation to external content
                 _webView2Control.CoreWebView2.NavigationStarting += (s, e) =>
                 {
-                    // Only allow the initial about:blank and data: URIs for our HTML content
+                    // Only allow the initial page and local media mapped to the virtual host.
                     if (!e.Uri.StartsWith("about:", StringComparison.OrdinalIgnoreCase) &&
-                        !e.Uri.StartsWith("data:", StringComparison.OrdinalIgnoreCase))
+                        !e.Uri.StartsWith("data:", StringComparison.OrdinalIgnoreCase) &&
+                        !e.Uri.StartsWith($"https://{VirtualHostName}/", StringComparison.OrdinalIgnoreCase))
                     {
                         e.Cancel = true;
                     }
                 };
 
-                // Generate and navigate to HTML content
-                var htmlContent = GenerateMediaHtml(filePath);
+                var mediaUrl = MapMediaFileForWebView(filePath);
+                var htmlContent = GenerateMediaHtml(filePath, mediaUrl);
                 _webView2Control.CoreWebView2.NavigateToString(htmlContent);
             }
             catch (Exception ex)
@@ -133,9 +124,32 @@ namespace Microsoft.PowerToys.PreviewHandler.Media
         }
 
         /// <summary>
+        /// Maps the media file folder to a virtual host URL for WebView2 loading.
+        /// </summary>
+        /// <param name="filePath">Path to the media file.</param>
+        /// <returns>Virtual-host URL pointing to the media file.</returns>
+        private string MapMediaFileForWebView(string filePath)
+        {
+            var directory = Path.GetDirectoryName(filePath);
+            var fileName = Path.GetFileName(filePath);
+
+            if (string.IsNullOrEmpty(directory) || string.IsNullOrEmpty(fileName))
+            {
+                throw new ArgumentException("Invalid media file path.", nameof(filePath));
+            }
+
+            _webView2Control.CoreWebView2.SetVirtualHostNameToFolderMapping(
+                VirtualHostName,
+                directory,
+                CoreWebView2HostResourceAccessKind.Allow);
+
+            return $"https://{VirtualHostName}/{Uri.EscapeDataString(fileName)}";
+        }
+
+        /// <summary>
         /// Handles WebView2 initialization completion.
         /// </summary>
-        private void CoreWebView2_InitializationCompleted(object? sender, CoreWebView2InitializationCompletedEventArgs e)
+        private void CoreWebView2_InitializationCompleted(object sender, CoreWebView2InitializationCompletedEventArgs e)
         {
             if (!e.IsSuccess)
             {
@@ -147,28 +161,31 @@ namespace Microsoft.PowerToys.PreviewHandler.Media
         /// Generates HTML content for playing media.
         /// </summary>
         /// <param name="filePath">Path to the media file.</param>
+        /// <param name="mediaUrl">Media URL served through the WebView2 virtual host.</param>
         /// <returns>HTML string with embedded media player.</returns>
-        private static string GenerateMediaHtml(string filePath)
+        private static string GenerateMediaHtml(string filePath, string mediaUrl)
         {
             var extension = Path.GetExtension(filePath);
             var isVideo = VideoExtensions.Contains(extension);
             var isAudio = AudioExtensions.Contains(extension);
 
-            // Convert file path to file:// URL
-            var fileUrl = new Uri(filePath).AbsoluteUri;
+            if (!isVideo && !isAudio)
+            {
+                throw new NotSupportedException($"Unsupported media format: {extension}");
+            }
 
             // Determine MIME type
             var mimeType = GetMimeType(extension);
 
             var mediaElement = isVideo
-                ? $@"<video id=""player"" controls autoplay style=""max-width: 100%; max-height: 100%; object-fit: contain;"">
-                        <source src=""{fileUrl}"" type=""{mimeType}"">
+                ? $@"<video id=""player"" controls style=""max-width: 100%; max-height: 100%; object-fit: contain;"">
+                        <source src=""{mediaUrl}"" type=""{mimeType}"">
                         Your browser does not support the video tag.
                      </video>"
                 : $@"<div class=""audio-container"">
                         <div class=""audio-icon"">🎵</div>
-                        <audio id=""player"" controls autoplay style=""width: 100%;"">
-                            <source src=""{fileUrl}"" type=""{mimeType}"">
+                        <audio id=""player"" controls style=""width: 100%;"">
+                            <source src=""{mediaUrl}"" type=""{mimeType}"">
                             Your browser does not support the audio tag.
                         </audio>
                         <div class=""file-name"">{System.Net.WebUtility.HtmlEncode(Path.GetFileName(filePath))}</div>
@@ -237,19 +254,17 @@ namespace Microsoft.PowerToys.PreviewHandler.Media
         /// <returns>MIME type string.</returns>
         private static string GetMimeType(string extension)
         {
-            // MIME type strings use concatenation to avoid spell checker warnings
             return extension.ToLowerInvariant() switch
             {
                 // Video types
-                ".mp4" or ".m4v" or ".mp4v" => "video/mp4",
+                ".mp4" or ".m4v" => "video/mp4",
                 ".webm" => "video/webm",
-                ".avi" => "video/x-ms" + "video",
-                ".mov" => "video/quick" + "time",
-                ".mkv" => "video/x-ma" + "troska",
-                ".wmv" or ".wm" => "video/x-ms-wmv",
-                ".3gp" or ".3gpp" or ".3g2" or ".3gp2" => "video/3gpp",
-                ".m2ts" or ".mts" or ".m2t" => "video/mp2t",
-                ".asf" => "video/x-ms-asf",
+                ".avi" => "video/x-msvideo",
+                ".mov" => "video/quicktime",
+                ".mkv" => "video/x-matroska",
+                ".wmv" => "video/x-ms-wmv",
+                ".3gp" => "video/3gpp",
+                ".3g2" => "video/3gpp2",
 
                 // Audio types
                 ".mp3" => "audio/mpeg",
@@ -259,8 +274,6 @@ namespace Microsoft.PowerToys.PreviewHandler.Media
                 ".aac" => "audio/aac",
                 ".m4a" => "audio/mp4",
                 ".wma" => "audio/x-ms-wma",
-                ".ac3" => "audio/ac3",
-                ".amr" => "audio/amr",
 
                 _ => "application/octet-stream",
             };
@@ -272,19 +285,16 @@ namespace Microsoft.PowerToys.PreviewHandler.Media
         /// <param name="exception">The exception which occurred.</param>
         private void PreviewError(Exception exception)
         {
-            InvokeOnControlThread(() =>
+            Controls.Clear();
+            var errorLabel = new Label
             {
-                Controls.Clear();
-                var errorLabel = new Label
-                {
-                    Text = $"Error loading media preview:\n{exception.Message}",
-                    Dock = DockStyle.Fill,
-                    ForeColor = Color.White,
-                    BackColor = Color.FromArgb(30, 30, 30),
-                    TextAlign = ContentAlignment.MiddleCenter,
-                };
-                Controls.Add(errorLabel);
-            });
+                Text = $"Error loading media preview:\n{exception.Message}",
+                Dock = DockStyle.Fill,
+                ForeColor = Color.White,
+                BackColor = Color.FromArgb(30, 30, 30),
+                TextAlign = ContentAlignment.MiddleCenter,
+            };
+            Controls.Add(errorLabel);
         }
     }
 }

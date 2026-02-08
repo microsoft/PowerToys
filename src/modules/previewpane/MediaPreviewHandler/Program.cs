@@ -30,7 +30,11 @@ namespace Microsoft.PowerToys.PreviewHandler.Media
                 {
                     ETWTrace etwTrace = new ETWTrace(Path.Combine(
                         Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
-                        "AppData", "LocalLow", "Microsoft", "PowerToys", "etw"));
+                        "AppData",
+                        "LocalLow",
+                        "Microsoft",
+                        "PowerToys",
+                        "etw"));
 
                     try
                     {

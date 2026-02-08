@@ -339,6 +339,7 @@ inline std::vector<registry::ChangeSet> getAllModulesChangeSets(const std::wstri
              getMdPreviewHandlerChangeSet(installationDir, PER_USER),
              getMonacoPreviewHandlerChangeSet(installationDir, PER_USER),
              getPdfPreviewHandlerChangeSet(installationDir, PER_USER),
+             getMediaPreviewHandlerChangeSet(installationDir, PER_USER),
              getGcodePreviewHandlerChangeSet(installationDir, PER_USER),
              getBgcodePreviewHandlerChangeSet(installationDir, PER_USER),
              getQoiPreviewHandlerChangeSet(installationDir, PER_USER),

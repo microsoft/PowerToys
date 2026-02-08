@@ -4,6 +4,7 @@
 
 #include <shellapi.h>
 #include <Shlwapi.h>
+#include <sstream>
 #include <string>
 
 #include <common/interop/shared_constants.h>
@@ -29,6 +30,13 @@ MediaPreviewHandler::MediaPreviewHandler() :
 
 MediaPreviewHandler::~MediaPreviewHandler()
 {
+    if (m_process)
+    {
+        TerminateProcess(m_process, 0);
+        CloseHandle(m_process);
+        m_process = NULL;
+    }
+
     if (m_resizeEvent)
     {
         CloseHandle(m_resizeEvent);
@@ -171,7 +179,6 @@ IFACEMETHODIMP MediaPreviewHandler::DoPreview()
         }
         Logger::info(L"Starting MediaPreviewHandler.exe");
 
-        STARTUPINFO info = { sizeof(info) };
         std::wstring cmdLine{ L"\"" + m_filePath + L"\"" };
         cmdLine += L" ";
         std::wostringstream ss;
@@ -193,13 +200,29 @@ IFACEMETHODIMP MediaPreviewHandler::DoPreview()
         sei.lpFile = appPath.c_str();
         sei.lpParameters = cmdLine.c_str();
         sei.nShow = SW_SHOWDEFAULT;
-        ShellExecuteEx(&sei);
+        if (!ShellExecuteEx(&sei))
+        {
+            const auto error = GetLastError();
+            Logger::error(L"Failed to start MediaPreviewHandler.exe. ShellExecuteEx error: {}", error);
+            return HRESULT_FROM_WIN32(error);
+        }
+
+        if (sei.hProcess == NULL)
+        {
+            Logger::error(L"ShellExecuteEx succeeded but returned a null process handle.");
+            return E_FAIL;
+        }
 
         // Prevent to leak processes: preview is called multiple times when minimizing and restoring Explorer window
         if (m_process)
         {
-            TerminateProcess(m_process, 0);
+            if (!TerminateProcess(m_process, 0))
+            {
+                Logger::warn(L"Failed to terminate previous MediaPreviewHandler.exe process. Error: {}", GetLastError());
+            }
+
             CloseHandle(m_process);
+            m_process = NULL;
         }
 
         m_process = sei.hProcess;
@@ -208,6 +231,7 @@ IFACEMETHODIMP MediaPreviewHandler::DoPreview()
     {
         std::wstring errorMessage = std::wstring{ winrt::to_hstring(e.what()) };
         Logger::error(L"Failed to start MediaPreviewHandler.exe. Error: {}", errorMessage);
+        return E_FAIL;
     }
 
     return S_OK;

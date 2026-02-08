@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Copyright (c) Microsoft Corporation.
      Licensed under the MIT License. -->
-<policyDefinitionResources xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" revision="1.19" schemaVersion="1.0" xmlns="http://schemas.microsoft.com/GroupPolicy/2006/07/PolicyDefinitions">
+<policyDefinitionResources xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" revision="1.20" schemaVersion="1.0" xmlns="http://schemas.microsoft.com/GroupPolicy/2006/07/PolicyDefinitions">
   <displayName>PowerToys</displayName>
   <description>PowerToys</description>
   <resources>
@@ -255,6 +255,7 @@ If you don't configure this policy, the user will be able to control the setting
       <string id="ConfigureEnabledUtilityFileExplorerMarkdownPreview">Markdown file preview: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityFileExplorerMonacoPreview">Source code file preview: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityFileExplorerPDFPreview">PDF file preview: Configure enabled state</string>
+      <string id="ConfigureEnabledUtilityFileExplorerMediaPreview">Media file preview: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityFileExplorerGcodePreview">Gcode file preview: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityFileExplorerBgcodePreview">BGcode file preview: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityFileExplorerSVGThumbnails">SVG file thumbnail: Configure enabled state</string>

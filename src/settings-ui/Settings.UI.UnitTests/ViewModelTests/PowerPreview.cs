@@ -60,6 +60,7 @@ namespace ViewModelTests
             Assert.AreEqual(originalSettings.Properties.EnableMdPreview, viewModel.MDRenderIsEnabled);
             Assert.AreEqual(originalSettings.Properties.EnableMonacoPreview, viewModel.MonacoRenderIsEnabled);
             Assert.AreEqual(originalSettings.Properties.EnablePdfPreview, viewModel.PDFRenderIsEnabled);
+            Assert.AreEqual(originalSettings.Properties.EnableMediaPreview, viewModel.MediaRenderIsEnabled);
             Assert.AreEqual(originalSettings.Properties.EnableGcodePreview, viewModel.GCODERenderIsEnabled);
             Assert.AreEqual(originalSettings.Properties.EnableBgcodePreview, viewModel.BGCODERenderIsEnabled);
             Assert.AreEqual(originalSettings.Properties.EnableQoiPreview, viewModel.QOIRenderIsEnabled);
@@ -254,6 +255,24 @@ namespace ViewModelTests
 
             // act
             viewModel.PDFRenderIsEnabled = true;
+        }
+
+        [TestMethod]
+        public void MediaRenderIsEnabledShouldPrevHandlerWhenSuccessful()
+        {
+            // Assert
+            Func<string, int> sendMockIPCConfigMSG = msg =>
+            {
+                SndModuleSettings<SndPowerPreviewSettings> snd = JsonSerializer.Deserialize<SndModuleSettings<SndPowerPreviewSettings>>(msg);
+                Assert.IsTrue(snd.PowertoysSetting.FileExplorerPreviewSettings.Properties.EnableMediaPreview);
+                return 0;
+            };
+
+            // arrange
+            PowerPreviewViewModel viewModel = new PowerPreviewViewModel(SettingsRepository<PowerPreviewSettings>.GetInstance(mockPowerPreviewSettingsUtils.Object), SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), sendMockIPCConfigMSG, PowerPreviewSettings.ModuleName);
+
+            // act
+            viewModel.MediaRenderIsEnabled = true;
         }
 
         [TestMethod]

@@ -111,6 +111,20 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 _pdfRenderIsEnabled = Settings.Properties.EnablePdfPreview;
             }
 
+            _mediaRenderEnabledGpoRuleConfiguration = GPOWrapper.GetConfiguredMediaPreviewEnabledValue();
+            if (_mediaRenderEnabledGpoRuleConfiguration == GpoRuleConfigured.Disabled || _mediaRenderEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled)
+            {
+                // Get the enabled state from GPO.
+                _mediaRenderEnabledStateIsGPOConfigured = true;
+                _mediaRenderIsEnabled = _mediaRenderEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
+                _mediaRenderIsGpoEnabled = _mediaRenderEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
+                _mediaRenderIsGpoDisabled = _mediaRenderEnabledGpoRuleConfiguration == GpoRuleConfigured.Disabled;
+            }
+            else
+            {
+                _mediaRenderIsEnabled = Settings.Properties.EnableMediaPreview;
+            }
+
             _gcodeRenderEnabledGpoRuleConfiguration = GPOWrapper.GetConfiguredGcodePreviewEnabledValue();
             if (_gcodeRenderEnabledGpoRuleConfiguration == GpoRuleConfigured.Disabled || _gcodeRenderEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled)
             {
@@ -273,6 +287,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private bool _pdfRenderIsGpoDisabled;
         private bool _pdfRenderIsEnabled;
 
+        private GpoRuleConfigured _mediaRenderEnabledGpoRuleConfiguration;
+        private bool _mediaRenderEnabledStateIsGPOConfigured;
+        private bool _mediaRenderIsGpoEnabled;
+        private bool _mediaRenderIsGpoDisabled;
+        private bool _mediaRenderIsEnabled;
+
         private GpoRuleConfigured _gcodeRenderEnabledGpoRuleConfiguration;
         private bool _gcodeRenderEnabledStateIsGPOConfigured;
         private bool _gcodeRenderIsGpoEnabled;
@@ -334,6 +354,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 return _svgRenderEnabledStateIsGPOConfigured || _mdRenderEnabledStateIsGPOConfigured
                     || _monacoRenderEnabledStateIsGPOConfigured || _pdfRenderEnabledStateIsGPOConfigured
+                    || _mediaRenderEnabledStateIsGPOConfigured
                     || _gcodeRenderEnabledStateIsGPOConfigured || _qoiRenderEnabledStateIsGPOConfigured
                     || _bgcodeRenderEnabledStateIsGPOConfigured;
             }
@@ -732,6 +753,48 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             get
             {
                 return _pdfRenderIsGpoDisabled;
+            }
+        }
+
+        public bool MediaRenderIsEnabled
+        {
+            get
+            {
+                return _mediaRenderIsEnabled;
+            }
+
+            set
+            {
+                if (_mediaRenderEnabledStateIsGPOConfigured)
+                {
+                    // If it's GPO configured, shouldn't be able to change this state.
+                    return;
+                }
+
+                if (value != _mediaRenderIsEnabled)
+                {
+                    _mediaRenderIsEnabled = value;
+                    Settings.Properties.EnableMediaPreview = value;
+                    RaisePropertyChanged();
+                }
+            }
+        }
+
+        // Used to only disable enabled button on forced enabled state. (With this users still able to change the utility properties.)
+        public bool MediaRenderIsGpoEnabled
+        {
+            get
+            {
+                return _mediaRenderIsGpoEnabled;
+            }
+        }
+
+        // Used to disable the settings card on forced disabled state.
+        public bool MediaRenderIsGpoDisabled
+        {
+            get
+            {
+                return _mediaRenderIsGpoDisabled;
             }
         }
 
