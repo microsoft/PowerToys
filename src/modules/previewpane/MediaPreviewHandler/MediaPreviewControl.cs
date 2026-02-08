@@ -4,15 +4,9 @@
 
 using System.Globalization;
 using System.IO;
-using System.Threading.Tasks;
 using System.Windows.Forms.Integration;
 
 using Common;
-
-using Windows.Media.Core;
-using Windows.Media.MediaProperties;
-using Windows.Media.Transcoding;
-using Windows.Storage;
 
 using Wpf = System.Windows;
 using WpfControls = System.Windows.Controls;
@@ -119,7 +113,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Media
             _positionTimer.Tick += PositionTimer_Tick;
             _positionTimer.Start();
 
-            _ = LoadMediaWithCodecCheckAsync(filePath, isVideo);
+            LoadMedia(filePath);
         }
 
         private Wpf.UIElement CreatePlayerRoot(string filePath)
@@ -191,7 +185,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Media
                 Content = "Play",
                 Width = 70,
                 Height = 30,
-                IsEnabled = true,
+                IsEnabled = false,
                 Margin = new Wpf.Thickness(0, 0, 8, 0),
             };
             _playPauseButton.Click += PlayPauseButton_Click;
@@ -227,47 +221,15 @@ namespace Microsoft.PowerToys.PreviewHandler.Media
             return root;
         }
 
-        private async Task LoadMediaWithCodecCheckAsync(string filePath, bool isVideo)
+        private void LoadMedia(string filePath)
         {
-            var missingCodec = await GetMissingCodecAsync(filePath, isVideo);
-            if (!string.IsNullOrWhiteSpace(missingCodec))
-            {
-                ShowMessage($"Missing {missingCodec} codec on this machine. Install the codec, then try again.");
-                _playPauseButton.IsEnabled = false;
-                _positionSlider.IsEnabled = false;
-                return;
-            }
-
             _mediaElement.Source = new Uri(filePath, UriKind.Absolute);
-        }
+            _playPauseButton.IsEnabled = true;
 
-        private static async Task<string> GetMissingCodecAsync(string filePath, bool isVideo)
-        {
-            try
+            if (_isPlaying)
             {
-                var file = await StorageFile.GetFileFromPathAsync(filePath);
-                var profile = await MediaEncodingProfile.CreateFromFileAsync(file);
-
-                var codecQuery = new CodecQuery();
-
-                if (isVideo && profile.Video != null)
-                {
-                    var videoDecoders = await codecQuery.FindAllAsync(CodecKind.Video, CodecCategory.Decoder, profile.Video.Subtype);
-                    return videoDecoders.Count > 0 ? string.Empty : profile.Video.Subtype;
-                }
-
-                if (!isVideo && profile.Audio != null)
-                {
-                    var audioDecoders = await codecQuery.FindAllAsync(CodecKind.Audio, CodecCategory.Decoder, profile.Audio.Subtype);
-                    return audioDecoders.Count > 0 ? string.Empty : profile.Audio.Subtype;
-                }
+                _mediaElement.Play();
             }
-            catch
-            {
-                // Best-effort codec probe only.
-            }
-
-            return string.Empty;
         }
 
         private void MediaElement_MediaOpened(object sender, Wpf.RoutedEventArgs e)
@@ -298,7 +260,9 @@ namespace Microsoft.PowerToys.PreviewHandler.Media
 
         private void MediaElement_MediaFailed(object sender, Wpf.ExceptionRoutedEventArgs e)
         {
-            var message = e.ErrorException == null ? "Unable to preview this media file." : e.ErrorException.Message;
+            var message = e.ErrorException == null
+                ? "Unable to preview this media file. The codec may be unsupported on this machine."
+                : e.ErrorException.Message;
             ShowMessage(message);
             _isPlaying = false;
             _playPauseButton.Content = "Play";
