@@ -850,6 +850,20 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public bool RecordCaptureSystemAudio
+        {
+            get => _zoomItSettings.Properties.CaptureSystemAudio.Value;
+            set
+            {
+                if (_zoomItSettings.Properties.CaptureSystemAudio.Value != value)
+                {
+                    _zoomItSettings.Properties.CaptureSystemAudio.Value = value;
+                    OnPropertyChanged(nameof(RecordCaptureSystemAudio));
+                    NotifySettingsChanged();
+                }
+            }
+        }
+
         public bool RecordCaptureAudio
         {
             get => _zoomItSettings.Properties.CaptureAudio.Value;

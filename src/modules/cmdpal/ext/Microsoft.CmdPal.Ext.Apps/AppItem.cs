@@ -33,6 +33,8 @@ public sealed class AppItem
 
     public string? FullExecutablePath { get; set; }
 
+    public string? JumboIconPath { get; set; }
+
     public AppItem()
     {
     }

@@ -285,6 +285,9 @@
                                     <ComboBoxItem>MP4</ComboBoxItem>
                                 </ComboBox>
                             </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard Name="ZoomItRecordCaptureSystemAudio" ContentAlignment="Left">
+                                <CheckBox x:Uid="ZoomIt_Record_CaptureSystemAudio" IsChecked="{x:Bind ViewModel.RecordCaptureSystemAudio, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard Name="ZoomItRecordCaptureAudio" ContentAlignment="Left">
                                 <CheckBox x:Uid="ZoomIt_Record_CaptureAudio" IsChecked="{x:Bind ViewModel.RecordCaptureAudio, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
