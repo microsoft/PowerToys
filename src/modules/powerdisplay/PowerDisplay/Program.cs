@@ -125,14 +125,27 @@ namespace PowerDisplay
 
         /// <summary>
         /// Called when an existing instance is activated by another process.
-        /// This happens when EnsureProcessRunning() launches a new process while one is already running.
-        /// We intentionally don't show the window here - window visibility should only be controlled via:
-        /// - Toggle event (hotkey, tray icon click, Settings UI Launch button)
-        /// - Standalone mode startup (handled in OnLaunched)
+        /// This happens when Quick Access or other launchers start the process while one is already running.
+        /// We toggle the window to show it - this allows Quick Access launch to work properly.
         /// </summary>
         private static void OnActivated(object? sender, AppActivationArguments args)
         {
-            Logger.LogInfo("OnActivated: Redirect activation received - window visibility unchanged");
+            Logger.LogInfo("OnActivated: Redirect activation received - toggling window");
+
+            // Toggle the main window on redirect activation
+            if (_app?.MainWindow is MainWindow mainWindow)
+            {
+                // Dispatch to UI thread since OnActivated may be called from a different thread
+                mainWindow.DispatcherQueue.TryEnqueue(() =>
+                {
+                    Logger.LogTrace("OnActivated: Toggling window from redirect activation");
+                    mainWindow.ToggleWindow();
+                });
+            }
+            else
+            {
+                Logger.LogWarning("OnActivated: MainWindow not available for toggle");
+            }
         }
     }
 }

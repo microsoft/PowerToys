@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <root>
-  <!-- 
-    Microsoft ResX Schema 
-    
+  <!--
+    Microsoft ResX Schema
+
     Version 2.0
-    
-    The primary goals of this format is to allow a simple XML format 
-    that is mostly human readable. The generation and parsing of the 
-    various data types are done through the TypeConverter classes 
+
+    The primary goals of this format is to allow a simple XML format
+    that is mostly human readable. The generation and parsing of the
+    various data types are done through the TypeConverter classes
     associated with the data types.
-    
+
     Example:
-    
+
     ... ado.net/XML headers & schema ...
     <resheader name="resmimetype">text/microsoft-resx</resheader>
     <resheader name="version">2.0</resheader>
@@ -26,36 +26,36 @@
         <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
         <comment>This is a comment</comment>
     </data>
-                
-    There are any number of "resheader" rows that contain simple 
+
+    There are any number of "resheader" rows that contain simple
     name/value pairs.
-    
-    Each data row contains a name, and value. The row also contains a 
-    type or mimetype. Type corresponds to a .NET class that support 
-    text/value conversion through the TypeConverter architecture. 
-    Classes that don't support this are serialized and stored with the 
+
+    Each data row contains a name, and value. The row also contains a
+    type or mimetype. Type corresponds to a .NET class that support
+    text/value conversion through the TypeConverter architecture.
+    Classes that don't support this are serialized and stored with the
     mimetype set.
-    
-    The mimetype is used for serialized objects, and tells the 
-    ResXResourceReader how to depersist the object. This is currently not 
+
+    The mimetype is used for serialized objects, and tells the
+    ResXResourceReader how to depersist the object. This is currently not
     extensible. For a given mimetype the value must be set accordingly:
-    
-    Note - application/x-microsoft.net.object.binary.base64 is the format 
-    that the ResXResourceWriter will generate, however the reader can 
+
+    Note - application/x-microsoft.net.object.binary.base64 is the format
+    that the ResXResourceWriter will generate, however the reader can
     read any of the formats listed below.
-    
+
     mimetype: application/x-microsoft.net.object.binary.base64
-    value   : The object must be serialized with 
+    value   : The object must be serialized with
             : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
             : and then encoded with base64 encoding.
-    
+
     mimetype: application/x-microsoft.net.object.soap.base64
-    value   : The object must be serialized with 
+    value   : The object must be serialized with
             : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
             : and then encoded with base64 encoding.
 
     mimetype: application/x-microsoft.net.object.bytearray.base64
-    value   : The object must be serialized into a byte array 
+    value   : The object must be serialized into a byte array
             : using a System.ComponentModel.TypeConverter
             : and then encoded with base64 encoding.
     -->
@@ -2726,6 +2726,9 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="MouseUtils_CursorWrap_DisableWrapDuringDrag.Content" xml:space="preserve">
     <value>Disable wrapping while dragging</value>
   </data>
+  <data name="MouseUtils_CursorWrap_DisableOnSingleMonitor.Content" xml:space="preserve">
+    <value>Disable wrapping when using a single monitor</value>
+  </data>	
   <data name="MouseUtils_CursorWrap_AutoActivate.Header" xml:space="preserve">
     <value>Auto-activate on startup</value>
   </data>
@@ -4659,6 +4662,14 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Show clipboard preview</value>
     <comment>Enables display of clipboard contents preview in the Advanced Paste window</comment>
   </data>
+  <data name="AdvancedPaste_AutoCopySelectionForCustomActionHotkey.Header" xml:space="preserve">
+    <value>Auto-copy selection for custom action hotkeys</value>
+    <comment>Advanced Paste is a product name</comment>
+  </data>
+  <data name="AdvancedPaste_AutoCopySelectionForCustomActionHotkey.Description" xml:space="preserve">
+    <value>Attempts to copy the current selection before running a custom action shortcut</value>
+    <comment>Advanced Paste is a product name</comment>
+  </data>
   <data name="GPO_CommandNotFound_ForceDisabled.Title" xml:space="preserve">
     <value>The Command Not Found module is disabled by your organization.</value>
     <comment>"Command Not Found" is a product name</comment>
@@ -4834,9 +4845,9 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Zoom in or out to enlarge content and make details clearer.</value>
   </data>
   <data name="ZoomIt_ZoomFAQ.Text" xml:space="preserve">
-    <value>Press **the mouse wheel** or **the Up / Down arrow keys** to zoom in or out.  
-Press **Esc** or **the right mouse button** to exit zoom mode.  
-Press **Ctrl + C** to capture the zoomed view, or **Ctrl + S** to save it.  
+    <value>Press **the mouse wheel** or **the Up / Down arrow keys** to zoom in or out.
+Press **Esc** or **the right mouse button** to exit zoom mode.
+Press **Ctrl + C** to capture the zoomed view, or **Ctrl + S** to save it.
 Press **Ctrl + Shift** to crop before copying or saving.</value>
   </data>
   <data name="ZoomIt_Zoom_Shortcut.Header" xml:space="preserve">
@@ -4864,23 +4875,23 @@ Press **Ctrl + Shift** to crop before copying or saving.</value>
     <value>Draw</value>
   </data>
   <data name="ZoomIt_DrawFAQ.Text" xml:space="preserve">
-    <value>Press **the left mouse button** to toggle drawing mode when zoomed in, and **the right mouse button** to exit.  
+    <value>Press **the left mouse button** to toggle drawing mode when zoomed in, and **the right mouse button** to exit.
 Press **Ctrl + Z** to undo, **E** to clear drawings, and **Space** to center the cursor.
 
-**Pen control**  
+**Pen control**
 Press **Ctrl + the mouse wheel** or **Ctrl + Up / Down** to adjust the pen width.
 
-**Colors**  
+**Colors**
 Press **R** (Red), **G** (Green), **B** (Blue), **O** (Orange), **Y** (Yellow), or **P** (Pink) to switch colors.
 
-**Highlight and blur**  
+**Highlight and blur**
 Press **Shift + a color key** for a translucent highlighter, **X** for blur, or **Shift + X** for a stronger blur.
 
-**Shapes**  
+**Shapes**
 Press **Shift** for a line, **Ctrl** for a rectangle, **Tab** for an ellipse, or **Shift + Ctrl** for an arrow.
 
-**Screen**  
-Press **W** or **K** for a white or black sketch pad.  
+**Screen**
+Press **W** or **K** for a white or black sketch pad.
 Press **Ctrl + C** to copy or **Ctrl + S** to save, and **Ctrl + Shift** to crop.
     </value>
   </data>
@@ -4907,16 +4918,16 @@ Press **Ctrl + C** to copy or **Ctrl + S** to save, and **Ctrl + Shift** to crop
     <value>Insert predefined text snippets with a shortcut using a text file.</value>
   </data>
   <data name="ZoomIt_DemoTypeFAQ" xml:space="preserve">
-    <value>Text can be pulled from the clipboard when it starts with **[start]**.  
-Use **[end]** to separate snippets, **[pause:n]** to insert pauses (in seconds), and **[paste]** / **[/paste]** to send clipboard text.  
+    <value>Text can be pulled from the clipboard when it starts with **[start]**.
+Use **[end]** to separate snippets, **[pause:n]** to insert pauses (in seconds), and **[paste]** / **[/paste]** to send clipboard text.
 Use **[enter]**, **[up]**, **[down]**, **[left]**, and **[right]** to issue keystrokes.
 
 ZoomIt can send text automatically or run in manual mode. Keyboard input is blocked while text is being sent.
 
-In manual mode, press **Space** to unblock keyboard input at the end of a snippet.  
+In manual mode, press **Space** to unblock keyboard input at the end of a snippet.
 In auto mode, control returns automatically after completion.
 
-At the end of the file, ZoomIt reloads the file and restarts from the beginning.  
+At the end of the file, ZoomIt reloads the file and restarts from the beginning.
 Press the hotkey with **Shift** in the opposite mode to step back to the previous **[end]** marker.
 
 Press **{0}** to reset DemoType and start from the beginning.</value>
@@ -4952,12 +4963,12 @@ Press **{0}** to reset DemoType and start from the beginning.</value>
     <value>Displays a countdown overlay for timed breaks or presentations.</value>
   </data>
   <data name="ZoomIt_BreakFAQ.Text" xml:space="preserve">
-    <value>Enter timer mode from the ZoomIt tray icon’s Break menu.  
+    <value>Enter timer mode from the ZoomIt tray icon’s Break menu.
 Press **the arrow keys** to adjust the time. If the timer window loses focus through **Alt + Tab**, press **the left mouse button** on the ZoomIt tray icon to reactivate it.
 
 Press **Esc** to exit timer mode.
 
-Change the break timer color using the same keys as the drawing colors.  
+Change the break timer color using the same keys as the drawing colors.
 The break timer font matches the text font.</value>
   </data>
   <data name="ZoomIt_Break_Shortcut.Header" xml:space="preserve">
@@ -5097,6 +5108,9 @@ The break timer font matches the text font.</value>
   </data>
   <data name="ZoomIt_Record_Format.Header" xml:space="preserve">
     <value>Format</value>
+  </data>
+  <data name="ZoomIt_Record_CaptureSystemAudio.Content" xml:space="preserve">
+    <value>Capture system audio</value>
   </data>
   <data name="ZoomIt_Record_CaptureAudio.Content" xml:space="preserve">
     <value>Capture audio input</value>
@@ -5992,6 +6006,69 @@ The break timer font matches the text font.</value>
   <data name="PowerDisplay_ShowIdentifyMonitorsButton.Description" xml:space="preserve">
     <value>Show or hide the identify monitors button in the Power Display flyout</value>
   </data>
+  <data name="PowerDisplay_CustomVcpMappings_GroupSettings.Header" xml:space="preserve">
+    <value>Custom VCP Name Mappings</value>
+  </data>
+  <data name="PowerDisplay_CustomVcpMappings.Header" xml:space="preserve">
+    <value>Custom name mappings</value>
+  </data>
+  <data name="PowerDisplay_CustomVcpMappings.Description" xml:space="preserve">
+    <value>Define custom display names for color temperature presets and input sources</value>
+  </data>
+  <data name="PowerDisplay_AddCustomMappingButton.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Add custom mapping</value>
+  </data>
+  <data name="PowerDisplay_AddCustomMapping_Text.Text" xml:space="preserve">
+    <value>Add mapping</value>
+  </data>
+  <data name="PowerDisplay_CustomMappingEditor_Title" xml:space="preserve">
+    <value>Custom VCP Name Mapping</value>
+  </data>
+  <data name="PowerDisplay_CustomMappingEditor_VcpCode.Header" xml:space="preserve">
+    <value>VCP Code</value>
+  </data>
+  <data name="PowerDisplay_VcpCode_Name_0x14" xml:space="preserve">
+    <value>Color Temperature</value>
+  </data>
+  <data name="PowerDisplay_VcpCode_Name_0x60" xml:space="preserve">
+    <value>Input Source</value>
+  </data>
+  <data name="PowerDisplay_CustomMappingEditor_CustomName.Header" xml:space="preserve">
+    <value>Custom Name</value>
+  </data>
+  <data name="PowerDisplay_CustomMappingEditor_CustomName.PlaceholderText" xml:space="preserve">
+    <value>Enter custom name</value>
+  </data>
+  <data name="PowerDisplay_CustomMappingEditor_ValueComboBox.Header" xml:space="preserve">
+    <value>Value</value>
+  </data>
+  <data name="PowerDisplay_CustomMappingEditor_CustomValueOption" xml:space="preserve">
+    <value>Custom value...</value>
+  </data>
+  <data name="PowerDisplay_CustomMappingEditor_CustomValueInput.Header" xml:space="preserve">
+    <value>Enter custom value (hex)</value>
+  </data>
+  <data name="PowerDisplay_CustomMappingEditor_CustomValueInput.PlaceholderText" xml:space="preserve">
+    <value>e.g., 0x11 or 17</value>
+  </data>
+  <data name="PowerDisplay_CustomMappingEditor_ApplyToAll.Header" xml:space="preserve">
+    <value>Apply to all monitors</value>
+  </data>
+  <data name="PowerDisplay_CustomMappingEditor_ApplyToAll.OnContent" xml:space="preserve">
+    <value>On</value>
+  </data>
+  <data name="PowerDisplay_CustomMappingEditor_ApplyToAll.OffContent" xml:space="preserve">
+    <value>Off</value>
+  </data>
+  <data name="PowerDisplay_CustomMappingEditor_SelectMonitor.Header" xml:space="preserve">
+    <value>Select monitor</value>
+  </data>
+  <data name="PowerDisplay_CustomMapping_Delete_Title" xml:space="preserve">
+    <value>Delete custom mapping?</value>
+  </data>
+  <data name="PowerDisplay_CustomMapping_Delete_Message" xml:space="preserve">
+    <value>This custom name mapping will be permanently removed.</value>
+  </data>
   <data name="Hosts_Backup_GroupSettings.Header" xml:space="preserve">
     <value>Backup</value>
   </data>
@@ -6167,14 +6244,14 @@ The break timer font matches the text font.</value>
   </data>
   <data name="ZoomIt_LiveZoom_Shortcut_Draw" xml:space="preserve">
     <value>Press **{0}** to activate live drawing and **Esc** to clear annotations or to exit.
-	
+
 Press **Ctrl + Up / Down** to adjust the zoom level.
 	</value>
   </data>
   <data name="ZoomIt_TypeFAQ.Text" xml:space="preserve">
-    <value>Press **T** to switch to typing when drawing mode is active, and **Shift** for right-aligned text.  
-Press **Esc** or **the left mouse button** to exit typing mode.  
-Press **the mouse wheel** or **Up / Down** to adjust the font size.  
+    <value>Press **T** to switch to typing when drawing mode is active, and **Shift** for right-aligned text.
+Press **Esc** or **the left mouse button** to exit typing mode.
+Press **the mouse wheel** or **Up / Down** to adjust the font size.
 Text uses the current drawing color.</value>
   </data>
   <data name="ZoomIt_DrawGroup.Description" xml:space="preserve">

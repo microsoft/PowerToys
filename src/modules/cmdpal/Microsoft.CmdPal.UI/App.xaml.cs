@@ -6,6 +6,7 @@ using ManagedCommon;
 using Microsoft.CmdPal.Core.Common;
 using Microsoft.CmdPal.Core.Common.Helpers;
 using Microsoft.CmdPal.Core.Common.Services;
+using Microsoft.CmdPal.Core.Common.Text;
 using Microsoft.CmdPal.Core.ViewModels;
 using Microsoft.CmdPal.Ext.Apps;
 using Microsoft.CmdPal.Ext.Bookmarks;
@@ -67,11 +68,13 @@ public partial class App : Application, IDisposable
     /// </summary>
     public App()
     {
+        var appInfoService = new ApplicationInfoService();
+
 #if !CMDPAL_DISABLE_GLOBAL_ERROR_HANDLER
-        _globalErrorHandler.Register(this, GlobalErrorHandler.Options.Default);
+        _globalErrorHandler.Register(this, GlobalErrorHandler.Options.Default, appInfoService);
 #endif
 
-        Services = ConfigureServices();
+        Services = ConfigureServices(appInfoService);
 
         IconCacheProvider.Initialize(Services);
 
@@ -92,6 +95,9 @@ public partial class App : Application, IDisposable
         // This way, log statements from the core project will be captured by the PT logs
         var logWrapper = new LogWrapper();
         CoreLogger.InitializeLogger(logWrapper);
+
+        // Now that CoreLogger is initialized, initialize the logger delegate in ApplicationInfoService
+        appInfoService.SetLogDirectory(() => Logger.CurrentVersionLogDirectoryPath);
     }
 
     /// <summary>
@@ -109,7 +115,7 @@ public partial class App : Application, IDisposable
     /// <summary>
     /// Configures the services for the application
     /// </summary>
-    private static ServiceProvider ConfigureServices()
+    private static ServiceProvider ConfigureServices(IApplicationInfoService appInfoService)
     {
         // TODO: It's in the Labs feed, but we can use Sergio's AOT-friendly source generator for this: https://github.com/CommunityToolkit/Labs-Windows/discussions/463
         ServiceCollection services = new();
@@ -120,7 +126,7 @@ public partial class App : Application, IDisposable
 
         AddBuiltInCommands(services);
 
-        AddCoreServices(services);
+        AddCoreServices(services, appInfoService);
 
         AddUIServices(services, dispatcherQueue);
 
@@ -196,15 +202,20 @@ public partial class App : Application, IDisposable
         services.AddIconServices(dispatcherQueue);
     }
 
-    private static void AddCoreServices(ServiceCollection services)
+    private static void AddCoreServices(ServiceCollection services, IApplicationInfoService appInfoService)
     {
         // Core services
+        services.AddSingleton(appInfoService);
+
         services.AddSingleton<IExtensionService, ExtensionService>();
         services.AddSingleton<IRunHistoryService, RunHistoryService>();
 
         services.AddSingleton<IRootPageService, PowerToysRootPageService>();
         services.AddSingleton<IAppHostService, PowerToysAppHostService>();
         services.AddSingleton<ITelemetryService, TelemetryForwarder>();
+
+        services.AddSingleton<IFuzzyMatcherProvider, FuzzyMatcherProvider>(
+            _ => new FuzzyMatcherProvider(new PrecomputedFuzzyMatcherOptions(), new PinyinFuzzyMatcherOptions()));
 
         // ViewModels
         services.AddSingleton<ShellViewModel>();
