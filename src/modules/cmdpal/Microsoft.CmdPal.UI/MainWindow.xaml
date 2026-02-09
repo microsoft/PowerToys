@@ -31,6 +31,6 @@
             TintIntensity="{x:Bind ViewModel.BackgroundImageTintIntensity, Mode=OneWay}"
             Visibility="{x:Bind ViewModel.ShowBackgroundImage, Mode=OneWay}" />
 
-        <pages:ShellPage />
+        <pages:ShellPage HostWindow="{x:Bind}" />
     </Grid>
 </winuiex:WindowEx>
