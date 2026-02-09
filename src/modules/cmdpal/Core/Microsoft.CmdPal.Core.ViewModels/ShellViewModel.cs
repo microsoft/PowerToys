@@ -476,6 +476,7 @@ public partial class ShellViewModel : ObservableObject,
                     navigationToken,
                     TaskContinuationOptions.None,
                     _scheduler);
+            return;
         }
 
         // -------------------------------------------------------------

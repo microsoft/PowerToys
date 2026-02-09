@@ -5,6 +5,7 @@
 using System.Runtime.InteropServices;
 using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
+using Microsoft.CmdPal.Core.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Dock;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
@@ -16,6 +17,7 @@ using Microsoft.UI.Composition.SystemBackdrops;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls.Primitives;
 using Windows.Foundation;
 using Windows.Win32;
 using Windows.Win32.Foundation;
@@ -35,6 +37,8 @@ public sealed partial class DockWindow : WindowEx,
                                                  IRecipient<BringToTopMessage>,
                                                  IRecipient<RequestShowPaletteAtMessage>,
     IRecipient<QuitMessage>,
+    IRecipient<ShowCommandInContextMenuMessage>,
+    IRecipient<CloseContextMenuMessage>,
     IDisposable
 {
 #pragma warning disable SA1306 // Field names should begin with lower-case letter
@@ -92,6 +96,9 @@ public sealed partial class DockWindow : WindowEx,
         WeakReferenceMessenger.Default.Register<BringToTopMessage>(this);
         WeakReferenceMessenger.Default.Register<RequestShowPaletteAtMessage>(this);
         WeakReferenceMessenger.Default.Register<QuitMessage>(this);
+
+        WeakReferenceMessenger.Default.Register<ShowCommandInContextMenuMessage>(this);
+        WeakReferenceMessenger.Default.Register<CloseContextMenuMessage>(this);
 
         _hwnd = GetWindowHandle(this);
 
@@ -529,6 +536,11 @@ public sealed partial class DockWindow : WindowEx,
         return false;
     }
 
+    private void ContextMenuFlyout_Opened(object sender, object e)
+    {
+        ContextMenuControl.FocusSearchBox();
+    }
+
     public void Receive(QuitMessage message)
     {
         DispatcherQueue.TryEnqueue(() =>
@@ -539,6 +551,25 @@ public sealed partial class DockWindow : WindowEx,
         });
     }
 
+    public void Receive(ShowCommandInContextMenuMessage message)
+    {
+        DispatcherQueue.TryEnqueue(() =>
+        {
+            ShowFlyoutOnUiThread(message.Context, message.Position);
+        });
+    }
+
+    public void Receive(CloseContextMenuMessage message)
+    {
+        DispatcherQueue.TryEnqueue(() =>
+        {
+            if (ContextMenuFlyout.IsOpen)
+            {
+                ContextMenuFlyout.Hide();
+            }
+        });
+    }
+
     void IRecipient<RequestShowPaletteAtMessage>.Receive(RequestShowPaletteAtMessage message)
     {
         DispatcherQueue.TryEnqueue(DispatcherQueuePriority.Low, () => RequestShowPaletteOnUiThread(message.PosDips));
@@ -546,6 +577,10 @@ public sealed partial class DockWindow : WindowEx,
 
     private void RequestShowPaletteOnUiThread(Point posDips)
     {
+        // TODO!!!! posDips was originally relative to the dock window.
+        // It's now relative to the screen.
+        // this method wasn't yet updated for that.
+
         // pos is relative to our root. We need to convert to screen coords.
         var rootPosDips = Root.TransformToVisual(null).TransformPoint(new Point(0, 0));
         var screenPosDips = new Point(rootPosDips.X + posDips.X, rootPosDips.Y + posDips.Y);
@@ -611,6 +646,93 @@ public sealed partial class DockWindow : WindowEx,
         // Now that we know the anchor corner, and where to attempt to place it, we can
         // ask the palette to show itself there.
         WeakReferenceMessenger.Default.Send<ShowPaletteAtMessage>(new(screenPosPixels, anchorPoint));
+    }
+
+    private void ShowFlyoutOnUiThread(IContextMenuContext context, Point position)
+    {
+        ContextMenuControl.ViewModel.SelectedItem = context;
+
+        // Depending on the side we're on, change the direction of the results
+        switch (_settings.Side)
+        {
+            case DockSide.Top:
+            case DockSide.Left:
+            case DockSide.Right:
+                ContextMenuControl.ViewModel.FilterOnTop = true;
+                break;
+            case DockSide.Bottom:
+                ContextMenuControl.ViewModel.FilterOnTop = false;
+                break;
+        }
+
+        // position is relative to our root. We need to convert to screen coords.
+        //
+        // Root.TransformToVisual(null) will always return 0,0, because Root is at the root of our window.
+        //
+        // we instead need:
+
+        // var rootPosDips = Root.TransformToVisual(null).TransformPoint(new Point(0, 0));
+
+        // var screenPosDips = new Point(rootPosDips.X + position.X, rootPosDips.Y + position.Y);
+
+        // TODO! deal with DPI - I'm sure this is wrong
+        var dpi = PInvoke.GetDpiForWindow(_hwnd);
+        PInvoke.GetWindowRect(_hwnd, out var ourRect);
+        var scaleFactor = dpi / 96.0;
+
+        var positionPixels = new Point(position.X * scaleFactor, position.Y * scaleFactor);
+
+        var screenPosPixels = // new Point(screenPosDips.X * scaleFactor, screenPosDips.Y * scaleFactor);
+                new Point(ourRect.left + positionPixels.X, ourRect.top + positionPixels.Y);
+
+        var screenWidth = PInvoke.GetSystemMetrics(SYSTEM_METRICS_INDEX.SM_CXSCREEN);
+        var screenHeight = PInvoke.GetSystemMetrics(SYSTEM_METRICS_INDEX.SM_CYSCREEN);
+        var onTopHalf = screenPosPixels.Y < screenHeight / 2;
+        var onLeftHalf = screenPosPixels.X < screenWidth / 2;
+        var onRightHalf = !onLeftHalf;
+        var onBottomHalf = !onTopHalf;
+        var anchorPoint = _settings.Side switch
+        {
+            DockSide.Top => onLeftHalf ? AnchorPoint.TopLeft : AnchorPoint.TopRight,
+            DockSide.Bottom => onLeftHalf ? AnchorPoint.BottomLeft : AnchorPoint.BottomRight,
+            DockSide.Left => onTopHalf ? AnchorPoint.TopLeft : AnchorPoint.BottomLeft,
+            DockSide.Right => onTopHalf ? AnchorPoint.TopRight : AnchorPoint.BottomRight,
+            _ => AnchorPoint.TopLeft,
+        };
+
+        // we also need to slide the anchor point a bit away from the dock
+        var paddingDips = 8;
+        var paddingPixels = paddingDips * scaleFactor;
+
+        // Depending on the side we're on, we need to offset differently
+        switch (_settings.Side)
+        {
+            case DockSide.Top:
+                screenPosPixels.Y += paddingPixels;
+                break;
+            case DockSide.Bottom:
+                screenPosPixels.Y -= paddingPixels;
+                break;
+            case DockSide.Left:
+                screenPosPixels.X += paddingPixels;
+                break;
+            case DockSide.Right:
+                screenPosPixels.X -= paddingPixels;
+                break;
+        }
+
+        // var finalPosDips = new Point((screenPosPixels.X / scaleFactor) - rootPosDips.X, (screenPosPixels.Y / scaleFactor) - rootPosDips.Y);
+        var finalPosDips = new Point(
+            (screenPosPixels.X - ourRect.left) / scaleFactor,
+            (screenPosPixels.Y - ourRect.top) / scaleFactor);
+
+        ContextMenuFlyout.ShowAt(
+           Root,
+           new FlyoutShowOptions()
+           {
+               ShowMode = FlyoutShowMode.Standard,
+               Position = finalPosDips,
+           });
     }
 
     public DockWindowViewModel WindowViewModel => _windowViewModel;

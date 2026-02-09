@@ -178,6 +178,12 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
                 borderPos.X + (dockItem.ActualWidth / 2),
                 borderPos.Y + (dockItem.ActualHeight / 2));
 
+            // // borderCenter is in DIPs, relative to the dock window.
+            // // we need screen DIPs
+            // var windowPos = dockItem.XamlRoot.Content.XamlRoot.TransformToVisual(null).TransformPoint(new Point(0, 0));
+            // var screenPos = new Point(
+            //     borderCenter.X + windowPos.X,
+            //     borderCenter.Y + windowPos.Y);
             InvokeItem(item, borderCenter);
             e.Handled = true;
         }

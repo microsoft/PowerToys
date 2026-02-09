@@ -28,7 +28,6 @@ using Microsoft.UI.Composition.SystemBackdrops;
 using Microsoft.UI.Input;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.Windows.AppLifecycle;
 using Windows.ApplicationModel.Activation;
 using Windows.Foundation;
@@ -58,8 +57,6 @@ public sealed partial class MainWindow : WindowEx,
     IRecipient<NavigationDepthMessage>,
     IRecipient<SearchQueryMessage>,
     IRecipient<ErrorOccurredMessage>,
-    IRecipient<ShowCommandInContextMenuMessage>,
-    IRecipient<CloseContextMenuMessage>,
     IRecipient<DragStartedMessage>,
     IRecipient<DragCompletedMessage>,
     IDisposable
@@ -144,8 +141,6 @@ public sealed partial class MainWindow : WindowEx,
         WeakReferenceMessenger.Default.Register<NavigationDepthMessage>(this);
         WeakReferenceMessenger.Default.Register<SearchQueryMessage>(this);
         WeakReferenceMessenger.Default.Register<ErrorOccurredMessage>(this);
-        WeakReferenceMessenger.Default.Register<ShowCommandInContextMenuMessage>(this);
-        WeakReferenceMessenger.Default.Register<CloseContextMenuMessage>(this);
         WeakReferenceMessenger.Default.Register<DragStartedMessage>(this);
         WeakReferenceMessenger.Default.Register<DragCompletedMessage>(this);
 
@@ -678,41 +673,6 @@ public sealed partial class MainWindow : WindowEx,
     public void Receive(ErrorOccurredMessage message)
     {
         _sessionErrorCount++;
-    }
-
-    public void Receive(ShowCommandInContextMenuMessage message)
-    {
-        DispatcherQueue.TryEnqueue(() =>
-        {
-            ContextMenuControl.ViewModel.SelectedItem = message.Context;
-            ContextMenuFlyout.ShouldConstrainToRootBounds = false;
-            ContextMenuFlyout.ShowMode = FlyoutShowMode.Standard;
-            ContextMenuFlyout.ShowAt(RootElement);
-
-            // ContextMenuFlyout.ShowAt(
-            //    RootElement,
-            //    new FlyoutShowOptions()
-            //    {
-            //        ShowMode = FlyoutShowMode.Standard,
-            //        Position = message.Position,
-            //    });
-        });
-    }
-
-    public void Receive(CloseContextMenuMessage message)
-    {
-        DispatcherQueue.TryEnqueue(() =>
-        {
-            if (ContextMenuFlyout.IsOpen)
-            {
-                ContextMenuFlyout.Hide();
-            }
-        });
-    }
-
-    private void ContextMenuFlyout_Opened(object sender, object e)
-    {
-        ContextMenuControl.FocusSearchBox();
     }
 
     /// <summary>
@@ -1251,6 +1211,27 @@ public sealed partial class MainWindow : WindowEx,
         });
     }
 
+    // public void Receive(ShowCommandInContextMenuMessage message)
+    // {
+    //     DispatcherQueue.TryEnqueue(() =>
+    //     {
+    //         ContextMenuControl.ViewModel.SelectedItem = message.Context;
+    //         ContextMenuFlyout.ShouldConstrainToRootBounds = false;
+    //         ContextMenuFlyout.ShowMode = FlyoutShowMode.Standard;
+
+    // // message.Position is in dips,
+
+    // ContextMenuFlyout.ShowAt(RootElement);
+
+    // // ContextMenuFlyout.ShowAt(
+    //         //    RootElement,
+    //         //    new FlyoutShowOptions()
+    //         //    {
+    //         //        ShowMode = FlyoutShowMode.Standard,
+    //         //        Position = message.Position,
+    //         //    });
+    //     });
+    // }
     private unsafe void StealForeground()
     {
         var foregroundWindow = PInvoke.GetForegroundWindow();
