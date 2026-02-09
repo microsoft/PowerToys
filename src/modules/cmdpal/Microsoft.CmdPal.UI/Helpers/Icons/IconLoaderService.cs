@@ -219,6 +219,6 @@ internal sealed partial class IconLoaderService : IIconLoaderService
             iconSize = DefaultIconSize;
         }
 
-        return IconPathConverter.IconSourceMUX(iconString, false, fontFamily, iconSize);
+        return IconPathConverter.IconSourceMUX(iconString, fontFamily, iconSize);
     }
 }
