@@ -555,7 +555,7 @@ public sealed partial class DockWindow : WindowEx,
     {
         DispatcherQueue.TryEnqueue(() =>
         {
-            ShowFlyoutOnUiThread(message.Context, message.Position);
+            ShowFlyoutOnUiThread(message.Context, message.UiContext);
         });
     }
 
@@ -648,9 +648,14 @@ public sealed partial class DockWindow : WindowEx,
         WeakReferenceMessenger.Default.Send<ShowPaletteAtMessage>(new(screenPosPixels, anchorPoint));
     }
 
-    private void ShowFlyoutOnUiThread(IContextMenuContext context, Point position)
+    private void ShowFlyoutOnUiThread(IContextMenuContext context, object? uiContext)
     {
         ContextMenuControl.ViewModel.SelectedItem = context;
+
+        FlyoutShowOptions opts = new()
+        {
+            ShowMode = FlyoutShowMode.Standard,
+        };
 
         // Depending on the side we're on, change the direction of the results
         switch (_settings.Side)
@@ -665,74 +670,97 @@ public sealed partial class DockWindow : WindowEx,
                 break;
         }
 
-        // position is relative to our root. We need to convert to screen coords.
-        //
-        // Root.TransformToVisual(null) will always return 0,0, because Root is at the root of our window.
-        //
-        // we instead need:
-
-        // var rootPosDips = Root.TransformToVisual(null).TransformPoint(new Point(0, 0));
-
-        // var screenPosDips = new Point(rootPosDips.X + position.X, rootPosDips.Y + position.Y);
-
-        // TODO! deal with DPI - I'm sure this is wrong
-        var dpi = PInvoke.GetDpiForWindow(_hwnd);
-        PInvoke.GetWindowRect(_hwnd, out var ourRect);
-        var scaleFactor = dpi / 96.0;
-
-        var positionPixels = new Point(position.X * scaleFactor, position.Y * scaleFactor);
-
-        var screenPosPixels = // new Point(screenPosDips.X * scaleFactor, screenPosDips.Y * scaleFactor);
-                new Point(ourRect.left + positionPixels.X, ourRect.top + positionPixels.Y);
-
-        var screenWidth = PInvoke.GetSystemMetrics(SYSTEM_METRICS_INDEX.SM_CXSCREEN);
-        var screenHeight = PInvoke.GetSystemMetrics(SYSTEM_METRICS_INDEX.SM_CYSCREEN);
-        var onTopHalf = screenPosPixels.Y < screenHeight / 2;
-        var onLeftHalf = screenPosPixels.X < screenWidth / 2;
-        var onRightHalf = !onLeftHalf;
-        var onBottomHalf = !onTopHalf;
-        var anchorPoint = _settings.Side switch
-        {
-            DockSide.Top => onLeftHalf ? AnchorPoint.TopLeft : AnchorPoint.TopRight,
-            DockSide.Bottom => onLeftHalf ? AnchorPoint.BottomLeft : AnchorPoint.BottomRight,
-            DockSide.Left => onTopHalf ? AnchorPoint.TopLeft : AnchorPoint.BottomLeft,
-            DockSide.Right => onTopHalf ? AnchorPoint.TopRight : AnchorPoint.BottomRight,
-            _ => AnchorPoint.TopLeft,
-        };
-
-        // we also need to slide the anchor point a bit away from the dock
-        var paddingDips = 8;
-        var paddingPixels = paddingDips * scaleFactor;
-
-        // Depending on the side we're on, we need to offset differently
         switch (_settings.Side)
         {
             case DockSide.Top:
-                screenPosPixels.Y += paddingPixels;
-                break;
-            case DockSide.Bottom:
-                screenPosPixels.Y -= paddingPixels;
+                opts.Placement = FlyoutPlacementMode.Bottom;
                 break;
             case DockSide.Left:
-                screenPosPixels.X += paddingPixels;
+                opts.Placement = FlyoutPlacementMode.RightEdgeAlignedTop;
                 break;
             case DockSide.Right:
-                screenPosPixels.X -= paddingPixels;
+                opts.Placement = FlyoutPlacementMode.LeftEdgeAlignedTop;
+                break;
+            case DockSide.Bottom:
+                opts.Placement = FlyoutPlacementMode.Top;
                 break;
         }
 
-        // var finalPosDips = new Point((screenPosPixels.X / scaleFactor) - rootPosDips.X, (screenPosPixels.Y / scaleFactor) - rootPosDips.Y);
-        var finalPosDips = new Point(
-            (screenPosPixels.X - ourRect.left) / scaleFactor,
-            (screenPosPixels.Y - ourRect.top) / scaleFactor);
+        if (uiContext is UIElement uiElement)
+        {
+            ContextMenuFlyout.ShowAt(
+               uiElement,
+               opts);
+        }
 
-        ContextMenuFlyout.ShowAt(
-           Root,
-           new FlyoutShowOptions()
-           {
-               ShowMode = FlyoutShowMode.Standard,
-               Position = finalPosDips,
-           });
+        //// position is relative to our root. We need to convert to screen coords.
+        ////
+        //// Root.TransformToVisual(null) will always return 0,0, because Root is at the root of our window.
+        ////
+        //// we instead need:
+
+        //// var rootPosDips = Root.TransformToVisual(null).TransformPoint(new Point(0, 0));
+
+        //// var screenPosDips = new Point(rootPosDips.X + position.X, rootPosDips.Y + position.Y);
+
+        //// TODO! deal with DPI - I'm sure this is wrong
+        // var dpi = PInvoke.GetDpiForWindow(_hwnd);
+        // PInvoke.GetWindowRect(_hwnd, out var ourRect);
+        // var scaleFactor = dpi / 96.0;
+
+        // var positionPixels = new Point(position.X * scaleFactor, position.Y * scaleFactor);
+
+        // var screenPosPixels = // new Point(screenPosDips.X * scaleFactor, screenPosDips.Y * scaleFactor);
+        //        new Point(ourRect.left + positionPixels.X, ourRect.top + positionPixels.Y);
+
+        // var screenWidth = PInvoke.GetSystemMetrics(SYSTEM_METRICS_INDEX.SM_CXSCREEN);
+        // var screenHeight = PInvoke.GetSystemMetrics(SYSTEM_METRICS_INDEX.SM_CYSCREEN);
+        // var onTopHalf = screenPosPixels.Y < screenHeight / 2;
+        // var onLeftHalf = screenPosPixels.X < screenWidth / 2;
+        // var onRightHalf = !onLeftHalf;
+        // var onBottomHalf = !onTopHalf;
+        // var anchorPoint = _settings.Side switch
+        // {
+        //    DockSide.Top => onLeftHalf ? AnchorPoint.TopLeft : AnchorPoint.TopRight,
+        //    DockSide.Bottom => onLeftHalf ? AnchorPoint.BottomLeft : AnchorPoint.BottomRight,
+        //    DockSide.Left => onTopHalf ? AnchorPoint.TopLeft : AnchorPoint.BottomLeft,
+        //    DockSide.Right => onTopHalf ? AnchorPoint.TopRight : AnchorPoint.BottomRight,
+        //    _ => AnchorPoint.TopLeft,
+        // };
+
+        //// we also need to slide the anchor point a bit away from the dock
+        // var paddingDips = 8;
+        // var paddingPixels = paddingDips * scaleFactor;
+
+        //// Depending on the side we're on, we need to offset differently
+        // switch (_settings.Side)
+        // {
+        //    case DockSide.Top:
+        //        screenPosPixels.Y += paddingPixels;
+        //        break;
+        //    case DockSide.Bottom:
+        //        screenPosPixels.Y -= paddingPixels;
+        //        break;
+        //    case DockSide.Left:
+        //        screenPosPixels.X += paddingPixels;
+        //        break;
+        //    case DockSide.Right:
+        //        screenPosPixels.X -= paddingPixels;
+        //        break;
+        // }
+
+        //// var finalPosDips = new Point((screenPosPixels.X / scaleFactor) - rootPosDips.X, (screenPosPixels.Y / scaleFactor) - rootPosDips.Y);
+        // var finalPosDips = new Point(
+        //    (screenPosPixels.X - ourRect.left) / scaleFactor,
+        //    (screenPosPixels.Y - ourRect.top) / scaleFactor);
+
+        // ContextMenuFlyout.ShowAt(
+        //   Root,
+        //   new FlyoutShowOptions()
+        //   {
+        //       ShowMode = FlyoutShowMode.Standard,
+        //       Position = finalPosDips,
+        //   });
     }
 
     public DockWindowViewModel WindowViewModel => _windowViewModel;

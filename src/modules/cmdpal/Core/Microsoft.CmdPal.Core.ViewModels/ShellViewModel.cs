@@ -137,7 +137,7 @@ public partial class ShellViewModel : ObservableObject,
         return true;
     }
 
-    private async Task ShowPageAsFlyoutAsync(PageViewModel viewModel, Point flyoutPosition, CancellationToken cancellationToken = default)
+    private async Task ShowPageAsFlyoutAsync(PageViewModel viewModel, object flyoutUiContext, CancellationToken cancellationToken = default)
     {
         if (viewModel is not IContextMenuContext ctx)
         {
@@ -152,7 +152,7 @@ public partial class ShellViewModel : ObservableObject,
             await SetCurrentPageAsync(viewModel, cancellationToken);
 
             // send message
-            WeakReferenceMessenger.Default.Send(new ShowCommandInContextMenuMessage(ctx, flyoutPosition));
+            WeakReferenceMessenger.Default.Send(new ShowCommandInContextMenuMessage(ctx, flyoutUiContext));
 
             //// now cleanup navigation
             // await CleanupNavigationTokenAsync(cancellationToken);
@@ -468,9 +468,9 @@ public partial class ShellViewModel : ObservableObject,
 
         if (pageViewModel is ListViewModel listViewModel
             && message.OpenAsFlyout
-            && message.FlyoutPosition is Point flyoutPosition)
+            && message.FlyoutUiContext is not null)
         {
-            ShowPageAsFlyoutAsync(listViewModel, flyoutPosition, navigationToken)
+            ShowPageAsFlyoutAsync(listViewModel, message.FlyoutUiContext, navigationToken)
                 .ContinueWith(
                     (Task t) => CleanupNavigationTokenAsync(cts),
                     navigationToken,

@@ -8,4 +8,4 @@ using Windows.Foundation;
 
 namespace Microsoft.CmdPal.Core.ViewModels.Messages;
 
-public record ShowCommandInContextMenuMessage(IContextMenuContext Context, Point Position);
+public record ShowCommandInContextMenuMessage(IContextMenuContext Context, object? UiContext);

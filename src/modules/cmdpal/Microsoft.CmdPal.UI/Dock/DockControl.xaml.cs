@@ -173,18 +173,18 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
         if (sender is DockItemControl dockItem && dockItem.DataContext is DockBandViewModel band && dockItem.Tag is DockItemViewModel item)
         {
             // Use the center of the border as the point to open at
-            var borderPos = dockItem.TransformToVisual(null).TransformPoint(new Point(0, 0));
-            var borderCenter = new Point(
-                borderPos.X + (dockItem.ActualWidth / 2),
-                borderPos.Y + (dockItem.ActualHeight / 2));
-
+            // var borderPos = dockItem.TransformToVisual(null).TransformPoint(new Point(0, 0));
+            // var borderCenter = new Point(
+            //     borderPos.X + (dockItem.ActualWidth / 2),
+            //     borderPos.Y + (dockItem.ActualHeight / 2));
+            //
             // // borderCenter is in DIPs, relative to the dock window.
             // // we need screen DIPs
             // var windowPos = dockItem.XamlRoot.Content.XamlRoot.TransformToVisual(null).TransformPoint(new Point(0, 0));
             // var screenPos = new Point(
             //     borderCenter.X + windowPos.X,
             //     borderCenter.Y + windowPos.Y);
-            InvokeItem(item, borderCenter);
+            InvokeItem(item, dockItem);
             e.Handled = true;
         }
     }
@@ -261,7 +261,7 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
         }
     }
 
-    private void InvokeItem(DockItemViewModel item, Point pos)
+    private void InvokeItem(DockItemViewModel item, object flyoutUiContext)
     {
         var command = item.Command;
         try
@@ -272,7 +272,7 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
             // It might be the case that we should just have like... a
             // PerformDockCommandMessage like PerformCommandMessage but with the
             // context that we should be opening the command as a flyout.
-            var m = PerformCommandMessage.CreateFlyoutMessage(command.Model, pos);
+            var m = PerformCommandMessage.CreateFlyoutMessage(command.Model, flyoutUiContext);
             WeakReferenceMessenger.Default.Send(m);
 
             // var isPage = command.Model.Unsafe is not IInvokableCommand invokable;

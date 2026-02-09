@@ -23,7 +23,7 @@ public record PerformCommandMessage
 
     public bool OpenAsFlyout { get; private set; }
 
-    public Point? FlyoutPosition { get; private set; }
+    public object? FlyoutUiContext { get; private set; }
 
     public PerformCommandMessage(ExtensionObject<ICommand> command)
     {
@@ -31,14 +31,14 @@ public record PerformCommandMessage
         Context = null;
     }
 
-    public static PerformCommandMessage CreateFlyoutMessage(ExtensionObject<ICommand> command, Point flyoutPosition)
+    public static PerformCommandMessage CreateFlyoutMessage(ExtensionObject<ICommand> command, object flyoutUiContext)
     {
         var message = new PerformCommandMessage(command)
         {
             WithAnimation = false,
             TransientPage = true,
             OpenAsFlyout = true,
-            FlyoutPosition = flyoutPosition,
+            FlyoutUiContext = flyoutUiContext,
         };
         return message;
     }
