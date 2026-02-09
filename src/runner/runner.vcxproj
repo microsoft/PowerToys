@@ -28,7 +28,7 @@
     <PackageReference Include="Microsoft.Windows.ImplementationLibrary" GeneratePathProperty="true" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
-  <Import Project="..\..\deps\expected.props" />
+  <Import Project="$(RepoRoot)deps\expected.props" />
   <ImportGroup Label="Shared" />
   <PropertyGroup Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -164,7 +164,7 @@
     </CopyFileToFolders>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
-  <Import Project="..\..\deps\spdlog.props" />
+  <Import Project="$(RepoRoot)deps\spdlog.props" />
   <!-- Deduplicate WindowsAppRuntimeAutoInitializer.cpp (added twice via transitive imports causing LNK4042). Remove all then add exactly once. -->
   <Target Name="FixWinAppSDKAutoInitializer" BeforeTargets="ClCompile" AfterTargets="WindowsAppRuntimeAutoInitializer">
     <ItemGroup>

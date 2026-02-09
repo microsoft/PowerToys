@@ -23,6 +23,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             ShowSystemTrayIcon = true;
             ShowProfileSwitcher = true;
             ShowIdentifyMonitorsButton = true;
+            CustomVcpMappings = new List<CustomVcpValueMapping>();
 
             // Note: saved_monitor_settings has been moved to monitor_state.json
             // which is managed separately by PowerDisplay app
@@ -61,5 +62,12 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         /// </summary>
         [JsonPropertyName("show_identify_monitors_button")]
         public bool ShowIdentifyMonitorsButton { get; set; }
+
+        /// <summary>
+        /// Gets or sets custom VCP value name mappings shared across all monitors.
+        /// Allows users to define custom names for color temperature presets and input sources.
+        /// </summary>
+        [JsonPropertyName("custom_vcp_mappings")]
+        public List<CustomVcpValueMapping> CustomVcpMappings { get; set; }
     }
 }

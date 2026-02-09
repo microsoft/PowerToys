@@ -1,6 +1,6 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <!-- Look at Directory.Build.props in root for common stuff as well -->
-  <Import Project="..\..\..\Common.Dotnet.CsWinRT.props" />
+  <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
 
   <PropertyGroup>
     <ProjectGuid>{F93C2817-C846-4259-84D8-B39A6B57C8DE}</ProjectGuid>
@@ -11,7 +11,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <OutputPath>..\..\..\..\$(Platform)\$(Configuration)\tests\ColorPickerUI.UnitTest\</OutputPath>
+    <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\tests\ColorPickerUI.UnitTest\</OutputPath>
   </PropertyGroup>
 
   <ItemGroup>
