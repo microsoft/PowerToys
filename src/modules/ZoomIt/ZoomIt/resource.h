@@ -12,6 +12,7 @@
 // Non-localizable
 //////////////////////////////
 #define IDC_AUDIO                       117
+#define IDD_VIDEO_TRIM                  119
 #define IDC_LINK                        1000
 #define IDC_ALT                         1001
 #define IDC_CTRL                        1002
@@ -94,9 +95,22 @@
 #define IDC_DEMOTYPE_STATIC2            1074
 #define IDC_COPYRIGHT                   1075
 #define IDC_RECORD_FORMAT               1076
+#define IDC_TRIM_POSITION_LABEL         1087
+#define IDC_TRIM_PREVIEW                1088
+#define IDC_TRIM_TIMELINE               1089
+#define IDC_TRIM_PLAY_PAUSE             1090
+#define IDC_TRIM_REWIND                 1091
+#define IDC_TRIM_FORWARD                1092
+#define IDC_TRIM_DURATION_LABEL         1094
+#define IDC_TRIM_SKIP_START             1095
+#define IDC_TRIM_SKIP_END               1096
+#define IDC_TRIM_VOLUME                 1097
+#define IDC_TRIM_VOLUME_ICON            1098
 #define IDC_PEN_WIDTH                   1105
 #define IDC_TIMER                       1106
 #define IDC_SMOOTH_IMAGE				1107
+#define IDC_CAPTURE_SYSTEM_AUDIO        1108
+#define IDC_MICROPHONE_LABEL            1109
 #define IDC_SAVE                        40002
 #define IDC_COPY                        40004
 #define IDC_RECORD                      40006
@@ -109,9 +123,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        118
+#define _APS_NEXT_RESOURCE_VALUE        120
 #define _APS_NEXT_COMMAND_VALUE         40013
-#define _APS_NEXT_CONTROL_VALUE         1078
+#define _APS_NEXT_CONTROL_VALUE         1099
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

@@ -18,6 +18,8 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 
 public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDisposable
 {
+    private static readonly Color DefaultTintColor = Color.FromArgb(255, 0, 120, 212);
+
     private static readonly ObservableCollection<Color> WindowsColorSwatches = [
 
         // row 0
@@ -128,10 +130,13 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(ColorizationModeIndex));
                 OnPropertyChanged(nameof(IsCustomTintVisible));
-                OnPropertyChanged(nameof(IsCustomTintIntensityVisible));
+                OnPropertyChanged(nameof(IsColorIntensityVisible));
+                OnPropertyChanged(nameof(IsImageTintIntensityVisible));
+                OnPropertyChanged(nameof(EffectiveTintIntensity));
                 OnPropertyChanged(nameof(IsBackgroundControlsVisible));
                 OnPropertyChanged(nameof(IsNoBackgroundVisible));
                 OnPropertyChanged(nameof(IsAccentColorControlsVisible));
+                OnPropertyChanged(nameof(IsResetButtonVisible));
 
                 if (value == ColorizationMode.WindowsAccentColor)
                 {
@@ -179,6 +184,19 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
         {
             _settings.CustomThemeColorIntensity = value;
             OnPropertyChanged();
+            OnPropertyChanged(nameof(EffectiveTintIntensity));
+            Save();
+        }
+    }
+
+    public int BackgroundImageTintIntensity
+    {
+        get => _settings.BackgroundImageTintIntensity;
+        set
+        {
+            _settings.BackgroundImageTintIntensity = value;
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(EffectiveTintIntensity));
             Save();
         }
     }
@@ -279,12 +297,108 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
         };
     }
 
+    public int BackdropOpacity
+    {
+        get => _settings.BackdropOpacity;
+        set
+        {
+            if (_settings.BackdropOpacity != value)
+            {
+                _settings.BackdropOpacity = value;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(EffectiveBackdropStyle));
+                OnPropertyChanged(nameof(EffectiveImageOpacity));
+                Save();
+            }
+        }
+    }
+
+    public int BackdropStyleIndex
+    {
+        get => (int)_settings.BackdropStyle;
+        set
+        {
+            var newStyle = (BackdropStyle)value;
+            if (_settings.BackdropStyle != newStyle)
+            {
+                _settings.BackdropStyle = newStyle;
+
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(IsBackdropOpacityVisible));
+                OnPropertyChanged(nameof(IsMicaBackdropDescriptionVisible));
+                OnPropertyChanged(nameof(IsBackgroundSettingsEnabled));
+                OnPropertyChanged(nameof(IsBackgroundNotAvailableVisible));
+
+                if (!IsBackgroundSettingsEnabled)
+                {
+                    IsColorizationDetailsExpanded = false;
+                }
+
+                Save();
+            }
+        }
+    }
+
+    /// <summary>
+    /// Gets whether the backdrop opacity slider should be visible.
+    /// </summary>
+    public bool IsBackdropOpacityVisible =>
+        BackdropStyles.Get(_settings.BackdropStyle).SupportsOpacity;
+
+    /// <summary>
+    /// Gets whether the backdrop description (for styles without options) should be visible.
+    /// </summary>
+    public bool IsMicaBackdropDescriptionVisible =>
+        !BackdropStyles.Get(_settings.BackdropStyle).SupportsOpacity;
+
+    /// <summary>
+    /// Gets whether background/colorization settings are available.
+    /// </summary>
+    public bool IsBackgroundSettingsEnabled =>
+        BackdropStyles.Get(_settings.BackdropStyle).SupportsColorization;
+
+    /// <summary>
+    /// Gets whether the "not available" message should be shown (inverse of IsBackgroundSettingsEnabled).
+    /// </summary>
+    public bool IsBackgroundNotAvailableVisible =>
+        !BackdropStyles.Get(_settings.BackdropStyle).SupportsColorization;
+
+    public BackdropStyle? EffectiveBackdropStyle
+    {
+        get
+        {
+            // Return style when transparency/blur is visible (not fully opaque Acrylic)
+            // - Clear/Mica/MicaAlt/AcrylicThin always show their effect
+            // - Acrylic shows effect only when opacity < 100
+            if (_settings.BackdropStyle != BackdropStyle.Acrylic || _settings.BackdropOpacity < 100)
+            {
+                return _settings.BackdropStyle;
+            }
+
+            return null;
+        }
+    }
+
+    public double EffectiveImageOpacity =>
+        EffectiveBackdropStyle is not null
+            ? (BackgroundImageOpacity / 100f) * Math.Sqrt(_settings.BackdropOpacity / 100.0)
+            : (BackgroundImageOpacity / 100f);
+
     [ObservableProperty]
     public partial bool IsColorizationDetailsExpanded { get; set; }
 
     public bool IsCustomTintVisible => _settings.ColorizationMode is ColorizationMode.CustomColor or ColorizationMode.Image;
 
-    public bool IsCustomTintIntensityVisible => _settings.ColorizationMode is ColorizationMode.CustomColor or ColorizationMode.WindowsAccentColor or ColorizationMode.Image;
+    public bool IsColorIntensityVisible => _settings.ColorizationMode is ColorizationMode.CustomColor or ColorizationMode.WindowsAccentColor;
+
+    public bool IsImageTintIntensityVisible => _settings.ColorizationMode is ColorizationMode.Image;
+
+    /// <summary>
+    /// Gets the effective tint intensity for the preview, based on the current colorization mode.
+    /// </summary>
+    public int EffectiveTintIntensity => _settings.ColorizationMode is ColorizationMode.Image
+        ? _settings.BackgroundImageTintIntensity
+        : _settings.CustomThemeColorIntensity;
 
     public bool IsBackgroundControlsVisible => _settings.ColorizationMode is ColorizationMode.Image;
 
@@ -292,16 +406,21 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
 
     public bool IsAccentColorControlsVisible => _settings.ColorizationMode is ColorizationMode.WindowsAccentColor;
 
-    public AcrylicBackdropParameters EffectiveBackdrop { get; private set; } = new(Colors.Black, Colors.Black, 0.5f, 0.5f);
+    public bool IsResetButtonVisible => _settings.ColorizationMode is ColorizationMode.Image;
+
+    public BackdropParameters EffectiveBackdrop { get; private set; } = new(Colors.Black, Colors.Black, 0.5f, 0.5f);
 
     public ElementTheme EffectiveTheme => _elementThemeOverride ?? _themeService.Current.Theme;
 
-    public Color EffectiveThemeColor => ColorizationMode switch
-    {
-        ColorizationMode.WindowsAccentColor => _currentSystemAccentColor,
-        ColorizationMode.CustomColor or ColorizationMode.Image => ThemeColor,
-        _ => Colors.Transparent,
-    };
+    public Color EffectiveThemeColor =>
+        !BackdropStyles.Get(_settings.BackdropStyle).SupportsColorization
+            ? Colors.Transparent
+            : ColorizationMode switch
+            {
+                ColorizationMode.WindowsAccentColor => _currentSystemAccentColor,
+                ColorizationMode.CustomColor or ColorizationMode.Image => ThemeColor,
+                _ => Colors.Transparent,
+            };
 
     // Since the blur amount is absolute, we need to scale it down for the preview (which is smaller than full screen).
     public int EffectiveBackgroundImageBlurAmount => (int)Math.Round(BackgroundImageBlurAmount / 4f);
@@ -309,11 +428,13 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
     public double EffectiveBackgroundImageBrightness => BackgroundImageBrightness / 100.0;
 
     public ImageSource? EffectiveBackgroundImageSource =>
-        ColorizationMode is ColorizationMode.Image
-        && !string.IsNullOrWhiteSpace(BackgroundImagePath)
-        && Uri.TryCreate(BackgroundImagePath, UriKind.RelativeOrAbsolute, out var uri)
-            ? new Microsoft.UI.Xaml.Media.Imaging.BitmapImage(uri)
-            : null;
+        !BackdropStyles.Get(_settings.BackdropStyle).SupportsBackgroundImage
+            ? null
+            : ColorizationMode is ColorizationMode.Image
+              && !string.IsNullOrWhiteSpace(BackgroundImagePath)
+              && Uri.TryCreate(BackgroundImagePath, UriKind.RelativeOrAbsolute, out var uri)
+                ? new Microsoft.UI.Xaml.Media.Imaging.BitmapImage(uri)
+                : null;
 
     public AppearanceSettingsViewModel(IThemeService themeService, SettingsModel settings)
     {
@@ -327,7 +448,7 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
 
         Reapply();
 
-        IsColorizationDetailsExpanded = _settings.ColorizationMode != ColorizationMode.None;
+        IsColorizationDetailsExpanded = _settings.ColorizationMode != ColorizationMode.None && IsBackgroundSettingsEnabled;
     }
 
     private void UiSettingsOnColorValuesChanged(UISettings sender, object args) => _uiDispatcher.TryEnqueue(() => UpdateAccentColor(sender));
@@ -357,6 +478,8 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
         // Theme services recalculates effective color and opacity based on current settings.
         EffectiveBackdrop = _themeService.Current.BackdropParameters;
         OnPropertyChanged(nameof(EffectiveBackdrop));
+        OnPropertyChanged(nameof(EffectiveBackdropStyle));
+        OnPropertyChanged(nameof(EffectiveImageOpacity));
         OnPropertyChanged(nameof(EffectiveBackgroundImageBrightness));
         OnPropertyChanged(nameof(EffectiveBackgroundImageSource));
         OnPropertyChanged(nameof(EffectiveThemeColor));
@@ -379,7 +502,28 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
         BackgroundImageBlurAmount = 0;
         BackgroundImageFit = BackgroundImageFit.UniformToFill;
         BackgroundImageOpacity = 100;
-        ColorIntensity = 0;
+        BackgroundImageTintIntensity = 0;
+    }
+
+    [RelayCommand]
+    private void ResetAppearanceSettings()
+    {
+        // Reset theme
+        Theme = UserTheme.Default;
+
+        // Reset backdrop settings
+        BackdropStyleIndex = (int)BackdropStyle.Acrylic;
+        BackdropOpacity = 100;
+
+        // Reset background image settings
+        BackgroundImagePath = string.Empty;
+        ResetBackgroundImageProperties();
+
+        // Reset colorization
+        ColorizationMode = ColorizationMode.None;
+        ThemeColor = DefaultTintColor;
+        ColorIntensity = 100;
+        BackgroundImageTintIntensity = 0;
     }
 
     public void Dispose()
