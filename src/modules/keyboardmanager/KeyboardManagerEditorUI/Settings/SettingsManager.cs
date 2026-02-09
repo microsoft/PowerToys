@@ -149,7 +149,7 @@ namespace KeyboardManagerEditorUI.Settings
                 if (!shortcutKeyMappings.Any(m => m.Equals(shortcutSettings.Shortcut)))
                 {
                     shortcutSettingsChanged = true;
-                    ToggleShortcutKeyMappingActiveState(shortcutSettings.Id);
+                    shortcutSettings.IsActive = false;
                 }
             }
 
