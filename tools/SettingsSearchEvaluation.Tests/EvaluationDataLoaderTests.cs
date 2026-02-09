@@ -2,7 +2,10 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace SettingsSearchEvaluation.Tests;
@@ -10,6 +13,84 @@ namespace SettingsSearchEvaluation.Tests;
 [TestClass]
 public class EvaluationDataLoaderTests
 {
+    [TestMethod]
+    public void LoadEntriesFromJson_UsesResourceStrings_WhenHeaderAndDescriptionAreMissing()
+    {
+        const string json = """
+[
+  {
+    "type": 0,
+    "header": null,
+    "pageTypeName": "FancyZonesPage",
+    "elementName": "",
+    "elementUid": "FancyZones",
+    "parentElementName": "",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "PowerRenamePage",
+    "elementName": "PowerRenameToggle",
+    "elementUid": "PowerRename_Toggle_Enable",
+    "parentElementName": "",
+    "description": null,
+    "icon": null
+  }
+]
+""";
+
+        var resourceMap = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["FancyZones.ModuleTitle"] = "FancyZones",
+            ["FancyZones.ModuleDescription"] = "Create and manage zone layouts.",
+            ["PowerRename_Toggle_Enable.Header"] = "PowerRename",
+            ["PowerRename_Toggle_Enable.Description"] = "Enable bulk rename integration.",
+        };
+
+        var (entries, _) = EvaluationDataLoader.LoadEntriesFromJson(json, resourceMap);
+
+        Assert.AreEqual(2, entries.Count);
+        Assert.AreEqual("FancyZones", entries[0].Header);
+        Assert.AreEqual("Create and manage zone layouts.", entries[0].Description);
+        Assert.AreEqual("PowerRename", entries[1].Header);
+        Assert.AreEqual("Enable bulk rename integration.", entries[1].Description);
+    }
+
+    [TestMethod]
+    public void WriteNormalizedTextCorpusFile_EmitsOnlyNormalizedText()
+    {
+        var entries = new[]
+        {
+            new SettingEntry(
+                EntryType.SettingsCard,
+                "Activation shortcut",
+                PageTypeName: "MeasureToolPage",
+                ElementName: "MeasureToolActivationShortcut",
+                ElementUid: "MeasureTool_ActivationShortcut",
+                ParentElementName: string.Empty,
+                Description: "Customize the shortcut to bring up the command bar",
+                Icon: string.Empty),
+        };
+
+        var outputPath = Path.GetTempFileName();
+        try
+        {
+            EvaluationDataLoader.WriteNormalizedTextCorpusFile(outputPath, entries);
+            var line = File.ReadAllLines(outputPath).Single();
+
+            Assert.AreEqual(
+                "activation shortcut customize the shortcut to bring up the command bar",
+                line);
+            Assert.IsFalse(line.Contains("MeasureTool_ActivationShortcut", StringComparison.OrdinalIgnoreCase));
+        }
+        finally
+        {
+            File.Delete(outputPath);
+        }
+    }
+
     [TestMethod]
     public void LoadEntriesFromJson_NormalizesHeaderAndDetectsDuplicates()
     {

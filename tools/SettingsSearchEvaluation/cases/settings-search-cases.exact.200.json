@@ -1,0 +1,1602 @@
+[
+  {
+    "group": "exact",
+    "query": "advanced paste",
+    "expectedIds": [
+      "AdvancedPaste"
+    ],
+    "notes": "exact:AdvancedPaste"
+  },
+  {
+    "group": "exact",
+    "query": "always on top",
+    "expectedIds": [
+      "AlwaysOnTop"
+    ],
+    "notes": "exact:AlwaysOnTop"
+  },
+  {
+    "group": "exact",
+    "query": "awake",
+    "expectedIds": [
+      "Awake"
+    ],
+    "notes": "exact:Awake"
+  },
+  {
+    "group": "exact",
+    "query": "command not found",
+    "expectedIds": [
+      "CmdNotFound"
+    ],
+    "notes": "exact:CmdNotFound"
+  },
+  {
+    "group": "exact",
+    "query": "color picker",
+    "expectedIds": [
+      "ColorPicker"
+    ],
+    "notes": "exact:ColorPicker"
+  },
+  {
+    "group": "exact",
+    "query": "crop and lock",
+    "expectedIds": [
+      "CropAndLock"
+    ],
+    "notes": "exact:CropAndLock"
+  },
+  {
+    "group": "exact",
+    "query": "environment variables",
+    "expectedIds": [
+      "EnvironmentVariables"
+    ],
+    "notes": "exact:EnvironmentVariables"
+  },
+  {
+    "group": "exact",
+    "query": "fancyzones",
+    "expectedIds": [
+      "FancyZones"
+    ],
+    "notes": "exact:FancyZones"
+  },
+  {
+    "group": "exact",
+    "query": "file explorer",
+    "expectedIds": [
+      "FileExplorerPreview"
+    ],
+    "notes": "exact:FileExplorerPreview"
+  },
+  {
+    "group": "exact",
+    "query": "file locksmith",
+    "expectedIds": [
+      "FileLocksmith"
+    ],
+    "notes": "exact:FileLocksmith"
+  },
+  {
+    "group": "exact",
+    "query": "general",
+    "expectedIds": [
+      "General"
+    ],
+    "notes": "exact:General"
+  },
+  {
+    "group": "exact",
+    "query": "hosts file editor",
+    "expectedIds": [
+      "Hosts"
+    ],
+    "notes": "exact:Hosts"
+  },
+  {
+    "group": "exact",
+    "query": "image resizer",
+    "expectedIds": [
+      "ImageResizer"
+    ],
+    "notes": "exact:ImageResizer"
+  },
+  {
+    "group": "exact",
+    "query": "keyboard manager",
+    "expectedIds": [
+      "KeyboardManager"
+    ],
+    "notes": "exact:KeyboardManager"
+  },
+  {
+    "group": "exact",
+    "query": "light switch",
+    "expectedIds": [
+      "LightSwitch"
+    ],
+    "notes": "exact:LightSwitch"
+  },
+  {
+    "group": "exact",
+    "query": "screen ruler",
+    "expectedIds": [
+      "MeasureTool"
+    ],
+    "notes": "exact:MeasureTool"
+  },
+  {
+    "group": "exact",
+    "query": "mouse utilities",
+    "expectedIds": [
+      "MouseUtils"
+    ],
+    "notes": "exact:MouseUtils"
+  },
+  {
+    "group": "exact",
+    "query": "mouse without borders",
+    "expectedIds": [
+      "MouseWithoutBorders"
+    ],
+    "notes": "exact:MouseWithoutBorders"
+  },
+  {
+    "group": "exact",
+    "query": "new+",
+    "expectedIds": [
+      "NewPlus"
+    ],
+    "notes": "exact:NewPlus"
+  },
+  {
+    "group": "exact",
+    "query": "peek",
+    "expectedIds": [
+      "Peek"
+    ],
+    "notes": "exact:Peek"
+  },
+  {
+    "group": "exact",
+    "query": "power display",
+    "expectedIds": [
+      "PowerDisplay"
+    ],
+    "notes": "exact:PowerDisplay"
+  },
+  {
+    "group": "exact",
+    "query": "powertoys run",
+    "expectedIds": [
+      "PowerLauncher"
+    ],
+    "notes": "exact:PowerLauncher"
+  },
+  {
+    "group": "exact",
+    "query": "powerrename",
+    "expectedIds": [
+      "PowerRename"
+    ],
+    "notes": "exact:PowerRename"
+  },
+  {
+    "group": "exact",
+    "query": "quick accent",
+    "expectedIds": [
+      "QuickAccent"
+    ],
+    "notes": "exact:QuickAccent"
+  },
+  {
+    "group": "exact",
+    "query": "registry preview",
+    "expectedIds": [
+      "RegistryPreview"
+    ],
+    "notes": "exact:RegistryPreview"
+  },
+  {
+    "group": "exact",
+    "query": "shortcut guide",
+    "expectedIds": [
+      "ShortcutGuide"
+    ],
+    "notes": "exact:ShortcutGuide"
+  },
+  {
+    "group": "exact",
+    "query": "text extractor",
+    "expectedIds": [
+      "TextExtractor"
+    ],
+    "notes": "exact:TextExtractor"
+  },
+  {
+    "group": "exact",
+    "query": "workspaces",
+    "expectedIds": [
+      "Workspaces"
+    ],
+    "notes": "exact:Workspaces"
+  },
+  {
+    "group": "exact",
+    "query": "zoomit",
+    "expectedIds": [
+      "ZoomIt"
+    ],
+    "notes": "exact:ZoomIt"
+  },
+  {
+    "group": "exact",
+    "query": "show clipboard preview",
+    "expectedIds": [
+      "AdvancedPaste_EnableClipboardPreview"
+    ],
+    "notes": "exact:AdvancedPaste_EnableClipboardPreview"
+  },
+  {
+    "group": "exact",
+    "query": "model providers",
+    "expectedIds": [
+      "AdvancedPaste_ModelProviders"
+    ],
+    "notes": "exact:AdvancedPaste_ModelProviders"
+  },
+  {
+    "group": "exact",
+    "query": "activation shortcut",
+    "expectedIds": [
+      "AlwaysOnTop_ActivationShortcut"
+    ],
+    "notes": "exact:AlwaysOnTop_ActivationShortcut"
+  },
+  {
+    "group": "exact",
+    "query": "color",
+    "expectedIds": [
+      "AlwaysOnTop_FrameColor"
+    ],
+    "notes": "exact:AlwaysOnTop_FrameColor"
+  },
+  {
+    "group": "exact",
+    "query": "color mode",
+    "expectedIds": [
+      "AlwaysOnTop_FrameColor_Mode"
+    ],
+    "notes": "exact:AlwaysOnTop_FrameColor_Mode"
+  },
+  {
+    "group": "exact",
+    "query": "show a border around the pinned window",
+    "expectedIds": [
+      "AlwaysOnTop_FrameEnabled"
+    ],
+    "notes": "exact:AlwaysOnTop_FrameEnabled"
+  },
+  {
+    "group": "exact",
+    "query": "opacity (%)",
+    "expectedIds": [
+      "AlwaysOnTop_FrameOpacity"
+    ],
+    "notes": "exact:AlwaysOnTop_FrameOpacity"
+  },
+  {
+    "group": "exact",
+    "query": "play a sound when pinning a window",
+    "expectedIds": [
+      "AlwaysOnTop_Sound"
+    ],
+    "notes": "exact:AlwaysOnTop_Sound"
+  },
+  {
+    "group": "exact",
+    "query": "command not found",
+    "expectedIds": [
+      "CmdNotFound_Enable"
+    ],
+    "notes": "exact:CmdNotFound_Enable"
+  },
+  {
+    "group": "exact",
+    "query": "powershell 7.4 or greater",
+    "expectedIds": [
+      "CmdNotFound_PowerShellDetection"
+    ],
+    "notes": "exact:CmdNotFound_PowerShellDetection"
+  },
+  {
+    "group": "exact",
+    "query": "command palette",
+    "expectedIds": [
+      "CmdPal_Enable_CmdPal"
+    ],
+    "notes": "exact:CmdPal_Enable_CmdPal"
+  },
+  {
+    "group": "exact",
+    "query": "open command palette",
+    "expectedIds": [
+      "CmdPal_Launch"
+    ],
+    "notes": "exact:CmdPal_Launch"
+  },
+  {
+    "group": "exact",
+    "query": "activation behavior",
+    "expectedIds": [
+      "ColorPicker_ActivationAction"
+    ],
+    "notes": "exact:ColorPicker_ActivationAction"
+  },
+  {
+    "group": "exact",
+    "query": "color formats",
+    "expectedIds": [
+      "ColorPicker_ColorFormats"
+    ],
+    "notes": "exact:ColorPicker_ColorFormats"
+  },
+  {
+    "group": "exact",
+    "query": "default color format",
+    "expectedIds": [
+      "ColorPicker_CopiedColorRepresentation"
+    ],
+    "notes": "exact:ColorPicker_CopiedColorRepresentation"
+  },
+  {
+    "group": "exact",
+    "query": "color picker",
+    "expectedIds": [
+      "ColorPicker_EnableColorPicker"
+    ],
+    "notes": "exact:ColorPicker_EnableColorPicker"
+  },
+  {
+    "group": "exact",
+    "query": "middle click",
+    "expectedIds": [
+      "ColorPicker_MiddleClick"
+    ],
+    "notes": "exact:ColorPicker_MiddleClick"
+  },
+  {
+    "group": "exact",
+    "query": "mouse actions",
+    "expectedIds": [
+      "ColorPicker_MouseActions"
+    ],
+    "notes": "exact:ColorPicker_MouseActions"
+  },
+  {
+    "group": "exact",
+    "query": "primary click",
+    "expectedIds": [
+      "ColorPicker_PrimaryClick"
+    ],
+    "notes": "exact:ColorPicker_PrimaryClick"
+  },
+  {
+    "group": "exact",
+    "query": "secondary click",
+    "expectedIds": [
+      "ColorPicker_SecondaryClick"
+    ],
+    "notes": "exact:ColorPicker_SecondaryClick"
+  },
+  {
+    "group": "exact",
+    "query": "show color name",
+    "expectedIds": [
+      "ColorPicker_ShowColorName"
+    ],
+    "notes": "exact:ColorPicker_ShowColorName"
+  },
+  {
+    "group": "exact",
+    "query": "reparent shortcut",
+    "expectedIds": [
+      "CropAndLock_ReparentActivation_Shortcut"
+    ],
+    "notes": "exact:CropAndLock_ReparentActivation_Shortcut"
+  },
+  {
+    "group": "exact",
+    "query": "screenshot shortcut",
+    "expectedIds": [
+      "CropAndLock_ScreenshotActivation_Shortcut"
+    ],
+    "notes": "exact:CropAndLock_ScreenshotActivation_Shortcut"
+  },
+  {
+    "group": "exact",
+    "query": "thumbnail shortcut",
+    "expectedIds": [
+      "CropAndLock_ThumbnailActivation_Shortcut"
+    ],
+    "notes": "exact:CropAndLock_ThumbnailActivation_Shortcut"
+  },
+  {
+    "group": "exact",
+    "query": "open as administrator",
+    "expectedIds": [
+      "EnvironmentVariables_Toggle_LaunchAdministrator"
+    ],
+    "notes": "exact:EnvironmentVariables_Toggle_LaunchAdministrator"
+  },
+  {
+    "group": "exact",
+    "query": "allow child windows snapping",
+    "expectedIds": [
+      "FancyZones_AllowChildWindowSnap"
+    ],
+    "notes": "exact:FancyZones_AllowChildWindowSnap"
+  },
+  {
+    "group": "exact",
+    "query": "move newly created windows to their last known zone",
+    "expectedIds": [
+      "FancyZones_AppLastZoneMoveWindows"
+    ],
+    "notes": "exact:FancyZones_AppLastZoneMoveWindows"
+  },
+  {
+    "group": "exact",
+    "query": "border color",
+    "expectedIds": [
+      "FancyZones_BorderColor"
+    ],
+    "notes": "exact:FancyZones_BorderColor"
+  },
+  {
+    "group": "exact",
+    "query": "disable rounded corners when a window is snapped",
+    "expectedIds": [
+      "FancyZones_DisableRoundCornersOnWindowSnap"
+    ],
+    "notes": "exact:FancyZones_DisableRoundCornersOnWindowSnap"
+  },
+  {
+    "group": "exact",
+    "query": "excluded apps",
+    "expectedIds": [
+      "FancyZones_ExcludeApps"
+    ],
+    "notes": "exact:FancyZones_ExcludeApps"
+  },
+  {
+    "group": "exact",
+    "query": "opacity (%)",
+    "expectedIds": [
+      "FancyZones_HighlightOpacity"
+    ],
+    "notes": "exact:FancyZones_HighlightOpacity"
+  },
+  {
+    "group": "exact",
+    "query": "inactive color",
+    "expectedIds": [
+      "FancyZones_InActiveColor"
+    ],
+    "notes": "exact:FancyZones_InActiveColor"
+  },
+  {
+    "group": "exact",
+    "query": "move windows based on",
+    "expectedIds": [
+      "FancyZones_MoveWindow"
+    ],
+    "notes": "exact:FancyZones_MoveWindow"
+  },
+  {
+    "group": "exact",
+    "query": "number color",
+    "expectedIds": [
+      "FancyZones_NumberColor"
+    ],
+    "notes": "exact:FancyZones_NumberColor"
+  },
+  {
+    "group": "exact",
+    "query": "move newly created windows to the current active monitor (experimental)",
+    "expectedIds": [
+      "FancyZones_OpenWindowOnActiveMonitor"
+    ],
+    "notes": "exact:FancyZones_OpenWindowOnActiveMonitor"
+  },
+  {
+    "group": "exact",
+    "query": "when multiple zones overlap",
+    "expectedIds": [
+      "FancyZones_OverlappingZones"
+    ],
+    "notes": "exact:FancyZones_OverlappingZones"
+  },
+  {
+    "group": "exact",
+    "query": "override windows snap",
+    "expectedIds": [
+      "FancyZones_OverrideSnapHotkeys"
+    ],
+    "notes": "exact:FancyZones_OverrideSnapHotkeys"
+  },
+  {
+    "group": "exact",
+    "query": "restore the original size of windows when unsnapping",
+    "expectedIds": [
+      "FancyZones_RestoreSize"
+    ],
+    "notes": "exact:FancyZones_RestoreSize"
+  },
+  {
+    "group": "exact",
+    "query": "allow zones to span across monitors",
+    "expectedIds": [
+      "FancyZones_SpanZonesAcrossMonitors"
+    ],
+    "notes": "exact:FancyZones_SpanZonesAcrossMonitors"
+  },
+  {
+    "group": "exact",
+    "query": "launch editor on the display",
+    "expectedIds": [
+      "FancyZones_UseCursorPosEditorStartupScreen"
+    ],
+    "notes": "exact:FancyZones_UseCursorPosEditorStartupScreen"
+  },
+  {
+    "group": "exact",
+    "query": "zone appearance",
+    "expectedIds": [
+      "FancyZones_Zone_Appearance"
+    ],
+    "notes": "exact:FancyZones_Zone_Appearance"
+  },
+  {
+    "group": "exact",
+    "query": "highlight color",
+    "expectedIds": [
+      "FancyZones_ZoneHighlightColor"
+    ],
+    "notes": "exact:FancyZones_ZoneHighlightColor"
+  },
+  {
+    "group": "exact",
+    "query": "during zone layout changes, windows assigned to a zone will match new size/positions",
+    "expectedIds": [
+      "FancyZones_ZoneSetChangeMoveWindows"
+    ],
+    "notes": "exact:FancyZones_ZoneSetChangeMoveWindows"
+  },
+  {
+    "group": "exact",
+    "query": "color",
+    "expectedIds": [
+      "FileExplorerPreview_Color_Thumbnail_STL"
+    ],
+    "notes": "exact:FileExplorerPreview_Color_Thumbnail_STL"
+  },
+  {
+    "group": "exact",
+    "query": "color",
+    "expectedIds": [
+      "FileExplorerPreview_Preview_SVG_Background_Color"
+    ],
+    "notes": "exact:FileExplorerPreview_Preview_SVG_Background_Color"
+  },
+  {
+    "group": "exact",
+    "query": "checkered shade",
+    "expectedIds": [
+      "FileExplorerPreview_Preview_SVG_Checkered_Shade_Mode"
+    ],
+    "notes": "exact:FileExplorerPreview_Preview_SVG_Checkered_Shade_Mode"
+  },
+  {
+    "group": "exact",
+    "query": "color mode",
+    "expectedIds": [
+      "FileExplorerPreview_Preview_SVG_Color_Mode"
+    ],
+    "notes": "exact:FileExplorerPreview_Preview_SVG_Color_Mode"
+  },
+  {
+    "group": "exact",
+    "query": "font size",
+    "expectedIds": [
+      "FileExplorerPreview_Toggle_Monaco_Font_Size"
+    ],
+    "notes": "exact:FileExplorerPreview_Toggle_Monaco_Font_Size"
+  },
+  {
+    "group": "exact",
+    "query": "maximum file size to preview",
+    "expectedIds": [
+      "FileExplorerPreview_Toggle_Monaco_Max_File_Size"
+    ],
+    "notes": "exact:FileExplorerPreview_Toggle_Monaco_Max_File_Size"
+  },
+  {
+    "group": "exact",
+    "query": "binary geometric code",
+    "expectedIds": [
+      "FileExplorerPreview_ToggleSwitch_Preview_BGCODE"
+    ],
+    "notes": "exact:FileExplorerPreview_ToggleSwitch_Preview_BGCODE"
+  },
+  {
+    "group": "exact",
+    "query": "geometric code",
+    "expectedIds": [
+      "FileExplorerPreview_ToggleSwitch_Preview_GCODE"
+    ],
+    "notes": "exact:FileExplorerPreview_ToggleSwitch_Preview_GCODE"
+  },
+  {
+    "group": "exact",
+    "query": "markdown",
+    "expectedIds": [
+      "FileExplorerPreview_ToggleSwitch_Preview_MD"
+    ],
+    "notes": "exact:FileExplorerPreview_ToggleSwitch_Preview_MD"
+  },
+  {
+    "group": "exact",
+    "query": "source code files (monaco)",
+    "expectedIds": [
+      "FileExplorerPreview_ToggleSwitch_Preview_Monaco"
+    ],
+    "notes": "exact:FileExplorerPreview_ToggleSwitch_Preview_Monaco"
+  },
+  {
+    "group": "exact",
+    "query": "portable document format",
+    "expectedIds": [
+      "FileExplorerPreview_ToggleSwitch_Preview_PDF"
+    ],
+    "notes": "exact:FileExplorerPreview_ToggleSwitch_Preview_PDF"
+  },
+  {
+    "group": "exact",
+    "query": "quite ok image",
+    "expectedIds": [
+      "FileExplorerPreview_ToggleSwitch_Preview_QOI"
+    ],
+    "notes": "exact:FileExplorerPreview_ToggleSwitch_Preview_QOI"
+  },
+  {
+    "group": "exact",
+    "query": "scalable vector graphics",
+    "expectedIds": [
+      "FileExplorerPreview_ToggleSwitch_Preview_SVG"
+    ],
+    "notes": "exact:FileExplorerPreview_ToggleSwitch_Preview_SVG"
+  },
+  {
+    "group": "exact",
+    "query": "binary geometric code",
+    "expectedIds": [
+      "FileExplorerPreview_ToggleSwitch_Thumbnail_BGCODE"
+    ],
+    "notes": "exact:FileExplorerPreview_ToggleSwitch_Thumbnail_BGCODE"
+  },
+  {
+    "group": "exact",
+    "query": "geometric code",
+    "expectedIds": [
+      "FileExplorerPreview_ToggleSwitch_Thumbnail_GCODE"
+    ],
+    "notes": "exact:FileExplorerPreview_ToggleSwitch_Thumbnail_GCODE"
+  },
+  {
+    "group": "exact",
+    "query": "portable document format",
+    "expectedIds": [
+      "FileExplorerPreview_ToggleSwitch_Thumbnail_PDF"
+    ],
+    "notes": "exact:FileExplorerPreview_ToggleSwitch_Thumbnail_PDF"
+  },
+  {
+    "group": "exact",
+    "query": "quite ok image",
+    "expectedIds": [
+      "FileExplorerPreview_ToggleSwitch_Thumbnail_QOI"
+    ],
+    "notes": "exact:FileExplorerPreview_ToggleSwitch_Thumbnail_QOI"
+  },
+  {
+    "group": "exact",
+    "query": "stereolithography",
+    "expectedIds": [
+      "FileExplorerPreview_ToggleSwitch_Thumbnail_STL"
+    ],
+    "notes": "exact:FileExplorerPreview_ToggleSwitch_Thumbnail_STL"
+  },
+  {
+    "group": "exact",
+    "query": "scalable vector graphics",
+    "expectedIds": [
+      "FileExplorerPreview_ToggleSwitch_Thumbnail_SVG"
+    ],
+    "notes": "exact:FileExplorerPreview_ToggleSwitch_Thumbnail_SVG"
+  },
+  {
+    "group": "exact",
+    "query": "file locksmith",
+    "expectedIds": [
+      "FileLocksmith_Enable_FileLocksmith"
+    ],
+    "notes": "exact:FileLocksmith_Enable_FileLocksmith"
+  },
+  {
+    "group": "exact",
+    "query": "show file locksmith in",
+    "expectedIds": [
+      "FileLocksmith_Toggle_ContextMenu"
+    ],
+    "notes": "exact:FileLocksmith_Toggle_ContextMenu"
+  },
+  {
+    "group": "exact",
+    "query": "back up and restore your settings",
+    "expectedIds": [
+      "General_SettingsBackupAndRestore"
+    ],
+    "notes": "exact:General_SettingsBackupAndRestore"
+  },
+  {
+    "group": "exact",
+    "query": "location",
+    "expectedIds": [
+      "General_SettingsBackupAndRestoreLocationText"
+    ],
+    "notes": "exact:General_SettingsBackupAndRestoreLocationText"
+  },
+  {
+    "group": "exact",
+    "query": "backup information",
+    "expectedIds": [
+      "General_SettingsBackupAndRestoreStatusInfo"
+    ],
+    "notes": "exact:General_SettingsBackupAndRestoreStatusInfo"
+  },
+  {
+    "group": "exact",
+    "query": "highlight mode",
+    "expectedIds": [
+      "HighlightMode"
+    ],
+    "notes": "exact:HighlightMode"
+  },
+  {
+    "group": "exact",
+    "query": "placement of additional content",
+    "expectedIds": [
+      "Hosts_AdditionalLinesPosition"
+    ],
+    "notes": "exact:Hosts_AdditionalLinesPosition"
+  },
+  {
+    "group": "exact",
+    "query": "backup hosts file",
+    "expectedIds": [
+      "Hosts_Backup"
+    ],
+    "notes": "exact:Hosts_Backup"
+  },
+  {
+    "group": "exact",
+    "query": "days",
+    "expectedIds": [
+      "Hosts_Backup_DaysInput"
+    ],
+    "notes": "exact:Hosts_Backup_DaysInput"
+  },
+  {
+    "group": "exact",
+    "query": "location",
+    "expectedIds": [
+      "Hosts_Backup_Location"
+    ],
+    "notes": "exact:Hosts_Backup_Location"
+  },
+  {
+    "group": "exact",
+    "query": "automatically delete backups",
+    "expectedIds": [
+      "Hosts_Delete_Backup"
+    ],
+    "notes": "exact:Hosts_Delete_Backup"
+  },
+  {
+    "group": "exact",
+    "query": "encoding",
+    "expectedIds": [
+      "Hosts_Encoding"
+    ],
+    "notes": "exact:Hosts_Encoding"
+  },
+  {
+    "group": "exact",
+    "query": "no leading spaces",
+    "expectedIds": [
+      "Hosts_NoLeadingSpaces"
+    ],
+    "notes": "exact:Hosts_NoLeadingSpaces"
+  },
+  {
+    "group": "exact",
+    "query": "open as administrator",
+    "expectedIds": [
+      "Hosts_Toggle_LaunchAdministrator"
+    ],
+    "notes": "exact:Hosts_Toggle_LaunchAdministrator"
+  },
+  {
+    "group": "exact",
+    "query": "consider loopback addresses as duplicates",
+    "expectedIds": [
+      "Hosts_Toggle_LoopbackDuplicates"
+    ],
+    "notes": "exact:Hosts_Toggle_LoopbackDuplicates"
+  },
+  {
+    "group": "exact",
+    "query": "show a warning at startup",
+    "expectedIds": [
+      "Hosts_Toggle_ShowStartupWarning"
+    ],
+    "notes": "exact:Hosts_Toggle_ShowStartupWarning"
+  },
+  {
+    "group": "exact",
+    "query": "image resizer",
+    "expectedIds": [
+      "ImageResizer_EnableToggle"
+    ],
+    "notes": "exact:ImageResizer_EnableToggle"
+  },
+  {
+    "group": "exact",
+    "query": "jpeg quality level (%)",
+    "expectedIds": [
+      "ImageResizer_Encoding"
+    ],
+    "notes": "exact:ImageResizer_Encoding"
+  },
+  {
+    "group": "exact",
+    "query": "fallback encoder",
+    "expectedIds": [
+      "ImageResizer_FallBackEncoderText"
+    ],
+    "notes": "exact:ImageResizer_FallBackEncoderText"
+  },
+  {
+    "group": "exact",
+    "query": "file modified timestamp",
+    "expectedIds": [
+      "ImageResizer_FileModifiedDate"
+    ],
+    "notes": "exact:ImageResizer_FileModifiedDate"
+  },
+  {
+    "group": "exact",
+    "query": "png interlacing",
+    "expectedIds": [
+      "ImageResizer_PNGInterlacing"
+    ],
+    "notes": "exact:ImageResizer_PNGInterlacing"
+  },
+  {
+    "group": "exact",
+    "query": "presets",
+    "expectedIds": [
+      "ImageResizer_Presets"
+    ],
+    "notes": "exact:ImageResizer_Presets"
+  },
+  {
+    "group": "exact",
+    "query": "tiff compression",
+    "expectedIds": [
+      "ImageResizer_TIFFCompression"
+    ],
+    "notes": "exact:ImageResizer_TIFFCompression"
+  },
+  {
+    "group": "exact",
+    "query": "image to text",
+    "expectedIds": [
+      "ImageToText"
+    ],
+    "notes": "exact:ImageToText"
+  },
+  {
+    "group": "exact",
+    "query": "keyboard manager",
+    "expectedIds": [
+      "KeyboardManager_EnableToggle"
+    ],
+    "notes": "exact:KeyboardManager_EnableToggle"
+  },
+  {
+    "group": "exact",
+    "query": "theme toggle shortcut",
+    "expectedIds": [
+      "LightSwitch_ThemeToggle_Shortcut"
+    ],
+    "notes": "exact:LightSwitch_ThemeToggle_Shortcut"
+  },
+  {
+    "group": "exact",
+    "query": "turn off dark mode",
+    "expectedIds": [
+      "LightSwitch_TurnOffDarkMode"
+    ],
+    "notes": "exact:LightSwitch_TurnOffDarkMode"
+  },
+  {
+    "group": "exact",
+    "query": "turn on dark mode",
+    "expectedIds": [
+      "LightSwitch_TurnOnDarkMode"
+    ],
+    "notes": "exact:LightSwitch_TurnOnDarkMode"
+  },
+  {
+    "group": "exact",
+    "query": "activation shortcut",
+    "expectedIds": [
+      "MeasureTool_ActivationShortcut"
+    ],
+    "notes": "exact:MeasureTool_ActivationShortcut"
+  },
+  {
+    "group": "exact",
+    "query": "capture screen continuously during measuring",
+    "expectedIds": [
+      "MeasureTool_ContinuousCapture"
+    ],
+    "notes": "exact:MeasureTool_ContinuousCapture"
+  },
+  {
+    "group": "exact",
+    "query": "default mode",
+    "expectedIds": [
+      "MeasureTool_DefaultMeasureStyle"
+    ],
+    "notes": "exact:MeasureTool_DefaultMeasureStyle"
+  },
+  {
+    "group": "exact",
+    "query": "draw feet on cross",
+    "expectedIds": [
+      "MeasureTool_DrawFeetOnCross"
+    ],
+    "notes": "exact:MeasureTool_DrawFeetOnCross"
+  },
+  {
+    "group": "exact",
+    "query": "screen ruler",
+    "expectedIds": [
+      "MeasureTool_EnableMeasureTool"
+    ],
+    "notes": "exact:MeasureTool_EnableMeasureTool"
+  },
+  {
+    "group": "exact",
+    "query": "line color",
+    "expectedIds": [
+      "MeasureTool_MeasureCrossColor"
+    ],
+    "notes": "exact:MeasureTool_MeasureCrossColor"
+  },
+  {
+    "group": "exact",
+    "query": "per color channel edge detection",
+    "expectedIds": [
+      "MeasureTool_PerColorChannelEdgeDetection"
+    ],
+    "notes": "exact:MeasureTool_PerColorChannelEdgeDetection"
+  },
+  {
+    "group": "exact",
+    "query": "pixel tolerance for edge detection",
+    "expectedIds": [
+      "MeasureTool_PixelTolerance"
+    ],
+    "notes": "exact:MeasureTool_PixelTolerance"
+  },
+  {
+    "group": "exact",
+    "query": "extra units of measurement",
+    "expectedIds": [
+      "MeasureTool_UnitsOfMeasure"
+    ],
+    "notes": "exact:MeasureTool_UnitsOfMeasure"
+  },
+  {
+    "group": "exact",
+    "query": "activation and behavior",
+    "expectedIds": [
+      "MouseUtils_CursorWrap_ActivationShortcut"
+    ],
+    "notes": "exact:MouseUtils_CursorWrap_ActivationShortcut"
+  },
+  {
+    "group": "exact",
+    "query": "wrap mode",
+    "expectedIds": [
+      "MouseUtils_CursorWrap_WrapMode"
+    ],
+    "notes": "exact:MouseUtils_CursorWrap_WrapMode"
+  },
+  {
+    "group": "exact",
+    "query": "cursorwrap",
+    "expectedIds": [
+      "MouseUtils_Enable_CursorWrap"
+    ],
+    "notes": "exact:MouseUtils_Enable_CursorWrap"
+  },
+  {
+    "group": "exact",
+    "query": "find my mouse",
+    "expectedIds": [
+      "MouseUtils_Enable_FindMyMouse"
+    ],
+    "notes": "exact:MouseUtils_Enable_FindMyMouse"
+  },
+  {
+    "group": "exact",
+    "query": "mouse highlighter",
+    "expectedIds": [
+      "MouseUtils_Enable_MouseHighlighter"
+    ],
+    "notes": "exact:MouseUtils_Enable_MouseHighlighter"
+  },
+  {
+    "group": "exact",
+    "query": "mouse jump",
+    "expectedIds": [
+      "MouseUtils_Enable_MouseJump"
+    ],
+    "notes": "exact:MouseUtils_Enable_MouseJump"
+  },
+  {
+    "group": "exact",
+    "query": "mouse pointer crosshairs",
+    "expectedIds": [
+      "MouseUtils_Enable_MousePointerCrosshairs"
+    ],
+    "notes": "exact:MouseUtils_Enable_MousePointerCrosshairs"
+  },
+  {
+    "group": "exact",
+    "query": "activation method",
+    "expectedIds": [
+      "MouseUtils_FindMyMouse_ActivationMethod"
+    ],
+    "notes": "exact:MouseUtils_FindMyMouse_ActivationMethod"
+  },
+  {
+    "group": "exact",
+    "query": "activation shortcut",
+    "expectedIds": [
+      "MouseUtils_FindMyMouse_ActivationShortcut"
+    ],
+    "notes": "exact:MouseUtils_FindMyMouse_ActivationShortcut"
+  },
+  {
+    "group": "exact",
+    "query": "animation duration (ms)",
+    "expectedIds": [
+      "MouseUtils_FindMyMouse_AnimationDurationMs"
+    ],
+    "notes": "exact:MouseUtils_FindMyMouse_AnimationDurationMs"
+  },
+  {
+    "group": "exact",
+    "query": "background color",
+    "expectedIds": [
+      "MouseUtils_FindMyMouse_BackgroundColor"
+    ],
+    "notes": "exact:MouseUtils_FindMyMouse_BackgroundColor"
+  },
+  {
+    "group": "exact",
+    "query": "excluded apps",
+    "expectedIds": [
+      "MouseUtils_FindMyMouse_ExcludedApps"
+    ],
+    "notes": "exact:MouseUtils_FindMyMouse_ExcludedApps"
+  },
+  {
+    "group": "exact",
+    "query": "shake sensitivity factor (percent)",
+    "expectedIds": [
+      "MouseUtils_FindMyMouse_ShakingFactor"
+    ],
+    "notes": "exact:MouseUtils_FindMyMouse_ShakingFactor"
+  },
+  {
+    "group": "exact",
+    "query": "shake detection interval (ms)",
+    "expectedIds": [
+      "MouseUtils_FindMyMouse_ShakingIntervalMs"
+    ],
+    "notes": "exact:MouseUtils_FindMyMouse_ShakingIntervalMs"
+  },
+  {
+    "group": "exact",
+    "query": "minimum shake distance",
+    "expectedIds": [
+      "MouseUtils_FindMyMouse_ShakingMinimumDistance"
+    ],
+    "notes": "exact:MouseUtils_FindMyMouse_ShakingMinimumDistance"
+  },
+  {
+    "group": "exact",
+    "query": "spotlight color",
+    "expectedIds": [
+      "MouseUtils_FindMyMouse_SpotlightColor"
+    ],
+    "notes": "exact:MouseUtils_FindMyMouse_SpotlightColor"
+  },
+  {
+    "group": "exact",
+    "query": "spotlight initial zoom",
+    "expectedIds": [
+      "MouseUtils_FindMyMouse_SpotlightInitialZoom"
+    ],
+    "notes": "exact:MouseUtils_FindMyMouse_SpotlightInitialZoom"
+  },
+  {
+    "group": "exact",
+    "query": "spotlight radius (px)",
+    "expectedIds": [
+      "MouseUtils_FindMyMouse_SpotlightRadius"
+    ],
+    "notes": "exact:MouseUtils_FindMyMouse_SpotlightRadius"
+  },
+  {
+    "group": "exact",
+    "query": "gliding cursor",
+    "expectedIds": [
+      "MouseUtils_GlidingCursor"
+    ],
+    "notes": "exact:MouseUtils_GlidingCursor"
+  },
+  {
+    "group": "exact",
+    "query": "reduced line speed",
+    "expectedIds": [
+      "MouseUtils_GlidingCursor_DelaySpeed"
+    ],
+    "notes": "exact:MouseUtils_GlidingCursor_DelaySpeed"
+  },
+  {
+    "group": "exact",
+    "query": "initial line speed",
+    "expectedIds": [
+      "MouseUtils_GlidingCursor_InitialSpeed"
+    ],
+    "notes": "exact:MouseUtils_GlidingCursor_InitialSpeed"
+  },
+  {
+    "group": "exact",
+    "query": "activation shortcut",
+    "expectedIds": [
+      "MouseUtils_MouseHighlighter_ActivationShortcut"
+    ],
+    "notes": "exact:MouseUtils_MouseHighlighter_ActivationShortcut"
+  },
+  {
+    "group": "exact",
+    "query": "always highlight color",
+    "expectedIds": [
+      "MouseUtils_MouseHighlighter_AlwaysColor"
+    ],
+    "notes": "exact:MouseUtils_MouseHighlighter_AlwaysColor"
+  },
+  {
+    "group": "exact",
+    "query": "fade delay (ms)",
+    "expectedIds": [
+      "MouseUtils_MouseHighlighter_FadeDelayMs"
+    ],
+    "notes": "exact:MouseUtils_MouseHighlighter_FadeDelayMs"
+  },
+  {
+    "group": "exact",
+    "query": "fade duration (ms)",
+    "expectedIds": [
+      "MouseUtils_MouseHighlighter_FadeDurationMs"
+    ],
+    "notes": "exact:MouseUtils_MouseHighlighter_FadeDurationMs"
+  },
+  {
+    "group": "exact",
+    "query": "radius (px)",
+    "expectedIds": [
+      "MouseUtils_MouseHighlighter_HighlightRadius"
+    ],
+    "notes": "exact:MouseUtils_MouseHighlighter_HighlightRadius"
+  },
+  {
+    "group": "exact",
+    "query": "activation shortcut",
+    "expectedIds": [
+      "MouseUtils_MouseJump_ActivationShortcut"
+    ],
+    "notes": "exact:MouseUtils_MouseJump_ActivationShortcut"
+  },
+  {
+    "group": "exact",
+    "query": "appearance",
+    "expectedIds": [
+      "MouseUtils_MouseJump_Appearance"
+    ],
+    "notes": "exact:MouseUtils_MouseJump_Appearance"
+  },
+  {
+    "group": "exact",
+    "query": "background color 1",
+    "expectedIds": [
+      "MouseUtils_MouseJump_BackgroundColor1"
+    ],
+    "notes": "exact:MouseUtils_MouseJump_BackgroundColor1"
+  },
+  {
+    "group": "exact",
+    "query": "background color 2",
+    "expectedIds": [
+      "MouseUtils_MouseJump_BackgroundColor2"
+    ],
+    "notes": "exact:MouseUtils_MouseJump_BackgroundColor2"
+  },
+  {
+    "group": "exact",
+    "query": "bezel 3d depth",
+    "expectedIds": [
+      "MouseUtils_MouseJump_Bezel3dDepth"
+    ],
+    "notes": "exact:MouseUtils_MouseJump_Bezel3dDepth"
+  },
+  {
+    "group": "exact",
+    "query": "bezel color",
+    "expectedIds": [
+      "MouseUtils_MouseJump_BezelColor"
+    ],
+    "notes": "exact:MouseUtils_MouseJump_BezelColor"
+  },
+  {
+    "group": "exact",
+    "query": "bezel thickness",
+    "expectedIds": [
+      "MouseUtils_MouseJump_BezelThickness"
+    ],
+    "notes": "exact:MouseUtils_MouseJump_BezelThickness"
+  },
+  {
+    "group": "exact",
+    "query": "border 3d depth",
+    "expectedIds": [
+      "MouseUtils_MouseJump_Border3dDepth"
+    ],
+    "notes": "exact:MouseUtils_MouseJump_Border3dDepth"
+  },
+  {
+    "group": "exact",
+    "query": "border color",
+    "expectedIds": [
+      "MouseUtils_MouseJump_BorderColor"
+    ],
+    "notes": "exact:MouseUtils_MouseJump_BorderColor"
+  },
+  {
+    "group": "exact",
+    "query": "border padding",
+    "expectedIds": [
+      "MouseUtils_MouseJump_BorderPadding"
+    ],
+    "notes": "exact:MouseUtils_MouseJump_BorderPadding"
+  },
+  {
+    "group": "exact",
+    "query": "border thickness",
+    "expectedIds": [
+      "MouseUtils_MouseJump_BorderThickness"
+    ],
+    "notes": "exact:MouseUtils_MouseJump_BorderThickness"
+  },
+  {
+    "group": "exact",
+    "query": "preview style",
+    "expectedIds": [
+      "MouseUtils_MouseJump_PreviewType"
+    ],
+    "notes": "exact:MouseUtils_MouseJump_PreviewType"
+  },
+  {
+    "group": "exact",
+    "query": "screen color 1",
+    "expectedIds": [
+      "MouseUtils_MouseJump_ScreenColor1"
+    ],
+    "notes": "exact:MouseUtils_MouseJump_ScreenColor1"
+  },
+  {
+    "group": "exact",
+    "query": "screen color 2",
+    "expectedIds": [
+      "MouseUtils_MouseJump_ScreenColor2"
+    ],
+    "notes": "exact:MouseUtils_MouseJump_ScreenColor2"
+  },
+  {
+    "group": "exact",
+    "query": "screen spacing",
+    "expectedIds": [
+      "MouseUtils_MouseJump_ScreenMargin"
+    ],
+    "notes": "exact:MouseUtils_MouseJump_ScreenMargin"
+  },
+  {
+    "group": "exact",
+    "query": "thumbnail size",
+    "expectedIds": [
+      "MouseUtils_MouseJump_ThumbnailSize"
+    ],
+    "notes": "exact:MouseUtils_MouseJump_ThumbnailSize"
+  },
+  {
+    "group": "exact",
+    "query": "activation shortcut",
+    "expectedIds": [
+      "MouseUtils_MousePointerCrosshairs_ActivationShortcut"
+    ],
+    "notes": "exact:MouseUtils_MousePointerCrosshairs_ActivationShortcut"
+  },
+  {
+    "group": "exact",
+    "query": "crosshairs border color",
+    "expectedIds": [
+      "MouseUtils_MousePointerCrosshairs_CrosshairsBorderColor"
+    ],
+    "notes": "exact:MouseUtils_MousePointerCrosshairs_CrosshairsBorderColor"
+  },
+  {
+    "group": "exact",
+    "query": "crosshairs border size (px)",
+    "expectedIds": [
+      "MouseUtils_MousePointerCrosshairs_CrosshairsBorderSize"
+    ],
+    "notes": "exact:MouseUtils_MousePointerCrosshairs_CrosshairsBorderSize"
+  },
+  {
+    "group": "exact",
+    "query": "crosshairs color",
+    "expectedIds": [
+      "MouseUtils_MousePointerCrosshairs_CrosshairsColor"
+    ],
+    "notes": "exact:MouseUtils_MousePointerCrosshairs_CrosshairsColor"
+  },
+  {
+    "group": "exact",
+    "query": "crosshairs fixed length (px)",
+    "expectedIds": [
+      "MouseUtils_MousePointerCrosshairs_CrosshairsFixedLength"
+    ],
+    "notes": "exact:MouseUtils_MousePointerCrosshairs_CrosshairsFixedLength"
+  },
+  {
+    "group": "exact",
+    "query": "crosshairs opacity (%)",
+    "expectedIds": [
+      "MouseUtils_MousePointerCrosshairs_CrosshairsOpacity"
+    ],
+    "notes": "exact:MouseUtils_MousePointerCrosshairs_CrosshairsOpacity"
+  },
+  {
+    "group": "exact",
+    "query": "crosshairs orientation",
+    "expectedIds": [
+      "MouseUtils_MousePointerCrosshairs_CrosshairsOrientation"
+    ],
+    "notes": "exact:MouseUtils_MousePointerCrosshairs_CrosshairsOrientation"
+  },
+  {
+    "group": "exact",
+    "query": "crosshairs center radius (px)",
+    "expectedIds": [
+      "MouseUtils_MousePointerCrosshairs_CrosshairsRadius"
+    ],
+    "notes": "exact:MouseUtils_MousePointerCrosshairs_CrosshairsRadius"
+  },
+  {
+    "group": "exact",
+    "query": "crosshairs thickness (px)",
+    "expectedIds": [
+      "MouseUtils_MousePointerCrosshairs_CrosshairsThickness"
+    ],
+    "notes": "exact:MouseUtils_MousePointerCrosshairs_CrosshairsThickness"
+  },
+  {
+    "group": "exact",
+    "query": "fix crosshairs length",
+    "expectedIds": [
+      "MouseUtils_MousePointerCrosshairs_IsCrosshairsFixedLengthEnabled"
+    ],
+    "notes": "exact:MouseUtils_MousePointerCrosshairs_IsCrosshairsFixedLengthEnabled"
+  },
+  {
+    "group": "exact",
+    "query": "block mouse at screen corners",
+    "expectedIds": [
+      "MouseWithoutBorders_BlockMouseAtScreenCorners"
+    ],
+    "notes": "exact:MouseWithoutBorders_BlockMouseAtScreenCorners"
+  },
+  {
+    "group": "exact",
+    "query": "block screen saver on other machines",
+    "expectedIds": [
+      "MouseWithoutBorders_BlockScreenSaverOnOtherMachines"
+    ],
+    "notes": "exact:MouseWithoutBorders_BlockScreenSaverOnOtherMachines"
+  },
+  {
+    "group": "exact",
+    "query": "disable easy mouse when an application is running in full screen.",
+    "expectedIds": [
+      "MouseWithoutBorders_DisableEasyMouseWhenForegroundWindowIsFullscreen"
+    ],
+    "notes": "exact:MouseWithoutBorders_DisableEasyMouseWhenForegroundWindowIsFullscreen"
+  },
+  {
+    "group": "exact",
+    "query": "mouse without borders disable easy mouse when foreground window is fullscreen excluded apps",
+    "expectedIds": [
+      "MouseWithoutBorders_DisableEasyMouseWhenForegroundWindowIsFullscreen_ExcludedApps"
+    ],
+    "notes": "exact:MouseWithoutBorders_DisableEasyMouseWhenForegroundWindowIsFullscreen_ExcludedApps"
+  },
+  {
+    "group": "exact",
+    "query": "draw mouse cursor",
+    "expectedIds": [
+      "MouseWithoutBorders_DrawMouseCursor"
+    ],
+    "notes": "exact:MouseWithoutBorders_DrawMouseCursor"
+  },
+  {
+    "group": "exact",
+    "query": "easy mouse: move between machines by moving the mouse pointer to the screen edges.",
+    "expectedIds": [
+      "MouseWithoutBorders_EasyMouseOption"
+    ],
+    "notes": "exact:MouseWithoutBorders_EasyMouseOption"
+  },
+  {
+    "group": "exact",
+    "query": "hide mouse at the screen edge",
+    "expectedIds": [
+      "MouseWithoutBorders_HideMouseAtScreenEdge"
+    ],
+    "notes": "exact:MouseWithoutBorders_HideMouseAtScreenEdge"
+  },
+  {
+    "group": "exact",
+    "query": "ip address mapping",
+    "expectedIds": [
+      "MouseWithoutBorders_IPAddressMapping"
+    ],
+    "notes": "exact:MouseWithoutBorders_IPAddressMapping"
+  },
+  {
+    "group": "exact",
+    "query": "shortcut to lock all machines.",
+    "expectedIds": [
+      "MouseWithoutBorders_LockMachinesShortcut"
+    ],
+    "notes": "exact:MouseWithoutBorders_LockMachinesShortcut"
+  },
+  {
+    "group": "exact",
+    "query": "devices in a single row",
+    "expectedIds": [
+      "MouseWithoutBorders_MatrixOneRow"
+    ],
+    "notes": "exact:MouseWithoutBorders_MatrixOneRow"
+  },
+  {
+    "group": "exact",
+    "query": "move mouse relatively",
+    "expectedIds": [
+      "MouseWithoutBorders_MoveMouseRelatively"
+    ],
+    "notes": "exact:MouseWithoutBorders_MoveMouseRelatively"
+  },
+  {
+    "group": "exact",
+    "query": "shortcut to try reconnecting",
+    "expectedIds": [
+      "MouseWithoutBorders_ReconnectShortcut"
+    ],
+    "notes": "exact:MouseWithoutBorders_ReconnectShortcut"
+  },
+  {
+    "group": "exact",
+    "query": "same subnet only",
+    "expectedIds": [
+      "MouseWithoutBorders_SameSubnetOnly"
+    ],
+    "notes": "exact:MouseWithoutBorders_SameSubnetOnly"
+  },
+  {
+    "group": "exact",
+    "query": "security key",
+    "expectedIds": [
+      "MouseWithoutBorders_SecurityKey"
+    ],
+    "notes": "exact:MouseWithoutBorders_SecurityKey"
+  },
+  {
+    "group": "exact",
+    "query": "share clipboard",
+    "expectedIds": [
+      "MouseWithoutBorders_ShareClipboard"
+    ],
+    "notes": "exact:MouseWithoutBorders_ShareClipboard"
+  },
+  {
+    "group": "exact",
+    "query": "show clipboard and network status messages",
+    "expectedIds": [
+      "MouseWithoutBorders_ShowClipboardAndNetworkStatusMessages"
+    ],
+    "notes": "exact:MouseWithoutBorders_ShowClipboardAndNetworkStatusMessages"
+  },
+  {
+    "group": "exact",
+    "query": "shortcut to switch to multiple machine mode.",
+    "expectedIds": [
+      "MouseWithoutBorders_Switch2AllPcShortcut"
+    ],
+    "notes": "exact:MouseWithoutBorders_Switch2AllPcShortcut"
+  },
+  {
+    "group": "exact",
+    "query": "shortcut to switch between machines. ctrl+alt+:",
+    "expectedIds": [
+      "MouseWithoutBorders_SwitchBetweenMachineShortcut"
+    ],
+    "notes": "exact:MouseWithoutBorders_SwitchBetweenMachineShortcut"
+  },
+  {
+    "group": "exact",
+    "query": "mouse without borders",
+    "expectedIds": [
+      "MouseWithoutBorders_Toggle_Enable"
+    ],
+    "notes": "exact:MouseWithoutBorders_Toggle_Enable"
+  },
+  {
+    "group": "exact",
+    "query": "shortcut to toggle easy mouse.",
+    "expectedIds": [
+      "MouseWithoutBorders_ToggleEasyMouseShortcut"
+    ],
+    "notes": "exact:MouseWithoutBorders_ToggleEasyMouseShortcut"
+  }
+]

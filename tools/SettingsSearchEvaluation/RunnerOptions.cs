@@ -8,6 +8,12 @@ internal sealed class RunnerOptions
 {
     public required string IndexJsonPath { get; init; }
 
+    public string? NormalizedCorpusPath { get; init; }
+
+    public string? ExportNormalizedPath { get; init; }
+
+    public bool ExportOnly { get; init; }
+
     public string? CasesJsonPath { get; init; }
 
     public required IReadOnlyList<SearchEngineKind> Engines { get; init; }
@@ -23,4 +29,8 @@ internal sealed class RunnerOptions
     public TimeSpan SemanticIndexTimeout { get; init; } = TimeSpan.FromSeconds(15);
 
     public string? OutputJsonPath { get; init; }
+
+    public bool UseNormalizedCorpus => !string.IsNullOrWhiteSpace(NormalizedCorpusPath);
+
+    public string InputDataPath => UseNormalizedCorpus ? NormalizedCorpusPath! : IndexJsonPath;
 }

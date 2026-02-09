@@ -1,0 +1,1602 @@
+[
+  {
+    "group": "typo",
+    "query": "advaced paste",
+    "expectedIds": [
+      "AdvancedPaste"
+    ],
+    "notes": "typo:AdvancedPaste"
+  },
+  {
+    "group": "typo",
+    "query": "alwys on top",
+    "expectedIds": [
+      "AlwaysOnTop"
+    ],
+    "notes": "typo:AlwaysOnTop"
+  },
+  {
+    "group": "typo",
+    "query": "awke",
+    "expectedIds": [
+      "Awake"
+    ],
+    "notes": "typo:Awake"
+  },
+  {
+    "group": "typo",
+    "query": "comand not found",
+    "expectedIds": [
+      "CmdNotFound"
+    ],
+    "notes": "typo:CmdNotFound"
+  },
+  {
+    "group": "typo",
+    "query": "color picer",
+    "expectedIds": [
+      "ColorPicker"
+    ],
+    "notes": "typo:ColorPicker"
+  },
+  {
+    "group": "typo",
+    "query": "corp and lock",
+    "expectedIds": [
+      "CropAndLock"
+    ],
+    "notes": "typo:CropAndLock"
+  },
+  {
+    "group": "typo",
+    "query": "envirnment variables",
+    "expectedIds": [
+      "EnvironmentVariables"
+    ],
+    "notes": "typo:EnvironmentVariables"
+  },
+  {
+    "group": "typo",
+    "query": "fancyones",
+    "expectedIds": [
+      "FancyZones"
+    ],
+    "notes": "typo:FancyZones"
+  },
+  {
+    "group": "typo",
+    "query": "file explrer",
+    "expectedIds": [
+      "FileExplorerPreview"
+    ],
+    "notes": "typo:FileExplorerPreview"
+  },
+  {
+    "group": "typo",
+    "query": "file lockmith",
+    "expectedIds": [
+      "FileLocksmith"
+    ],
+    "notes": "typo:FileLocksmith"
+  },
+  {
+    "group": "typo",
+    "query": "genral",
+    "expectedIds": [
+      "General"
+    ],
+    "notes": "typo:General"
+  },
+  {
+    "group": "typo",
+    "query": "hosts file edior",
+    "expectedIds": [
+      "Hosts"
+    ],
+    "notes": "typo:Hosts"
+  },
+  {
+    "group": "typo",
+    "query": "image reszer",
+    "expectedIds": [
+      "ImageResizer"
+    ],
+    "notes": "typo:ImageResizer"
+  },
+  {
+    "group": "typo",
+    "query": "keybard manager",
+    "expectedIds": [
+      "KeyboardManager"
+    ],
+    "notes": "typo:KeyboardManager"
+  },
+  {
+    "group": "typo",
+    "query": "light swich",
+    "expectedIds": [
+      "LightSwitch"
+    ],
+    "notes": "typo:LightSwitch"
+  },
+  {
+    "group": "typo",
+    "query": "scren ruler",
+    "expectedIds": [
+      "MeasureTool"
+    ],
+    "notes": "typo:MeasureTool"
+  },
+  {
+    "group": "typo",
+    "query": "mouse utilties",
+    "expectedIds": [
+      "MouseUtils"
+    ],
+    "notes": "typo:MouseUtils"
+  },
+  {
+    "group": "typo",
+    "query": "mouse witout borders",
+    "expectedIds": [
+      "MouseWithoutBorders"
+    ],
+    "notes": "typo:MouseWithoutBorders"
+  },
+  {
+    "group": "typo",
+    "query": "nwe+",
+    "expectedIds": [
+      "NewPlus"
+    ],
+    "notes": "typo:NewPlus"
+  },
+  {
+    "group": "typo",
+    "query": "peek",
+    "expectedIds": [
+      "Peek"
+    ],
+    "notes": "typo:Peek"
+  },
+  {
+    "group": "typo",
+    "query": "power dislay",
+    "expectedIds": [
+      "PowerDisplay"
+    ],
+    "notes": "typo:PowerDisplay"
+  },
+  {
+    "group": "typo",
+    "query": "powetoys run",
+    "expectedIds": [
+      "PowerLauncher"
+    ],
+    "notes": "typo:PowerLauncher"
+  },
+  {
+    "group": "typo",
+    "query": "powerename",
+    "expectedIds": [
+      "PowerRename"
+    ],
+    "notes": "typo:PowerRename"
+  },
+  {
+    "group": "typo",
+    "query": "quick accnt",
+    "expectedIds": [
+      "QuickAccent"
+    ],
+    "notes": "typo:QuickAccent"
+  },
+  {
+    "group": "typo",
+    "query": "regitry preview",
+    "expectedIds": [
+      "RegistryPreview"
+    ],
+    "notes": "typo:RegistryPreview"
+  },
+  {
+    "group": "typo",
+    "query": "shorcut guide",
+    "expectedIds": [
+      "ShortcutGuide"
+    ],
+    "notes": "typo:ShortcutGuide"
+  },
+  {
+    "group": "typo",
+    "query": "text extrctor",
+    "expectedIds": [
+      "TextExtractor"
+    ],
+    "notes": "typo:TextExtractor"
+  },
+  {
+    "group": "typo",
+    "query": "worksaces",
+    "expectedIds": [
+      "Workspaces"
+    ],
+    "notes": "typo:Workspaces"
+  },
+  {
+    "group": "typo",
+    "query": "zooit",
+    "expectedIds": [
+      "ZoomIt"
+    ],
+    "notes": "typo:ZoomIt"
+  },
+  {
+    "group": "typo",
+    "query": "show clipoard preview",
+    "expectedIds": [
+      "AdvancedPaste_EnableClipboardPreview"
+    ],
+    "notes": "typo:AdvancedPaste_EnableClipboardPreview"
+  },
+  {
+    "group": "typo",
+    "query": "model provders",
+    "expectedIds": [
+      "AdvancedPaste_ModelProviders"
+    ],
+    "notes": "typo:AdvancedPaste_ModelProviders"
+  },
+  {
+    "group": "typo",
+    "query": "activtion shortcut",
+    "expectedIds": [
+      "AlwaysOnTop_ActivationShortcut"
+    ],
+    "notes": "typo:AlwaysOnTop_ActivationShortcut"
+  },
+  {
+    "group": "typo",
+    "query": "coor",
+    "expectedIds": [
+      "AlwaysOnTop_FrameColor"
+    ],
+    "notes": "typo:AlwaysOnTop_FrameColor"
+  },
+  {
+    "group": "typo",
+    "query": "coor mode",
+    "expectedIds": [
+      "AlwaysOnTop_FrameColor_Mode"
+    ],
+    "notes": "typo:AlwaysOnTop_FrameColor_Mode"
+  },
+  {
+    "group": "typo",
+    "query": "show a borer around the pinned window",
+    "expectedIds": [
+      "AlwaysOnTop_FrameEnabled"
+    ],
+    "notes": "typo:AlwaysOnTop_FrameEnabled"
+  },
+  {
+    "group": "typo",
+    "query": "opaity (%)",
+    "expectedIds": [
+      "AlwaysOnTop_FrameOpacity"
+    ],
+    "notes": "typo:AlwaysOnTop_FrameOpacity"
+  },
+  {
+    "group": "typo",
+    "query": "play a sound when pining a window",
+    "expectedIds": [
+      "AlwaysOnTop_Sound"
+    ],
+    "notes": "typo:AlwaysOnTop_Sound"
+  },
+  {
+    "group": "typo",
+    "query": "comand not found",
+    "expectedIds": [
+      "CmdNotFound_Enable"
+    ],
+    "notes": "typo:CmdNotFound_Enable"
+  },
+  {
+    "group": "typo",
+    "query": "powerhell 7.4 or greater",
+    "expectedIds": [
+      "CmdNotFound_PowerShellDetection"
+    ],
+    "notes": "typo:CmdNotFound_PowerShellDetection"
+  },
+  {
+    "group": "typo",
+    "query": "comand palette",
+    "expectedIds": [
+      "CmdPal_Enable_CmdPal"
+    ],
+    "notes": "typo:CmdPal_Enable_CmdPal"
+  },
+  {
+    "group": "typo",
+    "query": "open comand palette",
+    "expectedIds": [
+      "CmdPal_Launch"
+    ],
+    "notes": "typo:CmdPal_Launch"
+  },
+  {
+    "group": "typo",
+    "query": "activtion behavior",
+    "expectedIds": [
+      "ColorPicker_ActivationAction"
+    ],
+    "notes": "typo:ColorPicker_ActivationAction"
+  },
+  {
+    "group": "typo",
+    "query": "color forats",
+    "expectedIds": [
+      "ColorPicker_ColorFormats"
+    ],
+    "notes": "typo:ColorPicker_ColorFormats"
+  },
+  {
+    "group": "typo",
+    "query": "defult color format",
+    "expectedIds": [
+      "ColorPicker_CopiedColorRepresentation"
+    ],
+    "notes": "typo:ColorPicker_CopiedColorRepresentation"
+  },
+  {
+    "group": "typo",
+    "query": "color picer",
+    "expectedIds": [
+      "ColorPicker_EnableColorPicker"
+    ],
+    "notes": "typo:ColorPicker_EnableColorPicker"
+  },
+  {
+    "group": "typo",
+    "query": "midle click",
+    "expectedIds": [
+      "ColorPicker_MiddleClick"
+    ],
+    "notes": "typo:ColorPicker_MiddleClick"
+  },
+  {
+    "group": "typo",
+    "query": "mouse actons",
+    "expectedIds": [
+      "ColorPicker_MouseActions"
+    ],
+    "notes": "typo:ColorPicker_MouseActions"
+  },
+  {
+    "group": "typo",
+    "query": "priary click",
+    "expectedIds": [
+      "ColorPicker_PrimaryClick"
+    ],
+    "notes": "typo:ColorPicker_PrimaryClick"
+  },
+  {
+    "group": "typo",
+    "query": "secodary click",
+    "expectedIds": [
+      "ColorPicker_SecondaryClick"
+    ],
+    "notes": "typo:ColorPicker_SecondaryClick"
+  },
+  {
+    "group": "typo",
+    "query": "show coor name",
+    "expectedIds": [
+      "ColorPicker_ShowColorName"
+    ],
+    "notes": "typo:ColorPicker_ShowColorName"
+  },
+  {
+    "group": "typo",
+    "query": "repaent shortcut",
+    "expectedIds": [
+      "CropAndLock_ReparentActivation_Shortcut"
+    ],
+    "notes": "typo:CropAndLock_ReparentActivation_Shortcut"
+  },
+  {
+    "group": "typo",
+    "query": "screeshot shortcut",
+    "expectedIds": [
+      "CropAndLock_ScreenshotActivation_Shortcut"
+    ],
+    "notes": "typo:CropAndLock_ScreenshotActivation_Shortcut"
+  },
+  {
+    "group": "typo",
+    "query": "thumnail shortcut",
+    "expectedIds": [
+      "CropAndLock_ThumbnailActivation_Shortcut"
+    ],
+    "notes": "typo:CropAndLock_ThumbnailActivation_Shortcut"
+  },
+  {
+    "group": "typo",
+    "query": "open as adminitrator",
+    "expectedIds": [
+      "EnvironmentVariables_Toggle_LaunchAdministrator"
+    ],
+    "notes": "typo:EnvironmentVariables_Toggle_LaunchAdministrator"
+  },
+  {
+    "group": "typo",
+    "query": "allow child windows snaping",
+    "expectedIds": [
+      "FancyZones_AllowChildWindowSnap"
+    ],
+    "notes": "typo:FancyZones_AllowChildWindowSnap"
+  },
+  {
+    "group": "typo",
+    "query": "move newly creted windows to their last known zone",
+    "expectedIds": [
+      "FancyZones_AppLastZoneMoveWindows"
+    ],
+    "notes": "typo:FancyZones_AppLastZoneMoveWindows"
+  },
+  {
+    "group": "typo",
+    "query": "borer color",
+    "expectedIds": [
+      "FancyZones_BorderColor"
+    ],
+    "notes": "typo:FancyZones_BorderColor"
+  },
+  {
+    "group": "typo",
+    "query": "disble rounded corners when a window is snapped",
+    "expectedIds": [
+      "FancyZones_DisableRoundCornersOnWindowSnap"
+    ],
+    "notes": "typo:FancyZones_DisableRoundCornersOnWindowSnap"
+  },
+  {
+    "group": "typo",
+    "query": "exclded apps",
+    "expectedIds": [
+      "FancyZones_ExcludeApps"
+    ],
+    "notes": "typo:FancyZones_ExcludeApps"
+  },
+  {
+    "group": "typo",
+    "query": "opaity (%)",
+    "expectedIds": [
+      "FancyZones_HighlightOpacity"
+    ],
+    "notes": "typo:FancyZones_HighlightOpacity"
+  },
+  {
+    "group": "typo",
+    "query": "inacive color",
+    "expectedIds": [
+      "FancyZones_InActiveColor"
+    ],
+    "notes": "typo:FancyZones_InActiveColor"
+  },
+  {
+    "group": "typo",
+    "query": "move winows based on",
+    "expectedIds": [
+      "FancyZones_MoveWindow"
+    ],
+    "notes": "typo:FancyZones_MoveWindow"
+  },
+  {
+    "group": "typo",
+    "query": "numer color",
+    "expectedIds": [
+      "FancyZones_NumberColor"
+    ],
+    "notes": "typo:FancyZones_NumberColor"
+  },
+  {
+    "group": "typo",
+    "query": "move newly created windows to the current active monitor (experiental)",
+    "expectedIds": [
+      "FancyZones_OpenWindowOnActiveMonitor"
+    ],
+    "notes": "typo:FancyZones_OpenWindowOnActiveMonitor"
+  },
+  {
+    "group": "typo",
+    "query": "when multple zones overlap",
+    "expectedIds": [
+      "FancyZones_OverlappingZones"
+    ],
+    "notes": "typo:FancyZones_OverlappingZones"
+  },
+  {
+    "group": "typo",
+    "query": "overide windows snap",
+    "expectedIds": [
+      "FancyZones_OverrideSnapHotkeys"
+    ],
+    "notes": "typo:FancyZones_OverrideSnapHotkeys"
+  },
+  {
+    "group": "typo",
+    "query": "restore the original size of windows when unsnaping",
+    "expectedIds": [
+      "FancyZones_RestoreSize"
+    ],
+    "notes": "typo:FancyZones_RestoreSize"
+  },
+  {
+    "group": "typo",
+    "query": "allow zones to span across moniors",
+    "expectedIds": [
+      "FancyZones_SpanZonesAcrossMonitors"
+    ],
+    "notes": "typo:FancyZones_SpanZonesAcrossMonitors"
+  },
+  {
+    "group": "typo",
+    "query": "launch editor on the dislay",
+    "expectedIds": [
+      "FancyZones_UseCursorPosEditorStartupScreen"
+    ],
+    "notes": "typo:FancyZones_UseCursorPosEditorStartupScreen"
+  },
+  {
+    "group": "typo",
+    "query": "zone appeaance",
+    "expectedIds": [
+      "FancyZones_Zone_Appearance"
+    ],
+    "notes": "typo:FancyZones_Zone_Appearance"
+  },
+  {
+    "group": "typo",
+    "query": "highight color",
+    "expectedIds": [
+      "FancyZones_ZoneHighlightColor"
+    ],
+    "notes": "typo:FancyZones_ZoneHighlightColor"
+  },
+  {
+    "group": "typo",
+    "query": "during zone layout changes, windows assigned to a zone will match new size/poitions",
+    "expectedIds": [
+      "FancyZones_ZoneSetChangeMoveWindows"
+    ],
+    "notes": "typo:FancyZones_ZoneSetChangeMoveWindows"
+  },
+  {
+    "group": "typo",
+    "query": "coor",
+    "expectedIds": [
+      "FileExplorerPreview_Color_Thumbnail_STL"
+    ],
+    "notes": "typo:FileExplorerPreview_Color_Thumbnail_STL"
+  },
+  {
+    "group": "typo",
+    "query": "coor",
+    "expectedIds": [
+      "FileExplorerPreview_Preview_SVG_Background_Color"
+    ],
+    "notes": "typo:FileExplorerPreview_Preview_SVG_Background_Color"
+  },
+  {
+    "group": "typo",
+    "query": "checered shade",
+    "expectedIds": [
+      "FileExplorerPreview_Preview_SVG_Checkered_Shade_Mode"
+    ],
+    "notes": "typo:FileExplorerPreview_Preview_SVG_Checkered_Shade_Mode"
+  },
+  {
+    "group": "typo",
+    "query": "coor mode",
+    "expectedIds": [
+      "FileExplorerPreview_Preview_SVG_Color_Mode"
+    ],
+    "notes": "typo:FileExplorerPreview_Preview_SVG_Color_Mode"
+  },
+  {
+    "group": "typo",
+    "query": "fnot size",
+    "expectedIds": [
+      "FileExplorerPreview_Toggle_Monaco_Font_Size"
+    ],
+    "notes": "typo:FileExplorerPreview_Toggle_Monaco_Font_Size"
+  },
+  {
+    "group": "typo",
+    "query": "maxmum file size to preview",
+    "expectedIds": [
+      "FileExplorerPreview_Toggle_Monaco_Max_File_Size"
+    ],
+    "notes": "typo:FileExplorerPreview_Toggle_Monaco_Max_File_Size"
+  },
+  {
+    "group": "typo",
+    "query": "binary geomtric code",
+    "expectedIds": [
+      "FileExplorerPreview_ToggleSwitch_Preview_BGCODE"
+    ],
+    "notes": "typo:FileExplorerPreview_ToggleSwitch_Preview_BGCODE"
+  },
+  {
+    "group": "typo",
+    "query": "geomtric code",
+    "expectedIds": [
+      "FileExplorerPreview_ToggleSwitch_Preview_GCODE"
+    ],
+    "notes": "typo:FileExplorerPreview_ToggleSwitch_Preview_GCODE"
+  },
+  {
+    "group": "typo",
+    "query": "markown",
+    "expectedIds": [
+      "FileExplorerPreview_ToggleSwitch_Preview_MD"
+    ],
+    "notes": "typo:FileExplorerPreview_ToggleSwitch_Preview_MD"
+  },
+  {
+    "group": "typo",
+    "query": "source code files (monco)",
+    "expectedIds": [
+      "FileExplorerPreview_ToggleSwitch_Preview_Monaco"
+    ],
+    "notes": "typo:FileExplorerPreview_ToggleSwitch_Preview_Monaco"
+  },
+  {
+    "group": "typo",
+    "query": "portble document format",
+    "expectedIds": [
+      "FileExplorerPreview_ToggleSwitch_Preview_PDF"
+    ],
+    "notes": "typo:FileExplorerPreview_ToggleSwitch_Preview_PDF"
+  },
+  {
+    "group": "typo",
+    "query": "qute ok image",
+    "expectedIds": [
+      "FileExplorerPreview_ToggleSwitch_Preview_QOI"
+    ],
+    "notes": "typo:FileExplorerPreview_ToggleSwitch_Preview_QOI"
+  },
+  {
+    "group": "typo",
+    "query": "scalble vector graphics",
+    "expectedIds": [
+      "FileExplorerPreview_ToggleSwitch_Preview_SVG"
+    ],
+    "notes": "typo:FileExplorerPreview_ToggleSwitch_Preview_SVG"
+  },
+  {
+    "group": "typo",
+    "query": "binary geomtric code",
+    "expectedIds": [
+      "FileExplorerPreview_ToggleSwitch_Thumbnail_BGCODE"
+    ],
+    "notes": "typo:FileExplorerPreview_ToggleSwitch_Thumbnail_BGCODE"
+  },
+  {
+    "group": "typo",
+    "query": "geomtric code",
+    "expectedIds": [
+      "FileExplorerPreview_ToggleSwitch_Thumbnail_GCODE"
+    ],
+    "notes": "typo:FileExplorerPreview_ToggleSwitch_Thumbnail_GCODE"
+  },
+  {
+    "group": "typo",
+    "query": "portble document format",
+    "expectedIds": [
+      "FileExplorerPreview_ToggleSwitch_Thumbnail_PDF"
+    ],
+    "notes": "typo:FileExplorerPreview_ToggleSwitch_Thumbnail_PDF"
+  },
+  {
+    "group": "typo",
+    "query": "qute ok image",
+    "expectedIds": [
+      "FileExplorerPreview_ToggleSwitch_Thumbnail_QOI"
+    ],
+    "notes": "typo:FileExplorerPreview_ToggleSwitch_Thumbnail_QOI"
+  },
+  {
+    "group": "typo",
+    "query": "stereolihography",
+    "expectedIds": [
+      "FileExplorerPreview_ToggleSwitch_Thumbnail_STL"
+    ],
+    "notes": "typo:FileExplorerPreview_ToggleSwitch_Thumbnail_STL"
+  },
+  {
+    "group": "typo",
+    "query": "scalble vector graphics",
+    "expectedIds": [
+      "FileExplorerPreview_ToggleSwitch_Thumbnail_SVG"
+    ],
+    "notes": "typo:FileExplorerPreview_ToggleSwitch_Thumbnail_SVG"
+  },
+  {
+    "group": "typo",
+    "query": "file lockmith",
+    "expectedIds": [
+      "FileLocksmith_Enable_FileLocksmith"
+    ],
+    "notes": "typo:FileLocksmith_Enable_FileLocksmith"
+  },
+  {
+    "group": "typo",
+    "query": "show file lockmith in",
+    "expectedIds": [
+      "FileLocksmith_Toggle_ContextMenu"
+    ],
+    "notes": "typo:FileLocksmith_Toggle_ContextMenu"
+  },
+  {
+    "group": "typo",
+    "query": "back up and restore your settngs",
+    "expectedIds": [
+      "General_SettingsBackupAndRestore"
+    ],
+    "notes": "typo:General_SettingsBackupAndRestore"
+  },
+  {
+    "group": "typo",
+    "query": "locaion",
+    "expectedIds": [
+      "General_SettingsBackupAndRestoreLocationText"
+    ],
+    "notes": "typo:General_SettingsBackupAndRestoreLocationText"
+  },
+  {
+    "group": "typo",
+    "query": "backup inforation",
+    "expectedIds": [
+      "General_SettingsBackupAndRestoreStatusInfo"
+    ],
+    "notes": "typo:General_SettingsBackupAndRestoreStatusInfo"
+  },
+  {
+    "group": "typo",
+    "query": "highight mode",
+    "expectedIds": [
+      "HighlightMode"
+    ],
+    "notes": "typo:HighlightMode"
+  },
+  {
+    "group": "typo",
+    "query": "placement of additonal content",
+    "expectedIds": [
+      "Hosts_AdditionalLinesPosition"
+    ],
+    "notes": "typo:Hosts_AdditionalLinesPosition"
+  },
+  {
+    "group": "typo",
+    "query": "bacup hosts file",
+    "expectedIds": [
+      "Hosts_Backup"
+    ],
+    "notes": "typo:Hosts_Backup"
+  },
+  {
+    "group": "typo",
+    "query": "dyas",
+    "expectedIds": [
+      "Hosts_Backup_DaysInput"
+    ],
+    "notes": "typo:Hosts_Backup_DaysInput"
+  },
+  {
+    "group": "typo",
+    "query": "locaion",
+    "expectedIds": [
+      "Hosts_Backup_Location"
+    ],
+    "notes": "typo:Hosts_Backup_Location"
+  },
+  {
+    "group": "typo",
+    "query": "automaically delete backups",
+    "expectedIds": [
+      "Hosts_Delete_Backup"
+    ],
+    "notes": "typo:Hosts_Delete_Backup"
+  },
+  {
+    "group": "typo",
+    "query": "encoing",
+    "expectedIds": [
+      "Hosts_Encoding"
+    ],
+    "notes": "typo:Hosts_Encoding"
+  },
+  {
+    "group": "typo",
+    "query": "no leaing spaces",
+    "expectedIds": [
+      "Hosts_NoLeadingSpaces"
+    ],
+    "notes": "typo:Hosts_NoLeadingSpaces"
+  },
+  {
+    "group": "typo",
+    "query": "open as adminitrator",
+    "expectedIds": [
+      "Hosts_Toggle_LaunchAdministrator"
+    ],
+    "notes": "typo:Hosts_Toggle_LaunchAdministrator"
+  },
+  {
+    "group": "typo",
+    "query": "consider loopback addresses as dupliates",
+    "expectedIds": [
+      "Hosts_Toggle_LoopbackDuplicates"
+    ],
+    "notes": "typo:Hosts_Toggle_LoopbackDuplicates"
+  },
+  {
+    "group": "typo",
+    "query": "show a waring at startup",
+    "expectedIds": [
+      "Hosts_Toggle_ShowStartupWarning"
+    ],
+    "notes": "typo:Hosts_Toggle_ShowStartupWarning"
+  },
+  {
+    "group": "typo",
+    "query": "image reszer",
+    "expectedIds": [
+      "ImageResizer_EnableToggle"
+    ],
+    "notes": "typo:ImageResizer_EnableToggle"
+  },
+  {
+    "group": "typo",
+    "query": "jpeg quaity level (%)",
+    "expectedIds": [
+      "ImageResizer_Encoding"
+    ],
+    "notes": "typo:ImageResizer_Encoding"
+  },
+  {
+    "group": "typo",
+    "query": "fallack encoder",
+    "expectedIds": [
+      "ImageResizer_FallBackEncoderText"
+    ],
+    "notes": "typo:ImageResizer_FallBackEncoderText"
+  },
+  {
+    "group": "typo",
+    "query": "file modified timetamp",
+    "expectedIds": [
+      "ImageResizer_FileModifiedDate"
+    ],
+    "notes": "typo:ImageResizer_FileModifiedDate"
+  },
+  {
+    "group": "typo",
+    "query": "png interacing",
+    "expectedIds": [
+      "ImageResizer_PNGInterlacing"
+    ],
+    "notes": "typo:ImageResizer_PNGInterlacing"
+  },
+  {
+    "group": "typo",
+    "query": "preets",
+    "expectedIds": [
+      "ImageResizer_Presets"
+    ],
+    "notes": "typo:ImageResizer_Presets"
+  },
+  {
+    "group": "typo",
+    "query": "tiff comprssion",
+    "expectedIds": [
+      "ImageResizer_TIFFCompression"
+    ],
+    "notes": "typo:ImageResizer_TIFFCompression"
+  },
+  {
+    "group": "typo",
+    "query": "imge to text",
+    "expectedIds": [
+      "ImageToText"
+    ],
+    "notes": "typo:ImageToText"
+  },
+  {
+    "group": "typo",
+    "query": "keybard manager",
+    "expectedIds": [
+      "KeyboardManager_EnableToggle"
+    ],
+    "notes": "typo:KeyboardManager_EnableToggle"
+  },
+  {
+    "group": "typo",
+    "query": "theme toggle shorcut",
+    "expectedIds": [
+      "LightSwitch_ThemeToggle_Shortcut"
+    ],
+    "notes": "typo:LightSwitch_ThemeToggle_Shortcut"
+  },
+  {
+    "group": "typo",
+    "query": "trun off dark mode",
+    "expectedIds": [
+      "LightSwitch_TurnOffDarkMode"
+    ],
+    "notes": "typo:LightSwitch_TurnOffDarkMode"
+  },
+  {
+    "group": "typo",
+    "query": "trun on dark mode",
+    "expectedIds": [
+      "LightSwitch_TurnOnDarkMode"
+    ],
+    "notes": "typo:LightSwitch_TurnOnDarkMode"
+  },
+  {
+    "group": "typo",
+    "query": "activtion shortcut",
+    "expectedIds": [
+      "MeasureTool_ActivationShortcut"
+    ],
+    "notes": "typo:MeasureTool_ActivationShortcut"
+  },
+  {
+    "group": "typo",
+    "query": "capture screen continously during measuring",
+    "expectedIds": [
+      "MeasureTool_ContinuousCapture"
+    ],
+    "notes": "typo:MeasureTool_ContinuousCapture"
+  },
+  {
+    "group": "typo",
+    "query": "defult mode",
+    "expectedIds": [
+      "MeasureTool_DefaultMeasureStyle"
+    ],
+    "notes": "typo:MeasureTool_DefaultMeasureStyle"
+  },
+  {
+    "group": "typo",
+    "query": "draw feet on crss",
+    "expectedIds": [
+      "MeasureTool_DrawFeetOnCross"
+    ],
+    "notes": "typo:MeasureTool_DrawFeetOnCross"
+  },
+  {
+    "group": "typo",
+    "query": "scren ruler",
+    "expectedIds": [
+      "MeasureTool_EnableMeasureTool"
+    ],
+    "notes": "typo:MeasureTool_EnableMeasureTool"
+  },
+  {
+    "group": "typo",
+    "query": "line coor",
+    "expectedIds": [
+      "MeasureTool_MeasureCrossColor"
+    ],
+    "notes": "typo:MeasureTool_MeasureCrossColor"
+  },
+  {
+    "group": "typo",
+    "query": "per color channel edge detetion",
+    "expectedIds": [
+      "MeasureTool_PerColorChannelEdgeDetection"
+    ],
+    "notes": "typo:MeasureTool_PerColorChannelEdgeDetection"
+  },
+  {
+    "group": "typo",
+    "query": "pixel toleance for edge detection",
+    "expectedIds": [
+      "MeasureTool_PixelTolerance"
+    ],
+    "notes": "typo:MeasureTool_PixelTolerance"
+  },
+  {
+    "group": "typo",
+    "query": "extra units of measuement",
+    "expectedIds": [
+      "MeasureTool_UnitsOfMeasure"
+    ],
+    "notes": "typo:MeasureTool_UnitsOfMeasure"
+  },
+  {
+    "group": "typo",
+    "query": "activtion and behavior",
+    "expectedIds": [
+      "MouseUtils_CursorWrap_ActivationShortcut"
+    ],
+    "notes": "typo:MouseUtils_CursorWrap_ActivationShortcut"
+  },
+  {
+    "group": "typo",
+    "query": "warp mode",
+    "expectedIds": [
+      "MouseUtils_CursorWrap_WrapMode"
+    ],
+    "notes": "typo:MouseUtils_CursorWrap_WrapMode"
+  },
+  {
+    "group": "typo",
+    "query": "cursowrap",
+    "expectedIds": [
+      "MouseUtils_Enable_CursorWrap"
+    ],
+    "notes": "typo:MouseUtils_Enable_CursorWrap"
+  },
+  {
+    "group": "typo",
+    "query": "find my mose",
+    "expectedIds": [
+      "MouseUtils_Enable_FindMyMouse"
+    ],
+    "notes": "typo:MouseUtils_Enable_FindMyMouse"
+  },
+  {
+    "group": "typo",
+    "query": "mouse highlghter",
+    "expectedIds": [
+      "MouseUtils_Enable_MouseHighlighter"
+    ],
+    "notes": "typo:MouseUtils_Enable_MouseHighlighter"
+  },
+  {
+    "group": "typo",
+    "query": "mose jump",
+    "expectedIds": [
+      "MouseUtils_Enable_MouseJump"
+    ],
+    "notes": "typo:MouseUtils_Enable_MouseJump"
+  },
+  {
+    "group": "typo",
+    "query": "mouse pointer crossairs",
+    "expectedIds": [
+      "MouseUtils_Enable_MousePointerCrosshairs"
+    ],
+    "notes": "typo:MouseUtils_Enable_MousePointerCrosshairs"
+  },
+  {
+    "group": "typo",
+    "query": "activtion method",
+    "expectedIds": [
+      "MouseUtils_FindMyMouse_ActivationMethod"
+    ],
+    "notes": "typo:MouseUtils_FindMyMouse_ActivationMethod"
+  },
+  {
+    "group": "typo",
+    "query": "activtion shortcut",
+    "expectedIds": [
+      "MouseUtils_FindMyMouse_ActivationShortcut"
+    ],
+    "notes": "typo:MouseUtils_FindMyMouse_ActivationShortcut"
+  },
+  {
+    "group": "typo",
+    "query": "animtion duration (ms)",
+    "expectedIds": [
+      "MouseUtils_FindMyMouse_AnimationDurationMs"
+    ],
+    "notes": "typo:MouseUtils_FindMyMouse_AnimationDurationMs"
+  },
+  {
+    "group": "typo",
+    "query": "backgound color",
+    "expectedIds": [
+      "MouseUtils_FindMyMouse_BackgroundColor"
+    ],
+    "notes": "typo:MouseUtils_FindMyMouse_BackgroundColor"
+  },
+  {
+    "group": "typo",
+    "query": "exclded apps",
+    "expectedIds": [
+      "MouseUtils_FindMyMouse_ExcludedApps"
+    ],
+    "notes": "typo:MouseUtils_FindMyMouse_ExcludedApps"
+  },
+  {
+    "group": "typo",
+    "query": "shake sensiivity factor (percent)",
+    "expectedIds": [
+      "MouseUtils_FindMyMouse_ShakingFactor"
+    ],
+    "notes": "typo:MouseUtils_FindMyMouse_ShakingFactor"
+  },
+  {
+    "group": "typo",
+    "query": "shake detetion interval (ms)",
+    "expectedIds": [
+      "MouseUtils_FindMyMouse_ShakingIntervalMs"
+    ],
+    "notes": "typo:MouseUtils_FindMyMouse_ShakingIntervalMs"
+  },
+  {
+    "group": "typo",
+    "query": "minimum shake distnce",
+    "expectedIds": [
+      "MouseUtils_FindMyMouse_ShakingMinimumDistance"
+    ],
+    "notes": "typo:MouseUtils_FindMyMouse_ShakingMinimumDistance"
+  },
+  {
+    "group": "typo",
+    "query": "spotight color",
+    "expectedIds": [
+      "MouseUtils_FindMyMouse_SpotlightColor"
+    ],
+    "notes": "typo:MouseUtils_FindMyMouse_SpotlightColor"
+  },
+  {
+    "group": "typo",
+    "query": "spotight initial zoom",
+    "expectedIds": [
+      "MouseUtils_FindMyMouse_SpotlightInitialZoom"
+    ],
+    "notes": "typo:MouseUtils_FindMyMouse_SpotlightInitialZoom"
+  },
+  {
+    "group": "typo",
+    "query": "spotight radius (px)",
+    "expectedIds": [
+      "MouseUtils_FindMyMouse_SpotlightRadius"
+    ],
+    "notes": "typo:MouseUtils_FindMyMouse_SpotlightRadius"
+  },
+  {
+    "group": "typo",
+    "query": "gliing cursor",
+    "expectedIds": [
+      "MouseUtils_GlidingCursor"
+    ],
+    "notes": "typo:MouseUtils_GlidingCursor"
+  },
+  {
+    "group": "typo",
+    "query": "redced line speed",
+    "expectedIds": [
+      "MouseUtils_GlidingCursor_DelaySpeed"
+    ],
+    "notes": "typo:MouseUtils_GlidingCursor_DelaySpeed"
+  },
+  {
+    "group": "typo",
+    "query": "iniial line speed",
+    "expectedIds": [
+      "MouseUtils_GlidingCursor_InitialSpeed"
+    ],
+    "notes": "typo:MouseUtils_GlidingCursor_InitialSpeed"
+  },
+  {
+    "group": "typo",
+    "query": "activtion shortcut",
+    "expectedIds": [
+      "MouseUtils_MouseHighlighter_ActivationShortcut"
+    ],
+    "notes": "typo:MouseUtils_MouseHighlighter_ActivationShortcut"
+  },
+  {
+    "group": "typo",
+    "query": "always highight color",
+    "expectedIds": [
+      "MouseUtils_MouseHighlighter_AlwaysColor"
+    ],
+    "notes": "typo:MouseUtils_MouseHighlighter_AlwaysColor"
+  },
+  {
+    "group": "typo",
+    "query": "fade deay (ms)",
+    "expectedIds": [
+      "MouseUtils_MouseHighlighter_FadeDelayMs"
+    ],
+    "notes": "typo:MouseUtils_MouseHighlighter_FadeDelayMs"
+  },
+  {
+    "group": "typo",
+    "query": "fade duraion (ms)",
+    "expectedIds": [
+      "MouseUtils_MouseHighlighter_FadeDurationMs"
+    ],
+    "notes": "typo:MouseUtils_MouseHighlighter_FadeDurationMs"
+  },
+  {
+    "group": "typo",
+    "query": "radus (px)",
+    "expectedIds": [
+      "MouseUtils_MouseHighlighter_HighlightRadius"
+    ],
+    "notes": "typo:MouseUtils_MouseHighlighter_HighlightRadius"
+  },
+  {
+    "group": "typo",
+    "query": "activtion shortcut",
+    "expectedIds": [
+      "MouseUtils_MouseJump_ActivationShortcut"
+    ],
+    "notes": "typo:MouseUtils_MouseJump_ActivationShortcut"
+  },
+  {
+    "group": "typo",
+    "query": "appeaance",
+    "expectedIds": [
+      "MouseUtils_MouseJump_Appearance"
+    ],
+    "notes": "typo:MouseUtils_MouseJump_Appearance"
+  },
+  {
+    "group": "typo",
+    "query": "backgound color 1",
+    "expectedIds": [
+      "MouseUtils_MouseJump_BackgroundColor1"
+    ],
+    "notes": "typo:MouseUtils_MouseJump_BackgroundColor1"
+  },
+  {
+    "group": "typo",
+    "query": "backgound color 2",
+    "expectedIds": [
+      "MouseUtils_MouseJump_BackgroundColor2"
+    ],
+    "notes": "typo:MouseUtils_MouseJump_BackgroundColor2"
+  },
+  {
+    "group": "typo",
+    "query": "beel 3d depth",
+    "expectedIds": [
+      "MouseUtils_MouseJump_Bezel3dDepth"
+    ],
+    "notes": "typo:MouseUtils_MouseJump_Bezel3dDepth"
+  },
+  {
+    "group": "typo",
+    "query": "beel color",
+    "expectedIds": [
+      "MouseUtils_MouseJump_BezelColor"
+    ],
+    "notes": "typo:MouseUtils_MouseJump_BezelColor"
+  },
+  {
+    "group": "typo",
+    "query": "bezel thicness",
+    "expectedIds": [
+      "MouseUtils_MouseJump_BezelThickness"
+    ],
+    "notes": "typo:MouseUtils_MouseJump_BezelThickness"
+  },
+  {
+    "group": "typo",
+    "query": "borer 3d depth",
+    "expectedIds": [
+      "MouseUtils_MouseJump_Border3dDepth"
+    ],
+    "notes": "typo:MouseUtils_MouseJump_Border3dDepth"
+  },
+  {
+    "group": "typo",
+    "query": "borer color",
+    "expectedIds": [
+      "MouseUtils_MouseJump_BorderColor"
+    ],
+    "notes": "typo:MouseUtils_MouseJump_BorderColor"
+  },
+  {
+    "group": "typo",
+    "query": "border pading",
+    "expectedIds": [
+      "MouseUtils_MouseJump_BorderPadding"
+    ],
+    "notes": "typo:MouseUtils_MouseJump_BorderPadding"
+  },
+  {
+    "group": "typo",
+    "query": "border thicness",
+    "expectedIds": [
+      "MouseUtils_MouseJump_BorderThickness"
+    ],
+    "notes": "typo:MouseUtils_MouseJump_BorderThickness"
+  },
+  {
+    "group": "typo",
+    "query": "preiew style",
+    "expectedIds": [
+      "MouseUtils_MouseJump_PreviewType"
+    ],
+    "notes": "typo:MouseUtils_MouseJump_PreviewType"
+  },
+  {
+    "group": "typo",
+    "query": "scren color 1",
+    "expectedIds": [
+      "MouseUtils_MouseJump_ScreenColor1"
+    ],
+    "notes": "typo:MouseUtils_MouseJump_ScreenColor1"
+  },
+  {
+    "group": "typo",
+    "query": "scren color 2",
+    "expectedIds": [
+      "MouseUtils_MouseJump_ScreenColor2"
+    ],
+    "notes": "typo:MouseUtils_MouseJump_ScreenColor2"
+  },
+  {
+    "group": "typo",
+    "query": "screen spaing",
+    "expectedIds": [
+      "MouseUtils_MouseJump_ScreenMargin"
+    ],
+    "notes": "typo:MouseUtils_MouseJump_ScreenMargin"
+  },
+  {
+    "group": "typo",
+    "query": "thumnail size",
+    "expectedIds": [
+      "MouseUtils_MouseJump_ThumbnailSize"
+    ],
+    "notes": "typo:MouseUtils_MouseJump_ThumbnailSize"
+  },
+  {
+    "group": "typo",
+    "query": "activtion shortcut",
+    "expectedIds": [
+      "MouseUtils_MousePointerCrosshairs_ActivationShortcut"
+    ],
+    "notes": "typo:MouseUtils_MousePointerCrosshairs_ActivationShortcut"
+  },
+  {
+    "group": "typo",
+    "query": "crossairs border color",
+    "expectedIds": [
+      "MouseUtils_MousePointerCrosshairs_CrosshairsBorderColor"
+    ],
+    "notes": "typo:MouseUtils_MousePointerCrosshairs_CrosshairsBorderColor"
+  },
+  {
+    "group": "typo",
+    "query": "crossairs border size (px)",
+    "expectedIds": [
+      "MouseUtils_MousePointerCrosshairs_CrosshairsBorderSize"
+    ],
+    "notes": "typo:MouseUtils_MousePointerCrosshairs_CrosshairsBorderSize"
+  },
+  {
+    "group": "typo",
+    "query": "crossairs color",
+    "expectedIds": [
+      "MouseUtils_MousePointerCrosshairs_CrosshairsColor"
+    ],
+    "notes": "typo:MouseUtils_MousePointerCrosshairs_CrosshairsColor"
+  },
+  {
+    "group": "typo",
+    "query": "crossairs fixed length (px)",
+    "expectedIds": [
+      "MouseUtils_MousePointerCrosshairs_CrosshairsFixedLength"
+    ],
+    "notes": "typo:MouseUtils_MousePointerCrosshairs_CrosshairsFixedLength"
+  },
+  {
+    "group": "typo",
+    "query": "crossairs opacity (%)",
+    "expectedIds": [
+      "MouseUtils_MousePointerCrosshairs_CrosshairsOpacity"
+    ],
+    "notes": "typo:MouseUtils_MousePointerCrosshairs_CrosshairsOpacity"
+  },
+  {
+    "group": "typo",
+    "query": "crosshairs orienation",
+    "expectedIds": [
+      "MouseUtils_MousePointerCrosshairs_CrosshairsOrientation"
+    ],
+    "notes": "typo:MouseUtils_MousePointerCrosshairs_CrosshairsOrientation"
+  },
+  {
+    "group": "typo",
+    "query": "crossairs center radius (px)",
+    "expectedIds": [
+      "MouseUtils_MousePointerCrosshairs_CrosshairsRadius"
+    ],
+    "notes": "typo:MouseUtils_MousePointerCrosshairs_CrosshairsRadius"
+  },
+  {
+    "group": "typo",
+    "query": "crossairs thickness (px)",
+    "expectedIds": [
+      "MouseUtils_MousePointerCrosshairs_CrosshairsThickness"
+    ],
+    "notes": "typo:MouseUtils_MousePointerCrosshairs_CrosshairsThickness"
+  },
+  {
+    "group": "typo",
+    "query": "fix crossairs length",
+    "expectedIds": [
+      "MouseUtils_MousePointerCrosshairs_IsCrosshairsFixedLengthEnabled"
+    ],
+    "notes": "typo:MouseUtils_MousePointerCrosshairs_IsCrosshairsFixedLengthEnabled"
+  },
+  {
+    "group": "typo",
+    "query": "block mouse at screen corers",
+    "expectedIds": [
+      "MouseWithoutBorders_BlockMouseAtScreenCorners"
+    ],
+    "notes": "typo:MouseWithoutBorders_BlockMouseAtScreenCorners"
+  },
+  {
+    "group": "typo",
+    "query": "block screen saver on other machnes",
+    "expectedIds": [
+      "MouseWithoutBorders_BlockScreenSaverOnOtherMachines"
+    ],
+    "notes": "typo:MouseWithoutBorders_BlockScreenSaverOnOtherMachines"
+  },
+  {
+    "group": "typo",
+    "query": "disable easy mouse when an appliation is running in full screen.",
+    "expectedIds": [
+      "MouseWithoutBorders_DisableEasyMouseWhenForegroundWindowIsFullscreen"
+    ],
+    "notes": "typo:MouseWithoutBorders_DisableEasyMouseWhenForegroundWindowIsFullscreen"
+  },
+  {
+    "group": "typo",
+    "query": "mouse without borders disable easy mouse when foregound window is fullscreen excluded apps",
+    "expectedIds": [
+      "MouseWithoutBorders_DisableEasyMouseWhenForegroundWindowIsFullscreen_ExcludedApps"
+    ],
+    "notes": "typo:MouseWithoutBorders_DisableEasyMouseWhenForegroundWindowIsFullscreen_ExcludedApps"
+  },
+  {
+    "group": "typo",
+    "query": "draw mouse curor",
+    "expectedIds": [
+      "MouseWithoutBorders_DrawMouseCursor"
+    ],
+    "notes": "typo:MouseWithoutBorders_DrawMouseCursor"
+  },
+  {
+    "group": "typo",
+    "query": "easy mouse: move between machnes by moving the mouse pointer to the screen edges.",
+    "expectedIds": [
+      "MouseWithoutBorders_EasyMouseOption"
+    ],
+    "notes": "typo:MouseWithoutBorders_EasyMouseOption"
+  },
+  {
+    "group": "typo",
+    "query": "hide mouse at the scren edge",
+    "expectedIds": [
+      "MouseWithoutBorders_HideMouseAtScreenEdge"
+    ],
+    "notes": "typo:MouseWithoutBorders_HideMouseAtScreenEdge"
+  },
+  {
+    "group": "typo",
+    "query": "ip addess mapping",
+    "expectedIds": [
+      "MouseWithoutBorders_IPAddressMapping"
+    ],
+    "notes": "typo:MouseWithoutBorders_IPAddressMapping"
+  },
+  {
+    "group": "typo",
+    "query": "shortcut to lock all machnes.",
+    "expectedIds": [
+      "MouseWithoutBorders_LockMachinesShortcut"
+    ],
+    "notes": "typo:MouseWithoutBorders_LockMachinesShortcut"
+  },
+  {
+    "group": "typo",
+    "query": "devces in a single row",
+    "expectedIds": [
+      "MouseWithoutBorders_MatrixOneRow"
+    ],
+    "notes": "typo:MouseWithoutBorders_MatrixOneRow"
+  },
+  {
+    "group": "typo",
+    "query": "move mouse relatvely",
+    "expectedIds": [
+      "MouseWithoutBorders_MoveMouseRelatively"
+    ],
+    "notes": "typo:MouseWithoutBorders_MoveMouseRelatively"
+  },
+  {
+    "group": "typo",
+    "query": "shortcut to try reconncting",
+    "expectedIds": [
+      "MouseWithoutBorders_ReconnectShortcut"
+    ],
+    "notes": "typo:MouseWithoutBorders_ReconnectShortcut"
+  },
+  {
+    "group": "typo",
+    "query": "same subet only",
+    "expectedIds": [
+      "MouseWithoutBorders_SameSubnetOnly"
+    ],
+    "notes": "typo:MouseWithoutBorders_SameSubnetOnly"
+  },
+  {
+    "group": "typo",
+    "query": "secuity key",
+    "expectedIds": [
+      "MouseWithoutBorders_SecurityKey"
+    ],
+    "notes": "typo:MouseWithoutBorders_SecurityKey"
+  },
+  {
+    "group": "typo",
+    "query": "share clipoard",
+    "expectedIds": [
+      "MouseWithoutBorders_ShareClipboard"
+    ],
+    "notes": "typo:MouseWithoutBorders_ShareClipboard"
+  },
+  {
+    "group": "typo",
+    "query": "show clipoard and network status messages",
+    "expectedIds": [
+      "MouseWithoutBorders_ShowClipboardAndNetworkStatusMessages"
+    ],
+    "notes": "typo:MouseWithoutBorders_ShowClipboardAndNetworkStatusMessages"
+  },
+  {
+    "group": "typo",
+    "query": "shorcut to switch to multiple machine mode.",
+    "expectedIds": [
+      "MouseWithoutBorders_Switch2AllPcShortcut"
+    ],
+    "notes": "typo:MouseWithoutBorders_Switch2AllPcShortcut"
+  },
+  {
+    "group": "typo",
+    "query": "shortcut to switch between machines. ctrl+lt+:",
+    "expectedIds": [
+      "MouseWithoutBorders_SwitchBetweenMachineShortcut"
+    ],
+    "notes": "typo:MouseWithoutBorders_SwitchBetweenMachineShortcut"
+  },
+  {
+    "group": "typo",
+    "query": "mouse witout borders",
+    "expectedIds": [
+      "MouseWithoutBorders_Toggle_Enable"
+    ],
+    "notes": "typo:MouseWithoutBorders_Toggle_Enable"
+  },
+  {
+    "group": "typo",
+    "query": "shorcut to toggle easy mouse.",
+    "expectedIds": [
+      "MouseWithoutBorders_ToggleEasyMouseShortcut"
+    ],
+    "notes": "typo:MouseWithoutBorders_ToggleEasyMouseShortcut"
+  }
+]

@@ -6,7 +6,6 @@ using System.Diagnostics;
 using Common.Search;
 using Common.Search.FuzzSearch;
 using Common.Search.SemanticSearch;
-using Settings.UI.Library;
 
 namespace SettingsSearchEvaluation;
 
@@ -39,7 +38,7 @@ internal static class Evaluator
         return new EvaluationReport
         {
             GeneratedAtUtc = DateTimeOffset.UtcNow,
-            IndexJsonPath = options.IndexJsonPath,
+            IndexJsonPath = options.InputDataPath,
             Dataset = dataset,
             CaseCount = cases.Count,
             Engines = reports,

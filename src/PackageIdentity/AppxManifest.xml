@@ -107,5 +107,15 @@
         </uap3:Extension>
       </Extensions>
     </Application>
+    <Application Id="PowerToys.SettingsSearchEvaluation" Executable="SettingsSearchEvaluation.exe" EntryPoint="Windows.FullTrustApplication">
+      <uap:VisualElements
+        DisplayName="PowerToys.SettingsSearchEvaluation"
+        Description="PowerToys Settings search evaluator"
+        BackgroundColor="transparent"
+        Square150x150Logo="Images\Square150x150Logo.png"
+        Square44x44Logo="Images\Square44x44Logo.png"
+        AppListEntry="none">
+      </uap:VisualElements>
+    </Application>
   </Applications>
 </Package>

@@ -1,0 +1,1602 @@
+[
+  {
+    "group": "semantic",
+    "query": "help me configure advanced paste",
+    "expectedIds": [
+      "AdvancedPaste"
+    ],
+    "notes": "semantic:AdvancedPaste"
+  },
+  {
+    "group": "semantic",
+    "query": "where can i configure always on top",
+    "expectedIds": [
+      "AlwaysOnTop"
+    ],
+    "notes": "semantic:AlwaysOnTop"
+  },
+  {
+    "group": "semantic",
+    "query": "where can i keep pc awake with awake",
+    "expectedIds": [
+      "Awake"
+    ],
+    "notes": "semantic:Awake"
+  },
+  {
+    "group": "semantic",
+    "query": "where can i configure command not found",
+    "expectedIds": [
+      "CmdNotFound"
+    ],
+    "notes": "semantic:CmdNotFound"
+  },
+  {
+    "group": "semantic",
+    "query": "where can i change color picker",
+    "expectedIds": [
+      "ColorPicker"
+    ],
+    "notes": "semantic:ColorPicker"
+  },
+  {
+    "group": "semantic",
+    "query": "how do i configure crop and lock",
+    "expectedIds": [
+      "CropAndLock"
+    ],
+    "notes": "semantic:CropAndLock"
+  },
+  {
+    "group": "semantic",
+    "query": "i want to configure environment variables",
+    "expectedIds": [
+      "EnvironmentVariables"
+    ],
+    "notes": "semantic:EnvironmentVariables"
+  },
+  {
+    "group": "semantic",
+    "query": "how do i configure fancyzones",
+    "expectedIds": [
+      "FancyZones"
+    ],
+    "notes": "semantic:FancyZones"
+  },
+  {
+    "group": "semantic",
+    "query": "help me set preview for file explorer",
+    "expectedIds": [
+      "FileExplorerPreview"
+    ],
+    "notes": "semantic:FileExplorerPreview"
+  },
+  {
+    "group": "semantic",
+    "query": "i want to configure file locksmith",
+    "expectedIds": [
+      "FileLocksmith"
+    ],
+    "notes": "semantic:FileLocksmith"
+  },
+  {
+    "group": "semantic",
+    "query": "i want to configure general",
+    "expectedIds": [
+      "General"
+    ],
+    "notes": "semantic:General"
+  },
+  {
+    "group": "semantic",
+    "query": "where can i configure hosts file editor",
+    "expectedIds": [
+      "Hosts"
+    ],
+    "notes": "semantic:Hosts"
+  },
+  {
+    "group": "semantic",
+    "query": "help me configure image resizer",
+    "expectedIds": [
+      "ImageResizer"
+    ],
+    "notes": "semantic:ImageResizer"
+  },
+  {
+    "group": "semantic",
+    "query": "how do i configure keyboard manager",
+    "expectedIds": [
+      "KeyboardManager"
+    ],
+    "notes": "semantic:KeyboardManager"
+  },
+  {
+    "group": "semantic",
+    "query": "i want to configure light switch",
+    "expectedIds": [
+      "LightSwitch"
+    ],
+    "notes": "semantic:LightSwitch"
+  },
+  {
+    "group": "semantic",
+    "query": "how do i configure screen ruler",
+    "expectedIds": [
+      "MeasureTool"
+    ],
+    "notes": "semantic:MeasureTool"
+  },
+  {
+    "group": "semantic",
+    "query": "i want to configure mouse utilities",
+    "expectedIds": [
+      "MouseUtils"
+    ],
+    "notes": "semantic:MouseUtils"
+  },
+  {
+    "group": "semantic",
+    "query": "i want to configure mouse without borders",
+    "expectedIds": [
+      "MouseWithoutBorders"
+    ],
+    "notes": "semantic:MouseWithoutBorders"
+  },
+  {
+    "group": "semantic",
+    "query": "i want to configure new+",
+    "expectedIds": [
+      "NewPlus"
+    ],
+    "notes": "semantic:NewPlus"
+  },
+  {
+    "group": "semantic",
+    "query": "where can i configure peek",
+    "expectedIds": [
+      "Peek"
+    ],
+    "notes": "semantic:Peek"
+  },
+  {
+    "group": "semantic",
+    "query": "help me configure power display",
+    "expectedIds": [
+      "PowerDisplay"
+    ],
+    "notes": "semantic:PowerDisplay"
+  },
+  {
+    "group": "semantic",
+    "query": "help me launch powertoys run",
+    "expectedIds": [
+      "PowerLauncher"
+    ],
+    "notes": "semantic:PowerLauncher"
+  },
+  {
+    "group": "semantic",
+    "query": "where can i bulk rename with powerrename",
+    "expectedIds": [
+      "PowerRename"
+    ],
+    "notes": "semantic:PowerRename"
+  },
+  {
+    "group": "semantic",
+    "query": "help me configure quick accent",
+    "expectedIds": [
+      "QuickAccent"
+    ],
+    "notes": "semantic:QuickAccent"
+  },
+  {
+    "group": "semantic",
+    "query": "help me set preview for registry preview",
+    "expectedIds": [
+      "RegistryPreview"
+    ],
+    "notes": "semantic:RegistryPreview"
+  },
+  {
+    "group": "semantic",
+    "query": "i want to change shortcut for shortcut guide",
+    "expectedIds": [
+      "ShortcutGuide"
+    ],
+    "notes": "semantic:ShortcutGuide"
+  },
+  {
+    "group": "semantic",
+    "query": "where can i configure extractor",
+    "expectedIds": [
+      "TextExtractor"
+    ],
+    "notes": "semantic:TextExtractor"
+  },
+  {
+    "group": "semantic",
+    "query": "i want to configure workspaces",
+    "expectedIds": [
+      "Workspaces"
+    ],
+    "notes": "semantic:Workspaces"
+  },
+  {
+    "group": "semantic",
+    "query": "i want to configure zoomit",
+    "expectedIds": [
+      "ZoomIt"
+    ],
+    "notes": "semantic:ZoomIt"
+  },
+  {
+    "group": "semantic",
+    "query": "help me enable show clipboard preview",
+    "expectedIds": [
+      "AdvancedPaste_EnableClipboardPreview"
+    ],
+    "notes": "semantic:AdvancedPaste_EnableClipboardPreview"
+  },
+  {
+    "group": "semantic",
+    "query": "where can i configure model providers",
+    "expectedIds": [
+      "AdvancedPaste_ModelProviders"
+    ],
+    "notes": "semantic:AdvancedPaste_ModelProviders"
+  },
+  {
+    "group": "semantic",
+    "query": "i want to change shortcut for activation shortcut",
+    "expectedIds": [
+      "AlwaysOnTop_ActivationShortcut"
+    ],
+    "notes": "semantic:AlwaysOnTop_ActivationShortcut"
+  },
+  {
+    "group": "semantic",
+    "query": "i want to change color",
+    "expectedIds": [
+      "AlwaysOnTop_FrameColor"
+    ],
+    "notes": "semantic:AlwaysOnTop_FrameColor"
+  },
+  {
+    "group": "semantic",
+    "query": "i want to change color mode",
+    "expectedIds": [
+      "AlwaysOnTop_FrameColor_Mode"
+    ],
+    "notes": "semantic:AlwaysOnTop_FrameColor_Mode"
+  },
+  {
+    "group": "semantic",
+    "query": "i want to enable show a border around the pinned window",
+    "expectedIds": [
+      "AlwaysOnTop_FrameEnabled"
+    ],
+    "notes": "semantic:AlwaysOnTop_FrameEnabled"
+  },
+  {
+    "group": "semantic",
+    "query": "how do i change opacity (%)",
+    "expectedIds": [
+      "AlwaysOnTop_FrameOpacity"
+    ],
+    "notes": "semantic:AlwaysOnTop_FrameOpacity"
+  },
+  {
+    "group": "semantic",
+    "query": "where can i configure play a sound when pinning a window",
+    "expectedIds": [
+      "AlwaysOnTop_Sound"
+    ],
+    "notes": "semantic:AlwaysOnTop_Sound"
+  },
+  {
+    "group": "semantic",
+    "query": "help me enable command not found",
+    "expectedIds": [
+      "CmdNotFound_Enable"
+    ],
+    "notes": "semantic:CmdNotFound_Enable"
+  },
+  {
+    "group": "semantic",
+    "query": "how do i configure powershell 7.4 or greater",
+    "expectedIds": [
+      "CmdNotFound_PowerShellDetection"
+    ],
+    "notes": "semantic:CmdNotFound_PowerShellDetection"
+  },
+  {
+    "group": "semantic",
+    "query": "help me enable command palette",
+    "expectedIds": [
+      "CmdPal_Enable_CmdPal"
+    ],
+    "notes": "semantic:CmdPal_Enable_CmdPal"
+  },
+  {
+    "group": "semantic",
+    "query": "help me launch open command palette",
+    "expectedIds": [
+      "CmdPal_Launch"
+    ],
+    "notes": "semantic:CmdPal_Launch"
+  },
+  {
+    "group": "semantic",
+    "query": "how do i change activation behavior",
+    "expectedIds": [
+      "ColorPicker_ActivationAction"
+    ],
+    "notes": "semantic:ColorPicker_ActivationAction"
+  },
+  {
+    "group": "semantic",
+    "query": "help me change color formats",
+    "expectedIds": [
+      "ColorPicker_ColorFormats"
+    ],
+    "notes": "semantic:ColorPicker_ColorFormats"
+  },
+  {
+    "group": "semantic",
+    "query": "i want to change default color format",
+    "expectedIds": [
+      "ColorPicker_CopiedColorRepresentation"
+    ],
+    "notes": "semantic:ColorPicker_CopiedColorRepresentation"
+  },
+  {
+    "group": "semantic",
+    "query": "how do i enable color picker",
+    "expectedIds": [
+      "ColorPicker_EnableColorPicker"
+    ],
+    "notes": "semantic:ColorPicker_EnableColorPicker"
+  },
+  {
+    "group": "semantic",
+    "query": "where can i change middle click",
+    "expectedIds": [
+      "ColorPicker_MiddleClick"
+    ],
+    "notes": "semantic:ColorPicker_MiddleClick"
+  },
+  {
+    "group": "semantic",
+    "query": "i want to change mouse actions",
+    "expectedIds": [
+      "ColorPicker_MouseActions"
+    ],
+    "notes": "semantic:ColorPicker_MouseActions"
+  },
+  {
+    "group": "semantic",
+    "query": "i want to change primary click",
+    "expectedIds": [
+      "ColorPicker_PrimaryClick"
+    ],
+    "notes": "semantic:ColorPicker_PrimaryClick"
+  },
+  {
+    "group": "semantic",
+    "query": "i want to change secondary click",
+    "expectedIds": [
+      "ColorPicker_SecondaryClick"
+    ],
+    "notes": "semantic:ColorPicker_SecondaryClick"
+  },
+  {
+    "group": "semantic",
+    "query": "where can i change show color name",
+    "expectedIds": [
+      "ColorPicker_ShowColorName"
+    ],
+    "notes": "semantic:ColorPicker_ShowColorName"
+  },
+  {
+    "group": "semantic",
+    "query": "where can i change shortcut for reparent shortcut",
+    "expectedIds": [
+      "CropAndLock_ReparentActivation_Shortcut"
+    ],
+    "notes": "semantic:CropAndLock_ReparentActivation_Shortcut"
+  },
+  {
+    "group": "semantic",
+    "query": "i want to change shortcut for screenshot shortcut",
+    "expectedIds": [
+      "CropAndLock_ScreenshotActivation_Shortcut"
+    ],
+    "notes": "semantic:CropAndLock_ScreenshotActivation_Shortcut"
+  },
+  {
+    "group": "semantic",
+    "query": "how do i change shortcut for thumbnail shortcut",
+    "expectedIds": [
+      "CropAndLock_ThumbnailActivation_Shortcut"
+    ],
+    "notes": "semantic:CropAndLock_ThumbnailActivation_Shortcut"
+  },
+  {
+    "group": "semantic",
+    "query": "i want to enable open as administrator",
+    "expectedIds": [
+      "EnvironmentVariables_Toggle_LaunchAdministrator"
+    ],
+    "notes": "semantic:EnvironmentVariables_Toggle_LaunchAdministrator"
+  },
+  {
+    "group": "semantic",
+    "query": "how do i configure allow child windows snapping",
+    "expectedIds": [
+      "FancyZones_AllowChildWindowSnap"
+    ],
+    "notes": "semantic:FancyZones_AllowChildWindowSnap"
+  },
+  {
+    "group": "semantic",
+    "query": "i want to configure move newly created windows to their last known zone",
+    "expectedIds": [
+      "FancyZones_AppLastZoneMoveWindows"
+    ],
+    "notes": "semantic:FancyZones_AppLastZoneMoveWindows"
+  },
+  {
+    "group": "semantic",
+    "query": "how do i change border color",
+    "expectedIds": [
+      "FancyZones_BorderColor"
+    ],
+    "notes": "semantic:FancyZones_BorderColor"
+  },
+  {
+    "group": "semantic",
+    "query": "i want to configure disable rounded corners when a window is snapped",
+    "expectedIds": [
+      "FancyZones_DisableRoundCornersOnWindowSnap"
+    ],
+    "notes": "semantic:FancyZones_DisableRoundCornersOnWindowSnap"
+  },
+  {
+    "group": "semantic",
+    "query": "where can i configure excluded apps",
+    "expectedIds": [
+      "FancyZones_ExcludeApps"
+    ],
+    "notes": "semantic:FancyZones_ExcludeApps"
+  },
+  {
+    "group": "semantic",
+    "query": "how do i change opacity (%)",
+    "expectedIds": [
+      "FancyZones_HighlightOpacity"
+    ],
+    "notes": "semantic:FancyZones_HighlightOpacity"
+  },
+  {
+    "group": "semantic",
+    "query": "where can i change inactive color",
+    "expectedIds": [
+      "FancyZones_InActiveColor"
+    ],
+    "notes": "semantic:FancyZones_InActiveColor"
+  },
+  {
+    "group": "semantic",
+    "query": "i want to configure move windows based on",
+    "expectedIds": [
+      "FancyZones_MoveWindow"
+    ],
+    "notes": "semantic:FancyZones_MoveWindow"
+  },
+  {
+    "group": "semantic",
+    "query": "help me change number color",
+    "expectedIds": [
+      "FancyZones_NumberColor"
+    ],
+    "notes": "semantic:FancyZones_NumberColor"
+  },
+  {
+    "group": "semantic",
+    "query": "i want to configure move newly created windows to the current active monitor (experimental)",
+    "expectedIds": [
+      "FancyZones_OpenWindowOnActiveMonitor"
+    ],
+    "notes": "semantic:FancyZones_OpenWindowOnActiveMonitor"
+  },
+  {
+    "group": "semantic",
+    "query": "where can i configure when multiple zones overlap",
+    "expectedIds": [
+      "FancyZones_OverlappingZones"
+    ],
+    "notes": "semantic:FancyZones_OverlappingZones"
+  },
+  {
+    "group": "semantic",
+    "query": "how do i change shortcut for override windows snap",
+    "expectedIds": [
+      "FancyZones_OverrideSnapHotkeys"
+    ],
+    "notes": "semantic:FancyZones_OverrideSnapHotkeys"
+  },
+  {
+    "group": "semantic",
+    "query": "i want to manage backup for restore the original size of windows when unsnapping",
+    "expectedIds": [
+      "FancyZones_RestoreSize"
+    ],
+    "notes": "semantic:FancyZones_RestoreSize"
+  },
+  {
+    "group": "semantic",
+    "query": "i want to configure allow zones to span across monitors",
+    "expectedIds": [
+      "FancyZones_SpanZonesAcrossMonitors"
+    ],
+    "notes": "semantic:FancyZones_SpanZonesAcrossMonitors"
+  },
+  {
+    "group": "semantic",
+    "query": "i want to configure launch editor on the display",
+    "expectedIds": [
+      "FancyZones_UseCursorPosEditorStartupScreen"
+    ],
+    "notes": "semantic:FancyZones_UseCursorPosEditorStartupScreen"
+  },
+  {
+    "group": "semantic",
+    "query": "i want to configure zone appearance",
+    "expectedIds": [
+      "FancyZones_Zone_Appearance"
+    ],
+    "notes": "semantic:FancyZones_Zone_Appearance"
+  },
+  {
+    "group": "semantic",
+    "query": "i want to change highlight color",
+    "expectedIds": [
+      "FancyZones_ZoneHighlightColor"
+    ],
+    "notes": "semantic:FancyZones_ZoneHighlightColor"
+  },
+  {
+    "group": "semantic",
+    "query": "help me configure during zone layout changes, windows assigned to a zone will match new size/positions",
+    "expectedIds": [
+      "FancyZones_ZoneSetChangeMoveWindows"
+    ],
+    "notes": "semantic:FancyZones_ZoneSetChangeMoveWindows"
+  },
+  {
+    "group": "semantic",
+    "query": "i want to change color",
+    "expectedIds": [
+      "FileExplorerPreview_Color_Thumbnail_STL"
+    ],
+    "notes": "semantic:FileExplorerPreview_Color_Thumbnail_STL"
+  },
+  {
+    "group": "semantic",
+    "query": "how do i change color",
+    "expectedIds": [
+      "FileExplorerPreview_Preview_SVG_Background_Color"
+    ],
+    "notes": "semantic:FileExplorerPreview_Preview_SVG_Background_Color"
+  },
+  {
+    "group": "semantic",
+    "query": "how do i set preview for checkered shade",
+    "expectedIds": [
+      "FileExplorerPreview_Preview_SVG_Checkered_Shade_Mode"
+    ],
+    "notes": "semantic:FileExplorerPreview_Preview_SVG_Checkered_Shade_Mode"
+  },
+  {
+    "group": "semantic",
+    "query": "where can i change color mode",
+    "expectedIds": [
+      "FileExplorerPreview_Preview_SVG_Color_Mode"
+    ],
+    "notes": "semantic:FileExplorerPreview_Preview_SVG_Color_Mode"
+  },
+  {
+    "group": "semantic",
+    "query": "how do i enable font size",
+    "expectedIds": [
+      "FileExplorerPreview_Toggle_Monaco_Font_Size"
+    ],
+    "notes": "semantic:FileExplorerPreview_Toggle_Monaco_Font_Size"
+  },
+  {
+    "group": "semantic",
+    "query": "i want to enable maximum file size to preview",
+    "expectedIds": [
+      "FileExplorerPreview_Toggle_Monaco_Max_File_Size"
+    ],
+    "notes": "semantic:FileExplorerPreview_Toggle_Monaco_Max_File_Size"
+  },
+  {
+    "group": "semantic",
+    "query": "i want to enable binary geometric code",
+    "expectedIds": [
+      "FileExplorerPreview_ToggleSwitch_Preview_BGCODE"
+    ],
+    "notes": "semantic:FileExplorerPreview_ToggleSwitch_Preview_BGCODE"
+  },
+  {
+    "group": "semantic",
+    "query": "how do i enable geometric code",
+    "expectedIds": [
+      "FileExplorerPreview_ToggleSwitch_Preview_GCODE"
+    ],
+    "notes": "semantic:FileExplorerPreview_ToggleSwitch_Preview_GCODE"
+  },
+  {
+    "group": "semantic",
+    "query": "help me enable markdown",
+    "expectedIds": [
+      "FileExplorerPreview_ToggleSwitch_Preview_MD"
+    ],
+    "notes": "semantic:FileExplorerPreview_ToggleSwitch_Preview_MD"
+  },
+  {
+    "group": "semantic",
+    "query": "help me enable source code files (monaco)",
+    "expectedIds": [
+      "FileExplorerPreview_ToggleSwitch_Preview_Monaco"
+    ],
+    "notes": "semantic:FileExplorerPreview_ToggleSwitch_Preview_Monaco"
+  },
+  {
+    "group": "semantic",
+    "query": "how do i enable portable document format",
+    "expectedIds": [
+      "FileExplorerPreview_ToggleSwitch_Preview_PDF"
+    ],
+    "notes": "semantic:FileExplorerPreview_ToggleSwitch_Preview_PDF"
+  },
+  {
+    "group": "semantic",
+    "query": "help me enable quite ok image",
+    "expectedIds": [
+      "FileExplorerPreview_ToggleSwitch_Preview_QOI"
+    ],
+    "notes": "semantic:FileExplorerPreview_ToggleSwitch_Preview_QOI"
+  },
+  {
+    "group": "semantic",
+    "query": "i want to enable scalable vector graphics",
+    "expectedIds": [
+      "FileExplorerPreview_ToggleSwitch_Preview_SVG"
+    ],
+    "notes": "semantic:FileExplorerPreview_ToggleSwitch_Preview_SVG"
+  },
+  {
+    "group": "semantic",
+    "query": "how do i enable binary geometric code",
+    "expectedIds": [
+      "FileExplorerPreview_ToggleSwitch_Thumbnail_BGCODE"
+    ],
+    "notes": "semantic:FileExplorerPreview_ToggleSwitch_Thumbnail_BGCODE"
+  },
+  {
+    "group": "semantic",
+    "query": "i want to enable geometric code",
+    "expectedIds": [
+      "FileExplorerPreview_ToggleSwitch_Thumbnail_GCODE"
+    ],
+    "notes": "semantic:FileExplorerPreview_ToggleSwitch_Thumbnail_GCODE"
+  },
+  {
+    "group": "semantic",
+    "query": "i want to enable portable document format",
+    "expectedIds": [
+      "FileExplorerPreview_ToggleSwitch_Thumbnail_PDF"
+    ],
+    "notes": "semantic:FileExplorerPreview_ToggleSwitch_Thumbnail_PDF"
+  },
+  {
+    "group": "semantic",
+    "query": "where can i enable quite ok image",
+    "expectedIds": [
+      "FileExplorerPreview_ToggleSwitch_Thumbnail_QOI"
+    ],
+    "notes": "semantic:FileExplorerPreview_ToggleSwitch_Thumbnail_QOI"
+  },
+  {
+    "group": "semantic",
+    "query": "help me enable stereolithography",
+    "expectedIds": [
+      "FileExplorerPreview_ToggleSwitch_Thumbnail_STL"
+    ],
+    "notes": "semantic:FileExplorerPreview_ToggleSwitch_Thumbnail_STL"
+  },
+  {
+    "group": "semantic",
+    "query": "how do i enable scalable vector graphics",
+    "expectedIds": [
+      "FileExplorerPreview_ToggleSwitch_Thumbnail_SVG"
+    ],
+    "notes": "semantic:FileExplorerPreview_ToggleSwitch_Thumbnail_SVG"
+  },
+  {
+    "group": "semantic",
+    "query": "where can i enable file locksmith",
+    "expectedIds": [
+      "FileLocksmith_Enable_FileLocksmith"
+    ],
+    "notes": "semantic:FileLocksmith_Enable_FileLocksmith"
+  },
+  {
+    "group": "semantic",
+    "query": "how do i enable show file locksmith in",
+    "expectedIds": [
+      "FileLocksmith_Toggle_ContextMenu"
+    ],
+    "notes": "semantic:FileLocksmith_Toggle_ContextMenu"
+  },
+  {
+    "group": "semantic",
+    "query": "help me manage backup for back up and restore your",
+    "expectedIds": [
+      "General_SettingsBackupAndRestore"
+    ],
+    "notes": "semantic:General_SettingsBackupAndRestore"
+  },
+  {
+    "group": "semantic",
+    "query": "where can i manage backup for location",
+    "expectedIds": [
+      "General_SettingsBackupAndRestoreLocationText"
+    ],
+    "notes": "semantic:General_SettingsBackupAndRestoreLocationText"
+  },
+  {
+    "group": "semantic",
+    "query": "help me manage backup for backup information",
+    "expectedIds": [
+      "General_SettingsBackupAndRestoreStatusInfo"
+    ],
+    "notes": "semantic:General_SettingsBackupAndRestoreStatusInfo"
+  },
+  {
+    "group": "semantic",
+    "query": "where can i configure highlight mode",
+    "expectedIds": [
+      "HighlightMode"
+    ],
+    "notes": "semantic:HighlightMode"
+  },
+  {
+    "group": "semantic",
+    "query": "where can i configure placement of additional content",
+    "expectedIds": [
+      "Hosts_AdditionalLinesPosition"
+    ],
+    "notes": "semantic:Hosts_AdditionalLinesPosition"
+  },
+  {
+    "group": "semantic",
+    "query": "i want to manage backup for backup hosts file",
+    "expectedIds": [
+      "Hosts_Backup"
+    ],
+    "notes": "semantic:Hosts_Backup"
+  },
+  {
+    "group": "semantic",
+    "query": "i want to manage backup for days",
+    "expectedIds": [
+      "Hosts_Backup_DaysInput"
+    ],
+    "notes": "semantic:Hosts_Backup_DaysInput"
+  },
+  {
+    "group": "semantic",
+    "query": "i want to manage backup for location",
+    "expectedIds": [
+      "Hosts_Backup_Location"
+    ],
+    "notes": "semantic:Hosts_Backup_Location"
+  },
+  {
+    "group": "semantic",
+    "query": "how do i manage backup for automatically delete backups",
+    "expectedIds": [
+      "Hosts_Delete_Backup"
+    ],
+    "notes": "semantic:Hosts_Delete_Backup"
+  },
+  {
+    "group": "semantic",
+    "query": "help me configure encoding",
+    "expectedIds": [
+      "Hosts_Encoding"
+    ],
+    "notes": "semantic:Hosts_Encoding"
+  },
+  {
+    "group": "semantic",
+    "query": "how do i configure no leading spaces",
+    "expectedIds": [
+      "Hosts_NoLeadingSpaces"
+    ],
+    "notes": "semantic:Hosts_NoLeadingSpaces"
+  },
+  {
+    "group": "semantic",
+    "query": "where can i enable open as administrator",
+    "expectedIds": [
+      "Hosts_Toggle_LaunchAdministrator"
+    ],
+    "notes": "semantic:Hosts_Toggle_LaunchAdministrator"
+  },
+  {
+    "group": "semantic",
+    "query": "i want to enable consider loopback addresses as duplicates",
+    "expectedIds": [
+      "Hosts_Toggle_LoopbackDuplicates"
+    ],
+    "notes": "semantic:Hosts_Toggle_LoopbackDuplicates"
+  },
+  {
+    "group": "semantic",
+    "query": "help me enable show a warning at startup",
+    "expectedIds": [
+      "Hosts_Toggle_ShowStartupWarning"
+    ],
+    "notes": "semantic:Hosts_Toggle_ShowStartupWarning"
+  },
+  {
+    "group": "semantic",
+    "query": "help me enable image resizer",
+    "expectedIds": [
+      "ImageResizer_EnableToggle"
+    ],
+    "notes": "semantic:ImageResizer_EnableToggle"
+  },
+  {
+    "group": "semantic",
+    "query": "where can i configure jpeg quality level (%)",
+    "expectedIds": [
+      "ImageResizer_Encoding"
+    ],
+    "notes": "semantic:ImageResizer_Encoding"
+  },
+  {
+    "group": "semantic",
+    "query": "help me configure fallback encoder",
+    "expectedIds": [
+      "ImageResizer_FallBackEncoderText"
+    ],
+    "notes": "semantic:ImageResizer_FallBackEncoderText"
+  },
+  {
+    "group": "semantic",
+    "query": "where can i configure file modified timestamp",
+    "expectedIds": [
+      "ImageResizer_FileModifiedDate"
+    ],
+    "notes": "semantic:ImageResizer_FileModifiedDate"
+  },
+  {
+    "group": "semantic",
+    "query": "help me configure png interlacing",
+    "expectedIds": [
+      "ImageResizer_PNGInterlacing"
+    ],
+    "notes": "semantic:ImageResizer_PNGInterlacing"
+  },
+  {
+    "group": "semantic",
+    "query": "how do i configure presets",
+    "expectedIds": [
+      "ImageResizer_Presets"
+    ],
+    "notes": "semantic:ImageResizer_Presets"
+  },
+  {
+    "group": "semantic",
+    "query": "where can i configure tiff compression",
+    "expectedIds": [
+      "ImageResizer_TIFFCompression"
+    ],
+    "notes": "semantic:ImageResizer_TIFFCompression"
+  },
+  {
+    "group": "semantic",
+    "query": "help me configure image to",
+    "expectedIds": [
+      "ImageToText"
+    ],
+    "notes": "semantic:ImageToText"
+  },
+  {
+    "group": "semantic",
+    "query": "how do i enable keyboard manager",
+    "expectedIds": [
+      "KeyboardManager_EnableToggle"
+    ],
+    "notes": "semantic:KeyboardManager_EnableToggle"
+  },
+  {
+    "group": "semantic",
+    "query": "where can i enable theme shortcut",
+    "expectedIds": [
+      "LightSwitch_ThemeToggle_Shortcut"
+    ],
+    "notes": "semantic:LightSwitch_ThemeToggle_Shortcut"
+  },
+  {
+    "group": "semantic",
+    "query": "how do i configure turn off dark mode",
+    "expectedIds": [
+      "LightSwitch_TurnOffDarkMode"
+    ],
+    "notes": "semantic:LightSwitch_TurnOffDarkMode"
+  },
+  {
+    "group": "semantic",
+    "query": "i want to configure turn on dark mode",
+    "expectedIds": [
+      "LightSwitch_TurnOnDarkMode"
+    ],
+    "notes": "semantic:LightSwitch_TurnOnDarkMode"
+  },
+  {
+    "group": "semantic",
+    "query": "where can i change shortcut for activation shortcut",
+    "expectedIds": [
+      "MeasureTool_ActivationShortcut"
+    ],
+    "notes": "semantic:MeasureTool_ActivationShortcut"
+  },
+  {
+    "group": "semantic",
+    "query": "i want to configure capture screen continuously during measuring",
+    "expectedIds": [
+      "MeasureTool_ContinuousCapture"
+    ],
+    "notes": "semantic:MeasureTool_ContinuousCapture"
+  },
+  {
+    "group": "semantic",
+    "query": "help me configure default mode",
+    "expectedIds": [
+      "MeasureTool_DefaultMeasureStyle"
+    ],
+    "notes": "semantic:MeasureTool_DefaultMeasureStyle"
+  },
+  {
+    "group": "semantic",
+    "query": "how do i configure draw feet on cross",
+    "expectedIds": [
+      "MeasureTool_DrawFeetOnCross"
+    ],
+    "notes": "semantic:MeasureTool_DrawFeetOnCross"
+  },
+  {
+    "group": "semantic",
+    "query": "i want to enable screen ruler",
+    "expectedIds": [
+      "MeasureTool_EnableMeasureTool"
+    ],
+    "notes": "semantic:MeasureTool_EnableMeasureTool"
+  },
+  {
+    "group": "semantic",
+    "query": "i want to change line color",
+    "expectedIds": [
+      "MeasureTool_MeasureCrossColor"
+    ],
+    "notes": "semantic:MeasureTool_MeasureCrossColor"
+  },
+  {
+    "group": "semantic",
+    "query": "i want to change per color channel edge detection",
+    "expectedIds": [
+      "MeasureTool_PerColorChannelEdgeDetection"
+    ],
+    "notes": "semantic:MeasureTool_PerColorChannelEdgeDetection"
+  },
+  {
+    "group": "semantic",
+    "query": "i want to configure pixel tolerance for edge detection",
+    "expectedIds": [
+      "MeasureTool_PixelTolerance"
+    ],
+    "notes": "semantic:MeasureTool_PixelTolerance"
+  },
+  {
+    "group": "semantic",
+    "query": "where can i configure extra units of measurement",
+    "expectedIds": [
+      "MeasureTool_UnitsOfMeasure"
+    ],
+    "notes": "semantic:MeasureTool_UnitsOfMeasure"
+  },
+  {
+    "group": "semantic",
+    "query": "i want to change shortcut for activation and behavior",
+    "expectedIds": [
+      "MouseUtils_CursorWrap_ActivationShortcut"
+    ],
+    "notes": "semantic:MouseUtils_CursorWrap_ActivationShortcut"
+  },
+  {
+    "group": "semantic",
+    "query": "help me configure wrap mode",
+    "expectedIds": [
+      "MouseUtils_CursorWrap_WrapMode"
+    ],
+    "notes": "semantic:MouseUtils_CursorWrap_WrapMode"
+  },
+  {
+    "group": "semantic",
+    "query": "help me enable cursorwrap",
+    "expectedIds": [
+      "MouseUtils_Enable_CursorWrap"
+    ],
+    "notes": "semantic:MouseUtils_Enable_CursorWrap"
+  },
+  {
+    "group": "semantic",
+    "query": "help me enable find my mouse",
+    "expectedIds": [
+      "MouseUtils_Enable_FindMyMouse"
+    ],
+    "notes": "semantic:MouseUtils_Enable_FindMyMouse"
+  },
+  {
+    "group": "semantic",
+    "query": "help me enable mouse highlighter",
+    "expectedIds": [
+      "MouseUtils_Enable_MouseHighlighter"
+    ],
+    "notes": "semantic:MouseUtils_Enable_MouseHighlighter"
+  },
+  {
+    "group": "semantic",
+    "query": "how do i enable mouse jump",
+    "expectedIds": [
+      "MouseUtils_Enable_MouseJump"
+    ],
+    "notes": "semantic:MouseUtils_Enable_MouseJump"
+  },
+  {
+    "group": "semantic",
+    "query": "i want to enable mouse pointer crosshairs",
+    "expectedIds": [
+      "MouseUtils_Enable_MousePointerCrosshairs"
+    ],
+    "notes": "semantic:MouseUtils_Enable_MousePointerCrosshairs"
+  },
+  {
+    "group": "semantic",
+    "query": "help me configure activation method",
+    "expectedIds": [
+      "MouseUtils_FindMyMouse_ActivationMethod"
+    ],
+    "notes": "semantic:MouseUtils_FindMyMouse_ActivationMethod"
+  },
+  {
+    "group": "semantic",
+    "query": "i want to change shortcut for activation shortcut",
+    "expectedIds": [
+      "MouseUtils_FindMyMouse_ActivationShortcut"
+    ],
+    "notes": "semantic:MouseUtils_FindMyMouse_ActivationShortcut"
+  },
+  {
+    "group": "semantic",
+    "query": "i want to configure animation duration (ms)",
+    "expectedIds": [
+      "MouseUtils_FindMyMouse_AnimationDurationMs"
+    ],
+    "notes": "semantic:MouseUtils_FindMyMouse_AnimationDurationMs"
+  },
+  {
+    "group": "semantic",
+    "query": "help me change background color",
+    "expectedIds": [
+      "MouseUtils_FindMyMouse_BackgroundColor"
+    ],
+    "notes": "semantic:MouseUtils_FindMyMouse_BackgroundColor"
+  },
+  {
+    "group": "semantic",
+    "query": "i want to configure excluded apps",
+    "expectedIds": [
+      "MouseUtils_FindMyMouse_ExcludedApps"
+    ],
+    "notes": "semantic:MouseUtils_FindMyMouse_ExcludedApps"
+  },
+  {
+    "group": "semantic",
+    "query": "how do i configure shake sensitivity factor (percent)",
+    "expectedIds": [
+      "MouseUtils_FindMyMouse_ShakingFactor"
+    ],
+    "notes": "semantic:MouseUtils_FindMyMouse_ShakingFactor"
+  },
+  {
+    "group": "semantic",
+    "query": "i want to configure shake detection interval (ms)",
+    "expectedIds": [
+      "MouseUtils_FindMyMouse_ShakingIntervalMs"
+    ],
+    "notes": "semantic:MouseUtils_FindMyMouse_ShakingIntervalMs"
+  },
+  {
+    "group": "semantic",
+    "query": "how do i configure minimum shake distance",
+    "expectedIds": [
+      "MouseUtils_FindMyMouse_ShakingMinimumDistance"
+    ],
+    "notes": "semantic:MouseUtils_FindMyMouse_ShakingMinimumDistance"
+  },
+  {
+    "group": "semantic",
+    "query": "where can i change spotlight color",
+    "expectedIds": [
+      "MouseUtils_FindMyMouse_SpotlightColor"
+    ],
+    "notes": "semantic:MouseUtils_FindMyMouse_SpotlightColor"
+  },
+  {
+    "group": "semantic",
+    "query": "where can i configure spotlight initial zoom",
+    "expectedIds": [
+      "MouseUtils_FindMyMouse_SpotlightInitialZoom"
+    ],
+    "notes": "semantic:MouseUtils_FindMyMouse_SpotlightInitialZoom"
+  },
+  {
+    "group": "semantic",
+    "query": "i want to configure spotlight radius (px)",
+    "expectedIds": [
+      "MouseUtils_FindMyMouse_SpotlightRadius"
+    ],
+    "notes": "semantic:MouseUtils_FindMyMouse_SpotlightRadius"
+  },
+  {
+    "group": "semantic",
+    "query": "where can i configure gliding cursor",
+    "expectedIds": [
+      "MouseUtils_GlidingCursor"
+    ],
+    "notes": "semantic:MouseUtils_GlidingCursor"
+  },
+  {
+    "group": "semantic",
+    "query": "how do i configure reduced line speed",
+    "expectedIds": [
+      "MouseUtils_GlidingCursor_DelaySpeed"
+    ],
+    "notes": "semantic:MouseUtils_GlidingCursor_DelaySpeed"
+  },
+  {
+    "group": "semantic",
+    "query": "help me configure initial line speed",
+    "expectedIds": [
+      "MouseUtils_GlidingCursor_InitialSpeed"
+    ],
+    "notes": "semantic:MouseUtils_GlidingCursor_InitialSpeed"
+  },
+  {
+    "group": "semantic",
+    "query": "i want to change shortcut for activation shortcut",
+    "expectedIds": [
+      "MouseUtils_MouseHighlighter_ActivationShortcut"
+    ],
+    "notes": "semantic:MouseUtils_MouseHighlighter_ActivationShortcut"
+  },
+  {
+    "group": "semantic",
+    "query": "how do i change always highlight color",
+    "expectedIds": [
+      "MouseUtils_MouseHighlighter_AlwaysColor"
+    ],
+    "notes": "semantic:MouseUtils_MouseHighlighter_AlwaysColor"
+  },
+  {
+    "group": "semantic",
+    "query": "help me configure fade delay (ms)",
+    "expectedIds": [
+      "MouseUtils_MouseHighlighter_FadeDelayMs"
+    ],
+    "notes": "semantic:MouseUtils_MouseHighlighter_FadeDelayMs"
+  },
+  {
+    "group": "semantic",
+    "query": "i want to configure fade duration (ms)",
+    "expectedIds": [
+      "MouseUtils_MouseHighlighter_FadeDurationMs"
+    ],
+    "notes": "semantic:MouseUtils_MouseHighlighter_FadeDurationMs"
+  },
+  {
+    "group": "semantic",
+    "query": "how do i configure radius (px)",
+    "expectedIds": [
+      "MouseUtils_MouseHighlighter_HighlightRadius"
+    ],
+    "notes": "semantic:MouseUtils_MouseHighlighter_HighlightRadius"
+  },
+  {
+    "group": "semantic",
+    "query": "help me change shortcut for activation shortcut",
+    "expectedIds": [
+      "MouseUtils_MouseJump_ActivationShortcut"
+    ],
+    "notes": "semantic:MouseUtils_MouseJump_ActivationShortcut"
+  },
+  {
+    "group": "semantic",
+    "query": "where can i configure appearance",
+    "expectedIds": [
+      "MouseUtils_MouseJump_Appearance"
+    ],
+    "notes": "semantic:MouseUtils_MouseJump_Appearance"
+  },
+  {
+    "group": "semantic",
+    "query": "where can i change background color 1",
+    "expectedIds": [
+      "MouseUtils_MouseJump_BackgroundColor1"
+    ],
+    "notes": "semantic:MouseUtils_MouseJump_BackgroundColor1"
+  },
+  {
+    "group": "semantic",
+    "query": "i want to change background color 2",
+    "expectedIds": [
+      "MouseUtils_MouseJump_BackgroundColor2"
+    ],
+    "notes": "semantic:MouseUtils_MouseJump_BackgroundColor2"
+  },
+  {
+    "group": "semantic",
+    "query": "help me configure bezel 3d depth",
+    "expectedIds": [
+      "MouseUtils_MouseJump_Bezel3dDepth"
+    ],
+    "notes": "semantic:MouseUtils_MouseJump_Bezel3dDepth"
+  },
+  {
+    "group": "semantic",
+    "query": "i want to change bezel color",
+    "expectedIds": [
+      "MouseUtils_MouseJump_BezelColor"
+    ],
+    "notes": "semantic:MouseUtils_MouseJump_BezelColor"
+  },
+  {
+    "group": "semantic",
+    "query": "help me configure bezel thickness",
+    "expectedIds": [
+      "MouseUtils_MouseJump_BezelThickness"
+    ],
+    "notes": "semantic:MouseUtils_MouseJump_BezelThickness"
+  },
+  {
+    "group": "semantic",
+    "query": "help me configure border 3d depth",
+    "expectedIds": [
+      "MouseUtils_MouseJump_Border3dDepth"
+    ],
+    "notes": "semantic:MouseUtils_MouseJump_Border3dDepth"
+  },
+  {
+    "group": "semantic",
+    "query": "i want to change border color",
+    "expectedIds": [
+      "MouseUtils_MouseJump_BorderColor"
+    ],
+    "notes": "semantic:MouseUtils_MouseJump_BorderColor"
+  },
+  {
+    "group": "semantic",
+    "query": "i want to configure border padding",
+    "expectedIds": [
+      "MouseUtils_MouseJump_BorderPadding"
+    ],
+    "notes": "semantic:MouseUtils_MouseJump_BorderPadding"
+  },
+  {
+    "group": "semantic",
+    "query": "help me configure border thickness",
+    "expectedIds": [
+      "MouseUtils_MouseJump_BorderThickness"
+    ],
+    "notes": "semantic:MouseUtils_MouseJump_BorderThickness"
+  },
+  {
+    "group": "semantic",
+    "query": "where can i set preview for preview style",
+    "expectedIds": [
+      "MouseUtils_MouseJump_PreviewType"
+    ],
+    "notes": "semantic:MouseUtils_MouseJump_PreviewType"
+  },
+  {
+    "group": "semantic",
+    "query": "where can i change screen color 1",
+    "expectedIds": [
+      "MouseUtils_MouseJump_ScreenColor1"
+    ],
+    "notes": "semantic:MouseUtils_MouseJump_ScreenColor1"
+  },
+  {
+    "group": "semantic",
+    "query": "i want to change screen color 2",
+    "expectedIds": [
+      "MouseUtils_MouseJump_ScreenColor2"
+    ],
+    "notes": "semantic:MouseUtils_MouseJump_ScreenColor2"
+  },
+  {
+    "group": "semantic",
+    "query": "help me configure screen spacing",
+    "expectedIds": [
+      "MouseUtils_MouseJump_ScreenMargin"
+    ],
+    "notes": "semantic:MouseUtils_MouseJump_ScreenMargin"
+  },
+  {
+    "group": "semantic",
+    "query": "how do i set preview for thumbnail size",
+    "expectedIds": [
+      "MouseUtils_MouseJump_ThumbnailSize"
+    ],
+    "notes": "semantic:MouseUtils_MouseJump_ThumbnailSize"
+  },
+  {
+    "group": "semantic",
+    "query": "where can i change shortcut for activation shortcut",
+    "expectedIds": [
+      "MouseUtils_MousePointerCrosshairs_ActivationShortcut"
+    ],
+    "notes": "semantic:MouseUtils_MousePointerCrosshairs_ActivationShortcut"
+  },
+  {
+    "group": "semantic",
+    "query": "where can i change crosshairs border color",
+    "expectedIds": [
+      "MouseUtils_MousePointerCrosshairs_CrosshairsBorderColor"
+    ],
+    "notes": "semantic:MouseUtils_MousePointerCrosshairs_CrosshairsBorderColor"
+  },
+  {
+    "group": "semantic",
+    "query": "where can i configure crosshairs border size (px)",
+    "expectedIds": [
+      "MouseUtils_MousePointerCrosshairs_CrosshairsBorderSize"
+    ],
+    "notes": "semantic:MouseUtils_MousePointerCrosshairs_CrosshairsBorderSize"
+  },
+  {
+    "group": "semantic",
+    "query": "help me change crosshairs color",
+    "expectedIds": [
+      "MouseUtils_MousePointerCrosshairs_CrosshairsColor"
+    ],
+    "notes": "semantic:MouseUtils_MousePointerCrosshairs_CrosshairsColor"
+  },
+  {
+    "group": "semantic",
+    "query": "i want to configure crosshairs fixed length (px)",
+    "expectedIds": [
+      "MouseUtils_MousePointerCrosshairs_CrosshairsFixedLength"
+    ],
+    "notes": "semantic:MouseUtils_MousePointerCrosshairs_CrosshairsFixedLength"
+  },
+  {
+    "group": "semantic",
+    "query": "where can i change crosshairs opacity (%)",
+    "expectedIds": [
+      "MouseUtils_MousePointerCrosshairs_CrosshairsOpacity"
+    ],
+    "notes": "semantic:MouseUtils_MousePointerCrosshairs_CrosshairsOpacity"
+  },
+  {
+    "group": "semantic",
+    "query": "how do i configure crosshairs orientation",
+    "expectedIds": [
+      "MouseUtils_MousePointerCrosshairs_CrosshairsOrientation"
+    ],
+    "notes": "semantic:MouseUtils_MousePointerCrosshairs_CrosshairsOrientation"
+  },
+  {
+    "group": "semantic",
+    "query": "how do i configure crosshairs center radius (px)",
+    "expectedIds": [
+      "MouseUtils_MousePointerCrosshairs_CrosshairsRadius"
+    ],
+    "notes": "semantic:MouseUtils_MousePointerCrosshairs_CrosshairsRadius"
+  },
+  {
+    "group": "semantic",
+    "query": "how do i configure crosshairs thickness (px)",
+    "expectedIds": [
+      "MouseUtils_MousePointerCrosshairs_CrosshairsThickness"
+    ],
+    "notes": "semantic:MouseUtils_MousePointerCrosshairs_CrosshairsThickness"
+  },
+  {
+    "group": "semantic",
+    "query": "where can i enable fix crosshairs length",
+    "expectedIds": [
+      "MouseUtils_MousePointerCrosshairs_IsCrosshairsFixedLengthEnabled"
+    ],
+    "notes": "semantic:MouseUtils_MousePointerCrosshairs_IsCrosshairsFixedLengthEnabled"
+  },
+  {
+    "group": "semantic",
+    "query": "i want to configure block mouse at screen corners",
+    "expectedIds": [
+      "MouseWithoutBorders_BlockMouseAtScreenCorners"
+    ],
+    "notes": "semantic:MouseWithoutBorders_BlockMouseAtScreenCorners"
+  },
+  {
+    "group": "semantic",
+    "query": "how do i configure block screen saver on other machines",
+    "expectedIds": [
+      "MouseWithoutBorders_BlockScreenSaverOnOtherMachines"
+    ],
+    "notes": "semantic:MouseWithoutBorders_BlockScreenSaverOnOtherMachines"
+  },
+  {
+    "group": "semantic",
+    "query": "how do i configure disable easy mouse when an application is running in full screen.",
+    "expectedIds": [
+      "MouseWithoutBorders_DisableEasyMouseWhenForegroundWindowIsFullscreen"
+    ],
+    "notes": "semantic:MouseWithoutBorders_DisableEasyMouseWhenForegroundWindowIsFullscreen"
+  },
+  {
+    "group": "semantic",
+    "query": "where can i configure mouse without borders disable easy mouse when foreground window is fullscreen excluded apps",
+    "expectedIds": [
+      "MouseWithoutBorders_DisableEasyMouseWhenForegroundWindowIsFullscreen_ExcludedApps"
+    ],
+    "notes": "semantic:MouseWithoutBorders_DisableEasyMouseWhenForegroundWindowIsFullscreen_ExcludedApps"
+  },
+  {
+    "group": "semantic",
+    "query": "i want to configure draw mouse cursor",
+    "expectedIds": [
+      "MouseWithoutBorders_DrawMouseCursor"
+    ],
+    "notes": "semantic:MouseWithoutBorders_DrawMouseCursor"
+  },
+  {
+    "group": "semantic",
+    "query": "where can i configure easy mouse: move between machines by moving the mouse pointer to the screen edges.",
+    "expectedIds": [
+      "MouseWithoutBorders_EasyMouseOption"
+    ],
+    "notes": "semantic:MouseWithoutBorders_EasyMouseOption"
+  },
+  {
+    "group": "semantic",
+    "query": "i want to configure hide mouse at the screen edge",
+    "expectedIds": [
+      "MouseWithoutBorders_HideMouseAtScreenEdge"
+    ],
+    "notes": "semantic:MouseWithoutBorders_HideMouseAtScreenEdge"
+  },
+  {
+    "group": "semantic",
+    "query": "how do i configure ip address mapping",
+    "expectedIds": [
+      "MouseWithoutBorders_IPAddressMapping"
+    ],
+    "notes": "semantic:MouseWithoutBorders_IPAddressMapping"
+  },
+  {
+    "group": "semantic",
+    "query": "i want to change shortcut for shortcut to lock all machines.",
+    "expectedIds": [
+      "MouseWithoutBorders_LockMachinesShortcut"
+    ],
+    "notes": "semantic:MouseWithoutBorders_LockMachinesShortcut"
+  },
+  {
+    "group": "semantic",
+    "query": "how do i configure devices in a single row",
+    "expectedIds": [
+      "MouseWithoutBorders_MatrixOneRow"
+    ],
+    "notes": "semantic:MouseWithoutBorders_MatrixOneRow"
+  },
+  {
+    "group": "semantic",
+    "query": "i want to configure move mouse relatively",
+    "expectedIds": [
+      "MouseWithoutBorders_MoveMouseRelatively"
+    ],
+    "notes": "semantic:MouseWithoutBorders_MoveMouseRelatively"
+  },
+  {
+    "group": "semantic",
+    "query": "i want to change shortcut for shortcut to try reconnecting",
+    "expectedIds": [
+      "MouseWithoutBorders_ReconnectShortcut"
+    ],
+    "notes": "semantic:MouseWithoutBorders_ReconnectShortcut"
+  },
+  {
+    "group": "semantic",
+    "query": "i want to configure same subnet only",
+    "expectedIds": [
+      "MouseWithoutBorders_SameSubnetOnly"
+    ],
+    "notes": "semantic:MouseWithoutBorders_SameSubnetOnly"
+  },
+  {
+    "group": "semantic",
+    "query": "i want to configure security key",
+    "expectedIds": [
+      "MouseWithoutBorders_SecurityKey"
+    ],
+    "notes": "semantic:MouseWithoutBorders_SecurityKey"
+  },
+  {
+    "group": "semantic",
+    "query": "how do i configure share clipboard",
+    "expectedIds": [
+      "MouseWithoutBorders_ShareClipboard"
+    ],
+    "notes": "semantic:MouseWithoutBorders_ShareClipboard"
+  },
+  {
+    "group": "semantic",
+    "query": "help me configure show clipboard and network status messages",
+    "expectedIds": [
+      "MouseWithoutBorders_ShowClipboardAndNetworkStatusMessages"
+    ],
+    "notes": "semantic:MouseWithoutBorders_ShowClipboardAndNetworkStatusMessages"
+  },
+  {
+    "group": "semantic",
+    "query": "where can i change shortcut for shortcut to switch to multiple machine mode.",
+    "expectedIds": [
+      "MouseWithoutBorders_Switch2AllPcShortcut"
+    ],
+    "notes": "semantic:MouseWithoutBorders_Switch2AllPcShortcut"
+  },
+  {
+    "group": "semantic",
+    "query": "i want to change shortcut for shortcut to switch between machines. ctrl+alt+:",
+    "expectedIds": [
+      "MouseWithoutBorders_SwitchBetweenMachineShortcut"
+    ],
+    "notes": "semantic:MouseWithoutBorders_SwitchBetweenMachineShortcut"
+  },
+  {
+    "group": "semantic",
+    "query": "where can i enable mouse without borders",
+    "expectedIds": [
+      "MouseWithoutBorders_Toggle_Enable"
+    ],
+    "notes": "semantic:MouseWithoutBorders_Toggle_Enable"
+  },
+  {
+    "group": "semantic",
+    "query": "i want to enable shortcut to easy mouse.",
+    "expectedIds": [
+      "MouseWithoutBorders_ToggleEasyMouseShortcut"
+    ],
+    "notes": "semantic:MouseWithoutBorders_ToggleEasyMouseShortcut"
+  }
+]

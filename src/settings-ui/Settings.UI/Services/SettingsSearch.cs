@@ -12,6 +12,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Common.Search;
+using Common.Search.FuzzSearch;
 using Common.Search.SemanticSearch;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
@@ -29,9 +30,11 @@ namespace Microsoft.PowerToys.Settings.UI.Services
         private readonly Dictionary<string, string> _pageNameCache = [];
         private readonly Dictionary<string, Type> _pageTypeCache = new();
         private readonly ISearchEngine<SettingEntry> _searchEngine;
+        private readonly ISearchEngine<SettingEntry> _fallbackSearchEngine;
         private ImmutableArray<SettingEntry> _index = [];
         private bool _isIndexBuilt;
         private bool _isIndexBuilding;
+        private bool _isFallbackIndexBuilt;
         private bool _disposed;
         private Task _buildTask;
 
@@ -45,10 +48,11 @@ namespace Microsoft.PowerToys.Settings.UI.Services
         {
         }
 
-        public SettingsSearch(ISearchEngine<SettingEntry> searchEngine)
+        public SettingsSearch(ISearchEngine<SettingEntry> searchEngine, ISearchEngine<SettingEntry> fallbackSearchEngine = null)
         {
             ArgumentNullException.ThrowIfNull(searchEngine);
             _searchEngine = searchEngine;
+            _fallbackSearchEngine = fallbackSearchEngine ?? new FuzzSearchEngine<SettingEntry>();
         }
 
         public static SettingsSearch Default => DefaultInstance.Value;
@@ -118,6 +122,7 @@ namespace Microsoft.PowerToys.Settings.UI.Services
             {
                 _isIndexBuilding = true;
                 _isIndexBuilt = false;
+                _isFallbackIndexBuilt = false;
                 _index = builtIndex;
                 _pageNameCache.Clear();
                 _pageTypeCache.Clear();
@@ -125,6 +130,37 @@ namespace Microsoft.PowerToys.Settings.UI.Services
 
             Logger.LogInfo($"[SettingsSearch] Initializing index. Entries={builtIndex.Length}, Engine={_searchEngine.GetType().Name}.");
             CachePageNames(builtIndex);
+
+            try
+            {
+                // Build a lightweight fallback index first so search remains available
+                // while semantic indexing is still warming up.
+                if (_fallbackSearchEngine.IsReady)
+                {
+                    await _fallbackSearchEngine.ClearAsync(cancellationToken).ConfigureAwait(false);
+                }
+                else
+                {
+                    await _fallbackSearchEngine.InitializeAsync(cancellationToken).ConfigureAwait(false);
+                }
+
+                if (_fallbackSearchEngine.IsReady)
+                {
+                    await _fallbackSearchEngine.IndexBatchAsync(builtIndex, cancellationToken).ConfigureAwait(false);
+                    lock (_lockObject)
+                    {
+                        _isFallbackIndexBuilt = true;
+                    }
+                }
+                else
+                {
+                    Logger.LogWarning("[SettingsSearch] Fallback search engine is not ready after initialization.");
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"[SettingsSearch] ERROR initializing fallback search engine: {ex.Message}", ex);
+            }
 
             try
             {
@@ -179,7 +215,26 @@ namespace Microsoft.PowerToys.Settings.UI.Services
                 return Array.Empty<SettingSearchResult>();
             }
 
-            if (!IsReady)
+            bool useFallback = false;
+            ISearchEngine<SettingEntry> engineToUse = null;
+            lock (_lockObject)
+            {
+                if (_isIndexBuilt && _searchEngine.IsReady)
+                {
+                    engineToUse = _searchEngine;
+                }
+                else if (_isFallbackIndexBuilt && _fallbackSearchEngine.IsReady)
+                {
+                    engineToUse = _fallbackSearchEngine;
+                    useFallback = true;
+                }
+                else
+                {
+                    engineToUse = null;
+                }
+            }
+
+            if (engineToUse == null)
             {
                 Logger.LogWarning("[SettingsSearch] Search called but index is not ready.");
                 return Array.Empty<SettingSearchResult>();
@@ -194,9 +249,14 @@ namespace Microsoft.PowerToys.Settings.UI.Services
             try
             {
                 var sw = Stopwatch.StartNew();
+                if (useFallback)
+                {
+                    Logger.LogDebug("[SettingsSearch] Using fallback search engine for query.");
+                }
+
                 Logger.LogDebug($"[SettingsSearch] Search start. QueryLength={query.Length}, MaxResults={effectiveOptions.MaxResults}.");
                 var results = await Task.Run(
-                    () => _searchEngine.SearchAsync(query, effectiveOptions, token),
+                    () => engineToUse.SearchAsync(query, effectiveOptions, token),
                     token).ConfigureAwait(false);
                 var filtered = FilterValidPageTypes(results);
                 sw.Stop();
@@ -244,6 +304,7 @@ namespace Microsoft.PowerToys.Settings.UI.Services
             }
 
             _searchEngine.Dispose();
+            _fallbackSearchEngine.Dispose();
             _disposed = true;
         }
 

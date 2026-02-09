@@ -1,19 +1,34 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <!-- Look at Directory.Build.props in root for common stuff as well -->
   <Import Project="..\..\src\Common.Dotnet.CsWinRT.props" />
+  <Import Project="..\..\src\Common.SelfContained.props" />
+
+  <PropertyGroup Condition="'$(UseSparseIdentity)'==''">
+    <UseSparseIdentity>false</UseSparseIdentity>
+  </PropertyGroup>
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <RootNamespace>SettingsSearchEvaluation</RootNamespace>
     <AssemblyName>SettingsSearchEvaluation</AssemblyName>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
     <WindowsPackageType>None</WindowsPackageType>
+    <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+    <WindowsAppSDKBootstrapAutoInitializeOptions_OnPackageIdentity_NoOp>true</WindowsAppSDKBootstrapAutoInitializeOptions_OnPackageIdentity_NoOp>
+    <OutputPath>..\..\$(Platform)\$(Configuration)\</OutputPath>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <DefaultItemExcludes>$(DefaultItemExcludes);artifacts\**\*;bin\**\*;obj\**\*</DefaultItemExcludes>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(UseSparseIdentity)'=='true'">
+    <WindowsAppSDKSelfContained>false</WindowsAppSDKSelfContained>
+    <WindowsAppSDKBootstrapAutoInitializeOptions_OnPackageIdentity_NoOp>true</WindowsAppSDKBootstrapAutoInitializeOptions_OnPackageIdentity_NoOp>
+  </PropertyGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\..\src\common\Common.Search\Common.Search.csproj" />
-    <ProjectReference Include="..\..\src\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
   </ItemGroup>
 </Project>
