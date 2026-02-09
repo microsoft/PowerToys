@@ -112,7 +112,7 @@ There are <a href="https://learn.microsoft.com/windows/powertoys/install#communi
 
 ## Color Picker
 
-- #45367 Fixed contract issue in Color Picker UI
+- #45367 Fixed contrast issue in Color Picker UI
 
 ## Cursor Wrap
 
