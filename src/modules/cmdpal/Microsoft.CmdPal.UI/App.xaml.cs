@@ -13,6 +13,7 @@ using Microsoft.CmdPal.Ext.Bookmarks;
 using Microsoft.CmdPal.Ext.Calc;
 using Microsoft.CmdPal.Ext.ClipboardHistory;
 using Microsoft.CmdPal.Ext.Indexer;
+using Microsoft.CmdPal.Ext.PerformanceMonitor;
 using Microsoft.CmdPal.Ext.Registry;
 using Microsoft.CmdPal.Ext.RemoteDesktop;
 using Microsoft.CmdPal.Ext.Shell;
@@ -177,6 +178,7 @@ public partial class App : Application, IDisposable
         services.AddSingleton<ICommandProvider, TimeDateCommandsProvider>();
         services.AddSingleton<ICommandProvider, SystemCommandExtensionProvider>();
         services.AddSingleton<ICommandProvider, RemoteDesktopCommandProvider>();
+        services.AddSingleton<ICommandProvider, PerformanceMonitorCommandsProvider>();
     }
 
     private static void AddUIServices(ServiceCollection services, DispatcherQueue dispatcherQueue)
