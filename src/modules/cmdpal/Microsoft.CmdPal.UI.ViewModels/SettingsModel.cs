@@ -74,6 +74,8 @@ public partial class SettingsModel : ObservableObject
 
     public int CustomThemeColorIntensity { get; set; } = 100;
 
+    public int BackgroundImageTintIntensity { get; set; }
+
     public int BackgroundImageOpacity { get; set; } = 20;
 
     public int BackgroundImageBlurAmount { get; set; }
@@ -83,6 +85,10 @@ public partial class SettingsModel : ObservableObject
     public BackgroundImageFit BackgroundImageFit { get; set; }
 
     public string? BackgroundImagePath { get; set; }
+
+    public BackdropStyle BackdropStyle { get; set; }
+
+    public int BackdropOpacity { get; set; } = 100;
 
     // END SETTINGS
     ///////////////////////////////////////////////////////////////////////////
