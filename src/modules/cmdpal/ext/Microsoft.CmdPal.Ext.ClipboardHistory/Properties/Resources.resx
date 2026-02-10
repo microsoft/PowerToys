@@ -261,4 +261,16 @@
   <data name="metadata_web_link_fragment_key" xml:space="preserve">
     <value>Fragment</value>
   </data>
+  <data name="clipboard_item_image_title" xml:space="preserve">
+    <value>Image</value>
+  </data>
+  <data name="metadata_general_section_title" xml:space="preserve">
+    <value>General</value>
+  </data>
+  <data name="metadata_copied_key" xml:space="preserve">
+    <value>Copied</value>
+  </data>
+  <data name="metadata_file_system_folder_value" xml:space="preserve">
+    <value>Folder</value>
+  </data>
 </root>

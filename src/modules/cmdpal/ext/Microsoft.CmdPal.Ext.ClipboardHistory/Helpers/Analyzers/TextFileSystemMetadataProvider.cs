@@ -70,7 +70,7 @@ internal sealed class TextFileSystemMetadataProvider : IClipboardMetadataProvide
                 var di = new DirectoryInfo(path);
                 result.Add(new DetailsElement { Key = Resources.metadata_file_system_name_key, Data = new DetailsLink(di.Name) });
                 result.Add(new DetailsElement { Key = Resources.metadata_file_system_location_key, Data = new DetailsLink(UrlHelper.NormalizeUrl(di.FullName), di.FullName) });
-                result.Add(new DetailsElement { Key = Resources.metadata_file_system_type_key, Data = new DetailsLink("Folder") });
+                result.Add(new DetailsElement { Key = Resources.metadata_file_system_type_key, Data = new DetailsLink(Resources.metadata_file_system_folder_value) });
                 result.Add(new DetailsElement { Key = Resources.metadata_file_system_modified_key, Data = new DetailsLink(di.LastWriteTime.ToString(CultureInfo.CurrentCulture)) });
                 result.Add(new DetailsElement { Key = Resources.metadata_file_system_created_key, Data = new DetailsLink(di.CreationTime.ToString(CultureInfo.CurrentCulture)) });
             }

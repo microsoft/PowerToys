@@ -79,6 +79,15 @@ namespace Microsoft.CmdPal.Ext.ClipboardHistory.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Image.
+        /// </summary>
+        public static string clipboard_item_image_title {
+            get {
+                return ResourceManager.GetString("clipboard_item_image_title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Copied to clipboard.
         /// </summary>
         public static string copied_toast_text {
@@ -151,11 +160,29 @@ namespace Microsoft.CmdPal.Ext.ClipboardHistory.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Copied.
+        /// </summary>
+        public static string metadata_copied_key {
+            get {
+                return ResourceManager.GetString("metadata_copied_key", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Created.
         /// </summary>
         public static string metadata_file_system_created_key {
             get {
                 return ResourceManager.GetString("metadata_file_system_created_key", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Folder.
+        /// </summary>
+        public static string metadata_file_system_folder_value {
+            get {
+                return ResourceManager.GetString("metadata_file_system_folder_value", resourceCulture);
             }
         }
         
@@ -210,6 +237,15 @@ namespace Microsoft.CmdPal.Ext.ClipboardHistory.Properties {
         public static string metadata_file_system_type_key {
             get {
                 return ResourceManager.GetString("metadata_file_system_type_key", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to General.
+        /// </summary>
+        public static string metadata_general_section_title {
+            get {
+                return ResourceManager.GetString("metadata_general_section_title", resourceCulture);
             }
         }
         
