@@ -394,7 +394,7 @@ namespace Microsoft.CmdPal.Ext.ClipboardHistory.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Link.
+        ///   Looks up a localized string similar to Web link.
         /// </summary>
         public static string metadata_web_link_section_title {
             get {
