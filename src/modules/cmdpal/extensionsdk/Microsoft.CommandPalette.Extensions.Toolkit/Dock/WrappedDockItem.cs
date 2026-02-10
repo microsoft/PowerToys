@@ -19,16 +19,10 @@ public partial class WrappedDockItem : CommandItem
 {
     public override string Title => _itemTitle;
 
-    public override IIconInfo? Icon
-    {
-        get => _icon; set { _icon = value; }
-    }
-
     public override ICommand? Command => _backingList;
 
     private readonly string _itemTitle;
     private readonly WrappedDockList _backingList;
-    private IIconInfo? _icon;
 
     public IListItem[] Items { get => _backingList.GetItems(); set => _backingList.SetItems(value); }
 
@@ -38,7 +32,7 @@ public partial class WrappedDockItem : CommandItem
     {
         _backingList = new WrappedDockList(command);
         _itemTitle = string.IsNullOrEmpty(displayTitle) ? command.Name : displayTitle;
-        _icon = command.Icon;
+        Icon = command.Icon;
     }
 
     // This was too much of a foot gun - we'd internally create a ListItem that
