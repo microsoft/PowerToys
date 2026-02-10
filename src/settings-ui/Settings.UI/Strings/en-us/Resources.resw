@@ -2950,7 +2950,7 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Activation shortcut</value>
   </data>
   <data name="MouseUtils_MouseHighlighter_ActivationShortcut.Description" xml:space="preserve">
-    <value>Customize the shortcut to turn on or off this mode</value>
+    <value>Customize the shortcut used to turn this mode on or off</value>
     <comment>"Mouse Highlighter" is the name of the utility. Mouse is the hardware mouse.</comment>
   </data>
   <data name="MouseUtils_MouseHighlighter_PrimaryButtonClickColor.Header" xml:space="preserve">
@@ -4285,7 +4285,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <comment>"Mouse Jump" is the name of the utility.</comment>
   </data>
   <data name="MouseUtils_MouseJump_ActivationShortcut.Description" xml:space="preserve">
-    <value>Customize the shortcut to turn on or off this mode</value>
+    <value>Customize the shortcut used to turn this mode on or off</value>
   </data>
   <data name="MouseUtils_MouseJump_ActivationShortcut.Header" xml:space="preserve">
     <value>Activation shortcut</value>
@@ -4489,7 +4489,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <comment>Right control is the physical key on the keyboard.</comment>
   </data>
   <data name="MouseUtils_FindMyMouse_ActivationShortcut.Description" xml:space="preserve">
-    <value>Customize the shortcut to turn on or off this mode</value>
+    <value>Customize the shortcut used to turn this mode on or off</value>
   </data>
   <data name="MouseUtils_FindMyMouse_ActivationShortcut.Header" xml:space="preserve">
     <value>Activation shortcut</value>
