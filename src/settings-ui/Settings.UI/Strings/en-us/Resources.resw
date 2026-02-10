@@ -274,7 +274,7 @@
     <value>Uninstall service</value>
   </data>
   <data name="MouseWithoutBorders_UninstallService.Description" xml:space="preserve">
-    <value>Removes the service from the computer. Needs to run as administrator.</value>
+    <value>Removes the service from the computer; administrator access is required</value>
   </data>
   <data name="MouseWithoutBorders_Settings.Header" xml:space="preserve">
     <value>Behavior</value>
