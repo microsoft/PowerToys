@@ -121,6 +121,54 @@ namespace KeyboardManagerEditorUI.Interop
         [DllImport(DllName)]
         internal static extern void FreeString(IntPtr str);
 
+        // Mouse Button Remap Functions
+        [DllImport(DllName)]
+        internal static extern int GetMouseButtonRemapCount(IntPtr config);
+
+        [DllImport(DllName)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool GetMouseButtonRemap(IntPtr config, int index, ref MouseButtonMapping mapping);
+
+        [DllImport(DllName)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool AddMouseButtonRemap(
+            IntPtr config,
+            int originalButton,
+            [MarshalAs(UnmanagedType.LPWStr)] string targetKeys,
+            [MarshalAs(UnmanagedType.LPWStr)] string targetApp,
+            int targetType,
+            [MarshalAs(UnmanagedType.LPWStr)] string targetText,
+            [MarshalAs(UnmanagedType.LPWStr)] string programPath,
+            [MarshalAs(UnmanagedType.LPWStr)] string programArgs,
+            [MarshalAs(UnmanagedType.LPWStr)] string uriToOpen);
+
+        [DllImport(DllName)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool DeleteMouseButtonRemap(IntPtr config, int originalButton, [MarshalAs(UnmanagedType.LPWStr)] string targetApp);
+
+        // Key to Mouse Remap Functions
+        [DllImport(DllName)]
+        internal static extern int GetKeyToMouseRemapCount(IntPtr config);
+
+        [DllImport(DllName)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool GetKeyToMouseRemap(IntPtr config, int index, ref KeyToMouseMappingInterop mapping);
+
+        [DllImport(DllName)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool AddKeyToMouseRemap(IntPtr config, int originalKey, int targetMouseButton, [MarshalAs(UnmanagedType.LPWStr)] string targetApp);
+
+        [DllImport(DllName)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool DeleteKeyToMouseRemap(IntPtr config, int originalKey, [MarshalAs(UnmanagedType.LPWStr)] string targetApp);
+
+        // Mouse Button Utility Functions
+        [DllImport(DllName, CharSet = CharSet.Unicode)]
+        internal static extern void GetMouseButtonName(int buttonCode, [Out] StringBuilder buttonName, int maxLength);
+
+        [DllImport(DllName)]
+        internal static extern int GetMouseButtonFromName([MarshalAs(UnmanagedType.LPWStr)] string buttonName);
+
         public static string GetStringAndFree(IntPtr handle)
         {
             if (handle == IntPtr.Zero)
@@ -161,5 +209,40 @@ namespace KeyboardManagerEditorUI.Interop
         public IntPtr ProgramPath;
         public IntPtr ProgramArgs;
         public IntPtr UriToOpen;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct MouseButtonMapping
+    {
+        public int OriginalButton;      // MouseButton enum value (0-6)
+        public IntPtr TargetKeys;       // Target key/shortcut string
+        public IntPtr TargetApp;        // Empty for global, app name for app-specific
+        public int TargetType;          // 0=Key, 1=Shortcut, 2=Text, 3=RunProgram, 4=OpenUri
+        public IntPtr TargetText;       // For text mappings
+        public IntPtr ProgramPath;      // For RunProgram
+        public IntPtr ProgramArgs;      // For RunProgram
+        public IntPtr UriToOpen;        // For OpenUri
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct KeyToMouseMappingInterop
+    {
+        public int OriginalKey;         // Original key code (DWORD)
+        public int TargetMouseButton;   // MouseButton enum value (0-6)
+        public IntPtr TargetApp;        // Empty for global, app name for app-specific
+    }
+
+    /// <summary>
+    /// Mouse button enum values matching the C++ MouseButton enum.
+    /// </summary>
+    public enum MouseButtonCode
+    {
+        Left = 0,
+        Right = 1,
+        Middle = 2,
+        X1 = 3,      // Back button
+        X2 = 4,      // Forward button
+        ScrollUp = 5,
+        ScrollDown = 6,
     }
 }
