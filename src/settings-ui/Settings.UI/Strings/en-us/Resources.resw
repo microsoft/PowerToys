@@ -250,7 +250,7 @@
     <value>Security key</value>
   </data>
   <data name="MouseWithoutBorders_SecurityKey.Description" xml:space="preserve">
-    <value>To set up, generate the key on one machine, and enter it manually on other machines.</value>
+    <value>To set up, generate the key on one machine, and enter it manually on other machines</value>
   </data>
   <data name="MouseWithoutBorders_NewKey.Content" xml:space="preserve">
     <value>New key</value>
@@ -262,7 +262,7 @@
     <value>Refresh connections</value>
   </data>
   <data name="MouseWithoutBorders_ReconnectTooltip.Text" xml:space="preserve">
-    <value>Reestablishes connections with other devices if you are experiencing issues.</value>
+    <value>Reestablishes connections with other devices if issues occur</value>
   </data>
   <data name="MouseWithoutBorders_ThisMachineNameLabel.Header" xml:space="preserve">
     <value>Host name of this device</value>
@@ -287,7 +287,7 @@
     <comment>"Mouse Without Borders" is a product name</comment>
   </data>
   <data name="MouseWithoutBorders_AddFirewallRuleButtonControl.Description" xml:space="preserve">
-    <value>Adding a firewall rule might help solve connection issues.</value>
+    <value>Adding a firewall rule might help solve connection issues</value>
   </data>
   <data name="MouseWithoutBorders_RunAsAdminText.Title" xml:space="preserve">
     <value>This setting can only be changed when running as administrator</value>
@@ -317,31 +317,31 @@
     <value>Use Service</value>
   </data>
   <data name="MouseWithoutBorders_UseService.Description" xml:space="preserve">
-    <value>Runs in service mode, that allows MWB to control remote machines when they're locked. Also allows control of system and administrator applications.</value>
+    <value>Runs in service mode, allowing MWB to control locked remote machines and system or administrator applications</value>
   </data>
   <data name="MouseWithoutBorders_MatrixOneRow.Header" xml:space="preserve">
     <value>Devices in a single row</value>
   </data>
   <data name="MouseWithoutBorders_MatrixOneRow.Description" xml:space="preserve">
-    <value>Sets whether the devices are aligned on a single row. A two by two matrix is considered otherwise.</value>
+    <value>Sets whether the devices are aligned on a single row. A two by two matrix is considered otherwise</value>
   </data>
-  <data name="MouseWithoutBorders_WrapMouse.Header" xml:space="preserve">
-    <value>Wrap mouse</value>
-  </data>
-  <data name="MouseWithoutBorders_WrapMouse.Description" xml:space="preserve">
-    <value>Move control back to the first machine when mouse moves past the last one.</value>
+  <data name="MouseWithoutBorders_WrapMouse.Content" xml:space="preserve">
+    <value>Move the mouse back to the first machine when it passes the last one</value>
   </data>
   <data name="MouseWithoutBorders_ShareClipboard.Header" xml:space="preserve">
     <value>Share clipboard</value>
   </data>
-  <data name="MouseWithoutBorders_TransferFile.Header" xml:space="preserve">
-    <value>Transfer file</value>
+  <data name="MouseWithoutBorders_TransferFile.Content" xml:space="preserve">
+    <value>Transfer copied files to the remote machine’s clipboard (up to 100 MB)</value>
   </data>
   <data name="MouseWithoutBorders_HideMouseAtScreenEdge.Header" xml:space="preserve">
     <value>Hide mouse at the screen edge</value>
   </data>
   <data name="MouseWithoutBorders_DrawMouseCursor.Header" xml:space="preserve">
     <value>Draw mouse cursor</value>
+  </data>
+	<data name="MouseWithoutBorders_MouseBehavior.Header" xml:space="preserve">
+    <value>Mouse behavior</value>
   </data>
   <data name="MouseWithoutBorders_ValidateRemoteMachineIP.Header" xml:space="preserve">
     <value>Validate remote machine IP</value>
@@ -355,8 +355,8 @@
   <data name="MouseWithoutBorders_MoveMouseRelatively.Header" xml:space="preserve">
     <value>Move mouse relatively</value>
   </data>
-  <data name="MouseWithoutBorders_BlockMouseAtScreenCorners.Header" xml:space="preserve">
-    <value>Block mouse at screen corners</value>
+  <data name="MouseWithoutBorders_BlockMouseAtScreenCorners.Content" xml:space="preserve">
+    <value>Block mouse at screen corners to avoid acc</value>
   </data>
   <data name="MouseWithoutBorders_ShowClipboardAndNetworkStatusMessages.Header" xml:space="preserve">
     <value>Show clipboard and network status messages</value>
@@ -365,22 +365,19 @@
     <value>Show the original Mouse Without Borders UI</value>
   </data>
   <data name="MouseWithoutBorders_ShowOriginalUI.Description" xml:space="preserve">
-    <value>This is accessible from the system tray and requires a restart.</value>
+    <value>This is accessible from the system tray and requires a restart</value>
   </data>
   <data name="MouseWithoutBorders_ShareClipboard.Description" xml:space="preserve">
-    <value>If share clipboard stops working, Ctrl+Alt+Del then Esc may solve the problem.</value>
-  </data>
-  <data name="MouseWithoutBorders_TransferFile.Description" xml:space="preserve">
-    <value>If a file (&lt;100MB) is copied, it will be transferred to the remote machine clipboard.</value>
+    <value>If share clipboard stops working, Ctrl+Alt+Del then Esc may solve the problem</value>
   </data>
   <data name="MouseWithoutBorders_HideMouseAtScreenEdge.Description" xml:space="preserve">
-    <value>Hide the mouse cursor at the top edge of the screen when switching to other machine. This option also steals the focus from any full-screen app to ensure the keyboard input is redirected.</value>
+    <value>Hide the cursor at the top edge when switching to another machine, and take focus from full-screen apps to ensure keyboard input is redirected</value>
   </data>
   <data name="MouseWithoutBorders_DrawMouseCursor.Description" xml:space="preserve">
-    <value>The mouse cursor may not appear on Windows 10 and later if no physical mouse is connected.</value>
+    <value>The mouse cursor may not appear on Windows 10 and later if no physical mouse is connected</value>
   </data>
   <data name="MouseWithoutBorders_ValidateRemoteMachineIP.Description" xml:space="preserve">
-    <value>Reverse DNS lookup to validate machine IP Address.</value>
+    <value>Reverse DNS lookup to validate machine IP address</value>
   </data>
   <data name="MouseWithoutBorders_SameSubnetOnly.Description" xml:space="preserve">
     <value>Only connect to machines in the same intranet NNN.NNN.*.* (only works when both machines have IPv4 enabled)</value>
@@ -393,16 +390,13 @@
     <value>IP address mapping</value>
   </data>
   <data name="MouseWithoutBorders_IPAddressMapping.Description" xml:space="preserve">
-    <value>Resolve machine's IP address using manually entered mappings below.</value>
+    <value>Resolve machine's IP address using manually entered mappings below</value>
   </data>
   <data name="MouseWithoutBorders_BlockScreenSaverOnOtherMachines.Description" xml:space="preserve">
-    <value>Prevent screen saver from starting on other machines when user is actively working on this machine.</value>
+    <value>Prevent screen saver from starting on other machines when user is actively working on this machine</value>
   </data>
   <data name="MouseWithoutBorders_MoveMouseRelatively.Description" xml:space="preserve">
-    <value>Use this option when remote machine's monitor settings are different, or remote machine has multiple monitors.</value>
-  </data>
-  <data name="MouseWithoutBorders_BlockMouseAtScreenCorners.Description" xml:space="preserve">
-    <value>To avoid accident machine-switch at screen corners.</value>
+    <value>Use this option when remote machine's monitor settings are different, or remote machine has multiple monitors</value>
   </data>
   <data name="MouseWithoutBorders_ShowClipboardAndNetworkStatusMessages.Description" xml:space="preserve">
     <value>Show clipboard activities and network status in system tray notifications</value>
@@ -412,16 +406,16 @@
     <comment>keyboard is the hardware peripheral</comment>
   </data>
   <data name="MouseWithoutBorders_AdvancedSettings_Group.Header" xml:space="preserve">
-    <value>Advanced Settings</value>
+    <value>Advanced settings</value>
   </data>
   <data name="MouseWithoutBorders_EasyMouseSettings_Group.Header" xml:space="preserve">
     <value>Easy Mouse</value>
   </data>
   <data name="MouseWithoutBorders_EasyMouseOption.Header" xml:space="preserve">
-    <value>Easy Mouse: move between machines by moving the mouse pointer to the screen edges.</value>
+    <value>Easy Mouse: move between machines by moving the mouse pointer to the screen edges</value>
   </data>
   <data name="MouseWithoutBorders_EasyMouseOption.Description" xml:space="preserve">
-    <value>Can also be set to move only when pressing Shift or Ctrl.</value>
+    <value>Can also be set to move only when pressing Shift or Ctrl</value>
     <comment>Shift and Ctrl are the keyboard keys</comment>
   </data>
   <data name="MouseWithoutBorders_EasyMouseOption_Disabled.Content" xml:space="preserve">
@@ -439,13 +433,13 @@
     <comment>This is the Shift keyboard key</comment>
   </data>
   <data name="MouseWithoutBorders_DisableEasyMouseWhenForegroundWindowIsFullscreen.Header" xml:space="preserve">
-    <value>Disable Easy Mouse when an application is running in full screen.</value>
+    <value>Disable Easy Mouse when an application is running in full screen</value>
   </data>
   <data name="MouseWithoutBorders_DisableEasyMouseWhenForegroundWindowIsFullscreen.Description" xml:space="preserve">
-    <value>Prevent Easy Mouse from moving to another machine when an application is in full-screen mode.</value>
+    <value>Prevent Easy Mouse from moving to another machine when an application is in full-screen mode</value>
   </data>
   <data name="MouseWithoutBorders_CanOnlyStopEasyMouseIfMovingFromHostMachine.Title" xml:space="preserve">
-    <value>Disabling Easy Mouse in full-screen mode only affects the host PC. It won’t stop the mouse from moving away from remote machines.</value>
+    <value>Disabling Easy Mouse in full-screen mode only affects the host PC and does not prevent the mouse from moving away from remote machines</value>
   </data>
   <data name="MouseWithoutBorders_DisableEasyMouseWhenForegroundWindowIsFullscreen_TextBoxControl.PlaceholderText" xml:space="preserve">
     <value>msedge.exe
@@ -460,27 +454,30 @@ opera.exe</value>
     <value>Allow Easy Mouse to move between machines even if one of these applications is running in full screen, separate each executable with a new line.</value>
   </data>
   <data name="MouseWithoutBorders_LockMachinesShortcut.Header" xml:space="preserve">
-    <value>Shortcut to lock all machines.</value>
+    <value>Lock all machines</value>
   </data>
   <data name="MouseWithoutBorders_LockMachinesShortcut.Description" xml:space="preserve">
-    <value>Hit this hotkey twice to lock all machines. Note: Only the machines which have the same shortcut configured will be locked.</value>
+    <value>Press this hotkey twice to lock all machines, noting that only machines with the same shortcut configured will be locked</value>
+  </data>
+	<data name="MouseWithoutBorders_Shortcuts.Header" xml:space="preserve">
+    <value>Shortcuts</value>
+  </data>
+	<data name="MouseWithoutBorders_Shortcuts.Description" xml:space="preserve">
+    <value>Configure shortcuts to quickly control features</value>
   </data>
   <data name="MouseWithoutBorders_ToggleEasyMouseShortcut.Header" xml:space="preserve">
-    <value>Shortcut to toggle Easy Mouse.</value>
+    <value>Turn Easy Mouse on or off</value>
     <comment>Ctrl and Alt are the keyboard keys</comment>
   </data>
   <data name="MouseWithoutBorders_ToggleEasyMouseShortcut.Description" xml:space="preserve">
-    <value>Only works if EasyMouse is set to Enabled or Disabled.</value>
-  </data>
-  <data name="MouseWithoutBorders_ToggleEasyMouseShortcut_Disabled.Content" xml:space="preserve">
-    <value>Disabled</value>
+    <value>Only works if EasyMouse is set to Enabled or Disabled</value>
   </data>
   <data name="MouseWithoutBorders_SwitchBetweenMachineShortcut.Header" xml:space="preserve">
-    <value>Shortcut to switch between machines. Ctrl+Alt+:</value>
+    <value>Switching between machines</value>
     <comment>Ctrl and Alt are the keyboard keys</comment>
   </data>
   <data name="MouseWithoutBorders_SwitchBetweenMachineShortcut.Description" xml:space="preserve">
-    <value>Click on Ctrl+Alt+ the chosen option to switch between machines.</value>
+    <value> Ctrl+Alt+:</value>
     <comment>Ctrl and Alt are the keyboard keys</comment>
   </data>
   <data name="MouseWithoutBorders_SwitchBetweenMachineShortcut_F1.Content" xml:space="preserve">
@@ -491,33 +488,11 @@ opera.exe</value>
     <value>1, 2, 3, 4</value>
     <comment>Don't localize. These are keyboard keys</comment>
   </data>
-  <data name="MouseWithoutBorders_SwitchBetweenMachineShortcut_Disabled.Content" xml:space="preserve">
-    <value>Disabled</value>
-  </data>
-  <data name="MouseWithoutBorders_LockMachinesShortcut_Disabled.Content" xml:space="preserve">
-    <value>Disabled</value>
-  </data>
   <data name="MouseWithoutBorders_ReconnectShortcut.Header" xml:space="preserve">
-    <value>Shortcut to try reconnecting</value>
-  </data>
-  <data name="MouseWithoutBorders_ReconnectShortcut.Description" xml:space="preserve">
-    <value>Just in case the connection is lost for any reason.</value>
-  </data>
-  <data name="MouseWithoutBorders_ReconnectShortcut_Disabled.Content" xml:space="preserve">
-    <value>Disabled</value>
+    <value>Try reconnecting when connection is lost</value>
   </data>
   <data name="MouseWithoutBorders_Switch2AllPcShortcut.Header" xml:space="preserve">
-    <value>Shortcut to switch to multiple machine mode.</value>
-  </data>
-  <data name="MouseWithoutBorders_Switch2AllPcShortcut.Description" xml:space="preserve">
-    <value>Allows controlling all computers at once.</value>
-  </data>
-  <data name="MouseWithoutBorders_Switch2AllPcShortcut_Disabled.Content" xml:space="preserve">
-    <value>Disabled</value>
-  </data>
-  <data name="MouseWithoutBorders_Switch2AllPcShortcut_Ctrl3.Content" xml:space="preserve">
-    <value>Ctrl three times</value>
-    <comment>This is the Ctrl keyboard key</comment>
+    <value>Control all computes are once</value>
   </data>
   <data name="Shell_General.Content" xml:space="preserve">
     <value>General</value>
