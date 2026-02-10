@@ -18,30 +18,12 @@ public sealed partial class ListItemTemplateSelector : DataTemplateSelector
 
     protected override DataTemplate? SelectTemplateCore(object item, DependencyObject container)
     {
-        DataTemplate? dataTemplate = ListItem;
-
-        if (container is ListViewItem listItem)
+        if (item is ListItemViewModel element && element.IsSectionOrSeparator)
         {
-            if (item is ListItemViewModel element)
-            {
-                if (container is ListViewItem li && element.IsSectionOrSeparator)
-                {
-                    li.IsEnabled = false;
-                    li.AllowFocusWhenDisabled = false;
-                    li.AllowFocusOnInteraction = false;
-                    li.IsHitTestVisible = false;
-                    dataTemplate = string.IsNullOrWhiteSpace(element.Section) ? Separator : Section;
-                }
-                else
-                {
-                    listItem.IsEnabled = true;
-                    listItem.AllowFocusWhenDisabled = true;
-                    listItem.AllowFocusOnInteraction = true;
-                    listItem.IsHitTestVisible = true;
-                }
-            }
+            var dataTemplate = string.IsNullOrWhiteSpace(element.Section) ? Separator : Section;
+            return dataTemplate;
         }
 
-        return dataTemplate;
+        return ListItem;
     }
 }

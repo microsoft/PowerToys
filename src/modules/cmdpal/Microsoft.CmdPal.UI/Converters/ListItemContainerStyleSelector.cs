@@ -20,7 +20,7 @@ internal sealed partial class ListItemContainerStyleSelector : StyleSelector
     {
         return item switch
         {
-            ListItemViewModel { IsSectionOrSeparator: true } listItemViewModel when string.IsNullOrWhiteSpace(listItemViewModel.Title) => Separator!,
+            ListItemViewModel { IsSectionOrSeparator: true } listItemViewModel when string.IsNullOrWhiteSpace(listItemViewModel.Section) => Separator!,
             ListItemViewModel { IsSectionOrSeparator: true } => Section,
             _ => Default,
         };
