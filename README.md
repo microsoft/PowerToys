@@ -113,7 +113,7 @@ There are <a href="https://learn.microsoft.com/windows/powertoys/install#communi
 - #45367 Fixed contrast issue in Color picker UI.
 
 ## Command Palette
-- #45194 Command Palette PowerToys extension strings not localized.
+- #45194 Fixed a issue that Command Palette PowerToys extension strings not localized.
 
 ## Cursor Wrap
 - #45210 Fixed "Automatically activate on utility startup" setting not persisting when disabled. Thanks [@ThanhNguyxn](https://github.com/ThanhNguyxn)!
