@@ -18,12 +18,20 @@ public sealed partial class ListItemTemplateSelector : DataTemplateSelector
 
     protected override DataTemplate? SelectTemplateCore(object item, DependencyObject container)
     {
-        if (item is ListItemViewModel element && element.IsSectionOrSeparator)
+        if (item is not ListItemViewModel element)
         {
-            var dataTemplate = string.IsNullOrWhiteSpace(element.Section) ? Separator : Section;
-            return dataTemplate;
+            return ListItem;
         }
 
-        return ListItem;
+        switch (element.Type)
+        {
+            case ListItemType.Separator:
+                return Separator;
+            case ListItemType.SectionHeader:
+                return Section;
+            case ListItemType.Item:
+            default:
+                return ListItem;
+        }
     }
 }
