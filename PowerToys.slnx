@@ -51,6 +51,7 @@
       <Platform Solution="*|x64" Project="x64" />
     </Project>
     <Project Path="src/common/UnitTests-CommonLib/UnitTests-CommonLib.vcxproj" Id="1a066c63-64b3-45f8-92fe-664e1cce8077" />
+    <Project Path="src/common/UnitTests-CommonUtils/UnitTests-CommonUtils.vcxproj" Id="8b5cfb38-ccba-40a8-ad7a-89c57b070884" />
     <Project Path="src/common/updating/updating.vcxproj" Id="17da04df-e393-4397-9cf0-84dabe11032e" />
     <Project Path="src/common/version/version.vcxproj" Id="cc6e41ac-8174-4e8a-8d22-85dd7f4851df" />
   </Folder>
@@ -296,6 +297,10 @@
     </Project>
   </Folder>
   <Folder Name="/modules/CommandPalette/Tests/">
+    <Project Path="src/modules/cmdpal/Tests/Microsoft.CmdPal.Core.Common.UnitTests/Microsoft.CmdPal.Core.Common.UnitTests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
     <Project Path="src/modules/cmdpal/Tests/Microsoft.CmdPal.Ext.Apps.UnitTests/Microsoft.CmdPal.Ext.Apps.UnitTests.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
@@ -349,6 +354,10 @@
       <Platform Solution="*|x64" Project="x64" />
     </Project>
     <Project Path="src/modules/cmdpal/Tests/Microsoft.CmdPal.UITests/Microsoft.CmdPal.UITests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/cmdpal/Tests/Microsoft.CommandPalette.Extensions.Toolkit.UnitTests/Microsoft.CommandPalette.Extensions.Toolkit.UnitTests.csproj" Id="2eca18b7-33b7-4829-88f1-439b20fd60f6">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
@@ -661,6 +670,7 @@
     </Project>
   </Folder>
   <Folder Name="/modules/LightSwitch/">
+    <Project Path="src/modules/LightSwitch/LightSwitchLib/LightSwitchLib.vcxproj" Id="79267138-2895-4346-9021-21408d65379f" />
     <Project Path="src/modules/LightSwitch/LightSwitchModuleInterface/LightSwitchModuleInterface.vcxproj" Id="38177d56-6ad1-4adf-88c9-2843a7932166" />
     <Project Path="src/modules/LightSwitch/LightSwitchService/LightSwitchService.vcxproj" Id="08e71c67-6a7e-4ca1-b04e-2fb336410bac" />
   </Folder>
@@ -669,6 +679,23 @@
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
       <Deploy />
+    </Project>
+  </Folder>
+  <Folder Name="/modules/PowerDisplay/">
+    <Project Path="src/modules/powerdisplay/PowerDisplay.Lib/PowerDisplay.Lib.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/powerdisplay/PowerDisplay/PowerDisplay.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/powerdisplay/PowerDisplayModuleInterface/PowerDisplayModuleInterface.vcxproj" Id="d1234567-8901-2345-6789-abcdef012345" />
+  </Folder>
+  <Folder Name="/modules/PowerDisplay/Tests/">
+    <Project Path="src/modules/powerdisplay/PowerDisplay.Lib.UnitTests/PowerDisplay.Lib.UnitTests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
     </Project>
   </Folder>
   <Folder Name="/modules/MeasureTool/">

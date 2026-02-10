@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.props')" />
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>16.0</VCProjectVersion>
+    <ProjectGuid>{8B5CFB38-CCBA-40A8-AD7A-89C57B070884}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>UnitTestsCommonUtils</RootNamespace>
+    <ProjectSubType>NativeUnitTestProject</ProjectSubType>
+    <ProjectName>Common.Utils.UnitTests</ProjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <PlatformToolset>v143</PlatformToolset>
+    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\tests\UnitTestsCommonUtils\</OutDir>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>..\;..\utils;..\Telemetry;..\..\;..\..\..\deps\;..\..\..\deps\spdlog\include;..\..\..\packages\Microsoft.Windows.ImplementationLibrary.1.0.231216.1\include;$(VCInstallDir)UnitTest\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp23</LanguageStandard>
+      <PreprocessorDefinitions>SPDLOG_WCHAR_TO_UTF8_SUPPORT;SPDLOG_HEADER_ONLY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <AdditionalLibraryDirectories>$(VCInstallDir)UnitTest\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>RuntimeObject.lib;Msi.lib;Shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="pch.cpp">
+      <PrecompiledHeader Condition="'$(UsePrecompiledHeaders)' != 'false'">Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="StringUtils.Tests.cpp" />
+    <ClCompile Include="ColorUtils.Tests.cpp" />
+    <ClCompile Include="TimeUtils.Tests.cpp" />
+    <ClCompile Include="WinApiError.Tests.cpp" />
+    <ClCompile Include="Serialized.Tests.cpp" />
+    <ClCompile Include="Json.Tests.cpp" />
+    <ClCompile Include="OsDetect.Tests.cpp" />
+    <ClCompile Include="Threading.Tests.cpp" />
+    <ClCompile Include="ProcessPath.Tests.cpp" />
+    <ClCompile Include="Window.Tests.cpp" />
+    <ClCompile Include="GameMode.Tests.cpp" />
+    <ClCompile Include="Gpo.Tests.cpp" />
+    <ClCompile Include="MsiUtils.Tests.cpp" />
+    <ClCompile Include="HttpClient.Tests.cpp" />
+    <ClCompile Include="ComObjectFactory.Tests.cpp" />
+    <ClCompile Include="AppMutex.Tests.cpp" />
+    <ClCompile Include="Elevation.Tests.cpp" />
+    <ClCompile Include="Exec.Tests.cpp" />
+    <ClCompile Include="ExcludedApps.Tests.cpp" />
+    <ClCompile Include="HDropIterator.Tests.cpp" />
+    <ClCompile Include="LoggerHelper.Tests.cpp" />
+    <ClCompile Include="ModulesRegistry.Tests.cpp" />
+    <ClCompile Include="MsWindowsSettings.Tests.cpp" />
+    <ClCompile Include="Package.Tests.cpp" />
+    <ClCompile Include="ProcessApi.Tests.cpp" />
+    <ClCompile Include="ProcessWaiter.Tests.cpp" />
+    <ClCompile Include="Registry.Tests.cpp" />
+    <ClCompile Include="Resources.Tests.cpp" />
+    <ClCompile Include="TestStubs.cpp" />
+    <ClCompile Include="UnhandledException.Tests.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="pch.h" />
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="TestHelpers.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="UnitTests-CommonUtils.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+    <Import Project="..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.targets')" />
+  </ImportGroup>
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.props'))" />
+    <Error Condition="!Exists('..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.targets'))" />
+  </Target>
+</Project>

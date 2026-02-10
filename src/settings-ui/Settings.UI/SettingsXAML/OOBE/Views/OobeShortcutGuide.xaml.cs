@@ -8,6 +8,7 @@ using System.Globalization;
 using System.IO;
 
 using Microsoft.PowerToys.Settings.UI.Library;
+using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.OOBE.Enums;
 using Microsoft.PowerToys.Settings.UI.OOBE.ViewModel;
 using Microsoft.PowerToys.Settings.UI.Views;
@@ -66,6 +67,10 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             {
                 HotkeyControl.Keys = settingsProperties.OpenShortcutGuide.GetKeysList();
             }
+
+            // Disable the Launch button if the module is disabled
+            var generalSettings = SettingsRepository<GeneralSettings>.GetInstance(SettingsUtils.Default).SettingsConfig;
+            LaunchButton.IsEnabled = ModuleHelper.GetIsModuleEnabled(generalSettings, ManagedCommon.ModuleType.ShortcutGuide);
         }
 
         protected override void OnNavigatedFrom(NavigationEventArgs e)

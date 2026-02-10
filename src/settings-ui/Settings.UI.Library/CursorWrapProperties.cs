@@ -22,11 +22,19 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("disable_wrap_during_drag")]
         public BoolProperty DisableWrapDuringDrag { get; set; }
 
+        [JsonPropertyName("wrap_mode")]
+        public IntProperty WrapMode { get; set; }
+
+        [JsonPropertyName("disable_cursor_wrap_on_single_monitor")]
+        public BoolProperty DisableCursorWrapOnSingleMonitor { get; set; }
+
         public CursorWrapProperties()
         {
             ActivationShortcut = DefaultActivationShortcut;
             AutoActivate = new BoolProperty(false);
             DisableWrapDuringDrag = new BoolProperty(true);
+            WrapMode = new IntProperty(0); // 0=Both (default), 1=VerticalOnly, 2=HorizontalOnly
+            DisableCursorWrapOnSingleMonitor = new BoolProperty(false);
         }
     }
 }
