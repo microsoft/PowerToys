@@ -3190,11 +3190,9 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   </data>
   <data name="AlwaysOnTop.ModuleDescription" xml:space="preserve">
     <value>Always On Top is a quick and easy way to pin windows on top.</value>
-    <comment>{Locked="Always On Top"}</comment>
   </data>
   <data name="AlwaysOnTop.ModuleTitle" xml:space="preserve">
     <value>Always On Top</value>
-    <comment>{Locked}</comment>
   </data>
   <data name="AlwaysOnTop_Activation_GroupSettings.Header" xml:space="preserve">
     <value>Activation</value>
@@ -3204,7 +3202,6 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   </data>
   <data name="AlwaysOnTop_EnableToggleControl_HeaderText.Header" xml:space="preserve">
     <value>Always On Top</value>
-    <comment>{Locked="Always On Top"}</comment>
   </data>
   <data name="AlwaysOnTop_ExcludedApps.Description" xml:space="preserve">
     <value>Excludes an application from pinning on top</value>
@@ -3267,7 +3264,6 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   </data>
   <data name="Oobe_AlwaysOnTop.Description" xml:space="preserve">
     <value>Always On Top improves your multitasking workflow by pinning an application window so it's always in front - even when focus changes to another window after that.</value>
-    <comment>{Locked="Always On Top"}</comment>
   </data>
   <data name="Oobe_AlwaysOnTop_HowToUse.Text" xml:space="preserve">
     <value>to pin or unpin the selected window so it's always on top of all other windows.</value>
@@ -4051,7 +4047,6 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="Alternate_OOBE_AlwaysOnTop_Title.Text" xml:space="preserve">
     <value>Always On Top</value>
-    <comment>{Locked}</comment>
   </data>
   <data name="Alternate_OOBE_ColorPicker_Description.Text" xml:space="preserve">
     <value>To pick a color:</value>
