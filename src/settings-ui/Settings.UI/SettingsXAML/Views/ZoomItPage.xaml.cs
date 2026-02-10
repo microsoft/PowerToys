@@ -50,7 +50,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private static LOGFONT PickFontDialog(LOGFONT font)
         {
-            IntPtr pLogFont = Marshal.AllocHGlobal(Marshal.SizeOf(typeof(LOGFONT)));
+            // Use generic overload for AOT compatibility (IL3050)
+            IntPtr pLogFont = Marshal.AllocHGlobal(Marshal.SizeOf<LOGFONT>());
             if (font != null)
             {
                 font.lfHeight = -21;
@@ -72,12 +73,16 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             chooseFont.nSizeMin = 16;
             chooseFont.nSizeMax = 16;
             chooseFont.nFontType = 0x2000; // SCREEN_FONTTYPE as in the original ZoomIt source.
-            chooseFont.hInstance = Marshal.GetHINSTANCE(typeof(ZoomItPage).Module);
+
+            // Use IntPtr.Zero instead of Marshal.GetHINSTANCE for AOT compatibility (IL3002)
+            // This works fine for ChooseFont dialog as the system will use the process HINSTANCE
+            chooseFont.hInstance = IntPtr.Zero;
 
             // TODO: chooseFont.lpTemplateName = FORMATDLGORD31; and CHOOSE_FONT_FLAGS.CF_ENABLETEMPLATE
             chooseFont.lpLogFont = pLogFont;
 
-            IntPtr pChooseFont = Marshal.AllocHGlobal(Marshal.SizeOf(chooseFont));
+            // Use generic overload for AOT compatibility (IL3050)
+            IntPtr pChooseFont = Marshal.AllocHGlobal(Marshal.SizeOf<CHOOSEFONT>());
             Marshal.StructureToPtr(chooseFont, pChooseFont, false);
 
             bool callResult = NativeMethods.ChooseFont(pChooseFont);

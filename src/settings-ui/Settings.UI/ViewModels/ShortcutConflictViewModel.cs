@@ -272,10 +272,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             try
             {
-                var jsonTypeInfo = GetJsonTypeInfo(settingsConfig.GetType());
-                var serializedSettings = jsonTypeInfo != null
-                    ? JsonSerializer.Serialize(settingsConfig, jsonTypeInfo)
-                    : JsonSerializer.Serialize(settingsConfig);
+                // Use source-generated serializer for AOT compatibility (IL2026/IL3050)
+                var serializedSettings = SerializeSettings(settingsConfig);
 
                 string ipcMessage;
                 if (string.Equals(moduleName, "GeneralSettings", StringComparison.OrdinalIgnoreCase))
@@ -303,30 +301,43 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        private JsonTypeInfo GetJsonTypeInfo(Type settingsType)
+        // AOT-compatible serialization using source-generated context
+        private string SerializeSettings(ISettingsConfig settingsConfig)
         {
-            try
+            return settingsConfig switch
             {
-                var contextType = typeof(SourceGenerationContextContext);
-                var defaultProperty = contextType.GetProperty("Default", BindingFlags.Public | BindingFlags.Static);
-                var defaultContext = defaultProperty?.GetValue(null) as JsonSerializerContext;
+                GeneralSettings s => JsonSerializer.Serialize(s, SettingsSerializationContext.Default.GeneralSettings),
+                AdvancedPasteSettings s => JsonSerializer.Serialize(s, SettingsSerializationContext.Default.AdvancedPasteSettings),
+                AlwaysOnTopSettings s => JsonSerializer.Serialize(s, SettingsSerializationContext.Default.AlwaysOnTopSettings),
+                AwakeSettings s => JsonSerializer.Serialize(s, SettingsSerializationContext.Default.AwakeSettings),
+                CmdNotFoundSettings s => JsonSerializer.Serialize(s, SettingsSerializationContext.Default.CmdNotFoundSettings),
+                ColorPickerSettings s => JsonSerializer.Serialize(s, SettingsSerializationContext.Default.ColorPickerSettings),
+                CropAndLockSettings s => JsonSerializer.Serialize(s, SettingsSerializationContext.Default.CropAndLockSettings),
+                EnvironmentVariablesSettings s => JsonSerializer.Serialize(s, SettingsSerializationContext.Default.EnvironmentVariablesSettings),
+                FancyZonesSettings s => JsonSerializer.Serialize(s, SettingsSerializationContext.Default.FancyZonesSettings),
+                FileLocksmithSettings s => JsonSerializer.Serialize(s, SettingsSerializationContext.Default.FileLocksmithSettings),
+                HostsSettings s => JsonSerializer.Serialize(s, SettingsSerializationContext.Default.HostsSettings),
+                ImageResizerSettings s => JsonSerializer.Serialize(s, SettingsSerializationContext.Default.ImageResizerSettings),
+                KeyboardManagerSettings s => JsonSerializer.Serialize(s, SettingsSerializationContext.Default.KeyboardManagerSettings),
+                LightSwitchSettings s => JsonSerializer.Serialize(s, SettingsSerializationContext.Default.LightSwitchSettings),
+                MeasureToolSettings s => JsonSerializer.Serialize(s, SettingsSerializationContext.Default.MeasureToolSettings),
+                MouseWithoutBordersSettings s => JsonSerializer.Serialize(s, SettingsSerializationContext.Default.MouseWithoutBordersSettings),
+                NewPlusSettings s => JsonSerializer.Serialize(s, SettingsSerializationContext.Default.NewPlusSettings),
+                PeekSettings s => JsonSerializer.Serialize(s, SettingsSerializationContext.Default.PeekSettings),
+                PowerAccentSettings s => JsonSerializer.Serialize(s, SettingsSerializationContext.Default.PowerAccentSettings),
+                PowerDisplaySettings s => JsonSerializer.Serialize(s, SettingsSerializationContext.Default.PowerDisplaySettings),
+                PowerLauncherSettings s => JsonSerializer.Serialize(s, SettingsSerializationContext.Default.PowerLauncherSettings),
+                PowerOcrSettings s => JsonSerializer.Serialize(s, SettingsSerializationContext.Default.PowerOcrSettings),
+                PowerPreviewSettings s => JsonSerializer.Serialize(s, SettingsSerializationContext.Default.PowerPreviewSettings),
+                PowerRenameSettings s => JsonSerializer.Serialize(s, SettingsSerializationContext.Default.PowerRenameSettings),
+                RegistryPreviewSettings s => JsonSerializer.Serialize(s, SettingsSerializationContext.Default.RegistryPreviewSettings),
+                ShortcutGuideSettings s => JsonSerializer.Serialize(s, SettingsSerializationContext.Default.ShortcutGuideSettings),
+                WorkspacesSettings s => JsonSerializer.Serialize(s, SettingsSerializationContext.Default.WorkspacesSettings),
+                ZoomItSettings s => JsonSerializer.Serialize(s, SettingsSerializationContext.Default.ZoomItSettings),
 
-                if (defaultContext != null)
-                {
-                    var typeInfoProperty = contextType.GetProperties(BindingFlags.Public | BindingFlags.Instance)
-                        .FirstOrDefault(p => p.PropertyType.IsGenericType &&
-                                           p.PropertyType.GetGenericTypeDefinition() == typeof(JsonTypeInfo<>) &&
-                                           p.PropertyType.GetGenericArguments()[0] == settingsType);
-
-                    return typeInfoProperty?.GetValue(defaultContext) as JsonTypeInfo;
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"Error getting JsonTypeInfo for {settingsType.Name}: {ex.Message}");
-            }
-
-            return null;
+                // If we hit this case, SettingsSerializationContext is incomplete - this should be caught in development
+                _ => throw new InvalidOperationException($"Settings type {settingsConfig.GetType().Name} is not registered in SettingsSerializationContext. Please add [JsonSerializable(typeof({settingsConfig.GetType().Name}))] to the context."),
+            };
         }
 
         private string GetHotkeyLocalizationHeader(string moduleName, int hotkeyID, string headerKey)

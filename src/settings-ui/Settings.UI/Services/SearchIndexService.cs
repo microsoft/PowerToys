@@ -17,6 +17,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Common.Search.FuzzSearch;
 using Microsoft.PowerToys.Settings.UI.Helpers;
+using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Views;
 using Microsoft.Windows.ApplicationModel.Resources;
 using Settings.UI.Library;
@@ -33,7 +34,6 @@ namespace Microsoft.PowerToys.Settings.UI.Services
         private static bool _isIndexBuilt;
         private static bool _isIndexBuilding;
         private const string PrebuiltIndexResourceName = "Microsoft.PowerToys.Settings.UI.Assets.search.index.json";
-        private static JsonSerializerOptions _serializerOptions = new() { PropertyNameCaseInsensitive = true };
 
         public static ImmutableArray<SettingEntry> Index
         {
@@ -121,7 +121,8 @@ namespace Microsoft.PowerToys.Settings.UI.Services
                     return;
                 }
 
-                metadataList = JsonSerializer.Deserialize<SettingEntry[]>(json, _serializerOptions);
+                // Use source-generated deserializer for AOT compatibility (IL2026/IL3050)
+                metadataList = JsonSerializer.Deserialize(json, SettingsSerializationContext.Default.SettingEntryArray);
             }
             catch (Exception ex)
             {
@@ -262,6 +263,7 @@ namespace Microsoft.PowerToys.Settings.UI.Services
                 .ToList();
         }
 
+        // AOT-compatible type lookup using switch expression instead of reflection (IL2026)
         private static Type GetPageTypeFromName(string pageTypeName)
         {
             if (string.IsNullOrEmpty(pageTypeName))
@@ -276,8 +278,43 @@ namespace Microsoft.PowerToys.Settings.UI.Services
                     return cached;
                 }
 
-                var assembly = typeof(GeneralPage).Assembly;
-                var type = assembly.GetType($"Microsoft.PowerToys.Settings.UI.Views.{pageTypeName}");
+                // Use compile-time known types instead of Assembly.GetType for AOT compatibility
+                var type = pageTypeName switch
+                {
+                    nameof(DashboardPage) => typeof(DashboardPage),
+                    nameof(GeneralPage) => typeof(GeneralPage),
+                    nameof(AdvancedPastePage) => typeof(AdvancedPastePage),
+                    nameof(AlwaysOnTopPage) => typeof(AlwaysOnTopPage),
+                    nameof(AwakePage) => typeof(AwakePage),
+                    nameof(CmdNotFoundPage) => typeof(CmdNotFoundPage),
+                    nameof(CmdPalPage) => typeof(CmdPalPage),
+                    nameof(ColorPickerPage) => typeof(ColorPickerPage),
+                    nameof(CropAndLockPage) => typeof(CropAndLockPage),
+                    nameof(EnvironmentVariablesPage) => typeof(EnvironmentVariablesPage),
+                    nameof(FancyZonesPage) => typeof(FancyZonesPage),
+                    nameof(FileLocksmithPage) => typeof(FileLocksmithPage),
+                    nameof(HostsPage) => typeof(HostsPage),
+                    nameof(ImageResizerPage) => typeof(ImageResizerPage),
+                    nameof(KeyboardManagerPage) => typeof(KeyboardManagerPage),
+                    nameof(LightSwitchPage) => typeof(LightSwitchPage),
+                    nameof(MeasureToolPage) => typeof(MeasureToolPage),
+                    nameof(MouseUtilsPage) => typeof(MouseUtilsPage),
+                    nameof(MouseWithoutBordersPage) => typeof(MouseWithoutBordersPage),
+                    nameof(NewPlusPage) => typeof(NewPlusPage),
+                    nameof(PeekPage) => typeof(PeekPage),
+                    nameof(PowerAccentPage) => typeof(PowerAccentPage),
+                    nameof(PowerLauncherPage) => typeof(PowerLauncherPage),
+                    nameof(PowerOcrPage) => typeof(PowerOcrPage),
+                    nameof(PowerPreviewPage) => typeof(PowerPreviewPage),
+                    nameof(PowerRenamePage) => typeof(PowerRenamePage),
+                    nameof(PowerDisplayPage) => typeof(PowerDisplayPage),
+                    nameof(RegistryPreviewPage) => typeof(RegistryPreviewPage),
+                    nameof(ShortcutGuidePage) => typeof(ShortcutGuidePage),
+                    nameof(WorkspacesPage) => typeof(WorkspacesPage),
+                    nameof(ZoomItPage) => typeof(ZoomItPage),
+                    _ => null,
+                };
+
                 _pageTypeCache[pageTypeName] = type;
                 return type;
             }

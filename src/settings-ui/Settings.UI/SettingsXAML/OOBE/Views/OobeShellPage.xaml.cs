@@ -230,7 +230,8 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             NavigationViewItem selectedItem = this.navigationView.SelectedItem as NavigationViewItem;
             if (selectedItem != null)
             {
-                Modules[(int)(PowerToysModules)Enum.Parse(typeof(PowerToysModules), (string)selectedItem.Tag, true)].LogClosingModuleEvent();
+                // Use generic overload for AOT compatibility (IL2026)
+                Modules[(int)Enum.Parse<PowerToysModules>((string)selectedItem.Tag, ignoreCase: true)].LogClosingModuleEvent();
             }
         }
 

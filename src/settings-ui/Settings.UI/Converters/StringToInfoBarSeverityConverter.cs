@@ -20,7 +20,8 @@ namespace Microsoft.PowerToys.Settings.UI.Converters
                 }
                 else
                 {
-                    return (Microsoft.UI.Xaml.Controls.InfoBarSeverity)Enum.Parse(typeof(Microsoft.UI.Xaml.Controls.InfoBarSeverity), (string)value, true);
+                    // Use generic overload for AOT compatibility (IL2026)
+                    return Enum.Parse<Microsoft.UI.Xaml.Controls.InfoBarSeverity>((string)value, ignoreCase: true);
                 }
             }
             catch

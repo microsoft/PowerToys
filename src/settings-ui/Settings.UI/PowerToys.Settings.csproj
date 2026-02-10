@@ -1,12 +1,14 @@
 <Project Sdk="Microsoft.NET.Sdk">
 	<!-- Look at Directory.Build.props in root for common stuff as well -->
 	<Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
+	<Import Project="$(RepoRoot)src\Common.Dotnet.AotCompatibility.props" />
 	<Import Project="$(RepoRoot)src\Common.SelfContained.props" />
 
 	<PropertyGroup>
 		<OutputType>WinExe</OutputType>
 		<RootNamespace>Microsoft.PowerToys.Settings.UI</RootNamespace>
 		<ApplicationManifest>app.manifest</ApplicationManifest>
+		<PublishProfile>win-$(Platform).pubxml</PublishProfile>
 		<UseWinUI>true</UseWinUI>
 		<EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
 		<WindowsPackageType>None</WindowsPackageType>
@@ -19,6 +21,25 @@
 		<!-- MRT from windows app sdk will search for a pri file with the same name of the module before defaulting to resources.pri -->
 		<ProjectPriFileName>PowerToys.Settings.pri</ProjectPriFileName>
 	</PropertyGroup>
+
+	<!-- For debugging purposes, uncomment this block to enable AOT builds -->
+	<PropertyGroup>
+		<EnableSettingsAOT>true</EnableSettingsAOT>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(EnableSettingsAOT)' == 'true'">
+		<SelfContained>true</SelfContained>
+		<PublishSingleFile>false</PublishSingleFile>
+		<DisableRuntimeMarshalling>false</DisableRuntimeMarshalling>
+		<PublishAot>true</PublishAot>
+		<!-- Use environmental tools to bypass VS version detection issue with VS 2026 -->
+		<IlcUseEnvironmentalTools>true</IlcUseEnvironmentalTools>
+		<!-- Trim is mandatory for AOT, but disable reflection removal to preserve WPF compatibility -->
+		<IlcDisableReflection>false</IlcDisableReflection>
+		<!-- Suppress trim/AOT warnings from third-party assemblies (WPF, COM interop, etc.) -->
+		<NoWarn>$(NoWarn);IL2026;IL2104;IL3000;IL3002;IL3050;IL3053</NoWarn>
+	</PropertyGroup>
+
 	<ItemGroup>
 		<None Remove="Assets\Settings\Icons\Models\Azure.svg" />
 		<None Remove="Assets\Settings\Icons\Models\FoundryLocal.svg" />
@@ -219,4 +240,15 @@
 		<Message Importance="high" Text="[Settings] Building XamlIndexBuilder prior to compile. Views='$(MSBuildProjectDirectory)\SettingsXAML\Views' Out='$(GeneratedJsonFile)'" />
 		<MSBuild Projects="..\Settings.UI.XamlIndexBuilder\Settings.UI.XamlIndexBuilder.csproj" Targets="Build" Properties="Configuration=$(Configuration);Platform=Any CPU;TargetFramework=net9.0;XamlViewsDir=$(MSBuildProjectDirectory)\SettingsXAML\Views;GeneratedJsonFile=$(GeneratedJsonFile)" />
 	</Target>
+
+	<!-- Build information for AOT -->
+	<PropertyGroup Condition=" '$(PublishAot)' == 'true' ">
+		<DefineConstants>$(DefineConstants);BUILD_INFO_PUBLISH_AOT</DefineConstants>
+	</PropertyGroup>
+	<PropertyGroup Condition=" '$(PublishTrimmed)' == 'true' ">
+		<DefineConstants>$(DefineConstants);BUILD_INFO_PUBLISH_TRIMMED</DefineConstants>
+	</PropertyGroup>
+	<PropertyGroup Condition=" '$(CIBuild)' == 'true' ">
+		<DefineConstants>$(DefineConstants);BUILD_INFO_CIBUILD</DefineConstants>
+	</PropertyGroup>
 </Project>

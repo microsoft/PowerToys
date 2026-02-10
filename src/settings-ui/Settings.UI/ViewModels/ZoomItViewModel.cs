@@ -66,12 +66,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        private static readonly JsonSerializerOptions _serializerOptions = new JsonSerializerOptions
-        {
-            MaxDepth = 0,
-            IncludeFields = true,
-        };
-
         public ZoomItViewModel(SettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, Func<string, int> ipcMSGCallBackFunc, Func<string, string, string, int, string> pickFileDialog, Func<LOGFONT, LOGFONT> pickFontDialog)
         {
             ArgumentNullException.ThrowIfNull(settingsUtils);
@@ -84,7 +78,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             GeneralSettingsConfig = settingsRepository.SettingsConfig;
 
             var zoomItSettings = global::PowerToys.ZoomItSettingsInterop.ZoomItSettings.LoadSettingsJson();
-            _zoomItSettings = JsonSerializer.Deserialize<ZoomItSettings>(zoomItSettings, _serializerOptions);
+
+            // Use source-generated deserializer for AOT compatibility (IL2026/IL3050)
+            _zoomItSettings = JsonSerializer.Deserialize(zoomItSettings, SettingsSerializationContext.Default.ZoomItSettings);
 
             InitializeEnabledValue();
 
@@ -424,7 +420,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 var encodedFont = _zoomItSettings.Properties.Font.Value;
                 byte[] decodedFont = Convert.FromBase64String(encodedFont);
-                int size = Marshal.SizeOf(typeof(LOGFONT));
+                int size = Marshal.SizeOf<LOGFONT>();
                 if (size != decodedFont.Length)
                 {
                     throw new InvalidOperationException("Expected byte array from saved Settings doesn't match the LOGFONT structure size");
@@ -438,7 +434,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     Marshal.Copy(decodedFont, 0, ptr, size);
 
                     // Marshal the unmanaged memory back to a LOGFONT structure
-                    return (LOGFONT)Marshal.PtrToStructure(ptr, typeof(LOGFONT));
+                    // Use generic overload for AOT compatibility
+                    return Marshal.PtrToStructure<LOGFONT>(ptr);
                 }
                 finally
                 {
@@ -450,7 +447,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             set
             {
                 _typeFont = value;
-                int size = Marshal.SizeOf(typeof(LOGFONT));
+                int size = Marshal.SizeOf<LOGFONT>();
                 byte[] bytes = new byte[size];
 
                 // Allocate unmanaged memory for the LOGFONT structure
@@ -840,7 +837,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
                     // Reload settings to get the new format's scaling value
                     var reloadedSettings = global::PowerToys.ZoomItSettingsInterop.ZoomItSettings.LoadSettingsJson();
-                    var reloaded = JsonSerializer.Deserialize<ZoomItSettings>(reloadedSettings, _serializerOptions);
+
+                    // Use source-generated deserializer for AOT compatibility (IL2026/IL3050)
+                    var reloaded = JsonSerializer.Deserialize(reloadedSettings, SettingsSerializationContext.Default.ZoomItSettings);
                     if (reloaded != null && reloaded.Properties != null)
                     {
                         _zoomItSettings.Properties.RecordScaling.Value = reloaded.Properties.RecordScaling.Value;
@@ -894,8 +893,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private void NotifySettingsChanged()
         {
+            // Use source-generated serializer for AOT compatibility (IL2026/IL3050)
             global::PowerToys.ZoomItSettingsInterop.ZoomItSettings.SaveSettingsJson(
-                JsonSerializer.Serialize(_zoomItSettings));
+                JsonSerializer.Serialize(_zoomItSettings, SettingsSerializationContext.Default.ZoomItSettings));
             SendCustomAction("refresh_settings");
         }
 

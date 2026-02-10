@@ -153,6 +153,11 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     [JsonSerializable(typeof(List<VcpValueInfo>))]
     [JsonSerializable(typeof(SettingsUILibraryHelpers.SearchLocation))]
 
+    // Search Index Types (for AOT compatibility)
+    [JsonSerializable(typeof(SettingsUILibrary.SettingEntry))]
+    [JsonSerializable(typeof(SettingsUILibrary.SettingEntry[]))]
+    [JsonSerializable(typeof(SettingsUILibrary.EntryType))]
+
     // AdvancedPaste AI Provider Types (for AOT compatibility)
     [JsonSerializable(typeof(PasteAIConfiguration))]
     [JsonSerializable(typeof(PasteAIProviderDefinition))]
