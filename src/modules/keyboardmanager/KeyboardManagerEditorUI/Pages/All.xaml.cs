@@ -113,13 +113,13 @@ namespace KeyboardManagerEditorUI.Pages
                 {
                     Type = EditingItem.ItemType.Remapping,
                     Item = remapping,
-                    OriginalTriggerKeys = remapping.OriginalKeys.ToList(),
+                    OriginalTriggerKeys = remapping.Shortcut.ToList(),
                     AppName = remapping.AppName,
                     IsAllApps = remapping.IsAllApps,
                 };
 
                 UnifiedMappingControl.Reset();
-                UnifiedMappingControl.SetTriggerKeys(remapping.OriginalKeys.ToList());
+                UnifiedMappingControl.SetTriggerKeys(remapping.Shortcut.ToList());
                 UnifiedMappingControl.SetActionType(UnifiedMappingControl.ActionType.KeyOrShortcut);
                 UnifiedMappingControl.SetActionKeys(remapping.RemappedKeys.ToList());
                 UnifiedMappingControl.SetAppSpecific(!remapping.IsAllApps, remapping.AppName);
@@ -597,13 +597,19 @@ namespace KeyboardManagerEditorUI.Pages
                 switch (menuFlyoutItem.Tag)
                 {
                     case Remapping remapping:
-                        if (RemappingHelper.DeleteRemapping(_mappingService, remapping))
+
+                        if (!remapping.IsActive)
+                        {
+                            SettingsManager.RemoveShortcutKeyMappingFromSettings(remapping.Id);
+                            LoadRemappings();
+                        }
+                        else if (RemappingHelper.DeleteRemapping(_mappingService, remapping))
                         {
                             LoadRemappings();
                         }
                         else
                         {
-                            Logger.LogWarning($"Failed to delete remapping: {string.Join("+", remapping.OriginalKeys)}");
+                            Logger.LogWarning($"Failed to delete remapping: {string.Join("+", remapping.Shortcut)}");
                         }
 
                         break;
@@ -656,6 +662,14 @@ namespace KeyboardManagerEditorUI.Pages
                 {
                     if (toggleSwitch.IsOn)
                     {
+                        if (shortcut is Remapping remapping)
+                        {
+                            RemappingHelper.SaveMapping(_mappingService, remapping.Shortcut, remapping.RemappedKeys, remapping.IsAllApps, remapping.AppName, false);
+                            shortcut.IsActive = true;
+                            SettingsManager.ToggleShortcutKeyMappingActiveState(shortcut.Id);
+                            return;
+                        }
+
                         bool saved = false;
                         ShortcutKeyMapping shortcutKeyMapping = SettingsManager.EditorSettings.ShortcutSettingsDictionary[shortcut.Id].Shortcut;
                         if (shortcut.Shortcut.Count == 1)
@@ -672,16 +686,20 @@ namespace KeyboardManagerEditorUI.Pages
                         if (saved)
                         {
                             shortcut.IsActive = true;
-                            _mappingService.SaveSettings();
                             SettingsManager.ToggleShortcutKeyMappingActiveState(shortcut.Id);
-                        }
-                        else
-                        {
-                            toggleSwitch.IsOn = false;
+                            _mappingService.SaveSettings();
                         }
                     }
                     else
                     {
+                        if (shortcut is Remapping remapping)
+                        {
+                            shortcut.IsActive = false;
+                            RemappingHelper.DeleteRemapping(_mappingService, remapping, false);
+                            SettingsManager.ToggleShortcutKeyMappingActiveState(shortcut.Id);
+                            return;
+                        }
+
                         bool deleted = false;
                         if (shortcut.Shortcut.Count == 1)
                         {
@@ -699,11 +717,10 @@ namespace KeyboardManagerEditorUI.Pages
 
                         if (deleted)
                         {
+                            shortcut.IsActive = false;
                             SettingsManager.ToggleShortcutKeyMappingActiveState(shortcut.Id);
                             _mappingService.SaveSettings();
                         }
-
-                        LoadAllMappings();
                     }
                 }
                 catch (Exception ex)
@@ -734,36 +751,12 @@ namespace KeyboardManagerEditorUI.Pages
 
             RemappingList.Clear();
 
-            // Load all single key mappings
-            foreach (var mapping in _mappingService.GetSingleKeyMappings())
+            foreach (var shortcutSettings in SettingsManager.GetShortcutSettingsByOperationType(ShortcutOperationType.RemapShortcut))
             {
-                string[] targetKeyCodes = mapping.TargetKey.Split(';');
-                var targetKeyNames = new List<string>();
-
-                foreach (var keyCode in targetKeyCodes)
-                {
-                    if (int.TryParse(keyCode, out int code))
-                    {
-                        targetKeyNames.Add(_mappingService.GetKeyDisplayName(code));
-                    }
-                }
-
-                RemappingList.Add(new Remapping
-                {
-                    OriginalKeys = new List<string> { _mappingService.GetKeyDisplayName(mapping.OriginalKey) },
-                    RemappedKeys = targetKeyNames,
-                    IsAllApps = true,
-                });
-            }
-
-            // Load all shortcut key mappings
-            foreach (var mapping in _mappingService.GetShortcutMappingsByType(ShortcutOperationType.RemapShortcut))
-            {
+                ShortcutKeyMapping mapping = shortcutSettings.Shortcut;
                 string[] originalKeyCodes = mapping.OriginalKeys.Split(';');
-                string[] targetKeyCodes = mapping.TargetKeys.Split(';');
-
                 var originalKeyNames = new List<string>();
-                var targetKeyNames = new List<string>();
+                var remappedKeyNames = new List<string>();
 
                 foreach (var keyCode in originalKeyCodes)
                 {
@@ -773,20 +766,22 @@ namespace KeyboardManagerEditorUI.Pages
                     }
                 }
 
-                foreach (var keyCode in targetKeyCodes)
+                foreach (var remappedKeyCode in mapping.TargetKeys.Split(';'))
                 {
-                    if (int.TryParse(keyCode, out int code))
+                    if (int.TryParse(remappedKeyCode, out int remappedCode))
                     {
-                        targetKeyNames.Add(_mappingService.GetKeyDisplayName(code));
+                        remappedKeyNames.Add(_mappingService.GetKeyDisplayName(remappedCode));
                     }
                 }
 
                 RemappingList.Add(new Remapping
                 {
-                    OriginalKeys = originalKeyNames,
-                    RemappedKeys = targetKeyNames,
+                    Shortcut = originalKeyNames,
+                    RemappedKeys = remappedKeyNames,
                     IsAllApps = string.IsNullOrEmpty(mapping.TargetApp),
                     AppName = string.IsNullOrEmpty(mapping.TargetApp) ? string.Empty : mapping.TargetApp,
+                    Id = shortcutSettings.Id,
+                    IsActive = shortcutSettings.IsActive,
                 });
             }
         }

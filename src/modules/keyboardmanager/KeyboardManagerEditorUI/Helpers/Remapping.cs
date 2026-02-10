@@ -12,9 +12,9 @@ using System.Threading.Tasks;
 
 namespace KeyboardManagerEditorUI.Helpers
 {
-    public partial class Remapping : INotifyPropertyChanged
+    public partial class Remapping : INotifyPropertyChanged, IToggleableShortcut
     {
-        public List<string> OriginalKeys { get; set; } = new List<string>();
+        public List<string> Shortcut { get; set; } = new List<string>();
 
         public List<string> RemappedKeys { get; set; } = new List<string>();
 
@@ -23,6 +23,10 @@ namespace KeyboardManagerEditorUI.Helpers
         public string AppName { get; set; } = string.Empty;
 
         private bool IsEnabledValue { get; set; } = true;
+
+        public string Id { get; set; } = string.Empty;
+
+        public bool IsActive { get; set; } = true;
 
         public event PropertyChangedEventHandler? PropertyChanged;
 

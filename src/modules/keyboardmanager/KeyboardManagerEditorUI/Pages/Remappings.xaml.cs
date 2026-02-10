@@ -135,7 +135,7 @@ namespace KeyboardManagerEditorUI.Pages
                 _isEditMode = true;
                 _editingRemapping = selectedRemapping;
 
-                RemappingControl.SetOriginalKeys(selectedRemapping.OriginalKeys);
+                RemappingControl.SetOriginalKeys(selectedRemapping.Shortcut);
                 RemappingControl.SetRemappedKeys(selectedRemapping.RemappedKeys);
                 RemappingControl.SetApp(!selectedRemapping.IsAllApps, selectedRemapping.AppName);
                 RemappingControl.SetUpToggleButtonInitialStatus();
@@ -290,7 +290,7 @@ namespace KeyboardManagerEditorUI.Pages
 
                 RemappingList.Add(new Remapping
                 {
-                    OriginalKeys = new List<string> { _mappingService.GetKeyDisplayName(mapping.OriginalKey) },
+                    Shortcut = new List<string> { _mappingService.GetKeyDisplayName(mapping.OriginalKey) },
                     RemappedKeys = targetKeyNames,
                     IsAllApps = true,
                 });
@@ -325,7 +325,7 @@ namespace KeyboardManagerEditorUI.Pages
 
                 RemappingList.Add(new Remapping
                 {
-                    OriginalKeys = originalKeyNames,
+                    Shortcut = originalKeyNames,
                     RemappedKeys = targetKeyNames,
                     IsAllApps = string.IsNullOrEmpty(mapping.TargetApp),
                     AppName = string.IsNullOrEmpty(mapping.TargetApp) ? string.Empty : mapping.TargetApp,

@@ -119,7 +119,7 @@
                                             </Grid.ColumnDefinitions>
                                             <Rectangle Style="{StaticResource ItemDividerStyle}" />
                                             <StackPanel Orientation="Horizontal" Spacing="8">
-                                                <ItemsControl VerticalAlignment="Center" ItemsSource="{x:Bind OriginalKeys}">
+                                                <ItemsControl VerticalAlignment="Center" ItemsSource="{x:Bind Shortcut}">
                                                     <ItemsControl.ItemsPanel>
                                                         <ItemsPanelTemplate>
                                                             <StackPanel Orientation="Horizontal" Spacing="4" />
@@ -162,7 +162,10 @@
                                                 Grid.Column="1"
                                                 Orientation="Horizontal"
                                                 Spacing="8">
-                                                <!--  TO DO: Add ToggleSwitch  -->
+                                                <ToggleSwitch
+                                                    IsOn="{x:Bind IsActive}"
+                                                    Style="{StaticResource RightAlignedCompactToggleSwitchStyle}"
+                                                    Toggled="ToggleSwitch_Toggled" />
                                                 <Button
                                                     VerticalAlignment="Center"
                                                     Content="{ui:FontIcon Glyph=&#xE712;,

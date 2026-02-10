@@ -111,7 +111,7 @@
                                     Grid.Column="0"
                                     VerticalAlignment="Center"
                                     IsEnabled="{x:Bind IsEnabled, Mode=OneWay}"
-                                    ItemsSource="{x:Bind OriginalKeys}">
+                                    ItemsSource="{x:Bind Shortcut}">
                                     <ItemsControl.ItemsPanel>
                                         <ItemsPanelTemplate>
                                             <tkcontrols:WrapPanel
