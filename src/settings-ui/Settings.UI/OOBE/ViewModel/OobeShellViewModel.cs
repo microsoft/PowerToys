@@ -19,11 +19,11 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.ViewModel
             new (PowerToysModules Module, bool IsNew)[]
             {
             (PowerToysModules.Overview, false),
-            (PowerToysModules.AdvancedPaste, true),
+            (PowerToysModules.AdvancedPaste, false),
             (PowerToysModules.AlwaysOnTop, false),
             (PowerToysModules.Awake, false),
             (PowerToysModules.CmdNotFound, false),
-            (PowerToysModules.CmdPal, true),
+            (PowerToysModules.CmdPal, false),
             (PowerToysModules.ColorPicker, false),
             (PowerToysModules.CropAndLock, false),
             (PowerToysModules.EnvironmentVariables, false),
@@ -32,11 +32,11 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.ViewModel
             (PowerToysModules.FileExplorer, false),
             (PowerToysModules.ImageResizer, false),
             (PowerToysModules.KBM, false),
-            (PowerToysModules.LightSwitch, true),
+            (PowerToysModules.LightSwitch, false),
             (PowerToysModules.MouseUtils, false),
             (PowerToysModules.MouseWithoutBorders, false),
             (PowerToysModules.Peek, false),
-            (PowerToysModules.PowerDisplay, false),
+            (PowerToysModules.PowerDisplay, true),
             (PowerToysModules.PowerRename, false),
             (PowerToysModules.Run, false),
             (PowerToysModules.QuickAccent, false),
@@ -44,10 +44,10 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.ViewModel
             (PowerToysModules.TextExtractor, false),
             (PowerToysModules.MeasureTool, false),
             (PowerToysModules.Hosts, false),
-            (PowerToysModules.Workspaces, true),
+            (PowerToysModules.Workspaces, false),
             (PowerToysModules.RegistryPreview, false),
-            (PowerToysModules.NewPlus, true),
-            (PowerToysModules.ZoomIt, true),
+            (PowerToysModules.NewPlus, false),
+            (PowerToysModules.ZoomIt, false),
             }
             .Select(x => new OobePowerToysModule
             {

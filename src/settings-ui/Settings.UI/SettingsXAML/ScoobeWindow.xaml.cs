@@ -13,11 +13,8 @@ using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.OOBE.Views;
 using Microsoft.PowerToys.Settings.UI.SerializationContext;
-using Microsoft.UI;
-using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Windows.Graphics;
 using WinRT.Interop;
 using WinUIEx;
 
@@ -133,6 +130,11 @@ namespace Microsoft.PowerToys.Settings.UI
             string json = await httpClient.GetStringAsync("https://api.github.com/repos/microsoft/PowerToys/releases?per_page=20");
             var allReleases = JsonSerializer.Deserialize<IList<PowerToysReleaseInfo>>(json, SourceGenerationContextContext.Default.IListPowerToysReleaseInfo);
 
+            if (allReleases is null || allReleases.Count == 0)
+            {
+                return [];
+            }
+
             return allReleases
                 .OrderByDescending(r => r.PublishedDate)
                 .ToList();
@@ -141,7 +143,7 @@ namespace Microsoft.PowerToys.Settings.UI
         private static IList<IList<PowerToysReleaseInfo>> GroupReleasesByMajorMinor(IList<PowerToysReleaseInfo> releases)
         {
             return releases
-                .GroupBy(r => GetMajorMinorVersion(r))
+                .GroupBy(GetMajorMinorVersion)
                 .Select(g => g.OrderByDescending(r => r.PublishedDate).ToList() as IList<PowerToysReleaseInfo>)
                 .ToList();
         }

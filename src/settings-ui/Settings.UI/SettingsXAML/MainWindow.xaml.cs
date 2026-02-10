@@ -172,10 +172,7 @@ namespace Microsoft.PowerToys.Settings.UI
         private void Window_Activated_SetIcon(object sender, WindowActivatedEventArgs args)
         {
             // Set window icon
-            var hWnd = WindowNative.GetWindowHandle(this);
-            WindowId windowId = Win32Interop.GetWindowIdFromWindow(hWnd);
-            AppWindow appWindow = AppWindow.GetFromWindowId(windowId);
-            appWindow.SetIcon("Assets\\Settings\\icon.ico");
+            this.SetIcon("Assets\\Settings\\icon.ico");
         }
 
         private void Window_Activated(object sender, WindowActivatedEventArgs args)
@@ -183,7 +180,7 @@ namespace Microsoft.PowerToys.Settings.UI
             if (args.WindowActivationState != WindowActivationState.Deactivated)
             {
                 this.Activated -= Window_Activated;
-                var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
+                var hWnd = WindowNative.GetWindowHandle(this);
                 var placement = WindowHelper.DeserializePlacementOrDefault(hWnd);
                 NativeMethods.SetWindowPlacement(hWnd, ref placement);
             }

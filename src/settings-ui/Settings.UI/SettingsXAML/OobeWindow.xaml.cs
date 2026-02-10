@@ -3,23 +3,16 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.ObjectModel;
 using ManagedCommon;
-using Microsoft.Extensions.AI;
 using Microsoft.PowerToys.Settings.UI.Helpers;
-using Microsoft.PowerToys.Settings.UI.OOBE.Enums;
 using Microsoft.PowerToys.Settings.UI.OOBE.ViewModel;
 using Microsoft.PowerToys.Settings.UI.OOBE.Views;
-using Microsoft.UI;
-using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using PowerToys.Interop;
-using Windows.Graphics;
 using WinRT.Interop;
 using WinUIEx;
-using WinUIEx.Messaging;
 
 namespace Microsoft.PowerToys.Settings.UI
 {
@@ -83,14 +76,6 @@ namespace Microsoft.PowerToys.Settings.UI
             this.ExtendsContentIntoTitleBar = true;
             this.SetTitleBar(AppTitleBar);
             Title = ResourceLoaderInstance.ResourceLoader.GetString("OobeWindow_Title");
-        }
-
-        public void OnClosing()
-        {
-            if (navigationView.SelectedItem is NavigationViewItem selectedItem)
-            {
-                App.OobeShellViewModel.GetModuleFromTag((string)selectedItem.Tag).LogClosingModuleEvent();
-            }
         }
 
         private void NavigationView_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
@@ -165,8 +150,12 @@ namespace Microsoft.PowerToys.Settings.UI
 
         private void Window_Closed(object sender, WindowEventArgs args)
         {
-            var mainWindow = App.GetSettingsWindow();
-            if (mainWindow != null)
+            if (navigationView.SelectedItem is NavigationViewItem selectedItem && selectedItem.Tag is string tag)
+            {
+                App.OobeShellViewModel.GetModuleFromTag(tag).LogClosingModuleEvent();
+            }
+
+            if (App.GetSettingsWindow() is MainWindow mainWindow)
             {
                 mainWindow.CloseHiddenWindow();
             }
