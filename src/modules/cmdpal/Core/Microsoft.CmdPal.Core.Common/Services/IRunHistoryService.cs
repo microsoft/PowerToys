@@ -6,6 +6,8 @@ namespace Microsoft.CmdPal.Core.Common.Services;
 
 public interface IRunHistoryService
 {
+    long RunCommand(string commandLine, string workingDir, bool asAdmin, ulong hwnd);
+
     /// <summary>
     /// Gets the run history.
     /// </summary>
@@ -22,6 +24,13 @@ public interface IRunHistoryService
     /// </summary>
     /// <param name="item">The run history item to add.</param>
     void AddRunHistoryItem(string item);
+
+    /// <summary>
+    /// Parses a command line into its components.
+    /// </summary>
+    ParseCommandlineResult ParseCommandline(string commandLine, string workingDirectory);
+
+    string QualifyCommandLineDirectory(string commandLine, string fullFilePath, string defaultDirectory);
 }
 
 public interface ITelemetryService
@@ -31,4 +40,16 @@ public interface ITelemetryService
     void LogRunCommand(string command, bool asAdmin, bool success);
 
     void LogOpenUri(string uri, bool isWeb, bool success);
+
+    void LogEvent(string eventName, IDictionary<string, object>? properties = null);
+}
+
+public struct ParseCommandlineResult
+{
+    public int Result; // HRESULT
+    public bool IsUri;
+    public string FilePath;
+    public string Arguments;
+
+    public bool Success => Result == 0;
 }

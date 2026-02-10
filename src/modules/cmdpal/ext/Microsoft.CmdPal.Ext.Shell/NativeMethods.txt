@@ -20,3 +20,15 @@ SearchPathW
 GetFileAttributesW
 LocalFree
 FILE_FLAGS_AND_ATTRIBUTES
+
+S_OK
+E_FAIL
+E_UNEXPECTED
+
+IUnknown
+IACList2
+IEnumString
+CoCreateInstance
+OleInitialize
+OleUninitialize
+CLSID_ACListISF
