@@ -93,11 +93,6 @@ namespace Microsoft.PowerToys.Settings.UI
             }
         }
 
-        public void NavigateToModule(PowerToysModules selectedModule)
-        {
-            navigationView.SelectedItem = navigationView.MenuItems[(int)selectedModule];
-        }
-
         private void NavigationView_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
         {
             if (navigationView.SelectedItem is NavigationViewItem selectedItem)
