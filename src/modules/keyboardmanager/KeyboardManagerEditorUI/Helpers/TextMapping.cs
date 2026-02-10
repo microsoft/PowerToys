@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace KeyboardManagerEditorUI.Helpers
 {
-    public class TextMapping
+    public class TextMapping : IToggleableShortcut
     {
         public List<string> Shortcut { get; set; } = new List<string>();
 
@@ -21,5 +21,7 @@ namespace KeyboardManagerEditorUI.Helpers
         public string AppName { get; set; } = string.Empty;
 
         public bool IsActive { get; set; } = true;
+
+        public string Id { get; set; } = string.Empty;
     }
 }

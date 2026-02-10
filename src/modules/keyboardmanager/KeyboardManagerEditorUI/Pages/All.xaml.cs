@@ -381,30 +381,8 @@ namespace KeyboardManagerEditorUI.Pages
 
                         break;
 
-                    case EditingItem.ItemType.TextMapping:
-                        if (originalKeys.Count == 1)
-                        {
-                            int originalKey = _mappingService.GetKeyCodeFromName(originalKeys[0]);
-                            if (originalKey != 0)
-                            {
-                                deleted = _mappingService.DeleteSingleKeyToTextMapping(originalKey);
-                            }
-                        }
-                        else
-                        {
-                            string originalKeysString = string.Join(";", originalKeys.Select(k => _mappingService.GetKeyCodeFromName(k).ToString(CultureInfo.InvariantCulture)));
-                            deleted = _mappingService.DeleteShortcutMapping(originalKeysString, _editingItem.IsAllApps ? string.Empty : _editingItem.AppName ?? string.Empty);
-                        }
-
-                        if (deleted)
-                        {
-                            _mappingService.SaveSettings();
-                        }
-
-                        break;
-
-                    case EditingItem.ItemType.ProgramShortcut:
-                        if (_editingItem.Item is ProgramShortcut programShortcut)
+                    default:
+                        if (_editingItem.Item is IToggleableShortcut shortcut)
                         {
                             if (originalKeys.Count == 1)
                             {
@@ -425,39 +403,9 @@ namespace KeyboardManagerEditorUI.Pages
                                 _mappingService.SaveSettings();
                             }
 
-                            if (!string.IsNullOrEmpty(programShortcut.Id))
+                            if (!string.IsNullOrEmpty(shortcut.Id))
                             {
-                                SettingsManager.RemoveShortcutKeyMappingFromSettings(programShortcut.Id);
-                            }
-                        }
-
-                        break;
-
-                    case EditingItem.ItemType.UrlShortcut:
-                        if (_editingItem.Item is URLShortcut urlShortcut)
-                        {
-                            if (originalKeys.Count == 1)
-                            {
-                                int originalKey = _mappingService.GetKeyCodeFromName(originalKeys[0]);
-                                if (originalKey != 0)
-                                {
-                                    deleted = _mappingService.DeleteSingleKeyMapping(originalKey);
-                                }
-                            }
-                            else
-                            {
-                                string originalKeysString = string.Join(";", originalKeys.Select(k => _mappingService.GetKeyCodeFromName(k).ToString(CultureInfo.InvariantCulture)));
-                                deleted = _mappingService.DeleteShortcutMapping(originalKeysString);
-                            }
-
-                            if (deleted)
-                            {
-                                _mappingService.SaveSettings();
-                            }
-
-                            if (!string.IsNullOrEmpty(urlShortcut.Id))
-                            {
-                                SettingsManager.RemoveShortcutKeyMappingFromSettings(urlShortcut.Id);
+                                SettingsManager.RemoveShortcutKeyMappingFromSettings(shortcut.Id);
                             }
                         }
 
@@ -501,10 +449,21 @@ namespace KeyboardManagerEditorUI.Pages
                 int originalKey = _mappingService!.GetKeyCodeFromName(triggerKeys[0]);
                 if (originalKey != 0)
                 {
+                    ShortcutKeyMapping shortcutKeyMapping = new ShortcutKeyMapping()
+                    {
+                        OperationType = ShortcutOperationType.RemapText,
+                        OriginalKeys = originalKey.ToString(CultureInfo.InvariantCulture),
+                        TargetKeys = textContent,
+                        TargetText = textContent,
+                        TargetApp = isAppSpecific ? appName : string.Empty,
+                    };
+
                     bool saved = _mappingService.AddSingleKeyToTextMapping(originalKey, textContent);
                     if (saved)
                     {
-                        return _mappingService.SaveSettings();
+                        _mappingService.SaveSettings();
+                        SettingsManager.AddShortcutKeyMappingToSettings(shortcutKeyMapping);
+                        return true;
                     }
                 }
             }
@@ -514,6 +473,16 @@ namespace KeyboardManagerEditorUI.Pages
                 string originalKeysString = string.Join(";", triggerKeys.Select(k => _mappingService!.GetKeyCodeFromName(k).ToString(CultureInfo.InvariantCulture)));
 
                 bool saved;
+
+                ShortcutKeyMapping shortcutKeyMapping = new ShortcutKeyMapping()
+                {
+                    OperationType = ShortcutOperationType.RemapText,
+                    OriginalKeys = originalKeysString,
+                    TargetKeys = textContent,
+                    TargetText = textContent,
+                    TargetApp = isAppSpecific ? appName : string.Empty,
+                };
+
                 if (isAppSpecific && !string.IsNullOrEmpty(appName))
                 {
                     saved = _mappingService!.AddShortcutMapping(originalKeysString, textContent, appName, ShortcutOperationType.RemapText);
@@ -525,7 +494,9 @@ namespace KeyboardManagerEditorUI.Pages
 
                 if (saved)
                 {
-                    return _mappingService.SaveSettings();
+                    _mappingService.SaveSettings();
+                    SettingsManager.AddShortcutKeyMappingToSettings(shortcutKeyMapping);
+                    return true;
                 }
             }
 
@@ -637,94 +608,33 @@ namespace KeyboardManagerEditorUI.Pages
 
                         break;
 
-                    case TextMapping textMapping:
-                        {
-                            bool deleted = false;
-                            if (textMapping.Shortcut.Count == 1)
-                            {
-                                int originalKey = _mappingService.GetKeyCodeFromName(textMapping.Shortcut[0]);
-                                if (originalKey != 0)
-                                {
-                                    deleted = _mappingService.DeleteSingleKeyToTextMapping(originalKey);
-                                }
-                            }
-                            else
-                            {
-                                string originalKeys = string.Join(";", textMapping.Shortcut.Select(k => _mappingService.GetKeyCodeFromName(k)));
-                                deleted = _mappingService.DeleteShortcutMapping(originalKeys, textMapping.IsAllApps ? string.Empty : textMapping.AppName ?? string.Empty);
-                            }
-
-                            if (deleted)
-                            {
-                                _mappingService.SaveSettings();
-                                LoadTextMappings();
-                            }
-                            else
-                            {
-                                Logger.LogWarning($"Failed to delete text mapping: {string.Join("+", textMapping.Shortcut)}");
-                            }
-                        }
-
-                        break;
-
-                    case ProgramShortcut programShortcut:
-                        {
-                            bool deleted = false;
-                            if (programShortcut.Shortcut.Count == 1)
-                            {
-                                int originalKey = _mappingService.GetKeyCodeFromName(programShortcut.Shortcut[0]);
-                                if (originalKey != 0)
-                                {
-                                    deleted = _mappingService.DeleteSingleKeyMapping(originalKey);
-                                }
-                            }
-                            else
-                            {
-                                string originalKeys = string.Join(";", programShortcut.Shortcut.Select(k => _mappingService.GetKeyCodeFromName(k)));
-                                deleted = _mappingService.DeleteShortcutMapping(originalKeys);
-                            }
-
-                            if (deleted)
-                            {
-                                _mappingService.SaveSettings();
-                            }
-
-                            SettingsManager.RemoveShortcutKeyMappingFromSettings(programShortcut.Id);
-                            LoadProgramShortcuts();
-                        }
-
-                        break;
-
-                    case URLShortcut urlShortcut:
-                        {
-                            bool deleted = false;
-                            if (urlShortcut.Shortcut.Count == 1)
-                            {
-                                int originalKey = _mappingService.GetKeyCodeFromName(urlShortcut.Shortcut[0]);
-                                if (originalKey != 0)
-                                {
-                                    deleted = _mappingService.DeleteSingleKeyMapping(originalKey);
-                                }
-                            }
-                            else
-                            {
-                                string originalKeys = string.Join(";", urlShortcut.Shortcut.Select(k => _mappingService.GetKeyCodeFromName(k)));
-                                deleted = _mappingService.DeleteShortcutMapping(originalKeys);
-                            }
-
-                            if (deleted)
-                            {
-                                _mappingService.SaveSettings();
-                            }
-
-                            SettingsManager.RemoveShortcutKeyMappingFromSettings(urlShortcut.Id);
-                            LoadUrlShortcuts();
-                        }
-
-                        break;
-
                     default:
-                        Logger.LogWarning($"Unknown DataContext type for delete: {menuFlyoutItem.Tag?.GetType().Name ?? "null"}");
+                        if (menuFlyoutItem.Tag is IToggleableShortcut shortcut)
+                        {
+                            bool deleted = false;
+                            if (shortcut.Shortcut.Count == 1)
+                            {
+                                int originalKey = _mappingService.GetKeyCodeFromName(shortcut.Shortcut[0]);
+                                if (originalKey != 0)
+                                {
+                                    deleted = _mappingService.DeleteSingleKeyMapping(originalKey) || _mappingService.DeleteSingleKeyToTextMapping(originalKey);
+                                }
+                            }
+                            else
+                            {
+                                string originalKeys = string.Join(";", shortcut.Shortcut.Select(k => _mappingService.GetKeyCodeFromName(k)));
+                                deleted = _mappingService.DeleteShortcutMapping(originalKeys);
+                            }
+
+                            if (deleted)
+                            {
+                                _mappingService.SaveSettings();
+                            }
+
+                            SettingsManager.RemoveShortcutKeyMappingFromSettings(shortcut.Id);
+                            LoadAllMappings();
+                        }
+
                         break;
                 }
             }
@@ -748,8 +658,16 @@ namespace KeyboardManagerEditorUI.Pages
                     {
                         bool saved = false;
                         ShortcutKeyMapping shortcutKeyMapping = SettingsManager.EditorSettings.ShortcutSettingsDictionary[shortcut.Id].Shortcut;
-
-                        saved = _mappingService.AddShorcutMapping(shortcutKeyMapping);
+                        if (shortcut.Shortcut.Count == 1)
+                        {
+                            saved = _mappingService.AddSingleKeyToTextMapping(
+                                _mappingService.GetKeyCodeFromName(shortcut.Shortcut[0]),
+                                shortcutKeyMapping.TargetText);
+                        }
+                        else
+                        {
+                            saved = shortcutKeyMapping.OperationType == ShortcutOperationType.RemapText ? _mappingService!.AddShortcutMapping(shortcutKeyMapping.OriginalKeys, shortcutKeyMapping.TargetText, operationType: ShortcutOperationType.RemapText) : _mappingService.AddShorcutMapping(shortcutKeyMapping);
+                        }
 
                         if (saved)
                         {
@@ -781,13 +699,8 @@ namespace KeyboardManagerEditorUI.Pages
 
                         if (deleted)
                         {
-                            shortcut.IsActive = false;
                             SettingsManager.ToggleShortcutKeyMappingActiveState(shortcut.Id);
                             _mappingService.SaveSettings();
-                        }
-                        else
-                        {
-                            toggleSwitch.IsOn = true;
                         }
 
                         LoadAllMappings();
@@ -887,22 +800,10 @@ namespace KeyboardManagerEditorUI.Pages
 
             TextMappings.Clear();
 
-            // Load key-to-text mappings
-            var keyToTextMappings = _mappingService.GetKeyToTextMappings();
-            foreach (var mapping in keyToTextMappings)
-            {
-                TextMappings.Add(new TextMapping
-                {
-                    Shortcut = new List<string> { _mappingService.GetKeyDisplayName(mapping.OriginalKey) },
-                    Text = mapping.TargetText,
-                    IsAllApps = true,
-                    AppName = string.Empty,
-                });
-            }
-
             // Load shortcut-to-text mappings
-            foreach (var mapping in _mappingService.GetShortcutMappingsByType(ShortcutOperationType.RemapText))
+            foreach (var shortcutSettings in SettingsManager.GetShortcutSettingsByOperationType(ShortcutOperationType.RemapText))
             {
+                ShortcutKeyMapping mapping = shortcutSettings.Shortcut;
                 string[] originalKeyCodes = mapping.OriginalKeys.Split(';');
                 var originalKeyNames = new List<string>();
                 foreach (var keyCode in originalKeyCodes)
@@ -919,6 +820,8 @@ namespace KeyboardManagerEditorUI.Pages
                     Text = mapping.TargetText,
                     IsAllApps = string.IsNullOrEmpty(mapping.TargetApp),
                     AppName = string.IsNullOrEmpty(mapping.TargetApp) ? string.Empty : mapping.TargetApp,
+                    Id = shortcutSettings.Id,
+                    IsActive = shortcutSettings.IsActive,
                 });
             }
         }

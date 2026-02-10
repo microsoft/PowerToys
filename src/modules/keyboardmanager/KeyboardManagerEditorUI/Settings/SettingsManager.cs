@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -85,6 +86,7 @@ namespace KeyboardManagerEditorUI.Settings
         private static EditorSettings CreateSettingsFromKeyboardManagerService()
         {
             EditorSettings settings = new EditorSettings();
+
             foreach (ShortcutKeyMapping mapping in _mappingService!.GetShortcutMappings())
             {
                 string guid = Guid.NewGuid().ToString();
@@ -107,6 +109,39 @@ namespace KeyboardManagerEditorUI.Settings
                 }
             }
 
+            // Handle single key to text mappings
+            var keyToTextMappings = _mappingService.GetKeyToTextMappings();
+            foreach (var mapping in keyToTextMappings)
+            {
+                // Create a ShortcutKeyMapping representation for single key to text mappings
+                var shortcutMapping = new ShortcutKeyMapping
+                {
+                    OperationType = ShortcutOperationType.RemapText,
+                    OriginalKeys = _mappingService.GetKeyDisplayName(mapping.OriginalKey),
+                    TargetKeys = _mappingService.GetKeyDisplayName(mapping.OriginalKey),
+                    TargetText = mapping.TargetText,
+                };
+
+                string guid = Guid.NewGuid().ToString();
+                ShortcutSettings shortcutSettings = new ShortcutSettings
+                {
+                    Id = guid,
+                    Shortcut = shortcutMapping,
+                    IsActive = true,
+                };
+
+                settings.ShortcutSettingsDictionary[guid] = shortcutSettings;
+
+                if (settings.ShortcutsByOperationType.TryGetValue(ShortcutOperationType.RemapText, out List<string>? value))
+                {
+                    value.Add(guid);
+                }
+                else
+                {
+                    settings.ShortcutsByOperationType[ShortcutOperationType.RemapText] = new List<string> { guid };
+                }
+            }
+
             return settings;
         }
 
@@ -119,10 +154,11 @@ namespace KeyboardManagerEditorUI.Settings
                 return;
             }
 
+            // Handle shortcut mappings (RunProgram, OpenUri, RemapShortcut, RemapText shortcuts)
             List<ShortcutKeyMapping> shortcutKeyMappings = _mappingService.GetShortcutMappings();
             foreach (ShortcutKeyMapping mapping in shortcutKeyMappings)
             {
-                if (!EditorSettings.ShortcutSettingsDictionary.Values.Any(s => s.Shortcut.Equals(mapping)))
+                if (!EditorSettings.ShortcutSettingsDictionary.Values.Any(s => s.Shortcut.OriginalKeys == mapping.OriginalKeys))
                 {
                     shortcutSettingsChanged = true;
                     string guid = Guid.NewGuid().ToString();
@@ -144,9 +180,63 @@ namespace KeyboardManagerEditorUI.Settings
                 }
             }
 
+            // Handle single key to text mappings
+            var keyToTextMappings = _mappingService.GetKeyToTextMappings();
+            foreach (var mapping in keyToTextMappings)
+            {
+                // Create a ShortcutKeyMapping representation for single key to text mappings
+                var shortcutMapping = new ShortcutKeyMapping
+                {
+                    OperationType = ShortcutOperationType.RemapText,
+                    OriginalKeys = mapping.OriginalKey.ToString(CultureInfo.InvariantCulture),
+                    TargetKeys = mapping.TargetText,
+                    TargetText = mapping.TargetText,
+                };
+
+                if (!EditorSettings.ShortcutSettingsDictionary.Values.Any(s => s.Shortcut.OriginalKeys == shortcutMapping.OriginalKeys))
+                {
+                    shortcutSettingsChanged = true;
+                    string guid = Guid.NewGuid().ToString();
+                    ShortcutSettings shortcutSettings = new ShortcutSettings
+                    {
+                        Id = guid,
+                        Shortcut = shortcutMapping,
+                        IsActive = true,
+                    };
+                    EditorSettings.ShortcutSettingsDictionary[guid] = shortcutSettings;
+                    if (EditorSettings.ShortcutsByOperationType.TryGetValue(ShortcutOperationType.RemapText, out List<string>? value))
+                    {
+                        value.Add(guid);
+                    }
+                    else
+                    {
+                        EditorSettings.ShortcutsByOperationType[ShortcutOperationType.RemapText] = new List<string> { guid };
+                    }
+                }
+            }
+
+            // Mark as inactive any settings that no longer exist in the mapping service
             foreach (ShortcutSettings shortcutSettings in EditorSettings.ShortcutSettingsDictionary.Values.ToList())
             {
-                if (!shortcutKeyMappings.Any(m => m.Equals(shortcutSettings.Shortcut)))
+                bool foundInService = false;
+
+                if (shortcutSettings.Shortcut.OperationType == ShortcutOperationType.RemapText &&
+                         !string.IsNullOrEmpty(shortcutSettings.Shortcut.OriginalKeys) &&
+                         shortcutSettings.Shortcut.OriginalKeys.Split(';').Length == 1)
+                {
+                    if (int.TryParse(shortcutSettings.Shortcut.OriginalKeys, out int keyCode))
+                    {
+                        foundInService = keyToTextMappings.Any(m =>
+                            m.OriginalKey == keyCode &&
+                            m.TargetText == shortcutSettings.Shortcut.TargetText);
+                    }
+                }
+                else if (shortcutKeyMappings.Any(m => m.OriginalKeys == shortcutSettings.Shortcut.OriginalKeys))
+                {
+                    foundInService = true;
+                }
+
+                if (!foundInService)
                 {
                     shortcutSettingsChanged = true;
                     shortcutSettings.IsActive = false;
