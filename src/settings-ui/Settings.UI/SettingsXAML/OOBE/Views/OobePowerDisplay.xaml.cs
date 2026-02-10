@@ -14,9 +14,6 @@ using PowerToys.Interop;
 
 namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 {
-    /// <summary>
-    /// An empty page that can be used on its own or navigated to within a Frame.
-    /// </summary>
     public sealed partial class OobePowerDisplay : Page
     {
         public OobePowerToysModule ViewModel { get; set; }
@@ -24,7 +21,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
         public OobePowerDisplay()
         {
             this.InitializeComponent();
-            ViewModel = App.OobeShellViewModel.GetModule(PowerToysModules.QuickAccent);
+            ViewModel = App.OobeShellViewModel.GetModule(PowerToysModules.PowerDisplay);
             DataContext = ViewModel;
         }
 
@@ -40,7 +37,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
         {
             if (OobeWindow.OpenMainWindowCallback != null)
             {
-                OobeWindow.OpenMainWindowCallback(typeof(PowerAccentPage));
+                OobeWindow.OpenMainWindowCallback(typeof(PowerDisplayPage));
             }
 
             ViewModel.LogOpeningSettingsEvent();

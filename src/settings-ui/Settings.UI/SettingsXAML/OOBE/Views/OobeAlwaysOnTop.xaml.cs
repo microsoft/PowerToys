@@ -18,7 +18,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
         public OobeAlwaysOnTop()
         {
             InitializeComponent();
-            ViewModel = new OobeShellViewModel().Modules[(int)PowerToysModules.AlwaysOnTop];
+            ViewModel = App.OobeShellViewModel.GetModule(PowerToysModules.AlwaysOnTop);
             DataContext = ViewModel;
         }
 
