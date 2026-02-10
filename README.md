@@ -114,7 +114,7 @@ There are <a href="https://learn.microsoft.com/windows/powertoys/install#communi
 
 ## Command Palette
 - #45194 Command Palette PowerToys extension strings not localized.
-- 
+
 ## Cursor Wrap
 - #45210 Fixed "Automatically activate on utility startup" setting not persisting when disabled. Thanks [@ThanhNguyxn](https://github.com/ThanhNguyxn)!
 - #45303 Added option to disable Cursor Wrapping when only a single monitor is connected. Thanks [@mikehall-ms](https://github.com/mikehall-ms)!
