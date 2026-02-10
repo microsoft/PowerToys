@@ -120,6 +120,7 @@ namespace Microsoft.PowerToys.Settings.UI
                     case "KBM": NavigationFrame.Navigate(typeof(OobeKBM)); break;
                     case "LightSwitch": NavigationFrame.Navigate(typeof(OobeLightSwitch)); break;
                     case "PowerRename": NavigationFrame.Navigate(typeof(OobePowerRename)); break;
+                    case "PowerDisplay": NavigationFrame.Navigate(typeof(OobePowerDisplay)); break;
                     case "QuickAccent": NavigationFrame.Navigate(typeof(OobePowerAccent)); break;
                     case "FileExplorer": NavigationFrame.Navigate(typeof(OobeFileExplorer)); break;
                     case "ShortcutGuide": NavigationFrame.Navigate(typeof(OobeShortcutGuide)); break;
