@@ -27,9 +27,6 @@ using WinUIEx;
 
 namespace Microsoft.PowerToys.Settings.UI
 {
-    /// <summary>
-    /// Provides application-specific behavior to supplement the default Application class.
-    /// </summary>
     public partial class App : Application
     {
         public static OobeShellViewModel OobeShellViewModel { get; } = new();
@@ -402,6 +399,7 @@ namespace Microsoft.PowerToys.Settings.UI
                 case "MouseWithoutBorders": return typeof(MouseWithoutBordersPage);
                 case "Peek": return typeof(PeekPage);
                 case "PowerAccent": return typeof(PowerAccentPage);
+                case "PowerDisplay": return typeof(PowerDisplayPage);
                 case "PowerLauncher": return typeof(PowerLauncherPage);
                 case "PowerPreview": return typeof(PowerPreviewPage);
                 case "PowerRename": return typeof(PowerRenamePage);
@@ -418,7 +416,6 @@ namespace Microsoft.PowerToys.Settings.UI
                 case "Workspaces": return typeof(WorkspacesPage);
                 case "CmdPal": return typeof(CmdPalPage);
                 case "ZoomIt": return typeof(ZoomItPage);
-                case "PowerDisplay": return typeof(PowerDisplayPage);
                 default:
                     // Fallback to Dashboard
                     Debug.Assert(false, "Unexpected SettingsWindow argument value");
