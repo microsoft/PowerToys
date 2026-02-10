@@ -506,6 +506,8 @@ namespace KeyboardManagerEditorUI.Pages
         private bool SaveUrlMapping(List<string> triggerKeys)
         {
             string url = UnifiedMappingControl.GetUrl();
+            bool isAppSpecific = UnifiedMappingControl.GetIsAppSpecific();
+            string appName = UnifiedMappingControl.GetAppName();
 
             if (string.IsNullOrEmpty(url))
             {
@@ -520,6 +522,7 @@ namespace KeyboardManagerEditorUI.Pages
                 OriginalKeys = originalKeysString,
                 TargetKeys = originalKeysString,
                 UriToOpen = url,
+                TargetApp = isAppSpecific ? appName : string.Empty,
             };
 
             bool saved = _mappingService!.AddShorcutMapping(shortcutKeyMapping);
@@ -542,6 +545,8 @@ namespace KeyboardManagerEditorUI.Pages
             ElevationLevel elevationLevel = UnifiedMappingControl.GetElevationLevel();
             StartWindowType visibility = UnifiedMappingControl.GetVisibility();
             ProgramAlreadyRunningAction ifRunningAction = UnifiedMappingControl.GetIfRunningAction();
+            bool isAppSpecific = UnifiedMappingControl.GetIsAppSpecific();
+            string appName = UnifiedMappingControl.GetAppName();
 
             if (string.IsNullOrEmpty(programPath))
             {
@@ -561,6 +566,7 @@ namespace KeyboardManagerEditorUI.Pages
                 IfRunningAction = ifRunningAction,
                 Visibility = visibility,
                 Elevation = elevationLevel,
+                TargetApp = isAppSpecific ? appName : string.Empty,
             };
 
             bool saved = _mappingService!.AddShorcutMapping(shortcutKeyMapping);
