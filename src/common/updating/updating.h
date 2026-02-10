@@ -31,13 +31,15 @@ namespace updating
     };
     using github_version_info = std::variant<new_version_download_info, version_up_to_date>;
 
-    std::optional<std::filesystem::path> download_new_version(const new_version_download_info& new_version);
-    std::filesystem::path get_pending_updates_path();
 #if USE_STD_EXPECTED
-    std::expected<github_version_info, std::wstring> get_github_version_info_async(const bool prerelease = false);
+    using github_version_result = std::expected<github_version_info, std::wstring>;
 #else
-    nonstd::expected<github_version_info, std::wstring> get_github_version_info_async(const bool prerelease = false);
+    using github_version_result = nonstd::expected<github_version_info, std::wstring>;
 #endif
+
+    winrt::Windows::Foundation::IAsyncAction get_github_version_info_async(github_version_result& result, bool prerelease = false);
+    winrt::Windows::Foundation::IAsyncAction download_new_version_async(const new_version_download_info& new_version, std::optional<std::filesystem::path>& result);
+    std::filesystem::path get_pending_updates_path();
     void cleanup_updates();
 
     // non-localized

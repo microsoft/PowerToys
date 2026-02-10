@@ -82,20 +82,17 @@ namespace updating
 // prevent the warning that may show up depend on the value of the constants (#defines)
 #pragma warning(push)
 #pragma warning(disable : 4702)
-#if USE_STD_EXPECTED
-    std::expected<github_version_info, std::wstring> get_github_version_info_async(const bool prerelease)
-#else
-    nonstd::expected<github_version_info, std::wstring> get_github_version_info_async(const bool prerelease)
-#endif
+    winrt::Windows::Foundation::IAsyncAction get_github_version_info_async(github_version_result& result, const bool prerelease)
     {
         // If the current version starts with 0.0.*, it means we're on a local build from a farm and shouldn't check for updates.
         if constexpr (VERSION_MAJOR == 0 && VERSION_MINOR == 0)
         {
 #if USE_STD_EXPECTED
-            return std::unexpected(LOCAL_BUILD_ERROR);
+            result = std::unexpected(LOCAL_BUILD_ERROR);
 #else
-            return nonstd::make_unexpected(LOCAL_BUILD_ERROR);
+            result = nonstd::make_unexpected(LOCAL_BUILD_ERROR);
 #endif
+            co_return;
         }
 
         try
@@ -107,7 +104,7 @@ namespace updating
 
             if (prerelease)
             {
-                const auto body = client.request(Uri{ ALL_RELEASES_ENDPOINT }).get();
+                const auto body = co_await client.request(Uri{ ALL_RELEASES_ENDPOINT });
                 for (const auto& json : json::JsonValue::Parse(body).GetArray())
                 {
                     auto potential_release_object = json.GetObjectW();
@@ -125,7 +122,7 @@ namespace updating
             }
             else
             {
-                const auto body = client.request(Uri{ LATEST_RELEASE_ENDPOINT }).get();
+                const auto body = co_await client.request(Uri{ LATEST_RELEASE_ENDPOINT });
                 release_object = json::JsonValue::Parse(body).GetObjectW();
                 if (auto extracted_version = extract_version_from_release_object(release_object))
                 {
@@ -135,22 +132,24 @@ namespace updating
 
             if (github_version <= current_version)
             {
-                return version_up_to_date{};
+                result = version_up_to_date{};
+                co_return;
             }
 
             auto [installer_download_url, installer_filename] = extract_installer_asset_download_info(release_object);
-            return new_version_download_info{ extract_release_page_url(release_object),
+            result = new_version_download_info{ extract_release_page_url(release_object),
                                                  std::move(github_version),
                                                  std::move(installer_download_url),
                                                  std::move(installer_filename) };
+            co_return;
         }
         catch (...)
         {
         }
 #if USE_STD_EXPECTED
-        return std::unexpected(NETWORK_ERROR);
+        result = std::unexpected(NETWORK_ERROR);
 #else
-        return nonstd::make_unexpected(NETWORK_ERROR);
+        result = nonstd::make_unexpected(NETWORK_ERROR);
 #endif
     }
 #pragma warning(pop)
@@ -170,12 +169,13 @@ namespace updating
         return !ec ? std::optional{ installer_download_path } : std::nullopt;
     }
 
-    std::optional<std::filesystem::path> download_new_version(const new_version_download_info& new_version)
+    winrt::Windows::Foundation::IAsyncAction download_new_version_async(const new_version_download_info& new_version, std::optional<std::filesystem::path>& out_path)
     {
         auto installer_download_path = create_download_path();
         if (!installer_download_path)
         {
-            return std::nullopt;
+            out_path = std::nullopt;
+            co_return;
         }
 
         *installer_download_path /= new_version.installer_filename;
@@ -186,7 +186,7 @@ namespace updating
             try
             {
                 http::HttpClient client;
-                client.download(new_version.installer_download_url, *installer_download_path).get();
+                co_await client.download(new_version.installer_download_url, *installer_download_path);
                 download_success = true;
                 break;
             }
@@ -195,7 +195,7 @@ namespace updating
                 // reattempt to download or do nothing
             }
         }
-        return download_success ? installer_download_path : std::nullopt;
+        out_path = download_success ? installer_download_path : std::nullopt;
     }
 
     void cleanup_updates()
