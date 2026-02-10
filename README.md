@@ -106,6 +106,8 @@ There are <a href="https://learn.microsoft.com/windows/powertoys/install#communi
 
 **Version 0.97.2 (Feb 2026)**
 
+This patch release fixes several important stability issues identified in v0.97.0 based on incoming reports. Check out the [v0.97.0](https://github.com/microsoft/PowerToys/releases/tag/v0.97.0) notes for the full list of changes.
+
 ## Advanced Paste
 - #45207 Fixed a crash in the Advanced Paste settings page caused by null values during JSON deserialization.
 
@@ -113,7 +115,7 @@ There are <a href="https://learn.microsoft.com/windows/powertoys/install#communi
 - #45367 Fixed contrast issue in Color picker UI.
 
 ## Command Palette
-- #45194 Fixed a issue that Command Palette PowerToys extension strings not localized.
+- #45194 Fixed an issue where some Command Palette PowerToys Extension strings were not localised.
 
 ## Cursor Wrap
 - #45210 Fixed "Automatically activate on utility startup" setting not persisting when disabled. Thanks [@ThanhNguyxn](https://github.com/ThanhNguyxn)!
@@ -132,8 +134,6 @@ There are <a href="https://learn.microsoft.com/windows/powertoys/install#communi
 - #45443 Fixed crash related to `IsShownInSwitchers` property when Explorer is not running.
 
 **Version 0.97.1 (January 2026)**
-
-This patch release fixes several important stability issues identified in v0.97.0 based on incoming reports. Check out the [v0.97.0](https://github.com/microsoft/PowerToys/releases/tag/v0.97.0) notes for the full list of changes.
 
 **Highlights**
 
