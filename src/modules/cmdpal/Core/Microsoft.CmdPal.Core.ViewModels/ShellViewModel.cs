@@ -10,6 +10,8 @@ using Microsoft.CmdPal.Core.Common;
 using Microsoft.CmdPal.Core.ViewModels.Messages;
 using Microsoft.CmdPal.Core.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
+using Microsoft.CommandPalette.Extensions.Toolkit;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.CmdPal.Core.ViewModels;
 
@@ -222,12 +224,19 @@ public partial class ShellViewModel : ObservableObject,
         }
     }
 
-    public void Receive(PerformCommandMessage message)
+    public async void Receive(PerformCommandMessage message)
     {
-        PerformCommand(message);
+        try
+        {
+            await PerformCommandAsync(message);
+        }
+        catch (Exception ex)
+        {
+            CoreLogger.LogError("Exception handling command", ex);
+        }
     }
 
-    private void PerformCommand(PerformCommandMessage message)
+    private async Task PerformCommandAsync(PerformCommandMessage message)
     {
         // Create/replace the navigation cancellation token.
         // If one already exists, cancel and dispose it first.
@@ -257,12 +266,32 @@ public partial class ShellViewModel : ObservableObject,
             return;
         }
 
-        var host = _appHostService.GetHostForCommand(message.Context, CurrentPage.ExtensionHost);
+        var pageExtensionHost = CurrentPage.ExtensionHost;
+        var host = _appHostService.GetHostForCommand(message.Context, pageExtensionHost);
 
         _rootPageService.OnPerformCommand(message.Context, !CurrentPage.IsNested, host);
 
         try
         {
+            if (command is IPageFactoryCommand pageFactoryCommand)
+            {
+                CoreLogger.LogDebug("Getting a page...");
+                command = await Task.Run(
+                    () =>
+                    {
+                        navigationToken.ThrowIfCancellationRequested();
+                        var newPage = pageFactoryCommand.CreatePage();
+                        navigationToken.ThrowIfCancellationRequested();
+                        return newPage;
+                    },
+                    navigationToken).ConfigureAwait(false);
+            }
+
+            if (navigationToken.IsCancellationRequested)
+            {
+                return;
+            }
+
             if (command is IPage page)
             {
                 CoreLogger.LogDebug($"Navigating to page");
@@ -292,7 +321,7 @@ public partial class ShellViewModel : ObservableObject,
                 OnUIThread(() => WeakReferenceMessenger.Default.Send<UpdateCommandBarMessage>(new(null)));
 
                 // Kick off async loading of our ViewModel
-                LoadPageViewModelAsync(pageViewModel, navigationToken)
+                _ = LoadPageViewModelAsync(pageViewModel, navigationToken)
                     .ContinueWith(
                         (Task t) =>
                         {
@@ -319,6 +348,11 @@ public partial class ShellViewModel : ObservableObject,
                 WeakReferenceMessenger.Default.Send<TelemetryBeginInvokeMessage>();
                 StartInvoke(message, invokable, host);
             }
+        }
+        catch (OperationCanceledException)
+        {
+            // Operation was cancelled, nothing to do.
+            _rootPageService.OnCancelledCommand(pageExtensionHost);
         }
         catch (Exception ex)
         {

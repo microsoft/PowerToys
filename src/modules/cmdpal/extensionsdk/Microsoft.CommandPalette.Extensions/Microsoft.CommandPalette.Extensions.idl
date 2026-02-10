@@ -405,6 +405,10 @@ namespace Microsoft.CommandPalette.Extensions
     {
         Object[] GetApiExtensionStubs();
     };
-    
 
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)] 
+    interface IPageFactoryCommand requires ICommand
+    {
+        IPage CreatePage();
+    }
 }

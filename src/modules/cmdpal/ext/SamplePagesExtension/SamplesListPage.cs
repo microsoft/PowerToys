@@ -113,6 +113,14 @@ public partial class SamplesListPage : ListPage
             Subtitle = "Demonstrates clipboard integration and drag-and-drop functionality",
         },
 
+        // Page factory sample
+        new ListItem(new SamplePageFactoryPage())
+        {
+            Title = "Sample page factory",
+            Subtitle = "A demo of page factory",
+            Icon = new IconInfo("\ue806"),
+        },
+
         // Evil edge cases
         // Anything weird that might break the palette - put that in here.
         new ListItem(new EvilSamplesPage())
