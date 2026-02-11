@@ -18,12 +18,12 @@ using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Telemetry;
 using WorkspacesCsharpLibrary;
-using WorkspacesEditor.Data;
+using WorkspacesCsharpLibrary.Data;
+using WorkspacesCsharpLibrary.Utils;
 using WorkspacesEditor.Models;
 using WorkspacesEditor.Telemetry;
 using WorkspacesEditor.Utils;
-
-using static WorkspacesEditor.Data.WorkspacesData;
+using static WorkspacesCsharpLibrary.Data.WorkspacesData;
 
 namespace WorkspacesEditor.ViewModels
 {
@@ -495,10 +495,10 @@ namespace WorkspacesEditor.ViewModels
             {
                 var bounds = screen.Bounds;
                 OverlayWindow overlayWindow = new OverlayWindow();
-                overlayWindow.Top = bounds.Top;
-                overlayWindow.Left = bounds.Left;
-                overlayWindow.Width = bounds.Width;
-                overlayWindow.Height = bounds.Height;
+
+                // Use DPI-unaware positioning to fix overlay on mixed-DPI multi-monitor setups
+                overlayWindow.SetTargetBounds(bounds.Left, bounds.Top, bounds.Width, bounds.Height);
+
                 overlayWindow.ShowActivated = true;
                 overlayWindow.Topmost = true;
                 overlayWindow.Show();

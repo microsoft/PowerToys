@@ -9,7 +9,6 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
-
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
@@ -41,16 +40,14 @@ namespace Microsoft.PowerToys.Settings.UI
             IsUserAdmin,
             ShowOobeWindow,
             ShowScoobeWindow,
-            ShowFlyout,
             ContainsSettingsWindow,
-            ContainsFlyoutPosition,
         }
 
         private const int RequiredArgumentsSetSettingQty = 4;
         private const int RequiredArgumentsSetAdditionalSettingsQty = 4;
         private const int RequiredArgumentsGetSettingQty = 3;
 
-        private const int RequiredArgumentsLaunchedFromRunnerQty = 12;
+        private const int RequiredArgumentsLaunchedFromRunnerQty = 10;
 
         // Create an instance of the  IPC wrapper.
         private static TwoWayPipeMessageIPCManaged ipcmanager;
@@ -62,8 +59,6 @@ namespace Microsoft.PowerToys.Settings.UI
         public static int PowerToysPID { get; set; }
 
         public bool ShowOobe { get; set; }
-
-        public bool ShowFlyout { get; set; }
 
         public bool ShowScoobe { get; set; }
 
@@ -194,9 +189,7 @@ namespace Microsoft.PowerToys.Settings.UI
             IsUserAnAdmin = cmdArgs[(int)Arguments.IsUserAdmin] == "true";
             ShowOobe = cmdArgs[(int)Arguments.ShowOobeWindow] == "true";
             ShowScoobe = cmdArgs[(int)Arguments.ShowScoobeWindow] == "true";
-            ShowFlyout = cmdArgs[(int)Arguments.ShowFlyout] == "true";
             bool containsSettingsWindow = cmdArgs[(int)Arguments.ContainsSettingsWindow] == "true";
-            bool containsFlyoutPosition = cmdArgs[(int)Arguments.ContainsFlyoutPosition] == "true";
 
             // To keep track of variable arguments
             int currentArgumentIndex = RequiredArgumentsLaunchedFromRunnerQty;
@@ -207,15 +200,6 @@ namespace Microsoft.PowerToys.Settings.UI
                 StartupPage = GetPage(cmdArgs[currentArgumentIndex]);
 
                 currentArgumentIndex++;
-            }
-
-            int flyout_x = 0;
-            int flyout_y = 0;
-            if (containsFlyoutPosition)
-            {
-                // get the flyout position arguments
-                _ = int.TryParse(cmdArgs[currentArgumentIndex++], out flyout_x);
-                _ = int.TryParse(cmdArgs[currentArgumentIndex++], out flyout_y);
             }
 
             RunnerHelper.WaitForPowerToysRunner(PowerToysPID, () =>
@@ -238,11 +222,10 @@ namespace Microsoft.PowerToys.Settings.UI
                 return 0;
             });
 
-            if (!ShowOobe && !ShowScoobe && !ShowFlyout)
+            if (!ShowOobe && !ShowScoobe)
             {
                 settingsWindow = new MainWindow();
                 settingsWindow.Activate();
-                settingsWindow.ExtendsContentIntoTitleBar = true;
                 settingsWindow.NavigateToSection(StartupPage);
 
                 // https://github.com/microsoft/microsoft-ui-xaml/issues/7595 - Activate doesn't bring window to the foreground
@@ -272,21 +255,10 @@ namespace Microsoft.PowerToys.Settings.UI
                 else if (ShowScoobe)
                 {
                     PowerToysTelemetry.Log.WriteEvent(new ScoobeStartedEvent());
-                    OobeWindow scoobeWindow = new OobeWindow(OOBE.Enums.PowerToysModules.WhatsNew);
-                    scoobeWindow.Activate();
-                    scoobeWindow.ExtendsContentIntoTitleBar = true;
+                    ScoobeWindow newScoobeWindow = new ScoobeWindow();
+                    newScoobeWindow.Activate();
                     WindowHelpers.ForceTopBorder1PixelInsetOnWindows10(WindowNative.GetWindowHandle(settingsWindow));
-                    SetOobeWindow(scoobeWindow);
-                }
-                else if (ShowFlyout)
-                {
-                    POINT? p = null;
-                    if (containsFlyoutPosition)
-                    {
-                        p = new POINT(flyout_x, flyout_y);
-                    }
-
-                    ShellPage.OpenFlyoutCallback(p);
+                    SetScoobeWindow(newScoobeWindow);
                 }
             }
         }
@@ -336,7 +308,7 @@ namespace Microsoft.PowerToys.Settings.UI
                 });
 #else
         /* If we try to run Settings as a standalone app, it will start PowerToys.exe if not running and open Settings again through it in the Dashboard page. */
-        Common.UI.SettingsDeepLink.OpenSettings(Common.UI.SettingsDeepLink.SettingsWindow.Dashboard, true);
+        Common.UI.SettingsDeepLink.OpenSettings(Common.UI.SettingsDeepLink.SettingsWindow.Dashboard);
         Exit();
 #endif
             }
@@ -357,14 +329,14 @@ namespace Microsoft.PowerToys.Settings.UI
             return 0;
         }
 
-        private static ISettingsUtils settingsUtils = SettingsUtils.Default;
+        private static SettingsUtils settingsUtils = SettingsUtils.Default;
         private static ThemeService themeService = new ThemeService(SettingsRepository<GeneralSettings>.GetInstance(settingsUtils));
 
         public static ThemeService ThemeService => themeService;
 
         private static MainWindow settingsWindow;
         private static OobeWindow oobeWindow;
-        private static FlyoutWindow flyoutWindow;
+        private static ScoobeWindow scoobeWindow;
 
         public static void ClearSettingsWindow()
         {
@@ -381,19 +353,9 @@ namespace Microsoft.PowerToys.Settings.UI
             return oobeWindow;
         }
 
-        public static FlyoutWindow GetFlyoutWindow()
-        {
-            return flyoutWindow;
-        }
-
         public static void SetOobeWindow(OobeWindow window)
         {
             oobeWindow = window;
-        }
-
-        public static void SetFlyoutWindow(FlyoutWindow window)
-        {
-            flyoutWindow = window;
         }
 
         public static void ClearOobeWindow()
@@ -401,9 +363,19 @@ namespace Microsoft.PowerToys.Settings.UI
             oobeWindow = null;
         }
 
-        public static void ClearFlyoutWindow()
+        public static ScoobeWindow GetScoobeWindow()
         {
-            flyoutWindow = null;
+            return scoobeWindow;
+        }
+
+        public static void SetScoobeWindow(ScoobeWindow window)
+        {
+            scoobeWindow = window;
+        }
+
+        public static void ClearScoobeWindow()
+        {
+            scoobeWindow = null;
         }
 
         public static Type GetPage(string settingWindow)
@@ -443,6 +415,7 @@ namespace Microsoft.PowerToys.Settings.UI
                 case "Workspaces": return typeof(WorkspacesPage);
                 case "CmdPal": return typeof(CmdPalPage);
                 case "ZoomIt": return typeof(ZoomItPage);
+                case "PowerDisplay": return typeof(PowerDisplayPage);
                 default:
                     // Fallback to Dashboard
                     Debug.Assert(false, "Unexpected SettingsWindow argument value");

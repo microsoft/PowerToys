@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Target Name="GenerateResourceFiles" BeforeTargets="PrepareForBuild">
     <Exec Command="powershell -NonInteractive -executionpolicy Unrestricted ..\..\tools\build\convert-resx-to-rc.ps1 $(MSBuildThisFileDirectory) resource.base.h resource.h runner.base.rc runner.rc" />
@@ -28,11 +28,11 @@
     <PackageReference Include="Microsoft.Windows.ImplementationLibrary" GeneratePathProperty="true" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
-  <Import Project="..\..\deps\expected.props" />
+  <Import Project="$(RepoRoot)deps\expected.props" />
   <ImportGroup Label="Shared" />
   <PropertyGroup Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
-    <PlatformToolset>v143</PlatformToolset>
+    
     <WindowsPackageType>None</WindowsPackageType>
     <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
     <WindowsAppSdkUndockedRegFreeWinRTInitialize>true</WindowsAppSdkUndockedRegFreeWinRTInitialize>
@@ -70,6 +70,7 @@
     </ClCompile>
     <ClCompile Include="powertoy_module.cpp" />
     <ClCompile Include="main.cpp" />
+  <ClCompile Include="quick_access_host.cpp" />
     <ClCompile Include="restart_elevated.cpp" />
     <ClCompile Include="centralized_kb_hook.cpp" />
     <ClCompile Include="settings_telemetry.cpp" />
@@ -81,9 +82,11 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ActionRunnerUtils.h" />
+    <ClInclude Include="ai_detection.h" />
     <ClInclude Include="auto_start_helper.h" />
     <ClInclude Include="bug_report.h" />
     <ClInclude Include="centralized_hotkeys.h" />
+  <ClInclude Include="quick_access_host.h" />
     <ClInclude Include="general_settings.h" />
     <ClInclude Include="hotkey_conflict_detector.h" />
     <ClInclude Include="pch.h" />
@@ -133,22 +136,40 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
     <Manifest Include="PowerToys.exe.manifest" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources.resx" />
   </ItemGroup>
+  <ItemGroup>
+    <CopyFileToFolders Include="svgs\PowerToysDark.ico">
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">true</DeploymentContent>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">true</DeploymentContent>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DeploymentContent>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</DeploymentContent>
+      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">$(OutDir)\svgs</DestinationFolders>
+      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">$(OutDir)\svgs</DestinationFolders>
+      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)\svgs</DestinationFolders>
+      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)\svgs</DestinationFolders>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="svgs\PowerToysWhite.ico">
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">true</DeploymentContent>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">true</DeploymentContent>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DeploymentContent>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</DeploymentContent>
+      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">$(OutDir)\svgs</DestinationFolders>
+      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">$(OutDir)\svgs</DestinationFolders>
+      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)\svgs</DestinationFolders>
+      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)\svgs</DestinationFolders>
+    </CopyFileToFolders>
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
-  <Import Project="..\..\deps\spdlog.props" />
+  <Import Project="$(RepoRoot)deps\spdlog.props" />
   <!-- Deduplicate WindowsAppRuntimeAutoInitializer.cpp (added twice via transitive imports causing LNK4042). Remove all then add exactly once. -->
   <Target Name="FixWinAppSDKAutoInitializer" BeforeTargets="ClCompile" AfterTargets="WindowsAppRuntimeAutoInitializer">
     <ItemGroup>
       <!-- Remove ALL injected versions of the file -->
       <ClCompile Remove="@(ClCompile)" Condition="'%(Filename)' == 'WindowsAppRuntimeAutoInitializer'" />
-
       <!-- Add ONE copy back manually -->
       <ClCompile Include="$(PkgMicrosoft_WindowsAppSDK_Foundation)\include\WindowsAppRuntimeAutoInitializer.cpp">
         <PrecompiledHeader>NotUsing</PrecompiledHeader>

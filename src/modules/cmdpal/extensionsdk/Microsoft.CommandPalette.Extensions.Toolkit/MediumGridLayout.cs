@@ -6,15 +6,5 @@ namespace Microsoft.CommandPalette.Extensions.Toolkit;
 
 public partial class MediumGridLayout : BaseObservable, IMediumGridLayout
 {
-    public virtual bool ShowTitle
-    {
-        get => field;
-        set
-        {
-            field = value;
-            OnPropertyChanged(nameof(ShowTitle));
-        }
-    }
-
-    = true;
+    public virtual bool ShowTitle { get; set => SetProperty(ref field, value); } = true;
 }

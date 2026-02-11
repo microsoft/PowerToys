@@ -32,7 +32,7 @@ namespace ViewModelTests
         [DataRow("v0.22.0", "settings.json")]
         public void OriginalFilesModificationTest(string version, string fileName)
         {
-            var settingPathMock = new Mock<ISettingsPath>();
+            var settingPathMock = new Mock<SettingPath>();
 
             var fileMock = BackCompatTestProperties.GetModuleIOProvider(version, FancyZonesSettings.ModuleName, fileName);
             var mockSettingsUtils = new SettingsUtils(fileMock.Object, settingPathMock.Object);
@@ -89,9 +89,9 @@ namespace ViewModelTests
             return 0;
         }
 
-        private Mock<ISettingsUtils> mockGeneralSettingsUtils;
+        private Mock<SettingsUtils> mockGeneralSettingsUtils;
 
-        private Mock<ISettingsUtils> mockFancyZonesSettingsUtils;
+        private Mock<SettingsUtils> mockFancyZonesSettingsUtils;
 
         private Func<string, int> sendMockIPCConfigMSG = msg => { return 0; };
 

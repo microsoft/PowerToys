@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.props')" />
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <Import Project="$(RepoRoot)packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('$(RepoRoot)packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.props')" />
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|x64">
       <Configuration>Debug</Configuration>
@@ -27,23 +28,23 @@
     <WindowsTargetPlatformVersion>10.0.26100.0</WindowsTargetPlatformVersion>
     <ProjectName>LightSwitchService</ProjectName>
   </PropertyGroup>
-  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <PropertyGroup>
-    <OutDir>..\..\..\..\$(Platform)\$(Configuration)\$(MSBuildProjectName)\</OutDir>
+    <OutDir>$(RepoRoot)$(Platform)\$(Configuration)\$(MSBuildProjectName)\</OutDir>
     <TargetName>PowerToys.LightSwitchService</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup>
@@ -55,12 +56,13 @@
       <PreprocessorDefinitions>%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>
         ./../;
+        ..\LightSwitchLib;
         ..\..\..\common;
-        ..\..\..\common\logger;
-        ..\..\..\common\utils;
-        ..\..\..\common\SettingsAPI;
-        ..\..\..\common\Telemetry;
-        ..\..\..\;
+        $(RepoRoot)src\common\logger;
+        $(RepoRoot)src\common\utils;
+        $(RepoRoot)src\common\SettingsAPI;
+        $(RepoRoot)src\common\Telemetry;
+        $(RepoRoot)src\;
         ..\..\..\..\deps\spdlog\include;
         ./;
         %(AdditionalIncludeDirectories)
@@ -78,8 +80,8 @@
     <ClCompile Include="LightSwitchStateManager.cpp" />
     <ClCompile Include="NightLightRegistryObserver.cpp" />
     <ClCompile Include="SettingsConstants.cpp" />
-    <ClCompile Include="ThemeHelper.cpp" />
     <ClCompile Include="ThemeScheduler.cpp" />
+    <ClCompile Include="trace.cpp" />
     <ClCompile Include="WinHookEventIDs.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -92,28 +94,31 @@
     <ClInclude Include="NightLightRegistryObserver.h" />
     <ClInclude Include="SettingsConstants.h" />
     <ClInclude Include="SettingsObserver.h" />
-    <ClInclude Include="ThemeHelper.h" />
     <ClInclude Include="ThemeScheduler.h" />
+    <ClInclude Include="trace.h" />
     <ClInclude Include="WinHookEventIDs.h" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\common\ManagedCommon\ManagedCommon.csproj">
+    <ProjectReference Include="$(RepoRoot)src\common\ManagedCommon\ManagedCommon.csproj">
       <Project>{4aed67b6-55fd-486f-b917-e543dee2cb3c}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\common\SettingsAPI\SettingsAPI.vcxproj">
+    <ProjectReference Include="$(RepoRoot)src\common\SettingsAPI\SettingsAPI.vcxproj">
       <Project>{6955446d-23f7-4023-9bb3-8657f904af99}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\common\notifications\notifications.vcxproj">
+    <ProjectReference Include="$(RepoRoot)src\common\notifications\notifications.vcxproj">
       <Project>{1d5be09d-78c0-4fd7-af00-ae7c1af7c525}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\common\Telemetry\EtwTrace\EtwTrace.vcxproj">
+    <ProjectReference Include="$(RepoRoot)src\common\Telemetry\EtwTrace\EtwTrace.vcxproj">
       <Project>{8f021b46-362b-485c-bfba-ccf83e820cbd}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\LightSwitchLib\LightSwitchLib.vcxproj">
+      <Project>{79267138-2895-4346-9021-21408d65379f}</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
-  <Import Project="..\..\..\..\deps\spdlog.props" />
+  <Import Project="$(RepoRoot)deps\spdlog.props" />
   <ImportGroup Label="ExtensionTargets">
-    <Import Project="..\..\..\..\packages\Microsoft.Windows.ImplementationLibrary.1.0.231216.1\build\native\Microsoft.Windows.ImplementationLibrary.targets" Condition="Exists('..\..\..\..\packages\Microsoft.Windows.ImplementationLibrary.1.0.231216.1\build\native\Microsoft.Windows.ImplementationLibrary.targets')" />
-    <Import Project="..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.targets')" />
+    <Import Project="$(RepoRoot)packages\Microsoft.Windows.ImplementationLibrary.1.0.231216.1\build\native\Microsoft.Windows.ImplementationLibrary.targets" Condition="Exists('$(RepoRoot)packages\Microsoft.Windows.ImplementationLibrary.1.0.231216.1\build\native\Microsoft.Windows.ImplementationLibrary.targets')" />
+    <Import Project="$(RepoRoot)packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('$(RepoRoot)packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.targets')" />
   </ImportGroup>
 </Project>

@@ -4,7 +4,8 @@
 #include "trace.h"
 #include "InclusiveCrosshairs.h"
 #include "common/utils/color.h"
-#include <atomic>
+#include <common/utils/EventWaiter.h>
+#include <common/interop/shared_constants.h>
 #include <thread>
 #include <chrono>
 #include <memory>
@@ -124,6 +125,9 @@ private:
     // Mouse Pointer Crosshairs specific settings
     InclusiveCrosshairsSettings m_inclusiveCrosshairsSettings;
 
+    // Event-driven trigger support
+    EventWaiter m_triggerEventWaiter;
+
 public:
     // Constructor
     MousePointerCrosshairs()
@@ -137,11 +141,9 @@ public:
     // Destroy the powertoy and free memory
     virtual void destroy() override
     {
-        UninstallKeyboardHook();
-        StopXTimer();
-        StopYTimer();
+        // Ensure all background threads/handles are torn down before destruction to avoid std::terminate/abort on joinable threads
+        disable();
         g_instance.store(nullptr, std::memory_order_release);
-        // Release shared state so worker threads (if any) exit when weak_ptr lock fails
         m_state.reset();
         delete this;
     }
@@ -203,6 +205,11 @@ public:
         m_enabled = true;
         Trace::EnableMousePointerCrosshairs(true);
         std::thread([=]() { InclusiveCrosshairsMain(m_hModule, m_inclusiveCrosshairsSettings); }).detach();
+
+        // Start listening for external trigger event so we can invoke the same logic as the activation hotkey.
+        m_triggerEventWaiter.start(CommonSharedConstants::MOUSE_CROSSHAIRS_TRIGGER_EVENT, [this](DWORD) {
+            on_hotkey(0); // activation hotkey
+        });
     }
 
     // Disable the powertoy
@@ -215,6 +222,8 @@ public:
         StopYTimer();
         m_glideState = 0;
         InclusiveCrosshairsDisable();
+
+        m_triggerEventWaiter.stop();
     }
 
     // Returns if the powertoys is enabled

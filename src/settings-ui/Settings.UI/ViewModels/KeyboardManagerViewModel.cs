@@ -29,7 +29,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
     {
         private GeneralSettings GeneralSettingsConfig { get; set; }
 
-        private readonly ISettingsUtils _settingsUtils;
+        private readonly SettingsUtils _settingsUtils;
 
         protected override string ModuleName => KeyboardManagerSettings.ModuleName;
 
@@ -63,7 +63,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private Func<List<KeysDataModel>, int> FilterRemapKeysList { get; }
 
-        public KeyboardManagerViewModel(ISettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, Func<string, int> ipcMSGCallBackFunc, Func<List<KeysDataModel>, int> filterRemapKeysList)
+        public KeyboardManagerViewModel(SettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, Func<string, int> ipcMSGCallBackFunc, Func<List<KeysDataModel>, int> filterRemapKeysList)
         {
             ArgumentNullException.ThrowIfNull(settingsRepository);
 

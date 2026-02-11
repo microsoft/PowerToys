@@ -21,7 +21,6 @@ using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.PowerToys.Telemetry;
-using Microsoft.UI;
 using Microsoft.UI.Composition;
 using Microsoft.UI.Composition.SystemBackdrops;
 using Microsoft.UI.Input;
@@ -33,12 +32,9 @@ using Windows.Foundation;
 using Windows.Graphics;
 using Windows.System;
 using Windows.UI;
-using Windows.UI.WindowManagement;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.Graphics.Dwm;
-using Windows.Win32.Graphics.Gdi;
-using Windows.Win32.UI.HiDpi;
 using Windows.Win32.UI.Input.KeyboardAndMouse;
 using Windows.Win32.UI.WindowsAndMessaging;
 using WinRT;
@@ -52,11 +48,16 @@ public sealed partial class MainWindow : WindowEx,
     IRecipient<ShowWindowMessage>,
     IRecipient<HideWindowMessage>,
     IRecipient<QuitMessage>,
-    IDisposable
+    IRecipient<NavigateToPageMessage>,
+    IRecipient<NavigationDepthMessage>,
+    IRecipient<SearchQueryMessage>,
+    IRecipient<ErrorOccurredMessage>,
+    IRecipient<DragStartedMessage>,
+    IRecipient<DragCompletedMessage>,
+    IRecipient<ToggleDevRibbonMessage>,
+    IDisposable,
+    IHostWindow
 {
-    private const int DefaultWidth = 800;
-    private const int DefaultHeight = 480;
-
     [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1310:Field names should not contain underscore", Justification = "Stylistically, window messages are WM_")]
     [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1306:Field names should begin with lower-case letter", Justification = "Stylistically, window messages are WM_")]
     private readonly uint WM_TASKBAR_RESTART;
@@ -73,13 +74,29 @@ public sealed partial class MainWindow : WindowEx,
     private bool _ignoreHotKeyWhenFullScreen = true;
     private bool _themeServiceInitialized;
 
+    // Session tracking for telemetry
+    private Stopwatch? _sessionStopwatch;
+    private int _sessionCommandsExecuted;
+    private int _sessionPagesVisited;
+    private int _sessionSearchQueriesCount;
+    private int _sessionMaxNavigationDepth;
+    private int _sessionErrorCount;
+
     private DesktopAcrylicController? _acrylicController;
+    private MicaController? _micaController;
     private SystemBackdropConfiguration? _configurationSource;
+    private bool _isUpdatingBackdrop;
     private TimeSpan _autoGoHomeInterval = Timeout.InfiniteTimeSpan;
 
     private WindowPosition _currentWindowPosition = new();
 
+    private bool _preventHideWhenDeactivated;
+
+    private DevRibbon? _devRibbon;
+
     private MainWindowViewModel ViewModel { get; }
+
+    public bool IsVisibleToUser { get; private set; } = true;
 
     public MainWindow()
     {
@@ -101,7 +118,7 @@ public sealed partial class MainWindow : WindowEx,
             CommandPaletteHost.SetHostHwnd((ulong)_hwnd.Value);
         }
 
-        SetAcrylic();
+        InitializeBackdropSupport();
 
         _hiddenOwnerBehavior.ShowInTaskbar(this, Debugger.IsAttached);
 
@@ -119,6 +136,13 @@ public sealed partial class MainWindow : WindowEx,
         WeakReferenceMessenger.Default.Register<QuitMessage>(this);
         WeakReferenceMessenger.Default.Register<ShowWindowMessage>(this);
         WeakReferenceMessenger.Default.Register<HideWindowMessage>(this);
+        WeakReferenceMessenger.Default.Register<NavigateToPageMessage>(this);
+        WeakReferenceMessenger.Default.Register<NavigationDepthMessage>(this);
+        WeakReferenceMessenger.Default.Register<SearchQueryMessage>(this);
+        WeakReferenceMessenger.Default.Register<ErrorOccurredMessage>(this);
+        WeakReferenceMessenger.Default.Register<DragStartedMessage>(this);
+        WeakReferenceMessenger.Default.Register<DragCompletedMessage>(this);
+        WeakReferenceMessenger.Default.Register<ToggleDevRibbonMessage>(this);
 
         // Hide our titlebar.
         // We need to both ExtendsContentIntoTitleBar, then set the height to Collapsed
@@ -144,7 +168,7 @@ public sealed partial class MainWindow : WindowEx,
         App.Current.Services.GetService<SettingsModel>()!.SettingsChanged += SettingsChangedHandler;
 
         // Make sure that we update the acrylic theme when the OS theme changes
-        RootElement.ActualThemeChanged += (s, e) => DispatcherQueue.TryEnqueue(UpdateAcrylic);
+        RootElement.ActualThemeChanged += (s, e) => DispatcherQueue.TryEnqueue(UpdateBackdrop);
 
         // Hardcoding event name to avoid bringing in the PowerToys.interop dependency. Event name must match CMDPAL_SHOW_EVENT from shared_constants.h
         NativeEventWaiter.WaitForEventLoop("Local\\PowerToysCmdPal-ShowEvent-62336fcd-8611-4023-9b30-091a6af4cc5a", () =>
@@ -171,7 +195,7 @@ public sealed partial class MainWindow : WindowEx,
 
     private void ThemeServiceOnThemeChanged(object? sender, ThemeChangedEventArgs e)
     {
-        UpdateAcrylic();
+        UpdateBackdrop();
     }
 
     private static void LocalKeyboardListener_OnKeyPressed(object? sender, LocalKeyboardListenerKeyPressedEventArgs e)
@@ -192,7 +216,8 @@ public sealed partial class MainWindow : WindowEx,
         // Add dev ribbon if enabled
         if (!BuildInfo.IsCiBuild)
         {
-            RootElement.Children.Add(new DevRibbon { Margin = new Thickness(-1, -1, 120, -1) });
+            _devRibbon = new DevRibbon { Margin = new Thickness(-1, -1, 120, -1) };
+            RootElement.Children.Add(_devRibbon);
         }
     }
 
@@ -204,37 +229,38 @@ public sealed partial class MainWindow : WindowEx,
         PositionCentered(displayArea);
     }
 
+    private void PositionCentered(DisplayArea displayArea)
+    {
+        var position = WindowPositionHelper.CalculateCenteredPosition(
+            displayArea,
+            AppWindow.Size,
+            (int)this.GetDpiForWindow());
+
+        if (position is not null)
+        {
+            // Use Move(), not MoveAndResize(). Windows auto-resizes on DPI change via WM_DPICHANGED;
+            // the helper already accounts for this when calculating the centered position.
+            AppWindow.Move((PointInt32)position);
+        }
+    }
+
     private void RestoreWindowPosition()
     {
         var settings = App.Current.Services.GetService<SettingsModel>();
-        if (settings?.LastWindowPosition is not WindowPosition savedPosition)
+        if (settings?.LastWindowPosition is not { Width: > 0, Height: > 0 } savedPosition)
         {
             PositionCentered();
             return;
         }
 
-        if (savedPosition.Width <= 0 || savedPosition.Height <= 0)
-        {
-            PositionCentered();
-            return;
-        }
+        // MoveAndResize is safe here—we're restoring a saved state at startup,
+        // not moving a live window between displays.
+        var newRect = WindowPositionHelper.AdjustRectForVisibility(
+            savedPosition.ToPhysicalWindowRectangle(),
+            new SizeInt32(savedPosition.ScreenWidth, savedPosition.ScreenHeight),
+            savedPosition.Dpi);
 
-        var newRect = EnsureWindowIsVisible(savedPosition.ToPhysicalWindowRectangle(), new SizeInt32(savedPosition.ScreenWidth, savedPosition.ScreenHeight), savedPosition.Dpi);
         AppWindow.MoveAndResize(newRect);
-    }
-
-    private void PositionCentered(DisplayArea displayArea)
-    {
-        if (displayArea is not null)
-        {
-            var centeredPosition = AppWindow.Position;
-            centeredPosition.X = (displayArea.WorkArea.Width - AppWindow.Size.Width) / 2;
-            centeredPosition.Y = (displayArea.WorkArea.Height - AppWindow.Size.Height) / 2;
-
-            centeredPosition.X += displayArea.WorkArea.X;
-            centeredPosition.Y += displayArea.WorkArea.Y;
-            AppWindow.Move(centeredPosition);
-        }
     }
 
     private void UpdateWindowPositionInMemory()
@@ -265,48 +291,170 @@ public sealed partial class MainWindow : WindowEx,
         _autoGoHomeTimer.Interval = _autoGoHomeInterval;
     }
 
-    private void SetAcrylic()
+    private void InitializeBackdropSupport()
     {
-        if (DesktopAcrylicController.IsSupported())
+        if (DesktopAcrylicController.IsSupported() || MicaController.IsSupported())
         {
-            // Hooking up the policy object.
             _configurationSource = new SystemBackdropConfiguration
             {
-                // Initial configuration state.
                 IsInputActive = true,
             };
-            UpdateAcrylic();
         }
     }
 
-    private void UpdateAcrylic()
+    private void UpdateBackdrop()
     {
+        // Prevent re-entrance when backdrop changes trigger ActualThemeChanged
+        if (_isUpdatingBackdrop)
+        {
+            return;
+        }
+
+        _isUpdatingBackdrop = true;
+
+        var backdrop = _themeService.Current.BackdropParameters;
+        var isImageMode = ViewModel.ShowBackgroundImage;
+        var config = BackdropStyles.Get(backdrop.Style);
+
         try
         {
-            if (_acrylicController != null)
+            switch (config.ControllerKind)
             {
-                _acrylicController.RemoveAllSystemBackdropTargets();
-                _acrylicController.Dispose();
+                case BackdropControllerKind.Solid:
+                    CleanupBackdropControllers();
+                    var tintColor = Color.FromArgb(
+                        (byte)(backdrop.EffectiveOpacity * 255),
+                        backdrop.TintColor.R,
+                        backdrop.TintColor.G,
+                        backdrop.TintColor.B);
+                    SetupTransparentBackdrop(tintColor);
+                    break;
+
+                case BackdropControllerKind.Mica:
+                case BackdropControllerKind.MicaAlt:
+                    SetupMica(backdrop, isImageMode, config.ControllerKind);
+                    break;
+
+                case BackdropControllerKind.Acrylic:
+                case BackdropControllerKind.AcrylicThin:
+                default:
+                    SetupDesktopAcrylic(backdrop, isImageMode, config.ControllerKind);
+                    break;
             }
-
-            var backdrop = _themeService.Current.BackdropParameters;
-            _acrylicController = new DesktopAcrylicController
-            {
-                TintColor = backdrop.TintColor,
-                TintOpacity = backdrop.TintOpacity,
-                FallbackColor = backdrop.FallbackColor,
-                LuminosityOpacity = backdrop.LuminosityOpacity,
-            };
-
-            // Enable the system backdrop.
-            // Note: Be sure to have "using WinRT;" to support the Window.As<...>() call.
-            _acrylicController.AddSystemBackdropTarget(this.As<ICompositionSupportsSystemBackdrop>());
-            _acrylicController.SetSystemBackdropConfiguration(_configurationSource);
         }
         catch (Exception ex)
         {
             Logger.LogError("Failed to update backdrop", ex);
         }
+        finally
+        {
+            _isUpdatingBackdrop = false;
+        }
+    }
+
+    private void SetupTransparentBackdrop(Color tintColor)
+    {
+        if (SystemBackdrop is TransparentTintBackdrop existingBackdrop)
+        {
+            existingBackdrop.TintColor = tintColor;
+        }
+        else
+        {
+            SystemBackdrop = new TransparentTintBackdrop { TintColor = tintColor };
+        }
+    }
+
+    private void CleanupBackdropControllers()
+    {
+        if (_acrylicController is not null)
+        {
+            _acrylicController.RemoveAllSystemBackdropTargets();
+            _acrylicController.Dispose();
+            _acrylicController = null;
+        }
+
+        if (_micaController is not null)
+        {
+            _micaController.RemoveAllSystemBackdropTargets();
+            _micaController.Dispose();
+            _micaController = null;
+        }
+    }
+
+    private void SetupDesktopAcrylic(BackdropParameters backdrop, bool isImageMode, BackdropControllerKind kind)
+    {
+        CleanupBackdropControllers();
+
+        // Fall back to solid color if acrylic not supported
+        if (_configurationSource is null || !DesktopAcrylicController.IsSupported())
+        {
+            SetupTransparentBackdrop(backdrop.FallbackColor);
+            return;
+        }
+
+        // DesktopAcrylicController and SystemBackdrop can't be active simultaneously
+        SystemBackdrop = null;
+
+        // Image mode: no tint here, BlurImageControl handles it (avoids double-tinting)
+        var effectiveTintOpacity = isImageMode
+            ? 0.0f
+            : backdrop.EffectiveOpacity;
+
+        _acrylicController = new DesktopAcrylicController
+        {
+            Kind = kind == BackdropControllerKind.AcrylicThin
+                ? DesktopAcrylicKind.Thin
+                : DesktopAcrylicKind.Default,
+            TintColor = backdrop.TintColor,
+            TintOpacity = effectiveTintOpacity,
+            FallbackColor = backdrop.FallbackColor,
+            LuminosityOpacity = backdrop.EffectiveLuminosityOpacity,
+        };
+
+        // Requires "using WinRT;" for Window.As<>()
+        _acrylicController.AddSystemBackdropTarget(this.As<ICompositionSupportsSystemBackdrop>());
+        _acrylicController.SetSystemBackdropConfiguration(_configurationSource);
+    }
+
+    private void SetupMica(BackdropParameters backdrop, bool isImageMode, BackdropControllerKind kind)
+    {
+        CleanupBackdropControllers();
+
+        // Fall back to solid color if Mica not supported
+        if (_configurationSource is null || !MicaController.IsSupported())
+        {
+            SetupTransparentBackdrop(backdrop.FallbackColor);
+            return;
+        }
+
+        // MicaController and SystemBackdrop can't be active simultaneously
+        SystemBackdrop = null;
+        _configurationSource.Theme = _themeService.Current.Theme == ElementTheme.Dark
+            ? SystemBackdropTheme.Dark
+            : SystemBackdropTheme.Light;
+
+        var hasColorization = _themeService.Current.HasColorization || isImageMode;
+
+        _micaController = new MicaController
+        {
+            Kind = kind == BackdropControllerKind.MicaAlt
+                ? MicaKind.BaseAlt
+                : MicaKind.Base,
+        };
+
+        // Only set tint properties when colorization is active
+        // Otherwise let system handle light/dark theme defaults automatically
+        if (hasColorization)
+        {
+            // Image mode: no tint here, BlurImageControl handles it (avoids double-tinting)
+            _micaController.TintColor = backdrop.TintColor;
+            _micaController.TintOpacity = isImageMode ? 0.0f : backdrop.EffectiveOpacity;
+            _micaController.FallbackColor = backdrop.FallbackColor;
+            _micaController.LuminosityOpacity = backdrop.EffectiveLuminosityOpacity;
+        }
+
+        _micaController.AddSystemBackdropTarget(this.As<ICompositionSupportsSystemBackdrop>());
+        _micaController.SetSystemBackdropConfiguration(_configurationSource);
     }
 
     private void ShowHwnd(IntPtr hwndValue, MonitorBehavior target)
@@ -330,7 +478,8 @@ public sealed partial class MainWindow : WindowEx,
 
         if (target == MonitorBehavior.ToLast)
         {
-            var newRect = EnsureWindowIsVisible(_currentWindowPosition.ToPhysicalWindowRectangle(), new SizeInt32(_currentWindowPosition.ScreenWidth, _currentWindowPosition.ScreenHeight), _currentWindowPosition.Dpi);
+            var originalScreen = new SizeInt32(_currentWindowPosition.ScreenWidth, _currentWindowPosition.ScreenHeight);
+            var newRect = WindowPositionHelper.AdjustRectForVisibility(_currentWindowPosition.ToPhysicalWindowRectangle(), originalScreen, _currentWindowPosition.Dpi);
             AppWindow.MoveAndResize(newRect);
         }
         else
@@ -360,115 +509,7 @@ public sealed partial class MainWindow : WindowEx,
         PInvoke.SetWindowPos(hwnd, HWND.HWND_TOPMOST, 0, 0, 0, 0, SET_WINDOW_POS_FLAGS.SWP_NOMOVE | SET_WINDOW_POS_FLAGS.SWP_NOSIZE);
     }
 
-    /// <summary>
-    /// Ensures that the window rectangle is visible on-screen.
-    /// </summary>
-    /// <param name="windowRect">The window rectangle in physical pixels.</param>
-    /// <param name="originalScreen">The desktop area the window was positioned on.</param>
-    /// <param name="originalDpi">The window's original DPI.</param>
-    /// <returns>
-    /// A window rectangle in physical pixels, moved to the nearest display and resized
-    /// if the DPI has changed.
-    /// </returns>
-    private static RectInt32 EnsureWindowIsVisible(RectInt32 windowRect, SizeInt32 originalScreen, int originalDpi)
-    {
-        var displayArea = DisplayArea.GetFromRect(windowRect, DisplayAreaFallback.Nearest);
-        if (displayArea is null)
-        {
-            return windowRect;
-        }
-
-        var workArea = displayArea.WorkArea;
-        if (workArea.Width <= 0 || workArea.Height <= 0)
-        {
-            // Fallback, nothing reasonable to do
-            return windowRect;
-        }
-
-        var effectiveDpi = GetEffectiveDpiFromDisplayId(displayArea);
-        if (originalDpi <= 0)
-        {
-            originalDpi = effectiveDpi; // use current DPI as baseline (no scaling adjustment needed)
-        }
-
-        var hasInvalidSize = windowRect.Width <= 0 || windowRect.Height <= 0;
-        if (hasInvalidSize)
-        {
-            windowRect = new RectInt32(windowRect.X, windowRect.Y, DefaultWidth, DefaultHeight);
-        }
-
-        // If we have a DPI change, scale the window rectangle accordingly
-        if (effectiveDpi != originalDpi)
-        {
-            var scalingFactor = effectiveDpi / (double)originalDpi;
-            windowRect = new RectInt32(
-                (int)Math.Round(windowRect.X * scalingFactor),
-                (int)Math.Round(windowRect.Y * scalingFactor),
-                (int)Math.Round(windowRect.Width * scalingFactor),
-                (int)Math.Round(windowRect.Height * scalingFactor));
-        }
-
-        var targetWidth = Math.Min(windowRect.Width, workArea.Width);
-        var targetHeight = Math.Min(windowRect.Height, workArea.Height);
-
-        // Ensure at least some minimum visible area (e.g., 100 pixels)
-        // This helps prevent the window from being entirely offscreen, regardless of display scaling.
-        const int minimumVisibleSize = 100;
-        var isOffscreen =
-            windowRect.X + minimumVisibleSize > workArea.X + workArea.Width ||
-            windowRect.X + windowRect.Width - minimumVisibleSize < workArea.X ||
-            windowRect.Y + minimumVisibleSize > workArea.Y + workArea.Height ||
-            windowRect.Y + windowRect.Height - minimumVisibleSize < workArea.Y;
-
-        // if the work area size has changed, re-center the window
-        var workAreaSizeChanged =
-            originalScreen.Width != workArea.Width ||
-            originalScreen.Height != workArea.Height;
-
-        int targetX;
-        int targetY;
-        var recenter = isOffscreen || workAreaSizeChanged || hasInvalidSize;
-        if (recenter)
-        {
-            targetX = workArea.X + ((workArea.Width - targetWidth) / 2);
-            targetY = workArea.Y + ((workArea.Height - targetHeight) / 2);
-        }
-        else
-        {
-            targetX = windowRect.X;
-            targetY = windowRect.Y;
-        }
-
-        return new RectInt32(targetX, targetY, targetWidth, targetHeight);
-    }
-
-    private static int GetEffectiveDpiFromDisplayId(DisplayArea displayArea)
-    {
-        var effectiveDpi = 96;
-
-        var hMonitor = (HMONITOR)Win32Interop.GetMonitorFromDisplayId(displayArea.DisplayId);
-        if (!hMonitor.IsNull)
-        {
-            var hr = PInvoke.GetDpiForMonitor(hMonitor, MONITOR_DPI_TYPE.MDT_EFFECTIVE_DPI, out var dpiX, out _);
-            if (hr == 0)
-            {
-                effectiveDpi = (int)dpiX;
-            }
-            else
-            {
-                Logger.LogWarning($"GetDpiForMonitor failed with HRESULT: 0x{hr.Value:X8} on display {displayArea.DisplayId}");
-            }
-        }
-
-        if (effectiveDpi <= 0)
-        {
-            effectiveDpi = 96;
-        }
-
-        return effectiveDpi;
-    }
-
-    private DisplayArea GetScreen(HWND currentHwnd, MonitorBehavior target)
+    private static DisplayArea GetScreen(HWND currentHwnd, MonitorBehavior target)
     {
         // Leaving a note here, in case we ever need it:
         // https://github.com/microsoft/microsoft-ui-xaml/issues/6454
@@ -518,6 +559,11 @@ public sealed partial class MainWindow : WindowEx,
     {
         var settings = App.Current.Services.GetService<SettingsModel>()!;
 
+        // Start session tracking
+        _sessionStopwatch = Stopwatch.StartNew();
+        _sessionCommandsExecuted = 0;
+        _sessionPagesVisited = 0;
+
         ShowHwnd(message.Hwnd, settings.SummonOn);
     }
 
@@ -526,6 +572,7 @@ public sealed partial class MainWindow : WindowEx,
         // This might come in off the UI thread. Make sure to hop back.
         DispatcherQueue.TryEnqueue(() =>
         {
+            EndSession("Hide");
             HideWindow();
         });
     }
@@ -545,8 +592,65 @@ public sealed partial class MainWindow : WindowEx,
         // This might come in off the UI thread. Make sure to hop back.
         DispatcherQueue.TryEnqueue(() =>
         {
+            EndSession("Dismiss");
             HideWindow();
         });
+    }
+
+    // Session telemetry: Track metrics during the Command Palette session
+    // These receivers increment counters that are sent when EndSession is called
+    public void Receive(NavigateToPageMessage message)
+    {
+        _sessionPagesVisited++;
+    }
+
+    public void Receive(NavigationDepthMessage message)
+    {
+        if (message.Depth > _sessionMaxNavigationDepth)
+        {
+            _sessionMaxNavigationDepth = message.Depth;
+        }
+    }
+
+    public void Receive(SearchQueryMessage message)
+    {
+        _sessionSearchQueriesCount++;
+    }
+
+    public void Receive(ErrorOccurredMessage message)
+    {
+        _sessionErrorCount++;
+    }
+
+    /// <summary>
+    /// Ends the current telemetry session and emits the CmdPal_SessionDuration event.
+    /// Aggregates all session metrics collected since ShowWindow and sends them to telemetry.
+    /// </summary>
+    /// <param name="dismissalReason">The reason the session ended (e.g., Dismiss, Hide, LostFocus).</param>
+    private void EndSession(string dismissalReason)
+    {
+        if (_sessionStopwatch is not null)
+        {
+            _sessionStopwatch.Stop();
+            TelemetryForwarder.LogSessionDuration(
+                (ulong)_sessionStopwatch.ElapsedMilliseconds,
+                _sessionCommandsExecuted,
+                _sessionPagesVisited,
+                dismissalReason,
+                _sessionSearchQueriesCount,
+                _sessionMaxNavigationDepth,
+                _sessionErrorCount);
+            _sessionStopwatch = null;
+        }
+    }
+
+    /// <summary>
+    /// Increments the session commands executed counter for telemetry.
+    /// Called by TelemetryForwarder when an extension command is invoked.
+    /// </summary>
+    internal void IncrementCommandsExecuted()
+    {
+        _sessionCommandsExecuted++;
     }
 
     private void HideWindow()
@@ -604,15 +708,12 @@ public sealed partial class MainWindow : WindowEx,
             {
                 Logger.LogWarning($"DWM cloaking of the main window failed. HRESULT: {hr.Value}.");
             }
+            else
+            {
+                IsVisibleToUser = false;
+            }
 
             wasCloaked = hr.Succeeded;
-        }
-
-        if (wasCloaked)
-        {
-            // Because we're only cloaking the window, bury it at the bottom in case something can
-            // see it - e.g. some accessibility helper (note: this also removes the top-most status).
-            PInvoke.SetWindowPos(_hwnd, HWND.HWND_BOTTOM, 0, 0, 0, 0, SET_WINDOW_POS_FLAGS.SWP_NOMOVE | SET_WINDOW_POS_FLAGS.SWP_NOSIZE);
         }
 
         return wasCloaked;
@@ -624,6 +725,7 @@ public sealed partial class MainWindow : WindowEx,
         {
             BOOL value = false;
             PInvoke.DwmSetWindowAttribute(_hwnd, DWMWINDOWATTRIBUTE.DWMWA_CLOAK, &value, (uint)sizeof(BOOL));
+            IsVisibleToUser = true;
         }
     }
 
@@ -666,19 +768,21 @@ public sealed partial class MainWindow : WindowEx,
 
     private void DisposeAcrylic()
     {
-        if (_acrylicController is not null)
-        {
-            _acrylicController.Dispose();
-            _acrylicController = null!;
-            _configurationSource = null!;
-        }
+        CleanupBackdropControllers();
+        _configurationSource = null!;
     }
 
     // Updates our window s.t. the top of the window is draggable.
     private void UpdateRegionsForCustomTitleBar()
     {
+        var xamlRoot = RootElement.XamlRoot;
+        if (xamlRoot is null)
+        {
+            return;
+        }
+
         // Specify the interactive regions of the title bar.
-        var scaleAdjustment = RootElement.XamlRoot.RasterizationScale;
+        var scaleAdjustment = xamlRoot.RasterizationScale;
 
         // Get the rectangle around our XAML content. We're going to mark this
         // rectangle as "Passthrough", so that the normal window operations
@@ -751,7 +855,14 @@ public sealed partial class MainWindow : WindowEx,
                 return;
             }
 
+            // We're doing something that requires us to lose focus, but we don't want to hide the window
+            if (_preventHideWhenDeactivated)
+            {
+                return;
+            }
+
             // This will DWM cloak our window:
+            EndSession("LostFocus");
             HideWindow();
 
             PowerToysTelemetry.Log.WriteEvent(new CmdPalDismissedOnLostFocus());
@@ -1026,5 +1137,50 @@ public sealed partial class MainWindow : WindowEx,
         _localKeyboardListener.Dispose();
         _windowThemeSynchronizer.Dispose();
         DisposeAcrylic();
+    }
+
+    public void Receive(ToggleDevRibbonMessage message)
+    {
+        _devRibbon?.Visibility = _devRibbon.Visibility == Visibility.Visible ? Visibility.Collapsed : Visibility.Visible;
+    }
+
+    public void Receive(DragStartedMessage message)
+    {
+        _preventHideWhenDeactivated = true;
+    }
+
+    public void Receive(DragCompletedMessage message)
+    {
+        _preventHideWhenDeactivated = false;
+        Task.Delay(200).ContinueWith(_ =>
+        {
+            DispatcherQueue.TryEnqueue(StealForeground);
+        });
+    }
+
+    private unsafe void StealForeground()
+    {
+        var foregroundWindow = PInvoke.GetForegroundWindow();
+        if (foregroundWindow == _hwnd)
+        {
+            return;
+        }
+
+        // This is bad, evil, and I'll have to forgo today's dinner dessert to punish myself
+        // for  writing this. But there's no way to make this work without it.
+        // If the window is not reactivated, the UX breaks down: a deactivated window has to
+        // be activated and then deactivated again to hide.
+        var currentThreadId = PInvoke.GetCurrentThreadId();
+        var foregroundThreadId = PInvoke.GetWindowThreadProcessId(foregroundWindow, null);
+        if (foregroundThreadId != currentThreadId)
+        {
+            PInvoke.AttachThreadInput(currentThreadId, foregroundThreadId, true);
+            PInvoke.SetForegroundWindow(_hwnd);
+            PInvoke.AttachThreadInput(currentThreadId, foregroundThreadId, false);
+        }
+        else
+        {
+            PInvoke.SetForegroundWindow(_hwnd);
+        }
     }
 }

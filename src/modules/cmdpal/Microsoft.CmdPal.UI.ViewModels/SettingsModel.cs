@@ -50,6 +50,8 @@ public partial class SettingsModel : ObservableObject
 
     public Dictionary<string, ProviderSettings> ProviderSettings { get; set; } = [];
 
+    public string[] FallbackRanks { get; set; } = [];
+
     public Dictionary<string, CommandAlias> Aliases { get; set; } = [];
 
     public List<TopLevelHotkey> CommandHotkeys { get; set; } = [];
@@ -72,6 +74,8 @@ public partial class SettingsModel : ObservableObject
 
     public int CustomThemeColorIntensity { get; set; } = 100;
 
+    public int BackgroundImageTintIntensity { get; set; }
+
     public int BackgroundImageOpacity { get; set; } = 20;
 
     public int BackgroundImageBlurAmount { get; set; }
@@ -81,6 +85,10 @@ public partial class SettingsModel : ObservableObject
     public BackgroundImageFit BackgroundImageFit { get; set; }
 
     public string? BackgroundImagePath { get; set; }
+
+    public BackdropStyle BackdropStyle { get; set; }
+
+    public int BackdropOpacity { get; set; } = 100;
 
     // END SETTINGS
     ///////////////////////////////////////////////////////////////////////////
@@ -105,6 +113,25 @@ public partial class SettingsModel : ObservableObject
         }
 
         return settings;
+    }
+
+    public string[] GetGlobalFallbacks()
+    {
+        var globalFallbacks = new HashSet<string>();
+
+        foreach (var provider in ProviderSettings.Values)
+        {
+            foreach (var fallback in provider.FallbackCommands)
+            {
+                var fallbackSetting = fallback.Value;
+                if (fallbackSetting.IsEnabled && fallbackSetting.IncludeInGlobalResults)
+                {
+                    globalFallbacks.Add(fallback.Key);
+                }
+            }
+        }
+
+        return globalFallbacks.ToArray();
     }
 
     public static SettingsModel LoadSettings()

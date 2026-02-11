@@ -201,7 +201,7 @@ public:
                 Logger::error(message.value());
             }
         }
-        m_toggleEditorEventWaiter = EventWaiter(CommonSharedConstants::WORKSPACES_LAUNCH_EDITOR_EVENT, [&](int err) {
+        m_toggleEditorEventWaiter.start(CommonSharedConstants::WORKSPACES_LAUNCH_EDITOR_EVENT, [&](DWORD err) {
             if (err == ERROR_SUCCESS)
             {
                 Logger::trace(L"{} event was signaled", CommonSharedConstants::WORKSPACES_LAUNCH_EDITOR_EVENT);

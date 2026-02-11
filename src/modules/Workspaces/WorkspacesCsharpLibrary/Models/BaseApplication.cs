@@ -16,7 +16,7 @@ using Windows.Management.Deployment;
 
 namespace WorkspacesCsharpLibrary.Models
 {
-    public class BaseApplication : INotifyPropertyChanged, IDisposable
+    public partial class BaseApplication : INotifyPropertyChanged, IDisposable
     {
         public event PropertyChangedEventHandler PropertyChanged;
 

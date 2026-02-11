@@ -9,7 +9,6 @@
 #include <shellapi.h>
 #include <common/utils/logger_helper.h>
 #include <common/interop/shared_constants.h>
-#include <common/notifications/notifications.h>
 
 BOOL APIENTRY DllMain(HMODULE /*hModule*/, DWORD ul_reason_for_call, LPVOID /*lpReserved*/)
 {
@@ -282,12 +281,10 @@ public:
         if (m_enabled)
         {
             disable();
-            notifications::show_toast(L"Keyboard Manager Disabled", L"");
         }
         else
         {
             enable();
-            notifications::show_toast(L"Keyboard Manager Enabled", L"");
         }
         return true;
     }
