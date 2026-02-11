@@ -224,7 +224,7 @@ BEGIN
     CONTROL         "Show Time Elapsed After Expiration:",IDC_CHECK_SHOW_EXPIRED,
                     "Button",BS_AUTOCHECKBOX | BS_LEFTTEXT | WS_TABSTOP,7,104,132,10
     CONTROL         "Lock Workstation During Break:",IDC_CHECK_LOCK_WORKSTATION,
-                    "Button",BS_AUTOCHECKBOX | BS_LEFTTEXT | WS_TABSTOP,7,119,132,10
+                    "Button",BS_AUTOCHECKBOX | BS_LEFTTEXT | WS_TABSTOP,7,119,113,10
 END
 
 1543 DIALOGEX 100, 50, 216, 131
