@@ -180,8 +180,8 @@ namespace KeyboardManagerEditorUI.Helpers
                     {
                         // Skip if the remapping is the same as the one being edited
                         if (isEditMode && editingRemapping != null &&
-                            editingRemapping.OriginalKeys.Count == 1 &&
-                            mappingService.GetKeyCodeFromName(editingRemapping.OriginalKeys[0]) == originalKeyCode)
+                            editingRemapping.Shortcut.Count == 1 &&
+                            mappingService.GetKeyCodeFromName(editingRemapping.Shortcut[0]) == originalKeyCode)
                         {
                             continue;
                         }
@@ -201,7 +201,7 @@ namespace KeyboardManagerEditorUI.Helpers
                 bool isEditingExistingRemapping = false;
                 if (isEditMode && editingRemapping != null)
                 {
-                    string editingOriginalKeysString = string.Join(";", editingRemapping.OriginalKeys.Select(k =>
+                    string editingOriginalKeysString = string.Join(";", editingRemapping.Shortcut.Select(k =>
                                     mappingService.GetKeyCodeFromName(k).ToString(CultureInfo.InvariantCulture)));
 
                     if (KeyboardManagerInterop.AreShortcutsEqual(originalKeysString, editingOriginalKeysString))
@@ -219,7 +219,7 @@ namespace KeyboardManagerEditorUI.Helpers
                         if (!isAppSpecific && string.IsNullOrEmpty(mapping.TargetApp))
                         {
                             // Skip if the remapping is the same as the one being edited
-                            if (editingRemapping != null && editingRemapping.OriginalKeys.Count > 1 && editingRemapping.IsAllApps && isEditingExistingRemapping)
+                            if (editingRemapping != null && editingRemapping.Shortcut.Count > 1 && editingRemapping.IsAllApps && isEditingExistingRemapping)
                             {
                                 continue;
                             }
@@ -232,7 +232,7 @@ namespace KeyboardManagerEditorUI.Helpers
                             && string.Equals(mapping.TargetApp, appName, StringComparison.OrdinalIgnoreCase))
                         {
                             // Skip if the remapping is the same as the one being edited
-                            if (editingRemapping != null && editingRemapping.OriginalKeys.Count > 1 && !editingRemapping.IsAllApps &&
+                            if (editingRemapping != null && editingRemapping.Shortcut.Count > 1 && !editingRemapping.IsAllApps &&
                                 string.Equals(editingRemapping.AppName, appName, StringComparison.OrdinalIgnoreCase) && isEditingExistingRemapping)
                             {
                                 continue;

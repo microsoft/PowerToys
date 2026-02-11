@@ -27,9 +27,7 @@
 
   <ItemGroup>
     <None Remove="Assets\Keyboard.ico" />
-    <None Remove="Pages\Programs.xaml" />
-    <None Remove="Pages\Text.xaml" />
-    <None Remove="Pages\URLs.xaml" />
+    <None Remove="Styles\Colors.xaml" />
   </ItemGroup>
 
   <ItemGroup>
@@ -45,11 +43,12 @@
     <ProjectCapability Include="Msix" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="CommunityToolkit.Common" />
-    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
-    <PackageReference Include="Microsoft.WindowsAppSDK" />
-    <PackageReference Include="CommunityToolkit.WinUI.UI.Controls.Markdown" />
-    <PackageReference Include="WinUIEx" />
+  <PackageReference Include="CommunityToolkit.Common" />
+  <PackageReference Include="CommunityToolkit.WinUI.Controls.Primitives" />
+  <PackageReference Include="CommunityToolkit.WinUI.Converters" />
+  <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
+  <PackageReference Include="Microsoft.WindowsAppSDK" />
+  <PackageReference Include="WinUIEx" />
     <!-- This line forces the WebView2 version used by Windows App SDK to be the one we expect from Directory.Packages.props . -->
     <PackageReference Include="Microsoft.Web.WebView2" />
   </ItemGroup>
@@ -67,30 +66,12 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <Page Update="Controls\UrlPageInputControl.xaml">
-      <SubType>Designer</SubType>
+    <Page Update="Styles\Colors.xaml">
+      <Generator>MSBuild:Compile</Generator>
     </Page>
+  </ItemGroup>
+  <ItemGroup>
     <Page Update="Styles\Button.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-  </ItemGroup>
-  <ItemGroup>
-    <Page Update="Pages\URLs.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-  </ItemGroup>
-  <ItemGroup>
-    <Page Update="Pages\Text.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-  </ItemGroup>
-  <ItemGroup>
-    <Page Update="Pages\Programs.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-  </ItemGroup>
-  <ItemGroup>
-    <Page Update="Pages\Remappings.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>

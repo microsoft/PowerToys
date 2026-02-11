@@ -9,6 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using KeyboardManagerEditorUI.Interop;
+using KeyboardManagerEditorUI.Settings;
 using ManagedCommon;
 using Windows.System;
 
@@ -16,7 +17,7 @@ namespace KeyboardManagerEditorUI.Helpers
 {
     public static class RemappingHelper
     {
-        public static bool SaveMapping(KeyboardMappingService mappingService, List<string> originalKeys, List<string> remappedKeys, bool isAppSpecific, string appName)
+        public static bool SaveMapping(KeyboardMappingService mappingService, List<string> originalKeys, List<string> remappedKeys, bool isAppSpecific, string appName, bool saveToSettings = true)
         {
             if (mappingService == null)
             {
@@ -34,8 +35,17 @@ namespace KeyboardManagerEditorUI.Helpers
                 if (originalKeys.Count == 1)
                 {
                     int originalKey = mappingService.GetKeyCodeFromName(originalKeys[0]);
+
                     if (originalKey != 0)
                     {
+                        string targetKeysString = string.Join(";", remappedKeys.Select(k => mappingService.GetKeyCodeFromName(k).ToString(CultureInfo.InvariantCulture)));
+                        ShortcutKeyMapping shortcutKeyMapping = new ShortcutKeyMapping()
+                        {
+                            OperationType = ShortcutOperationType.RemapShortcut,
+                            OriginalKeys = originalKey.ToString(CultureInfo.InvariantCulture),
+                            TargetKeys = targetKeysString,
+                            TargetApp = isAppSpecific ? appName : string.Empty,
+                        };
                         if (remappedKeys.Count == 1)
                         {
                             int targetKey = mappingService.GetKeyCodeFromName(remappedKeys[0]);
@@ -46,8 +56,12 @@ namespace KeyboardManagerEditorUI.Helpers
                         }
                         else
                         {
-                            string targetKeys = string.Join(";", remappedKeys.Select(k => mappingService.GetKeyCodeFromName(k).ToString(CultureInfo.InvariantCulture)));
-                            mappingService.AddSingleKeyMapping(originalKey, targetKeys);
+                            mappingService.AddSingleKeyMapping(originalKey, targetKeysString);
+                        }
+
+                        if (saveToSettings)
+                        {
+                            SettingsManager.AddShortcutKeyMappingToSettings(shortcutKeyMapping);
                         }
                     }
                 }
@@ -56,6 +70,14 @@ namespace KeyboardManagerEditorUI.Helpers
                     string originalKeysString = string.Join(";", originalKeys.Select(k => mappingService.GetKeyCodeFromName(k).ToString(CultureInfo.InvariantCulture)));
                     string targetKeysString = string.Join(";", remappedKeys.Select(k => mappingService.GetKeyCodeFromName(k).ToString(CultureInfo.InvariantCulture)));
 
+                    ShortcutKeyMapping shortcutKeyMapping = new ShortcutKeyMapping()
+                    {
+                        OperationType = ShortcutOperationType.RemapShortcut,
+                        OriginalKeys = originalKeysString,
+                        TargetKeys = targetKeysString,
+                        TargetApp = isAppSpecific ? appName : string.Empty,
+                    };
+
                     if (isAppSpecific && !string.IsNullOrEmpty(appName))
                     {
                         mappingService.AddShortcutMapping(originalKeysString, targetKeysString, appName);
@@ -63,6 +85,11 @@ namespace KeyboardManagerEditorUI.Helpers
                     else
                     {
                         mappingService.AddShortcutMapping(originalKeysString, targetKeysString);
+                    }
+
+                    if (saveToSettings)
+                    {
+                        SettingsManager.AddShortcutKeyMappingToSettings(shortcutKeyMapping);
                     }
                 }
 
@@ -75,7 +102,7 @@ namespace KeyboardManagerEditorUI.Helpers
             }
         }
 
-        public static bool DeleteRemapping(KeyboardMappingService mappingService, Remapping remapping)
+        public static bool DeleteRemapping(KeyboardMappingService mappingService, Remapping remapping, bool deleteFromSettings = true)
         {
             if (mappingService == null)
             {
@@ -84,23 +111,27 @@ namespace KeyboardManagerEditorUI.Helpers
 
             try
             {
-                if (remapping.OriginalKeys.Count == 1)
+                if (remapping.Shortcut.Count == 1)
                 {
                     // Single key mapping
-                    int originalKey = mappingService.GetKeyCodeFromName(remapping.OriginalKeys[0]);
+                    int originalKey = mappingService.GetKeyCodeFromName(remapping.Shortcut[0]);
                     if (originalKey != 0)
                     {
                         if (mappingService.DeleteSingleKeyMapping(originalKey))
                         {
-                            // Save settings after successful deletion
+                            if (deleteFromSettings)
+                            {
+                                SettingsManager.RemoveShortcutKeyMappingFromSettings(remapping.Id);
+                            }
+
                             return mappingService.SaveSettings();
                         }
                     }
                 }
-                else if (remapping.OriginalKeys.Count > 1)
+                else if (remapping.Shortcut.Count > 1)
                 {
                     // Shortcut mapping
-                    string originalKeysString = string.Join(";", remapping.OriginalKeys.Select(k => mappingService.GetKeyCodeFromName(k).ToString(CultureInfo.InvariantCulture)));
+                    string originalKeysString = string.Join(";", remapping.Shortcut.Select(k => mappingService.GetKeyCodeFromName(k).ToString(CultureInfo.InvariantCulture)));
 
                     bool deleteResult;
                     if (!remapping.IsAllApps && !string.IsNullOrEmpty(remapping.AppName))
@@ -112,6 +143,11 @@ namespace KeyboardManagerEditorUI.Helpers
                     {
                         // Global shortcut key mapping
                         deleteResult = mappingService.DeleteShortcutMapping(originalKeysString);
+                    }
+
+                    if (deleteResult && deleteFromSettings)
+                    {
+                        SettingsManager.RemoveShortcutKeyMappingFromSettings(remapping.Id);
                     }
 
                     return deleteResult ? mappingService.SaveSettings() : false;

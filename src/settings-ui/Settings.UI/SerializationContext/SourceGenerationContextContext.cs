@@ -23,7 +23,7 @@ namespace Microsoft.PowerToys.Settings.UI.SerializationContext;
 [JsonSerializable(typeof(FileLocksmithSettings))]
 [JsonSerializable(typeof(FindMyMouseSettings))]
 [JsonSerializable(typeof(IList<PowerToysReleaseInfo>))]
-[JsonSerializable(typeof(SettingsUILibrary.LightSwitchSettings))]
+[JsonSerializable(typeof(LightSwitchSettings))]
 [JsonSerializable(typeof(MeasureToolSettings))]
 [JsonSerializable(typeof(MouseHighlighterSettings))]
 [JsonSerializable(typeof(MouseJumpSettings))]

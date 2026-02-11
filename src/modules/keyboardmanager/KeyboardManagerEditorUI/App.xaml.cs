@@ -9,6 +9,7 @@ using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
 using KeyboardManagerEditorUI.Helpers;
+using KeyboardManagerEditorUI.Settings;
 using ManagedCommon;
 using Microsoft.UI;
 using Microsoft.UI.Dispatching;
@@ -39,7 +40,6 @@ namespace KeyboardManagerEditorUI
         /// </summary>
         public App()
         {
-            global::System.Diagnostics.Debugger.Break();
             this.InitializeComponent();
 
             Task.Run(() =>
@@ -48,6 +48,8 @@ namespace KeyboardManagerEditorUI
             });
 
             UnhandledException += App_UnhandledException;
+
+            SettingsManager.CorrelateServiceAndEditorMappings();
         }
 
         /// <summary>

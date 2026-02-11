@@ -30,18 +30,20 @@ namespace KeyboardManagerEditorUI
         public MainWindow()
         {
             this.InitializeComponent();
-            this.ExtendsContentIntoTitleBar = true;
-            this.SetTitleBar(titleBar);
-
+            SetTitleBar();
             this.Activated += MainWindow_Activated;
             this.Closed += MainWindow_Closed;
 
             // Set the default page
-            RootView.SelectedItem = RootView.MenuItems[0];
-            IntPtr windowHandle = WinRT.Interop.WindowNative.GetWindowHandle(this);
-            WindowId windowId = Win32Interop.GetWindowIdFromWindow(windowHandle);
-            AppWindow appWindow = AppWindow.GetFromWindowId(windowId);
-            appWindow.SetIcon(@"Assets\Keyboard.ico");
+            // RootView.SelectedItem = RootView.MenuItems[0];
+        }
+
+        private void SetTitleBar()
+        {
+            ExtendsContentIntoTitleBar = true;
+            this.SetIcon(@"Assets\Keyboard.ico");
+            this.SetTitleBar(titleBar);
+            Title = "Keyboard Manager";
         }
 
         private void MainWindow_Activated(object sender, WindowActivatedEventArgs args)
@@ -58,24 +60,6 @@ namespace KeyboardManagerEditorUI
             KeyboardHookHelper.Instance.Dispose();
             this.Activated -= MainWindow_Activated;
             this.Closed -= MainWindow_Closed;
-        }
-
-        private void RootView_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
-        {
-            // Cleanup the keyboard hook when the selected page changes
-            KeyboardHookHelper.Instance.CleanupHook();
-
-            if (args.SelectedItem is NavigationViewItem selectedItem)
-            {
-                switch ((string)selectedItem.Tag)
-                {
-                    case "Remappings": NavigationFrame.Navigate(typeof(Pages.Remappings)); break;
-                    case "Programs": NavigationFrame.Navigate(typeof(Pages.Programs)); break;
-                    case "Text": NavigationFrame.Navigate(typeof(Pages.Text)); break;
-                    case "URLs": NavigationFrame.Navigate(typeof(Pages.URLs)); break;
-                    case "Mouse": NavigationFrame.Navigate(typeof(Pages.Mouse)); break;
-                }
-            }
         }
     }
 }

@@ -23,6 +23,20 @@ namespace winrt::PowerToys::Interop::implementation
         static hstring AdvancedPasteAdditionalActionMessage();
         static hstring AdvancedPasteCustomActionMessage();
         static hstring AdvancedPasteTerminateAppMessage();
+        static hstring AdvancedPasteShowUIEvent();
+        static hstring AlwaysOnTopPinEvent();
+        static hstring MeasureToolTriggerEvent();
+        static hstring FindMyMouseTriggerEvent();
+        static hstring MouseHighlighterTriggerEvent();
+        static hstring MouseCrosshairsTriggerEvent();
+        static hstring CursorWrapTriggerEvent();
+        static hstring LightSwitchToggleEvent();
+        static hstring ZoomItZoomEvent();
+        static hstring ZoomItDrawEvent();
+        static hstring ZoomItBreakEvent();
+        static hstring ZoomItLiveZoomEvent();
+        static hstring ZoomItSnipEvent();
+        static hstring ZoomItRecordEvent();
         static hstring ShowPowerOCRSharedEvent();
         static hstring TerminatePowerOCRSharedEvent();
         static hstring MouseJumpShowPreviewEvent();
@@ -33,7 +47,6 @@ namespace winrt::PowerToys::Interop::implementation
         static hstring PowerAccentExitEvent();
         static hstring ShortcutGuideTriggerEvent();
         static hstring RegistryPreviewTriggerEvent();
-        static hstring MeasureToolTriggerEvent();
         static hstring GcodePreviewResizeEvent();
         static hstring BgcodePreviewResizeEvent();
         static hstring QoiPreviewResizeEvent();
@@ -46,6 +59,7 @@ namespace winrt::PowerToys::Interop::implementation
         static hstring TerminateHostsSharedEvent();
         static hstring CropAndLockThumbnailEvent();
         static hstring CropAndLockReparentEvent();
+        static hstring CropAndLockScreenshotEvent();
         static hstring ShowEnvironmentVariablesSharedEvent();
         static hstring ShowEnvironmentVariablesAdminSharedEvent();
         static hstring WorkspacesLaunchEditorEvent();

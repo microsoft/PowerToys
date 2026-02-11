@@ -10,14 +10,14 @@
         <Setter Property="AutomationProperties.AccessibilityView" Value="Raw" />
         <Setter Property="IsTabStop" Value="False" />
         <Setter Property="MinHeight" Value="16" />
-        <Setter Property="Background" Value="{ThemeResource ControlFillColorInputActiveBrush}" />
+        <Setter Property="Background" Value="{ThemeResource CardBackgroundFillColorSecondaryBrush}" />
         <Setter Property="Foreground" Value="{ThemeResource TextFillColorPrimaryBrush}" />
-        <Setter Property="BorderBrush" Value="{ThemeResource ControlStrokeColorDefaultBrush}" />
-        <Setter Property="BorderThickness" Value="1" />
-        <Setter Property="Padding" Value="8" />
+        <Setter Property="BorderBrush" Value="{ThemeResource CardStrokeColorDefaultBrush}" />
+        <Setter Property="BorderThickness" Value="{ThemeResource ButtonBorderThemeThickness}" />
+        <Setter Property="Padding" Value="4,4,4,4" />
         <Setter Property="FontWeight" Value="Normal" />
         <Setter Property="FontSize" Value="14" />
-        <Setter Property="CornerRadius" Value="4" />
+        <Setter Property="CornerRadius" Value="2" />
         <Setter Property="BackgroundSizing" Value="InnerBorderEdge" />
         <Setter Property="HorizontalAlignment" Value="Left" />
         <Setter Property="HorizontalContentAlignment" Value="Center" />
@@ -33,6 +33,7 @@
                         HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
                         VerticalAlignment="{TemplateBinding VerticalAlignment}"
                         Background="{TemplateBinding Background}"
+                        BackgroundSizing="{TemplateBinding BackgroundSizing}"
                         BorderBrush="{TemplateBinding BorderBrush}"
                         BorderThickness="{TemplateBinding BorderThickness}"
                         CornerRadius="{TemplateBinding CornerRadius}">
@@ -63,8 +64,16 @@
                                     <VisualState.Setters>
                                         <Setter Target="KeyHolder.Background" Value="{ThemeResource SystemFillColorCriticalBackgroundBrush}" />
                                         <Setter Target="KeyHolder.BorderBrush" Value="{ThemeResource SystemFillColorCriticalBrush}" />
-                                        <Setter Target="KeyHolder.BorderThickness" Value="2" />
+                                        <Setter Target="KeyHolder.BorderThickness" Value="1" />
                                         <Setter Target="KeyPresenter.Foreground" Value="{ThemeResource SystemFillColorCriticalBrush}" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="Warning">
+                                    <VisualState.Setters>
+                                        <Setter Target="KeyHolder.Background" Value="{ThemeResource SystemFillColorCautionBackgroundBrush}" />
+                                        <Setter Target="KeyHolder.BorderBrush" Value="{ThemeResource SystemFillColorCautionBrush}" />
+                                        <Setter Target="KeyHolder.BorderThickness" Value="1" />
+                                        <Setter Target="KeyPresenter.Foreground" Value="{ThemeResource SystemFillColorCautionBrush}" />
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -120,6 +129,11 @@
                                         <Setter Target="KeyPresenter.Foreground" Value="{ThemeResource SystemFillColorCriticalBrush}" />
                                     </VisualState.Setters>
                                 </VisualState>
+                                <VisualState x:Name="Warning">
+                                    <VisualState.Setters>
+                                        <Setter Target="KeyPresenter.Foreground" Value="{ThemeResource SystemFillColorCautionBrush}" />
+                                    </VisualState.Setters>
+                                </VisualState>
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
                     </Grid>
@@ -147,6 +161,7 @@
                         VerticalAlignment="{TemplateBinding VerticalAlignment}"
                         AutomationProperties.AccessibilityView="Raw"
                         Background="{TemplateBinding Background}"
+                        BackgroundSizing="{TemplateBinding BackgroundSizing}"
                         BorderBrush="{TemplateBinding BorderBrush}"
                         BorderThickness="{TemplateBinding BorderThickness}"
                         CornerRadius="{TemplateBinding CornerRadius}">
@@ -176,8 +191,16 @@
                                     <VisualState.Setters>
                                         <Setter Target="KeyHolder.Background" Value="{ThemeResource SystemFillColorCriticalBackgroundBrush}" />
                                         <Setter Target="KeyHolder.BorderBrush" Value="{ThemeResource SystemFillColorCriticalBrush}" />
-                                        <Setter Target="KeyHolder.BorderThickness" Value="2" />
+                                        <Setter Target="KeyHolder.BorderThickness" Value="1" />
                                         <Setter Target="KeyPresenter.Foreground" Value="{ThemeResource SystemFillColorCriticalBrush}" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="Warning">
+                                    <VisualState.Setters>
+                                        <Setter Target="KeyHolder.Background" Value="{ThemeResource SystemFillColorCautionBackgroundBrush}" />
+                                        <Setter Target="KeyHolder.BorderBrush" Value="{ThemeResource SystemFillColorCautionBrush}" />
+                                        <Setter Target="KeyHolder.BorderThickness" Value="1" />
+                                        <Setter Target="KeyPresenter.Foreground" Value="{ThemeResource SystemFillColorCautionBrush}" />
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>

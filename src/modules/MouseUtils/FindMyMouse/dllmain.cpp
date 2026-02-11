@@ -8,6 +8,8 @@
 #include <common/utils/logger_helper.h>
 #include <common/utils/color.h>
 #include <common/utils/string_utils.h>
+#include <common/utils/EventWaiter.h>
+#include <common/interop/shared_constants.h>
 
 namespace
 {
@@ -69,6 +71,9 @@ private:
     // Find My Mouse specific settings
     FindMyMouseSettings m_findMyMouseSettings;
 
+    // Event-driven trigger support
+    EventWaiter m_triggerEventWaiter;
+
     // Load initial settings from the persisted values.
     void init_settings();
 
@@ -86,6 +91,8 @@ public:
     // Destroy the powertoy and free memory
     virtual void destroy() override
     {
+        // Ensure threads/handles are cleaned up before destruction
+        disable();
         delete this;
     }
 
@@ -150,6 +157,11 @@ public:
         m_enabled = true;
         Trace::EnableFindMyMouse(true);
         std::thread([=]() { FindMyMouseMain(m_hModule, m_findMyMouseSettings); }).detach();
+
+        // Start listening for external trigger event so we can invoke the same logic as the hotkey.
+        m_triggerEventWaiter.start(CommonSharedConstants::FIND_MY_MOUSE_TRIGGER_EVENT, [this](DWORD) {
+            OnHotkeyEx();
+        });
     }
 
     // Disable the powertoy
@@ -158,6 +170,8 @@ public:
         m_enabled = false;
         Trace::EnableFindMyMouse(false);
         FindMyMouseDisable();
+
+        m_triggerEventWaiter.stop();
     }
 
     // Returns if the powertoys is enabled
@@ -216,7 +230,7 @@ inline static uint8_t LegacyOpacityToAlpha(int overlayOpacityPercent)
         overlayOpacityPercent = 100;
     }
 
-    // Round to nearest integer (0–255)
+    // Round to nearest integer (0â€“255)
     return static_cast<uint8_t>((overlayOpacityPercent * 255 + 50) / 100);
 }
 

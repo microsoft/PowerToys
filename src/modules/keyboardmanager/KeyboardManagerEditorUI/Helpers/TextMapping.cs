@@ -10,14 +10,18 @@ using System.Threading.Tasks;
 
 namespace KeyboardManagerEditorUI.Helpers
 {
-    public class TextMapping
+    public class TextMapping : IToggleableShortcut
     {
-        public List<string> Keys { get; set; } = new List<string>();
+        public List<string> Shortcut { get; set; } = new List<string>();
 
         public string Text { get; set; } = string.Empty;
 
         public bool IsAllApps { get; set; } = true;
 
-        public string AppName { get; set; } = "All Apps";
+        public string AppName { get; set; } = string.Empty;
+
+        public bool IsActive { get; set; } = true;
+
+        public string Id { get; set; } = string.Empty;
     }
 }

@@ -11,7 +11,7 @@
     Title="KeyboardManagerEditorUI"
     Width="1440"
     Height="900"
-    MinWidth="480"
+    MinWidth="860"
     MinHeight="320"
     mc:Ignorable="d">
     <Window.SystemBackdrop>
@@ -34,45 +34,10 @@
                     Source="/Assets/FluentIconsKeyboardManager.png" />
             </TitleBar.LeftHeader>
         </TitleBar>
-        <NavigationView
-            x:Name="RootView"
+
+        <pages:All
             Grid.Row="1"
-            IsBackButtonVisible="Collapsed"
-            IsBackEnabled="False"
-            IsPaneToggleButtonVisible="False"
-            IsSettingsVisible="False"
-            PaneDisplayMode="Top"
-            SelectionChanged="RootView_SelectionChanged">
-            <NavigationView.MenuItems>
-                <NavigationViewItem Content="Remappings" Tag="Remappings">
-                    <NavigationViewItem.Icon>
-                        <FontIcon Glyph="&#xEDA7;" />
-                    </NavigationViewItem.Icon>
-                </NavigationViewItem>
-                <NavigationViewItem Content="Text" Tag="Text">
-                    <NavigationViewItem.Icon>
-                        <FontIcon Glyph="&#xE8D2;" />
-                    </NavigationViewItem.Icon>
-                </NavigationViewItem>
-                <NavigationViewItem Content="Programs" Tag="Programs">
-                    <NavigationViewItem.Icon>
-                        <FontIcon Glyph="&#xECAA;" />
-                    </NavigationViewItem.Icon>
-                </NavigationViewItem>
-                <NavigationViewItem Content="URLs" Tag="URLs">
-                    <NavigationViewItem.Icon>
-                        <FontIcon Glyph="&#xE8A7;" />
-                    </NavigationViewItem.Icon>
-                </NavigationViewItem>
-                <NavigationViewItem Content="Mouse" Tag="Mouse">
-                    <NavigationViewItem.Icon>
-                        <FontIcon Glyph="&#xE962;" />
-                    </NavigationViewItem.Icon>
-                </NavigationViewItem>
-            </NavigationView.MenuItems>
-            <NavigationView.Content>
-                <Frame x:Name="NavigationFrame" Margin="0,0,0,0" />
-            </NavigationView.Content>
-        </NavigationView>
+            HorizontalAlignment="Stretch"
+            VerticalAlignment="Stretch" />
     </Grid>
 </winuiex:WindowEx>

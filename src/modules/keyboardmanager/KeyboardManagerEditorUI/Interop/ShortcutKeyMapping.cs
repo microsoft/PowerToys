@@ -60,5 +60,44 @@ namespace KeyboardManagerEditorUI.Interop
             EndTask = 4,
             CloseAndEndTask = 5,
         }
+
+        public override bool Equals(object? obj)
+        {
+            if (obj is not ShortcutKeyMapping other)
+            {
+                return false;
+            }
+
+            return OriginalKeys == other.OriginalKeys &&
+                   TargetKeys == other.TargetKeys &&
+                   TargetApp == other.TargetApp &&
+                   OperationType == other.OperationType &&
+                   TargetText == other.TargetText &&
+                   ProgramPath == other.ProgramPath &&
+                   ProgramArgs == other.ProgramArgs &&
+                   StartInDirectory == other.StartInDirectory &&
+                   Elevation == other.Elevation &&
+                   IfRunningAction == other.IfRunningAction &&
+                   Visibility == other.Visibility &&
+                   UriToOpen == other.UriToOpen;
+        }
+
+        public override int GetHashCode()
+        {
+            HashCode hash = default(HashCode);
+            hash.Add(OriginalKeys);
+            hash.Add(TargetKeys);
+            hash.Add(TargetApp);
+            hash.Add(OperationType);
+            hash.Add(TargetText);
+            hash.Add(ProgramPath);
+            hash.Add(ProgramArgs);
+            hash.Add(StartInDirectory);
+            hash.Add(Elevation);
+            hash.Add(IfRunningAction);
+            hash.Add(Visibility);
+            hash.Add(UriToOpen);
+            return hash.ToHashCode();
+        }
     }
 }
