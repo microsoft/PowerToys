@@ -5776,7 +5776,7 @@ Text uses the current drawing color.</value>
     <value>Following Night Light settings.</value>
   </data>
   <data name="Shell_TopLevelWindowsAndLayouts.Content" xml:space="preserve">
-    <value>Windowing &amp;amp; Layouts</value>
+    <value>Windowing &amp; Layouts</value>
   </data>
   <data name="OOBE_NavViewItem.Content" xml:space="preserve">
     <value>Welcome to PowerToys</value>
