@@ -2971,10 +2971,10 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Customize the shortcut to pin or unpin an app window. Use the same modifier keys with + or - to adjust window transparency.</value>
   </data>
   <data name="AlwaysOnTop_TransparencyInfo.Header" xml:space="preserve">
-    <value>Window transparency adjustment</value>
+    <value>Window transparency</value>
   </data>
 	<data name="AlwaysOnTop_TransparencyInfo.Description" xml:space="preserve">
-    <value>Adjust the transparancy of the focused window that is on top</value>
+    <value>Adjust the transparency of the focused window that is on top</value>
   </data>
   <data name="AlwaysOnTop_IncreaseOpacity" xml:space="preserve">
     <value>Press **{0}** to increase the window opacity</value>
