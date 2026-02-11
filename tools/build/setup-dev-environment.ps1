@@ -38,7 +38,7 @@ Runs the full setup process.
 Runs setup but skips Visual Studio component installation.
 
 .EXAMPLE
-.\tools\build\setup-dev-environment.ps1 -VSInstallPath "C:\Program Files\Microsoft Visual Studio\2026\Enterprise"
+.\tools\build\setup-dev-environment.ps1 -VSInstallPath "C:\Program Files\Microsoft Visual Studio\18\Enterprise"
 Runs setup with a custom Visual Studio installation path.
 
 .NOTES
