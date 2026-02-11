@@ -11,7 +11,7 @@
     xmlns:ui="using:CommunityToolkit.WinUI"
     AutomationProperties.LandmarkType="Main"
     mc:Ignorable="d">
-
+    <local:NavigablePage.Resources />
     <controls:SettingsPageControl
         x:Uid="AlwaysOnTop"
         IsTabStop="False"
@@ -39,24 +39,7 @@
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
-                    <tkcontrols:SettingsExpander
-                        x:Uid="AlwaysOnTop_TransparencyInfo"
-                        HeaderIcon="{ui:FontIcon Glyph=&#xE790;}"
-                        IsExpanded="True">
-                        <tkcontrols:SettingsExpander.Items>
-                            <tkcontrols:SettingsCard ContentAlignment="Left">
-                                <ptcontrols:ShortcutWithTextLabelControl x:Uid="AlwaysOnTop_IncreaseOpacity" Keys="{x:Bind ViewModel.IncreaseOpacityKeysList, Mode=OneWay}" />
-                            </tkcontrols:SettingsCard>
-                            <tkcontrols:SettingsCard ContentAlignment="Left">
-                                <ptcontrols:ShortcutWithTextLabelControl x:Uid="AlwaysOnTop_DecreaseOpacity" Keys="{x:Bind ViewModel.DecreaseOpacityKeysList, Mode=OneWay}" />
-                            </tkcontrols:SettingsCard>
-                            <tkcontrols:SettingsCard>
-                                <tkcontrols:SettingsCard.Description>
-                                    <TextBlock x:Uid="AlwaysOnTop_TransparencyRange" Style="{StaticResource SecondaryTextStyle}" />
-                                </tkcontrols:SettingsCard.Description>
-                            </tkcontrols:SettingsCard>
-                        </tkcontrols:SettingsExpander.Items>
-                    </tkcontrols:SettingsExpander>
+
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup x:Uid="AlwaysOnTop_Behavior_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
@@ -114,6 +97,22 @@
                     <tkcontrols:SettingsCard x:Uid="AlwaysOnTop_Sound" HeaderIcon="{ui:FontIcon Glyph=&#xE7F3;}">
                         <ToggleSwitch IsOn="{x:Bind ViewModel.SoundEnabled, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
+
+                    <tkcontrols:SettingsExpander
+                        x:Uid="AlwaysOnTop_TransparencyInfo"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE790;}"
+                        IsExpanded="True">
+                        <tkcontrols:SettingsExpander.Items>
+                            <tkcontrols:SettingsCard>
+                                <tkcontrols:SettingsCard.Description>
+                                    <StackPanel Orientation="Vertical">
+                                        <tkcontrols:MarkdownTextBlock Config="{StaticResource DescriptionTextMarkdownConfig}" Text="{x:Bind ViewModel.IncreaseOpacityShortcut, Mode=OneWay}" />
+                                        <tkcontrols:MarkdownTextBlock Config="{StaticResource DescriptionTextMarkdownConfig}" Text="{x:Bind ViewModel.DecreaseOpacityShortcut, Mode=OneWay}" />
+                                    </StackPanel>
+                                </tkcontrols:SettingsCard.Description>
+                            </tkcontrols:SettingsCard>
+                        </tkcontrols:SettingsExpander.Items>
+                    </tkcontrols:SettingsExpander>
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup x:Uid="ExcludedApps" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">

@@ -101,10 +101,10 @@
                                         Keys="{x:Bind Hotkey.GetKeysList()}"
                                         LabelPlacement="Before" />
                                     <CheckBox
+                                        x:Uid="ShortcutConflictWindow_IgnoreShortcut"
                                         HorizontalAlignment="Right"
                                         VerticalAlignment="Center"
                                         Click="OnIgnoreConflictClicked"
-                                        Content="Ignore shortcut"
                                         IsChecked="{x:Bind ConflictIgnored, Mode=OneWay}" />
                                 </Grid>
 

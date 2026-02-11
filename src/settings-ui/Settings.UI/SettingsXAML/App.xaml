@@ -78,6 +78,17 @@
 
             <Style BasedOn="{StaticResource DefaultCheckBoxStyle}" TargetType="ptcontrols:CheckBoxWithDescriptionControl" />
 
+            <tkcontrols:MarkdownThemes
+                x:Key="DescriptionTextMarkdownThemeConfig"
+                InlineCodeBackground="{StaticResource ControlFillColorDefaultBrush}"
+                InlineCodeBorderBrush="{StaticResource ControlElevationBorderBrush}"
+                InlineCodeCornerRadius="2"
+                InlineCodeFontSize="12"
+                InlineCodeForeground="{StaticResource TextFillColorSecondaryBrush}"
+                InlineCodePadding="2,0,2,1" />
+
+            <tkcontrols:MarkdownConfig x:Key="DescriptionTextMarkdownConfig" Themes="{StaticResource DescriptionTextMarkdownThemeConfig}" />
+
             <TransitionCollection x:Key="SettingsCardsAnimations">
                 <EntranceThemeTransition FromVerticalOffset="50" />
                 <!--  Animates cards when loaded  -->

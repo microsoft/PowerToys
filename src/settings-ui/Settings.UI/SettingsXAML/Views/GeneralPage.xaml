@@ -484,9 +484,9 @@
                                             Style="{StaticResource SecondaryTextStyle}"
                                             TextWrapping="WrapWholeWords" />
                                         <HyperlinkButton
+                                            x:Uid="GeneralPage_ViewDiagnosticDataButton"
                                             Margin="0,2,0,0"
                                             Click="ViewDiagnosticData_Click"
-                                            Content="View diagnostic data"
                                             FontWeight="SemiBold" />
                                     </StackPanel>
                                 </tkcontrols:SettingsCard.Description>

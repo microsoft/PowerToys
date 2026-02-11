@@ -15,7 +15,7 @@ namespace Microsoft.PowerToys.Common.UI.Controls
     {
         public IsEnabledTextBlock()
         {
-            this.Style = (Style)Application.Current.Resources["DefaultIsEnabledTextBlockStyle"];
+            this.DefaultStyleKey = typeof(IsEnabledTextBlock);
         }
 
         protected override void OnApplyTemplate()
@@ -26,17 +26,21 @@ namespace Microsoft.PowerToys.Common.UI.Controls
             base.OnApplyTemplate();
         }
 
-        public static readonly DependencyProperty TextProperty = DependencyProperty.Register(
-           "Text",
-           typeof(string),
-           typeof(IsEnabledTextBlock),
-           null);
+        public static readonly DependencyProperty TextProperty = DependencyProperty.Register(nameof(Text), typeof(string), typeof(IsEnabledTextBlock), new PropertyMetadata(null));
 
         [Localizable(true)]
         public string Text
         {
             get => (string)GetValue(TextProperty);
             set => SetValue(TextProperty, value);
+        }
+
+        public static readonly DependencyProperty IsTextSelectionEnabledProperty = DependencyProperty.Register(nameof(IsTextSelectionEnabled), typeof(bool), typeof(IsEnabledTextBlock), new PropertyMetadata(false));
+
+        public bool IsTextSelectionEnabled
+        {
+            get => (bool)GetValue(IsTextSelectionEnabledProperty);
+            set => SetValue(IsTextSelectionEnabledProperty, value);
         }
 
         private void IsEnabledTextBlock_IsEnabledChanged(object sender, DependencyPropertyChangedEventArgs e)
