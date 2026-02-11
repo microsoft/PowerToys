@@ -45,6 +45,7 @@ class KeyboardManager : public PowertoyModuleIface
 private:
     // The PowerToy state.
     bool m_enabled = false;
+    bool m_active = false;
 
     // The PowerToy name that will be shown in the settings.
     const std::wstring app_name = GET_RESOURCE_STRING(IDS_KEYBOARDMANAGER);
@@ -55,9 +56,92 @@ private:
     // Hotkey for toggling the module
     Hotkey m_hotkey = { .key = 0 };
 
+    ULONGLONG m_lastHotkeyToggleTime = 0;
+
     HANDLE m_hProcess = nullptr;
 
     HANDLE m_hTerminateEngineEvent = nullptr;
+
+    void refresh_process_state()
+    {
+        if (m_hProcess && WaitForSingleObject(m_hProcess, 0) != WAIT_TIMEOUT)
+        {
+            CloseHandle(m_hProcess);
+            m_hProcess = nullptr;
+            m_active = false;
+        }
+    }
+
+    bool start_engine()
+    {
+        refresh_process_state();
+        if (m_hProcess)
+        {
+            m_active = true;
+            return true;
+        }
+
+        if (!m_hTerminateEngineEvent)
+        {
+            Logger::error(L"Cannot start keyboard manager engine because terminate event is not available");
+            m_active = false;
+            return false;
+        }
+
+        unsigned long powertoys_pid = GetCurrentProcessId();
+        std::wstring executable_args = std::to_wstring(powertoys_pid);
+
+        SHELLEXECUTEINFOW sei{ sizeof(sei) };
+        sei.fMask = { SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI };
+        sei.lpFile = L"KeyboardManagerEngine\\PowerToys.KeyboardManagerEngine.exe";
+        sei.nShow = SW_SHOWNORMAL;
+        sei.lpParameters = executable_args.data();
+        if (ShellExecuteExW(&sei) == false)
+        {
+            Logger::error(L"Failed to start keyboard manager engine");
+            auto message = get_last_error_message(GetLastError());
+            if (message.has_value())
+            {
+                Logger::error(message.value());
+            }
+
+            m_active = false;
+            return false;
+        }
+
+        m_hProcess = sei.hProcess;
+        if (m_hProcess)
+        {
+            SetPriorityClass(m_hProcess, REALTIME_PRIORITY_CLASS);
+            m_active = true;
+            return true;
+        }
+
+        m_active = false;
+        return false;
+    }
+
+    void stop_engine()
+    {
+        refresh_process_state();
+        if (!m_hProcess)
+        {
+            m_active = false;
+            return;
+        }
+
+        SetEvent(m_hTerminateEngineEvent);
+        auto waitResult = WaitForSingleObject(m_hProcess, 1500);
+        if (waitResult == WAIT_TIMEOUT)
+        {
+            TerminateProcess(m_hProcess, 0);
+            WaitForSingleObject(m_hProcess, 500);
+        }
+
+        CloseHandle(m_hProcess);
+        m_hProcess = nullptr;
+        m_active = false;
+    }
 
     void parse_hotkey(PowerToysSettings::PowerToyValues& settings)
     {
@@ -132,6 +216,16 @@ public:
         init_settings();
     };
 
+    ~KeyboardManager()
+    {
+        stop_engine();
+        if (m_hTerminateEngineEvent)
+        {
+            CloseHandle(m_hTerminateEngineEvent);
+            m_hTerminateEngineEvent = nullptr;
+        }
+    }
+
     // Destroy the powertoy and free memory
     virtual void destroy() override
     {
@@ -200,33 +294,7 @@ public:
         m_enabled = true;
         // Log telemetry
         Trace::EnableKeyboardManager(true);
-
-        unsigned long powertoys_pid = GetCurrentProcessId();
-        std::wstring executable_args = L"";
-        executable_args.append(std::to_wstring(powertoys_pid));
-
-        SHELLEXECUTEINFOW sei{ sizeof(sei) };
-        sei.fMask = { SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI };
-        sei.lpFile = L"KeyboardManagerEngine\\PowerToys.KeyboardManagerEngine.exe";
-        sei.nShow = SW_SHOWNORMAL;
-        sei.lpParameters = executable_args.data();
-        if (ShellExecuteExW(&sei) == false)
-        {
-            Logger::error(L"Failed to start keyboard manager engine");
-            auto message = get_last_error_message(GetLastError());
-            if (message.has_value())
-            {
-                Logger::error(message.value());
-            }
-        }
-        else
-        {
-            m_hProcess = sei.hProcess;
-            if (m_hProcess)
-            {
-                SetPriorityClass(m_hProcess, REALTIME_PRIORITY_CLASS);
-            }
-        }
+        start_engine();
     }
 
     // Disable the powertoy
@@ -235,15 +303,7 @@ public:
         m_enabled = false;
         // Log telemetry
         Trace::EnableKeyboardManager(false);
-
-        if (m_hProcess)
-        {
-            SetEvent(m_hTerminateEngineEvent);
-            WaitForSingleObject(m_hProcess, 1500);
-
-            TerminateProcess(m_hProcess, 0);
-            m_hProcess = nullptr;
-        }
+        stop_engine();
     }
 
     // Returns if the powertoys is enabled
@@ -278,14 +338,29 @@ public:
     // Process the hotkey event
     virtual bool on_hotkey(size_t /*hotkeyId*/) override
     {
-        if (m_enabled)
+        if (!m_enabled)
         {
-            disable();
+            return false;
+        }
+
+        constexpr ULONGLONG hotkeyToggleDebounceMs = 500;
+        const auto now = GetTickCount64();
+        if (now - m_lastHotkeyToggleTime < hotkeyToggleDebounceMs)
+        {
+            return true;
+        }
+        m_lastHotkeyToggleTime = now;
+
+        refresh_process_state();
+        if (m_active)
+        {
+            stop_engine();
         }
         else
         {
-            enable();
+            start_engine();
         }
+
         return true;
     }
 };

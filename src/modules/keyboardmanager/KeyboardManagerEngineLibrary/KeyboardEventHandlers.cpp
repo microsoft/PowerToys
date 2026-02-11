@@ -14,17 +14,10 @@
 #include <future>
 #include <chrono>
 
-#include <winrt/Windows.UI.Notifications.h>
-#include <winrt/Windows.Data.Xml.Dom.h>
-
 #include <windows.h>
 #include <string>
 #include <urlmon.h>
 #include <mmsystem.h>
-
-using namespace winrt;
-using namespace Windows::UI::Notifications;
-using namespace Windows::Data::Xml::Dom;
 
 namespace
 {
@@ -436,9 +429,7 @@ namespace KeyboardEventHandlers
                             }
                             else
                             {
-                                // need access to text resources, maybe "convert-resx-to-rc.ps1" is not working to get
-                                // text from KeyboardManagerEditor to here in KeyboardManagerEngineLibrary land?
-                                toast(L"Error", L"Could not understand the Path or URI");
+                                Logger::error(L"ChordKeyboardHandler: Could not understand the path or URI: {}", uri);
                                 return 1;
                             }
                         }
@@ -448,9 +439,7 @@ namespace KeyboardEventHandlers
 
                             if (result == reinterpret_cast<HINSTANCE>(HINSTANCE_ERROR))
                             {
-                                // need access to text resources, maybe "convert-resx-to-rc.ps1" is not working to get
-                                // text from KeyboardManagerEditor to here in KeyboardManagerEngineLibrary land?
-                                toast(L"Error", L"Could not understand the Path or URI");
+                                Logger::error(L"ChordKeyboardHandler: Failed to open path or URI: {}", newUri);
                             }
                         };
 
@@ -1244,46 +1233,6 @@ namespace KeyboardEventHandlers
         return fullPath;
     }
 
-    void toast(param::hstring const& message1, param::hstring const& message2) noexcept
-    {
-        try
-        {
-            // Alternatively can build DOM from code:
-            XmlDocument toastXml;
-            XmlElement toastElement = toastXml.CreateElement(L"toast");
-            XmlElement visualElement = toastXml.CreateElement(L"visual");
-            XmlElement bindingElement = toastXml.CreateElement(L"binding");
-            XmlElement textElement1 = toastXml.CreateElement(L"text");
-            XmlElement textElement2 = toastXml.CreateElement(L"text");
-
-            toastXml.AppendChild(toastElement);
-            toastElement.AppendChild(visualElement);
-            visualElement.AppendChild(bindingElement);
-
-            bindingElement.AppendChild(textElement1);
-            bindingElement.AppendChild(textElement2);
-
-            bindingElement.SetAttribute(L"template", L"ToastGeneric");
-
-            textElement1.InnerText(message1);
-            textElement2.InnerText(message2);
-
-            Logger::trace(L"ChordKeyboardHandler:toastXml {}", toastXml.GetXml());
-            std::wstring APPLICATION_ID = L"Microsoft.PowerToysWin32";
-            const auto notifier = ToastNotificationManager::ToastNotificationManager::CreateToastNotifier(APPLICATION_ID);
-
-            ToastNotification notification{ toastXml };
-            notifier.Show(notification);
-        }
-        catch (...)
-        {
-        }
-
-        /*std::thread{ [message] {
-    
-        } }.detach();*/
-    }
-
     void CreateOrShowProcessForShortcut(Shortcut shortcut) noexcept
     {
         WCHAR fullExpandedFilePath[MAX_PATH];
@@ -1344,7 +1293,7 @@ namespace KeyboardEventHandlers
             {
                 std::wstring title = fmt::format(L"Error starting {}", fileNamePart);
                 std::wstring message = fmt::format(L"The program was not found.");
-                toast(title, message);
+                Logger::error(L"{} {}", title, message);
                 return;
             }
 
@@ -1368,9 +1317,9 @@ namespace KeyboardEventHandlers
                 if (dwAttrib == INVALID_FILE_ATTRIBUTES)
                 {
                     std::wstring title = fmt::format(L"Error starting {}", fileNamePart);
-                    std::wstring message = fmt::format(L"The start in path was not valid. It could not be used.", currentDir);
+                    std::wstring message = fmt::format(L"The start in path was not valid. It could not be used.");
                     currentDirPtr = nullptr;
-                    toast(title, message);
+                    Logger::error(L"{} {}", title, message);
                     return;
                 }
             }
@@ -1397,7 +1346,7 @@ namespace KeyboardEventHandlers
             {
                 std::wstring title = fmt::format(L"Error starting {}", fileNamePart);
                 std::wstring message = fmt::format(L"The application might not have started.");
-                toast(title, message);
+                Logger::error(L"{} {}", title, message);
                 return;
             }
 
