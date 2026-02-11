@@ -2968,13 +2968,13 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Activation shortcut</value>
   </data>
   <data name="AlwaysOnTop_ActivationShortcut.Description" xml:space="preserve">
-    <value>Customize the shortcut to pin or unpin an app window. Use the same modifier keys with + or - to adjust window transparency.</value>
+    <value>Customize the shortcut to pin or unpin an app window and use the same modifier keys with + or − to adjust its transparency</value>
   </data>
   <data name="AlwaysOnTop_TransparencyInfo.Header" xml:space="preserve">
     <value>Window transparency</value>
   </data>
   <data name="AlwaysOnTop_TransparencyInfo.Description" xml:space="preserve">
-    <value>Adjust the transparency of the focused window that is on top</value>
+    <value>Adjust the transparency of the focused window on top</value>
   </data>
   <data name="AlwaysOnTop_IncreaseOpacity" xml:space="preserve">
     <value>Press **{0}** to increase the window opacity</value>
@@ -2983,7 +2983,7 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Press **{0}** to decrease the window opacity</value>
   </data>
   <data name="AlwaysOnTop_TransparencyRange.Text" xml:space="preserve">
-    <value>Transparency range: 20% to 100%</value>
+    <value>Transparency can be set between 20% and 100%</value>
   </data>
   <data name="Oobe_AlwaysOnTop.Title" xml:space="preserve">
     <value>Always On Top</value>
