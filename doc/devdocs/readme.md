@@ -7,9 +7,20 @@ Welcome to the PowerToys developer documentation. This documentation provides in
 ### Prerequisites
 
 1. Windows 10 April 2018 Update (version 1803) or newer
-1. Visual Studio Community/Professional/Enterprise 2022 17.4 or newer, or Visual Studio 2026
-1. A local clone of the PowerToys repository
+1. [Visual Studio 2026](https://visualstudio.microsoft.com/downloads/) (recommended) or Visual Studio 2022 17.4+ with the following workloads/components:
+   - Desktop Development with C++
+   - WinUI application development
+   - .NET desktop development
+   - Windows 10 SDK (10.0.22621.0)
+   - Windows 11 SDK (10.0.26100.3916)
+1. .NET 8 SDK
 1. Enable long paths in Windows (see [Enable Long Paths](https://docs.microsoft.com/windows/win32/fileio/maximum-file-path-limitation#enabling-long-paths-in-windows-10-version-1607-and-later) for details)
+
+> **Tip:** You can install Visual Studio with all required workloads automatically using the [WinGet configuration files](https://github.com/microsoft/PowerToys/tree/main/.config) in the repository:
+> ```powershell
+> winget configure .config\configuration.winget
+> ```
+> Pick the file that matches your VS edition (e.g., `configuration.vsProfessional.winget` or `configuration.vsEnterprise.winget`).
 
 ### Fork, Clone, and Set Up
 
@@ -37,7 +48,7 @@ Run with `-Help` to see all available options.
 1. Open the `PowerToys.slnx` file.
 1. If you see a dialog that says `install extra components` in the solution explorer pane, click `install`
 
-Alternatively, import the `.vsconfig` file from the repository root using Visual Studio Installer to install all required workloads. You can also use the [WinGet configuration files](https://github.com/microsoft/PowerToys/tree/main/.config) in the repository (pick the one that matches your VS distribution).
+Alternatively, import the `.vsconfig` file from the repository root using Visual Studio Installer to install all required workloads.
 
 #### Initialize submodules
 
@@ -81,6 +92,10 @@ You can also build from the command line using the provided scripts in `tools\bu
 
 See [Debugging](development/debugging.md) for detailed debugging techniques, including Visual Studio setup, attaching to child processes, and troubleshooting build errors.
 
+### Creating a New PowerToy
+
+See [Creating a New PowerToy](development/new-powertoy.md) for an end-to-end guide covering module architecture, settings integration, installer packaging, and testing.
+
 ## Development Guidelines
 
 - [Coding Guidelines](development/guidelines.md) - Development guidelines and best practices
@@ -89,7 +104,6 @@ See [Debugging](development/debugging.md) for detailed debugging techniques, inc
 - [Localization](development/localization.md) - How to support multiple languages
 - [UI Testing](development/ui-tests.md) - How to write UI tests for PowerToys
 - [Developing with VS Code](development/dev-with-vscode.md) - Build, debug, and contribute using VS Code
-- [Creating a New PowerToy](development/new-powertoy.md) - End-to-end guide for building a new module
 
 ## Rules
 
