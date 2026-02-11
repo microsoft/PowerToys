@@ -2,6 +2,12 @@
   <!-- Look at Directory.Build.props in root for common stuff as well -->
   <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
 
+  <!-- Force WebView2 to use Win32/WinForms mode for unit tests -->
+  <PropertyGroup>
+    <WebView2UseWinRT>false</WebView2UseWinRT>
+    <WebView2EnableCsWinRTProjection>false</WebView2EnableCsWinRTProjection>
+  </PropertyGroup>
+
   <PropertyGroup>
     <AssemblyTitle>UnitTests-SvgPreviewHandler</AssemblyTitle>
     <AssemblyDescription>PowerToys UnitTests-SvgPreviewHandler</AssemblyDescription>

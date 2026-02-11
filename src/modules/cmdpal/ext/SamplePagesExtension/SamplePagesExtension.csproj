@@ -62,11 +62,12 @@
     <HasPackageAndPublishMenu>true</HasPackageAndPublishMenu>
   </PropertyGroup>
 
-  <!-- Only enable Native AOT for Release builds to avoid System.Private.CoreLib.dll version conflicts during development -->
+  <!-- Temporarily disable Native AOT until C++ Desktop Development workload is installed -->
+  <!-- TODO: Re-enable after installing Desktop Development for C++ in Visual Studio -->
   <PropertyGroup Condition="'$(Configuration)' == 'Release'">
-    <PublishTrimmed>true</PublishTrimmed>
-    <PublishSingleFile>true</PublishSingleFile>
-    <PublishAot>true</PublishAot>
+    <PublishTrimmed>false</PublishTrimmed>
+    <PublishSingleFile>false</PublishSingleFile>
+    <PublishAot>false</PublishAot>
   </PropertyGroup>
 
   <!-- For Debug builds, use standard JIT compilation -->

@@ -12,6 +12,8 @@
     <TargetFramework>net9.0-windows10.0.26100.0</TargetFramework>
     <UseWindowsForms>true</UseWindowsForms>
     <PublishTrimmed>false</PublishTrimmed>
+    <!-- Suppress code analysis warnings for test library -->
+    <NoWarn>$(NoWarn);CA1305;CA1310;CA2101</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -20,6 +22,7 @@
     <PackageReference Include="System.IO.Abstractions" />
     <PackageReference Include="System.Text.RegularExpressions" />
     <PackageReference Include="CoenM.ImageSharp.ImageHash" />
+    <PackageReference Include="System.Drawing.Common" />
   </ItemGroup>
 
   <ItemGroup>
