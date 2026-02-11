@@ -39,45 +39,5 @@
             Grid.Row="1"
             HorizontalAlignment="Stretch"
             VerticalAlignment="Stretch" />
-        <!--<NavigationView
-            x:Name="RootView"
-            Grid.Row="1"
-            IsBackButtonVisible="Collapsed"
-            IsBackEnabled="False"
-            IsPaneToggleButtonVisible="False"
-            IsSettingsVisible="False"
-            PaneDisplayMode="Top"
-            SelectionChanged="RootView_SelectionChanged">
-            <NavigationView.MenuItems>
-                <NavigationViewItem Content="All" Tag="All">
-                    <NavigationViewItem.Icon>
-                        <FontIcon Glyph="&#xE8FD;" />
-                    </NavigationViewItem.Icon>
-                </NavigationViewItem>
-                <NavigationViewItem Content="Remappings" Tag="Remappings">
-                    <NavigationViewItem.Icon>
-                        <FontIcon Glyph="&#xEDA7;" />
-                    </NavigationViewItem.Icon>
-                </NavigationViewItem>
-                <NavigationViewItem Content="Text" Tag="Text">
-                    <NavigationViewItem.Icon>
-                        <FontIcon Glyph="&#xE8D2;" />
-                    </NavigationViewItem.Icon>
-                </NavigationViewItem>
-                <NavigationViewItem Content="Programs" Tag="Programs">
-                    <NavigationViewItem.Icon>
-                        <FontIcon Glyph="&#xECAA;" />
-                    </NavigationViewItem.Icon>
-                </NavigationViewItem>
-                <NavigationViewItem Content="URLs" Tag="URLs">
-                    <NavigationViewItem.Icon>
-                        <FontIcon Glyph="&#xE8A7;" />
-                    </NavigationViewItem.Icon>
-                </NavigationViewItem>
-            </NavigationView.MenuItems>
-            <NavigationView.Content>
-                <Frame x:Name="NavigationFrame" Margin="0,0,0,0" />
-            </NavigationView.Content>
-        </NavigationView>-->
     </Grid>
 </winuiex:WindowEx>

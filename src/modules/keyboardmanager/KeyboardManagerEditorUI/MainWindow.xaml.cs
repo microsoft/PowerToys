@@ -61,23 +61,5 @@ namespace KeyboardManagerEditorUI
             this.Activated -= MainWindow_Activated;
             this.Closed -= MainWindow_Closed;
         }
-
-        private void RootView_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
-        {
-            // Cleanup the keyboard hook when the selected page changes
-            /* KeyboardHookHelper.Instance.CleanupHook();
-
-            if (args.SelectedItem is NavigationViewItem selectedItem)
-            {
-                switch ((string)selectedItem.Tag)
-                {
-                    case "All": NavigationFrame.Navigate(typeof(Pages.All)); break;
-                    case "Remappings": NavigationFrame.Navigate(typeof(Pages.Remappings)); break;
-                    case "Programs": NavigationFrame.Navigate(typeof(Pages.Programs)); break;
-                    case "Text": NavigationFrame.Navigate(typeof(Pages.Text)); break;
-                    case "URLs": NavigationFrame.Navigate(typeof(Pages.URLs)); break;
-                }
-            } */
-        }
     }
 }

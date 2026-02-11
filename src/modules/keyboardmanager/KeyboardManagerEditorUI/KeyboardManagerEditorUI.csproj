@@ -27,9 +27,6 @@
 
   <ItemGroup>
     <None Remove="Assets\Keyboard.ico" />
-    <None Remove="Pages\Programs.xaml" />
-    <None Remove="Pages\Text.xaml" />
-    <None Remove="Pages\URLs.xaml" />
     <None Remove="Styles\Colors.xaml" />
   </ItemGroup>
 
@@ -74,30 +71,7 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <Page Update="Controls\UrlPageInputControl.xaml">
-      <SubType>Designer</SubType>
-    </Page>
     <Page Update="Styles\Button.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-  </ItemGroup>
-  <ItemGroup>
-    <Page Update="Pages\URLs.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-  </ItemGroup>
-  <ItemGroup>
-    <Page Update="Pages\Text.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-  </ItemGroup>
-  <ItemGroup>
-    <Page Update="Pages\Programs.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-  </ItemGroup>
-  <ItemGroup>
-    <Page Update="Pages\Remappings.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
