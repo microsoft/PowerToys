@@ -2980,7 +2980,7 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Press **{0}** to increase the window opacity</value>
   </data>
   <data name="AlwaysOnTop_DecreaseOpacity" xml:space="preserve">
-    <value>Decrease opacity</value>
+    <value>Press **{0}** to decrease the window opacity</value>
   </data>
   <data name="AlwaysOnTop_TransparencyRange.Text" xml:space="preserve">
     <value>Transparency range: 20%-100%</value>
