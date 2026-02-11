@@ -82,7 +82,7 @@ namespace updating
 // prevent the warning that may show up depend on the value of the constants (#defines)
 #pragma warning(push)
 #pragma warning(disable : 4702)
-    utils::async_task<github_version_result> get_github_version_info_async(const bool prerelease)
+    wil::task<github_version_result> get_github_version_info_async(const bool prerelease)
     {
         // If the current version starts with 0.0.*, it means we're on a local build from a farm and shouldn't check for updates.
         if constexpr (VERSION_MAJOR == 0 && VERSION_MINOR == 0)
@@ -166,7 +166,7 @@ namespace updating
         return !ec ? std::optional{ installer_download_path } : std::nullopt;
     }
 
-    utils::async_task<std::optional<std::filesystem::path>> download_new_version_async(new_version_download_info new_version)
+    wil::task<std::optional<std::filesystem::path>> download_new_version_async(new_version_download_info new_version)
     {
         auto installer_download_path = create_download_path();
         if (!installer_download_path)

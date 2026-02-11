@@ -15,7 +15,7 @@
 #endif
 
 #include <common/version/helper.h>
-#include <common/utils/async_task.h>
+#include <wil/coroutine.h>
 
 namespace updating
 {
@@ -38,8 +38,8 @@ namespace updating
     using github_version_result = nonstd::expected<github_version_info, std::wstring>;
 #endif
 
-    utils::async_task<github_version_result> get_github_version_info_async(bool prerelease = false);
-    utils::async_task<std::optional<std::filesystem::path>> download_new_version_async(new_version_download_info new_version);
+    wil::task<github_version_result> get_github_version_info_async(bool prerelease = false);
+    wil::task<std::optional<std::filesystem::path>> download_new_version_async(new_version_download_info new_version);
     std::filesystem::path get_pending_updates_path();
     void cleanup_updates();
 
