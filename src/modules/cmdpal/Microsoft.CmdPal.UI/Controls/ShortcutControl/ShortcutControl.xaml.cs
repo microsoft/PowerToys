@@ -36,6 +36,8 @@ public sealed partial class ShortcutControl : UserControl, IDisposable, IRecipie
 
     public static readonly DependencyProperty AllowDisableProperty = DependencyProperty.Register("AllowDisable", typeof(bool), typeof(ShortcutControl), new PropertyMetadata(false, OnAllowDisableChanged));
 
+    private static ResourceLoader resourceLoader = Microsoft.CmdPal.UI.Helpers.ResourceLoaderInstance.ResourceLoader;
+
     private static void OnAllowDisableChanged(DependencyObject d, DependencyPropertyChangedEventArgs? e)
     {
         var me = d as ShortcutControl;
@@ -106,8 +108,6 @@ public sealed partial class ShortcutControl : UserControl, IDisposable, IRecipie
     {
         InitializeComponent();
         internalSettings = new HotkeySettings();
-
-        var resourceLoader = Microsoft.CmdPal.UI.Helpers.ResourceLoaderInstance.ResourceLoader;
 
         // We create the Dialog in C# because doing it in XAML is giving WinUI/XAML Island bugs when using dark theme.
         shortcutDialog = new ContentDialog
