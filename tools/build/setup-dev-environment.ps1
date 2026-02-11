@@ -170,9 +170,9 @@ if (-not $SkipVSComponents) {
 
         if (-not $VSInstallPath) {
             $commonPaths = @(
-                "${env:ProgramFiles}\Microsoft Visual Studio\2026\Enterprise",
-                "${env:ProgramFiles}\Microsoft Visual Studio\2026\Professional",
-                "${env:ProgramFiles}\Microsoft Visual Studio\2026\Community",
+                "${env:ProgramFiles}\Microsoft Visual Studio\18\Enterprise",
+                "${env:ProgramFiles}\Microsoft Visual Studio\18\Professional",
+                "${env:ProgramFiles}\Microsoft Visual Studio\18\Community",
                 "${env:ProgramFiles}\Microsoft Visual Studio\2022\Enterprise",
                 "${env:ProgramFiles}\Microsoft Visual Studio\2022\Professional",
                 "${env:ProgramFiles}\Microsoft Visual Studio\2022\Community"
