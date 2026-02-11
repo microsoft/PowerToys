@@ -135,7 +135,6 @@
                                 Grid.Row="2"
                                 FontSize="12"
                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                Text="To pick a color:"
                                 TextWrapping="Wrap" />
                             <controls:ShortcutWithTextLabelControl
                                 x:Name="ColorPickerHotkeyControl"
