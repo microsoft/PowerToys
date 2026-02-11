@@ -48,7 +48,7 @@
                                     <StackPanel Orientation="Vertical">
                                         <tkcontrols:MarkdownTextBlock Config="{StaticResource DescriptionTextMarkdownConfig}" Text="{x:Bind ViewModel.IncreaseOpacityShortcut, Mode=OneWay}" />
                                         <tkcontrols:MarkdownTextBlock Config="{StaticResource DescriptionTextMarkdownConfig}" Text="{x:Bind ViewModel.DecreaseOpacityShortcut, Mode=OneWay}" />
-                                        <controls:IsEnabledTextBlock x:Uid="AlwaysOnTop_TransparencyRange" Style="{StaticResource SecondaryTextStyle}" />
+                                        <controls:IsEnabledTextBlock x:Uid="AlwaysOnTop_TransparencyRange" />
                                     </StackPanel>
                                 </tkcontrols:SettingsCard.Description>
                             </tkcontrols:SettingsCard>

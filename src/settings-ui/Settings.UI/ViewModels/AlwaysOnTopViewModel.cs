@@ -316,7 +316,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 var modifiers = new HotkeySettings(_hotkey.Win, _hotkey.Ctrl, _hotkey.Alt, _hotkey.Shift, 0).ToString();
                 var shortcut = string.IsNullOrEmpty(modifiers) ? "-" : modifiers + " + -";
-                return string.Format(CultureInfo.CurrentCulture, ResourceLoaderInstance.ResourceLoader.GetString("ZoomIt_LiveZoom_Shortcut_Draw"), shortcut);
+                return string.Format(CultureInfo.CurrentCulture, ResourceLoaderInstance.ResourceLoader.GetString("AlwaysOnTop_DecreaseOpacity"), shortcut);
             }
         }
 

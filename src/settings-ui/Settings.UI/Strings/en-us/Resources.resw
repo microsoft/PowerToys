@@ -2979,11 +2979,11 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="AlwaysOnTop_IncreaseOpacity" xml:space="preserve">
     <value>Press **{0}** to increase the window opacity</value>
   </data>
-  <data name="AlwaysOnTop_DecreaseOpacity.Text" xml:space="preserve">
+  <data name="AlwaysOnTop_DecreaseOpacity" xml:space="preserve">
     <value>Decrease opacity</value>
   </data>
   <data name="AlwaysOnTop_TransparencyRange.Text" xml:space="preserve">
-    <value>Range: 20%-100%</value>
+    <value>Transparency range: 20%-100%</value>
   </data>
   <data name="Oobe_AlwaysOnTop.Title" xml:space="preserve">
     <value>Always On Top</value>
