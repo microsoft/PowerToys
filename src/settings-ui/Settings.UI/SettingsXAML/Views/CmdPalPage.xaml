@@ -62,11 +62,11 @@
                             </LinearGradientBrush>
                         </Grid.Background>
                         <TextBlock
+                            x:Uid="CmdPal_HeroTitle"
                             Margin="0,24,0,12"
                             HorizontalAlignment="Center"
                             FontSize="36"
-                            FontWeight="Bold"
-                            Text="Command Palette">
+                            FontWeight="Bold">
                             <TextBlock.Foreground>
                                 <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
                                     <GradientStop Offset="0.0" Color="#FFB9EBFF" />
@@ -181,7 +181,6 @@
                         Grid.Row="3"
                         ActionIcon="{ui:FontIcon Glyph=&#xE8A7;}"
                         Click="LaunchCard_Click"
-                        Header="Launch Command Palette"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE945;}"
                         IsClickEnabled="True"
                         IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
