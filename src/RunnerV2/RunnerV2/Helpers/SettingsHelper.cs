@@ -16,6 +16,7 @@ using System.Threading;
 using System.Windows.Documents;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
+using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using PowerToys.Interop;
 using RunnerV2.Models;
 using Update;
@@ -191,6 +192,13 @@ namespace RunnerV2.Helpers
 
                         break;
 
+                    case "module_status":
+                        GeneralSettings generalSettings = _settingsUtils.GetSettings<GeneralSettings>();
+                        string nameOfModule = property.Value.EnumerateObject().First().Name;
+                        bool enabled = property.Value.EnumerateObject().First().Value.GetBoolean();
+                        ModuleHelper.SetIsModuleEnabled(generalSettings, ModuleHelper.GetModuleType(nameOfModule), enabled);
+                        SettingsUtils.Default.SaveSettings(generalSettings.ToJsonString(), string.Empty);
+                        return;
                     case "bugreport":
                         Logger.LogInfo("Starting bug report tool from Settings window");
                         TrayIconManager.ProcessTrayMenuCommand((nuint)TrayIconManager.TrayButton.ReportBug);
@@ -227,15 +235,6 @@ namespace RunnerV2.Helpers
                     case "powertoys":
                         foreach (var powertoysSettingsPart in property.Value.EnumerateObject())
                         {
-                            try
-                            {
-                                _settingsUtils.SaveSettings(powertoysSettingsPart.Value.ToString(), powertoysSettingsPart.Name);
-                            }
-                            catch (Exception ex)
-                            {
-                                Logger.LogError($"Failed writing {powertoysSettingsPart.Name} settings from Settings window", ex);
-                            }
-
                             if (Runner.LoadedModules.Find(m => m.Name == powertoysSettingsPart.Name) is IPowerToysModuleSettingsChangedSubscriber module && module is IPowerToysModule ptModule && ptModule.Enabled)
                             {
                                 Logger.InitializeLogger("\\" + ptModule.Name + "\\ModuleInterface\\Logs");
@@ -249,7 +248,9 @@ namespace RunnerV2.Helpers
                                 {
                                     if (module2 is IPowerToysModuleSettingsChangedSubscriber settingsChangedSubscriber)
                                     {
+                                        Logger.InitializeLogger("\\" + module2.Name + "\\ModuleInterface\\Logs");
                                         settingsChangedSubscriber.OnSettingsChanged();
+                                        Logger.InitializeLogger("\\RunnerLogs");
                                     }
                                 }
                             }

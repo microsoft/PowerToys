@@ -31,7 +31,6 @@ namespace RunnerV2.Helpers
                 string appPipeName = "\\\\.\\pipe\\powertoys_quick_access_ui_" + Guid.NewGuid();
 
                 PowerToys.Interop.TwoWayPipeMessageIPCManaged quickAccessIpc = new(runnerPipeName, appPipeName, SettingsHelper.OnSettingsMessageReceived);
-                quickAccessIpc.Start();
 
                 string exePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "WinUI3Apps\\PowerToys.QuickAccess.exe");
 
@@ -48,6 +47,7 @@ namespace RunnerV2.Helpers
                     Arguments = $"--show-event=\"Local\\PowerToysQuickAccess__Show\" --exit-event=\"Local\\PowerToysQuickAccess__Exit\" --runner-pipe=\"{runnerPipeName}\" --app-pipe=\"{appPipeName}\"",
                 };
                 _process.Start();
+                quickAccessIpc.Start();
             }
         }
 
