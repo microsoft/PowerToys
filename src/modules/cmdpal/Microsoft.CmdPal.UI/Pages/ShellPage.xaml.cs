@@ -800,8 +800,8 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
     [LoggerMessage(
         Level = LogLevel.Warning,
-        Message = "Unrecognized target for shell navigation: {paramter}")]
-    partial void Log_UnrecognizedShellNavigationTargetWarning(object paramter);
+        Message = "Unrecognized target for shell navigation: {parameter}")]
+    partial void Log_UnrecognizedShellNavigationTargetWarning(object parameter);
 
     [LoggerMessage(
         Level = LogLevel.Error,
