@@ -9,6 +9,7 @@
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     xmlns:tkconverters="using:CommunityToolkit.WinUI.Converters"
     xmlns:ui="using:CommunityToolkit.WinUI"
+    xmlns:ptcontrols="using:Microsoft.PowerToys.Common.UI.Controls"
     mc:Ignorable="d">
     <Page.Resources>
         <tkconverters:ResourceNameToResourceStringConverter x:Key="ResourceNameToResourceStringConverter" />
@@ -99,19 +100,18 @@
                                         <ColumnDefinition Width="*" />
                                         <ColumnDefinition Width="Auto" />
                                     </Grid.ColumnDefinitions>
-                                    <controls:IsEnabledTextBlock
-                                        x:Name="pathTextBlock"
+                                    <ptcontrols:IsEnabledTextBlock
                                         Grid.Column="0"
                                         VerticalAlignment="Center"
                                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                         IsTextSelectionEnabled="True"
                                         Text="{x:Bind ViewModel.BackupPath, Mode=TwoWay}">
                                         <ToolTipService.ToolTip>
-                                            <ToolTip IsEnabled="{Binding IsTextTrimmed, ElementName=pathTextBlock, Mode=OneWay}">
+                                            <ToolTip>
                                                 <TextBlock Text="{x:Bind ViewModel.BackupPath, Mode=TwoWay}" />
                                             </ToolTip>
                                         </ToolTipService.ToolTip>
-                                    </controls:IsEnabledTextBlock>
+                                    </ptcontrols:IsEnabledTextBlock>
                                     <Button
                                         Grid.Column="1"
                                         Command="{x:Bind ViewModel.SelectBackupPathEventHandler}"

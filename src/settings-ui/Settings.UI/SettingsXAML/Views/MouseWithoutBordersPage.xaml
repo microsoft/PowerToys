@@ -9,6 +9,7 @@
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     xmlns:tkconverters="using:CommunityToolkit.WinUI.Converters"
     xmlns:ui="using:CommunityToolkit.WinUI"
+    xmlns:ptcontrols="using:Microsoft.PowerToys.Common.UI.Controls"
     AutomationProperties.LandmarkType="Main"
     mc:Ignorable="d">
     <local:NavigablePage.Resources>
@@ -77,7 +78,7 @@
 
                     <tkcontrols:SettingsCard Name="MouseWithoutBordersThisMachineNameLabel" x:Uid="MouseWithoutBorders_ThisMachineNameLabel">
                         <StackPanel Orientation="Horizontal" Spacing="8">
-                            <controls:IsEnabledTextBlock
+                            <ptcontrols:IsEnabledTextBlock
                                 VerticalAlignment="Center"
                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                 IsTextSelectionEnabled="True"
@@ -237,16 +238,16 @@
                                 <CheckBox x:Uid="MouseWithoutBorders_WrapMouse" IsChecked="{x:Bind ViewModel.WrapMouse, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard Name="MouseWithoutBordersMoveMouseRelatively" ContentAlignment="Left">
-                                <controls:CheckBoxWithDescriptionControl x:Uid="MouseWithoutBorders_MoveMouseRelatively" IsChecked="{x:Bind ViewModel.MoveMouseRelatively, Mode=TwoWay}" />
+                                <ptcontrols:CheckBoxWithDescriptionControl x:Uid="MouseWithoutBorders_MoveMouseRelatively" IsChecked="{x:Bind ViewModel.MoveMouseRelatively, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard Name="MouseWithoutBordersBlockMouseAtScreenCorners" ContentAlignment="Left">
                                 <CheckBox x:Uid="MouseWithoutBorders_BlockMouseAtScreenCorners" IsChecked="{x:Bind ViewModel.BlockMouseAtScreenCorners, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard Name="MouseWithoutBordersHideMouseAtScreenEdge" ContentAlignment="Left">
-                                <controls:CheckBoxWithDescriptionControl x:Uid="MouseWithoutBorders_HideMouseAtScreenEdge" IsChecked="{x:Bind ViewModel.HideMouseAtScreenEdge, Mode=TwoWay}" />
+                                <ptcontrols:CheckBoxWithDescriptionControl x:Uid="MouseWithoutBorders_HideMouseAtScreenEdge" IsChecked="{x:Bind ViewModel.HideMouseAtScreenEdge, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard Name="MouseWithoutBordersDrawMouseCursor" ContentAlignment="Left">
-                                <controls:CheckBoxWithDescriptionControl x:Uid="MouseWithoutBorders_DrawMouseCursor" IsChecked="{x:Bind ViewModel.DrawMouseCursor, Mode=TwoWay}" />
+                                <ptcontrols:CheckBoxWithDescriptionControl x:Uid="MouseWithoutBorders_DrawMouseCursor" IsChecked="{x:Bind ViewModel.DrawMouseCursor, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
