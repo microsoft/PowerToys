@@ -22,7 +22,7 @@ namespace http
             headers.UserAgent().TryParseAdd(USER_AGENT);
         }
 
-        winrt::Windows::Foundation::IAsyncOperation<winrt::hstring> request(const winrt::Windows::Foundation::Uri& url)
+        winrt::Windows::Foundation::IAsyncOperation<winrt::hstring> request(winrt::Windows::Foundation::Uri url)
         {
             auto response = co_await m_client.GetAsync(url);
             (void)response.EnsureSuccessStatusCode();
