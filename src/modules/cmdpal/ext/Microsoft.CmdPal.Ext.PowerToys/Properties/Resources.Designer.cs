@@ -19,7 +19,7 @@ namespace PowerToysExtension.Properties {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "18.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Resources {
@@ -322,7 +322,7 @@ namespace PowerToysExtension.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to N/A.
+        ///   Looks up a localized string similar to n/a.
         /// </summary>
         internal static string Common_NotAvailable {
             get {
@@ -345,24 +345,6 @@ namespace PowerToysExtension.Properties {
         internal static string CropAndLock_Reparent_Title {
             get {
                 return ResourceManager.GetString("CropAndLock_Reparent_Title", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Create a cropped screenshot window.
-        /// </summary>
-        internal static string CropAndLock_Screenshot_Subtitle {
-            get {
-                return ResourceManager.GetString("CropAndLock_Screenshot_Subtitle", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Crop and Lock (Screenshot).
-        /// </summary>
-        internal static string CropAndLock_Screenshot_Title {
-            get {
-                return ResourceManager.GetString("CropAndLock_Screenshot_Title", resourceCulture);
             }
         }
         
@@ -390,6 +372,24 @@ namespace PowerToysExtension.Properties {
         internal static string CropAndLock_Thumbnail_Title {
             get {
                 return ResourceManager.GetString("CropAndLock_Thumbnail_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Crop and Lock (Screenshot).
+        /// </summary>
+        internal static string CropAndLock_Screenshot_Title {
+            get {
+                return ResourceManager.GetString("CropAndLock_Screenshot_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Create a cropped screenshot window.
+        /// </summary>
+        internal static string CropAndLock_Screenshot_Subtitle {
+            get {
+                return ResourceManager.GetString("CropAndLock_Screenshot_Subtitle", resourceCulture);
             }
         }
         
