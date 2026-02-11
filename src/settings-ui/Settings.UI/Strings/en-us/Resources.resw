@@ -2747,6 +2747,49 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="MouseUtils_CursorWrap_WrapMode_Both.Content" xml:space="preserve">
     <value>Vertical and horizontal</value>
   </data>
+  <!-- CursorFocus -->
+  <data name="MouseUtils_CursorFocus.Header" xml:space="preserve">
+    <value>Cursor Focus</value>
+  </data>
+  <data name="MouseUtils_CursorFocus.Description" xml:space="preserve">
+    <value>Automatically moves the cursor to the center of the focused window when focus changes.</value>
+  </data>
+  <data name="MouseUtils_Enable_CursorFocus.Header" xml:space="preserve">
+    <value>Enable Cursor Focus</value>
+  </data>
+  <data name="MouseUtils_Enable_CursorFocus.Description" xml:space="preserve">
+    <value>Moves the cursor to the focused window when application focus changes.</value>
+  </data>
+  <data name="MouseUtils_CursorFocus_ActivationShortcut.Header" xml:space="preserve">
+    <value>Activation shortcut</value>
+  </data>
+  <data name="MouseUtils_CursorFocus_ActivationShortcut.Description" xml:space="preserve">
+    <value>Customize the shortcut to toggle Cursor Focus on and off.</value>
+  </data>
+  <data name="MouseUtils_CursorFocus_FocusChangeDelayMs.Header" xml:space="preserve">
+    <value>Focus change delay (ms)</value>
+  </data>
+  <data name="MouseUtils_CursorFocus_FocusChangeDelayMs.Description" xml:space="preserve">
+    <value>Delay in milliseconds before moving the cursor after focus changes. Helps avoid rapid cursor movements during quick Alt+Tab cycling.</value>
+  </data>
+  <data name="MouseUtils_CursorFocus_TargetPosition.Header" xml:space="preserve">
+    <value>Cursor target position</value>
+  </data>
+  <data name="MouseUtils_CursorFocus_TargetPosition.Description" xml:space="preserve">
+    <value>Where to move the cursor when focus changes.</value>
+  </data>
+  <data name="MouseUtils_CursorFocus_TargetPosition_CenterOfWindow.Content" xml:space="preserve">
+    <value>Center of window</value>
+  </data>
+  <data name="MouseUtils_CursorFocus_TargetPosition_CenterOfTitleBar.Content" xml:space="preserve">
+    <value>Center of title bar</value>
+  </data>
+  <data name="MouseUtils_CursorFocus_DisableOnFullScreen.Content" xml:space="preserve">
+    <value>Do not move cursor when focusing full-screen applications</value>
+  </data>
+  <data name="MouseUtils_CursorFocus_DisableOnGameMode.Content" xml:space="preserve">
+    <value>Do not move cursor when Game Mode is active</value>
+  </data>
   <data name="Oobe_MouseUtils_MousePointerCrosshairs.Text" xml:space="preserve">
     <value>Mouse Pointer Crosshairs</value>
     <comment>Mouse as in the hardware peripheral.</comment>
