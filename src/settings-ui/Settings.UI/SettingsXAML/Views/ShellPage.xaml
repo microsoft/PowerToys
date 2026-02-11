@@ -259,7 +259,7 @@
                 <!--  Windowing & Layouts  -->
                 <NavigationViewItem
                     x:Name="WindowingAndLayoutsNavigationItem"
-                    x:Uid="Shell_TopLevelWindowsAndLayouts "
+                    x:Uid="Shell_TopLevelWindowsAndLayouts"
                     AutomationProperties.AutomationId="WindowingAndLayoutsNavItem"
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/WindowingAndLayouts.png}"
                     SelectsOnInvoked="False">
