@@ -5,7 +5,6 @@
 using System;
 using System.IO.Abstractions;
 using System.Threading.Tasks;
-using System.Windows.Input;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
@@ -170,6 +169,41 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         public void RefreshEnabledState()
         {
             ViewModel.RefreshEnabledState();
+        }
+
+        private void ConnectButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        {
+            ConnectCommand?.Execute(null);
+        }
+
+        private void GenerateNewKeyButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        {
+            GenerateNewKeyCommand?.Execute(null);
+        }
+
+        private void ShowConnectFieldsButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        {
+            ShowConnectFieldsCommand?.Execute(null);
+        }
+
+        private void CopyPCNameButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        {
+            CopyPCNameCommand?.Execute(null);
+        }
+
+        private void ReconnectButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        {
+            ReconnectCommand?.Execute(null);
+        }
+
+        private void UninstallServiceButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        {
+            ViewModel.UninstallServiceEventHandler?.Execute(null);
+        }
+
+        private void AddFirewallRuleButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        {
+            ViewModel.AddFirewallRuleEventHandler?.Execute(null);
         }
     }
 }

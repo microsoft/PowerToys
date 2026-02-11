@@ -4,7 +4,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Windows.Input;
 
 using CommunityToolkit.WinUI.Controls;
 using Microsoft.PowerToys.Settings.UI.Helpers;
@@ -24,6 +23,15 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         public ICommand UpdateCommand => new RelayCommand(Update);
 
         private ResourceLoader resourceLoader = ResourceLoaderInstance.ResourceLoader;
+
+        private enum DialogActionMode
+        {
+            None,
+            Add,
+            Update,
+        }
+
+        private DialogActionMode _dialogActionMode = DialogActionMode.None;
 
         public ColorPickerPage()
         {
@@ -129,7 +137,9 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             ColorFormatDialog.Tag = string.Empty;
 
             ColorFormatDialog.PrimaryButtonText = resourceLoader.GetString("ColorFormatSave");
-            ColorFormatDialog.PrimaryButtonCommand = AddCommand;
+
+            // Use Click event instead of Command for AOT compatibility
+            _dialogActionMode = DialogActionMode.Add;
             await ColorFormatDialog.ShowAsync();
         }
 
@@ -142,7 +152,9 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             ColorFormatDialog.Tag = new KeyValuePair<string, string>(colorFormatModel.Name, colorFormatModel.Format);
 
             ColorFormatDialog.PrimaryButtonText = resourceLoader.GetString("ColorFormatUpdate");
-            ColorFormatDialog.PrimaryButtonCommand = UpdateCommand;
+
+            // Use Click event instead of Command for AOT compatibility
+            _dialogActionMode = DialogActionMode.Update;
             await ColorFormatDialog.ShowAsync();
         }
 
@@ -154,6 +166,18 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         public void RefreshEnabledState()
         {
             ViewModel.RefreshEnabledState();
+        }
+
+        private void ColorFormatDialog_PrimaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
+        {
+            if (_dialogActionMode == DialogActionMode.Add)
+            {
+                Add();
+            }
+            else if (_dialogActionMode == DialogActionMode.Update)
+            {
+                Update();
+            }
         }
 
         private void ColorFormatDialog_Closed(ContentDialog sender, ContentDialogClosedEventArgs args)

@@ -56,7 +56,7 @@
                                         Width="248" />
                                     <Button
                                         x:Uid="MouseWithoutBorders_Connect"
-                                        Command="{x:Bind ConnectCommand, Mode=OneTime}"
+                                        Click="ConnectButton_Click"
                                         Style="{StaticResource AccentButtonStyle}" />
                                 </StackPanel>
                             </tkcontrols:SettingsCard>
@@ -65,11 +65,11 @@
                             <TextBox IsReadOnly="True" Text="{x:Bind ViewModel.SecurityKey, Mode=TwoWay}" />
                             <Button
                                 x:Uid="MouseWithoutBorders_NewKey"
-                                Command="{x:Bind GenerateNewKeyCommand, Mode=OneTime}"
+                                Click="GenerateNewKeyButton_Click"
                                 Style="{StaticResource AccentButtonStyle}" />
                             <Button
                                 x:Uid="MouseWithoutBorders_Connect"
-                                Command="{x:Bind ShowConnectFieldsCommand, Mode=OneTime}"
+                                Click="ShowConnectFieldsButton_Click"
                                 Style="{StaticResource AccentButtonStyle}"
                                 Visibility="{x:Bind Path=ViewModel.ConnectFieldsVisible, Mode=OneWay, Converter={StaticResource ReverseBoolToVisibilityConverter}, ConverterParameter=True}" />
                         </StackPanel>
@@ -86,7 +86,7 @@
                                 Width="32"
                                 Height="32"
                                 Padding="4"
-                                Command="{x:Bind CopyPCNameCommand, Mode=OneTime}"
+                                Click="CopyPCNameButton_Click"
                                 Content="&#xE8C8;"
                                 FontFamily="{StaticResource SymbolThemeFontFamily}">
                                 <ToolTipService.ToolTip>
@@ -160,7 +160,7 @@
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
-                            <Button HorizontalAlignment="Right" Command="{x:Bind ReconnectCommand, Mode=OneTime}">
+                            <Button HorizontalAlignment="Right" Click="ReconnectButton_Click">
                                 <ToolTipService.ToolTip>
                                     <TextBlock x:Uid="MouseWithoutBorders_ReconnectTooltip" TextWrapping="Wrap" />
                                 </ToolTipService.ToolTip>
@@ -210,7 +210,7 @@
                         Name="MouseWithoutBordersUninstallService"
                         x:Uid="MouseWithoutBorders_UninstallService"
                         ActionIcon="{ui:FontIcon Glyph=&#xE8A7;}"
-                        Command="{x:Bind ViewModel.UninstallServiceEventHandler}"
+                        Click="UninstallServiceButton_Click"
                         IsClickEnabled="{x:Bind ViewModel.CanUninstallService, Mode=OneWay}"
                         IsEnabled="{x:Bind ViewModel.CanUninstallService, Mode=OneWay}" />
                 </controls:SettingsGroup>
@@ -476,7 +476,7 @@
                         Name="MouseWithoutBordersAddFirewallRuleButtonControl"
                         x:Uid="MouseWithoutBorders_AddFirewallRuleButtonControl"
                         ActionIcon="{ui:FontIcon Glyph=&#xE8A7;}"
-                        Command="{x:Bind ViewModel.AddFirewallRuleEventHandler}"
+                        Click="AddFirewallRuleButton_Click"
                         IsClickEnabled="True" />
                     <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.ShowPolicyConfiguredInfoForOriginalUiSetting, Mode=OneWay}">
                         <tkcontrols:SettingsCard

@@ -5,7 +5,6 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Windows;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.UI.Xaml.Data;
 
@@ -31,7 +30,7 @@ public sealed partial class ImageResizerUnitToStringConverter : IValueConverter
                 unitText;
         }
 
-        return DependencyProperty.UnsetValue;
+        return Microsoft.UI.Xaml.DependencyProperty.UnsetValue;
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, string language)

@@ -41,7 +41,7 @@
                         Name="HostsLaunchButtonControl"
                         x:Uid="Hosts_LaunchButtonControl"
                         ActionIcon="{ui:FontIcon Glyph=&#xE8A7;}"
-                        Command="{x:Bind ViewModel.LaunchEventHandler}"
+                        Click="LaunchButton_Click"
                         HeaderIcon="{ui:FontIcon Glyph=&#xEA37;}"
                         IsClickEnabled="True" />
                     <tkcontrols:SettingsCard
@@ -115,7 +115,7 @@
                                     </TextBlock>
                                     <Button
                                         Grid.Column="1"
-                                        Command="{x:Bind ViewModel.SelectBackupPathEventHandler}"
+                                        Click="SelectBackupPathButton_Click"
                                         Content="&#xe8da;"
                                         FontFamily="{ThemeResource SymbolThemeFontFamily}">
                                         <ToolTipService.ToolTip>

@@ -36,8 +36,8 @@
 		<IlcUseEnvironmentalTools>true</IlcUseEnvironmentalTools>
 		<!-- Trim is mandatory for AOT, but disable reflection removal to preserve WPF compatibility -->
 		<IlcDisableReflection>false</IlcDisableReflection>
-		<!-- Suppress trim/AOT warnings from third-party assemblies (WPF, COM interop, etc.) -->
-		<NoWarn>$(NoWarn);IL2026;IL2104;IL3000;IL3002;IL3050;IL3053</NoWarn>
+		<!-- Suppress trim/AOT warnings from third-party assemblies and XAML Command binding type checks -->
+		<NoWarn>$(NoWarn);IL2026;IL2060;IL2070;IL2071;IL2072;IL2075;IL2076;IL2104;IL3000;IL3002;IL3050;IL3053;WMC1121</NoWarn>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -135,7 +135,7 @@
 	<ItemGroup>
 		<!-- HACK: Common.UI is referenced, even if it is not used, to force dll versions to be the same as in other projects that use it. It's still unclear why this is the case, but this is need for flattening the install directory. -->
 		<ProjectReference Include="..\..\common\Common.Search\Common.Search.csproj" />
-		<ProjectReference Include="..\..\common\Common.UI\Common.UI.csproj" />
+		<ProjectReference Condition="'$(EnableSettingsAOT)' != 'true'" Include="..\..\common\Common.UI\Common.UI.csproj" />
 		<ProjectReference Include="..\..\common\AllExperiments\AllExperiments.csproj" />
 		<ProjectReference Include="..\..\common\GPOWrapper\GPOWrapper.vcxproj" />
 		<ProjectReference Include="..\..\common\interop\PowerToys.Interop.vcxproj" />
@@ -160,7 +160,7 @@
 		<!-- TODO: fix issues and reenable -->
 		<!-- These are caused by streamjsonrpc dependency on Microsoft.VisualStudio.Threading.Analyzers -->
 		<!-- We might want to add that to the project and fix the issues as well -->
-		<NoWarn>VSTHRD002;VSTHRD110;VSTHRD100;VSTHRD200;VSTHRD101</NoWarn>
+		<NoWarn>$(NoWarn);VSTHRD002;VSTHRD110;VSTHRD100;VSTHRD200;VSTHRD101</NoWarn>
 	</PropertyGroup>
 
 	<!-- Removed hard-coded resource exclusion. -->

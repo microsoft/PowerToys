@@ -13,7 +13,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
     /// <summary>
     /// ViewModel for monitor selection in profile editor
     /// </summary>
-    public class MonitorSelectionItem : INotifyPropertyChanged
+    public partial class MonitorSelectionItem : INotifyPropertyChanged
     {
         private bool _isSelected;
         private int _brightness = 100;

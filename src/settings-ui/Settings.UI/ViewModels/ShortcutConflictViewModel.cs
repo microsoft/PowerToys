@@ -2,6 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -12,7 +14,6 @@ using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
-using System.Windows.Threading;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
@@ -25,11 +26,11 @@ using Microsoft.Windows.ApplicationModel.Resources;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
-    public class ShortcutConflictViewModel : PageViewModelBase
+    public partial class ShortcutConflictViewModel : PageViewModelBase
     {
         private readonly SettingsFactory _settingsFactory;
         private readonly Func<string, int> _ipcMSGCallBackFunc;
-        private readonly Dispatcher _dispatcher;
+        private readonly Microsoft.UI.Dispatching.DispatcherQueue? _dispatcherQueue;
 
         private bool _disposed;
         private AllHotkeyConflictsData _conflictsData = new();
@@ -41,7 +42,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             ISettingsRepository<GeneralSettings> settingsRepository,
             Func<string, int> ipcMSGCallBackFunc)
         {
-            _dispatcher = Dispatcher.CurrentDispatcher;
+            // Use WinUI 3 DispatcherQueue instead of WPF Dispatcher for AOT compatibility
+            _dispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread();
             _ipcMSGCallBackFunc = ipcMSGCallBackFunc ?? throw new ArgumentNullException(nameof(ipcMSGCallBackFunc));
             resourceLoader = ResourceLoaderInstance.ResourceLoader;
 
@@ -63,7 +65,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public ObservableCollection<HotkeyConflictGroupData> ConflictItems
         {
-            get => _conflictItems;
+            get => _conflictItems ?? new ObservableCollection<HotkeyConflictGroupData>();
             private set => Set(ref _conflictItems, value);
         }
 
@@ -117,13 +119,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"Error loading settings for {moduleKey}: {ex.Message}");
-                return null;
+                return null!;  // Suppress nullable warning - caller handles null
             }
         }
 
         protected override void OnConflictsUpdated(object sender, AllHotkeyConflictsEventArgs e)
         {
-            _dispatcher.BeginInvoke(() =>
+            // WinUI 3 DispatcherQueue uses TryEnqueue instead of BeginInvoke
+            _dispatcherQueue?.TryEnqueue(() =>
             {
                 ConflictsData = e.Conflicts ?? new AllHotkeyConflictsData();
             });
@@ -133,8 +136,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             var items = new ObservableCollection<HotkeyConflictGroupData>();
 
-            ProcessConflicts(ConflictsData?.InAppConflicts, false, items);
-            ProcessConflicts(ConflictsData?.SystemConflicts, true, items);
+            ProcessConflicts(ConflictsData?.InAppConflicts ?? Enumerable.Empty<HotkeyConflictGroupData>(), false, items);
+            ProcessConflicts(ConflictsData?.SystemConflicts ?? Enumerable.Empty<HotkeyConflictGroupData>(), true, items);
 
             ConflictItems = items;
             OnPropertyChanged(nameof(ConflictItems));
@@ -218,7 +221,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             settings.IsSystemConflict = isSystemConflict;
         }
 
-        private void OnModuleHotkeyDataPropertyChanged(object sender, PropertyChangedEventArgs e)
+        private void OnModuleHotkeyDataPropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
             if (sender is ModuleHotkeyData moduleData && e.PropertyName == nameof(ModuleHotkeyData.HotkeySettings))
             {

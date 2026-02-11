@@ -24,8 +24,8 @@
             <DataTemplate x:DataType="local:QuickAccessItem">
                 <local:FlyoutMenuButton
                     AutomationProperties.Name="{x:Bind Title}"
-                    Command="{x:Bind Command}"
-                    CommandParameter="{x:Bind CommandParameter}"
+                    Click="FlyoutMenuButton_Click"
+                    Tag="{x:Bind}"
                     Visibility="{x:Bind Visible, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
                     <local:FlyoutMenuButton.Content>
                         <TextBlock

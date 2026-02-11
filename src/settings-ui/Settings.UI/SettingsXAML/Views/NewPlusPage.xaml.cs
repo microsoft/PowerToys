@@ -25,5 +25,15 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         {
             ViewModel.RefreshEnabledState();
         }
+
+        private void InstallTemplatePackageButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        {
+            ViewModel.OpenCurrentNewTemplateFolder?.Execute(null);
+        }
+
+        private void UninstallTemplatePackageButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        {
+            ViewModel.PickAnotherNewTemplateFolder?.Execute(null);
+        }
     }
 }

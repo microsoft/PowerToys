@@ -55,14 +55,14 @@
                                     Glyph="&#xEC61;" />
                                 <HyperlinkButton
                                     x:Uid="CmdNotFound_UninstallButton"
-                                    Command="{x:Bind ViewModel.UninstallModuleEventHandler}"
+                                    Click="UninstallButton_Click"
                                     IsEnabled="{x:Bind ViewModel.IsModuleGpoEnabled, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}" />
                             </StackPanel>
                         </tkcontrols:Case>
                         <tkcontrols:Case Value="False">
                             <Button
                                 x:Uid="CmdNotFound_InstallButton"
-                                Command="{x:Bind ViewModel.InstallModuleEventHandler}"
+                                Click="InstallButton_Click"
                                 IsEnabled="{x:Bind ViewModel.IsModuleGpoDisabled, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}"
                                 Style="{StaticResource AccentButtonStyle}" />
                         </tkcontrols:Case>
@@ -76,7 +76,7 @@
                                 IsClosable="False"
                                 IsOpen="True">
                                 <InfoBar.ActionButton>
-                                    <HyperlinkButton x:Uid="CmdNotFound_CheckCompatibility" Command="{x:Bind ViewModel.CheckRequirementsEventHandler}">
+                                    <HyperlinkButton x:Uid="CmdNotFound_CheckCompatibility" Click="CheckRequirementsButton_Click">
                                         <ToolTipService.ToolTip>
                                             <TextBlock x:Uid="CmdNotFound_CheckCompatibilityTooltip" TextWrapping="Wrap" />
                                         </ToolTipService.ToolTip>
@@ -112,7 +112,7 @@
                                             Glyph="&#xEB90;" />
                                         <Button
                                             x:Uid="CmdNotFound_InstallButton"
-                                            Command="{x:Bind ViewModel.InstallPowerShell7EventHandler}"
+                                            Click="InstallPowerShell7Button_Click"
                                             IsEnabled="{x:Bind ViewModel.IsModuleGpoDisabled, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}" />
                                     </StackPanel>
                                 </tkcontrols:Case>
@@ -145,7 +145,7 @@
                                             Glyph="&#xEB90;" />
                                         <Button
                                             x:Uid="CmdNotFound_InstallButton"
-                                            Command="{x:Bind ViewModel.InstallWinGetClientModuleEventHandler}"
+                                            Click="InstallWinGetButton_Click"
                                             IsEnabled="{x:Bind ViewModel.IsModuleGpoDisabled, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}" />
                                     </StackPanel>
                                 </tkcontrols:Case>

@@ -21,7 +21,7 @@ using Settings.UI.Library;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
-    public class PeekViewModel : PageViewModelBase
+    public partial class PeekViewModel : PageViewModelBase
     {
         protected override string ModuleName => PeekSettings.ModuleName;
 

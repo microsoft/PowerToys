@@ -10,16 +10,17 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Input;
-
 using global::PowerToys.GPOWrapper;
 using ManagedCommon;
+using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
-using Microsoft.PowerToys.Settings.UI.Library.ViewModels.Commands;
 using Microsoft.PowerToys.Settings.Utilities;
 using Microsoft.Win32;
+using LibraryRelayCommand = Microsoft.PowerToys.Settings.UI.Library.ViewModels.Commands.RelayCommand;
+using NativeMethods = Microsoft.PowerToys.Settings.Utilities.NativeMethods;
+using RelayCommand = Microsoft.PowerToys.Settings.UI.Helpers.RelayCommand;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {

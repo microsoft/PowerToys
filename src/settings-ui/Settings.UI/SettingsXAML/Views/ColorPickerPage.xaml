@@ -196,6 +196,7 @@
                     x:Name="ColorFormatDialog"
                     x:Uid="ColorFormatDialog"
                     Closed="ColorFormatDialog_Closed"
+                    PrimaryButtonClick="ColorFormatDialog_PrimaryButtonClick"
                     IsPrimaryButtonEnabled="{Binding IsValid, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                     PrimaryButtonStyle="{ThemeResource AccentButtonStyle}">
                     <ContentDialog.DataContext>

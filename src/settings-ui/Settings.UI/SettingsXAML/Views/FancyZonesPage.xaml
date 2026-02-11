@@ -31,7 +31,7 @@
                         x:Uid="FancyZones_LaunchEditorButtonControl"
                         ActionIcon="{ui:FontIcon Glyph=&#xE8A7;}"
                         AutomationProperties.AutomationId="LaunchLayoutEditorButton"
-                        Command="{x:Bind ViewModel.LaunchEditorEventHandler}"
+                        Click="LaunchEditorButton_Click"
                         HeaderIcon="{ui:FontIcon Glyph=&#xEB3C;}"
                         IsClickEnabled="True" />
 
