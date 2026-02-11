@@ -162,9 +162,15 @@ namespace Microsoft.PowerToys.Settings.UI
             var hWnd = WindowNative.GetWindowHandle(this);
             WindowHelper.SerializePlacement(hWnd);
 
-            App.ClearSettingsWindow();
-            args.Handled = true;
-            NativeMethods.ShowWindow(hWnd, NativeMethods.SW_HIDE);
+            if (!App.IsOobeOrScoobeOpen())
+            {
+                App.ClearSettingsWindow();
+            }
+            else
+            {
+                args.Handled = true;
+                NativeMethods.ShowWindow(hWnd, NativeMethods.SW_HIDE);
+            }
 
             App.ThemeService.ThemeChanged -= OnThemeChanged;
         }

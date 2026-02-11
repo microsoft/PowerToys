@@ -50,8 +50,6 @@ namespace Microsoft.PowerToys.Settings.UI
 
             SetTitleBar();
 
-            this.ExtendsContentIntoTitleBar = true;
-
             RootGrid.DataContext = ViewModel;
 
             SetRunSharedEventCallback(() =>

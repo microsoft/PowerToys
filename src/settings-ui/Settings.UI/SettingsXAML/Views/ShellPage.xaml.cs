@@ -49,16 +49,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         public delegate bool UpdatingGeneralSettingsCallback(ModuleType moduleType, bool isEnabled);
 
         /// <summary>
-        /// Declaration for opening oobe window callback function.
-        /// </summary>
-        public delegate void OobeOpeningCallback();
-
-        /// <summary>
-        /// Declaration for opening whats new window callback function.
-        /// </summary>
-        public delegate void WhatIsNewOpeningCallback();
-
-        /// <summary>
         /// Gets or sets a shell handler to be used to update contents of the shell dynamically from page within the frame.
         /// </summary>
         public static ShellPage ShellHandler { get; set; }
@@ -87,16 +77,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         /// Gets or sets callback function for updating the general settings
         /// </summary>
         public static UpdatingGeneralSettingsCallback UpdateGeneralSettingsCallback { get; set; }
-
-        /// <summary>
-        /// Gets or sets callback function for opening oobe window
-        /// </summary>
-        public static OobeOpeningCallback OpenOobeWindowCallback { get; set; }
-
-        /// <summary>
-        /// Gets or sets callback function for opening scoobe window
-        /// </summary>
-        public static WhatIsNewOpeningCallback OpenWhatIsNewWindowCallback { get; set; }
 
         /// <summary>
         /// Gets view model.

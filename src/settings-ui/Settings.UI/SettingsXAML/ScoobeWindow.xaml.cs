@@ -150,23 +150,11 @@ namespace Microsoft.PowerToys.Settings.UI
 
         private static string GetMajorMinorVersion(PowerToysReleaseInfo release)
         {
-            string version = GetVersionFromRelease(release);
+            string version = ScoobeReleaseGroupViewModel.GetVersionFromRelease(release);
             var parts = version.Split('.');
             if (parts.Length >= 2)
             {
                 return $"{parts[0]}.{parts[1]}";
-            }
-
-            return version;
-        }
-
-        private static string GetVersionFromRelease(PowerToysReleaseInfo release)
-        {
-            // TagName is typically like "v0.96.0", Name might be "Release v0.96.0"
-            string version = release.TagName ?? release.Name ?? "Unknown";
-            if (version.StartsWith("v", StringComparison.OrdinalIgnoreCase))
-            {
-                version = version.Substring(1);
             }
 
             return version;

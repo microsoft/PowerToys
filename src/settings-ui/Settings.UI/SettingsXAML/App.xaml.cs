@@ -336,6 +336,12 @@ namespace Microsoft.PowerToys.Settings.UI
             return settingsWindow;
         }
 
+        public static bool IsOobeOrScoobeOpen()
+        {
+            var app = (App)Current;
+            return app.oobeWindow != null || app.scoobeWindow != null;
+        }
+
         public void OpenScoobe()
         {
             PowerToysTelemetry.Log.WriteEvent(new ScoobeStartedEvent());
