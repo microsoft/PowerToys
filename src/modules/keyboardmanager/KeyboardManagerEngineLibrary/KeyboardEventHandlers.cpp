@@ -1823,7 +1823,7 @@ namespace KeyboardEventHandlers
             return 0;  // Scroll wheel has no "up" event
         }
 
-        // Rate limiting for scroll wheel to prevent infinite scroll wheels from spamming
+        // Rate limiting for scroll wheel to prevent infinite scroll wheels from aggressive repetition
         if (isScrollWheel)
         {
             auto now = std::chrono::steady_clock::now();
@@ -2094,7 +2094,7 @@ namespace KeyboardEventHandlers
             return 0;  // Scroll wheel has no "up" event
         }
 
-        // Rate limiting for scroll wheel to prevent infinite scroll wheels from spamming
+        // Rate limiting for scroll wheel to prevent infinite scroll wheels from aggressive repetition
         if (isScrollWheel)
         {
             auto now = std::chrono::steady_clock::now();

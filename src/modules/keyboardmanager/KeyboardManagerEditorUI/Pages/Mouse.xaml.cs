@@ -32,12 +32,12 @@ namespace KeyboardManagerEditorUI.Pages
         private KeyToMouseMapping? _editingKeyToMouseMapping;
 
         /// <summary>
-        /// The list of mouse-to-key mappings.
+        /// Gets the list of mouse-to-key mappings.
         /// </summary>
         public ObservableCollection<MouseMapping> MouseToKeyMappings { get; } = new ObservableCollection<MouseMapping>();
 
         /// <summary>
-        /// The list of key-to-mouse mappings.
+        /// Gets the list of key-to-mouse mappings.
         /// </summary>
         public ObservableCollection<KeyToMouseMapping> KeyToMouseMappings { get; } = new ObservableCollection<KeyToMouseMapping>();
 

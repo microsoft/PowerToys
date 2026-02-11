@@ -132,7 +132,7 @@ namespace KeyboardManagerEditorUI.Helpers
             return ValidationErrorType.NoError;
         }
 
-        // Temporary program shorctut validation
+        // Temporary program shortcut validation
         public static ValidationErrorType ValidateProgramOrUrlMapping(
             List<string> originalKeys,
             bool isAppSpecific,

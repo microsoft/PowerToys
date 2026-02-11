@@ -183,7 +183,7 @@ namespace KeyboardManagerEditorUI.Pages
                     Elevation = elevationLevel,
                 };
 
-                saved = _mappingService.AddShorcutMapping(shortcutKeyMapping);
+                saved = _mappingService.AddShortcutMapping(shortcutKeyMapping);
 
                 if (saved)
                 {

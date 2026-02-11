@@ -193,7 +193,7 @@ namespace KeyboardManagerEditorUI.Pages
                     UriToOpen = urlPath,
                 };
 
-                saved = _mappingService.AddShorcutMapping(shortcutKeyMapping);
+                saved = _mappingService.AddShortcutMapping(shortcutKeyMapping);
 
                 if (saved)
                 {
