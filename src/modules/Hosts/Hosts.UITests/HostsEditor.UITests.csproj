@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <!-- Look at Directory.Build.props in root for common stuff as well -->
-  <Import Project="..\..\..\Common.Dotnet.CsWinRT.props" />
+  <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
 
   <PropertyGroup>
     <ProjectGuid>{4E0AE3A4-2EE0-44D7-A2D0-8769977254A0}</ProjectGuid>
@@ -15,7 +15,7 @@
       <RunVSTest>false</RunVSTest>
     </PropertyGroup>
     <PropertyGroup>
-      <OutputPath>..\..\..\..\$(Platform)\$(Configuration)\tests\Hosts.UITests\</OutputPath>
+      <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\tests\Hosts.UITests\</OutputPath>
     </PropertyGroup>
     <ItemGroup>
       <EmbeddedResource Include="Baseline\HostModuleTests_TestAddingEntry_arm64.png" />
