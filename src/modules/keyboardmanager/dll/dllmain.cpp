@@ -140,6 +140,7 @@ private:
 
         CloseHandle(m_hProcess);
         m_hProcess = nullptr;
+        ResetEvent(m_hTerminateEngineEvent);
         m_active = false;
     }
 
