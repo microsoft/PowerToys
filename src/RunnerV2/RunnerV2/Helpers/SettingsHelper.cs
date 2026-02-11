@@ -118,7 +118,7 @@ namespace RunnerV2.Helpers
                                         ElevationHelper.RestartScheduled = ElevationHelper.RestartScheduledMode.RestartElevatedWithOpenSettings;
                                         Runner.Close();
                                         break;
-                                    case "restart_mentain_elevation":
+                                    case "restart_maintain_elevation":
                                         // Todo:
                                         break;
                                     case "check_for_updates":
@@ -258,6 +258,9 @@ namespace RunnerV2.Helpers
                             NativeMethods.PostMessageW(Runner.RunnerHwnd, (uint)NativeMethods.WindowMessages.REFRESH_SETTINGS, 0, 0);
                         }
 
+                        break;
+                    case "language":
+                        File.WriteAllText(SettingsUtils.Default.GetSettingsFilePath(fileName: "language.json"), @$"{{""{property.Name}"": ""{property.Value}""}}");
                         break;
                     default:
                         Console.WriteLine($"Unknown message received from Settings: {property.Name}");
