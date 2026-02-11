@@ -5,9 +5,12 @@
 #nullable enable
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.PowerToys.Settings.UI.Library.ViewModels.Commands
 {
+    // Preserve for AOT - ensure command execution methods are not trimmed
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.PublicProperties)]
     public class RelayCommand : Microsoft.PowerToys.Settings.UI.Library.ICommand
     {
         private readonly Action _execute;

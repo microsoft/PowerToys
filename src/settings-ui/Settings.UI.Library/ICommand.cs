@@ -6,8 +6,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 {
     /// <summary>
     /// ICommand interface for WinUI 3 applications, compatible with Native AOT.
-    /// Extends System.Windows.Input.ICommand so that implementors are also compatible
-    /// with WinUI XAML Command property bindings.
+    /// Extends System.Windows.Input.ICommand which is also recognized by WinUI3 XAML bindings.
     /// </summary>
     public interface ICommand : System.Windows.Input.ICommand
     {

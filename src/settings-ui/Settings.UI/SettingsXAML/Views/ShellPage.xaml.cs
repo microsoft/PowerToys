@@ -338,6 +338,19 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             OpenWhatIsNewWindowCallback();
         }
 
+        private void NavigationView_ItemInvoked(NavigationView sender, NavigationViewItemInvokedEventArgs args)
+        {
+            // Direct event handler for AOT compatibility (InvokeCommandAction doesn't work reliably with AOT)
+            if (args?.InvokedItemContainer != null)
+            {
+                var pageType = args.InvokedItemContainer.GetValue(NavHelper.NavigateToProperty) as Type;
+                if (pageType != null)
+                {
+                    NavigationService.Navigate(pageType);
+                }
+            }
+        }
+
         private void NavigationView_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
         {
             NavigationViewItem selectedItem = args.SelectedItem as NavigationViewItem;

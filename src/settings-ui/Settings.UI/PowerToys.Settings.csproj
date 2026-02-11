@@ -83,6 +83,14 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<!-- Navigation Icons - PNG files (required for AOT publish) -->
+		<Content Include="Assets\Settings\Icons\*.png">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+		<!-- Module Images - PNG files (required for AOT publish) -->
+		<Content Include="Assets\Settings\Modules\*.png">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
 		<!-- AI Model Provider Icons - SVG files -->
 		<Content Include="Assets\Settings\Icons\Models\*.svg">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
