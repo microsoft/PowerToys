@@ -10,7 +10,7 @@
     xmlns:ui="using:CommunityToolkit.WinUI"
     AutomationProperties.LandmarkType="Main"
     mc:Ignorable="d">
-
+    <local:NavigablePage.Resources />
     <controls:SettingsPageControl
         x:Uid="AlwaysOnTop"
         IsTabStop="False"
@@ -43,15 +43,13 @@
                         HeaderIcon="{ui:FontIcon Glyph=&#xE790;}"
                         IsExpanded="True">
                         <tkcontrols:SettingsExpander.Items>
-                            <tkcontrols:SettingsCard ContentAlignment="Left">
-                                <controls:ShortcutWithTextLabelControl x:Uid="AlwaysOnTop_IncreaseOpacity" Keys="{x:Bind ViewModel.IncreaseOpacityKeysList, Mode=OneWay}" />
-                            </tkcontrols:SettingsCard>
-                            <tkcontrols:SettingsCard ContentAlignment="Left">
-                                <controls:ShortcutWithTextLabelControl x:Uid="AlwaysOnTop_DecreaseOpacity" Keys="{x:Bind ViewModel.DecreaseOpacityKeysList, Mode=OneWay}" />
-                            </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard>
                                 <tkcontrols:SettingsCard.Description>
-                                    <TextBlock x:Uid="AlwaysOnTop_TransparencyRange" Style="{StaticResource SecondaryTextStyle}" />
+                                    <StackPanel Orientation="Vertical">
+                                        <tkcontrols:MarkdownTextBlock Config="{StaticResource DescriptionTextMarkdownConfig}" Text="{x:Bind ViewModel.IncreaseOpacityShortcut, Mode=OneWay}" />
+                                        <tkcontrols:MarkdownTextBlock Config="{StaticResource DescriptionTextMarkdownConfig}" Text="{x:Bind ViewModel.DecreaseOpacityShortcut, Mode=OneWay}" />
+                                        <controls:IsEnabledTextBlock x:Uid="AlwaysOnTop_TransparencyRange" Style="{StaticResource SecondaryTextStyle}" />
+                                    </StackPanel>
                                 </tkcontrols:SettingsCard.Description>
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>

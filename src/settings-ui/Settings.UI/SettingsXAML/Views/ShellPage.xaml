@@ -76,7 +76,6 @@
                     x:Uid="Shell_Search_ShowAll"
                     HorizontalAlignment="Stretch"
                     VerticalAlignment="Center"
-                    Text="Show all results"
                     TextAlignment="Center" />
             </Grid>
         </DataTemplate>

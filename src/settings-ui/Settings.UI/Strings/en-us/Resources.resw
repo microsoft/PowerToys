@@ -159,10 +159,6 @@
     <value>No results for</value>
     <comment>Prefix used in the no-results row; the query is appended in code, e.g., "No results for 'abc'"</comment>
   </data>
-  <data name="Shell_Search_ShowAll" xml:space="preserve">
-    <value>Show all results</value>
-    <comment>Tail item text to navigate to full results</comment>
-  </data>
   <data name="MeasureTool_DefaultMeasureStyle.Header" xml:space="preserve">
     <value>Default mode</value>
   </data>
@@ -2975,10 +2971,13 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Customize the shortcut to pin or unpin an app window. Use the same modifier keys with + or - to adjust window transparency.</value>
   </data>
   <data name="AlwaysOnTop_TransparencyInfo.Header" xml:space="preserve">
-    <value>Transparency adjustment</value>
+    <value>Window transparency adjustment</value>
   </data>
-  <data name="AlwaysOnTop_IncreaseOpacity.Text" xml:space="preserve">
-    <value>Increase opacity</value>
+	<data name="AlwaysOnTop_TransparencyInfo.Description" xml:space="preserve">
+    <value>Adjust the transparancy of the focused window that is on top</value>
+  </data>
+  <data name="AlwaysOnTop_IncreaseOpacity" xml:space="preserve">
+    <value>Press **{0}** to increase the window opacity</value>
   </data>
   <data name="AlwaysOnTop_DecreaseOpacity.Text" xml:space="preserve">
     <value>Decrease opacity</value>
@@ -5781,5 +5780,30 @@ Text uses the current drawing color.</value>
   </data>
   <data name="OOBE_NavViewItem.Content" xml:space="preserve">
     <value>Welcome to PowerToys</value>
+  </data>
+  <data name="ShortcutConflictWindow_IgnoreShortcut.Content" xml:space="preserve">
+    <value>Ignore shortcut</value>
+  </data>
+  <data name="AdvancedPaste_AddModelButton.Content" xml:space="preserve">
+    <value>Add model</value>
+  </data>
+  <data name="AdvancedPaste_EndpointDialog.Title" xml:space="preserve">
+    <value>Paste with AI provider configuration</value>
+  </data>
+  <data name="AdvancedPaste_ModelPath.Header" xml:space="preserve">
+    <value>Model path</value>
+  </data>
+  <data name="CmdPal_HeroTitle.Text" xml:space="preserve">
+    <value>Command Palette</value>
+    <comment>Command Palette is a product name and should not be localized</comment>
+  </data>
+  <data name="GeneralPage_ViewDiagnosticDataButton.Content" xml:space="preserve">
+    <value>View diagnostic data</value>
+  </data>
+  <data name="Shell_Search_ShowAll.Text" xml:space="preserve">
+    <value>Show all results</value>
+  </data>
+  <data name="ZoomIt_Type_DemoSample.Text" xml:space="preserve">
+    <value>Sample</value>
   </data>
 </root>

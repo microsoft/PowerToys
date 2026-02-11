@@ -104,7 +104,7 @@
                             </tkcontrols:SettingsExpander.Description>
                             <tkcontrols:SettingsExpander.ItemsHeader>
                                 <tkcontrols:SettingsCard x:Uid="AdvancedPaste_ModelProviders" Style="{StaticResource DefaultSettingsExpanderItemStyle}">
-                                    <Button Content="Add model" Style="{StaticResource AccentButtonStyle}">
+                                    <Button x:Uid="AdvancedPaste_AddModelButton" Style="{StaticResource AccentButtonStyle}">
                                         <Button.Flyout>
                                             <MenuFlyout x:Name="AddProviderMenuFlyout" Opening="AddProviderMenuFlyout_Opening" />
                                         </Button.Flyout>
@@ -433,7 +433,6 @@
         <ContentDialog
             x:Name="PasteAIProviderConfigurationDialog"
             x:Uid="AdvancedPaste_EndpointDialog"
-            Title="Paste with AI provider configuration"
             Closed="PasteAIProviderConfigurationDialog_Closed"
             PrimaryButtonClick="PasteAIProviderConfigurationDialog_PrimaryButtonClick"
             PrimaryButtonStyle="{ThemeResource AccentButtonStyle}">
@@ -535,7 +534,6 @@
                             MinHeight="76"
                             HorizontalAlignment="Stretch"
                             AcceptsReturn="True"
-                            Header="System prompt"
                             Text="{x:Bind ViewModel.PasteAIProviderDraft.SystemPrompt, Mode=TwoWay}"
                             TextWrapping="Wrap" />
                         <Grid
@@ -551,9 +549,9 @@
                             Spacing="8">
                             <TextBox
                                 x:Name="PasteAIModelPathTextBox"
+                                x:Uid="AdvancedPaste_ModelPath"
                                 MinWidth="200"
                                 HorizontalAlignment="Stretch"
-                                Header="Model path"
                                 PlaceholderText="C:\Models\phi-3.onnx"
                                 Text="{x:Bind ViewModel.PasteAIProviderDraft.ModelPath, Mode=TwoWay}" />
                             <Button
