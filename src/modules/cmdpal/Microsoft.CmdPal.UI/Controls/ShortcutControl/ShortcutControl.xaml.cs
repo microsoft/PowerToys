@@ -11,6 +11,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
+using Microsoft.Windows.ApplicationModel.Resources;
 using Windows.System;
 
 namespace Microsoft.CmdPal.UI.Controls;
@@ -522,7 +523,9 @@ public sealed partial class ShortcutControl : UserControl, IDisposable, IRecipie
         {
             VisualStateManager.GoToState(this, "Configured", true);
             PreviewKeysControl.ItemsSource = keys;
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
             AutomationProperties.SetHelpText(EditButton, HotkeySettings.ToString());
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
         }
         else
         {
