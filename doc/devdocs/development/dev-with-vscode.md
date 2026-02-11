@@ -15,7 +15,7 @@ VS Code extensions Needed:
 ---
 
 ## Building in VS Code
-### Configure Developer PowerShell for VS for more convenient dev in VS Code
+### Configure Developer PowerShell for VS for more convenient development experience in VS Code
 1. Configure profile in settings, entry: `terminal.integrated.profiles.windows`
 2. Add below config as entry (choose VS 2026 or VS 2022 based on your installation):
 
