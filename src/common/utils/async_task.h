@@ -54,18 +54,25 @@ public:
         // Custom final awaiter: signals the semaphore for .get() callers
         // and resumes any co_await continuation, all after the coroutine
         // is fully suspended (safe for cross-thread destruction).
+        //
+        // IMPORTANT: After ready.release(), another thread may call .get()
+        // and then destroy the coroutine frame. We must read continuation
+        // BEFORE releasing the semaphore and must NOT touch the promise
+        // after the release.
         struct final_awaiter
         {
             bool await_ready() noexcept { return false; }
             void await_suspend(std::coroutine_handle<promise_type> h) noexcept
             {
                 auto& p = h.promise();
-                // Signal synchronous waiters.
+                // Save continuation locally before releasing the semaphore,
+                // because release() allows .get() callers to destroy the frame.
+                auto continuation = p.continuation;
                 p.ready.release();
-                // Resume any co_await continuation.
-                if (p.continuation)
+                // Do NOT access h or p after this point.
+                if (continuation)
                 {
-                    p.continuation.resume();
+                    continuation.resume();
                 }
             }
             void await_resume() noexcept {}

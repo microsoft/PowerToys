@@ -70,6 +70,7 @@
     <ClCompile Include="Resources.Tests.cpp" />
     <ClCompile Include="TestStubs.cpp" />
     <ClCompile Include="UnhandledException.Tests.cpp" />
+    <ClCompile Include="AsyncTask.Tests.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
