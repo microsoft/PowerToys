@@ -1,8 +1,9 @@
-﻿<winuiex:WindowEx
+<winuiex:WindowEx
     x:Class="Microsoft.PowerToys.Settings.UI.SettingsXAML.Controls.Dashboard.ShortcutConflictWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:ptcontrols="using:Microsoft.PowerToys.Common.UI.Controls"
     xmlns:converters="using:Microsoft.PowerToys.Settings.UI.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:hotkeyConflicts="using:Microsoft.PowerToys.Settings.UI.Library.HotkeyConflicts"
@@ -93,7 +94,7 @@
                                 Orientation="Vertical">
                                 <!--  Hotkey Header  -->
                                 <Grid Margin="16,12,16,12">
-                                    <controls:ShortcutWithTextLabelControl
+                                    <ptcontrols:ShortcutWithTextLabelControl
                                         x:Uid="ShortcutConflictWindow_ModulesUsingShortcut"
                                         VerticalAlignment="Center"
                                         FontWeight="SemiBold"

@@ -21,7 +21,7 @@
                 <ResourceDictionary Source="/SettingsXAML/Themes/Colors.xaml" />
                 <ResourceDictionary Source="/SettingsXAML/Themes/Generic.xaml" />
                 <ResourceDictionary Source="/SettingsXAML/Controls/Timeline/TimelineStyles.xaml" />
-                <ResourceDictionary Source="/SettingsXAML/Controls/ShortcutControl/ShortcutWithTextLabelControl.xaml" />
+                <ResourceDictionary Source="ms-appx:///PowerToys.Common.UI.Controls/Controls/ShortcutWithTextLabelControl/ShortcutWithTextLabelControl.xaml" />
                 <!--  Other merged dictionaries here  -->
             </ResourceDictionary.MergedDictionaries>
 
