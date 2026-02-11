@@ -221,10 +221,10 @@ LRESULT WINAPI ScreenSaverProc( HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
 
     //------------------------------------------------------------------
     // Prevent DefScreenSaverProc from auto-closing on user input.
-    // When launched by ZoomIt (not by the system screensaver infra),
-    // the screensaver is a regular process and must stay up until the
-    // break timer expires.  DefScreenSaverProc would close the window
-    // on mouse movement, clicks, keyboard, or deactivation.
+    // The screensaver must stay up until the break timer expires or
+    // the user authenticates via Ctrl+Alt+Del.  DefScreenSaverProc
+    // would close the window on mouse movement, clicks, keyboard,
+    // or deactivation.
     //------------------------------------------------------------------
     case WM_MOUSEMOVE:
     case WM_LBUTTONDOWN:

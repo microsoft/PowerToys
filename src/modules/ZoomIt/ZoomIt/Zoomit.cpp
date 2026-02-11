@@ -1851,6 +1851,10 @@ static void RestoreScreenSaverSettings( void )
 
         RegCloseKey( hKey );
         RegDeleteKey( HKEY_CURRENT_USER, SCREENSAVER_BACKUP_KEY );
+
+        // Broadcast settings change so Windows picks up all the registry modifications
+        // (SCRNSAVE.EXE, ScreenSaverIsSecure are registry-only with no SPI equivalent).
+        SendNotifyMessage( HWND_BROADCAST, WM_SETTINGCHANGE, SPI_SETSCREENSAVEACTIVE, 0 );
     }
 }
 
@@ -1869,48 +1873,6 @@ static BOOLEAN HasOrphanedScreenSaverSettings( void )
 
 //----------------------------------------------------------------------------
 //
-// ScreenSaverRestoreThread
-//
-// Background thread that waits for the screensaver to fully launch,
-// then restores the user's original screensaver settings.
-//
-//----------------------------------------------------------------------------
-static DWORD WINAPI ScreenSaverRestoreThread( LPVOID /*param*/ )
-{
-    // Wait for the screensaver to actually start.  The system's idle
-    // detection will launch it once the 1-second timeout we set expires.
-    // Poll for up to 15 seconds — OpenDesktop("Screen-saver") succeeds
-    // only while the screensaver desktop exists.
-    OutputDebugString( L"[ZoomIt] Restore thread: waiting for screensaver to launch...\n" );
-
-    BOOL screensaverStarted = FALSE;
-    for( int i = 0; i < 30; i++ )
-    {
-        Sleep( 500 );
-        HDESK hDesk = OpenDesktop( L"Screen-saver", 0, FALSE, DESKTOP_READOBJECTS );
-        if( hDesk )
-        {
-            OutputDebugString( L"[ZoomIt] Restore thread: Screen-saver desktop detected!\n" );
-            CloseDesktop( hDesk );
-            screensaverStarted = TRUE;
-            break;
-        }
-    }
-
-    if( !screensaverStarted )
-    {
-        OutputDebugString( L"[ZoomIt] Restore thread: screensaver never started (timeout)\n" );
-    }
-
-    // Whether it started or not, restore the user's original settings.
-    RestoreScreenSaverSettings();
-    OutputDebugString( L"[ZoomIt] Screensaver settings restored (from restore thread)\n" );
-    return 0;
-}
-
-
-//----------------------------------------------------------------------------
-//
 // ActivateBreakScreenSaver
 //
 // Activates the break timer as a secure screensaver using the registry-swap
@@ -1920,11 +1882,11 @@ static DWORD WINAPI ScreenSaverRestoreThread( LPVOID /*param*/ )
 // 3. Saves user's current screensaver settings
 // 4. Configures system to use our .scr with password protection
 // 5. Triggers screensaver via SC_SCREENSAVE
-// 6. Background thread restores user's settings after screensaver starts
 //
-// The screensaver runs on the ScreenSaver Desktop (separate from User Desktop)
-// and displays the countdown timer. It requires authentication to dismiss.
-// Students can see the countdown but cannot access the system without unlocking.
+// The screensaver runs on the ScreenSaver Desktop and displays the countdown
+// timer.  With ScreenSaverIsSecure=1, students must authenticate to dismiss it.
+// The user's original settings are restored on session unlock (WTS_SESSION_UNLOCK)
+// or on ZoomIt shutdown (crash recovery).
 //
 //----------------------------------------------------------------------------
 static BOOLEAN ActivateBreakScreenSaver( HWND hWnd, int breakTimeoutSeconds )
@@ -1932,7 +1894,11 @@ static BOOLEAN ActivateBreakScreenSaver( HWND hWnd, int breakTimeoutSeconds )
     TCHAR tempDir[MAX_PATH];
     GetTempPath( MAX_PATH, tempDir );
 
-    OutputDebugString( L"[ZoomIt] ActivateBreakScreenSaver: starting\n" );
+    {
+        TCHAR dbg[256];
+        _stprintf( dbg, L"[ZoomIt] ActivateBreakScreenSaver: timeout=%d\n", breakTimeoutSeconds );
+        OutputDebugString( dbg );
+    }
 
     //
     // 1. Extract the embedded .scr to %TEMP%.
@@ -1993,8 +1959,6 @@ static BOOLEAN ActivateBreakScreenSaver( HWND hWnd, int breakTimeoutSeconds )
             return FALSE;
         }
     }
-    OutputDebugString( L"[ZoomIt] .scr extracted OK\n" );
-
     //
     // 2. Capture desktop screenshot if the user wants "show desktop" background.
     //
@@ -2051,7 +2015,6 @@ static BOOLEAN ActivateBreakScreenSaver( HWND hWnd, int breakTimeoutSeconds )
         OutputDebugString( L"[ZoomIt] BreakScrConfig_Write FAILED\n" );
         return FALSE;
     }
-    OutputDebugString( L"[ZoomIt] Config written OK\n" );
 
     //
     // 4. Save current screensaver settings for later restoration.
@@ -2060,27 +2023,20 @@ static BOOLEAN ActivateBreakScreenSaver( HWND hWnd, int breakTimeoutSeconds )
     //
     if( !HasOrphanedScreenSaverSettings() )
     {
-        OutputDebugString( L"[ZoomIt] Saving user's screensaver settings\n" );
         SaveScreenSaverSettings();
-    }
-    else
-    {
-        OutputDebugString( L"[ZoomIt] Settings already saved (previous activation still active)\n" );
     }
 
     //
     // 4a. Ensure screensaver is fully reset before reconfiguring.
-    //     Disable screensaver, wait briefly, then reconfigure. This ensures
+    //     Disable screensaver, wait briefly, then reconfigure.  This ensures
     //     Windows processes the state change and allows subsequent activations.
     //
-    OutputDebugString( L"[ZoomIt] Resetting screensaver state\n" );
     SystemParametersInfo( SPI_SETSCREENSAVEACTIVE, FALSE, 0, SPIF_SENDCHANGE );
     Sleep( 200 );  // Allow Windows to process the disable
 
     //
     // 5. Configure system to use our screensaver.
     //
-    OutputDebugString( L"[ZoomIt] Setting our screensaver in registry\n" );
 
     // Set our .scr as the system screensaver
     if( RegSetKeyValue( HKEY_CURRENT_USER, L"Control Panel\\Desktop",
@@ -2092,12 +2048,17 @@ static BOOLEAN ActivateBreakScreenSaver( HWND hWnd, int breakTimeoutSeconds )
         return FALSE;
     }
 
-    // Set timeout to 1 second (immediate activation)
-    // Write to registry for persistence, then notify system via SystemParametersInfo
-    DWORD dwTimeout = 1;
+    // Set screensaver timeout to 15 seconds.
+    // The initial activation uses SC_SCREENSAVE for immediate launch.
+    // This timeout controls how quickly the screensaver REACTIVATES on the lock
+    // screen after a student triggers the credential provider but doesn't
+    // authenticate and walks away.  1 second may be below Windows' enforced
+    // minimum, so we use 15 seconds as a practical value.
+    // ScreenSaveTimeOut is stored as REG_SZ in Control Panel\Desktop.
     RegSetKeyValue( HKEY_CURRENT_USER, L"Control Panel\\Desktop",
-                    L"ScreenSaveTimeOut", REG_DWORD, &dwTimeout, sizeof( DWORD ) );
-    SystemParametersInfo( SPI_SETSCREENSAVETIMEOUT, 1, 0, SPIF_SENDCHANGE );
+                    L"ScreenSaveTimeOut", REG_SZ, L"15",
+                    static_cast<DWORD>( 3 * sizeof( TCHAR ) ) );
+    SystemParametersInfo( SPI_SETSCREENSAVETIMEOUT, 15, 0, SPIF_SENDCHANGE );
 
     // Force password protection for classroom security
     TCHAR secure[] = L"1";
@@ -2110,99 +2071,28 @@ static BOOLEAN ActivateBreakScreenSaver( HWND hWnd, int breakTimeoutSeconds )
         return FALSE;
     }
 
-    // Verify ScreenSaverIsSecure was set correctly
-    TCHAR verifySecure[8] = {};
-    DWORD cbVerify = sizeof( verifySecure );
-    if( RegGetValue( HKEY_CURRENT_USER, L"Control Panel\\Desktop", L"ScreenSaverIsSecure",
-                     RRF_RT_REG_SZ, NULL, verifySecure, &cbVerify ) == ERROR_SUCCESS )
-    {
-        OutputDebugString( L"[ZoomIt] ScreenSaverIsSecure verified: " );
-        OutputDebugString( verifySecure );
-        OutputDebugString( L"\n" );
-
-        if( _tcscmp( verifySecure, L"1" ) != 0 )
-        {
-            OutputDebugString( L"[ZoomIt] WARNING: ScreenSaverIsSecure is not '1'!\n" );
-        }
-    }
-    else
-    {
-        OutputDebugString( L"[ZoomIt] WARNING: Failed to verify ScreenSaverIsSecure\n" );
-    }
-
     // Activate screensaver (must be enabled for SC_SCREENSAVE to work)
     SystemParametersInfo( SPI_SETSCREENSAVEACTIVE, TRUE, 0, SPIF_SENDCHANGE );
 
-    // Broadcast settings change to ensure all apps (including Windows) pick up the changes
+    // Broadcast and give Windows time to process all registry changes before
+    // triggering the screensaver.  If we trigger too quickly, Windows may not
+    // see ScreenSaverIsSecure=1 and the screensaver won't require authentication.
     SendNotifyMessage( HWND_BROADCAST, WM_SETTINGCHANGE, SPI_SETSCREENSAVEACTIVE,
                       reinterpret_cast<LPARAM>( L"Policy" ) );
-
-    // Give Windows time to process all registry changes before triggering screensaver.
-    // This is critical - if we trigger too quickly, Windows may not see ScreenSaverIsSecure=1
-    // and the screensaver won't require authentication.
-    OutputDebugString( L"[ZoomIt] Waiting for Windows to process registry changes...\n" );
     Sleep( 500 );
 
-    OutputDebugString( L"[ZoomIt] Registry configured successfully\n" );
-
     //
-    // 6. Start background thread to restore settings after screensaver launches.
-    //
-    HANDLE hThread = CreateThread( NULL, 0, ScreenSaverRestoreThread, NULL, 0, NULL );
-    if( hThread )
-    {
-        CloseHandle( hThread );
-        OutputDebugString( L"[ZoomIt] Restore thread started\n" );
-    }
-    else
-    {
-        OutputDebugString( L"[ZoomIt] WARNING: Failed to start restore thread\n" );
-    }
-
-    //
-    // 7. Final verification: Dump all screensaver settings before triggering.
-    //
-    {
-        TCHAR finalScrPath[MAX_PATH] = {};
-        DWORD cbFinalPath = sizeof( finalScrPath );
-        RegGetValue( HKEY_CURRENT_USER, L"Control Panel\\Desktop", L"SCRNSAVE.EXE",
-                    RRF_RT_REG_SZ, NULL, finalScrPath, &cbFinalPath );
-
-        TCHAR finalSecure[8] = {};
-        DWORD cbFinalSecure = sizeof( finalSecure );
-        RegGetValue( HKEY_CURRENT_USER, L"Control Panel\\Desktop", L"ScreenSaverIsSecure",
-                    RRF_RT_REG_SZ, NULL, finalSecure, &cbFinalSecure );
-
-        BOOL finalActive = FALSE;
-        SystemParametersInfo( SPI_GETSCREENSAVEACTIVE, 0, &finalActive, 0 );
-
-        UINT finalTimeout = 0;
-        SystemParametersInfo( SPI_GETSCREENSAVETIMEOUT, 0, &finalTimeout, 0 );
-
-        OutputDebugString( L"[ZoomIt] === FINAL SCREENSAVER STATE ===\n" );
-        OutputDebugString( L"[ZoomIt] SCRNSAVE.EXE: " );
-        OutputDebugString( finalScrPath );
-        OutputDebugString( L"\n" );
-        OutputDebugString( L"[ZoomIt] ScreenSaverIsSecure: " );
-        OutputDebugString( finalSecure );
-        OutputDebugString( L"\n" );
-
-        TCHAR dbg[256];
-        _stprintf( dbg, L"[ZoomIt] ScreenSaveActive: %d\n", finalActive );
-        OutputDebugString( dbg );
-        _stprintf( dbg, L"[ZoomIt] ScreenSaveTimeout: %u\n", finalTimeout );
-        OutputDebugString( dbg );
-        OutputDebugString( L"[ZoomIt] =====================================\n" );
-    }
-
-    //
-    // 8. Trigger the screensaver via system mechanism.
+    // 6. Trigger the screensaver via system mechanism.
     //    This causes Windows/Winlogon to launch our .scr on the ScreenSaver Desktop.
     //
-    OutputDebugString( L"[ZoomIt] Triggering screensaver via SC_SCREENSAVE\n" );
-    SendMessage( HWND_BROADCAST, WM_SYSCOMMAND, SC_SCREENSAVE, 0 );
+    //    IMPORTANT: Use DefWindowProc on our own window rather than
+    //    SendMessage(HWND_BROADCAST).  Broadcasting WM_SYSCOMMAND is synchronous
+    //    and blocks our message loop for the entire screensaver session, making
+    //    the desktop unresponsive.  It also delivers SC_SCREENSAVE to ZoomIt's
+    //    own window, triggering unwanted LiveZoom activation.
+    //
+    DefWindowProc( hWnd, WM_SYSCOMMAND, SC_SCREENSAVE, 0 );
 
-    OutputDebugString( L"[ZoomIt] ActivateBreakScreenSaver completed\n" );
     return TRUE;
 }
 
@@ -6880,6 +6770,11 @@ LRESULT APIENTRY MainWndProc(
             RestoreScreenSaverSettings();
         }
 
+        // Register for session change notifications so we can restore
+        // screensaver settings after the break timer screensaver is dismissed
+        // via user authentication (session unlock).
+        WTSRegisterSessionNotification( hWnd, NOTIFY_FOR_THIS_SESSION );
+
         // Refresh dark mode state after loading theme override from registry
         RefreshDarkModeState();
 
@@ -7288,7 +7183,6 @@ LRESULT APIENTRY MainWndProc(
 #else
             if( !g_Zoomed && !IsWindowVisible( g_hWndLiveZoom )) {
 #endif
-
                 SendMessage( hWnd, WM_COMMAND, IDC_BREAK, 0 );
             }
             break;
@@ -9899,16 +9793,12 @@ LRESULT APIENTRY MainWndProc(
             //
             // If lock workstation is enabled, skip the local break timer
             // window entirely — the embedded screensaver will run it on
-            // the secure desktop.
+            // the ScreenSaver Desktop with authentication required.
             //
             if( g_BreakLockWorkstation )
             {
-                OutputDebugString( L"[ZoomIt] IDC_BREAK: lock path — launching screensaver, skipping local timer\n" );
                 DeleteDC( hdcScreen );
-                if( !ActivateBreakScreenSaver( hWnd, breakTimeout ) )
-                {
-                    OutputDebugString( L"[ZoomIt] ActivateBreakScreenSaver FAILED\n" );
-                }
+                ActivateBreakScreenSaver( hWnd, breakTimeout );
                 break;
             }
 
@@ -10160,11 +10050,27 @@ LRESULT APIENTRY MainWndProc(
         EndPaint(hWnd, &ps);
         return TRUE;
 
+    case WM_WTSSESSION_CHANGE:
+        //
+        // When the user unlocks the workstation after a break timer screensaver
+        // session, restore the original screensaver settings so the break timer
+        // doesn't reactivate.
+        //
+        if( wParam == WTS_SESSION_UNLOCK )
+        {
+            if( HasOrphanedScreenSaverSettings() )
+            {
+                RestoreScreenSaverSettings();
+            }
+        }
+        break;
+
     case WM_DESTROY:
         // Restore screensaver settings on clean shutdown in case the
         // break screensaver was still active.
         if( HasOrphanedScreenSaverSettings() )
             RestoreScreenSaverSettings();
+        WTSUnRegisterSessionNotification( hWnd );
         CleanupDarkModeResources();
         PostQuitMessage( 0 );
         break;
