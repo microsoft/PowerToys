@@ -134,8 +134,15 @@ LRESULT WINAPI ScreenSaverProc( HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
             ULONGLONG diffSeconds = (now.QuadPart - modified.QuadPart) / 10000000ULL;
             if( diffSeconds < 60 )
             {
-                DbgPrint( L"[BreakScr] Detected resumption (config age: %llu sec), using saved timeout=%d\n",
-                         diffSeconds, g_State.timeoutSeconds );
+                // Subtract the screensaver idle timeout to compensate for
+                // the time the screensaver wasn't running on the lock screen.
+                UINT scrTimeout = 0;
+                SystemParametersInfo( SPI_GETSCREENSAVETIMEOUT, 0, &scrTimeout, 0 );
+                g_State.timeoutSeconds -= static_cast<int>( scrTimeout );
+                if( g_State.timeoutSeconds < 0 && !g_Settings.showExpiredTime )
+                    g_State.timeoutSeconds = 0;
+                DbgPrint( L"[BreakScr] Resumption: config age %llu sec, subtracted %u sec idle, timeout=%d\n",
+                         diffSeconds, scrTimeout, g_State.timeoutSeconds );
             }
         }
 
