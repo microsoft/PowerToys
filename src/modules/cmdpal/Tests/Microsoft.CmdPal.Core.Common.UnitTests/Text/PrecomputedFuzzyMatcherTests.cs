@@ -12,7 +12,7 @@ public class PrecomputedFuzzyMatcherTests
     private readonly PrecomputedFuzzyMatcher _matcher = new();
 
     public static IEnumerable<object[]> MatchData =>
-        [
+        (object[])[
             ["a", "a"],
             ["abc", "abc"],
             ["a", "ab"],

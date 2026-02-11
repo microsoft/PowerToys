@@ -1,4 +1,4 @@
-<Project>
+﻿<Project>
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
     <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
@@ -68,13 +68,13 @@
     <PackageVersion Include="Microsoft.Win32.SystemEvents" Version="9.0.10" />
     <PackageVersion Include="Microsoft.WindowsPackageManager.ComInterop" Version="1.10.340" />
     <PackageVersion Include="Microsoft.Windows.Compatibility" Version="9.0.10" />
-    <PackageVersion Include="Microsoft.Windows.CsWin32" Version="0.3.183" />
+    <PackageVersion Include="Microsoft.Windows.CsWin32" Version="0.3.269" />
     <!-- CsWinRT version needs to be set to have a WinRT.Runtime.dll at the same version contained inside the NET SDK we're currently building on CI. -->
     <!-- 
       TODO: in Common.Dotnet.CsWinRT.props, on upgrade, verify RemoveCsWinRTPackageAnalyzer is no longer needed.  
       This is present due to a bug in CsWinRT where WPF projects cause the analyzer to fail.
 	-->
-    <PackageVersion Include="Microsoft.Windows.CsWinRT" Version="2.2.0" />
+    <PackageVersion Include="Microsoft.Windows.CsWinRT" Version="2.3.0-prerelease.251115.2" />
     <PackageVersion Include="Microsoft.Windows.ImplementationLibrary" Version="1.0.231216.1"/>
     <PackageVersion Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.6901" />
     <PackageVersion Include="Microsoft.WindowsAppSDK" Version="1.8.251106002" />
