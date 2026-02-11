@@ -37,7 +37,12 @@ namespace updating
     using github_version_result = nonstd::expected<github_version_info, std::wstring>;
 #endif
 
+    // NOTE: Caller MUST call .get() on the returned IAsyncAction before reading 'result'.
+    // The reference must remain valid until the async operation completes.
     winrt::Windows::Foundation::IAsyncAction get_github_version_info_async(github_version_result& result, bool prerelease = false);
+
+    // NOTE: Caller MUST call .get() on the returned IAsyncAction before reading 'result'.
+    // The reference must remain valid until the async operation completes.
     winrt::Windows::Foundation::IAsyncAction download_new_version_async(const new_version_download_info& new_version, std::optional<std::filesystem::path>& result);
     std::filesystem::path get_pending_updates_path();
     void cleanup_updates();

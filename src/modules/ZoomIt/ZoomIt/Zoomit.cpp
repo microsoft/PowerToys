@@ -5140,6 +5140,8 @@ bool IsPenInverted( WPARAM wParam )
 // Captures the specified screen using the capture APIs
 //
 //----------------------------------------------------------------------------
+// NOTE: Caller MUST call .get() on the returned IAsyncAction before reading 'result'.
+// The reference must remain valid until the async operation completes.
 winrt::Windows::Foundation::IAsyncAction CaptureScreenshotAsync(winrt::IDirect3DDevice const& device, winrt::GraphicsCaptureItem const& item, winrt::DirectXPixelFormat const& pixelFormat, winrt::com_ptr<ID3D11Texture2D>& result)
 {
     auto d3dDevice = GetDXGIInterfaceFromObject<ID3D11Device>(device);
