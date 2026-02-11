@@ -3,16 +3,34 @@
     x:Class="Microsoft.CmdPal.UI.Pages.LoadingPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:converters="using:CommunityToolkit.WinUI.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
+    <Page.Resources>
+        <converters:StringVisibilityConverter
+            x:Key="StringNotEmptyToVisibilityConverter"
+            EmptyValue="Collapsed"
+            NotEmptyValue="Visible" />
+    </Page.Resources>
+
     <Grid>
-        <ProgressRing
-            Width="36"
-            Height="36"
+        <StackPanel
             HorizontalAlignment="Center"
             VerticalAlignment="Center"
-            IsIndeterminate="True" />
+            Spacing="12">
+            <ProgressRing
+                Width="36"
+                Height="36"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                IsIndeterminate="True" />
+            <TextBlock
+                HorizontalAlignment="Center"
+                Style="{StaticResource BodyStrongTextBlockStyle}"
+                Text="{x:Bind ViewModel.LoadingMessage, Mode=OneWay, FallbackValue=''}"
+                Visibility="{x:Bind ViewModel.LoadingMessage, Converter={StaticResource StringNotEmptyToVisibilityConverter}, Mode=OneWay, FallbackValue=Collapsed}" />
+        </StackPanel>
     </Grid>
 </Page>

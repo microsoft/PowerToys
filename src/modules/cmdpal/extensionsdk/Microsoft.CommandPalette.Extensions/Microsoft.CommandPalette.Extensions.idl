@@ -409,6 +409,6 @@ namespace Microsoft.CommandPalette.Extensions
     [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)] 
     interface IPageFactoryCommand requires ICommand
     {
-        IPage CreatePage();
+        Windows.Foundation.IAsyncOperation<IPage> CreatePageAsync();
     }
 }

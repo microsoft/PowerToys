@@ -118,7 +118,7 @@ public partial class SamplesListPage : ListPage
         {
             Title = "Sample page factory",
             Subtitle = "A demo of page factory",
-            Icon = new IconInfo("\ue806"),
+            Icon = new IconInfo("\uE822"),
         },
 
         // Evil edge cases

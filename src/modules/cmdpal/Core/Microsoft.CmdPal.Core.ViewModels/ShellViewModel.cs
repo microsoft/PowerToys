@@ -42,6 +42,8 @@ public partial class ShellViewModel : ObservableObject,
     [ObservableProperty]
     public partial bool IsSearchBoxVisible { get; set; } = true;
 
+    public bool IsLoading => CurrentPage?.IsLoading ?? false;
+
     private PageViewModel _currentPage;
 
     public PageViewModel CurrentPage
@@ -66,6 +68,8 @@ public partial class ShellViewModel : ObservableObject,
                         CoreLogger.LogError(ex.ToString());
                     }
                 }
+
+                OnUIThread(() => OnPropertyChanged(nameof(IsLoading)));
             }
         }
     }
@@ -75,6 +79,10 @@ public partial class ShellViewModel : ObservableObject,
         if (e.PropertyName == nameof(PageViewModel.HasSearchBox))
         {
             IsSearchBoxVisible = CurrentPage.HasSearchBox;
+        }
+        else if (e.PropertyName == nameof(PageViewModel.IsLoading))
+        {
+            OnUIThread(() => OnPropertyChanged(nameof(IsLoading)));
         }
     }
 
@@ -275,16 +283,24 @@ public partial class ShellViewModel : ObservableObject,
         {
             if (command is IPageFactoryCommand pageFactoryCommand)
             {
-                CoreLogger.LogDebug("Getting a page...");
-                command = await Task.Run(
-                    () =>
+#if DEBUG
+                CoreLogger.LogDebug($"Page factory {pageFactoryCommand.Id} is building page");
+#endif
+                var createPageTask = pageFactoryCommand.CreatePageAsync().AsTask(navigationToken);
+                var loadingTimer = Task.Delay(200, navigationToken);
+
+                var completedTask = await Task.WhenAny(createPageTask, loadingTimer).ConfigureAwait(false);
+                if (completedTask == loadingTimer)
+                {
+                    var loadingPage = new LoadingPageViewModel(null, _scheduler, host ?? _appHostService.GetDefaultHost())
                     {
-                        navigationToken.ThrowIfCancellationRequested();
-                        var newPage = pageFactoryCommand.CreatePage();
-                        navigationToken.ThrowIfCancellationRequested();
-                        return newPage;
-                    },
-                    navigationToken).ConfigureAwait(false);
+                        LoadingMessage = Properties.Resources.Loading,
+                    };
+
+                    WeakReferenceMessenger.Default.Send<NavigateToPageMessage>(new(loadingPage, false, navigationToken));
+                }
+
+                command = await createPageTask.ConfigureAwait(false);
             }
 
             if (navigationToken.IsCancellationRequested)

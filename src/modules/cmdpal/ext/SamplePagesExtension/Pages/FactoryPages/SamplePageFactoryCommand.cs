@@ -5,6 +5,8 @@
 #nullable enable
 
 using System;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
@@ -20,10 +22,10 @@ public sealed partial class SamplePageFactoryCommand : PageFactoryCommand
         Icon = new IconInfo("\uF158");
     }
 
-    public override IPage CreatePage()
+    public override Task<IPage> CreatePageAsync(CancellationToken cancellationToken)
     {
         var newPage = new SampleTimeCapturePage(Guid.CreateVersion7(DateTimeOffset.UtcNow).ToString());
         _items.AddPage(newPage);
-        return newPage;
+        return Task.FromResult<IPage>(newPage);
     }
 }

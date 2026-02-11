@@ -16,6 +16,7 @@ public sealed partial class SamplePageFactoryPage : ListPage
     {
         _items = [
             new ListItem(new SamplePageFactoryCommand(this)) { Title = "Capture world state" },
+            new ListItem(new SlowSamplePageFactoryCommand(this)) { Title = "Capture world state", Subtitle = "...and pretend a bit of work (150 ms)" },
             new ListItem(new EvilSamplePageFactoryCommand(this)) { Title = "Capture world state", Subtitle = "...but take a sweet time creating that" },
         ];
     }

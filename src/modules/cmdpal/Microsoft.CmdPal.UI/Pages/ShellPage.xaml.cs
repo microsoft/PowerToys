@@ -148,19 +148,28 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         // TODO GH #526 This needs more better locking too
         _ = _queue.TryEnqueue(() =>
         {
+            // Check if we are navigating away from a loading page, if so, remove it from the backstack
+            var isFwdNavFromLoading = RootFrame.CurrentSourcePageType == typeof(LoadingPage);
+
             // Also hide our details pane about here, if we had one
             HideDetails();
 
             // Navigate to the appropriate host page for that VM
-            RootFrame.Navigate(
+            var navigated = RootFrame.Navigate(
                 message.Page switch
                 {
                     ListViewModel => typeof(ListPage),
                     ContentPageViewModel => typeof(ContentPage),
-                    _ => throw new NotSupportedException(),
+                    LoadingPageViewModel => typeof(LoadingPage),
+                    _ => throw new NotSupportedException($"Page type {message.Page.GetType().Name} is not supported"),
                 },
                 new AsyncNavigationRequest(message.Page, message.CancellationToken),
                 message.WithAnimation ? DefaultPageAnimation : _noAnimation);
+
+            if (navigated && isFwdNavFromLoading && RootFrame.BackStackDepth > 0)
+            {
+                RootFrame.BackStack.RemoveAt(RootFrame.BackStackDepth - 1);
+            }
 
             PowerToysTelemetry.Log.WriteEvent(new OpenPage(RootFrame.BackStackDepth, message.Page.Id));
 
