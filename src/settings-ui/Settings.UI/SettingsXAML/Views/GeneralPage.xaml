@@ -506,22 +506,30 @@
                             </InfoBar>
                         </tkcontrols:SettingsExpander.ItemsFooter>
                     </tkcontrols:SettingsExpander>
-                    <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsDataDiagnosticsGPOManaged, Mode=OneWay}">
-                        <tkcontrols:SettingsCard x:Uid="GeneralPage_ReportBugPackage" HeaderIcon="{ui:FontIcon Glyph=&#xEBE8;}">
-                            <StackPanel Orientation="Horizontal">
-                                <Button
-                                    x:Uid="GeneralPageReportBugPackage"
-                                    Click="BugReportToolClicked"
-                                    Visibility="{x:Bind ViewModel.IsBugReportRunning, Converter={StaticResource ReverseBoolToVisibilityConverter}, Mode=OneWay}" />
-                                <ProgressRing
-                                    Width="24"
-                                    Height="24"
-                                    HorizontalAlignment="Right"
-                                    VerticalAlignment="Center"
-                                    Visibility="{x:Bind ViewModel.IsBugReportRunning, Mode=OneWay}" />
-                            </StackPanel>
-                        </tkcontrols:SettingsCard>
-                    </controls:GPOInfoControl>
+                    <InfoBar
+                        x:Uid="GPO_SettingIsManaged"
+                        IsClosable="False"
+                        IsOpen="{x:Bind ViewModel.IsDataDiagnosticsGPOManaged, Mode=OneWay}"
+                        IsTabStop="{x:Bind ViewModel.IsDataDiagnosticsGPOManaged, Mode=OneWay}"
+                        Severity="Informational">
+                        <InfoBar.IconSource>
+                            <FontIconSource FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE72E;" />
+                        </InfoBar.IconSource>
+                    </InfoBar>
+                    <tkcontrols:SettingsCard x:Uid="GeneralPage_ReportBugPackage" HeaderIcon="{ui:FontIcon Glyph=&#xEBE8;}">
+                        <StackPanel Orientation="Horizontal">
+                            <Button
+                                x:Uid="GeneralPageReportBugPackage"
+                                Click="BugReportToolClicked"
+                                Visibility="{x:Bind ViewModel.IsBugReportRunning, Converter={StaticResource ReverseBoolToVisibilityConverter}, Mode=OneWay}" />
+                            <ProgressRing
+                                Width="24"
+                                Height="24"
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Center"
+                                Visibility="{x:Bind ViewModel.IsBugReportRunning, Mode=OneWay}" />
+                        </StackPanel>
+                    </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
             </StackPanel>
 

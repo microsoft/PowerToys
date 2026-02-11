@@ -5140,7 +5140,7 @@ bool IsPenInverted( WPARAM wParam )
 // Captures the specified screen using the capture APIs
 //
 //----------------------------------------------------------------------------
-std::future<winrt::com_ptr<ID3D11Texture2D>> CaptureScreenshotAsync(winrt::IDirect3DDevice const& device, winrt::GraphicsCaptureItem const& item, winrt::DirectXPixelFormat const& pixelFormat)
+wil::task<winrt::com_ptr<ID3D11Texture2D>> CaptureScreenshotAsync(winrt::IDirect3DDevice const& device, winrt::GraphicsCaptureItem const& item, winrt::DirectXPixelFormat const& pixelFormat)
 {
     auto d3dDevice = GetDXGIInterfaceFromObject<ID3D11Device>(device);
     winrt::com_ptr<ID3D11DeviceContext> d3dContext;
@@ -5176,9 +5176,7 @@ std::future<winrt::com_ptr<ID3D11Texture2D>> CaptureScreenshotAsync(winrt::IDire
     framePool.Close();
 
     auto texture = GetDXGIInterfaceFromObject<ID3D11Texture2D>(frame.Surface());
-    auto result = util::CopyD3DTexture(d3dDevice, texture, true);
-
-    co_return result;
+    co_return util::CopyD3DTexture(d3dDevice, texture, true);
 }
 
 //----------------------------------------------------------------------------
@@ -5205,10 +5203,7 @@ winrt::com_ptr<ID3D11Texture2D>CaptureScreenshot(winrt::DirectXPixelFormat const
 
     auto item = util::CreateCaptureItemForMonitor(hMon);
 
-    auto capture = CaptureScreenshotAsync(device, item, pixelFormat);
-    capture.wait();
-
-    return capture.get();
+    return CaptureScreenshotAsync(device, item, pixelFormat).get();
 }
 
 

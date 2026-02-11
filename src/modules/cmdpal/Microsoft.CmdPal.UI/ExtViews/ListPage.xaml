@@ -206,23 +206,30 @@
             x:Key="ListSectionContainerStyle"
             BasedOn="{StaticResource DefaultListViewItemStyle}"
             TargetType="ListViewItem">
+            <Setter Property="IsEnabled" Value="False" />
+            <Setter Property="AllowFocusWhenDisabled" Value="False" />
+            <Setter Property="AllowFocusOnInteraction" Value="False" />
             <Setter Property="IsHitTestVisible" Value="False" />
             <Setter Property="IsTabStop" Value="False" />
             <Setter Property="IsHoldingEnabled" Value="False" />
+            <Setter Property="AllowDrop" Value="False" />
             <Setter Property="Padding" Value="16,8,12,0" />
             <Setter Property="HorizontalContentAlignment" Value="Stretch" />
             <Setter Property="VerticalContentAlignment" Value="Bottom" />
             <Setter Property="MinHeight" Value="{StaticResource ListViewSectionMinHeight}" />
-            <Setter Property="AllowDrop" Value="False" />
         </Style>
 
         <Style
             x:Key="ListSeparatorContainerStyle"
             BasedOn="{StaticResource DefaultListViewItemStyle}"
             TargetType="ListViewItem">
+            <Setter Property="IsEnabled" Value="False" />
+            <Setter Property="AllowFocusWhenDisabled" Value="False" />
+            <Setter Property="AllowFocusOnInteraction" Value="False" />
             <Setter Property="IsHitTestVisible" Value="False" />
             <Setter Property="IsTabStop" Value="False" />
             <Setter Property="IsHoldingEnabled" Value="False" />
+            <Setter Property="AllowDrop" Value="False" />
             <Setter Property="Padding" Value="16,4,12,4" />
             <Setter Property="HorizontalContentAlignment" Value="Stretch" />
             <Setter Property="VerticalContentAlignment" Value="Center" />

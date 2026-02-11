@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using Microsoft.CmdPal.Core.ViewModels;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
@@ -24,15 +25,19 @@ internal sealed partial class GridItemTemplateSelector : DataTemplateSelector
 
     protected override DataTemplate? SelectTemplateCore(object item, DependencyObject dependencyObject)
     {
-        if (item is ListItemViewModel element && element.IsSectionOrSeparator)
+        if (item is not ListItemViewModel element)
         {
-            if (dependencyObject is UIElement li)
-            {
-                li.IsTabStop = false;
-                li.IsHitTestVisible = false;
-            }
+            return Medium;
+        }
 
-            return string.IsNullOrWhiteSpace(element.Section) ? Separator : Section;
+        switch (element.Type)
+        {
+            case ListItemType.Separator:
+                return Separator;
+            case ListItemType.SectionHeader:
+                return Section;
+            default:
+                break;
         }
 
         return GridProperties switch

@@ -11,6 +11,8 @@ public partial class CommandViewModel : ExtensionObjectViewModel
 {
     public ExtensionObject<ICommand> Model { get; private set; } = new(null);
 
+    public bool IsSet => Model.Unsafe is not null;
+
     protected bool IsInitialized { get; private set; }
 
     protected bool IsFastInitialized { get; private set; }
