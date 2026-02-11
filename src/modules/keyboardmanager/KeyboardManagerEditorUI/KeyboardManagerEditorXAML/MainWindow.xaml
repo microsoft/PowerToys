@@ -31,7 +31,7 @@
                 <ImageIcon
                     Height="16"
                     Margin="16,0,0,0"
-                    Source="/Assets/FluentIconsKeyboardManager.png" />
+                    Source="/Assets/KeyboardManagerEditor/FluentIconsKeyboardManager.png" />
             </TitleBar.LeftHeader>
         </TitleBar>
 
