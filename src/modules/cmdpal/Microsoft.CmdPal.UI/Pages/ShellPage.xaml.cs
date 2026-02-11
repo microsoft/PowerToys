@@ -148,7 +148,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         // TODO GH #526 This needs more better locking too
         _ = _queue.TryEnqueue(() =>
         {
-            // Check if we are navigating away from a loading page, if so, remove it from the backstack
+            // Check if we are navigating away from a loading page, if so, remove it from the back stack
             var isFwdNavFromLoading = RootFrame.CurrentSourcePageType == typeof(LoadingPage);
 
             // Also hide our details pane about here, if we had one
