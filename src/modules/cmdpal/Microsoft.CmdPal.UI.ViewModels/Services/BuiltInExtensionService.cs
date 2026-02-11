@@ -3,18 +3,18 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Diagnostics;
-using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CommandPalette.Extensions;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.Extensions.Logging;
 using Windows.Foundation;
 
-namespace Microsoft.CmdPal.UI.ViewModels.Models;
+namespace Microsoft.CmdPal.UI.ViewModels.Services;
 
 public partial class BuiltInExtensionService : IExtensionService, IDisposable
 {
-    public event TypedEventHandler<CommandProviderWrapper, IEnumerable<CommandProviderWrapper>>? OnCommandProviderAdded;
+    public event TypedEventHandler<IExtensionService, IEnumerable<CommandProviderWrapper>>? OnCommandProviderAdded;
 
-    public event TypedEventHandler<CommandProviderWrapper, IEnumerable<CommandProviderWrapper>>? OnCommandProviderRemoved;
+    public event TypedEventHandler<IExtensionService, IEnumerable<CommandProviderWrapper>>? OnCommandProviderRemoved;
 
     public event TypedEventHandler<CommandProviderWrapper, IEnumerable<TopLevelViewModel>>? OnCommandsAdded;
 
@@ -58,51 +58,13 @@ public partial class BuiltInExtensionService : IExtensionService, IDisposable
         _commandProviders = commandProviders;
     }
 
-    public async Task<IEnumerable<CommandProviderWrapper>> GetCommandProviderWrappersAsync(WeakReference<IPageContext> weakPageContext, bool includeDisabledExtensions = false)
+    public async Task SignalStartExtensionsAsync(WeakReference<IPageContext> weakPageContext)
     {
         _weakPageContext = weakPageContext;
 
         if (!isLoaded)
         {
             await LoadBuiltInsAsync();
-        }
-
-        if (includeDisabledExtensions)
-        {
-            await _getBuiltInCommandWrappersLock.WaitAsync();
-            try
-            {
-                return _builtInCommandWrappers;
-            }
-            finally
-            {
-                _getBuiltInCommandWrappersLock.Release();
-            }
-        }
-        else
-        {
-            await _getEnabledBuiltInCommandWrappersLock.WaitAsync();
-            try
-            {
-                return _enabledBuiltInCommandWrappers;
-            }
-            finally
-            {
-                _getEnabledBuiltInCommandWrappersLock.Release();
-            }
-        }
-    }
-
-    public async Task<IEnumerable<TopLevelViewModel>> GetTopLevelCommandsAsync()
-    {
-        await _getTopLevelCommandsLock.WaitAsync();
-        try
-        {
-            return _topLevelCommands;
-        }
-        finally
-        {
-            _getTopLevelCommandsLock.Release();
         }
     }
 
@@ -116,9 +78,12 @@ public partial class BuiltInExtensionService : IExtensionService, IDisposable
         await _getEnabledBuiltInCommandWrappersLock.WaitAsync();
         try
         {
-            if (_enabledBuiltInCommandWrappers.Any(wrapper => wrapper.Id.Equals(providerId, StringComparison.Ordinal)))
+            foreach (var wrapper in _enabledBuiltInCommandWrappers)
             {
-                return;
+                if (wrapper.Id.Equals(providerId, StringComparison.Ordinal))
+                {
+                    return;
+                }
             }
         }
         finally
@@ -129,7 +94,15 @@ public partial class BuiltInExtensionService : IExtensionService, IDisposable
         await _getBuiltInCommandWrappersLock.WaitAsync();
         try
         {
-            CommandProviderWrapper? wrapper = _builtInCommandWrappers.FirstOrDefault(wrapper => wrapper.Id.Equals(providerId, StringComparison.Ordinal));
+            CommandProviderWrapper? wrapper = null;
+
+            foreach (var builtInWrapper in _builtInCommandWrappers)
+            {
+                if (builtInWrapper.Id.Equals(providerId, StringComparison.Ordinal))
+                {
+                    wrapper = builtInWrapper;
+                }
+            }
 
             if (wrapper != null)
             {
@@ -171,7 +144,15 @@ public partial class BuiltInExtensionService : IExtensionService, IDisposable
         await _getEnabledBuiltInCommandWrappersLock.WaitAsync();
         try
         {
-            var wrapper = _enabledBuiltInCommandWrappers.FirstOrDefault(wrapper => wrapper.Id.Equals(providerId, StringComparison.Ordinal));
+            CommandProviderWrapper? wrapper = null;
+
+            foreach (var enabledWrapper in _enabledBuiltInCommandWrappers)
+            {
+                if (enabledWrapper.Id.Equals(providerId, StringComparison.Ordinal))
+                {
+                    wrapper = enabledWrapper;
+                }
+            }
 
             if (wrapper != null)
             {
@@ -180,7 +161,16 @@ public partial class BuiltInExtensionService : IExtensionService, IDisposable
                 await _getTopLevelCommandsLock.WaitAsync();
                 try
                 {
-                    var commands = _topLevelCommands.Where(command => command.CommandProviderId.Equals(wrapper.Id, StringComparison.Ordinal));
+                    List<TopLevelViewModel> commands = [];
+
+                    foreach (var topLevelCommand in _topLevelCommands)
+                    {
+                        if (topLevelCommand.CommandProviderId.Equals(wrapper.Id, StringComparison.Ordinal))
+                        {
+                            commands.Add(topLevelCommand);
+                        }
+                    }
+
                     foreach (var c in commands)
                     {
                         _topLevelCommands.Remove(c);
@@ -214,6 +204,8 @@ public partial class BuiltInExtensionService : IExtensionService, IDisposable
                 _builtInCommandWrappers.Add(wrapper);
             }
 
+            var providerSettings = _settingsService.CurrentSettings.GetProviderSettings(wrapper);
+
             lock (_getEnabledBuiltInCommandWrappersLock)
             {
                 _enabledBuiltInCommandWrappers.Add(wrapper);
@@ -227,6 +219,9 @@ public partial class BuiltInExtensionService : IExtensionService, IDisposable
                     _topLevelCommands.Add(c);
                 }
             }
+
+            OnCommandProviderAdded?.Invoke(this, new[] { wrapper });
+            OnCommandsAdded?.Invoke(wrapper, commands);
         }
 
         s.Stop();
@@ -269,8 +264,52 @@ public partial class BuiltInExtensionService : IExtensionService, IDisposable
         return commands;
     }
 
-    private void CommandProvider_CommandsChanged(CommandProviderWrapper commandProviderWrapper, IItemsChangedEventArgs args)
+    private void CommandProvider_CommandsChanged(CommandProviderWrapper sender, IItemsChangedEventArgs args) =>
+       _ = Task.Run(async () => await UpdateCommandsForProvider(sender, args));
+
+    /// <summary>
+    /// Called when a command provider raises its ItemsChanged event. We'll
+    /// remove the old commands from the top-level list and try to put the new
+    /// ones in the same place in the list.
+    /// </summary>
+    private async Task UpdateCommandsForProvider(CommandProviderWrapper sender, IItemsChangedEventArgs args)
     {
+        var topLevelItems = await LoadTopLevelCommandsFromProvider(sender);
+
+        List<TopLevelViewModel> newTopLevelItems = [.. topLevelItems];
+        foreach (var i in sender.FallbackItems)
+        {
+            if (i.IsEnabled)
+            {
+                newTopLevelItems.Add(i);
+            }
+        }
+
+        // Modify the TopLevelCommands under shared lock; event if we clone it, we don't want
+        // TopLevelCommands to get modified while we're working on it. Otherwise, we might
+        // out clone would be stale at the end of this method.
+        await _getTopLevelCommandsLock.WaitAsync();
+        try
+        {
+            // Work on a clone of the list, so that we can just do one atomic
+            // update to the actual observable list at the end
+            // TODO: just added a lock around all of this anyway, but keeping the clone
+            // while looking on some other ways to improve this; can be removed later
+            // .
+            // The clone will be everything except the commands
+            // from the provider that raised the event
+            List<TopLevelViewModel> clone = [.. _topLevelCommands];
+            clone.RemoveAll(item => item.CommandProviderId == sender.ProviderId);
+            clone.AddRange(newTopLevelItems);
+
+            ListHelpers.InPlaceUpdateList(_topLevelCommands, clone);
+        }
+        finally
+        {
+            _getTopLevelCommandsLock.Release();
+        }
+
+        return;
     }
 
     public void Dispose()

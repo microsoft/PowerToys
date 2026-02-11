@@ -72,31 +72,18 @@ public partial class TopLevelCommandManager : ObservableObject,
 
         foreach (var extensionService in _extensionServices)
         {
-            // extensionService.OnCommandProviderAdded -= ExtensionService_OnProviderAdded;
-            // extensionService.OnCommandProviderRemoved -= ExtensionService_OnProviderRemoved;
+            extensionService.OnCommandProviderAdded -= ExtensionService_OnProviderAdded;
+            extensionService.OnCommandProviderRemoved -= ExtensionService_OnProviderRemoved;
             extensionService.OnCommandsAdded -= ExtensionService_OnCommandsAdded;
             extensionService.OnCommandsRemoved -= ExtensionService_OnCommandsRemoved;
 
             _ = Task.Run(async () =>
             {
-                var providers = await extensionService.GetCommandProviderWrappersAsync(weakSelf);
-                lock (_commandProviderWrappers)
-                {
-                    _commandProviderWrappers.AddRange(providers);
-                }
-
-                var commands = await extensionService.GetTopLevelCommandsAsync();
-                lock (TopLevelCommands)
-                {
-                    foreach (var command in commands)
-                    {
-                        TopLevelCommands.Add(command);
-                    }
-                }
+                await extensionService.SignalStartExtensionsAsync(weakSelf);
             });
 
-            // extensionService.OnCommandProviderAdded += ExtensionService_OnProviderAdded;
-            // extensionService.OnCommandProviderRemoved += ExtensionService_OnProviderRemoved;
+            extensionService.OnCommandProviderAdded += ExtensionService_OnProviderAdded;
+            extensionService.OnCommandProviderRemoved += ExtensionService_OnProviderRemoved;
             extensionService.OnCommandsAdded += ExtensionService_OnCommandsAdded;
             extensionService.OnCommandsRemoved += ExtensionService_OnCommandsRemoved;
         }
@@ -105,6 +92,14 @@ public partial class TopLevelCommandManager : ObservableObject,
 
         // Send on the current thread; receivers should marshal to UI if needed
         WeakReferenceMessenger.Default.Send<ReloadFinishedMessage>();
+    }
+
+    private void ExtensionService_OnProviderRemoved(IExtensionService sender, IEnumerable<CommandProviderWrapper> args)
+    {
+    }
+
+    private void ExtensionService_OnProviderAdded(IExtensionService sender, IEnumerable<CommandProviderWrapper> args)
+    {
     }
 
     private void ExtensionService_OnCommandsAdded(CommandProviderWrapper commandProviderWrapper, IEnumerable<TopLevelViewModel> commands)
@@ -130,6 +125,23 @@ public partial class TopLevelCommandManager : ObservableObject,
 
     private void ExtensionService_OnCommandsRemoved(CommandProviderWrapper commandProviderWrapper, IEnumerable<TopLevelViewModel> commands)
     {
+        _ = Task.Run(async () =>
+        {
+            await Task.Factory.StartNew(
+             () =>
+             {
+                 lock (TopLevelCommands)
+                 {
+                     foreach (var command in commands)
+                     {
+                         TopLevelCommands.Remove(command);
+                     }
+                 }
+             },
+             CancellationToken.None,
+             TaskCreationOptions.None,
+             _taskScheduler);
+        });
     }
 
     public async Task ReloadAllCommandsAsync()

@@ -168,6 +168,7 @@ public partial class MainListPage : DynamicListPage,
             {
                 return _tlcManager.TopLevelCommands
                     .Where(tlc => !tlc.IsFallback && !string.IsNullOrEmpty(tlc.Title))
+                    .OrderByDescending(tlc => _appStateService.CurrentSettings.RecentCommands.GetCommandHistoryWeight(tlc.Id))
                     .ToArray();
             }
             else
