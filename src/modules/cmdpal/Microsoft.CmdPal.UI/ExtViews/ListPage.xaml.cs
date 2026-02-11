@@ -2,7 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Diagnostics;
 using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
 using Microsoft.CmdPal.Core.ViewModels;
@@ -46,13 +45,15 @@ public sealed partial class ListPage : Page,
     public static readonly DependencyProperty ViewModelProperty =
         DependencyProperty.Register(nameof(ViewModel), typeof(ListViewModel), typeof(ListPage), new PropertyMetadata(null, OnViewModelChanged));
 
-    private ListViewBase ItemView
+    public ShellViewModel ShellViewModel
     {
-        get
-        {
-            return ViewModel?.IsGridView == true ? ItemsGrid : ItemsList;
-        }
+        get => (ShellViewModel)GetValue(ShellViewModelProperty);
+        set => SetValue(ShellViewModelProperty, value);
     }
+
+    public static readonly DependencyProperty ShellViewModelProperty = DependencyProperty.Register(nameof(ShellViewModel), typeof(ShellViewModel), typeof(ListPage), new PropertyMetadata(null, OnShellViewModelChanged));
+
+    private ListViewBase ItemView => ViewModel?.IsGridView == true ? ItemsGrid : ItemsList;
 
     public ListPage()
     {
@@ -76,6 +77,8 @@ public sealed partial class ListPage : Page,
         }
 
         ViewModel = listViewModel;
+        ShellViewModel = navigationRequest.ShellViewModel;
+        PokeTemplateSelector();
 
         if (e.NavigationMode == NavigationMode.Back)
         {
@@ -526,6 +529,22 @@ public sealed partial class ListPage : Page,
         return (currentIndex, targetIndex);
     }
 
+    private static void OnShellViewModelChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        if (d is ListPage @this)
+        {
+            if (e.OldValue is ShellViewModel old)
+            {
+                old.PropertyChanged -= @this.ShellViewModel_PropertyChanged;
+            }
+
+            if (e.NewValue is ShellViewModel shellViewModel)
+            {
+                shellViewModel.PropertyChanged += @this.ShellViewModel_PropertyChanged;
+            }
+        }
+    }
+
     private static void OnViewModelChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
         if (d is ListPage @this)
@@ -623,9 +642,66 @@ public sealed partial class ListPage : Page,
     private void ViewModel_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
         var prop = e.PropertyName;
-        if (prop == nameof(ViewModel.FilteredItems))
+        if (prop == nameof(ViewModel.GridProperties))
         {
-            Debug.WriteLine($"ViewModel.FilteredItems {ItemView.SelectedItem}");
+            PokeTemplateSelector();
+        }
+    }
+
+    private void ShellViewModel_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        var prop = e.PropertyName;
+        if (prop == nameof(ShellViewModel.IsDetailsVisible))
+        {
+            PokeTemplateSelector();
+        }
+    }
+
+    private void PokeTemplateSelector()
+    {
+        if (Resources["ListItemTemplateSelector"] is not ListItemTemplateSelector selector)
+        {
+            return;
+        }
+
+        var newMode = ComputeListItemViewMode();
+        if (selector.ListItemViewMode == newMode)
+        {
+            return;
+        }
+
+        selector.ListItemViewMode = newMode;
+        ItemsList.ItemTemplateSelector = null;
+        ItemsList.ItemTemplateSelector = selector;
+        return;
+
+        ListItemViewMode ComputeListItemViewMode()
+        {
+            var useCompact =
+                ViewModel?.GridProperties is SinglelineListPropertiesViewModel p &&
+                IsCompactFeasible(p, ShellViewModel);
+
+            return useCompact ? ListItemViewMode.Singleline : ListItemViewMode.Multiline;
+        }
+
+        static bool IsCompactFeasible(SinglelineListPropertiesViewModel propertiesViewModel, ShellViewModel shellViewModel)
+        {
+            if (!shellViewModel.IsDetailsVisible)
+            {
+                return true;
+            }
+
+            if (!propertiesViewModel.IsAutomaticWrappingEnabled)
+            {
+                return true;
+            }
+
+            if (shellViewModel.Details is null)
+            {
+                return true;
+            }
+
+            return shellViewModel.Details.Size < propertiesViewModel.AutomaticWrappingBreakpoint;
         }
     }
 

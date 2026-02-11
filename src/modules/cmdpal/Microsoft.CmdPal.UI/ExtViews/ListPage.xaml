@@ -245,7 +245,8 @@
             x:DataType="coreViewModels:ListItemViewModel"
             ListItem="{StaticResource ListItemViewModelTemplate}"
             Section="{StaticResource ListSectionViewModelTemplate}"
-            Separator="{StaticResource ListSeparatorViewModelTemplate}" />
+            Separator="{StaticResource ListSeparatorViewModelTemplate}"
+            SingleRowListItem="{StaticResource ListItemSingleRowViewModelTemplate}" />
 
         <cmdpalUI:ListItemContainerStyleSelector
             x:Key="ListItemContainerStyleSelector"
@@ -320,6 +321,71 @@
                 <ItemsControl
                     Grid.RowSpan="2"
                     Grid.Column="2"
+                    Margin="0,0,8,0"
+                    VerticalAlignment="Center"
+                    IsHitTestVisible="False"
+                    IsTabStop="False"
+                    ItemTemplate="{StaticResource TagTemplate}"
+                    ItemsSource="{x:Bind Tags, Mode=OneWay}"
+                    Visibility="{x:Bind HasTags, Mode=OneWay}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Orientation="Horizontal" Spacing="4" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                </ItemsControl>
+            </Grid>
+        </DataTemplate>
+
+        <DataTemplate x:Key="ListItemSingleRowViewModelTemplate" x:DataType="coreViewModels:ListItemViewModel">
+            <Grid
+                Padding="0,12,0,12"
+                AutomationProperties.Name="{x:Bind Title, Mode=OneWay}"
+                ColumnSpacing="12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="28" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <cpcontrols:IconBox
+                    x:Name="IconBorder"
+                    Grid.Column="0"
+                    Width="20"
+                    Height="20"
+                    Margin="4,0,4,0"
+                    AutomationProperties.AccessibilityView="Raw"
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                    SourceKey="{x:Bind Icon, Mode=OneWay}"
+                    SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}" />
+
+                <TextBlock
+                    Grid.Column="1"
+                    VerticalAlignment="Center"
+                    CharacterSpacing="12"
+                    FontSize="14"
+                    MaxLines="1"
+                    Style="{StaticResource CaptionTextBlockStyle}"
+                    Text="{x:Bind Title, Mode=OneWay}"
+                    TextTrimming="CharacterEllipsis"
+                    TextWrapping="NoWrap" />
+
+                <TextBlock
+                    Grid.Column="2"
+                    VerticalAlignment="Center"
+                    CharacterSpacing="12"
+                    FontSize="14"
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                    MaxLines="1"
+                    Style="{StaticResource CaptionTextBlockStyle}"
+                    Text="{x:Bind Subtitle, Mode=OneWay}"
+                    TextTrimming="CharacterEllipsis"
+                    TextWrapping="NoWrap"
+                    Visibility="{x:Bind ShowSubtitle, Mode=OneWay}" />
+
+                <ItemsControl
+                    Grid.Column="3"
                     Margin="0,0,8,0"
                     VerticalAlignment="Center"
                     IsHitTestVisible="False"
