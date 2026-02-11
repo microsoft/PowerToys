@@ -105,7 +105,6 @@
     <PackageVersion Include="StyleCop.Analyzers" Version="1.2.0-beta.556" />
     <!-- Package System.CodeDom added as a hack for being able to exclude the runtime assets so they don't conflict with 8.0.1. This is a dependency of System.Management but the 8.0.1 version wasn't published to nuget. -->
     <PackageVersion Include="System.CodeDom" Version="10.0.2" />
-    <PackageVersion Include="System.Collections.Immutable" Version="10.0.2" />
     <PackageVersion Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
     <PackageVersion Include="System.ComponentModel.Composition" Version="10.0.2" />
     <PackageVersion Include="System.Configuration.ConfigurationManager" Version="10.0.2" />
