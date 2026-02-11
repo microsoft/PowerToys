@@ -28,7 +28,6 @@
 #include <common/utils/logger_helper.h>
 #include <common/utils/winapi_error.h>
 #include <common/utils/gpo.h>
-#include <common/utils/async_task.h>
 #include <array>
 #include <vector>
 #endif // __ZOOMIT_POWERTOYS__
