@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8" ?>
 <Page
     x:Class="Microsoft.CmdPal.UI.Settings.ExtensionPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -7,6 +7,7 @@
     xmlns:controls="using:CommunityToolkit.WinUI.Controls"
     xmlns:converters="using:CommunityToolkit.WinUI.Converters"
     xmlns:cpcontrols="using:Microsoft.CmdPal.UI.Controls"
+    xmlns:ptcontrols="using:Microsoft.PowerToys.Common.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:helpers="using:Microsoft.CmdPal.UI.Helpers"
     xmlns:local="using:Microsoft.CmdPal.UI.Settings"
@@ -174,7 +175,7 @@
 
                                                 <controls:SettingsExpander.Items>
                                                     <controls:SettingsCard ContentAlignment="Left">
-                                                        <cpcontrols:CheckBoxWithDescriptionControl
+                                                        <ptcontrols:CheckBoxWithDescriptionControl
                                                             x:Uid="Settings_FallbacksPage_GlobalResults_SettingsCard"
                                                             IsChecked="{x:Bind IncludeInGlobalResults, Mode=TwoWay}"
                                                             IsEnabled="{x:Bind IsEnabled, Mode=OneWay}" />

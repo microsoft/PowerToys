@@ -96,8 +96,7 @@ public sealed partial class ShortcutControl : UserControl, IDisposable, IRecipie
             {
                 hotkeySettings = value;
                 SetValue(HotkeySettingsProperty, value);
-                PreviewKeysControl.ItemsSource = HotkeySettings?.GetKeysList() ?? new List<object>();
-                AutomationProperties.SetHelpText(EditButton, HotkeySettings?.ToString() ?? string.Empty);
+                SetKeys();
                 c.Keys = HotkeySettings?.GetKeysList() ?? new List<object>();
             }
         }
@@ -402,6 +401,17 @@ public sealed partial class ShortcutControl : UserControl, IDisposable, IRecipie
         _isActive = true;
     }
 
+    private void C_ResetClick(object sender, RoutedEventArgs e)
+    {
+        hotkeySettings = null;
+
+        SetValue(HotkeySettingsProperty, hotkeySettings);
+        SetKeys();
+
+        lastValidSettings = hotkeySettings;
+        shortcutDialog.Hide();
+    }
+
     private async void OpenDialogButton_Click(object sender, RoutedEventArgs e)
     {
         // c.Keys = null;
@@ -421,11 +431,9 @@ public sealed partial class ShortcutControl : UserControl, IDisposable, IRecipie
         hotkeySettings = null;
 
         SetValue(HotkeySettingsProperty, hotkeySettings);
-        PreviewKeysControl.ItemsSource = HotkeySettings?.GetKeysList() ?? new List<object>();
+        SetKeys();
 
         lastValidSettings = hotkeySettings;
-
-        AutomationProperties.SetHelpText(EditButton, HotkeySettings?.ToString() ?? string.Empty);
         shortcutDialog.Hide();
     }
 
@@ -436,8 +444,7 @@ public sealed partial class ShortcutControl : UserControl, IDisposable, IRecipie
             HotkeySettings = lastValidSettings with { };
         }
 
-        PreviewKeysControl.ItemsSource = hotkeySettings?.GetKeysList() ?? new List<object>();
-        AutomationProperties.SetHelpText(EditButton, HotkeySettings?.ToString() ?? string.Empty);
+        SetKeys();
         shortcutDialog.Hide();
     }
 
@@ -450,9 +457,7 @@ public sealed partial class ShortcutControl : UserControl, IDisposable, IRecipie
 
         var empty = new HotkeySettings();
         HotkeySettings = empty;
-
-        PreviewKeysControl.ItemsSource = HotkeySettings.GetKeysList();
-        AutomationProperties.SetHelpText(EditButton, HotkeySettings.ToString());
+        SetKeys();
         shortcutDialog.Hide();
     }
 
@@ -507,5 +512,22 @@ public sealed partial class ShortcutControl : UserControl, IDisposable, IRecipie
         // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
         Dispose(disposing: true);
         GC.SuppressFinalize(this);
+    }
+
+    private void SetKeys()
+    {
+        var keys = HotkeySettings?.GetKeysList();
+
+        if (keys != null && keys.Count > 0)
+        {
+            VisualStateManager.GoToState(this, "Configured", true);
+            PreviewKeysControl.ItemsSource = keys;
+            AutomationProperties.SetHelpText(EditButton, HotkeySettings.ToString());
+        }
+        else
+        {
+            VisualStateManager.GoToState(this, "Normal", true);
+            AutomationProperties.SetHelpText(EditButton, resourceLoader.GetString("ConfigureShortcut"));
+        }
     }
 }
