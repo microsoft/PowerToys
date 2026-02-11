@@ -1,8 +1,9 @@
-﻿<local:NavigablePage
+<local:NavigablePage
     x:Class="Microsoft.PowerToys.Settings.UI.Views.GeneralPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:ptcontrols="using:Microsoft.PowerToys.Common.UI.Controls"
     xmlns:converters="using:Microsoft.PowerToys.Settings.UI.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:Microsoft.PowerToys.Settings.UI.Helpers"
@@ -74,10 +75,10 @@
                                 ContentAlignment="Left"
                                 IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsAutoDownloadUpdatesCardEnabled}"
                                 Visibility="{x:Bind ViewModel.IsAdmin, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}">
-                                <controls:CheckBoxWithDescriptionControl x:Uid="GeneralPage_AutoDownloadAndInstallUpdates" IsChecked="{Binding Mode=TwoWay, Path=AutoDownloadUpdates}" />
+                                <ptcontrols:CheckBoxWithDescriptionControl x:Uid="GeneralPage_AutoDownloadAndInstallUpdates" IsChecked="{Binding Mode=TwoWay, Path=AutoDownloadUpdates}" />
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard ContentAlignment="Left" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsShowNewUpdatesToastNotificationCardEnabled}">
-                                <controls:CheckBoxWithDescriptionControl x:Uid="GeneralPage_ShowNewUpdatesToast" IsChecked="{Binding Mode=TwoWay, Path=ShowNewUpdatesToastNotification}" />
+                                <ptcontrols:CheckBoxWithDescriptionControl x:Uid="GeneralPage_ShowNewUpdatesToast" IsChecked="{Binding Mode=TwoWay, Path=ShowNewUpdatesToastNotification}" />
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard ContentAlignment="Left" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsShowWhatsNewAfterUpdatesCardEnabled}">
                                 <CheckBox x:Uid="GeneralPage_ShowWhatsNewAfterUpdates" IsChecked="{Binding Mode=TwoWay, Path=ShowWhatsNewAfterUpdates}" />
@@ -223,7 +224,7 @@
                             IsEnabled="{Binding IsAdminButtonEnabled}" />
                         <tkcontrols:SettingsExpander.Items>
                             <tkcontrols:SettingsCard ContentAlignment="Left" IsEnabled="{x:Bind ViewModel.IsElevated, Mode=OneWay}">
-                                <controls:CheckBoxWithDescriptionControl x:Uid="GeneralSettings_AlwaysRunAsAdminText" IsChecked="{x:Bind ViewModel.RunElevated, Mode=TwoWay}" />
+                                <ptcontrols:CheckBoxWithDescriptionControl x:Uid="GeneralSettings_AlwaysRunAsAdminText" IsChecked="{x:Bind ViewModel.RunElevated, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard ContentAlignment="Left">
                                 <CheckBox x:Uid="GeneralPage_WarningsElevatedApps" IsChecked="{Binding Mode=TwoWay, Path=EnableWarningsElevatedApps}" />

@@ -3,6 +3,7 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:ptcontrols="using:Microsoft.PowerToys.Common.UI.Controls"
     xmlns:tk="using:CommunityToolkit.WinUI"
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls">
 
@@ -32,7 +33,7 @@
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
                                     <StackPanel Orientation="Vertical">
-                                        <local:KeyVisual
+                                        <ptcontrols:KeyVisual
                                             tk:FrameworkElementExtensions.AncestorType="local:ShortcutWithTextLabelControl"
                                             AutomationProperties.AccessibilityView="Raw"
                                             Content="{Binding}"

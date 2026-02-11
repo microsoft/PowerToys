@@ -33,7 +33,6 @@
 		<None Remove="Assets\Settings\Modules\LightSwitch.png" />
 		<None Remove="SettingsXAML\Controls\Dashboard\CheckUpdateControl.xaml" />
 		<None Remove="SettingsXAML\Controls\Dashboard\ShortcutConflictControl.xaml" />
-		<None Remove="SettingsXAML\Controls\KeyVisual\KeyCharPresenter.xaml" />
 		<None Remove="SettingsXAML\Controls\TitleBar\TitleBar.xaml" />
 	</ItemGroup>
 	<ItemGroup>
@@ -116,6 +115,7 @@
 		<ProjectReference Include="..\..\common\Common.Search\Common.Search.csproj" />
 		<ProjectReference Include="..\..\common\Common.UI\Common.UI.csproj" />
 		<ProjectReference Include="..\..\common\AllExperiments\AllExperiments.csproj" />
+		<ProjectReference Include="..\..\common\Common.UI.Controls\Common.UI.Controls.csproj" />
 		<ProjectReference Include="..\..\common\GPOWrapper\GPOWrapper.vcxproj" />
 		<ProjectReference Include="..\..\common\interop\PowerToys.Interop.vcxproj" />
 		<ProjectReference Include="..\..\modules\ZoomIt\ZoomItSettingsInterop\ZoomItSettingsInterop.vcxproj" />
@@ -181,9 +181,6 @@
 		  <Generator>MSBuild:Compile</Generator>
 		</Page>
 		<Page Update="SettingsXAML\Controls\TitleBar\TitleBar.xaml">
-			<Generator>MSBuild:Compile</Generator>
-		</Page>
-		<Page Update="SettingsXAML\Controls\KeyVisual\KeyCharPresenter.xaml">
 			<Generator>MSBuild:Compile</Generator>
 		</Page>
 		<Page Update="SettingsXAML\Controls\GPOInfoControl.xaml">

@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.PowerToys.Settings.UI.Controls;
+using Microsoft.PowerToys.Common.UI.Controls;
 using Microsoft.UI.Xaml.Data;
 
 namespace Microsoft.PowerToys.Settings.UI.Converters

@@ -1,9 +1,10 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8" ?>
 <local:NavigablePage
     x:Class="Microsoft.PowerToys.Settings.UI.Views.LightSwitchPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:ptcontrols="using:Microsoft.PowerToys.Common.UI.Controls"
     xmlns:converters="using:Microsoft.PowerToys.Settings.UI.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:Microsoft.PowerToys.Settings.UI.Helpers"
@@ -91,7 +92,7 @@
                                     x:Uid="LightSwitch_LocationSettingsCard"
                                     Visibility="Collapsed">
                                     <StackPanel Orientation="Horizontal" Spacing="8">
-                                        <controls:IsEnabledTextBlock
+                                        <ptcontrols:IsEnabledTextBlock
                                             VerticalAlignment="Center"
                                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                             Text="{x:Bind ViewModel.SyncButtonInformation, Mode=OneWay}" />
@@ -109,7 +110,7 @@
                                     <StackPanel Orientation="Horizontal" Spacing="20">
                                         <StackPanel Orientation="Horizontal" Spacing="8">
                                             <!--<FontIcon Glyph="&#xED39;" FontSize="16" />-->
-                                            <controls:IsEnabledTextBlock x:Uid="LightSwitch_SunriseText" VerticalAlignment="Center" />
+                                            <ptcontrols:IsEnabledTextBlock x:Uid="LightSwitch_SunriseText" VerticalAlignment="Center" />
                                             <NumberBox
                                                 AutomationProperties.AutomationId="SunriseOffset_LightSwitch"
                                                 Maximum="{x:Bind ViewModel.SunriseOffsetMax, Mode=OneWay}"
@@ -118,7 +119,7 @@
                                                 Value="{x:Bind ViewModel.SunriseOffset, Mode=TwoWay}" />
                                         </StackPanel>
                                         <StackPanel Orientation="Horizontal" Spacing="8">
-                                            <controls:IsEnabledTextBlock x:Uid="LightSwitch_SunsetText" VerticalAlignment="Center" />
+                                            <ptcontrols:IsEnabledTextBlock x:Uid="LightSwitch_SunsetText" VerticalAlignment="Center" />
                                             <NumberBox
                                                 AutomationProperties.AutomationId="SunsetOffset_LightSwitch"
                                                 Maximum="{x:Bind ViewModel.SunsetOffsetMax, Mode=OneWay}"
@@ -200,13 +201,13 @@
                             IsExpanded="True">
                             <tkcontrols:SettingsExpander.Items>
                                 <tkcontrols:SettingsCard HorizontalContentAlignment="Stretch" ContentAlignment="Left">
-                                    <controls:CheckBoxWithDescriptionControl
+                                    <ptcontrols:CheckBoxWithDescriptionControl
                                         x:Uid="LightSwitch_SystemCheckbox"
                                         AutomationProperties.AutomationId="ChangeSystemCheckbox_LightSwitch"
                                         IsChecked="{x:Bind ViewModel.ChangeSystem, Mode=TwoWay}" />
                                 </tkcontrols:SettingsCard>
                                 <tkcontrols:SettingsCard HorizontalContentAlignment="Stretch" ContentAlignment="Left">
-                                    <controls:CheckBoxWithDescriptionControl
+                                    <ptcontrols:CheckBoxWithDescriptionControl
                                         x:Uid="LightSwitch_AppsCheckbox"
                                         AutomationProperties.AutomationId="ChangeAppsCheckbox_LightSwitch"
                                         IsChecked="{x:Bind ViewModel.ChangeApps, Mode=TwoWay}" />
