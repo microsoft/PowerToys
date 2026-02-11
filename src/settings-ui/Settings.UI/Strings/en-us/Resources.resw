@@ -348,7 +348,7 @@
     <value>Move mouse relatively</value>
   </data>
   <data name="MouseWithoutBorders_BlockMouseAtScreenCorners.Content" xml:space="preserve">
-    <value>Block mouse at screen corners to avoid acc</value>
+    <value>Block mouse at screen corners to avoid accident machine-switch at screen corners</value>
   </data>
   <data name="MouseWithoutBorders_ShowClipboardAndNetworkStatusMessages.Header" xml:space="preserve">
     <value>Show clipboard and network status messages</value>
