@@ -343,6 +343,7 @@ namespace RunnerV2
                     }
 
                     TrayIconManager.UpdateTrayIcon();
+                    TrayIconManager.RegenerateRightClickMenu();
 
                     if (SettingsUtils.Default.GetSettings<GeneralSettings>().ShowSysTrayIcon)
                     {

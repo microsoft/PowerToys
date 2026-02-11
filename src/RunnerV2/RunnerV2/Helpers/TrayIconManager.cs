@@ -92,6 +92,7 @@ namespace RunnerV2.Helpers
             Documentation,
             ReportBug,
             Close,
+            QuickAccess,
         }
 
         private static bool _doubleClickTimerRunning;
@@ -101,17 +102,31 @@ namespace RunnerV2.Helpers
 
         static TrayIconManager()
         {
+            RegenerateRightClickMenu();
+            new ThemeListener().ThemeChanged += (_) =>
+            {
+                PostMessageW(Runner.RunnerHwnd, 0x0800, IntPtr.Zero, 0x9000);
+            };
+        }
+
+        public static void RegenerateRightClickMenu()
+        {
             _trayIconMenu = CreatePopupMenu();
-            AppendMenuW(_trayIconMenu, 0u, new UIntPtr((uint)TrayButton.Settings), "Settings\tDouble-click");
+            if (SettingsUtils.Default.GetSettings<GeneralSettings>().EnableQuickAccess)
+            {
+                AppendMenuW(_trayIconMenu, 0u, new UIntPtr((uint)TrayButton.QuickAccess), "Quick access\tLeft-click");
+                AppendMenuW(_trayIconMenu, 0u, new UIntPtr((uint)TrayButton.Settings), "Settings\tDouble-click");
+            }
+            else
+            {
+                AppendMenuW(_trayIconMenu, 0u, new UIntPtr((uint)TrayButton.Settings), "Settings\tLeft-click");
+            }
+
             AppendMenuW(_trayIconMenu, 0x00000800u, UIntPtr.Zero, string.Empty); // separator
             AppendMenuW(_trayIconMenu, 0u, new UIntPtr((uint)TrayButton.Documentation), "Documentation");
             AppendMenuW(_trayIconMenu, 0u, new UIntPtr((uint)TrayButton.ReportBug), "Report a Bug");
             AppendMenuW(_trayIconMenu, 0x00000800u, UIntPtr.Zero, string.Empty); // separator
             AppendMenuW(_trayIconMenu, 0u, new UIntPtr((uint)TrayButton.Close), "Close");
-            new ThemeListener().ThemeChanged += (_) =>
-            {
-                PostMessageW(Runner.RunnerHwnd, 0x0800, IntPtr.Zero, 0x9000);
-            };
         }
 
         internal static void ProcessTrayIconMessage(long lParam)
@@ -154,6 +169,7 @@ namespace RunnerV2.Helpers
                     break;
                 case 0x9000: // Update tray icon
                     UpdateTrayIcon();
+                    RegenerateRightClickMenu();
                     break;
             }
         }
@@ -166,6 +182,9 @@ namespace RunnerV2.Helpers
             {
                 case TrayButton.Settings:
                     SettingsHelper.OpenSettingsWindow();
+                    break;
+                case TrayButton.QuickAccess:
+                    QuickAccessHelper.Show();
                     break;
                 case TrayButton.Documentation:
                     Process.Start(new ProcessStartInfo
