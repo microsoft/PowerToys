@@ -2188,8 +2188,6 @@ INT_PTR CALLBACK AdvancedBreakProc( HWND hDlg, UINT message, WPARAM wParam, LPAR
             g_ShowExpiredTime ? BST_CHECKED : BST_UNCHECKED );
         CheckDlgButton( hDlg, IDC_CHECK_BACKGROUND_STRETCH,
             g_BreakBackgroundStretch ? BST_CHECKED : BST_UNCHECKED );
-        CheckDlgButton( hDlg, IDC_CHECK_LOCK_WORKSTATION,
-            g_BreakLockWorkstation ? BST_CHECKED : BST_UNCHECKED );
 #if 0
         CheckDlgButton( hDlg, IDC_CHECK_SECONDARYDISPLAY,
             g_BreakOnSecondary ? BST_CHECKED : BST_UNCHECKED );
@@ -2436,7 +2434,6 @@ INT_PTR CALLBACK AdvancedBreakProc( HWND hDlg, UINT message, WPARAM wParam, LPAR
             g_BreakPlaySoundFile = IsDlgButtonChecked( hDlg, IDC_CHECK_SOUND_FILE ) == BST_CHECKED;
             g_BreakShowBackgroundFile = IsDlgButtonChecked( hDlg, IDC_CHECK_BACKGROUND_FILE ) == BST_CHECKED;
             g_BreakBackgroundStretch = IsDlgButtonChecked( hDlg, IDC_CHECK_BACKGROUND_STRETCH ) == BST_CHECKED;
-            g_BreakLockWorkstation = IsDlgButtonChecked( hDlg, IDC_CHECK_LOCK_WORKSTATION ) == BST_CHECKED;
 #if 0
             g_BreakOnSecondary = IsDlgButtonChecked( hDlg, IDC_CHECK_SECONDARYDISPLAY ) == BST_CHECKED;
 #endif
@@ -4424,6 +4421,8 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
                             MAKELPARAM (99, 1));
         CheckDlgButton( g_OptionsTabs[BREAK_PAGE].hPage, IDC_CHECK_SHOW_EXPIRED,
             g_ShowExpiredTime ? BST_CHECKED : BST_UNCHECKED );
+        CheckDlgButton( g_OptionsTabs[BREAK_PAGE].hPage, IDC_CHECK_LOCK_WORKSTATION,
+            g_BreakLockWorkstation ? BST_CHECKED : BST_UNCHECKED );
 
         CheckDlgButton( g_OptionsTabs[RECORD_PAGE].hPage, IDC_CAPTURE_SYSTEM_AUDIO,
             g_CaptureSystemAudio ? BST_CHECKED: BST_UNCHECKED );
@@ -4851,6 +4850,7 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
             g_DemoTypeSpeedSlider = static_cast<int>(SendMessage( GetDlgItem( g_OptionsTabs[DEMOTYPE_PAGE].hPage, IDC_DEMOTYPE_SPEED_SLIDER ), TBM_GETPOS, 0, 0 ));
 
             g_ShowExpiredTime = IsDlgButtonChecked(  g_OptionsTabs[BREAK_PAGE].hPage, IDC_CHECK_SHOW_EXPIRED ) == BST_CHECKED;
+            g_BreakLockWorkstation = IsDlgButtonChecked( g_OptionsTabs[BREAK_PAGE].hPage, IDC_CHECK_LOCK_WORKSTATION ) == BST_CHECKED;
             g_CaptureSystemAudio = IsDlgButtonChecked(g_OptionsTabs[RECORD_PAGE].hPage, IDC_CAPTURE_SYSTEM_AUDIO) == BST_CHECKED;
             g_CaptureAudio = IsDlgButtonChecked(g_OptionsTabs[RECORD_PAGE].hPage, IDC_CAPTURE_AUDIO) == BST_CHECKED;
             GetDlgItemText( g_OptionsTabs[BREAK_PAGE].hPage, IDC_TIMER, text, 3 );
