@@ -406,8 +406,9 @@ namespace KeyboardEventHandlers
 
                     if (isRunProgram)
                     {
-                        auto threadFunction = [it]() {
-                            CreateOrShowProcessForShortcut(std::get<Shortcut>(it->second.targetShortcut));
+                        auto targetShortcut = std::get<Shortcut>(it->second.targetShortcut);
+                        auto threadFunction = [targetShortcut]() {
+                            CreateOrShowProcessForShortcut(targetShortcut);
                         };
 
                         std::thread myThread(threadFunction);

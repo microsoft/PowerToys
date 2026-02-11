@@ -174,6 +174,41 @@ namespace KeyboardManagerEditorUI.Controls
                 {
                     CleanupKeyboardHook();
                     UncheckAllToggleButtons();
+
+                    // Hide MouseClick action option - can't map mouse to mouse
+                    SetMouseClickActionVisibility(false);
+                }
+                else
+                {
+                    // Show MouseClick action option for keyboard triggers
+                    SetMouseClickActionVisibility(true);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Shows or hides the MouseClick action option in the ActionTypeComboBox.
+        /// </summary>
+        private void SetMouseClickActionVisibility(bool visible)
+        {
+            if (ActionTypeComboBox == null)
+            {
+                return;
+            }
+
+            foreach (var comboItem in ActionTypeComboBox.Items)
+            {
+                if (comboItem is ComboBoxItem cbi && cbi.Tag?.ToString() == "MouseClick")
+                {
+                    cbi.Visibility = visible ? Visibility.Visible : Visibility.Collapsed;
+
+                    // If currently selected and hiding, switch to KeyOrShortcut
+                    if (!visible && ActionTypeComboBox.SelectedItem == (object)cbi)
+                    {
+                        ActionTypeComboBox.SelectedIndex = 0;
+                    }
+
+                    break;
                 }
             }
         }
@@ -429,20 +464,50 @@ namespace KeyboardManagerEditorUI.Controls
         public List<string> GetActionKeys() => _actionKeys.ToList();
 
         /// <summary>
+        /// Gets the selected mouse trigger button code.
+        /// </summary>
+        public int? GetMouseTriggerButtonCode()
+        {
+            if (MouseTriggerComboBox?.SelectedItem is ComboBoxItem item &&
+                int.TryParse(item.Tag?.ToString(), out int buttonCode))
+            {
+                return buttonCode;
+            }
+
+            return null;
+        }
+
+        /// <summary>
         /// Gets the selected mouse trigger.
         /// </summary>
+        [System.Obsolete("Use GetMouseTriggerButtonCode() instead for direct interop")]
         public MouseButton? GetMouseTrigger()
         {
-            if (MouseTriggerComboBox?.SelectedItem is ComboBoxItem item)
+            if (MouseTriggerComboBox?.SelectedItem is ComboBoxItem item &&
+                int.TryParse(item.Tag?.ToString(), out int buttonCode))
             {
-                return item.Tag?.ToString() switch
+                return buttonCode switch
                 {
-                    "LeftMouse" => MouseButton.LeftMouse,
-                    "RightMouse" => MouseButton.RightMouse,
-                    "ScrollUp" => MouseButton.ScrollUp,
-                    "ScrollDown" => MouseButton.ScrollDown,
+                    0 => MouseButton.LeftMouse,
+                    1 => MouseButton.RightMouse,
+                    5 => MouseButton.ScrollUp,
+                    6 => MouseButton.ScrollDown,
                     _ => null,
                 };
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Gets the selected mouse action button code (for MouseClick action type).
+        /// </summary>
+        public int? GetMouseActionButtonCode()
+        {
+            if (MouseActionComboBox?.SelectedItem is ComboBoxItem item &&
+                int.TryParse(item.Tag?.ToString(), out int buttonCode))
+            {
+                return buttonCode;
             }
 
             return null;

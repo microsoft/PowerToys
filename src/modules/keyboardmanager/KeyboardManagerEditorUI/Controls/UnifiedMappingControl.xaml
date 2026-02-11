@@ -117,12 +117,15 @@
                         x:Name="MouseTriggerComboBox"
                         MinHeight="86"
                         HorizontalAlignment="Stretch"
-                        VerticalContentAlignment="Center">
-                        <ComboBoxItem Content="Left" Tag="LeftMouse" />
-                        <ComboBoxItem Content="Center" Tag="RightMouse" />
-                        <ComboBoxItem Content="Right" Tag="RightMouse" />
-                        <ComboBoxItem Content="Button 1" Tag="ScrollUp" />
-                        <ComboBoxItem Content="Button 2" Tag="ScrollDown" />
+                        VerticalContentAlignment="Center"
+                        SelectedIndex="0">
+                        <ComboBoxItem Content="Left Click" Tag="0" />
+                        <ComboBoxItem Content="Right Click" Tag="1" />
+                        <ComboBoxItem Content="Middle Click" Tag="2" />
+                        <ComboBoxItem Content="X1 (Back)" Tag="3" />
+                        <ComboBoxItem Content="X2 (Forward)" Tag="4" />
+                        <ComboBoxItem Content="Scroll Up" Tag="5" />
+                        <ComboBoxItem Content="Scroll Down" Tag="6" />
                     </ComboBox>
                 </tkcontrols:Case>
             </tkcontrols:SwitchPresenter>
@@ -381,12 +384,28 @@
                     </StackPanel>
                 </tkcontrols:Case>
 
-                <!--  Mouse Click Action (Placeholder)  -->
+                <!--  Mouse Click Action  -->
                 <tkcontrols:Case Value="MouseClick">
-                    <TextBlock
-                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                        Text="Mouse click action - coming soon"
-                        TextWrapping="Wrap" />
+                    <StackPanel Orientation="Vertical" Spacing="12">
+                        <TextBlock
+                            x:Uid="UnifiedMappingControlMouseActionHeader"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            Text="Select target mouse button" />
+                        <ComboBox
+                            x:Name="MouseActionComboBox"
+                            MinHeight="48"
+                            HorizontalAlignment="Stretch"
+                            VerticalContentAlignment="Center"
+                            SelectedIndex="0">
+                            <ComboBoxItem Content="Left Click" Tag="0" />
+                            <ComboBoxItem Content="Right Click" Tag="1" />
+                            <ComboBoxItem Content="Middle Click" Tag="2" />
+                            <ComboBoxItem Content="X1 (Back)" Tag="3" />
+                            <ComboBoxItem Content="X2 (Forward)" Tag="4" />
+                            <ComboBoxItem Content="Scroll Up" Tag="5" />
+                            <ComboBoxItem Content="Scroll Down" Tag="6" />
+                        </ComboBox>
+                    </StackPanel>
                 </tkcontrols:Case>
             </tkcontrols:SwitchPresenter>
         </StackPanel>

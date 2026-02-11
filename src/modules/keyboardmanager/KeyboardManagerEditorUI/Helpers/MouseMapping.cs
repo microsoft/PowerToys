@@ -13,7 +13,12 @@ namespace KeyboardManagerEditorUI.Helpers
     public partial class MouseMapping : INotifyPropertyChanged
     {
         /// <summary>
-        /// The original mouse button (Left, Right, Middle, X1, X2).
+        /// The original mouse button code (0-6 matching MouseButtonCode enum).
+        /// </summary>
+        public int OriginalButtonCode { get; set; }
+
+        /// <summary>
+        /// The original mouse button display name (Left, Right, Middle, X1, X2, etc.).
         /// </summary>
         public string OriginalButton { get; set; } = string.Empty;
 

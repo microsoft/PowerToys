@@ -932,6 +932,7 @@ bool MappingConfiguration::SaveSettingsToFile()
 
             if (targetShortcut.operationType == Shortcut::OperationType::RunProgram)
             {
+                keys.SetNamedValue(KeyboardManagerConstants::NewRemapKeysSettingName, json::value(targetShortcut.ToHstringVK()));
                 keys.SetNamedValue(KeyboardManagerConstants::RunProgramElevationLevelSettingName, json::value(static_cast<unsigned int>(targetShortcut.elevationLevel)));
 
                 keys.SetNamedValue(KeyboardManagerConstants::ShortcutOperationType, json::value(static_cast<unsigned int>(targetShortcut.operationType)));
@@ -947,6 +948,7 @@ bool MappingConfiguration::SaveSettingsToFile()
             }
             else if (targetShortcut.operationType == Shortcut::OperationType::OpenURI)
             {
+                keys.SetNamedValue(KeyboardManagerConstants::NewRemapKeysSettingName, json::value(targetShortcut.ToHstringVK()));
                 keys.SetNamedValue(KeyboardManagerConstants::RunProgramElevationLevelSettingName, json::value(static_cast<unsigned int>(targetShortcut.elevationLevel)));
                 keys.SetNamedValue(KeyboardManagerConstants::ShortcutOperationType, json::value(static_cast<unsigned int>(targetShortcut.operationType)));
 
@@ -997,6 +999,7 @@ bool MappingConfiguration::SaveSettingsToFile()
 
                 if (targetShortcut.operationType == Shortcut::OperationType::RunProgram)
                 {
+                    keys.SetNamedValue(KeyboardManagerConstants::NewRemapKeysSettingName, json::value(targetShortcut.ToHstringVK()));
                     keys.SetNamedValue(KeyboardManagerConstants::RunProgramElevationLevelSettingName, json::value(static_cast<unsigned int>(targetShortcut.elevationLevel)));
 
                     keys.SetNamedValue(KeyboardManagerConstants::ShortcutOperationType, json::value(static_cast<unsigned int>(targetShortcut.operationType)));
@@ -1012,6 +1015,7 @@ bool MappingConfiguration::SaveSettingsToFile()
                 }
                 else if (targetShortcut.operationType == Shortcut::OperationType::OpenURI)
                 {
+                    keys.SetNamedValue(KeyboardManagerConstants::NewRemapKeysSettingName, json::value(targetShortcut.ToHstringVK()));
                     keys.SetNamedValue(KeyboardManagerConstants::RunProgramElevationLevelSettingName, json::value(static_cast<unsigned int>(targetShortcut.elevationLevel)));
                     keys.SetNamedValue(KeyboardManagerConstants::ShortcutOperationType, json::value(static_cast<unsigned int>(targetShortcut.operationType)));
 

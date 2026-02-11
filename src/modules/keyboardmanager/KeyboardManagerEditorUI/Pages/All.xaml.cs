@@ -249,6 +249,41 @@ namespace KeyboardManagerEditorUI.Pages
             {
                 bool saved = false;
                 var actionType = UnifiedMappingControl.CurrentActionType;
+                var triggerType = UnifiedMappingControl.CurrentTriggerType;
+
+                // Handle mouse trigger type
+                if (triggerType == UnifiedMappingControl.TriggerType.Mouse)
+                {
+                    int? mouseButtonCode = UnifiedMappingControl.GetMouseTriggerButtonCode();
+                    if (mouseButtonCode == null)
+                    {
+                        UnifiedMappingControl.ShowValidationError("Missing Mouse Button", "Please select a mouse button to remap.");
+                        args.Cancel = true;
+                        return;
+                    }
+
+                    // If in edit mode, delete the existing mapping first
+                    if (_isEditMode && _editingItem != null)
+                    {
+                        DeleteExistingMapping();
+                    }
+
+                    saved = SaveMouseButtonMapping(mouseButtonCode.Value, actionType);
+
+                    if (saved)
+                    {
+                        LoadAllMappings();
+                    }
+                    else
+                    {
+                        UnifiedMappingControl.ShowValidationError("Save Failed", "Failed to save the mouse remapping. Please try again.");
+                        args.Cancel = true;
+                    }
+
+                    return;
+                }
+
+                // Keyboard trigger type - existing logic
                 List<string> triggerKeys = UnifiedMappingControl.GetTriggerKeys();
 
                 // Validate trigger keys
@@ -293,9 +328,8 @@ namespace KeyboardManagerEditorUI.Pages
                         break;
 
                     case UnifiedMappingControl.ActionType.MouseClick:
-                        UnifiedMappingControl.ShowValidationError("Not Implemented", "Mouse click remapping is not yet supported.");
-                        args.Cancel = true;
-                        return;
+                        saved = SaveMouseClickMapping(triggerKeys);
+                        break;
                 }
 
                 if (saved)
@@ -525,7 +559,7 @@ namespace KeyboardManagerEditorUI.Pages
                 TargetApp = isAppSpecific ? appName : string.Empty,
             };
 
-            bool saved = _mappingService!.AddShorcutMapping(shortcutKeyMapping);
+            bool saved = _mappingService!.AddShortcutMapping(shortcutKeyMapping);
 
             if (saved)
             {
@@ -569,7 +603,7 @@ namespace KeyboardManagerEditorUI.Pages
                 TargetApp = isAppSpecific ? appName : string.Empty,
             };
 
-            bool saved = _mappingService!.AddShorcutMapping(shortcutKeyMapping);
+            bool saved = _mappingService!.AddShortcutMapping(shortcutKeyMapping);
 
             if (saved)
             {
@@ -579,6 +613,161 @@ namespace KeyboardManagerEditorUI.Pages
             }
 
             return false;
+        }
+
+        private bool SaveMouseClickMapping(List<string> triggerKeys)
+        {
+            int? targetMouseButton = UnifiedMappingControl.GetMouseActionButtonCode();
+            bool isAppSpecific = UnifiedMappingControl.GetIsAppSpecific();
+            string appName = UnifiedMappingControl.GetAppName();
+
+            if (targetMouseButton == null)
+            {
+                return false;
+            }
+
+            if (triggerKeys == null || triggerKeys.Count == 0)
+            {
+                return false;
+            }
+
+            // Convert trigger keys to key code
+            // For single key, use that key; for shortcuts, use the first key (primary key)
+            int originalKey;
+            if (triggerKeys.Count == 1)
+            {
+                originalKey = _mappingService!.GetKeyCodeFromName(triggerKeys[0]);
+            }
+            else
+            {
+                // For shortcuts, concatenate all key codes with semicolons
+                // Currently key-to-mouse only supports single keys in the engine
+                // So we use the first key for now
+                originalKey = _mappingService!.GetKeyCodeFromName(triggerKeys[0]);
+
+                // TODO: When engine supports shortcut-to-mouse, use this:
+                // string originalKeysString = string.Join(";", triggerKeys.Select(k => _mappingService!.GetKeyCodeFromName(k).ToString(CultureInfo.InvariantCulture)));
+            }
+
+            if (originalKey == 0)
+            {
+                return false;
+            }
+
+            MouseButtonCode mouseButton = (MouseButtonCode)targetMouseButton.Value;
+            string targetApp = isAppSpecific ? appName : string.Empty;
+
+            bool saved = _mappingService!.AddKeyToMouseMapping(originalKey, mouseButton, targetApp);
+
+            if (saved)
+            {
+                _mappingService.SaveSettings();
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Saves a mouse button remapping (mouse button → key/shortcut/text/url/program).
+        /// </summary>
+        private bool SaveMouseButtonMapping(int mouseButtonCode, UnifiedMappingControl.ActionType actionType)
+        {
+            bool isAppSpecific = UnifiedMappingControl.GetIsAppSpecific();
+            string appName = UnifiedMappingControl.GetAppName();
+            string targetApp = isAppSpecific ? appName : string.Empty;
+            MouseButtonCode originalButton = (MouseButtonCode)mouseButtonCode;
+
+            switch (actionType)
+            {
+                case UnifiedMappingControl.ActionType.KeyOrShortcut:
+                    {
+                        List<string> actionKeys = UnifiedMappingControl.GetActionKeys();
+                        if (actionKeys == null || actionKeys.Count == 0)
+                        {
+                            return false;
+                        }
+
+                        string targetKeysString = string.Join(";", actionKeys.Select(k => _mappingService!.GetKeyCodeFromName(k).ToString(CultureInfo.InvariantCulture)));
+                        int targetType = actionKeys.Count > 1 ? 1 : 0; // 0=Key, 1=Shortcut
+
+                        return _mappingService!.AddMouseButtonMapping(
+                            originalButton,
+                            targetKeysString,
+                            targetApp,
+                            targetType) && _mappingService.SaveSettings();
+                    }
+
+                case UnifiedMappingControl.ActionType.Text:
+                    {
+                        string textContent = UnifiedMappingControl.GetTextContent();
+                        if (string.IsNullOrEmpty(textContent))
+                        {
+                            return false;
+                        }
+
+                        return _mappingService!.AddMouseButtonMapping(
+                            originalButton,
+                            string.Empty,
+                            targetApp,
+                            targetType: 2, // Text
+                            targetText: textContent) && _mappingService.SaveSettings();
+                    }
+
+                case UnifiedMappingControl.ActionType.OpenUrl:
+                    {
+                        string url = UnifiedMappingControl.GetUrl();
+                        if (string.IsNullOrEmpty(url))
+                        {
+                            return false;
+                        }
+
+                        return _mappingService!.AddMouseButtonMapping(
+                            originalButton,
+                            string.Empty,
+                            targetApp,
+                            targetType: 4, // OpenUri
+                            uriToOpen: url) && _mappingService.SaveSettings();
+                    }
+
+                case UnifiedMappingControl.ActionType.OpenApp:
+                    {
+                        string programPath = UnifiedMappingControl.GetProgramPath();
+                        string programArgs = UnifiedMappingControl.GetProgramArgs();
+                        if (string.IsNullOrEmpty(programPath))
+                        {
+                            return false;
+                        }
+
+                        return _mappingService!.AddMouseButtonMapping(
+                            originalButton,
+                            string.Empty,
+                            targetApp,
+                            targetType: 3, // RunProgram
+                            programPath: programPath,
+                            programArgs: programArgs) && _mappingService.SaveSettings();
+                    }
+
+                case UnifiedMappingControl.ActionType.MouseClick:
+                    // Mouse to mouse remapping - not typically useful but support it anyway
+                    {
+                        int? targetMouseButton = UnifiedMappingControl.GetMouseActionButtonCode();
+                        if (targetMouseButton == null)
+                        {
+                            return false;
+                        }
+
+                        // Mouse → Mouse is a key remap technically (button code as target)
+                        return _mappingService!.AddMouseButtonMapping(
+                            originalButton,
+                            targetMouseButton.Value.ToString(CultureInfo.InvariantCulture),
+                            targetApp,
+                            targetType: 0) && _mappingService.SaveSettings();
+                    }
+
+                default:
+                    return false;
+            }
         }
 
         #endregion
@@ -606,7 +795,12 @@ namespace KeyboardManagerEditorUI.Pages
 
                         if (!remapping.IsActive)
                         {
-                            SettingsManager.RemoveShortcutKeyMappingFromSettings(remapping.Id);
+                            // Only remove from SettingsManager if the ID exists in the dictionary
+                            if (remapping.Id != null && SettingsManager.EditorSettings.ShortcutSettingsDictionary.ContainsKey(remapping.Id))
+                            {
+                                SettingsManager.RemoveShortcutKeyMappingFromSettings(remapping.Id);
+                            }
+
                             LoadRemappings();
                         }
                         else if (RemappingHelper.DeleteRemapping(_mappingService, remapping))
@@ -624,7 +818,33 @@ namespace KeyboardManagerEditorUI.Pages
                         if (menuFlyoutItem.Tag is IToggleableShortcut shortcut)
                         {
                             bool deleted = false;
-                            if (shortcut.Shortcut.Count == 1)
+
+                            // Try to look up the setting by ID (GUID) to get the original keys
+                            Settings.ShortcutSettings? setting = null;
+                            if (shortcut.Id != null)
+                            {
+                                SettingsManager.EditorSettings.ShortcutSettingsDictionary.TryGetValue(shortcut.Id, out setting);
+                            }
+
+                            // Check if this is a mouse mapping (either by setting OriginalKeys or fallback ID format)
+                            bool isMouseMapping = setting?.Shortcut.OriginalKeys?.StartsWith("mouse_", StringComparison.Ordinal) == true ||
+                                                  (setting == null && shortcut.Id?.StartsWith("mouse_", StringComparison.Ordinal) == true);
+
+                            if (isMouseMapping)
+                            {
+                                // Parse the mouse button code from either setting OriginalKeys or fallback ID
+                                string? mouseKeyString = setting?.Shortcut.OriginalKeys ?? shortcut.Id;
+                                if (mouseKeyString != null && mouseKeyString.StartsWith("mouse_", StringComparison.Ordinal))
+                                {
+                                    var parts = mouseKeyString.Split('_', 3);
+                                    if (parts.Length >= 2 && int.TryParse(parts[1], out int buttonCode))
+                                    {
+                                        string targetApp = setting?.Shortcut.TargetApp ?? (parts.Length > 2 ? parts[2] : string.Empty);
+                                        deleted = _mappingService.DeleteMouseButtonMapping((MouseButtonCode)buttonCode, targetApp);
+                                    }
+                                }
+                            }
+                            else if (shortcut.Shortcut.Count == 1)
                             {
                                 int originalKey = _mappingService.GetKeyCodeFromName(shortcut.Shortcut[0]);
                                 if (originalKey != 0)
@@ -643,7 +863,12 @@ namespace KeyboardManagerEditorUI.Pages
                                 _mappingService.SaveSettings();
                             }
 
-                            SettingsManager.RemoveShortcutKeyMappingFromSettings(shortcut.Id);
+                            // Remove from SettingsManager (now includes mouse mappings)
+                            if (shortcut.Id != null && setting != null)
+                            {
+                                SettingsManager.RemoveShortcutKeyMappingFromSettings(shortcut.Id);
+                            }
+
                             LoadAllMappings();
                         }
 
@@ -666,30 +891,108 @@ namespace KeyboardManagerEditorUI.Pages
             {
                 try
                 {
+                    // Look up the settings for this shortcut
+                    Settings.ShortcutSettings? setting = null;
+                    if (shortcut.Id != null)
+                    {
+                        SettingsManager.EditorSettings.ShortcutSettingsDictionary.TryGetValue(shortcut.Id, out setting);
+                    }
+
+                    // Check if this is a mouse mapping
+                    bool isMouseMapping = setting?.Shortcut.OriginalKeys?.StartsWith("mouse_", StringComparison.Ordinal) == true;
+
                     if (toggleSwitch.IsOn)
                     {
                         if (shortcut is Remapping remapping)
                         {
+                            // Check if this is a key-to-mouse remapping
+                            if (setting?.Shortcut.OperationType == ShortcutOperationType.RemapKeyToMouse)
+                            {
+                                if (int.TryParse(setting.Shortcut.OriginalKeys, out int keyCode))
+                                {
+                                    MouseButtonCode mouseButtonCode = _mappingService.GetMouseButtonFromName(setting.Shortcut.TargetMouseButton);
+                                    _mappingService.AddKeyToMouseMapping(keyCode, mouseButtonCode, setting.Shortcut.TargetApp);
+                                    shortcut.IsActive = true;
+                                    if (shortcut.Id != null)
+                                    {
+                                        SettingsManager.ToggleShortcutKeyMappingActiveState(shortcut.Id);
+                                    }
+
+                                    _mappingService.SaveSettings();
+                                }
+
+                                return;
+                            }
+
                             RemappingHelper.SaveMapping(_mappingService, remapping.Shortcut, remapping.RemappedKeys, remapping.IsAllApps, remapping.AppName, false);
                             shortcut.IsActive = true;
-                            SettingsManager.ToggleShortcutKeyMappingActiveState(shortcut.Id);
+                            if (shortcut.Id != null)
+                            {
+                                SettingsManager.ToggleShortcutKeyMappingActiveState(shortcut.Id);
+                            }
+
                             return;
                         }
 
-                        bool saved = false;
+                        // Handle mouse button mappings
+                        if (isMouseMapping && setting != null)
+                        {
+                            if (setting.Shortcut.OriginalKeys.StartsWith("mouse_", StringComparison.Ordinal) &&
+                                int.TryParse(setting.Shortcut.OriginalKeys.AsSpan(6), out int buttonCode))
+                            {
+                                // Convert ShortcutOperationType to mouse targetType int:
+                                // 0=Key, 1=Shortcut, 2=Text, 3=RunProgram, 4=OpenUri
+                                int targetType = setting.Shortcut.OperationType switch
+                                {
+                                    ShortcutOperationType.RemapText => 2,
+                                    ShortcutOperationType.RunProgram => 3,
+                                    ShortcutOperationType.OpenUri => 4,
+                                    _ => setting.Shortcut.TargetKeys?.Contains(';') == true ? 1 : 0, // Shortcut vs Key
+                                };
+
+                                bool saved = _mappingService.AddMouseButtonMapping(
+                                    (MouseButtonCode)buttonCode,
+                                    setting.Shortcut.TargetKeys ?? string.Empty,
+                                    setting.Shortcut.TargetApp,
+                                    targetType,
+                                    setting.Shortcut.TargetText,
+                                    setting.Shortcut.ProgramPath,
+                                    setting.Shortcut.ProgramArgs,
+                                    setting.Shortcut.UriToOpen);
+                                if (saved)
+                                {
+                                    shortcut.IsActive = true;
+                                    if (shortcut.Id != null)
+                                    {
+                                        SettingsManager.ToggleShortcutKeyMappingActiveState(shortcut.Id);
+                                    }
+
+                                    _mappingService.SaveSettings();
+                                }
+                            }
+
+                            return;
+                        }
+
+                        if (shortcut.Id == null)
+                        {
+                            return;
+                        }
+
+                        bool saved2 = false;
                         ShortcutKeyMapping shortcutKeyMapping = SettingsManager.EditorSettings.ShortcutSettingsDictionary[shortcut.Id].Shortcut;
                         if (shortcut.Shortcut.Count == 1)
                         {
-                            saved = _mappingService.AddSingleKeyToTextMapping(
+                            saved2 = _mappingService.AddSingleKeyToTextMapping(
                                 _mappingService.GetKeyCodeFromName(shortcut.Shortcut[0]),
                                 shortcutKeyMapping.TargetText);
                         }
                         else
                         {
-                            saved = shortcutKeyMapping.OperationType == ShortcutOperationType.RemapText ? _mappingService!.AddShortcutMapping(shortcutKeyMapping.OriginalKeys, shortcutKeyMapping.TargetText, operationType: ShortcutOperationType.RemapText) : _mappingService.AddShorcutMapping(shortcutKeyMapping);
+                            saved2 = shortcutKeyMapping.OperationType == ShortcutOperationType.RemapText ? _mappingService!.AddShortcutMapping(shortcutKeyMapping.OriginalKeys, shortcutKeyMapping.TargetText, operationType: ShortcutOperationType.RemapText) : _mappingService.AddShortcutMapping(shortcutKeyMapping);
                         }
 
-                        if (saved)
+                        if (saved2)
                         {
                             shortcut.IsActive = true;
                             SettingsManager.ToggleShortcutKeyMappingActiveState(shortcut.Id);
@@ -702,26 +1005,57 @@ namespace KeyboardManagerEditorUI.Pages
                         {
                             shortcut.IsActive = false;
                             RemappingHelper.DeleteRemapping(_mappingService, remapping, false);
-                            SettingsManager.ToggleShortcutKeyMappingActiveState(shortcut.Id);
+                            if (shortcut.Id != null)
+                            {
+                                SettingsManager.ToggleShortcutKeyMappingActiveState(shortcut.Id);
+                            }
+
                             return;
                         }
 
-                        bool deleted = false;
+                        // Handle mouse button mappings
+                        if (isMouseMapping && setting != null)
+                        {
+                            if (setting.Shortcut.OriginalKeys.StartsWith("mouse_", StringComparison.Ordinal) &&
+                                int.TryParse(setting.Shortcut.OriginalKeys.AsSpan(6), out int buttonCode))
+                            {
+                                bool deleted = _mappingService.DeleteMouseButtonMapping((MouseButtonCode)buttonCode, setting.Shortcut.TargetApp);
+                                if (deleted)
+                                {
+                                    shortcut.IsActive = false;
+                                    if (shortcut.Id != null)
+                                    {
+                                        SettingsManager.ToggleShortcutKeyMappingActiveState(shortcut.Id);
+                                    }
+
+                                    _mappingService.SaveSettings();
+                                }
+                            }
+
+                            return;
+                        }
+
+                        if (shortcut.Id == null)
+                        {
+                            return;
+                        }
+
+                        bool deleted2 = false;
                         if (shortcut.Shortcut.Count == 1)
                         {
                             int originalKey = _mappingService.GetKeyCodeFromName(shortcut.Shortcut[0]);
                             if (originalKey != 0)
                             {
-                                deleted = _mappingService.DeleteSingleKeyToTextMapping(originalKey);
+                                deleted2 = _mappingService.DeleteSingleKeyToTextMapping(originalKey);
                             }
                         }
                         else
                         {
                             string originalKeys = string.Join(";", shortcut.Shortcut.Select(k => _mappingService.GetKeyCodeFromName(k)));
-                            deleted = _mappingService.DeleteShortcutMapping(originalKeys);
+                            deleted2 = _mappingService.DeleteShortcutMapping(originalKeys);
                         }
 
-                        if (deleted)
+                        if (deleted2)
                         {
                             shortcut.IsActive = false;
                             SettingsManager.ToggleShortcutKeyMappingActiveState(shortcut.Id);
@@ -746,6 +1080,7 @@ namespace KeyboardManagerEditorUI.Pages
             LoadTextMappings();
             LoadProgramShortcuts();
             LoadUrlShortcuts();
+            LoadMouseMappings();
         }
 
         private void LoadRemappings()
@@ -887,6 +1222,123 @@ namespace KeyboardManagerEditorUI.Pages
                     URL = shortcutSettings.Shortcut.UriToOpen,
                     Id = shortcutSettings.Id,
                     IsActive = shortcutSettings.IsActive,
+                });
+            }
+        }
+
+        private void LoadMouseMappings()
+        {
+            if (_mappingService == null)
+            {
+                return;
+            }
+
+            // Load mouse button → key/shortcut remappings
+            var mouseButtonMappings = _mappingService.GetMouseButtonMappings();
+            Logger.LogInfo($"LoadMouseMappings: Got {mouseButtonMappings.Count} mouse mappings from interop");
+            foreach (var mapping in mouseButtonMappings)
+            {
+                Logger.LogInfo($"LoadMouseMappings: Button={mapping.OriginalButton}, TargetType={mapping.TargetType}, Text={mapping.TargetText}");
+                var triggerDisplay = new List<string> { $"🖱️ {mapping.OriginalButton}" };
+                var targetDisplay = new List<string>();
+
+                // Look up settings from SettingsManager
+                string originalKeysForLookup = $"mouse_{mapping.OriginalButtonCode}";
+                var existingSetting = SettingsManager.EditorSettings.ShortcutSettingsDictionary.Values
+                    .FirstOrDefault(s => s.Shortcut.OriginalKeys == originalKeysForLookup &&
+                                         s.Shortcut.TargetApp == mapping.TargetApp);
+                string id = existingSetting?.Id ?? $"mouse_{mapping.OriginalButtonCode}_{mapping.TargetApp}";
+                bool isActive = existingSetting?.IsActive ?? true;
+
+                switch (mapping.TargetType)
+                {
+                    case "Key":
+                    case "Shortcut":
+                        if (!string.IsNullOrEmpty(mapping.TargetKeyName))
+                        {
+                            targetDisplay.Add(mapping.TargetKeyName);
+                        }
+                        else if (!string.IsNullOrEmpty(mapping.TargetShortcutKeys))
+                        {
+                            foreach (var keyCode in mapping.TargetShortcutKeys.Split(';'))
+                            {
+                                if (int.TryParse(keyCode, out int code))
+                                {
+                                    targetDisplay.Add(GetKeyDisplayNameFromCode(code));
+                                }
+                            }
+                        }
+
+                        RemappingList.Add(new Remapping
+                        {
+                            Shortcut = triggerDisplay,
+                            RemappedKeys = targetDisplay,
+                            IsAllApps = mapping.IsAllApps,
+                            AppName = mapping.TargetApp,
+                            Id = id,
+                            IsActive = isActive,
+                        });
+                        break;
+
+                    case "Text":
+                        TextMappings.Add(new TextMapping
+                        {
+                            Shortcut = triggerDisplay,
+                            Text = mapping.TargetText,
+                            IsAllApps = mapping.IsAllApps,
+                            AppName = mapping.TargetApp,
+                            Id = id,
+                            IsActive = isActive,
+                        });
+                        break;
+
+                    case "RunProgram":
+                        ProgramShortcuts.Add(new ProgramShortcut
+                        {
+                            Shortcut = triggerDisplay,
+                            AppToRun = mapping.ProgramPath,
+                            Args = mapping.ProgramArgs,
+                            Id = id,
+                            IsActive = isActive,
+                        });
+                        break;
+
+                    case "OpenUri":
+                        UrlShortcuts.Add(new URLShortcut
+                        {
+                            Shortcut = triggerDisplay,
+                            URL = mapping.UriToOpen,
+                            Id = id,
+                            IsActive = isActive,
+                        });
+                        break;
+                }
+            }
+
+            // Load key → mouse button remappings
+            var keyToMouseMappings = _mappingService.GetKeyToMouseMappings();
+            foreach (var mapping in keyToMouseMappings)
+            {
+                var triggerDisplay = new List<string> { mapping.OriginalKeyName };
+                var targetDisplay = new List<string> { $"🖱️ {mapping.TargetMouseButton}" };
+
+                // Look up settings from SettingsManager
+                string keyOriginalKeys = mapping.OriginalKeyCode.ToString(System.Globalization.CultureInfo.InvariantCulture);
+                var keyToMouseSetting = SettingsManager.EditorSettings.ShortcutSettingsDictionary.Values
+                    .FirstOrDefault(s => s.Shortcut.OperationType == Interop.ShortcutOperationType.RemapKeyToMouse &&
+                                         s.Shortcut.OriginalKeys == keyOriginalKeys &&
+                                         s.Shortcut.TargetApp == mapping.TargetApp);
+                string keyToMouseId = keyToMouseSetting?.Id ?? $"key_to_mouse_{mapping.OriginalKeyCode}_{mapping.TargetApp}";
+                bool keyToMouseIsActive = keyToMouseSetting?.IsActive ?? true;
+
+                RemappingList.Add(new Remapping
+                {
+                    Shortcut = triggerDisplay,
+                    RemappedKeys = targetDisplay,
+                    IsAllApps = mapping.IsAllApps,
+                    AppName = mapping.TargetApp,
+                    Id = keyToMouseId,
+                    IsActive = keyToMouseIsActive,
                 });
             }
         }
