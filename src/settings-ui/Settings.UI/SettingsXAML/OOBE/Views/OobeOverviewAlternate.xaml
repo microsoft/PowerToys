@@ -5,6 +5,7 @@
     xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ptcontrols="using:Microsoft.PowerToys.Common.UI.Controls"
     mc:Ignorable="d">
 
     <controls:OOBEPageControl
@@ -54,7 +55,7 @@
                                 FontSize="12"
                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                 TextWrapping="Wrap" />
-                            <controls:ShortcutWithTextLabelControl
+                            <ptcontrols:ShortcutWithTextLabelControl
                                 x:Name="FancyZonesHotkeyControl"
                                 Grid.Row="3"
                                 Margin="0,8,0,0" />
@@ -95,7 +96,7 @@
                                 FontSize="12"
                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                 TextWrapping="Wrap" />
-                            <controls:ShortcutWithTextLabelControl
+                            <ptcontrols:ShortcutWithTextLabelControl
                                 x:Name="RunHotkeyControl"
                                 Grid.Row="3"
                                 Margin="0,8,0,0" />
@@ -137,7 +138,7 @@
                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                 Text="To pick a color:"
                                 TextWrapping="Wrap" />
-                            <controls:ShortcutWithTextLabelControl
+                            <ptcontrols:ShortcutWithTextLabelControl
                                 x:Name="ColorPickerHotkeyControl"
                                 Grid.Row="3"
                                 Margin="0,8,0,0" />
@@ -178,7 +179,7 @@
                                 FontSize="12"
                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                 TextWrapping="Wrap" />
-                            <controls:ShortcutWithTextLabelControl
+                            <ptcontrols:ShortcutWithTextLabelControl
                                 x:Name="AlwaysOnTopHotkeyControl"
                                 Grid.Row="3"
                                 Margin="0,8,0,0" />
