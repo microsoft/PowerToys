@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.Globalization;
@@ -10,7 +11,9 @@ using System.IO;
 using System.IO.Pipelines;
 using System.Linq;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Threading;
+using System.Windows.Documents;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using PowerToys.Interop;
@@ -141,8 +144,53 @@ namespace RunnerV2.Helpers
 
                         break;
                     case "get_all_hotkey_conflicts":
-                        // Todo: Handle hotkey conflict
+                        JsonNode hotkeyConflicts = HotkeyConflictsManager.GetHotkeyConflictsAsJson();
+                        hotkeyConflicts.Root["response_type"] = "all_hotkey_conflicts";
+                        _ipc?.Send(hotkeyConflicts.ToJsonString());
                         break;
+                    case "check_hotkey_conflict":
+                        try
+                        {
+                            HotkeySettings hotkey = new(
+                                property.Value.GetProperty("win").GetBoolean(),
+                                property.Value.GetProperty("ctrl").GetBoolean(),
+                                property.Value.GetProperty("alt").GetBoolean(),
+                                property.Value.GetProperty("shift").GetBoolean(),
+                                property.Value.GetProperty("key").GetInt32());
+
+                            string requestId = property.Value.GetProperty("request_id").GetString() ?? string.Empty;
+
+                            bool hasConflict = HotkeyConflictsManager.HasConflict(hotkey);
+
+                            JsonObject response = [];
+                            response["response_type"] = "hotkey_conflict_result";
+                            response["request_id"] = requestId;
+                            response["has_conflict"] = hasConflict;
+
+                            if (hasConflict)
+                            {
+                                List<HotkeyConflictsManager.HotkeyConflict> conflicts = HotkeyConflictsManager.GetAllConflicts(hotkey);
+                                JsonArray allConflicts = [];
+                                foreach (HotkeyConflictsManager.HotkeyConflict conflict in conflicts)
+                                {
+                                    allConflicts.Add(new JsonObject
+                                    {
+                                        ["module"] = conflict.ModuleName,
+                                        ["hotkeyID"] = conflict.HotkeyID,
+                                    });
+                                }
+
+                                response["all_conflicts"] = allConflicts;
+                            }
+
+                            _ipc?.Send(response.ToJsonString());
+                        }
+                        catch
+                        {
+                        }
+
+                        break;
+
                     case "bugreport":
                         Logger.LogInfo("Starting bug report tool from Settings window");
                         TrayIconManager.ProcessTrayMenuCommand((nuint)TrayIconManager.TrayButton.ReportBug);

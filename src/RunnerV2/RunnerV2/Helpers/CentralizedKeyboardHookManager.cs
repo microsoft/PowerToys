@@ -14,7 +14,7 @@ namespace RunnerV2.Helpers
     {
         private static readonly UIntPtr _ignoreKeyEventFlag = 0x5555;
 
-        private static readonly Dictionary<string, List<(HotkeySettings HotkeySettings, Action Action)>> _keyboardHooks = [];
+        public static OrderedDictionary<string, List<(HotkeySettings HotkeySettings, Action Action)>> KeyboardHooks { get; } = [];
 
         private static HotkeySettingsControlHook _hotkeySettingsControlHook = new(OnKeyDown, OnKeyUp, IsActive, (_, specialFlags) => specialFlags != _ignoreKeyEventFlag);
 
@@ -118,25 +118,25 @@ namespace RunnerV2.Helpers
         public static void AddKeyboardHook(string moduleName, HotkeySettings hotkeySettings, Action action)
         {
 #pragma warning disable CA1854 // Prefer the 'IDictionary.TryGetValue(TKey, out TValue)' method
-            if (!_keyboardHooks.ContainsKey(moduleName))
+            if (!KeyboardHooks.ContainsKey(moduleName))
             {
-                _keyboardHooks[moduleName] = [];
+                KeyboardHooks[moduleName] = [];
             }
 #pragma warning restore CA1854 // Prefer the 'IDictionary.TryGetValue(TKey, out TValue)' method
 
-            _keyboardHooks[moduleName].Add((hotkeySettings, action));
+            KeyboardHooks[moduleName].Add((hotkeySettings, action));
         }
 
         public static void RemoveAllHooksFromModule(string moduleName)
         {
-            _keyboardHooks.Remove(moduleName);
+            KeyboardHooks.Remove(moduleName);
         }
 
         private static bool OnKeyboardEvent(HotkeySettings pressedHotkey)
         {
             bool shortcutHandled = false;
 
-            foreach (var moduleHooks in _keyboardHooks.Values)
+            foreach (var moduleHooks in KeyboardHooks.Values)
             {
                 foreach (var (hotkeySettings, action) in moduleHooks)
                 {
@@ -213,6 +213,23 @@ namespace RunnerV2.Helpers
                 0x90 => true, // VK_NUMLOCK
                 _ => false,
             };
+        }
+
+        internal static List<string> GetAllModulesWithShortcut(HotkeySettings hotkeySettings)
+        {
+            List<string> modulesWithShortcut = [];
+            foreach (var moduleHooks in KeyboardHooks)
+            {
+                foreach (var (registeredHotkeySettings, _) in moduleHooks.Value)
+                {
+                    if (registeredHotkeySettings == hotkeySettings)
+                    {
+                        modulesWithShortcut.Add(moduleHooks.Key);
+                    }
+                }
+            }
+
+            return modulesWithShortcut;
         }
     }
 }

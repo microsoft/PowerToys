@@ -104,6 +104,15 @@ namespace RunnerV2
             foreach (IPowerToysModule module in ModulesToLoad)
             {
                 ToggleModuleStateBasedOnEnabledProperty(module);
+                foreach ((string moduleName, var hotkeys) in CentralizedKeyboardHookManager.KeyboardHooks)
+                {
+                    HotkeyConflictsManager.RemoveHotkeysOfModule(moduleName);
+
+                    foreach ((int i, (HotkeySettings hotkeySettings, Action _)) in hotkeys.Index())
+                    {
+                        HotkeyConflictsManager.AddHotkey(hotkeySettings, moduleName, i);
+                    }
+                }
             }
 
             Logger.InitializeLogger("\\RunnerLogs");
@@ -327,6 +336,16 @@ namespace RunnerV2
                     foreach (IPowerToysModule module in ModulesToLoad)
                     {
                         ToggleModuleStateBasedOnEnabledProperty(module);
+                    }
+
+                    foreach ((string moduleName, var hotkeys) in CentralizedKeyboardHookManager.KeyboardHooks)
+                    {
+                        HotkeyConflictsManager.RemoveHotkeysOfModule(moduleName);
+
+                        foreach ((int i, (HotkeySettings hotkeySettings, Action _)) in hotkeys.Index())
+                        {
+                            HotkeyConflictsManager.AddHotkey(hotkeySettings, moduleName, i);
+                        }
                     }
 
                     Logger.InitializeLogger("\\RunnerLogs");

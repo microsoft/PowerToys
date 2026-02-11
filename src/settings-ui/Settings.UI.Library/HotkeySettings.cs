@@ -317,6 +317,21 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             return true;
         }
 
+        public int GetHotkeyHandle()
+        {
+            int handle = Code;
+            handle |= (Win ? 0 : 1) << 8;
+            handle |= (Ctrl ? 0 : 1) << 9;
+            handle |= (Alt ? 0 : 1) << 10;
+            handle |= (Shift ? 0 : 1) << 11;
+            return handle;
+        }
+
+        public override int GetHashCode()
+        {
+            return GetHotkeyHandle();
+        }
+
         public static implicit operator HotkeyEx(HotkeySettings settings)
         {
             ushort modifiers = 0;

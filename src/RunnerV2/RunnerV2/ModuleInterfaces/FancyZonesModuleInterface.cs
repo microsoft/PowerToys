@@ -49,7 +49,7 @@ namespace RunnerV2.ModuleInterfaces
             },
         };
 
-        public List<(HotkeySettings Hotkey, Action Action)> Shortcuts { get;  } = [];
+        public List<(HotkeySettings Hotkey, Action Action)> Shortcuts { get; } = [];
 
         public void InitializeShortcuts()
         {
