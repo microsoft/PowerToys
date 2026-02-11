@@ -54,13 +54,9 @@
 
         <!--  Title Bar Area  -->
         <TitleBar x:Name="titleBar" x:Uid="ShortcutConflictWindow_TitleTxt">
-            <!--  This is a workaround for https://github.com/microsoft/microsoft-ui-xaml/issues/10374, once fixed we should just be using IconSource  -->
-            <TitleBar.LeftHeader>
-                <ImageIcon
-                    Height="16"
-                    Margin="16,0,0,0"
-                    Source="/Assets/Settings/icon.ico" />
-            </TitleBar.LeftHeader>
+            <TitleBar.IconSource>
+                <ImageIconSource ImageSource="/Assets/Settings/icon.ico" />
+            </TitleBar.IconSource>
         </TitleBar>
 
         <!--  Description text  -->

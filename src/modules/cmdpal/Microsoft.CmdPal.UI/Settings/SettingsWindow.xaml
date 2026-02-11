@@ -31,14 +31,9 @@
             IsBackButtonVisible="{x:Bind NavFrame.CanGoBack, Mode=OneWay}"
             IsTabStop="False"
             PaneToggleRequested="AppTitleBar_PaneToggleRequested">
-            <!--  This is a workaround for https://github.com/microsoft/microsoft-ui-xaml/issues/10374, once fixed we should just be using IconSource  -->
-            <TitleBar.LeftHeader>
-                <ImageIcon
-                    x:Name="WorkAroundIcon"
-                    Height="16"
-                    Margin="16,0,0,0"
-                    Source="ms-appx:///Assets/icon.svg" />
-            </TitleBar.LeftHeader>
+            <TitleBar.IconSource>
+                <ImageIconSource ImageSource="ms-appx:///Assets/icon.svg" />
+            </TitleBar.IconSource>
         </TitleBar>
         <NavigationView
             x:Name="NavView"
