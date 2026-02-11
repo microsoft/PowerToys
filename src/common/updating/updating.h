@@ -15,6 +15,7 @@
 #endif
 
 #include <common/version/helper.h>
+#include <common/utils/async_task.h>
 
 namespace updating
 {
@@ -37,17 +38,12 @@ namespace updating
     using github_version_result = nonstd::expected<github_version_info, std::wstring>;
 #endif
 
-    // NOTE: Caller MUST call .get() on the returned IAsyncAction before reading 'result'.
-    // The reference must remain valid until the async operation completes.
-    winrt::Windows::Foundation::IAsyncAction get_github_version_info_async(github_version_result& result, bool prerelease = false);
-
-    // NOTE: Caller MUST call .get() on the returned IAsyncAction before reading 'result'.
-    // The reference must remain valid until the async operation completes.
-    winrt::Windows::Foundation::IAsyncAction download_new_version_async(const new_version_download_info& new_version, std::optional<std::filesystem::path>& result);
+    utils::async_task<github_version_result> get_github_version_info_async(bool prerelease = false);
+    utils::async_task<std::optional<std::filesystem::path>> download_new_version_async(new_version_download_info new_version);
     std::filesystem::path get_pending_updates_path();
     void cleanup_updates();
 
     // non-localized
     constexpr inline std::wstring_view INSTALLER_FILENAME_PATTERN = L"powertoyssetup";
-    constexpr inline std::wstring_view INSTALLER_FILENAME_PATTERN_USER = L"powertoysusersetup";
+    constexpr inline std::wstring_view INSTALLER_FILENAME_PATTERN_USER = L"powertoyssetup-user";
 }

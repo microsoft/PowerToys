@@ -173,8 +173,7 @@ void ProcessNewVersionInfo(const github_version_info& version_info,
         // Cleanup old updates before downloading the latest
         updating::cleanup_updates();
 
-        std::optional<std::filesystem::path> downloaded_installer;
-        download_new_version_async(new_version_info, downloaded_installer).get();
+        auto downloaded_installer = download_new_version_async(new_version_info).get();
         if (downloaded_installer)
         {
             state.state = UpdateState::readyToInstall;
@@ -234,8 +233,7 @@ void PeriodicUpdateWorker()
         bool version_info_obtained = false;
         try
         {
-            github_version_result new_version_info;
-            get_github_version_info_async(new_version_info).get();
+            const auto new_version_info = get_github_version_info_async().get();
             if (new_version_info.has_value())
             {
                 version_info_obtained = true;
@@ -275,8 +273,7 @@ void CheckForUpdatesCallback()
     auto state = UpdateState::read();
     try
     {
-        github_version_result new_version_info;
-        get_github_version_info_async(new_version_info).get();
+        auto new_version_info = get_github_version_info_async().get();
         if (!new_version_info)
         {
             // We couldn't get a new version from github for some reason, log error

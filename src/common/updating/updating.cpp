@@ -82,17 +82,16 @@ namespace updating
 // prevent the warning that may show up depend on the value of the constants (#defines)
 #pragma warning(push)
 #pragma warning(disable : 4702)
-    winrt::Windows::Foundation::IAsyncAction get_github_version_info_async(github_version_result& result, const bool prerelease)
+    utils::async_task<github_version_result> get_github_version_info_async(const bool prerelease)
     {
         // If the current version starts with 0.0.*, it means we're on a local build from a farm and shouldn't check for updates.
         if constexpr (VERSION_MAJOR == 0 && VERSION_MINOR == 0)
         {
 #if USE_STD_EXPECTED
-            result = std::unexpected(LOCAL_BUILD_ERROR);
+            co_return std::unexpected(LOCAL_BUILD_ERROR);
 #else
-            result = nonstd::make_unexpected(LOCAL_BUILD_ERROR);
+            co_return nonstd::make_unexpected(LOCAL_BUILD_ERROR);
 #endif
-            co_return;
         }
 
         try
@@ -132,24 +131,22 @@ namespace updating
 
             if (github_version <= current_version)
             {
-                result = version_up_to_date{};
-                co_return;
+                co_return version_up_to_date{};
             }
 
             auto [installer_download_url, installer_filename] = extract_installer_asset_download_info(release_object);
-            result = new_version_download_info{ extract_release_page_url(release_object),
+            co_return new_version_download_info{ extract_release_page_url(release_object),
                                                  std::move(github_version),
                                                  std::move(installer_download_url),
                                                  std::move(installer_filename) };
-            co_return;
         }
         catch (...)
         {
         }
 #if USE_STD_EXPECTED
-        result = std::unexpected(NETWORK_ERROR);
+        co_return std::unexpected(NETWORK_ERROR);
 #else
-        result = nonstd::make_unexpected(NETWORK_ERROR);
+        co_return nonstd::make_unexpected(NETWORK_ERROR);
 #endif
     }
 #pragma warning(pop)
@@ -169,13 +166,12 @@ namespace updating
         return !ec ? std::optional{ installer_download_path } : std::nullopt;
     }
 
-    winrt::Windows::Foundation::IAsyncAction download_new_version_async(const new_version_download_info& new_version, std::optional<std::filesystem::path>& out_path)
+    utils::async_task<std::optional<std::filesystem::path>> download_new_version_async(new_version_download_info new_version)
     {
         auto installer_download_path = create_download_path();
         if (!installer_download_path)
         {
-            out_path = std::nullopt;
-            co_return;
+            co_return std::nullopt;
         }
 
         *installer_download_path /= new_version.installer_filename;
@@ -195,7 +191,7 @@ namespace updating
                 // reattempt to download or do nothing
             }
         }
-        out_path = download_success ? installer_download_path : std::nullopt;
+        co_return download_success ? installer_download_path : std::nullopt;
     }
 
     void cleanup_updates()

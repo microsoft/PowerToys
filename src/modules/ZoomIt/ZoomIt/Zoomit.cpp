@@ -28,6 +28,7 @@
 #include <common/utils/logger_helper.h>
 #include <common/utils/winapi_error.h>
 #include <common/utils/gpo.h>
+#include <common/utils/async_task.h>
 #include <array>
 #include <vector>
 #endif // __ZOOMIT_POWERTOYS__
@@ -5140,9 +5141,7 @@ bool IsPenInverted( WPARAM wParam )
 // Captures the specified screen using the capture APIs
 //
 //----------------------------------------------------------------------------
-// NOTE: Caller MUST call .get() on the returned IAsyncAction before reading 'result'.
-// The reference must remain valid until the async operation completes.
-winrt::Windows::Foundation::IAsyncAction CaptureScreenshotAsync(winrt::IDirect3DDevice const& device, winrt::GraphicsCaptureItem const& item, winrt::DirectXPixelFormat const& pixelFormat, winrt::com_ptr<ID3D11Texture2D>& result)
+utils::async_task<winrt::com_ptr<ID3D11Texture2D>> CaptureScreenshotAsync(winrt::IDirect3DDevice const& device, winrt::GraphicsCaptureItem const& item, winrt::DirectXPixelFormat const& pixelFormat)
 {
     auto d3dDevice = GetDXGIInterfaceFromObject<ID3D11Device>(device);
     winrt::com_ptr<ID3D11DeviceContext> d3dContext;
@@ -5178,7 +5177,7 @@ winrt::Windows::Foundation::IAsyncAction CaptureScreenshotAsync(winrt::IDirect3D
     framePool.Close();
 
     auto texture = GetDXGIInterfaceFromObject<ID3D11Texture2D>(frame.Surface());
-    result = util::CopyD3DTexture(d3dDevice, texture, true);
+    co_return util::CopyD3DTexture(d3dDevice, texture, true);
 }
 
 //----------------------------------------------------------------------------
@@ -5205,9 +5204,7 @@ winrt::com_ptr<ID3D11Texture2D>CaptureScreenshot(winrt::DirectXPixelFormat const
 
     auto item = util::CreateCaptureItemForMonitor(hMon);
 
-    winrt::com_ptr<ID3D11Texture2D> result;
-    CaptureScreenshotAsync(device, item, pixelFormat, result).get();
-    return result;
+    return CaptureScreenshotAsync(device, item, pixelFormat).get();
 }
 
 

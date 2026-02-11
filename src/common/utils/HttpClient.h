@@ -1,6 +1,7 @@
 #pragma once
 
 #include <functional>
+#include <string>
 #include <winrt/Windows.Foundation.h>
 #include <winrt/Windows.Storage.Streams.h>
 #include <winrt/Windows.Web.Http.h>
@@ -29,7 +30,7 @@ namespace http
             co_return body;
         }
 
-        winrt::Windows::Foundation::IAsyncAction download(const winrt::Windows::Foundation::Uri& url, const std::wstring& dstFilePath)
+        winrt::Windows::Foundation::IAsyncAction download(winrt::Windows::Foundation::Uri url, std::wstring dstFilePath)
         {
             auto response = co_await m_client.GetAsync(url);
             (void)response.EnsureSuccessStatusCode();
@@ -38,7 +39,7 @@ namespace http
             file_stream.Close();
         }
 
-        winrt::Windows::Foundation::IAsyncAction download(const winrt::Windows::Foundation::Uri& url, const std::wstring& dstFilePath, const std::function<void(float)>& progressUpdateCallback)
+        winrt::Windows::Foundation::IAsyncAction download(winrt::Windows::Foundation::Uri url, std::wstring dstFilePath, std::function<void(float)> progressUpdateCallback)
         {
             auto response = co_await m_client.GetAsync(url, HttpCompletionOption::ResponseHeadersRead);
             response.EnsureSuccessStatusCode();
