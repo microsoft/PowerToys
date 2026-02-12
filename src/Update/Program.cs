@@ -76,7 +76,7 @@ internal sealed partial class Program
 
     private static async Task PerformUpdateNowStage1()
     {
-        UpdateSettingsHelper.TriggerUpdateCheck();
+        UpdateSettingsHelper.TriggerUpdateCheck((_) => { });
         UpdateSettingsHelper.UpdateInfo updateInfo = await UpdateSettingsHelper.GetUpdateAvailableInfo();
 
         if (updateInfo is not UpdateSettingsHelper.UpdateInfo.UpdateAvailable ua)

@@ -113,6 +113,7 @@
     <ClInclude Include="LayoutMapManaged.h">
       <DependentUpon>LayoutMapManaged.idl</DependentUpon>
     </ClInclude>
+    <ClInclude Include="Notifications.h" />
     <ClInclude Include="Package.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="resource.h" />
@@ -144,6 +145,7 @@
     <ClCompile Include="LayoutMapManaged.cpp">
       <DependentUpon>LayoutMapManaged.idl</DependentUpon>
     </ClCompile>
+    <ClCompile Include="Notifications.cpp" />
     <ClCompile Include="Package.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
@@ -176,6 +178,7 @@
     <Midl Include="HotkeyManager.idl" />
     <Midl Include="KeyboardHook.idl" />
     <Midl Include="LayoutMapManaged.idl" />
+    <Midl Include="Notifications.idl" />
     <Midl Include="Package.idl" />
     <Midl Include="ThemeHelper.idl" />
     <Midl Include="TwoWayPipeMessageIPCManaged.idl" />
@@ -183,6 +186,9 @@
   <ItemGroup>
     <ProjectReference Include="..\logger\logger.vcxproj">
       <Project>{d9b8fc84-322a-4f9f-bbb9-20915c47ddfd}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\notifications\notifications.vcxproj">
+      <Project>{1d5be09d-78c0-4fd7-af00-ae7c1af7c525}</Project>
     </ProjectReference>
   </ItemGroup>
   <ImportGroup Label="ExtensionTargets" />

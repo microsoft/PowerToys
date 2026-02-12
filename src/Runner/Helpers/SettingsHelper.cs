@@ -10,6 +10,7 @@ using System.Globalization;
 using System.IO;
 using System.IO.Pipelines;
 using System.Linq;
+using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading;
@@ -125,7 +126,9 @@ namespace RunnerV2.Helpers
 
                                         break;
                                     case "check_for_updates":
-                                        UpdateSettingsHelper.TriggerUpdateCheck();
+                                        var version = Assembly.GetExecutingAssembly().GetName().Version!;
+                                        var versionString = "v" + version.Major + "." + version.Minor + "." + version.Build;
+                                        UpdateSettingsHelper.TriggerUpdateCheck((version) => { PowerToys.Interop.Notifications.ShowUpdateAvailableNotification("PowerToys", "An update to PowerToys is available.\n" + versionString + " \u2192 " + version, "PTUpdateNotifyTag", "Update Now", "More info..."); });
                                         break;
                                     case "request_update_state_date":
                                         JsonObject response = [];

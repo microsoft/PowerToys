@@ -24,7 +24,7 @@ namespace Update
         private const string INSTALLERFILENAME = "powertoyssetup";
         private const string USERINSTALLERFILENAME = "powertoysusersetup";
 
-        public static void TriggerUpdateCheck()
+        public static void TriggerUpdateCheck(Action<string> doIfUpdateAvailable)
         {
             if (_updateThread is not null && _updateThread.IsAlive)
             {
@@ -41,6 +41,7 @@ namespace Update
                         break;
                     case UpdateInfo.UpdateAvailable ua:
                         ProcessUpdateAvailable(ua);
+                        doIfUpdateAvailable($"v{ua.AvailableVersion.Major}.{ua.AvailableVersion.Minor}.{ua.AvailableVersion.Build}");
                         break;
                     case UpdateInfo.NoUpdateAvailable:
                         ProcessNoUpdateAvailable();
@@ -86,11 +87,11 @@ namespace Update
                 return new UpdateInfo.NoUpdateAvailable();
             }
 
-            if (currentVersion is { Major: 0, Minor: 0 })
+            /*if (currentVersion is { Major: 0, Minor: 0 })
             {
                 // Pre-release or local build, skip update check
                 return new UpdateInfo.NoUpdateAvailable();
-            }
+            }*/
 
             try
             {

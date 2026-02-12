@@ -150,7 +150,14 @@ namespace RunnerV2
                     continue;
                 }
 
-                HandleMessage(msg.HWnd, msg.Message, (nint)msg.WParam, (nint)msg.LParam);
+                try
+                {
+                    HandleMessage(msg.HWnd, msg.Message, (nint)msg.WParam, (nint)msg.LParam);
+                }
+                catch (Exception e)
+                {
+                    Logger.LogError("Uncaught error in message handling: ", e);
+                }
             }
 
             Close();

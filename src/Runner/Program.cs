@@ -52,8 +52,17 @@ internal sealed class Program
             case SpecialMode.CouldntToggleFileExplorerModulesNotification:
                 Environment.Exit(NotificationHelper.DisableToast(NotificationHelper.ToastType.CouldntToggleFileExplorerModules) ? 1 : 0);
                 return;
+            case SpecialMode.Win32ToastNotificationCOMServer:
+                PowerToys.Interop.Notifications.RunDesktopAppActivatorLoop();
+                return;
+            case SpecialMode.ReportSuccessfulUpdate:
+                PowerToys.Interop.Notifications.RemoveToastsByTag("PTUpdateNotifyTag");
+                PowerToys.Interop.Notifications.RemoveAllScheduledToasts();
+                PowerToys.Interop.Notifications.ShowToastWithActivation("PowerToys was updated successfully", "PowerToys", "PTUpdateNotifyTag");
+                return;
             default:
-                throw new NotImplementedException("Special modes are not implemented yet.");
+                Logger.LogError("Unexpected special mode detected");
+                return;
         }
 
         // If PowerToys restarted the old process may still be around
@@ -159,6 +168,16 @@ internal sealed class Program
     /// <returns>The <see cref="SpecialMode"/> the app should run in.</returns>
     private static SpecialMode ShouldRunInSpecialMode(string[] args)
     {
+        if (args.Contains("-ToastActivated"))
+        {
+            return SpecialMode.Win32ToastNotificationCOMServer;
+        }
+
+        if (args.Contains("-report_update_success"))
+        {
+            return SpecialMode.ReportSuccessfulUpdate;
+        }
+
         if (args.Length > 0 && args[0].StartsWith("powertoys://", StringComparison.InvariantCultureIgnoreCase))
         {
             Uri uri = new(args[0]);

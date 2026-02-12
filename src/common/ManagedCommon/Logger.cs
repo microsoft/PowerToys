@@ -186,14 +186,20 @@ namespace ManagedCommon
 
         private static void Log(string message, string type, string memberName, string sourceFilePath, int sourceLineNumber)
         {
-            Trace.WriteLine("[" + DateTime.Now.TimeOfDay + "] [" + type + "] " + GetCallerInfo(memberName, sourceFilePath, sourceLineNumber));
-            Trace.Indent();
-            if (message != string.Empty)
+            try
             {
-                Trace.WriteLine(message);
-            }
+                Trace.WriteLine("[" + DateTime.Now.TimeOfDay + "] [" + type + "] " + GetCallerInfo(memberName, sourceFilePath, sourceLineNumber));
+                Trace.Indent();
+                if (message != string.Empty)
+                {
+                    Trace.WriteLine(message);
+                }
 
-            Trace.Unindent();
+                Trace.Unindent();
+            }
+            catch
+            {
+            }
         }
 
         private static string GetCallerInfo(string memberName, string sourceFilePath, int sourceLineNumber)
