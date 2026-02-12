@@ -35,10 +35,6 @@ internal static class ResultHelper
         for (var i = 0; i < list.Count; i++)
         {
             var window = list[i].Item;
-            if (window?.Process is null)
-            {
-                continue;
-            }
 
             if (string.Equals(window.Process.Name, "explorer.exe", StringComparison.OrdinalIgnoreCase) && window.Process.IsShellProcess)
             {

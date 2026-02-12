@@ -98,7 +98,7 @@ internal sealed class OpenWindows
     /// <param name="lParam">Value being passed from the caller (we don't use this but might come in handy
     /// in the future</param>
     /// <returns>true to make sure to continue enumeration</returns>
-    internal bool WindowEnumerationCallBack(IntPtr hwnd, IntPtr lParam)
+    private bool WindowEnumerationCallBack(IntPtr hwnd, IntPtr lParam)
     {
         var tokenHandle = GCHandle.FromIntPtr(lParam);
         var target = (CancellationToken?)tokenHandle.Target ?? CancellationToken.None;

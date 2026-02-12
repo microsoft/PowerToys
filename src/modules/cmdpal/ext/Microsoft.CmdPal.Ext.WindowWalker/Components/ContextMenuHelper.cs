@@ -16,11 +16,14 @@ internal static class ContextMenuHelper
 {
     internal static List<CommandContextItem> GetContextMenuResults(in WindowWalkerListItem listItem)
     {
-        if (listItem?.Window is not Window windowData)
+        ArgumentNullException.ThrowIfNull(listItem);
+
+        if (listItem.Window is null)
         {
             return [];
         }
 
+        var windowData = listItem.Window;
         var contextMenu = new List<CommandContextItem>
         {
             new(new CloseWindowCommand(windowData))

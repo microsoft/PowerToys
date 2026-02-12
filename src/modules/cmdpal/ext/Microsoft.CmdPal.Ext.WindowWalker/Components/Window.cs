@@ -115,7 +115,7 @@ internal sealed class Window
     /// <summary>
     /// Gets a value indicating whether the window is minimized
     /// </summary>
-    internal bool Minimized => GetWindowSizeState() == WindowSizeState.Minimized;
+    private bool Minimized => GetWindowSizeState() == WindowSizeState.Minimized;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="Window"/> class.
@@ -159,7 +159,7 @@ internal sealed class Window
     /// <summary>
     /// Helper function to close the window
     /// </summary>
-    internal void CloseThisWindowHelper()
+    private void CloseThisWindowHelper()
     {
         _ = NativeMethods.SendMessageTimeout(Hwnd, Win32Constants.WM_SYSCOMMAND, Win32Constants.SC_CLOSE, 0, 0x0000, 5000, out _);
     }
@@ -169,7 +169,7 @@ internal sealed class Window
     /// </summary>
     internal void CloseThisWindow()
     {
-        Thread thread = new(new ThreadStart(CloseThisWindowHelper));
+        Thread thread = new(CloseThisWindowHelper);
         thread.Start();
     }
 
@@ -188,24 +188,24 @@ internal sealed class Window
         }
 
         // Try WM_GETICON with SendMessageTimeout
-        if (NativeMethods.SendMessageTimeout(Hwnd, Win32Constants.WM_GETICON, (UIntPtr)Win32Constants.ICON_BIG, IntPtr.Zero, Win32Constants.SMTO_ABORTIFHUNG, 100, out var result) != 0 && result != 0)
+        if (NativeMethods.SendMessageTimeout(Hwnd, Win32Constants.WM_GETICON, Win32Constants.ICON_BIG, IntPtr.Zero, Win32Constants.SMTO_ABORTIFHUNG, 100, out var result) != 0 && result != 0)
         {
-            icon = System.Drawing.Icon.FromHandle((IntPtr)result);
-            NativeMethods.DestroyIcon((IntPtr)result);
+            icon = System.Drawing.Icon.FromHandle(result);
+            NativeMethods.DestroyIcon(result);
             return true;
         }
 
-        if (NativeMethods.SendMessageTimeout(Hwnd, Win32Constants.WM_GETICON, (UIntPtr)Win32Constants.ICON_SMALL, IntPtr.Zero, Win32Constants.SMTO_ABORTIFHUNG, 100, out result) != 0 && result != 0)
+        if (NativeMethods.SendMessageTimeout(Hwnd, Win32Constants.WM_GETICON, Win32Constants.ICON_SMALL, IntPtr.Zero, Win32Constants.SMTO_ABORTIFHUNG, 100, out result) != 0 && result != 0)
         {
-            icon = System.Drawing.Icon.FromHandle((IntPtr)result);
-            NativeMethods.DestroyIcon((IntPtr)result);
+            icon = System.Drawing.Icon.FromHandle(result);
+            NativeMethods.DestroyIcon(result);
             return true;
         }
 
-        if (NativeMethods.SendMessageTimeout(Hwnd, Win32Constants.WM_GETICON, (UIntPtr)Win32Constants.ICON_SMALL2, IntPtr.Zero, Win32Constants.SMTO_ABORTIFHUNG, 100, out result) != 0 && result != 0)
+        if (NativeMethods.SendMessageTimeout(Hwnd, Win32Constants.WM_GETICON, Win32Constants.ICON_SMALL2, IntPtr.Zero, Win32Constants.SMTO_ABORTIFHUNG, 100, out result) != 0 && result != 0)
         {
-            icon = System.Drawing.Icon.FromHandle((IntPtr)result);
-            NativeMethods.DestroyIcon((IntPtr)result);
+            icon = System.Drawing.Icon.FromHandle(result);
+            NativeMethods.DestroyIcon(result);
             return true;
         }
 
@@ -214,7 +214,7 @@ internal sealed class Window
         if (iconHandle != IntPtr.Zero)
         {
             icon = System.Drawing.Icon.FromHandle(iconHandle);
-            NativeMethods.DestroyIcon((IntPtr)iconHandle);
+            NativeMethods.DestroyIcon(iconHandle);
             return true;
         }
 
@@ -222,7 +222,7 @@ internal sealed class Window
         if (iconHandle != IntPtr.Zero)
         {
             icon = System.Drawing.Icon.FromHandle(iconHandle);
-            NativeMethods.DestroyIcon((IntPtr)iconHandle);
+            NativeMethods.DestroyIcon(iconHandle);
             return true;
         }
 
@@ -242,8 +242,8 @@ internal sealed class Window
     /// <summary>
     /// Returns what the window size is
     /// </summary>
-    /// <returns>The state (minimized, maximized, etc..) of the window</returns>
-    internal WindowSizeState GetWindowSizeState()
+    /// <returns>The state (minimized, maximized, etc...) of the window</returns>
+    private WindowSizeState GetWindowSizeState()
     {
         NativeMethods.GetWindowPlacement(Hwnd, out var placement);
 
@@ -369,7 +369,7 @@ internal sealed class Window
             {
                 new Task(() =>
                 {
-                    var callbackptr = new EnumWindowsProc((IntPtr hwnd, IntPtr lParam) =>
+                    var callbackptr = new EnumWindowsProc((hwnd, _) =>
                     {
                         // Every uwp app main window has at least three child windows. Only the one we are interested in has a class starting with "Windows.UI.Core." and is assigned to the real app process.
                         // (The other ones have a class name that begins with the string "ApplicationFrame".)
