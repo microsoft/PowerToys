@@ -186,7 +186,11 @@ function Get-NuspecDependencies {
 
     try {
         # Extract .nupkg (it's a zip file)
-        Expand-Archive -Path $NupkgPath -DestinationPath $tempDir -Force
+        # Workaround: Expand-Archive may not recognize .nupkg extension, so copy to .zip first
+        $tempZip = Join-Path $env:TEMP "temp_$(Get-Random).zip"
+        Copy-Item $NupkgPath -Destination $tempZip -Force
+        Expand-Archive -Path $tempZip -DestinationPath $tempDir -Force
+        Remove-Item $tempZip -Force -ErrorAction SilentlyContinue
 
         # Find .nuspec file
         $nuspecFile = Get-ChildItem -Path $tempDir -Filter "*.nuspec" -Recurse | Select-Object -First 1
