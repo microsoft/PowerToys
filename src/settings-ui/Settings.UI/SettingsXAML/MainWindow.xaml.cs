@@ -162,7 +162,7 @@ namespace Microsoft.PowerToys.Settings.UI
             var hWnd = WindowNative.GetWindowHandle(this);
             WindowHelper.SerializePlacement(hWnd);
 
-            if (!App.IsOobeOrScoobeOpen())
+            if (!App.IsSecondaryWindowOpen())
             {
                 App.ClearSettingsWindow();
             }

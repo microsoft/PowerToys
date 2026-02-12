@@ -39,6 +39,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             DataContext = ViewModel;
 
             Loaded += (s, e) => ViewModel.OnPageLoaded();
+            Unloaded += (s, e) => ViewModel?.Dispose();
         }
 
         public void RefreshEnabledState()
