@@ -777,4 +777,46 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="Settings_ExtensionsPage_More_Button.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>More options</value>
   </data>
+  <data name="ImageContentViewer_ZoomAndScroll.Text" xml:space="preserve">
+    <value>Zoom &amp; Scroll</value>
+  </data>
+  <data name="ImageContentViewer_OpenZoomViewer.Text" xml:space="preserve">
+    <value>Open Zoom Viewer</value>
+  </data>
+  <data name="ImageContentViewer_CopyImage.Text" xml:space="preserve">
+    <value>Copy Image</value>
+  </data>
+  <data name="ImageViewer_ZoomIn.Content" xml:space="preserve">
+    <value>Zoom in</value>
+  </data>
+  <data name="ImageViewer_ZoomOut.Content" xml:space="preserve">
+    <value>Zoom out</value>
+  </data>
+  <data name="ImageViewer_ZoomToFit.Content" xml:space="preserve">
+    <value>Zoom to fit</value>
+  </data>
+  <data name="PlainTextContentViewer_Copy.Text" xml:space="preserve">
+    <value>Copy</value>
+  </data>
+  <data name="PlainTextContentViewer_SelectAll.Text" xml:space="preserve">
+    <value>Select All</value>
+  </data>
+  <data name="PlainTextContentViewer_WordWrap.Text" xml:space="preserve">
+    <value>Word Wrap</value>
+  </data>
+  <data name="PlainTextContentViewer_MonospaceFont.Text" xml:space="preserve">
+    <value>Monospace Font</value>
+  </data>
+  <data name="ImageViewer_ZoomInButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Zoom in</value>
+  </data>
+  <data name="ImageViewer_ZoomOutButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Zoom out</value>
+  </data>
+  <data name="ImageViewer_ZoomToFitButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Zoom to fit</value>
+  </data>
+  <data name="ImageContentViewer_OpenZoomOverlayButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Zoom and Scroll</value>
+  </data>
 </root>

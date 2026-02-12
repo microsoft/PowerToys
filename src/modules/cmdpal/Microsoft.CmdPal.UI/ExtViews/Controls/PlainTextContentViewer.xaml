@@ -19,19 +19,19 @@
                 Text="{Binding Text, Mode=OneWay}">
                 <TextBlock.ContextFlyout>
                     <MenuFlyout>
-                        <MenuFlyoutItem x:Name="CopySelectionItem" Text="Copy" Icon="Copy" Click="CopySelection_Click">
+                        <MenuFlyoutItem x:Name="CopySelectionItem" x:Uid="PlainTextContentViewer_Copy" Text="Copy" Icon="Copy" Click="CopySelection_Click">
                             <MenuFlyoutItem.KeyboardAccelerators>
                                 <KeyboardAccelerator  Key="C" Modifiers="Control" />
                             </MenuFlyoutItem.KeyboardAccelerators>
                         </MenuFlyoutItem>
-                        <MenuFlyoutItem Text="Select All" Icon="SelectAll" Click="SelectAll_Click">
+                        <MenuFlyoutItem x:Uid="PlainTextContentViewer_SelectAll" Text="Select All" Icon="SelectAll" Click="SelectAll_Click">
                             <MenuFlyoutItem.KeyboardAccelerators>
                                 <KeyboardAccelerator  Key="A" Modifiers="Control" />
                             </MenuFlyoutItem.KeyboardAccelerators>
                         </MenuFlyoutItem>
                         <MenuFlyoutSeparator />
-                        <ToggleMenuFlyoutItem Text="Word Wrap" IsChecked="{x:Bind WordWrapEnabled, Mode=TwoWay}" />
-                        <ToggleMenuFlyoutItem Text="Monospace Font" IsChecked="{x:Bind UseMonospace, Mode=TwoWay}" />
+                        <ToggleMenuFlyoutItem x:Uid="PlainTextContentViewer_WordWrap" Text="Word Wrap" IsChecked="{x:Bind WordWrapEnabled, Mode=TwoWay}" />
+                        <ToggleMenuFlyoutItem x:Uid="PlainTextContentViewer_MonospaceFont" Text="Monospace Font" IsChecked="{x:Bind UseMonospace, Mode=TwoWay}" />
                     </MenuFlyout>
                 </TextBlock.ContextFlyout>
             </TextBlock>

@@ -39,6 +39,7 @@
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Stretch">
                     <Button x:Name="OpenZoomOverlayButton"
+                            x:Uid="ImageContentViewer_OpenZoomOverlayButton"
                             IsHitTestVisible="True"
                             Padding="8,4"
                             Style="{StaticResource ButtonRevealStyle}"
@@ -47,7 +48,7 @@
                             SizeChanged="OpenZoomOverlayButton_SizeChanged">
                         <StackPanel Orientation="Horizontal" Spacing="6">
                             <SymbolIcon Symbol="Zoom" />
-                            <TextBlock Text="Zoom &amp; Scroll" />
+                            <TextBlock x:Uid="ImageContentViewer_ZoomAndScroll" Text="Zoom &amp; Scroll" />
                         </StackPanel>
                     </Button>
                 </Canvas>
@@ -55,9 +56,9 @@
         </Border>
         <Grid.ContextFlyout>
             <MenuFlyout>
-                <MenuFlyoutItem Text="Open Zoom Viewer" Icon="Zoom" Click="OpenZoomOverlay_Click" />
+                <MenuFlyoutItem x:Uid="ImageContentViewer_OpenZoomViewer" Text="Open Zoom Viewer" Icon="Zoom" Click="OpenZoomOverlay_Click" />
                 <MenuFlyoutSeparator />
-                <MenuFlyoutItem Text="Copy Image" Icon="Copy" Click="CopyImage_Click" />
+                <MenuFlyoutItem x:Uid="ImageContentViewer_CopyImage" Text="Copy Image" Icon="Copy" Click="CopyImage_Click" />
             </MenuFlyout>
         </Grid.ContextFlyout>
     </Grid>
