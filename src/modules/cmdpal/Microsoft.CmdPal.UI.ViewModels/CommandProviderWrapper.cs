@@ -7,6 +7,7 @@ using Microsoft.CmdPal.Core.Common;
 using Microsoft.CmdPal.Core.Common.Services;
 using Microsoft.CmdPal.Core.ViewModels;
 using Microsoft.CmdPal.Core.ViewModels.Models;
+using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.Extensions.DependencyInjection;
@@ -24,6 +25,8 @@ public sealed class CommandProviderWrapper
     private readonly ExtensionObject<ICommandProvider> _commandProvider;
 
     private readonly TaskScheduler _taskScheduler;
+
+    private readonly ICommandProviderCache? _commandProviderCache;
 
     public TopLevelViewModel[] TopLevelItems { get; private set; } = [];
 
@@ -47,13 +50,7 @@ public sealed class CommandProviderWrapper
 
     public bool IsActive { get; private set; }
 
-    public string ProviderId
-    {
-        get
-        {
-            return string.IsNullOrEmpty(Extension?.ExtensionUniqueId) ? Id : Extension.ExtensionUniqueId;
-        }
-    }
+    public string ProviderId => string.IsNullOrEmpty(Extension?.ExtensionUniqueId) ? Id : Extension.ExtensionUniqueId;
 
     public CommandProviderWrapper(ICommandProvider provider, TaskScheduler mainThread)
     {
@@ -81,9 +78,11 @@ public sealed class CommandProviderWrapper
         Logger.LogDebug($"Initialized command provider {ProviderId}");
     }
 
-    public CommandProviderWrapper(IExtensionWrapper extension, TaskScheduler mainThread)
+    public CommandProviderWrapper(IExtensionWrapper extension, TaskScheduler mainThread, ICommandProviderCache commandProviderCache)
     {
         _taskScheduler = mainThread;
+        _commandProviderCache = commandProviderCache;
+
         Extension = extension;
         ExtensionHost = new CommandPaletteHost(extension);
         if (!Extension.IsRunning())
@@ -132,28 +131,32 @@ public sealed class CommandProviderWrapper
         if (!isValid)
         {
             IsActive = false;
+            RecallFromCache();
             return;
         }
 
         var settings = serviceProvider.GetService<SettingsModel>()!;
 
-        IsActive = GetProviderSettings(settings).IsEnabled;
+        var providerSettings = GetProviderSettings(settings);
+        IsActive = providerSettings.IsEnabled;
         if (!IsActive)
         {
+            RecallFromCache();
             return;
         }
 
         ICommandItem[]? commands = null;
         IFallbackCommandItem[]? fallbacks = null;
         ICommandItem[] dockBands = []; // do not initialize me to null
+        var displayInfoInitialized = false;
 
         try
         {
             var model = _commandProvider.Unsafe!;
 
-            Task<ICommandItem[]> t = new(model.TopLevelCommands);
-            t.Start();
-            commands = await t.ConfigureAwait(false);
+            Task<ICommandItem[]> loadTopLevelCommandsTask = new(model.TopLevelCommands);
+            loadTopLevelCommandsTask.Start();
+            commands = await loadTopLevelCommandsTask.ConfigureAwait(false);
 
             // On a BG thread here
             fallbacks = model.FallbackCommands();
@@ -177,6 +180,13 @@ public sealed class CommandProviderWrapper
             DisplayName = model.DisplayName;
             Icon = new(model.Icon);
             Icon.InitializeProperties();
+            displayInfoInitialized = true;
+
+            // Update cached display name
+            if (_commandProviderCache is not null && Extension?.ExtensionUniqueId is not null)
+            {
+                _commandProviderCache.Memorize(Extension.ExtensionUniqueId, new CommandProviderCacheItem(model.DisplayName));
+            }
 
             // Note: explicitly not InitializeProperties()ing the settings here. If
             // we do that, then we'd regress GH #38321
@@ -193,6 +203,25 @@ public sealed class CommandProviderWrapper
             Logger.LogError("Failed to load commands from extension");
             Logger.LogError($"Extension was {Extension!.PackageFamilyName}");
             Logger.LogError(e.ToString());
+
+            if (!displayInfoInitialized)
+            {
+                RecallFromCache();
+            }
+        }
+    }
+
+    private void RecallFromCache()
+    {
+        var cached = _commandProviderCache?.Recall(ProviderId);
+        if (cached is not null)
+        {
+            DisplayName = cached.DisplayName;
+        }
+
+        if (string.IsNullOrWhiteSpace(DisplayName))
+        {
+            DisplayName = Extension?.PackageDisplayName ?? Extension?.PackageFamilyName ?? ProviderId;
         }
     }
 

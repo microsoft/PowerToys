@@ -50,7 +50,7 @@
                                         AutomationProperties.AccessibilityView="Raw"
                                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                         SourceKey="{x:Bind Icon, Mode=OneWay}"
-                                        SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}" />
+                                        SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested16}" />
                                 </local:DockItemControl.Icon>
                             </local:DockItemControl>
                         </DataTemplate>
@@ -159,7 +159,7 @@
                                         VerticalAlignment="Center"
                                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                         SourceKey="{x:Bind IconViewModel, Mode=OneWay}"
-                                        SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}" />
+                                        SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested20}" />
                                     <TextBlock
                                         Grid.Column="1"
                                         VerticalAlignment="Center"

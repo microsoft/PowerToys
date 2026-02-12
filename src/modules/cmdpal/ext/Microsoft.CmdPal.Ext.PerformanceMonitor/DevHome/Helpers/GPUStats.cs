@@ -53,8 +53,8 @@ internal sealed partial class GPUStats : IDisposable
         // the card template and in the details metadata.
         _gpuCounters.Clear();
 
-        var pcg = new PerformanceCounterCategory("GPU Engine");
-        var instanceNames = pcg.GetInstanceNames();
+        var perfCounterCategory = new PerformanceCounterCategory("GPU Engine");
+        var instanceNames = perfCounterCategory.GetInstanceNames();
 
         foreach (var instanceName in instanceNames)
         {
@@ -63,7 +63,7 @@ internal sealed partial class GPUStats : IDisposable
                 continue;
             }
 
-            var utilizationCounters = pcg.GetCounters(instanceName)
+            var utilizationCounters = perfCounterCategory.GetCounters(instanceName)
                 .Where(x => x.CounterName.StartsWith("Utilization Percentage", StringComparison.InvariantCulture));
 
             foreach (var counter in utilizationCounters)
@@ -106,7 +106,7 @@ internal sealed partial class GPUStats : IDisposable
         // Microsoft.Management.Infrastructure, which is not compatible with
         // AOT.
         //
-        // For now, we'll just use the indicies as the GPU names.
+        // For now, we'll just use the indices as the GPU names.
         _stats.Clear();
         foreach (var (k, v) in _gpuCounters)
         {

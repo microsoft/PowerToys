@@ -19,7 +19,7 @@ public partial class OpenSettingsCommand : InvokableCommand
 
     public override ICommandResult Invoke()
     {
-        WeakReferenceMessenger.Default.Send<OpenSettingsMessage>(new());
+        WeakReferenceMessenger.Default.Send(new OpenSettingsMessage());
         return CommandResult.KeepOpen();
     }
 }

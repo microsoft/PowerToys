@@ -34,6 +34,7 @@ using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.PowerToys.Telemetry;
+using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 
 // To learn more about WinUI, the WinUI project structure,
@@ -43,7 +44,7 @@ namespace Microsoft.CmdPal.UI;
 /// <summary>
 /// Provides application-specific behavior to supplement the default Application class.
 /// </summary>
-public partial class App : Application
+public partial class App : Application, IDisposable
 {
     private readonly GlobalErrorHandler _globalErrorHandler = new();
 
@@ -69,10 +70,12 @@ public partial class App : Application
     public App()
     {
 #if !CMDPAL_DISABLE_GLOBAL_ERROR_HANDLER
-        _globalErrorHandler.Register(this);
+        _globalErrorHandler.Register(this, GlobalErrorHandler.Options.Default);
 #endif
 
         Services = ConfigureServices();
+
+        IconCacheProvider.Initialize(Services);
 
         this.InitializeComponent();
 
@@ -115,12 +118,13 @@ public partial class App : Application
 
         // Root services
         services.AddSingleton(TaskScheduler.FromCurrentSynchronizationContext());
+        var dispatcherQueue = DispatcherQueue.GetForCurrentThread();
 
         AddBuiltInCommands(services);
 
         AddCoreServices(services);
 
-        AddUIServices(services);
+        AddUIServices(services, dispatcherQueue);
 
         return services.BuildServiceProvider();
     }
@@ -172,7 +176,7 @@ public partial class App : Application
         services.AddSingleton<ICommandProvider, PerformanceMonitorCommandsProvider>();
     }
 
-    private static void AddUIServices(ServiceCollection services)
+    private static void AddUIServices(ServiceCollection services, DispatcherQueue dispatcherQueue)
     {
         // Models
         var sm = SettingsModel.LoadSettings();
@@ -181,6 +185,7 @@ public partial class App : Application
         services.AddSingleton(state);
 
         // Services
+        services.AddSingleton<ICommandProviderCache, DefaultCommandProviderCache>();
         services.AddSingleton<TopLevelCommandManager>();
         services.AddSingleton<AliasManager>();
         services.AddSingleton<HotkeyManager>();
@@ -190,6 +195,8 @@ public partial class App : Application
 
         services.AddSingleton<IThemeService, ThemeService>();
         services.AddSingleton<ResourceSwapper>();
+
+        services.AddIconServices(dispatcherQueue);
     }
 
     private static void AddCoreServices(ServiceCollection services)
@@ -206,5 +213,12 @@ public partial class App : Application
         services.AddSingleton<ShellViewModel>();
         services.AddSingleton<DockViewModel>();
         services.AddSingleton<IPageViewModelFactoryService, CommandPalettePageViewModelFactory>();
+    }
+
+    public void Dispose()
+    {
+        _globalErrorHandler.Dispose();
+        EtwTrace.Dispose();
+        GC.SuppressFinalize(this);
     }
 }

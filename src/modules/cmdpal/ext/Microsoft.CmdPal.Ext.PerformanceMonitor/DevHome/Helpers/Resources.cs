@@ -55,8 +55,7 @@ public static class Resources
     }
 
     public static string ReplaceIdentifersFast(
-        string original,
-        ILogger? log = null)
+        string original)
     {
         // walk the string, looking for a pair of '%' characters
         StringBuilder sb = new();
@@ -69,7 +68,7 @@ public static class Resources
                 if (end > i)
                 {
                     var identifier = original.Substring(i + 1, end - i - 1);
-                    var resourceString = GetResource(identifier, log);
+                    var resourceString = GetResource(identifier);
                     sb.Append(resourceString);
                     i = end; // move index to the end '%'
                     continue;
@@ -80,43 +79,6 @@ public static class Resources
         }
 
         return sb.ToString();
-    }
-
-    // These are all the string identifiers that appear in widgets.
-    public static string[] GetWidgetResourceIdentifiers()
-    {
-        return
-        [
-            "Widget_Template/Loading",
-            "Widget_Template_Tooltip/Submit",
-            "Memory_Widget_Template/SystemMemory",
-            "Memory_Widget_Template/MemoryUsage",
-            "Memory_Widget_Template/AllMemory",
-            "Memory_Widget_Template/UsedMemory",
-            "Memory_Widget_Template/Committed",
-            "Memory_Widget_Template/Cached",
-            "Memory_Widget_Template/NonPagedPool",
-            "Memory_Widget_Template/PagedPool",
-            "NetworkUsage_Widget_Template/Network_Usage",
-            "NetworkUsage_Widget_Template/Sent",
-            "NetworkUsage_Widget_Template/Received",
-            "NetworkUsage_Widget_Template/Network_Name",
-            "NetworkUsage_Widget_Template/Previous_Network",
-            "NetworkUsage_Widget_Template/Next_Network",
-            "NetworkUsage_Widget_Template/Ethernet_Heading",
-            "GPUUsage_Widget_Template/GPU_Usage",
-            "GPUUsage_Widget_Template/GPU_Name",
-            "GPUUsage_Widget_Template/GPU_Temperature",
-            "GPUUsage_Widget_Template/Previous_GPU",
-            "GPUUsage_Widget_Template/Next_GPU",
-            "CPUUsage_Widget_Template/CPU_Usage",
-            "CPUUsage_Widget_Template/CPU_Speed",
-            "CPUUsage_Widget_Template/Processes",
-            "CPUUsage_Widget_Template/End_Process",
-            "Widget_Template_Button/Preview",
-            "Widget_Template_Button/Save",
-            "Widget_Template_Button/Cancel",
-        ];
     }
 
     private static void DebugResources(ILogger? log)
