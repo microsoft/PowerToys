@@ -112,6 +112,7 @@ public sealed partial class ImageViewer : UserControl
                 e.Handled = true;
                 break;
             case VirtualKey.Number0:
+            case VirtualKey.NumberPad0:
                 ResetView();
                 CenterImage();
                 e.Handled = true;
@@ -147,6 +148,9 @@ public sealed partial class ImageViewer : UserControl
         }
     }
 
+    /// <summary>
+    /// Zoom relative to viewport center (used by keyboard shortcuts and toolbar buttons).
+    /// </summary>
     private void ZoomRelative(double factor)
     {
         var target = _scale * factor;
@@ -183,27 +187,53 @@ public sealed partial class ImageViewer : UserControl
         e.Handled = true;
     }
 
+    /// <summary>
+    /// Applies zoom so the image point under <paramref name="pivot"/> stays fixed.
+    /// </summary>
+    /// <remarks>
+    /// The image element uses <c>RenderTransformOrigin="0.5,0.5"</c> and is centered
+    /// in the viewport via layout alignment. This means the effective transform origin
+    /// in viewport coordinates is the viewport center.
+    ///
+    /// The full mapping from image-local to viewport space is:
+    ///   screen = viewportCenter + (imgLocal - imgCenter) × scale + translate
+    ///
+    /// Because the image is layout-centered, the viewport center acts as the origin
+    /// for the transform group, giving us:
+    ///   screen = origin + relativeOffset × scale + translate
+    /// </remarks>
     private void SetScale(double targetScale, Point pivot)
     {
-        if (targetScale < MinScale)
-        {
-            targetScale = MinScale;
-        }
-        else if (targetScale > MaxScale)
-        {
-            targetScale = MaxScale;
-        }
+        targetScale = Math.Clamp(targetScale, MinScale, MaxScale);
 
         var prevScale = _scale;
+        if (targetScale == prevScale)
+        {
+            return;
+        }
+
+        // The effective transform origin is the viewport center
+        // (RenderTransformOrigin="0.5,0.5" + centered layout).
+        var vw = _host?.ActualWidth ?? ActualWidth;
+        var vh = _host?.ActualHeight ?? ActualHeight;
+        var originX = vw / 2.0;
+        var originY = vh / 2.0;
+
+        // Convert pivot to image-relative-to-origin space using the old transform:
+        //   pivot = origin + rel × oldScale + oldTranslate
+        //   rel   = (pivot - origin - oldTranslate) / oldScale
+        var relX = (pivot.X - originX - TranslateTransform.X) / prevScale;
+        var relY = (pivot.Y - originY - TranslateTransform.Y) / prevScale;
+
         _scale = targetScale;
         ScaleTransform.ScaleX = _scale;
         ScaleTransform.ScaleY = _scale;
 
-        var dx = pivot.X - TranslateTransform.X;
-        var dy = pivot.Y - TranslateTransform.Y;
-        var scaleRatio = _scale / prevScale;
-        TranslateTransform.X -= dx * (scaleRatio - 1);
-        TranslateTransform.Y -= dy * (scaleRatio - 1);
+        // Solve for new translate so the same image point stays under the pivot:
+        //   pivot = origin + rel × newScale + newTranslate
+        //   newTranslate = pivot - origin - rel × newScale
+        TranslateTransform.X = pivot.X - originX - (relX * _scale);
+        TranslateTransform.Y = pivot.Y - originY - (relY * _scale);
         ClampTranslation();
     }
 

@@ -14,6 +14,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
+using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Windows.ApplicationModel.DataTransfer;
@@ -238,7 +239,7 @@ public sealed partial class ImageContentViewer : UserControl
                 FallbackColor = Microsoft.UI.Colors.Gray,
                 AlwaysUseFallback = false,
             },
-            IsTabStop = true,
+            TabFocusNavigation = KeyboardNavigationMode.Local,
         };
 
         // Close popup on Esc pressed at overlay level
