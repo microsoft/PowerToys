@@ -341,7 +341,8 @@ function Resolve-ArtifactBasedDependencies {
         }
     }
 
-    # Update nuget.config
+    # Update nuget.config dynamically during pipeline execution
+    # This modification is temporary and won't be committed back to the repo
     $nugetConfig = Join-Path $rootPath "nuget.config"
     $configData = Read-FileWithEncoding -Path $nugetConfig
     [xml]$xml = $configData.Content
@@ -349,7 +350,7 @@ function Resolve-ArtifactBasedDependencies {
     Add-NuGetSourceAndMapping -Xml $xml -Key "localpackages" -Value $OutputDir -Patterns $allLocalPackages
 
     $xml.Save($nugetConfig)
-    Write-Host "Updated nuget.config with localpackages mapping."
+    Write-Host "Updated nuget.config with localpackages mapping (temporary, for pipeline execution only)."
 
     return $packageVersions
 }
