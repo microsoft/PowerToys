@@ -406,11 +406,6 @@ namespace Microsoft.PowerToys.Settings.UI
             }
         }
 
-        internal void NotifyShortcutConflictWindowClosed()
-        {
-            shortcutConflictWindow = null;
-        }
-
         public static Type GetPage(string settingWindow)
         {
             switch (settingWindow)
