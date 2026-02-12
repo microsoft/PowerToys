@@ -2,32 +2,40 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices.WindowsRuntime;
+using CommunityToolkit.Mvvm.Messaging;
+using Microsoft.CmdPal.Core.ViewModels.Messages;
 using Microsoft.CmdPal.UI.Controls;
+using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CommandPalette.Extensions.Toolkit;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Media.Imaging;
+using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
+using Windows.Graphics.Imaging;
+using Windows.Storage.Streams;
 using Windows.System;
 using DispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue;
 using DispatcherQueueTimer = Microsoft.UI.Dispatching.DispatcherQueueTimer;
+using RS_ = Microsoft.CmdPal.UI.Helpers.ResourceLoaderInstance;
 
 namespace Microsoft.CmdPal.UI.ExtViews.Controls;
 
 public sealed partial class ImageContentViewer : UserControl
 {
-    public static readonly DependencyProperty UniformFitEnabledProperty = DependencyProperty.Register(
-        nameof(UniformFitEnabled), typeof(bool), typeof(ImageContentViewer), new PropertyMetadata(true, OnUniformFitChanged));
+    private const double MaxHeightSafetyPadding = 12 + 20 + 20; // a few pixels to be safe
 
-    private static void OnUniformFitChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-    {
-    }
+    public static readonly DependencyProperty UniformFitEnabledProperty = DependencyProperty.Register(
+        nameof(UniformFitEnabled), typeof(bool), typeof(ImageContentViewer), new PropertyMetadata(true));
 
     private DispatcherQueueTimer? _resizeDebounceTimer;
     private Microsoft.UI.Xaml.Controls.Page? _parentPage;
-    private const double MaxHeightSafetyPadding = 12 + 20 + 20; // a few pixels to be safe
 
     public bool UniformFitEnabled
     {
@@ -145,17 +153,63 @@ public sealed partial class ImageContentViewer : UserControl
         ImageBorder.MaxWidth = ViewModel.MaxWidth;
     }
 
-    private void CopyImage_Click(object sender, RoutedEventArgs e)
+    private async void CopyImage_Click(object sender, RoutedEventArgs e)
     {
-        // If the image has a known URI, copy it as text for now
+        if (this.Image.Source is FontIconSource fontIconSource)
+        {
+            ClipboardHelper.SetText(fontIconSource.Glyph);
+            SendCopiedImageToast();
+            return;
+        }
+
+        try
+        {
+            var renderTarget = new RenderTargetBitmap();
+            await renderTarget.RenderAsync(this.Image);
+
+            var pixelBuffer = await renderTarget.GetPixelsAsync();
+            var pixels = pixelBuffer.ToArray();
+
+            var stream = new InMemoryRandomAccessStream();
+            var encoder = await BitmapEncoder.CreateAsync(BitmapEncoder.PngEncoderId, stream);
+            encoder.SetPixelData(
+                BitmapPixelFormat.Bgra8,
+                BitmapAlphaMode.Premultiplied,
+                (uint)renderTarget.PixelWidth,
+                (uint)renderTarget.PixelHeight,
+                96,
+                96,
+                pixels);
+            await encoder.FlushAsync();
+
+            var dataPackage = new DataPackage();
+            dataPackage.SetBitmap(RandomAccessStreamReference.CreateFromStream(stream));
+            Clipboard.SetContent(dataPackage);
+            SendCopiedImageToast();
+        }
+        catch
+        {
+            CopyImageUri_Click(sender, e);
+        }
+    }
+
+    private void CopyImageUri_Click(object sender, RoutedEventArgs e)
+    {
         var iconVm = ViewModel?.Image;
         var lightTheme = ActualTheme == ElementTheme.Light;
         var data = lightTheme ? iconVm?.Light : iconVm?.Dark;
         var srcKey = data?.Icon ?? string.Empty;
-        if (!string.IsNullOrEmpty(srcKey))
+        if (Uri.TryCreate(srcKey, UriKind.Absolute, out var uri) &&
+            uri.Scheme is "http" or "https")
         {
             ClipboardHelper.SetText(srcKey);
+            WeakReferenceMessenger.Default.Send(new ShowToastMessage(RS_.GetString("ImageContentViewer_Toast_CopiedLink")));
         }
+    }
+
+    private static void SendCopiedImageToast()
+    {
+        WeakReferenceMessenger.Default.Send(new ShowToastMessage(RS_.GetString("ImageContentViewer_Toast_CopiedImage")));
     }
 
     private void OpenZoomOverlay_Click(object sender, RoutedEventArgs e)
@@ -224,15 +278,15 @@ public sealed partial class ImageContentViewer : UserControl
 
         TypedEventHandler<XamlRoot, XamlRootChangedEventArgs>? onRootChanged = (_, _) =>
         {
-            overlay.Width = XamlRoot.Size.Width;
-            overlay.Height = XamlRoot.Size.Height;
+            overlay.Width = popup.XamlRoot.Size.Width;
+            overlay.Height = popup.XamlRoot.Size.Height;
         };
 
-        XamlRoot.Changed += onRootChanged;
+        popup.XamlRoot.Changed += onRootChanged;
 
         popup.Closed += (_, __) =>
         {
-            XamlRoot.Changed -= onRootChanged;
+            popup.XamlRoot.Changed -= onRootChanged;
             popup.Child = null;
         };
 

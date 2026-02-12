@@ -784,7 +784,7 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Open Zoom Viewer</value>
   </data>
   <data name="ImageContentViewer_CopyImage.Text" xml:space="preserve">
-    <value>Copy Image</value>
+    <value>Copy image</value>
   </data>
   <data name="ImageViewer_ZoomIn.Content" xml:space="preserve">
     <value>Zoom in</value>
@@ -818,5 +818,14 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   </data>
   <data name="ImageContentViewer_OpenZoomOverlayButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Zoom and Scroll</value>
+  </data>
+  <data name="ImageContentViewer_CopyImageUri" xml:space="preserve">
+    <value>Copy image location</value>
+  </data>
+  <data name="ImageContentViewer_Toast_CopiedImage" xml:space="preserve">
+    <value>Copied image to clipboard</value>
+  </data>
+  <data name="ImageContentViewer_Toast_CopiedLink" xml:space="preserve">
+    <value>Copied link to clipboard</value>
   </data>
 </root>

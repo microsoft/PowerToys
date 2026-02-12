@@ -13,17 +13,18 @@ namespace Microsoft.CmdPal.UI.Controls;
 
 public sealed partial class ImageViewer : UserControl
 {
-    private Grid? _host;
+    public event EventHandler? CancelRequested;
 
-    private Point _lastPanPoint;
-    private bool _isPanning;
-    private double _scale = 1.0;
     private const double MinScale = 0.25;
     private const double MaxScale = 8.0;
     private const double MinVisiblePadding = 24.0;
     private const double KeyboardPanStep = 24.0;
 
-    public event EventHandler? CancelRequested;
+    private Grid? _host;
+
+    private Point _lastPanPoint;
+    private bool _isPanning;
+    private double _scale = 1.0;
 
     public ImageViewer()
     {

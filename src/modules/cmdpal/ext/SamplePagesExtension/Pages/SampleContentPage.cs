@@ -64,10 +64,11 @@ internal sealed partial class SamplePlainTextContentPage : ContentPage
 [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:File may only contain a single type", Justification = "Sample code")]
 internal sealed partial class SampleImageContentPage : ContentPage
 {
-    private readonly ImageContent _sampleImage = new(IconHelpers.FromRelativePath("Assets/Images/Win-Digital.png"));
-    private readonly ImageContent _sampleImage2 = new(IconHelpers.FromRelativePath("Assets/Images/Win-Digital.png")) { MaxWidth = 200, MaxHeight = 200 };
+    private readonly ImageContent _sampleImage = new(IconHelpers.FromRelativePath("Assets/Images/win-11-bloom-6k.jpg"));
+    private readonly ImageContent _sampleImage2 = new(IconHelpers.FromRelativePath("Assets/Images/win-11-bloom-6k.jpg")) { MaxWidth = 200, MaxHeight = 200 };
+    private readonly ImageContent _sampleImage3 = new(IconHelpers.FromRelativePath("Assets/Images/FluentEmojiChipmunk.svg")) { MaxWidth = 200, MaxHeight = 200 };
 
-    public override IContent[] GetContent() => [_sampleImage, _sampleImage2];
+    public override IContent[] GetContent() => [_sampleImage, _sampleImage2, _sampleImage3];
 
     public SampleImageContentPage()
     {
