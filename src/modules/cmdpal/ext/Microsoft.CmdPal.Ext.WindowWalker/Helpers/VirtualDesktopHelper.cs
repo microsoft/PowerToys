@@ -101,23 +101,17 @@ public class VirtualDesktopHelper
         if (virtualDesktopKey is not null)
         {
             var allDeskValue = (byte[]?)virtualDesktopKey.GetValue("VirtualDesktopIDs", null) ?? [];
-            if (allDeskValue is not null)
-            {
-                // We clear only, if we can read from registry. Otherwise, we keep the existing values.
-                _availableDesktops.Clear();
 
-                // Each guid has a length of 16 elements
-                var numberOfDesktops = allDeskValue.Length / 16;
-                for (var i = 0; i < numberOfDesktops; i++)
-                {
-                    var guidArray = new byte[16];
-                    Array.ConstrainedCopy(allDeskValue, i * 16, guidArray, 0, 16);
-                    _availableDesktops.Add(new Guid(guidArray));
-                }
-            }
-            else
+            // We clear only, if we can read from registry. Otherwise, we keep the existing values.
+            _availableDesktops.Clear();
+
+            // Each guid has a length of 16 elements
+            var numberOfDesktops = allDeskValue.Length / 16;
+            for (var i = 0; i < numberOfDesktops; i++)
             {
-                ExtensionHost.LogMessage(new LogMessage() { Message = $"VirtualDesktopHelper.UpdateDesktopList() failed to read the list of existing desktops form registry." });
+                var guidArray = new byte[16];
+                Array.ConstrainedCopy(allDeskValue, i * 16, guidArray, 0, 16);
+                _availableDesktops.Add(new Guid(guidArray));
             }
         }
 
