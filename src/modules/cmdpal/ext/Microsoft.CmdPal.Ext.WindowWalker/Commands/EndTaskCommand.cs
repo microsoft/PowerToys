@@ -32,7 +32,7 @@ internal sealed partial class EndTaskCommand : InvokableCommand
         // Validate process
         if (!window.IsWindow || !window.Process.DoesExist || string.IsNullOrEmpty(window.Process.Name) || !window.Process.Name.Equals(WindowProcess.GetProcessNameFromProcessID(window.Process.ProcessID), StringComparison.Ordinal))
         {
-            ExtensionHost.LogMessage(new LogMessage() { Message = $"Cannot kill process '{window.Process.Name}' ({window.Process.ProcessID}) of the window '{window.Title}' ({window.Hwnd}), because it doesn't exist." });
+            ExtensionHost.LogMessage(new LogMessage { Message = $"Cannot kill process '{window.Process.Name}' ({window.Process.ProcessID}) of the window '{window.Title}' ({window.Hwnd}), because it doesn't exist." });
 
             // TODO GH #86 -- need to figure out how to show status message once implemented on host
             return false;

@@ -71,7 +71,7 @@ public class VirtualDesktopHelper
         }
         catch (COMException ex)
         {
-            ExtensionHost.LogMessage(new LogMessage() { Message = $"Initialization of <VirtualDesktopHelper> failed: An exception was thrown when creating the instance of COM interface <IVirtualDesktopManager>. {ex} " });
+            ExtensionHost.LogMessage(new LogMessage { Message = $"Initialization of <VirtualDesktopHelper> failed: An exception was thrown when creating the instance of COM interface <IVirtualDesktopManager>. {ex} " });
             return;
         }
 
@@ -129,7 +129,7 @@ public class VirtualDesktopHelper
             {
                 // The registry value is missing when the user hasn't switched the desktop at least one time before reading the registry. In this case we can set it to desktop one.
                 // We can only set it to desktop one, if we have at least one desktop in the desktops list. Otherwise, we keep the existing value.
-                ExtensionHost.LogMessage(new LogMessage() { Message = "VirtualDesktopHelper.UpdateDesktopList() failed to read the id for the current desktop form registry." });
+                ExtensionHost.LogMessage(new LogMessage { Message = "VirtualDesktopHelper.UpdateDesktopList() failed to read the id for the current desktop form registry." });
                 _currentDesktop = _availableDesktops.Count >= 1 ? _availableDesktops[0] : _currentDesktop;
             }
         }
@@ -251,7 +251,7 @@ public class VirtualDesktopHelper
     {
         if (desktop == Guid.Empty || !GetDesktopIdList().Contains(desktop))
         {
-            ExtensionHost.LogMessage(new LogMessage() { Message = $"VirtualDesktopHelper.GetDesktopName() failed. Parameter contains an invalid desktop guid ({desktop}) that doesn't belongs to an available desktop. Maybe the guid belongs to the generic 'AllDesktops' view." });
+            ExtensionHost.LogMessage(new LogMessage { Message = $"VirtualDesktopHelper.GetDesktopName() failed. Parameter contains an invalid desktop guid ({desktop}) that doesn't belongs to an available desktop. Maybe the guid belongs to the generic 'AllDesktops' view." });
             return string.Empty;
         }
 
@@ -309,7 +309,7 @@ public class VirtualDesktopHelper
     {
         if (_virtualDesktopManager is null)
         {
-            ExtensionHost.LogMessage(new LogMessage() { Message = "VirtualDesktopHelper.GetWindowDesktopId() failed: The instance of <IVirtualDesktopHelper> isn't available." });
+            ExtensionHost.LogMessage(new LogMessage { Message = "VirtualDesktopHelper.GetWindowDesktopId() failed: The instance of <IVirtualDesktopHelper> isn't available." });
             desktopId = Guid.Empty;
             return unchecked((int)HRESULT.E_UNEXPECTED);
         }
@@ -326,7 +326,7 @@ public class VirtualDesktopHelper
     {
         if (_virtualDesktopManager is null)
         {
-            ExtensionHost.LogMessage(new LogMessage() { Message = "VirtualDesktopHelper.GetWindowDesktop() failed: The instance of <IVirtualDesktopHelper> isn't available." });
+            ExtensionHost.LogMessage(new LogMessage { Message = "VirtualDesktopHelper.GetWindowDesktop() failed: The instance of <IVirtualDesktopHelper> isn't available." });
             return CreateVDesktopInstance(Guid.Empty);
         }
 
@@ -344,7 +344,7 @@ public class VirtualDesktopHelper
     {
         if (_virtualDesktopManager is null)
         {
-            ExtensionHost.LogMessage(new LogMessage() { Message = "VirtualDesktopHelper.GetWindowDesktopAssignmentType() failed: The instance of <IVirtualDesktopHelper> isn't available." });
+            ExtensionHost.LogMessage(new LogMessage { Message = "VirtualDesktopHelper.GetWindowDesktopAssignmentType() failed: The instance of <IVirtualDesktopHelper> isn't available." });
             return VirtualDesktopAssignmentType.Unknown;
         }
 
@@ -411,14 +411,14 @@ public class VirtualDesktopHelper
     {
         if (_virtualDesktopManager is null)
         {
-            ExtensionHost.LogMessage(new LogMessage() { Message = "VirtualDesktopHelper.MoveWindowToDesktop() failed: The instance of <IVirtualDesktopHelper> isn't available." });
+            ExtensionHost.LogMessage(new LogMessage { Message = "VirtualDesktopHelper.MoveWindowToDesktop() failed: The instance of <IVirtualDesktopHelper> isn't available." });
             return false;
         }
 
         var hr = _virtualDesktopManager.MoveWindowToDesktop(hWindow, ref desktopId);
         if (hr != (int)HRESULT.S_OK)
         {
-            ExtensionHost.LogMessage(new LogMessage() { Message = "VirtualDesktopHelper.MoveWindowToDesktop() failed: An exception was thrown when moving the window ({hWindow}) to another desktop ({desktopId})." });
+            ExtensionHost.LogMessage(new LogMessage { Message = "VirtualDesktopHelper.MoveWindowToDesktop() failed: An exception was thrown when moving the window ({hWindow}) to another desktop ({desktopId})." });
             return false;
         }
 
@@ -435,20 +435,20 @@ public class VirtualDesktopHelper
         var hr = GetWindowDesktopId(hWindow, out var windowDesktop);
         if (hr != (int)HRESULT.S_OK)
         {
-            ExtensionHost.LogMessage(new LogMessage() { Message = $"VirtualDesktopHelper.MoveWindowOneDesktopLeft() failed when moving the window ({hWindow}) one desktop left: Can't get current desktop of the window." });
+            ExtensionHost.LogMessage(new LogMessage { Message = $"VirtualDesktopHelper.MoveWindowOneDesktopLeft() failed when moving the window ({hWindow}) one desktop left: Can't get current desktop of the window." });
             return false;
         }
 
         if (GetDesktopIdList().Count == 0 || GetWindowDesktopAssignmentType(hWindow, windowDesktop) == VirtualDesktopAssignmentType.Unknown || GetWindowDesktopAssignmentType(hWindow, windowDesktop) == VirtualDesktopAssignmentType.NotAssigned)
         {
-            ExtensionHost.LogMessage(new LogMessage() { Message = $"VirtualDesktopHelper.MoveWindowOneDesktopLeft() failed when moving the window ({hWindow}) one desktop left: We can't find the target desktop. This can happen if the desktop list is empty or if the window isn't assigned to a specific desktop." });
+            ExtensionHost.LogMessage(new LogMessage { Message = $"VirtualDesktopHelper.MoveWindowOneDesktopLeft() failed when moving the window ({hWindow}) one desktop left: We can't find the target desktop. This can happen if the desktop list is empty or if the window isn't assigned to a specific desktop." });
             return false;
         }
 
         var windowDesktopNumber = GetDesktopIdList().IndexOf(windowDesktop);
         if (windowDesktopNumber == 1)
         {
-            ExtensionHost.LogMessage(new LogMessage() { Message = $"VirtualDesktopHelper.MoveWindowOneDesktopLeft() failed when moving the window ({hWindow}) one desktop left: The window is on the first desktop." });
+            ExtensionHost.LogMessage(new LogMessage { Message = $"VirtualDesktopHelper.MoveWindowOneDesktopLeft() failed when moving the window ({hWindow}) one desktop left: The window is on the first desktop." });
             return false;
         }
 
@@ -466,20 +466,20 @@ public class VirtualDesktopHelper
         var hr = GetWindowDesktopId(hWindow, out var windowDesktop);
         if (hr != (int)HRESULT.S_OK)
         {
-            ExtensionHost.LogMessage(new LogMessage() { Message = $"VirtualDesktopHelper.MoveWindowOneDesktopRight() failed when moving the window ({hWindow}) one desktop right: Can't get current desktop of the window." });
+            ExtensionHost.LogMessage(new LogMessage { Message = $"VirtualDesktopHelper.MoveWindowOneDesktopRight() failed when moving the window ({hWindow}) one desktop right: Can't get current desktop of the window." });
             return false;
         }
 
         if (GetDesktopIdList().Count == 0 || GetWindowDesktopAssignmentType(hWindow, windowDesktop) == VirtualDesktopAssignmentType.Unknown || GetWindowDesktopAssignmentType(hWindow, windowDesktop) == VirtualDesktopAssignmentType.NotAssigned)
         {
-            ExtensionHost.LogMessage(new LogMessage() { Message = $"VirtualDesktopHelper.MoveWindowOneDesktopRight() failed when moving the window ({hWindow}) one desktop right: We can't find the target desktop. This can happen if the desktop list is empty or if the window isn't assigned to a specific desktop." });
+            ExtensionHost.LogMessage(new LogMessage { Message = $"VirtualDesktopHelper.MoveWindowOneDesktopRight() failed when moving the window ({hWindow}) one desktop right: We can't find the target desktop. This can happen if the desktop list is empty or if the window isn't assigned to a specific desktop." });
             return false;
         }
 
         var windowDesktopNumber = GetDesktopIdList().IndexOf(windowDesktop);
         if (windowDesktopNumber == GetDesktopCount())
         {
-            ExtensionHost.LogMessage(new LogMessage() { Message = $"VirtualDesktopHelper.MoveWindowOneDesktopRight() failed when moving the window ({hWindow}) one desktop right: The window is on the last desktop." });
+            ExtensionHost.LogMessage(new LogMessage { Message = $"VirtualDesktopHelper.MoveWindowOneDesktopRight() failed when moving the window ({hWindow}) one desktop right: The window is on the last desktop." });
             return false;
         }
 
@@ -505,7 +505,7 @@ public class VirtualDesktopHelper
         var isAllDesktops = (hWindow != default) && desktopType == VirtualDesktopAssignmentType.AllDesktops;
         var isDesktopVisible = (hWindow != default) ? (isAllDesktops || desktopType == VirtualDesktopAssignmentType.CurrentDesktop) : IsDesktopVisible(desktop);
 
-        return new VDesktop()
+        return new VDesktop
         {
             Id = desktop,
             Name = isAllDesktops ? Resources.VirtualDesktopHelper_AllDesktops : GetDesktopName(desktop),

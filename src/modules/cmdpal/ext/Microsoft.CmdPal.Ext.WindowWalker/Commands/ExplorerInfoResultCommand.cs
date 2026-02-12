@@ -36,7 +36,7 @@ internal sealed partial class ExplorerInfoResultCommand : InvokableCommand
         }
         catch (Win32Exception ex)
         {
-            ExtensionHost.LogMessage(new LogMessage() { Message = $"Unable to open {path}: {ex.Message}" });
+            ExtensionHost.LogMessage(new LogMessage { Message = $"Unable to open {path}: {ex.Message}" });
             return false;
         }
     }

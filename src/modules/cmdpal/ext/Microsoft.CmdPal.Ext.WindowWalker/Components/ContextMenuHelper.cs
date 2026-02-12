@@ -21,7 +21,7 @@ internal static class ContextMenuHelper
             return [];
         }
 
-        var contextMenu = new List<CommandContextItem>()
+        var contextMenu = new List<CommandContextItem>
         {
             new(new CloseWindowCommand(windowData))
             {
