@@ -45,6 +45,8 @@ public class DockSettings
     // /Theme settings
     public List<string> PinnedCommands { get; set; } = [];
 
+    public List<CommandItemIdentity> PinnedCommandItems { get; set; } = [];
+
     public List<DockBandSettings> StartBands { get; set; } = [];
 
     public List<DockBandSettings> CenterBands { get; set; } = [];
@@ -133,5 +135,7 @@ public enum DockBackdrop
     Transparent,
     Acrylic,
 }
+
+public record CommandItemIdentity(string ProviderId, string CommandId);
 
 #pragma warning restore SA1402 // File may only contain a single type

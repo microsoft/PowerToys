@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation
+﻿// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -470,8 +470,9 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
             contextItems.Add(new Separator());
 
             var inStartBands = _settings.DockSettings.StartBands.Any(band => band.Id == this.Id);
+            var inCenterBands = _settings.DockSettings.CenterBands.Any(band => band.Id == this.Id);
             var inEndBands = _settings.DockSettings.EndBands.Any(band => band.Id == this.Id);
-            var alreadyPinned = (inStartBands || inEndBands) &&
+            var alreadyPinned = (inStartBands || inCenterBands || inEndBands) &&
                                 _settings.DockSettings.PinnedCommands.Contains(this.Id);
 
             var pinCommand = new PinToDockCommand(
@@ -597,6 +598,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
         {
             _settings.DockSettings.PinnedCommands.Remove(_topLevelViewModel.Id);
             _settings.DockSettings.StartBands.RemoveAll(band => band.Id == _topLevelViewModel.Id);
+            _settings.DockSettings.CenterBands.RemoveAll(band => band.Id == _topLevelViewModel.Id);
             _settings.DockSettings.EndBands.RemoveAll(band => band.Id == _topLevelViewModel.Id);
 
             _topLevelViewModel.Save();
