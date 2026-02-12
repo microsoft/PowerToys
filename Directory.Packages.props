@@ -44,7 +44,7 @@
     <!-- Including Microsoft.Bcl.AsyncInterfaces to force version, since it's used by Microsoft.SemanticKernel. -->
     <PackageVersion Include="Microsoft.Bcl.AsyncInterfaces" Version="9.0.10" />
     <PackageVersion Include="Microsoft.Graphics.Win2D" Version="1.3.2" />
-    <PackageVersion Include="Microsoft.Windows.CppWinRT" Version="2.0.240111.5" />
+    <PackageVersion Include="Microsoft.Windows.CppWinRT" Version="2.0.250303.1" />
     <PackageVersion Include="Microsoft.Diagnostics.Tracing.TraceEvent" Version="3.1.16" />
     <PackageVersion Include="Microsoft.Extensions.AI" Version="9.9.1" />
     <PackageVersion Include="Microsoft.Extensions.AI.OpenAI" Version="9.9.1-preview.1.25474.6" />
