@@ -9,6 +9,7 @@ using System.IO;
 using ManagedCommon;
 using Microsoft.CmdPal.Core.Common.Helpers;
 using Microsoft.CmdPal.Ext.ClipboardHistory.Models;
+using Microsoft.CmdPal.Ext.ClipboardHistory.Properties;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.ClipboardHistory.Helpers.Analyzers;
@@ -18,7 +19,7 @@ namespace Microsoft.CmdPal.Ext.ClipboardHistory.Helpers.Analyzers;
 /// </summary>
 internal sealed class TextFileSystemMetadataProvider : IClipboardMetadataProvider
 {
-    public string SectionTitle => "File";
+    public string SectionTitle => Resources.metadata_file_system_section_title;
 
     public bool CanHandle(ClipboardItem item)
     {
@@ -47,8 +48,8 @@ internal sealed class TextFileSystemMetadataProvider : IClipboardMetadataProvide
 
         if (PathHelper.IsSlow(path) || !PathHelper.Exists(path, out var isDirectory))
         {
-            result.Add(new DetailsElement { Key = "Name", Data = new DetailsLink(Path.GetFileName(path)) });
-            result.Add(new DetailsElement { Key = "Location", Data = new DetailsLink(UrlHelper.NormalizeUrl(path), path) });
+            result.Add(new DetailsElement { Key = Resources.metadata_file_system_name_key, Data = new DetailsLink(Path.GetFileName(path)) });
+            result.Add(new DetailsElement { Key = Resources.metadata_file_system_location_key, Data = new DetailsLink(UrlHelper.NormalizeUrl(path), path) });
             return result;
         }
 
@@ -57,21 +58,21 @@ internal sealed class TextFileSystemMetadataProvider : IClipboardMetadataProvide
             if (!isDirectory)
             {
                 var fi = new FileInfo(path);
-                result.Add(new DetailsElement { Key = "Name", Data = new DetailsLink(fi.Name) });
-                result.Add(new DetailsElement { Key = "Location", Data = new DetailsLink(UrlHelper.NormalizeUrl(fi.FullName), fi.FullName) });
-                result.Add(new DetailsElement { Key = "Type", Data = new DetailsLink(fi.Extension) });
-                result.Add(new DetailsElement { Key = "Size", Data = new DetailsLink(SizeFormatter.FormatSize(fi.Length)) });
-                result.Add(new DetailsElement { Key = "Modified", Data = new DetailsLink(fi.LastWriteTime.ToString(CultureInfo.CurrentCulture)) });
-                result.Add(new DetailsElement { Key = "Created", Data = new DetailsLink(fi.CreationTime.ToString(CultureInfo.CurrentCulture)) });
+                result.Add(new DetailsElement { Key = Resources.metadata_file_system_name_key, Data = new DetailsLink(fi.Name) });
+                result.Add(new DetailsElement { Key = Resources.metadata_file_system_location_key, Data = new DetailsLink(UrlHelper.NormalizeUrl(fi.FullName), fi.FullName) });
+                result.Add(new DetailsElement { Key = Resources.metadata_file_system_type_key, Data = new DetailsLink(fi.Extension) });
+                result.Add(new DetailsElement { Key = Resources.metadata_file_system_size_key, Data = new DetailsLink(SizeFormatter.FormatSize(fi.Length)) });
+                result.Add(new DetailsElement { Key = Resources.metadata_file_system_modified_key, Data = new DetailsLink(fi.LastWriteTime.ToString(CultureInfo.CurrentCulture)) });
+                result.Add(new DetailsElement { Key = Resources.metadata_file_system_created_key, Data = new DetailsLink(fi.CreationTime.ToString(CultureInfo.CurrentCulture)) });
             }
             else
             {
                 var di = new DirectoryInfo(path);
-                result.Add(new DetailsElement { Key = "Name", Data = new DetailsLink(di.Name) });
-                result.Add(new DetailsElement { Key = "Location", Data = new DetailsLink(UrlHelper.NormalizeUrl(di.FullName), di.FullName) });
-                result.Add(new DetailsElement { Key = "Type", Data = new DetailsLink("Folder") });
-                result.Add(new DetailsElement { Key = "Modified", Data = new DetailsLink(di.LastWriteTime.ToString(CultureInfo.CurrentCulture)) });
-                result.Add(new DetailsElement { Key = "Created", Data = new DetailsLink(di.CreationTime.ToString(CultureInfo.CurrentCulture)) });
+                result.Add(new DetailsElement { Key = Resources.metadata_file_system_name_key, Data = new DetailsLink(di.Name) });
+                result.Add(new DetailsElement { Key = Resources.metadata_file_system_location_key, Data = new DetailsLink(UrlHelper.NormalizeUrl(di.FullName), di.FullName) });
+                result.Add(new DetailsElement { Key = Resources.metadata_file_system_type_key, Data = new DetailsLink(Resources.metadata_file_system_folder_value) });
+                result.Add(new DetailsElement { Key = Resources.metadata_file_system_modified_key, Data = new DetailsLink(di.LastWriteTime.ToString(CultureInfo.CurrentCulture)) });
+                result.Add(new DetailsElement { Key = Resources.metadata_file_system_created_key, Data = new DetailsLink(di.CreationTime.ToString(CultureInfo.CurrentCulture)) });
             }
         }
         catch (Exception ex)

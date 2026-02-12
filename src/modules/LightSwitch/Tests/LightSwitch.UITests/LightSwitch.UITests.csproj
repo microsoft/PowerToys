@@ -1,5 +1,5 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-  <Import Project="..\..\..\..\Common.Dotnet.CsWinRT.props" />
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
   <PropertyGroup>
     <RootNamespace>PowerToys.LightSwitch.UITests</RootNamespace>
     <AssemblyName>LightSwitch.UITests</AssemblyName>
@@ -18,5 +18,16 @@
   <ItemGroup>
 	  <PackageReference Include="MSTest" />
 	  <ProjectReference Include="..\..\..\..\common\UITestAutomation\UITestAutomation.csproj" />
+	  <ProjectReference Include="..\..\..\..\common\ManagedCommon\ManagedCommon.csproj">
+	    <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+	  </ProjectReference>
+	  <ProjectReference Include="..\..\LightSwitchModuleInterface\LightSwitchModuleInterface.vcxproj">
+	    <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+	  </ProjectReference>
   </ItemGroup>
+
+  <Target Name="CopyNativeDll" AfterTargets="Build">
+    <Copy SourceFiles="$(SolutionDir)$(Platform)\$(Configuration)\PowerToys.LightSwitchModuleInterface.dll" DestinationFolder="$(OutputPath)" SkipUnchangedFiles="true" Condition="Exists('$(SolutionDir)$(Platform)\$(Configuration)\PowerToys.LightSwitchModuleInterface.dll')" />
+    <Copy SourceFiles="$(SolutionDir)$(Platform)\$(Configuration)\LightSwitchLib\LightSwitchLib.lib" DestinationFolder="$(OutputPath)" SkipUnchangedFiles="true" Condition="Exists('$(SolutionDir)$(Platform)\$(Configuration)\LightSwitchLib\LightSwitchLib.lib')" ContinueOnError="true" />
+  </Target>
 </Project>

@@ -22,14 +22,13 @@ namespace Awake.Core
 
         public static string ToHumanReadableString(this TimeSpan timeSpan)
         {
-            // Get days, hours, minutes, and seconds from the TimeSpan
-            int days = timeSpan.Days;
-            int hours = timeSpan.Hours;
-            int minutes = timeSpan.Minutes;
-            int seconds = timeSpan.Seconds;
+            // Format as H:MM:SS or M:SS depending on total hours
+            if (timeSpan.TotalHours >= 1)
+            {
+                return $"{(int)timeSpan.TotalHours}:{timeSpan.Minutes:D2}:{timeSpan.Seconds:D2}";
+            }
 
-            // Format the string based on the presence of days, hours, minutes, and seconds
-            return $"{days:D2}{Properties.Resources.AWAKE_LABEL_DAYS} {hours:D2}{Properties.Resources.AWAKE_LABEL_HOURS} {minutes:D2}{Properties.Resources.AWAKE_LABEL_MINUTES} {seconds:D2}{Properties.Resources.AWAKE_LABEL_SECONDS}";
+            return $"{timeSpan.Minutes}:{timeSpan.Seconds:D2}";
         }
     }
 }

@@ -10,7 +10,6 @@
     IsMaximizable="False"
     IsMinimizable="False"
     IsResizable="False"
-    IsShownInSwitchers="False"
     IsTitleBarVisible="False"
     mc:Ignorable="d">
     <winuiex:WindowEx.Backdrop>

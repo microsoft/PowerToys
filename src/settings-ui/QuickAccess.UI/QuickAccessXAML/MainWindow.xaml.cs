@@ -305,7 +305,17 @@ public sealed partial class MainWindow : WindowEx, IDisposable
             return;
         }
 
-        _appWindow.IsShownInSwitchers = false;
+        try
+        {
+            _appWindow.IsShownInSwitchers = false;
+        }
+        catch (NotImplementedException)
+        {
+            // WinUI Will throw if explorer is not running, safely ignore
+        }
+        catch (Exception)
+        {
+        }
     }
 
     private bool CloakWindow()

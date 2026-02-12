@@ -5,6 +5,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="using:Microsoft.CmdPal.UI.Controls"
     xmlns:local="using:Microsoft.CmdPal.UI"
+    xmlns:ptcontrols="using:Microsoft.PowerToys.Common.UI.Controls"
     xmlns:services="using:Microsoft.CmdPal.UI.Services">
     <Application.Resources>
         <ResourceDictionary>
@@ -16,8 +17,10 @@
                 <ResourceDictionary Source="ms-appx:///Styles/TextBox.xaml" />
                 <ResourceDictionary Source="ms-appx:///Styles/Settings.xaml" />
                 <ResourceDictionary Source="ms-appx:///Controls/Tag.xaml" />
-                <ResourceDictionary Source="ms-appx:///Controls/KeyVisual/KeyVisual.xaml" />
-                <ResourceDictionary Source="ms-appx:///Controls/IsEnabledTextBlock.xaml" />
+                <ResourceDictionary Source="ms-appx:///PowerToys.Common.UI.Controls/Controls/KeyVisual/KeyVisual.xaml" />
+                <ResourceDictionary Source="ms-appx:///PowerToys.Common.UI.Controls/Controls/KeyVisual/KeyCharPresenter.xaml" />
+                <ResourceDictionary Source="ms-appx:///PowerToys.Common.UI.Controls/Controls/ShortcutWithTextLabelControl/ShortcutWithTextLabelControl.xaml" />
+                <ResourceDictionary Source="ms-appx:///PowerToys.Common.UI.Controls/Controls/IsEnabledTextBlock/IsEnabledTextBlock.xaml" />
                 <!--  Default theme dictionary  -->
                 <ResourceDictionary Source="ms-appx:///Styles/Theme.Normal.xaml" />
                 <services:MutableOverridesDictionary />
@@ -25,7 +28,7 @@
             <!--  Other app resources here  -->
 
             <x:Double x:Key="SettingActionControlMinWidth">240</x:Double>
-            <Style BasedOn="{StaticResource DefaultCheckBoxStyle}" TargetType="controls:CheckBoxWithDescriptionControl" />
+            <Style BasedOn="{StaticResource DefaultCheckBoxStyle}" TargetType="ptcontrols:CheckBoxWithDescriptionControl" />
         </ResourceDictionary>
     </Application.Resources>
 </Application>

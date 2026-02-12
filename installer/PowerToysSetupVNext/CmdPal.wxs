@@ -18,6 +18,7 @@
         <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
           <RegistryValue Type="string" Name="Module_CmdPal" Value="" KeyPath="yes" />
         </RegistryKey>
+        <RemoveFile Id="RemoveOldCmdPalMsix" Name="Microsoft.CmdPal.UI_*.msix" On="install" />
         <?if $(sys.BUILDARCH) = x64 ?>
         <File Id="Microsoft.CmdPal.UI___var.CmdPalVersion_._x64.msix" Source="$(var.CmdPalBuildDir)AppPackages\Microsoft.CmdPal.UI_$(var.CmdPalVersion)_Test\Microsoft.CmdPal.UI_$(var.CmdPalVersion)_x64.msix" />
         <?else?>
