@@ -3,8 +3,13 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Diagnostics;
+using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
+using Microsoft.CmdPal.Core.ViewModels.Messages;
+using Microsoft.CmdPal.UI.Events;
+using Microsoft.CmdPal.UI.Messages;
 using Microsoft.CmdPal.UI.ViewModels;
+using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI;
@@ -12,6 +17,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Documents;
 using Microsoft.Windows.Storage.Pickers;
+using Windows.Win32.Foundation;
 
 namespace Microsoft.CmdPal.UI.Settings;
 
@@ -85,5 +91,10 @@ public sealed partial class AppearancePage : Page
                 Logger.LogError("Failed to open Windows Settings", ex);
             }
         });
+    }
+
+    private void OpenCommandPalette_Click(object sender, RoutedEventArgs e)
+    {
+        WeakReferenceMessenger.Default.Send<HotkeySummonMessage>(new(string.Empty, HWND.Null));
     }
 }

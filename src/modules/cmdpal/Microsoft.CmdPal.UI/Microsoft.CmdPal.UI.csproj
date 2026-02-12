@@ -1,7 +1,7 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-  <Import Project="..\..\..\Common.Dotnet.CsWinRT.props" />
-  <Import Project="..\..\..\Common.Dotnet.AotCompatibility.props" />
-  <Import Project="..\..\..\CmdPalVersion.props" />
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
+  <Import Project="$(RepoRoot)src\Common.Dotnet.AotCompatibility.props" />
+  <Import Project="$(RepoRoot)src\CmdPalVersion.props" />
   <Import Project="CmdPal.pre.props" />
   <Import Project="CmdPal.Branding.props" />
 
@@ -72,10 +72,8 @@
     <None Remove="Controls\CommandPalettePreview.xaml" />
     <None Remove="Controls\DevRibbon.xaml" />
     <None Remove="Controls\FallbackRankerDialog.xaml" />
-    <None Remove="Controls\KeyVisual\KeyCharPresenter.xaml" />
     <None Remove="Controls\ScreenPreview.xaml" />
     <None Remove="Controls\SearchBar.xaml" />
-    <None Remove="IsEnabledTextBlock.xaml" />
     <None Remove="ListDetailPage.xaml" />
     <None Remove="LoadingPage.xaml" />
     <None Remove="MainPage.xaml" />
@@ -128,6 +126,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\common\ManagedTelemetry\Telemetry\ManagedTelemetry.csproj" />
+    <ProjectReference Include="..\..\..\common\Common.UI.Controls\Common.UI.Controls.csproj" />
     <ProjectReference Include="..\ext\Microsoft.CmdPal.Ext.ClipboardHistory\Microsoft.CmdPal.Ext.ClipboardHistory.csproj" />
     <ProjectReference Include="..\ext\Microsoft.CmdPal.Ext.RemoteDesktop\Microsoft.CmdPal.Ext.RemoteDesktop.csproj" />
     <ProjectReference Include="..\ext\Microsoft.CmdPal.Ext.System\Microsoft.CmdPal.Ext.System.csproj" />
@@ -141,6 +140,7 @@
     <ProjectReference Include="..\ext\Microsoft.CmdPal.Ext.Apps\Microsoft.CmdPal.Ext.Apps.csproj" />
     <ProjectReference Include="..\ext\Microsoft.CmdPal.Ext.Bookmark\Microsoft.CmdPal.Ext.Bookmarks.csproj" />
     <ProjectReference Include="..\ext\Microsoft.CmdPal.Ext.Calc\Microsoft.CmdPal.Ext.Calc.csproj" />
+    <ProjectReference Include="..\ext\Microsoft.CmdPal.Ext.PerformanceMonitor\Microsoft.CmdPal.Ext.PerformanceMonitor.csproj" />
     <ProjectReference Include="..\ext\Microsoft.CmdPal.Ext.Registry\Microsoft.CmdPal.Ext.Registry.csproj" />
     <ProjectReference Include="..\ext\Microsoft.CmdPal.Ext.Shell\Microsoft.CmdPal.Ext.Shell.csproj" />
     <ProjectReference Include="..\ext\Microsoft.CmdPal.Ext.TimeDate\Microsoft.CmdPal.Ext.TimeDate.csproj" />
@@ -254,17 +254,6 @@
     </Page>
   </ItemGroup>
 
-  <ItemGroup>
-    <Page Update="IsEnabledTextBlock.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Page Update="Controls\KeyVisual\KeyCharPresenter.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-  </ItemGroup>
   <ItemGroup>
     <Page Update="Settings\InternalPage.xaml">
       <Generator>MSBuild:Compile</Generator>

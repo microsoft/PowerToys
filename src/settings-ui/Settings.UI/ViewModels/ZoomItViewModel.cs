@@ -8,8 +8,8 @@ using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text.Json;
-using AllExperiments;
 using global::PowerToys.GPOWrapper;
+using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
@@ -846,6 +846,20 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                         _zoomItSettings.Properties.RecordScaling.Value = reloaded.Properties.RecordScaling.Value;
                         OnPropertyChanged(nameof(RecordScaling));
                     }
+                }
+            }
+        }
+
+        public bool RecordCaptureSystemAudio
+        {
+            get => _zoomItSettings.Properties.CaptureSystemAudio.Value;
+            set
+            {
+                if (_zoomItSettings.Properties.CaptureSystemAudio.Value != value)
+                {
+                    _zoomItSettings.Properties.CaptureSystemAudio.Value = value;
+                    OnPropertyChanged(nameof(RecordCaptureSystemAudio));
+                    NotifySettingsChanged();
                 }
             }
         }
