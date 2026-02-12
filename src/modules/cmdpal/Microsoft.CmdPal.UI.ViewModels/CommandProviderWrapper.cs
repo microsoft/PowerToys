@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -210,11 +210,11 @@ public sealed class CommandProviderWrapper
     {
         var settings = serviceProvider.GetService<SettingsModel>()!;
         var providerSettings = GetProviderSettings(settings);
-
+        var ourContext = GetProviderContext();
         var makeAndAdd = (ICommandItem? i, bool fallback) =>
         {
             CommandItemViewModel commandItemViewModel = new(new(i), pageContext);
-            TopLevelViewModel topLevelViewModel = new(commandItemViewModel, fallback, ExtensionHost, ProviderId, settings, providerSettings, serviceProvider, i);
+            TopLevelViewModel topLevelViewModel = new(commandItemViewModel, fallback, ExtensionHost, ourContext, settings, providerSettings, serviceProvider, i);
             topLevelViewModel.InitializeProperties();
 
             return topLevelViewModel;
@@ -246,6 +246,11 @@ public sealed class CommandProviderWrapper
                 Logger.LogDebug($"{ProviderId}: Found an IExtendedAttributesProvider");
             }
         }
+    }
+
+    public CommandProviderContext GetProviderContext()
+    {
+        return new() { ProviderId = ProviderId };
     }
 
     public override bool Equals(object? obj) => obj is CommandProviderWrapper wrapper && isValid == wrapper.isValid;

@@ -26,4 +26,15 @@ internal sealed class PowerToysAppHostService : IAppHostService
 
         return topLevelHost ?? currentHost ?? CommandPaletteHost.Instance;
     }
+
+    public CommandProviderContext GetProviderContextForCommand(object? command, CommandProviderContext? currentContext)
+    {
+        CommandProviderContext? topLevelId = null;
+        if (command is TopLevelViewModel topLevelViewModel)
+        {
+            topLevelId = topLevelViewModel.CommandProviderContext;
+        }
+
+        return topLevelId ?? currentContext ?? throw new InvalidOperationException("No command provider context could be found for the given command, and no current context was provided.");
+    }
 }

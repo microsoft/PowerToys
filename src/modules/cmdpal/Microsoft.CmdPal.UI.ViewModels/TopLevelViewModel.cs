@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -27,7 +27,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
     private readonly IServiceProvider _serviceProvider;
     private readonly CommandItemViewModel _commandItemViewModel;
 
-    private readonly string _commandProviderId;
+    private readonly CommandProviderContext _commandProviderContext;
 
     private string IdFromModel => IsFallback && !string.IsNullOrWhiteSpace(_fallbackId) ? _fallbackId : _commandItemViewModel.Command.Id;
 
@@ -57,7 +57,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
 
     public CommandItemViewModel ItemViewModel => _commandItemViewModel;
 
-    public string CommandProviderId => _commandProviderId;
+    public string CommandProviderId => _commandProviderContext.ProviderId;
 
     ////// ICommandItem
     public string Title => _commandItemViewModel.Title;
@@ -190,7 +190,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
         CommandItemViewModel item,
         bool isFallback,
         CommandPaletteHost extensionHost,
-        string commandProviderId,
+        CommandProviderContext commandProviderContext,
         SettingsModel settings,
         ProviderSettings providerSettings,
         IServiceProvider serviceProvider,
@@ -199,7 +199,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
         _serviceProvider = serviceProvider;
         _settings = settings;
         _providerSettings = providerSettings;
-        _commandProviderId = commandProviderId;
+        _commandProviderContext = commandProviderContext;
         _commandItemViewModel = item;
 
         IsFallback = isFallback;
@@ -358,8 +358,8 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
     {
         // Use WyHash64 to generate stable ID hashes.
         // manually seeding with 0, so that the hash is stable across launches
-        var result = WyHash64.ComputeHash64(_commandProviderId + DisplayTitle + Title + Subtitle, seed: 0);
-        _generatedId = $"{_commandProviderId}{result}";
+        var result = WyHash64.ComputeHash64(CommandProviderId + DisplayTitle + Title + Subtitle, seed: 0);
+        _generatedId = $"{CommandProviderId}{result}";
     }
 
     private void DoOnUiThread(Action action)
