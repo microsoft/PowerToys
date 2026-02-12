@@ -25,7 +25,7 @@ internal static class ContextMenuHelper
         {
             new(new CloseWindowCommand(windowData))
             {
-                RequestedShortcut = KeyChordHelpers.FromModifiers(true, false, false, false, (int)VirtualKey.F4, 0),
+                RequestedShortcut = KeyChordHelpers.FromModifiers(true, false, false, false, (int)VirtualKey.F4),
             },
         };
 
@@ -36,7 +36,7 @@ internal static class ContextMenuHelper
         {
             contextMenu.Add(new CommandContextItem(new EndTaskCommand(windowData))
             {
-                RequestedShortcut = KeyChordHelpers.FromModifiers(true, false, false, false, (int)VirtualKey.Delete, 0),
+                RequestedShortcut = KeyChordHelpers.FromModifiers(true, false, false, false, (int)VirtualKey.Delete),
                 IsCritical = true,
             });
         }

@@ -57,16 +57,13 @@ internal sealed partial class SwitchToWindowCommand : InvokableCommand
             else
             {
                 var p = Process.GetProcessById((int)_window.Process.ProcessID);
-                if (p is not null)
+                try
                 {
-                    try
-                    {
-                        var processFileName = p.MainModule?.FileName;
-                        Icon = new IconInfo(processFileName);
-                    }
-                    catch
-                    {
-                    }
+                    var processFileName = p.MainModule?.FileName;
+                    Icon = new IconInfo(processFileName);
+                }
+                catch
+                {
                 }
             }
         }
