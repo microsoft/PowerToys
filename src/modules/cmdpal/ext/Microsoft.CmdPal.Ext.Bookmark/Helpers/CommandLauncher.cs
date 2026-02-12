@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -70,12 +70,14 @@ internal static class CommandLauncher
     {
         public static void ActivateApplication(string aumid, string? args, int options, out uint pid)
         {
-            var mgr = (IApplicationActivationManager)new _ApplicationActivationManager();
-            var hr = mgr.ActivateApplication(aumid, args ?? string.Empty, options, out pid);
-            if (hr < 0)
-            {
-                throw new Win32Exception(hr);
-            }
+            // TODO!
+            // var mgr = (IApplicationActivationManager)new _ApplicationActivationManager();
+            // var hr = mgr.ActivateApplication(aumid, args ?? string.Empty, options, out pid);
+            // if (hr < 0)
+            // {
+            //    throw new Win32Exception(hr);
+            // }
+            throw new Win32Exception(-1);
         }
 
         [ComImport]

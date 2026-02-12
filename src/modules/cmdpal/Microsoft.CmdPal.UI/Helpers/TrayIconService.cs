@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -135,9 +135,12 @@ internal sealed partial class TrayIconService
     private DestroyIconSafeHandle GetAppIconHandle()
     {
         var exePath = Path.Combine(AppContext.BaseDirectory, "Microsoft.CmdPal.UI.exe");
-        DestroyIconSafeHandle largeIcon;
-        PInvoke.ExtractIconEx(exePath, 0, out largeIcon, out _, 1);
-        return largeIcon;
+
+        // DestroyIconSafeHandle largeIcon;
+        Span<HICON> large = new([default]); // 1 size array to accept icon
+        PInvoke.ExtractIconEx(exePath, 0, large);
+        DestroyIconSafeHandle h = new(large[0]);
+        return h;
     }
 
     private LRESULT WindowProc(

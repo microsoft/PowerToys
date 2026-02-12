@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -49,7 +49,7 @@ internal static class WinGetStatics
 
         _wingetCatalog = Manager.GetPredefinedPackageCatalog(PredefinedPackageCatalog.OpenWindowsCatalog);
         _storeCatalog = Manager.GetPredefinedPackageCatalog(PredefinedPackageCatalog.MicrosoftStore);
-        AvailableCatalogs = [
+        AvailableCatalogs = (PackageCatalogReference[])[
             _wingetCatalog,
             _storeCatalog,
         ];
