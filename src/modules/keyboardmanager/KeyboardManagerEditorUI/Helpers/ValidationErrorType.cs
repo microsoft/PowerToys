@@ -21,5 +21,6 @@ namespace KeyboardManagerEditorUI.Helpers
         DuplicateMapping,
         SelfMapping,
         EmptyTargetText,
+        OneKeyMapping,
     }
 }
