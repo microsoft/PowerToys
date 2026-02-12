@@ -345,11 +345,6 @@ namespace Microsoft.PowerToys.Settings.UI
             return app.oobeWindow != null || app.scoobeWindow != null || app.shortcutConflictWindow != null;
         }
 
-        public static bool IsOobeOrScoobeOpen()
-        {
-            return IsSecondaryWindowOpen();
-        }
-
         public void OpenScoobe()
         {
             PowerToysTelemetry.Log.WriteEvent(new ScoobeStartedEvent());
