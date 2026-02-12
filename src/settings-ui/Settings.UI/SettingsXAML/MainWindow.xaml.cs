@@ -182,7 +182,7 @@ namespace Microsoft.PowerToys.Settings.UI
             var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
             WindowHelper.SerializePlacement(hWnd);
 
-            if (App.GetOobeWindow() == null && App.GetScoobeWindow() == null)
+            if (App.GetOobeWindow() == null && App.GetScoobeWindow() == null && App.GetShortcutConflictWindow() == null)
             {
                 App.ClearSettingsWindow();
             }
