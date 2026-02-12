@@ -20,9 +20,9 @@ namespace KeyboardManagerEditorUI.Settings
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
             "Microsoft",
             "PowerToys",
-            "KeyboardManager");
+            "Keyboard Manager");
 
-        private static readonly string _settingsFilePath = Path.Combine(_settingsDirectory, "settings.json");
+        private static readonly string _settingsFilePath = Path.Combine(_settingsDirectory, "editorSettings.json");
 
         private static readonly JsonSerializerOptions _jsonOptions = new JsonSerializerOptions
         {
