@@ -20,27 +20,27 @@ internal sealed class OpenWindows
     /// <summary>
     /// Used to enforce single execution of EnumWindows
     /// </summary>
-    private static readonly Lock _enumWindowsLock = new();
+    private static readonly Lock EnumWindowsLock = new();
 
     /// <summary>
     /// PowerLauncher main executable
     /// </summary>
-    private static readonly string? _powerLauncherExe = Path.GetFileName(Environment.ProcessPath);
+    private static readonly string? PowerLauncherExe = Path.GetFileName(Environment.ProcessPath);
 
     /// <summary>
     /// List of all the open windows
     /// </summary>
-    private readonly List<Window> windows = [];
+    private readonly List<Window> _windows = [];
 
     /// <summary>
     /// An instance of the class OpenWindows
     /// </summary>
-    private static OpenWindows? instance;
+    private static OpenWindows? _instance;
 
     /// <summary>
     /// Gets the list of all open windows
     /// </summary>
-    internal List<Window> Windows => [..windows];
+    internal List<Window> Windows => [.._windows];
 
     /// <summary>
     /// Gets an instance property of this class that makes sure that
@@ -51,9 +51,9 @@ internal sealed class OpenWindows
     {
         get
         {
-            instance ??= new OpenWindows();
+            _instance ??= new OpenWindows();
 
-            return instance;
+            return _instance;
         }
     }
 
@@ -75,9 +75,9 @@ internal sealed class OpenWindows
         try
         {
             var tokenHandleParam = GCHandle.ToIntPtr(tokenHandle);
-            lock (_enumWindowsLock)
+            lock (EnumWindowsLock)
             {
-                windows.Clear();
+                _windows.Clear();
                 var callbackptr = new EnumWindowsProc(WindowEnumerationCallBack);
                 _ = NativeMethods.EnumWindows(callbackptr, tokenHandleParam);
             }
@@ -114,13 +114,13 @@ internal sealed class OpenWindows
         if (newWindow.IsWindow && newWindow.Visible && newWindow.IsOwner &&
             (!newWindow.IsToolWindow || newWindow.IsAppWindow) && !newWindow.TaskListDeleted &&
             (newWindow.Desktop.IsVisible || !SettingsManager.Instance.ResultsFromVisibleDesktopOnly || WindowWalkerCommandsProvider.VirtualDesktopHelperInstance.GetDesktopCount() < 2) &&
-            newWindow.ClassName != "Windows.UI.Core.CoreWindow" && newWindow.Process.Name != _powerLauncherExe)
+            newWindow.ClassName != "Windows.UI.Core.CoreWindow" && newWindow.Process.Name != PowerLauncherExe)
         {
             // To hide (not add) preloaded uwp app windows that are invisible to the user and other cloaked windows, we check the cloak state. (Issue #13637.)
             // (If user asking to see cloaked uwp app windows again we can add an optional plugin setting in the future.)
             if (!newWindow.IsCloaked || newWindow.GetWindowCloakState() == Window.WindowCloakState.OtherDesktop)
             {
-                windows.Add(newWindow);
+                _windows.Add(newWindow);
             }
         }
 

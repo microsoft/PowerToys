@@ -10,13 +10,11 @@ namespace Microsoft.CmdPal.Ext.WindowWalker.Pages;
 
 internal sealed partial class WindowWalkerListItem : ListItem
 {
-    private readonly Window? _window;
-
-    public Window? Window => _window;
+    public Window? Window { get; }
 
     public WindowWalkerListItem(Window? window)
         : base(new SwitchToWindowCommand(window))
     {
-        _window = window;
+        Window = window;
     }
 }

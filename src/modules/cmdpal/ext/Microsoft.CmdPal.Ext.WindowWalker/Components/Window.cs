@@ -21,25 +21,10 @@ namespace Microsoft.CmdPal.Ext.WindowWalker.Components;
 internal sealed class Window
 {
     /// <summary>
-    /// The handle to the window
-    /// </summary>
-    private readonly IntPtr hwnd;
-
-    /// <summary>
     /// A static cache for the process data of all known windows
     /// that we don't have to query the data every time
     /// </summary>
-    private static readonly Dictionary<IntPtr, WindowProcess> _handlesToProcessCache = new();
-
-    /// <summary>
-    /// An instance of <see cref="WindowProcess"/> that contains the process information for the window
-    /// </summary>
-    private readonly WindowProcess processInfo;
-
-    /// <summary>
-    /// An instance of <see cref="VDesktop"/> that contains the desktop information for the window
-    /// </summary>
-    private readonly VDesktop desktopInfo;
+    private static readonly Dictionary<IntPtr, WindowProcess> HandlesToProcessCache = new();
 
     /// <summary>
     /// Gets the title of the window (the string displayed at the top of the window)
@@ -48,11 +33,11 @@ internal sealed class Window
     {
         get
         {
-            var sizeOfTitle = NativeMethods.GetWindowTextLength(hwnd);
+            var sizeOfTitle = NativeMethods.GetWindowTextLength(Hwnd);
             if (sizeOfTitle++ > 0)
             {
                 var titleBuffer = new StringBuilder(sizeOfTitle);
-                var numCharactersWritten = NativeMethods.GetWindowText(hwnd, titleBuffer, sizeOfTitle);
+                var numCharactersWritten = NativeMethods.GetWindowText(Hwnd, titleBuffer, sizeOfTitle);
                 if (numCharactersWritten == 0)
                 {
                     return string.Empty;
@@ -70,17 +55,17 @@ internal sealed class Window
     /// <summary>
     /// Gets the handle to the window
     /// </summary>
-    internal IntPtr Hwnd => hwnd;
+    internal IntPtr Hwnd { get; }
 
     /// <summary>
     /// Gets the object of with the process information of the window
     /// </summary>
-    internal WindowProcess Process => processInfo;
+    internal WindowProcess Process { get; }
 
     /// <summary>
     /// Gets the object of with the desktop information of the window
     /// </summary>
-    internal VDesktop Desktop => desktopInfo;
+    internal VDesktop Desktop { get; }
 
     /// <summary>
     /// Gets the name of the class for the window represented
@@ -140,9 +125,9 @@ internal sealed class Window
     internal Window(IntPtr hwnd)
     {
         // TODO: Add verification as to whether the window handle is valid
-        this.hwnd = hwnd;
-        processInfo = CreateWindowProcessInstance(hwnd);
-        desktopInfo = WindowWalkerCommandsProvider.VirtualDesktopHelperInstance.GetWindowDesktop(hwnd);
+        Hwnd = hwnd;
+        Process = CreateWindowProcessInstance(hwnd);
+        Desktop = WindowWalkerCommandsProvider.VirtualDesktopHelperInstance.GetWindowDesktop(hwnd);
     }
 
     /// <summary>
@@ -155,7 +140,7 @@ internal sealed class Window
         //    to use ShowWindow for switching tabs in IE
         // 2) SetForegroundWindow fails on minimized windows
         // Using Ordinal since this is internal
-        if (processInfo.Name?.ToUpperInvariant().Equals("IEXPLORE.EXE", StringComparison.Ordinal) == true || !Minimized)
+        if (Process.Name?.ToUpperInvariant().Equals("IEXPLORE.EXE", StringComparison.Ordinal) == true || !Minimized)
         {
             NativeMethods.SetForegroundWindow(Hwnd);
         }
@@ -197,27 +182,27 @@ internal sealed class Window
     {
         icon = null;
 
-        if (hwnd == IntPtr.Zero)
+        if (Hwnd == IntPtr.Zero)
         {
             return false;
         }
 
         // Try WM_GETICON with SendMessageTimeout
-        if (NativeMethods.SendMessageTimeout(hwnd, Win32Constants.WM_GETICON, (UIntPtr)Win32Constants.ICON_BIG, IntPtr.Zero, Win32Constants.SMTO_ABORTIFHUNG, 100, out var result) != 0 && result != 0)
+        if (NativeMethods.SendMessageTimeout(Hwnd, Win32Constants.WM_GETICON, (UIntPtr)Win32Constants.ICON_BIG, IntPtr.Zero, Win32Constants.SMTO_ABORTIFHUNG, 100, out var result) != 0 && result != 0)
         {
             icon = System.Drawing.Icon.FromHandle((IntPtr)result);
             NativeMethods.DestroyIcon((IntPtr)result);
             return true;
         }
 
-        if (NativeMethods.SendMessageTimeout(hwnd, Win32Constants.WM_GETICON, (UIntPtr)Win32Constants.ICON_SMALL, IntPtr.Zero, Win32Constants.SMTO_ABORTIFHUNG, 100, out result) != 0 && result != 0)
+        if (NativeMethods.SendMessageTimeout(Hwnd, Win32Constants.WM_GETICON, (UIntPtr)Win32Constants.ICON_SMALL, IntPtr.Zero, Win32Constants.SMTO_ABORTIFHUNG, 100, out result) != 0 && result != 0)
         {
             icon = System.Drawing.Icon.FromHandle((IntPtr)result);
             NativeMethods.DestroyIcon((IntPtr)result);
             return true;
         }
 
-        if (NativeMethods.SendMessageTimeout(hwnd, Win32Constants.WM_GETICON, (UIntPtr)Win32Constants.ICON_SMALL2, IntPtr.Zero, Win32Constants.SMTO_ABORTIFHUNG, 100, out result) != 0 && result != 0)
+        if (NativeMethods.SendMessageTimeout(Hwnd, Win32Constants.WM_GETICON, (UIntPtr)Win32Constants.ICON_SMALL2, IntPtr.Zero, Win32Constants.SMTO_ABORTIFHUNG, 100, out result) != 0 && result != 0)
         {
             icon = System.Drawing.Icon.FromHandle((IntPtr)result);
             NativeMethods.DestroyIcon((IntPtr)result);
@@ -225,7 +210,7 @@ internal sealed class Window
         }
 
         // Fallback to GetClassLongPtr
-        var iconHandle = NativeMethods.GetClassLongPtr(hwnd, Win32Constants.GCLP_HICON);
+        var iconHandle = NativeMethods.GetClassLongPtr(Hwnd, Win32Constants.GCLP_HICON);
         if (iconHandle != IntPtr.Zero)
         {
             icon = System.Drawing.Icon.FromHandle(iconHandle);
@@ -233,7 +218,7 @@ internal sealed class Window
             return true;
         }
 
-        iconHandle = NativeMethods.GetClassLongPtr(hwnd, Win32Constants.GCLP_HICONSM);
+        iconHandle = NativeMethods.GetClassLongPtr(Hwnd, Win32Constants.GCLP_HICONSM);
         if (iconHandle != IntPtr.Zero)
         {
             icon = System.Drawing.Icon.FromHandle(iconHandle);
@@ -251,7 +236,7 @@ internal sealed class Window
     public override string ToString()
     {
         // Using CurrentCulture since this is user facing
-        return Title + " (" + processInfo.Name?.ToUpper(CultureInfo.CurrentCulture) + ")";
+        return Title + " (" + Process.Name?.ToUpper(CultureInfo.CurrentCulture) + ")";
     }
 
     /// <summary>
@@ -304,7 +289,7 @@ internal sealed class Window
             case (int)DwmWindowCloakStates.CloakedApp:
                 return WindowCloakState.App;
             case (int)DwmWindowCloakStates.CloakedShell:
-                return WindowWalkerCommandsProvider.VirtualDesktopHelperInstance.IsWindowCloakedByVirtualDesktopManager(hwnd, Desktop.Id) ? WindowCloakState.OtherDesktop : WindowCloakState.Shell;
+                return WindowWalkerCommandsProvider.VirtualDesktopHelperInstance.IsWindowCloakedByVirtualDesktopManager(Hwnd, Desktop.Id) ? WindowCloakState.OtherDesktop : WindowCloakState.Shell;
             case (int)DwmWindowCloakStates.CloakedInherited:
                 return WindowCloakState.Inherited;
             default:
@@ -350,16 +335,16 @@ internal sealed class Window
     /// <returns>A new Instance of type <see cref="WindowProcess"/></returns>
     private static WindowProcess CreateWindowProcessInstance(IntPtr hWindow)
     {
-        lock (_handlesToProcessCache)
+        lock (HandlesToProcessCache)
         {
-            if (_handlesToProcessCache.Count > 7000)
+            if (HandlesToProcessCache.Count > 7000)
             {
-                Debug.Print("Clearing Process Cache because it's size is " + _handlesToProcessCache.Count);
-                _handlesToProcessCache.Clear();
+                Debug.Print("Clearing Process Cache because it's size is " + HandlesToProcessCache.Count);
+                HandlesToProcessCache.Clear();
             }
 
             // Add window's process to cache if missing
-            if (!_handlesToProcessCache.ContainsKey(hWindow))
+            if (!HandlesToProcessCache.ContainsKey(hWindow))
             {
                 // Get process ID and name
                 var processId = WindowProcess.GetProcessIDFromWindowHandle(hWindow);
@@ -368,19 +353,19 @@ internal sealed class Window
 
                 if (processName.Length != 0)
                 {
-                    _handlesToProcessCache.Add(hWindow, new WindowProcess(processId, threadId, processName));
+                    HandlesToProcessCache.Add(hWindow, new WindowProcess(processId, threadId, processName));
                 }
                 else
                 {
                     // For the dwm process we cannot receive the name. This is no problem because the window isn't part of result list.
                     ExtensionHost.LogMessage(new LogMessage() { Message = $"Invalid process {processId} ({processName}) for window handle {hWindow}." });
-                    _handlesToProcessCache.Add(hWindow, new WindowProcess(0, 0, string.Empty));
+                    HandlesToProcessCache.Add(hWindow, new WindowProcess(0, 0, string.Empty));
                 }
             }
 
             // Correct the process data if the window belongs to a uwp app hosted by 'ApplicationFrameHost.exe'
             // (This only works if the window isn't minimized. For minimized windows the required child window isn't assigned.)
-            if (_handlesToProcessCache[hWindow].IsUwpAppFrameHost)
+            if (HandlesToProcessCache[hWindow].IsUwpAppFrameHost)
             {
                 new Task(() =>
                 {
@@ -395,7 +380,7 @@ internal sealed class Window
                             var childProcessName = WindowProcess.GetProcessNameFromProcessID(childProcessId);
 
                             // Update process info in cache
-                            _handlesToProcessCache[hWindow].UpdateProcessInfo(childProcessId, childThreadId, childProcessName);
+                            HandlesToProcessCache[hWindow].UpdateProcessInfo(childProcessId, childThreadId, childProcessName);
                             return false;
                         }
                         else
@@ -407,7 +392,7 @@ internal sealed class Window
                 }).Start();
             }
 
-            return _handlesToProcessCache[hWindow];
+            return HandlesToProcessCache[hWindow];
         }
     }
 }

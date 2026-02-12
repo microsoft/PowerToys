@@ -10,11 +10,11 @@ namespace Microsoft.CmdPal.Ext.WindowWalker.Helpers;
 
 public class SettingsManager : JsonSettingsManager, ISettingsInterface
 {
-    private static readonly string _namespace = "windowWalker";
+    private const string Namespace = "windowWalker";
 
-    private static string Namespaced(string propertyName) => $"{_namespace}.{propertyName}";
+    private static string Namespaced(string propertyName) => $"{Namespace}.{propertyName}";
 
-    private static SettingsManager? instance;
+    private static SettingsManager? _instance;
 
     private readonly ToggleSetting _resultsFromVisibleDesktopOnly = new(
         Namespaced(nameof(ResultsFromVisibleDesktopOnly)),
@@ -130,8 +130,8 @@ public class SettingsManager : JsonSettingsManager, ISettingsInterface
     {
         get
         {
-            instance ??= new SettingsManager();
-            return instance;
+            _instance ??= new SettingsManager();
+            return _instance;
         }
     }
 }
