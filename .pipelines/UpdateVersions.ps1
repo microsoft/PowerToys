@@ -223,7 +223,7 @@ function Get-NuspecDependencies {
                     # Remove version range brackets if present (e.g., "[2.0.0]" -> "2.0.0")
                     $depVer = $depVer -replace '[\[\]]', ''
                     $dependencies[$depId] = $depVer
-                    Write-Host "    - $depId : $depVer"
+                    Write-Host "    - ${depId} : ${depVer}"
                 }
             }
         } else {
@@ -235,7 +235,7 @@ function Get-NuspecDependencies {
                     $depVer = $dep.version
                     $depVer = $depVer -replace '[\[\]]', ''
                     $dependencies[$depId] = $depVer
-                    Write-Host "  - $depId : $depVer"
+                    Write-Host "  - ${depId} : ${depVer}"
                 }
             }
         }
@@ -288,15 +288,24 @@ function Resolve-ArtifactBasedDependencies {
     Copy-Item $metaNupkg.FullName -Destination $OutputDir -Force
     Write-Host "Copied metapackage to $OutputDir"
 
-    # Copy Runtime package from artifact (it's not in feed)
+    # Prepare package versions hashtable - initialize with metapackage version
+    $packageVersions = @{ $MetaPackageName = $metaVersion }
+
+    # Copy Runtime package from artifact (it's not in feed) and extract its version
     $runtimeNupkg = Get-ChildItem -Path $ArtifactDir -Recurse -Filter "$MetaPackageName.Runtime.*.nupkg" | Select-Object -First 1
     if ($runtimeNupkg) {
         Copy-Item $runtimeNupkg.FullName -Destination $OutputDir -Force
         Write-Host "Copied Runtime package to $OutputDir"
-    }
 
-    # Prepare package versions hashtable
-    $packageVersions = @{ $MetaPackageName = $metaVersion }
+        # Extract version from Runtime package filename
+        if ($runtimeNupkg.Name -match "$MetaPackageName\.Runtime\.(.+)\.nupkg") {
+            $runtimeVersion = $Matches[1]
+            $packageVersions["$MetaPackageName.Runtime"] = $runtimeVersion
+            Write-Host "Extracted Runtime package version: $runtimeVersion"
+        } else {
+            Write-Warning "Could not extract version from Runtime package: $($runtimeNupkg.Name)"
+        }
+    }
 
     # Download other dependencies from feed (excluding Runtime as it's already copied)
     # Create temp nuget.config that includes both local packages and remote feed
@@ -318,7 +327,10 @@ function Resolve-ArtifactBasedDependencies {
         foreach ($depId in $dependencies.Keys) {
             # Skip Runtime as it's already copied from artifact
             if ($depId -like "*Runtime*") {
-                $packageVersions[$depId] = $dependencies[$depId]
+                # Don't overwrite the version we extracted from the Runtime package filename
+                if (-not $packageVersions.ContainsKey($depId)) {
+                    $packageVersions[$depId] = $dependencies[$depId]
+                }
                 Write-Host "Skipping $depId (already in artifact)"
                 continue
             }
@@ -327,7 +339,7 @@ function Resolve-ArtifactBasedDependencies {
             Write-Host "Downloading dependency: $depId version $depVersion from feed..."
 
             $nugetArgs = "install $depId -Version $depVersion -ConfigFile `"$tempConfig`" -OutputDirectory `"$OutputDir`" -NonInteractive -NoCache"
-            Invoke-Expression "nuget $nugetArgs"
+            Invoke-Expression "nuget $nugetArgs" | Out-Null
 
             if ($LASTEXITCODE -eq 0) {
                 $packageVersions[$depId] = $depVersion
@@ -374,7 +386,24 @@ function Resolve-ArtifactBasedDependencies {
     $xml.Save($nugetConfig)
     Write-Host "Updated nuget.config with localpackages mapping (temporary, for pipeline execution only)."
 
-    return $packageVersions
+    # Display all resolved package versions for debugging
+    Write-Host "`nResolved package versions (inside function):"
+    foreach ($pkgId in $packageVersions.Keys | Sort-Object) {
+        $ver = $packageVersions[$pkgId]
+        if ([string]::IsNullOrWhiteSpace($ver)) {
+            Write-Warning "  ${pkgId} : (empty version)"
+        } else {
+            Write-Host "  ${pkgId} : $ver"
+        }
+    }
+
+    Write-Host "`nHashtable info before return:"
+    Write-Host "  Type: $($packageVersions.GetType().FullName)"
+    Write-Host "  Count: $($packageVersions.Count)"
+    Write-Host "  Keys: $($packageVersions.Keys -join ', ')"
+
+    # Return hashtable explicitly (PowerShell will convert this to the correct type)
+    return ,$packageVersions
 }
 
 function Resolve-WinAppSdkSplitDependencies {
@@ -470,15 +499,28 @@ if ($useArtifactSource) {
         -SourceUrl $sourceLink `
         -OutputDir $installDir
 
+    Write-Host "`nHashtable info after function return:"
+    Write-Host "  Type: $($packageVersions.GetType().FullName)"
+    Write-Host "  Count: $($packageVersions.Count)"
+    Write-Host "  Keys: $($packageVersions.Keys -join ', ')"
+    Write-Host "  metaPackageName variable: '$metaPackageName'"
+
     if ($packageVersions.Count -eq 0) {
         Write-Host "Failed to resolve dependencies from artifact"
         exit 1
     }
 
     # Extract WinAppSDK version
+    Write-Host "`nAttempting to access: packageVersions['$metaPackageName']"
     $WinAppSDKVersion = $packageVersions[$metaPackageName]
-    Write-Host "WinAppSDK Version: $WinAppSDKVersion"
+    Write-Host "WinAppSDK Version: '$WinAppSDKVersion'"
     Write-Host "##vso[task.setvariable variable=WinAppSDKVersion]$WinAppSDKVersion"
+
+    # Additional debugging: try to access all keys
+    Write-Host "`nAll hashtable entries:"
+    foreach ($key in $packageVersions.Keys) {
+        Write-Host "  [$key] = '$($packageVersions[$key])'"
+    }
 
 } else {
     Write-Host "=== Using Feed-Based Source ===" -ForegroundColor Cyan
@@ -538,6 +580,13 @@ Get-ChildItem -Path $rootPath -Recurse "Directory.Packages.props" | ForEach-Obje
     
     foreach ($pkgId in $packageVersions.Keys) {
         $ver = $packageVersions[$pkgId]
+
+        # Skip packages with empty versions to prevent corruption
+        if ([string]::IsNullOrWhiteSpace($ver)) {
+            Write-Warning "Skipping ${pkgId}: version is empty"
+            continue
+        }
+
         # Escape dots in package ID for regex
         $pkgIdRegex = $pkgId -replace '\.', '\.'
 
