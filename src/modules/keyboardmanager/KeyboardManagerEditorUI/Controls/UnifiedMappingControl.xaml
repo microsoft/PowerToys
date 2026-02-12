@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <UserControl
     x:Class="KeyboardManagerEditorUI.Controls.UnifiedMappingControl"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -49,12 +49,14 @@
                         <TextBlock Text="Key or shortcut" />
                     </StackPanel>
                 </ComboBoxItem>
+                <!--
                 <ComboBoxItem AutomationProperties.Name="Mouse button" Tag="Mouse">
                     <StackPanel Orientation="Horizontal" Spacing="8">
                         <FontIcon FontSize="16" Glyph="&#xE962;" />
                         <TextBlock Text="Mouse button" />
                     </StackPanel>
                 </ComboBoxItem>
+                -->
             </ComboBox>
 
             <Rectangle
@@ -213,12 +215,14 @@
                         <TextBlock Text="Open app" />
                     </StackPanel>
                 </ComboBoxItem>
+                <!--
                 <ComboBoxItem AutomationProperties.Name="Remap to mouse click" Tag="MouseClick">
                     <StackPanel Orientation="Horizontal" Spacing="8">
                         <FontIcon FontSize="14" Glyph="&#xE962;" />
                         <TextBlock Text="Remap to mouse click" />
                     </StackPanel>
                 </ComboBoxItem>
+                -->
             </ComboBox>
 
             <Rectangle
