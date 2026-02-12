@@ -151,16 +151,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                 ConflictCount = this.ConflictCount,
             });
 
-            if (App.GetShortcutConflictWindow() == null)
-            {
-                var conflictWindow = new ShortcutConflictWindow();
-                App.SetShortcutConflictWindow(conflictWindow);
-                conflictWindow.Activate();
-            }
-            else
-            {
-                App.GetShortcutConflictWindow().Activate();
-            }
+            ((App)App.Current)!.OpenShortcutConflictWindow();
         }
     }
 }
