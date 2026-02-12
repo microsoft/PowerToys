@@ -13,7 +13,31 @@ Param(
 
   # Root folder Path for processing
   [Parameter(Mandatory=$False,Position=4)]
-  [string]$sourceLink = "https://microsoft.pkgs.visualstudio.com/ProjectReunion/_packaging/Project.Reunion.nuget.internal/nuget/v3/index.json"
+  [string]$sourceLink = "https://microsoft.pkgs.visualstudio.com/ProjectReunion/_packaging/Project.Reunion.nuget.internal/nuget/v3/index.json",
+
+  # Use Azure Pipeline artifact as source for metapackage
+  [Parameter(Mandatory=$False,Position=5)]
+  [boolean]$useArtifactSource = $False,
+
+  # Azure DevOps organization URL
+  [Parameter(Mandatory=$False,Position=6)]
+  [string]$azureDevOpsOrg = "https://dev.azure.com/microsoft",
+
+  # Azure DevOps project name
+  [Parameter(Mandatory=$False,Position=7)]
+  [string]$azureDevOpsProject = "ProjectReunion",
+
+  # Pipeline build ID (or "latest" for latest build)
+  [Parameter(Mandatory=$False,Position=8)]
+  [string]$buildId = "",
+
+  # Artifact name containing the NuGet packages
+  [Parameter(Mandatory=$False,Position=9)]
+  [string]$artifactName = "WindowsAppSDK_Nuget_And_MSIX",
+
+  # Metapackage name to look for in artifact
+  [Parameter(Mandatory=$False,Position=10)]
+  [string]$metaPackageName = "Microsoft.WindowsAppSDK"
 )
 
 
@@ -114,6 +138,222 @@ function Add-NuGetSourceAndMapping {
     }
 }
 
+function Download-ArtifactFromPipeline {
+    param (
+        [string]$Organization,
+        [string]$Project,
+        [string]$BuildId,
+        [string]$ArtifactName,
+        [string]$OutputDir
+    )
+
+    Write-Host "Downloading artifact '$ArtifactName' from build $BuildId..."
+    New-Item -ItemType Directory -Path $OutputDir -Force | Out-Null
+
+    try {
+        # Use az CLI to download artifact
+        $azArgs = "pipelines runs artifact download --organization $Organization --project $Project --run-id $BuildId --artifact-name `"$ArtifactName`" --path `"$OutputDir`""
+        Invoke-Expression "az $azArgs"
+
+        if ($LASTEXITCODE -eq 0) {
+            Write-Host "Successfully downloaded artifact to $OutputDir"
+            return $true
+        } else {
+            Write-Warning "Failed to download artifact. Exit code: $LASTEXITCODE"
+            return $false
+        }
+    } catch {
+        Write-Warning "Error downloading artifact: $_"
+        return $false
+    }
+}
+
+function Get-NuspecDependencies {
+    param (
+        [string]$NupkgPath,
+        [string]$TargetFramework = ""
+    )
+
+    $tempDir = Join-Path $env:TEMP "nuspec_parse_$(Get-Random)"
+
+    try {
+        # Extract .nupkg (it's a zip file)
+        Expand-Archive -Path $NupkgPath -DestinationPath $tempDir -Force
+
+        # Find .nuspec file
+        $nuspecFile = Get-ChildItem -Path $tempDir -Filter "*.nuspec" -Recurse | Select-Object -First 1
+
+        if (-not $nuspecFile) {
+            Write-Warning "No .nuspec file found in $NupkgPath"
+            return @{}
+        }
+
+        [xml]$nuspec = Get-Content $nuspecFile.FullName
+
+        # Extract package info
+        $packageId = $nuspec.package.metadata.id
+        $version = $nuspec.package.metadata.version
+        Write-Host "Parsing $packageId version $version"
+
+        # Parse dependencies
+        $dependencies = @{}
+        $depGroups = $nuspec.package.metadata.dependencies.group
+
+        if ($depGroups) {
+            # Dependencies are grouped by target framework
+            foreach ($group in $depGroups) {
+                $fx = $group.targetFramework
+                Write-Host "  Target Framework: $fx"
+
+                foreach ($dep in $group.dependency) {
+                    $depId = $dep.id
+                    $depVer = $dep.version
+                    # Remove version range brackets if present (e.g., "[2.0.0]" -> "2.0.0")
+                    $depVer = $depVer -replace '[\[\]]', ''
+                    $dependencies[$depId] = $depVer
+                    Write-Host "    - $depId : $depVer"
+                }
+            }
+        } else {
+            # No grouping, direct dependencies
+            $deps = $nuspec.package.metadata.dependencies.dependency
+            if ($deps) {
+                foreach ($dep in $deps) {
+                    $depId = $dep.id
+                    $depVer = $dep.version
+                    $depVer = $depVer -replace '[\[\]]', ''
+                    $dependencies[$depId] = $depVer
+                    Write-Host "  - $depId : $depVer"
+                }
+            }
+        }
+
+        return $dependencies
+    }
+    catch {
+        Write-Warning "Failed to parse nuspec: $_"
+        return @{}
+    }
+    finally {
+        Remove-Item $tempDir -Recurse -Force -ErrorAction SilentlyContinue
+    }
+}
+
+function Resolve-ArtifactBasedDependencies {
+    param (
+        [string]$ArtifactDir,
+        [string]$MetaPackageName,
+        [string]$SourceUrl,
+        [string]$OutputDir
+    )
+
+    Write-Host "Resolving dependencies from artifact-based metapackage..."
+    New-Item -ItemType Directory -Path $OutputDir -Force | Out-Null
+
+    # Find the metapackage in artifact
+    $metaNupkg = Get-ChildItem -Path $ArtifactDir -Recurse -Filter "$MetaPackageName.*.nupkg" |
+                 Where-Object { $_.Name -notmatch "Runtime" } |
+                 Select-Object -First 1
+
+    if (-not $metaNupkg) {
+        Write-Warning "Metapackage $MetaPackageName not found in artifact"
+        return @{}
+    }
+
+    # Extract version from filename
+    if ($metaNupkg.Name -match "$MetaPackageName\.(.+)\.nupkg") {
+        $metaVersion = $Matches[1]
+        Write-Host "Found metapackage: $MetaPackageName version $metaVersion"
+    } else {
+        Write-Warning "Could not extract version from $($metaNupkg.Name)"
+        return @{}
+    }
+
+    # Parse dependencies from metapackage
+    $dependencies = Get-NuspecDependencies -NupkgPath $metaNupkg.FullName
+
+    # Copy metapackage to output directory
+    Copy-Item $metaNupkg.FullName -Destination $OutputDir -Force
+    Write-Host "Copied metapackage to $OutputDir"
+
+    # Copy Runtime package from artifact (it's not in feed)
+    $runtimeNupkg = Get-ChildItem -Path $ArtifactDir -Recurse -Filter "$MetaPackageName.Runtime.*.nupkg" | Select-Object -First 1
+    if ($runtimeNupkg) {
+        Copy-Item $runtimeNupkg.FullName -Destination $OutputDir -Force
+        Write-Host "Copied Runtime package to $OutputDir"
+    }
+
+    # Prepare package versions hashtable
+    $packageVersions = @{ $MetaPackageName = $metaVersion }
+
+    # Download other dependencies from feed (excluding Runtime as it's already copied)
+    # Create temp nuget.config that includes both local packages and remote feed
+    # This allows NuGet to find packages already copied from artifact
+    $tempConfig = Join-Path $env:TEMP "nuget_artifact_$(Get-Random).config"
+    $tempConfigContent = @"
+<?xml version='1.0' encoding='utf-8'?>
+<configuration>
+  <packageSources>
+    <clear />
+    <add key='LocalPackages' value='$OutputDir' />
+    <add key='RemoteFeed' value='$SourceUrl' />
+  </packageSources>
+</configuration>
+"@
+    Set-Content -Path $tempConfig -Value $tempConfigContent
+
+    try {
+        foreach ($depId in $dependencies.Keys) {
+            # Skip Runtime as it's already copied from artifact
+            if ($depId -like "*Runtime*") {
+                $packageVersions[$depId] = $dependencies[$depId]
+                Write-Host "Skipping $depId (already in artifact)"
+                continue
+            }
+
+            $depVersion = $dependencies[$depId]
+            Write-Host "Downloading dependency: $depId version $depVersion from feed..."
+
+            $nugetArgs = "install $depId -Version $depVersion -ConfigFile `"$tempConfig`" -OutputDirectory `"$OutputDir`" -NonInteractive -NoCache"
+            Invoke-Expression "nuget $nugetArgs"
+
+            if ($LASTEXITCODE -eq 0) {
+                $packageVersions[$depId] = $depVersion
+                Write-Host "  Successfully downloaded $depId"
+            } else {
+                Write-Warning "  Failed to download $depId version $depVersion"
+            }
+        }
+    }
+    finally {
+        Remove-Item $tempConfig -Force -ErrorAction SilentlyContinue
+    }
+
+    # Parse all downloaded packages to get actual versions
+    $directories = Get-ChildItem -Path $OutputDir -Directory
+    $allLocalPackages = @()
+    foreach ($dir in $directories) {
+        if ($dir.Name -match "^(.+?)\.(\d+\..*)$") {
+            $pkgId = $Matches[1]
+            $pkgVer = $Matches[2]
+            $allLocalPackages += $pkgId
+            $packageVersions[$pkgId] = $pkgVer
+        }
+    }
+
+    # Update nuget.config
+    $nugetConfig = Join-Path $rootPath "nuget.config"
+    $configData = Read-FileWithEncoding -Path $nugetConfig
+    [xml]$xml = $configData.Content
+
+    Add-NuGetSourceAndMapping -Xml $xml -Key "localpackages" -Value $OutputDir -Patterns $allLocalPackages
+
+    $xml.Save($nugetConfig)
+    Write-Host "Updated nuget.config with localpackages mapping."
+
+    return $packageVersions
+}
+
 function Resolve-WinAppSdkSplitDependencies {
     Write-Host "Version $WinAppSDKVersion detected. Resolving split dependencies..."
     $installDir = Join-Path $rootPath "localpackages\output"
@@ -172,51 +412,100 @@ function Resolve-WinAppSdkSplitDependencies {
     }
 }
 
-# Execute nuget list and capture the output
-if ($useExperimentalVersion) {
-    # The nuget list for experimental versions will cost more time
-    # So, we will not use -AllVersions to wast time
-    # But it can only get the latest experimental version
-    Write-Host "Fetching WindowsAppSDK with experimental versions"
-    $nugetOutput = nuget list Microsoft.WindowsAppSDK `
-        -Source  $sourceLink `
-        -Prerelease
-    # Filter versions based on the specified version prefix
-    $escapedVersionNumber = [regex]::Escape($winAppSdkVersionNumber)
-    $filteredVersions = $nugetOutput | Where-Object { $_ -match "Microsoft.WindowsAppSDK $escapedVersionNumber\." }
-    $latestVersions = $filteredVersions
-} else {
-    Write-Host "Fetching stable WindowsAppSDK versions for $winAppSdkVersionNumber"
-    $nugetOutput = nuget list Microsoft.WindowsAppSDK `
-        -Source $sourceLink `
-        -AllVersions
-    # Filter versions based on the specified version prefix
-    $escapedVersionNumber = [regex]::Escape($winAppSdkVersionNumber)
-    $filteredVersions = $nugetOutput | Where-Object { $_ -match "Microsoft.WindowsAppSDK $escapedVersionNumber\." }
-    $latestVersions = $filteredVersions | Sort-Object { [version]($_ -split ' ')[1] } -Descending | Select-Object -First 1
-}
+# Main logic: choose between artifact-based or feed-based approach
+if ($useArtifactSource) {
+    Write-Host "=== Using Artifact-Based Source ===" -ForegroundColor Cyan
+    Write-Host "Organization: $azureDevOpsOrg"
+    Write-Host "Project: $azureDevOpsProject"
+    Write-Host "Build ID: $buildId"
+    Write-Host "Artifact: $artifactName"
 
-Write-Host "Latest versions found: $latestVersions"
-# Extract the latest version number from the output
-$latestVersion = $latestVersions -split "`n" | `
-    Select-String -Pattern 'Microsoft.WindowsAppSDK\s*([0-9]+\.[0-9]+\.[0-9]+-*[a-zA-Z0-9]*)' | `
-    ForEach-Object { $_.Matches[0].Groups[1].Value } | `
-    Sort-Object -Descending | `
-    Select-Object -First 1
+    if ([string]::IsNullOrEmpty($buildId)) {
+        Write-Host "Error: buildId parameter is required when using artifact source"
+        exit 1
+    }
 
-if ($latestVersion) {
-    $WinAppSDKVersion = $latestVersion
-    Write-Host "Extracted version: $WinAppSDKVersion"
+    # Download artifact
+    $artifactDir = Join-Path $rootPath "localpackages\artifact"
+    $downloadSuccess = Download-ArtifactFromPipeline `
+        -Organization $azureDevOpsOrg `
+        -Project $azureDevOpsProject `
+        -BuildId $buildId `
+        -ArtifactName $artifactName `
+        -OutputDir $artifactDir
+
+    if (-not $downloadSuccess) {
+        Write-Host "Failed to download artifact"
+        exit 1
+    }
+
+    # Resolve dependencies from artifact
+    $installDir = Join-Path $rootPath "localpackages\output"
+    $packageVersions = Resolve-ArtifactBasedDependencies `
+        -ArtifactDir $artifactDir `
+        -MetaPackageName $metaPackageName `
+        -SourceUrl $sourceLink `
+        -OutputDir $installDir
+
+    if ($packageVersions.Count -eq 0) {
+        Write-Host "Failed to resolve dependencies from artifact"
+        exit 1
+    }
+
+    # Extract WinAppSDK version
+    $WinAppSDKVersion = $packageVersions[$metaPackageName]
+    Write-Host "WinAppSDK Version: $WinAppSDKVersion"
     Write-Host "##vso[task.setvariable variable=WinAppSDKVersion]$WinAppSDKVersion"
+
 } else {
-    Write-Host "Failed to extract version number from nuget list output"
-    exit 1
+    Write-Host "=== Using Feed-Based Source ===" -ForegroundColor Cyan
+
+    # Execute nuget list and capture the output
+    if ($useExperimentalVersion) {
+        # The nuget list for experimental versions will cost more time
+        # So, we will not use -AllVersions to wast time
+        # But it can only get the latest experimental version
+        Write-Host "Fetching WindowsAppSDK with experimental versions"
+        $nugetOutput = nuget list Microsoft.WindowsAppSDK `
+            -Source  $sourceLink `
+            -Prerelease
+        # Filter versions based on the specified version prefix
+        $escapedVersionNumber = [regex]::Escape($winAppSdkVersionNumber)
+        $filteredVersions = $nugetOutput | Where-Object { $_ -match "Microsoft.WindowsAppSDK $escapedVersionNumber\." }
+        $latestVersions = $filteredVersions
+    } else {
+        Write-Host "Fetching stable WindowsAppSDK versions for $winAppSdkVersionNumber"
+        $nugetOutput = nuget list Microsoft.WindowsAppSDK `
+            -Source $sourceLink `
+            -AllVersions
+        # Filter versions based on the specified version prefix
+        $escapedVersionNumber = [regex]::Escape($winAppSdkVersionNumber)
+        $filteredVersions = $nugetOutput | Where-Object { $_ -match "Microsoft.WindowsAppSDK $escapedVersionNumber\." }
+        $latestVersions = $filteredVersions | Sort-Object { [version]($_ -split ' ')[1] } -Descending | Select-Object -First 1
+    }
+
+    Write-Host "Latest versions found: $latestVersions"
+    # Extract the latest version number from the output
+    $latestVersion = $latestVersions -split "`n" | `
+        Select-String -Pattern 'Microsoft.WindowsAppSDK\s*([0-9]+\.[0-9]+\.[0-9]+-*[a-zA-Z0-9]*)' | `
+        ForEach-Object { $_.Matches[0].Groups[1].Value } | `
+        Sort-Object -Descending | `
+        Select-Object -First 1
+
+    if ($latestVersion) {
+        $WinAppSDKVersion = $latestVersion
+        Write-Host "Extracted version: $WinAppSDKVersion"
+        Write-Host "##vso[task.setvariable variable=WinAppSDKVersion]$WinAppSDKVersion"
+    } else {
+        Write-Host "Failed to extract version number from nuget list output"
+        exit 1
+    }
+
+    # Resolve dependencies for 1.8+
+    $packageVersions = @{ "Microsoft.WindowsAppSDK" = $WinAppSDKVersion }
+
+    Resolve-WinAppSdkSplitDependencies
 }
-
-# Resolve dependencies for 1.8+
-$packageVersions = @{ "Microsoft.WindowsAppSDK" = $WinAppSDKVersion }
-
-Resolve-WinAppSdkSplitDependencies
 
 # Update Directory.Packages.props file
 Get-ChildItem -Path $rootPath -Recurse "Directory.Packages.props" | ForEach-Object {
