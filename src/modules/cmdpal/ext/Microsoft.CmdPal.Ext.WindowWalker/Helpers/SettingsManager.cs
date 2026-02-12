@@ -123,7 +123,7 @@ public class SettingsManager : JsonSettingsManager, ISettingsInterface
         // Load settings from file upon initialization
         LoadSettings();
 
-        Settings.SettingsChanged += (s, a) => this.SaveSettings();
+        Settings.SettingsChanged += (_, _) => SaveSettings();
     }
 
     internal static SettingsManager Instance

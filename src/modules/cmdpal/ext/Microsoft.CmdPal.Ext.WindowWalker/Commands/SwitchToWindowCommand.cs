@@ -4,7 +4,6 @@
 
 using System;
 using System.Diagnostics;
-using System.Drawing;
 using System.IO;
 using Microsoft.CmdPal.Ext.WindowWalker.Components;
 using Microsoft.CmdPal.Ext.WindowWalker.Helpers;

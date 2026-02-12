@@ -55,7 +55,7 @@ public class VirtualDesktopHelper
     /// </summary>
     private Guid _currentDesktop;
 
-    private static readonly CompositeFormat VirtualDesktopHelperDesktop = System.Text.CompositeFormat.Parse(Properties.Resources.VirtualDesktopHelper_Desktop);
+    private static readonly CompositeFormat VirtualDesktopHelperDesktop = CompositeFormat.Parse(Resources.VirtualDesktopHelper_Desktop);
 
     /// <summary>
     /// Initializes a new instance of the <see cref="VirtualDesktopHelper"/> class.

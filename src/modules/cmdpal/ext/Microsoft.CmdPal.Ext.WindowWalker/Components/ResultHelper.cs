@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.CmdPal.Ext.WindowWalker.Commands;
 using Microsoft.CmdPal.Ext.WindowWalker.Helpers;
+using Microsoft.CmdPal.Ext.WindowWalker.Pages;
 using Microsoft.CmdPal.Ext.WindowWalker.Properties;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
