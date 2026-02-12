@@ -8,6 +8,7 @@ using System.Diagnostics;
 using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
 using Microsoft.CmdPal.Core.Common.Helpers;
+using Microsoft.CmdPal.Core.Common.Text;
 using Microsoft.CmdPal.Core.ViewModels.Messages;
 using Microsoft.CmdPal.Ext.Apps;
 using Microsoft.CmdPal.Ext.Apps.Programs;
@@ -24,7 +25,7 @@ namespace Microsoft.CmdPal.UI.ViewModels.MainPage;
 /// This class encapsulates the data we load from built-in providers and extensions to use within the same extension-UI system for a <see cref="ListPage"/>.
 /// TODO: Need to think about how we structure/interop for the page -> section -> item between the main setup, the extensions, and our viewmodels.
 /// </summary>
-public partial class MainListPage : DynamicListPage,
+public sealed partial class MainListPage : DynamicListPage,
     IRecipient<ClearSearchMessage>,
     IRecipient<UpdateFallbackItemsMessage>, IDisposable
 {
@@ -32,13 +33,18 @@ public partial class MainListPage : DynamicListPage,
     private readonly AliasManager _aliasManager;
     private readonly SettingsModel _settings;
     private readonly AppStateModel _appStateModel;
-    private List<Scored<IListItem>>? _filteredItems;
-    private List<Scored<IListItem>>? _filteredApps;
+    private readonly ScoringFunction<IListItem> _scoringFunction;
+    private readonly ScoringFunction<IListItem> _fallbackScoringFunction;
+    private readonly IFuzzyMatcherProvider _fuzzyMatcherProvider;
+
+    private RoScored<IListItem>[]? _filteredItems;
+    private RoScored<IListItem>[]? _filteredApps;
 
     // Keep as IEnumerable for deferred execution. Fallback item titles are updated
     // asynchronously, so scoring must happen lazily when GetItems is called.
-    private IEnumerable<Scored<IListItem>>? _scoredFallbackItems;
-    private IEnumerable<Scored<IListItem>>? _fallbackItems;
+    private IEnumerable<RoScored<IListItem>>? _scoredFallbackItems;
+    private IEnumerable<RoScored<IListItem>>? _fallbackItems;
+
     private bool _includeApps;
     private bool _filteredItemsIncludesApps;
     private int _appResultLimit = 10;
@@ -48,7 +54,12 @@ public partial class MainListPage : DynamicListPage,
 
     private CancellationTokenSource? _cancellationTokenSource;
 
-    public MainListPage(TopLevelCommandManager topLevelCommandManager, SettingsModel settings, AliasManager aliasManager, AppStateModel appStateModel)
+    public MainListPage(
+        TopLevelCommandManager topLevelCommandManager,
+        SettingsModel settings,
+        AliasManager aliasManager,
+        AppStateModel appStateModel,
+        IFuzzyMatcherProvider fuzzyMatcherProvider)
     {
         Id = "com.microsoft.cmdpal.home";
         Title = Resources.builtin_home_name;
@@ -59,6 +70,10 @@ public partial class MainListPage : DynamicListPage,
         _aliasManager = aliasManager;
         _appStateModel = appStateModel;
         _tlcManager = topLevelCommandManager;
+        _fuzzyMatcherProvider = fuzzyMatcherProvider;
+        _scoringFunction = (in query, item) => ScoreTopLevelItem(in query, item, _appStateModel.RecentCommands, _fuzzyMatcherProvider.Current);
+        _fallbackScoringFunction = (in _, item) => ScoreFallbackItem(item, _settings.FallbackRanks);
+
         _tlcManager.PropertyChanged += TlcManager_PropertyChanged;
         _tlcManager.TopLevelCommands.CollectionChanged += Commands_CollectionChanged;
 
@@ -191,8 +206,7 @@ public partial class MainListPage : DynamicListPage,
 
     public override void UpdateSearchText(string oldSearch, string newSearch)
     {
-        var timer = new Stopwatch();
-        timer.Start();
+        var stopwatch = Stopwatch.StartNew();
 
         _cancellationTokenSource?.Cancel();
         _cancellationTokenSource?.Dispose();
@@ -355,15 +369,14 @@ public partial class MainListPage : DynamicListPage,
 
                 if (_includeApps)
                 {
-                    var allNewApps = AllAppsCommandProvider.Page.GetItems().ToList();
+                    var allNewApps = AllAppsCommandProvider.Page.GetItems().Cast<AppListItem>().ToList();
 
                     // We need to remove pinned apps from allNewApps so they don't show twice.
                     var pinnedApps = PinnedAppsManager.Instance.GetPinnedAppIdentifiers();
 
                     if (pinnedApps.Length > 0)
                     {
-                        newApps = allNewApps.Where(w =>
-                            pinnedApps.IndexOf(((AppListItem)w).AppIdentifier) < 0);
+                        newApps = allNewApps.Where(w => pinnedApps.IndexOf(w.AppIdentifier) < 0);
                     }
                     else
                     {
@@ -377,11 +390,10 @@ public partial class MainListPage : DynamicListPage,
                 }
             }
 
-            var history = _appStateModel.RecentCommands!;
-            Func<string, IListItem, int> scoreItem = (a, b) => { return ScoreTopLevelItem(a, b, history); };
+            var searchQuery = _fuzzyMatcherProvider.Current.PrecomputeQuery(SearchText);
 
             // Produce a list of everything that matches the current filter.
-            _filteredItems = [.. ListHelpers.FilterListWithScores<IListItem>(newFilteredItems ?? [], SearchText, scoreItem)];
+            _filteredItems = InternalListHelpers.FilterListWithScores(newFilteredItems, searchQuery, _scoringFunction);
 
             if (token.IsCancellationRequested)
             {
@@ -389,21 +401,14 @@ public partial class MainListPage : DynamicListPage,
             }
 
             IEnumerable<IListItem> newFallbacksForScoring = commands.Where(s => s.IsFallback && globalFallbacks.Contains(s.Id));
+            _scoredFallbackItems = InternalListHelpers.FilterListWithScores(newFallbacksForScoring, searchQuery, _scoringFunction);
 
             if (token.IsCancellationRequested)
             {
                 return;
             }
 
-            _scoredFallbackItems = ListHelpers.FilterListWithScores<IListItem>(newFallbacksForScoring ?? [], SearchText, scoreItem);
-
-            if (token.IsCancellationRequested)
-            {
-                return;
-            }
-
-            Func<string, IListItem, int> scoreFallbackItem = (a, b) => { return ScoreFallbackItem(a, b, _settings.FallbackRanks); };
-            _fallbackItems = [.. ListHelpers.FilterListWithScores<IListItem>(newFallbacks ?? [], SearchText, scoreFallbackItem)];
+            _fallbackItems = InternalListHelpers.FilterListWithScores<IListItem>(newFallbacks ?? [], searchQuery, _fallbackScoringFunction);
 
             if (token.IsCancellationRequested)
             {
@@ -413,18 +418,7 @@ public partial class MainListPage : DynamicListPage,
             // Produce a list of filtered apps with the appropriate limit
             if (newApps.Any())
             {
-                var scoredApps = ListHelpers.FilterListWithScores<IListItem>(newApps, SearchText, scoreItem);
-
-                if (token.IsCancellationRequested)
-                {
-                    return;
-                }
-
-                // We'll apply this limit in the GetItems method after merging with commands
-                // but we need to know the limit now to avoid re-scoring apps
-                var appLimit = AllAppsCommandProvider.TopLevelResultLimit;
-
-                _filteredApps = [.. scoredApps];
+                _filteredApps = InternalListHelpers.FilterListWithScores(newApps, searchQuery, _scoringFunction);
 
                 if (token.IsCancellationRequested)
                 {
@@ -432,10 +426,15 @@ public partial class MainListPage : DynamicListPage,
                 }
             }
 
+            var filterDoneTimestamp = stopwatch.ElapsedMilliseconds;
+            Logger.LogDebug($"Filter with '{newSearch}' in {filterDoneTimestamp}ms");
+
             RaiseItemsChanged();
 
-            timer.Stop();
-            Logger.LogDebug($"Filter with '{newSearch}' in {timer.ElapsedMilliseconds}ms");
+            var listPageUpdatedTimestamp = stopwatch.ElapsedMilliseconds;
+            Logger.LogDebug($"Render items with '{newSearch}' in {listPageUpdatedTimestamp}ms /d {listPageUpdatedTimestamp - filterDoneTimestamp}ms");
+
+            stopwatch.Stop();
         }
     }
 
@@ -479,7 +478,11 @@ public partial class MainListPage : DynamicListPage,
     // Almost verbatim ListHelpers.ScoreListItem, but also accounting for the
     // fact that we want fallback handlers down-weighted, so that they don't
     // _always_ show up first.
-    internal static int ScoreTopLevelItem(string query, IListItem topLevelOrAppItem, IRecentCommandsManager history)
+    internal static int ScoreTopLevelItem(
+        in FuzzyQuery query,
+        IListItem topLevelOrAppItem,
+        IRecentCommandsManager history,
+        IPrecomputedFuzzyMatcher precomputedFuzzyMatcher)
     {
         var title = topLevelOrAppItem.Title;
         if (string.IsNullOrWhiteSpace(title))
@@ -487,94 +490,80 @@ public partial class MainListPage : DynamicListPage,
             return 0;
         }
 
-        var isWhiteSpace = string.IsNullOrWhiteSpace(query);
-
         var isFallback = false;
         var isAliasSubstringMatch = false;
         var isAliasMatch = false;
         var id = IdForTopLevelOrAppItem(topLevelOrAppItem);
 
-        var extensionDisplayName = string.Empty;
+        FuzzyTarget? extensionDisplayNameTarget = null;
         if (topLevelOrAppItem is TopLevelViewModel topLevel)
         {
             isFallback = topLevel.IsFallback;
+            extensionDisplayNameTarget = topLevel.GetExtensionNameTarget(precomputedFuzzyMatcher);
+
             if (topLevel.HasAlias)
             {
                 var alias = topLevel.AliasText;
-                isAliasMatch = alias == query;
-                isAliasSubstringMatch = isAliasMatch || alias.StartsWith(query, StringComparison.CurrentCultureIgnoreCase);
+                isAliasMatch = alias == query.Original;
+                isAliasSubstringMatch = isAliasMatch || alias.StartsWith(query.Original, StringComparison.CurrentCultureIgnoreCase);
             }
-
-            extensionDisplayName = topLevel.ExtensionHost?.Extension?.PackageDisplayName ?? string.Empty;
         }
 
-        // StringMatcher.FuzzySearch will absolutely BEEF IT if you give it a
-        // whitespace-only query.
-        //
-        // in that scenario, we'll just use a simple string contains for the
-        // query. Maybe someone is really looking for things with a space in
-        // them, I don't know.
-
-        // Title:
-        // * whitespace query: 1 point
-        // * otherwise full weight match
-        var nameMatch = isWhiteSpace ?
-            (title.Contains(query) ? 1 : 0) :
-               FuzzyStringMatcher.ScoreFuzzy(query, title);
-
-        // Subtitle:
-        // * whitespace query: 1/2 point
-        // * otherwise ~half weight match. Minus a bit, because subtitles tend to be longer
-        var descriptionMatch = isWhiteSpace ?
-            (topLevelOrAppItem.Subtitle.Contains(query) ? .5 : 0) :
-            (FuzzyStringMatcher.ScoreFuzzy(query, topLevelOrAppItem.Subtitle) - 4) / 2.0;
-
-        // Extension title: despite not being visible, give the extension name itself some weight
-        // * whitespace query: 0 points
-        // * otherwise more weight than a subtitle, but not much
-        var extensionTitleMatch = isWhiteSpace ? 0 : FuzzyStringMatcher.ScoreFuzzy(query, extensionDisplayName) / 1.5;
-
-        var scores = new[]
+        // Handle whitespace query separately - FuzzySearch doesn't handle it well
+        if (string.IsNullOrWhiteSpace(query.Original))
         {
-             nameMatch,
-             descriptionMatch,
-             isFallback ? 1 : 0, // Always give fallbacks a chance
-        };
-        var max = scores.Max();
+            return ScoreWhitespaceQuery(query.Original, title, topLevelOrAppItem.Subtitle, isFallback);
+        }
 
-        // _Add_ the extension name. This will bubble items that match both
-        // title and extension name up above ones that just match title.
-        // e.g. "git" will up-weight "GitHub searches" from the GitHub extension
-        // above "git" from "whatever"
-        max = max + extensionTitleMatch;
+        // Get precomputed targets
+        var (titleTarget, subtitleTarget) = topLevelOrAppItem is IPrecomputedListItem precomputedItem
+            ? (precomputedItem.GetTitleTarget(precomputedFuzzyMatcher), precomputedItem.GetSubtitleTarget(precomputedFuzzyMatcher))
+            : (precomputedFuzzyMatcher.PrecomputeTarget(title), precomputedFuzzyMatcher.PrecomputeTarget(topLevelOrAppItem.Subtitle));
+
+        // Score components
+        var nameScore = precomputedFuzzyMatcher.Score(query, titleTarget);
+        var descriptionScore = (precomputedFuzzyMatcher.Score(query, subtitleTarget) - 4) / 2.0;
+        var extensionScore = extensionDisplayNameTarget is { } extTarget ? precomputedFuzzyMatcher.Score(query, extTarget) / 1.5 : 0;
+
+        // Take best match from title/description/fallback, then add extension score
+        // Extension adds to max so items matching both title AND extension bubble up
+        var baseScore = Math.Max(Math.Max(nameScore, descriptionScore), isFallback ? 1 : 0);
+        var matchScore = baseScore + extensionScore;
 
         // Apply a penalty to fallback items so they rank below direct matches.
         // Fallbacks that dynamically match queries (like RDP connections) should
         // appear after apps and direct command matches.
-        if (isFallback && max > 1)
+        if (isFallback && matchScore > 1)
         {
             // Reduce fallback scores by 50% to prioritize direct matches
-            max = max * 0.5;
+            matchScore = matchScore * 0.5;
         }
 
-        var matchSomething = max
-            + (isAliasMatch ? 9001 : (isAliasSubstringMatch ? 1 : 0));
+        // Alias matching: exact match is overwhelming priority, substring match adds a small boost
+        var aliasBoost = isAliasMatch ? 9001 : (isAliasSubstringMatch ? 1 : 0);
+        var totalMatch = matchScore + aliasBoost;
 
-        // If we matched title, subtitle, or alias (something real), then
-        // here we add the recent command weight boost
-        //
-        // Otherwise something like `x` will still match everything you've run before
-        var finalScore = matchSomething * 10;
-        if (matchSomething > 0)
+        // Apply scaling and history boost only if we matched something real
+        var finalScore = totalMatch * 10;
+        if (totalMatch > 0)
         {
-            var recentWeightBoost = history.GetCommandHistoryWeight(id);
-            finalScore += recentWeightBoost;
+            finalScore += history.GetCommandHistoryWeight(id);
         }
 
         return (int)finalScore;
     }
 
-    internal static int ScoreFallbackItem(string query, IListItem topLevelOrAppItem, string[] fallbackRanks)
+    private static int ScoreWhitespaceQuery(string query, string title, string subtitle, bool isFallback)
+    {
+        // Simple contains check for whitespace queries
+        var nameMatch = title.Contains(query, StringComparison.Ordinal) ? 1.0 : 0;
+        var descriptionMatch = subtitle.Contains(query, StringComparison.Ordinal) ? 0.5 : 0;
+        var baseScore = Math.Max(Math.Max(nameMatch, descriptionMatch), isFallback ? 1 : 0);
+
+        return (int)(baseScore * 10);
+    }
+
+    private static int ScoreFallbackItem(IListItem topLevelOrAppItem, string[] fallbackRanks)
     {
         // Default to 1 so it always shows in list.
         var finalScore = 1;

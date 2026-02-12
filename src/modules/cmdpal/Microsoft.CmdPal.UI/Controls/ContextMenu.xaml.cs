@@ -4,9 +4,11 @@
 
 using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.WinUI;
+using Microsoft.CmdPal.Core.Common.Text;
 using Microsoft.CmdPal.Core.ViewModels;
 using Microsoft.CmdPal.Core.ViewModels.Messages;
 using Microsoft.CmdPal.UI.Messages;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -21,21 +23,19 @@ public sealed partial class ContextMenu : UserControl,
     IRecipient<UpdateCommandBarMessage>,
     IRecipient<TryCommandKeybindingMessage>
 {
-    public ContextMenuViewModel ViewModel { get; } = new();
+    public ContextMenuViewModel ViewModel { get; }
 
     public ContextMenu()
     {
         this.InitializeComponent();
 
+        ViewModel = new ContextMenuViewModel(App.Current.Services.GetRequiredService<IFuzzyMatcherProvider>());
+        ViewModel.PropertyChanged += ViewModel_PropertyChanged;
+
         // RegisterAll isn't AOT compatible
         WeakReferenceMessenger.Default.Register<OpenContextMenuMessage>(this);
         WeakReferenceMessenger.Default.Register<UpdateCommandBarMessage>(this);
         WeakReferenceMessenger.Default.Register<TryCommandKeybindingMessage>(this);
-
-        if (ViewModel is not null)
-        {
-            ViewModel.PropertyChanged += ViewModel_PropertyChanged;
-        }
     }
 
     public void Receive(OpenContextMenuMessage message)

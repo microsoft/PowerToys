@@ -2,19 +2,26 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Globalization;
 using System.Runtime.InteropServices;
-using System.Security.Principal;
 using Microsoft.CmdPal.Core.Common.Services.Sanitizer;
-using Windows.ApplicationModel;
 
 namespace Microsoft.CmdPal.Core.Common.Services.Reports;
 
 public sealed class ErrorReportBuilder : IErrorReportBuilder
 {
     private readonly ErrorReportSanitizer _sanitizer = new();
+    private readonly IApplicationInfoService _appInfoService;
 
     private static string Preamble => Properties.Resources.ErrorReport_Global_Preamble;
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ErrorReportBuilder"/> class.
+    /// </summary>
+    /// <param name="appInfoService">Optional application info service. If not provided, a default instance is created.</param>
+    public ErrorReportBuilder(IApplicationInfoService? appInfoService = null)
+    {
+        _appInfoService = appInfoService ?? new ApplicationInfoService(null);
+    }
 
     public string BuildReport(Exception exception, string context, bool redactPii = true)
     {
@@ -23,6 +30,9 @@ public sealed class ErrorReportBuilder : IErrorReportBuilder
         var exceptionMessage = CoalesceExceptionMessage(exception);
         var sanitizedMessage = redactPii ? _sanitizer.Sanitize(exceptionMessage) : exceptionMessage;
         var sanitizedFormattedException = redactPii ? _sanitizer.Sanitize(exception.ToString()) : exception.ToString();
+
+        var applicationInfoSummary = GetAppInfoSafe();
+        var applicationInfoSummarySanitized = redactPii ? _sanitizer.Sanitize(applicationInfoSummary) : applicationInfoSummary;
 
         // Note:
         // - do not localize technical part of the report, we need to ensure it can be read by developers
@@ -38,18 +48,7 @@ public sealed class ErrorReportBuilder : IErrorReportBuilder
                   HRESULT:               0x{exception.HResult:X8} ({exception.HResult})
                   Context:               {context ?? "N/A"}
 
-                Application:
-                  App version:           {GetAppVersionSafe()}
-                  Is elevated:           {GetElevationStatus()}
-
-                Environment:
-                  OS version:            {RuntimeInformation.OSDescription}
-                  OS architecture:       {RuntimeInformation.OSArchitecture}
-                  Runtime identifier:    {RuntimeInformation.RuntimeIdentifier}
-                  Framework:             {RuntimeInformation.FrameworkDescription}
-                  Process architecture:  {RuntimeInformation.ProcessArchitecture}
-                  Culture:               {CultureInfo.CurrentCulture.Name}
-                  UI culture:            {CultureInfo.CurrentUICulture.Name}
+                {applicationInfoSummarySanitized}
 
                 Stack Trace:
                 {exception.StackTrace}
@@ -66,31 +65,17 @@ public sealed class ErrorReportBuilder : IErrorReportBuilder
                 """;
     }
 
-    private static string GetElevationStatus()
+    private string? GetAppInfoSafe()
     {
-        // Note: do not localize technical part of the report, we need to ensure it can be read by developers
         try
         {
-            var isElevated = new WindowsPrincipal(WindowsIdentity.GetCurrent()).IsInRole(WindowsBuiltInRole.Administrator);
-            return isElevated ? "yes" : "no";
+            return _appInfoService.GetApplicationInfoSummary();
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            return "Failed to determine elevation status";
-        }
-    }
-
-    private static string GetAppVersionSafe()
-    {
-        // Note: do not localize technical part of the report, we need to ensure it can be read by developers
-        try
-        {
-            var version = Package.Current.Id.Version;
-            return $"{version.Major}.{version.Minor}.{version.Build}.{version.Revision}";
-        }
-        catch (Exception)
-        {
-            return "Failed to retrieve app version";
+            // Getting application info should never throw, but if it does, we don't want it to prevent the report from being generated
+            var message = CoalesceExceptionMessage(ex);
+            return $"Failed to get application info summary: {message}";
         }
     }
 

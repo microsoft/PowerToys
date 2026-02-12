@@ -32,6 +32,7 @@ using Windows.ApplicationModel.Activation;
 using Windows.Foundation;
 using Windows.Graphics;
 using Windows.System;
+using Windows.UI;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.Graphics.Dwm;
@@ -55,7 +56,9 @@ public sealed partial class MainWindow : WindowEx,
     IRecipient<ErrorOccurredMessage>,
     IRecipient<DragStartedMessage>,
     IRecipient<DragCompletedMessage>,
-    IDisposable
+    IRecipient<ToggleDevRibbonMessage>,
+    IDisposable,
+    IHostWindow
 {
     [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1310:Field names should not contain underscore", Justification = "Stylistically, window messages are WM_")]
     [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1306:Field names should begin with lower-case letter", Justification = "Stylistically, window messages are WM_")]
@@ -82,14 +85,20 @@ public sealed partial class MainWindow : WindowEx,
     private int _sessionErrorCount;
 
     private DesktopAcrylicController? _acrylicController;
+    private MicaController? _micaController;
     private SystemBackdropConfiguration? _configurationSource;
+    private bool _isUpdatingBackdrop;
     private TimeSpan _autoGoHomeInterval = Timeout.InfiniteTimeSpan;
 
     private WindowPosition _currentWindowPosition = new();
 
     private bool _preventHideWhenDeactivated;
 
+    private DevRibbon? _devRibbon;
+
     private MainWindowViewModel ViewModel { get; }
+
+    public bool IsVisibleToUser { get; private set; } = true;
 
     public MainWindow()
     {
@@ -111,7 +120,7 @@ public sealed partial class MainWindow : WindowEx,
             CommandPaletteHost.SetHostHwnd((ulong)_hwnd.Value);
         }
 
-        SetAcrylic();
+        InitializeBackdropSupport();
 
         _hiddenOwnerBehavior.ShowInTaskbar(this, Debugger.IsAttached);
 
@@ -136,6 +145,7 @@ public sealed partial class MainWindow : WindowEx,
         WeakReferenceMessenger.Default.Register<ErrorOccurredMessage>(this);
         WeakReferenceMessenger.Default.Register<DragStartedMessage>(this);
         WeakReferenceMessenger.Default.Register<DragCompletedMessage>(this);
+        WeakReferenceMessenger.Default.Register<ToggleDevRibbonMessage>(this);
 
         // Hide our titlebar.
         // We need to both ExtendsContentIntoTitleBar, then set the height to Collapsed
@@ -161,7 +171,7 @@ public sealed partial class MainWindow : WindowEx,
         App.Current.Services.GetService<SettingsModel>()!.SettingsChanged += SettingsChangedHandler;
 
         // Make sure that we update the acrylic theme when the OS theme changes
-        RootElement.ActualThemeChanged += (s, e) => DispatcherQueue.TryEnqueue(UpdateAcrylic);
+        RootElement.ActualThemeChanged += (s, e) => DispatcherQueue.TryEnqueue(UpdateBackdrop);
 
         // Hardcoding event name to avoid bringing in the PowerToys.interop dependency. Event name must match CMDPAL_SHOW_EVENT from shared_constants.h
         NativeEventWaiter.WaitForEventLoop("Local\\PowerToysCmdPal-ShowEvent-62336fcd-8611-4023-9b30-091a6af4cc5a", () =>
@@ -188,7 +198,7 @@ public sealed partial class MainWindow : WindowEx,
 
     private void ThemeServiceOnThemeChanged(object? sender, ThemeChangedEventArgs e)
     {
-        UpdateAcrylic();
+        UpdateBackdrop();
     }
 
     private static void LocalKeyboardListener_OnKeyPressed(object? sender, LocalKeyboardListenerKeyPressedEventArgs e)
@@ -209,7 +219,8 @@ public sealed partial class MainWindow : WindowEx,
         // Add dev ribbon if enabled
         if (!BuildInfo.IsCiBuild)
         {
-            RootElement.Children.Add(new DevRibbon { Margin = new Thickness(-1, -1, 120, -1) });
+            _devRibbon = new DevRibbon { Margin = new Thickness(-1, -1, 120, -1) };
+            RootElement.Children.Add(_devRibbon);
         }
     }
 
@@ -283,48 +294,170 @@ public sealed partial class MainWindow : WindowEx,
         _autoGoHomeTimer.Interval = _autoGoHomeInterval;
     }
 
-    private void SetAcrylic()
+    private void InitializeBackdropSupport()
     {
-        if (DesktopAcrylicController.IsSupported())
+        if (DesktopAcrylicController.IsSupported() || MicaController.IsSupported())
         {
-            // Hooking up the policy object.
             _configurationSource = new SystemBackdropConfiguration
             {
-                // Initial configuration state.
                 IsInputActive = true,
             };
-            UpdateAcrylic();
         }
     }
 
-    private void UpdateAcrylic()
+    private void UpdateBackdrop()
     {
+        // Prevent re-entrance when backdrop changes trigger ActualThemeChanged
+        if (_isUpdatingBackdrop)
+        {
+            return;
+        }
+
+        _isUpdatingBackdrop = true;
+
+        var backdrop = _themeService.Current.BackdropParameters;
+        var isImageMode = ViewModel.ShowBackgroundImage;
+        var config = BackdropStyles.Get(backdrop.Style);
+
         try
         {
-            if (_acrylicController != null)
+            switch (config.ControllerKind)
             {
-                _acrylicController.RemoveAllSystemBackdropTargets();
-                _acrylicController.Dispose();
+                case BackdropControllerKind.Solid:
+                    CleanupBackdropControllers();
+                    var tintColor = Color.FromArgb(
+                        (byte)(backdrop.EffectiveOpacity * 255),
+                        backdrop.TintColor.R,
+                        backdrop.TintColor.G,
+                        backdrop.TintColor.B);
+                    SetupTransparentBackdrop(tintColor);
+                    break;
+
+                case BackdropControllerKind.Mica:
+                case BackdropControllerKind.MicaAlt:
+                    SetupMica(backdrop, isImageMode, config.ControllerKind);
+                    break;
+
+                case BackdropControllerKind.Acrylic:
+                case BackdropControllerKind.AcrylicThin:
+                default:
+                    SetupDesktopAcrylic(backdrop, isImageMode, config.ControllerKind);
+                    break;
             }
-
-            var backdrop = _themeService.Current.BackdropParameters;
-            _acrylicController = new DesktopAcrylicController
-            {
-                TintColor = backdrop.TintColor,
-                TintOpacity = backdrop.TintOpacity,
-                FallbackColor = backdrop.FallbackColor,
-                LuminosityOpacity = backdrop.LuminosityOpacity,
-            };
-
-            // Enable the system backdrop.
-            // Note: Be sure to have "using WinRT;" to support the Window.As<...>() call.
-            _acrylicController.AddSystemBackdropTarget(this.As<ICompositionSupportsSystemBackdrop>());
-            _acrylicController.SetSystemBackdropConfiguration(_configurationSource);
         }
         catch (Exception ex)
         {
             Logger.LogError("Failed to update backdrop", ex);
         }
+        finally
+        {
+            _isUpdatingBackdrop = false;
+        }
+    }
+
+    private void SetupTransparentBackdrop(Color tintColor)
+    {
+        if (SystemBackdrop is TransparentTintBackdrop existingBackdrop)
+        {
+            existingBackdrop.TintColor = tintColor;
+        }
+        else
+        {
+            SystemBackdrop = new TransparentTintBackdrop { TintColor = tintColor };
+        }
+    }
+
+    private void CleanupBackdropControllers()
+    {
+        if (_acrylicController is not null)
+        {
+            _acrylicController.RemoveAllSystemBackdropTargets();
+            _acrylicController.Dispose();
+            _acrylicController = null;
+        }
+
+        if (_micaController is not null)
+        {
+            _micaController.RemoveAllSystemBackdropTargets();
+            _micaController.Dispose();
+            _micaController = null;
+        }
+    }
+
+    private void SetupDesktopAcrylic(BackdropParameters backdrop, bool isImageMode, BackdropControllerKind kind)
+    {
+        CleanupBackdropControllers();
+
+        // Fall back to solid color if acrylic not supported
+        if (_configurationSource is null || !DesktopAcrylicController.IsSupported())
+        {
+            SetupTransparentBackdrop(backdrop.FallbackColor);
+            return;
+        }
+
+        // DesktopAcrylicController and SystemBackdrop can't be active simultaneously
+        SystemBackdrop = null;
+
+        // Image mode: no tint here, BlurImageControl handles it (avoids double-tinting)
+        var effectiveTintOpacity = isImageMode
+            ? 0.0f
+            : backdrop.EffectiveOpacity;
+
+        _acrylicController = new DesktopAcrylicController
+        {
+            Kind = kind == BackdropControllerKind.AcrylicThin
+                ? DesktopAcrylicKind.Thin
+                : DesktopAcrylicKind.Default,
+            TintColor = backdrop.TintColor,
+            TintOpacity = effectiveTintOpacity,
+            FallbackColor = backdrop.FallbackColor,
+            LuminosityOpacity = backdrop.EffectiveLuminosityOpacity,
+        };
+
+        // Requires "using WinRT;" for Window.As<>()
+        _acrylicController.AddSystemBackdropTarget(this.As<ICompositionSupportsSystemBackdrop>());
+        _acrylicController.SetSystemBackdropConfiguration(_configurationSource);
+    }
+
+    private void SetupMica(BackdropParameters backdrop, bool isImageMode, BackdropControllerKind kind)
+    {
+        CleanupBackdropControllers();
+
+        // Fall back to solid color if Mica not supported
+        if (_configurationSource is null || !MicaController.IsSupported())
+        {
+            SetupTransparentBackdrop(backdrop.FallbackColor);
+            return;
+        }
+
+        // MicaController and SystemBackdrop can't be active simultaneously
+        SystemBackdrop = null;
+        _configurationSource.Theme = _themeService.Current.Theme == ElementTheme.Dark
+            ? SystemBackdropTheme.Dark
+            : SystemBackdropTheme.Light;
+
+        var hasColorization = _themeService.Current.HasColorization || isImageMode;
+
+        _micaController = new MicaController
+        {
+            Kind = kind == BackdropControllerKind.MicaAlt
+                ? MicaKind.BaseAlt
+                : MicaKind.Base,
+        };
+
+        // Only set tint properties when colorization is active
+        // Otherwise let system handle light/dark theme defaults automatically
+        if (hasColorization)
+        {
+            // Image mode: no tint here, BlurImageControl handles it (avoids double-tinting)
+            _micaController.TintColor = backdrop.TintColor;
+            _micaController.TintOpacity = isImageMode ? 0.0f : backdrop.EffectiveOpacity;
+            _micaController.FallbackColor = backdrop.FallbackColor;
+            _micaController.LuminosityOpacity = backdrop.EffectiveLuminosityOpacity;
+        }
+
+        _micaController.AddSystemBackdropTarget(this.As<ICompositionSupportsSystemBackdrop>());
+        _micaController.SetSystemBackdropConfiguration(_configurationSource);
     }
 
     private void ShowHwnd(IntPtr hwndValue, MonitorBehavior target)
@@ -650,15 +783,12 @@ public sealed partial class MainWindow : WindowEx,
             {
                 Logger.LogWarning($"DWM cloaking of the main window failed. HRESULT: {hr.Value}.");
             }
+            else
+            {
+                IsVisibleToUser = false;
+            }
 
             wasCloaked = hr.Succeeded;
-        }
-
-        if (wasCloaked)
-        {
-            // Because we're only cloaking the window, bury it at the bottom in case something can
-            // see it - e.g. some accessibility helper (note: this also removes the top-most status).
-            PInvoke.SetWindowPos(_hwnd, HWND.HWND_BOTTOM, 0, 0, 0, 0, SET_WINDOW_POS_FLAGS.SWP_NOMOVE | SET_WINDOW_POS_FLAGS.SWP_NOSIZE);
         }
 
         return wasCloaked;
@@ -670,6 +800,7 @@ public sealed partial class MainWindow : WindowEx,
         {
             BOOL value = false;
             PInvoke.DwmSetWindowAttribute(_hwnd, DWMWINDOWATTRIBUTE.DWMWA_CLOAK, &value, (uint)sizeof(BOOL));
+            IsVisibleToUser = true;
         }
     }
 
@@ -712,12 +843,8 @@ public sealed partial class MainWindow : WindowEx,
 
     private void DisposeAcrylic()
     {
-        if (_acrylicController is not null)
-        {
-            _acrylicController.Dispose();
-            _acrylicController = null!;
-            _configurationSource = null!;
-        }
+        CleanupBackdropControllers();
+        _configurationSource = null!;
     }
 
     // Updates our window s.t. the top of the window is draggable.
@@ -1089,6 +1216,11 @@ public sealed partial class MainWindow : WindowEx,
     }
 
     void IRecipient<ShowPaletteAtMessage>.Receive(ShowPaletteAtMessage message) => Receive(message);
+
+    public void Receive(ToggleDevRibbonMessage message)
+    {
+        _devRibbon?.Visibility = _devRibbon.Visibility == Visibility.Visible ? Visibility.Collapsed : Visibility.Visible;
+    }
 
     public void Receive(DragStartedMessage message)
     {

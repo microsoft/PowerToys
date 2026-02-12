@@ -14,6 +14,7 @@ using Microsoft.CmdPal.UI.Dock;
 using Microsoft.CmdPal.UI.Events;
 using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.Messages;
+using Microsoft.CmdPal.UI.Services;
 using Microsoft.CmdPal.UI.Settings;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
@@ -76,6 +77,8 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     public ShellViewModel ViewModel { get; private set; } = App.Current.Services.GetService<ShellViewModel>()!;
 
     public event PropertyChangedEventHandler? PropertyChanged;
+
+    public IHostWindow? HostWindow { get; set; }
 
     public ShellPage()
     {
@@ -439,7 +442,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
         if (!RootFrame.CanGoBack)
         {
-            ViewModel.GoHome();
+            ViewModel.GoHome(withAnimation, focusSearch);
         }
 
         if (focusSearch)
@@ -553,6 +556,11 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
         if (shouldSearchBoxBeVisible || page is not ContentPage)
         {
+            if (HostWindow?.IsVisibleToUser != true)
+            {
+                return;
+            }
+
             ViewModel.IsSearchBoxVisible = shouldSearchBoxBeVisible;
             SearchBox.Focus(FocusState.Programmatic);
             SearchBox.SelectSearch();
@@ -569,6 +577,11 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
                     try
                     {
+                        if (HostWindow?.IsVisibleToUser != true)
+                        {
+                            return;
+                        }
+
                         await page.DispatcherQueue.EnqueueAsync(
                             async () =>
                             {
@@ -577,6 +590,11 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
                                 for (var i = 0; i < 10; i++)
                                 {
                                     token.ThrowIfCancellationRequested();
+
+                                    if (HostWindow?.IsVisibleToUser != true)
+                                    {
+                                        break;
+                                    }
 
                                     if (FocusManager.FindFirstFocusableElement(page) is FrameworkElement frameworkElement)
                                     {

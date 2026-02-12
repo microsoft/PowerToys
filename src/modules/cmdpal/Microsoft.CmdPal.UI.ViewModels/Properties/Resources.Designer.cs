@@ -302,6 +302,39 @@ namespace Microsoft.CmdPal.UI.ViewModels.Properties {
                 return ResourceManager.GetString("builtin_extension_name_fallback", resourceCulture);
             }
         }
+
+        public static string builtin_extension_name {
+            get {
+                return ResourceManager.GetString("builtin_extension_name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0}, {1} commands.
+        /// </summary>
+        public static string builtin_extension_subtext {
+            get {
+                return ResourceManager.GetString("builtin_extension_subtext", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0}, {1}.
+        /// </summary>
+        public static string builtin_extension_subtext_disabled {
+            get {
+                return ResourceManager.GetString("builtin_extension_subtext_disabled", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0}, {1} commands, {2} fallback commands.
+        /// </summary>
+        public static string builtin_extension_subtext_with_fallback {
+            get {
+                return ResourceManager.GetString("builtin_extension_subtext_with_fallback", resourceCulture);
+            }
+        }
         
         /// <summary>
         ///   Looks up a localized string similar to Home.

@@ -207,9 +207,9 @@ public sealed partial class DockWindow : WindowEx,
         {
             Kind = DesktopAcrylicKind.Thin,
             TintColor = backdrop.TintColor,
-            TintOpacity = backdrop.TintOpacity,
+            TintOpacity = backdrop.EffectiveOpacity,
             FallbackColor = backdrop.FallbackColor,
-            LuminosityOpacity = backdrop.LuminosityOpacity,
+            LuminosityOpacity = backdrop.EffectiveLuminosityOpacity,
         };
 
         // Enable the system backdrop.

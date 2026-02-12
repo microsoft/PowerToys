@@ -22,7 +22,7 @@
             VerticalAlignment="Stretch"
             BlurAmount="{x:Bind ViewModel.BackgroundImageBlurAmount, Mode=OneWay}"
             ImageBrightness="{x:Bind ViewModel.BackgroundImageBrightness, Mode=OneWay}"
-            ImageOpacity="{x:Bind ViewModel.BackgroundImageOpacity, Mode=OneWay}"
+            ImageOpacity="{x:Bind ViewModel.EffectiveImageOpacity, Mode=OneWay}"
             ImageSource="{x:Bind ViewModel.BackgroundImageSource, Mode=OneWay}"
             ImageStretch="{x:Bind ViewModel.BackgroundImageStretch, Mode=OneWay}"
             IsHitTestVisible="False"
@@ -31,6 +31,6 @@
             TintIntensity="{x:Bind ViewModel.BackgroundImageTintIntensity, Mode=OneWay}"
             Visibility="{x:Bind ViewModel.ShowBackgroundImage, Mode=OneWay}" />
 
-        <pages:ShellPage />
+        <pages:ShellPage HostWindow="{x:Bind}" />
     </Grid>
 </winuiex:WindowEx>
