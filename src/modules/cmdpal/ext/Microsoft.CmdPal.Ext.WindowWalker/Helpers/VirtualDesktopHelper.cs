@@ -264,7 +264,7 @@ public class VirtualDesktopHelper
     /// Returns the position type for a desktop.
     /// </summary>
     /// <param name="desktop">Guid of the desktop.</param>
-    /// <returns>Type of <see cref="VirtualDesktopPosition"/>. On failure we return <see cref="VirtualDesktopPosition.Unknown"/>.</returns>
+    /// <returns>Type of <see cref="VirtualDesktopPosition"/> or <see cref="VirtualDesktopPosition.NotApplicable"/>.</returns>
     public VirtualDesktopPosition GetDesktopPositionType(Guid desktop)
     {
         var desktopNumber = GetDesktopNumber(desktop);
