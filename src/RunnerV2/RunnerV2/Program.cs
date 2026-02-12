@@ -89,6 +89,8 @@ internal sealed class Program
 
         bool hasRestartedElevatedArgment = args.Contains("--restartedElevated");
 
+        AutoStartHelper.SetAutoStartState(SettingsUtils.Default.GetSettings<GeneralSettings>().Startup);
+
         Action afterInitializationAction = () => { };
         Version version = Assembly.GetExecutingAssembly().GetName().Version!;
 

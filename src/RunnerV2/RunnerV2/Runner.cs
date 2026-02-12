@@ -378,6 +378,8 @@ namespace RunnerV2
                         TrayIconManager.StopTrayIcon();
                     }
 
+                    AutoStartHelper.SetAutoStartState(SettingsUtils.Default.GetSettings<GeneralSettings>().Startup);
+
                     break;
                 default:
                     if (msg == _taskbarCreatedMessage && SettingsUtils.Default.GetSettings<GeneralSettings>().ShowSysTrayIcon)

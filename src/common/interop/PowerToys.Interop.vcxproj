@@ -85,7 +85,7 @@
       <AdditionalOptions>%(AdditionalOptions) /bigobj /Zc:twoPhase- </AdditionalOptions>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>WindowsApp.lib;shell32.lib;advapi32.lib;Shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>WindowsApp.lib;Taskschd.lib;shell32.lib;advapi32.lib;Shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Console</SubSystem>
       <GenerateWindowsMetadata>false</GenerateWindowsMetadata>
       <ModuleDefinitionFile>PowerToys.Interop.def</ModuleDefinitionFile>
@@ -93,6 +93,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="async_message_queue.h" />
+    <ClInclude Include="AutoStart.h" />
     <ClInclude Include="Clipboard.h" />
     <ClInclude Include="CommonManaged.h">
       <DependentUpon>CommonManaged.idl</DependentUpon>
@@ -124,6 +125,7 @@
     <ClInclude Include="two_way_pipe_message_ipc_impl.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="AutoStart.cpp" />
     <ClCompile Include="Clipboard.cpp" />
     <ClCompile Include="CommonManaged.cpp">
       <DependentUpon>CommonManaged.idl</DependentUpon>
@@ -166,6 +168,7 @@
     <None Include="PropertySheet.props" />
   </ItemGroup>
   <ItemGroup>
+    <Midl Include="AutoStart.idl" />
     <Midl Include="Clipboard.idl" />
     <Midl Include="CommonManaged.idl" />
     <Midl Include="Constants.idl" />

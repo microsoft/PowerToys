@@ -66,6 +66,9 @@
     <ClInclude Include="Elevation.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="AutoStart.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="keyboard_layout.cpp">
@@ -105,6 +108,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Elevation.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="AutoStart.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -149,6 +155,9 @@
       <Filter>Source Files</Filter>
     </Midl>
     <Midl Include="Elevation.idl">
+      <Filter>Source Files</Filter>
+    </Midl>
+    <Midl Include="AutoStart.idl">
       <Filter>Source Files</Filter>
     </Midl>
   </ItemGroup>
