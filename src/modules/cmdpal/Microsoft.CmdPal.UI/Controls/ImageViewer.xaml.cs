@@ -126,21 +126,25 @@ public sealed partial class ImageViewer : UserControl
                 e.Handled = true;
                 break;
             case VirtualKey.Left:
+            case VirtualKey.A:
                 TranslateTransform.X += KeyboardPanStep;
                 ClampTranslation();
                 e.Handled = true;
                 break;
             case VirtualKey.Right:
+            case VirtualKey.D:
                 TranslateTransform.X -= KeyboardPanStep;
                 ClampTranslation();
                 e.Handled = true;
                 break;
             case VirtualKey.Up:
+            case VirtualKey.W:
                 TranslateTransform.Y += KeyboardPanStep;
                 ClampTranslation();
                 e.Handled = true;
                 break;
             case VirtualKey.Down:
+            case VirtualKey.S:
                 TranslateTransform.Y -= KeyboardPanStep;
                 ClampTranslation();
                 e.Handled = true;
