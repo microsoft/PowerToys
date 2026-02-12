@@ -99,20 +99,19 @@
                                         <ColumnDefinition Width="*" />
                                         <ColumnDefinition Width="Auto" />
                                     </Grid.ColumnDefinitions>
-                                    <TextBlock
+                                    <controls:IsEnabledTextBlock
                                         x:Name="pathTextBlock"
                                         Grid.Column="0"
                                         VerticalAlignment="Center"
                                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                         IsTextSelectionEnabled="True"
-                                        Text="{x:Bind ViewModel.BackupPath, Mode=TwoWay}"
-                                        TextWrapping="Wrap">
+                                        Text="{x:Bind ViewModel.BackupPath, Mode=TwoWay}">
                                         <ToolTipService.ToolTip>
                                             <ToolTip IsEnabled="{Binding IsTextTrimmed, ElementName=pathTextBlock, Mode=OneWay}">
                                                 <TextBlock Text="{x:Bind ViewModel.BackupPath, Mode=TwoWay}" />
                                             </ToolTip>
                                         </ToolTipService.ToolTip>
-                                    </TextBlock>
+                                    </controls:IsEnabledTextBlock>
                                     <Button
                                         Grid.Column="1"
                                         Command="{x:Bind ViewModel.SelectBackupPathEventHandler}"

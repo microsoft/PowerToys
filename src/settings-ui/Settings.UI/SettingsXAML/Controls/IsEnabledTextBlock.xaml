@@ -3,6 +3,8 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls">
 
+    <Style BasedOn="{StaticResource DefaultIsEnabledTextBlockStyle}" TargetType="controls:IsEnabledTextBlock" />
+
     <Style x:Key="DefaultIsEnabledTextBlockStyle" TargetType="controls:IsEnabledTextBlock">
         <Setter Property="Foreground" Value="{ThemeResource DefaultTextForegroundThemeBrush}" />
         <Setter Property="IsTabStop" Value="False" />
@@ -16,6 +18,7 @@
                             FontSize="{TemplateBinding FontSize}"
                             FontWeight="{TemplateBinding FontWeight}"
                             Foreground="{TemplateBinding Foreground}"
+                            IsTextSelectionEnabled="{TemplateBinding IsTextSelectionEnabled}"
                             Text="{TemplateBinding Text}"
                             TextWrapping="WrapWholeWords" />
                         <VisualStateManager.VisualStateGroups>

@@ -3,6 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
+using System.Text;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.Core.Common.Services;
@@ -15,6 +17,9 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 public partial class ProviderSettingsViewModel : ObservableObject
 {
     private static readonly IconInfoViewModel EmptyIcon = new(null);
+    private static readonly CompositeFormat ExtensionSubtextFormat = CompositeFormat.Parse(Resources.builtin_extension_subtext);
+    private static readonly CompositeFormat ExtensionSubtextWithFallbackFormat = CompositeFormat.Parse(Resources.builtin_extension_subtext_with_fallback);
+    private static readonly CompositeFormat ExtensionSubtextDisabledFormat = CompositeFormat.Parse(Resources.builtin_extension_subtext_disabled);
 
     private readonly CommandProviderWrapper _provider;
     private readonly ProviderSettings _providerSettings;
@@ -39,13 +44,13 @@ public partial class ProviderSettingsViewModel : ObservableObject
 
     public string DisplayName => _provider.DisplayName;
 
-    public string ExtensionName => _provider.Extension?.ExtensionDisplayName ?? "Built-in";
+    public string ExtensionName => _provider.Extension?.ExtensionDisplayName ?? Resources.builtin_extension_name;
 
     public string ExtensionSubtext => IsEnabled ?
         HasFallbackCommands ?
-            $"{ExtensionName}, {TopLevelCommands.Count} commands, {_provider.FallbackItems?.Length} fallback commands" :
-            $"{ExtensionName}, {TopLevelCommands.Count} commands" :
-        $"{ExtensionName}, {Resources.builtin_disabled_extension}";
+            string.Format(CultureInfo.CurrentCulture, ExtensionSubtextWithFallbackFormat, ExtensionName, TopLevelCommands.Count, _provider.FallbackItems?.Length ?? 0) :
+            string.Format(CultureInfo.CurrentCulture, ExtensionSubtextFormat, ExtensionName, TopLevelCommands.Count) :
+        string.Format(CultureInfo.CurrentCulture, ExtensionSubtextDisabledFormat, ExtensionName, Resources.builtin_disabled_extension);
 
     [MemberNotNullWhen(true, nameof(Extension))]
     public bool IsFromExtension => _provider.Extension is not null;

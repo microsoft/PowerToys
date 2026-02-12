@@ -8,8 +8,14 @@ using WinRT;
 
 namespace Microsoft.CommandPalette.Extensions.Toolkit;
 
-public partial class CommandItem : BaseObservable, ICommandItem, IExtendedAttributesProvider
+public partial class CommandItem : BaseObservable, ICommandItem
 {
+    // NOTE TO MAINTAINERS: Do NOT implement `IExtendedAttributesProvider` here
+    // directly. Instead, implement it in derived classes like `ListItem` where
+    // appropriate.
+    //
+    // Putting it directly here will cause out-of-proc extensions to fail to
+    // load the context menu commands, for unknown CsWinRT reasons.
     private readonly PropertySet _extendedAttributes = new();
 
     private ICommand? _command;

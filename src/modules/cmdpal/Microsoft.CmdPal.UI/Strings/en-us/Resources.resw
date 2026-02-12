@@ -774,6 +774,9 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="Settings_AppearancePage_ResetAppearanceButton_Text.Text" xml:space="preserve">
     <value>Reset to defaults</value>
   </data>
+  <data name="Settings_ExtensionsPage_More_Button.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>More options</value>
+  </data>
   <data name="MoreCommandsButton_Label.Text" xml:space="preserve">
     <value>More</value>
   </data>

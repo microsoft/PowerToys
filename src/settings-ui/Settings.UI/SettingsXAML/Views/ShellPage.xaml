@@ -76,7 +76,6 @@
                     x:Uid="Shell_Search_ShowAll"
                     HorizontalAlignment="Stretch"
                     VerticalAlignment="Center"
-                    Text="Show all results"
                     TextAlignment="Center" />
             </Grid>
         </DataTemplate>
@@ -259,7 +258,7 @@
                 <!--  Windowing & Layouts  -->
                 <NavigationViewItem
                     x:Name="WindowingAndLayoutsNavigationItem"
-                    x:Uid="Shell_TopLevelWindowsAndLayouts "
+                    x:Uid="Shell_TopLevelWindowsAndLayouts"
                     AutomationProperties.AutomationId="WindowingAndLayoutsNavItem"
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/WindowingAndLayouts.png}"
                     SelectsOnInvoked="False">
