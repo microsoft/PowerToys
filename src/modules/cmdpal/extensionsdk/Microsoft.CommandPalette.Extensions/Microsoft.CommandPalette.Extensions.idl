@@ -405,6 +405,12 @@ namespace Microsoft.CommandPalette.Extensions
     {
         Object[] GetApiExtensionStubs();
     };
+
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface ICommandProvider4 requires ICommandProvider
+    {
+        ICommandItem GetCommandItem(String id);
+    };
     
 
 }

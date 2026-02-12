@@ -6,7 +6,7 @@ using Windows.Foundation;
 
 namespace Microsoft.CommandPalette.Extensions.Toolkit;
 
-public abstract partial class CommandProvider : ICommandProvider, ICommandProvider2
+public abstract partial class CommandProvider : ICommandProvider, ICommandProvider2, ICommandProvider4
 {
     public virtual string Id { get; protected set; } = string.Empty;
 
@@ -21,6 +21,8 @@ public abstract partial class CommandProvider : ICommandProvider, ICommandProvid
     public virtual IFallbackCommandItem[]? FallbackCommands() => null;
 
     public virtual ICommand? GetCommand(string id) => null;
+
+    public virtual ICommandItem? GetCommandItem(string id) => null;
 
     public virtual ICommandSettings? Settings { get; protected set; }
 

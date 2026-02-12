@@ -8,6 +8,7 @@ using Microsoft.CmdPal.Core.ViewModels;
 using Microsoft.CmdPal.Core.ViewModels.Models;
 using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CommandPalette.Extensions;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.Extensions.DependencyInjection;
 
 using Windows.Foundation;
@@ -153,6 +154,9 @@ public sealed class CommandProviderWrapper
             // On a BG thread here
             var fallbacks = model.FallbackCommands();
 
+            // Load pinned commands from saved settings
+            var pinnedCommands = LoadPinnedCommands(model, providerSettings);
+
             if (model is ICommandProvider2 two)
             {
                 UnsafePreCacheApiAdditions(two);
@@ -175,7 +179,7 @@ public sealed class CommandProviderWrapper
             Settings = new(model.Settings, this, _taskScheduler);
 
             // We do need to explicitly initialize commands though
-            InitializeCommands(commands, fallbacks, serviceProvider, pageContext);
+            InitializeCommands(commands, fallbacks, pinnedCommands, serviceProvider, pageContext);
 
             Logger.LogDebug($"Loaded commands from {DisplayName} ({ProviderId})");
         }
@@ -206,7 +210,7 @@ public sealed class CommandProviderWrapper
         }
     }
 
-    private void InitializeCommands(ICommandItem[] commands, IFallbackCommandItem[] fallbacks, IServiceProvider serviceProvider, WeakReference<IPageContext> pageContext)
+    private void InitializeCommands(ICommandItem[] commands, IFallbackCommandItem[] fallbacks, ICommandItem[] pinnedCommands, IServiceProvider serviceProvider, WeakReference<IPageContext> pageContext)
     {
         var settings = serviceProvider.GetService<SettingsModel>()!;
         var providerSettings = GetProviderSettings(settings);
@@ -220,12 +224,19 @@ public sealed class CommandProviderWrapper
             return topLevelViewModel;
         };
 
+        var topLevelList = new List<TopLevelViewModel>();
+
         if (commands is not null)
         {
-            TopLevelItems = commands
-                .Select(c => makeAndAdd(c, false))
-                .ToArray();
+            topLevelList.AddRange(commands.Select(c => makeAndAdd(c, false)));
         }
+
+        if (pinnedCommands is not null)
+        {
+            topLevelList.AddRange(pinnedCommands.Select(c => makeAndAdd(c, false)));
+        }
+
+        TopLevelItems = topLevelList.ToArray();
 
         if (fallbacks is not null)
         {
@@ -233,6 +244,32 @@ public sealed class CommandProviderWrapper
                 .Select(c => makeAndAdd(c, true))
                 .ToArray();
         }
+    }
+
+    private ICommandItem[] LoadPinnedCommands(ICommandProvider model, ProviderSettings providerSettings)
+    {
+        var pinnedItems = new List<ICommandItem>();
+
+        if (model is ICommandProvider4 provider4)
+        {
+            foreach (var pinnedId in providerSettings.PinnedCommandIds)
+            {
+                try
+                {
+                    var commandItem = provider4.GetCommandItem(pinnedId);
+                    if (commandItem is not null)
+                    {
+                        pinnedItems.Add(commandItem);
+                    }
+                }
+                catch (Exception e)
+                {
+                    Logger.LogError($"Failed to load pinned command {pinnedId}: {e.Message}");
+                }
+            }
+        }
+
+        return pinnedItems.ToArray();
     }
 
     private void UnsafePreCacheApiAdditions(ICommandProvider2 provider)
@@ -245,6 +282,21 @@ public sealed class CommandProviderWrapper
             {
                 Logger.LogDebug($"{ProviderId}: Found an IExtendedAttributesProvider");
             }
+        }
+    }
+
+    public void PinCommand(string commandId, IServiceProvider serviceProvider)
+    {
+        var settings = serviceProvider.GetService<SettingsModel>()!;
+        var providerSettings = GetProviderSettings(settings);
+
+        if (!providerSettings.PinnedCommandIds.Contains(commandId))
+        {
+            providerSettings.PinnedCommandIds.Add(commandId);
+            SettingsModel.SaveSettings(settings);
+
+            // Raise CommandsChanged so the TopLevelCommandManager reloads our commands
+            this.CommandsChanged?.Invoke(this, new ItemsChangedEventArgs(-1));
         }
     }
 

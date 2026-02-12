@@ -27,7 +27,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
     private readonly IServiceProvider _serviceProvider;
     private readonly CommandItemViewModel _commandItemViewModel;
 
-    private readonly CommandProviderContext _commandProviderContext;
+    public CommandProviderContext ProviderContext { get; private set; }
 
     private string IdFromModel => IsFallback && !string.IsNullOrWhiteSpace(_fallbackId) ? _fallbackId : _commandItemViewModel.Command.Id;
 
@@ -57,7 +57,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
 
     public CommandItemViewModel ItemViewModel => _commandItemViewModel;
 
-    public string CommandProviderId => _commandProviderContext.ProviderId;
+    public string CommandProviderId => ProviderContext.ProviderId;
 
     ////// ICommandItem
     public string Title => _commandItemViewModel.Title;
@@ -199,7 +199,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
         _serviceProvider = serviceProvider;
         _settings = settings;
         _providerSettings = providerSettings;
-        _commandProviderContext = commandProviderContext;
+        ProviderContext = commandProviderContext;
         _commandItemViewModel = item;
 
         IsFallback = isFallback;

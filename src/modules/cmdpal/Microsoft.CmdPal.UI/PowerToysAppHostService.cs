@@ -32,7 +32,7 @@ internal sealed class PowerToysAppHostService : IAppHostService
         CommandProviderContext? topLevelId = null;
         if (command is TopLevelViewModel topLevelViewModel)
         {
-            topLevelId = topLevelViewModel.CommandProviderContext;
+            topLevelId = topLevelViewModel.ProviderContext;
         }
 
         return topLevelId ?? currentContext ?? throw new InvalidOperationException("No command provider context could be found for the given command, and no current context was provided.");
