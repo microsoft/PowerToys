@@ -10,11 +10,11 @@ internal static class Icons
 {
     internal static IconInfo WindowWalkerIcon { get; } = IconHelpers.FromRelativePath("Assets\\WindowWalker.svg");
 
-    internal static IconInfo EndTask { get; } = new IconInfo("\uF140"); // StatusCircleBlock
+    internal static IconInfo EndTask { get; } = new("\uF140"); // StatusCircleBlock
 
-    internal static IconInfo CloseWindow { get; } = new IconInfo("\uE894"); // Clear
+    internal static IconInfo CloseWindow { get; } = new("\uE894"); // Clear
 
-    internal static IconInfo Info { get; } = new IconInfo("\uE946"); // Info
+    internal static IconInfo Info { get; } = new("\uE946"); // Info
 
     internal static IconInfo GenericAppIcon { get; } = new("\uE737"); // Favicon
 }
