@@ -1028,25 +1028,7 @@
     <Platform Solution="*|ARM64" Project="ARM64" />
     <Platform Solution="*|x64" Project="x64" />
   </Project>
-  <Project Path="src/runner/runner.vcxproj" Id="9412d5c6-2cf2-4fc2-a601-b55508ea9b27">
-    <BuildDependency Project="src/common/notifications/BackgroundActivator/BackgroundActivator.vcxproj" />
-    <BuildDependency Project="src/common/notifications/BackgroundActivatorDLL/BackgroundActivatorDLL.vcxproj" />
-    <BuildDependency Project="src/modules/awake/Awake/Awake.csproj" />
-    <BuildDependency Project="src/modules/colorPicker/ColorPickerUI/ColorPickerUI.csproj" />
-    <BuildDependency Project="src/modules/fancyzones/editor/FancyZonesEditor/FancyZonesEditor.csproj" />
-    <BuildDependency Project="src/modules/fancyzones/FancyZonesLib/FancyZonesLib.vcxproj" />
-    <BuildDependency Project="src/modules/imageresizer/dll/ImageResizerExt.vcxproj" />
-    <BuildDependency Project="src/modules/imageresizer/ui/ImageResizerUI.csproj" />
-    <BuildDependency Project="src/modules/LightSwitch/LightSwitchService/LightSwitchService.vcxproj" />
-    <BuildDependency Project="src/modules/powerrename/dll/PowerRenameExt.vcxproj" />
-    <BuildDependency Project="src/modules/powerrename/lib/PowerRenameLib.vcxproj" />
-    <BuildDependency Project="src/modules/previewpane/Common/PreviewHandlerCommon.csproj" />
-    <BuildDependency Project="src/modules/previewpane/MarkdownPreviewHandler/MarkdownPreviewHandler.csproj" />
-    <BuildDependency Project="src/modules/previewpane/PdfPreviewHandler/PdfPreviewHandler.csproj" />
-    <BuildDependency Project="src/modules/previewpane/SvgPreviewHandler/SvgPreviewHandler.csproj" />
-    <BuildDependency Project="src/PackageIdentity/PackageIdentity.vcxproj" />
-  </Project>
-  <Project Path="src/RunnerV2/RunnerV2/RunnerV2.csproj">
+  <Project Path="src/Runner/RunnerV2.csproj">
     <Platform Solution="*|ARM64" Project="ARM64" />
     <Platform Solution="*|x64" Project="x64" />
   </Project>

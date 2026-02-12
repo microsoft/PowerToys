@@ -1,11 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <Import Project="..\..\Common.Dotnet.CsWinRT.props" />
-  <Import Project="..\..\Common.SelfContained.props" />
+  <Import Project="..\Common.Dotnet.CsWinRT.props" />
+  <Import Project="..\Common.SelfContained.props" />
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <Description>PowerToys Runner</Description>
     <AssemblyName>PowerToys</AssemblyName>
-    <OutputPath>..\..\..\$(Platform)\$(Configuration)</OutputPath>
+    <OutputPath>..\..\$(Platform)\$(Configuration)</OutputPath>
     <Nullable>enable</Nullable>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
@@ -14,12 +14,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\common\GPOWrapperProjection\GPOWrapperProjection.csproj" />
-    <ProjectReference Include="..\..\common\ManagedCommon\ManagedCommon.csproj" />
-    <ProjectReference Include="..\..\common\ManagedCsWin32\ManagedCsWin32.csproj" />
-    <ProjectReference Include="..\..\modules\poweraccent\PowerAccent.UI\PowerAccent.UI.csproj" />
-    <ProjectReference Include="..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
-    <ProjectReference Include="..\..\Update\Update.csproj" />
+    <ProjectReference Include="..\common\GPOWrapperProjection\GPOWrapperProjection.csproj" />
+    <ProjectReference Include="..\common\ManagedCommon\ManagedCommon.csproj" />
+    <ProjectReference Include="..\common\ManagedCsWin32\ManagedCsWin32.csproj" />
+    <ProjectReference Include="..\modules\poweraccent\PowerAccent.UI\PowerAccent.UI.csproj" />
+    <ProjectReference Include="..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
+    <ProjectReference Include="..\Update\Update.csproj" />
   </ItemGroup>
 
   <ItemGroup>
