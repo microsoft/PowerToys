@@ -1,3 +1,8 @@
+# NOTE: When using artifact mode (useArtifactSource: true), the pipeline needs
+# permission to access System.AccessToken. This is automatically handled by the
+# script if SYSTEM_ACCESSTOKEN environment variable is available.
+# If you encounter authentication errors, ensure the job has oauth access enabled.
+
 trigger: none
 pr: none
 schedules:

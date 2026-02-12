@@ -151,6 +151,14 @@ function Download-ArtifactFromPipeline {
     New-Item -ItemType Directory -Path $OutputDir -Force | Out-Null
 
     try {
+        # Authenticate with Azure DevOps using System Access Token (if available)
+        if ($env:SYSTEM_ACCESSTOKEN) {
+            Write-Host "Authenticating with Azure DevOps using System Access Token..."
+            $env:AZURE_DEVOPS_EXT_PAT = $env:SYSTEM_ACCESSTOKEN
+        } else {
+            Write-Host "No SYSTEM_ACCESSTOKEN found, assuming az CLI is already authenticated..."
+        }
+
         # Use az CLI to download artifact
         $azArgs = "pipelines runs artifact download --organization $Organization --project $Project --run-id $BuildId --artifact-name `"$ArtifactName`" --path `"$OutputDir`""
         Invoke-Expression "az $azArgs"

@@ -31,6 +31,8 @@ steps:
 
 - task: PowerShell@2
   displayName: Update WinAppSDK Versions
+  env:
+    SYSTEM_ACCESSTOKEN: $(System.AccessToken)
   inputs:
     filePath: '$(build.sourcesdirectory)\.pipelines\UpdateVersions.ps1'
     arguments: >
