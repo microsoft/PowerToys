@@ -30,7 +30,7 @@ internal sealed class OpenWindows
     /// <summary>
     /// List of all the open windows
     /// </summary>
-    private readonly List<Window> windows = new();
+    private readonly List<Window> windows = [];
 
     /// <summary>
     /// An instance of the class OpenWindows
@@ -40,7 +40,7 @@ internal sealed class OpenWindows
     /// <summary>
     /// Gets the list of all open windows
     /// </summary>
-    internal List<Window> Windows => new(windows);
+    internal List<Window> Windows => [..windows];
 
     /// <summary>
     /// Gets an instance property of this class that makes sure that

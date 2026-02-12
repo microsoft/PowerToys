@@ -100,7 +100,7 @@ public class VirtualDesktopHelper
         using var virtualDesktopKey = Registry.CurrentUser.OpenSubKey(registryExplorerVirtualDesktops, false);
         if (virtualDesktopKey is not null)
         {
-            var allDeskValue = (byte[]?)virtualDesktopKey.GetValue("VirtualDesktopIDs", null) ?? Array.Empty<byte>();
+            var allDeskValue = (byte[]?)virtualDesktopKey.GetValue("VirtualDesktopIDs", null) ?? [];
             if (allDeskValue is not null)
             {
                 // We clear only, if we can read from registry. Otherwise, we keep the existing values.
