@@ -63,3 +63,4 @@ steps:
     feedsToUse: 'config'
     nugetConfigPath: '$(build.sourcesdirectory)\nuget.config'
     workingDirectory: '$(build.sourcesdirectory)'
+    arguments: '/p:NoWarn=NU1602,NU1604'
