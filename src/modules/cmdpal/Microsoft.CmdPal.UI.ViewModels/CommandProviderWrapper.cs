@@ -154,13 +154,13 @@ public sealed class CommandProviderWrapper
             // On a BG thread here
             var fallbacks = model.FallbackCommands();
 
-            // Load pinned commands from saved settings
-            var pinnedCommands = LoadPinnedCommands(model, providerSettings);
-
             if (model is ICommandProvider2 two)
             {
                 UnsafePreCacheApiAdditions(two);
             }
+
+            // Load pinned commands from saved settings
+            var pinnedCommands = LoadPinnedCommands(model, providerSettings);
 
             Id = model.Id;
             DisplayName = model.DisplayName;
