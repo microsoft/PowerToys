@@ -38,22 +38,17 @@
                         HorizontalAlignment="Center"
                         VerticalAlignment="Center"
                         Background="Transparent">
-                <Button x:Uid="ImageViewer_ZoomInButton" Padding="8,6" Click="OnZoomInClick">
-                    <ToolTipService.ToolTip>
-                        <ToolTip x:Uid="ImageViewer_ZoomIn" Content="Zoom in"/>
-                    </ToolTipService.ToolTip>
+                <Button x:Uid="ImageViewer_ZoomInButton"
+                        Padding="8,6"
+                        Click="OnZoomInClick">
                     <SymbolIcon Symbol="ZoomIn" />
                 </Button>
-                <Button x:Uid="ImageViewer_ZoomOutButton" Padding="8,6" Click="OnZoomOutClick">
-                    <ToolTipService.ToolTip>
-                        <ToolTip x:Uid="ImageViewer_ZoomOut" Content="Zoom out"/>
-                    </ToolTipService.ToolTip>
+                <Button x:Uid="ImageViewer_ZoomOutButton"
+                        Padding="8,6"
+                        Click="OnZoomOutClick">
                     <SymbolIcon Symbol="ZoomOut" />
                 </Button>
                 <Button x:Uid="ImageViewer_ZoomToFitButton" Padding="8,6" Click="OnZoomToFitClick">
-                    <ToolTipService.ToolTip>
-                        <ToolTip x:Uid="ImageViewer_ZoomToFit" Content="Zoom to fit"/>
-                    </ToolTipService.ToolTip>
                     <FontIcon Glyph="&#xE9A6;" />
                 </Button>
             </StackPanel>

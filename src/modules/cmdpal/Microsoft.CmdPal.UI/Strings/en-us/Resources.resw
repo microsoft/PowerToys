@@ -781,7 +781,7 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Zoom &amp; Scroll</value>
   </data>
   <data name="ImageContentViewer_OpenZoomViewer.Text" xml:space="preserve">
-    <value>Open Zoom Viewer</value>
+    <value>Open image viewer</value>
   </data>
   <data name="ImageContentViewer_CopyImage.Text" xml:space="preserve">
     <value>Copy image</value>
@@ -807,25 +807,37 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="PlainTextContentViewer_MonospaceFont.Text" xml:space="preserve">
     <value>Monospace Font</value>
   </data>
-  <data name="ImageViewer_ZoomInButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>Zoom in</value>
-  </data>
-  <data name="ImageViewer_ZoomOutButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>Zoom out</value>
-  </data>
-  <data name="ImageViewer_ZoomToFitButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>Zoom to fit</value>
-  </data>
-  <data name="ImageContentViewer_OpenZoomOverlayButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>Zoom and Scroll</value>
-  </data>
-  <data name="ImageContentViewer_CopyImageUri" xml:space="preserve">
-    <value>Copy image location</value>
-  </data>
   <data name="ImageContentViewer_Toast_CopiedImage" xml:space="preserve">
     <value>Copied image to clipboard</value>
   </data>
   <data name="ImageContentViewer_Toast_CopiedLink" xml:space="preserve">
     <value>Copied link to clipboard</value>
+  </data>
+  <data name="ImageViewer_ZoomInButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Zoom in</value>
+  </data>
+  <data name="ImageViewer_ZoomInButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Zoom in (Ctrl+Plus key)</value>
+  </data>
+  <data name="ImageViewer_ZoomOutButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Zoom out</value>
+  </data>
+  <data name="ImageViewer_ZoomOutButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Zoom out (Ctrl+Minus key)</value>
+  </data>
+  <data name="ImageViewer_ZoomToFitButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Zoom to fit</value>
+  </data>
+  <data name="ImageViewer_ZoomToFitButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Zoom to fit (Ctrl+0)</value>
+  </data>
+  <data name="ImageContentViewer_OpenZoomOverlayButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Open image viewer</value>
+  </data>
+  <data name="ImageContentViewer_OpenZoomOverlayButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Open image viewer</value>
+  </data>
+  <data name="ImageContentViewer_CopyImageUri.Text" xml:space="preserve">
+    <value>Copy image link</value>
   </data>
 </root>

@@ -48,7 +48,7 @@
                             SizeChanged="OpenZoomOverlayButton_SizeChanged">
                         <StackPanel Orientation="Horizontal" Spacing="6">
                             <SymbolIcon Symbol="Zoom" />
-                            <TextBlock x:Uid="ImageContentViewer_ZoomAndScroll" Text="Zoom &amp; Scroll" />
+                            <TextBlock x:Uid="ImageContentViewer_ZoomAndScroll" />
                         </StackPanel>
                     </Button>
                 </Canvas>
