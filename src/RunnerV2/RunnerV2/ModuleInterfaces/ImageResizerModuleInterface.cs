@@ -29,6 +29,7 @@ namespace RunnerV2.ModuleInterfaces
         public void Enable()
         {
             UpdateImageResizerRegistrationWin10(true);
+            AIHelper.DetectAiCapabilities(true);
             if (Environment.OSVersion.Version.Build >= 22000)
             {
                 PackageHelper.InstallPackage(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, "WinUI3Apps", "ImageResizerContextMenuPackage.msix"), [], true);

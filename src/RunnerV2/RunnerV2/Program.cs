@@ -89,6 +89,12 @@ internal sealed class Program
 
         bool hasRestartedElevatedArgment = args.Contains("--restartedElevated");
 
+        // When running on Windows 11, detect AI capabilities and log them.
+        if (Environment.OSVersion.Version.Build >= 22000)
+        {
+            AIHelper.DetectAiCapabilities();
+        }
+
         AutoStartHelper.SetAutoStartState(SettingsUtils.Default.GetSettings<GeneralSettings>().Startup);
 
         Action afterInitializationAction = () => { };
