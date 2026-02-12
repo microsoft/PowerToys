@@ -33,6 +33,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
     private readonly ExtensionObject<IListPage> _model;
 
     private readonly Lock _listLock = new();
+    private readonly IContextMenuFactory? _contextMenuFactory;
 
     private InterlockedBoolean _isLoading;
     private bool _isFetching;
@@ -89,11 +90,12 @@ public partial class ListViewModel : PageViewModel, IDisposable
         }
     }
 
-    public ListViewModel(IListPage model, TaskScheduler scheduler, AppExtensionHost host, CommandProviderContext providerContext)
+    public ListViewModel(IListPage model, TaskScheduler scheduler, AppExtensionHost host, CommandProviderContext providerContext, IContextMenuFactory? contextMenuFactory)
         : base(model, scheduler, host, providerContext)
     {
         _model = new(model);
-        EmptyContent = new(new(null), PageContext);
+        _contextMenuFactory = contextMenuFactory;
+        EmptyContent = new(new(null), PageContext, _contextMenuFactory);
     }
 
     private void FiltersPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)

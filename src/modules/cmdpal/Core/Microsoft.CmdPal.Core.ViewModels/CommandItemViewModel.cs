@@ -19,6 +19,8 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
 {
     public ExtensionObject<ICommandItem> Model => _commandItemModel;
 
+    private readonly IContextMenuFactory? _contextMenuFactory;
+
     private ExtensionObject<IExtendedAttributesProvider>? ExtendedAttributesProvider { get; set; }
 
     private readonly ExtensionObject<ICommandItem> _commandItemModel = new(null);
@@ -34,6 +36,8 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
     protected bool IsInitialized => IsInErrorState || Initialized.HasFlag(InitializedState.Initialized);
 
     protected bool IsSelectedInitialized => IsInErrorState || Initialized.HasFlag(InitializedState.SelectionInitialized);
+
+    public bool IsContextMenuItem { get; protected init; }
 
     public bool IsInErrorState => Initialized.HasFlag(InitializedState.Error);
 
@@ -96,10 +100,14 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
         _errorIcon.InitializeProperties();
     }
 
-    public CommandItemViewModel(ExtensionObject<ICommandItem> item, WeakReference<IPageContext> errorContext)
+    public CommandItemViewModel(
+        ExtensionObject<ICommandItem> item,
+        WeakReference<IPageContext> errorContext,
+        IContextMenuFactory? contextMenuFactory = null)
         : base(errorContext)
     {
         _commandItemModel = item;
+        _contextMenuFactory = contextMenuFactory;
         Command = new(null, errorContext);
     }
 
@@ -197,26 +205,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
             return;
         }
 
-        var more = model.MoreCommands;
-        if (more is not null)
-        {
-            MoreCommands = more
-                .Select<IContextItem, IContextItemViewModel>(item =>
-                {
-                    return item is ICommandContextItem contextItem ? new CommandContextItemViewModel(contextItem, PageContext) : new SeparatorViewModel();
-                })
-                .ToList();
-        }
-
-        // Here, we're already theoretically in the async context, so we can
-        // use Initialize straight up
-        MoreCommands
-            .OfType<CommandContextItemViewModel>()
-            .ToList()
-            .ForEach(contextItem =>
-            {
-                contextItem.SlowInitializeProperties();
-            });
+        BuildAndInitMoreCommands();
 
         if (!string.IsNullOrEmpty(model.Command?.Name))
         {
@@ -370,36 +359,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
                 break;
 
             case nameof(model.MoreCommands):
-                var more = model.MoreCommands;
-                if (more is not null)
-                {
-                    var newContextMenu = more
-                        .Select<IContextItem, IContextItemViewModel>(item =>
-                        {
-                            return item is ICommandContextItem contextItem ? new CommandContextItemViewModel(contextItem, PageContext) : new SeparatorViewModel();
-                        })
-                        .ToList();
-                    lock (MoreCommands)
-                    {
-                        ListHelpers.InPlaceUpdateList(MoreCommands, newContextMenu);
-                    }
-
-                    newContextMenu
-                        .OfType<CommandContextItemViewModel>()
-                        .ToList()
-                        .ForEach(contextItem =>
-                        {
-                            contextItem.InitializeProperties();
-                        });
-                }
-                else
-                {
-                    lock (MoreCommands)
-                    {
-                        MoreCommands.Clear();
-                    }
-                }
-
+                BuildAndInitMoreCommands();
                 UpdateProperty(nameof(SecondaryCommand));
                 UpdateProperty(nameof(SecondaryCommandName));
                 UpdateProperty(nameof(HasMoreCommands));
@@ -476,6 +436,33 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
 
     public FuzzyTarget GetSubtitleTarget(IPrecomputedFuzzyMatcher matcher)
         => _subtitleCache.GetOrUpdate(matcher, Subtitle);
+
+    /// <remarks>
+    /// * Does call SlowInitializeProperties on the created items.
+    /// * does NOT call UpdateProperty ; caller must do that.
+    /// </remarks>
+    private void BuildAndInitMoreCommands()
+    {
+        var model = _commandItemModel.Unsafe;
+        if (model is null)
+        {
+            return;
+        }
+
+        var more = model.MoreCommands;
+        var factory = _contextMenuFactory ?? DefaultContextMenuFactory.Instance;
+        var results = factory.UnsafeBuildAndInitMoreCommands(more, this);
+
+        List<IContextItemViewModel>? freedItems;
+        lock (MoreCommands)
+        {
+            ListHelpers.InPlaceUpdateList(MoreCommands, results, out freedItems);
+        }
+
+        freedItems.OfType<CommandContextItemViewModel>()
+                  .ToList()
+                  .ForEach(c => c.SafeCleanup());
+    }
 
     protected override void UnsafeCleanup()
     {
