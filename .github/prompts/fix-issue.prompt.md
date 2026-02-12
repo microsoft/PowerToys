@@ -1,9 +1,11 @@
+---
 agent: 'agent'
-model: GPT-5.1-Codex-Max
-description: "Execute the fix for a GitHub issue using the previously generated implementation plan. Apply code & tests directly in the repo. Output only a PR description (and optional manual steps)."
+description: 'Execute the fix for a GitHub issue using the previously generated implementation plan'
 ---
 
-# DEPENDENCY
+# Fix GitHub Issue
+
+## Dependencies
 Source review prompt (for generating the implementation plan if missing):
 - .github/prompts/review-issue.prompt.md
 

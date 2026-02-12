@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using Microsoft.CommandPalette.Extensions;
@@ -41,15 +42,19 @@ internal sealed partial class FancyZonesMonitorListItem : ListItem
     public static Details BuildMonitorDetails(FancyZonesMonitorDescriptor monitor)
     {
         var currentVirtualDesktop = FancyZonesVirtualDesktop.GetCurrentVirtualDesktopIdString();
+
+        // Calculate physical resolution from logical pixels and DPI
+        var scaleFactor = monitor.Data.Dpi > 0 ? monitor.Data.Dpi / 96.0 : 1.0;
+        var physicalWidth = (int)Math.Round(monitor.Data.MonitorWidth * scaleFactor);
+        var physicalHeight = (int)Math.Round(monitor.Data.MonitorHeight * scaleFactor);
+        var resolution = $"{physicalWidth}\u00D7{physicalHeight}";
+
         var tags = new List<IDetailsElement>
         {
             DetailTag(Resources.FancyZones_Monitor, monitor.Data.Monitor),
-            DetailTag(Resources.FancyZones_Instance, monitor.Data.MonitorInstanceId),
-            DetailTag(Resources.FancyZones_Serial, monitor.Data.MonitorSerialNumber),
             DetailTag(Resources.FancyZones_Number, monitor.Data.MonitorNumber.ToString(CultureInfo.InvariantCulture)),
             DetailTag(Resources.FancyZones_VirtualDesktop, currentVirtualDesktop),
-            DetailTag(Resources.FancyZones_WorkArea, $"{monitor.Data.LeftCoordinate},{monitor.Data.TopCoordinate}  {monitor.Data.WorkAreaWidth}\u00D7{monitor.Data.WorkAreaHeight}"),
-            DetailTag(Resources.FancyZones_Resolution, $"{monitor.Data.MonitorWidth}\u00D7{monitor.Data.MonitorHeight}"),
+            DetailTag(Resources.FancyZones_Resolution, resolution),
             DetailTag(Resources.FancyZones_DPI, monitor.Data.Dpi.ToString(CultureInfo.InvariantCulture)),
         };
 

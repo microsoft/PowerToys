@@ -2,11 +2,13 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Globalization;
+using Microsoft.CmdPal.Core.Common.Services;
+using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml.Controls;
-using Windows.ApplicationModel;
 
 namespace Microsoft.CmdPal.UI.Settings;
 
@@ -15,6 +17,7 @@ public sealed partial class GeneralPage : Page
     private readonly TaskScheduler _mainTaskScheduler = TaskScheduler.FromCurrentSynchronizationContext();
 
     private readonly SettingsViewModel? viewModel;
+    private readonly IApplicationInfoService _appInfoService;
 
     public GeneralPage()
     {
@@ -23,6 +26,7 @@ public sealed partial class GeneralPage : Page
         var settings = App.Current.Services.GetService<SettingsModel>()!;
         var topLevelCommandManager = App.Current.Services.GetService<TopLevelCommandManager>()!;
         var themeService = App.Current.Services.GetService<IThemeService>()!;
+        _appInfoService = App.Current.Services.GetRequiredService<IApplicationInfoService>();
         viewModel = new SettingsViewModel(settings, topLevelCommandManager, _mainTaskScheduler, themeService);
     }
 
@@ -30,8 +34,9 @@ public sealed partial class GeneralPage : Page
     {
         get
         {
-            var version = Package.Current.Id.Version;
-            return $"Version {version.Major}.{version.Minor}.{version.Build}.{version.Revision}";
+            var versionNo = ResourceLoaderInstance.GetString("Settings_GeneralPage_VersionNo");
+            var version = _appInfoService.AppVersion;
+            return string.Format(CultureInfo.CurrentCulture, versionNo, version);
         }
     }
 }

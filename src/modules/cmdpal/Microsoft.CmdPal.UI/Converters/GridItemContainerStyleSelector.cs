@@ -18,8 +18,27 @@ internal sealed partial class GridItemContainerStyleSelector : StyleSelector
 
     public Style? Gallery { get; set; }
 
+    public Style? Section { get; set; }
+
+    public Style? Separator { get; set; }
+
     protected override Style? SelectStyleCore(object item, DependencyObject container)
     {
+        if (item is not ListItemViewModel element)
+        {
+            return Medium;
+        }
+
+        switch (element.Type)
+        {
+            case ListItemType.Separator:
+                return Separator;
+            case ListItemType.SectionHeader:
+                return Section;
+            default:
+                break;
+        }
+
         return GridProperties switch
         {
             SmallGridPropertiesViewModel => Small,

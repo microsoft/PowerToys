@@ -1,12 +1,13 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-  <Import Project="..\..\Common.Dotnet.CsWinRT.props" />
-  <Import Project="..\..\Common.SelfContained.props" />
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
+  <Import Project="$(RepoRoot)src\Common.SelfContained.props" />
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net9.0-windows10.0.26100.0</TargetFramework>
     <RootNamespace>Microsoft.PowerToys.QuickAccess</RootNamespace>
     <AssemblyName>PowerToys.QuickAccess</AssemblyName>
+    <ApplicationIcon>..\..\runner\svgs\icon.ico</ApplicationIcon>
     <UseWinUI>true</UseWinUI>
     <WindowsPackageType>None</WindowsPackageType>
     <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
@@ -14,7 +15,7 @@
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <ApplicationManifest>app.manifest</ApplicationManifest>
-    <OutputPath>..\..\..\$(Platform)\$(Configuration)\WinUI3Apps</OutputPath>
+    <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\WinUI3Apps</OutputPath>
       <EnableDefaultPageItems>false</EnableDefaultPageItems>
       <EnableDefaultApplicationDefinition>false</EnableDefaultApplicationDefinition>
     <Nullable>enable</Nullable>
@@ -50,8 +51,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PRIResource Include="..\Settings.UI\Strings\en-us\Resources.resw">
-      <Link>Strings\en-us\Resources.resw</Link>
+    <PRIResource Include="..\Settings.UI\Strings\**\Resources.resw">
+      <Link>Strings\%(RecursiveDir)Resources.resw</Link>
     </PRIResource>
   </ItemGroup>
 

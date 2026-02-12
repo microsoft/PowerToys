@@ -104,7 +104,7 @@
                             </tkcontrols:SettingsExpander.Description>
                             <tkcontrols:SettingsExpander.ItemsHeader>
                                 <tkcontrols:SettingsCard x:Uid="AdvancedPaste_ModelProviders" Style="{StaticResource DefaultSettingsExpanderItemStyle}">
-                                    <Button Content="Add model" Style="{StaticResource AccentButtonStyle}">
+                                    <Button x:Uid="AdvancedPaste_AddModelButton" Style="{StaticResource AccentButtonStyle}">
                                         <Button.Flyout>
                                             <MenuFlyout x:Name="AddProviderMenuFlyout" Opening="AddProviderMenuFlyout_Opening" />
                                         </Button.Flyout>
@@ -155,7 +155,19 @@
                             HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}"
                             IsExpanded="True">
                             <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.AdvancedPasteUIShortcut, Mode=TwoWay}" />
-                            <tkcontrols:SettingsExpander.ItemsHeader>
+                            <tkcontrols:SettingsExpander.Items>
+                                <tkcontrols:SettingsCard Name="AdvancedPasteEnableClipboardPreview" ContentAlignment="Left">
+                                    <controls:CheckBoxWithDescriptionControl x:Uid="AdvancedPaste_EnableClipboardPreview" IsChecked="{x:Bind ViewModel.EnableClipboardPreview, Mode=TwoWay}" />
+                                </tkcontrols:SettingsCard>
+                                <tkcontrols:SettingsCard Name="AdvancedPasteAutoCopySelectionCustomAction" ContentAlignment="Left">
+                                    <controls:CheckBoxWithDescriptionControl x:Uid="AdvancedPaste_AutoCopySelectionForCustomActionHotkey" IsChecked="{x:Bind ViewModel.AutoCopySelectionForCustomActionHotkey, Mode=TwoWay}" />
+                                </tkcontrols:SettingsCard>
+                                <tkcontrols:SettingsCard
+                                    Name="AdvancedPasteClipboardHistoryEnabledSettingsCard"
+                                    ContentAlignment="Left"
+                                    IsEnabled="{x:Bind ViewModel.ClipboardHistoryEnabled, Mode=OneWay}">
+                                    <controls:CheckBoxWithDescriptionControl x:Uid="AdvancedPaste_Clipboard_History_Enabled_SettingsCard" IsChecked="{x:Bind ViewModel.ClipboardHistoryEnabled, Mode=TwoWay}" />
+                                </tkcontrols:SettingsCard>
                                 <InfoBar
                                     x:Uid="GPO_SettingIsManaged"
                                     IsClosable="False"
@@ -166,17 +178,6 @@
                                         <FontIconSource FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE72E;" />
                                     </InfoBar.IconSource>
                                 </InfoBar>
-                            </tkcontrols:SettingsExpander.ItemsHeader>
-                            <tkcontrols:SettingsExpander.Items>
-                                <tkcontrols:SettingsCard Name="AdvancedPasteEnableClipboardPreview" ContentAlignment="Left">
-                                    <controls:CheckBoxWithDescriptionControl x:Uid="AdvancedPaste_EnableClipboardPreview" IsChecked="{x:Bind ViewModel.EnableClipboardPreview, Mode=TwoWay}" />
-                                </tkcontrols:SettingsCard>
-                                <tkcontrols:SettingsCard
-                                    Name="AdvancedPasteClipboardHistoryEnabledSettingsCard"
-                                    ContentAlignment="Left"
-                                    IsEnabled="{x:Bind ViewModel.ClipboardHistoryEnabled, Mode=OneWay}">
-                                    <controls:CheckBoxWithDescriptionControl x:Uid="AdvancedPaste_Clipboard_History_Enabled_SettingsCard" IsChecked="{x:Bind ViewModel.ClipboardHistoryEnabled, Mode=TwoWay}" />
-                                </tkcontrols:SettingsCard>
                                 <tkcontrols:SettingsCard Name="AdvancedPasteCloseAfterLosingFocus" ContentAlignment="Left">
                                     <CheckBox x:Uid="AdvancedPaste_CloseAfterLosingFocus" IsChecked="{x:Bind ViewModel.CloseAfterLosingFocus, Mode=TwoWay}" />
                                 </tkcontrols:SettingsCard>
@@ -430,7 +431,6 @@
         <ContentDialog
             x:Name="PasteAIProviderConfigurationDialog"
             x:Uid="AdvancedPaste_EndpointDialog"
-            Title="Paste with AI provider configuration"
             Closed="PasteAIProviderConfigurationDialog_Closed"
             PrimaryButtonClick="PasteAIProviderConfigurationDialog_PrimaryButtonClick"
             PrimaryButtonStyle="{ThemeResource AccentButtonStyle}">
@@ -532,7 +532,6 @@
                             MinHeight="76"
                             HorizontalAlignment="Stretch"
                             AcceptsReturn="True"
-                            Header="System prompt"
                             Text="{x:Bind ViewModel.PasteAIProviderDraft.SystemPrompt, Mode=TwoWay}"
                             TextWrapping="Wrap" />
                         <Grid
@@ -548,9 +547,9 @@
                             Spacing="8">
                             <TextBox
                                 x:Name="PasteAIModelPathTextBox"
+                                x:Uid="AdvancedPaste_ModelPath"
                                 MinWidth="200"
                                 HorizontalAlignment="Stretch"
-                                Header="Model path"
                                 PlaceholderText="C:\Models\phi-3.onnx"
                                 Text="{x:Bind ViewModel.PasteAIProviderDraft.ModelPath, Mode=TwoWay}" />
                             <Button

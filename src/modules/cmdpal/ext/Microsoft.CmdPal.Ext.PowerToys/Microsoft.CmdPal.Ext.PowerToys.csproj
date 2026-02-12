@@ -1,12 +1,13 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-	<Import Project="..\..\..\..\Common.Dotnet.CsWinRT.props" />
-	<Import Project="..\..\..\..\Common.Dotnet.AotCompatibility.props" />
-	<Import Project="..\..\..\..\CmdPalVersion.props" />
+<Project Sdk="Microsoft.NET.Sdk">
+	<Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
+	<Import Project="$(RepoRoot)src\Common.Dotnet.AotCompatibility.props" />
+	<Import Project="$(RepoRoot)src\CmdPalVersion.props" />
 
 	<PropertyGroup>
 		<OutputType>WinExe</OutputType>
 		<RootNamespace>PowerToysExtension</RootNamespace>
 		<ApplicationManifest>app.manifest</ApplicationManifest>
+		<ApplicationIcon>..\..\..\..\runner\svgs\icon.ico</ApplicationIcon>
 		<PublishProfile>win-$(Platform).pubxml</PublishProfile>
 		<EnableMsixTooling>false</EnableMsixTooling>
 		<WindowsPackageType>None</WindowsPackageType>

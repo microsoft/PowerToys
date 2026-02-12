@@ -11,6 +11,7 @@
 #include "CaptureFrameWait.h"
 #include <d3d11_4.h>
 #include <vector>
+#include <mutex>
 
 class GifRecordingSession : public std::enable_shared_from_this<GifRecordingSession>
 {
@@ -27,6 +28,8 @@ public:
     void EnableCursorCapture(bool enable = true) { m_frameWait->EnableCursorCapture(enable); }
     void Close();
 
+    bool HasCapturedFrames() const { return m_hasAnyFrame.load(); }
+
 private:
     GifRecordingSession(
         winrt::Direct3D11::IDirect3DDevice const& device,
@@ -35,6 +38,7 @@ private:
         uint32_t frameRate,
         winrt::Streams::IRandomAccessStream const& stream);
     void CloseInternal();
+    void ReleaseEncoderResources();
     HRESULT EncodeFrame(ID3D11Texture2D* texture);
 
 private:
@@ -58,6 +62,9 @@ private:
 
     std::atomic<bool> m_isRecording = false;
     std::atomic<bool> m_closed = false;
+    std::atomic<bool> m_encoderReleased = false;
+    std::atomic<bool> m_hasAnyFrame = false;
+    std::mutex m_encoderMutex;
 
     uint32_t m_frameWidth=0;
     uint32_t m_frameHeight=0;

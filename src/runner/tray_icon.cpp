@@ -7,6 +7,7 @@
 #include "centralized_kb_hook.h"
 #include "quick_access_host.h"
 #include "hotkey_conflict_detector.h"
+#include "trace.h"
 #include <Windows.h>
 
 #include <common/utils/resources.h>
@@ -14,6 +15,7 @@
 #include <common/logger/logger.h>
 #include <common/utils/elevation.h>
 #include <common/Themes/theme_listener.h>
+#include <common/Themes/theme_helpers.h>
 #include "bug_report.h"
 
 namespace
@@ -39,6 +41,7 @@ namespace
     bool double_click_timer_running = false;
     bool double_clicked = false;
     POINT tray_icon_click_point;
+    std::optional<bool> last_quick_access_state; // Track the last known Quick Access state
 
     static ThemeListener theme_listener;
     static bool theme_adaptive_enabled = false;
@@ -129,6 +132,9 @@ void click_timer_elapsed()
     double_click_timer_running = false;
     if (!double_clicked)
     {
+        // Log telemetry for single click (confirmed it's not a double click)
+        Trace::TrayIconLeftClick(get_general_settings().enableQuickAccess);
+
         if (get_general_settings().enableQuickAccess)
         {
             open_quick_access_flyout_window();
@@ -194,6 +200,21 @@ LRESULT __stdcall tray_icon_window_proc(HWND window, UINT message, WPARAM wparam
             case WM_RBUTTONUP:
             case WM_CONTEXTMENU:
             {
+                bool quick_access_enabled = get_general_settings().enableQuickAccess;
+
+                // Log telemetry
+                Trace::TrayIconRightClick(quick_access_enabled);
+
+                // Reload menu if Quick Access state has changed or is first time
+                if (h_menu && (!last_quick_access_state.has_value() || quick_access_enabled != last_quick_access_state.value()))
+                {
+                    DestroyMenu(h_menu);
+                    h_menu = nullptr;
+                    h_sub_menu = nullptr;
+                }
+
+                last_quick_access_state = quick_access_enabled;
+
                 if (!h_menu)
                 {
                     h_menu = LoadMenu(reinterpret_cast<HINSTANCE>(&__ImageBase), MAKEINTRESOURCE(ID_TRAY_MENU));
@@ -201,17 +222,39 @@ LRESULT __stdcall tray_icon_window_proc(HWND window, UINT message, WPARAM wparam
                 if (h_menu)
                 {
                     static std::wstring settings_menuitem_label = GET_RESOURCE_STRING(IDS_SETTINGS_MENU_TEXT);
+                    static std::wstring settings_menuitem_label_leftclick = GET_RESOURCE_STRING(IDS_SETTINGS_MENU_TEXT_LEFTCLICK);
                     static std::wstring close_menuitem_label = GET_RESOURCE_STRING(IDS_CLOSE_MENU_TEXT);
                     static std::wstring submit_bug_menuitem_label = GET_RESOURCE_STRING(IDS_SUBMIT_BUG_TEXT);
                     static std::wstring documentation_menuitem_label = GET_RESOURCE_STRING(IDS_DOCUMENTATION_MENU_TEXT);
                     static std::wstring quick_access_menuitem_label = GET_RESOURCE_STRING(IDS_QUICK_ACCESS_MENU_TEXT);
-                    change_menu_item_text(ID_SETTINGS_MENU_COMMAND, settings_menuitem_label.data());
+
+                    // Update Settings menu text based on Quick Access state
+                    if (quick_access_enabled)
+                    {
+                        change_menu_item_text(ID_SETTINGS_MENU_COMMAND, settings_menuitem_label.data());
+                    }
+                    else
+                    {
+                        change_menu_item_text(ID_SETTINGS_MENU_COMMAND, settings_menuitem_label_leftclick.data());
+                    }
+
                     change_menu_item_text(ID_CLOSE_MENU_COMMAND, close_menuitem_label.data());
                     change_menu_item_text(ID_REPORT_BUG_COMMAND, submit_bug_menuitem_label.data());
                     bool bug_report_disabled = is_bug_report_running();
                     EnableMenuItem(h_sub_menu, ID_REPORT_BUG_COMMAND, MF_BYCOMMAND | (bug_report_disabled ? MF_GRAYED : MF_ENABLED));
                     change_menu_item_text(ID_DOCUMENTATION_MENU_COMMAND, documentation_menuitem_label.data());
                     change_menu_item_text(ID_QUICK_ACCESS_MENU_COMMAND, quick_access_menuitem_label.data());
+
+                    // Hide or show Quick Access menu item based on setting
+                    if (!h_sub_menu)
+                    {
+                        h_sub_menu = GetSubMenu(h_menu, 0);
+                    }
+                    if (!quick_access_enabled)
+                    {
+                        // Remove Quick Access menu item when disabled
+                        DeleteMenu(h_sub_menu, ID_QUICK_ACCESS_MENU_COMMAND, MF_BYCOMMAND);
+                    }
                 }
                 if (!h_sub_menu)
                 {
@@ -242,6 +285,9 @@ LRESULT __stdcall tray_icon_window_proc(HWND window, UINT message, WPARAM wparam
             }
             case WM_LBUTTONDBLCLK:
             {
+                // Log telemetry
+                Trace::TrayIconDoubleClick(get_general_settings().enableQuickAccess);
+
                 double_clicked = true;
                 open_settings_window(std::nullopt);
                 break;
@@ -273,12 +319,19 @@ static HICON get_icon(Theme theme)
 {
     std::wstring icon_path = get_module_folderpath();
     icon_path += theme == Theme::Dark ? L"\\svgs\\PowerToysWhite.ico" : L"\\svgs\\PowerToysDark.ico";
-    return static_cast<HICON>(LoadImage(NULL,
+    Logger::trace(L"get_icon: Loading icon from path: {}", icon_path);
+
+    HICON icon = static_cast<HICON>(LoadImage(NULL,
                                         icon_path.c_str(),
                                         IMAGE_ICON,
                                         0,
                                         0,
                                         LR_LOADFROMFILE | LR_DEFAULTSIZE | LR_SHARED));
+    if (!icon)
+    {
+        Logger::warn(L"get_icon: Failed to load icon from {}, error: {}", icon_path, GetLastError());
+    }
+    return icon;
 }
 
 
@@ -286,7 +339,7 @@ static void handle_theme_change()
 {
     if (theme_adaptive_enabled)
     {
-        tray_icon_data.hIcon = get_icon(theme_listener.AppTheme);
+        tray_icon_data.hIcon = get_icon(ThemeHelpers::GetSystemTheme());
         Shell_NotifyIcon(NIM_MODIFY, &tray_icon_data);
     }
 }
@@ -303,7 +356,7 @@ void start_tray_icon(bool isProcessElevated, bool theme_adaptive)
 {
     theme_adaptive_enabled = theme_adaptive;
     auto h_instance = reinterpret_cast<HINSTANCE>(&__ImageBase);
-    HICON const icon = theme_adaptive ? get_icon(theme_listener.AppTheme) : LoadIcon(h_instance, MAKEINTRESOURCE(APPICON));
+    HICON const icon = theme_adaptive ? get_icon(ThemeHelpers::GetSystemTheme()) : LoadIcon(h_instance, MAKEINTRESOURCE(APPICON));
     if (icon)
     {
         UINT id_tray_icon = 1;
@@ -350,7 +403,7 @@ void start_tray_icon(bool isProcessElevated, bool theme_adaptive)
         ChangeWindowMessageFilterEx(hwnd, WM_COMMAND, MSGFLT_ALLOW, nullptr);
 
         tray_icon_created = Shell_NotifyIcon(NIM_ADD, &tray_icon_data) == TRUE;
-        theme_listener.AddChangedHandler(&handle_theme_change);
+        theme_listener.AddSystemThemeChangedHandler(&handle_theme_change);
 
         // Register callback to update bug report menu item status
         BugReportManager::instance().register_callback([](bool isRunning) {
@@ -374,13 +427,45 @@ void set_tray_icon_visible(bool shouldIconBeVisible)
 
 void set_tray_icon_theme_adaptive(bool theme_adaptive)
 {
-    theme_adaptive_enabled = theme_adaptive;
+    Logger::info(L"set_tray_icon_theme_adaptive: Called with theme_adaptive={}, current theme_adaptive_enabled={}",
+                 theme_adaptive, theme_adaptive_enabled);
+
     auto h_instance = reinterpret_cast<HINSTANCE>(&__ImageBase);
-    HICON const icon = theme_adaptive ? get_icon(theme_listener.AppTheme) : LoadIcon(h_instance, MAKEINTRESOURCE(APPICON));
+    HICON icon = nullptr;
+
+    if (theme_adaptive)
+    {
+        icon = get_icon(ThemeHelpers::GetSystemTheme());
+        if (!icon)
+        {
+            Logger::warn(L"set_tray_icon_theme_adaptive: Failed to load theme adaptive icon, falling back to default");
+        }
+    }
+
+    // If not requesting adaptive icon, or if adaptive icon failed to load, use default icon
+    if (!icon)
+    {
+        icon = LoadIcon(h_instance, MAKEINTRESOURCE(APPICON));
+        if (theme_adaptive && icon)
+        {
+            // We requested adaptive but had to fall back, so update the flag
+            theme_adaptive = false;
+            Logger::info(L"set_tray_icon_theme_adaptive: Using default icon as fallback");
+        }
+    }
+
+    theme_adaptive_enabled = theme_adaptive;
+
     if (icon)
     {
         tray_icon_data.hIcon = icon;
-        Shell_NotifyIcon(NIM_MODIFY, &tray_icon_data);
+        BOOL result = Shell_NotifyIcon(NIM_MODIFY, &tray_icon_data);
+        Logger::info(L"set_tray_icon_theme_adaptive: Icon updated, theme_adaptive_enabled={}, Shell_NotifyIcon result={}",
+                     theme_adaptive_enabled, result);
+    }
+    else
+    {
+        Logger::error(L"set_tray_icon_theme_adaptive: Failed to load any icon");
     }
 }
 

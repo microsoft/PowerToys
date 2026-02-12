@@ -10,6 +10,7 @@ using global::PowerToys.GPOWrapper;
 using ManagedCommon;
 using Microsoft.PowerToys.QuickAccess.Helpers;
 using Microsoft.PowerToys.QuickAccess.Services;
+using Microsoft.PowerToys.Settings.UI.Controls;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
@@ -21,12 +22,17 @@ namespace Microsoft.PowerToys.QuickAccess.ViewModels;
 
 public sealed class AllAppsViewModel : Observable
 {
+    private readonly object _sortLock = new object();
     private readonly IQuickAccessCoordinator _coordinator;
     private readonly ISettingsRepository<GeneralSettings> _settingsRepository;
     private readonly SettingsUtils _settingsUtils;
     private readonly ResourceLoader _resourceLoader;
     private readonly DispatcherQueue _dispatcherQueue;
+    private readonly List<FlyoutMenuItem> _allFlyoutMenuItems = new();
     private GeneralSettings _generalSettings;
+
+    // Flag to prevent toggle operations during sorting to avoid race conditions.
+    private bool _isSorting;
 
     public ObservableCollection<FlyoutMenuItem> FlyoutMenuItems { get; }
 
@@ -38,9 +44,9 @@ public sealed class AllAppsViewModel : Observable
             if (_generalSettings.DashboardSortOrder != value)
             {
                 _generalSettings.DashboardSortOrder = value;
-                _settingsUtils.SaveSettings(_generalSettings.ToJsonString(), _generalSettings.GetModuleName());
+                _coordinator.SendSortOrderUpdate(_generalSettings);
                 OnPropertyChanged();
-                RefreshFlyoutMenuItems();
+                SortFlyoutMenuItems();
             }
         }
     }
@@ -52,13 +58,31 @@ public sealed class AllAppsViewModel : Observable
         _settingsUtils = SettingsUtils.Default;
         _settingsRepository = SettingsRepository<GeneralSettings>.GetInstance(_settingsUtils);
         _generalSettings = _settingsRepository.SettingsConfig;
-        _generalSettings.AddEnabledModuleChangeNotification(ModuleEnabledChangedOnSettingsPage);
         _settingsRepository.SettingsChanged += OnSettingsChanged;
 
         _resourceLoader = Helpers.ResourceLoaderInstance.ResourceLoader;
         FlyoutMenuItems = new ObservableCollection<FlyoutMenuItem>();
 
+        BuildFlyoutMenuItems();
         RefreshFlyoutMenuItems();
+    }
+
+    private void BuildFlyoutMenuItems()
+    {
+        _allFlyoutMenuItems.Clear();
+        foreach (ModuleType moduleType in Enum.GetValues<ModuleType>())
+        {
+            if (moduleType == ModuleType.GeneralSettings)
+            {
+                continue;
+            }
+
+            _allFlyoutMenuItems.Add(new FlyoutMenuItem
+            {
+                Tag = moduleType,
+                EnabledChangedCallback = EnabledChangedOnUI,
+            });
+        }
     }
 
     private void OnSettingsChanged(GeneralSettings newSettings)
@@ -66,7 +90,6 @@ public sealed class AllAppsViewModel : Observable
         _dispatcherQueue.TryEnqueue(() =>
         {
             _generalSettings = newSettings;
-            _generalSettings.AddEnabledModuleChangeNotification(ModuleEnabledChangedOnSettingsPage);
             OnPropertyChanged(nameof(DashboardSortOrder));
             RefreshFlyoutMenuItems();
         });
@@ -82,91 +105,90 @@ public sealed class AllAppsViewModel : Observable
 
     private void RefreshFlyoutMenuItems()
     {
-        var desiredItems = new List<FlyoutMenuItem>();
-
-        foreach (ModuleType moduleType in Enum.GetValues<ModuleType>())
+        foreach (var item in _allFlyoutMenuItems)
         {
-            if (moduleType == ModuleType.GeneralSettings)
-            {
-                continue;
-            }
-
+            var moduleType = item.Tag;
             var gpo = Helpers.ModuleGpoHelper.GetModuleGpoConfiguration(moduleType);
             var isLocked = gpo is GpoRuleConfigured.Enabled or GpoRuleConfigured.Disabled;
             var isEnabled = gpo == GpoRuleConfigured.Enabled || (!isLocked && Microsoft.PowerToys.Settings.UI.Library.Helpers.ModuleHelper.GetIsModuleEnabled(_generalSettings, moduleType));
 
-            var existingItem = FlyoutMenuItems.FirstOrDefault(x => x.Tag == moduleType);
+            item.Label = _resourceLoader.GetString(Microsoft.PowerToys.Settings.UI.Library.Helpers.ModuleHelper.GetModuleLabelResourceName(moduleType));
+            item.IsLocked = isLocked;
+            item.Icon = Microsoft.PowerToys.Settings.UI.Library.Helpers.ModuleHelper.GetModuleTypeFluentIconName(moduleType);
 
-            if (existingItem != null)
+            if (item.IsEnabled != isEnabled)
             {
-                existingItem.Label = _resourceLoader.GetString(Microsoft.PowerToys.Settings.UI.Library.Helpers.ModuleHelper.GetModuleLabelResourceName(moduleType));
-                existingItem.IsLocked = isLocked;
-                existingItem.Icon = Microsoft.PowerToys.Settings.UI.Library.Helpers.ModuleHelper.GetModuleTypeFluentIconName(moduleType);
+                item.UpdateStatus(isEnabled);
+            }
+        }
 
-                if (existingItem.IsEnabled != isEnabled)
+        SortFlyoutMenuItems();
+    }
+
+    private void SortFlyoutMenuItems()
+    {
+        if (_isSorting)
+        {
+            return;
+        }
+
+        lock (_sortLock)
+        {
+            _isSorting = true;
+            try
+            {
+                var sortedItems = DashboardSortOrder switch
                 {
-                    var callback = existingItem.EnabledChangedCallback;
-                    existingItem.EnabledChangedCallback = null;
-                    existingItem.IsEnabled = isEnabled;
-                    existingItem.EnabledChangedCallback = callback;
+                    DashboardSortOrder.ByStatus => _allFlyoutMenuItems.OrderByDescending(x => x.IsEnabled).ThenBy(x => x.Label).ToList(),
+                    _ => _allFlyoutMenuItems.OrderBy(x => x.Label).ToList(),
+                };
+
+                if (FlyoutMenuItems.Count == 0)
+                {
+                    foreach (var item in sortedItems)
+                    {
+                        FlyoutMenuItems.Add(item);
+                    }
+
+                    return;
                 }
 
-                desiredItems.Add(existingItem);
-            }
-            else
-            {
-                desiredItems.Add(new FlyoutMenuItem
+                for (int i = 0; i < sortedItems.Count; i++)
                 {
-                    Label = _resourceLoader.GetString(Microsoft.PowerToys.Settings.UI.Library.Helpers.ModuleHelper.GetModuleLabelResourceName(moduleType)),
-                    IsEnabled = isEnabled,
-                    IsLocked = isLocked,
-                    Tag = moduleType,
-                    Icon = Microsoft.PowerToys.Settings.UI.Library.Helpers.ModuleHelper.GetModuleTypeFluentIconName(moduleType),
-                    EnabledChangedCallback = EnabledChangedOnUI,
+                    var item = sortedItems[i];
+                    var oldIndex = FlyoutMenuItems.IndexOf(item);
+
+                    if (oldIndex != -1 && oldIndex != i)
+                    {
+                        FlyoutMenuItems.Move(oldIndex, i);
+                    }
+                }
+            }
+            finally
+            {
+                // Use dispatcher to reset flag after UI updates complete
+                _dispatcherQueue.TryEnqueue(DispatcherQueuePriority.Low, () =>
+                {
+                    _isSorting = false;
                 });
             }
         }
-
-        var sortedItems = DashboardSortOrder switch
-        {
-            DashboardSortOrder.ByStatus => desiredItems.OrderByDescending(x => x.IsEnabled).ThenBy(x => x.Label).ToList(),
-            _ => desiredItems.OrderBy(x => x.Label).ToList(),
-        };
-
-        for (int i = FlyoutMenuItems.Count - 1; i >= 0; i--)
-        {
-            if (!sortedItems.Contains(FlyoutMenuItems[i]))
-            {
-                FlyoutMenuItems.RemoveAt(i);
-            }
-        }
-
-        for (int i = 0; i < sortedItems.Count; i++)
-        {
-            var item = sortedItems[i];
-            var oldIndex = FlyoutMenuItems.IndexOf(item);
-
-            if (oldIndex < 0)
-            {
-                FlyoutMenuItems.Insert(i, item);
-            }
-            else if (oldIndex != i)
-            {
-                FlyoutMenuItems.Move(oldIndex, i);
-            }
-        }
     }
 
-    private void EnabledChangedOnUI(FlyoutMenuItem item)
+    private void EnabledChangedOnUI(ModuleListItem item)
     {
-        if (_coordinator.UpdateModuleEnabled(item.Tag, item.IsEnabled))
-        {
-            _coordinator.NotifyUserSettingsInteraction();
-        }
-    }
+        var flyoutItem = (FlyoutMenuItem)item;
+        var isEnabled = flyoutItem.IsEnabled;
 
-    private void ModuleEnabledChangedOnSettingsPage()
-    {
-        RefreshFlyoutMenuItems();
+        // Ignore toggle operations during sorting to prevent race conditions.
+        // Revert the toggle state since UI already changed due to TwoWay binding.
+        if (_isSorting)
+        {
+            flyoutItem.UpdateStatus(!isEnabled);
+            return;
+        }
+
+        _coordinator.UpdateModuleEnabled(flyoutItem.Tag, flyoutItem.IsEnabled);
+        SortFlyoutMenuItems();
     }
 }
