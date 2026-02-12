@@ -41,7 +41,6 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
-    
     <CharacterSet>Unicode</CharacterSet>
     <GenerateManifest>false</GenerateManifest>
   </PropertyGroup>
@@ -101,6 +100,7 @@
     <ClInclude Include="Constants.h">
       <DependentUpon>KeyboardListener.idl</DependentUpon>
     </ClInclude>
+    <ClInclude Include="Elevation.h" />
     <ClInclude Include="HotkeyManager.h">
       <DependentUpon>HotkeyManager.idl</DependentUpon>
     </ClInclude>
@@ -131,6 +131,7 @@
     <ClCompile Include="Constants.cpp">
       <DependentUpon>KeyboardListener.idl</DependentUpon>
     </ClCompile>
+    <ClCompile Include="Elevation.cpp" />
     <ClCompile Include="HotkeyManager.cpp">
       <DependentUpon>HotkeyManager.idl</DependentUpon>
     </ClCompile>
@@ -168,12 +169,18 @@
     <Midl Include="Clipboard.idl" />
     <Midl Include="CommonManaged.idl" />
     <Midl Include="Constants.idl" />
+    <Midl Include="Elevation.idl" />
     <Midl Include="HotkeyManager.idl" />
     <Midl Include="KeyboardHook.idl" />
     <Midl Include="LayoutMapManaged.idl" />
     <Midl Include="Package.idl" />
     <Midl Include="ThemeHelper.idl" />
     <Midl Include="TwoWayPipeMessageIPCManaged.idl" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\logger\logger.vcxproj">
+      <Project>{d9b8fc84-322a-4f9f-bbb9-20915c47ddfd}</Project>
+    </ProjectReference>
   </ItemGroup>
   <ImportGroup Label="ExtensionTargets" />
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

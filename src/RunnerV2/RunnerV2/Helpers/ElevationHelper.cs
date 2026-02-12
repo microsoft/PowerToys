@@ -6,6 +6,7 @@ using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using ManagedCommon;
+using Microsoft.PowerToys.Settings.UI.Library;
 using static RunnerV2.NativeMethods;
 
 namespace RunnerV2.Helpers
@@ -31,15 +32,20 @@ namespace RunnerV2.Helpers
                 case RestartScheduledMode.None:
                     return;
                 case RestartScheduledMode.RestartElevated:
-                    RestartAsAdministrator("--restartedElevated");
+                    RestartAsAdministrator("--restartedElevated --restarted");
                     break;
                 case RestartScheduledMode.RestartElevatedWithOpenSettings:
-                    RestartAsAdministrator("--restartedElevated --open-settings");
+                    RestartAsAdministrator("--restartedElevated --open-settings --restarted");
                     break;
                 case RestartScheduledMode.RestartNonElevated:
-                    // Todo: restart unelevated
+                    RestartAsNonElevated("--restarted --open-settings");
                     break;
             }
+        }
+
+        private static void RestartAsNonElevated(string arguments)
+        {
+            PowerToys.Interop.Elevation.RunNonElevated(Environment.ProcessPath, arguments);
         }
 
         private static void RestartAsAdministrator(string arguments)
@@ -62,6 +68,8 @@ namespace RunnerV2.Helpers
             {
                 Logger.LogError("Failed to restart as administrator.", ex);
             }
+
+            Environment.Exit(0);
         }
 
         internal static bool IsProcessElevated(bool useCachedValue = true)

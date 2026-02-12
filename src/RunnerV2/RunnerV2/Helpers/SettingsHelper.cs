@@ -119,13 +119,18 @@ namespace RunnerV2.Helpers
                                         Runner.Close();
                                         break;
                                     case "restart_maintain_elevation":
-                                        // Todo:
+                                        ElevationHelper.RestartScheduled = ElevationHelper.IsProcessElevated() ? ElevationHelper.RestartScheduledMode.RestartElevatedWithOpenSettings : ElevationHelper.RestartScheduledMode.RestartNonElevated;
+
+                                        ElevationHelper.RestartIfScheudled();
+
                                         break;
                                     case "check_for_updates":
                                         UpdateSettingsHelper.TriggerUpdateCheck();
                                         break;
                                     case "request_update_state_date":
-                                        // Todo:
+                                        JsonObject response = [];
+                                        response["updateStateDate"] = UpdateSettingsHelper.GetLastCheckedDate();
+                                        _ipc?.Send(response.ToJsonString());
                                         break;
                                 }
 

@@ -5,6 +5,7 @@
 using System;
 using System.Diagnostics;
 using System.Globalization;
+using System.IO;
 using ManagedCommon;
 using RunnerV2.Helpers;
 
@@ -61,6 +62,11 @@ namespace RunnerV2.Models
             /// Sets the launched process to realtime priority.
             /// </summary>
             RealtimePriority = 128,
+
+            /// <summary>
+            /// Indicates that the process should never be launched with elevated privileges, even if the runner process is elevated.
+            /// </summary>
+            NeverElevate = 256,
         }
 
         /// <summary>
@@ -125,6 +131,12 @@ namespace RunnerV2.Models
             }
 
             string arguments = (LaunchOptions.HasFlag(ProcessLaunchOptions.RunnerProcessIdAsFirstArgument) ? Environment.ProcessId.ToString(CultureInfo.InvariantCulture) + (string.IsNullOrEmpty(ProcessArguments) ? string.Empty : " ") : string.Empty) + ProcessArguments;
+
+            if (ElevationHelper.IsProcessElevated() && LaunchOptions.HasFlag(ProcessLaunchOptions.NeverElevate))
+            {
+                PowerToys.Interop.Elevation.RunNonElevated(Path.GetFullPath(ProcessPath), arguments);
+                return;
+            }
 
             Process? p = Process.Start(new ProcessStartInfo()
             {

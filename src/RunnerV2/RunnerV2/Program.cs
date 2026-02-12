@@ -56,11 +56,14 @@ internal sealed class Program
                 throw new NotImplementedException("Special modes are not implemented yet.");
         }
 
+        // If PowerToys restarted the old process may still be around
+        bool hasRestartedArgment = args.Contains("--restarted");
+
         bool shouldOpenSettings = args.Any(s => s.StartsWith("--open-settings", StringComparison.InvariantCulture));
         bool shouldOpenSettingsToSpecificPage = args.Any(s => s.StartsWith("--open-settings=", StringComparison.InvariantCulture));
 
         // Check if PowerToys is already running
-        if (Process.GetProcessesByName(Process.GetCurrentProcess().ProcessName).Length > 1)
+        if ((!hasRestartedArgment && Process.GetProcessesByName(Process.GetCurrentProcess().ProcessName).Length > 1) || Process.GetProcessesByName(Process.GetCurrentProcess().ProcessName).Length > 2)
         {
             IntPtr hwndMain = NativeMethods.FindWindowW(Runner.TrayWindowClassName, null!);
             NativeMethods.PostMessageW(hwndMain, 0x0111, 1, IntPtr.Zero);
@@ -74,7 +77,16 @@ internal sealed class Program
 
         bool isElevated = ElevationHelper.IsProcessElevated();
         bool hasDontElevateArgument = args.Contains("--dont-elevate");
-        bool runElevatedSetting = GeneralSettings.RunElevated;
+        bool runElevatedSetting = false;
+        try
+        {
+            runElevatedSetting = GeneralSettings.RunElevated;
+        }
+        catch
+        {
+            Logger.LogError("Could not retrieve run elevated setting");
+        }
+
         bool hasRestartedElevatedArgment = args.Contains("--restartedElevated");
 
         Action afterInitializationAction = () => { };
@@ -112,8 +124,8 @@ internal sealed class Program
         switch ((isElevated, hasDontElevateArgument, runElevatedSetting, hasRestartedElevatedArgment))
         {
             case (true, true, false, _):
-                // Todo: Scheudle restart as non elevated
-                throw new NotImplementedException();
+                ElevationHelper.RestartScheduled = ElevationHelper.RestartScheduledMode.RestartNonElevated;
+                break;
             case (true, _, _, _):
             case (_, _, false, _):
             case (_, true, _, _):

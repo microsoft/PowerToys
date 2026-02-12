@@ -38,7 +38,7 @@ namespace RunnerV2.ModuleInterfaces
 
         public override string ProcessName => "PowerToys.Peek.UI";
 
-        public override ProcessLaunchOptions LaunchOptions => ProcessLaunchOptions.RunnerProcessIdAsFirstArgument | ProcessLaunchOptions.SingletonProcess;
+        public override ProcessLaunchOptions LaunchOptions => ProcessLaunchOptions.RunnerProcessIdAsFirstArgument | ProcessLaunchOptions.SingletonProcess | (SettingsUtils.Default.GetSettings<PeekSettings>(Name).Properties.AlwaysRunNotElevated.Value ? ProcessLaunchOptions.NeverElevate : 0);
 
         public List<(HotkeySettings Hotkey, Action Action)> Shortcuts { get; } = [];
 

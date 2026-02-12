@@ -51,6 +51,18 @@ namespace Update
             _updateThread.Start();
         }
 
+        public static string GetLastCheckedDate()
+        {
+            UpdatingSettings updatingSettings = UpdatingSettings.LoadSettings();
+            if (long.TryParse(updatingSettings.LastCheckedDate, out long lastCheckedDateSeconds))
+            {
+                DateTimeOffset lastCheckedDate = DateTimeOffset.FromUnixTimeSeconds(lastCheckedDateSeconds);
+                return lastCheckedDate.ToString("g", CultureInfo.CurrentCulture);
+            }
+
+            return string.Empty;
+        }
+
         internal record UpdateInfo
         {
             private UpdateInfo()

@@ -135,7 +135,14 @@ namespace RunnerV2
             while (GetMessageW(out MSG msg, IntPtr.Zero, 0, 0) != 0 || true)
             {
                 TranslateMessage(ref msg);
-                DispatchMessageW(ref msg);
+                try
+                {
+                    DispatchMessageW(ref msg);
+                }
+                catch (Exception e)
+                {
+                    Logger.LogError("Uncaught error in message loop: ", e);
+                }
 
                 // Supress duplicate handling of HOTKEY messages
                 if (msg.Message == (uint)WindowMessages.HOTKEY)
@@ -196,8 +203,6 @@ namespace RunnerV2
             {
                 if ((module.Enabled && (module.GpoRuleConfigured != PowerToys.GPOWrapper.GpoRuleConfigured.Disabled)) || module.GpoRuleConfigured == PowerToys.GPOWrapper.GpoRuleConfigured.Enabled)
                 {
-                    /* Todo: conflict manager */
-
                     if (!LoadedModules.Contains(module))
                     {
                         module.Enable();
