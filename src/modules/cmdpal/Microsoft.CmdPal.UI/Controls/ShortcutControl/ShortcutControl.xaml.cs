@@ -402,17 +402,6 @@ public sealed partial class ShortcutControl : UserControl, IDisposable, IRecipie
         _isActive = true;
     }
 
-    private void C_ResetClick(object sender, RoutedEventArgs e)
-    {
-        hotkeySettings = null;
-
-        SetValue(HotkeySettingsProperty, hotkeySettings);
-        SetKeys();
-
-        lastValidSettings = hotkeySettings;
-        shortcutDialog.Hide();
-    }
-
     private async void OpenDialogButton_Click(object sender, RoutedEventArgs e)
     {
         // c.Keys = null;
