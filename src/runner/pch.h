@@ -32,3 +32,4 @@
 #include <winrt/Windows.Storage.h>
 
 #include <wil/resource.h>
+#include <wil/coroutine.h>

@@ -15,9 +15,29 @@ VS Code extensions Needed:
 ---
 
 ## Building in VS Code
-### Configure developer powershell for vs2022 for more convenient dev in vscode.
-1. Configure profile in in settings, entry:  "terminal.integrated.profiles.windows"
-2. Add below config as entry:
+### Configure Developer PowerShell for VS for more convenient development experience in VS Code
+1. Configure profile in settings, entry: `terminal.integrated.profiles.windows`
+2. Add below config as entry (choose VS 2026 or VS 2022 based on your installation):
+
+**For Visual Studio 2026 (recommended):**
+```json
+    "Developer PowerShell for VS": {
+		// Configure based on your preference
+        "path": "C:\\Program Files\\WindowsApps\\Microsoft.PowerShell_7.5.2.0_arm64__8wekyb3d8bbwe\\pwsh.exe",
+        "args": [
+            "-NoExit",
+            "-Command",
+            "& {",
+            "$orig = Get-Location;",
+            // Adjust path based on your edition (Community/Professional/Enterprise)
+            "& 'C:\\Program Files\\Microsoft Visual Studio\\18\\Enterprise\\Common7\\Tools\\Launch-VsDevShell.ps1';",
+            "Set-Location $orig",
+            "}"
+        ]
+    },
+```
+
+**For Visual Studio 2022:**
 ```json
     "Developer PowerShell for VS 2022": {
 		// Configure based on your preference
@@ -27,16 +47,17 @@ VS Code extensions Needed:
             "-Command",
             "& {",
             "$orig = Get-Location;",
-            // Configure based on your environment
+            // Adjust path based on your edition (Community/Professional/Enterprise)
             "& 'C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\Common7\\Tools\\Launch-VsDevShell.ps1';",
             "Set-Location $orig",
             "}"
         ]
     },
 ```
-3. [Optional] Set Developer PowerShell for VS 2022 as your default profile, so that you can get a deep integration with vscode coding agent. 
 
-4. Now You can build with plain `msbuild` or configure tasks.json in below section
+3. [Optional] Set your Developer PowerShell profile as the default, so that you can get a deep integration with vscode coding agent. 
+
+4. Now you can build with plain `msbuild` or configure tasks.json in below section.
 Or reach out to "tools\build\BUILD-GUIDELINES.md"
 
 ### Sample plain msbuild command

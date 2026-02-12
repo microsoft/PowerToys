@@ -78,6 +78,7 @@
                     x:Uid="Settings_GeneralPage_NavigationViewItem_Dock"
                     Icon="{ui:FontIcon Glyph=&#xF596;}"
                     Tag="Dock" />
+                <!--  "Internal Tools" page item is added dynamically from code  -->
             </NavigationView.MenuItems>
             <Grid>
                 <Grid.RowDefinitions>

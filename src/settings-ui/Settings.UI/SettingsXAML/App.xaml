@@ -4,6 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:converters="using:Microsoft.PowerToys.Settings.UI.Converters"
+    xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     xmlns:tkconverters="using:CommunityToolkit.WinUI.Converters">
     <Application.Resources>
         <ResourceDictionary>
@@ -18,7 +19,7 @@
                 <ResourceDictionary Source="/SettingsXAML/Themes/Colors.xaml" />
                 <ResourceDictionary Source="/SettingsXAML/Themes/Generic.xaml" />
                 <ResourceDictionary Source="/SettingsXAML/Controls/Timeline/TimelineStyles.xaml" />
-
+                <ResourceDictionary Source="/SettingsXAML/Controls/ShortcutControl/ShortcutWithTextLabelControl.xaml" />
                 <!--  Other merged dictionaries here  -->
             </ResourceDictionary.MergedDictionaries>
 
@@ -75,15 +76,23 @@
 
             <Style BasedOn="{StaticResource DefaultCheckBoxStyle}" TargetType="controls:CheckBoxWithDescriptionControl" />
 
+            <tkcontrols:MarkdownThemes
+                x:Key="DescriptionTextMarkdownThemeConfig"
+                InlineCodeBackground="{StaticResource ControlFillColorDefaultBrush}"
+                InlineCodeBorderBrush="{StaticResource ControlElevationBorderBrush}"
+                InlineCodeCornerRadius="2"
+                InlineCodeFontSize="12"
+                InlineCodeForeground="{StaticResource TextFillColorSecondaryBrush}"
+                InlineCodePadding="2,0,2,1" />
+
+            <tkcontrols:MarkdownConfig x:Key="DescriptionTextMarkdownConfig" Themes="{StaticResource DescriptionTextMarkdownThemeConfig}" />
+
             <TransitionCollection x:Key="SettingsCardsAnimations">
                 <EntranceThemeTransition FromVerticalOffset="50" />
                 <!--  Animates cards when loaded  -->
                 <RepositionThemeTransition IsStaggeringEnabled="False" />
                 <!--  Smoothly animates individual cards upon whenever Expanders are expanded/collapsed  -->
             </TransitionCollection>
-
-            <!--  Additional resources or settings can be added here  -->
-
         </ResourceDictionary>
     </Application.Resources>
 </Application>

@@ -4,10 +4,6 @@
     <Platform Name="x64" />
   </Configurations>
   <Folder Name="/common/">
-    <Project Path="src/common/AllExperiments/AllExperiments.csproj">
-      <Platform Solution="*|ARM64" Project="ARM64" />
-      <Platform Solution="*|x64" Project="x64" />
-    </Project>
     <Project Path="src/common/CalculatorEngineCommon/CalculatorEngineCommon.vcxproj" Id="2cf78cf7-8feb-4be1-9591-55fa25b48fc6" />
     <Project Path="src/common/Common.Search/Common.Search.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
@@ -55,6 +51,7 @@
       <Platform Solution="*|x64" Project="x64" />
     </Project>
     <Project Path="src/common/UnitTests-CommonLib/UnitTests-CommonLib.vcxproj" Id="1a066c63-64b3-45f8-92fe-664e1cce8077" />
+    <Project Path="src/common/UnitTests-CommonUtils/UnitTests-CommonUtils.vcxproj" Id="8b5cfb38-ccba-40a8-ad7a-89c57b070884" />
     <Project Path="src/common/updating/updating.vcxproj" Id="17da04df-e393-4397-9cf0-84dabe11032e" />
     <Project Path="src/common/version/version.vcxproj" Id="cc6e41ac-8174-4e8a-8d22-85dd7f4851df" />
   </Folder>
@@ -304,6 +301,10 @@
     </Project>
   </Folder>
   <Folder Name="/modules/CommandPalette/Tests/">
+    <Project Path="src/modules/cmdpal/Tests/Microsoft.CmdPal.Core.Common.UnitTests/Microsoft.CmdPal.Core.Common.UnitTests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
     <Project Path="src/modules/cmdpal/Tests/Microsoft.CmdPal.Ext.Apps.UnitTests/Microsoft.CmdPal.Ext.Apps.UnitTests.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
@@ -357,6 +358,10 @@
       <Platform Solution="*|x64" Project="x64" />
     </Project>
     <Project Path="src/modules/cmdpal/Tests/Microsoft.CmdPal.UITests/Microsoft.CmdPal.UITests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/cmdpal/Tests/Microsoft.CommandPalette.Extensions.Toolkit.UnitTests/Microsoft.CommandPalette.Extensions.Toolkit.UnitTests.csproj" Id="2eca18b7-33b7-4829-88f1-439b20fd60f6">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
@@ -678,6 +683,23 @@
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
       <Deploy />
+    </Project>
+  </Folder>
+  <Folder Name="/modules/PowerDisplay/">
+    <Project Path="src/modules/powerdisplay/PowerDisplay.Lib/PowerDisplay.Lib.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/powerdisplay/PowerDisplay/PowerDisplay.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/powerdisplay/PowerDisplayModuleInterface/PowerDisplayModuleInterface.vcxproj" Id="d1234567-8901-2345-6789-abcdef012345" />
+  </Folder>
+  <Folder Name="/modules/PowerDisplay/Tests/">
+    <Project Path="src/modules/powerdisplay/PowerDisplay.Lib.UnitTests/PowerDisplay.Lib.UnitTests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
     </Project>
   </Folder>
   <Folder Name="/modules/MeasureTool/">

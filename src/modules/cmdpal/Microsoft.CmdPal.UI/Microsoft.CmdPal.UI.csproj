@@ -1,7 +1,7 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-  <Import Project="..\..\..\Common.Dotnet.CsWinRT.props" />
-  <Import Project="..\..\..\Common.Dotnet.AotCompatibility.props" />
-  <Import Project="..\..\..\CmdPalVersion.props" />
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
+  <Import Project="$(RepoRoot)src\Common.Dotnet.AotCompatibility.props" />
+  <Import Project="$(RepoRoot)src\CmdPalVersion.props" />
   <Import Project="CmdPal.pre.props" />
   <Import Project="CmdPal.Branding.props" />
 
@@ -87,6 +87,7 @@
     <None Remove="Pages\Settings\GeneralPage.xaml" />
     <None Remove="SettingsWindow.xaml" />
     <None Remove="Settings\AppearancePage.xaml" />
+    <None Remove="Settings\InternalPage.xaml" />
     <None Remove="ShellPage.xaml" />
     <None Remove="Styles\Settings.xaml" />
     <None Remove="Styles\TeachingTip.xaml" />
@@ -284,6 +285,16 @@
 
   <ItemGroup>
     <Page Update="Controls\KeyVisual\KeyCharPresenter.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="Settings\InternalPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="Styles\Colors.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>

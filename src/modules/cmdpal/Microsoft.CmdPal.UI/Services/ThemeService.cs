@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -76,10 +76,13 @@ internal sealed partial class ThemeService : IThemeService, IDisposable
         }
 
         // provider selection
-        var intensity = Math.Clamp(_settings.CustomThemeColorIntensity, 0, 100);
-        IThemeProvider provider = intensity > 0 && _settings.ColorizationMode is ColorizationMode.CustomColor or ColorizationMode.WindowsAccentColor or ColorizationMode.Image
-                ? _colorfulThemeProvider
-                : _normalThemeProvider;
+        var themeColorIntensity = Math.Clamp(_settings.CustomThemeColorIntensity, 0, 100);
+        var imageTintIntensity = Math.Clamp(_settings.BackgroundImageTintIntensity, 0, 100);
+        var effectiveColorIntensity = _settings.ColorizationMode == ColorizationMode.Image
+            ? imageTintIntensity
+            : themeColorIntensity;
+
+        IThemeProvider provider = UseColorfulProvider(effectiveColorIntensity) ? _colorfulThemeProvider : _normalThemeProvider;
 
         // Calculate values
         var tint = _settings.ColorizationMode switch
@@ -100,32 +103,39 @@ internal sealed partial class ThemeService : IThemeService, IDisposable
         };
         var opacity = Math.Clamp(_settings.BackgroundImageOpacity, 0, 100) / 100.0;
 
-        // create context and offload to actual theme provider
+        // create input and offload to actual theme provider
         var context = new ThemeContext
         {
             Tint = tint,
-            ColorIntensity = intensity,
+            ColorIntensity = effectiveColorIntensity,
             Theme = effectiveTheme,
             BackgroundImageSource = imageSource,
             BackgroundImageStretch = stretch,
             BackgroundImageOpacity = opacity,
+            BackdropStyle = _settings.BackdropStyle,
+            BackdropOpacity = Math.Clamp(_settings.BackdropOpacity, 0, 100) / 100f,
         };
-        var backdrop = provider.GetAcrylicBackdrop(context);
+        var backdrop = provider.GetBackdropParameters(context);
         var blur = _settings.BackgroundImageBlurAmount;
         var brightness = _settings.BackgroundImageBrightness;
 
         // Create public snapshot (no provider!)
+        var hasColorization = effectiveColorIntensity > 0
+            && _settings.ColorizationMode is ColorizationMode.CustomColor or ColorizationMode.WindowsAccentColor or ColorizationMode.Image;
+
         var snapshot = new ThemeSnapshot
         {
             Tint = tint,
-            TintIntensity = intensity / 100f,
+            TintIntensity = effectiveColorIntensity / 100f,
             Theme = effectiveTheme,
             BackgroundImageSource = imageSource,
             BackgroundImageStretch = stretch,
             BackgroundImageOpacity = opacity,
             BackdropParameters = backdrop,
+            BackdropOpacity = context.BackdropOpacity,
             BlurAmount = blur,
             BackgroundBrightness = brightness / 100f,
+            HasColorization = hasColorization,
         };
 
         // Bundle with provider for internal use
@@ -172,7 +182,7 @@ internal sealed partial class ThemeService : IThemeService, IDisposable
             BackgroundImageStretch = dockStretch,
             BackgroundImageOpacity = dockOpacity,
         };
-        var dockBackdrop = dockProvider.GetAcrylicBackdrop(dockContext);
+        var dockBackdrop = dockProvider.GetBackdropParameters(dockContext);
         var dockBlur = dockSettings.BackgroundImageBlurAmount;
         var dockBrightness = dockSettings.BackgroundImageBrightness;
 
@@ -194,6 +204,12 @@ internal sealed partial class ThemeService : IThemeService, IDisposable
 
         _resourceSwapper.TryActivateTheme(provider.ThemeKey);
         ThemeChanged?.Invoke(this, new ThemeChangedEventArgs());
+    }
+
+    private bool UseColorfulProvider(int effectiveColorIntensity)
+    {
+        return _settings.ColorizationMode == ColorizationMode.Image
+               || (effectiveColorIntensity > 0 && _settings.ColorizationMode is ColorizationMode.CustomColor or ColorizationMode.WindowsAccentColor);
     }
 
     private static BitmapImage? LoadImageSafe(string? path)
@@ -253,13 +269,15 @@ internal sealed partial class ThemeService : IThemeService, IDisposable
             {
                 Tint = Colors.Transparent,
                 Theme = ElementTheme.Light,
-                BackdropParameters = new AcrylicBackdropParameters(Colors.Black, Colors.Black, 0.5f, 0.5f),
+                BackdropParameters = new BackdropParameters(Colors.Black, Colors.Black, EffectiveOpacity: 0.5f, EffectiveLuminosityOpacity: 0.5f),
+                BackdropOpacity = 1.0f,
                 BackgroundImageOpacity = 1,
                 BackgroundImageSource = null,
                 BackgroundImageStretch = Stretch.Fill,
                 BlurAmount = 0,
                 TintIntensity = 1.0f,
                 BackgroundBrightness = 0,
+                HasColorization = false,
             },
             Provider = _normalThemeProvider,
         };
@@ -270,7 +288,7 @@ internal sealed partial class ThemeService : IThemeService, IDisposable
             TintIntensity = 1.0f,
             Theme = ElementTheme.Light,
             Backdrop = DockBackdrop.Acrylic,
-            BackdropParameters = new AcrylicBackdropParameters(Colors.Black, Colors.Black, 0.5f, 0.5f),
+            BackdropParameters = new BackdropParameters(Colors.Black, Colors.Black, 0.5f, 0.5f),
             BackgroundImageOpacity = 1,
             BackgroundImageSource = null,
             BackgroundImageStretch = Stretch.Fill,

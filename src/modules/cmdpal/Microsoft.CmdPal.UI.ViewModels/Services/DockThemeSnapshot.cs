@@ -59,7 +59,7 @@ public sealed class DockThemeSnapshot
     /// <summary>
     /// Gets the effective acrylic backdrop parameters based on current settings and theme.
     /// </summary>
-    public required AcrylicBackdropParameters BackdropParameters { get; init; }
+    public required BackdropParameters BackdropParameters { get; init; }
 
     /// <summary>
     /// Gets the blur amount for the background image.

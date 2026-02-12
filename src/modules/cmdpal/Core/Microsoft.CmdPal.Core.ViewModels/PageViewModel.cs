@@ -82,11 +82,11 @@ public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
     bool IPageContext.ExtensionSupportsPinning => ExtensionHost.SupportsDockBands;
 
     public PageViewModel(IPage? model, TaskScheduler scheduler, AppExtensionHost extensionHost)
-        : base((IPageContext?)null)
+        : base(scheduler)
     {
+        InitializeSelfAsPageContext();
         _pageModel = new(model);
         Scheduler = scheduler;
-        PageContext = new(this);
         ExtensionHost = extensionHost;
         Icon = new(null);
 

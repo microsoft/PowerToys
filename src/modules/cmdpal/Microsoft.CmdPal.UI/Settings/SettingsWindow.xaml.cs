@@ -30,12 +30,12 @@ public sealed partial class SettingsWindow : WindowEx,
 {
     private readonly LocalKeyboardListener _localKeyboardListener;
 
+    private readonly NavigationViewItem? _internalNavItem;
+
     public ObservableCollection<Crumb> BreadCrumbs { get; } = [];
 
     // Gets or sets optional action invoked after NavigationView is loaded.
     public Action? NavigationViewLoaded { get; set; }
-
-    internal string? OpenToPage { get; set; }
 
     public SettingsWindow()
     {
@@ -56,6 +56,23 @@ public sealed partial class SettingsWindow : WindowEx,
         _localKeyboardListener.Start();
         Closed += SettingsWindow_Closed;
         RootElement.AddHandler(UIElement.PointerPressedEvent, new PointerEventHandler(RootElement_OnPointerPressed), true);
+
+        if (!BuildInfo.IsCiBuild)
+        {
+            _internalNavItem = new NavigationViewItem
+            {
+                Content = "Internal Tools",
+                Icon = new FontIcon { Glyph = "\uEC7A" },
+                Tag = "Internal",
+            };
+            NavView.MenuItems.Add(_internalNavItem);
+        }
+        else
+        {
+            _internalNavItem = null;
+        }
+
+        Navigate("General");
     }
 
     private void SettingsWindow_Closed(object sender, WindowEventArgs args)
@@ -69,11 +86,6 @@ public sealed partial class SettingsWindow : WindowEx,
     {
         // Delay necessary to ensure NavigationView visual state can match navigation
         Task.Delay(500).ContinueWith(_ => this.NavigationViewLoaded?.Invoke(), TaskScheduler.FromCurrentSynchronizationContext());
-
-        NavView.SelectedItem = NavView.MenuItems[0];
-
-        Navigate(OpenToPage);
-        OpenToPage = null;
 
         if (sender is NavigationView navigationView)
         {
@@ -100,17 +112,36 @@ public sealed partial class SettingsWindow : WindowEx,
         Navigate((selectedItem.Tag as string)!);
     }
 
-    internal void Navigate(string? page)
+    internal void Navigate(string page)
     {
-        var pageType = page switch
+        Type? pageType;
+        switch (page)
         {
-            null => typeof(GeneralPage),
-            "General" => typeof(GeneralPage),
-            "Appearance" => typeof(AppearancePage),
-            "Extensions" => typeof(ExtensionsPage),
-            "Dock" => typeof(DockSettingsPage),
-            _ => null,
-        };
+            case "General":
+                pageType = typeof(GeneralPage);
+                break;
+            case "Appearance":
+                pageType = typeof(AppearancePage);
+                break;
+            case "Extensions":
+                pageType = typeof(ExtensionsPage);
+                break;
+            case "Dock":
+                pageType = typeof(DockSettingsPage);
+                break;
+            case "Internal":
+                pageType = typeof(InternalPage);
+                break;
+            case "":
+                // intentional no-op: empty tag means no navigation
+                pageType = null;
+                break;
+            default:
+                // unknown page, no-op and log
+                pageType = null;
+                Logger.LogError($"Unknown settings page tag '{page}'");
+                break;
+        }
 
         var actualPage = page ?? "General";
         if (pageType is not null)
@@ -294,6 +325,12 @@ public sealed partial class SettingsWindow : WindowEx,
             var extensionsPageType = RS_.GetString("Settings_PageTitles_ExtensionsPage");
             BreadCrumbs.Add(new(extensionsPageType, extensionsPageType));
             BreadCrumbs.Add(new(vm.DisplayName, vm));
+        }
+        else if (e.SourcePageType == typeof(InternalPage) && _internalNavItem is not null)
+        {
+            NavView.SelectedItem = _internalNavItem;
+            var pageType = "Internal";
+            BreadCrumbs.Add(new(pageType, pageType));
         }
         else
         {
