@@ -11,7 +11,7 @@ namespace Microsoft.CmdPal.Ext.WindowWalker.Components;
 /// <summary>
 /// Class containing methods to control the live preview
 /// </summary>
-internal sealed class LivePreview
+internal static class LivePreview
 {
     /// <summary>
     /// Makes sure that a window is excluded from the live preview

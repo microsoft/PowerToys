@@ -12,7 +12,7 @@ using Windows.System;
 
 namespace Microsoft.CmdPal.Ext.WindowWalker.Components;
 
-internal sealed class ContextMenuHelper
+internal static class ContextMenuHelper
 {
     internal static List<CommandContextItem> GetContextMenuResults(in WindowWalkerListItem listItem)
     {

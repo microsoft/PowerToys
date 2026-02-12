@@ -6,7 +6,7 @@ using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.WindowWalker;
 
-internal sealed class Icons
+internal static class Icons
 {
     internal static IconInfo WindowWalkerIcon { get; } = IconHelpers.FromRelativePath("Assets\\WindowWalker.svg");
 
