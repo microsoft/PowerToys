@@ -42,7 +42,7 @@
                         Margin="4,0,0,0"
                         HorizontalAlignment="Left"
                         SourceKey="{x:Bind Icon, Mode=OneWay}"
-                        SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}" />
+                        SourceRequested="{x:Bind help:IconProvider.SourceRequested20}" />
                     <TextBlock
                         x:Name="TitleTextBlock"
                         Grid.Column="1"
@@ -83,7 +83,7 @@
                         HorizontalAlignment="Left"
                         Foreground="{ThemeResource SystemFillColorCriticalBrush}"
                         SourceKey="{x:Bind Icon, Mode=OneWay}"
-                        SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}" />
+                        SourceRequested="{x:Bind help:IconProvider.SourceRequested20}" />
                     <TextBlock
                         x:Name="TitleTextBlock"
                         Grid.Column="1"
@@ -134,6 +134,9 @@
             ItemsSource="{x:Bind ViewModel.FilteredItems, Mode=OneWay}"
             PreviewKeyDown="CommandsDropdown_PreviewKeyDown"
             SelectionMode="Single">
+            <ListView.Resources>
+                <x:Boolean x:Key="ListViewItemSelectionIndicatorVisualEnabled">False</x:Boolean>
+            </ListView.Resources>
             <ListView.ItemContainerStyle>
                 <Style BasedOn="{StaticResource DefaultListViewItemStyle}" TargetType="ListViewItem">
                     <Setter Property="MinHeight" Value="0" />

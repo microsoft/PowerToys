@@ -11,7 +11,9 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using ManagedCommon;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
 using Microsoft.CommandPalette.Extensions.Toolkit;
+using Microsoft.UI;
 using Windows.Foundation;
+using Windows.UI;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
@@ -48,6 +50,8 @@ public partial class SettingsModel : ObservableObject
 
     public Dictionary<string, ProviderSettings> ProviderSettings { get; set; } = [];
 
+    public string[] FallbackRanks { get; set; } = [];
+
     public Dictionary<string, CommandAlias> Aliases { get; set; } = [];
 
     public List<TopLevelHotkey> CommandHotkeys { get; set; } = [];
@@ -59,6 +63,32 @@ public partial class SettingsModel : ObservableObject
     public WindowPosition? LastWindowPosition { get; set; }
 
     public TimeSpan AutoGoHomeInterval { get; set; } = Timeout.InfiniteTimeSpan;
+
+    public EscapeKeyBehavior EscapeKeyBehaviorSetting { get; set; } = EscapeKeyBehavior.ClearSearchFirstThenGoBack;
+
+    public UserTheme Theme { get; set; } = UserTheme.Default;
+
+    public ColorizationMode ColorizationMode { get; set; }
+
+    public Color CustomThemeColor { get; set; } = Colors.Transparent;
+
+    public int CustomThemeColorIntensity { get; set; } = 100;
+
+    public int BackgroundImageTintIntensity { get; set; }
+
+    public int BackgroundImageOpacity { get; set; } = 20;
+
+    public int BackgroundImageBlurAmount { get; set; }
+
+    public int BackgroundImageBrightness { get; set; }
+
+    public BackgroundImageFit BackgroundImageFit { get; set; }
+
+    public string? BackgroundImagePath { get; set; }
+
+    public BackdropStyle BackdropStyle { get; set; }
+
+    public int BackdropOpacity { get; set; } = 100;
 
     // END SETTINGS
     ///////////////////////////////////////////////////////////////////////////
@@ -83,6 +113,25 @@ public partial class SettingsModel : ObservableObject
         }
 
         return settings;
+    }
+
+    public string[] GetGlobalFallbacks()
+    {
+        var globalFallbacks = new HashSet<string>();
+
+        foreach (var provider in ProviderSettings.Values)
+        {
+            foreach (var fallback in provider.FallbackCommands)
+            {
+                var fallbackSetting = fallback.Value;
+                if (fallbackSetting.IsEnabled && fallbackSetting.IncludeInGlobalResults)
+                {
+                    globalFallbacks.Add(fallback.Key);
+                }
+            }
+        }
+
+        return globalFallbacks.ToArray();
     }
 
     public static SettingsModel LoadSettings()
@@ -281,4 +330,12 @@ public enum MonitorBehavior
     ToFocusedWindow = 2,
     InPlace = 3,
     ToLast = 4,
+}
+
+public enum EscapeKeyBehavior
+{
+    ClearSearchFirstThenGoBack = 0,
+    AlwaysGoBack = 1,
+    AlwaysDismiss = 2,
+    AlwaysHide = 3,
 }

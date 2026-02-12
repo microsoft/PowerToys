@@ -13,10 +13,13 @@
 #include <utils/logger_helper.h>
 #include "LightSwitchStateManager.h"
 #include <LightSwitchUtils.h>
+#include <NightLightRegistryObserver.h>
+#include <trace.h>
 
 SERVICE_STATUS g_ServiceStatus = {};
 SERVICE_STATUS_HANDLE g_StatusHandle = nullptr;
 HANDLE g_ServiceStopEvent = nullptr;
+static LightSwitchStateManager* g_stateManagerPtr = nullptr;
 
 VOID WINAPI ServiceMain(DWORD argc, LPTSTR* argv);
 VOID WINAPI ServiceCtrlHandler(DWORD dwCtrl);
@@ -168,7 +171,15 @@ static void DetectAndHandleExternalThemeChange(LightSwitchStateManager& stateMan
     }
 
     // Use shared helper (handles wraparound logic)
-    bool shouldBeLight = ShouldBeLight(nowMinutes, effectiveLight, effectiveDark);
+    bool shouldBeLight = false;
+    if (s.scheduleMode == ScheduleMode::FollowNightLight)
+    {
+        shouldBeLight = !IsNightLightEnabled();
+    } 
+    else
+    {
+        shouldBeLight = ShouldBeLight(nowMinutes, effectiveLight, effectiveDark);
+    }
 
     // Compare current system/apps theme
     bool currentSystemLight = GetCurrentSystemTheme();
@@ -199,14 +210,39 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
     // Initialization
     // ────────────────────────────────────────────────────────────────
     static LightSwitchStateManager stateManager;
+    g_stateManagerPtr = &stateManager;
 
     LightSwitchSettings::instance().InitFileWatcher();
 
     HANDLE hManualOverride = OpenEventW(SYNCHRONIZE | EVENT_MODIFY_STATE, FALSE, L"POWERTOYS_LIGHTSWITCH_MANUAL_OVERRIDE");
     HANDLE hSettingsChanged = LightSwitchSettings::instance().GetSettingsChangedEvent();
 
+    static std::unique_ptr<NightLightRegistryObserver> g_nightLightWatcher;
+
     LightSwitchSettings::instance().LoadSettings();
     const auto& settings = LightSwitchSettings::instance().settings();
+
+    // after loading settings:
+    bool nightLightNeeded = (settings.scheduleMode == ScheduleMode::FollowNightLight);
+
+    if (nightLightNeeded && !g_nightLightWatcher)
+    {
+        Logger::info(L"[LightSwitchService] Starting Night Light registry watcher...");
+
+        g_nightLightWatcher = std::make_unique<NightLightRegistryObserver>(
+            HKEY_CURRENT_USER,
+            NIGHT_LIGHT_REGISTRY_PATH,
+            []() {
+                if (g_stateManagerPtr)
+                    g_stateManagerPtr->OnNightLightChange();
+            });
+    }
+    else if (!nightLightNeeded && g_nightLightWatcher)
+    {
+        Logger::info(L"[LightSwitchService] Stopping Night Light registry watcher...");
+        g_nightLightWatcher->Stop();
+        g_nightLightWatcher.reset();
+    }
 
     SYSTEMTIME st;
     GetLocalTime(&st);
@@ -214,7 +250,6 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
 
     Logger::info(L"[LightSwitchService] Initialized at {:02d}:{:02d}.", st.wHour, st.wMinute);
     stateManager.SyncInitialThemeState();
-    stateManager.OnTick(nowMinutes);
 
     // ────────────────────────────────────────────────────────────────
     // Worker Loop
@@ -245,7 +280,7 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
             GetLocalTime(&st);
             nowMinutes = st.wHour * 60 + st.wMinute;
             DetectAndHandleExternalThemeChange(stateManager);
-            stateManager.OnTick(nowMinutes);
+            stateManager.OnTick();
             continue;
         }
 
@@ -274,6 +309,31 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
             ResetEvent(hSettingsChanged);
             LightSwitchSettings::instance().LoadSettings();
             stateManager.OnSettingsChanged();
+
+            const auto& settings = LightSwitchSettings::instance().settings();
+            bool nightLightNeeded = (settings.scheduleMode == ScheduleMode::FollowNightLight);
+
+            if (nightLightNeeded && !g_nightLightWatcher)
+            {
+                Logger::info(L"[LightSwitchService] Starting Night Light registry watcher...");
+
+                g_nightLightWatcher = std::make_unique<NightLightRegistryObserver>(
+                    HKEY_CURRENT_USER,
+                    NIGHT_LIGHT_REGISTRY_PATH,
+                    []() {
+                        if (g_stateManagerPtr)
+                            g_stateManagerPtr->OnNightLightChange();
+                    });
+
+                stateManager.OnNightLightChange();
+            }
+            else if (!nightLightNeeded && g_nightLightWatcher)
+            {
+                Logger::info(L"[LightSwitchService] Stopping Night Light registry watcher...");
+                g_nightLightWatcher->Stop();
+                g_nightLightWatcher.reset();
+            }
+
             continue;
         }
     }
@@ -285,6 +345,11 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
         CloseHandle(hManualOverride);
     if (hParent)
         CloseHandle(hParent);
+    if (g_nightLightWatcher)
+    {
+        g_nightLightWatcher->Stop();
+        g_nightLightWatcher.reset();
+    }
 
     Logger::info(L"[LightSwitchService] Worker thread exiting cleanly.");
     return 0;
@@ -292,6 +357,8 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
 
 int APIENTRY wWinMain(HINSTANCE, HINSTANCE, PWSTR, int)
 {
+    Trace::LightSwitch::RegisterProvider();
+
     if (powertoys_gpo::getConfiguredLightSwitchEnabledValue() == powertoys_gpo::gpo_rule_configured_disabled)
     {
         wchar_t msg[160];
@@ -299,12 +366,14 @@ int APIENTRY wWinMain(HINSTANCE, HINSTANCE, PWSTR, int)
             msg,
             L"Tried to start with a GPO policy setting the utility to always be disabled. Please contact your systems administrator.");
         Logger::info(msg);
+        Trace::LightSwitch::UnregisterProvider();
         return 0;
     }
-
     int argc = 0;
     LPWSTR* argv = CommandLineToArgvW(GetCommandLineW(), &argc);
     int rc = _tmain(argc, argv); // reuse your existing logic
     LocalFree(argv);
+
+    Trace::LightSwitch::UnregisterProvider();
     return rc;
 }

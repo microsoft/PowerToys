@@ -11,7 +11,7 @@ using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 
-namespace Settings.UI.Library
+namespace Microsoft.PowerToys.Settings.UI.Library
 {
     public class LightSwitchSettings : BasePTModuleSettings, ISettingsConfig, ICloneable, IHotkeyConfig
     {
@@ -60,6 +60,10 @@ namespace Settings.UI.Library
                     Latitude = new StringProperty(Properties.Latitude.Value),
                     Longitude = new StringProperty(Properties.Longitude.Value),
                     ToggleThemeHotkey = new KeyboardKeysProperty(Properties.ToggleThemeHotkey.Value),
+                    EnableDarkModeProfile = new BoolProperty(Properties.EnableDarkModeProfile.Value),
+                    EnableLightModeProfile = new BoolProperty(Properties.EnableLightModeProfile.Value),
+                    DarkModeProfile = new StringProperty(Properties.DarkModeProfile.Value),
+                    LightModeProfile = new StringProperty(Properties.LightModeProfile.Value),
                 },
             };
         }

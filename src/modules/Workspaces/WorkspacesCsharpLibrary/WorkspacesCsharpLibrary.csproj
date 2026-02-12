@@ -1,18 +1,24 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
-  <Import Project="..\..\..\Common.Dotnet.CsWinRT.props" />
+  <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
+  <Import Project="$(RepoRoot)src\Common.Dotnet.AotCompatibility.props" />
 
   <PropertyGroup>
     <AssemblyTitle>PowerToys.WorkspacesCsharpLibrary</AssemblyTitle>
     <AssemblyDescription>PowerToys Workspaces Csharp Library</AssemblyDescription>
     <Description>PowerToys Workspaces Csharp Library</Description>
+    <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
     <UseWindowsForms>true</UseWindowsForms>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <GenerateSatelliteAssembliesForCore>true</GenerateSatelliteAssembliesForCore>
-    <OutputPath>..\..\..\..\$(Platform)\$(Configuration)</OutputPath>
+    <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)</OutputPath>
     <AssemblyName>PowerToys.WorkspacesCsharpLibrary</AssemblyName>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.IO.Abstractions" />
+  </ItemGroup>
 
 </Project>

@@ -60,6 +60,8 @@
             "PowerToys.FancyZonesEditorCommon.dll",
             "PowerToys.FancyZonesModuleInterface.dll",
             "PowerToys.FancyZones.exe",
+            "FancyZonesCLI.exe",
+            "FancyZonesCLI.dll",
 
             "PowerToys.GcodePreviewHandler.dll",
             "PowerToys.GcodePreviewHandler.exe",
@@ -115,12 +117,17 @@
             "WinUI3Apps\\PowerToys.FileLocksmithUI.dll",
             "WinUI3Apps\\PowerToys.FileLocksmithContextMenu.dll",
             "FileLocksmithContextMenuPackage.msix",
+            "FileLocksmithCLI.exe",
 
             "WinUI3Apps\\Peek.Common.dll",
             "WinUI3Apps\\Peek.FilePreviewer.dll",
             "WinUI3Apps\\Powertoys.Peek.UI.dll",
             "WinUI3Apps\\Powertoys.Peek.UI.exe",
             "WinUI3Apps\\Powertoys.Peek.dll",
+
+            "WinUI3Apps\\PowerToys.QuickAccess.dll",
+            "WinUI3Apps\\PowerToys.QuickAccess.exe",
+            "WinUI3Apps\\PowerToys.Settings.UI.Controls.dll",
 
             "WinUI3Apps\\PowerToys.EnvironmentVariablesModuleInterface.dll",
             "WinUI3Apps\\PowerToys.EnvironmentVariablesUILib.dll",
@@ -129,6 +136,8 @@
 
             "PowerToys.ImageResizer.exe",
             "PowerToys.ImageResizer.dll",
+            "WinUI3Apps\\PowerToys.ImageResizerCLI.exe",
+            "WinUI3Apps\\PowerToys.ImageResizerCLI.dll",
             "PowerToys.ImageResizerExt.dll",
             "PowerToys.ImageResizerContextMenu.dll",
             "ImageResizerContextMenuPackage.msix",
@@ -201,6 +210,11 @@
             "PowerToys.PowerAccentModuleInterface.dll",
             "PowerToys.PowerAccentKeyboardService.dll",
 
+            "PowerToys.PowerDisplayModuleInterface.dll",
+            "WinUI3Apps\\PowerToys.PowerDisplay.dll",
+            "WinUI3Apps\\PowerToys.PowerDisplay.exe",
+            "PowerDisplay.Lib.dll",
+
             "WinUI3Apps\\PowerToys.PowerRenameExt.dll",
             "WinUI3Apps\\PowerToys.PowerRename.exe",
             "WinUI3Apps\\PowerToys.PowerRenameContextMenu.dll",
@@ -233,6 +247,14 @@
 
             "PowerToys.CmdPalModuleInterface.dll",
             "CmdPalKeyboardService.dll",
+            "PowerToys.ModuleContracts.dll",
+            "Awake.ModuleServices.dll",
+            "ColorPicker.ModuleServices.dll",
+            "Workspaces.ModuleServices.dll",
+            "Microsoft.CommandPalette.Extensions.dll",
+            "Microsoft.CommandPalette.Extensions.Toolkit.dll",
+            "Microsoft.CmdPal.Ext.PowerToys.dll",
+            "Microsoft.CmdPal.Ext.PowerToys.exe",
             "*Microsoft.CmdPal.UI_*.msix",
 
             "PowerToys.DSC.dll",
@@ -351,9 +373,20 @@
                 "Microsoft.SemanticKernel.Connectors.Ollama.dll",
                 "OllamaSharp.dll",
 
+                "boost_regex-vc143-mt-gd-x32-1_87.dll",
+                "boost_regex-vc143-mt-gd-x64-1_87.dll",
+                "boost_regex-vc143-mt-x32-1_87.dll",
+                "boost_regex-vc143-mt-x64-1_87.dll",
+
+                "Microsoft.ML.OnnxRuntime.dll",
+
                 "UnitsNet.dll",
                 "UtfUnknown.dll",
-                "Wpf.Ui.dll"
+                "Wpf.Ui.dll",
+                "WmiLight.dll",
+                "WmiLight.Native.dll",
+                "Shmuelie.WinRTServer.dll",
+                "ToolGood.Words.Pinyin.dll"
             ],
             "SigningInfo": {
                 "Operations": [

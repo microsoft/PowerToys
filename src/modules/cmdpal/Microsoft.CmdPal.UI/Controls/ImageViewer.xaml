@@ -14,7 +14,7 @@
                           VerticalAlignment="Center"
                           IsTabStop="False"
                           RenderTransformOrigin="0.5,0.5"
-                          SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}">
+                          SourceRequested="{x:Bind help:IconProvider.SourceRequestedOriginal}">
             <controls:IconBox.RenderTransform>
                 <TransformGroup>
                     <ScaleTransform x:Name="ScaleTransform" ScaleX="1" ScaleY="1" />

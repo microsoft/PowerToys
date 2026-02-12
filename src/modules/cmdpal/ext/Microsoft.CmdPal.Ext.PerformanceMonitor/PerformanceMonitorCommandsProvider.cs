@@ -1,0 +1,40 @@
+// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using CoreWidgetProvider.Helpers;
+using Microsoft.CommandPalette.Extensions;
+using Microsoft.CommandPalette.Extensions.Toolkit;
+
+namespace Microsoft.CmdPal.Ext.PerformanceMonitor;
+
+public partial class PerformanceMonitorCommandsProvider : CommandProvider
+{
+    private readonly ICommandItem[] _commands;
+    private readonly ICommandItem _band;
+
+    public PerformanceMonitorCommandsProvider()
+    {
+        DisplayName = Resources.GetResource("Performance_Monitor_Title");
+        Id = "PerformanceMonitor";
+        Icon = Icons.StackedAreaIcon;
+
+        var page = new PerformanceWidgetsPage(false);
+        var band = new PerformanceWidgetsPage(true);
+        _band = new CommandItem(band) { Title = DisplayName };
+        _commands = [
+            new CommandItem(page) { Title = DisplayName },
+        ];
+    }
+
+    public override ICommandItem[] TopLevelCommands()
+    {
+        return _commands;
+    }
+
+    // Soon...
+    // public override ICommandItem[]? GetDockBands()
+    // {
+    //     return new ICommandItem[] { _band };
+    // }
+}

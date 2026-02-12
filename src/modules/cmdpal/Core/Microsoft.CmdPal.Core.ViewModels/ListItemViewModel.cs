@@ -10,10 +10,9 @@ using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Core.ViewModels;
 
-public partial class ListItemViewModel(IListItem model, WeakReference<IPageContext> context)
-    : CommandItemViewModel(new(model), context)
+public partial class ListItemViewModel : CommandItemViewModel
 {
-    public new ExtensionObject<IListItem> Model { get; } = new(model);
+    public new ExtensionObject<IListItem> Model { get; }
 
     public List<TagViewModel>? Tags { get; set; }
 
@@ -25,12 +24,50 @@ public partial class ListItemViewModel(IListItem model, WeakReference<IPageConte
 
     public string Section { get; private set; } = string.Empty;
 
+    public ListItemType Type { get; private set; }
+
+    public bool IsInteractive => Type == ListItemType.Item;
+
     public DetailsViewModel? Details { get; private set; }
 
     [MemberNotNullWhen(true, nameof(Details))]
     public bool HasDetails => Details is not null;
 
     public string AccessibleName { get; private set; } = string.Empty;
+
+    public bool ShowTitle { get; private set; }
+
+    public bool ShowSubtitle { get; private set; }
+
+    public bool LayoutShowsTitle
+    {
+        get;
+        set
+        {
+            if (SetProperty(ref field, value))
+            {
+                UpdateShowsTitle();
+            }
+        }
+    }
+
+    public bool LayoutShowsSubtitle
+    {
+        get;
+        set
+        {
+            if (SetProperty(ref field, value))
+            {
+                UpdateShowsSubtitle();
+            }
+        }
+    }
+
+    public ListItemViewModel(IListItem model, WeakReference<IPageContext> context)
+        : base(new(model), context)
+    {
+        Model = new ExtensionObject<IListItem>(model);
+    }
 
     public override void InitializeProperties()
     {
@@ -49,12 +86,18 @@ public partial class ListItemViewModel(IListItem model, WeakReference<IPageConte
         }
 
         UpdateTags(li.Tags);
-
         Section = li.Section ?? string.Empty;
-
-        UpdateProperty(nameof(Section));
+        Type = EvaluateType();
+        UpdateProperty(nameof(Section), nameof(Type), nameof(IsInteractive));
 
         UpdateAccessibleName();
+    }
+
+    private ListItemType EvaluateType()
+    {
+        return Command.IsSet
+            ? ListItemType.Item
+            : string.IsNullOrEmpty(Section) ? ListItemType.Separator : ListItemType.SectionHeader;
     }
 
     public override void SlowInitializeProperties()
@@ -71,8 +114,7 @@ public partial class ListItemViewModel(IListItem model, WeakReference<IPageConte
         {
             Details = new(extensionDetails, PageContext);
             Details.InitializeProperties();
-            UpdateProperty(nameof(Details));
-            UpdateProperty(nameof(HasDetails));
+            UpdateProperty(nameof(Details), nameof(HasDetails));
         }
 
         AddShowDetailsCommands();
@@ -93,33 +135,47 @@ public partial class ListItemViewModel(IListItem model, WeakReference<IPageConte
 
         switch (propertyName)
         {
-            case nameof(Tags):
+            case nameof(model.Tags):
                 UpdateTags(model.Tags);
                 break;
-            case nameof(TextToSuggest):
-                this.TextToSuggest = model.TextToSuggest ?? string.Empty;
+            case nameof(model.TextToSuggest):
+                TextToSuggest = model.TextToSuggest ?? string.Empty;
+                UpdateProperty(nameof(TextToSuggest));
                 break;
-            case nameof(Section):
-                this.Section = model.Section ?? string.Empty;
+            case nameof(model.Section):
+                Section = model.Section ?? string.Empty;
+                Type = EvaluateType();
+                UpdateProperty(nameof(Section), nameof(Type), nameof(IsInteractive));
+                break;
+            case nameof(model.Command):
+                Type = EvaluateType();
+                UpdateProperty(nameof(Type), nameof(IsInteractive));
                 break;
             case nameof(Details):
                 var extensionDetails = model.Details;
                 Details = extensionDetails is not null ? new(extensionDetails, PageContext) : null;
                 Details?.InitializeProperties();
-                UpdateProperty(nameof(Details));
-                UpdateProperty(nameof(HasDetails));
+                UpdateProperty(nameof(Details), nameof(HasDetails));
                 UpdateShowDetailsCommand();
                 break;
-            case nameof(MoreCommands):
+            case nameof(model.MoreCommands):
+                UpdateProperty(nameof(MoreCommands));
                 AddShowDetailsCommands();
                 break;
-            case nameof(Title):
-            case nameof(Subtitle):
+            case nameof(model.Title):
+                UpdateProperty(nameof(Title));
+                UpdateShowsTitle();
                 UpdateAccessibleName();
                 break;
+            case nameof(model.Subtitle):
+                UpdateProperty(nameof(Subtitle));
+                UpdateShowsSubtitle();
+                UpdateAccessibleName();
+                break;
+            default:
+                UpdateProperty(propertyName);
+                break;
         }
-
-        UpdateProperty(propertyName);
     }
 
     // TODO: Do we want filters to match descriptions and other properties? Tags, etc... Yes?
@@ -151,8 +207,7 @@ public partial class ListItemViewModel(IListItem model, WeakReference<IPageConte
                 MoreCommands.Add(showDetailsContextItemViewModel);
             }
 
-            UpdateProperty(nameof(MoreCommands));
-            UpdateProperty(nameof(AllCommands));
+            UpdateProperty(nameof(MoreCommands), nameof(AllCommands));
         }
     }
 
@@ -184,8 +239,7 @@ public partial class ListItemViewModel(IListItem model, WeakReference<IPageConte
             showDetailsContextItemViewModel.SlowInitializeProperties();
             MoreCommands.Add(showDetailsContextItemViewModel);
 
-            UpdateProperty(nameof(MoreCommands));
-            UpdateProperty(nameof(AllCommands));
+            UpdateProperty(nameof(MoreCommands), nameof(AllCommands));
         }
     }
 
@@ -206,9 +260,30 @@ public partial class ListItemViewModel(IListItem model, WeakReference<IPageConte
                 // many COM exception issues.
                 Tags = [.. newTags];
 
-                UpdateProperty(nameof(Tags));
-                UpdateProperty(nameof(HasTags));
+                // We're already in UI thread, so just raise the events
+                OnPropertyChanged(nameof(Tags));
+                OnPropertyChanged(nameof(HasTags));
             });
+    }
+
+    private void UpdateShowsTitle()
+    {
+        var oldShowTitle = ShowTitle;
+        ShowTitle = LayoutShowsTitle;
+        if (oldShowTitle != ShowTitle)
+        {
+            UpdateProperty(nameof(ShowTitle));
+        }
+    }
+
+    private void UpdateShowsSubtitle()
+    {
+        var oldShowSubtitle = ShowSubtitle;
+        ShowSubtitle = LayoutShowsSubtitle && !string.IsNullOrWhiteSpace(Subtitle);
+        if (oldShowSubtitle != ShowSubtitle)
+        {
+            UpdateProperty(nameof(ShowSubtitle));
+        }
     }
 
     protected override void UnsafeCleanup()

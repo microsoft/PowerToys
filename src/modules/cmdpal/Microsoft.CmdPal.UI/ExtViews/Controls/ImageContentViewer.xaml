@@ -30,7 +30,7 @@
                             x:Name="Image"
                             AutomationProperties.AccessibilityView="Raw"
                             SourceKey="{x:Bind ViewModel.Image, Mode=OneWay}"
-                            SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}" />
+                            SourceRequested="{x:Bind help:IconProvider.SourceRequestedOriginal}" />
                     </Viewbox>
                 </Border>
 

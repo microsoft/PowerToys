@@ -72,7 +72,7 @@ public partial class Tag : Control
 
         if (GetTemplateChild(TagIconBox) is IconBox iconBox)
         {
-            iconBox.SourceRequested += IconCacheProvider.SourceRequested;
+            iconBox.SourceRequested += IconProvider.SourceRequested20;
             iconBox.Visibility = HasIcon ? Visibility.Visible : Visibility.Collapsed;
         }
     }

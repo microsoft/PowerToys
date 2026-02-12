@@ -1,6 +1,6 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-  <Import Project="..\..\..\Common.Dotnet.CsWinRT.props" />
-  <Import Project="..\..\..\Common.Dotnet.AotCompatibility.props" />
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
+  <Import Project="$(RepoRoot)src\Common.Dotnet.AotCompatibility.props" />
 
   <PropertyGroup>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -23,11 +23,12 @@
     <PackageReference Include="CommunityToolkit.Common" />
     <PackageReference Include="CommunityToolkit.Mvvm" />
     <PackageReference Include="AdaptiveCards.Templating" />
+    <PackageReference Include="CommunityToolkit.WinUI.Extensions" />
     <PackageReference Include="Microsoft.Bot.AdaptiveExpressions.Core" />
     <PackageReference Include="AdaptiveCards.ObjectModel.WinUI3" GeneratePathProperty="true">
       <ExcludeAssets>compile</ExcludeAssets>
     </PackageReference>
-    <PackageReference Include="AdaptiveCards.Rendering.WinUI3" GeneratePathProperty="True" >
+    <PackageReference Include="AdaptiveCards.Rendering.WinUI3" GeneratePathProperty="True">
       <ExcludeAssets>compile</ExcludeAssets>
     </PackageReference>
 

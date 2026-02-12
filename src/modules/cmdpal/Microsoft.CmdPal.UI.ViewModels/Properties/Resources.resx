@@ -126,6 +126,21 @@
   <data name="builtin_display_name" xml:space="preserve">
     <value>Built-in commands</value>
   </data>
+  <data name="builtin_extension_name" xml:space="preserve">
+    <value>Built-in</value>
+  </data>
+  <data name="builtin_extension_subtext" xml:space="preserve">
+    <value>{0}, {1} commands</value>
+    <comment>{0}=extension name, {1}=number of commands</comment>
+  </data>
+  <data name="builtin_extension_subtext_with_fallback" xml:space="preserve">
+    <value>{0}, {1} commands, {2} fallback commands</value>
+    <comment>{0}=extension name, {1}=number of commands, {2} number of fallback commands</comment>
+  </data>
+  <data name="builtin_extension_subtext_disabled" xml:space="preserve">
+    <value>{0}, {1}</value>
+    <comment>{0}=extension name, {1}=message</comment>
+  </data>
   <data name="builtin_log_subtitle" xml:space="preserve">
     <value>View log messages</value>
   </data>
@@ -238,5 +253,11 @@
   </data>
   <data name="builtin_settings_extension_n_extensions_installed" xml:space="preserve">
     <value>{0} extensions installed</value>
+  </data>
+  <data name="builtin_settings_appearance_pick_background_image_title" xml:space="preserve">
+    <value>Pick background image</value>
+  </data>
+  <data name="fallbacks" xml:space="preserve">
+    <value>Fallbacks</value>
   </data>
 </root>

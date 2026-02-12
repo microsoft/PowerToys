@@ -18,7 +18,7 @@ namespace PowerToys.DSC.UnitTests.SettingsResourceTests;
 public abstract class SettingsResourceModuleTest<TSettingsConfig> : BaseDscTest
     where TSettingsConfig : ISettingsConfig, new()
 {
-    private readonly SettingsUtils _settingsUtils = new();
+    private readonly SettingsUtils _settingsUtils = SettingsUtils.Default;
     private TSettingsConfig _originalSettings;
 
     protected TSettingsConfig DefaultSettings => new();

@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using Microsoft.CmdPal.Core.ViewModels;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
@@ -18,23 +19,33 @@ internal sealed partial class GridItemTemplateSelector : DataTemplateSelector
 
     public DataTemplate? Gallery { get; set; }
 
+    public DataTemplate? Section { get; set; }
+
+    public DataTemplate? Separator { get; set; }
+
     protected override DataTemplate? SelectTemplateCore(object item, DependencyObject dependencyObject)
     {
-        DataTemplate? dataTemplate = Medium;
-
-        if (GridProperties is SmallGridPropertiesViewModel)
+        if (item is not ListItemViewModel element)
         {
-            dataTemplate = Small;
-        }
-        else if (GridProperties is MediumGridPropertiesViewModel)
-        {
-            dataTemplate = Medium;
-        }
-        else if (GridProperties is GalleryGridPropertiesViewModel)
-        {
-            dataTemplate = Gallery;
+            return Medium;
         }
 
-        return dataTemplate;
+        switch (element.Type)
+        {
+            case ListItemType.Separator:
+                return Separator;
+            case ListItemType.SectionHeader:
+                return Section;
+            default:
+                break;
+        }
+
+        return GridProperties switch
+        {
+            SmallGridPropertiesViewModel => Small,
+            MediumGridPropertiesViewModel => Medium,
+            GalleryGridPropertiesViewModel => Gallery,
+            _ => Medium,
+        };
     }
 }
