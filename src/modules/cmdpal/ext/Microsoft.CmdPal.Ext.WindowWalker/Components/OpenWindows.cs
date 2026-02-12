@@ -78,7 +78,7 @@ internal sealed class OpenWindows
             lock (_enumWindowsLock)
             {
                 windows.Clear();
-                EnumWindowsProc callbackptr = new EnumWindowsProc(WindowEnumerationCallBack);
+                var callbackptr = new EnumWindowsProc(WindowEnumerationCallBack);
                 _ = NativeMethods.EnumWindows(callbackptr, tokenHandleParam);
             }
         }
@@ -109,7 +109,7 @@ internal sealed class OpenWindows
             return false;
         }
 
-        Window newWindow = new Window(hwnd);
+        var newWindow = new Window(hwnd);
 
         if (newWindow.IsWindow && newWindow.Visible && newWindow.IsOwner &&
             (!newWindow.IsToolWindow || newWindow.IsAppWindow) && !newWindow.TaskListDeleted &&

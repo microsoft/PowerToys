@@ -97,7 +97,7 @@ public class VirtualDesktopHelper
         var registryExplorerVirtualDesktops = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\VirtualDesktops"; // Windows 11
 
         // List of all desktops
-        using RegistryKey? virtualDesktopKey = Registry.CurrentUser.OpenSubKey(registryExplorerVirtualDesktops, false);
+        using var virtualDesktopKey = Registry.CurrentUser.OpenSubKey(registryExplorerVirtualDesktops, false);
         if (virtualDesktopKey is not null)
         {
             var allDeskValue = (byte[]?)virtualDesktopKey.GetValue("VirtualDesktopIDs", null) ?? Array.Empty<byte>();
@@ -123,7 +123,7 @@ public class VirtualDesktopHelper
 
         // Guid for current desktop
         var virtualDesktopsKeyName = _isWindowsEleven ? registryExplorerVirtualDesktops : registrySessionVirtualDesktops;
-        using RegistryKey? virtualDesktopsKey = Registry.CurrentUser.OpenSubKey(virtualDesktopsKeyName, false);
+        using var virtualDesktopsKey = Registry.CurrentUser.OpenSubKey(virtualDesktopsKeyName, false);
         if (virtualDesktopsKey is not null)
         {
             var currentVirtualDesktopValue = virtualDesktopsKey.GetValue("CurrentVirtualDesktop", null);
@@ -166,8 +166,8 @@ public class VirtualDesktopHelper
             UpdateDesktopList();
         }
 
-        List<VDesktop> list = new List<VDesktop>();
-        foreach (Guid d in _availableDesktops)
+        var list = new List<VDesktop>();
+        foreach (var d in _availableDesktops)
         {
             list.Add(CreateVDesktopInstance(d));
         }
@@ -265,7 +265,7 @@ public class VirtualDesktopHelper
         var defaultName = string.Format(System.Globalization.CultureInfo.InvariantCulture, VirtualDesktopHelperDesktop, GetDesktopNumber(desktop));
 
         var registryPath = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\VirtualDesktops\\Desktops\\{" + desktop.ToString().ToUpper(System.Globalization.CultureInfo.InvariantCulture) + "}";
-        using RegistryKey? deskSubKey = Registry.CurrentUser.OpenSubKey(registryPath, false);
+        using var deskSubKey = Registry.CurrentUser.OpenSubKey(registryPath, false);
         var desktopName = deskSubKey?.GetValue("Name");
 
         return (desktopName is not null) ? (string)desktopName : defaultName;
@@ -336,7 +336,7 @@ public class VirtualDesktopHelper
             return CreateVDesktopInstance(Guid.Empty);
         }
 
-        var hr = _virtualDesktopManager.GetWindowDesktopId(hWindow, out Guid desktopId);
+        var hr = _virtualDesktopManager.GetWindowDesktopId(hWindow, out var desktopId);
         return (hr != (int)HRESULT.S_OK || desktopId == Guid.Empty) ? VDesktop.Empty : CreateVDesktopInstance(desktopId, hWindow);
     }
 
@@ -355,7 +355,7 @@ public class VirtualDesktopHelper
         }
 
         _ = _virtualDesktopManager.IsWindowOnCurrentVirtualDesktop(hWindow, out var isOnCurrentDesktop);
-        Guid windowDesktopId = desktop ?? Guid.Empty; // Prepare variable in case we have no input parameter for desktop
+        var windowDesktopId = desktop ?? Guid.Empty; // Prepare variable in case we have no input parameter for desktop
         var hResult = desktop is null ? GetWindowDesktopId(hWindow, out windowDesktopId) : 0;
 
         if (hResult != (int)HRESULT.S_OK)
@@ -438,7 +438,7 @@ public class VirtualDesktopHelper
     /// <returns><see langword="True"/> on success and <see langword="false"/> on failure.</returns>
     public bool MoveWindowOneDesktopLeft(IntPtr hWindow)
     {
-        var hr = GetWindowDesktopId(hWindow, out Guid windowDesktop);
+        var hr = GetWindowDesktopId(hWindow, out var windowDesktop);
         if (hr != (int)HRESULT.S_OK)
         {
             ExtensionHost.LogMessage(new LogMessage() { Message = $"VirtualDesktopHelper.MoveWindowOneDesktopLeft() failed when moving the window ({hWindow}) one desktop left: Can't get current desktop of the window." });
@@ -458,7 +458,7 @@ public class VirtualDesktopHelper
             return false;
         }
 
-        Guid newDesktop = _availableDesktops[windowDesktopNumber - 1];
+        var newDesktop = _availableDesktops[windowDesktopNumber - 1];
         return MoveWindowToDesktop(hWindow, ref newDesktop);
     }
 
@@ -469,7 +469,7 @@ public class VirtualDesktopHelper
     /// <returns><see langword="True"/> on success and <see langword="false"/> on failure.</returns>
     public bool MoveWindowOneDesktopRight(IntPtr hWindow)
     {
-        var hr = GetWindowDesktopId(hWindow, out Guid windowDesktop);
+        var hr = GetWindowDesktopId(hWindow, out var windowDesktop);
         if (hr != (int)HRESULT.S_OK)
         {
             ExtensionHost.LogMessage(new LogMessage() { Message = $"VirtualDesktopHelper.MoveWindowOneDesktopRight() failed when moving the window ({hWindow}) one desktop right: Can't get current desktop of the window." });
@@ -489,7 +489,7 @@ public class VirtualDesktopHelper
             return false;
         }
 
-        Guid newDesktop = _availableDesktops[windowDesktopNumber + 1];
+        var newDesktop = _availableDesktops[windowDesktopNumber + 1];
         return MoveWindowToDesktop(hWindow, ref newDesktop);
     }
 
@@ -507,7 +507,7 @@ public class VirtualDesktopHelper
         }
 
         // Can be only detected if method is invoked with window handle parameter.
-        VirtualDesktopAssignmentType desktopType = (hWindow != default) ? GetWindowDesktopAssignmentType(hWindow, desktop) : VirtualDesktopAssignmentType.Unknown;
+        var desktopType = (hWindow != default) ? GetWindowDesktopAssignmentType(hWindow, desktop) : VirtualDesktopAssignmentType.Unknown;
         var isAllDesktops = (hWindow != default) && desktopType == VirtualDesktopAssignmentType.AllDesktops;
         var isDesktopVisible = (hWindow != default) ? (isAllDesktops || desktopType == VirtualDesktopAssignmentType.CurrentDesktop) : IsDesktopVisible(desktop);
 

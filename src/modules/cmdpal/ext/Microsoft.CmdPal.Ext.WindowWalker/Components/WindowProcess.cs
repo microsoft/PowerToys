@@ -197,7 +197,7 @@ internal sealed class WindowProcess
     internal static string GetProcessNameFromProcessID(uint pid)
     {
         var processHandle = NativeMethods.OpenProcess(ProcessAccessFlags.QueryLimitedInformation, true, (int)pid);
-        StringBuilder processName = new StringBuilder(MaximumFileNameLength);
+        var processName = new StringBuilder(MaximumFileNameLength);
 
         if (NativeMethods.GetProcessImageFileName(processHandle, processName, MaximumFileNameLength) != 0)
         {

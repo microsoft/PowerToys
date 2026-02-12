@@ -51,7 +51,7 @@ internal sealed class Window
             var sizeOfTitle = NativeMethods.GetWindowTextLength(hwnd);
             if (sizeOfTitle++ > 0)
             {
-                StringBuilder titleBuffer = new StringBuilder(sizeOfTitle);
+                var titleBuffer = new StringBuilder(sizeOfTitle);
                 var numCharactersWritten = NativeMethods.GetWindowText(hwnd, titleBuffer, sizeOfTitle);
                 if (numCharactersWritten == 0)
                 {
@@ -260,7 +260,7 @@ internal sealed class Window
     /// <returns>The state (minimized, maximized, etc..) of the window</returns>
     internal WindowSizeState GetWindowSizeState()
     {
-        NativeMethods.GetWindowPlacement(Hwnd, out WINDOWPLACEMENT placement);
+        NativeMethods.GetWindowPlacement(Hwnd, out var placement);
 
         switch (placement.ShowCmd)
         {
@@ -332,7 +332,7 @@ internal sealed class Window
     /// <returns>Class name</returns>
     private static string GetWindowClassName(IntPtr hwnd)
     {
-        StringBuilder windowClassName = new StringBuilder(300);
+        var windowClassName = new StringBuilder(300);
         var numCharactersWritten = NativeMethods.GetClassName(hwnd, windowClassName, windowClassName.MaxCapacity);
 
         if (numCharactersWritten == 0)
@@ -384,7 +384,7 @@ internal sealed class Window
             {
                 new Task(() =>
                 {
-                    EnumWindowsProc callbackptr = new EnumWindowsProc((IntPtr hwnd, IntPtr lParam) =>
+                    var callbackptr = new EnumWindowsProc((IntPtr hwnd, IntPtr lParam) =>
                     {
                         // Every uwp app main window has at least three child windows. Only the one we are interested in has a class starting with "Windows.UI.Core." and is assigned to the real app process.
                         // (The other ones have a class name that begins with the string "ApplicationFrame".)
