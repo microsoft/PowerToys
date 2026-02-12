@@ -270,7 +270,13 @@ public sealed partial class ImageContentViewer : UserControl
         viewer.VerticalAlignment = VerticalAlignment.Stretch;
 
         // Also close when viewer requests cancellation (e.g., Escape from viewer)
-        viewer.CancelRequested += (_, __) => popup.IsOpen = false;
+        viewer.CancelRequested += (_, __) =>
+        {
+            popup.IsOpen = false;
+
+            // Move focus back, otherwise it might go to place where sun doesn't shine in after closing the popup
+            this.Focus(FocusState.Programmatic);
+        };
 
         overlay.Children.Add(viewer);
         overlay.Children.Add(closeBtn);
