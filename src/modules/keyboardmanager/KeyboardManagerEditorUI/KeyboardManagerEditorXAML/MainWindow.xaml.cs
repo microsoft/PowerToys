@@ -41,7 +41,7 @@ namespace KeyboardManagerEditorUI
         private void SetTitleBar()
         {
             ExtendsContentIntoTitleBar = true;
-            this.SetIcon(@"Assets\Keyboard.ico");
+            this.SetIcon(@"Assets\KeyboardManagerEditor\Keyboard.ico");
             this.SetTitleBar(titleBar);
             Title = "Keyboard Manager";
         }

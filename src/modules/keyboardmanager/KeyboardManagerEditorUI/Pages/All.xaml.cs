@@ -378,7 +378,8 @@ namespace KeyboardManagerEditorUI.Pages
                         textContent,
                         isAppSpecific,
                         appName,
-                        _mappingService!);
+                        _mappingService!,
+                        _isEditMode);
 
                 case UnifiedMappingControl.ActionType.OpenUrl:
                 case UnifiedMappingControl.ActionType.OpenApp:
@@ -386,7 +387,8 @@ namespace KeyboardManagerEditorUI.Pages
                         triggerKeys,
                         isAppSpecific,
                         appName,
-                        _mappingService!);
+                        _mappingService!,
+                        _isEditMode);
 
                 default:
                     return ValidationErrorType.NoError;

@@ -9,6 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using KeyboardManagerEditorUI.Interop;
+using KeyboardManagerEditorUI.Settings;
 
 namespace KeyboardManagerEditorUI.Helpers
 {
@@ -24,6 +25,7 @@ namespace KeyboardManagerEditorUI.Helpers
             { ValidationErrorType.DuplicateMapping, ("Duplicate Remapping", "This key or shortcut is already remapped.") },
             { ValidationErrorType.SelfMapping, ("Invalid Remapping", "A key or shortcut cannot be remapped to itself. Please choose a different target.") },
             { ValidationErrorType.EmptyTargetText, ("Missing Target Text", "Please enter the text to be inserted when the shortcut is pressed.") },
+            { ValidationErrorType.OneKeyMapping, ("Invalid Remapping", "A single key cannot be remapped to a Program or URL shorcut. Please choose a combination of keys.") },
         };
 
         public static ValidationErrorType ValidateKeyMapping(
@@ -72,7 +74,7 @@ namespace KeyboardManagerEditorUI.Helpers
             }
 
             // Check for duplicate mappings
-            if (IsDuplicateMapping(originalKeys, isAppSpecific, appName, mappingService, isEditMode, editingRemapping))
+            if (IsDuplicateMapping(originalKeys, isEditMode, mappingService))
             {
                 return ValidationErrorType.DuplicateMapping;
             }
@@ -91,7 +93,8 @@ namespace KeyboardManagerEditorUI.Helpers
             string textContent,
             bool isAppSpecific,
             string appName,
-            KeyboardMappingService mappingService)
+            KeyboardMappingService mappingService,
+            bool isEditMode = false)
         {
             // Check if original keys are empty
             if (keys == null || keys.Count == 0)
@@ -128,11 +131,15 @@ namespace KeyboardManagerEditorUI.Helpers
                 }
             }
 
+            if (IsDuplicateMapping(keys, isEditMode, mappingService))
+            {
+                return ValidationErrorType.DuplicateMapping;
+            }
+
             // No errors found
             return ValidationErrorType.NoError;
         }
 
-        // Temporary program shortcut validation
         public static ValidationErrorType ValidateProgramOrUrlMapping(
             List<string> originalKeys,
             bool isAppSpecific,
@@ -141,6 +148,11 @@ namespace KeyboardManagerEditorUI.Helpers
             bool isEditMode = false,
             Remapping? editingRemapping = null)
         {
+            if (originalKeys.Count < 2)
+            {
+                return ValidationErrorType.OneKeyMapping;
+            }
+
             ValidationErrorType error = ValidateKeyMapping(originalKeys, originalKeys, isAppSpecific, appName, mappingService, isEditMode, editingRemapping);
 
             if (error == ValidationErrorType.SelfMapping)
@@ -151,100 +163,11 @@ namespace KeyboardManagerEditorUI.Helpers
             return error;
         }
 
-        public static bool IsDuplicateMapping(
-            List<string> originalKeys,
-            bool isAppSpecific,
-            string appName,
-            KeyboardMappingService mappingService,
-            bool isEditMode = false,
-            Remapping? editingRemapping = null)
+        public static bool IsDuplicateMapping(List<string> keys, bool isEditMode, KeyboardMappingService mappingService)
         {
-            if (mappingService == null || originalKeys == null || originalKeys.Count == 0)
-            {
-                return false;
-            }
-
-            // For single key remapping
-            if (originalKeys.Count == 1)
-            {
-                int originalKeyCode = mappingService.GetKeyCodeFromName(originalKeys[0]);
-                if (originalKeyCode == 0)
-                {
-                    return false;
-                }
-
-                // Check if the key is already remapped
-                foreach (var mapping in mappingService.GetSingleKeyMappings())
-                {
-                    if (mapping.OriginalKey == originalKeyCode)
-                    {
-                        // Skip if the remapping is the same as the one being edited
-                        if (isEditMode && editingRemapping != null &&
-                            editingRemapping.Shortcut.Count == 1 &&
-                            mappingService.GetKeyCodeFromName(editingRemapping.Shortcut[0]) == originalKeyCode)
-                        {
-                            continue;
-                        }
-
-                        return true;
-                    }
-                }
-            }
-
-            // For shortcut remapping
-            else
-            {
-                string originalKeysString = string.Join(";", originalKeys.Select(
-                    k => mappingService.GetKeyCodeFromName(k).ToString(CultureInfo.InvariantCulture)));
-
-                // Don't check for duplicates if the original keys are the same as the remapping being edited
-                bool isEditingExistingRemapping = false;
-                if (isEditMode && editingRemapping != null)
-                {
-                    string editingOriginalKeysString = string.Join(";", editingRemapping.Shortcut.Select(k =>
-                                    mappingService.GetKeyCodeFromName(k).ToString(CultureInfo.InvariantCulture)));
-
-                    if (KeyboardManagerInterop.AreShortcutsEqual(originalKeysString, editingOriginalKeysString))
-                    {
-                        isEditingExistingRemapping = true;
-                    }
-                }
-
-                // Check if the shortcut is already remapped in the same app context
-                foreach (var mapping in mappingService.GetShortcutMappingsByType(ShortcutOperationType.RemapShortcut))
-                {
-                    if (KeyboardManagerInterop.AreShortcutsEqual(originalKeysString, mapping.OriginalKeys))
-                    {
-                        // If both are global (all apps)
-                        if (!isAppSpecific && string.IsNullOrEmpty(mapping.TargetApp))
-                        {
-                            // Skip if the remapping is the same as the one being edited
-                            if (editingRemapping != null && editingRemapping.Shortcut.Count > 1 && editingRemapping.IsAllApps && isEditingExistingRemapping)
-                            {
-                                continue;
-                            }
-
-                            return true;
-                        }
-
-                        // If both are for the same specific app
-                        else if (isAppSpecific && !string.IsNullOrEmpty(mapping.TargetApp)
-                            && string.Equals(mapping.TargetApp, appName, StringComparison.OrdinalIgnoreCase))
-                        {
-                            // Skip if the remapping is the same as the one being edited
-                            if (editingRemapping != null && editingRemapping.Shortcut.Count > 1 && !editingRemapping.IsAllApps &&
-                                string.Equals(editingRemapping.AppName, appName, StringComparison.OrdinalIgnoreCase) && isEditingExistingRemapping)
-                            {
-                                continue;
-                            }
-
-                            return true;
-                        }
-                    }
-                }
-            }
-
-            return false;
+            int upperLimit = isEditMode ? 1 : 0;
+            string shortcutKeysString = string.Join(";", keys.Select(k => mappingService.GetKeyCodeFromName(k).ToString(CultureInfo.InvariantCulture)));
+            return SettingsManager.EditorSettings.ShortcutSettingsDictionary.Values.Count(settings => KeyboardManagerInterop.AreShortcutsEqual(settings.Shortcut.OriginalKeys, shortcutKeysString)) > upperLimit;
         }
 
         public static bool IsSelfMapping(List<string> originalKeys, List<string> remappedKeys, KeyboardMappingService mappingService)
