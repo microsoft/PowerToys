@@ -344,12 +344,22 @@ function Resolve-ArtifactBasedDependencies {
     # Parse all downloaded packages to get actual versions
     $directories = Get-ChildItem -Path $OutputDir -Directory
     $allLocalPackages = @()
+
+    # Add metapackage and runtime to the list (they are .nupkg files, not directories)
+    $allLocalPackages += $MetaPackageName
+    if ($packageVersions.ContainsKey("$MetaPackageName.Runtime")) {
+        $allLocalPackages += "$MetaPackageName.Runtime"
+    }
+
     foreach ($dir in $directories) {
         if ($dir.Name -match "^(.+?)\.(\d+\..*)$") {
             $pkgId = $Matches[1]
             $pkgVer = $Matches[2]
             $allLocalPackages += $pkgId
-            $packageVersions[$pkgId] = $pkgVer
+            # Don't overwrite metapackage version that was set earlier
+            if (-not $packageVersions.ContainsKey($pkgId)) {
+                $packageVersions[$pkgId] = $pkgVer
+            }
         }
     }
 
@@ -530,9 +540,13 @@ Get-ChildItem -Path $rootPath -Recurse "Directory.Packages.props" | ForEach-Obje
         $ver = $packageVersions[$pkgId]
         # Escape dots in package ID for regex
         $pkgIdRegex = $pkgId -replace '\.', '\.'
-        
-        $newVersionString = "<PackageVersion Include=""$pkgId"" Version=""$ver"" />"
-        $oldVersionString = "<PackageVersion Include=""$pkgIdRegex"" Version=""[-.0-9a-zA-Z]*"" />"
+
+        # Use explicit version bounds [version] to avoid NU1602/NU1604 errors
+        # Square brackets specify an exact version with inclusive lower bound
+        $newVersionString = "<PackageVersion Include=""$pkgId"" Version=""[$ver]"" />"
+
+        # Match both old format (without brackets) and new format (with brackets)
+        $oldVersionString = "<PackageVersion Include=""$pkgIdRegex"" Version=""(\[)?[-.0-9a-zA-Z]*(\])?"" />"
 
         if ($content -match "<PackageVersion Include=""$pkgIdRegex""") {
             # Update existing package
