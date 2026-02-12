@@ -68,7 +68,7 @@ internal sealed partial class ClipboardListItem : ListItem
 
         if (item.IsImage)
         {
-            Title = "Image";
+            Title = Properties.Resources.clipboard_item_image_title;
 
             _pasteCommand = new CommandContextItem(new PasteCommand(_item, ClipboardFormat.Image, _settingsManager));
             _copyCommand = new CommandContextItem(new CopyCommand(_item, ClipboardFormat.Image));
@@ -220,12 +220,12 @@ internal sealed partial class ClipboardListItem : ListItem
 
         metadata.Add(new DetailsElement
         {
-            Key = "General",
+            Key = Properties.Resources.metadata_general_section_title,
             Data = new DetailsSeparator(),
         });
         metadata.Add(new DetailsElement
         {
-            Key = "Copied",
+            Key = Properties.Resources.metadata_copied_key,
             Data = new DetailsLink(_item.Timestamp.DateTime.ToString(DateTimeFormatInfo.CurrentInfo)),
         });
 
