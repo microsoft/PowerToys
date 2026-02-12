@@ -311,6 +311,14 @@ void AudioSampleGenerator::Stop()
     // Stop the audio graph - no more quantum callbacks will run
     m_audioGraph.Stop();
 
+    // Close the microphone input node to release the device so Windows no longer
+    // reports the microphone as in use by ZoomIt.
+    if (m_audioInputNode)
+    {
+        m_audioInputNode.Close();
+        m_audioInputNode = nullptr;
+    }
+
     // Mark as stopped
     m_started.store(false);
 

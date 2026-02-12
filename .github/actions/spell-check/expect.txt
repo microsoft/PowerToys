@@ -197,6 +197,7 @@ Canvascustomlayout
 CAPTUREBLT
 CAPTURECHANGED
 CARETBLINKING
+carlos
 Carlseibert
 CAtl
 caub
@@ -217,6 +218,7 @@ certmgr
 cfp
 CHANGECBCHAIN
 changecursor
+chatasweetie
 checkmarks
 CHILDACTIVATE
 CHILDWINDOW
@@ -1495,6 +1497,7 @@ psz
 ptb
 ptc
 PTCHAR
+ptcontrols
 ptd
 PTOKEN
 PToy
@@ -1527,6 +1530,7 @@ randi
 RAquadrant
 rasterization
 Rasterize
+rasterizing
 RAWINPUTDEVICE
 RAWINPUTHEADER
 RAWMODE
@@ -2241,6 +2245,7 @@ YSpeed
 YStr
 YTimer
 YVIRTUALSCREEN
+zamora
 ZEROINIT
 zonability
 zonable

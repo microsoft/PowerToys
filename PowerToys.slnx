@@ -4,16 +4,16 @@
     <Platform Name="x64" />
   </Configurations>
   <Folder Name="/common/">
-    <Project Path="src/common/AllExperiments/AllExperiments.csproj">
-      <Platform Solution="*|ARM64" Project="ARM64" />
-      <Platform Solution="*|x64" Project="x64" />
-    </Project>
     <Project Path="src/common/CalculatorEngineCommon/CalculatorEngineCommon.vcxproj" Id="2cf78cf7-8feb-4be1-9591-55fa25b48fc6" />
     <Project Path="src/common/Common.Search/Common.Search.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
     <Project Path="src/common/Common.UI/Common.UI.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/common/Common.UI.Controls/Common.UI.Controls.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
@@ -207,6 +207,10 @@
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
       <Deploy />
+    </Project>
+    <Project Path="src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.PerformanceMonitor/Microsoft.CmdPal.Ext.PerformanceMonitor.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
     </Project>
     <Project Path="src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.PowerToys/Microsoft.CmdPal.Ext.PowerToys.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />

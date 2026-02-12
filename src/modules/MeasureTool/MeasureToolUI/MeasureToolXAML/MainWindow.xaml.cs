@@ -52,11 +52,22 @@ namespace MeasureToolUI
             var presenter = _appWindow.Presenter as OverlappedPresenter;
             presenter.IsAlwaysOnTop = true;
             this.SetIsAlwaysOnTop(true);
-            this.SetIsShownInSwitchers(false);
             this.SetIsResizable(false);
             this.SetIsMinimizable(false);
             this.SetIsMaximizable(false);
             IsTitleBarVisible = false;
+
+            try
+            {
+                this.SetIsShownInSwitchers(false);
+            }
+            catch (NotImplementedException)
+            {
+                // WinUI will throw if explorer is not running, safely ignore
+            }
+            catch (Exception)
+            {
+            }
 
             // Remove the caption style from the window style. Windows App SDK 1.6 added it, which made the title bar and borders appear for Measure Tool. This code removes it.
             var windowStyle = GetWindowLong(hwnd, GWL_STYLE);

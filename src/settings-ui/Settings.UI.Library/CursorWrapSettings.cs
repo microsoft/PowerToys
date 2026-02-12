@@ -56,6 +56,13 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 settingsUpgraded = true;
             }
 
+            // Add DisableCursorWrapOnSingleMonitor property if it doesn't exist (for users upgrading from older versions)
+            if (Properties.DisableCursorWrapOnSingleMonitor == null)
+            {
+                Properties.DisableCursorWrapOnSingleMonitor = new BoolProperty(false); // Default to false
+                settingsUpgraded = true;
+            }
+
             return settingsUpgraded;
         }
     }

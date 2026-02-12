@@ -3,8 +3,11 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using CommunityToolkit.Mvvm.ComponentModel;
 using ManagedCommon;
+using Microsoft.CmdPal.Core.Common.Helpers;
+using Microsoft.CmdPal.Core.Common.Text;
 using Microsoft.CmdPal.Core.ViewModels;
 using Microsoft.CmdPal.Core.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
@@ -16,7 +19,8 @@ using WyHash;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
-public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IExtendedAttributesProvider
+[DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
+public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IExtendedAttributesProvider, IPrecomputedListItem
 {
     private readonly SettingsModel _settings;
     private readonly ProviderSettings _providerSettings;
@@ -33,6 +37,10 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
 
     private HotkeySettings? _hotkey;
     private IIconInfo? _initialIcon;
+
+    private FuzzyTargetCache _titleCache;
+    private FuzzyTargetCache _subtitleCache;
+    private FuzzyTargetCache _extensionNameCache;
 
     private CommandAlias? Alias { get; set; }
 
@@ -176,6 +184,8 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
         }
     }
 
+    public string ExtensionName => ExtensionHost.GetExtensionDisplayName() ?? string.Empty;
+
     public TopLevelViewModel(
         CommandItemViewModel item,
         bool isFallback,
@@ -229,6 +239,15 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
         if (!string.IsNullOrEmpty(e.PropertyName))
         {
             PropChanged?.Invoke(this, new PropChangedEventArgs(e.PropertyName));
+
+            if (e.PropertyName is nameof(CommandItemViewModel.Title) or nameof(CommandItemViewModel.Name))
+            {
+                _titleCache.Invalidate();
+            }
+            else if (e.PropertyName is nameof(CommandItemViewModel.Subtitle))
+            {
+                _subtitleCache.Invalidate();
+            }
 
             if (e.PropertyName is "IsInitialized" or nameof(CommandItemViewModel.Command))
             {
@@ -419,5 +438,19 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
         {
             [WellKnownExtensionAttributes.DataPackage] = _commandItemViewModel?.DataPackage,
         };
+    }
+
+    public FuzzyTarget GetTitleTarget(IPrecomputedFuzzyMatcher matcher)
+        => _titleCache.GetOrUpdate(matcher, Title);
+
+    public FuzzyTarget GetSubtitleTarget(IPrecomputedFuzzyMatcher matcher)
+        => _subtitleCache.GetOrUpdate(matcher, Subtitle);
+
+    public FuzzyTarget GetExtensionNameTarget(IPrecomputedFuzzyMatcher matcher)
+        => _extensionNameCache.GetOrUpdate(matcher, ExtensionName);
+
+    private string GetDebuggerDisplay()
+    {
+        return ToString();
     }
 }

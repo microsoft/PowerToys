@@ -10,7 +10,6 @@ using CommunityToolkit.WinUI;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
-using Microsoft.PowerToys.Settings.UI.Library.HotkeyConflicts;
 using Microsoft.PowerToys.Settings.UI.Library.Telemetry.Events;
 using Microsoft.PowerToys.Settings.UI.Services;
 using Microsoft.PowerToys.Settings.UI.SettingsXAML.Controls.Dashboard;
@@ -301,9 +300,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             // Close the current shortcut dialog
             shortcutDialog.Hide();
 
-            // Create and show the ShortcutConflictWindow
-            var conflictWindow = new ShortcutConflictWindow();
-            conflictWindow.Activate();
+            ((App)App.Current)!.OpenShortcutConflictWindow();
         }
 
         private void UpdateKeyVisualStyles()

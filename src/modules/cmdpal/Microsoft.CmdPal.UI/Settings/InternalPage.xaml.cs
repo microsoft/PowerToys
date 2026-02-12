@@ -2,8 +2,12 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
+using Microsoft.CmdPal.Core.Common.Services;
+using Microsoft.CmdPal.UI.Messages;
 using Microsoft.CommandPalette.Extensions.Toolkit;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Windows.System;
 using Page = Microsoft.UI.Xaml.Controls.Page;
@@ -15,9 +19,13 @@ namespace Microsoft.CmdPal.UI.Settings;
 /// </summary>
 public sealed partial class InternalPage : Page
 {
+    private readonly IApplicationInfoService _appInfoService;
+
     public InternalPage()
     {
         InitializeComponent();
+
+        _appInfoService = App.Current.Services.GetRequiredService<IApplicationInfoService>();
     }
 
     private void ThrowPlainMainThreadException_Click(object sender, RoutedEventArgs e)
@@ -46,7 +54,7 @@ public sealed partial class InternalPage : Page
     {
         try
         {
-            var logFolderPath = Logger.CurrentVersionLogDirectoryPath;
+            var logFolderPath = _appInfoService.LogDirectory;
             if (Directory.Exists(logFolderPath))
             {
                 await Launcher.LaunchFolderPathAsync(logFolderPath);
@@ -78,7 +86,7 @@ public sealed partial class InternalPage : Page
     {
         try
         {
-            var directory = Utilities.BaseSettingsPath("Microsoft.CmdPal");
+            var directory = _appInfoService.ConfigDirectory;
             if (Directory.Exists(directory))
             {
                 await Launcher.LaunchFolderPathAsync(directory);
@@ -88,5 +96,10 @@ public sealed partial class InternalPage : Page
         {
             Logger.LogError("Failed to open directory in Explorer", ex);
         }
+    }
+
+    private void ToggleDevRibbonClicked(object sender, RoutedEventArgs e)
+    {
+        WeakReferenceMessenger.Default.Send(new ToggleDevRibbonMessage());
     }
 }

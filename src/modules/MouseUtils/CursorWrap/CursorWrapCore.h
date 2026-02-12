@@ -18,9 +18,11 @@ public:
     
     // Handle mouse move with wrap mode filtering
     // wrapMode: 0=Both, 1=VerticalOnly, 2=HorizontalOnly
-    POINT HandleMouseMove(const POINT& currentPos, bool disableWrapDuringDrag, int wrapMode);
+    // disableOnSingleMonitor: if true, cursor wrapping is disabled when only one monitor is connected
+    POINT HandleMouseMove(const POINT& currentPos, bool disableWrapDuringDrag, int wrapMode, bool disableOnSingleMonitor);
 
     const std::vector<MonitorInfo>& GetMonitors() const { return m_monitors; }
+    size_t GetMonitorCount() const { return m_monitors.size(); }
     const MonitorTopology& GetTopology() const { return m_topology; }
 
 private:
