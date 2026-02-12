@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using Microsoft.CmdPal.Core.Common.Services;
+using Microsoft.CmdPal.Ext.Run;
 using Microsoft.CmdPal.UI.ViewModels;
 
 namespace Microsoft.CmdPal.UI;
@@ -46,5 +47,20 @@ internal sealed class RunHistoryService : IRunHistoryService
         _appStateModel.RunHistory.Insert(0, item);
 
         AppStateModel.SaveState(_appStateModel);
+    }
+
+    public long RunCommand(string commandLine, string workingDir, bool asAdmin, ulong hwnd)
+    {
+        return RunHistory.ExecuteCommandline(commandLine, workingDir, hwnd, asAdmin);
+    }
+
+    public ParseCommandlineResult ParseCommandline(string commandLine, string workingDirectory)
+    {
+        return RunHistory.ParseCommandline(commandLine, workingDirectory);
+    }
+
+    public string QualifyCommandLineDirectory(string commandLine, string fullFilePath, string defaultDirectory)
+    {
+        return RunHistory.QualifyCommandLineDirectory(commandLine, fullFilePath, defaultDirectory);
     }
 }

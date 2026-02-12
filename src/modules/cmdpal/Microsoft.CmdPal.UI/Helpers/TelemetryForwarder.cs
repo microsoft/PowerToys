@@ -6,7 +6,6 @@ using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.Core.Common.Services;
 using Microsoft.CmdPal.Core.ViewModels.Messages;
 using Microsoft.CmdPal.UI.Events;
-using Microsoft.CommandPalette.Extensions;
 using Microsoft.PowerToys.Telemetry;
 
 namespace Microsoft.CmdPal.UI;
@@ -91,5 +90,38 @@ internal sealed class TelemetryForwarder :
     public void LogOpenUri(string uri, bool isWeb, bool success)
     {
         PowerToysTelemetry.Log.WriteEvent(new CmdPalOpenUri(uri, isWeb, success));
+    }
+
+    public void LogEvent(string eventName, IDictionary<string, object>? properties = null)
+    {
+        if (string.IsNullOrEmpty(eventName))
+        {
+            throw new ArgumentNullException(nameof(eventName));
+        }
+        else
+        {
+            // Unknown event - log generic
+            // TODO!
+            // PowerToysTelemetry.Log.WriteEvent(new CmdPalRunLogEvent()
+            // {
+            //    Message = $"{eventName}: {PrintProperties(properties)}"
+            // });
+        }
+    }
+
+    private string PrintProperties(IDictionary<string, object>? properties)
+    {
+        if (properties == null || properties.Count == 0)
+        {
+            return string.Empty;
+        }
+
+        var list = new List<string>();
+        foreach (KeyValuePair<string, object> kvp in properties)
+        {
+            list.Add($"{kvp.Key}={kvp.Value}");
+        }
+
+        return string.Join(", ", list);
     }
 }

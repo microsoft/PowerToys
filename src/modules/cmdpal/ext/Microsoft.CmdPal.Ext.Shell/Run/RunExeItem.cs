@@ -2,7 +2,9 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using Microsoft.CmdPal.Core.Common.Commands;
 using Microsoft.CmdPal.Core.Common.Services;
+using Microsoft.CmdPal.Ext.Shell;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using static Microsoft.CommandPalette.Extensions.Toolkit.ShellHelpers;
@@ -99,10 +101,10 @@ internal sealed partial class RunExeItem : FileItem
     {
         // For debugging purposes, set this conditional to true to see what
         // context menu items on Run looks like.
-#if false
-#if !DEBUG
-#error Do not check this in - CI should explode here
-#endif
+#if true
+        // #if !DEBUG
+        // #error Do not check this in - CI should explode here
+        // #endif
         // n.b. It might be a fun idea to use the StorageItem.GetMenuItemsAsync
         // APIs to build context menu items for run items
         List<IContextItem> items = new();
@@ -115,7 +117,6 @@ internal sealed partial class RunExeItem : FileItem
         // Problem is, this only applies to executables, not like word docs
         if (!isDir)
         {
-
             items.Add(new CommandContextItem(
                 new AnonymousCommand(RunAsAdmin)
                 {
@@ -133,11 +134,11 @@ internal sealed partial class RunExeItem : FileItem
             new Separator());
         }
 
-        //items.Add(new CommandContextItem(new OpenWithCommand(FullExePath)));
+        items.Add(new CommandContextItem(new OpenWithCommand(FullExePath)));
         items.Add(new CommandContextItem(new ShowFileInFolderCommand(FullExePath)));
         items.Add(new CommandContextItem(new CopyPathCommand(FullExePath)));
-        //items.Add(new CommandContextItem(new Common.Commands.OpenInConsoleCommand(FullExePath)));
-        items.Add(new CommandContextItem(new Common.Commands.OpenPropertiesCommand(FullExePath)));
+        items.Add(new CommandContextItem(new OpenInConsoleCommand(FullExePath)));
+        items.Add(new CommandContextItem(new OpenPropertiesCommand(FullExePath)));
 
         return items.ToArray();
 #else

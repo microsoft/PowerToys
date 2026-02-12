@@ -57,9 +57,7 @@ public sealed partial class RunListPage : AsyncDynamicListPage
 
     private readonly Dictionary<string, RunExeItem> _currentPathItems = new();
     private readonly List<ListItem> _pathItems = [];
-
-    // Persistent STA thread for shell operations
-    private readonly StaHelperService _suggestionsService = new();
+    private ListItem? _exeItem;
 
     private bool _loadedInitialHistory;
 
@@ -114,12 +112,13 @@ public sealed partial class RunListPage : AsyncDynamicListPage
             return;
         }
 
+        _exeItem = null;
+
         if (string.IsNullOrEmpty(searchText) || string.IsNullOrWhiteSpace(searchText))
         {
             _pathItems.Clear();
             _currentHistoryItems.Clear();
             _currentHistoryItems.AddRange(_historyItems.Values);
-
             return;
         }
 
@@ -259,8 +258,7 @@ public sealed partial class RunListPage : AsyncDynamicListPage
                 //
                 // If for some reason you wanted a command here, you could
                 // uncomment the following lines to create an exe item for it.
-                //
-                // var exeItem = RunDialogHelpers.CreateListItemForCommandResult(res);
+                // _exeItem = RunDialogHelpers.CreateListItemForCommandResult(res);
             }
         }
         else
@@ -271,6 +269,18 @@ public sealed partial class RunListPage : AsyncDynamicListPage
             // This is again different than CmdPal's shell page - we don't care
             // if we can't parse the thing. Ultimately, the button will try to
             // run the command even if there's no selected item.
+        }
+
+        if (parseResult is ParseCommandlineResult res2
+            && _pathItems.Count == 0)
+        {
+            var item = new RunExeItem(res2.FilePath, res2.Arguments, res2.FilePath, (s) => _historyService.AddRunHistoryItem(s), _telemetryService)
+            {
+                Title = Path.GetFileName(res2.FilePath),
+
+                // TextToSuggest = res2.FilePath,
+            };
+            _exeItem = item;
         }
 
         FilterHistoryItems(newSearch, searchText);
@@ -584,12 +594,18 @@ public sealed partial class RunListPage : AsyncDynamicListPage
         }
 
         var totalCount =
+            (_exeItem is not null ? 1 : 0) +
             _currentHistoryItems.Count +
             _pathItems.Count
             ;
 
         var combined = new IListItem[totalCount];
         var index = 0;
+
+        if (_exeItem is not null)
+        {
+            combined[index++] = _exeItem;
+        }
 
         for (var i = 0; i < _currentHistoryItems.Count; i++)
         {

@@ -32,3 +32,15 @@ CoCreateInstance
 OleInitialize
 OleUninitialize
 CLSID_ACListISF
+
+ShellExecuteEx
+SHELLEXECUTEINFOW
+SHOW_WINDOW_CMD
+SEE_MASK_INVOKEIDLIST
+SEE_MASK_NOASYNC
+SEE_MASK_DOENVSUBST
+SEE_MASK_FLAG_LOG_USAGE
+
+SHEvaluateSystemCommandTemplate
+SearchPath
+CoTaskMemFree
