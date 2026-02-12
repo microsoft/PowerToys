@@ -89,6 +89,18 @@ internal sealed class PowerToysRootPageService : IRootPageService
         }
     }
 
+    public void OnCancelledCommand(AppExtensionHost? previousHost)
+    {
+        if (previousHost is CommandPaletteHost host)
+        {
+            SetActiveExtension(host.Extension);
+        }
+        else
+        {
+            throw new InvalidOperationException("This must be a programming error - everything in Command Palette should have a CommandPaletteHost");
+        }
+    }
+
     public void SetActiveExtension(IExtensionWrapper? extension)
     {
         if (extension != _activeExtension)

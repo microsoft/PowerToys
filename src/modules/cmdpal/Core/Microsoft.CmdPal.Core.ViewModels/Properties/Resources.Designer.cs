@@ -68,5 +68,13 @@ namespace Microsoft.CmdPal.Core.ViewModels.Properties {
                 return ResourceManager.GetString("ShowDetailsCommand", resourceCulture);
             }
         }
+            /// <summary>
+            ///   Looks up a localized string similar to Loading....
+            /// </summary>
+            public static string Loading {
+                get {
+                    return ResourceManager.GetString("Loading", resourceCulture);
+                }
+            }
+        }
     }
-}

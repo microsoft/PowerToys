@@ -121,4 +121,8 @@
     <value>Show details</value>
     <comment>Name for the command that shows details of an item</comment>
   </data>
+  <data name="Loading" xml:space="preserve">
+    <value>Loading...</value>
+    <comment>Message shown when a page is loading</comment>
+  </data>
 </root>

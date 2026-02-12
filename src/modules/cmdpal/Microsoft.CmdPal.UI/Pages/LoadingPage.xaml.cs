@@ -16,6 +16,8 @@ public sealed partial class LoadingPage : Page
 {
     private readonly DispatcherQueue _queue = DispatcherQueue.GetForCurrentThread();
 
+    public LoadingPageViewModel? ViewModel { get; private set; }
+
     public LoadingPage()
     {
         this.InitializeComponent();
@@ -28,24 +30,30 @@ public sealed partial class LoadingPage : Page
             throw new InvalidOperationException($"Invalid navigation parameter: {nameof(e.Parameter)} must be {nameof(AsyncNavigationRequest)}");
         }
 
-        if (request.TargetViewModel is not ShellViewModel shellVM)
+        if (request.TargetViewModel is ShellViewModel shellVM)
         {
-            throw new InvalidOperationException($"Invalid navigation target: AsyncNavigationRequest.{nameof(AsyncNavigationRequest.TargetViewModel)} must be {nameof(ShellViewModel)}");
-        }
+            // This will load the built-in commands, then navigate to the main page.
+            // Once the mainpage loads, we'll start loading extensions.
+            shellVM.LoadCommand.Execute(null);
 
-        // This will load the built-in commands, then navigate to the main page.
-        // Once the mainpage loads, we'll start loading extensions.
-        shellVM.LoadCommand.Execute(null);
-
-        _ = Task.Run(async () =>
-        {
-            await shellVM.LoadCommand.ExecutionTask!;
-
-            if (shellVM.LoadCommand.ExecutionTask.Status != TaskStatus.RanToCompletion)
+            _ = Task.Run(async () =>
             {
-                // TODO: Handle failure case
-            }
-        });
+                await shellVM.LoadCommand.ExecutionTask!;
+
+                if (shellVM.LoadCommand.ExecutionTask.Status != TaskStatus.RanToCompletion)
+                {
+                    // TODO: Handle failure case
+                }
+            });
+        }
+        else if (request.TargetViewModel is LoadingPageViewModel loadingVM)
+        {
+            ViewModel = loadingVM;
+        }
+        else
+        {
+            throw new InvalidOperationException($"Invalid navigation target: AsyncNavigationRequest.{nameof(AsyncNavigationRequest.TargetViewModel)} must be {nameof(ShellViewModel)} or {nameof(LoadingPageViewModel)}");
+        }
 
         base.OnNavigatedTo(e);
     }

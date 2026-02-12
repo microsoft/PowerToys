@@ -10,6 +10,8 @@ using Microsoft.CmdPal.Core.Common;
 using Microsoft.CmdPal.Core.ViewModels.Messages;
 using Microsoft.CmdPal.Core.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
+using Microsoft.CommandPalette.Extensions.Toolkit;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.CmdPal.Core.ViewModels;
 
@@ -40,6 +42,8 @@ public partial class ShellViewModel : ObservableObject,
     [ObservableProperty]
     public partial bool IsSearchBoxVisible { get; set; } = true;
 
+    public bool IsLoading => CurrentPage?.IsLoading ?? false;
+
     private PageViewModel _currentPage;
 
     public PageViewModel CurrentPage
@@ -64,6 +68,8 @@ public partial class ShellViewModel : ObservableObject,
                         CoreLogger.LogError(ex.ToString());
                     }
                 }
+
+                OnUIThread(() => OnPropertyChanged(nameof(IsLoading)));
             }
         }
     }
@@ -73,6 +79,10 @@ public partial class ShellViewModel : ObservableObject,
         if (e.PropertyName == nameof(PageViewModel.HasSearchBox))
         {
             IsSearchBoxVisible = CurrentPage.HasSearchBox;
+        }
+        else if (e.PropertyName == nameof(PageViewModel.IsLoading))
+        {
+            OnUIThread(() => OnPropertyChanged(nameof(IsLoading)));
         }
     }
 
@@ -222,12 +232,19 @@ public partial class ShellViewModel : ObservableObject,
         }
     }
 
-    public void Receive(PerformCommandMessage message)
+    public async void Receive(PerformCommandMessage message)
     {
-        PerformCommand(message);
+        try
+        {
+            await PerformCommandAsync(message);
+        }
+        catch (Exception ex)
+        {
+            CoreLogger.LogError("Exception handling command", ex);
+        }
     }
 
-    private void PerformCommand(PerformCommandMessage message)
+    private async Task PerformCommandAsync(PerformCommandMessage message)
     {
         // Create/replace the navigation cancellation token.
         // If one already exists, cancel and dispose it first.
@@ -257,12 +274,40 @@ public partial class ShellViewModel : ObservableObject,
             return;
         }
 
-        var host = _appHostService.GetHostForCommand(message.Context, CurrentPage.ExtensionHost);
+        var pageExtensionHost = CurrentPage.ExtensionHost;
+        var host = _appHostService.GetHostForCommand(message.Context, pageExtensionHost);
 
         _rootPageService.OnPerformCommand(message.Context, !CurrentPage.IsNested, host);
 
         try
         {
+            if (command is IPageFactoryCommand pageFactoryCommand)
+            {
+#if DEBUG
+                CoreLogger.LogDebug($"Page factory {pageFactoryCommand.Id} is building page");
+#endif
+                var createPageTask = pageFactoryCommand.CreatePageAsync().AsTask(navigationToken);
+                var loadingTimer = Task.Delay(200, navigationToken);
+
+                var completedTask = await Task.WhenAny(createPageTask, loadingTimer).ConfigureAwait(false);
+                if (completedTask == loadingTimer)
+                {
+                    var loadingPage = new LoadingPageViewModel(null, _scheduler, host ?? _appHostService.GetDefaultHost())
+                    {
+                        LoadingMessage = Properties.Resources.Loading,
+                    };
+
+                    WeakReferenceMessenger.Default.Send<NavigateToPageMessage>(new(loadingPage, false, navigationToken));
+                }
+
+                command = await createPageTask.ConfigureAwait(false);
+            }
+
+            if (navigationToken.IsCancellationRequested)
+            {
+                return;
+            }
+
             if (command is IPage page)
             {
                 CoreLogger.LogDebug($"Navigating to page");
@@ -292,7 +337,7 @@ public partial class ShellViewModel : ObservableObject,
                 OnUIThread(() => WeakReferenceMessenger.Default.Send<UpdateCommandBarMessage>(new(null)));
 
                 // Kick off async loading of our ViewModel
-                LoadPageViewModelAsync(pageViewModel, navigationToken)
+                _ = LoadPageViewModelAsync(pageViewModel, navigationToken)
                     .ContinueWith(
                         (Task t) =>
                         {
@@ -319,6 +364,11 @@ public partial class ShellViewModel : ObservableObject,
                 WeakReferenceMessenger.Default.Send<TelemetryBeginInvokeMessage>();
                 StartInvoke(message, invokable, host);
             }
+        }
+        catch (OperationCanceledException)
+        {
+            // Operation was cancelled, nothing to do.
+            _rootPageService.OnCancelledCommand(pageExtensionHost);
         }
         catch (Exception ex)
         {

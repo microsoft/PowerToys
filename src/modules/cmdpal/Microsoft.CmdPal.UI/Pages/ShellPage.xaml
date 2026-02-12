@@ -353,7 +353,7 @@
                 Grid.ColumnSpan="2"
                 VerticalAlignment="Bottom"
                 IsIndeterminate="True"
-                Visibility="{x:Bind ViewModel.CurrentPage.IsLoading, Mode=OneWay}">
+                Visibility="{x:Bind ViewModel.IsLoading, Mode=OneWay}">
                 <animations:Implicit.ShowAnimations>
                     <animations:OpacityAnimation
                         From="0"

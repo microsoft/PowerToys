@@ -33,5 +33,11 @@ public interface IRootPageService
     /// </summary>
     void OnPerformCommand(object? context, bool topLevel, AppExtensionHost? currentHost);
 
+    /// <summary>
+    /// Called when a command is cancelled. The previousHost is the
+    /// host that was active before the command was cancelled.
+    /// </summary>
+    void OnCancelledCommand(AppExtensionHost? previousHost);
+
     void GoHome();
 }
