@@ -3,9 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 // Code forked from Betsegaw Tadele's https://github.com/betsegaw/windowwalker/
-using System;
-using Microsoft.CmdPal.Ext.WindowWalker.Helpers;
-
 namespace Microsoft.CmdPal.Ext.WindowWalker.Components;
 
 /// <summary>

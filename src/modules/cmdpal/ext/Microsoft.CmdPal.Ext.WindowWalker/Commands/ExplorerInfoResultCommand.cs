@@ -5,7 +5,6 @@
 using System.ComponentModel;
 using System.Diagnostics;
 using Microsoft.CommandPalette.Extensions;
-using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.WindowWalker.Commands;
 

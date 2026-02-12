@@ -2,14 +2,10 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
 using System.Diagnostics;
 using System.IO;
 using Microsoft.CmdPal.Ext.WindowWalker.Components;
-using Microsoft.CmdPal.Ext.WindowWalker.Helpers;
-using Microsoft.CmdPal.Ext.WindowWalker.Properties;
 using Microsoft.CommandPalette.Extensions;
-using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.Storage.Streams;
 
 namespace Microsoft.CmdPal.Ext.WindowWalker.Commands;
