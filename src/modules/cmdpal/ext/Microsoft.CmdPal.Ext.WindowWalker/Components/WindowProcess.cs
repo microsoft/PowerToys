@@ -192,7 +192,7 @@ internal sealed class WindowProcess
     /// <summary>
     /// Gets the process name for the process ID
     /// </summary>
-    /// <param name="pid">The id of the process/param>
+    /// <param name="pid">The id of the process</param>
     /// <returns>A string representing the process name or an empty string if the function fails</returns>
     internal static string GetProcessNameFromProcessID(uint pid)
     {
