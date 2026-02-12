@@ -28,7 +28,10 @@
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
-                <tkcontrols:OpacityMaskView Margin="-16,0,-16,0" HorizontalAlignment="Stretch">
+                <tkcontrols:OpacityMaskView
+                    Margin="-16,0,-16,0"
+                    HorizontalAlignment="Stretch"
+                    HorizontalContentAlignment="Stretch">
                     <tkcontrols:OpacityMaskView.OpacityMask>
                         <Rectangle>
                             <Rectangle.Fill>
@@ -40,17 +43,24 @@
                             </Rectangle.Fill>
                         </Rectangle>
                     </tkcontrols:OpacityMaskView.OpacityMask>
-                    <Grid Height="560">
+                    <Grid MaxHeight="560">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="*" />
                         </Grid.RowDefinitions>
-                        <Image
-                            Grid.RowSpan="3"
-                            HorizontalAlignment="Stretch"
-                            Source="/Assets/Settings/Modules/CmdPal_Background.png"
-                            Stretch="UniformToFill" />
+                        <Grid.Background>
+                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                <!--  Top-left: light cyan/blue  -->
+                                <GradientStop Offset="0.0" Color="#5FAFC9" />
+
+                                <!--  Mid transition  -->
+                                <GradientStop Offset="0.45" Color="#3E7FB0" />
+
+                                <!--  Bottom-right: deep blue  -->
+                                <GradientStop Offset="1.0" Color="#2C3E8F" />
+                            </LinearGradientBrush>
+                        </Grid.Background>
                         <TextBlock
                             x:Uid="CmdPal_HeroTitle"
                             Margin="0,24,0,12"
@@ -81,7 +91,7 @@
                             Margin="0,16,0,0"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Top"
-                            Source="/Assets/Settings/Modules/CmdPal_Hero.png"
+                            Source="/Assets/Settings/Modules/CmdPal.png"
                             Stretch="Uniform" />
                     </Grid>
                 </tkcontrols:OpacityMaskView>
