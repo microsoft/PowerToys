@@ -7,7 +7,7 @@ using CommunityToolkit.WinUI.Controls;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
-namespace Microsoft.PowerToys.Settings.UI.Controls
+namespace Microsoft.PowerToys.Common.UI.Controls
 {
     public sealed partial class ShortcutWithTextLabelControl : Control
     {

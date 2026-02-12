@@ -9,6 +9,7 @@
     xmlns:ic="using:Microsoft.Xaml.Interactions.Core"
     xmlns:local="using:Microsoft.PowerToys.Settings.UI.Helpers"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ptcontrols="using:Microsoft.PowerToys.Common.UI.Controls"
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     xmlns:ui="using:CommunityToolkit.WinUI"
     xmlns:viewModels="using:Microsoft.PowerToys.Settings.UI.ViewModels"
@@ -45,7 +46,7 @@
                     BorderThickness="0,0,0,0"
                     ContentAlignment="Left"
                     CornerRadius="0">
-                    <controls:CheckBoxWithDescriptionControl
+                    <ptcontrols:CheckBoxWithDescriptionControl
                         Margin="56,0,0,0"
                         Description="{x:Bind Path=DisplayDescription}"
                         Header="{x:Bind Path=DisplayLabel}"
@@ -160,7 +161,7 @@
                     BorderThickness="0,0,0,0"
                     ContentAlignment="Left"
                     CornerRadius="0">
-                    <controls:CheckBoxWithDescriptionControl
+                    <ptcontrols:CheckBoxWithDescriptionControl
                         Margin="56,0,0,0"
                         Description="{x:Bind Path=DisplayDescription}"
                         Header="{x:Bind Path=DisplayLabel}"
@@ -197,7 +198,7 @@
                     BorderThickness="0,0,0,0"
                     ContentAlignment="Left"
                     CornerRadius="0">
-                    <controls:CheckBoxWithDescriptionControl
+                    <ptcontrols:CheckBoxWithDescriptionControl
                         Margin="56,0,0,0"
                         Description="{x:Bind Path=DisplayDescription}"
                         Header="{x:Bind Path=DisplayLabel}"
@@ -234,7 +235,7 @@
                     BorderThickness="0,0,0,0"
                     ContentAlignment="Left"
                     CornerRadius="0">
-                    <controls:CheckBoxWithDescriptionControl
+                    <ptcontrols:CheckBoxWithDescriptionControl
                         Margin="56,0,0,0"
                         Description="{x:Bind Path=DisplayDescription}"
                         Header="{x:Bind Path=DisplayLabel}"
@@ -276,7 +277,7 @@
                     BorderThickness="0,0,0,0"
                     ContentAlignment="Left"
                     CornerRadius="0">
-                    <controls:CheckBoxWithDescriptionControl
+                    <ptcontrols:CheckBoxWithDescriptionControl
                         Margin="56,0,0,0"
                         Description="{x:Bind Path=DisplayDescription}"
                         Header="{x:Bind Path=DisplayLabel}"
@@ -342,7 +343,7 @@
                         <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.OpenPowerLauncher, Mode=TwoWay}" />
                         <tkcontrols:SettingsExpander.Items>
                             <tkcontrols:SettingsCard ContentAlignment="Left">
-                                <controls:CheckBoxWithDescriptionControl x:Uid="PowerLauncher_UseCentralizedKeyboardHook" IsChecked="{x:Bind ViewModel.UseCentralizedKeyboardHook, Mode=TwoWay}" />
+                                <ptcontrols:CheckBoxWithDescriptionControl x:Uid="PowerLauncher_UseCentralizedKeyboardHook" IsChecked="{x:Bind ViewModel.UseCentralizedKeyboardHook, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard ContentAlignment="Left">
                                 <CheckBox x:Uid="PowerLauncher_IgnoreHotkeysInFullScreen" IsChecked="{x:Bind ViewModel.IgnoreHotkeysInFullScreen, Mode=TwoWay}" />
@@ -459,7 +460,7 @@
                                     Value="{x:Bind ViewModel.SearchClickedItemWeight, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard ContentAlignment="Left" IsEnabled="{x:Bind ViewModel.SearchQueryTuningEnabled, Mode=OneWay}">
-                                <controls:CheckBoxWithDescriptionControl x:Uid="PowerLauncher_WaitForSlowResults" IsChecked="{x:Bind ViewModel.SearchWaitForSlowResults, Mode=TwoWay}" />
+                                <ptcontrols:CheckBoxWithDescriptionControl x:Uid="PowerLauncher_WaitForSlowResults" IsChecked="{x:Bind ViewModel.SearchWaitForSlowResults, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
@@ -548,7 +549,7 @@
                         x:Uid="PowerLauncher_TitleFontSize"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE8E9;}">
                         <StackPanel Orientation="Horizontal" Spacing="12">
-                            <controls:IsEnabledTextBlock
+                            <ptcontrols:IsEnabledTextBlock
                                 VerticalAlignment="Center"
                                 AutomationProperties.AccessibilityView="Raw"
                                 FontSize="12"
@@ -564,7 +565,7 @@
                                 TickFrequency="2"
                                 TickPlacement="Outside"
                                 Value="{x:Bind ViewModel.TitleFontSize, Mode=TwoWay}" />
-                            <controls:IsEnabledTextBlock
+                            <ptcontrols:IsEnabledTextBlock
                                 VerticalAlignment="Center"
                                 AutomationProperties.AccessibilityView="Raw"
                                 FontSize="24"
@@ -709,7 +710,7 @@
                                                     IsChecked="{x:Bind IsGlobal, Mode=TwoWay}">
                                                     <StackPanel Orientation="Vertical">
                                                         <TextBlock x:Name="IncludeInGlobalResultTitle" x:Uid="PowerLauncher_IncludeInGlobalResultTitle" />
-                                                        <controls:IsEnabledTextBlock
+                                                        <ptcontrols:IsEnabledTextBlock
                                                             x:Uid="PowerLauncher_IncludeInGlobalResultDescription"
                                                             FontSize="{StaticResource SecondaryTextFontSize}"
                                                             Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
