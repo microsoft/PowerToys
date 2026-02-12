@@ -49,16 +49,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         public delegate bool UpdatingGeneralSettingsCallback(ModuleType moduleType, bool isEnabled);
 
         /// <summary>
-        /// Declaration for opening oobe window callback function.
-        /// </summary>
-        public delegate void OobeOpeningCallback();
-
-        /// <summary>
-        /// Declaration for opening whats new window callback function.
-        /// </summary>
-        public delegate void WhatIsNewOpeningCallback();
-
-        /// <summary>
         /// Gets or sets a shell handler to be used to update contents of the shell dynamically from page within the frame.
         /// </summary>
         public static ShellPage ShellHandler { get; set; }
@@ -87,16 +77,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         /// Gets or sets callback function for updating the general settings
         /// </summary>
         public static UpdatingGeneralSettingsCallback UpdateGeneralSettingsCallback { get; set; }
-
-        /// <summary>
-        /// Gets or sets callback function for opening oobe window
-        /// </summary>
-        public static OobeOpeningCallback OpenOobeWindowCallback { get; set; }
-
-        /// <summary>
-        /// Gets or sets callback function for opening oobe window
-        /// </summary>
-        public static WhatIsNewOpeningCallback OpenWhatIsNewWindowCallback { get; set; }
 
         /// <summary>
         /// Gets view model.
@@ -223,24 +203,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             UpdateGeneralSettingsCallback = implementation;
         }
 
-        /// <summary>
-        /// Set oobe opening callback function
-        /// </summary>
-        /// <param name="implementation">delegate function implementation.</param>
-        public static void SetOpenOobeCallback(OobeOpeningCallback implementation)
-        {
-            OpenOobeWindowCallback = implementation;
-        }
-
-        /// <summary>
-        /// Set whats new opening callback function
-        /// </summary>
-        /// <param name="implementation">delegate function implementation.</param>
-        public static void SetOpenWhatIsNewCallback(WhatIsNewOpeningCallback implementation)
-        {
-            OpenWhatIsNewWindowCallback = implementation;
-        }
-
         public static void SetElevationStatus(bool isElevated)
         {
             IsElevated = isElevated;
@@ -325,7 +287,12 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private void OOBEItem_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            OpenOobeWindowCallback();
+            ((App)App.Current)!.OpenOobe();
+        }
+
+        private void WhatIsNewItem_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            ((App)App.Current)!.OpenScoobe();
         }
 
         private async void FeedbackItem_Tapped(object sender, TappedRoutedEventArgs e)
@@ -333,15 +300,9 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             await Launcher.LaunchUriAsync(new Uri("https://aka.ms/powerToysGiveFeedback"));
         }
 
-        private void WhatIsNewItem_Tapped(object sender, TappedRoutedEventArgs e)
-        {
-            OpenWhatIsNewWindowCallback();
-        }
-
         private void NavigationView_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
         {
-            NavigationViewItem selectedItem = args.SelectedItem as NavigationViewItem;
-            if (selectedItem != null)
+            if (args.SelectedItem is NavigationViewItem selectedItem)
             {
                 Type pageType = selectedItem.GetValue(NavHelper.NavigateToProperty) as Type;
 
@@ -409,7 +370,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             navigationView.IsPaneOpen = !navigationView.IsPaneOpen;
         }
 
-        private async void Close_Tapped(object sender, Microsoft.UI.Xaml.Input.TappedRoutedEventArgs e)
+        private async void Close_Tapped(object sender, TappedRoutedEventArgs e)
         {
             await CloseDialog.ShowAsync();
         }
