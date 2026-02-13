@@ -70,3 +70,4 @@ AttachThreadInput
 
 GetWindowPlacement
 WINDOWPLACEMENT
+WM_DPICHANGED
