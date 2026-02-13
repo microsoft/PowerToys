@@ -476,8 +476,9 @@ if ($useArtifactSource) {
     Write-Host "Build ID: $buildId"
     Write-Host "Artifact: $artifactName"
 
-    if ([string]::IsNullOrEmpty($buildId)) {
-        Write-Host "Error: buildId parameter is required when using artifact source"
+    if ([string]::IsNullOrEmpty($buildId) -or $buildId -eq 'N/A') {
+        Write-Error "buildId parameter is required when using artifact source. Please provide a valid Windows App SDK Build ID."
+        Write-Host "Tip: You can find the build ID from the Windows App SDK pipeline run in Azure DevOps."
         exit 1
     }
 

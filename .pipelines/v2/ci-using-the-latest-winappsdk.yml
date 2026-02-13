@@ -49,15 +49,15 @@ parameters:
     default: false
   - name: buildId
     type: string
-    displayName: "Windows App SDK Build ID (for artifact mode)"
-    default: ''
+    displayName: "Windows App SDK Build ID (required only if using artifact source)"
+    default: 'N/A'
   - name: azureDevOpsProject
     type: string
-    displayName: "Source Project (for artifact mode)"
+    displayName: "Source Project (for artifact mode, default: ProjectReunion)"
     default: 'ProjectReunion'
   - name: artifactName
     type: string
-    displayName: "Artifact Name (for artifact mode)"
+    displayName: "Artifact Name (for artifact mode, default: WindowsAppSDK_Nuget_And_MSIX)"
     default: 'WindowsAppSDK_Nuget_And_MSIX'
 
 extends:
