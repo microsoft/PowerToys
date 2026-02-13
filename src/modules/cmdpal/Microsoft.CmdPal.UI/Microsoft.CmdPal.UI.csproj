@@ -75,11 +75,9 @@
     <None Remove="Controls\CommandPalettePreview.xaml" />
     <None Remove="Controls\DevRibbon.xaml" />
     <None Remove="Controls\FallbackRankerDialog.xaml" />
-    <None Remove="Controls\KeyVisual\KeyCharPresenter.xaml" />
     <None Remove="Controls\ScreenPreview.xaml" />
     <None Remove="Controls\ScrollContainer.xaml" />
     <None Remove="Controls\SearchBar.xaml" />
-    <None Remove="IsEnabledTextBlock.xaml" />
     <None Remove="ListDetailPage.xaml" />
     <None Remove="LoadingPage.xaml" />
     <None Remove="MainPage.xaml" />
@@ -132,6 +130,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\common\ManagedTelemetry\Telemetry\ManagedTelemetry.csproj" />
+    <ProjectReference Include="..\..\..\common\Common.UI.Controls\Common.UI.Controls.csproj" />
     <ProjectReference Include="..\ext\Microsoft.CmdPal.Ext.ClipboardHistory\Microsoft.CmdPal.Ext.ClipboardHistory.csproj" />
     <ProjectReference Include="..\ext\Microsoft.CmdPal.Ext.RemoteDesktop\Microsoft.CmdPal.Ext.RemoteDesktop.csproj" />
     <ProjectReference Include="..\ext\Microsoft.CmdPal.Ext.System\Microsoft.CmdPal.Ext.System.csproj" />
@@ -277,17 +276,6 @@
     </Page>
   </ItemGroup>
 
-  <ItemGroup>
-    <Page Update="IsEnabledTextBlock.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Page Update="Controls\KeyVisual\KeyCharPresenter.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-  </ItemGroup>
   <ItemGroup>
     <Page Update="Settings\InternalPage.xaml">
       <Generator>MSBuild:Compile</Generator>

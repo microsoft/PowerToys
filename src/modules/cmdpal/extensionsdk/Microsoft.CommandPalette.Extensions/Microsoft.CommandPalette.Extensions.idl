@@ -411,5 +411,5 @@ namespace Microsoft.CommandPalette.Extensions
     {
         ICommandItem[] GetDockBands();
     };
-
+    
 }

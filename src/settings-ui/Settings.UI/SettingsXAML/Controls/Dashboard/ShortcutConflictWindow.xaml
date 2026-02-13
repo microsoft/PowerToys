@@ -7,6 +7,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:hotkeyConflicts="using:Microsoft.PowerToys.Settings.UI.Library.HotkeyConflicts"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ptcontrols="using:Microsoft.PowerToys.Common.UI.Controls"
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     xmlns:ui="using:CommunityToolkit.WinUI"
     xmlns:winuiex="using:WinUIEx"
@@ -93,7 +94,7 @@
                                 Orientation="Vertical">
                                 <!--  Hotkey Header  -->
                                 <Grid Margin="16,12,16,12">
-                                    <controls:ShortcutWithTextLabelControl
+                                    <ptcontrols:ShortcutWithTextLabelControl
                                         x:Uid="ShortcutConflictWindow_ModulesUsingShortcut"
                                         VerticalAlignment="Center"
                                         FontWeight="SemiBold"
