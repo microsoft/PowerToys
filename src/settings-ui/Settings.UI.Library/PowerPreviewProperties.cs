@@ -189,6 +189,23 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
+        private bool enableMediaPreview;
+
+        [JsonPropertyName("media-previewer-toggle-setting")]
+        [JsonConverter(typeof(BoolPropertyJsonConverter))]
+        public bool EnableMediaPreview
+        {
+            get => enableMediaPreview;
+            set
+            {
+                if (value != enableMediaPreview)
+                {
+                    LogTelemetryEvent(value);
+                    enableMediaPreview = value;
+                }
+            }
+        }
+
         private bool enablePdfThumbnail;
 
         [JsonPropertyName("pdf-thumbnail-toggle-setting")]

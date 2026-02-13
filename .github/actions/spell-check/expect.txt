@@ -1047,6 +1047,7 @@ MAPPEDTOSAMEKEY
 MAPTOSAMESHORTCUT
 MAPVK
 MARKDOWNPREVIEWHANDLERCPP
+matroska
 MAXIMIZEBOX
 Maximizebox
 MAXSHORTCUTSIZE
@@ -1062,6 +1063,7 @@ mdtext
 mdtxt
 mdwn
 mccs
+MEDIAPREVIEWHANDLERCPP
 meme
 memicmp
 MENUITEMINFO
@@ -1149,6 +1151,7 @@ msstore
 mstsc
 mswhql
 msvcp
+msvideo
 MT
 MTND
 MULTIPLEUSE
@@ -1524,6 +1527,7 @@ QUERYENDSESSION
 QUERYOPEN
 QUEUESYNC
 quickaccent
+quicktime
 QUNS
 RAII
 RAlt
@@ -1943,6 +1947,7 @@ transicc
 TRAYMOUSEMESSAGE
 triaging
 trl
+troska
 trx
 tsa
 tskill

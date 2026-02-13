@@ -155,6 +155,17 @@
                     </tkcontrols:SettingsCard>
 
                     <tkcontrols:SettingsCard
+                        Name="FileExplorerPreviewToggleSwitchPreviewMedia"
+                        x:Uid="FileExplorerPreview_ToggleSwitch_Preview_Media"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE189;}"
+                        IsEnabled="{x:Bind ViewModel.MediaRenderIsGpoDisabled, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
+                        <ToggleSwitch
+                            x:Uid="ToggleSwitch"
+                            IsEnabled="{x:Bind ViewModel.MediaRenderIsGpoEnabled, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}"
+                            IsOn="{x:Bind ViewModel.MediaRenderIsEnabled, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
+
+                    <tkcontrols:SettingsCard
                         Name="FileExplorerPreviewToggleSwitchPreviewGCODE"
                         x:Uid="FileExplorerPreview_ToggleSwitch_Preview_GCODE"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE914;}"

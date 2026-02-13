@@ -1035,6 +1035,14 @@ opera.exe</value>
     <value>.pdf</value>
     <comment>{Locked}</comment>
   </data>
+  <data name="FileExplorerPreview_ToggleSwitch_Preview_Media.Header" xml:space="preserve">
+    <value>Media files (audio and video)</value>
+    <comment>{Locked}</comment>
+  </data>
+  <data name="FileExplorerPreview_ToggleSwitch_Preview_Media.Description" xml:space="preserve">
+    <value>.mp4, .avi, .mkv, .mov, .webm, .wmv, .m4v, .3gp, .3g2, .mp3, .wav, .flac, .m4a, .aac, .ogg, .wma</value>
+    <comment>{Locked}</comment>
+  </data>
   <data name="FileExplorerPreview_ToggleSwitch_Thumbnail_SVG.Header" xml:space="preserve">
     <value>Scalable Vector Graphics</value>
     <comment>{Locked}</comment>

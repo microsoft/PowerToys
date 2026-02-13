@@ -45,6 +45,11 @@ PowerPreviewModule::PowerPreviewModule() :
                                       .checkModuleGPOEnabledRuleFunction = powertoys_gpo::getConfiguredPdfPreviewEnabledValue,
                                       .registryChanges = getPdfPreviewHandlerChangeSet(installationDir, installPerUser) });
 
+    m_fileExplorerModules.push_back({ .settingName = L"media-previewer-toggle-setting",
+                                      .settingDescription = GET_RESOURCE_STRING(IDS_PREVPANE_MEDIA_SETTINGS_DESCRIPTION),
+                                      .checkModuleGPOEnabledRuleFunction = powertoys_gpo::getConfiguredMediaPreviewEnabledValue,
+                                      .registryChanges = getMediaPreviewHandlerChangeSet(installationDir, installPerUser) });
+
     m_fileExplorerModules.push_back({ .settingName = L"gcode-previewer-toggle-setting",
                                       .settingDescription = GET_RESOURCE_STRING(IDS_PREVPANE_GCODE_SETTINGS_DESCRIPTION),
                                       .checkModuleGPOEnabledRuleFunction = powertoys_gpo::getConfiguredGcodePreviewEnabledValue,

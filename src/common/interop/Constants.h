@@ -54,6 +54,7 @@ namespace winrt::PowerToys::Interop::implementation
         static hstring MarkdownPreviewResizeEvent();
         static hstring PdfPreviewResizeEvent();
         static hstring SvgPreviewResizeEvent();
+        static hstring MediaPreviewResizeEvent();
         static hstring ShowHostsSharedEvent();
         static hstring ShowHostsAdminSharedEvent();
         static hstring TerminateHostsSharedEvent();

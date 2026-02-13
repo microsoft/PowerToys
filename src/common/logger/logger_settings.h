@@ -41,6 +41,8 @@ struct LogSettings
     inline const static std::wstring svgPrevLogPath = L"logs\\FileExplorer_localLow\\SvgPrevHandler\\svg-prev-handler-log.log";
     inline const static std::string svgThumbLoggerName = "SvgThumbnailProvider";
     inline const static std::wstring svgThumbLogPath = L"logs\\FileExplorer_localLow\\SvgThumbnailProvider\\svg-thumbnail-provider-log.log";
+    inline const static std::string mediaPrevLoggerName = "MediaPrevHandler";
+    inline const static std::wstring mediaPrevLogPath = L"logs\\FileExplorer_localLow\\MediaPrevHandler\\media-prev-handler-log.log";
     inline const static std::string launcherLoggerName = "launcher";
     inline const static std::wstring launcherLogPath = L"LogsModuleInterface\\launcher-log.log";
     inline const static std::string mouseWithoutBordersLoggerName = "mouseWithoutBorders";

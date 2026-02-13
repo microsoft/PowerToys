@@ -60,6 +60,10 @@ namespace winrt::PowerToys::GPOWrapper::implementation
     {
         return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredPdfPreviewEnabledValue());
     }
+    GpoRuleConfigured GPOWrapper::GetConfiguredMediaPreviewEnabledValue()
+    {
+        return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredMediaPreviewEnabledValue());
+    }
     GpoRuleConfigured GPOWrapper::GetConfiguredGcodePreviewEnabledValue()
     {
         return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredGcodePreviewEnabledValue());
