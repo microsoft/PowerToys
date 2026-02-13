@@ -1,4 +1,5 @@
 #include "pch.h"
+#include "RuntimeRegistration.h"
 
 #include <winrt/Windows.Data.Json.h>
 

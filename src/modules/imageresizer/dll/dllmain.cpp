@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "dllmain.h"
+#include "../dll/RuntimeRegistration.h"
 
 #include <trace.h>
 

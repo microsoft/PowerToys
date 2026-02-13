@@ -1,4 +1,5 @@
 #include "pch.h"
+#include "../FileLocksmithExt/RuntimeRegistration.h"
 
 // Update registration based on enabled state
 EXTERN_C __declspec(dllexport) void UpdateFileLocksmithRegistrationWin10(bool enabled)

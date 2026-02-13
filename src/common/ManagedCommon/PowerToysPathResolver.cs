@@ -27,7 +27,7 @@ namespace ManagedCommon
             return GetPathFromCurrentProcess();
 #else
             // Try to get path from Per-User installation first
-            string path = GetPathFromRegistry(RegistryHive.CurrentUser);
+            string? path = GetPathFromRegistry(RegistryHive.CurrentUser);
             if (!string.IsNullOrEmpty(path))
             {
                 return path;

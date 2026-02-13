@@ -1,6 +1,7 @@
 #include "pch.h"
 
 #include "PowerRenameExt.h"
+#include "../dll/RuntimeRegistration.h"
 
 #include <trace.h>
 
