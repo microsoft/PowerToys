@@ -214,6 +214,11 @@ public sealed partial class MainWindow : WindowEx,
         // Now that our content has loaded, we can update our draggable regions
         UpdateRegionsForCustomTitleBar();
 
+        // Also update regions when DPI changes. SizeChanged only fires when the logical
+        // (DIP) size changes — a DPI change that scales the physical size while preserving
+        // the DIP size won't trigger it, leaving drag regions at the old physical coordinates.
+        RootElement.XamlRoot.Changed += XamlRoot_Changed;
+
         // Add dev ribbon if enabled
         if (!BuildInfo.IsCiBuild)
         {
@@ -221,6 +226,8 @@ public sealed partial class MainWindow : WindowEx,
             RootElement.Children.Add(_devRibbon);
         }
     }
+
+    private void XamlRoot_Changed(XamlRoot sender, XamlRootChangedEventArgs args) => UpdateRegionsForCustomTitleBar();
 
     private void WindowSizeChanged(object sender, WindowSizeChangedEventArgs args) => UpdateRegionsForCustomTitleBar();
 
