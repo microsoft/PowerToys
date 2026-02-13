@@ -4,15 +4,20 @@
 
 using System.Collections.Immutable;
 using System.Collections.Specialized;
+using System.Diagnostics;
 using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
-using Microsoft.CmdPal.Common.Helpers;
+using Microsoft.CmdPal.Core.Common.Helpers;
+using Microsoft.CmdPal.Core.Common.Text;
 using Microsoft.CmdPal.Core.ViewModels.Messages;
 using Microsoft.CmdPal.Ext.Apps;
+using Microsoft.CmdPal.Ext.Apps.Programs;
+using Microsoft.CmdPal.Ext.Apps.State;
+using Microsoft.CmdPal.UI.ViewModels.Commands;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
+using Microsoft.CmdPal.UI.ViewModels.Properties;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.CmdPal.UI.ViewModels.MainPage;
 
@@ -20,27 +25,54 @@ namespace Microsoft.CmdPal.UI.ViewModels.MainPage;
 /// This class encapsulates the data we load from built-in providers and extensions to use within the same extension-UI system for a <see cref="ListPage"/>.
 /// TODO: Need to think about how we structure/interop for the page -> section -> item between the main setup, the extensions, and our viewmodels.
 /// </summary>
-public partial class MainListPage : DynamicListPage,
+public sealed partial class MainListPage : DynamicListPage,
     IRecipient<ClearSearchMessage>,
-    IRecipient<UpdateFallbackItemsMessage>
+    IRecipient<UpdateFallbackItemsMessage>, IDisposable
 {
-    private readonly IServiceProvider _serviceProvider;
-
     private readonly TopLevelCommandManager _tlcManager;
-    private IEnumerable<IListItem>? _filteredItems;
+    private readonly AliasManager _aliasManager;
+    private readonly SettingsModel _settings;
+    private readonly AppStateModel _appStateModel;
+    private readonly ScoringFunction<IListItem> _scoringFunction;
+    private readonly ScoringFunction<IListItem> _fallbackScoringFunction;
+    private readonly IFuzzyMatcherProvider _fuzzyMatcherProvider;
+
+    private RoScored<IListItem>[]? _filteredItems;
+    private RoScored<IListItem>[]? _filteredApps;
+
+    // Keep as IEnumerable for deferred execution. Fallback item titles are updated
+    // asynchronously, so scoring must happen lazily when GetItems is called.
+    private IEnumerable<RoScored<IListItem>>? _scoredFallbackItems;
+    private IEnumerable<RoScored<IListItem>>? _fallbackItems;
+
     private bool _includeApps;
     private bool _filteredItemsIncludesApps;
+    private int _appResultLimit = 10;
 
     private InterlockedBoolean _refreshRunning;
     private InterlockedBoolean _refreshRequested;
 
-    public MainListPage(IServiceProvider serviceProvider)
+    private CancellationTokenSource? _cancellationTokenSource;
+
+    public MainListPage(
+        TopLevelCommandManager topLevelCommandManager,
+        SettingsModel settings,
+        AliasManager aliasManager,
+        AppStateModel appStateModel,
+        IFuzzyMatcherProvider fuzzyMatcherProvider)
     {
+        Title = Resources.builtin_home_name;
         Icon = IconHelpers.FromRelativePath("Assets\\StoreLogo.scale-200.png");
         PlaceholderText = Properties.Resources.builtin_main_list_page_searchbar_placeholder;
-        _serviceProvider = serviceProvider;
 
-        _tlcManager = _serviceProvider.GetService<TopLevelCommandManager>()!;
+        _settings = settings;
+        _aliasManager = aliasManager;
+        _appStateModel = appStateModel;
+        _tlcManager = topLevelCommandManager;
+        _fuzzyMatcherProvider = fuzzyMatcherProvider;
+        _scoringFunction = (in query, item) => ScoreTopLevelItem(in query, item, _appStateModel.RecentCommands, _fuzzyMatcherProvider.Current);
+        _fallbackScoringFunction = (in _, item) => ScoreFallbackItem(item, _settings.FallbackRanks);
+
         _tlcManager.PropertyChanged += TlcManager_PropertyChanged;
         _tlcManager.TopLevelCommands.CollectionChanged += Commands_CollectionChanged;
 
@@ -48,17 +80,16 @@ public partial class MainListPage : DynamicListPage,
         // We just want to know when it is done.
         var allApps = AllAppsCommandProvider.Page;
         allApps.PropChanged += (s, p) =>
-        {
-            if (p.PropertyName == nameof(allApps.IsLoading))
             {
-                IsLoading = ActuallyLoading();
-            }
-        };
+                if (p.PropertyName == nameof(allApps.IsLoading))
+                {
+                    IsLoading = ActuallyLoading();
+                }
+            };
 
         WeakReferenceMessenger.Default.Register<ClearSearchMessage>(this);
         WeakReferenceMessenger.Default.Register<UpdateFallbackItemsMessage>(this);
 
-        var settings = _serviceProvider.GetService<SettingsModel>()!;
         settings.SettingsChanged += SettingsChangedHandler;
         HotReloadSettings(settings);
         _includeApps = _tlcManager.IsProviderActive(AllAppsCommandProvider.WellKnownId);
@@ -83,7 +114,7 @@ public partial class MainListPage : DynamicListPage,
         }
         else
         {
-            RaiseItemsChanged(_tlcManager.TopLevelCommands.Count);
+            RaiseItemsChanged();
         }
     }
 
@@ -134,31 +165,68 @@ public partial class MainListPage : DynamicListPage,
 
     public override IListItem[] GetItems()
     {
-        if (string.IsNullOrEmpty(SearchText))
+        lock (_tlcManager.TopLevelCommands)
         {
-            lock (_tlcManager.TopLevelCommands)
+            // Either return the top-level commands (no search text), or the merged and
+            // filtered results.
+            if (string.IsNullOrWhiteSpace(SearchText))
             {
-                return _tlcManager
-                    .TopLevelCommands
-                    .Where(tlc => !string.IsNullOrEmpty(tlc.Title))
+                return _tlcManager.TopLevelCommands
+                    .Where(tlc => !tlc.IsFallback && !string.IsNullOrEmpty(tlc.Title))
                     .ToArray();
             }
-        }
-        else
-        {
-            lock (_tlcManager.TopLevelCommands)
+            else
             {
-                return _filteredItems?.ToArray() ?? [];
+                var validScoredFallbacks = _scoredFallbackItems?
+                    .Where(s => !string.IsNullOrWhiteSpace(s.Item.Title))
+                    .ToList();
+
+                var validFallbacks = _fallbackItems?
+                    .Where(s => !string.IsNullOrWhiteSpace(s.Item.Title))
+                    .ToList();
+
+                return MainListPageResultFactory.Create(
+                    _filteredItems,
+                    validScoredFallbacks,
+                    _filteredApps,
+                    validFallbacks,
+                    _appResultLimit);
             }
         }
     }
 
+    private void ClearResults()
+    {
+        _filteredItems = null;
+        _filteredApps = null;
+        _fallbackItems = null;
+        _scoredFallbackItems = null;
+    }
+
     public override void UpdateSearchText(string oldSearch, string newSearch)
     {
+        var stopwatch = Stopwatch.StartNew();
+
+        _cancellationTokenSource?.Cancel();
+        _cancellationTokenSource?.Dispose();
+        _cancellationTokenSource = new CancellationTokenSource();
+
+        var token = _cancellationTokenSource.Token;
+        if (token.IsCancellationRequested)
+        {
+            return;
+        }
+
         // Handle changes to the filter text here
         if (!string.IsNullOrEmpty(SearchText))
         {
-            var aliases = _serviceProvider.GetService<AliasManager>()!;
+            var aliases = _aliasManager;
+
+            if (token.IsCancellationRequested)
+            {
+                return;
+            }
+
             if (aliases.CheckAlias(newSearch))
             {
                 if (_filteredItemsIncludesApps != _includeApps)
@@ -166,7 +234,7 @@ public partial class MainListPage : DynamicListPage,
                     lock (_tlcManager.TopLevelCommands)
                     {
                         _filteredItemsIncludesApps = _includeApps;
-                        _filteredItems = null;
+                        ClearResults();
                     }
                 }
 
@@ -174,16 +242,56 @@ public partial class MainListPage : DynamicListPage,
             }
         }
 
+        if (token.IsCancellationRequested)
+        {
+            return;
+        }
+
         var commands = _tlcManager.TopLevelCommands;
         lock (commands)
         {
-            UpdateFallbacks(newSearch, commands.ToImmutableArray());
+            if (token.IsCancellationRequested)
+            {
+                return;
+            }
+
+            // prefilter fallbacks
+            var globalFallbacks = _settings.GetGlobalFallbacks();
+            var specialFallbacks = new List<TopLevelViewModel>(globalFallbacks.Length);
+            var commonFallbacks = new List<TopLevelViewModel>();
+
+            foreach (var s in commands)
+            {
+                if (!s.IsFallback)
+                {
+                    continue;
+                }
+
+                if (globalFallbacks.Contains(s.Id))
+                {
+                    specialFallbacks.Add(s);
+                }
+                else
+                {
+                    commonFallbacks.Add(s);
+                }
+            }
+
+            // start update of fallbacks; update special fallbacks separately,
+            // so they can finish faster
+            UpdateFallbacks(SearchText, specialFallbacks, token);
+            UpdateFallbacks(SearchText, commonFallbacks, token);
+
+            if (token.IsCancellationRequested)
+            {
+                return;
+            }
 
             // Cleared out the filter text? easy. Reset _filteredItems, and bail out.
             if (string.IsNullOrEmpty(newSearch))
             {
                 _filteredItemsIncludesApps = _includeApps;
-                _filteredItems = null;
+                ClearResults();
                 RaiseItemsChanged(commands.Count);
                 return;
             }
@@ -192,70 +300,188 @@ public partial class MainListPage : DynamicListPage,
             // re-use previous results. Reset _filteredItems, and keep er moving.
             if (!newSearch.StartsWith(oldSearch, StringComparison.CurrentCultureIgnoreCase))
             {
-                _filteredItems = null;
+                ClearResults();
             }
 
             // If the internal state has changed, reset _filteredItems to reset the list.
             if (_filteredItemsIncludesApps != _includeApps)
             {
-                _filteredItems = null;
+                ClearResults();
+            }
+
+            if (token.IsCancellationRequested)
+            {
+                return;
+            }
+
+            var newFilteredItems = Enumerable.Empty<IListItem>();
+            var newFallbacks = Enumerable.Empty<IListItem>();
+            var newApps = Enumerable.Empty<IListItem>();
+
+            if (_filteredItems is not null)
+            {
+                newFilteredItems = _filteredItems.Select(s => s.Item);
+            }
+
+            if (token.IsCancellationRequested)
+            {
+                return;
+            }
+
+            if (_filteredApps is not null)
+            {
+                newApps = _filteredApps.Select(s => s.Item);
+            }
+
+            if (token.IsCancellationRequested)
+            {
+                return;
+            }
+
+            if (_fallbackItems is not null)
+            {
+                newFallbacks = _fallbackItems.Select(s => s.Item);
+            }
+
+            if (token.IsCancellationRequested)
+            {
+                return;
             }
 
             // If we don't have any previous filter results to work with, start
             // with a list of all our commands & apps.
-            if (_filteredItems is null)
+            if (!newFilteredItems.Any() && !newApps.Any())
             {
-                _filteredItems = commands;
+                newFilteredItems = commands.Where(s => !s.IsFallback);
+
+                // Fallbacks are always included in the list, even if they
+                // don't match the search text. But we don't want to
+                // consider them when filtering the list.
+                newFallbacks = commonFallbacks;
+
+                if (token.IsCancellationRequested)
+                {
+                    return;
+                }
+
                 _filteredItemsIncludesApps = _includeApps;
+
                 if (_includeApps)
                 {
-                    IEnumerable<IListItem> apps = AllAppsCommandProvider.Page.GetItems();
-                    var appIds = apps.Select(app => app.Command.Id).ToArray();
+                    var allNewApps = AllAppsCommandProvider.Page.GetItems().Cast<AppListItem>().ToList();
 
-                    // Remove any top level pinned apps and use the apps from AllAppsCommandProvider.Page.GetItems()
-                    // since they contain details.
-                    _filteredItems = _filteredItems.Where(item => item.Command is not AppCommand);
-                    _filteredItems = _filteredItems.Concat(apps);
+                    // We need to remove pinned apps from allNewApps so they don't show twice.
+                    var pinnedApps = PinnedAppsManager.Instance.GetPinnedAppIdentifiers();
+
+                    if (pinnedApps.Length > 0)
+                    {
+                        newApps = allNewApps.Where(w => pinnedApps.IndexOf(w.AppIdentifier) < 0);
+                    }
+                    else
+                    {
+                        newApps = allNewApps;
+                    }
+                }
+
+                if (token.IsCancellationRequested)
+                {
+                    return;
                 }
             }
 
+            var searchQuery = _fuzzyMatcherProvider.Current.PrecomputeQuery(SearchText);
+
             // Produce a list of everything that matches the current filter.
-            _filteredItems = ListHelpers.FilterList<IListItem>(_filteredItems, SearchText, ScoreTopLevelItem);
-            RaiseItemsChanged(_filteredItems.Count());
+            _filteredItems = InternalListHelpers.FilterListWithScores(newFilteredItems, searchQuery, _scoringFunction);
+
+            if (token.IsCancellationRequested)
+            {
+                return;
+            }
+
+            IEnumerable<IListItem> newFallbacksForScoring = commands.Where(s => s.IsFallback && globalFallbacks.Contains(s.Id));
+            _scoredFallbackItems = InternalListHelpers.FilterListWithScores(newFallbacksForScoring, searchQuery, _scoringFunction);
+
+            if (token.IsCancellationRequested)
+            {
+                return;
+            }
+
+            _fallbackItems = InternalListHelpers.FilterListWithScores<IListItem>(newFallbacks ?? [], searchQuery, _fallbackScoringFunction);
+
+            if (token.IsCancellationRequested)
+            {
+                return;
+            }
+
+            // Produce a list of filtered apps with the appropriate limit
+            if (newApps.Any())
+            {
+                _filteredApps = InternalListHelpers.FilterListWithScores(newApps, searchQuery, _scoringFunction);
+
+                if (token.IsCancellationRequested)
+                {
+                    return;
+                }
+            }
+
+            var filterDoneTimestamp = stopwatch.ElapsedMilliseconds;
+            Logger.LogDebug($"Filter with '{newSearch}' in {filterDoneTimestamp}ms");
+
+            RaiseItemsChanged();
+
+            var listPageUpdatedTimestamp = stopwatch.ElapsedMilliseconds;
+            Logger.LogDebug($"Render items with '{newSearch}' in {listPageUpdatedTimestamp}ms /d {listPageUpdatedTimestamp - filterDoneTimestamp}ms");
+
+            stopwatch.Stop();
         }
     }
 
-    private void UpdateFallbacks(string newSearch, IReadOnlyList<TopLevelViewModel> commands)
+    private void UpdateFallbacks(string newSearch, IReadOnlyList<TopLevelViewModel> commands, CancellationToken token)
     {
-        // fire and forget
-        _ = Task.Run(() =>
+        _ = Task.Run(
+            () =>
         {
             var needsToUpdate = false;
 
             foreach (var command in commands)
             {
+                if (token.IsCancellationRequested)
+                {
+                    return;
+                }
+
                 var changedVisibility = command.SafeUpdateFallbackTextSynchronous(newSearch);
                 needsToUpdate = needsToUpdate || changedVisibility;
             }
 
             if (needsToUpdate)
             {
+                if (token.IsCancellationRequested)
+                {
+                    return;
+                }
+
                 RaiseItemsChanged();
             }
-        });
+        },
+            token);
     }
 
     private bool ActuallyLoading()
     {
-        var tlcManager = _serviceProvider.GetService<TopLevelCommandManager>()!;
         var allApps = AllAppsCommandProvider.Page;
-        return allApps.IsLoading || tlcManager.IsLoading;
+        return allApps.IsLoading || _tlcManager.IsLoading;
     }
 
     // Almost verbatim ListHelpers.ScoreListItem, but also accounting for the
     // fact that we want fallback handlers down-weighted, so that they don't
     // _always_ show up first.
-    private int ScoreTopLevelItem(string query, IListItem topLevelOrAppItem)
+    internal static int ScoreTopLevelItem(
+        in FuzzyQuery query,
+        IListItem topLevelOrAppItem,
+        IRecentCommandsManager history,
+        IPrecomputedFuzzyMatcher precomputedFuzzyMatcher)
     {
         var title = topLevelOrAppItem.Title;
         if (string.IsNullOrWhiteSpace(title))
@@ -263,95 +489,106 @@ public partial class MainListPage : DynamicListPage,
             return 0;
         }
 
-        var isWhiteSpace = string.IsNullOrWhiteSpace(query);
-
         var isFallback = false;
         var isAliasSubstringMatch = false;
         var isAliasMatch = false;
         var id = IdForTopLevelOrAppItem(topLevelOrAppItem);
 
-        var extensionDisplayName = string.Empty;
+        FuzzyTarget? extensionDisplayNameTarget = null;
         if (topLevelOrAppItem is TopLevelViewModel topLevel)
         {
             isFallback = topLevel.IsFallback;
+            extensionDisplayNameTarget = topLevel.GetExtensionNameTarget(precomputedFuzzyMatcher);
+
             if (topLevel.HasAlias)
             {
                 var alias = topLevel.AliasText;
-                isAliasMatch = alias == query;
-                isAliasSubstringMatch = isAliasMatch || alias.StartsWith(query, StringComparison.CurrentCultureIgnoreCase);
+                isAliasMatch = alias == query.Original;
+                isAliasSubstringMatch = isAliasMatch || alias.StartsWith(query.Original, StringComparison.CurrentCultureIgnoreCase);
             }
-
-            extensionDisplayName = topLevel.ExtensionHost?.Extension?.PackageDisplayName ?? string.Empty;
         }
 
-        // StringMatcher.FuzzySearch will absolutely BEEF IT if you give it a
-        // whitespace-only query.
-        //
-        // in that scenario, we'll just use a simple string contains for the
-        // query. Maybe someone is really looking for things with a space in
-        // them, I don't know.
-
-        // Title:
-        // * whitespace query: 1 point
-        // * otherwise full weight match
-        var nameMatch = isWhiteSpace ?
-            (title.Contains(query) ? 1 : 0) :
-            StringMatcher.FuzzySearch(query, title).Score;
-
-        // Subtitle:
-        // * whitespace query: 1/2 point
-        // * otherwise ~half weight match. Minus a bit, because subtitles tend to be longer
-        var descriptionMatch = isWhiteSpace ?
-            (topLevelOrAppItem.Subtitle.Contains(query) ? .5 : 0) :
-            (StringMatcher.FuzzySearch(query, topLevelOrAppItem.Subtitle).Score - 4) / 2.0;
-
-        // Extension title: despite not being visible, give the extension name itself some weight
-        // * whitespace query: 0 points
-        // * otherwise more weight than a subtitle, but not much
-        var extensionTitleMatch = isWhiteSpace ? 0 : StringMatcher.FuzzySearch(query, extensionDisplayName).Score / 1.5;
-
-        var scores = new[]
+        // Handle whitespace query separately - FuzzySearch doesn't handle it well
+        if (string.IsNullOrWhiteSpace(query.Original))
         {
-             nameMatch,
-             descriptionMatch,
-             isFallback ? 1 : 0, // Always give fallbacks a chance
-        };
-        var max = scores.Max();
+            return ScoreWhitespaceQuery(query.Original, title, topLevelOrAppItem.Subtitle, isFallback);
+        }
 
-        // _Add_ the extension name. This will bubble items that match both
-        // title and extension name up above ones that just match title.
-        // e.g. "git" will up-weight "GitHub searches" from the GitHub extension
-        // above "git" from "whatever"
-        max = max + extensionTitleMatch;
+        // Get precomputed targets
+        var (titleTarget, subtitleTarget) = topLevelOrAppItem is IPrecomputedListItem precomputedItem
+            ? (precomputedItem.GetTitleTarget(precomputedFuzzyMatcher), precomputedItem.GetSubtitleTarget(precomputedFuzzyMatcher))
+            : (precomputedFuzzyMatcher.PrecomputeTarget(title), precomputedFuzzyMatcher.PrecomputeTarget(topLevelOrAppItem.Subtitle));
 
-        var matchSomething = max
-            + (isAliasMatch ? 9001 : (isAliasSubstringMatch ? 1 : 0));
+        // Score components
+        var nameScore = precomputedFuzzyMatcher.Score(query, titleTarget);
+        var descriptionScore = (precomputedFuzzyMatcher.Score(query, subtitleTarget) - 4) / 2.0;
+        var extensionScore = extensionDisplayNameTarget is { } extTarget ? precomputedFuzzyMatcher.Score(query, extTarget) / 1.5 : 0;
 
-        // If we matched title, subtitle, or alias (something real), then
-        // here we add the recent command weight boost
-        //
-        // Otherwise something like `x` will still match everything you've run before
-        var finalScore = matchSomething;
-        if (matchSomething > 0)
+        // Take best match from title/description/fallback, then add extension score
+        // Extension adds to max so items matching both title AND extension bubble up
+        var baseScore = Math.Max(Math.Max(nameScore, descriptionScore), isFallback ? 1 : 0);
+        var matchScore = baseScore + extensionScore;
+
+        // Apply a penalty to fallback items so they rank below direct matches.
+        // Fallbacks that dynamically match queries (like RDP connections) should
+        // appear after apps and direct command matches.
+        if (isFallback && matchScore > 1)
         {
-            var history = _serviceProvider.GetService<AppStateModel>()!.RecentCommands;
-            var recentWeightBoost = history.GetCommandHistoryWeight(id);
-            finalScore += recentWeightBoost;
+            // Reduce fallback scores by 50% to prioritize direct matches
+            matchScore = matchScore * 0.5;
+        }
+
+        // Alias matching: exact match is overwhelming priority, substring match adds a small boost
+        var aliasBoost = isAliasMatch ? 9001 : (isAliasSubstringMatch ? 1 : 0);
+        var totalMatch = matchScore + aliasBoost;
+
+        // Apply scaling and history boost only if we matched something real
+        var finalScore = totalMatch * 10;
+        if (totalMatch > 0)
+        {
+            finalScore += history.GetCommandHistoryWeight(id);
         }
 
         return (int)finalScore;
     }
 
+    private static int ScoreWhitespaceQuery(string query, string title, string subtitle, bool isFallback)
+    {
+        // Simple contains check for whitespace queries
+        var nameMatch = title.Contains(query, StringComparison.Ordinal) ? 1.0 : 0;
+        var descriptionMatch = subtitle.Contains(query, StringComparison.Ordinal) ? 0.5 : 0;
+        var baseScore = Math.Max(Math.Max(nameMatch, descriptionMatch), isFallback ? 1 : 0);
+
+        return (int)(baseScore * 10);
+    }
+
+    private static int ScoreFallbackItem(IListItem topLevelOrAppItem, string[] fallbackRanks)
+    {
+        // Default to 1 so it always shows in list.
+        var finalScore = 1;
+
+        if (topLevelOrAppItem is TopLevelViewModel topLevelViewModel)
+        {
+            var index = Array.IndexOf(fallbackRanks, topLevelViewModel.Id);
+
+            if (index >= 0)
+            {
+                finalScore = fallbackRanks.Length - index + 1;
+            }
+        }
+
+        return finalScore;
+    }
+
     public void UpdateHistory(IListItem topLevelOrAppItem)
     {
         var id = IdForTopLevelOrAppItem(topLevelOrAppItem);
-        var state = _serviceProvider.GetService<AppStateModel>()!;
-        var history = state.RecentCommands;
+        var history = _appStateModel.RecentCommands;
         history.AddHistoryItem(id);
-        AppStateModel.SaveState(state);
+        AppStateModel.SaveState(_appStateModel);
     }
 
-    private string IdForTopLevelOrAppItem(IListItem topLevelOrAppItem)
+    private static string IdForTopLevelOrAppItem(IListItem topLevelOrAppItem)
     {
         if (topLevelOrAppItem is TopLevelViewModel topLevel)
         {
@@ -371,4 +608,21 @@ public partial class MainListPage : DynamicListPage,
     private void SettingsChangedHandler(SettingsModel sender, object? args) => HotReloadSettings(sender);
 
     private void HotReloadSettings(SettingsModel settings) => ShowDetails = settings.ShowAppDetails;
+
+    public void Dispose()
+    {
+        _cancellationTokenSource?.Cancel();
+        _cancellationTokenSource?.Dispose();
+
+        _tlcManager.PropertyChanged -= TlcManager_PropertyChanged;
+        _tlcManager.TopLevelCommands.CollectionChanged -= Commands_CollectionChanged;
+
+        if (_settings is not null)
+        {
+            _settings.SettingsChanged -= SettingsChangedHandler;
+        }
+
+        WeakReferenceMessenger.Default.UnregisterAll(this);
+        GC.SuppressFinalize(this);
+    }
 }

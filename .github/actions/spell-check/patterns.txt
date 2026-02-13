@@ -1,5 +1,10 @@
 # See https://github.com/check-spelling/check-spelling/wiki/Configuration-Examples:-patterns
 
+# marker to ignore all code on line
+^.*/\* #no-spell-check-line \*/.*$
+# marker for ignoring a comment to the end of the line
+// #no-spell-check.*$
+
 # Gaelic
 Gàidhlig
 
@@ -248,7 +253,7 @@ _SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING
 
 # hit-count: 1 file-count: 1
 # Amazon
-\bamazon\.com/[-\w]+/(?:dp/[0-9A-Z]+|)[^"'\s]+
+\bamazon\.com/[-\w]+/(?:dp/[0-9A-Z]+|)
 
 # hit-count: 3 file-count: 3
 # imgur
@@ -264,3 +269,23 @@ St&yle
 # This matches a relative clause where the relative pronoun "that" is omitted.
 # Example: "Gets or sets the window the TitleBar should configure."
 \bthe\s+\w+\s+the\b
+
+# Usernames with numbers
+# 0x6f677548 is user name but user folder causes a flag
+\bx6f677548\b
+
+# Windows API constants and hardware interface terms
+\bCOINIT[_A-Z]*\b
+\bEOAC[_A-Z]*\b
+\b(?:RPC_C_AUTHN_)?WINNT\b
+\bUPDATEREGISTRY\b
+\b(?:CDS_)?UPDATEREGISTRY\b
+
+# Display interface terms (HDMI, DVI, DisplayPort)
+\b(?:HDMI|DVI|DisplayPort)(?:-\d+)?\b
+
+# 2D Region struct names
+\bDisplayConfig2?D?Region\b
+
+# Microsoft Store URLs and product IDs
+ms-windows-store://\S+

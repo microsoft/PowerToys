@@ -27,6 +27,8 @@
     <Thickness x:Key="TagPadding">4,2,4,2</Thickness>
     <Thickness x:Key="TagBorderThickness">1</Thickness>
 
+    <local:IconMarginConverter x:Key="IconMarginConverter" />
+
     <Style BasedOn="{StaticResource DefaultTagStyle}" TargetType="local:Tag" />
 
     <Style x:Key="DefaultTagStyle" TargetType="local:Tag">
@@ -70,8 +72,9 @@
                             <local:IconBox
                                 x:Name="PART_Icon"
                                 Grid.Column="0"
+                                Width="12"
                                 Height="12"
-                                Margin="0,0,4,0"
+                                Margin="{Binding Text, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource IconMarginConverter}}"
                                 SourceKey="{TemplateBinding Icon}" />
                             <TextBlock
                                 Grid.Column="1"

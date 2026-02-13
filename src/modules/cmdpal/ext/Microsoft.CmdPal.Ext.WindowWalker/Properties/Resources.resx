@@ -209,7 +209,7 @@
     <value>When disabled, windows will be sorted by title</value>
   </data>
   <data name="windowwalker_NotResponding" xml:space="preserve">
-    <value>Not Responding</value>
+    <value>Not responding</value>
   </data>
   <data name="window_walker_top_level_command_title" xml:space="preserve">
     <value>Switch between open windows</value>
@@ -218,7 +218,7 @@
     <value>Switch to</value>
   </data>
   <data name="VirtualDesktopHelper_AllDesktops" xml:space="preserve">
-    <value>On all Desktops</value>
+    <value>On all desktops</value>
   </data>
   <data name="VirtualDesktopHelper_Desktop" xml:space="preserve">
     <value>Desktop {0}</value>
@@ -234,5 +234,11 @@
   </data>
   <data name="windowwalker_NoResultsMessage" xml:space="preserve">
     <value>No open windows found</value>
+  </data>
+  <data name="windowwalker_SettingUseWindowIcon" xml:space="preserve">
+    <value>Use window icons</value>
+  </data>
+  <data name="windowwalker_SettingUseWindowIcon_Description" xml:space="preserve">
+    <value>Show the actual window icon instead of the process icon</value>
   </data>
 </root>

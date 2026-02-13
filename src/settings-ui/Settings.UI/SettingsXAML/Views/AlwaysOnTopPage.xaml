@@ -6,36 +6,27 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:Microsoft.PowerToys.Settings.UI.Helpers"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ptcontrols="using:Microsoft.PowerToys.Common.UI.Controls"
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     xmlns:ui="using:CommunityToolkit.WinUI"
     AutomationProperties.LandmarkType="Main"
     mc:Ignorable="d">
-
+    <local:NavigablePage.Resources />
     <controls:SettingsPageControl
         x:Uid="AlwaysOnTop"
         IsTabStop="False"
         ModuleImageSource="ms-appx:///Assets/Settings/Modules/AlwaysOnTop.png">
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
-                <tkcontrols:SettingsCard
-                    Name="AlwaysOnTopEnableToggleControlHeaderText"
-                    x:Uid="AlwaysOnTop_EnableToggleControl_HeaderText"
-                    HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/AlwaysOnTop.png}"
-                    IsEnabled="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
-                    <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
-                </tkcontrols:SettingsCard>
-                <InfoBar
-                    x:Uid="GPO_SettingIsManaged"
-                    IsClosable="False"
-                    IsOpen="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
-                    IsTabStop="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
-                    Severity="Informational">
-                    <InfoBar.IconSource>
-                        <FontIconSource FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE72E;" />
-                    </InfoBar.IconSource>
-                </InfoBar>
+                <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}">
+                    <tkcontrols:SettingsCard
+                        Name="AlwaysOnTopEnableToggleControlHeaderText"
+                        x:Uid="AlwaysOnTop_EnableToggleControl_HeaderText"
+                        HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/AlwaysOnTop.png}">
+                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
+                </controls:GPOInfoControl>
                 <controls:SettingsGroup x:Uid="AlwaysOnTop_Activation_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-
                     <tkcontrols:SettingsExpander
                         Name="AlwaysOnTopActivationShortcut"
                         x:Uid="AlwaysOnTop_ActivationShortcut"
@@ -48,6 +39,7 @@
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
+
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup x:Uid="AlwaysOnTop_Behavior_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
@@ -105,6 +97,22 @@
                     <tkcontrols:SettingsCard x:Uid="AlwaysOnTop_Sound" HeaderIcon="{ui:FontIcon Glyph=&#xE7F3;}">
                         <ToggleSwitch IsOn="{x:Bind ViewModel.SoundEnabled, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
+
+                    <tkcontrols:SettingsExpander
+                        x:Uid="AlwaysOnTop_TransparencyInfo"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE790;}"
+                        IsExpanded="True">
+                        <tkcontrols:SettingsExpander.Items>
+                            <tkcontrols:SettingsCard>
+                                <tkcontrols:SettingsCard.Description>
+                                    <StackPanel Orientation="Vertical">
+                                        <tkcontrols:MarkdownTextBlock Config="{StaticResource DescriptionTextMarkdownConfig}" Text="{x:Bind ViewModel.IncreaseOpacityShortcut, Mode=OneWay}" />
+                                        <tkcontrols:MarkdownTextBlock Config="{StaticResource DescriptionTextMarkdownConfig}" Text="{x:Bind ViewModel.DecreaseOpacityShortcut, Mode=OneWay}" />
+                                    </StackPanel>
+                                </tkcontrols:SettingsCard.Description>
+                            </tkcontrols:SettingsCard>
+                        </tkcontrols:SettingsExpander.Items>
+                    </tkcontrols:SettingsExpander>
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup x:Uid="ExcludedApps" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">

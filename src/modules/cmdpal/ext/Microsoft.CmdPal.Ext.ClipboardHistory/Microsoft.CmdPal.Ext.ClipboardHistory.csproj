@@ -1,6 +1,6 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-  <Import Project="..\..\..\..\Common.Dotnet.CsWinRT.props" />
-  <Import Project="..\..\..\..\Common.Dotnet.AotCompatibility.props" />
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
+  <Import Project="$(RepoRoot)src\Common.Dotnet.AotCompatibility.props" />
   <Import Project="..\Common.ExtDependencies.props" />
   <PropertyGroup>
     <RootNamespace>Microsoft.CmdPal.Ext.ClipboardHistory</RootNamespace>
@@ -10,7 +10,8 @@
 	  <Nullable>enable</Nullable> 
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Microsoft.CmdPal.Common\Microsoft.CmdPal.Common.csproj" />
+    <ProjectReference Include="..\..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
+    <ProjectReference Include="..\..\Core\Microsoft.CmdPal.Core.Common\Microsoft.CmdPal.Core.Common.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.Mvvm" />
@@ -37,6 +38,42 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Update="Assets\ClipboardHistory.svg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Update="Assets\Icons\ic_fluent_clipboard_20_regular.dark.svg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Update="Assets\Icons\ic_fluent_clipboard_20_regular.light.svg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Update="Assets\Icons\ic_fluent_clipboard_image_20_regular.dark.svg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Update="Assets\Icons\ic_fluent_clipboard_image_20_regular.light.svg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Update="Assets\Icons\ic_fluent_clipboard_letter_20_regular.dark.svg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Update="Assets\Icons\ic_fluent_clipboard_letter_20_regular.light.svg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Update="Assets\Icons\ic_fluent_copy_20_regular.dark.svg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Update="Assets\Icons\ic_fluent_copy_20_regular.light.svg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Update="Assets\Icons\ic_fluent_document_copy_20_regular.dark.svg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Update="Assets\Icons\ic_fluent_document_copy_20_regular.light.svg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Update="Assets\Icons\ic_fluent_image_copy_20_regular.dark.svg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Update="Assets\Icons\ic_fluent_image_copy_20_regular.light.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

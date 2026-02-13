@@ -144,4 +144,133 @@
   <data name="clipboard_failed_to_load" xml:space="preserve">
     <value>Loading clipboard history failed</value>
   </data>
+  <data name="delete_command_name" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="delete_toast_text" xml:space="preserve">
+    <value>Deleted from clipboard history</value>
+  </data>
+  <data name="settings_keep_after_paste_description" xml:space="preserve">
+    <value>Keep items in clipboard history after pasting</value>
+  </data>
+  <data name="settings_keep_after_paste_title" xml:space="preserve">
+    <value>Keep items after pasting</value>
+  </data>
+  <data name="settings_confirm_delete_title" xml:space="preserve">
+    <value>Ask for confirmation before deleting items</value>
+  </data>
+  <data name="settings_confirm_delete_description" xml:space="preserve">
+    <value>Show a confirmation dialog when manually deleting an item</value>
+  </data>
+  <data name="delete_confirmation_title" xml:space="preserve">
+    <value>Delete item?</value>
+  </data>
+  <data name="delete_confirmation_message" xml:space="preserve">
+    <value>Are you sure you want to delete this item from clipboard history? This action cannot be undone.</value>
+  </data>
+  <data name="settings_primary_action_title" xml:space="preserve">
+    <value>Primary action</value>
+  </data>
+  <data name="settings_primary_action_description" xml:space="preserve">
+    <value>Primary action (Enter key)</value>
+  </data>
+  <data name="settings_primary_action_default" xml:space="preserve">
+    <value>Default (Copy to Clipboard)</value>
+  </data>
+  <data name="settings_primary_action_paste" xml:space="preserve">
+    <value>Paste</value>
+  </data>
+  <data name="settings_primary_action_copy" xml:space="preserve">
+    <value>Copy to Clipboard</value>
+  </data>
+  <data name="open_url_command_name" xml:space="preserve">
+    <value>Open URL</value>
+  </data>
+  <data name="metadata_image_section_title" xml:space="preserve">
+    <value>Image metadata</value>
+  </data>
+  <data name="metadata_image_dimensions_key" xml:space="preserve">
+    <value>Dimensions</value>
+  </data>
+  <data name="metadata_image_dpi_key" xml:space="preserve">
+    <value>DPI</value>
+  </data>
+  <data name="metadata_image_storage_size_key" xml:space="preserve">
+    <value>Storage size</value>
+  </data>
+  <data name="metadata_text_section_title" xml:space="preserve">
+    <value>Text statistics</value>
+  </data>
+  <data name="metadata_text_characters_key" xml:space="preserve">
+    <value>Characters</value>
+  </data>
+  <data name="metadata_text_words_key" xml:space="preserve">
+    <value>Words</value>
+  </data>
+  <data name="metadata_text_sentences_key" xml:space="preserve">
+    <value>Sentences</value>
+  </data>
+  <data name="metadata_text_lines_key" xml:space="preserve">
+    <value>Lines</value>
+  </data>
+  <data name="metadata_text_paragraphs_key" xml:space="preserve">
+    <value>Paragraphs</value>
+  </data>
+  <data name="metadata_text_line_ending_key" xml:space="preserve">
+    <value>Line ending</value>
+  </data>
+  <data name="metadata_file_system_section_title" xml:space="preserve">
+    <value>File</value>
+  </data>
+  <data name="metadata_file_system_name_key" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="metadata_file_system_location_key" xml:space="preserve">
+    <value>Location</value>
+  </data>
+  <data name="metadata_file_system_type_key" xml:space="preserve">
+    <value>Type</value>
+  </data>
+  <data name="metadata_file_system_size_key" xml:space="preserve">
+    <value>Size</value>
+  </data>
+  <data name="metadata_file_system_modified_key" xml:space="preserve">
+    <value>Modified</value>
+  </data>
+  <data name="metadata_file_system_created_key" xml:space="preserve">
+    <value>Created</value>
+  </data>
+  <data name="metadata_web_link_section_title" xml:space="preserve">
+    <value>Web link</value>
+  </data>
+  <data name="metadata_web_link_url_key" xml:space="preserve">
+    <value>URL</value>
+  </data>
+  <data name="metadata_web_link_host_key" xml:space="preserve">
+    <value>Host</value>
+  </data>
+  <data name="metadata_web_link_port_key" xml:space="preserve">
+    <value>Port</value>
+  </data>
+  <data name="metadata_web_link_path_key" xml:space="preserve">
+    <value>Path</value>
+  </data>
+  <data name="metadata_web_link_query_params_key" xml:space="preserve">
+    <value>Query params</value>
+  </data>
+  <data name="metadata_web_link_fragment_key" xml:space="preserve">
+    <value>Fragment</value>
+  </data>
+  <data name="clipboard_item_image_title" xml:space="preserve">
+    <value>Image</value>
+  </data>
+  <data name="metadata_general_section_title" xml:space="preserve">
+    <value>General</value>
+  </data>
+  <data name="metadata_copied_key" xml:space="preserve">
+    <value>Copied</value>
+  </data>
+  <data name="metadata_file_system_folder_value" xml:space="preserve">
+    <value>Folder</value>
+  </data>
 </root>

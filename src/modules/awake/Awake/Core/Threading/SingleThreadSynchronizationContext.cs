@@ -11,7 +11,7 @@ namespace Awake.Core.Threading
 {
     internal sealed class SingleThreadSynchronizationContext : SynchronizationContext
     {
-        private readonly Queue<Tuple<SendOrPostCallback, object?>?> queue = new();
+        private readonly Queue<(SendOrPostCallback Callback, object? State)?> queue = new();
 
         public override void Post(SendOrPostCallback d, object? state)
         {
@@ -19,7 +19,7 @@ namespace Awake.Core.Threading
 
             lock (queue)
             {
-                queue.Enqueue(Tuple.Create(d, state));
+                queue.Enqueue((d, state));
                 Monitor.Pulse(queue);
             }
         }
@@ -28,7 +28,7 @@ namespace Awake.Core.Threading
         {
             while (true)
             {
-                Tuple<SendOrPostCallback, object?>? work;
+                (SendOrPostCallback Callback, object? State)? work;
                 lock (queue)
                 {
                     while (queue.Count == 0)
@@ -46,7 +46,7 @@ namespace Awake.Core.Threading
 
                 try
                 {
-                    work.Item1(work.Item2);
+                    work.Value.Callback(work.Value.State);
                 }
                 catch (Exception e)
                 {

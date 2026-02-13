@@ -192,6 +192,7 @@ ycv
 yeelam
 Yuniardi
 yuyoyuppe
+zadjii
 Zeol
 Zhao
 Zhaopeng
@@ -206,8 +207,10 @@ Bilibili
 BVID
 capturevideosample
 cmdow
+Contoso
 Controlz
 cortana
+devhints
 dlnilsson
 fancymouse
 firefox
@@ -227,6 +230,8 @@ regedit
 roslyn
 Skia
 Spotify
+taskmgr
+tldr
 Vanara
 wangyi
 WEX
@@ -241,4 +246,3 @@ xamlstyler
 Xavalon
 Xbox
 Youdao
-zadjii

@@ -1,6 +1,6 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-  <Import Project="..\..\..\..\Common.Dotnet.CsWinRT.props" />
-  <Import Project="..\..\..\..\Common.Dotnet.AotCompatibility.props" />
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
+  <Import Project="$(RepoRoot)src\Common.Dotnet.AotCompatibility.props" />
   <Import Project="..\Common.ExtDependencies.props" />
   <PropertyGroup>
     <RootNamespace>Microsoft.CmdPal.Ext.WebSearch</RootNamespace>
@@ -31,13 +31,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Remove="Assets\WebSearch.svg" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Update="Assets\WebSearch.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Update="Assets\WebSearch.svg">
+    <Content Update="Assets\**\*.*">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

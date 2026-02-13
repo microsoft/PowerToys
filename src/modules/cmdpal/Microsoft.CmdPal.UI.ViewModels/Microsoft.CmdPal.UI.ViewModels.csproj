@@ -1,6 +1,6 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-  <Import Project="..\..\..\Common.Dotnet.CsWinRT.props" />
-  <Import Project="..\..\..\Common.Dotnet.AotCompatibility.props" />
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
+  <Import Project="$(RepoRoot)src\Common.Dotnet.AotCompatibility.props" />
 
   <PropertyGroup>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -23,11 +23,12 @@
     <PackageReference Include="CommunityToolkit.Common" />
     <PackageReference Include="CommunityToolkit.Mvvm" />
     <PackageReference Include="AdaptiveCards.Templating" />
+    <PackageReference Include="CommunityToolkit.WinUI.Extensions" />
     <PackageReference Include="Microsoft.Bot.AdaptiveExpressions.Core" />
     <PackageReference Include="AdaptiveCards.ObjectModel.WinUI3" GeneratePathProperty="true">
       <ExcludeAssets>compile</ExcludeAssets>
     </PackageReference>
-    <PackageReference Include="AdaptiveCards.Rendering.WinUI3" GeneratePathProperty="True" >
+    <PackageReference Include="AdaptiveCards.Rendering.WinUI3" GeneratePathProperty="True">
       <ExcludeAssets>compile</ExcludeAssets>
     </PackageReference>
 
@@ -55,8 +56,8 @@
 	</ItemGroup>
 	
   <ItemGroup>
-    <ProjectReference Include="..\Microsoft.CmdPal.Common\Microsoft.CmdPal.Common.csproj" />
-    <ProjectReference Include="..\Microsoft.CmdPal.Core.ViewModels\Microsoft.CmdPal.Core.ViewModels.csproj" />
+    <ProjectReference Include="..\Core\Microsoft.CmdPal.Core.Common\Microsoft.CmdPal.Core.Common.csproj" />
+    <ProjectReference Include="..\Core\Microsoft.CmdPal.Core.ViewModels\Microsoft.CmdPal.Core.ViewModels.csproj" />
     <ProjectReference Include="..\extensionsdk\Microsoft.CommandPalette.Extensions.Toolkit\Microsoft.CommandPalette.Extensions.Toolkit.csproj" />
 
     <ProjectReference Include="..\ext\Microsoft.CmdPal.Ext.Apps\Microsoft.CmdPal.Ext.Apps.csproj" />
@@ -94,16 +95,4 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
-
-  <!-- Just mark it as AOT compatible. Do not publish with AOT now. We need fully test before we really publish it as AOT enabled-->
-  <!--<PropertyGroup>
-    <SelfContained>true</SelfContained>
-    <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
-    <PublishTrimmed>true</PublishTrimmed>
-    <PublishSingleFile>true</PublishSingleFile>
-    --><!-- <DisableRuntimeMarshalling>true</DisableRuntimeMarshalling> --><!--
-    <PublishAot>true</PublishAot>
-	<EnableMsixTooling>true</EnableMsixTooling>
-  </PropertyGroup>-->
-
 </Project>

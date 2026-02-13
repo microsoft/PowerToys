@@ -148,16 +148,19 @@ std::optional<std::wstring> dispatch_json_action_to_module(const json::JsonObjec
     return result;
 }
 
-void send_json_config_to_module(const std::wstring& module_key, const std::wstring& settings)
+void send_json_config_to_module(const std::wstring& module_key, const std::wstring& settings, bool hotkeyUpdated)
 {
     auto moduleIt = modules().find(module_key);
     if (moduleIt != modules().end())
     {
         moduleIt->second->set_config(settings.c_str());
 
-        moduleIt->second.remove_hotkey_records();
-        moduleIt->second.update_hotkeys();
-        moduleIt->second.UpdateHotkeyEx();
+        if (hotkeyUpdated)
+        {
+            moduleIt->second.remove_hotkey_records();
+            moduleIt->second.update_hotkeys();
+            moduleIt->second.UpdateHotkeyEx();
+        }
     }
 }
 
@@ -166,7 +169,25 @@ void dispatch_json_config_to_modules(const json::JsonObject& powertoys_configs)
     for (const auto& powertoy_element : powertoys_configs)
     {
         const auto element = powertoy_element.Value().Stringify();
-        send_json_config_to_module(powertoy_element.Key().c_str(), element.c_str());
+
+        /* As PowerToys Run hotkeys are not registered by the runner, hotkey updates are
+         * triggered only when hotkey properties change to avoid incorrect conflict detection; 
+         * otherwise, the existing logic remains.
+         */
+        auto settings = powertoy_element.Value().GetObjectW();
+        bool hotkeyUpdated = true;
+        if (settings.HasKey(L"properties"))
+        {
+            const auto properties = settings.GetNamedObject(L"properties");
+
+            // Currently, only PowerToys Run settings use the 'hotkey_changed' property.
+            if (properties.HasKey(L"hotkey_changed"))
+            {
+                json::get(properties, L"hotkey_changed", hotkeyUpdated, true);
+            }
+        }
+        
+        send_json_config_to_module(powertoy_element.Key().c_str(), element.c_str(), hotkeyUpdated);
     }
 };
 
@@ -180,6 +201,8 @@ void dispatch_received_json(const std::wstring& json_to_parse)
         return;
     }
 
+    Logger::info(L"dispatch_received_json: {}", json_to_parse);
+
     for (const auto& base_element : j)
     {
         const auto name = base_element.Key();
@@ -188,12 +211,18 @@ void dispatch_received_json(const std::wstring& json_to_parse)
         if (name == L"general")
         {
             apply_general_settings(value.GetObjectW());
-            const std::wstring settings_string{ get_all_settings().Stringify().c_str() };
-            {
-                std::unique_lock lock{ ipc_mutex };
-                if (current_settings_ipc)
-                    current_settings_ipc->send(settings_string);
-            }
+            // const std::wstring settings_string{ get_all_settings().Stringify().c_str() };
+            // {
+            //     std::unique_lock lock{ ipc_mutex };
+            //     if (current_settings_ipc)
+            //         current_settings_ipc->send(settings_string);
+            // }
+        }
+        else if (name == L"module_status")
+        {
+            // Handle single module enable/disable update
+            // Expected format: {"module_status": {"ModuleName": true/false}}
+            apply_module_status_update(value.GetObjectW());
         }
         else if (name == L"powertoys")
         {
@@ -403,7 +432,7 @@ BOOL run_settings_non_elevated(LPCWSTR executable_path, LPWSTR executable_args, 
 
 DWORD g_settings_process_id = 0;
 
-void run_settings_window(bool show_oobe_window, bool show_scoobe_window, std::optional<std::wstring> settings_window, bool show_flyout = false, const std::optional<POINT>& flyout_position = std::nullopt)
+void run_settings_window(bool show_oobe_window, bool show_scoobe_window, std::optional<std::wstring> settings_window)
 {
     g_isLaunchInProgress = true;
 
@@ -473,22 +502,16 @@ void run_settings_window(bool show_oobe_window, bool show_scoobe_window, std::op
     // Arg 9: should scoobe window be shown
     std::wstring settings_showScoobe = show_scoobe_window ? L"true" : L"false";
 
-    // Arg 10: should flyout be shown
-    std::wstring settings_showFlyout = show_flyout ? L"true" : L"false";
-
-    // Arg 11: contains if there's a settings window argument. If true, will add one extra argument with the value to the call.
+    // Arg 10: contains if there's a settings window argument. If true, will add one extra argument with the value to the call.
     std::wstring settings_containsSettingsWindow = settings_window.has_value() ? L"true" : L"false";
 
-    // Arg 12: contains if there's flyout coordinates. If true, will add two extra arguments to the call containing the x and y coordinates.
-    std::wstring settings_containsFlyoutPosition = flyout_position.has_value() ? L"true" : L"false";
-
-    // Args 13, .... : Optional arguments depending on the options presented before. All by the same value.
+    // Args 11, .... : Optional arguments depending on the options presented before. All by the same value.
 
     // create general settings file to initialize the settings file with installation configurations like :
     // 1. Run on start up.
     PTSettingsHelper::save_general_settings(save_settings.to_json());
 
-    std::wstring executable_args = fmt::format(L"\"{}\" {} {} {} {} {} {} {} {} {} {} {}",
+    std::wstring executable_args = fmt::format(L"\"{}\" {} {} {} {} {} {} {} {} {}",
                                                executable_path,
                                                powertoys_pipe_name,
                                                settings_pipe_name,
@@ -498,22 +521,12 @@ void run_settings_window(bool show_oobe_window, bool show_scoobe_window, std::op
                                                settings_isUserAnAdmin,
                                                settings_showOobe,
                                                settings_showScoobe,
-                                               settings_showFlyout,
-                                               settings_containsSettingsWindow,
-                                               settings_containsFlyoutPosition);
+                                               settings_containsSettingsWindow);
 
     if (settings_window.has_value())
     {
         executable_args.append(L" ");
         executable_args.append(settings_window.value());
-    }
-
-    if (flyout_position)
-    {
-        executable_args.append(L" ");
-        executable_args.append(std::to_wstring(flyout_position.value().x));
-        executable_args.append(L" ");
-        executable_args.append(std::to_wstring(flyout_position.value().y));
     }
 
     BOOL process_created = false;
@@ -666,39 +679,22 @@ void bring_settings_to_front()
     EnumWindows(callback, 0);
 }
 
-void open_settings_window(std::optional<std::wstring> settings_window, bool show_flyout = false, const std::optional<POINT>& flyout_position)
+void open_settings_window(std::optional<std::wstring> settings_window)
 {
     if (g_settings_process_id != 0)
     {
-        if (show_flyout)
+        // nl instead of showing the window, send message to it (flyout might need to be hidden, main setting window activated)
+        // bring_settings_to_front();
+        if (current_settings_ipc)
         {
-            if (current_settings_ipc)
+            if (settings_window.has_value())
             {
-                if (!flyout_position.has_value())
-                {
-                    current_settings_ipc->send(L"{\"ShowYourself\":\"flyout\"}");
-                }
-                else
-                {
-                    current_settings_ipc->send(fmt::format(L"{{\"ShowYourself\":\"flyout\", \"x_position\":{}, \"y_position\":{} }}", std::to_wstring(flyout_position.value().x), std::to_wstring(flyout_position.value().y)));
-                }
+                std::wstring msg = L"{\"ShowYourself\":\"" + settings_window.value() + L"\"}";
+                current_settings_ipc->send(msg);
             }
-        }
-        else
-        {
-            // nl instead of showing the window, send message to it (flyout might need to be hidden, main setting window activated)
-            // bring_settings_to_front();
-            if (current_settings_ipc)
+            else
             {
-                if (settings_window.has_value())
-                {
-                    std::wstring msg = L"{\"ShowYourself\":\"" + settings_window.value() + L"\"}";
-                    current_settings_ipc->send(msg);
-                }
-                else
-                {
-                    current_settings_ipc->send(L"{\"ShowYourself\":\"Dashboard\"}");
-                }
+                current_settings_ipc->send(L"{\"ShowYourself\":\"Dashboard\"}");
             }
         }
     }
@@ -706,8 +702,8 @@ void open_settings_window(std::optional<std::wstring> settings_window, bool show
     {
         if (!g_isLaunchInProgress)
         {
-            std::thread([settings_window, show_flyout, flyout_position]() {
-                run_settings_window(false, false, settings_window, show_flyout, flyout_position);
+            std::thread([settings_window]() {
+                run_settings_window(false, false, settings_window);
             }).detach();
         }
     }
@@ -757,6 +753,8 @@ std::string ESettingsWindowNames_to_string(ESettingsWindowNames value)
         return "ColorPicker";
     case ESettingsWindowNames::CmdNotFound:
         return "CmdNotFound";
+    case ESettingsWindowNames::LightSwitch:
+        return "LightSwitch";
     case ESettingsWindowNames::FancyZones:
         return "FancyZones";
     case ESettingsWindowNames::FileLocksmith:
@@ -807,6 +805,8 @@ std::string ESettingsWindowNames_to_string(ESettingsWindowNames value)
         return "CmdPal";
     case ESettingsWindowNames::ZoomIt:
         return "ZoomIt";
+    case ESettingsWindowNames::PowerDisplay:
+        return "PowerDisplay";
     default:
     {
         Logger::error(L"Can't convert ESettingsWindowNames value={} to string", static_cast<int>(value));
@@ -841,6 +841,10 @@ ESettingsWindowNames ESettingsWindowNames_from_string(std::string value)
     else if (value == "CmdNotFound")
     {
         return ESettingsWindowNames::CmdNotFound;
+    }
+    else if (value == "LightSwitch")
+    {
+        return ESettingsWindowNames::LightSwitch;
     }
     else if (value == "FancyZones")
     {
@@ -941,6 +945,10 @@ ESettingsWindowNames ESettingsWindowNames_from_string(std::string value)
     else if (value == "ZoomIt")
     {
         return ESettingsWindowNames::ZoomIt;
+    }
+    else if (value == "PowerDisplay")
+    {
+        return ESettingsWindowNames::PowerDisplay;
     }
     else
     {

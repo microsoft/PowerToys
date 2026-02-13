@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <!-- Look at Directory.Build.props in root for common stuff as well -->
-  <Import Project="..\..\..\Common.Dotnet.CsWinRT.props" />
+  <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
 
   <PropertyGroup>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -9,7 +9,7 @@
 
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
-    <OutputPath>..\..\..\..\$(Platform)\$(Configuration)\tests\UnitTest-FancyZonesEditor\</OutputPath>
+    <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\tests\UnitTest-FancyZonesEditor\</OutputPath>
   </PropertyGroup>
 
   <ItemGroup>

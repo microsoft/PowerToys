@@ -4,7 +4,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using Microsoft.CmdPal.Ext.Apps.Helpers;
 using Microsoft.CmdPal.Ext.Apps.Programs;
 using Microsoft.CmdPal.Ext.Apps.Properties;
 using Microsoft.CmdPal.Ext.Apps.State;
@@ -37,7 +37,6 @@ public partial class AllAppsCommandProvider : CommandProvider
 
         _listItem = new(_page)
         {
-            Subtitle = Resources.search_installed_apps,
             MoreCommands = [new CommandContextItem(AllAppsSettings.Instance.Settings.SettingsPage)],
         };
 
@@ -45,32 +44,140 @@ public partial class AllAppsCommandProvider : CommandProvider
         PinnedAppsManager.Instance.PinStateChanged += OnPinStateChanged;
     }
 
-    public override ICommandItem[] TopLevelCommands() => [_listItem, .._page.GetPinnedApps()];
+    public static int TopLevelResultLimit
+    {
+        get
+        {
+            var limitSetting = AllAppsSettings.Instance.SearchResultLimit;
 
-    public ICommandItem? LookupApp(string displayName)
+            if (limitSetting is null)
+            {
+                return 10;
+            }
+
+            var quantity = 10;
+
+            if (int.TryParse(limitSetting, out var result))
+            {
+                quantity = result < 0 ? quantity : result;
+            }
+
+            return quantity;
+        }
+    }
+
+    public override ICommandItem[] TopLevelCommands() => [_listItem, .. _page.GetPinnedApps()];
+
+    public ICommandItem? LookupAppByPackageFamilyName(string packageFamilyName, bool requireSingleMatch)
+    {
+        if (string.IsNullOrEmpty(packageFamilyName))
+        {
+            return null;
+        }
+
+        var items = _page.GetItems();
+        List<ICommandItem> matches = [];
+
+        foreach (var item in items)
+        {
+            if (item is AppListItem appItem && string.Equals(packageFamilyName, appItem.App.PackageFamilyName, StringComparison.OrdinalIgnoreCase))
+            {
+                matches.Add(item);
+                if (!requireSingleMatch)
+                {
+                    // Return early if we don't require uniqueness.
+                    return item;
+                }
+            }
+        }
+
+        return requireSingleMatch && matches.Count == 1 ? matches[0] : null;
+    }
+
+    public ICommandItem? LookupAppByProductCode(string productCode, bool requireSingleMatch)
+    {
+        if (string.IsNullOrEmpty(productCode))
+        {
+            return null;
+        }
+
+        if (!UninstallRegistryAppLocator.TryGetInstallInfo(productCode, out _, out var candidates) || candidates.Count <= 0)
+        {
+            return null;
+        }
+
+        var items = _page.GetItems();
+        List<ICommandItem> matches = [];
+
+        foreach (var item in items)
+        {
+            if (item is not AppListItem appListItem || string.IsNullOrEmpty(appListItem.App.FullExecutablePath))
+            {
+                continue;
+            }
+
+            foreach (var candidate in candidates)
+            {
+                if (string.Equals(appListItem.App.FullExecutablePath, candidate, StringComparison.OrdinalIgnoreCase))
+                {
+                    matches.Add(item);
+                    if (!requireSingleMatch)
+                    {
+                        return item;
+                    }
+                }
+            }
+        }
+
+        return requireSingleMatch && matches.Count == 1 ? matches[0] : null;
+    }
+
+    public ICommandItem? LookupAppByDisplayName(string displayName)
     {
         var items = _page.GetItems();
 
-        // We're going to do this search in two directions:
-        // First, is this name a substring of any app...
-        var nameMatches = items.Where(i => i.Title.Contains(displayName));
+        var nameMatches = new List<ICommandItem>();
+        ICommandItem? bestAppMatch = null;
+        var bestLength = -1;
 
-        // ... Then, does any app have this name as a substring ...
-        // Only get one of these - "Terminal Preview" contains both "Terminal" and "Terminal Preview", so just take the best one
-        var appMatches = items.Where(i => displayName.Contains(i.Title)).OrderByDescending(i => i.Title.Length).Take(1);
+        foreach (var item in items)
+        {
+            if (item.Title is null)
+            {
+                continue;
+            }
+
+            // We're going to do this search in two directions:
+            // First, is this name a substring of any app...
+            if (item.Title.Contains(displayName))
+            {
+                nameMatches.Add(item);
+            }
+
+            // ... Then, does any app have this name as a substring ...
+            // Only get one of these - "Terminal Preview" contains both "Terminal" and "Terminal Preview", so just take the best one
+            if (displayName.Contains(item.Title))
+            {
+                if (item.Title.Length > bestLength)
+                {
+                    bestLength = item.Title.Length;
+                    bestAppMatch = item;
+                }
+            }
+        }
 
         // ... Now, combine those two
-        var both = nameMatches.Concat(appMatches);
+        List<ICommandItem> both = bestAppMatch is null ? nameMatches : [.. nameMatches, bestAppMatch];
 
-        if (both.Count() == 1)
+        if (both.Count == 1)
         {
-            return both.First();
+            return both[0];
         }
-        else if (nameMatches.Count() == 1 && appMatches.Count() == 1)
+        else if (nameMatches.Count == 1 && bestAppMatch is not null)
         {
-            if (nameMatches.First() == appMatches.First())
+            if (nameMatches[0] == bestAppMatch)
             {
-                return nameMatches.First();
+                return nameMatches[0];
             }
         }
 

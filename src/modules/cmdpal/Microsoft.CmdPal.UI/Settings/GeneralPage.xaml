@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8" ?>
 <Page
     x:Class="Microsoft.CmdPal.UI.Settings.GeneralPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -9,6 +9,7 @@
     xmlns:local="using:Microsoft.CmdPal.UI.Settings"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ptControls="using:Microsoft.CmdPal.UI.Controls"
+    xmlns:ptcontrols="using:Microsoft.PowerToys.Common.UI.Controls"
     xmlns:ui="using:CommunityToolkit.WinUI"
     xmlns:viewModels="using:Microsoft.CmdPal.UI.ViewModels"
     mc:Ignorable="d">
@@ -34,25 +35,35 @@
                   <RepositionThemeTransition IsStaggeringEnabled="False" />
               </StackPanel.ChildrenTransitions>-->
 
-                    <TextBlock x:Uid="ActivationSettingsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
+                    <!--  'Activation' section  -->
 
+                    <TextBlock x:Uid="ActivationSettingsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
                     <controls:SettingsExpander
                         x:Uid="Settings_GeneralPage_ActivationKey_SettingsExpander"
                         HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}"
                         IsExpanded="True">
                         <ptControls:ShortcutControl HotkeySettings="{x:Bind viewModel.Hotkey, Mode=TwoWay}" />
-
                         <controls:SettingsExpander.Items>
-                            <controls:SettingsCard x:Uid="Settings_GeneralPage_LowLevelHook_SettingsCard">
-                                <ToggleSwitch IsOn="{x:Bind viewModel.UseLowLevelGlobalHotkey, Mode=TwoWay}" />
+                            <controls:SettingsCard ContentAlignment="Left">
+                                <ptcontrols:CheckBoxWithDescriptionControl x:Uid="Settings_GeneralPage_LowLevelHook_SettingsCard" IsChecked="{x:Bind viewModel.UseLowLevelGlobalHotkey, Mode=TwoWay}" />
+                            </controls:SettingsCard>
+                            <controls:SettingsCard ContentAlignment="Left">
+                                <ptcontrols:CheckBoxWithDescriptionControl x:Uid="Settings_GeneralPage_IgnoreShortcutWhenFullscreen_SettingsCard" IsChecked="{x:Bind viewModel.IgnoreShortcutWhenFullscreen, Mode=TwoWay}" />
                             </controls:SettingsCard>
                         </controls:SettingsExpander.Items>
                     </controls:SettingsExpander>
-                    <controls:SettingsCard x:Uid="Settings_GeneralPage_IgnoreShortcutWhenFullscreen_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE7FC;}">
-                        <ToggleSwitch IsOn="{x:Bind viewModel.IgnoreShortcutWhenFullscreen, Mode=TwoWay}" />
-                    </controls:SettingsCard>
-                    <controls:SettingsCard x:Uid="Settings_GeneralPage_GoHome_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE80F;}">
-                        <ToggleSwitch IsOn="{x:Bind viewModel.HotkeyGoesHome, Mode=TwoWay}" />
+                    <controls:SettingsCard x:Uid="Settings_GeneralPage_AutoGoHome_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE80F;}">
+                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind viewModel.AutoGoBackIntervalIndex, Mode=TwoWay}">
+                            <ComboBoxItem x:Uid="Settings_GeneralPage_AutoGoHome_Item_Never" />
+                            <ComboBoxItem x:Uid="Settings_GeneralPage_AutoGoHome_Item_Immediately" />
+                            <ComboBoxItem x:Uid="Settings_GeneralPage_AutoGoHome_Item_After10Seconds" />
+                            <ComboBoxItem x:Uid="Settings_GeneralPage_AutoGoHome_Item_After20Seconds" />
+                            <ComboBoxItem x:Uid="Settings_GeneralPage_AutoGoHome_Item_After30Seconds" />
+                            <ComboBoxItem x:Uid="Settings_GeneralPage_AutoGoHome_Item_After60Seconds" />
+                            <ComboBoxItem x:Uid="Settings_GeneralPage_AutoGoHome_Item_After90Seconds" />
+                            <ComboBoxItem x:Uid="Settings_GeneralPage_AutoGoHome_Item_After120Seconds" />
+                            <ComboBoxItem x:Uid="Settings_GeneralPage_AutoGoHome_Item_After180Seconds" />
+                        </ComboBox>
                     </controls:SettingsCard>
                     <controls:SettingsCard x:Uid="Settings_GeneralPage_HighlightSearch_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE933;}">
                         <ToggleSwitch IsOn="{x:Bind viewModel.HighlightSearchOnActivate, Mode=TwoWay}" />
@@ -63,28 +74,28 @@
                             <ComboBoxItem x:Uid="Run_Radio_Position_Primary_Monitor" />
                             <ComboBoxItem x:Uid="Run_Radio_Position_Focus" />
                             <ComboBoxItem x:Uid="Run_Radio_Position_In_Place" />
+                            <ComboBoxItem x:Uid="Run_Radio_Position_LastPosition" />
                         </ComboBox>
                     </controls:SettingsCard>
 
+                    <!--  'Behavior' section  -->
+
                     <TextBlock x:Uid="BehaviorSettingsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
-
-                    <controls:SettingsCard x:Uid="Settings_GeneralPage_ShowAppDetails_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE8A0;}">
-                        <ToggleSwitch IsOn="{x:Bind viewModel.ShowAppDetails, Mode=TwoWay}" />
-                    </controls:SettingsCard>
-
-                    <controls:SettingsCard x:Uid="Settings_GeneralPage_BackspaceGoesBack_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE750;}">
-                        <ToggleSwitch IsOn="{x:Bind viewModel.BackspaceGoesBack, Mode=TwoWay}" />
-                    </controls:SettingsCard>
-
-                    <controls:SettingsCard x:Uid="Settings_GeneralPage_SingleClickActivation_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE962;}">
-                        <ToggleSwitch IsOn="{x:Bind viewModel.SingleClickActivates, Mode=TwoWay}" />
-                    </controls:SettingsCard>
 
                     <controls:SettingsCard x:Uid="Settings_GeneralPage_ShowSystemTrayIcon_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE75B;}">
                         <ToggleSwitch IsOn="{x:Bind viewModel.ShowSystemTrayIcon, Mode=TwoWay}" />
                     </controls:SettingsCard>
 
-                    <!--  Example 'About' section  -->
+                    <!--  'For Developers' section  -->
+
+                    <TextBlock x:Uid="ForDevelopersSettingsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
+
+                    <controls:SettingsCard x:Uid="Settings_GeneralPage_AllowExternalReload_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE777;}">
+                        <ToggleSwitch IsOn="{x:Bind viewModel.AllowExternalReload, Mode=TwoWay}" />
+                    </controls:SettingsCard>
+
+                    <!--  'About' section  -->
+
                     <TextBlock x:Uid="AboutSettingsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
 
                     <controls:SettingsExpander x:Uid="Settings_GeneralPage_About_SettingsExpander" HeaderIcon="{ui:BitmapIcon Source=ms-appx:///Assets/StoreLogo.png}">
@@ -96,7 +107,7 @@
                             <controls:SettingsCard HorizontalContentAlignment="Left" ContentAlignment="Left">
                                 <StackPanel Margin="-12,0,0,0" Orientation="Vertical">
                                     <HyperlinkButton x:Uid="Settings_GeneralPage_About_GithubLink_Hyperlink" NavigateUri="https://go.microsoft.com/fwlink/?linkid=2310837" />
-                                    <HyperlinkButton x:Uid="Settings_GeneralPage_About_SDKDocs_Hyperlink" NavigateUri="https://go.microsoft.com/fwlink/?linkid=2310639" />
+                                    <HyperlinkButton x:Uid="Settings_GeneralPage_About_SDKDocs_Hyperlink" NavigateUri="https://aka.ms/cmdpalextensions-devdocs" />
                                 </StackPanel>
                             </controls:SettingsCard>
                         </controls:SettingsExpander.Items>

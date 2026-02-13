@@ -32,4 +32,6 @@ EXPORTS
 	CleanFileLocksmithRuntimeRegistryCA
 	CleanPowerRenameRuntimeRegistryCA
 	CleanNewPlusRuntimeRegistryCA
-	
+	SetBundleInstallLocationCA
+	InstallPackageIdentityMSIXCA
+	UninstallPackageIdentityMSIXCA

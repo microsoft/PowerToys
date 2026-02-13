@@ -61,15 +61,6 @@ namespace Awake.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Checked.
-        /// </summary>
-        internal static string AWAKE_CHECKED {
-            get {
-                return ResourceManager.GetString("AWAKE_CHECKED", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Specifies whether Awake will be using the PowerToys configuration file for managing the state..
         /// </summary>
         internal static string AWAKE_CMD_HELP_CONFIG_OPTION {
@@ -133,6 +124,15 @@ namespace Awake.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Exiting because the provided process ID is Awake&apos;s own..
+        /// </summary>
+        internal static string AWAKE_EXIT_BIND_TO_SELF_FAILURE_MESSAGE {
+            get {
+                return ResourceManager.GetString("AWAKE_EXIT_BIND_TO_SELF_FAILURE_MESSAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Terminating from process binding hook..
         /// </summary>
         internal static string AWAKE_EXIT_BINDING_HOOK_MESSAGE {
@@ -151,11 +151,38 @@ namespace Awake.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Exiting because the parent process ID could not be found..
+        /// </summary>
+        internal static string AWAKE_EXIT_PARENT_BINDING_FAILURE_MESSAGE {
+            get {
+                return ResourceManager.GetString("AWAKE_EXIT_PARENT_BINDING_FAILURE_MESSAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Exiting because the requested process ID could not be found..
+        /// </summary>
+        internal static string AWAKE_EXIT_PROCESS_BINDING_FAILURE_MESSAGE {
+            get {
+                return ResourceManager.GetString("AWAKE_EXIT_PROCESS_BINDING_FAILURE_MESSAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Received a signal to end the process. Making sure we quit....
         /// </summary>
         internal static string AWAKE_EXIT_SIGNAL_MESSAGE {
             get {
                 return ResourceManager.GetString("AWAKE_EXIT_SIGNAL_MESSAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} hour.
+        /// </summary>
+        internal static string AWAKE_HOUR {
+            get {
+                return ResourceManager.GetString("AWAKE_HOUR", resourceCulture);
             }
         }
         
@@ -205,38 +232,11 @@ namespace Awake.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to d.
+        ///   Looks up a localized string similar to {0} minute.
         /// </summary>
-        internal static string AWAKE_LABEL_DAYS {
+        internal static string AWAKE_MINUTE {
             get {
-                return ResourceManager.GetString("AWAKE_LABEL_DAYS", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to h.
-        /// </summary>
-        internal static string AWAKE_LABEL_HOURS {
-            get {
-                return ResourceManager.GetString("AWAKE_LABEL_HOURS", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to m.
-        /// </summary>
-        internal static string AWAKE_LABEL_MINUTES {
-            get {
-                return ResourceManager.GetString("AWAKE_LABEL_MINUTES", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to s.
-        /// </summary>
-        internal static string AWAKE_LABEL_SECONDS {
-            get {
-                return ResourceManager.GetString("AWAKE_LABEL_SECONDS", resourceCulture);
+                return ResourceManager.GetString("AWAKE_MINUTE", resourceCulture);
             }
         }
         
@@ -275,7 +275,16 @@ namespace Awake.Properties {
                 return ResourceManager.GetString("AWAKE_SCREEN_ON", resourceCulture);
             }
         }
-        
+
+        /// <summary>
+        ///   Looks up a localized string similar to Screen.
+        /// </summary>
+        internal static string AWAKE_TRAY_DISPLAY {
+            get {
+                return ResourceManager.GetString("AWAKE_TRAY_DISPLAY", resourceCulture);
+            }
+        }
+
         /// <summary>
         ///   Looks up a localized string similar to Expiring.
         /// </summary>
@@ -284,7 +293,7 @@ namespace Awake.Properties {
                 return ResourceManager.GetString("AWAKE_TRAY_TEXT_EXPIRATION", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to Indefinite.
         /// </summary>
@@ -293,7 +302,7 @@ namespace Awake.Properties {
                 return ResourceManager.GetString("AWAKE_TRAY_TEXT_INDEFINITE", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to Passive.
         /// </summary>
@@ -302,31 +311,31 @@ namespace Awake.Properties {
                 return ResourceManager.GetString("AWAKE_TRAY_TEXT_OFF", resourceCulture);
             }
         }
-        
+
         /// <summary>
-        ///   Looks up a localized string similar to Bound to.
-        /// </summary>
-        internal static string AWAKE_TRAY_TEXT_PID_BINDING {
-            get {
-                return ResourceManager.GetString("AWAKE_TRAY_TEXT_PID_BINDING", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Interval.
+        ///   Looks up a localized string similar to Timed.
         /// </summary>
         internal static string AWAKE_TRAY_TEXT_TIMED {
             get {
                 return ResourceManager.GetString("AWAKE_TRAY_TEXT_TIMED", resourceCulture);
             }
         }
-        
+
         /// <summary>
-        ///   Looks up a localized string similar to Unchecked.
+        ///   Looks up a localized string similar to Until.
         /// </summary>
-        internal static string AWAKE_UNCHECKED {
+        internal static string AWAKE_TRAY_UNTIL {
             get {
-                return ResourceManager.GetString("AWAKE_UNCHECKED", resourceCulture);
+                return ResourceManager.GetString("AWAKE_TRAY_UNTIL", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to remaining.
+        /// </summary>
+        internal static string AWAKE_TRAY_REMAINING {
+            get {
+                return ResourceManager.GetString("AWAKE_TRAY_REMAINING", resourceCulture);
             }
         }
     }

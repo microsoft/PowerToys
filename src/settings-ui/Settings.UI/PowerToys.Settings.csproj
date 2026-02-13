@@ -1,7 +1,7 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 	<!-- Look at Directory.Build.props in root for common stuff as well -->
-	<Import Project="..\..\Common.Dotnet.CsWinRT.props" />
-	<Import Project="..\..\Common.SelfContained.props" />
+	<Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
+	<Import Project="$(RepoRoot)src\Common.SelfContained.props" />
 
 	<PropertyGroup>
 		<OutputType>WinExe</OutputType>
@@ -15,16 +15,22 @@
 		<ApplicationIcon>Assets\Settings\icon.ico</ApplicationIcon>
 		<WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
 		<!-- OutputPath looks like this because it has to be called both by settings and publish.cmd -->
-		<OutputPath>..\..\..\$(Platform)\$(Configuration)\WinUI3Apps</OutputPath>
+		<OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\WinUI3Apps</OutputPath>
 		<!-- MRT from windows app sdk will search for a pri file with the same name of the module before defaulting to resources.pri -->
 		<ProjectPriFileName>PowerToys.Settings.pri</ProjectPriFileName>
 	</PropertyGroup>
 	<ItemGroup>
+		<None Remove="Assets\Settings\Icons\Models\Azure.svg" />
+		<None Remove="Assets\Settings\Icons\Models\FoundryLocal.svg" />
+		<None Remove="Assets\Settings\Icons\Models\Onnx.svg" />
+		<None Remove="Assets\Settings\Icons\Models\OpenAI.dark.svg" />
+		<None Remove="Assets\Settings\Icons\Models\OpenAI.light.svg" />
+		<None Remove="Assets\Settings\Icons\Models\WindowsML.svg" />
 		<None Remove="Assets\Settings\Modules\APDialog.dark.png" />
 		<None Remove="Assets\Settings\Modules\APDialog.light.png" />
+		<None Remove="Assets\Settings\Modules\LightSwitch.png" />
 		<None Remove="SettingsXAML\Controls\Dashboard\CheckUpdateControl.xaml" />
 		<None Remove="SettingsXAML\Controls\Dashboard\ShortcutConflictControl.xaml" />
-		<None Remove="SettingsXAML\Controls\KeyVisual\KeyCharPresenter.xaml" />
 		<None Remove="SettingsXAML\Controls\TitleBar\TitleBar.xaml" />
 	</ItemGroup>
 	<ItemGroup>
@@ -53,17 +59,25 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<!-- AI Model Provider Icons - SVG files -->
+		<Content Include="Assets\Settings\Icons\Models\*.svg">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+	</ItemGroup>
+
+	<ItemGroup>
 		<EmbeddedResource Include="Images\MouseJump-Desktop.png" />
 	</ItemGroup>
 
 	<ItemGroup>
+		<PackageReference Include="CommunityToolkit.Labs.WinUI.Controls.OpacityMaskView" />
 		<PackageReference Include="CommunityToolkit.WinUI.Controls.Segmented" />
 		<PackageReference Include="CommunityToolkit.WinUI.Controls.SettingsControls" />
 		<PackageReference Include="CommunityToolkit.WinUI.Controls.Primitives" />
 		<PackageReference Include="CommunityToolkit.WinUI.Animations" />
 		<PackageReference Include="CommunityToolkit.WinUI.Extensions" />
 		<PackageReference Include="CommunityToolkit.WinUI.Converters" />
-		<PackageReference Include="CommunityToolkit.WinUI.UI.Controls.Markdown" />
+		<PackageReference Include="CommunityToolkit.Labs.WinUI.Controls.MarkdownTextBlock" />
 		<PackageReference Include="System.Net.Http" />
 		<PackageReference Include="System.Private.Uri" />
 		<PackageReference Include="System.Text.RegularExpressions" />
@@ -98,14 +112,17 @@
 		<!-- HACK: Common.UI is referenced, even if it is not used, to force dll versions to be the same as in other projects that use it. It's still unclear why this is the case, but this is need for flattening the install directory. -->
 		<ProjectReference Include="..\..\common\Common.Search\Common.Search.csproj" />
 		<ProjectReference Include="..\..\common\Common.UI\Common.UI.csproj" />
-		<ProjectReference Include="..\..\common\AllExperiments\AllExperiments.csproj" />
+		<ProjectReference Include="..\..\common\Common.UI.Controls\Common.UI.Controls.csproj" />
 		<ProjectReference Include="..\..\common\GPOWrapper\GPOWrapper.vcxproj" />
 		<ProjectReference Include="..\..\common\interop\PowerToys.Interop.vcxproj" />
 		<ProjectReference Include="..\..\modules\ZoomIt\ZoomItSettingsInterop\ZoomItSettingsInterop.vcxproj" />
 		<ProjectReference Include="..\..\common\ManagedCommon\ManagedCommon.csproj" />
 		<ProjectReference Include="..\..\common\ManagedTelemetry\Telemetry\ManagedTelemetry.csproj" />
+		<ProjectReference Include="..\..\common\LanguageModelProvider\LanguageModelProvider.csproj" />
 		<ProjectReference Include="..\..\modules\MouseUtils\MouseJump.Common\MouseJump.Common.csproj" />
+		<ProjectReference Include="..\..\modules\powerdisplay\PowerDisplay.Lib\PowerDisplay.Lib.csproj" />
 		<ProjectReference Include="..\Settings.UI.Library\Settings.UI.Library.csproj" />
+		<ProjectReference Include="..\Settings.UI.Controls\Settings.UI.Controls.csproj" />
 	</ItemGroup>
 
 	<!-- XamlIndexBuilder now outputs directly to Assets\Settings -->
@@ -156,9 +173,11 @@
 		</None>
 		<None Update="Assets\Settings\Scripts\DisableModule.ps1">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</None>		<Page Update="SettingsXAML\Controls\TitleBar\TitleBar.xaml">
+		</None>
+		<Page Update="SettingsXAML\Controls\TitleBar\TitleBar.xaml">
+			<Generator>MSBuild:Compile</Generator>
 		</Page>
-		<Page Update="SettingsXAML\Controls\KeyVisual\KeyCharPresenter.xaml">
+		<Page Update="SettingsXAML\Controls\GPOInfoControl.xaml">
 			<Generator>MSBuild:Compile</Generator>
 		</Page>
 		<Page Update="SettingsXAML\Controls\Dashboard\ShortcutConflictControl.xaml">
@@ -167,6 +186,12 @@
 		<Page Update="SettingsXAML\Controls\Dashboard\CheckUpdateControl.xaml">
 			<Generator>MSBuild:Compile</Generator>
 		</Page>
+		    <Page Update="SettingsXAML\Controls\Timeline\TimelineStyles.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="SettingsXAML\Controls\Timeline\Timeline.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
 	</ItemGroup>
 
 	<ItemGroup>
@@ -181,7 +206,7 @@
 		</Page>
 	</ItemGroup>
 
-	<Target Name="BuildXamlIndexBeforeSettings" BeforeTargets="CoreCompile">
+	<Target Name="BuildXamlIndexBeforeSettings" BeforeTargets="CoreCompile" Condition="'$(DesignTimeBuild)' != 'true'">
 		<Message Importance="high" Text="[Settings] Building XamlIndexBuilder prior to compile. Views='$(MSBuildProjectDirectory)\SettingsXAML\Views' Out='$(GeneratedJsonFile)'" />
 		<MSBuild Projects="..\Settings.UI.XamlIndexBuilder\Settings.UI.XamlIndexBuilder.csproj" Targets="Build" Properties="Configuration=$(Configuration);Platform=Any CPU;TargetFramework=$(CoreTargetFramework);XamlViewsDir=$(MSBuildProjectDirectory)\SettingsXAML\Views;GeneratedJsonFile=$(GeneratedJsonFile)" />
 	</Target>

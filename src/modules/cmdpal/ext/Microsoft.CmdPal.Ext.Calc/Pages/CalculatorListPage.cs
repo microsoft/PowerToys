@@ -25,12 +25,12 @@ public sealed partial class CalculatorListPage : DynamicListPage
     private readonly Lock _resultsLock = new();
     private readonly ISettingsInterface _settingsManager;
     private readonly List<ListItem> _items = [];
-    private readonly List<ListItem> history = [];
+    private readonly List<ListItem> _history = [];
     private readonly ListItem _emptyItem;
 
     // This is the text that saved when the user click the result.
     // We need to avoid the double calculation. This may cause some wierd behaviors.
-    private string skipQuerySearchText = string.Empty;
+    private string _skipQuerySearchText = string.Empty;
 
     public CalculatorListPage(ISettingsInterface settings)
     {
@@ -54,6 +54,17 @@ public sealed partial class CalculatorListPage : DynamicListPage
         UpdateSearchText(string.Empty, string.Empty);
     }
 
+    private void HandleReplaceQuery(object sender, object args)
+    {
+        var lastResult = _items[0].Title;
+        if (!string.IsNullOrEmpty(lastResult))
+        {
+            _skipQuerySearchText = lastResult;
+            SearchText = lastResult;
+            OnPropertyChanged(nameof(SearchText));
+        }
+    }
+
     public override void UpdateSearchText(string oldSearch, string newSearch)
     {
         if (oldSearch == newSearch)
@@ -61,19 +72,37 @@ public sealed partial class CalculatorListPage : DynamicListPage
             return;
         }
 
-        if (!string.IsNullOrEmpty(skipQuerySearchText) && newSearch == skipQuerySearchText)
+        if (!string.IsNullOrEmpty(_skipQuerySearchText) && newSearch == _skipQuerySearchText)
         {
             // only skip once.
-            skipQuerySearchText = string.Empty;
+            _skipQuerySearchText = string.Empty;
             return;
         }
 
-        skipQuerySearchText = string.Empty;
+        var copyResultToSearchText = false;
+        if (_settingsManager.CopyResultToSearchBarIfQueryEndsWithEqualSign && newSearch.EndsWith('='))
+        {
+            newSearch = newSearch.TrimEnd('=').TrimEnd();
+            copyResultToSearchText = true;
+        }
+
+        _skipQuerySearchText = string.Empty;
 
         _emptyItem.Subtitle = newSearch;
 
-        var result = QueryHelper.Query(newSearch, _settingsManager, false, HandleSave);
+        var result = QueryHelper.Query(newSearch, _settingsManager, isFallbackSearch: false, out var displayQuery, HandleSave, HandleReplaceQuery);
+
         UpdateResult(result);
+
+        if (copyResultToSearchText && result is not null)
+        {
+            _skipQuerySearchText = result.Title;
+            SearchText = result.Title;
+
+            // LOAD BEARING: The SearchText setter does not raise a PropertyChanged notification,
+            // so we must raise it explicitly to ensure the UI updates correctly.
+            OnPropertyChanged(nameof(SearchText));
+        }
     }
 
     private void UpdateResult(ListItem result)
@@ -91,7 +120,7 @@ public sealed partial class CalculatorListPage : DynamicListPage
                 _items.Add(_emptyItem);
             }
 
-            this._items.AddRange(history);
+            this._items.AddRange(_history);
         }
 
         RaiseItemsChanged(this._items.Count);
@@ -109,7 +138,7 @@ public sealed partial class CalculatorListPage : DynamicListPage
                 TextToSuggest = lastResult,
             };
 
-            history.Insert(0, li);
+            _history.Insert(0, li);
             _items.Insert(1, li);
 
             // Why we need to clean the query record? Removed, but if necessary, please move it back.
@@ -117,9 +146,14 @@ public sealed partial class CalculatorListPage : DynamicListPage
 
             // this change will call the UpdateSearchText again.
             // We need to avoid it.
-            skipQuerySearchText = lastResult;
+            _skipQuerySearchText = lastResult;
             SearchText = lastResult;
-            this.RaiseItemsChanged(this._items.Count);
+
+            // LOAD BEARING: The SearchText setter does not raise a PropertyChanged notification,
+            // so we must raise it explicitly to ensure the UI updates correctly.
+            OnPropertyChanged(nameof(SearchText));
+
+            RaiseItemsChanged(this._items.Count);
         }
     }
 

@@ -14,6 +14,9 @@ namespace winrt::PowerToys::ZoomItSettingsInterop::implementation
     const unsigned int SPECIAL_SEMANTICS_SHORTCUT = 1;
     const unsigned int SPECIAL_SEMANTICS_COLOR = 2;
     const unsigned int SPECIAL_SEMANTICS_LOG_FONT = 3;
+    const unsigned int SPECIAL_SEMANTICS_RECORDING_FORMAT = 4;
+    const unsigned int SPECIAL_SEMANTICS_RECORD_SCALING_GIF = 5;
+    const unsigned int SPECIAL_SEMANTICS_RECORD_SCALING_MP4 = 6;
 
     std::vector<unsigned char> base64_decode(const std::wstring& base64_string)
     {
@@ -72,6 +75,9 @@ namespace winrt::PowerToys::ZoomItSettingsInterop::implementation
         { L"PenColor", SPECIAL_SEMANTICS_COLOR },
         { L"BreakPenColor", SPECIAL_SEMANTICS_COLOR },
         { L"Font", SPECIAL_SEMANTICS_LOG_FONT },
+        { L"RecordingFormat", SPECIAL_SEMANTICS_RECORDING_FORMAT },
+        { L"RecordScalingGIF", SPECIAL_SEMANTICS_RECORD_SCALING_GIF },
+        { L"RecordScalingMP4", SPECIAL_SEMANTICS_RECORD_SCALING_MP4 },
     };
 
     hstring ZoomItSettings::LoadSettingsJson()
@@ -102,6 +108,11 @@ namespace winrt::PowerToys::ZoomItSettingsInterop::implementation
                             value & (HOTKEYF_SHIFT << 8),
                             value & 0xFF);
                         _settings.add_property(curSetting->ValueName, hotkey.get_json());
+                    }
+                    else if (special_semantics->second == SPECIAL_SEMANTICS_RECORDING_FORMAT)
+                    {
+                        std::wstring formatString = (value == 0) ? L"GIF" : L"MP4";
+                        _settings.add_property(L"RecordFormat", formatString);
                     }
                     else if (special_semantics->second == SPECIAL_SEMANTICS_COLOR)
                     {
@@ -156,6 +167,9 @@ namespace winrt::PowerToys::ZoomItSettingsInterop::implementation
             curSetting++;
         }
 
+        DWORD recordScaling = (g_RecordingFormat == static_cast<RecordingFormat>(0)) ? g_RecordScalingGIF : g_RecordScalingMP4;
+        _settings.add_property<DWORD>(L"RecordScaling", recordScaling);
+
         return _settings.get_raw_json().Stringify();
     }
 
@@ -166,6 +180,8 @@ namespace winrt::PowerToys::ZoomItSettingsInterop::implementation
         // Parse the input JSON string.
         PowerToysSettings::PowerToyValues valuesFromSettings =
             PowerToysSettings::PowerToyValues::from_json_string(json, L"ZoomIt");
+
+        bool formatChanged = false;
 
         PREG_SETTING curSetting = RegSettings;
         while (curSetting->ValueName)
@@ -210,6 +226,42 @@ namespace winrt::PowerToys::ZoomItSettingsInterop::implementation
                                 value |= (HOTKEYF_EXT << 8);
                             }
                             *static_cast<PDWORD>(curSetting->Setting) = value;
+                        }
+                    }
+                    else if (special_semantics->second == SPECIAL_SEMANTICS_RECORDING_FORMAT)
+                    {
+                        // Convert string ("GIF" or "MP4") to DWORD enum value (0=GIF, 1=MP4)
+                        auto possibleValue = valuesFromSettings.get_string_value(L"RecordFormat");
+                        if (possibleValue.has_value())
+                        {
+                            RecordingFormat oldFormat = g_RecordingFormat;
+                            DWORD formatValue = (possibleValue.value() == L"GIF") ? 0 : 1;
+                            RecordingFormat newFormat = static_cast<RecordingFormat>(formatValue);
+
+                            *static_cast<PDWORD>(curSetting->Setting) = formatValue;
+
+                            if (oldFormat != newFormat)
+                            {
+                                formatChanged = true;
+
+                                if (oldFormat == static_cast<RecordingFormat>(0))
+                                {
+                                    g_RecordScalingGIF = g_RecordScaling;
+                                }
+                                else
+                                {
+                                    g_RecordScalingMP4 = g_RecordScaling;
+                                }
+
+                                if (newFormat == static_cast<RecordingFormat>(0))
+                                {
+                                    g_RecordScaling = g_RecordScalingGIF;
+                                }
+                                else
+                                {
+                                    g_RecordScaling = g_RecordScalingMP4;
+                                }
+                            }
                         }
                     }
                     else if (special_semantics->second == SPECIAL_SEMANTICS_COLOR)
@@ -275,6 +327,22 @@ namespace winrt::PowerToys::ZoomItSettingsInterop::implementation
             }
             curSetting++;
         }
+
+        auto recordScalingValue = valuesFromSettings.get_uint_value(L"RecordScaling");
+        if (recordScalingValue.has_value() && !formatChanged)
+        {
+            g_RecordScaling = recordScalingValue.value();
+
+            if (g_RecordingFormat == static_cast<RecordingFormat>(0))
+            {
+                g_RecordScalingGIF = recordScalingValue.value();
+            }
+            else
+            {
+                g_RecordScalingMP4 = recordScalingValue.value();
+            }
+        }
+
         reg.WriteRegSettings(RegSettings);
     }
 }

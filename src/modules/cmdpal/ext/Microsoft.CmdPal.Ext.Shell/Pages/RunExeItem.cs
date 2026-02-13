@@ -2,8 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
-using System.Threading.Tasks;
+using Microsoft.CmdPal.Core.Common.Services;
+using Microsoft.CmdPal.Ext.Shell.Helpers;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.Storage.Streams;
@@ -15,6 +15,7 @@ internal sealed partial class RunExeItem : ListItem
 {
     private readonly Lazy<IconInfo> _icon;
     private readonly Action<string>? _addToHistory;
+    private readonly ITelemetryService? _telemetryService;
 
     public override IIconInfo? Icon { get => _icon.Value; set => base.Icon = value; }
 
@@ -26,13 +27,18 @@ internal sealed partial class RunExeItem : ListItem
 
     private string FullString => string.IsNullOrEmpty(_args) ? Exe : $"{Exe} {_args}";
 
-    public RunExeItem(string exe, string args, string fullExePath, Action<string>? addToHistory)
+    public RunExeItem(
+        string exe,
+        string args,
+        string fullExePath,
+        Action<string>? addToHistory,
+        ITelemetryService? telemetryService = null)
     {
         FullExePath = fullExePath;
         Exe = exe;
         var command = new AnonymousCommand(Run)
         {
-            Name = Properties.Resources.generic_run_command,
+            Name = ResourceLoaderInstance.GetString("generic_run_command"),
             Result = CommandResult.Dismiss(),
         };
         Command = command;
@@ -46,6 +52,7 @@ internal sealed partial class RunExeItem : ListItem
         });
 
         _addToHistory = addToHistory;
+        _telemetryService = telemetryService;
 
         UpdateArgs(args);
 
@@ -53,13 +60,13 @@ internal sealed partial class RunExeItem : ListItem
             new CommandContextItem(
                 new AnonymousCommand(RunAsAdmin)
             {
-                Name = Properties.Resources.cmd_run_as_administrator,
+                Name = ResourceLoaderInstance.GetString("cmd_run_as_administrator"),
                 Icon = Icons.AdminIcon,
             }) { RequestedShortcut = KeyChordHelpers.FromModifiers(ctrl: true, shift: true, vkey: VirtualKey.Enter) },
             new CommandContextItem(
                 new AnonymousCommand(RunAsOther)
             {
-                Name = Properties.Resources.cmd_run_as_user,
+                Name = ResourceLoaderInstance.GetString("cmd_run_as_user"),
                 Icon = Icons.UserIcon,
             }) { RequestedShortcut = KeyChordHelpers.FromModifiers(ctrl: true, shift: true, vkey: VirtualKey.U) },
         ];
@@ -97,20 +104,26 @@ internal sealed partial class RunExeItem : ListItem
     {
         _addToHistory?.Invoke(FullString);
 
-        ShellHelpers.OpenInShell(FullExePath, _args);
+        var success = ShellHelpers.OpenInShell(FullExePath, _args);
+
+        _telemetryService?.LogRunCommand(FullString, false, success);
     }
 
     public void RunAsAdmin()
     {
         _addToHistory?.Invoke(FullString);
 
-        ShellHelpers.OpenInShell(FullExePath, _args, runAs: ShellHelpers.ShellRunAsType.Administrator);
+        var success = ShellHelpers.OpenInShell(FullExePath, _args, runAs: ShellHelpers.ShellRunAsType.Administrator);
+
+        _telemetryService?.LogRunCommand(FullString, true, success);
     }
 
     public void RunAsOther()
     {
         _addToHistory?.Invoke(FullString);
 
-        ShellHelpers.OpenInShell(FullExePath, _args, runAs: ShellHelpers.ShellRunAsType.OtherUser);
+        var success = ShellHelpers.OpenInShell(FullExePath, _args, runAs: ShellHelpers.ShellRunAsType.OtherUser);
+
+        _telemetryService?.LogRunCommand(FullString, false, success);
     }
 }

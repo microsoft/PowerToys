@@ -10,7 +10,15 @@ constexpr int INCLUSIVE_MOUSE_DEFAULT_CROSSHAIRS_BORDER_SIZE = 1;
 constexpr bool INCLUSIVE_MOUSE_DEFAULT_AUTO_HIDE = false;
 constexpr bool INCLUSIVE_MOUSE_DEFAULT_CROSSHAIRS_IS_FIXED_LENGTH_ENABLED = false;
 constexpr int INCLUSIVE_MOUSE_DEFAULT_CROSSHAIRS_FIXED_LENGTH = 1;
+constexpr int INCLUSIVE_MOUSE_DEFAULT_CROSSHAIRS_ORIENTATION = 0; // 0=Both, 1=Vertical, 2=Horizontal
 constexpr bool INCLUSIVE_MOUSE_DEFAULT_AUTO_ACTIVATE = false;
+
+enum struct CrosshairsOrientation : int
+{
+    Both = 0,
+    VerticalOnly = 1,
+    HorizontalOnly = 2,
+};
 
 struct InclusiveCrosshairsSettings
 {
@@ -23,6 +31,7 @@ struct InclusiveCrosshairsSettings
     bool crosshairsAutoHide = INCLUSIVE_MOUSE_DEFAULT_AUTO_HIDE;
     bool crosshairsIsFixedLengthEnabled = INCLUSIVE_MOUSE_DEFAULT_CROSSHAIRS_IS_FIXED_LENGTH_ENABLED;
     int crosshairsFixedLength = INCLUSIVE_MOUSE_DEFAULT_CROSSHAIRS_FIXED_LENGTH;
+    CrosshairsOrientation crosshairsOrientation = static_cast<CrosshairsOrientation>(INCLUSIVE_MOUSE_DEFAULT_CROSSHAIRS_ORIENTATION);
     bool autoActivate = INCLUSIVE_MOUSE_DEFAULT_AUTO_ACTIVATE;
 };
 
@@ -35,3 +44,4 @@ void InclusiveCrosshairsRequestUpdatePosition();
 void InclusiveCrosshairsEnsureOn();
 void InclusiveCrosshairsEnsureOff();
 void InclusiveCrosshairsSetExternalControl(bool enabled);
+void InclusiveCrosshairsSetOrientation(CrosshairsOrientation orientation);

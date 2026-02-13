@@ -1,6 +1,6 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-  <Import Project="..\..\..\..\Common.Dotnet.CsWinRT.props" />
-  <Import Project="..\..\..\..\Common.Dotnet.AotCompatibility.props" />
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
+  <Import Project="$(RepoRoot)src\Common.Dotnet.AotCompatibility.props" />
   <Import Project="..\Common.ExtDependencies.props" />
   <PropertyGroup>
     <RootNamespace>Microsoft.CmdPal.Ext.Indexer</RootNamespace>
@@ -17,7 +17,7 @@
     </PackageReference>
     <ProjectReference Include="..\..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
     <ProjectReference Include="..\..\..\..\common\ManagedCsWin32\ManagedCsWin32.csproj" />
-    <ProjectReference Include="..\..\Microsoft.CmdPal.Common\Microsoft.CmdPal.Common.csproj" />
+    <ProjectReference Include="..\..\Core\Microsoft.CmdPal.Core.Common\Microsoft.CmdPal.Core.Common.csproj" />
     <!-- CmdPal Toolkit reference now included via Common.ExtDependencies.props -->
   </ItemGroup>
 
@@ -40,6 +40,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Update="Assets\FileExplorer.svg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Update="Assets\Peek.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

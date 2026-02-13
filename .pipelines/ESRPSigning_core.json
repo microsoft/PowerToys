@@ -5,7 +5,6 @@
         {
           "MatchedPath": [
             "*.resources.dll",
-
             "WinUI3Apps\\Assets\\Settings\\Scripts\\*.ps1",
 
             "PowerToys.ActionRunner.exe",
@@ -27,6 +26,7 @@
             "PowerToys.GPOWrapper.dll",
             "PowerToys.GPOWrapperProjection.dll",
             "PowerToys.AllExperiments.dll",
+            "LanguageModelProvider.dll",
 
             "Common.Search.dll",
 
@@ -55,12 +55,13 @@
             "PowerToys.Awake.exe",
             "PowerToys.Awake.dll",
 
-
             "PowerToys.FancyZonesEditor.exe",
             "PowerToys.FancyZonesEditor.dll",
             "PowerToys.FancyZonesEditorCommon.dll",
             "PowerToys.FancyZonesModuleInterface.dll",
             "PowerToys.FancyZones.exe",
+            "FancyZonesCLI.exe",
+            "FancyZonesCLI.dll",
 
             "PowerToys.GcodePreviewHandler.dll",
             "PowerToys.GcodePreviewHandler.exe",
@@ -116,12 +117,17 @@
             "WinUI3Apps\\PowerToys.FileLocksmithUI.dll",
             "WinUI3Apps\\PowerToys.FileLocksmithContextMenu.dll",
             "FileLocksmithContextMenuPackage.msix",
+            "FileLocksmithCLI.exe",
 
             "WinUI3Apps\\Peek.Common.dll",
             "WinUI3Apps\\Peek.FilePreviewer.dll",
             "WinUI3Apps\\Powertoys.Peek.UI.dll",
             "WinUI3Apps\\Powertoys.Peek.UI.exe",
             "WinUI3Apps\\Powertoys.Peek.dll",
+
+            "WinUI3Apps\\PowerToys.QuickAccess.dll",
+            "WinUI3Apps\\PowerToys.QuickAccess.exe",
+            "WinUI3Apps\\PowerToys.Settings.UI.Controls.dll",
 
             "WinUI3Apps\\PowerToys.EnvironmentVariablesModuleInterface.dll",
             "WinUI3Apps\\PowerToys.EnvironmentVariablesUILib.dll",
@@ -130,9 +136,14 @@
 
             "PowerToys.ImageResizer.exe",
             "PowerToys.ImageResizer.dll",
+            "WinUI3Apps\\PowerToys.ImageResizerCLI.exe",
+            "WinUI3Apps\\PowerToys.ImageResizerCLI.dll",
             "PowerToys.ImageResizerExt.dll",
             "PowerToys.ImageResizerContextMenu.dll",
             "ImageResizerContextMenuPackage.msix",
+
+            "PowerToys.LightSwitchModuleInterface.dll",
+            "LightSwitchService\\PowerToys.LightSwitchService.exe",
 
             "PowerToys.KeyboardManager.dll",
             "KeyboardManagerEditor\\PowerToys.KeyboardManagerEditor.exe",
@@ -179,6 +190,7 @@
             "PowerToys.MousePointerCrosshairs.dll",
             "PowerToys.MouseJumpUI.dll",
             "PowerToys.MouseJumpUI.exe",
+            "PowerToys.CursorWrap.dll",
 
             "PowerToys.MouseWithoutBorders.dll",
             "PowerToys.MouseWithoutBorders.exe",
@@ -197,6 +209,11 @@
             "PowerToys.PowerAccent.exe",
             "PowerToys.PowerAccentModuleInterface.dll",
             "PowerToys.PowerAccentKeyboardService.dll",
+
+            "PowerToys.PowerDisplayModuleInterface.dll",
+            "WinUI3Apps\\PowerToys.PowerDisplay.dll",
+            "WinUI3Apps\\PowerToys.PowerDisplay.exe",
+            "PowerDisplay.Lib.dll",
 
             "WinUI3Apps\\PowerToys.PowerRenameExt.dll",
             "WinUI3Apps\\PowerToys.PowerRename.exe",
@@ -230,7 +247,20 @@
 
             "PowerToys.CmdPalModuleInterface.dll",
             "CmdPalKeyboardService.dll",
-            "*Microsoft.CmdPal.UI_*.msix"
+            "PowerToys.ModuleContracts.dll",
+            "Awake.ModuleServices.dll",
+            "ColorPicker.ModuleServices.dll",
+            "Workspaces.ModuleServices.dll",
+            "Microsoft.CommandPalette.Extensions.dll",
+            "Microsoft.CommandPalette.Extensions.Toolkit.dll",
+            "Microsoft.CmdPal.Ext.PowerToys.dll",
+            "Microsoft.CmdPal.Ext.PowerToys.exe",
+            "*Microsoft.CmdPal.UI_*.msix",
+
+            "PowerToys.DSC.dll",
+            "PowerToys.DSC.exe",
+
+            "PowerToysSparse.msix"
           ],
             "SigningInfo": {
                 "Operations": [
@@ -283,6 +313,7 @@
                 "Mono.Cecil.Rocks.dll",
                 "Newtonsoft.Json.dll",
                 "CommunityToolkit.WinUI.Controls.TitleBar.dll",
+                "CommunityToolkit.WinUI.Controls.OpacityMaskView.dll",
 
                 "NLog.dll",
                 "HtmlAgilityPack.dll",
@@ -297,6 +328,9 @@
                 "msvcp140_1_app.dll",
                 "msvcp140_2_app.dll",
                 "msvcp140_app.dll",
+                "Namotion.Reflection.dll",
+                "NJsonSchema.Annotations.dll",
+                "NJsonSchema.dll",
                 "vcamp140_app.dll",
                 "vccorlib140_app.dll",
                 "vcomp140_app.dll",
@@ -322,6 +356,12 @@
                 "WinUI3Apps\\ReverseMarkdown.dll",
                 "WinUI3Apps\\SharpCompress.dll",
                 "WinUI3Apps\\ZstdSharp.dll",
+                "CommunityToolkit.WinUI.Controls.MarkdownTextBlock.dll",
+                "WinUI3Apps\\CommunityToolkit.WinUI.Controls.MarkdownTextBlock.dll",
+                "Markdig.dll",
+                "WinUI3Apps\\Markdig.dll",
+                "RomanNumerals.dll",
+                "WinUI3Apps\\RomanNumerals.dll",
                 "TestableIO.System.IO.Abstractions.dll",
                 "WinUI3Apps\\TestableIO.System.IO.Abstractions.dll",
                 "TestableIO.System.IO.Abstractions.Wrappers.dll",
@@ -330,10 +370,23 @@
                 "Testably.Abstractions.FileSystem.Interface.dll",
                 "WinUI3Apps\\Testably.Abstractions.FileSystem.Interface.dll",
                 "ColorCode.Core.dll", 
+                "Microsoft.SemanticKernel.Connectors.Ollama.dll",
+                "OllamaSharp.dll",
+
+                "boost_regex-vc143-mt-gd-x32-1_87.dll",
+                "boost_regex-vc143-mt-gd-x64-1_87.dll",
+                "boost_regex-vc143-mt-x32-1_87.dll",
+                "boost_regex-vc143-mt-x64-1_87.dll",
+
+                "Microsoft.ML.OnnxRuntime.dll",
 
                 "UnitsNet.dll",
                 "UtfUnknown.dll",
-                "Wpf.Ui.dll"
+                "Wpf.Ui.dll",
+                "WmiLight.dll",
+                "WmiLight.Native.dll",
+                "Shmuelie.WinRTServer.dll",
+                "ToolGood.Words.Pinyin.dll"
             ],
             "SigningInfo": {
                 "Operations": [

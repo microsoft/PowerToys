@@ -46,7 +46,7 @@
                         HorizontalAlignment="Left"
                         VerticalAlignment="Center"
                         SourceKey="{x:Bind Icon}"
-                        SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}" />
+                        SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested20}" />
                     <TextBlock
                         Grid.Column="1"
                         VerticalAlignment="Center"
@@ -59,7 +59,7 @@
                 <Rectangle
                     Height="1"
                     Margin="-16,-12,-12,-12"
-                    Fill="{ThemeResource MenuFlyoutSeparatorThemeBrush}" />
+                    Fill="{ThemeResource MenuFlyoutSeparatorBackground}" />
             </DataTemplate>
 
         </ResourceDictionary>
@@ -68,14 +68,16 @@
     <ComboBox
         Name="FiltersComboBox"
         x:Uid="FiltersComboBox"
+        MinWidth="200"
         VerticalAlignment="Center"
         ItemTemplateSelector="{StaticResource FilterTemplateSelector}"
         ItemsSource="{x:Bind ViewModel.Filters, Mode=OneWay}"
         PlaceholderText="Filters"
         PreviewKeyDown="FiltersComboBox_PreviewKeyDown"
+        SelectedValue="{x:Bind ViewModel.CurrentFilter, Mode=OneWay}"
         SelectionChanged="FiltersComboBox_SelectionChanged"
         Style="{StaticResource ComboBoxStyle}"
-        Visibility="{x:Bind ViewModel.ShouldShowFilters, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+        Visibility="{x:Bind ViewModel.ShouldShowFilters, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}, FallbackValue=Collapsed}">
         <ComboBox.ItemContainerStyle>
             <Style BasedOn="{StaticResource DefaultComboBoxItemStyle}" TargetType="ComboBoxItem">
                 <Setter Property="MinHeight" Value="0" />

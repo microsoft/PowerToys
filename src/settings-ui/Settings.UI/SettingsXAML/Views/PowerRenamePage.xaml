@@ -7,9 +7,17 @@
     xmlns:local="using:Microsoft.PowerToys.Settings.UI.Helpers"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
+    xmlns:tkconverters="using:CommunityToolkit.WinUI.Converters"
     xmlns:ui="using:CommunityToolkit.WinUI"
     AutomationProperties.LandmarkType="Main"
     mc:Ignorable="d">
+
+    <local:NavigablePage.Resources>
+        <tkconverters:BoolToVisibilityConverter
+            x:Key="BoolToInvertedVisibilityConverter"
+            FalseValue="Visible"
+            TrueValue="Collapsed" />
+    </local:NavigablePage.Resources>
 
     <controls:SettingsPageControl x:Uid="PowerRename" ModuleImageSource="ms-appx:///Assets/Settings/Modules/PowerRename.png">
         <controls:SettingsPageControl.ModuleContent>
@@ -17,29 +25,26 @@
                 x:Name="PowerRenameView"
                 ChildrenTransitions="{StaticResource SettingsCardsAnimations}"
                 Orientation="Vertical">
-                <tkcontrols:SettingsCard
-                    Name="PowerRenameToggleEnable"
-                    x:Uid="PowerRename_Toggle_Enable"
-                    HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/PowerRename.png}"
-                    IsEnabled="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
-                    <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
-                </tkcontrols:SettingsCard>
-                <InfoBar
-                    x:Uid="GPO_SettingIsManaged"
-                    IsClosable="False"
-                    IsOpen="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
-                    IsTabStop="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
-                    Severity="Informational">
-                    <InfoBar.IconSource>
-                        <FontIconSource FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE72E;" />
-                    </InfoBar.IconSource>
-                </InfoBar>
+                <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}">
+                    <tkcontrols:SettingsCard
+                        Name="PowerRenameToggleEnable"
+                        x:Uid="PowerRename_Toggle_Enable"
+                        HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/PowerRename.png}">
+                        <ToggleSwitch
+                            x:Uid="ToggleSwitch"
+                            AutomationProperties.Name="{Binding ElementName=PowerRenameToggleEnable, Path=Header}"
+                            IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
+                </controls:GPOInfoControl>
                 <controls:SettingsGroup x:Uid="PowerRename_ShellIntegration" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsExpander
                         Name="PowerRenameToggleContextMenu"
                         x:Uid="PowerRename_Toggle_ContextMenu"
                         IsExpanded="False">
-                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.EnabledOnContextExtendedMenu, Mode=TwoWay, Converter={StaticResource BoolToComboBoxIndexConverter}}">
+                        <ComboBox
+                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                            AutomationProperties.Name="{Binding ElementName=PowerRenameToggleContextMenu, Path=Header}"
+                            SelectedIndex="{x:Bind ViewModel.EnabledOnContextExtendedMenu, Mode=TwoWay, Converter={StaticResource BoolToComboBoxIndexConverter}}">
                             <ComboBoxItem x:Uid="PowerRename_Toggle_StandardContextMenu" />
                             <ComboBoxItem x:Uid="PowerRename_Toggle_ExtendedContextMenu" />
                         </ComboBox>
@@ -62,7 +67,10 @@
                         Name="PowerRenameToggleAutoComplete"
                         x:Uid="PowerRename_Toggle_AutoComplete"
                         IsExpanded="True">
-                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.MRUEnabled, Mode=TwoWay}" />
+                        <ToggleSwitch
+                            x:Uid="ToggleSwitch"
+                            AutomationProperties.Name="{Binding ElementName=PowerRenameToggleAutoComplete, Path=Header}"
+                            IsOn="{x:Bind ViewModel.MRUEnabled, Mode=TwoWay}" />
                         <tkcontrols:SettingsExpander.Items>
                             <tkcontrols:SettingsCard
                                 Name="PowerRenameToggleMaxDispListNum"
@@ -70,6 +78,7 @@
                                 IsEnabled="{x:Bind ViewModel.GlobalAndMruEnabled, Mode=OneWay}">
                                 <NumberBox
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    AutomationProperties.Name="{Binding ElementName=PowerRenameToggleMaxDispListNum, Path=Header}"
                                     Maximum="20"
                                     Minimum="0"
                                     SpinButtonPlacementMode="Compact"
@@ -82,12 +91,60 @@
                         Name="PowerRenameToggleRestoreFlagsOnLaunch"
                         x:Uid="PowerRename_Toggle_RestoreFlagsOnLaunch"
                         HeaderIcon="{ui:FontIcon Glyph=&#xe81c;}">
-                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.RestoreFlagsOnLaunch, Mode=TwoWay}" />
+                        <ToggleSwitch
+                            x:Uid="ToggleSwitch"
+                            AutomationProperties.Name="{Binding ElementName=PowerRenameToggleRestoreFlagsOnLaunch, Path=Header}"
+                            IsOn="{x:Bind ViewModel.RestoreFlagsOnLaunch, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
                 <controls:SettingsGroup x:Uid="PowerRename_BehaviorHeader" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsCard Name="PowerRenameToggleUseBoostLib" x:Uid="PowerRename_Toggle_UseBoostLib">
-                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.UseBoostLib, Mode=TwoWay}" />
+                        <ToggleSwitch
+                            x:Uid="ToggleSwitch"
+                            AutomationProperties.Name="{Binding ElementName=PowerRenameToggleUseBoostLib, Path=Header}"
+                            IsOn="{x:Bind ViewModel.UseBoostLib, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
+                </controls:SettingsGroup>
+                <controls:SettingsGroup x:Uid="PowerRename_ExtensionsHeader" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                    <tkcontrols:SettingsCard
+                        Name="PowerRenameHeifExtension"
+                        x:Uid="PowerRename_HeifExtension"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xEB9F;}">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <FontIcon
+                                VerticalAlignment="Center"
+                                Foreground="{ThemeResource SystemFillColorSuccessBrush}"
+                                Glyph="&#xEC61;"
+                                Visibility="{x:Bind ViewModel.IsHeifExtensionInstalled, Mode=OneWay}" />
+                            <TextBlock
+                                x:Uid="PowerRename_HeifExtension_Installed"
+                                VerticalAlignment="Center"
+                                Visibility="{x:Bind ViewModel.IsHeifExtensionInstalled, Mode=OneWay}" />
+                            <Button
+                                x:Uid="PowerRename_HeifExtension_Install"
+                                Command="{x:Bind ViewModel.InstallHeifExtensionCommand}"
+                                Visibility="{x:Bind ViewModel.IsHeifExtensionInstalled, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}" />
+                        </StackPanel>
+                    </tkcontrols:SettingsCard>
+                    <tkcontrols:SettingsCard
+                        Name="PowerRenameAvifExtension"
+                        x:Uid="PowerRename_AvifExtension"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xEB9F;}">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <FontIcon
+                                VerticalAlignment="Center"
+                                Foreground="{ThemeResource SystemFillColorSuccessBrush}"
+                                Glyph="&#xEC61;"
+                                Visibility="{x:Bind ViewModel.IsAvifExtensionInstalled, Mode=OneWay}" />
+                            <TextBlock
+                                x:Uid="PowerRename_AvifExtension_Installed"
+                                VerticalAlignment="Center"
+                                Visibility="{x:Bind ViewModel.IsAvifExtensionInstalled, Mode=OneWay}" />
+                            <Button
+                                x:Uid="PowerRename_AvifExtension_Install"
+                                Command="{x:Bind ViewModel.InstallAvifExtensionCommand}"
+                                Visibility="{x:Bind ViewModel.IsAvifExtensionInstalled, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}" />
+                        </StackPanel>
                     </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
             </StackPanel>

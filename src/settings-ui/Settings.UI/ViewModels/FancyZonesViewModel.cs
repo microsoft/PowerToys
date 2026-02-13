@@ -19,7 +19,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
     {
         protected override string ModuleName => FancyZonesSettings.ModuleName;
 
-        private ISettingsUtils SettingsUtils { get; set; }
+        private SettingsUtils SettingsUtils { get; set; }
 
         private GeneralSettings GeneralSettingsConfig { get; set; }
 
@@ -46,7 +46,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             Positional = 2,
         }
 
-        public FancyZonesViewModel(ISettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, ISettingsRepository<FancyZonesSettings> moduleSettingsRepository, Func<string, int> ipcMSGCallBackFunc, string configFileSubfolder = "")
+        public FancyZonesViewModel(SettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, ISettingsRepository<FancyZonesSettings> moduleSettingsRepository, Func<string, int> ipcMSGCallBackFunc, string configFileSubfolder = "")
         {
             ArgumentNullException.ThrowIfNull(settingsUtils);
 
@@ -776,7 +776,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 if (value != _editorHotkey)
                 {
-                    if (value == null || value.IsEmpty())
+                    if (value == null)
                     {
                         _editorHotkey = FZConfigProperties.DefaultEditorHotkeyValue;
                     }
@@ -822,7 +822,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 if (value != _nextTabHotkey)
                 {
-                    if (value == null || value.IsEmpty())
+                    if (value == null)
                     {
                         _nextTabHotkey = FZConfigProperties.DefaultNextTabHotkeyValue;
                     }
@@ -848,7 +848,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 if (value != _prevTabHotkey)
                 {
-                    if (value == null || value.IsEmpty())
+                    if (value == null)
                     {
                         _prevTabHotkey = FZConfigProperties.DefaultPrevTabHotkeyValue;
                     }

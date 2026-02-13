@@ -4,17 +4,33 @@
 
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
-using Microsoft.Extensions.DependencyInjection;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
 public partial class SettingsViewModel : INotifyPropertyChanged
 {
+    private static readonly List<TimeSpan> AutoGoHomeIntervals =
+    [
+        Timeout.InfiniteTimeSpan,
+        TimeSpan.Zero,
+        TimeSpan.FromSeconds(10),
+        TimeSpan.FromSeconds(20),
+        TimeSpan.FromSeconds(30),
+        TimeSpan.FromSeconds(60),
+        TimeSpan.FromSeconds(90),
+        TimeSpan.FromSeconds(120),
+        TimeSpan.FromSeconds(180),
+    ];
+
     private readonly SettingsModel _settings;
-    private readonly IServiceProvider _serviceProvider;
+    private readonly TopLevelCommandManager _topLevelCommandManager;
 
     public event PropertyChangedEventHandler? PropertyChanged;
+
+    public AppearanceSettingsViewModel Appearance { get; }
 
     public HotkeySettings? Hotkey
     {
@@ -38,22 +54,22 @@ public partial class SettingsViewModel : INotifyPropertyChanged
         }
     }
 
+    public bool AllowExternalReload
+    {
+        get => _settings.AllowExternalReload;
+        set
+        {
+            _settings.AllowExternalReload = value;
+            Save();
+        }
+    }
+
     public bool ShowAppDetails
     {
         get => _settings.ShowAppDetails;
         set
         {
             _settings.ShowAppDetails = value;
-            Save();
-        }
-    }
-
-    public bool HotkeyGoesHome
-    {
-        get => _settings.HotkeyGoesHome;
-        set
-        {
-            _settings.HotkeyGoesHome = value;
             Save();
         }
     }
@@ -118,30 +134,114 @@ public partial class SettingsViewModel : INotifyPropertyChanged
         }
     }
 
-    public ObservableCollection<ProviderSettingsViewModel> CommandProviders { get; } = [];
+    public bool DisableAnimations
+    {
+        get => _settings.DisableAnimations;
+        set
+        {
+            _settings.DisableAnimations = value;
+            Save();
+        }
+    }
 
-    public SettingsViewModel(SettingsModel settings, IServiceProvider serviceProvider, TaskScheduler scheduler)
+    public int AutoGoBackIntervalIndex
+    {
+        get
+        {
+            var index = AutoGoHomeIntervals.IndexOf(_settings.AutoGoHomeInterval);
+            return index >= 0 ? index : 0;
+        }
+
+        set
+        {
+            if (value >= 0 && value < AutoGoHomeIntervals.Count)
+            {
+                _settings.AutoGoHomeInterval = AutoGoHomeIntervals[value];
+            }
+
+            Save();
+        }
+    }
+
+    public int EscapeKeyBehaviorIndex
+    {
+        get => (int)_settings.EscapeKeyBehaviorSetting;
+        set
+        {
+            _settings.EscapeKeyBehaviorSetting = (EscapeKeyBehavior)value;
+            Save();
+        }
+    }
+
+    public ObservableCollection<ProviderSettingsViewModel> CommandProviders { get; } = new();
+
+    public ObservableCollection<FallbackSettingsViewModel> FallbackRankings { get; set; } = new();
+
+    public SettingsExtensionsViewModel Extensions { get; }
+
+    public SettingsViewModel(SettingsModel settings, TopLevelCommandManager topLevelCommandManager, TaskScheduler scheduler, IThemeService themeService)
     {
         _settings = settings;
-        _serviceProvider = serviceProvider;
+        _topLevelCommandManager = topLevelCommandManager;
+
+        Appearance = new AppearanceSettingsViewModel(themeService, _settings);
 
         var activeProviders = GetCommandProviders();
         var allProviderSettings = _settings.ProviderSettings;
+
+        var fallbacks = new List<FallbackSettingsViewModel>();
+        var currentRankings = _settings.FallbackRanks;
+        var needsSave = false;
 
         foreach (var item in activeProviders)
         {
             var providerSettings = settings.GetProviderSettings(item);
 
-            var settingsModel = new ProviderSettingsViewModel(item, providerSettings, _serviceProvider);
+            var settingsModel = new ProviderSettingsViewModel(item, providerSettings, _settings);
             CommandProviders.Add(settingsModel);
+
+            fallbacks.AddRange(settingsModel.FallbackCommands);
+        }
+
+        var fallbackRankings = new List<Scored<FallbackSettingsViewModel>>(fallbacks.Count);
+        foreach (var fallback in fallbacks)
+        {
+            var index = currentRankings.IndexOf(fallback.Id);
+            var score = fallbacks.Count;
+
+            if (index >= 0)
+            {
+                score = index;
+            }
+
+            fallbackRankings.Add(new Scored<FallbackSettingsViewModel>() { Item = fallback, Score = score });
+
+            if (index == -1)
+            {
+                needsSave = true;
+            }
+        }
+
+        FallbackRankings = new ObservableCollection<FallbackSettingsViewModel>(fallbackRankings.OrderBy(o => o.Score).Select(fr => fr.Item));
+        Extensions = new SettingsExtensionsViewModel(CommandProviders, scheduler);
+
+        if (needsSave)
+        {
+            ApplyFallbackSort();
         }
     }
 
     private IEnumerable<CommandProviderWrapper> GetCommandProviders()
     {
-        var manager = _serviceProvider.GetService<TopLevelCommandManager>()!;
-        var allProviders = manager.CommandProviders;
+        var allProviders = _topLevelCommandManager.CommandProviders;
         return allProviders;
+    }
+
+    public void ApplyFallbackSort()
+    {
+        _settings.FallbackRanks = FallbackRankings.Select(s => s.Id).ToArray();
+        Save();
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(FallbackRankings)));
     }
 
     private void Save() => SettingsModel.SaveSettings(_settings);

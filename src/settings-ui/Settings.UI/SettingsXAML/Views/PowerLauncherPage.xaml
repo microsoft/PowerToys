@@ -9,6 +9,7 @@
     xmlns:ic="using:Microsoft.Xaml.Interactions.Core"
     xmlns:local="using:Microsoft.PowerToys.Settings.UI.Helpers"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ptcontrols="using:Microsoft.PowerToys.Common.UI.Controls"
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     xmlns:ui="using:CommunityToolkit.WinUI"
     xmlns:viewModels="using:Microsoft.PowerToys.Settings.UI.ViewModels"
@@ -45,7 +46,7 @@
                     BorderThickness="0,0,0,0"
                     ContentAlignment="Left"
                     CornerRadius="0">
-                    <controls:CheckBoxWithDescriptionControl
+                    <ptcontrols:CheckBoxWithDescriptionControl
                         Margin="56,0,0,0"
                         Description="{x:Bind Path=DisplayDescription}"
                         Header="{x:Bind Path=DisplayLabel}"
@@ -67,6 +68,7 @@
                     Header="{x:Bind Path=DisplayLabel}">
                     <ComboBox
                         MinWidth="{StaticResource SettingActionControlMinWidth}"
+                        AutomationProperties.Name="{x:Bind Path=DisplayLabel}"
                         DisplayMemberPath="Key"
                         ItemsSource="{x:Bind Path=ComboBoxItems}"
                         SelectedValue="{x:Bind ComboBoxValue, Mode=TwoWay}"
@@ -110,6 +112,7 @@
                     Header="{x:Bind Path=DisplayLabel}">
                     <NumberBox
                         MinWidth="{StaticResource SettingActionControlMinWidth}"
+                        AutomationProperties.Name="{x:Bind Path=DisplayLabel}"
                         LargeChange="{x:Bind NumberBoxLargeChange, Mode=OneWay}"
                         Maximum="{x:Bind NumberBoxMax, Mode=OneWay}"
                         Minimum="{x:Bind NumberBoxMin, Mode=OneWay}"
@@ -158,7 +161,7 @@
                     BorderThickness="0,0,0,0"
                     ContentAlignment="Left"
                     CornerRadius="0">
-                    <controls:CheckBoxWithDescriptionControl
+                    <ptcontrols:CheckBoxWithDescriptionControl
                         Margin="56,0,0,0"
                         Description="{x:Bind Path=DisplayDescription}"
                         Header="{x:Bind Path=DisplayLabel}"
@@ -175,6 +178,7 @@
                     IsEnabled="{x:Bind SecondSettingIsEnabled, Mode=OneWay}">
                     <ComboBox
                         MinWidth="{StaticResource SettingActionControlMinWidth}"
+                        AutomationProperties.Name="{x:Bind Path=SecondDisplayLabel}"
                         DisplayMemberPath="Key"
                         ItemsSource="{x:Bind Path=ComboBoxItems}"
                         SelectedValue="{x:Bind ComboBoxValue, Mode=TwoWay}"
@@ -194,7 +198,7 @@
                     BorderThickness="0,0,0,0"
                     ContentAlignment="Left"
                     CornerRadius="0">
-                    <controls:CheckBoxWithDescriptionControl
+                    <ptcontrols:CheckBoxWithDescriptionControl
                         Margin="56,0,0,0"
                         Description="{x:Bind Path=DisplayDescription}"
                         Header="{x:Bind Path=DisplayLabel}"
@@ -231,7 +235,7 @@
                     BorderThickness="0,0,0,0"
                     ContentAlignment="Left"
                     CornerRadius="0">
-                    <controls:CheckBoxWithDescriptionControl
+                    <ptcontrols:CheckBoxWithDescriptionControl
                         Margin="56,0,0,0"
                         Description="{x:Bind Path=DisplayDescription}"
                         Header="{x:Bind Path=DisplayLabel}"
@@ -273,7 +277,7 @@
                     BorderThickness="0,0,0,0"
                     ContentAlignment="Left"
                     CornerRadius="0">
-                    <controls:CheckBoxWithDescriptionControl
+                    <ptcontrols:CheckBoxWithDescriptionControl
                         Margin="56,0,0,0"
                         Description="{x:Bind Path=DisplayDescription}"
                         Header="{x:Bind Path=DisplayLabel}"
@@ -290,6 +294,7 @@
                     IsEnabled="{x:Bind SecondSettingIsEnabled, Mode=OneWay}">
                     <NumberBox
                         MinWidth="{StaticResource SettingActionControlMinWidth}"
+                        AutomationProperties.Name="{x:Bind Path=SecondDisplayLabel}"
                         LargeChange="{x:Bind NumberBoxLargeChange, Mode=OneWay}"
                         Maximum="{x:Bind NumberBoxMax, Mode=OneWay}"
                         Minimum="{x:Bind NumberBoxMin, Mode=OneWay}"
@@ -308,7 +313,6 @@
 
     <controls:SettingsPageControl x:Uid="PowerLauncher" ModuleImageSource="ms-appx:///Assets/Settings/Modules/Run.png">
         <controls:SettingsPageControl.ModuleContent>
-
             <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
                 <InfoBar
                     x:Uid="Run_CheckOutCmdPal"
@@ -322,24 +326,14 @@
                         <HyperlinkButton x:Uid="Run_NavigateCmdPalSettings" Click="NavigateCmdPalSettings_Click" />
                     </InfoBar.ActionButton>
                 </InfoBar>
-                <tkcontrols:SettingsCard
-                    Name="PowerLauncherEnablePowerLauncher"
-                    x:Uid="PowerLauncher_EnablePowerLauncher"
-                    HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/PowerToysRun.png}"
-                    IsEnabled="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
-                    <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.EnablePowerLauncher, Mode=TwoWay}" />
-                </tkcontrols:SettingsCard>
-                <InfoBar
-                    x:Uid="GPO_SettingIsManaged"
-                    IsClosable="False"
-                    IsOpen="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
-                    IsTabStop="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
-                    Severity="Informational">
-                    <InfoBar.IconSource>
-                        <FontIconSource FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE72E;" />
-                    </InfoBar.IconSource>
-                </InfoBar>
-
+                <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}">
+                    <tkcontrols:SettingsCard
+                        Name="PowerLauncherEnablePowerLauncher"
+                        x:Uid="PowerLauncher_EnablePowerLauncher"
+                        HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/PowerToysRun.png}">
+                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.EnablePowerLauncher, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
+                </controls:GPOInfoControl>
                 <controls:SettingsGroup x:Uid="Shortcut" IsEnabled="{x:Bind ViewModel.EnablePowerLauncher, Mode=OneWay}">
                     <tkcontrols:SettingsExpander
                         Name="ActivationShortcut"
@@ -349,7 +343,7 @@
                         <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.OpenPowerLauncher, Mode=TwoWay}" />
                         <tkcontrols:SettingsExpander.Items>
                             <tkcontrols:SettingsCard ContentAlignment="Left">
-                                <controls:CheckBoxWithDescriptionControl x:Uid="PowerLauncher_UseCentralizedKeyboardHook" IsChecked="{x:Bind ViewModel.UseCentralizedKeyboardHook, Mode=TwoWay}" />
+                                <ptcontrols:CheckBoxWithDescriptionControl x:Uid="PowerLauncher_UseCentralizedKeyboardHook" IsChecked="{x:Bind ViewModel.UseCentralizedKeyboardHook, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard ContentAlignment="Left">
                                 <CheckBox x:Uid="PowerLauncher_IgnoreHotkeysInFullScreen" IsChecked="{x:Bind ViewModel.IgnoreHotkeysInFullScreen, Mode=TwoWay}" />
@@ -357,7 +351,6 @@
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
                 </controls:SettingsGroup>
-
 
                 <!--<Custom:HotkeySettingsControl x:Uid="PowerLauncher_OpenFileLocation"
                                           HorizontalAlignment="Left"
@@ -467,7 +460,7 @@
                                     Value="{x:Bind ViewModel.SearchClickedItemWeight, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard ContentAlignment="Left" IsEnabled="{x:Bind ViewModel.SearchQueryTuningEnabled, Mode=OneWay}">
-                                <controls:CheckBoxWithDescriptionControl x:Uid="PowerLauncher_WaitForSlowResults" IsChecked="{x:Bind ViewModel.SearchWaitForSlowResults, Mode=TwoWay}" />
+                                <ptcontrols:CheckBoxWithDescriptionControl x:Uid="PowerLauncher_WaitForSlowResults" IsChecked="{x:Bind ViewModel.SearchWaitForSlowResults, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
@@ -556,7 +549,7 @@
                         x:Uid="PowerLauncher_TitleFontSize"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE8E9;}">
                         <StackPanel Orientation="Horizontal" Spacing="12">
-                            <TextBlock
+                            <ptcontrols:IsEnabledTextBlock
                                 VerticalAlignment="Center"
                                 AutomationProperties.AccessibilityView="Raw"
                                 FontSize="12"
@@ -572,7 +565,7 @@
                                 TickFrequency="2"
                                 TickPlacement="Outside"
                                 Value="{x:Bind ViewModel.TitleFontSize, Mode=TwoWay}" />
-                            <TextBlock
+                            <ptcontrols:IsEnabledTextBlock
                                 VerticalAlignment="Center"
                                 AutomationProperties.AccessibilityView="Raw"
                                 FontSize="24"
@@ -717,7 +710,7 @@
                                                     IsChecked="{x:Bind IsGlobal, Mode=TwoWay}">
                                                     <StackPanel Orientation="Vertical">
                                                         <TextBlock x:Name="IncludeInGlobalResultTitle" x:Uid="PowerLauncher_IncludeInGlobalResultTitle" />
-                                                        <controls:IsEnabledTextBlock
+                                                        <ptcontrols:IsEnabledTextBlock
                                                             x:Uid="PowerLauncher_IncludeInGlobalResultDescription"
                                                             FontSize="{StaticResource SecondaryTextFontSize}"
                                                             Foreground="{ThemeResource TextFillColorSecondaryBrush}" />

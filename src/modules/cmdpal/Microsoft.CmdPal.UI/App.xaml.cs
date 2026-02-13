@@ -3,15 +3,19 @@
 // See the LICENSE file in the project root for more information.
 
 using ManagedCommon;
-using Microsoft.CmdPal.Common.Helpers;
-using Microsoft.CmdPal.Common.Services;
+using Microsoft.CmdPal.Core.Common;
+using Microsoft.CmdPal.Core.Common.Helpers;
+using Microsoft.CmdPal.Core.Common.Services;
+using Microsoft.CmdPal.Core.Common.Text;
 using Microsoft.CmdPal.Core.ViewModels;
 using Microsoft.CmdPal.Ext.Apps;
 using Microsoft.CmdPal.Ext.Bookmarks;
 using Microsoft.CmdPal.Ext.Calc;
 using Microsoft.CmdPal.Ext.ClipboardHistory;
 using Microsoft.CmdPal.Ext.Indexer;
+using Microsoft.CmdPal.Ext.PerformanceMonitor;
 using Microsoft.CmdPal.Ext.Registry;
+using Microsoft.CmdPal.Ext.RemoteDesktop;
 using Microsoft.CmdPal.Ext.Shell;
 using Microsoft.CmdPal.Ext.System;
 using Microsoft.CmdPal.Ext.TimeDate;
@@ -22,12 +26,15 @@ using Microsoft.CmdPal.Ext.WindowsTerminal;
 using Microsoft.CmdPal.Ext.WindowWalker;
 using Microsoft.CmdPal.Ext.WinGet;
 using Microsoft.CmdPal.UI.Helpers;
+using Microsoft.CmdPal.UI.Services;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.BuiltinCommands;
 using Microsoft.CmdPal.UI.ViewModels.Models;
+using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.PowerToys.Telemetry;
+using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 
 // To learn more about WinUI, the WinUI project structure,
@@ -37,8 +44,10 @@ namespace Microsoft.CmdPal.UI;
 /// <summary>
 /// Provides application-specific behavior to supplement the default Application class.
 /// </summary>
-public partial class App : Application
+public partial class App : Application, IDisposable
 {
+    private readonly GlobalErrorHandler _globalErrorHandler = new();
+
     /// <summary>
     /// Gets the current <see cref="App"/> instance in use.
     /// </summary>
@@ -60,7 +69,15 @@ public partial class App : Application
     /// </summary>
     public App()
     {
-        Services = ConfigureServices();
+        var appInfoService = new ApplicationInfoService();
+
+#if !CMDPAL_DISABLE_GLOBAL_ERROR_HANDLER
+        _globalErrorHandler.Register(this, GlobalErrorHandler.Options.Default, appInfoService);
+#endif
+
+        Services = ConfigureServices(appInfoService);
+
+        IconCacheProvider.Initialize(Services);
 
         this.InitializeComponent();
 
@@ -74,6 +91,14 @@ public partial class App : Application
                 AppWindow?.Close();
                 Environment.Exit(0);
             });
+
+        // Connect the PT logging to the core project's logging.
+        // This way, log statements from the core project will be captured by the PT logs
+        var logWrapper = new LogWrapper();
+        CoreLogger.InitializeLogger(logWrapper);
+
+        // Now that CoreLogger is initialized, initialize the logger delegate in ApplicationInfoService
+        appInfoService.SetLogDirectory(() => Logger.CurrentVersionLogDirectoryPath);
     }
 
     /// <summary>
@@ -85,20 +110,32 @@ public partial class App : Application
         AppWindow = new MainWindow();
 
         var activatedEventArgs = Microsoft.Windows.AppLifecycle.AppInstance.GetCurrent().GetActivatedEventArgs();
-        ((MainWindow)AppWindow).HandleLaunch(activatedEventArgs);
+        ((MainWindow)AppWindow).HandleLaunchNonUI(activatedEventArgs);
     }
 
     /// <summary>
     /// Configures the services for the application
     /// </summary>
-    private static ServiceProvider ConfigureServices()
+    private static ServiceProvider ConfigureServices(IApplicationInfoService appInfoService)
     {
         // TODO: It's in the Labs feed, but we can use Sergio's AOT-friendly source generator for this: https://github.com/CommunityToolkit/Labs-Windows/discussions/463
         ServiceCollection services = new();
 
         // Root services
         services.AddSingleton(TaskScheduler.FromCurrentSynchronizationContext());
+        var dispatcherQueue = DispatcherQueue.GetForCurrentThread();
 
+        AddBuiltInCommands(services);
+
+        AddCoreServices(services, appInfoService);
+
+        AddUIServices(services, dispatcherQueue);
+
+        return services.BuildServiceProvider();
+    }
+
+    private static void AddBuiltInCommands(ServiceCollection services)
+    {
         // Built-in Commands. Order matters - this is the order they'll be presented by default.
         var allApps = new AllAppsCommandProvider();
         var files = new IndexerCommandsProvider();
@@ -108,7 +145,7 @@ public partial class App : Application
         services.AddSingleton<ICommandProvider, ShellCommandsProvider>();
         services.AddSingleton<ICommandProvider, CalculatorCommandProvider>();
         services.AddSingleton<ICommandProvider>(files);
-        services.AddSingleton<ICommandProvider, BookmarksCommandProvider>();
+        services.AddSingleton<ICommandProvider, BookmarksCommandProvider>(_ => BookmarksCommandProvider.CreateWithDefaultStore());
 
         services.AddSingleton<ICommandProvider, WindowWalkerCommandsProvider>();
         services.AddSingleton<ICommandProvider, WebSearchCommandsProvider>();
@@ -122,8 +159,9 @@ public partial class App : Application
         try
         {
             var winget = new WinGetExtensionCommandsProvider();
-            var callback = allApps.LookupApp;
-            winget.SetAllLookup(callback);
+            winget.SetAllLookup(
+                query => allApps.LookupAppByPackageFamilyName(query, requireSingleMatch: true),
+                query => allApps.LookupAppByProductCode(query, requireSingleMatch: true));
             services.AddSingleton<ICommandProvider>(winget);
         }
         catch (Exception ex)
@@ -139,27 +177,57 @@ public partial class App : Application
         services.AddSingleton<ICommandProvider, BuiltInsCommandProvider>();
         services.AddSingleton<ICommandProvider, TimeDateCommandsProvider>();
         services.AddSingleton<ICommandProvider, SystemCommandExtensionProvider>();
+        services.AddSingleton<ICommandProvider, RemoteDesktopCommandProvider>();
+        services.AddSingleton<ICommandProvider, PerformanceMonitorCommandsProvider>();
+    }
 
+    private static void AddUIServices(ServiceCollection services, DispatcherQueue dispatcherQueue)
+    {
         // Models
-        services.AddSingleton<TopLevelCommandManager>();
-        services.AddSingleton<AliasManager>();
-        services.AddSingleton<HotkeyManager>();
         var sm = SettingsModel.LoadSettings();
         services.AddSingleton(sm);
         var state = AppStateModel.LoadState();
         services.AddSingleton(state);
-        services.AddSingleton<IExtensionService, ExtensionService>();
+
+        // Services
+        services.AddSingleton<ICommandProviderCache, DefaultCommandProviderCache>();
+        services.AddSingleton<TopLevelCommandManager>();
+        services.AddSingleton<AliasManager>();
+        services.AddSingleton<HotkeyManager>();
+
+        services.AddSingleton<MainWindowViewModel>();
         services.AddSingleton<TrayIconService>();
+
+        services.AddSingleton<IThemeService, ThemeService>();
+        services.AddSingleton<ResourceSwapper>();
+
+        services.AddIconServices(dispatcherQueue);
+    }
+
+    private static void AddCoreServices(ServiceCollection services, IApplicationInfoService appInfoService)
+    {
+        // Core services
+        services.AddSingleton(appInfoService);
+
+        services.AddSingleton<IExtensionService, ExtensionService>();
         services.AddSingleton<IRunHistoryService, RunHistoryService>();
 
         services.AddSingleton<IRootPageService, PowerToysRootPageService>();
         services.AddSingleton<IAppHostService, PowerToysAppHostService>();
-        services.AddSingleton(new TelemetryForwarder());
+        services.AddSingleton<ITelemetryService, TelemetryForwarder>();
+
+        services.AddSingleton<IFuzzyMatcherProvider, FuzzyMatcherProvider>(
+            _ => new FuzzyMatcherProvider(new PrecomputedFuzzyMatcherOptions(), new PinyinFuzzyMatcherOptions()));
 
         // ViewModels
         services.AddSingleton<ShellViewModel>();
         services.AddSingleton<IPageViewModelFactoryService, CommandPalettePageViewModelFactory>();
+    }
 
-        return services.BuildServiceProvider();
+    public void Dispose()
+    {
+        _globalErrorHandler.Dispose();
+        EtwTrace.Dispose();
+        GC.SuppressFinalize(this);
     }
 }

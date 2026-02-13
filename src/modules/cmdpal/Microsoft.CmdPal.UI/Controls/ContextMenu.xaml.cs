@@ -3,9 +3,12 @@
 // See the LICENSE file in the project root for more information.
 
 using CommunityToolkit.Mvvm.Messaging;
+using CommunityToolkit.WinUI;
+using Microsoft.CmdPal.Core.Common.Text;
 using Microsoft.CmdPal.Core.ViewModels;
 using Microsoft.CmdPal.Core.ViewModels.Messages;
 using Microsoft.CmdPal.UI.Messages;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -20,21 +23,19 @@ public sealed partial class ContextMenu : UserControl,
     IRecipient<UpdateCommandBarMessage>,
     IRecipient<TryCommandKeybindingMessage>
 {
-    public ContextMenuViewModel ViewModel { get; } = new();
+    public ContextMenuViewModel ViewModel { get; }
 
     public ContextMenu()
     {
         this.InitializeComponent();
 
+        ViewModel = new ContextMenuViewModel(App.Current.Services.GetRequiredService<IFuzzyMatcherProvider>());
+        ViewModel.PropertyChanged += ViewModel_PropertyChanged;
+
         // RegisterAll isn't AOT compatible
         WeakReferenceMessenger.Default.Register<OpenContextMenuMessage>(this);
         WeakReferenceMessenger.Default.Register<UpdateCommandBarMessage>(this);
         WeakReferenceMessenger.Default.Register<TryCommandKeybindingMessage>(this);
-
-        if (ViewModel is not null)
-        {
-            ViewModel.PropertyChanged += ViewModel_PropertyChanged;
-        }
     }
 
     public void Receive(OpenContextMenuMessage message)
@@ -112,6 +113,24 @@ public sealed partial class ContextMenu : UserControl,
         else if (result == ContextKeybindingResult.Unhandled)
         {
             e.Handled = false;
+        }
+    }
+
+    /// <summary>
+    /// Handles Escape to close the context menu and return focus to the "More" button.
+    /// </summary>
+    private void UserControl_PreviewKeyDown(object sender, KeyRoutedEventArgs e)
+    {
+        if (e.Key == VirtualKey.Escape)
+        {
+            // Close the context menu (if not already handled)
+            WeakReferenceMessenger.Default.Send(new CloseContextMenuMessage());
+
+            // Find the parent CommandBar and set focus to MoreCommandsButton
+            var parent = this.FindParent<CommandBar>();
+            parent?.FocusMoreCommandsButton();
+
+            e.Handled = true;
         }
     }
 

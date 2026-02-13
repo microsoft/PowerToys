@@ -10,7 +10,7 @@ namespace ManagedCommon
     {
         public static bool IsWindows10()
         {
-            return Environment.OSVersion.Version.Major >= 10 && Environment.OSVersion.Version.Minor < 22000;
+            return Environment.OSVersion.Version.Major >= 10 && Environment.OSVersion.Version.Build < 22000;
         }
 
         public static bool IsWindows11()

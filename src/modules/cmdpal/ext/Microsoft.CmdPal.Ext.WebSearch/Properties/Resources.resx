@@ -172,7 +172,7 @@
   <data name="plugin_search_failed" xml:space="preserve">
     <value>Failed to open {0}.</value>
   </data>
-  <data name="plugin_show_history" xml:space="preserve">
+  <data name="plugin_history_item_count" xml:space="preserve">
     <value>Determines the number of history items to show from previous searches</value>
   </data>
   <data name="settings_page_name" xml:space="preserve">
@@ -183,5 +183,14 @@
   </data>
   <data name="open_url_fallback_title" xml:space="preserve">
     <value>Open URL</value>
+  </data>
+  <data name="default_browser" xml:space="preserve">
+    <value>default browser</value>
+  </data>
+  <data name="plugin_custom_search_uri" xml:space="preserve">
+    <value>Custom search engine URL</value>
+  </data>
+  <data name="plugin_custom_search_uri_placeholder" xml:space="preserve">
+    <value>Use {query} or %s as the search query placeholder; e.g. https://www.bing.com/search?q={query}</value>
   </data>
 </root>
