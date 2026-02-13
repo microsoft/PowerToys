@@ -6,6 +6,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:Microsoft.PowerToys.Settings.UI.Helpers"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ptcontrols="using:Microsoft.PowerToys.Common.UI.Controls"
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     xmlns:ui="using:CommunityToolkit.WinUI"
     AutomationProperties.LandmarkType="Main"
@@ -70,7 +71,7 @@
                                 <CheckBox x:Uid="Peek_SourceCode_WrapText" IsChecked="{x:Bind ViewModel.SourceCodeWrapText, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard ContentAlignment="Left" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-                                <controls:CheckBoxWithDescriptionControl
+                                <ptcontrols:CheckBoxWithDescriptionControl
                                     x:Uid="Peek_SourceCode_TryFormat"
                                     IsChecked="{x:Bind ViewModel.SourceCodeTryFormat, Mode=TwoWay}"
                                     IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}" />

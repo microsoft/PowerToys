@@ -3,29 +3,38 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Text.Json;
+using System.Threading.Tasks;
+using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.OOBE.Views;
-using Microsoft.UI;
-using Microsoft.UI.Windowing;
+using Microsoft.PowerToys.Settings.UI.SerializationContext;
 using Microsoft.UI.Xaml;
-using PowerToys.Interop;
-using Windows.Graphics;
+using Microsoft.UI.Xaml.Controls;
+using WinRT.Interop;
 using WinUIEx;
-using WinUIEx.Messaging;
 
 namespace Microsoft.PowerToys.Settings.UI
 {
-    public sealed partial class ScoobeWindow : WindowEx, IDisposable
+    public sealed partial class ScoobeWindow : WindowEx
     {
-        private const int ExpectedWidth = 1100;
-        private const int ExpectedHeight = 700;
-        private const int DefaultDPI = 96;
-        private int _currentDPI;
-        private WindowId _windowId;
-        private IntPtr _hWnd;
-        private AppWindow _appWindow;
-        private bool disposedValue;
+        public static Action<Type> OpenMainWindowCallback { get; set; }
+
+        public static void SetOpenMainWindowCallback(Action<Type> implementation)
+        {
+            OpenMainWindowCallback = implementation;
+        }
+
+        /// <summary>
+        /// Gets the list of release groups loaded from GitHub (grouped by major.minor version).
+        /// </summary>
+        public IList<IList<PowerToysReleaseInfo>> ReleaseGroups { get; private set; }
+
+        private bool _isLoading;
 
         public ScoobeWindow()
         {
@@ -34,63 +43,31 @@ namespace Microsoft.PowerToys.Settings.UI
 
             this.InitializeComponent();
 
-            _hWnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
-            _windowId = Win32Interop.GetWindowIdFromWindow(_hWnd);
-            _appWindow = AppWindow.GetFromWindowId(_windowId);
-            this.Activated += Window_Activated_SetIcon;
-            this.ExtendsContentIntoTitleBar = true;
+            SetTitleBar();
 
-            var dpi = NativeMethods.GetDpiForWindow(_hWnd);
-            _currentDPI = dpi;
-            float scalingFactor = (float)dpi / DefaultDPI;
-            int width = (int)(ExpectedWidth * scalingFactor);
-            int height = (int)(ExpectedHeight * scalingFactor);
-
-            SizeInt32 size;
-            size.Width = width;
-            size.Height = height;
-            _appWindow.Resize(size);
-
-            this.SizeChanged += ScoobeWindow_SizeChanged;
-
-            var loader = Helpers.ResourceLoaderInstance.ResourceLoader;
-            Title = loader.GetString("ScoobeWindow_Title");
-
-            ScoobeShellPage.SetOpenMainWindowCallback((Type type) =>
+            SetOpenMainWindowCallback((Type type) =>
             {
                 App.OpenSettingsWindow(type);
             });
         }
 
-        private void Window_Activated_SetIcon(object sender, WindowActivatedEventArgs args)
+        private void SetTitleBar()
         {
-            // Set window icon
-            _appWindow.SetIcon("Assets\\Settings\\icon.ico");
+            WindowHelpers.ForceTopBorder1PixelInsetOnWindows10(WindowNative.GetWindowHandle(this));
+            this.ExtendsContentIntoTitleBar = true;
+            this.SetTitleBar(AppTitleBar);
+            Title = ResourceLoaderInstance.ResourceLoader.GetString("ScoobeWindow_Title");
         }
 
-        private void ScoobeWindow_SizeChanged(object sender, WindowSizeChangedEventArgs args)
+        private void Window_Activated(object sender, WindowActivatedEventArgs args)
         {
-            var dpi = NativeMethods.GetDpiForWindow(_hWnd);
-            if (_currentDPI != dpi)
-            {
-                // Reacting to a DPI change. Should not cause a resize -> sizeChanged loop.
-                _currentDPI = dpi;
-                float scalingFactor = (float)dpi / DefaultDPI;
-                int width = (int)(ExpectedWidth * scalingFactor);
-                int height = (int)(ExpectedHeight * scalingFactor);
-                SizeInt32 size;
-                size.Width = width;
-                size.Height = height;
-                _appWindow.Resize(size);
-            }
+            // Set window icon
+            this.SetIcon("Assets\\Settings\\icon.ico");
         }
 
         private void Window_Closed(object sender, WindowEventArgs args)
         {
-            App.ClearScoobeWindow();
-
-            var mainWindow = App.GetSettingsWindow();
-            if (mainWindow != null)
+            if (App.GetSettingsWindow() is MainWindow mainWindow)
             {
                 mainWindow.CloseHiddenWindow();
             }
@@ -103,19 +80,133 @@ namespace Microsoft.PowerToys.Settings.UI
             WindowHelper.SetTheme(this, theme);
         }
 
-        private void Dispose(bool disposing)
+        private async void NavigationView_Loaded(object sender, RoutedEventArgs e)
         {
-            if (!disposedValue)
+            await LoadReleasesAsync();
+        }
+
+        private async Task LoadReleasesAsync()
+        {
+            if (_isLoading)
             {
-                disposedValue = true;
+                return;
+            }
+
+            _isLoading = true;
+            LoadingProgressRing.Visibility = Visibility.Visible;
+            ErrorInfoBar.IsOpen = false;
+            navigationView.MenuItems.Clear();
+
+            try
+            {
+                var releases = await FetchReleasesFromGitHubAsync();
+                ReleaseGroups = GroupReleasesByMajorMinor(releases);
+                PopulateNavigationItems();
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Failed to load releases", ex);
+                ErrorInfoBar.IsOpen = true;
+            }
+            finally
+            {
+                LoadingProgressRing.Visibility = Visibility.Collapsed;
+                _isLoading = false;
             }
         }
 
-        public void Dispose()
+        private static async Task<IList<PowerToysReleaseInfo>> FetchReleasesFromGitHubAsync()
         {
-            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-            Dispose(disposing: true);
-            GC.SuppressFinalize(this);
+            using var proxyClientHandler = new HttpClientHandler
+            {
+                DefaultProxyCredentials = CredentialCache.DefaultCredentials,
+                Proxy = WebRequest.GetSystemWebProxy(),
+                PreAuthenticate = true,
+            };
+
+            using var httpClient = new HttpClient(proxyClientHandler);
+            httpClient.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", "PowerToys");
+
+            string json = await httpClient.GetStringAsync("https://api.github.com/repos/microsoft/PowerToys/releases?per_page=20");
+            var allReleases = JsonSerializer.Deserialize<IList<PowerToysReleaseInfo>>(json, SourceGenerationContextContext.Default.IListPowerToysReleaseInfo);
+
+            if (allReleases is null || allReleases.Count == 0)
+            {
+                return [];
+            }
+
+            return allReleases
+                .OrderByDescending(r => r.PublishedDate)
+                .ToList();
+        }
+
+        private static IList<IList<PowerToysReleaseInfo>> GroupReleasesByMajorMinor(IList<PowerToysReleaseInfo> releases)
+        {
+            return releases
+                .GroupBy(GetMajorMinorVersion)
+                .Select(g => g.OrderByDescending(r => r.PublishedDate).ToList() as IList<PowerToysReleaseInfo>)
+                .ToList();
+        }
+
+        private static string GetMajorMinorVersion(PowerToysReleaseInfo release)
+        {
+            string version = ScoobeReleaseGroupViewModel.GetVersionFromRelease(release);
+            var parts = version.Split('.');
+            if (parts.Length >= 2)
+            {
+                return $"{parts[0]}.{parts[1]}";
+            }
+
+            return version;
+        }
+
+        private void PopulateNavigationItems()
+        {
+            if (ReleaseGroups == null || ReleaseGroups.Count == 0)
+            {
+                return;
+            }
+
+            foreach (var releaseGroup in ReleaseGroups)
+            {
+                var viewModel = new ScoobeReleaseGroupViewModel(releaseGroup);
+                navigationView.MenuItems.Add(viewModel);
+            }
+
+            // Select the first item to trigger navigation
+            navigationView.SelectedItem = navigationView.MenuItems[0];
+        }
+
+        private void NavigationView_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
+        {
+            if (args.SelectedItem is ScoobeReleaseGroupViewModel viewModel)
+            {
+                NavigationFrame.Navigate(typeof(ScoobeReleaseNotesPage), viewModel.Releases);
+            }
+        }
+
+        private async void RetryButton_Click(object sender, RoutedEventArgs e)
+        {
+            await LoadReleasesAsync();
+        }
+
+        private void NavigationView_DisplayModeChanged(NavigationView sender, NavigationViewDisplayModeChangedEventArgs args)
+        {
+            if (args.DisplayMode == NavigationViewDisplayMode.Compact || args.DisplayMode == NavigationViewDisplayMode.Minimal)
+            {
+                TitleBarIcon.Margin = new Thickness(0, 0, 8, 0); // Workaround, see XAML comment
+                AppTitleBar.IsPaneToggleButtonVisible = true;
+            }
+            else
+            {
+                TitleBarIcon.Margin = new Thickness(16, 0, 0, 0);  // Workaround, see XAML comment
+                AppTitleBar.IsPaneToggleButtonVisible = false;
+            }
+        }
+
+        private void TitleBar_PaneButtonClick(Microsoft.UI.Xaml.Controls.TitleBar sender, object args)
+        {
+            navigationView.IsPaneOpen = !navigationView.IsPaneOpen;
         }
     }
 }

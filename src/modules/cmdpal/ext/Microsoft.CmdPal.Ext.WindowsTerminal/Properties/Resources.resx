@@ -157,6 +157,7 @@
   </data>
   <data name="list_item_title" xml:space="preserve">
     <value>Open Windows Terminal profiles</value>
+    <comment>Verb: leads to a list of Terminal profiles to open</comment>
   </data>
   <data name="preferred_channel" xml:space="preserve">
     <value>Preferred channel</value>
