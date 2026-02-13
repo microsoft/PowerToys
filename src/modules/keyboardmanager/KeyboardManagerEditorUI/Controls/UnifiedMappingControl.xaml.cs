@@ -478,28 +478,6 @@ namespace KeyboardManagerEditorUI.Controls
         }
 
         /// <summary>
-        /// Gets the selected mouse trigger.
-        /// </summary>
-        [System.Obsolete("Use GetMouseTriggerButtonCode() instead for direct interop")]
-        public MouseButton? GetMouseTrigger()
-        {
-            if (MouseTriggerComboBox?.SelectedItem is ComboBoxItem item &&
-                int.TryParse(item.Tag?.ToString(), out int buttonCode))
-            {
-                return buttonCode switch
-                {
-                    0 => MouseButton.LeftMouse,
-                    1 => MouseButton.RightMouse,
-                    5 => MouseButton.ScrollUp,
-                    6 => MouseButton.ScrollDown,
-                    _ => null,
-                };
-            }
-
-            return null;
-        }
-
-        /// <summary>
         /// Gets the selected mouse action button code (for MouseClick action type).
         /// </summary>
         public int? GetMouseActionButtonCode()
