@@ -143,3 +143,5 @@ ignore$
 ^src/modules/registrypreview/RegistryPreviewUILib/Controls/HexBox/.*$
 ^src/common/CalculatorEngineCommon/exprtk\.hpp$
 src/modules/cmdpal/ext/SamplePagesExtension/Pages/SampleMarkdownImagesPage.cs
+^src/modules/powerrename/unittests/testdata/avif_test\.avif$
+^src/modules/powerrename/unittests/testdata/heif_test\.heic$
