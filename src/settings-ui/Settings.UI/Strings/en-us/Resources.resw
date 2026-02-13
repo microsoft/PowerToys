@@ -4718,6 +4718,9 @@ The break timer font matches the text font.</value>
   <data name="ZoomIt_Record_CaptureAudio.Content" xml:space="preserve">
     <value>Capture audio input</value>
   </data>
+  <data name="ZoomIt_Record_MicMonoMix.Content" xml:space="preserve">
+    <value>Mono</value>
+  </data>
   <data name="ZoomIt_Record_Microphone.Header" xml:space="preserve">
     <value>Microphone</value>
   </data>

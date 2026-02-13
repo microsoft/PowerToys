@@ -878,6 +878,20 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public bool RecordMicMonoMix
+        {
+            get => _zoomItSettings.Properties.MicMonoMix.Value;
+            set
+            {
+                if (_zoomItSettings.Properties.MicMonoMix.Value != value)
+                {
+                    _zoomItSettings.Properties.MicMonoMix.Value = value;
+                    OnPropertyChanged(nameof(RecordMicMonoMix));
+                    NotifySettingsChanged();
+                }
+            }
+        }
+
         public string RecordMicrophoneDeviceId
         {
             get => _zoomItSettings.Properties.MicrophoneDeviceId.Value;
