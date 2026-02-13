@@ -14,44 +14,44 @@ public class SettingsManager : JsonSettingsManager, ISettingsInterface
 
     private static string Namespaced(string propertyName) => $"{_namespace}.{propertyName}";
 
-    private static readonly List<ChoiceSetSetting.Choice> _trigUnitChoices = new()
+    private static readonly List<ChoiceSetCardSetting.Entry> _trigUnitChoices = new()
     {
-        new ChoiceSetSetting.Choice(Properties.Resources.calculator_settings_trig_unit_radians, "0"),
-        new ChoiceSetSetting.Choice(Properties.Resources.calculator_settings_trig_unit_degrees, "1"),
-        new ChoiceSetSetting.Choice(Properties.Resources.calculator_settings_trig_unit_gradians, "2"),
+        new ChoiceSetCardSetting.Entry(Properties.Resources.calculator_settings_trig_unit_radians, "0"),
+        new ChoiceSetCardSetting.Entry(Properties.Resources.calculator_settings_trig_unit_degrees, "1"),
+        new ChoiceSetCardSetting.Entry(Properties.Resources.calculator_settings_trig_unit_gradians, "2"),
     };
 
-    private readonly ChoiceSetSetting _trigUnit = new(
+    private readonly ChoiceSetCardSetting _trigUnit = new(
         Namespaced(nameof(TrigUnit)),
         Properties.Resources.calculator_settings_trig_unit_mode,
         Properties.Resources.calculator_settings_trig_unit_mode_description,
         _trigUnitChoices);
 
-    private readonly ToggleSetting _inputUseEnNumberFormat = new(
+    private readonly ToggleCardSetting _inputUseEnNumberFormat = new(
         Namespaced(nameof(InputUseEnglishFormat)),
         Properties.Resources.calculator_settings_in_en_format,
         Properties.Resources.calculator_settings_in_en_format_description,
         false);
 
-    private readonly ToggleSetting _outputUseEnNumberFormat = new(
+    private readonly ToggleCardSetting _outputUseEnNumberFormat = new(
         Namespaced(nameof(OutputUseEnglishFormat)),
         Properties.Resources.calculator_settings_out_en_format,
         Properties.Resources.calculator_settings_out_en_format_description,
         false);
 
-    private readonly ToggleSetting _closeOnEnter = new(
+    private readonly ToggleCardSetting _closeOnEnter = new(
         Namespaced(nameof(CloseOnEnter)),
         Properties.Resources.calculator_settings_close_on_enter,
         Properties.Resources.calculator_settings_close_on_enter_description,
         true);
 
-    private readonly ToggleSetting _copyResultToSearchBarIfQueryEndsWithEqualSign = new(
+    private readonly ToggleCardSetting _copyResultToSearchBarIfQueryEndsWithEqualSign = new(
         Namespaced(nameof(CopyResultToSearchBarIfQueryEndsWithEqualSign)),
         Properties.Resources.calculator_settings_copy_result_to_search_bar,
         Properties.Resources.calculator_settings_copy_result_to_search_bar_description,
         false);
 
-    private readonly ToggleSetting _autoFixQuery = new(
+    private readonly ToggleCardSetting _autoFixQuery = new(
         Namespaced(nameof(AutoFixQuery)),
         Properties.Resources.calculator_settings_auto_fix_query,
         Properties.Resources.calculator_settings_auto_fix_query_description,

@@ -16,10 +16,20 @@ using Windows.Data.Json;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
-public partial class ContentFormViewModel(IFormContent _form, WeakReference<IPageContext> context) :
-    ContentViewModel(context)
+public partial class ContentFormViewModel :
+    ContentViewModel
 {
-    private readonly ExtensionObject<IFormContent> _formModel = new(_form);
+    public static AdaptiveElementParserRegistration AdaptiveElementParserRegistration { get; } = new();
+
+    public static AdaptiveActionParserRegistration AdaptiveActionParserRegistration { get; } = new();
+
+    private readonly ExtensionObject<IFormContent> _formModel;
+
+    public ContentFormViewModel(IFormContent form, WeakReference<IPageContext> context)
+        : base(context)
+    {
+        _formModel = new ExtensionObject<IFormContent>(form);
+    }
 
     // Remember - "observable" properties from the model (via PropChanged)
     // cannot be marked [ObservableProperty]
@@ -47,7 +57,7 @@ public partial class ContentFormViewModel(IFormContent _form, WeakReference<IPag
         {
             var template = new AdaptiveCardTemplate(templateJson);
             var cardJson = template.Expand(dataJson);
-            card = AdaptiveCard.FromJsonString(cardJson);
+            card = AdaptiveCard.FromJsonString(cardJson, AdaptiveElementParserRegistration, AdaptiveActionParserRegistration);
             return true;
         }
         catch (Exception ex)

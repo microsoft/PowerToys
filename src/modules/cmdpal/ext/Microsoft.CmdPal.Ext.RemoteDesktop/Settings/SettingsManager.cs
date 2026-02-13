@@ -19,7 +19,7 @@ internal class SettingsManager : JsonSettingsManager, ISettingsInterface
 
     private static string Namespaced(string propertyName) => $"{_namespace}.{propertyName}";
 
-    private readonly TextSetting _predefinedConnections = new(
+    private readonly TextCardSetting _predefinedConnections = new(
         Namespaced(nameof(PredefinedConnections)),
         Resources.remotedesktop_settings_predefined_connections_title,
         Resources.remotedesktop_settings_predefined_connections_description,

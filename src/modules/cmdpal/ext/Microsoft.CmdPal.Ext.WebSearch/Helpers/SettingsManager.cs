@@ -26,22 +26,22 @@ public class SettingsManager : JsonSettingsManager, ISettingsInterface
 
     private static string Namespaced(string propertyName) => $"{_namespace}.{propertyName}";
 
-    private static readonly List<ChoiceSetSetting.Choice> _choices =
+    private static readonly List<ChoiceSetCardSetting.Entry> _choices =
     [
-        new ChoiceSetSetting.Choice(Resources.history_none, "None"),
-        new ChoiceSetSetting.Choice(Resources.history_1, "1"),
-        new ChoiceSetSetting.Choice(Resources.history_5, "5"),
-        new ChoiceSetSetting.Choice(Resources.history_10, "10"),
-        new ChoiceSetSetting.Choice(Resources.history_20, "20"),
+        new ChoiceSetCardSetting.Entry(Resources.history_none, "None"),
+        new ChoiceSetCardSetting.Entry(Resources.history_1, "1"),
+        new ChoiceSetCardSetting.Entry(Resources.history_5, "5"),
+        new ChoiceSetCardSetting.Entry(Resources.history_10, "10"),
+        new ChoiceSetCardSetting.Entry(Resources.history_20, "20"),
     ];
 
-    private readonly ToggleSetting _globalIfURI = new(
+    private readonly ToggleCardSetting _globalIfURI = new(
         Namespaced(nameof(GlobalIfURI)),
         Resources.plugin_global_if_uri,
         Resources.plugin_global_if_uri,
         false);
 
-    private readonly TextSetting _customSearchUri = new(
+    private readonly TextCardSetting _customSearchUri = new(
         Namespaced(nameof(CustomSearchUri)),
         Resources.plugin_custom_search_uri,
         Resources.plugin_custom_search_uri,
@@ -50,7 +50,7 @@ public class SettingsManager : JsonSettingsManager, ISettingsInterface
         Placeholder = Resources.plugin_custom_search_uri_placeholder,
     };
 
-    private readonly ChoiceSetSetting _historyItemCount = new(
+    private readonly ChoiceSetCardSetting _historyItemCount = new(
         Namespaced(HistoryItemCountLegacySettingsKey),
         Resources.plugin_history_item_count,
         Resources.plugin_history_item_count,

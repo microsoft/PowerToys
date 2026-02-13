@@ -15,24 +15,24 @@ public class SettingsManager : JsonSettingsManager, ISettingsInterface
 
     private static string Namespaced(string propertyName) => $"{_namespace}.{propertyName}";
 
-    private static readonly List<ChoiceSetSetting.Choice> _choices =
+    private static readonly List<ChoiceSetCardSetting.Entry> _choices =
     [
-        new ChoiceSetSetting.Choice(Resources.find_executable_file_and_run_it, "2"), // idk why but this is how PT Run did it? Maybe ordering matters there
-        new ChoiceSetSetting.Choice(Resources.run_command_in_command_prompt, "0"),
-        new ChoiceSetSetting.Choice(Resources.run_command_in_powershell, "1"),
-        new ChoiceSetSetting.Choice(Resources.run_command_in_powershell_seven, "6"),
-        new ChoiceSetSetting.Choice(Resources.run_command_in_windows_terminal_cmd, "5"),
-        new ChoiceSetSetting.Choice(Resources.run_command_in_windows_terminal_powershell, "3"),
-        new ChoiceSetSetting.Choice(Resources.run_command_in_windows_terminal_powershell_seven, "4"),
+        new ChoiceSetCardSetting.Entry(Resources.find_executable_file_and_run_it, "2"), // idk why but this is how PT Run did it? Maybe ordering matters there
+        new ChoiceSetCardSetting.Entry(Resources.run_command_in_command_prompt, "0"),
+        new ChoiceSetCardSetting.Entry(Resources.run_command_in_powershell, "1"),
+        new ChoiceSetCardSetting.Entry(Resources.run_command_in_powershell_seven, "6"),
+        new ChoiceSetCardSetting.Entry(Resources.run_command_in_windows_terminal_cmd, "5"),
+        new ChoiceSetCardSetting.Entry(Resources.run_command_in_windows_terminal_powershell, "3"),
+        new ChoiceSetCardSetting.Entry(Resources.run_command_in_windows_terminal_powershell_seven, "4"),
     ];
 
-    private readonly ToggleSetting _leaveShellOpen = new(
+    private readonly ToggleCardSetting _leaveShellOpen = new(
         Namespaced(nameof(LeaveShellOpen)),
         Resources.leave_shell_open,
         Resources.leave_shell_open,
         false); // TODO -- double check default value
 
-    private readonly ChoiceSetSetting _shellCommandExecution = new(
+    private readonly ChoiceSetCardSetting _shellCommandExecution = new(
         Namespaced(nameof(ShellCommandExecution)),
         Resources.shell_command_execution,
         Resources.shell_command_execution_description,

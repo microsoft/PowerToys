@@ -22,29 +22,29 @@ public class SettingsManager : JsonSettingsManager, ISettingsInterface
 
     private static string Namespaced(string propertyName) => $"{_namespace}.{propertyName}";
 
-    private static readonly List<ChoiceSetSetting.Choice> _firstWeekOfYearChoices = new()
+    private static readonly List<ChoiceSetCardSetting.Entry> _firstWeekOfYearChoices = new()
     {
-        new ChoiceSetSetting.Choice(Resources.Microsoft_plugin_timedate_Setting_UseSystemSetting, "-1"),
-        new ChoiceSetSetting.Choice(Resources.Microsoft_plugin_timedate_SettingFirstWeekRule_FirstDay, "0"),
-        new ChoiceSetSetting.Choice(Resources.Microsoft_plugin_timedate_SettingFirstWeekRule_FirstFullWeek, "1"),
-        new ChoiceSetSetting.Choice(Resources.Microsoft_plugin_timedate_SettingFirstWeekRule_FirstFourDayWeek, "2"),
+        new ChoiceSetCardSetting.Entry(Resources.Microsoft_plugin_timedate_Setting_UseSystemSetting, "-1"),
+        new ChoiceSetCardSetting.Entry(Resources.Microsoft_plugin_timedate_SettingFirstWeekRule_FirstDay, "0"),
+        new ChoiceSetCardSetting.Entry(Resources.Microsoft_plugin_timedate_SettingFirstWeekRule_FirstFullWeek, "1"),
+        new ChoiceSetCardSetting.Entry(Resources.Microsoft_plugin_timedate_SettingFirstWeekRule_FirstFourDayWeek, "2"),
     };
 
-    private static readonly List<ChoiceSetSetting.Choice> _firstDayOfWeekChoices = GetFirstDayOfWeekChoices();
+    private static readonly List<ChoiceSetCardSetting.Entry> _firstDayOfWeekChoices = GetFirstDayOfWeekChoices();
 
-    private static List<ChoiceSetSetting.Choice> GetFirstDayOfWeekChoices()
+    private static List<ChoiceSetCardSetting.Entry> GetFirstDayOfWeekChoices()
     {
         // List (Sorted for first day is Sunday)
-        var list = new List<ChoiceSetSetting.Choice>
+        var list = new List<ChoiceSetCardSetting.Entry>
             {
-                new ChoiceSetSetting.Choice(Resources.Microsoft_plugin_timedate_Setting_UseSystemSetting, "-1"),
-                new ChoiceSetSetting.Choice(Resources.Microsoft_plugin_timedate_SettingFirstDayOfWeek_Sunday, "0"),
-                new ChoiceSetSetting.Choice(Resources.Microsoft_plugin_timedate_SettingFirstDayOfWeek_Monday, "1"),
-                new ChoiceSetSetting.Choice(Resources.Microsoft_plugin_timedate_SettingFirstDayOfWeek_Tuesday, "2"),
-                new ChoiceSetSetting.Choice(Resources.Microsoft_plugin_timedate_SettingFirstDayOfWeek_Wednesday, "3"),
-                new ChoiceSetSetting.Choice(Resources.Microsoft_plugin_timedate_SettingFirstDayOfWeek_Thursday, "4"),
-                new ChoiceSetSetting.Choice(Resources.Microsoft_plugin_timedate_SettingFirstDayOfWeek_Friday, "5"),
-                new ChoiceSetSetting.Choice(Resources.Microsoft_plugin_timedate_SettingFirstDayOfWeek_Saturday, "6"),
+                new ChoiceSetCardSetting.Entry(Resources.Microsoft_plugin_timedate_Setting_UseSystemSetting, "-1"),
+                new ChoiceSetCardSetting.Entry(Resources.Microsoft_plugin_timedate_SettingFirstDayOfWeek_Sunday, "0"),
+                new ChoiceSetCardSetting.Entry(Resources.Microsoft_plugin_timedate_SettingFirstDayOfWeek_Monday, "1"),
+                new ChoiceSetCardSetting.Entry(Resources.Microsoft_plugin_timedate_SettingFirstDayOfWeek_Tuesday, "2"),
+                new ChoiceSetCardSetting.Entry(Resources.Microsoft_plugin_timedate_SettingFirstDayOfWeek_Wednesday, "3"),
+                new ChoiceSetCardSetting.Entry(Resources.Microsoft_plugin_timedate_SettingFirstDayOfWeek_Thursday, "4"),
+                new ChoiceSetCardSetting.Entry(Resources.Microsoft_plugin_timedate_SettingFirstDayOfWeek_Friday, "5"),
+                new ChoiceSetCardSetting.Entry(Resources.Microsoft_plugin_timedate_SettingFirstDayOfWeek_Saturday, "6"),
             };
 
         // Order Rules
@@ -63,37 +63,37 @@ public class SettingsManager : JsonSettingsManager, ISettingsInterface
         }
     }
 
-    private readonly ChoiceSetSetting _firstWeekOfYear = new(
+    private readonly ChoiceSetCardSetting _firstWeekOfYear = new(
         Namespaced(nameof(FirstWeekOfYear)),
         Resources.Microsoft_plugin_timedate_SettingFirstWeekRule,
         Resources.Microsoft_plugin_timedate_SettingFirstWeekRule_Description,
         _firstWeekOfYearChoices);
 
-    private readonly ChoiceSetSetting _firstDayOfWeek = new(
+    private readonly ChoiceSetCardSetting _firstDayOfWeek = new(
         Namespaced(nameof(FirstDayOfWeek)),
         Resources.Microsoft_plugin_timedate_SettingFirstDayOfWeek,
         Resources.Microsoft_plugin_timedate_SettingFirstDayOfWeek,
         _firstDayOfWeekChoices);
 
-    private readonly ToggleSetting _enableFallbackItems = new(
+    private readonly ToggleCardSetting _enableFallbackItems = new(
         Namespaced(nameof(EnableFallbackItems)),
         Resources.Microsoft_plugin_timedate_SettingEnableFallbackItems,
         Resources.Microsoft_plugin_timedate_SettingEnableFallbackItems_Description,
         true);
 
-    private readonly ToggleSetting _timeWithSeconds = new(
+    private readonly ToggleCardSetting _timeWithSeconds = new(
         Namespaced(nameof(TimeWithSecond)),
         Resources.Microsoft_plugin_timedate_SettingTimeWithSeconds,
         Resources.Microsoft_plugin_timedate_SettingTimeWithSeconds_Description,
         false); // TODO -- double check default value
 
-    private readonly ToggleSetting _dateWithWeekday = new(
+    private readonly ToggleCardSetting _dateWithWeekday = new(
         Namespaced(nameof(DateWithWeekday)),
         Resources.Microsoft_plugin_timedate_SettingDateWithWeekday,
         Resources.Microsoft_plugin_timedate_SettingDateWithWeekday_Description,
         false); // TODO -- double check default value
 
-    private readonly TextSetting _customFormats = new(
+    private readonly TextCardSetting _customFormats = new(
         Namespaced(nameof(CustomFormats)),
         Resources.Microsoft_plugin_timedate_Setting_CustomFormats,
         Resources.Microsoft_plugin_timedate_Setting_CustomFormats + TEXTBOXNEWLINE + string.Format(CultureInfo.CurrentCulture, Resources.Microsoft_plugin_timedate_Setting_CustomFormatsDescription.ToString(), "DOW", "DIM", "WOM", "WOY", "EAB", "WFT", "UXT", "UMS", "OAD", "EXC", "EXF", "UTC:"),
