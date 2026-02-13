@@ -274,7 +274,7 @@ public sealed partial class ImageContentViewer : UserControl
         {
             popup.IsOpen = false;
 
-            // Move focus back, otherwise it might go to place where sun doesn't shine in after closing the popup
+            // Move focus back; otherwise it might go to place where sun doesn't shine in after closing the popup
             this.Focus(FocusState.Programmatic);
         };
 
@@ -337,18 +337,18 @@ public sealed partial class ImageContentViewer : UserControl
         if (height > 0)
         {
             var pageLimit = Math.Max(0, height - MaxHeightSafetyPadding);
-            if (ViewModel?.MaxHeight is double vmh and > 0)
+            if (ViewModel?.MaxHeight is double vmHeight and > 0)
             {
-                ImageBorder.MaxHeight = Math.Min(pageLimit, vmh);
+                ImageBorder.MaxHeight = Math.Min(pageLimit, vmHeight);
             }
             else
             {
                 ImageBorder.MaxHeight = pageLimit;
             }
         }
-        else if (ViewModel?.MaxHeight is double vmh2 and > 0)
+        else if (ViewModel?.MaxHeight is double vmHeight2 and > 0)
         {
-            ImageBorder.MaxHeight = vmh2; // fallback if page height not ready
+            ImageBorder.MaxHeight = vmHeight2; // fallback if page height not ready
         }
     }
 
