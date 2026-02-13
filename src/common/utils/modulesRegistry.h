@@ -3,6 +3,7 @@
 #include "registry.h"
 
 #include <common/utils/json.h>
+#include <common/utils/version.h>
 
 #include <filesystem>
 
@@ -23,6 +24,11 @@ namespace NonLocalizable
     const static std::vector<std::wstring> ExtNoNoNo   = {
         L".svgz" //Monaco cannot handle this file type at all; it's a binary file.
     };
+}
+
+inline std::wstring get_std_product_version()
+{
+    return get_product_version() + L".0";
 }
 
 inline registry::ChangeSet getSvgPreviewHandlerChangeSet(const std::wstring installationDir, const bool perUser)

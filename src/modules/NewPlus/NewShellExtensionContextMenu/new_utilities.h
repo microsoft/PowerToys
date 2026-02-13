@@ -3,7 +3,6 @@
 #include "pch.h"
 
 #include <common/utils/process_path.h>
-#include <common/utils/package.h>
 
 #include "constants.h"
 #include "settings.h"

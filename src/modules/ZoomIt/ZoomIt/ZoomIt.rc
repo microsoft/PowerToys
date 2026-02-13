@@ -4,7 +4,7 @@
 
 // version.h and branding.h are different in the Sysinternals repository,
 // keep the includes as such, here.
-// From $(MSBuildThisFileDirectory)..\..\..\common\version
+// From $(MSBuildThisFileDirectory)..\..\..\utils\version
 #include "version.h"
 // From $(MSBuildThisFileDirectory)PowerToys
 #include "branding.h"

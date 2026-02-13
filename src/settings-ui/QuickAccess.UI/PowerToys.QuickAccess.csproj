@@ -7,7 +7,7 @@
     <TargetFramework>net9.0-windows10.0.26100.0</TargetFramework>
     <RootNamespace>Microsoft.PowerToys.QuickAccess</RootNamespace>
     <AssemblyName>PowerToys.QuickAccess</AssemblyName>
-    <ApplicationIcon>..\..\runner\svgs\icon.ico</ApplicationIcon>
+    <ApplicationIcon>..\..\runner\icon.ico</ApplicationIcon>
     <UseWinUI>true</UseWinUI>
     <WindowsPackageType>None</WindowsPackageType>
     <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>

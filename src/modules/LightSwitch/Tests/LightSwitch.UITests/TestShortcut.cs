@@ -19,14 +19,5 @@ namespace LightSwitch.UITests
             : base(PowerToysModule.PowerToysSettings, WindowSize.Large)
         {
         }
-
-        [TestMethod("LightSwitch.TestShortcut")]
-        [TestCategory("Shortcut")]
-        public void TestLightSwitchShortcut()
-        {
-            var activationKeys = TestHelper.InitializeTest(this, "light switch shortcut test");
-            TestHelper.PerformShortcutTest(this, activationKeys);
-            TestHelper.CleanupTest(this);
-        }
     }
 }

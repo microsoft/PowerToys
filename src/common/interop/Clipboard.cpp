@@ -40,14 +40,12 @@ namespace winrt::PowerToys::Interop::implementation
 
             if (!OpenClipboard(NULL))
             {
-                DWORD errorCode = GetLastError();
                 return;
             }
             HANDLE h_clipboard_data = GetClipboardData(CF_UNICODETEXT);
 
             if (h_clipboard_data == NULL)
             {
-                DWORD errorCode = GetLastError();
                 CloseClipboard();
                 return;
             }
@@ -56,7 +54,6 @@ namespace winrt::PowerToys::Interop::implementation
 
             if (NULL == pch_data)
             {
-                DWORD errorCode = GetLastError();
                 CloseClipboard();
                 return;
             }
@@ -81,7 +78,6 @@ namespace winrt::PowerToys::Interop::implementation
 
             if (!OpenClipboard(NULL))
             {
-                DWORD errorCode = GetLastError();
                 return;
             }
 

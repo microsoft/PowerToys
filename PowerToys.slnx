@@ -9,11 +9,11 @@
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
-    <Project Path="src/common/Common.UI/Common.UI.csproj">
+    <Project Path="src/common/Common.UI.Controls/Common.UI.Controls.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
-    <Project Path="src/common/Common.UI.Controls/Common.UI.Controls.csproj">
+    <Project Path="src/common/Common.UI/Common.UI.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
@@ -104,7 +104,6 @@
     <File Path="src/common/utils/MsWindowsSettings.h" />
     <File Path="src/common/utils/OnThreadExecutor.h" />
     <File Path="src/common/utils/os-detect.h" />
-    <File Path="src/common/utils/package.h" />
     <File Path="src/common/utils/ProcessWaiter.h" />
     <File Path="src/common/utils/process_path.h" />
     <File Path="src/common/utils/registry.h" />
@@ -117,7 +116,6 @@
     <File Path="src/common/utils/version.h" />
     <File Path="src/common/utils/winapi_error.h" />
     <File Path="src/common/utils/window.h" />
-    <File Path="version.h" />
   </Folder>
   <Folder Name="/DSC/">
     <Project Path="src/dsc/PowerToys.Settings.DSC.Schema.Generator/PowerToys.Settings.DSC.Schema.Generator.csproj">

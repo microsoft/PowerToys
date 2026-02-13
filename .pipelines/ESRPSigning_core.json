@@ -25,7 +25,6 @@
             "PowerToys.Settings.UI.Lib.dll",
             "PowerToys.GPOWrapper.dll",
             "PowerToys.GPOWrapperProjection.dll",
-            "PowerToys.AllExperiments.dll",
             "LanguageModelProvider.dll",
 
             "Common.Search.dll",

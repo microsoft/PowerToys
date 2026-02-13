@@ -113,7 +113,6 @@
 		<ProjectReference Include="..\..\common\Common.Search\Common.Search.csproj" />
 		<ProjectReference Include="..\..\common\Common.UI\Common.UI.csproj" />
 		<ProjectReference Include="..\..\common\Common.UI.Controls\Common.UI.Controls.csproj" />
-		<ProjectReference Include="..\..\common\AllExperiments\AllExperiments.csproj" />
 		<ProjectReference Include="..\..\common\GPOWrapper\GPOWrapper.vcxproj" />
 		<ProjectReference Include="..\..\common\interop\PowerToys.Interop.vcxproj" />
 		<ProjectReference Include="..\..\modules\ZoomIt\ZoomItSettingsInterop\ZoomItSettingsInterop.vcxproj" />
