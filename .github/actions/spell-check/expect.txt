@@ -1072,6 +1072,7 @@ Metacharacter
 metadatamatters
 Metadatas
 metafile
+metapackage
 mfc
 Mgmt
 Microwaved
@@ -1497,6 +1498,7 @@ psz
 ptb
 ptc
 PTCHAR
+ptcontrols
 ptd
 PTOKEN
 PToy

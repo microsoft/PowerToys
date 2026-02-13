@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -8,7 +8,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
 
-namespace Microsoft.PowerToys.Settings.UI.Controls
+namespace Microsoft.PowerToys.Common.UI.Controls
 {
     public partial class CheckBoxWithDescriptionControl : CheckBox
     {
@@ -39,7 +39,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             // Add text box only if the description is not empty. Required for additional plugin options.
             if (!string.IsNullOrWhiteSpace(Description))
             {
-              panel.Children.Add(new IsEnabledTextBlock() { Style = (Style)App.Current.Resources["SecondaryIsEnabledTextBlockStyle"], Text = Description });
+                panel.Children.Add(new IsEnabledTextBlock() { Style = (Style)Application.Current.Resources["SecondaryIsEnabledTextBlockStyle"], Text = Description });
             }
 
             this.Content = panel;
