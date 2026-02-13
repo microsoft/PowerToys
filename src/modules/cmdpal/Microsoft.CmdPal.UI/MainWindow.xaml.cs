@@ -239,16 +239,14 @@ public sealed partial class MainWindow : WindowEx,
 
     private void PositionCentered(DisplayArea displayArea)
     {
-        var position = WindowPositionHelper.CalculateCenteredPosition(
+        var rect = WindowPositionHelper.CenterOnDisplay(
             displayArea,
             AppWindow.Size,
             (int)this.GetDpiForWindow());
 
-        if (position is not null)
+        if (rect is not null)
         {
-            // Use Move(), not MoveAndResize(). Windows auto-resizes on DPI change via WM_DPICHANGED;
-            // the helper already accounts for this when calculating the centered position.
-            AppWindow.Move((PointInt32)position);
+            MoveAndResizeDpiAware(rect.Value);
         }
     }
 
@@ -267,13 +265,20 @@ public sealed partial class MainWindow : WindowEx,
             new SizeInt32(savedPosition.ScreenWidth, savedPosition.ScreenHeight),
             savedPosition.Dpi);
 
-        // Suppress WM_DPICHANGED while restoring — AdjustRectForVisibility already
-        // scaled the size for the target monitor's DPI, so the framework's automatic
-        // DPI resize would double-scale it.
+        MoveAndResizeDpiAware(newRect);
+    }
+
+    /// <summary>
+    /// Moves and resizes the window while suppressing WM_DPICHANGED.
+    /// The caller is expected to provide a rect already scaled for the target display's DPI.
+    /// Without suppression, the framework would apply its own DPI scaling on top, double-scaling the window.
+    /// </summary>
+    private void MoveAndResizeDpiAware(RectInt32 rect)
+    {
         _suppressDpiChange = true;
         try
         {
-            AppWindow.MoveAndResize(newRect);
+            AppWindow.MoveAndResize(rect);
         }
         finally
         {
@@ -505,16 +510,7 @@ public sealed partial class MainWindow : WindowEx,
         {
             var originalScreen = new SizeInt32(_currentWindowPosition.ScreenWidth, _currentWindowPosition.ScreenHeight);
             var newRect = WindowPositionHelper.AdjustRectForVisibility(_currentWindowPosition.ToPhysicalWindowRectangle(), originalScreen, _currentWindowPosition.Dpi);
-
-            _suppressDpiChange = true;
-            try
-            {
-                AppWindow.MoveAndResize(newRect);
-            }
-            finally
-            {
-                _suppressDpiChange = false;
-            }
+            MoveAndResizeDpiAware(newRect);
         }
         else
         {
@@ -771,18 +767,12 @@ public sealed partial class MainWindow : WindowEx,
         var settings = serviceProvider.GetService<SettingsModel>();
         if (settings is not null)
         {
-            settings.LastWindowPosition = new WindowPosition
+            // a quick sanity check, so we don't overwrite correct values
+            if (_currentWindowPosition.IsSizeValid)
             {
-                X = _currentWindowPosition.X,
-                Y = _currentWindowPosition.Y,
-                Width = _currentWindowPosition.Width,
-                Height = _currentWindowPosition.Height,
-                Dpi = _currentWindowPosition.Dpi,
-                ScreenWidth = _currentWindowPosition.ScreenWidth,
-                ScreenHeight = _currentWindowPosition.ScreenHeight,
-            };
-
-            SettingsModel.SaveSettings(settings);
+                settings.LastWindowPosition = _currentWindowPosition;
+                SettingsModel.SaveSettings(settings);
+            }
         }
 
         var extensionService = serviceProvider.GetService<IExtensionService>()!;

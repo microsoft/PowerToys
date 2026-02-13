@@ -18,7 +18,7 @@ internal static class WindowPositionHelper
     private const int MinimumVisibleSize = 100;
     private const int DefaultDpi = 96;
 
-    public static PointInt32? CalculateCenteredPosition(DisplayArea? displayArea, SizeInt32 windowSize, int windowDpi)
+    public static RectInt32? CenterOnDisplay(DisplayArea? displayArea, SizeInt32 windowSize, int windowDpi)
     {
         if (displayArea is null)
         {
@@ -32,15 +32,9 @@ internal static class WindowPositionHelper
         }
 
         var targetDpi = GetDpiForDisplay(displayArea);
-        var predictedSize = ScaleSize(windowSize, windowDpi, targetDpi);
-
-        // Clamp to work area
-        var width = Math.Min(predictedSize.Width, workArea.Width);
-        var height = Math.Min(predictedSize.Height, workArea.Height);
-
-        return new PointInt32(
-            workArea.X + ((workArea.Width - width) / 2),
-            workArea.Y + ((workArea.Height - height) / 2));
+        var scaledSize = ScaleSize(windowSize, windowDpi, targetDpi);
+        var clampedSize = ClampSize(scaledSize.Width, scaledSize.Height, workArea);
+        return CenterRectInWorkArea(clampedSize, workArea);
     }
 
     /// <summary>
