@@ -18,15 +18,15 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
         public OobeZoomIt()
         {
             this.InitializeComponent();
-            ViewModel = new OobePowerToysModule(OobeShellPage.OobeShellHandler.Modules[(int)PowerToysModules.ZoomIt]);
+            ViewModel = App.OobeShellViewModel.GetModule(PowerToysModules.ZoomIt);
             DataContext = ViewModel;
         }
 
         private void SettingsLaunchButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
-            if (OobeShellPage.OpenMainWindowCallback != null)
+            if (OobeWindow.OpenMainWindowCallback != null)
             {
-                OobeShellPage.OpenMainWindowCallback(typeof(ZoomItPage));
+                OobeWindow.OpenMainWindowCallback(typeof(ZoomItPage));
             }
 
             ViewModel.LogOpeningSettingsEvent();

@@ -8,6 +8,7 @@
     xmlns:local="using:Microsoft.PowerToys.Settings.UI.Helpers"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:models="using:Microsoft.PowerToys.Settings.UI.Library"
+    xmlns:ptcontrols="using:Microsoft.PowerToys.Common.UI.Controls"
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     xmlns:ui="using:CommunityToolkit.WinUI"
     xmlns:viewmodels="using:Microsoft.PowerToys.Settings.UI.ViewModels"
@@ -21,15 +22,12 @@
             </ResourceDictionary.MergedDictionaries>
             <ResourceDictionary.ThemeDictionaries>
                 <ResourceDictionary x:Key="Default">
-                    <ImageSource x:Key="DialogHeaderImage">ms-appx:///Assets/Settings/Modules/APDialog.dark.png</ImageSource>
                     <ImageSource x:Key="OpenAIIconImage">ms-appx:///Assets/Settings/Icons/Models/OpenAI.dark.svg</ImageSource>
                 </ResourceDictionary>
                 <ResourceDictionary x:Key="Light">
-                    <ImageSource x:Key="DialogHeaderImage">ms-appx:///Assets/Settings/Modules/APDialog.light.png</ImageSource>
                     <ImageSource x:Key="OpenAIIconImage">ms-appx:///Assets/Settings/Icons/Models/OpenAI.light.svg</ImageSource>
                 </ResourceDictionary>
                 <ResourceDictionary x:Key="HighContrast">
-                    <ImageSource x:Key="DialogHeaderImage">ms-appx:///Assets/Settings/Modules/APDialog.light.png</ImageSource>
                     <ImageSource x:Key="OpenAIIconImage">ms-appx:///Assets/Settings/Icons/Models/OpenAI.light.svg</ImageSource>
                 </ResourceDictionary>
             </ResourceDictionary.ThemeDictionaries>
@@ -157,16 +155,16 @@
                             <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.AdvancedPasteUIShortcut, Mode=TwoWay}" />
                             <tkcontrols:SettingsExpander.Items>
                                 <tkcontrols:SettingsCard Name="AdvancedPasteEnableClipboardPreview" ContentAlignment="Left">
-                                    <controls:CheckBoxWithDescriptionControl x:Uid="AdvancedPaste_EnableClipboardPreview" IsChecked="{x:Bind ViewModel.EnableClipboardPreview, Mode=TwoWay}" />
+                                    <ptcontrols:CheckBoxWithDescriptionControl x:Uid="AdvancedPaste_EnableClipboardPreview" IsChecked="{x:Bind ViewModel.EnableClipboardPreview, Mode=TwoWay}" />
                                 </tkcontrols:SettingsCard>
                                 <tkcontrols:SettingsCard Name="AdvancedPasteAutoCopySelectionCustomAction" ContentAlignment="Left">
-                                    <controls:CheckBoxWithDescriptionControl x:Uid="AdvancedPaste_AutoCopySelectionForCustomActionHotkey" IsChecked="{x:Bind ViewModel.AutoCopySelectionForCustomActionHotkey, Mode=TwoWay}" />
+                                    <ptcontrols:CheckBoxWithDescriptionControl x:Uid="AdvancedPaste_AutoCopySelectionForCustomActionHotkey" IsChecked="{x:Bind ViewModel.AutoCopySelectionForCustomActionHotkey, Mode=TwoWay}" />
                                 </tkcontrols:SettingsCard>
                                 <tkcontrols:SettingsCard
                                     Name="AdvancedPasteClipboardHistoryEnabledSettingsCard"
                                     ContentAlignment="Left"
                                     IsEnabled="{x:Bind ViewModel.ClipboardHistoryEnabled, Mode=OneWay}">
-                                    <controls:CheckBoxWithDescriptionControl x:Uid="AdvancedPaste_Clipboard_History_Enabled_SettingsCard" IsChecked="{x:Bind ViewModel.ClipboardHistoryEnabled, Mode=TwoWay}" />
+                                    <ptcontrols:CheckBoxWithDescriptionControl x:Uid="AdvancedPaste_Clipboard_History_Enabled_SettingsCard" IsChecked="{x:Bind ViewModel.ClipboardHistoryEnabled, Mode=TwoWay}" />
                                 </tkcontrols:SettingsCard>
                                 <InfoBar
                                     x:Uid="GPO_SettingIsManaged"
@@ -182,7 +180,7 @@
                                     <CheckBox x:Uid="AdvancedPaste_CloseAfterLosingFocus" IsChecked="{x:Bind ViewModel.CloseAfterLosingFocus, Mode=TwoWay}" />
                                 </tkcontrols:SettingsCard>
                                 <tkcontrols:SettingsCard Name="AdvancedPasteShowCustomPreviewSettingsCard" ContentAlignment="Left">
-                                    <controls:CheckBoxWithDescriptionControl x:Uid="AdvancedPaste_ShowCustomPreviewSettingsCard" IsChecked="{x:Bind ViewModel.ShowCustomPreview, Mode=TwoWay}" />
+                                    <ptcontrols:CheckBoxWithDescriptionControl x:Uid="AdvancedPaste_ShowCustomPreviewSettingsCard" IsChecked="{x:Bind ViewModel.ShowCustomPreview, Mode=TwoWay}" />
                                 </tkcontrols:SettingsCard>
                             </tkcontrols:SettingsExpander.Items>
                         </tkcontrols:SettingsExpander>

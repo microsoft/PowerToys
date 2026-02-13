@@ -1497,6 +1497,7 @@ psz
 ptb
 ptc
 PTCHAR
+ptcontrols
 ptd
 PTOKEN
 PToy

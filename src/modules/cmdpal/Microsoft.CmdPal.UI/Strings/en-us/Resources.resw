@@ -777,6 +777,24 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="Settings_ExtensionsPage_More_Button.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>More options</value>
   </data>
+  <data name="MoreCommandsButton_Label.Text" xml:space="preserve">
+    <value>More</value>
+  </data>
+  <data name="CommandBar_SecondaryButton_HotkeyCtrl.Text" xml:space="preserve">
+    <value>Ctrl</value>
+    <comment>Key modifier</comment>
+  </data>
+  <data name="CommandBar_MoreCommandsButtonButton_HotkeyCtrl.Text" xml:space="preserve">
+    <value>Ctrl</value>
+    <comment>Key modifier</comment>
+  </data>
+  <data name="MoreCommandsButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Ctrl+K</value>
+  </data>
+  <data name="CommandBar_MoreCommandsButtonButton_HotkeyCtrl2.Text" xml:space="preserve">
+    <value>K</value>
+    <comment>Keyboard key</comment>
+  </data>
   <data name="ImageContentViewer_ZoomAndScroll.Text" xml:space="preserve">
     <value>Zoom &amp; Scroll</value>
   </data>
