@@ -210,19 +210,19 @@
                         <TextBlock Text="Open URL" />
                     </StackPanel>
                 </ComboBoxItem>
-        <ComboBoxItem AutomationProperties.Name="Open app" Tag="OpenApp">
-          <StackPanel Orientation="Horizontal" Spacing="8">
-            <FontIcon FontSize="14" Glyph="&#xECAA;" />
-            <TextBlock Text="Open app" />
-          </StackPanel>
-        </ComboBoxItem>
-        <ComboBoxItem AutomationProperties.Name="Remap to mouse click" Tag="MouseClick">
-          <StackPanel Orientation="Horizontal" Spacing="8">
-            <FontIcon FontSize="14" Glyph="&#xE962;" />
-            <TextBlock Text="Remap to mouse click" />
-          </StackPanel>
-        </ComboBoxItem>
-      </ComboBox>
+                <ComboBoxItem AutomationProperties.Name="Open app" Tag="OpenApp">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <FontIcon FontSize="14" Glyph="&#xECAA;" />
+                        <TextBlock Text="Open app" />
+                    </StackPanel>
+                </ComboBoxItem>
+                <ComboBoxItem AutomationProperties.Name="Remap to mouse click" Tag="MouseClick">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <FontIcon FontSize="14" Glyph="&#xE962;" />
+                        <TextBlock Text="Remap to mouse click" />
+                    </StackPanel>
+                </ComboBoxItem>
+            </ComboBox>
 
             <Rectangle
                 Height="1"

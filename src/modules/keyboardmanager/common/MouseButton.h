@@ -156,64 +156,6 @@ namespace MouseButtonHelpers
             return MouseButton::ScrollDown;
         return std::nullopt;
     }
-
-    // Get the mouse event flags for SendInput to simulate a button down
-    inline DWORD GetMouseDownFlag(MouseButton button)
-    {
-        switch (button)
-        {
-        case MouseButton::Left:
-            return MOUSEEVENTF_LEFTDOWN;
-        case MouseButton::Right:
-            return MOUSEEVENTF_RIGHTDOWN;
-        case MouseButton::Middle:
-            return MOUSEEVENTF_MIDDLEDOWN;
-        case MouseButton::X1:
-        case MouseButton::X2:
-            return MOUSEEVENTF_XDOWN;
-        case MouseButton::ScrollUp:
-        case MouseButton::ScrollDown:
-            return MOUSEEVENTF_WHEEL;
-        default:
-            return 0;
-        }
-    }
-
-    // Get the mouse event flags for SendInput to simulate a button up
-    inline DWORD GetMouseUpFlag(MouseButton button)
-    {
-        switch (button)
-        {
-        case MouseButton::Left:
-            return MOUSEEVENTF_LEFTUP;
-        case MouseButton::Right:
-            return MOUSEEVENTF_RIGHTUP;
-        case MouseButton::Middle:
-            return MOUSEEVENTF_MIDDLEUP;
-        case MouseButton::X1:
-        case MouseButton::X2:
-            return MOUSEEVENTF_XUP;
-        case MouseButton::ScrollUp:
-        case MouseButton::ScrollDown:
-            return 0;  // Scroll wheel doesn't have up/down events
-        default:
-            return 0;
-        }
-    }
-
-    // Get the mouseData value for X buttons and scroll wheel (used with SendInput)
-    inline DWORD GetXButtonData(MouseButton button)
-    {
-        if (button == MouseButton::X1)
-            return XBUTTON1;
-        else if (button == MouseButton::X2)
-            return XBUTTON2;
-        else if (button == MouseButton::ScrollUp)
-            return static_cast<DWORD>(WHEEL_DELTA);  // Positive for scroll up
-        else if (button == MouseButton::ScrollDown)
-            return static_cast<DWORD>(-WHEEL_DELTA);  // Negative for scroll down
-        return 0;
-    }
 }
 
 // Hash function for MouseButton to use in unordered_map

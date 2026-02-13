@@ -1838,8 +1838,6 @@ namespace KeyboardEventHandlers
             lastTime = now;
         }
 
-        Logger::info(L"Mouse {} -> remap ({})", static_cast<int>(button), isButtonDown ? L"down" : L"up");
-
         auto it = remapping.value();
         const auto& target = it->second;
 
@@ -1987,8 +1985,6 @@ namespace KeyboardEventHandlers
             return 1;  // Suppress key up but don't send scroll
         }
         
-        Logger::info(L"Key {} -> Mouse {} ({})", keyCode, static_cast<int>(targetButton), isKeyDown ? L"down" : L"up");
-
         // Prepare mouse input
         INPUT mouseInput = {};
         mouseInput.type = INPUT_MOUSE;
@@ -2108,8 +2104,6 @@ namespace KeyboardEventHandlers
             }
             lastTime = now;
         }
-
-        Logger::info(L"App-specific Mouse {} -> remap for {} ({})", static_cast<int>(button), process_name, isButtonDown ? L"down" : L"up");
 
         const auto& target = buttonIt->second;
 
@@ -2266,8 +2260,6 @@ namespace KeyboardEventHandlers
             return 1;  // Suppress key up but don't send scroll
         }
         
-        Logger::info(L"App-specific Key {} -> Mouse {} for {} ({})", keyCode, static_cast<int>(targetButton), process_name, isKeyDown ? L"down" : L"up");
-
         // Prepare mouse input
         INPUT mouseInput = {};
         mouseInput.type = INPUT_MOUSE;
