@@ -1,0 +1,56 @@
+name: Build Command Palette Extension
+
+on:
+  workflow_dispatch:
+    inputs:
+      project_path:
+        description: 'Relative path to extension folder or csproj (default: SamplePagesExtension)'
+        required: false
+        default: 'src/modules/cmdpal/ext/SamplePagesExtension'
+  push:
+    paths:
+      - 'src/modules/cmdpal/ext/**'
+
+jobs:
+  build-extension:
+    runs-on: windows-latest
+    permissions: write-all
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Print environment
+        run: |
+          Write-Host "Workspace: $env:GITHUB_WORKSPACE"
+          dotnet --info
+        shell: pwsh
+
+      - name: Install build essentials (optional)
+        run: .\tools\build\build-essentials.cmd
+        shell: pwsh
+
+      - name: Build extension
+        run: |
+          $proj = '${{ github.event.inputs.project_path }}'
+          if (-not $proj) { $proj = '${{ github.event.inputs.project_path }}' }
+          Write-Host "Building project path: $proj"
+          if (Test-Path "$proj") {
+            & .\tools\build\build.cmd -Path $proj -Configuration Release
+          } else {
+            Write-Host "Path '$proj' not found, attempting to build default SamplePagesExtension"
+            & .\tools\build\build.cmd -Path src\modules\cmdpal\ext\SamplePagesExtension -Configuration Release
+          }
+        shell: pwsh
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: cmdpal-extension-build
+          path: |
+            src/modules/cmdpal/ext/**/bin/**
+            src/modules/cmdpal/ext/**/artifacts/**
