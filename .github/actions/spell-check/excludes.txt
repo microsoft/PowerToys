@@ -24,6 +24,7 @@
 \.ai$
 \.all-contributorsrc$
 \.avi$
+\.avif$
 \.bmp$
 \.bz2$
 \.cert?$|\.crt$
@@ -45,6 +46,7 @@
 \.gitkeep$
 \.graffle$
 \.gz$
+\.heic$
 \.icns$
 \.ico$
 \.ipynb$
