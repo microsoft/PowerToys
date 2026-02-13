@@ -51,6 +51,7 @@
     <ClInclude Include="KeyboardEventHandlers.h" />
     <ClInclude Include="MappingConfiguration.h" />
     <ClInclude Include="ModifierKey.h" />
+    <ClInclude Include="MouseButton.h" />
     <ClInclude Include="InputInterface.h" />
     <ClInclude Include="Helpers.h" />
     <ClInclude Include="KeyboardManagerConstants.h" />

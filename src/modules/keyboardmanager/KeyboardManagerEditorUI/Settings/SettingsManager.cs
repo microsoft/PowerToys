@@ -175,6 +175,64 @@ namespace KeyboardManagerEditorUI.Settings
                 }
             }
 
+            // Handle mouse button → key/shortcut/text/etc. mappings
+            var mouseButtonMappings = _mappingService.GetMouseButtonMappings();
+            foreach (var mapping in mouseButtonMappings)
+            {
+                var shortcutMapping = ConvertMouseMappingToShortcutKeyMapping(mapping);
+
+                string guid = Guid.NewGuid().ToString();
+                ShortcutSettings shortcutSettings = new ShortcutSettings
+                {
+                    Id = guid,
+                    Shortcut = shortcutMapping,
+                    IsActive = true,
+                };
+
+                settings.ShortcutSettingsDictionary[guid] = shortcutSettings;
+
+                if (settings.ShortcutsByOperationType.TryGetValue(shortcutMapping.OperationType, out List<string>? mouseValue))
+                {
+                    mouseValue.Add(guid);
+                }
+                else
+                {
+                    settings.ShortcutsByOperationType[shortcutMapping.OperationType] = new List<string> { guid };
+                }
+            }
+
+            // Handle key → mouse button mappings
+            var keyToMouseMappings = _mappingService.GetKeyToMouseMappings();
+            foreach (var mapping in keyToMouseMappings)
+            {
+                var shortcutMapping = new ShortcutKeyMapping
+                {
+                    OperationType = ShortcutOperationType.RemapKeyToMouse,
+                    OriginalKeys = mapping.OriginalKeyCode.ToString(CultureInfo.InvariantCulture),
+                    TargetApp = mapping.TargetApp,
+                    TargetMouseButton = mapping.TargetMouseButton,
+                };
+
+                string guid = Guid.NewGuid().ToString();
+                ShortcutSettings shortcutSettings = new ShortcutSettings
+                {
+                    Id = guid,
+                    Shortcut = shortcutMapping,
+                    IsActive = true,
+                };
+
+                settings.ShortcutSettingsDictionary[guid] = shortcutSettings;
+
+                if (settings.ShortcutsByOperationType.TryGetValue(ShortcutOperationType.RemapKeyToMouse, out List<string>? keyToMouseValue))
+                {
+                    keyToMouseValue.Add(guid);
+                }
+                else
+                {
+                    settings.ShortcutsByOperationType[ShortcutOperationType.RemapKeyToMouse] = new List<string> { guid };
+                }
+            }
+
             return settings;
         }
 
@@ -285,6 +343,73 @@ namespace KeyboardManagerEditorUI.Settings
                 }
             }
 
+            // Handle mouse button mappings
+            var mouseButtonMappings = _mappingService.GetMouseButtonMappings();
+            foreach (var mapping in mouseButtonMappings)
+            {
+                var shortcutMapping = ConvertMouseMappingToShortcutKeyMapping(mapping);
+
+                if (!EditorSettings.ShortcutSettingsDictionary.Values.Any(s =>
+                    s.Shortcut.OriginalKeys == shortcutMapping.OriginalKeys &&
+                    s.Shortcut.TargetApp == shortcutMapping.TargetApp))
+                {
+                    shortcutSettingsChanged = true;
+                    string guid = Guid.NewGuid().ToString();
+                    ShortcutSettings shortcutSettings = new ShortcutSettings
+                    {
+                        Id = guid,
+                        Shortcut = shortcutMapping,
+                        IsActive = true,
+                    };
+                    EditorSettings.ShortcutSettingsDictionary[guid] = shortcutSettings;
+                    if (EditorSettings.ShortcutsByOperationType.TryGetValue(shortcutMapping.OperationType, out List<string>? mouseValue))
+                    {
+                        mouseValue.Add(guid);
+                    }
+                    else
+                    {
+                        EditorSettings.ShortcutsByOperationType[shortcutMapping.OperationType] = new List<string> { guid };
+                    }
+                }
+            }
+
+            // Handle key → mouse button mappings
+            var keyToMouseMappings = _mappingService.GetKeyToMouseMappings();
+            foreach (var mapping in keyToMouseMappings)
+            {
+                var shortcutMapping = new ShortcutKeyMapping
+                {
+                    OperationType = ShortcutOperationType.RemapKeyToMouse,
+                    OriginalKeys = mapping.OriginalKeyCode.ToString(CultureInfo.InvariantCulture),
+                    TargetApp = mapping.TargetApp,
+                    TargetMouseButton = mapping.TargetMouseButton,
+                };
+
+                if (!EditorSettings.ShortcutSettingsDictionary.Values.Any(s =>
+                    s.Shortcut.OperationType == ShortcutOperationType.RemapKeyToMouse &&
+                    s.Shortcut.OriginalKeys == shortcutMapping.OriginalKeys &&
+                    s.Shortcut.TargetApp == shortcutMapping.TargetApp))
+                {
+                    shortcutSettingsChanged = true;
+                    string guid = Guid.NewGuid().ToString();
+                    ShortcutSettings shortcutSettings = new ShortcutSettings
+                    {
+                        Id = guid,
+                        Shortcut = shortcutMapping,
+                        IsActive = true,
+                    };
+                    EditorSettings.ShortcutSettingsDictionary[guid] = shortcutSettings;
+                    if (EditorSettings.ShortcutsByOperationType.TryGetValue(ShortcutOperationType.RemapKeyToMouse, out List<string>? keyToMouseValue))
+                    {
+                        keyToMouseValue.Add(guid);
+                    }
+                    else
+                    {
+                        EditorSettings.ShortcutsByOperationType[ShortcutOperationType.RemapKeyToMouse] = new List<string> { guid };
+                    }
+                }
+            }
+
             // Mark as inactive any settings that no longer exist in the mapping service
             foreach (ShortcutSettings shortcutSettings in EditorSettings.ShortcutSettingsDictionary.Values.ToList())
             {
@@ -310,6 +435,27 @@ namespace KeyboardManagerEditorUI.Settings
                         foundInService = singleKeyMappings.Any(m =>
                             m.OriginalKey == keyCode &&
                             m.TargetKey == shortcutSettings.Shortcut.TargetKeys);
+                    }
+                }
+                else if (shortcutSettings.Shortcut.OperationType == ShortcutOperationType.RemapMouseButton ||
+                         shortcutSettings.Shortcut.OriginalKeys?.StartsWith("mouse_", StringComparison.Ordinal) == true)
+                {
+                    // Check mouse button mappings
+                    if (shortcutSettings.Shortcut.OriginalKeys?.StartsWith("mouse_", StringComparison.Ordinal) == true &&
+                        int.TryParse(shortcutSettings.Shortcut.OriginalKeys.AsSpan(6), out int buttonCode))
+                    {
+                        foundInService = mouseButtonMappings.Any(m =>
+                            m.OriginalButtonCode == buttonCode &&
+                            m.TargetApp == shortcutSettings.Shortcut.TargetApp);
+                    }
+                }
+                else if (shortcutSettings.Shortcut.OperationType == ShortcutOperationType.RemapKeyToMouse)
+                {
+                    if (int.TryParse(shortcutSettings.Shortcut.OriginalKeys, out int keyCode))
+                    {
+                        foundInService = keyToMouseMappings.Any(m =>
+                            m.OriginalKeyCode == keyCode &&
+                            m.TargetApp == shortcutSettings.Shortcut.TargetApp);
                     }
                 }
                 else if (shortcutKeyMappings.Any(m => m.OriginalKeys == shortcutSettings.Shortcut.OriginalKeys))
@@ -391,6 +537,29 @@ namespace KeyboardManagerEditorUI.Settings
                 shortcutSettings.IsActive = !shortcutSettings.IsActive;
                 WriteSettings();
             }
+        }
+
+        private static ShortcutKeyMapping ConvertMouseMappingToShortcutKeyMapping(Helpers.MouseMapping mapping)
+        {
+            var operationType = mapping.TargetType switch
+            {
+                "RunProgram" => ShortcutOperationType.RunProgram,
+                "OpenUri" => ShortcutOperationType.OpenUri,
+                "Text" => ShortcutOperationType.RemapText,
+                _ => ShortcutOperationType.RemapMouseButton,
+            };
+
+            return new ShortcutKeyMapping
+            {
+                OperationType = operationType,
+                OriginalKeys = $"mouse_{mapping.OriginalButtonCode}",
+                TargetKeys = mapping.TargetType == "Key" ? mapping.TargetKeyCode.ToString(CultureInfo.InvariantCulture) : mapping.TargetShortcutKeys,
+                TargetApp = mapping.TargetApp,
+                TargetText = mapping.TargetText,
+                ProgramPath = mapping.ProgramPath,
+                ProgramArgs = mapping.ProgramArgs,
+                UriToOpen = mapping.UriToOpen,
+            };
         }
     }
 }

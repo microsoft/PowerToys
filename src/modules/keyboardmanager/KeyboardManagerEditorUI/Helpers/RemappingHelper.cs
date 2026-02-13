@@ -111,6 +111,84 @@ namespace KeyboardManagerEditorUI.Helpers
 
             try
             {
+                // Try to look up the setting by ID to get original keys info
+                Settings.ShortcutSettings? setting = null;
+                if (remapping.Id != null)
+                {
+                    Settings.SettingsManager.EditorSettings.ShortcutSettingsDictionary.TryGetValue(remapping.Id, out setting);
+                }
+
+                // Check if this is a mouse button mapping (by setting OriginalKeys or fallback ID format)
+                bool isMouseButtonMapping = setting?.Shortcut.OriginalKeys?.StartsWith("mouse_", StringComparison.Ordinal) == true ||
+                                            (setting == null && remapping.Id?.StartsWith("mouse_", StringComparison.Ordinal) == true);
+
+                if (isMouseButtonMapping)
+                {
+                    // Parse the mouse button code from setting OriginalKeys or fallback ID
+                    string? mouseKeyString = setting?.Shortcut.OriginalKeys ?? remapping.Id;
+                    if (mouseKeyString != null && mouseKeyString.StartsWith("mouse_", StringComparison.Ordinal))
+                    {
+                        var parts = mouseKeyString.Split('_', 3);
+                        if (parts.Length >= 2 && int.TryParse(parts[1], out int buttonCode))
+                        {
+                            string targetApp = setting?.Shortcut.TargetApp ?? (parts.Length > 2 ? parts[2] : string.Empty);
+                            bool deleteResult = mappingService.DeleteMouseButtonMapping((Interop.MouseButtonCode)buttonCode, targetApp);
+                            if (deleteResult)
+                            {
+                                if (deleteFromSettings && remapping.Id != null && setting != null)
+                                {
+                                    Settings.SettingsManager.RemoveShortcutKeyMappingFromSettings(remapping.Id);
+                                }
+
+                                return mappingService.SaveSettings();
+                            }
+                        }
+                    }
+
+                    return false;
+                }
+
+                // Check if this is a key-to-mouse mapping (by setting OperationType or fallback ID format)
+                bool isKeyToMouseMapping = setting?.Shortcut.OperationType == Interop.ShortcutOperationType.RemapKeyToMouse ||
+                                           (setting == null && remapping.Id?.StartsWith("key_to_mouse_", StringComparison.Ordinal) == true);
+
+                if (isKeyToMouseMapping)
+                {
+                    int keyCode = 0;
+                    string targetApp = string.Empty;
+
+                    if (setting != null && int.TryParse(setting.Shortcut.OriginalKeys, out int parsedKeyCode))
+                    {
+                        keyCode = parsedKeyCode;
+                        targetApp = setting.Shortcut.TargetApp;
+                    }
+                    else if (remapping.Id?.StartsWith("key_to_mouse_", StringComparison.Ordinal) == true)
+                    {
+                        var parts = remapping.Id.Split('_', 5);
+                        if (parts.Length >= 4 && int.TryParse(parts[3], out int fallbackKeyCode))
+                        {
+                            keyCode = fallbackKeyCode;
+                            targetApp = parts.Length > 4 ? parts[4] : string.Empty;
+                        }
+                    }
+
+                    if (keyCode != 0)
+                    {
+                        bool deleteResult = mappingService.DeleteKeyToMouseMapping(keyCode, targetApp);
+                        if (deleteResult)
+                        {
+                            if (deleteFromSettings && remapping.Id != null && setting != null)
+                            {
+                                Settings.SettingsManager.RemoveShortcutKeyMappingFromSettings(remapping.Id);
+                            }
+
+                            return mappingService.SaveSettings();
+                        }
+                    }
+
+                    return false;
+                }
+
                 if (remapping.Shortcut.Count == 1)
                 {
                     // Single key mapping
@@ -119,7 +197,7 @@ namespace KeyboardManagerEditorUI.Helpers
                     {
                         if (mappingService.DeleteSingleKeyMapping(originalKey))
                         {
-                            if (deleteFromSettings)
+                            if (deleteFromSettings && remapping.Id != null)
                             {
                                 SettingsManager.RemoveShortcutKeyMappingFromSettings(remapping.Id);
                             }
@@ -145,7 +223,7 @@ namespace KeyboardManagerEditorUI.Helpers
                         deleteResult = mappingService.DeleteShortcutMapping(originalKeysString);
                     }
 
-                    if (deleteResult && deleteFromSettings)
+                    if (deleteResult && deleteFromSettings && remapping.Id != null)
                     {
                         SettingsManager.RemoveShortcutKeyMappingFromSettings(remapping.Id);
                     }

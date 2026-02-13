@@ -35,6 +35,25 @@ struct ShortcutMapping
     wchar_t* uriToOpen;
 };
 
+struct MouseButtonMapping
+{
+    int originalButton;      // MouseButton enum value (0-6)
+    wchar_t* targetKeys;     // Target key/shortcut string
+    wchar_t* targetApp;      // Empty for global, app name for app-specific
+    int targetType;          // 0=Key, 1=Shortcut, 2=Text, 3=RunProgram, 4=OpenUri
+    wchar_t* targetText;     // For text mappings
+    wchar_t* programPath;    // For RunProgram
+    wchar_t* programArgs;    // For RunProgram
+    wchar_t* uriToOpen;      // For OpenUri
+};
+
+struct KeyToMouseMapping
+{
+    int originalKey;         // Original key code (DWORD)
+    int targetMouseButton;   // MouseButton enum value (0-6)
+    wchar_t* targetApp;      // Empty for global, app name for app-specific
+};
+
 extern "C"
 {
     __declspec(dllexport) void* CreateMappingConfiguration();
@@ -82,5 +101,21 @@ extern "C"
     __declspec(dllexport) bool DeleteSingleKeyRemap(void* config, int originalKey);
     __declspec(dllexport) bool DeleteSingleKeyToTextRemap(void* config, int originalKey);
     __declspec(dllexport) bool DeleteShortcutRemap(void* config, const wchar_t* originalKeys, const wchar_t* targetApp);
+
+    // Mouse Button Remap Functions
+    __declspec(dllexport) int GetMouseButtonRemapCount(void* config);
+    __declspec(dllexport) bool GetMouseButtonRemap(void* config, int index, MouseButtonMapping* mapping);
+    __declspec(dllexport) bool AddMouseButtonRemap(void* config, int originalButton, const wchar_t* targetKeys, const wchar_t* targetApp, int targetType, const wchar_t* targetText, const wchar_t* programPath, const wchar_t* programArgs, const wchar_t* uriToOpen);
+    __declspec(dllexport) bool DeleteMouseButtonRemap(void* config, int originalButton, const wchar_t* targetApp);
+
+    // Key to Mouse Remap Functions
+    __declspec(dllexport) int GetKeyToMouseRemapCount(void* config);
+    __declspec(dllexport) bool GetKeyToMouseRemap(void* config, int index, KeyToMouseMapping* mapping);
+    __declspec(dllexport) bool AddKeyToMouseRemap(void* config, int originalKey, int targetMouseButton, const wchar_t* targetApp);
+    __declspec(dllexport) bool DeleteKeyToMouseRemap(void* config, int originalKey, const wchar_t* targetApp);
+
+    // Mouse Button Utility Functions
+    __declspec(dllexport) void GetMouseButtonName(int buttonCode, wchar_t* buttonName, int maxCount);
+    __declspec(dllexport) int GetMouseButtonFromName(const wchar_t* buttonName);
 }
 extern "C" __declspec(dllexport) int GetKeyboardKeysList(bool isShortcut, KeyNamePair* keyList, int maxCount);

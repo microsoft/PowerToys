@@ -167,7 +167,19 @@ namespace KeyboardManagerEditorUI.Helpers
         {
             int upperLimit = isEditMode ? 1 : 0;
             string shortcutKeysString = string.Join(";", keys.Select(k => mappingService.GetKeyCodeFromName(k).ToString(CultureInfo.InvariantCulture)));
-            return SettingsManager.EditorSettings.ShortcutSettingsDictionary.Values.Count(settings => KeyboardManagerInterop.AreShortcutsEqual(settings.Shortcut.OriginalKeys, shortcutKeysString)) > upperLimit;
+            ICollection<ShortcutSettings> otherMappings = SettingsManager.EditorSettings.ShortcutSettingsDictionary.Values;
+            int matchesCount = otherMappings.Count(settings =>
+            {
+                // Mouse mappings use a different format (mouse_X) - use string comparison
+                if (settings.Shortcut.OriginalKeys.StartsWith("mouse_", StringComparison.Ordinal))
+                {
+                    return settings.Shortcut.OriginalKeys == shortcutKeysString;
+                }
+
+                // Keyboard mappings - use native comparison
+                return KeyboardManagerInterop.AreShortcutsEqual(settings.Shortcut.OriginalKeys, shortcutKeysString);
+            });
+            return matchesCount > upperLimit;
         }
 
         public static bool IsSelfMapping(List<string> originalKeys, List<string> remappedKeys, KeyboardMappingService mappingService)
