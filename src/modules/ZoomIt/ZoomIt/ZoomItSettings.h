@@ -51,6 +51,7 @@ DWORD	g_RecordScalingMP4 = 100;
 RecordingFormat g_RecordingFormat = RecordingFormat::MP4;
 BOOLEAN g_CaptureSystemAudio = TRUE;
 BOOLEAN g_CaptureAudio = FALSE;
+BOOLEAN g_MicMonoMix = FALSE;
 TCHAR	g_MicrophoneDeviceId[MAX_PATH] = {0};
 TCHAR	g_RecordingSaveLocationBuffer[MAX_PATH] = {0};
 TCHAR	g_ScreenshotSaveLocationBuffer[MAX_PATH] = {0};
@@ -99,6 +100,7 @@ REG_SETTING RegSettings[] = {
     { L"RecordScalingMP4", SETTING_TYPE_DWORD, 0, &g_RecordScalingMP4, static_cast<DOUBLE>(g_RecordScalingMP4) },
     { L"CaptureAudio", SETTING_TYPE_BOOLEAN, 0, &g_CaptureAudio, static_cast<DOUBLE>(g_CaptureAudio) },
     { L"CaptureSystemAudio", SETTING_TYPE_BOOLEAN, 0, &g_CaptureSystemAudio, static_cast<DOUBLE>(g_CaptureSystemAudio) },
+    { L"MicMonoMix", SETTING_TYPE_BOOLEAN, 0, &g_MicMonoMix, static_cast<DOUBLE>(g_MicMonoMix) },
     { L"MicrophoneDeviceId", SETTING_TYPE_STRING, sizeof(g_MicrophoneDeviceId), g_MicrophoneDeviceId, static_cast<DOUBLE>(0) },
     { L"RecordingSaveLocation", SETTING_TYPE_STRING, sizeof(g_RecordingSaveLocationBuffer), g_RecordingSaveLocationBuffer, static_cast<DOUBLE>(0) },
     { L"ScreenshotSaveLocation", SETTING_TYPE_STRING, sizeof(g_ScreenshotSaveLocationBuffer), g_ScreenshotSaveLocationBuffer, static_cast<DOUBLE>(0) },

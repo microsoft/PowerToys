@@ -7,4 +7,6 @@ namespace Microsoft.CmdPal.Core.ViewModels;
 public sealed class CommandProviderContext
 {
     public required string ProviderId { get; init; }
+
+    public static CommandProviderContext Empty { get; } = new() { ProviderId = "<EMPTY>" };
 }

@@ -1,7 +1,7 @@
-﻿<ResourceDictionary
+<ResourceDictionary
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:Microsoft.PowerToys.Settings.UI.Controls">
+    xmlns:local="using:Microsoft.PowerToys.Common.UI.Controls">
 
     <Style BasedOn="{StaticResource DefaultKeyVisualStyle}" TargetType="local:KeyVisual" />
 
