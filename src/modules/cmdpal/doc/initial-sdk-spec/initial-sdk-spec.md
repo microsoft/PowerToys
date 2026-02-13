@@ -2135,7 +2135,7 @@ We'll use another command provider method to allow the host to ask exensions for
 items based on their ID.
 
 ```csharp
-interface ICommandProvider4 requires ICommandProvider
+interface ICommandProvider4 requires ICommandProvider3
 {
     ICommandItem GetCommandItem(String id);
 };

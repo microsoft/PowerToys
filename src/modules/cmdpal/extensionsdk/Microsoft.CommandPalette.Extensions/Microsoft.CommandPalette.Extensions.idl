@@ -413,7 +413,7 @@ namespace Microsoft.CommandPalette.Extensions
     };
 
     [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
-    interface ICommandProvider4 requires ICommandProvider
+    interface ICommandProvider4 requires ICommandProvider3
     {
         ICommandItem GetCommandItem(String id);
     };
