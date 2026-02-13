@@ -265,13 +265,20 @@ public sealed partial class MainWindow : WindowEx,
 
     private void UpdateWindowPositionInMemory()
     {
+        var placement = new WINDOWPLACEMENT { length = (uint)Marshal.SizeOf<WINDOWPLACEMENT>() };
+        if (!PInvoke.GetWindowPlacement(_hwnd, ref placement))
+        {
+            return;
+        }
+
+        var rect = placement.rcNormalPosition;
         var displayArea = DisplayArea.GetFromWindowId(AppWindow.Id, DisplayAreaFallback.Nearest) ?? DisplayArea.Primary;
         _currentWindowPosition = new WindowPosition
         {
-            X = AppWindow.Position.X,
-            Y = AppWindow.Position.Y,
-            Width = AppWindow.Size.Width,
-            Height = AppWindow.Size.Height,
+            X = rect.X,
+            Y = rect.Y,
+            Width = rect.Width,
+            Height = rect.Height,
             Dpi = (int)this.GetDpiForWindow(),
             ScreenWidth = displayArea.WorkArea.Width,
             ScreenHeight = displayArea.WorkArea.Height,

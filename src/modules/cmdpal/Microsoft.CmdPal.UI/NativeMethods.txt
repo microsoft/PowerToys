@@ -67,3 +67,6 @@ GetModuleHandle
 
 GetWindowThreadProcessId
 AttachThreadInput
+
+GetWindowPlacement
+WINDOWPLACEMENT
