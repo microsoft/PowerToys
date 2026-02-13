@@ -15,7 +15,7 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests.Mocks
         internal static Mock<SettingsUtils> GetStubSettingsUtils<T>()
             where T : ISettingsConfig, new()
         {
-            var settingsUtils = new Mock<SettingsUtils>();
+            var settingsUtils = new Mock<SettingsUtils>(new FileSystem(), null);
             settingsUtils
                 .Setup(x => x.GetSettingsOrDefault<T>(It.IsAny<string>(), It.IsAny<string>()))
                 .Returns(new T());
