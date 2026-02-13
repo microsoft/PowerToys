@@ -31,6 +31,15 @@
   </PropertyGroup>
 
   <!--
+    UI tests are run in dedicated UI test jobs/pipelines.
+    In CI, the main build uses `/t:Build;Test` across the full solution, so
+    prevent UI test projects from being executed in that pass.
+  -->
+  <PropertyGroup Condition="'$(TF_BUILD)' != '' and $(MSBuildProjectName.Contains('UITest'))">
+    <TestingPlatformDisableCustomTestTarget>true</TestingPlatformDisableCustomTestTarget>
+  </PropertyGroup>
+
+  <!--
     Completely skip building test projects when BuildTests=false (e.g., Release pipeline).
     This avoids InternalsVisibleTo/signing issues by not compiling test code at all.
     Match: projects ending in Test, Tests, UnitTests, UITests, FuzzTests, or in a folder named Tests.
