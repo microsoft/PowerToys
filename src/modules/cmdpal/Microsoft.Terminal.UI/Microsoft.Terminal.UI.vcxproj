@@ -53,10 +53,8 @@
   </ItemGroup>
   <PropertyGroup Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
-    <PlatformToolset>v143</PlatformToolset>
-    <PlatformToolset Condition="'$(VisualStudioVersion)' == '16.0'">v142</PlatformToolset>
-    <PlatformToolset Condition="'$(VisualStudioVersion)' == '15.0'">v141</PlatformToolset>
-    <PlatformToolset Condition="'$(VisualStudioVersion)' == '14.0'">v140</PlatformToolset>
+    
+   
     <CharacterSet>Unicode</CharacterSet>
     <GenerateManifest>false</GenerateManifest>
     <DesktopCompatible>true</DesktopCompatible>
@@ -203,7 +201,7 @@
     <None Include="Microsoft.Terminal.UI.def" />
   </ItemGroup>
   <PropertyGroup>
-    <OutDir>..\..\..\..\$(Platform)\$(Configuration)\WinUI3Apps\CmdPal</OutDir>
+    <OutDir>$(RepoRoot)$(Platform)\$(Configuration)\WinUI3Apps\CmdPal\</OutDir>
     <IntDir>obj\$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

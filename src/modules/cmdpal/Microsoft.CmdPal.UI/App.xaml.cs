@@ -10,6 +10,7 @@ using Microsoft.CmdPal.Ext.Bookmarks;
 using Microsoft.CmdPal.Ext.Calc;
 using Microsoft.CmdPal.Ext.ClipboardHistory;
 using Microsoft.CmdPal.Ext.Indexer;
+using Microsoft.CmdPal.Ext.PerformanceMonitor;
 using Microsoft.CmdPal.Ext.Registry;
 using Microsoft.CmdPal.Ext.RemoteDesktop;
 using Microsoft.CmdPal.Ext.Shell;
@@ -35,6 +36,7 @@ using Microsoft.CommandPalette.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.PowerToys.Telemetry;
+using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 
 // To learn more about WinUI, the WinUI project structure,
@@ -44,7 +46,7 @@ namespace Microsoft.CmdPal.UI;
 /// <summary>
 /// Provides application-specific behavior to supplement the default Application class.
 /// </summary>
-public partial class App : Application
+public partial class App : Application, IDisposable
 {
     private readonly ILogger _logger;
     private readonly GlobalErrorHandler _globalErrorHandler;
@@ -69,11 +71,15 @@ public partial class App : Application
         _logger = logger;
         _globalErrorHandler = new((CmdPalLogger)logger);
 
+        var appInfoService = new ApplicationInfoService();
+
 #if !CMDPAL_DISABLE_GLOBAL_ERROR_HANDLER
-        _globalErrorHandler.Register(this);
+        _globalErrorHandler.Register(this, GlobalErrorHandler.Options.Default, appInfoService);
 #endif
 
-        _services = ConfigureServices();
+        _services = ConfigureServices(appInfoService);
+
+        IconCacheProvider.Initialize(Services);
 
         this.InitializeComponent();
 
@@ -87,6 +93,7 @@ public partial class App : Application
                 AppWindow?.Close();
                 Environment.Exit(0);
             });
+        appInfoService.SetLogDirectory(() => Logger.CurrentVersionLogDirectoryPath);
     }
 
     /// <summary>
@@ -104,7 +111,7 @@ public partial class App : Application
     /// <summary>
     /// Configures the services for the application
     /// </summary>
-    private ServiceProvider ConfigureServices()
+    private ServiceProvider ConfigureServices(IApplicationInfoService appInfoService)
     {
         // TODO: It's in the Labs feed, but we can use Sergio's AOT-friendly source generator for this: https://github.com/CommunityToolkit/Labs-Windows/discussions/463
         ServiceCollection services = new();
@@ -112,17 +119,18 @@ public partial class App : Application
         // Root services
         services.AddSingleton<ILogger>(_logger);
         services.AddSingleton(TaskScheduler.FromCurrentSynchronizationContext());
+        var dispatcherQueue = DispatcherQueue.GetForCurrentThread();
 
         // Register settings & app state services first
         // because other services depend on them
         services.AddSingleton<SettingsService>();
         services.AddSingleton<AppStateService>();
 
-        AddCoreServices(services);
+        AddCoreServices(services, appInfoService);
 
         AddBuiltInCommands(services);
 
-        AddUIServices(services);
+        AddUIServices(services, dispatcherQueue);
 
         return services.BuildServiceProvider();
     }
@@ -211,11 +219,13 @@ public partial class App : Application
         services.AddSingleton<ICommandProvider, TimeDateCommandsProvider>();
         services.AddSingleton<ICommandProvider, SystemCommandExtensionProvider>();
         services.AddSingleton<ICommandProvider, RemoteDesktopCommandProvider>();
+        services.AddSingleton<ICommandProvider, PerformanceMonitorCommandsProvider>();
     }
 
-    private void AddUIServices(ServiceCollection services)
+    private void AddUIServices(ServiceCollection services, DispatcherQueue dispatcherQueue)
     {
         // Services
+        services.AddSingleton<ICommandProviderCache, DefaultCommandProviderCache>();
         services.AddSingleton<TopLevelCommandManager>();
         services.AddSingleton<AliasManager>();
         services.AddSingleton<HotkeyManager>();
@@ -225,9 +235,37 @@ public partial class App : Application
 
         services.AddSingleton<IThemeService, ThemeService>();
         services.AddSingleton<ResourceSwapper>();
+
+        services.AddIconServices(dispatcherQueue);
         services.AddTransient<LocalKeyboardListener>();
     }
 
+    private static void AddCoreServices(ServiceCollection services, IApplicationInfoService appInfoService)
+    {
+        // Core services
+        services.AddSingleton(appInfoService);
+
+        services.AddSingleton<IExtensionService, ExtensionService>();
+        services.AddSingleton<IRunHistoryService, RunHistoryService>();
+
+        services.AddSingleton<IRootPageService, PowerToysRootPageService>();
+        services.AddSingleton<IAppHostService, PowerToysAppHostService>();
+        services.AddSingleton<ITelemetryService, TelemetryForwarder>();
+
+        services.AddSingleton<IFuzzyMatcherProvider, FuzzyMatcherProvider>(
+            _ => new FuzzyMatcherProvider(new PrecomputedFuzzyMatcherOptions(), new PinyinFuzzyMatcherOptions()));
+
+        // ViewModels
+        services.AddSingleton<ShellViewModel>();
+        services.AddSingleton<IPageViewModelFactoryService, CommandPalettePageViewModelFactory>();
+    }
+
+    public void Dispose()
+    {
+        _globalErrorHandler.Dispose();
+        EtwTrace.Dispose();
+        GC.SuppressFinalize(this);
+    }
     [LoggerMessage(Level = LogLevel.Error, Message = "Couldn't load winget")]
     partial void Log_FailedToLoadWinget(Exception ex);
 }

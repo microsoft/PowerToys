@@ -23,6 +23,8 @@ public sealed partial class CommandProviderWrapper
     private readonly HotkeyManager _hotkeyManager;
     private readonly AliasManager _aliasManager;
 
+    private readonly ICommandProviderCache? _commandProviderCache;
+
     public TopLevelViewModel[] TopLevelItems { get; private set; } = [];
 
     public TopLevelViewModel[] FallbackItems { get; private set; } = [];
@@ -43,13 +45,7 @@ public sealed partial class CommandProviderWrapper
 
     public bool IsActive { get; private set; }
 
-    public string ProviderId
-    {
-        get
-        {
-            return string.IsNullOrEmpty(Extension?.ExtensionUniqueId) ? Id : Extension.ExtensionUniqueId;
-        }
-    }
+    public string ProviderId => string.IsNullOrEmpty(Extension?.ExtensionUniqueId) ? Id : Extension.ExtensionUniqueId;
 
     public CommandProviderWrapper(
         ICommandProvider provider,
@@ -91,12 +87,14 @@ public sealed partial class CommandProviderWrapper
         TaskScheduler mainThread,
         HotkeyManager hotkeyManager,
         AliasManager aliasManager,
+        ICommandProviderCache commandProviderCache,
         ILogger logger)
     {
         _taskScheduler = mainThread;
         _logger = logger;
         _hotkeyManager = hotkeyManager;
         _aliasManager = aliasManager;
+        _commandProviderCache = commandProviderCache;
         Extension = extension;
         ExtensionHost = new CommandPaletteHost(extension, logger);
         if (!Extension.IsRunning())
@@ -143,30 +141,31 @@ public sealed partial class CommandProviderWrapper
         if (!isValid)
         {
             IsActive = false;
+            RecallFromCache();
             return;
         }
 
         var settings = settingsService.CurrentSettings;
 
-        IsActive = GetProviderSettings(settings).IsEnabled;
+        var providerSettings = GetProviderSettings(settings);
+        IsActive = providerSettings.IsEnabled;
         if (!IsActive)
         {
+            RecallFromCache();
             return;
         }
 
-        ICommandItem[]? commands = null;
-        IFallbackCommandItem[]? fallbacks = null;
-
+        var displayInfoInitialized = false;
         try
         {
             var model = _commandProvider.Unsafe!;
 
-            Task<ICommandItem[]> t = new(model.TopLevelCommands);
-            t.Start();
-            commands = await t.ConfigureAwait(false);
+            Task<ICommandItem[]> loadTopLevelCommandsTask = new(model.TopLevelCommands);
+            loadTopLevelCommandsTask.Start();
+            var commands = await loadTopLevelCommandsTask.ConfigureAwait(false);
 
             // On a BG thread here
-            fallbacks = model.FallbackCommands();
+            var fallbacks = model.FallbackCommands();
 
             if (model is ICommandProvider2 two)
             {
@@ -177,6 +176,13 @@ public sealed partial class CommandProviderWrapper
             DisplayName = model.DisplayName;
             Icon = new(model.Icon);
             Icon.InitializeProperties();
+            displayInfoInitialized = true;
+
+            // Update cached display name
+            if (_commandProviderCache is not null && Extension?.ExtensionUniqueId is not null)
+            {
+                _commandProviderCache.Memorize(Extension.ExtensionUniqueId, new CommandProviderCacheItem(model.DisplayName));
+            }
 
             // Note: explicitly not InitializeProperties()ing the settings here. If
             // we do that, then we'd regress GH #38321
@@ -190,6 +196,25 @@ public sealed partial class CommandProviderWrapper
         catch (Exception e)
         {
             Log_FailedToLoadCommands(Extension!.PackageFamilyName, e);
+
+            if (!displayInfoInitialized)
+            {
+                RecallFromCache();
+            }
+        }
+    }
+
+    private void RecallFromCache()
+    {
+        var cached = _commandProviderCache?.Recall(ProviderId);
+        if (cached is not null)
+        {
+            DisplayName = cached.DisplayName;
+        }
+
+        if (string.IsNullOrWhiteSpace(DisplayName))
+        {
+            DisplayName = Extension?.PackageDisplayName ?? Extension?.PackageFamilyName ?? ProviderId;
         }
     }
 
@@ -198,7 +223,7 @@ public sealed partial class CommandProviderWrapper
         var settings = settingsService.CurrentSettings;
         var providerSettings = GetProviderSettings(settings);
 
-        Func<ICommandItem?, bool, TopLevelViewModel> makeAndAdd = (ICommandItem? i, bool fallback) =>
+        var makeAndAdd = (ICommandItem? i, bool fallback) =>
         {
             CommandItemViewModel commandItemViewModel = new(new(i), pageContext);
             TopLevelViewModel topLevelViewModel = new(commandItemViewModel, fallback, ExtensionHost, ProviderId, settingsService, providerSettings, _hotkeyManager, _aliasManager, i);

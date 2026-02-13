@@ -49,7 +49,7 @@
                                             Height="16"
                                             AutomationProperties.AccessibilityView="Raw"
                                             SourceKey="{x:Bind Icon, Mode=OneWay}"
-                                            SourceRequested="{x:Bind helpers:IconCacheProvider.SourceRequested}" />
+                                            SourceRequested="{x:Bind helpers:IconCacheProvider.SourceRequested20}" />
                                     </cpcontrols:ContentIcon.Content>
                                 </cpcontrols:ContentIcon>
                             </controls:SettingsCard.HeaderIcon>

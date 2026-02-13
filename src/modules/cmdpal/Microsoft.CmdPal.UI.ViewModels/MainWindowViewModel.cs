@@ -22,6 +22,7 @@ public partial class MainWindowViewModel : ObservableObject, IDisposable
     public partial Stretch BackgroundImageStretch { get; private set; } = Stretch.Fill;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(EffectiveImageOpacity))]
     public partial double BackgroundImageOpacity { get; private set; }
 
     [ObservableProperty]
@@ -38,6 +39,30 @@ public partial class MainWindowViewModel : ObservableObject, IDisposable
 
     [ObservableProperty]
     public partial bool ShowBackgroundImage { get; private set; }
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(EffectiveBackdropStyle))]
+    [NotifyPropertyChangedFor(nameof(EffectiveImageOpacity))]
+    public partial BackdropStyle BackdropStyle { get; private set; }
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(EffectiveBackdropStyle))]
+    [NotifyPropertyChangedFor(nameof(EffectiveImageOpacity))]
+    public partial float BackdropOpacity { get; private set; } = 1.0f;
+
+    // Returns null when no transparency needed (BlurImageControl uses this to decide source type)
+    public BackdropStyle? EffectiveBackdropStyle =>
+        BackdropStyle == BackdropStyle.Clear ||
+        BackdropStyle == BackdropStyle.Mica ||
+        BackdropOpacity < 1.0f
+            ? BackdropStyle
+            : null;
+
+    // When transparency is enabled, use square root curve so image stays visible longer as backdrop fades
+    public double EffectiveImageOpacity =>
+        EffectiveBackdropStyle is not null
+            ? BackgroundImageOpacity * Math.Sqrt(BackdropOpacity)
+            : BackgroundImageOpacity;
 
     public MainWindowViewModel(IThemeService themeService)
     {
@@ -57,6 +82,9 @@ public partial class MainWindowViewModel : ObservableObject, IDisposable
             BackgroundImageTint = _themeService.Current.Tint;
             BackgroundImageTintIntensity = _themeService.Current.TintIntensity;
             BackgroundImageBlurAmount = _themeService.Current.BlurAmount;
+
+            BackdropStyle = _themeService.Current.BackdropParameters.Style;
+            BackdropOpacity = _themeService.Current.BackdropOpacity;
 
             ShowBackgroundImage = BackgroundImageSource != null;
         });

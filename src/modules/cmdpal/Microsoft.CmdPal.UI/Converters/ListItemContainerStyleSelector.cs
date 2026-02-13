@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using Microsoft.CmdPal.UI.ViewModels;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
@@ -18,11 +19,20 @@ internal sealed partial class ListItemContainerStyleSelector : StyleSelector
 
     protected override Style? SelectStyleCore(object item, DependencyObject container)
     {
-        return item switch
+        if (item is not ListItemViewModel element)
         {
-            ListItemViewModel { IsSectionOrSeparator: true } listItemViewModel when string.IsNullOrWhiteSpace(listItemViewModel.Title) => Separator!,
-            ListItemViewModel { IsSectionOrSeparator: true } => Section,
-            _ => Default,
-        };
+            return Default;
+        }
+
+        switch (element.Type)
+        {
+            case ListItemType.Separator:
+                return Separator;
+            case ListItemType.SectionHeader:
+                return Section;
+            case ListItemType.Item:
+            default:
+                return Default;
+        }
     }
 }

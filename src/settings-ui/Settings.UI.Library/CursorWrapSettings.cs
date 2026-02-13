@@ -47,7 +47,23 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         // This can be utilized in the future if the settings.json file is to be modified/deleted.
         public bool UpgradeSettingsConfiguration()
         {
-            return false;
+            bool settingsUpgraded = false;
+
+            // Add WrapMode property if it doesn't exist (for users upgrading from older versions)
+            if (Properties.WrapMode == null)
+            {
+                Properties.WrapMode = new IntProperty(0); // Default to Both
+                settingsUpgraded = true;
+            }
+
+            // Add DisableCursorWrapOnSingleMonitor property if it doesn't exist (for users upgrading from older versions)
+            if (Properties.DisableCursorWrapOnSingleMonitor == null)
+            {
+                Properties.DisableCursorWrapOnSingleMonitor = new BoolProperty(false); // Default to false
+                settingsUpgraded = true;
+            }
+
+            return settingsUpgraded;
         }
     }
 }

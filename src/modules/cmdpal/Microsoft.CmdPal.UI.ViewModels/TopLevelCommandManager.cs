@@ -18,6 +18,7 @@ public partial class TopLevelCommandManager : ObservableObject,
     IPageContext,
     IDisposable
 {
+    private readonly ICommandProviderCache _commandProviderCache;
     private readonly TaskScheduler _taskScheduler;
     private readonly IEnumerable<IExtensionService> _extensionServices;
     private readonly ILogger _logger;
@@ -34,12 +35,14 @@ public partial class TopLevelCommandManager : ObservableObject,
         IEnumerable<IExtensionService> extensionServices,
         TaskScheduler taskScheduler,
         SettingsService settingsService,
+        ICommandProviderCache commandProviderCache,
         ILogger logger)
     {
         this._logger = logger;
         _extensionServices = extensionServices;
         _taskScheduler = taskScheduler;
         _settingsService = settingsService;
+        _commandProviderCache = commandProviderCache;
         WeakReferenceMessenger.Default.Register<ReloadCommandsMessage>(this);
         _reloadCommandsGate = new(ReloadAllCommandsAsyncCore);
     }
@@ -155,6 +158,117 @@ public partial class TopLevelCommandManager : ObservableObject,
     private async Task ReloadAllCommandsAsyncCore(CancellationToken cancellationToken)
     {
         IsLoading = true;
+        var extensionService = _serviceProvider.GetService<IExtensionService>()!;
+        await extensionService.SignalStopExtensionsAsync();
+
+        lock (TopLevelCommands)
+        {
+            TopLevelCommands.Clear();
+        }
+
+        await LoadBuiltinsAsync();
+        _ = Task.Run(LoadExtensionsAsync);
+    }
+
+    // Load commands from our extensions. Called on a background thread.
+    // Currently, this
+    // * queries the package catalog,
+    // * starts all the extensions,
+    // * then fetches the top-level commands from them.
+    // TODO In the future, we'll probably abstract some of this away, to have
+    // separate extension tracking vs stub loading.
+    [RelayCommand]
+    public async Task<bool> LoadExtensionsAsync()
+    {
+        var extensionService = _serviceProvider.GetService<IExtensionService>()!;
+
+        extensionService.OnExtensionAdded -= ExtensionService_OnExtensionAdded;
+        extensionService.OnExtensionRemoved -= ExtensionService_OnExtensionRemoved;
+
+        var extensions = (await extensionService.GetInstalledExtensionsAsync()).ToImmutableList();
+        lock (_commandProvidersLock)
+        {
+            _extensionCommandProviders.Clear();
+        }
+
+        if (extensions is not null)
+        {
+            await StartExtensionsAndGetCommands(extensions);
+        }
+
+        extensionService.OnExtensionAdded += ExtensionService_OnExtensionAdded;
+        extensionService.OnExtensionRemoved += ExtensionService_OnExtensionRemoved;
+
+        IsLoading = false;
+
+        // Send on the current thread; receivers should marshal to UI if needed
+        WeakReferenceMessenger.Default.Send<ReloadFinishedMessage>();
+
+        return true;
+    }
+
+    private void ExtensionService_OnExtensionAdded(IExtensionService sender, IEnumerable<IExtensionWrapper> extensions)
+    {
+        // When we get an extension install event, hop off to a BG thread
+        _ = Task.Run(async () =>
+        {
+            // for each newly installed extension, start it and get commands
+            // from it. One single package might have more than one
+            // IExtensionWrapper in it.
+            await StartExtensionsAndGetCommands(extensions);
+        });
+    }
+
+    private async Task StartExtensionsAndGetCommands(IEnumerable<IExtensionWrapper> extensions)
+    {
+        var timer = new Stopwatch();
+        timer.Start();
+
+        // Start all extensions in parallel
+        var startTasks = extensions.Select(StartExtensionWithTimeoutAsync);
+
+        // Wait for all extensions to start
+        var wrappers = (await Task.WhenAll(startTasks)).Where(wrapper => wrapper is not null).Select(w => w!).ToList();
+
+        lock (_commandProvidersLock)
+        {
+            _extensionCommandProviders.AddRange(wrappers);
+        }
+
+        // Load the commands from the providers in parallel
+        var loadTasks = wrappers.Select(LoadCommandsWithTimeoutAsync);
+
+        var commandSets = (await Task.WhenAll(loadTasks)).Where(results => results is not null).Select(r => r!).ToList();
+
+        lock (TopLevelCommands)
+        {
+            foreach (var commands in commandSets)
+            {
+                foreach (var c in commands)
+                {
+                    TopLevelCommands.Add(c);
+                }
+            }
+        }
+
+        timer.Stop();
+        Logger.LogDebug($"Loading extensions took {timer.ElapsedMilliseconds} ms");
+    }
+
+    private async Task<CommandProviderWrapper?> StartExtensionWithTimeoutAsync(IExtensionWrapper extension)
+    {
+        Logger.LogDebug($"Starting {extension.PackageFullName}");
+        try
+        {
+            await extension.StartExtensionAsync().WaitAsync(TimeSpan.FromSeconds(10));
+            return new CommandProviderWrapper(extension, _taskScheduler, _commandProviderCache);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"Failed to start extension {extension.PackageFullName}: {ex}");
+            return null; // Return null for failed extensions
+        }
+    }
 
         foreach (var extensionService in _extensionServices)
         {

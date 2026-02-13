@@ -22,6 +22,50 @@
                     HorizontalAlignment="Stretch"
                     Spacing="{StaticResource SettingsCardSpacing}">
 
+                    <StackPanel
+                        Margin="0,0,0,16"
+                        HorizontalAlignment="Left"
+                        Orientation="Horizontal"
+                        Spacing="16">
+                        <ptControls:ScreenPreview>
+                            <ptControls:CommandPalettePreview
+                                PreviewBackdropStyle="{x:Bind ViewModel.Appearance.EffectiveBackdropStyle, Mode=OneWay}"
+                                PreviewBackgroundColor="{x:Bind ViewModel.Appearance.EffectiveBackdrop.TintColor, Mode=OneWay}"
+                                PreviewBackgroundImageBlurAmount="{x:Bind ViewModel.Appearance.EffectiveBackgroundImageBlurAmount, Mode=OneWay}"
+                                PreviewBackgroundImageBrightness="{x:Bind ViewModel.Appearance.EffectiveBackgroundImageBrightness, Mode=OneWay}"
+                                PreviewBackgroundImageFit="{x:Bind ViewModel.Appearance.BackgroundImageFit, Mode=OneWay}"
+                                PreviewBackgroundImageOpacity="{x:Bind ViewModel.Appearance.EffectiveImageOpacity, Mode=OneWay}"
+                                PreviewBackgroundImageSource="{x:Bind ViewModel.Appearance.EffectiveBackgroundImageSource, Mode=OneWay}"
+                                PreviewBackgroundImageTint="{x:Bind ViewModel.Appearance.EffectiveThemeColor, Mode=OneWay}"
+                                PreviewBackgroundImageTintIntensity="{x:Bind ViewModel.Appearance.EffectiveTintIntensity, Mode=OneWay}"
+                                PreviewEffectiveOpacity="{x:Bind ViewModel.Appearance.EffectiveBackdrop.EffectiveOpacity, Mode=OneWay}"
+                                RequestedTheme="{x:Bind ViewModel.Appearance.EffectiveTheme, Mode=OneWay}" />
+                        </ptControls:ScreenPreview>
+                        <StackPanel VerticalAlignment="Bottom" Spacing="8">
+                            <Button
+                                x:Uid="Settings_AppearancePage_OpenCommandPaletteButton"
+                                MinWidth="200"
+                                HorizontalContentAlignment="Left"
+                                Click="OpenCommandPalette_Click"
+                                Style="{StaticResource SubtleButtonStyle}">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <FontIcon FontSize="16" Glyph="&#xE8A7;" />
+                                    <TextBlock x:Uid="Settings_AppearancePage_OpenCommandPaletteButton_Text" />
+                                </StackPanel>
+                            </Button>
+                            <Button
+                                x:Uid="Settings_AppearancePage_ResetAppearanceButton"
+                                MinWidth="200"
+                                HorizontalContentAlignment="Left"
+                                Command="{x:Bind ViewModel.Appearance.ResetAppearanceSettingsCommand}"
+                                Style="{StaticResource SubtleButtonStyle}">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <FontIcon FontSize="16" Glyph="&#xE72C;" />
+                                    <TextBlock x:Uid="Settings_AppearancePage_ResetAppearanceButton_Text" />
+                                </StackPanel>
+                            </Button>
+                        </StackPanel>
+                    </StackPanel>
                     <Border x:Name="ScreenPreviewContainer" Margin="0,0,0,16" HorizontalAlignment="Left" />
 
                     <controls:SettingsCard x:Uid="Settings_GeneralPage_AppTheme_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE793;}">
@@ -52,18 +96,66 @@
                     </controls:SettingsCard>
 
                     <controls:SettingsExpander
+                        x:Uid="Settings_GeneralPage_BackdropStyle_SettingsCard"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xF5EF;}"
+                        IsExpanded="{x:Bind ViewModel.Appearance.IsBackdropOpacityVisible, Mode=OneWay}">
+                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.Appearance.BackdropStyleIndex, Mode=TwoWay}">
+                            <ComboBoxItem x:Uid="Settings_GeneralPage_BackdropStyle_Acrylic" />
+                            <ComboBoxItem x:Uid="Settings_GeneralPage_BackdropStyle_Transparent" />
+                            <ComboBoxItem x:Uid="Settings_GeneralPage_BackdropStyle_Mica" />
+                            <!--  Hidden: preview not working well, kept to preserve index mapping  -->
+                            <ComboBoxItem x:Uid="Settings_GeneralPage_BackdropStyle_AcrylicThin" Visibility="Collapsed" />
+                            <ComboBoxItem x:Uid="Settings_GeneralPage_BackdropStyle_MicaAlt" />
+                        </ComboBox>
+                        <controls:SettingsExpander.Items>
+                            <!--  Mica description (no opacity control)  -->
+                            <controls:SettingsCard
+                                x:Uid="Settings_GeneralPage_MicaBackdrop_SettingsCard"
+                                HorizontalContentAlignment="Stretch"
+                                ContentAlignment="Vertical"
+                                Visibility="{x:Bind ViewModel.Appearance.IsMicaBackdropDescriptionVisible, Mode=OneWay}">
+                                <TextBlock
+                                    x:Uid="Settings_GeneralPage_MicaBackdrop_DescriptionTextBlock"
+                                    Margin="24"
+                                    HorizontalAlignment="Stretch"
+                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                    HorizontalTextAlignment="Center"
+                                    TextAlignment="Center"
+                                    TextWrapping="WrapWholeWords" />
+                            </controls:SettingsCard>
+                            <!--  Opacity slider (for non-Mica styles)  -->
+                            <controls:SettingsCard x:Uid="Settings_GeneralPage_BackdropOpacity_SettingsCard" Visibility="{x:Bind ViewModel.Appearance.IsBackdropOpacityVisible, Mode=OneWay}">
+                                <Slider
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    Maximum="100"
+                                    Minimum="0"
+                                    StepFrequency="1"
+                                    Value="{x:Bind ViewModel.Appearance.BackdropOpacity, Mode=TwoWay}" />
+                            </controls:SettingsCard>
+                        </controls:SettingsExpander.Items>
+                    </controls:SettingsExpander>
+
+                    <controls:SettingsExpander
                         x:Uid="Settings_GeneralPage_Background_SettingsExpander"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE790;}"
+                        IsEnabled="{x:Bind ViewModel.Appearance.IsBackgroundSettingsEnabled, Mode=OneWay}"
                         IsExpanded="{x:Bind ViewModel.Appearance.IsColorizationDetailsExpanded, Mode=TwoWay}">
-                        <ComboBox
-                            x:Uid="Settings_GeneralPage_ColorizationMode"
-                            MinWidth="{StaticResource SettingActionControlMinWidth}"
-                            SelectedIndex="{x:Bind ViewModel.Appearance.ColorizationModeIndex, Mode=TwoWay}">
-                            <ComboBoxItem x:Uid="Settings_GeneralPage_ColorizationMode_None" />
-                            <ComboBoxItem x:Uid="Settings_GeneralPage_ColorizationMode_WindowsAccent" />
-                            <ComboBoxItem x:Uid="Settings_GeneralPage_ColorizationMode_CustomColor" />
-                            <ComboBoxItem x:Uid="Settings_GeneralPage_ColorizationMode_Image" />
-                        </ComboBox>
+                        <Grid>
+                            <ComboBox
+                                x:Uid="Settings_GeneralPage_ColorizationMode"
+                                MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                SelectedIndex="{x:Bind ViewModel.Appearance.ColorizationModeIndex, Mode=TwoWay}"
+                                Visibility="{x:Bind ViewModel.Appearance.IsBackgroundSettingsEnabled, Mode=OneWay}">
+                                <ComboBoxItem x:Uid="Settings_GeneralPage_ColorizationMode_None" />
+                                <ComboBoxItem x:Uid="Settings_GeneralPage_ColorizationMode_WindowsAccent" />
+                                <ComboBoxItem x:Uid="Settings_GeneralPage_ColorizationMode_CustomColor" />
+                                <ComboBoxItem x:Uid="Settings_GeneralPage_ColorizationMode_Image" />
+                            </ComboBox>
+                            <TextBlock
+                                x:Uid="Settings_GeneralPage_Background_NotAvailable"
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                Visibility="{x:Bind ViewModel.Appearance.IsBackgroundNotAvailableVisible, Mode=OneWay}" />
+                        </Grid>
                         <controls:SettingsExpander.Items>
                             <!--  none  -->
                             <controls:SettingsCard
@@ -144,7 +236,7 @@
                                     PaletteColors="{x:Bind ViewModel.Appearance.Swatches}"
                                     SelectedColor="{x:Bind ViewModel.Appearance.ThemeColor, Mode=TwoWay}" />
                             </controls:SettingsCard>
-                            <controls:SettingsCard x:Uid="Settings_GeneralPage_BackgroundTintIntensity_SettingsCard" Visibility="{x:Bind ViewModel.Appearance.IsCustomTintIntensityVisible, Mode=OneWay}">
+                            <controls:SettingsCard x:Uid="Settings_GeneralPage_BackgroundTintIntensity_SettingsCard" Visibility="{x:Bind ViewModel.Appearance.IsColorIntensityVisible, Mode=OneWay}">
                                 <Slider
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
                                     Maximum="100"
@@ -152,9 +244,17 @@
                                     StepFrequency="1"
                                     Value="{x:Bind ViewModel.Appearance.ColorIntensity, Mode=TwoWay}" />
                             </controls:SettingsCard>
+                            <controls:SettingsCard x:Uid="Settings_GeneralPage_ImageTintIntensity_SettingsCard" Visibility="{x:Bind ViewModel.Appearance.IsImageTintIntensityVisible, Mode=OneWay}">
+                                <Slider
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    Maximum="100"
+                                    Minimum="0"
+                                    StepFrequency="1"
+                                    Value="{x:Bind ViewModel.Appearance.BackgroundImageTintIntensity, Mode=TwoWay}" />
+                            </controls:SettingsCard>
 
-                            <!--  Reset background image properties  -->
-                            <controls:SettingsCard x:Uid="Settings_GeneralPage_BackgroundImage_ResetProperties_SettingsCard" Visibility="{x:Bind ViewModel.Appearance.IsBackgroundControlsVisible, Mode=OneWay}">
+                            <!--  Reset appearance properties  -->
+                            <controls:SettingsCard x:Uid="Settings_GeneralPage_BackgroundImage_ResetProperties_SettingsCard" Visibility="{x:Bind ViewModel.Appearance.IsResetButtonVisible, Mode=OneWay}">
                                 <StackPanel Orientation="Horizontal" Spacing="8">
                                     <Button x:Uid="Settings_GeneralPage_Background_ResetImagePropertiesButton" Command="{x:Bind ViewModel.Appearance.ResetBackgroundImagePropertiesCommand}" />
                                 </StackPanel>

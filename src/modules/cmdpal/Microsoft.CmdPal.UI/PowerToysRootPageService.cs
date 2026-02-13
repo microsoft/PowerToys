@@ -31,11 +31,6 @@ internal sealed partial class PowerToysRootPageService : IRootPageService
         _tlcManager = topLevelCommandManager;
 
         _mainListPage = mainListPage;
-
-        // new Lazy<MainListPage>(() =>
-        // {
-        // return new MainListPage(_tlcManager, settingsService, aliasManager, appStateService, _logger);
-        // });
     }
 
     public async Task PreLoadAsync()

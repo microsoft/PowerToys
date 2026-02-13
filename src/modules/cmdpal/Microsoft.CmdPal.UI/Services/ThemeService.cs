@@ -75,7 +75,12 @@ internal sealed partial class ThemeService : IThemeService, IDisposable
         }
 
         // provider selection
-        var intensity = Math.Clamp(Settings.CustomThemeColorIntensity, 0, 100);
+        var themeColorIntensity = Math.Clamp(_settings.CustomThemeColorIntensity, 0, 100);
+        var imageTintIntensity = Math.Clamp(_settings.BackgroundImageTintIntensity, 0, 100);
+        var effectiveColorIntensity = _settings.ColorizationMode == ColorizationMode.Image
+            ? imageTintIntensity
+            : themeColorIntensity;
+
         IThemeProvider provider = intensity > 0 && Settings.ColorizationMode is ColorizationMode.CustomColor or ColorizationMode.WindowsAccentColor or ColorizationMode.Image
                 ? _colorfulThemeProvider
                 : _normalThemeProvider;
@@ -99,32 +104,39 @@ internal sealed partial class ThemeService : IThemeService, IDisposable
         };
         var opacity = Math.Clamp(Settings.BackgroundImageOpacity, 0, 100) / 100.0;
 
-        // create context and offload to actual theme provider
+        // create input and offload to actual theme provider
         var context = new ThemeContext
         {
             Tint = tint,
-            ColorIntensity = intensity,
+            ColorIntensity = effectiveColorIntensity,
             Theme = effectiveTheme,
             BackgroundImageSource = imageSource,
             BackgroundImageStretch = stretch,
             BackgroundImageOpacity = opacity,
+            BackdropStyle = _settings.BackdropStyle,
+            BackdropOpacity = Math.Clamp(_settings.BackdropOpacity, 0, 100) / 100f,
         };
-        var backdrop = provider.GetAcrylicBackdrop(context);
+        var backdrop = provider.GetBackdropParameters(context);
         var blur = Settings.BackgroundImageBlurAmount;
         var brightness = Settings.BackgroundImageBrightness;
 
         // Create public snapshot (no provider!)
+        var hasColorization = effectiveColorIntensity > 0
+            && _settings.ColorizationMode is ColorizationMode.CustomColor or ColorizationMode.WindowsAccentColor or ColorizationMode.Image;
+
         var snapshot = new ThemeSnapshot
         {
             Tint = tint,
-            TintIntensity = intensity / 100f,
+            TintIntensity = effectiveColorIntensity / 100f,
             Theme = effectiveTheme,
             BackgroundImageSource = imageSource,
             BackgroundImageStretch = stretch,
             BackgroundImageOpacity = opacity,
             BackdropParameters = backdrop,
+            BackdropOpacity = context.BackdropOpacity,
             BlurAmount = blur,
             BackgroundBrightness = brightness / 100f,
+            HasColorization = hasColorization,
         };
 
         // Bundle with provider for internal use
@@ -139,6 +151,12 @@ internal sealed partial class ThemeService : IThemeService, IDisposable
 
         _resourceSwapper.TryActivateTheme(provider.ThemeKey);
         ThemeChanged?.Invoke(this, new ThemeChangedEventArgs());
+    }
+
+    private bool UseColorfulProvider(int effectiveColorIntensity)
+    {
+        return _settings.ColorizationMode == ColorizationMode.Image
+               || (effectiveColorIntensity > 0 && _settings.ColorizationMode is ColorizationMode.CustomColor or ColorizationMode.WindowsAccentColor);
     }
 
     private BitmapImage? LoadImageSafe(string? path)
@@ -199,13 +217,15 @@ internal sealed partial class ThemeService : IThemeService, IDisposable
             {
                 Tint = Colors.Transparent,
                 Theme = ElementTheme.Light,
-                BackdropParameters = new AcrylicBackdropParameters(Colors.Black, Colors.Black, 0.5f, 0.5f),
+                BackdropParameters = new BackdropParameters(Colors.Black, Colors.Black, EffectiveOpacity: 0.5f, EffectiveLuminosityOpacity: 0.5f),
+                BackdropOpacity = 1.0f,
                 BackgroundImageOpacity = 1,
                 BackgroundImageSource = null,
                 BackgroundImageStretch = Stretch.Fill,
                 BlurAmount = 0,
                 TintIntensity = 1.0f,
                 BackgroundBrightness = 0,
+                HasColorization = false,
             },
             Provider = _normalThemeProvider,
         };

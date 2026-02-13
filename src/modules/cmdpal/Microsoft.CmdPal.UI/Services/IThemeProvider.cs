@@ -8,14 +8,14 @@ using Microsoft.CmdPal.UI.ViewModels.Services;
 namespace Microsoft.CmdPal.UI.Services;
 
 /// <summary>
-/// Provides theme identification, resource path resolution, and creation of acrylic
-/// backdrop parameters based on the current <see cref="ThemeContext"/>.
+/// Provides theme identification, resource path resolution, and creation of backdrop
+/// parameters based on the current <see cref="ThemeContext"/>.
 /// </summary>
 /// <remarks>
 /// Implementations should expose a stable <see cref="ThemeKey"/> and a valid XAML resource
 /// dictionary path via <see cref="ResourcePath"/>. The
-/// <see cref="GetAcrylicBackdrop(ThemeContext)"/> method computes
-/// <see cref="AcrylicBackdropParameters"/> using the supplied theme context.
+/// <see cref="GetBackdropParameters(ThemeContext)"/> method computes
+/// <see cref="BackdropParameters"/> using the supplied theme context.
 /// </remarks>
 internal interface IThemeProvider
 {
@@ -30,9 +30,9 @@ internal interface IThemeProvider
     string ResourcePath { get; }
 
     /// <summary>
-    /// Creates acrylic backdrop parameters based on the provided theme context.
+    /// Creates backdrop parameters based on the provided theme context.
     /// </summary>
-    /// <param name="context">The current theme context, including theme, tint, and optional background details.</param>
-    /// <returns>The computed <see cref="AcrylicBackdropParameters"/> for the backdrop.</returns>
-    AcrylicBackdropParameters GetAcrylicBackdrop(ThemeContext context);
+    /// <param name="context">The current theme context, including theme, tint, transparency mode, and optional background details.</param>
+    /// <returns>The computed <see cref="BackdropParameters"/> for the backdrop.</returns>
+    BackdropParameters GetBackdropParameters(ThemeContext context);
 }

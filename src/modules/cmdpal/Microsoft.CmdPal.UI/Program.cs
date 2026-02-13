@@ -37,6 +37,53 @@ internal sealed partial class Program
             return 0;
         }
 
+        try
+        {
+            Logger.InitializeLogger("\\CmdPal\\Logs\\");
+        }
+        catch (COMException e)
+        {
+            // This is unexpected. For the sake of debugging:
+            // pop a message box
+            PInvoke.MessageBox(
+                (HWND)IntPtr.Zero,
+                $"Failed to initialize the logger. COMException: \r{e.Message}",
+                "Command Palette",
+                MESSAGEBOX_STYLE.MB_OK | MESSAGEBOX_STYLE.MB_ICONERROR);
+            return 0;
+        }
+        catch (Exception e2)
+        {
+            // This is unexpected. For the sake of debugging:
+            // pop a message box
+            PInvoke.MessageBox(
+                (HWND)IntPtr.Zero,
+                $"Failed to initialize the logger. Unknown Exception: \r{e2.Message}",
+                "Command Palette",
+                MESSAGEBOX_STYLE.MB_OK | MESSAGEBOX_STYLE.MB_ICONERROR);
+            return 0;
+        }
+
+        Logger.LogDebug($"Starting at {DateTime.UtcNow}");
+
+        // Log application startup information
+        try
+        {
+            var appInfoService = new ApplicationInfoService(() => Logger.CurrentVersionLogDirectoryPath);
+            var startupMessage = $"""
+                ============================================================
+                Hello World! Command Palette is starting.
+
+                {appInfoService.GetApplicationInfoSummary()}
+                ============================================================
+                """;
+            Logger.LogInfo(startupMessage);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError("Failed to log application startup information", ex);
+        }
+
         Log_AppStart(_logger, DateTime.UtcNow);
         PowerToysTelemetry.Log.WriteEvent(new CmdPalProcessStarted());
 

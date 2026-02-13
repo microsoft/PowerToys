@@ -2,13 +2,11 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Diagnostics;
 using System.Globalization;
 using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.Extensions.Logging;
 using Microsoft.UI.Xaml.Controls;
-using Windows.ApplicationModel;
 
 namespace Microsoft.CmdPal.UI.Settings;
 
@@ -18,25 +16,25 @@ public sealed partial class GeneralPage : Page
     private ILogger _logger;
     private SettingsViewModel viewModel;
 
+    private readonly IApplicationInfoService _appInfoService;
+
     public GeneralPage(
         SettingsViewModel settingsViewModel,
+        IApplicationInfoService applicationInfoService,
         ILogger logger)
     {
         this.InitializeComponent();
         this._logger = logger;
+        this._appInfoService = applicationInfoService;
         this.viewModel = settingsViewModel;
-    }
+  }
 
     public string ApplicationVersion
     {
         get
         {
             var versionNo = ResourceLoaderInstance.GetString("Settings_GeneralPage_VersionNo");
-            if (!TryGetPackagedVersion(out var version) && !TryGetAssemblyVersion(out version))
-            {
-                version = "?";
-            }
-
+            var version = _appInfoService.AppVersion;
             return string.Format(CultureInfo.CurrentCulture, versionNo, version);
         }
     }

@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.CmdPal.Core.Common.Helpers;
 using Microsoft.CmdPal.UI.ViewModels.Commands;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -43,38 +44,34 @@ public partial class MainListPageResultFactoryTests
         public override string ToString() => Title;
     }
 
-    private static Scored<IListItem> S(string title, int score)
+    private static RoScored<IListItem> S(string title, int score)
     {
-        return new Scored<IListItem>
-        {
-            Score = score,
-            Item = new MockListItem { Title = title },
-        };
+        return new RoScored<IListItem>(score: score, item: new MockListItem { Title = title });
     }
 
     [TestMethod]
     public void Merge_PrioritizesListsCorrectly()
     {
-        var filtered = new List<Scored<IListItem>>
+        var filtered = new List<RoScored<IListItem>>
         {
             S("F1", 100),
             S("F2", 50),
         };
 
-        var scoredFallback = new List<Scored<IListItem>>
+        var scoredFallback = new List<RoScored<IListItem>>
         {
             S("SF1", 100),
             S("SF2", 60),
         };
 
-        var apps = new List<Scored<IListItem>>
+        var apps = new List<RoScored<IListItem>>
         {
             S("A1", 100),
             S("A2", 55),
         };
 
         // Fallbacks are not scored.
-        var fallbacks = new List<Scored<IListItem>>
+        var fallbacks = new List<RoScored<IListItem>>
         {
             S("FB1", 0),
             S("FB2", 0),
@@ -104,7 +101,7 @@ public partial class MainListPageResultFactoryTests
     [TestMethod]
     public void Merge_AppliesAppLimit()
     {
-        var apps = new List<Scored<IListItem>>
+        var apps = new List<RoScored<IListItem>>
         {
             S("A1", 100),
             S("A2", 90),
@@ -126,7 +123,7 @@ public partial class MainListPageResultFactoryTests
     [TestMethod]
     public void Merge_FiltersEmptyFallbacks()
     {
-        var fallbacks = new List<Scored<IListItem>>
+        var fallbacks = new List<RoScored<IListItem>>
         {
             S("FB1", 0),
             S("FB3", 0),

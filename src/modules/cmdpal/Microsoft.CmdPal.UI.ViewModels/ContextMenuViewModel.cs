@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.ObjectModel;
+using System.Runtime.CompilerServices;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
@@ -17,6 +18,8 @@ public partial class ContextMenuViewModel : ObservableObject,
     IRecipient<UpdateCommandBarMessage>
 {
     private readonly ILogger _logger;
+
+    private readonly IFuzzyMatcherProvider _fuzzyMatcherProvider;
 
     public ICommandBarContext? SelectedItem
     {
@@ -41,9 +44,11 @@ public partial class ContextMenuViewModel : ObservableObject,
 
     private string _lastSearchText = string.Empty;
 
-    public ContextMenuViewModel(ILogger logger)
+    public ContextMenuViewModel(IFuzzyMatcherProvider fuzzyMatcherProvider, ILogger logger)
     {
         _logger = logger;
+        _fuzzyMatcherProvider = fuzzyMatcherProvider;
+
         WeakReferenceMessenger.Default.Register<UpdateCommandBarMessage>(this);
     }
 
@@ -56,7 +61,7 @@ public partial class ContextMenuViewModel : ObservableObject,
     {
         if (SelectedItem is not null)
         {
-            if (SelectedItem.MoreCommands.Count() > 1)
+            if (SelectedItem.PrimaryCommand is not null || SelectedItem.HasMoreCommands)
             {
                 ContextMenuStack.Clear();
                 PushContextStack(SelectedItem.AllCommands);
@@ -94,13 +99,14 @@ public partial class ContextMenuViewModel : ObservableObject,
                             .OfType<CommandContextItemViewModel>()
                             .Where(c => c.ShouldBeVisible);
 
-        var newResults = ListHelpers.FilterList<CommandContextItemViewModel>(commands, searchText, ScoreContextCommand);
+        var query = _fuzzyMatcherProvider.Current.PrecomputeQuery(searchText);
+        var newResults = InternalListHelpers.FilterList(commands, in query, ScoreFunction);
         ListHelpers.InPlaceUpdateList(FilteredItems, newResults);
     }
 
-    private static int ScoreContextCommand(string query, CommandContextItemViewModel item)
+    private int ScoreFunction(in FuzzyQuery query, CommandContextItemViewModel item)
     {
-        if (string.IsNullOrEmpty(query) || string.IsNullOrWhiteSpace(query))
+        if (string.IsNullOrWhiteSpace(query.Original))
         {
             return 1;
         }
@@ -110,11 +116,21 @@ public partial class ContextMenuViewModel : ObservableObject,
             return 0;
         }
 
-        var nameMatch = FuzzyStringMatcher.ScoreFuzzy(query, item.Title);
+        var fuzzyMatcher = _fuzzyMatcherProvider.Current;
+        var title = item.GetTitleTarget(fuzzyMatcher);
+        var subtitle = item.GetSubtitleTarget(fuzzyMatcher);
 
-        var descriptionMatch = FuzzyStringMatcher.ScoreFuzzy(query, item.Subtitle);
+        var titleScore = fuzzyMatcher.Score(query, title);
+        var subtitleScore = (fuzzyMatcher.Score(query, subtitle) - 4) / 2;
 
-        return new[] { nameMatch, (descriptionMatch - 4) / 2, 0 }.Max();
+        return Max3(titleScore, subtitleScore, 0);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static int Max3(int a, int b, int c)
+    {
+        var m = a > b ? a : b;
+        return m > c ? m : c;
     }
 
     /// <summary>

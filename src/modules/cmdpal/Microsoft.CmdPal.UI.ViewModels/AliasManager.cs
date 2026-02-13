@@ -106,7 +106,7 @@ public partial class AliasManager : ObservableObject
             }
 
             // Look for the alias belonging to another command, and remove it
-            if (newAlias is not null && kv.Value.Alias == newAlias.Alias)
+            if (newAlias is not null && kv.Value.Alias == newAlias.Alias && kv.Value.CommandId != commandId)
             {
                 toRemove.Add(kv.Value);
 

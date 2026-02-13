@@ -155,7 +155,19 @@
                             HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}"
                             IsExpanded="True">
                             <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.AdvancedPasteUIShortcut, Mode=TwoWay}" />
-                            <tkcontrols:SettingsExpander.ItemsHeader>
+                            <tkcontrols:SettingsExpander.Items>
+                                <tkcontrols:SettingsCard Name="AdvancedPasteEnableClipboardPreview" ContentAlignment="Left">
+                                    <controls:CheckBoxWithDescriptionControl x:Uid="AdvancedPaste_EnableClipboardPreview" IsChecked="{x:Bind ViewModel.EnableClipboardPreview, Mode=TwoWay}" />
+                                </tkcontrols:SettingsCard>
+                                <tkcontrols:SettingsCard Name="AdvancedPasteAutoCopySelectionCustomAction" ContentAlignment="Left">
+                                    <controls:CheckBoxWithDescriptionControl x:Uid="AdvancedPaste_AutoCopySelectionForCustomActionHotkey" IsChecked="{x:Bind ViewModel.AutoCopySelectionForCustomActionHotkey, Mode=TwoWay}" />
+                                </tkcontrols:SettingsCard>
+                                <tkcontrols:SettingsCard
+                                    Name="AdvancedPasteClipboardHistoryEnabledSettingsCard"
+                                    ContentAlignment="Left"
+                                    IsEnabled="{x:Bind ViewModel.ClipboardHistoryEnabled, Mode=OneWay}">
+                                    <controls:CheckBoxWithDescriptionControl x:Uid="AdvancedPaste_Clipboard_History_Enabled_SettingsCard" IsChecked="{x:Bind ViewModel.ClipboardHistoryEnabled, Mode=TwoWay}" />
+                                </tkcontrols:SettingsCard>
                                 <InfoBar
                                     x:Uid="GPO_SettingIsManaged"
                                     IsClosable="False"
@@ -166,17 +178,6 @@
                                         <FontIconSource FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE72E;" />
                                     </InfoBar.IconSource>
                                 </InfoBar>
-                            </tkcontrols:SettingsExpander.ItemsHeader>
-                            <tkcontrols:SettingsExpander.Items>
-                                <tkcontrols:SettingsCard Name="AdvancedPasteEnableClipboardPreview" ContentAlignment="Left">
-                                    <controls:CheckBoxWithDescriptionControl x:Uid="AdvancedPaste_EnableClipboardPreview" IsChecked="{x:Bind ViewModel.EnableClipboardPreview, Mode=TwoWay}" />
-                                </tkcontrols:SettingsCard>
-                                <tkcontrols:SettingsCard
-                                    Name="AdvancedPasteClipboardHistoryEnabledSettingsCard"
-                                    ContentAlignment="Left"
-                                    IsEnabled="{x:Bind ViewModel.ClipboardHistoryEnabled, Mode=OneWay}">
-                                    <controls:CheckBoxWithDescriptionControl x:Uid="AdvancedPaste_Clipboard_History_Enabled_SettingsCard" IsChecked="{x:Bind ViewModel.ClipboardHistoryEnabled, Mode=TwoWay}" />
-                                </tkcontrols:SettingsCard>
                                 <tkcontrols:SettingsCard Name="AdvancedPasteCloseAfterLosingFocus" ContentAlignment="Left">
                                     <CheckBox x:Uid="AdvancedPaste_CloseAfterLosingFocus" IsChecked="{x:Bind ViewModel.CloseAfterLosingFocus, Mode=TwoWay}" />
                                 </tkcontrols:SettingsCard>

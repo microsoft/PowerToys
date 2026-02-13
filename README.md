@@ -51,19 +51,19 @@ But to get started quickly, choose one of the installation methods below:
 Go to the <a href="https://aka.ms/installPowerToys">PowerToys GitHub releases</a>, click Assets to reveal the downloads, and choose the installer that matches your architecture and install scope. For most devices, that's the x64 per-user installer.
 
 <!-- items that need to be updated release to release -->
-[github-next-release-work]: https://github.com/microsoft/PowerToys/issues?q=is%3Aissue+milestone%3A%22PowerToys+0.97%22
-[github-current-release-work]: https://github.com/microsoft/PowerToys/issues?q=is%3Aissue+milestone%3A%22PowerToys+0.96%22
-[ptUserX64]: https://github.com/microsoft/PowerToys/releases/download/v0.97.0/PowerToysUserSetup-0.97.0-x64.exe 
-[ptUserArm64]: https://github.com/microsoft/PowerToys/releases/download/v0.97.0/PowerToysUserSetup-0.97.0-arm64.exe 
-[ptMachineX64]: https://github.com/microsoft/PowerToys/releases/download/v0.97.0/PowerToysSetup-0.97.0-x64.exe 
-[ptMachineArm64]: https://github.com/microsoft/PowerToys/releases/download/v0.97.0/PowerToysSetup-0.97.0-arm64.exe
+[github-next-release-work]: https://github.com/microsoft/PowerToys/issues?q=is%3Aissue+milestone%3A%22PowerToys+0.98%22
+[github-current-release-work]: https://github.com/microsoft/PowerToys/issues?q=is%3Aissue+milestone%3A%22PowerToys+0.97%22
+[ptUserX64]: https://github.com/microsoft/PowerToys/releases/download/v0.97.1/PowerToysUserSetup-0.97.1-x64.exe 
+[ptUserArm64]: https://github.com/microsoft/PowerToys/releases/download/v0.97.1/PowerToysUserSetup-0.97.1-arm64.exe 
+[ptMachineX64]: https://github.com/microsoft/PowerToys/releases/download/v0.97.1/PowerToysSetup-0.97.1-x64.exe 
+[ptMachineArm64]: https://github.com/microsoft/PowerToys/releases/download/v0.97.1/PowerToysSetup-0.97.1-arm64.exe
  
 |  Description   | Filename |
 |----------------|----------|
-| Per user - x64       | [PowerToysUserSetup-0.97.0-x64.exe][ptUserX64] |
-| Per user - ARM64     | [PowerToysUserSetup-0.97.0-arm64.exe][ptUserArm64] |
-| Machine wide - x64   | [PowerToysSetup-0.97.0-x64.exe][ptMachineX64] |
-| Machine wide - ARM64 | [PowerToysSetup-0.97.0-arm64.exe][ptMachineArm64] |
+| Per user - x64       | [PowerToysUserSetup-0.97.1-x64.exe][ptUserX64] |
+| Per user - ARM64     | [PowerToysUserSetup-0.97.1-arm64.exe][ptUserArm64] |
+| Machine wide - x64   | [PowerToysSetup-0.97.1-x64.exe][ptMachineX64] |
+| Machine wide - ARM64 | [PowerToysSetup-0.97.1-arm64.exe][ptMachineArm64] |
 
 </details>
 
@@ -103,18 +103,66 @@ There are <a href="https://learn.microsoft.com/windows/powertoys/install#communi
 </details>
 
 ## ✨ What's new
-**Version 0.97 (January 2026)**
 
-For an in-depth look at the latest changes, visit the [Windows Command Line blog](https://aka.ms/powertoys-releaseblog).
+**Version 0.97.2 (Feb 2026)**
 
-**✨ Highlights**
-- **Command Palette**: Major expansion with PowerToys extension (Windows 11 only), Remote Desktop built-in extension, theme customization, drag-and-drop support, fallback ranking controls, sections/separators for pages, pinyin Chinese matching, and many UX refinements.
-- **Settings**: Quick Access flyout is now a standalone process for significantly faster startup, theme-adaptive tray icon, AOT serialization, and multiple UI/accessibility fixes
-- **CursorWrap (New!)**: New mouse utility that lets your cursor wrap around screen edges, making multi-monitor navigation faster and more seamless.
-- **Advanced Paste**: Image input for AI, color detection in clipboard history, Foundry Local improvements, Azure AI icons, and multiple bug fixes
-- **CLI Support Expanded**: FancyZones, Image Resizer, and File Locksmith can now be controlled from the command line for layout management, batch image resizing, and file lock inspection.
-- **LightSwitch**: Added support for automatically following Windows Night Light mode.
-- **Release Experience & Quality**: Refreshed "What’s new" dialog, plus many performance improvements, stability fixes, and refinements across PowerToys.
+This patch release fixes several important stability issues identified in v0.97.0 based on incoming reports. Check out the [v0.97.0](https://github.com/microsoft/PowerToys/releases/tag/v0.97.0) notes for the full list of changes.
+
+## Advanced Paste
+- #45207 Fixed a crash in the Advanced Paste settings page caused by null values during JSON deserialization.
+
+## Color Picker
+- #45367 Fixed contrast issue in Color picker UI.
+
+## Command Palette
+- #45194 Fixed an issue where some Command Palette PowerToys Extension strings were not localised.
+
+## Cursor Wrap
+- #45210 Fixed "Automatically activate on utility startup" setting not persisting when disabled. Thanks [@ThanhNguyxn](https://github.com/ThanhNguyxn)!
+- #45303 Added option to disable Cursor Wrapping when only a single monitor is connected. Thanks [@mikehall-ms](https://github.com/mikehall-ms)!
+
+## Image Resizer
+- #45184 Fixed Image Resizer not working after upgrading PowerToys on Windows 10 by properly cleaning up legacy sparse app packages.
+
+## LightSwitch
+- #45304 Fixed Light Switch startup logic to correctly apply the appropriate theme on launch.
+
+## Workspaces
+- #45183 Fixed overlay positioning issue in workspace snapshot draw caused by DPI-aware coordinate mismatch.
+
+## Quick Access and Measure Tool
+- #45443 Fixed crash related to `IsShownInSwitchers` property when Explorer is not running.
+
+**Version 0.97.1 (January 2026)**
+
+**Highlights**
+
+### Advanced Paste
+- #44862: Fixed Settings UI advanced paste page crash by using correct settings repository for null checking.
+
+### Command Palette
+- #44886: Fixed personalization section not appearing by using latest MSIX for installation.
+- #44938: Fixed loading of icons from internet shortcuts. Thanks [@jiripolasek](https://github.com/jiripolasek)!
+- #45076: Fixed potential deadlock from lazy-loading AppListItem details. Thanks [@jiripolasek](https://github.com/jiripolasek)!
+
+### Cursor Wrap
+- #44936: Added improved multi-monitor support; Added laptop lid close detection for dynamic monitor topology updates. Thanks [@mikehall-ms](https://github.com/mikehall-ms)!
+- #44936: Added new settings dropdown to constrain wrapping to horizontal-only, vertical-only, or both directions. Thanks [@mikehall-ms](https://github.com/mikehall-ms)!
+
+### Peek
+- #44995: Fixed Space key triggering Peek during file rename, search, or address bar typing.
+
+### PowerRename
+- #44944: Fixed regex `$` not working, preventing users from adding text at the end of filenames.
+
+### Runner
+- #44931: Monochrome tray icon now adapts to Windows system theme instead of app theme.
+- #44982: Fixed right-click menu to dynamically update based on Quick Access enabled/disabled state.
+
+### GPO / Enterprise
+- #45028: Added CursorWrap policy definition to ADMX templates. Thanks [@htcfreek](https://github.com/htcfreek)!
+
+For the full list of v0.97 changes, visit the [Windows Command Line blog](https://aka.ms/powertoys-releaseblog).
 
 ## Advanced Paste
 
@@ -289,7 +337,7 @@ For an in-depth look at the latest changes, visit the [Windows Command Line blog
 - Stabilized FancyZones UI tests with more reliable selectors and screen recordings.
 
 ## 🛣️ Roadmap 
-We are planning some nice new features and improvements for the next releases – PowerDisplay, Command Palette improvements and a brand-new Shortcut Guide experience! Stay tuned for [v0.97][github-next-release-work]!
+We are planning some nice new features and improvements for the next releases – PowerDisplay, Command Palette improvements and a brand-new Shortcut Guide experience! Stay tuned for [v0.98][github-next-release-work]!
 
 ## ❤️ PowerToys Community 
 The PowerToys team is extremely grateful to have the [support of an amazing active community][community-link]. The work you do is incredibly important. PowerToys wouldn't be nearly what it is today without your help filing bugs, updating documentation, guiding the design, or writing features. We want to say thank you and take time to recognize your work. Your contributions and feedback improve PowerToys month after month!

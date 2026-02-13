@@ -14,7 +14,7 @@ using Windows.ApplicationModel.DataTransfer;
 namespace Microsoft.CmdPal.UI.ViewModels;
 
 [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
-public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBarContext
+public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBarContext, IPrecomputedListItem
 {
     // Local logger field required for [LoggerMessage] source generator
     private readonly ILogger _logger;
@@ -25,6 +25,9 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
 
     private readonly ExtensionObject<ICommandItem> _commandItemModel = new(null);
     private CommandContextItemViewModel? _defaultCommandContextItemViewModel;
+
+    private FuzzyTargetCache _titleCache;
+    private FuzzyTargetCache _subtitleCache;
 
     internal InitializedState Initialized { get; private set; } = InitializedState.Uninitialized;
 
@@ -121,6 +124,8 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
 
         _itemTitle = model.Title;
         Subtitle = model.Subtitle;
+        _titleCache.Invalidate();
+        _subtitleCache.Invalidate();
 
         Initialized |= InitializedState.FastInitialized;
     }
@@ -254,6 +259,8 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
             Subtitle = "Item failed to load";
             MoreCommands = [];
             _icon = _errorIcon;
+            _titleCache.Invalidate();
+            _subtitleCache.Invalidate();
             Initialized |= InitializedState.Error;
         }
 
@@ -291,6 +298,8 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
             Subtitle = "Item failed to load";
             MoreCommands = [];
             _icon = _errorIcon;
+            _titleCache.Invalidate();
+            _subtitleCache.Invalidate();
             Initialized |= InitializedState.Error;
         }
 
@@ -340,12 +349,14 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
 
             case nameof(Title):
                 _itemTitle = model.Title;
+                _titleCache.Invalidate();
                 break;
 
             case nameof(Subtitle):
                 var modelSubtitle = model.Subtitle;
                 this.Subtitle = modelSubtitle;
                 _defaultCommandContextItemViewModel?.Subtitle = modelSubtitle;
+                _subtitleCache.Invalidate();
                 break;
 
             case nameof(Icon):
@@ -420,6 +431,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
                 // Extensions based on Command Palette SDK < 0.3 CommandItem class won't notify when Title changes because Command
                 // or Command.Name change. This is a workaround to ensure that the Title is always up-to-date for extensions with old SDK.
                 _itemTitle = model.Title;
+                _titleCache.Invalidate();
                 UpdateProperty(nameof(Title), nameof(Name));
 
                 _defaultCommandContextItemViewModel?.UpdateTitle(model.Command.Name);
@@ -441,6 +453,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
     private void UpdateTitle(string? title)
     {
         _itemTitle = title ?? string.Empty;
+        _titleCache.Invalidate();
         UpdateProperty(nameof(Title));
     }
 
@@ -460,6 +473,12 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
                 : null;
         UpdateProperty(nameof(DataPackage));
     }
+
+    public FuzzyTarget GetTitleTarget(IPrecomputedFuzzyMatcher matcher)
+        => _titleCache.GetOrUpdate(matcher, Title);
+
+    public FuzzyTarget GetSubtitleTarget(IPrecomputedFuzzyMatcher matcher)
+        => _subtitleCache.GetOrUpdate(matcher, Subtitle);
 
     protected override void UnsafeCleanup()
     {

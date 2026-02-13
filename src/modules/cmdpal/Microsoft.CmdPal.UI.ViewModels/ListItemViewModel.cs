@@ -24,7 +24,9 @@ public partial class ListItemViewModel : CommandItemViewModel
 
     public string Section { get; private set; } = string.Empty;
 
-    public bool IsSectionOrSeparator { get; private set; }
+    public ListItemType Type { get; private set; }
+
+    public bool IsInteractive => Type == ListItemType.Item;
 
     public DetailsViewModel? Details { get; private set; }
 
@@ -85,15 +87,17 @@ public partial class ListItemViewModel : CommandItemViewModel
 
         UpdateTags(li.Tags);
         Section = li.Section ?? string.Empty;
-        IsSectionOrSeparator = IsSeparator(li);
-        UpdateProperty(nameof(Section), nameof(IsSectionOrSeparator));
+        Type = EvaluateType();
+        UpdateProperty(nameof(Section), nameof(Type), nameof(IsInteractive));
 
         UpdateAccessibleName();
     }
 
-    private bool IsSeparator(IListItem item)
+    private ListItemType EvaluateType()
     {
-        return item.Command is null;
+        return Command.IsSet
+            ? ListItemType.Item
+            : string.IsNullOrEmpty(Section) ? ListItemType.Separator : ListItemType.SectionHeader;
     }
 
     public override void SlowInitializeProperties()
@@ -140,12 +144,12 @@ public partial class ListItemViewModel : CommandItemViewModel
                 break;
             case nameof(model.Section):
                 Section = model.Section ?? string.Empty;
-                IsSectionOrSeparator = IsSeparator(model);
-                UpdateProperty(nameof(Section), nameof(IsSectionOrSeparator));
+                Type = EvaluateType();
+                UpdateProperty(nameof(Section), nameof(Type), nameof(IsInteractive));
                 break;
             case nameof(model.Command):
-                IsSectionOrSeparator = IsSeparator(model);
-                UpdateProperty(nameof(IsSectionOrSeparator));
+                Type = EvaluateType();
+                UpdateProperty(nameof(Type), nameof(IsInteractive));
                 break;
             case nameof(Details):
                 var extensionDetails = model.Details;

@@ -29,6 +29,9 @@ public sealed partial class SettingsWindow : WindowEx,
     private readonly LocalKeyboardListener _localKeyboardListener;
     private readonly ILogger _logger;
 
+    private readonly NavigationViewItem? _internalNavItem;
+
+    public ObservableCollection<Crumb> BreadCrumbs { get; } = [];
     private readonly SettingsWindowViewModel viewModel;
 
     // Gets or sets optional action invoked after NavigationView is loaded.
@@ -63,6 +66,23 @@ public sealed partial class SettingsWindow : WindowEx,
 
         Closed += SettingsWindow_Closed;
         RootElement.AddHandler(UIElement.PointerPressedEvent, new PointerEventHandler(RootElement_OnPointerPressed), true);
+
+        if (!BuildInfo.IsCiBuild)
+        {
+            _internalNavItem = new NavigationViewItem
+            {
+                Content = "Internal Tools",
+                Icon = new FontIcon { Glyph = "\uEC7A" },
+                Tag = "Internal",
+            };
+            NavView.MenuItems.Add(_internalNavItem);
+        }
+        else
+        {
+            _internalNavItem = null;
+        }
+
+        Navigate("General");
     }
 
     private void ViewModel_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -84,8 +104,6 @@ public sealed partial class SettingsWindow : WindowEx,
     {
         // Delay necessary to ensure NavigationView visual state can match navigation
         Task.Delay(500).ContinueWith(_ => this.NavigationViewLoaded?.Invoke(), TaskScheduler.FromCurrentSynchronizationContext());
-
-        NavView.SelectedItem = NavView.MenuItems[0];
 
         if (sender is NavigationView navigationView)
         {
@@ -110,6 +128,45 @@ public sealed partial class SettingsWindow : WindowEx,
     {
         var selectedItem = args.InvokedItemContainer;
         viewModel.Navigate((selectedItem.Tag as string)!);
+    }
+
+    internal void Navigate(string page)
+    {
+        Type? pageType;
+        switch (page)
+        {
+            case "General":
+                pageType = typeof(GeneralPage);
+                break;
+            case "Appearance":
+                pageType = typeof(AppearancePage);
+                break;
+            case "Extensions":
+                pageType = typeof(ExtensionsPage);
+                break;
+            case "Internal":
+                pageType = typeof(InternalPage);
+                break;
+            case "":
+                // intentional no-op: empty tag means no navigation
+                pageType = null;
+                break;
+            default:
+                // unknown page, no-op and log
+                pageType = null;
+                Logger.LogError($"Unknown settings page tag '{page}'");
+                break;
+        }
+
+        if (pageType is not null)
+        {
+            NavFrame.Navigate(pageType);
+        }
+    }
+
+    private void Navigate(ProviderSettingsViewModel extension)
+    {
+        NavFrame.Navigate(typeof(ExtensionPage), extension);
     }
 
     private void PositionCentered()
@@ -223,6 +280,57 @@ public sealed partial class SettingsWindow : WindowEx,
     public void Dispose()
     {
         _localKeyboardListener?.Dispose();
+    }
+
+    private void NavFrame_OnNavigated(object sender, NavigationEventArgs e)
+    {
+        BreadCrumbs.Clear();
+
+        if (e.SourcePageType == typeof(GeneralPage))
+        {
+            NavView.SelectedItem = GeneralPageNavItem;
+            var pageType = RS_.GetString("Settings_PageTitles_GeneralPage");
+            BreadCrumbs.Add(new(pageType, pageType));
+        }
+        else if (e.SourcePageType == typeof(AppearancePage))
+        {
+            NavView.SelectedItem = AppearancePageNavItem;
+            var pageType = RS_.GetString("Settings_PageTitles_AppearancePage");
+            BreadCrumbs.Add(new(pageType, pageType));
+        }
+        else if (e.SourcePageType == typeof(ExtensionsPage))
+        {
+            NavView.SelectedItem = ExtensionPageNavItem;
+            var pageType = RS_.GetString("Settings_PageTitles_ExtensionsPage");
+            BreadCrumbs.Add(new(pageType, pageType));
+        }
+        else if (e.SourcePageType == typeof(ExtensionPage) && e.Parameter is ProviderSettingsViewModel vm)
+        {
+            NavView.SelectedItem = ExtensionPageNavItem;
+            var extensionsPageType = RS_.GetString("Settings_PageTitles_ExtensionsPage");
+            BreadCrumbs.Add(new(extensionsPageType, extensionsPageType));
+            BreadCrumbs.Add(new(vm.DisplayName, vm));
+        }
+        else if (e.SourcePageType == typeof(InternalPage) && _internalNavItem is not null)
+        {
+            NavView.SelectedItem = _internalNavItem;
+            var pageType = "Internal";
+            BreadCrumbs.Add(new(pageType, pageType));
+        }
+        else
+        {
+            BreadCrumbs.Add(new($"[{e.SourcePageType?.Name}]", string.Empty));
+            Logger.LogError($"Unknown breadcrumb for page type '{e.SourcePageType}'");
+        }
+    }
+}
+
+public readonly struct Crumb
+{
+    public Crumb(string label, object data)
+    {
+        Label = label;
+        Data = data;
     }
 
     [LoggerMessage(

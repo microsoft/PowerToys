@@ -152,7 +152,7 @@ public sealed partial class TrayIconService
                 {
                     if (wParam == PInvoke.WM_USER + 1)
                     {
-                        WeakReferenceMessenger.Default.Send<OpenSettingsMessage>();
+                        WeakReferenceMessenger.Default.Send(new OpenSettingsMessage());
                     }
                     else if (wParam == PInvoke.WM_USER + 2)
                     {

@@ -46,7 +46,7 @@
                         HorizontalAlignment="Left"
                         VerticalAlignment="Center"
                         SourceKey="{x:Bind Icon}"
-                        SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}" />
+                        SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested20}" />
                     <TextBlock
                         Grid.Column="1"
                         VerticalAlignment="Center"

@@ -34,7 +34,10 @@ public sealed partial class ContextMenu : UserControl,
         WeakReferenceMessenger.Default.Register<UpdateCommandBarMessage>(this);
         WeakReferenceMessenger.Default.Register<TryCommandKeybindingMessage>(this);
 
-        viewModel.PropertyChanged += ViewModel_PropertyChanged;
+        if (viewModel is not null)
+        {
+            viewModel.PropertyChanged += ViewModel_PropertyChanged;
+        }
     }
 
     public void Receive(OpenContextMenuMessage message)
