@@ -40,6 +40,9 @@ Param(
   [string]$metaPackageName = "Microsoft.WindowsAppSDK"
 )
 
+# Script-level constants
+$script:PackageVersionRegex = '^(.+?)\.(\d+\..*)$'
+
 
 
 function Read-FileWithEncoding {
@@ -81,7 +84,7 @@ function Add-NuGetSourceAndMapping {
 
     # Ensure packageSources exists
     if (-not $Xml.configuration.packageSources) {
-        $Xml.configuration.AppendChild($Xml.CreateElement("packageSources")) | Out-Null
+        $null = $Xml.configuration.AppendChild($Xml.CreateElement("packageSources"))
     }
     $sources = $Xml.configuration.packageSources
 
@@ -90,13 +93,13 @@ function Add-NuGetSourceAndMapping {
     if (-not $sourceNode) {
         $sourceNode = $Xml.CreateElement("add")
         $sourceNode.SetAttribute("key", $Key)
-        $sources.AppendChild($sourceNode) | Out-Null
+        $null = $sources.AppendChild($sourceNode)
     }
     $sourceNode.SetAttribute("value", $Value)
 
     # Ensure packageSourceMapping exists
     if (-not $Xml.configuration.packageSourceMapping) {
-        $Xml.configuration.AppendChild($Xml.CreateElement("packageSourceMapping")) | Out-Null
+        $null = $Xml.configuration.AppendChild($Xml.CreateElement("packageSourceMapping"))
     }
     $mapping = $Xml.configuration.packageSourceMapping
 
@@ -104,7 +107,7 @@ function Add-NuGetSourceAndMapping {
     $invalidNodes = $mapping.SelectNodes("packageSource[not(@key) or @key='']")
     if ($invalidNodes) {
         foreach ($node in $invalidNodes) {
-            $mapping.RemoveChild($node) | Out-Null
+            $null = $mapping.RemoveChild($node)
         }
     }
 
@@ -115,9 +118,9 @@ function Add-NuGetSourceAndMapping {
         $mappingSource.SetAttribute("key", $Key)
         # Insert at top for priority
         if ($mapping.HasChildNodes) {
-            $mapping.InsertBefore($mappingSource, $mapping.FirstChild) | Out-Null
+            $null = $mapping.InsertBefore($mappingSource, $mapping.FirstChild)
         } else {
-            $mapping.AppendChild($mappingSource) | Out-Null
+            $null = $mapping.AppendChild($mappingSource)
         }
     }
     
@@ -134,7 +137,7 @@ function Add-NuGetSourceAndMapping {
     foreach ($pattern in $Patterns) {
         $pkg = $Xml.CreateElement("package")
         $pkg.SetAttribute("pattern", $pattern)
-        $mappingSource.AppendChild($pkg) | Out-Null
+        $null = $mappingSource.AppendChild($pkg)
     }
 }
 
@@ -148,7 +151,7 @@ function Download-ArtifactFromPipeline {
     )
 
     Write-Host "Downloading artifact '$ArtifactName' from build $BuildId..."
-    New-Item -ItemType Directory -Path $OutputDir -Force | Out-Null
+    $null = New-Item -ItemType Directory -Path $OutputDir -Force
 
     try {
         # Authenticate with Azure DevOps using System Access Token (if available)
@@ -160,8 +163,12 @@ function Download-ArtifactFromPipeline {
         }
 
         # Use az CLI to download artifact
-        $azArgs = "pipelines runs artifact download --organization $Organization --project $Project --run-id $BuildId --artifact-name `"$ArtifactName`" --path `"$OutputDir`""
-        Invoke-Expression "az $azArgs"
+        & az pipelines runs artifact download `
+            --organization $Organization `
+            --project $Project `
+            --run-id $BuildId `
+            --artifact-name $ArtifactName `
+            --path $OutputDir
 
         if ($LASTEXITCODE -eq 0) {
             Write-Host "Successfully downloaded artifact to $OutputDir"
@@ -260,7 +267,7 @@ function Resolve-ArtifactBasedDependencies {
     )
 
     Write-Host "Resolving dependencies from artifact-based metapackage..."
-    New-Item -ItemType Directory -Path $OutputDir -Force | Out-Null
+    $null = New-Item -ItemType Directory -Path $OutputDir -Force
 
     # Find the metapackage in artifact
     $metaNupkg = Get-ChildItem -Path $ArtifactDir -Recurse -Filter "$MetaPackageName.*.nupkg" |
@@ -338,8 +345,13 @@ function Resolve-ArtifactBasedDependencies {
             $depVersion = $dependencies[$depId]
             Write-Host "Downloading dependency: $depId version $depVersion from feed..."
 
-            $nugetArgs = "install $depId -Version $depVersion -ConfigFile `"$tempConfig`" -OutputDirectory `"$OutputDir`" -NonInteractive -NoCache"
-            Invoke-Expression "nuget $nugetArgs" | Out-Null
+            & nuget install $depId `
+                -Version $depVersion `
+                -ConfigFile $tempConfig `
+                -OutputDirectory $OutputDir `
+                -NonInteractive `
+                -NoCache `
+                | Out-Null
 
             if ($LASTEXITCODE -eq 0) {
                 $packageVersions[$depId] = $depVersion
@@ -364,11 +376,10 @@ function Resolve-ArtifactBasedDependencies {
     }
 
     foreach ($dir in $directories) {
-        if ($dir.Name -match "^(.+?)\.(\d+\..*)$") {
+        if ($dir.Name -match $script:PackageVersionRegex) {
             $pkgId = $Matches[1]
             $pkgVer = $Matches[2]
             $allLocalPackages += $pkgId
-            # Don't overwrite metapackage version that was set earlier
             if (-not $packageVersions.ContainsKey($pkgId)) {
                 $packageVersions[$pkgId] = $pkgVer
             }
@@ -386,30 +397,13 @@ function Resolve-ArtifactBasedDependencies {
     $xml.Save($nugetConfig)
     Write-Host "Updated nuget.config with localpackages mapping (temporary, for pipeline execution only)."
 
-    # Display all resolved package versions for debugging
-    Write-Host "`nResolved package versions (inside function):"
-    foreach ($pkgId in $packageVersions.Keys | Sort-Object) {
-        $ver = $packageVersions[$pkgId]
-        if ([string]::IsNullOrWhiteSpace($ver)) {
-            Write-Warning "  ${pkgId} : (empty version)"
-        } else {
-            Write-Host "  ${pkgId} : $ver"
-        }
-    }
-
-    Write-Host "`nHashtable info before return:"
-    Write-Host "  Type: $($packageVersions.GetType().FullName)"
-    Write-Host "  Count: $($packageVersions.Count)"
-    Write-Host "  Keys: $($packageVersions.Keys -join ', ')"
-
-    # Return hashtable explicitly (PowerShell will convert this to the correct type)
     return ,$packageVersions
 }
 
 function Resolve-WinAppSdkSplitDependencies {
     Write-Host "Version $WinAppSDKVersion detected. Resolving split dependencies..."
     $installDir = Join-Path $rootPath "localpackages\output"
-    New-Item -ItemType Directory -Path $installDir -Force | Out-Null
+    $null = New-Item -ItemType Directory -Path $installDir -Force
 
     # Create a temporary nuget.config to avoid interference from the repo's config
     $tempConfig = Join-Path $env:TEMP "nuget_$(Get-Random).config"
@@ -423,14 +417,24 @@ function Resolve-WinAppSdkSplitDependencies {
             if ($propsContent -match '<PackageVersion Include="Microsoft.Windows.SDK.BuildTools" Version="([^"]+)"') {
                 $buildToolsVersion = $Matches[1]
                 Write-Host "Downloading Microsoft.Windows.SDK.BuildTools version $buildToolsVersion..."
-                $nugetArgsBuildTools = "install Microsoft.Windows.SDK.BuildTools -Version $buildToolsVersion -ConfigFile $tempConfig -OutputDirectory $installDir -NonInteractive -NoCache"
-                Invoke-Expression "nuget $nugetArgsBuildTools" | Out-Null
+                & nuget install Microsoft.Windows.SDK.BuildTools `
+                    -Version $buildToolsVersion `
+                    -ConfigFile $tempConfig `
+                    -OutputDirectory $installDir `
+                    -NonInteractive `
+                    -NoCache `
+                    | Out-Null
             }
         }
 
         # Download package to inspect nuspec and keep it for the build
-        $nugetArgs = "install Microsoft.WindowsAppSDK -Version $WinAppSDKVersion -ConfigFile $tempConfig -OutputDirectory $installDir -NonInteractive -NoCache"
-        Invoke-Expression "nuget $nugetArgs" | Out-Null
+        & nuget install Microsoft.WindowsAppSDK `
+            -Version $WinAppSDKVersion `
+            -ConfigFile $tempConfig `
+            -OutputDirectory $installDir `
+            -NonInteractive `
+            -NoCache `
+            | Out-Null
 
         # Parse dependencies from the installed folders
         # Folder structure is typically {PackageId}.{Version}
@@ -499,28 +503,14 @@ if ($useArtifactSource) {
         -SourceUrl $sourceLink `
         -OutputDir $installDir
 
-    Write-Host "`nHashtable info after function return:"
-    Write-Host "  Type: $($packageVersions.GetType().FullName)"
-    Write-Host "  Count: $($packageVersions.Count)"
-    Write-Host "  Keys: $($packageVersions.Keys -join ', ')"
-    Write-Host "  metaPackageName variable: '$metaPackageName'"
-
     if ($packageVersions.Count -eq 0) {
-        Write-Host "Failed to resolve dependencies from artifact"
+        Write-Error "Failed to resolve dependencies from artifact"
         exit 1
     }
 
-    # Extract WinAppSDK version
-    Write-Host "`nAttempting to access: packageVersions['$metaPackageName']"
     $WinAppSDKVersion = $packageVersions[$metaPackageName]
-    Write-Host "WinAppSDK Version: '$WinAppSDKVersion'"
+    Write-Host "WinAppSDK Version: $WinAppSDKVersion"
     Write-Host "##vso[task.setvariable variable=WinAppSDKVersion]$WinAppSDKVersion"
-
-    # Additional debugging: try to access all keys
-    Write-Host "`nAll hashtable entries:"
-    foreach ($key in $packageVersions.Keys) {
-        Write-Host "  [$key] = '$($packageVersions[$key])'"
-    }
 
 } else {
     Write-Host "=== Using Feed-Based Source ===" -ForegroundColor Cyan
