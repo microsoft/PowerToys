@@ -93,7 +93,7 @@ public sealed partial class PlainTextContentViewer : UserControl
 
         try
         {
-            ContentTextBlock.FontFamily = UseMonospace ? new FontFamily("Consolas") : FontFamily.XamlAutoFontFamily;
+            ContentTextBlock.FontFamily = UseMonospace ? new FontFamily("Cascadia Mono, Consolas") : FontFamily.XamlAutoFontFamily;
         }
         catch
         {
